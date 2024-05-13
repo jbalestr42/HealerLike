@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e321382ab739504ab8f748087ee86bb, type: 3}
+  m_Name: ApplyBuffOnTargetSkillFactory
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  data:
+    onSkillTriggerFactory:
+    - {fileID: 0}
+    buffHandlerFactory: {fileID: 11400000, guid: 5448266a32c9f7141821d42a031627b2, type: 2}
+    targetValidators:
+    - {fileID: 11400000, guid: 5baed217b936dba4ba8f65ad7abe725b, type: 2}
+    singleTimeUse: 1
+    rate: 0
+    isSelfTarget: 1
+    range: 1

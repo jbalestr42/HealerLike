@@ -1,0 +1,4 @@
+using UnityEngine;
+
+[CreateAssetMenu(menuName = "Custom/Data/Skills/IncreaseDamageOnDistanceProjectileBehaviour")]
+public class IncreaseDamageOnDistanceProjectileBehaviourFactory : ProjectileBehaviourFactory<IncreaseDamageOnDistanceProjectileBehaviour, IncreaseDamageOnDistanceProjectileBehaviourData> {}
