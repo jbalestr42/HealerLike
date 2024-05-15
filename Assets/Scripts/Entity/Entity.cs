@@ -93,6 +93,29 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, ISelectable, IBuffa
         _inventoryHandler.OnItemRemoved.AddListener(OnItemRemoved);
     }
 
+    void OnHealthChanged(ResourceAttribute health)
+    {
+        if (health.Value <= 0f)
+        {
+            EntityManager.instance.DestroyEntity(gameObject, entityType);
+        }
+    }
+
+    public EntityType GetTargetType()
+    {
+        if (entityType == EntityType.Player)
+        {
+            return EntityType.Computer;
+        }
+        else if (entityType == EntityType.Computer)
+        {
+            return EntityType.Player;
+        }
+        return EntityType.None;
+    }
+
+    #region Inventory
+
     public void OnItemAdded(InventoryItemData itemData, bool isNewItem)
     {
         // If the item is in the first 2 slots, we stack it to be more powerfull
@@ -118,26 +141,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, ISelectable, IBuffa
         return 1 + maxStacks - Mathf.Clamp(index, 0, maxStacks);
     }
 
-    void OnHealthChanged(ResourceAttribute health)
-    {
-        if (health.Value <= 0f)
-        {
-            EntityManager.instance.DestroyEntity(gameObject, entityType);
-        }
-    }
-
-    public EntityType GetTargetType()
-    {
-        if (entityType == EntityType.Player)
-        {
-            return EntityType.Computer;
-        }
-        else if (entityType == EntityType.Computer)
-        {
-            return EntityType.Player;
-        }
-        return EntityType.None;
-    }
+    #endregion
 
     #region IAttackable
 
@@ -215,7 +219,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, ISelectable, IBuffa
 
     #endregion
 
-    #region IMakable
+    #region IMarkable
 
     public void Mark()
     {
@@ -233,18 +237,12 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, ISelectable, IBuffa
 
     public void Select()
     {
-        _attributeManager.Get(AttributeType.Range).AddOnValueChangedListener(OnRangeChanged);
         UIManager.instance.GetView<GameView>(ViewType.Game).ShowPanel(PanelType.Entity, gameObject);
     }
 
     public void UnSelect()
     {
-        _attributeManager.Get(AttributeType.Range).RemoveOnValueChangedListener(OnRangeChanged);
         UIManager.instance.GetView<GameView>(ViewType.Game).HidePanel(PanelType.Entity);
-    }
-
-    void OnRangeChanged(Attribute range)
-    {
     }
 
     #endregion

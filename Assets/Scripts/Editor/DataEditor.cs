@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class DataEditor : OdinMenuEditorWindow
 {
-    private static string[] typesToDisplay = { "Entities", "Items", "Consumables", "GameData" };
+    private static string[] typesToDisplay = { "Characters", "CharacterSkills", "Entities", "Items", "Consumables", "GameData" };
     private string _selectedType = "Items";
 
     Dictionary<string, List<ABaseDataEditor>> _dataEditors = new Dictionary<string, List<ABaseDataEditor>>();
@@ -78,6 +78,8 @@ public class DataEditor : OdinMenuEditorWindow
             _dataEditors[type] = new List<ABaseDataEditor>();
         }
 
+        _dataEditors["Characters"].Add(new BaseDataEditor<CharacterData>("Characters", "Assets/Data/Characters/") { getDataName = (CharacterData data) => data.title + "Character" });
+        _dataEditors["CharacterSkills"].Add(new DerivedTypeDataEditor<ACharacterSkillFactory>("CharacterSkills", "Assets/Data/CharacterSkills/"));
         _dataEditors["Entities"].Add(new BaseDataEditor<EnemyData>("Enemies", "Assets/Data/Enemies/") { getDataName = (EnemyData data) => data.title + "Enemy" });
         _dataEditors["Entities"].Add(new BaseDataEditor<TowerData>("Towers", "Assets/Data/Towers/") { getDataName = (TowerData data) => data.title + "Tower" });
         _dataEditors["Entities"].Add(new BaseDataEditor<EntityData>("Entities", "Assets/Data/Entities/") { getDataName = (EntityData data) => data.title + "Entity" });

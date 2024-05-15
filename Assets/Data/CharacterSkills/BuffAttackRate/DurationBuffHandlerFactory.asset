@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5092650b537ff954da3a4ef75918f6a2, type: 3}
-  m_Name: SupraBuffTower
+  m_Script: {fileID: 11500000, guid: 8193789146749c445af97d00ccc71755, type: 3}
+  m_Name: DurationBuffHandlerFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -21,11 +21,8 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
+  uniqueID: 02bfb97f-5962-401d-8d62-08e89fdee44c
   data:
-    icon: {fileID: 21300000, guid: a56b9ef5a8cc3844bbc272c680bbaed8, type: 3}
-    name: Buff single tower
-    description: 
-    buffHandlerFactory: {fileID: 11400000, guid: 273283f8025e2894f81090a20453bd1f, type: 2}
-    layerMask:
-      serializedVersion: 2
-      m_Bits: 16384
+    buffFactory: {fileID: 11400000, guid: c0e9a3e0bb2b9094a8b661fe73d93ac9, type: 2}
+    buffEffect: {fileID: 235923177188579788, guid: f7d829ef2eae5624bb2caa7f507d8990, type: 3}
+    duration: 2

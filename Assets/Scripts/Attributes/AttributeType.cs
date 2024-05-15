@@ -11,4 +11,5 @@ public enum AttributeType
     HitArmor,
     Speed,
     Vulnerability,
+    ManaMax,
 }

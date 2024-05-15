@@ -37,18 +37,12 @@ public class GameHUD : MonoBehaviour
     void Start()
     {
         PlayerBehaviour.instance.OnGoldChanged.AddListener(SetGold);
-        PlayerBehaviour.instance.OnLifeChanged.AddListener(SetLife);
         GameManager.instance.OnWaveChanged.AddListener(SetCurrentWave);
     }
 
     public void SetGold(int gold)
     {
         _goldText.text = "Gold: " + gold.ToString();
-    }
-
-    public void SetLife(int life)
-    {
-        _lifeText.text = "Life: " + life.ToString();
     }
 
     public void SetCurrentWave(int currentWave)

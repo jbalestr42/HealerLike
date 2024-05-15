@@ -43,8 +43,6 @@ public class WaveGameType : AGameType
         _gameView.gameHUD.nextWaveButton.onClick.AddListener(StartWave);
         _upgradeView.OnItemSelected.AddListener(OnItemSelected);
         _waveView.OnWaveSelected.AddListener(OnWaveSelected);
-
-        PlayerBehaviour.instance.OnLifeChanged.AddListener(OnLifeChanged);
     }
 
     void Update()
@@ -107,14 +105,6 @@ public class WaveGameType : AGameType
         _gameView.gameHUD.nextWaveButton.interactable = false;
         _gameView.playerInventory.HideInventory();
         _spawnCor = StartCoroutine(StartWave(_nextWaveData));
-    }
-
-    void OnLifeChanged(int life)
-    {
-        if (life <= 0)
-        {
-            SetState(State.GameOver);
-        }
     }
 
     public override void StartGame()

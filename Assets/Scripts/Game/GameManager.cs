@@ -26,7 +26,6 @@ public class GameManager : Singleton<GameManager>
         _gameView = UIManager.instance.GetView<GameView>(ViewType.Game);
 
         _gameView.gameHUD.startGameButton.onClick.AddListener(StartGame);
-        _gameView.gameHUD.generateMapButton.onClick.AddListener(GenerateMap);
 
         UIManager.instance.AddView(ViewType.Game);
         
@@ -65,11 +64,6 @@ public class GameManager : Singleton<GameManager>
     void StartGame()
     {
         SetState(GameState.StartGame);
-    }
-
-    void GenerateMap()
-    {
-        PlayerBehaviour.instance.Generate(Random.Range(0, 100000));
     }
 
     void SetState(GameState newState)
