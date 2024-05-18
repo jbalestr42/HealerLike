@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8193789146749c445af97d00ccc71755, type: 3}
+  m_Name: DurationBuffHandlerFactory
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  uniqueID: 3cab0838-f2c8-40f3-9fc6-495a78e3f014
+  data:
+    buffFactory: {fileID: 11400000, guid: aa2055b184c89a74881735e170eaff1a, type: 2}
+    buffEffect: {fileID: 235923177188579788, guid: f7d829ef2eae5624bb2caa7f507d8990, type: 3}
+    duration: 2

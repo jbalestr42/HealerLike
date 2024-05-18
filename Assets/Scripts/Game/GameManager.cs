@@ -41,7 +41,6 @@ public class GameManager : Singleton<GameManager>
 
             case GameState.StartGame:
                 _gameView.gameHUD.startGameButton.interactable = false;
-                _gameView.gameHUD.generateMapButton.interactable = false;
                 _gameType.StartGame();
                 SetState(GameState.Running);
                 break;
@@ -50,7 +49,6 @@ public class GameManager : Singleton<GameManager>
                 if (_gameType.IsOver())
                 {
                     _gameView.gameHUD.startGameButton.interactable = true;
-                    _gameView.gameHUD.generateMapButton.interactable = true;
                     SetState(GameState.None);
                 }
                 break;

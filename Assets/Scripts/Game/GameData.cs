@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Sirenix.OdinInspector;
-using Sirenix.Utilities.Editor;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/GameData")]
@@ -46,6 +40,9 @@ public class GameData : SerializedScriptableObject
 
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<EntityData>, EntityData>(entities, this)")]
     public List<EntityData> entities = new List<EntityData>();
+
+    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<CharacterData>, CharacterData>(characters, this)")]
+    public List<CharacterData> characters = new List<CharacterData>();
 
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<AItemFactory>, AItemFactory>(items, this)")]
     public List<AItemFactory> items = new List<AItemFactory>();

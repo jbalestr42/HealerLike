@@ -40,7 +40,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 1
+      Data: 2
     - Name: 
       Entry: 7
       Data: 
@@ -54,6 +54,18 @@ MonoBehaviour:
       Entry: 8
       Data: 
     - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 10
+    - Name: $v
+      Entry: 4
+      Data: 40
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
       Entry: 13
       Data: 
     - Name: 
@@ -63,5 +75,31 @@ MonoBehaviour:
   title: Normal
   text: The basic healer
   passives: []
-  characterSkills:
-  - {fileID: 11400000, guid: 6f3324f3137cbe04f96785bbf509ea1a, type: 2}
+  skills:
+  - icon: {fileID: 0}
+    name: BuffAttackRate All
+    description: 
+    validators:
+    - {fileID: 11400000, guid: 851cf16035ab3864ea7f7ca97811d719, type: 2}
+    - {fileID: 11400000, guid: 0fd1e87657ff4b343992974468172780, type: 2}
+    skill: {fileID: 11400000, guid: 6f3324f3137cbe04f96785bbf509ea1a, type: 2}
+  - icon: {fileID: 0}
+    name: BuffAttackRate Single
+    description: 
+    validators:
+    - {fileID: 11400000, guid: 4d20c926180f5f941bfea1508ab97bda, type: 2}
+    - {fileID: 11400000, guid: dc2f78e77f04f0e4bae3912f48f6bafc, type: 2}
+    skill: {fileID: 11400000, guid: 982988a7dafc19541ae28d7e873f0776, type: 2}
+  - icon: {fileID: 0}
+    name: Heal Single
+    description: 
+    validators:
+    - {fileID: 11400000, guid: 1f1196ba720c4dc4faf8999a2ad1581a, type: 2}
+    skill: {fileID: 11400000, guid: 6b9b13052c3a4f54eb25e14b54bcce8f, type: 2}
+  - icon: {fileID: 0}
+    name: Reduce Damage
+    description: 
+    validators:
+    - {fileID: 11400000, guid: 921ba672700d0a04eadbd6f93cfb5ec5, type: 2}
+    - {fileID: 11400000, guid: 23e621d26a8f214409df308a446c7e8d, type: 2}
+    skill: {fileID: 11400000, guid: e2104578a6b3b3343b4cb6244edd300e, type: 2}

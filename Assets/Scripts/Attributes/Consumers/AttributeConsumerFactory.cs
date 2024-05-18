@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/Data/Consumer/AttributeConsumer")]
-public class AttributeConsumerFactory: ConsumerFactory<AttributeConsumer, AttributeConsumerData> { }
+public class AttributeConsumerFactory : ConsumerFactory<AttributeConsumer, AttributeConsumerData> { }
 
 [Serializable]
 public class AttributeConsumerData : ConsumerBaseData

@@ -14,6 +14,9 @@ public class GameView : AView
     [SerializeField] TowerInventory _towerInventory;
     public TowerInventory towerInventory { get { return _towerInventory; } }
 
+    [SerializeField] CharacterSkillInventory _characterSkillInventory;
+    public CharacterSkillInventory characterSkillInventory { get { return _characterSkillInventory; } }
+
     [SerializeField] EntityInventory _entityInventory;
     public EntityInventory entityInventory { get { return _entityInventory; } }
 

@@ -26,13 +26,21 @@ public class Character : MonoBehaviour
         }
 
         _mana = gameObject.AddComponent<ResourceAttribute>();
-        _mana.Init();
+        _mana.Init(AttributeType.ManaMax);
         _mana.OnValueChanged.AddListener(OnManaChanged);
 
         // Init self buff from data
         foreach (ABuffFactory passive in _data.passives)
         {
             AddBuff(passive, gameObject, gameObject);
+        }
+
+        // Init skills
+        foreach (CharacterSkillSlotData skillData in _data.skills)
+        {
+            UseCharacterSkillButton skillButton = UIManager.instance.GetView<GameView>(ViewType.Game).characterSkillInventory.Create();
+            CharacterSkillSlot skillSlot = gameObject.AddComponent<CharacterSkillSlot>();
+            skillSlot.Init(skillData, skillButton);
         }
     }
 

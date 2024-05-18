@@ -18,7 +18,6 @@ public class BuffTargetInteraction : AInteraction
 
     public override void OnMouseClick(RaycastHit hit)
     {
-        Debug.Log("[DEBUG] OnMouseClick");
         hit.transform.GetComponent<IBuffable>().AddBuffHandler(_buffHandlerFactory, hit.transform.gameObject, hit.transform.gameObject);
         InteractionManager.instance.EndInteraction();
     }

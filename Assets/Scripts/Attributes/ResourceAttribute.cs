@@ -23,10 +23,10 @@ public class ResourceAttribute : MonoBehaviour
     List<ResourceModifier> _resourceModifiers = new List<ResourceModifier>();
     List<AConsumerModifier> _consumerModifiers = new List<AConsumerModifier>();
 
-    public void Init()
+    public void Init(AttributeType maxResourceType)
     {
         AttributeManager attributeManager = GetComponent<AttributeManager>();
-        _max = attributeManager.Get(AttributeType.HealthMax);
+        _max = attributeManager.Get(maxResourceType);
         _value = _max.Value;
         _max.AddOnValueChangedListener(OnValueMaxChanged);
         Update();

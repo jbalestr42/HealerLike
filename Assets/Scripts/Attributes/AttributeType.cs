@@ -12,4 +12,5 @@ public enum AttributeType
     Speed,
     Vulnerability,
     ManaMax,
+    HealPower
 }

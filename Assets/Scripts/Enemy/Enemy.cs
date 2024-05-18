@@ -33,7 +33,7 @@ public class Enemy : MonoBehaviour, IAttackable, ISelectable, IBuffable, IMarkab
         }
 
         _health = GetComponent<ResourceAttribute>();
-        _health.Init();
+        _health.Init(AttributeType.HealthMax);
         _health.OnValueChanged.AddListener(OnHealthChanged);
 
         // Init self buff from data

@@ -26,6 +26,6 @@ MonoBehaviour:
     name: Buff Attack Rate
     description: 
     cost: 10
-    commentGererUSage: cooldown/afterfight/etc.
-    buffHandlerFactory: {fileID: 11400000, guid: 2ac46e2d6e76aa94887297fed51161f4, type: 2}
+    buffHandlerFactory:
+    - {fileID: 11400000, guid: 2ac46e2d6e76aa94887297fed51161f4, type: 2}
     entityType: 1

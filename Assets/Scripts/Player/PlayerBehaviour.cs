@@ -5,6 +5,9 @@ public class PlayerBehaviour : Singleton<PlayerBehaviour>
 {
     public UnityEvent<int> OnGoldChanged = new UnityEvent<int>();
 
+    [SerializeField] Character _character;
+    public Character character { get { return _character; } set { _character = value; } }
+
     [SerializeField] GridManager _grid;
     public GridManager grid { get { return _grid; } set { _grid = value; } }
 
@@ -27,6 +30,9 @@ public class PlayerBehaviour : Singleton<PlayerBehaviour>
         _grid.Generate();
 
         gold = DataManager.instance.data.gold;
+
+        _character.data = DataManager.instance.GetRandomCharacter();
+        _character.Init();
     }
 
     public bool HasEnoughGold(int value)

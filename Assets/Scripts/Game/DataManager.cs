@@ -10,6 +10,7 @@ public class DataManager : Singleton<DataManager>
     public List<WavePatternData> wavePatterns { get { return _data.wavePatterns; } set { _data.wavePatterns = value; } }
     public List<TowerData> towers { get { return _data.towers; } set { _data.towers = value; } } 
     public List<EntityData> entities { get { return _data.entities; } set { _data.entities = value; } } 
+    public List<CharacterData> characters { get { return _data.characters; } set { _data.characters = value; } } 
     public List<AItemFactory> items { get { return _data.items; } set { _data.items = value; } } 
     public List<AConsumableFactory> consumables { get { return _data.consumables; } set { _data.consumables = value; } } 
 
@@ -17,6 +18,11 @@ public class DataManager : Singleton<DataManager>
     {
         List<EnemyData> enemyDataByRank = _data.enemies.FindAll(data => data.rank == enemyRank);
         return enemyDataByRank[Random.Range(0, enemyDataByRank.Count)];
+    }
+
+    public CharacterData GetRandomCharacter()
+    {
+        return _data.characters[Random.Range(0, _data.characters.Count)];
     }
 
     public AItem GetRandomItem()

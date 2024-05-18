@@ -54,7 +54,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, ISelectable, IBuffa
         }
 
         _health = gameObject.AddComponent<ResourceAttribute>();
-        _health.Init();
+        _health.Init(AttributeType.HealthMax);
         _health.OnValueChanged.AddListener(OnHealthChanged);
 
         // Init model from data
