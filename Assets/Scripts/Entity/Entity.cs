@@ -92,6 +92,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, ISelectable, IBuffa
         // Register to inventory events
         _inventoryHandler.OnItemAdded.AddListener(OnItemAdded);
         _inventoryHandler.OnItemRemoved.AddListener(OnItemRemoved);
+        
+        EntityManager.instance.OnEntitySpawned.Invoke(this);
     }
 
     void OnHealthChanged(ResourceAttribute health)

@@ -58,6 +58,7 @@ public class EntityManager : Singleton<EntityManager>
     {
         if (entity != null)
         {
+            OnEntityKilled.Invoke(entity.GetComponent<Entity>());
             PlayerBehaviour player = PlayerBehaviour.instance;
             Vector2Int coord = player.grid.GetCoordFromPosition(entity.transform.position);
             player.grid.SetWalkable(coord.x, coord.y, true);
