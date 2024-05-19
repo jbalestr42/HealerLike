@@ -21,8 +21,8 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  uniqueID: 132508d8-6af6-4022-8091-2b85a5d97da8
+  uniqueID: 2a3e1ba4-8180-4140-b504-dc80aa9493cc
   data:
     buffFactory: {fileID: 11400000, guid: 135b10db4941da24abcd93e1d7fa91ca, type: 2}
     buffEffect: {fileID: 0}
-    duration: 5
+    duration: 2

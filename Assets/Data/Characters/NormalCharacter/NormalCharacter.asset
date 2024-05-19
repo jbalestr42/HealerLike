@@ -100,6 +100,6 @@ MonoBehaviour:
     name: Reduce Damage
     description: 
     validators:
-    - {fileID: 11400000, guid: 921ba672700d0a04eadbd6f93cfb5ec5, type: 2}
     - {fileID: 11400000, guid: 23e621d26a8f214409df308a446c7e8d, type: 2}
-    skill: {fileID: 11400000, guid: e2104578a6b3b3343b4cb6244edd300e, type: 2}
+    - {fileID: 11400000, guid: 921ba672700d0a04eadbd6f93cfb5ec5, type: 2}
+    skill: {fileID: 11400000, guid: 2b924a48e51eb3143b5c1b822235f679, type: 2}

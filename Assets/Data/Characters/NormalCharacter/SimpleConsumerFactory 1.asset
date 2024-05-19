@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8193789146749c445af97d00ccc71755, type: 3}
-  m_Name: DurationBuffHandlerFactory 1
+  m_Script: {fileID: 11500000, guid: ca3e8e142e87b074a9b1df4e194f4712, type: 3}
+  m_Name: SimpleConsumerFactory 1
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -21,8 +21,7 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  uniqueID: 43451cb9-4a8c-403a-a452-36d82004a06c
   data:
-    buffFactory: {fileID: 0}
-    buffEffect: {fileID: 0}
-    duration: 0
+    ignoreConsumerModifier: 0
+    ignoreConsumerPrevention: 0
+    value: 50

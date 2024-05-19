@@ -23,5 +23,6 @@ MonoBehaviour:
     SerializationNodes: []
   data:
     isSingle: 0
-    entityType: 0
-    buffHandlerFactory: []
+    entityType: 2
+    buffHandlerFactory:
+    - {fileID: 11400000, guid: 91a06ec056a97d9419c24abd2a9e918c, type: 2}
