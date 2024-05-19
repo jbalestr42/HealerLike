@@ -23,12 +23,6 @@ public class GridManager : MonoBehaviour
     Vector3 _min;
     Vector3 _max;
     GridGraph _gridGraph;
-    CheckPointManager _checkPointManager;
-
-    void Start()
-    {
-        _checkPointManager = CheckPointManager.instance;
-    }
 
     public void Generate()
     {
@@ -155,34 +149,12 @@ public class GridManager : MonoBehaviour
 
     public bool CanPlaceObject(Bounds bounds)
     {
-        CheckPoint checkPoint = _checkPointManager.start;
         GraphUpdateObject guo = new GraphUpdateObject(bounds);
         guo.modifyWalkability = true;
         guo.setWalkability = false;
 
         List<GraphNode> nodes = new List<GraphNode>();
-        while (checkPoint != null)
-        {
-            Vector2Int nodeCoord = GetCoordFromPosition(checkPoint.transform.position);
-            var node = _gridGraph.GetNode(nodeCoord.x, nodeCoord.y);
-            nodes.Add(node);
-            checkPoint = checkPoint.next;
-        }
         return GraphUpdateUtilities.UpdateGraphsNoBlock(guo, nodes, true);
-    }
-
-    public bool IsPathPossible()
-    {
-        CheckPoint checkPoint = _checkPointManager.start;
-        List<GraphNode> nodes = new List<GraphNode>();
-        while (checkPoint != null)
-        {
-            Vector2Int nodeCoord = GetCoordFromPosition(checkPoint.transform.position);
-            var node = _gridGraph.GetNode(nodeCoord.x, nodeCoord.y);
-            nodes.Add(node);
-            checkPoint = checkPoint.next;
-        }
-        return PathUtilities.IsPathPossible(nodes);
     }
 
     public Vector3 GetNearestWalkablePosition(Vector3 position)

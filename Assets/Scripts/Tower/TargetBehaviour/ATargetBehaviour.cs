@@ -92,9 +92,6 @@ public abstract class ATargetBehaviour
             case TargetBehaviourType.Nearest:
                 targetBehaviour = new NearestTargetBehaviour();
                 break;
-            case TargetBehaviourType.Fastest:
-                targetBehaviour = new FastestTargetBehaviour();
-                break;
             case TargetBehaviourType.LowestHealth:
                 targetBehaviour = new LowestHealthTargetBehaviour();
                 break;

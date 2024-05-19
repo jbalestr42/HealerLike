@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 7901822376538958486}
   - component: {fileID: 7901822376538958481}
   - component: {fileID: 7901822376538958480}
-  - component: {fileID: 7901822376538958493}
   - component: {fileID: 7901822376538958495}
   - component: {fileID: 7901822376538958488}
   - component: {fileID: 2105798593342471104}
@@ -30,13 +29,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7901822376538958699}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7901822376538958486
 MonoBehaviour:
@@ -102,38 +101,13 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  OnEnemySpawned:
+  OnEntitySpawned:
     m_PersistentCalls:
       m_Calls: []
-  OnEnemyKilled:
+  OnEntityKilled:
     m_PersistentCalls:
       m_Calls: []
-  _towerBasePrefab: {fileID: 1773381645329648, guid: 1b790f12c1e467142a438e84a42fa25c, type: 3}
-  _enemyBasePrefab: {fileID: 5402104911565863006, guid: 5f17136dffa75814393d993fd3726731, type: 3}
---- !u!114 &7901822376538958493
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7901822376538958699}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: db30d704d84e8a143aba5ab495c5c0ea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
-  _checkPoints:
-  - {fileID: 0}
-  - {fileID: 0}
+  _entityBasePrefab: {fileID: 1773381645329648, guid: d67892d24999b0a45bf3b94be456ef3d, type: 3}
 --- !u!114 &7901822376538958495
 MonoBehaviour:
   m_ObjectHideFlags: 0
