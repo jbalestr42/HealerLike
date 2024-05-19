@@ -37,6 +37,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, ISelectable, IBuffa
     public BuffManager buffManager { get { return _buffManager; } }
 
     EntityModel _model;
+    public EntityModel model => _model;
     public SkillSource skillStartPoint { get { return _model.GetSourcePoint(); } } 
 
     GameObject _targetPoint;

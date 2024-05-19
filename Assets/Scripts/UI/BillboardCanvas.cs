@@ -11,7 +11,7 @@ public class BillboardCanvas : MonoBehaviour
     {
         Camera camera = Camera.main;
         _cameraTransform = camera.transform;
-        GetComponent<Canvas>().worldCamera = camera;
+        GetComponentInParent<Canvas>().worldCamera = camera;
         _originalRotation = transform.rotation;
     }
 
