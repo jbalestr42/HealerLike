@@ -12,7 +12,6 @@ public class DataManager : Singleton<DataManager>
     public List<EntityData> entities { get { return _data.entities; } set { _data.entities = value; } } 
     public List<CharacterData> characters { get { return _data.characters; } set { _data.characters = value; } } 
     public List<AItemFactory> items { get { return _data.items; } set { _data.items = value; } } 
-    public List<AConsumableFactory> consumables { get { return _data.consumables; } set { _data.consumables = value; } } 
 
     public EnemyData GetRandomEnemyDataFromRank(EnemyRank enemyRank)
     {
@@ -28,11 +27,6 @@ public class DataManager : Singleton<DataManager>
     public AItem GetRandomItem()
     {
         return _data.items[Random.Range(0, _data.items.Count)].GetItem();
-    }
-
-    public AConsumable GetRandomConsumable()
-    {
-        return _data.consumables[Random.Range(0, _data.consumables.Count)].GetConsumable();
     }
 
     public AWaveData GetRandomWave(int minimumWaveApparition)

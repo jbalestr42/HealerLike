@@ -46,7 +46,4 @@ public class GameData : SerializedScriptableObject
 
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<AItemFactory>, AItemFactory>(items, this)")]
     public List<AItemFactory> items = new List<AItemFactory>();
-
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<AConsumableFactory>, AConsumableFactory>(consumables, this)")]
-    public List<AConsumableFactory> consumables = new List<AConsumableFactory>();
 }

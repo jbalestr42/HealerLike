@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class DataEditor : OdinMenuEditorWindow
 {
-    private static string[] typesToDisplay = { "Characters", "CharacterSkills", "Entities", "Items", "Consumables", "GameData" };
+    private static string[] typesToDisplay = { "Characters", "CharacterSkills", "Entities", "Items", "GameData" };
     private string _selectedType = "Items";
 
     Dictionary<string, List<ABaseDataEditor>> _dataEditors = new Dictionary<string, List<ABaseDataEditor>>();
@@ -84,7 +84,6 @@ public class DataEditor : OdinMenuEditorWindow
         _dataEditors["Entities"].Add(new BaseDataEditor<TowerData>("Towers", "Assets/Data/Towers/") { getDataName = (TowerData data) => data.title + "Tower" });
         _dataEditors["Entities"].Add(new BaseDataEditor<EntityData>("Entities", "Assets/Data/Entities/") { getDataName = (EntityData data) => data.title + "Entity" });
         _dataEditors["Items"].Add(new BaseDataEditor<ItemFactory>("Items", "Assets/Data/Items/") { getDataName = (ItemFactory item) => item.title + "Item" });
-        _dataEditors["Consumables"].Add(new DerivedTypeDataEditor<AConsumableFactory>("Consumables", "Assets/Data/Consumables/"));
         _dataEditors["GameData"].Add(new BaseDataEditor<GameData>("", "Assets/") { createFolder = false, canCreate = false });
 
         foreach (ABaseDataEditor dataEditor in _dataEditors[_selectedType])
