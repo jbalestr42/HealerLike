@@ -21,32 +21,60 @@ public class CreateDataButtonAttributeDrawer<T> : OdinAttributeDrawer<CreateData
         this.selector.EnableSingleClickToSelect();
         this.selector.SelectionConfirmed += selections =>
         {
-            var selected = selections.First();
-            var so = ScriptableObject.CreateInstance(selected);
-            string currentDirectory = Selection.activeObject != null ? Path.GetDirectoryName(AssetDatabase.GetAssetPath(Selection.activeObject)) : "Assets/";
-            var uniquePath = AssetDatabase.GenerateUniqueAssetPath(Path.Combine(currentDirectory, $"{selected.GetNiceName()}.asset"));
-            AssetDatabase.CreateAsset(so, uniquePath);
-            this.ValueEntry.SmartValue = (T)so;
+            this.ValueEntry.SmartValue = CreateSO(selections.First());
         };
     }
 
     protected override void DrawPropertyLayout(GUIContent label)
     {
-        if (this.ValueEntry.SmartValue != null)
-        {
-            this.CallNextDrawer(label);
-            return;
-        }
-
         EditorGUILayout.BeginHorizontal();
 
         this.CallNextDrawer(label);
 
-        if (SirenixEditorGUI.ToolbarButton(new GUIContent() { image = EditorIcons.TriangleRight.Raw }))
+        if (this.ValueEntry.SmartValue != null)
         {
-            this.selector.ShowInPopup();
+            if (SirenixEditorGUI.ToolbarButton(EditorIcons.X))
+            {
+                // Tricks to show "None" instead of "Missing"
+                var tmp = this.ValueEntry.SmartValue;
+                this.ValueEntry.SmartValue = null;
+                DeleteSO(tmp);
+            }
+        }
+        else
+        {
+            if (this.selector.SelectionTree.MenuItems.Count > 0)
+            {
+                if (SirenixEditorGUI.ToolbarButton(EditorIcons.TriangleRight))
+                {
+                    this.selector.ShowInPopup();
+                }
+            }
+            else
+            {
+                if (SirenixEditorGUI.ToolbarButton(EditorIcons.Plus))
+                {
+                    this.ValueEntry.SmartValue = CreateSO(typeof(T));
+                }
+            }
         }
 
         EditorGUILayout.EndHorizontal();
+    }
+
+    private T CreateSO(Type type)
+    {
+        var so = ScriptableObject.CreateInstance(type);
+        string currentDirectory = Selection.activeObject != null ? Path.GetDirectoryName(AssetDatabase.GetAssetPath(Selection.activeObject)) : "Assets/";
+        var uniquePath = AssetDatabase.GenerateUniqueAssetPath(Path.Combine(currentDirectory, $"{type.GetNiceName()}.asset"));
+        AssetDatabase.CreateAsset(so, uniquePath);
+        return (T)so;
+    }
+
+    private void DeleteSO(T so)
+    {
+        string assetPath = AssetDatabase.GetAssetPath(so);
+        AssetDatabase.DeleteAsset(assetPath);
+        AssetDatabase.Refresh();
     }
 }
