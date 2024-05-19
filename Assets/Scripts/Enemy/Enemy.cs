@@ -123,12 +123,10 @@ public class Enemy : MonoBehaviour, IAttackable, ISelectable, IBuffable, IMarkab
 
     public void Select()
     {
-        UIManager.instance.GetView<GameView>(ViewType.Game).ShowPanel(PanelType.Enemy, gameObject);
     }
 
     public void UnSelect()
     {
-        UIManager.instance.GetView<GameView>(ViewType.Game).HidePanel(PanelType.Enemy);
     }
 
     #endregion

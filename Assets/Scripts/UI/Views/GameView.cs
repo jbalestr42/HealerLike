@@ -4,16 +4,11 @@ using UnityEngine;
 public enum PanelType
 {
     None,
-    Tower,
-    Enemy,
     Entity
 }
 
 public class GameView : AView
 {
-    [SerializeField] TowerInventory _towerInventory;
-    public TowerInventory towerInventory { get { return _towerInventory; } }
-
     [SerializeField] CharacterSkillInventory _characterSkillInventory;
     public CharacterSkillInventory characterSkillInventory { get { return _characterSkillInventory; } }
 

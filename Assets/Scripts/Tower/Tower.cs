@@ -227,14 +227,12 @@ public class Tower : MonoBehaviour, IAttacker, ISelectable, IBuffable
     {
         _towerRange.Show(_attributeManager.Get(AttributeType.Range).Value);
         _attributeManager.Get(AttributeType.Range).AddOnValueChangedListener(OnRangeChanged);
-        UIManager.instance.GetView<GameView>(ViewType.Game).ShowPanel(PanelType.Tower, gameObject);
     }
 
     public void UnSelect()
     {
         _towerRange.Hide();
         _attributeManager.Get(AttributeType.Range).RemoveOnValueChangedListener(OnRangeChanged);
-        UIManager.instance.GetView<GameView>(ViewType.Game).HidePanel(PanelType.Tower);
     }
 
     void OnRangeChanged(Attribute range)

@@ -40,7 +40,6 @@ public class WaveGameType : AGameType
         _upgradeView = UIManager.instance.GetView<UpgradeView>(ViewType.Upgrade);
         _waveView = UIManager.instance.GetView<WaveView>(ViewType.Wave);
 
-        _gameView.gameHUD.nextWaveButton.onClick.AddListener(StartWave);
         _upgradeView.OnItemSelected.AddListener(OnItemSelected);
         _waveView.OnWaveSelected.AddListener(OnWaveSelected);
     }
@@ -56,7 +55,6 @@ public class WaveGameType : AGameType
                 _currentWave++;
                 GameManager.instance.OnWaveChanged.Invoke(_currentWave);
                 _gameView.gameHUD.inventoryButton.interactable = true;
-                _gameView.gameHUD.nextWaveButton.interactable = true;
                 SetState(State.WaitForWaveToStart);
                 break;
 
@@ -102,7 +100,6 @@ public class WaveGameType : AGameType
         SetState(State.WaitingForEndOfWave);
         // TODO add method to set the mode in the UI manager, then call this method here
         _gameView.gameHUD.inventoryButton.interactable = false;
-        _gameView.gameHUD.nextWaveButton.interactable = false;
         _gameView.playerInventory.HideInventory();
         _spawnCor = StartCoroutine(StartWave(_nextWaveData));
     }
