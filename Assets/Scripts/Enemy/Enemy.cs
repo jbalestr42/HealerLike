@@ -50,8 +50,6 @@ public class Enemy : MonoBehaviour, IAttackable, ISelectable, IBuffable, IMarkab
         
         GameObject model = Instantiate(_data.model, transform);
         _targetPoint = model.GetComponentInChildren<SkillTargetPointTag>()?.gameObject ?? gameObject;
-
-        EntityManager.instance.OnEnemySpawned.Invoke(this);
     }
 
     public void OnHealthChanged(ResourceAttribute health)
@@ -59,7 +57,6 @@ public class Enemy : MonoBehaviour, IAttackable, ISelectable, IBuffable, IMarkab
         _hud.SetHealth(health.Value, health.Max);
         if (health.Value <= 0f)
         {
-            EntityManager.instance.DestroyEnemy(gameObject, false);
         }
     }
 

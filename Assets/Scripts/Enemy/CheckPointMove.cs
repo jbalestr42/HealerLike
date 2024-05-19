@@ -39,7 +39,7 @@ public class CheckPointMove : MonoBehaviour
         {
             if (checkpoint.isLast)
             {
-                EntityManager.instance.DestroyEnemy(gameObject, true);
+                EntityManager.instance.DestroyEntity(gameObject, Entity.EntityType.Computer);
             }
             else
             {

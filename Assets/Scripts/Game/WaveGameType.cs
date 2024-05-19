@@ -63,7 +63,7 @@ public class WaveGameType : AGameType
                 break;
 
             case State.WaitingForEndOfWave:
-                if (_spawnCor == null && _entities.AreAllEnemyDead())
+                if (_spawnCor == null && _entities.AreAllEntityDead(Entity.EntityType.Computer))
                 {
                     // Show Upgrade UI
                     UIManager.instance.AddView(ViewType.Upgrade);
@@ -153,8 +153,8 @@ public class WaveGameType : AGameType
             EnemyData data = step.GetEnemyData();
             while (count != 0)
             {
-                GameObject go = EntityManager.instance.SpawnEnemy(data, start.transform.position);
-                go.GetComponent<CheckPointMove>().SetNextDestination(start.next);
+                //GameObject go = EntityManager.instance.SpawnEntity(data, start.transform.position, Entity.EntityType.Computer);
+                //go.GetComponent<CheckPointMove>().SetNextDestination(start.next);
                 count--;
                 yield return wait;
             }

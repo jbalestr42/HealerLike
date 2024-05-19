@@ -5,94 +5,19 @@ using UnityEngine.Events;
 
 public class EntityManager : Singleton<EntityManager>
 {
-    [HideInInspector] public UnityEvent<Enemy> OnEnemySpawned = new UnityEvent<Enemy>();
-    [HideInInspector] public UnityEvent<Enemy, bool> OnEnemyKilled = new UnityEvent<Enemy, bool>();
-
-    [SerializeField]
-    GameObject _towerBasePrefab;
-
-    [SerializeField]
-    GameObject _enemyBasePrefab;
+    [HideInInspector] public UnityEvent<Entity> OnEntitySpawned = new UnityEvent<Entity>();
+    [HideInInspector] public UnityEvent<Entity> OnEntityKilled = new UnityEvent<Entity>();
 
     [SerializeField]
     GameObject _entityBasePrefab;
-
-    List<GameObject> _enemies;
-    public List<GameObject> enemies => _enemies;
-
-    List<GameObject> _towers;
-    public List<GameObject> towers => _towers;
 
     Dictionary<Entity.EntityType, List<GameObject>> _entities;
     public Dictionary<Entity.EntityType, List<GameObject>> entities => _entities;
 
     void Awake()
     {
-        _enemies = new List<GameObject>();
-        _towers = new List<GameObject>();
         _entities = new Dictionary<Entity.EntityType, List<GameObject>>();
     }
-
-    #region Enemies
-
-    public GameObject SpawnEnemy(EnemyData data, Vector3 position)
-    {
-        GameObject enemy = Instantiate(_enemyBasePrefab, position, Quaternion.identity);
-        enemy.GetComponent<Enemy>().data = data;
-        enemy.GetComponent<Enemy>().Init();
-        _enemies.Add(enemy);
-        return enemy;
-    }
-
-    public void DestroyEnemy(GameObject enemy, bool hasReachedEnd)
-    {
-        OnEnemyKilled.Invoke(enemy.GetComponent<Enemy>(), hasReachedEnd);
-        _enemies.Remove(enemy);
-        Destroy(enemy);
-    }
-
-    public bool AreAllEnemyDead()
-    {
-        return _enemies.Count == 0;
-    }
-
-    #endregion
-
-    #region Towers
-
-    public GameObject SpawnTower(TowerData data, Vector3 position)
-    {
-        PlayerBehaviour player = PlayerBehaviour.instance;
-        Vector2Int coord = player.grid.GetCoordFromPosition(position);
-
-        GameObject tower = null;
-        if (player.grid.IsWalkable(coord.x, coord.y) && player.HasEnoughGold(data.price))
-        {
-            tower = Instantiate(_towerBasePrefab, Vector3.zero, Quaternion.identity);
-            tower.GetComponent<Tower>().data = data;
-            tower.transform.position = position;
-
-            if (player.grid.CanPlaceObject(coord))
-            {
-                player.grid.SetWalkable(coord.x, coord.y, false);
-                player.gold -= data.price;
-                _towers.Add(tower);
-            }
-            else
-            {
-                GameObject.Destroy(tower);
-            }
-        }
-        return tower;
-    }
-
-    public void DestroyTower(GameObject tower)
-    {
-        _towers.Remove(tower);
-        Destroy(tower);
-    }
-
-    #endregion
 
     #region Entities
 
@@ -139,6 +64,11 @@ public class EntityManager : Singleton<EntityManager>
             _entities[entityType].Remove(entity);
             Destroy(entity);
         }
+    }
+
+    public bool AreAllEntityDead(Entity.EntityType entityType)
+    {
+        return GetEntities(entityType).Count == 0;
     }
 
     #endregion

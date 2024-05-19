@@ -3,13 +3,13 @@ using UnityEngine;
 public class MarkManager : Singleton<MarkManager>
 {
     GameView _gameView;
-    GameObject _markedEnemy;
+    GameObject _markedEntity;
 
     void Start()
     {
         _gameView = UIManager.instance.GetView<GameView>(ViewType.Game);
         _gameView.gameHUD.markEnemyToggle.onValueChanged.AddListener(OnEnemyMarkClicked);
-        EntityManager.instance.OnEnemyKilled.AddListener(OnEnemyKilled);
+        EntityManager.instance.OnEntityKilled.AddListener(OnEntityKilled);
     }
 
     void OnEnemyMarkClicked(bool isOn)
@@ -25,44 +25,44 @@ public class MarkManager : Singleton<MarkManager>
         }
     }
 
-    void OnEnemyKilled(Enemy enemy, bool hasReachedEnd)
+    void OnEntityKilled(Entity entity)
     {
-        if (IsEnemyMarked(enemy.gameObject))
+        if (IsEnemyMarked(entity.gameObject))
         {
             ResetMark();
         }
     }
 
-    public bool IsEnemyMarked(GameObject enemy)
+    public bool IsEnemyMarked(GameObject entity)
     {
-        return enemy == _markedEnemy;
+        return entity == _markedEntity;
     }
 
     public void MarkEnemy(GameObject markedEnemy)
     {
         if (markedEnemy.GetComponent<IMarkable>() != null)
         {
-            if (_markedEnemy != null)
+            if (_markedEntity != null)
             {
-                _markedEnemy.GetComponent<IMarkable>().UnMark();
+                _markedEntity.GetComponent<IMarkable>().UnMark();
             }
-            _markedEnemy = markedEnemy;
-            _markedEnemy.GetComponent<IMarkable>().Mark();
+            _markedEntity = markedEnemy;
+            _markedEntity.GetComponent<IMarkable>().Mark();
         }
     }
 
     public void UnMarkEnemy()
     {
-        if (_markedEnemy != null)
+        if (_markedEntity != null)
         {
-            _markedEnemy.GetComponent<IMarkable>().UnMark();
-            _markedEnemy = null;
+            _markedEntity.GetComponent<IMarkable>().UnMark();
+            _markedEntity = null;
         }
     }
 
     public void ResetMark()
     {
-        _markedEnemy = null;
+        _markedEntity = null;
         _gameView.gameHUD.markEnemyToggle.SetIsOnWithoutNotify(true);
     }
 }

@@ -9,39 +9,37 @@ public class DamageAllEnemyOnEnemyDieBuffData
 {
     [CreateDataButton]
     public AConsumerFactory damageToAllEnemy;
+    public Entity.EntityType entityType;
 }
 
 public class DamageAllEnemyOnEnemyDieBuff : ABuff<DamageAllEnemyOnEnemyDieBuffData>, IStackableBuff
 {
     int _stacks = 1;
 
-    void OnEnemyDie(Enemy enemy, bool hasReachedEnd)
+    void OnEntityDie(Entity target)
     {
-        if (!hasReachedEnd)
+        foreach (GameObject entity in EntityManager.instance.GetEntities(data.entityType))
         {
-            foreach (GameObject enemyGo in EntityManager.instance.enemies)
+            if (entity != target.gameObject)
             {
-                if (enemyGo != enemy.gameObject)
-                {
-                    ResourceModifier resourceModifier = new ResourceModifier();
-                    resourceModifier.consumers.Add(data.damageToAllEnemy.GetConsumer(enemy.gameObject, enemy.gameObject));
-                    resourceModifier.multiplier = _stacks;
-                    resourceModifier.source = enemy.gameObject;
+                ResourceModifier resourceModifier = new ResourceModifier();
+                resourceModifier.consumers.Add(data.damageToAllEnemy.GetConsumer(target.gameObject, target.gameObject));
+                resourceModifier.multiplier = _stacks;
+                resourceModifier.source = target.gameObject;
 
-                    enemyGo.GetComponent<Entity>().health.AddResourceModifier(resourceModifier);
-                }
+                entity.GetComponent<Entity>().health.AddResourceModifier(resourceModifier);
             }
         }
     }
 
     public override void Add(GameObject source, GameObject target)
     {
-        EntityManager.instance.OnEnemyKilled.AddListener(OnEnemyDie);
+        EntityManager.instance.OnEntityKilled.AddListener(OnEntityDie);
     }
 
     public override void Remove(GameObject source, GameObject target)
     {
-        EntityManager.instance.OnEnemyKilled.RemoveListener(OnEnemyDie);
+        EntityManager.instance.OnEntityKilled.RemoveListener(OnEntityDie);
     }
 
     public void Stack(GameObject source, GameObject target)

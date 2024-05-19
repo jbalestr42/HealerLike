@@ -6,18 +6,18 @@ public class DamageDisplayer : MonoBehaviour
 
     void Start()
     {
-        EntityManager.instance.OnEnemySpawned.AddListener(RegisterEnemy);
-        EntityManager.instance.OnEnemyKilled.AddListener(UnregisterEnemy);
+        EntityManager.instance.OnEntitySpawned.AddListener(RegisterEntity);
+        EntityManager.instance.OnEntityKilled.AddListener(UnregisterEntity);
     }
 
-    void RegisterEnemy(Enemy enemy)
+    void RegisterEntity(Entity entity)
     {
-        enemy.health.OnAllConsumerProcessed.AddListener(DisplayDamage);
+        entity.health.OnAllConsumerProcessed.AddListener(DisplayDamage);
     }
 
-    void UnregisterEnemy(Enemy enemy, bool hasReachedEnd)
+    void UnregisterEntity(Entity entity)
     {
-        enemy.health.OnAllConsumerProcessed.RemoveListener(DisplayDamage);
+        entity.health.OnAllConsumerProcessed.RemoveListener(DisplayDamage);
     }
 
     void DisplayDamage(GameObject owner, ResourceAttribute resource, ResourceModifier resourceModifier, float value)

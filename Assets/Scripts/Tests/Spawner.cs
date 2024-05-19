@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Spawner : MonoBehaviour
 {
-    [SerializeField] EnemyData _data;
+    [SerializeField] EntityData _data;
     [SerializeField] int _spawnCount;
     [SerializeField] float _spawnRate;
     [SerializeField] CheckPoint _spawnStart;
@@ -39,7 +39,7 @@ public class Spawner : MonoBehaviour
 
     void Spawn()
     {
-        GameObject go = EntityManager.instance.SpawnEnemy(_data, _spawnStart.transform.position);
+        GameObject go = EntityManager.instance.SpawnEntity(_data, _spawnStart.transform.position, Entity.EntityType.Computer);
         go.GetComponent<CheckPointMove>().SetNextDestination(_spawnStart.next);
     }
 }

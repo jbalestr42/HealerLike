@@ -29,7 +29,7 @@ public class GameManager : Singleton<GameManager>
 
         UIManager.instance.AddView(ViewType.Game);
         
-        EntityManager.instance.OnEnemyKilled.AddListener(OnEnemyKilled);
+        EntityManager.instance.OnEntityKilled.AddListener(OnEntityKilled);
     }
 
     void Update()
@@ -70,11 +70,8 @@ public class GameManager : Singleton<GameManager>
         _state = newState;
     }
 
-    void OnEnemyKilled(Enemy enemy, bool hasReachedEnd)
+    void OnEntityKilled(Entity entity)
     {
-        if (hasReachedEnd)
-        {
-            GetComponent<Cinemachine.CinemachineImpulseSource>().GenerateImpulse(enemy.data.lifeCost);
-        }
+        GetComponent<Cinemachine.CinemachineImpulseSource>().GenerateImpulse();
     }
 }

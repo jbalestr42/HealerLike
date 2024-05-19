@@ -143,7 +143,6 @@ public class Tower : MonoBehaviour, IAttacker, ISelectable, IBuffable
     public void OnSold()
     {
         OnTowerSold.Invoke(this);
-        EntityManager.instance.DestroyTower(gameObject);
     }
 
     #region Attribute upgrade
