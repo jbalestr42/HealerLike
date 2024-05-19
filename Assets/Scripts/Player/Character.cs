@@ -27,7 +27,6 @@ public class Character : MonoBehaviour
 
         _mana = gameObject.AddComponent<ResourceAttribute>();
         _mana.Init(AttributeType.ManaMax);
-        _mana.OnValueChanged.AddListener(OnManaChanged);
 
         // Init self buff from data
         foreach (ABuffFactory passive in _data.passives)
@@ -42,11 +41,6 @@ public class Character : MonoBehaviour
             CharacterSkillSlot skillSlot = gameObject.AddComponent<CharacterSkillSlot>();
             skillSlot.Init(skillData, skillButton);
         }
-    }
-
-    void OnManaChanged(ResourceAttribute mana)
-    {
-        Debug.Log("Actual mana " + mana.Value);
     }
 
     #region IBuffable

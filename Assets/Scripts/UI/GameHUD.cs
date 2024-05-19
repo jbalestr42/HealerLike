@@ -23,14 +23,28 @@ public class GameHUD : MonoBehaviour
     public UnityEngine.UI.Button playSpeedx3Button { get { return _playSpeedx3Button; } }
     [SerializeField] UnityEngine.UI.Toggle _markEnemyToggle;
     public UnityEngine.UI.Toggle markEnemyToggle { get { return _markEnemyToggle; } }
+    [SerializeField] ResourceView _manaBar;
+
 
     void Start()
     {
-        PlayerBehaviour.instance.OnGoldChanged.AddListener(SetGold);
+        PlayerBehaviour.instance.OnCharacterInit.AddListener(OnCharacterInit);
     }
 
     public void SetGold(int gold)
     {
         _goldText.text = "Gold: " + gold.ToString();
+    }
+
+    void OnCharacterInit(Character character)
+    {
+        PlayerBehaviour.instance.OnGoldChanged.AddListener(SetGold);
+        PlayerBehaviour.instance.character.mana.OnValueChanged.AddListener(OnManaChanged);
+        OnManaChanged(PlayerBehaviour.instance.character.mana);
+    }
+
+    void OnManaChanged(ResourceAttribute health)
+    {
+        _manaBar.SetResource(health.Value, health.Max);
     }
 }

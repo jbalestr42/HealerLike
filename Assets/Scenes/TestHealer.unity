@@ -625,11 +625,6 @@ LightingSettings:
   m_PVRTiledBaking: 0
   m_NumRaysToShootPerTexel: -1
   m_RespectSceneVisibilityWhenBakingGI: 0
---- !u!1 &248412337 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5508150230538445299, guid: d5ad4b9249cd4154aa8085cf2a485b44, type: 3}
-  m_PrefabInstance: {fileID: 5820983543368096138}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &259564915
 GameObject:
   m_ObjectHideFlags: 0
@@ -1386,24 +1381,11 @@ PrefabInstance:
       objectReference: {fileID: 8447520249148034658, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
     - target: {fileID: 8447520249148034658, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
       propertyPath: serializationData.PrefabModifications.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8447520249148034658, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
       propertyPath: serializationData.PrefabModifications.Array.data[0]
-      value: '"path":"_panels","add_keys":null,"remove_keys":{"$id":0,"$type":"System.Object[],
-        mscorlib","$rlength":1,"$rcontent":[{"$id":1,"$type":"PanelType, Assembly-CSharp",2}]}'
-      objectReference: {fileID: 0}
-    - target: {fileID: 8447520249148034658, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
-      propertyPath: serializationData.PrefabModifications.Array.data[1]
       value: '"path":"_panels.{1es}","value":$eref:0'
-      objectReference: {fileID: 0}
-    - target: {fileID: 8447520249148034658, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
-      propertyPath: serializationData.ReferencedUnityObjects.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 8447520249148034658, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
-      propertyPath: serializationData.ReferencedUnityObjects.Array.data[0]
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8447520249148034658, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
       propertyPath: serializationData.PrefabModificationsReferencedUnityObjects.Array.size
@@ -2132,7 +2114,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1127217882}
-  m_LocalRotation: {x: -0.14172372, y: -0.0000000060963767, z: 0.000000042581746, w: 0.9899063}
+  m_LocalRotation: {x: -0.14172372, y: 0.0000000060963803, z: -0.000000042581746, w: 0.9899063}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2218,7 +2200,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1133649933}
-  m_LocalRotation: {x: 0.59975564, y: -0.0000000418745, z: 0.0000000313859, w: 0.80018324}
+  m_LocalRotation: {x: 0.59975564, y: 0.000000041874515, z: -0.00000003138591, w: 0.80018324}
   m_LocalPosition: {x: 0.49, y: 22.689999, z: -5.67}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -3381,23 +3363,19 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5508150230538445299, guid: d5ad4b9249cd4154aa8085cf2a485b44, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5820983543368096140}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d5ad4b9249cd4154aa8085cf2a485b44, type: 3}
 --- !u!4 &5820983543368096139 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3997629714499954772, guid: d5ad4b9249cd4154aa8085cf2a485b44, type: 3}
   m_PrefabInstance: {fileID: 5820983543368096138}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5820983543368096140
+--- !u!114 &5820983543368096141 stripped
 MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 4511746088519369537, guid: d5ad4b9249cd4154aa8085cf2a485b44, type: 3}
+  m_PrefabInstance: {fileID: 5820983543368096138}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248412337}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5134fa95260ccc9428221f3bb1044a24, type: 3}
@@ -3456,7 +3434,10 @@ MonoBehaviour:
   OnGoldChanged:
     m_PersistentCalls:
       m_Calls: []
-  _character: {fileID: 5820983543368096140}
+  OnCharacterInit:
+    m_PersistentCalls:
+      m_Calls: []
+  _character: {fileID: 5820983543368096141}
   _grid: {fileID: 9158114156218484085}
   _gridGenerator: {fileID: 6872951910718554557}
 --- !u!1001 &7901822375898008981

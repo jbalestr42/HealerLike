@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3997629714499954772}
   - component: {fileID: 5981077655185024973}
   - component: {fileID: 1682919308326162658}
+  - component: {fileID: 4511746088519369537}
   m_Layer: 0
   m_Name: Character
   m_TagString: Untagged
@@ -69,3 +70,15 @@ MonoBehaviour:
   OnBuffHandlerStopped:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &4511746088519369537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5508150230538445299}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5134fa95260ccc9428221f3bb1044a24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

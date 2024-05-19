@@ -4,6 +4,7 @@ using UnityEngine.Events;
 public class PlayerBehaviour : Singleton<PlayerBehaviour>
 {
     public UnityEvent<int> OnGoldChanged = new UnityEvent<int>();
+    public UnityEvent<Character> OnCharacterInit = new UnityEvent<Character>();
 
     [SerializeField] Character _character;
     public Character character { get { return _character; } set { _character = value; } }
@@ -33,6 +34,8 @@ public class PlayerBehaviour : Singleton<PlayerBehaviour>
 
         _character.data = DataManager.instance.GetRandomCharacter();
         _character.Init();
+
+        OnCharacterInit.Invoke(_character);
     }
 
     public bool HasEnoughGold(int value)
