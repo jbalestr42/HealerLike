@@ -59,7 +59,6 @@ public class CharacterSkillSlot : MonoBehaviour
         {
             _skill.Use(gameObject, (bool isDone) =>
             {
-                Debug.Log("OnSkillComplete " + isDone);
                 if (isDone)
                 {
                     foreach (ACharacterSkillValidator validator in _validators)

@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2666611303eb6a44481881d30da4875b, type: 3}
-  m_Name: BuffAttackRate
+  m_Script: {fileID: 11500000, guid: e5a3319670e9bd242a09c0fe204a1c42, type: 3}
+  m_Name: MultiTargetBuffAttackRate
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -22,10 +22,7 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    icon: {fileID: 0}
-    name: Buff Attack Rate
-    description: 
-    cost: 10
+    isSingle: 0
+    entityType: 0
     buffHandlerFactory:
     - {fileID: 11400000, guid: 2ac46e2d6e76aa94887297fed51161f4, type: 2}
-    entityType: 1

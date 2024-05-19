@@ -22,4 +22,4 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    consumer: {fileID: 11400000, guid: 0f992c686d0a24048b992aeb70a34d69, type: 2}
+    consumer: {fileID: 0}
