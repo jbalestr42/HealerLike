@@ -25,3 +25,4 @@ MonoBehaviour:
     isSingle: 1
     entityType: 1
     consumer: {fileID: 11400000, guid: 3835a21a7e0849f47aa8881f016eab76, type: 2}
+    multiplier: 1.5

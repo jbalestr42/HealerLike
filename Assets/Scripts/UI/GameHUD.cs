@@ -10,6 +10,9 @@ public class GameHUD : MonoBehaviour
     [SerializeField] UnityEngine.UI.Button _inventoryButton;
     public UnityEngine.UI.Button inventoryButton { get { return _inventoryButton; } }
 
+    [SerializeField] UnityEngine.UI.Button _nextWaveButton;
+    public UnityEngine.UI.Button nextWaveButton { get { return _nextWaveButton; } }
+
     [SerializeField] UnityEngine.UI.Text _goldText;
     [SerializeField] UnityEngine.UI.Button _playSpeedx0Button;
     public UnityEngine.UI.Button playSpeedx0Button { get { return _playSpeedx0Button; } }
