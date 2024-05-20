@@ -33,7 +33,7 @@ public class CreateDataButtonAttributeDrawer<T> : OdinAttributeDrawer<CreateData
 
         if (this.ValueEntry.SmartValue != null)
         {
-            if (SirenixEditorGUI.ToolbarButton(EditorIcons.X))
+            if (SirenixEditorGUI.ToolbarButton(EditorIcons.X.ActiveGUIContent))
             {
                 // Tricks to show "None" instead of "Missing"
                 var tmp = this.ValueEntry.SmartValue;
@@ -45,14 +45,14 @@ public class CreateDataButtonAttributeDrawer<T> : OdinAttributeDrawer<CreateData
         {
             if (this.selector.SelectionTree.MenuItems.Count > 0)
             {
-                if (SirenixEditorGUI.ToolbarButton(EditorIcons.TriangleRight))
+                if (SirenixEditorGUI.ToolbarButton(EditorIcons.TriangleRight.ActiveGUIContent))
                 {
                     this.selector.ShowInPopup();
                 }
             }
             else
             {
-                if (SirenixEditorGUI.ToolbarButton(EditorIcons.Plus))
+                if (SirenixEditorGUI.ToolbarButton(EditorIcons.Plus.ActiveGUIContent))
                 {
                     this.ValueEntry.SmartValue = CreateSO(typeof(T));
                 }
