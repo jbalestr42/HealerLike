@@ -1,33 +1,26 @@
 using System;
-using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
-using UnityEngine.Events;
 
 [CreateAssetMenu(menuName = "Custom/Data/CharacterSkill/HealCharacterSkill")]
 public class HealCharacterSkillFactory : CharacterSkillFactory<HealCharacterSkill, HealCharacterSkillData> {}
 
 [Serializable]
-public class HealCharacterSkillData
+public class HealCharacterSkillData : BaseCharacterSkillData
 {
     [CreateDataButton]
     public AConsumerFactory consumer;
+    public float multiplier = 1f;
 }
 
-public class HealCharacterSkill : ACharacterSkill<HealCharacterSkillData>
+public class HealCharacterSkill : BaseCharacterSkill<HealCharacterSkillData>
 {
-    public override void Use(GameObject source, UnityAction<bool> onSkillComplete)
+    public override void ApplySkillOnTarget(GameObject source, GameObject target)
     {
-        UnityAction<GameObject> onTargetSelected = (GameObject target) => 
-        {
-            ResourceModifier resourceModifier = new ResourceModifier();
-            resourceModifier.consumers.Add(data.consumer.GetConsumer(source, target));
-            resourceModifier.multiplier = -1f;
-            resourceModifier.source = source;
+        ResourceModifier resourceModifier = new ResourceModifier();
+        resourceModifier.consumers.Add(data.consumer.GetConsumer(source, target));
+        resourceModifier.multiplier = -1f * data.multiplier;
+        resourceModifier.source = source;
 
-            target.GetComponent<Entity>().health.AddResourceModifier(resourceModifier);
-        };
-
-        InteractionManager.instance.SetInteraction(new SingleTargetInteraction(onTargetSelected, onSkillComplete));
+        target.GetComponent<Entity>().health.AddResourceModifier(resourceModifier);
     }
 }

@@ -22,6 +22,6 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    ignoreConsumerModifier: 1
+    ignoreConsumerModifier: 0
     ignoreConsumerPrevention: 1
     type: 10

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 49143b78cfd3d7e4fa77b19d42823637, type: 3}
-  m_Name: HealSingleTarget
+  m_Name: HealMultiTarget
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -22,6 +22,6 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    isSingle: 1
+    isSingle: 0
     entityType: 1
-    consumer: {fileID: 11400000, guid: 3835a21a7e0849f47aa8881f016eab76, type: 2}
+    consumer: {fileID: 11400000, guid: 6a54771d318487d478f485ae1e435d60, type: 2}
