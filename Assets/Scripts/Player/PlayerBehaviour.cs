@@ -29,7 +29,10 @@ public class PlayerBehaviour : Singleton<PlayerBehaviour>
     void Start()
     {
         _grid.Generate();
+    }
 
+    public void Init()
+    {
         gold = DataManager.instance.data.gold;
 
         _character.data = DataManager.instance.GetRandomCharacter();

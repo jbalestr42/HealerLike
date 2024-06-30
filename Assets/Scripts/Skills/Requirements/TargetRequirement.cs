@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class TargetRequirement : IRequirement
@@ -13,6 +12,7 @@ public class TargetRequirement : IRequirement
 
     public bool IsValid(GameObject source)
     {
-        return _targetProvider.GetTargets().Count > 0;
+        List<GameObject> targets = _targetProvider.GetTargets();
+        return targets != null && targets.Count > 0;
     }
 }

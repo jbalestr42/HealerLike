@@ -43,6 +43,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, ISelectable, IBuffa
     GameObject _targetPoint;
     public GameObject targetPoint => _targetPoint;
 
+    public bool isEnabled = false;
+
     public void Init()
     {
         _buffManager = GetComponent<BuffManager>();

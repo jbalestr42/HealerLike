@@ -33,4 +33,9 @@ public class EntityInventory : MonoBehaviour
             _entityButtons[i].GetComponent<UnityEngine.UI.Button>().interactable = _entityButtons[i].data.price <= gold;
         }
     }
+
+    public void Show(bool show)
+    {
+        _inventoryConainer.SetActive(show);
+    }
 }

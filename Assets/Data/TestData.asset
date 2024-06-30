@@ -124,9 +124,8 @@ MonoBehaviour:
   refoundFactor: 0.75
   waves: []
   wavePatterns:
-  - {fileID: 11400000, guid: dd7634a923f75aa4fa455f26326efb39, type: 2}
-  - {fileID: 11400000, guid: 26760702ead9ca24ba0f1aba145c1e37, type: 2}
-  - {fileID: 11400000, guid: 9bea2e9b58244ba489d515ca176d0e6c, type: 2}
+  - {fileID: 11400000, guid: 46776799d2008614b9df9baa0ad8d107, type: 2}
+  - {fileID: 11400000, guid: 7017dc7573d67c24994a98a8e0a1f684, type: 2}
   enemies:
   - {fileID: 11400000, guid: 85a1a69f23e87f04abfe85cc290d6463, type: 2}
   - {fileID: 11400000, guid: a2003999930914c4782f5152c53489fe, type: 2}
@@ -154,7 +153,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ff864edc5e8dfdc47ad1e7a7cd3ec589, type: 2}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
   characters:
-  - {fileID: 11400000, guid: d5522b5142b13b74bbf81471208c72e0, type: 2}
+  - {fileID: 11400000, guid: b6564d3df55530743a8bae3f230c6101, type: 2}
   items:
   - {fileID: 11400000, guid: 981f707cc21684046903704c33211566, type: 2}
   - {fileID: 11400000, guid: 863d741e86f47494a916f37a85d07d2f, type: 2}
@@ -169,5 +168,3 @@ MonoBehaviour:
   - {fileID: 11400000, guid: fc720cd10a4f2274982ec917fd77d9ee, type: 2}
   - {fileID: 11400000, guid: 84838603ada205643ab074dfd136f83b, type: 2}
   - {fileID: 11400000, guid: 60b337d5800dd0943ba5e16ee16359fd, type: 2}
-  consumables:
-  - {fileID: 11400000, guid: 6c16414503bc23d44b50ab3978718126, type: 2}

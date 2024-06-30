@@ -21,7 +21,10 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
 
     void Update()
     {
-        _targets = _targetBehaviour.GetTargets(transform.position, _range.Value, _owner.GetTargetType());
+        if (_owner.isEnabled)
+        {
+            _targets = _targetBehaviour.GetTargets(transform.position, _range.Value, _owner.GetTargetType());
+        }
     }
 
     public void SetTargetBehaviour(TargetBehaviourType targetBehaviourType)

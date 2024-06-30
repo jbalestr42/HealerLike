@@ -39,6 +39,11 @@ public class GameHUD : MonoBehaviour
         _goldText.text = "Gold: " + gold.ToString();
     }
 
+    public void ShowManaBar(bool show)
+    {
+        _manaBar.gameObject.SetActive(show);
+    }
+
     void OnCharacterInit(Character character)
     {
         PlayerBehaviour.instance.OnGoldChanged.AddListener(SetGold);

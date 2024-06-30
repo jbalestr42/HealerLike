@@ -1,33 +1,42 @@
 using UnityEngine;
+using Sirenix.OdinInspector;
 
 public class AscensionGameType : AGameType
 {
     public enum State
     {
         None,
-        InitializeWave,
-        WaitForWaveToStart,
-        WaitingForEndOfWave,
+        InitializeGame,
+        InitializeRound,
+        WaitForRoundToStart,
+        StartBattle,
+        OnGoingBattle,
+        EndBattle,
         SelectUpgrade,
         GameEnd,
         GameOver,
     }
 
-    State _state = State.None;
+    [Header("In Game")]
+    [ShowInInspector, ReadOnly] State _state = State.None;
     EntityManager _entities = null;
     GameView _gameView;
     UpgradeView _upgradeView;
-    int _currentWave = 0;
+    int _currentRound = 0;
 
-    public override int currentWave => _currentWave;
+    public override int currentWave => _currentRound;
 
     void Start()
     {
         _entities = EntityManager.instance;
         _gameView = UIManager.instance.GetView<GameView>(ViewType.Game);
+        _gameView.characterSkillInventory.Show(false);
+        _gameView.entityInventory.Show(false);
+        _gameView.gameHUD.ShowManaBar(false);
+
         _upgradeView = UIManager.instance.GetView<UpgradeView>(ViewType.Upgrade);
 
-        _gameView.gameHUD.nextWaveButton.onClick.AddListener(StartWave);
+        _gameView.gameHUD.nextWaveButton.onClick.AddListener(StartBattle);
         _upgradeView.OnItemSelected.AddListener(OnItemSelected);
     }
 
@@ -38,36 +47,68 @@ public class AscensionGameType : AGameType
             case State.None:
                 break;
 
-            case State.InitializeWave:
-                _currentWave++;
+            case State.InitializeGame:
+                _gameView.gameHUD.inventoryButton.enabled = true;
+                _gameView.gameHUD.ShowManaBar(true);
+
+                PlayerBehaviour.instance.Init();
+
+                SetState(State.InitializeRound);
+                break;
+
+            case State.InitializeRound:
+                _currentRound++;
                 _gameView.gameHUD.inventoryButton.interactable = true;
                 _gameView.gameHUD.nextWaveButton.interactable = true;
-                SetState(State.WaitForWaveToStart);
+                _gameView.characterSkillInventory.Show(false);
+                _gameView.entityInventory.Show(true);
+
+                // Later we can show multiple choice to the user
+                LoadEnemies(DataManager.instance.GetRandomWavePattern());
+                EnableAllEntities(false);
+                SetState(State.WaitForRoundToStart);
                 break;
 
-            case State.WaitForWaveToStart:
-                // Wait for player to click on "nextWaveButton"
+            case State.WaitForRoundToStart:
+                // During this time the player can arrange the units and dispatch items
+                // Then, wait for player to click on "nextWaveButton" to go to the StartBattle state
                 break;
 
-            case State.WaitingForEndOfWave:
+            case State.StartBattle:
+                _gameView.gameHUD.inventoryButton.interactable = false;
+                _gameView.gameHUD.nextWaveButton.interactable = false;
+                _gameView.characterSkillInventory.Show(true);
+                _gameView.entityInventory.Show(false);
+                _gameView.playerInventory.HideInventory();
+                EnableAllEntities(true);
+                // Show countdown before starting the battl
+                SetState(State.OnGoingBattle);
+                break;
+
+            case State.OnGoingBattle:
                 if (_entities.AreAllEntityDead(Entity.EntityType.Computer))
                 {
-                    // Show Upgrade UI
-                    UIManager.instance.AddView(ViewType.Upgrade);
-                    _upgradeView.FillChoices();
-                    SetState(State.SelectUpgrade);
+                    SetState(State.EndBattle);
                 }
-                // else if (_entities.AreAllEntityDead(Entity.EntityType.Player))
-                // {
-                //     SetState(State.GameOver);
-                // }
+                else if (_entities.AreAllEntityDead(Entity.EntityType.Player))
+                {
+                    SetState(State.GameOver);
+                }
+                break;
+
+            case State.EndBattle:
+                // Show Upgrade UI
+                UIManager.instance.AddView(ViewType.Upgrade);
+                _upgradeView.FillChoices();
+                    SetState(State.SelectUpgrade);
                 break;
 
             case State.SelectUpgrade:
-                    // Wait for player to select an item
+                // Wait for player to select an item then move to InitializeRound
                 break;
 
             case State.GameEnd:
+                // do something like restart
                 break;
 
             case State.GameOver:
@@ -81,18 +122,14 @@ public class AscensionGameType : AGameType
         }
     }
 
-    void StartWave()
+    void StartBattle()
     {
-        SetState(State.WaitingForEndOfWave);
-        _gameView.gameHUD.inventoryButton.interactable = false;
-        _gameView.gameHUD.nextWaveButton.interactable = false;
-        _gameView.playerInventory.HideInventory();
-        LoadWave(DataManager.instance.GetRandomWavePattern());
+        SetState(State.StartBattle);
     }
 
     public override void StartGame()
     {
-        SetState(State.InitializeWave);
+        SetState(State.InitializeGame);
     }
 
     public void OnItemSelected(AItem item)
@@ -100,7 +137,7 @@ public class AscensionGameType : AGameType
         _gameView.playerInventory.AddItem(item);
         _upgradeView.ClearChoices();
         UIManager.instance.PopCurrentView();
-        SetState(State.InitializeWave);
+        SetState(State.InitializeRound);
     }
 
     public override bool IsOver()
@@ -110,11 +147,17 @@ public class AscensionGameType : AGameType
 
     void SetState(State newState)
     {
-        Debug.Log($"[WaveGameType] {_state} -> {newState}");
+        Debug.Log($"[AscensionGameType] {_state} -> {newState}");
         _state = newState;
     }
 
-    public void LoadWave(WavePatternData waveData)
+    void EnableAllEntities(bool enable)
+    {
+        _entities.GetEntities(Entity.EntityType.Player).ForEach(x => x.GetComponent<Entity>().isEnabled = enable);
+        _entities.GetEntities(Entity.EntityType.Computer).ForEach(x => x.GetComponent<Entity>().isEnabled = enable);
+    }
+
+    public void LoadEnemies(WavePatternData waveData)
     {
         for (int i = 0; i < waveData.width; i++)
         {

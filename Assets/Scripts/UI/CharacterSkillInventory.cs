@@ -17,4 +17,9 @@ public class CharacterSkillInventory : MonoBehaviour
 
         return skillButton;
 	}
+
+    public void Show(bool show)
+    {
+        _inventoryContainer.SetActive(show);
+    }
 }
