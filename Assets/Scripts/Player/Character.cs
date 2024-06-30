@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 public class Character : MonoBehaviour
 {
@@ -13,6 +15,9 @@ public class Character : MonoBehaviour
 
     BuffManager _buffManager;
     public BuffManager buffManager { get { return _buffManager; } }
+
+    List<EntityData> _entityPool = new List<EntityData>();
+    public List<EntityData> entityPool { get { return _entityPool; } }
 
     public void Init()
     {
@@ -41,6 +46,9 @@ public class Character : MonoBehaviour
             CharacterSkillSlot skillSlot = gameObject.AddComponent<CharacterSkillSlot>();
             skillSlot.Init(skillData, skillButton);
         }
+
+        // Init starting entities
+        _entityPool.AddRange(_data.entities);
     }
 
     #region IBuffable

@@ -52,6 +52,7 @@ public class AscensionGameType : AGameType
                 _gameView.gameHUD.ShowManaBar(true);
 
                 PlayerBehaviour.instance.Init();
+                _gameView.entityInventory.Init(PlayerBehaviour.instance.character.entityPool);
 
                 SetState(State.InitializeRound);
                 break;

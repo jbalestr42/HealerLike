@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,29 +8,35 @@ public class EntityInventory : MonoBehaviour
 
     [SerializeField] GameObject _inventoryEntity;
 
-    List<SelectEntityButton> _entityButtons;
+    List<SelectEntityButton> _entityButtons = new List<SelectEntityButton>();
 
-	void Awake()
+	public void Init(List<EntityData> entitiesData)
     {
-        _entityButtons = new List<SelectEntityButton>();
-        var entitiesData = DataManager.instance.entities;
+        _entityButtons.Clear();
 		foreach (var data in entitiesData)
         {
-            var entityButton = Instantiate(_inventoryEntity);
-            entityButton.GetComponent<SelectEntityButton>().data = data;
-            entityButton.GetComponentInChildren<UnityEngine.UI.Text>().text = data.title + "\n" + data.price;
-            entityButton.transform.SetParent(_inventoryConainer.transform);
-            _entityButtons.Add(entityButton.GetComponent<SelectEntityButton>());
+            AddEntity(data);
         }
 
-        PlayerBehaviour.instance.OnGoldChanged.AddListener(UpdateAffordableTowers);
+        EntityManager.instance.OnEntitySpawned.AddListener(UpdateUsableEntities);
 	}
-
-    public void UpdateAffordableTowers(int gold)
+    
+    public void AddEntity(EntityData data)
     {
-        for (int i = 0; i < _entityButtons.Count; i++)
+        var entityButton = Instantiate(_inventoryEntity);
+        entityButton.GetComponent<SelectEntityButton>().data = data;
+        entityButton.GetComponentInChildren<UnityEngine.UI.Text>().text = data.title + "\n" + data.price;
+        entityButton.transform.SetParent(_inventoryConainer.transform);
+        _entityButtons.Add(entityButton.GetComponent<SelectEntityButton>());
+    }
+
+    public void UpdateUsableEntities(Entity entity)
+    {
+        var entityButton = _entityButtons.Where(x => x.data == entity.data).FirstOrDefault();
+        if (entityButton != null)
         {
-            _entityButtons[i].GetComponent<UnityEngine.UI.Button>().interactable = _entityButtons[i].data.price <= gold;
+            _entityButtons.Remove(entityButton);
+            GameObject.Destroy(entityButton.gameObject);
         }
     }
 

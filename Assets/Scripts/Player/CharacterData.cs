@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -28,6 +27,8 @@ public class CharacterData : SerializedScriptableObject
     [Space]
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffFactory>, ABuffFactory>(passives)")]
     public List<ABuffFactory> passives;
+
+    public List<EntityData> entities = new List<EntityData>();
 
     public List<CharacterSkillSlotData> skills = new List<CharacterSkillSlotData>();
 }

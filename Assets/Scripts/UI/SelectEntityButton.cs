@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class SelectEntityButton : MonoBehaviour
 {
@@ -8,9 +6,6 @@ public class SelectEntityButton : MonoBehaviour
 
     public void SelectEntity()
     {
-        if (PlayerBehaviour.instance.HasEnoughGold(data.price))
-        {
-            InteractionManager.instance.SetInteraction(new EntityGridInteraction(data));
-        }
+        InteractionManager.instance.SetInteraction(new EntityGridInteraction(data));
     }
 }

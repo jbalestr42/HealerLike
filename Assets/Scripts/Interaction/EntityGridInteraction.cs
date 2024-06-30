@@ -20,7 +20,7 @@ public class EntityGridInteraction : AInteraction
 
     public override void OnMouseClick(RaycastHit hit)
     {
-        GameObject tower = EntityManager.instance.SpawnEntity(_data, PlayerBehaviour.instance.grid.GetNearestWalkablePosition(hit.point), Entity.EntityType.Player);
+        EntityManager.instance.SpawnEntity(_data, PlayerBehaviour.instance.grid.GetNearestWalkablePosition(hit.point), Entity.EntityType.Player);
         InteractionManager.instance.EndInteraction();
     }
 
