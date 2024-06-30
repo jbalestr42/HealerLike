@@ -27,14 +27,14 @@ public class DataEditor : OdinMenuEditorWindow
         }
     }
 
-    protected override void OnGUI()
+    protected override void OnImGUI()
     {
         if (GUIUtils.SelectButtonList(ref _selectedType, typesToDisplay))
         {
             ForceMenuTreeRebuild();
         }
 
-        base.OnGUI();
+        base.OnImGUI();
     }
 
     protected override void OnBeginDrawEditors()
