@@ -97,7 +97,7 @@ MonoBehaviour:
       Data: 
   model: {fileID: 1081930672269232, guid: b2cace1bde908184ca8c4fe8a9637280, type: 3}
   title: ChainLightning
-  text: 
+  description: Create a lightning that chain from enemy to enemy
   price: 0
   passives: []
   onHitEffects: []

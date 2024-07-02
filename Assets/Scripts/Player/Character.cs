@@ -44,11 +44,12 @@ public class Character : MonoBehaviour
         {
             UseCharacterSkillButton skillButton = UIManager.instance.GetView<GameView>(ViewType.Game).characterSkillInventory.Create();
             CharacterSkillSlot skillSlot = gameObject.AddComponent<CharacterSkillSlot>();
+            skillButton.data = skillData;
             skillSlot.Init(skillData, skillButton);
         }
 
         // Init starting entities
-        _entityPool.AddRange(_data.entities);
+        _entityPool.AddRange(_data.entities.ToArray());
     }
 
     #region IBuffable

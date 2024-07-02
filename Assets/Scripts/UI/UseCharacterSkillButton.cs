@@ -8,6 +8,7 @@ public class UseCharacterSkillButton : MonoBehaviour
     [SerializeField] UnityEngine.UI.Text _cooldownText;
     [SerializeField] UnityEngine.UI.Text _costText;
     [SerializeField] UnityEngine.UI.Image _cooldownImage;
+    public CharacterSkillSlotData data { get; set; }
     public bool hasCooldown { get; set; } = false;
     public bool hasCost { get; set; } = false;
 
@@ -31,5 +32,21 @@ public class UseCharacterSkillButton : MonoBehaviour
     public void Enable(bool enabled)
     {
         _button.interactable = enabled;
+    }
+
+    public void OnPointerEnter()
+    {
+        ShowToolTip(true);
+    }
+
+    public void OnPointerExit()
+    {
+        ShowToolTip(false);
+    }
+
+    void ShowToolTip(bool show)
+    {
+        UIManager.instance.GetView<GameView>(ViewType.Game).toolTip.Show(show);
+        UIManager.instance.GetView<GameView>(ViewType.Game).toolTip.SetText(data.description);
     }
 }

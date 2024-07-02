@@ -97,7 +97,7 @@ MonoBehaviour:
       Data: 
   model: {fileID: 1081930672269232, guid: da2863f2b1683574f84656c8c3cd830b, type: 3}
   title: FastShoot
-  text: 
+  description: Shoot 2 fast pprojectile dealing moderate damage
   price: 0
   passives: []
   onHitEffects: []

@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -20,11 +18,7 @@ public class EntityData : SerializedScriptableObject
 
     [VerticalGroup("Data/Stats")]
     [LabelWidth(100)]
-    public string text;
-
-    [VerticalGroup("Data/Stats")]
-    [LabelWidth(100)]
-    public int price;
+    public string description;
 
     [Space]
     [DictionaryDrawerSettings(KeyLabel = "Attribute Type", ValueLabel = "Value")]

@@ -97,7 +97,7 @@ MonoBehaviour:
       Data: 
   model: {fileID: 6058514216512742586, guid: 3254ba096c79f224babbda9e67cdf806, type: 3}
   title: Normal
-  text: 
+  description: The most basic entity, well balanced
   price: 0
   passives: []
   onHitEffects: []

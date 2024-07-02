@@ -25,7 +25,7 @@ public class EntityInventory : MonoBehaviour
     {
         var entityButton = Instantiate(_inventoryEntity);
         entityButton.GetComponent<SelectEntityButton>().data = data;
-        entityButton.GetComponentInChildren<UnityEngine.UI.Text>().text = data.title + "\n" + data.price;
+        entityButton.GetComponentInChildren<UnityEngine.UI.Text>().text = data.title;
         entityButton.transform.SetParent(_inventoryConainer.transform);
         _entityButtons.Add(entityButton.GetComponent<SelectEntityButton>());
     }

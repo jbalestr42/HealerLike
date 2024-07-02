@@ -24,6 +24,9 @@ public class GameView : AView
     [SerializeField] GameHUD _gameHUD;
     public GameHUD gameHUD { get { return _gameHUD; } }
 
+    [SerializeField] ToolTip _toolTip;
+    public ToolTip toolTip { get { return _toolTip; } }
+
     PanelType _selectedPanel = PanelType.None;
     GameObject _selectedObject = null;
 

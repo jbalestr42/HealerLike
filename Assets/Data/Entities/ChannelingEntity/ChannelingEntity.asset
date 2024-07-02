@@ -97,7 +97,7 @@ MonoBehaviour:
       Data: 
   model: {fileID: 1631280189745936, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
   title: Channeling
-  text: 
+  description: Channel attack on the same target
   price: 0
   passives: []
   onHitEffects: []
