@@ -19,6 +19,9 @@ public class Character : MonoBehaviour
     List<EntityData> _entityPool = new List<EntityData>();
     public List<EntityData> entityPool { get { return _entityPool; } }
 
+    List<CharacterSkillSlot> _skillSlots = new List<CharacterSkillSlot>();
+    public List<CharacterSkillSlot> skillSlots { get { return _skillSlots; } }
+
     public void Init()
     {
         _buffManager = GetComponent<BuffManager>();
@@ -40,12 +43,12 @@ public class Character : MonoBehaviour
         }
 
         // Init skills
-        foreach (CharacterSkillSlotData skillData in _data.skills)
+        foreach (ACharacterSkillFactory skillFactory in _data.skills)
         {
             UseCharacterSkillButton skillButton = UIManager.instance.GetView<GameView>(ViewType.Game).characterSkillInventory.Create();
             CharacterSkillSlot skillSlot = gameObject.AddComponent<CharacterSkillSlot>();
-            skillButton.data = skillData;
-            skillSlot.Init(skillData, skillButton);
+            skillSlot.Init(skillFactory.Create(), skillButton);
+            _skillSlots.Add(skillSlot);
         }
 
         // Init starting entities

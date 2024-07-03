@@ -6,17 +6,21 @@ using UnityEngine;
 public class CharacterSkillSlot : MonoBehaviour
 {
     [InlineProperty]
-    [SerializeField] CharacterSkillSlotData _data;
-    public CharacterSkillSlotData data => _data;
+    [SerializeField] CharacterSkillData _data;
+    public CharacterSkillData data => _data;
 
     List<ACharacterSkillValidator> _validators = new List<ACharacterSkillValidator>();
     ACharacterSkill _skill;
     UseCharacterSkillButton _skillButton;
 
-    public void Init(CharacterSkillSlotData data, UseCharacterSkillButton skillButton)
+    public void Init(ACharacterSkill skill, UseCharacterSkillButton skillButton)
     {
-        _data = data;
+        _skill = skill;
+        _data = _skill.GetData();
         _skillButton = skillButton;
+        _skillButton.data = _data;
+
+        _skillButton.button.onClick.AddListener(UseSkill);
 
         foreach (ACharacterSkillValidatorFactory validatorFactory in data.validators)
         {
@@ -24,9 +28,6 @@ public class CharacterSkillSlot : MonoBehaviour
             validator.Init(_skillButton, gameObject);
             _validators.Add(validator);
         }
-
-        _skill = data.skill.Create();
-        _skillButton.button.onClick.AddListener(UseSkill);
 
         _skillButton.SetName(_data.name);
     }

@@ -80,15 +80,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ff864edc5e8dfdc47ad1e7a7cd3ec589, type: 2}
   - {fileID: 11400000, guid: 0e42156d42eb9244db24d1871321181b, type: 2}
   skills:
-  - icon: {fileID: 0}
-    name: Heal Single
-    description: 
-    validators:
-    - {fileID: 11400000, guid: 196b6db43fc2c814a93796a4aa7f5cde, type: 2}
-    skill: {fileID: 11400000, guid: 6b9b13052c3a4f54eb25e14b54bcce8f, type: 2}
-  - icon: {fileID: 0}
-    name: Heal All
-    description: 
-    validators:
-    - {fileID: 11400000, guid: 1c87322635003a74dadc1f585642f557, type: 2}
-    skill: {fileID: 11400000, guid: 070b01962bb037544be10fbcc40f137b, type: 2}
+  - {fileID: 11400000, guid: 6b9b13052c3a4f54eb25e14b54bcce8f, type: 2}
+  - {fileID: 11400000, guid: 070b01962bb037544be10fbcc40f137b, type: 2}

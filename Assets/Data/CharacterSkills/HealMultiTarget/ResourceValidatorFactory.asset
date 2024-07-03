@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55c69b3b65604cb469e9dca6a49fd2af, type: 3}
-  m_Name: DurationValidatorFactory 4
+  m_Script: {fileID: 11500000, guid: 4aceb3818c0a80c46a7cb87218546fe2, type: 3}
+  m_Name: ResourceValidatorFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -22,4 +22,4 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    duration: 5
+    consumer: {fileID: 11400000, guid: be94bcbc082cf104b8ab9c51bae1a4df, type: 2}

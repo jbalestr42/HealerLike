@@ -28,7 +28,10 @@ public class CharacterData : SerializedScriptableObject
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffFactory>, ABuffFactory>(passives)")]
     public List<ABuffFactory> passives;
 
+    [Space]
     public List<EntityData> entities = new List<EntityData>();
 
-    public List<CharacterSkillSlotData> skills = new List<CharacterSkillSlotData>();
+    [Space]
+    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ACharacterSkillFactory>, ACharacterSkillFactory>(skills)")]
+    public List<ACharacterSkillFactory> skills = new List<ACharacterSkillFactory>();
 }

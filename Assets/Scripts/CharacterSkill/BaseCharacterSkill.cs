@@ -1,11 +1,16 @@
+using Sirenix.OdinInspector;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
 [Serializable]
-public class BaseCharacterSkillData
+public class BaseCharacterSkillData : CharacterSkillData
 {
+    [BoxGroup("Common/Split/Left/Displayed Data")]
     public bool isSingle;
+
+    [BoxGroup("Common/Split/Left/Displayed Data")]
     public Entity.EntityType entityType;
 }
 

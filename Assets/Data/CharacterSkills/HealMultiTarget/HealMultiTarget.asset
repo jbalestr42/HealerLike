@@ -22,8 +22,10 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
+    icon: {fileID: 0}
     name: Heal group
     description: Heal all entities
+    validators: []
     isSingle: 0
     entityType: 1
     consumer: {fileID: 11400000, guid: 6a54771d318487d478f485ae1e435d60, type: 2}
