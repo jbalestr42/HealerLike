@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Text.RegularExpressions;
+using Unity.VisualScripting;
+using UnityEngine;
 
 public class UseCharacterSkillButton : MonoBehaviour
 {
@@ -8,6 +11,7 @@ public class UseCharacterSkillButton : MonoBehaviour
     [SerializeField] UnityEngine.UI.Text _cooldownText;
     [SerializeField] UnityEngine.UI.Text _costText;
     [SerializeField] UnityEngine.UI.Image _cooldownImage;
+    public Character character { get; set; }
     public CharacterSkillData data { get; set; }
     public bool hasCooldown { get; set; } = false;
     public bool hasCost { get; set; } = false;
@@ -47,6 +51,6 @@ public class UseCharacterSkillButton : MonoBehaviour
     void ShowToolTip(bool show)
     {
         UIManager.instance.GetView<GameView>(ViewType.Game).toolTip.Show(show);
-        UIManager.instance.GetView<GameView>(ViewType.Game).toolTip.SetText(data.description);
+        UIManager.instance.GetView<GameView>(ViewType.Game).toolTip.SetText(TextConvertor.GetDescription(character, data, data.description));
     }
 }

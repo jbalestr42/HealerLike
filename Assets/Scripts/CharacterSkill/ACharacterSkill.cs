@@ -46,6 +46,7 @@ public class CharacterSkillData
     public string name;
 
     [BoxGroup("Common/Split/Left/Displayed Data")]
+    [TextArea(4, 10)]
     public string description;
 
     [VerticalGroup("Common/Split/Right")]

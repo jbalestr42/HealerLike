@@ -22,8 +22,13 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
+    icon: {fileID: 0}
     name: Heal
-    description: Heal single target
+    description: Heal single target for {data:multiplier|mul(100)}% <color="green">HealPower</color>
+      ({attribute:current:HealPower})
+    validators:
+    - {fileID: 11400000, guid: 17016692f1a03ab4ca4807ba22f03f4b, type: 2}
+    - {fileID: 11400000, guid: 80dffdeee988ccc41a0e7ab0ae1e307c, type: 2}
     isSingle: 1
     entityType: 1
     consumer: {fileID: 11400000, guid: 3835a21a7e0849f47aa8881f016eab76, type: 2}

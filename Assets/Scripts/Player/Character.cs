@@ -47,6 +47,7 @@ public class Character : MonoBehaviour
         {
             UseCharacterSkillButton skillButton = UIManager.instance.GetView<GameView>(ViewType.Game).characterSkillInventory.Create();
             CharacterSkillSlot skillSlot = gameObject.AddComponent<CharacterSkillSlot>();
+            skillButton.character = this;
             skillSlot.Init(skillFactory.Create(), skillButton);
             _skillSlots.Add(skillSlot);
         }
