@@ -25,4 +25,4 @@ MonoBehaviour:
   data:
     buffFactory: {fileID: 11400000, guid: c0e9a3e0bb2b9094a8b661fe73d93ac9, type: 2}
     buffEffect: {fileID: 235923177188579788, guid: f7d829ef2eae5624bb2caa7f507d8990, type: 3}
-    duration: 2
+    duration: 1

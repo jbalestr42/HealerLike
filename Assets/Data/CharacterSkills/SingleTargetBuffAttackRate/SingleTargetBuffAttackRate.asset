@@ -22,6 +22,14 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
+    icon: {fileID: 0}
+    name: 
+    description: 'Increase single target <color="green">{data:buffHandlerFactory|0.data.buffFactory.data.type}</color>
+
+      by
+      <color=#008080ff>[{data:buffHandlerFactory|0.data.buffFactory.data.value}x100]%</color>
+      during <color="cyan">({data:buffHandlerFactory|0.data.duration}s)</color>'
+    validators: []
     isSingle: 0
     entityType: 0
     buffHandlerFactory:

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Sirenix.OdinInspector.Editor;
 
@@ -174,26 +175,8 @@ public class TextConvertor
                     return GetError("Wrong Format -> Available format is {data:name}", defaultValue);
                 }
 
-                if (tokens.Length > 3)
-                {
-                    if (int.TryParse(tokens[2], out int index))
-                    {
-                        var listProp = data.GetType().GetField(tokens[1]);
-                        var list = listProp.GetValue(data) as IList;
-                        var value = GetPropertyValue(list[index], tokens[3]);
-                        return value != null ? value.ToString() : GetError($"Unkown Variable Name '{tokens[1]}'", defaultValue);
-                    }
-                    else
-                    {
-                        return GetError("", defaultValue);
-                    }
-                }
-                else
-                {
-                    var value = data.GetType().GetField(tokens[1])?.GetValue(data);
-                    return value != null ? value.ToString() : GetError($"Unkown Variable Name '{tokens[1]}'", defaultValue);
-                }
-
+                var value = GetPropertyValue(data, tokens[1]);
+                return value != null ? value.ToString() : GetError($"Unkown Variable Name '{tokens[1]}'", defaultValue);
             default:
                 return GetError($"Unkown Variable Type -> {tokens[0]}", defaultValue);
         }
@@ -201,20 +184,30 @@ public class TextConvertor
 
     public static object GetPropertyValue(object obj, string propertyName)
     {
-        var _propertyNames = propertyName.Split('.');
+        var propertyNames = propertyName.Split('.');
 
-        for (var i = 0; i < _propertyNames.Length; i++)
+        for (var i = 0; i < propertyNames.Length; i++)
         {
             if (obj != null)
             {
-                var _propertyInfo = obj.GetType().GetField(_propertyNames[i]);
-                if (_propertyInfo != null)
+                var tokens = propertyNames[i].Split('|');
+                if (tokens.Length > 1 && int.TryParse(tokens[1], out int index))
                 {
-                    obj = _propertyInfo.GetValue(obj);
+                    var listProp = obj.GetType().GetField(tokens[0]);
+                    var list = listProp.GetValue(obj) as IList;
+                    obj = list[index];
                 }
                 else
                 {
-                    obj = null;
+                    var propertyInfo = obj.GetType().GetField(propertyNames[i]);
+                    if (propertyInfo != null)
+                    {
+                        obj = propertyInfo.GetValue(obj);
+                    }
+                    else
+                    {
+                        obj = null;
+                    }
                 }
             }
         }
