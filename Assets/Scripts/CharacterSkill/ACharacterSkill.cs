@@ -46,7 +46,8 @@ public class CharacterSkillData
     public string name;
 
     [BoxGroup("Common/Split/Left/Displayed Data")]
-    [TextArea(4, 10)]
+    [TextArea(10, 10)]
+    [InfoBox("@TextConvertor.Convert(description, null, this)", InfoMessageType.None)]
     public string description;
 
     [VerticalGroup("Common/Split/Right")]

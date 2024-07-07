@@ -24,8 +24,8 @@ MonoBehaviour:
   data:
     icon: {fileID: 0}
     name: Heal
-    description: Heal single target for {data:multiplier|mul(100)}% <color="green">HealPower</color>
-      ({attribute:current:HealPower})
+    description: Heal single target for <color=#008080ff>[{data:multiplier}x100]%</color>
+      <color="green">HealPower</color> <color="blue">([{attribute:current:HealPower}x{data:multiplier}])</color>
     validators:
     - {fileID: 11400000, guid: 17016692f1a03ab4ca4807ba22f03f4b, type: 2}
     - {fileID: 11400000, guid: 80dffdeee988ccc41a0e7ab0ae1e307c, type: 2}

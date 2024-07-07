@@ -22,6 +22,10 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
+    icon: {fileID: 0}
+    name: 
+    description: 
+    validators: []
     isSingle: 0
     entityType: 0
     buffHandlerFactory:

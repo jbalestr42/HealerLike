@@ -51,6 +51,9 @@ public class UseCharacterSkillButton : MonoBehaviour
     void ShowToolTip(bool show)
     {
         UIManager.instance.GetView<GameView>(ViewType.Game).toolTip.Show(show);
-        UIManager.instance.GetView<GameView>(ViewType.Game).toolTip.SetText(TextConvertor.GetDescription(character, data, data.description));
+        if (show)
+        {
+            UIManager.instance.GetView<GameView>(ViewType.Game).toolTip.SetText(TextConvertor.Convert(data.description, character, data));
+        }
     }
 }

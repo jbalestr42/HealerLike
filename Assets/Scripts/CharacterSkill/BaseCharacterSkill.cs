@@ -7,10 +7,10 @@ using UnityEngine.Events;
 [Serializable]
 public class BaseCharacterSkillData : CharacterSkillData
 {
-    [BoxGroup("Common/Split/Left/Displayed Data")]
+    [BoxGroup("Common/Split/Left/Target")]
     public bool isSingle;
 
-    [BoxGroup("Common/Split/Left/Displayed Data")]
+    [BoxGroup("Common/Split/Left/Target")]
     public Entity.EntityType entityType;
 }
 

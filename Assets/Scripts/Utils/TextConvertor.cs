@@ -1,36 +1,152 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Text.RegularExpressions;
-using Unity.VisualScripting;
-using UnityEngine;
+using Sirenix.OdinInspector.Editor;
 
 public class TextConvertor
 {
-    public static string GetDescription(Character character, object data, string description)
-    {
-        var output = Regex.Replace(description, @"{(.*?)}", m => ResolveValue(character, data, m.Groups[1].Value));
-        return output;
-    }
+    static readonly char openSign = '[';
+    static readonly char closeSign = ']';
+    static readonly string regexCatchVariable = @"{(.*?)}";
+    static readonly string regexCatchExpression = @"\[(?>[^][]+|(?<c>)\[|(?<-c>)])+]";
 
-    public static string ResolveValue(Character character, object data, string value)
+    /// <summary>
+    /// Convert variables within {} and expression within []
+    /// </summary>
+    public static string Convert(string description, Character character, object data)
     {
-        string[] operators = value.Split("|");
-        if (operators.Length == 0)
+        if (string.IsNullOrEmpty(description))
         {
-            return "null";
+            return "";
         }
 
-        string[] tokens = operators[0].Split(":");
+        // Replace all variables within {}
+        description = Regex.Replace(description, regexCatchVariable, m => EvaluateVariable(character, data, m.Groups[1].Value, defaultValue: "1"));
+
+        // Compute all expressions within []
+        return Regex.Replace(description, regexCatchExpression, m => EvaluateExpression(m.Groups[0].Value.Replace(',', '.')).ToString());
+    }
+
+    /// <summary>
+    /// Resolve expression of type [[AxB]+C]
+    /// </summary>
+    /// <returns>Returns evaluated expression as float</returns>
+    public static float EvaluateExpression(string expression)
+    {
+        Stack<float> values = new Stack<float>();
+        Stack<char> operators = new Stack<char>();
+
+        int i = 0;
+        while (i < expression.Length)
+        {
+            int j = 0;
+            while (i + j < expression.Length && (char.IsNumber(expression[i + j]) || expression[i + j] == '.' || expression[i + j] == ','))
+            {
+                j++;
+            }
+
+            if (j > 0)
+            {
+                values.Push(float.Parse(expression.Substring(i, j), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture));
+                i += j;
+            }
+
+            if (i >= expression.Length)
+            {
+                break;
+            }
+
+            if (expression[i] == openSign)
+            {
+                operators.Push(openSign);
+            }
+            else if (expression[i] == closeSign)
+            {
+                while (operators.Peek() != openSign)
+                {
+                    values.Push(ComputeResult(values.Pop(), values.Pop(), operators.Pop()));
+                }
+                operators.Pop();
+            }
+            else if (IsOperator(expression[i]))
+            {
+                while (operators.Count != 0 && HasPrecedence(expression[i], operators.Peek()))
+                {
+                    values.Push(ComputeResult(values.Pop(), values.Pop(), operators.Pop()));
+                }
+                operators.Push(expression[i]);
+            }
+            i++;
+        }
+
+        while (operators.Count != 0)
+        {
+            values.Push(ComputeResult(values.Pop(), values.Pop(), operators.Pop()));
+        }
+        return values.Pop();
+    }
+
+    /// <summary>
+    /// Returns true if 'op2' has higher or same precedence as 'op1',
+    /// </summary>
+    static bool HasPrecedence(char op1, char op2)
+    {
+        if (op2 == openSign || op2 == closeSign)
+        {
+            return false;
+        }
+
+        if ((op1 == 'x' || op1 == '/') && (op2 == '+' || op2 == '-'))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    static bool IsOperator(char c)
+    {
+        return c == '+' || c == '-' || c == 'x' || c == '/';
+    }
+
+    static float ComputeResult(float a, float b, char op)
+    {
+        return op switch
+        {
+            '+' => b + a,
+            '-' => b - a,
+            'x' => b * a,
+            '/' => b / a,
+            _ => 1f
+        };
+    }
+
+    /// <summary>
+    /// Convert variables within {}
+    /// attribute: base / current
+    /// data: reflection within the object
+    /// </summary>
+    static string EvaluateVariable(Character character, object data, string variable, string defaultValue = "")
+    {
+        string[] tokens = variable.Split(":");
         if (tokens.Length == 0)
         {
-            return "null";
+            return "";
         }
 
         switch (tokens[0])
         {
             case "attribute":
-                if (tokens.Length < 3)
+                if (character == null)
                 {
-                    return GetError("Wrong Format -> {attribute:param:type}");
+                    return defaultValue;
+                }
+                else if (tokens.Length < 3)
+                {
+                    return GetError("Wrong Format -> Available format is {attribute:param:type}", defaultValue);
                 }
 
                 if (Enum.TryParse<AttributeType>(tokens[2], out var type))
@@ -38,61 +154,77 @@ public class TextConvertor
                     Attribute attribute = character.attributeManager.Get(type);
                     return tokens[1] switch
                     {
-                        "base" => GetAttribute(attribute.BaseValue),
-                        "current" => GetAttribute(attribute.Value),
-                        // TODO how to get the value if the skill also modifies it?
-                        _ => GetError($"Bad Token '{tokens[1]}' -> base/current")
+                        "base" => attribute.BaseValue.ToString("F2"),
+                        "current" => attribute.BaseValue.ToString("F2"),
+                        _ => GetError($"Bad Attribute Param '{tokens[1]}' -> Available are 'base' or 'current'", defaultValue)
                     };
                 }
                 else
                 {
-                    return GetError("Wrong Type -> AttributeType");
+                    return GetError("Wrong Type -> AttributeType", defaultValue);
                 }
 
             case "data":
-                if (operators.Length < 1)
+                if (data == null)
                 {
-                    return GetError("Wrong Format -> {data:value}");
+                    return defaultValue;
+                }
+                else if (tokens.Length < 2)
+                {
+                    return GetError("Wrong Format -> Available format is {data:name}", defaultValue);
                 }
 
-                // TODO manage other types
-                if (float.TryParse(data.GetType().GetField(tokens[1]).GetValue(data).ToString(), out var finalValue))
+                if (tokens.Length > 3)
                 {
-                    if (operators.Length > 1 && float.TryParse(operators[1].Substring(4, operators[1].Length - 5), out var modifier))
+                    if (int.TryParse(tokens[2], out int index))
                     {
-                        return operators[1].Substring(0, 3) switch
-                        {
-                            "add" => GetData(finalValue + modifier),
-                            "sub" => GetData(finalValue - modifier),
-                            "mul" => GetData(finalValue * modifier),
-                            "div" => GetData(finalValue + modifier),
-                            _ => GetError($"Bad Token '{tokens[1]}' -> base/current")
-                        };
+                        var listProp = data.GetType().GetField(tokens[1]);
+                        var list = listProp.GetValue(data) as IList;
+                        var value = GetPropertyValue(list[index], tokens[3]);
+                        return value != null ? value.ToString() : GetError($"Unkown Variable Name '{tokens[1]}'", defaultValue);
                     }
                     else
                     {
-                        return GetData(finalValue);
+                        return GetError("", defaultValue);
                     }
                 }
-                return GetError("Bad Type -> float");
-            
+                else
+                {
+                    var value = data.GetType().GetField(tokens[1])?.GetValue(data);
+                    return value != null ? value.ToString() : GetError($"Unkown Variable Name '{tokens[1]}'", defaultValue);
+                }
+
             default:
-                return "null";
+                return GetError($"Unkown Variable Type -> {tokens[0]}", defaultValue);
         }
     }
 
-    public static string GetAttribute(float value)
+    public static object GetPropertyValue(object obj, string propertyName)
     {
-        return $"<color=\"blue\">{value:F0}</color>";
+        var _propertyNames = propertyName.Split('.');
+
+        for (var i = 0; i < _propertyNames.Length; i++)
+        {
+            if (obj != null)
+            {
+                var _propertyInfo = obj.GetType().GetField(_propertyNames[i]);
+                if (_propertyInfo != null)
+                {
+                    obj = _propertyInfo.GetValue(obj);
+                }
+                else
+                {
+                    obj = null;
+                }
+            }
+        }
+
+        return obj;
     }
 
-    public static string GetData(float value)
+    static string GetError(string errorLog, string output)
     {
-        return $"<color=#008080ff>{value:F0}</color>";
-    }
-
-    public static string GetError(string error)
-    {
-        return $"<color=\"red\">[ERROR: {error}]</color>";
+        UnityEngine.Debug.LogError($"[EvaluateVariable] ERROR: {errorLog}");
+        return output;
     }
 }
