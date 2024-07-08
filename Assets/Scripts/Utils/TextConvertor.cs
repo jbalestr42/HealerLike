@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Sirenix.OdinInspector.Editor;
+using UnityEngine.Assertions;
 
 public class TextConvertor
 {
@@ -13,6 +14,40 @@ public class TextConvertor
     static readonly char closeSign = ']';
     static readonly string regexCatchVariable = @"{(.*?)}";
     static readonly string regexCatchExpression = @"\[(?>[^][]+|(?<c>)\[|(?<-c>)])+]";
+    static readonly char unaryMinusOperator = 'm';
+    static readonly char unaryPlusOperator = 'p';
+
+    public enum TokenType
+    {
+        None,
+        Operand,
+        Operator,
+        LeftParenthesis,
+        RightParenthesis,
+    }
+
+    public static void Test()
+    {
+        Assert.AreEqual(42f, EvaluateExpression("42"));
+        Assert.AreEqual(42f, EvaluateExpression("[42]"));
+        Assert.AreEqual(-42f, EvaluateExpression("-42"));
+        Assert.AreEqual(-42f, EvaluateExpression("[-42]"));
+        Assert.AreEqual(-42f, EvaluateExpression("-[42]"));
+        Assert.AreEqual(42f, EvaluateExpression("-[-42]"));
+        Assert.AreEqual(42f, EvaluateExpression("[-[-42]]"));
+        Assert.AreEqual(-42f, EvaluateExpression("-[-[-42]]"));
+
+        Assert.AreEqual(42f, EvaluateExpression("21+21"));
+        Assert.AreEqual(-42f, EvaluateExpression("-21-21"));
+        Assert.AreEqual(-42f, EvaluateExpression("[-21-21]"));
+        Assert.AreEqual(42f, EvaluateExpression("21/-1x-2"));
+        Assert.AreEqual(42f, EvaluateExpression("[-21-21]x-1"));
+        Assert.AreEqual(42f, EvaluateExpression("[-21-21]x[-1]"));
+        Assert.AreEqual(-42f, EvaluateExpression("[-21-21]x-[-1]"));
+        Assert.AreEqual(42f, EvaluateExpression("-[-21-21]x-[-1]"));
+        Assert.AreEqual(-42f, EvaluateExpression("-[-21-21]x-[-1x-42]/42"));
+        Assert.AreEqual(42f, EvaluateExpression("-[-21-21]x-[-1x-42]/-42"));
+    }
 
     /// <summary>
     /// Convert variables within {} and expression within []
@@ -40,7 +75,20 @@ public class TextConvertor
         Stack<float> values = new Stack<float>();
         Stack<char> operators = new Stack<char>();
 
+        Action processOperator = () =>
+        {
+            if (IsUnaryOperator(operators.Peek()))
+            {
+                values.Push(operators.Pop() == unaryMinusOperator ? -values.Pop() : values.Pop());
+            }
+            else
+            {
+                values.Push(ComputeResult(values.Pop(), values.Pop(), operators.Pop()));
+            }
+        };
+
         int i = 0;
+        TokenType lastTokenType = TokenType.None;
         while (i < expression.Length)
         {
             int j = 0;
@@ -53,6 +101,7 @@ public class TextConvertor
             {
                 values.Push(float.Parse(expression.Substring(i, j).Replace(" ", ""), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture));
                 i += j;
+                lastTokenType = TokenType.Operand;
             }
 
             if (i >= expression.Length)
@@ -63,29 +112,48 @@ public class TextConvertor
             if (expression[i] == openSign)
             {
                 operators.Push(openSign);
+                lastTokenType = TokenType.LeftParenthesis;
             }
             else if (expression[i] == closeSign)
             {
                 while (operators.Peek() != openSign)
                 {
-                    values.Push(ComputeResult(values.Pop(), values.Pop(), operators.Pop()));
+                    processOperator();
                 }
-                operators.Pop();
+                operators.Pop(); // Pop open parenthesis
+                lastTokenType = TokenType.RightParenthesis;
             }
             else if (IsOperator(expression[i]))
             {
-                while (operators.Count != 0 && HasPrecedence(expression[i], operators.Peek()))
+                if (lastTokenType != TokenType.Operand && lastTokenType != TokenType.RightParenthesis)
                 {
-                    values.Push(ComputeResult(values.Pop(), values.Pop(), operators.Pop()));
+                    if (expression[i] == '-' || expression[i] == '+')
+                    {
+                        operators.Push(expression[i] == '-' ? unaryMinusOperator : unaryPlusOperator);
+                    }
+                    else
+                    {
+                        // error
+                    }
                 }
-                operators.Push(expression[i]);
+                else
+                {
+                    while (operators.Count != 0
+                        && (GetPrecedence(expression[i]) <= GetPrecedence(operators.Peek())
+                            || (GetPrecedence(expression[i]) < GetPrecedence(operators.Peek()) && GetAssiociative(expression[i]) == AssociativeType.Right)))
+                    {
+                        processOperator();
+                    }
+                    operators.Push(expression[i]);
+                    lastTokenType = TokenType.Operator;
+                }
             }
             i++;
         }
 
         while (operators.Count != 0)
         {
-            values.Push(ComputeResult(values.Pop(), values.Pop(), operators.Pop()));
+            processOperator();
         }
 
         if (values.Count == 0)
@@ -94,6 +162,54 @@ public class TextConvertor
         }
 
         return values.Pop();
+    }
+
+    static bool IsUnaryOperator(char op)
+    {
+        return (op == unaryMinusOperator || op == unaryPlusOperator);
+    }
+
+    public enum AssociativeType
+    {
+        None,
+        Left,
+        Right,
+    }
+
+    static AssociativeType GetAssiociative(char op)
+    {
+        if (op == 'm' || op == 'p')
+        {
+            return AssociativeType.Right;
+        }
+        else if (op == 'x' || op == '/')
+        {
+            return AssociativeType.Left;
+        }
+        else if (op == '+' || op == '-')
+        {
+            return AssociativeType.Left;
+        }
+
+        return AssociativeType.None;
+    }
+
+    static int GetPrecedence(char op)
+    {
+        if (op == 'm' || op == 'p')
+        {
+            return 6;
+        }
+        else if (op == 'x' || op == '/')
+        {
+            return 4;
+        }
+        else if (op == '+' || op == '-')
+        {
+            return 2;
+        }
+
+        return 0;
     }
 
     /// <summary>
@@ -106,7 +222,12 @@ public class TextConvertor
             return false;
         }
 
-        if ((op1 == 'x' || op1 == '/') && (op2 == '+' || op2 == '-'))
+        if (op1 == 'm')
+        {
+            return false;
+        }
+
+        if ((op1 == 'x' || op1 == '/'/* || op2 == 'm'*/) && (op2 == '+' || op2 == '-'))
         {
             return false;
         }
