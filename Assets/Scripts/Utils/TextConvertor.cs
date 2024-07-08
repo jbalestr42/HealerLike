@@ -35,7 +35,7 @@ public class TextConvertor
     /// Resolve expression of type [[AxB]+C]
     /// </summary>
     /// <returns>Returns evaluated expression as float</returns>
-    public static float EvaluateExpression(string expression)
+    public static float EvaluateExpression(string expression, float defaultValue = 0f)
     {
         Stack<float> values = new Stack<float>();
         Stack<char> operators = new Stack<char>();
@@ -44,14 +44,14 @@ public class TextConvertor
         while (i < expression.Length)
         {
             int j = 0;
-            while (i + j < expression.Length && (char.IsNumber(expression[i + j]) || expression[i + j] == '.' || expression[i + j] == ','))
+            while (i + j < expression.Length && (char.IsNumber(expression[i + j]) || char.IsWhiteSpace(expression[i + j]) || expression[i + j] == '.' || expression[i + j] == ','))
             {
                 j++;
             }
 
             if (j > 0)
             {
-                values.Push(float.Parse(expression.Substring(i, j), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture));
+                values.Push(float.Parse(expression.Substring(i, j).Replace(" ", ""), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture));
                 i += j;
             }
 
@@ -87,6 +87,12 @@ public class TextConvertor
         {
             values.Push(ComputeResult(values.Pop(), values.Pop(), operators.Pop()));
         }
+
+        if (values.Count == 0)
+        {
+            return defaultValue;
+        }
+
         return values.Pop();
     }
 
