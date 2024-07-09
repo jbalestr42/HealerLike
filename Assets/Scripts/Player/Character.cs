@@ -53,7 +53,7 @@ public class Character : MonoBehaviour
         }
 
         // Init starting entities
-        _entityPool.AddRange(_data.entities.ToArray());
+        _entityPool.AddRange(_data.entities);
     }
 
     #region IBuffable
