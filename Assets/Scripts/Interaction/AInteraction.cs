@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 public abstract class AInteraction {
 
     public abstract int GetLayerMask();
+    public virtual bool IsValidTarget(GameObject target) { return true; }
     public virtual void OnMouseClick(RaycastHit hit) { }
     public virtual void OnMouseEnter(RaycastHit hit) { }
     public virtual void OnMouseOver(RaycastHit hit) { }

@@ -6,6 +6,7 @@ using UnityEngine;
 public class CharacterSkillSlot : MonoBehaviour
 {
     [InlineProperty]
+    [HideLabel]
     [SerializeField] CharacterSkillData _data;
     public CharacterSkillData data => _data;
 
@@ -34,7 +35,6 @@ public class CharacterSkillSlot : MonoBehaviour
 
     void Update()
     {
-        // TODO update button UI (cooldown + validity with mana cost etc.)
         foreach (ACharacterSkillValidator validator in _validators)
         {
             validator.Update(_skillButton);

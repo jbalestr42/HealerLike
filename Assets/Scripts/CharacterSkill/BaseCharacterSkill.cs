@@ -20,8 +20,7 @@ public abstract class BaseCharacterSkill<DataType> : ACharacterSkill<DataType> w
     {
         if (data.isSingle)
         {
-            // TODO manage entity type for singletarget
-            InteractionManager.instance.SetInteraction(new SingleTargetInteraction((GameObject target) => ApplySkillOnTarget(source, target), onSkillComplete));
+            InteractionManager.instance.SetInteraction(new SingleTargetInteraction((GameObject target) => ApplySkillOnTarget(source, target), onSkillComplete, data.entityType));
         }
         else
         {

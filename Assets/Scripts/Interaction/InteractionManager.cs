@@ -19,7 +19,7 @@ public class InteractionManager : Singleton<InteractionManager>
             {
                 UpdateInteraction();
             } 
-            else 
+            else
             {
                 if (Input.GetMouseButtonDown(0))
                 {
@@ -46,7 +46,7 @@ public class InteractionManager : Singleton<InteractionManager>
     public void UpdateInteraction()
     {
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, _interaction.GetLayerMask()))
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, _interaction.GetLayerMask()) && _interaction.IsValidTarget(hit.transform.gameObject))
         {
             if (!_isOver)
             {
