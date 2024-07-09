@@ -1,7 +1,7 @@
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-public class TextConvertorDebugger : MonoBehaviour
+public class ExpressionEvaluatorTester : MonoBehaviour
 {
     [SerializeField]
     [OnValueChanged("DebugEvaluateExpression")]
@@ -14,12 +14,12 @@ public class TextConvertorDebugger : MonoBehaviour
     [Button]
     public void DebugEvaluateExpression()
     {
-        result = TextConvertor.EvaluateExpression(debugText).ToString("F2");
+        result = ExpressionEvaluator.Evaluate(debugText).ToString("F2");
     }
 
     [Button]
     public void Test()
     {
-        TextConvertor.Test();
+        ExpressionEvaluator.Test();
     }
 }
