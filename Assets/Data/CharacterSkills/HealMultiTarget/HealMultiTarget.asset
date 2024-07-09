@@ -24,8 +24,9 @@ MonoBehaviour:
   data:
     icon: {fileID: 0}
     name: Heal group
-    description: Heal all entities for <color=#008080ff>[{data:multiplier}x100]%</color>
-      <color="green">HealPower</color> <color="blue">([{attribute:current:HealPower}x{data:multiplier}])</color>
+    description: "Heal all entities for <color=\"green\">[{attribute:current:HealPower}x{data:multiplier}]</color>
+      <color=#008080ff>([{data:multiplier}x100]% HealPower)</color> \nCost: <color=\"blue\">{data:validators|1.data.consumer.data.value}</color>
+      mana\nCooldown: <color=\"yellow\">{data:validators|0.data.duration}s</color>"
     validators:
     - {fileID: 11400000, guid: 5798f4360f0e1b64e81aa22d9492631a, type: 2}
     - {fileID: 11400000, guid: 2b4ae92132a3dca42aaf2e04143441c7, type: 2}
