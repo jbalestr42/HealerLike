@@ -10,13 +10,14 @@ GameObject:
   m_Component:
   - component: {fileID: 4539076426825286}
   - component: {fileID: 54024370743456462}
-  - component: {fileID: 736962975920777177}
+  - component: {fileID: -638161048396855426}
   - component: {fileID: 4773022368444220168}
   - component: {fileID: -255542928893784051}
   - component: {fileID: 8158293602482554723}
   - component: {fileID: 8158556011190788405}
   - component: {fileID: 8748714897848685465}
   - component: {fileID: -1557207005166871236}
+  - component: {fileID: 8465872866791211294}
   m_Layer: 14
   m_Name: BaseEntity
   m_TagString: Untagged
@@ -67,8 +68,8 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 126
   m_CollisionDetection: 0
---- !u!135 &736962975920777177
-SphereCollider:
+--- !u!65 &-638161048396855426
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -86,8 +87,8 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!114 &4773022368444220168
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -103,6 +104,7 @@ MonoBehaviour:
   OnMarkChanged:
     m_PersistentCalls:
       m_Calls: []
+  isEnabled: 0
 --- !u!114 &-255542928893784051
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -174,6 +176,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b3b06a7e5347684696726a90d3cad88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8465872866791211294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1773381645329648}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d464f749f423be47bfc3906e53bc620, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &7482130460885648092

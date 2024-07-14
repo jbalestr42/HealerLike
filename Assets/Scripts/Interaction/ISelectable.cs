@@ -1,9 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.EventSystems;
-
-public interface ISelectable {
+﻿public interface ISelectable
+{
     void Select();
     void UnSelect();
 }

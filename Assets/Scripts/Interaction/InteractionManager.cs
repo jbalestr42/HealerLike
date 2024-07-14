@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -7,6 +6,7 @@ public class InteractionManager : Singleton<InteractionManager>
 {
     AInteraction _interaction = null;
     ISelectable _selectable = null;
+    IDraggable _draggable = null;
     bool _isOver = false;
     Ray ray;
     RaycastHit hit;
@@ -33,11 +33,42 @@ public class InteractionManager : Singleton<InteractionManager>
                             CancelSelection();
                             Select(interactable);
                         }
+
+                        _draggable = hit.collider.gameObject.GetComponentInParent<IDraggable>();
+                        if (_draggable != null)
+                        {
+                            _draggable.StartDrag(hit);
+                        }
                     }
                 }
+
+                if (Input.GetMouseButton(0))
+                {
+                    if (_draggable != null)
+                    {
+                        ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                        if (Physics.Raycast(ray, out hit, Mathf.Infinity))
+                        {
+                            _draggable.Drag(hit);
+                        }
+                    }
+                }
+
+                if (Input.GetMouseButtonUp(0))
+                {
+                    if (_draggable != null)
+                    {
+                        ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                        Physics.Raycast(ray, out hit, Mathf.Infinity);
+                        _draggable.EndDrag(hit);
+                        _draggable = null;
+                    }
+                }
+
                 if (Input.GetKeyDown(KeyCode.Escape))
                 {
                     CancelSelection();
+                    CancelDrag();
                 }
             }
         }
@@ -123,6 +154,15 @@ public class InteractionManager : Singleton<InteractionManager>
         {
             _selectable.UnSelect();
             _selectable = null;
+        }
+    }
+
+    public void CancelDrag()
+    {
+        if (_draggable != null)
+        {
+            _draggable.CancelDrag();
+            _draggable = null;
         }
     }
 }

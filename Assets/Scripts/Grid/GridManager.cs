@@ -96,6 +96,11 @@ public class GridManager : MonoBehaviour
         SetWalkable(cell.coord.x, cell.coord.y, walkable);
     }
 
+    public void SetWalkable(Vector3 position, bool walkable)
+    {
+        SetWalkable(GetCoordFromPosition(position), walkable);
+    }
+
     public void SetWalkable(Vector2Int coord, bool walkable)
     {
         SetWalkable(coord.x, coord.y, walkable);
