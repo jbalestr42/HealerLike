@@ -3646,6 +3646,12 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
+  _skillInputs:
+  - {fileID: 892513156125766737, guid: 0c2bc830538da654da4288bd1a900f80, type: 3}
+  - {fileID: 4904762223498611440, guid: 0c2bc830538da654da4288bd1a900f80, type: 3}
+  - {fileID: 8436407921996772326, guid: 0c2bc830538da654da4288bd1a900f80, type: 3}
+  - {fileID: -7413156538294012743, guid: 0c2bc830538da654da4288bd1a900f80, type: 3}
+  - {fileID: -7128537311651269816, guid: 0c2bc830538da654da4288bd1a900f80, type: 3}
   OnGoldChanged:
     m_PersistentCalls:
       m_Calls: []
