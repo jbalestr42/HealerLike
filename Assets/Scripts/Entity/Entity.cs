@@ -4,7 +4,7 @@ using UnityEngine.Events;
 using UnityEngine.Assertions;
 
 [RequireComponent(typeof(BuffManager), typeof(AttributeManager))]
-public class Entity : MonoBehaviour, IAttackable, IAttacker, ISelectable, IBuffable, IMarkable
+public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkable
 {
     public UnityEvent<bool> OnMarkChanged = new UnityEvent<bool>();
 
@@ -234,20 +234,6 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, ISelectable, IBuffa
     public void UnMark()
     {
         OnMarkChanged.Invoke(false);
-    }
-
-    #endregion
-
-    #region ISelectable
-
-    public void Select()
-    {
-        UIManager.instance.GetView<GameView>(ViewType.Game).ShowPanel(PanelType.Entity, gameObject);
-    }
-
-    public void UnSelect()
-    {
-        UIManager.instance.GetView<GameView>(ViewType.Game).HidePanel(PanelType.Entity);
     }
 
     #endregion
