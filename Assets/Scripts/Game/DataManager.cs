@@ -6,7 +6,6 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] GameData _data;
     public GameData data { get { return _data; } set { _data = value; } }
 
-    public List<AWaveData> waves { get { return _data.waves; } set { _data.waves = value; } }
     public List<WavePatternData> wavePatterns { get { return _data.wavePatterns; } set { _data.wavePatterns = value; } }
     public List<TowerData> towers { get { return _data.towers; } set { _data.towers = value; } } 
     public List<EntityData> entities { get { return _data.entities; } set { _data.entities = value; } } 
@@ -27,12 +26,6 @@ public class DataManager : Singleton<DataManager>
     public AItem GetRandomItem()
     {
         return _data.items[Random.Range(0, _data.items.Count)].GetItem();
-    }
-
-    public AWaveData GetRandomWave(int minimumWaveApparition)
-    {
-        List<AWaveData> filteredWaveData = _data.waves.FindAll(data => data.minimumWaveApparition <= minimumWaveApparition);
-        return filteredWaveData[Random.Range(0, filteredWaveData.Count)];
     }
 
     public WavePatternData GetRandomWavePattern()

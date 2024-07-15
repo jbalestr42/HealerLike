@@ -122,16 +122,6 @@ MonoBehaviour:
   gold: 150
   life: 20
   refoundFactor: 0.75
-  waves:
-  - {fileID: 11400000, guid: 5337db0dcd717d64c9f271379fe74c56, type: 2}
-  - {fileID: 11400000, guid: 2d847e34787e06d45a5b760e65b5a4c3, type: 2}
-  - {fileID: 11400000, guid: e3835cd5a03bafd48af86e23d402f409, type: 2}
-  - {fileID: 11400000, guid: 32b030cb761512643aaace4f68172af8, type: 2}
-  - {fileID: 11400000, guid: 02baa6fc9ed336f4fb4d9525244014f1, type: 2}
-  - {fileID: 11400000, guid: 093f00a41b0876347993ca635ee7e165, type: 2}
-  - {fileID: 11400000, guid: eec809bc3332bf34d9c407eefa04042e, type: 2}
-  - {fileID: 11400000, guid: 3cdcd0bb5cf1dc541b8f54c8d1723adb, type: 2}
-  - {fileID: 11400000, guid: acc5709945c17e848abcf6cefd51070b, type: 2}
   wavePatterns: []
   enemies:
   - {fileID: 11400000, guid: 85a1a69f23e87f04abfe85cc290d6463, type: 2}
@@ -166,5 +156,3 @@ MonoBehaviour:
   - {fileID: 11400000, guid: fc720cd10a4f2274982ec917fd77d9ee, type: 2}
   - {fileID: 11400000, guid: 84838603ada205643ab074dfd136f83b, type: 2}
   - {fileID: 11400000, guid: 60b337d5800dd0943ba5e16ee16359fd, type: 2}
-  consumables:
-  - {fileID: 11400000, guid: 6c16414503bc23d44b50ab3978718126, type: 2}

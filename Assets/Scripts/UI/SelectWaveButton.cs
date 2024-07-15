@@ -1,13 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class SelectWaveButton : MonoBehaviour
 {
     [SerializeField] TMPro.TMP_Text _title;
-    AWaveData _wave;
+    WavePatternData _wave;
 
-    public void Init(AWaveData wave)
+    public void Init(WavePatternData wave)
     {
         _wave = wave;
         _title.text = _wave.name;

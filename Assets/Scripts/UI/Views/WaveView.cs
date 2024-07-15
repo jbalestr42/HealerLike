@@ -4,7 +4,7 @@ using UnityEngine.Events;
 
 public class WaveView : AView
 {
-    public UnityEvent<AWaveData> OnWaveSelected = new UnityEvent<AWaveData>();
+    public UnityEvent<WavePatternData> OnWaveSelected = new UnityEvent<WavePatternData>();
 
     [SerializeField] GameObject _waveContainer;
 
@@ -18,7 +18,7 @@ public class WaveView : AView
 		for (int i = 0; i < _count; i++)
         {
             GameObject waveButton = Instantiate(_waveItem);
-            waveButton.GetComponent<SelectWaveButton>().Init(DataManager.instance.GetRandomWave(minimumWaveApparition));
+            waveButton.GetComponent<SelectWaveButton>().Init(DataManager.instance.GetRandomWavePattern());
             waveButton.transform.SetParent(_waveContainer.transform);
             _waveButtons.Add(waveButton.GetComponent<SelectWaveButton>());
         }

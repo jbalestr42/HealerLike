@@ -27,8 +27,6 @@ public class GameData : SerializedScriptableObject
     [DictionaryDrawerSettings(DisplayMode = DictionaryDisplayOptions.Foldout)]
     public Dictionary<AttributeType, AttributeUpgradeData> attributeUpgradeData = new Dictionary<AttributeType, AttributeUpgradeData>();
 
-    public List<AWaveData> waves = new List<AWaveData>();
-
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<WavePatternData>, WavePatternData>(wavePatterns, this)")]
     public List<WavePatternData> wavePatterns = new List<WavePatternData>();
 
