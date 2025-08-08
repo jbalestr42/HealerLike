@@ -14,6 +14,11 @@ public class CurrentWaveModifier : AttributeModifier<CurrentWaveModifierData>
 {
     public override float ApplyModifier()
     {
-        return data.value * Math.GetProgressionFactorFromWave(GameManager.instance.gameType.currentWave);
+        var gameType = GameManager.instance.gameType as AscensionGameType;
+        if (gameType != null)
+        {
+            return data.value * Math.GetProgressionFactorFromWave(gameType.currentRound);
+        }
+        return 1f;
     }
 }

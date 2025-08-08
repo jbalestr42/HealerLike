@@ -13,19 +13,22 @@ public class GameData : SerializedScriptableObject
         public float bonusPerUpgrade;
     }
 
+    public class WavePerRound
+    {
+        public int round;
+        public List<WavePatternData> wavePatterns = new List<WavePatternData>();
+    }
+
     [HorizontalGroup("Split")]
     [BoxGroup("Split/Player Data")]
     public int gold = 100;
 
-    [BoxGroup("Split/Player Data")]
-    public int life = 20;
-
-    [BoxGroup("Split/Player Data")]
-    public float refoundFactor = 0.75f;
-
     [BoxGroup("Split/Upgrade Data")]
     [DictionaryDrawerSettings(DisplayMode = DictionaryDisplayOptions.Foldout)]
     public Dictionary<AttributeType, AttributeUpgradeData> attributeUpgradeData = new Dictionary<AttributeType, AttributeUpgradeData>();
+
+    [BoxGroup("Split/Player Data")]
+    public List<WavePerRound> wavePerRound = new List<WavePerRound>();
 
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<WavePatternData>, WavePatternData>(wavePatterns, this)")]
     public List<WavePatternData> wavePatterns = new List<WavePatternData>();

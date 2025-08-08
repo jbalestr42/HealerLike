@@ -49,8 +49,8 @@ public class Item : AItem<ItemData>
 
         foreach (ABuffFactory projectileBehaviour in data.projectileBehaviours)
         {
-            target.GetComponent<Tower>()?.projectileBehaviours.Add(projectileBehaviour);
-            target.GetComponent<Entity>()?.projectileBehaviours.Add(projectileBehaviour);
+            // target.GetComponent<Tower>().projectileBehaviours.Add(projectileBehaviour);
+            target.GetComponent<Entity>().projectileBehaviours.Add(projectileBehaviour);
         }
 
         foreach (ASkillFactory skillFactory in data.skills)
@@ -79,7 +79,7 @@ public class Item : AItem<ItemData>
 
         foreach (ABuffFactory projectileBehaviour in data.projectileBehaviours)
         {
-            target.GetComponent<Tower>().projectileBehaviours.Remove(projectileBehaviour);
+            target.GetComponent<Entity>().projectileBehaviours.Remove(projectileBehaviour);
         }
 
         foreach (ASkill skill in _skillInstances)

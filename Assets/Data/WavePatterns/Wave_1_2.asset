@@ -17,95 +17,46 @@ MonoBehaviour:
     SerializedBytes: 
     ReferencedUnityObjects:
     - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
-    - {fileID: 11400000, guid: ff864edc5e8dfdc47ad1e7a7cd3ec589, type: 2}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes:
-    - Name: spawns
+    - Name: slots
       Entry: 7
-      Data: 0|EntityData[,], Assembly-CSharp
+      Data: 0|EntitySlot[,], Assembly-CSharp
     - Name: 
       Entry: 12
-      Data: 25
+      Data: 3
     - Name: ranks
       Entry: 1
-      Data: 5|5
+      Data: 1|3
     - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
+      Entry: 7
+      Data: EntitySlot, Assembly-CSharp
+    - Name: entity
       Entry: 10
       Data: 0
     - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, Assembly-CSharp
+    - Name: entity
       Entry: 6
       Data: 
     - Name: 
-      Entry: 6
+      Entry: 8
       Data: 
     - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
+      Entry: 7
+      Data: EntitySlot, Assembly-CSharp
+    - Name: entity
       Entry: 10
-      Data: 1
+      Data: 0
     - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 6
+      Entry: 8
       Data: 
     - Name: 
       Entry: 13
@@ -113,5 +64,6 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  width: 5
-  height: 5
+  width: 1
+  height: 3
+  rank: {fileID: 11400000, guid: 431424fbb6f38414eaef7fc7774b0b13, type: 2}

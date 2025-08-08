@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class DataManager : Singleton<DataManager>
@@ -26,6 +27,12 @@ public class DataManager : Singleton<DataManager>
     public AItem GetRandomItem()
     {
         return _data.items[Random.Range(0, _data.items.Count)].GetItem();
+    }
+
+    public WavePatternData GetWavePattern(int round)
+    {
+        GameData.WavePerRound wavePerRound = _data.wavePerRound.Where(x => x.round == round).FirstOrDefault();
+        return wavePerRound.wavePatterns[Random.Range(0, wavePerRound.wavePatterns.Count)];
     }
 
     public WavePatternData GetRandomWavePattern()

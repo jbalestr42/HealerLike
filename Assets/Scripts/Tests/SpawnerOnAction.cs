@@ -19,9 +19,9 @@ public class SpawnerOnAction : SerializedMonoBehaviour
         {
             for (int j = 0; j < waveData.height; j++)
             {
-                if (waveData.spawns[i, j] != null)
+                if (waveData.slots[i, j].entity != null)
                 {
-                    GameObject entity = EntityManager.instance.SpawnEntity(waveData.spawns[i, j], transform.position - new Vector3(waveData.width / 2f, 0f, waveData.height / 2f) + new Vector3(i, 0f, j), Entity.EntityType.Computer);
+                    GameObject entity = EntityManager.instance.SpawnEntity(waveData.slots[i, j].entity, transform.position - new Vector3(waveData.width / 2f, 0f, waveData.height / 2f) + new Vector3(i, 0f, j), Entity.EntityType.Computer);
                     if (entity != null)
                     {
                         entity.transform.parent = transform;

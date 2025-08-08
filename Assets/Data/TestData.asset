@@ -15,7 +15,12 @@ MonoBehaviour:
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
-    ReferencedUnityObjects: []
+    ReferencedUnityObjects:
+    - {fileID: 11400000, guid: 46776799d2008614b9df9baa0ad8d107, type: 2}
+    - {fileID: 11400000, guid: 7017dc7573d67c24994a98a8e0a1f684, type: 2}
+    - {fileID: 11400000, guid: 1bf36ca141918c94ea485df9e025943a, type: 2}
+    - {fileID: 11400000, guid: 3b001c9f0efaeec429a2be36da0315a1, type: 2}
+    - {fileID: 11400000, guid: 691bb0f9e62ef6c40b3577089580cb15, type: 2}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -119,13 +124,152 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
+    - Name: wavePerRound
+      Entry: 7
+      Data: 2|System.Collections.Generic.List`1[[GameData+WavePerRound, Assembly-CSharp]],
+        mscorlib
+    - Name: 
+      Entry: 12
+      Data: 5
+    - Name: 
+      Entry: 7
+      Data: 3|GameData+WavePerRound, Assembly-CSharp
+    - Name: round
+      Entry: 3
+      Data: 0
+    - Name: wavePatterns
+      Entry: 7
+      Data: 4|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
+        mscorlib
+    - Name: 
+      Entry: 12
+      Data: 1
+    - Name: 
+      Entry: 10
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 5|GameData+WavePerRound, Assembly-CSharp
+    - Name: round
+      Entry: 3
+      Data: 1
+    - Name: wavePatterns
+      Entry: 7
+      Data: 6|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
+        mscorlib
+    - Name: 
+      Entry: 12
+      Data: 1
+    - Name: 
+      Entry: 10
+      Data: 1
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 7|GameData+WavePerRound, Assembly-CSharp
+    - Name: round
+      Entry: 3
+      Data: 2
+    - Name: wavePatterns
+      Entry: 7
+      Data: 8|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
+        mscorlib
+    - Name: 
+      Entry: 12
+      Data: 1
+    - Name: 
+      Entry: 10
+      Data: 2
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 9|GameData+WavePerRound, Assembly-CSharp
+    - Name: round
+      Entry: 3
+      Data: 3
+    - Name: wavePatterns
+      Entry: 7
+      Data: 10|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
+        mscorlib
+    - Name: 
+      Entry: 12
+      Data: 1
+    - Name: 
+      Entry: 10
+      Data: 3
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 11|GameData+WavePerRound, Assembly-CSharp
+    - Name: round
+      Entry: 3
+      Data: 4
+    - Name: wavePatterns
+      Entry: 7
+      Data: 12|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
+        mscorlib
+    - Name: 
+      Entry: 12
+      Data: 1
+    - Name: 
+      Entry: 10
+      Data: 4
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
   gold: 10000
-  life: 200
-  refoundFactor: 0.75
-  waves: []
   wavePatterns:
   - {fileID: 11400000, guid: 46776799d2008614b9df9baa0ad8d107, type: 2}
   - {fileID: 11400000, guid: 7017dc7573d67c24994a98a8e0a1f684, type: 2}
+  - {fileID: 11400000, guid: 1bf36ca141918c94ea485df9e025943a, type: 2}
+  - {fileID: 11400000, guid: 3b001c9f0efaeec429a2be36da0315a1, type: 2}
+  - {fileID: 11400000, guid: 691bb0f9e62ef6c40b3577089580cb15, type: 2}
+  - {fileID: 11400000, guid: 356fdea750cbcf64aaf3a67e87a912de, type: 2}
   enemies:
   - {fileID: 11400000, guid: 85a1a69f23e87f04abfe85cc290d6463, type: 2}
   - {fileID: 11400000, guid: a2003999930914c4782f5152c53489fe, type: 2}

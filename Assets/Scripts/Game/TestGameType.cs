@@ -20,6 +20,4 @@ public class TestGameType : AGameType
     {
         return false;
     }
-
-    public override int currentWave => _debugWave;
 }

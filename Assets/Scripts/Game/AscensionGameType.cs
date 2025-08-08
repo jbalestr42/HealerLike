@@ -23,8 +23,7 @@ public class AscensionGameType : AGameType
     GameView _gameView;
     UpgradeView _upgradeView;
     int _currentRound = 0;
-
-    public override int currentWave => _currentRound;
+    public int currentRound => _currentRound;
 
     void Start()
     {
@@ -58,16 +57,16 @@ public class AscensionGameType : AGameType
                 break;
 
             case State.InitializeRound:
-                _currentRound++;
                 _gameView.gameHUD.inventoryButton.interactable = true;
                 _gameView.gameHUD.nextWaveButton.interactable = true;
-                _gameView.characterSkillInventory.Show(false);
+                _gameView.characterSkillInventory.Show(true);
                 _gameView.entityInventory.Show(true);
 
                 // Later we can show multiple choice to the user
-                LoadEnemies(DataManager.instance.GetRandomWavePattern());
+                LoadEnemies(DataManager.instance.GetWavePattern(_currentRound));
                 EnableAllEntities(false);
                 SetState(State.WaitForRoundToStart);
+                _currentRound++;
                 break;
 
             case State.WaitForRoundToStart:
@@ -78,7 +77,6 @@ public class AscensionGameType : AGameType
             case State.StartBattle:
                 _gameView.gameHUD.inventoryButton.interactable = false;
                 _gameView.gameHUD.nextWaveButton.interactable = false;
-                _gameView.characterSkillInventory.Show(true);
                 _gameView.entityInventory.Show(false);
                 _gameView.playerInventory.HideInventory();
                 EnableAllEntities(true);
@@ -164,9 +162,9 @@ public class AscensionGameType : AGameType
         {
             for (int j = 0; j < waveData.height; j++)
             {
-                if (waveData.spawns[i, j] != null)
+                if (waveData.slots[i, j].entity != null)
                 {
-                    GameObject entity = EntityManager.instance.SpawnEntity(waveData.spawns[i, j], transform.position - new Vector3(waveData.width / 2f, 0f, waveData.height / 2f) + new Vector3(i, 0f, j), Entity.EntityType.Computer);
+                    GameObject entity = EntityManager.instance.SpawnEntity(waveData.slots[i, j].entity, transform.position - new Vector3(waveData.width / 2f, 0f, waveData.height / 2f) + new Vector3(i, 0f, j), Entity.EntityType.Computer);
                     if (entity != null)
                     {
                         entity.transform.parent = transform;

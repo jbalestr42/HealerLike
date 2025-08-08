@@ -6,5 +6,4 @@ public abstract class AGameType : MonoBehaviour
 {
     public abstract void StartGame();
     public abstract bool IsOver();
-    public abstract int currentWave { get; }
 }

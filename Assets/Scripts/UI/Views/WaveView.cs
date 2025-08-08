@@ -13,12 +13,12 @@ public class WaveView : AView
     List<SelectWaveButton> _waveButtons = new List<SelectWaveButton>();
     int _count = 3;
 
-	public void FillChoices(int minimumWaveApparition)
+	public void FillChoices(int currentRound)
     {
 		for (int i = 0; i < _count; i++)
         {
             GameObject waveButton = Instantiate(_waveItem);
-            waveButton.GetComponent<SelectWaveButton>().Init(DataManager.instance.GetRandomWavePattern());
+            waveButton.GetComponent<SelectWaveButton>().Init(DataManager.instance.GetWavePattern(currentRound));
             waveButton.transform.SetParent(_waveContainer.transform);
             _waveButtons.Add(waveButton.GetComponent<SelectWaveButton>());
         }
