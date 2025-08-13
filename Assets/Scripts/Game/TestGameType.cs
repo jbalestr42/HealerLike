@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class TestGameType : AGameType
 {
-    [SerializeField] int _debugWave = 0;
-
     public override void StartGame()
     {
         PlayerInventory playerInventory = UIManager.instance.GetView<GameView>(ViewType.Game).playerInventory;
