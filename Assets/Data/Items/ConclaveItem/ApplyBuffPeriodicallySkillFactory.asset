@@ -22,7 +22,7 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
+    onSkillTriggerFactory: []
     periodicBuff:
     - {fileID: 11400000, guid: bb832ccd42d51764ebcd587159c4f921, type: 2}
-    - {fileID: 11400000, guid: 64a61e4f9c685614695933f2ba902efd, type: 2}
     - {fileID: 11400000, guid: dbbee649fe9649849bb85542e71de56d, type: 2}
