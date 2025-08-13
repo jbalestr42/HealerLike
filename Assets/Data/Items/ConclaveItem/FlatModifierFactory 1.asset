@@ -24,5 +24,6 @@ MonoBehaviour:
   uniqueID: d7fbff9c-9eed-4e24-b560-b27cae7bc278
   data:
     type: 2
+    modifierType: 1
     isRelative: 1
     value: 0.2

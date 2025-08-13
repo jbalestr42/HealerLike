@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/Data/Modifier/FlatModifier")]
@@ -30,12 +28,12 @@ public class FlatModifier : AttributeModifier<FlatModifierData>, IStackableBuff
 
     public void Stack(GameObject source, GameObject target)
     {
-        if (data.isRelative)
+        if (data.modifierType == AttributeModifierType.Multiply)
         {
             _lastStackedValue *= data.value;
             _stackedValue += Mathf.Sign(data.value) * Mathf.Abs(_lastStackedValue);
         }
-        else
+        else if (data.modifierType == AttributeModifierType.Add)
         {
             _stackedValue += data.value;
         }
@@ -43,12 +41,12 @@ public class FlatModifier : AttributeModifier<FlatModifierData>, IStackableBuff
 
     public void Unstack(GameObject source, GameObject target)
     {
-        if (data.isRelative)
+        if (data.modifierType == AttributeModifierType.Multiply)
         {
             _lastStackedValue /= data.value;
             _stackedValue -= Mathf.Sign(data.value) * Mathf.Abs(_lastStackedValue);
         }
-        else
+        else if (data.modifierType == AttributeModifierType.Add)
         {
             _stackedValue -= data.value;
         }

@@ -23,14 +23,22 @@ MonoBehaviour:
     SerializationNodes: []
   data:
     icon: {fileID: 0}
-    name: 
+    name: Buff attack speed
     description: 'Increase all targets <color="green">{data:buffHandlerFactory|0.data.buffFactory.data.type}</color>
 
       by
       <color=#008080ff>[{data:buffHandlerFactory|0.data.buffFactory.data.value}x100]%</color>
-      during <color="cyan">({data:buffHandlerFactory|0.data.duration}s)</color>'
-    validators: []
+      during <color="green">({data:buffHandlerFactory|0.data.duration}s)</color>
+
+      Cost:
+      <color="blue">{data:validators|1.data.consumer.data.value}</color> mana
+
+      Cooldown:
+      <color="yellow">{data:validators|0.data.duration}s</color>'
+    validators:
+    - {fileID: 11400000, guid: 4cca8ac36cb5222439b45b2788a98a99, type: 2}
+    - {fileID: 11400000, guid: 5c2a9da5653cb7a4dbb51084f7ecdd11, type: 2}
     isSingle: 0
-    entityType: 0
+    entityType: 1
     buffHandlerFactory:
     - {fileID: 11400000, guid: 2ac46e2d6e76aa94887297fed51161f4, type: 2}

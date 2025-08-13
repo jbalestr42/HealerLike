@@ -3,6 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum AttributeModifierType
+{
+    Add,
+    Multiply,
+    Override
+}
+
 [Serializable]
 public class Attribute
 {
@@ -16,12 +23,20 @@ public class Attribute
     float _value;
     public float Value { get { return _value; } }
 
-    Dictionary<GameObject, List<AttributeModifier>> _relativeModifiers = new Dictionary<GameObject, List<AttributeModifier>>();
-    Dictionary<GameObject, List<AttributeModifier>> _absoluteModifiers = new Dictionary<GameObject, List<AttributeModifier>>();
+    public class SourceModifier
+    {
+        public GameObject source;
+        public AttributeModifier modifier;
+    }
+
+    Dictionary<AttributeModifierType, List<SourceModifier>> _modifiers = new Dictionary<AttributeModifierType, List<SourceModifier>>();
 
     public Attribute()
     {
         _prevValue = 0f;
+        _modifiers[AttributeModifierType.Add] = new List<SourceModifier>();
+        _modifiers[AttributeModifierType.Multiply] = new List<SourceModifier>();
+        _modifiers[AttributeModifierType.Override] = new List<SourceModifier>();
     }
 
     public Attribute(float value)
@@ -31,30 +46,33 @@ public class Attribute
         Update();
     }
 
-    public virtual void Update()
+    public virtual float ComputeValue(Attribute attribute)
     {
-        float relativeBonus = 1f;
-        foreach (var kvp in _relativeModifiers)
+        // If there is multiple override modifiers, only get the last one
+        if (_modifiers[AttributeModifierType.Override].Count > 0)
         {
-            List<AttributeModifier> modifiers = kvp.Value;
-            for (int i = modifiers.Count - 1; i >= 0; i--)
-            {
-                relativeBonus *= 1f + modifiers[i].ApplyModifier();
-            }
+            return _modifiers[AttributeModifierType.Override][^1].modifier.ApplyModifier();
         }
 
-        float absoluteBonus = 0f;
-        foreach (var kvp in _absoluteModifiers)
+        float multiplicative = 1f;
+        foreach (var sourceModifier in _modifiers[AttributeModifierType.Multiply])
         {
-            List<AttributeModifier> modifiers = kvp.Value;
-            for (int i = modifiers.Count - 1; i >= 0; i--)
-            {
-                absoluteBonus += modifiers[i].ApplyModifier();
-            }
+            multiplicative *= 1f + sourceModifier.modifier.ApplyModifier();
         }
 
+        float additive = 0f;
+        foreach (var sourceModifier in _modifiers[AttributeModifierType.Add])
+        {
+            additive += sourceModifier.modifier.ApplyModifier();
+        }
+
+        return (attribute.BaseValue + additive) * multiplicative;
+    }
+
+    public void Update()
+    {
         _prevValue = _value;
-        _value = (_baseValue + absoluteBonus) * relativeBonus;
+        _value = ComputeValue(this);
         _value = Mathf.Max(_value, 0f);
 
         if (_onValueChanged != null && _prevValue != _value)
@@ -68,52 +86,38 @@ public class Attribute
         return new Attribute(_baseValue);
     }
 
-    public void AddRelativeModifier(GameObject source, AttributeModifier modifier)
+    public void AddModifier(AttributeModifierType type, GameObject source, AttributeModifier modifier)
     {
-        if (!_relativeModifiers.ContainsKey(source))
-        {
-            _relativeModifiers[source] = new List<AttributeModifier>();
-        }
-        _relativeModifiers[source].Add(modifier);
+        _modifiers[type].Add(new SourceModifier { source = source, modifier = modifier });
     }
 
-    public List<AttributeModifier> GetRelativeModifier(GameObject source)
+    public List<SourceModifier> GetModifiers(AttributeModifierType type)
     {
-        return _relativeModifiers[source];
+        return _modifiers[type];
     }
 
-    public void RemoveRelativeModifierFromSource(GameObject source)
+    public void RemoveModifiersBySource(AttributeModifierType type, GameObject source)
     {
-        _relativeModifiers[source].Clear();
+        _modifiers[type].RemoveAll(x => x.source == source);
     }
 
-    public void RemoveRelativeModifier(GameObject source, AttributeModifier modifier)
+    public void RemoveModifier(AttributeModifierType type, AttributeModifier modifier)
     {
-        _relativeModifiers[source].Remove(modifier);
+        _modifiers[type].RemoveAll(x => x.modifier == modifier);
     }
 
-    public void AddAbsoluteModifier(GameObject source, AttributeModifier modifier)
+    public void RemoveModifiersBySource(GameObject source)
     {
-        if (!_absoluteModifiers.ContainsKey(source))
-        {
-            _absoluteModifiers[source] = new List<AttributeModifier>();
-        }
-        _absoluteModifiers[source].Add(modifier);
+        RemoveModifiersBySource(AttributeModifierType.Add, source);
+        RemoveModifiersBySource(AttributeModifierType.Multiply, source);
+        RemoveModifiersBySource(AttributeModifierType.Override, source);
     }
 
-    public List<AttributeModifier> GetAbsoluteModifier(GameObject source)
+    public void RemoveModifier(AttributeModifier modifier)
     {
-        return _absoluteModifiers[source];
-    }
-
-    public void RemoveAbsoluteModifierFromSource(GameObject source)
-    {
-        _absoluteModifiers[source].Clear();
-    }
-
-    public void RemoveAbsoluteModifier(GameObject source, AttributeModifier modifier)
-    {
-        _absoluteModifiers[source].Remove(modifier);
+        RemoveModifier(AttributeModifierType.Add, modifier);
+        RemoveModifier(AttributeModifierType.Multiply, modifier);
+        RemoveModifier(AttributeModifierType.Override, modifier);
     }
 
     public void AddOnValueChangedListener(OnValueChanged onValueChanged)

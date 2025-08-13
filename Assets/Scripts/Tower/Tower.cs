@@ -76,7 +76,7 @@ public class Tower : MonoBehaviour, IAttacker, ISelectable, IBuffable
             AttributeType attributeType = attributeTypeUpgradeData.Key;
             GameData.AttributeUpgradeData upgradeData = attributeTypeUpgradeData.Value;
             UpgradeModifier modifier = new UpgradeModifier() { data = new UpgradeModifierData() { value = upgradeData.bonusPerUpgrade }, stacks = 0 };
-            _attributeManager.Get(attributeType).AddAbsoluteModifier(gameObject, modifier);
+            _attributeManager.Get(attributeType).AddModifier(AttributeModifierType.Add, gameObject, modifier);
             _attributeUpgrade[attributeType] = new AttributeUpgrade() { modifier = modifier, cost = upgradeData.startingUpgradeCost, costIncreaseFactor = upgradeData.costIncreaseFactor };
         }
 
