@@ -265,7 +265,7 @@ MonoBehaviour:
       Data: 13|GameData+WavePerRound, Assembly-CSharp
     - Name: round
       Entry: 3
-      Data: 0
+      Data: 5
     - Name: wavePatterns
       Entry: 7
       Data: 14|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
@@ -290,7 +290,7 @@ MonoBehaviour:
       Data: 15|GameData+WavePerRound, Assembly-CSharp
     - Name: round
       Entry: 3
-      Data: 0
+      Data: 6
     - Name: wavePatterns
       Entry: 7
       Data: 16|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
@@ -315,7 +315,7 @@ MonoBehaviour:
       Data: 17|GameData+WavePerRound, Assembly-CSharp
     - Name: round
       Entry: 3
-      Data: 0
+      Data: 7
     - Name: wavePatterns
       Entry: 7
       Data: 18|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
@@ -340,7 +340,7 @@ MonoBehaviour:
       Data: 19|GameData+WavePerRound, Assembly-CSharp
     - Name: round
       Entry: 3
-      Data: 0
+      Data: 8
     - Name: wavePatterns
       Entry: 7
       Data: 20|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
@@ -367,12 +367,7 @@ MonoBehaviour:
       Entry: 8
       Data: 
   gold: 10000
-  wavePatterns:
-  - {fileID: 11400000, guid: 46776799d2008614b9df9baa0ad8d107, type: 2}
-  - {fileID: 11400000, guid: 7017dc7573d67c24994a98a8e0a1f684, type: 2}
-  - {fileID: 11400000, guid: 1bf36ca141918c94ea485df9e025943a, type: 2}
-  - {fileID: 11400000, guid: 3b001c9f0efaeec429a2be36da0315a1, type: 2}
-  - {fileID: 11400000, guid: 691bb0f9e62ef6c40b3577089580cb15, type: 2}
+  wavePatterns: []
   enemies:
   - {fileID: 11400000, guid: 85a1a69f23e87f04abfe85cc290d6463, type: 2}
   - {fileID: 11400000, guid: a2003999930914c4782f5152c53489fe, type: 2}

@@ -7,7 +7,6 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] GameData _data;
     public GameData data { get { return _data; } set { _data = value; } }
 
-    public List<WavePatternData> wavePatterns { get { return _data.wavePatterns; } set { _data.wavePatterns = value; } }
     public List<TowerData> towers { get { return _data.towers; } set { _data.towers = value; } } 
     public List<EntityData> entities { get { return _data.entities; } set { _data.entities = value; } } 
     public List<CharacterData> characters { get { return _data.characters; } set { _data.characters = value; } } 
@@ -33,10 +32,5 @@ public class DataManager : Singleton<DataManager>
     {
         GameData.WavePerRound wavePerRound = _data.wavePerRound.Where(x => x.round == round).FirstOrDefault();
         return wavePerRound.wavePatterns[Random.Range(0, wavePerRound.wavePatterns.Count)];
-    }
-
-    public WavePatternData GetRandomWavePattern()
-    {
-        return _data.wavePatterns[Random.Range(0, _data.wavePatterns.Count)];
     }
 }

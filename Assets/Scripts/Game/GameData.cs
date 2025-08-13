@@ -30,9 +30,6 @@ public class GameData : SerializedScriptableObject
     [BoxGroup("Split/Player Data")]
     public List<WavePerRound> wavePerRound = new List<WavePerRound>();
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<WavePatternData>, WavePatternData>(wavePatterns, this)")]
-    public List<WavePatternData> wavePatterns = new List<WavePatternData>();
-
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<EnemyData>, EnemyData>(enemies, this)")]
     public List<EnemyData> enemies = new List<EnemyData>();
 
