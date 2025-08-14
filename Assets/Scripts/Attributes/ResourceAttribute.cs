@@ -18,10 +18,14 @@ public class ResourceAttribute : MonoBehaviour
     public float percent => _value / _max.Value;
 
     int _preventConsumersCount = 0;
+
+    // TODO: replace by tag
     public bool preventConsumers { get { return _preventConsumersCount > 0; } set { _preventConsumersCount += value ? 1 : -1; } }
 
     List<ResourceModifier> _resourceModifiers = new List<ResourceModifier>();
-    List<AConsumerModifier> _consumerModifiers = new List<AConsumerModifier>();
+
+    // TODO: move in SO
+    ResourceConsumerResolver _resourceConsumerResolver = new ResourceConsumerResolver();
 
     public void Init(AttributeType maxResourceType)
     {
@@ -29,6 +33,7 @@ public class ResourceAttribute : MonoBehaviour
         _max = attributeManager.Get(maxResourceType);
         _value = _max.Value;
         _max.AddOnValueChangedListener(OnValueMaxChanged);
+        _resourceConsumerResolver.Init(attributeManager);
         Update();
     }
 
@@ -40,61 +45,20 @@ public class ResourceAttribute : MonoBehaviour
             {
                 if (resourceModifier.consumers.Count > 0)
                 {
-                    float value = 0f;
-                    foreach (AConsumer consumer in resourceModifier.consumers)
-                    {
-                        if (CanApplyConsumer(consumer))
-                        {
-                            value += ApplyConsumerModifiers(consumer);
-                        }
-                    }
-                    resourceModifier.consumers.Clear();
-
-                    value *= resourceModifier.multiplier;
+                    float value = _resourceConsumerResolver.ComputeValue(this, resourceModifier);
                     _value += value;
                     OnAllConsumerProcessed.Invoke(gameObject, this, resourceModifier, value);
                 }
             }
             _resourceModifiers.Clear();
         }
-
         _value = Mathf.Clamp(_value, 0f, _max.Value);
 
         if (_prevValue != _value)
         {
             OnValueChanged.Invoke(this);
+            _prevValue = _value;
         }
-        _prevValue = _value;
-    }
-
-    bool CanApplyConsumer(AConsumer consumer)
-    {
-        return !preventConsumers || consumer.ignoreConsumerPrevention;
-    }
-
-    float ApplyConsumerModifiers(AConsumer consumer)
-    {
-        float baseValue = consumer.GetValue();
-        float value = baseValue;
-        if (!consumer.ignoreConsumerModifier)
-        {
-            foreach (AConsumerModifier controller in _consumerModifiers)
-            {
-                value = controller.ApplyController(consumer, value);
-            }
-        }
-
-        return value;
-    }
-
-    public void AddConsumerModifier(AConsumerModifier controller)
-    {
-        _consumerModifiers.Add(controller);
-    }
-
-    public void RemoveConsumerModifier(AConsumerModifier controller)
-    {
-        _consumerModifiers.Remove(controller);
     }
 
     public void AddResourceModifier(ResourceModifier resourceModifier)

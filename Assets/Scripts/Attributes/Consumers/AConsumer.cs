@@ -30,19 +30,19 @@ public abstract class AConsumer
     public GameObject target;
 
     public abstract float GetValue();
-    public abstract bool ignoreConsumerModifier { get; }
+    public abstract bool ignoreDamageReduction { get; }
     public abstract bool ignoreConsumerPrevention { get; }
 }
 
 public class ConsumerBaseData
 {
-    public bool ignoreConsumerModifier;
+    public bool ignoreDamageReduction;
     public bool ignoreConsumerPrevention;
 }
 
 public abstract class AConsumer<DataType> : AConsumer where DataType : ConsumerBaseData
 {
     public DataType data;
-    public override bool ignoreConsumerModifier => data.ignoreConsumerModifier;
+    public override bool ignoreDamageReduction => data.ignoreDamageReduction;
     public override bool ignoreConsumerPrevention => data.ignoreConsumerPrevention;
 }

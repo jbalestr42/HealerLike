@@ -77,7 +77,6 @@ MonoBehaviour:
   lifeCost: 10
   rank: {fileID: 11400000, guid: 9bcbbc0939dde6f4ab297e8c595fbc7a, type: 2}
   passives:
-  - {fileID: 11400000, guid: 9f6b604d3e61aa9499bc76b529c52d91, type: 2}
   - {fileID: 11400000, guid: 6dec21751180cc24e8322b7c6bc779c7, type: 2}
   skillFactories:
   - {fileID: 11400000, guid: 845ccdefd97b888429d27fbdd3215335, type: 2}
