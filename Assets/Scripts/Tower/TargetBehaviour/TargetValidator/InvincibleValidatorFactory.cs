@@ -12,7 +12,7 @@ public class InvincibleValidatorData
 
 public class InvincibleValidator : ATargetValidator<InvincibleValidatorData>
 {
-    public override bool IsValid(GameObject target)
+    public override bool IsValid(GameObject source, GameObject target)
     {
         return target.GetComponent<Entity>().health.preventConsumers == data.inverse;
     }

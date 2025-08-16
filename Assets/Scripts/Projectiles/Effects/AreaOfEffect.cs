@@ -20,7 +20,7 @@ public class AreaOfEffect : MonoBehaviour
 
         transform.localScale = new Vector3(_radius, _radius, _radius);
 
-        List<GameObject> targets = targetBehaviour.GetTargets(transform.position, _radius, source.GetComponent<Entity>().GetTargetType());
+        List<GameObject> targets = targetBehaviour.GetTargets(source, transform.position, _radius, source.GetComponent<Entity>().GetTargetType());
         foreach (GameObject nextTarget in targets)
         {
             // _target is already hit, we don't want to hit twice

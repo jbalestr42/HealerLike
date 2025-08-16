@@ -23,7 +23,7 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
     {
         if (_owner.isEnabled)
         {
-            _targets = _targetBehaviour.GetTargets(transform.position, _range.Value, _owner.GetTargetType());
+            _targets = _targetBehaviour.GetTargets(gameObject, transform.position, _range.Value, _owner.GetTargetType());
         }
     }
 

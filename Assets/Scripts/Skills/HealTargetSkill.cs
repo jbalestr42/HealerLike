@@ -29,7 +29,7 @@ public class HealTargetSkill : ASkill<HealTargetSkillData>
 
     public override bool Execute(GameObject source)
     {
-        List<GameObject> targets = _targetBehaviour.GetTargets(transform.position, data.range, source.GetComponent<Entity>().GetTargetType());
+        List<GameObject> targets = _targetBehaviour.GetTargets(source, transform.position, data.range, source.GetComponent<Entity>().GetTargetType());
         if (targets.Count > 0)
         {
             ResourceModifier resourceModifier = new ResourceModifier();

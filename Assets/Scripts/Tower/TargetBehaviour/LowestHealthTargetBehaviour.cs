@@ -10,7 +10,7 @@ public class LowestHealthTargetBehaviour : ATargetBehaviour
     {
         targets.Sort((GameObject a, GameObject b) =>
         {
-            return a.GetComponent<Entity>().health.Value.CompareTo(b.GetComponent<Entity>().health.Value);
+            return a.GetComponent<Entity>().health.percent.CompareTo(b.GetComponent<Entity>().health.percent);
         });
     }
 }

@@ -22,7 +22,7 @@ public class TargetValidatorFactory<TargetValidatorType, DataType> : ATargetVali
 
 public abstract class ATargetValidator
 {
-    public abstract bool IsValid(GameObject target);
+    public abstract bool IsValid(GameObject source, GameObject target);
 }
 
 public abstract class ATargetValidator<DataType> : ATargetValidator

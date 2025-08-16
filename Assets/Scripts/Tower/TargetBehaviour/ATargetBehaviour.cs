@@ -22,7 +22,7 @@ public abstract class ATargetBehaviour
 
     protected List<GameObject> _targets = new List<GameObject>();
 
-    public virtual List<GameObject> GetTargets(Vector3 position, float range, Entity.EntityType entityType)
+    public virtual List<GameObject> GetTargets(GameObject source, Vector3 position, float range, Entity.EntityType entityType)
     {
         _targets.Clear();
 
@@ -30,7 +30,7 @@ public abstract class ATargetBehaviour
         {
             if (Vector3.Distance(target.transform.position, position) <= range)
             {
-                if (CanAddTarget(target))
+                if (CanAddTarget(source, target))
                 {
                     _targets.Add(target);
                 }
@@ -61,11 +61,11 @@ public abstract class ATargetBehaviour
         return _targets;
     }
 
-    public bool CanAddTarget(GameObject target)
+    public bool CanAddTarget(GameObject source, GameObject target)
     {
         foreach (ATargetValidator targetValidator in _targetValidators)
         {
-            if (!targetValidator.IsValid(target))
+            if (!targetValidator.IsValid(source, target))
             {
                 return false;
             }

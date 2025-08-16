@@ -54,7 +54,7 @@ public class BounceProjectileBehaviour : AProjectileBehaviour<BounceProjectileBe
 
     GameObject GetNextTarget(Vector3 position)
     {
-        List<GameObject> targets = _targetBehaviour.GetTargets(position, _range, projectile.source.GetComponent<Entity>().GetTargetType());
+        List<GameObject> targets = _targetBehaviour.GetTargets(gameObject, position, _range, projectile.source.GetComponent<Entity>().GetTargetType());
         foreach (GameObject nextTarget in targets)
         {
             if (!_hitEnemies.Contains(nextTarget))

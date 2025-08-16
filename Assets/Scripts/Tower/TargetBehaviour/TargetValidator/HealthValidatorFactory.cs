@@ -12,7 +12,7 @@ public class HealthValidatorData
 
 public class HealthValidator : ATargetValidator<HealthValidatorData>
 {
-    public override bool IsValid(GameObject target)
+    public override bool IsValid(GameObject source, GameObject target)
     {
         return target.GetComponent<Entity>().health.percent <= data.threshold;
     }
