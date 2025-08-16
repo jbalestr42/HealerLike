@@ -13,15 +13,15 @@ public class ApplyBuffOnTargetSkillData : SkillDataBase
     public bool singleTimeUse = false;
     [HideIf("singleTimeUse")]
     public float rate = 5f;
-    public bool isSelfTarget = false;
-    [HideIf("isSelfTarget")]
     public float range = 5f;
+    public bool targetAlly;
 }
 
 public class ApplyBuffOnTargetSkill : ASkill<ApplyBuffOnTargetSkillData>
 {
     int _usageCount = 0;
     ATargetBehaviour _targetBehaviour;
+    Entity.EntityType _targetType;
 
     void Start()
     {
@@ -30,18 +30,19 @@ public class ApplyBuffOnTargetSkill : ASkill<ApplyBuffOnTargetSkillData>
         {
             _targetBehaviour.targetValidators.Add(targetValidator.GetTargetValidator());
         }
+        _targetType = data.targetAlly ? gameObject.GetComponent<Entity>().entityType : gameObject.GetComponent<Entity>().GetTargetType();
     }
 
     public override bool Execute(GameObject source)
     {
         if (CanUseSkill())
         {
-            List<GameObject> targets = _targetBehaviour.GetTargets(transform.position, data.range, source.GetComponent<Entity>().GetTargetType());
-            GameObject target = data.isSelfTarget ? targets.Find(t => t == source) : targets.Count > 0 ? targets[0] : null;
+            List<GameObject> targets = _targetBehaviour.GetTargets(source, transform.position, data.range, _targetType);
+            GameObject target = targets.Count > 0 ? targets[0] : null;
             if (target != null)
             {
                 _usageCount++;
-                Debug.Log($"[ApplyBuffOnTargetSkill] Use skill isSelfTarget={data.isSelfTarget} | source={source} | target={target}");
+                Debug.Log($"[ApplyBuffOnTargetSkill] Use skill targetAlly={data.targetAlly} | source={source} | target={target}");
                 target.GetComponent<BuffManager>().AddHandler(data.buffHandlerFactory, gameObject, target);
                 return true;
             }
