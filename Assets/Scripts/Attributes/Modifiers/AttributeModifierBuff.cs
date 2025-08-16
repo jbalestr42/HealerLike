@@ -16,6 +16,29 @@ public class AttributeModifierBuff<ModifierType, DataType> : ABuff<DataType>, IS
 {
     ModifierType _modifier;
 
+    void ComputeInstantValue(Attribute attribute, float value)
+    {
+        switch (data.modifierType)
+        {
+            case AttributeModifierType.Add:
+                attribute.BaseValue += value;
+                break;
+            case AttributeModifierType.Multiply:
+                attribute.BaseValue *= value;
+                break;
+            case AttributeModifierType.Override:
+                attribute.BaseValue = value;
+                break;
+        }
+    }
+
+    public override void Instant(GameObject source, GameObject target)
+    {
+        _modifier = new ModifierType() { data = data };
+        _modifier.Init(source, target);
+        ComputeInstantValue(target.GetComponent<AttributeManager>().GetOrAdd(data.type), _modifier.ApplyModifier());
+    }
+
     public override void Add(GameObject source, GameObject target)
     {
         _modifier = new ModifierType() { data = data };

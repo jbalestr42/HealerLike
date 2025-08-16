@@ -23,6 +23,10 @@ MonoBehaviour:
     SerializationNodes: []
   uniqueID: e64c13e9-bd4e-4d4e-ae4a-995c981e5756
   data:
+    durationType: 2
+    duration: 0
+    isPeriodic: 0
+    periodDuration: 0
     type: 3
-    isRelative: 0
+    modifierType: 0
     value: 0.5

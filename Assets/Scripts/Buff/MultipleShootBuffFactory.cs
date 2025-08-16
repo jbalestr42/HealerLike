@@ -12,6 +12,8 @@ public class MultipleShootBuffData
 
 public class MultipleShootBuff : ABuff<MultipleShootBuffData>, IStackableBuff
 {
+    public override void Instant(GameObject source, GameObject target) { }
+
     public override void Add(GameObject source, GameObject target)
     {
         target.GetComponent<ITargetProvider>().targetCount += data.value;

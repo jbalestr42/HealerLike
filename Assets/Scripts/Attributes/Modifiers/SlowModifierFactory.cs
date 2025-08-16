@@ -10,7 +10,6 @@ public class SlowModifierFactory : BuffFactory<AttributeModifierBuff<SlowModifie
 public class SlowModifierData : BaseData
 {
     public float value;
-    public float duration;
 }
 
 public class SlowModifier : AttributeModifier<SlowModifierData>, IStackableBuff
@@ -18,10 +17,12 @@ public class SlowModifier : AttributeModifier<SlowModifierData>, IStackableBuff
     float _start = 0f;
     float _stackFactor = 1f;
     float _stacks = 1f;
+    float _duration = 1f;
 
     public SlowModifier()
     {
         _start = Time.time;
+        _duration = buffHandler.hasDuration ? buffHandler.duration : 1f;
     }
 
     public override float ApplyModifier()
@@ -31,7 +32,7 @@ public class SlowModifier : AttributeModifier<SlowModifierData>, IStackableBuff
 
     float GetRatio()
     {
-        return Mathf.Clamp01((Time.time - _start) / data.duration);
+        return Mathf.Clamp01((Time.time - _start) / _duration);
     }
 
     public void Stack(GameObject source, GameObject target)

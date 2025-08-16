@@ -21,6 +21,11 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
+  uniqueID: 0b52fa50-a119-4255-a79b-11e7b16d6e85
   data:
-    buffFactory: {fileID: 11400000, guid: f73d37961f96f3045bb86a27caf4d572, type: 2}
+    durationType: 1
     duration: 1
+    isPeriodic: 0
+    periodDuration: 0
+    buffFactory: {fileID: 11400000, guid: f73d37961f96f3045bb86a27caf4d572, type: 2}
+    buffEffect: {fileID: 0}

@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e06a758994b963543969a03f84ad65db, type: 3}
-  m_Name: AliveBuffHandlerFactory
+  m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
+  m_Name: BuffHandlerFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -21,11 +21,11 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  uniqueID: 8d49a681-963d-43d2-97b5-a52f46d84480
+  uniqueID: d0dbb35b-1fa7-4efe-9660-189fb561580a
   data:
-    durationType: 2
+    durationType: 0
     duration: 0
     isPeriodic: 0
     periodDuration: 0
-    buffFactory: {fileID: 11400000, guid: 6f7da3c10b0d9764f879433126e45322, type: 2}
+    buffFactory: {fileID: 11400000, guid: 9f8f478ee44e6854eb63d742bb3e420f, type: 2}
     buffEffect: {fileID: 0}

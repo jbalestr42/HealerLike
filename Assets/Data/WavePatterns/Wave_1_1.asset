@@ -17,6 +17,7 @@ MonoBehaviour:
     SerializedBytes: 
     ReferencedUnityObjects:
     - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
+    - {fileID: 11400000, guid: 26dbd27e829bb32408f456f507d1393f, type: 2}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -27,10 +28,10 @@ MonoBehaviour:
       Data: 0|EntitySlot[,], Assembly-CSharp
     - Name: 
       Entry: 12
-      Data: 1
+      Data: 2
     - Name: ranks
       Entry: 1
-      Data: 1|1
+      Data: 2|1
     - Name: 
       Entry: 7
       Data: EntitySlot, Assembly-CSharp
@@ -41,11 +42,19 @@ MonoBehaviour:
       Entry: 8
       Data: 
     - Name: 
+      Entry: 7
+      Data: EntitySlot, Assembly-CSharp
+    - Name: entity
+      Entry: 10
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
       Entry: 13
       Data: 
     - Name: 
       Entry: 8
       Data: 
-  width: 1
+  width: 2
   height: 1
-  rank: {fileID: 11400000, guid: 431424fbb6f38414eaef7fc7774b0b13, type: 2}

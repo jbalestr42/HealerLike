@@ -24,6 +24,7 @@ public class BuffFactory<BuffType, DataType> : ABuffFactory where BuffType : ABu
 
 public abstract class ABuff
 {
+    public abstract void Instant(GameObject source, GameObject target);
     public abstract void Add(GameObject source, GameObject target);
     public abstract void Remove(GameObject source, GameObject target);
     public abstract bool isStackable { get; }

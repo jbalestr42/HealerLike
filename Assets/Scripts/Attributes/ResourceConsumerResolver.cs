@@ -43,6 +43,7 @@ public class ResourceConsumerResolver
         {
             if (_hitArmor.Value > 0f)
             {
+                _hitArmor.BaseValue -= 1f;
                 return 0f;
             }
             return Mathf.Min(0f, value - _flatArmor.Value) * (1f - _percentArmor.Value) * (1f + _vulnerability.Value);

@@ -8,7 +8,6 @@ public class DurationBuffHandlerFactory : BuffHandlerFactory<DurationBuffHandler
 [Serializable]
 public class DurationBuffHandlerData : BuffHandlerBaseData
 {
-    public float duration;
 }
 
 public class DurationBuffHandler : ABuffHandler<DurationBuffHandlerData>

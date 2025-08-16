@@ -15,6 +15,8 @@ public class AddSkillBuff : ABuff<AddSkillBuffData>, IStackableBuff
 {
     ASkill _skillInstance;
 
+    public override void Instant(GameObject source, GameObject target) { }
+
     public override void Add(GameObject source, GameObject target)
     {
         _skillInstance = data.skillFactory.AddSkill(target);

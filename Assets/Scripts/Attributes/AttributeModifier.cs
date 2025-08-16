@@ -5,7 +5,8 @@ using UnityEngine;
 
 public abstract class AttributeModifier
 {
-    public virtual void Init(GameObject source, GameObject target) {}
+    public ABuffHandler buffHandler { get; set; }
+    public virtual void Init(GameObject source, GameObject target) { }
     public abstract float ApplyModifier();
 }
 

@@ -10,16 +10,17 @@ public class TimeModifierFactory : BuffFactory<AttributeModifierBuff<TimeModifie
 public class TimeModifierData : BaseData
 {
     public float value;
-    public float duration;
 }
 
 public class TimeModifier : AttributeModifier<TimeModifierData>, IStackableBuff
 {
     float _start = 0f;
+    float _duration = 1f;
 
     public TimeModifier()
     {
         _start = Time.time;
+        _duration = buffHandler.hasDuration ? buffHandler.duration : 1f;
     }
 
     public override float ApplyModifier()
@@ -29,7 +30,7 @@ public class TimeModifier : AttributeModifier<TimeModifierData>, IStackableBuff
 
     float GetRatio()
     {
-        float ratio = (Time.time - _start) / data.duration;
+        float ratio = (Time.time - _start) / _duration;
         ratio = Mathf.Clamp(ratio, 0f, 1f);
         return ratio;
     }

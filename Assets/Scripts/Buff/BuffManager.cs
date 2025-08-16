@@ -77,35 +77,45 @@ public class BuffManager : MonoBehaviour
                 BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
                 if (buffHandlerData.isInit)
                 {
-                    if (!buffHandlerData.hasStarted)
+                    if (buffHandlerData.buffHandler.durationType == DurationType.Instant)
                     {
-                        Debug.Log("[BuffManager] Start buff handler " + buffHandlerData.buffHandlerFactory.name);
-                        buffHandlerData.hasStarted = true;
-                        buffHandlerData.buffHandler.Start(source, buffHandlerData.target);
-                        Add(buffHandlerData.buffHandlerFactory.GetBuffFactory(), source, buffHandlerData.target);
-                        OnBuffHandlerStarted.Invoke(buffHandlerData);
-                    }
-
-                    if (buffHandlerData.shouldRefresh)
-                    {
-                        Debug.Log("[BuffManager] Refresh buff handler " + buffHandlerData.buffHandlerFactory.name);
-                        buffHandlerData.buffHandler.Refresh(source, buffHandlerData.target);
-                        for (int i = 0; i < buffHandlerData.refreshStacks; i++)
-                        {
-                            Add(buffHandlerData.buffHandlerFactory.GetBuffFactory(), source, buffHandlerData.target);
-                        }
-                        buffHandlerData.refreshStacks = 0;
-                    }
-
-                    buffHandlerData.buffHandler.Update(Time.deltaTime);
-
-                    if (buffHandlerData.buffHandler.IsDone())
-                    {
-                        Debug.Log("[BuffManager] Stop buff handler " + buffHandlerData.buffHandlerFactory.name);
-                        Remove(buffHandlerData.buffHandlerFactory.GetBuffFactory(), source, buffHandlerData.target, true);
-                        buffHandlerData.buffHandler.Stop(source, buffHandlerData.target);
-                        OnBuffHandlerStopped.Invoke(buffHandlerData);
+                        Debug.Log("[BuffManager] Instant buff handler " + buffHandlerData.buffHandlerFactory.name);
+                        ABuff buff = buffHandlerData.buffHandlerFactory.GetBuffFactory().GetBuff();
+                        buff.Instant(source, buffHandlerData.target);
                         buffHandlerData.buffHandler = null;
+                    }
+                    else
+                    {
+                        if (!buffHandlerData.hasStarted)
+                        {
+                            Debug.Log("[BuffManager] Start buff handler " + buffHandlerData.buffHandlerFactory.name);
+                            buffHandlerData.hasStarted = true;
+                            buffHandlerData.buffHandler.Start(source, buffHandlerData.target);
+                            Add(buffHandlerData.buffHandlerFactory.GetBuffFactory(), source, buffHandlerData.target);
+                            OnBuffHandlerStarted.Invoke(buffHandlerData);
+                        }
+
+                        if (buffHandlerData.shouldRefresh)
+                        {
+                            Debug.Log("[BuffManager] Refresh buff handler " + buffHandlerData.buffHandlerFactory.name);
+                            buffHandlerData.buffHandler.Refresh(source, buffHandlerData.target);
+                            for (int i = 0; i < buffHandlerData.refreshStacks; i++)
+                            {
+                                Add(buffHandlerData.buffHandlerFactory.GetBuffFactory(), source, buffHandlerData.target);
+                            }
+                            buffHandlerData.refreshStacks = 0;
+                        }
+
+                        buffHandlerData.buffHandler.Update(Time.deltaTime);
+
+                        if (buffHandlerData.buffHandler.IsDone())
+                        {
+                            Debug.Log("[BuffManager] Stop buff handler " + buffHandlerData.buffHandlerFactory.name);
+                            Remove(buffHandlerData.buffHandlerFactory.GetBuffFactory(), source, buffHandlerData.target, true);
+                            buffHandlerData.buffHandler.Stop(source, buffHandlerData.target);
+                            OnBuffHandlerStopped.Invoke(buffHandlerData);
+                            buffHandlerData.buffHandler = null;
+                        }
                     }
                 }
             }

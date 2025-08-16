@@ -15,6 +15,8 @@ public class ProjectileBehaviourBuff : ABuff<ProjectileBehaviourBuffData>, IStac
 {
     AProjectileBehaviour _projectileBehaviourInstance;
 
+    public override void Instant(GameObject source, GameObject target) { }
+
     public override void Add(GameObject source, GameObject target)
     {
         _projectileBehaviourInstance = data.projectileBehaviour.AddBehaviour(target);
