@@ -17,6 +17,7 @@ public class AscensionGameType : AGameType
         GameOver,
     }
 
+    [SerializeField] bool _debug = false;
     [Header("In Game")]
     [ShowInInspector, ReadOnly] State _state = State.None;
     EntityManager _entities = null;
@@ -37,6 +38,14 @@ public class AscensionGameType : AGameType
 
         _gameView.gameHUD.nextWaveButton.onClick.AddListener(StartBattle);
         _upgradeView.OnItemSelected.AddListener(OnItemSelected);
+
+        if (_debug)
+        {
+            foreach (var item in DataManager.instance.items)
+            {
+                _gameView.playerInventory.AddItem(item.GetItem());
+            }
+        }
     }
 
     void Update()
