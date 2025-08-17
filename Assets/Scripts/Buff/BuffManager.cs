@@ -80,8 +80,8 @@ public class BuffManager : MonoBehaviour
                     ABuffHandlerFactory buffHandlerFactory = buffHandlerData.buffHandlerFactory;
                     if (buffHandlerData.buffHandler.durationType == DurationType.Instant)
                     {
-                        Debug.Log("[BuffManager] Instant buff " + buffHandlerFactory.GetBuffFactory().name);
-                        ABuff buff = buffHandlerFactory.GetBuffFactory().GetBuff();
+                        Debug.Log("[BuffManager] Instant buff " + buffHandlerFactory.buffFactory.name);
+                        ABuff buff = buffHandlerFactory.buffFactory.GetBuff();
                         buff.Instant(source, buffHandlerData.target);
                         buffHandlerData.buffHandler = null;
                     }
@@ -89,20 +89,20 @@ public class BuffManager : MonoBehaviour
                     {
                         if (!buffHandlerData.hasStarted)
                         {
-                            Debug.Log("[BuffManager] Start buff " + buffHandlerFactory.GetBuffFactory().name);
+                            Debug.Log("[BuffManager] Start buff " + buffHandlerFactory.buffFactory.name);
                             buffHandlerData.hasStarted = true;
                             buffHandlerData.buffHandler.Start(source, buffHandlerData.target);
-                            Add(buffHandlerFactory.GetBuffFactory(), source, buffHandlerData.target);
+                            Add(buffHandlerFactory.buffFactory, source, buffHandlerData.target);
                             OnBuffHandlerStarted.Invoke(buffHandlerData);
                         }
 
                         if (buffHandlerData.shouldRefresh)
                         {
-                            Debug.Log("[BuffManager] Refresh buff " + buffHandlerFactory.GetBuffFactory().name);
+                            Debug.Log("[BuffManager] Refresh buff " + buffHandlerFactory.buffFactory.name);
                             buffHandlerData.buffHandler.Refresh(source, buffHandlerData.target);
                             for (int i = 0; i < buffHandlerData.refreshStacks; i++)
                             {
-                                Add(buffHandlerFactory.GetBuffFactory(), source, buffHandlerData.target);
+                                Add(buffHandlerFactory.buffFactory, source, buffHandlerData.target);
                             }
                             buffHandlerData.refreshStacks = 0;
                         }
@@ -111,11 +111,11 @@ public class BuffManager : MonoBehaviour
 
                         if (buffHandlerData.buffHandler.isPeriodic && buffHandlerData.buffHandler.isPeriodDone)
                         {
-                            BuffData buffData = GetBuffData(buffHandlerFactory.GetBuffFactory(), source);
+                            BuffData buffData = GetBuffData(buffHandlerFactory.buffFactory, source);
                             ABuff buff = buffData.first;
                             if (buff != null)
                             {
-                                Debug.Log("[BuffManager] Instant periodic buff " + buffHandlerFactory.GetBuffFactory().name);
+                                Debug.Log("[BuffManager] Instant periodic buff " + buffHandlerFactory.buffFactory.name);
                                 buff.Instant(source, buffHandlerData.target);
                                 buffHandlerData.buffHandler.ResetPeriodDuration();
                             }
@@ -123,8 +123,8 @@ public class BuffManager : MonoBehaviour
 
                         if (buffHandlerData.buffHandler.isDone)
                         {
-                            Debug.Log("[BuffManager] Stop buff " + buffHandlerFactory.GetBuffFactory().name);
-                            Remove(buffHandlerFactory.GetBuffFactory(), source, buffHandlerData.target, true);
+                            Debug.Log("[BuffManager] Stop buff " + buffHandlerFactory.buffFactory.name);
+                            Remove(buffHandlerFactory.buffFactory, source, buffHandlerData.target, true);
                             buffHandlerData.buffHandler.Stop(source, buffHandlerData.target);
                             OnBuffHandlerStopped.Invoke(buffHandlerData);
                             buffHandlerData.buffHandler = null;
@@ -139,13 +139,13 @@ public class BuffManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(buffHandlerFactory.uniqueID))
         {
-            Debug.LogError($"[BuffManager] uniqueId is null for factory '{buffHandlerFactory.GetBuffFactory().name}'");
+            Debug.LogError($"[BuffManager] uniqueId is null for factory '{buffHandlerFactory.buffFactory.name}'");
         }
 
         BuffHandlerData buffHandlerData = GetBuffHandlerData(buffHandlerFactory, source);
         if (!buffHandlerData.isInit)
         {
-            Debug.Log("[BuffManager] Init handler " + buffHandlerFactory.GetBuffFactory().name);
+            Debug.Log("[BuffManager] Init handler " + buffHandlerFactory.buffFactory.name);
             buffHandlerData.buffHandler = buffHandlerFactory.GetBuffHandler();
             buffHandlerData.buffHandlerFactory = buffHandlerFactory;
             buffHandlerData.target = target;
@@ -153,7 +153,7 @@ public class BuffManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("[BuffManager] Refresh handler " + buffHandlerFactory.GetBuffFactory().name);
+            Debug.Log("[BuffManager] Refresh handler " + buffHandlerFactory.buffFactory.name);
             buffHandlerData.refreshStacks++;
         }
     }

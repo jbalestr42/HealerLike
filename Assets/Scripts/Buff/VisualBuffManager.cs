@@ -17,7 +17,7 @@ public class VisualBuffManager : MonoBehaviour
     {
         if (!_buffHandlers.ContainsKey(buffHandlerData))
         {
-            GameObject buffEffectPrefab = buffHandlerData.buffHandlerFactory.GetBuffEffect();
+            GameObject buffEffectPrefab = buffHandlerData.buffHandlerFactory.buffEffect;
             if (buffEffectPrefab)
             {
                 GameObject buffEffect = Instantiate(buffEffectPrefab, buffHandlerData.target.GetComponent<Entity>().targetPoint.transform);

@@ -15,8 +15,8 @@ public abstract class ABuffHandlerFactory : SerializedScriptableObject
     [HideInInlineEditors]
     public string uniqueID = Guid.NewGuid().ToString();
     public abstract ABuffHandler GetBuffHandler();
-    public abstract ABuffFactory GetBuffFactory();
-    public abstract GameObject GetBuffEffect();
+    public abstract ABuffFactory buffFactory { get; }
+    public abstract GameObject buffEffect { get; }
     public abstract DurationType durationType { get; }
     public abstract float duration { get; }
     public abstract bool hasDuration { get; }
@@ -35,15 +35,8 @@ public class BuffHandlerFactory<BuffHandlerType, DataType> : ABuffHandlerFactory
         return new BuffHandlerType() { data = this.data };
     }
 
-    public override ABuffFactory GetBuffFactory()
-    {
-        return data.buffFactory;
-    }
-
-    public override GameObject GetBuffEffect()
-    {
-        return data.buffEffect;
-    }
+    public override ABuffFactory buffFactory => data.buffFactory;
+    public override GameObject buffEffect => data.buffEffect;
     public override DurationType durationType => data.durationType;
     public override float duration => data.duration;
     public override bool hasDuration => data.durationType != DurationType.Instant;
