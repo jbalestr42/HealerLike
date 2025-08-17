@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c1209e64e030c74fb65bb4e4364b58a, type: 3}
-  m_Name: ApplyConsumerOnTimeFactory
+  m_Script: {fileID: 11500000, guid: fec17fdacd5a1e74697fd8a9627a0933, type: 3}
+  m_Name: ApplyConsumerBuffFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -21,6 +21,6 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
+  uniqueID: ae1470d4-51c7-4153-a3a0-60407617d6d7
   data:
     consumerFactory: {fileID: 11400000, guid: a0ddc60db8a3fe849bc83256d65be967, type: 2}
-    rate: 1

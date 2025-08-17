@@ -23,9 +23,9 @@ MonoBehaviour:
     SerializationNodes: []
   uniqueID: aaeeeac0-a073-4009-8c09-535e7969dcd0
   data:
-    durationType: 0
+    durationType: 2
     duration: 0
-    isPeriodic: 0
-    periodDuration: 0
-    buffFactory: {fileID: 11400000, guid: 07c23ae0b22e69c498c33489e76a111e, type: 2}
+    isPeriodic: 1
+    periodDuration: 1.5
+    buffFactory: {fileID: 11400000, guid: 1efa6c4ee6ff78c458d49890b83e33d0, type: 2}
     buffEffect: {fileID: 0}

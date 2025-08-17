@@ -21,9 +21,8 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  uniqueID: 3cc4a1e3-e739-40e7-9940-cd0cdfb039a2
+  uniqueID: 8146efd1-2023-4a1e-8e01-bee1fb702130
   data:
     type: 1
     modifierType: 1
-    isRelative: 1
-    value: 3
+    value: 2

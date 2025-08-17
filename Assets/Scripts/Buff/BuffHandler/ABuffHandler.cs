@@ -55,11 +55,11 @@ public abstract class ABuffHandler
     public abstract void Update(float deltaTime);
     public abstract void Stop(GameObject source, GameObject target);
     public abstract void Refresh(GameObject source, GameObject target);
-    public abstract void ResetDuration();
     public abstract void ResetPeriodDuration();
     public abstract DurationType durationType { get; }
     public abstract float duration { get; }
     public abstract bool hasDuration { get; }
+    public abstract bool isPeriodic { get; }
     public abstract bool isDone { get; }
     public abstract bool isPeriodDone { get; }
 }
