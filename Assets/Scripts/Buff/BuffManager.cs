@@ -106,9 +106,10 @@ public class BuffManager : MonoBehaviour
                             buffHandlerData.refreshStacks = 0;
                         }
 
+                        // TODO: periodic with instant when period is done
                         buffHandlerData.buffHandler.Update(Time.deltaTime);
 
-                        if (buffHandlerData.buffHandler.IsDone())
+                        if (buffHandlerData.buffHandler.isDone)
                         {
                             Debug.Log("[BuffManager] Stop buff handler " + buffHandlerData.buffHandlerFactory.name);
                             Remove(buffHandlerData.buffHandlerFactory.GetBuffFactory(), source, buffHandlerData.target, true);

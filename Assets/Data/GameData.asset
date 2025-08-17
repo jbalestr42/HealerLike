@@ -119,10 +119,20 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
+    - Name: wavePerRound
+      Entry: 7
+      Data: 2|System.Collections.Generic.List`1[[GameData+WavePerRound, Assembly-CSharp]],
+        mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
   gold: 150
-  life: 20
-  refoundFactor: 0.75
-  wavePatterns: []
   enemies:
   - {fileID: 11400000, guid: 85a1a69f23e87f04abfe85cc290d6463, type: 2}
   - {fileID: 11400000, guid: 5790ab3541f0a5042a1cb97f10a65ae2, type: 2}
@@ -141,7 +151,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: fb76ad3259673304e8f1796f2d3992ce, type: 2}
   - {fileID: 11400000, guid: c79de1eb3ce19cf4da3be6f0df024341, type: 2}
   entities: []
-  characters: []
+  characters:
+  - {fileID: 11400000, guid: d5522b5142b13b74bbf81471208c72e0, type: 2}
+  - {fileID: 11400000, guid: b6564d3df55530743a8bae3f230c6101, type: 2}
   items:
   - {fileID: 11400000, guid: 981f707cc21684046903704c33211566, type: 2}
   - {fileID: 11400000, guid: 863d741e86f47494a916f37a85d07d2f, type: 2}

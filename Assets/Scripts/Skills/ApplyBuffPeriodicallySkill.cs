@@ -6,7 +6,8 @@ using UnityEngine;
 [Serializable]
 public class ApplyBuffPeriodicallySkillData : SkillDataBase
 {
-    public List<DurationBuffHandlerFactory> periodicBuff;
+    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(periodicBuff)")]
+    public List<ABuffHandlerFactory> periodicBuff;
 }
 
 public class ApplyBuffPeriodicallySkill : ASkill<ApplyBuffPeriodicallySkillData>
@@ -34,5 +35,5 @@ public class ApplyBuffPeriodicallySkill : ASkill<ApplyBuffPeriodicallySkillData>
         return true;
     }
 
-    public override float cooldownDuration => data.periodicBuff[_currentBuff].data.duration;
+    public override float cooldownDuration => data.periodicBuff[_currentBuff].duration;
 }

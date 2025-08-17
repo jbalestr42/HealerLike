@@ -24,5 +24,5 @@ MonoBehaviour:
   data:
     onSkillTriggerFactory: []
     periodicBuff:
-    - {fileID: 11400000, guid: bb832ccd42d51764ebcd587159c4f921, type: 2}
-    - {fileID: 11400000, guid: dbbee649fe9649849bb85542e71de56d, type: 2}
+    - {fileID: 11400000, guid: f5cb130f1e5b5664da4524a74dd37a5f, type: 2}
+    - {fileID: 11400000, guid: 15469dd3a4a9e1f46add9308f8213444, type: 2}

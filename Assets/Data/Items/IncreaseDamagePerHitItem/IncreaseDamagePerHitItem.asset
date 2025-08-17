@@ -27,7 +27,7 @@ MonoBehaviour:
     description: 
     buffList: []
     onHitEffects:
-    - {fileID: 11400000, guid: 0f0339d6871867d44a54a3839f11dc50, type: 2}
+    - {fileID: 11400000, guid: d0dae11441ad20944a24b8232296e2a0, type: 2}
     onHitConsumers: []
     projectileBehaviours: []
     skills: []

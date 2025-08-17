@@ -41,4 +41,4 @@ MonoBehaviour:
     isSingle: 0
     entityType: 1
     buffHandlerFactory:
-    - {fileID: 11400000, guid: 2ac46e2d6e76aa94887297fed51161f4, type: 2}
+    - {fileID: 11400000, guid: bed51418fb36cc44cb0ce74a75844c29, type: 2}
