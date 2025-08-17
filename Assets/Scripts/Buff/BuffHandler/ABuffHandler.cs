@@ -68,13 +68,10 @@ public class BuffHandlerBaseData
 {
     public DurationType durationType;
 
-    //TODO hide if durationType is instant
-    [HideIf("durationType", DurationType.Instant)]
+    [ShowIf("durationType", DurationType.Duration)]
     public float duration;
-    //TODO hide if durationType is instant
     [HideIf("durationType", DurationType.Instant)]
     public bool isPeriodic;
-    //TODO hide if isPeriodic is false
     [ShowIf("@this.durationType != DurationType.Instant && isPeriodic")]
     public float periodDuration;
 
