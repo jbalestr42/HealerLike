@@ -37,9 +37,9 @@ public class Enemy : MonoBehaviour, IAttackable, ISelectable, IBuffable, IMarkab
         _health.OnValueChanged.AddListener(OnHealthChanged);
 
         // Init self buff from data
-        foreach (ABuffFactory passive in _data.passives)
+        foreach (ABuffHandlerFactory passive in _data.passives)
         {
-            AddBuff(passive, gameObject, gameObject);
+            AddBuffHandler(passive, gameObject, gameObject);
         }
 
         // Init skills from data
@@ -107,16 +107,6 @@ public class Enemy : MonoBehaviour, IAttackable, ISelectable, IBuffable, IMarkab
     public void RemoveBuffHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target)
     {
         _buffManager.RemoveHandler(buffHandlerFactory, source, target);
-    }
-
-    public void AddBuff(ABuffFactory buffFactory, GameObject source, GameObject target)
-    {
-        _buffManager.Add(buffFactory, source, target);
-    }
-
-    public void RemoveBuff(ABuffFactory buffFactory, GameObject source, GameObject target)
-    {
-        _buffManager.Remove(buffFactory, source, target);
     }
 
     #endregion

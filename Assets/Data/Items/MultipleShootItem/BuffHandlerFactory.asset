@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e321382ab739504ab8f748087ee86bb, type: 3}
-  m_Name: ApplyBuffOnTargetSkillFactory
+  m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
+  m_Name: BuffHandlerFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -21,8 +21,12 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
+  uniqueID: 16e81863-f6bb-4b82-b52f-cfae8d017d06
   data:
-    buffHandlerFactory: {fileID: 11400000, guid: 1fd8a82e6c53ae449a361f34d7d3c045, type: 2}
-    targetValidators: []
-    rate: 3
-    range: 7
+    durationType: 2
+    duration: 0
+    isPeriodic: 0
+    periodDuration: 0
+    buffFactoryList:
+    - {fileID: 11400000, guid: 5c28dc58e75982c48895148d9a3b98ae, type: 2}
+    buffEffect: {fileID: 0}

@@ -87,9 +87,9 @@ public class Tower : MonoBehaviour, IAttacker, ISelectable, IBuffable
         _model.Init(this);
 
         // Init self buff from data
-        foreach (ABuffFactory passive in _data.passives)
+        foreach (ABuffHandlerFactory passive in _data.passives)
         {
-            AddBuff(passive, gameObject, gameObject);
+            AddBuffHandler(passive, gameObject, gameObject);
         }
 
         // Init on hit effects from data
@@ -211,16 +211,6 @@ public class Tower : MonoBehaviour, IAttacker, ISelectable, IBuffable
     public void RemoveBuffHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target)
     {
         _buffManager.RemoveHandler(buffHandlerFactory, source, target);
-    }
-
-    public void AddBuff(ABuffFactory buffFactory, GameObject source, GameObject target)
-    {
-        _buffManager.Add(buffFactory, source, target);
-    }
-
-    public void RemoveBuff(ABuffFactory buffFactory, GameObject source, GameObject target)
-    {
-        _buffManager.Remove(buffFactory, source, target);
     }
 
     #endregion

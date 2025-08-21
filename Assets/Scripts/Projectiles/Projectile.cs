@@ -24,7 +24,7 @@ public class Projectile : MonoBehaviour, IBuffable
     BuffManager _buffManager;
     public BuffManager buffManager { get { return _buffManager; } }
 
-    public void Init(GameObject source, GameObject target, List<ABuffFactory> projectileBehaviours)
+    public void Init(GameObject source, GameObject target, List<ABuffHandlerFactory> projectileBehaviours)
     {
         _buffManager = GetComponent<BuffManager>();
 
@@ -33,9 +33,9 @@ public class Projectile : MonoBehaviour, IBuffable
         _targetPoint = target.GetComponent<Entity>().targetPoint;
 
         // Init buff from data
-        foreach (ABuffFactory passive in projectileBehaviours)
+        foreach (ABuffHandlerFactory passive in projectileBehaviours)
         {
-            AddBuff(passive, source, gameObject);
+            AddBuffHandler(passive, source, gameObject);
         }
 
         // Init projectile behaviours
@@ -132,16 +132,6 @@ public class Projectile : MonoBehaviour, IBuffable
     public void RemoveBuffHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target)
     {
         _buffManager.RemoveHandler(buffHandlerFactory, source, target);
-    }
-
-    public void AddBuff(ABuffFactory buffFactory, GameObject source, GameObject target)
-    {
-        _buffManager.Add(buffFactory, source, target);
-    }
-
-    public void RemoveBuff(ABuffFactory buffFactory, GameObject source, GameObject target)
-    {
-        _buffManager.Remove(buffFactory, source, target);
     }
 
     #endregion

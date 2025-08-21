@@ -25,11 +25,10 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 26de841f6d53c6a4da359d956be2c4f4, type: 3}
     name: ExplodeOnHit
     description: 
-    buffList:
-    - {fileID: 11400000, guid: f8a413b84fac75941b6e39053bd756f5, type: 2}
-    - {fileID: 11400000, guid: df8b161f599687c42a15660ae38a1e7b, type: 2}
+    buffs:
+    - {fileID: 11400000, guid: c6d3037918c4cb44eb21c1138fe430e7, type: 2}
     onHitEffects: []
     onHitConsumers: []
     projectileBehaviours:
-    - {fileID: 11400000, guid: 5b4c314f3e67fde4eb51385e485987f5, type: 2}
+    - {fileID: 11400000, guid: c951e24336a91454f99570ba60ae3905, type: 2}
     skills: []

@@ -25,9 +25,9 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 830168f764471444d8a47b35247f811c, type: 3}
     name: Backstab
     description: 
-    buffList: []
+    buffHandlerList: []
     onHitEffects: []
     onHitConsumers: []
     projectileBehaviours:
-    - {fileID: 11400000, guid: 7be3793834bb13b4e86081dab74d9452, type: 2}
+    - {fileID: 11400000, guid: 8288a2aadfe04dd419b89869c243724d, type: 2}
     skills: []

@@ -2,7 +2,7 @@
 using System.Linq;
 using UnityEngine;
 
-public class Character : MonoBehaviour
+public class Character : MonoBehaviour, IBuffable
 {
     CharacterData _data;
     public CharacterData data { get { return _data; } set { _data = value; } }
@@ -37,9 +37,9 @@ public class Character : MonoBehaviour
         _mana.Init(AttributeType.ManaMax);
 
         // Init self buff from data
-        foreach (ABuffFactory passive in _data.passives)
+        foreach (ABuffHandlerFactory passive in _data.passives)
         {
-            AddBuff(passive, gameObject, gameObject);
+            AddBuffHandler(passive, gameObject, gameObject);
         }
 
         // Init skills
@@ -63,14 +63,9 @@ public class Character : MonoBehaviour
         _buffManager.AddHandler(buffHandlerFactory, source, target);
     }
 
-    public void AddBuff(ABuffFactory buffFactory, GameObject source, GameObject target)
+    public void RemoveBuffHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target)
     {
-        _buffManager.Add(buffFactory, source, target);
-    }
-
-    public void RemoveBuff(ABuffFactory buffFactory, GameObject source, GameObject target)
-    {
-        _buffManager.Remove(buffFactory, source, target);
+        _buffManager.RemoveHandler(buffHandlerFactory, source, target);
     }
 
     #endregion

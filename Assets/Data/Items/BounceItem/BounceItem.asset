@@ -25,9 +25,9 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 9392f93915a0c67489f7288cf69dd701, type: 3}
     name: Bounce
     description: 
-    buffList: []
+    buffs: []
     onHitEffects: []
     onHitConsumers: []
     projectileBehaviours:
-    - {fileID: 11400000, guid: ea482b909510552498f2cfb20b7455cd, type: 2}
+    - {fileID: 11400000, guid: 7ad136870e3c90442976e4661357bc78, type: 2}
     skills: []

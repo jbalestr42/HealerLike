@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e80ed34af0e9c24c88c51b725cecec1, type: 3}
-  m_Name: HealTargetSkillFactory
+  m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
+  m_Name: BuffHandlerFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -21,9 +21,12 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
+  uniqueID: 4f6beb89-245a-4359-8a4d-d69670382e11
   data:
-    consumerFactory: {fileID: 11400000, guid: 58866cbacde838845bb9c602bd23a2b1, type: 2}
-    targetValidators:
-    - {fileID: 11400000, guid: ea0c684ba44e345438f1c5ef8031c431, type: 2}
-    rate: 5
-    range: 5
+    durationType: 2
+    duration: 0
+    isPeriodic: 0
+    periodDuration: 0
+    buffFactoryList:
+    - {fileID: 11400000, guid: 5b4c314f3e67fde4eb51385e485987f5, type: 2}
+    buffEffect: {fileID: 0}

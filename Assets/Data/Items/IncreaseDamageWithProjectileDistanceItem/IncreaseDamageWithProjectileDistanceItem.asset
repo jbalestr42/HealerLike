@@ -25,9 +25,9 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: d52306de7206bd34ea489197b237f4a8, type: 3}
     name: IncreaseDamageWithProjectileDistance
     description: 
-    buffList: []
+    buffs: []
     onHitEffects: []
     onHitConsumers: []
     projectileBehaviours:
-    - {fileID: 11400000, guid: 1431d73ab9b1d3449894c9805de19c37, type: 2}
+    - {fileID: 11400000, guid: 208da416cfdfb894bb6d4b09a0339217, type: 2}
     skills: []

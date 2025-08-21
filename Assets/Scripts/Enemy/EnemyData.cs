@@ -35,8 +35,8 @@ public class EnemyData : SerializedScriptableObject
     public Dictionary<AttributeType, float> attributes = new Dictionary<AttributeType, float>();
 
     [Space]
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffFactory>, ABuffFactory>(passives)")]
-    public List<ABuffFactory> passives;
+    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(passives)")]
+    public List<ABuffHandlerFactory> passives;
 
     [Space]
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ASkillFactory>, ASkillFactory>(skillFactories)")]

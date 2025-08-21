@@ -22,11 +22,12 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
+    icon: {fileID: 21300000, guid: c11fa297dd331de418654209c490f7e6, type: 3}
     name: MultipleShoot
     description: 
-    icon: {fileID: 21300000, guid: c11fa297dd331de418654209c490f7e6, type: 3}
-    buffList:
-    - {fileID: 11400000, guid: 5c28dc58e75982c48895148d9a3b98ae, type: 2}
+    buffs:
+    - {fileID: 11400000, guid: 9fb6d17c9b1e6c84ba0584f6a6031dd9, type: 2}
     onHitEffects: []
     onHitConsumers: []
+    projectileBehaviours: []
     skills: []

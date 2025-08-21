@@ -209,12 +209,7 @@ public class BuffManager : SerializedMonoBehaviour
         }
     }
 
-    // Remove Add/Remove buff
-    // the only way to add a buff should be by using a buffhandler
-    // Then we can stack/unstack the buff handler like we did for the buffs
-    // do the important thinks in Update
-
-    public void Add(ABuffFactory buffFactory, GameObject source, GameObject target)
+    void Add(ABuffFactory buffFactory, GameObject source, GameObject target)
     {
         if (string.IsNullOrEmpty(buffFactory.uniqueID))
         {
@@ -239,7 +234,7 @@ public class BuffManager : SerializedMonoBehaviour
         OnBuffAdded.Invoke(buffData);
     }
 
-    public void Remove(ABuffFactory buffFactory, GameObject source, GameObject target, bool removeAll = false)
+    void Remove(ABuffFactory buffFactory, GameObject source, GameObject target, bool removeAll = false)
     {
         if (_buffPerSource.ContainsKey(source))
         {

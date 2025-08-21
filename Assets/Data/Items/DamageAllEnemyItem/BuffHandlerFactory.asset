@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 74fc0f31ef123f345aa3a3f58188e484, type: 3}
-  m_Name: CurrentHealthPercentConsumerFactory
+  m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
+  m_Name: BuffHandlerFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -21,7 +21,12 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
+  uniqueID: 49802f61-fb0d-4d04-ba0b-b12ae2890c7e
   data:
-    ignoreConsumerModifier: 1
-    multiplier: -0.05
-    inverse: 1
+    durationType: 2
+    duration: 0
+    isPeriodic: 0
+    periodDuration: 0
+    buffFactoryList:
+    - {fileID: 11400000, guid: df886ce39b12c59449194240adf5d950, type: 2}
+    buffEffect: {fileID: 0}

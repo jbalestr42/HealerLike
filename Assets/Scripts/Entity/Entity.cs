@@ -21,8 +21,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     List<AConsumerFactory> _onHitConsumers = new List<AConsumerFactory>();
     List<ABuffHandlerFactory> _onHitEffects = new List<ABuffHandlerFactory>();
     public List<ABuffHandlerFactory> onHitEffects { get { return _onHitEffects; } set { _onHitEffects = value; } }
-    List<ABuffFactory> _projectileBehaviours = new List<ABuffFactory>();
-    public List<ABuffFactory> projectileBehaviours { get { return _projectileBehaviours; } set { _projectileBehaviours = value; } }
+    List<ABuffHandlerFactory> _projectileBehaviours = new List<ABuffHandlerFactory>();
+    public List<ABuffHandlerFactory> projectileBehaviours { get { return _projectileBehaviours; } set { _projectileBehaviours = value; } }
 
     EntityData _data;
     public EntityData data { get { return _data; } set { _data = value; } }
@@ -68,9 +68,9 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         _targetPoint = model.GetComponentInChildren<SkillTargetPointTag>()?.gameObject ?? gameObject;
 
         // Init self buff from data
-        foreach (ABuffFactory passive in _data.passives)
+        foreach (ABuffHandlerFactory passive in _data.passives)
         {
-            AddBuff(passive, gameObject, gameObject);
+            AddBuffHandler(passive, gameObject, gameObject);
         }
 
         // Init on hit effects from data
@@ -215,16 +215,6 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     public void RemoveBuffHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target)
     {
         _buffManager.RemoveHandler(buffHandlerFactory, source, target);
-    }
-
-    public void AddBuff(ABuffFactory buffFactory, GameObject source, GameObject target)
-    {
-        _buffManager.Add(buffFactory, source, target);
-    }
-
-    public void RemoveBuff(ABuffFactory buffFactory, GameObject source, GameObject target)
-    {
-        _buffManager.Remove(buffFactory, source, target);
     }
 
     #endregion

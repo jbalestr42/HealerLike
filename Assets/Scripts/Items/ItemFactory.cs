@@ -10,12 +10,8 @@ public class ItemFactory : ItemFactory<Item, ItemData> {}
 public class ItemData : BaseItemData
 {
     [Space]
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffFactory>, ABuffFactory>(buffList)")]
-    public List<ABuffFactory> buffList;
-
-    [Space]
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(buffHandlerList)")]
-    public List<ABuffHandlerFactory> buffHandlerList;
+    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(buffs)")]
+    public List<ABuffHandlerFactory> buffs;
 
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(onHitEffects)")]
     public List<ABuffHandlerFactory> onHitEffects;
@@ -23,8 +19,8 @@ public class ItemData : BaseItemData
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<AConsumerFactory>, AConsumerFactory>(onHitConsumers)")]
     public List<AConsumerFactory> onHitConsumers;
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffFactory>, ABuffFactory>(projectileBehaviours)")]
-    public List<ABuffFactory> projectileBehaviours;
+    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(projectileBehaviours)")]
+    public List<ABuffHandlerFactory> projectileBehaviours;
 
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ASkillFactory>, ASkillFactory>(skills)")]
     public List<ASkillFactory> skills;
@@ -36,12 +32,7 @@ public class Item : AItem<ItemData>
 
     public override void Equip(GameObject target)
     {
-        foreach (ABuffFactory buffFactory in data.buffList)
-        {
-            target.GetComponent<IBuffable>().AddBuff(buffFactory, target, target);
-        }
-
-        foreach (ABuffHandlerFactory buffHandlerFactory in data.buffHandlerList)
+        foreach (ABuffHandlerFactory buffHandlerFactory in data.buffs)
         {
             target.GetComponent<IBuffable>().AddBuffHandler(buffHandlerFactory, target, target);
         }
@@ -56,7 +47,7 @@ public class Item : AItem<ItemData>
             target.GetComponent<IAttacker>().AddOnHitConsumer(consumerFactory);
         }
 
-        foreach (ABuffFactory projectileBehaviour in data.projectileBehaviours)
+        foreach (ABuffHandlerFactory projectileBehaviour in data.projectileBehaviours)
         {
             target.GetComponent<Entity>().projectileBehaviours.Add(projectileBehaviour);
         }
@@ -70,12 +61,7 @@ public class Item : AItem<ItemData>
 
     public override void Unequip(GameObject target)
     {
-        foreach (ABuffFactory buffFactory in data.buffList)
-        {
-            target.GetComponent<IBuffable>().RemoveBuff(buffFactory, target, target);
-        }
-
-        foreach (ABuffHandlerFactory buffHandlerFactory in data.buffHandlerList)
+        foreach (ABuffHandlerFactory buffHandlerFactory in data.buffs)
         {
             target.GetComponent<IBuffable>().RemoveBuffHandler(buffHandlerFactory, target, target);
         }
@@ -90,7 +76,7 @@ public class Item : AItem<ItemData>
             target.GetComponent<IAttacker>().RemoveOnHitConsumer(consumerFactory);
         }
 
-        foreach (ABuffFactory projectileBehaviour in data.projectileBehaviours)
+        foreach (ABuffHandlerFactory projectileBehaviour in data.projectileBehaviours)
         {
             target.GetComponent<Entity>().projectileBehaviours.Remove(projectileBehaviour);
         }

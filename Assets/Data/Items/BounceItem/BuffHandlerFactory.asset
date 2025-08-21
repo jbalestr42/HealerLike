@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c8b7d4b27c9ac914b8fa1ccfd86ce60f, type: 3}
-  m_Name: HealthValidatorFactory
+  m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
+  m_Name: BuffHandlerFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -21,5 +21,12 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
+  uniqueID: cfaf4fab-80c8-425b-89f4-2864cdf358a4
   data:
-    threshold: 0.75
+    durationType: 2
+    duration: 0
+    isPeriodic: 0
+    periodDuration: 0
+    buffFactoryList:
+    - {fileID: 11400000, guid: ea482b909510552498f2cfb20b7455cd, type: 2}
+    buffEffect: {fileID: 0}
