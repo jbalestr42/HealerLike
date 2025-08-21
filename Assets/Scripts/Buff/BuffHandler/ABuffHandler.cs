@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -15,7 +16,7 @@ public abstract class ABuffHandlerFactory : SerializedScriptableObject
     [HideInInlineEditors]
     public string uniqueID = Guid.NewGuid().ToString();
     public abstract ABuffHandler GetBuffHandler();
-    public abstract ABuffFactory buffFactory { get; }
+    public abstract List<ABuffFactory> buffFactoryList { get; }
     public abstract GameObject buffEffect { get; }
     public abstract DurationType durationType { get; }
     public abstract float duration { get; }
@@ -35,7 +36,7 @@ public class BuffHandlerFactory<BuffHandlerType, DataType> : ABuffHandlerFactory
         return new BuffHandlerType() { data = this.data };
     }
 
-    public override ABuffFactory buffFactory => data.buffFactory;
+    public override List<ABuffFactory> buffFactoryList => data.buffFactoryList;
     public override GameObject buffEffect => data.buffEffect;
     public override DurationType durationType => data.durationType;
     public override float duration => data.duration;
@@ -68,8 +69,8 @@ public class BuffHandlerBaseData
     [ShowIf("@this.durationType != DurationType.Instant && isPeriodic")]
     public float periodDuration;
 
-    [CreateDataButton]
-    public ABuffFactory buffFactory;
+    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffFactory>, ABuffFactory>(buffFactoryList)")]
+    public List<ABuffFactory> buffFactoryList;
 
     [AssetsOnly]
     public GameObject buffEffect; // TODO IBuffEffect ? to manage start and stop visual effect

@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 984d75a39286c4f498033bb6c8f5e063, type: 3}
-  m_Name: FlatModifierFactory 1
+  m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
+  m_Name: BuffHandlerFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -21,12 +21,13 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  uniqueID: e64c13e9-bd4e-4d4e-ae4a-995c981e5756
+  uniqueID: 38a68154-a9fa-45c5-878d-23e45c0c5ec4
   data:
     durationType: 2
     duration: 0
     isPeriodic: 0
     periodDuration: 0
-    type: 3
-    modifierType: 0
-    value: 0.5
+    buffFactoryList:
+    - {fileID: 11400000, guid: 20d029bd75f1c644f9c6013b87b29ab8, type: 2}
+    - {fileID: 11400000, guid: 3d94387abaae65a42a634b7b705d5cb3, type: 2}
+    buffEffect: {fileID: 0}

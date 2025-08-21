@@ -27,5 +27,6 @@ MonoBehaviour:
     duration: 0
     isPeriodic: 0
     periodDuration: 0
-    buffFactory: {fileID: 11400000, guid: 6f7da3c10b0d9764f879433126e45322, type: 2}
+    buffFactoryList:
+    - {fileID: 11400000, guid: 6f7da3c10b0d9764f879433126e45322, type: 2}
     buffEffect: {fileID: 0}

@@ -25,10 +25,9 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: a56b9ef5a8cc3844bbc272c680bbaed8, type: 3}
     name: Trinity
     description: 
-    buffList:
-    - {fileID: 11400000, guid: 20d029bd75f1c644f9c6013b87b29ab8, type: 2}
-    - {fileID: 11400000, guid: 8b8d286bcb0f2194684e142309a7966a, type: 2}
-    - {fileID: 11400000, guid: 3d94387abaae65a42a634b7b705d5cb3, type: 2}
+    buffList: []
+    buffHandlerList:
+    - {fileID: 11400000, guid: c3236f465491bbf42a002a4da76a6381, type: 2}
     onHitEffects: []
     onHitConsumers: []
     projectileBehaviours: []

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// TODO: rename
 [RequireComponent(typeof(BuffManager))]
 public class VisualBuffManager : MonoBehaviour
 {

@@ -212,6 +212,11 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         _buffManager.AddHandler(buffHandlerFactory, source, target);
     }
 
+    public void RemoveBuffHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target)
+    {
+        _buffManager.RemoveHandler(buffHandlerFactory, source, target);
+    }
+
     public void AddBuff(ABuffFactory buffFactory, GameObject source, GameObject target)
     {
         _buffManager.Add(buffFactory, source, target);

@@ -13,6 +13,10 @@ public class ItemData : BaseItemData
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffFactory>, ABuffFactory>(buffList)")]
     public List<ABuffFactory> buffList;
 
+    [Space]
+    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(buffHandlerList)")]
+    public List<ABuffHandlerFactory> buffHandlerList;
+
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(onHitEffects)")]
     public List<ABuffHandlerFactory> onHitEffects;
 
@@ -37,6 +41,11 @@ public class Item : AItem<ItemData>
             target.GetComponent<IBuffable>().AddBuff(buffFactory, target, target);
         }
 
+        foreach (ABuffHandlerFactory buffHandlerFactory in data.buffHandlerList)
+        {
+            target.GetComponent<IBuffable>().AddBuffHandler(buffHandlerFactory, target, target);
+        }
+
         foreach (ABuffHandlerFactory buffHandlerFactory in data.onHitEffects)
         {
             target.GetComponent<IAttacker>().AddOnHitEffect(buffHandlerFactory);
@@ -49,7 +58,6 @@ public class Item : AItem<ItemData>
 
         foreach (ABuffFactory projectileBehaviour in data.projectileBehaviours)
         {
-            // target.GetComponent<Tower>().projectileBehaviours.Add(projectileBehaviour);
             target.GetComponent<Entity>().projectileBehaviours.Add(projectileBehaviour);
         }
 
@@ -65,6 +73,11 @@ public class Item : AItem<ItemData>
         foreach (ABuffFactory buffFactory in data.buffList)
         {
             target.GetComponent<IBuffable>().RemoveBuff(buffFactory, target, target);
+        }
+
+        foreach (ABuffHandlerFactory buffHandlerFactory in data.buffHandlerList)
+        {
+            target.GetComponent<IBuffable>().RemoveBuffHandler(buffHandlerFactory, target, target);
         }
 
         foreach (ABuffHandlerFactory buffHandlerFactory in data.onHitEffects)
