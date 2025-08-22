@@ -8,6 +8,7 @@ public class EntityHUD : MonoBehaviour, IVisualBehaviour
     public void Init(Entity entity)
     {
         entity.health.OnValueChanged.AddListener((ResourceAttribute health) => _resourceView.SetResource(health.Value, health.Max));
+        entity.OnMarkChanged.AddListener(ShowMark);
 
         _resourceView.Show(true);
     }
