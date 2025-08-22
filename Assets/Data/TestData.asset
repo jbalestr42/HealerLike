@@ -367,26 +367,6 @@ MonoBehaviour:
       Entry: 8
       Data: 
   gold: 10000
-  wavePatterns: []
-  enemies:
-  - {fileID: 11400000, guid: 85a1a69f23e87f04abfe85cc290d6463, type: 2}
-  - {fileID: 11400000, guid: a2003999930914c4782f5152c53489fe, type: 2}
-  - {fileID: 11400000, guid: 5790ab3541f0a5042a1cb97f10a65ae2, type: 2}
-  - {fileID: 11400000, guid: 2b9c8bcb337008244bcae1db222649a3, type: 2}
-  - {fileID: 11400000, guid: a21eb85731570c145965aae25a77aeb7, type: 2}
-  - {fileID: 11400000, guid: 6983ce313cb34a64a995039290773c79, type: 2}
-  - {fileID: 11400000, guid: 2a867188a6e6c0c46bee6757fe33c244, type: 2}
-  - {fileID: 11400000, guid: 74810650e31df0a48a6ea3c6f66e98ce, type: 2}
-  - {fileID: 11400000, guid: 4ddbea452d29f2246ab3ea24ec77b722, type: 2}
-  towers:
-  - {fileID: 11400000, guid: 808dd1399f7c9b34da64af01ea46f9b8, type: 2}
-  - {fileID: 11400000, guid: 167d63df2f0e3b94b801bef7f5a2c222, type: 2}
-  - {fileID: 11400000, guid: 23ef9ec78e507a54da86027806f17f3e, type: 2}
-  - {fileID: 11400000, guid: f3d0ea733c223214b953c86315248c56, type: 2}
-  - {fileID: 11400000, guid: 48daac76efb70b2408093ac3f0f5c6d5, type: 2}
-  - {fileID: 11400000, guid: 135223c51d96750418e5b372d25ec344, type: 2}
-  - {fileID: 11400000, guid: fb76ad3259673304e8f1796f2d3992ce, type: 2}
-  - {fileID: 11400000, guid: c79de1eb3ce19cf4da3be6f0df024341, type: 2}
   entities:
   - {fileID: 11400000, guid: 19f30c8aca7684b4eb7fbd3a5e0f4b16, type: 2}
   - {fileID: 11400000, guid: 54a4a578c5855404698780caa3b60094, type: 2}
@@ -408,5 +388,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 99c839410d10b0949a8c13b287954fec, type: 2}
   - {fileID: 11400000, guid: 7a727d3ba171a4a44bc7af8e70c4af88, type: 2}
   - {fileID: 11400000, guid: fc720cd10a4f2274982ec917fd77d9ee, type: 2}
+  - {fileID: 11400000, guid: e650e43fbec13764bac68e7b756e405f, type: 2}
   - {fileID: 11400000, guid: 84838603ada205643ab074dfd136f83b, type: 2}
   - {fileID: 11400000, guid: 60b337d5800dd0943ba5e16ee16359fd, type: 2}
