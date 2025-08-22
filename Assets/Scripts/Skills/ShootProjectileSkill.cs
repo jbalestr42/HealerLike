@@ -40,7 +40,7 @@ public class ShootProjectileSkill : ASkill<ShootProjectileSkillData>
                     SkillSource skillSource = entity.skillStartPoint;
                     skillSource.OnUseSkill();
 
-                    GameObject projectileGo = Instantiate(data.projectilePrefab, skillSource.transform.position, Quaternion.identity);
+                    GameObject projectileGo = EntityManager.instance.SpawnProjectile(data.projectilePrefab, skillSource.transform.position, Quaternion.identity);
                     Projectile projectile = projectileGo.GetComponent<Projectile>();
                     projectile.Init(source, target, entity.projectileBehaviours);
                 }

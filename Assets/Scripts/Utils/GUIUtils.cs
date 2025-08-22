@@ -5,6 +5,7 @@ using System.Linq;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -99,7 +100,13 @@ public static class GUIUtils
                 var selected = selections.First();
                 var so = ScriptableObject.CreateInstance(selected);
                 string currentDirectory = Selection.activeObject != null ? Path.GetDirectoryName(AssetDatabase.GetAssetPath(Selection.activeObject)) : "Assets/";
-                var uniquePath = AssetDatabase.GenerateUniqueAssetPath(Path.Combine(currentDirectory, $"{selected.GetNiceName()}.asset"));
+                string assetName = selected.GetNiceName();
+                if (Selection.activeObject != null)
+                {
+                    string prefixName = Path.GetFileName(Path.GetDirectoryName(AssetDatabase.GetAssetPath(Selection.activeObject)));
+                    assetName = $"{prefixName}_{selected.GetNiceName()}";
+                }
+                var uniquePath = AssetDatabase.GenerateUniqueAssetPath(Path.Combine(currentDirectory, $"{assetName}.asset"));
                 AssetDatabase.CreateAsset(so, uniquePath);
                 list.Add((TElement)so);
             };
