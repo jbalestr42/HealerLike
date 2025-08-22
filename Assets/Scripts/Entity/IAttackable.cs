@@ -13,4 +13,5 @@ public interface IAttackable
 {
     void OnHit(ResourceModifier resourceModifier);
     void OnHit(OnHitData onHitData);
+    GameObject owner { get; }
 }

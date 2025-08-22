@@ -169,6 +169,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         }
     }
 
+    public GameObject owner => gameObject;
+
     #endregion
 
     #region IAttacker

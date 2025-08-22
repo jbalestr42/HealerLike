@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4533536401712314}
-  - component: {fileID: 5002725660328576105}
+  - component: {fileID: 2192693694304428963}
   m_Layer: 9
   m_Name: BoudhaTower
   m_TagString: Untagged
@@ -33,7 +33,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5002725660328576105
+--- !u!114 &2192693694304428963
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -42,7 +42,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1081930672269232}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5eec90594863de740a05b70baade6201, type: 3}
+  m_Script: {fileID: 11500000, guid: df261b6205e0a28488c3e360c6de64b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &2495452823377971933
@@ -50,6 +50,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 4533536401712314}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 671bf934769e4e143a0f3cd1b441dacb, type: 3}
@@ -121,6 +122,9 @@ PrefabInstance:
       value: buddhaPreaching
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 671bf934769e4e143a0f3cd1b441dacb, type: 3}
 --- !u!4 &2678261214425771318 stripped
 Transform:

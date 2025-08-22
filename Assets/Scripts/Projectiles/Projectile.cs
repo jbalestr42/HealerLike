@@ -86,9 +86,10 @@ public class Projectile : MonoBehaviour, IBuffable
             return;
         }
 
-        if (other.gameObject.GetComponent<IAttackable>() != null && source.GetComponent<IAttacker>() != null)
+        IAttackable attackable = other.gameObject.GetComponentInParent<IAttackable>();
+        if (attackable != null && source.GetComponent<IAttacker>() != null)
         {
-            OnCollisionEnter.Invoke(other.gameObject, source);
+            OnCollisionEnter.Invoke(attackable.owner, source);
         }
     }
 

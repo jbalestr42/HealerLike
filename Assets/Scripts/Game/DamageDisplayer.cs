@@ -27,7 +27,7 @@ public class DamageDisplayer : MonoBehaviour
 
     void DisplayDamage(GameObject owner, ResourceAttribute resource, ResourceModifier resourceModifier, float value)
     {
-        GameObject damagePopupGO = Instantiate(_damagePopup, owner.transform.position, Quaternion.identity);
+        GameObject damagePopupGO = Instantiate(_damagePopup, owner.GetComponent<Entity>().targetPoint.transform.position, Quaternion.identity);
         DamagePopup damagePopup = damagePopupGO.GetComponent<DamagePopup>();
         damagePopupGO.transform.SetParent(_parent.transform);
         damagePopup.Init(resourceModifier.source, value);
