@@ -16,8 +16,9 @@ public class BuffManager : SerializedMonoBehaviour
         public int stacks = 0;
         public List<ABuff> buffList = new List<ABuff>();
 
-        public bool shouldStack => buffList.Count > 0 && first.isStackable;
-        public bool shouldUnstack => stacks > 0 && first.isStackable;
+        public bool isStackable => buffList.Count > 0 && first.isStackable;
+        public bool shouldStack => stacks > 0 && isStackable;
+        public bool shouldUnstack => stacks > 0 && isStackable;
         public ABuff first => buffList.Count > 0 ? buffList[0] : null;
     }
 
@@ -33,11 +34,12 @@ public class BuffManager : SerializedMonoBehaviour
         public ABuffHandlerFactory buffHandlerFactory = null;
         public ABuffHandler buffHandler = null;
         public GameObject target = null;
-        public bool hasStarted = false;
         public int refreshStacks = 0;
+        public int currentStacks = 0;
+        public bool hasStarted => currentStacks != 0;
         public bool isInit => buffHandler != null;
-        public bool shouldRemove => refreshStacks < 0;
-        public bool shouldRefresh => refreshStacks > 0;
+        public bool shouldRemove => currentStacks == 0;
+        public bool shouldRefresh => refreshStacks != 0;
     }
 
     class BuffHandlerDataPerId
@@ -98,21 +100,18 @@ public class BuffManager : SerializedMonoBehaviour
                     }
                     else
                     {
+                        // First time we start the handler
                         if (!buffHandlerData.hasStarted)
                         {
-                            buffHandlerData.hasStarted = true;
                             Debug.Log("[BuffManager] Start buff handler " + buffHandlerFactory.name);
                             buffHandlerData.buffHandler.Start(source, buffHandlerData.target);
-                            foreach (var buffFactory in buffHandlerFactory.buffFactoryList)
-                            {
-                                Add(buffFactory, source, buffHandlerData.target);
-                            }
                             OnBuffHandlerStarted.Invoke(buffHandlerData);
                         }
 
+                        // Handler need to stack/unstack
                         if (buffHandlerData.shouldRefresh)
                         {
-                            Debug.Log("[BuffManager] Refresh buff handler " + buffHandlerFactory.name);
+                            Debug.Log($"[BuffManager] Refresh buff handler {buffHandlerFactory.name} | currentStacks={buffHandlerData.currentStacks} | refreshStacks={buffHandlerData.refreshStacks}");
                             buffHandlerData.buffHandler.Refresh(source, buffHandlerData.target);
                             for (int i = 0; i < buffHandlerData.refreshStacks; i++)
                             {
@@ -120,6 +119,15 @@ public class BuffManager : SerializedMonoBehaviour
                                 {
                                     Add(buffFactory, source, buffHandlerData.target);
                                 }
+                                buffHandlerData.currentStacks++;
+                            }
+                            for (int i = 0; i > buffHandlerData.refreshStacks; i--)
+                            {
+                                foreach (var buffFactory in buffHandlerFactory.buffFactoryList)
+                                {
+                                    Remove(buffFactory, source, buffHandlerData.target);
+                                }
+                                buffHandlerData.currentStacks--;
                             }
                             buffHandlerData.refreshStacks = 0;
                         }
@@ -181,13 +189,12 @@ public class BuffManager : SerializedMonoBehaviour
             buffHandlerData.buffHandler = buffHandlerFactory.GetBuffHandler();
             buffHandlerData.buffHandlerFactory = buffHandlerFactory;
             buffHandlerData.target = target;
-            buffHandlerData.hasStarted = false;
         }
         else
         {
             Debug.Log("[BuffManager] Refresh handler " + buffHandlerFactory.name);
-            buffHandlerData.refreshStacks++;
         }
+        buffHandlerData.refreshStacks++;
     }
 
     public void RemoveHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target, bool removeAll = false)
@@ -197,15 +204,11 @@ public class BuffManager : SerializedMonoBehaviour
             Debug.LogError($"[BuffManager] uniqueId is null for factory '{buffHandlerFactory.name}'");
         }
 
-        if (_buffHandlerPerSource.ContainsKey(source))
+        BuffHandlerData buffHandlerData = GetBuffHandlerData(buffHandlerFactory, source);
+        if (buffHandlerData != null)
         {
-            BuffHandlerDataPerId sourceBuffHandler = _buffHandlerPerSource[source];
-            if (sourceBuffHandler.buffHandlerPerId.ContainsKey(buffHandlerFactory.uniqueID))
-            {
-                Debug.Log("[BuffManager] Remove handler " + buffHandlerFactory.name);
-                BuffHandlerData buffHandlerData = sourceBuffHandler.buffHandlerPerId[buffHandlerFactory.uniqueID];
-                buffHandlerData.refreshStacks--;
-            }
+            Debug.Log("[BuffManager] Remove handler " + buffHandlerFactory.name);
+            buffHandlerData.refreshStacks--;
         }
     }
 
@@ -219,7 +222,6 @@ public class BuffManager : SerializedMonoBehaviour
         BuffData buffData = GetBuffData(buffFactory, source);
         if (buffData.shouldStack)
         {
-            buffData.stacks++;
             Debug.Log("[BuffManager] Stack buff " + buffFactory.name + " | stacks=" + buffData.stacks);
             IStackableBuff stackableBuff = buffData.first as IStackableBuff;
             stackableBuff.Stack(source, target);
@@ -231,6 +233,7 @@ public class BuffManager : SerializedMonoBehaviour
             buffData.buffList.Add(buff);
             buff.Add(source, target);
         }
+        buffData.stacks++;
         OnBuffAdded.Invoke(buffData);
     }
 
@@ -242,20 +245,23 @@ public class BuffManager : SerializedMonoBehaviour
             if (sourceBuff.buffPerId.ContainsKey(buffFactory.uniqueID))
             {
                 BuffData buffData = sourceBuff.buffPerId[buffFactory.uniqueID];
-                if (buffData.shouldUnstack && !removeAll)
+                if (buffData.first != null)
                 {
-                    Debug.Log("[BuffManager] Unstack buff " + buffFactory.name + " | stacks=" + buffData.stacks);
-                    buffData.stacks--;
-                    IStackableBuff stackableBuff = buffData.first as IStackableBuff;
-                    stackableBuff.Unstack(source, target);
-                }
-                else
-                {
-                    Debug.Log("[BuffManager] Remove buff " + buffFactory.name + " | stacks=" + (removeAll ? buffData.stacks : 1));
-                    ABuff buff = buffData.first;
-                    buffData.stacks = 0;
-                    buffData.buffList.Remove(buff);
-                    buff.Remove(source, target);
+                    if (buffData.shouldUnstack && !removeAll)
+                    {
+                        Debug.Log("[BuffManager] Unstack buff " + buffFactory.name + " | stacks=" + buffData.stacks);
+                        buffData.stacks--;
+                        IStackableBuff stackableBuff = buffData.first as IStackableBuff;
+                        stackableBuff.Unstack(source, target);
+                    }
+                    else
+                    {
+                        Debug.Log("[BuffManager] Remove buff " + buffFactory.name + " | stacks=" + buffData.stacks);
+                        ABuff buff = buffData.first;
+                        buffData.stacks = 0;
+                        buffData.buffList.Remove(buff);
+                        buff.Remove(source, target);
+                    }
                 }
                 OnBuffRemoved.Invoke(buffData);
             }

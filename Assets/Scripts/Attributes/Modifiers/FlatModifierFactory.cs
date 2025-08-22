@@ -43,8 +43,8 @@ public class FlatModifier : AttributeModifier<FlatModifierData>, IStackableBuff
     {
         if (data.modifierType == AttributeModifierType.Multiply)
         {
-            _lastStackedValue /= data.value;
             _stackedValue -= Mathf.Sign(data.value) * Mathf.Abs(_lastStackedValue);
+            _lastStackedValue /= data.value;
         }
         else if (data.modifierType == AttributeModifierType.Add)
         {
