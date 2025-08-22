@@ -39,15 +39,15 @@ public abstract class ATargetBehaviour
 
         ApplyBehaviour(_targets, position, range);
 
-        // Focus marked enemy first
-        //if at some point we want multiple marked enemy
+        // Focus marked entity first
+        //if at some point we want multiple marked entity
         //_targets.Sort((GameObject a, GameObject b) =>
         //{
-        //    return MarkManager.instance.IsEnemyMarked(b).CompareTo(MarkManager.instance.IsEnemyMarked(a));
+        //    return MarkManager.instance.IsEntityMarked(b).CompareTo(MarkManager.instance.IsEntityMarked(a));
         //});
 
-        // Move single marked enemy at first index
-        GameObject marked = _targets.Find((GameObject a) => MarkManager.instance.IsEnemyMarked(a));
+        // Move single marked entity at first index
+        GameObject marked = _targets.Find((GameObject a) => MarkManager.instance.IsEntityMarked(a));
         if (marked)
         {
             _targets.Remove(marked);

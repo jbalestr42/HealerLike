@@ -8,50 +8,50 @@ public class MarkManager : Singleton<MarkManager>
     void Start()
     {
         _gameView = UIManager.instance.GetView<GameView>(ViewType.Game);
-        _gameView.gameHUD.markEnemyToggle.onValueChanged.AddListener(OnEnemyMarkClicked);
+        _gameView.gameHUD.markEntityToggle.onValueChanged.AddListener(OnEntityMarkClicked);
         EntityManager.instance.OnEntityKilled.AddListener(OnEntityKilled);
     }
 
-    void OnEnemyMarkClicked(bool isOn)
+    void OnEntityMarkClicked(bool isOn)
     {
         if (!isOn)
         {
-            InteractionManager.instance.SetInteraction(new MarkEnemyInteraction());
+            InteractionManager.instance.SetInteraction(new MarkEntityInteraction());
         }
         else
         {
-            UnMarkEnemy();
+            UnMarkEntity();
             InteractionManager.instance.CancelInteraction();
         }
     }
 
     void OnEntityKilled(Entity entity)
     {
-        if (IsEnemyMarked(entity.gameObject))
+        if (IsEntityMarked(entity.gameObject))
         {
             ResetMark();
         }
     }
 
-    public bool IsEnemyMarked(GameObject entity)
+    public bool IsEntityMarked(GameObject entity)
     {
         return entity == _markedEntity;
     }
 
-    public void MarkEnemy(GameObject markedEnemy)
+    public void MarkEntity(GameObject markedEntity)
     {
-        if (markedEnemy.GetComponent<IMarkable>() != null)
+        if (markedEntity.GetComponent<IMarkable>() != null)
         {
             if (_markedEntity != null)
             {
                 _markedEntity.GetComponent<IMarkable>().UnMark();
             }
-            _markedEntity = markedEnemy;
+            _markedEntity = markedEntity;
             _markedEntity.GetComponent<IMarkable>().Mark();
         }
     }
 
-    public void UnMarkEnemy()
+    public void UnMarkEntity()
     {
         if (_markedEntity != null)
         {
@@ -63,6 +63,6 @@ public class MarkManager : Singleton<MarkManager>
     public void ResetMark()
     {
         _markedEntity = null;
-        _gameView.gameHUD.markEnemyToggle.SetIsOnWithoutNotify(true);
+        _gameView.gameHUD.markEntityToggle.SetIsOnWithoutNotify(true);
     }
 }

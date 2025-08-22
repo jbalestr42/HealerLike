@@ -58,6 +58,7 @@ GameObject:
   - component: {fileID: 5617268302777728159}
   - component: {fileID: 3331761143499893624}
   - component: {fileID: 3432506910933755837}
+  - component: {fileID: 5387663750601445669}
   m_Layer: 14
   m_Name: Lakshmi_Statue_Acsesory
   m_TagString: Untagged
@@ -130,6 +131,18 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &5387663750601445669
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6265886345846692088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58afcc8e4d7e2cb41946ba4810fbabf4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6856644120570094250
 GameObject:
   m_ObjectHideFlags: 0
@@ -143,7 +156,6 @@ GameObject:
   - component: {fileID: 7700338341531302952}
   - component: {fileID: 8847513940704216830}
   - component: {fileID: 8232269103539080962}
-  - component: {fileID: 2258767501666132486}
   m_Layer: 14
   m_Name: Lakshmi_Statue_Body
   m_TagString: Untagged
@@ -246,18 +258,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _speed: 5
---- !u!114 &2258767501666132486
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6856644120570094250}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58afcc8e4d7e2cb41946ba4810fbabf4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &183899188455326796
 PrefabInstance:
   m_ObjectHideFlags: 0

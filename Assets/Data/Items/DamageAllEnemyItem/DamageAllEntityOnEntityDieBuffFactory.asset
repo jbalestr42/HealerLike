@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 984d75a39286c4f498033bb6c8f5e063, type: 3}
-  m_Name: FlatModifierFactory
+  m_Script: {fileID: 11500000, guid: 29b593bfd2467d249a6182b4f319a968, type: 3}
+  m_Name: DamageAllEntityOnEntityDieBuffFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -21,8 +21,7 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  uniqueID: ad34ab2e-de05-4079-99d6-b653535bdef2
+  uniqueID: 2eba4b6a-e195-4d7d-a172-d27c7880729f
   data:
-    type: 2
-    isRelative: 1
-    value: 1
+    damageToAllEntity: {fileID: 11400000, guid: 3ce3b47cbd847cf4aa41f3bb97bdd19f, type: 2}
+    entityType: 2

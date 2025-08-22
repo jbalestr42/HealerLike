@@ -61,7 +61,7 @@ MonoBehaviour:
       Data: 1
     - Name: $v
       Entry: 4
-      Data: 1
+      Data: 4
     - Name: 
       Entry: 8
       Data: 
@@ -98,7 +98,6 @@ MonoBehaviour:
   model: {fileID: 1631280189745936, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
   title: Channeling
   description: Channel attack on the same target
-  price: 0
   passives: []
   onHitEffects: []
   onHitConsumer:

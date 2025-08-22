@@ -1,18 +1,18 @@
 using System;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Custom/Data/Buff/DamageAllEnemyOnEnemyDieBuff")]
-public class DamageAllEnemyOnEnemyDieBuffFactory : BuffFactory<DamageAllEnemyOnEnemyDieBuff, DamageAllEnemyOnEnemyDieBuffData> { }
+[CreateAssetMenu(menuName = "Custom/Data/Buff/DamageAllEntityOnEntityDieBuff")]
+public class DamageAllEntityOnEntityDieBuffFactory : BuffFactory<DamageAllEntityOnEntityDieBuff, DamageAllEntityOnEntityDieBuffData> { }
 
 [Serializable]
-public class DamageAllEnemyOnEnemyDieBuffData
+public class DamageAllEntityOnEntityDieBuffData
 {
     [CreateDataButton]
-    public AConsumerFactory damageToAllEnemy;
+    public AConsumerFactory damageToAllEntity;
     public Entity.EntityType entityType;
 }
 
-public class DamageAllEnemyOnEnemyDieBuff : ABuff<DamageAllEnemyOnEnemyDieBuffData>, IStackableBuff
+public class DamageAllEntityOnEntityDieBuff : ABuff<DamageAllEntityOnEntityDieBuffData>, IStackableBuff
 {
     int _stacks = 1;
 
@@ -23,7 +23,7 @@ public class DamageAllEnemyOnEnemyDieBuff : ABuff<DamageAllEnemyOnEnemyDieBuffDa
             if (entity != target.gameObject)
             {
                 ResourceModifier resourceModifier = new ResourceModifier();
-                resourceModifier.consumers.Add(data.damageToAllEnemy.GetConsumer(target.gameObject, target.gameObject));
+                resourceModifier.consumers.Add(data.damageToAllEntity.GetConsumer(target.gameObject, target.gameObject));
                 resourceModifier.multiplier = _stacks;
                 resourceModifier.source = target.gameObject;
 

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TowerRange : MonoBehaviour
+public class Range : MonoBehaviour
 {
     [SerializeField] MeshRenderer _renderer;
 

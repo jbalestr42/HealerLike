@@ -15,10 +15,10 @@ TagManager:
   - 
   - 
   - Terrain
-  - Tower
+  - 
   - Player
   - Bullet
-  - Enemy
+  - 
   - 
   - Entity
   - 

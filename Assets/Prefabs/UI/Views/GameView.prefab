@@ -4639,7 +4639,7 @@ MonoBehaviour:
   _playSpeedx1Button: {fileID: 51310980}
   _playSpeedx2Button: {fileID: 38494166}
   _playSpeedx3Button: {fileID: 777688682}
-  _markEnemyToggle: {fileID: 418965651897506648}
+  _markEntityToggle: {fileID: 418965651897506648}
   _manaBar: {fileID: 4140834516305002288}
 --- !u!1 &5866334168411925696
 GameObject:

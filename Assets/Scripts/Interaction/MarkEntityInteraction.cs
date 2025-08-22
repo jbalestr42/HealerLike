@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
-public class MarkEnemyInteraction : AInteraction
+public class MarkEntityInteraction : AInteraction
 {
-    public MarkEnemyInteraction()
+    public MarkEntityInteraction()
     {
         Cursor.SetCursor(Resources.Load<Texture2D>("markedCursor"), new Vector2(256f, 256f), CursorMode.Auto);
     }
@@ -14,7 +14,7 @@ public class MarkEnemyInteraction : AInteraction
 
     public override void OnMouseClick(RaycastHit hit)
     {
-        MarkManager.instance.MarkEnemy(hit.transform.gameObject);
+        MarkManager.instance.MarkEntity(hit.transform.gameObject);
         InteractionManager.instance.EndInteraction();
     }
 
