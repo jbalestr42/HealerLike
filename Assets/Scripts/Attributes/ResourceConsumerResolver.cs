@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ResourceConsumerResolver
@@ -6,6 +7,7 @@ public class ResourceConsumerResolver
     Attribute _flatArmor;
     Attribute _hitArmor;
     Attribute _vulnerability;
+    Attribute _criticalChanceResist;
 
     public void Init(AttributeManager attributeManager)
     {
@@ -13,9 +15,10 @@ public class ResourceConsumerResolver
         _flatArmor = attributeManager.GetOrAdd(AttributeType.FlatArmor);
         _hitArmor = attributeManager.GetOrAdd(AttributeType.HitArmor);
         _vulnerability = attributeManager.GetOrAdd(AttributeType.Vulnerability);
+        _criticalChanceResist = attributeManager.GetOrAdd(AttributeType.CriticalChanceResist);
     }
 
-    public float ComputeValue(ResourceAttribute resourceAttribute, ResourceModifier resourceModifier)
+    public (float value, bool isCritical) ComputeValue(ResourceAttribute resourceAttribute, ResourceModifier resourceModifier)
     {
         float value = 0f;
         foreach (AConsumer consumer in resourceModifier.consumers)
@@ -27,8 +30,22 @@ public class ResourceConsumerResolver
         }
         resourceModifier.consumers.Clear();
 
+        bool isCritical = false;
+        AttributeManager sourceAttributeManager = resourceModifier.source.GetComponent<AttributeManager>();
+        if (sourceAttributeManager.Has(AttributeType.CriticalChance))
+        {
+            Attribute criticalChance = sourceAttributeManager.Get(AttributeType.CriticalChance);
+            Attribute criticalMultiplier = sourceAttributeManager.Get(AttributeType.CriticalMultiplier);
+
+            isCritical = Random.Range(0f, 100f) < (criticalChance.Value - _criticalChanceResist.Value);
+            if (isCritical)
+            {
+                value *= criticalMultiplier.Value;
+            }
+        }
+
         value *= resourceModifier.multiplier;
-        return value;
+        return (value, isCritical);
     }
 
     bool CanApplyConsumer(ResourceAttribute resourceAttribute, AConsumer consumer)

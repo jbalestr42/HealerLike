@@ -183,7 +183,7 @@ GameObject:
   - component: {fileID: 3737077731378541527}
   - component: {fileID: 1587967747575220463}
   m_Layer: 5
-  m_Name: DamagePopup
+  m_Name: CriticalDamagePopup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -278,6 +278,15 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
+      time: 0.064069524
+      value: 0.73148
+      inSlope: 2.2512326
+      outSlope: 2.2512326
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
       time: 0.4916687
       value: 1
       inSlope: 0
@@ -286,6 +295,15 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0
       outWeight: 0
+    - serializedVersion: 3
+      time: 0.9577327
+      value: 0.64734167
+      inSlope: -2.345349
+      outSlope: -2.345349
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.99583334
       value: 0.0023584906
@@ -298,8 +316,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  _duration: 0.5
-  _maxSpeed: 1.5
-  _maxSize: 45
-  _positiveMaterial: {fileID: 2100000, guid: c2bbd57640605574a9010f375ca5207c, type: 2}
-  _negativeMaterial: {fileID: 2100000, guid: 71da319be09523f4a866599604d71368, type: 2}
+  _duration: 0.6
+  _maxSpeed: 1
+  _maxSize: 60
+  _positiveMaterial: {fileID: 2100000, guid: 0c1777a5994a5f44fbe8e252c6deb85f, type: 2}
+  _negativeMaterial: {fileID: 2100000, guid: e8179e5c88a7d63408cb1b6c7f3ff53a, type: 2}

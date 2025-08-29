@@ -35,7 +35,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 16
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7901822376538958486
 MonoBehaviour:
@@ -121,6 +121,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _damagePopup: {fileID: 3737077731378541531, guid: 19fd26f5500c7fb46a24c325624cbc3c, type: 3}
+  _criticalDamagePopup: {fileID: 3737077731378541531, guid: a2b6b0b82f908bf41a6bd079fc28df42, type: 3}
 --- !u!114 &7901822376538958488
 MonoBehaviour:
   m_ObjectHideFlags: 0

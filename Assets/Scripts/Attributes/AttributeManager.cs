@@ -29,6 +29,11 @@ public class AttributeManager : MonoBehaviour
         return attribute;
     }
 
+    public bool Has(AttributeType type)
+    {
+        return _attributes.ContainsKey(type);
+    }
+
     public Attribute Get(AttributeType type)
     {
         if (!_attributes.ContainsKey(type))

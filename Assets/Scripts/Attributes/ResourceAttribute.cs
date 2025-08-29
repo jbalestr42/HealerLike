@@ -6,7 +6,7 @@ using UnityEngine.Events;
 public class ResourceAttribute : MonoBehaviour
 {
     public UnityEvent<ResourceAttribute> OnValueChanged = new UnityEvent<ResourceAttribute>();
-    public UnityEvent<GameObject, ResourceAttribute, ResourceModifier, float> OnAllConsumerProcessed = new UnityEvent<GameObject, ResourceAttribute, ResourceModifier, float>();
+    public UnityEvent<GameObject, ResourceModifier, float, bool> OnAllConsumerProcessed = new UnityEvent<GameObject, ResourceModifier, float, bool>();
 
     float _prevValue;
     float _value;
@@ -45,9 +45,9 @@ public class ResourceAttribute : MonoBehaviour
             {
                 if (resourceModifier.consumers.Count > 0)
                 {
-                    float value = _resourceConsumerResolver.ComputeValue(this, resourceModifier);
+                    (float value, bool isCritical) = _resourceConsumerResolver.ComputeValue(this, resourceModifier);
                     _value += value;
-                    OnAllConsumerProcessed.Invoke(gameObject, this, resourceModifier, value);
+                    OnAllConsumerProcessed.Invoke(gameObject, resourceModifier, value, isCritical);
                 }
             }
             _resourceModifiers.Clear();

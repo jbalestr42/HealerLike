@@ -3,6 +3,7 @@ using UnityEngine;
 public class DamageDisplayer : MonoBehaviour
 {
     [SerializeField] GameObject _damagePopup;
+    [SerializeField] GameObject _criticalDamagePopup;
 
     GameObject _parent;
 
@@ -25,9 +26,10 @@ public class DamageDisplayer : MonoBehaviour
         entity.health.OnAllConsumerProcessed.RemoveListener(DisplayDamage);
     }
 
-    void DisplayDamage(GameObject owner, ResourceAttribute resource, ResourceModifier resourceModifier, float value)
+    void DisplayDamage(GameObject owner, ResourceModifier resourceModifier, float value, bool isCritical)
     {
-        GameObject damagePopupGO = Instantiate(_damagePopup, owner.GetComponent<Entity>().targetPoint.transform.position, Quaternion.identity);
+        GameObject damagePopupPrefab = isCritical ? _criticalDamagePopup : _damagePopup;
+        GameObject damagePopupGO = Instantiate(damagePopupPrefab, owner.GetComponent<Entity>().targetPoint.transform.position, Quaternion.identity);
         DamagePopup damagePopup = damagePopupGO.GetComponent<DamagePopup>();
         damagePopupGO.transform.SetParent(_parent.transform);
         damagePopup.Init(resourceModifier.source, value);

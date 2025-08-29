@@ -7,8 +7,10 @@ public class DamagePopup : MonoBehaviour
 {
     [SerializeField] TMP_Text _text;
     [SerializeField] AnimationCurve _opacity;
+    [SerializeField] AnimationCurve _size;
     [SerializeField] float _duration = 1f;
     [SerializeField] float _maxSpeed = 0.5f;
+    [SerializeField] float _maxSize = 10f;
 
     [SerializeField] Material _positiveMaterial;
     [SerializeField] Material _negativeMaterial;
@@ -52,6 +54,7 @@ public class DamagePopup : MonoBehaviour
         transform.position += _direction * Time.deltaTime * _speed;
         _color.a = _opacity.Evaluate(_time / _duration);
         _text.color = _color;
+        _text.fontSize = _maxSize * _size.Evaluate(_time / _duration);
         transform.rotation = _cameraTransform.rotation * _originalRotation;        
     }
 }
