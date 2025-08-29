@@ -98,8 +98,9 @@ MonoBehaviour:
   model: {fileID: 6891580169314388076, guid: 66ae442726d1cf4428dacb34edd61ac4, type: 3}
   title: HitArmorBuffer
   description: 
+  targetBehaviourType: 1
+  targetValidators: []
   passives: []
   onHitEffects: []
-  onHitConsumer: []
   skillFactories:
   - {fileID: 11400000, guid: c833b73cafde2dd4bb983bda29aa4b41, type: 2}

@@ -25,6 +25,7 @@ public class ApplyBuffOnTargetSkill : ASkill<ApplyBuffOnTargetSkillData>
 
     void Start()
     {
+        // TODO: use the TargetProvider but we need to rework it a little bit to select a custom entitytype based on the skill
         _targetBehaviour = ATargetBehaviour.Create(TargetBehaviourType.LowestHealth);
         foreach (ATargetValidatorFactory targetValidator in data.targetValidators)
         {

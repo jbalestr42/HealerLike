@@ -8,6 +8,8 @@ public enum TargetBehaviourType
     Nearest = 1,
     Fastest = 2,
     LowestHealth = 3,
+    Random = 4,
+    Farest = 5,
 }
 
 public abstract class ATargetBehaviour
@@ -94,6 +96,12 @@ public abstract class ATargetBehaviour
                 break;
             case TargetBehaviourType.LowestHealth:
                 targetBehaviour = new LowestHealthTargetBehaviour();
+                break;
+            case TargetBehaviourType.Random:
+                targetBehaviour = new RandomTargetBehaviour();
+                break;
+            case TargetBehaviourType.Farest:
+                targetBehaviour = new FarestTargetBehaviour();
                 break;
             default:
                 Debug.LogError($"[ATargetBehaviour] Unkown target behaviour '{type}'");

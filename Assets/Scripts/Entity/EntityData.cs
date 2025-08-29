@@ -21,8 +21,16 @@ public class EntityData : SerializedScriptableObject
     public string description;
 
     [Space]
-    [DictionaryDrawerSettings(KeyLabel = "Attribute Type", ValueLabel = "Value")]
+    [HorizontalGroup("Group")]
+    [VerticalGroup("Group/Attributes")]
+    [DictionaryDrawerSettings(KeyColumnWidth = 75f, KeyLabel = "Type", ValueLabel = "Value")]
     public Dictionary<AttributeType, float> attributes = new Dictionary<AttributeType, float>();
+
+    [VerticalGroup("Group/Target")]
+    public TargetBehaviourType targetBehaviourType;
+
+    [VerticalGroup("Group/Target")]
+    public List<ATargetValidatorFactory> targetValidators;
 
     [Space]
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(passives)")]

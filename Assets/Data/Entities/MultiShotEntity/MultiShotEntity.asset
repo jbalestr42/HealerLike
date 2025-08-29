@@ -98,6 +98,8 @@ MonoBehaviour:
   model: {fileID: 1081930672269232, guid: 054ffd7425a4bbc4486585bcd1593eab, type: 3}
   title: MultiShot
   description: Fast shoot but low damage
+  targetBehaviourType: 5
+  targetValidators: []
   passives: []
   onHitEffects: []
   skillFactories:

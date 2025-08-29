@@ -13,9 +13,14 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
     public int targetCount { get { return _targetBehaviour.targetCount; } set { _targetBehaviour.targetCount = value; } }
     public TargetBehaviourType targetBehaviourType { get => _targetBehaviour.targetType; set => SetTargetBehaviour(value); }
 
-    void Start()
+    public void Init(TargetBehaviourType targetBehaviourType, List<ATargetValidatorFactory> targetValidators)
     {
-        _targetBehaviour = ATargetBehaviour.Create(TargetBehaviourType.Nearest);
+        _targetBehaviour = ATargetBehaviour.Create(targetBehaviourType);
+        foreach (ATargetValidatorFactory targetValidator in targetValidators)
+        {
+            _targetBehaviour.targetValidators.Add(targetValidator.GetTargetValidator());
+        }
+
         _range = GetComponent<AttributeManager>().Get(AttributeType.Range);
         _owner = GetComponent<Entity>();
     }

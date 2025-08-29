@@ -64,6 +64,9 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         _health.Init(AttributeType.HealthMax);
         _health.OnValueChanged.AddListener(OnHealthChanged);
 
+        // Init target behaviour from data
+        _targetProvider.Init(data.targetBehaviourType, data.targetValidators);
+
         // Init model from data
         GameObject model = Instantiate(_data.model, transform);
         _model = model.GetComponent<EntityModel>();
