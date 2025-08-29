@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: -255542928893784051}
   - component: {fileID: 8158293602482554723}
   - component: {fileID: 8158556011190788405}
-  - component: {fileID: 8748714897848685465}
   - component: {fileID: -1557207005166871236}
   - component: {fileID: 8465872866791211294}
   - component: {fileID: -8835911320852111699}
@@ -105,7 +104,6 @@ MonoBehaviour:
   OnMarkChanged:
     m_PersistentCalls:
       m_Calls: []
-  isEnabled: 0
 --- !u!114 &-255542928893784051
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -130,6 +128,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c0d9fa0b00a1164da50d8bb5bb69176, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: _buffPerSource
+      Entry: 7
+      Data: 0|System.Collections.Generic.Dictionary`2[[UnityEngine.GameObject, UnityEngine.CoreModule],[BuffManager+BuffDataPerId,
+        Assembly-CSharp]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 1|System.Collections.Generic.ObjectEqualityComparer`1[[UnityEngine.GameObject,
+        UnityEngine.CoreModule]], mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: _buffHandlerPerSource
+      Entry: 7
+      Data: 2|System.Collections.Generic.Dictionary`2[[UnityEngine.GameObject, UnityEngine.CoreModule],[BuffManager+BuffHandlerDataPerId,
+        Assembly-CSharp]], mscorlib
+    - Name: comparer
+      Entry: 9
+      Data: 1
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
   OnBuffAdded:
     m_PersistentCalls:
       m_Calls: []
@@ -154,19 +197,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70da2ed93a574874a8a589b64b95bffa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &8748714897848685465
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1773381645329648}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a7c7658584fe984c892103791f95ddd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _debug: 1
 --- !u!114 &-1557207005166871236
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -203,6 +233,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67fd57ebab4764a4d8b5edadcd013a7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playerColor: {r: 0, g: 1, b: 1, a: 1}
+  _computerColor: {r: 1, g: 0, b: 1, a: 1}
+  _selectedColor: {r: 1, g: 1, b: 1, a: 1}
+  _lineWidth: 4
 --- !u!1001 &7482130460885648092
 PrefabInstance:
   m_ObjectHideFlags: 0
