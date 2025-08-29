@@ -33,10 +33,6 @@ public class EntityData : SerializedScriptableObject
     public List<ABuffHandlerFactory> onHitEffects;
 
     [Space]
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<AConsumerFactory>, AConsumerFactory>(onHitConsumer)")]
-    public List<AConsumerFactory> onHitConsumer;
-
-    [Space]
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ASkillFactory>, ASkillFactory>(skillFactories)")]
     public List<ASkillFactory> skillFactories;
 }

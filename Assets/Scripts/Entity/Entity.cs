@@ -83,12 +83,6 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
             AddOnHitEffect(onHitEffect);
         }
 
-        // Init damage from data
-        foreach (AConsumerFactory consumerFactory in _data.onHitConsumer)
-        {
-            AddOnHitConsumer(consumerFactory);
-        }
-
         // Init skills from data
         foreach (ASkillFactory skillFactory in _data.skillFactories)
         {

@@ -24,12 +24,15 @@ public class Projectile : MonoBehaviour, IBuffable
     BuffManager _buffManager;
     public BuffManager buffManager { get { return _buffManager; } }
 
-    public void Init(GameObject source, GameObject target, List<ABuffHandlerFactory> projectileBehaviours)
+    List<AConsumerFactory> _onHitConsumers = new List<AConsumerFactory>();
+
+    public void Init(GameObject source, GameObject target, List<ABuffHandlerFactory> projectileBehaviours, List<AConsumerFactory> onHitConsumers)
     {
         _buffManager = GetComponent<BuffManager>();
 
         _source = source;
         _target = target;
+        _onHitConsumers = onHitConsumers;
         _targetPoint = target.GetComponent<Entity>().targetPoint;
 
         // Init buff from data
@@ -109,8 +112,14 @@ public class Projectile : MonoBehaviour, IBuffable
             onHitData.attackable = attackable;
             onHitData.target = currentTarget;
 
-            List<AConsumerFactory> onHitConsumers = attacker.GetOnHitConsumers();
-            foreach (AConsumerFactory consumerFactory in onHitConsumers)
+            // Apply on hit effect from the attackes
+            foreach (AConsumerFactory consumerFactory in attacker.GetOnHitConsumers())
+            {
+                onHitData.resourceModifier.consumers.Add(consumerFactory.GetConsumer(source, currentTarget));
+            }
+
+            // Apply on hit effect from the projectile
+            foreach (AConsumerFactory consumerFactory in _onHitConsumers)
             {
                 onHitData.resourceModifier.consumers.Add(consumerFactory.GetConsumer(source, currentTarget));
             }

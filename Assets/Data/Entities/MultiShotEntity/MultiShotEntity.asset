@@ -100,7 +100,5 @@ MonoBehaviour:
   description: Fast shoot but low damage
   passives: []
   onHitEffects: []
-  onHitConsumer:
-  - {fileID: 11400000, guid: ffd1e9f13f9713847a932252b81ba3c9, type: 2}
   skillFactories:
   - {fileID: 11400000, guid: 2e0862fec6e73cb4db8e1de0a6a8e64a, type: 2}

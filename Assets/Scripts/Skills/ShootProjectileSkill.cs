@@ -12,6 +12,9 @@ public class ShootProjectileSkillData : SkillDataBase
     [AssetsOnly]
     public GameObject projectilePrefab;
 
+    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<AConsumerFactory>, AConsumerFactory>(onHitConsumer)")]
+    public List<AConsumerFactory> onHitConsumer;
+
     public int numberOfProjectileToShootPerTarget = 1;
 }
 
@@ -42,7 +45,7 @@ public class ShootProjectileSkill : ASkill<ShootProjectileSkillData>
 
                     GameObject projectileGo = EntityManager.instance.SpawnProjectile(data.projectilePrefab, skillSource.transform.position, Quaternion.identity);
                     Projectile projectile = projectileGo.GetComponent<Projectile>();
-                    projectile.Init(source, target, entity.projectileBehaviours);
+                    projectile.Init(source, target, entity.projectileBehaviours, data.onHitConsumer);
                 }
             }
             return true;
