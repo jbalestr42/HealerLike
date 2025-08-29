@@ -58,6 +58,8 @@ public class BuffManager : SerializedMonoBehaviour
 
     List<string> _toRemove = new List<string>();
 
+    public bool isEnabled { get; set; }
+
     void OnDestroy()
     {
         foreach (var item in _buffPerSource)
@@ -77,12 +79,32 @@ public class BuffManager : SerializedMonoBehaviour
         _buffHandlerPerSource.Clear();
     }
 
-    void Update()
+    public void Reset()
     {
+        // TODO: Add a "item" tag to all items
+        // Remove all item without this tag
         foreach (var item in _buffHandlerPerSource)
         {
             GameObject source = item.Key;
             foreach (var kvpBuffHandler in item.Value.buffHandlerPerId)
+            {
+                BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
+                buffHandlerData.buffHandler.ResetPeriodDuration();
+            }
+        }
+    }
+
+    void Update()
+    {
+        if (!isEnabled)
+        {
+            return;
+        }
+        
+        foreach (var handlerPerSource in _buffHandlerPerSource)
+        {
+            GameObject source = handlerPerSource.Key;
+            foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
             {
                 BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
                 if (buffHandlerData.isInit)
@@ -92,9 +114,13 @@ public class BuffManager : SerializedMonoBehaviour
                     {
                         foreach (var buffFactory in buffHandlerFactory.buffFactoryList)
                         {
-                            Debug.Log("[BuffManager] Instant buff " + buffFactory.name);
-                            ABuff buff = buffFactory.GetBuff();
-                            buff.Instant(source, buffHandlerData.target);
+                            // In some cases we are cumulating multiple instant buff, so we must appy all of them
+                            Debug.Log($"[BuffManager] Instant buff {buffFactory.name} | refreshStacks={buffHandlerData.refreshStacks}");
+                            for (int i = 0; i < buffHandlerData.refreshStacks; i++)
+                            {
+                                ABuff buff = buffFactory.GetBuff();
+                                buff.Instant(source, buffHandlerData.target);
+                            }
                             _toRemove.Add(kvpBuffHandler.Key);
                         }
                     }
@@ -168,7 +194,7 @@ public class BuffManager : SerializedMonoBehaviour
             {
                 foreach (string idToRemove in _toRemove)
                 {
-                    item.Value.buffHandlerPerId.Remove(idToRemove);
+                    handlerPerSource.Value.buffHandlerPerId.Remove(idToRemove);
                 }
                 _toRemove.Clear();
             }

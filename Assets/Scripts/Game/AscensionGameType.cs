@@ -105,10 +105,12 @@ public class AscensionGameType : AGameType
                 break;
 
             case State.EndBattle:
+                // Reset all unit to their default state (remove temporary buffs)
+                ResetAllEntities();
                 // Show Upgrade UI
                 UIManager.instance.AddView(ViewType.Upgrade);
                 _upgradeView.FillChoices();
-                    SetState(State.SelectUpgrade);
+                SetState(State.SelectUpgrade);
                 break;
 
             case State.SelectUpgrade:
@@ -159,10 +161,16 @@ public class AscensionGameType : AGameType
         _state = newState;
     }
 
-    void EnableAllEntities(bool enable)
+    void EnableAllEntities(bool isEnabled)
     {
-        _entities.GetEntities(Entity.EntityType.Player).ForEach(x => x.GetComponent<Entity>().isEnabled = enable);
-        _entities.GetEntities(Entity.EntityType.Computer).ForEach(x => x.GetComponent<Entity>().isEnabled = enable);
+        _entities.GetEntities(Entity.EntityType.Player).ForEach(x => x.GetComponent<Entity>().Enable(isEnabled));
+        _entities.GetEntities(Entity.EntityType.Computer).ForEach(x => x.GetComponent<Entity>().Enable(isEnabled));
+    }
+
+    void ResetAllEntities()
+    {
+        _entities.GetEntities(Entity.EntityType.Player).ForEach(x => x.GetComponent<Entity>().Reset());
+        _entities.GetEntities(Entity.EntityType.Computer).ForEach(x => x.GetComponent<Entity>().Reset());
     }
 
     public void LoadEnemies(WavePatternData waveData)

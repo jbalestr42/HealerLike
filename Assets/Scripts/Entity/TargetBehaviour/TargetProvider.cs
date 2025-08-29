@@ -9,6 +9,7 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
     Attribute _range;
     Entity _owner;
 
+    public bool isEnabled { get; set; }
     public int targetCount { get { return _targetBehaviour.targetCount; } set { _targetBehaviour.targetCount = value; } }
     public TargetBehaviourType targetBehaviourType { get => _targetBehaviour.targetType; set => SetTargetBehaviour(value); }
 
@@ -21,10 +22,15 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
 
     void Update()
     {
-        if (_owner.isEnabled)
+        if (isEnabled)
         {
             _targets = _targetBehaviour.GetTargets(gameObject, transform.position, _range.Value, _owner.GetTargetType());
         }
+    }
+
+    public void Reset()
+    {
+        _targets.Clear();
     }
 
     public void SetTargetBehaviour(TargetBehaviourType targetBehaviourType)

@@ -36,6 +36,9 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     BuffManager _buffManager;
     public BuffManager buffManager { get { return _buffManager; } }
 
+    TargetProvider _targetProvider;
+    public TargetProvider targetProvider { get { return _targetProvider; } }
+
     EntityModel _model;
     public EntityModel model => _model;
     public SkillSource skillStartPoint { get { return _model.GetSourcePoint(); } } 
@@ -43,11 +46,12 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     GameObject _targetPoint;
     public GameObject targetPoint => _targetPoint;
 
-    public bool isEnabled = false;
+    List<ASkill> _skills = new List<ASkill>();
 
     public void Init()
     {
         _buffManager = GetComponent<BuffManager>();
+        _targetProvider = GetComponent<TargetProvider>();
 
         // Init attributes from data
         _attributeManager = GetComponent<AttributeManager>();
@@ -88,14 +92,18 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         // Init skills from data
         foreach (ASkillFactory skillFactory in _data.skillFactories)
         {
-            skillFactory.AddSkill(gameObject);
+            ASkill skill = skillFactory.AddSkill(gameObject);
+            _skills.Add(skill);
         }
 
         // Register to inventory events
         _inventoryHandler.OnItemAdded.AddListener(OnItemAdded);
         _inventoryHandler.OnItemRemoved.AddListener(OnItemRemoved);
-        
+
         EntityManager.instance.OnEntitySpawned.Invoke(this);
+
+        // Disable the unit since we are not in combat
+        Enable(false);
     }
 
     void OnHealthChanged(ResourceAttribute health)
@@ -103,6 +111,28 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         if (health.Value <= 0f)
         {
             EntityManager.instance.DestroyEntity(gameObject, entityType);
+        }
+    }
+
+    public void Enable(bool isEnabled)
+    {
+        _targetProvider.isEnabled = isEnabled;
+        _buffManager.isEnabled = isEnabled;
+
+        foreach (ASkill skill in _skills)
+        {
+            skill.isEnabled = isEnabled;
+        }
+    }
+
+    public void Reset()
+    {
+        _targetProvider.Reset();
+        _buffManager.Reset();
+
+        foreach (ASkill skill in _skills)
+        {
+            skill.Reset();
         }
     }
 

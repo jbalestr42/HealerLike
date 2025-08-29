@@ -31,9 +31,14 @@ public abstract class ASkill : MonoBehaviour
     List<IRequirement> _requirements;
     public List<IRequirement> requirements { get { return _requirements; } set { _requirements = value; } }
 
+    public bool isEnabled { get; set; }
+
     void Update()
     {
-        UpdateBehaviour(gameObject);
+        if (isEnabled)
+        {
+            UpdateBehaviour(gameObject);
+        }
     }
 
     public bool IsRequirementValidated()
@@ -52,6 +57,7 @@ public abstract class ASkill : MonoBehaviour
     }
 
     public abstract void UpdateBehaviour(GameObject source);
+    public abstract void Reset();
 }
 
 public class SkillDataBase
@@ -91,6 +97,11 @@ public abstract class ASkill<SkillData> : ASkill where SkillData : SkillDataBase
         {
             _cooldown -= Time.deltaTime;
         }
+    }
+
+    public override void Reset()
+    {
+        _cooldown = 0f;
     }
 
     public abstract bool Execute(GameObject source);
