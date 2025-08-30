@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86578b487da7fb240a18670cd8bed782, type: 3}
-  m_Name: ShootProjectileSkillFactory
+  m_Script: {fileID: 11500000, guid: 4aee98d927598e340ae28ed4c28c0ac7, type: 3}
+  m_Name: TripleShootEntity_AttributeConsumerFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -22,9 +22,7 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    onSkillTriggerFactory: []
-    projectiles:
-    - projectilePrefab: {fileID: 1985067714463758, guid: 27fe66d68fc09f4498b6274a9509a0a6, type: 3}
-      onHitConsumer:
-      - {fileID: 11400000, guid: 3b3a59b2639ca4544a2166f90d8f8a82, type: 2}
-      numberOfProjectileToShootPerTarget: 1
+    ignoreDamageReduction: 0
+    ignoreConsumerPrevention: 0
+    type: 2
+    multiplier: 1

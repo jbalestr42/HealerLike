@@ -8,12 +8,13 @@ public class AttributeConsumerFactory : ConsumerFactory<AttributeConsumer, Attri
 public class AttributeConsumerData : ConsumerBaseData
 {
     public AttributeType type;
+    public float multiplier = 1f;
 }
 
 public class AttributeConsumer : AConsumer<AttributeConsumerData>
 {
     public override float GetValue()
     {
-        return -source.GetComponent<AttributeManager>().Get(data.type).Value;
+        return -source.GetComponent<AttributeManager>().Get(data.type).Value * data.multiplier;
     }
 }

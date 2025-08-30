@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 86578b487da7fb240a18670cd8bed782, type: 3}
-  m_Name: ShootProjectileSkillFactory
+  m_Name: TripleShootEntity_ShootProjectileSkillFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -26,5 +26,13 @@ MonoBehaviour:
     projectiles:
     - projectilePrefab: {fileID: 1985067714463758, guid: 27fe66d68fc09f4498b6274a9509a0a6, type: 3}
       onHitConsumer:
-      - {fileID: 11400000, guid: 3b3a59b2639ca4544a2166f90d8f8a82, type: 2}
-      numberOfProjectileToShootPerTarget: 1
+      - {fileID: 11400000, guid: 0809b73230bf3b54b9b131309fd05381, type: 2}
+      numberOfProjectileToShootPerTarget: 2
+    - projectilePrefab: {fileID: 1985067714463758, guid: 27fe66d68fc09f4498b6274a9509a0a6, type: 3}
+      onHitConsumer:
+      - {fileID: 11400000, guid: 0809b73230bf3b54b9b131309fd05381, type: 2}
+      numberOfProjectileToShootPerTarget: 2
+    - projectilePrefab: {fileID: 1985067714463758, guid: 53b6f547fca7a7a4292e47d9306d4270, type: 3}
+      onHitConsumer:
+      - {fileID: 11400000, guid: 111aaf418d3ccfb4c9770e4496326450, type: 2}
+      numberOfProjectileToShootPerTarget: 2

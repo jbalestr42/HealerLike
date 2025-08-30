@@ -23,7 +23,8 @@ MonoBehaviour:
     SerializationNodes: []
   data:
     onSkillTriggerFactory: []
-    projectilePrefab: {fileID: 1985067714463758, guid: 53b6f547fca7a7a4292e47d9306d4270, type: 3}
-    onHitConsumer:
-    - {fileID: 11400000, guid: b7d904cc4d250a142b8f81884a3bb75f, type: 2}
-    numberOfProjectileToShootPerTarget: 1
+    projectiles:
+    - projectilePrefab: {fileID: 1985067714463758, guid: 53b6f547fca7a7a4292e47d9306d4270, type: 3}
+      onHitConsumer:
+      - {fileID: 11400000, guid: b7d904cc4d250a142b8f81884a3bb75f, type: 2}
+      numberOfProjectileToShootPerTarget: 1

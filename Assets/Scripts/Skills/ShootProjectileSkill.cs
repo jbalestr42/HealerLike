@@ -2,25 +2,33 @@
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 [Serializable]
 public class ShootProjectileSkillData : SkillDataBase
 {
-    [HorizontalGroup("Split", 75)]
-    [PreviewField(75)]
-    [HideLabel]
-    [AssetsOnly]
-    public GameObject projectilePrefab;
+    [Serializable]
+    public class ProjectileData
+    {
+        [HorizontalGroup("Split", 75)]
+        [PreviewField(75)]
+        [HideLabel]
+        [AssetsOnly]
+        public GameObject projectilePrefab;
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<AConsumerFactory>, AConsumerFactory>(onHitConsumer)")]
-    public List<AConsumerFactory> onHitConsumer;
+        [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<AConsumerFactory>, AConsumerFactory>(onHitConsumer)")]
+        public List<AConsumerFactory> onHitConsumer;
 
-    public int numberOfProjectileToShootPerTarget = 1;
+        public int numberOfProjectileToShootPerTarget = 1;
+    }
+
+    public List<ProjectileData> projectiles;
 }
 
 public class ShootProjectileSkill : ASkill<ShootProjectileSkillData>
 {
     Attribute _cooldownDuration;
+    int _projectileIndex = 0;
 
     void Start()
     {
@@ -36,18 +44,21 @@ public class ShootProjectileSkill : ASkill<ShootProjectileSkillData>
             ITargetProvider targetProvider = source.GetComponent<ITargetProvider>();
             Entity entity = source.GetComponent<Entity>();
             List<GameObject> targets = targetProvider.GetTargets();
+
+            ShootProjectileSkillData.ProjectileData projectileData = data.projectiles[_projectileIndex];
             foreach (GameObject target in targets)
             {
-                for (int i = 0; i < data.numberOfProjectileToShootPerTarget; i++)
+                for (int i = 0; i < projectileData.numberOfProjectileToShootPerTarget; i++)
                 {
                     SkillSource skillSource = entity.skillStartPoint;
                     skillSource.OnUseSkill();
 
-                    GameObject projectileGo = EntityManager.instance.SpawnProjectile(data.projectilePrefab, skillSource.transform.position, Quaternion.identity);
+                    GameObject projectileGo = EntityManager.instance.SpawnProjectile(projectileData.projectilePrefab, skillSource.transform.position, Quaternion.identity);
                     Projectile projectile = projectileGo.GetComponent<Projectile>();
-                    projectile.Init(source, target, entity.projectileBehaviours, data.onHitConsumer);
+                    projectile.Init(source, target, entity.projectileBehaviours, projectileData.onHitConsumer);
                 }
             }
+            _projectileIndex = (_projectileIndex + 1) % data.projectiles.Count;
             return true;
         }
         return false;
