@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using UnityEngine.Rendering;
+
+[CreateAssetMenu(menuName = "Custom/Data/SkillSteps/ShootProjectileSkillStep")]
+public class ShootProjectileSkillStepFactory : SkillStepFactory<ShootProjectileSkillStep, ShootProjectileSkillStepData> { }
 
 [Serializable]
-public class ShootProjectileSkillData : SkillDataBase
+public class ShootProjectileSkillStepData : SkillStepDataBase
 {
     [Serializable]
     public class ProjectileData
@@ -25,27 +27,23 @@ public class ShootProjectileSkillData : SkillDataBase
     public List<ProjectileData> projectiles;
 }
 
-public class ShootProjectileSkill : ACooldownSkill<ShootProjectileSkillData>
+public class ShootProjectileSkillStep : ASkillStep<ShootProjectileSkillStepData>
 {
-    Attribute _cooldownDuration;
     int _projectileIndex = 0;
 
-    void Start()
+    public override void Init()
     {
-        requirements = new List<IRequirement>();
-        requirements.Add(new TargetRequirement(gameObject));
-        _cooldownDuration = GetComponent<AttributeManager>().Get(AttributeType.AttackRate);
     }
 
-    public override bool Execute(GameObject source)
+    public override bool Update(ASkill skill, float deltaTime)
     {
-        if (IsRequirementValidated())
+        if (skill.IsRequirementValidated())
         {
-            ITargetProvider targetProvider = source.GetComponent<ITargetProvider>();
-            Entity entity = source.GetComponent<Entity>();
+            ITargetProvider targetProvider = skill.gameObject.GetComponent<ITargetProvider>();
+            Entity entity = skill.gameObject.GetComponent<Entity>();
             List<GameObject> targets = targetProvider.GetTargets();
 
-            ShootProjectileSkillData.ProjectileData projectileData = data.projectiles[_projectileIndex];
+            ShootProjectileSkillStepData.ProjectileData projectileData = data.projectiles[_projectileIndex];
             foreach (GameObject target in targets)
             {
                 for (int i = 0; i < projectileData.numberOfProjectileToShootPerTarget; i++)
@@ -55,7 +53,7 @@ public class ShootProjectileSkill : ACooldownSkill<ShootProjectileSkillData>
 
                     GameObject projectileGo = EntityManager.instance.SpawnProjectile(projectileData.projectilePrefab, skillSource.transform.position, Quaternion.identity);
                     Projectile projectile = projectileGo.GetComponent<Projectile>();
-                    projectile.Init(source, target, entity.projectileBehaviours, projectileData.onHitConsumer);
+                    projectile.Init(skill.gameObject, target, entity.projectileBehaviours, projectileData.onHitConsumer);
                 }
             }
             _projectileIndex = (_projectileIndex + 1) % data.projectiles.Count;
@@ -64,5 +62,8 @@ public class ShootProjectileSkill : ACooldownSkill<ShootProjectileSkillData>
         return false;
     }
 
-    public override float cooldownDuration => 1f / _cooldownDuration.Value;
+    public override void Reset()
+    {
+        _projectileIndex = 0;
+    }
 }

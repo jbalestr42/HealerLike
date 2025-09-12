@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f9c5cbcc3bade640b655d9fe3fc6912, type: 3}
-  m_Name: BasicHealerCharacter
+  m_Script: {fileID: 11500000, guid: 200499978037cc34d93ebc9c76414b0c, type: 3}
+  m_Name: TestEntity
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -40,16 +40,16 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 2
+      Data: 4
     - Name: 
       Entry: 7
       Data: 
     - Name: $k
       Entry: 3
-      Data: 10
+      Data: 0
     - Name: $v
       Entry: 4
-      Data: 20
+      Data: 100
     - Name: 
       Entry: 8
       Data: 
@@ -58,10 +58,34 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 3
-      Data: 9
+      Data: 1
     - Name: $v
       Entry: 4
-      Data: 100
+      Data: 2
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 2
+    - Name: $v
+      Entry: 4
+      Data: 10
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 3
+    - Name: $v
+      Entry: 4
+      Data: 1000
     - Name: 
       Entry: 8
       Data: 
@@ -71,21 +95,12 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  model: {fileID: 0}
-  title: BasicHealer
-  text: 
+  model: {fileID: 6058514216512742586, guid: 3254ba096c79f224babbda9e67cdf806, type: 3}
+  title: Test
+  description: 
+  targetBehaviourType: 0
+  targetValidators: []
   passives: []
-  entities:
-  - {fileID: 11400000, guid: ff864edc5e8dfdc47ad1e7a7cd3ec589, type: 2}
-  - {fileID: 11400000, guid: ff864edc5e8dfdc47ad1e7a7cd3ec589, type: 2}
-  - {fileID: 11400000, guid: 0e42156d42eb9244db24d1871321181b, type: 2}
-  - {fileID: 11400000, guid: 19f30c8aca7684b4eb7fbd3a5e0f4b16, type: 2}
-  - {fileID: 11400000, guid: 54a4a578c5855404698780caa3b60094, type: 2}
-  - {fileID: 11400000, guid: 1031ee4e52da5ab41a03527d522aeee3, type: 2}
-  - {fileID: 11400000, guid: 41e68c97d2ab0cf4b868a3a3098b1e3d, type: 2}
-  - {fileID: 11400000, guid: 255dff38d4e43e54496d1a01bd3b147d, type: 2}
-  - {fileID: 11400000, guid: d7aba650df8a23549b88525d3bb92910, type: 2}
-  skills:
-  - {fileID: 11400000, guid: 6b9b13052c3a4f54eb25e14b54bcce8f, type: 2}
-  - {fileID: 11400000, guid: 070b01962bb037544be10fbcc40f137b, type: 2}
-  - {fileID: 11400000, guid: c7050747abad2aa49b132e7982ee2f03, type: 2}
+  onHitEffects: []
+  skillFactories:
+  - {fileID: 11400000, guid: 5f3bfd10c02e1fd43b5e18206313b11e, type: 2}

@@ -13,7 +13,7 @@ public class AreaOfEffectSkillData : SkillDataBase
     public GameObject areaOfEffectPrefab;
 }
 
-public class AreaOfEffectSkill : ASkill<AreaOfEffectSkillData>
+public class AreaOfEffectSkill : ACooldownSkill<AreaOfEffectSkillData>
 {
     Attribute _cooldownDuration;
     Attribute _range;

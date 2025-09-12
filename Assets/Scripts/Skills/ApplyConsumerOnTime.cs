@@ -10,7 +10,7 @@ public class ApplyConsumerOnTimeData : SkillDataBase
     public float rate = 1f;
 }
 
-public class ApplyConsumerOnTime : ASkill<ApplyConsumerOnTimeData>, IStackableBuff
+public class ApplyConsumerOnTime : ACooldownSkill<ApplyConsumerOnTimeData>, IStackableBuff
 {
     [ReadOnly]
     [SerializeField]

@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72e4d76ffe9d2be48929fc73f1636381, type: 3}
+  m_Name: TestEntity_ConfigurableSkillFactory
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  data:
+    onSkillTriggerFactory: []
+    skillStepFactories:
+    - {fileID: 11400000, guid: 7ba34a0a574b0954991ba695c6df28d4, type: 2}
+    - {fileID: 11400000, guid: dac17834346466a4086f5ceb27d62725, type: 2}
+    - {fileID: 11400000, guid: 386be91c069dc3544b8d95ba28633b4e, type: 2}

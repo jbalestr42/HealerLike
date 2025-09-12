@@ -17,7 +17,7 @@ public class ApplyBuffOnTargetSkillData : SkillDataBase
     public bool targetAlly;
 }
 
-public class ApplyBuffOnTargetSkill : ASkill<ApplyBuffOnTargetSkillData>
+public class ApplyBuffOnTargetSkill : ACooldownSkill<ApplyBuffOnTargetSkillData>
 {
     int _usageCount = 0;
     ATargetBehaviour _targetBehaviour;

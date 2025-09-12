@@ -14,7 +14,7 @@ public class HealTargetSkillData : SkillDataBase
     public float range = 5f;
 }
 
-public class HealTargetSkill : ASkill<HealTargetSkillData>
+public class HealTargetSkill : ACooldownSkill<HealTargetSkillData>
 {
     ATargetBehaviour _targetBehaviour;
 

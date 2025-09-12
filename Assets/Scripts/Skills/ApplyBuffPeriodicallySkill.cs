@@ -10,7 +10,7 @@ public class ApplyBuffPeriodicallySkillData : SkillDataBase
     public List<ABuffHandlerFactory> periodicBuff;
 }
 
-public class ApplyBuffPeriodicallySkill : ASkill<ApplyBuffPeriodicallySkillData>
+public class ApplyBuffPeriodicallySkill : ACooldownSkill<ApplyBuffPeriodicallySkillData>
 {
     [ReadOnly]
     [SerializeField]
