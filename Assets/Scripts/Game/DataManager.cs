@@ -7,7 +7,6 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] GameData _data;
     public GameData data { get { return _data; } set { _data = value; } }
 
-    public List<EntityData> entities { get { return _data.entities; } set { _data.entities = value; } } 
     public List<CharacterData> characters { get { return _data.characters; } set { _data.characters = value; } } 
     public List<AItemFactory> items { get { return _data.items; } set { _data.items = value; } } 
 
