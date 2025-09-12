@@ -7,7 +7,7 @@ public class DurationSkillStepFactory : SkillStepFactory<DurationSkillStep, Dura
 [Serializable]
 public class DurationSkillStepData : SkillStepDataBase
 {
-    [CreateDataButton]
+    [SerializeReference]
     public AValue duration;
 }
 
@@ -18,7 +18,7 @@ public class DurationSkillStep : ASkillStep<DurationSkillStepData>
     public override void Init()
     {
         _timer = 0f;
-        Debug.LogWarning($"Init Duration {data.duration.GetValue(source)}");
+        // Debug.LogWarning($"Init Duration {data.duration.GetValue(source)}");
     }
 
     public override bool Update(ASkill skill, float deltaTime)
@@ -26,7 +26,7 @@ public class DurationSkillStep : ASkillStep<DurationSkillStepData>
         _timer += deltaTime;
         if (_timer >= data.duration.GetValue(source))
         {
-            Debug.LogWarning($"Duration done {data.duration.GetValue(source)}");
+            // Debug.LogWarning($"Duration done {data.duration.GetValue(source)}");
             return true;
         }
         return false;
@@ -34,7 +34,7 @@ public class DurationSkillStep : ASkillStep<DurationSkillStepData>
 
     public override void Reset()
     {
-        Debug.LogWarning($"Reset Duration {data.duration.GetValue(source)}");
+        // Debug.LogWarning($"Reset Duration {data.duration.GetValue(source)}");
         _timer = 0f;
     }
 }

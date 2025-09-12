@@ -1,12 +1,14 @@
+using System;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-[InlineEditor]
-public abstract class AValue : SerializedScriptableObject
+[Serializable]
+public abstract class AValue
 {
     public abstract float GetValue(GameObject source);
 }
 
+[Serializable]
 public abstract class AValue<DataType> : AValue
 {
     [InlineProperty]

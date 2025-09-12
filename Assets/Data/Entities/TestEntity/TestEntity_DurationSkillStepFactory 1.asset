@@ -22,4 +22,14 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    duration: {fileID: 11400000, guid: 64ff46ddc7e360a4796c4ef40e00fd99, type: 2}
+    duration:
+      rid: 5275139311471951874
+  references:
+    version: 2
+    RefIds:
+    - rid: 5275139311471951874
+      type: {class: AttributeValue, ns: , asm: Assembly-CSharp}
+      data:
+        data:
+          type: 1
+          multiplier: 0.2

@@ -8,7 +8,7 @@ public class AttributeValueData
     public float multiplier = 1f;
 }
 
-[CreateAssetMenu(menuName = "Custom/Data/Value/AttributeValue")]
+[Serializable]
 public class AttributeValue : AValue<AttributeValueData>
 {
     public override float GetValue(GameObject source)
