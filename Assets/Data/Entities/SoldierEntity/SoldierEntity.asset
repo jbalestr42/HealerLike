@@ -61,7 +61,7 @@ MonoBehaviour:
       Data: 1
     - Name: $v
       Entry: 4
-      Data: 0.8
+      Data: 1
     - Name: 
       Entry: 8
       Data: 
@@ -98,10 +98,9 @@ MonoBehaviour:
   model: {fileID: 6688149642241925542, guid: 11eed2dfd1329ab4db9e7f27b8e628b7, type: 3}
   title: Soldier
   description: first bad enemy
-  price: 0
+  targetBehaviourType: 0
+  targetValidators: []
   passives: []
   onHitEffects: []
-  onHitConsumer:
-  - {fileID: 11400000, guid: b7d904cc4d250a142b8f81884a3bb75f, type: 2}
   skillFactories:
   - {fileID: 11400000, guid: dd6c272587b45b947b4c9e814ba179a2, type: 2}

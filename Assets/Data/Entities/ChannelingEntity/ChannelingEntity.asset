@@ -61,7 +61,7 @@ MonoBehaviour:
       Data: 1
     - Name: $v
       Entry: 4
-      Data: 4
+      Data: 1
     - Name: 
       Entry: 8
       Data: 
@@ -98,9 +98,9 @@ MonoBehaviour:
   model: {fileID: 1631280189745936, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
   title: Channeling
   description: Channel attack on the same target
+  targetBehaviourType: 0
+  targetValidators: []
   passives: []
   onHitEffects: []
-  onHitConsumer:
-  - {fileID: 11400000, guid: 27345eaa767457c45adad6333b8c8d6d, type: 2}
   skillFactories:
   - {fileID: 11400000, guid: 74138de38d4bc1840a327912fa81228e, type: 2}

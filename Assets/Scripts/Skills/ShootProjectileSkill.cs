@@ -64,5 +64,5 @@ public class ShootProjectileSkill : ACooldownSkill<ShootProjectileSkillData>
         return false;
     }
 
-    public override float cooldownDuration => 1f / _cooldownDuration.Value;
+    public override float cooldownDuration => _cooldownDuration.Value;
 }
