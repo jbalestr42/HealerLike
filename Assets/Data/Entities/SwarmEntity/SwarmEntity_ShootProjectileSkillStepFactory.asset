@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cc78a7da60785349b9588854a55a5f6, type: 3}
+  m_Name: SwarmEntity_ShootProjectileSkillStepFactory
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  data:
+    projectiles:
+    - projectilePrefab: {fileID: 1985067714463758, guid: 3c17665f881eca744be3ca7d15fcd364, type: 3}
+      onHitConsumer:
+      - {fileID: 11400000, guid: 3ad2788d4aef15b4ca096bb8a271312a, type: 2}
+      numberOfProjectileToShootPerTarget: 1

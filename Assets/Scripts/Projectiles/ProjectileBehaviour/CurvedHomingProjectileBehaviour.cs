@@ -6,7 +6,9 @@ using static UnityEngine.ParticleSystem;
 public class CurvedHomingProjectileBehaviourData
 {
     public float speed = 10f;
+    public bool inverseSpeedOverDistance = false;
     public float additionnalSpeedOverDistance = 10f;
+    public float curveMultiplier = 1.0f;
 }
 
 public class CurvedHomingProjectileBehaviour : AProjectileBehaviour<CurvedHomingProjectileBehaviourData>
@@ -18,7 +20,7 @@ public class CurvedHomingProjectileBehaviour : AProjectileBehaviour<CurvedHoming
     public override void Init(GameObject source)
     {
         projectile.OnUpdate.AddListener(OnUpdate);
-        _launchVector = new Vector3(0f, 1f, UnityEngine.Random.Range(-0.5f, 0.5f));
+        _launchVector = new Vector3(0f, 1f, UnityEngine.Random.Range(-1f, 1f));
         _sourcePosition = projectile.source.transform.position;
     }
 
@@ -29,8 +31,8 @@ public class CurvedHomingProjectileBehaviour : AProjectileBehaviour<CurvedHoming
             float normalizedDistance = GetNormalizedDistance(projectile.targetPoint.transform.position, transform.position, projectile.targetPoint.transform.position, _sourcePosition);
 
             Vector3 direction = (projectile.targetPoint.transform.position - transform.position).normalized;
-            Vector3 curveDirection = _minMaxHeightCurve.Evaluate(1f - normalizedDistance) * (Vector3.up + Vector3.Cross(Vector3.up, transform.forward) * _launchVector.z);
-            Vector3 deltaPosition = (direction + curveDirection) * (data.speed + data.additionnalSpeedOverDistance * normalizedDistance) * Time.deltaTime;
+            Vector3 curveDirection = data.curveMultiplier * _minMaxHeightCurve.Evaluate(1f - normalizedDistance) * (Vector3.up * _launchVector.y + Vector3.Cross(Vector3.up, transform.forward) * _launchVector.z);
+            Vector3 deltaPosition = (direction + curveDirection) * (data.speed + (data.additionnalSpeedOverDistance * (data.inverseSpeedOverDistance ? 1f - normalizedDistance : normalizedDistance))) * Time.deltaTime;
             transform.position += deltaPosition;
             transform.rotation = Quaternion.LookRotation(deltaPosition);
         }
