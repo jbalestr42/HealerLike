@@ -23,4 +23,4 @@ MonoBehaviour:
     SerializationNodes: []
   uniqueID: ae1470d4-51c7-4153-a3a0-60407617d6d7
   data:
-    consumerFactory: {fileID: 11400000, guid: a0ddc60db8a3fe849bc83256d65be967, type: 2}
+    consumerFactory: {fileID: 11400000, guid: 88f25125f4f1a3248b9aba6e887861d3, type: 2}

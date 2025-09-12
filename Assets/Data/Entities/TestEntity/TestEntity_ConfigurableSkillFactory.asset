@@ -26,4 +26,3 @@ MonoBehaviour:
     skillStepFactories:
     - {fileID: 11400000, guid: 7ba34a0a574b0954991ba695c6df28d4, type: 2}
     - {fileID: 11400000, guid: dac17834346466a4086f5ceb27d62725, type: 2}
-    - {fileID: 11400000, guid: 386be91c069dc3544b8d95ba28633b4e, type: 2}

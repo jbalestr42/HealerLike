@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ee4336be73d3274ca513c5b6bb22f0f, type: 3}
-  m_Name: TestEntity_DurationSkillStepFactory
+  m_Script: {fileID: 11500000, guid: 4aee98d927598e340ae28ed4c28c0ac7, type: 3}
+  m_Name: ConsumerFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -22,13 +22,16 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    duration:
-      rid: 5275139311471951876
+    ignoreDamageReduction: 0
+    ignoreConsumerPrevention: 1
+    value:
+      rid: 5275139311471951900
   references:
     version: 2
     RefIds:
-    - rid: 5275139311471951876
-      type: {class: FlatValue, ns: , asm: Assembly-CSharp}
+    - rid: 5275139311471951900
+      type: {class: AttributeValue, ns: , asm: Assembly-CSharp}
       data:
         data:
-          value: 3
+          type: 10
+          multiplier: 1

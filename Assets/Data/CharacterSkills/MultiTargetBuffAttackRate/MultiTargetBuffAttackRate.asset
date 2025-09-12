@@ -31,10 +31,10 @@ MonoBehaviour:
       during <color="green">({data:buffHandlerFactory|0.data.duration}s)</color>
 
       Cost:
-      <color="blue">{data:validators|1.data.consumer.data.value}</color> mana
+      <color="blue">{data:validators|1.data.consumer.data.value.data.value}</color>
+      mana
 
-      Cooldown:
-      <color="yellow">{data:validators|0.data.duration}s</color>'
+      Cooldown: <color="yellow">{data:validators|0.data.duration}s</color>'
     validators:
     - {fileID: 11400000, guid: 4cca8ac36cb5222439b45b2788a98a99, type: 2}
     - {fileID: 11400000, guid: 5c2a9da5653cb7a4dbb51084f7ecdd11, type: 2}

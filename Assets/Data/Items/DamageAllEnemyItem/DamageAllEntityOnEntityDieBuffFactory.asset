@@ -23,5 +23,5 @@ MonoBehaviour:
     SerializationNodes: []
   uniqueID: 2eba4b6a-e195-4d7d-a172-d27c7880729f
   data:
-    damageToAllEntity: {fileID: 11400000, guid: 3ce3b47cbd847cf4aa41f3bb97bdd19f, type: 2}
+    damageToAllEntity: {fileID: 11400000, guid: 63b63ffc826dfaf49bdf21910a3399c4, type: 2}
     entityType: 2

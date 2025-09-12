@@ -11,8 +11,8 @@ public class AttributeValueData
 [Serializable]
 public class AttributeValue : AValue<AttributeValueData>
 {
-    public override float GetValue(GameObject source)
+    public override float GetValue(GameObject target)
     {
-        return source.GetComponent<AttributeManager>().Get(data.type).Value * data.multiplier;
+        return target.GetComponent<AttributeManager>().Get(data.type).Value * data.multiplier;
     }
 }

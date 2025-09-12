@@ -28,14 +28,14 @@ MonoBehaviour:
       <color=#008080ff>([{data:multiplier}x100]% HealPower)</color>
 
       Cost:
-      <color="blue">{data:validators|1.data.consumer.data.value}</color> mana
+      <color="blue">{data:validators|1.data.consumer.data.value.data.value}</color>
+      mana
 
-      Cooldown:
-      <color="yellow">{data:validators|0.data.duration}s</color>'
+      Cooldown: <color="yellow">{data:validators|0.data.duration}s</color>'
     validators:
     - {fileID: 11400000, guid: 80dffdeee988ccc41a0e7ab0ae1e307c, type: 2}
     - {fileID: 11400000, guid: 17016692f1a03ab4ca4807ba22f03f4b, type: 2}
     isSingle: 1
     entityType: 1
-    consumer: {fileID: 11400000, guid: 3835a21a7e0849f47aa8881f016eab76, type: 2}
+    consumer: {fileID: 11400000, guid: 61e6b376a00fb444bb5eaa2d7a51e730, type: 2}
     multiplier: 1.5

@@ -12,7 +12,7 @@ public class FlatValueData
 [Serializable]
 public class FlatValue : AValue<FlatValueData>
 {
-    public override float GetValue(GameObject source)
+    public override float GetValue(GameObject target)
     {
         return data.value;
     }

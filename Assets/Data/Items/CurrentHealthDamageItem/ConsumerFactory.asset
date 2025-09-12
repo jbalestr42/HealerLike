@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4aceb3818c0a80c46a7cb87218546fe2, type: 3}
-  m_Name: ResourceValidatorFactory
+  m_Script: {fileID: 11500000, guid: 4aee98d927598e340ae28ed4c28c0ac7, type: 3}
+  m_Name: ConsumerFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -22,4 +22,16 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    consumer: {fileID: 11400000, guid: be94bcbc082cf104b8ab9c51bae1a4df, type: 2}
+    ignoreDamageReduction: 0
+    ignoreConsumerPrevention: 0
+    value:
+      rid: 5275139311471951893
+  references:
+    version: 2
+    RefIds:
+    - rid: 5275139311471951893
+      type: {class: CurrentHealthValue, ns: , asm: Assembly-CSharp}
+      data:
+        data:
+          multiplier: 0.1
+          inverse: 0

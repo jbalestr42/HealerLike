@@ -5,7 +5,7 @@ using UnityEngine;
 [Serializable]
 public abstract class AValue
 {
-    public abstract float GetValue(GameObject source);
+    public abstract float GetValue(GameObject target);
 }
 
 [Serializable]

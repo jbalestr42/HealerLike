@@ -25,5 +25,5 @@ MonoBehaviour:
     projectiles:
     - projectilePrefab: {fileID: 1985067714463758, guid: d7f619fa465538548a98377b43738ac6, type: 3}
       onHitConsumer:
-      - {fileID: 11400000, guid: 8e22d21276fdb7f43852053b860d1c9c, type: 2}
+      - {fileID: 11400000, guid: 727c29ff1ca950646add32fbe5746f5a, type: 2}
       numberOfProjectileToShootPerTarget: 1

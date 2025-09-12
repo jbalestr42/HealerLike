@@ -8,7 +8,7 @@ public class ResourceValidatorFactory : CharacterSkillValidatorFactory<ResourceV
 public class ResourceValidatorData
 {
     [CreateDataButton]
-    public SimpleConsumerFactory consumer;
+    public ConsumerFactory consumer;
 }
 
 public class ResourceValidator : ACharacterSkillValidator<ResourceValidatorData>
@@ -20,12 +20,12 @@ public class ResourceValidator : ACharacterSkillValidator<ResourceValidatorData>
         resource = owner.GetComponent<Character>().mana;
 
         skillButton.hasCost = true;
-        skillButton.SetCost(data.consumer.data.value);
+        skillButton.SetCost(data.consumer.data.value.GetValue(owner));
     }
 
     public override bool IsValid(GameObject owner)
     {
-        return resource.Value >= data.consumer.data.value;
+        return resource.Value >= data.consumer.data.value.GetValue(owner);
     }
 
     public override void OnSkillUsed(GameObject owner)

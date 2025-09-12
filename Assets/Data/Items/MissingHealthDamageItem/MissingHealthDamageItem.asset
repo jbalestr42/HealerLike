@@ -25,8 +25,9 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 8bc6eddd271bcbc4cb29b7e805886aae, type: 3}
     name: MissingHealthDamage
     description: 
-    buffList: []
+    buffs: []
     onHitEffects: []
     onHitConsumers:
-    - {fileID: 11400000, guid: 6790db05c9f74e3448a725e452c286c1, type: 2}
+    - {fileID: 11400000, guid: 4f0218fe5a09df44d995112981d110cc, type: 2}
+    projectileBehaviours: []
     skills: []

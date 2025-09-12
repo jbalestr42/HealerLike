@@ -22,6 +22,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    ignoreConsumerModifier: 0
-    ignoreConsumerPrevention: 1
-    type: 10
+    ignoreDamageReduction: 0
+    ignoreConsumerPrevention: 0
+    value:
+      rid: 5275139311471951898
+  references:
+    version: 2
+    RefIds:
+    - rid: 5275139311471951898
+      type: {class: FlatValue, ns: , asm: Assembly-CSharp}
+      data:
+        data:
+          value: 5
