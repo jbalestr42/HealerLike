@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ee4336be73d3274ca513c5b6bb22f0f, type: 3}
-  m_Name: TestEntity_DurationSkillStepFactory
+  m_Script: {fileID: 11500000, guid: e262ad46897c47a4ea34e1e4a87b391a, type: 3}
+  m_Name: AttributeValueFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -22,4 +22,5 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    duration: {fileID: 11400000, guid: bc89712ac0ab4a44e9d8b6a34ff75933, type: 2}
+    type: 1
+    multiplier: 0.1

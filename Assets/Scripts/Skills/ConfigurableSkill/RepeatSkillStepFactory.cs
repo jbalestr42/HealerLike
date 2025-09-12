@@ -26,7 +26,7 @@ public class RepeatSkillStep : ASkillStep<RepeatSkillStepData>
         _currentStep = 0;
         foreach (var skillStepFactory in data.skillStepFactories)
         {
-            ASkillStep skillStep = skillStepFactory.AddSkillStep();
+            ASkillStep skillStep = skillStepFactory.AddSkillStep(source);
             skillStep.Init();
             _skillSteps.Add(skillStep);
         }
@@ -63,9 +63,5 @@ public class RepeatSkillStep : ASkillStep<RepeatSkillStepData>
 
         // Only reset the first step, all other steps will be reset when they are selected
         _skillSteps[_currentStep].Reset();
-        // foreach (var skillStep in _skillSteps)
-        // {
-        //     skillStep.Reset();
-        // }
     }
 }

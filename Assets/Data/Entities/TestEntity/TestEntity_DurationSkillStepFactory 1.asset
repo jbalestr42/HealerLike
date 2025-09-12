@@ -22,4 +22,4 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    duration: 0.15
+    duration: {fileID: 11400000, guid: 64ff46ddc7e360a4796c4ef40e00fd99, type: 2}

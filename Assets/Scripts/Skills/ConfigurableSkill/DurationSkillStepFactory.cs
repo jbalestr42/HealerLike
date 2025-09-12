@@ -7,9 +7,8 @@ public class DurationSkillStepFactory : SkillStepFactory<DurationSkillStep, Dura
 [Serializable]
 public class DurationSkillStepData : SkillStepDataBase
 {
-    //Can we use attribute modifier factory ?
-    // Est-ce qu'il faut abstraire une simple valeur ? et qu'on utilise dans AConsumer aussi ?
-    public float duration;
+    [CreateDataButton]
+    public AValue duration;
 }
 
 public class DurationSkillStep : ASkillStep<DurationSkillStepData>
@@ -19,15 +18,15 @@ public class DurationSkillStep : ASkillStep<DurationSkillStepData>
     public override void Init()
     {
         _timer = 0f;
-        Debug.LogWarning($"Init Duration {data.duration}");
+        Debug.LogWarning($"Init Duration {data.duration.GetValue(source)}");
     }
 
     public override bool Update(ASkill skill, float deltaTime)
     {
         _timer += deltaTime;
-        if (_timer >= data.duration)
+        if (_timer >= data.duration.GetValue(source))
         {
-            Debug.LogWarning($"Duration done {data.duration}");
+            Debug.LogWarning($"Duration done {data.duration.GetValue(source)}");
             return true;
         }
         return false;
@@ -35,7 +34,7 @@ public class DurationSkillStep : ASkillStep<DurationSkillStepData>
 
     public override void Reset()
     {
-        Debug.LogWarning($"Reset Duration {data.duration}");
+        Debug.LogWarning($"Reset Duration {data.duration.GetValue(source)}");
         _timer = 0f;
     }
 }

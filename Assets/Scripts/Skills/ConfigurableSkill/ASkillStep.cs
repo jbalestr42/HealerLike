@@ -4,7 +4,7 @@ using UnityEngine;
 [InlineEditor]
 public abstract class ASkillStepFactory : SerializedScriptableObject
 {
-    public abstract ASkillStep AddSkillStep();
+    public abstract ASkillStep AddSkillStep(GameObject source);
 }
 
 public class SkillStepFactory<SkillStepType, SkillStepData> : ASkillStepFactory
@@ -15,16 +15,17 @@ public class SkillStepFactory<SkillStepType, SkillStepData> : ASkillStepFactory
     [HideLabel]
     public SkillStepData data;
 
-    public override ASkillStep AddSkillStep()
+    public override ASkillStep AddSkillStep(GameObject source)
     {
-        SkillStepType skillStep = new SkillStepType();
-        skillStep.data = data;
+        SkillStepType skillStep = new SkillStepType() { data = this.data, source = source };;
         return skillStep;
     }
 }
 
 public abstract class ASkillStep
 {
+    public GameObject source;
+
     public abstract void Init();
     public abstract bool Update(ASkill skill, float deltaTime);
     public abstract void Reset();

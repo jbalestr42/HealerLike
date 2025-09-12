@@ -19,7 +19,7 @@ public class ConfigurableSkill : ASkill<ConfigurableSkillData>
     {
         foreach (var skillStepFactory in data.skillStepFactories)
         {
-            ASkillStep skillStep = skillStepFactory.AddSkillStep();
+            ASkillStep skillStep = skillStepFactory.AddSkillStep(gameObject);
             skillStep.Init();
             _skillSteps.Add(skillStep);
         }
