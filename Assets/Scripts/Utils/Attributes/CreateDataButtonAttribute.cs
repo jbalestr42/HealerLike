@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities;
 using Sirenix.Utilities.Editor;
@@ -64,10 +65,21 @@ public class CreateDataButtonAttributeDrawer<T> : OdinAttributeDrawer<CreateData
 
     private T CreateSO(Type type)
     {
+        InspectorProperty root = this.Property;
+        while (root.Parent != null)
+        {
+            root = root.Parent;
+        }
         var so = ScriptableObject.CreateInstance(type);
-        string currentDirectory = Selection.activeObject != null ? Path.GetDirectoryName(AssetDatabase.GetAssetPath(Selection.activeObject)) : "Assets/";
+        string currentDirectory = root.ValueEntry.WeakSmartValue as UnityEngine.Object ? Path.GetDirectoryName(AssetDatabase.GetAssetPath((UnityEngine.Object)root.ValueEntry.WeakSmartValue)) : "";
+        if (string.IsNullOrEmpty(currentDirectory))
+        {
+            currentDirectory = Selection.activeObject != null ? Path.GetDirectoryName(AssetDatabase.GetAssetPath(Selection.activeObject)) : "Assets/";
+        }
         var uniquePath = AssetDatabase.GenerateUniqueAssetPath(Path.Combine(currentDirectory, $"{type.GetNiceName()}.asset"));
         AssetDatabase.CreateAsset(so, uniquePath);
+        Selection.activeObject = so;
+        EditorGUIUtility.PingObject(so);
         return (T)so;
     }
 
