@@ -23,4 +23,6 @@ MonoBehaviour:
     SerializationNodes: []
   data:
     onSkillTriggerFactory: []
-    skillStepFactories: []
+    skillStepFactories:
+    - {fileID: 11400000, guid: 196f10f8672accc4dbe10df308dc9425, type: 2}
+    - {fileID: 11400000, guid: fc65945e20ebc994c8cd91e5dcede302, type: 2}
