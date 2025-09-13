@@ -22,5 +22,6 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    rangeMultiplier: 0.5
+    rangeMultiplier: 100
+    decreaseMultiplierPerBounce: 0.5
     bounce: 1

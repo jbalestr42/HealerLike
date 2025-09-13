@@ -29,6 +29,7 @@ public class Projectile : MonoBehaviour, IBuffable
     public void Init(GameObject source, GameObject target, List<ABuffHandlerFactory> projectileBehaviours, List<AConsumerFactory> onHitConsumers)
     {
         _buffManager = GetComponent<BuffManager>();
+        _buffManager.isEnabled = true;
 
         _source = source;
         _target = target;
@@ -40,6 +41,7 @@ public class Projectile : MonoBehaviour, IBuffable
         {
             AddBuffHandler(passive, source, gameObject);
         }
+        _buffManager.ForceUpdate();
 
         // Init projectile behaviours
         _projectileBehaviours = new List<AProjectileBehaviour>(GetComponents<AProjectileBehaviour>());

@@ -201,6 +201,11 @@ public class BuffManager : SerializedMonoBehaviour
         }
     }
 
+    public void ForceUpdate()
+    {
+        Update();
+    }
+
     public void AddHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target)
     {
         if (string.IsNullOrEmpty(buffHandlerFactory.uniqueID))
