@@ -81,7 +81,8 @@ public class DataEditor : OdinMenuEditorWindow
         _dataEditors["Characters"].Add(new BaseDataEditor<CharacterData>("Characters", "Assets/Data/Characters/") { getDataName = (CharacterData data) => data.title + "Character" });
         _dataEditors["CharacterSkills"].Add(new DerivedTypeDataEditor<ACharacterSkillFactory>("CharacterSkills", "Assets/Data/CharacterSkills/"));
         _dataEditors["Entities"].Add(new BaseDataEditor<EntityData>("Entities", "Assets/Data/Entities/") { getDataName = (EntityData data) => data.title + "Entity" });
-        _dataEditors["Items"].Add(new BaseDataEditor<ItemFactory>("Items", "Assets/Data/Items/") { getDataName = (ItemFactory item) => item.title + "Item" });
+        _dataEditors["Items"].Add(new BaseDataEditor<ItemFactory>("Entity Items", "Assets/Data/EntityItems/") { getDataName = (ItemFactory item) => item.title + "Item" });
+        _dataEditors["Items"].Add(new BaseDataEditor<ItemFactory>("Player Items", "Assets/Data/PlayerItems/") { getDataName = (ItemFactory item) => item.title + "Item" });
         _dataEditors["GameData"].Add(new BaseDataEditor<GameData>("", "Assets/") { createFolder = false, canCreate = false });
 
         foreach (ABaseDataEditor dataEditor in _dataEditors[_selectedType])
