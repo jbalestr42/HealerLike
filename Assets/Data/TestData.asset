@@ -383,3 +383,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e650e43fbec13764bac68e7b756e405f, type: 2}
   - {fileID: 11400000, guid: 84838603ada205643ab074dfd136f83b, type: 2}
   - {fileID: 11400000, guid: 60b337d5800dd0943ba5e16ee16359fd, type: 2}
+  - {fileID: 11400000, guid: 0fe911b81aaae204fad2bb44dbdc001c, type: 2}
+  playerItems: []

@@ -1,8 +1,11 @@
 using UnityEngine;
 using Sirenix.OdinInspector;
+using UnityEngine.Events;
 
 public class AscensionGameType : AGameType
 {
+    [HideInInspector] public static UnityEvent OnRoundEnd = new UnityEvent();
+
     public enum State
     {
         None,
@@ -107,6 +110,7 @@ public class AscensionGameType : AGameType
             case State.EndBattle:
                 // Reset all unit to their default state (remove temporary buffs)
                 ResetAllEntities();
+                OnRoundEnd.Invoke();
                 // Show Upgrade UI
                 UIManager.instance.AddView(ViewType.Upgrade);
                 _upgradeView.FillChoices();

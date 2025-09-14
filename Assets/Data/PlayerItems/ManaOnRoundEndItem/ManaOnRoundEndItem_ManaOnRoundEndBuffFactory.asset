@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8940981ac4386e4395c5404eb3a86d1, type: 3}
-  m_Name: ManaOnRoundEndItem
+  m_Script: {fileID: 11500000, guid: cfc9149460a1e2941869f72f776d8cfe, type: 3}
+  m_Name: ManaOnRoundEndItem_ManaOnRoundEndBuffFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -21,13 +21,6 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
+  uniqueID: 63b0be15-1fe9-408f-9d51-2bf7380cacb3
   data:
-    icon: {fileID: 0}
-    name: ManaOnRoundEnd
-    description: 
-    buffs:
-    - {fileID: 11400000, guid: b7bf54a52d782b74fb35c1940ef00a62, type: 2}
-    onHitEffects: []
-    onHitConsumers: []
-    projectileBehaviours: []
-    skills: []
+    consumerFactory: {fileID: 11400000, guid: dfd534f1934884a48a30be8516edaa17, type: 2}

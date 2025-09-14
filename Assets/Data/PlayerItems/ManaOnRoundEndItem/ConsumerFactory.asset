@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8940981ac4386e4395c5404eb3a86d1, type: 3}
-  m_Name: ManaOnRoundEndItem
+  m_Script: {fileID: 11500000, guid: 4aee98d927598e340ae28ed4c28c0ac7, type: 3}
+  m_Name: ConsumerFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -22,12 +22,16 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    icon: {fileID: 0}
-    name: ManaOnRoundEnd
-    description: 
-    buffs:
-    - {fileID: 11400000, guid: b7bf54a52d782b74fb35c1940ef00a62, type: 2}
-    onHitEffects: []
-    onHitConsumers: []
-    projectileBehaviours: []
-    skills: []
+    ignoreDamageReduction: 1
+    ignoreConsumerPrevention: 1
+    value:
+      rid: 5275139358269898752
+  references:
+    version: 2
+    RefIds:
+    - rid: 5275139358269898752
+      type: {class: AttributeValue, ns: , asm: Assembly-CSharp}
+      data:
+        data:
+          type: 9
+          multiplier: -0.1
