@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class SelectUpgradeButton : MonoBehaviour
+public class SelectItemUpgradeButton : MonoBehaviour
 {
     [SerializeField] TMPro.TMP_Text _title;
     AItem _item;

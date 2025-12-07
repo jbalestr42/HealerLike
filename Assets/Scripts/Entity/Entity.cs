@@ -93,7 +93,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
             _skills.Add(skill);
         }
 
-        // Register to inventory events
+        // Register inventory events
         _inventoryHandler.OnItemAdded.AddListener(OnItemAdded);
         _inventoryHandler.OnItemRemoved.AddListener(OnItemRemoved);
 

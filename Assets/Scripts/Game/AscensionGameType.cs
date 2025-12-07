@@ -41,6 +41,7 @@ public class AscensionGameType : AGameType
 
         _gameView.gameHUD.nextWaveButton.onClick.AddListener(StartBattle);
         _upgradeView.OnItemSelected.AddListener(OnItemSelected);
+        _upgradeView.OnPlayerItemSelected.AddListener(OnPlayerItemSelected);
 
         if (_debug)
         {
@@ -74,7 +75,7 @@ public class AscensionGameType : AGameType
                 _gameView.characterSkillInventory.Show(true);
                 _gameView.entityInventory.Show(true);
 
-                // Later we can show multiple choice to the user
+                // TODO: Later we can show multiple choice to the user
                 LoadEnemies(DataManager.instance.GetWavePattern(_currentRound));
                 EnableAllEntities(false);
                 SetState(State.WaitForRoundToStart);
@@ -92,7 +93,7 @@ public class AscensionGameType : AGameType
                 _gameView.entityInventory.Show(false);
                 _gameView.playerInventory.HideInventory();
                 EnableAllEntities(true);
-                // Show countdown before starting the battl
+                // TODO: Show countdown before starting the battle
                 SetState(State.OnGoingBattle);
                 break;
 
@@ -154,6 +155,14 @@ public class AscensionGameType : AGameType
         SetState(State.InitializeRound);
     }
 
+    public void OnPlayerItemSelected(AItem item)
+    {
+        PlayerBehaviour.instance.character.inventoryHandler.AddItem(item, -1);
+        _upgradeView.ClearChoices();
+        UIManager.instance.PopCurrentView();
+        SetState(State.InitializeRound);
+    }
+
     public override bool IsOver()
     {
         return _state == State.GameEnd;
@@ -167,12 +176,14 @@ public class AscensionGameType : AGameType
 
     void EnableAllEntities(bool isEnabled)
     {
+        PlayerBehaviour.instance.character.Enable(isEnabled);
         _entities.GetEntities(Entity.EntityType.Player).ForEach(x => x.GetComponent<Entity>().Enable(isEnabled));
         _entities.GetEntities(Entity.EntityType.Computer).ForEach(x => x.GetComponent<Entity>().Enable(isEnabled));
     }
 
     void ResetAllEntities()
     {
+        PlayerBehaviour.instance.character.Reset();
         _entities.GetEntities(Entity.EntityType.Player).ForEach(x => x.GetComponent<Entity>().Reset());
         _entities.GetEntities(Entity.EntityType.Computer).ForEach(x => x.GetComponent<Entity>().Reset());
     }

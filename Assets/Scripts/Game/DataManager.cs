@@ -9,6 +9,7 @@ public class DataManager : Singleton<DataManager>
 
     public List<CharacterData> characters { get { return _data.characters; } set { _data.characters = value; } } 
     public List<AItemFactory> items { get { return _data.items; } set { _data.items = value; } } 
+    public List<AItemFactory> playerItems { get { return _data.playerItems; } set { _data.playerItems = value; } } 
 
     public CharacterData GetRandomCharacter()
     {
@@ -18,6 +19,11 @@ public class DataManager : Singleton<DataManager>
     public AItem GetRandomItem()
     {
         return _data.items[Random.Range(0, _data.items.Count)].GetItem();
+    }
+
+    public AItem GetRandomPlayerItem()
+    {
+        return _data.playerItems[Random.Range(0, _data.playerItems.Count)].GetItem();
     }
 
     public WavePatternData GetWavePattern(int round)

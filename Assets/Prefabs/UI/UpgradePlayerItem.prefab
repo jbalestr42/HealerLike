@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 4186623986392225973}
   - component: {fileID: 4186623986392225974}
   - component: {fileID: 4186623986392225972}
-  - component: {fileID: 253647960623683998}
+  - component: {fileID: 6175483463809863836}
   m_Layer: 5
-  m_Name: UpgradeItem
+  m_Name: UpgradePlayerItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -68,7 +68,7 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
---- !u!114 &253647960623683998
+--- !u!114 &6175483463809863836
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -77,11 +77,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 4186623986392225970}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 38ee5b151787c1d41973936a89d1aae4, type: 3}
+  m_Script: {fileID: 11500000, guid: 582c2d42a99995241b10a879f496038d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _title: {fileID: 2991792910323217940}
-  _background: {fileID: 7909666890490247706}
 --- !u!1 &4904171008188051935
 GameObject:
   m_ObjectHideFlags: 0
@@ -143,7 +142,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6563044, g: 0.7264151, b: 0.35978106, a: 1}
+  m_Color: {r: 0.7254902, g: 0.41139117, b: 0.36078432, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -204,8 +203,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 253647960623683998}
-        m_TargetAssemblyTypeName: SelectUpgradeButton, Assembly-CSharp
+      - m_Target: {fileID: 6175483463809863836}
+        m_TargetAssemblyTypeName: SelectPlayerItemUpgradeButton, Assembly-CSharp
         m_MethodName: SelectUpgrade
         m_Mode: 1
         m_Arguments:

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class Character : MonoBehaviour, IBuffable
@@ -21,6 +20,9 @@ public class Character : MonoBehaviour, IBuffable
 
     List<CharacterSkillSlot> _skillSlots = new List<CharacterSkillSlot>();
     public List<CharacterSkillSlot> skillSlots { get { return _skillSlots; } }
+
+    InventoryHandler _inventoryHandler = new InventoryHandler();
+    public InventoryHandler inventoryHandler => _inventoryHandler;
 
     public void Init()
     {
@@ -54,7 +56,38 @@ public class Character : MonoBehaviour, IBuffable
 
         // Init starting entities
         _entityPool.AddRange(_data.entities);
+
+        // Register inventory events
+        _inventoryHandler.OnItemAdded.AddListener(OnItemAdded);
+        _inventoryHandler.OnItemRemoved.AddListener(OnItemRemoved);
+        
+        // Disable the unit since we are not in combat
+        Enable(false);
     }
+
+    public void Enable(bool isEnabled)
+    {
+        _buffManager.isEnabled = isEnabled;
+    }
+
+    public void Reset()
+    {
+        _buffManager.Reset();
+    }
+
+    #region Inventory
+
+    public void OnItemAdded(InventoryItemData itemData, bool isNewItem)
+    {
+        itemData.item.Equip(gameObject);
+    }
+
+    public void OnItemRemoved(InventoryItemData itemData)
+    {
+        itemData.item.Unequip(gameObject);
+    }
+
+    #endregion
 
     #region IBuffable
 

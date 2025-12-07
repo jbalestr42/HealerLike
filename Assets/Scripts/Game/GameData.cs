@@ -23,6 +23,10 @@ public class GameData : SerializedScriptableObject
     [BoxGroup("Split/Player Data")]
     public int gold = 100;
 
+    [HorizontalGroup("Split")]
+    [BoxGroup("Split/Player Data")]
+    public float playerItemChance = 0.2f;
+
     [BoxGroup("Split/Upgrade Data")]
     [DictionaryDrawerSettings(DisplayMode = DictionaryDisplayOptions.Foldout)]
     public Dictionary<AttributeType, AttributeUpgradeData> attributeUpgradeData = new Dictionary<AttributeType, AttributeUpgradeData>();

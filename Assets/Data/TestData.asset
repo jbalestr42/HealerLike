@@ -367,6 +367,7 @@ MonoBehaviour:
       Entry: 8
       Data: 
   gold: 10000
+  playerItemChance: 0.5
   characters:
   - {fileID: 11400000, guid: b6564d3df55530743a8bae3f230c6101, type: 2}
   items:
@@ -383,5 +384,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e650e43fbec13764bac68e7b756e405f, type: 2}
   - {fileID: 11400000, guid: 84838603ada205643ab074dfd136f83b, type: 2}
   - {fileID: 11400000, guid: 60b337d5800dd0943ba5e16ee16359fd, type: 2}
+  playerItems:
   - {fileID: 11400000, guid: 0fe911b81aaae204fad2bb44dbdc001c, type: 2}
-  playerItems: []
+  - {fileID: 11400000, guid: 10e7a3acb9f60c54aa9701c4a92cf377, type: 2}

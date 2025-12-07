@@ -81,7 +81,7 @@ public class BuffManager : SerializedMonoBehaviour
 
     public void Reset()
     {
-        // TODO: Add a "item" tag to all items
+        // TODO: Add a "persistent" ou "isDebuffable" tag to all items
         // Remove all item without this tag
         foreach (var item in _buffHandlerPerSource)
         {
