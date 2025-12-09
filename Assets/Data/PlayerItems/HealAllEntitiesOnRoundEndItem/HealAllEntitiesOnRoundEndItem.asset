@@ -25,7 +25,8 @@ MonoBehaviour:
     icon: {fileID: 0}
     name: HealAllEntitiesOnRoundEnd
     description: 
-    buffs: []
+    buffs:
+    - {fileID: 11400000, guid: c525ccce07e5a4b46ab825826ae77ee4, type: 2}
     onHitEffects: []
     onHitConsumers: []
     projectileBehaviours: []
