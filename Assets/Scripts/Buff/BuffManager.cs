@@ -57,7 +57,8 @@ public class BuffManager : SerializedMonoBehaviour
     [DictionaryDrawerSettings(KeyLabel = "Source", ValueLabel = "Handler Data per Id")]
     [SerializeField] Dictionary<GameObject, BuffHandlerDataPerId> _buffHandlerPerSource = new Dictionary<GameObject, BuffHandlerDataPerId>();
 
-    List<string> _toRemove = new List<string>();
+    List<string> _cachedIdsToRemove = new List<string>();
+    List<GameObject> _cachedSourcesToRemove = new List<GameObject>();
 
     public bool isEnabled { get; set; }
 
@@ -120,7 +121,7 @@ public class BuffManager : SerializedMonoBehaviour
                                 ABuff buff = buffFactory.GetBuff();
                                 buff.Instant(source, buffHandlerData.target);
                             }
-                            _toRemove.Add(kvpBuffHandler.Key);
+                            _cachedIdsToRemove.Add(kvpBuffHandler.Key);
                         }
                     }
                     else
@@ -183,14 +184,16 @@ public class BuffManager : SerializedMonoBehaviour
                             }
                             buffHandlerData.buffHandler.Stop(source, buffHandlerData.target);
                             OnBuffHandlerStopped.Invoke(buffHandlerData);
-                            _toRemove.Add(kvpBuffHandler.Key);
+                            _cachedIdsToRemove.Add(kvpBuffHandler.Key);
                         }
                     }
                 }
             }
 
-            RemoveFromHandler(handlerPerSource.Value.buffHandlerPerId);
+            RemoveCachedIdsFromHandler(handlerPerSource.Value.buffHandlerPerId);
         }
+
+        RemoveOutdatedSources();
     }
 
     public void ForceUpdate()
@@ -207,12 +210,14 @@ public class BuffManager : SerializedMonoBehaviour
                 BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
                 if (buffHandlerData.buffHandlerFactory.tags.Contains(tag))
                 {
-                    _toRemove.Add(kvpBuffHandler.Key);
+                    _cachedIdsToRemove.Add(kvpBuffHandler.Key);
                 }
             }
 
-            RemoveFromHandler(handlerPerSource.Value.buffHandlerPerId);
+            RemoveCachedIdsFromHandler(handlerPerSource.Value.buffHandlerPerId);
         }
+
+        RemoveOutdatedSources();
     }
 
     public void RemoveBuffWithoutTag(GameplayTag tag)
@@ -224,24 +229,46 @@ public class BuffManager : SerializedMonoBehaviour
                 BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
                 if (!buffHandlerData.buffHandlerFactory.tags.Contains(tag))
                 {
-                    _toRemove.Add(kvpBuffHandler.Key);
+                    _cachedIdsToRemove.Add(kvpBuffHandler.Key);
                 }
             }
 
-            RemoveFromHandler(handlerPerSource.Value.buffHandlerPerId);
+            RemoveCachedIdsFromHandler(handlerPerSource.Value.buffHandlerPerId);
         }
+
+        RemoveOutdatedSources();
     }
 
-    void RemoveFromHandler(Dictionary<string, BuffHandlerData> buffHandlerPerId)
+    void RemoveCachedIdsFromHandler(Dictionary<string, BuffHandlerData> buffHandlerPerId)
     {
-        if (_toRemove.Count > 0)
+        foreach (string idToRemove in _cachedIdsToRemove)
         {
-            foreach (string idToRemove in _toRemove)
-            {
-                buffHandlerPerId.Remove(idToRemove);
-            }
-            _toRemove.Clear();
+            buffHandlerPerId.Remove(idToRemove);
         }
+        _cachedIdsToRemove.Clear();
+    }
+
+    void RemoveOutdatedSources()
+    {
+        // Clean sources that do not have an active buff or sources that doesn't exists anymore
+        foreach (var handlerPerSource in _buffHandlerPerSource)
+        {
+            if (handlerPerSource.Key == null)
+            {
+                _cachedSourcesToRemove.Add(handlerPerSource.Key);
+            }
+            else if (handlerPerSource.Value.buffHandlerPerId.Count() == 0)
+            {
+                _cachedSourcesToRemove.Add(handlerPerSource.Key);
+            }
+        }
+        
+        foreach (GameObject sourceToRemove in _cachedSourcesToRemove)
+        {
+            _buffHandlerPerSource.Remove(sourceToRemove);
+        }
+
+        _cachedSourcesToRemove.Clear();
     }
 
     public void AddHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target)
