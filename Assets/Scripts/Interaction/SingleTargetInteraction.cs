@@ -22,7 +22,7 @@ public class SingleTargetInteraction : AInteraction
 
     public override bool IsValidTarget(GameObject target)
     {
-        return target.GetComponent<Entity>()?.entityType == _targetEntityType;
+        return _targetEntityType == Entity.EntityType.Any || target.GetComponent<Entity>()?.entityType == _targetEntityType;
     }
 
     public override void OnMouseClick(RaycastHit hit)

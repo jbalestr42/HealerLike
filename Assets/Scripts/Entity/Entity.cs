@@ -12,7 +12,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     {
         None,
         Player,
-        Computer
+        Computer,
+        Any
     }
     public EntityType entityType { get; set; }
 
@@ -41,7 +42,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
 
     EntityModel _model;
     public EntityModel model => _model;
-    public SkillSource skillStartPoint { get { return _model.GetSourcePoint(); } } 
+    public SkillSource skillStartPoint { get { return _model.GetSourcePoint(); } }
 
     GameObject _targetPoint;
     public GameObject targetPoint => _targetPoint;
