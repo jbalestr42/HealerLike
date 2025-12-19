@@ -57,6 +57,7 @@ public class BuffManager : SerializedMonoBehaviour
     [DictionaryDrawerSettings(KeyLabel = "Source", ValueLabel = "Handler Data per Id")]
     [SerializeField] Dictionary<GameObject, BuffHandlerDataPerId> _buffHandlerPerSource = new Dictionary<GameObject, BuffHandlerDataPerId>();
 
+    List<string> _cachedBuffIdsToRemove = new List<string>();
     List<string> _cachedIdsToRemove = new List<string>();
     List<GameObject> _cachedSourcesToRemove = new List<GameObject>();
 
@@ -250,7 +251,7 @@ public class BuffManager : SerializedMonoBehaviour
 
     void RemoveOutdatedSources()
     {
-        // Clean sources that do not have an active buff or sources that doesn't exists anymore
+        // Clean sources that do not have an active buff handler or sources that doesn't exists anymore
         foreach (var handlerPerSource in _buffHandlerPerSource)
         {
             if (handlerPerSource.Key == null)
@@ -266,6 +267,44 @@ public class BuffManager : SerializedMonoBehaviour
         foreach (GameObject sourceToRemove in _cachedSourcesToRemove)
         {
             _buffHandlerPerSource.Remove(sourceToRemove);
+        }
+
+        _cachedSourcesToRemove.Clear();
+
+        // Clean sources that do not have an active buff or sources that doesn't exists anymore
+        foreach (var buffPerSource in _buffPerSource)
+        {
+            if (buffPerSource.Key == null)
+            {
+                _cachedSourcesToRemove.Add(buffPerSource.Key);
+            }
+            else
+            {
+                foreach (var buffPerId in buffPerSource.Value.buffPerId)
+                {
+                    if (buffPerId.Value.buffList.Count() == 0 || buffPerId.Value.stacks == 0)
+                    {
+                        _cachedBuffIdsToRemove.Add(buffPerId.Key);
+                    }
+                }
+
+                foreach (var idToRemove in _cachedBuffIdsToRemove)
+                {
+                    buffPerSource.Value.buffPerId.Remove(idToRemove);
+                }
+
+                _cachedBuffIdsToRemove.Clear();
+
+                if (buffPerSource.Value.buffPerId.Count() == 0)
+                {
+                    _cachedSourcesToRemove.Add(buffPerSource.Key);
+                }
+            }
+        }
+        
+        foreach (GameObject sourceToRemove in _cachedSourcesToRemove)
+        {
+            _buffPerSource.Remove(sourceToRemove);
         }
 
         _cachedSourcesToRemove.Clear();
