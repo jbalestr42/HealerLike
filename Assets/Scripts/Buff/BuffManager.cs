@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using System.Linq;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
@@ -81,12 +82,10 @@ public class BuffManager : SerializedMonoBehaviour
 
     public void Reset()
     {
-        // TODO: Add a "persistent" ou "isDebuffable" tag to all items
-        // Remove all item without this tag
-        foreach (var item in _buffHandlerPerSource)
+        foreach (var handlerPerSource in _buffHandlerPerSource)
         {
-            GameObject source = item.Key;
-            foreach (var kvpBuffHandler in item.Value.buffHandlerPerId)
+            GameObject source = handlerPerSource.Key;
+            foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
             {
                 BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
                 buffHandlerData.buffHandler.ResetPeriodDuration();
@@ -190,20 +189,59 @@ public class BuffManager : SerializedMonoBehaviour
                 }
             }
 
-            if (_toRemove.Count > 0)
-            {
-                foreach (string idToRemove in _toRemove)
-                {
-                    handlerPerSource.Value.buffHandlerPerId.Remove(idToRemove);
-                }
-                _toRemove.Clear();
-            }
+            RemoveFromHandler(handlerPerSource.Value.buffHandlerPerId);
         }
     }
 
     public void ForceUpdate()
     {
         Update();
+    }
+
+    public void RemoveBuffWithTag(GameplayTag tag)
+    {
+        foreach (var handlerPerSource in _buffHandlerPerSource)
+        {
+            foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
+            {
+                BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
+                if (buffHandlerData.buffHandlerFactory.tags.Contains(tag))
+                {
+                    _toRemove.Add(kvpBuffHandler.Key);
+                }
+            }
+
+            RemoveFromHandler(handlerPerSource.Value.buffHandlerPerId);
+        }
+    }
+
+    public void RemoveBuffWithoutTag(GameplayTag tag)
+    {
+        foreach (var handlerPerSource in _buffHandlerPerSource)
+        {
+            foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
+            {
+                BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
+                if (!buffHandlerData.buffHandlerFactory.tags.Contains(tag))
+                {
+                    _toRemove.Add(kvpBuffHandler.Key);
+                }
+            }
+
+            RemoveFromHandler(handlerPerSource.Value.buffHandlerPerId);
+        }
+    }
+
+    void RemoveFromHandler(Dictionary<string, BuffHandlerData> buffHandlerPerId)
+    {
+        if (_toRemove.Count > 0)
+        {
+            foreach (string idToRemove in _toRemove)
+            {
+                buffHandlerPerId.Remove(idToRemove);
+            }
+            _toRemove.Clear();
+        }
     }
 
     public void AddHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target)

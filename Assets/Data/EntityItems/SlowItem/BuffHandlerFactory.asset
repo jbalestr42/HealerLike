@@ -30,3 +30,4 @@ MonoBehaviour:
     buffFactoryList:
     - {fileID: 11400000, guid: f73d37961f96f3045bb86a27caf4d572, type: 2}
     buffEffect: {fileID: 0}
+    tags: []

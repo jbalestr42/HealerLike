@@ -31,4 +31,17 @@ public class DataManager : Singleton<DataManager>
         GameData.WavePerRound wavePerRound = _data.wavePerRound.Where(x => x.round == round).FirstOrDefault();
         return wavePerRound.wavePatterns[Random.Range(0, wavePerRound.wavePatterns.Count)];
     }
+
+    public GameplayTag GetTagWithName(string tagName)
+    {
+        foreach (GameplayTag tag in _data.tags)
+        {
+            if (tag.name == tagName)
+            {
+                return tag;
+            }
+        }
+
+        return null;
+    }
 }

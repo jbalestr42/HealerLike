@@ -31,3 +31,5 @@ MonoBehaviour:
     - {fileID: 11400000, guid: df8b161f599687c42a15660ae38a1e7b, type: 2}
     - {fileID: 11400000, guid: f8a413b84fac75941b6e39053bd756f5, type: 2}
     buffEffect: {fileID: 0}
+    tags:
+    - {fileID: 11400000, guid: 89edbaa6345fd89478db1b09b2b2150f, type: 2}

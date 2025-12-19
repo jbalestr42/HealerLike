@@ -31,7 +31,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     public AttributeManager attributeManager { get { return _attributeManager; } set { _attributeManager = value; } }
 
     InventoryHandler _inventoryHandler = new InventoryHandler();
-    public InventoryHandler inventoryHandler => _inventoryHandler;
+    public InventoryHandler inventoryHandler { get { return _inventoryHandler; } }
 
     BuffManager _buffManager;
     public BuffManager buffManager { get { return _buffManager; } }
@@ -126,6 +126,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     {
         _targetProvider.Reset();
         _buffManager.Reset();
+        _buffManager.RemoveBuffWithoutTag(DataManager.instance.GetTagWithName("FromItem"));
 
         foreach (ASkill skill in _skills)
         {

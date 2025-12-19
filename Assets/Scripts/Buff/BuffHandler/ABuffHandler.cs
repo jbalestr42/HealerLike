@@ -21,6 +21,7 @@ public abstract class ABuffHandlerFactory : SerializedScriptableObject
     public abstract DurationType durationType { get; }
     public abstract float duration { get; }
     public abstract bool hasDuration { get; }
+    public abstract List<GameplayTag> tags { get; }
 }
 
 public class BuffHandlerFactory<BuffHandlerType, DataType> : ABuffHandlerFactory
@@ -41,6 +42,7 @@ public class BuffHandlerFactory<BuffHandlerType, DataType> : ABuffHandlerFactory
     public override DurationType durationType => data.durationType;
     public override float duration => data.duration;
     public override bool hasDuration => data.durationType != DurationType.Instant;
+    public override List<GameplayTag> tags => data.tags;
 }
 
 public abstract class ABuffHandler
@@ -74,6 +76,8 @@ public class BuffHandlerBaseData
 
     [AssetsOnly]
     public GameObject buffEffect; // TODO IBuffEffect ? to manage start and stop visual effect
+
+    public List<GameplayTag> tags = new List<GameplayTag>();
 }
 
 public abstract class ABuffHandler<DataType> : ABuffHandler where DataType : BuffHandlerBaseData
