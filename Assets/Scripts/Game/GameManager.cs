@@ -70,6 +70,6 @@ public class GameManager : Singleton<GameManager>
 
     void OnEntityKilled(Entity entity)
     {
-        GetComponent<Cinemachine.CinemachineImpulseSource>().GenerateImpulse();
+        GetComponent<Unity.Cinemachine.CinemachineImpulseSource>().GenerateImpulse();
     }
 }

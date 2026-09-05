@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
@@ -12,6 +13,7 @@ public class BuffManager : SerializedMonoBehaviour
     [HideInInspector] public UnityEvent<BuffHandlerData> OnBuffHandlerStarted = new UnityEvent<BuffHandlerData>();
     [HideInInspector] public UnityEvent<BuffHandlerData> OnBuffHandlerStopped = new UnityEvent<BuffHandlerData>();
 
+    [Serializable]
     public class BuffData
     {
         public int stacks = 0;
@@ -23,13 +25,15 @@ public class BuffManager : SerializedMonoBehaviour
         public ABuff first => buffList.Count > 0 ? buffList[0] : null;
     }
 
+    [Serializable]
     class BuffDataPerId
     {
         // BuffFactory unique Id -> BuffDataPerId
         [DictionaryDrawerSettings(KeyLabel = "Id", ValueLabel = "Buff Data")]
-        public Dictionary<string, BuffData> buffPerId = new Dictionary<string, BuffData>();
+        [SerializeField] public Dictionary<string, BuffData> buffPerId = new Dictionary<string, BuffData>();
     }
 
+    [Serializable]
     public class BuffHandlerData
     {
         public ABuffHandlerFactory buffHandlerFactory = null;
@@ -43,11 +47,12 @@ public class BuffManager : SerializedMonoBehaviour
         public bool shouldRefresh => refreshStacks != 0;
     }
 
+    [Serializable]
     class BuffHandlerDataPerId
     {
         // BuffHandlerFactory unique Id -> BuffHandlerDataPerId
         [DictionaryDrawerSettings(KeyLabel = "Id", ValueLabel = "Buff Handler Data")]
-        public Dictionary<string, BuffHandlerData> buffHandlerPerId = new Dictionary<string, BuffHandlerData>();
+        [SerializeField] public Dictionary<string, BuffHandlerData> buffHandlerPerId = new Dictionary<string, BuffHandlerData>();
     }
 
     // Buff source -> BuffData

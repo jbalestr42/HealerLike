@@ -56,8 +56,8 @@ public class ArcHomingProjectileBehaviour : AProjectileBehaviour<ArcHomingProjec
             Vector3 localVelocity = new Vector3(0f, Vy, Vz);
             Vector3 globalVelocity = transform.TransformDirection(localVelocity);
 
-            _rigidbody.velocity = globalVelocity;
-            transform.rotation = Quaternion.LookRotation(_rigidbody.velocity) * _initialRotation;
+            _rigidbody.linearVelocity = globalVelocity;
+            transform.rotation = Quaternion.LookRotation(_rigidbody.linearVelocity) * _initialRotation;
         }
 	}
 }
