@@ -115,6 +115,14 @@ public class BuffManager : SerializedMonoBehaviour
                 if (buffHandlerData.isInit)
                 {
                     ABuffHandlerFactory buffHandlerFactory = buffHandlerData.buffHandlerFactory;
+
+                    if (buffHandlerData.target == null)
+                    {
+                        Debug.Log("[BuffManager] Target destroyed, discard buff handler " + buffHandlerFactory.name);
+                        _cachedIdsToRemove.Add(kvpBuffHandler.Key);
+                        continue;
+                    }
+
                     if (buffHandlerData.buffHandler.durationType == DurationType.Instant)
                     {
                         foreach (var buffFactory in buffHandlerFactory.buffFactoryList)
