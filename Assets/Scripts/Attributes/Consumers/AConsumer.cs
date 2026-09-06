@@ -1,3 +1,4 @@
+using System;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -31,6 +32,7 @@ public abstract class AConsumer
     public abstract bool ignoreConsumerPrevention { get; }
 }
 
+[Serializable]
 public class ConsumerBaseData
 {
     public bool ignoreDamageReduction;

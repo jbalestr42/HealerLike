@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/GameData")]
 public class GameData : SerializedScriptableObject
 {
+    [Serializable]
     [InlineProperty(LabelWidth = 130)]
     public struct AttributeUpgradeData
     {
@@ -13,6 +15,7 @@ public class GameData : SerializedScriptableObject
         public float bonusPerUpgrade;
     }
 
+    [Serializable]
     public class WavePerRound
     {
         public int round;
@@ -28,6 +31,7 @@ public class GameData : SerializedScriptableObject
     public float playerItemChance = 0.2f;
 
     [BoxGroup("Split/Upgrade Data")]
+    [SerializeField]
     [DictionaryDrawerSettings(DisplayMode = DictionaryDisplayOptions.Foldout)]
     public Dictionary<AttributeType, AttributeUpgradeData> attributeUpgradeData = new Dictionary<AttributeType, AttributeUpgradeData>();
 

@@ -45,6 +45,7 @@ public class BuffHandlerFactory<BuffHandlerType, DataType> : ABuffHandlerFactory
     public override List<GameplayTag> tags => data.tags;
 }
 
+[Serializable]
 public abstract class ABuffHandler
 {
     public abstract void Start(GameObject source, GameObject target);
@@ -80,6 +81,7 @@ public class BuffHandlerBaseData
     public List<GameplayTag> tags = new List<GameplayTag>();
 }
 
+[Serializable]
 public abstract class ABuffHandler<DataType> : ABuffHandler where DataType : BuffHandlerBaseData
 {
     public DataType data;

@@ -22,6 +22,7 @@ public class BuffFactory<BuffType, DataType> : ABuffFactory where BuffType : ABu
     }
 }
 
+[Serializable]
 public abstract class ABuff
 {
     public abstract void Instant(GameObject source, GameObject target);
@@ -30,6 +31,7 @@ public abstract class ABuff
     public abstract bool isStackable { get; }
 }
 
+[Serializable]
 public abstract class ABuff<DataType> : ABuff
 {
     public DataType data;

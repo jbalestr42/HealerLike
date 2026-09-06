@@ -21,6 +21,7 @@ public class EntityData : SerializedScriptableObject
     public string description;
 
     [Space]
+    [SerializeField]
     [HorizontalGroup("Group")]
     [VerticalGroup("Group/Attributes")]
     [DictionaryDrawerSettings(KeyColumnWidth = 75f, KeyLabel = "Type", ValueLabel = "Value")]

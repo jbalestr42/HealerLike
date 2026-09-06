@@ -1,4 +1,5 @@
-﻿using Sirenix.OdinInspector;
+﻿using System;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 [InlineEditor]
@@ -31,6 +32,7 @@ public abstract class ASkillStep
     public abstract void Reset();
 }
 
+[Serializable]
 public class SkillStepDataBase
 {
 }

@@ -21,6 +21,7 @@ public class CharacterData : SerializedScriptableObject
     public string text;
 
     [Space]
+    [SerializeField]
     [DictionaryDrawerSettings(KeyLabel = "Attribute Type", ValueLabel = "Value")]
     public Dictionary<AttributeType, float> attributes = new Dictionary<AttributeType, float>();
 
