@@ -1,7 +1,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
@@ -263,7 +262,7 @@ public class BuffManager : SerializedMonoBehaviour
             {
                 _cachedSourcesToRemove.Add(handlerPerSource.Key);
             }
-            else if (handlerPerSource.Value.buffHandlerPerId.Count() == 0)
+            else if (handlerPerSource.Value.buffHandlerPerId.Count == 0)
             {
                 _cachedSourcesToRemove.Add(handlerPerSource.Key);
             }
@@ -287,7 +286,7 @@ public class BuffManager : SerializedMonoBehaviour
             {
                 foreach (var buffPerId in buffPerSource.Value.buffPerId)
                 {
-                    if (buffPerId.Value.buffList.Count() == 0 || buffPerId.Value.stacks == 0)
+                    if (buffPerId.Value.buffList.Count == 0 || buffPerId.Value.stacks == 0)
                     {
                         _cachedBuffIdsToRemove.Add(buffPerId.Key);
                     }
@@ -300,7 +299,7 @@ public class BuffManager : SerializedMonoBehaviour
 
                 _cachedBuffIdsToRemove.Clear();
 
-                if (buffPerSource.Value.buffPerId.Count() == 0)
+                if (buffPerSource.Value.buffPerId.Count == 0)
                 {
                     _cachedSourcesToRemove.Add(buffPerSource.Key);
                 }
