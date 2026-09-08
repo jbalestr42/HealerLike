@@ -1,0 +1,21 @@
+{
+    "name": "HealerLike.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "AstarPathfindingProject",
+        "QuickOutline",
+        "Unity.TextMeshPro",
+        "Unity.InputSystem",
+        "Unity.VisualScripting.Core",
+        "Unity.Cinemachine"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

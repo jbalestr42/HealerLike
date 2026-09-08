@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 [Serializable]
 public class AttributeValueData
@@ -9,6 +10,7 @@ public class AttributeValueData
 }
 
 [Serializable]
+[MovedFrom(false, sourceAssembly: "Assembly-CSharp")]
 public class AttributeValue : AValue<AttributeValueData>
 {
     public override float GetValue(GameObject target)

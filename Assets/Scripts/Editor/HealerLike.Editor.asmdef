@@ -1,0 +1,19 @@
+{
+    "name": "HealerLike.Editor",
+    "rootNamespace": "",
+    "references": [
+        "HealerLike.Runtime",
+        "HealerLike.Utils.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

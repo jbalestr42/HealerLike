@@ -1,14 +1,20 @@
 ﻿<Solution>
-  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="HealerLike.Runtime.csproj" />
   <Project Path="AstarPathfindingProject.csproj" />
   <Project Path="CFXRRuntime.csproj" />
   <Project Path="PackageToolsEditor.csproj" />
   <Project Path="CFXRDemo.csproj" />
   <Project Path="CFXREditor.csproj" />
-  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="HealerLike.Models.csproj" />
+  <Project Path="HealerLike.Editor.csproj" />
+  <Project Path="QuickOutline.csproj" />
   <Project Path="AstarPathfindingProjectEditor.csproj" />
+  <Project Path="HealerLike.Tests.EditMode.csproj" />
   <Project Path="KinoBloom.Runtime.csproj" />
+  <Project Path="HealerLike.Utils.Editor.csproj" />
   <Project Path="CFXR.WelcomeScreen.csproj" />
   <Project Path="ToonyColorsPro.Demo.Editor.csproj" />
   <Project Path="Sirenix.OdinInspector.Modules.UnityMathematics.csproj" />
+  <Project Path="HealerLike.Grid.Editor.csproj" />
 </Solution>

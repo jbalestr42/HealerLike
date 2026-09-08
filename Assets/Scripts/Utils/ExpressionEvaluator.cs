@@ -124,7 +124,7 @@ public class ExpressionEvaluator
                 operators.Pop(); // Pop '('
                 lastTokenType = TokenType.RightParenthesis;
             }
-            else if (operatorData[expression[i]].precedence > 0) // Push an operator
+            else if (operatorData.TryGetValue(expression[i], out OperatorData currentOperator) && currentOperator.precedence > 0) // Push an operator
             {
                 if (lastTokenType != TokenType.Operand && lastTokenType != TokenType.RightParenthesis) // It's an unary operator
                 {
@@ -154,7 +154,7 @@ public class ExpressionEvaluator
             }
             else
             {
-                LogError($"We should never reach this code.");
+                LogError($"Unknown character '{expression[i]}' in expression '{expression}'");
             }
             i++;
         }

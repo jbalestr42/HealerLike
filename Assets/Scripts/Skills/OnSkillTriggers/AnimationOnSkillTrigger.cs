@@ -15,7 +15,8 @@ public class AnimationOnSkillTrigger : AOnSkillTrigger<AnimationOnSkillTriggerDa
 {
     public override void Execute(GameObject source)
     {
-        // TODO: start animation
-        source.GetComponentInChildren<DeviantBoss>().StartAnimation();
+        // Decoupled from any specific model script (e.g. DeviantBoss) so Scripts doesn't need
+        // a compile-time reference into Assets/Models.
+        source.BroadcastMessage("StartAnimation", SendMessageOptions.DontRequireReceiver);
     }
 }

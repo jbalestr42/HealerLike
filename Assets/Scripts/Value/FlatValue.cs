@@ -1,6 +1,7 @@
 ﻿using System;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 [Serializable]
 public class FlatValueData
@@ -10,6 +11,7 @@ public class FlatValueData
 }
 
 [Serializable]
+[MovedFrom(false, sourceAssembly: "Assembly-CSharp")]
 public class FlatValue : AValue<FlatValueData>
 {
     public override float GetValue(GameObject target)

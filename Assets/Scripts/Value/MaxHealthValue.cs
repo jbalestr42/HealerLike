@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 [Serializable]
 public class MaxHealthValueData
@@ -9,6 +10,7 @@ public class MaxHealthValueData
 }
 
 [Serializable]
+[MovedFrom(false, sourceAssembly: "Assembly-CSharp")]
 public class MaxHealthValue : AValue<MaxHealthValueData>
 {
     public override float GetValue(GameObject target)
