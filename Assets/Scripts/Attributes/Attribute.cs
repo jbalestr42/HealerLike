@@ -81,11 +81,6 @@ public class Attribute
         }
     }
 
-    public Attribute Clone()
-    {
-        return new Attribute(_baseValue);
-    }
-
     public void AddModifier(AttributeModifierType type, GameObject source, AttributeModifier modifier)
     {
         _modifiers[type].Add(new SourceModifier { source = source, modifier = modifier });
