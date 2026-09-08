@@ -1,0 +1,206 @@
+using System.Collections.Generic;
+using NUnit.Framework;
+using UnityEngine;
+
+namespace Buff
+{
+
+public class FakeBuffData
+{
+    public List<string> log = new List<string>();
+}
+
+public class FakeBuff : ABuff<FakeBuffData>
+{
+    public override void Instant(GameObject source, GameObject target) => data.log.Add("Instant");
+    public override void Add(GameObject source, GameObject target) => data.log.Add("Add");
+    public override void Remove(GameObject source, GameObject target) => data.log.Add("Remove");
+}
+
+public class FakeStackableBuff : ABuff<FakeBuffData>, IStackableBuff
+{
+    public override void Instant(GameObject source, GameObject target) => data.log.Add("Instant");
+    public override void Add(GameObject source, GameObject target) => data.log.Add("Add");
+    public override void Remove(GameObject source, GameObject target) => data.log.Add("Remove");
+    public void Stack(GameObject source, GameObject target) => data.log.Add("Stack");
+    public void Unstack(GameObject source, GameObject target) => data.log.Add("Unstack");
+}
+
+public class FakeBuffFactory : BuffFactory<FakeBuff, FakeBuffData> { }
+public class FakeStackableBuffFactory : BuffFactory<FakeStackableBuff, FakeBuffData> { }
+
+public class BuffManagerTests
+{
+    GameObject _source;
+    GameObject _target;
+    BuffManager _buffManager;
+    FakeBuffData _data;
+    readonly List<Object> _scriptableObjects = new List<Object>();
+
+    [SetUp]
+    public void SetUp()
+    {
+        _source = new GameObject("Source");
+        _target = new GameObject("Target");
+        _buffManager = new GameObject("BuffManager").AddComponent<BuffManager>();
+        _buffManager.isEnabled = true;
+        _data = new FakeBuffData();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        Object.DestroyImmediate(_source);
+        Object.DestroyImmediate(_target);
+        Object.DestroyImmediate(_buffManager.gameObject);
+        foreach (Object scriptableObject in _scriptableObjects)
+        {
+            Object.DestroyImmediate(scriptableObject);
+        }
+        _scriptableObjects.Clear();
+    }
+
+    T CreateTracked<T>() where T : ScriptableObject
+    {
+        T instance = ScriptableObject.CreateInstance<T>();
+        _scriptableObjects.Add(instance);
+        return instance;
+    }
+
+    ABuffHandlerFactory CreateHandlerFactory(ABuffFactory buffFactory, DurationType durationType, float duration = 100f, List<GameplayTag> tags = null)
+    {
+        BuffHandlerFactory handlerFactory = CreateTracked<BuffHandlerFactory>();
+        handlerFactory.data = new BuffHandlerData
+        {
+            durationType = durationType,
+            duration = duration,
+            buffFactoryList = new List<ABuffFactory> { buffFactory },
+            tags = tags ?? new List<GameplayTag>(),
+        };
+        return handlerFactory;
+    }
+
+    [Test]
+    public void AddHandler_InstantDuration_InvokesInstantOncePerRefreshStack()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Instant);
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { "Instant", "Instant" }, _data.log);
+    }
+
+    [Test]
+    public void AddHandler_DurationType_StartsHandlerAndAddsBuff()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration);
+        int startedCount = 0;
+        _buffManager.OnBuffHandlerStarted.AddListener(_ => startedCount++);
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { "Add" }, _data.log);
+        Assert.AreEqual(1, startedCount);
+    }
+
+    [Test]
+    public void RemoveHandler_NonStackableBuff_RemovesBuffAndStopsHandler()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration);
+        int stoppedCount = 0;
+        _buffManager.OnBuffHandlerStopped.AddListener(_ => stoppedCount++);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // Add
+
+        _buffManager.RemoveHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // Remove + Stop
+
+        CollectionAssert.AreEqual(new[] { "Add", "Remove" }, _data.log);
+        Assert.AreEqual(1, stoppedCount);
+    }
+
+    [Test]
+    public void AddHandler_CalledTwiceBeforeUpdate_StacksSecondApplication()
+    {
+        FakeStackableBuffFactory buffFactory = CreateTracked<FakeStackableBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration);
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { "Add", "Stack" }, _data.log);
+    }
+
+    [Test]
+    public void RemoveHandler_AfterStacking_UnstacksWithoutStoppingHandler()
+    {
+        FakeStackableBuffFactory buffFactory = CreateTracked<FakeStackableBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration);
+        int stoppedCount = 0;
+        _buffManager.OnBuffHandlerStopped.AddListener(_ => stoppedCount++);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // Add, Stack -> 2 stacks
+
+        _buffManager.RemoveHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // Unstack only, handler still has 1 stack
+
+        CollectionAssert.AreEqual(new[] { "Add", "Stack", "Unstack" }, _data.log);
+        Assert.AreEqual(0, stoppedCount);
+    }
+
+    [Test]
+    public void RemoveBuffWithTag_DiscardsMatchingHandlerBookkeepingWithoutStoppingIt()
+    {
+        // RemoveBuffWithTag only drops the handler entry from BuffManager's internal tracking -
+        // it never calls buffHandler.Stop() or buff.Remove(), so the buff's own effect is not
+        // reversed by this call. Asserting that behaviour as-is (rather than what one might expect)
+        // so a future change to this method shows up here.
+        GameplayTag tag = CreateTracked<GameplayTag>();
+        FakeStackableBuffFactory buffFactory = CreateTracked<FakeStackableBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration, tags: new List<GameplayTag> { tag });
+        int stoppedCount = 0;
+        _buffManager.OnBuffHandlerStopped.AddListener(_ => stoppedCount++);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // Add, Stack -> 2 stacks
+
+        _buffManager.RemoveBuffWithTag(tag);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { "Add", "Stack" }, _data.log);
+        Assert.AreEqual(0, stoppedCount);
+    }
+
+    [Test]
+    public void RemoveBuffWithoutTag_KeepsHandlerThatHasTheTag()
+    {
+        GameplayTag tag = CreateTracked<GameplayTag>();
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration, tags: new List<GameplayTag> { tag });
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // Add
+
+        _buffManager.RemoveBuffWithoutTag(tag);
+        _buffManager.ForceUpdate();
+
+        // The handler has the tag, so RemoveBuffWithoutTag leaves it alone: no further log entries.
+        CollectionAssert.AreEqual(new[] { "Add" }, _data.log);
+    }
+}
+
+}
