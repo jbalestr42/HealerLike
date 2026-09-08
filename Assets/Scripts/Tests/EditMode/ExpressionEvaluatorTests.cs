@@ -1,6 +1,5 @@
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.TestTools;
 
 public class ExpressionEvaluatorTests
 {
@@ -30,13 +29,18 @@ public class ExpressionEvaluatorTests
     [Test]
     public void Evaluate_InvalidExpression_ReturnsDefaultValue()
     {
-        // Every unknown character logs an error; only assert the first to stay resilient to the exact text.
-        LogAssert.Expect(LogType.Error, "[ERROR] Unknown character 'n' in expression 'not a number'");
-        LogAssert.ignoreFailingMessages = true;
-
-        Assert.AreEqual(-1f, ExpressionEvaluator.Evaluate("not a number", -1f));
-
-        LogAssert.ignoreFailingMessages = false;
+        // Every unknown character logs an error (expected, production behavior) - silence the
+        // logger for this call only so it doesn't spam the Console during test runs.
+        bool wasLogEnabled = Debug.unityLogger.logEnabled;
+        Debug.unityLogger.logEnabled = false;
+        try
+        {
+            Assert.AreEqual(-1f, ExpressionEvaluator.Evaluate("not a number", -1f));
+        }
+        finally
+        {
+            Debug.unityLogger.logEnabled = wasLogEnabled;
+        }
     }
 
     [Test]

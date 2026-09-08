@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 public class TextConvertor
@@ -21,7 +22,7 @@ public class TextConvertor
         description = Regex.Replace(description, regexCatchVariable, m => EvaluateVariable(character, data, m.Groups[1].Value, defaultValue: "1"));
 
         // Compute all expressions within []
-        return Regex.Replace(description, regexCatchExpression, m => ExpressionEvaluator.Evaluate(m.Groups[0].Value.Replace(',', '.')).ToString());
+        return Regex.Replace(description, regexCatchExpression, m => ExpressionEvaluator.Evaluate(m.Groups[0].Value.Replace(',', '.')).ToString(CultureInfo.InvariantCulture));
     }
 
     /// <summary>
@@ -54,8 +55,8 @@ public class TextConvertor
                     Attribute attribute = character.attributeManager.Get(type);
                     return tokens[1] switch
                     {
-                        "base" => attribute.BaseValue.ToString("F2"),
-                        "current" => attribute.BaseValue.ToString("F2"),
+                        "base" => attribute.BaseValue.ToString("F2", CultureInfo.InvariantCulture),
+                        "current" => attribute.Value.ToString("F2", CultureInfo.InvariantCulture),
                         _ => GetError($"Bad Attribute Param '{tokens[1]}' -> Available are 'base' or 'current'", defaultValue)
                     };
                 }
