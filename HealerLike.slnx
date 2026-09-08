@@ -5,12 +5,12 @@
   <Project Path="PackageToolsEditor.csproj" />
   <Project Path="CFXRDemo.csproj" />
   <Project Path="CFXREditor.csproj" />
+  <Project Path="HealerLike.Tests.EditMode.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="HealerLike.Models.csproj" />
   <Project Path="HealerLike.Editor.csproj" />
   <Project Path="QuickOutline.csproj" />
   <Project Path="AstarPathfindingProjectEditor.csproj" />
-  <Project Path="HealerLike.Tests.EditMode.csproj" />
   <Project Path="KinoBloom.Runtime.csproj" />
   <Project Path="HealerLike.Utils.Editor.csproj" />
   <Project Path="CFXR.WelcomeScreen.csproj" />

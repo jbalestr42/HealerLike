@@ -1,6 +1,9 @@
 using NUnit.Framework;
 using UnityEngine;
 
+namespace Attributes
+{
+
 public class AttributeTests
 {
     [Test]
@@ -414,4 +417,6 @@ public class AttributeTests
         Object.DestroyImmediate(sourceToRemove);
         Object.DestroyImmediate(otherSource);
     }
+}
+
 }
