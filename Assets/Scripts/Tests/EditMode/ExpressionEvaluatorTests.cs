@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using UnityEngine;
 
 public class ExpressionEvaluatorTests
 {
@@ -31,16 +30,10 @@ public class ExpressionEvaluatorTests
     {
         // Every unknown character logs an error (expected, production behavior) - silence the
         // logger for this call only so it doesn't spam the Console during test runs.
-        bool wasLogEnabled = Debug.unityLogger.logEnabled;
-        Debug.unityLogger.logEnabled = false;
-        try
+        TestHelpers.WithLoggingDisabled(() =>
         {
             Assert.AreEqual(-1f, ExpressionEvaluator.Evaluate("not a number", -1f));
-        }
-        finally
-        {
-            Debug.unityLogger.logEnabled = wasLogEnabled;
-        }
+        });
     }
 
     [Test]

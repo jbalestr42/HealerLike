@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Globalization;
-using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -18,40 +17,13 @@ public class TextConvertorTests
         public List<string> Items = new List<string> { "a", "b", "c" };
     }
 
-    class FakeModifier : AttributeModifier
-    {
-        readonly float _value;
-        public FakeModifier(float value) { _value = value; }
-        public override float ApplyModifier() => _value;
-    }
-
-    static void WithLoggingDisabled(System.Action action)
-    {
-        bool wasLogEnabled = Debug.unityLogger.logEnabled;
-        Debug.unityLogger.logEnabled = false;
-        try
-        {
-            action();
-        }
-        finally
-        {
-            Debug.unityLogger.logEnabled = wasLogEnabled;
-        }
-    }
-
     static Character CreateCharacterWithAttribute(AttributeType type, float value)
     {
         Character character = null;
-        WithLoggingDisabled(() =>
+        TestHelpers.WithLoggingDisabled(() =>
         {
             GameObject go = new GameObject();
-            AttributeManager attributeManager = go.AddComponent<AttributeManager>();
-            // Awake() (which initializes AttributeManager's internal dictionary) isn't invoked
-            // synchronously by AddComponent in EditMode tests - invoke it directly via reflection
-            // rather than GameObject.SendMessage, which trips Unity's internal ShouldRunBehaviour() assert.
-            typeof(AttributeManager).GetMethod("Awake", BindingFlags.NonPublic | BindingFlags.Instance)
-                .Invoke(attributeManager, null);
-            attributeManager.Add(type, new Attribute(value));
+            AttributeManager attributeManager = TestHelpers.CreateAttributeManager(go, type, value);
 
             // Adding Character triggers Unity's editor-only Reset() message, which NREs on
             // _buffManager since we deliberately skip the heavy Character.Init() for this test
@@ -160,7 +132,7 @@ public class TextConvertorTests
         Character character = CreateCharacterWithAttribute(AttributeType.HealthMax, 10f);
 
         string result = null;
-        WithLoggingDisabled(() => result = TextConvertor.Convert("{attribute:base}", character, null));
+        TestHelpers.WithLoggingDisabled(() => result = TextConvertor.Convert("{attribute:base}", character, null));
 
         Assert.AreEqual("1", result);
         Object.DestroyImmediate(character.gameObject);
@@ -172,7 +144,7 @@ public class TextConvertorTests
         Character character = CreateCharacterWithAttribute(AttributeType.HealthMax, 10f);
 
         string result = null;
-        WithLoggingDisabled(() => result = TextConvertor.Convert("{attribute:base:NotAnAttributeType}", character, null));
+        TestHelpers.WithLoggingDisabled(() => result = TextConvertor.Convert("{attribute:base:NotAnAttributeType}", character, null));
 
         Assert.AreEqual("1", result);
         Object.DestroyImmediate(character.gameObject);
@@ -184,7 +156,7 @@ public class TextConvertorTests
         Character character = CreateCharacterWithAttribute(AttributeType.HealthMax, 10f);
 
         string result = null;
-        WithLoggingDisabled(() => result = TextConvertor.Convert("{attribute:unknown:HealthMax}", character, null));
+        TestHelpers.WithLoggingDisabled(() => result = TextConvertor.Convert("{attribute:unknown:HealthMax}", character, null));
 
         Assert.AreEqual("1", result);
         Object.DestroyImmediate(character.gameObject);
@@ -222,7 +194,7 @@ public class TextConvertorTests
     public void Convert_DataVariable_UnknownField_ReturnsDefaultValue()
     {
         string result = null;
-        WithLoggingDisabled(() => result = TextConvertor.Convert("{data:DoesNotExist}", null, new TestData()));
+        TestHelpers.WithLoggingDisabled(() => result = TextConvertor.Convert("{data:DoesNotExist}", null, new TestData()));
 
         Assert.AreEqual("1", result);
     }
@@ -233,7 +205,7 @@ public class TextConvertorTests
     public void Convert_UnknownVariableType_ReturnsDefaultValue()
     {
         string result = null;
-        WithLoggingDisabled(() => result = TextConvertor.Convert("{unknown:foo}", null, null));
+        TestHelpers.WithLoggingDisabled(() => result = TextConvertor.Convert("{unknown:foo}", null, null));
 
         Assert.AreEqual("1", result);
     }

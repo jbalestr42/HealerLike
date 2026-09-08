@@ -3,13 +3,6 @@ using UnityEngine;
 
 public class AttributeTests
 {
-    class FakeModifier : AttributeModifier
-    {
-        readonly float _value;
-        public FakeModifier(float value) { _value = value; }
-        public override float ApplyModifier() => _value;
-    }
-
     [Test]
     public void Value_NoModifiers_EqualsBaseValue()
     {

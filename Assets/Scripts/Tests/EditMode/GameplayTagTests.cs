@@ -9,8 +9,7 @@ public class GameplayTagTests
         tag.name = name;
         if (parent != null)
         {
-            typeof(GameplayTag).GetField("_parent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .SetValue(tag, parent);
+            TestHelpers.SetPrivateField(tag, "_parent", parent);
         }
         return tag;
     }
