@@ -3,14 +3,21 @@ using UnityEngine;
 public class DraggableEntity : MonoBehaviour, IDraggable
 {
     GridManager _grid;
+    Entity _entity;
     Vector3 _originalPosition = Vector3.zero;
 
     void Start()
     {
         _grid = PlayerBehaviour.instance.grid;
+        _entity = GetComponent<Entity>();
     }
 
     #region IDraggable
+
+    public bool CanDrag()
+    {
+        return _entity.isDraggable;
+    }
 
     public void StartDrag(RaycastHit hit)
     {

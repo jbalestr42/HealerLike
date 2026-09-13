@@ -34,9 +34,13 @@ public class InteractionManager : Singleton<InteractionManager>
                         }
 
                         _draggable = hit.collider.gameObject.GetComponentInParent<IDraggable>();
-                        if (_draggable != null)
+                        if (_draggable != null && _draggable.CanDrag())
                         {
                             _draggable.StartDrag(hit);
+                        }
+                        else
+                        {
+                            _draggable = null;
                         }
                     }
                 }

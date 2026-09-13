@@ -49,6 +49,9 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
 
     List<ASkill> _skills = new List<ASkill>();
 
+    bool _isDraggable;
+    public bool isDraggable { get { return _isDraggable; } }
+
     public void Init()
     {
         _buffManager = GetComponent<BuffManager>();
@@ -114,6 +117,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
 
     public void Enable(bool isEnabled)
     {
+        _isDraggable = !isEnabled;
         _targetProvider.isEnabled = isEnabled;
         _buffManager.isEnabled = isEnabled;
 
