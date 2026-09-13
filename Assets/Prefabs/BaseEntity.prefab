@@ -32,6 +32,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1773381645329648}
+  serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -39,7 +40,6 @@ Transform:
   m_Children:
   - {fileID: 7323869075977762566}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &54024370743456462
 Rigidbody:
@@ -48,10 +48,10 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1773381645329648}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -139,12 +139,10 @@ MonoBehaviour:
     SerializationNodes:
     - Name: _buffPerSource
       Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[UnityEngine.GameObject, UnityEngine.CoreModule],[BuffManager+BuffDataPerId,
-        Assembly-CSharp]], mscorlib
+      Data: 0|System.Collections.Generic.Dictionary`2[[UnityEngine.GameObject, UnityEngine.CoreModule],[BuffManager+BuffDataPerId, HealerLike.Runtime]], mscorlib
     - Name: comparer
       Entry: 7
-      Data: 1|System.Collections.Generic.ObjectEqualityComparer`1[[UnityEngine.GameObject,
-        UnityEngine.CoreModule]], mscorlib
+      Data: 1|System.Collections.Generic.ObjectEqualityComparer`1[[UnityEngine.GameObject, UnityEngine.CoreModule]], mscorlib
     - Name: 
       Entry: 8
       Data: 
@@ -159,8 +157,7 @@ MonoBehaviour:
       Data: 
     - Name: _buffHandlerPerSource
       Entry: 7
-      Data: 2|System.Collections.Generic.Dictionary`2[[UnityEngine.GameObject, UnityEngine.CoreModule],[BuffManager+BuffHandlerDataPerId,
-        Assembly-CSharp]], mscorlib
+      Data: 2|System.Collections.Generic.Dictionary`2[[UnityEngine.GameObject, UnityEngine.CoreModule],[BuffManager+BuffHandlerDataPerId, HealerLike.Runtime]], mscorlib
     - Name: comparer
       Entry: 9
       Data: 1
@@ -185,6 +182,8 @@ MonoBehaviour:
   OnBuffHandlerStopped:
     m_PersistentCalls:
       m_Calls: []
+  _buffPerSource: []
+  _buffHandlerPerSource: []
 --- !u!114 &8158556011190788405
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -295,7 +294,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4219220005151473105, guid: 94204bcd06cb66041947a6534c625e2a, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

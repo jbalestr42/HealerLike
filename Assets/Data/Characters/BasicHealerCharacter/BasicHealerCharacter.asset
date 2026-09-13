@@ -23,12 +23,10 @@ MonoBehaviour:
     SerializationNodes:
     - Name: attributes
       Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, Assembly-CSharp],[System.Single,
-        mscorlib]], mscorlib
+      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, HealerLike.Runtime],[System.Single, mscorlib]], mscorlib
     - Name: comparer
       Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, Assembly-CSharp]],
-        mscorlib
+      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, HealerLike.Runtime]], mscorlib
     - Name: 
       Entry: 12
       Data: 0
@@ -74,10 +72,15 @@ MonoBehaviour:
   model: {fileID: 0}
   title: BasicHealer
   text: 
+  attributes:
+  - key: 10
+    value: 20
+  - key: 9
+    value: 100
   passives: []
   entities:
   - {fileID: 11400000, guid: ff864edc5e8dfdc47ad1e7a7cd3ec589, type: 2}
-  - {fileID: 11400000, guid: ff864edc5e8dfdc47ad1e7a7cd3ec589, type: 2}
+  - {fileID: 11400000, guid: 723a5c26dd4a39d489c9b9accfc6fec4, type: 2}
   - {fileID: 11400000, guid: 0e42156d42eb9244db24d1871321181b, type: 2}
   - {fileID: 11400000, guid: 19f30c8aca7684b4eb7fbd3a5e0f4b16, type: 2}
   - {fileID: 11400000, guid: 54a4a578c5855404698780caa3b60094, type: 2}
@@ -92,3 +95,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c7050747abad2aa49b132e7982ee2f03, type: 2}
   - {fileID: 11400000, guid: 398f76355dcd1574d876d59d8e1dd8bd, type: 2}
   - {fileID: 11400000, guid: b2bc5d9e766f0e14789e2b82c1dc37e9, type: 2}
+  - {fileID: 11400000, guid: 38f88bae44f5f1f41b2aef0148296685, type: 2}
