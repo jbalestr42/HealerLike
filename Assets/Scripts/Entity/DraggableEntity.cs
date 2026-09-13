@@ -5,6 +5,7 @@ public class DraggableEntity : MonoBehaviour, IDraggable
     GridManager _grid;
     Entity _entity;
     Collider[] _colliders;
+    int[] _originalLayers;
     Vector3 _originalPosition = Vector3.zero;
     Vector3 _homePosition = Vector3.zero;
     public Vector3 homePosition { get { return _homePosition; } }
@@ -15,15 +16,27 @@ public class DraggableEntity : MonoBehaviour, IDraggable
         _grid = PlayerBehaviour.instance.grid;
         _entity = GetComponent<Entity>();
         _colliders = GetComponentsInChildren<Collider>();
+        _originalLayers = new int[_colliders.Length];
         _originalPosition = transform.position;
         _homePosition = transform.position;
     }
 
-    void SetCollidersEnabled(bool isEnabled)
+    // Moves this entity's collider(s) off the layer used by drag/drop raycasts (without touching
+    // the colliders themselves), so InteractionManager stops self-hitting this entity mid-drag
+    // while every other physics interaction (e.g. BoostCell triggers) keeps working normally.
+    void SetIgnoredByRaycasts(bool isIgnored)
     {
-        foreach (Collider collider in _colliders)
+        for (int i = 0; i < _colliders.Length; i++)
         {
-            collider.enabled = isEnabled;
+            if (isIgnored)
+            {
+                _originalLayers[i] = _colliders[i].gameObject.layer;
+                _colliders[i].gameObject.layer = Layers.IgnoreRaycast;
+            }
+            else
+            {
+                _colliders[i].gameObject.layer = _originalLayers[i];
+            }
         }
     }
 
@@ -38,20 +51,20 @@ public class DraggableEntity : MonoBehaviour, IDraggable
     {
         _originalPosition = transform.position;
         _swapTarget = null;
-        // Otherwise this entity's own collider(s) would intercept the raycast once it moves onto
-        // a swap target's cell, hiding the terrain underneath and making a re-hover of that same
-        // cell look ambiguous.
-        SetCollidersEnabled(false);
+        // Otherwise this entity's own collider(s) would intercept the drag/drop raycast once it
+        // moves onto a swap target's cell, hiding the terrain underneath and making a re-hover of
+        // that same cell look ambiguous.
+        SetIgnoredByRaycasts(true);
     }
 
     public void Drag(RaycastHit hit)
     {
-        // With this entity's collider disabled, re-hovering the cell a previewed target vacated
+        // With this entity ignored by raycasts, re-hovering the cell a previewed target vacated
         // now cleanly hits flat terrain (not this entity, not the target - both are elsewhere),
         // so comparing grid cells reliably detects "still hovering the same target" and avoids
         // re-triggering revert/preview every frame (which would otherwise flicker: the target
-        // reverting to its real home - exactly where this entity currently sits - would put its
-        // own collider back, getting freshly re-detected and re-previewed again next frame).
+        // reverting to its real home - exactly where this entity currently sits - would be
+        // freshly re-detected and re-previewed again next frame).
         Vector2Int hitCoord = _grid.GetCoordFromPosition(hit.point);
         bool stillOnSameTarget = _swapTarget != null && hitCoord == _grid.GetCoordFromPosition(_swapTarget.homePosition);
 
@@ -106,7 +119,7 @@ public class DraggableEntity : MonoBehaviour, IDraggable
         {
             _homePosition = transform.position;
         }
-        SetCollidersEnabled(true);
+        SetIgnoredByRaycasts(false);
     }
 
     public void CancelDrag()
@@ -117,7 +130,7 @@ public class DraggableEntity : MonoBehaviour, IDraggable
             _swapTarget = null;
         }
         transform.position = _grid.GetCellCenterFromPosition(_homePosition);
-        SetCollidersEnabled(true);
+        SetIgnoredByRaycasts(false);
     }
 
     #endregion
