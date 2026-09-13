@@ -205,28 +205,18 @@ public class BuffManager : SerializedMonoBehaviour
 
     public void RemoveBuffWithTag(GameplayTag tag)
     {
-        foreach (var handlerPerSource in _buffHandlerPerSource)
-        {
-            GameObject source = handlerPerSource.Key;
-            foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
-            {
-                BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
-                if (buffHandlerData.isInit && buffHandlerData.buffHandlerFactory.tags.Contains(tag))
-                {
-                    // Properly stop the handler instead of just discarding the entry - otherwise
-                    // the underlying buff (e.g. an AttributeModifier) never gets removed from its
-                    // target and stays attached forever.
-                    StopHandler(source, buffHandlerData);
-                }
-            }
-
-            RemoveCachedIdsFromHandler(handlerPerSource.Value.buffHandlerPerId);
-        }
-
-        RemoveOutdatedSources();
+        RemoveBuff(buffHandlerData => buffHandlerData.buffHandlerFactory.tags.Contains(tag));
     }
 
     public void RemoveBuffWithoutTag(GameplayTag tag)
+    {
+        RemoveBuff(buffHandlerData => !buffHandlerData.buffHandlerFactory.tags.Contains(tag));
+    }
+
+    // Stops and removes every initialized handler matching the predicate, across all sources -
+    // properly (Remove()+Stop()) instead of just discarding the entry, so the underlying buff
+    // (e.g. an AttributeModifier) never stays attached to its target forever.
+    public void RemoveBuff(Func<BuffHandlerData, bool> shouldRemove)
     {
         foreach (var handlerPerSource in _buffHandlerPerSource)
         {
@@ -234,9 +224,8 @@ public class BuffManager : SerializedMonoBehaviour
             foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
             {
                 BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
-                if (buffHandlerData.isInit && !buffHandlerData.buffHandlerFactory.tags.Contains(tag))
+                if (buffHandlerData.isInit && shouldRemove(buffHandlerData))
                 {
-                    // Same fix as RemoveBuffWithTag: stop it properly first.
                     StopHandler(source, buffHandlerData);
                 }
             }

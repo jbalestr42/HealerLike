@@ -131,7 +131,9 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     {
         _targetProvider.Reset();
         _buffManager.Reset();
-        _buffManager.RemoveBuffWithoutTag(DataManager.instance.GetTagWithName("FromItem"));
+
+        GameplayTag permanentTag = DataManager.instance.GetTagWithName("Permanent");
+        _buffManager.RemoveBuff(buffHandlerData => !buffHandlerData.buffHandlerFactory.tags.Exists(tag => tag.IsDescendantOf(permanentTag)));
 
         foreach (ASkill skill in _skills)
         {

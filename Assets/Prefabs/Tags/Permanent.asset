@@ -10,6 +10,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76ea1aa8f16af4b4493bafb0540075bf, type: 3}
-  m_Name: FromItem
-  m_EditorClassIdentifier: 
-  _parent: {fileID: 11400000, guid: 74cca3bd6163ba540b8b0168a3c22312, type: 2}
+  m_Name: Permanent
+  m_EditorClassIdentifier: HealerLike.Runtime::GameplayTag
+  _parent: {fileID: 0}
