@@ -21,7 +21,7 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
             _targetBehaviour.targetValidators.Add(targetValidator.GetTargetValidator());
         }
 
-        _range = GetComponent<AttributeManager>().Get(AttributeType.Range);
+        _range = GetComponent<AttributeManager>().GetOrAdd(AttributeType.Range);
         _owner = GetComponent<Entity>();
     }
 

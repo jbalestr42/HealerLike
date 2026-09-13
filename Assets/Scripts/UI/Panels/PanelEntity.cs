@@ -45,7 +45,14 @@ public class PanelEntity : APanel
             
             foreach (var attributeUI in _attributeUI)
             {
-                attributeUI.text.text = $"{attributeUI.name}: {attributeManager.Get(attributeUI.attributeType).Value.ToString("F2")}";
+                if (attributeManager.Has(attributeUI.attributeType))
+                {
+                    attributeUI.text.text = $"{attributeUI.name}: {attributeManager.Get(attributeUI.attributeType).Value.ToString("F2")}";
+                }
+                else
+                {
+                    attributeUI.text.text = "";
+                }
             }
         }
     }
