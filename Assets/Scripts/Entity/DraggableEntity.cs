@@ -16,7 +16,7 @@ public class DraggableEntity : MonoBehaviour, IDraggable
 
     public bool CanDrag()
     {
-        return _entity.isDraggable;
+        return _entity.isDraggable && _entity.entityType == Entity.EntityType.Player;
     }
 
     public void StartDrag(RaycastHit hit)
