@@ -19,7 +19,7 @@ namespace HealerLike.Render.Stones
             health=TestHelpers.CreateResourceAttribute(target,AttributeType.HealthMax,100); TestHelpers.CreateAttributeManager(source);
             fx=fxObject.AddComponent<HLStoneEffects>(); visual=target.AddComponent<HLStoneEnemyVisual>(); visual.Initialize(health,15,fx);
         }
-        [TearDown] public void Teardown(){Object.DestroyImmediate(target);Object.DestroyImmediate(source);Object.DestroyImmediate(fxObject);}
+        [TearDown] public void Teardown(){if(visual!=null)TestHelpers.InvokePrivate(visual,"OnDestroy");TestHelpers.InvokePrivate(fx,"OnDestroy");Object.DestroyImmediate(target);Object.DestroyImmediate(source);Object.DestroyImmediate(fxObject);}
         ResourceModifier Queue(float delta)
         {
             var m=new ResourceModifier{source=source}; m.consumers.Add(new Consumer(delta)); health.AddResourceModifier(m); return m;
@@ -62,9 +62,9 @@ namespace HealerLike.Render.Stones
         {
             Queue(-100);Drain(); Assert.AreEqual(0,Visible); Assert.AreEqual(21,fx.LiveCount);
             visual.Collapse(); Assert.AreEqual(21,fx.LiveCount);
-            Object.DestroyImmediate(target); target=null; Assert.AreEqual(21,fx.LiveCount); fx.Advance(.81f); Assert.AreEqual(0,fx.LiveCount);
+            TestHelpers.InvokePrivate(visual,"OnDestroy"); Object.DestroyImmediate(target); target=null; Assert.AreEqual(21,fx.LiveCount); fx.Advance(.81f); Assert.AreEqual(0,fx.LiveCount);
         }
         [Test] public void DisableOrLivingRemovalDoesNotEmitDeath()
-        {visual.enabled=false;Object.DestroyImmediate(target);target=null;Assert.AreEqual(0,fx.LiveCount);}
+        {visual.enabled=false;TestHelpers.InvokePrivate(visual,"OnDestroy");Object.DestroyImmediate(target);target=null;Assert.AreEqual(0,fx.LiveCount);}
     }
 }

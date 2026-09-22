@@ -70,8 +70,11 @@ namespace HealerLike.Render.Stones
         }
         void Release(Fragment f)
         {
-            active.Remove(f); global.Remove(f.GlobalNode); f.Object.SetActive(false); f.Filter.sharedMesh=null;
-            HLStoneMeshCache.DestroyOwned(f.OwnedMesh); f.OwnedMesh=null; pool.Push(f);
+            active.Remove(f); global.Remove(f.GlobalNode);
+            HLStoneMeshCache.DestroyOwned(f.OwnedMesh); f.OwnedMesh=null;
+            // Scene teardown can destroy child objects before their owner receives OnDestroy.
+            if(f.Object==null) return;
+            f.Object.SetActive(false); f.Filter.sharedMesh=null; pool.Push(f);
         }
         static Vector3 Direction(ref HLStoneRandom r,Vector3 normal)
         {

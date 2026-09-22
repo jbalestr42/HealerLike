@@ -37,11 +37,11 @@ namespace HealerLike.Render.Stones
         {
             var shapes=new[]{HLStonePresets.Boulder,HLStonePresets.Cairn,HLStonePresets.Monolith};
             for(int n=0;n<=2;n++) foreach(var shape in shapes) foreach(float rough in new[]{0f,.18f})
-            for(uint seed=0;seed<1024;seed++)
+            for(int axes=0;axes<8;axes++) for(uint seed=0;seed<1024;seed++)
             {
                 var s=shape; s.Subdivisions=n; s.Roughness=rough;
-                // Cycle all eight independent min/max scale combinations throughout the seed sweep.
-                s.Size=(seed&1)==0?.02f:8f; s.Elongation=(seed&2)==0?.25f:5f; s.DepthRatio=(seed&4)==0?.25f:2f;
+                // Exercise every seed with all eight independent min/max scale combinations.
+                s.Size=(axes&1)==0?.02f:8f; s.Elongation=(axes&2)==0?.25f:5f; s.DepthRatio=(axes&4)==0?.25f:2f;
                 var d=HLStoneMesh.Generate(seed,s);
                 var inv=new Vector3(2/s.Size,2/(s.Size*s.Elongation),2/(s.Size*s.DepthRatio));
                 for(int i=0;i<d.Vertices.Length;i+=3)
@@ -55,6 +55,15 @@ namespace HealerLike.Render.Stones
                     if(Mathf.Abs(d.Normals[i].magnitude-1)>1e-5f) Assert.Fail("Non-unit normal");
                 }
             }
+        }
+        [Test] public void CanonicalGeometryHashIsPinned()
+        {
+            uint h=2166136261;
+            var d=HLStoneMesh.Generate(827361,HLStonePresets.Boulder);
+            foreach(var v in d.Vertices) foreach(float f in new[]{v.x,v.y,v.z}) h=HLStoneSeed.ForPart(h,unchecked((uint)System.BitConverter.SingleToInt32Bits(f)));
+            foreach(var v in d.Normals) foreach(float f in new[]{v.x,v.y,v.z}) h=HLStoneSeed.ForPart(h,unchecked((uint)System.BitConverter.SingleToInt32Bits(f)));
+            foreach(int i in d.Indices) h=HLStoneSeed.ForPart(h,(uint)i);
+            Assert.AreEqual(3051263645u,h,"Version-1 geometry golden on Unity 6000.6");
         }
         [Test]
         public void InvalidSettingsRejectedAndMeshCopiesData()

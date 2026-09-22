@@ -15,7 +15,7 @@ namespace HealerLike.Render.Stones
                 for(uint i=0;i<40;i++) (i%2==0?fx:second).EmitHit(impact,true,i);
                 Assert.AreEqual(256,HLStoneEffects.GlobalLiveCount); fx.Advance(1); second.Advance(1); Assert.AreEqual(0,HLStoneEffects.GlobalLiveCount);
                 Assert.AreEqual(0,go.GetComponentsInChildren<Collider>().Length); Assert.AreEqual(0,go.GetComponentsInChildren<Rigidbody>().Length);
-            } finally { Object.DestroyImmediate(go); Object.DestroyImmediate(other); }
+            } finally { TestHelpers.InvokePrivate(fx,"OnDestroy"); TestHelpers.InvokePrivate(second,"OnDestroy"); Object.DestroyImmediate(go); Object.DestroyImmediate(other); }
         }
         [Test] public void DetachedCopySurvivesSourceReleaseAndSplitsIntoThree()
         {
@@ -26,7 +26,7 @@ namespace HealerLike.Render.Stones
                 Object.DestroyImmediate(mesh); fx.Advance(.24f); Assert.AreEqual(1,fx.LiveCount);
                 Assert.IsNotNull(go.GetComponentInChildren<MeshFilter>().sharedMesh);
                 fx.Advance(.01f); Assert.AreEqual(3,fx.LiveCount); fx.Advance(.25f); Assert.AreEqual(0,fx.LiveCount);
-            } finally { if(mesh!=null)Object.DestroyImmediate(mesh); Object.DestroyImmediate(go); }
+            } finally { if(mesh!=null)Object.DestroyImmediate(mesh); TestHelpers.InvokePrivate(fx,"OnDestroy"); Object.DestroyImmediate(go); }
         }
         [Test] public void OneAnalyticBounceNeverFallsBelowGround()
         {

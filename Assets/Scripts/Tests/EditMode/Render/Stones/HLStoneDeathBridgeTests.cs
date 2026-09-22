@@ -4,22 +4,19 @@ namespace HealerLike.Render.Stones
 {
     public class HLStoneDeathBridgeTests
     {
-        [Test] public void LivingRemovalDoesNothingAndLethalEventCollapsesSynchronouslyOnce()
+        [Test] public void LivingRemovalDoesNothingAndLethalDepartureCollapsesSynchronouslyOnce()
         {
-            var managerObject=new GameObject("HLManager"); var target=new GameObject("HLTarget"); var effectsObject=new GameObject("HLEffects");
-            var bridgeObject=new GameObject("HLBridge");
+            HLStoneEnemyVisual visual=null; HLStoneEffects fx=null;
+            var target=new GameObject("HLTarget"); var effectsObject=new GameObject("HLEffects"); var bridgeObject=new GameObject("HLBridge");
             try {
-                // Construct a local manager only; never read Singleton.instance or call gameplay destruction.
-                var manager=managerObject.AddComponent<EntityManager>();
-                var health=TestHelpers.CreateResourceAttribute(target,AttributeType.HealthMax,100); Entity entity=null;
-                TestHelpers.WithLoggingDisabled(()=>entity=target.AddComponent<Entity>()); TestHelpers.SetPrivateField(entity,"_health",health);
-                var visual=target.AddComponent<HLStoneEnemyVisual>(); var fx=effectsObject.AddComponent<HLStoneEffects>(); visual.Initialize(health,1,fx);
-                var bridge=bridgeObject.AddComponent<HLStoneDeathBridge>(); bridge.Bind(manager,fx);
-                manager.OnEntityKilled.Invoke(entity);Assert.AreEqual(0,fx.LiveCount);
-                TestHelpers.SetPrivateField(health,"_value",0f); manager.OnEntityKilled.Invoke(entity);Assert.AreEqual(12,fx.LiveCount);
-                manager.OnEntityKilled.Invoke(entity);Assert.AreEqual(12,fx.LiveCount);
-                visual.Initialize(health,1,fx);bridge.enabled=false;TestHelpers.InvokePrivate(bridge,"OnDisable");manager.OnEntityKilled.Invoke(entity);Assert.AreEqual(12,fx.LiveCount);
-            } finally {Object.DestroyImmediate(bridgeObject);Object.DestroyImmediate(target);Object.DestroyImmediate(effectsObject);Object.DestroyImmediate(managerObject);}
+                var health=TestHelpers.CreateResourceAttribute(target,AttributeType.HealthMax,100);
+                visual=target.AddComponent<HLStoneEnemyVisual>(); fx=effectsObject.AddComponent<HLStoneEffects>(); visual.Initialize(health,1,fx);
+                var bridge=bridgeObject.AddComponent<HLStoneDeathBridge>(); bridge.Bind(null,fx);
+                bridge.HandleDeparture(health,visual); Assert.AreEqual(0,fx.LiveCount);
+                TestHelpers.SetPrivateField(health,"_value",0f); bridge.HandleDeparture(health,visual); Assert.AreEqual(12,fx.LiveCount);
+                bridge.HandleDeparture(health,visual); Assert.AreEqual(12,fx.LiveCount);
+                visual.Initialize(health,1,fx); bridge.enabled=false; bridge.HandleDeparture(health,visual); Assert.AreEqual(12,fx.LiveCount);
+            } finally {if(visual!=null)TestHelpers.InvokePrivate(visual,"OnDestroy");if(fx!=null)TestHelpers.InvokePrivate(fx,"OnDestroy");Object.DestroyImmediate(bridgeObject);Object.DestroyImmediate(target);Object.DestroyImmediate(effectsObject);}
         }
     }
 }
