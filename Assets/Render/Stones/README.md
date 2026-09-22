@@ -4,7 +4,7 @@ T5 assets are isolated under this folder. Assign the two model variants to the c
 
 Source asset limitation: the original Grid prefab’s first generator references missing script GUID `51e649e13e54af44aaa511b582e95fc6`. The render variant explicitly substitutes a basic `GridGeneratorSystem` with the same min/max/walkability values in that slot. Its prefab GUID `356c856d27b224948a6a15287e83110a` is also missing, so that slot uses `HLStoneGridPlaceholder`, an empty nonblocking prop. This keeps basic cell selection operational without inventing an obstruction on a walkable cell. The missing implementation cannot be recovered from this clone, so exact behavior of that first slot cannot be verified. The two BlockGridSystem entries are fully preserved.
 
-Use `Prefabs/HLStoneGrid.prefab` and call its `HLStoneGridEntry.Generate(grid, ground, seed)` after the gameplay grid has been created. Both original block entries retain their order, walkability, count and chain-size ranges. The last generator entry is a render-only completion fence: it consumes no random values and creates no objects. `IsGenerating` stays true until that fence is reached; overlapping Generate calls throw before overwriting seeds. Do not remove or reorder the fence, or invoke the raw GridGenerator concurrently. An externally stopped coroutine must not be restarted by calling Generate on the locked entry; recreate the generation host after cancellation.
+`HLStoneGridEntry.Generate(grid, ground, seed)` invokes gameplay generation and changes cell walkability. Production attachment must never call it; gameplay owns generation. The entry refuses by default. Only an explicit demo fixture may set the serialized `demoSceneOnly` flag on the calling `HLStoneGridEntry` component and use `Prefabs/HLStoneGrid.prefab` after creating its grid. Both original block entries retain their order, walkability, count and chain-size ranges. The last generator entry is a render-only completion fence: it consumes no random values and creates no objects. `IsGenerating` stays true until that fence is reached; overlapping Generate calls throw before overwriting seeds. Do not remove or reorder the fence, or invoke the raw GridGenerator concurrently. An externally stopped coroutine must not be restarted by calling Generate on the locked entry; recreate the generation host after cancellation.
 
 Use the `HLStone*` projectile prefab variants where impacts should record an estimated contact. The observer reads OnHitData's target because Projectile has already cleared its target property by the callback. Direct hits fall back to the nearest stone surface toward the modifier source. Estimated contacts are explicitly marked; these are not physics contact reports. Recording only changes visual context, never consumers or projectile motion.
 
@@ -74,5 +74,8 @@ from it. HLLookSettings has no light direction field, so this is intentionally a
 than inferred from unavailable globals. Ground means the generated assembly base, not a physics
 raycast; uneven terrain and grass occlusion need camera review. These are opaque cheap stand-ins.
 
-Wave-5 tests live here in `Tests/` with an asmref to the existing EditMode assembly, preserving
-the task's stricter prohibition on changes under Assets/Scripts while reusing TestHelpers.
+All stone tests live in `Assets/Scripts/Tests/EditMode/Render/Stones/`, namespace
+`HealerLike.Render.Stones`, using the existing EditMode assembly and TestHelpers.
+Disabling an effects owner clears live fragments, releases global slots and hides its pool.
+Scene lookup retains that owner while disabled; emission calls are ignored until re-enabled.
+LookAtTarget is cached during visual initialization; reinitialize after changing BodyPivot components.

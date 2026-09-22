@@ -12,6 +12,7 @@ namespace HealerLike.Render.Stones
         [SerializeField] HLStoneEffects effects;
         [SerializeField] bool groundShadowEnabled=true;
         [SerializeField] Vector3 directionToKeyLight=new Vector3(-1,2,-1);
+        LookAtTarget bodyLookAtTarget;
         Transform presentation;
         HLStoneGroundShadow groundShadow;
         TargetProvider targets;
@@ -50,6 +51,7 @@ namespace HealerLike.Render.Stones
                 if(child==null) { child=new GameObject("BodyPivot").transform; child.SetParent(transform,false); }
                 bodyPivot=child;
             }
+            bodyLookAtTarget=bodyPivot.GetComponent<LookAtTarget>();
             if(presentation==null) { presentation=new GameObject("HLStonePresentation").transform; presentation.SetParent(bodyPivot,false); }
             presentation.localRotation=Quaternion.identity; settleAge=0;
             assembly.BuildEnemy(presentation,seed,preset,stoneMaterial,profile);
@@ -131,7 +133,7 @@ namespace HealerLike.Render.Stones
             Quaternion facing=Quaternion.identity; Vector3 velocity=Vector3.zero;
             bool explicitFacing=motion!=null && motion.TrySample(out velocity,out facing);
             if(explicitFacing && (entity==null || !entity.isDraggable)) { velocity.y=0; PlanarVelocity=velocity.magnitude<.02f?Vector3.zero:velocity; }
-            if(PlanarVelocity!=Vector3.zero && bodyPivot.GetComponent<LookAtTarget>()==null)
+            if(PlanarVelocity!=Vector3.zero && bodyLookAtTarget==null)
                 bodyPivot.rotation=explicitFacing?Quaternion.Euler(0,facing.eulerAngles.y,0):Quaternion.LookRotation(PlanarVelocity,Vector3.up);
             completedFrames++; expired.Clear();
             foreach(var pair in impacts) if(completedFrames-pair.Value.Frame>=2) expired.Add(pair.Key);

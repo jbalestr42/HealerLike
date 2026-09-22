@@ -5,12 +5,14 @@ namespace HealerLike.Render.Stones
     [RequireComponent(typeof(GridGenerator))]
     public sealed class HLStoneGridEntry : MonoBehaviour
     {
+        [SerializeField] bool demoSceneOnly;
         [SerializeField] GridGenerator generator;
         [SerializeField] HLStoneBlockGridSystem[] systems;
         [SerializeField] HLStoneGenerationFence completionFence;
         public bool IsGenerating { get; private set; }
         public void Generate(GridManager grid,Transform ground,int seed)
         {
+            if(!demoSceneOnly) throw new InvalidOperationException("Stone grid generation is demo-scene-only; production attachment must never call Generate");
             if(IsGenerating) throw new InvalidOperationException("Wait for the previous stone grid generation to finish");
             if(grid==null || ground==null) throw new ArgumentNullException(grid==null?nameof(grid):nameof(ground));
             if(completionFence==null || systems==null || systems.Length==0) throw new InvalidOperationException("Wire the stone systems and final generation fence");
