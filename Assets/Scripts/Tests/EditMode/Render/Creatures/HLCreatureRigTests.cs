@@ -14,6 +14,27 @@ namespace HealerLike.Render.Creatures
             recipe = HLCreatureValidatorTests.Recipe(); recipe.idle = default; rig = HLCreatureRig.Build(recipe, parent.transform, material);
         }
         [TearDown] public void Cleanup() { rig.Dispose(); Object.DestroyImmediate(parent); Object.DestroyImmediate(material); Object.DestroyImmediate(recipe); HLPrimitiveMeshes.ReleaseAll(); }
+        [Test] public void ShortDirectDeliveryDoesNotDrawUnusedBoardLengthAsCoils()
+        {
+            var host = new GameObject("HLShortDelivery");
+            var data = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>("Assets/Render/Creatures/Data/HLSpiralFern.asset");
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            try
+            {
+                using (var body = HLCreatureRig.Build(data,host.transform,mat))
+                {
+                    body.Tick(0,0,new HLFootFrame(Vector3.zero,Vector3.up,1));
+                    Vector3 target = new Vector3(2,1.3f,0);
+                    Assert.IsTrue(body.BeginDelivery(500,HLDeliveryStyle.Direct,null,target));
+                    body.ContactDelivery(500,target,null);
+                    body.Tick(.02f,.02f,new HLFootFrame(Vector3.zero,Vector3.up,1));
+                    var arm = body.Root.Find("HLLianaArm").GetComponent<MeshFilter>();
+                    Assert.Less(arm.sharedMesh.bounds.size.magnitude,4f,
+                        "A two-cell real delivery must not loop the unused 24-cell reach around the actor.");
+                }
+            }
+            finally { Object.DestroyImmediate(host); Object.DestroyImmediate(mat); HLPrimitiveMeshes.ReleaseAll(); }
+        }
         [Test] public void LastRigReleasesSharedMeshesEvenWhenParentWasDestroyed()
         {
             var other = HLCreatureRig.Build(recipe, parent.transform, material);

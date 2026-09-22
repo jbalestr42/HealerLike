@@ -1,4 +1,5 @@
 using UnityEngine;
+using HealerLike.Render.Spells;
 using System.Collections.Generic;
 using System;
 
@@ -42,6 +43,7 @@ namespace HealerLike.Render.Creatures
         public void ContactDelivery(int token, Vector3 position, GameObject target) => Rig?.ContactDelivery(token, position, target);
         public void EndDelivery(int token) => Rig?.EndDelivery(token);
         ResourceAttribute health;
+        HLResourceOutcomeObserver outcomeObserver;
         GameObject registeredSource;
         HLRenderRegistry registeredRegistry;
         HLRenderRegistry injectedRegistry;
@@ -65,6 +67,7 @@ namespace HealerLike.Render.Creatures
             Detach();
             if (entity != owner) Rig?.CancelAll();
             entity = owner; RefreshSkills();
+            if (entity) outcomeObserver = HLResourceOutcomeObserver.Ensure(entity, injectedRegistry, hasInjection);
             if (!entity) { Rig?.SetVisible(false); return; }
             EnsureRig();
             if (isActiveAndEnabled) Attach();
@@ -83,12 +86,14 @@ namespace HealerLike.Render.Creatures
         void Attach()
         {
             if (!entity || !isActiveAndEnabled) return;
+            if (!outcomeObserver) outcomeObserver = HLResourceOutcomeObserver.Ensure(entity, injectedRegistry, hasInjection);
             if (health != entity.health)
             {
                 if (health) health.OnAllConsumerProcessed.RemoveListener(OnHealthProcessed);
                 health = entity.health;
                 if (health) health.OnAllConsumerProcessed.AddListener(OnHealthProcessed);
             }
+            if (outcomeObserver) outcomeObserver.enabled = true;
             SyncRegistry(); Rig?.SetVisible(true);
         }
         void SyncRegistry()
@@ -103,20 +108,16 @@ namespace HealerLike.Render.Creatures
         void Detach()
         {
             if (health) health.OnAllConsumerProcessed.RemoveListener(OnHealthProcessed);
-            health = null; Unregister();
+            health = null;
+            if (outcomeObserver) outcomeObserver.enabled = false;
+            outcomeObserver = null;
+            Unregister();
         }
         void OnHealthProcessed(GameObject owner, ResourceModifier modifier, float value, bool critical)
         {
             if (!isActiveAndEnabled || value == 0 || !HLChainSolver.Finite(value)) return;
             if (value < 0) Rig?.Hit();
-            SyncRegistry();
-            GameObject source = modifier?.source;
-            var registry = hasInjection ? injectedRegistry : HLRenderRegistry.Current;
-            registry?.SpellSink?.ShowImpact(source, owner, HLResourceKind.Health, value, critical);
-            if (value > 0)
-            {
-                registry?.NotifyHeal(source, owner, value, critical);
-            }
+
         }
         public void OnHealResolved(GameObject target, float value, bool critical)
         { if (isActiveAndEnabled && target && value > 0) Rig?.HealContact(TargetPosition(target)); }
@@ -142,6 +143,7 @@ namespace HealerLike.Render.Creatures
                 float remaining = pair.Value();
                 if (HLChainSolver.Finite(remaining)) readiness = Mathf.Max(readiness, 1 - Mathf.Clamp01(remaining));
             }
+            Rig?.SetStatusTint(HLBodyTintState.Read(entity.gameObject));
             Rig?.SetReadout(target, health && health.Max > 0 ? health.Value / health.Max : 1, readiness, readiness);
             Rig?.Tick(Time.time, Time.deltaTime, Frame());
         }
