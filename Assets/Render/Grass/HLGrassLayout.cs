@@ -62,22 +62,37 @@ namespace HealerLike.Render.Grass
             {
                 int quota = quotient + (cell < remainder ? 1 : 0);
                 if (quota == 0) continue;
-                int columns = quota == 128 || quota == 256 ? 16 : quota == 384 ? 24 : Mathf.CeilToInt(Mathf.Sqrt(quota));
-                int rows = (quota + columns - 1) / columns;
-                // Rotate then reverse the complete slot sequence: a bijection even for non-square quotas.
-                int slots = columns * rows, offset = (int)(Hash(seed ^ (uint)cell) % (uint)slots);
-                for (int blade = 0; blade < quota; blade++)
+                // Sparse budgets retain their exact per-cell quota; ordinary cells partition into 3..7.
+                int clumps = Mathf.Max(1, (quota + 4) / 5);
+                int columns = Mathf.CeilToInt(Mathf.Sqrt(clumps));
+                int rows = (clumps + columns - 1) / columns;
+                int remaining = quota;
+                int patchSize = 2 + (int)(Hash(seed) % 3);
+                int patch = cell % width / patchSize + (cell / width / patchSize) * ((width + patchSize - 1) / patchSize);
+                float hue = Sample(seed, patch, 0, 7);
+                for (int clump = 0; clump < clumps; clump++)
                 {
-                    int slot = (offset + slots - blade) % slots;
-                    float x = (slot % columns + 0.1f + 0.8f * Sample(seed, cell, blade, 1)) / columns;
-                    float z = (slot / columns + 0.1f + 0.8f * Sample(seed, cell, blade, 2)) / rows;
-                    result[index++] = new HLBladeSeed {
-                        positionYaw = new Vector4(minX + (cell % width + x) * cellSize, surfaceY + RootLift,
-                            minZ + (cell / width + z) * cellSize, Sample(seed, cell, blade, 3) * Mathf.PI * 2),
-                        heightPhaseWidthRandom = new Vector4(0.22f + 0.14f * Sample(seed, cell, blade, 4),
-                            Sample(seed, cell, blade, 5) * Mathf.PI * 2, 0.035f + 0.015f * Sample(seed, cell, blade, 6),
-                            Sample(seed, cell, blade, 7))
-                    };
+                    int left = clumps - clump - 1;
+                    int blades = left == 0 ? remaining : Mathf.Clamp(3 + (int)(Sample(seed, cell, clump, 8) * 5),
+                        Mathf.Max(3, remaining - 7 * left), Mathf.Min(7, remaining - 3 * left));
+                    remaining -= blades;
+                    float x = (clump % columns + 0.1f + 0.8f * Sample(seed, cell, clump, 1)) / columns;
+                    float z = (clump / columns + 0.1f + 0.8f * Sample(seed, cell, clump, 2)) / rows;
+                    float yaw = Sample(seed, cell, clump, 3) * Mathf.PI * 2;
+                    float phase = Sample(seed, cell, clump, 5) * Mathf.PI * 2;
+                    float heightScale = 0.6f + 0.8f * Sample(seed, cell, clump, 4);
+                    for (int blade = 0; blade < blades; blade++)
+                    {
+                        float fan = blades == 1 ? 0 : ((float)blade / (blades - 1) - 0.5f) * 0.8f;
+                        result[index++] = new HLBladeSeed {
+                            positionYaw = new Vector4(minX + (cell % width + x) * cellSize, surfaceY + RootLift,
+                                minZ + (cell / width + z) * cellSize, Mathf.Repeat(yaw + fan, Mathf.PI * 2)),
+                            // Phase is also the shared rest-lean heading. W is the seeded cell-patch hue.
+                            heightPhaseWidthRandom = new Vector4(quota < 3 ? 0.22f + 0.14f * Sample(seed, cell, clump, 4)
+                                : 0.30f * heightScale * (1 - 0.12f * Mathf.Abs(fan)),
+                                phase, 0.035f + 0.015f * Sample(seed, cell, blade, 6), hue)
+                        };
+                    }
                 }
             }
             return result;

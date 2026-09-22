@@ -39,6 +39,7 @@ struct HLGrassVaryings
     float3 normalWS : TEXCOORD1;
     float height01 : TEXCOORD2;
     nointerpolation float2 healSpike : TEXCOORD3;
+    nointerpolation float patchHue : TEXCOORD4;
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
 };
@@ -78,6 +79,7 @@ HLGrassVaryings HLGrassVertex(HLGrassAttributes input)
     output.positionCS = TransformWorldToHClip(output.positionWS);
     output.normalWS = normal;
     output.height01 = t;
+    output.patchHue = seed.heightPhaseWidthRandom.w;
     output.healSpike = float2(state.rampHealReserved.y, max(state.leanHeightSpike.w, 0.4 * state.rampHealReserved.z));
     return output;
 }
@@ -99,8 +101,13 @@ half4 HLGrassFragment(HLGrassVaryings input, FRONT_FACE_TYPE face : FRONT_FACE_S
     float4 shadowCoord = TransformWorldToShadowCoord(input.positionWS);
 #endif
     Light mainLight = GetMainLight(shadowCoord);
+    // Rounded clump shading: upper blade normals turn toward the sky to catch the key.
+    // The resulting illumination still enters the shared threshold/tint/ramp only once.
+    if (input.healSpike.y < 0.5) normal = normalize(normal + float3(0, input.height01 * input.height01 * 1.4, 0));
     float illum = saturate((dot(normal, mainLight.direction) * 0.5 + 0.5) * mainLight.shadowAttenuation);
     float3 baseColor = HLGrassAlbedo(input.height01, input.healSpike) * UNITY_ACCESS_INSTANCED_PROP(HLGrassInstances, _BaseColor).rgb;
+    float3 patchTint = lerp(float3(0.78, 0.96, 1.08), float3(1.08, 1.03, 0.78), input.patchHue);
+    baseColor *= lerp(patchTint, float3(1,1,1), saturate(input.healSpike.x + 2 * input.healSpike.y));
     return half4(HLEvaluateSurface(input.positionWS, illum, baseColor), 1);
 }
 half4 HLGrassDepth(HLGrassVaryings input) : SV_Target { return 0; }
