@@ -40,3 +40,39 @@ The mesh sweep covers 147,456 generated configurations (1,024 seeds × 3 subdivi
 Scope/name/metadata and whitespace audits passed. Source prefabs, scenes, data, frozen contracts and account preferences were not edited. Pre-existing clone warm-up changes outside the Stones ownership area were left untouched and uncommitted.
 
 BLIND-SPOT: No on-screen or PlayMode camera review was performed. Exact behavior of the source grid's missing first generator/prop cannot be recovered; the explicit render-owned fallback is described above. Shared Look material, outline integration and stage wiring still need T7 review.
+
+## Wave 5 dynamics
+
+`HLStoneEnemyVisual` adds a generated `HLStonePresentation` pivot below BodyPivot. Only this
+pivot leans; gameplay root, source/target anchors and BodyPivot remain untouched by the new
+attack poses. It reads the same first `TargetProvider.GetTargets()` entry as LookAtTarget.
+Enabled skill components are discovered each frame (Entity adds them after model Init); cached
+public reflection reads `ACooldownSkill<T>.cooldownProgress`. The minimum finite remaining
+fraction drives anticipation during the last 30% of cooldown. A successful delivery launch
+snaps the boulder forward. There is no fabricated cast clock. The generic public property is
+preserved by `link.xml` for stripping. Cairn/Monolith ignore aim and recoil and receive only a
+1.5-degree, exponentially decaying rigid settle from visual initialization; this is cosmetic
+spawn response, not simulation state. Existing health shedding/collapse still apply.
+
+Delivery supports Thrown, Direct and Rigid, rejects other styles and duplicate live tokens,
+spawns a small faceted shard at the visual body, then tracks the live projectile in LateUpdate.
+Contact emits 3–5 stone cones plus a five-ray coral star. Contact, End, disable, reinitialization
+and projectile disappearance release shard mesh leases idempotently. Contact debris belongs to
+the independent effects owner and can outlive the source. The observer must dispatch the frozen
+`IHLDeliverySource` callbacks (the wave-3 observer in this checkout does not yet do so).
+
+Health polling restores authored per-instance colours at full health and progressively darkens
+a seeded subset of boulders toward ultramarine as health falls. This is a cluster-level crack
+pattern using `_BaseColor`, not a texture or per-face mesh alteration; the monolith darkens as
+one piece. Existing damage-confirmed shedding thresholds are preserved.
+
+Every initialized enemy and terrain clump creates an `HLStoneGroundShadow` disc, dark ultramarine,
+with queue 2001 and a 0.012 world-unit ground offset. Both visual owners expose
+`GroundShadowEnabled`; set it false when real shadows are enabled. `directionToKeyLight` is a
+serialized WORLD direction toward the light, default (-1, 2, -1); the ellipse extends away
+from it. HLLookSettings has no light direction field, so this is intentionally authored rather
+than inferred from unavailable globals. Ground means the generated assembly base, not a physics
+raycast; uneven terrain and grass occlusion need camera review. These are opaque cheap stand-ins.
+
+Wave-5 tests live here in `Tests/` with an asmref to the existing EditMode assembly, preserving
+the task's stricter prohibition on changes under Assets/Scripts while reusing TestHelpers.
