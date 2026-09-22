@@ -8,7 +8,7 @@ namespace HealerLike.Render.Zones
     /// Cosmetic zone kind. The numeric values are part of the frozen GPU ABI
     /// (0 normal / 1 heal / 2 hostile ramp index on the shader side).
     /// </summary>
-    public enum HLZoneKind : int { None = 0, Heal = 1, Hostile = 2, Range = 3, Bruise = 4, Launch = 5 }
+    public enum HLZoneKind : int { None = 0, Heal = 1, Hostile = 2, Range = 3, Bruise = 4, Launch = 5, Trample = 6 }
 
     /// <summary>
     /// One cosmetic zone record, laid out to match the 32-byte GPU element of _HL_Zones.
@@ -56,7 +56,7 @@ namespace HealerLike.Render.Zones
             if (!IsFinite(position.x) || !IsFinite(position.y) || !IsFinite(position.z)) return false;
             if (!IsFinite(radius) || !IsFinite(strength) || !IsFinite(age)) return false;
             if (radius <= 0f) return false;
-            if (kind < HLZoneKind.Heal || kind > HLZoneKind.Launch) return false;
+            if (kind < HLZoneKind.Heal || kind > HLZoneKind.Trample) return false;
 
             zone.position = position;
             zone.radius = radius;

@@ -39,7 +39,7 @@ namespace HealerLike.Render.Grass
                 Assert.That(b.positionYaw.z, Is.GreaterThanOrEqualTo(-8).And.LessThan(8));
                 Assert.AreEqual(0.505f, b.positionYaw.y);
                 Assert.That(b.positionYaw.w, Is.InRange(0, 2 * Mathf.PI));
-                Assert.That(b.heightPhaseWidthRandom.x, Is.InRange(0.22f, 0.36f));
+                Assert.That(b.heightPhaseWidthRandom.x, Is.InRange(0.17f, 0.42f));
                 Assert.That(b.heightPhaseWidthRandom.y, Is.InRange(0, 2 * Mathf.PI));
                 Assert.That(b.heightPhaseWidthRandom.z, Is.InRange(0.035f, 0.05f));
                 Assert.That(b.heightPhaseWidthRandom.w, Is.InRange(0, 1));
@@ -60,6 +60,30 @@ namespace HealerLike.Render.Grass
             Assert.AreEqual(224, dense.Length);
             foreach (var b in dense) Assert.IsTrue(rect.Contains(new Vector2(b.positionYaw.x, b.positionYaw.z)));
             Assert.IsEmpty(HLGrassLayout.Generate(1, 1, 1, Vector3.zero, 0, 0));
+        }
+        [Test] public void ClumpsShareRootsPhaseAndPatchHueWithThreeToSevenBlades()
+        {
+            var seeds = HLGrassLayout.Generate(8, 8, 1, Vector3.zero, 0);
+            int i = 0; float shortest = 1, tallest = 0;
+            var sizes = new System.Collections.Generic.HashSet<int>();
+            while (i < seeds.Length)
+            {
+                var first = seeds[i]; int end = i + 1;
+                while (end < seeds.Length && (Vector3)seeds[end].positionYaw == (Vector3)first.positionYaw) end++;
+                Assert.That(end - i, Is.InRange(3, 7)); sizes.Add(end - i);
+                for (int j = i; j < end; j++)
+                {
+                    Assert.AreEqual(first.heightPhaseWidthRandom.y, seeds[j].heightPhaseWidthRandom.y);
+                    Assert.AreEqual(first.heightPhaseWidthRandom.w, seeds[j].heightPhaseWidthRandom.w);
+                    shortest = Mathf.Min(shortest, seeds[j].heightPhaseWidthRandom.x);
+                    tallest = Mathf.Max(tallest, seeds[j].heightPhaseWidthRandom.x);
+                }
+                i = end;
+            }
+            Assert.AreEqual(5, sizes.Count); Assert.Less(shortest, 0.19f); Assert.Greater(tallest, 0.40f);
+            // The first 2x2 cells always belong to one patch, regardless of the seeded 2..4 scale.
+            Assert.AreEqual(seeds[0].heightPhaseWidthRandom.w, seeds[1024].heightPhaseWidthRandom.w);
+            Assert.AreEqual(seeds[0].heightPhaseWidthRandom.w, seeds[8192].heightPhaseWidthRandom.w);
         }
         [Test] public void RejectsInvalidInputs()
         {

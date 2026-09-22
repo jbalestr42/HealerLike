@@ -20,7 +20,7 @@ namespace HealerLike.Render.Zones
             };
         }
 
-        [TestCase(HLZoneKind.Range, 3)] [TestCase(HLZoneKind.Bruise, 4)] [TestCase(HLZoneKind.Launch, 5)]
+        [TestCase(HLZoneKind.Range, 3)] [TestCase(HLZoneKind.Bruise, 4)] [TestCase(HLZoneKind.Launch, 5)] [TestCase(HLZoneKind.Trample, 6)]
         public void V3KindsPreserveAbi(HLZoneKind kind, int value)
         {
             Assert.AreEqual(value, (int)kind);
