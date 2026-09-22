@@ -10,6 +10,7 @@ namespace HealerLike.Render.Spells
             var type=System.AppDomain.CurrentDomain.GetAssemblies();
             System.Type builder=null;foreach(var assembly in type) builder=builder??assembly.GetType("HealerLike.Render.Spells.HLSpellPrefabBuilder");
             Assert.IsNotNull(builder);
+            Assert.AreEqual("HealerLike.Render.Spells.Editor", builder.Assembly.GetName().Name);
             var rows=(System.Collections.IDictionary)builder.GetMethod("Inventory").Invoke(null,null);
             var table=AssetDatabase.LoadAssetAtPath<HLSpellStyleTable>("Assets/Render/Spells/Data/HLSpellStyles.asset");
             Assert.Greater(rows.Count,20);Assert.IsEmpty(table.FindCollisions());
