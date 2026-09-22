@@ -36,7 +36,7 @@ namespace HealerLike.Render.Spells
         Vector3[] _positions, _scales;
         Quaternion[] _rotations;
         float _age;
-        bool _ready, _hasSignature;
+        bool _ready, _hasSignature, _ownsPrimitives;
         Transform[] _stackBeads;
         Renderer _sideRim;
         public void SetStatus(int stacks, float elapsed, float duration, HLClockKind clock, HLSpellSignature signature)
@@ -59,9 +59,14 @@ namespace HealerLike.Render.Spells
         }
         void OnDisable() { if (Tint != Color.white) SetTint(Color.white); }
         void Start() => Initialize();
+        void OnDestroy()
+        {
+            if (_ownsPrimitives) { _ownsPrimitives = false; HLSpellPrimitives.ReleaseUser(); }
+        }
         public void Initialize()
         {
             if (_ready) return;
+            if (!_ownsPrimitives) { HLSpellPrimitives.Retain(); _ownsPrimitives = true; }
             if (parts == null || parts.Length == 0) HLSpellPrimitives.Build(this);
             _positions = new Vector3[parts.Length]; _scales = new Vector3[parts.Length]; _rotations = new Quaternion[parts.Length];
             for (int i = 0; i < parts.Length; i++) { _positions[i] = parts[i].localPosition; _scales[i] = parts[i].localScale; _rotations[i] = parts[i].localRotation; }

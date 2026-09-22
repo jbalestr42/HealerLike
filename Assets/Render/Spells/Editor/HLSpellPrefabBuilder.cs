@@ -144,7 +144,7 @@ namespace HealerLike.Render.Spells
         static void SaveMesh(Mesh mesh,string name)
         {
             string path=Root+"Data/"+name+".asset";var old=AssetDatabase.LoadAssetAtPath<Mesh>(path);
-            if(old) { if(old != mesh) EditorUtility.CopySerialized(mesh,old); } else AssetDatabase.CreateAsset(mesh,path);
+            if(old) { if(old != mesh) EditorUtility.CopySerialized(mesh,old); } else AssetDatabase.CreateAsset(Object.Instantiate(mesh),path);
         }
     }
 }

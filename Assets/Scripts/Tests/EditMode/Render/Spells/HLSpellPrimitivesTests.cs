@@ -4,6 +4,38 @@ namespace HealerLike.Render.Spells
 {
     public class HLSpellPrimitivesTests
     {
+        [Test] public void LastSinkReleasesMeshesAndFallbackButOtherSinkKeepsThemAlive()
+        {
+            var a = new GameObject("HLFirstSink"); var b = new GameObject("HLSecondSink");
+            try
+            {
+                var first = a.AddComponent<HLSpellVisualSink>(); b.AddComponent<HLSpellVisualSink>();
+                first.ShowImpact(null,b,HLResourceKind.Health,-1,false);
+                var torus = HLSpellPrimitives.Torus; var cone = HLSpellPrimitives.Cone;
+                var fallback = a.GetComponentInChildren<Renderer>().sharedMaterial;
+                Object.DestroyImmediate(a);
+                Assert.IsTrue(torus); Assert.IsTrue(cone); Assert.IsTrue(fallback);
+                Object.DestroyImmediate(b);
+                Assert.IsFalse(torus); Assert.IsFalse(cone); Assert.IsFalse(fallback);
+                HLSpellPrimitives.Release(); // Idempotent.
+                Assert.IsTrue(HLSpellPrimitives.Torus);
+                Assert.AreNotSame(torus,HLSpellPrimitives.Torus);
+            }
+            finally { if(a) Object.DestroyImmediate(a); if(b) Object.DestroyImmediate(b); HLSpellPrimitives.Release(); }
+        }
+        [Test] public void StandaloneEffectKeepsCacheAliveAfterSinkDestruction()
+        {
+            var host = new GameObject("HLSink"); var effectHost = new GameObject("HLEffect");
+            try
+            {
+                host.AddComponent<HLSpellVisualSink>();
+                effectHost.AddComponent<HLSpellEffect>().Initialize();
+                var mesh = HLSpellPrimitives.Torus;
+                Object.DestroyImmediate(host); Assert.IsTrue(mesh);
+                Object.DestroyImmediate(effectHost); Assert.IsFalse(mesh);
+            }
+            finally { if(host) Object.DestroyImmediate(host); if(effectHost) Object.DestroyImmediate(effectHost); }
+        }
         [TestCase(HLOperation.Resource,AttributeType.HealthMax,HLSign.Positive,HLTempo.Immediate,HLSpellEffectKind.Heal)]
         [TestCase(HLOperation.Resource,AttributeType.HealthMax,HLSign.Negative,HLTempo.HandlerTick,HLSpellEffectKind.Drip)]
         [TestCase(HLOperation.Attribute,AttributeType.FlatArmor,HLSign.Positive,HLTempo.Continuous,HLSpellEffectKind.Shield)]

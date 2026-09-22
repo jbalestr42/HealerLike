@@ -148,13 +148,24 @@ namespace HealerLike.Render.Spells
             foreach(var key in dead) { Dispose(_statuses[key]);_statuses.Remove(key); }
             _impacts.RemoveAll(x=>!x);
         }
+        bool _ownsPrimitives;
+        void RetainPrimitives()
+        {
+            if (_ownsPrimitives) return;
+            HLSpellPrimitives.Retain(); _ownsPrimitives = true;
+        }
         void OnEnable()
         {
+            RetainPrimitives();
             // The registry may retain this sink across disable/enable.
             Clear();
         }
         void OnDisable() => Clear();
-        void OnDestroy() => Clear();
+        void OnDestroy()
+        {
+            Clear();
+            if (_ownsPrimitives) { _ownsPrimitives = false; HLSpellPrimitives.ReleaseUser(); }
+        }
         public void Clear()
         {
             _heals.Clear(); foreach(var root in _removing) Dispose(root); _removing.Clear();
