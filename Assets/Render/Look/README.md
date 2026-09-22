@@ -40,3 +40,55 @@ The shader tests also synchronously compile 52 primitive pass/keyword combinatio
 and both edge normal encodings when a graphics device is available. The required
 nographics run validates asset import and C# behavior; run with force-metal to
 exercise shader compilation. Compilation does not replace a rendered frame capture.
+
+## Wave 5: shadows, portrait hatch and grass-safe screen edges
+
+Primitive shadow sampling uses projected screen coordinates for screen-space main
+shadows, and world-to-shadow coordinates for atlas/cascade variants. Its existing
+caster uses light-space bias and near-plane clamping. Cast shadows enter the same
+ultramarine toon tint as unlit facets; no black shadow multiplication is added. Fully occluded shadows converge to the
+authored tint; ShadowStrength controls the blend at the toon boundary.
+The pipeline and light still have to enable shadows and cover the camera range.
+
+`HLLookSettings.InkSpacingPixels` defaults to 3.5. The projected derivative of the
+world hatch coordinate scales spacing with camera distance, FOV, surface slope and
+render resolution. This mode bypasses the old shadow-tone density compression.
+Set zero to retain the legacy `InkScale`/`InkDistStart`/`InkFarSpacing` controls.
+At 40-degree vertical FOV and 1920-pixel portrait height, 3.5 pixels correspond to
+about .0345/.0411/.0531 world units on a camera-facing surface at 26/31/40 units.
+These are projected spacings, not constant world distances on a tilted ground.
+Older serialized settings lacking the new field deserialize as zero; the stage
+owner should explicitly set `InkSpacingPixels=3.5` on its existing controller.
+
+`HLOutlines` exposes `DepthThresholdWorld=1`, `ReferenceDistance=31`,
+`DistanceScale=1`, `NormalAngleDegrees=55`, `NormalDensityDegrees=35`, and
+`UseNormalEdgeMask=true`. Depth edges require a positive eye-depth jump above
+`1 * (1 + max(0, eyeDepth/31 - 1))` world units. Normal edges require the angle
+threshold; neighboring normal variation raises it by up to 35 degrees. These are
+independent edge channels: the mask suppresses normal edges, never depth edges.
+The existing `LayerMask` continues to select hulls only.
+
+Normal-edge eligibility is camera-normal alpha. Primitive `_HLNormalEdges`
+defaults to one, can be overridden per material or via MaterialPropertyBlock
+(including instancing), and writes into both normal encodings. Set it to zero
+for dense blade geometry. The existing grass normal pass already writes zero,
+so grass opts out without any grass-owned source edit. Other shaders that write
+zero also opt out. If a renderer repurposes normal alpha or supplies RGB-only
+normals, disable this mask and integrate a separate mask before enabling the pass.
+Indirect grass still needs matching camera depth/normals submitted by its owner.
+All six renderer assets currently leave `DepthNormalEdges` off; D5 does not own
+those assets. Enable the feature after integration and inspect the full grass field.
+
+`_HLKeyLightDir.xyz` points **toward** the main directional light in world space;
+`w=0`, and zero means no light. HLLookController publishes the sun (or brightest
+active directional) on frame/camera callbacks. HLOutlines supplies URP's actual
+culled main-light selection before rendering, so disabled-main-light quality
+tiers publish zero. Disabling the owning controller clears the direction.
+This is render state; no animation clock or simulated event was introduced.
+
+The opt-in `HLLookShaderTests.CapturePortraitShadowsAndMaskedEdges` fixture builds
+an in-memory scene inside the Look test folder's test code. Run the Look tests
+with `HL_D5_CAPTURE=1 -batchmode -force-metal`. It clones a Very High pipeline and
+renderer in memory, without saving assets. Outputs go to the shared captures
+folder: shadow, edge-off, edge-on and side-by-side (off left, on right). The dense
+blades are masked primitive fixtures, not an indirect grass performance test.

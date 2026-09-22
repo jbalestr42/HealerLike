@@ -22,6 +22,14 @@ namespace HealerLike.Render.Look
                 FeatureType.GetMethod("Create").Invoke(feature, null);
                 var first = (Material)materialField.GetValue(feature);
                 Assert.That(first != null, Is.True);
+                Assert.That(first.GetVector("_HLEdgeDepth"), Is.EqualTo(new Vector4(1f, 31f, 1f, 0)));
+                Assert.That(first.GetVector("_HLEdgeNormals"), Is.EqualTo(new Vector4(55f, 35f, 1f, 0)));
+                FeatureType.GetField("DepthThresholdWorld").SetValue(feature, -.5f);
+                FeatureType.GetField("UseNormalEdgeMask").SetValue(feature, false);
+                TestHelpers.SetPrivateField(feature, "edgeMaterial", first);
+                FeatureType.GetMethod("ApplyEdgeSettings").Invoke(feature, null);
+                Assert.That(first.GetVector("_HLEdgeDepth").x, Is.EqualTo(.001f));
+                Assert.That(first.GetVector("_HLEdgeNormals").z, Is.Zero);
                 Assert.That(first.shader.name, Is.EqualTo("Hidden/HL/Look/DepthNormalOutline"));
                 FeatureType.GetMethod("Create").Invoke(feature, null);
                 Assert.That(first == null, Is.True, "Recreation must destroy the previous material.");

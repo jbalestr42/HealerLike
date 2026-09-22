@@ -16,6 +16,8 @@ namespace HealerLike.Render.Look
         public float FogStart;
         public float FogEnd;
         public float InkStrength;
+        [Tooltip("Projected stroke spacing in pixels; 3.5 for portrait at 26–40 units. Zero uses legacy world spacing.")]
+        public float InkSpacingPixels;
         public float InkScale;
         public float InkWidth;
         public float InkStart;
@@ -40,6 +42,7 @@ namespace HealerLike.Render.Look
             FogStart = 20f,
             FogEnd = 60f,
             InkStrength = 1f,
+            InkSpacingPixels = 3.5f,
             InkScale = .05f,
             InkWidth = .001f,
             InkStart = 0f,
@@ -67,6 +70,7 @@ namespace HealerLike.Render.Look
             value.FogStart = Mathf.Max(0f, Finite(FogStart, defaults.FogStart));
             value.FogEnd = Mathf.Max(0f, Finite(FogEnd, defaults.FogEnd));
             value.InkStrength = Mathf.Clamp(Finite(InkStrength, defaults.InkStrength), 0f, 1f);
+            value.InkSpacingPixels = Mathf.Clamp(Finite(InkSpacingPixels, defaults.InkSpacingPixels), 0f, 16f);
             value.InkScale = Mathf.Max(.0001f, Finite(InkScale, defaults.InkScale));
             value.InkWidth = Mathf.Max(0f, Finite(InkWidth, defaults.InkWidth));
             value.InkStart = Mathf.Clamp(Finite(InkStart, defaults.InkStart), 0f, 1f);
