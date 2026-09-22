@@ -23,6 +23,11 @@ namespace HealerLike.Render.Creatures
                 rig.Tick(1.3f, .3f, new HLFootFrame(anchor.transform.position, Vector3.up, 1));
                 registry.NotifyHeal(go, target, 4, true); Assert.AreEqual(0, rig.ActiveArmCount);
                 view.enabled = true; TestHelpers.InvokePrivate(view, "OnEnable"); registry.NotifyHeal(go, target, 4, false); Assert.AreEqual(1, rig.ActiveArmCount);
+                Object.DestroyImmediate(go);
+                view.enabled = false; TestHelpers.InvokePrivate(view, "OnDisable");
+                var field = typeof(HLRenderRegistry).GetField("_healSinks",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                Assert.AreEqual(0, ((System.Collections.IDictionary)field.GetValue(registry)).Count);
             }
             finally { Object.DestroyImmediate(anchor); Object.DestroyImmediate(go); Object.DestroyImmediate(target); Object.DestroyImmediate(recipe); Object.DestroyImmediate(material); HLPrimitiveMeshes.ReleaseAll(); }
         }

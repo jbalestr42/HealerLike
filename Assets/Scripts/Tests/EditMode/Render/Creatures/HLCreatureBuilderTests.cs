@@ -59,6 +59,17 @@ namespace HealerLike.Render.Creatures
             Assert.AreEqual(1, sink.heals); Assert.AreEqual(200, sink.amount); Assert.AreEqual(100, health.Value);
             health.OnAllConsumerProcessed.Invoke(owner, new ResourceModifier(), 2, false); Assert.AreEqual(2, builder.Rig.HealPulseCount);
         }
+        [Test] public void DestroyedEntityStillUnregistersExternallyAnchoredBuilder()
+        {
+            model.transform.SetParent(null);
+            registry.Unregister(source, sink);
+            Object.DestroyImmediate(owner);
+            builder.enabled = false; TestHelpers.InvokePrivate(builder, "OnDisable");
+            var field = typeof(HLRenderRegistry).GetField("_healSinks",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            Assert.AreEqual(0, ((System.Collections.IDictionary)field.GetValue(registry)).Count);
+            Object.DestroyImmediate(model);
+        }
         [Test] public void BreathingAndDragNeverRelocateAuthoredSockets()
         {
             Vector3 s = source.transform.localPosition, t = target.transform.localPosition;

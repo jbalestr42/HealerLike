@@ -42,6 +42,7 @@ namespace HealerLike.Render.Creatures
         public void ContactDelivery(int token, Vector3 position, GameObject target) => Rig?.ContactDelivery(token, position, target);
         public void EndDelivery(int token) => Rig?.EndDelivery(token);
         ResourceAttribute health;
+        GameObject registeredSource;
         HLRenderRegistry registeredRegistry;
         HLRenderRegistry injectedRegistry;
         bool hasInjection, configuredPlane;
@@ -95,9 +96,10 @@ namespace HealerLike.Render.Creatures
             var registry = hasInjection ? injectedRegistry : HLRenderRegistry.Current;
             if (registeredRegistry == registry) return;
             Unregister(); registeredRegistry = registry;
-            registeredRegistry?.Register(entity ? entity.gameObject : null, this);
+            registeredSource = entity ? entity.gameObject : null;
+            registeredRegistry?.Register(registeredSource, this);
         }
-        void Unregister() { registeredRegistry?.Unregister(entity ? entity.gameObject : null, this); registeredRegistry = null; }
+        void Unregister() { registeredRegistry?.Unregister(registeredSource, this); registeredRegistry = null; registeredSource = null; }
         void Detach()
         {
             if (health) health.OnAllConsumerProcessed.RemoveListener(OnHealthProcessed);

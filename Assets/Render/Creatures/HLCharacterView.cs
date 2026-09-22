@@ -14,6 +14,7 @@ namespace HealerLike.Render.Creatures
         [SerializeField] float cellSize = 1;
         HLRenderRegistry injectedRegistry, registeredRegistry;
         bool injected;
+        GameObject registeredSource;
         readonly HashSet<ResourceAttribute> observed = new HashSet<ResourceAttribute>();
         readonly Dictionary<(GameObject, float, bool), int> resolvedHeals = new Dictionary<(GameObject, float, bool), int>();
         int resolvedFrame = -1;
@@ -68,7 +69,7 @@ namespace HealerLike.Render.Creatures
             Rig.SetVisible(isActiveAndEnabled);
             if (!isActiveAndEnabled) return;
             var registry = injected ? injectedRegistry : HLRenderRegistry.Current;
-            if (registeredRegistry != registry) { Unregister(); registeredRegistry = registry; registeredRegistry?.Register(character.gameObject, this); }
+            if (registeredRegistry != registry) { Unregister(); registeredRegistry = registry; registeredSource = character.gameObject; registeredRegistry?.Register(registeredSource, this); }
         }
         public void OnHealResolved(GameObject target, float value, bool critical)
         {
@@ -91,7 +92,7 @@ namespace HealerLike.Render.Creatures
                 Rig.SetReadout(null, 1, 0, character.mana && character.mana.Max > 0 ? character.mana.Value / character.mana.Max : 0);
             if (Rig != null && visualAnchor) Rig.Tick(Time.time, Time.deltaTime, new HLFootFrame(visualAnchor.position, visualAnchor.up, cellSize));
         }
-        void Unregister() { registeredRegistry?.Unregister(character ? character.gameObject : null, this); registeredRegistry = null; }
+        void Unregister() { registeredRegistry?.Unregister(registeredSource, this); registeredRegistry = null; registeredSource = null; }
         void OnEnable() { BuildAndRegister(); ObserveResources(); }
         void OnDisable() { StopObserving(); Unregister(); Rig?.CancelAll(); Rig?.SetVisible(false); }
         void OnDestroy() { StopObserving(); Unregister(); Rig?.Dispose(); Rig = null; }

@@ -55,7 +55,7 @@ namespace HealerLike.Render
         /// </summary>
         public void Unregister(GameObject source, IHLHealVisualSink sink)
         {
-            if (source == null || sink == null) return;
+            if (ReferenceEquals(source, null) || sink == null) return;
             if (!_healSinks.TryGetValue(source, out List<IHLHealVisualSink> sinks)) return;
 
             sinks.Remove(sink);
@@ -73,10 +73,12 @@ namespace HealerLike.Render
             if (source == null) return;
             if (!_healSinks.TryGetValue(source, out List<IHLHealVisualSink> sinks)) return;
 
-            for (int i = sinks.Count - 1; i >= 0; i--)
+            // Each invocation owns its snapshot, including nested notifications. Mutations
+            // affect the next notification; every captured registration runs once.
+            var snapshot = sinks.ToArray();
+            for (int i = snapshot.Length - 1; i >= 0; i--)
             {
-                if (i >= sinks.Count) continue; // a sink unregistered others while we notified
-                IHLHealVisualSink sink = sinks[i];
+                IHLHealVisualSink sink = snapshot[i];
                 try
                 {
                     sink.OnHealResolved(target, value, critical);
