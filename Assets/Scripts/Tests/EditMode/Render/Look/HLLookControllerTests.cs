@@ -81,6 +81,36 @@ namespace HealerLike.Render.Look
             finally { RenderSettings.sun = previousSun; }
         }
 
+        [Test]
+        public void SteadyPublicationAllocatesNothingAndDisabledSunClearsFallback()
+        {
+            var controller = CreateController();
+            var go = new GameObject("HL allocation sun"); objects.Add(go);
+            var sun = go.AddComponent<Light>(); sun.type = LightType.Directional;
+            var previous = RenderSettings.sun;
+            try
+            {
+                RenderSettings.sun = sun;
+                var cameraGo = new GameObject("HL allocation camera"); objects.Add(cameraGo);
+                var camera = cameraGo.AddComponent<Camera>();
+                var callback = (Action<UnityEngine.Rendering.ScriptableRenderContext, Camera>)Delegate.CreateDelegate(
+                    typeof(Action<UnityEngine.Rendering.ScriptableRenderContext, Camera>), controller,
+                    typeof(HLLookController).GetMethod("OnBeginCameraRendering", BindingFlags.Instance | BindingFlags.NonPublic));
+                for (int i = 0; i < 8; i++) { controller.ApplyGlobals(); callback(default, camera); }
+                long before = GC.GetAllocatedBytesForCurrentThread();
+                for (int i = 0; i < 128; i++) { controller.ApplyGlobals(); callback(default, camera); }
+                long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+                Assert.That(allocated, Is.Zero);
+                camera.cullingMask = 0;
+                callback(default, camera);
+                Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(Vector4.zero));
+                sun.enabled = false;
+                controller.ApplyGlobals();
+                Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(Vector4.zero));
+            }
+            finally { RenderSettings.sun = previous; }
+        }
+
         [TestCase(ColorSpace.Gamma)]
         [TestCase(ColorSpace.Linear)]
         public void ColorConversionIsExplicitAndAlphaIsOne(ColorSpace space)

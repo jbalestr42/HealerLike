@@ -34,6 +34,9 @@ namespace HealerLike.Render.Look
         private static readonly int FogBandsId = Shader.PropertyToID("_HLFogBands");
         private static readonly int LookAppliedId = Shader.PropertyToID("_HLLookApplied");
 
+        private static readonly Action<int, float> SetFloat = Shader.SetGlobalFloat;
+        private static readonly Action<int, Vector4> SetVector = Shader.SetGlobalVector;
+
         public HLLookSettings Settings { get => settings; set => settings = value.Validated(); }
 
         private void OnEnable()
@@ -67,16 +70,22 @@ namespace HealerLike.Render.Look
         public void ApplyGlobals()
         {
             if (owner != this || !isActiveAndEnabled) return;
-            Shader.SetGlobalVector(KeyLightDirId, SelectKeyLightDirection(
-                FindObjectsByType<Light>(FindObjectsSortMode.InstanceID), RenderSettings.sun, ~0));
+            PublishSunDirection(~0);
             UploadGlobals(in settings);
         }
 
         private void OnBeginCameraRendering(ScriptableRenderContext context, Camera camera)
         {
             if (owner != this || !isActiveAndEnabled) return;
-            Shader.SetGlobalVector(KeyLightDirId, SelectKeyLightDirection(
-                FindObjectsByType<Light>(FindObjectsSortMode.InstanceID), RenderSettings.sun, camera.cullingMask));
+            PublishSunDirection(camera.cullingMask);
+        }
+
+        // Allocation-free fallback until HLOutlines publishes the actual culled main light.
+        private static void PublishSunDirection(int cameraMask)
+        {
+            var sun = RenderSettings.sun;
+            PublishMainLightDirection(sun && sun.isActiveAndEnabled &&
+                (cameraMask & (1 << sun.gameObject.layer)) != 0 ? sun : null);
         }
 
         // Mirrors URP's sun-first, otherwise brightest directional selection.
@@ -112,7 +121,7 @@ namespace HealerLike.Render.Look
 
         // Explicit tooling entry point; ordinary frame publication belongs to the active owner.
         public static void UploadGlobals(in HLLookSettings settings) =>
-            PublishGlobals(settings, QualitySettings.activeColorSpace, Shader.SetGlobalFloat, Shader.SetGlobalVector);
+            PublishGlobals(settings, QualitySettings.activeColorSpace, SetFloat, SetVector);
 
         // Isolated publication seam lets tests observe the real write ordering without a renderer.
         private static void PublishGlobals(HLLookSettings settings, ColorSpace colorSpace,

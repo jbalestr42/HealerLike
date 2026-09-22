@@ -29,9 +29,10 @@ its submission path. This feature requests both textures, but does not discover
 or replay indirect draws. Primitive depth and normal passes are supplied. Normal
 textures support both ordinary world normals and the octahedral encoding.
 
-For hard-edged stone, supply smooth object-space outline normals in TEXCOORD3;
-lighting continues to use face normals. A missing/zero outline normal falls back
-to the lighting normal. Pixel width is approximate at silhouettes and needs a
+For hard-edged stone, supply smooth object-space outline normals in TEXCOORD3
+and set `_HLSmoothOutlineNormals=1` on that material;
+lighting continues to use face normals. Default materials use lighting normals. Explicit zero outline normals also fall back
+to lighting normals; absent vertex streams cannot be reliably detected on every GPU. Pixel width is normalized after projection and needs a
 visual check with the integrated camera, grass density and LODs. Fog distances
 20/60 and one-pixel outlines are initial art values.
 
@@ -81,8 +82,7 @@ All six renderer assets currently leave `DepthNormalEdges` off; D5 does not own
 those assets. Enable the feature after integration and inspect the full grass field.
 
 `_HLKeyLightDir.xyz` points **toward** the main directional light in world space;
-`w=0`, and zero means no light. HLLookController publishes the sun (or brightest
-active directional) on frame/camera callbacks. HLOutlines supplies URP's actual
+`w=0`, and zero means no light. HLLookController publishes the active sun without scene searches on frame/camera callbacks. HLOutlines supplies URP's actual
 culled main-light selection before rendering, so disabled-main-light quality
 tiers publish zero. Disabling the owning controller clears the direction.
 This is render state; no animation clock or simulated event was introduced.
@@ -93,3 +93,40 @@ with `HL_D5_CAPTURE=1 -batchmode -force-metal`. It clones a Very High pipeline a
 renderer in memory, without saving assets. Outputs go to the shared captures
 folder: shadow, edge-off, edge-on and side-by-side (off left, on right). The dense
 blades are masked primitive fixtures, not an indirect grass performance test.
+
+## Beauty integration (B6)
+
+`HL/Look/Primitive` now exposes `_HLOutlineWidthMultiplier` (default 1, zero
+suppresses its hull) and `_HLGroundGrid` (default 0). Enable the latter only on
+an owned ground material instance. Grid evaluation is before fog, inside the
+XZ rectangle only, antialiased to about one pixel, pale and distance faded.
+The four stage-owned globals are `_HLGridOrigin` (xyz minimum board corner),
+`_HLGridCell` (positive square cell size), `_HLGridExtent` (x/z full width/depth),
+and `_HLGridStrength` (0 disables, .12 recommended). Bounds/cell zero disables.
+These are independent of `_HLLookApplied`; HLLookController does not overwrite them.
+Stage must reset strength to zero on teardown. No overlay geometry or texture.
+
+Fog has static world-space smooth threshold noise, bounded to .32 of a band;
+start and end remain exactly clear/full. Existing fog ABI and six-band defaults
+are unchanged. No clock or gameplay state is sampled.
+
+`HLApplyTipLight(color, bladeHeight01, illum)` is an optional grass adapter in
+HLLookCore, driven by stage-owned `_HLTipLight` (zero disables; .12 recommended).
+It only lifts the top 35 percent of lit blades toward pale yellow-green, keeping
+roots and shadow hatching intact. Call after HLShadeSurface and before fog.
+Grass source is deliberately left for its owner; the capture probe exercises
+this helper directly and is not a production grass shader.
+
+At portrait distance 42.8–47.8, set the existing controller's InkSpacingPixels to
+3.5 and OutlineWidthPixels to 1. Do not scale outline width by camera distance.
+Hull extrusion normalizes the projected normal in pixel space, applies an XY
+clip offset at unchanged depth. Primitives use this clip result directly; the frozen
+world-space helper unprojects it for existing adapters. Zero normals, view-parallel projected normals and behind-camera
+vertices produce no displacement. Smooth outline normals remain necessary on
+hard-edged meshes. Raster coverage still depends on silhouette mesh resolution.
+
+Run `HL_B6_CAPTURE=1` with the Look EditMode tests and `-force-metal` to generate
+`Assets/Render/Look/captures/beauty-look-*.png`. The fixtures clone pipeline assets
+in memory only. HLLookController's publication path has cached delegates and no
+per-frame object discovery; the renderer feature provides URP's actual main light.
+Without that feature the fallback is RenderSettings.sun only.
