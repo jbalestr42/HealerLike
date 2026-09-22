@@ -71,6 +71,8 @@ namespace HealerLike.Render.Stage
         static void Late()
         {
             if(!gameStarted || count>=CaptureTimes.Length) return;
+            // Keep grass frustum culling (next frame) and the render request on the same 9:16 aspect.
+            if(Camera.main) Camera.main.aspect=(float)HLStageCalibration.PortraitWidth/HLStageCalibration.PortraitHeight;
             Observe();
             float t=Time.time-gameStartTime;
             if(!placed && t>=PlaceAt) { placed=true; PlaceAllies(); }
@@ -143,16 +145,19 @@ namespace HealerLike.Render.Stage
         {
             var camera=Camera.main;
             if(!camera) throw new InvalidOperationException("HL capture requires the gameplay camera.");
-            var target=RenderTexture.GetTemporary(1920,1080,24,RenderTextureFormat.ARGB32);
+            // Portrait, as Julien's device autorotates: the aspect follows the target, not the batchmode screen.
+            const int width=HLStageCalibration.PortraitWidth, height=HLStageCalibration.PortraitHeight;
+            var target=RenderTexture.GetTemporary(width,height,24,RenderTextureFormat.ARGB32);
             var previous=RenderTexture.active;
-            var texture=new Texture2D(1920,1080,TextureFormat.RGB24,false);
+            var texture=new Texture2D(width,height,TextureFormat.RGB24,false);
+            camera.aspect=(float)width/height;
             try
             {
                 var request=new RenderPipeline.StandardRequest { destination=target };
                 RenderPipeline.SubmitRenderRequest(camera,request);
                 RenderTexture.active=target;
-                texture.ReadPixels(new Rect(0,0,1920,1080),0,0); texture.Apply();
-                string path=DirectoryPath+"wave3-"+(count+1)+".png";
+                texture.ReadPixels(new Rect(0,0,width,height),0,0); texture.Apply();
+                string path=DirectoryPath+"wave4-"+(count+1)+".png";
                 File.WriteAllBytes(path,texture.EncodeToPNG());
                 count++; SessionState.SetInt(Key+"Count",count);
                 Debug.Log($"HL screenshot: {path} at game time {Time.time-gameStartTime:F2}s; attacks={attacks} heals={heals} zones={HealerLike.Render.Zones.HLZoneRegistry.Current?.Count ?? -1}");

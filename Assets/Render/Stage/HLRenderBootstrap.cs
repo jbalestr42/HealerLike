@@ -18,9 +18,26 @@ namespace HealerLike.Render.Stage
         [SerializeField] Transform ground;
         [SerializeField] Component stoneGridEntry;
         [SerializeField] int stoneSeed = 1707;
+        public enum Framing { Portrait, Landscape }
+        [Tooltip("Portrait is Julien's device orientation; landscape keeps the wave-3 50 degree framing. Look calibration is for portrait.")]
+        [SerializeField] Framing framing = Framing.Portrait;
+        [SerializeField] Camera stageCamera;
+        [SerializeField] Pose portraitPose = new Pose(Vector3.zero, Quaternion.identity);
+        [SerializeField] Pose landscapePose = new Pose(Vector3.zero, Quaternion.identity);
         HLRenderRegistry registry;
         bool owns;
         public HLRenderRegistry Registry => registry;
+        public Framing CameraFraming { get => framing; set { framing = value; ApplyFraming(); } }
+        public void ConfigureFraming(Camera camera, Pose portrait, Pose landscape)
+        {
+            stageCamera = camera; portraitPose = portrait; landscapePose = landscape; ApplyFraming();
+        }
+        public void ApplyFraming()
+        {
+            if (!stageCamera) return;
+            var pose = framing == Framing.Portrait ? portraitPose : landscapePose;
+            stageCamera.transform.SetPositionAndRotation(pose.position, pose.rotation);
+        }
 
         // Explicit injection keeps ownership testable without a scene or gameplay singleton.
         public void Configure(IHLSpellVisualSink sink, Behaviour look, Behaviour zones)
@@ -34,6 +51,7 @@ namespace HealerLike.Render.Stage
         void OnEnable()
         {
             if (owns) return;
+            ApplyFraming();
             if (HLRenderRegistry.Current != null)
             {
                 Debug.LogWarning("HL stage registry already has an owner.", this);

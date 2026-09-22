@@ -23,5 +23,22 @@ namespace HealerLike.Render.Stage
                 Assert.That(HLStageCalibration.HatchSpacing(camera, 50,2000), Is.EqualTo(.04f).Within(.0001));
             } finally { Object.DestroyImmediate(go); }
         }
+        [Test] public void PortraitFrameFitsTheBoardWidthAtTheNearEdgeAndPlacesTheCentre()
+        {
+            var go = new GameObject("HLCamera");
+            try {
+                var camera = go.AddComponent<Camera>(); camera.fieldOfView = 40; camera.aspect = 9f/16f;
+                var board = new Bounds(new Vector3(0,.505f,0), new Vector3(16,0,16));
+                var pose = HLStageCalibration.Frame(board, 73.7f, 40, 9f/16f, .5f, .42f);
+                go.transform.SetPositionAndRotation(pose.position, pose.rotation);
+                Assert.That(pose.rotation.eulerAngles.x, Is.EqualTo(73.7f).Within(.01f));
+                Assert.That(camera.WorldToViewportPoint(board.center).y, Is.EqualTo(.42f).Within(.002f));
+                var nearLeft = camera.WorldToViewportPoint(new Vector3(-8,.505f,-8)); var nearRight = camera.WorldToViewportPoint(new Vector3(8,.505f,-8));
+                float margin = .5f / 17f; // half a unit of 17 across
+                Assert.That(nearLeft.x, Is.EqualTo(margin).Within(.002f)); Assert.That(nearRight.x, Is.EqualTo(1 - margin).Within(.002f));
+                var far = camera.WorldToViewportPoint(new Vector3(8,.505f,8));
+                Assert.That(far.x, Is.InRange(0f, 1f)); Assert.That(far.y, Is.InRange(0f, 1f));
+            } finally { Object.DestroyImmediate(go); }
+        }
     }
 }

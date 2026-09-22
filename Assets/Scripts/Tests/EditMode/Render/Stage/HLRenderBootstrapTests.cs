@@ -75,5 +75,20 @@ namespace HealerLike.Render.Stage
             TestHelpers.InvokePrivate(bootstrap, "OnDisable");
             Assert.That(HLRenderRegistry.Current, Is.SameAs(replacement));
         }
+        [Test] public void AppliesPortraitByDefaultAndLandscapeOnRequest()
+        {
+            var bootstrap = root.AddComponent<HLRenderBootstrap>();
+            var cameraGo = new GameObject("HLFramingCamera");
+            try {
+                var camera = cameraGo.AddComponent<Camera>();
+                var portrait = new Pose(new Vector3(0,40,-12), Quaternion.Euler(73.7f,0,0)); var landscape = new Pose(new Vector3(0,24,-20), Quaternion.Euler(50,0,0));
+                bootstrap.ConfigureFraming(camera, portrait, landscape);
+                Assert.AreEqual(HLRenderBootstrap.Framing.Portrait, bootstrap.CameraFraming);
+                Assert.AreEqual(portrait.position, camera.transform.position);
+                bootstrap.CameraFraming = HLRenderBootstrap.Framing.Landscape;
+                Assert.AreEqual(landscape.position, camera.transform.position);
+                Assert.That(Quaternion.Angle(landscape.rotation, camera.transform.rotation), Is.LessThan(.01f));
+            } finally { Object.DestroyImmediate(cameraGo); }
+        }
     }
 }

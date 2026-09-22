@@ -68,9 +68,9 @@ namespace HealerLike.Render.Stage
             foreach (var b in Object.FindObjectsByType<Behaviour>(FindObjectsInactive.Include))
                 if ((b.GetType().Namespace ?? "").StartsWith("Unity.Cinemachine")) b.enabled = false;
             var camera = Camera.main ?? Object.FindAnyObjectByType<Camera>();
-            camera.transform.rotation = Quaternion.Euler(50, 0, 0);
-            camera.transform.position = new Vector3(0,.5f,0) - camera.transform.forward * 31;
-            camera.fieldOfView = 40; camera.nearClipPlane = .1f; camera.farClipPlane = 100;
+            // Wave-3 landscape pose, kept as the bootstrap's landscape option.
+            var landscape = new Pose(new Vector3(0,.5f,0) - Quaternion.Euler(50,0,0) * Vector3.forward * 31, Quaternion.Euler(50,0,0));
+            camera.fieldOfView = HLStageCalibration.PortraitFov; camera.nearClipPlane = .1f; camera.farClipPlane = 200;
             camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = new Color32(191,210,224,255);
             var cameraData = camera.GetUniversalAdditionalCameraData(); cameraData.renderPostProcessing = false;
             var grid = Object.FindAnyObjectByType<GridManager>();
@@ -81,6 +81,8 @@ namespace HealerLike.Render.Stage
             RenderSettings.ambientLight = new Color(.35f,.40f,.5f);
             foreach (var light in Object.FindObjectsByType<Light>()) light.lightmapBakeType = LightmapBakeType.Realtime;
             var bounds = new Bounds(new Vector3(grid.transform.position.x,.505f,grid.transform.position.z), new Vector3(grid.width*grid.size,0,grid.height*grid.size));
+            var portrait = HLStageCalibration.Frame(bounds, HLStageCalibration.PortraitPitch, HLStageCalibration.PortraitFov, HLStageCalibration.PortraitAspect, HLStageCalibration.PortraitMargin, HLStageCalibration.PortraitCentreY);
+            camera.transform.SetPositionAndRotation(portrait.position, portrait.rotation);
             var stage = new GameObject("HLRenderStage"); stage.SetActive(false);
             var bootstrap = stage.AddComponent<HLRenderBootstrap>();
             var look = Optional(stage, "HLLookController") as Behaviour;
@@ -88,6 +90,7 @@ namespace HealerLike.Render.Stage
             var sink = SpellSink(stage);
             if (look) { Calibrate(look, camera, bounds); look.enabled = false; }
             if (zones) zones.enabled = false;
+            bootstrap.ConfigureFraming(camera, portrait, landscape);
             var so = new SerializedObject(bootstrap);
             so.FindProperty("lookController").objectReferenceValue = look;
             so.FindProperty("zoneRegistry").objectReferenceValue = zones;
@@ -107,13 +110,16 @@ namespace HealerLike.Render.Stage
             }
             Grass(stage.transform, bounds, grid, ground.transform, camera, zones, bootstrap);
             var range = stage.AddComponent<HLStageRangeDriver>(); range.Mode = HLStageRangeDriver.PreviewMode.Featured;
-            if (ground.TryGetComponent<Renderer>(out var renderer)) renderer.sharedMaterial = green;
+            var groundMaterial = GroundMaterial();
+            if (ground.TryGetComponent<Renderer>(out var renderer)) renderer.sharedMaterial = groundMaterial;
+            Environment(stage.transform, grid, ground.transform, camera, zones as HealerLike.Render.Zones.HLZoneRegistry, groundMaterial);
             WireRenderers();
             EditorSceneManager.SaveScene(scene, ScenePath);
             AssetDatabase.SaveAssets();
             var fog = WaveThreeFog(camera, bounds);
+            WriteCalibration(camera, bounds);
             File.WriteAllText(Root + "WAVE3-TODO.md", "# Wave 3 integration\n\nRe-run `HLStageBuilder.Build` after the other tracks land. No other track source is copied into this branch.\n\n" + string.Join("\n",todo.Distinct().Select(s => "- " + s)) + "\n\n# Calibration\n\n" +
-                $"Source: Main (menu loads Main; Build Settings instead enables TestHealer). Board {grid.width} x {grid.height}, cell {grid.size}; roots y=.505. Camera 50 degrees, FOV 40, distance 31, position {camera.transform.position}. 1080p hatch spacing {HLStageCalibration.HatchSpacing(camera,31,1080):F5}; fog {fog.x:F3}/{fog.y:F3}, six bands, pale #BFD2E0, 1px outline. Numerical calibration awaits final shader/grass captures.\n" +
+                $"Source: Main (menu loads Main; Build Settings instead enables TestHealer). Board {grid.width} x {grid.height}, cell {grid.size}; roots y=.505. Portrait camera {HLStageCalibration.PortraitPitch} degrees, FOV 40, position {camera.transform.position}. 1920-high hatch spacing {HLStageCalibration.HatchSpacing(camera,CentreDepth(camera,bounds),HLStageCalibration.PortraitHeight):F5}; fog {fog.x:F3}/{fog.y:F3}, six bands, pale #BFD2E0, 1px outline. Numerical calibration awaits final shader/grass captures.\n" +
                 "\n# CONTRACT-CONFLICT\n\nThe older look spec proposes stock RenderObjects, but the frozen contract requires T1 HLOutlines. The wave-2 fallback is labelled HLOutlines_PLACEHOLDER and must be replaced by the real feature. Main is the menu target but absent from enabled Build Settings; stage copies Main without changing the source scene list. The Ultra quality slot references missing pipeline GUID a0da25f9ff8de264189edd30d9654c37; Graphics Settings falls back to Low. All six existing pipeline assets and their six renderers are covered. The copied scene hides the 100-unit debug ground (its top .51 obscures the board at .5), middle line and debug sphere renderers; their colliders remain unchanged.\n");
             AssetDatabase.Refresh(); Debug.Log("HL stage build complete: " + ScenePath);
         }
@@ -259,12 +265,12 @@ namespace HealerLike.Render.Stage
             settings.FindPropertyRelative("FogColor").colorValue = new Color32(191,210,224,255);
             settings.FindPropertyRelative("FogStart").floatValue = fog.x; settings.FindPropertyRelative("FogEnd").floatValue = fog.y;
             settings.FindPropertyRelative("FogBands").intValue = 6;
-            float spacing = HLStageCalibration.HatchSpacing(camera,31,1080);
+            float spacing = HLStageCalibration.HatchSpacing(camera,CentreDepth(camera,bounds),HLStageCalibration.PortraitHeight);
             settings.FindPropertyRelative("InkScale").floatValue = spacing;
             settings.FindPropertyRelative("InkWidth").floatValue = spacing*.04f;
             settings.FindPropertyRelative("InkDistStart").floatValue = fog.x;
             settings.FindPropertyRelative("InkFarSpacing").floatValue = spacing*1.2f;
-            settings.FindPropertyRelative("OutlineWidthPixels").floatValue = 1;
+            settings.FindPropertyRelative("OutlineWidthPixels").floatValue = OutlinePixels(camera,bounds);
             so.ApplyModifiedPropertiesWithoutUndo();
         }
         // Wave-3 capture review: fog from the near edge washed out the back half of the board. Start at the
@@ -274,6 +280,71 @@ namespace HealerLike.Render.Stage
             var edge = HLStageCalibration.FogRange(camera.transform.position, bounds);
             float centre = Vector3.Distance(camera.transform.position, bounds.center);
             return new Vector2(centre, edge.y + (edge.y - edge.x) * .5f);
+        }
+        public static float CentreDepth(Camera camera, Bounds bounds) => Vector3.Distance(camera.transform.position, bounds.center);
+        // Wave 3 drew 1 px at depth 31 on a 1080-high target. Keep the same world thickness: scale by the pixels per
+        // world unit at the board centre, rounded to a quarter pixel, never under one pixel.
+        public static float OutlinePixels(Camera camera, Bounds bounds)
+        {
+            float wave3 = 1080 / HLStageCalibration.HatchSpacing(camera,31,4), now = HLStageCalibration.PortraitHeight / HLStageCalibration.HatchSpacing(camera,CentreDepth(camera,bounds),4);
+            return Mathf.Max(1, Mathf.Round(now / wave3 * 4) / 4);
+        }
+        static void WriteCalibration(Camera camera, Bounds bounds)
+        {
+            var fog = WaveThreeFog(camera, bounds); var edge = HLStageCalibration.FogRange(camera.transform.position, bounds);
+            float spacing = HLStageCalibration.HatchSpacing(camera,CentreDepth(camera,bounds),HLStageCalibration.PortraitHeight);
+            Debug.Log($"HL calibration: camera {camera.transform.position.ToString("F3")} euler {camera.transform.eulerAngles.ToString("F2")} fov {camera.fieldOfView}; near edge {edge.x:F3} centre {CentreDepth(camera,bounds):F3} edge-range end {edge.y:F3}; fog {fog.x:F3}/{fog.y:F3}; ink scale {spacing:F5} width {spacing*.04f:F5} far {spacing*1.2f:F5}; outline {OutlinePixels(camera,bounds)} px");
+        }
+        static Material GroundMaterial()
+        {
+            const string path = "Assets/Render/Environment/HLLook_Ground.mat";
+            var result = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (!result) { result = new Material(AssetDatabase.LoadAssetAtPath<Material>(LookDefault)) { name = "HLLook_Ground" }; AssetDatabase.CreateAsset(result, path); }
+            result.SetColor("_BaseColor", new Color32(46,125,79,255)); result.enableInstancing = true;
+            EditorUtility.SetDirty(result); AssetDatabase.SaveAssets();
+            return result;
+        }
+        // Julien-scale ground (1000 x 1000) a hair under the board top, the grass ring and the scattered ring.
+        static void Environment(Transform parent, GridManager grid, Transform ground, Camera camera, HealerLike.Render.Zones.HLZoneRegistry zones, Material groundMaterial)
+        {
+            float top = ground.TryGetComponent<Renderer>(out var groundRenderer) ? groundRenderer.bounds.max.y : .5f;
+            var root = new GameObject("HLEnvironment"); root.transform.SetParent(parent,false);
+            var plane = GameObject.CreatePrimitive(PrimitiveType.Plane); plane.name = "HLEnvironmentGround";
+            Object.DestroyImmediate(plane.GetComponent<Collider>()); // never intercept gameplay raycasts
+            plane.transform.SetParent(root.transform,false);
+            plane.transform.position = new Vector3(grid.transform.position.x, top - .01f, grid.transform.position.z);
+            plane.transform.localScale = new Vector3(100,1,100);
+            var planeRenderer = plane.GetComponent<MeshRenderer>(); planeRenderer.sharedMaterial = groundMaterial; planeRenderer.shadowCastingMode = ShadowCastingMode.Off;
+            var gridRect = HealerLike.Render.Environment.HLEnvironmentScatter.GridRect(grid);
+            var proxies = new List<GridManager>(); var fields = new List<HealerLike.Render.Grass.HLGrassField>();
+            var main = Object.FindAnyObjectByType<HealerLike.Render.Grass.HLGrassField>();
+            float density = (main ? main.BladeBudget : HealerLike.Render.Grass.HLGrassLayout.DefaultBudget) / (gridRect.width * gridRect.height) * .25f;
+            var strips = HealerLike.Render.Environment.HLEnvironmentGrass.Strips(gridRect, gridRect.width);
+            for (int i = 0; i < strips.Length; i++)
+            {
+                var strip = new GameObject("HLGrassRing" + i); strip.transform.SetParent(root.transform,false);
+                strip.transform.position = new Vector3(strips[i].center.x, grid.transform.position.y, strips[i].center.y);
+                var proxy = strip.AddComponent<GridManager>(); var pso = new SerializedObject(proxy);
+                pso.FindProperty("_width").intValue = Mathf.RoundToInt(strips[i].width / grid.size); pso.FindProperty("_height").intValue = Mathf.RoundToInt(strips[i].height / grid.size);
+                pso.FindProperty("_size").floatValue = grid.size; pso.ApplyModifiedPropertiesWithoutUndo();
+                var field = strip.AddComponent<HealerLike.Render.Grass.HLGrassField>(); var fso = new SerializedObject(field);
+                fso.FindProperty("grid").objectReferenceValue = proxy; fso.FindProperty("ground").objectReferenceValue = ground;
+                fso.FindProperty("gameplayCamera").objectReferenceValue = camera;
+                fso.FindProperty("updateGrass").objectReferenceValue = AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute");
+                fso.FindProperty("grassShader").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrass.shader");
+                fso.FindProperty("ringShader").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrassRing.shader");
+                fso.FindProperty("bladeBudget").intValue = HealerLike.Render.Environment.HLEnvironmentGrass.Budget(strips[i], density);
+                fso.FindProperty("seed").longValue = 11 + i; fso.ApplyModifiedPropertiesWithoutUndo();
+                proxies.Add(proxy); fields.Add(field);
+                Debug.Log($"HL grass ring {i}: rect {strips[i]} blades {field.BladeBudget}");
+            }
+            root.AddComponent<HealerLike.Render.Environment.HLEnvironmentGrass>().Configure(zones, proxies.ToArray(), fields.ToArray());
+            var scatter = root.AddComponent<HealerLike.Render.Environment.HLEnvironmentScatter>(); var sso = new SerializedObject(scatter);
+            sso.FindProperty("grid").objectReferenceValue = grid; sso.FindProperty("plantMaterial").objectReferenceValue = green;
+            sso.FindProperty("stoneMaterial").objectReferenceValue = stone; sso.FindProperty("surfaceY").floatValue = top;
+            sso.ApplyModifiedPropertiesWithoutUndo();
+            var preview = HealerLike.Render.Environment.HLEnvironmentLayout.Generate(scatter.Settings, gridRect, grid.size, top);
+            Debug.Log("HL environment scatter: " + string.Join(", ", preview.GroupBy(item => item.Kind).Select(g => g.Key + "=" + g.Count())) + $" total={preview.Count}");
         }
         static Component StoneGrid(GameObject stage, GridManager grid)
         {
