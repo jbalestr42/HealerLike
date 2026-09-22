@@ -1,5 +1,29 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-3063871050333475319
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2f68311c93d43d1ad9965fda1d33f89, type: 3}
+  m_Name: HLOutlines
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Look.HLOutlines
+  m_Active: 1
+  LayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  DepthNormalEdges: 1
+  DepthThresholdWorld: 1
+  ReferenceDistance: 31
+  DistanceScale: 1
+  NormalAngleDegrees: 55
+  NormalDensityDegrees: 35
+  UseNormalEdgeMask: 1
+  edgeShader: {fileID: 4800000, guid: 971c04c4edc847ed900396526624a93c, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25,8 +49,8 @@ MonoBehaviour:
     probeSamplingDebugTexture: {fileID: 0}
     probeVolumeBlendStatesCS: {fileID: 0}
   m_RendererFeatures:
-  - {fileID: 8985096837802517435}
-  m_RendererFeatureMap: bb63b409f879b17cl
+  - {fileID: -3063871050333475319}
+  m_RendererFeatureMap: 092e454783f17ad5l
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_AssetVersion: 3
@@ -55,27 +79,3 @@ MonoBehaviour:
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
   m_TileOnlyMode: 0
---- !u!114 &8985096837802517435
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2f68311c93d43d1ad9965fda1d33f89, type: 3}
-  m_Name: HLOutlines
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Look.HLOutlines
-  m_Active: 1
-  LayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  DepthNormalEdges: 1
-  DepthThresholdWorld: 1
-  ReferenceDistance: 31
-  DistanceScale: 1
-  NormalAngleDegrees: 55
-  NormalDensityDegrees: 35
-  UseNormalEdgeMask: 1
-  edgeShader: {fileID: 4800000, guid: 971c04c4edc847ed900396526624a93c, type: 3}

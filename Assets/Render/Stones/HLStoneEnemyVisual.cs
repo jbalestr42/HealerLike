@@ -39,7 +39,7 @@ namespace HealerLike.Render.Stones
         public int PendingImpactCount=>impacts.Count;
         public void Init(Entity owner)
         {
-            entity=owner; targets=owner.GetComponent<TargetProvider>();
+            entity=owner; HealerLike.Render.Spells.HLResourceOutcomeObserver.Ensure(owner); targets=owner.GetComponent<TargetProvider>();
             Initialize(owner.health,seed,effects);
             foreach(var component in owner.GetComponents<MonoBehaviour>()) if(component is IHLStoneMotionSource source) { motion=source; break; }
         }
@@ -110,7 +110,7 @@ namespace HealerLike.Render.Stones
         public void CompleteHealthBatch()
         {
             if(health==null) return;
-            assembly.ApplyFracture(health.Max>0?health.Value/health.Max:1,seed);
+            assembly.ApplyFracture(health.Max>0?health.Value/health.Max:1,seed,entity ? HealerLike.Render.Spells.HLBodyTintState.Read(entity.gameObject) : Color.white);
             var action=state.CompleteBatch(health.Value,health.Max);
             if(action==HLStoneHealthAction.Collapse) Collapse();
             else if(action==HLStoneHealthAction.ShedPart)

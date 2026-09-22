@@ -23,7 +23,7 @@ MonoBehaviour:
     SerializationNodes: []
   data:
     projectiles:
-    - projectilePrefab: {fileID: 8116602070263938494, guid: d0dca8bd3587443dbf4ee3e0d6b3bff2, type: 3}
+    - projectilePrefab: {fileID: 3375512896400303741, guid: d0dca8bd3587443dbf4ee3e0d6b3bff2, type: 3}
       onHitConsumer:
       - {fileID: 11400000, guid: d13f03216d624780acc99fb33ebe07e6, type: 2}
       numberOfProjectileToShootPerTarget: 1

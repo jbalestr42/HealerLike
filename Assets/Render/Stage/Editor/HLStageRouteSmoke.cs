@@ -14,7 +14,7 @@ namespace HealerLike.Render.Stage
     {
         const string Key="HLStageRouteSmoke.Active";
         const string Output="/Users/fc/Documents/healerlike-render-specs/captures/wave9-route/";
-        static int step;
+        static int step; static int queuedFrame=-1;
         static double after,deadline;
         static EditorWindow gameView;
         static HLStageRouteSmoke() { EditorApplication.update+=Tick; EditorApplication.playModeStateChanged+=Changed; }
@@ -27,7 +27,7 @@ namespace HealerLike.Render.Stage
         static void Changed(PlayModeStateChange state)
         {
             if(!SessionState.GetBool(Key,false)) return;
-            if(state==PlayModeStateChange.EnteredPlayMode) { step=0; after=EditorApplication.timeSinceStartup+.5; deadline=after+90; }
+            if(state==PlayModeStateChange.EnteredPlayMode) { step=0; queuedFrame=-1; after=EditorApplication.timeSinceStartup+.5; deadline=after+90; }
             if(state==PlayModeStateChange.EnteredEditMode) { SessionState.SetBool(Key,false); EditorApplication.Exit(SessionState.GetInt(Key+"Code",1)); }
         }
         static void Tick()
@@ -41,7 +41,8 @@ namespace HealerLike.Render.Stage
             string scene=SceneManager.GetActiveScene().name;
             if((step==0 || step==4) && scene==HLStageSceneLoader.MenuName)
             {
-                ScreenCapture.CaptureScreenshot(Output+(step==0?"menu.png":"returned-menu.png"));
+                if(queuedFrame<0) { ScreenCapture.CaptureScreenshot(Output+(step==0?"menu.png":"returned-menu.png")); queuedFrame=Time.frameCount; return; }
+                if(Time.frameCount<=queuedFrame) return; queuedFrame=-1;
                 var loader=Object.FindAnyObjectByType<HLStageSceneLoader>(); var button=loader?loader.GetComponent<UnityEngine.UI.Button>():null;
                 if(!button) return; button.onClick.Invoke(); step++; after=now+1; Debug.Log("HL route menu Start -> gameplay"); return;
             }
@@ -59,7 +60,8 @@ namespace HealerLike.Render.Stage
             {
                 var view=Object.FindAnyObjectByType<GameOverView>(); if(!view || !view.gameObject.activeInHierarchy) return;
                 var button=view.GetComponentsInChildren<UnityEngine.UI.Button>(true).FirstOrDefault(b=>b.name=="RestartButton"); if(!button) return;
-                ScreenCapture.CaptureScreenshot(Output+"gameover.png"); button.onClick.Invoke(); step++; after=now+1; Debug.Log("HL route GameOver restart -> render menu"); return;
+                if(queuedFrame<0) { ScreenCapture.CaptureScreenshot(Output+"gameover.png"); queuedFrame=Time.frameCount; return; }
+                if(Time.frameCount<=queuedFrame) return; queuedFrame=-1; button.onClick.Invoke(); step++; after=now+1; Debug.Log("HL route GameOver restart -> render menu"); return;
             }
             if(step==5 && scene==HLStageSceneLoader.SceneName)
             {

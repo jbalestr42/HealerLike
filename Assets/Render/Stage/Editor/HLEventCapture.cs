@@ -6,7 +6,6 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using Object=UnityEngine.Object;
 namespace HealerLike.Render.Stage
@@ -21,18 +20,24 @@ namespace HealerLike.Render.Stage
         static bool Landscape=>System.Environment.GetEnvironmentVariable("HL_CAPTURE_LANDSCAPE")=="1";
         static readonly Dictionary<ResourceAttribute,UnityAction<GameObject,ResourceModifier,float,bool>> listeners=new();
         static readonly List<Entity> allies=new();
+        static readonly HashSet<BuffManager> buffManagers=new();
+        static readonly UnityAction<BuffManager.BuffHandlerData> buffStarted=OnBuffStarted;
+        static int statuses; static bool speedValid;
         static readonly List<string> events=new();
+        static readonly Dictionary<string,int> stillFrames=new();
+        static readonly List<string> pendingStills=new();
         static double start;
         static float gameStart, nextFrame, nextHeal;
         static int frame, positiveHealth, negativeHealth, casts, projectiles;
         static bool menuPressed, gameStarted, placed, wave, groupCast, buffCast, finished, firstHit, screenshotHeal;
         static EditorWindow gameView;
         static readonly HashSet<EntityId> seen=new();
-        static string Folder=>Output+(Landscape?"landscape/":"portrait/");
+        static string Folder=>SessionState.GetString(Key+"Folder",Output);
         static HLEventCapture() { EditorApplication.update+=Tick; EditorApplication.playModeStateChanged+=Changed; }
         public static void Run()
         {
-            Directory.CreateDirectory(Folder);
+            SessionState.SetString(Key+"Folder",Output+(Landscape?"landscape-":"portrait-")+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")+"/");
+            Directory.CreateDirectory(Folder); Debug.Log("HL real capture output: "+Folder);
             HLStageMenu.BuildMenuScene();
             SetGameViewSize(Landscape?1280:720,Landscape?720:1280);
             EditorSceneManager.OpenScene(HLStageMenu.MenuPath);
@@ -47,7 +52,7 @@ namespace HealerLike.Render.Stage
             {
                 start=EditorApplication.timeSinceStartup; frame=positiveHealth=negativeHealth=casts=projectiles=0;
                 gameStart=nextFrame=nextHeal=0; menuPressed=gameStarted=placed=wave=groupCast=buffCast=finished=firstHit=screenshotHeal=false;
-                events.Clear(); seen.Clear(); allies.Clear(); listeners.Clear();
+                events.Clear(); stillFrames.Clear(); pendingStills.Clear(); seen.Clear(); allies.Clear(); listeners.Clear(); buffManagers.Clear(); statuses=0; speedValid=true;
                 var go=new GameObject("HLRealEventCapture"); Object.DontDestroyOnLoad(go); go.AddComponent<HLEventCaptureHook>().Late=Late;
                 ScreenCapture.CaptureScreenshot(Folder+"menu-ui.png");
             }
@@ -87,6 +92,7 @@ namespace HealerLike.Render.Stage
         {
             if(!gameStarted || finished) return;
             float t=Time.time-gameStart;
+            speedValid &= Mathf.Approximately(Time.timeScale,1);
             Observe();
             if(!placed && t>.7f) { placed=true; Place(); }
             if(placed && !wave && allies.Count>0)
@@ -100,16 +106,17 @@ namespace HealerLike.Render.Stage
             if(injured && t>nextHeal && positiveHealth==0) { nextHeal=t+1; Cast("Heal",injured); }
             if(t>8 && !groupCast) { groupCast=Cast("Heal group",null); }
             if(t>10 && !buffCast) { buffCast=Cast("Buff attack speed",null); }
-            if(t>=nextFrame)
+            if(t<15 && t>=nextFrame)
             {
                 nextFrame=t+1f/12;
                 RenderFrame("motion-"+frame.ToString("D5")+".png",Landscape?960:540,Landscape?540:960);
                 events.Add($"FRAME,{frame},{t:F5},{Time.realtimeSinceStartup:F5}"); frame++;
-                if(frame==12) { RenderFrame("gameplay.png",Landscape?1920:1080,Landscape?1080:1920); ScreenCapture.CaptureScreenshot(Folder+"gameplay-ui.png"); }
+                foreach(var name in pendingStills) stillFrames[name]=frame-1; pendingStills.Clear();
+                if(frame==12) stillFrames["gameplay-ui.png"]=frame-1;
             }
-            if(negativeHealth>0 && !firstHit) { firstHit=true; RenderFrame("first-contact.png",Landscape?1920:1080,Landscape?1080:1920); }
-            if(positiveHealth>0 && !screenshotHeal) { screenshotHeal=true; RenderFrame("heal-outcome.png",Landscape?1920:1080,Landscape?1080:1920); ScreenCapture.CaptureScreenshot(Folder+"heal-ui.png"); }
-            if(t>=15) Finish(wave && projectiles>0 && negativeHealth>0 && Mathf.Approximately(Time.timeScale,1),"15 second normal-speed sequence complete");
+            if(negativeHealth>0 && !firstHit) { firstHit=true; pendingStills.Add("first-contact.png"); }
+            if(positiveHealth>0 && !screenshotHeal) { screenshotHeal=true; pendingStills.Add("heal-ui.png"); }
+            if(t>=15.3f) Finish(wave && projectiles>0 && negativeHealth>0 && positiveHealth>0 && statuses>0 && speedValid,"15 second normal-speed sequence; waited after final queued screenshot");
         }
         static void Place()
         {
@@ -158,7 +165,7 @@ namespace HealerLike.Render.Stage
         }
         static void Observe()
         {
-            foreach(var e in Object.FindObjectsByType<Entity>(FindObjectsSortMode.None)) if(e.health) Attach(e.health,"health");
+            foreach(var e in Object.FindObjectsByType<Entity>(FindObjectsSortMode.None)) { if(e.health) Attach(e.health,"health"); if(e.buffManager && buffManagers.Add(e.buffManager)) e.buffManager.OnBuffHandlerStarted.AddListener(buffStarted); }
             foreach(var c in Object.FindObjectsByType<Character>(FindObjectsSortMode.None)) if(c.mana) Attach(c.mana,"mana");
         }
         static void Attach(ResourceAttribute resource,string kind)
@@ -170,12 +177,22 @@ namespace HealerLike.Render.Stage
             };
             listeners.Add(resource,callback); resource.OnAllConsumerProcessed.AddListener(callback);
         }
-        static void Unsubscribe() { foreach(var pair in listeners) if(pair.Key) pair.Key.OnAllConsumerProcessed.RemoveListener(pair.Value); listeners.Clear(); }
+        static void OnBuffStarted(BuffManager.BuffHandlerData data) { statuses++; Log("buff-start factory="+(data.buffHandlerFactory?data.buffHandlerFactory.name:"null")+" target="+(data.target?data.target.name:"null")); }
+        static void Unsubscribe() { foreach(var manager in buffManagers) if(manager) manager.OnBuffHandlerStarted.RemoveListener(buffStarted); buffManagers.Clear(); foreach(var pair in listeners) if(pair.Key) pair.Key.OnAllConsumerProcessed.RemoveListener(pair.Value); listeners.Clear(); }
         static void Log(string s) { var line=$"EVENT,{Time.time-gameStart:F5},{s}"; events.Add(line); Debug.Log("HL real capture "+line); }
         static void Finish(bool success,string reason)
         {
             if(finished) return; finished=true; Unsubscribe();
-            Log($"result={success} {reason}; frames={frame}; healthPositive={positiveHealth}; healthNegative={negativeHealth}; projectiles={projectiles}; casts={casts}; no transient hostile AoE is claimed without its real item event");
+            int missing=0;
+            for(int i=0;i<frame;i++) if(!File.Exists(Folder+"motion-"+i.ToString("D5")+".png")) missing++;
+            foreach(var pair in stillFrames) {
+                string source=Folder+"motion-"+pair.Value.ToString("D5")+".png";
+                if(File.Exists(source)) { File.Copy(source,Folder+pair.Key,true); events.Add("STILL,"+pair.Key+","+pair.Value); }
+                else missing++;
+            }
+            success &= missing==0 && stillFrames.ContainsKey("heal-ui.png");
+            reason+="; missing current-run frame files="+missing;
+            Log($"result={success} {reason}; frames={frame}; healthPositive={positiveHealth}; healthNegative={negativeHealth}; projectiles={projectiles}; casts={casts}; observedStatuses={statuses}; normalSpeedThroughout={speedValid}; no transient hostile AoE is claimed without its real item event");
             File.WriteAllLines(Folder+"events.csv",events); SessionState.SetInt(Key+"Code",success?0:1); EditorApplication.isPlaying=false;
         }
         static void RenderFrame(string name,int width,int height)

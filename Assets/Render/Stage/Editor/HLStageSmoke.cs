@@ -80,7 +80,7 @@ namespace HealerLike.Render.Stage
                 else if(now-started>10) Finish(false,"no GameView/startGameButton in the stage scene");
             }
             RepaintGameView();
-            // Round 3 has started its battle and is still running: a pass once the grace expires, or just before the hard deadline.
+            // An unfinished third round is a failure even after its grace period.
             if(round3Battle>0 && state==AscensionGameType.State.OnGoingBattle && (now-round3Battle>Round3Grace || now>deadline-15))
             {
                 LogRound(actedRound,true);
