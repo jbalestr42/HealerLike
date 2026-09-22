@@ -13,7 +13,12 @@ namespace HealerLike.Render.Creatures
         readonly Vector3[] rest, joints;
         readonly float[] lengths;
         readonly Transform container;
-        readonly Transform[] segments, beads;
+        readonly Mesh mesh;
+        readonly MeshRenderer renderer;
+        readonly Vector3[] vertices, normals;
+        const int Sides = 6;
+        bool visible = true;
+        public int MeshRevision { get; private set; }
         readonly float radius;
         readonly Vector3 pole;
         int token;
@@ -21,6 +26,8 @@ namespace HealerLike.Render.Creatures
         Vector3 goal, startGoal, returnGoal;
         bool pendingEnd;
         HLGestureKind kind;
+        public HLDeliveryStyle Style { get; set; }
+        public bool DeliveryProfile { get; set; }
         public HLGesturePhase Phase { get; private set; }
         public HLChainResult LastResult { get; private set; }
         public Vector3 Tip => joints[joints.Length - 1];
@@ -41,10 +48,29 @@ namespace HealerLike.Render.Creatures
             if (parent)
             {
                 container = new GameObject("HLLianaArm").transform; container.SetParent(parent, false);
-                segments = new Transform[lengths.Length]; beads = new Transform[rest.Length];
-                for (int i = 0; i < segments.Length; i++) segments[i] = HLPrimitiveMeshes.Geometry("HLLink", container, HLPrimitive.CylinderSegment, material, definition.colour);
-                for (int i = 0; i < beads.Length; i++) beads[i] = HLPrimitiveMeshes.Geometry("HLJoint", container, HLPrimitive.Sphere, material,
-                    i == beads.Length - 1 ? new Color(.78f, .95f, .3f) : definition.colour);
+                mesh = new Mesh { name = "HLLianaChain", hideFlags = HideFlags.DontSave };
+                mesh.MarkDynamic();
+                vertices = new Vector3[joints.Length * Sides + 2]; normals = new Vector3[vertices.Length];
+                var triangles = new int[lengths.Length * Sides * 6 + Sides * 6];
+                int index = 0;
+                for (int j = 0; j < lengths.Length; j++) for (int side = 0; side < Sides; side++)
+                {
+                    int a = j * Sides + side, next = j * Sides + (side + 1) % Sides;
+                    int b = a + Sides, nextB = next + Sides;
+                    triangles[index++] = a; triangles[index++] = next; triangles[index++] = b;
+                    triangles[index++] = next; triangles[index++] = nextB; triangles[index++] = b;
+                }
+                for (int side = 0; side < Sides; side++)
+                {
+                    int next = (side + 1) % Sides, end = lengths.Length * Sides;
+                    triangles[index++] = vertices.Length - 2; triangles[index++] = next; triangles[index++] = side;
+                    triangles[index++] = vertices.Length - 1; triangles[index++] = end + side; triangles[index++] = end + next;
+                }
+                mesh.vertices = vertices; mesh.triangles = triangles;
+                container.gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
+                renderer = container.gameObject.AddComponent<MeshRenderer>(); renderer.sharedMaterial = material;
+                var block = new MaterialPropertyBlock(); block.SetColor("_BaseColor", definition.colour); renderer.SetPropertyBlock(block);
+                renderer.enabled = false;
             }
         }
         public void Begin(int gestureToken, HLGestureKind gestureKind, Vector3 worldTarget)
@@ -57,7 +83,7 @@ namespace HealerLike.Render.Creatures
             if (token != gestureToken || Phase == HLGesturePhase.Rest || Phase == HLGesturePhase.Retract) return;
             goal = worldPosition;
             // Projectile travel is already the authoritative extension timing.
-            if (Phase != HLGesturePhase.Contact) Phase = HLGesturePhase.Hold;
+            if (Phase != HLGesturePhase.Contact || Style == HLDeliveryStyle.Bounce) Phase = HLGesturePhase.Hold;
         }
         public void Contact(int gestureToken, Vector3 worldPosition)
         {
@@ -75,9 +101,10 @@ namespace HealerLike.Render.Creatures
         public void Tick(float deltaTime, Vector3 rootWorld, Quaternion restOrientation)
         {
             float dt = Mathf.Max(0, deltaTime);
+            float retractSeconds = DeliveryProfile && Style == HLDeliveryStyle.Rigid ? .045f : .20f;
             Vector3 restTip = rootWorld + restOrientation * rest[rest.Length - 1];
             elapsed += dt;
-            if (Phase == HLGesturePhase.Rest || (Phase == HLGesturePhase.Retract && elapsed >= .20f))
+            if (Phase == HLGesturePhase.Rest || (Phase == HLGesturePhase.Retract && elapsed >= retractSeconds))
             {
                 Phase = HLGesturePhase.Rest;
                 for (int i = 0; i < joints.Length; i++) joints[i] = rootWorld + restOrientation * rest[i];
@@ -92,12 +119,26 @@ namespace HealerLike.Render.Creatures
                 }
                 if (Phase == HLGesturePhase.Retract)
                 {
-                    float blend = Mathf.Clamp01(elapsed / .20f);
+                    float blend = Mathf.Clamp01(elapsed / retractSeconds);
                     target = Vector3.Lerp(returnGoal, restTip, blend);
                     // This is only an initial guess; FABRIK projects every link immediately below.
                     for (int i = 0; i < joints.Length; i++) joints[i] = Vector3.Lerp(joints[i], rootWorld + restOrientation * rest[i], blend);
                 }
-                LastResult = solver.Solve(joints, lengths, rootWorld, target, restOrientation * pole, 64);
+                if (!DeliveryProfile) LastResult = solver.Solve(joints, lengths, rootWorld, target, restOrientation * pole, 64);
+                else if (Style == HLDeliveryStyle.Rigid || Style == HLDeliveryStyle.Direct || Style == HLDeliveryStyle.Swarm || Style == HLDeliveryStyle.Bounce || Style == HLDeliveryStyle.ChainSync)
+                {
+                    // Delivery rods telescope visually; the projectile endpoint remains authoritative.
+                    if (Style == HLDeliveryStyle.Rigid && Phase != HLGesturePhase.Retract) target = goal;
+                    for (int i = 0; i < joints.Length; i++) joints[i] = Vector3.Lerp(rootWorld, target, (float)i / (joints.Length - 1));
+                }
+                else
+                {
+                    for (int i = 0; i < joints.Length; i++)
+                    {
+                        float t = (float)i / (joints.Length - 1);
+                        joints[i] = Vector3.Lerp(rootWorld, target, t) + Vector3.up * (4 * t * (1 - t) * Mathf.Min(2, Vector3.Distance(rootWorld, target) * .4f));
+                    }
+                }
                 if (Phase == HLGesturePhase.Contact && elapsed >= .04f)
                 {
                     if (pendingEnd || kind == HLGestureKind.Heal) StartReturn(); else { Phase = HLGesturePhase.Hold; elapsed = 0; }
@@ -108,15 +149,40 @@ namespace HealerLike.Render.Creatures
         void Draw()
         {
             if (!container) return;
-            for (int i = 0; i < segments.Length; i++)
-                HLPrimitiveMeshes.Segment(segments[i], joints[i], joints[i + 1], Mathf.Lerp(radius, radius * .56f, (float)i / segments.Length));
-            for (int i = 0; i < beads.Length; i++)
+            renderer.enabled = visible && Phase != HLGesturePhase.Rest;
+            if (!renderer.enabled) return;
+            for (int j = 0; j < joints.Length; j++)
             {
-                beads[i].position = joints[i];
-                beads[i].localScale = Vector3.one * (Mathf.Lerp(radius, radius * .56f, (float)i / segments.Length) * (i == segments.Length ? 3 : 2.1f));
+                Vector3 tangent = joints[Mathf.Min(j + 1, joints.Length - 1)] - joints[Mathf.Max(j - 1, 0)];
+                if (tangent.sqrMagnitude < 1e-12f) tangent = Vector3.up;
+                tangent.Normalize();
+                Vector3 axis = Mathf.Abs(tangent.y) < .9f ? Vector3.up : Vector3.right;
+                Vector3 u = Vector3.Cross(tangent, axis).normalized, v = Vector3.Cross(tangent, u);
+                float width = Mathf.Lerp(radius, radius * .56f, (float)j / lengths.Length) * (Style == HLDeliveryStyle.Swarm ? .45f : 1);
+                for (int side = 0; side < Sides; side++)
+                {
+                    float angle = side * Mathf.PI * 2 / Sides;
+                    Vector3 normal = u * Mathf.Cos(angle) + v * Mathf.Sin(angle);
+                    int index = j * Sides + side;
+                    vertices[index] = container.InverseTransformPoint(joints[j] + normal * width);
+                    normals[index] = container.InverseTransformDirection(normal);
+                }
             }
+            vertices[vertices.Length - 2] = container.InverseTransformPoint(joints[0]);
+            vertices[vertices.Length - 1] = container.InverseTransformPoint(Tip);
+            normals[normals.Length - 2] = container.InverseTransformDirection((joints[0] - joints[1]).normalized);
+            normals[normals.Length - 1] = container.InverseTransformDirection((Tip - joints[joints.Length - 2]).normalized);
+            mesh.vertices = vertices; mesh.normals = normals; mesh.RecalculateBounds(); MeshRevision++;
         }
-        public void SetVisible(bool visible) { if (container) container.gameObject.SetActive(visible); }
-        public void Dispose() { if (container) { container.gameObject.SetActive(false); HLPrimitiveMeshes.DestroyOwned(container.gameObject); } }
+        public void SetVisible(bool value)
+        {
+            visible = value;
+            if (renderer && (!visible || Phase == HLGesturePhase.Rest)) renderer.enabled = false;
+        }
+        public void Dispose()
+        {
+            if (container) { container.gameObject.SetActive(false); HLPrimitiveMeshes.DestroyOwned(container.gameObject); }
+            HLPrimitiveMeshes.DestroyOwned(mesh);
+        }
     }
 }

@@ -7,7 +7,7 @@ namespace HealerLike.Render.Creatures
     public class HLCreatureAssetAuthoringTests
     {
         const string Root = "Assets/Render/Creatures/";
-        [TestCase("HLHealer")] [TestCase("HLSpiralFern")] [TestCase("HLHangingArch")] [TestCase("HLSphereStack")]
+        [TestCase("HLBladeRosette")] [TestCase("HLHealer")] [TestCase("HLSpiralFern")] [TestCase("HLHangingArch")] [TestCase("HLSphereStack")]
         public void ShippedRecipeValidatesAndBuildsWithoutImportedGeometry(string name)
         {
             var recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(Root + "Data/" + name + ".asset");
@@ -60,7 +60,7 @@ namespace HealerLike.Render.Creatures
                 Assert.AreEqual(before[i].gameObject.activeSelf, after[i].gameObject.activeSelf);
             }
         }
-        [Test] public void ProjectileVariantsRetainComponentsAndHideRenderers()
+        [Test] public void ProjectileVariantsRetainComponentsAndFallbackRendererStates()
         {
             foreach (string path in Directory.GetFiles("Assets/Prefabs/Projectiles", "*.prefab"))
             {
@@ -70,11 +70,13 @@ namespace HealerLike.Render.Creatures
                 Assert.AreEqual(original.GetComponent<Projectile>().GetType(), variant.GetComponent<Projectile>().GetType());
                 Assert.AreEqual(original.GetComponentsInChildren<Collider>(true).Length, variant.GetComponentsInChildren<Collider>(true).Length);
                 Assert.AreEqual(original.GetComponentsInChildren<Renderer>(true).Length, variant.GetComponentsInChildren<Renderer>(true).Length);
-                foreach (var renderer in variant.GetComponentsInChildren<Renderer>(true)) Assert.IsFalse(renderer.enabled, path);
+                var before = original.GetComponentsInChildren<Renderer>(true);
+                var after = variant.GetComponentsInChildren<Renderer>(true);
+                for (int i = 0; i < before.Length; i++) Assert.AreEqual(before[i].enabled, after[i].enabled, path);
                 foreach (var behaviour in original.GetComponents<AProjectileBehaviour>()) Assert.NotNull(variant.GetComponent(behaviour.GetType()));
             }
         }
-        [TestCase("HLHealer")] [TestCase("HLSpiralFern")] [TestCase("HLHangingArch")] [TestCase("HLSphereStack")]
+        [TestCase("HLBladeRosette")] [TestCase("HLHealer")] [TestCase("HLSpiralFern")] [TestCase("HLHangingArch")] [TestCase("HLSphereStack")]
         public void ShippedArmsReachAcrossCurrentBoardAndClampOutsideIt(string name)
         {
             var recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(Root + "Data/" + name + ".asset");

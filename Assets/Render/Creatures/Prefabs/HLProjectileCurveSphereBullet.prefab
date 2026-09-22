@@ -56,10 +56,6 @@ PrefabInstance:
       propertyPath: serializationData.Prefab
       value:
       objectReference: {fileID: 3913158666709983660, guid: c6c42f75873f5e143bef74b981d46f58, type: 3}
-    - target: {fileID: 6832765309683670399, guid: c6c42f75873f5e143bef74b981d46f58, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

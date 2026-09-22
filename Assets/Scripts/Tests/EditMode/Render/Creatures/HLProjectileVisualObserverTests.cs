@@ -6,6 +6,62 @@ namespace HealerLike.Render.Creatures
 {
     public class HLProjectileVisualObserverTests
     {
+        public sealed class HLDeliveryProbe : MonoBehaviour, IHLDeliverySource
+        {
+            public int begins, updates, contacts, ends;
+            public bool accepts = true;
+            public HLDeliveryStyle style;
+            public bool BeginDelivery(int token, HLDeliveryStyle value, Transform projectile, Vector3 end) { begins++; style = value; return accepts; }
+            public void UpdateDelivery(int token, Vector3 position) { updates++; }
+            public void ContactDelivery(int token, Vector3 position, GameObject target) { contacts++; }
+            public void EndDelivery(int token) { ends++; }
+        }
+        [Test] public void ObserverDispatchesThroughInterfaceWithoutCreatureBuilder()
+        {
+            var model = builder.gameObject;
+            TestHelpers.InvokePrivate(builder, "OnDestroy");
+            Object.DestroyImmediate(builder);
+            var probe = model.AddComponent<HLDeliveryProbe>();
+            TestHelpers.SetPrivateField(observer, "deliveryStyle", HLDeliveryStyle.Arc);
+            observer.Init(source);
+            Assert.AreEqual(1, probe.begins); Assert.AreEqual(HLDeliveryStyle.Arc, probe.style);
+            TestHelpers.InvokePrivate(observer, "LateUpdate"); Assert.AreEqual(1, probe.updates);
+            projectile.OnHit.Invoke(new OnHitData { target = first }); Assert.AreEqual(1, probe.contacts);
+            observer.enabled = false; TestHelpers.InvokePrivate(observer, "OnDisable");
+            Assert.AreEqual(1, probe.ends);
+        }
+        [Test] public void MissingOrDecliningSourcePreservesOriginalRendererStates()
+        {
+            var model = builder.gameObject;
+            TestHelpers.InvokePrivate(builder, "OnDestroy");
+            Object.DestroyImmediate(builder);
+            observer.Init(source);
+            var visible = projectileObject.GetComponent<LineRenderer>();
+            Assert.IsTrue(visible.enabled);
+            var child = new GameObject("HLHiddenRenderer", typeof(MeshRenderer));
+            child.transform.SetParent(projectileObject.transform);
+            var hidden = child.GetComponent<Renderer>(); hidden.enabled = false;
+            var probe = model.AddComponent<HLDeliveryProbe>(); probe.accepts = false;
+            observer.Init(source); TestHelpers.InvokePrivate(observer, "LateUpdate");
+            projectile.OnHit.Invoke(new OnHitData { target = first });
+            Assert.AreEqual(0, observer.GestureToken); Assert.IsTrue(visible.enabled); Assert.IsFalse(hidden.enabled);
+            Assert.AreEqual(0, probe.updates); Assert.AreEqual(0, probe.contacts);
+            probe.accepts = true; observer.Init(source);
+            Assert.IsFalse(visible.enabled);
+            probe.enabled = false; TestHelpers.InvokePrivate(observer, "LateUpdate");
+            Assert.IsTrue(visible.enabled); Assert.IsFalse(hidden.enabled); Assert.AreEqual(1, probe.ends);
+        }
+        [Test] public void DecliningAdapterDoesNotPreventAnotherAdapterPresenting()
+        {
+            var model = builder.gameObject;
+            TestHelpers.InvokePrivate(builder, "OnDestroy");
+            Object.DestroyImmediate(builder);
+            model.AddComponent<HLDeliveryProbe>().accepts = false;
+            var accepted = model.AddComponent<HLDeliveryProbe>();
+            observer.Init(source);
+            Assert.AreEqual(1, accepted.begins); Assert.AreNotEqual(0, observer.GestureToken);
+            Assert.IsFalse(projectileObject.GetComponent<LineRenderer>().enabled);
+        }
         GameObject source, first, second, projectileObject;
         Projectile projectile;
         HLProjectileVisualObserver observer;
@@ -32,6 +88,8 @@ namespace HealerLike.Render.Creatures
         }
         [TearDown] public void Cleanup()
         {
+            if (observer) TestHelpers.InvokePrivate(observer, "OnDestroy");
+            if (builder) TestHelpers.InvokePrivate(builder, "OnDestroy");
             Object.DestroyImmediate(projectileObject); Object.DestroyImmediate(source); Object.DestroyImmediate(first); Object.DestroyImmediate(second);
             Object.DestroyImmediate(recipe); Object.DestroyImmediate(material); HLPrimitiveMeshes.ReleaseAll();
         }
@@ -66,6 +124,14 @@ namespace HealerLike.Render.Creatures
             var observerOrder = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(typeof(HLProjectileVisualObserver), typeof(DefaultExecutionOrder));
             var builderOrder = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(typeof(HLCreatureBuilder), typeof(DefaultExecutionOrder));
             Assert.Less(observerOrder.order, builderOrder.order);
+        }
+        [Test] public void AuthoredThrownStyleIsRejectedWithoutMovingProjectile()
+        {
+            TestHelpers.SetPrivateField(observer, "deliveryStyle", HLDeliveryStyle.Thrown);
+            observer.Init(source); Assert.AreEqual(0, observer.GestureToken);
+            Assert.AreEqual(HLDeliveryStyle.Thrown, observer.DeliveryStyle);
+            Assert.IsTrue(projectileObject.GetComponent<LineRenderer>().enabled);
+            Assert.AreEqual(Vector3.zero, projectile.transform.position);
         }
     }
 }

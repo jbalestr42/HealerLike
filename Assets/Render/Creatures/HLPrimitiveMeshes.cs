@@ -8,6 +8,13 @@ namespace HealerLike.Render.Creatures
     public static class HLPrimitiveMeshes
     {
         static readonly Dictionary<(HLPrimitive, int, int, float), Mesh> Cache = new Dictionary<(HLPrimitive, int, int, float), Mesh>();
+        static int owners;
+        internal static void Retain() => owners++;
+        internal static void Release()
+        {
+            if (owners == 0) return;
+            if (--owners == 0) ReleaseAll();
+        }
         public static Mesh Get(HLPrimitive primitive, int radialSegments = 10, int axialSegments = 6, float torusTubeRatio = .25f)
         {
             if ((int)primitive < 0 || (int)primitive > 4 || radialSegments < 3 || radialSegments > 128 || axialSegments < 2 || axialSegments > 128
@@ -89,6 +96,7 @@ namespace HealerLike.Render.Creatures
         }
         public static void ReleaseAll()
         {
+            if (owners != 0) return;
             foreach (var mesh in Cache.Values) DestroyOwned(mesh);
             Cache.Clear();
         }
@@ -104,9 +112,14 @@ namespace HealerLike.Render.Creatures
             go.GetComponent<MeshFilter>().sharedMesh = Get(kind, kind == HLPrimitive.CylinderSegment ? 6 : 12, 6, ratio);
             var renderer = go.GetComponent<MeshRenderer>(); renderer.sharedMaterial = material;
             var block = new MaterialPropertyBlock();
-            block.SetColor("_BaseColor", colour); block.SetColor("_EmissionColor", colour * glow);
+            block.SetColor("_BaseColor", Brighten(colour, glow));
             renderer.SetPropertyBlock(block);
             return go.transform;
+        }
+        internal static Color Brighten(Color colour, float glow)
+        {
+            float brightness = 1 + Mathf.Max(0, glow);
+            return new Color(colour.r * brightness, colour.g * brightness, colour.b * brightness, colour.a);
         }
         internal static void Segment(Transform segment, Vector3 a, Vector3 b, float radius)
         {

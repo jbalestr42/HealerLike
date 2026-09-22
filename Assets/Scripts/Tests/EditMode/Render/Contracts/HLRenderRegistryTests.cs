@@ -295,6 +295,60 @@ namespace HealerLike.Render
             Assert.AreEqual(1, selfRemoving.CallCount, "it really did leave");
         }
 
+        sealed class HLCallbackSink : IHLHealVisualSink
+        {
+            public Action Callback;
+            public void OnHealResolved(GameObject target, float value, bool critical) => Callback();
+        }
+
+        [Test]
+        public void RemovingEarlierSinkUsesStableNewestFirstSnapshot()
+        {
+            var source = NewObject("HLSource");
+            var calls = new List<string>();
+            var a = new HLCallbackSink { Callback = () => calls.Add("A") };
+            var b = new HLCallbackSink { Callback = () => calls.Add("B") };
+            var c = new HLCallbackSink { Callback = () => { calls.Add("C"); _registry.Unregister(source, a); } };
+            _registry.Register(source, a); _registry.Register(source, b); _registry.Register(source, c);
+            _registry.NotifyHeal(source, null, 1, false);
+            CollectionAssert.AreEqual(new[] { "C", "B", "A" }, calls);
+            calls.Clear();
+            _registry.NotifyHeal(source, null, 1, false);
+            CollectionAssert.AreEqual(new[] { "C", "B" }, calls);
+        }
+
+        [Test]
+        public void NestedNotificationHasIndependentSnapshot()
+        {
+            var source = NewObject("HLSource");
+            var calls = new List<string>();
+            bool nested = false;
+            var a = new HLCallbackSink { Callback = () => calls.Add("A") };
+            var b = new HLCallbackSink { Callback = () =>
+            {
+                calls.Add("B");
+                if (nested) return;
+                nested = true; _registry.Unregister(source, a);
+                _registry.NotifyHeal(source, null, 1, false);
+            } };
+            _registry.Register(source, a); _registry.Register(source, b);
+            _registry.NotifyHeal(source, null, 1, false);
+            CollectionAssert.AreEqual(new[] { "B", "B", "A" }, calls);
+        }
+
+        [Test]
+        public void DestroyedSourceCanRemoveItsLastRegistration()
+        {
+            var source = NewObject("HLSource");
+            var sink = new RecordingHealSink();
+            _registry.Register(source, sink);
+            UnityEngine.Object.DestroyImmediate(source);
+            _registry.Unregister(source, sink);
+            var field = typeof(HLRenderRegistry).GetField("_healSinks",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            Assert.AreEqual(0, ((System.Collections.IDictionary)field.GetValue(_registry)).Count);
+        }
+
         [Test]
         public void TheSpellSinkContractIsImplementableFromAnotherAssembly()
         {
