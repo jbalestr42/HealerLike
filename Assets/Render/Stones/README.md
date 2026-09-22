@@ -17,3 +17,26 @@ Place an `HLStoneEffects` component on a scene root and an `HLStoneDeathBridge` 
 The material is `HLPlaceholderStone` (URP Lit, slate, zero metallic/smoothness), because no Look material was present in this branch. Parts use `_BaseColor` property blocks; coral effects use an owned shared coral material. T7 should swap the material for the shared Look stone material and verify its outline path with the preserved welded topology. No custom look shader or renderer feature is introduced here.
 
 `Editor/HLStonePrefabBuilder.cs` can reproduce the variants via the HealerLike menu or batch `-executeMethod HealerLike.Render.Stones.HLStonePrefabBuilder.Build`. It writes only this folder and leaves source prefabs, scenes and data untouched. Runtime event order, graph release, apparent ground contact, fog/outline integration and silhouette readability require stage PlayMode and camera review.
+
+## Verification (2026-09-22)
+
+Unity 6000.6.0f1 batchmode ran only on `/Users/fc/Documents/HealerLike-stones`.
+
+```sh
+/Applications/Unity/Hub/Editor/6000.6.0f1/Unity.app/Contents/MacOS/Unity -batchmode -nographics -projectPath /Users/fc/Documents/HealerLike-stones -executeMethod HealerLike.Render.Stones.HLStonePrefabBuilder.Build -quit -logFile /tmp/hl-stones-assets.log
+# Exit 0; prefab creation succeeded; zero error CS matches.
+/Applications/Unity/Hub/Editor/6000.6.0f1/Unity.app/Contents/MacOS/Unity -batchmode -nographics -projectPath /Users/fc/Documents/HealerLike-stones -runTests -testPlatform EditMode -testResults /tmp/hl-stones-final.xml -logFile /tmp/hl-stones-final.log
+# Exit 0; 244 passed, 0 failed: 46 Stones and 198 pre-existing tests; zero error CS matches.
+```
+
+Actual XML summary:
+
+```xml
+<test-run id="2" testcasecount="244" result="Passed" total="244" passed="244" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-09-22 19:25:12Z" end-time="2026-09-22 19:25:26Z" duration="14.5642253">
+```
+
+The mesh sweep covers 147,456 generated configurations (1,024 seeds × 3 subdivisions × 3 presets × 2 roughness limits × 8 axis-scale extremes). Tests also cover exact word-fold seed values, a version-1 geometry hash, flat normals, bounds, global RNG independence, cache leases, clamped health shedding, lethal precedence, recorded impacts, expiry/unbind, independent debris lifetime, global fragment capacity, terrain determinism, and prefab structure.
+
+Scope/name/metadata and whitespace audits passed. Source prefabs, scenes, data, frozen contracts and account preferences were not edited. Pre-existing clone warm-up changes outside the Stones ownership area were left untouched and uncommitted.
+
+BLIND-SPOT: No on-screen or PlayMode camera review was performed. Exact behavior of the source grid's missing first generator/prop cannot be recovered; the explicit render-owned fallback is described above. Shared Look material, outline integration and stage wiring still need T7 review.
