@@ -318,6 +318,25 @@ namespace HealerLike.Render
         }
 
         [Test]
+        public void NestedNotificationHasIndependentSnapshot()
+        {
+            var source = NewObject("HLSource");
+            var calls = new List<string>();
+            bool nested = false;
+            var a = new HLCallbackSink { Callback = () => calls.Add("A") };
+            var b = new HLCallbackSink { Callback = () =>
+            {
+                calls.Add("B");
+                if (nested) return;
+                nested = true; _registry.Unregister(source, a);
+                _registry.NotifyHeal(source, null, 1, false);
+            } };
+            _registry.Register(source, a); _registry.Register(source, b);
+            _registry.NotifyHeal(source, null, 1, false);
+            CollectionAssert.AreEqual(new[] { "B", "B", "A" }, calls);
+        }
+
+        [Test]
         public void DestroyedSourceCanRemoveItsLastRegistration()
         {
             var source = NewObject("HLSource");

@@ -28,7 +28,6 @@ namespace HealerLike.Render.Creatures
                 {
                     material = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "HLPlaceholder", enableInstancing = true };
                     material.SetColor("_BaseColor", Color.white); material.SetFloat("_Smoothness", .2f);
-                    material.EnableKeyword("_EMISSION"); material.SetColor("_EmissionColor", Color.black);
                     AssetDatabase.CreateAsset(material, path);
                 }
             }
@@ -194,8 +193,6 @@ namespace HealerLike.Render.Creatures
             try
             {
                 instance.name = "HLProjectile" + Path.GetFileNameWithoutExtension(original);
-                foreach (var renderer in instance.GetComponentsInChildren<Renderer>(true))
-                { renderer.enabled = false; PrefabUtility.RecordPrefabInstancePropertyModifications(renderer); }
                 var observer = instance.AddComponent<HLProjectileVisualObserver>();
                 var data = new SerializedObject(observer);
                 data.FindProperty("preserveContactPath").boolValue = instance.GetComponent<ChainLightningProjectile>() != null;

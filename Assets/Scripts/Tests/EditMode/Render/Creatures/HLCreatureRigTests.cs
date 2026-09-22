@@ -14,6 +14,34 @@ namespace HealerLike.Render.Creatures
             recipe = HLCreatureValidatorTests.Recipe(); rig = HLCreatureRig.Build(recipe, parent.transform, material);
         }
         [TearDown] public void Cleanup() { rig.Dispose(); Object.DestroyImmediate(parent); Object.DestroyImmediate(material); Object.DestroyImmediate(recipe); HLPrimitiveMeshes.ReleaseAll(); }
+        [Test] public void LastRigReleasesSharedMeshesEvenWhenParentWasDestroyed()
+        {
+            var other = HLCreatureRig.Build(recipe, parent.transform, material);
+            var mesh = rig.Root.GetComponentInChildren<MeshFilter>().sharedMesh;
+            Assert.AreSame(mesh, other.Root.GetComponentInChildren<MeshFilter>().sharedMesh);
+            rig.Dispose(); rig.Dispose();
+            Assert.IsTrue(mesh);
+            Object.DestroyImmediate(parent);
+            other.Dispose(); other.Dispose();
+            Assert.IsFalse(mesh);
+        }
+        [Test] public void GlowUsesLookBaseColourAndPreservesAlpha()
+        {
+            rig.Dispose();
+            recipe.parts[0].glow = 2;
+            recipe.parts[0].colour = new Color(.2f, .4f, .1f, .7f);
+            rig = HLCreatureRig.Build(recipe, parent.transform, material);
+            var renderer = rig.Root.GetComponentInChildren<Renderer>();
+            var block = new MaterialPropertyBlock(); renderer.GetPropertyBlock(block);
+            Assert.That(block.GetColor("_BaseColor").g, Is.EqualTo(1.2f).Within(.0001f));
+            Assert.That(block.GetColor("_BaseColor").a, Is.EqualTo(.7f).Within(.0001f));
+            rig.SetReadout(null, 1, 0, 1); rig.Tick(0, 0, new HLFootFrame(Vector3.zero, Vector3.up, 1));
+            renderer.GetPropertyBlock(block);
+            Assert.Greater(block.GetColor("_BaseColor").g, 1);
+            rig.SetReadout(null, 1, 0, 0); rig.Tick(0, 0, new HLFootFrame(Vector3.zero, Vector3.up, 1));
+            renderer.GetPropertyBlock(block);
+            Assert.Less(block.GetColor("_BaseColor").g, 1);
+        }
         [Test] public void PoolSaturatesWithoutStealingLeasesAndDisposeIsIdempotent()
         {
             for (int i = 0; i < 8; i++) Assert.AreNotEqual(0, rig.Begin(HLGestureKind.Attack, Vector3.one));

@@ -19,6 +19,21 @@ namespace HealerLike.Render.Creatures
             HLPrimitiveMeshes.ReleaseAll(); var again = HLPrimitiveMeshes.Get(type, 12, 6);
             CollectionAssert.AreEqual(vertices, again.vertices); CollectionAssert.AreEqual(indices, again.triangles);
         }
+        [Test] public void ReleaseAllCannotInvalidateMeshesUsedByLiveRig()
+        {
+            var parent = new GameObject("HLMeshOwner");
+            var recipe = HLCreatureValidatorTests.Recipe();
+            var material = new Material(Shader.Find("HL/Look/Primitive"));
+            var rig = HLCreatureRig.Build(recipe, parent.transform, material);
+            var mesh = rig.Root.GetComponentInChildren<MeshFilter>().sharedMesh;
+            try
+            {
+                HLPrimitiveMeshes.ReleaseAll();
+                Assert.IsTrue(mesh);
+            }
+            finally { rig.Dispose(); Object.DestroyImmediate(parent); Object.DestroyImmediate(recipe); Object.DestroyImmediate(material); }
+            Assert.IsFalse(mesh);
+        }
         [TearDown] public void Cleanup() => HLPrimitiveMeshes.ReleaseAll();
     }
 }

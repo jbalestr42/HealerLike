@@ -56,10 +56,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: HLProjectileChainLightning
       objectReference: {fileID: 0}
-    - target: {fileID: 1606386851348304031, guid: dc6b772867f70024fa721dc9cf8521c4, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

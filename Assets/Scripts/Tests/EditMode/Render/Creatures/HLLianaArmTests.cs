@@ -9,6 +9,38 @@ namespace HealerLike.Render.Creatures
         [SetUp] public void Setup() { recipe = HLCreatureValidatorTests.Recipe(); arm = new HLLianaArm(recipe.arms[0], null, null); arm.Tick(0, Vector3.zero, Quaternion.identity); }
         [TearDown] public void Cleanup() { arm.Dispose(); Object.DestroyImmediate(recipe); }
         void Lengths() { for (int i = 0; i < arm.SegmentCount; i++) Assert.That(Vector3.Distance(arm.Joint(i), arm.Joint(i + 1)), Is.EqualTo(.2f).Within(1e-5)); }
+        [Test] public void AuthoredArmUsesOneMeshOnlyDuringGesturesAndDisposesIt()
+        {
+            var authored = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>("Assets/Render/Creatures/Data/HLHealer.asset");
+            var parent = new GameObject("HLArmFixture");
+            var material = new Material(Shader.Find("HL/Look/Primitive"));
+            var rendered = new HLLianaArm(authored.arms[0], parent.transform, material);
+            Mesh mesh = null;
+            try
+            {
+                var renderers = parent.GetComponentsInChildren<Renderer>(true);
+                Assert.AreEqual(1, renderers.Length); Assert.IsFalse(renderers[0].enabled);
+                rendered.Tick(0, Vector3.zero, Quaternion.identity);
+                Assert.AreEqual(0, rendered.MeshRevision);
+                rendered.Begin(1, HLGestureKind.Attack, Vector3.one);
+                rendered.SetTipGoal(1, Vector3.one);
+                rendered.Tick(.016f, Vector3.zero, Quaternion.identity);
+                Assert.IsTrue(renderers[0].enabled);
+                mesh = parent.GetComponentInChildren<MeshFilter>().sharedMesh;
+                Assert.Greater(mesh.vertexCount, 0);
+                foreach (var vertex in mesh.vertices) Assert.IsTrue(HLChainSolver.Finite(vertex));
+                Assert.That(Vector3.Distance(rendered.Tip, Vector3.one), Is.LessThan(.001f));
+                rendered.End(1); rendered.Tick(1, Vector3.zero, Quaternion.identity);
+                Assert.IsFalse(renderers[0].enabled);
+                int revision = rendered.MeshRevision;
+                var vertices = mesh.vertices;
+                rendered.SetVisible(true); rendered.Tick(1, Vector3.one, Quaternion.identity);
+                Assert.IsFalse(renderers[0].enabled); Assert.AreEqual(revision, rendered.MeshRevision);
+                CollectionAssert.AreEqual(vertices, mesh.vertices);
+            }
+            finally { rendered.Dispose(); Object.DestroyImmediate(parent); Object.DestroyImmediate(material); }
+            Assert.IsFalse(mesh);
+        }
         [Test] public void ContactBypassesAnticipationAndReturnRestoresExactPose()
         {
             arm.Begin(1, HLGestureKind.Heal, Vector3.one); arm.Contact(1, Vector3.one); arm.Tick(.001f, Vector3.zero, Quaternion.identity);

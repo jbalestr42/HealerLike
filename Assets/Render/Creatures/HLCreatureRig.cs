@@ -24,10 +24,8 @@ namespace HealerLike.Render.Creatures
         readonly int[] tokens = new int[MaxArms];
         readonly int[] definitions = new int[MaxArms];
         readonly Vector3?[] branchRoots = new Vector3?[MaxArms];
-        readonly Transform[] motes = new Transform[12];
-        readonly float[] moteBirth = new float[12];
-        readonly Vector3[] moteOrigins = new Vector3[12];
-        int nextToken, nextMote;
+        int nextToken;
+        bool disposed;
         float crownPulse, hitPulse;
         Quaternion aim = Quaternion.identity;
         Vector3? aimTarget;
@@ -84,7 +82,6 @@ namespace HealerLike.Render.Creatures
         bool placed;
         public Transform Root => root;
         public int ActiveArmCount { get { int count = 0; foreach (var arm in arms) if (arm != null && !arm.IsAvailable) count++; return count; } }
-        public int HealPulseCount { get; private set; }
 
         public static HLCreatureRig Build(HLCreatureRecipe data, Transform parent, Material material, float cellSize = 1)
         {
@@ -97,6 +94,7 @@ namespace HealerLike.Render.Creatures
         }
         HLCreatureRig(HLCreatureRecipe data, Transform parent, Material material, float cellSize)
         {
+            HLPrimitiveMeshes.Retain();
             recipe = data; this.material = material; this.cellSize = cellSize;
             root = new GameObject("HLGeneratedCreature").transform; root.SetParent(parent, false); root.localScale = Vector3.one / parent.lossyScale.x;
             sway = new GameObject("HLSway").transform; sway.SetParent(root, false);
@@ -116,12 +114,8 @@ namespace HealerLike.Render.Creatures
             roots = new Transform[data.roots.count * 2];
             for (int i = 0; i < roots.Length; i++) roots[i] = HLPrimitiveMeshes.Geometry("HLRoot", root, HLPrimitive.CylinderSegment, material, data.roots.colour);
             for (int i = 0; i < data.arms.Length; i++) CreateArm(i, i);
-            for (int i = 0; i < motes.Length; i++)
-            {
-                motes[i] = HLPrimitiveMeshes.Geometry("HLHealMote", root, HLPrimitive.Sphere, material, new Color(.78f, .95f, .29f), .25f, 1);
-                motes[i].gameObject.SetActive(false); moteBirth[i] = float.NegativeInfinity;
-            }
         }
+
         void CreateArm(int slot, int definition)
         {
             definitions[slot] = definition;
@@ -174,17 +168,6 @@ namespace HealerLike.Render.Creatures
         }
         public void HealContact(Vector3 point)
         { crownPulse = 1; int token = Begin(HLGestureKind.Heal, point); Contact(token, point); }
-        public void EmitHeal(Vector3 point, float time)
-        {
-            HealPulseCount++;
-            for (int j = 0; j < 3; j++)
-            {
-                int i = nextMote++ % motes.Length; moteBirth[i] = time;
-                float angle = i * 2.39996f;
-                moteOrigins[i] = point + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * .12f * cellSize;
-                motes[i].gameObject.SetActive(true);
-            }
-        }
         public void Tick(float time, float deltaTime, in HLFootFrame frame)
         {
             if (!root) return;
@@ -208,8 +191,7 @@ namespace HealerLike.Render.Creatures
                 geometry[i].localScale = part.dimensions * cellSize * (1 + crownPulse * .06f + (part.parent >= 0 ? charge * .16f : 0));
                 Color colour = Color.Lerp(new Color(.18f, .49f, .31f), part.colour, healthFraction);
                 if (part.glow > 0) colour = Color.Lerp(colour * .55f, new Color(.78f, .95f, .29f), budPower);
-                colourBlock.SetColor("_BaseColor", colour);
-                colourBlock.SetColor("_EmissionColor", colour * part.glow * budPower);
+                colourBlock.SetColor("_BaseColor", HLPrimitiveMeshes.Brighten(colour, part.glow * budPower));
                 bodyRenderers[i].SetPropertyBlock(colourBlock);
             }
             var r = recipe.roots;
@@ -231,20 +213,16 @@ namespace HealerLike.Render.Creatures
                 arms[i].Tick(deltaTime, shoulder, root.rotation * sway.localRotation);
                 if (arms[i].IsAvailable) { branchRoots[i] = null; tokens[i] = 0; arms[i].SetVisible(i < recipe.arms.Length); }
             }
-            for (int i = 0; i < motes.Length; i++)
-            {
-                float age = time - moteBirth[i];
-                bool active = age >= 0 && age < .45f; motes[i].gameObject.SetActive(active);
-                if (!active) continue;
-                motes[i].position = moteOrigins[i] + frame.normal * (age * .8f * cellSize);
-                motes[i].localScale = Vector3.one * (.045f * cellSize * (1 - age / .45f));
-            }
         }
+
         public void SetVisible(bool visible) { if (root) root.gameObject.SetActive(visible); }
         public void Dispose()
         {
-            if (!root) return;
-            root.gameObject.SetActive(false); HLPrimitiveMeshes.DestroyOwned(root.gameObject);
+            if (disposed) return;
+            disposed = true;
+            foreach (var arm in arms) arm?.Dispose();
+            if (root) { root.gameObject.SetActive(false); HLPrimitiveMeshes.DestroyOwned(root.gameObject); }
+            HLPrimitiveMeshes.Release();
         }
     }
 }

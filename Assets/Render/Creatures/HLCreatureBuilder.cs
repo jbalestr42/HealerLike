@@ -115,7 +115,6 @@ namespace HealerLike.Render.Creatures
             registry?.SpellSink?.ShowImpact(source, owner, HLResourceKind.Health, value, critical);
             if (value > 0)
             {
-                Rig?.EmitHeal(TargetPosition(owner), Time.time);
                 registry?.NotifyHeal(source, owner, value, critical);
             }
         }

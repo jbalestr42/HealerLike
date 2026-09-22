@@ -13,7 +13,12 @@ namespace HealerLike.Render.Creatures
         readonly Vector3[] rest, joints;
         readonly float[] lengths;
         readonly Transform container;
-        readonly Transform[] segments, beads;
+        readonly Mesh mesh;
+        readonly MeshRenderer renderer;
+        readonly Vector3[] vertices, normals;
+        const int Sides = 6;
+        bool visible = true;
+        public int MeshRevision { get; private set; }
         readonly float radius;
         readonly Vector3 pole;
         int token;
@@ -43,10 +48,29 @@ namespace HealerLike.Render.Creatures
             if (parent)
             {
                 container = new GameObject("HLLianaArm").transform; container.SetParent(parent, false);
-                segments = new Transform[lengths.Length]; beads = new Transform[rest.Length];
-                for (int i = 0; i < segments.Length; i++) segments[i] = HLPrimitiveMeshes.Geometry("HLLink", container, HLPrimitive.CylinderSegment, material, definition.colour);
-                for (int i = 0; i < beads.Length; i++) beads[i] = HLPrimitiveMeshes.Geometry("HLJoint", container, HLPrimitive.Sphere, material,
-                    i == beads.Length - 1 ? new Color(.78f, .95f, .3f) : definition.colour);
+                mesh = new Mesh { name = "HLLianaChain", hideFlags = HideFlags.DontSave };
+                mesh.MarkDynamic();
+                vertices = new Vector3[joints.Length * Sides + 2]; normals = new Vector3[vertices.Length];
+                var triangles = new int[lengths.Length * Sides * 6 + Sides * 6];
+                int index = 0;
+                for (int j = 0; j < lengths.Length; j++) for (int side = 0; side < Sides; side++)
+                {
+                    int a = j * Sides + side, next = j * Sides + (side + 1) % Sides;
+                    int b = a + Sides, nextB = next + Sides;
+                    triangles[index++] = a; triangles[index++] = next; triangles[index++] = b;
+                    triangles[index++] = next; triangles[index++] = nextB; triangles[index++] = b;
+                }
+                for (int side = 0; side < Sides; side++)
+                {
+                    int next = (side + 1) % Sides, end = lengths.Length * Sides;
+                    triangles[index++] = vertices.Length - 2; triangles[index++] = next; triangles[index++] = side;
+                    triangles[index++] = vertices.Length - 1; triangles[index++] = end + side; triangles[index++] = end + next;
+                }
+                mesh.vertices = vertices; mesh.triangles = triangles;
+                container.gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
+                renderer = container.gameObject.AddComponent<MeshRenderer>(); renderer.sharedMaterial = material;
+                var block = new MaterialPropertyBlock(); block.SetColor("_BaseColor", definition.colour); renderer.SetPropertyBlock(block);
+                renderer.enabled = false;
             }
         }
         public void Begin(int gestureToken, HLGestureKind gestureKind, Vector3 worldTarget)
@@ -125,15 +149,40 @@ namespace HealerLike.Render.Creatures
         void Draw()
         {
             if (!container) return;
-            for (int i = 0; i < segments.Length; i++)
-                HLPrimitiveMeshes.Segment(segments[i], joints[i], joints[i + 1], Mathf.Lerp(radius, radius * .56f, (float)i / segments.Length) * (Style == HLDeliveryStyle.Swarm ? .45f : 1));
-            for (int i = 0; i < beads.Length; i++)
+            renderer.enabled = visible && Phase != HLGesturePhase.Rest;
+            if (!renderer.enabled) return;
+            for (int j = 0; j < joints.Length; j++)
             {
-                beads[i].position = joints[i];
-                beads[i].localScale = Vector3.one * (Mathf.Lerp(radius, radius * .56f, (float)i / segments.Length) * (Style == HLDeliveryStyle.Swarm ? .45f : 1) * (i == segments.Length ? 3 : 2.1f));
+                Vector3 tangent = joints[Mathf.Min(j + 1, joints.Length - 1)] - joints[Mathf.Max(j - 1, 0)];
+                if (tangent.sqrMagnitude < 1e-12f) tangent = Vector3.up;
+                tangent.Normalize();
+                Vector3 axis = Mathf.Abs(tangent.y) < .9f ? Vector3.up : Vector3.right;
+                Vector3 u = Vector3.Cross(tangent, axis).normalized, v = Vector3.Cross(tangent, u);
+                float width = Mathf.Lerp(radius, radius * .56f, (float)j / lengths.Length) * (Style == HLDeliveryStyle.Swarm ? .45f : 1);
+                for (int side = 0; side < Sides; side++)
+                {
+                    float angle = side * Mathf.PI * 2 / Sides;
+                    Vector3 normal = u * Mathf.Cos(angle) + v * Mathf.Sin(angle);
+                    int index = j * Sides + side;
+                    vertices[index] = container.InverseTransformPoint(joints[j] + normal * width);
+                    normals[index] = container.InverseTransformDirection(normal);
+                }
             }
+            vertices[vertices.Length - 2] = container.InverseTransformPoint(joints[0]);
+            vertices[vertices.Length - 1] = container.InverseTransformPoint(Tip);
+            normals[normals.Length - 2] = container.InverseTransformDirection((joints[0] - joints[1]).normalized);
+            normals[normals.Length - 1] = container.InverseTransformDirection((Tip - joints[joints.Length - 2]).normalized);
+            mesh.vertices = vertices; mesh.normals = normals; mesh.RecalculateBounds(); MeshRevision++;
         }
-        public void SetVisible(bool visible) { if (container) container.gameObject.SetActive(visible); }
-        public void Dispose() { if (container) { container.gameObject.SetActive(false); HLPrimitiveMeshes.DestroyOwned(container.gameObject); } }
+        public void SetVisible(bool value)
+        {
+            visible = value;
+            if (renderer && (!visible || Phase == HLGesturePhase.Rest)) renderer.enabled = false;
+        }
+        public void Dispose()
+        {
+            if (container) { container.gameObject.SetActive(false); HLPrimitiveMeshes.DestroyOwned(container.gameObject); }
+            HLPrimitiveMeshes.DestroyOwned(mesh);
+        }
     }
 }

@@ -41,7 +41,7 @@ namespace HealerLike.Render.Creatures
             builder.Init(entity); builder.Init(entity); Assert.AreSame(rig, builder.Rig); Assert.AreEqual(count, model.GetComponentsInChildren<Transform>().Length);
             Assert.AreSame(source.GetComponent<SkillSource>(), model.GetComponent<EntityModel>().GetSourcePoint());
             health.OnAllConsumerProcessed.Invoke(owner, new ResourceModifier { source = source }, 20, true);
-            Assert.AreEqual(1, sink.heals); Assert.AreEqual(1, sink.impacts); Assert.AreSame(owner, sink.target); Assert.AreEqual(1, rig.HealPulseCount);
+            Assert.AreEqual(1, sink.heals); Assert.AreEqual(1, sink.impacts); Assert.AreSame(owner, sink.target); Assert.IsNull(rig.Root.Find("HLHealMote"));
         }
         [Test] public void DisableEnableAndRebindDetachOldHealthExactlyOnce()
         {
@@ -57,7 +57,7 @@ namespace HealerLike.Render.Creatures
             Assert.AreEqual(1, sink.impacts); Assert.AreEqual(0, sink.heals); Assert.AreEqual(-7, sink.amount);
             health.OnAllConsumerProcessed.Invoke(owner, new ResourceModifier { source = source }, 200, false);
             Assert.AreEqual(1, sink.heals); Assert.AreEqual(200, sink.amount); Assert.AreEqual(100, health.Value);
-            health.OnAllConsumerProcessed.Invoke(owner, new ResourceModifier(), 2, false); Assert.AreEqual(2, builder.Rig.HealPulseCount);
+            health.OnAllConsumerProcessed.Invoke(owner, new ResourceModifier(), 2, false); Assert.IsNull(builder.Rig.Root.Find("HLHealMote"));
         }
         [Test] public void DestroyedEntityStillUnregistersExternallyAnchoredBuilder()
         {

@@ -41,8 +41,6 @@ namespace HealerLike.Render.Creatures
             subscribed = projectile; subscribed.OnHit.AddListener(OnProjectileHit);
             CapturedTarget = projectile.target; CapturedTargetPoint = projectile.targetPoint;
             var entity = source ? source.GetComponent<Entity>() : null;
-            builder = entity && entity.model ? entity.model.GetComponent<HLCreatureBuilder>() : null;
-            rig = builder && builder.isActiveAndEnabled ? builder.Rig : null;
             var model = entity && entity.model ? entity.model.gameObject : source;
             if (++nextToken == 0) ++nextToken;
             if (model) foreach (var component in model.GetComponentsInChildren<MonoBehaviour>())
@@ -50,7 +48,9 @@ namespace HealerLike.Render.Creatures
                 if (!(component is IHLDeliverySource candidate) || !component.isActiveAndEnabled) continue;
                 if (!candidate.BeginDelivery(nextToken, preserveContactPath ? HLDeliveryStyle.ChainSync : deliveryStyle,
                     projectile.transform, CapturedTargetPoint ? CapturedTargetPoint.transform.position : projectile.transform.position)) continue;
-                delivery = candidate; deliveryComponent = component; token = nextToken; break;
+                delivery = candidate; deliveryComponent = component; token = nextToken;
+                builder = component as HLCreatureBuilder; rig = builder ? builder.Rig : null;
+                break;
             }
             if (token == 0) return;
             renderers = GetComponentsInChildren<Renderer>(true);
