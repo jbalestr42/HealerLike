@@ -31,7 +31,7 @@ namespace HealerLike.Render.Spells
         { var entity = target.GetComponent<Entity>(); return entity && entity.targetPoint ? entity.targetPoint.transform : target.transform; }
         public void ShowImpact(GameObject source, GameObject target, HLResourceKind resource, float preClampAmount, bool isCritical)
         {
-            if (!target || !HLSpellGrammar.Finite(preClampAmount) || preClampAmount == 0) return;
+            if (!isActiveAndEnabled || !target || !HLSpellGrammar.Finite(preClampAmount) || preClampAmount == 0) return;
             var kind = resource == HLResourceKind.Mana ? HLSpellEffectKind.Mana : preClampAmount > 0 ? HLSpellEffectKind.Heal : HLSpellEffectKind.Impact;
             var prefab = styles ? kind == HLSpellEffectKind.Heal ? styles.heal : kind == HLSpellEffectKind.Impact ? styles.impact : null : null;
             var signature = new HLSpellSignature { operation = HLOperation.Resource, sign = HLSpellGrammar.Sign(preClampAmount), hasAttribute = true, attribute = resource == HLResourceKind.Health ? AttributeType.HealthMax : AttributeType.ManaMax, topology = HLTopology.Single, duration = HLDurationShape.Instant, tempo = HLTempo.Immediate };
@@ -54,7 +54,7 @@ namespace HealerLike.Render.Spells
         }
         public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks, float elapsedSeconds, float durationSeconds, HLClockKind clock)
         {
-            if (!target || !factory) return;
+            if (!isActiveAndEnabled || !target || !factory) return;
             if (stacks <= 0) { RemoveStatus(source,target,factory); return; }
             if (!HLSpellGrammar.Finite(elapsedSeconds) || float.IsNaN(durationSeconds)) return;
             var key = (target,factory);
@@ -108,7 +108,7 @@ namespace HealerLike.Render.Spells
         }
         public void PulseArea(Vector3 center,float radius,HLZoneKind kind,float strength)
         {
-            if(!HLZonePacker.TryCreate(center,radius,kind,strength,0,out var zone)) return;
+            if(!isActiveAndEnabled || !HLZonePacker.TryCreate(center,radius,kind,strength,0,out var zone)) return;
             var ring = Spawn(null,HLSpellEffectKind.Area,transform);
             ring.transform.position = center; ring.transform.localScale = Vector3.one * radius;
             ring.SetSide(kind == HLZoneKind.Hostile ? Entity.EntityType.Computer : Entity.EntityType.Player);
@@ -119,13 +119,14 @@ namespace HealerLike.Render.Spells
         }
         public HLSpellEffect ShowLink(Vector3 start, Vector3 end)
         {
-            if (!HLSpellGrammar.Finite(start.x) || !HLSpellGrammar.Finite(start.y) || !HLSpellGrammar.Finite(start.z) || !HLSpellGrammar.Finite(end.x) || !HLSpellGrammar.Finite(end.y) || !HLSpellGrammar.Finite(end.z)) return null;
+            if (!isActiveAndEnabled || !HLSpellGrammar.Finite(start.x) || !HLSpellGrammar.Finite(start.y) || !HLSpellGrammar.Finite(start.z) || !HLSpellGrammar.Finite(end.x) || !HLSpellGrammar.Finite(end.y) || !HLSpellGrammar.Finite(end.z)) return null;
             var effect=Spawn(styles ? styles.chain : null,HLSpellEffectKind.Chain,transform);effect.lifetime=.6f;effect.SetEndpoints(start,end);_impacts.Add(effect.gameObject);
             if (_impacts.Count > 128) { Dispose(_impacts[0]); _impacts.RemoveAt(0); }
             return effect;
         }
         public void FlushHealLinks()
         {
+            if (!isActiveAndEnabled) { _heals.Clear(); return; }
             foreach (var pair in _heals)
             {
                 if (!pair.source || !pair.target) continue;
@@ -147,7 +148,13 @@ namespace HealerLike.Render.Spells
             foreach(var key in dead) { Dispose(_statuses[key]);_statuses.Remove(key); }
             _impacts.RemoveAll(x=>!x);
         }
+        void OnEnable()
+        {
+            // The registry may retain this sink across disable/enable.
+            Clear();
+        }
         void OnDisable() => Clear();
+        void OnDestroy() => Clear();
         public void Clear()
         {
             _heals.Clear(); foreach(var root in _removing) Dispose(root); _removing.Clear();

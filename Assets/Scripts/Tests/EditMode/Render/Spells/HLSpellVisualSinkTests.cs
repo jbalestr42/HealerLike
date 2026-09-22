@@ -14,6 +14,32 @@ namespace HealerLike.Render.Spells
             factory.data=new BuffHandlerData {durationType=DurationType.Duration,duration=4,buffFactoryList=new List<ABuffFactory>{modifier}};second.data=factory.data;
         }
         [TearDown] public void Cleanup(){Object.DestroyImmediate(host);Object.DestroyImmediate(target);Object.DestroyImmediate(other);Object.DestroyImmediate(factory);Object.DestroyImmediate(second);Object.DestroyImmediate(modifier);}
+        [Test] public void RegistryCallsCannotRepopulateDisabledSinkAndEnableStartsClean()
+        {
+            var previous = HLRenderRegistry.Current;
+            try
+            {
+                HLRenderRegistry.Current = new HLRenderRegistry { SpellSink = sink };
+                sink.SetStatus(null,target,factory,1,0,4,HLClockKind.Simulation);
+                var root = sink.GetStatus(target,factory);
+                sink.enabled = false;
+                Assert.IsFalse(root);
+                HLRenderRegistry.Current.SpellSink.SetStatus(null,target,factory,1,0,4,HLClockKind.Simulation);
+                HLRenderRegistry.Current.SpellSink.ShowImpact(null,target,HLResourceKind.Health,2,false);
+                sink.PulseArea(Vector3.zero,1,HLZoneKind.Heal,1);
+                Assert.IsNull(sink.ShowLink(Vector3.zero,Vector3.one));
+                Assert.AreEqual(0,sink.StatusCount);
+                Assert.AreEqual(0,sink.ImpactCount);
+                sink.enabled = true;
+                Assert.AreSame(sink,HLRenderRegistry.Current.SpellSink);
+                Assert.AreEqual(0,sink.StatusCount);
+                sink.SetStatus(null,target,factory,1,0,4,HLClockKind.Simulation);
+                Assert.AreEqual(1,sink.StatusCount);
+                TestHelpers.InvokePrivate(sink,"OnEnable");
+                Assert.AreEqual(0,sink.StatusCount);
+            }
+            finally { HLRenderRegistry.Current = previous; }
+        }
         [Test] public void SpeedStatusSitsLowAndRemovalKeepsOnlyCosmeticTail()
         {
             modifier.data.type=AttributeType.Speed;
