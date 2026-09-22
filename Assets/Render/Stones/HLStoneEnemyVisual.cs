@@ -212,7 +212,7 @@ namespace HealerLike.Render.Stones
             shard.SetParent(transform,false); shard.position=presentation.TransformPoint(assembly.LocalBounds.center);
             shard.gameObject.AddComponent<MeshFilter>().sharedMesh=lease.Mesh;
             var renderer=shard.gameObject.AddComponent<MeshRenderer>(); renderer.sharedMaterial=stoneMaterial;
-            var block=new MaterialPropertyBlock(); block.SetColor("_BaseColor",HLStoneAssembly.Palette[1].linear); renderer.SetPropertyBlock(block);
+            var block=new MaterialPropertyBlock(); block.SetVector("_BaseColor",HLStoneAssembly.Palette[1].linear); renderer.SetPropertyBlock(block);
             deliveries.Add(token,(shard,projectile,lease));
             if(preset==HLStonePreset.Boulder)
             {
