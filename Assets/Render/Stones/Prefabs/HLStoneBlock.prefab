@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 969b7f68d198c4136adc1ba03e0fec04, type: 3}
   m_Name:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.HLStoneTerrainClump
-  stoneMaterial: {fileID: 2100000, guid: b780cf2e7f05a4cafaaa2dcbbc0a6740, type: 2}
+  stoneMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
 --- !u!1001 &9208830889057863384
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -47,7 +47,7 @@ MonoBehaviour:
   character: {fileID: 3531554335774156233}
   recipe: {fileID: 11400000, guid: 265a00ac0c6c743d08a762c0950e82e1, type: 2}
   visualAnchor: {fileID: 4543650985477941120}
-  material: {fileID: 2100000, guid: bd1c96db057ca4958b45d9df3313e99a, type: 2}
+  material: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
   cellSize: 1
 --- !u!1001 &1125452254518421128
 PrefabInstance:

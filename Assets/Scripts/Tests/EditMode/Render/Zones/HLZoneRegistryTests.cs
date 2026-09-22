@@ -33,6 +33,16 @@ namespace HealerLike.Render.Zones
         [TearDown] public void TearDown() => Object.DestroyImmediate(_go);
         int Add(float x) => _registry.Add(HLZoneKind.Heal, new Vector3(x, 0, 0), 1, 1);
 
+        [Test] public void ActsAsTheRegistryZoneOwner()
+        {
+            IHLZoneOwner owner = _registry;
+            int handle = owner.AddPulse(HLZoneKind.Hostile, Vector3.zero, 2, 1, .8f);
+            Assert.That(handle, Is.GreaterThan(0));
+            Assert.IsTrue(_registry.Contains(handle));
+            _registry.PublishFrame(.8f);
+            Assert.IsFalse(_registry.Contains(handle));
+        }
+
         [Test] public void UpdatesPreserveOrderAndPublishCanonicalSnapshotEveryFrame()
         {
             int first = Add(1); Add(2); Add(3);

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &4288679698731807846
+--- !u!1001 &4747787111469894089
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -54,7 +54,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3913158666709983660, guid: 7f87a892e026f66429de10dda4f28c37, type: 3}
       propertyPath: serializationData.Prefab
-      value:
+      value: 
       objectReference: {fileID: 3913158666709983660, guid: 7f87a892e026f66429de10dda4f28c37, type: 3}
     - target: {fileID: 6832765309683670399, guid: 7f87a892e026f66429de10dda4f28c37, type: 3}
       propertyPath: m_Enabled
@@ -66,41 +66,39 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1985067714463758, guid: 7f87a892e026f66429de10dda4f28c37, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1328780875546718226}
+      addedObject: {fileID: 8578628606826326304}
     - targetCorrespondingSourceObject: {fileID: 1985067714463758, guid: 7f87a892e026f66429de10dda4f28c37, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 440631957652143657}
+      addedObject: {fileID: 6804680462842472846}
   m_SourcePrefab: {fileID: 100100000, guid: 7f87a892e026f66429de10dda4f28c37, type: 3}
---- !u!1 &4288409938468764776 stripped
+--- !u!1 &4748071990062907847 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1985067714463758, guid: 7f87a892e026f66429de10dda4f28c37, type: 3}
-  m_PrefabInstance: {fileID: 4288679698731807846}
+  m_PrefabInstance: {fileID: 4747787111469894089}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1328780875546718226
+--- !u!114 &8578628606826326304
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4288409938468764776}
+  m_GameObject: {fileID: 4748071990062907847}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 61dfd27d575d54bbe939a32bb30ab581, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStagePlaceholder
-  requiredType: HLProjectileVisualObserver
-  replacement: Rebuild stage after owning track lands.
---- !u!114 &440631957652143657
+  m_Script: {fileID: 11500000, guid: 88c2ca8cf908f497296bf92110ed7d8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.HLProjectileVisualObserver
+  presentation: 0
+  preserveContactPath: 0
+--- !u!114 &6804680462842472846
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4288409938468764776}
+  m_GameObject: {fileID: 4748071990062907847}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 61dfd27d575d54bbe939a32bb30ab581, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStagePlaceholder
-  requiredType: HLStoneProjectileImpactBridge
-  replacement: Rebuild stage after owning track lands.
+  m_Script: {fileID: 11500000, guid: 0c8d48ce7f4d64b2191ff8031b63299a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.HLStoneProjectileImpactBridge

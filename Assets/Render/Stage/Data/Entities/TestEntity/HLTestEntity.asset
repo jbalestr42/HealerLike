@@ -11,12 +11,12 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 200499978037cc34d93ebc9c76414b0c, type: 3}
   m_Name: TestEntity
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
-    SerializedBytes:
+    SerializedBytes: 
     ReferencedUnityObjects: []
-    SerializedBytesString:
+    SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
@@ -27,75 +27,75 @@ MonoBehaviour:
     - Name: comparer
       Entry: 7
       Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, HealerLike.Runtime]], mscorlib
-    - Name:
+    - Name: 
       Entry: 12
       Data: 0
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 12
       Data: 4
-    - Name:
+    - Name: 
       Entry: 7
-      Data:
+      Data: 
     - Name: $k
       Entry: 3
       Data: 0
     - Name: $v
       Entry: 4
       Data: 100
-    - Name:
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
-      Data:
+      Data: 
     - Name: $k
       Entry: 3
       Data: 1
     - Name: $v
       Entry: 4
       Data: 2
-    - Name:
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
-      Data:
+      Data: 
     - Name: $k
       Entry: 3
       Data: 2
     - Name: $v
       Entry: 4
       Data: 10
-    - Name:
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
-      Data:
+      Data: 
     - Name: $k
       Entry: 3
       Data: 3
     - Name: $v
       Entry: 4
       Data: 1000
-    - Name:
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-  model: {fileID: 3254859442067390045, guid: 56d46d823f0b7497f9040ed54bb3fdca, type: 3}
+      Data: 
+  model: {fileID: 7884719768184335477, guid: 960820665a5bb4993b6f1d864a3dc442, type: 3}
   title: Test
-  description:
+  description: 
   attributes:
   - key: 0
     value: 100

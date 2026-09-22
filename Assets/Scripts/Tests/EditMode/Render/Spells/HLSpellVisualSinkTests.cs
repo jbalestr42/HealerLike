@@ -38,6 +38,26 @@ namespace HealerLike.Render.Spells
             int calls=0;sink.AreaPulse=(p,r,k,s)=>{calls++;Assert.AreEqual(2,r);Assert.AreEqual(HLZoneKind.Heal,k);};
             sink.PulseArea(Vector3.zero,2,HLZoneKind.Heal,.5f);sink.PulseArea(Vector3.zero,-1,HLZoneKind.Heal,.5f);Assert.AreEqual(1,calls);
         }
+        sealed class HLOwnerSpy : IHLZoneOwner
+        {
+            public int calls;public float seconds,radius;public HLZoneKind kind;
+            public int AddPulse(HLZoneKind k,Vector3 c,float r,float s,float t){calls++;kind=k;radius=r;seconds=t;return calls;}
+        }
+        [Test] public void NullDelegateFallsBackToRegistryZoneOwner()
+        {
+            var previous=HLRenderRegistry.Current;var owner=new HLOwnerSpy();
+            try
+            {
+                HLRenderRegistry.Current=new HLRenderRegistry{ZoneOwner=owner};
+                sink.PulseArea(Vector3.one,3,HLZoneKind.Hostile,.5f);
+                Assert.AreEqual(1,owner.calls);Assert.AreEqual(3,owner.radius);Assert.AreEqual(HLZoneKind.Hostile,owner.kind);Assert.AreEqual(HLSpellVisualSink.PulseSeconds,owner.seconds);
+                sink.PulseArea(Vector3.one,-1,HLZoneKind.Hostile,.5f);Assert.AreEqual(1,owner.calls);
+                int injected=0;sink.AreaPulse=(p,r,k,s)=>injected++;sink.PulseArea(Vector3.one,3,HLZoneKind.Heal,.5f);
+                Assert.AreEqual(1,injected);Assert.AreEqual(1,owner.calls);
+                sink.AreaPulse=null;HLRenderRegistry.Current=null;Assert.DoesNotThrow(()=>sink.PulseArea(Vector3.one,3,HLZoneKind.Heal,.5f));
+            }
+            finally{HLRenderRegistry.Current=previous;}
+        }
         [Test] public void DestroyedTargetAndDisableReleaseVisuals()
         {
             sink.SetStatus(null,target,factory,1,0,4,HLClockKind.Simulation);Object.DestroyImmediate(target);TestHelpers.InvokePrivate(sink,"LateUpdate");Assert.AreEqual(0,sink.StatusCount);

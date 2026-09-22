@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &5663179658655573470
+--- !u!1001 &7273547483486823278
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -58,24 +58,23 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1491598258801841562, guid: 01853b17441166446a7cdcca5640f029, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7544576796976903831}
+      addedObject: {fileID: 6804232736209215381}
   m_SourcePrefab: {fileID: 100100000, guid: 01853b17441166446a7cdcca5640f029, type: 3}
---- !u!1 &6495491744193032260 stripped
+--- !u!1 &8089569186467198708 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1491598258801841562, guid: 01853b17441166446a7cdcca5640f029, type: 3}
-  m_PrefabInstance: {fileID: 5663179658655573470}
+  m_PrefabInstance: {fileID: 7273547483486823278}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7544576796976903831
+--- !u!114 &6804232736209215381
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6495491744193032260}
+  m_GameObject: {fileID: 8089569186467198708}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 61dfd27d575d54bbe939a32bb30ab581, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStagePlaceholder
-  requiredType: HLAreaPulse
-  replacement: Rebuild stage after owning track lands.
+  m_Script: {fileID: 11500000, guid: c2d395edae9447a98344d294c92d4a3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLAreaPulse
+  _kind: 2

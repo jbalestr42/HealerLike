@@ -221,7 +221,7 @@ MonoBehaviour:
   bodyPivot: {fileID: 8422120432104562012}
   preset: 0
   profile: {fileID: 0}
-  stoneMaterial: {fileID: 2100000, guid: b780cf2e7f05a4cafaaa2dcbbc0a6740, type: 2}
+  stoneMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
   seed: 1
   effects: {fileID: 0}
 --- !u!4 &6646549706594309191 stripped

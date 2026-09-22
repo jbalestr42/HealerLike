@@ -226,6 +226,6 @@ MonoBehaviour:
   bodyPivot: {fileID: 1689596929970041618}
   preset: 1
   profile: {fileID: 0}
-  stoneMaterial: {fileID: 2100000, guid: b780cf2e7f05a4cafaaa2dcbbc0a6740, type: 2}
+  stoneMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
   seed: 1
   effects: {fileID: 0}
