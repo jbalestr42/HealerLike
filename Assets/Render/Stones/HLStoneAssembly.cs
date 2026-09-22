@@ -13,7 +13,7 @@ namespace HealerLike.Render.Stones
         public readonly List<Part> Parts=new List<Part>();
         MaterialPropertyBlock fractureBlock;
         public Bounds LocalBounds { get; private set; }
-        public static readonly Color[] Palette={ new Color32(201,196,180,255),new Color32(142,147,161,255),new Color32(74,84,104,255),new Color32(199,154,75,255) };
+        public static readonly Color[] Palette={ new Color32(201,196,180,255),new Color32(142,147,161,255),new Color32(100,121,150,255),new Color32(199,154,75,255) };
         public void Add(Transform parent,uint seed,HLStonePart recipe,Material material)
         {
             var lease=HLStoneMeshCache.Acquire(HLStoneSeed.ForPart(seed,recipe.SeedSalt),recipe.Shape);
@@ -69,7 +69,7 @@ namespace HealerLike.Render.Stones
                 int order=(i+(int)(seed%(uint)Mathf.Max(1,Parts.Count)))%Parts.Count;
                 float weight=Parts.Count==1?1:order==Parts.Count-1?0:1-order/(float)Parts.Count;
                 var part=Parts[i]; part.Renderer.GetPropertyBlock(block);
-                block.SetColor("_BaseColor",Color.Lerp(part.BaseColor,((Color)new Color32(43,60,105,255)).linear,damage*weight*.85f));
+                block.SetColor("_BaseColor",Color.Lerp(part.BaseColor,((Color)new Color32(66,89,138,255)).linear,damage*weight*.85f));
                 part.Renderer.SetPropertyBlock(block);
             }
         }

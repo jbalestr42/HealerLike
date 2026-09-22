@@ -16,7 +16,8 @@ namespace HealerLike.Render.Grass
                 {
                     Assert.AreEqual(row / 3f, v[row * 2].y); Assert.AreEqual(row / 3f, uv[row * 2].y);
                     Assert.AreEqual(0, uv[row * 2].x); Assert.AreEqual(1, uv[row * 2 + 1].x);
-                    if (row > 0) Assert.Less(v[row * 2 + 1].x, v[row * 2 - 1].x);
+                    if (row > 1) Assert.Less(v[row * 2 + 1].x, v[row * 2 - 1].x);
+                    if (row == 1) Assert.Greater(v[3].x, v[1].x);
                 }
                 for (int i = 0; i < indices.Length; i += 3)
                     Assert.Greater(Vector3.Cross(v[indices[i + 1]] - v[indices[i]], v[indices[i + 2]] - v[indices[i]]).sqrMagnitude, 0);

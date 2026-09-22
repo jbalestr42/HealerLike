@@ -95,3 +95,12 @@ destruction, owner recreation and invalid values use the same handle lifecycle a
 other producers. No new buffer fields, capacity change or gameplay writes. The
 reserved lane stays zero. Trample takes priority over hostile cones in its core;
 heal cannot raise the flattened core. Overflow still publishes the first 64 zones.
+
+## Feedback capacity
+
+The registry reserves its 64 records for non-Trample feedback first, then admits
+the earliest registered decorative Trample records into the remaining capacity.
+The selected records retain their original registration order; the frozen Pack
+function and 32-byte layout are unchanged. An omitted footprint remains live and
+returns when pulse expiry frees capacity. OverflowCount counts all omitted live
+records. More than 64 simultaneous non-Trample records still use first-in order.

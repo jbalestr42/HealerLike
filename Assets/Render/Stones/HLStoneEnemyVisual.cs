@@ -263,8 +263,13 @@ namespace HealerLike.Render.Stones
             if(bound && health!=null) { health.OnAllConsumerProcessed.RemoveListener(OnConsumersProcessed); health.OnValueChanged.RemoveListener(OnHealthChanged); }
             if(life!=null) life.enabled=false; cooldownReaders.Clear(); ClearDeliveries(); bound=false; impacts.Clear(); sampler.Reset(); state.CompleteBatch(float.PositiveInfinity,1);
         }
-        void OnEnable() { if(life!=null) life.enabled=true; Bind(); }
-        void OnDisable() => Unbind();
+        void SetVisible(bool value)
+        {
+            if(presentation!=null) presentation.gameObject.SetActive(value);
+            if(groundShadow!=null) groundShadow.enabled=value;
+        }
+        void OnEnable() { SetVisible(true); if(life!=null) life.enabled=true; Bind(); }
+        void OnDisable() { Unbind(); SetVisible(false); }
         void OnDestroy() { Unbind(); assembly.Dispose(); }
     }
 }

@@ -70,7 +70,7 @@ namespace HealerLike.Render.Zones
         {
             int first = Add(0);
             for (int i = 1; i < 65; i++) Add(i);
-            LogAssert.Expect(LogType.Warning, "HLZoneRegistry: cosmetic zone capacity exceeded; displaying the first 64 active zones.");
+            LogAssert.Expect(LogType.Warning, "HLZoneRegistry: cosmetic zone capacity exceeded; feedback reserved before decorative footprints; first registered wins within each kind.");
             _registry.PublishFrame(0);
             Assert.AreEqual(64, _upload.Count);
             Assert.AreEqual(1, _registry.OverflowCount);
@@ -81,8 +81,28 @@ namespace HealerLike.Render.Zones
             Assert.AreEqual(64, _upload.Data[63].position.x);
             Assert.AreEqual(0, _registry.OverflowCount);
             Add(65);
-            LogAssert.Expect(LogType.Warning, "HLZoneRegistry: cosmetic zone capacity exceeded; displaying the first 64 active zones.");
+            LogAssert.Expect(LogType.Warning, "HLZoneRegistry: cosmetic zone capacity exceeded; feedback reserved before decorative footprints; first registered wins within each kind.");
             _registry.PublishFrame(0);
+        }
+
+        [Test] public void PersistentFootprintsCannotStarveHealAndExpiredFeedbackReturnsCapacity()
+        {
+            for (int i = 0; i < 80; i++) _registry.Add(HLZoneKind.Trample, Vector3.right * i, 1, 1);
+            int heal = _registry.AddPulse(HLZoneKind.Heal, Vector3.right * 100, 2, 1, .45f);
+            _registry.AddPulse(HLZoneKind.Hostile, Vector3.right * 101, 2, 1, .8f);
+            LogAssert.Expect(LogType.Warning, "HLZoneRegistry: cosmetic zone capacity exceeded; feedback reserved before decorative footprints; first registered wins within each kind.");
+            _registry.PublishFrame(.1f);
+            Assert.AreEqual(64, _registry.Count); Assert.AreEqual(82, _registry.LiveCount);
+            Assert.AreEqual(18, _registry.OverflowCount);
+            for (int i = 0; i < 62; i++) Assert.AreEqual(i, _registry.Snapshot[i].position.x);
+            Assert.AreEqual((int)HLZoneKind.Heal, _registry.Snapshot[62].kind);
+            Assert.AreEqual((int)HLZoneKind.Hostile, _registry.Snapshot[63].kind);
+            _registry.PublishFrame(.4f);
+            Assert.IsFalse(_registry.Contains(heal));
+            Assert.AreEqual(62, _registry.Snapshot[62].position.x);
+            Assert.AreEqual((int)HLZoneKind.Hostile, _registry.Snapshot[63].kind);
+            _registry.PublishFrame(.4f);
+            Assert.AreEqual(63, _registry.Snapshot[63].position.x);
         }
 
         [Test] public void RemovedSlotsAreReusedWithoutReusingHandlesOrReordering()
