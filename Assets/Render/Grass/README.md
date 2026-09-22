@@ -95,3 +95,20 @@ TriggerGust(Vector3 towardTarget) doubles the authored wind amplitude for 0.5 sc
 HLLaunchWave calls it from Projectile.Init; latest launch wins. Wind returns to its authored
 heading/amplitude afterward. These elapsed times are cosmetic envelopes of simulation events,
 not invented cooldown or cast state. Existing ambient wind remains unchanged between launches.
+
+## Measured stock budget (2026-09-22)
+
+The default remains **65,536**, with a stock cap of **98,304** blades. In
+`/Users/fc/Documents/healerlike-render-specs/bench-stage.md`, requesting 262,144
+with the stock asset produced 98,304. The separate 262,144 uncapped experiment
+changed the constant temporarily; it is not a supported stock budget.
+
+Loaded Apple M2 Max, Unity 6000.6.0f1, Metal, 1920x1080, 120 warmup and 300
+sample frames: full 65,536 stage average **11.696 ms**, p50 **8.949 ms**, p99
+**58.960 ms**; no-grass average **7.699 ms**, p50 **7.532 ms**, p99 **11.217 ms**.
+The average difference is about **4 ms**. These are shared-machine whole-frame
+Editor measurements with changing gameplay, not an isolated grass GPU cost.
+The stock capped 98,304 run averaged **8.103 ms** (p99 **11.104 ms**); the
+non-monotonic results reflect workload/scheduling variability, not evidence that
+more blades are cheaper. The 65,536 harness average/p95/p99 were
+**11.695 / 16.273 / 73.783 ms**; harness and stage p99 clocks differ.

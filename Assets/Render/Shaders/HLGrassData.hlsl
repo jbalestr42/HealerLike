@@ -93,7 +93,12 @@ half4 HLGrassFragment(HLGrassVaryings input, FRONT_FACE_TYPE face : FRONT_FACE_S
 {
     UNITY_SETUP_INSTANCE_ID(input);
     float3 normal = normalize(input.normalWS) * (float(face) > 0 ? 1 : -1);
-    Light mainLight = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
+#if defined(_MAIN_LIGHT_SHADOWS_SCREEN)
+    float4 shadowCoord = ComputeScreenPos(TransformWorldToHClip(input.positionWS));
+#else
+    float4 shadowCoord = TransformWorldToShadowCoord(input.positionWS);
+#endif
+    Light mainLight = GetMainLight(shadowCoord);
     float illum = saturate((dot(normal, mainLight.direction) * 0.5 + 0.5) * mainLight.shadowAttenuation);
     float3 baseColor = HLGrassAlbedo(input.height01, input.healSpike) * UNITY_ACCESS_INSTANCED_PROP(HLGrassInstances, _BaseColor).rgb;
     return half4(HLEvaluateSurface(input.positionWS, illum, baseColor), 1);
