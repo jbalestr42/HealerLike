@@ -53,3 +53,20 @@ status children, then read `Tint` immediately to catch late subscription. Negati
 resource statuses emit coral, removal/disable emits white (release sentinel). The creature owner
 must combine overlapping tints and restore its own body palette when releasing; this event does
 not directly overwrite shared materials. No new tint contract or creature code is introduced.
+
+## Beauty pass B4
+
+`SIGNATURES.md` records the reviewed beauty code beside every authored signature. Rebuilding
+with `HLSpellPrefabBuilder.Build` regenerates all 99 prefabs, including standalone heal ring,
+hostile litter and poison drips. Heal buds have thin attached stalks and a grow/pop envelope;
+regeneration uses the observed tick period. The impact is a two-sided planar star and four
+ballistic cone shards. `FacingCamera` can override the main camera used for its facing pose.
+Buff planes orbit the body with a small size/brightness pulse; shield leaves overlap when closed
+and swing radially outward on removal. Hostile `PulseArea` adds five slate boulders on the same
+0.8-second cosmetic clock as the existing grass cone pulse. Grass remains the cone/disc owner.
+
+`HLChainContactVisual` is an optional projectile behaviour for the two lightning variants.
+Attach it before `Projectile.Init`; it obtains the spell sink from the registry unless `Sink`
+is injected. Each contact after the first draws `ShowContactLink(previousContact, contact)`.
+The existing multi-heal `ShowLink` keeps its curved gold beam and travelling dots, with a soft
+`_BaseColor` brightness envelope. See `BEAUTY-REPORT.md` for exact Stage wiring and limitations.

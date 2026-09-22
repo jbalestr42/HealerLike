@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Spells
 {
-    public enum HLSpellEffectKind { Buff, Shield, Heal, Impact, Chain, Mana, Drip, Area }
+    public enum HLSpellEffectKind { Buff, Shield, Heal, Impact, Chain, Mana, Drip, Area, Litter }
     /// <summary>Cosmetic animation only. Status timing is supplied by the observer, never used to execute ticks.</summary>
     public sealed class HLSpellEffect : MonoBehaviour
     {
@@ -18,7 +18,8 @@ namespace HealerLike.Render.Spells
         {
             Color color = signature.sign == HLSign.Negative ? new Color32(242,96,122,255) :
                 signature.operation == HLOperation.Resource && signature.sign == HLSign.Positive && signature.attribute == AttributeType.HealthMax ? new Color32(198,242,74,255) : new Color32(242,194,48,255);
-            var block = PropertyBlock; block.SetColor("_BaseColor",color);
+            _baseColor = color;
+            var block = PropertyBlock; block.SetColor(BaseColorId,color);
             foreach(var part in parts) if(part) part.GetComponent<Renderer>().SetPropertyBlock(block);
         }
         public UnityEngine.Events.UnityEvent<Color> OnTint = new UnityEngine.Events.UnityEvent<Color>();
@@ -32,6 +33,13 @@ namespace HealerLike.Render.Spells
         public float DurationSeconds { get; private set; }
         public HLClockKind Clock { get; private set; }
         public HLSpellSignature Signature { get; private set; }
+        public Transform[] stalks = new Transform[0];
+        // Optional explicit camera; otherwise the tagged main camera is read in LateUpdate.
+        public Transform FacingCamera;
+        public bool ContactThread;
+        Renderer[] _renderers;
+        Color _baseColor;
+        static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         public Transform[] parts = new Transform[0];
         Vector3[] _positions, _scales;
         Quaternion[] _rotations;
@@ -83,10 +91,14 @@ namespace HealerLike.Render.Spells
             if (_ready) return;
             RetainPrimitives();
             if (parts == null || parts.Length == 0) HLSpellPrimitives.Build(this);
+            _renderers = new Renderer[parts.Length];
             _positions = new Vector3[parts.Length]; _scales = new Vector3[parts.Length]; _rotations = new Quaternion[parts.Length];
-            for (int i = 0; i < parts.Length; i++) { _positions[i] = parts[i].localPosition; _scales[i] = parts[i].localScale; _rotations[i] = parts[i].localRotation; }
+            for (int i = 0; i < parts.Length; i++) { _renderers[i] = parts[i].GetComponent<Renderer>(); _positions[i] = parts[i].localPosition; _scales[i] = parts[i].localScale; _rotations[i] = parts[i].localRotation; }
             Color color = kind == HLSpellEffectKind.Heal ? new Color32(198,242,74,255) : (kind == HLSpellEffectKind.Impact || kind == HLSpellEffectKind.Drip) ? new Color32(242,96,122,255) : new Color32(242,194,48,255);
-            var block = PropertyBlock; block.SetColor("_BaseColor", color);
+            if (kind == HLSpellEffectKind.Litter) color = new Color32(58,66,87,255);
+            if (kind == HLSpellEffectKind.Area) color = Color.white;
+            _baseColor = color;
+            var block = PropertyBlock; block.SetColor(BaseColorId, color);
             foreach (var renderer in GetComponentsInChildren<Renderer>()) { if (material) renderer.sharedMaterial = material; renderer.SetPropertyBlock(block); }
             if (hasAuthoredSignature) ApplySignatureColor(authoredSignature);
             _ready = true;
@@ -100,6 +112,18 @@ namespace HealerLike.Render.Spells
             {
                 parts[i].gameObject.SetActive(Signature.operation != HLOperation.Attribute || Signature.attribute != AttributeType.HitArmor || !observedCharges.HasValue || i < Mathf.Clamp(Mathf.CeilToInt(observedCharges.Value), 0, 6));
             }
+        }
+        public void FaceCamera(Transform cameraTransform)
+        {
+            if (kind == HLSpellEffectKind.Impact && cameraTransform && parts.Length > 0)
+                parts[0].rotation = cameraTransform.rotation;
+        }
+        void LateUpdate()
+        {
+            if (kind != HLSpellEffectKind.Impact) return;
+            var cameraTransform = FacingCamera;
+            if (!cameraTransform) { var camera = Camera.main; if (camera) cameraTransform = camera.transform; }
+            FaceCamera(cameraTransform);
         }
         void Update()
         {
@@ -120,24 +144,72 @@ namespace HealerLike.Render.Spells
             {
                 if (!parts[i]) continue;
                 if (kind == HLSpellEffectKind.Buff)
-                    parts[i].localRotation = _rotations[i] * Quaternion.Euler(0, statusTime * (i % 2 == 0 ? 34 : -28), 0);
+                {
+                    // Rotate the tilted plane around the body; spinning a torus in its own plane is invisible.
+                    parts[i].localRotation = Quaternion.Euler(0, statusTime * (i % 2 == 0 ? 34 : -28), 0) * _rotations[i];
+                    parts[i].localScale = _scales[i] * (1 + .035f * Mathf.Sin(statusTime*2.4f+i));
+                    Brighten(i, 1.12f + .12f * Mathf.Sin(statusTime*2.4f+i));
+                }
                 else if (kind == HLSpellEffectKind.Shield)
-                    parts[i].localRotation = _rotations[i] * Quaternion.Euler(Mathf.Lerp(-32, Signature.operation == HLOperation.Attribute && Signature.attribute == AttributeType.PercentArmor ? -16 : 0, (_removing ? 1 - Mathf.Clamp01(_removalAge * 4) : Mathf.Clamp01(statusTime * 4))), 0, 0);
+                {
+                    float closure = _removing ? 1 - Mathf.Clamp01(_removalAge*4) : Mathf.Clamp01(statusTime*4);
+                    float closedAngle = Signature.operation == HLOperation.Attribute && Signature.attribute == AttributeType.PercentArmor ? -16 : 0;
+                    parts[i].localRotation = _rotations[i] * Quaternion.Euler(0,0,Mathf.Lerp(-32,closedAngle,closure));
+                    parts[i].localPosition = _positions[i] * Mathf.Lerp(1.3f,1,closure);
+                }
                 else if (kind == HLSpellEffectKind.Drip)
                 {
-                    float phase = PeriodSeconds > 0 ? Mathf.Repeat(statusTime, PeriodSeconds) / PeriodSeconds : 0;
-                    parts[i].localPosition = _positions[i] + Vector3.down * phase * .35f;
-                    parts[i].localScale = _scales[i] * (statusTime >= PeriodSeconds && PeriodSeconds > 0 ? 1 - phase : .25f);
+                    bool ticking = HLSpellGrammar.Finite(PeriodSeconds) && PeriodSeconds > 0 && statusTime >= PeriodSeconds;
+                    float phase = ticking ? Mathf.Repeat(statusTime, PeriodSeconds) / PeriodSeconds : 0;
+                    bool rising = Signature.sign == HLSign.Positive;
+                    parts[i].localPosition = _positions[i] + (rising ? Vector3.up : Vector3.down) * phase * phase * .6f;
+                    parts[i].localScale = _scales[i] * (ticking ? Mathf.Clamp01((1-phase)*4) : 0);
                 }
                 else if (kind == HLSpellEffectKind.Area)
                     parts[i].localScale = _scales[i] * Mathf.Clamp01(_age / .3f);
-                else if (kind == HLSpellEffectKind.Heal || kind == HLSpellEffectKind.Mana)
+                else if (kind == HLSpellEffectKind.Litter)
+                {
+                    float emergence = Mathf.SmoothStep(0,1,Mathf.Clamp01(_age/.15f));
+                    float sink = Mathf.SmoothStep(0,1,Mathf.Clamp01((_age-lifetime*.55f)/(lifetime*.45f)));
+                    parts[i].localPosition = _positions[i] + Vector3.down * (.22f*(1-emergence+sink));
+                    parts[i].localScale = _scales[i] * emergence;
+                }
+                else if (kind == HLSpellEffectKind.Heal)
+                {
+                    bool periodic = _hasSignature && Signature.tempo == HLTempo.HandlerTick && HLSpellGrammar.Finite(PeriodSeconds) && PeriodSeconds > 0;
+                    float time = periodic ? Mathf.Repeat(statusTime,PeriodSeconds)/PeriodSeconds : _age/Mathf.Max(.01f,lifetime);
+                    float phase = _hasSignature && !periodic ? 0 : Mathf.Clamp01(time * (1+i*.025f));
+                    float bud = _hasSignature && !periodic ? 1 : Mathf.SmoothStep(.2f,1,Mathf.Clamp01(phase/.6f)) * (1-Mathf.SmoothStep(0,1,Mathf.Clamp01((phase-.78f)/.16f)));
+                    if (periodic && statusTime < PeriodSeconds) bud = 0;
+                    parts[i].localPosition = _positions[i] + Vector3.up * phase * (.45f+i*.025f);
+                    parts[i].localScale = _scales[i] * bud;
+                    if (i < stalks.Length && stalks[i])
+                    {
+                        float height = parts[i].localPosition.y + .12f;
+                        stalks[i].localPosition = new Vector3(_positions[i].x, height*.5f-.12f, _positions[i].z);
+                        stalks[i].localScale = new Vector3(.009f*bud,height*.5f,.009f*bud);
+                    }
+                }
+                else if (kind == HLSpellEffectKind.Mana)
                     parts[i].localPosition = _positions[i] + Vector3.up * ((_hasSignature ? 0 : _age) * (.55f + i * .04f));
                 else if (kind == HLSpellEffectKind.Impact)
-                    parts[i].localPosition = _positions[i] + _positions[i].normalized * (_hasSignature ? 0 : _age) * .9f;
-                if (!_hasSignature && kind != HLSpellEffectKind.Chain && kind != HLSpellEffectKind.Area)
+                {
+                    float time = _hasSignature ? 0 : _age;
+                    if (i > 0)
+                    {
+                        var velocity = new Vector3(_positions[i].x*4,1.1f+i*.12f,_positions[i].z*4);
+                        parts[i].localPosition = _positions[i] + velocity*time + Vector3.down*(2.8f*time*time);
+                        parts[i].localRotation = _rotations[i]*Quaternion.Euler(time*180,time*70,0);
+                    }
+                }
+                if (!_hasSignature && kind != HLSpellEffectKind.Chain && kind != HLSpellEffectKind.Area && kind != HLSpellEffectKind.Heal && kind != HLSpellEffectKind.Litter && kind != HLSpellEffectKind.Drip)
                     parts[i].localScale = _scales[i] * Mathf.Sqrt(fade);
             }
+        }
+        void Brighten(int index, float brightness)
+        {
+            var color = _baseColor * brightness; color.a = 1;
+            var block = PropertyBlock; block.SetColor(BaseColorId,color); _renderers[index].SetPropertyBlock(block);
         }
         /// <summary>Endpoints supplied by a confirmed link; no target queries or inferred bounce order.</summary>
         public void SetEndpoints(Vector3 start, Vector3 end)
@@ -148,16 +220,27 @@ namespace HealerLike.Render.Spells
             for (int i = 0; i < parts.Length; i++)
             {
                 float t = (i / 2) / 16f;
-                Vector3 p = Curve(start, end, t);
+                Vector3 p = LinkPoint(start, end, t);
                 if (i % 2 == 0)
                 {
-                    Vector3 q = Curve(start, end, Mathf.Min(1, t + 1 / 16f));
+                    Vector3 q = LinkPoint(start, end, Mathf.Min(1, t + 1 / 16f));
                     parts[i].position = (p + q) * .5f;
                     parts[i].rotation = q == p ? Quaternion.identity : Quaternion.FromToRotation(Vector3.up, q - p);
-                    parts[i].localScale = new Vector3(.025f, Vector3.Distance(p, q) * .5f, .025f);
+                    parts[i].localScale = new Vector3(ContactThread ? .012f : .025f, Vector3.Distance(p, q) * .5f, ContactThread ? .012f : .025f);
                 }
-                else parts[i].position = Curve(start, end, Mathf.Repeat(t + _age / .6f, 1));
+                else
+                {
+                    parts[i].gameObject.SetActive(!ContactThread);
+                    parts[i].position = Curve(start, end, Mathf.Repeat(t + _age / .6f, 1));
+                }
+                Brighten(i, 1.15f + .25f*Mathf.Sin(Mathf.PI*Mathf.Clamp01(_age/Mathf.Max(.01f,lifetime))));
             }
+        }
+        Vector3 LinkPoint(Vector3 a, Vector3 b, float t)
+        {
+            if (!ContactThread) return Curve(a,b,t);
+            Vector3 side = Vector3.Cross((b-a).normalized,Vector3.up);
+            return Vector3.Lerp(a,b,t) + side*(Mathf.Sin(t*Mathf.PI*8)*Mathf.Sin(t*Mathf.PI)*.035f);
         }
         static Vector3 Curve(Vector3 a, Vector3 b, float t) => Vector3.Lerp(a, b, t) + Vector3.up * (4 * t * (1-t) * Mathf.Min(.7f, Vector3.Distance(a,b) * .2f));
     }

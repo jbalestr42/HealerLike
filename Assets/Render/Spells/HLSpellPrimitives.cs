@@ -11,13 +11,13 @@ namespace HealerLike.Render.Spells
             if (s.operation == HLOperation.Prevention || s.operation == HLOperation.Attribute && (s.attribute == AttributeType.HitArmor || s.attribute == AttributeType.PercentArmor || s.attribute == AttributeType.FlatArmor)) return HLSpellEffectKind.Shield;
             if (s.operation == HLOperation.Resource)
             {
-                if (s.tempo == HLTempo.HandlerTick) return HLSpellEffectKind.Drip;
+                if (s.tempo == HLTempo.HandlerTick && s.sign != HLSign.Positive) return HLSpellEffectKind.Drip;
                 if (s.attribute == AttributeType.ManaMax) return HLSpellEffectKind.Mana;
                 return s.sign == HLSign.Positive ? HLSpellEffectKind.Heal : HLSpellEffectKind.Impact;
             }
             return HLSpellEffectKind.Buff;
         }
-        static Mesh _torus, _cone;
+        static Mesh _torus, _cone, _star, _boulder;
         static Material _fallback;
         static int _users;
         public static void Retain() => _users++;
@@ -30,8 +30,8 @@ namespace HealerLike.Render.Spells
         public static void Release()
         {
             if (_users != 0) return;
-            Dispose(_torus); Dispose(_cone); Dispose(_fallback);
-            _torus = null; _cone = null; _fallback = null;
+            Dispose(_torus); Dispose(_cone); Dispose(_star); Dispose(_boulder); Dispose(_fallback);
+            _torus = null; _cone = null; _star = null; _boulder = null; _fallback = null;
         }
         static void Dispose(Object resource)
         {
@@ -54,7 +54,7 @@ namespace HealerLike.Render.Spells
                     parts.Add(Part(effect, Torus, gold, Vector3.up * (i - 1) * .12f, Vector3.one * (.55f + i * .16f), Quaternion.Euler(30 + i * 23, i * 60, 18)));
             }
             else if (effect.kind == HLSpellEffectKind.Area)
-                parts.Add(Part(effect, Torus, lime, Vector3.up*.03f, Vector3.one*2, Quaternion.identity));
+                parts.Add(Part(effect, Torus, lime, Vector3.up*.03f, new Vector3(2,.3f,2), Quaternion.identity));
             else if (effect.kind == HLSpellEffectKind.Drip)
             {
                 for (int i = 0; i < 5; i++)
@@ -65,28 +65,36 @@ namespace HealerLike.Render.Spells
                 for (int i = 0; i < 6; i++)
                 {
                     float a = i * Mathf.PI / 3;
-                    parts.Add(Primitive(effect, PrimitiveType.Sphere, gold, new Vector3(Mathf.Cos(a)*.4f,0,Mathf.Sin(a)*.4f), new Vector3(.12f,.85f,.32f), Quaternion.Euler(0,-i*60,20)));
+                    parts.Add(Primitive(effect, PrimitiveType.Sphere, gold, new Vector3(Mathf.Cos(a)*.4f,0,Mathf.Sin(a)*.4f), new Vector3(.14f,.9f,.46f), Quaternion.Euler(0,-i*60,12)));
+                }
+            }
+            else if (effect.kind == HLSpellEffectKind.Litter)
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    float a = i * 2.4f, r = .3f + i * .11f;
+                    parts.Add(Part(effect, Boulder, new Color32(58,66,87,255), new Vector3(Mathf.Cos(a)*r,.06f,Mathf.Sin(a)*r), new Vector3(.12f+i*.009f,.09f,.10f), Quaternion.Euler(i*17,i*43,12)));
                 }
             }
             else if (effect.kind == HLSpellEffectKind.Heal || effect.kind == HLSpellEffectKind.Mana)
             {
+                if (effect.kind == HLSpellEffectKind.Heal) effect.stalks = new Transform[7];
                 for (int i = 0; i < 7; i++)
                 {
                     float a = i * 2.4f; var p = new Vector3(Mathf.Cos(a)*.25f, i*.035f, Mathf.Sin(a)*.25f);
                     parts.Add(effect.kind == HLSpellEffectKind.Mana ? Part(effect, Torus, gold, p, Vector3.one*.12f, Quaternion.Euler(90,0,0)) : Primitive(effect, PrimitiveType.Sphere, lime, p, Vector3.one*(.065f+i*.006f), Quaternion.identity));
+                    if (effect.kind == HLSpellEffectKind.Heal)
+                        effect.stalks[i] = Primitive(effect, PrimitiveType.Cylinder, lime, new Vector3(p.x,(p.y+.12f)*.5f-.12f,p.z), new Vector3(.009f,(p.y+.12f)*.5f,.009f), Quaternion.identity);
                 }
             }
             else if (effect.kind == HLSpellEffectKind.Impact)
             {
-                for (int i = 0; i < 8; i++)
+                parts.Add(Part(effect, Star, coral, Vector3.zero, Vector3.one*.28f, Quaternion.identity));
+                for (int i = 0; i < 4; i++)
                 {
-                    float a = i * Mathf.PI / 4; var p = new Vector3(Mathf.Cos(a),Mathf.Sin(a), .1f) * .2f;
-                    parts.Add(Part(effect, Cone, coral, p, new Vector3(.045f,.16f,.045f), Quaternion.FromToRotation(Vector3.up,p)));
-                    if (i % 2 == 0)
-                    {
-                        parts.Add(Primitive(effect, PrimitiveType.Cube, coral, p*.7f, new Vector3(.025f,.17f,.025f), Quaternion.Euler(0,0,45)));
-                        parts.Add(Primitive(effect, PrimitiveType.Cube, coral, p*.7f, new Vector3(.025f,.17f,.025f), Quaternion.Euler(0,0,-45)));
-                    }
+                    float a = i * 2.4f;
+                    var p = new Vector3(Mathf.Cos(a)*.14f,.08f+i*.025f,Mathf.Sin(a)*.14f);
+                    parts.Add(Part(effect, Cone, coral, p, new Vector3(.035f,.12f,.035f), Quaternion.FromToRotation(Vector3.up,p)));
                 }
             }
             else for (int i = 0; i < 16; i++)
@@ -155,6 +163,37 @@ namespace HealerLike.Render.Spells
         }
         public static Mesh Torus => _torus ? _torus : _torus = CreateTorus();
         public static Mesh Cone => _cone ? _cone : _cone = CreateCone();
+        public static Mesh Star => _star ? _star : _star = CreateStar();
+        public static Mesh Boulder => _boulder ? _boulder : _boulder = CreateBoulder();
+        static Mesh CreateStar()
+        {
+            // Two-sided planar triangle fan: eight long rays alternating with short notches.
+            var vertices = new Vector3[34]; var triangles = new int[96];
+            for (int i=0;i<16;i++)
+            {
+                float a=i*Mathf.PI/8, r=i%2==0 ? 1 : .32f;
+                vertices[i+1]=new Vector3(Mathf.Cos(a)*r,Mathf.Sin(a)*r,0);
+                vertices[i+18]=vertices[i+1];
+                int next=(i+1)%16+1, o=i*6;
+                triangles[o]=0;triangles[o+1]=i+1;triangles[o+2]=next;
+                triangles[o+3]=17;triangles[o+4]=next+17;triangles[o+5]=i+18;
+            }
+            var mesh=new Mesh{name="HLStar"};mesh.vertices=vertices;mesh.triangles=triangles;mesh.RecalculateNormals();mesh.RecalculateBounds();return mesh;
+        }
+        static Mesh CreateBoulder()
+        {
+            // Flat-shaded octahedron, kept deliberately asymmetric.
+            var vertices=new Vector3[24];var triangles=new int[24];
+            for(int i=0;i<4;i++)
+            {
+                float a=i*Mathf.PI*.5f,b=(i+1)*Mathf.PI*.5f;
+                var p=new Vector3(Mathf.Cos(a),0,Mathf.Sin(a));var q=new Vector3(Mathf.Cos(b),0,Mathf.Sin(b));
+                int k=i*6;vertices[k]=p;vertices[k+1]=new Vector3(.15f,1,0);vertices[k+2]=q;
+                vertices[k+3]=q;vertices[k+4]=new Vector3(-.1f,-.7f,.1f);vertices[k+5]=p;
+                for(int j=0;j<6;j++)triangles[k+j]=k+j;
+            }
+            var mesh=new Mesh{name="HLBoulder"};mesh.vertices=vertices;mesh.triangles=triangles;mesh.RecalculateNormals();mesh.RecalculateBounds();return mesh;
+        }
         static Mesh CreateTorus()
         {
             const int rings = 32, sides = 6; var v = new Vector3[rings*sides]; var t = new int[rings*sides*6];

@@ -123,7 +123,8 @@ namespace HealerLike.Render.Spells
             if(!HLZonePacker.TryCreate(center,radius,kind,strength,0,out var zone)) return;
             if (isActiveAndEnabled)
             {
-                var ring = Spawn(null,HLSpellEffectKind.Area,transform);
+                var ring = Spawn(null,kind == HLZoneKind.Hostile ? HLSpellEffectKind.Litter : HLSpellEffectKind.Area,transform);
+                ring.lifetime = PulseSeconds;
                 ring.transform.position = center; ring.transform.localScale = Vector3.one * radius;
                 ring.SetSide(kind == HLZoneKind.Hostile ? Entity.EntityType.Computer : Entity.EntityType.Player);
                 _impacts.Add(ring.gameObject);
@@ -138,6 +139,13 @@ namespace HealerLike.Render.Spells
             if (!isActiveAndEnabled || !HLSpellGrammar.Finite(start.x) || !HLSpellGrammar.Finite(start.y) || !HLSpellGrammar.Finite(start.z) || !HLSpellGrammar.Finite(end.x) || !HLSpellGrammar.Finite(end.y) || !HLSpellGrammar.Finite(end.z)) return null;
             var effect=Spawn(styles ? styles.chain : null,HLSpellEffectKind.Chain,transform);effect.lifetime=.6f;effect.SetEndpoints(start,end);_impacts.Add(effect.gameObject);
             if (_impacts.Count > 128) { Dispose(_impacts[0]); _impacts.RemoveAt(0); }
+            return effect;
+        }
+        /// <summary>Call only with the previous and current confirmed lightning contacts.</summary>
+        public HLSpellEffect ShowContactLink(Vector3 previousContact, Vector3 contact)
+        {
+            var effect = ShowLink(previousContact,contact);
+            if (effect) { effect.ContactThread = true; effect.SetEndpoints(previousContact,contact); }
             return effect;
         }
         public void FlushHealLinks()
