@@ -8,8 +8,8 @@ namespace HealerLike.Render.Creatures
         public static bool TryValidate(HLCreatureRecipe data, out string error)
         {
             error = null;
-            if (!data || data.parts == null || data.parts.Length == 0 || data.parts.Length > 24)
-                return Fail("Require 1..24 parts.", out error);
+            if (!data || data.parts == null || data.parts.Length == 0 || data.parts.Length > 40)
+                return Fail("Require 1..40 parts.", out error);
             var ids = new HashSet<string>();
             for (int i = 0; i < data.parts.Length; i++)
             {
@@ -36,7 +36,7 @@ namespace HealerLike.Render.Creatures
                         return Fail("Rest pose does not preserve link lengths.", out error);
             }
             var r = data.roots;
-            if (r.count < 4 || r.count > 6 || !Positive(r.footRadius) || !Positive(r.thickness) || r.footRadius + r.thickness > .46f
+            if (r.count < 4 || r.count > 8 || !Positive(r.footRadius) || !Positive(r.thickness) || r.footRadius + r.thickness > .46f
                 || !Positive(r.hipHeight) || !Positive(r.kneeHeight) || !HLChainSolver.Finite(r.angularOffset) || !Colour(r.colour))
                 return Fail("Roots exceed the cell footprint or have invalid settings.", out error);
             var idle = data.idle;

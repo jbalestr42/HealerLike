@@ -19,13 +19,13 @@ No scene, EntityData, skill-factory or original prefab wiring is changed by this
 
 | Recipe | Shape | Model variants |
 | --- | --- | --- |
-| HLHealer | Bulb on stem, torus crown, three luminous buds | HLHealerCharacter |
+| HLHealer | Cone on jointed stem, spinning oval torus crown, three luminous buds | HLHealerCharacter |
 | HLSpiralFern | Curled stalk with alternating flattened fronds | HLNormal, HLFastShoot, HLRandomShoot |
 | HLHangingArch | Tall open arch with three pendant pods | HLSwarm, HLTripleShoot, HLMultiShot |
 | HLBladeRosette | Low hub with six outward leaf cones | HLHitArmorBuffer (Stage currently uses a stone; see WAVE5-REPORT.md) |
 | HLSphereStack | Three offset spheres above a broad cone | HLTest, HLChainLightning, HLChanneling, HLSoldier |
 
-The four recipes are authored primitive trees; each part has a pivot separate from its dimension-scaled geometry. Recipe socket positions are new-authoring hints only: runtime never overwrites the preserved prefab sockets with these hints. Legacy imported socket heights therefore remain substantially above the smaller bodies in some models. The visible shoulder is recipe-authored; its tip follows the actual invisible projectile even when the original source socket is above the body.
+The five recipes are authored primitive trees; each part has a pivot separate from its dimension-scaled geometry. Recipe socket positions are new-authoring hints only: runtime never overwrites the preserved prefab sockets with these hints. Legacy imported socket heights therefore remain substantially above the smaller bodies in some models. The visible shoulder is recipe-authored; its tip follows the actual invisible projectile even when the original source socket is above the body.
 
 ## Reach, timing and bounds
 
@@ -46,8 +46,8 @@ Asset tests validate all recipes, build procedural geometry, compare every model
 ## Wave 5 simulation readouts
 
 The generated body turns toward the first `TargetProvider.GetTargets()` root, with damped yaw;
-its rest arms share that orientation. No target selects a slow cosmetic scan. The former
-free-running sway/breath is replaced by health droop, event-driven hit shake, and cooldown swell.
+its rest arms share that orientation. No target selects a slow cosmetic scan. Subtle clock-driven
+sway/breath layers with health droop, event-driven hit shake, and cooldown swell.
 Health uses current/max; enabled cooldown skills use `1 - cooldownProgress`, with the greatest
 readiness driving the body. No cooldown skills means no charge. The generic public getter is
 bound once per skill to a delegate; component enumeration each frame catches initial skills
@@ -70,3 +70,19 @@ views unsubscribe. Discovery includes resources on stones, not just creature mod
 scans the scene per frame because the runtime has no global resource-added event. `Bud0`, `Bud1`,
 `Bud2` and `BudAnchors` expose generated presentation transforms for ShowLink callers. Bud base
 colour brightness follows mana fraction through the shared primitive shader. This does not relocate gameplay sockets.
+
+## Beauty pass
+
+The five shipped recipes now use six to eight cone-root legs and capsule joint collars.
+Healer crown rotation, subtle sway and breathing read the supplied clock; targeting,
+charge, health and mana retain their simulation readouts. Colour variation is stable for
+an instance lifetime, within six hue degrees and eight percent value, without gameplay RNG.
+Charge swells rounded heads by up to 24 percent and brightens authored buds; low health
+suppresses that brightness and keeps the jade droop readable.
+
+The existing liana tube remains one renderer. While active, five cone leaves and six
+spheres (five collars plus the tip) use two instanced submissions, shared meshes/material,
+and reusable matrices. Materials must enable instancing. Resting arms submit no details.
+Healer resource discovery now traverses loaded scene roots into reusable lists instead of
+allocating a scene-search array each Update. New resources still bind on the next Update.
+See BEAUTY-REPORT.md for Stage mapping and verification limits.

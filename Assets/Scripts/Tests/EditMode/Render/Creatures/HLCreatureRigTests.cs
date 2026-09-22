@@ -11,7 +11,7 @@ namespace HealerLike.Render.Creatures
         [SetUp] public void Setup()
         {
             parent = new GameObject("HLTestRig"); material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            recipe = HLCreatureValidatorTests.Recipe(); rig = HLCreatureRig.Build(recipe, parent.transform, material);
+            recipe = HLCreatureValidatorTests.Recipe(); recipe.idle = default; rig = HLCreatureRig.Build(recipe, parent.transform, material);
         }
         [TearDown] public void Cleanup() { rig.Dispose(); Object.DestroyImmediate(parent); Object.DestroyImmediate(material); Object.DestroyImmediate(recipe); HLPrimitiveMeshes.ReleaseAll(); }
         [Test] public void LastRigReleasesSharedMeshesEvenWhenParentWasDestroyed()
@@ -33,7 +33,7 @@ namespace HealerLike.Render.Creatures
             rig = HLCreatureRig.Build(recipe, parent.transform, material);
             var renderer = rig.Root.GetComponentInChildren<Renderer>();
             var block = new MaterialPropertyBlock(); renderer.GetPropertyBlock(block);
-            Assert.That(block.GetColor("_BaseColor").g, Is.EqualTo(1.2f).Within(.0001f));
+            Assert.That(block.GetColor("_BaseColor").g, Is.InRange(1.104f, 1.296f));
             Assert.That(block.GetColor("_BaseColor").a, Is.EqualTo(.7f).Within(.0001f));
             rig.SetReadout(null, 1, 0, 1); rig.Tick(0, 0, new HLFootFrame(Vector3.zero, Vector3.up, 1));
             renderer.GetPropertyBlock(block);
@@ -41,6 +41,28 @@ namespace HealerLike.Render.Creatures
             rig.SetReadout(null, 1, 0, 0); rig.Tick(0, 0, new HLFootFrame(Vector3.zero, Vector3.up, 1));
             renderer.GetPropertyBlock(block);
             Assert.Less(block.GetColor("_BaseColor").g, 1);
+        }
+        [Test] public void ChargeSwellsAndBrightensBudAndWiltSuppressesGlow()
+        {
+            rig.Dispose(); recipe.parts[0].glow = 1;
+            rig = HLCreatureRig.Build(recipe, parent.transform, material);
+            var renderer = rig.Root.GetComponentInChildren<Renderer>();
+            var block = new MaterialPropertyBlock(); var frame = new HLFootFrame(Vector3.zero, Vector3.up, 1);
+            rig.SetReadout(null, 1, 0, 0); rig.Tick(0, 0, frame);
+            var scale = renderer.transform.localScale; renderer.GetPropertyBlock(block); var colour = block.GetColor("_BaseColor");
+            rig.SetReadout(null, 1, 1, 0); rig.Tick(0, 0, frame);
+            Assert.Greater(renderer.transform.localScale.x, scale.x * 1.2f);
+            renderer.GetPropertyBlock(block); Assert.Greater(block.GetColor("_BaseColor").g, colour.g);
+            rig.SetReadout(null, 0, 1, 1); rig.Tick(0, 0, frame);
+            renderer.GetPropertyBlock(block); Assert.Less(block.GetColor("_BaseColor").g, .5f);
+        }
+        [Test] public void WarmBodyTickAllocatesNoManagedMemory()
+        {
+            var frame = new HLFootFrame(Vector3.zero, Vector3.up, 1);
+            for (int i = 0; i < 20; i++) rig.Tick(i * .016f, .016f, frame);
+            long before = System.GC.GetAllocatedBytesForCurrentThread();
+            for (int i = 0; i < 100; i++) rig.Tick(i * .016f, .016f, frame);
+            Assert.AreEqual(0, System.GC.GetAllocatedBytesForCurrentThread() - before);
         }
         [Test] public void PoolSaturatesWithoutStealingLeasesAndDisposeIsIdempotent()
         {

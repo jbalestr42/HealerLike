@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 namespace HealerLike.Render.Creatures
 {
@@ -18,6 +19,8 @@ namespace HealerLike.Render.Creatures
         readonly HashSet<ResourceAttribute> observed = new HashSet<ResourceAttribute>();
         readonly Dictionary<(GameObject, float, bool), int> resolvedHeals = new Dictionary<(GameObject, float, bool), int>();
         int resolvedFrame = -1;
+        readonly List<GameObject> sceneRoots = new List<GameObject>(128);
+        readonly List<ResourceAttribute> resources = new List<ResourceAttribute>(128);
         public IReadOnlyList<Transform> BudAnchors => Rig?.BudAnchors ?? System.Array.Empty<Transform>();
         public Transform Bud0 => BudAnchors.Count > 0 ? BudAnchors[0] : null;
         public Transform Bud1 => BudAnchors.Count > 1 ? BudAnchors[1] : null;
@@ -32,8 +35,28 @@ namespace HealerLike.Render.Creatures
         {
             if (!character || !isActiveAndEnabled) return;
             observed.RemoveWhere(r => !r);
-            foreach (var resource in FindObjectsByType<ResourceAttribute>(FindObjectsSortMode.None))
-                if (observed.Add(resource)) resource.OnAllConsumerProcessed.AddListener(OnResourceProcessed);
+            bool ownerSceneVisited = false;
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                var scene = SceneManager.GetSceneAt(i);
+                ObserveScene(scene);
+                if (scene == character.gameObject.scene) ownerSceneVisited = true;
+            }
+            // The persistent scene is absent from SceneManager's ordinary scene list.
+            if (!ownerSceneVisited) ObserveScene(character.gameObject.scene);
+        }
+        void ObserveScene(Scene scene)
+        {
+            if (!scene.IsValid() || !scene.isLoaded) return;
+            if (sceneRoots.Capacity <= scene.rootCount) sceneRoots.Capacity = scene.rootCount + 32;
+            scene.GetRootGameObjects(sceneRoots);
+            foreach (var sceneRoot in sceneRoots)
+            {
+                if (!sceneRoot.activeInHierarchy) continue;
+                sceneRoot.GetComponentsInChildren(false, resources);
+                foreach (var resource in resources)
+                    if (observed.Add(resource)) resource.OnAllConsumerProcessed.AddListener(OnResourceProcessed);
+            }
         }
         void OnResourceProcessed(GameObject owner, ResourceModifier modifier, float value, bool critical)
         {

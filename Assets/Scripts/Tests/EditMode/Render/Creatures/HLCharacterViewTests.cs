@@ -44,6 +44,12 @@ namespace HealerLike.Render.Creatures
                 var health = TestHelpers.CreateResourceAttribute(target, AttributeType.HealthMax, 100);
                 var view = go.AddComponent<HLCharacterView>(); var registry = new HLRenderRegistry();
                 view.Bind(character, recipe, go.transform, material, registry);
+                var update = (System.Action)System.Delegate.CreateDelegate(typeof(System.Action), view,
+                    typeof(HLCharacterView).GetMethod("Update", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic));
+                for (int i = 0; i < 10; i++) update();
+                long before = System.GC.GetAllocatedBytesForCurrentThread();
+                for (int i = 0; i < 20; i++) update();
+                Assert.AreEqual(0, System.GC.GetAllocatedBytesForCurrentThread() - before);
                 Assert.AreEqual(3, view.BudAnchors.Count); Assert.NotNull(view.Bud0); Assert.NotNull(view.Bud1); Assert.NotNull(view.Bud2);
                 var modifier = new ResourceModifier { source = go };
                 health.OnAllConsumerProcessed.Invoke(target, modifier, -5, false);

@@ -12,6 +12,12 @@ namespace HealerLike.Render.Creatures
         {
             var recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(Root + "Data/" + name + ".asset");
             Assert.IsTrue(HLCreatureValidator.TryValidate(recipe, out var error), error);
+            Assert.That(recipe.roots.count, Is.InRange(6, 8));
+            if (name == "HLHealer")
+            {
+                Assert.AreEqual(HLPrimitive.Cone, System.Array.Find(recipe.parts, p => p.id == "HLBulb").primitive);
+                Assert.AreEqual(HLPrimitive.Torus, System.Array.Find(recipe.parts, p => p.id == "HLCrown").primitive);
+            }
             var parent = new GameObject("HLRecipeFixture");
             try
             {
@@ -19,6 +25,13 @@ namespace HealerLike.Render.Creatures
                 using (var rig = HLCreatureRig.Build(recipe, parent.transform, material))
                 {
                     rig.Tick(1, .016f, new HLFootFrame(Vector3.zero, Vector3.up, 1));
+                    if (name == "HLHealer")
+                    {
+                        var crown = rig.Root.Find("HLSway/HLStem/HLCrown");
+                        var before = crown.localRotation;
+                        rig.Tick(11, .016f, new HLFootFrame(Vector3.zero, Vector3.up, 1));
+                        Assert.That(Quaternion.Angle(before, crown.localRotation), Is.EqualTo(180).Within(.01f));
+                    }
                     foreach (var filter in parent.GetComponentsInChildren<MeshFilter>()) Assert.IsFalse(AssetDatabase.Contains(filter.sharedMesh));
                     Assert.IsEmpty(parent.GetComponentsInChildren<Collider>());
                 }

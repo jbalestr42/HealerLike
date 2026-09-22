@@ -20,6 +20,8 @@ namespace HealerLike.Render.Creatures
         readonly Transform root, sway;
         readonly Transform[] pivots, geometry, roots;
         readonly Renderer[] bodyRenderers;
+        readonly Color[] colours;
+        readonly HLIdleDefinition idle;
         readonly HLLianaArm[] arms = new HLLianaArm[MaxArms];
         readonly int[] tokens = new int[MaxArms];
         readonly int[] definitions = new int[MaxArms];
@@ -100,27 +102,30 @@ namespace HealerLike.Render.Creatures
             sway = new GameObject("HLSway").transform; sway.SetParent(root, false);
             pivots = new Transform[data.parts.Length]; geometry = new Transform[data.parts.Length];
             bodyRenderers = new Renderer[data.parts.Length];
+            colours = new Color[data.parts.Length];
+            idle = data.idle; idle.seed ^= parent.GetEntityId().GetHashCode();
             for (int i = 0; i < data.parts.Length; i++)
             {
                 var part = data.parts[i];
+                colours[i] = HLBeautyMotion.Vary(part.colour, idle.seed);
                 pivots[i] = new GameObject(part.id).transform; pivots[i].SetParent(part.parent < 0 ? sway : pivots[part.parent], false);
                 pivots[i].localPosition = part.localPosition * cellSize; pivots[i].localRotation = Quaternion.Euler(part.localEuler);
-                geometry[i] = HLPrimitiveMeshes.Geometry("HLGeometry", pivots[i], part.primitive, material, part.colour,
+                geometry[i] = HLPrimitiveMeshes.Geometry("HLGeometry", pivots[i], part.primitive, material, colours[i],
                     part.primitive == HLPrimitive.Torus ? part.torusTubeRatio : .25f, part.glow);
                 geometry[i].localScale = part.dimensions * cellSize;
                 bodyRenderers[i] = geometry[i].GetComponent<Renderer>();
             }
             BudAnchors = Array.FindAll(pivots, p => p.name.StartsWith("HLBud", StringComparison.Ordinal));
             roots = new Transform[data.roots.count * 2];
-            for (int i = 0; i < roots.Length; i++) roots[i] = HLPrimitiveMeshes.Geometry("HLRoot", root, HLPrimitive.CylinderSegment, material, data.roots.colour);
+            for (int i = 0; i < roots.Length; i++) roots[i] = HLPrimitiveMeshes.Geometry("HLRoot", root, HLPrimitive.Cone, material, HLBeautyMotion.Vary(data.roots.colour, idle.seed));
             for (int i = 0; i < data.arms.Length; i++) CreateArm(i, i);
         }
 
         void CreateArm(int slot, int definition)
         {
             definitions[slot] = definition;
-            arms[slot] = new HLLianaArm(recipe.arms[definition], root, material, cellSize);
-            var d = recipe.arms[definition]; arms[slot].Tick(0, pivots[d.bodyPart].TransformPoint(d.rootLocal * cellSize), root.rotation);
+            var d = recipe.arms[definition]; d.colour = HLBeautyMotion.Vary(d.colour, idle.seed);
+            arms[slot] = new HLLianaArm(d, root, material, cellSize); arms[slot].Tick(0, pivots[d.bodyPart].TransformPoint(d.rootLocal * cellSize), root.rotation);
         }
         int FreeSlot()
         {
@@ -182,16 +187,21 @@ namespace HealerLike.Render.Creatures
             if (direction.sqrMagnitude > .000001f)
                 aim = Quaternion.Slerp(aim, Quaternion.LookRotation(direction), 1 - Mathf.Exp(-dt * 7));
             hitPulse = Mathf.Max(0, hitPulse - dt * 5);
-            sway.localRotation = aim * Quaternion.Euler((1 - healthFraction) * 32, 0, Mathf.Sin(hitPulse * 24) * hitPulse * 9);
+            var idlePose = HLIdleMotion.Evaluate(idle, time);
+            sway.localRotation = aim * idlePose.sway * Quaternion.Euler((1 - healthFraction) * 32, 0, Mathf.Sin(hitPulse * 24) * hitPulse * 9);
             sway.localPosition = Vector3.down * ((1 - healthFraction) * .08f * cellSize);
             crownPulse = Mathf.Max(0, crownPulse - dt / .2f);
             for (int i = 0; i < geometry.Length; i++)
             {
                 var part = recipe.parts[i];
-                geometry[i].localScale = part.dimensions * cellSize * (1 + crownPulse * .06f + (part.parent >= 0 ? charge * .16f : 0));
-                Color colour = Color.Lerp(new Color(.18f, .49f, .31f), part.colour, healthFraction);
-                if (part.glow > 0) colour = Color.Lerp(colour * .55f, new Color(.78f, .95f, .29f), budPower);
-                colourBlock.SetColor("_BaseColor", HLPrimitiveMeshes.Brighten(colour, part.glow * budPower));
+                bool head = part.primitive == HLPrimitive.Sphere || part.glow > 0 || part.id == "HLBulb";
+                geometry[i].localScale = Vector3.Scale(part.dimensions, idlePose.bodyScale) * cellSize * (1 + crownPulse * .06f + (head ? charge * .24f : 0));
+                if (part.id == "HLCrown") pivots[i].localRotation = Quaternion.Euler(part.localEuler) * Quaternion.AngleAxis(time * 18, Vector3.up);
+                Color colour = Color.Lerp(new Color(.18f, .49f, .31f, colours[i].a), colours[i], healthFraction);
+                float light = Mathf.Max(budPower, charge) * healthFraction;
+                if (part.glow > 0) colour = Color.Lerp(new Color(colour.r * .55f, colour.g * .55f, colour.b * .55f, colour.a),
+                    new Color(.78f, .95f, .29f, colour.a), light);
+                colourBlock.SetColor("_BaseColor", HLPrimitiveMeshes.Brighten(colour, part.glow * light));
                 bodyRenderers[i].SetPropertyBlock(colourBlock);
             }
             var r = recipe.roots;
