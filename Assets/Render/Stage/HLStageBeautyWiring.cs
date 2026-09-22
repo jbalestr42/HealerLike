@@ -12,7 +12,7 @@ namespace HealerLike.Render.Stage
     [DefaultExecutionOrder(-1900), DisallowMultipleComponent]
     public sealed class HLStageBeautyWiring : MonoBehaviour
     {
-        public const float GridStrength = .12f, TipLight = .12f, TrampleMargin = .15f;
+        public const float GridStrength = .12f, TipLight = .035f, TrampleMargin = .15f;
         // Generation normally finishes within a few frames of the cells existing; never wait forever.
         public const float ClumpWaitSeconds = 10;
         static readonly int GridOrigin = Shader.PropertyToID("_HLGridOrigin"), GridCell = Shader.PropertyToID("_HLGridCell"),

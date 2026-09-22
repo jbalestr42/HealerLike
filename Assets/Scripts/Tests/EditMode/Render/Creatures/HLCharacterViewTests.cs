@@ -31,7 +31,7 @@ namespace HealerLike.Render.Creatures
             }
             finally { var view = anchor.GetComponent<HLCharacterView>(); if (view) TestHelpers.InvokePrivate(view, "OnDestroy"); Object.DestroyImmediate(anchor); Object.DestroyImmediate(go); Object.DestroyImmediate(target); Object.DestroyImmediate(recipe); Object.DestroyImmediate(material); HLPrimitiveMeshes.ReleaseAll(); }
         }
-        [Test] public void SignedCharacterOutcomesManaAnchorsAndDuplicateHealReports()
+        [Test] public void RegisteredCharacterOutcomesManaAnchorsAndNoGlobalDiscovery()
         {
             var go = new GameObject("HLCharacter"); var target = new GameObject("HLRecipient");
             var recipe = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>("Assets/Render/Creatures/Data/HLHealer.asset");
@@ -44,6 +44,8 @@ namespace HealerLike.Render.Creatures
                 var health = TestHelpers.CreateResourceAttribute(target, AttributeType.HealthMax, 100);
                 var view = go.AddComponent<HLCharacterView>(); var registry = new HLRenderRegistry();
                 view.Bind(character, recipe, go.transform, material, registry);
+                var observer = target.AddComponent<HealerLike.Render.Spells.HLResourceOutcomeObserver>();
+                observer.Bind(health, null, registry, true);
                 var update = (System.Action)System.Delegate.CreateDelegate(typeof(System.Action), view,
                     typeof(HLCharacterView).GetMethod("Update", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic));
                 for (int i = 0; i < 10; i++) update();
@@ -57,11 +59,12 @@ namespace HealerLike.Render.Creatures
                 for (int i = 0; i < 2; i++)
                 {
                     health.OnAllConsumerProcessed.Invoke(target, modifier, 5, false);
-                    registry.NotifyHeal(go, target, 5, false);
                 }
                 Assert.AreEqual(3, view.CastGestureCount);
-                registry.NotifyHeal(go, target, 7, false); health.OnAllConsumerProcessed.Invoke(target, modifier, 7, false);
+                health.OnAllConsumerProcessed.Invoke(target, modifier, 7, false);
                 Assert.AreEqual(4, view.CastGestureCount);
+                mana.OnAllConsumerProcessed.Invoke(go, modifier, 10, false);
+                Assert.AreEqual(4, view.CastGestureCount, "Mana restoration must not count as a heal gesture.");
                 TestHelpers.SetPrivateField(mana, "_value", 0f); TestHelpers.InvokePrivate(view, "LateUpdate");
                 var block = new MaterialPropertyBlock(); var renderer = view.Bud0.GetComponentInChildren<Renderer>(); renderer.GetPropertyBlock(block);
                 Color empty = block.GetColor("_BaseColor");

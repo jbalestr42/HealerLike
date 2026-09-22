@@ -35,8 +35,36 @@ namespace HealerLike.Render.Stage
             var target = board.center + Vector3.forward * shift;
             return new Pose(target - rotation * Vector3.forward * distance, rotation);
         }
+        // The fog starts past every playable corner, so the board keeps its authored colours.
+        public static Vector2 BackgroundFog(Vector3 camera, Bounds board)
+        {
+            float far = 0;
+            for (int x=-1;x<=1;x+=2) for(int z=-1;z<=1;z+=2)
+                far = Mathf.Max(far, Vector3.Distance(camera, board.center + Vector3.Scale(board.extents,new Vector3(x,0,z))));
+            return new Vector2(far + 2, far + 36);
+        }
+        // Fit both axes, preserving room above the back row and below the front row for the HUD.
+        public static Pose PlayableFrame(Bounds board, float pitch, float fov, float aspect, float centreY)
+        {
+            var pose=Frame(board,pitch,fov,aspect,.35f,centreY);
+            var forward=pose.rotation*Vector3.forward;
+            float tan=Mathf.Tan(fov*Mathf.Deg2Rad*.5f);
+            for(int pass=0;pass<80;pass++)
+            {
+                bool fits=true;
+                for(int x=-1;x<=1;x+=2) for(int z=-1;z<=1;z+=2)
+                {
+                    var q=Quaternion.Inverse(pose.rotation)*(board.center+Vector3.Scale(board.extents,new Vector3(x,0,z))-pose.position);
+                    float vx=.5f+q.x/(2*q.z*tan*aspect), vy=.5f+q.y/(2*q.z*tan);
+                    fits &= vx>=.015f && vx<=.985f && vy>=.12f && vy<=.84f;
+                }
+                if(fits) return pose;
+                pose.position-=forward*.35f;
+            }
+            return pose;
+        }
         // Julien's Main camera: rotation x .5998, w .8002, FOV 40, portrait autorotation.
-        public const float PortraitPitch = 73.7f, PortraitFov = 40, PortraitAspect = 9f / 16f, PortraitMargin = .5f, PortraitCentreY = .42f;
+        public const float PortraitPitch = 52f, PortraitFov = 40, PortraitAspect = 9f / 16f, PortraitMargin = .35f, PortraitCentreY = .48f;
         public const int PortraitWidth = 1080, PortraitHeight = 1920;
     }
 }

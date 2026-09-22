@@ -172,6 +172,7 @@ namespace HealerLike.Render.Creatures
             renderer.enabled = visible && Phase != HLGesturePhase.Rest;
             if (!renderer.enabled) return;
             UpdateDetails();
+            Matrix4x4 worldToLocal = container.worldToLocalMatrix;
             for (int j = 0; j < joints.Length; j++)
             {
                 Vector3 tangent = joints[Mathf.Min(j + 1, joints.Length - 1)] - joints[Mathf.Max(j - 1, 0)];
@@ -179,20 +180,22 @@ namespace HealerLike.Render.Creatures
                 tangent.Normalize();
                 Vector3 axis = Mathf.Abs(tangent.y) < .9f ? Vector3.up : Vector3.right;
                 Vector3 u = Vector3.Cross(tangent, axis).normalized, v = Vector3.Cross(tangent, u);
-                float width = Mathf.Lerp(radius, radius * .56f, (float)j / lengths.Length) * (Style == HLDeliveryStyle.Swarm ? .45f : 1);
+                float width = Mathf.Lerp(radius, radius * .65f, (float)j / lengths.Length) * (Style == HLDeliveryStyle.Swarm ? .6f : 1);
+                // Narrow collars between broader internodes read as a jointed plant arm at gameplay scale.
+                width *= (j % 3 == 0) ? .76f : 1.12f;
                 for (int side = 0; side < Sides; side++)
                 {
                     float angle = side * Mathf.PI * 2 / Sides;
                     Vector3 normal = u * Mathf.Cos(angle) + v * Mathf.Sin(angle);
                     int index = j * Sides + side;
-                    vertices[index] = container.InverseTransformPoint(joints[j] + normal * width);
-                    normals[index] = container.InverseTransformDirection(normal);
+                    vertices[index] = worldToLocal.MultiplyPoint3x4(joints[j] + normal * width);
+                    normals[index] = worldToLocal.MultiplyVector(normal);
                 }
             }
-            vertices[vertices.Length - 2] = container.InverseTransformPoint(joints[0]);
-            vertices[vertices.Length - 1] = container.InverseTransformPoint(Tip);
-            normals[normals.Length - 2] = container.InverseTransformDirection((joints[0] - joints[1]).normalized);
-            normals[normals.Length - 1] = container.InverseTransformDirection((Tip - joints[joints.Length - 2]).normalized);
+            vertices[vertices.Length - 2] = worldToLocal.MultiplyPoint3x4(joints[0]);
+            vertices[vertices.Length - 1] = worldToLocal.MultiplyPoint3x4(Tip);
+            normals[normals.Length - 2] = worldToLocal.MultiplyVector((joints[0] - joints[1]).normalized);
+            normals[normals.Length - 1] = worldToLocal.MultiplyVector((Tip - joints[joints.Length - 2]).normalized);
             mesh.vertices = vertices; mesh.normals = normals; mesh.RecalculateBounds(); MeshRevision++;
         }
         void UpdateDetails()

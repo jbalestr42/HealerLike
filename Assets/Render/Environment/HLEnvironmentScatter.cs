@@ -96,13 +96,15 @@ namespace HealerLike.Render.Environment
             ownedMeshes.Clear();
             if (retained) { HLPrimitiveMeshes.Release(); retained = false; }
         }
+        void OnEnable() { if(root) root.gameObject.SetActive(true); }
+        void OnDisable() { if(root) root.gameObject.SetActive(false); }
         void OnDestroy() => Clear();
         static void Dispose(Object value) { if (Application.isPlaying) Destroy(value); else DestroyImmediate(value); }
 
         void Spawn(in HLEnvironmentItem item)
         {
             var pivot = new GameObject(item.Kind.ToString()).transform; pivot.SetParent(root, false);
-            pivot.localPosition = item.Position; pivot.localRotation = Quaternion.Euler(0, item.Yaw, 0);
+            pivot.position = item.Position; pivot.rotation = Quaternion.Euler(0, item.Yaw, 0);
             var random = new HLStoneRandom(item.Seed);
             float s = item.Scale; colourSeed = item.Seed;
             switch (item.Kind)

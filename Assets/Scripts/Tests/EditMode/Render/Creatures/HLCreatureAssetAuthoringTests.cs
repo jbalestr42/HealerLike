@@ -103,7 +103,7 @@ namespace HealerLike.Render.Creatures
                 Assert.Less(Vector3.Distance(arm.Tip, target), .001f);
                 arm.Contact(1, Vector3.right * 100);
                 arm.Tick(.016f, Vector3.zero, Quaternion.identity); Assert.IsTrue(arm.LastResult.clamped);
-                for (int i = 0; i < arm.SegmentCount; i++) Assert.That(Vector3.Distance(arm.Joint(i), arm.Joint(i + 1)), Is.EqualTo(.2f).Within(1e-5));
+                for (int i = 0; i < arm.SegmentCount; i++) Assert.That(Vector3.Distance(arm.Joint(i), arm.Joint(i + 1)), Is.EqualTo(recipe.arms[0].segmentLength).Within(1e-5));
             }
         }
         [Test] public void HealerVariantRetainsCharacterAndAuthoredAnchor()

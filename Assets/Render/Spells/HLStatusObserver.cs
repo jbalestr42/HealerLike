@@ -14,7 +14,15 @@ namespace HealerLike.Render.Spells
         int _sinkVersion;
         BuffManager _manager;
         IHLSpellVisualSink _injected, _lastSink;
-        public void Init(Entity entity) => Bind(entity ? entity.buffManager ?? entity.GetComponent<BuffManager>() : null, _injected);
+        public void Init(Entity entity)
+        {
+            Bind(entity ? entity.buffManager ?? entity.GetComponent<BuffManager>() : null, _injected);
+            if (!entity) return;
+            HLResourceOutcomeObserver.Ensure(entity);
+            var shield = GetComponent<HLAttributeShieldView>();
+            if (!shield) shield = gameObject.AddComponent<HLAttributeShieldView>();
+            shield.Init(entity);
+        }
         public void Bind(BuffManager manager,IHLSpellVisualSink sink)
         {
             Detach();_manager=manager;_injected=sink;
