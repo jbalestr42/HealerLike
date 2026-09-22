@@ -78,7 +78,7 @@ namespace HealerLike.Render.Zones
             if (!_owner.Contains(_handle))
                 _handle = _owner.Add(HLZoneKind.Heal, _entity.transform.position, radius, 0.35f);
             else
-                _owner.Update(_handle, HLZoneKind.Heal, _entity.transform.position, radius, 0.35f);
+                _owner.UpdateZone(_handle, HLZoneKind.Heal, _entity.transform.position, radius, 0.35f);
         }
 
         void ClearZone()

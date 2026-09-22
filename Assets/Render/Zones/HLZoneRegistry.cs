@@ -89,7 +89,7 @@ namespace HealerLike.Render.Zones
 
         /// <summary>Updates in place without reordering or resetting age. Invalid/zero values remove it.
         /// Updating a pulse's strength changes its initial strength, retaining its fade clock.</summary>
-        public void Update(int handle, HLZoneKind kind, Vector3 position, float radius, float strength)
+        public void UpdateZone(int handle, HLZoneKind kind, Vector3 position, float radius, float strength)
         {
             int i = Find(handle);
             if (i < 0) return;

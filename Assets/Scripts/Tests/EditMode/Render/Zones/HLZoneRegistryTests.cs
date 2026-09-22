@@ -46,7 +46,7 @@ namespace HealerLike.Render.Zones
         [Test] public void UpdatesPreserveOrderAndPublishCanonicalSnapshotEveryFrame()
         {
             int first = Add(1); Add(2); Add(3);
-            _registry.Update(first, HLZoneKind.Hostile, Vector3.right * 9, 2, 5);
+            _registry.UpdateZone(first, HLZoneKind.Hostile, Vector3.right * 9, 2, 5);
             _upload.Calls.Clear();
             _registry.PublishFrame(0.25f);
             CollectionAssert.AreEqual(new[] { "upload", "bind", "count:3" }, _upload.Calls);
@@ -85,7 +85,7 @@ namespace HealerLike.Render.Zones
             _registry.Remove(old);
             int replacement = Add(3);
             Assert.AreNotEqual(old, replacement);
-            _registry.Update(old, HLZoneKind.Hostile, Vector3.zero, 9, 1);
+            _registry.UpdateZone(old, HLZoneKind.Hostile, Vector3.zero, 9, 1);
             _registry.PublishFrame(0);
             Assert.AreEqual(2, _upload.Count);
             Assert.AreEqual(2, _upload.Data[0].position.x);
@@ -129,7 +129,7 @@ namespace HealerLike.Render.Zones
             Assert.AreEqual(0, _registry.AddPulse(HLZoneKind.Heal, Vector3.zero, 1, 1, float.NaN));
             Assert.AreEqual(0, _registry.AddPulse(HLZoneKind.Heal, Vector3.zero, 1, 1, 0));
             int handle = Add(1);
-            _registry.Update(handle, HLZoneKind.Heal, Vector3.zero, 1, float.NaN);
+            _registry.UpdateZone(handle, HLZoneKind.Heal, Vector3.zero, 1, float.NaN);
             Assert.IsFalse(_registry.Contains(handle));
             Assert.Throws<System.ArgumentOutOfRangeException>(() => _registry.PublishFrame(-1));
         }
