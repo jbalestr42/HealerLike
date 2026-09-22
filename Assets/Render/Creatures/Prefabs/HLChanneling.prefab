@@ -1,0 +1,91 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &7433564852276088967
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1631280189745936, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+      propertyPath: m_Name
+      value: HLChanneling
+      objectReference: {fileID: 0}
+    - target: {fileID: 4525448726112170, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4525448726112170, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4525448726112170, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4525448726112170, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4525448726112170, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4525448726112170, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4525448726112170, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4525448726112170, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4525448726112170, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4525448726112170, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 8228936155810697154, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+    - {fileID: 23375520040407044, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+    - {fileID: 23209718633262128, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+    - {fileID: 5141164071296647134, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+    - {fileID: 5486082964870722589, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+    - {fileID: 33209981031470678, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+    - {fileID: 33140660532522836, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+    - {fileID: 880531033471598350, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+    - {fileID: 1694790914887530563, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1631280189745936, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5518755476868800238}
+  m_SourcePrefab: {fileID: 100100000, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+--- !u!1 &7434484748434799511 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1631280189745936, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
+  m_PrefabInstance: {fileID: 7433564852276088967}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5518755476868800238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7434484748434799511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a556e8eba114a46318504f3d26157b81, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.HLCreatureBuilder
+  recipe: {fileID: 11400000, guid: 44e914ad4ebd44f81b99664206f22efd, type: 2}
+  material: {fileID: 2100000, guid: bd1c96db057ca4958b45d9df3313e99a, type: 2}
+  cellSize: 1
