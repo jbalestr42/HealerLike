@@ -85,9 +85,9 @@ HLGrassVaryings HLGrassVertex(HLGrassAttributes input)
 }
 float3 HLGrassAlbedo(float t, float2 healSpike)
 {
-    float3 root = lerp(_HL_RootColor.rgb, _HL_HealColor.rgb, 0.35 * healSpike.x);
-    float3 mid = lerp(_HL_MidColor.rgb, _HL_HealColor.rgb, healSpike.x);
-    float3 tip = lerp(_HL_TipColor.rgb, _HL_HealColor.rgb, healSpike.x);
+    float3 root = lerp(_HL_RootColor.rgb, _HL_HealColor.rgb, 0.22 * healSpike.x);
+    float3 mid = lerp(_HL_MidColor.rgb, _HL_HealColor.rgb, 0.72 * healSpike.x);
+    float3 tip = lerp(_HL_TipColor.rgb, _HL_HealColor.rgb, 0.95 * healSpike.x);
     float3 grass = t < 0.45 ? lerp(root, mid, t / 0.45) : lerp(mid, tip, (t - 0.45) / 0.55);
     return lerp(grass, lerp(_HL_SlateRoot.rgb, _HL_SlateTip.rgb, t), saturate(2 * healSpike.y));
 }
@@ -107,7 +107,7 @@ half4 HLGrassFragment(HLGrassVaryings input, FRONT_FACE_TYPE face : FRONT_FACE_S
     float illum = saturate((dot(normal, mainLight.direction) * 0.5 + 0.5) * mainLight.shadowAttenuation);
     float3 baseColor = HLGrassAlbedo(input.height01, input.healSpike) * UNITY_ACCESS_INSTANCED_PROP(HLGrassInstances, _BaseColor).rgb;
     float3 patchTint = lerp(float3(0.78, 0.96, 1.08), float3(1.08, 1.03, 0.78), input.patchHue);
-    baseColor *= lerp(patchTint, float3(1,1,1), saturate(input.healSpike.x + 2 * input.healSpike.y));
+    baseColor *= lerp(patchTint, float3(1,1,1), saturate(0.65 * input.healSpike.x + 2 * input.healSpike.y));
     // Look beauty tip light: lit blade tips lift slightly; shadow and roots unchanged. _HLTipLight 0 disables it.
     float3 color = HLShadeSurface(input.positionWS, illum, baseColor);
     color = HLApplyTipLight(color, input.height01, illum);

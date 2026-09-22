@@ -59,7 +59,7 @@ namespace HealerLike.Render.Stones
             foreach(var p in Parts) { p.Transform.localPosition=Vector3.Scale(p.Transform.localPosition-offset,scale); p.Transform.localScale=Vector3.Scale(p.Transform.localScale,scale); }
             RecalculateBounds();
         }
-        public void ApplyFracture(float healthFraction,uint seed)
+        public void ApplyFracture(float healthFraction,uint seed,Color? statusTint=null)
         {
             float damage=1-Mathf.Clamp01(float.IsFinite(healthFraction)?healthFraction:1);
             var block=fractureBlock??(fractureBlock=new MaterialPropertyBlock());
@@ -69,7 +69,9 @@ namespace HealerLike.Render.Stones
                 int order=(i+(int)(seed%(uint)Mathf.Max(1,Parts.Count)))%Parts.Count;
                 float weight=Parts.Count==1?1:order==Parts.Count-1?0:1-order/(float)Parts.Count;
                 var part=Parts[i]; part.Renderer.GetPropertyBlock(block);
-                block.SetColor("_BaseColor",Color.Lerp(part.BaseColor,((Color)new Color32(66,89,138,255)).linear,damage*weight*.85f));
+                var healthColor=Color.Lerp(part.BaseColor,((Color)new Color32(66,89,138,255)).linear,damage*weight*.85f);
+                if(statusTint.HasValue && statusTint.Value!=Color.white) healthColor=Color.Lerp(healthColor,statusTint.Value,.42f);
+                block.SetColor("_BaseColor",healthColor);
                 part.Renderer.SetPropertyBlock(block);
             }
         }

@@ -41,8 +41,8 @@ Generate call is made.
 The two opaque indirect draws are exclusive strip/cone ID lists. A third small draw
 handles rings: fixed 64 instances read the same global snapshot, with degenerate
 vertices for unused/non-Heal-or-Range slots. This avoids another mutable CPU zone snapshot,
-an ID map, or GPU readback. Ring width is 0.012 (clamped for small radii), surface
-lift 0.020, strength/onset controls opacity, and hostile influence suppresses the ring.
+an ID map, or GPU readback. Ring width is 0.018 (clamped for small radii), surface
+lift 0.10, strength/onset controls opacity, and hostile influence suppresses the ring.
 The clear band lowers non-hostile grass to 0.005 at full strength and smoothly restores
 it outside the band. Ring white is an albedo evaluated by the shared look, not emission.
 
@@ -121,8 +121,7 @@ of a 0.30 m base; outside fan blades are up to 4.95% shorter. Budgets assigning 
 than three blades to a cell retain their exact quota. Seeded hue blocks span 2–4
 cells and travel in the existing seed W lane; no texture or extra buffer is used.
 Tips turn their shading normals toward the key light; illumination and jade/lime
-albedo still pass through HLEvaluateSurface. The heal ring is now 0.012 m wide,
-with a narrower grass clearance band. See BEAUTY-REPORT.md for verification and
+albedo still pass through HLEvaluateSurface. The heal ring is 0.018 m wide, with a clearance band wide enough for broad leaves. See BEAUTY-REPORT.md for verification and
 loaded-machine timings.
 
 Stage attaches HLTrampleZone to each stone-clump and creature root; Radius is the

@@ -67,7 +67,7 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
         float d = length(delta);
         outwardSum += w * (d < 1e-5 ? yaw : delta / d);
         weightSum += w;
-        ringClear = max(ringClear, HLGrassZoneOnset(z) * (1 - smoothstep(0.025, 0.055, abs(d - z.radius))));
+        ringClear = max(ringClear, HLGrassZoneOnset(z) * (1 - smoothstep(min(0.06, z.radius * 0.08), min(0.22, z.radius * 0.25), abs(d - z.radius))));
     }
     HLBladeState state;
     if (conePresence > 0 && trample < 0.5)
