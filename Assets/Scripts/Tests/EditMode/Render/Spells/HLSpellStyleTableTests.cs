@@ -15,10 +15,10 @@ namespace HealerLike.Render.Spells
                 key.variant=1;table.entries[1]=new HLSpellStyleTable.HLEntry {signature=key,prefab=go};Assert.AreEqual(0,table.FindCollisions().Count);Assert.IsTrue(table.TryGet(key,out _));
             }finally{Object.DestroyImmediate(go);Object.DestroyImmediate(table);}
         }
-        [Test] public void ArmorAndPreventionUseShieldButMaxHealthDoesNot()
+        [Test] public void MissingSignaturesFailClosed()
         {
             var table=ScriptableObject.CreateInstance<HLSpellStyleTable>();var a=new GameObject("HLBuff");var b=new GameObject("HLShield");
-            try{table.buff=a;table.shield=b;Assert.AreSame(a,table.StatusPrefab(new HLSpellSignature{operation=HLOperation.Attribute,attribute=AttributeType.HealthMax}));Assert.AreSame(b,table.StatusPrefab(new HLSpellSignature{operation=HLOperation.Prevention}));}
+            try{table.buff=a;table.shield=b;Assert.IsNull(table.StatusPrefab(new HLSpellSignature{operation=HLOperation.Attribute,attribute=AttributeType.HealthMax}));Assert.IsNull(table.StatusPrefab(new HLSpellSignature{operation=HLOperation.Prevention}));}
             finally{Object.DestroyImmediate(a);Object.DestroyImmediate(b);Object.DestroyImmediate(table);}
         }
     }

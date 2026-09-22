@@ -29,8 +29,7 @@ namespace HealerLike.Render.Spells
         public GameObject StatusPrefab(HLSpellSignature signature)
         {
             if (TryGet(signature, out var prefab)) return prefab;
-            return signature.operation == HLOperation.Prevention || signature.operation == HLOperation.Attribute &&
-                (signature.attribute == AttributeType.HitArmor || signature.attribute == AttributeType.PercentArmor) ? shield : buff;
+            return null;
         }
     }
 }
