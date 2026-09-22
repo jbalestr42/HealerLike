@@ -23,7 +23,7 @@ namespace HealerLike.Render.Stones
             Assert.AreEqual(original.layer,block.layer);var a=original.GetComponentInChildren<BoxCollider>();var b=block.GetComponentInChildren<BoxCollider>();
             Assert.AreEqual(a.size,b.size);Assert.AreEqual(a.center,b.center);Assert.AreEqual(a.transform.localPosition,b.transform.localPosition);Assert.AreEqual(a.isTrigger,b.isTrigger);Assert.AreEqual(a.gameObject.layer,b.gameObject.layer);
             var grid=AssetDatabase.LoadAssetAtPath<GameObject>(Root+"HLStoneGrid.prefab");var systems=grid.GetComponents<HLStoneBlockGridSystem>();Assert.AreEqual(2,systems.Length);
-            Assert.AreEqual(20,systems[0].min);Assert.AreEqual(50,systems[0].max);Assert.AreEqual(0,systems[1].min);Assert.AreEqual(10,systems[1].max);Assert.IsTrue(systems.All(s=>!s.isWalkable));
+            Assert.AreEqual(7,systems[0].min);Assert.AreEqual(17,systems[0].max);Assert.AreEqual(0,systems[1].min);Assert.AreEqual(3,systems[1].max);Assert.IsTrue(systems.All(s=>!s.isWalkable));
             var list=new SerializedObject(grid.GetComponent<GridGenerator>()).FindProperty("_gridGenerators");Assert.AreEqual(4,list.arraySize);
             Assert.AreSame(systems[0],list.GetArrayElementAtIndex(1).objectReferenceValue);Assert.AreSame(systems[1],list.GetArrayElementAtIndex(2).objectReferenceValue);
             Assert.IsInstanceOf<HLStoneGenerationFence>(list.GetArrayElementAtIndex(3).objectReferenceValue);

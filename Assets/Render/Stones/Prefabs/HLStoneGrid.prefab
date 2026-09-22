@@ -139,8 +139,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe3172bbfc486401e86bf3a4220c4a1b, type: 3}
   m_Name:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.HLStoneBlockGridSystem
-  _min: 20
-  _max: 50
+  _min: 7
+  _max: 17
   _prefab: {fileID: 77216186686908422, guid: 2fe0786dba0fb4bdfbdc6db45d00f17b, type: 3}
   _isWalkable: 0
   _minSize: 5
@@ -158,7 +158,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.HLStoneBlockGridSystem
   _min: 0
-  _max: 10
+  _max: 3
   _prefab: {fileID: 77216186686908422, guid: 2fe0786dba0fb4bdfbdc6db45d00f17b, type: 3}
   _isWalkable: 0
   _minSize: 4
