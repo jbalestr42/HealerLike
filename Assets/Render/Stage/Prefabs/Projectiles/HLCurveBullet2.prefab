@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &7994300838910419856
+--- !u!1001 &7973312201632448018
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -66,23 +66,23 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1985067714463758, guid: d7f619fa465538548a98377b43738ac6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8765093304808052601}
+      addedObject: {fileID: 6319569582880227071}
     - targetCorrespondingSourceObject: {fileID: 1985067714463758, guid: d7f619fa465538548a98377b43738ac6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6970082959740961836}
+      addedObject: {fileID: 9053341585611826376}
   m_SourcePrefab: {fileID: 100100000, guid: d7f619fa465538548a98377b43738ac6, type: 3}
---- !u!1 &7995713606432140190 stripped
+--- !u!1 &7971908294613612060 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1985067714463758, guid: d7f619fa465538548a98377b43738ac6, type: 3}
-  m_PrefabInstance: {fileID: 7994300838910419856}
+  m_PrefabInstance: {fileID: 7973312201632448018}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8765093304808052601
+--- !u!114 &6319569582880227071
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7995713606432140190}
+  m_GameObject: {fileID: 7971908294613612060}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 88c2ca8cf908f497296bf92110ed7d8e, type: 3}
@@ -90,13 +90,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.HLProjectileVisualObserver
   presentation: 0
   preserveContactPath: 0
---- !u!114 &6970082959740961836
+--- !u!114 &9053341585611826376
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7995713606432140190}
+  m_GameObject: {fileID: 7971908294613612060}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0c8d48ce7f4d64b2191ff8031b63299a, type: 3}

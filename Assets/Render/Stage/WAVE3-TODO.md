@@ -6,7 +6,7 @@ Re-run `HLStageBuilder.Build` after the other tracks land. No other track source
 
 # Calibration
 
-Source: Main (menu loads Main; Build Settings instead enables TestHealer). Board 16 x 16, cell 1; roots y=.505. Camera 50 degrees, FOV 40, distance 31, position (0.00, 24.25, -19.93). 1080p hatch spacing 0.08358; fog 26.570/39.707, six bands, pale #BFD2E0, 1px outline. Numerical calibration awaits final shader/grass captures.
+Source: Main (menu loads Main; Build Settings instead enables TestHealer). Board 16 x 16, cell 1; roots y=.505. Camera 50 degrees, FOV 40, distance 31, position (0.00, 24.25, -19.93). 1080p hatch spacing 0.08358; fog 30.996/46.276, six bands, pale #BFD2E0, 1px outline. Numerical calibration awaits final shader/grass captures.
 
 # CONTRACT-CONFLICT
 

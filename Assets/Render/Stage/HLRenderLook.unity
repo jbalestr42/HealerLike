@@ -1202,6 +1202,62 @@ MonoBehaviour:
     pivotPointRoot: {fileID: 0}
     spreadOutCount: 1
   showGraphs: 1
+--- !u!1 &468004652
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 468004654}
+  - component: {fileID: 468004653}
+  m_Layer: 0
+  m_Name: HLGrassField
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &468004653
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 468004652}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
+  grid: {fileID: 9158114156218484085}
+  ground: {fileID: 9158114157369665995}
+  gameplayCamera: {fileID: 1133649934}
+  updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
+  grassShader: {fileID: 4800000, guid: 0beb9c7b7142a47cf91e7a21799e10ef, type: 3}
+  ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
+  bladeBudget: 65536
+  seed: 1
+  windDirection: {x: 1, y: 0.35}
+  windSpeed: 1.2
+  windAmplitude: 0.065
+  surfaceY: 0.5
+--- !u!4 &468004654
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 468004652}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.505, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1820068038}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &503767744
 GameObject:
   m_ObjectHideFlags: 0
@@ -1527,55 +1583,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac0b09e7857660247b1477e93731de29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &636943794
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 636943795}
-  - component: {fileID: 636943796}
-  m_Layer: 0
-  m_Name: HLHealerAnchor
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &636943795
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 636943794}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 5820983543368096139}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &636943796
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 636943794}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e23edee68ceab417ea5177d97a00a4d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.HLCharacterView
-  character: {fileID: 5820983543368096141}
-  recipe: {fileID: 11400000, guid: 265a00ac0c6c743d08a762c0950e82e1, type: 2}
-  visualAnchor: {fileID: 636943795}
-  material: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
-  cellSize: 1
 --- !u!1 &645146366
 GameObject:
   m_ObjectHideFlags: 0
@@ -2091,7 +2098,158 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &939405635
+--- !u!1001 &897753074
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1820068038}
+    m_Modifications:
+    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4282093853857487933, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+      propertyPath: m_Name
+      value: HLStoneGeneration
+      objectReference: {fileID: 0}
+    - target: {fileID: 4282093854721618054, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 4282093853857487934, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+--- !u!114 &897753075 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4543048231471891146, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+  m_PrefabInstance: {fileID: 897753074}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2125cd8b55b14f36a08fcccba01add9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.HLStoneGridEntry
+--- !u!4 &897753076 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
+  m_PrefabInstance: {fileID: 897753074}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &898135680
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1820068038}
+    m_Modifications:
+    - target: {fileID: 426481555694381639, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_Name
+      value: HLSpellVisualSink
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+--- !u!114 &898135681 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1258488744135845347, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+  m_PrefabInstance: {fileID: 898135680}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a99ca9a8282a64d3fa1694fe1054f8b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.HLSpellVisualSink
+--- !u!4 &898135682 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+  m_PrefabInstance: {fileID: 898135680}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &976833174
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2099,54 +2257,47 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 939405637}
-  - component: {fileID: 939405636}
+  - component: {fileID: 976833175}
+  - component: {fileID: 976833176}
   m_Layer: 0
-  m_Name: HLGrassField
+  m_Name: HLHealerAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &939405636
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 939405635}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
-  grid: {fileID: 9158114156218484085}
-  ground: {fileID: 9158114157369665995}
-  gameplayCamera: {fileID: 1133649934}
-  updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
-  grassShader: {fileID: 4800000, guid: 0beb9c7b7142a47cf91e7a21799e10ef, type: 3}
-  ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
-  bladeBudget: 65536
-  seed: 1
-  windDirection: {x: 1, y: 0.35}
-  windSpeed: 1.2
-  windAmplitude: 0.065
-  surfaceY: 0.5
---- !u!4 &939405637
+--- !u!4 &976833175
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 939405635}
+  m_GameObject: {fileID: 976833174}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.505, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1408602463}
+  m_Father: {fileID: 5820983543368096139}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &976833176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 976833174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e23edee68ceab417ea5177d97a00a4d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.HLCharacterView
+  character: {fileID: 5820983543368096141}
+  recipe: {fileID: 11400000, guid: 265a00ac0c6c743d08a762c0950e82e1, type: 2}
+  visualAnchor: {fileID: 976833175}
+  material: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  cellSize: 1
 --- !u!1 &981129123
 GameObject:
   m_ObjectHideFlags: 0
@@ -2817,212 +2968,6 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   CustomBlends: {fileID: 0}
---- !u!1 &1408602457
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1408602463}
-  - component: {fileID: 1408602462}
-  - component: {fileID: 1408602461}
-  - component: {fileID: 1408602460}
-  - component: {fileID: 1408602459}
-  - component: {fileID: 1408602458}
-  m_Layer: 0
-  m_Name: HLRenderStage
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1408602458
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1408602457}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4ec1f25bb1e4572a78033e6481ba946, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageRangeDriver
-  mode: 1
---- !u!114 &1408602459
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1408602457}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4dcbc6b07b7984d4a8883c6209631513, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageZoneBridge
-  zoneRegistry: {fileID: 1408602460}
-  grassField: {fileID: 939405636}
---- !u!114 &1408602460
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1408602457}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c7446c1c3fa041349b776e8964cdfbda, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLZoneRegistry
---- !u!114 &1408602461
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1408602457}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2cb5ba83a5304f8f9445eca291e9b4fb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Look.HLLookController
-  settings:
-    ShadowTint: {r: 0.16862746, g: 0.29411766, b: 0.56078434, a: 1}
-    OutlineColor: {r: 0.09411765, g: 0.14901961, b: 0.24705882, a: 1}
-    FogColor: {r: 0.7490196, g: 0.8235294, b: 0.8784314, a: 1}
-    ShadowStrength: 0.65
-    ToonThreshold: 0.5
-    OutlineWidthPixels: 1
-    FogStart: 26.569532
-    FogEnd: 39.707455
-    InkStrength: 1
-    InkScale: 0.08357835
-    InkWidth: 0.003343134
-    InkStart: 0
-    InkRange: 1
-    DensityMul: 0.55
-    InkWarp: 0.006
-    InkWarpFreq: 2.44
-    DashAmount: 0.1
-    DashScale: 0.01
-    InkDistStart: 26.569532
-    InkFarSpacing: 0.100294024
-    FogBands: 6
---- !u!114 &1408602462
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1408602457}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d0817ab340d54e0ca7f505e653f397e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLRenderBootstrap
-  lookController: {fileID: 1408602461}
-  zoneRegistry: {fileID: 1408602460}
-  zoneBridge: {fileID: 1408602459}
-  grassField: {fileID: 939405636}
-  spellVisualSink: {fileID: 1493166727}
-  grid: {fileID: 9158114156218484085}
-  ground: {fileID: 9158114157369665995}
-  stoneGridEntry: {fileID: 1733208718}
-  stoneSeed: 1707
---- !u!4 &1408602463
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1408602457}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1493166728}
-  - {fileID: 1733208719}
-  - {fileID: 939405637}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1493166726
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 1408602463}
-    m_Modifications:
-    - target: {fileID: 426481555694381639, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_Name
-      value: HLSpellVisualSink
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
---- !u!114 &1493166727 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1258488744135845347, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-  m_PrefabInstance: {fileID: 1493166726}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a99ca9a8282a64d3fa1694fe1054f8b2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.HLSpellVisualSink
---- !u!4 &1493166728 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-  m_PrefabInstance: {fileID: 1493166726}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1504872536
 GameObject:
   m_ObjectHideFlags: 0
@@ -3407,84 +3352,6 @@ MonoBehaviour:
   m_MaximumFOV: 60
   m_MinimumOrthoSize: 1
   m_MaximumOrthoSize: 5000
---- !u!1001 &1733208717
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 1408602463}
-    m_Modifications:
-    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4282093853857487933, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-      propertyPath: m_Name
-      value: HLStoneGeneration
-      objectReference: {fileID: 0}
-    - target: {fileID: 4282093854721618054, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 4282093853857487934, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
---- !u!114 &1733208718 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4543048231471891146, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-  m_PrefabInstance: {fileID: 1733208717}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2125cd8b55b14f36a08fcccba01add9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.HLStoneGridEntry
---- !u!4 &1733208719 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4282093853857487932, guid: 00199eaecdfae4c6f9974590a27520a8, type: 3}
-  m_PrefabInstance: {fileID: 1733208717}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1800498750
 GameObject:
   m_ObjectHideFlags: 0
@@ -3595,6 +3462,139 @@ MonoBehaviour:
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
   m_ScrollDeltaPerTick: 6
+--- !u!1 &1820068032
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1820068038}
+  - component: {fileID: 1820068037}
+  - component: {fileID: 1820068036}
+  - component: {fileID: 1820068035}
+  - component: {fileID: 1820068034}
+  - component: {fileID: 1820068033}
+  m_Layer: 0
+  m_Name: HLRenderStage
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1820068033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1820068032}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4ec1f25bb1e4572a78033e6481ba946, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageRangeDriver
+  mode: 1
+--- !u!114 &1820068034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1820068032}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dcbc6b07b7984d4a8883c6209631513, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageZoneBridge
+  zoneRegistry: {fileID: 1820068035}
+  grassField: {fileID: 468004653}
+--- !u!114 &1820068035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1820068032}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7446c1c3fa041349b776e8964cdfbda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLZoneRegistry
+--- !u!114 &1820068036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1820068032}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cb5ba83a5304f8f9445eca291e9b4fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Look.HLLookController
+  settings:
+    ShadowTint: {r: 0.16862746, g: 0.29411766, b: 0.56078434, a: 1}
+    OutlineColor: {r: 0.09411765, g: 0.14901961, b: 0.24705882, a: 1}
+    FogColor: {r: 0.7490196, g: 0.8235294, b: 0.8784314, a: 1}
+    ShadowStrength: 0.65
+    ToonThreshold: 0.5
+    OutlineWidthPixels: 1
+    FogStart: 30.996172
+    FogEnd: 46.276417
+    InkStrength: 1
+    InkScale: 0.08357835
+    InkWidth: 0.003343134
+    InkStart: 0
+    InkRange: 1
+    DensityMul: 0.55
+    InkWarp: 0.006
+    InkWarpFreq: 2.44
+    DashAmount: 0.1
+    DashScale: 0.01
+    InkDistStart: 30.996172
+    InkFarSpacing: 0.100294024
+    FogBands: 6
+--- !u!114 &1820068037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1820068032}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d0817ab340d54e0ca7f505e653f397e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLRenderBootstrap
+  lookController: {fileID: 1820068036}
+  zoneRegistry: {fileID: 1820068035}
+  zoneBridge: {fileID: 1820068034}
+  grassField: {fileID: 468004653}
+  spellVisualSink: {fileID: 898135681}
+  grid: {fileID: 9158114156218484085}
+  ground: {fileID: 9158114157369665995}
+  stoneGridEntry: {fileID: 897753075}
+  stoneSeed: 1707
+--- !u!4 &1820068038
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1820068032}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 898135682}
+  - {fileID: 897753076}
+  - {fileID: 468004654}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1821923413
 GameObject:
   m_ObjectHideFlags: 0
@@ -4375,7 +4375,7 @@ PrefabInstance:
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 3997629714499954772, guid: 50dfaada6bcd48039625695569d546bc, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 636943795}
+      addedObject: {fileID: 976833175}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 50dfaada6bcd48039625695569d546bc, type: 3}
 --- !u!4 &5820983543368096139 stripped
@@ -4665,4 +4665,4 @@ SceneRoots:
   - {fileID: 645146370}
   - {fileID: 711645745}
   - {fileID: 4378792853192872687}
-  - {fileID: 1408602463}
+  - {fileID: 1820068038}

@@ -36,7 +36,6 @@ namespace HealerLike.Render.Stage
         {
             todo.Clear(); copies.Clear();
             Directory.CreateDirectory(Root + "Data"); Directory.CreateDirectory(Root + "Prefabs");
-            Directory.CreateDirectory(Root + "Materials");
             AssetDatabase.Refresh();
             green = AssetDatabase.LoadAssetAtPath<Material>(LookDefault);
             stone = StoneMaterial();
@@ -112,7 +111,7 @@ namespace HealerLike.Render.Stage
             WireRenderers();
             EditorSceneManager.SaveScene(scene, ScenePath);
             AssetDatabase.SaveAssets();
-            var fog = HLStageCalibration.FogRange(camera.transform.position, bounds);
+            var fog = WaveThreeFog(camera, bounds);
             File.WriteAllText(Root + "WAVE3-TODO.md", "# Wave 3 integration\n\nRe-run `HLStageBuilder.Build` after the other tracks land. No other track source is copied into this branch.\n\n" + string.Join("\n",todo.Distinct().Select(s => "- " + s)) + "\n\n# Calibration\n\n" +
                 $"Source: Main (menu loads Main; Build Settings instead enables TestHealer). Board {grid.width} x {grid.height}, cell {grid.size}; roots y=.505. Camera 50 degrees, FOV 40, distance 31, position {camera.transform.position}. 1080p hatch spacing {HLStageCalibration.HatchSpacing(camera,31,1080):F5}; fog {fog.x:F3}/{fog.y:F3}, six bands, pale #BFD2E0, 1px outline. Numerical calibration awaits final shader/grass captures.\n" +
                 "\n# CONTRACT-CONFLICT\n\nThe older look spec proposes stock RenderObjects, but the frozen contract requires T1 HLOutlines. The wave-2 fallback is labelled HLOutlines_PLACEHOLDER and must be replaced by the real feature. Main is the menu target but absent from enabled Build Settings; stage copies Main without changing the source scene list. The Ultra quality slot references missing pipeline GUID a0da25f9ff8de264189edd30d9654c37; Graphics Settings falls back to Low. All six existing pipeline assets and their six renderers are covered. The copied scene hides the 100-unit debug ground (its top .51 obscures the board at .5), middle line and debug sphere renderers; their colliders remain unchanged.\n");
@@ -256,7 +255,7 @@ namespace HealerLike.Render.Stage
         {
             var so = new SerializedObject(look); var settings = so.FindProperty("settings");
             if (settings == null) throw new InvalidOperationException("Review HLLookController settings ABI.");
-            var fog = HLStageCalibration.FogRange(camera.transform.position,bounds);
+            var fog = WaveThreeFog(camera, bounds);
             settings.FindPropertyRelative("FogColor").colorValue = new Color32(191,210,224,255);
             settings.FindPropertyRelative("FogStart").floatValue = fog.x; settings.FindPropertyRelative("FogEnd").floatValue = fog.y;
             settings.FindPropertyRelative("FogBands").intValue = 6;
@@ -267,6 +266,14 @@ namespace HealerLike.Render.Stage
             settings.FindPropertyRelative("InkFarSpacing").floatValue = spacing*1.2f;
             settings.FindPropertyRelative("OutlineWidthPixels").floatValue = 1;
             so.ApplyModifiedPropertiesWithoutUndo();
+        }
+        // Wave-3 capture review: fog from the near edge washed out the back half of the board. Start at the
+        // board centre and stretch the end by half the board's depth span, so the far row keeps about 60% colour.
+        public static Vector2 WaveThreeFog(Camera camera, Bounds bounds)
+        {
+            var edge = HLStageCalibration.FogRange(camera.transform.position, bounds);
+            float centre = Vector3.Distance(camera.transform.position, bounds.center);
+            return new Vector2(centre, edge.y + (edge.y - edge.x) * .5f);
         }
         static Component StoneGrid(GameObject stage, GridManager grid)
         {
@@ -341,7 +348,9 @@ namespace HealerLike.Render.Stage
                         feature=placeholder; todo.Add(AssetDatabase.GetAssetPath(data)+": replace HLOutlines_PLACEHOLDER (hull tag only) with T1 HLOutlines depth/normal feature.");
                     }
                     feature.name=type!=null?"HLOutlines":"HLOutlines_PLACEHOLDER";
-                    if(type!=null) { var fso=new SerializedObject(feature); var shader=fso.FindProperty("edgeShader"); if(shader!=null) shader.objectReferenceValue=Shader.Find("Hidden/HL/Look/DepthNormalOutline"); fso.ApplyModifiedPropertiesWithoutUndo(); }
+                    if(type!=null) { var fso=new SerializedObject(feature); var shader=fso.FindProperty("edgeShader"); if(shader!=null) shader.objectReferenceValue=Shader.Find("Hidden/HL/Look/DepthNormalOutline");
+                        // Wave-3 capture review: at this camera and blade density the screen edge pass inks nearly every blade, so the stage runs hull-only outlines.
+                        var edges=fso.FindProperty("DepthNormalEdges"); if(edges!=null) edges.boolValue=false; fso.ApplyModifiedPropertiesWithoutUndo(); }
                     AssetDatabase.AddObjectToAsset(feature,data); data.rendererFeatures.Add(feature); feature.SetActive(true);
                     var dso=new SerializedObject(data); var map=dso.FindProperty("m_RendererFeatureMap"); map.arraySize=data.rendererFeatures.Count;
                     for(int j=0;j<data.rendererFeatures.Count;j++) { AssetDatabase.TryGetGUIDAndLocalFileIdentifier(data.rendererFeatures[j],out string _,out long id); map.GetArrayElementAtIndex(j).longValue=id; }
