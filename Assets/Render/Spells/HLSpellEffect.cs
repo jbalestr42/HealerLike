@@ -1,0 +1,106 @@
+using UnityEngine;
+
+namespace HealerLike.Render.Spells
+{
+    public enum HLSpellEffectKind { Buff, Shield, Heal, Impact, Chain, Mana }
+    /// <summary>Cosmetic animation only. Status timing is supplied by the observer, never used to execute ticks.</summary>
+    public sealed class HLSpellEffect : MonoBehaviour
+    {
+        public HLSpellEffectKind kind;
+        public Material material;
+        public float lifetime = .65f;
+        public int Stacks { get; private set; }
+        public float ElapsedSeconds { get; private set; }
+        public float DurationSeconds { get; private set; }
+        public HLClockKind Clock { get; private set; }
+        public HLSpellSignature Signature { get; private set; }
+        public Transform[] parts = new Transform[0];
+        Vector3[] _positions, _scales;
+        Quaternion[] _rotations;
+        float _age;
+        bool _ready, _hasSignature;
+        Transform[] _stackBeads;
+        Renderer _sideRim;
+        public void SetStatus(int stacks, float elapsed, float duration, HLClockKind clock, HLSpellSignature signature)
+        {
+            Initialize();
+            if (!_hasSignature) { HLSpellPrimitives.AddMarker(this, signature); _hasSignature = true; }
+            if (_stackBeads == null) _stackBeads = HLSpellPrimitives.StackBeads(this);
+            for (int i = 0; i < _stackBeads.Length; i++) _stackBeads[i].gameObject.SetActive(i < Mathf.Min(8, stacks));
+            Stacks = Mathf.Max(0, stacks); ElapsedSeconds = Mathf.Max(0, elapsed);
+            DurationSeconds = duration; Clock = clock; Signature = signature;
+        }
+        public void SetSide(Entity.EntityType side)
+        {
+            if (!_sideRim) _sideRim = HLSpellPrimitives.SideRim(this);
+            var color = side == Entity.EntityType.Player ? new Color32(155,210,74,255) : side == Entity.EntityType.Computer ? new Color32(199,154,75,255) : new Color32(201,196,180,255);
+            var block = new MaterialPropertyBlock(); block.SetColor("_BaseColor", color); _sideRim.SetPropertyBlock(block);
+        }
+        void Start() => Initialize();
+        public void Initialize()
+        {
+            if (_ready) return;
+            if (parts == null || parts.Length == 0) HLSpellPrimitives.Build(this);
+            _positions = new Vector3[parts.Length]; _scales = new Vector3[parts.Length]; _rotations = new Quaternion[parts.Length];
+            for (int i = 0; i < parts.Length; i++) { _positions[i] = parts[i].localPosition; _scales[i] = parts[i].localScale; _rotations[i] = parts[i].localRotation; }
+            Color color = kind == HLSpellEffectKind.Heal ? new Color32(198,242,74,255) : kind == HLSpellEffectKind.Impact ? new Color32(242,96,122,255) : new Color32(242,194,48,255);
+            var block = new MaterialPropertyBlock(); block.SetColor("_BaseColor", color);
+            foreach (var renderer in GetComponentsInChildren<Renderer>()) { if (material) renderer.sharedMaterial = material; renderer.SetPropertyBlock(block); }
+            _ready = true;
+        }
+        public void SetShieldState(float? observedCharges)
+        {
+            if (kind != HLSpellEffectKind.Shield) return;
+            for (int i = 0; i < parts.Length; i++)
+            {
+                parts[i].gameObject.SetActive(Signature.operation != HLOperation.Attribute || Signature.attribute != AttributeType.HitArmor || !observedCharges.HasValue || i < Mathf.Clamp(Mathf.CeilToInt(observedCharges.Value), 0, 6));
+            }
+        }
+        void Update()
+        {
+            Advance(Clock == HLClockKind.Realtime ? Time.unscaledDeltaTime : Time.deltaTime);
+            if (kind != HLSpellEffectKind.Buff && kind != HLSpellEffectKind.Shield && _age >= lifetime) Destroy(gameObject);
+        }
+        public void Advance(float delta)
+        {
+            Initialize();
+            if (!HLSpellGrammar.Finite(delta) || delta < 0) return;
+            _age += delta;
+            float fade = Mathf.Clamp01(1 - _age / Mathf.Max(.01f, lifetime));
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (!parts[i]) continue;
+                if (kind == HLSpellEffectKind.Buff)
+                    parts[i].localRotation = _rotations[i] * Quaternion.Euler(0, _age * (i % 2 == 0 ? 34 : -28), 0);
+                else if (kind == HLSpellEffectKind.Shield)
+                    parts[i].localRotation = _rotations[i] * Quaternion.Euler(Mathf.Lerp(-32, Signature.operation == HLOperation.Attribute && Signature.attribute == AttributeType.PercentArmor ? -16 : 0, Mathf.Clamp01(_age * 4)), 0, 0);
+                else if (kind == HLSpellEffectKind.Heal || kind == HLSpellEffectKind.Mana)
+                    parts[i].localPosition = _positions[i] + Vector3.up * (_age * (.55f + i * .04f));
+                else if (kind == HLSpellEffectKind.Impact)
+                    parts[i].localPosition = _positions[i] + _positions[i].normalized * _age * .9f;
+                if (kind != HLSpellEffectKind.Buff && kind != HLSpellEffectKind.Shield && kind != HLSpellEffectKind.Chain)
+                    parts[i].localScale = _scales[i] * Mathf.Sqrt(fade);
+            }
+        }
+        /// <summary>Endpoints supplied by a confirmed link; no target queries or inferred bounce order.</summary>
+        public void SetEndpoints(Vector3 start, Vector3 end)
+        {
+            Initialize();
+            if (kind != HLSpellEffectKind.Chain) return;
+            for (int i = 0; i < parts.Length; i++)
+            {
+                float t = (i / 2) / 16f;
+                Vector3 p = Curve(start, end, t);
+                if (i % 2 == 0)
+                {
+                    Vector3 q = Curve(start, end, Mathf.Min(1, t + 1 / 16f));
+                    parts[i].position = (p + q) * .5f;
+                    parts[i].rotation = q == p ? Quaternion.identity : Quaternion.FromToRotation(Vector3.up, q - p);
+                    parts[i].localScale = new Vector3(.025f, Vector3.Distance(p, q) * .5f, .025f);
+                }
+                else parts[i].position = p;
+            }
+        }
+        static Vector3 Curve(Vector3 a, Vector3 b, float t) => Vector3.Lerp(a, b, t) + Vector3.up * (4 * t * (1-t) * Mathf.Min(.7f, Vector3.Distance(a,b) * .2f));
+    }
+}
