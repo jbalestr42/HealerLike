@@ -1,0 +1,6 @@
+{
+  "name": "HealerLike.Render.Stage.Editor",
+  "references": ["HealerLike.Render", "HealerLike.Runtime", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime"],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true
+}
