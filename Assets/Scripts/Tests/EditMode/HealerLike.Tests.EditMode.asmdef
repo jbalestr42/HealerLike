@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "HealerLike.Runtime",
+        "HealerLike.Render",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
