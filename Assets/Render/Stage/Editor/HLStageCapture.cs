@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -12,9 +13,13 @@ namespace HealerLike.Render.Stage
     {
         const string Key = "HLStageCapture.Active";
         const string DirectoryPath = "/Users/fc/Documents/healerlike-render-specs/captures/";
+        // Simulated seconds after the Start button: a wave has spawned by the second, attacks and heals by the last.
+        public static readonly float[] CaptureTimes = { 1f, 4f, 8f };
         static double started;
-        static int count;
+        static int count, attacks, heals;
         static bool gameStarted;
+        static float gameStartTime;
+        static readonly HashSet<ResourceAttribute> observed = new HashSet<ResourceAttribute>();
         static HLStageCapture()
         {
             EditorApplication.playModeStateChanged += Changed;
@@ -31,10 +36,10 @@ namespace HealerLike.Render.Stage
         static void Changed(PlayModeStateChange state)
         {
             if(!SessionState.GetBool(Key,false)) return;
-            if(state==PlayModeStateChange.EnteredPlayMode) { started=EditorApplication.timeSinceStartup; count=0; }
+            if(state==PlayModeStateChange.EnteredPlayMode) { started=EditorApplication.timeSinceStartup; count=attacks=heals=0; gameStarted=false; observed.Clear(); }
             if(state==PlayModeStateChange.EnteredEditMode)
             {
-                bool success=SessionState.GetInt(Key+"Count",0)==3;
+                bool success=SessionState.GetInt(Key+"Count",0)==CaptureTimes.Length;
                 SessionState.SetBool(Key,false); EditorApplication.Exit(success?0:1);
             }
         }
@@ -46,10 +51,19 @@ namespace HealerLike.Render.Stage
             if(!gameStarted && EditorApplication.timeSinceStartup-started>.25)
             {
                 var view=UnityEngine.Object.FindAnyObjectByType<GameView>();
-                if(view && view.gameHUD && view.gameHUD.startGameButton) { view.gameHUD.startGameButton.onClick.Invoke(); gameStarted=true; }
+                if(view && view.gameHUD && view.gameHUD.startGameButton) { view.gameHUD.startGameButton.onClick.Invoke(); gameStarted=true; gameStartTime=Time.time; }
             }
-            if(count>=3 && EditorApplication.timeSinceStartup-started>=3) { EditorApplication.isPlaying=false; return; }
-            if(count<3 && EditorApplication.timeSinceStartup-started >= count+1) Capture();
+            if(!gameStarted) return;
+            Observe();
+            if(count>=CaptureTimes.Length) { Debug.Log($"HL capture events: attacks={attacks} heals={heals}"); EditorApplication.isPlaying=false; return; }
+            if(Time.time-gameStartTime >= CaptureTimes[count]) Capture();
+        }
+        // Count resolved outcomes (signed pre-clamp deltas) on every live resource, without touching gameplay.
+        static void Observe()
+        {
+            foreach(var resource in UnityEngine.Object.FindObjectsByType<ResourceAttribute>(FindObjectsSortMode.None))
+                if(observed.Add(resource))
+                    resource.OnAllConsumerProcessed.AddListener((owner,modifier,value,critical)=>{ if(value<0) attacks++; else if(value>0) heals++; });
         }
         static void Capture()
         {
@@ -64,9 +78,10 @@ namespace HealerLike.Render.Stage
                 RenderPipeline.SubmitRenderRequest(camera,request);
                 RenderTexture.active=target;
                 texture.ReadPixels(new Rect(0,0,1920,1080),0,0); texture.Apply();
-                string path=DirectoryPath+"HLRenderLook-"+(count+1)+".png";
+                string path=DirectoryPath+"wave3-"+(count+1)+".png";
                 File.WriteAllBytes(path,texture.EncodeToPNG());
-                count++; SessionState.SetInt(Key+"Count",count); Debug.Log("HL screenshot: "+path);
+                count++; SessionState.SetInt(Key+"Count",count);
+                Debug.Log($"HL screenshot: {path} at game time {Time.time-gameStartTime:F2}s; attacks={attacks} heals={heals} zones={HealerLike.Render.Zones.HLZoneRegistry.Current?.Count ?? -1}");
             }
             finally { RenderTexture.active=previous; RenderTexture.ReleaseTemporary(target); UnityEngine.Object.DestroyImmediate(texture); }
         }

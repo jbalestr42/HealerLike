@@ -18,6 +18,17 @@ namespace HealerLike.Render.Stage
         static readonly List<string> todo = new List<string>();
         static readonly Dictionary<string,string> copies = new Dictionary<string,string>();
         static Material green, stone;
+        public const string LookDefault = "Assets/Render/Look/HLLook_Default.mat";
+        public const string LookStone = "Assets/Render/Look/HLLook_Stone.mat";
+        // Placeholder materials shipped by the tracks and wave 2, mapped to the look material that replaces them.
+        static readonly (string placeholder, string look)[] placeholderMaterials =
+        {
+            ("Assets/Render/Spells/Data/HLSpellPlaceholder.mat", LookDefault),
+            ("Assets/Render/Creatures/Data/HLPlaceholder.mat", LookDefault),
+            ("Assets/Render/Stones/HLPlaceholderStone.mat", LookStone),
+            (Root + "Materials/HLAllyPlaceholder.mat", LookDefault),
+            (Root + "Materials/HLStonePlaceholder.mat", LookStone),
+        };
         public static Type Resolve(string name) => TypeCache.GetTypesDerivedFrom<UnityEngine.Object>().FirstOrDefault(t => t.Name == name);
 
         [MenuItem("HL/Stage/Build isolated gameplay stage")]
@@ -27,8 +38,10 @@ namespace HealerLike.Render.Stage
             Directory.CreateDirectory(Root + "Data"); Directory.CreateDirectory(Root + "Prefabs");
             Directory.CreateDirectory(Root + "Materials");
             AssetDatabase.Refresh();
-            green = Material("HLAllyPlaceholder", new Color32(127,201,63,255));
-            stone = Material("HLStonePlaceholder", new Color32(142,147,161,255));
+            green = AssetDatabase.LoadAssetAtPath<Material>(LookDefault);
+            stone = StoneMaterial();
+            if (!green || green.shader.name != "HL/Look/Primitive") throw new InvalidOperationException("HLLook_Default.mat must use HL/Look/Primitive.");
+            SwapPlaceholderMaterials();
             // Copy the complete small data catalog so random choices cannot escape into source data.
             foreach (string path in Directory.GetFiles("Assets/Data", "*.asset", SearchOption.AllDirectories)) Copy(path, "Data/" + path.Substring("Assets/Data/".Length));
             foreach (string path in Directory.GetFiles("Assets/Prefabs", "*.prefab", SearchOption.AllDirectories)) Copy(path, "Prefabs/" + path.Substring("Assets/Prefabs/".Length));
@@ -73,7 +86,7 @@ namespace HealerLike.Render.Stage
             var bootstrap = stage.AddComponent<HLRenderBootstrap>();
             var look = Optional(stage, "HLLookController") as Behaviour;
             var zones = Optional(stage, "HLZoneRegistry") as Behaviour;
-            var sink = Optional(stage, "HLSpellVisualSink") as MonoBehaviour;
+            var sink = SpellSink(stage);
             if (look) { Calibrate(look, camera, bounds); look.enabled = false; }
             if (zones) zones.enabled = false;
             var so = new SerializedObject(bootstrap);
@@ -94,6 +107,7 @@ namespace HealerLike.Render.Stage
                 if (view) { var vso=new SerializedObject(view); vso.FindProperty("character").objectReferenceValue=character; vso.FindProperty("visualAnchor").objectReferenceValue=anchor.transform; vso.FindProperty("recipe").objectReferenceValue=AssetDatabase.LoadMainAssetAtPath("Assets/Render/Creatures/Data/HLHealer.asset"); vso.FindProperty("material").objectReferenceValue=green; vso.ApplyModifiedPropertiesWithoutUndo(); }
             }
             Grass(stage.transform, bounds, grid, ground.transform, camera, zones, bootstrap);
+            var range = stage.AddComponent<HLStageRangeDriver>(); range.Mode = HLStageRangeDriver.PreviewMode.Featured;
             if (ground.TryGetComponent<Renderer>(out var renderer)) renderer.sharedMaterial = green;
             WireRenderers();
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -113,15 +127,54 @@ namespace HealerLike.Render.Stage
             else File.Copy(source,path,true);
             copies[source] = path;
         }
-        static Material Material(string name, Color color)
+        // Slate variant of HLLook_Default; stones override _BaseColor per instance from the brief's palette.
+        static Material StoneMaterial()
         {
-            string path = Root + "Materials/" + name + ".mat";
-            var result = AssetDatabase.LoadAssetAtPath<Material>(path);
-            var shader = Shader.Find("HL/Look/Primitive") ?? Shader.Find("Universal Render Pipeline/Lit");
-            if (!result) { result = new Material(shader); AssetDatabase.CreateAsset(result,path); }
-            result.shader = shader; result.SetColor("_BaseColor",color); result.enableInstancing = true;
-            if (shader.name != "HL/Look/Primitive") todo.Add(path + ": replace URP Lit with HL/Look/Primitive; toon, hatch and banded fog are unavailable in this wave.");
+            var result = AssetDatabase.LoadAssetAtPath<Material>(LookStone);
+            if (!result) { result = new Material(AssetDatabase.LoadAssetAtPath<Material>(LookDefault)) { name = "HLLook_Stone" }; AssetDatabase.CreateAsset(result, LookStone); }
+            result.SetColor("_BaseColor", new Color32(142,147,161,255)); result.enableInstancing = true;
+            EditorUtility.SetDirty(result); AssetDatabase.SaveAssets();
             return result;
+        }
+        // Rewrites every serialized reference (renderers and material fields) from a placeholder to its look material.
+        static void SwapPlaceholderMaterials()
+        {
+            var map = new Dictionary<string,string>();
+            foreach (var (placeholder, look) in placeholderMaterials)
+            {
+                string from = AssetDatabase.AssetPathToGUID(placeholder), to = AssetDatabase.AssetPathToGUID(look);
+                if (!string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to)) map["guid: " + from] = "guid: " + to;
+            }
+            foreach (string path in Directory.GetFiles("Assets/Render", "*.*", SearchOption.AllDirectories).Where(p => p.EndsWith(".prefab") || p.EndsWith(".asset") || p.EndsWith(".unity")))
+            {
+                string yaml = File.ReadAllText(path), swapped = yaml;
+                foreach (var pair in map) swapped = swapped.Replace(pair.Key, pair.Value);
+                if (swapped != yaml) File.WriteAllText(path, swapped);
+            }
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+        }
+        static MonoBehaviour SpellSink(GameObject stage)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Spells/Prefabs/HLSpellVisualSink.prefab");
+            if (!prefab) return Optional(stage, "HLSpellVisualSink") as MonoBehaviour;
+            var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, stage.transform);
+            var sink = instance.GetComponent(Resolve("HLSpellVisualSink")) as MonoBehaviour;
+            var so = new SerializedObject(sink); so.FindProperty("material").objectReferenceValue = green; so.ApplyModifiedPropertiesWithoutUndo();
+            return sink;
+        }
+        // Stage-owned model variant: the track prefab plus the observers EntityModel.Init walks before any buff starts.
+        static GameObject StageModel(GameObject real, bool ally)
+        {
+            string path = Root + "Prefabs/Models/" + real.name + ".prefab";
+            Directory.CreateDirectory(Root + "Prefabs/Models");
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(real);
+            try
+            {
+                if (!go.GetComponent<HealerLike.Render.Spells.HLStatusObserver>()) go.AddComponent<HealerLike.Render.Spells.HLStatusObserver>();
+                if (ally && !go.GetComponent<HealerLike.Render.Zones.HLRangePreview>()) go.AddComponent<HealerLike.Render.Zones.HLRangePreview>().ObservePointer = false;
+                return PrefabUtility.SaveAsPrefabAsset(go, path);
+            }
+            finally { Object.DestroyImmediate(go); }
         }
         static Component Optional(GameObject go, string name)
         {
@@ -158,6 +211,7 @@ namespace HealerLike.Render.Stage
                     replacement = PrefabUtility.SaveAsPrefabAsset(go,target); Object.DestroyImmediate(go);
                     todo.Add(target + " -> " + real + " (preserves original model sockets and HUD; primitive placeholder).");
                 }
+                else if (asset is EntityData) replacement = StageModel(replacement, !enemy);
                 model.objectReferenceValue = replacement; so.ApplyModifiedPropertiesWithoutUndo(); EditorUtility.SetDirty(asset);
             }
         }

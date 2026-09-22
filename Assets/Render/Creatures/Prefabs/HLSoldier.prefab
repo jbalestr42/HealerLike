@@ -84,5 +84,5 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.HLCreatureBuilder
   recipe: {fileID: 11400000, guid: 44e914ad4ebd44f81b99664206f22efd, type: 2}
-  material: {fileID: 2100000, guid: bd1c96db057ca4958b45d9df3313e99a, type: 2}
+  material: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
   cellSize: 1
