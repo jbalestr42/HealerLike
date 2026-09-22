@@ -11,12 +11,12 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: edf55bc394f49164288e0e7637f68124, type: 3}
   m_Name: ProjectileBehaviourBuffFactory
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
-    SerializedBytes:
+    SerializedBytes: 
     ReferencedUnityObjects: []
-    SerializedBytesString:
+    SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []

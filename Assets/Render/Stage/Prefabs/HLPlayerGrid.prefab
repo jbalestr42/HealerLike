@@ -76,13 +76,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8e945a0b102168d4cb093f54458d5cd7, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
-    SerializedBytes:
+    SerializedBytes: 
     ReferencedUnityObjects: []
-    SerializedBytesString:
+    SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
@@ -105,8 +105,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b45226dacddc80b468283ab128a50051, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   _move: {fileID: -1680190386980627800, guid: 0c2bc830538da654da4288bd1a900f80, type: 3}
   _startPanning: {fileID: -4172574259742606899, guid: 0c2bc830538da654da4288bd1a900f80, type: 3}
   _cameraTarget: {fileID: 1480487326311738968}
@@ -192,7 +192,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5265550454449666727, guid: 37b158db65d545bd8fb9e62d479addac, type: 3}
       propertyPath: _prefab
-      value:
+      value: 
       objectReference: {fileID: 9141750140142513886, guid: 3cf6cae3350c4b7fae29bc63f4b8e845, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 37b158db65d545bd8fb9e62d479addac, type: 3}
@@ -205,8 +205,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4be5bcabbfe86f148b8749288a3b2cdc, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &9057227452101622553 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1293989677201975774, guid: 37b158db65d545bd8fb9e62d479addac, type: 3}
@@ -221,5 +221,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -11,14 +11,14 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: efe4e1f5836d4fb4cbc56b8284243758, type: 3}
   m_Name: Wave_1_1
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
-    SerializedBytes:
+    SerializedBytes: 
     ReferencedUnityObjects:
     - {fileID: 11400000, guid: 26bec679fa96466288a584a67a134753, type: 2}
     - {fileID: 11400000, guid: f882a737a51a4a5abc403bca8e068620, type: 2}
-    SerializedBytesString:
+    SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
@@ -26,35 +26,35 @@ MonoBehaviour:
     - Name: slots
       Entry: 7
       Data: 0|EntitySlot[,], Assembly-CSharp
-    - Name:
+    - Name: 
       Entry: 12
       Data: 2
     - Name: ranks
       Entry: 1
       Data: 2|1
-    - Name:
+    - Name: 
       Entry: 7
       Data: EntitySlot, Assembly-CSharp
     - Name: entity
       Entry: 10
       Data: 0
-    - Name:
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
       Data: EntitySlot, Assembly-CSharp
     - Name: entity
       Entry: 10
       Data: 1
-    - Name:
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
+      Data: 
   width: 2
   height: 1

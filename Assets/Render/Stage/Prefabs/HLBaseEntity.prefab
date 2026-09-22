@@ -99,8 +99,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e0401d2d8cbef5409cb163adad26040, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   OnMarkChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -114,8 +114,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c78d483188be39647ab4a876c1908b13, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &8158293602482554723
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126,13 +126,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8c0d9fa0b00a1164da50d8bb5bb69176, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
-    SerializedBytes:
+    SerializedBytes: 
     ReferencedUnityObjects: []
-    SerializedBytesString:
+    SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
@@ -145,18 +145,18 @@ MonoBehaviour:
       Entry: 7
       Data: 1|System.Collections.Generic.ObjectEqualityComparer`1[[UnityEngine.GameObject,
         UnityEngine.CoreModule]], mscorlib
-    - Name:
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 12
       Data: 0
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
+      Data: 
     - Name: _buffHandlerPerSource
       Entry: 7
       Data: 2|System.Collections.Generic.Dictionary`2[[UnityEngine.GameObject, UnityEngine.CoreModule],[BuffManager+BuffHandlerDataPerId,
@@ -164,15 +164,15 @@ MonoBehaviour:
     - Name: comparer
       Entry: 9
       Data: 1
-    - Name:
+    - Name: 
       Entry: 12
       Data: 0
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
+      Data: 
   OnBuffAdded:
     m_PersistentCalls:
       m_Calls: []
@@ -195,8 +195,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70da2ed93a574874a8a589b64b95bffa, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &-1557207005166871236
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -207,8 +207,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b3b06a7e5347684696726a90d3cad88, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &8465872866791211294
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219,8 +219,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0d464f749f423be47bfc3906e53bc620, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &-8835911320852111699
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -231,8 +231,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 67fd57ebab4764a4d8b5edadcd013a7f, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   _playerColor: {r: 0, g: 1, b: 1, a: 1}
   _computerColor: {r: 1, g: 0, b: 1, a: 1}
   _selectedColor: {r: 1, g: 1, b: 1, a: 1}

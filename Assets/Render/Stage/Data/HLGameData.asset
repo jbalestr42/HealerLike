@@ -11,12 +11,12 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4a6fcb842b0335b4aaffac25a7f9d89f, type: 3}
   m_Name: GameData
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
-    SerializedBytes:
+    SerializedBytes: 
     ReferencedUnityObjects: []
-    SerializedBytesString:
+    SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
@@ -29,21 +29,21 @@ MonoBehaviour:
       Entry: 7
       Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, Assembly-CSharp]],
         mscorlib
-    - Name:
+    - Name: 
       Entry: 12
       Data: 0
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 12
       Data: 3
-    - Name:
+    - Name: 
       Entry: 7
-      Data:
+      Data: 
     - Name: $k
       Entry: 3
       Data: 2
@@ -59,15 +59,15 @@ MonoBehaviour:
     - Name: bonusPerUpgrade
       Entry: 4
       Data: 5
-    - Name:
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
-      Data:
+      Data: 
     - Name: $k
       Entry: 3
       Data: 3
@@ -83,15 +83,15 @@ MonoBehaviour:
     - Name: bonusPerUpgrade
       Entry: 4
       Data: 0.1
-    - Name:
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
-      Data:
+      Data: 
     - Name: $k
       Entry: 3
       Data: 1
@@ -107,31 +107,31 @@ MonoBehaviour:
     - Name: bonusPerUpgrade
       Entry: 4
       Data: 0.1
-    - Name:
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
+      Data: 
     - Name: wavePerRound
       Entry: 7
       Data: 2|System.Collections.Generic.List`1[[GameData+WavePerRound, Assembly-CSharp]],
         mscorlib
-    - Name:
+    - Name: 
       Entry: 12
       Data: 0
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
+      Data: 
   gold: 150
   enemies:
   - {fileID: 11400000, guid: 85a1a69f23e87f04abfe85cc290d6463, type: 2}

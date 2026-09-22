@@ -11,19 +11,19 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e5a3319670e9bd242a09c0fe204a1c42, type: 3}
   m_Name: SingleTargetBuffAttackRate
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
-    SerializedBytes:
+    SerializedBytes: 
     ReferencedUnityObjects: []
-    SerializedBytesString:
+    SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
   data:
     icon: {fileID: 0}
-    name:
+    name: 
     description: 'Increase single target <color="green">{data:buffHandlerFactory|0.data.buffFactoryList|0.data.type}</color>
 
       by
