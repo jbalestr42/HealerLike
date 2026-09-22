@@ -7,7 +7,6 @@ using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Look
 {
-    [NonParallelizable]
     public class HLLookControllerTests
     {
         private readonly Dictionary<int, float> floats = new Dictionary<int, float>();
