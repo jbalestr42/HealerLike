@@ -37,6 +37,28 @@ namespace HealerLike.Render.Grass
         float builtSize, builtSurface;
         Vector3 builtOrigin;
         bool ready;
+        float gustRemaining;
+        Vector2 gustDirection;
+        /// <summary>Cosmetic 0.5-second response to a public projectile launch.</summary>
+        public void TriggerGust(Vector3 towardTarget)
+        {
+            Vector2 direction = new Vector2(towardTarget.x, towardTarget.z);
+            if (float.IsNaN(direction.sqrMagnitude) || float.IsInfinity(direction.sqrMagnitude) || direction.sqrMagnitude < 1e-8f) return;
+            gustDirection = direction.normalized; gustRemaining = 0.5f;
+        }
+        public void AdvanceGust(float scaledSeconds)
+        {
+            if (scaledSeconds >= 0 && !float.IsInfinity(scaledSeconds)) gustRemaining = Mathf.Max(0, gustRemaining - scaledSeconds);
+        }
+        public Vector4 Wind
+        {
+            get
+            {
+                Vector2 direction = gustRemaining > 0 ? gustDirection : windDirection.sqrMagnitude > 1e-8f ? windDirection.normalized : Vector2.right;
+                return new Vector4(direction.x, direction.y, Mathf.Max(0, windSpeed), Mathf.Clamp(windAmplitude, 0, 0.1f) * (gustRemaining > 0 ? 2 : 1));
+            }
+        }
+        void Update() => AdvanceGust(Time.deltaTime);
         public int BladeCount => count;
         public int ActiveZoneCount => zoneCount;
         public bool IsReady => ready;
@@ -76,10 +98,9 @@ namespace HealerLike.Render.Grass
             if (count == 0) return;
             GeometryUtility.CalculateFrustumPlanes(gameplayCamera, planes);
             for (int i = 0; i < 6; i++) planeVectors[i] = new Vector4(planes[i].normal.x, planes[i].normal.y, planes[i].normal.z, planes[i].distance);
-            Vector2 direction = windDirection.sqrMagnitude > 1e-8f ? windDirection.normalized : Vector2.right;
             compute.SetVectorArray("_HL_FrustumPlanes", planeVectors);
             compute.SetFloat("_HL_Time", Time.time);
-            compute.SetVector("_HL_Wind", new Vector4(direction.x, direction.y, Mathf.Max(0, windSpeed), Mathf.Clamp(windAmplitude, 0, 0.1f)));
+            compute.SetVector("_HL_Wind", Wind);
             compute.SetBuffer(kernel, "_HL_Zones", zones);
             compute.SetInt("_HL_ZoneCount", zoneCount);
             visibleGrass.SetCounterValue(0); visibleCones.SetCounterValue(0);
@@ -168,7 +189,7 @@ namespace HealerLike.Render.Grass
                 instanceCount = instances, startIndex = mesh.GetIndexStart(0), baseVertexIndex = (uint)mesh.GetBaseVertex(0), startInstance = 0 } });
             return buffer;
         }
-        void OnDisable() => ReleaseOwned();
+        void OnDisable() { gustRemaining = 0; ReleaseOwned(); }
         void OnDestroy() => Release();
         public void Release() { ReleaseOwned(); zones = null; zoneCount = 0; }
         void ReleaseOwned()

@@ -5,6 +5,22 @@ namespace HealerLike.Render.Grass
 {
     public class HLGrassFieldTests
     {
+        [Test] public void LaunchGustDoublesAmplitudePointsAtTargetAndExpires()
+        {
+            var go = new GameObject("field");
+            try
+            {
+                var field = go.AddComponent<HLGrassField>(); var baseline = field.Wind;
+                field.TriggerGust(Vector3.forward);
+                Assert.AreEqual(0, field.Wind.x); Assert.AreEqual(1, field.Wind.y);
+                Assert.AreEqual(baseline.w * 2, field.Wind.w);
+                field.AdvanceGust(0.49f); Assert.AreEqual(baseline.w * 2, field.Wind.w);
+                field.AdvanceGust(0.02f); Assert.AreEqual(baseline, field.Wind);
+                field.TriggerGust(new Vector3(float.NaN, 0, 0)); Assert.AreEqual(baseline, field.Wind);
+                field.TriggerGust(Vector3.zero); Assert.AreEqual(baseline, field.Wind);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
         [Test] public void DefaultsBudgetClampNullSnapshotAndIdempotentRelease()
         {
             var go = new GameObject("HLGrassFieldTest");

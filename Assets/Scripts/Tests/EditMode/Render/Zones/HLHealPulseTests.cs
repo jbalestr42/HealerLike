@@ -40,7 +40,7 @@ namespace HealerLike.Render.Zones
             _target.transform.position = Vector3.zero;
             _owner.PublishFrame(0.225f);
             Assert.AreEqual(0.5f, _owner.Snapshot[0].strength, 0.0001f);
-            Assert.AreEqual(new Vector3(1, 2, 3), _owner.Snapshot[0].position);
+            Assert.AreEqual(Vector3.zero, _owner.Snapshot[0].position);
             _owner.PublishFrame(0.225f);
             Assert.AreEqual(0, _owner.Count);
         }
@@ -67,6 +67,16 @@ namespace HealerLike.Render.Zones
             Assert.AreEqual(0, _owner.LiveCount);
             HLRenderRegistry.Current.NotifyHeal(_target, _source, 1, false);
             Assert.AreEqual(1, _owner.LiveCount);
+        }
+        [Test] public void TransformPulseSurvivesSourceDisableButEndsWithTarget()
+        {
+            _pulse.Pulse(_target.transform);
+            _pulse.enabled = false;
+            _owner.PublishFrame(0.1f);
+            Assert.AreEqual(1, _owner.Count);
+            Object.DestroyImmediate(_target);
+            _owner.PublishFrame(0);
+            Assert.AreEqual(0, _owner.Count);
         }
         [Test] public void DamageZeroNonFiniteAndMissingTargetsAreIgnored()
         {

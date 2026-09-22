@@ -78,7 +78,7 @@ HLGrassVaryings HLGrassVertex(HLGrassAttributes input)
     output.positionCS = TransformWorldToHClip(output.positionWS);
     output.normalWS = normal;
     output.height01 = t;
-    output.healSpike = float2(state.rampHealReserved.y, state.leanHeightSpike.w);
+    output.healSpike = float2(state.rampHealReserved.y, max(state.leanHeightSpike.w, 0.4 * state.rampHealReserved.z));
     return output;
 }
 float3 HLGrassAlbedo(float t, float2 healSpike)

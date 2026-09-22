@@ -21,19 +21,32 @@ more entries; publishing does not allocate managed arrays.
 - Add `HLAreaPulse` beside `AreaOfEffect` in the stage-owned prefab variant. The authored kind
   defaults to Hostile. Start samples the initialized radius in world units (not object scale),
   emits a 0.8-second pulse, and disable removes any remaining registration.
-- Add `HLHealPulse` to each healer's active model hierarchy before `EntityModel.Init`, or call
-  `Initialize(sourceGameObject)` explicitly. It implements `IVisualBehaviour` and subscribes
-  to the source's `HLRenderRegistry.NotifyHeal` notifications. Set `CellSize` from the grid's
-  `size`; radius is 0.6 times that world-unit size. Positive resolved heals create 0.45-second
-  pulses at the target's current root position. Re-init and disable unsubscribe. Already emitted
-  pulses finish independently of the healer's lifetime.
-- Add `HLRangePreview` to an entity/model. It implements `IVisualBehaviour`, with parent discovery
-  as a Start fallback. It samples the current Range attribute in world units and emits one Heal
-  zone at strength 0.35. `ObservePointer=false` plus `SetPreviewState(selected, dragging)` lets
-  stage wiring drive the cosmetic preview precisely. Default pointer observation uses an
-  assigned `PreviewCamera` or Camera.main, checks enabled SelectableEntity/DraggableEntity and
-  public Entity.isDraggable eligibility, and maintains its own presentation selection until an
-  outside click or Escape. It never calls Range.Show or mutates gameplay input state.
+- Add `HLHealPulse` to each healer model before `EntityModel.Init`, or call
+  `Initialize(sourceGameObject)` explicitly for a Character. Positive resolved heals call
+  `Pulse(Transform target)`: radius is 0.6 times CellSize, lifetime 0.45 scaled seconds.
+  The registry follows the target even if the source disappears; target destruction or
+  deactivation ends the pulse. `HLLoadZone` blooms the visual radius from zero to its
+  authored radius over 0.3 seconds, shared by blades and ring. CPU snapshots retain the
+  authored radius (debug circles therefore show the final extent).
+- `HLRangePreview` reads a live Player entity's Range and position. Selection and dragging
+  come exclusively from `SetPreviewState(selected, dragging)`; no click-derived selection.
+  Hover uses one shared entity-collider raycast per frame, with PreviewCamera or Camera.main.
+  All previews must use the same gameplay camera; the first sample is shared for that frame.
+  `ObserveHover` defaults true, independently of the legacy `ObservePointer` stage-mode flag.
+  This lets wave 3's Featured wiring coexist with hover. Set ObserveHover false when needed.
+  Range zones have strength 0.35; static `HLRangePreview.AllRanges = true` shows every active
+  ally preview at exactly 0.15, including selected/hovered allies. The stage must attach a
+  preview to each ally (as wave 3 does). The 64-zone shared capacity still applies.
+- Add `HLBruiseZone` to enemy model variants before `EntityModel.Init` (parent lookup fallback).
+  It polls public Entity Range, position, type, active state and health, and removes its zone
+  on disable/death. Bruise darkens/flattens blades without generating cones.
+- Add `HLLaunchWave` alongside Projectile in projectile variants. Projectile.Init discovers
+  AProjectileBehaviour components and calls Init; the wave reads source and target transforms
+  once, never the round-robin skill source. It registers a 0.4-second directional front and
+  calls `HLGrassField.TriggerGust(target - source)` for a doubled-amplitude 0.5-second gust.
+  Assign Field explicitly, or it discovers the single active field on launch. Pulses outlive
+  the projectile so synchronous hits still leave a wave. Repeated launches replace the gust
+  direction and restart its cosmetic envelope; they do not stack amplitude.
 - `HLZoneDebugGizmos` draws XZ circles from the published prefix, green for Heal and red for
   Hostile, with strength as alpha. Assign a registry or use the active owner.
 
@@ -49,10 +62,21 @@ also holds selected/draggable references privately. seams.md section 2 confirms 
 no events or callers. Thus exact gameplay selection cannot be polled through the requested
 public seam in this clone. Gameplay and frozen contract files are left unchanged.
 
-The render-owned pointer fallback is approximate: it cannot observe programmatic selection,
-interaction cancellation, UI interception or custom gameplay interactions. Use the explicit
-state API when the stage has that information; a future public read-only gameplay state seam
-would remove this limitation. No reflection into private gameplay state is used.
+Selection stays on the explicit state API; collider hover does not assert selection or dragging.
+Hover is a physics presentation readout and does not reproduce UI interception or custom input.
+
+## Contract v3
+
+Kinds append Range=3, Bruise=4, Launch=5 without changing any 32-byte wire offsets. Launch
+uses reserved at byte 28 as an unsigned full-turn heading: +X=0, +Z=1073741824,
+-X=2147483648, -Z=3221225472. EncodeDirection projects to XZ; zero defaults +X.
+TryCreate initializes the lane to zero. Pack preserves all 32 heading bits for Launch and
+clears reserved for every other kind. HLLoadZone decodes to a shader-local float2 direction;
+this does not change HLZoneStorage. Launch radius is source-to-target XZ distance.
+
+`RefreshZone` isolates the producer call to the existing registry Update method. Wave 4
+owns the UpdateZone rename: change that single wrapper call at merge. This branch does
+not rename the method. Contracts/ delivery files remain untouched.
 
 # Validation limits
 

@@ -31,6 +31,8 @@ namespace HealerLike.Render.Zones
             public HLZone zone;
             public float duration;
             public float initialStrength;
+            public Transform follow;
+            public bool followsTarget;
         }
 
         public static HLZoneRegistry Current { get; private set; }
@@ -87,6 +89,37 @@ namespace HealerLike.Render.Zones
             return handle;
         }
 
+        /// <summary>Target-following heal pulse. Its radius blooms in the shared GPU loader.</summary>
+        public int AddHealPulse(Transform target, float radius, float strength = 1)
+        {
+            if (!target) return 0;
+            int handle = AddPulse(HLZoneKind.Heal, target.position, radius, strength, 0.45f);
+            int i = Find(handle);
+            if (i >= 0)
+            {
+                Entry entry = _entries[i]; entry.follow = target; entry.followsTarget = true;
+                _entries[i] = entry;
+            }
+            return handle;
+        }
+
+        public int AddLaunch(Vector3 source, Vector3 target)
+        {
+            Vector3 direction = target - source; direction.y = 0;
+            int handle = AddPulse(HLZoneKind.Launch, source, direction.magnitude, 1, 0.4f);
+            int i = Find(handle);
+            if (i >= 0)
+            {
+                Entry entry = _entries[i]; entry.zone.reserved = HLZonePacker.EncodeDirection(direction);
+                _entries[i] = entry;
+            }
+            return handle;
+        }
+
+        // Wave 4 owns the Update -> UpdateZone rename; this is the only producer call site.
+        public void RefreshZone(int handle, HLZoneKind kind, Vector3 position, float radius, float strength)
+            => Update(handle, kind, position, radius, strength);
+
         /// <summary>Updates in place without reordering or resetting age. Invalid/zero values remove it.
         /// Updating a pulse's strength changes its initial strength, retaining its fade clock.</summary>
         public void Update(int handle, HLZoneKind kind, Vector3 position, float radius, float strength)
@@ -131,6 +164,11 @@ namespace HealerLike.Render.Zones
             for (int i = 0; i < _entries.Count; i++)
             {
                 Entry entry = _entries[i];
+                if (entry.followsTarget)
+                {
+                    if (!entry.follow || !entry.follow.gameObject.activeInHierarchy) continue;
+                    entry.zone.position = entry.follow.position;
+                }
                 entry.zone.age = Mathf.Min(float.MaxValue, entry.zone.age + deltaTime);
                 if (entry.duration > 0)
                 {

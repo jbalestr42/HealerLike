@@ -52,7 +52,7 @@ namespace HealerLike.Render.Grass
                 Assert.That(states[0].rampHealReserved.y, Is.EqualTo(0.4f).Within(0.0001));
                 Assert.That(states[0].leanHeightSpike.z, Is.EqualTo(1.32f).Within(0.0001));
                 Assert.That(states[1].leanHeightSpike.w, Is.EqualTo(0.759375f).Within(0.0001));
-                Assert.AreEqual(2, states[1].rampHealReserved.x); Assert.AreEqual(1.5f, states[1].leanHeightSpike.z);
+                Assert.AreEqual(2, states[1].rampHealReserved.x); Assert.That(states[1].leanHeightSpike.z, Is.EqualTo(1.5f * 0.759375f * 0.648f).Within(0.0001));
                 Assert.AreEqual(Vector4.one * 123, states[65].leanHeightSpike);
                 var ids = new uint[64]; grass.GetData(ids, 0, 0, 64); var unique = new HashSet<uint>(ids);
                 Assert.AreEqual(64, unique.Count); Assert.IsFalse(unique.Contains(1));
@@ -62,6 +62,34 @@ namespace HealerLike.Render.Grass
                 compute.SetInt("_HL_ZoneCount", 64); CollectionAssert.AreEqual(new uint[] { 64, 1 }, Dispatch());
                 compute.SetInt("_HL_ZoneCount", 0); CollectionAssert.AreEqual(new uint[] { 65, 0 }, Dispatch());
                 stateBuffer.GetData(states); Assert.AreEqual(0, states[1].leanHeightSpike.w); Assert.AreEqual(1, states[0].leanHeightSpike.z);
+                HLBladeState Sample(int kind, Vector3 point, float radius, float age, float strength = 1, uint heading = 0)
+                {
+                    layout[0].positionYaw = new Vector4(point.x, 0.505f, point.z, 0); seedBuffer.SetData(layout);
+                    zoneData[0] = new HLZone { radius = radius, kind = kind, strength = strength, age = age, reserved = heading };
+                    zones.SetData(zoneData); compute.SetInt("_HL_ZoneCount", 1);
+                    compute.SetVector("_HL_Wind", new Vector4(1, 0, 1.2f, 0)); Dispatch(); stateBuffer.GetData(states);
+                    return states[0];
+                }
+                var range = Sample(3, Vector3.right, 3, 1);
+                Assert.Greater(range.leanHeightSpike.x, 0); Assert.That(range.rampHealReserved.y, Is.InRange(0.01f, 0.4f));
+                Assert.AreEqual(0, range.leanHeightSpike.w);
+                var bruise = Sample(4, Vector3.zero, 3, 1);
+                Assert.Less(bruise.leanHeightSpike.z, 1); Assert.AreEqual(0, bruise.leanHeightSpike.w);
+                Assert.AreEqual(1, bruise.rampHealReserved.z);
+                var launch = Sample(5, Vector3.forward * 2, 4, 0.2f, heading: 1073741824u);
+                Assert.Greater(launch.leanHeightSpike.y, 0.1f); Assert.That(launch.leanHeightSpike.x, Is.EqualTo(0).Within(0.0001));
+                var behind = Sample(5, Vector3.back * 2, 4, 0.2f, heading: 1073741824u);
+                Assert.That(behind.leanHeightSpike.y, Is.EqualTo(0).Within(0.0001));
+                var passed = Sample(5, Vector3.forward * 2, 4, 0.4f, heading: 1073741824u);
+                Assert.AreEqual(0, passed.leanHeightSpike.y);
+                Assert.AreEqual(0, Sample(1, Vector3.right, 2, 0).rampHealReserved.y);
+                Assert.AreEqual(0, Sample(1, Vector3.right, 2, 0.15f).rampHealReserved.y);
+                Assert.AreEqual(1, Sample(1, Vector3.right, 2, 0.3f).rampHealReserved.y);
+                float rising = Sample(2, Vector3.zero, 3, 0.075f).leanHeightSpike.z;
+                float peak = Sample(2, Vector3.zero, 3, 0.15f).leanHeightSpike.z;
+                float sinking = Sample(2, Vector3.zero, 3, 0.7f, 0.125f).leanHeightSpike.z;
+                Assert.Less(rising, peak); Assert.Less(sinking, rising);
+                Assert.GreaterOrEqual(states[0].leanHeightSpike.w, 0.5f, "Sinking cones retain their geometry until expiry.");
                 planes[0] = new Vector4(1, 0, 0, -100); compute.SetVectorArray("_HL_FrustumPlanes", planes);
                 CollectionAssert.AreEqual(new uint[] { 0, 0 }, Dispatch());
                 foreach (var message in ShaderUtil.GetComputeShaderMessages(compute)) Assert.AreNotEqual(ShaderCompilerMessageSeverity.Error, message.severity, message.message);

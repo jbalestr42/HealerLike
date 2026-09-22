@@ -40,7 +40,7 @@ Generate call is made.
 
 The two opaque indirect draws are exclusive strip/cone ID lists. A third small draw
 handles rings: fixed 64 instances read the same global snapshot, with degenerate
-vertices for unused/non-heal slots. This avoids another mutable CPU zone snapshot,
+vertices for unused/non-Heal-or-Range slots. This avoids another mutable CPU zone snapshot,
 an ID map, or GPU readback. Ring width is 0.025 (clamped for small radii), surface
 lift 0.020, strength/onset controls opacity, and hostile influence suppresses the ring.
 The clear band lowers non-hostile grass to 0.005 at full strength and smoothly restores
@@ -81,3 +81,17 @@ select 32,768 blades. The reference target is base M1, not the test host's M2 Ma
 No 300-frame staged performance measurement was possible in these EditMode runs.
 Metal readback and shader compilation validate operations, not visual appearance or
 rendering cost. See VERIFY.md for exact commands and results.
+
+## Wave 5 dynamics
+
+Zone v3 preserves the buffer stride and 65,536 default blade budget. Range gently brightens
+and bends blades outward with an edge ring. Bruise flattens and darkens without cones.
+Hostile cone height rises over 0.15 seconds and sinks with the pulse decay; the cone list
+retains the geometry during sinking. Heal radius blooms over 0.3 seconds in HLLoadZone,
+so the blade footprint and ring agree. Launch fronts travel over 0.4 seconds, bowing grass
+along the heading stored in the reserved lane. See Zones/README.md for the wire encoding.
+
+TriggerGust(Vector3 towardTarget) doubles the authored wind amplitude for 0.5 scaled seconds.
+HLLaunchWave calls it from Projectile.Init; latest launch wins. Wind returns to its authored
+heading/amplitude afterward. These elapsed times are cosmetic envelopes of simulation events,
+not invented cooldown or cast state. Existing ambient wind remains unchanged between launches.

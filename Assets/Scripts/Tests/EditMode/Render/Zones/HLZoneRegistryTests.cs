@@ -33,6 +33,13 @@ namespace HealerLike.Render.Zones
         [TearDown] public void TearDown() => Object.DestroyImmediate(_go);
         int Add(float x) => _registry.Add(HLZoneKind.Heal, new Vector3(x, 0, 0), 1, 1);
 
+        [Test] public void InvalidLaunchAndMissingHealTargetAreRejected()
+        {
+            Assert.AreEqual(0, _registry.AddLaunch(Vector3.zero, Vector3.up));
+            Assert.AreEqual(0, _registry.AddLaunch(Vector3.zero, new Vector3(float.NaN, 0, 0)));
+            Assert.AreEqual(0, _registry.AddHealPulse(null, 1));
+            Assert.AreEqual(0, _registry.LiveCount);
+        }
         [Test] public void ActsAsTheRegistryZoneOwner()
         {
             IHLZoneOwner owner = _registry;

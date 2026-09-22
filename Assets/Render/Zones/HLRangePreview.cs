@@ -2,23 +2,30 @@ using UnityEngine;
 
 namespace HealerLike.Render.Zones
 {
-    /// <summary>
-    /// Cosmetic Heal-kind range preview, never an active healing field. Reads Entity's current
-    /// range and position; never calls Range.Show or any gameplay selection/drag methods.
-    /// This clone exposes no public selected/dragging state on SelectableEntity/DraggableEntity.
-    /// The default render-owned pointer selection is therefore an approximation; stage integrations
-    /// may disable ObservePointer and supply exact state through SetPreviewState instead.
-    /// </summary>
+    /// <summary>Public-state range preview with one shared collider hover raycast per frame.</summary>
     public sealed class HLRangePreview : MonoBehaviour, IVisualBehaviour
     {
         [SerializeField] bool _observePointer = true;
         [SerializeField] Camera _camera;
         Entity _entity;
-        SelectableEntity _selectable;
-        DraggableEntity _draggable;
+        public static bool AllRanges { get; set; }
+        static int _hoverFrame = -1;
+        static Entity _hovered;
+        public bool ObserveHover { get; set; } = true;
+        public static Entity SampleHover(Ray ray, int frame)
+        {
+            if (_hoverFrame == frame) return _hovered;
+            _hoverFrame = frame;
+            _hovered = Physics.Raycast(ray, out var hit) ? hit.collider.GetComponentInParent<Entity>() : null;
+            return _hovered;
+        }
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetState() { AllRanges = false; _hoverFrame = -1; _hovered = null; }
         HLZoneRegistry _owner;
         int _handle;
         bool _selected, _dragging;
+        // Legacy stage mode flag; selection now comes exclusively through SetPreviewState.
+        // Hover remains independent so Featured mode does not disable the range under the cursor.
         public bool ObservePointer { get => _observePointer; set => _observePointer = value; }
         public Camera PreviewCamera { get => _camera; set => _camera = value; }
 
@@ -27,8 +34,6 @@ namespace HealerLike.Render.Zones
             ClearZone();
             _selected = _dragging = false;
             _entity = entity;
-            _selectable = entity != null ? entity.GetComponent<SelectableEntity>() : null;
-            _draggable = entity != null ? entity.GetComponent<DraggableEntity>() : null;
         }
 
         void Start()
@@ -44,41 +49,28 @@ namespace HealerLike.Render.Zones
             Refresh();
         }
 
-        void Update()
-        {
-            if (_observePointer && _entity != null)
-            {
-                if (Input.GetKeyDown(KeyCode.Escape)) _selected = _dragging = false;
-                else if (Input.GetMouseButtonDown(0))
-                {
-                    Camera camera = _camera != null ? _camera : Camera.main;
-                    bool hitSelf = camera != null && Physics.Raycast(camera.ScreenPointToRay(Input.mousePosition), out var hit) &&
-                        hit.collider.GetComponentInParent<Entity>() == _entity;
-                    _selected = hitSelf && _selectable != null && _selectable.isActiveAndEnabled;
-                    _dragging = hitSelf && _draggable != null && _draggable.isActiveAndEnabled && _entity.isDraggable;
-                }
-                if (Input.GetMouseButtonUp(0)) _dragging = false;
-            }
-            Refresh();
-        }
+        void Update() => Refresh();
 
         /// <summary>Samples current public range/position. Missing attributes or inactive entities hide it.</summary>
         public void Refresh()
         {
+            Camera camera = ObserveHover ? (_camera != null ? _camera : Camera.main) : null;
+            bool hovered = camera != null && SampleHover(camera.ScreenPointToRay(Input.mousePosition), Time.frameCount) == _entity;
             var current = HLZoneRegistry.Current;
             if (_owner != current) ClearZone();
-            if (!isActiveAndEnabled || _entity == null || !_entity.isActiveAndEnabled || !(_selected || _dragging) ||
+            if (!isActiveAndEnabled || _entity == null || !_entity.isActiveAndEnabled || _entity.entityType != Entity.EntityType.Player || !(_selected || _dragging || hovered || AllRanges) ||
                 current == null || _entity.attributeManager == null || !_entity.attributeManager.Has(AttributeType.Range))
             {
                 ClearZone();
                 return;
             }
+            float strength = AllRanges ? 0.15f : 0.35f;
             float radius = _entity.attributeManager.Get(AttributeType.Range).Value;
             if (_owner == null) _owner = current;
             if (!_owner.Contains(_handle))
-                _handle = _owner.Add(HLZoneKind.Heal, _entity.transform.position, radius, 0.35f);
+                _handle = _owner.Add(HLZoneKind.Range, _entity.transform.position, radius, strength);
             else
-                _owner.Update(_handle, HLZoneKind.Heal, _entity.transform.position, radius, 0.35f);
+                _owner.RefreshZone(_handle, HLZoneKind.Range, _entity.transform.position, radius, strength);
         }
 
         void ClearZone()

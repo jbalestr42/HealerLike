@@ -20,6 +20,22 @@ namespace HealerLike.Render.Zones
             };
         }
 
+        [TestCase(HLZoneKind.Range, 3)] [TestCase(HLZoneKind.Bruise, 4)] [TestCase(HLZoneKind.Launch, 5)]
+        public void V3KindsPreserveAbi(HLZoneKind kind, int value)
+        {
+            Assert.AreEqual(value, (int)kind);
+            Assert.IsTrue(HLZonePacker.TryCreate(Vector3.zero, 1, kind, 1, 0, out _));
+        }
+        [Test] public void LaunchHeadingSurvivesPackingAndOtherKindsClearIt()
+        {
+            Assert.AreEqual(0u, HLZonePacker.EncodeDirection(Vector3.right));
+            Assert.AreEqual(1073741824u, HLZonePacker.EncodeDirection(Vector3.forward));
+            Assert.AreEqual(2147483648u, HLZonePacker.EncodeDirection(Vector3.left));
+            Assert.AreEqual(3221225472u, HLZonePacker.EncodeDirection(Vector3.back));
+            var source = new[] { Raw(Vector3.zero, 2, HLZoneKind.Launch, 1, reserved: 1073741824u), Raw(Vector3.zero, 2, HLZoneKind.Range, 1, reserved: 123u) };
+            var dest = new HLZone[2]; HLZonePacker.Pack(source, dest, out _, out _);
+            Assert.AreEqual(1073741824u, dest[0].reserved); Assert.AreEqual(0u, dest[1].reserved);
+        }
         [Test]
         public void StrideIsThirtyTwoBytes()
         {
