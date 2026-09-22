@@ -71,6 +71,8 @@ namespace HealerLike.Render.Stage
             if(count>=CaptureTimes.Length)
             {
                 Debug.Log($"HL capture events: negative={attacks} (on enemies {enemyHits}, from ally entities {allyHits}) heals={heals} projectiles={launched} (from allies {allyLaunched}) pipeline={(GraphicsSettings.currentRenderPipeline?GraphicsSettings.currentRenderPipeline.name:"none")}");
+                var key=UnityEngine.Object.FindAnyObjectByType<HLStageKeyLight>();
+                Debug.Log(key ? $"HL capture key light: real shadows={key.RealShadows} cheap ellipses switched off={key.Suppressed} light={(key.KeyLight?key.KeyLight.name:"none")}" : "HL capture key light: none");
                 Debug.Log(allyLaunched>0 && allyHits>0 ? "HL capture: ally auto-attack confirmed (projectile launched and a negative outcome from an ally entity)" : "HL capture: NO ally auto-attack observed");
                 EditorApplication.isPlaying=false;
             }

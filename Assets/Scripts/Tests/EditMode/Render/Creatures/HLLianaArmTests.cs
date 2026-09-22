@@ -41,6 +41,20 @@ namespace HealerLike.Render.Creatures
             finally { rendered.Dispose(); Object.DestroyImmediate(parent); Object.DestroyImmediate(material); }
             Assert.IsFalse(mesh);
         }
+        [Test] public void RestMeshHasOneNormalPerVertexBeforeAnyGesture()
+        {
+            var authored = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>("Assets/Render/Creatures/Data/HLHealer.asset");
+            var parent = new GameObject("HLArmFixture");
+            var material = new Material(Shader.Find("HL/Look/Primitive"));
+            var rendered = new HLLianaArm(authored.arms[0], parent.transform, material);
+            try
+            {
+                var mesh = parent.GetComponentInChildren<MeshFilter>().sharedMesh;
+                Assert.Greater(mesh.vertexCount, 0);
+                Assert.AreEqual(mesh.vertexCount, mesh.normals.Length, "QuickOutline indexes normals per vertex on Awake");
+            }
+            finally { rendered.Dispose(); Object.DestroyImmediate(parent); Object.DestroyImmediate(material); }
+        }
         [Test] public void ContactBypassesAnticipationAndReturnRestoresExactPose()
         {
             arm.Begin(1, HLGestureKind.Heal, Vector3.one); arm.Contact(1, Vector3.one); arm.Tick(.001f, Vector3.zero, Quaternion.identity);

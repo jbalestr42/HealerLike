@@ -176,7 +176,21 @@ namespace HealerLike.Render.Stage
             return sink;
         }
         // Stage-owned model variant: the track prefab plus the observers EntityModel.Init walks before any buff starts.
-        static GameObject StageModel(GameObject real, bool ally)
+        // A range at least the board's width bruises every cell from anywhere: the whole board darkens and the readout
+        // carries no information (Soldier's authored range is 100). Only shorter ranges get the bruise.
+        public const float BruiseMaxRange = 16;
+        public static bool Bruises(float range) => range > 0 && range < BruiseMaxRange;
+        public static float AuthoredRange(SerializedObject entityData)
+        {
+            var attributes = entityData.FindProperty("attributes");
+            for (int i = 0; attributes != null && i < attributes.arraySize; i++)
+            {
+                var entry = attributes.GetArrayElementAtIndex(i);
+                if (entry.FindPropertyRelative("key").intValue == (int)AttributeType.Range) return entry.FindPropertyRelative("value").floatValue;
+            }
+            return 0;
+        }
+        static GameObject StageModel(GameObject real, bool ally, bool bruise)
         {
             string path = Root + "Prefabs/Models/" + real.name + ".prefab";
             Directory.CreateDirectory(Root + "Prefabs/Models");
@@ -188,7 +202,9 @@ namespace HealerLike.Render.Stage
                 // Finding 8: any entity that heals gets its resolved-heal pulse; EntityModel.Init walks it as an IVisualBehaviour.
                 if (!go.GetComponent<HLHealPulse>()) go.AddComponent<HLHealPulse>();
                 // Grass wave 5: enemy range readout; it clears itself on non-Computer entities.
-                if (!ally && !go.GetComponent<HLBruiseZone>()) go.AddComponent<HLBruiseZone>();
+                var existing = go.GetComponent<HLBruiseZone>();
+                if (bruise && !existing) go.AddComponent<HLBruiseZone>();
+                else if (!bruise && existing) Object.DestroyImmediate(existing);
                 return PrefabUtility.SaveAsPrefabAsset(go, path);
             }
             finally { Object.DestroyImmediate(go); }
@@ -230,7 +246,7 @@ namespace HealerLike.Render.Stage
                     replacement = PrefabUtility.SaveAsPrefabAsset(go,target); Object.DestroyImmediate(go);
                     todo.Add(target + " -> " + real + " (preserves original model sockets and HUD; primitive placeholder).");
                 }
-                else if (asset is EntityData) replacement = StageModel(replacement, !enemy);
+                else if (asset is EntityData) replacement = StageModel(replacement, !enemy, enemy && Bruises(AuthoredRange(so)));
                 model.objectReferenceValue = replacement; so.ApplyModifiedPropertiesWithoutUndo(); EditorUtility.SetDirty(asset);
             }
         }

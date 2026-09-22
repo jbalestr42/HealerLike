@@ -22,5 +22,5 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    areaOfEffectPrefab: {fileID: 7460564058291525847, guid: 8f23ad8bf9aa4d7e8146d1682ee58a54, type: 3}
+    areaOfEffectPrefab: {fileID: 9143119085679320124, guid: 8f23ad8bf9aa4d7e8146d1682ee58a54, type: 3}
     radius: 1

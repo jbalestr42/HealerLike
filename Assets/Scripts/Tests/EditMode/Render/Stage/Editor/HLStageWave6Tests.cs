@@ -77,22 +77,31 @@ namespace HealerLike.Render.Stage
         }
         [Test] public void ModelsCarryTheirReadoutsAndTheBufferIsAPlant()
         {
-            int enemies=0, allies=0;
+            int allies=0, buffers=0;
             foreach(var guid in AssetDatabase.FindAssets("t:EntityData",new[]{HLStageBuilder.Root+"Data"}))
             {
                 var data=AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));
-                var model=new SerializedObject(data).FindProperty("model").objectReferenceValue as GameObject;
+                var so=new SerializedObject(data);
+                var model=so.FindProperty("model").objectReferenceValue as GameObject;
                 Assert.That(model,Is.Not.Null,data.name);
                 Assert.That(model.GetComponent<HLHealPulse>(),Is.Not.Null,data.name);
                 if(model.GetComponent<HLRangePreview>()) allies++;
-                if(model.GetComponent<HLBruiseZone>()) enemies++;
+                if(model.GetComponent<HLBruiseZone>()) Assert.That(HLStageBuilder.Bruises(HLStageBuilder.AuthoredRange(so)),Is.True,data.name+" bruises the whole board");
                 if(data.name.Contains("HitArmor"))
                 {
+                    buffers++;
                     var source=PrefabUtility.GetCorrespondingObjectFromSource(model);
                     Assert.That(AssetDatabase.GetAssetPath(source),Is.EqualTo("Assets/Render/Creatures/Prefabs/HLHitArmorBuffer.prefab"),data.name);
                 }
             }
-            Assert.That(allies,Is.GreaterThan(0)); Assert.That(enemies,Is.GreaterThan(0));
+            Assert.That(allies,Is.GreaterThan(0)); Assert.That(buffers,Is.GreaterThan(0));
+        }
+        [Test] public void BruiseOnlyForRangesShorterThanTheBoard()
+        {
+            Assert.That(HLStageBuilder.Bruises(3),Is.True);
+            Assert.That(HLStageBuilder.Bruises(100),Is.False,"Soldier");
+            Assert.That(HLStageBuilder.Bruises(HLStageBuilder.BruiseMaxRange),Is.False);
+            Assert.That(HLStageBuilder.Bruises(0),Is.False);
         }
         [Test] public void StageSceneOptsItsStoneEntryIntoDemoGenerationAndWiresTheHealerPulse()
         {

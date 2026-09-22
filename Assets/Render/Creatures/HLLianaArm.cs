@@ -66,7 +66,9 @@ namespace HealerLike.Render.Creatures
                     triangles[index++] = vertices.Length - 2; triangles[index++] = next; triangles[index++] = side;
                     triangles[index++] = vertices.Length - 1; triangles[index++] = end + side; triangles[index++] = end + next;
                 }
-                mesh.vertices = vertices; mesh.triangles = triangles;
+                // Every vertex carries a normal from creation: gameplay's SelectableEntity adds QuickOutline, whose Awake
+                // reads one normal per vertex of every child mesh, before the first gesture uploads real normals.
+                mesh.vertices = vertices; mesh.normals = normals; mesh.triangles = triangles;
                 container.gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
                 renderer = container.gameObject.AddComponent<MeshRenderer>(); renderer.sharedMaterial = material;
                 var block = new MaterialPropertyBlock(); block.SetColor("_BaseColor", definition.colour); renderer.SetPropertyBlock(block);
