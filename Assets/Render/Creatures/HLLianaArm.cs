@@ -17,6 +17,16 @@ namespace HealerLike.Render.Creatures
         readonly MeshRenderer renderer;
         readonly Vector3[] vertices, normals;
         const int Sides = 6;
+        const int LeafCount = 5;
+        readonly Matrix4x4[] leaves = new Matrix4x4[LeafCount];
+        readonly Matrix4x4[] beads = new Matrix4x4[LeafCount + 1];
+        readonly Mesh leafMesh, beadMesh;
+        readonly Material detailMaterial;
+        readonly MaterialPropertyBlock detailColour;
+        bool disposed;
+        public int ActiveLeafCount => visible && Phase != HLGesturePhase.Rest ? LeafCount : 0;
+        public Matrix4x4 LeafMatrix(int index) => leaves[index];
+        public Matrix4x4 TipMatrix => beads[LeafCount];
         bool visible = true;
         public int MeshRevision { get; private set; }
         readonly float radius;
@@ -47,6 +57,14 @@ namespace HealerLike.Render.Creatures
             radius = definition.radius * cellSize; pole = definition.bendPole;
             if (parent)
             {
+                HLPrimitiveMeshes.Retain();
+                leafMesh = HLPrimitiveMeshes.Get(HLPrimitive.Cone);
+                beadMesh = HLPrimitiveMeshes.Get(HLPrimitive.Sphere);
+                detailMaterial = material;
+                detailColour = new MaterialPropertyBlock();
+                var detailColours = new Vector4[LeafCount + 1];
+                for (int i = 0; i < detailColours.Length; i++) detailColours[i] = definition.colour;
+                detailColour.SetVectorArray("_BaseColor", detailColours);
                 container = new GameObject("HLLianaArm").transform; container.SetParent(parent, false);
                 mesh = new Mesh { name = "HLLianaChain", hideFlags = HideFlags.DontSave };
                 mesh.MarkDynamic();
@@ -151,6 +169,7 @@ namespace HealerLike.Render.Creatures
             if (!container) return;
             renderer.enabled = visible && Phase != HLGesturePhase.Rest;
             if (!renderer.enabled) return;
+            UpdateDetails();
             for (int j = 0; j < joints.Length; j++)
             {
                 Vector3 tangent = joints[Mathf.Min(j + 1, joints.Length - 1)] - joints[Mathf.Max(j - 1, 0)];
@@ -174,6 +193,28 @@ namespace HealerLike.Render.Creatures
             normals[normals.Length - 1] = container.InverseTransformDirection((Tip - joints[joints.Length - 2]).normalized);
             mesh.vertices = vertices; mesh.normals = normals; mesh.RecalculateBounds(); MeshRevision++;
         }
+        void UpdateDetails()
+        {
+            float width = Style == HLDeliveryStyle.Swarm ? .45f : 1;
+            for (int i = 0; i < LeafCount; i++)
+            {
+                int j = Mathf.Clamp((i + 1) * lengths.Length / (LeafCount + 1), 1, lengths.Length - 1);
+                Vector3 tangent = (joints[j + 1] - joints[j - 1]).normalized;
+                if (tangent.sqrMagnitude < .001f) tangent = Vector3.up;
+                Vector3 side = Vector3.Cross(tangent, Mathf.Abs(tangent.y) < .9f ? Vector3.up : Vector3.right).normalized;
+                Vector3 direction = (side * (i % 2 == 0 ? 1 : -1) + tangent * .45f).normalized;
+                float length = radius * 9 * width;
+                leaves[i] = Matrix4x4.TRS(joints[j] + direction * length * .45f,
+                    Quaternion.FromToRotation(Vector3.up, direction), new Vector3(length * .38f, length, length * .22f));
+                beads[i] = Matrix4x4.TRS(joints[j], Quaternion.identity, Vector3.one * radius * 2.4f * width);
+            }
+            beads[LeafCount] = Matrix4x4.TRS(Tip, Quaternion.identity, Vector3.one * radius * 4.5f * width);
+            if (!SystemInfo.supportsInstancing || !detailMaterial || !detailMaterial.enableInstancing || !container.gameObject.activeInHierarchy) return;
+            Graphics.DrawMeshInstanced(leafMesh, 0, detailMaterial, leaves, LeafCount, detailColour,
+                UnityEngine.Rendering.ShadowCastingMode.On, true, container.gameObject.layer);
+            Graphics.DrawMeshInstanced(beadMesh, 0, detailMaterial, beads, LeafCount + 1, detailColour,
+                UnityEngine.Rendering.ShadowCastingMode.On, true, container.gameObject.layer);
+        }
         public void SetVisible(bool value)
         {
             visible = value;
@@ -181,6 +222,9 @@ namespace HealerLike.Render.Creatures
         }
         public void Dispose()
         {
+            if (disposed) return;
+            disposed = true;
+            if (leafMesh) HLPrimitiveMeshes.Release();
             if (container) { container.gameObject.SetActive(false); HLPrimitiveMeshes.DestroyOwned(container.gameObject); }
             HLPrimitiveMeshes.DestroyOwned(mesh);
         }

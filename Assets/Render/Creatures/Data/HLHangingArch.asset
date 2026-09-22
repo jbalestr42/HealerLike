@@ -111,7 +111,7 @@ MonoBehaviour:
     dimensions: {x: 0.16, y: 0.28, z: 0.18}
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
-    glow: 0
+    glow: 0.6
   - id: HLPodStem1
     parent: 0
     primitive: 4
@@ -129,7 +129,7 @@ MonoBehaviour:
     dimensions: {x: 0.16, y: 0.28, z: 0.18}
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
-    glow: 0
+    glow: 0.6
   - id: HLPodStem2
     parent: 0
     primitive: 4
@@ -145,6 +145,87 @@ MonoBehaviour:
     localPosition: {x: 0.45, y: 0.35, z: 0}
     localEuler: {x: 0, y: 0, z: 0}
     dimensions: {x: 0.16, y: 0.28, z: 0.18}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0.6
+  - id: HLJoint0
+    parent: 0
+    primitive: 0
+    localPosition: {x: 0, y: 0.152, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.15, y: 0.15, z: 0.15}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint1
+    parent: 1
+    primitive: 0
+    localPosition: {x: 0, y: 0.12458684, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.135, y: 0.135, z: 0.135}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint2
+    parent: 2
+    primitive: 0
+    localPosition: {x: 0, y: 0.11069676, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.135, y: 0.135, z: 0.135}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint3
+    parent: 3
+    primitive: 0
+    localPosition: {x: 0, y: 0.086578995, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.135, y: 0.135, z: 0.135}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint4
+    parent: 4
+    primitive: 0
+    localPosition: {x: 0, y: 0.06262466, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.135, y: 0.135, z: 0.135}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint5
+    parent: 5
+    primitive: 0
+    localPosition: {x: 0, y: 0.062624656, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.135, y: 0.135, z: 0.135}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint6
+    parent: 6
+    primitive: 0
+    localPosition: {x: 0, y: 0.08657901, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.135, y: 0.135, z: 0.135}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint7
+    parent: 7
+    primitive: 0
+    localPosition: {x: 0, y: 0.11069672, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.135, y: 0.135, z: 0.135}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint8
+    parent: 8
+    primitive: 0
+    localPosition: {x: 0, y: 0.12458689, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.135, y: 0.135, z: 0.135}
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
     glow: 0
@@ -671,15 +752,15 @@ MonoBehaviour:
     colour: {r: 0.18, g: 0.49, b: 0.31, a: 1}
   roots:
     count: 6
-    footRadius: 0.38
+    footRadius: 0.42
     hipHeight: 0.18
     kneeHeight: 0.09
-    thickness: 0.022
+    thickness: 0.035
     angularOffset: 0
     colour: {r: 0.18, g: 0.49, b: 0.31, a: 1}
   idle:
     swayDegrees: 2.5
-    swayFrequency: 0.12
+    swayFrequency: 0.25
     breathAmount: 0.025
     breathFrequency: 0.25
     seed: 57

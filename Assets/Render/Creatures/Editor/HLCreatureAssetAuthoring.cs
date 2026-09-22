@@ -32,10 +32,10 @@ namespace HealerLike.Render.Creatures
                 }
             }
             var healer = SaveRecipe("HLHealer", Healer(), 6, 2, 17);
-            var fern = SaveRecipe("HLSpiralFern", Fern(), 4, 2, 31);
+            var fern = SaveRecipe("HLSpiralFern", Fern(), 7, 2, 31);
             var arch = SaveRecipe("HLHangingArch", Arch(), 6, 4, 57);
             var rosette = SaveRecipe("HLBladeRosette", Rosette(), 6, 2, 103);
-            var stack = SaveRecipe("HLSphereStack", Stack(), 4, 1, 89);
+            var stack = SaveRecipe("HLSphereStack", Stack(), 8, 1, 89);
             Model("HLNormal", "Assets/Models/Jomon.prefab", fern, material);
             Model("HLTest", "Assets/Models/Jomon.prefab", stack, material);
             Model("HLSwarm", "Assets/Models/Jomon.prefab", arch, material);
@@ -52,14 +52,24 @@ namespace HealerLike.Render.Creatures
             AssetDatabase.SaveAssets(); AssetDatabase.Refresh();
             Debug.Log("HL creature recipes and presentation prefab variants authored.");
         }
+        // Recipe-only refresh keeps existing prefab presentation and delivery overrides intact.
+        public static void AuthorBeautyRecipes()
+        {
+            SaveRecipe("HLHealer", Healer(), 6, 2, 17);
+            SaveRecipe("HLSpiralFern", Fern(), 7, 2, 31);
+            SaveRecipe("HLHangingArch", Arch(), 6, 4, 57);
+            SaveRecipe("HLBladeRosette", Rosette(), 6, 2, 103);
+            SaveRecipe("HLSphereStack", Stack(), 8, 1, 89);
+            AssetDatabase.SaveAssets();
+        }
         static HLPart Part(string id, HLPrimitive primitive, Vector3 position, Vector3 dimensions, Color colour, Vector3 euler = default, int parent = 0, float glow = 0)
             => new HLPart { id = id, parent = parent, primitive = primitive, localPosition = position, dimensions = dimensions, colour = colour, localEuler = euler, torusTubeRatio = .2f, glow = glow };
         static List<HLPart> Base() => new List<HLPart> { Part("HLStem", HLPrimitive.Capsule, new Vector3(0, .25f, 0), new Vector3(.11f, .5f, .11f), Stem, parent: -1) };
         static List<HLPart> Healer()
         {
             var p = Base();
-            p.Add(Part("HLBulb", HLPrimitive.Sphere, new Vector3(0, .48f, 0), new Vector3(.5f, .62f, .45f), Body));
-            p.Add(Part("HLCrown", HLPrimitive.Torus, new Vector3(0, .81f, 0), new Vector3(.42f, .3f, .42f), Bud, glow: .4f));
+            p.Add(Part("HLBulb", HLPrimitive.Cone, new Vector3(0, .48f, 0), new Vector3(.5f, .62f, .45f), Body));
+            p.Add(Part("HLCrown", HLPrimitive.Torus, new Vector3(0, .86f, 0), new Vector3(.60f, .3f, .48f), Bud, glow: .4f));
             for (int i = 0; i < 3; i++)
             {
                 float a = i * Mathf.PI * 2 / 3;
@@ -74,7 +84,7 @@ namespace HealerLike.Render.Creatures
             {
                 float angle = i * Mathf.PI / 3;
                 p.Add(Part("HLBud" + i, HLPrimitive.Cone, new Vector3(.26f * Mathf.Cos(angle), .28f, .26f * Mathf.Sin(angle)),
-                    new Vector3(.2f, .72f, .1f), Body, new Vector3(0, i * 60, -55), glow: .7f));
+                    new Vector3(.2f, .72f, .1f), Body, Quaternion.FromToRotation(Vector3.up, new Vector3(Mathf.Cos(angle), .65f, Mathf.Sin(angle))).eulerAngles, glow: .7f));
             }
             return p;
         }
@@ -90,7 +100,7 @@ namespace HealerLike.Render.Creatures
                 p.Add(Part("HLFernStem" + i, HLPrimitive.Capsule, (point + previous) * .5f, new Vector3(.065f, delta.magnitude + .035f, .065f), Stem,
                     Quaternion.FromToRotation(Vector3.up, delta).eulerAngles));
                 p.Add(Part("HLFrond" + i, HLPrimitive.Sphere, point, new Vector3(.28f * (1 - i * .04f), .07f, .15f), i % 2 == 0 ? Body : Bud,
-                    new Vector3(0, i * 29, i % 2 == 0 ? 32 : -32)));
+                    new Vector3(0, i * 29, i % 2 == 0 ? 32 : -32), glow: i > 6 ? .45f : 0));
                 previous = point;
             }
             return p;
@@ -111,7 +121,7 @@ namespace HealerLike.Render.Creatures
             {
                 float x = .13f + i * .16f, y = i == 1 ? .58f : .41f;
                 p.Add(Part("HLPodStem" + i, HLPrimitive.CylinderSegment, new Vector3(x, y + .12f, 0), new Vector3(.028f, .25f, .028f), Stem));
-                p.Add(Part("HLPod" + i, HLPrimitive.Sphere, new Vector3(x, y - .06f, 0), new Vector3(.16f, .28f, .18f), Bud));
+                p.Add(Part("HLPod" + i, HLPrimitive.Sphere, new Vector3(x, y - .06f, 0), new Vector3(.16f, .28f, .18f), Bud, glow: .6f));
             }
             return p;
         }
@@ -120,7 +130,7 @@ namespace HealerLike.Render.Creatures
             var p = new List<HLPart> { Part("HLConicalRoot", HLPrimitive.Cone, new Vector3(0, .2f, 0), new Vector3(.5f, .4f, .5f), Stem, parent: -1) };
             p.Add(Part("HLBottomSphere", HLPrimitive.Sphere, new Vector3(0, .34f, 0), Vector3.one * .43f, Body));
             p.Add(Part("HLMiddleSphere", HLPrimitive.Sphere, new Vector3(.045f, .69f, 0), Vector3.one * .32f, Bud));
-            p.Add(Part("HLTopSphere", HLPrimitive.Sphere, new Vector3(-.02f, .95f, 0), Vector3.one * .22f, Body));
+            p.Add(Part("HLTopSphere", HLPrimitive.Sphere, new Vector3(-.02f, .95f, 0), Vector3.one * .22f, Body, glow: .7f));
             p.Add(Part("HLRing", HLPrimitive.Torus, new Vector3(0, .56f, 0), new Vector3(.48f, .26f, .48f), Stem));
             return p;
         }
@@ -129,7 +139,17 @@ namespace HealerLike.Render.Creatures
             string path = Root + "Data/" + name + ".asset";
             var recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
             if (!recipe) { recipe = ScriptableObject.CreateInstance<HLCreatureRecipe>(); AssetDatabase.CreateAsset(recipe, path); }
-            recipe.parts = parts.ToArray(); recipe.roots.count = roots; recipe.idle.seed = seed;
+            // A rounded collar makes capsule endpoints legible without changing their pivots.
+            int stemCount = parts.Count;
+            for (int i = 0; i < stemCount; i++)
+            {
+                var stem = parts[i];
+                if (stem.primitive != HLPrimitive.Capsule) continue;
+                parts.Add(Part("HLJoint" + i, HLPrimitive.Sphere, Vector3.up * (stem.dimensions.y * .38f),
+                    Vector3.one * (stem.dimensions.x * 1.5f), Bud, parent: i));
+            }
+            recipe.parts = parts.ToArray(); recipe.roots.count = roots; recipe.idle.seed = seed; recipe.roots.thickness = .035f; recipe.roots.footRadius = .42f;
+            recipe.idle.swayFrequency = .25f;
             recipe.targetLocal = Vector3.up * .8f; recipe.sourceLocal = new Vector3[armCount]; recipe.arms = new HLArmDefinition[armCount];
             for (int j = 0; j < armCount; j++)
             {

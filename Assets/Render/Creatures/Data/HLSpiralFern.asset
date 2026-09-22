@@ -165,7 +165,7 @@ MonoBehaviour:
     dimensions: {x: 0.2016, y: 0.07, z: 0.15}
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
-    glow: 0
+    glow: 0.45
   - id: HLFernStem8
     parent: 0
     primitive: 1
@@ -183,7 +183,7 @@ MonoBehaviour:
     dimensions: {x: 0.1904, y: 0.07, z: 0.15}
     colour: {r: 0.5, g: 0.79, b: 0.25, a: 1}
     torusTubeRatio: 0.2
-    glow: 0
+    glow: 0.45
   - id: HLFernStem9
     parent: 0
     primitive: 1
@@ -199,6 +199,105 @@ MonoBehaviour:
     localPosition: {x: -0.15629028, y: 0.805, z: 0.0031548787}
     localEuler: {x: 0, y: 261, z: -32}
     dimensions: {x: 0.17920001, y: 0.07, z: 0.15}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0.45
+  - id: HLJoint0
+    parent: 0
+    primitive: 0
+    localPosition: {x: 0, y: 0.19, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.16499999, y: 0.16499999, z: 0.16499999}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint1
+    parent: 1
+    primitive: 0
+    localPosition: {x: 0, y: 0.077644944, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.0975, y: 0.0975, z: 0.0975}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint3
+    parent: 3
+    primitive: 0
+    localPosition: {x: 0, y: 0.07683936, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.0975, y: 0.0975, z: 0.0975}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint5
+    parent: 5
+    primitive: 0
+    localPosition: {x: 0, y: 0.06121548, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.0975, y: 0.0975, z: 0.0975}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint7
+    parent: 7
+    primitive: 0
+    localPosition: {x: 0, y: 0.048022076, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.0975, y: 0.0975, z: 0.0975}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint9
+    parent: 9
+    primitive: 0
+    localPosition: {x: 0, y: 0.051656768, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.0975, y: 0.0975, z: 0.0975}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint11
+    parent: 11
+    primitive: 0
+    localPosition: {x: 0, y: 0.06179874, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.0975, y: 0.0975, z: 0.0975}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint13
+    parent: 13
+    primitive: 0
+    localPosition: {x: 0, y: 0.06518979, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.0975, y: 0.0975, z: 0.0975}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint15
+    parent: 15
+    primitive: 0
+    localPosition: {x: 0, y: 0.05961131, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.0975, y: 0.0975, z: 0.0975}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint17
+    parent: 17
+    primitive: 0
+    localPosition: {x: 0, y: 0.049634133, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.0975, y: 0.0975, z: 0.0975}
+    colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    torusTubeRatio: 0.2
+    glow: 0
+  - id: HLJoint19
+    parent: 19
+    primitive: 0
+    localPosition: {x: 0, y: 0.04411665, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    dimensions: {x: 0.0975, y: 0.0975, z: 0.0975}
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
     glow: 0
@@ -464,16 +563,16 @@ MonoBehaviour:
     bendPole: {x: 0, y: 1, z: 0}
     colour: {r: 0.18, g: 0.49, b: 0.31, a: 1}
   roots:
-    count: 4
-    footRadius: 0.38
+    count: 7
+    footRadius: 0.42
     hipHeight: 0.18
     kneeHeight: 0.09
-    thickness: 0.022
+    thickness: 0.035
     angularOffset: 0
     colour: {r: 0.18, g: 0.49, b: 0.31, a: 1}
   idle:
     swayDegrees: 2.5
-    swayFrequency: 0.12
+    swayFrequency: 0.25
     breathAmount: 0.025
     breathFrequency: 0.25
     seed: 31
