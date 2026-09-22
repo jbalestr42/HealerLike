@@ -122,12 +122,7 @@ namespace HealerLike.Render.Stage
             actedRound=round;
             var view=UnityEngine.Object.FindAnyObjectByType<GameView>();
             if(round==1) PlaceAllies();
-            else
-            {
-                // Julien's loop grants no units or gold per round: the pool is fixed at InitializeGame and gold is never earned or spent.
-                var player=PlayerBehaviour.instance;
-                Debug.Log($"HL smoke: round {round} nothing new to place (pool={(player && player.character ? player.character.entityPool.Count : -1)} gold={(player ? player.gold : -1)})");
-            }
+            else PlaceFromPool(round);
             if(!view || !view.gameHUD || !view.gameHUD.nextWaveButton) { Finish(false,"no nextWaveButton"); return; }
             if(!view.gameHUD.nextWaveButton.interactable) Debug.LogWarning($"HL smoke: nextWaveButton not interactable in round {round}, invoking anyway");
             view.gameHUD.nextWaveButton.onClick.Invoke();
@@ -148,7 +143,29 @@ namespace HealerLike.Render.Stage
             else if(first is SelectItemUpgradeButton item) item.SelectUpgrade();
             else ((SelectPlayerItemUpgradeButton)first).SelectUpgrade();
         }
+        // Later rounds: the player's own pool, as EntityGridInteraction places a selected inventory entity (no cost in
+        // Julien's loop). Two new allies per round on the nearest free walkable cells around the first enemy.
+        const int NewAlliesPerRound = 2;
+        static void PlaceFromPool(int round)
+        {
+            var player=PlayerBehaviour.instance;
+            var pool=player && player.character ? player.character.entityPool : null;
+            if(pool==null || pool.Count==0) { Debug.Log($"HL smoke: round {round} empty pool, nothing to place"); return; }
+            var data=new List<EntityData>();
+            for(int i=0;i<NewAlliesPerRound;i++) data.Add(pool[((round-2)*NewAlliesPerRound+i)%pool.Count]);
+            Place(data,$"round {round} pool");
+        }
         static void PlaceAllies()
+        {
+            var data=new List<EntityData>();
+            foreach(var relative in Allies)
+            {
+                var entity=AssetDatabase.LoadAssetAtPath<EntityData>(HLStageBuilder.Root+relative);
+                if(entity) data.Add(entity); else Debug.LogWarning("HL smoke: missing "+relative);
+            }
+            Place(data,"round 1");
+        }
+        static void Place(List<EntityData> list, string label)
         {
             var manager=EntityManager.instance;
             var grid=PlayerBehaviour.instance ? PlayerBehaviour.instance.grid : null;
@@ -157,10 +174,8 @@ namespace HealerLike.Render.Stage
             var enemy=enemies.Count>0 ? enemies[0] : null;
             Vector3 anchor=enemy ? enemy.transform.position : Vector3.zero;
             int next=0;
-            foreach(var relative in Allies)
+            foreach(var data in list)
             {
-                var data=AssetDatabase.LoadAssetAtPath<EntityData>(HLStageBuilder.Root+relative);
-                if(!data) { Debug.LogWarning("HL smoke: missing "+relative); continue; }
                 GameObject go=null; Vector3 position=anchor;
                 // Nearest free walkable cell around the first enemy; SpawnEntity refuses occupied cells, so try the next offset.
                 while(!go && next<Offsets.Length)
@@ -168,7 +183,7 @@ namespace HealerLike.Render.Stage
                     try { position=grid.GetNearestWalkablePosition(anchor+Offsets[next++]*grid.size); go=manager.SpawnEntity(data,position,Entity.EntityType.Player); }
                     catch(Exception e) { Debug.LogWarning("HL smoke: placement failed: "+e.Message); break; }
                 }
-                Debug.Log($"HL smoke: placed {data.name} at {position} next to {(enemy?enemy.name:"no enemy")} -> {(go?go.name:"refused")}");
+                Debug.Log($"HL smoke: {label} placed {data.name} at {position} next to {(enemy?enemy.name:"no enemy")} -> {(go?go.name:"refused")}");
             }
         }
         static void Observe()
@@ -198,7 +213,8 @@ namespace HealerLike.Render.Stage
         static void ResetRound() { projectiles=negative=positive=frames=roundExceptions=0; frameMs=0; }
         static void OnLog(string message, string stack, LogType type)
         {
-            if((type==LogType.Exception || type==LogType.Error) && Array.TrueForAll(KnownErrors,k=>!message.Contains(k)))
+            // Known editor-side errors name themselves in the message or only in the stack (Unity Search's index exception).
+            if((type==LogType.Exception || type==LogType.Error) && Array.TrueForAll(KnownErrors,k=>!message.Contains(k) && (stack==null || !stack.Contains(k))))
             {
                 exceptions++; roundExceptions++;
                 if(errors.Count<10) errors.Add(type+": "+message+"\n"+stack);
