@@ -57,6 +57,24 @@ namespace HealerLike.Render.Stage
             }
             finally { zones.Release(); }
         }
+        [Test] public void InitializesTheHealerPulseForItsSourceAndReleasesIt()
+        {
+            var bootstrap = root.AddComponent<HLRenderBootstrap>();
+            var pulse = root.AddComponent<HLHealPulse>();
+            var healer = new GameObject("HLHealer");
+            var source = typeof(HLHealPulse).GetField("_source", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            try
+            {
+                TestHelpers.SetPrivateField(bootstrap, "healPulse", pulse);
+                TestHelpers.SetPrivateField(bootstrap, "healSource", healer);
+                bootstrap.Configure(new HLFakeSink(), null, null);
+                TestHelpers.InvokePrivate(bootstrap, "OnEnable");
+                Assert.That(source.GetValue(pulse), Is.SameAs(healer), "a Character is not walked by EntityModel.Init");
+                TestHelpers.InvokePrivate(bootstrap, "OnDisable");
+                Assert.That(source.GetValue(pulse), Is.Null);
+            }
+            finally { Object.DestroyImmediate(healer); }
+        }
         [Test] public void DuplicateCannotReplaceOrClearOwner()
         {
             var first = root.AddComponent<HLRenderBootstrap>(); TestHelpers.InvokePrivate(first, "OnEnable");

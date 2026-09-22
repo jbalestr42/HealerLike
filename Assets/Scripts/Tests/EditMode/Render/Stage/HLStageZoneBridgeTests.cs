@@ -15,6 +15,17 @@ namespace HealerLike.Render.Stage
                 TestHelpers.InvokePrivate(bridge,"OnDisable"); Assert.That(observed,Is.Zero); Assert.That(writes,Is.EqualTo(3));
             } finally { Object.DestroyImmediate(go); }
         }
+        [Test] public void ConcreteConfigureReadsTheRegistryDirectly()
+        {
+            var go=new GameObject("HLBridgeTest"); go.SetActive(false);
+            var zones=go.AddComponent<HealerLike.Render.Zones.HLZoneRegistry>();
+            try {
+                var bridge=go.AddComponent<HLStageZoneBridge>();
+                Assert.DoesNotThrow(()=>bridge.Configure(zones,null));
+                Assert.That(bridge.ZoneRegistry,Is.SameAs(zones)); Assert.That(bridge.GrassField,Is.Null);
+                Assert.DoesNotThrow(()=>TestHelpers.InvokePrivate(bridge,"LateUpdate"));
+            } finally { Object.DestroyImmediate(go); }
+        }
         [Test] public void MissingOptionalTracksAreSafe()
         {
             var go=new GameObject("HLBridgeTest"); go.SetActive(false);

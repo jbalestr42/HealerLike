@@ -113,7 +113,15 @@ float HLFogFactor(float3 positionWS)
     float bands = max(1.0, floor(HL_G(_HLFogBands, HL_DEF_FOGBANDS) + 0.5));
     float start = HL_G(_HLFogStart, HL_DEF_FOGSTART);
     float end = HL_G(_HLFogEnd, HL_DEF_FOGEND);
-    float f = saturate((distance(positionWS, GetCameraPositionWS()) - start) / max(0.001, end - start));
+    float span = max(0.001, end - start);
+    // Warp the band edges with the ink's warp frequency and dash amount, so bands read as
+    // drifting, broken contours instead of concentric arcs. Zero dash amount keeps exact arcs.
+    float freq = HL_G(_HLInkWarpFreq, HL_DEF_INKWARPFREQ) * 0.1;
+    float warp = sin(positionWS.x * freq + positionWS.z * freq * 0.37)
+               + 0.5 * sin(positionWS.z * freq * 2.7 - positionWS.x * freq * 1.3)
+               + 0.25 * (HLDashNoise(positionWS.x * freq * 4.0 + positionWS.z * freq * 3.1) * 2.0 - 1.0);
+    float amplitude = saturate(HL_G(_HLDashAmount, HL_DEF_DASHAMOUNT) * 3.0) * span / bands;
+    float f = saturate((distance(positionWS, GetCameraPositionWS()) + warp * amplitude - start) / span);
     return floor(f * bands) / bands;
 }
 
