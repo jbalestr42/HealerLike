@@ -12,21 +12,45 @@ namespace HealerLike.Render.Spells
         public Material material;
         // Injected adapter wins; when null, PulseArea falls back to HLRenderRegistry.Current.ZoneOwner (contract v2).
         public Action<Vector3, float, HLZoneKind, float> AreaPulse { get; set; }
-        readonly Dictionary<(GameObject, ABuffHandlerFactory), GameObject> _statuses = new Dictionary<(GameObject, ABuffHandlerFactory), GameObject>();
+        struct HLStatusVisual
+        {
+            public GameObject Root;
+            public HLSpellEffect[] Effects;
+            public AttributeManager Attributes;
+        }
+        readonly Dictionary<(GameObject, ABuffHandlerFactory), HLStatusVisual> _statuses = new Dictionary<(GameObject, ABuffHandlerFactory), HLStatusVisual>();
+        readonly List<(GameObject,ABuffHandlerFactory)> _dead = new List<(GameObject,ABuffHandlerFactory)>();
+        readonly List<HLSpellEffect> _remainingEffects = new List<HLSpellEffect>();
+        public int PresentationVersion { get; private set; }
         readonly List<GameObject> _impacts = new List<GameObject>();
+        // Optional bud adapter supplied by the creature track after merge.
+        public Func<GameObject, Transform> HealerAnchor { get; set; }
+        public Func<GameObject, bool> IsCharacterSource { get; set; }
+        public Action<Vector3, Vector3> LinkObserved { get; set; }
+        readonly HashSet<(GameObject source, GameObject target)> _heals = new HashSet<(GameObject, GameObject)>();
+        readonly HashSet<HLSpellSignature> _unknown = new HashSet<HLSpellSignature>();
+        readonly List<GameObject> _removing = new List<GameObject>();
+        void Unknown(HLSpellSignature signature)
+        { if (_unknown.Add(signature)) Debug.LogWarning("HL unmapped spell signature: " + signature); }
         readonly HLSpellGrammar _grammar = new HLSpellGrammar();
         public int StatusCount => _statuses.Count;
         public int ImpactCount { get { _impacts.RemoveAll(x => !x); return _impacts.Count; } }
-        public GameObject GetStatus(GameObject target, ABuffHandlerFactory factory) => _statuses.TryGetValue((target,factory), out var go) ? go : null;
+        public GameObject GetStatus(GameObject target, ABuffHandlerFactory factory) => _statuses.TryGetValue((target,factory), out var status) ? status.Root : null;
         static Transform Anchor(GameObject target)
         { var entity = target.GetComponent<Entity>(); return entity && entity.targetPoint ? entity.targetPoint.transform : target.transform; }
         public void ShowImpact(GameObject source, GameObject target, HLResourceKind resource, float preClampAmount, bool isCritical)
         {
-            if (!target || !HLSpellGrammar.Finite(preClampAmount) || preClampAmount == 0) return;
+            if (!isActiveAndEnabled || !target || !HLSpellGrammar.Finite(preClampAmount) || preClampAmount == 0) return;
             var kind = resource == HLResourceKind.Mana ? HLSpellEffectKind.Mana : preClampAmount > 0 ? HLSpellEffectKind.Heal : HLSpellEffectKind.Impact;
             var prefab = styles ? kind == HLSpellEffectKind.Heal ? styles.heal : kind == HLSpellEffectKind.Impact ? styles.impact : null : null;
             var signature = new HLSpellSignature { operation = HLOperation.Resource, sign = HLSpellGrammar.Sign(preClampAmount), hasAttribute = true, attribute = resource == HLResourceKind.Health ? AttributeType.HealthMax : AttributeType.ManaMax, topology = HLTopology.Single, duration = HLDurationShape.Instant, tempo = HLTempo.Immediate };
-            if (styles && styles.TryGet(signature, out var mapped)) prefab = mapped;
+            if (styles)
+            {
+                if (!styles.TryGet(signature, out var mapped)) { Unknown(signature); return; }
+                prefab = mapped;
+            }
+            if (resource == HLResourceKind.Health && preClampAmount > 0 && source &&
+                (IsCharacterSource != null ? IsCharacterSource(source) : source.GetComponent<Character>() != null)) _heals.Add((source,target));
             var effect = Spawn(prefab, kind, transform); effect.transform.position = Anchor(target).position;
             var owner = source ? source.GetComponent<Entity>() : null;
             effect.SetSide(owner ? owner.entityType : Entity.EntityType.None);
@@ -39,34 +63,40 @@ namespace HealerLike.Render.Spells
         }
         public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks, float elapsedSeconds, float durationSeconds, HLClockKind clock)
         {
-            if (!target || !factory) return;
+            if (!isActiveAndEnabled || !target || !factory) return;
             if (stacks <= 0) { RemoveStatus(source,target,factory); return; }
             if (!HLSpellGrammar.Finite(elapsedSeconds) || float.IsNaN(durationSeconds)) return;
             var key = (target,factory);
-            if (!_statuses.TryGetValue(key,out var root) || !root)
+            if (!_statuses.TryGetValue(key,out var status) || !status.Root)
             {
                 var recipe = _grammar.Describe(factory,source,target);
-                if (!recipe.IsValid) return;
-                root = new GameObject("HLStatus"); root.transform.SetParent(Anchor(target),false);
+                if (!recipe.IsValid) { Unknown(recipe.Signature); return; }
+                var root = new GameObject("HLStatus"); root.transform.SetParent(Anchor(target),false);
                 AddStatusAtoms(root.transform, recipe);
-                _statuses[key]=root;
+                var effects = root.GetComponentsInChildren<HLSpellEffect>();
+                if (effects.Length == 0) { Dispose(root); return; }
+                var entity = target.GetComponent<Entity>();
+                status = new HLStatusVisual { Root = root, Effects = effects, Attributes = entity ? entity.attributeManager : null };
+                _statuses[key]=status;
             }
-            foreach(var effect in root.GetComponentsInChildren<HLSpellEffect>())
+            foreach(var effect in status.Effects)
             {
                 effect.SetStatus(stacks,elapsedSeconds,durationSeconds,clock,effect.Signature);
-                var entity = target.GetComponent<Entity>();
-                var attributes = entity ? entity.attributeManager : null;
+                var attributes = status.Attributes;
                 effect.SetShieldState(attributes && attributes.Has(AttributeType.HitArmor) ? attributes.Get(AttributeType.HitArmor).Value : null);
-                effect.SetSide(entity ? entity.entityType : Entity.EntityType.None);
+                var caster = source ? source.GetComponent<Entity>() : null;
+                effect.SetSide(caster ? caster.entityType : Entity.EntityType.None);
             }
         }
         void AddStatusAtoms(Transform root, HLVisualRecipe recipe)
         {
-            if (!recipe.IsValid) return;
+            if (!recipe.IsValid) { Unknown(recipe.Signature); return; }
             if (recipe.Children.Count > 0) { foreach(var child in recipe.Children) AddStatusAtoms(root,child); return; }
             var signature=recipe.Signature;
-            bool shield=signature.operation==HLOperation.Prevention || signature.operation==HLOperation.Attribute && (signature.attribute==AttributeType.HitArmor || signature.attribute==AttributeType.PercentArmor);
-            var effect=Spawn(styles ? styles.StatusPrefab(signature) : null,shield ? HLSpellEffectKind.Shield : HLSpellEffectKind.Buff,root);
+            GameObject prefab = null;
+            if (styles && !styles.TryGet(signature, out prefab)) { Unknown(signature); return; }
+            var effect=Spawn(prefab,HLSpellPrimitives.Kind(signature),root);
+            effect.PeriodSeconds = recipe.PeriodSeconds;
             effect.SetStatus(1,0,recipe.DurationSeconds,recipe.Clock,signature);
             if(signature.hasAttribute && signature.attribute==AttributeType.Speed) effect.transform.localPosition=Vector3.down*.35f;
         }
@@ -80,34 +110,105 @@ namespace HealerLike.Render.Spells
         public void RemoveStatus(GameObject source, GameObject target, ABuffHandlerFactory factory)
         {
             if (ReferenceEquals(target,null)||ReferenceEquals(factory,null)) return;
-            if(_statuses.Remove((target,factory),out var root)) Dispose(root);
+            if(_statuses.Remove((target,factory),out var status) && status.Root)
+            {
+                var root = status.Root;
+                root.transform.SetParent(transform,true);
+                foreach (var effect in status.Effects) effect.BeginRemoval();
+                _removing.Add(root);
+            }
         }
         public void PulseArea(Vector3 center,float radius,HLZoneKind kind,float strength)
         {
             if(!HLZonePacker.TryCreate(center,radius,kind,strength,0,out var zone)) return;
+            if (isActiveAndEnabled)
+            {
+                var ring = Spawn(null,HLSpellEffectKind.Area,transform);
+                ring.transform.position = center; ring.transform.localScale = Vector3.one * radius;
+                ring.SetSide(kind == HLZoneKind.Hostile ? Entity.EntityType.Computer : Entity.EntityType.Player);
+                _impacts.Add(ring.gameObject);
+                if (_impacts.Count > 128) { Dispose(_impacts[0]); _impacts.RemoveAt(0); }
+            }
+            // The zone owner has an independent lifetime; forwarding does not create sink children.
             if(AreaPulse!=null) AreaPulse(center,radius,kind,zone.strength);
             else HLRenderRegistry.Current?.ZoneOwner?.AddPulse(kind,center,radius,zone.strength,PulseSeconds);
         }
         public HLSpellEffect ShowLink(Vector3 start, Vector3 end)
         {
-            if (!HLSpellGrammar.Finite(start.x) || !HLSpellGrammar.Finite(start.y) || !HLSpellGrammar.Finite(start.z) || !HLSpellGrammar.Finite(end.x) || !HLSpellGrammar.Finite(end.y) || !HLSpellGrammar.Finite(end.z)) return null;
-            var effect=Spawn(styles ? styles.chain : null,HLSpellEffectKind.Chain,transform);effect.SetEndpoints(start,end);_impacts.Add(effect.gameObject);
+            if (!isActiveAndEnabled || !HLSpellGrammar.Finite(start.x) || !HLSpellGrammar.Finite(start.y) || !HLSpellGrammar.Finite(start.z) || !HLSpellGrammar.Finite(end.x) || !HLSpellGrammar.Finite(end.y) || !HLSpellGrammar.Finite(end.z)) return null;
+            var effect=Spawn(styles ? styles.chain : null,HLSpellEffectKind.Chain,transform);effect.lifetime=.6f;effect.SetEndpoints(start,end);_impacts.Add(effect.gameObject);
             if (_impacts.Count > 128) { Dispose(_impacts[0]); _impacts.RemoveAt(0); }
             return effect;
         }
+        public void FlushHealLinks()
+        {
+            if (!isActiveAndEnabled) { _heals.Clear(); return; }
+            foreach (var pair in _heals)
+            {
+                if (!pair.source || !pair.target) continue;
+                var anchor = HealerAnchor?.Invoke(pair.source);
+                var start = anchor ? anchor.position : pair.source.transform.position;
+                var end = Anchor(pair.target).position;
+                ShowLink(start,end); LinkObserved?.Invoke(start,end);
+            }
+            _heals.Clear();
+        }
         void LateUpdate()
         {
-            var dead=new List<(GameObject,ABuffHandlerFactory)>();
-            foreach(var pair in _statuses) if(!pair.Key.Item1||!pair.Key.Item2||!pair.Value) dead.Add(pair.Key);
-            foreach(var key in dead) { Dispose(_statuses[key]);_statuses.Remove(key); }
+            FlushHealLinks();
+            for (int i = _removing.Count-1; i >= 0; i--)
+            {
+                _remainingEffects.Clear();
+                if (_removing[i]) _removing[i].GetComponentsInChildren(false,_remainingEffects);
+                if (_remainingEffects.Count == 0) { Dispose(_removing[i]); _removing.RemoveAt(i); }
+            }
+            _dead.Clear();
+            foreach(var pair in _statuses)
+            {
+                if(!pair.Key.Item1||!pair.Key.Item2||!pair.Value.Root) { _dead.Add(pair.Key); continue; }
+                var attributes = pair.Value.Attributes;
+                foreach (var effect in pair.Value.Effects)
+                    effect.SetShieldState(attributes && attributes.Has(AttributeType.HitArmor) ? attributes.Get(AttributeType.HitArmor).Value : null);
+            }
+            if (_dead.Count > 0) PresentationVersion++;
+            foreach(var key in _dead) { Dispose(_statuses[key].Root);_statuses.Remove(key); }
             _impacts.RemoveAll(x=>!x);
         }
+        bool _ownsPrimitives;
+        void RetainPrimitives()
+        {
+            if (_ownsPrimitives) return;
+            HLSpellPrimitives.Retain(); _ownsPrimitives = true;
+        }
+        void OnEnable()
+        {
+            RetainPrimitives();
+            // The registry may retain this sink across disable/enable.
+            Clear();
+        }
         void OnDisable() => Clear();
+        void OnDestroy()
+        {
+            Clear();
+            if (_ownsPrimitives) { _ownsPrimitives = false; HLSpellPrimitives.ReleaseUser(); }
+        }
         public void Clear()
         {
-            foreach(var root in _statuses.Values) Dispose(root);_statuses.Clear();
+            PresentationVersion++;
+            _heals.Clear(); foreach(var root in _removing) Dispose(root); _removing.Clear();
+            foreach(var status in _statuses.Values) Dispose(status.Root);_statuses.Clear();
             foreach(var root in _impacts) Dispose(root);_impacts.Clear();
         }
-        static void Dispose(GameObject go) { if(!go)return;go.SetActive(false);if(Application.isPlaying) Destroy(go);else DestroyImmediate(go); }
+        static void Dispose(GameObject go)
+        {
+            if(!go)return;
+            go.SetActive(false);
+            if(Application.isPlaying) Destroy(go);
+            else
+            {
+                foreach(var effect in go.GetComponentsInChildren<HLSpellEffect>(true)) effect.ReleaseResources();
+                DestroyImmediate(go);
+            }
+        }
     }
 }

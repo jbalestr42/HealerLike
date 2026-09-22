@@ -23,6 +23,7 @@ namespace HealerLike.Render.Spells
         public HLDurationShape duration;
         public HLTempo tempo;
         public byte variant;
+        public override string ToString() => $"{operation}/{sign}/{(hasAttribute ? attribute.ToString() : "none")}/{topology}/{duration}/{tempo}/v{variant}";
         public bool Equals(HLSpellSignature other) => sign == other.sign && attribute == other.attribute &&
             hasAttribute == other.hasAttribute && operation == other.operation && topology == other.topology &&
             duration == other.duration && tempo == other.tempo && variant == other.variant;

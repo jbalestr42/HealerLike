@@ -1,0 +1,12 @@
+{
+    "name": "HealerLike.Render.Spells.Editor",
+    "rootNamespace": "HealerLike.Render.Spells",
+    "references": [
+        "HealerLike.Render",
+        "HealerLike.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": true
+}

@@ -17,3 +17,39 @@ Prefabs contain primitive meshes only, no colliders or gameplay components. `HLS
 Commands run with Unity 6000.6.0f1 on this clone only. See REPORT.md for final commands, exit status and counts.
 
 BLIND-SPOT: No rendered frame or PlayMode camera review was performed; integrated timing, density, outlines, fog, socket sizing and performance need stage review.
+
+## Wave 5 integration
+
+`HLSpellPrefabBuilder.Build` now enumerates deserialized `Assets/Data` through
+`HLSpellGrammar.DescribeData`, writes `SIGNATURES.md`, and creates one persistent primitive
+prefab per key. The inventory includes composition nodes, standalone factory contexts, self
+handler contexts, and diagnostic intent. Runtime invalid recipes remain silent and log once;
+unmapped keys in a configured style table fail closed. The four signed health/mana resolution
+keys supplement the data inventory because the frozen outcome seam carries no original signature.
+
+`HLDeliveryStyles` is an authored asset at `Spells/Data/HLDeliveryStyles.asset`. Inject this asset
+into the delivery observer and call `styles.For(projectilePrefab)`; original, stage `HL` names and
+`(Clone)` suffixes resolve alike. Unknown/null names return Direct. Component facts are retained
+in each row. Both lightning variants are ChainSync. Laser and swarm are presentation variants
+(their underlying behaviours are arc/homing and curved respectively). Bounce is supported by
+the classifier; none of the nine base prefabs carries it. An item-added bounce must be selected
+by the observing track from the installed behaviour, rather than guessed from the base prefab.
+
+`HLSpellVisualSink` queues positive health outcomes from a Character and flushes one gold curved
+link per source/recipient in LateUpdate. Dots travel for the cosmetic 0.6-second lifetime.
+`HealerAnchor` accepts a render-owned bud anchor adapter; absent that adapter it uses the source
+transform. `IsCharacterSource` and `LinkObserved` allow tests with plain objects. Single-recipient
+positive outcomes also link, as requested; the frozen seam cannot identify the originating skill.
+
+Status orbits and drip phases read `SetStatus` elapsed/duration and the grammar's authored period.
+Three rings have separate tilts and radii. Plates close over the first 0.25 seconds of observed
+status elapsed time; removal detaches a cosmetic tail that opens over 0.25 seconds. Refreshes
+follow the supplied elapsed reset. Stacks remain counted beads, not an inferred stat magnitude.
+Resource outcomes retain the bounded square-root magnitude scale. Round-end/death listener
+markers stay still until an actual outcome arrives. Speed markers sit 0.35 units below the anchor.
+
+Creature integration: subscribe to `HLSpellEffect.OnTint` (`UnityEvent<Color>`) on the target's
+status children, then read `Tint` immediately to catch late subscription. Negative periodic
+resource statuses emit coral, removal/disable emits white (release sentinel). The creature owner
+must combine overlapping tints and restore its own body palette when releasing; this event does
+not directly overwrite shared materials. No new tint contract or creature code is introduced.

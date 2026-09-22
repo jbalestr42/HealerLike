@@ -6,16 +6,59 @@ namespace HealerLike.Render.Spells
     /// <summary>Small primitive assemblies, no textures, colliders, random state or imported geometry.</summary>
     public static class HLSpellPrimitives
     {
+        public static HLSpellEffectKind Kind(HLSpellSignature s)
+        {
+            if (s.operation == HLOperation.Prevention || s.operation == HLOperation.Attribute && (s.attribute == AttributeType.HitArmor || s.attribute == AttributeType.PercentArmor || s.attribute == AttributeType.FlatArmor)) return HLSpellEffectKind.Shield;
+            if (s.operation == HLOperation.Resource)
+            {
+                if (s.tempo == HLTempo.HandlerTick) return HLSpellEffectKind.Drip;
+                if (s.attribute == AttributeType.ManaMax) return HLSpellEffectKind.Mana;
+                return s.sign == HLSign.Positive ? HLSpellEffectKind.Heal : HLSpellEffectKind.Impact;
+            }
+            return HLSpellEffectKind.Buff;
+        }
         static Mesh _torus, _cone;
         static Material _fallback;
+        static int _users;
+        public static void Retain() => _users++;
+        public static void ReleaseUser()
+        {
+            if (_users > 0) _users--;
+            Release();
+        }
+        /// <summary>Release owned native resources only after all sinks and effects are gone.</summary>
+        public static void Release()
+        {
+            if (_users != 0) return;
+            Dispose(_torus); Dispose(_cone); Dispose(_fallback);
+            _torus = null; _cone = null; _fallback = null;
+        }
+        static void Dispose(Object resource)
+        {
+            if (!resource) return;
+#if UNITY_EDITOR
+            // Authoring or external tools may persist a mesh returned by the public cache.
+            if (UnityEditor.EditorUtility.IsPersistent(resource)) return;
+#endif
+            if (Application.isPlaying) Object.Destroy(resource);
+            else Object.DestroyImmediate(resource);
+        }
         public static void Build(HLSpellEffect effect)
         {
+            effect.RetainPrimitives();
             var parts = new List<Transform>();
             Color gold = new Color32(242,194,48,255), lime = new Color32(198,242,74,255), coral = new Color32(242,96,122,255);
             if (effect.kind == HLSpellEffectKind.Buff)
             {
                 for (int i = 0; i < 3; i++)
-                    parts.Add(Part(effect, Torus, gold, Vector3.up * (i - 1) * .12f, new Vector3(.65f,.65f,.65f), Quaternion.Euler(30 + i * 23, i * 60, 18)));
+                    parts.Add(Part(effect, Torus, gold, Vector3.up * (i - 1) * .12f, Vector3.one * (.55f + i * .16f), Quaternion.Euler(30 + i * 23, i * 60, 18)));
+            }
+            else if (effect.kind == HLSpellEffectKind.Area)
+                parts.Add(Part(effect, Torus, lime, Vector3.up*.03f, Vector3.one*2, Quaternion.identity));
+            else if (effect.kind == HLSpellEffectKind.Drip)
+            {
+                for (int i = 0; i < 5; i++)
+                    parts.Add(Primitive(effect, PrimitiveType.Sphere, coral, new Vector3(Mathf.Cos(i*2.4f)*.25f,.2f,Mathf.Sin(i*2.4f)*.25f), new Vector3(.05f,.11f,.05f), Quaternion.identity));
             }
             else if (effect.kind == HLSpellEffectKind.Shield)
             {
