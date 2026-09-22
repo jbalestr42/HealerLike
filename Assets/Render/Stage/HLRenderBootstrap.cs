@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using HealerLike.Render.Spells;
+using HealerLike.Render.Stones;
 using HealerLike.Render.Zones;
 using UnityEngine;
 
@@ -16,7 +17,11 @@ namespace HealerLike.Render.Stage
         [SerializeField] MonoBehaviour spellVisualSink;
         [SerializeField] GridManager grid;
         [SerializeField] Transform ground;
-        [SerializeField] Component stoneGridEntry;
+        [Tooltip("Demo-scene stone terrain. The entry's own demoSceneOnly flag must be on; production scenes leave this empty.")]
+        [SerializeField] HLStoneGridEntry stoneGridEntry;
+        [Tooltip("The healer's resolved-heal pulse. A Character is not an Entity, so no EntityModel walk initializes it.")]
+        [SerializeField] HLHealPulse healPulse;
+        [SerializeField] GameObject healSource;
         [SerializeField] int stoneSeed = 1707;
         public enum Framing { Portrait, Landscape }
         [Tooltip("Portrait is Julien's device orientation; landscape keeps the wave-3 50 degree framing. Look calibration is for portrait.")]
@@ -64,6 +69,8 @@ namespace HealerLike.Render.Stage
             // Explicit stage adapter; the sink would otherwise reach the same owner through the registry.
             if (spellVisualSink is HLSpellVisualSink sink && zoneRegistry is HLZoneRegistry zones)
                 sink.AreaPulse = (center, radius, kind, strength) => zones.AddPulse(kind, center, radius, strength, HLSpellVisualSink.PulseSeconds);
+            if (spellVisualSink) spellVisualSink.enabled = true;
+            if (healPulse) healPulse.Initialize(healSource);
             if (lookController) lookController.enabled = true;
             if (zoneBridge) zoneBridge.enabled = true;
             if (grassField) grassField.enabled = true;
@@ -73,14 +80,14 @@ namespace HealerLike.Render.Stage
             if (!owns || !stoneGridEntry || !grid || !ground) yield break;
             // PlayerBehaviour creates cells in Start. Never generate them a second time.
             while (grid.cells == null || grid.cells.Length != grid.width * grid.height) yield return null;
-            var generate = stoneGridEntry.GetType().GetMethod("Generate", new[] { typeof(GridManager), typeof(Transform), typeof(int) });
-            if (generate == null) throw new InvalidOperationException("HL stone entry must expose Generate(grid, ground, seed).");
-            generate.Invoke(stoneGridEntry, new object[] { grid, ground, stoneSeed });
+            stoneGridEntry.Generate(grid, ground, stoneSeed);
         }
         void OnDisable()
         {
             if (!owns) return;
             if (spellVisualSink is HLSpellVisualSink sink) sink.AreaPulse = null;
+            if (healPulse) healPulse.Initialize(null);
+            if (spellVisualSink) spellVisualSink.enabled = false;
             if (zoneBridge) zoneBridge.enabled = false;
             if (grassField) grassField.enabled = false;
             if (lookController) lookController.enabled = false;

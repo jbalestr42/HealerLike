@@ -1,4 +1,6 @@
 using System;
+using HealerLike.Render.Grass;
+using HealerLike.Render.Zones;
 using UnityEngine;
 namespace HealerLike.Render.Stage
 {
@@ -6,25 +8,26 @@ namespace HealerLike.Render.Stage
     [DefaultExecutionOrder(0)]
     public sealed class HLStageZoneBridge : MonoBehaviour
     {
-        [SerializeField] Behaviour zoneRegistry;
-        [SerializeField] Behaviour grassField;
+        [SerializeField] HLZoneRegistry zoneRegistry;
+        [SerializeField] HLGrassField grassField;
         Func<GraphicsBuffer> buffer;
         Func<int> count;
         Action<GraphicsBuffer,int> publish;
+        public HLZoneRegistry ZoneRegistry => zoneRegistry;
+        public HLGrassField GrassField => grassField;
         public void Configure(Func<GraphicsBuffer> getBuffer, Func<int> getCount, Action<GraphicsBuffer,int> setSnapshot)
         {
             buffer=getBuffer ?? throw new ArgumentNullException(nameof(getBuffer));
             count=getCount ?? throw new ArgumentNullException(nameof(getCount));
             publish=setSnapshot ?? throw new ArgumentNullException(nameof(setSnapshot));
         }
-        void OnEnable()
+        // Concrete track types called directly: a rename is a compile error, not a runtime reflection failure.
+        public void Configure(HLZoneRegistry zones, HLGrassField field)
         {
-            if(!zoneRegistry || !grassField) return;
-            var owner=zoneRegistry.GetType();
-            Configure((Func<GraphicsBuffer>)Delegate.CreateDelegate(typeof(Func<GraphicsBuffer>),zoneRegistry,owner.GetProperty("Buffer").GetGetMethod()),
-                (Func<int>)Delegate.CreateDelegate(typeof(Func<int>),zoneRegistry,owner.GetProperty("Count").GetGetMethod()),
-                (Action<GraphicsBuffer,int>)Delegate.CreateDelegate(typeof(Action<GraphicsBuffer,int>),grassField,"SetZoneSnapshot"));
+            zoneRegistry=zones; grassField=field;
+            if(zones && field) Configure(()=>zones.Buffer,()=>zones.Count,field.SetZoneSnapshot);
         }
+        void OnEnable() { if(zoneRegistry && grassField) Configure(zoneRegistry,grassField); }
         void LateUpdate() { if(publish!=null) publish(buffer(),count()); }
         void OnDisable() { publish?.Invoke(null,0); }
     }

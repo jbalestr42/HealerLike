@@ -14,10 +14,13 @@ namespace HealerLike.Render.Stage
         const string Key = "HLStageCapture.Active";
         const string DirectoryPath = "/Users/fc/Documents/healerlike-render-specs/captures/";
         // Simulated seconds after the Start button: a wave has spawned by the second, attacks and heals by the last.
-        public static readonly float[] CaptureTimes = { 1f, 4f, 8f };
+        public static readonly float[] CaptureTimes = { 1f, 4f, 8f, 12f };
+        public const string Prefix = "wave6-";
         public static int EnemyHits => enemyHits;
         static double started;
-        static int count, attacks, heals, enemyHits, castSlot;
+        static int count, attacks, heals, enemyHits, castSlot, allyHits, launched, allyLaunched;
+        static bool waveStarted;
+        static readonly HashSet<EntityId> projectiles = new HashSet<EntityId>();
         static bool gameStarted;
         static float gameStartTime;
         static readonly HashSet<ResourceAttribute> observed = new HashSet<ResourceAttribute>();
@@ -44,7 +47,7 @@ namespace HealerLike.Render.Stage
         static void Changed(PlayModeStateChange state)
         {
             if(!SessionState.GetBool(Key,false)) return;
-            if(state==PlayModeStateChange.EnteredPlayMode) { started=EditorApplication.timeSinceStartup; count=attacks=heals=enemyHits=castSlot=0; gameStarted=false; observed.Clear(); placed=false; nextHeal=HealFrom; allies.Clear();
+            if(state==PlayModeStateChange.EnteredPlayMode) { started=EditorApplication.timeSinceStartup; count=attacks=heals=enemyHits=castSlot=allyHits=launched=allyLaunched=0; gameStarted=waveStarted=false; projectiles.Clear(); observed.Clear(); placed=false; nextHeal=HealFrom; allies.Clear();
                 new GameObject("HLCaptureHook").AddComponent<HLCaptureHook>().Late=Late; }
             if(state==PlayModeStateChange.EnteredEditMode)
             {
@@ -65,7 +68,14 @@ namespace HealerLike.Render.Stage
             RepaintGameView();
             if(!gameStarted) return;
             Observe();
-            if(count>=CaptureTimes.Length) { Debug.Log($"HL capture events: negative={attacks} (on enemies {enemyHits}) heals={heals}"); EditorApplication.isPlaying=false; }
+            if(count>=CaptureTimes.Length)
+            {
+                Debug.Log($"HL capture events: negative={attacks} (on enemies {enemyHits}, from ally entities {allyHits}) heals={heals} projectiles={launched} (from allies {allyLaunched}) pipeline={(GraphicsSettings.currentRenderPipeline?GraphicsSettings.currentRenderPipeline.name:"none")}");
+                var key=UnityEngine.Object.FindAnyObjectByType<HLStageKeyLight>();
+                Debug.Log(key ? $"HL capture key light: real shadows={key.RealShadows} cheap ellipses switched off={key.Suppressed} light={(key.KeyLight?key.KeyLight.name:"none")}" : "HL capture key light: none");
+                Debug.Log(allyLaunched>0 && allyHits>0 ? "HL capture: ally auto-attack confirmed (projectile launched and a negative outcome from an ally entity)" : "HL capture: NO ally auto-attack observed");
+                EditorApplication.isPlaying=false;
+            }
         }
         // Runs after grass LateUpdate (10000) in the same player-loop frame, so indirect draws queued this frame are included.
         static void Late()
@@ -76,6 +86,10 @@ namespace HealerLike.Render.Stage
             Observe();
             float t=Time.time-gameStartTime;
             if(!placed && t>=PlaceAt) { placed=true; PlaceAllies(); }
+            // probe-attacks.md: Start only loads the round; Next Wave is the player action that enables combat. After placement,
+            // because Entity.Init disables every newly spawned unit and an empty roster could end the game.
+            if(placed && !waveStarted) StartWave();
+            TrackProjectiles();
             if(placed && heals==0 && t>=nextHeal) { nextHeal=t+1f; CastOn(allies.Find(a=>a)); }
             else if(placed && heals>0 && enemyHits==0 && t>=Mathf.Max(nextHeal,StrikeFrom)) { nextHeal=t+1f; CastOn(Array.Find(UnityEngine.Object.FindObjectsByType<Entity>(FindObjectsSortMode.InstanceID),e=>e.entityType!=Entity.EntityType.Player)); }
             if(t>=CaptureTimes[count]) Capture();
@@ -104,6 +118,26 @@ namespace HealerLike.Render.Stage
                 var go=EntityManager.instance.SpawnEntity(data,position,Entity.EntityType.Player);
                 if(go) allies.Add(go.GetComponent<Entity>());
                 Debug.Log($"HL capture: placed {data.name} at {position} next to {(enemy?enemy.name+" "+enemy.transform.position:"no enemy")} -> {(go?go.name:"refused")}");
+            }
+        }
+        static void StartWave()
+        {
+            var view=UnityEngine.Object.FindAnyObjectByType<GameView>();
+            if(!view || !view.gameHUD || !view.gameHUD.nextWaveButton) return;
+            waveStarted=true; view.gameHUD.nextWaveButton.onClick.Invoke();
+            Debug.Log($"HL capture: Next Wave pressed at game time {Time.time-gameStartTime:F2}s with {allies.Count} allies placed");
+        }
+        // Distinct live projectiles, by source; editor fixture only, one scan per frame while capturing.
+        static void TrackProjectiles()
+        {
+            foreach(var projectile in UnityEngine.Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+            {
+                if(!projectiles.Add(projectile.GetEntityId())) continue;
+                launched++;
+                var entity=projectile.source?projectile.source.GetComponent<Entity>():null;
+                bool ally=entity && entity.entityType==Entity.EntityType.Player;
+                if(ally) allyLaunched++;
+                if(launched<=12) Debug.Log($"HL capture projectile: {projectile.name} from {(projectile.source?projectile.source.name:"none")}{(ally?" (ally)":"")} at game time {Time.time-gameStartTime:F2}s");
             }
         }
         // Tries the next skill slot on the target each attempt, as a player clicking the button then the target would.
@@ -138,6 +172,8 @@ namespace HealerLike.Render.Stage
                     resource.OnAllConsumerProcessed.AddListener((owner,modifier,value,critical)=>{
                         if(value<0) attacks++; else if(value>0) heals++;
                         var entity=owner?owner.GetComponent<Entity>():null; if(value<0 && entity && entity.entityType!=Entity.EntityType.Player) enemyHits++;
+                        var from=modifier?.source?modifier.source.GetComponent<Entity>():null;
+                        if(value<0 && from && from.entityType==Entity.EntityType.Player) allyHits++;
                         if(attacks+heals<=16) Debug.Log($"HL capture outcome: {(modifier?.source?modifier.source.name:"none")} -> {(owner?owner.name:"none")} {value:F1}");
                     });
         }
@@ -157,7 +193,7 @@ namespace HealerLike.Render.Stage
                 RenderPipeline.SubmitRenderRequest(camera,request);
                 RenderTexture.active=target;
                 texture.ReadPixels(new Rect(0,0,width,height),0,0); texture.Apply();
-                string path=DirectoryPath+"wave4-"+(count+1)+".png";
+                string path=DirectoryPath+Prefix+(count+1)+".png";
                 File.WriteAllBytes(path,texture.EncodeToPNG());
                 count++; SessionState.SetInt(Key+"Count",count);
                 foreach(var field in UnityEngine.Object.FindObjectsByType<HealerLike.Render.Grass.HLGrassField>(FindObjectsSortMode.InstanceID))

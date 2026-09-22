@@ -59,6 +59,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6302393034784345853, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8723217013292663004}
+    - targetCorrespondingSourceObject: {fileID: 6302393034784345853, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3609367450265859371}
   m_SourcePrefab: {fileID: 100100000, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
 --- !u!1 &3372982749147706943 stripped
 GameObject:
@@ -77,3 +80,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95883ece797a642eb85c1765fa3e1b22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.HLStatusObserver
+--- !u!114 &3609367450265859371
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3372982749147706943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff72fcddce784a6396cd2bda1d8abbd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLHealPulse
+  _cellSize: 1

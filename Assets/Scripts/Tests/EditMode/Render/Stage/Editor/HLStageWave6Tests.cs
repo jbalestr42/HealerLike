@@ -1,0 +1,116 @@
+using System.IO;
+using System.Linq;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Look;
+using HealerLike.Render.Spells;
+using HealerLike.Render.Zones;
+using NUnit.Framework;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.Rendering.Universal;
+namespace HealerLike.Render.Stage
+{
+    // Built-state checks for the wave-6 stage pass; they read the assets HLStageBuilder.Build wrote.
+    public class HLStageWave6Tests
+    {
+        static string[] Projectiles => Directory.GetFiles(HLStageBuilder.Root+"Prefabs/Projectiles","*.prefab");
+        [Test] public void ProjectileVariantsCopyTheCreatureObserverAndTakeTheirDeliveryStyle()
+        {
+            var styles=AssetDatabase.LoadAssetAtPath<HLDeliveryStyles>(HLStageBuilder.DeliveryStylesPath);
+            Assert.That(styles,Is.Not.Null);
+            Assert.That(Projectiles.Length,Is.EqualTo(9));
+            foreach(var path in Projectiles)
+            {
+                var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                var observer=prefab.GetComponent<HLProjectileVisualObserver>();
+                Assert.That(observer,Is.Not.Null,path);
+                Assert.That(observer.DeliveryStyle,Is.EqualTo(styles.For(prefab)),path);
+                var creature=AssetDatabase.LoadAssetAtPath<GameObject>(HLStageBuilder.CreatureProjectiles+prefab.name.Substring(2)+".prefab");
+                Assert.That(creature,Is.Not.Null,path);
+                var expected=new SerializedObject(creature.GetComponent<HLProjectileVisualObserver>());
+                var actual=new SerializedObject(observer);
+                foreach(var field in new[]{"preserveContactPath","presentation"})
+                    Assert.That(actual.FindProperty(field).intValue,Is.EqualTo(expected.FindProperty(field).intValue),path+" "+field);
+                Assert.That(prefab.GetComponent<HLLaunchWave>(),Is.Not.Null,path);
+            }
+            Assert.That(styles.ForName("HLChainLightning"),Is.EqualTo(HLDeliveryStyle.ChainSync));
+        }
+        [Test] public void LegacyChainVisualNeverRunsItsSocketLoopButKeepsTheComponent()
+        {
+            int chains=0;
+            foreach(var path in Projectiles)
+            {
+                var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                var chain=prefab.GetComponent<ChainLightningProjectile>(); if(!chain) continue;
+                chains++;
+                var so=new SerializedObject(chain);
+                Assert.That(so.FindProperty("_effectMode").intValue,Is.EqualTo((int)ChainLightningProjectile.EffectMode.FixedDuration),path);
+                Assert.That(so.FindProperty("_effectDuration").floatValue,Is.LessThan(0),path);
+                Assert.That(prefab.GetComponentsInChildren<LineRenderer>(true).All(l=>!l.enabled),path);
+            }
+            Assert.That(chains,Is.EqualTo(2));
+        }
+        [Test] public void LegacyChainVisualOffIgnoresOtherProjectiles()
+        {
+            var go=new GameObject("HLNotAChain");
+            try { Assert.That(HLStageBuilder.LegacyChainVisualOff(go),Is.False); }
+            finally { Object.DestroyImmediate(go); }
+        }
+        [Test] public void EveryTierRendersMainShadowsToSeventyAndDrawsGrassSafeEdges()
+        {
+            foreach(var guid in AssetDatabase.FindAssets("t:UniversalRenderPipelineAsset",new[]{"Assets/Settings"}))
+            {
+                var pipeline=AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(AssetDatabase.GUIDToAssetPath(guid));
+                Assert.That(pipeline.supportsMainLightShadows,Is.True,pipeline.name);
+                Assert.That(pipeline.mainLightRenderingMode,Is.EqualTo(LightRenderingMode.PerPixel),pipeline.name);
+                Assert.That(pipeline.shadowDistance,Is.EqualTo(HLStageBuilder.ShadowDistance),pipeline.name);
+                Assert.That(pipeline.shadowCascadeCount,Is.EqualTo(2),pipeline.name);
+                var list=new SerializedObject(pipeline).FindProperty("m_RendererDataList");
+                for(int i=0;i<list.arraySize;i++)
+                {
+                    var data=(ScriptableRendererData)list.GetArrayElementAtIndex(i).objectReferenceValue;
+                    var outlines=data.rendererFeatures.OfType<HLOutlines>().Single();
+                    Assert.That(outlines.DepthNormalEdges && outlines.UseNormalEdgeMask,Is.True,data.name);
+                    Assert.That(outlines.NormalAngleDegrees,Is.EqualTo(55)); Assert.That(outlines.DepthThresholdWorld,Is.EqualTo(1));
+                }
+            }
+        }
+        [Test] public void ModelsCarryTheirReadoutsAndTheBufferIsAPlant()
+        {
+            int allies=0, buffers=0;
+            foreach(var guid in AssetDatabase.FindAssets("t:EntityData",new[]{HLStageBuilder.Root+"Data"}))
+            {
+                var data=AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));
+                var so=new SerializedObject(data);
+                var model=so.FindProperty("model").objectReferenceValue as GameObject;
+                Assert.That(model,Is.Not.Null,data.name);
+                Assert.That(model.GetComponent<HLHealPulse>(),Is.Not.Null,data.name);
+                if(model.GetComponent<HLRangePreview>()) allies++;
+                if(model.GetComponent<HLBruiseZone>()) Assert.That(HLStageBuilder.Bruises(HLStageBuilder.AuthoredRange(so)),Is.True,data.name+" bruises the whole board");
+                if(data.name.Contains("HitArmor"))
+                {
+                    buffers++;
+                    var source=PrefabUtility.GetCorrespondingObjectFromSource(model);
+                    Assert.That(AssetDatabase.GetAssetPath(source),Is.EqualTo("Assets/Render/Creatures/Prefabs/HLHitArmorBuffer.prefab"),data.name);
+                }
+            }
+            Assert.That(allies,Is.GreaterThan(0)); Assert.That(buffers,Is.GreaterThan(0));
+        }
+        [Test] public void BruiseOnlyForRangesShorterThanTheBoard()
+        {
+            Assert.That(HLStageBuilder.Bruises(3),Is.True);
+            Assert.That(HLStageBuilder.Bruises(100),Is.False,"Soldier");
+            Assert.That(HLStageBuilder.Bruises(HLStageBuilder.BruiseMaxRange),Is.False);
+            Assert.That(HLStageBuilder.Bruises(0),Is.False);
+        }
+        [Test] public void StageSceneOptsItsStoneEntryIntoDemoGenerationAndWiresTheHealerPulse()
+        {
+            string yaml=File.ReadAllText(HLStageBuilder.ScenePath);
+            // HLStoneGeneration is a prefab instance: the opt-in is stored as a modification of the stones prefab's false default.
+            Assert.That(yaml,Does.Match(@"propertyPath: demoSceneOnly\s+value: 1"));
+            Assert.That(yaml,Does.Not.Match(@"propertyPath: demoSceneOnly\s+value: 0"));
+            Assert.That(yaml,Does.Match(@"healPulse: \{fileID: [1-9]"));
+            Assert.That(yaml,Does.Match(@"healSource: \{fileID: [1-9]"));
+        }
+    }
+}

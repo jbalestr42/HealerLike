@@ -37,5 +37,18 @@ namespace HealerLike.Render.Stage
             driver.Apply(new List<HLRangePreview> { a, b });
             Assert.IsTrue(a.ObservePointer); Assert.IsTrue(b.ObservePointer);
         }
-    }
+            [Test] public void TickRescansOnlyWhenDueOrStale()
+        {
+            driver.Mode = HLStageRangeDriver.PreviewMode.Featured;
+            driver.Tick(0);
+            int scans = driver.Scans; Assert.That(scans, Is.EqualTo(1));
+            CollectionAssert.IsSubsetOf(new[] { a, b }, new List<HLRangePreview>(driver.Cached));
+            driver.Tick(.1f); driver.Tick(.2f);
+            Assert.That(driver.Scans, Is.EqualTo(scans), "no scene scan per frame");
+            driver.Tick(10); Assert.That(driver.Scans, Is.EqualTo(scans + 1), "due");
+            first.SetActive(false);
+            Assert.That(HLStageRangeDriver.IsStale(driver.Cached), Is.True);
+            driver.Tick(10.1f); Assert.That(driver.Scans, Is.EqualTo(scans + 2), "stale");
+        }
+}
 }

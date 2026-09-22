@@ -7,6 +7,10 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Spells;
+using HealerLike.Render.Stones;
+using HealerLike.Render.Zones;
 using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Stage
@@ -80,6 +84,7 @@ namespace HealerLike.Render.Stage
             RenderSettings.ambientMode = AmbientMode.Flat;
             RenderSettings.ambientLight = new Color(.35f,.40f,.5f);
             foreach (var light in Object.FindObjectsByType<Light>()) light.lightmapBakeType = LightmapBakeType.Realtime;
+            var key = KeyLight();
             var bounds = new Bounds(new Vector3(grid.transform.position.x,.505f,grid.transform.position.z), new Vector3(grid.width*grid.size,0,grid.height*grid.size));
             var portrait = HLStageCalibration.Frame(bounds, HLStageCalibration.PortraitPitch, HLStageCalibration.PortraitFov, HLStageCalibration.PortraitAspect, HLStageCalibration.PortraitMargin, HLStageCalibration.PortraitCentreY);
             camera.transform.SetPositionAndRotation(portrait.position, portrait.rotation);
@@ -106,10 +111,13 @@ namespace HealerLike.Render.Stage
                 var anchor = new GameObject("HLHealerAnchor"); anchor.transform.SetParent(character.transform,false);
                 var view = Optional(anchor,"HLCharacterView");
                 if (!view) { var bulb=GameObject.CreatePrimitive(PrimitiveType.Sphere); bulb.name="HLHealerPlaceholder"; bulb.transform.SetParent(anchor.transform,false); bulb.transform.localPosition=Vector3.up*.8f; bulb.transform.localScale=new Vector3(.45f,.65f,.45f); Object.DestroyImmediate(bulb.GetComponent<Collider>()); bulb.GetComponent<Renderer>().sharedMaterial=green; }
+                var pulse = anchor.AddComponent<HLHealPulse>();
+                var bso = new SerializedObject(bootstrap); bso.FindProperty("healPulse").objectReferenceValue = pulse; bso.FindProperty("healSource").objectReferenceValue = character.gameObject; bso.ApplyModifiedPropertiesWithoutUndo();
                 if (view) { var vso=new SerializedObject(view); vso.FindProperty("character").objectReferenceValue=character; vso.FindProperty("visualAnchor").objectReferenceValue=anchor.transform; vso.FindProperty("recipe").objectReferenceValue=AssetDatabase.LoadMainAssetAtPath("Assets/Render/Creatures/Data/HLHealer.asset"); vso.FindProperty("material").objectReferenceValue=green; vso.ApplyModifiedPropertiesWithoutUndo(); }
             }
             Grass(stage.transform, bounds, grid, ground.transform, camera, zones, bootstrap);
             var range = stage.AddComponent<HLStageRangeDriver>(); range.Mode = HLStageRangeDriver.PreviewMode.Featured;
+            if (key) stage.AddComponent<HLStageKeyLight>().KeyLight = key;
             var groundMaterial = GroundMaterial();
             if (ground.TryGetComponent<Renderer>(out var renderer)) renderer.sharedMaterial = groundMaterial;
             Environment(stage.transform, grid, ground.transform, camera, zones as HealerLike.Render.Zones.HLZoneRegistry, groundMaterial);
@@ -168,7 +176,21 @@ namespace HealerLike.Render.Stage
             return sink;
         }
         // Stage-owned model variant: the track prefab plus the observers EntityModel.Init walks before any buff starts.
-        static GameObject StageModel(GameObject real, bool ally)
+        // A range at least the board's width bruises every cell from anywhere: the whole board darkens and the readout
+        // carries no information (Soldier's authored range is 100). Only shorter ranges get the bruise.
+        public const float BruiseMaxRange = 16;
+        public static bool Bruises(float range) => range > 0 && range < BruiseMaxRange;
+        public static float AuthoredRange(SerializedObject entityData)
+        {
+            var attributes = entityData.FindProperty("attributes");
+            for (int i = 0; attributes != null && i < attributes.arraySize; i++)
+            {
+                var entry = attributes.GetArrayElementAtIndex(i);
+                if (entry.FindPropertyRelative("key").intValue == (int)AttributeType.Range) return entry.FindPropertyRelative("value").floatValue;
+            }
+            return 0;
+        }
+        static GameObject StageModel(GameObject real, bool ally, bool bruise)
         {
             string path = Root + "Prefabs/Models/" + real.name + ".prefab";
             Directory.CreateDirectory(Root + "Prefabs/Models");
@@ -177,6 +199,12 @@ namespace HealerLike.Render.Stage
             {
                 if (!go.GetComponent<HealerLike.Render.Spells.HLStatusObserver>()) go.AddComponent<HealerLike.Render.Spells.HLStatusObserver>();
                 if (ally && !go.GetComponent<HealerLike.Render.Zones.HLRangePreview>()) go.AddComponent<HealerLike.Render.Zones.HLRangePreview>().ObservePointer = false;
+                // Finding 8: any entity that heals gets its resolved-heal pulse; EntityModel.Init walks it as an IVisualBehaviour.
+                if (!go.GetComponent<HLHealPulse>()) go.AddComponent<HLHealPulse>();
+                // Grass wave 5: enemy range readout; it clears itself on non-Computer entities.
+                var existing = go.GetComponent<HLBruiseZone>();
+                if (bruise && !existing) go.AddComponent<HLBruiseZone>();
+                else if (!bruise && existing) Object.DestroyImmediate(existing);
                 return PrefabUtility.SaveAsPrefabAsset(go, path);
             }
             finally { Object.DestroyImmediate(go); }
@@ -200,8 +228,10 @@ namespace HealerLike.Render.Stage
                 string title = so.FindProperty("title")?.stringValue ?? asset.name;
                 string name = title.Replace(" ", "").Replace("Entity", "");
                 bool enemy = path.Contains("Enemies") || name.Contains("Soldier") || name.Contains("HitArmor");
-                string real = asset is CharacterData ? "Assets/Render/Creatures/Prefabs/HLHealerCharacter.prefab" : enemy ?
-                    "Assets/Render/Stones/Prefabs/" + (name.Contains("HitArmor") ? "HLStoneCairnModel" : "HLStoneSoldierModel") + ".prefab" :
+                // Creatures wave 5: the buffer is a plant (HLBladeRosette recipe in HLHitArmorBuffer.prefab), not the stone cairn.
+                string real = asset is CharacterData ? "Assets/Render/Creatures/Prefabs/HLHealerCharacter.prefab" :
+                    name.Contains("HitArmor") ? "Assets/Render/Creatures/Prefabs/HLHitArmorBuffer.prefab" : enemy ?
+                    "Assets/Render/Stones/Prefabs/HLStoneSoldierModel.prefab" :
                     "Assets/Render/Creatures/Prefabs/HL" + name + ".prefab";
                 var replacement = AssetDatabase.LoadAssetAtPath<GameObject>(real);
                 if (!replacement)
@@ -216,7 +246,7 @@ namespace HealerLike.Render.Stage
                     replacement = PrefabUtility.SaveAsPrefabAsset(go,target); Object.DestroyImmediate(go);
                     todo.Add(target + " -> " + real + " (preserves original model sockets and HUD; primitive placeholder).");
                 }
-                else if (asset is EntityData) replacement = StageModel(replacement, !enemy);
+                else if (asset is EntityData) replacement = StageModel(replacement, !enemy, enemy && Bruises(AuthoredRange(so)));
                 model.objectReferenceValue = replacement; so.ApplyModifiedPropertiesWithoutUndo(); EditorUtility.SetDirty(asset);
             }
         }
@@ -226,11 +256,46 @@ namespace HealerLike.Render.Stage
             var go = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(source));
             if (go.GetComponent<Projectile>())
             {
-                Optional(go, "HLProjectileVisualObserver"); Optional(go, "HLStoneProjectileImpactBridge");
-                foreach (var renderer in go.GetComponentsInChildren<Renderer>(true)) renderer.enabled = false;
+                var observer = go.GetComponent<HLProjectileVisualObserver>() ?? go.AddComponent<HLProjectileVisualObserver>();
+                ConfigureObserver(observer, Path.GetFileNameWithoutExtension(source));
+                if (!go.GetComponent<HLStoneProjectileImpactBridge>()) go.AddComponent<HLStoneProjectileImpactBridge>();
+                if (!go.GetComponent<HLLaunchWave>()) go.AddComponent<HLLaunchWave>();
+                // The observer hides the gameplay renderers itself once it holds a visual lease and restores them
+                // otherwise (creatures fix 3), so the variant keeps the original renderer states.
+                LegacyChainVisualOff(go);
             }
             if (go.GetComponent<AreaOfEffect>()) { go.name = Path.GetFileNameWithoutExtension(destination); Optional(go,"HLAreaPulse"); }
             PrefabUtility.SaveAsPrefabAsset(go,destination); Object.DestroyImmediate(go);
+        }
+        public const string DeliveryStylesPath = "Assets/Render/Spells/Data/HLDeliveryStyles.asset";
+        public const string CreatureProjectiles = "Assets/Render/Creatures/Prefabs/HLProjectile";
+        // Review finding 4: start from the creatures track's authored observer (contact path, channel presentation),
+        // then set the delivery style the spells track recorded for this projectile.
+        public static void ConfigureObserver(HLProjectileVisualObserver observer, string projectileName)
+        {
+            var authored = AssetDatabase.LoadAssetAtPath<GameObject>(CreatureProjectiles + projectileName + ".prefab");
+            var template = authored ? authored.GetComponent<HLProjectileVisualObserver>() : null;
+            if (template && UnityEditorInternal.ComponentUtility.CopyComponent(template)) UnityEditorInternal.ComponentUtility.PasteComponentValues(observer);
+            else todo.Add("No creature-authored observer for " + projectileName + "; default observer settings kept.");
+            var styles = AssetDatabase.LoadAssetAtPath<HLDeliveryStyles>(DeliveryStylesPath);
+            var so = new SerializedObject(observer);
+            so.FindProperty("deliveryStyle").intValue = (int)(styles ? styles.ForName(projectileName) : HLDeliveryStyle.Direct);
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+        // Review finding 2: the legacy chain coroutine draws a LineRenderer from Entity.skillStartPoint every frame, which
+        // advances the round-robin firing socket. Its hits are applied synchronously before that loop; the loop and the
+        // duration only draw the line. A negative fixed duration skips the loop (no socket read) and the component, its
+        // hits and its destruction stay intact. The creature observer draws the chain instead.
+        public static bool LegacyChainVisualOff(GameObject projectile)
+        {
+            var chain = projectile.GetComponent<ChainLightningProjectile>();
+            if (!chain) return false;
+            var so = new SerializedObject(chain);
+            so.FindProperty("_effectMode").intValue = (int)ChainLightningProjectile.EffectMode.FixedDuration;
+            so.FindProperty("_effectDuration").floatValue = -1;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            foreach (var line in projectile.GetComponentsInChildren<LineRenderer>(true)) line.enabled = false;
+            return true;
         }
         static void RepairVariantReferences()
         {
@@ -271,6 +336,8 @@ namespace HealerLike.Render.Stage
             settings.FindPropertyRelative("InkDistStart").floatValue = fog.x;
             settings.FindPropertyRelative("InkFarSpacing").floatValue = spacing*1.2f;
             settings.FindPropertyRelative("OutlineWidthPixels").floatValue = OutlinePixels(camera,bounds);
+            // Look wave 5: pixel-space hatch spacing; a serialized controller predating the field would read zero.
+            settings.FindPropertyRelative("InkSpacingPixels").floatValue = 3.5f;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
         // Wave-3 capture review: fog from the near edge washed out the back half of the board. Start at the
@@ -295,6 +362,16 @@ namespace HealerLike.Render.Stage
             float spacing = HLStageCalibration.HatchSpacing(camera,CentreDepth(camera,bounds),HLStageCalibration.PortraitHeight);
             Debug.Log($"HL calibration: camera {camera.transform.position.ToString("F3")} euler {camera.transform.eulerAngles.ToString("F2")} fov {camera.fieldOfView}; near edge {edge.x:F3} centre {CentreDepth(camera,bounds):F3} edge-range end {edge.y:F3}; fog {fog.x:F3}/{fog.y:F3}; ink scale {spacing:F5} width {spacing*.04f:F5} far {spacing*1.2f:F5}; outline {OutlinePixels(camera,bounds)} px");
         }
+        // One upper-left key light aimed along the stones' cheap-shadow direction, so real and cheap shadows agree.
+        static Light KeyLight()
+        {
+            var key = Object.FindObjectsByType<Light>(FindObjectsInactive.Include).FirstOrDefault(l => l.type == LightType.Directional);
+            if (!key) { todo.Add("No directional light in the copied scene; no key light."); return null; }
+            key.transform.rotation = HLStageKeyLight.Aim(HLStageKeyLight.StoneKeyDirection);
+            key.shadows = LightShadows.Soft; key.enabled = true; key.gameObject.SetActive(true);
+            RenderSettings.sun = key;
+            return key;
+        }
         static Material GroundMaterial()
         {
             const string path = "Assets/Render/Environment/HLLook_Ground.mat";
@@ -318,14 +395,17 @@ namespace HealerLike.Render.Stage
             var gridRect = HealerLike.Render.Environment.HLEnvironmentScatter.GridRect(grid);
             var proxies = new List<GridManager>(); var fields = new List<HealerLike.Render.Grass.HLGrassField>();
             var main = Object.FindAnyObjectByType<HealerLike.Render.Grass.HLGrassField>();
-            float density = (main ? main.BladeBudget : HealerLike.Render.Grass.HLGrassLayout.DefaultBudget) / (gridRect.width * gridRect.height) * .25f;
-            var strips = HealerLike.Render.Environment.HLEnvironmentGrass.Strips(gridRect, gridRect.width);
+            float boardDensity = (main ? main.BladeBudget : HealerLike.Render.Grass.HLGrassLayout.DefaultBudget) / (gridRect.width * gridRect.height);
+            // Wave-4 capture: a quarter-density ring read as bare ground in a hard rectangle. Graded bands instead, dense at
+            // the board edge and thinning outward; the first two bands cover the camera's near edge (z -12.6) and beyond.
+            var strips = HealerLike.Render.Environment.HLEnvironmentGrass.Bands(gridRect, RingWidths, RingFractions, boardDensity);
             for (int i = 0; i < strips.Length; i++)
             {
-                var strip = new GameObject("HLGrassRing" + i); strip.transform.SetParent(root.transform,false);
-                strip.transform.position = new Vector3(strips[i].center.x, grid.transform.position.y, strips[i].center.y);
+                var rect = strips[i].Rect;
+                var strip = new GameObject("HLGrassRing" + i + "_band" + strips[i].Band); strip.transform.SetParent(root.transform,false);
+                strip.transform.position = new Vector3(rect.center.x, grid.transform.position.y, rect.center.y);
                 var proxy = strip.AddComponent<GridManager>(); var pso = new SerializedObject(proxy);
-                pso.FindProperty("_width").intValue = Mathf.RoundToInt(strips[i].width / grid.size); pso.FindProperty("_height").intValue = Mathf.RoundToInt(strips[i].height / grid.size);
+                pso.FindProperty("_width").intValue = Mathf.RoundToInt(rect.width / grid.size); pso.FindProperty("_height").intValue = Mathf.RoundToInt(rect.height / grid.size);
                 pso.FindProperty("_size").floatValue = grid.size; pso.ApplyModifiedPropertiesWithoutUndo();
                 var field = strip.AddComponent<HealerLike.Render.Grass.HLGrassField>(); var fso = new SerializedObject(field);
                 fso.FindProperty("grid").objectReferenceValue = proxy; fso.FindProperty("ground").objectReferenceValue = ground;
@@ -333,19 +413,30 @@ namespace HealerLike.Render.Stage
                 fso.FindProperty("updateGrass").objectReferenceValue = AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute");
                 fso.FindProperty("grassShader").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrass.shader");
                 fso.FindProperty("ringShader").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrassRing.shader");
-                fso.FindProperty("bladeBudget").intValue = HealerLike.Render.Environment.HLEnvironmentGrass.Budget(strips[i], density);
+                fso.FindProperty("bladeBudget").intValue = strips[i].Budget;
                 fso.FindProperty("seed").longValue = 11 + i; fso.ApplyModifiedPropertiesWithoutUndo();
                 proxies.Add(proxy); fields.Add(field);
-                Debug.Log($"HL grass ring {i}: rect {strips[i]} blades {field.BladeBudget}");
+                Debug.Log($"HL grass ring {i}: band {strips[i].Band} rect {rect} density {strips[i].Density:F1} blades {strips[i].Budget}");
             }
             root.AddComponent<HealerLike.Render.Environment.HLEnvironmentGrass>().Configure(zones, proxies.ToArray(), fields.ToArray());
             var scatter = root.AddComponent<HealerLike.Render.Environment.HLEnvironmentScatter>(); var sso = new SerializedObject(scatter);
             sso.FindProperty("grid").objectReferenceValue = grid; sso.FindProperty("plantMaterial").objectReferenceValue = green;
             sso.FindProperty("stoneMaterial").objectReferenceValue = stone; sso.FindProperty("surfaceY").floatValue = top;
             sso.ApplyModifiedPropertiesWithoutUndo();
+            // BEAUTY.md scale ladder: cropped foreground stones and rosettes in the shadow tint, and a far ridge of monoliths
+            // and mushroom stems in the last fog band. Both build in Start from the camera pose the bootstrap applied.
+            var fog = WaveThreeFog(camera, new Bounds(new Vector3(grid.transform.position.x,.505f,grid.transform.position.z), new Vector3(grid.width*grid.size,0,grid.height*grid.size)));
+            var foreground = new GameObject("HLForeground").AddComponent<HealerLike.Render.Environment.HLEnvironmentForeground>();
+            foreground.transform.SetParent(root.transform,false);
+            foreground.Configure(camera, stone, green, top, 1707);
+            var ridge = new GameObject("HLFarRidge").AddComponent<HealerLike.Render.Environment.HLEnvironmentRidge>();
+            ridge.transform.SetParent(root.transform,false);
+            ridge.Configure(camera, stone, green, gridRect, top, fog.x, fog.y, 6, 1707);
             var preview = HealerLike.Render.Environment.HLEnvironmentLayout.Generate(scatter.Settings, gridRect, grid.size, top);
             Debug.Log("HL environment scatter: " + string.Join(", ", preview.GroupBy(item => item.Kind).Select(g => g.Key + "=" + g.Count())) + $" total={preview.Count}");
         }
+        public static readonly float[] RingWidths = { 3, 5, 16 };
+        public static readonly float[] RingFractions = { .85f, .6f, .15f };
         static Component StoneGrid(GameObject stage, GridManager grid)
         {
             var real = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/HLStoneGrid.prefab");
@@ -356,7 +447,26 @@ namespace HealerLike.Render.Stage
             var templateGrid = instance.GetComponent<GridManager>();
             if (templateGrid) Object.DestroyImmediate(templateGrid);
             foreach (var r in instance.GetComponentsInChildren<Renderer>()) r.enabled = false;
-            return instance.GetComponent(Resolve("HLStoneGridEntry"));
+            var entry = instance.GetComponent<HLStoneGridEntry>();
+            // Finding 5: this scene is the demo fixture; the stones fix refuses Generate unless the entry opts in.
+            var eso = new SerializedObject(entry); eso.FindProperty("demoSceneOnly").boolValue = true; eso.ApplyModifiedPropertiesWithoutUndo();
+            SpreadStoneRecipes(entry);
+            return entry;
+        }
+        // Wave-4 capture: the terrain stones sat in three dense blocks. Many small clumps instead of a few 5..15-cell blocks.
+        public static readonly Vector2Int[] StoneBlockCounts = { new Vector2Int(9, 14), new Vector2Int(0, 3) };
+        public static readonly Vector2Int[] StoneBlockSizes = { new Vector2Int(1, 3), new Vector2Int(1, 2) };
+        static void SpreadStoneRecipes(HLStoneGridEntry entry)
+        {
+            var systems = new SerializedObject(entry).FindProperty("systems");
+            for (int i = 0; i < systems.arraySize && i < StoneBlockCounts.Length; i++)
+            {
+                var system = systems.GetArrayElementAtIndex(i).objectReferenceValue; if (!system) continue;
+                var so = new SerializedObject(system);
+                so.FindProperty("_min").intValue = StoneBlockCounts[i].x; so.FindProperty("_max").intValue = StoneBlockCounts[i].y;
+                so.FindProperty("_minSize").intValue = StoneBlockSizes[i].x; so.FindProperty("_maxSize").intValue = StoneBlockSizes[i].y;
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
         }
         static void Grass(Transform parent, Bounds board, GridManager grid, Transform ground, Camera camera, Behaviour zones, HLRenderBootstrap bootstrap)
         {
@@ -397,6 +507,31 @@ namespace HealerLike.Render.Stage
             go.AddComponent<MeshFilter>().sharedMesh = mesh; go.AddComponent<MeshRenderer>().sharedMaterial=green;
             todo.Add("HLGrassFieldPlaceholder / HLGrassPlaceholder.asset: static 4096-blade coverage mesh; replace with T2 HLGrassField and HLStageZoneBridge (after zone publication, before grass submission), bound to board [-8,8] squared at y=.505. No wind, zone response or indirect rendering is claimed.");
         }
+        // Look wave 5 grass-safe thresholds (captures wave5-edges-*): depth 1 world unit at 31, slope 1, normal 55 deg,
+        // density penalty 35 deg, grass opted out through the normal-alpha mask.
+        public static void EdgeSettings(SerializedObject outlines)
+        {
+            outlines.FindProperty("DepthNormalEdges").boolValue = true;
+            outlines.FindProperty("DepthThresholdWorld").floatValue = 1;
+            outlines.FindProperty("ReferenceDistance").floatValue = 31;
+            outlines.FindProperty("DistanceScale").floatValue = 1;
+            outlines.FindProperty("NormalAngleDegrees").floatValue = 55;
+            outlines.FindProperty("NormalDensityDegrees").floatValue = 35;
+            outlines.FindProperty("UseNormalEdgeMask").boolValue = true;
+        }
+        // Look wave 5's tested Very High setup on every tier: the stage resolves to whichever tier Graphics/Quality
+        // settings pick (Low today, through the missing Ultra slot), and the board sits 42 to 48 units from the camera.
+        public const float ShadowDistance = 70;
+        public static void Shadows(SerializedObject pipeline)
+        {
+            pipeline.FindProperty("m_MainLightRenderingMode").intValue = 1;
+            pipeline.FindProperty("m_MainLightShadowsSupported").boolValue = true;
+            pipeline.FindProperty("m_ShadowDistance").floatValue = ShadowDistance;
+            pipeline.FindProperty("m_ShadowCascadeCount").intValue = 2;
+            pipeline.FindProperty("m_Cascade2Split").floatValue = 1f / 3;
+            var map = pipeline.FindProperty("m_MainLightShadowmapResolution"); map.intValue = Mathf.Max(map.intValue, 2048);
+            pipeline.FindProperty("m_SoftShadowsSupported").boolValue = true;
+        }
         static void WireRenderers()
         {
             foreach (string guid in AssetDatabase.FindAssets("t:UniversalRenderPipelineAsset",new[]{"Assets/Settings"}))
@@ -420,13 +555,14 @@ namespace HealerLike.Render.Stage
                     }
                     feature.name=type!=null?"HLOutlines":"HLOutlines_PLACEHOLDER";
                     if(type!=null) { var fso=new SerializedObject(feature); var shader=fso.FindProperty("edgeShader"); if(shader!=null) shader.objectReferenceValue=Shader.Find("Hidden/HL/Look/DepthNormalOutline");
-                        // Wave-3 capture review: at this camera and blade density the screen edge pass inks nearly every blade, so the stage runs hull-only outlines.
-                        var edges=fso.FindProperty("DepthNormalEdges"); if(edges!=null) edges.boolValue=false; fso.ApplyModifiedPropertiesWithoutUndo(); }
+                        // Look wave 5: grass writes zero normal-edge eligibility, so the screen pass no longer inks every blade.
+                        EdgeSettings(fso); fso.ApplyModifiedPropertiesWithoutUndo(); }
                     AssetDatabase.AddObjectToAsset(feature,data); data.rendererFeatures.Add(feature); feature.SetActive(true);
                     var dso=new SerializedObject(data); var map=dso.FindProperty("m_RendererFeatureMap"); map.arraySize=data.rendererFeatures.Count;
                     for(int j=0;j<data.rendererFeatures.Count;j++) { AssetDatabase.TryGetGUIDAndLocalFileIdentifier(data.rendererFeatures[j],out string _,out long id); map.GetArrayElementAtIndex(j).longValue=id; }
                     dso.ApplyModifiedPropertiesWithoutUndo(); data.SetDirty(); EditorUtility.SetDirty(data);
                 }
+                Shadows(pso); pso.ApplyModifiedPropertiesWithoutUndo(); EditorUtility.SetDirty(pipeline);
             }
         }
     }
