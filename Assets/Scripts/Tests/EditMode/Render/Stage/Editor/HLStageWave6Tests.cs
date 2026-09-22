@@ -106,8 +106,9 @@ namespace HealerLike.Render.Stage
         [Test] public void StageSceneOptsItsStoneEntryIntoDemoGenerationAndWiresTheHealerPulse()
         {
             string yaml=File.ReadAllText(HLStageBuilder.ScenePath);
-            Assert.That(yaml,Does.Contain("demoSceneOnly: 1"));
-            Assert.That(yaml,Does.Not.Contain("demoSceneOnly: 0"));
+            // HLStoneGeneration is a prefab instance: the opt-in is stored as a modification of the stones prefab's false default.
+            Assert.That(yaml,Does.Match(@"propertyPath: demoSceneOnly\s+value: 1"));
+            Assert.That(yaml,Does.Not.Match(@"propertyPath: demoSceneOnly\s+value: 0"));
             Assert.That(yaml,Does.Match(@"healPulse: \{fileID: [1-9]"));
             Assert.That(yaml,Does.Match(@"healSource: \{fileID: [1-9]"));
         }

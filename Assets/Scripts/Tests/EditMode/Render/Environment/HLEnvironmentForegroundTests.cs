@@ -99,7 +99,9 @@ namespace HealerLike.Render.Environment
                 foreground.Configure(camera, null, null, Ground, 11);
                 foreground.Build();
                 var expected = HLEnvironmentForeground.Layout(Position, Rotation, Fov, Aspect, Ground, 11);
-                Assert.AreEqual(expected.Select(i => i.Position), foreground.Items.Select(i => i.Position));
+                Assert.AreEqual(expected.Count, foreground.Items.Count);
+                // The camera transform round-trips the pose through its own storage; compare within float tolerance.
+                for (int i = 0; i < expected.Count; i++) Assert.That(Vector3.Distance(expected[i].Position, foreground.Items[i].Position), Is.LessThan(1e-3f), i.ToString());
                 int children = foreground.Root.childCount; foreground.Build();
                 Assert.AreEqual(children, foreground.Root.childCount); Assert.AreEqual(1, go.transform.childCount);
             }
