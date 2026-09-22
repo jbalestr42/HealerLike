@@ -160,6 +160,8 @@ namespace HealerLike.Render.Stage
                 string path=DirectoryPath+"wave4-"+(count+1)+".png";
                 File.WriteAllBytes(path,texture.EncodeToPNG());
                 count++; SessionState.SetInt(Key+"Count",count);
+                foreach(var field in UnityEngine.Object.FindObjectsByType<HealerLike.Render.Grass.HLGrassField>(FindObjectsSortMode.InstanceID))
+                    Debug.Log($"HL capture grass: {field.name} enabled={field.isActiveAndEnabled} ready={field.IsReady} blades={field.BladeCount}");
                 Debug.Log($"HL screenshot: {path} at game time {Time.time-gameStartTime:F2}s; attacks={attacks} heals={heals} zones={HealerLike.Render.Zones.HLZoneRegistry.Current?.Count ?? -1}");
             }
             finally { RenderTexture.active=previous; RenderTexture.ReleaseTemporary(target); UnityEngine.Object.DestroyImmediate(texture); }
