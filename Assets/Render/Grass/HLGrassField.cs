@@ -17,6 +17,7 @@ namespace HealerLike.Render.Grass
         [SerializeField] Shader ringShader;
         [SerializeField, Range(0, HLGrassLayout.MaxBudget)] int bladeBudget = HLGrassLayout.DefaultBudget;
         [SerializeField] uint seed = 1;
+        [SerializeField, Range(.25f, 1f)] float bladeHeightScale = 1;
         [SerializeField] Vector2 windDirection = new Vector2(1, 0.35f);
         [SerializeField, Min(0)] float windSpeed = 1.2f;
         [SerializeField, Range(0, 0.1f)] float windAmplitude = 0.065f;
@@ -63,6 +64,16 @@ namespace HealerLike.Render.Grass
         public int ActiveZoneCount => zoneCount;
         public bool IsReady => ready;
         public int BladeBudget { get => bladeBudget; set => bladeBudget = Mathf.Clamp(value, 0, HLGrassLayout.MaxBudget); }
+        /// <summary>Presentation-only strip height; cone height, blade width and density stay unchanged.</summary>
+        public float BladeHeightScale
+        {
+            get => bladeHeightScale;
+            set
+            {
+                bladeHeightScale = HLGrassLayout.Finite(value) ? Mathf.Clamp(value, .25f, 1f) : 1f;
+                if (bladeMaterial) bladeMaterial.SetFloat("_HL_BladeHeightScale", bladeHeightScale);
+            }
+        }
 
         public void Initialize(GridManager assignedGrid, Transform assignedGround, Camera camera,
             GraphicsBuffer zoneBuffer, int zoneCapacity)
@@ -86,7 +97,23 @@ namespace HealerLike.Render.Grass
         }
         public void SetZoneCount(int validCount) => SetZoneSnapshot(zones, validCount);
 
-        void OnEnable() { groundRenderer = ground != null ? ground.GetComponent<Renderer>() : null; }
+        void OnEnable()
+        {
+            groundRenderer = ground != null ? ground.GetComponent<Renderer>() : null;
+            RenderPipelineManager.beginCameraRendering -= BeginCameraRendering;
+            RenderPipelineManager.beginCameraRendering += BeginCameraRendering;
+        }
+        void BeginCameraRendering(ScriptableRenderContext context, Camera camera)
+        {
+            if (camera != gameplayCamera || !isActiveAndEnabled || !ready || count == 0 ||
+                zones == null || !zones.IsValid()) return;
+            // Indirect submissions last for one render. Queue them for the camera consuming them,
+            // including Editor repaints that do not run another player-loop LateUpdate.
+            bladeParams.camera = coneParams.camera = ringParams.camera = camera;
+            Graphics.RenderMeshIndirect(in bladeParams, bladeMesh, grassArgs);
+            Graphics.RenderMeshIndirect(in coneParams, coneMesh, coneArgs);
+            if (zoneCount > 0) Graphics.RenderMeshIndirect(in ringParams, ringMesh, ringArgs);
+        }
         void LateUpdate()
         {
             if (grid == null || ground == null || gameplayCamera == null || zones == null || !zones.IsValid()) return;
@@ -107,10 +134,6 @@ namespace HealerLike.Render.Grass
             compute.Dispatch(kernel, (count + 63) / 64, 1, 1);
             GraphicsBuffer.CopyCount(visibleGrass, grassArgs, 4);
             GraphicsBuffer.CopyCount(visibleCones, coneArgs, 4);
-            bladeParams.camera = coneParams.camera = ringParams.camera = gameplayCamera;
-            Graphics.RenderMeshIndirect(in bladeParams, bladeMesh, grassArgs);
-            Graphics.RenderMeshIndirect(in coneParams, coneMesh, coneArgs);
-            if (zoneCount > 0) Graphics.RenderMeshIndirect(in ringParams, ringMesh, ringArgs);
         }
 
         bool Build(float top)
@@ -158,6 +181,7 @@ namespace HealerLike.Render.Grass
         Material CreateGrassMaterial(bool cone)
         {
             var material = new Material(grassShader) { name = cone ? "HLGrassConeRuntime" : "HLGrassBladeRuntime", enableInstancing = true };
+            material.SetFloat("_HL_BladeHeightScale", HLGrassLayout.Finite(bladeHeightScale) ? Mathf.Clamp(bladeHeightScale, .25f, 1f) : 1f);
             material.SetFloat("_HL_Cone", cone ? 1 : 0); material.SetFloat("_HL_Cull", cone ? 2 : 0);
             material.SetVector("_HL_InstanceTint", Vector4.one);
             SetColor(material, "_HL_RootColor", 43, 110, 87); SetColor(material, "_HL_MidColor", 101, 159, 89);
@@ -189,8 +213,8 @@ namespace HealerLike.Render.Grass
                 instanceCount = instances, startIndex = mesh.GetIndexStart(0), baseVertexIndex = (uint)mesh.GetBaseVertex(0), startInstance = 0 } });
             return buffer;
         }
-        void OnDisable() { gustRemaining = 0; ReleaseOwned(); }
-        void OnDestroy() => Release();
+        void OnDisable() { RenderPipelineManager.beginCameraRendering -= BeginCameraRendering; gustRemaining = 0; ReleaseOwned(); }
+        void OnDestroy() { RenderPipelineManager.beginCameraRendering -= BeginCameraRendering; Release(); }
         public void Release() { ReleaseOwned(); zones = null; zoneCount = 0; }
         void ReleaseOwned()
         {

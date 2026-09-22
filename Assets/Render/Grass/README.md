@@ -130,3 +130,15 @@ flattens the core to 0.055 m with a patchy feathered edge, and suppresses hostil
 the core. It fills capacity left after feedback in the registry's 64 slots and disappears on disable/destruction.
 No obstacle search is performed by grass. Ambient wind reads the existing scaled
 clock; trample reads the registered transform. Gameplay occupancy is not inferred.
+
+## Camera submission
+
+LateUpdate prepares the compute buffers. The assigned camera's SRP
+beginCameraRendering callback submits the indirect draws, so an Editor repaint
+without another simulation frame still receives the grass. Disable/destroy removes
+that callback. Revoking the borrowed zone snapshot also stops submission.
+
+`bladeHeightScale` defaults to 1 and scales only grass strips. Stage can author
+0.8 on the battlefield while leaving environment fields at 1; the public
+`BladeHeightScale` property updates an existing material. Blade width and density
+remain unchanged, as does hostile cone height.
