@@ -92,7 +92,7 @@ namespace HealerLike.Render.Grass
                 Assert.Less(rising, peak); Assert.Less(sinking, rising);
                 Assert.GreaterOrEqual(states[0].leanHeightSpike.w, 0.5f, "Sinking cones retain their geometry until expiry.");
                 var trample = Sample(6, Vector3.zero, 1, 1);
-                Assert.That(trample.leanHeightSpike.z * layout[0].heightPhaseWidthRandom.x, Is.EqualTo(0.012f).Within(0.0001));
+                Assert.That(trample.leanHeightSpike.z * layout[0].heightPhaseWidthRandom.x, Is.EqualTo(0.055f).Within(0.0001));
                 Assert.AreEqual(0, trample.leanHeightSpike.w);
                 var outside = Sample(6, Vector3.right * 1.1f, 1, 1);
                 Assert.AreEqual(1, outside.leanHeightSpike.z);

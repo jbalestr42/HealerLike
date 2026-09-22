@@ -116,8 +116,8 @@ more blades are cheaper. The 65,536 harness average/p95/p99 were
 ## Beauty grass
 
 Static 32-byte seeds now group ordinary cell quotas into clumps of 3–7 blades, sharing
-an exact root and phase/rest heading, with a small yaw fan. Clump height is 0.6–1.4
-of a 0.30 m base; outside fan blades are up to 4.8% shorter. Budgets assigning fewer
+an exact root and phase/rest heading, with a broad yaw fan. Clump height is 0.6–1.4
+of a 0.30 m base; outside fan blades are up to 4.95% shorter. Budgets assigning fewer
 than three blades to a cell retain their exact quota. Seeded hue blocks span 2–4
 cells and travel in the existing seed W lane; no texture or extra buffer is used.
 Tips turn their shading normals toward the key light; illumination and jade/lime
@@ -127,7 +127,7 @@ loaded-machine timings.
 
 Stage attaches HLTrampleZone to each stone-clump and creature root; Radius is the
 outer world-space footprint (include a small visible margin). It follows the root,
-flattens the core to 0.012 m with a feathered edge, and suppresses hostile cones in
-the core. It shares the registry's 64 slots and disappears on disable/destruction.
+flattens the core to 0.055 m with a patchy feathered edge, and suppresses hostile cones in
+the core. It fills capacity left after feedback in the registry's 64 slots and disappears on disable/destruction.
 No obstacle search is performed by grass. Ambient wind reads the existing scaled
 clock; trample reads the registered transform. Gameplay occupancy is not inferred.

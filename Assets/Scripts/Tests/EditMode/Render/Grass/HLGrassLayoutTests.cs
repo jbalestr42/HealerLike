@@ -41,7 +41,7 @@ namespace HealerLike.Render.Grass
                 Assert.That(b.positionYaw.w, Is.InRange(0, 2 * Mathf.PI));
                 Assert.That(b.heightPhaseWidthRandom.x, Is.InRange(0.17f, 0.42f));
                 Assert.That(b.heightPhaseWidthRandom.y, Is.InRange(0, 2 * Mathf.PI));
-                Assert.That(b.heightPhaseWidthRandom.z, Is.InRange(0.035f, 0.05f));
+                Assert.That(b.heightPhaseWidthRandom.z, Is.InRange(0.095f, 0.15f));
                 Assert.That(b.heightPhaseWidthRandom.w, Is.InRange(0, 1));
                 quotas[Mathf.FloorToInt(b.positionYaw.x + 8) + 16 * Mathf.FloorToInt(b.positionYaw.z + 8)]++;
             }
