@@ -9,7 +9,7 @@ same packed prefix for rings/debugging; do not retain that view across frames. N
 the borrowed buffer. Stop grass submissions before disabling/releasing the registry.
 
 `Add(kind, position, radius, strength)` returns a positive handle, or zero for invalid/inactive
-input or an unavailable owner. `Update(handle, kind, position, radius, strength)` preserves
+input or an unavailable owner. `UpdateZone(handle, kind, position, radius, strength)` preserves
 order and age. Invalid or zero-strength updates remove the registration. `Remove` ignores
 unknown handles. Removed handles are never reassigned, including after disable/re-enable;
 this prevents stale producers from modifying a replacement. Storage slots can be reused.

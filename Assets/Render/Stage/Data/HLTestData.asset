@@ -11,10 +11,10 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4a6fcb842b0335b4aaffac25a7f9d89f, type: 3}
   m_Name: TestData
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
-    SerializedBytes:
+    SerializedBytes: 
     ReferencedUnityObjects:
     - {fileID: 11400000, guid: a2133f51bf40420ab341e8b6682a7990, type: 2}
     - {fileID: 11400000, guid: 6e67aca1f03947be8d6cd0e6e40e7008, type: 2}
@@ -25,7 +25,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 78e0e4e3ccdd427ea669e75e8b9e8320, type: 2}
     - {fileID: 11400000, guid: 9dba385f42664ee8872d1e77b7186fe2, type: 2}
     - {fileID: 11400000, guid: 377bd4ee8dac4de68f979ba31498d14b, type: 2}
-    SerializedBytesString:
+    SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
@@ -38,21 +38,21 @@ MonoBehaviour:
       Entry: 7
       Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, Assembly-CSharp]],
         mscorlib
-    - Name:
+    - Name: 
       Entry: 12
       Data: 0
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 12
       Data: 3
-    - Name:
+    - Name: 
       Entry: 7
-      Data:
+      Data: 
     - Name: $k
       Entry: 3
       Data: 2
@@ -68,15 +68,15 @@ MonoBehaviour:
     - Name: bonusPerUpgrade
       Entry: 4
       Data: 5
-    - Name:
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
-      Data:
+      Data: 
     - Name: $k
       Entry: 3
       Data: 1
@@ -92,15 +92,15 @@ MonoBehaviour:
     - Name: bonusPerUpgrade
       Entry: 4
       Data: 0.1
-    - Name:
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
-      Data:
+      Data: 
     - Name: $k
       Entry: 3
       Data: 3
@@ -116,26 +116,26 @@ MonoBehaviour:
     - Name: bonusPerUpgrade
       Entry: 4
       Data: 0.1
-    - Name:
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
+      Data: 
     - Name: wavePerRound
       Entry: 7
       Data: 2|System.Collections.Generic.List`1[[GameData+WavePerRound, Assembly-CSharp]],
         mscorlib
-    - Name:
+    - Name: 
       Entry: 12
       Data: 9
-    - Name:
+    - Name: 
       Entry: 7
       Data: 3|GameData+WavePerRound, Assembly-CSharp
     - Name: round
@@ -145,22 +145,22 @@ MonoBehaviour:
       Entry: 7
       Data: 4|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
         mscorlib
-    - Name:
+    - Name: 
       Entry: 12
       Data: 1
-    - Name:
+    - Name: 
       Entry: 10
       Data: 0
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
       Data: 5|GameData+WavePerRound, Assembly-CSharp
     - Name: round
@@ -170,22 +170,22 @@ MonoBehaviour:
       Entry: 7
       Data: 6|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
         mscorlib
-    - Name:
+    - Name: 
       Entry: 12
       Data: 1
-    - Name:
+    - Name: 
       Entry: 10
       Data: 1
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
       Data: 7|GameData+WavePerRound, Assembly-CSharp
     - Name: round
@@ -195,22 +195,22 @@ MonoBehaviour:
       Entry: 7
       Data: 8|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
         mscorlib
-    - Name:
+    - Name: 
       Entry: 12
       Data: 1
-    - Name:
+    - Name: 
       Entry: 10
       Data: 2
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
       Data: 9|GameData+WavePerRound, Assembly-CSharp
     - Name: round
@@ -220,22 +220,22 @@ MonoBehaviour:
       Entry: 7
       Data: 10|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
         mscorlib
-    - Name:
+    - Name: 
       Entry: 12
       Data: 1
-    - Name:
+    - Name: 
       Entry: 10
       Data: 3
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
       Data: 11|GameData+WavePerRound, Assembly-CSharp
     - Name: round
@@ -245,22 +245,22 @@ MonoBehaviour:
       Entry: 7
       Data: 12|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
         mscorlib
-    - Name:
+    - Name: 
       Entry: 12
       Data: 1
-    - Name:
+    - Name: 
       Entry: 10
       Data: 4
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
       Data: 13|GameData+WavePerRound, Assembly-CSharp
     - Name: round
@@ -270,22 +270,22 @@ MonoBehaviour:
       Entry: 7
       Data: 14|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
         mscorlib
-    - Name:
+    - Name: 
       Entry: 12
       Data: 1
-    - Name:
+    - Name: 
       Entry: 10
       Data: 5
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
       Data: 15|GameData+WavePerRound, Assembly-CSharp
     - Name: round
@@ -295,22 +295,22 @@ MonoBehaviour:
       Entry: 7
       Data: 16|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
         mscorlib
-    - Name:
+    - Name: 
       Entry: 12
       Data: 1
-    - Name:
+    - Name: 
       Entry: 10
       Data: 6
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
       Data: 17|GameData+WavePerRound, Assembly-CSharp
     - Name: round
@@ -320,22 +320,22 @@ MonoBehaviour:
       Entry: 7
       Data: 18|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
         mscorlib
-    - Name:
+    - Name: 
       Entry: 12
       Data: 1
-    - Name:
+    - Name: 
       Entry: 10
       Data: 7
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 7
       Data: 19|GameData+WavePerRound, Assembly-CSharp
     - Name: round
@@ -345,27 +345,27 @@ MonoBehaviour:
       Entry: 7
       Data: 20|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
         mscorlib
-    - Name:
+    - Name: 
       Entry: 12
       Data: 1
-    - Name:
+    - Name: 
       Entry: 10
       Data: 8
-    - Name:
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 13
-      Data:
-    - Name:
+      Data: 
+    - Name: 
       Entry: 8
-      Data:
+      Data: 
   gold: 10000
   playerItemChance: 0.5
   characters:

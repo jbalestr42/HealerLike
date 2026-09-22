@@ -144,8 +144,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   _ground: {fileID: 1293989675970250086}
   _width: 32
   _height: 32
@@ -160,8 +160,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4be5bcabbfe86f148b8749288a3b2cdc, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   _gridGenerators:
   - {fileID: 4796522870559552952}
   - {fileID: 5265550454449666727}
@@ -176,8 +176,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 51e649e13e54af44aaa511b582e95fc6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   _min: 2
   _max: 5
   _prefab: {fileID: 9141750140142513886, guid: 356c856d27b224948a6a15287e83110a, type: 3}
@@ -192,8 +192,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c9ca7fa6a579f86469e8c9f18be8a721, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   _min: 20
   _max: 50
   _prefab: {fileID: 9141750140142513886, guid: 3cf6cae3350c4b7fae29bc63f4b8e845, type: 3}
@@ -210,8 +210,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c9ca7fa6a579f86469e8c9f18be8a721, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   _min: 0
   _max: 10
   _prefab: {fileID: 9141750140142513886, guid: 3cf6cae3350c4b7fae29bc63f4b8e845, type: 3}

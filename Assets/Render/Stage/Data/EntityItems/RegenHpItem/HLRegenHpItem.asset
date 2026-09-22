@@ -11,12 +11,12 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a8940981ac4386e4395c5404eb3a86d1, type: 3}
   m_Name: RegenHpItem
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
-    SerializedBytes:
+    SerializedBytes: 
     ReferencedUnityObjects: []
-    SerializedBytesString:
+    SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
@@ -24,7 +24,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 830168f764471444d8a47b35247f811c, type: 3}
     name: RegenHp
-    description:
+    description: 
     buffs:
     - {fileID: 11400000, guid: 4ed824f4e7b641e3a9e8d54eeda8d19e, type: 2}
     onHitEffects: []

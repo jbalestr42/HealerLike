@@ -8,6 +8,7 @@ namespace HealerLike.Render.Stones
     public static class HLStonePrefabBuilder
     {
         const string Root="Assets/Render/Stones/";
+        public const int BlockCountDivisor=3;
         [MenuItem("HealerLike/Build stone prefabs")]
         public static void Build()
         {
@@ -108,7 +109,9 @@ namespace HealerLike.Render.Stones
                 {
                     var old=list.GetArrayElementAtIndex(i).objectReferenceValue as BlockGridSystem; if(old==null) continue;
                     var oldSO=new SerializedObject(old); var replacement=go.AddComponent<HLStoneBlockGridSystem>(); var replacementSO=new SerializedObject(replacement);
-                    foreach(string property in new[]{"_min","_max","_minSize","_maxSize"}) replacementSO.FindProperty(property).intValue=oldSO.FindProperty(property).intValue;
+                    foreach(string property in new[]{"_minSize","_maxSize"}) replacementSO.FindProperty(property).intValue=oldSO.FindProperty(property).intValue;
+                    // Wave 4: a third of Julien's block counts, so the stones stop hiding the allies. Sizes and order are unchanged.
+                    foreach(string property in new[]{"_min","_max"}) replacementSO.FindProperty(property).intValue=Mathf.RoundToInt(oldSO.FindProperty(property).intValue/(float)BlockCountDivisor);
                     replacementSO.FindProperty("_isWalkable").boolValue=old.isWalkable;
                     replacementSO.FindProperty("_prefab").objectReferenceValue=AssetDatabase.LoadAssetAtPath<GameObject>(Root+"Prefabs/HLStoneBlock.prefab");
                     replacementSO.ApplyModifiedPropertiesWithoutUndo(); list.GetArrayElementAtIndex(i).objectReferenceValue=replacement; systems.Add(replacement);
