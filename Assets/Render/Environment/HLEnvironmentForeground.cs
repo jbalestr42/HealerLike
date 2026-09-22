@@ -31,12 +31,13 @@ namespace HealerLike.Render.Environment
         [SerializeField] Material plantMaterial;
         [SerializeField] float groundY = .5f;
         [SerializeField] int seed = 1707;
-        [Tooltip("Frame aspect the corners are computed for; zero or less uses the camera's.")] [SerializeField] float aspect = 9f / 16f;
+        [Tooltip("Frame aspect the corners are computed for; zero or less uses the camera's.")] [SerializeField] float aspect = 0;
         [SerializeField] Color tint = new Color32(43, 75, 143, 255);
-        [SerializeField] Color rosetteTint = new Color32(58, 90, 154, 255);
+        [SerializeField] Color rosetteTint = new Color32(61, 116, 98, 255);
         readonly List<Mesh> ownedMeshes = new List<Mesh>();
         List<HLForegroundItem> items = new List<HLForegroundItem>();
         Transform root;
+        bool retained;
         MaterialPropertyBlock properties;
 
         public IReadOnlyList<HLForegroundItem> Items => items;
@@ -82,7 +83,7 @@ namespace HealerLike.Render.Environment
                 for (int n = 0; n < boulders + rosettes; n++)
                 {
                     bool boulder = n < boulders;
-                    float scale = boulder ? random.Range(2, 3.5f) : random.Range(3, 5);
+                    float scale = (boulder ? random.Range(2, 3.5f) : random.Range(3, 5)) * (aspect > 1 ? .5f : .7f);
                     float radius = boulder ? scale : scale * BladeLength * Mathf.Sin(MaxTilt * Mathf.Deg2Rad);
                     Vector3 position = corner;
                     for (int attempt = 0; attempt < 16; attempt++)
@@ -114,6 +115,7 @@ namespace HealerLike.Render.Environment
         public void Build(Vector3 cameraPosition, Quaternion cameraRotation, float verticalFov, float frameAspect)
         {
             Clear();
+            HLPrimitiveMeshes.Retain(); retained=true;
             items = Layout(cameraPosition, cameraRotation, verticalFov, frameAspect, groundY, seed);
             root = new GameObject("HLForegroundItems").transform; root.SetParent(transform, false);
             properties = new MaterialPropertyBlock();
@@ -125,7 +127,10 @@ namespace HealerLike.Render.Environment
             if (root) Dispose(root.gameObject); root = null;
             foreach (var mesh in ownedMeshes) Dispose(mesh);
             ownedMeshes.Clear();
+            if(retained) { HLPrimitiveMeshes.Release(); retained=false; }
         }
+        void OnEnable() { if(root) root.gameObject.SetActive(true); }
+        void OnDisable() { if(root) root.gameObject.SetActive(false); }
         void OnDestroy() => Clear();
         static void Dispose(Object value) { if (Application.isPlaying) Destroy(value); else DestroyImmediate(value); }
 

@@ -14,7 +14,7 @@ namespace HealerLike.Render.Stage
     public sealed class HLStageRangeDriver : MonoBehaviour
     {
         public enum PreviewMode { Pointer, Featured, Hidden }
-        [SerializeField] PreviewMode mode = PreviewMode.Featured;
+        [SerializeField] PreviewMode mode = PreviewMode.Pointer;
         [Tooltip("Seconds between scene scans for new previews; a destroyed or disabled cached preview forces a rescan.")]
         [SerializeField, Min(0.05f)] float rescanSeconds = .5f;
         readonly List<HLRangePreview> _previews = new List<HLRangePreview>();
@@ -53,7 +53,8 @@ namespace HealerLike.Render.Stage
                 var preview = previews[i];
                 if (!preview) continue;
                 preview.ObservePointer = mode == PreviewMode.Pointer;
-                if (mode != PreviewMode.Pointer) preview.SetPreviewState(i == featured, false);
+                preview.ObserveHover = mode == PreviewMode.Pointer;
+                preview.SetPreviewState(i == featured, false);
             }
             _applied = mode; _appliedFeatured = Featured;
         }
@@ -66,7 +67,7 @@ namespace HealerLike.Render.Stage
             {
                 int before = _previews.Count;
                 _previews.Clear();
-                _previews.AddRange(FindObjectsByType<HLRangePreview>(FindObjectsSortMode.InstanceID));
+                foreach(var preview in FindObjectsByType<HLRangePreview>(FindObjectsSortMode.InstanceID)) if(preview.isActiveAndEnabled) _previews.Add(preview);
                 _nextScan = now + rescanSeconds; Scans++;
                 if (_previews.Count != before) _applied = (PreviewMode)(-1);
             }

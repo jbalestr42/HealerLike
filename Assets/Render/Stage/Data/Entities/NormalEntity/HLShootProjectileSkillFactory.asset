@@ -11,12 +11,12 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 86578b487da7fb240a18670cd8bed782, type: 3}
   m_Name: ShootProjectileSkillFactory
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   serializationData:
     SerializedFormat: 2
-    SerializedBytes: 
+    SerializedBytes:
     ReferencedUnityObjects: []
-    SerializedBytesString: 
+    SerializedBytesString:
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
@@ -24,7 +24,7 @@ MonoBehaviour:
   data:
     onSkillTriggerFactory: []
     projectiles:
-    - projectilePrefab: {fileID: 6727251045688864600, guid: 2f760b8d115f415d8faf1846a96217fc, type: 3}
+    - projectilePrefab: {fileID: 8683745431272970881, guid: 2f760b8d115f415d8faf1846a96217fc, type: 3}
       onHitConsumer:
       - {fileID: 11400000, guid: 0669781f68b24e38a200bbc82d03b430, type: 2}
       numberOfProjectileToShootPerTarget: 1

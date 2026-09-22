@@ -19,7 +19,7 @@ namespace HealerLike.Render.Stage
         public static readonly float[] LandscapeTimes = { 8f };
         static bool Landscape => System.Environment.GetEnvironmentVariable("HL_CAPTURE_LANDSCAPE")=="1";
         static float[] CaptureTimes => Landscape ? LandscapeTimes : PortraitTimes;
-        public const string Prefix = "wave7-";
+        public const string Prefix = "wave9-stage-";
         public static int EnemyHits => enemyHits;
         static double started;
         static int count, attacks, heals, enemyHits, castSlot, allyHits, launched, allyLaunched;

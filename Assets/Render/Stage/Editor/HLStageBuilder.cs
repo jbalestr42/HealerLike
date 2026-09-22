@@ -62,6 +62,7 @@ namespace HealerLike.Render.Stage
             }
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             Models();
+            WireRestartPrefab();
             foreach (var pair in copies.Where(p => p.Key.Contains("/Projectiles/") || p.Value.Contains("/Area/")))
                 VisualVariant(pair.Key, pair.Value);
             AssetDatabase.SaveAssets();
@@ -74,7 +75,7 @@ namespace HealerLike.Render.Stage
                 if ((b.GetType().Namespace ?? "").StartsWith("Unity.Cinemachine")) b.enabled = false;
             var camera = Camera.main ?? Object.FindAnyObjectByType<Camera>();
             // Wave-3 landscape pose, kept as the bootstrap's landscape option.
-            var landscape = new Pose(new Vector3(0,.5f,0) - Quaternion.Euler(50,0,0) * Vector3.forward * 31, Quaternion.Euler(50,0,0));
+            var landscape = new Pose();
             camera.fieldOfView = HLStageCalibration.PortraitFov; camera.nearClipPlane = .1f; camera.farClipPlane = 200;
             camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = new Color32(191,210,224,255);
             var cameraData = camera.GetUniversalAdditionalCameraData(); cameraData.renderPostProcessing = false;
@@ -87,7 +88,9 @@ namespace HealerLike.Render.Stage
             foreach (var light in Object.FindObjectsByType<Light>()) light.lightmapBakeType = LightmapBakeType.Realtime;
             var key = KeyLight();
             var bounds = new Bounds(new Vector3(grid.transform.position.x,.505f,grid.transform.position.z), new Vector3(grid.width*grid.size,0,grid.height*grid.size));
-            var portrait = HLStageCalibration.Frame(bounds, HLStageCalibration.PortraitPitch, HLStageCalibration.PortraitFov, HLStageCalibration.PortraitAspect, HLStageCalibration.PortraitMargin, HLStageCalibration.PortraitCentreY);
+            var portrait = HLStageCalibration.PlayableFrame(bounds, HLStageCalibration.PortraitPitch, HLStageCalibration.PortraitFov, HLStageCalibration.PortraitAspect, HLStageCalibration.PortraitCentreY);
+            landscape = HLStageCalibration.PlayableFrame(bounds, 46, camera.fieldOfView, 16f/9f, .46f);
+            camera.aspect=HLStageCalibration.PortraitAspect;
             camera.transform.SetPositionAndRotation(portrait.position, portrait.rotation);
             var stage = new GameObject("HLRenderStage"); stage.SetActive(false);
             var bootstrap = stage.AddComponent<HLRenderBootstrap>();
@@ -120,7 +123,7 @@ namespace HealerLike.Render.Stage
                 if (view) { var vso=new SerializedObject(view); vso.FindProperty("character").objectReferenceValue=character; vso.FindProperty("visualAnchor").objectReferenceValue=anchor.transform; vso.FindProperty("recipe").objectReferenceValue=AssetDatabase.LoadMainAssetAtPath("Assets/Render/Creatures/Data/HLHealer.asset"); vso.FindProperty("material").objectReferenceValue=green; vso.ApplyModifiedPropertiesWithoutUndo(); }
             }
             Grass(stage.transform, bounds, grid, ground.transform, camera, zones, bootstrap);
-            var range = stage.AddComponent<HLStageRangeDriver>(); range.Mode = HLStageRangeDriver.PreviewMode.Featured;
+            var range = stage.AddComponent<HLStageRangeDriver>(); range.Mode = HLStageRangeDriver.PreviewMode.Pointer;
             if (key) stage.AddComponent<HLStageKeyLight>().KeyLight = key;
             var groundMaterial = StageGroundMaterial(GroundMaterial());
             if (ground.TryGetComponent<Renderer>(out var renderer)) renderer.sharedMaterial = groundMaterial;
@@ -138,6 +141,25 @@ namespace HealerLike.Render.Stage
                 $"Source: Main (menu loads Main; Build Settings instead enables TestHealer). Board {grid.width} x {grid.height}, cell {grid.size}; roots y=.505. Portrait camera {HLStageCalibration.PortraitPitch} degrees, FOV 40, position {camera.transform.position}. 1920-high hatch spacing {HLStageCalibration.HatchSpacing(camera,CentreDepth(camera,bounds),HLStageCalibration.PortraitHeight):F5}; fog {fog.x:F3}/{fog.y:F3}, six bands, pale #BFD2E0, 1px outline. Numerical calibration awaits final shader/grass captures.\n" +
                 "\n# CONTRACT-CONFLICT\n\nThe older look spec proposes stock RenderObjects, but the frozen contract requires T1 HLOutlines. The wave-2 fallback is labelled HLOutlines_PLACEHOLDER and must be replaced by the real feature. Main is the menu target but absent from enabled Build Settings; stage copies Main without changing the source scene list. The Ultra quality slot references missing pipeline GUID a0da25f9ff8de264189edd30d9654c37; Graphics Settings falls back to Low. All six existing pipeline assets and their six renderers are covered. The copied scene hides the 100-unit debug ground (its top .51 obscures the board at .5), middle line and debug sphere renderers; their colliders remain unchanged.\n");
             AssetDatabase.Refresh(); Debug.Log("HL stage build complete: " + ScenePath);
+        }
+        static void WireRestartPrefab()
+        {
+            string path=Root+"Prefabs/UI/Views/HLGameOverView.prefab";
+            var prefab=PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                var view=prefab.GetComponentInChildren<GameOverView>(true);
+                var button=prefab.GetComponentsInChildren<UnityEngine.UI.Button>(true).First(b=>b.name=="RestartButton");
+                var viewData=new SerializedObject(view); viewData.FindProperty("_restartButton").objectReferenceValue=button; viewData.ApplyModifiedPropertiesWithoutUndo();
+                // Keep the view identity used by UIManager; its empty Show/Hide work while disabled.
+                // Disabling prevents Start from registering Julien's MenuScene destination.
+                view.enabled=false;
+                for(int i=button.onClick.GetPersistentEventCount()-1;i>=0;i--) UnityEditor.Events.UnityEventTools.RemovePersistentListener(button.onClick,i);
+                var loader=button.gameObject.AddComponent<HLStageSceneLoader>();
+                UnityEditor.Events.UnityEventTools.AddPersistentListener(button.onClick,loader.LoadMenu);
+                PrefabUtility.SaveAsPrefabAsset(prefab,path);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(prefab); }
         }
         static void Copy(string source, string relative, bool prefix = true)
         {
@@ -348,6 +370,8 @@ namespace HealerLike.Render.Stage
             settings.FindPropertyRelative("FogColor").colorValue = new Color32(191,210,224,255);
             settings.FindPropertyRelative("FogStart").floatValue = fog.x; settings.FindPropertyRelative("FogEnd").floatValue = fog.y;
             settings.FindPropertyRelative("FogBands").intValue = 6;
+            settings.FindPropertyRelative("ShadowTint").colorValue = new Color32(63,91,148,255);
+            settings.FindPropertyRelative("InkStrength").floatValue = .75f;
             float spacing = HLStageCalibration.HatchSpacing(camera,CentreDepth(camera,bounds),HLStageCalibration.PortraitHeight);
             settings.FindPropertyRelative("InkScale").floatValue = spacing;
             settings.FindPropertyRelative("InkWidth").floatValue = spacing*.04f;
@@ -365,7 +389,7 @@ namespace HealerLike.Render.Stage
         {
             var edge = HLStageCalibration.FogRange(camera.transform.position, bounds);
             float centre = Vector3.Distance(camera.transform.position, bounds.center);
-            return new Vector2(centre, edge.y + (edge.y - edge.x) * .5f);
+            return HLStageCalibration.BackgroundFog(camera.transform.position,bounds);
         }
         public static float CentreDepth(Camera camera, Bounds bounds) => Vector3.Distance(camera.transform.position, bounds.center);
         // Wave 3 drew 1 px at depth 31 on a 1080-high target. Keep the same world thickness: scale by the pixels per
@@ -396,7 +420,7 @@ namespace HealerLike.Render.Stage
             const string path = "Assets/Render/Environment/HLLook_Ground.mat";
             var result = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (!result) { result = new Material(AssetDatabase.LoadAssetAtPath<Material>(LookDefault)) { name = "HLLook_Ground" }; AssetDatabase.CreateAsset(result, path); }
-            result.SetColor("_BaseColor", new Color32(46,125,79,255)); result.enableInstancing = true;
+            result.SetColor("_BaseColor", new Color32(78,126,87,255)); result.enableInstancing = true;
             EditorUtility.SetDirty(result); AssetDatabase.SaveAssets();
             return result;
         }
@@ -534,7 +558,7 @@ namespace HealerLike.Render.Stage
                 float h = .15f+(float)random.NextDouble()*.2f; int v = vertices.Count;
                 vertices.Add(new Vector3(x-.025f,0,z)); vertices.Add(new Vector3(x+.025f,0,z)); vertices.Add(new Vector3(x+.045f,h,z+.02f));
                 indices.AddRange(new[]{v,v+2,v+1,v,v+1,v+2});
-                colors.Add(new Color32(46,125,79,255)); colors.Add(new Color32(46,125,79,255)); colors.Add(new Color32(155,210,74,255));
+                colors.Add(new Color32(78,126,87,255)); colors.Add(new Color32(78,126,87,255)); colors.Add(new Color32(155,210,74,255));
             }
             var mesh = new Mesh { name = "HLGrassPlaceholder" }; mesh.SetVertices(vertices); mesh.SetTriangles(indices,0); mesh.SetColors(colors); mesh.SetNormals(Enumerable.Repeat(new Vector3(0,.6f,-.8f),vertices.Count).ToArray()); mesh.RecalculateBounds();
             string path = Root+"HLGrassPlaceholder.asset";

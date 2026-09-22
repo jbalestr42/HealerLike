@@ -21,7 +21,7 @@ namespace HealerLike.Render.Stage
                 Assert.That((Vector3)Shader.GetGlobalVector("_HLGridExtent"),Is.EqualTo(new Vector3(16,0,16)));
                 Assert.That(Shader.GetGlobalFloat("_HLGridCell"),Is.EqualTo(1));
                 Assert.That(Shader.GetGlobalFloat("_HLGridStrength"),Is.EqualTo(.12f).Within(1e-6f));
-                Assert.That(Shader.GetGlobalFloat("_HLTipLight"),Is.EqualTo(.12f).Within(1e-6f));
+                Assert.That(Shader.GetGlobalFloat("_HLTipLight"),Is.EqualTo(.035f).Within(1e-6f));
                 HLStageBeautyWiring.ClearGrid();
                 Assert.That(Shader.GetGlobalFloat("_HLGridStrength"),Is.Zero);
                 Assert.That(Shader.GetGlobalFloat("_HLTipLight"),Is.Zero);

@@ -49,7 +49,7 @@ namespace HealerLike.Render.Environment
                 foreach (var item in items)
                 {
                     string label = $"seed {seed} {item.Kind} at {item.Position}";
-                    Assert.That(item.Scale, item.Kind == HLForegroundKind.Boulder ? Is.InRange(2f, 3.5f) : Is.InRange(3f, 5f), label);
+                    Assert.That(item.Scale, item.Kind == HLForegroundKind.Boulder ? Is.InRange(1.4f, 2.45f) : Is.InRange(2.1f, 3.5f), label);
                     Assert.AreEqual(Ground, item.Position.y, label);
                     var vp = HLEnvironmentForeground.ToViewport(item.Position, Position, Rotation, Fov, Aspect);
                     Assert.That(vp.y, Is.LessThan(.2f), label); Assert.IsTrue(vp.x < .25f || vp.x > .75f, label);
@@ -93,7 +93,7 @@ namespace HealerLike.Render.Environment
             var cameraObject = new GameObject("HLForegroundCamera");
             try
             {
-                var camera = cameraObject.AddComponent<Camera>(); camera.fieldOfView = Fov;
+                var camera = cameraObject.AddComponent<Camera>(); camera.fieldOfView = Fov; camera.aspect=Aspect;
                 cameraObject.transform.SetPositionAndRotation(Position, Rotation);
                 var foreground = go.AddComponent<HLEnvironmentForeground>();
                 foreground.Configure(camera, null, null, Ground, 11);

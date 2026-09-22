@@ -49,7 +49,7 @@ namespace HealerLike.Render.Environment
         [Tooltip("Density falls as exp(-falloff * t), t = 0 at the margin and 1 at the ring's outer edge.")] public float falloff;
         public HLEnvironmentCounts counts;
         public static HLEnvironmentSettings Default => new HLEnvironmentSettings
-            { seed = 1707, marginCells = 1, ringDistance = 32, falloff = 2.2f, counts = HLEnvironmentCounts.Default };
+            { seed = 1707, marginCells = 1, ringDistance = 17, falloff = 3.2f, counts = HLEnvironmentCounts.Default };
     }
 
     /// <summary>Deterministic placement of the ring around the grid. Pure data, no GameObjects.</summary>

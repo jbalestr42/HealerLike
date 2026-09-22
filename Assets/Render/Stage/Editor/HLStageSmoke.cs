@@ -57,6 +57,7 @@ namespace HealerLike.Render.Stage
             }
             if(change==PlayModeStateChange.EnteredEditMode)
             {
+                Unsubscribe();
                 int code=SessionState.GetInt(Key+"Code",1);
                 SessionState.SetBool(Key,false); EditorApplication.Exit(code);
             }
@@ -83,7 +84,7 @@ namespace HealerLike.Render.Stage
             if(round3Battle>0 && state==AscensionGameType.State.OnGoingBattle && (now-round3Battle>Round3Grace || now>deadline-15))
             {
                 LogRound(actedRound,true);
-                Finish(exceptions==0,$"round {actedRound} still running after {now-round3Battle:F0}s");
+                Finish(false,$"round {actedRound} incomplete after {now-round3Battle:F0}s");
             }
         }
         // The HUD's own x3 speed button (TimeManager); a direct timeScale only if that button has no effect in this scene.
@@ -233,6 +234,7 @@ namespace HealerLike.Render.Stage
         static void Finish(bool pass, string reason)
         {
             if(finished) return;
+            pass &= roundsDone>=Rounds;
             finished=true; Unsubscribe();
             foreach(var error in errors) Debug.Log("HL smoke error: "+error);
             Debug.Log($"HL smoke result: {(pass?"PASS":"FAIL")} rounds={roundsDone} exceptions={exceptions}{(reason!=null?" reason="+reason:"")}");

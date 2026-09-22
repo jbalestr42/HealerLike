@@ -42,6 +42,14 @@ namespace HealerLike.Render.Stage
             if (!stageCamera) return;
             var pose = framing == Framing.Portrait ? portraitPose : landscapePose;
             stageCamera.transform.SetPositionAndRotation(pose.position, pose.rotation);
+            stageCamera.aspect=framing==Framing.Portrait ? 9f/16f : 16f/9f;
+            if(grid && lookController is HealerLike.Render.Look.HLLookController look)
+            {
+                var fog=HLStageCalibration.BackgroundFog(pose.position, new Bounds(grid.transform.position,new Vector3(grid.width*grid.size,0,grid.height*grid.size)));
+                var settings=look.Settings; settings.FogStart=fog.x; settings.FogEnd=fog.y; look.Settings=settings; look.ApplyGlobals();
+            }
+            if(Application.isPlaying)
+                foreach(var foreground in GetComponentsInChildren<HealerLike.Render.Environment.HLEnvironmentForeground>()) foreground.Build();
         }
 
         // Explicit injection keeps ownership testable without a scene or gameplay singleton.
