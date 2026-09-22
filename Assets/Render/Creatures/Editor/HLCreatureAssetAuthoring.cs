@@ -139,6 +139,15 @@ namespace HealerLike.Render.Creatures
             string path = Root + "Data/" + name + ".asset";
             var recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
             if (!recipe) { recipe = ScriptableObject.CreateInstance<HLCreatureRecipe>(); AssetDatabase.CreateAsset(recipe, path); }
+            // Geometry-only readability: root footprint and gameplay sockets stay unchanged.
+            Vector3 displayScale = name == "HLHealer" ? new Vector3(1.45f, 2.05f, 1.45f) : new Vector3(1.45f, 1.7f, 1.45f);
+            for (int i = 0; i < parts.Count; i++)
+            {
+                var part = parts[i];
+                part.localPosition = Vector3.Scale(part.localPosition, displayScale);
+                part.dimensions = Vector3.Scale(part.dimensions, displayScale);
+                parts[i] = part;
+            }
             // A rounded collar makes capsule endpoints legible without changing their pivots.
             int stemCount = parts.Count;
             for (int i = 0; i < stemCount; i++)
@@ -148,22 +157,22 @@ namespace HealerLike.Render.Creatures
                 parts.Add(Part("HLJoint" + i, HLPrimitive.Sphere, Vector3.up * (stem.dimensions.y * .38f),
                     Vector3.one * (stem.dimensions.x * 1.5f), Bud, parent: i));
             }
-            recipe.parts = parts.ToArray(); recipe.roots.count = roots; recipe.idle.seed = seed; recipe.roots.thickness = .035f; recipe.roots.footRadius = .42f;
+            recipe.parts = parts.ToArray(); recipe.roots.count = roots; recipe.idle.seed = seed; recipe.roots.thickness = .042f; recipe.roots.footRadius = .41f; recipe.roots.hipHeight = .26f; recipe.roots.kneeHeight = .14f;
             recipe.idle.swayFrequency = .25f;
             recipe.targetLocal = Vector3.up * .8f; recipe.sourceLocal = new Vector3[armCount]; recipe.arms = new HLArmDefinition[armCount];
             for (int j = 0; j < armCount; j++)
             {
-                recipe.sourceLocal[j] = new Vector3(j % 2 == 0 ? -.19f : .19f, .75f, 0);
-                var rest = new Vector3[121];
-                // Ten compact coils: 120 x .2 = 24 cells covers the current 16 x 16 board.
+                recipe.sourceLocal[j] = new Vector3(j % 2 == 0 ? -.26f : .26f, 1.1f, 0);
+                var rest = new Vector3[49];
+                // Four compact coils: 48 x .5 = 24 cells covers the current 16 x 16 board.
                 // Larger boards/out-of-board targets still clamp without changing gameplay.
-                for (int i = 0; i < 120; i++)
+                for (int i = 0; i < 48; i++)
                 {
                     float angle = i * Mathf.PI * 2 / 12;
-                    rest[i + 1] = rest[i] + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), .015f).normalized * .2f;
+                    rest[i + 1] = rest[i] + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), .015f).normalized * .5f;
                 }
                 recipe.arms[j] = new HLArmDefinition { bodyPart = 0, rootLocal = recipe.sourceLocal[j] - parts[0].localPosition,
-                    sourceSocketIndex = j, segmentCount = 120, segmentLength = .2f, radius = .018f, restJoints = rest,
+                    sourceSocketIndex = j, segmentCount = 48, segmentLength = .5f, radius = .045f, restJoints = rest,
                     bendPole = Vector3.up, colour = Stem };
             }
             if (!HLCreatureValidator.TryValidate(recipe, out string error)) throw new InvalidOperationException(error);

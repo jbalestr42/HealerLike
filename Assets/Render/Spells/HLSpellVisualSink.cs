@@ -55,7 +55,7 @@ namespace HealerLike.Render.Spells
             var owner = source ? source.GetComponent<Entity>() : null;
             effect.SetSide(owner ? owner.entityType : Entity.EntityType.None);
             var entity = target.GetComponent<Entity>(); float maximum = entity && entity.health ? entity.health.Max : 100;
-            float radius = Mathf.Lerp(.035f,.18f,Mathf.Sqrt(Mathf.Clamp01(Mathf.Abs(preClampAmount)/Mathf.Max(maximum,1))));
+            float radius = Mathf.Lerp(.10f,.26f,Mathf.Sqrt(Mathf.Clamp01(Mathf.Abs(preClampAmount)/Mathf.Max(maximum,1))));
             effect.transform.localScale = Vector3.one * (radius/.1f);
             if (isCritical) HLSpellPrimitives.AddCritical(effect);
             _impacts.Add(effect.gameObject);
@@ -72,6 +72,7 @@ namespace HealerLike.Render.Spells
                 var recipe = _grammar.Describe(factory,source,target);
                 if (!recipe.IsValid) { Unknown(recipe.Signature); return; }
                 var root = new GameObject("HLStatus"); root.transform.SetParent(Anchor(target),false);
+                root.transform.localScale = Vector3.one * 1.35f;
                 AddStatusAtoms(root.transform, recipe);
                 var effects = root.GetComponentsInChildren<HLSpellEffect>();
                 if (effects.Length == 0) { Dispose(root); return; }
@@ -87,6 +88,19 @@ namespace HealerLike.Render.Spells
                 var caster = source ? source.GetComponent<Entity>() : null;
                 effect.SetSide(caster ? caster.entityType : Entity.EntityType.None);
             }
+            RefreshBodyTint(target);
+        }
+        void RefreshBodyTint(GameObject target)
+        {
+            if (!target) return;
+            Color tint = Color.white;
+            foreach (var pair in _statuses)
+                if (pair.Key.Item1 == target)
+                    foreach (var effect in pair.Value.Effects)
+                        if (effect && effect.Tint != Color.white) tint = effect.Tint;
+            var state = target.GetComponent<HLBodyTintState>();
+            if (!state && tint != Color.white) state = target.AddComponent<HLBodyTintState>();
+            if (state) state.Set(tint);
         }
         void AddStatusAtoms(Transform root, HLVisualRecipe recipe)
         {
@@ -116,6 +130,7 @@ namespace HealerLike.Render.Spells
                 root.transform.SetParent(transform,true);
                 foreach (var effect in status.Effects) effect.BeginRemoval();
                 _removing.Add(root);
+                RefreshBodyTint(target);
             }
         }
         public void PulseArea(Vector3 center,float radius,HLZoneKind kind,float strength)
@@ -155,6 +170,7 @@ namespace HealerLike.Render.Spells
             {
                 if (!pair.source || !pair.target) continue;
                 var anchor = HealerAnchor?.Invoke(pair.source);
+                if (!anchor) anchor = pair.source.GetComponentInChildren<HealerLike.Render.Creatures.HLCharacterView>()?.Bud0;
                 var start = anchor ? anchor.position : pair.source.transform.position;
                 var end = Anchor(pair.target).position;
                 ShowLink(start,end); LinkObserved?.Invoke(start,end);
@@ -204,7 +220,7 @@ namespace HealerLike.Render.Spells
         {
             PresentationVersion++;
             _heals.Clear(); foreach(var root in _removing) Dispose(root); _removing.Clear();
-            foreach(var status in _statuses.Values) Dispose(status.Root);_statuses.Clear();
+            foreach(var pair in _statuses) { var state = pair.Key.Item1 ? pair.Key.Item1.GetComponent<HLBodyTintState>() : null; if (state) state.Set(Color.white); Dispose(pair.Value.Root); } _statuses.Clear();
             foreach(var root in _impacts) Dispose(root);_impacts.Clear();
         }
         static void Dispose(GameObject go)
