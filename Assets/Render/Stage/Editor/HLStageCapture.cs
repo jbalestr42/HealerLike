@@ -161,7 +161,12 @@ namespace HealerLike.Render.Stage
                 File.WriteAllBytes(path,texture.EncodeToPNG());
                 count++; SessionState.SetInt(Key+"Count",count);
                 foreach(var field in UnityEngine.Object.FindObjectsByType<HealerLike.Render.Grass.HLGrassField>(FindObjectsSortMode.InstanceID))
-                    Debug.Log($"HL capture grass: {field.name} enabled={field.isActiveAndEnabled} ready={field.IsReady} blades={field.BladeCount}");
+                {
+                    // Instance count the compute wrote this frame: blades that survived frustum culling and were drawn.
+                    var args=typeof(HealerLike.Render.Grass.HLGrassField).GetField("grassArgs",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)?.GetValue(field) as GraphicsBuffer;
+                    var data=new uint[5]; if(args!=null && args.IsValid()) args.GetData(data);
+                    Debug.Log($"HL capture grass: {field.name} enabled={field.isActiveAndEnabled} ready={field.IsReady} blades={field.BladeCount} drawn={data[1]}");
+                }
                 Debug.Log($"HL screenshot: {path} at game time {Time.time-gameStartTime:F2}s; attacks={attacks} heals={heals} zones={HealerLike.Render.Zones.HLZoneRegistry.Current?.Count ?? -1}");
             }
             finally { RenderTexture.active=previous; RenderTexture.ReleaseTemporary(target); UnityEngine.Object.DestroyImmediate(texture); }
