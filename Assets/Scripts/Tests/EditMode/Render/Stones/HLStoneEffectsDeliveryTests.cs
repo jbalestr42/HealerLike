@@ -16,7 +16,7 @@ namespace HealerLike.Render.Stones
                 effects.EmitThrownContact(Vector3.one,91); Assert.AreEqual(count,effects.LiveCount);
                 Assert.AreEqual(count,go.transform.childCount);
             }
-            finally { Object.DestroyImmediate(go); }
+            finally { TestHelpers.InvokePrivate(go.GetComponent<HLStoneEffects>(),"OnDestroy"); Object.DestroyImmediate(go); }
         }
     }
 }

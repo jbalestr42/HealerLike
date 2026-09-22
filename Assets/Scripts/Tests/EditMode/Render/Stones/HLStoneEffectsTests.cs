@@ -33,9 +33,9 @@ namespace HealerLike.Render.Stones
                 if(deactivateObject) go.SetActive(true); else fx.enabled=true;
                 fx.EmitThrownContact(Vector3.zero,1); Assert.Greater(fx.LiveCount,0);
                 Assert.AreEqual(pooled,go.transform.childCount);
-                Object.DestroyImmediate(go); Assert.AreEqual(baseline+otherCount,HLStoneEffects.GlobalLiveCount);
+                TestHelpers.InvokePrivate(fx,"OnDestroy"); Object.DestroyImmediate(go); Assert.AreEqual(baseline+otherCount,HLStoneEffects.GlobalLiveCount);
             }
-            finally { Object.DestroyImmediate(go); Object.DestroyImmediate(source); Object.DestroyImmediate(other); Object.DestroyImmediate(mesh); }
+            finally { if(fx!=null) TestHelpers.InvokePrivate(fx,"OnDestroy"); TestHelpers.InvokePrivate(second,"OnDestroy"); Object.DestroyImmediate(go); Object.DestroyImmediate(source); Object.DestroyImmediate(other); Object.DestroyImmediate(mesh); }
             Assert.AreEqual(baseline,HLStoneEffects.GlobalLiveCount);
         }
         [Test] public void SceneLookupPreservesDisabledOwnerWithoutSpawning()
@@ -48,7 +48,7 @@ namespace HealerLike.Render.Stones
                 fx.EmitThrownContact(Vector3.zero,1); Assert.AreEqual(0,fx.LiveCount);
                 Assert.AreEqual(0,fx.transform.childCount);
             }
-            finally { Object.DestroyImmediate(fx.gameObject); }
+            finally { TestHelpers.InvokePrivate(fx,"OnDestroy"); Object.DestroyImmediate(fx.gameObject); }
         }
         [Test] public void HitCountsGlobalCapAndLifetime()
         {

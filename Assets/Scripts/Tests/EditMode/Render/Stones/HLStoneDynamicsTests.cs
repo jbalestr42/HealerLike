@@ -16,7 +16,7 @@ namespace HealerLike.Render.Stones
             health=TestHelpers.CreateResourceAttribute(root,AttributeType.HealthMax,100);
             fx=fxRoot.AddComponent<HLStoneEffects>(); visual=root.AddComponent<HLStoneEnemyVisual>(); visual.Initialize(health,17,fx);
         }
-        [TearDown] public void TearDown() { Object.DestroyImmediate(root); Object.DestroyImmediate(projectile); Object.DestroyImmediate(fxRoot); }
+        [TearDown] public void TearDown() { TestHelpers.InvokePrivate(fx,"OnDestroy"); Object.DestroyImmediate(root); Object.DestroyImmediate(projectile); Object.DestroyImmediate(fxRoot); }
         [Test] public void AimAnticipationAndLaunchRotateOnlyPresentation()
         {
             var pivot=visual.Parts[0].Transform.parent;
