@@ -63,6 +63,8 @@ namespace HealerLike.Render.Grass
                     }
                     Assert.AreEqual(7, buffers.Count);
                     Assert.AreEqual(3, meshes); Assert.AreEqual(3, materials); Assert.AreEqual(1, computes);
+                    // Runtime messages do not run automatically on this EditMode-only fixture.
+                    TestHelpers.InvokePrivate(field, destroy ? "OnDestroy" : "OnDisable");
                     if (destroy) UnityEngine.Object.DestroyImmediate(field);
                     else field.enabled = false;
                     int liveBuffers = 0, liveObjects = 0;
@@ -74,7 +76,12 @@ namespace HealerLike.Render.Grass
                     if (!destroy) { Assert.IsFalse(field.IsReady); Assert.AreEqual(0, field.BladeCount); }
                 }
             }
-            finally { UnityEngine.Object.DestroyImmediate(go); borrowed.Dispose(); }
+            finally
+            {
+                var survivingField = go.GetComponent<HLGrassField>();
+                if (survivingField != null) survivingField.Release();
+                UnityEngine.Object.DestroyImmediate(go); borrowed.Dispose();
+            }
         }
 
         [Test] public void DefaultsBudgetClampNullSnapshotAndIdempotentRelease()
