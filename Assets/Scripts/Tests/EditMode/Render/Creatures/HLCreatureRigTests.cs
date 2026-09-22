@@ -37,6 +37,15 @@ namespace HealerLike.Render.Creatures
             rig = HLCreatureRig.Build(recipe, parent.transform, material);
             var child = rig.Root.Find("HLSway/HLBody/HLChild"); Assert.AreEqual(Vector3.up, child.localPosition); Assert.AreEqual(Vector3.one, child.lossyScale);
         }
+        [Test] public void SaturatedContactCannotReviveCancelledLease()
+        {
+            for (int i = 0; i < 8; i++) { int token = rig.Begin(HLGestureKind.Attack, Vector3.one); rig.Contact(token, Vector3.one); }
+            rig.CancelAll();
+            rig.Tick(.05f, .05f, new HLFootFrame(Vector3.zero, Vector3.up, 1));
+            rig.Contact(0, Vector3.one);
+            rig.Tick(.26f, .21f, new HLFootFrame(Vector3.zero, Vector3.up, 1));
+            Assert.AreEqual(0, rig.ActiveArmCount);
+        }
         [Test] public void NonuniformAncestorsAreRejected()
         {
             parent.transform.localScale = new Vector3(1, 2, 1);

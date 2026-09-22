@@ -104,7 +104,7 @@ namespace HealerLike.Render.Creatures
             // Saturated same-position contacts renew an existing visual contact, without sharing
             // its lease token. A dropped observer can never end somebody else's chain.
             for (int i = 0; i < MaxArms; i++)
-                if (arms[i] != null && !arms[i].IsAvailable && (arms[i].Goal - goal).sqrMagnitude < 1e-6f)
+                if (tokens[i] != 0 && arms[i] != null && !arms[i].IsAvailable && (arms[i].Goal - goal).sqrMagnitude < 1e-6f)
                 { arms[i].Contact(arms[i].Token, goal); return; }
         }
         public void End(int token)
