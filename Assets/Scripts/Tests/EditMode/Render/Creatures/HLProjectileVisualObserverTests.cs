@@ -9,8 +9,9 @@ namespace HealerLike.Render.Creatures
         public sealed class HLDeliveryProbe : MonoBehaviour, IHLDeliverySource
         {
             public int begins, updates, contacts, ends;
+            public bool accepts = true;
             public HLDeliveryStyle style;
-            public bool BeginDelivery(int token, HLDeliveryStyle value, Transform projectile, Vector3 end) { begins++; style = value; return true; }
+            public bool BeginDelivery(int token, HLDeliveryStyle value, Transform projectile, Vector3 end) { begins++; style = value; return accepts; }
             public void UpdateDelivery(int token, Vector3 position) { updates++; }
             public void ContactDelivery(int token, Vector3 position, GameObject target) { contacts++; }
             public void EndDelivery(int token) { ends++; }
@@ -27,6 +28,36 @@ namespace HealerLike.Render.Creatures
             projectile.OnHit.Invoke(new OnHitData { target = first }); Assert.AreEqual(1, probe.contacts);
             observer.enabled = false; TestHelpers.InvokePrivate(observer, "OnDisable");
             Assert.AreEqual(1, probe.ends);
+        }
+        [Test] public void MissingOrDecliningSourcePreservesOriginalRendererStates()
+        {
+            var model = builder.gameObject;
+            Object.DestroyImmediate(builder);
+            observer.Init(source);
+            var visible = projectileObject.GetComponent<LineRenderer>();
+            Assert.IsTrue(visible.enabled);
+            var child = new GameObject("HLHiddenRenderer", typeof(MeshRenderer));
+            child.transform.SetParent(projectileObject.transform);
+            var hidden = child.GetComponent<Renderer>(); hidden.enabled = false;
+            var probe = model.AddComponent<HLDeliveryProbe>(); probe.accepts = false;
+            observer.Init(source); TestHelpers.InvokePrivate(observer, "LateUpdate");
+            projectile.OnHit.Invoke(new OnHitData { target = first });
+            Assert.AreEqual(0, observer.GestureToken); Assert.IsTrue(visible.enabled); Assert.IsFalse(hidden.enabled);
+            Assert.AreEqual(0, probe.updates); Assert.AreEqual(0, probe.contacts);
+            probe.accepts = true; observer.Init(source);
+            Assert.IsFalse(visible.enabled);
+            probe.enabled = false; TestHelpers.InvokePrivate(observer, "LateUpdate");
+            Assert.IsTrue(visible.enabled); Assert.IsFalse(hidden.enabled); Assert.AreEqual(1, probe.ends);
+        }
+        [Test] public void DecliningAdapterDoesNotPreventAnotherAdapterPresenting()
+        {
+            var model = builder.gameObject;
+            Object.DestroyImmediate(builder);
+            model.AddComponent<HLDeliveryProbe>().accepts = false;
+            var accepted = model.AddComponent<HLDeliveryProbe>();
+            observer.Init(source);
+            Assert.AreEqual(1, accepted.begins); Assert.AreNotEqual(0, observer.GestureToken);
+            Assert.IsFalse(projectileObject.GetComponent<LineRenderer>().enabled);
         }
         GameObject source, first, second, projectileObject;
         Projectile projectile;
@@ -94,6 +125,7 @@ namespace HealerLike.Render.Creatures
             TestHelpers.SetPrivateField(observer, "deliveryStyle", HLDeliveryStyle.Thrown);
             observer.Init(source); Assert.AreEqual(0, observer.GestureToken);
             Assert.AreEqual(HLDeliveryStyle.Thrown, observer.DeliveryStyle);
+            Assert.IsTrue(projectileObject.GetComponent<LineRenderer>().enabled);
             Assert.AreEqual(Vector3.zero, projectile.transform.position);
         }
     }

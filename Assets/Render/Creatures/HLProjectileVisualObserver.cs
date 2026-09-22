@@ -25,6 +25,7 @@ namespace HealerLike.Render.Creatures
         HLCreatureBuilder builder;
         HLCreatureRig rig;
         Renderer[] renderers;
+        bool[] rendererStates;
         int token, contactFrame = -1;
         bool initialized;
         public IReadOnlyList<HLProjectileContact> Contacts => contacts;
@@ -43,23 +44,29 @@ namespace HealerLike.Render.Creatures
             builder = entity && entity.model ? entity.model.GetComponent<HLCreatureBuilder>() : null;
             rig = builder && builder.isActiveAndEnabled ? builder.Rig : null;
             var model = entity && entity.model ? entity.model.gameObject : source;
-            if (model) foreach (var component in model.GetComponentsInChildren<MonoBehaviour>())
-                if (component is IHLDeliverySource candidate && component.isActiveAndEnabled)
-                { delivery = candidate; deliveryComponent = component; break; }
             if (++nextToken == 0) ++nextToken;
-            token = nextToken;
-            if (delivery == null || !delivery.BeginDelivery(token, deliveryStyle, projectile.transform,
-                CapturedTargetPoint ? CapturedTargetPoint.transform.position : projectile.transform.position)) token = 0;
-            renderers = GetComponentsInChildren<Renderer>(true); HideRenderers();
+            if (model) foreach (var component in model.GetComponentsInChildren<MonoBehaviour>())
+            {
+                if (!(component is IHLDeliverySource candidate) || !component.isActiveAndEnabled) continue;
+                if (!candidate.BeginDelivery(nextToken, preserveContactPath ? HLDeliveryStyle.ChainSync : deliveryStyle,
+                    projectile.transform, CapturedTargetPoint ? CapturedTargetPoint.transform.position : projectile.transform.position)) continue;
+                delivery = candidate; deliveryComponent = component; token = nextToken; break;
+            }
+            if (token == 0) return;
+            renderers = GetComponentsInChildren<Renderer>(true);
+            rendererStates = new bool[renderers.Length];
+            for (int i = 0; i < renderers.Length; i++) rendererStates[i] = renderers[i].enabled;
+            HideRenderers();
         }
+
         void HideRenderers()
         {
-            if (renderers == null) return;
+            if (token == 0 || renderers == null) return;
             foreach (var renderer in renderers) if (renderer) renderer.enabled = false;
         }
         void OnProjectileHit(OnHitData hit)
         {
-            if (!isActiveAndEnabled || hit == null) return;
+            if (!isActiveAndEnabled || hit == null || token == 0) return;
             Vector3 point = hit.target ? HLCreatureBuilder.TargetPosition(hit.target)
                 : contacts.Count > 0 ? contacts[contacts.Count - 1].position : transform.position;
             contacts.Add(new HLProjectileContact(hit.target, point)); contactFrame = Time.frameCount;
@@ -68,16 +75,24 @@ namespace HealerLike.Render.Creatures
         }
         void LateUpdate()
         {
-            HideRenderers();
+            if (token == 0) return;
             if (!subscribed || !subscribed.source || !deliveryComponent || !deliveryComponent.isActiveAndEnabled || (builder && builder.Rig != rig))
             { EndLease(); return; }
+            HideRenderers();
             // Retarget listeners have all finished by now. Never replace ordered hit contacts
             // with the final target, which can already be null for an instant chain.
             if (subscribed.ShouldDestroyProjectile()) { EndLease(); return; }
             if (subscribed.target && contactFrame != Time.frameCount && !(preserveContactPath && contacts.Count > 0))
                 delivery?.UpdateDelivery(token, subscribed.transform.position);
         }
-        void EndLease() { if (token != 0) delivery?.EndDelivery(token); token = 0; }
+        void EndLease()
+        {
+            if (token != 0 && deliveryComponent) delivery?.EndDelivery(token);
+            token = 0;
+            if (renderers != null)
+                for (int i = 0; i < renderers.Length; i++) if (renderers[i]) renderers[i].enabled = rendererStates[i];
+            renderers = null; rendererStates = null;
+        }
         void Unbind()
         {
             if (subscribed) subscribed.OnHit.RemoveListener(OnProjectileHit);
