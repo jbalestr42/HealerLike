@@ -18,12 +18,16 @@ namespace HealerLike.Render.Zones
             var attributes = TestHelpers.CreateAttributeManager(_entityGo, AttributeType.Range, 3);
             TestHelpers.WithLoggingDisabled(() => _entity = _entityGo.AddComponent<Entity>());
             _entity.attributeManager = attributes;
+            _entity.entityType = Entity.EntityType.Player;
             _preview = _entityGo.AddComponent<HLRangePreview>();
             _preview.ObservePointer = false;
+            _preview.ObserveHover = false;
+            HLRangePreview.AllRanges = false;
             _preview.Init(_entity);
         }
         [TearDown] public void TearDown()
         {
+            HLRangePreview.AllRanges = false;
             Object.DestroyImmediate(_entityGo); Object.DestroyImmediate(_ownerGo);
         }
         [TestCase(true, false)] [TestCase(false, true)] [TestCase(true, true)]
@@ -35,7 +39,7 @@ namespace HealerLike.Render.Zones
             _owner.PublishFrame(0);
             Assert.AreEqual(1, _owner.Count);
             Assert.AreEqual(3, _owner.Snapshot[0].radius);
-            Assert.AreEqual((int)HLZoneKind.Heal, _owner.Snapshot[0].kind);
+            Assert.AreEqual((int)HLZoneKind.Range, _owner.Snapshot[0].kind);
             Assert.AreEqual(0.35f, _owner.Snapshot[0].strength);
             Assert.AreEqual(_entityGo.transform.position, _owner.Snapshot[0].position);
             _entityGo.transform.position = Vector3.right;
@@ -47,10 +51,24 @@ namespace HealerLike.Render.Zones
             Assert.AreEqual(5, _owner.Snapshot[0].radius);
             Assert.AreEqual(1, _owner.LiveCount);
         }
+        [Test] public void StateChangesPublishOnlyOnUpdate()
+        {
+            _preview.SetPreviewState(true, false);
+            Assert.AreEqual(0, _owner.LiveCount);
+            TestHelpers.InvokePrivate(_preview, "Update");
+            Assert.AreEqual(1, _owner.LiveCount);
+            _preview.SetPreviewState(false, false);
+            Assert.AreEqual(1, _owner.LiveCount);
+            TestHelpers.InvokePrivate(_preview, "Update");
+            Assert.AreEqual(0, _owner.LiveCount);
+        }
         [Test] public void DeselectionDisableAndInvalidRangeRemovePreview()
         {
             _preview.SetPreviewState(true, false);
+            _preview.Refresh();
+            Assert.AreEqual(1, _owner.LiveCount);
             _preview.SetPreviewState(false, false);
+            _preview.Refresh();
             Assert.AreEqual(0, _owner.LiveCount);
             _preview.SetPreviewState(true, false);
             _entity.attributeManager.Get(AttributeType.Range).BaseValue = 0;
@@ -69,11 +87,45 @@ namespace HealerLike.Render.Zones
         [Test] public void RegistryRestartRecreatesPreviewWithoutStaleHandleUse()
         {
             _preview.SetPreviewState(true, false);
+            _preview.Refresh();
             _owner.Release();
             _owner.Initialize(new HLZoneFakeUpload());
             _preview.Refresh();
             _owner.PublishFrame(0);
             Assert.AreEqual(1, _owner.Count);
+        }
+        [Test] public void AllRangesUsesLowStrengthAndExcludesEnemies()
+        {
+            HLRangePreview.AllRanges = true;
+            _preview.Refresh(); _owner.PublishFrame(0);
+            Assert.AreEqual(0.15f, _owner.Snapshot[0].strength);
+            _preview.SetPreviewState(true, false); _owner.PublishFrame(0);
+            Assert.AreEqual(0.15f, _owner.Snapshot[0].strength);
+            _entity.entityType = Entity.EntityType.Computer;
+            _preview.Refresh(); Assert.AreEqual(0, _owner.LiveCount);
+        }
+        [Test] public void HoverUsesEntityColliderAndCachesOnlyOneRaycastPerFrame()
+        {
+            _entityGo.AddComponent<BoxCollider>(); Physics.SyncTransforms();
+            var hit = new Ray(Vector3.back * 3, Vector3.forward);
+            var miss = new Ray(Vector3.back * 3, Vector3.back);
+            Assert.AreSame(_entity, HLRangePreview.SampleHover(hit, -100));
+            Assert.AreSame(_entity, HLRangePreview.SampleHover(miss, -100));
+            Assert.IsNull(HLRangePreview.SampleHover(miss, -99));
+            Assert.AreEqual(0, _owner.LiveCount, "Hover does not invent selection state.");
+        }
+        [Test] public void HoverShowsRangeWithoutOverwritingExplicitSelection()
+        {
+            _entityGo.AddComponent<BoxCollider>(); Physics.SyncTransforms();
+            var cameraGo = new GameObject("preview camera"); cameraGo.transform.SetParent(_entityGo.transform);
+            _preview.PreviewCamera = cameraGo.AddComponent<Camera>(); _preview.ObserveHover = true;
+            HLRangePreview.SampleHover(new Ray(Vector3.back * 3, Vector3.forward), Time.frameCount);
+            _preview.Refresh(); _owner.PublishFrame(0);
+            Assert.AreEqual(3, _owner.Snapshot[0].kind);
+            _preview.SetPreviewState(true, false); _preview.ObserveHover = false;
+            _preview.Refresh(); Assert.AreEqual(1, _owner.LiveCount);
+            _preview.SetPreviewState(false, false);
+            _preview.Refresh(); Assert.AreEqual(0, _owner.LiveCount);
         }
         [Test] public void MissingRangeAndDestroyedEntityAreSafe()
         {

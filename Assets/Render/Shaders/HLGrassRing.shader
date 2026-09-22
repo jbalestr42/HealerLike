@@ -33,7 +33,7 @@ Shader "HL/Grass/HealRing"
                 // Fixed 64-instance draw, no CPU snapshot or GPU readback. Invalid slots are degenerate.
                 if (id >= (uint)_HL_ZoneCount) { output.positionCS = float4(0,0,0,1); return output; }
                 HLZone zone = HLLoadZone(id);
-                if (zone.kind != 1 || zone.radius <= 0) { output.positionCS = float4(0,0,0,1); return output; }
+                if ((zone.kind != 1 && zone.kind != 3) || zone.radius <= 0) { output.positionCS = float4(0,0,0,1); return output; }
                 float radius = zone.radius + input.uv.y * min(0.025, zone.radius * 0.5);
                 float2 p = zone.position.xz + float2(cos(input.uv.x), sin(input.uv.x)) * radius;
                 output.positionWS = float3(p.x, _HL_SurfaceY + 0.020, p.y);

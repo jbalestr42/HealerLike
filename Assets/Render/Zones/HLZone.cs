@@ -8,7 +8,7 @@ namespace HealerLike.Render.Zones
     /// Cosmetic zone kind. The numeric values are part of the frozen GPU ABI
     /// (0 normal / 1 heal / 2 hostile ramp index on the shader side).
     /// </summary>
-    public enum HLZoneKind : int { None = 0, Heal = 1, Hostile = 2 }
+    public enum HLZoneKind : int { None = 0, Heal = 1, Hostile = 2, Range = 3, Bruise = 4, Launch = 5 }
 
     /// <summary>
     /// One cosmetic zone record, laid out to match the 32-byte GPU element of _HL_Zones.
@@ -25,7 +25,7 @@ namespace HealerLike.Render.Zones
         [FieldOffset(16)] public int kind;
         [FieldOffset(20)] public float strength;
         [FieldOffset(24)] public float age;
-        [FieldOffset(28)] public uint reserved;   // always zero
+        [FieldOffset(28)] public uint reserved;   // Launch: normalized XZ heading encoded as uint turns; otherwise zero
 
         /// <summary>Size in bytes of one GPU element; also the GraphicsBuffer stride.</summary>
         public const int Stride = 32;
@@ -56,7 +56,7 @@ namespace HealerLike.Render.Zones
             if (!IsFinite(position.x) || !IsFinite(position.y) || !IsFinite(position.z)) return false;
             if (!IsFinite(radius) || !IsFinite(strength) || !IsFinite(age)) return false;
             if (radius <= 0f) return false;
-            if (kind != HLZoneKind.Heal && kind != HLZoneKind.Hostile) return false;
+            if (kind < HLZoneKind.Heal || kind > HLZoneKind.Launch) return false;
 
             zone.position = position;
             zone.radius = radius;
@@ -105,6 +105,7 @@ namespace HealerLike.Render.Zones
                     continue;
                 }
 
+                if (canonical.kind == (int)HLZoneKind.Launch) canonical.reserved = raw.reserved;
                 destination[written] = canonical;
                 written++;
             }
@@ -112,6 +113,15 @@ namespace HealerLike.Render.Zones
             for (int i = written; i < destination.Length; i++) destination[i] = default;
 
             return written;
+        }
+
+        /// <summary>Full uint turn: +X = 0, +Z = quarter turn, decoded identically by HLSL.</summary>
+        public static uint EncodeDirection(Vector3 direction)
+        {
+            if (!IsFinite(direction.x) || !IsFinite(direction.z)) return 0;
+            double turns = System.Math.Atan2(direction.z, direction.x) / (2 * System.Math.PI);
+            if (turns < 0) turns += 1;
+            return (uint)(turns * 4294967296.0);
         }
 
         static bool IsFinite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
