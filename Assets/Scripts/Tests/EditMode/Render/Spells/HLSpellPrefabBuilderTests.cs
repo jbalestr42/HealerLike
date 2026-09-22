@@ -5,6 +5,29 @@ namespace HealerLike.Render.Spells
 {
     public class HLSpellPrefabBuilderTests
     {
+        [Test] public void EveryShippedPrefabUsesReviewedBeautyGeometry()
+        {
+            var paths=AssetDatabase.FindAssets("t:Prefab",new[]{"Assets/Render/Spells/Prefabs"});
+            Assert.Greater(paths.Length,90);
+            foreach(var guid in paths)
+            {
+                var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
+                foreach(var fx in prefab.GetComponentsInChildren<HLSpellEffect>())
+                {
+                    if(fx.hasAuthoredSignature) Assert.AreEqual(HLSpellPrimitives.Kind(fx.authoredSignature),fx.kind,prefab.name);
+                    switch(fx.kind)
+                    {
+                        case HLSpellEffectKind.Heal: Assert.AreEqual(7,fx.stalks.Length,prefab.name);break;
+                        case HLSpellEffectKind.Impact: Assert.AreEqual(5,fx.parts.Length,prefab.name);Assert.AreEqual("HLStar",fx.parts[0].GetComponent<MeshFilter>().sharedMesh.name);break;
+                        case HLSpellEffectKind.Buff: Assert.AreEqual(3,fx.parts.Length,prefab.name);break;
+                        case HLSpellEffectKind.Shield: Assert.AreEqual(6,fx.parts.Length,prefab.name);Assert.Greater(fx.parts[0].localScale.z,.4f);break;
+                        case HLSpellEffectKind.Litter: Assert.AreEqual(5,fx.parts.Length,prefab.name);break;
+                    }
+                }
+                foreach(var filter in prefab.GetComponentsInChildren<MeshFilter>()) Assert.IsTrue(EditorUtility.IsPersistent(filter.sharedMesh),prefab.name);
+                Assert.IsEmpty(prefab.GetComponentsInChildren<Collider>(),prefab.name);
+            }
+        }
         [Test] public void EveryInventorySignatureHasExactlyOnePersistentVisual()
         {
             var type=System.AppDomain.CurrentDomain.GetAssemblies();

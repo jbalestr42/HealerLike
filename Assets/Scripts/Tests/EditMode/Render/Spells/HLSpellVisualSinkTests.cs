@@ -21,6 +21,20 @@ namespace HealerLike.Render.Spells
             factory.data=new BuffHandlerData {durationType=DurationType.Duration,duration=4,buffFactoryList=new List<ABuffFactory>{modifier}};second.data=factory.data;
         }
         [TearDown] public void Cleanup(){DestroyHost(host);DestroyHost(target);DestroyHost(other);Object.DestroyImmediate(factory);Object.DestroyImmediate(second);Object.DestroyImmediate(modifier);}
+        [Test] public void HostilePulseSpawnsSlateLitterAndContactLinkUsesThreads()
+        {
+            var go=new GameObject("HLBeautySink");try {
+                var sink=go.AddComponent<HLSpellVisualSink>();TestHelpers.InvokePrivate(sink,"OnEnable");
+                sink.AreaPulse=(center,radius,kind,strength)=>{};
+                sink.PulseArea(Vector3.one,2,HealerLike.Render.Zones.HLZoneKind.Hostile,1);
+                var effect=go.GetComponentInChildren<HLSpellEffect>();Assert.AreEqual(HLSpellEffectKind.Litter,effect.kind);
+                Assert.AreEqual(HLSpellVisualSink.PulseSeconds,effect.lifetime);Assert.AreEqual(Vector3.one,effect.transform.position);
+                var block=new MaterialPropertyBlock();effect.parts[0].GetComponent<Renderer>().GetPropertyBlock(block);
+                Assert.Less(Vector4.Distance((Color)new Color32(58,66,87,255),block.GetColor("_BaseColor")),.00001f);
+                var thread=sink.ShowContactLink(Vector3.zero,Vector3.right);Assert.IsTrue(thread.ContactThread);Assert.IsFalse(thread.parts[1].gameObject.activeSelf);
+                TestHelpers.InvokePrivate(sink,"OnDestroy");
+            } finally {Object.DestroyImmediate(go);}
+        }
         [Test] public void RegistryCallsCannotRepopulateDisabledSinkAndEnableStartsClean()
         {
             var previous = HLRenderRegistry.Current;
