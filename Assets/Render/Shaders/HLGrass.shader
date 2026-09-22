@@ -5,6 +5,7 @@ Shader "HL/Grass/BladeAndCone"
         _BaseColor("Instance Tint", Color) = (1,1,1,1)
         [HideInInspector] _HL_Cull("Cull", Float) = 0
         [HideInInspector] _HL_Cone("Cone", Float) = 0
+        [HideInInspector] _HL_BladeHeightScale("Blade Height Scale", Float) = 1
     }
     SubShader
     {
