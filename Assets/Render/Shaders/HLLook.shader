@@ -4,6 +4,7 @@ Shader "HL/Look/Primitive"
     Properties
     {
         [MainColor] _BaseColor ("Base Color", Color) = (1,1,1,1)
+        [Toggle] _HLNormalEdges ("Normal Edges (zero keeps depth edges only)", Float) = 1
     }
     SubShader
     {
@@ -57,7 +58,13 @@ Shader "HL/Look/Primitive"
             {
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-                Light mainLight = GetMainLight(TransformWorldToShadowCoord(input.positionWS), input.positionWS, half4(1,1,1,1));
+                // Screen shadows sample camera UV; atlas/cascades use world-to-shadow.
+                #if defined(_MAIN_LIGHT_SHADOWS_SCREEN)
+                float4 shadowCoord = ComputeScreenPos(TransformWorldToHClip(input.positionWS));
+                #else
+                float4 shadowCoord = TransformWorldToShadowCoord(input.positionWS);
+                #endif
+                Light mainLight = GetMainLight(shadowCoord, input.positionWS, half4(1,1,1,1));
                 float illum = saturate((dot(normalize(input.normalWS), mainLight.direction) * 0.5 + 0.5) * mainLight.shadowAttenuation);
                 return half4(HLEvaluateSurface(input.positionWS, illum, HLGetBaseColor().rgb), 1);
             }
@@ -158,9 +165,9 @@ Shader "HL/Look/Primitive"
                 #if defined(_GBUFFER_NORMALS_OCT)
                 float2 octNormalWS = PackNormalOctQuadEncode(normalWS);
                 float2 remapped = saturate(octNormalWS * 0.5 + 0.5);
-                return half4(PackFloat2To888(remapped), 0);
+                return half4(PackFloat2To888(remapped), HLGetNormalEdges());
                 #else
-                return half4(normalWS, 0);
+                return half4(normalWS, HLGetNormalEdges());
                 #endif
             }
             ENDHLSL

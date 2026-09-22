@@ -30,6 +30,8 @@ float  _HLDashScale;
 float  _HLInkDistStart;
 float  _HLInkFarSpacing;
 float  _HLLookApplied;
+float _HLInkSpacingPixels;
+float4 _HLKeyLightDir; // World-space direction toward main light, w=0; zero when absent.
 
 #define HL_G(uniformName, fallbackValue) \
     ((_HLLookApplied > 0.5) ? (uniformName) : (fallbackValue))
@@ -58,6 +60,7 @@ float3 HLWorkingColor(float3 srgb)
 #define HL_DEF_FOGEND 60.0
 #define HL_DEF_FOGBANDS 6.0
 #define HL_DEF_INKSTRENGTH 1.0
+#define HL_DEF_INKSPACINGPIXELS 3.5
 #define HL_DEF_INKSCALE 0.05
 #define HL_DEF_INKWIDTH 0.001
 #define HL_DEF_INKSTART 0.0
@@ -126,8 +129,11 @@ float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor)
 {
     illum = saturate(illum);
     float shadowMask = HLShadowMask(illum);
-    float3 shadowColor = lerp(baseColor, HL_G(_HLShadowTint, HL_DEF_SHADOWTINT).rgb,
-                             HL_G(_HLShadowStrength, HL_DEF_SHADOWSTRENGTH));
+    // Deep cast shadows converge to the authored ultramarine, instead of retaining
+    // enough green base colour to read as grey/teal. Strength controls the toon boundary.
+    float tintStrength = lerp(HL_G(_HLShadowStrength, HL_DEF_SHADOWSTRENGTH), 1.0,
+        saturate(1.0 - illum / max(.001, HL_G(_HLToonThreshold, HL_DEF_TOONTHRESHOLD))));
+    float3 shadowColor = lerp(baseColor, HL_G(_HLShadowTint, HL_DEF_SHADOWTINT).rgb, tintStrength);
     float3 color = lerp(baseColor, shadowColor, shadowMask);
     float tone = saturate(((1.0 - illum) - HL_G(_HLInkStart, HL_DEF_INKSTART)) /
                           max(0.001, HL_G(_HLInkRange, HL_DEF_INKRANGE)));
@@ -137,6 +143,11 @@ float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor)
     float dist = distance(positionWS, GetCameraPositionWS());
     spacing *= 1.0 + HL_G(_HLInkFarSpacing, HL_DEF_INKFARSPACING) *
         max(0.0, dist / max(0.001, HL_G(_HLInkDistStart, HL_DEF_INKDISTSTART)) - 1.0);
+    // Projected hatch-coordinate footprint follows camera distance, FOV and render scale.
+    // Pixel mode bypasses tone compression so dense shadows remain readable.
+    float pixelSpacing = HL_G(_HLInkSpacingPixels, HL_DEF_INKSPACINGPIXELS);
+    float footprintWS = length(float2(ddx(hcoord), ddy(hcoord)));
+    if (pixelSpacing > 0.0) spacing = footprintWS * pixelSpacing;
     spacing = max(spacing, 1e-4);
     // Derivatives must run for every lane, including lit fragments.
     float ink = HLLine(hcoord, hwarp, spacing, HL_G(_HLInkWarp, HL_DEF_INKWARP),

@@ -24,6 +24,7 @@ namespace HealerLike.Render.Look
                 else floats[id] = Shader.GetGlobalFloat(id);
             }
             floats[Applied] = Shader.GetGlobalFloat(Applied);
+            vectors[Shader.PropertyToID("_HLKeyLightDir")] = Shader.GetGlobalVector("_HLKeyLightDir");
         }
 
         [TearDown]
@@ -45,6 +46,39 @@ namespace HealerLike.Render.Look
             var controller = go.AddComponent<HLLookController>();
             if (active) go.SetActive(true);
             return controller;
+        }
+
+        [Test]
+        public void KeyDirectionSelectsSunThenBrightestAndClearsOnDisable()
+        {
+            var controller = CreateController();
+            var go = new GameObject("HL key"); objects.Add(go);
+            var sun = go.AddComponent<Light>(); sun.type = LightType.Directional;
+            sun.transform.rotation = Quaternion.Euler(45, -35, 0);
+            var otherGo = new GameObject("HL brighter"); objects.Add(otherGo);
+            var other = otherGo.AddComponent<Light>(); other.type = LightType.Directional; other.intensity = 4;
+            Vector3 expected = -sun.transform.forward;
+            Assert.That(HLLookController.SelectKeyLightDirection(new[] { other, sun }, sun, ~0),
+                Is.EqualTo(new Vector4(expected.x, expected.y, expected.z, 0)));
+            Assert.That(HLLookController.SelectKeyLightDirection(new[] { sun, other }, null, ~0),
+                Is.EqualTo(new Vector4(0, 0, -1, 0)));
+            other.enabled = false; sun.gameObject.layer = 7;
+            Assert.That(HLLookController.SelectKeyLightDirection(new[] { sun, other }, sun, ~(1 << 7)), Is.EqualTo(Vector4.zero));
+            var previousSun = RenderSettings.sun;
+            try
+            {
+                RenderSettings.sun = sun;
+                controller.ApplyGlobals();
+                Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(new Vector4(expected.x, expected.y, expected.z, 0)));
+                HLLookController.PublishMainLightDirection(null);
+                Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(Vector4.zero));
+                HLLookController.PublishMainLightDirection(sun);
+                Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(new Vector4(expected.x, expected.y, expected.z, 0)));
+                controller.enabled = false;
+                HLLookController.PublishMainLightDirection(sun);
+                Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(Vector4.zero));
+            }
+            finally { RenderSettings.sun = previousSun; }
         }
 
         [TestCase(ColorSpace.Gamma)]
@@ -71,10 +105,10 @@ namespace HealerLike.Render.Look
             Action<int, Vector4> color = (id, value) => { writes.Add(id); colorWrites.Add(id, value); };
             typeof(HLLookController).GetMethod("PublishGlobals", BindingFlags.Static | BindingFlags.NonPublic)
                 .Invoke(null, new object[] { input, ColorSpace.Linear, scalar, color });
-            Assert.That(writes.Count, Is.EqualTo(22));
-            Assert.That(writes[21], Is.EqualTo(Applied));
+            Assert.That(writes.Count, Is.EqualTo(23));
+            Assert.That(writes[22], Is.EqualTo(Applied));
             Assert.That(scalarWrites[Applied], Is.EqualTo(1f));
-            Assert.That(scalarWrites.Count, Is.EqualTo(19));
+            Assert.That(scalarWrites.Count, Is.EqualTo(20));
             Assert.That(colorWrites.Count, Is.EqualTo(3));
             foreach (var field in typeof(HLLookSettings).GetFields(BindingFlags.Public | BindingFlags.Instance))
             {

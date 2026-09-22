@@ -18,6 +18,8 @@ namespace HealerLike.Render.Look
         private static readonly int FogStartId = Shader.PropertyToID("_HLFogStart");
         private static readonly int FogEndId = Shader.PropertyToID("_HLFogEnd");
         private static readonly int InkStrengthId = Shader.PropertyToID("_HLInkStrength");
+        private static readonly int KeyLightDirId = Shader.PropertyToID("_HLKeyLightDir");
+        private static readonly int InkSpacingPixelsId = Shader.PropertyToID("_HLInkSpacingPixels");
         private static readonly int InkScaleId = Shader.PropertyToID("_HLInkScale");
         private static readonly int InkWidthId = Shader.PropertyToID("_HLInkWidth");
         private static readonly int InkStartId = Shader.PropertyToID("_HLInkStart");
@@ -45,14 +47,17 @@ namespace HealerLike.Render.Look
             owner = this;
             RenderPipelineManager.beginFrameRendering -= OnBeginFrameRendering;
             RenderPipelineManager.beginFrameRendering += OnBeginFrameRendering;
+            RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
         }
 
         private void OnDisable()
         {
             RenderPipelineManager.beginFrameRendering -= OnBeginFrameRendering;
+            RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
             if (owner != this) return;
             owner = null;
             Shader.SetGlobalFloat(LookAppliedId, 0f);
+            Shader.SetGlobalVector(KeyLightDirId, Vector4.zero);
         }
 
         private void OnValidate() => settings = settings.Validated();
@@ -61,7 +66,42 @@ namespace HealerLike.Render.Look
 
         public void ApplyGlobals()
         {
-            if (owner == this && isActiveAndEnabled) UploadGlobals(in settings);
+            if (owner != this || !isActiveAndEnabled) return;
+            Shader.SetGlobalVector(KeyLightDirId, SelectKeyLightDirection(
+                FindObjectsByType<Light>(FindObjectsSortMode.InstanceID), RenderSettings.sun, ~0));
+            UploadGlobals(in settings);
+        }
+
+        private void OnBeginCameraRendering(ScriptableRenderContext context, Camera camera)
+        {
+            if (owner != this || !isActiveAndEnabled) return;
+            Shader.SetGlobalVector(KeyLightDirId, SelectKeyLightDirection(
+                FindObjectsByType<Light>(FindObjectsSortMode.InstanceID), RenderSettings.sun, camera.cullingMask));
+        }
+
+        // Mirrors URP's sun-first, otherwise brightest directional selection.
+        public static Vector4 SelectKeyLightDirection(Light[] lights, Light sun, int cameraMask)
+        {
+            Light selected = null;
+            float brightest = 0f;
+            foreach (var light in lights)
+            {
+                if (!light || !light.isActiveAndEnabled || light.type != LightType.Directional ||
+                    (cameraMask & (1 << light.gameObject.layer)) == 0) continue;
+                if (light == sun) { selected = light; break; }
+                if (light.intensity > brightest) { selected = light; brightest = light.intensity; }
+            }
+            if (!selected) return Vector4.zero;
+            Vector3 direction = -selected.transform.forward;
+            return new Vector4(direction.x, direction.y, direction.z, 0f);
+        }
+
+        // The renderer supplies URP's actual culled selection before drawing, including no-main-light tiers.
+        public static void PublishMainLightDirection(Light mainLight)
+        {
+            if (!owner || !owner.isActiveAndEnabled) return;
+            Vector3 direction = mainLight && mainLight.type == LightType.Directional ? -mainLight.transform.forward : Vector3.zero;
+            Shader.SetGlobalVector(KeyLightDirId, new Vector4(direction.x, direction.y, direction.z, 0));
         }
 
         public static Vector4 ToWorkingColor(Color srgb, ColorSpace colorSpace)
@@ -88,6 +128,7 @@ namespace HealerLike.Render.Look
             setFloat(FogStartId, value.FogStart);
             setFloat(FogEndId, value.FogEnd);
             setFloat(InkStrengthId, value.InkStrength);
+            setFloat(InkSpacingPixelsId, value.InkSpacingPixels);
             setFloat(InkScaleId, value.InkScale);
             setFloat(InkWidthId, value.InkWidth);
             setFloat(InkStartId, value.InkStart);

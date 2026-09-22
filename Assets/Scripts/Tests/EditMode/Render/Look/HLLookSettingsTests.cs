@@ -87,6 +87,19 @@ namespace HealerLike.Render.Look
             Assert.That(value.Validated(), Is.EqualTo(value));
         }
 
+        [Test]
+        public void PixelDensitySupportsLegacyZeroAndClampsUnsafeValues()
+        {
+            var settings = HLLookSettings.Default;
+            Assert.That(settings.InkSpacingPixels, Is.EqualTo(3.5f));
+            settings.InkSpacingPixels = -1;
+            Assert.That(settings.Validated().InkSpacingPixels, Is.Zero);
+            settings.InkSpacingPixels = 100;
+            Assert.That(settings.Validated().InkSpacingPixels, Is.EqualTo(16));
+            settings.InkSpacingPixels = 0;
+            Assert.That(settings.Validated().InkSpacingPixels, Is.Zero);
+        }
+
         [TestCase(0f)]
         [TestCase(1000000f)]
         [TestCase(float.MaxValue)]
