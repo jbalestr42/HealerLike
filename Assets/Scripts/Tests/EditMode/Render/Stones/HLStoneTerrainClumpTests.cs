@@ -4,6 +4,18 @@ namespace HealerLike.Render.Stones
 {
     public class HLStoneTerrainClumpTests
     {
+        [Test] public void OchreIsOneFaceAndRingIsPublic()
+        {
+            var go=new GameObject("HLTerrain"); var clump=go.AddComponent<HLStoneTerrainClump>();
+            try
+            {
+                clump.Initialize(5,1); Assert.Greater(clump.BareGroundRadius,clump.Assembly.LocalBounds.extents.x);
+                var facet=clump.Assembly.Parts[0].Transform.Find("HLOchreFace"); Assert.IsNotNull(facet);
+                Assert.AreEqual(3,facet.GetComponent<MeshFilter>().sharedMesh.vertexCount);
+                clump.Initialize(6,1); Assert.IsNull(clump.Assembly.Parts[0].Transform.Find("HLOchreFace"));
+            }
+            finally { TestHelpers.InvokePrivate(clump,"OnDestroy"); Object.DestroyImmediate(go); }
+        }
         [Test] public void BoundsAndCellOrderDeterminism()
         {
             var a=new GameObject("HLA");var b=new GameObject("HLB");var ca=a.AddComponent<HLStoneTerrainClump>();var cb=b.AddComponent<HLStoneTerrainClump>();

@@ -67,27 +67,27 @@ namespace HealerLike.Render.Stones
             // No final value event is emitted when damage and healing return to the previous value.
             Queue(-160);Queue(160);Drain(); TestHelpers.InvokePrivate(visual,"LateUpdate"); Assert.AreEqual(3,Visible);
         }
-        [Test] public void RecordedContactConsumedOnlyByExactModifierAndZeroDamageDoesNotBurst()
+        [Test] public void RecordedContactConsumedOnlyByExactModifierAndZeroDamageEmitsOnlyDust()
         {
             var m=Queue(-1); var point=new Vector3(23,7,4);
             visual.RecordImpact(m,new HLStoneImpact(point,Vector3.up,Vector3.zero,false));
-            Drain(); Assert.AreEqual(0,visual.PendingImpactCount); Assert.AreEqual(9,fx.LiveCount);
-            foreach(var filter in fxObject.GetComponentsInChildren<MeshFilter>()) Assert.That(Vector3.Distance(filter.transform.position,point+Vector3.up*.005f),Is.LessThan(1e-5));
+            Drain(); Assert.AreEqual(0,visual.PendingImpactCount); Assert.AreEqual(14,fx.LiveCount);
+            foreach(var filter in fxObject.GetComponentsInChildren<MeshFilter>()) Assert.That(Vector3.Distance(filter.transform.position,filter.sharedMesh.name=="HLFlatCone"?point+Vector3.up*.005f:point),Is.LessThan(1e-5));
             fx.Advance(1); var zero=Queue(0); visual.RecordImpact(zero,new HLStoneImpact(point,Vector3.up,Vector3.zero,false)); Drain();
-            Assert.AreEqual(0,visual.PendingImpactCount); Assert.AreEqual(0,fx.LiveCount);
+            Assert.AreEqual(0,visual.PendingImpactCount); Assert.AreEqual(5,fx.LiveCount);
         }
         [Test] public void ExpiryUnbindReenableAndReinitDoNotDuplicateListeners()
         {
             visual.RecordImpact(new ResourceModifier(),default); TestHelpers.InvokePrivate(visual,"LateUpdate"); Assert.AreEqual(1,visual.PendingImpactCount);
             TestHelpers.InvokePrivate(visual,"LateUpdate"); Assert.AreEqual(0,visual.PendingImpactCount);
             visual.enabled=false; TestHelpers.InvokePrivate(visual,"OnDisable"); visual.RecordImpact(new ResourceModifier(),default); Assert.AreEqual(0,visual.PendingImpactCount);
-            visual.enabled=true; visual.Initialize(health,15,fx); Queue(-1);Drain();Assert.AreEqual(9,fx.LiveCount);
+            fx.Advance(1); visual.enabled=true; visual.Initialize(health,15,fx); Queue(-1);Drain();Assert.AreEqual(14,fx.LiveCount);
         }
         [Test] public void LethalBatchCollapsesOnlyOnceAndDebrisSurvivesOwner()
         {
-            Queue(-100);Drain(); Assert.AreEqual(0,Visible); Assert.AreEqual(21,fx.LiveCount);
-            visual.Collapse(); Assert.AreEqual(21,fx.LiveCount);
-            TestHelpers.InvokePrivate(visual,"OnDestroy"); Object.DestroyImmediate(target); target=null; Assert.AreEqual(21,fx.LiveCount); fx.Advance(.81f); Assert.AreEqual(0,fx.LiveCount);
+            Queue(-100);Drain(); Assert.AreEqual(0,Visible); Assert.AreEqual(31,fx.LiveCount);
+            visual.Collapse(); Assert.AreEqual(31,fx.LiveCount);
+            TestHelpers.InvokePrivate(visual,"OnDestroy"); Object.DestroyImmediate(target); target=null; Assert.AreEqual(31,fx.LiveCount); fx.Advance(.81f); Assert.AreEqual(0,fx.LiveCount);
         }
         [Test] public void DisableOrLivingRemovalDoesNotEmitDeath()
         {visual.enabled=false;TestHelpers.InvokePrivate(visual,"OnDestroy");Object.DestroyImmediate(target);target=null;Assert.AreEqual(0,fx.LiveCount);}

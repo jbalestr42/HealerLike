@@ -23,9 +23,9 @@ namespace HealerLike.Render.Stones
             visual.AdvancePresentation(Vector3.forward,1,1);
             Assert.Greater((pivot.rotation*Vector3.up).z,0);
             visual.AdvancePresentation(Vector3.forward,0,1);
-            Assert.Less((pivot.rotation*Vector3.up).z,0);
+            Assert.Less((pivot.rotation*Vector3.up).z,-.2f);
             Assert.True(visual.BeginDelivery(1,HLDeliveryStyle.Thrown,projectile.transform,Vector3.forward*5));
-            Assert.Greater((pivot.rotation*Vector3.up).z,0);
+            Assert.Greater((pivot.rotation*Vector3.up).z,.3f);
             Assert.AreEqual(Quaternion.identity,root.transform.rotation);
             Assert.AreEqual(Quaternion.identity,pivot.parent.localRotation);
             Assert.AreEqual(Vector3.zero,root.transform.position);
@@ -80,6 +80,11 @@ namespace HealerLike.Render.Stones
             TestHelpers.InvokePrivate(visual,"LateUpdate");
             var read=typeof(HLStoneEnemyVisual).GetMethod("ReadCooldown",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance);
             Assert.AreEqual(1f,(float)read.Invoke(visual,null));
+            var poll=(System.Func<float>)System.Delegate.CreateDelegate(typeof(System.Func<float>),visual,read);
+            poll(); visual.CompleteHealthBatch();
+            long before=System.GC.GetAllocatedBytesForCurrentThread();
+            for(int i=0;i<100;i++) { poll(); visual.CompleteHealthBatch(); }
+            Assert.AreEqual(0,System.GC.GetAllocatedBytesForCurrentThread()-before);
             cooldown.SetValue(skill,.05f); Assert.AreEqual(.05f,(float)read.Invoke(visual,null));
             skill.isEnabled=false; Assert.True(float.IsNaN((float)read.Invoke(visual,null)));
             skill.isEnabled=true; TestHelpers.SetPrivateField(owner,"_isDraggable",true);

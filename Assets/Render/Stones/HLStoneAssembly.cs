@@ -11,6 +11,7 @@ namespace HealerLike.Render.Stones
             public Color BaseColor; public Transform Transform; public MeshRenderer Renderer; public HLStoneMeshCache.Lease Lease;
         }
         public readonly List<Part> Parts=new List<Part>();
+        MaterialPropertyBlock fractureBlock;
         public Bounds LocalBounds { get; private set; }
         public static readonly Color[] Palette={ new Color32(201,196,180,255),new Color32(142,147,161,255),new Color32(74,84,104,255),new Color32(199,154,75,255) };
         public void Add(Transform parent,uint seed,HLStonePart recipe,Material material)
@@ -61,7 +62,7 @@ namespace HealerLike.Render.Stones
         public void ApplyFracture(float healthFraction,uint seed)
         {
             float damage=1-Mathf.Clamp01(float.IsFinite(healthFraction)?healthFraction:1);
-            var block=new MaterialPropertyBlock();
+            var block=fractureBlock??(fractureBlock=new MaterialPropertyBlock());
             for(int i=0;i<Parts.Count;i++)
             {
                 // A seeded connected run across the cluster, leaving one boulder uncracked.

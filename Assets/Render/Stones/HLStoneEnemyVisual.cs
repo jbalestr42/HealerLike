@@ -15,12 +15,14 @@ namespace HealerLike.Render.Stones
         LookAtTarget bodyLookAtTarget;
         Transform presentation;
         HLStoneGroundShadow groundShadow;
+        HLStoneLife life;
         TargetProvider targets;
         readonly List<ASkill> skills=new List<ASkill>();
-        readonly Dictionary<System.Type,System.Reflection.PropertyInfo> cooldownProperties=new Dictionary<System.Type,System.Reflection.PropertyInfo>();
+        readonly Dictionary<ASkill,System.Func<float>> cooldownReaders=new Dictionary<ASkill,System.Func<float>>();
         readonly Dictionary<int,(Transform shard,Transform projectile,HLStoneMeshCache.Lease lease)> deliveries=new Dictionary<int,(Transform,Transform,HLStoneMeshCache.Lease)>();
         readonly List<int> endedDeliveries=new List<int>();
         float settleAge;
+        Vector3 tricklePoint;
         public int LiveDeliveryCount=>deliveries.Count;
         public bool GroundShadowEnabled { get=>groundShadowEnabled; set { groundShadowEnabled=value; if(groundShadow!=null) groundShadow.Visible=value; } }
         readonly HLStoneAssembly assembly=new HLStoneAssembly();
@@ -55,13 +57,21 @@ namespace HealerLike.Render.Stones
             if(presentation==null) { presentation=new GameObject("HLStonePresentation").transform; presentation.SetParent(bodyPivot,false); }
             presentation.localRotation=Quaternion.identity; settleAge=0;
             assembly.BuildEnemy(presentation,seed,preset,stoneMaterial,profile);
+            var vertices=assembly.Parts[0].Lease.Data.Vertices; tricklePoint=vertices[0];
+            for(int i=1;i<vertices.Length;i++) if(vertices[i].x>tricklePoint.x) tricklePoint=vertices[i];
             if(groundShadow==null) groundShadow=gameObject.AddComponent<HLStoneGroundShadow>();
             groundShadow.Configure(assembly.LocalBounds,directionToKeyLight,groundShadowEnabled);
             state.Reset(profile!=null?profile.ShedHealthFraction:.5f); collapsed=false; hitIndex=0; completedFrames=0;
+            if(life==null) life=gameObject.AddComponent<HLStoneLife>();
+            life.enabled=true; life.Configure(effects,seed,assembly.LocalBounds.extents.magnitude,false,preset==HLStonePreset.Cairn?assembly.Parts[assembly.Parts.Count-1].Transform:null);
             motion=null; sampler.Reset(); PlanarVelocity=Vector3.zero; Bind();
         }
         public void RecordImpact(ResourceModifier modifier,in HLStoneImpact impact)
-        { if(modifier!=null && bound && isActiveAndEnabled) impacts[modifier]=new ImpactRecord{Impact=impact,Frame=completedFrames}; }
+        {
+            if(modifier==null || !bound || !isActiveAndEnabled) return;
+            impacts[modifier]=new ImpactRecord{Impact=impact,Frame=completedFrames};
+            Effects()?.RecordImpact(impact.PointWS,HLStoneSeed.ForPart(seed,++hitIndex+100));
+        }
         public HLStoneImpact EstimateImpact(Vector3 queryWS,Vector3 incomingVelocityWS)
         {
             Vector3 point=transform.position+Vector3.up*.5f,normal=Vector3.up; float best=float.PositiveInfinity;
@@ -85,7 +95,11 @@ namespace HealerLike.Render.Stones
             if(modifier!=null) impacts.Remove(modifier);
             state.RecordProcessedDelta(delta);
             if(!(delta<0) || collapsed) return;
-            if(!recorded) impact=EstimateImpact(modifier?.source!=null?modifier.source.transform.position:transform.position+Vector3.up*2,Vector3.zero);
+            if(!recorded)
+            {
+                impact=EstimateImpact(modifier?.source!=null?modifier.source.transform.position:transform.position+Vector3.up*2,Vector3.zero);
+                Effects()?.RecordImpact(impact.PointWS,HLStoneSeed.ForPart(seed,++hitIndex+100));
+            }
             Effects()?.EmitHit(impact,critical,HLStoneSeed.ForPart(seed,++hitIndex+100));
         }
         void OnHealthChanged(ResourceAttribute resource)
@@ -122,6 +136,8 @@ namespace HealerLike.Render.Stones
             FollowDeliveries();
             if(!bound) return;
             CompleteHealthBatch();
+            if(life!=null && health!=null && !collapsed)
+                life.PollHealth(health.Max>0?health.Value/health.Max:1,Time.deltaTime,assembly.Parts[0].Transform.TransformPoint(tricklePoint));
             Vector3 aim=Vector3.zero;
             var currentTargets=targets!=null?targets.GetTargets():null;
             if(currentTargets!=null && currentTargets.Count>0 && currentTargets[0]!=null)
@@ -148,16 +164,17 @@ namespace HealerLike.Render.Stones
             foreach(var skill in skills)
             {
                 if(!skill.isEnabled) continue;
-                var type=skill.GetType();
-                if(!cooldownProperties.TryGetValue(type,out var property))
+                if(!cooldownReaders.TryGetValue(skill,out var reader))
                 {
-                    for(var parent=type;parent!=null;parent=parent.BaseType)
+                    System.Reflection.PropertyInfo property=null;
+                    for(var parent=skill.GetType();parent!=null;parent=parent.BaseType)
                         if(parent.IsGenericType && parent.GetGenericTypeDefinition()==typeof(ACooldownSkill<>))
                         { property=parent.GetProperty("cooldownProgress"); break; }
-                    cooldownProperties[type]=property;
+                    reader=property==null?null:(System.Func<float>)System.Delegate.CreateDelegate(typeof(System.Func<float>),skill,property.GetMethod);
+                    cooldownReaders[skill]=reader;
                 }
-                if(property==null) continue;
-                float value=(float)property.GetValue(skill);
+                if(reader==null) continue;
+                float value=reader();
                 if(float.IsFinite(value)) remaining=float.IsNaN(remaining)?Mathf.Clamp01(value):Mathf.Min(remaining,Mathf.Clamp01(value));
             }
             return remaining;
@@ -181,7 +198,7 @@ namespace HealerLike.Render.Stones
                 {
                     float anticipation=float.IsFinite(remaining)?1-Mathf.Clamp01(remaining/.3f):0;
                     Vector3 axis=bodyPivot.InverseTransformDirection(Vector3.Cross(Vector3.up,targetDirection.normalized));
-                    desired=Quaternion.AngleAxis(5-10*anticipation,axis);
+                    desired=Quaternion.AngleAxis(7-21*anticipation,axis);
                 }
             }
             presentation.localRotation=Quaternion.Slerp(presentation.localRotation,desired,1-Mathf.Exp(-8*dt));
@@ -200,7 +217,7 @@ namespace HealerLike.Render.Stones
             if(preset==HLStonePreset.Boulder)
             {
                 Vector3 direction=intendedEnd-transform.position; direction.y=0;
-                if(direction.sqrMagnitude>1e-6f) presentation.localRotation=Quaternion.AngleAxis(9,bodyPivot.InverseTransformDirection(Vector3.Cross(Vector3.up,direction.normalized)));
+                if(direction.sqrMagnitude>1e-6f) presentation.localRotation=Quaternion.AngleAxis(18,bodyPivot.InverseTransformDirection(Vector3.Cross(Vector3.up,direction.normalized)));
             }
             return true;
         }
@@ -244,9 +261,9 @@ namespace HealerLike.Render.Stones
         void Unbind()
         {
             if(bound && health!=null) { health.OnAllConsumerProcessed.RemoveListener(OnConsumersProcessed); health.OnValueChanged.RemoveListener(OnHealthChanged); }
-            ClearDeliveries(); bound=false; impacts.Clear(); sampler.Reset(); state.CompleteBatch(float.PositiveInfinity,1);
+            if(life!=null) life.enabled=false; cooldownReaders.Clear(); ClearDeliveries(); bound=false; impacts.Clear(); sampler.Reset(); state.CompleteBatch(float.PositiveInfinity,1);
         }
-        void OnEnable() => Bind();
+        void OnEnable() { if(life!=null) life.enabled=true; Bind(); }
         void OnDisable() => Unbind();
         void OnDestroy() { Unbind(); assembly.Dispose(); }
     }
