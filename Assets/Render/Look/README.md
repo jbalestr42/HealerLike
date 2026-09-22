@@ -1,7 +1,8 @@
 # HL look integration
 
 Use `HL/Look/Primitive` with `HLLook_Default.mat` (ally green, instancing enabled).
-Override only `_BaseColor` through a MaterialPropertyBlock for per-instance colours.
+Override `_BaseColor` through a MaterialPropertyBlock for per-instance colours.
+The optional `_HLNormalEdges` override controls normal-edge eligibility (below).
 The core and material input declarations live in `Assets/Render/Shaders/`.
 
 Add one HLLookController to publish the complete look at beginFrameRendering.
@@ -11,8 +12,8 @@ A conflicting controller must be disabled and re-enabled after the owner release
 ownership. `ApplyGlobals()` publishes immediately for an active owner; the static
 `UploadGlobals(in settings)` entry point is for explicit setup/tooling.
 
-T7 must add HLOutlines to each intended renderer asset. The feature is deliberately
-not installed in any renderer or scene here. Assign its serialized Edge Shader to
+The stage owns HLOutlines installation in renderer assets. All six current
+renderers include it with the screen-edge pass disabled. Assign its serialized Edge Shader to
 `Hidden/HL/Look/DepthNormalOutline` and save that reference for build retention.
 Create also resolves the shader by name when authoring the feature.
 
