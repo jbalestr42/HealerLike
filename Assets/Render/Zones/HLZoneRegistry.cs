@@ -23,7 +23,7 @@ namespace HealerLike.Render.Zones
     /// Stop consumer submissions before disabling this owner.
     /// </summary>
     [DefaultExecutionOrder(-1000)]
-    public sealed class HLZoneRegistry : MonoBehaviour
+    public sealed class HLZoneRegistry : MonoBehaviour, IHLZoneOwner
     {
         struct Entry
         {

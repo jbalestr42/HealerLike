@@ -315,5 +315,28 @@ namespace HealerLike.Render
             Assert.AreEqual(1, sink.PulseCount);
             Assert.AreEqual(HLZoneKind.Hostile, sink.LastZoneKind);
         }
+
+        sealed class RecordingZoneOwner : IHLZoneOwner
+        {
+            public int Calls;
+            public float LastSeconds;
+            public int AddPulse(HLZoneKind kind, Vector3 center, float radius, float strength, float seconds)
+            {
+                Calls++; LastSeconds = seconds; return Calls;
+            }
+        }
+
+        [Test]
+        public void ZoneOwner_DefaultsToNullAndRoundTrips()
+        {
+            var registry = new HLRenderRegistry();
+            Assert.IsNull(registry.ZoneOwner);
+            var owner = new RecordingZoneOwner();
+            registry.ZoneOwner = owner;
+            Assert.AreSame(owner, registry.ZoneOwner);
+            Assert.AreEqual(1, registry.ZoneOwner.AddPulse(HLZoneKind.Heal, Vector3.zero, 1, 1, .8f));
+            registry.ZoneOwner = null;
+            Assert.IsNull(registry.ZoneOwner);
+        }
     }
 }

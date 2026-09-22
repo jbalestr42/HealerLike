@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using HealerLike.Render.Spells;
+using HealerLike.Render.Zones;
 using UnityEngine;
 
 namespace HealerLike.Render.Stage
@@ -24,7 +26,8 @@ namespace HealerLike.Render.Stage
         public void Configure(IHLSpellVisualSink sink, Behaviour look, Behaviour zones)
         {
             if (owns) throw new InvalidOperationException("Disable bootstrap before rewiring.");
-            registry = new HLRenderRegistry { SpellSink = sink };
+            registry = new HLRenderRegistry { SpellSink = sink, ZoneOwner = zones as IHLZoneOwner };
+            spellVisualSink = sink as MonoBehaviour;
             lookController = look;
             zoneRegistry = zones;
         }
@@ -36,10 +39,13 @@ namespace HealerLike.Render.Stage
                 Debug.LogWarning("HL stage registry already has an owner.", this);
                 return;
             }
-            if (registry == null) registry = new HLRenderRegistry { SpellSink = spellVisualSink as IHLSpellVisualSink };
+            if (registry == null) registry = new HLRenderRegistry { SpellSink = spellVisualSink as IHLSpellVisualSink, ZoneOwner = zoneRegistry as IHLZoneOwner };
             HLRenderRegistry.Current = registry;
             owns = true;
             if (zoneRegistry) zoneRegistry.enabled = true;
+            // Explicit stage adapter; the sink would otherwise reach the same owner through the registry.
+            if (spellVisualSink is HLSpellVisualSink sink && zoneRegistry is HLZoneRegistry zones)
+                sink.AreaPulse = (center, radius, kind, strength) => zones.AddPulse(kind, center, radius, strength, HLSpellVisualSink.PulseSeconds);
             if (lookController) lookController.enabled = true;
             if (zoneBridge) zoneBridge.enabled = true;
             if (grassField) grassField.enabled = true;
@@ -56,6 +62,7 @@ namespace HealerLike.Render.Stage
         void OnDisable()
         {
             if (!owns) return;
+            if (spellVisualSink is HLSpellVisualSink sink) sink.AreaPulse = null;
             if (zoneBridge) zoneBridge.enabled = false;
             if (grassField) grassField.enabled = false;
             if (lookController) lookController.enabled = false;

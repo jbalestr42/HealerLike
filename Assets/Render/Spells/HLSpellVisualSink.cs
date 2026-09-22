@@ -7,9 +7,10 @@ namespace HealerLike.Render.Spells
 {
     public sealed class HLSpellVisualSink : MonoBehaviour, IHLSpellVisualSink
     {
+        public const float PulseSeconds = 0.8f;
         public HLSpellStyleTable styles;
         public Material material;
-        // Frozen HLRenderRegistry has no zone slot. Stage injects the zone owner's AddPulse adapter here.
+        // Injected adapter wins; when null, PulseArea falls back to HLRenderRegistry.Current.ZoneOwner (contract v2).
         public Action<Vector3, float, HLZoneKind, float> AreaPulse { get; set; }
         readonly Dictionary<(GameObject, ABuffHandlerFactory), GameObject> _statuses = new Dictionary<(GameObject, ABuffHandlerFactory), GameObject>();
         readonly List<GameObject> _impacts = new List<GameObject>();
@@ -83,7 +84,9 @@ namespace HealerLike.Render.Spells
         }
         public void PulseArea(Vector3 center,float radius,HLZoneKind kind,float strength)
         {
-            if(HLZonePacker.TryCreate(center,radius,kind,strength,0,out var zone)) AreaPulse?.Invoke(center,radius,kind,zone.strength);
+            if(!HLZonePacker.TryCreate(center,radius,kind,strength,0,out var zone)) return;
+            if(AreaPulse!=null) AreaPulse(center,radius,kind,zone.strength);
+            else HLRenderRegistry.Current?.ZoneOwner?.AddPulse(kind,center,radius,zone.strength,PulseSeconds);
         }
         public HLSpellEffect ShowLink(Vector3 start, Vector3 end)
         {

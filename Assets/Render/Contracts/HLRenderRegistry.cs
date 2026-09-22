@@ -22,6 +22,12 @@ namespace HealerLike.Render
         /// <summary>The registered spell visual sink, or null. Setting null silences spell visuals.</summary>
         public IHLSpellVisualSink SpellSink { get; set; }
 
+        /// <summary>
+        /// Contract v2: the cosmetic zone owner, or null. Setting null silences area pulses routed
+        /// through the registry. The stage bootstrap assigns it alongside <see cref="SpellSink"/>.
+        /// </summary>
+        public IHLZoneOwner ZoneOwner { get; set; }
+
         readonly Dictionary<GameObject, List<IHLHealVisualSink>> _healSinks =
             new Dictionary<GameObject, List<IHLHealVisualSink>>();
 

@@ -38,6 +38,25 @@ namespace HealerLike.Render.Stage
             TestHelpers.InvokePrivate(bootstrap, "OnEnable");
             Assert.That(HLRenderRegistry.Current.SpellSink, Is.SameAs(fake));
         }
+        [Test] public void BindsZoneOwnerAndSinkAreaPulseThenClearsOnDisable()
+        {
+            var bootstrap = root.AddComponent<HLRenderBootstrap>();
+            var sink = root.AddComponent<HealerLike.Render.Spells.HLSpellVisualSink>();
+            var zones = root.AddComponent<HLZoneRegistry>();
+            var upload = new HLZoneFakeUpload(); zones.Initialize(upload);
+            try
+            {
+                bootstrap.Configure(sink, null, zones);
+                TestHelpers.InvokePrivate(bootstrap, "OnEnable");
+                Assert.That(HLRenderRegistry.Current.ZoneOwner, Is.SameAs(zones));
+                Assert.That(sink.AreaPulse, Is.Not.Null);
+                sink.PulseArea(Vector3.zero, 2, HLZoneKind.Hostile, 1);
+                Assert.That(zones.LiveCount, Is.EqualTo(1));
+                TestHelpers.InvokePrivate(bootstrap, "OnDisable");
+                Assert.That(sink.AreaPulse, Is.Null);
+            }
+            finally { zones.Release(); }
+        }
         [Test] public void DuplicateCannotReplaceOrClearOwner()
         {
             var first = root.AddComponent<HLRenderBootstrap>(); TestHelpers.InvokePrivate(first, "OnEnable");
