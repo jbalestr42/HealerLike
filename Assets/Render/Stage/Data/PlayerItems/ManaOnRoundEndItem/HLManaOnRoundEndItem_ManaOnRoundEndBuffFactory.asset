@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfc9149460a1e2941869f72f776d8cfe, type: 3}
+  m_Name: ManaOnRoundEndItem_ManaOnRoundEndBuffFactory
+  m_EditorClassIdentifier:
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes:
+    ReferencedUnityObjects: []
+    SerializedBytesString:
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  uniqueID: 63b0be15-1fe9-408f-9d51-2bf7380cacb3
+  data:
+    consumerFactory: {fileID: 11400000, guid: a4bb263492a74f1d9b84767efcb4783b, type: 2}

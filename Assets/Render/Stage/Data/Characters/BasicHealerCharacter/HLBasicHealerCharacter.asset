@@ -1,0 +1,94 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f9c5cbcc3bade640b655d9fe3fc6912, type: 3}
+  m_Name: BasicHealerCharacter
+  m_EditorClassIdentifier:
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes:
+    ReferencedUnityObjects: []
+    SerializedBytesString:
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: attributes
+      Entry: 7
+      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, Assembly-CSharp],[System.Single,
+        mscorlib]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, Assembly-CSharp]],
+        mscorlib
+    - Name:
+      Entry: 12
+      Data: 0
+    - Name:
+      Entry: 13
+      Data:
+    - Name:
+      Entry: 8
+      Data:
+    - Name:
+      Entry: 12
+      Data: 2
+    - Name:
+      Entry: 7
+      Data:
+    - Name: $k
+      Entry: 3
+      Data: 10
+    - Name: $v
+      Entry: 4
+      Data: 20
+    - Name:
+      Entry: 8
+      Data:
+    - Name:
+      Entry: 7
+      Data:
+    - Name: $k
+      Entry: 3
+      Data: 9
+    - Name: $v
+      Entry: 4
+      Data: 100
+    - Name:
+      Entry: 8
+      Data:
+    - Name:
+      Entry: 13
+      Data:
+    - Name:
+      Entry: 8
+      Data:
+  model: {fileID: 0}
+  title: BasicHealer
+  text:
+  passives: []
+  entities:
+  - {fileID: 11400000, guid: d14dd1ac4a1147da88993eb63feb574f, type: 2}
+  - {fileID: 11400000, guid: d14dd1ac4a1147da88993eb63feb574f, type: 2}
+  - {fileID: 11400000, guid: 2015ede6f1244efd8b99810282a41553, type: 2}
+  - {fileID: 11400000, guid: 6266d661a42a4ddcb51c759ad44cce00, type: 2}
+  - {fileID: 11400000, guid: 91db068da48045789b33a0714359fbeb, type: 2}
+  - {fileID: 11400000, guid: 758095dfdeae407ea05c7dd4417f7d53, type: 2}
+  - {fileID: 11400000, guid: 7e399bddde3a4a3cb7b06f73a148bb30, type: 2}
+  - {fileID: 11400000, guid: 591b9bfd32204139b65297df18e51b70, type: 2}
+  - {fileID: 11400000, guid: cce730666868433a8588a4b1de1bbb2f, type: 2}
+  - {fileID: 11400000, guid: 7c110d1a830e4038b77dbdd05208c65a, type: 2}
+  skills:
+  - {fileID: 11400000, guid: 434c721aeb2c4475a5ff8a6a94846e59, type: 2}
+  - {fileID: 11400000, guid: b37cbbc76a084892b3979d4178415843, type: 2}
+  - {fileID: 11400000, guid: 4e3de2518b9e4b798c0fa5bce3895bc6, type: 2}
+  - {fileID: 11400000, guid: 879112d5002841d29391b831a489243e, type: 2}
+  - {fileID: 11400000, guid: 8bb9ab3abf254e83b169e5d9add22833, type: 2}

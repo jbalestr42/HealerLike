@@ -1,0 +1,170 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a6fcb842b0335b4aaffac25a7f9d89f, type: 3}
+  m_Name: GameData
+  m_EditorClassIdentifier:
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes:
+    ReferencedUnityObjects: []
+    SerializedBytesString:
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: attributeUpgradeData
+      Entry: 7
+      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, Assembly-CSharp],[GameData+AttributeUpgradeData,
+        Assembly-CSharp]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, Assembly-CSharp]],
+        mscorlib
+    - Name:
+      Entry: 12
+      Data: 0
+    - Name:
+      Entry: 13
+      Data:
+    - Name:
+      Entry: 8
+      Data:
+    - Name:
+      Entry: 12
+      Data: 3
+    - Name:
+      Entry: 7
+      Data:
+    - Name: $k
+      Entry: 3
+      Data: 2
+    - Name: $v
+      Entry: 7
+      Data: GameData+AttributeUpgradeData, Assembly-CSharp
+    - Name: startingUpgradeCost
+      Entry: 3
+      Data: 10
+    - Name: costIncreaseFactor
+      Entry: 4
+      Data: 4
+    - Name: bonusPerUpgrade
+      Entry: 4
+      Data: 5
+    - Name:
+      Entry: 8
+      Data:
+    - Name:
+      Entry: 8
+      Data:
+    - Name:
+      Entry: 7
+      Data:
+    - Name: $k
+      Entry: 3
+      Data: 3
+    - Name: $v
+      Entry: 7
+      Data: GameData+AttributeUpgradeData, Assembly-CSharp
+    - Name: startingUpgradeCost
+      Entry: 3
+      Data: 10
+    - Name: costIncreaseFactor
+      Entry: 4
+      Data: 4
+    - Name: bonusPerUpgrade
+      Entry: 4
+      Data: 0.1
+    - Name:
+      Entry: 8
+      Data:
+    - Name:
+      Entry: 8
+      Data:
+    - Name:
+      Entry: 7
+      Data:
+    - Name: $k
+      Entry: 3
+      Data: 1
+    - Name: $v
+      Entry: 7
+      Data: GameData+AttributeUpgradeData, Assembly-CSharp
+    - Name: startingUpgradeCost
+      Entry: 3
+      Data: 10
+    - Name: costIncreaseFactor
+      Entry: 4
+      Data: 4
+    - Name: bonusPerUpgrade
+      Entry: 4
+      Data: 0.1
+    - Name:
+      Entry: 8
+      Data:
+    - Name:
+      Entry: 8
+      Data:
+    - Name:
+      Entry: 13
+      Data:
+    - Name:
+      Entry: 8
+      Data:
+    - Name: wavePerRound
+      Entry: 7
+      Data: 2|System.Collections.Generic.List`1[[GameData+WavePerRound, Assembly-CSharp]],
+        mscorlib
+    - Name:
+      Entry: 12
+      Data: 0
+    - Name:
+      Entry: 13
+      Data:
+    - Name:
+      Entry: 8
+      Data:
+  gold: 150
+  enemies:
+  - {fileID: 11400000, guid: 85a1a69f23e87f04abfe85cc290d6463, type: 2}
+  - {fileID: 11400000, guid: 5790ab3541f0a5042a1cb97f10a65ae2, type: 2}
+  - {fileID: 11400000, guid: 2b9c8bcb337008244bcae1db222649a3, type: 2}
+  - {fileID: 11400000, guid: a21eb85731570c145965aae25a77aeb7, type: 2}
+  - {fileID: 11400000, guid: 6983ce313cb34a64a995039290773c79, type: 2}
+  - {fileID: 11400000, guid: 74810650e31df0a48a6ea3c6f66e98ce, type: 2}
+  - {fileID: 11400000, guid: 4ddbea452d29f2246ab3ea24ec77b722, type: 2}
+  towers:
+  - {fileID: 11400000, guid: 808dd1399f7c9b34da64af01ea46f9b8, type: 2}
+  - {fileID: 11400000, guid: 167d63df2f0e3b94b801bef7f5a2c222, type: 2}
+  - {fileID: 11400000, guid: 23ef9ec78e507a54da86027806f17f3e, type: 2}
+  - {fileID: 11400000, guid: f3d0ea733c223214b953c86315248c56, type: 2}
+  - {fileID: 11400000, guid: 48daac76efb70b2408093ac3f0f5c6d5, type: 2}
+  - {fileID: 11400000, guid: 135223c51d96750418e5b372d25ec344, type: 2}
+  - {fileID: 11400000, guid: fb76ad3259673304e8f1796f2d3992ce, type: 2}
+  - {fileID: 11400000, guid: c79de1eb3ce19cf4da3be6f0df024341, type: 2}
+  entities: []
+  characters:
+  - {fileID: 11400000, guid: 65061c5686634f6faf7668fe0e627a4d, type: 2}
+  - {fileID: 11400000, guid: 2579af2af41f4033bdf299da05d19e9f, type: 2}
+  items:
+  - {fileID: 11400000, guid: 981f707cc21684046903704c33211566, type: 2}
+  - {fileID: 11400000, guid: 710aecc6d4324dadb0857823134164b0, type: 2}
+  - {fileID: 11400000, guid: d3d8d3a79a9b47b1a4e3e07152b3f3d6, type: 2}
+  - {fileID: 11400000, guid: 4e7d0edead0b4d01ad0ea79998af008d, type: 2}
+  - {fileID: 11400000, guid: 0e6495e2f3db4c44a0fccecc66e1fcbd, type: 2}
+  - {fileID: 11400000, guid: 2d1cfdb1138740b48d0b2d951c798ac0, type: 2}
+  - {fileID: 11400000, guid: 59881af3672a4b43aaf44f2c39919a4a, type: 2}
+  - {fileID: 11400000, guid: 0f7c8083b37e470b9d478a61a7ea71a3, type: 2}
+  - {fileID: 11400000, guid: 79b506fe04094ea595e146b288798e57, type: 2}
+  - {fileID: 11400000, guid: fc28c9e3c1364782a7690eda9cb27bfa, type: 2}
+  - {fileID: 11400000, guid: 0a97beb265ec432db45da927ab72c16d, type: 2}
+  - {fileID: 11400000, guid: c3c6475999b2467f9c6466c357cbc776, type: 2}
+  - {fileID: 11400000, guid: 1091197316244f5d89f1ae2c99a6a229, type: 2}

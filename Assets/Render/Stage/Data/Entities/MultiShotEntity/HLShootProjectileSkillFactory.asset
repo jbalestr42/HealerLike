@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86578b487da7fb240a18670cd8bed782, type: 3}
+  m_Name: ShootProjectileSkillFactory
+  m_EditorClassIdentifier:
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes:
+    ReferencedUnityObjects: []
+    SerializedBytesString:
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  data:
+    onSkillTriggerFactory: []
+    projectiles:
+    - projectilePrefab: {fileID: 4288409938468764776, guid: 4dfd80bb3cb64c609e0bd82bf0e7aa11, type: 3}
+      onHitConsumer:
+      - {fileID: 11400000, guid: 8a4e575ed00143f28ae922f1db0828da, type: 2}
+      numberOfProjectileToShootPerTarget: 1
