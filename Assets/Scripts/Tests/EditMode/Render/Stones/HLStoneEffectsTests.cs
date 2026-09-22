@@ -4,6 +4,25 @@ namespace HealerLike.Render.Stones
 {
     public class HLStoneEffectsTests
     {
+        [Test] public void DustRisesFadesExpiresAndReusesWithoutAllocating()
+        {
+            var go=new GameObject("HLDustTest"); var fx=go.AddComponent<HLStoneEffects>();
+            try
+            {
+                fx.EmitDust(Vector3.zero,1); Assert.AreEqual(5,fx.LiveCount);
+                var renderer=go.GetComponentInChildren<MeshRenderer>(); var block=new MaterialPropertyBlock();
+                fx.Advance(.1f); renderer.GetPropertyBlock(block); float alpha=block.GetColor("_BaseColor").a;
+                Assert.Greater(renderer.transform.position.y,0);
+                fx.Advance(.2f); renderer.GetPropertyBlock(block); Assert.Less(block.GetColor("_BaseColor").a,alpha);
+                fx.Advance(1); Assert.AreEqual(0,fx.LiveCount);
+                fx.EmitDust(Vector3.zero,1); fx.Advance(.01f);
+                long before=System.GC.GetAllocatedBytesForCurrentThread();
+                for(int i=0;i<10;i++) { fx.Advance(1); fx.EmitDust(Vector3.zero,1); fx.Advance(.01f); }
+                long allocated=System.GC.GetAllocatedBytesForCurrentThread()-before;
+                Assert.AreEqual(0,allocated); Assert.AreEqual(5,go.transform.childCount);
+            }
+            finally { TestHelpers.InvokePrivate(fx,"OnDestroy"); Object.DestroyImmediate(go); }
+        }
         [TestCase(false)] [TestCase(true)]
         public void DisableClearsCopiesSlotsAndRejectsEveryEmission(bool deactivateObject)
         {
