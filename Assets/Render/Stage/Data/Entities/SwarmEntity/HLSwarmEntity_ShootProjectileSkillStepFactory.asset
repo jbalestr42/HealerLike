@@ -11,19 +11,19 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7cc78a7da60785349b9588854a55a5f6, type: 3}
   m_Name: SwarmEntity_ShootProjectileSkillStepFactory
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   serializationData:
     SerializedFormat: 2
-    SerializedBytes: 
+    SerializedBytes:
     ReferencedUnityObjects: []
-    SerializedBytesString: 
+    SerializedBytesString:
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
   data:
     projectiles:
-    - projectilePrefab: {fileID: 8152126888548667609, guid: d0dca8bd3587443dbf4ee3e0d6b3bff2, type: 3}
+    - projectilePrefab: {fileID: 3375512896400303741, guid: d0dca8bd3587443dbf4ee3e0d6b3bff2, type: 3}
       onHitConsumer:
       - {fileID: 11400000, guid: d13f03216d624780acc99fb33ebe07e6, type: 2}
       numberOfProjectileToShootPerTarget: 1

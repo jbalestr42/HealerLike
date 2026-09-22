@@ -9,7 +9,7 @@ namespace HealerLike.Render.Stage
 {
     // Opens the stage scenes, and builds the render-owned menu copy whose Start loads the stage instead of Main.
     // Julien's MenuScene (MainMenu.StartGame -> SceneManager.LoadScene("Main")) and Build Settings are never modified.
-    // Way back: the stage's GameOver restart button calls SceneManager.LoadScene("MenuScene"), i.e. Julien's menu (in Build Settings), not this copy.
+    // The stage game-over prefab returns here through HLStageSceneLoader.LoadMenu.
     public static class HLStageMenu
     {
         const string SourceMenu = "Assets/Scenes/MenuScene.unity";
@@ -50,6 +50,17 @@ namespace HealerLike.Render.Stage
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, MenuPath);
             AssetDatabase.Refresh();
+        }
+        [MenuItem("HealerLike/Render/Build Standalone Preview")]
+        public static void BuildPlayer()
+        {
+            string output=System.Environment.GetEnvironmentVariable("HL_PLAYER_OUTPUT") ?? "/tmp/HealerLikeRender.app";
+            var result=BuildPipeline.BuildPlayer(new BuildPlayerOptions {
+                scenes=new[]{MenuPath,HLStageBuilder.ScenePath}, locationPathName=output,
+                target=BuildTarget.StandaloneOSX, options=BuildOptions.Development });
+            Debug.Log($"HL player build: {result.summary.result}, errors={result.summary.totalErrors}, output={output}");
+            if(result.summary.result!=UnityEditor.Build.Reporting.BuildResult.Succeeded)
+                throw new InvalidOperationException("Render preview player build failed");
         }
         // Julien's Start button: GameObject "StartGame" whose persistent onClick calls MainMenu.StartGame.
         static bool IsStart(UnityEngine.UI.Button button)

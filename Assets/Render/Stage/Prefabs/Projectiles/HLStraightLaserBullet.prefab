@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &2712097753526733413
+--- !u!1001 &2263122655822816717
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -54,7 +54,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3913158666709983660, guid: 27fe66d68fc09f4498b6274a9509a0a6, type: 3}
       propertyPath: serializationData.Prefab
-      value: 
+      value:
       objectReference: {fileID: 3913158666709983660, guid: 27fe66d68fc09f4498b6274a9509a0a6, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -62,71 +62,71 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1985067714463758, guid: 27fe66d68fc09f4498b6274a9509a0a6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4208556083011165361}
+      addedObject: {fileID: 1339216310449147446}
     - targetCorrespondingSourceObject: {fileID: 1985067714463758, guid: 27fe66d68fc09f4498b6274a9509a0a6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4175111978098726948}
+      addedObject: {fileID: 6445290879236429676}
     - targetCorrespondingSourceObject: {fileID: 1985067714463758, guid: 27fe66d68fc09f4498b6274a9509a0a6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3762125488958277136}
+      addedObject: {fileID: 5623676327821587098}
     - targetCorrespondingSourceObject: {fileID: 1985067714463758, guid: 27fe66d68fc09f4498b6274a9509a0a6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2869380249941075524}
+      addedObject: {fileID: 5801218452348134585}
   m_SourcePrefab: {fileID: 100100000, guid: 27fe66d68fc09f4498b6274a9509a0a6, type: 3}
---- !u!1 &2712367509446673003 stripped
+--- !u!1 &2265090126269705667 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1985067714463758, guid: 27fe66d68fc09f4498b6274a9509a0a6, type: 3}
-  m_PrefabInstance: {fileID: 2712097753526733413}
+  m_PrefabInstance: {fileID: 2263122655822816717}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4208556083011165361
+--- !u!114 &1339216310449147446
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2712367509446673003}
+  m_GameObject: {fileID: 2265090126269705667}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 88c2ca8cf908f497296bf92110ed7d8e, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.HLProjectileVisualObserver
   presentation: 0
   deliveryStyle: 2
   preserveContactPath: 0
---- !u!114 &4175111978098726948
+--- !u!114 &6445290879236429676
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2712367509446673003}
+  m_GameObject: {fileID: 2265090126269705667}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0c8d48ce7f4d64b2191ff8031b63299a, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.HLStoneProjectileImpactBridge
---- !u!114 &3762125488958277136
+--- !u!114 &5623676327821587098
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2712367509446673003}
+  m_GameObject: {fileID: 2265090126269705667}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dcdfc54c6a52f4f45a7e8e26ed5a3bf7, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLLaunchWave
   _field: {fileID: 0}
---- !u!114 &2869380249941075524
+--- !u!114 &5801218452348134585
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2712367509446673003}
+  m_GameObject: {fileID: 2265090126269705667}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bc93387ec41ed49f39fe46835329f00f, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageLaunchGust

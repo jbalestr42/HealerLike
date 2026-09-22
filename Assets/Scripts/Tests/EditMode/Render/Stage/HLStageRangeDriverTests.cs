@@ -37,7 +37,18 @@ namespace HealerLike.Render.Stage
             driver.Apply(new List<HLRangePreview> { a, b });
             Assert.IsTrue(a.ObservePointer); Assert.IsTrue(b.ObservePointer);
         }
-            [Test] public void TickRescansOnlyWhenDueOrStale()
+        [Test] public void DisabledPreviewDoesNotForceAScanEveryFrame()
+        {
+            a.enabled=false; driver.Tick(0); int scans=driver.Scans;
+            driver.Tick(.05f); driver.Tick(.1f);
+            Assert.AreEqual(scans,driver.Scans); Assert.IsFalse(new List<HLRangePreview>(driver.Cached).Contains(a));
+        }
+        [Test] public void HiddenDisablesHoverAndPointerRestoresIt()
+        {
+            driver.Mode=HLStageRangeDriver.PreviewMode.Hidden; driver.Apply(new[]{a,b}); Assert.IsFalse(a.ObserveHover);
+            driver.Mode=HLStageRangeDriver.PreviewMode.Pointer; driver.Apply(new[]{a,b}); Assert.IsTrue(a.ObserveHover);
+        }
+        [Test] public void TickRescansOnlyWhenDueOrStale()
         {
             driver.Mode = HLStageRangeDriver.PreviewMode.Featured;
             driver.Tick(0);

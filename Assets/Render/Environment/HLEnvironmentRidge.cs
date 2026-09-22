@@ -43,6 +43,7 @@ namespace HealerLike.Render.Environment
         readonly List<Mesh> ownedMeshes = new List<Mesh>();
         List<HLRidgeItem> items = new List<HLRidgeItem>();
         Transform root;
+        bool retained;
         MaterialPropertyBlock properties;
 
         public IReadOnlyList<HLRidgeItem> Items => items;
@@ -108,6 +109,7 @@ namespace HealerLike.Render.Environment
         public void Build(Vector3 cameraPosition)
         {
             Clear();
+            HLPrimitiveMeshes.Retain(); retained=true;
             items = Layout(cameraPosition, fogStart, fogEnd, fogBands, grid, groundY, seed);
             root = new GameObject("HLRidgeItems").transform; root.SetParent(transform, false);
             properties = new MaterialPropertyBlock();
@@ -119,7 +121,10 @@ namespace HealerLike.Render.Environment
             if (root) Dispose(root.gameObject); root = null;
             foreach (var mesh in ownedMeshes) Dispose(mesh);
             ownedMeshes.Clear();
+            if(retained) { HLPrimitiveMeshes.Release(); retained=false; }
         }
+        void OnEnable() { if(root) root.gameObject.SetActive(true); }
+        void OnDisable() { if(root) root.gameObject.SetActive(false); }
         void OnDestroy() => Clear();
         static void Dispose(Object value) { if (Application.isPlaying) Destroy(value); else DestroyImmediate(value); }
 

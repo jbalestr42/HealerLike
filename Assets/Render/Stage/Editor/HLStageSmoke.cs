@@ -57,6 +57,7 @@ namespace HealerLike.Render.Stage
             }
             if(change==PlayModeStateChange.EnteredEditMode)
             {
+                Unsubscribe();
                 int code=SessionState.GetInt(Key+"Code",1);
                 SessionState.SetBool(Key,false); EditorApplication.Exit(code);
             }
@@ -79,11 +80,11 @@ namespace HealerLike.Render.Stage
                 else if(now-started>10) Finish(false,"no GameView/startGameButton in the stage scene");
             }
             RepaintGameView();
-            // Round 3 has started its battle and is still running: a pass once the grace expires, or just before the hard deadline.
+            // An unfinished third round is a failure even after its grace period.
             if(round3Battle>0 && state==AscensionGameType.State.OnGoingBattle && (now-round3Battle>Round3Grace || now>deadline-15))
             {
                 LogRound(actedRound,true);
-                Finish(exceptions==0,$"round {actedRound} still running after {now-round3Battle:F0}s");
+                Finish(false,$"round {actedRound} incomplete after {now-round3Battle:F0}s");
             }
         }
         // The HUD's own x3 speed button (TimeManager); a direct timeScale only if that button has no effect in this scene.
@@ -233,6 +234,7 @@ namespace HealerLike.Render.Stage
         static void Finish(bool pass, string reason)
         {
             if(finished) return;
+            pass &= roundsDone>=Rounds;
             finished=true; Unsubscribe();
             foreach(var error in errors) Debug.Log("HL smoke error: "+error);
             Debug.Log($"HL smoke result: {(pass?"PASS":"FAIL")} rounds={roundsDone} exceptions={exceptions}{(reason!=null?" reason="+reason:"")}");

@@ -11,16 +11,16 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 52d226a2e248a77499ed332b6aa05f48, type: 3}
   m_Name: AreaOfEffectProjectileBehaviourFactory
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   serializationData:
     SerializedFormat: 2
-    SerializedBytes: 
+    SerializedBytes:
     ReferencedUnityObjects: []
-    SerializedBytesString: 
+    SerializedBytesString:
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
   data:
-    areaOfEffectPrefab: {fileID: 4398770771196310194, guid: 8f23ad8bf9aa4d7e8146d1682ee58a54, type: 3}
+    areaOfEffectPrefab: {fileID: 1400459888338658389, guid: 8f23ad8bf9aa4d7e8146d1682ee58a54, type: 3}
     radius: 1
