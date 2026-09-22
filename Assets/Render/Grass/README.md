@@ -41,7 +41,7 @@ Generate call is made.
 The two opaque indirect draws are exclusive strip/cone ID lists. A third small draw
 handles rings: fixed 64 instances read the same global snapshot, with degenerate
 vertices for unused/non-Heal-or-Range slots. This avoids another mutable CPU zone snapshot,
-an ID map, or GPU readback. Ring width is 0.025 (clamped for small radii), surface
+an ID map, or GPU readback. Ring width is 0.012 (clamped for small radii), surface
 lift 0.020, strength/onset controls opacity, and hostile influence suppresses the ring.
 The clear band lowers non-hostile grass to 0.005 at full strength and smoothly restores
 it outside the band. Ring white is an albedo evaluated by the shared look, not emission.
@@ -94,7 +94,7 @@ along the heading stored in the reserved lane. See Zones/README.md for the wire 
 TriggerGust(Vector3 towardTarget) doubles the authored wind amplitude for 0.5 scaled seconds.
 HLLaunchWave calls it from Projectile.Init; latest launch wins. Wind returns to its authored
 heading/amplitude afterward. These elapsed times are cosmetic envelopes of simulation events,
-not invented cooldown or cast state. Existing ambient wind remains unchanged between launches.
+not invented cooldown or cast state. Ambient wind combines the existing gusts with a broad, slow 0.05 Hz flow between launches.
 
 ## Measured stock budget (2026-09-22)
 
@@ -112,3 +112,22 @@ The stock capped 98,304 run averaged **8.103 ms** (p99 **11.104 ms**); the
 non-monotonic results reflect workload/scheduling variability, not evidence that
 more blades are cheaper. The 65,536 harness average/p95/p99 were
 **11.695 / 16.273 / 73.783 ms**; harness and stage p99 clocks differ.
+
+## Beauty grass
+
+Static 32-byte seeds now group ordinary cell quotas into clumps of 3–7 blades, sharing
+an exact root and phase/rest heading, with a small yaw fan. Clump height is 0.6–1.4
+of a 0.30 m base; outside fan blades are up to 4.8% shorter. Budgets assigning fewer
+than three blades to a cell retain their exact quota. Seeded hue blocks span 2–4
+cells and travel in the existing seed W lane; no texture or extra buffer is used.
+Tips turn their shading normals toward the key light; illumination and jade/lime
+albedo still pass through HLEvaluateSurface. The heal ring is now 0.012 m wide,
+with a narrower grass clearance band. See BEAUTY-REPORT.md for verification and
+loaded-machine timings.
+
+Stage attaches HLTrampleZone to each stone-clump and creature root; Radius is the
+outer world-space footprint (include a small visible margin). It follows the root,
+flattens the core to 0.012 m with a feathered edge, and suppresses hostile cones in
+the core. It shares the registry's 64 slots and disappears on disable/destruction.
+No obstacle search is performed by grass. Ambient wind reads the existing scaled
+clock; trample reads the registered transform. Gameplay occupancy is not inferred.

@@ -85,3 +85,13 @@ They validate registry ordering, capacity, stale handles, fade and teardown orde
 producer lifecycle/data behavior. Batch compilation validates Unity API usage. Metal buffer
 layout/readback, actual grass/ring draws, gizmo appearance and pointer interaction require
 stage integration and visual verification.
+
+## Beauty additive kind
+
+`HLZoneKind.Trample = 6` is an authored obstacle footprint. HLTrampleZone polls its
+own root transform and maintains one registration with Radius (world units) and
+Strength. Stage must attach it to stone clumps and creature roots. Refresh, disable,
+destruction, owner recreation and invalid values use the same handle lifecycle as
+other producers. No new buffer fields, capacity change or gameplay writes. The
+reserved lane stays zero. Trample takes priority over hostile cones in its core;
+heal cannot raise the flattened core. Overflow still publishes the first 64 zones.

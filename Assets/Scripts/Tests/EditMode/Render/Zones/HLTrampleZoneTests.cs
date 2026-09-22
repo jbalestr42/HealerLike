@@ -24,6 +24,21 @@ namespace HealerLike.Render.Zones
             }
             finally { Object.DestroyImmediate(obstacle); Object.DestroyImmediate(root); }
         }
+        [Test] public void SteadyRefreshAllocatesNoManagedBytes()
+        {
+            var root = new GameObject("zones"); var obstacle = new GameObject("obstacle");
+            try
+            {
+                var registry = root.AddComponent<HLZoneRegistry>(); registry.Initialize(new HLZoneFakeUpload());
+                var zone = obstacle.AddComponent<HLTrampleZone>();
+                for (int i = 0; i < 100; i++) zone.Refresh();
+                long before = System.GC.GetAllocatedBytesForCurrentThread();
+                for (int i = 0; i < 1000; i++) zone.Refresh();
+                long allocated = System.GC.GetAllocatedBytesForCurrentThread() - before;
+                Assert.AreEqual(0, allocated);
+            }
+            finally { Object.DestroyImmediate(obstacle); Object.DestroyImmediate(root); }
+        }
         [Test] public void ReacquiresRegistryAfterOwnerRecreation()
         {
             var root = new GameObject("zones"); var obstacle = new GameObject("obstacle");
