@@ -4,6 +4,52 @@ namespace HealerLike.Render.Stones
 {
     public class HLStoneEffectsTests
     {
+        [TestCase(false)] [TestCase(true)]
+        public void DisableClearsCopiesSlotsAndRejectsEveryEmission(bool deactivateObject)
+        {
+            var go=new GameObject("HLDisableEffects"); var fx=go.AddComponent<HLStoneEffects>();
+            var source=new GameObject("HLSourceVisual"); var visual=source.AddComponent<HLStoneEnemyVisual>();
+            var mesh=HLStoneMesh.CreateMesh(1,HLStonePresets.Boulder);
+            var other=new GameObject("HLOtherEffects"); var second=other.AddComponent<HLStoneEffects>();
+            int baseline=HLStoneEffects.GlobalLiveCount;
+            try
+            {
+                visual.Initialize(null,1,fx);
+                second.EmitThrownContact(Vector3.zero,1); int otherCount=second.LiveCount;
+                fx.EmitDetachedPart(mesh,null,Matrix4x4.identity,Vector3.zero,0,1);
+                var copy=go.GetComponentInChildren<MeshFilter>().sharedMesh;
+                fx.EmitThrownContact(Vector3.zero,1);
+                if(deactivateObject) go.SetActive(false); else fx.enabled=false;
+                TestHelpers.InvokePrivate(fx,"OnDisable");
+                Assert.AreEqual(0,fx.LiveCount); Assert.IsTrue(copy==null);
+                Assert.AreEqual(baseline+otherCount,HLStoneEffects.GlobalLiveCount);
+                foreach(var filter in go.GetComponentsInChildren<MeshFilter>(true))
+                { Assert.IsFalse(filter.gameObject.activeSelf); Assert.IsNull(filter.sharedMesh); }
+                fx.EmitHit(default,false,1); fx.EmitThrownContact(Vector3.zero,1);
+                fx.EmitDetachedPart(mesh,null,Matrix4x4.identity,Vector3.zero,0,1); fx.CollapseOnce(visual,1);
+                Assert.AreEqual(0,fx.LiveCount); Assert.IsTrue(visual.Parts[0].Transform.gameObject.activeSelf);
+                Assert.IsTrue(visual.TryBeginCollapse(),"Inactive effects must not consume collapse state");
+                int pooled=go.transform.childCount;
+                if(deactivateObject) go.SetActive(true); else fx.enabled=true;
+                fx.EmitThrownContact(Vector3.zero,1); Assert.Greater(fx.LiveCount,0);
+                Assert.AreEqual(pooled,go.transform.childCount);
+                TestHelpers.InvokePrivate(fx,"OnDestroy"); Object.DestroyImmediate(go); Assert.AreEqual(baseline+otherCount,HLStoneEffects.GlobalLiveCount);
+            }
+            finally { if(fx!=null) TestHelpers.InvokePrivate(fx,"OnDestroy"); TestHelpers.InvokePrivate(second,"OnDestroy"); Object.DestroyImmediate(go); Object.DestroyImmediate(source); Object.DestroyImmediate(other); Object.DestroyImmediate(mesh); }
+            Assert.AreEqual(baseline,HLStoneEffects.GlobalLiveCount);
+        }
+        [Test] public void SceneLookupPreservesDisabledOwnerWithoutSpawning()
+        {
+            var fx=HLStoneEffects.ForScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(),null);
+            try
+            {
+                fx.enabled=false; TestHelpers.InvokePrivate(fx,"OnDisable");
+                Assert.AreSame(fx,HLStoneEffects.ForScene(fx.gameObject.scene,null));
+                fx.EmitThrownContact(Vector3.zero,1); Assert.AreEqual(0,fx.LiveCount);
+                Assert.AreEqual(0,fx.transform.childCount);
+            }
+            finally { TestHelpers.InvokePrivate(fx,"OnDestroy"); Object.DestroyImmediate(fx.gameObject); }
+        }
         [Test] public void HitCountsGlobalCapAndLifetime()
         {
             var go=new GameObject("HLEffectsTest"); var fx=go.AddComponent<HLStoneEffects>();

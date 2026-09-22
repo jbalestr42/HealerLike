@@ -4,7 +4,7 @@ T5 assets are isolated under this folder. Assign the two model variants to the c
 
 Source asset limitation: the original Grid prefab’s first generator references missing script GUID `51e649e13e54af44aaa511b582e95fc6`. The render variant explicitly substitutes a basic `GridGeneratorSystem` with the same min/max/walkability values in that slot. Its prefab GUID `356c856d27b224948a6a15287e83110a` is also missing, so that slot uses `HLStoneGridPlaceholder`, an empty nonblocking prop. This keeps basic cell selection operational without inventing an obstruction on a walkable cell. The missing implementation cannot be recovered from this clone, so exact behavior of that first slot cannot be verified. The two BlockGridSystem entries are fully preserved.
 
-Use `Prefabs/HLStoneGrid.prefab` and call its `HLStoneGridEntry.Generate(grid, ground, seed)` after the gameplay grid has been created. Both original block entries retain their order, walkability, count and chain-size ranges. The last generator entry is a render-only completion fence: it consumes no random values and creates no objects. `IsGenerating` stays true until that fence is reached; overlapping Generate calls throw before overwriting seeds. Do not remove or reorder the fence, or invoke the raw GridGenerator concurrently. An externally stopped coroutine must not be restarted by calling Generate on the locked entry; recreate the generation host after cancellation.
+`HLStoneGridEntry.Generate(grid, ground, seed)` invokes gameplay generation and changes cell walkability. Production attachment must never call it; gameplay owns generation. The entry refuses by default. Only an explicit demo fixture may set the serialized `demoSceneOnly` flag on the calling `HLStoneGridEntry` component and use `Prefabs/HLStoneGrid.prefab` after creating its grid. Both original block entries retain their order, walkability, count and chain-size ranges. The last generator entry is a render-only completion fence: it consumes no random values and creates no objects. `IsGenerating` stays true until that fence is reached; overlapping Generate calls throw before overwriting seeds. Do not remove or reorder the fence, or invoke the raw GridGenerator concurrently. An externally stopped coroutine must not be restarted by calling Generate on the locked entry; recreate the generation host after cancellation.
 
 Use the `HLStone*` projectile prefab variants where impacts should record an estimated contact. The observer reads OnHitData's target because Projectile has already cleared its target property by the callback. Direct hits fall back to the nearest stone surface toward the modifier source. Estimated contacts are explicitly marked; these are not physics contact reports. Recording only changes visual context, never consumers or projectile motion.
 
@@ -40,3 +40,42 @@ The mesh sweep covers 147,456 generated configurations (1,024 seeds × 3 subdivi
 Scope/name/metadata and whitespace audits passed. Source prefabs, scenes, data, frozen contracts and account preferences were not edited. Pre-existing clone warm-up changes outside the Stones ownership area were left untouched and uncommitted.
 
 BLIND-SPOT: No on-screen or PlayMode camera review was performed. Exact behavior of the source grid's missing first generator/prop cannot be recovered; the explicit render-owned fallback is described above. Shared Look material, outline integration and stage wiring still need T7 review.
+
+## Wave 5 dynamics
+
+`HLStoneEnemyVisual` adds a generated `HLStonePresentation` pivot below BodyPivot. Only this
+pivot leans; gameplay root, source/target anchors and BodyPivot remain untouched by the new
+attack poses. It reads the same first `TargetProvider.GetTargets()` entry as LookAtTarget.
+Enabled skill components are discovered each frame (Entity adds them after model Init); cached
+public reflection reads `ACooldownSkill<T>.cooldownProgress`. The minimum finite remaining
+fraction drives anticipation during the last 30% of cooldown. A successful delivery launch
+snaps the boulder forward. There is no fabricated cast clock. The generic public property is
+preserved by `link.xml` for stripping. Cairn/Monolith ignore aim and recoil and receive only a
+1.5-degree, exponentially decaying rigid settle from visual initialization; this is cosmetic
+spawn response, not simulation state. Existing health shedding/collapse still apply.
+
+Delivery supports Thrown, Direct and Rigid, rejects other styles and duplicate live tokens,
+spawns a small faceted shard at the visual body, then tracks the live projectile in LateUpdate.
+Contact emits 3–5 stone cones plus a five-ray coral star. Contact, End, disable, reinitialization
+and projectile disappearance release shard mesh leases idempotently. Contact debris belongs to
+the independent effects owner and can outlive the source. The observer must dispatch the frozen
+`IHLDeliverySource` callbacks (the wave-3 observer in this checkout does not yet do so).
+
+Health polling restores authored per-instance colours at full health and progressively darkens
+a seeded subset of boulders toward ultramarine as health falls. This is a cluster-level crack
+pattern using `_BaseColor`, not a texture or per-face mesh alteration; the monolith darkens as
+one piece. Existing damage-confirmed shedding thresholds are preserved.
+
+Every initialized enemy and terrain clump creates an `HLStoneGroundShadow` disc, dark ultramarine,
+with queue 2001 and a 0.012 world-unit ground offset. Both visual owners expose
+`GroundShadowEnabled`; set it false when real shadows are enabled. `directionToKeyLight` is a
+serialized WORLD direction toward the light, default (-1, 2, -1); the ellipse extends away
+from it. HLLookSettings has no light direction field, so this is intentionally authored rather
+than inferred from unavailable globals. Ground means the generated assembly base, not a physics
+raycast; uneven terrain and grass occlusion need camera review. These are opaque cheap stand-ins.
+
+All stone tests live in `Assets/Scripts/Tests/EditMode/Render/Stones/`, namespace
+`HealerLike.Render.Stones`, using the existing EditMode assembly and TestHelpers.
+Disabling an effects owner clears live fragments, releases global slots and hides its pool.
+Scene lookup retains that owner while disabled; emission calls are ignored until re-enabled.
+LookAtTarget is cached during visual initialization; reinitialize after changing BodyPivot components.

@@ -85,6 +85,7 @@ namespace HealerLike.Render.Stones
         }
         public void EmitHit(in HLStoneImpact impact,bool critical,uint seed)
         {
+            if(!isActiveAndEnabled) return;
             EnsureAssets(); var r=new HLStoneRandom(seed); int sparks=critical?9:6,shards=critical?5:3;
             Vector3 normal=impact.NormalWS.sqrMagnitude>0?impact.NormalWS.normalized:Vector3.up;
             for(int i=0;i<sparks+shards;i++)
@@ -95,8 +96,26 @@ namespace HealerLike.Render.Stones
                     Direction(ref r,normal)*r.Range(.6f,1.4f),spark?r.Range(.12f,.22f):r.Range(.35f,.55f),impact.PointWS.y-1,false,r.Next());
             }
         }
+        public void EmitThrownContact(Vector3 contact,uint seed)
+        {
+            if(!isActiveAndEnabled) return;
+            EnsureAssets(); var random=new HLStoneRandom(seed);
+            int count=3+(int)(random.Next()%3);
+            for(int i=0;i<count;i++)
+                Spawn(cone,stoneMaterial,contact,Quaternion.Euler(random.Range(0,180),random.Range(0,360),0),
+                    Vector3.one*random.Range(.055f,.11f),Direction(ref random,Vector3.up)*random.Range(.6f,1.3f),.45f,contact.y,false,random.Next());
+            // Five coral rays share a center: one star silhouette at the resolved contact.
+            for(int i=0;i<5;i++)
+            {
+                Vector3 ray=Quaternion.AngleAxis(i*72,Vector3.forward)*Vector3.up;
+                var star=Spawn(cone,coral,contact,Quaternion.FromToRotation(Vector3.up,ray),
+                    new Vector3(.055f,.2f,.035f),Vector3.up*.15f,.18f,contact.y,false,random.Next());
+                star.Spin=Vector3.zero;
+            }
+        }
         public void EmitDetachedPart(Mesh mesh,Material material,in Matrix4x4 pose,Vector3 velocityWS,float groundY,uint seed)
         {
+            if(!isActiveAndEnabled) return;
             EnsureAssets(); var r=new HLStoneRandom(seed);
             // A copy belongs to the effects owner, so releasing the enemy's cache lease cannot invalidate it.
             Mesh copy=Instantiate(mesh); copy.name="HLDetachedStone";
@@ -106,6 +125,7 @@ namespace HealerLike.Render.Stones
         }
         public void CollapseOnce(HLStoneEnemyVisual visual,uint seed)
         {
+            if(!isActiveAndEnabled) return;
             if(visual==null || !visual.TryBeginCollapse()) return;
             EnsureAssets(); var r=new HLStoneRandom(seed); var surviving=new List<HLStoneAssembly.Part>();
             foreach(var p in visual.Parts) if(p.Transform.gameObject.activeSelf) surviving.Add(p);
@@ -152,9 +172,14 @@ namespace HealerLike.Render.Stones
             }
         }
         void Update() => Advance(Time.deltaTime);
-        void OnDestroy()
+        void OnDisable()
         {
             while(active.Count>0) Release(active[active.Count-1]);
+            foreach(var f in pool) if(f.Object!=null) f.Object.SetActive(false);
+        }
+        void OnDestroy()
+        {
+            OnDisable();
             foreach(var f in pool) if(f.Object!=null) HLStoneMeshCache.DestroyOwned(f.Object);
             pool.Clear(); HLStoneMeshCache.DestroyOwned(cone); HLStoneMeshCache.DestroyOwned(coral); HLStoneMeshCache.DestroyOwned(fallback);
             if(sceneOwners.TryGetValue(gameObject.scene,out var owner) && owner==this) sceneOwners.Remove(gameObject.scene);

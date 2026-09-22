@@ -5,6 +5,10 @@ namespace HealerLike.Render.Stones
     public sealed class HLStoneTerrainClump : MonoBehaviour
     {
         [SerializeField] Material stoneMaterial;
+        [SerializeField] bool groundShadowEnabled=true;
+        [SerializeField] Vector3 directionToKeyLight=new Vector3(-1,2,-1);
+        HLStoneGroundShadow groundShadow;
+        public bool GroundShadowEnabled { get=>groundShadowEnabled; set { groundShadowEnabled=value; if(groundShadow!=null) groundShadow.Visible=value; } }
         readonly HLStoneAssembly assembly=new HLStoneAssembly();
         public HLStoneAssembly Assembly=>assembly;
         public void Initialize(uint seed,float cellSize)
@@ -27,6 +31,8 @@ namespace HealerLike.Render.Stones
             assembly.Fit(.96f,r.Range(.7f,1.2f));
             foreach(var p in assembly.Parts) { p.Transform.localPosition*=cellSize; p.Transform.localScale*=cellSize; }
             assembly.RecalculateBounds();
+            if(groundShadow==null) groundShadow=gameObject.AddComponent<HLStoneGroundShadow>();
+            groundShadow.Configure(assembly.LocalBounds,directionToKeyLight,groundShadowEnabled);
         }
         void OnDestroy() => assembly.Dispose();
     }

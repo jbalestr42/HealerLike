@@ -8,7 +8,7 @@ namespace HealerLike.Render.Stones
     {
         public sealed class Part
         {
-            public Transform Transform; public MeshRenderer Renderer; public HLStoneMeshCache.Lease Lease;
+            public Color BaseColor; public Transform Transform; public MeshRenderer Renderer; public HLStoneMeshCache.Lease Lease;
         }
         public readonly List<Part> Parts=new List<Part>();
         public Bounds LocalBounds { get; private set; }
@@ -21,7 +21,7 @@ namespace HealerLike.Render.Stones
             go.AddComponent<MeshFilter>().sharedMesh=lease.Mesh;
             var renderer=go.AddComponent<MeshRenderer>(); renderer.sharedMaterial=material;
             var properties=new MaterialPropertyBlock(); properties.SetColor("_BaseColor",Palette[Mathf.Clamp(recipe.PaletteIndex,0,3)].linear); renderer.SetPropertyBlock(properties);
-            Parts.Add(new Part { Transform=go.transform,Renderer=renderer,Lease=lease });
+            Parts.Add(new Part { BaseColor=Palette[Mathf.Clamp(recipe.PaletteIndex,0,3)].linear,Transform=go.transform,Renderer=renderer,Lease=lease });
         }
         public void BuildEnemy(Transform parent,uint seed,HLStonePreset preset,Material material,HLStoneAssemblyProfile profile=null)
         {
@@ -57,6 +57,20 @@ namespace HealerLike.Render.Stones
             Vector3 scale=new Vector3(xz,y,xz),offset=new Vector3(LocalBounds.center.x,LocalBounds.min.y,LocalBounds.center.z);
             foreach(var p in Parts) { p.Transform.localPosition=Vector3.Scale(p.Transform.localPosition-offset,scale); p.Transform.localScale=Vector3.Scale(p.Transform.localScale,scale); }
             RecalculateBounds();
+        }
+        public void ApplyFracture(float healthFraction,uint seed)
+        {
+            float damage=1-Mathf.Clamp01(float.IsFinite(healthFraction)?healthFraction:1);
+            var block=new MaterialPropertyBlock();
+            for(int i=0;i<Parts.Count;i++)
+            {
+                // A seeded connected run across the cluster, leaving one boulder uncracked.
+                int order=(i+(int)(seed%(uint)Mathf.Max(1,Parts.Count)))%Parts.Count;
+                float weight=Parts.Count==1?1:order==Parts.Count-1?0:1-order/(float)Parts.Count;
+                var part=Parts[i]; part.Renderer.GetPropertyBlock(block);
+                block.SetColor("_BaseColor",Color.Lerp(part.BaseColor,((Color)new Color32(43,60,105,255)).linear,damage*weight*.85f));
+                part.Renderer.SetPropertyBlock(block);
+            }
         }
         public void RecalculateBounds()
         {

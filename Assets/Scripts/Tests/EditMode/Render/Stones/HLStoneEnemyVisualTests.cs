@@ -5,6 +5,31 @@ namespace HealerLike.Render.Stones
 {
     public class HLStoneEnemyVisualTests
     {
+        sealed class MotionSource : IHLStoneMotionSource
+        {
+            public bool TrySample(out Vector3 velocityWS,out Quaternion facingWS)
+            { velocityWS=Vector3.right; facingWS=Quaternion.Euler(0,90,0); return true; }
+        }
+        [Test] public void MotionUsesLookAtTargetCachedDuringInitialization()
+        {
+            var pivot=target.transform.Find("BodyPivot");
+            var look=pivot.gameObject.AddComponent<LookAtTarget>();
+            visual.Initialize(health,15,fx);
+            TestHelpers.SetPrivateField(visual,"motion",new MotionSource());
+            TestHelpers.InvokePrivate(visual,"LateUpdate");
+            Assert.AreEqual(Quaternion.identity,pivot.rotation);
+            Object.DestroyImmediate(look);
+            TestHelpers.InvokePrivate(visual,"LateUpdate");
+            Assert.Less(Quaternion.Angle(Quaternion.Euler(0,90,0),pivot.rotation),.001f);
+            // New components are picked up only on initialization, never by the moving frame path.
+            pivot.gameObject.AddComponent<LookAtTarget>(); pivot.rotation=Quaternion.identity;
+            TestHelpers.InvokePrivate(visual,"LateUpdate");
+            Assert.Less(Quaternion.Angle(Quaternion.Euler(0,90,0),pivot.rotation),.001f);
+            visual.Initialize(health,15,fx); pivot.rotation=Quaternion.identity;
+            TestHelpers.SetPrivateField(visual,"motion",new MotionSource());
+            TestHelpers.InvokePrivate(visual,"LateUpdate");
+            Assert.AreEqual(Quaternion.identity,pivot.rotation);
+        }
         sealed class Consumer : AConsumer
         {
             readonly float amount; public Consumer(float amount){this.amount=amount;}
