@@ -17,3 +17,35 @@ The diagnostic `wave9-ground-fixture.png` uses a small 8x8 board, three seeded s
 VERIFY: Full Metal EditMode results and capture are under `/Users/fc/Documents/healerlike-render-specs/logs9/ground-tests4.*` and `captures/wave9-ground-fixture.png`. Final full suite: 630 passed, zero failed, two opt-in Look captures skipped (632 total). This includes GPU readback and shader compilation, the corrected appearance fixture, shed-part preservation and health/status composition regressions. Explicit paths only are committed; Unity importer changes in third-party metadata and ProjectSettings remain uncommitted.
 
 BLIND-SPOT: This branch does not prove the final camera composition, natural gameplay heal/poison timing, a player build, the complete menu loop or combined-track performance. The fixture sets its zones explicitly and has no actors casting skills. The fixed-capacity policy protects feedback from Trample only; feedback itself can still exceed 64 entries. The unlit footprint deliberately omits fog and real lighting, so Stage should keep it within the clear battlefield. Final gameplay captures and cross-track observer/tint wiring remain integration work.
+
+## Actual GameView correction
+
+Combined gameplay exposed a failure missed by manual camera fixtures: the real
+GameView contained the UI and actors but no indirect grass. Diagnostics ruled
+out a wrong camera assignment; the actual camera matched the configured camera,
+and all fields had prepared buffers (65,536 board blades). Submitting once from
+LateUpdate was insufficient for the render that produced the composed GameView.
+Grass now prepares buffers in LateUpdate and submits them at the assigned camera's
+SRP beginCameraRendering callback. Disable/destroy removes the callback, and a
+revoked or disposed borrowed zone buffer prevents submission. There is no
+screenshot-specific runtime path.
+
+An actual normal-speed ScreenCapture sequence from menu through gameplay,
+`wave9-events/portrait-20260922-232732`, recorded 170 frames over 15.3 seconds,
+47 projectiles, three positive health outcomes and two observed statuses.
+`motion-00012.png` was inspected and shows the dense carpet with the composed HUD
+and inventory. The full merged Metal suite passed 639 tests, zero failed, with
+two opt-in Look captures skipped. The appearance regression renders a second
+camera frame without another grass LateUpdate, then revokes the borrowed
+snapshot and verifies the next camera frame stops drawing grass.
+
+This establishes the actual GameView correction under the Editor recorder. An
+interactive player has not been visually inspected by this track; Stage owns
+the final player rebuild and both final gameplay captures.
+
+Stage can reduce only the battlefield strip height through serialized
+`bladeHeightScale` (public `BladeHeightScale`). Its default is 1, with finite
+values clamped to 0.25..1. Stage requested 0.8 on the board to keep actors
+readable; environment strips retain 1. Width, density and hostile cone height
+are unchanged. The focused Grass suite passed all 24 tests after the camera
+submission and revoked-snapshot correction.

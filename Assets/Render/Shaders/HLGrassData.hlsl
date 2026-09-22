@@ -13,6 +13,7 @@ StructuredBuffer<uint> _HL_VisibleBladeIDs;
 CBUFFER_START(UnityPerMaterial)
 float4 _HL_RootColor, _HL_MidColor, _HL_TipColor, _HL_HealColor, _HL_SlateRoot, _HL_SlateTip;
 float _HL_Cone;
+float _HL_BladeHeightScale;
 float _HL_Cull;
 float4 _HL_InstanceTint;
 CBUFFER_END
@@ -71,6 +72,7 @@ HLGrassVaryings HLGrassVertex(HLGrassAttributes input)
     }
     else
     {
+        height *= _HL_BladeHeightScale;
         local = B * (input.positionOS.x * seed.heightPhaseWidthRandom.z)
             + float3(lean.x * t * t, height * t, lean.y * t * t);
         normal = normalize(cross(B, float3(2 * lean.x * t, height, 2 * lean.y * t)));

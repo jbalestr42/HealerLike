@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections;
+using UnityEngine.TestTools;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -14,7 +16,7 @@ namespace HealerLike.Render.Grass
 {
     public class HLGrassAppearanceTests
     {
-        [Test] public void CaptureCarpetAndFeedbackFixtureOnMetal()
+        [UnityTest] public IEnumerator CaptureCarpetAndFeedbackFixtureOnMetal()
         {
             if(System.Environment.GetEnvironmentVariable("HL_GROUND_CAPTURE")!="1" || SystemInfo.graphicsDeviceType==GraphicsDeviceType.Null)
                 Assert.Ignore("Opt-in visual fixture: HL_GROUND_CAPTURE=1 with Metal.");
@@ -46,6 +48,7 @@ namespace HealerLike.Render.Grass
                 var registry=Make("HLGroundFixtureZones").AddComponent<HLZoneRegistry>();registry.Initialize();
                 var field=Make("HLGroundFixtureGrass").AddComponent<HLGrassField>();
                 field.Initialize(grid,ground.transform,camera,registry.Buffer,64); field.BladeBudget=16384;
+                TestHelpers.InvokePrivate(field,"OnEnable");
                 TestHelpers.SetPrivateField(field,"updateGrass",AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute"));
                 TestHelpers.SetPrivateField(field,"grassShader",Shader.Find("HL/Grass/BladeAndCone"));
                 TestHelpers.SetPrivateField(field,"ringShader",AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrassRing.shader"));
@@ -64,9 +67,23 @@ namespace HealerLike.Render.Grass
                 look.ApplyGlobals();TestHelpers.InvokePrivate(field,"LateUpdate");
                 RenderPipeline.SubmitRenderRequest(camera,new RenderPipeline.StandardRequest{destination=target});
                 RenderTexture.active=target;texture.ReadPixels(new Rect(0,0,1440,960),0,0);texture.Apply();
+                int GreenPixels() => texture.GetPixels32().Count(c => c.g > 140 && c.g > c.r * 1.1f && c.g > c.b * 1.3f);
+                int firstGrassPixels=GreenPixels(); Assert.Greater(firstGrassPixels,20000,"First camera render contains the carpet.");
+                // An Editor repaint can occur on another frame without a simulation LateUpdate.
+                // Keep prepared buffers, advance the Editor once, then render the same camera again.
+                yield return null;
+                look.ApplyGlobals();
+                RenderPipeline.SubmitRenderRequest(camera,new RenderPipeline.StandardRequest{destination=target});
+                RenderTexture.active=target;texture.ReadPixels(new Rect(0,0,1440,960),0,0);texture.Apply();
+                Assert.Greater(GreenPixels(),firstGrassPixels*.9f,"Repaint must resubmit prepared grass without another field LateUpdate.");
                 var bytes=texture.EncodeToPNG();Assert.Greater(bytes.Length,10000);Assert.AreEqual(16384,field.BladeCount);
                 const string directory="/Users/fc/Documents/healerlike-render-specs/captures";Directory.CreateDirectory(directory);
                 File.WriteAllBytes(Path.Combine(directory,"wave9-ground-fixture.png"),bytes);
+                field.SetZoneSnapshot(null,0);
+                yield return null;
+                RenderPipeline.SubmitRenderRequest(camera,new RenderPipeline.StandardRequest{destination=target});
+                RenderTexture.active=target;texture.ReadPixels(new Rect(0,0,1440,960),0,0);texture.Apply();
+                Assert.Less(GreenPixels(),firstGrassPixels*.1f,"Revoking the borrowed zone snapshot must stop camera submissions.");
                 Debug.Log("HL wave9 ground fixture: broad grass, three seeded clumps, explicit heal/hostile/trample zones. Visual fixture, not gameplay events.");
             }
             finally

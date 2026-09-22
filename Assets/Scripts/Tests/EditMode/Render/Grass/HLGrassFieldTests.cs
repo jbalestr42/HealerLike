@@ -91,6 +91,11 @@ namespace HealerLike.Render.Grass
             {
                 var field = go.AddComponent<HLGrassField>();
                 Assert.AreEqual(65536, field.BladeBudget);
+                Assert.AreEqual(1f, field.BladeHeightScale);
+                field.BladeHeightScale = .8f; Assert.AreEqual(.8f, field.BladeHeightScale);
+                field.BladeHeightScale = 3; Assert.AreEqual(1f, field.BladeHeightScale);
+                field.BladeHeightScale = -1; Assert.AreEqual(.25f, field.BladeHeightScale);
+                field.BladeHeightScale = float.NaN; Assert.AreEqual(1f, field.BladeHeightScale);
                 field.BladeBudget = int.MaxValue; Assert.AreEqual(98304, field.BladeBudget);
                 field.BladeBudget = -1; Assert.AreEqual(0, field.BladeBudget);
                 field.SetZoneSnapshot(null, 0);
