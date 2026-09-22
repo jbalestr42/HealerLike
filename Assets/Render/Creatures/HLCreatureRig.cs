@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace HealerLike.Render.Creatures
@@ -10,7 +11,7 @@ namespace HealerLike.Render.Creatures
         public HLFootFrame(Vector3 origin, Vector3 normal, float cellSize) { this.origin = origin; this.normal = normal.normalized; this.cellSize = cellSize; }
     }
 
-    public sealed class HLCreatureRig : IDisposable
+    public sealed class HLCreatureRig : IDisposable, IHLDeliverySource
     {
         public const int MaxArms = 8;
         readonly HLCreatureRecipe recipe;
@@ -18,6 +19,7 @@ namespace HealerLike.Render.Creatures
         readonly float cellSize;
         readonly Transform root, sway;
         readonly Transform[] pivots, geometry, roots;
+        readonly Renderer[] bodyRenderers;
         readonly HLLianaArm[] arms = new HLLianaArm[MaxArms];
         readonly int[] tokens = new int[MaxArms];
         readonly int[] definitions = new int[MaxArms];
@@ -26,7 +28,58 @@ namespace HealerLike.Render.Creatures
         readonly float[] moteBirth = new float[12];
         readonly Vector3[] moteOrigins = new Vector3[12];
         int nextToken, nextMote;
-        float crownPulse;
+        float crownPulse, hitPulse;
+        Quaternion aim = Quaternion.identity;
+        Vector3? aimTarget;
+        float healthFraction = 1, charge, budPower;
+        readonly MaterialPropertyBlock colourBlock = new MaterialPropertyBlock();
+        readonly Dictionary<int, (int lease, HLDeliveryStyle style, Vector3? contact)> deliveries = new Dictionary<int, (int, HLDeliveryStyle, Vector3?)>();
+        public float Charge => charge;
+        public float HealthFraction => healthFraction;
+        public Quaternion Aim => aim;
+        public Transform[] BudAnchors { get; private set; }
+        public void SetReadout(Vector3? target, float health, float readiness, float glow)
+        {
+            aimTarget = target;
+            healthFraction = HLChainSolver.Finite(health) ? Mathf.Clamp01(health) : 1;
+            charge = HLChainSolver.Finite(readiness) ? Mathf.Clamp01(readiness) : 0;
+            budPower = HLChainSolver.Finite(glow) ? Mathf.Clamp01(glow) : 0;
+        }
+        public void Hit() => hitPulse = 1;
+        public bool BeginDelivery(int token, HLDeliveryStyle style, Transform projectile, Vector3 intendedEnd)
+        {
+            if (token == 0 || style == HLDeliveryStyle.Thrown || deliveries.ContainsKey(token)) return false;
+            if (style == HLDeliveryStyle.Swarm)
+            {
+                int count = 0;
+                foreach (var item in deliveries.Values) if (item.style == style) count++;
+                if (count >= 4) return false;
+            }
+            int lease = Begin(HLGestureKind.Attack, projectile ? projectile.position : intendedEnd);
+            if (lease == 0) return false;
+            deliveries.Add(token, (lease, style, null));
+            for (int i = 0; i < MaxArms; i++) if (tokens[i] == lease) { arms[i].Style = style; arms[i].DeliveryProfile = style != HLDeliveryStyle.Direct; }
+            charge = 0;
+            return true;
+        }
+        public void UpdateDelivery(int token, Vector3 position)
+        {
+            if (!deliveries.TryGetValue(token, out var d)) return;
+            if (d.style == HLDeliveryStyle.ChainSync && d.contact.HasValue) return;
+            SetTipGoal(d.lease, position);
+        }
+        public void ContactDelivery(int token, Vector3 position, GameObject target) => ContactDeliveryPath(token, position, false);
+        public void ContactDeliveryPath(int token, Vector3 position, bool preserve)
+        {
+            if (!deliveries.TryGetValue(token, out var d)) return;
+            Contact(d.lease, position, (preserve || d.style == HLDeliveryStyle.ChainSync) ? d.contact : null);
+            deliveries[token] = (d.lease, d.style, position);
+        }
+        public void EndDelivery(int token)
+        {
+            if (!deliveries.TryGetValue(token, out var d)) return;
+            End(d.lease); deliveries.Remove(token);
+        }
         Vector3 previousOrigin;
         bool placed;
         public Transform Root => root;
@@ -48,6 +101,7 @@ namespace HealerLike.Render.Creatures
             root = new GameObject("HLGeneratedCreature").transform; root.SetParent(parent, false); root.localScale = Vector3.one / parent.lossyScale.x;
             sway = new GameObject("HLSway").transform; sway.SetParent(root, false);
             pivots = new Transform[data.parts.Length]; geometry = new Transform[data.parts.Length];
+            bodyRenderers = new Renderer[data.parts.Length];
             for (int i = 0; i < data.parts.Length; i++)
             {
                 var part = data.parts[i];
@@ -56,7 +110,9 @@ namespace HealerLike.Render.Creatures
                 geometry[i] = HLPrimitiveMeshes.Geometry("HLGeometry", pivots[i], part.primitive, material, part.colour,
                     part.primitive == HLPrimitive.Torus ? part.torusTubeRatio : .25f, part.glow);
                 geometry[i].localScale = part.dimensions * cellSize;
+                bodyRenderers[i] = geometry[i].GetComponent<Renderer>();
             }
+            BudAnchors = Array.FindAll(pivots, p => p.name.StartsWith("HLBud", StringComparison.Ordinal));
             roots = new Transform[data.roots.count * 2];
             for (int i = 0; i < roots.Length; i++) roots[i] = HLPrimitiveMeshes.Geometry("HLRoot", root, HLPrimitive.CylinderSegment, material, data.roots.colour);
             for (int i = 0; i < data.arms.Length; i++) CreateArm(i, i);
@@ -84,7 +140,7 @@ namespace HealerLike.Render.Creatures
             int slot = FreeSlot(); if (slot < 0) return 0;
             if (++nextToken == 0) ++nextToken;
             tokens[slot] = nextToken; branchRoots[slot] = null;
-            arms[slot].SetVisible(true); arms[slot].Begin(nextToken, kind, goal); return nextToken;
+            arms[slot].DeliveryProfile = false; arms[slot].Style = HLDeliveryStyle.Direct; arms[slot].SetVisible(true); arms[slot].Begin(nextToken, kind, goal); return nextToken;
         }
         public void SetTipGoal(int token, Vector3 goal)
         { if (token == 0) return; for (int i = 0; i < MaxArms; i++) if (tokens[i] == token && !branchRoots[i].HasValue) arms[i]?.SetTipGoal(token, goal); }
@@ -95,6 +151,7 @@ namespace HealerLike.Render.Creatures
             {
                 int slot = FreeSlot(); if (slot < 0) { CoalesceContact(goal); return; }
                 tokens[slot] = token; branchRoots[slot] = previousContact;
+                arms[slot].Style = HLDeliveryStyle.ChainSync; arms[slot].DeliveryProfile = true;
                 arms[slot].SetVisible(true); arms[slot].Begin(token, HLGestureKind.Attack, goal); arms[slot].Contact(token, goal);
             }
             else for (int i = 0; i < MaxArms; i++) if (tokens[i] == token && !branchRoots[i].HasValue) arms[i]?.Contact(token, goal);
@@ -111,6 +168,7 @@ namespace HealerLike.Render.Creatures
         { if (token == 0) return; for (int i = 0; i < MaxArms; i++) if (tokens[i] == token) arms[i]?.End(token); }
         public void CancelAll()
         {
+            deliveries.Clear();
             for (int i = 0; i < MaxArms; i++)
                 if (arms[i] != null) { arms[i].Cancel(tokens[i]); tokens[i] = 0; }
         }
@@ -134,10 +192,26 @@ namespace HealerLike.Render.Creatures
             previousOrigin = frame.origin; placed = true;
             root.SetPositionAndRotation(frame.origin, Quaternion.FromToRotation(Vector3.up, frame.normal));
             root.localScale = Vector3.one / root.parent.lossyScale.x;
-            var idle = HLIdleMotion.Evaluate(recipe.idle, time);
-            sway.localRotation = idle.sway; sway.localPosition = Vector3.up * idle.bodyLift * cellSize;
-            crownPulse = Mathf.Max(0, crownPulse - Mathf.Max(0, deltaTime) / .2f);
-            for (int i = 0; i < geometry.Length; i++) geometry[i].localScale = Vector3.Scale(recipe.parts[i].dimensions * cellSize, idle.bodyScale) * (1 + crownPulse * .06f);
+            float dt = Mathf.Max(0, deltaTime);
+            Vector3 direction = aimTarget.HasValue ? root.InverseTransformDirection(aimTarget.Value - frame.origin) :
+                new Vector3(Mathf.Sin(time * .3f) * .4f, 0, 1);
+            direction.y = 0;
+            if (direction.sqrMagnitude > .000001f)
+                aim = Quaternion.Slerp(aim, Quaternion.LookRotation(direction), 1 - Mathf.Exp(-dt * 7));
+            hitPulse = Mathf.Max(0, hitPulse - dt * 5);
+            sway.localRotation = aim * Quaternion.Euler((1 - healthFraction) * 32, 0, Mathf.Sin(hitPulse * 24) * hitPulse * 9);
+            sway.localPosition = Vector3.down * ((1 - healthFraction) * .08f * cellSize);
+            crownPulse = Mathf.Max(0, crownPulse - dt / .2f);
+            for (int i = 0; i < geometry.Length; i++)
+            {
+                var part = recipe.parts[i];
+                geometry[i].localScale = part.dimensions * cellSize * (1 + crownPulse * .06f + (part.parent >= 0 ? charge * .16f : 0));
+                Color colour = Color.Lerp(new Color(.18f, .49f, .31f), part.colour, healthFraction);
+                if (part.glow > 0) colour = Color.Lerp(colour * .55f, new Color(.78f, .95f, .29f), budPower);
+                colourBlock.SetColor("_BaseColor", colour);
+                colourBlock.SetColor("_EmissionColor", colour * part.glow * budPower);
+                bodyRenderers[i].SetPropertyBlock(colourBlock);
+            }
             var r = recipe.roots;
             for (int i = 0; i < r.count; i++)
             {
@@ -154,7 +228,7 @@ namespace HealerLike.Render.Creatures
                 if (arms[i] == null) continue;
                 var d = recipe.arms[definitions[i]];
                 Vector3 shoulder = branchRoots[i] ?? pivots[d.bodyPart].TransformPoint(d.rootLocal * cellSize);
-                arms[i].Tick(deltaTime, shoulder, root.rotation * idle.sway);
+                arms[i].Tick(deltaTime, shoulder, root.rotation * sway.localRotation);
                 if (arms[i].IsAvailable) { branchRoots[i] = null; tokens[i] = 0; arms[i].SetVisible(i < recipe.arms.Length); }
             }
             for (int i = 0; i < motes.Length; i++)

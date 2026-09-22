@@ -35,6 +35,7 @@ namespace HealerLike.Render.Creatures
             var healer = SaveRecipe("HLHealer", Healer(), 6, 2, 17);
             var fern = SaveRecipe("HLSpiralFern", Fern(), 4, 2, 31);
             var arch = SaveRecipe("HLHangingArch", Arch(), 6, 4, 57);
+            var rosette = SaveRecipe("HLBladeRosette", Rosette(), 6, 2, 103);
             var stack = SaveRecipe("HLSphereStack", Stack(), 4, 1, 89);
             Model("HLNormal", "Assets/Models/Jomon.prefab", fern, material);
             Model("HLTest", "Assets/Models/Jomon.prefab", stack, material);
@@ -46,7 +47,7 @@ namespace HealerLike.Render.Creatures
             Model("HLChainLightning", "Assets/Models/LightningTower.prefab", stack, material);
             Model("HLChanneling", "Assets/Models/SlowTowerModel.prefab", stack, material);
             Model("HLSoldier", "Assets/Models/Kawaii Slime/Prefabs/Slime_01_Viking.prefab", stack, material);
-            Model("HLHitArmorBuffer", "Assets/Models/Kawaii Slime/Prefabs/Slime_03 Leaf.prefab", arch, material);
+            Model("HLHitArmorBuffer", "Assets/Models/Kawaii Slime/Prefabs/Slime_03 Leaf.prefab", rosette, material);
             CharacterView(healer, material);
             foreach (string path in Directory.GetFiles("Assets/Prefabs/Projectiles", "*.prefab")) ProjectileView(path);
             AssetDatabase.SaveAssets(); AssetDatabase.Refresh();
@@ -64,6 +65,17 @@ namespace HealerLike.Render.Creatures
             {
                 float a = i * Mathf.PI * 2 / 3;
                 p.Add(Part("HLBud" + i, HLPrimitive.Sphere, new Vector3(Mathf.Cos(a) * .24f, .69f, Mathf.Sin(a) * .24f), new Vector3(.13f, .23f, .13f), Bud, new Vector3(0, -a * Mathf.Rad2Deg, -25), glow: 1.6f));
+            }
+            return p;
+        }
+        static List<HLPart> Rosette()
+        {
+            var p = new List<HLPart> { Part("HLRosette", HLPrimitive.Sphere, Vector3.up * .15f, new Vector3(.4f, .3f, .4f), Body, parent: -1) };
+            for (int i = 0; i < 6; i++)
+            {
+                float angle = i * Mathf.PI / 3;
+                p.Add(Part("HLBud" + i, HLPrimitive.Cone, new Vector3(.26f * Mathf.Cos(angle), .28f, .26f * Mathf.Sin(angle)),
+                    new Vector3(.2f, .72f, .1f), Body, new Vector3(0, i * 60, -55), glow: .7f));
             }
             return p;
         }

@@ -21,7 +21,8 @@ No scene, EntityData, skill-factory or original prefab wiring is changed by this
 | --- | --- | --- |
 | HLHealer | Bulb on stem, torus crown, three luminous buds | HLHealerCharacter |
 | HLSpiralFern | Curled stalk with alternating flattened fronds | HLNormal, HLFastShoot, HLRandomShoot |
-| HLHangingArch | Tall open arch with three pendant pods | HLSwarm, HLTripleShoot, HLMultiShot, HLHitArmorBuffer |
+| HLHangingArch | Tall open arch with three pendant pods | HLSwarm, HLTripleShoot, HLMultiShot |
+| HLBladeRosette | Low hub with six outward leaf cones | HLHitArmorBuffer (Stage currently uses a stone; see WAVE5-REPORT.md) |
 | HLSphereStack | Three offset spheres above a broad cone | HLTest, HLChainLightning, HLChanneling, HLSoldier |
 
 The four recipes are authored primitive trees; each part has a pivot separate from its dimension-scaled geometry. Recipe socket positions are new-authoring hints only: runtime never overwrites the preserved prefab sockets with these hints. Legacy imported socket heights therefore remain substantially above the smaller bodies in some models. The visible shoulder is recipe-authored; its tip follows the actual invisible projectile even when the original source socket is above the body.
@@ -41,3 +42,32 @@ The original SlowTowerModel root scale .9 is preserved to retain socket placemen
 EditMode coverage is under `Assets/Scripts/Tests/EditMode/Render/Creatures/`, in the existing test assembly that already references Render. Tests use TestHelpers and isolated Entity/Character fixtures without their gameplay Init methods. The projectile fixture safely calls the real Projectile.Init with empty buff/consumer lists, then invokes OnHit directly; the real ChainLightning coroutine is not run because it reads gameplay state. Tests cover immediate subscription, ordered hits, retargeting, renderer hiding, cancellation and listener cleanup.
 
 Asset tests validate all recipes, build procedural geometry, compare every model variant's source/target sockets against its original, check retained colliders, confirm removed model renderers, and check every projectile variant's retained components and hidden renderers. Runtime camera composition, glow/bloom, simultaneous-chain readability and frame cost cannot be established by headless EditMode tests.
+
+## Wave 5 simulation readouts
+
+The generated body turns toward the first `TargetProvider.GetTargets()` root, with damped yaw;
+its rest arms share that orientation. No target selects a slow cosmetic scan. The former
+free-running sway/breath is replaced by health droop, event-driven hit shake, and cooldown swell.
+Health uses current/max; enabled cooldown skills use `1 - cooldownProgress`, with the greatest
+readiness driving the body. No cooldown skills means no charge. The generic public getter is
+bound once per skill to a delegate; component enumeration each frame catches initial skills
+(which arrive after model Init), AddSkillBuff, and removal. A projectile launch releases charge.
+
+Builder and Character view implement the frozen `IHLDeliverySource`. The observer's serialized
+`deliveryStyle` defaults to Direct; the spells track authors prefab overrides. Direct retains
+fixed-length FABRIK. Arc uses an overhead segmented curve; Rigid telescopes straight and snaps
+back in .045 seconds; Swarm thins individual projectile leases and accepts at most four live
+leases; Bounce updates its straight tip between contacts; ChainSync collects simultaneous
+contact-to-contact tips, holds until the projectile ends, then retracts together. Non-Direct
+profiles telescope their visual segments so their tips track the simulation exactly. These are
+cosmetic shapes and recovery times, not simulated cast phases. Thrown returns false. Legacy
+`preserveContactPath` remains compatible with existing Direct lightning prefabs.
+
+Character views discover ResourceAttributes before default-order Update, subscribe once, and
+filter resolved contributions by the actual Character source. Positive registry/direct reports
+are paired one-for-one within the frame; negative and zero resolved outcomes cast too. Disabled
+views unsubscribe. Discovery includes resources on stones, not just creature models. It currently
+scans the scene per frame because the runtime has no global resource-added event. `Bud0`, `Bud1`,
+`Bud2` and `BudAnchors` expose generated presentation transforms for ShowLink callers. Bud base
+colour as well as emission follows mana fraction, so the readout works with the shared primitive
+shader even where emission is unsupported. This does not relocate gameplay sockets.

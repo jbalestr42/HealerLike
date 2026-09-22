@@ -1,15 +1,46 @@
 using UnityEngine;
+using System.Collections.Generic;
+using System;
 
 namespace HealerLike.Render.Creatures
 {
     [DefaultExecutionOrder(200)]
     [DisallowMultipleComponent]
-    public sealed class HLCreatureBuilder : MonoBehaviour, IVisualBehaviour, IHLHealVisualSink
+    public sealed class HLCreatureBuilder : MonoBehaviour, IVisualBehaviour, IHLHealVisualSink, IHLDeliverySource
     {
         [SerializeField] HLCreatureRecipe recipe;
         [SerializeField] Material material;
         [SerializeField] float cellSize = 1;
         Entity entity;
+        readonly List<ASkill> skills = new List<ASkill>();
+        readonly Dictionary<ASkill, Func<float>> cooldowns = new Dictionary<ASkill, Func<float>>();
+        readonly List<ASkill> removedSkills = new List<ASkill>();
+        public int CooldownSkillCount => cooldowns.Count;
+        void RefreshSkills()
+        {
+            if (!entity) { cooldowns.Clear(); return; }
+            entity.GetComponents(skills);
+            removedSkills.Clear();
+            foreach (var skill in cooldowns.Keys) if (!skill || !skills.Contains(skill)) removedSkills.Add(skill);
+            foreach (var skill in removedSkills) cooldowns.Remove(skill);
+            foreach (var skill in skills)
+            {
+                if (cooldowns.ContainsKey(skill)) continue;
+                // The runtime exposes a generic cooldown base, with no non-generic interface.
+                for (Type type = skill.GetType(); type != null; type = type.BaseType)
+                    if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ACooldownSkill<>))
+                    {
+                        var getter = type.GetProperty("cooldownProgress").GetGetMethod();
+                        cooldowns.Add(skill, (Func<float>)Delegate.CreateDelegate(typeof(Func<float>), skill, getter));
+                        break;
+                    }
+            }
+        }
+        public bool BeginDelivery(int token, HLDeliveryStyle style, Transform projectile, Vector3 end) =>
+            isActiveAndEnabled && Rig != null && Rig.BeginDelivery(token, style, projectile, end);
+        public void UpdateDelivery(int token, Vector3 position) => Rig?.UpdateDelivery(token, position);
+        public void ContactDelivery(int token, Vector3 position, GameObject target) => Rig?.ContactDelivery(token, position, target);
+        public void EndDelivery(int token) => Rig?.EndDelivery(token);
         ResourceAttribute health;
         HLRenderRegistry registeredRegistry;
         HLRenderRegistry injectedRegistry;
@@ -32,7 +63,7 @@ namespace HealerLike.Render.Creatures
         {
             Detach();
             if (entity != owner) Rig?.CancelAll();
-            entity = owner;
+            entity = owner; RefreshSkills();
             if (!entity) { Rig?.SetVisible(false); return; }
             EnsureRig();
             if (isActiveAndEnabled) Attach();
@@ -75,6 +106,7 @@ namespace HealerLike.Render.Creatures
         void OnHealthProcessed(GameObject owner, ResourceModifier modifier, float value, bool critical)
         {
             if (!isActiveAndEnabled || value == 0 || !HLChainSolver.Finite(value)) return;
+            if (value < 0) Rig?.Hit();
             SyncRegistry();
             GameObject source = modifier?.source;
             var registry = hasInjection ? injectedRegistry : HLRenderRegistry.Current;
@@ -98,7 +130,19 @@ namespace HealerLike.Render.Creatures
         void LateUpdate()
         {
             if (!entity) return;
-            Attach(); Rig?.Tick(Time.time, Time.deltaTime, Frame());
+            Attach(); RefreshSkills();
+            var provider = entity.targetProvider ? entity.targetProvider : entity.GetComponent<TargetProvider>();
+            var targets = provider ? provider.GetTargets() : null;
+            Vector3? target = targets != null && targets.Count > 0 && targets[0] ? targets[0].transform.position : (Vector3?)null;
+            float readiness = 0;
+            foreach (var pair in cooldowns)
+            {
+                if (!pair.Key || !pair.Key.isEnabled) continue;
+                float remaining = pair.Value();
+                if (HLChainSolver.Finite(remaining)) readiness = Mathf.Max(readiness, 1 - Mathf.Clamp01(remaining));
+            }
+            Rig?.SetReadout(target, health && health.Max > 0 ? health.Value / health.Max : 1, readiness, readiness);
+            Rig?.Tick(Time.time, Time.deltaTime, Frame());
         }
         void OnEnable() { if (entity) { EnsureRig(); Attach(); } }
         void OnDisable() { Detach(); Rig?.CancelAll(); Rig?.SetVisible(false); }

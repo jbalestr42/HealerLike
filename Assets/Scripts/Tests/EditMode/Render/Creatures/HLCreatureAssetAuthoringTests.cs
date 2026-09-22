@@ -7,7 +7,7 @@ namespace HealerLike.Render.Creatures
     public class HLCreatureAssetAuthoringTests
     {
         const string Root = "Assets/Render/Creatures/";
-        [TestCase("HLHealer")] [TestCase("HLSpiralFern")] [TestCase("HLHangingArch")] [TestCase("HLSphereStack")]
+        [TestCase("HLBladeRosette")] [TestCase("HLHealer")] [TestCase("HLSpiralFern")] [TestCase("HLHangingArch")] [TestCase("HLSphereStack")]
         public void ShippedRecipeValidatesAndBuildsWithoutImportedGeometry(string name)
         {
             var recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(Root + "Data/" + name + ".asset");
@@ -74,7 +74,7 @@ namespace HealerLike.Render.Creatures
                 foreach (var behaviour in original.GetComponents<AProjectileBehaviour>()) Assert.NotNull(variant.GetComponent(behaviour.GetType()));
             }
         }
-        [TestCase("HLHealer")] [TestCase("HLSpiralFern")] [TestCase("HLHangingArch")] [TestCase("HLSphereStack")]
+        [TestCase("HLBladeRosette")] [TestCase("HLHealer")] [TestCase("HLSpiralFern")] [TestCase("HLHangingArch")] [TestCase("HLSphereStack")]
         public void ShippedArmsReachAcrossCurrentBoardAndClampOutsideIt(string name)
         {
             var recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(Root + "Data/" + name + ".asset");

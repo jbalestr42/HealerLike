@@ -6,6 +6,28 @@ namespace HealerLike.Render.Creatures
 {
     public class HLProjectileVisualObserverTests
     {
+        public sealed class HLDeliveryProbe : MonoBehaviour, IHLDeliverySource
+        {
+            public int begins, updates, contacts, ends;
+            public HLDeliveryStyle style;
+            public bool BeginDelivery(int token, HLDeliveryStyle value, Transform projectile, Vector3 end) { begins++; style = value; return true; }
+            public void UpdateDelivery(int token, Vector3 position) { updates++; }
+            public void ContactDelivery(int token, Vector3 position, GameObject target) { contacts++; }
+            public void EndDelivery(int token) { ends++; }
+        }
+        [Test] public void ObserverDispatchesThroughInterfaceWithoutCreatureBuilder()
+        {
+            var model = builder.gameObject;
+            Object.DestroyImmediate(builder);
+            var probe = model.AddComponent<HLDeliveryProbe>();
+            TestHelpers.SetPrivateField(observer, "deliveryStyle", HLDeliveryStyle.Arc);
+            observer.Init(source);
+            Assert.AreEqual(1, probe.begins); Assert.AreEqual(HLDeliveryStyle.Arc, probe.style);
+            TestHelpers.InvokePrivate(observer, "LateUpdate"); Assert.AreEqual(1, probe.updates);
+            projectile.OnHit.Invoke(new OnHitData { target = first }); Assert.AreEqual(1, probe.contacts);
+            observer.enabled = false; TestHelpers.InvokePrivate(observer, "OnDisable");
+            Assert.AreEqual(1, probe.ends);
+        }
         GameObject source, first, second, projectileObject;
         Projectile projectile;
         HLProjectileVisualObserver observer;
@@ -66,6 +88,13 @@ namespace HealerLike.Render.Creatures
             var observerOrder = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(typeof(HLProjectileVisualObserver), typeof(DefaultExecutionOrder));
             var builderOrder = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(typeof(HLCreatureBuilder), typeof(DefaultExecutionOrder));
             Assert.Less(observerOrder.order, builderOrder.order);
+        }
+        [Test] public void AuthoredThrownStyleIsRejectedWithoutMovingProjectile()
+        {
+            TestHelpers.SetPrivateField(observer, "deliveryStyle", HLDeliveryStyle.Thrown);
+            observer.Init(source); Assert.AreEqual(0, observer.GestureToken);
+            Assert.AreEqual(HLDeliveryStyle.Thrown, observer.DeliveryStyle);
+            Assert.AreEqual(Vector3.zero, projectile.transform.position);
         }
     }
 }

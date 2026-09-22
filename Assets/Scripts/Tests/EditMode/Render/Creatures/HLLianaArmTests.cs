@@ -38,5 +38,18 @@ namespace HealerLike.Render.Creatures
             arm.Tick(.016f, Vector3.zero, Quaternion.identity);
             Assert.AreEqual(HLGesturePhase.Contact, arm.Phase); Assert.Less(Vector3.Distance(arm.Tip, Vector3.one), .001f);
         }
+        [TestCase(HLDeliveryStyle.Arc)] [TestCase(HLDeliveryStyle.Rigid)] [TestCase(HLDeliveryStyle.Bounce)]
+        public void DeliveryProfilesFollowLiveEndpoint(HLDeliveryStyle style)
+        {
+            arm.Style = style; arm.DeliveryProfile = true;
+            arm.Begin(1, HLGestureKind.Attack, Vector3.right * 2); arm.SetTipGoal(1, Vector3.right * 2);
+            arm.Tick(.016f, Vector3.zero, Quaternion.identity);
+            Assert.That(Vector3.Distance(arm.Tip, Vector3.right * 2), Is.LessThan(.001f));
+            if (style == HLDeliveryStyle.Arc) Assert.Greater(arm.Joint(arm.SegmentCount / 2).y, .1f);
+            else Assert.AreEqual(0, arm.Joint(arm.SegmentCount / 2).y);
+            arm.Contact(1, Vector3.right * 2); arm.SetTipGoal(1, Vector3.forward);
+            arm.Tick(.016f, Vector3.zero, Quaternion.identity);
+            Assert.That(Vector3.Distance(arm.Tip, Vector3.forward), Is.LessThan(.001f));
+        }
     }
 }

@@ -66,5 +66,29 @@ namespace HealerLike.Render.Creatures
             Assert.AreEqual(s, source.transform.localPosition); Assert.AreEqual(t, target.transform.localPosition);
             Assert.AreEqual(new Vector3(4, 0, 3), builder.Rig.Root.position); Assert.AreEqual(new Vector3(4, 2, 3), owner.transform.position);
         }
+        [Test] public void PublicTargetsHealthAndLateAddedCooldownArePolled()
+        {
+            TargetProvider provider = null; TestHelpers.WithLoggingDisabled(() => provider = owner.AddComponent<TargetProvider>());
+            target.transform.position = Vector3.right * 3;
+            TestHelpers.SetPrivateField(provider, "_targets", new System.Collections.Generic.List<GameObject> { target });
+            var skill = owner.AddComponent<ShootProjectileSkill>();
+            TestHelpers.SetPrivateField(skill, "_cooldownDuration", new Attribute(2));
+            skill.isEnabled = true;
+            TestHelpers.SetPrivateField(health, "_value", 25f);
+            TestHelpers.InvokePrivate(builder, "LateUpdate");
+            Assert.AreEqual(1, builder.CooldownSkillCount); Assert.AreEqual(1, builder.Rig.Charge);
+            Assert.AreEqual(.25f, builder.Rig.HealthFraction);
+            typeof(ACooldownSkill<ShootProjectileSkillData>).GetField("_cooldown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(skill, .5f);
+            TestHelpers.InvokePrivate(builder, "LateUpdate"); Assert.AreEqual(.75f, builder.Rig.Charge);
+            typeof(ACooldownSkill<ShootProjectileSkillData>).GetField("_cooldown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(skill, 2f);
+            TestHelpers.InvokePrivate(builder, "LateUpdate"); Assert.AreEqual(0, builder.Rig.Charge);
+            Assert.IsFalse(builder.BeginDelivery(200, HLDeliveryStyle.Thrown, null, Vector3.one));
+            Assert.IsTrue(builder.BeginDelivery(201, HLDeliveryStyle.Direct, null, Vector3.one));
+            Assert.AreEqual(0, builder.Rig.Charge);
+            Object.DestroyImmediate(skill); TestHelpers.InvokePrivate(builder, "LateUpdate");
+            Assert.AreEqual(0, builder.CooldownSkillCount); Assert.AreEqual(0, builder.Rig.Charge);
+            TestHelpers.SetPrivateField(health, "_value", 100f); TestHelpers.InvokePrivate(builder, "LateUpdate");
+            Assert.AreEqual(1, builder.Rig.HealthFraction);
+        }
     }
 }
