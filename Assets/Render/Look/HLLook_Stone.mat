@@ -26,7 +26,10 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
+    - _HLGroundGrid: 0
     - _HLNormalEdges: 1
+    - _HLOutlineWidthMultiplier: 1
+    - _HLSmoothOutlineNormals: 0
     m_Colors:
     - _BaseColor: {r: 0.5568628, g: 0.5764706, b: 0.6313726, a: 1}
   m_BuildTextureStacks: []

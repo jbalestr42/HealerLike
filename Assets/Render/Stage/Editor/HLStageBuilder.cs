@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Environment;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stones;
 using HealerLike.Render.Zones;
@@ -106,21 +107,28 @@ namespace HealerLike.Render.Stage
             so.FindProperty("stoneGridEntry").objectReferenceValue = entry;
             so.ApplyModifiedPropertiesWithoutUndo(); stage.SetActive(true);
             var character = Object.FindAnyObjectByType<Character>();
+            (HLCharacterView view, Character character, Transform anchor) healer = default;
             if (character)
             {
                 var anchor = new GameObject("HLHealerAnchor"); anchor.transform.SetParent(character.transform,false);
                 var view = Optional(anchor,"HLCharacterView");
                 if (!view) { var bulb=GameObject.CreatePrimitive(PrimitiveType.Sphere); bulb.name="HLHealerPlaceholder"; bulb.transform.SetParent(anchor.transform,false); bulb.transform.localPosition=Vector3.up*.8f; bulb.transform.localScale=new Vector3(.45f,.65f,.45f); Object.DestroyImmediate(bulb.GetComponent<Collider>()); bulb.GetComponent<Renderer>().sharedMaterial=green; }
                 var pulse = anchor.AddComponent<HLHealPulse>();
+                HLStageBeautyWiring.AttachTrample(anchor, CreatureFootprint(anchor.transform));
                 var bso = new SerializedObject(bootstrap); bso.FindProperty("healPulse").objectReferenceValue = pulse; bso.FindProperty("healSource").objectReferenceValue = character.gameObject; bso.ApplyModifiedPropertiesWithoutUndo();
+                if (view) healer = (view as HLCharacterView, character, anchor.transform);
                 if (view) { var vso=new SerializedObject(view); vso.FindProperty("character").objectReferenceValue=character; vso.FindProperty("visualAnchor").objectReferenceValue=anchor.transform; vso.FindProperty("recipe").objectReferenceValue=AssetDatabase.LoadMainAssetAtPath("Assets/Render/Creatures/Data/HLHealer.asset"); vso.FindProperty("material").objectReferenceValue=green; vso.ApplyModifiedPropertiesWithoutUndo(); }
             }
             Grass(stage.transform, bounds, grid, ground.transform, camera, zones, bootstrap);
             var range = stage.AddComponent<HLStageRangeDriver>(); range.Mode = HLStageRangeDriver.PreviewMode.Featured;
             if (key) stage.AddComponent<HLStageKeyLight>().KeyLight = key;
-            var groundMaterial = GroundMaterial();
+            var groundMaterial = StageGroundMaterial(GroundMaterial());
             if (ground.TryGetComponent<Renderer>(out var renderer)) renderer.sharedMaterial = groundMaterial;
-            Environment(stage.transform, grid, ground.transform, camera, zones as HealerLike.Render.Zones.HLZoneRegistry, groundMaterial);
+            var gust = Environment(stage.transform, grid, ground.transform, camera, zones as HealerLike.Render.Zones.HLZoneRegistry, groundMaterial);
+            var wiring = stage.AddComponent<HLStageBeautyWiring>();
+            wiring.Configure(bootstrap, grid, gust, entry as HLStoneGridEntry, groundMaterial);
+            if (healer.view) wiring.ConfigureHealer(healer.view, healer.character, AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>("Assets/Render/Creatures/Data/HLHealer.asset"), healer.anchor, green);
+            EditorUtility.SetDirty(wiring);
             WireRenderers();
             EditorSceneManager.SaveScene(scene, ScenePath);
             AssetDatabase.SaveAssets();
@@ -205,10 +213,15 @@ namespace HealerLike.Render.Stage
                 var existing = go.GetComponent<HLBruiseZone>();
                 if (bruise && !existing) go.AddComponent<HLBruiseZone>();
                 else if (!bruise && existing) Object.DestroyImmediate(existing);
+                // Grass beauty: a flattened ring around every creature root. The root crown stays inside its cell.
+                HLStageBeautyWiring.AttachTrample(go, CreatureFootprint(go.transform));
                 return PrefabUtility.SaveAsPrefabAsset(go, path);
             }
             finally { Object.DestroyImmediate(go); }
         }
+        // Creatures beauty: the root footprint stays within the cell bound (Julien's grid cell is 1 unit).
+        public const float CellSize = 1;
+        public static float CreatureFootprint(Transform root) => CellSize * .5f * Mathf.Max(Mathf.Abs(root.lossyScale.x), Mathf.Abs(root.lossyScale.z));
         static Component Optional(GameObject go, string name)
         {
             var type = Resolve(name);
@@ -260,6 +273,10 @@ namespace HealerLike.Render.Stage
                 ConfigureObserver(observer, Path.GetFileNameWithoutExtension(source));
                 if (!go.GetComponent<HLStoneProjectileImpactBridge>()) go.AddComponent<HLStoneProjectileImpactBridge>();
                 if (!go.GetComponent<HLLaunchWave>()) go.AddComponent<HLLaunchWave>();
+                // Environment beauty: the plant ring's gust at every real launch, beside the grass gust.
+                if (!go.GetComponent<HLStageLaunchGust>()) go.AddComponent<HLStageLaunchGust>();
+                // Spells beauty: gold threads between confirmed lightning contacts, on the two lightning variants only.
+                if (IsLightning(source) && !go.GetComponent<HLChainContactVisual>()) go.AddComponent<HLChainContactVisual>();
                 // The observer hides the gameplay renderers itself once it holds a visual lease and restores them
                 // otherwise (creatures fix 3), so the variant keeps the original renderer states.
                 LegacyChainVisualOff(go);
@@ -267,6 +284,7 @@ namespace HealerLike.Render.Stage
             if (go.GetComponent<AreaOfEffect>()) { go.name = Path.GetFileNameWithoutExtension(destination); Optional(go,"HLAreaPulse"); }
             PrefabUtility.SaveAsPrefabAsset(go,destination); Object.DestroyImmediate(go);
         }
+        public static bool IsLightning(string path) { string n = Path.GetFileNameWithoutExtension(path); return n.Contains("ChainLightning") || n.Contains("ChannelingLightning"); }
         public const string DeliveryStylesPath = "Assets/Render/Spells/Data/HLDeliveryStyles.asset";
         public const string CreatureProjectiles = "Assets/Render/Creatures/Prefabs/HLProjectile";
         // Review finding 4: start from the creatures track's authored observer (contact path, channel presentation),
@@ -335,7 +353,8 @@ namespace HealerLike.Render.Stage
             settings.FindPropertyRelative("InkWidth").floatValue = spacing*.04f;
             settings.FindPropertyRelative("InkDistStart").floatValue = fog.x;
             settings.FindPropertyRelative("InkFarSpacing").floatValue = spacing*1.2f;
-            settings.FindPropertyRelative("OutlineWidthPixels").floatValue = OutlinePixels(camera,bounds);
+            // Look beauty: outlines are pixel-normalized now, so no distance-derived inflation.
+            settings.FindPropertyRelative("OutlineWidthPixels").floatValue = 1f;
             // Look wave 5: pixel-space hatch spacing; a serialized controller predating the field would read zero.
             settings.FindPropertyRelative("InkSpacingPixels").floatValue = 3.5f;
             so.ApplyModifiedPropertiesWithoutUndo();
@@ -360,7 +379,7 @@ namespace HealerLike.Render.Stage
         {
             var fog = WaveThreeFog(camera, bounds); var edge = HLStageCalibration.FogRange(camera.transform.position, bounds);
             float spacing = HLStageCalibration.HatchSpacing(camera,CentreDepth(camera,bounds),HLStageCalibration.PortraitHeight);
-            Debug.Log($"HL calibration: camera {camera.transform.position.ToString("F3")} euler {camera.transform.eulerAngles.ToString("F2")} fov {camera.fieldOfView}; near edge {edge.x:F3} centre {CentreDepth(camera,bounds):F3} edge-range end {edge.y:F3}; fog {fog.x:F3}/{fog.y:F3}; ink scale {spacing:F5} width {spacing*.04f:F5} far {spacing*1.2f:F5}; outline {OutlinePixels(camera,bounds)} px");
+            Debug.Log($"HL calibration: camera {camera.transform.position.ToString("F3")} euler {camera.transform.eulerAngles.ToString("F2")} fov {camera.fieldOfView}; near edge {edge.x:F3} centre {CentreDepth(camera,bounds):F3} edge-range end {edge.y:F3}; fog {fog.x:F3}/{fog.y:F3}; ink scale {spacing:F5} width {spacing*.04f:F5} far {spacing*1.2f:F5}; outline 1 px (pixel-normalized; distance-derived would be {OutlinePixels(camera,bounds)})");
         }
         // One upper-left key light aimed along the stones' cheap-shadow direction, so real and cheap shadows agree.
         static Light KeyLight()
@@ -381,8 +400,20 @@ namespace HealerLike.Render.Stage
             EditorUtility.SetDirty(result); AssetDatabase.SaveAssets();
             return result;
         }
+        // Look beauty: the battlefield grid is a material switch; set it on a Stage-owned copy, not the Environment asset.
+        public const string StageGroundPath = Root + "Materials/HLStageGround.mat";
+        static Material StageGroundMaterial(Material source)
+        {
+            Directory.CreateDirectory(Root + "Materials");
+            var result = AssetDatabase.LoadAssetAtPath<Material>(StageGroundPath);
+            if (!result) { result = new Material(source) { name = "HLStageGround" }; AssetDatabase.CreateAsset(result, StageGroundPath); }
+            else result.CopyPropertiesFromMaterial(source);
+            result.SetFloat("_HLGroundGrid", 1f); result.enableInstancing = true;
+            EditorUtility.SetDirty(result); AssetDatabase.SaveAssets();
+            return result;
+        }
         // Julien-scale ground (1000 x 1000) a hair under the board top, the grass ring and the scattered ring.
-        static void Environment(Transform parent, GridManager grid, Transform ground, Camera camera, HealerLike.Render.Zones.HLZoneRegistry zones, Material groundMaterial)
+        static HLEnvironmentGust Environment(Transform parent, GridManager grid, Transform ground, Camera camera, HealerLike.Render.Zones.HLZoneRegistry zones, Material groundMaterial)
         {
             float top = ground.TryGetComponent<Renderer>(out var groundRenderer) ? groundRenderer.bounds.max.y : .5f;
             var root = new GameObject("HLEnvironment"); root.transform.SetParent(parent,false);
@@ -423,9 +454,13 @@ namespace HealerLike.Render.Stage
             sso.FindProperty("grid").objectReferenceValue = grid; sso.FindProperty("plantMaterial").objectReferenceValue = green;
             sso.FindProperty("stoneMaterial").objectReferenceValue = stone; sso.FindProperty("surfaceY").floatValue = top;
             sso.ApplyModifiedPropertiesWithoutUndo();
+            var fog = WaveThreeFog(camera, new Bounds(new Vector3(grid.transform.position.x,.505f,grid.transform.position.z), new Vector3(grid.width*grid.size,0,grid.height*grid.size)));
+            // Environment beauty: sway, uncurl and distance LOD read this gust and the calibrated fog end.
+            var gust = root.AddComponent<HLEnvironmentGust>();
+            scatter.ConfigureMotion(camera, gust, fog.y);
+            EditorUtility.SetDirty(scatter);
             // BEAUTY.md scale ladder: cropped foreground stones and rosettes in the shadow tint, and a far ridge of monoliths
             // and mushroom stems in the last fog band. Both build in Start from the camera pose the bootstrap applied.
-            var fog = WaveThreeFog(camera, new Bounds(new Vector3(grid.transform.position.x,.505f,grid.transform.position.z), new Vector3(grid.width*grid.size,0,grid.height*grid.size)));
             var foreground = new GameObject("HLForeground").AddComponent<HealerLike.Render.Environment.HLEnvironmentForeground>();
             foreground.transform.SetParent(root.transform,false);
             foreground.Configure(camera, stone, green, top, 1707);
@@ -434,6 +469,7 @@ namespace HealerLike.Render.Stage
             ridge.Configure(camera, stone, green, gridRect, top, fog.x, fog.y, 6, 1707);
             var preview = HealerLike.Render.Environment.HLEnvironmentLayout.Generate(scatter.Settings, gridRect, grid.size, top);
             Debug.Log("HL environment scatter: " + string.Join(", ", preview.GroupBy(item => item.Kind).Select(g => g.Key + "=" + g.Count())) + $" total={preview.Count}");
+            return gust;
         }
         public static readonly float[] RingWidths = { 3, 5, 16 };
         public static readonly float[] RingFractions = { .85f, .6f, .15f };

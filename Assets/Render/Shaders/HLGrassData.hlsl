@@ -108,7 +108,10 @@ half4 HLGrassFragment(HLGrassVaryings input, FRONT_FACE_TYPE face : FRONT_FACE_S
     float3 baseColor = HLGrassAlbedo(input.height01, input.healSpike) * UNITY_ACCESS_INSTANCED_PROP(HLGrassInstances, _BaseColor).rgb;
     float3 patchTint = lerp(float3(0.78, 0.96, 1.08), float3(1.08, 1.03, 0.78), input.patchHue);
     baseColor *= lerp(patchTint, float3(1,1,1), saturate(input.healSpike.x + 2 * input.healSpike.y));
-    return half4(HLEvaluateSurface(input.positionWS, illum, baseColor), 1);
+    // Look beauty tip light: lit blade tips lift slightly; shadow and roots unchanged. _HLTipLight 0 disables it.
+    float3 color = HLShadeSurface(input.positionWS, illum, baseColor);
+    color = HLApplyTipLight(color, input.height01, illum);
+    return half4(HLApplyBandedFog(input.positionWS, color), 1);
 }
 half4 HLGrassDepth(HLGrassVaryings input) : SV_Target { return 0; }
 half4 HLGrassNormals(HLGrassVaryings input, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC) : SV_Target
