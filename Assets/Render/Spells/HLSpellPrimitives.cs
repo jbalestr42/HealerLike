@@ -45,6 +45,7 @@ namespace HealerLike.Render.Spells
         }
         public static void Build(HLSpellEffect effect)
         {
+            effect.RetainPrimitives();
             var parts = new List<Transform>();
             Color gold = new Color32(242,194,48,255), lime = new Color32(198,242,74,255), coral = new Color32(242,96,122,255);
             if (effect.kind == HLSpellEffectKind.Buff)

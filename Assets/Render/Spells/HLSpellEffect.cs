@@ -18,7 +18,7 @@ namespace HealerLike.Render.Spells
         {
             Color color = signature.sign == HLSign.Negative ? new Color32(242,96,122,255) :
                 signature.operation == HLOperation.Resource && signature.sign == HLSign.Positive && signature.attribute == AttributeType.HealthMax ? new Color32(198,242,74,255) : new Color32(242,194,48,255);
-            var block = new MaterialPropertyBlock(); block.SetColor("_BaseColor",color);
+            var block = PropertyBlock; block.SetColor("_BaseColor",color);
             foreach(var part in parts) if(part) part.GetComponent<Renderer>().SetPropertyBlock(block);
         }
         public UnityEngine.Events.UnityEvent<Color> OnTint = new UnityEngine.Events.UnityEvent<Color>();
@@ -39,39 +39,54 @@ namespace HealerLike.Render.Spells
         bool _ready, _hasSignature, _ownsPrimitives;
         Transform[] _stackBeads;
         Renderer _sideRim;
+        MaterialPropertyBlock _propertyBlock;
+        MaterialPropertyBlock PropertyBlock => _propertyBlock ?? (_propertyBlock = new MaterialPropertyBlock());
+        Entity.EntityType _side;
+        bool _hasSide, _hasShieldState;
+        float? _shieldState;
         public void SetStatus(int stacks, float elapsed, float duration, HLClockKind clock, HLSpellSignature signature)
         {
             Initialize();
+            bool signatureChanged = !_hasSignature || !Signature.Equals(signature);
             if (!_hasSignature) { if (!hasAuthoredSignature) HLSpellPrimitives.AddMarker(this, signature); _hasSignature = true; }
+            bool stacksChanged = _stackBeads == null || Stacks != Mathf.Max(0,stacks);
             if (_stackBeads == null) _stackBeads = HLSpellPrimitives.StackBeads(this);
-            for (int i = 0; i < _stackBeads.Length; i++) _stackBeads[i].gameObject.SetActive(i < Mathf.Min(8, stacks));
+            if (stacksChanged) for (int i = 0; i < _stackBeads.Length; i++) _stackBeads[i].gameObject.SetActive(i < Mathf.Min(8, stacks));
             Stacks = Mathf.Max(0, stacks); ElapsedSeconds = Mathf.Max(0, elapsed);
             DurationSeconds = duration; Clock = clock; Signature = signature;
-            ApplySignatureColor(signature);
+            if (signatureChanged) { ApplySignatureColor(signature); _hasShieldState = false; }
             if (kind == HLSpellEffectKind.Drip && signature.sign != HLSign.Positive) SetTint(new Color32(242,96,122,255));
             Advance(0);
         }
         public void SetSide(Entity.EntityType side)
         {
+            if (_hasSide && _side == side && _sideRim) return;
+            _hasSide = true; _side = side;
             if (!_sideRim) _sideRim = HLSpellPrimitives.SideRim(this);
             var color = side == Entity.EntityType.Player ? new Color32(155,210,74,255) : side == Entity.EntityType.Computer ? new Color32(58,66,87,255) : new Color32(201,196,180,255);
-            var block = new MaterialPropertyBlock(); block.SetColor("_BaseColor", color); _sideRim.SetPropertyBlock(block);
+            var block = PropertyBlock; block.SetColor("_BaseColor", color); _sideRim.SetPropertyBlock(block);
         }
         void OnDisable() { if (Tint != Color.white) SetTint(Color.white); }
         void Start() => Initialize();
-        void OnDestroy()
+        void OnDestroy() => ReleaseResources();
+        // Explicit teardown also supports editor authoring, where runtime messages do not run.
+        public void ReleaseResources()
         {
             if (_ownsPrimitives) { _ownsPrimitives = false; HLSpellPrimitives.ReleaseUser(); }
+        }
+        internal void RetainPrimitives()
+        {
+            if (!_ownsPrimitives) { HLSpellPrimitives.Retain(); _ownsPrimitives = true; }
         }
         public void Initialize()
         {
             if (_ready) return;
-            if (!_ownsPrimitives) { HLSpellPrimitives.Retain(); _ownsPrimitives = true; }
+            RetainPrimitives();
             if (parts == null || parts.Length == 0) HLSpellPrimitives.Build(this);
             _positions = new Vector3[parts.Length]; _scales = new Vector3[parts.Length]; _rotations = new Quaternion[parts.Length];
             for (int i = 0; i < parts.Length; i++) { _positions[i] = parts[i].localPosition; _scales[i] = parts[i].localScale; _rotations[i] = parts[i].localRotation; }
             Color color = kind == HLSpellEffectKind.Heal ? new Color32(198,242,74,255) : (kind == HLSpellEffectKind.Impact || kind == HLSpellEffectKind.Drip) ? new Color32(242,96,122,255) : new Color32(242,194,48,255);
-            var block = new MaterialPropertyBlock(); block.SetColor("_BaseColor", color);
+            var block = PropertyBlock; block.SetColor("_BaseColor", color);
             foreach (var renderer in GetComponentsInChildren<Renderer>()) { if (material) renderer.sharedMaterial = material; renderer.SetPropertyBlock(block); }
             if (hasAuthoredSignature) ApplySignatureColor(authoredSignature);
             _ready = true;
@@ -79,6 +94,8 @@ namespace HealerLike.Render.Spells
         public void SetShieldState(float? observedCharges)
         {
             if (kind != HLSpellEffectKind.Shield) return;
+            if (_hasShieldState && _shieldState == observedCharges) return;
+            _hasShieldState = true; _shieldState = observedCharges;
             for (int i = 0; i < parts.Length; i++)
             {
                 parts[i].gameObject.SetActive(Signature.operation != HLOperation.Attribute || Signature.attribute != AttributeType.HitArmor || !observedCharges.HasValue || i < Mathf.Clamp(Mathf.CeilToInt(observedCharges.Value), 0, 6));

@@ -13,6 +13,27 @@ namespace HealerLike.Render.Spells
 {
     public static class HLSpellPrefabBuilder
     {
+        // Batch verification of actual player defines, without building or changing a scene.
+        public static void VerifyPlayerCompilation()
+        {
+            var settings = new UnityEditor.Build.Player.ScriptCompilationSettings
+            {
+                target = BuildTarget.StandaloneOSX,
+                group = BuildTargetGroup.Standalone
+            };
+            string output = Path.Combine(Path.GetTempPath(),"hl-f2-player-scripts");
+            Directory.CreateDirectory(output);
+            var result = UnityEditor.Build.Player.PlayerBuildInterface.CompilePlayerScripts(settings,output);
+            try
+            {
+                if (result.assemblies == null || !result.assemblies.Any(p => Path.GetFileName(p) == "HealerLike.Render.dll"))
+                    throw new InvalidOperationException("HL player compilation did not produce the render assembly.");
+                if (result.assemblies.Any(p => Path.GetFileName(p) == "HealerLike.Render.Spells.Editor.dll"))
+                    throw new InvalidOperationException("HL spell authoring was included in the player.");
+                Debug.Log("HL StandaloneOSX player script compilation passed; spell authoring excluded.");
+            }
+            finally { result.typeDB?.Dispose(); }
+        }
         const string Root="Assets/Render/Spells/";
         [MenuItem("HealerLike/Render/Build Spell Prefabs")]
         public static void Build()
@@ -35,7 +56,7 @@ namespace HealerLike.Render.Spells
                     if (filter.sharedMesh == HLSpellPrimitives.Torus) filter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(Root+"Data/HLTorus.asset");
                     else if (filter.sharedMesh == HLSpellPrimitives.Cone) filter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(Root+"Data/HLCone.asset");
                 }
-                prefabs[i]=PrefabUtility.SaveAsPrefabAsset(go,Root+"Prefabs/"+names[i]+".prefab");Object.DestroyImmediate(go);
+                prefabs[i]=PrefabUtility.SaveAsPrefabAsset(go,Root+"Prefabs/"+names[i]+".prefab");effect.ReleaseResources();Object.DestroyImmediate(go);
             }
             var table=AssetDatabase.LoadAssetAtPath<HLSpellStyleTable>(Root+"Data/HLSpellStyles.asset");
             if(!table){table=ScriptableObject.CreateInstance<HLSpellStyleTable>();AssetDatabase.CreateAsset(table,Root+"Data/HLSpellStyles.asset");}
@@ -106,7 +127,7 @@ namespace HealerLike.Render.Spells
                     if(filter.sharedMesh==HLSpellPrimitives.Cone) filter.sharedMesh=AssetDatabase.LoadAssetAtPath<Mesh>(Root+"Data/HLCone.asset");
                 }
                 string path=Root+"Prefabs/"+name+".prefab";
-                var prefab=PrefabUtility.SaveAsPrefabAsset(go,path); Object.DestroyImmediate(go);
+                var prefab=PrefabUtility.SaveAsPrefabAsset(go,path); effect.ReleaseResources();Object.DestroyImmediate(go);
                 table.entries.Add(new HLSpellStyleTable.HLEntry{signature=signature,prefab=prefab});
                 report.Append("| ").Append(row.Key).Append(" | ").Append(name).Append(" | ").Append(string.Join("<br>",row.Value.paths)).Append(" |\n");
             }
@@ -118,7 +139,7 @@ namespace HealerLike.Render.Spells
                 if(table.entries.Any(x=>x.signature.Equals(signature))) continue;
                 var go=new GameObject("HLResolved_"+resource+sign);var effect=go.AddComponent<HLSpellEffect>();effect.kind=HLSpellPrimitives.Kind(signature);effect.material=material;HLSpellPrimitives.Build(effect);
                 foreach(var f in go.GetComponentsInChildren<MeshFilter>()) if(f.sharedMesh==HLSpellPrimitives.Torus) f.sharedMesh=AssetDatabase.LoadAssetAtPath<Mesh>(Root+"Data/HLTorus.asset"); else if(f.sharedMesh==HLSpellPrimitives.Cone) f.sharedMesh=AssetDatabase.LoadAssetAtPath<Mesh>(Root+"Data/HLCone.asset");
-                var prefab=PrefabUtility.SaveAsPrefabAsset(go,Root+"Prefabs/"+go.name+".prefab");Object.DestroyImmediate(go);
+                var prefab=PrefabUtility.SaveAsPrefabAsset(go,Root+"Prefabs/"+go.name+".prefab");effect.ReleaseResources();Object.DestroyImmediate(go);
                 table.entries.Add(new HLSpellStyleTable.HLEntry{signature=signature,prefab=prefab});
             }
             File.WriteAllText(Root+"SIGNATURES.md",report.ToString());

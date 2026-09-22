@@ -6,6 +6,13 @@ namespace HealerLike.Render.Spells
 {
     public class HLSpellVisualSinkTests
     {
+        static void DestroyHost(GameObject go)
+        {
+            if (!go) return;
+            foreach(var effect in go.GetComponentsInChildren<HLSpellEffect>(true)) TestHelpers.InvokePrivate(effect,"OnDestroy");
+            foreach(var sink in go.GetComponentsInChildren<HLSpellVisualSink>(true)) TestHelpers.InvokePrivate(sink,"OnDestroy");
+            Object.DestroyImmediate(go);
+        }
         GameObject host,target,other;HLSpellVisualSink sink;BuffHandlerFactory factory,second;FlatModifierFactory modifier;
         [SetUp] public void Setup()
         {
@@ -13,7 +20,7 @@ namespace HealerLike.Render.Spells
             factory=ScriptableObject.CreateInstance<BuffHandlerFactory>();second=ScriptableObject.CreateInstance<BuffHandlerFactory>();modifier=ScriptableObject.CreateInstance<FlatModifierFactory>();modifier.data=new FlatModifierData {type=AttributeType.Damage,value=2};
             factory.data=new BuffHandlerData {durationType=DurationType.Duration,duration=4,buffFactoryList=new List<ABuffFactory>{modifier}};second.data=factory.data;
         }
-        [TearDown] public void Cleanup(){Object.DestroyImmediate(host);Object.DestroyImmediate(target);Object.DestroyImmediate(other);Object.DestroyImmediate(factory);Object.DestroyImmediate(second);Object.DestroyImmediate(modifier);}
+        [TearDown] public void Cleanup(){DestroyHost(host);DestroyHost(target);DestroyHost(other);Object.DestroyImmediate(factory);Object.DestroyImmediate(second);Object.DestroyImmediate(modifier);}
         [Test] public void RegistryCallsCannotRepopulateDisabledSinkAndEnableStartsClean()
         {
             var previous = HLRenderRegistry.Current;
@@ -22,7 +29,7 @@ namespace HealerLike.Render.Spells
                 HLRenderRegistry.Current = new HLRenderRegistry { SpellSink = sink };
                 sink.SetStatus(null,target,factory,1,0,4,HLClockKind.Simulation);
                 var root = sink.GetStatus(target,factory);
-                sink.enabled = false;
+                sink.enabled = false; TestHelpers.InvokePrivate(sink,"OnDisable");
                 Assert.IsFalse(root);
                 HLRenderRegistry.Current.SpellSink.SetStatus(null,target,factory,1,0,4,HLClockKind.Simulation);
                 HLRenderRegistry.Current.SpellSink.ShowImpact(null,target,HLResourceKind.Health,2,false);
@@ -30,7 +37,7 @@ namespace HealerLike.Render.Spells
                 Assert.IsNull(sink.ShowLink(Vector3.zero,Vector3.one));
                 Assert.AreEqual(0,sink.StatusCount);
                 Assert.AreEqual(0,sink.ImpactCount);
-                sink.enabled = true;
+                sink.enabled = true; TestHelpers.InvokePrivate(sink,"OnEnable");
                 Assert.AreSame(sink,HLRenderRegistry.Current.SpellSink);
                 Assert.AreEqual(0,sink.StatusCount);
                 sink.SetStatus(null,target,factory,1,0,4,HLClockKind.Simulation);
@@ -39,6 +46,20 @@ namespace HealerLike.Render.Spells
                 Assert.AreEqual(0,sink.StatusCount);
             }
             finally { HLRenderRegistry.Current = previous; }
+        }
+        [TestCase(false)] [TestCase(true)]
+        public void RepeatedStatusAndIdleSinkFramesAllocateNothing(bool populated)
+        {
+            if(populated) sink.SetStatus(null,target,factory,1,1,4,HLClockKind.Simulation);
+            var root=sink.GetStatus(target,factory);
+            var method=typeof(HLSpellVisualSink).GetMethod("LateUpdate",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);
+            var update=(System.Action)System.Delegate.CreateDelegate(typeof(System.Action),sink,method);
+            for(int i=0;i<32;i++) { if(populated) sink.SetStatus(null,target,factory,1,1,4,HLClockKind.Simulation); update(); }
+            long before=System.GC.GetAllocatedBytesForCurrentThread();
+            for(int i=0;i<32;i++) { if(populated) sink.SetStatus(null,target,factory,1,1,4,HLClockKind.Simulation); update(); }
+            long allocated=System.GC.GetAllocatedBytesForCurrentThread()-before;
+            Assert.AreEqual(0,allocated);
+            Assert.AreSame(root,sink.GetStatus(target,factory));
         }
         [Test] public void SpeedStatusSitsLowAndRemovalKeepsOnlyCosmeticTail()
         {
@@ -132,7 +153,7 @@ namespace HealerLike.Render.Spells
         }
         [Test] public void DestroyedTargetAndDisableReleaseVisuals()
         {
-            sink.SetStatus(null,target,factory,1,0,4,HLClockKind.Simulation);Object.DestroyImmediate(target);TestHelpers.InvokePrivate(sink,"LateUpdate");Assert.AreEqual(0,sink.StatusCount);
+            sink.SetStatus(null,target,factory,1,0,4,HLClockKind.Simulation);DestroyHost(target);TestHelpers.InvokePrivate(sink,"LateUpdate");Assert.AreEqual(0,sink.StatusCount);
             sink.ShowImpact(null,other,HLResourceKind.Health,1,false);sink.Clear();Assert.AreEqual(0,sink.ImpactCount);
         }
     }
