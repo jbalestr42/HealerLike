@@ -41,12 +41,11 @@ namespace HealerLike.Render.Zones
             if (_entity == null) Init(GetComponentInParent<Entity>());
         }
 
-        /// <summary>Render-owned state input for stage wiring, including non-pointer selection.</summary>
+        /// <summary>Render-owned state input for stage wiring, including non-pointer selection. Published by Update.</summary>
         public void SetPreviewState(bool selected, bool dragging)
         {
             _selected = selected;
             _dragging = dragging;
-            Refresh();
         }
 
         void Update() => Refresh();

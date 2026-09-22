@@ -51,10 +51,24 @@ namespace HealerLike.Render.Zones
             Assert.AreEqual(5, _owner.Snapshot[0].radius);
             Assert.AreEqual(1, _owner.LiveCount);
         }
+        [Test] public void StateChangesPublishOnlyOnUpdate()
+        {
+            _preview.SetPreviewState(true, false);
+            Assert.AreEqual(0, _owner.LiveCount);
+            TestHelpers.InvokePrivate(_preview, "Update");
+            Assert.AreEqual(1, _owner.LiveCount);
+            _preview.SetPreviewState(false, false);
+            Assert.AreEqual(1, _owner.LiveCount);
+            TestHelpers.InvokePrivate(_preview, "Update");
+            Assert.AreEqual(0, _owner.LiveCount);
+        }
         [Test] public void DeselectionDisableAndInvalidRangeRemovePreview()
         {
             _preview.SetPreviewState(true, false);
+            _preview.Refresh();
+            Assert.AreEqual(1, _owner.LiveCount);
             _preview.SetPreviewState(false, false);
+            _preview.Refresh();
             Assert.AreEqual(0, _owner.LiveCount);
             _preview.SetPreviewState(true, false);
             _entity.attributeManager.Get(AttributeType.Range).BaseValue = 0;
@@ -73,6 +87,7 @@ namespace HealerLike.Render.Zones
         [Test] public void RegistryRestartRecreatesPreviewWithoutStaleHandleUse()
         {
             _preview.SetPreviewState(true, false);
+            _preview.Refresh();
             _owner.Release();
             _owner.Initialize(new HLZoneFakeUpload());
             _preview.Refresh();
@@ -109,7 +124,8 @@ namespace HealerLike.Render.Zones
             Assert.AreEqual(3, _owner.Snapshot[0].kind);
             _preview.SetPreviewState(true, false); _preview.ObserveHover = false;
             _preview.Refresh(); Assert.AreEqual(1, _owner.LiveCount);
-            _preview.SetPreviewState(false, false); Assert.AreEqual(0, _owner.LiveCount);
+            _preview.SetPreviewState(false, false);
+            _preview.Refresh(); Assert.AreEqual(0, _owner.LiveCount);
         }
         [Test] public void MissingRangeAndDestroyedEntityAreSafe()
         {
