@@ -19,6 +19,7 @@ namespace HealerLike.Render.Creatures
         [Test] public void ObserverDispatchesThroughInterfaceWithoutCreatureBuilder()
         {
             var model = builder.gameObject;
+            TestHelpers.InvokePrivate(builder, "OnDestroy");
             Object.DestroyImmediate(builder);
             var probe = model.AddComponent<HLDeliveryProbe>();
             TestHelpers.SetPrivateField(observer, "deliveryStyle", HLDeliveryStyle.Arc);
@@ -32,6 +33,7 @@ namespace HealerLike.Render.Creatures
         [Test] public void MissingOrDecliningSourcePreservesOriginalRendererStates()
         {
             var model = builder.gameObject;
+            TestHelpers.InvokePrivate(builder, "OnDestroy");
             Object.DestroyImmediate(builder);
             observer.Init(source);
             var visible = projectileObject.GetComponent<LineRenderer>();
@@ -52,6 +54,7 @@ namespace HealerLike.Render.Creatures
         [Test] public void DecliningAdapterDoesNotPreventAnotherAdapterPresenting()
         {
             var model = builder.gameObject;
+            TestHelpers.InvokePrivate(builder, "OnDestroy");
             Object.DestroyImmediate(builder);
             model.AddComponent<HLDeliveryProbe>().accepts = false;
             var accepted = model.AddComponent<HLDeliveryProbe>();
@@ -85,6 +88,8 @@ namespace HealerLike.Render.Creatures
         }
         [TearDown] public void Cleanup()
         {
+            if (observer) TestHelpers.InvokePrivate(observer, "OnDestroy");
+            if (builder) TestHelpers.InvokePrivate(builder, "OnDestroy");
             Object.DestroyImmediate(projectileObject); Object.DestroyImmediate(source); Object.DestroyImmediate(first); Object.DestroyImmediate(second);
             Object.DestroyImmediate(recipe); Object.DestroyImmediate(material); HLPrimitiveMeshes.ReleaseAll();
         }

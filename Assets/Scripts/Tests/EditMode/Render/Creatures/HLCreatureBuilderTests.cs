@@ -34,7 +34,7 @@ namespace HealerLike.Render.Creatures
             sink = new HLSink(); registry = new HLRenderRegistry { SpellSink = sink }; registry.Register(source, sink);
             builder.Configure(registry, 1, Vector3.zero, Vector3.up); entityModel.Init(entity);
         }
-        [TearDown] public void Cleanup() { Object.DestroyImmediate(owner); Object.DestroyImmediate(recipe); Object.DestroyImmediate(material); HLPrimitiveMeshes.ReleaseAll(); }
+        [TearDown] public void Cleanup() { if (builder) TestHelpers.InvokePrivate(builder, "OnDestroy"); Object.DestroyImmediate(owner); Object.DestroyImmediate(recipe); Object.DestroyImmediate(material); HLPrimitiveMeshes.ReleaseAll(); }
         [Test] public void DoubleInitKeepsOneRigAndListenerAndPreservesSourceCache()
         {
             var rig = builder.Rig; int count = model.GetComponentsInChildren<Transform>().Length;
@@ -68,6 +68,7 @@ namespace HealerLike.Render.Creatures
             var field = typeof(HLRenderRegistry).GetField("_healSinks",
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
             Assert.AreEqual(0, ((System.Collections.IDictionary)field.GetValue(registry)).Count);
+            TestHelpers.InvokePrivate(builder, "OnDestroy");
             Object.DestroyImmediate(model);
         }
         [Test] public void BreathingAndDragNeverRelocateAuthoredSockets()

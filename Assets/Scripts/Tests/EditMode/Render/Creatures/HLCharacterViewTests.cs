@@ -29,7 +29,7 @@ namespace HealerLike.Render.Creatures
                     System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                 Assert.AreEqual(0, ((System.Collections.IDictionary)field.GetValue(registry)).Count);
             }
-            finally { Object.DestroyImmediate(anchor); Object.DestroyImmediate(go); Object.DestroyImmediate(target); Object.DestroyImmediate(recipe); Object.DestroyImmediate(material); HLPrimitiveMeshes.ReleaseAll(); }
+            finally { var view = anchor.GetComponent<HLCharacterView>(); if (view) TestHelpers.InvokePrivate(view, "OnDestroy"); Object.DestroyImmediate(anchor); Object.DestroyImmediate(go); Object.DestroyImmediate(target); Object.DestroyImmediate(recipe); Object.DestroyImmediate(material); HLPrimitiveMeshes.ReleaseAll(); }
         }
         [Test] public void SignedCharacterOutcomesManaAnchorsAndDuplicateHealReports()
         {
@@ -64,7 +64,7 @@ namespace HealerLike.Render.Creatures
                 view.enabled = false; health.OnAllConsumerProcessed.Invoke(target, modifier, -5, false);
                 Assert.AreEqual(4, view.CastGestureCount);
             }
-            finally { Object.DestroyImmediate(go); Object.DestroyImmediate(target); Object.DestroyImmediate(material); HLPrimitiveMeshes.ReleaseAll(); }
+            finally { var view = go.GetComponent<HLCharacterView>(); if (view) TestHelpers.InvokePrivate(view, "OnDestroy"); Object.DestroyImmediate(go); Object.DestroyImmediate(target); Object.DestroyImmediate(material); HLPrimitiveMeshes.ReleaseAll(); }
         }
     }
 }
