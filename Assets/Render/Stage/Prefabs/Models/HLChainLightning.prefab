@@ -62,6 +62,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4075585955230317254, guid: 17642493ed3a84ac49ec51ba40b1c2f5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4716223250382412358}
+    - targetCorrespondingSourceObject: {fileID: 4075585955230317254, guid: 17642493ed3a84ac49ec51ba40b1c2f5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4375707495915882999}
   m_SourcePrefab: {fileID: 100100000, guid: 17642493ed3a84ac49ec51ba40b1c2f5, type: 3}
 --- !u!1 &5081995870022245214 stripped
 GameObject:
@@ -94,3 +97,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLRangePreview
   _observePointer: 0
   _camera: {fileID: 0}
+--- !u!114 &4375707495915882999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5081995870022245214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff72fcddce784a6396cd2bda1d8abbd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLHealPulse
+  _cellSize: 1

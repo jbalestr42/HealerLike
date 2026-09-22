@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-1726325259617605525
+--- !u!114 &-869395394563952484
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -16,7 +16,13 @@ MonoBehaviour:
   LayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  DepthNormalEdges: 0
+  DepthNormalEdges: 1
+  DepthThresholdWorld: 1
+  ReferenceDistance: 31
+  DistanceScale: 1
+  NormalAngleDegrees: 55
+  NormalDensityDegrees: 35
+  UseNormalEdgeMask: 1
   edgeShader: {fileID: 4800000, guid: 971c04c4edc847ed900396526624a93c, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
@@ -43,8 +49,8 @@ MonoBehaviour:
     probeSamplingDebugTexture: {fileID: 0}
     probeVolumeBlendStatesCS: {fileID: 0}
   m_RendererFeatures:
-  - {fileID: -1726325259617605525}
-  m_RendererFeatureMap: 6b68b5a552dc0ae8l
+  - {fileID: -869395394563952484}
+  m_RendererFeatureMap: 9cb0a7b17e49eff3l
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_AssetVersion: 3

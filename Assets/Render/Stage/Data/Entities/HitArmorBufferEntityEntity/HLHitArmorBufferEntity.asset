@@ -105,7 +105,7 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  model: {fileID: 7025675693468111708, guid: 47071e64e09894eddbe8fc86b2224827, type: 3}
+  model: {fileID: 8493385001666444085, guid: f759375b7791947a19921cdfdbb3a415, type: 3}
   title: HitArmorBuffer
   description: 
   attributes:

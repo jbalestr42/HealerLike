@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &8771223041415821506
+--- !u!1001 &7004391338667612207
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -8,47 +8,47 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 6302393034784345853, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+    - target: {fileID: 1507026265762063130, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
       propertyPath: m_Name
-      value: HLStoneSoldierModel
+      value: HLHitArmorBuffer
       objectReference: {fileID: 0}
-    - target: {fileID: 6646549706594309191, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+    - target: {fileID: 2279341256832072096, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6646549706594309191, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+    - target: {fileID: 2279341256832072096, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6646549706594309191, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+    - target: {fileID: 2279341256832072096, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6646549706594309191, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+    - target: {fileID: 2279341256832072096, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 6646549706594309191, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+    - target: {fileID: 2279341256832072096, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6646549706594309191, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+    - target: {fileID: 2279341256832072096, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6646549706594309191, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+    - target: {fileID: 2279341256832072096, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6646549706594309191, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+    - target: {fileID: 2279341256832072096, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6646549706594309191, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+    - target: {fileID: 2279341256832072096, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6646549706594309191, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+    - target: {fileID: 2279341256832072096, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
@@ -56,53 +56,53 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6302393034784345853, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 1507026265762063130, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8723217013292663004}
-    - targetCorrespondingSourceObject: {fileID: 6302393034784345853, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+      addedObject: {fileID: 4290432334812430512}
+    - targetCorrespondingSourceObject: {fileID: 1507026265762063130, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3609367450265859371}
-    - targetCorrespondingSourceObject: {fileID: 6302393034784345853, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+      addedObject: {fileID: 7519093586858360091}
+    - targetCorrespondingSourceObject: {fileID: 1507026265762063130, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3636385764335967376}
-  m_SourcePrefab: {fileID: 100100000, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
---- !u!1 &3372982749147706943 stripped
+      addedObject: {fileID: 7751734751901065645}
+  m_SourcePrefab: {fileID: 100100000, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
+--- !u!1 &8493385001666444085 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 6302393034784345853, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
-  m_PrefabInstance: {fileID: 8771223041415821506}
+  m_CorrespondingSourceObject: {fileID: 1507026265762063130, guid: 942c67233dfd74cd0b5a6e8033ef536d, type: 3}
+  m_PrefabInstance: {fileID: 7004391338667612207}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8723217013292663004
+--- !u!114 &4290432334812430512
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3372982749147706943}
+  m_GameObject: {fileID: 8493385001666444085}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 95883ece797a642eb85c1765fa3e1b22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.HLStatusObserver
---- !u!114 &3609367450265859371
+--- !u!114 &7519093586858360091
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3372982749147706943}
+  m_GameObject: {fileID: 8493385001666444085}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff72fcddce784a6396cd2bda1d8abbd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLHealPulse
   _cellSize: 1
---- !u!114 &3636385764335967376
+--- !u!114 &7751734751901065645
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3372982749147706943}
+  m_GameObject: {fileID: 8493385001666444085}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a6b9a014428bf4236adc3d74ffbd7977, type: 3}
