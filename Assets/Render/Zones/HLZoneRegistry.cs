@@ -15,7 +15,9 @@ namespace HealerLike.Render.Zones
     }
 
     /// <summary>
-    /// Single owner of cosmetic zones. Registration order determines the first 64 visible records.
+    /// Single owner of cosmetic zones. Gameplay feedback reserves capacity before decorative Trample.
+    /// Within the selected set, registration order is preserved and the frozen packer is unchanged.
+    /// Trample fills remaining slots, first registered first; dropped footprints remain live.
     /// Overflow registrations remain live and can enter the snapshot when earlier zones disappear.
     /// Handles are never reused during this component's lifetime; zero denotes a rejected add.
     /// Producers update in Update; the snapshot is published in early LateUpdate before grass draws.
@@ -179,9 +181,21 @@ namespace HealerLike.Render.Zones
                 _source[written++] = entry.zone;
             }
             if (written < _entries.Count) _entries.RemoveRange(written, _entries.Count - written);
-            Count = HLZonePacker.Pack(new ReadOnlySpan<HLZone>(_source, 0, written), _packed, out _, out int overflow);
+            // Explicit admission policy, not a sort: reserve space for non-Trample records,
+            // then scan the original order. Persistent footprints cannot starve short feedback.
+            int feedback = 0;
+            for (int i = 0; i < written; i++) if (_source[i].kind != (int)HLZoneKind.Trample) feedback++;
+            int footprints = Mathf.Max(0, HLZonePacker.MaxZones - feedback);
+            int selected = 0;
+            for (int i = 0; i < written; i++)
+            {
+                if (_source[i].kind == (int)HLZoneKind.Trample && footprints-- <= 0) continue;
+                _source[selected++] = _source[i];
+            }
+            Count = HLZonePacker.Pack(new ReadOnlySpan<HLZone>(_source, 0, selected), _packed, out _, out int overflow);
+            overflow += written - selected;
             OverflowCount = overflow;
-            if (overflow > 0 && !_overflowing) Debug.LogWarning("HLZoneRegistry: cosmetic zone capacity exceeded; displaying the first 64 active zones.", this);
+            if (overflow > 0 && !_overflowing) Debug.LogWarning("HLZoneRegistry: cosmetic zone capacity exceeded; feedback reserved before decorative footprints; first registered wins within each kind.", this);
             _overflowing = overflow > 0;
             _upload.Upload(_packed);
             _upload.Bind();

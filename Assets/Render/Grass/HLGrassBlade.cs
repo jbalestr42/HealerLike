@@ -6,7 +6,7 @@ namespace HealerLike.Render.Grass
         public static Mesh CreateStrip()
         {
             var vertices = new Vector3[8]; var uv = new Vector2[8]; var indices = new int[18];
-            float[] widths = { 1, 0.78f, 0.40f, 0.04f };
+            float[] widths = { 0.55f, 1f, 0.65f, 0.015f };
             for (int row = 0; row < 4; row++)
             {
                 for (int side = 0; side < 2; side++)

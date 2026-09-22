@@ -83,14 +83,14 @@ namespace HealerLike.Render.Grass
                     float heightScale = 0.6f + 0.8f * Sample(seed, cell, clump, 4);
                     for (int blade = 0; blade < blades; blade++)
                     {
-                        float fan = blades == 1 ? 0 : ((float)blade / (blades - 1) - 0.5f) * 0.8f;
+                        float fan = blades == 1 ? 0 : ((float)blade / (blades - 1) - 0.5f) * 1.8f;
                         result[index++] = new HLBladeSeed {
                             positionYaw = new Vector4(minX + (cell % width + x) * cellSize, surfaceY + RootLift,
                                 minZ + (cell / width + z) * cellSize, Mathf.Repeat(yaw + fan, Mathf.PI * 2)),
                             // Phase is also the shared rest-lean heading. W is the seeded cell-patch hue.
                             heightPhaseWidthRandom = new Vector4(quota < 3 ? 0.22f + 0.14f * Sample(seed, cell, clump, 4)
-                                : 0.30f * heightScale * (1 - 0.12f * Mathf.Abs(fan)),
-                                phase, 0.035f + 0.015f * Sample(seed, cell, blade, 6), hue)
+                                : 0.30f * heightScale * (1 - 0.055f * Mathf.Abs(fan)),
+                                phase, 0.095f + 0.055f * Sample(seed, cell, blade, 6), hue)
                         };
                     }
                 }

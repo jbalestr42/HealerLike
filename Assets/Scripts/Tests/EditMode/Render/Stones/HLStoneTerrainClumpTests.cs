@@ -16,6 +16,21 @@ namespace HealerLike.Render.Stones
             }
             finally { TestHelpers.InvokePrivate(clump,"OnDestroy"); Object.DestroyImmediate(go); }
         }
+        [Test] public void DisableHidesOwnedPartsAndFootprintsAndEnableRestoresThem()
+        {
+            var go=new GameObject("HLTerrain"); var clump=go.AddComponent<HLStoneTerrainClump>();
+            try
+            {
+                clump.Initialize(5,1); clump.enabled=false;
+                TestHelpers.InvokePrivate(clump,"OnDisable");
+                foreach(var part in clump.Assembly.Parts) Assert.IsFalse(part.Transform.gameObject.activeSelf);
+                Assert.IsFalse(go.GetComponent<HLStoneGroundShadow>().enabled);
+                Assert.IsFalse(go.GetComponent<HLStoneGroundRing>().enabled);
+                clump.enabled=true; TestHelpers.InvokePrivate(clump,"OnEnable");
+                foreach(var part in clump.Assembly.Parts) Assert.IsTrue(part.Transform.gameObject.activeSelf);
+            }
+            finally { TestHelpers.InvokePrivate(clump,"OnDestroy"); Object.DestroyImmediate(go); }
+        }
         [Test] public void BoundsAndCellOrderDeterminism()
         {
             var a=new GameObject("HLA");var b=new GameObject("HLB");var ca=a.AddComponent<HLStoneTerrainClump>();var cb=b.AddComponent<HLStoneTerrainClump>();

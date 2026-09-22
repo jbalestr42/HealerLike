@@ -168,7 +168,7 @@ float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor)
     float dashAmount = HL_G(_HLDashAmount, HL_DEF_DASHAMOUNT);
     ink *= smoothstep(dashAmount, dashAmount + 0.08, dn);
     ink = saturate(ink * shadowMask * step(0.004, tone) * HL_G(_HLInkStrength, HL_DEF_INKSTRENGTH));
-    return lerp(color, HL_G(_HLOutlineColor, HL_DEF_OUTLINECOLOR).rgb, ink);
+    return lerp(color, HL_G(_HLOutlineColor, HL_DEF_OUTLINECOLOR).rgb, ink * 0.65);
 }
 
 float3 HLEvaluateSurface(float3 positionWS, float illum, float3 baseColor)

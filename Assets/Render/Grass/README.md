@@ -41,8 +41,8 @@ Generate call is made.
 The two opaque indirect draws are exclusive strip/cone ID lists. A third small draw
 handles rings: fixed 64 instances read the same global snapshot, with degenerate
 vertices for unused/non-Heal-or-Range slots. This avoids another mutable CPU zone snapshot,
-an ID map, or GPU readback. Ring width is 0.012 (clamped for small radii), surface
-lift 0.020, strength/onset controls opacity, and hostile influence suppresses the ring.
+an ID map, or GPU readback. Ring width is 0.018 (clamped for small radii), surface
+lift 0.10, strength/onset controls opacity, and hostile influence suppresses the ring.
 The clear band lowers non-hostile grass to 0.005 at full strength and smoothly restores
 it outside the band. Ring white is an albedo evaluated by the shared look, not emission.
 
@@ -116,18 +116,17 @@ more blades are cheaper. The 65,536 harness average/p95/p99 were
 ## Beauty grass
 
 Static 32-byte seeds now group ordinary cell quotas into clumps of 3–7 blades, sharing
-an exact root and phase/rest heading, with a small yaw fan. Clump height is 0.6–1.4
-of a 0.30 m base; outside fan blades are up to 4.8% shorter. Budgets assigning fewer
+an exact root and phase/rest heading, with a broad yaw fan. Clump height is 0.6–1.4
+of a 0.30 m base; outside fan blades are up to 4.95% shorter. Budgets assigning fewer
 than three blades to a cell retain their exact quota. Seeded hue blocks span 2–4
 cells and travel in the existing seed W lane; no texture or extra buffer is used.
 Tips turn their shading normals toward the key light; illumination and jade/lime
-albedo still pass through HLEvaluateSurface. The heal ring is now 0.012 m wide,
-with a narrower grass clearance band. See BEAUTY-REPORT.md for verification and
+albedo still pass through HLEvaluateSurface. The heal ring is 0.018 m wide, with a clearance band wide enough for broad leaves. See BEAUTY-REPORT.md for verification and
 loaded-machine timings.
 
 Stage attaches HLTrampleZone to each stone-clump and creature root; Radius is the
 outer world-space footprint (include a small visible margin). It follows the root,
-flattens the core to 0.012 m with a feathered edge, and suppresses hostile cones in
-the core. It shares the registry's 64 slots and disappears on disable/destruction.
+flattens the core to 0.055 m with a patchy feathered edge, and suppresses hostile cones in
+the core. It fills capacity left after feedback in the registry's 64 slots and disappears on disable/destruction.
 No obstacle search is performed by grass. Ambient wind reads the existing scaled
 clock; trample reads the registered transform. Gameplay occupancy is not inferred.

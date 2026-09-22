@@ -4,6 +4,22 @@ namespace HealerLike.Render.Stones
 {
     public class HLStoneFractureTests
     {
+        [Test] public void StatusTintComposesWithCurrentFractureAndRemovalRestoresHealthColor()
+        {
+            var root=new GameObject("HLTintAssembly");var assembly=new HLStoneAssembly();
+            try
+            {
+                assembly.BuildEnemy(root.transform,17,HLStonePreset.Boulder,null);
+                var block=new MaterialPropertyBlock();assembly.ApplyFracture(.3f,17);
+                assembly.Parts[0].Renderer.GetPropertyBlock(block);var healthColor=block.GetColor("_BaseColor");
+                var tint=new Color(.5f,.12f,.55f,1);assembly.ApplyFracture(.3f,17,tint);
+                assembly.Parts[0].Renderer.GetPropertyBlock(block);
+                Assert.Less(((Vector4)Color.Lerp(healthColor,tint,.42f)-(Vector4)block.GetColor("_BaseColor")).magnitude,1e-6f);
+                assembly.ApplyFracture(.3f,17,Color.white);assembly.Parts[0].Renderer.GetPropertyBlock(block);
+                Assert.Less(((Vector4)healthColor-(Vector4)block.GetColor("_BaseColor")).magnitude,1e-6f);
+            }
+            finally { assembly.Dispose();Object.DestroyImmediate(root); }
+        }
         [Test] public void SeededSubsetDarkensProgressivelyAndRestoresWithoutMaterialMutation()
         {
             var root=new GameObject("HLAssembly"); var assembly=new HLStoneAssembly();

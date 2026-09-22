@@ -16,7 +16,7 @@ namespace HealerLike.Render.Spells
         void SetTint(Color color) { Tint = color; OnTint.Invoke(color); }
         void ApplySignatureColor(HLSpellSignature signature)
         {
-            Color color = signature.sign == HLSign.Negative ? new Color32(242,96,122,255) :
+            Color color = kind == HLSpellEffectKind.Shield ? new Color32(151,203,99,255) : signature.sign == HLSign.Negative ? new Color32(242,96,122,255) :
                 signature.operation == HLOperation.Resource && signature.sign == HLSign.Positive && signature.attribute == AttributeType.HealthMax ? new Color32(198,242,74,255) : new Color32(242,194,48,255);
             _baseColor = color;
             var block = PropertyBlock; block.SetColor(BaseColorId,color);

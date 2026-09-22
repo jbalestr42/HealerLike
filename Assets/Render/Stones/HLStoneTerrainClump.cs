@@ -22,11 +22,12 @@ namespace HealerLike.Render.Stones
             if(!float.IsFinite(cellSize) || cellSize<=0) throw new ArgumentOutOfRangeException(nameof(cellSize));
             ClearFace(); assembly.Dispose(); var r=new HLStoneRandom(HLStoneSeed.ForPart(seed,401));
             int count=3+(int)(r.Next()%3);
+            int silhouette=(int)(seed%3);
             for(int i=0;i<count;i++)
             {
                 float size=i==0?.65f:r.Range(.27f,.42f);
                 var part=new HLStonePart {
-                    Shape=HLStonePresets.Shape(size,i==0?1.35f:r.Range(.7f,1.15f),.95f,.14f,(int)(r.Next()%2)),
+                    Shape=HLStonePresets.Shape(size,i==0?(silhouette==0?2.4f:silhouette==1?.8f:1.45f):r.Range(.7f,1.35f),r.Range(.6f,1f),.16f,0),
                     SeedSalt=501u+(uint)i,PaletteIndex=(int)(r.Next()%3),
                     LocalEulerAngles=new Vector3(0,r.Range(0,360),0),
                     LocalPosition=i==0?Vector3.zero:new Vector3(Mathf.Cos(i*2.4f)*.28f,0,Mathf.Sin(i*2.4f)*.28f)
@@ -53,14 +54,21 @@ namespace HealerLike.Render.Stones
             ochreMesh=new Mesh{name="HLOchreFacet"};
             ochreMesh.vertices=new[]{vertices[face]+normals[face]*.002f,vertices[face+1]+normals[face]*.002f,vertices[face+2]+normals[face]*.002f};
             ochreMesh.triangles=new[]{0,1,2}; ochreMesh.RecalculateNormals(); ochreMesh.RecalculateBounds();
-            ochreFace=new GameObject("HLOchreFace"); ochreFace.transform.SetParent(part.Transform,false);
+            ochreFace=new GameObject("HLOchreFace"); ochreFace.layer=gameObject.layer; ochreFace.transform.SetParent(part.Transform,false);
             ochreFace.AddComponent<MeshFilter>().sharedMesh=ochreMesh;
             var renderer=ochreFace.AddComponent<MeshRenderer>(); renderer.sharedMaterial=stoneMaterial;
             var block=new MaterialPropertyBlock(); block.SetColor("_BaseColor",HLStoneAssembly.Palette[3].linear); renderer.SetPropertyBlock(block);
         }
         void ClearFace() { HLStoneMeshCache.DestroyOwned(ochreFace); HLStoneMeshCache.DestroyOwned(ochreMesh); }
-        void OnEnable() { if(life!=null) life.enabled=true; }
-        void OnDisable() { if(life!=null) life.enabled=false; }
+        void SetVisible(bool value)
+        {
+            foreach(var part in assembly.Parts) if(part.Transform!=null) part.Transform.gameObject.SetActive(value);
+            if(groundShadow!=null) groundShadow.enabled=value;
+            if(groundRing!=null) groundRing.enabled=value;
+            if(life!=null) life.enabled=value;
+        }
+        void OnEnable() => SetVisible(true);
+        void OnDisable() => SetVisible(false);
         void OnDestroy() { ClearFace(); assembly.Dispose(); }
     }
 }

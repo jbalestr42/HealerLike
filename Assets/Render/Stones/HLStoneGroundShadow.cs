@@ -57,6 +57,8 @@ namespace HealerLike.Render.Stones
             disc.localScale=new Vector3(width/Mathf.Max(.0001f,Mathf.Abs(inherited.x)),.001f/Mathf.Max(.0001f,Mathf.Abs(inherited.y)),length/Mathf.Max(.0001f,Mathf.Abs(inherited.z)));
         }
         void LateUpdate()=>Refresh();
+        void OnEnable() { if(disc!=null) disc.gameObject.SetActive(visible); }
+        void OnDisable() { if(disc!=null) disc.gameObject.SetActive(false); }
         void OnDestroy()
         {
             if(disc!=null) HLStoneMeshCache.DestroyOwned(disc.gameObject);

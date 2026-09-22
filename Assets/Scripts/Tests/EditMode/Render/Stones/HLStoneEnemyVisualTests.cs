@@ -59,6 +59,15 @@ namespace HealerLike.Render.Stones
             Queue(50); Drain(); Queue(-70); Drain(); Assert.AreEqual(2,Visible);
             visual.Initialize(health,15,fx); Assert.AreEqual(3,Visible);
         }
+        [Test] public void ReenableRestoresPresentationWithoutResurrectingShedParts()
+        {
+            Queue(-60); Drain(); Assert.AreEqual(2,Visible);
+            visual.enabled=false; TestHelpers.InvokePrivate(visual,"OnDisable");
+            Assert.IsFalse(visual.Parts[0].Transform.gameObject.activeInHierarchy);
+            visual.enabled=true; TestHelpers.InvokePrivate(visual,"OnEnable");
+            Assert.AreEqual(2,Visible);
+            Assert.IsTrue(visual.Parts[0].Transform.gameObject.activeInHierarchy);
+        }
         [Test] public void DamageAndHealingInSameBatchAndMaxOnlyChangesDoNotShed()
         {
             Queue(-80);Queue(80);Drain(); Assert.AreEqual(3,Visible);

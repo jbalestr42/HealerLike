@@ -32,6 +32,8 @@ namespace HealerLike.Render.Creatures
         Quaternion aim = Quaternion.identity;
         Vector3? aimTarget;
         float healthFraction = 1, charge, budPower;
+        Color statusTint = Color.white;
+        public void SetStatusTint(Color tint) => statusTint = tint;
         readonly MaterialPropertyBlock colourBlock = new MaterialPropertyBlock();
         readonly Dictionary<int, (int lease, HLDeliveryStyle style, Vector3? contact)> deliveries = new Dictionary<int, (int, HLDeliveryStyle, Vector3?)>();
         public float Charge => charge;
@@ -58,7 +60,7 @@ namespace HealerLike.Render.Creatures
             int lease = Begin(HLGestureKind.Attack, projectile ? projectile.position : intendedEnd);
             if (lease == 0) return false;
             deliveries.Add(token, (lease, style, null));
-            for (int i = 0; i < MaxArms; i++) if (tokens[i] == lease) { arms[i].Style = style; arms[i].DeliveryProfile = style != HLDeliveryStyle.Direct; }
+            for (int i = 0; i < MaxArms; i++) if (tokens[i] == lease) { arms[i].Style = style; arms[i].DeliveryProfile = true; }
             charge = 0;
             return true;
         }
@@ -139,7 +141,7 @@ namespace HealerLike.Render.Creatures
             int slot = FreeSlot(); if (slot < 0) return 0;
             if (++nextToken == 0) ++nextToken;
             tokens[slot] = nextToken; branchRoots[slot] = null;
-            arms[slot].DeliveryProfile = false; arms[slot].Style = HLDeliveryStyle.Direct; arms[slot].SetVisible(true); arms[slot].Begin(nextToken, kind, goal); return nextToken;
+            arms[slot].DeliveryProfile = kind == HLGestureKind.Heal; arms[slot].Style = kind == HLGestureKind.Heal ? HLDeliveryStyle.Arc : HLDeliveryStyle.Direct; arms[slot].SetVisible(true); arms[slot].Begin(nextToken, kind, goal); return nextToken;
         }
         public void SetTipGoal(int token, Vector3 goal)
         { if (token == 0) return; for (int i = 0; i < MaxArms; i++) if (tokens[i] == token && !branchRoots[i].HasValue) arms[i]?.SetTipGoal(token, goal); }
@@ -201,6 +203,7 @@ namespace HealerLike.Render.Creatures
                 float light = Mathf.Max(budPower, charge) * healthFraction;
                 if (part.glow > 0) colour = Color.Lerp(new Color(colour.r * .55f, colour.g * .55f, colour.b * .55f, colour.a),
                     new Color(.78f, .95f, .29f, colour.a), light);
+                colour = statusTint == Color.white ? colour : Color.Lerp(colour, statusTint, .42f);
                 colourBlock.SetColor("_BaseColor", HLPrimitiveMeshes.Brighten(colour, part.glow * light));
                 bodyRenderers[i].SetPropertyBlock(colourBlock);
             }

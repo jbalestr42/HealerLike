@@ -160,8 +160,8 @@ namespace HealerLike.Render.Grass
             var material = new Material(grassShader) { name = cone ? "HLGrassConeRuntime" : "HLGrassBladeRuntime", enableInstancing = true };
             material.SetFloat("_HL_Cone", cone ? 1 : 0); material.SetFloat("_HL_Cull", cone ? 2 : 0);
             material.SetVector("_HL_InstanceTint", Vector4.one);
-            SetColor(material, "_HL_RootColor", 46, 125, 79); SetColor(material, "_HL_MidColor", 79, 168, 79);
-            SetColor(material, "_HL_TipColor", 155, 210, 74); SetColor(material, "_HL_HealColor", 198, 242, 74);
+            SetColor(material, "_HL_RootColor", 43, 110, 87); SetColor(material, "_HL_MidColor", 101, 159, 89);
+            SetColor(material, "_HL_TipColor", 169, 204, 96); SetColor(material, "_HL_HealColor", 198, 242, 74);
             SetColor(material, "_HL_SlateRoot", 58, 66, 87); SetColor(material, "_HL_SlateTip", 74, 84, 104);
             return material;
         }

@@ -34,9 +34,9 @@ Shader "HL/Grass/HealRing"
                 if (id >= (uint)_HL_ZoneCount) { output.positionCS = float4(0,0,0,1); return output; }
                 HLZone zone = HLLoadZone(id);
                 if ((zone.kind != 1 && zone.kind != 3) || zone.radius <= 0) { output.positionCS = float4(0,0,0,1); return output; }
-                float radius = zone.radius + input.uv.y * min(0.012, zone.radius * 0.25);
+                float radius = zone.radius + input.uv.y * min(0.018, zone.radius * 0.25);
                 float2 p = zone.position.xz + float2(cos(input.uv.x), sin(input.uv.x)) * radius;
-                output.positionWS = float3(p.x, _HL_SurfaceY + 0.020, p.y);
+                output.positionWS = float3(p.x, _HL_SurfaceY + 0.10, p.y);
                 output.positionCS = TransformWorldToHClip(output.positionWS);
                 output.fade = HLGrassZoneOnset(zone);
                 return output;

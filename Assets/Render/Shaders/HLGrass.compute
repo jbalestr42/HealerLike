@@ -44,7 +44,14 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
             if (w > 0) conePresence = 1;
             coneHeight = max(coneHeight, w * smoothstep(0, 0.15, z.age));
         }
-        if (z.kind == 6) trample = max(trample, w);
+        if (z.kind == 6)
+        {
+            // Smooth irregular flattening, rather than a shaved disc with a hard circular rim.
+            float2 delta = p - z.position.xz;
+            float radius = z.radius * (0.88 + 0.12 * sin(dot(p, float2(9.7, 6.3))));
+            float footprint = HLGrassZoneOnset(z) * (1 - smoothstep(radius * 0.35, radius, length(delta)));
+            trample = max(trample, footprint);
+        }
         if (z.kind == 4) bruise = max(bruise, w);
         if (z.kind == 5 && z.radius > 0)
         {
@@ -60,7 +67,7 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
         float d = length(delta);
         outwardSum += w * (d < 1e-5 ? yaw : delta / d);
         weightSum += w;
-        ringClear = max(ringClear, HLGrassZoneOnset(z) * (1 - smoothstep(0.025, 0.055, abs(d - z.radius))));
+        ringClear = max(ringClear, HLGrassZoneOnset(z) * (1 - smoothstep(min(0.06, z.radius * 0.08), min(0.22, z.radius * 0.25), abs(d - z.radius))));
     }
     HLBladeState state;
     if (conePresence > 0 && trample < 0.5)
@@ -72,11 +79,11 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
     {
         float2 outward = outwardSum / max(1, weightSum);
         float phase = blade.heightPhaseWidthRandom.y;
-        float2 restLean = float2(cos(phase), sin(phase)) * (0.065 * blade.heightPhaseWidthRandom.x / 0.30);
+        float2 restLean = (float2(cos(phase), sin(phase)) * 0.055 + yaw * 0.10) * (blade.heightPhaseWidthRandom.x / 0.30);
         float2 lean = HLCapLean(HLWindFlow(p, blade.heightPhaseWidthRandom.y, _HL_Time) * (1 - 0.65 * h)
             + restLean + 0.20 * outward + 0.22 * launch, 0.36) * (1 - 2 * s);
         float scale = lerp((1 + 0.8 * h) * (1 - 0.65 * bruise), 0.005 / blade.heightPhaseWidthRandom.x, ringClear);
-        scale = lerp(scale, 0.012 / blade.heightPhaseWidthRandom.x, trample);
+        scale = lerp(scale, 0.055 / blade.heightPhaseWidthRandom.x, trample);
         lean = lerp(lean, yaw * 0.10, trample);
         s *= 1 - trample;
         // Flatten the edge band as a whole, including sideways displacement.
@@ -91,10 +98,10 @@ void HLUpdateGrass(uint3 dispatchID : SV_DispatchThreadID)
     uint i = dispatchID.x;
     if (i >= _HL_BladeCount) return;
     HLBladeSeed blade = _HL_BladeSeeds[i];
-    HLBladeState state = HLEvaluateBlade(blade);
-    _HL_BladeStates[i] = state;
     for (int plane = 0; plane < 6; plane++)
         if (dot(_HL_FrustumPlanes[plane].xyz, blade.positionYaw.xyz) + _HL_FrustumPlanes[plane].w < -0.85) return;
+    HLBladeState state = HLEvaluateBlade(blade);
+    _HL_BladeStates[i] = state;
     if (state.leanHeightSpike.w >= 0.5) _HL_VisibleCones.Append(i);
     else _HL_VisibleGrass.Append(i);
 }
