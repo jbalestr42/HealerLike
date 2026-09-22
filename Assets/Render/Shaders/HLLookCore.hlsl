@@ -2,10 +2,10 @@
 #define HL_LOOK_CORE_INCLUDED
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 
-// Wave-0 scaffold: the ABI below (globals, HL_G, every prototype) is frozen.
-// The bodies are placeholders so the header compiles standalone; track T1 fills them
-// in per look.md's five normative rules. The core must not depend on Light, textures,
-// instance-buffer layout, mesh deformation or zone data; the adapter supplies illum.
+// Shared HL look for primitive, grass and stone adapters.
+// Include URP Core.hlsl before this file. Fragment shading uses derivatives.
+// HLLookController publishes global tuning; material colour stays in HLLookInput.hlsl.
+// Keep all look globals outside UnityPerMaterial and shader Properties.
 
 // Full global ABI: outside UnityPerMaterial; absent from Properties.
 float4 _HLShadowTint;
@@ -44,61 +44,129 @@ float3 HLWorkingColor(float3 srgb)
 #endif
 }
 
-// TODO(T1): hash / dash noise / line coverage per look.md rules 2 and 3.
+// HLLookController uploads every global before setting _HLLookApplied to 1.
+// When the flag is 0, use the complete baked HL defaults.
+// Keep HLLookSettings defaults and shader fallback values identical.
+#define HL_DEF_SHADOWTINT float4(HLWorkingColor(float3(43,75,143)/255.0),1)
+#define HL_DEF_OUTLINECOLOR float4(HLWorkingColor(float3(24,38,63)/255.0),1)
+#define HL_DEF_FOGCOLOR float4(HLWorkingColor(float3(191,210,224)/255.0),1)
+#define HL_DEF_SHADOWSTRENGTH 0.65
+#define HL_DEF_TOONTHRESHOLD 0.5
+#define HL_DEF_OUTLINEWIDTHPIXELS 1.0
+// Provisional world-unit fog distances; calibrate against the gameplay camera.
+#define HL_DEF_FOGSTART 20.0
+#define HL_DEF_FOGEND 60.0
+#define HL_DEF_FOGBANDS 6.0
+#define HL_DEF_INKSTRENGTH 1.0
+#define HL_DEF_INKSCALE 0.05
+#define HL_DEF_INKWIDTH 0.001
+#define HL_DEF_INKSTART 0.0
+#define HL_DEF_INKRANGE 1.0
+#define HL_DEF_DENSITYMUL 0.55
+#define HL_DEF_INKWARP 0.006
+#define HL_DEF_INKWARPFREQ 2.44
+#define HL_DEF_DASHAMOUNT 0.1
+#define HL_DEF_DASHSCALE 0.01
+#define HL_DEF_INKDISTSTART 10.0
+#define HL_DEF_INKFARSPACING 0.06
+
 float HLHash11(float p)
 {
-    return 0.0;
+    p = frac(p * 0.1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return frac(p);
 }
 
 float HLDashNoise(float x)
 {
-    return 0.0;
+    float i = floor(x), f = frac(x);
+    f = f * f * (3.0 - 2.0 * f);
+    return lerp(HLHash11(i), HLHash11(i + 1.0), f);
 }
 
 float HLLine(float coord, float warp, float spacing,
              float inkWarp, float inkWarpFreq, float inkWidth)
 {
-    return 0.0;
+    spacing = max(spacing, 1e-4);
+    coord += (sin(warp * inkWarpFreq) + 0.5 * sin(warp * inkWarpFreq * 2.7)) * inkWarp;
+    float u = coord / spacing;
+    float d = min(frac(u), 1.0 - frac(u));
+    float footprint = max(fwidth(u), 1e-6);
+    float aa = min(footprint, 0.25);
+    float hw = clamp(inkWidth, 0.0, 0.24 * spacing) / spacing;
+    // Fade unresolved strokes above the two-pixel frequency limit.
+    float resolved = 1.0 - smoothstep(0.25, 0.5, footprint);
+    return (1.0 - smoothstep(hw, hw + aa, d)) * resolved;
 }
 
-// TODO(T1): shadowMask = 1 - step(HL_G(_HLToonThreshold, default), saturate(illum)); equality is lit.
 float HLShadowMask(float illum)
 {
-    return 0.0;
+    return 1.0 - step(HL_G(_HLToonThreshold, HL_DEF_TOONTHRESHOLD), saturate(illum));
 }
 
-// TODO(T1): banded fog per look.md rule 4.
 float HLFogFactor(float3 positionWS)
 {
-    return 0.0;
+    float bands = max(1.0, floor(HL_G(_HLFogBands, HL_DEF_FOGBANDS) + 0.5));
+    float start = HL_G(_HLFogStart, HL_DEF_FOGSTART);
+    float end = HL_G(_HLFogEnd, HL_DEF_FOGEND);
+    float f = saturate((distance(positionWS, GetCameraPositionWS()) - start) / max(0.001, end - start));
+    return floor(f * bands) / bands;
 }
 
 float3 HLApplyBandedFog(float3 positionWS, float3 color)
 {
-    return color;
+    return lerp(color, HL_G(_HLFogColor, HL_DEF_FOGCOLOR).rgb, HLFogFactor(positionWS));
 }
 
-// TODO(T1): binary toon fill plus hatch, gated by the same shadow mask.
+// Shared HL surface shading; positionWS and baseColor are adapter inputs.
+// Illumination is remapped main-light facing multiplied by shadow attenuation.
+// Hatch is restricted to the same binary shadow mask as the toon fill.
 float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor)
 {
-    return baseColor;
+    illum = saturate(illum);
+    float shadowMask = HLShadowMask(illum);
+    float3 shadowColor = lerp(baseColor, HL_G(_HLShadowTint, HL_DEF_SHADOWTINT).rgb,
+                             HL_G(_HLShadowStrength, HL_DEF_SHADOWSTRENGTH));
+    float3 color = lerp(baseColor, shadowColor, shadowMask);
+    float tone = saturate(((1.0 - illum) - HL_G(_HLInkStart, HL_DEF_INKSTART)) /
+                          max(0.001, HL_G(_HLInkRange, HL_DEF_INKRANGE)));
+    float hcoord = dot(positionWS, normalize(float3(1.0, 0.35, 0.6)));
+    float hwarp = dot(positionWS, normalize(float3(-0.6, 0.0, 1.0)));
+    float spacing = HL_G(_HLInkScale, HL_DEF_INKSCALE) * lerp(1.0, HL_G(_HLDensityMul, HL_DEF_DENSITYMUL), tone);
+    float dist = distance(positionWS, GetCameraPositionWS());
+    spacing *= 1.0 + HL_G(_HLInkFarSpacing, HL_DEF_INKFARSPACING) *
+        max(0.0, dist / max(0.001, HL_G(_HLInkDistStart, HL_DEF_INKDISTSTART)) - 1.0);
+    spacing = max(spacing, 1e-4);
+    // Derivatives must run for every lane, including lit fragments.
+    float ink = HLLine(hcoord, hwarp, spacing, HL_G(_HLInkWarp, HL_DEF_INKWARP),
+                       HL_G(_HLInkWarpFreq, HL_DEF_INKWARPFREQ), HL_G(_HLInkWidth, HL_DEF_INKWIDTH));
+    float lineId = floor(hcoord / spacing + 0.5);
+    float dn = HLDashNoise(hwarp / max(0.001, HL_G(_HLDashScale, HL_DEF_DASHSCALE)) + lineId * 7.31);
+    float dashAmount = HL_G(_HLDashAmount, HL_DEF_DASHAMOUNT);
+    ink *= smoothstep(dashAmount, dashAmount + 0.08, dn);
+    ink = saturate(ink * shadowMask * step(0.004, tone) * HL_G(_HLInkStrength, HL_DEF_INKSTRENGTH));
+    return lerp(color, HL_G(_HLOutlineColor, HL_DEF_OUTLINECOLOR).rgb, ink);
 }
 
-// Final form is HLApplyBandedFog(positionWS, HLShadeSurface(positionWS, illum, baseColor)).
 float3 HLEvaluateSurface(float3 positionWS, float illum, float3 baseColor)
 {
-    return baseColor;
+    return HLApplyBandedFog(positionWS, HLShadeSurface(positionWS, illum, baseColor));
 }
 
-// TODO(T1): pixel-width world expansion per look.md rule 5. Width 0 must return the input.
 float3 HLOutlineExtrude(float3 positionWS, float3 outlineNormalWS)
 {
-    return positionWS;
+    float lengthSquared = dot(outlineNormalWS, outlineNormalWS);
+    if (lengthSquared < 1e-12) return positionWS;
+    float4 pCS = TransformWorldToHClip(positionWS);
+    float worldUnitsPerPixel = 2.0 * abs(pCS.w) /
+        (max(abs(UNITY_MATRIX_P._m11), 1e-5) * max(_ScaledScreenParams.y, 1.0));
+    return positionWS + outlineNormalWS * rsqrt(lengthSquared) *
+        HL_G(_HLOutlineWidthPixels, HL_DEF_OUTLINEWIDTHPIXELS) * worldUnitsPerPixel;
 }
 
-// TODO(T1): fog the resolved outline colour using the original surface world position.
 float3 HLEvaluateOutline(float3 unextrudedPositionWS)
 {
-    return HL_G(_HLOutlineColor, float4(0.0, 0.0, 0.0, 1.0)).rgb;
+    return HLApplyBandedFog(unextrudedPositionWS, HL_G(_HLOutlineColor, HL_DEF_OUTLINECOLOR).rgb);
 }
 #endif // HL_LOOK_CORE_INCLUDED
