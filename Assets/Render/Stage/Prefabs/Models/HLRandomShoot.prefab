@@ -65,6 +65,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2441901764677228129, guid: 799236eda4a7f4fd9810f0fa460bf830, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2443599774853063328}
+    - targetCorrespondingSourceObject: {fileID: 2441901764677228129, guid: 799236eda4a7f4fd9810f0fa460bf830, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7630100100987813335}
   m_SourcePrefab: {fileID: 100100000, guid: 799236eda4a7f4fd9810f0fa460bf830, type: 3}
 --- !u!1 &2056767049355066836 stripped
 GameObject:
@@ -110,3 +113,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLHealPulse
   _cellSize: 1
+--- !u!114 &7630100100987813335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2056767049355066836}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ebaf268b45a843f582ee963235f25ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLTrampleZone
+  Radius: 0.65
+  Strength: 1

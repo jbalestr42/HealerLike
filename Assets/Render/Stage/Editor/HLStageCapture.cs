@@ -14,8 +14,12 @@ namespace HealerLike.Render.Stage
         const string Key = "HLStageCapture.Active";
         const string DirectoryPath = "/Users/fc/Documents/healerlike-render-specs/captures/";
         // Simulated seconds after the Start button: a wave has spawned by the second, attacks and heals by the last.
-        public static readonly float[] CaptureTimes = { 1f, 4f, 8f, 12f };
-        public const string Prefix = "wave6-";
+        public static readonly float[] PortraitTimes = { 1f, 4f, 8f, 12f };
+        // HL_CAPTURE_LANDSCAPE=1: one frame at 8 s in the bootstrap's landscape framing, named <Prefix>land.png.
+        public static readonly float[] LandscapeTimes = { 8f };
+        static bool Landscape => System.Environment.GetEnvironmentVariable("HL_CAPTURE_LANDSCAPE")=="1";
+        static float[] CaptureTimes => Landscape ? LandscapeTimes : PortraitTimes;
+        public const string Prefix = "wave7-";
         public static int EnemyHits => enemyHits;
         static double started;
         static int count, attacks, heals, enemyHits, castSlot, allyHits, launched, allyLaunched;
@@ -48,7 +52,8 @@ namespace HealerLike.Render.Stage
         {
             if(!SessionState.GetBool(Key,false)) return;
             if(state==PlayModeStateChange.EnteredPlayMode) { started=EditorApplication.timeSinceStartup; count=attacks=heals=enemyHits=castSlot=allyHits=launched=allyLaunched=0; gameStarted=waveStarted=false; projectiles.Clear(); observed.Clear(); placed=false; nextHeal=HealFrom; allies.Clear();
-                new GameObject("HLCaptureHook").AddComponent<HLCaptureHook>().Late=Late; }
+                new GameObject("HLCaptureHook").AddComponent<HLCaptureHook>().Late=Late;
+                if(Landscape) FrameLandscape(); }
             if(state==PlayModeStateChange.EnteredEditMode)
             {
                 bool success=SessionState.GetInt(Key+"Count",0)==CaptureTimes.Length;
@@ -82,7 +87,7 @@ namespace HealerLike.Render.Stage
         {
             if(!gameStarted || count>=CaptureTimes.Length) return;
             // Keep grass frustum culling (next frame) and the render request on the same 9:16 aspect.
-            if(Camera.main) Camera.main.aspect=(float)HLStageCalibration.PortraitWidth/HLStageCalibration.PortraitHeight;
+            if(Camera.main) Camera.main.aspect=Landscape ? (float)HLStageCalibration.PortraitHeight/HLStageCalibration.PortraitWidth : (float)HLStageCalibration.PortraitWidth/HLStageCalibration.PortraitHeight;
             Observe();
             float t=Time.time-gameStartTime;
             if(!placed && t>=PlaceAt) { placed=true; PlaceAllies(); }
@@ -93,6 +98,17 @@ namespace HealerLike.Render.Stage
             if(placed && heals==0 && t>=nextHeal) { nextHeal=t+1f; CastOn(allies.Find(a=>a)); }
             else if(placed && heals>0 && enemyHits==0 && t>=Mathf.Max(nextHeal,StrikeFrom)) { nextHeal=t+1f; CastOn(Array.Find(UnityEngine.Object.FindObjectsByType<Entity>(FindObjectsSortMode.InstanceID),e=>e.entityType!=Entity.EntityType.Player)); }
             if(t>=CaptureTimes[count]) Capture();
+        }
+        // Environment beauty: re-run the ridge (and the cropped foreground) after switching framing.
+        static void FrameLandscape()
+        {
+            var bootstrap=UnityEngine.Object.FindAnyObjectByType<HLRenderBootstrap>();
+            if(!bootstrap) { Debug.LogWarning("HL capture: no bootstrap, landscape framing not applied"); return; }
+            bootstrap.CameraFraming=HLRenderBootstrap.Framing.Landscape;
+            if(Camera.main) Camera.main.aspect=(float)HLStageCalibration.PortraitHeight/HLStageCalibration.PortraitWidth;
+            foreach(var f in UnityEngine.Object.FindObjectsByType<HealerLike.Render.Environment.HLEnvironmentForeground>(FindObjectsSortMode.None)) f.Build();
+            foreach(var r in UnityEngine.Object.FindObjectsByType<HealerLike.Render.Environment.HLEnvironmentRidge>(FindObjectsSortMode.None)) r.Build();
+            Debug.Log("HL capture: landscape framing, foreground and ridge rebuilt");
         }
         // Batchmode has no visible Game view; asking it to repaint is what lets WaitForEndOfFrame coroutines (grid generation) resume.
         static void RepaintGameView()
@@ -182,7 +198,7 @@ namespace HealerLike.Render.Stage
             var camera=Camera.main;
             if(!camera) throw new InvalidOperationException("HL capture requires the gameplay camera.");
             // Portrait, as Julien's device autorotates: the aspect follows the target, not the batchmode screen.
-            const int width=HLStageCalibration.PortraitWidth, height=HLStageCalibration.PortraitHeight;
+            int width=Landscape?HLStageCalibration.PortraitHeight:HLStageCalibration.PortraitWidth, height=Landscape?HLStageCalibration.PortraitWidth:HLStageCalibration.PortraitHeight;
             var target=RenderTexture.GetTemporary(width,height,24,RenderTextureFormat.ARGB32);
             var previous=RenderTexture.active;
             var texture=new Texture2D(width,height,TextureFormat.RGB24,false);
@@ -193,7 +209,7 @@ namespace HealerLike.Render.Stage
                 RenderPipeline.SubmitRenderRequest(camera,request);
                 RenderTexture.active=target;
                 texture.ReadPixels(new Rect(0,0,width,height),0,0); texture.Apply();
-                string path=DirectoryPath+Prefix+(count+1)+".png";
+                string path=DirectoryPath+Prefix+(Landscape?"land":(count+1).ToString())+".png";
                 File.WriteAllBytes(path,texture.EncodeToPNG());
                 count++; SessionState.SetInt(Key+"Count",count);
                 foreach(var field in UnityEngine.Object.FindObjectsByType<HealerLike.Render.Grass.HLGrassField>(FindObjectsSortMode.InstanceID))
