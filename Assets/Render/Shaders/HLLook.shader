@@ -3,6 +3,9 @@ Shader "HL/Look/Primitive"
 {
     Properties
     {
+        _HLOutlineWidthMultiplier ("Outline Width Multiplier", Float) = 1
+        [Toggle] _HLGroundGrid ("Battlefield Ground Grid", Float) = 0
+        [Toggle] _HLSmoothOutlineNormals ("Use Authored TEXCOORD3 Outline Normals", Float) = 0
         [MainColor] _BaseColor ("Base Color", Color) = (1,1,1,1)
         [Toggle] _HLNormalEdges ("Normal Edges (zero keeps depth edges only)", Float) = 1
     }
@@ -66,7 +69,9 @@ Shader "HL/Look/Primitive"
                 #endif
                 Light mainLight = GetMainLight(shadowCoord, input.positionWS, half4(1,1,1,1));
                 float illum = saturate((dot(normalize(input.normalWS), mainLight.direction) * 0.5 + 0.5) * mainLight.shadowAttenuation);
-                return half4(HLEvaluateSurface(input.positionWS, illum, HLGetBaseColor().rgb), 1);
+                float3 color = HLShadeSurface(input.positionWS, illum, HLGetBaseColor().rgb);
+                if (_HLGroundGrid > .5) color = HLApplyBattlefieldGrid(input.positionWS, color);
+                return half4(HLApplyBandedFog(input.positionWS, color), 1);
             }
             ENDHLSL
         }
@@ -115,9 +120,9 @@ Shader "HL/Look/Primitive"
             HLVaryings HLOutlineVertex(HLAttributes input)
             {
                 HLVaryings output = HLForwardVertex(input);
-                float3 normalOS = dot(input.outlineNormalOS, input.outlineNormalOS) > 1e-12 ? input.outlineNormalOS : input.normalOS;
+                float3 normalOS = _HLSmoothOutlineNormals > .5 && dot(input.outlineNormalOS, input.outlineNormalOS) > 1e-12 ? input.outlineNormalOS : input.normalOS;
                 float3 normalWS = TransformObjectToWorldNormal(normalOS);
-                output.positionCS = TransformWorldToHClip(HLOutlineExtrude(output.positionWS, normalWS));
+                output.positionCS = HLOutlineClip(output.positionWS, normalWS, _HLOutlineWidthMultiplier);
                 return output;
             }
             half4 HLOutlineFragment(HLVaryings input) : SV_Target

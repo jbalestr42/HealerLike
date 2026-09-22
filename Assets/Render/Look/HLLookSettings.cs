@@ -16,7 +16,7 @@ namespace HealerLike.Render.Look
         public float FogStart;
         public float FogEnd;
         public float InkStrength;
-        [Tooltip("Projected stroke spacing in pixels; 3.5 for portrait at 26–40 units. Zero uses legacy world spacing.")]
+        [Tooltip("Projected stroke spacing in pixels; 3.5 for portrait at 42.8–47.8 units. Zero uses legacy world spacing.")]
         public float InkSpacingPixels;
         public float InkScale;
         public float InkWidth;

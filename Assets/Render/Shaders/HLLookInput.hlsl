@@ -3,6 +3,9 @@
 CBUFFER_START(UnityPerMaterial)
     float4 _BaseColor;
     float _HLNormalEdges;
+    float _HLOutlineWidthMultiplier;
+    float _HLGroundGrid;
+    float _HLSmoothOutlineNormals;
 CBUFFER_END
 
 #if defined(UNITY_INSTANCING_ENABLED)
