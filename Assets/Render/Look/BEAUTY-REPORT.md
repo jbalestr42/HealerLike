@@ -152,7 +152,9 @@ stream issue and led to the explicit opt-in and two-sided pixel assertions above
 matches (grep exit 1). Original contract declarations/signatures retained; only
 additive controls/helpers/material properties introduced. Unity's incidental
 ProjectSettings and unrelated importer metadata changes were restored.
-Only `git push -u origin zfc-b-look` is used for publication.
+`git push -u origin zfc-b-look`: exit 0; only the requested branch was pushed.
+Final capture metadata is included so importing the four newest evidence images
+does not leave untracked metadata files.
 
 BLIND-SPOT: Files from batchmode Metal were inspected; no visible Editor, device,
 full-stage gameplay or integrated indirect-grass tip rendering was observed.
