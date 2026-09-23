@@ -98,7 +98,7 @@ namespace HealerLike.Render.Zones
                 return 0;
             }
 
-            double turns = Math.Atan2(direction.z, direction.x) / (2 * Math.PI);
+            double turns = System.Math.Atan2(direction.z, direction.x) / (2 * System.Math.PI);
             if (turns < 0)
             {
                 turns += 1;
