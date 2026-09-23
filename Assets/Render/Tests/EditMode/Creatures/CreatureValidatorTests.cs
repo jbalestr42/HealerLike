@@ -68,13 +68,14 @@ public class CreatureValidatorTests
         Assert.AreEqual(valid, CreatureValidator.TryValidate(_recipe, out _));
     }
 
-    [TestCase(0.6f, true)] // the short band, 1.1 body units
-    [TestCase(1.16f, true)] // the long band, 2.1 body units
-    [TestCase(1.3f, false)]
+    [TestCase(0.6f, true)] // the healer's short band, 1.1 body units
+    [TestCase(1.29f, true)] // a plant's pinned reach, 1.3 plant body units
+    [TestCase(2.08f, true)] // the long band, 2.1 plant body units
+    [TestCase(2.3f, false)]
     public void TryValidate_RootReach_AcceptsEveryReachBand(float footRadius, bool valid)
     {
         _recipe.roots.footRadius = footRadius;
-        _recipe.roots.thickness = 0.042f;
+        _recipe.roots.thickness = 0.07f;
 
         Assert.AreEqual(valid, CreatureValidator.TryValidate(_recipe, out _));
     }
