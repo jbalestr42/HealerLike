@@ -166,8 +166,9 @@ public class SpellVisualSinkTests
     }
 
     [Test]
-    public void SetStatus_EnemyCasterOnAlly_UsesTheBaneLook()
+    public void SetStatus_HarmfulModifierFromAnEnemy_UsesTheBaneLook()
     {
+        _modifier.data.value = -2f;
         Entity caster = null;
         Entity recipient = null;
         TestHelpers.WithLoggingDisabled(() =>
