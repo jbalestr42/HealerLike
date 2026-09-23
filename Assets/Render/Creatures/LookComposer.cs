@@ -1,12 +1,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 using HealerLike.Render.Grammar;
+using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Creatures
 {
     // Builds the recipe of a unit from its channels and the vocabulary asset at spawn, in memory and never saved
     public static class LookComposer
     {
+        // How far past the body and head an accessory must reach on screen, in cells; stones need more to tell a group apart
+        public static readonly float PlantAccessoryReach = 0.25f;
+        public static readonly float StoneAccessoryReach = 0.3f;
+        // The board camera's pitch, an accessory is measured on its screen plane
+        static readonly Quaternion boardCamera = Quaternion.Euler(StageCalibration.PortraitPitch, 0f, 0f);
+
         // Parts laid out in body units around the creature's foot, turned into recipe parts in cells.
         // Every part hangs from the first one, which never rotates, so a part's local position is its offset from it.
         public class PartList
@@ -18,6 +25,9 @@ namespace HealerLike.Render.Creatures
             float _unit;
 
             public int count { get { return _parts.Count; } }
+
+            // The first accessory part, every part before it is body and head
+            public int accessoryStart { get; set; } = -1;
 
             public PartList(float unit)
             {
@@ -129,6 +139,16 @@ namespace HealerLike.Render.Creatures
                 parts = Parts(channels, vocabulary, copies, seed, out sockets);
             }
 
+            if (channels.accessory != AccessoryKind.None)
+            {
+                float reach = OutlineReach(parts, vocabulary.bodyUnit);
+                float needed = channels.side == LookSide.Plant ? PlantAccessoryReach : StoneAccessoryReach;
+                if (reach < needed)
+                {
+                    Debug.LogError($"[LookComposer] {recipe.name}: the {channels.accessory} reaches {reach:0.00} cell past the outline, under {needed}.");
+                }
+            }
+
             recipe.parts = parts.ToArray();
             recipe.targetLocal = sockets.body * vocabulary.bodyUnit;
             recipe.idle.seed = seed;
@@ -153,6 +173,18 @@ namespace HealerLike.Render.Creatures
                 return null;
             }
             return recipe;
+        }
+
+        // How far the accessory reaches past the body and head on the board camera's screen plane, in cells
+        public static float AccessoryReach(UnitChannels channels, LookVocabulary vocabulary)
+        {
+            if (channels.accessory == AccessoryKind.None || !HasEntries(channels, vocabulary))
+            {
+                return 0f;
+            }
+
+            PartList parts = Parts(channels, vocabulary, Copies(channels.count), Seed(channels), out _);
+            return OutlineReach(parts, vocabulary.bodyUnit);
         }
 
         public static int Copies(CountBand count)
@@ -292,6 +324,7 @@ namespace HealerLike.Render.Creatures
 
             if (channels.accessory != AccessoryKind.None)
             {
+                parts.accessoryStart = parts.count;
                 LookVocabulary.AccessoryEntry accessory = vocabulary.accessories[channels.accessory];
                 Vector3 socket = Socket(accessory.socket, sockets);
                 Fragment(parts, vocabulary, channels, isPlant ? accessory.plant : accessory.stone, socket, scale, CountBand.One, seed);
@@ -320,6 +353,58 @@ namespace HealerLike.Render.Creatures
                 parts.Add(part.id, part.primitive, at + part.position * scale, part.size * scale, colour, part.euler, part.glow,
                     part.role, Variant(seed, parts.count));
             }
+        }
+
+        // Each accessory part is sampled at its centre and its six face centres, the body and head as the ellipsoids in their boxes
+        static float OutlineReach(PartList parts, float bodyUnit)
+        {
+            Vector3 right = boardCamera * Vector3.right;
+            Vector3 up = boardCamera * Vector3.up;
+            float reach = 0f;
+            for (int i = Mathf.Max(0, parts.accessoryStart); i < parts.count; i++)
+            {
+                LookPart part = parts.Source(i);
+                Quaternion rotation = Quaternion.Euler(part.euler);
+                for (int k = 0; k < 7; k++)
+                {
+                    Vector3 point = part.position;
+                    if (k > 0)
+                    {
+                        int axis = (k - 1) / 2;
+                        Vector3 offset = Vector3.zero;
+                        offset[axis] = (k % 2 == 0 ? -0.5f : 0.5f) * part.size[axis];
+                        point += rotation * offset;
+                    }
+
+                    Vector2 screen = new Vector2(Vector3.Dot(point, right), Vector3.Dot(point, up));
+                    float nearest = float.MaxValue;
+                    for (int j = 0; j < parts.accessoryStart; j++)
+                    {
+                        nearest = Mathf.Min(nearest, Outside(parts.Source(j), screen, right, up));
+                    }
+
+                    reach = Mathf.Max(reach, nearest);
+                }
+            }
+            return reach * bodyUnit;
+        }
+
+        // How far a screen point lies outside a part's screen rectangle
+        static float Outside(LookPart part, Vector2 point, Vector3 right, Vector3 up)
+        {
+            Quaternion inverse = Quaternion.Inverse(Quaternion.Euler(part.euler));
+            Vector3 half = part.size * 0.5f;
+            float halfX = Extent(half, inverse * right);
+            float halfY = Extent(half, inverse * up);
+            float dx = Mathf.Max(0f, Mathf.Abs(point.x - Vector3.Dot(part.position, right)) - halfX);
+            float dy = Mathf.Max(0f, Mathf.Abs(point.y - Vector3.Dot(part.position, up)) - halfY);
+            return Mathf.Sqrt(dx * dx + dy * dy);
+        }
+
+        static float Extent(Vector3 half, Vector3 direction)
+        {
+            Vector3 scaled = Vector3.Scale(half, direction);
+            return scaled.magnitude;
         }
 
         // Two boulder legs under a stone body, from the ground up into it

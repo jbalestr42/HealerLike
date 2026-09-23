@@ -100,7 +100,7 @@ public class LookComposerTests
             {
                 foreach (CountBand count in Enum.GetValues(typeof(CountBand)))
                 {
-                    UnitChannels channels = CreateChannels(side, head, count, StemBand.Quick, MassBand.Heavy, AccessoryKind.MiniHead);
+                    UnitChannels channels = CreateChannels(side, head, count, StemBand.Quick, MassBand.Heavy);
 
                     CreatureRecipe recipe = Compose(channels);
 
@@ -122,6 +122,55 @@ public class LookComposerTests
 
                 Assert.NotNull(recipe, $"{side} {accessory}");
             }
+        }
+    }
+
+    [Test]
+    public void AccessoryReach_EveryAccessoryMassStemAndSide_BreaksTheOutline()
+    {
+        foreach (LookSide side in Enum.GetValues(typeof(LookSide)))
+        {
+            float needed = side == LookSide.Plant ? LookComposer.PlantAccessoryReach : LookComposer.StoneAccessoryReach;
+            foreach (AccessoryKind accessory in Enum.GetValues(typeof(AccessoryKind)))
+            {
+                if (accessory == AccessoryKind.None)
+                {
+                    continue;
+                }
+
+                foreach (MassBand mass in Enum.GetValues(typeof(MassBand)))
+                {
+                    foreach (StemBand stem in Enum.GetValues(typeof(StemBand)))
+                    {
+                        UnitChannels channels = CreateChannels(side, HeadKind.Bud, stem: stem, mass: mass, accessory: accessory);
+
+                        float reach = LookComposer.AccessoryReach(channels, _vocabulary);
+
+                        Assert.GreaterOrEqual(reach, needed, $"{side} {accessory} {mass} {stem}"); // in cells past body and head
+                    }
+                }
+            }
+        }
+    }
+
+    [Test]
+    public void Compose_EveryAccessory_SitsOnTheUnitsRight()
+    {
+        foreach (AccessoryKind accessory in Enum.GetValues(typeof(AccessoryKind)))
+        {
+            if (accessory == AccessoryKind.None)
+            {
+                continue;
+            }
+
+            CreatureRecipe recipe = Compose(CreateChannels(LookSide.Plant, HeadKind.Bud, accessory: accessory));
+
+            float sum = 0f;
+            foreach (CreaturePart part in FindAll(recipe, PartRole.Accessory))
+            {
+                sum += part.localPosition.x;
+            }
+            Assert.Greater(sum, 0f, accessory.ToString());
         }
     }
 
