@@ -1,4 +1,5 @@
-using System.Linq;
+using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -6,95 +7,176 @@ namespace HealerLike.Render.Stones
 {
     public class HLStoneDynamicsTests
     {
-        GameObject root,projectile,fxRoot;
-        HLStoneEnemyVisual visual;
-        HLStoneEffects fx;
-        ResourceAttribute health;
-        [SetUp] public void SetUp()
+        GameObject _root;
+        GameObject _projectile;
+        GameObject _fxRoot;
+        HLStoneEnemyVisual _visual;
+        HLStoneEffects _fx;
+        ResourceAttribute _health;
+
+        [SetUp]
+        public void SetUp()
         {
-            root=new GameObject("HLRoot"); projectile=new GameObject("HLProjectile"); fxRoot=new GameObject("HLFX");
-            health=TestHelpers.CreateResourceAttribute(root,AttributeType.HealthMax,100);
-            fx=fxRoot.AddComponent<HLStoneEffects>(); visual=root.AddComponent<HLStoneEnemyVisual>(); visual.Initialize(health,17,fx);
+            _root = new GameObject("HLRoot");
+            _projectile = new GameObject("HLProjectile");
+            _fxRoot = new GameObject("HLFX");
+            _health = TestHelpers.CreateResourceAttribute(_root, AttributeType.HealthMax, 100);
+            _fx = _fxRoot.AddComponent<HLStoneEffects>();
+            _visual = _root.AddComponent<HLStoneEnemyVisual>();
+            _visual.Initialize(_health, 17, _fx);
         }
-        [TearDown] public void TearDown() { TestHelpers.InvokePrivate(fx,"OnDestroy"); Object.DestroyImmediate(root); Object.DestroyImmediate(projectile); Object.DestroyImmediate(fxRoot); }
-        [Test] public void AimAnticipationAndLaunchRotateOnlyPresentation()
+
+        [TearDown]
+        public void TearDown()
         {
-            var pivot=visual.Parts[0].Transform.parent;
-            visual.AdvancePresentation(Vector3.forward,1,1);
-            Assert.Greater((pivot.rotation*Vector3.up).z,0);
-            visual.AdvancePresentation(Vector3.forward,0,1);
-            Assert.Less((pivot.rotation*Vector3.up).z,-.2f);
-            Assert.True(visual.BeginDelivery(1,HLDeliveryStyle.Thrown,projectile.transform,Vector3.forward*5));
-            Assert.Greater((pivot.rotation*Vector3.up).z,.3f);
-            Assert.AreEqual(Quaternion.identity,root.transform.rotation);
-            Assert.AreEqual(Quaternion.identity,pivot.parent.localRotation);
-            Assert.AreEqual(Vector3.zero,root.transform.position);
+            TestHelpers.InvokePrivate(_fx, "OnDestroy");
+            Object.DestroyImmediate(_root);
+            Object.DestroyImmediate(_projectile);
+            Object.DestroyImmediate(_fxRoot);
         }
-        [TestCase(HLStonePreset.Cairn)] [TestCase(HLStonePreset.Monolith)]
+
+        [Test]
+        public void AimAnticipationAndLaunchRotateOnlyPresentation()
+        {
+            Transform pivot = _visual.parts[0].transform.parent;
+            _visual.AdvancePresentation(Vector3.forward, 1f, 1f);
+            Assert.Greater((pivot.rotation * Vector3.up).z, 0);
+
+            _visual.AdvancePresentation(Vector3.forward, 0f, 1f);
+            Assert.Less((pivot.rotation * Vector3.up).z, -0.2f);
+
+            Assert.True(_visual.BeginDelivery(1, HLDeliveryStyle.Thrown, _projectile.transform, Vector3.forward * 5f));
+            Assert.Greater((pivot.rotation * Vector3.up).z, 0.3f);
+            Assert.AreEqual(Quaternion.identity, _root.transform.rotation);
+            Assert.AreEqual(Quaternion.identity, pivot.parent.localRotation);
+            Assert.AreEqual(Vector3.zero, _root.transform.position);
+        }
+
+        [TestCase(HLStonePreset.Cairn)]
+        [TestCase(HLStonePreset.Monolith)]
         public void RigidPresetsIgnoreTargetCooldownAndLaunch(HLStonePreset preset)
         {
-            TestHelpers.SetPrivateField(visual,"preset",preset); visual.Initialize(health,17,fx);
-            var pivot=visual.Parts[0].Transform.parent;
-            visual.AdvancePresentation(Vector3.forward,0,.2f); var first=pivot.localRotation;
-            visual.Initialize(health,17,fx); visual.AdvancePresentation(Vector3.left,1,.2f);
-            Assert.AreEqual(first,pivot.localRotation);
-            visual.BeginDelivery(1,HLDeliveryStyle.Direct,projectile.transform,Vector3.back);
-            Assert.AreEqual(first,pivot.localRotation);
-            visual.AdvancePresentation(Vector3.forward,0,10);
-            Assert.Less(Quaternion.Angle(Quaternion.identity,pivot.localRotation),.001f);
+            TestHelpers.SetPrivateField(_visual, "_preset", preset);
+            _visual.Initialize(_health, 17, _fx);
+            Transform pivot = _visual.parts[0].transform.parent;
+            _visual.AdvancePresentation(Vector3.forward, 0f, 0.2f);
+            Quaternion first = pivot.localRotation;
+
+            _visual.Initialize(_health, 17, _fx);
+            _visual.AdvancePresentation(Vector3.left, 1f, 0.2f);
+            Assert.AreEqual(first, pivot.localRotation);
+
+            _visual.BeginDelivery(1, HLDeliveryStyle.Direct, _projectile.transform, Vector3.back);
+            Assert.AreEqual(first, pivot.localRotation);
+
+            _visual.AdvancePresentation(Vector3.forward, 0f, 10f);
+            Assert.Less(Quaternion.Angle(Quaternion.identity, pivot.localRotation), 0.001f);
         }
-        [TestCase(HLDeliveryStyle.Thrown)] [TestCase(HLDeliveryStyle.Direct)] [TestCase(HLDeliveryStyle.Rigid)]
+
+        [TestCase(HLDeliveryStyle.Thrown)]
+        [TestCase(HLDeliveryStyle.Direct)]
+        [TestCase(HLDeliveryStyle.Rigid)]
         public void DeliveryFollowsContactsAndCleansUp(HLDeliveryStyle style)
         {
-            Assert.True(visual.BeginDelivery(1,style,projectile.transform,Vector3.forward));
-            Assert.False(visual.BeginDelivery(1,style,projectile.transform,Vector3.forward));
-            projectile.transform.position=new Vector3(4,3,2); TestHelpers.InvokePrivate(visual,"LateUpdate");
-            Assert.AreEqual(projectile.transform.position,root.transform.Find("HLThrownShard").position);
-            visual.ContactDelivery(1,Vector3.one*7,null); Assert.AreEqual(0,visual.LiveDeliveryCount);
-            Assert.That(fx.LiveCount,Is.InRange(8,10));
-            foreach(var filter in fxRoot.GetComponentsInChildren<MeshFilter>()) Assert.AreEqual(Vector3.one*7,filter.transform.position);
-            int count=fx.LiveCount; visual.ContactDelivery(1,Vector3.zero,null); visual.EndDelivery(1); Assert.AreEqual(count,fx.LiveCount);
+            Assert.True(_visual.BeginDelivery(1, style, _projectile.transform, Vector3.forward));
+            Assert.False(_visual.BeginDelivery(1, style, _projectile.transform, Vector3.forward));
+
+            _projectile.transform.position = new Vector3(4f, 3f, 2f);
+            TestHelpers.InvokePrivate(_visual, "LateUpdate");
+            Assert.AreEqual(_projectile.transform.position, _root.transform.Find("HLThrownShard").position);
+
+            _visual.ContactDelivery(1, Vector3.one * 7f, null);
+            Assert.AreEqual(0, _visual.liveDeliveryCount);
+            Assert.That(_fx.liveCount, Is.InRange(8, 10));
+            foreach (MeshFilter filter in _fxRoot.GetComponentsInChildren<MeshFilter>())
+            {
+                Assert.AreEqual(Vector3.one * 7f, filter.transform.position);
+            }
+
+            int count = _fx.liveCount;
+            _visual.ContactDelivery(1, Vector3.zero, null);
+            _visual.EndDelivery(1);
+            Assert.AreEqual(count, _fx.liveCount);
         }
-        [Test] public void UnsupportedStylesAndDisableDoNotLeak()
+
+        [Test]
+        public void UnsupportedStylesAndDisableDoNotLeak()
         {
-            foreach(var style in new[]{HLDeliveryStyle.Arc,HLDeliveryStyle.Swarm,HLDeliveryStyle.Bounce,HLDeliveryStyle.ChainSync})
-                Assert.False(visual.BeginDelivery(1,style,projectile.transform,Vector3.one));
-            visual.BeginDelivery(1,HLDeliveryStyle.Thrown,projectile.transform,Vector3.one);
-            visual.BeginDelivery(2,HLDeliveryStyle.Thrown,projectile.transform,Vector3.one);
-            visual.enabled=false; TestHelpers.InvokePrivate(visual,"OnDisable"); Assert.AreEqual(0,visual.LiveDeliveryCount);
-            Assert.AreEqual(0,fx.LiveCount);
+            HLDeliveryStyle[] unsupported =
+            {
+                HLDeliveryStyle.Arc, HLDeliveryStyle.Swarm, HLDeliveryStyle.Bounce, HLDeliveryStyle.ChainSync
+            };
+            foreach (HLDeliveryStyle style in unsupported)
+            {
+                Assert.False(_visual.BeginDelivery(1, style, _projectile.transform, Vector3.one));
+            }
+
+            _visual.BeginDelivery(1, HLDeliveryStyle.Thrown, _projectile.transform, Vector3.one);
+            _visual.BeginDelivery(2, HLDeliveryStyle.Thrown, _projectile.transform, Vector3.one);
+            _visual.enabled = false;
+            TestHelpers.InvokePrivate(_visual, "OnDisable");
+            Assert.AreEqual(0, _visual.liveDeliveryCount);
+            Assert.AreEqual(0, _fx.liveCount);
         }
-        [Test] public void LateUpdatePollsPublicSkillCooldownAndFirstTarget()
+
+        [Test]
+        public void LateUpdatePollsPublicSkillCooldownAndFirstTarget()
         {
-            Entity owner=null; TargetProvider provider=null;
-            TestHelpers.WithLoggingDisabled(()=> { owner=root.AddComponent<Entity>(); provider=root.AddComponent<TargetProvider>(); });
-            TestHelpers.SetPrivateField(owner,"_health",health);
-            TestHelpers.SetPrivateField(provider,"_targets",new System.Collections.Generic.List<GameObject>{projectile});
-            projectile.transform.position=Vector3.forward*8;
-            visual.Init(owner);
+            Entity owner = null;
+            TargetProvider provider = null;
+            TestHelpers.WithLoggingDisabled(() =>
+            {
+                owner = _root.AddComponent<Entity>();
+                provider = _root.AddComponent<TargetProvider>();
+            });
+            TestHelpers.SetPrivateField(owner, "_health", _health);
+            TestHelpers.SetPrivateField(provider, "_targets", new List<GameObject> { _projectile });
+            _projectile.transform.position = Vector3.forward * 8f;
+            _visual.Init(owner);
+
             // Entity creates skills after model Init. Verify they are discovered on a later poll.
-            var skill=root.AddComponent<ShootProjectileSkill>();
-            TestHelpers.SetPrivateField(skill,"_cooldownDuration",new Attribute(1)); skill.isEnabled=true;
-            var cooldown=typeof(ACooldownSkill<ShootProjectileSkillData>).GetField("_cooldown",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance);
-            cooldown.SetValue(skill,1f);
-            TestHelpers.InvokePrivate(visual,"LateUpdate");
-            var read=typeof(HLStoneEnemyVisual).GetMethod("ReadCooldown",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance);
-            Assert.AreEqual(1f,(float)read.Invoke(visual,null));
-            var poll=(System.Func<float>)System.Delegate.CreateDelegate(typeof(System.Func<float>),visual,read);
-            poll(); visual.CompleteHealthBatch();
-            long before=System.GC.GetAllocatedBytesForCurrentThread();
-            for(int i=0;i<100;i++) { poll(); visual.CompleteHealthBatch(); }
-            Assert.AreEqual(0,System.GC.GetAllocatedBytesForCurrentThread()-before);
-            cooldown.SetValue(skill,.05f); Assert.AreEqual(.05f,(float)read.Invoke(visual,null));
-            skill.isEnabled=false; Assert.True(float.IsNaN((float)read.Invoke(visual,null)));
-            skill.isEnabled=true; TestHelpers.SetPrivateField(owner,"_isDraggable",true);
-            Assert.True(float.IsNaN((float)read.Invoke(visual,null)));
+            ShootProjectileSkill skill = _root.AddComponent<ShootProjectileSkill>();
+            TestHelpers.SetPrivateField(skill, "_cooldownDuration", new Attribute(1));
+            skill.isEnabled = true;
+            BindingFlags privateInstance = BindingFlags.NonPublic | BindingFlags.Instance;
+            System.Type cooldownSkill = typeof(ACooldownSkill<ShootProjectileSkillData>);
+            FieldInfo cooldown = cooldownSkill.GetField("_cooldown", privateInstance);
+            cooldown.SetValue(skill, 1f);
+            TestHelpers.InvokePrivate(_visual, "LateUpdate");
+            MethodInfo read = typeof(HLStoneEnemyVisual).GetMethod("ReadCooldown", privateInstance);
+            Assert.AreEqual(1f, (float)read.Invoke(_visual, null));
+
+            System.Func<float> poll = (System.Func<float>)System.Delegate.CreateDelegate(typeof(System.Func<float>),
+                _visual, read);
+            poll();
+            _visual.CompleteHealthBatch();
+            long before = System.GC.GetAllocatedBytesForCurrentThread();
+            for (int i = 0; i < 100; i++)
+            {
+                poll();
+                _visual.CompleteHealthBatch();
+            }
+            Assert.AreEqual(0, System.GC.GetAllocatedBytesForCurrentThread() - before);
+
+            cooldown.SetValue(skill, 0.05f);
+            Assert.AreEqual(0.05f, (float)read.Invoke(_visual, null));
+
+            skill.isEnabled = false;
+            Assert.True(float.IsNaN((float)read.Invoke(_visual, null)));
+
+            skill.isEnabled = true;
+            TestHelpers.SetPrivateField(owner, "_isDraggable", true);
+            Assert.True(float.IsNaN((float)read.Invoke(_visual, null)));
         }
-        [Test] public void DestroyedProjectileIsReleasedWithoutContact()
+
+        [Test]
+        public void DestroyedProjectileIsReleasedWithoutContact()
         {
-            visual.BeginDelivery(1,HLDeliveryStyle.Thrown,projectile.transform,Vector3.one);
-            Object.DestroyImmediate(projectile); TestHelpers.InvokePrivate(visual,"LateUpdate");
-            Assert.AreEqual(0,visual.LiveDeliveryCount); Assert.AreEqual(0,fx.LiveCount);
+            _visual.BeginDelivery(1, HLDeliveryStyle.Thrown, _projectile.transform, Vector3.one);
+            Object.DestroyImmediate(_projectile);
+            TestHelpers.InvokePrivate(_visual, "LateUpdate");
+            Assert.AreEqual(0, _visual.liveDeliveryCount);
+            Assert.AreEqual(0, _fx.liveCount);
         }
     }
 }

@@ -1,51 +1,104 @@
 using NUnit.Framework;
 using UnityEngine;
+
 namespace HealerLike.Render.Stones
 {
     public class HLStoneTerrainClumpTests
     {
-        [Test] public void OchreIsOneFaceAndRingIsPublic()
+        [Test]
+        public void OchreIsOneFaceAndRingIsPublic()
         {
-            var go=new GameObject("HLTerrain"); var clump=go.AddComponent<HLStoneTerrainClump>();
+            GameObject go = new GameObject("HLTerrain");
+            HLStoneTerrainClump clump = go.AddComponent<HLStoneTerrainClump>();
             try
             {
-                clump.Initialize(5,1); Assert.Greater(clump.BareGroundRadius,clump.Assembly.LocalBounds.extents.x);
-                var facet=clump.Assembly.Parts[0].Transform.Find("HLOchreFace"); Assert.IsNotNull(facet);
-                Assert.AreEqual(3,facet.GetComponent<MeshFilter>().sharedMesh.vertexCount);
-                clump.Initialize(6,1); Assert.IsNull(clump.Assembly.Parts[0].Transform.Find("HLOchreFace"));
+                clump.Initialize(5, 1f);
+                Assert.Greater(clump.bareGroundRadius, clump.assembly.localBounds.extents.x);
+                Transform facet = clump.assembly.parts[0].transform.Find("HLOchreFace");
+                Assert.IsNotNull(facet);
+                Assert.AreEqual(3, facet.GetComponent<MeshFilter>().sharedMesh.vertexCount);
+
+                clump.Initialize(6, 1f);
+                Assert.IsNull(clump.assembly.parts[0].transform.Find("HLOchreFace"));
             }
-            finally { TestHelpers.InvokePrivate(clump,"OnDestroy"); Object.DestroyImmediate(go); }
+            finally
+            {
+                TestHelpers.InvokePrivate(clump, "OnDestroy");
+                Object.DestroyImmediate(go);
+            }
         }
-        [Test] public void DisableHidesOwnedPartsAndFootprintsAndEnableRestoresThem()
+
+        [Test]
+        public void DisableHidesOwnedPartsAndFootprintsAndEnableRestoresThem()
         {
-            var go=new GameObject("HLTerrain"); var clump=go.AddComponent<HLStoneTerrainClump>();
+            GameObject go = new GameObject("HLTerrain");
+            HLStoneTerrainClump clump = go.AddComponent<HLStoneTerrainClump>();
             try
             {
-                clump.Initialize(5,1); clump.enabled=false;
-                TestHelpers.InvokePrivate(clump,"OnDisable");
-                foreach(var part in clump.Assembly.Parts) Assert.IsFalse(part.Transform.gameObject.activeSelf);
+                clump.Initialize(5, 1f);
+                clump.enabled = false;
+                TestHelpers.InvokePrivate(clump, "OnDisable");
+                foreach (HLStoneAssembly.Part part in clump.assembly.parts)
+                {
+                    Assert.IsFalse(part.transform.gameObject.activeSelf);
+                }
                 Assert.IsFalse(go.GetComponent<HLStoneGroundShadow>().enabled);
                 Assert.IsFalse(go.GetComponent<HLStoneGroundRing>().enabled);
-                clump.enabled=true; TestHelpers.InvokePrivate(clump,"OnEnable");
-                foreach(var part in clump.Assembly.Parts) Assert.IsTrue(part.Transform.gameObject.activeSelf);
-            }
-            finally { TestHelpers.InvokePrivate(clump,"OnDestroy"); Object.DestroyImmediate(go); }
-        }
-        [Test] public void BoundsAndCellOrderDeterminism()
-        {
-            var a=new GameObject("HLA");var b=new GameObject("HLB");var ca=a.AddComponent<HLStoneTerrainClump>();var cb=b.AddComponent<HLStoneTerrainClump>();
-            try {
-                for(int i=0;i<32;i++)
+
+                clump.enabled = true;
+                TestHelpers.InvokePrivate(clump, "OnEnable");
+                foreach (HLStoneAssembly.Part part in clump.assembly.parts)
                 {
-                    uint seed=HLStoneSeed.ForCell(-12,new Vector2Int(i,-i));ca.Initialize(seed,2); cb.Initialize(seed+1,2);cb.Initialize(seed,2);
-                    Assert.That(ca.Assembly.Parts.Count,Is.InRange(3,5));Assert.AreEqual(ca.Assembly.Parts.Count,cb.Assembly.Parts.Count);
-                    var bounds=ca.Assembly.LocalBounds;
-                    Assert.That(bounds.size.x,Is.LessThanOrEqualTo(1.92001f));Assert.That(bounds.size.z,Is.LessThanOrEqualTo(1.92001f));
-                    Assert.That(bounds.min.y,Is.EqualTo(0).Within(1e-5));Assert.That(bounds.max.y,Is.InRange(1.39999f,2.40001f));
-                    for(int j=0;j<ca.Assembly.Parts.Count;j++) { CollectionAssert.AreEqual(ca.Assembly.Parts[j].Lease.Data.Vertices,cb.Assembly.Parts[j].Lease.Data.Vertices); Assert.AreEqual(ca.Assembly.Parts[j].Transform.localPosition,cb.Assembly.Parts[j].Transform.localPosition); }
+                    Assert.IsTrue(part.transform.gameObject.activeSelf);
                 }
-                Assert.Throws<System.ArgumentOutOfRangeException>(()=>ca.Initialize(1,float.NaN));
-            }finally{TestHelpers.InvokePrivate(ca,"OnDestroy");TestHelpers.InvokePrivate(cb,"OnDestroy");Object.DestroyImmediate(a);Object.DestroyImmediate(b);}
+            }
+            finally
+            {
+                TestHelpers.InvokePrivate(clump, "OnDestroy");
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void BoundsAndCellOrderDeterminism()
+        {
+            GameObject a = new GameObject("HLA");
+            GameObject b = new GameObject("HLB");
+            HLStoneTerrainClump clumpA = a.AddComponent<HLStoneTerrainClump>();
+            HLStoneTerrainClump clumpB = b.AddComponent<HLStoneTerrainClump>();
+            try
+            {
+                for (int i = 0; i < 32; i++)
+                {
+                    uint seed = HLStoneSeed.ForCell(-12, new Vector2Int(i, -i));
+                    clumpA.Initialize(seed, 2f);
+                    clumpB.Initialize(seed + 1, 2f);
+                    clumpB.Initialize(seed, 2f);
+                    Assert.That(clumpA.assembly.parts.Count, Is.InRange(3, 5));
+                    Assert.AreEqual(clumpA.assembly.parts.Count, clumpB.assembly.parts.Count);
+
+                    Bounds bounds = clumpA.assembly.localBounds;
+                    Assert.That(bounds.size.x, Is.LessThanOrEqualTo(1.92001f));
+                    Assert.That(bounds.size.z, Is.LessThanOrEqualTo(1.92001f));
+                    Assert.That(bounds.min.y, Is.EqualTo(0).Within(1e-5));
+                    Assert.That(bounds.max.y, Is.InRange(1.39999f, 2.40001f));
+                    for (int j = 0; j < clumpA.assembly.parts.Count; j++)
+                    {
+                        HLStoneAssembly.Part partA = clumpA.assembly.parts[j];
+                        HLStoneAssembly.Part partB = clumpB.assembly.parts[j];
+                        CollectionAssert.AreEqual(partA.lease.data.vertices, partB.lease.data.vertices);
+                        Assert.AreEqual(partA.transform.localPosition, partB.transform.localPosition);
+                    }
+                }
+                Assert.Throws<System.ArgumentOutOfRangeException>(() => clumpA.Initialize(1, float.NaN));
+            }
+            finally
+            {
+                TestHelpers.InvokePrivate(clumpA, "OnDestroy");
+                TestHelpers.InvokePrivate(clumpB, "OnDestroy");
+                Object.DestroyImmediate(a);
+                Object.DestroyImmediate(b);
+            }
         }
     }
 }

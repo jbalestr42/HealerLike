@@ -1,14 +1,23 @@
 using NUnit.Framework;
 using UnityEngine;
+
 namespace HealerLike.Render.Stones
 {
     public class HLStoneAssemblyProfileTests
     {
-        [Test] public void ProfileKeepsDefaultSingleThreshold()
+        [Test]
+        public void ProfileKeepsDefaultSingleThreshold()
         {
-            var p=ScriptableObject.CreateInstance<HLStoneAssemblyProfile>();
-            try { Assert.AreEqual(.5f,p.ShedHealthFraction); Assert.AreEqual(2,p.DetachablePartIndex); }
-            finally { Object.DestroyImmediate(p); }
+            HLStoneAssemblyProfile profile = ScriptableObject.CreateInstance<HLStoneAssemblyProfile>();
+            try
+            {
+                Assert.AreEqual(0.5f, profile.shedHealthFraction);
+                Assert.AreEqual(2, profile.detachablePartIndex);
+            }
+            finally
+            {
+                Object.DestroyImmediate(profile);
+            }
         }
     }
 }

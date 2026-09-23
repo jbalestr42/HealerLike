@@ -1,31 +1,58 @@
 using NUnit.Framework;
+
 namespace HealerLike.Render.Stones
 {
     public class HLStoneHealthStateTests
     {
-        [Test] public void ThresholdOnceWithHealingAndReset()
+        [Test]
+        public void ThresholdOnceWithHealingAndReset()
         {
-            var s=new HLStoneHealthState(); s.Reset(.5f); s.RecordProcessedDelta(-49);
-            Assert.AreEqual(HLStoneHealthAction.None,s.CompleteBatch(51,100)); s.RecordProcessedDelta(-1);
-            Assert.AreEqual(HLStoneHealthAction.ShedPart,s.CompleteBatch(50,100)); s.RecordProcessedDelta(50); s.CompleteBatch(100,100);
-            s.RecordProcessedDelta(-70); Assert.AreEqual(HLStoneHealthAction.None,s.CompleteBatch(30,100));
-            s.Reset(.5f); s.RecordProcessedDelta(-50); Assert.AreEqual(HLStoneHealthAction.ShedPart,s.CompleteBatch(50,100));
+            HLStoneHealthState state = new HLStoneHealthState();
+            state.Reset(0.5f);
+            state.RecordProcessedDelta(-49f);
+            Assert.AreEqual(HLStoneHealthAction.None, state.CompleteBatch(51f, 100f));
+
+            state.RecordProcessedDelta(-1f);
+            Assert.AreEqual(HLStoneHealthAction.ShedPart, state.CompleteBatch(50f, 100f));
+
+            state.RecordProcessedDelta(50f);
+            state.CompleteBatch(100f, 100f);
+            state.RecordProcessedDelta(-70f);
+            Assert.AreEqual(HLStoneHealthAction.None, state.CompleteBatch(30f, 100f));
+
+            state.Reset(0.5f);
+            state.RecordProcessedDelta(-50f);
+            Assert.AreEqual(HLStoneHealthAction.ShedPart, state.CompleteBatch(50f, 100f));
         }
-        [Test] public void FinalBatchWinsAndMaxChangeAloneDoesNotShed()
+
+        [Test]
+        public void FinalBatchWinsAndMaxChangeAloneDoesNotShed()
         {
-            var s=new HLStoneHealthState(); s.Reset(.5f);
-            Assert.AreEqual(HLStoneHealthAction.None,s.CompleteBatch(40,100));
-            s.RecordProcessedDelta(-80); s.RecordProcessedDelta(80);
-            Assert.AreEqual(HLStoneHealthAction.None,s.CompleteBatch(100,100));
-            Assert.AreEqual(HLStoneHealthAction.None,s.CompleteBatch(40,100));
-            s.RecordProcessedDelta(-10); Assert.AreEqual(HLStoneHealthAction.ShedPart,s.CompleteBatch(40,100));
+            HLStoneHealthState state = new HLStoneHealthState();
+            state.Reset(0.5f);
+            Assert.AreEqual(HLStoneHealthAction.None, state.CompleteBatch(40f, 100f));
+
+            state.RecordProcessedDelta(-80f);
+            state.RecordProcessedDelta(80f);
+            Assert.AreEqual(HLStoneHealthAction.None, state.CompleteBatch(100f, 100f));
+            Assert.AreEqual(HLStoneHealthAction.None, state.CompleteBatch(40f, 100f));
+
+            state.RecordProcessedDelta(-10f);
+            Assert.AreEqual(HLStoneHealthAction.ShedPart, state.CompleteBatch(40f, 100f));
         }
-        [Test] public void DeathPrecedesShedAndIsIdempotent()
+
+        [Test]
+        public void DeathPrecedesShedAndIsIdempotent()
         {
-            var s=new HLStoneHealthState(); s.RecordProcessedDelta(-100);
-            Assert.AreEqual(HLStoneHealthAction.Collapse,s.CompleteBatch(0,100)); Assert.IsFalse(s.TryBeginCollapse());
-            Assert.AreEqual(HLStoneHealthAction.None,s.CompleteBatch(0,100));
-            s.Reset(.5f); Assert.IsTrue(s.TryBeginCollapse()); Assert.IsFalse(s.TryBeginCollapse());
+            HLStoneHealthState state = new HLStoneHealthState();
+            state.RecordProcessedDelta(-100f);
+            Assert.AreEqual(HLStoneHealthAction.Collapse, state.CompleteBatch(0f, 100f));
+            Assert.IsFalse(state.TryBeginCollapse());
+            Assert.AreEqual(HLStoneHealthAction.None, state.CompleteBatch(0f, 100f));
+
+            state.Reset(0.5f);
+            Assert.IsTrue(state.TryBeginCollapse());
+            Assert.IsFalse(state.TryBeginCollapse());
         }
     }
 }
