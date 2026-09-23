@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grass;
+using HealerLike.Render.Stage;
 using HealerLike.Render.Stones;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -50,8 +52,12 @@ namespace HealerLike.Render.Environment
         readonly List<Motion> _swaying = new List<Motion>();
         double _builtAt;
         uint _colourSeed;
-        bool _isRetained;
         MaterialPropertyBlock _properties;
+        RenderManager _manager;
+        HLPrimitiveMeshes _meshes;
+
+        // Runtime meshes for the stage scene, removed in D2
+        HLPrimitiveMeshes _stageMeshes;
 
         [FormerlySerializedAs("settings")]
         [SerializeField] HLEnvironmentSettings _settings = HLEnvironmentSettings.Default;
@@ -66,10 +72,34 @@ namespace HealerLike.Render.Environment
         Transform _root;
         public Transform root { get { return _root; } }
 
+        public void Init(Rect board, float cellSize, float surfaceY, Camera viewCamera, HLEnvironmentGust gust, float fogEnd,
+            RenderManager manager)
+        {
+            if (manager == null || manager.meshes == null)
+            {
+                Debug.LogError("[HLEnvironmentScatter] Init needs the render manager and its primitive meshes.");
+                return;
+            }
+
+            _manager = manager;
+            _meshes = manager.meshes;
+            _surfaceY = surfaceY;
+            ConfigureMotion(viewCamera, gust, fogEnd);
+            Build(board, cellSize);
+        }
+
+        // The stage scene builds from its own grid until the render manager attaches it, removed in D2
         void Start()
         {
+            if (_manager != null)
+            {
+                return;
+            }
+
             if (_grid && _grid.width > 0 && _grid.height > 0 && _grid.size > 0f)
             {
+                _stageMeshes = StageSceneMeshes.Create();
+                _meshes = _stageMeshes;
                 Build(GridRect(_grid), _grid.size);
             }
         }
@@ -80,6 +110,7 @@ namespace HealerLike.Render.Environment
             {
                 _viewCamera = Camera.main;
             }
+
             bool isLookApplied = Shader.GetGlobalFloat(lookAppliedId) > 0.5f;
             float distance = isLookApplied ? Shader.GetGlobalFloat(fogEndId) : _farDistance;
             Vector3 cameraPosition = _viewCamera ? _viewCamera.transform.position : Vector3.zero;
@@ -105,6 +136,11 @@ namespace HealerLike.Render.Environment
         void OnDestroy()
         {
             Clear();
+            if (_stageMeshes != null)
+            {
+                StageSceneMeshes.Release(_stageMeshes);
+                _stageMeshes = null;
+            }
         }
 
         public static Rect GridRect(GridManager grid)
@@ -154,11 +190,15 @@ namespace HealerLike.Render.Environment
 
         public void Build(Rect gridRect, float cellSize)
         {
+            if (_meshes == null)
+            {
+                Debug.LogError("[HLEnvironmentScatter] Build needs the primitive meshes.");
+                return;
+            }
+
             Clear();
             _builtAt = Time.timeAsDouble;
             _items = HLEnvironmentLayout.Generate(_settings, gridRect, cellSize, _surfaceY);
-            HLPrimitiveMeshes.Retain();
-            _isRetained = true;
             _root = new GameObject("HLEnvironmentItems").transform;
             _root.SetParent(transform, false);
             _properties = new MaterialPropertyBlock();
@@ -175,19 +215,16 @@ namespace HealerLike.Render.Environment
             if (_root)
             {
                 _root.gameObject.SetActive(false);
-                Dispose(_root.gameObject);
+                Destroy(_root.gameObject);
             }
+
             _root = null;
             foreach (Mesh mesh in _ownedMeshes)
             {
-                Dispose(mesh);
+                Destroy(mesh);
             }
+
             _ownedMeshes.Clear();
-            if (_isRetained)
-            {
-                HLPrimitiveMeshes.Release();
-                _isRetained = false;
-            }
         }
 
         public static Color VaryColor(Color colour, uint seed)
@@ -197,18 +234,6 @@ namespace HealerLike.Render.Environment
             float hue = Mathf.Repeat(h + random.Range(-6f, 6f) / 360f, 1f);
             float value = Mathf.Clamp01(v * random.Range(0.92f, 1.08f));
             return Color.HSVToRGB(hue, s, value);
-        }
-
-        static void Dispose(Object value)
-        {
-            if (Application.isPlaying)
-            {
-                Destroy(value);
-            }
-            else
-            {
-                DestroyImmediate(value);
-            }
         }
 
         void Spawn(HLEnvironmentItem item)
@@ -267,16 +292,16 @@ namespace HealerLike.Render.Environment
             float stem = random.Range(2.2f, 4.2f) * s;
             Vector3 stemScale = new Vector3(0.22f * s, stem, 0.22f * s);
             Color stemColor = new Color(0.65f, 0.82f, 0.62f);
-            Part(pivot, HLPrimitive.Capsule, Vector3.zero, Quaternion.identity, stemScale, stemColor);
+            Part(pivot, _meshes.capsule, Vector3.zero, Quaternion.identity, stemScale, stemColor);
 
             Transform cap = new GameObject("NoddingCap").transform;
             cap.SetParent(pivot, false);
             cap.localPosition = Vector3.up * (stem * 0.92f);
             Vector3 underScale = new Vector3(1.5f, 0.14f, 1.5f) * s;
-            Part(cap, HLPrimitive.Sphere, Vector3.down * 0.08f * s, Quaternion.identity, underScale, Greens[0]);
+            Part(cap, _meshes.sphere, Vector3.down * 0.08f * s, Quaternion.identity, underScale, Greens[0]);
 
             bool isCone = random.Next01() < 0.4f;
-            HLPrimitive top = isCone ? HLPrimitive.Cone : HLPrimitive.Sphere;
+            Mesh top = isCone ? _meshes.cone : _meshes.sphere;
             Vector3 topScale = isCone ? new Vector3(1.4f, 0.7f, 1.4f) * s : new Vector3(1.6f, 0.45f, 1.6f) * s;
             Color topColor = random.Next01() < 0.5f ? new Color(0.44f, 0.74f, 0.61f) : new Color(0.64f, 0.78f, 0.65f);
             Part(cap, top, Vector3.zero, Quaternion.identity, topScale, topColor);
@@ -304,13 +329,14 @@ namespace HealerLike.Render.Environment
                     joint.localRotation = Quaternion.Euler(0f, 0f, -curl);
                     Vector3 scale = new Vector3(length * 0.9f, length * 1.15f, length * 0.9f);
                     Color color = Color.Lerp(Greens[1], Greens[2], i / 8f);
-                    Part(joint, HLPrimitive.Sphere, Vector3.zero, Quaternion.identity, scale, color);
+                    Part(joint, _meshes.sphere, Vector3.zero, Quaternion.identity, scale, color);
                     // A positive correction opens each negative curl angle during a gust
                     AddMotion(joint, pivot, item.seed + (uint)(f * 16 + i), 0.12f * s, -3f);
                     linkParent = joint;
                     length *= 0.88f;
                 }
             }
+
             Sway(pivot, item.seed, 1.6f * s);
         }
 
@@ -323,8 +349,9 @@ namespace HealerLike.Render.Environment
                 Quaternion rotation = Quaternion.Euler(0f, around, random.Range(15f, 45f));
                 Vector3 scale = new Vector3(0.32f * s, random.Range(0.8f, 1.6f) * s, 0.065f * s);
                 Color color = Color.Lerp(Greens[0], Greens[2], random.Next01());
-                Part(pivot, HLPrimitive.Cone, Vector3.zero, rotation, scale, color);
+                Part(pivot, _meshes.cone, Vector3.zero, rotation, scale, color);
             }
+
             Sway(pivot, item.seed, 0.45f * s);
         }
 
@@ -338,11 +365,12 @@ namespace HealerLike.Render.Environment
                 float h = random.Range(0.6f, 1.6f) * s;
                 float d = random.Range(0.3f, 0.55f) * s;
                 Vector3 stemScale = new Vector3(0.05f * s, h, 0.05f * s);
-                Part(pivot, HLPrimitive.CylinderSegment, Vector3.zero, tilt, stemScale, Greens[1]);
+                Part(pivot, _meshes.cylinder, Vector3.zero, tilt, stemScale, Greens[1]);
                 Vector3 bottom = tilt * Vector3.up * h - Vector3.up * (d * 0.2f);
                 Color color = i % 2 == 0 ? Greens[2] : Greens[3];
-                Part(pivot, HLPrimitive.Sphere, bottom, Quaternion.identity, Vector3.one * d, color);
+                Part(pivot, _meshes.sphere, bottom, Quaternion.identity, Vector3.one * d, color);
             }
+
             Sway(pivot, item.seed, 1.2f * s);
         }
 
@@ -385,11 +413,9 @@ namespace HealerLike.Render.Environment
             return Vector3.Scale(mesh.bounds.size, scale);
         }
 
-        void Part(Transform parent, HLPrimitive primitive, Vector3 bottom, Quaternion rotation, Vector3 scale,
-            Color color)
+        void Part(Transform parent, Mesh mesh, Vector3 bottom, Quaternion rotation, Vector3 scale, Color color)
         {
-            Mesh mesh = HLPrimitiveMeshes.Get(primitive);
-            Part(parent, mesh, _plantMaterial, bottom, rotation, scale, color, primitive.ToString());
+            Part(parent, mesh, _plantMaterial, bottom, rotation, scale, color, mesh.name);
         }
 
         Vector3 Stone(Transform parent, uint seed, HLStoneSettings shape, Vector3 bottom, float scale, int palette)

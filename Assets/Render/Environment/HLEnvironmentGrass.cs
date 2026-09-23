@@ -1,22 +1,25 @@
-using System;
 using System.Collections.Generic;
 using HealerLike.Render.Grass;
+using HealerLike.Render.Stage;
 using HealerLike.Render.Zones;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Environment
 {
-    // Grass carpet around the grid: HLGrassField strips, each bound to a proxy GridManager
-    // that the stage owns and never generates.
+    // Grass carpet around the board: one HLGrassField per strip, copied from the strip template.
     // The strips borrow the zone buffer with a count of zero, so zones stay on the board.
-    [DefaultExecutionOrder(0)]
     public class HLEnvironmentGrass : MonoBehaviour
     {
         public static readonly float[] DefaultWidths = { 3f, 5f, 16f };
-        public static readonly float[] DefaultFractions = { 0.8f, 0.5f, 0.3f };
+        public static readonly float[] DefaultFractions = { 0.85f, 0.6f, 0.15f };
         public static readonly float BoardDensity = 256f;
 
+        [SerializeField] HLGrassField _stripTemplate;
+        [SerializeField] float[] _widths = { 3f, 5f, 16f };
+        [SerializeField] float[] _fractions = { 0.85f, 0.6f, 0.15f };
+
+        // Stage scene wiring: proxy grids the stage builder sized for each strip, removed in D2
         [FormerlySerializedAs("zoneRegistry")]
         [SerializeField] HLZoneRegistry _zoneRegistry;
         [FormerlySerializedAs("proxies")]
@@ -24,6 +27,50 @@ namespace HealerLike.Render.Environment
         [FormerlySerializedAs("fields")]
         [SerializeField] HLGrassField[] _fields = new HLGrassField[0];
 
+        RenderManager _manager;
+        List<HLGrassField> _strips = new List<HLGrassField>();
+
+        public IReadOnlyList<HLGrassField> strips { get { return _strips; } }
+
+        public void Init(Rect board, float cellSize, float surfaceY, Camera camera, HLZoneRegistry zones, RenderManager manager)
+        {
+            _manager = manager;
+            foreach (HLGrassField strip in _strips)
+            {
+                Destroy(strip.gameObject);
+            }
+
+            _strips.Clear();
+            if (_stripTemplate == null || zones == null)
+            {
+                Debug.LogError("[HLEnvironmentGrass] Init needs the strip template and the zone registry.");
+                return;
+            }
+
+            float boardDensity = HLGrassLayout.DefaultBudget / (board.width * board.height);
+            HLRingStrip[] bands = Bands(board, _widths, _fractions, boardDensity);
+            for (int i = 0; i < bands.Length; i++)
+            {
+                HLGrassField strip = Instantiate(_stripTemplate, transform);
+                strip.name = "GrassStrip" + i + "_band" + bands[i].band;
+                strip.bladeBudget = bands[i].budget;
+                strip.seed = (uint)(11 + i);
+                strip.Init(bands[i].rect, cellSize, surfaceY, camera, zones.buffer, HLGrassField.MaxZones);
+                strip.gameObject.SetActive(true);
+                _strips.Add(strip);
+            }
+        }
+
+        public void UpdateStrips(HLZoneRegistry zones)
+        {
+            GraphicsBuffer buffer = zones != null ? zones.buffer : null;
+            foreach (HLGrassField strip in _strips)
+            {
+                strip.UpdateField(buffer, 0);
+            }
+        }
+
+        // The stage builder wires the proxy strips, removed in D2
         public void Configure(HLZoneRegistry zones, GridManager[] proxyGrids, HLGrassField[] grassFields)
         {
             _zoneRegistry = zones;
@@ -33,14 +80,25 @@ namespace HealerLike.Render.Environment
 
         void Start()
         {
+            if (_manager != null)
+            {
+                return;
+            }
+
             foreach (GridManager proxy in _proxies)
             {
                 EnsureCells(proxy);
             }
         }
 
+        // The stage scene hands its strips the zone buffer here until the render manager attaches it, removed in D2
         void LateUpdate()
         {
+            if (_manager != null)
+            {
+                return;
+            }
+
             GraphicsBuffer buffer = _zoneRegistry ? _zoneRegistry.buffer : null;
             foreach (HLGrassField field in _fields)
             {
@@ -60,14 +118,23 @@ namespace HealerLike.Render.Environment
                     field.SetZoneSnapshot(null, 0);
                 }
             }
+
+            foreach (HLGrassField strip in _strips)
+            {
+                if (strip)
+                {
+                    strip.SetZoneSnapshot(null, 0);
+                }
+            }
         }
 
         // Top, bottom, left and right strips of the given width; they tile the ring without overlap
         public static Rect[] Strips(Rect grid, float ring)
         {
-            if (!(ring > 0f) || float.IsInfinity(ring))
+            if (!float.IsFinite(ring) || ring <= 0f)
             {
-                throw new ArgumentOutOfRangeException(nameof(ring));
+                Debug.LogError($"[HLEnvironmentGrass] Rejected ring width {ring}.");
+                return new Rect[0];
             }
 
             return new Rect[]
@@ -92,20 +159,37 @@ namespace HealerLike.Render.Environment
 
         // Concentric bands of whole-cell widths, each as four strips at boardDensity * fraction.
         // A strip over the grass budget is cut along its length into whole-cell pieces so no density is lost.
+        // Returns no strips and logs when an input is not valid.
         public static HLRingStrip[] Bands(Rect grid, float[] widths, float[] densityFractions, float boardDensity)
         {
-            if (widths == null || densityFractions == null || widths.Length == 0
-                || widths.Length != densityFractions.Length)
+            if (widths == null || densityFractions == null || widths.Length == 0 || widths.Length != densityFractions.Length)
             {
-                throw new ArgumentException("Widths and density fractions must be non-empty and of equal length.");
+                Debug.LogError("[HLEnvironmentGrass] Widths and density fractions must be non-empty and of equal length.");
+                return new HLRingStrip[0];
             }
-            if (!(boardDensity > 0f) || float.IsInfinity(boardDensity))
+
+            if (!float.IsFinite(boardDensity) || boardDensity <= 0f)
             {
-                throw new ArgumentOutOfRangeException(nameof(boardDensity));
+                Debug.LogError($"[HLEnvironmentGrass] Rejected board density {boardDensity}.");
+                return new HLRingStrip[0];
             }
-            if (!(grid.width > 0f) || !(grid.height > 0f) || !IsWhole(grid.width) || !IsWhole(grid.height))
+
+            bool isWholeGrid = Mathf.Approximately(grid.width, Mathf.Round(grid.width)) && Mathf.Approximately(grid.height, Mathf.Round(grid.height));
+            if (grid.width <= 0f || grid.height <= 0f || !isWholeGrid)
             {
-                throw new ArgumentOutOfRangeException(nameof(grid));
+                Debug.LogError($"[HLEnvironmentGrass] Rejected grid {grid}, it needs a whole number of cells.");
+                return new HLRingStrip[0];
+            }
+
+            for (int band = 0; band < widths.Length; band++)
+            {
+                float width = widths[band];
+                float fraction = densityFractions[band];
+                if (!Mathf.Approximately(width, Mathf.Round(width)) || width < 1f || !float.IsFinite(fraction) || fraction <= 0f)
+                {
+                    Debug.LogError($"[HLEnvironmentGrass] Rejected band {band}: width {width}, density fraction {fraction}.");
+                    return new HLRingStrip[0];
+                }
             }
 
             List<HLRingStrip> result = new List<HLRingStrip>();
@@ -113,23 +197,14 @@ namespace HealerLike.Render.Environment
             for (int band = 0; band < widths.Length; band++)
             {
                 float width = widths[band];
-                float fraction = densityFractions[band];
-                if (!IsWhole(width) || width < 1f)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(widths));
-                }
-                if (!(fraction > 0f) || float.IsInfinity(fraction))
-                {
-                    throw new ArgumentOutOfRangeException(nameof(densityFractions));
-                }
-
                 foreach (Rect strip in Strips(inner, width))
                 {
-                    Split(strip, boardDensity * fraction, band, result);
+                    Split(strip, boardDensity * densityFractions[band], band, result);
                 }
-                inner = new Rect(inner.xMin - width, inner.yMin - width,
-                    inner.width + 2f * width, inner.height + 2f * width);
+
+                inner = new Rect(inner.xMin - width, inner.yMin - width, inner.width + 2f * width, inner.height + 2f * width);
             }
+
             return result.ToArray();
         }
 
@@ -139,6 +214,7 @@ namespace HealerLike.Render.Environment
             {
                 return;
             }
+
             if (proxy.cells != null && proxy.cells.Length == proxy.width * proxy.height)
             {
                 return;
@@ -149,12 +225,8 @@ namespace HealerLike.Render.Environment
             {
                 cells[i] = new GridCell { coord = new Vector2Int(i % proxy.width, i / proxy.width) };
             }
-            proxy.cells = cells;
-        }
 
-        static bool IsWhole(float value)
-        {
-            return !float.IsNaN(value) && !float.IsInfinity(value) && Mathf.Abs(value - Mathf.Round(value)) < 0.0001f;
+            proxy.cells = cells;
         }
 
         static void Split(Rect strip, float density, int band, List<HLRingStrip> into)
@@ -181,6 +253,7 @@ namespace HealerLike.Render.Environment
                 {
                     rect = new Rect(strip.xMin, strip.yMin + start, strip.width, end - start);
                 }
+
                 into.Add(new HLRingStrip
                 {
                     rect = rect,

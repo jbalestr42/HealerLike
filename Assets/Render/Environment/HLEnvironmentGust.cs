@@ -25,15 +25,15 @@ namespace HealerLike.Render.Environment
 
         public void GustAt(Vector3 direction, float strength, float seconds, double time)
         {
-            if (!Finite(direction.x) || !Finite(direction.y) || !Finite(direction.z)
-                || !Finite(strength) || !Finite(seconds)
-                || double.IsNaN(time) || double.IsInfinity(time) || seconds <= 0f || strength <= 0f)
+            bool isDirectionValid = float.IsFinite(direction.x) && float.IsFinite(direction.y) && float.IsFinite(direction.z);
+            bool isPulseValid = float.IsFinite(strength) && float.IsFinite(seconds) && strength > 0f && seconds > 0f;
+            if (!isDirectionValid || !isPulseValid || !double.IsFinite(time))
             {
                 return;
             }
 
             direction.y = 0f;
-            if (direction.sqrMagnitude < 0.000001f || float.IsInfinity(direction.sqrMagnitude))
+            if (direction.sqrMagnitude < 0.000001f || !float.IsFinite(direction.sqrMagnitude))
             {
                 return;
             }
@@ -50,7 +50,7 @@ namespace HealerLike.Render.Environment
 
         public Vector3 Sample(double time)
         {
-            if (double.IsNaN(time) || double.IsInfinity(time))
+            if (!double.IsFinite(time))
             {
                 return Vector3.zero;
             }
@@ -64,8 +64,10 @@ namespace HealerLike.Render.Environment
                 {
                     continue;
                 }
+
                 sum += pulse.direction * (pulse.strength * Mathf.Sin((float)(age / pulse.seconds) * Mathf.PI));
             }
+
             return Vector3.ClampMagnitude(sum, 1f);
         }
 
@@ -73,11 +75,6 @@ namespace HealerLike.Render.Environment
         {
             System.Array.Clear(_pulses, 0, Capacity);
             _next = 0;
-        }
-
-        static bool Finite(float value)
-        {
-            return !float.IsNaN(value) && !float.IsInfinity(value);
         }
     }
 }

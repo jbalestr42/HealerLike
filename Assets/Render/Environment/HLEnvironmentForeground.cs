@@ -1,10 +1,10 @@
-using System;
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grass;
+using HealerLike.Render.Stage;
 using HealerLike.Render.Stones;
 using UnityEngine;
 using UnityEngine.Serialization;
-using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Environment
 {
@@ -36,8 +36,12 @@ namespace HealerLike.Render.Environment
         [SerializeField] Color _rosetteTint = new Color32(61, 116, 98, 255);
 
         readonly List<Mesh> _ownedMeshes = new List<Mesh>();
-        bool _isRetained;
         MaterialPropertyBlock _properties;
+        RenderManager _manager;
+        HLPrimitiveMeshes _meshes;
+
+        // Runtime meshes for the stage scene, removed in D2
+        HLPrimitiveMeshes _stageMeshes;
 
         List<HLForegroundItem> _items = new List<HLForegroundItem>();
         public IReadOnlyList<HLForegroundItem> items { get { return _items; } }
@@ -45,9 +49,28 @@ namespace HealerLike.Render.Environment
         Transform _root;
         public Transform root { get { return _root; } }
 
+        public void Init(Camera stageCamera, float surfaceY, RenderManager manager)
+        {
+            if (manager == null || manager.meshes == null)
+            {
+                Debug.LogError("[HLEnvironmentForeground] Init needs the render manager and its primitive meshes.");
+                return;
+            }
+
+            _manager = manager;
+            _meshes = manager.meshes;
+            _stageCamera = stageCamera;
+            _groundY = surfaceY;
+            Build();
+        }
+
+        // The stage scene builds from its own camera until the render manager attaches it, removed in D2
         void Start()
         {
-            Build();
+            if (_manager == null)
+            {
+                Build();
+            }
         }
 
         void OnEnable()
@@ -69,8 +92,14 @@ namespace HealerLike.Render.Environment
         void OnDestroy()
         {
             Clear();
+            if (_stageMeshes != null)
+            {
+                StageSceneMeshes.Release(_stageMeshes);
+                _stageMeshes = null;
+            }
         }
 
+        // The stage builder wires the scene instance, removed in D2
         public void Configure(Camera stage, Material stones, Material plants, float surfaceY, int layoutSeed)
         {
             _stageCamera = stage;
@@ -80,19 +109,16 @@ namespace HealerLike.Render.Environment
             _seed = layoutSeed;
         }
 
-        // Ground point seen through a viewport point (0..1, origin bottom-left)
-        public static Vector3 GroundHit(Vector3 cameraPosition, Quaternion cameraRotation, float verticalFov,
-            float aspect, Vector2 viewport, float groundY)
+        // Ground point seen through a viewport point (0..1, origin bottom-left); false when the ray misses the ground
+        public static bool GroundHit(Vector3 cameraPosition, Quaternion cameraRotation, float verticalFov, float aspect,
+            Vector2 viewport, float groundY, out Vector3 hit)
         {
             float tan = Mathf.Tan(verticalFov * 0.5f * Mathf.Deg2Rad);
             Vector3 local = new Vector3((2f * viewport.x - 1f) * tan * aspect, (2f * viewport.y - 1f) * tan, 1f);
             Vector3 direction = cameraRotation * local;
             float along = (groundY - cameraPosition.y) / direction.y;
-            if (!(direction.y < 0f) || !(along > 0f) || float.IsInfinity(along))
-            {
-                throw new ArgumentException("The viewport ray does not hit the ground.");
-            }
-            return cameraPosition + direction * along;
+            hit = cameraPosition + direction * along;
+            return direction.y < 0f && along > 0f && float.IsFinite(along);
         }
 
         // Viewport coordinates (0..1 inside the frame) of a world point in front of the camera
@@ -106,24 +132,36 @@ namespace HealerLike.Render.Environment
             return new Vector2(x, y);
         }
 
-        // Two to three boulders and one to two rosettes per bottom corner, centred on or just past the frame edge
+        // Two to three boulders and one to two rosettes per bottom corner, centred on or just past the frame edge.
+        // Returns no items and logs when the camera does not see the ground at both bottom corners.
         public static List<HLForegroundItem> Layout(Vector3 cameraPosition, Quaternion cameraRotation,
             float verticalFov, float aspect, float groundY, int seed)
         {
-            if (!(verticalFov > 1f) || !(verticalFov < 179f) || !(aspect > 0f) || float.IsInfinity(aspect)
-                || float.IsNaN(groundY) || float.IsInfinity(groundY))
+            List<HLForegroundItem> result = new List<HLForegroundItem>();
+            bool isLensValid = verticalFov > 1f && verticalFov < 179f && float.IsFinite(aspect) && aspect > 0f;
+            if (!isLensValid || !float.IsFinite(groundY))
             {
-                throw new ArgumentOutOfRangeException(nameof(verticalFov));
+                Debug.LogError($"[HLEnvironmentForeground] Rejected field of view {verticalFov}, aspect {aspect}, ground {groundY}.");
+                return result;
             }
 
-            List<HLForegroundItem> result = new List<HLForegroundItem>();
+            Vector3[] corners = new Vector3[2];
+            for (int side = 0; side < 2; side++)
+            {
+                Vector2 viewport = new Vector2(side, 0f);
+                if (!GroundHit(cameraPosition, cameraRotation, verticalFov, aspect, viewport, groundY, out corners[side]))
+                {
+                    Debug.LogError("[HLEnvironmentForeground] The bottom corners of the frame do not see the ground.");
+                    return result;
+                }
+            }
+
             uint baseSeed = HLStoneSeed.ForPart((uint)seed, Salt);
             HLStoneRandom random = new HLStoneRandom(baseSeed);
             for (int side = 0; side < 2; side++)
             {
                 float outward = side == 0 ? -1f : 1f;
-                Vector2 viewport = new Vector2(side, 0f);
-                Vector3 corner = GroundHit(cameraPosition, cameraRotation, verticalFov, aspect, viewport, groundY);
+                Vector3 corner = corners[side];
                 // Offsets: positive x goes out past the side edge, negative z goes down past the bottom edge
                 int boulders = 2 + (int)(random.Next01() * 2f);
                 int rosettes = 1 + (int)(random.Next01() * 2f);
@@ -149,6 +187,7 @@ namespace HealerLike.Render.Environment
                                 isClear = false;
                             }
                         }
+
                         if (isClear)
                         {
                             break;
@@ -166,6 +205,7 @@ namespace HealerLike.Render.Environment
                     });
                 }
             }
+
             return result;
         }
 
@@ -175,6 +215,7 @@ namespace HealerLike.Render.Environment
             {
                 return;
             }
+
             float frameAspect = _aspect > 0f ? _aspect : _stageCamera.aspect;
             Transform cameraTransform = _stageCamera.transform;
             Build(cameraTransform.position, cameraTransform.rotation, _stageCamera.fieldOfView, frameAspect);
@@ -182,9 +223,13 @@ namespace HealerLike.Render.Environment
 
         public void Build(Vector3 cameraPosition, Quaternion cameraRotation, float verticalFov, float frameAspect)
         {
+            if (_manager == null && _meshes == null)
+            {
+                _stageMeshes = StageSceneMeshes.Create();
+                _meshes = _stageMeshes;
+            }
+
             Clear();
-            HLPrimitiveMeshes.Retain();
-            _isRetained = true;
             _items = Layout(cameraPosition, cameraRotation, verticalFov, frameAspect, _groundY, _seed);
             _root = new GameObject("HLForegroundItems").transform;
             _root.SetParent(transform, false);
@@ -199,31 +244,16 @@ namespace HealerLike.Render.Environment
         {
             if (_root)
             {
-                Dispose(_root.gameObject);
+                Destroy(_root.gameObject);
             }
+
             _root = null;
             foreach (Mesh mesh in _ownedMeshes)
             {
-                Dispose(mesh);
+                Destroy(mesh);
             }
-            _ownedMeshes.Clear();
-            if (_isRetained)
-            {
-                HLPrimitiveMeshes.Release();
-                _isRetained = false;
-            }
-        }
 
-        static void Dispose(Object value)
-        {
-            if (Application.isPlaying)
-            {
-                Destroy(value);
-            }
-            else
-            {
-                DestroyImmediate(value);
-            }
+            _ownedMeshes.Clear();
         }
 
         void Spawn(HLForegroundItem item)
@@ -247,7 +277,7 @@ namespace HealerLike.Render.Environment
 
             // Rosette: long flat blades fanned from one root, each tilted outward, thin across its tilt plane
             int blades = 7 + (int)(random.Next01() * 5f);
-            Mesh cone = HLPrimitiveMeshes.Get(HLPrimitive.Cone);
+            Mesh cone = _meshes.cone;
             for (int i = 0; i < blades; i++)
             {
                 float length = random.Range(0.8f, BladeLength) * item.scale;

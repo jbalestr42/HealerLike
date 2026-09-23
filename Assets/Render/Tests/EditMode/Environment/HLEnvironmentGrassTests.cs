@@ -1,7 +1,12 @@
 using System.Linq;
+using System.Text.RegularExpressions;
 using HealerLike.Render.Grass;
+using HealerLike.Render.Stage;
+using HealerLike.Render.Zones;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Environment
 {
@@ -35,8 +40,16 @@ namespace HealerLike.Render.Environment
             Assert.AreEqual(48 * 16 * 64, HLEnvironmentGrass.Budget(new Rect(0f, 0f, 48f, 16f), 64f));
             Assert.AreEqual(HLGrassLayout.MaxBudget, HLEnvironmentGrass.Budget(new Rect(0f, 0f, 1000f, 1000f), 64f));
             Assert.AreEqual(0, HLEnvironmentGrass.Budget(new Rect(0f, 0f, 4f, 4f), -1f));
-            Assert.Throws<System.ArgumentOutOfRangeException>(() =>
-                HLEnvironmentGrass.Strips(new Rect(0f, 0f, 1f, 1f), 0f));
+        }
+
+        [Test]
+        public void Strips_ZeroRing_LogsAndReturnsNoStrips()
+        {
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[HLEnvironmentGrass\] Rejected ring width"));
+
+            Rect[] strips = HLEnvironmentGrass.Strips(new Rect(0f, 0f, 1f, 1f), 0f);
+
+            Assert.IsEmpty(strips);
         }
 
         [Test]
@@ -125,23 +138,68 @@ namespace HealerLike.Render.Environment
         public void BandsRejectInvalidInput()
         {
             Rect grid = new Rect(-8f, -8f, 16f, 16f);
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentGrass.Bands(grid, null, new float[] { 1f }, 256f));
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentGrass.Bands(grid, new float[] { 3f, 5f }, new float[] { 1f }, 256f));
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentGrass.Bands(grid, new float[0], new float[0], 256f));
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentGrass.Bands(grid, new float[] { 2.5f }, new float[] { 1f }, 256f));
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentGrass.Bands(grid, new float[] { 0f }, new float[] { 1f }, 256f));
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentGrass.Bands(grid, new float[] { 3f }, new float[] { 0f }, 256f));
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentGrass.Bands(grid, new float[] { 3f }, new float[] { 1f }, float.NaN));
             Rect halfCellGrid = new Rect(0f, 0f, 2.5f, 3f);
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentGrass.Bands(halfCellGrid, new float[] { 3f }, new float[] { 1f }, 256f));
+            Regex rejected = new Regex(@"^\[HLEnvironmentGrass\] (Rejected|Widths)");
+            for (int i = 0; i < 8; i++)
+            {
+                LogAssert.Expect(LogType.Error, rejected);
+            }
+
+            Assert.IsEmpty(HLEnvironmentGrass.Bands(grid, null, new float[] { 1f }, 256f));
+            Assert.IsEmpty(HLEnvironmentGrass.Bands(grid, new float[] { 3f, 5f }, new float[] { 1f }, 256f));
+            Assert.IsEmpty(HLEnvironmentGrass.Bands(grid, new float[0], new float[0], 256f));
+            Assert.IsEmpty(HLEnvironmentGrass.Bands(grid, new float[] { 2.5f }, new float[] { 1f }, 256f));
+            Assert.IsEmpty(HLEnvironmentGrass.Bands(grid, new float[] { 0f }, new float[] { 1f }, 256f));
+            Assert.IsEmpty(HLEnvironmentGrass.Bands(grid, new float[] { 3f }, new float[] { 0f }, 256f));
+            Assert.IsEmpty(HLEnvironmentGrass.Bands(grid, new float[] { 3f }, new float[] { 1f }, float.NaN));
+            Assert.IsEmpty(HLEnvironmentGrass.Bands(halfCellGrid, new float[] { 3f }, new float[] { 1f }, 256f));
+        }
+
+        [Test]
+        public void InitCopiesTheTemplateOncePerBandStripAndUpdatesThemWithoutZones()
+        {
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+            {
+                Assert.Ignore("Zone buffers need a graphics device; run with Metal.");
+            }
+
+            GameObject go = new GameObject("HLRingGrass");
+            GameObject zonesGo = new GameObject("HLRingZones");
+            GameObject managerGo = new GameObject("HLRingManager");
+            HLZoneRegistry zones = zonesGo.AddComponent<HLZoneRegistry>();
+            try
+            {
+                GameObject templateGo = new GameObject("GrassStrip");
+                templateGo.transform.SetParent(go.transform, false);
+                templateGo.SetActive(false);
+                HLGrassField template = templateGo.AddComponent<HLGrassField>();
+                HLEnvironmentGrass grass = go.AddComponent<HLEnvironmentGrass>();
+                TestHelpers.SetPrivateField(grass, "_stripTemplate", template);
+                zones.Initialize();
+                RenderManager manager = managerGo.AddComponent<RenderManager>();
+                Rect board = new Rect(-8f, -8f, 16f, 16f);
+                float boardDensity = HLGrassLayout.DefaultBudget / (16f * 16f);
+                HLRingStrip[] bands = HLEnvironmentGrass.Bands(board, HLEnvironmentGrass.DefaultWidths, HLEnvironmentGrass.DefaultFractions, boardDensity);
+
+                grass.Init(board, 1f, 0.5f, null, zones, manager);
+                grass.UpdateStrips(zones);
+
+                Assert.AreEqual(bands.Length, grass.strips.Count);
+                for (int i = 0; i < bands.Length; i++)
+                {
+                    Assert.AreEqual(bands[i].budget, grass.strips[i].bladeBudget);
+                    Assert.AreEqual(0, grass.strips[i].activeZoneCount);
+                    Assert.AreSame(go.transform, grass.strips[i].transform.parent);
+                }
+                Assert.IsFalse(templateGo.activeSelf);
+            }
+            finally
+            {
+                zones.Release();
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(zonesGo);
+                Object.DestroyImmediate(managerGo);
+            }
         }
 
         [Test]

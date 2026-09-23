@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Environment
 {
@@ -117,14 +119,15 @@ namespace HealerLike.Render.Environment
         }
 
         [Test]
-        public void InvalidInputThrows()
+        public void InvalidInputLogsAndPlacesNothing()
         {
-            Assert.Throws<System.ArgumentOutOfRangeException>(() =>
-                HLEnvironmentLayout.Generate(HLEnvironmentSettings.Default, grid, 0f, 0f));
             HLEnvironmentSettings settings = HLEnvironmentSettings.Default;
             settings.ringDistance = 0f;
-            Assert.Throws<System.ArgumentOutOfRangeException>(() =>
-                HLEnvironmentLayout.Generate(settings, grid, 1f, 0f));
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[HLEnvironmentLayout\] Rejected grid"));
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[HLEnvironmentLayout\] Rejected grid"));
+
+            Assert.IsEmpty(HLEnvironmentLayout.Generate(HLEnvironmentSettings.Default, grid, 0f, 0f));
+            Assert.IsEmpty(HLEnvironmentLayout.Generate(settings, grid, 1f, 0f));
         }
     }
 }

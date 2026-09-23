@@ -25,17 +25,20 @@ namespace HealerLike.Render.Environment
             return Mathf.Sqrt(dx * dx + dz * dz);
         }
 
+        // Returns no items and logs when an input is not valid
         public static List<HLEnvironmentItem> Generate(HLEnvironmentSettings settings, Rect grid, float cellSize,
             float surfaceY)
         {
-            if (!(cellSize > 0f) || float.IsInfinity(cellSize) || grid.width <= 0f || grid.height <= 0f
-                || !(settings.ringDistance > 0f) || float.IsInfinity(settings.ringDistance)
-                || settings.marginCells < 0f || settings.falloff < 0f || float.IsNaN(surfaceY))
+            List<HLEnvironmentItem> result = new List<HLEnvironmentItem>();
+            bool isGridValid = float.IsFinite(cellSize) && cellSize > 0f && grid.width > 0f && grid.height > 0f;
+            bool isRingValid = float.IsFinite(settings.ringDistance) && settings.ringDistance > 0f;
+            bool isShapeValid = settings.marginCells >= 0f && settings.falloff >= 0f && !float.IsNaN(surfaceY);
+            if (!isGridValid || !isRingValid || !isShapeValid)
             {
-                throw new ArgumentOutOfRangeException(nameof(settings));
+                Debug.LogError($"[HLEnvironmentLayout] Rejected grid {grid} with cell size {cellSize} and ring {settings.ringDistance}.");
+                return result;
             }
 
-            List<HLEnvironmentItem> result = new List<HLEnvironmentItem>();
             uint baseSeed = HLStoneSeed.ForPart((uint)settings.seed, Salt);
             HLStoneRandom random = new HLStoneRandom(baseSeed);
             float margin = settings.marginCells * cellSize;
@@ -65,10 +68,12 @@ namespace HealerLike.Render.Environment
                         {
                             continue;
                         }
+
                         if (IsTall(kind) && point.y < grid.yMin)
                         {
                             continue;
                         }
+
                         if (kind == HLEnvironmentKind.Monolith)
                         {
                             if (point.y <= grid.yMax + margin || t < 0.3f)
@@ -95,6 +100,7 @@ namespace HealerLike.Render.Environment
                     }
                 }
             }
+
             return result;
         }
 
@@ -110,10 +116,12 @@ namespace HealerLike.Render.Environment
             {
                 return Mathf.Lerp(1.6f, 3.2f, t);
             }
+
             if (kind == HLEnvironmentKind.Boulder || kind == HLEnvironmentKind.Cairn)
             {
                 return Mathf.Lerp(0.7f, 2.6f, t) * (0.8f + 0.4f * jitter);
             }
+
             return Mathf.Lerp(0.8f, 1.6f, t) * (0.8f + 0.4f * jitter);
         }
     }

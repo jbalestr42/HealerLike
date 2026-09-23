@@ -1,8 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Stage;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Environment
 {
@@ -26,7 +31,21 @@ namespace HealerLike.Render.Environment
         [TearDown]
         public void Cleanup()
         {
+            // Stones are generated per seed; the baked primitive meshes are assets and stay
+            foreach (MeshFilter filter in _go.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (filter.sharedMesh != null && !EditorUtility.IsPersistent(filter.sharedMesh))
+                {
+                    Object.DestroyImmediate(filter.sharedMesh);
+                }
+            }
+
             Object.DestroyImmediate(_go);
+        }
+
+        static HLPrimitiveMeshes LoadMeshes()
+        {
+            return AssetDatabase.LoadAssetAtPath<HLPrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
         }
 
         [Test]
@@ -109,18 +128,19 @@ namespace HealerLike.Render.Environment
         }
 
         [Test]
-        public void InvalidInputThrows()
+        public void InvalidInputLogsAndLaysOutNothing()
         {
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentRidge.Layout(eye, fogStart, fogEnd, 0, grid, ground, 1));
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentRidge.Layout(eye, fogEnd, fogStart, bands, grid, ground, 1));
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentRidge.Layout(eye, fogStart, float.PositiveInfinity, bands, grid, ground, 1));
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, new Rect(0f, 0f, 0f, 4f), ground, 1));
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, float.NaN, 1));
+            Regex rejected = new Regex(@"^\[HLEnvironmentRidge\] Rejected");
+            for (int i = 0; i < 5; i++)
+            {
+                LogAssert.Expect(LogType.Error, rejected);
+            }
+
+            Assert.IsEmpty(HLEnvironmentRidge.Layout(eye, fogStart, fogEnd, 0, grid, ground, 1));
+            Assert.IsEmpty(HLEnvironmentRidge.Layout(eye, fogEnd, fogStart, bands, grid, ground, 1));
+            Assert.IsEmpty(HLEnvironmentRidge.Layout(eye, fogStart, float.PositiveInfinity, bands, grid, ground, 1));
+            Assert.IsEmpty(HLEnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, new Rect(0f, 0f, 0f, 4f), ground, 1));
+            Assert.IsEmpty(HLEnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, float.NaN, 1));
         }
 
         [Test]
@@ -128,6 +148,7 @@ namespace HealerLike.Render.Environment
         {
             HLEnvironmentRidge ridge = _go.AddComponent<HLEnvironmentRidge>();
             ridge.Configure(null, null, null, grid, ground, fogStart, fogEnd, bands, 4);
+            TestHelpers.SetPrivateField(ridge, "_meshes", LoadMeshes());
 
             Assert.DoesNotThrow(() => ridge.Build());
             Assert.IsNull(ridge.root);
@@ -157,11 +178,33 @@ namespace HealerLike.Render.Environment
                 Assert.AreEqual(ShadowCastingMode.Off, meshRenderer.shadowCastingMode);
                 Assert.IsTrue(meshRenderer.HasPropertyBlock());
             }
+        }
 
-            ridge.Clear();
+        [Test]
+        public void InitBuildsFromTheCameraWithTheManagerMeshes()
+        {
+            GameObject cameraGo = new GameObject("HLRidgeCamera");
+            GameObject managerGo = new GameObject("HLRidgeManager");
+            try
+            {
+                Camera camera = cameraGo.AddComponent<Camera>();
+                cameraGo.transform.position = eye;
+                RenderManager manager = managerGo.AddComponent<RenderManager>();
+                TestHelpers.SetPrivateField(manager, "_meshes", LoadMeshes());
+                HLEnvironmentRidge ridge = _go.AddComponent<HLEnvironmentRidge>();
 
-            Assert.IsNull(ridge.root);
-            Assert.AreEqual(0, _go.transform.childCount);
+                ridge.Init(camera, grid, ground, fogStart, fogEnd, manager);
+
+                List<HLRidgeItem> expected = HLEnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, ground, 1707);
+                Assert.AreEqual(expected.Count, ridge.items.Count);
+                Assert.AreEqual(expected.Count, ridge.root.childCount);
+                Assert.IsTrue(ridge.root.GetComponentsInChildren<MeshFilter>().Any(f => f.sharedMesh == LoadMeshes().capsule));
+            }
+            finally
+            {
+                Object.DestroyImmediate(cameraGo);
+                Object.DestroyImmediate(managerGo);
+            }
         }
     }
 }

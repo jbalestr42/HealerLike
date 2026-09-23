@@ -1,5 +1,8 @@
 using System.Linq;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Stage;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Environment
@@ -7,22 +10,47 @@ namespace HealerLike.Render.Environment
     public class HLEnvironmentScatterTests
     {
         GameObject _go;
+        GameObject _otherGo;
+        HLPrimitiveMeshes _meshes;
 
         [SetUp]
         public void Setup()
         {
             _go = new GameObject("HLScatterTest");
+            _otherGo = new GameObject("HLScatterOther");
+            _meshes = AssetDatabase.LoadAssetAtPath<HLPrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
         }
 
         [TearDown]
         public void Cleanup()
         {
-            Object.DestroyImmediate(_go);
+            DestroyWithGeneratedMeshes(_go);
+            DestroyWithGeneratedMeshes(_otherGo);
+        }
+
+        // Stones are generated per seed; the baked primitive meshes are assets and stay
+        static void DestroyWithGeneratedMeshes(GameObject go)
+        {
+            foreach (MeshFilter filter in go.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (filter.sharedMesh != null && !EditorUtility.IsPersistent(filter.sharedMesh))
+                {
+                    Object.DestroyImmediate(filter.sharedMesh);
+                }
+            }
+
+            Object.DestroyImmediate(go);
         }
 
         HLEnvironmentScatter Make(int seed)
         {
-            HLEnvironmentScatter scatter = _go.AddComponent<HLEnvironmentScatter>();
+            return Make(_go, seed);
+        }
+
+        HLEnvironmentScatter Make(GameObject go, int seed)
+        {
+            HLEnvironmentScatter scatter = go.AddComponent<HLEnvironmentScatter>();
+            TestHelpers.SetPrivateField(scatter, "_meshes", _meshes);
             HLEnvironmentSettings settings = HLEnvironmentSettings.Default;
             settings.seed = seed;
             settings.counts = new HLEnvironmentCounts
@@ -76,10 +104,34 @@ namespace HealerLike.Render.Environment
                     && b.max.z < grid.yMax, meshRenderer.name);
             }
 
-            scatter.Build(grid, 1f);
+            HLEnvironmentScatter other = Make(_otherGo, 5);
+            other.Build(grid, 1f);
 
-            Vector3[] second = PivotPositions(scatter);
-            Assert.AreEqual(first, second);
+            Assert.AreEqual(first, PivotPositions(other));
+        }
+
+        [Test]
+        public void InitBuildsFromTheManagerMeshes()
+        {
+            GameObject managerGo = new GameObject("HLScatterManager");
+            try
+            {
+                RenderManager manager = managerGo.AddComponent<RenderManager>();
+                TestHelpers.SetPrivateField(manager, "_meshes", _meshes);
+                HLEnvironmentScatter scatter = Make(3);
+                TestHelpers.SetPrivateField(scatter, "_meshes", null);
+
+                scatter.Init(new Rect(-8f, -8f, 16f, 16f), 1f, 0.5f, null, null, 60f, manager);
+
+                Assert.That(scatter.items.Count, Is.GreaterThan(0));
+                Assert.AreEqual(scatter.items.Count, scatter.root.childCount);
+                Assert.IsTrue(scatter.root.GetComponentsInChildren<MeshFilter>().Any(f => f.sharedMesh == _meshes.capsule));
+                Assert.IsTrue(scatter.items.All(i => i.position.y == 0.5f));
+            }
+            finally
+            {
+                Object.DestroyImmediate(managerGo);
+            }
         }
 
         [Test]
@@ -199,19 +251,6 @@ namespace HealerLike.Render.Environment
             long bytes = System.GC.GetAllocatedBytesForCurrentThread() - before;
 
             Assert.AreEqual(0, bytes);
-        }
-
-        [Test]
-        public void ClearRemovesEverything()
-        {
-            HLEnvironmentScatter scatter = Make(3);
-            scatter.Build(new Rect(-8f, -8f, 16f, 16f), 1f);
-
-            scatter.Clear();
-
-            Assert.IsNull(scatter.root);
-            Assert.AreEqual(0, _go.transform.childCount);
-            Assert.AreEqual(0, scatter.swayingCount);
         }
     }
 }

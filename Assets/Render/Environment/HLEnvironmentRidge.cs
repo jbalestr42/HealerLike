@@ -1,11 +1,11 @@
-using System;
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grass;
+using HealerLike.Render.Stage;
 using HealerLike.Render.Stones;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
-using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Environment
 {
@@ -44,8 +44,12 @@ namespace HealerLike.Render.Environment
         [SerializeField] Color _capColor = new Color32(156, 180, 162, 255);
 
         readonly List<Mesh> _ownedMeshes = new List<Mesh>();
-        bool _isRetained;
         MaterialPropertyBlock _properties;
+        RenderManager _manager;
+        HLPrimitiveMeshes _meshes;
+
+        // Runtime meshes for the stage scene, removed in D2
+        HLPrimitiveMeshes _stageMeshes;
 
         List<HLRidgeItem> _items = new List<HLRidgeItem>();
         public IReadOnlyList<HLRidgeItem> items { get { return _items; } }
@@ -53,9 +57,31 @@ namespace HealerLike.Render.Environment
         Transform _root;
         public Transform root { get { return _root; } }
 
+        public void Init(Camera stageCamera, Rect board, float surfaceY, float fogStart, float fogEnd, RenderManager manager)
+        {
+            if (manager == null || manager.meshes == null)
+            {
+                Debug.LogError("[HLEnvironmentRidge] Init needs the render manager and its primitive meshes.");
+                return;
+            }
+
+            _manager = manager;
+            _meshes = manager.meshes;
+            _stageCamera = stageCamera;
+            _grid = board;
+            _groundY = surfaceY;
+            _fogStart = fogStart;
+            _fogEnd = fogEnd;
+            Build();
+        }
+
+        // The stage scene builds from its own camera until the render manager attaches it, removed in D2
         void Start()
         {
-            Build();
+            if (_manager == null)
+            {
+                Build();
+            }
         }
 
         void OnEnable()
@@ -77,8 +103,14 @@ namespace HealerLike.Render.Environment
         void OnDestroy()
         {
             Clear();
+            if (_stageMeshes != null)
+            {
+                StageSceneMeshes.Release(_stageMeshes);
+                _stageMeshes = null;
+            }
         }
 
+        // The stage builder wires the scene instance, removed in D2
         public void Configure(Camera stage, Material stones, Material plants, Rect gridRect, float surfaceY,
             float start, float end, int bands, int layoutSeed)
         {
@@ -93,13 +125,15 @@ namespace HealerLike.Render.Environment
             _seed = layoutSeed;
         }
 
-        // Camera distances of the last visible fog band, [min, max)
+        // Camera distances of the last visible fog band, [min, max); zero and a log when the fog is not valid
         public static Vector2 LastBand(float fogStart, float fogEnd, int fogBands)
         {
-            if (fogBands < 1 || !(fogStart >= 0f) || !(fogEnd > fogStart) || float.IsInfinity(fogEnd))
+            if (fogBands < 1 || !(fogStart >= 0f) || !(fogEnd > fogStart) || !float.IsFinite(fogEnd))
             {
-                throw new ArgumentOutOfRangeException(nameof(fogBands));
+                Debug.LogError($"[HLEnvironmentRidge] Rejected fog from {fogStart} to {fogEnd} in {fogBands} bands.");
+                return Vector2.zero;
             }
+
             return new Vector2(fogStart + (fogBands - 1f) / fogBands * (fogEnd - fogStart), fogEnd);
         }
 
@@ -111,13 +145,20 @@ namespace HealerLike.Render.Environment
         // Eight to twelve monoliths and eight to twelve mushroom stems across x in [-SpreadX, SpreadX],
         // past the far (+z) edge.
         // Items the band cannot reach are clamped to z >= grid.yMax + GridClearance.
+        // Returns no items and logs when an input is not valid.
         public static List<HLRidgeItem> Layout(Vector3 cameraPosition, float fogStart, float fogEnd, int fogBands,
             Rect grid, float groundY, int seed)
         {
             Vector2 band = LastBand(fogStart, fogEnd, fogBands);
-            if (!(grid.width > 0f) || !(grid.height > 0f) || float.IsNaN(groundY) || float.IsInfinity(groundY))
+            if (band.y <= 0f)
             {
-                throw new ArgumentOutOfRangeException(nameof(grid));
+                return new List<HLRidgeItem>();
+            }
+
+            if (!(grid.width > 0f) || !(grid.height > 0f) || !float.IsFinite(groundY))
+            {
+                Debug.LogError($"[HLEnvironmentRidge] Rejected grid {grid} with ground {groundY}.");
+                return new List<HLRidgeItem>();
             }
 
             uint baseSeed = HLStoneSeed.ForPart((uint)seed, Salt);
@@ -132,6 +173,7 @@ namespace HealerLike.Render.Environment
             {
                 kinds[i] = i < monoliths ? HLRidgeKind.Monolith : HLRidgeKind.Mushroom;
             }
+
             for (int i = total - 1; i > 0; i--)
             {
                 int j = (int)(random.Next01() * (i + 1));
@@ -175,6 +217,7 @@ namespace HealerLike.Render.Environment
                 item.position = new Vector3(x, groundY, Mathf.Max(z, grid.yMax + GridClearance));
                 result.Add(item);
             }
+
             return result;
         }
 
@@ -188,9 +231,13 @@ namespace HealerLike.Render.Environment
 
         public void Build(Vector3 cameraPosition)
         {
+            if (_manager == null && _meshes == null)
+            {
+                _stageMeshes = StageSceneMeshes.Create();
+                _meshes = _stageMeshes;
+            }
+
             Clear();
-            HLPrimitiveMeshes.Retain();
-            _isRetained = true;
             _items = Layout(cameraPosition, _fogStart, _fogEnd, _fogBands, _grid, _groundY, _seed);
             _root = new GameObject("HLRidgeItems").transform;
             _root.SetParent(transform, false);
@@ -205,31 +252,16 @@ namespace HealerLike.Render.Environment
         {
             if (_root)
             {
-                Dispose(_root.gameObject);
+                Destroy(_root.gameObject);
             }
+
             _root = null;
             foreach (Mesh mesh in _ownedMeshes)
             {
-                Dispose(mesh);
+                Destroy(mesh);
             }
-            _ownedMeshes.Clear();
-            if (_isRetained)
-            {
-                HLPrimitiveMeshes.Release();
-                _isRetained = false;
-            }
-        }
 
-        static void Dispose(Object value)
-        {
-            if (Application.isPlaying)
-            {
-                Destroy(value);
-            }
-            else
-            {
-                DestroyImmediate(value);
-            }
+            _ownedMeshes.Clear();
         }
 
         void Spawn(HLRidgeItem item)
@@ -251,9 +283,9 @@ namespace HealerLike.Render.Environment
             }
 
             float stem = item.height - (1f - capSink) * item.capThickness;
-            Mesh capsule = HLPrimitiveMeshes.Get(HLPrimitive.Capsule);
+            Mesh capsule = _meshes.capsule;
             Part(pivot, capsule, _plantMaterial, Vector3.zero, new Vector3(item.width, stem, item.width), _stemColor);
-            Mesh sphere = HLPrimitiveMeshes.Get(HLPrimitive.Sphere);
+            Mesh sphere = _meshes.sphere;
             Vector3 capBottom = Vector3.up * (stem - capSink * item.capThickness);
             Vector3 capScale = new Vector3(item.capDiameter, item.capThickness, item.capDiameter);
             Part(pivot, sphere, _plantMaterial, capBottom, capScale, _capColor);
