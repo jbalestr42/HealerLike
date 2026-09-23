@@ -111,15 +111,15 @@ namespace HealerLike.Render.Creatures
         [BoxGroup("Proportions")]
         public int rootCount = 10;
 
-        // Root radius in cells, a 0.15 body unit thick cylinder
+        // Root diameter, hip and knee heights, in the creature's own body units
         [BoxGroup("Proportions")]
-        public float rootThickness = 0.042f;
+        public float rootThickness = 0.14f;
 
         [BoxGroup("Proportions")]
-        public float rootHip = 0.08f;
+        public float rootHip = 0.145f;
 
         [BoxGroup("Proportions")]
-        public float rootKnee = 0.06f;
+        public float rootKnee = 0.11f;
 
         [BoxGroup("Proportions")]
         public int armCount = 2;

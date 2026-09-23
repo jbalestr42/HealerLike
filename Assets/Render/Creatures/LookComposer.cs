@@ -215,14 +215,15 @@ namespace HealerLike.Render.Creatures
         {
             float reach = vocabulary.Reach(band);
             float mid = vocabulary.roots.ContainsKey(ReachBand.Mid) ? vocabulary.roots[ReachBand.Mid].reach : reach;
+            float unit = vocabulary.Unit(LookSide.Plant);
             return new RootDefinition
             {
                 count = vocabulary.rootCount,
                 segments = reach < mid ? 2 : 3,
-                footRadius = reach * vocabulary.bodyUnit,
-                hipHeight = vocabulary.rootHip,
-                kneeHeight = vocabulary.rootKnee,
-                thickness = vocabulary.rootThickness,
+                footRadius = reach * unit,
+                hipHeight = vocabulary.rootHip * unit,
+                kneeHeight = vocabulary.rootKnee * unit,
+                thickness = vocabulary.rootThickness * 0.5f * unit,
                 colour = vocabulary.palette.plantStem
             };
         }

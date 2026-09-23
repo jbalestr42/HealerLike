@@ -222,9 +222,9 @@ MonoBehaviour:
     count: 13
     segments: 3
     footRadius: 1.155
-    hipHeight: 0.08
-    kneeHeight: 0.07
-    thickness: 0.049
+    hipHeight: 0.07975
+    kneeHeight: 0.0605
+    thickness: 0.0385
     angularOffset: 0
     colour: {r: 0.18, g: 0.49, b: 0.31, a: 1}
   idle:

@@ -15090,8 +15090,8 @@ MonoBehaviour:
   isReachPinned: 1
   pinnedReach: 1.3
   rootCount: 10
-  rootThickness: 0.042
-  rootHip: 0.08
-  rootKnee: 0.06
+  rootThickness: 0.14
+  rootHip: 0.145
+  rootKnee: 0.11
   armCount: 2
   stoneWilt: {r: 0.22, g: 0.25, b: 0.33, a: 1}
