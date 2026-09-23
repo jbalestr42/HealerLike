@@ -40,6 +40,7 @@ public class CreatureLooksTests
         CreatureLooks looks = CreateTracked<CreatureLooks>();
         looks.plant = CreateView("Plant");
         looks.stone = CreateView("Stone");
+        looks.vocabulary = LookVocabularyTests.Vocabulary();
         return looks;
     }
 
@@ -111,7 +112,7 @@ public class CreatureLooksTests
         Assert.NotNull(stone);
         Assert.AreNotSame(plant, stone);
         Assert.AreSame(plant, looks.GetRecipe(data, Entity.EntityType.Player));
-        Assert.AreEqual(Primitive.Boulder, stone.parts[0].primitive);
+        Assert.AreEqual(Primitive.Stone, stone.parts[0].primitive);
         Assert.AreEqual(Primitive.Sphere, plant.parts[0].primitive);
     }
 
@@ -123,6 +124,7 @@ public class CreatureLooksTests
             "Assets/Data/Characters/BasicHealerCharacter/BasicHealerCharacter.asset");
 
         Assert.IsEmpty(looks.entities);
+        Assert.AreSame(LookVocabularyTests.Vocabulary(), looks.vocabulary);
         Assert.AreEqual("DerivedPlant", looks.plant.name);
         Assert.AreEqual("DerivedStone", looks.stone.name);
         Assert.AreEqual("HealerCharacter", looks.GetView(healer).name);

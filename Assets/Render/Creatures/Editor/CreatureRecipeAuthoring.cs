@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Creatures
 {
@@ -8,6 +9,7 @@ namespace HealerLike.Render.Creatures
     public static class CreatureRecipeAuthoring
     {
         static readonly string root = "Assets/Render/Creatures/";
+        static readonly string vocabularyPath = "Assets/Render/Creatures/Data/LookVocabulary.asset";
         public static readonly Color body = new Color(0.50f, 0.79f, 0.25f);
         public static readonly Color stem = new Color(0.18f, 0.49f, 0.31f);
         public static readonly Color bud = new Color(0.78f, 0.95f, 0.29f);
@@ -69,14 +71,21 @@ namespace HealerLike.Render.Creatures
             recipe.roots.segments = 3;
             recipe.idle.seed = seed;
             // Roots lie along the ground from the body's base, reaching as far as the derived units
-            recipe.roots.thickness = LookComposer.RootThickness;
-            recipe.roots.footRadius = LookComposer.PinnedReach * LookComposer.BodyUnit;
-            recipe.roots.hipHeight = LookComposer.RootHip;
-            recipe.roots.kneeHeight = LookComposer.RootKnee;
+            LookVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<LookVocabulary>(vocabularyPath);
+            if (vocabulary == null)
+            {
+                Debug.LogError($"[CreatureRecipeAuthoring] Missing {vocabularyPath}.");
+                return null;
+            }
+
+            recipe.roots.thickness = vocabulary.rootThickness;
+            recipe.roots.footRadius = vocabulary.pinnedReach * vocabulary.bodyUnit;
+            recipe.roots.hipHeight = vocabulary.rootHip;
+            recipe.roots.kneeHeight = vocabulary.rootKnee;
             if (name == "Healer")
             {
                 // The healer's rosette reaches 2.1 body units, from the foot of its stem
-                recipe.roots.footRadius = LookComposer.LongReach * LookComposer.BodyUnit;
+                recipe.roots.footRadius = vocabulary.roots[ReachBand.Long].reach * vocabulary.bodyUnit;
                 recipe.roots.kneeHeight = 0.07f;
                 recipe.roots.thickness = 0.049f;
             }

@@ -25,6 +25,10 @@ namespace HealerLike.Render.Creatures
         [AssetsOnly]
         public GameObject character;
 
+        // The parts and proportions every derived unit is composed from
+        [AssetsOnly]
+        public LookVocabulary vocabulary;
+
         // Derived once per entity and side, the same data always draws the same creature
         readonly Dictionary<EntityData, CreatureRecipe> _plants = new Dictionary<EntityData, CreatureRecipe>();
         readonly Dictionary<EntityData, CreatureRecipe> _stones = new Dictionary<EntityData, CreatureRecipe>();
@@ -58,7 +62,7 @@ namespace HealerLike.Render.Creatures
             Dictionary<EntityData, CreatureRecipe> cache = LookDerivation.Side(entityType) == LookSide.Plant ? _plants : _stones;
             if (!cache.ContainsKey(data) || cache[data] == null)
             {
-                cache[data] = LookComposer.Compose(LookDerivation.Channels(data, entityType));
+                cache[data] = LookComposer.Compose(LookDerivation.Channels(data, entityType), vocabulary);
             }
             return cache[data];
         }
