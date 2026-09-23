@@ -1535,6 +1535,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 49282687}
     m_Modifications:
+    - target: {fileID: 1474866273, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
+      objectReference: {fileID: 0}
+    - target: {fileID: 2040385809, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
+      objectReference: {fileID: 0}
+    - target: {fileID: 2054175651, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
+      objectReference: {fileID: 0}
+    - target: {fileID: 7077222750997751808, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
+      objectReference: {fileID: 0}
     - target: {fileID: 8447520249148034656, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
       propertyPath: m_Name
       value: GameView
@@ -1643,6 +1659,10 @@ PrefabInstance:
       propertyPath: 'serializationData.PrefabModificationsReferencedUnityObjects.Array.data[0]'
       value: 
       objectReference: {fileID: 401925404}
+    - target: {fileID: 8610631179331356886, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
+      objectReference: {fileID: 0}
     - target: {fileID: 9125300127069061713, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -1650,6 +1670,10 @@ PrefabInstance:
     - target: {fileID: 9125300127069061713, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9174737650309455972, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
