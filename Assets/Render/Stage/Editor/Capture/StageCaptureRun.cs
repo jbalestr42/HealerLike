@@ -29,7 +29,8 @@ namespace HealerLike.Render.Stage
             float nextCast = Time.time + 2f;
             while (Time.time - started < CaptureAt)
             {
-                if (Time.time >= nextCast)
+                // One heal, then strikes only until an enemy is hit, so his first wave is still fighting at the capture
+                if (Time.time >= nextCast && (_heals == 0 || !IsAnyEnemyHit()))
                 {
                     nextCast = Time.time + 1f;
                     Entity.EntityType side = _heals == 0 ? Entity.EntityType.Player : Entity.EntityType.Computer;
@@ -56,6 +57,20 @@ namespace HealerLike.Render.Stage
                 }
             }
             return null;
+        }
+
+        bool IsAnyEnemyHit()
+        {
+            foreach (GameObject entityGo in _manager.entityManager.GetEntities(Entity.EntityType.Computer))
+            {
+                Entity entity = entityGo != null ? entityGo.GetComponent<Entity>() : null;
+                if (entity != null && entity.health != null && entity.health.Value < entity.health.Max)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         // Portrait as his device autorotates, the aspect follows the target rather than the batchmode screen

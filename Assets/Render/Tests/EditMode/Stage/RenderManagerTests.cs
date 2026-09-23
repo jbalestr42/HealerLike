@@ -228,5 +228,34 @@ public class RenderManagerTests
         Assert.AreEqual(1, _manager.NextDeliveryToken());
         Assert.AreEqual(2, _manager.NextDeliveryToken());
     }
+
+    [Test]
+    public void OnEntitySpawned_SoldierEnemy_GetsTheStoneView()
+    {
+        _manager.Init(_entityManager, _player);
+        Entity entity = CreateEntity(_gameGo.transform, Entity.EntityType.Computer, out Renderer modelRenderer);
+        entity.data = AssetDatabase.LoadAssetAtPath<EntityData>("Assets/Data/Entities/SoldierEntity/SoldierEntity.asset");
+
+        _entityManager.OnEntitySpawned.Invoke(entity);
+
+        Assert.IsNotNull(entity.data);
+        Assert.IsNotNull(entity.model.GetComponentInChildren<StoneEnemyVisual>());
+        Assert.IsNull(entity.model.GetComponentInChildren<CreatureBuilder>());
+    }
+
+    [Test]
+    public void OnEntitySpawned_HitArmorBufferEnemy_GetsTheStoneView()
+    {
+        _manager.Init(_entityManager, _player);
+        Entity entity = CreateEntity(_gameGo.transform, Entity.EntityType.Computer, out Renderer modelRenderer);
+        entity.data = AssetDatabase.LoadAssetAtPath<EntityData>(
+            "Assets/Data/Entities/HitArmorBufferEntityEntity/HitArmorBufferEntity.asset");
+
+        _entityManager.OnEntitySpawned.Invoke(entity);
+
+        Assert.IsNotNull(entity.data);
+        Assert.IsNotNull(entity.model.GetComponentInChildren<StoneEnemyVisual>());
+        Assert.IsNull(entity.model.GetComponentInChildren<CreatureBuilder>());
+    }
 }
 }
