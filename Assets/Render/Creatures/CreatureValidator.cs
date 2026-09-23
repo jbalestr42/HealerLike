@@ -93,7 +93,8 @@ namespace HealerLike.Render.Creatures
             }
 
             RootDefinition roots = data.roots;
-            if (roots.count < 4 || roots.count > 8 || !Positive(roots.footRadius) || !Positive(roots.thickness)
+            if (roots.count < 4 || roots.count > 14 || roots.segments < 1 || roots.segments > 4
+                || !Positive(roots.footRadius) || !Positive(roots.thickness)
                 || roots.footRadius + roots.thickness > 0.46f
                 || !Positive(roots.hipHeight) || !Positive(roots.kneeHeight)
                 || !float.IsFinite(roots.angularOffset) || !Colour(roots.colour))

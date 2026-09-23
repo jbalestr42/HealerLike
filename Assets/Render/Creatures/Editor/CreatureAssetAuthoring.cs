@@ -25,11 +25,11 @@ namespace HealerLike.Render.Creatures
 
             Directory.CreateDirectory(root + "Data");
             Directory.CreateDirectory(root + "Prefabs");
-            CreatureRecipe healer = CreatureRecipeAuthoring.SaveRecipe("Healer", CreatureRecipeParts.Healer(), 6, 2, 17);
-            CreatureRecipe fern = CreatureRecipeAuthoring.SaveRecipe("SpiralFern", CreatureRecipeParts.Fern(), 7, 2, 31);
-            CreatureRecipe arch = CreatureRecipeAuthoring.SaveRecipe("HangingArch", CreatureRecipeParts.Arch(), 6, 4, 57);
-            CreatureRecipe rosette = CreatureRecipeAuthoring.SaveRecipe("BladeRosette", CreatureRecipeParts.Rosette(), 6, 2, 103);
-            CreatureRecipe stack = CreatureRecipeAuthoring.SaveRecipe("SphereStack", CreatureRecipeParts.Stack(), 8, 1, 89);
+            CreatureRecipe healer = CreatureRecipeAuthoring.SaveRecipe("Healer", CreatureRecipeParts.Healer(), 13, 2, 17);
+            CreatureRecipe fern = CreatureRecipeAuthoring.SaveRecipe("SpiralFern", CreatureRecipeParts.Fern(), 10, 2, 31);
+            CreatureRecipe arch = CreatureRecipeAuthoring.SaveRecipe("HangingArch", CreatureRecipeParts.Arch(), 9, 4, 57);
+            CreatureRecipe rosette = CreatureRecipeAuthoring.SaveRecipe("BladeRosette", CreatureRecipeParts.Rosette(), 9, 2, 103);
+            CreatureRecipe stack = CreatureRecipeAuthoring.SaveRecipe("SphereStack", CreatureRecipeParts.Stack(), 10, 1, 89);
             if (!healer || !fern || !arch || !rosette || !stack)
             {
                 return;
@@ -56,11 +56,11 @@ namespace HealerLike.Render.Creatures
         // Recipe-only refresh keeps existing prefab presentation and delivery overrides intact
         public static void AuthorBeautyRecipes()
         {
-            CreatureRecipeAuthoring.SaveRecipe("Healer", CreatureRecipeParts.Healer(), 6, 2, 17);
-            CreatureRecipeAuthoring.SaveRecipe("SpiralFern", CreatureRecipeParts.Fern(), 7, 2, 31);
-            CreatureRecipeAuthoring.SaveRecipe("HangingArch", CreatureRecipeParts.Arch(), 6, 4, 57);
-            CreatureRecipeAuthoring.SaveRecipe("BladeRosette", CreatureRecipeParts.Rosette(), 6, 2, 103);
-            CreatureRecipeAuthoring.SaveRecipe("SphereStack", CreatureRecipeParts.Stack(), 8, 1, 89);
+            CreatureRecipeAuthoring.SaveRecipe("Healer", CreatureRecipeParts.Healer(), 13, 2, 17);
+            CreatureRecipeAuthoring.SaveRecipe("SpiralFern", CreatureRecipeParts.Fern(), 10, 2, 31);
+            CreatureRecipeAuthoring.SaveRecipe("HangingArch", CreatureRecipeParts.Arch(), 9, 4, 57);
+            CreatureRecipeAuthoring.SaveRecipe("BladeRosette", CreatureRecipeParts.Rosette(), 9, 2, 103);
+            CreatureRecipeAuthoring.SaveRecipe("SphereStack", CreatureRecipeParts.Stack(), 10, 1, 89);
             AssetDatabase.SaveAssets();
         }
 

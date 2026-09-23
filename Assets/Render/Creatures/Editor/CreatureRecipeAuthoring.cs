@@ -66,6 +66,7 @@ namespace HealerLike.Render.Creatures
 
             recipe.parts = parts.ToArray();
             recipe.roots.count = roots;
+            recipe.roots.segments = 3;
             recipe.idle.seed = seed;
             recipe.roots.thickness = 0.042f;
             recipe.roots.footRadius = 0.41f;
