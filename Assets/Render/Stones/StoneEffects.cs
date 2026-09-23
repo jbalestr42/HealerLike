@@ -45,7 +45,6 @@ namespace HealerLike.Render.Stones
         readonly List<Fragment> _active = new List<Fragment>(MaxLiveFragments);
         readonly Stack<Fragment> _pool = new Stack<Fragment>(MaxLiveFragments);
         readonly Dictionary<Transform, Fragment> _shards = new Dictionary<Transform, Fragment>();
-        readonly List<StoneAssembly.Part> _surviving = new List<StoneAssembly.Part>(8);
         readonly List<Transform> _standing = new List<Transform>(8);
         StoneMeshCache.Lease _dustLease;
 
@@ -314,46 +313,6 @@ namespace HealerLike.Render.Stones
             Vector3 velocity = velocityWS + direction * random.Range(0.6f, 1.2f) + Vector3.up * 0.2f;
             Spawn(copy, partMaterial, pose.GetColumn(3), pose.rotation, pose.lossyScale, velocity, 0.25f, groundY,
                 false, seed, copy, true);
-        }
-
-        public void CollapseOnce(StoneEnemyVisual visual, uint seed)
-        {
-            if (!isActiveAndEnabled || !HasAssets())
-            {
-                return;
-            }
-            if (visual == null || !visual.TryBeginCollapse())
-            {
-                return;
-            }
-
-            StoneRandom random = new StoneRandom(seed);
-            _surviving.Clear();
-            for (int i = 0; i < visual.parts.Count; i++)
-            {
-                if (visual.parts[i].transform.gameObject.activeSelf)
-                {
-                    _surviving.Add(visual.parts[i]);
-                }
-            }
-
-            int count = _surviving.Count == 0 ? 0 : 12;
-            for (int i = 0; i < count; i++)
-            {
-                StoneAssembly.Part part = _surviving[i % _surviving.Count];
-                float angle = i * Mathf.PI * 2f / count;
-                Vector3 outward = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * random.Range(1.2f, 1.8f);
-                Vector3[] vertices = part.lease.data.vertices;
-                int vertex = (int)(random.Next() % (uint)vertices.Length);
-                Vector3 position = part.transform.TransformPoint(vertices[vertex]);
-                Material material = i % 4 == 0 ? _coralMaterial : _stoneMaterial;
-                Vector3 scale = Vector3.one * random.Range(0.06f, 0.16f);
-                Vector3 velocity = visual.planarVelocity + outward + Vector3.up * random.Range(0.7f, 1.5f);
-                Spawn(_meshes.pyramid, material, position, part.transform.rotation, scale, velocity, 0.8f, visual.groundY,
-                    true, random.Next());
-            }
-            EmitDust(visual.transform.position + Vector3.up * 0.15f, seed);
-            visual.HideParts();
         }
 
         // Breaks the parts still standing into debris and dust, the caller hides them

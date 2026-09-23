@@ -18,7 +18,6 @@ namespace HealerLike.Render.Stones
         {
             Directory.CreateDirectory(root + "Prefabs");
             BuildEffects();
-            StoneModelAuthoring.Build(root + "Prefabs/StoneSoldierModel.prefab", "StoneSoldierModel", StonePreset.Boulder);
             BuildDerivedStone();
             BuildBlock();
             AssetDatabase.SaveAssets();
