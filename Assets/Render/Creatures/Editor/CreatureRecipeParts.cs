@@ -73,7 +73,7 @@ namespace HealerLike.Render.Creatures
                 parts.Add(CreatureRecipeAuthoring.Part("HLFernStem" + i, HLPrimitive.Capsule, middle, stemSize, CreatureRecipeAuthoring.stem, stemEuler));
                 Vector3 frondSize = new Vector3(0.28f * (1f - i * 0.04f), 0.07f, 0.15f);
                 Vector3 frondEuler = new Vector3(0f, i * 29f, i % 2 == 0 ? 32f : -32f);
-                Color frondColour = i % 2 == 0 ? CreatureRecipeAuthoring.body : bud;
+                Color frondColour = i % 2 == 0 ? CreatureRecipeAuthoring.body : CreatureRecipeAuthoring.bud;
                 parts.Add(CreatureRecipeAuthoring.Part("HLFrond" + i, HLPrimitive.Sphere, point, frondSize, frondColour, frondEuler,
                     glow: i > 6 ? 0.45f : 0f));
                 previous = point;
