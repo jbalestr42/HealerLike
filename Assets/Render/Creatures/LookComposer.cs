@@ -32,9 +32,8 @@ namespace HealerLike.Render.Creatures
             public int accessoryStart { get; set; } = -1;
 
             // The first part of each head copy, the head runs from the first of them to the accessory
-            public List<int> headStarts { get { return _headStarts; } }
-
             readonly List<int> _headStarts = new List<int>();
+            public List<int> headStarts { get { return _headStarts; } }
 
             public PartList(float unit)
             {
