@@ -23,7 +23,8 @@ namespace HealerLike.Render.Stage
         static readonly List<Entity> allies=new();
         static readonly HashSet<BuffManager> buffManagers=new();
         static readonly UnityAction<BuffManager.BuffHandlerData> buffStarted=OnBuffStarted;
-        static int hostileAreas; static readonly HashSet<EntityId> seenAreas=new();
+        static AreaOfEffect lifetimeArea; static float lifetimeBorn; static bool lifetimeStarted,lifetimeLive,lifetimeDestroyed;
+        static float hostileFinishAt; static int hostileAreas; static readonly HashSet<EntityId> seenAreas=new();
         static int statuses; static bool speedValid; static bool overviewRequested,overviewVerified,refocusRequested;
         static readonly List<string> events=new();
         static readonly Dictionary<string,int> stillFrames=new();
@@ -54,7 +55,7 @@ namespace HealerLike.Render.Stage
             {
                 start=EditorApplication.timeSinceStartup; frame=positiveHealth=negativeHealth=casts=projectiles=0;
                 gameStart=nextFrame=nextHeal=0; menuPressed=gameStarted=placed=wave=groupCast=buffCast=finished=firstHit=screenshotHeal=false;
-                events.Clear(); stillFrames.Clear(); pendingStills.Clear(); seen.Clear(); allies.Clear(); listeners.Clear(); buffManagers.Clear(); statuses=hostileAreas=0; seenAreas.Clear(); speedValid=true; overviewRequested=overviewVerified=refocusRequested=false;
+                events.Clear(); stillFrames.Clear(); pendingStills.Clear(); seen.Clear(); allies.Clear(); listeners.Clear(); buffManagers.Clear(); lifetimeArea=null; lifetimeBorn=0; lifetimeStarted=lifetimeLive=lifetimeDestroyed=false; hostileFinishAt=0; statuses=hostileAreas=0; seenAreas.Clear(); speedValid=true; overviewRequested=overviewVerified=refocusRequested=false;
                 var go=new GameObject("HLRealEventCapture"); Object.DontDestroyOnLoad(go); go.AddComponent<HLEventCaptureHook>().Late=Late;
                 ScreenCapture.CaptureScreenshot(Folder+"menu-ui.png");
             }
@@ -96,8 +97,8 @@ namespace HealerLike.Render.Stage
             float t=Time.time-gameStart;
             speedValid &= Mathf.Approximately(Time.timeScale,1);
             Observe();
-            if(!placed && t>.7f) { placed=true; Place(); if(Hostile) EquipExistingExplosion(); }
-            if(placed && !wave && allies.Count>0)
+            if(!placed && t>.7f) { placed=true; Place(); if(Hostile) { EquipExistingExplosion(); var cameraControl=Object.FindAnyObjectByType<HLBattleFocus>(); if(cameraControl && cameraControl.ToggleButton) cameraControl.ToggleButton.onClick.Invoke(); } }
+            if(placed && !wave && allies.Count>0 && (!Hostile || Object.FindAnyObjectByType<HLBattleFocus>().IsSettled))
             {
                 var view=Object.FindAnyObjectByType<GameView>();
                 if(view && view.gameHUD.nextWaveButton.interactable) { view.gameHUD.nextWaveButton.onClick.Invoke(); wave=true; Log("Next Wave invoked"); }
@@ -106,21 +107,36 @@ namespace HealerLike.Render.Stage
                 if(seen.Add(p.GetEntityId())) { projectiles++; if(projectiles<8) Log("projectile "+p.name+" source="+(p.source?p.source.name:"null")); }
             if(Hostile) foreach(var area in Object.FindObjectsByType<AreaOfEffect>(FindObjectsSortMode.None))
                 if(area.source && area.source.TryGetComponent<Entity>(out var enemy) && enemy.entityType==Entity.EntityType.Computer && seenAreas.Add(area.GetEntityId()))
-                { hostileAreas++; Log("actual hostile AreaOfEffect source="+area.source.name+" radius="+area.radius+" position="+area.transform.position+" pulse="+(area.GetComponent<HealerLike.Render.Zones.HLAreaPulse>()!=null)); if(t>4 && !stillFrames.ContainsKey("hostile-area-ui.png") && !pendingStills.Contains("hostile-area-ui.png")) pendingStills.Add("hostile-area-ui.png"); }
+                { if(!lifetimeStarted) { lifetimeArea=area; lifetimeBorn=t; lifetimeStarted=true; } hostileAreas++; Log("actual hostile AreaOfEffect source="+area.source.name+" radius="+area.radius+" position="+area.transform.position+" pulse="+(area.GetComponent<HealerLike.Render.Zones.HLAreaPulse>()!=null)); if(!stillFrames.ContainsKey("hostile-area-ui.png") && !pendingStills.Contains("hostile-area-ui.png")) pendingStills.Add("hostile-area-ui.png"); }
+            if(Hostile && lifetimeStarted) {
+                if(lifetimeArea) {
+                    var vfx=lifetimeArea.GetComponentsInChildren<Behaviour>(true).FirstOrDefault(b=>b.GetType().FullName=="UnityEngine.VFX.VisualEffect");
+                    if(vfx && t-lifetimeBorn>1 && !lifetimeLive) {
+                        uint alive=Convert.ToUInt32(vfx.GetType().GetProperty("aliveParticleCount").GetValue(vfx));
+                        if(alive>0) { lifetimeLive=true; Log("legacy area VFX still simulates after one second: alive="+alive+" age="+(t-lifetimeBorn)+" masked="+lifetimeArea.GetComponentsInChildren<Renderer>(true).All(r=>r.forceRenderingOff)); }
+                    }
+                } else if(!lifetimeDestroyed) { lifetimeDestroyed=true; Log("legacy area destroyed naturally at age="+(t-lifetimeBorn)+"; observed live particles after one second="+lifetimeLive); }
+            }
             var injured=allies.Find(a=>a && a.health && a.health.Value<a.health.Max-.5f);
             if(injured && t>3 && t>nextHeal && positiveHealth==0) { nextHeal=t+1; Cast("Heal",injured); }
             if(t>8 && !groupCast) { groupCast=Cast("Heal group",null); }
             if(t>10 && !buffCast) { buffCast=Cast("Buff attack speed",null); }
-            if(t<15 && t>=nextFrame)
+            if(t<15 && t>=nextFrame && hostileFinishAt==0)
             {
                 nextFrame=t+1f/12;
                 RenderFrame("motion-"+frame.ToString("D5")+".png",Landscape?960:540,Landscape?540:960);
                 events.Add($"FRAME,{frame},{t:F5},{Time.realtimeSinceStartup:F5}"); frame++;
                 foreach(var name in pendingStills) stillFrames[name]=frame-1; pendingStills.Clear();
                 if(frame==48) stillFrames["gameplay-ui.png"]=frame-1;
+                if(Hostile && stillFrames.ContainsKey("hostile-area-ui.png")) hostileFinishAt=t+.5f;
             }
             if(negativeHealth>0 && !firstHit) { firstHit=true; pendingStills.Add("first-contact.png"); }
             if(positiveHealth>0 && !screenshotHeal) { screenshotHeal=true; pendingStills.Add("heal-ui.png"); }
+            if(Hostile) {
+                if(hostileFinishAt>0 && t>=hostileFinishAt && lifetimeDestroyed) Finish(hostileAreas>0 && negativeHealth>0 && speedValid && lifetimeLive,"supplemental actual debug-inventory hostile area plus damage; source and radius logged; waited for queued still");
+                else if(t>=14) Finish(false,"no real hostile area recorded from existing inventory");
+                return;
+            }
             var focus=Object.FindAnyObjectByType<HLBattleFocus>();
             if(t>=15.3f && !overviewRequested) { overviewRequested=true; if(focus && focus.IsSettled && focus.ToggleButton) { Log("verified settled automatic battle focus, current body corners inside safe viewport; bounds="+focus.CombatBounds+"; bodies="+focus.BodyCount); focus.ToggleButton.onClick.Invoke(); } else { Finish(false,"automatic battle focus absent"); return; } }
             if(t>=16.8f && !overviewVerified) { var bootstrap=Object.FindAnyObjectByType<HLRenderBootstrap>(); overviewVerified=focus && !focus.IsFocused && bootstrap && Vector3.Distance(Camera.main.transform.position,bootstrap.OverviewPose.position)<.1f; if(!overviewVerified) { Finish(false,"Overview button did not restore placement frame"); return; } ScreenCapture.CaptureScreenshot(Folder+"overview-ui.png"); Log("verified Overview button and restored pose"); }
@@ -156,7 +172,7 @@ namespace HealerLike.Render.Stage
         static void EquipExistingExplosion()
         {
             var view=Object.FindAnyObjectByType<GameView>();
-            var enemy=Object.FindObjectsByType<Entity>(FindObjectsSortMode.None).FirstOrDefault(e=>e.entityType==Entity.EntityType.Computer);
+            var enemy=Object.FindObjectsByType<Entity>(FindObjectsSortMode.None).FirstOrDefault(e=>e.entityType==Entity.EntityType.Computer && e.data && e.data.name.Contains("Soldier"));
             if(!view || !enemy) { Log("hostile route absent view/enemy"); return; }
             var inventory=view.playerInventory.inventory;
             var data=inventory.inventoryHandler.items.FirstOrDefault(i=>i.item.title=="ExplodeOnHit");
@@ -222,7 +238,7 @@ namespace HealerLike.Render.Stage
                 if(File.Exists(source)) { File.Copy(source,Folder+pair.Key,true); events.Add("STILL,"+pair.Key+","+pair.Value); }
                 else missing++;
             }
-            success &= missing==0 && stillFrames.ContainsKey("heal-ui.png");
+            success &= missing==0 && stillFrames.ContainsKey(Hostile?"hostile-area-ui.png":"heal-ui.png");
             reason+="; missing current-run frame files="+missing;
             Log($"result={success} {reason}; frames={frame}; healthPositive={positiveHealth}; healthNegative={negativeHealth}; projectiles={projectiles}; casts={casts}; observedStatuses={statuses}; actualHostileAreas={hostileAreas}; normalSpeedThroughout={speedValid}; hostile evidence requires actual source/radius item event");
             File.WriteAllLines(Folder+"events.csv",events); SessionState.SetInt(Key+"Code",success?0:1); EditorApplication.isPlaying=false;

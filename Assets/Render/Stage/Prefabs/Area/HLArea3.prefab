@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &131661917305691758
+--- !u!1001 &2202054753734341180
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -58,23 +58,38 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1491598258801841562, guid: 01853b17441166446a7cdcca5640f029, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4206223629788467066}
+      addedObject: {fileID: 8171614105508616678}
+    - targetCorrespondingSourceObject: {fileID: 1491598258801841562, guid: 01853b17441166446a7cdcca5640f029, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6997723511545183732}
   m_SourcePrefab: {fileID: 100100000, guid: 01853b17441166446a7cdcca5640f029, type: 3}
---- !u!1 &1540505290519759860 stripped
+--- !u!1 &737602526596179878 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1491598258801841562, guid: 01853b17441166446a7cdcca5640f029, type: 3}
-  m_PrefabInstance: {fileID: 131661917305691758}
+  m_PrefabInstance: {fileID: 2202054753734341180}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4206223629788467066
+--- !u!114 &8171614105508616678
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1540505290519759860}
+  m_GameObject: {fileID: 737602526596179878}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2d395edae9447a98344d294c92d4a3f, type: 3}
   m_Name:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLAreaPulse
   _kind: 2
+--- !u!114 &6997723511545183732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 737602526596179878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c54f9ecc005b4493af3f913d6e2acea0, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLLegacyAreaVisualMask
