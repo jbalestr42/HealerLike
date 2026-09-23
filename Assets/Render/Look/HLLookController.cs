@@ -1,52 +1,60 @@
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Look
 {
+    [ExecuteAlways]
     public class HLLookController : MonoBehaviour
     {
-        [SerializeField] HLLookSettings settings = HLLookSettings.Default;
-        static HLLookController owner;
-        static readonly int ShadowTintId = Shader.PropertyToID("_HLShadowTint");
-        static readonly int OutlineColorId = Shader.PropertyToID("_HLOutlineColor");
-        static readonly int FogColorId = Shader.PropertyToID("_HLFogColor");
-        static readonly int ShadowStrengthId = Shader.PropertyToID("_HLShadowStrength");
-        static readonly int ToonThresholdId = Shader.PropertyToID("_HLToonThreshold");
-        static readonly int OutlineWidthPixelsId = Shader.PropertyToID("_HLOutlineWidthPixels");
-        static readonly int FogStartId = Shader.PropertyToID("_HLFogStart");
-        static readonly int FogEndId = Shader.PropertyToID("_HLFogEnd");
-        static readonly int InkStrengthId = Shader.PropertyToID("_HLInkStrength");
-        static readonly int KeyLightDirId = Shader.PropertyToID("_HLKeyLightDir");
-        static readonly int InkSpacingPixelsId = Shader.PropertyToID("_HLInkSpacingPixels");
-        static readonly int InkScaleId = Shader.PropertyToID("_HLInkScale");
-        static readonly int InkWidthId = Shader.PropertyToID("_HLInkWidth");
-        static readonly int InkStartId = Shader.PropertyToID("_HLInkStart");
-        static readonly int InkRangeId = Shader.PropertyToID("_HLInkRange");
-        static readonly int DensityMulId = Shader.PropertyToID("_HLDensityMul");
-        static readonly int InkWarpId = Shader.PropertyToID("_HLInkWarp");
-        static readonly int InkWarpFreqId = Shader.PropertyToID("_HLInkWarpFreq");
-        static readonly int DashAmountId = Shader.PropertyToID("_HLDashAmount");
-        static readonly int DashScaleId = Shader.PropertyToID("_HLDashScale");
-        static readonly int InkDistStartId = Shader.PropertyToID("_HLInkDistStart");
-        static readonly int InkFarSpacingId = Shader.PropertyToID("_HLInkFarSpacing");
-        static readonly int FogBandsId = Shader.PropertyToID("_HLFogBands");
-        static readonly int LookAppliedId = Shader.PropertyToID("_HLLookApplied");
+        [FormerlySerializedAs("settings")]
+        [SerializeField] HLLookSettings _settings = HLLookSettings.Default;
 
-        static readonly Action<int, float> SetFloat = Shader.SetGlobalFloat;
-        static readonly Action<int, Vector4> SetVector = Shader.SetGlobalVector;
+        static HLLookController _owner;
 
-        public HLLookSettings Settings { get => settings; set => settings = value.Validated(); }
+        static readonly int shadowTintId = Shader.PropertyToID("_HLShadowTint");
+        static readonly int outlineColorId = Shader.PropertyToID("_HLOutlineColor");
+        static readonly int fogColorId = Shader.PropertyToID("_HLFogColor");
+        static readonly int shadowStrengthId = Shader.PropertyToID("_HLShadowStrength");
+        static readonly int toonThresholdId = Shader.PropertyToID("_HLToonThreshold");
+        static readonly int outlineWidthPixelsId = Shader.PropertyToID("_HLOutlineWidthPixels");
+        static readonly int fogStartId = Shader.PropertyToID("_HLFogStart");
+        static readonly int fogEndId = Shader.PropertyToID("_HLFogEnd");
+        static readonly int inkStrengthId = Shader.PropertyToID("_HLInkStrength");
+        static readonly int keyLightDirId = Shader.PropertyToID("_HLKeyLightDir");
+        static readonly int inkSpacingPixelsId = Shader.PropertyToID("_HLInkSpacingPixels");
+        static readonly int inkScaleId = Shader.PropertyToID("_HLInkScale");
+        static readonly int inkWidthId = Shader.PropertyToID("_HLInkWidth");
+        static readonly int inkStartId = Shader.PropertyToID("_HLInkStart");
+        static readonly int inkRangeId = Shader.PropertyToID("_HLInkRange");
+        static readonly int densityMulId = Shader.PropertyToID("_HLDensityMul");
+        static readonly int inkWarpId = Shader.PropertyToID("_HLInkWarp");
+        static readonly int inkWarpFreqId = Shader.PropertyToID("_HLInkWarpFreq");
+        static readonly int dashAmountId = Shader.PropertyToID("_HLDashAmount");
+        static readonly int dashScaleId = Shader.PropertyToID("_HLDashScale");
+        static readonly int inkDistStartId = Shader.PropertyToID("_HLInkDistStart");
+        static readonly int inkFarSpacingId = Shader.PropertyToID("_HLInkFarSpacing");
+        static readonly int fogBandsId = Shader.PropertyToID("_HLFogBands");
+        static readonly int lookAppliedId = Shader.PropertyToID("_HLLookApplied");
+
+        // Tests swap these to see the real write order without a renderer
+        static readonly Action<int, float> setGlobalFloat = Shader.SetGlobalFloat;
+        static readonly Action<int, Vector4> setGlobalVector = Shader.SetGlobalVector;
+
+        public HLLookSettings settings { get { return _settings; } set { _settings = value.Validated(); } }
 
         void OnEnable()
         {
-            settings = settings.Validated();
-            if (owner != null && owner != this)
+            _settings = _settings.Validated();
+            if (_owner != null && _owner != this)
             {
-                Debug.LogWarning("HLLookController already has an active owner; this controller remains inactive.", this);
+                Debug.LogWarning("HLLookController already has an active owner; "
+                                 + "this controller remains inactive.", this);
                 return;
             }
-            owner = this;
+
+            _owner = this;
             RenderPipelineManager.beginFrameRendering -= OnBeginFrameRendering;
             RenderPipelineManager.beginFrameRendering += OnBeginFrameRendering;
             RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
@@ -56,57 +64,98 @@ namespace HealerLike.Render.Look
         {
             RenderPipelineManager.beginFrameRendering -= OnBeginFrameRendering;
             RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
-            if (owner != this) return;
-            owner = null;
-            Shader.SetGlobalFloat(LookAppliedId, 0f);
-            Shader.SetGlobalVector(KeyLightDirId, Vector4.zero);
+            if (_owner != this)
+            {
+                return;
+            }
+
+            _owner = null;
+            Shader.SetGlobalFloat(lookAppliedId, 0f);
+            Shader.SetGlobalVector(keyLightDirId, Vector4.zero);
         }
 
-        void OnValidate() => settings = settings.Validated();
-
-        void OnBeginFrameRendering(ScriptableRenderContext context, Camera[] cameras) => ApplyGlobals();
-
-        public void ApplyGlobals()
+        void OnValidate()
         {
-            if (owner != this || !isActiveAndEnabled) return;
-            PublishSunDirection(~0);
-            UploadGlobals(in settings);
+            _settings = _settings.Validated();
+        }
+
+        void OnBeginFrameRendering(ScriptableRenderContext context, Camera[] cameras)
+        {
+            ApplyGlobals();
         }
 
         void OnBeginCameraRendering(ScriptableRenderContext context, Camera camera)
         {
-            if (owner != this || !isActiveAndEnabled) return;
+            if (_owner != this || !isActiveAndEnabled)
+            {
+                return;
+            }
+
             PublishSunDirection(camera.cullingMask);
         }
 
-        static void PublishSunDirection(int cameraMask)
+        // Only the active owner publishes, the other controllers stay silent
+        public void ApplyGlobals()
         {
-            var sun = RenderSettings.sun;
-            PublishMainLightDirection(sun && sun.isActiveAndEnabled &&
-                (cameraMask & (1 << sun.gameObject.layer)) != 0 ? sun : null);
+            if (_owner != this || !isActiveAndEnabled)
+            {
+                return;
+            }
+
+            PublishSunDirection(~0);
+            UploadGlobals(in _settings);
         }
 
+        // Same choice as URP: the sun first, otherwise the brightest directional light
         public static Vector4 SelectKeyLightDirection(Light[] lights, Light sun, int cameraMask)
         {
             Light selected = null;
             float brightest = 0f;
-            foreach (var light in lights)
+            foreach (Light light in lights)
             {
-                if (!light || !light.isActiveAndEnabled || light.type != LightType.Directional ||
-                    (cameraMask & (1 << light.gameObject.layer)) == 0) continue;
-                if (light == sun) { selected = light; break; }
-                if (light.intensity > brightest) { selected = light; brightest = light.intensity; }
+                if (!light || !light.isActiveAndEnabled || light.type != LightType.Directional
+                    || (cameraMask & (1 << light.gameObject.layer)) == 0)
+                {
+                    continue;
+                }
+
+                if (light == sun)
+                {
+                    selected = light;
+                    break;
+                }
+
+                if (light.intensity > brightest)
+                {
+                    selected = light;
+                    brightest = light.intensity;
+                }
             }
-            if (!selected) return Vector4.zero;
+
+            if (!selected)
+            {
+                return Vector4.zero;
+            }
+
             Vector3 direction = -selected.transform.forward;
             return new Vector4(direction.x, direction.y, direction.z, 0f);
         }
 
+        // HLOutlines calls this with the main light URP actually culled, before drawing
         public static void PublishMainLightDirection(Light mainLight)
         {
-            if (!owner || !owner.isActiveAndEnabled) return;
-            Vector3 direction = mainLight && mainLight.type == LightType.Directional ? -mainLight.transform.forward : Vector3.zero;
-            Shader.SetGlobalVector(KeyLightDirId, new Vector4(direction.x, direction.y, direction.z, 0));
+            if (!_owner || !_owner.isActiveAndEnabled)
+            {
+                return;
+            }
+
+            Vector3 direction = Vector3.zero;
+            if (mainLight && mainLight.type == LightType.Directional)
+            {
+                direction = -mainLight.transform.forward;
+            }
+
+            Shader.SetGlobalVector(keyLightDirId, new Vector4(direction.x, direction.y, direction.z, 0f));
         }
 
         public static Vector4 ToWorkingColor(Color srgb, ColorSpace colorSpace)
@@ -115,36 +164,47 @@ namespace HealerLike.Render.Look
             return new Vector4(color.r, color.g, color.b, 1f);
         }
 
-        public static void UploadGlobals(in HLLookSettings settings) =>
-            PublishGlobals(settings, QualitySettings.activeColorSpace, SetFloat, SetVector);
-
-        static void PublishGlobals(HLLookSettings settings, ColorSpace colorSpace,
-            Action<int, float> setFloat, Action<int, Vector4> setVector)
+        public static void UploadGlobals(in HLLookSettings settings)
         {
-            var value = settings.Validated();
-            setVector(ShadowTintId, ToWorkingColor(value.ShadowTint, colorSpace));
-            setVector(OutlineColorId, ToWorkingColor(value.OutlineColor, colorSpace));
-            setVector(FogColorId, ToWorkingColor(value.FogColor, colorSpace));
-            setFloat(ShadowStrengthId, value.ShadowStrength);
-            setFloat(ToonThresholdId, value.ToonThreshold);
-            setFloat(OutlineWidthPixelsId, value.OutlineWidthPixels);
-            setFloat(FogStartId, value.FogStart);
-            setFloat(FogEndId, value.FogEnd);
-            setFloat(InkStrengthId, value.InkStrength);
-            setFloat(InkSpacingPixelsId, value.InkSpacingPixels);
-            setFloat(InkScaleId, value.InkScale);
-            setFloat(InkWidthId, value.InkWidth);
-            setFloat(InkStartId, value.InkStart);
-            setFloat(InkRangeId, value.InkRange);
-            setFloat(DensityMulId, value.DensityMul);
-            setFloat(InkWarpId, value.InkWarp);
-            setFloat(InkWarpFreqId, value.InkWarpFreq);
-            setFloat(DashAmountId, value.DashAmount);
-            setFloat(DashScaleId, value.DashScale);
-            setFloat(InkDistStartId, value.InkDistStart);
-            setFloat(InkFarSpacingId, value.InkFarSpacing);
-            setFloat(FogBandsId, value.FogBands);
-            setFloat(LookAppliedId, 1f);
+            PublishGlobals(settings, QualitySettings.activeColorSpace, setGlobalFloat, setGlobalVector);
+        }
+
+        // Fallback until HLOutlines publishes the culled main light, allocates nothing
+        static void PublishSunDirection(int cameraMask)
+        {
+            Light sun = RenderSettings.sun;
+            bool isVisible = sun && sun.isActiveAndEnabled && (cameraMask & (1 << sun.gameObject.layer)) != 0;
+            PublishMainLightDirection(isVisible ? sun : null);
+        }
+
+        static void PublishGlobals(HLLookSettings settings, ColorSpace colorSpace, Action<int, float> setFloat,
+                                   Action<int, Vector4> setVector)
+        {
+            HLLookSettings value = settings.Validated();
+            setVector(shadowTintId, ToWorkingColor(value.shadowTint, colorSpace));
+            setVector(outlineColorId, ToWorkingColor(value.outlineColor, colorSpace));
+            setVector(fogColorId, ToWorkingColor(value.fogColor, colorSpace));
+            setFloat(shadowStrengthId, value.shadowStrength);
+            setFloat(toonThresholdId, value.toonThreshold);
+            setFloat(outlineWidthPixelsId, value.outlineWidthPixels);
+            setFloat(fogStartId, value.fogStart);
+            setFloat(fogEndId, value.fogEnd);
+            setFloat(inkStrengthId, value.inkStrength);
+            setFloat(inkSpacingPixelsId, value.inkSpacingPixels);
+            setFloat(inkScaleId, value.inkScale);
+            setFloat(inkWidthId, value.inkWidth);
+            setFloat(inkStartId, value.inkStart);
+            setFloat(inkRangeId, value.inkRange);
+            setFloat(densityMulId, value.densityMul);
+            setFloat(inkWarpId, value.inkWarp);
+            setFloat(inkWarpFreqId, value.inkWarpFreq);
+            setFloat(dashAmountId, value.dashAmount);
+            setFloat(dashScaleId, value.dashScale);
+            setFloat(inkDistStartId, value.inkDistStart);
+            setFloat(inkFarSpacingId, value.inkFarSpacing);
+            setFloat(fogBandsId, value.fogBands);
+            // The flag goes last so no shader reads a half published set
+            setFloat(lookAppliedId, 1f);
         }
     }
 }

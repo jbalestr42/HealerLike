@@ -1,104 +1,169 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Look
 {
-
+    // Authoring colours are sRGB, Validated returns a copy
     [Serializable]
     public struct HLLookSettings
     {
-        public Color ShadowTint;
-        public Color OutlineColor;
-        public Color FogColor;
-        public float ShadowStrength;
-        public float ToonThreshold;
-        public float OutlineWidthPixels;
-        public float FogStart;
-        public float FogEnd;
-        public float InkStrength;
-                public float InkSpacingPixels;
-        public float InkScale;
-        public float InkWidth;
-        public float InkStart;
-        public float InkRange;
-        public float DensityMul;
-        public float InkWarp;
-        public float InkWarpFreq;
-        public float DashAmount;
-        public float DashScale;
-        public float InkDistStart;
-        public float InkFarSpacing;
-        public int FogBands;
+        [FormerlySerializedAs("ShadowTint")]
+        public Color shadowTint;
 
-        public static HLLookSettings Default => new HLLookSettings
+        [FormerlySerializedAs("OutlineColor")]
+        public Color outlineColor;
+
+        [FormerlySerializedAs("FogColor")]
+        public Color fogColor;
+
+        [FormerlySerializedAs("ShadowStrength")]
+        public float shadowStrength;
+
+        [FormerlySerializedAs("ToonThreshold")]
+        public float toonThreshold;
+
+        [FormerlySerializedAs("OutlineWidthPixels")]
+        public float outlineWidthPixels;
+
+        [FormerlySerializedAs("FogStart")]
+        public float fogStart;
+
+        [FormerlySerializedAs("FogEnd")]
+        public float fogEnd;
+
+        [FormerlySerializedAs("InkStrength")]
+        public float inkStrength;
+
+        // Stroke spacing in pixels, zero falls back to the old world spacing
+        [FormerlySerializedAs("InkSpacingPixels")]
+        public float inkSpacingPixels;
+
+        [FormerlySerializedAs("InkScale")]
+        public float inkScale;
+
+        [FormerlySerializedAs("InkWidth")]
+        public float inkWidth;
+
+        [FormerlySerializedAs("InkStart")]
+        public float inkStart;
+
+        [FormerlySerializedAs("InkRange")]
+        public float inkRange;
+
+        [FormerlySerializedAs("DensityMul")]
+        public float densityMul;
+
+        [FormerlySerializedAs("InkWarp")]
+        public float inkWarp;
+
+        [FormerlySerializedAs("InkWarpFreq")]
+        public float inkWarpFreq;
+
+        [FormerlySerializedAs("DashAmount")]
+        public float dashAmount;
+
+        [FormerlySerializedAs("DashScale")]
+        public float dashScale;
+
+        [FormerlySerializedAs("InkDistStart")]
+        public float inkDistStart;
+
+        [FormerlySerializedAs("InkFarSpacing")]
+        public float inkFarSpacing;
+
+        [FormerlySerializedAs("FogBands")]
+        public int fogBands;
+
+        public static HLLookSettings Default
         {
-            ShadowTint = new Color(43/255f, 75/255f, 143/255f, 1f),
-            OutlineColor = new Color(24/255f, 38/255f, 63/255f, 1f),
-            FogColor = new Color(191/255f, 210/255f, 224/255f, 1f),
-            ShadowStrength = 0.65f,
-            ToonThreshold = 0.5f,
-            OutlineWidthPixels = 1f,
-            FogStart = 20f,
-            FogEnd = 60f,
-            InkStrength = 1f,
-            InkSpacingPixels = 3.5f,
-            InkScale = 0.05f,
-            InkWidth = 0.001f,
-            InkStart = 0f,
-            InkRange = 1f,
-            DensityMul = 0.55f,
-            InkWarp = 0.006f,
-            InkWarpFreq = 2.44f,
-            DashAmount = 0.1f,
-            DashScale = 0.01f,
-            InkDistStart = 10f,
-            InkFarSpacing = 0.06f,
-            FogBands = 6
-        };
+            get
+            {
+                return new HLLookSettings
+                {
+                    shadowTint = new Color(43 / 255f, 75 / 255f, 143 / 255f, 1f),
+                    outlineColor = new Color(24 / 255f, 38 / 255f, 63 / 255f, 1f),
+                    fogColor = new Color(191 / 255f, 210 / 255f, 224 / 255f, 1f),
+                    shadowStrength = 0.65f,
+                    toonThreshold = 0.5f,
+                    outlineWidthPixels = 1f,
+                    fogStart = 20f,
+                    fogEnd = 60f,
+                    inkStrength = 1f,
+                    inkSpacingPixels = 3.5f,
+                    inkScale = 0.05f,
+                    inkWidth = 0.001f,
+                    inkStart = 0f,
+                    inkRange = 1f,
+                    densityMul = 0.55f,
+                    inkWarp = 0.006f,
+                    inkWarpFreq = 2.44f,
+                    dashAmount = 0.1f,
+                    dashScale = 0.01f,
+                    inkDistStart = 10f,
+                    inkFarSpacing = 0.06f,
+                    fogBands = 6
+                };
+            }
+        }
 
         public HLLookSettings Validated()
         {
-            var value = this;
-            var defaults = Default;
-            value.ShadowTint = ValidateColor(ShadowTint, defaults.ShadowTint, true);
-            value.OutlineColor = ValidateColor(OutlineColor, defaults.OutlineColor, true);
-            value.FogColor = ValidateColor(FogColor, defaults.FogColor, false);
-            value.ShadowStrength = Mathf.Clamp(Finite(ShadowStrength, defaults.ShadowStrength), 0.01f, 1f);
-            value.ToonThreshold = Mathf.Clamp(Finite(ToonThreshold, defaults.ToonThreshold), 0.001f, 0.999f);
-            value.OutlineWidthPixels = Mathf.Max(0f, Finite(OutlineWidthPixels, defaults.OutlineWidthPixels));
-            value.FogStart = Mathf.Max(0f, Finite(FogStart, defaults.FogStart));
-            value.FogEnd = Mathf.Max(0f, Finite(FogEnd, defaults.FogEnd));
-            value.InkStrength = Mathf.Clamp(Finite(InkStrength, defaults.InkStrength), 0f, 1f);
-            value.InkSpacingPixels = Mathf.Clamp(Finite(InkSpacingPixels, defaults.InkSpacingPixels), 0f, 16f);
-            value.InkScale = Mathf.Max(0.0001f, Finite(InkScale, defaults.InkScale));
-            value.InkWidth = Mathf.Max(0f, Finite(InkWidth, defaults.InkWidth));
-            value.InkStart = Mathf.Clamp(Finite(InkStart, defaults.InkStart), 0f, 1f);
-            value.InkRange = Mathf.Max(0.001f, Finite(InkRange, defaults.InkRange));
-            value.DensityMul = Mathf.Clamp(Finite(DensityMul, defaults.DensityMul), 0.01f, 1f);
-            value.InkWarp = Mathf.Max(0f, Finite(InkWarp, defaults.InkWarp));
-            value.InkWarpFreq = Mathf.Max(0f, Finite(InkWarpFreq, defaults.InkWarpFreq));
-            value.DashAmount = Mathf.Clamp(Finite(DashAmount, defaults.DashAmount), 0f, 0.92f);
-            value.DashScale = Mathf.Max(0.001f, Finite(DashScale, defaults.DashScale));
-            value.InkDistStart = Mathf.Max(0.001f, Finite(InkDistStart, defaults.InkDistStart));
-            value.InkFarSpacing = Mathf.Max(0f, Finite(InkFarSpacing, defaults.InkFarSpacing));
-            value.FogBands = Mathf.Max(1, FogBands);
-            if (value.FogStart == float.MaxValue) value.FogStart = defaults.FogStart;
-            if ((double)value.FogEnd - value.FogStart < .001)
+            HLLookSettings value = this;
+            HLLookSettings defaults = Default;
+            value.shadowTint = ValidateColor(shadowTint, defaults.shadowTint, true);
+            value.outlineColor = ValidateColor(outlineColor, defaults.outlineColor, true);
+            value.fogColor = ValidateColor(fogColor, defaults.fogColor, false);
+            value.shadowStrength = Mathf.Clamp(Finite(shadowStrength, defaults.shadowStrength), 0.01f, 1f);
+            value.toonThreshold = Mathf.Clamp(Finite(toonThreshold, defaults.toonThreshold), 0.001f, 0.999f);
+            value.outlineWidthPixels = Mathf.Max(0f, Finite(outlineWidthPixels, defaults.outlineWidthPixels));
+            value.fogStart = Mathf.Max(0f, Finite(fogStart, defaults.fogStart));
+            value.fogEnd = Mathf.Max(0f, Finite(fogEnd, defaults.fogEnd));
+            value.inkStrength = Mathf.Clamp(Finite(inkStrength, defaults.inkStrength), 0f, 1f);
+            value.inkSpacingPixels = Mathf.Clamp(Finite(inkSpacingPixels, defaults.inkSpacingPixels), 0f, 16f);
+            value.inkScale = Mathf.Max(0.0001f, Finite(inkScale, defaults.inkScale));
+            value.inkWidth = Mathf.Max(0f, Finite(inkWidth, defaults.inkWidth));
+            value.inkStart = Mathf.Clamp(Finite(inkStart, defaults.inkStart), 0f, 1f);
+            value.inkRange = Mathf.Max(0.001f, Finite(inkRange, defaults.inkRange));
+            value.densityMul = Mathf.Clamp(Finite(densityMul, defaults.densityMul), 0.01f, 1f);
+            value.inkWarp = Mathf.Max(0f, Finite(inkWarp, defaults.inkWarp));
+            value.inkWarpFreq = Mathf.Max(0f, Finite(inkWarpFreq, defaults.inkWarpFreq));
+            value.dashAmount = Mathf.Clamp(Finite(dashAmount, defaults.dashAmount), 0f, 0.92f);
+            value.dashScale = Mathf.Max(0.001f, Finite(dashScale, defaults.dashScale));
+            value.inkDistStart = Mathf.Max(0.001f, Finite(inkDistStart, defaults.inkDistStart));
+            value.inkFarSpacing = Mathf.Max(0f, Finite(inkFarSpacing, defaults.inkFarSpacing));
+            value.fogBands = Mathf.Max(1, fogBands);
+
+            // At the largest float there is no finite end greater than the start
+            if (value.fogStart == float.MaxValue)
             {
-                value.FogEnd = (float)((double)value.FogStart + .001);
-                if ((double)value.FogEnd - value.FogStart < .001)
-                    value.FogEnd = BitConverter.Int32BitsToSingle(BitConverter.SingleToInt32Bits(value.FogEnd) + 1);
+                value.fogStart = defaults.fogStart;
             }
+
+            if ((double)value.fogEnd - value.fogStart < 0.001)
+            {
+                value.fogEnd = (float)((double)value.fogStart + 0.001);
+                // 0.001 can be smaller than the float spacing, then step to the next float up
+                if ((double)value.fogEnd - value.fogStart < 0.001)
+                {
+                    value.fogEnd = BitConverter.Int32BitsToSingle(BitConverter.SingleToInt32Bits(value.fogEnd) + 1);
+                }
+            }
+
             return value;
         }
 
-        static float Finite(float value, float fallback) =>
-            float.IsNaN(value) || float.IsInfinity(value) ? fallback : value;
+        static float Finite(float value, float fallback)
+        {
+            return float.IsNaN(value) || float.IsInfinity(value) ? fallback : value;
+        }
 
         static Color ValidateColor(Color value, Color fallback, bool nonblack)
         {
-            value = new Color(Mathf.Clamp01(Finite(value.r, fallback.r)),
-                Mathf.Clamp01(Finite(value.g, fallback.g)), Mathf.Clamp01(Finite(value.b, fallback.b)), 1f);
+            float red = Mathf.Clamp01(Finite(value.r, fallback.r));
+            float green = Mathf.Clamp01(Finite(value.g, fallback.g));
+            float blue = Mathf.Clamp01(Finite(value.b, fallback.b));
+            value = new Color(red, green, blue, 1f);
             return nonblack && value.r == 0f && value.g == 0f && value.b == 0f ? fallback : value;
         }
     }

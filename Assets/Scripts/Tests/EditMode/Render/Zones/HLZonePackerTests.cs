@@ -7,7 +7,7 @@ namespace HealerLike.Render.Zones
     public class HLZonePackerTests
     {
         static HLZone Raw(Vector3 position, float radius, HLZoneKind kind, float strength, float age = 1f,
-            uint reserved = 0u)
+                          uint reserved = 0u)
         {
             return new HLZone
             {
@@ -20,21 +20,34 @@ namespace HealerLike.Render.Zones
             };
         }
 
-        [TestCase(HLZoneKind.Range, 3)] [TestCase(HLZoneKind.Bruise, 4)] [TestCase(HLZoneKind.Launch, 5)] [TestCase(HLZoneKind.Trample, 6)]
+        [TestCase(HLZoneKind.Range, 3)]
+        [TestCase(HLZoneKind.Bruise, 4)]
+        [TestCase(HLZoneKind.Launch, 5)]
+        [TestCase(HLZoneKind.Trample, 6)]
         public void V3KindsPreserveAbi(HLZoneKind kind, int value)
         {
             Assert.AreEqual(value, (int)kind);
-            Assert.IsTrue(HLZonePacker.TryCreate(Vector3.zero, 1, kind, 1, 0, out _));
+            Assert.IsTrue(HLZonePacker.TryCreate(Vector3.zero, 1f, kind, 1f, 0f, out _));
         }
-        [Test] public void LaunchHeadingSurvivesPackingAndOtherKindsClearIt()
+
+        [Test]
+        public void LaunchHeadingSurvivesPackingAndOtherKindsClearIt()
         {
             Assert.AreEqual(0u, HLZonePacker.EncodeDirection(Vector3.right));
             Assert.AreEqual(1073741824u, HLZonePacker.EncodeDirection(Vector3.forward));
             Assert.AreEqual(2147483648u, HLZonePacker.EncodeDirection(Vector3.left));
             Assert.AreEqual(3221225472u, HLZonePacker.EncodeDirection(Vector3.back));
-            var source = new[] { Raw(Vector3.zero, 2, HLZoneKind.Launch, 1, reserved: 1073741824u), Raw(Vector3.zero, 2, HLZoneKind.Range, 1, reserved: 123u) };
-            var dest = new HLZone[2]; HLZonePacker.Pack(source, dest, out _, out _);
-            Assert.AreEqual(1073741824u, dest[0].reserved); Assert.AreEqual(0u, dest[1].reserved);
+            HLZone[] source =
+            {
+                Raw(Vector3.zero, 2f, HLZoneKind.Launch, 1f, reserved: 1073741824u),
+                Raw(Vector3.zero, 2f, HLZoneKind.Range, 1f, reserved: 123u)
+            };
+            HLZone[] destination = new HLZone[2];
+
+            HLZonePacker.Pack(source, destination, out _, out _);
+
+            Assert.AreEqual(1073741824u, destination[0].reserved);
+            Assert.AreEqual(0u, destination[1].reserved);
         }
         [Test]
         public void StrideIsThirtyTwoBytes()
@@ -72,8 +85,8 @@ namespace HealerLike.Render.Zones
         [Test]
         public void TryCreateCanonicalizesAValidZone()
         {
-            bool created = HLZonePacker.TryCreate(new Vector3(3f, 1f, -2f), 2.5f, HLZoneKind.Heal,
-                0.25f, 4f, out HLZone zone);
+            bool created = HLZonePacker.TryCreate(new Vector3(3f, 1f, -2f), 2.5f, HLZoneKind.Heal, 0.25f, 4f,
+                                                  out HLZone zone);
 
             Assert.IsTrue(created);
             Assert.AreEqual(new Vector3(3f, 1f, -2f), zone.position);
@@ -113,21 +126,29 @@ namespace HealerLike.Render.Zones
         [Test]
         public void TryCreateRejectsNonFiniteFields()
         {
-            Assert.IsFalse(HLZonePacker.TryCreate(new Vector3(float.NaN, 0f, 0f), 1f, HLZoneKind.Heal, 1f, 0f, out _),
-                "NaN position");
-            Assert.IsFalse(HLZonePacker.TryCreate(new Vector3(0f, 0f, float.PositiveInfinity), 1f, HLZoneKind.Heal, 1f, 0f, out _),
-                "infinite position");
-            Assert.IsFalse(HLZonePacker.TryCreate(Vector3.zero, float.NaN, HLZoneKind.Heal, 1f, 0f, out _), "NaN radius");
-            Assert.IsFalse(HLZonePacker.TryCreate(Vector3.zero, float.PositiveInfinity, HLZoneKind.Heal, 1f, 0f, out _),
-                "infinite radius");
-            Assert.IsFalse(HLZonePacker.TryCreate(Vector3.zero, 1f, HLZoneKind.Heal, float.NaN, 0f, out _), "NaN strength");
+            Vector3 nanPosition = new Vector3(float.NaN, 0f, 0f);
+            Vector3 infinitePosition = new Vector3(0f, 0f, float.PositiveInfinity);
+            float infinity = float.PositiveInfinity;
+
+            Assert.IsFalse(HLZonePacker.TryCreate(nanPosition, 1f, HLZoneKind.Heal, 1f, 0f, out _), "NaN position");
+            Assert.IsFalse(HLZonePacker.TryCreate(infinitePosition, 1f, HLZoneKind.Heal, 1f, 0f, out _),
+                           "infinite position");
+            Assert.IsFalse(HLZonePacker.TryCreate(Vector3.zero, float.NaN, HLZoneKind.Heal, 1f, 0f, out _),
+                           "NaN radius");
+            Assert.IsFalse(HLZonePacker.TryCreate(Vector3.zero, infinity, HLZoneKind.Heal, 1f, 0f, out _),
+                           "infinite radius");
+            Assert.IsFalse(HLZonePacker.TryCreate(Vector3.zero, 1f, HLZoneKind.Heal, float.NaN, 0f, out _),
+                           "NaN strength");
             Assert.IsFalse(HLZonePacker.TryCreate(Vector3.zero, 1f, HLZoneKind.Heal, 1f, float.NaN, out _), "NaN age");
         }
 
         [Test]
         public void TryCreateOutputsDefaultOnRejection()
         {
-            Assert.IsFalse(HLZonePacker.TryCreate(new Vector3(5f, 5f, 5f), -1f, HLZoneKind.Heal, 1f, 2f, out HLZone zone));
+            bool created = HLZonePacker.TryCreate(new Vector3(5f, 5f, 5f), -1f, HLZoneKind.Heal, 1f, 2f,
+                                                  out HLZone zone);
+
+            Assert.IsFalse(created);
             Assert.AreEqual(default(HLZone), zone);
         }
 
@@ -264,7 +285,7 @@ namespace HealerLike.Render.Zones
             destination[0] = Raw(Vector3.one, 1f, HLZoneKind.Heal, 1f);
 
             int written = HLZonePacker.Pack(ReadOnlySpan<HLZone>.Empty, destination, out int rejected,
-                out int overflow);
+                                            out int overflow);
 
             Assert.AreEqual(0, written);
             Assert.AreEqual(0, rejected);
@@ -290,7 +311,10 @@ namespace HealerLike.Render.Zones
             Assert.AreEqual(a, b);
             Assert.AreEqual(rejectedA, rejectedB);
             Assert.AreEqual(overflowA, overflowB);
-            for (int i = 0; i < first.Length; i++) Assert.AreEqual(first[i], second[i], "slot " + i);
+            for (int i = 0; i < first.Length; i++)
+            {
+                Assert.AreEqual(first[i], second[i], "slot " + i);
+            }
         }
     }
 }

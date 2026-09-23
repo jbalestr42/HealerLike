@@ -4,15 +4,15 @@ using UnityEngine;
 
 namespace HealerLike.Render
 {
-
+    // Plain class and not a Singleton so it creates no DontDestroyOnLoad object and a test can build one.
+    // Every caller null checks current, so a scene without the render layer just has nobody listening.
     public class HLRenderRegistry
     {
+        public static HLRenderRegistry current { get; set; }
 
-        public static HLRenderRegistry Current { get; set; }
+        public IHLSpellVisualSink spellSink { get; set; }
 
-        public IHLSpellVisualSink SpellSink { get; set; }
-
-        public IHLZoneOwner ZoneOwner { get; set; }
+        public IHLZoneOwner zoneOwner { get; set; }
 
         readonly Dictionary<GameObject, List<IHLHealVisualSink>> _healSinks =
             new Dictionary<GameObject, List<IHLHealVisualSink>>();
@@ -38,6 +38,7 @@ namespace HealerLike.Render
 
         public void Unregister(GameObject source, IHLHealVisualSink sink)
         {
+            // A destroyed source still has to find its entry, so no Unity null check here
             if (ReferenceEquals(source, null) || sink == null)
             {
                 return;
@@ -67,6 +68,7 @@ namespace HealerLike.Render
                 return;
             }
 
+            // Copy first so a sink can unregister itself or notify again while we loop
             IHLHealVisualSink[] snapshot = sinks.ToArray();
             for (int i = snapshot.Length - 1; i >= 0; i--)
             {

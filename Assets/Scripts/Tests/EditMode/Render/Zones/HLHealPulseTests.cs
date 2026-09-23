@@ -5,85 +5,116 @@ namespace HealerLike.Render.Zones
 {
     public class HLHealPulseTests
     {
-        GameObject _ownerGo, _source, _target;
+        GameObject _ownerGo;
+        GameObject _source;
+        GameObject _target;
         HLZoneRegistry _owner;
         HLHealPulse _pulse;
         HLRenderRegistry _previous;
-        [SetUp] public void SetUp()
+
+        [SetUp]
+        public void SetUp()
         {
-            _previous = HLRenderRegistry.Current;
-            HLRenderRegistry.Current = new HLRenderRegistry();
+            _previous = HLRenderRegistry.current;
+            HLRenderRegistry.current = new HLRenderRegistry();
             _ownerGo = new GameObject("zones");
             _owner = _ownerGo.AddComponent<HLZoneRegistry>();
             _owner.Initialize(new HLZoneFakeUpload());
             _source = new GameObject("source");
             _target = new GameObject("target");
-            _target.transform.position = new Vector3(1, 2, 3);
+            _target.transform.position = new Vector3(1f, 2f, 3f);
             _pulse = _source.AddComponent<HLHealPulse>();
-            _pulse.CellSize = 2;
+            _pulse.cellSize = 2f;
             _pulse.Initialize(_source);
         }
-        [TearDown] public void TearDown()
+
+        [TearDown]
+        public void TearDown()
         {
-            Object.DestroyImmediate(_source); Object.DestroyImmediate(_target); Object.DestroyImmediate(_ownerGo);
-            HLRenderRegistry.Current = _previous;
+            Object.DestroyImmediate(_source);
+            Object.DestroyImmediate(_target);
+            Object.DestroyImmediate(_ownerGo);
+            HLRenderRegistry.current = _previous;
         }
-        [Test] public void NotifyCreatesOneTargetPulseInCellUnitsAndExpires()
+
+        [Test]
+        public void NotifyCreatesOneTargetPulseInCellUnitsAndExpires()
         {
             _pulse.Initialize(_source);
-            HLRenderRegistry.Current.NotifyHeal(_source, _target, 4, true);
-            _owner.PublishFrame(0);
-            Assert.AreEqual(1, _owner.Count);
-            Assert.AreEqual((int)HLZoneKind.Heal, _owner.Snapshot[0].kind);
-            Assert.AreEqual(_target.transform.position, _owner.Snapshot[0].position);
-            Assert.AreEqual(1.2f, _owner.Snapshot[0].radius);
+
+            HLRenderRegistry.current.NotifyHeal(_source, _target, 4, true);
+            _owner.PublishFrame(0f);
+
+            Assert.AreEqual(1, _owner.count);
+            Assert.AreEqual((int)HLZoneKind.Heal, _owner.snapshot[0].kind);
+            Assert.AreEqual(_target.transform.position, _owner.snapshot[0].position);
+            Assert.AreEqual(1.2f, _owner.snapshot[0].radius);
+
             _target.transform.position = Vector3.zero;
             _owner.PublishFrame(0.225f);
-            Assert.AreEqual(0.5f, _owner.Snapshot[0].strength, 0.0001f);
-            Assert.AreEqual(Vector3.zero, _owner.Snapshot[0].position);
+
+            Assert.AreEqual(0.5f, _owner.snapshot[0].strength, 0.0001f);
+            Assert.AreEqual(Vector3.zero, _owner.snapshot[0].position);
+
             _owner.PublishFrame(0.225f);
-            Assert.AreEqual(0, _owner.Count);
+            Assert.AreEqual(0, _owner.count);
         }
-        [Test] public void DisableUnsubscribesAndEnableResubscribesWithoutDuplicates()
+
+        [Test]
+        public void DisableUnsubscribesAndEnableResubscribesWithoutDuplicates()
         {
             _pulse.enabled = false;
             TestHelpers.InvokePrivate(_pulse, "OnDisable");
-            HLRenderRegistry.Current.NotifyHeal(_source, _target, 1, false);
-            Assert.AreEqual(0, _owner.LiveCount);
+            HLRenderRegistry.current.NotifyHeal(_source, _target, 1, false);
+            Assert.AreEqual(0, _owner.liveCount);
+
             _pulse.enabled = true;
             TestHelpers.InvokePrivate(_pulse, "OnEnable");
-            HLRenderRegistry.Current.NotifyHeal(_source, _target, 1, false);
-            Assert.AreEqual(1, _owner.LiveCount);
+            HLRenderRegistry.current.NotifyHeal(_source, _target, 1, false);
+            Assert.AreEqual(1, _owner.liveCount);
         }
-        [Test] public void RegistryReplacementAndSourceReinitializationDetachOldSubscriptions()
+
+        [Test]
+        public void RegistryReplacementAndSourceReinitializationDetachOldSubscriptions()
         {
-            var oldRegistry = HLRenderRegistry.Current;
-            HLRenderRegistry.Current = new HLRenderRegistry();
+            HLRenderRegistry oldRegistry = HLRenderRegistry.current;
+            HLRenderRegistry.current = new HLRenderRegistry();
             TestHelpers.InvokePrivate(_pulse, "Update");
             oldRegistry.NotifyHeal(_source, _target, 1, false);
-            Assert.AreEqual(0, _owner.LiveCount);
+            Assert.AreEqual(0, _owner.liveCount);
+
             _pulse.Initialize(_target);
-            HLRenderRegistry.Current.NotifyHeal(_source, _target, 1, false);
-            Assert.AreEqual(0, _owner.LiveCount);
-            HLRenderRegistry.Current.NotifyHeal(_target, _source, 1, false);
-            Assert.AreEqual(1, _owner.LiveCount);
+            HLRenderRegistry.current.NotifyHeal(_source, _target, 1, false);
+            Assert.AreEqual(0, _owner.liveCount);
+
+            HLRenderRegistry.current.NotifyHeal(_target, _source, 1, false);
+            Assert.AreEqual(1, _owner.liveCount);
         }
-        [Test] public void TransformPulseSurvivesSourceDisableButEndsWithTarget()
+
+        [Test]
+        public void TransformPulseSurvivesSourceDisableButEndsWithTarget()
         {
             _pulse.Pulse(_target.transform);
             _pulse.enabled = false;
             _owner.PublishFrame(0.1f);
-            Assert.AreEqual(1, _owner.Count);
+            Assert.AreEqual(1, _owner.count);
+
             Object.DestroyImmediate(_target);
-            _owner.PublishFrame(0);
-            Assert.AreEqual(0, _owner.Count);
+            _owner.PublishFrame(0f);
+            Assert.AreEqual(0, _owner.count);
         }
-        [Test] public void DamageZeroNonFiniteAndMissingTargetsAreIgnored()
+
+        [Test]
+        public void DamageZeroNonFiniteAndMissingTargetsAreIgnored()
         {
             foreach (float value in new[] { -1f, 0f, float.NaN, float.PositiveInfinity })
-                HLRenderRegistry.Current.NotifyHeal(_source, _target, value, false);
-            HLRenderRegistry.Current.NotifyHeal(_source, null, 1, false);
-            Assert.AreEqual(0, _owner.LiveCount);
+            {
+                HLRenderRegistry.current.NotifyHeal(_source, _target, value, false);
+            }
+
+            HLRenderRegistry.current.NotifyHeal(_source, null, 1, false);
+
+            Assert.AreEqual(0, _owner.liveCount);
         }
     }
 }

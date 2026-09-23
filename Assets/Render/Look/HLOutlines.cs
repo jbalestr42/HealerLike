@@ -1,57 +1,102 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Look
 {
-
+    // Primitive hulls plus depth and normal edges, the grass gets its edges from the second part
     public class HLOutlines : ScriptableRendererFeature
     {
-                public LayerMask LayerMask = ~0;
-                public bool DepthNormalEdges = true;
-        [Min(0.001f)] public float DepthThresholdWorld = 1f;
-        [Min(1f)] public float ReferenceDistance = 31f;
-        [Min(0f)] public float DistanceScale = 1f;
-        [Range(0f, 180f)] public float NormalAngleDegrees = 55f;
-        [Range(0f, 180f)] public float NormalDensityDegrees = 35f;
-                public bool UseNormalEdgeMask = true;
-        [SerializeField] Shader edgeShader;
-        Material edgeMaterial;
-        HLOutlinesPass pass;
+        // Layers drawn as primitive hulls, the screen edges use the camera depth and normals instead
+        [FormerlySerializedAs("LayerMask")]
+        public LayerMask layerMask = ~0;
+
+        [FormerlySerializedAs("DepthNormalEdges")]
+        public bool depthNormalEdges = true;
+
+        [FormerlySerializedAs("DepthThresholdWorld")]
+        [Min(0.001f)]
+        public float depthThresholdWorld = 1f;
+
+        [FormerlySerializedAs("ReferenceDistance")]
+        [Min(1f)]
+        public float referenceDistance = 31f;
+
+        [FormerlySerializedAs("DistanceScale")]
+        [Min(0f)]
+        public float distanceScale = 1f;
+
+        [FormerlySerializedAs("NormalAngleDegrees")]
+        [Range(0f, 180f)]
+        public float normalAngleDegrees = 55f;
+
+        [FormerlySerializedAs("NormalDensityDegrees")]
+        [Range(0f, 180f)]
+        public float normalDensityDegrees = 35f;
+
+        // The camera normal alpha says which objects get normal edges, the grass writes zero
+        [FormerlySerializedAs("UseNormalEdgeMask")]
+        public bool useNormalEdgeMask = true;
+
+        [FormerlySerializedAs("edgeShader")]
+        [SerializeField] Shader _edgeShader;
+
+        Material _edgeMaterial;
+        HLOutlinesPass _pass;
 
         public override void Create()
         {
-            CoreUtils.Destroy(edgeMaterial);
-            if (edgeShader == null) edgeShader = Shader.Find("Hidden/HL/Look/DepthNormalOutline");
-            edgeMaterial = edgeShader != null ? CoreUtils.CreateEngineMaterial(edgeShader) : null;
+            CoreUtils.Destroy(_edgeMaterial);
+            if (_edgeShader == null)
+            {
+                _edgeShader = Shader.Find("Hidden/HL/Look/DepthNormalOutline");
+            }
+
+            _edgeMaterial = _edgeShader != null ? CoreUtils.CreateEngineMaterial(_edgeShader) : null;
             ApplyEdgeSettings();
-            pass = new HLOutlinesPass(LayerMask, DepthNormalEdges ? edgeMaterial : null);
+            _pass = new HLOutlinesPass(layerMask, depthNormalEdges ? _edgeMaterial : null);
         }
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
-            if (renderingData.cameraData.cameraType == CameraType.Preview ||
-                renderingData.cameraData.cameraType == CameraType.Reflection) return;
+            CameraType cameraType = renderingData.cameraData.cameraType;
+            if (cameraType == CameraType.Preview || cameraType == CameraType.Reflection)
+            {
+                return;
+            }
+
             int main = renderingData.lightData.mainLightIndex;
-            HLLookController.PublishMainLightDirection(main >= 0 ? renderingData.lightData.visibleLights[main].light : null);
+            Light mainLight = main >= 0 ? renderingData.lightData.visibleLights[main].light : null;
+            HLLookController.PublishMainLightDirection(mainLight);
             ApplyEdgeSettings();
-            if (pass != null) renderer.EnqueuePass(pass);
+            if (_pass != null)
+            {
+                renderer.EnqueuePass(_pass);
+            }
         }
 
         public void ApplyEdgeSettings()
         {
-            if (!edgeMaterial) return;
-            edgeMaterial.SetVector("_HLEdgeDepth", new Vector4(
-                Mathf.Max(0.001f, DepthThresholdWorld), Mathf.Max(1f, ReferenceDistance), Mathf.Max(0f, DistanceScale), 0));
-            edgeMaterial.SetVector("_HLEdgeNormals", new Vector4(
-                Mathf.Clamp(NormalAngleDegrees, 0, 180), Mathf.Clamp(NormalDensityDegrees, 0, 180), UseNormalEdgeMask ? 1 : 0, 0));
+            if (!_edgeMaterial)
+            {
+                return;
+            }
+
+            Vector4 depth = new Vector4(Mathf.Max(0.001f, depthThresholdWorld), Mathf.Max(1f, referenceDistance),
+                                        Mathf.Max(0f, distanceScale), 0f);
+            Vector4 normals = new Vector4(Mathf.Clamp(normalAngleDegrees, 0f, 180f),
+                                          Mathf.Clamp(normalDensityDegrees, 0f, 180f),
+                                          useNormalEdgeMask ? 1f : 0f, 0f);
+            _edgeMaterial.SetVector("_HLEdgeDepth", depth);
+            _edgeMaterial.SetVector("_HLEdgeNormals", normals);
         }
 
         protected override void Dispose(bool disposing)
         {
-            CoreUtils.Destroy(edgeMaterial);
-            edgeMaterial = null;
-            pass = null;
+            CoreUtils.Destroy(_edgeMaterial);
+            _edgeMaterial = null;
+            _pass = null;
         }
     }
 }
