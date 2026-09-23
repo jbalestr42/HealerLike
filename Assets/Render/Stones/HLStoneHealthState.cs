@@ -2,6 +2,13 @@ using System;
 
 namespace HealerLike.Render.Stones
 {
+    public enum HLStoneHealthAction
+    {
+        None,
+        ShedPart,
+        Collapse
+    }
+
     public class HLStoneHealthState
     {
         float _threshold = 0.5f;
