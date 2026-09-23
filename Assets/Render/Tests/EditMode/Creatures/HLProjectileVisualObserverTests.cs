@@ -57,6 +57,8 @@ namespace HealerLike.Render.Creatures
             return entity;
         }
 
+        GameObject _managerGo;
+
         [SetUp]
         public void Setup()
         {
@@ -80,6 +82,8 @@ namespace HealerLike.Render.Creatures
             _projectileObject = new GameObject("HLProjectile", typeof(LineRenderer));
             _projectile = _projectileObject.AddComponent<Projectile>();
             _observer = _projectileObject.AddComponent<HLProjectileVisualObserver>();
+            _managerGo = new GameObject("HLRenderManager");
+            _observer.Init(_managerGo.AddComponent<RenderManager>(), null);
             _projectile.Init(_source, _first, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
         }
 
@@ -97,6 +101,7 @@ namespace HealerLike.Render.Creatures
             }
 
             Object.DestroyImmediate(_projectileObject);
+            Object.DestroyImmediate(_managerGo);
             Object.DestroyImmediate(_source);
             Object.DestroyImmediate(_first);
             Object.DestroyImmediate(_second);

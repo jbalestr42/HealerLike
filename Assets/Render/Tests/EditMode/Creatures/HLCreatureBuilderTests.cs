@@ -20,8 +20,14 @@ namespace HealerLike.Render.Creatures
             public float amount;
             public bool critical;
 
+            // Like every heal sink, only the positive changes are heals
             public void OnHealResolved(GameObject target, float value, bool critical)
             {
+                if (value <= 0f)
+                {
+                    return;
+                }
+
                 heals++;
                 this.target = target;
                 amount = value;
@@ -91,6 +97,7 @@ namespace HealerLike.Render.Creatures
             _registry.Register(_source, _sink);
             _builder.Configure(_registry, 1f, Vector3.zero, Vector3.up);
             entityModel.Init(_entity);
+            _builder.Init(_entity);
         }
 
         [TearDown]

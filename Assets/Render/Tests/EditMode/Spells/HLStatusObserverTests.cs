@@ -243,6 +243,7 @@ namespace HealerLike.Render.Spells
                 sink.looks = UnityEditor.AssetDatabase.LoadAssetAtPath<SpellLooks>(
                     "Assets/Render/Spells/Data/SpellLooks.asset"
                 );
+                TestHelpers.SetPrivateField(renderManager, "_spellSink", sink);
                 HLStatusObserver observer = go.AddComponent<HLStatusObserver>();
 
                 observer.Init(entity, renderManager);

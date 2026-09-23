@@ -1,9 +1,9 @@
 using System.IO;
-using System.Linq;
 using HealerLike.Render.Creatures;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Stones
 {
@@ -11,135 +11,27 @@ namespace HealerLike.Render.Stones
     {
         static readonly string root = "Assets/Render/Stones/";
 
-        [MenuItem("HealerLike/Build stone prefabs")]
+        public static readonly string StoneMaterialPath = "Assets/Render/Look/HLLook_Stone.mat";
+
+        [MenuItem("Tools/Render/Author Stone Prefabs")]
         public static void Build()
         {
             Directory.CreateDirectory(root + "Prefabs");
             BuildEffects();
-            string slimes = "Assets/Models/Kawaii Slime/Prefabs/";
-            BuildModel(slimes + "Slime_01_Viking.prefab", "HLStoneSoldierModel", HLStonePreset.Boulder);
-            BuildModel(slimes + "Slime_03 Leaf.prefab", "HLStoneCairnModel", HLStonePreset.Cairn);
+            StoneModelAuthoring.Build(root + "Prefabs/HLStoneSoldierModel.prefab", "HLStoneSoldierModel", HLStonePreset.Boulder);
             BuildBlock();
-            foreach (string path in Directory.GetFiles("Assets/Prefabs/Projectiles", "*.prefab"))
-            {
-                GameObject source = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-                if (source.GetComponent<Projectile>() == null)
-                {
-                    continue;
-                }
-
-                GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(source);
-                instance.name = "HLStone" + source.name;
-                if (instance.GetComponent<HLStoneProjectileImpactBridge>() == null)
-                {
-                    instance.AddComponent<HLStoneProjectileImpactBridge>();
-                }
-                PrefabUtility.SaveAsPrefabAsset(instance, root + "Prefabs/" + instance.name + ".prefab");
-                Object.DestroyImmediate(instance);
-            }
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
 
-        // Adds the authored children to the existing prefabs in place, so their file ids and variants survive
-        [MenuItem("HealerLike/Add stone prefab children")]
-        public static void AddChildren()
+        public static AssetType Load<AssetType>(string path) where AssetType : Object
         {
-            BuildEffects();
-            foreach (string name in new string[] { "HLStoneSoldierModel", "HLStoneCairnModel" })
-            {
-                string path = root + "Prefabs/" + name + ".prefab";
-                GameObject contents = PrefabUtility.LoadPrefabContents(path);
-                AddModelChildren(contents);
-                PrefabUtility.SaveAsPrefabAsset(contents, path);
-                PrefabUtility.UnloadPrefabContents(contents);
-            }
-
-            string blockPath = root + "Prefabs/HLStoneBlock.prefab";
-            GameObject block = PrefabUtility.LoadPrefabContents(blockPath);
-            AddClumpChildren(block.GetComponentInChildren<HLStoneTerrainClump>(true));
-            PrefabUtility.SaveAsPrefabAsset(block, blockPath);
-            PrefabUtility.UnloadPrefabContents(block);
-            AssetDatabase.SaveAssets();
-        }
-
-        static T Load<T>(string path) where T : Object
-        {
-            T asset = AssetDatabase.LoadAssetAtPath<T>(path);
+            AssetType asset = AssetDatabase.LoadAssetAtPath<AssetType>(path);
             if (asset == null)
             {
                 Debug.LogError($"[HLStonePrefabBuilder] Missing {path}");
             }
             return asset;
-        }
-
-        static void BuildModel(string sourcePath, string name, HLStonePreset preset)
-        {
-            GameObject sourceModel = AssetDatabase.LoadAssetAtPath<GameObject>(sourcePath);
-            GameObject modelGo = (GameObject)PrefabUtility.InstantiatePrefab(sourceModel);
-            modelGo.name = name;
-            // Remove the inherited render hierarchy, keep the authored HUD as a sibling of BodyPivot
-            foreach (Transform child in modelGo.transform.Cast<Transform>().ToArray())
-            {
-                if (child.GetComponentInChildren<EntityHUD>(true) == null)
-                {
-                    Object.DestroyImmediate(child.gameObject);
-                }
-            }
-            foreach (Component component in modelGo.GetComponents<Component>())
-            {
-                if (!(component is Transform) && !(component is EntityModel))
-                {
-                    Object.DestroyImmediate(component);
-                }
-            }
-            if (modelGo.GetComponent<EntityModel>() == null)
-            {
-                modelGo.AddComponent<EntityModel>();
-            }
-
-            GameObject body = new GameObject("BodyPivot");
-            body.transform.SetParent(modelGo.transform, false);
-            body.AddComponent<LookAtTarget>();
-
-            GameObject source = new GameObject("SkillSource");
-            source.transform.SetParent(body.transform, false);
-            source.transform.localPosition = new Vector3(0f, 0.55f, 0.2f);
-            source.AddComponent<SkillSource>();
-
-            GameObject target = new GameObject("SkillTargetPoint");
-            target.transform.SetParent(body.transform, false);
-            target.transform.localPosition = new Vector3(0f, 0.45f, 0f);
-            target.AddComponent<SkillTargetPointTag>();
-
-            HLStoneEnemyVisual visual = modelGo.AddComponent<HLStoneEnemyVisual>();
-            SerializedObject visualSO = new SerializedObject(visual);
-            visualSO.FindProperty("_bodyPivot").objectReferenceValue = body.transform;
-            visualSO.FindProperty("_preset").enumValueIndex = (int)preset;
-            visualSO.FindProperty("_stoneMaterial").objectReferenceValue = Load<Material>("Assets/Render/Look/HLLook_Stone.mat");
-            visualSO.ApplyModifiedPropertiesWithoutUndo();
-            AddModelChildren(modelGo);
-            PrefabUtility.SaveAsPrefabAsset(modelGo, root + "Prefabs/" + name + ".prefab");
-            Object.DestroyImmediate(modelGo);
-        }
-
-        static void AddModelChildren(GameObject modelGo)
-        {
-            if (modelGo.transform.Find("GroundShadow") != null)
-            {
-                return;
-            }
-
-            HLStoneEnemyVisual visual = modelGo.GetComponent<HLStoneEnemyVisual>();
-            Transform body = modelGo.transform.Find("BodyPivot");
-            GameObject presentation = new GameObject("HLStonePresentation");
-            presentation.transform.SetParent(body, false);
-
-            SerializedObject visualSO = new SerializedObject(visual);
-            visualSO.FindProperty("_presentation").objectReferenceValue = presentation.transform;
-            visualSO.FindProperty("_groundShadow").objectReferenceValue = AddDisc(modelGo.transform, true);
-            visualSO.FindProperty("_effects").objectReferenceValue = Load<HLStoneEffects>(root + "Prefabs/StoneEffects.prefab");
-            visualSO.ApplyModifiedPropertiesWithoutUndo();
         }
 
         static void BuildBlock()
@@ -161,24 +53,25 @@ namespace HealerLike.Render.Stones
             child.transform.SetParent(blockGo.transform, false);
             HLStoneTerrainClump clump = child.AddComponent<HLStoneTerrainClump>();
             SerializedObject clumpSO = new SerializedObject(clump);
-            clumpSO.FindProperty("_stoneMaterial").objectReferenceValue = Load<Material>("Assets/Render/Look/HLLook_Stone.mat");
+            clumpSO.FindProperty("_stoneMaterial").objectReferenceValue = Load<Material>(StoneMaterialPath);
             clumpSO.ApplyModifiedPropertiesWithoutUndo();
             AddClumpChildren(clump);
+            // The grass flattens around the bare disc, the clump places it at Init
+            GameObject trampleGo = new GameObject("Trample");
+            trampleGo.transform.SetParent(child.transform, false);
+            clumpSO.Update();
+            clumpSO.FindProperty("_trample").objectReferenceValue = trampleGo.AddComponent<HLTrampleZone>();
+            clumpSO.ApplyModifiedPropertiesWithoutUndo();
             PrefabUtility.SaveAsPrefabAsset(blockGo, root + "Prefabs/HLStoneBlock.prefab");
             Object.DestroyImmediate(blockGo);
         }
 
         static void AddClumpChildren(HLStoneTerrainClump clump)
         {
-            if (clump.transform.Find("GroundDisc") != null)
-            {
-                return;
-            }
-
             GameObject face = new GameObject("HLOchreFace", typeof(MeshFilter), typeof(MeshRenderer));
             face.layer = clump.gameObject.layer;
             face.transform.SetParent(clump.transform, false);
-            face.GetComponent<MeshRenderer>().sharedMaterial = Load<Material>("Assets/Render/Look/HLLook_Stone.mat");
+            face.GetComponent<MeshRenderer>().sharedMaterial = Load<Material>(StoneMaterialPath);
             face.SetActive(false);
 
             SerializedObject clumpSO = new SerializedObject(clump);
@@ -189,7 +82,7 @@ namespace HealerLike.Render.Stones
         }
 
         // Bare earth or cast shadow, flat on the baked unit disc, hidden until its owner's Init
-        static StoneGroundDisc AddDisc(Transform parent, bool isShadow)
+        public static StoneGroundDisc AddDisc(Transform parent, bool isShadow)
         {
             GameObject discGo = new GameObject(isShadow ? "GroundShadow" : "GroundDisc", typeof(MeshFilter),
                 typeof(MeshRenderer));
@@ -222,7 +115,7 @@ namespace HealerLike.Render.Stones
             GameObject effectsGo = new GameObject("StoneEffects");
             HLStoneEffects effects = effectsGo.AddComponent<HLStoneEffects>();
             SerializedObject effectsSO = new SerializedObject(effects);
-            effectsSO.FindProperty("_stoneMaterial").objectReferenceValue = Load<Material>("Assets/Render/Look/HLLook_Stone.mat");
+            effectsSO.FindProperty("_stoneMaterial").objectReferenceValue = Load<Material>(StoneMaterialPath);
             effectsSO.FindProperty("_coralMaterial").objectReferenceValue = Load<Material>(root + "Materials/CoralSpark.mat");
             effectsSO.FindProperty("_dustMaterial").objectReferenceValue = Load<Material>(root + "Materials/Dust.mat");
             effectsSO.FindProperty("_meshes").objectReferenceValue = Load<HLPrimitiveMeshes>(

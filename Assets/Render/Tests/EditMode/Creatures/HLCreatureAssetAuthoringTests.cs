@@ -88,36 +88,6 @@ namespace HealerLike.Render.Creatures
             Assert.AreSame(HLPrimitiveMeshesTests.Meshes(), data.FindProperty("_meshes").objectReferenceValue);
         }
 
-        [Test]
-        public void ProjectileVariantsRetainComponentsAndFallbackRendererStates()
-        {
-            foreach (string path in Directory.GetFiles("Assets/Prefabs/Projectiles", "*.prefab"))
-            {
-                GameObject original = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-                string variantPath = root + "Prefabs/HLProjectile" + Path.GetFileName(path);
-                GameObject variant = AssetDatabase.LoadAssetAtPath<GameObject>(variantPath);
-                Assert.NotNull(variant, path);
-                Assert.NotNull(variant.GetComponent<HLProjectileVisualObserver>());
-                Assert.AreEqual(original.GetComponent<Projectile>().GetType(),
-                    variant.GetComponent<Projectile>().GetType());
-                Assert.AreEqual(original.GetComponentsInChildren<Collider>(true).Length,
-                    variant.GetComponentsInChildren<Collider>(true).Length);
-                Assert.AreEqual(original.GetComponentsInChildren<Renderer>(true).Length,
-                    variant.GetComponentsInChildren<Renderer>(true).Length);
-                Renderer[] before = original.GetComponentsInChildren<Renderer>(true);
-                Renderer[] after = variant.GetComponentsInChildren<Renderer>(true);
-                for (int i = 0; i < before.Length; i++)
-                {
-                    Assert.AreEqual(before[i].enabled, after[i].enabled, path);
-                }
-
-                foreach (AProjectileBehaviour behaviour in original.GetComponents<AProjectileBehaviour>())
-                {
-                    Assert.NotNull(variant.GetComponent(behaviour.GetType()));
-                }
-            }
-        }
-
         [TestCase("HLBladeRosette")]
         [TestCase("HLHealer")]
         [TestCase("HLSpiralFern")]

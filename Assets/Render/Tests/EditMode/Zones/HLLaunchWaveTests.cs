@@ -23,7 +23,7 @@ namespace HealerLike.Render.Zones
                 target.transform.position = Vector3.forward * 4f;
                 Projectile projectile = shot.AddComponent<Projectile>();
                 HLLaunchWave wave = shot.AddComponent<HLLaunchWave>();
-                wave.field = field;
+                wave.Init(owner, field);
 
                 projectile.Init(source, target, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
                 owner.PublishFrame(0f);
