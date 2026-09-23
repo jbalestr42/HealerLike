@@ -218,6 +218,12 @@ MonoBehaviour:
     direction: {x: 1, y: 0.35}
     speed: 1.2
     amplitude: 0.065
+  _palette:
+    darkGreen: {r: 0.39, g: 0.69, b: 0.27, a: 1}
+    midGreen: {r: 0.45, g: 0.74, b: 0.26, a: 1}
+    lightGreen: {r: 0.5, g: 0.79, b: 0.25, a: 1}
+    heal: {r: 0.78, g: 0.95, b: 0.29, a: 1}
+    slate: {r: 0.23, g: 0.26, b: 0.34, a: 1}
 --- !u!1 &6006450335263604257
 GameObject:
   m_ObjectHideFlags: 0

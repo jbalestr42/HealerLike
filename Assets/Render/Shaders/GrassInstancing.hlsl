@@ -2,7 +2,7 @@
 #define HL_GRASS_INSTANCING_INCLUDED
 
 // Grass blades are the plant cone drawn indirectly: the compute writes one state per blade
-// and appends the visible ids, and this path places each cone and colours it per vertex.
+// and appends the visible ids, and this path places each cone and gives it one flat colour.
 
 // Blades read their own buffers, so procedural instancing needs no per-instance setup
 void HLGrassInstancingSetup()
@@ -35,35 +35,30 @@ struct HLGrassPlacement
 StructuredBuffer<HLBladeSeed> _HL_BladeSeeds;
 StructuredBuffer<HLBladeState> _HL_BladeStates;
 StructuredBuffer<uint> _HL_VisibleBladeIDs;
-float4 _HL_RootColor;
-float4 _HL_MidColor;
-float4 _HL_TipColor;
+float4 _HL_DarkGreen;
+float4 _HL_MidGreen;
+float4 _HL_LightGreen;
 float4 _HL_HealColor;
-float4 _HL_SlateRoot;
-float4 _HL_SlateTip;
+float4 _HL_SlateColor;
 float _HL_BladeHeightScale;
 
-float3 HLGrassRamp(float height01, float heal)
+// One flat colour per blade, like a plant part: a green picked by the patch lane,
+// leaning toward the heal colour when healed and turning slate as the spike rises
+float3 HLGrassColor(HLBladeSeed seed, HLBladeState state)
 {
-    float3 root = lerp(_HL_RootColor.rgb, _HL_HealColor.rgb, 0.22 * heal);
-    float3 mid = lerp(_HL_MidColor.rgb, _HL_HealColor.rgb, 0.72 * heal);
-    float3 tip = lerp(_HL_TipColor.rgb, _HL_HealColor.rgb, 0.95 * heal);
-    if (height01 < 0.45)
+    float patch = seed.heightPhaseWidthRandom.w;
+    float3 color = _HL_MidGreen.rgb;
+    if (patch < 0.3333)
     {
-        return lerp(root, mid, height01 / 0.45);
+        color = _HL_DarkGreen.rgb;
     }
-    return lerp(mid, tip, (height01 - 0.45) / 0.55);
-}
+    else if (patch >= 0.6667)
+    {
+        color = _HL_LightGreen.rgb;
+    }
 
-float3 HLGrassColor(HLBladeSeed seed, HLBladeState state, float height01)
-{
-    float heal = state.rampHealReserved.y;
-    // Bruised grass leans part of the way to the spike slate
-    float slate = max(state.leanHeightSpike.w, 0.4 * state.rampHealReserved.z);
-    float3 slateColor = lerp(_HL_SlateRoot.rgb, _HL_SlateTip.rgb, height01);
-    float3 color = lerp(HLGrassRamp(height01, heal), slateColor, saturate(2.0 * slate));
-    float3 patchTint = lerp(float3(0.78, 0.96, 1.08), float3(1.08, 1.03, 0.78), seed.heightPhaseWidthRandom.w);
-    return color * lerp(patchTint, float3(1.0, 1.0, 1.0), saturate(0.65 * heal + 2.0 * slate));
+    color = lerp(color, _HL_HealColor.rgb, 0.72 * state.rampHealReserved.y);
+    return lerp(color, _HL_SlateColor.rgb, saturate(2.0 * state.leanHeightSpike.w));
 }
 
 // positionOS and normalOS are the unit cone of HLPrimitiveMeshes: base at y -0.5, apex at y 0.5, radius 0.5
@@ -97,7 +92,7 @@ HLGrassPlacement HLPlaceGrassBlade(float3 positionOS, float3 normalOS, uint inst
     HLGrassPlacement blade;
     blade.positionWS = seed.positionYaw.xyz + radial * width + lift;
     blade.normalWS = normalize(float3(horizontal.x, vertical, horizontal.z));
-    blade.color = HLGrassColor(seed, state, height01);
+    blade.color = HLGrassColor(seed, state);
     return blade;
 }
 #endif

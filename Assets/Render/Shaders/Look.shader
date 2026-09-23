@@ -71,11 +71,11 @@ Shader "HL/Look/Primitive"
             #endif
         }
 
-        // Grass keeps depth edges only, normal edges would ink every blade
+        // Blades read the material value, their instance ids index the blade buffers rather than instanced properties
         float HLSurfaceNormalEdges()
         {
             #if defined(HL_GRASS_INSTANCED)
-            return 0.0;
+            return saturate(_HLNormalEdges);
             #else
             return HLGetNormalEdges();
             #endif

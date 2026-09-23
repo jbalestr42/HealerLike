@@ -8,7 +8,7 @@ namespace HealerLike.Render.Grass
     // One flat grass area seen by one camera. The zone owner publishes first, then the field updates.
     public class GrassField : MonoBehaviour
     {
-        public static readonly int BladeSides = 5;
+        public static readonly int BladeSides = 4;
         public static readonly int MaxZones = 64;
 
         [SerializeField] PrimitiveMeshes _meshes;
@@ -37,6 +37,9 @@ namespace HealerLike.Render.Grass
 
         [SerializeField] GrassWind _wind = new GrassWind();
         public GrassWind wind { get { return _wind; } }
+
+        [SerializeField] GrassPalette _palette = new GrassPalette();
+        public GrassPalette palette { get { return _palette; } }
 
         GrassDraw _bladeDraw;
         public GrassDraw bladeDraw { get { return _bladeDraw; } }
@@ -270,11 +273,12 @@ namespace HealerLike.Render.Grass
 
             Bounds bounds = key.CalculateBounds();
             _bladeDraw = new GrassDraw(_meshes.bladeCone, _lookMaterial, 0, bounds, gameObject.layer);
+            _bladeDraw.shadowCastingMode = ShadowCastingMode.On;
             _bladeDraw.properties.SetBuffer("_HL_BladeSeeds", _seeds);
             _bladeDraw.properties.SetBuffer("_HL_BladeStates", _states);
             _bladeDraw.properties.SetBuffer("_HL_VisibleBladeIDs", _visibleBlades);
             _bladeDraw.properties.SetFloat("_HL_BladeHeightScale", ClampHeightScale(_bladeHeightScale));
-            GrassPalette.Apply(_bladeDraw.properties);
+            _palette.Apply(_bladeDraw.properties);
 
             _ringDraw = new GrassDraw(_meshes.annulus, _ringMaterial, (uint)MaxZones, bounds, gameObject.layer);
             _ringDraw.properties.SetFloat("_HL_SurfaceY", key.surfaceY);

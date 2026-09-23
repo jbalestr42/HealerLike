@@ -285,6 +285,8 @@ public class GrassFieldTests
         _field.bladeDraw.arguments.GetData(data);
         Assert.AreEqual(9u * (uint)GrassField.BladeSides, data[0]); // one cone: side quads and base cap
         Assert.AreEqual(5, OwnedBuffers().Count); // seeds, states, visible ids, blade and ring arguments
+        Assert.AreEqual(ShadowCastingMode.On, _field.bladeDraw.shadowCastingMode);
+        Assert.AreEqual(ShadowCastingMode.Off, _field.ringDraw.shadowCastingMode);
     }
 
     [Test]
