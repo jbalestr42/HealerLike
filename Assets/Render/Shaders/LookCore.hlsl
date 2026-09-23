@@ -59,8 +59,8 @@ float3 HLWorkingColor(float3 srgb)
 #define HL_DEF_SHADOWTINT float4(HLWorkingColor(float3(30,87,125)/255.0),1)
 #define HL_DEF_OUTLINECOLOR float4(HLWorkingColor(float3(24,38,63)/255.0),1)
 #define HL_DEF_FOGCOLOR float4(HLWorkingColor(float3(154,188,211)/255.0),1)
-#define HL_DEF_SHADOWSTRENGTH 0.8
-#define HL_DEF_TOONTHRESHOLD 0.64
+#define HL_DEF_SHADOWSTRENGTH 0.7
+#define HL_DEF_TOONTHRESHOLD 0.45
 #define HL_DEF_TOONSOFTNESS 0.08
 #define HL_DEF_OUTLINEWIDTHPIXELS 1.0
 // Provisional world-unit fog distances; calibrate against the gameplay camera.

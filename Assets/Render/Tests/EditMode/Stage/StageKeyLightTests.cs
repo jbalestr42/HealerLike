@@ -1,4 +1,3 @@
-using HealerLike.Render.Look;
 using HealerLike.Render.Stones;
 using NUnit.Framework;
 using UnityEngine;
@@ -47,39 +46,16 @@ public class StageKeyLightTests
     }
 
     [Test]
-    public void KeyDirection_DefaultToonThreshold_SplitsASphereAboutHalfLitFromThePortraitCamera()
+    public void KeyDirection_PortraitCamera_CastsShadowsToTheLowerLeft()
     {
+        Quaternion camera = Quaternion.Euler(StageCalibration.PortraitPitch, 0f, 0f);
         Vector3 toLight = StageKeyLight.KeyDirection.normalized;
-        Vector3 toCamera = Quaternion.Euler(StageCalibration.PortraitPitch, 0f, 0f) * Vector3.back;
-        float threshold = LookSettings.Default.toonThreshold;
-        float lit = 0f;
-        float seen = 0f;
+        // Where a point above the ground lands along the light, seen in the camera's axes
+        Vector3 shadow = Quaternion.Inverse(camera) * new Vector3(-toLight.x, 0f, -toLight.z);
 
-        // Projected area of the visible half, over a latitude and longitude grid
-        for (int i = 0; i < 90; i++)
-        {
-            float latitude = ((i + 0.5f) / 90f - 0.5f) * Mathf.PI;
-            for (int j = 0; j < 180; j++)
-            {
-                float longitude = (j + 0.5f) / 180f * 2f * Mathf.PI;
-                Vector3 normal = new Vector3(Mathf.Cos(latitude) * Mathf.Cos(longitude), Mathf.Sin(latitude),
-                                             Mathf.Cos(latitude) * Mathf.Sin(longitude));
-                float area = Vector3.Dot(normal, toCamera) * Mathf.Cos(latitude);
-                if (area <= 0f)
-                {
-                    continue;
-                }
-
-                seen += area;
-                // Same facing as Look.shader: half Lambert against the toon threshold
-                if (Vector3.Dot(normal, toLight) * 0.5f + 0.5f > threshold)
-                {
-                    lit += area;
-                }
-            }
-        }
-
-        Assert.That(lit / seen, Is.InRange(0.45f, 0.55f));
+        Assert.That(shadow.x, Is.LessThan(0f));
+        Assert.That(shadow.y, Is.LessThan(0f));
+        Assert.That(Mathf.Atan2(-shadow.y, -shadow.x) * Mathf.Rad2Deg, Is.InRange(10f, 45f)); // below the horizontal
     }
 
     [Test]

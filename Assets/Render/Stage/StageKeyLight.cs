@@ -9,8 +9,9 @@ namespace HealerLike.Render.Stage
     // cheap ground ellipses are turned off.
     public class StageKeyLight : MonoBehaviour
     {
-        // Upper right behind the board, so cast shadows fall to the lower left of the portrait view
-        public static readonly Vector3 KeyDirection = new Vector3(1f, 2f, 1f);
+        // Upper right, a little behind the board, so cast shadows fall to the lower left of the portrait view.
+        // Mostly from the side: from further behind, the camera sees the unlit side of every grass tuft.
+        public static readonly Vector3 KeyDirection = new Vector3(1f, 1.7f, 0.5f);
 
         [SerializeField] Light _keyLight;
         // Farthest board distance from the camera that real shadows must cover
