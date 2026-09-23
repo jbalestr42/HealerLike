@@ -182,14 +182,14 @@ namespace HealerLike.Render.Spells
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 ABuffHandlerFactory factory = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(path);
                 HLVisualRecipe recipe = grammar.Describe(factory, null, null);
-                if (!recipe.isValid)
+                List<HLVisualRecipe> leaves = new List<HLVisualRecipe>();
+                CollectLeaves(recipe, leaves);
+                if (leaves.Count == 0)
                 {
-                    Debug.Log($"[SpellLooksSeeder] {path}: no row, the grammar had no look for it ({recipe.diagnostic})");
+                    Debug.Log($"[SpellLooksSeeder] {path}: no row, the grammar had no look for it");
                     continue;
                 }
 
-                List<HLVisualRecipe> leaves = new List<HLVisualRecipe>();
-                CollectLeaves(recipe, leaves);
                 HLSpellSignature signature = leaves[0].signature;
                 HLSpellEffectKind kind = Kind(signature);
                 SpellLook look = Look(Prefab(kind, signature), SignatureColor(kind, signature));
@@ -229,11 +229,19 @@ namespace HealerLike.Render.Spells
             }
         }
 
+        // Leaves the grammar could describe, a broken sibling no longer hides them
         static void CollectLeaves(HLVisualRecipe recipe, List<HLVisualRecipe> leaves)
         {
             if (recipe.children.Count == 0)
             {
-                leaves.Add(recipe);
+                if (recipe.diagnostic == null && recipe.signature.operation != HLOperation.Unknown)
+                {
+                    leaves.Add(recipe);
+                }
+                else
+                {
+                    Debug.Log($"[SpellLooksSeeder] skipped atom {recipe.signature}: {recipe.diagnostic}");
+                }
                 return;
             }
 
