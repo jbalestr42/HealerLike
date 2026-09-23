@@ -1,31 +1,31 @@
+using System;
 using UnityEngine;
 
 namespace HealerLike.Render.Grass
 {
-    // The blade is the plant look material with the grass instancing keyword (GrassBlade.mat) and the grass colours
-    public static class GrassPalette
+    // The blade is the plant look material with the grass instancing keyword (GrassBlade.mat).
+    // Each blade takes one flat colour from these, in the greens of the plants.
+    [Serializable]
+    public class GrassPalette
     {
         public static readonly string InstancedKeyword = "HL_GRASS_INSTANCED";
 
-        public static void Apply(MaterialPropertyBlock properties)
-        {
-            SetColor(properties, "_HL_RootColor", 43, 110, 87);
-            SetColor(properties, "_HL_MidColor", 101, 159, 89);
-            SetColor(properties, "_HL_TipColor", 169, 204, 96);
-            SetColor(properties, "_HL_HealColor", 198, 242, 74);
-            SetColor(properties, "_HL_SlateRoot", 58, 66, 87);
-            SetColor(properties, "_HL_SlateTip", 74, 84, 104);
-        }
+        // Picked by the blade's patch lane, so neighbouring cells share a green
+        public Color darkGreen = new Color(0.18f, 0.49f, 0.31f);
+        public Color midGreen = new Color(0.34f, 0.64f, 0.28f);
+        public Color lightGreen = new Color(0.5f, 0.79f, 0.25f);
+        // Healed blades lean toward it, spikes take the slate
+        public Color heal = new Color(0.78f, 0.95f, 0.29f);
+        public Color slate = new Color(0.23f, 0.26f, 0.34f);
 
-        static void SetColor(MaterialPropertyBlock properties, string name, byte red, byte green, byte blue)
+        // SetColor converts to the working colour space, as the plants' _BaseColor does
+        public void Apply(MaterialPropertyBlock properties)
         {
-            Color color = new Color32(red, green, blue, 255);
-            if (QualitySettings.activeColorSpace == ColorSpace.Linear)
-            {
-                color = color.linear;
-            }
-
-            properties.SetVector(name, color);
+            properties.SetColor("_HL_DarkGreen", darkGreen);
+            properties.SetColor("_HL_MidGreen", midGreen);
+            properties.SetColor("_HL_LightGreen", lightGreen);
+            properties.SetColor("_HL_HealColor", heal);
+            properties.SetColor("_HL_SlateColor", slate);
         }
     }
 }

@@ -32,9 +32,9 @@ public class GrassPaletteTests
     {
         MaterialPropertyBlock properties = new MaterialPropertyBlock();
 
-        GrassPalette.Apply(properties);
+        new GrassPalette().Apply(properties);
 
-        foreach (string name in new[] { "_HL_RootColor", "_HL_MidColor", "_HL_TipColor", "_HL_HealColor", "_HL_SlateRoot", "_HL_SlateTip" })
+        foreach (string name in new[] { "_HL_DarkGreen", "_HL_MidGreen", "_HL_LightGreen", "_HL_HealColor", "_HL_SlateColor" })
         {
             Assert.IsTrue(properties.HasVector(name), name);
         }
@@ -44,15 +44,32 @@ public class GrassPaletteTests
     public void Apply_PropertyBlock_ConvertsToWorkingColourSpace()
     {
         MaterialPropertyBlock properties = new MaterialPropertyBlock();
-        Color tip = new Color32(169, 204, 96, 255);
+        GrassPalette palette = new GrassPalette();
+        Color expected = palette.lightGreen;
         if (QualitySettings.activeColorSpace == ColorSpace.Linear)
         {
-            tip = tip.linear;
+            expected = expected.linear;
         }
 
-        GrassPalette.Apply(properties);
+        palette.Apply(properties);
 
-        Assert.AreEqual((Vector4)tip, properties.GetVector("_HL_TipColor"));
+        Vector4 actual = properties.GetVector("_HL_LightGreen");
+        Assert.AreEqual(expected.r, actual.x, 0.001f);
+        Assert.AreEqual(expected.g, actual.y, 0.001f);
+        Assert.AreEqual(expected.b, actual.z, 0.001f);
+    }
+
+    [Test]
+    public void LightGreen_Default_IsThePlantBaseColour()
+    {
+        Material plant = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
+
+        Color lightGreen = new GrassPalette().lightGreen;
+
+        Color baseColor = plant.GetColor("_BaseColor");
+        Assert.AreEqual(baseColor.r, lightGreen.r, 0.005f);
+        Assert.AreEqual(baseColor.g, lightGreen.g, 0.005f);
+        Assert.AreEqual(baseColor.b, lightGreen.b, 0.005f);
     }
 }
 
