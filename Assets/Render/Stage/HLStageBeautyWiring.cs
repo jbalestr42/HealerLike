@@ -56,8 +56,8 @@ namespace HealerLike.Render.Stage
         public static HLTrampleZone WireClump(HLStoneTerrainClump clump, Material ground)
         {
             if (ground && ground.HasProperty(BaseColor) && clump.TryGetComponent<HLStoneGroundRing>(out var ring))
-                ring.GroundColour = ground.GetColor(BaseColor);
-            Vector3 centre = clump.BareGroundCenter, offset = centre - clump.transform.position; offset.y = 0;
+                ring.groundColour = ground.GetColor(BaseColor);
+            Vector3 centre = clump.bareGroundCenter, offset = centre - clump.transform.position; offset.y = 0;
             var root = clump.gameObject;
             if (offset.sqrMagnitude > .0025f)
             {
@@ -65,7 +65,7 @@ namespace HealerLike.Render.Stage
                 if (!child) { child = new GameObject("HLTrample").transform; child.SetParent(clump.transform, false); }
                 child.position = centre; root = child.gameObject;
             }
-            return AttachTrample(root, clump.BareGroundRadius);
+            return AttachTrample(root, clump.bareGroundRadius);
         }
 
         void OnEnable()

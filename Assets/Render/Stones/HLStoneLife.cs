@@ -1,47 +1,136 @@
+using System;
 using UnityEngine;
 using HealerLike.Render.Zones;
+
 namespace HealerLike.Render.Stones
 {
-    public sealed class HLStoneLife : MonoBehaviour
+    public class HLStoneLife : MonoBehaviour
     {
-        HLStoneLifeState state=new HLStoneLifeState();
-        HLStoneEffects effects;
-        Transform top;
-        Quaternion rest;
-        float wobbleAge=2,radius;
-        uint seed,index;
-        bool terrain,subscribed;
-        public void Configure(HLStoneEffects owner,uint visualSeed,float footprint,bool isTerrain,Transform cairnTop=null)
+        HLStoneLifeState _state = new HLStoneLifeState();
+        HLStoneEffects _effects;
+        Transform _top;
+        Quaternion _rest;
+        float _wobbleAge = 2f;
+        float _radius;
+        uint _seed;
+        uint _index;
+        bool _isTerrain;
+        bool _isSubscribed;
+
+        public void Configure(HLStoneEffects owner, uint visualSeed, float footprint, bool isTerrain,
+            Transform cairnTop = null)
         {
-            Restore(); state=new HLStoneLifeState(); effects=owner; seed=visualSeed; index=0;
-            radius=footprint; terrain=isTerrain; top=cairnTop; rest=top!=null?top.localRotation:Quaternion.identity;
-            wobbleAge=2; Subscribe();
+            Restore();
+            _state = new HLStoneLifeState();
+            _effects = owner;
+            _seed = visualSeed;
+            _index = 0;
+            _radius = footprint;
+            _isTerrain = isTerrain;
+            _top = cairnTop;
+            _rest = _top != null ? _top.localRotation : Quaternion.identity;
+            _wobbleAge = 2f;
+            Subscribe();
         }
-        void Subscribe() { if(subscribed) return; HLStoneEffects.ImpactRecorded+=OnImpact; subscribed=true; }
-        void OnEnable()=>Subscribe();
-        void OnDisable() { if(subscribed) HLStoneEffects.ImpactRecorded-=OnImpact; subscribed=false; Restore(); wobbleAge=2; }
-        void OnDestroy()=>OnDisable();
-        void Restore() { if(top!=null) top.localRotation=rest; }
+
+        void Subscribe()
+        {
+            if (_isSubscribed)
+            {
+                return;
+            }
+
+            HLStoneEffects.ImpactRecorded += OnImpact;
+            _isSubscribed = true;
+        }
+
+        void OnEnable()
+        {
+            Subscribe();
+        }
+
+        void OnDisable()
+        {
+            if (_isSubscribed)
+            {
+                HLStoneEffects.ImpactRecorded -= OnImpact;
+            }
+            _isSubscribed = false;
+            Restore();
+            _wobbleAge = 2f;
+        }
+
+        void OnDestroy()
+        {
+            OnDisable();
+        }
+
+        void Restore()
+        {
+            if (_top != null)
+            {
+                _top.localRotation = _rest;
+            }
+        }
+
         void OnImpact(Vector3 position)
-        { if(top!=null && (position-transform.position).sqrMagnitude<=(radius+2)*(radius+2)) wobbleAge=0; }
+        {
+            if (_top != null && (position - transform.position).sqrMagnitude <= (_radius + 2f) * (_radius + 2f))
+            {
+                _wobbleAge = 0f;
+            }
+        }
+
         HLStoneEffects Effects()
         {
-            if(effects==null && Application.isPlaying) effects=HLStoneEffects.ForScene(gameObject.scene,null);
-            return effects;
+            if (_effects == null && Application.isPlaying)
+            {
+                _effects = HLStoneEffects.ForScene(gameObject.scene, null);
+            }
+            return _effects;
         }
-        public void PollHealth(float fraction,float dt,Vector3 origin)
-        { if(isActiveAndEnabled && state.PollHealth(fraction,dt)) Effects()?.EmitTrickle(origin,seed+ ++index); }
+
+        public void PollHealth(float fraction, float dt, Vector3 origin)
+        {
+            if (isActiveAndEnabled && _state.PollHealth(fraction, dt))
+            {
+                Effects()?.EmitTrickle(origin, _seed + ++_index);
+            }
+        }
+
         public void Advance(float dt)
         {
-            if(!isActiveAndEnabled) return;
-            wobbleAge+=float.IsFinite(dt)?Mathf.Max(0,dt):0;
-            if(top!=null && top.gameObject.activeSelf) top.localRotation=rest*Quaternion.Euler(HLStoneLifeState.Wobble(wobbleAge),0,HLStoneLifeState.Wobble(wobbleAge)*.4f);
-            if(!terrain) return;
-            var registry=HLZoneRegistry.Current;
-            var snapshot=registry!=null?registry.Snapshot:default;
-            int pulses=state.PollZones(snapshot,transform.position,radius);
-            for(int i=0;i<pulses;i++) Effects()?.EmitDust(transform.position+Vector3.up*.1f,seed+ ++index);
+            if (!isActiveAndEnabled)
+            {
+                return;
+            }
+
+            if (float.IsFinite(dt))
+            {
+                _wobbleAge += Mathf.Max(0f, dt);
+            }
+            if (_top != null && _top.gameObject.activeSelf)
+            {
+                float wobble = HLStoneLifeState.Wobble(_wobbleAge);
+                _top.localRotation = _rest * Quaternion.Euler(wobble, 0f, wobble * 0.4f);
+            }
+            if (!_isTerrain)
+            {
+                return;
+            }
+
+            HLZoneRegistry registry = HLZoneRegistry.Current;
+            ReadOnlySpan<HLZone> snapshot = registry != null ? registry.Snapshot : default;
+            int pulses = _state.PollZones(snapshot, transform.position, _radius);
+            for (int i = 0; i < pulses; i++)
+            {
+                Effects()?.EmitDust(transform.position + Vector3.up * 0.1f, _seed + ++_index);
+            }
         }
-        void LateUpdate()=>Advance(Time.deltaTime);
+
+        void LateUpdate()
+        {
+            Advance(Time.deltaTime);
+        }
     }
 }

@@ -1,52 +1,127 @@
 using System;
 using HealerLike.Render.Zones;
 using UnityEngine;
+
 namespace HealerLike.Render.Stones
 {
     // Bounded snapshot comparison: no gameplay queries and no per-frame allocations.
-    public sealed class HLStoneLifeState
+    public class HLStoneLifeState
     {
-        readonly HLZone[] previous=new HLZone[64];
-        readonly bool[] used=new bool[64];
-        int count;
-        float health=1,remaining,next;
-        public bool PollHealth(float fraction,float dt)
+        readonly HLZone[] _previous = new HLZone[64];
+        readonly bool[] _used = new bool[64];
+        int _count;
+        float _health = 1f;
+        float _remaining;
+        float _next;
+
+        public bool PollHealth(float fraction, float dt)
         {
-            if(!float.IsFinite(fraction)) return false;
-            fraction=Mathf.Clamp01(fraction);
-            if(fraction<=0) { remaining=0; health=fraction; return false; }
-            if(health>=.5f && fraction<.5f) { remaining=3; next=0; }
-            if(fraction>=.5f) remaining=0;
-            health=fraction;
-            if(remaining<=0) return false;
-            dt=float.IsFinite(dt)?Mathf.Max(0,dt):0;
-            remaining=Mathf.Max(0,remaining-dt); next-=dt;
-            if(next>0 || remaining<=0) return false;
-            next=.18f; return true;
-        }
-        public int PollZones(ReadOnlySpan<HLZone> zones,Vector3 center,float radius)
-        {
-            Array.Clear(used,0,used.Length); int pulses=0;
-            int length=Mathf.Min(64,zones.Length);
-            for(int i=0;i<length;i++)
+            if (!float.IsFinite(fraction))
             {
-                var z=zones[i];
-                if(z.kind!=(int)HLZoneKind.Hostile || z.strength<=0 || !Overlaps(z,center,radius)) continue;
-                bool seen=false;
-                for(int j=0;j<count;j++)
-                {
-                    var p=previous[j];
-                    if(used[j] || p.kind!=z.kind || p.position!=z.position || p.radius!=z.radius ||
-                        z.age<p.age || z.strength>p.strength || !Overlaps(p,center,radius)) continue;
-                    used[j]=true; seen=true; break;
-                }
-                if(!seen) pulses++;
+                return false;
             }
-            zones.Slice(0,length).CopyTo(previous); count=length; return pulses;
+
+            fraction = Mathf.Clamp01(fraction);
+            if (fraction <= 0f)
+            {
+                _remaining = 0f;
+                _health = fraction;
+                return false;
+            }
+
+            if (_health >= 0.5f && fraction < 0.5f)
+            {
+                _remaining = 3f;
+                _next = 0f;
+            }
+            if (fraction >= 0.5f)
+            {
+                _remaining = 0f;
+            }
+
+            _health = fraction;
+            if (_remaining <= 0f)
+            {
+                return false;
+            }
+
+            if (float.IsFinite(dt))
+            {
+                dt = Mathf.Max(0f, dt);
+            }
+            else
+            {
+                dt = 0f;
+            }
+            _remaining = Mathf.Max(0f, _remaining - dt);
+            _next -= dt;
+            if (_next > 0f || _remaining <= 0f)
+            {
+                return false;
+            }
+
+            _next = 0.18f;
+            return true;
         }
-        static bool Overlaps(HLZone z,Vector3 p,float radius)
-        { float x=z.position.x-p.x,y=z.position.z-p.z,r=z.radius+radius; return x*x+y*y<=r*r; }
-        public static float Wobble(float age) => age<0 || age>=1.2f?0:7*Mathf.Sin(age*24)*Mathf.Pow(1-age/1.2f,2);
-        public static bool Ochre(uint seed) => seed%5==0;
+
+        public int PollZones(ReadOnlySpan<HLZone> zones, Vector3 center, float radius)
+        {
+            Array.Clear(_used, 0, _used.Length);
+            int pulses = 0;
+            int length = Mathf.Min(64, zones.Length);
+            for (int i = 0; i < length; i++)
+            {
+                HLZone zone = zones[i];
+                if (zone.kind != (int)HLZoneKind.Hostile || zone.strength <= 0f || !Overlaps(zone, center, radius))
+                {
+                    continue;
+                }
+
+                bool seen = false;
+                for (int j = 0; j < _count; j++)
+                {
+                    HLZone previous = _previous[j];
+                    if (_used[j] || previous.kind != zone.kind || previous.position != zone.position
+                        || previous.radius != zone.radius || zone.age < previous.age
+                        || zone.strength > previous.strength || !Overlaps(previous, center, radius))
+                    {
+                        continue;
+                    }
+
+                    _used[j] = true;
+                    seen = true;
+                    break;
+                }
+                if (!seen)
+                {
+                    pulses++;
+                }
+            }
+            zones.Slice(0, length).CopyTo(_previous);
+            _count = length;
+            return pulses;
+        }
+
+        static bool Overlaps(HLZone zone, Vector3 position, float radius)
+        {
+            float x = zone.position.x - position.x;
+            float y = zone.position.z - position.z;
+            float r = zone.radius + radius;
+            return x * x + y * y <= r * r;
+        }
+
+        public static float Wobble(float age)
+        {
+            if (age < 0f || age >= 1.2f)
+            {
+                return 0f;
+            }
+            return 7f * Mathf.Sin(age * 24f) * Mathf.Pow(1f - age / 1.2f, 2f);
+        }
+
+        public static bool Ochre(uint seed)
+        {
+            return seed % 5 == 0;
+        }
     }
 }

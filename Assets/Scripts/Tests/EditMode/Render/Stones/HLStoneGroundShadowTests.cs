@@ -1,36 +1,55 @@
 using NUnit.Framework;
 using UnityEngine;
+
 namespace HealerLike.Render.Stones
 {
     public class HLStoneGroundShadowTests
     {
-        [Test] public void ShadowPointsAwayFromLightStaysFlatAndCanBeDisabled()
+        [Test]
+        public void ShadowPointsAwayFromLightStaysFlatAndCanBeDisabled()
         {
-            var go=new GameObject("HLShadowOwner");
+            GameObject go = new GameObject("HLShadowOwner");
             try
             {
-                var shadow=go.AddComponent<HLStoneGroundShadow>();
-                shadow.Configure(new Bounds(Vector3.up,Vector3.one*2),new Vector3(-1,2,0),true);
-                Assert.Greater(shadow.Disc.position.x,0); Assert.Greater(shadow.Disc.position.y,0);
-                Assert.Greater(Vector3.Dot(shadow.Disc.forward,Vector3.right),.999f);
-                Assert.Greater(shadow.Disc.localScale.z,shadow.Disc.localScale.x);
-                Assert.Less(shadow.Disc.localScale.y,.01f);
-                shadow.Visible=false; Assert.False(shadow.Disc.gameObject.activeSelf);
-                shadow.Configure(new Bounds(Vector3.up,Vector3.one*2),Vector3.zero,true);
-                Assert.True(shadow.Disc.gameObject.activeSelf); Assert.AreEqual(1,go.transform.childCount);
+                HLStoneGroundShadow shadow = go.AddComponent<HLStoneGroundShadow>();
+                shadow.Configure(new Bounds(Vector3.up, Vector3.one * 2f), new Vector3(-1f, 2f, 0f), true);
+                Assert.Greater(shadow.disc.position.x, 0);
+                Assert.Greater(shadow.disc.position.y, 0);
+                Assert.Greater(Vector3.Dot(shadow.disc.forward, Vector3.right), 0.999f);
+                Assert.Greater(shadow.disc.localScale.z, shadow.disc.localScale.x);
+                Assert.Less(shadow.disc.localScale.y, 0.01f);
+
+                shadow.visible = false;
+                Assert.False(shadow.disc.gameObject.activeSelf);
+
+                shadow.Configure(new Bounds(Vector3.up, Vector3.one * 2f), Vector3.zero, true);
+                Assert.True(shadow.disc.gameObject.activeSelf);
+                Assert.AreEqual(1, go.transform.childCount);
             }
-            finally { Object.DestroyImmediate(go); }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
         }
-        [Test] public void TerrainAutomaticallyCreatesOneShadowAndPropagatesToggle()
+
+        [Test]
+        public void TerrainAutomaticallyCreatesOneShadowAndPropagatesToggle()
         {
-            var go=new GameObject("HLTerrain");
+            GameObject go = new GameObject("HLTerrain");
             try
             {
-                var terrain=go.AddComponent<HLStoneTerrainClump>(); terrain.Initialize(4,1); terrain.Initialize(5,2);
-                Assert.AreEqual(1,go.GetComponents<HLStoneGroundShadow>().Length);
-                terrain.GroundShadowEnabled=false; Assert.False(go.GetComponent<HLStoneGroundShadow>().Disc.gameObject.activeSelf);
+                HLStoneTerrainClump terrain = go.AddComponent<HLStoneTerrainClump>();
+                terrain.Initialize(4, 1f);
+                terrain.Initialize(5, 2f);
+                Assert.AreEqual(1, go.GetComponents<HLStoneGroundShadow>().Length);
+
+                terrain.groundShadowEnabled = false;
+                Assert.False(go.GetComponent<HLStoneGroundShadow>().disc.gameObject.activeSelf);
             }
-            finally { Object.DestroyImmediate(go); }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
         }
     }
 }

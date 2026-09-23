@@ -1,4 +1,5 @@
 using UnityEngine;
+
 namespace HealerLike.Render.Stones
 {
     public static class HLStoneSeed
@@ -7,11 +8,17 @@ namespace HealerLike.Render.Stones
         {
             unchecked
             {
-                uint h = 2166136261;
-                h = ForPart(h, (uint)gridSeed); h = ForPart(h, (uint)coord.x);
-                h = ForPart(h, (uint)coord.y); return ForPart(h, 1);
+                uint hash = 2166136261;
+                hash = ForPart(hash, (uint)gridSeed);
+                hash = ForPart(hash, (uint)coord.x);
+                hash = ForPart(hash, (uint)coord.y);
+                return ForPart(hash, 1);
             }
         }
-        public static uint ForPart(uint seed, uint partSalt) => unchecked((seed ^ partSalt) * 16777619);
+
+        public static uint ForPart(uint seed, uint partSalt)
+        {
+            return unchecked((seed ^ partSalt) * 16777619);
+        }
     }
 }

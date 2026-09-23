@@ -1,46 +1,85 @@
 using NUnit.Framework;
 using UnityEngine;
+
 namespace HealerLike.Render.Stones
 {
     public class HLStoneFractureTests
     {
-        [Test] public void StatusTintComposesWithCurrentFractureAndRemovalRestoresHealthColor()
+        [Test]
+        public void StatusTintComposesWithCurrentFractureAndRemovalRestoresHealthColor()
         {
-            var root=new GameObject("HLTintAssembly");var assembly=new HLStoneAssembly();
+            GameObject root = new GameObject("HLTintAssembly");
+            HLStoneAssembly assembly = new HLStoneAssembly();
             try
             {
-                assembly.BuildEnemy(root.transform,17,HLStonePreset.Boulder,null);
-                var block=new MaterialPropertyBlock();assembly.ApplyFracture(.3f,17);
-                assembly.Parts[0].Renderer.GetPropertyBlock(block);var healthColor=(Color)block.GetVector("_BaseColor");
-                var tint=new Color(.5f,.12f,.55f,1);assembly.ApplyFracture(.3f,17,tint);
-                assembly.Parts[0].Renderer.GetPropertyBlock(block);
-                Assert.Less(((Vector4)Color.Lerp(healthColor,tint,.42f)-(Vector4)(Color)block.GetVector("_BaseColor")).magnitude,1e-6f);
-                assembly.ApplyFracture(.3f,17,Color.white);assembly.Parts[0].Renderer.GetPropertyBlock(block);
-                Assert.Less(((Vector4)healthColor-(Vector4)(Color)block.GetVector("_BaseColor")).magnitude,1e-6f);
+                assembly.BuildEnemy(root.transform, 17, HLStonePreset.Boulder, null);
+                MaterialPropertyBlock block = new MaterialPropertyBlock();
+                assembly.ApplyFracture(0.3f, 17);
+                assembly.parts[0].renderer.GetPropertyBlock(block);
+                Color healthColor = (Color)block.GetVector("_BaseColor");
+
+                Color tint = new Color(0.5f, 0.12f, 0.55f, 1f);
+                assembly.ApplyFracture(0.3f, 17, tint);
+                assembly.parts[0].renderer.GetPropertyBlock(block);
+                Vector4 tinted = (Color)block.GetVector("_BaseColor");
+                Assert.Less(((Vector4)Color.Lerp(healthColor, tint, 0.42f) - tinted).magnitude, 1e-6f);
+
+                assembly.ApplyFracture(0.3f, 17, Color.white);
+                assembly.parts[0].renderer.GetPropertyBlock(block);
+                Vector4 restored = (Color)block.GetVector("_BaseColor");
+                Assert.Less(((Vector4)healthColor - restored).magnitude, 1e-6f);
             }
-            finally { assembly.Dispose();Object.DestroyImmediate(root); }
+            finally
+            {
+                assembly.Dispose();
+                Object.DestroyImmediate(root);
+            }
         }
-        [Test] public void SeededSubsetDarkensProgressivelyAndRestoresWithoutMaterialMutation()
+
+        [Test]
+        public void SeededSubsetDarkensProgressivelyAndRestoresWithoutMaterialMutation()
         {
-            var root=new GameObject("HLAssembly"); var assembly=new HLStoneAssembly();
+            GameObject root = new GameObject("HLAssembly");
+            HLStoneAssembly assembly = new HLStoneAssembly();
             try
             {
-                assembly.BuildEnemy(root.transform,17,HLStonePreset.Boulder,null);
-                var block=new MaterialPropertyBlock(); int changed=0;
-                assembly.ApplyFracture(.7f,17);
-                var colors=new Color[assembly.Parts.Count];
-                for(int i=0;i<colors.Length;i++) { assembly.Parts[i].Renderer.GetPropertyBlock(block); colors[i]=(Color)block.GetVector("_BaseColor"); }
-                assembly.ApplyFracture(.2f,17);
-                for(int i=0;i<colors.Length;i++)
+                assembly.BuildEnemy(root.transform, 17, HLStonePreset.Boulder, null);
+                MaterialPropertyBlock block = new MaterialPropertyBlock();
+                int changed = 0;
+                assembly.ApplyFracture(0.7f, 17);
+                Color[] colors = new Color[assembly.parts.Count];
+                for (int i = 0; i < colors.Length; i++)
                 {
-                    assembly.Parts[i].Renderer.GetPropertyBlock(block); var color=(Color)block.GetVector("_BaseColor");
-                    if(color!=colors[i]) { changed++; Assert.Less(color.grayscale,colors[i].grayscale); }
+                    assembly.parts[i].renderer.GetPropertyBlock(block);
+                    colors[i] = (Color)block.GetVector("_BaseColor");
                 }
-                Assert.AreEqual(2,changed);
-                assembly.ApplyFracture(1,17);
-                foreach(var part in assembly.Parts) { part.Renderer.GetPropertyBlock(block); Assert.Less(((Vector4)part.BaseColor-(Vector4)(Color)block.GetVector("_BaseColor")).magnitude,1e-6f); }
+
+                assembly.ApplyFracture(0.2f, 17);
+                for (int i = 0; i < colors.Length; i++)
+                {
+                    assembly.parts[i].renderer.GetPropertyBlock(block);
+                    Color color = (Color)block.GetVector("_BaseColor");
+                    if (color != colors[i])
+                    {
+                        changed++;
+                        Assert.Less(color.grayscale, colors[i].grayscale);
+                    }
+                }
+                Assert.AreEqual(2, changed);
+
+                assembly.ApplyFracture(1f, 17);
+                foreach (HLStoneAssembly.Part part in assembly.parts)
+                {
+                    part.renderer.GetPropertyBlock(block);
+                    Vector4 current = (Color)block.GetVector("_BaseColor");
+                    Assert.Less(((Vector4)part.baseColor - current).magnitude, 1e-6f);
+                }
             }
-            finally { assembly.Dispose(); Object.DestroyImmediate(root); }
+            finally
+            {
+                assembly.Dispose();
+                Object.DestroyImmediate(root);
+            }
         }
     }
 }

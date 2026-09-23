@@ -4,127 +4,193 @@ using UnityEngine;
 
 namespace HealerLike.Render.Stones
 {
-    [Serializable]
-    public struct HLStoneSettings
-    {
-        public float Size, Elongation, DepthRatio, Roughness;
-        public int Subdivisions;
-    }
-
-    // Arrays belong to this result; consumers must treat them as immutable.
-    public readonly struct HLStoneMeshData
-    {
-        public readonly Vector3[] Vertices, Normals, WeldedVertices;
-        public readonly int[] Indices, WeldedIndices;
-        public readonly Bounds Bounds;
-        public HLStoneMeshData(Vector3[] vertices, Vector3[] normals, int[] indices, Bounds bounds,
-            Vector3[] weldedVertices = null, int[] weldedIndices = null)
-        {
-            Vertices = vertices; Normals = normals; Indices = indices; Bounds = bounds;
-            WeldedVertices = weldedVertices; WeldedIndices = weldedIndices;
-        }
-    }
-
     public static class HLStoneMesh
     {
-        public const int GeneratorVersion = 1;
-        public static void Validate(in HLStoneSettings s)
+        public static readonly int GeneratorVersion = 1;
+
+        public static void Validate(in HLStoneSettings settings)
         {
-            Range(s.Size, .02f, 8, nameof(s.Size));
-            Range(s.Elongation, .25f, 5, nameof(s.Elongation));
-            Range(s.DepthRatio, .25f, 2, nameof(s.DepthRatio));
-            Range(s.Roughness, 0, .18f, nameof(s.Roughness));
-            TriangleCount(s.Subdivisions);
+            Range(settings.size, 0.02f, 8f, nameof(settings.size));
+            Range(settings.elongation, 0.25f, 5f, nameof(settings.elongation));
+            Range(settings.depthRatio, 0.25f, 2f, nameof(settings.depthRatio));
+            Range(settings.roughness, 0f, 0.18f, nameof(settings.roughness));
+            TriangleCount(settings.subdivisions);
         }
-        static void Range(float v, float min, float max, string name)
+
+        static void Range(float value, float min, float max, string name)
         {
-            if (float.IsNaN(v) || float.IsInfinity(v) || v < min || v > max)
+            if (float.IsNaN(value) || float.IsInfinity(value) || value < min || value > max)
+            {
                 throw new ArgumentOutOfRangeException(name);
+            }
         }
+
         public static int TriangleCount(int subdivisions)
         {
-            if (subdivisions < 0 || subdivisions > 2) throw new ArgumentOutOfRangeException(nameof(subdivisions));
+            if (subdivisions < 0 || subdivisions > 2)
+            {
+                throw new ArgumentOutOfRangeException(nameof(subdivisions));
+            }
             return 20 << (subdivisions * 2);
         }
-        public static int VertexCount(int subdivisions) => TriangleCount(subdivisions) * 3;
 
-        public static HLStoneMeshData Generate(uint seed, in HLStoneSettings s)
+        public static int VertexCount(int subdivisions)
         {
-            Validate(s);
-            float t = (1 + Mathf.Sqrt(5)) * .5f;
-            var points = new List<Vector3> {
-                new Vector3(-1,t,0), new Vector3(1,t,0), new Vector3(-1,-t,0), new Vector3(1,-t,0),
-                new Vector3(0,-1,t), new Vector3(0,1,t), new Vector3(0,-1,-t), new Vector3(0,1,-t),
-                new Vector3(t,0,-1), new Vector3(t,0,1), new Vector3(-t,0,-1), new Vector3(-t,0,1) };
-            for (int i = 0; i < points.Count; i++) points[i] = points[i].normalized;
-            var faces = new List<int> { 0,11,5, 0,5,1, 0,1,7, 0,7,10, 0,10,11,
-                1,5,9, 5,11,4, 11,10,2, 10,7,6, 7,1,8, 3,9,4, 3,4,2, 3,2,6, 3,6,8, 3,8,9,
-                4,9,5, 2,4,11, 6,2,10, 8,6,7, 9,8,1 };
-            for (int n = 0; n < s.Subdivisions; n++)
+            return TriangleCount(subdivisions) * 3;
+        }
+
+        public static HLStoneMeshData Generate(uint seed, in HLStoneSettings settings)
+        {
+            Validate(settings);
+            float t = (1f + Mathf.Sqrt(5f)) * 0.5f;
+            List<Vector3> points = new List<Vector3>
             {
-                var edges = new Dictionary<ulong, int>();
-                var next = new List<int>(faces.Count * 4);
+                new Vector3(-1f, t, 0f), new Vector3(1f, t, 0f), new Vector3(-1f, -t, 0f), new Vector3(1f, -t, 0f),
+                new Vector3(0f, -1f, t), new Vector3(0f, 1f, t), new Vector3(0f, -1f, -t), new Vector3(0f, 1f, -t),
+                new Vector3(t, 0f, -1f), new Vector3(t, 0f, 1f), new Vector3(-t, 0f, -1f), new Vector3(-t, 0f, 1f)
+            };
+            for (int i = 0; i < points.Count; i++)
+            {
+                points[i] = points[i].normalized;
+            }
+
+            List<int> faces = new List<int>
+            {
+                0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11,
+                1, 5, 9, 5, 11, 4, 11, 10, 2, 10, 7, 6, 7, 1, 8,
+                3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3, 8, 9,
+                4, 9, 5, 2, 4, 11, 6, 2, 10, 8, 6, 7, 9, 8, 1
+            };
+            for (int n = 0; n < settings.subdivisions; n++)
+            {
+                Dictionary<ulong, int> edges = new Dictionary<ulong, int>();
+                List<int> next = new List<int>(faces.Count * 4);
                 for (int i = 0; i < faces.Count; i += 3)
                 {
-                    int a = faces[i], b = faces[i+1], c = faces[i+2];
-                    int ab = Midpoint(a,b,points,edges), bc = Midpoint(b,c,points,edges), ca = Midpoint(c,a,points,edges);
-                    next.AddRange(new[] { a,ab,ca, b,bc,ab, c,ca,bc, ab,bc,ca });
+                    int a = faces[i];
+                    int b = faces[i + 1];
+                    int c = faces[i + 2];
+                    int ab = Midpoint(a, b, points, edges);
+                    int bc = Midpoint(b, c, points, edges);
+                    int ca = Midpoint(c, a, points, edges);
+                    next.AddRange(new int[] { a, ab, ca, b, bc, ab, c, ca, bc, ab, bc, ca });
                 }
                 faces = next;
             }
-            var displaced = new Vector3[points.Count];
-            var random = new HLStoneRandom(seed);
-            var noise = new float[points.Count];
-            for (int i = 0; i < noise.Length; i++) noise[i] = random.Next01() * 2 - 1;
-            float roughness = s.Roughness;
+
+            Vector3[] displaced = new Vector3[points.Count];
+            HLStoneRandom random = new HLStoneRandom(seed);
+            float[] noise = new float[points.Count];
+            for (int i = 0; i < noise.Length; i++)
+            {
+                noise[i] = random.Next01() * 2f - 1f;
+            }
+
+            float roughness = settings.roughness;
             for (int attempt = 0; ; attempt++)
             {
-                for (int i = 0; i < points.Count; i++) displaced[i] = points[i] * (1 + noise[i] * roughness);
-                if (ValidFaces(displaced, faces)) break;
-                if (attempt >= 4) roughness = 0; else roughness *= .5f;
-                if (attempt > 5) throw new InvalidOperationException("Invalid stone template");
+                for (int i = 0; i < points.Count; i++)
+                {
+                    displaced[i] = points[i] * (1f + noise[i] * roughness);
+                }
+                if (ValidFaces(displaced, faces))
+                {
+                    break;
+                }
+
+                if (attempt >= 4)
+                {
+                    roughness = 0f;
+                }
+                else
+                {
+                    roughness *= 0.5f;
+                }
+                if (attempt > 5)
+                {
+                    throw new InvalidOperationException("Invalid stone template");
+                }
             }
-            Vector3 scale = new Vector3(s.Size, s.Size * s.Elongation, s.Size * s.DepthRatio) * .5f;
-            for (int i = 0; i < displaced.Length; i++) displaced[i] = Vector3.Scale(displaced[i], scale);
-            var vertices = new Vector3[faces.Count];
-            var normals = new Vector3[faces.Count];
-            var indices = new int[faces.Count];
-            var bounds = new Bounds(displaced[0], Vector3.zero);
+
+            float height = settings.size * settings.elongation;
+            float depth = settings.size * settings.depthRatio;
+            Vector3 size = new Vector3(settings.size, height, depth);
+            Vector3 scale = size * 0.5f;
+            for (int i = 0; i < displaced.Length; i++)
+            {
+                displaced[i] = Vector3.Scale(displaced[i], scale);
+            }
+
+            Vector3[] vertices = new Vector3[faces.Count];
+            Vector3[] normals = new Vector3[faces.Count];
+            int[] indices = new int[faces.Count];
+            Bounds bounds = new Bounds(displaced[0], Vector3.zero);
             for (int i = 0; i < faces.Count; i += 3)
             {
-                Vector3 a = displaced[faces[i]], b = displaced[faces[i+1]], c = displaced[faces[i+2]];
-                Vector3 cross = Vector3.Cross(b-a,c-a);
-                if (!(cross.sqrMagnitude > 0) || !float.IsFinite(cross.sqrMagnitude) || Vector3.Dot(cross,a+b+c) <= 0)
+                Vector3 a = displaced[faces[i]];
+                Vector3 b = displaced[faces[i + 1]];
+                Vector3 c = displaced[faces[i + 2]];
+                Vector3 cross = Vector3.Cross(b - a, c - a);
+                if (!(cross.sqrMagnitude > 0f) || !float.IsFinite(cross.sqrMagnitude)
+                    || Vector3.Dot(cross, a + b + c) <= 0f)
+                {
                     throw new InvalidOperationException("Degenerate scaled stone face");
+                }
+
                 Vector3 normal = cross / Mathf.Sqrt(cross.sqrMagnitude);
                 for (int j = 0; j < 3; j++)
                 {
-                    vertices[i+j] = displaced[faces[i+j]]; normals[i+j] = normal; indices[i+j] = i+j;
-                    bounds.Encapsulate(vertices[i+j]);
+                    vertices[i + j] = displaced[faces[i + j]];
+                    normals[i + j] = normal;
+                    indices[i + j] = i + j;
+                    bounds.Encapsulate(vertices[i + j]);
                 }
             }
             return new HLStoneMeshData(vertices, normals, indices, bounds, displaced, faces.ToArray());
         }
-        static int Midpoint(int a, int b, List<Vector3> p, Dictionary<ulong,int> cache)
+
+        static int Midpoint(int a, int b, List<Vector3> points, Dictionary<ulong, int> cache)
         {
-            ulong key = ((ulong)(uint)System.Math.Min(a,b) << 32) | (uint)System.Math.Max(a,b);
-            if (cache.TryGetValue(key, out int index)) return index;
-            index = p.Count; p.Add((p[a]+p[b]).normalized); cache.Add(key,index); return index;
+            ulong key = ((ulong)(uint)System.Math.Min(a, b) << 32) | (uint)System.Math.Max(a, b);
+            if (cache.TryGetValue(key, out int index))
+            {
+                return index;
+            }
+
+            index = points.Count;
+            points.Add((points[a] + points[b]).normalized);
+            cache.Add(key, index);
+            return index;
         }
-        static bool ValidFaces(Vector3[] p, List<int> faces)
+
+        static bool ValidFaces(Vector3[] points, List<int> faces)
         {
             for (int i = 0; i < faces.Count; i += 3)
             {
-                Vector3 a=p[faces[i]], b=p[faces[i+1]], c=p[faces[i+2]], cross=Vector3.Cross(b-a,c-a);
-                if (cross.magnitude <= 1e-10f || Vector3.Dot(cross,a+b+c) <= 0) return false;
+                Vector3 a = points[faces[i]];
+                Vector3 b = points[faces[i + 1]];
+                Vector3 c = points[faces[i + 2]];
+                Vector3 cross = Vector3.Cross(b - a, c - a);
+                if (cross.magnitude <= 1e-10f || Vector3.Dot(cross, a + b + c) <= 0f)
+                {
+                    return false;
+                }
             }
             return true;
         }
-        public static Mesh CreateMesh(uint seed, in HLStoneSettings settings) => CreateMesh(Generate(seed, settings));
+
+        public static Mesh CreateMesh(uint seed, in HLStoneSettings settings)
+        {
+            return CreateMesh(Generate(seed, settings));
+        }
+
         public static Mesh CreateMesh(in HLStoneMeshData data)
         {
-            var mesh = new Mesh { name = "HLStone" };
-            mesh.vertices = data.Vertices; mesh.normals = data.Normals; mesh.triangles = data.Indices; mesh.bounds = data.Bounds;
+            Mesh mesh = new Mesh { name = "HLStone" };
+            mesh.vertices = data.vertices;
+            mesh.normals = data.normals;
+            mesh.triangles = data.indices;
+            mesh.bounds = data.bounds;
             return mesh;
         }
     }

@@ -1,96 +1,233 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+
 namespace HealerLike.Render.Stones
 {
     // Owns only its generated part objects and mesh leases, never gameplay anchors.
-    public sealed class HLStoneAssembly : IDisposable
+    public class HLStoneAssembly : IDisposable
     {
-        public sealed class Part
+        public class Part
         {
-            public Color BaseColor; public Transform Transform; public MeshRenderer Renderer; public HLStoneMeshCache.Lease Lease;
+            public Color baseColor;
+            public Transform transform;
+            public MeshRenderer renderer;
+            public HLStoneMeshCache.Lease lease;
         }
-        public readonly List<Part> Parts=new List<Part>();
-        MaterialPropertyBlock fractureBlock;
-        public Bounds LocalBounds { get; private set; }
-        public static readonly Color[] Palette={ new Color32(201,196,180,255),new Color32(142,147,161,255),new Color32(100,121,150,255),new Color32(199,154,75,255) };
-        public void Add(Transform parent,uint seed,HLStonePart recipe,Material material)
+
+        public static readonly Color[] Palette =
         {
-            var lease=HLStoneMeshCache.Acquire(HLStoneSeed.ForPart(seed,recipe.SeedSalt),recipe.Shape);
-            var go=new GameObject("HLStonePart"); go.layer=parent.gameObject.layer; go.transform.SetParent(parent,false);
-            go.transform.localPosition=recipe.LocalPosition; go.transform.localRotation=Quaternion.Euler(recipe.LocalEulerAngles);
-            go.AddComponent<MeshFilter>().sharedMesh=lease.Mesh;
-            var renderer=go.AddComponent<MeshRenderer>(); renderer.sharedMaterial=material;
-            // Palette/fracture colors are already linear. SetColor would convert them a second time.
-            var properties=new MaterialPropertyBlock(); properties.SetVector("_BaseColor",Palette[Mathf.Clamp(recipe.PaletteIndex,0,3)].linear); renderer.SetPropertyBlock(properties);
-            Parts.Add(new Part { BaseColor=Palette[Mathf.Clamp(recipe.PaletteIndex,0,3)].linear,Transform=go.transform,Renderer=renderer,Lease=lease });
+            new Color32(201, 196, 180, 255),
+            new Color32(142, 147, 161, 255),
+            new Color32(100, 121, 150, 255),
+            new Color32(199, 154, 75, 255)
+        };
+
+        public readonly List<Part> parts = new List<Part>();
+        MaterialPropertyBlock _fractureBlock;
+
+        public Bounds localBounds { get; private set; }
+
+        public void Add(Transform parent, uint seed, HLStonePart recipe, Material material)
+        {
+            uint partSeed = HLStoneSeed.ForPart(seed, recipe.seedSalt);
+            HLStoneMeshCache.Lease lease = HLStoneMeshCache.Acquire(partSeed, recipe.shape);
+            GameObject partGo = new GameObject("HLStonePart");
+            partGo.layer = parent.gameObject.layer;
+            partGo.transform.SetParent(parent, false);
+            partGo.transform.localPosition = recipe.localPosition;
+            partGo.transform.localRotation = Quaternion.Euler(recipe.localEulerAngles);
+            partGo.AddComponent<MeshFilter>().sharedMesh = lease.mesh;
+            MeshRenderer renderer = partGo.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+
+            // Palette and fracture colors are already linear. SetColor would convert them a second time.
+            Color baseColor = Palette[Mathf.Clamp(recipe.paletteIndex, 0, 3)].linear;
+            MaterialPropertyBlock properties = new MaterialPropertyBlock();
+            properties.SetVector("_BaseColor", baseColor);
+            renderer.SetPropertyBlock(properties);
+            Part part = new Part();
+            part.baseColor = baseColor;
+            part.transform = partGo.transform;
+            part.renderer = renderer;
+            part.lease = lease;
+            parts.Add(part);
         }
-        public void BuildEnemy(Transform parent,uint seed,HLStonePreset preset,Material material,HLStoneAssemblyProfile profile=null)
+
+        public void BuildEnemy(Transform parent, uint seed, HLStonePreset preset, Material material,
+            HLStoneAssemblyProfile profile = null)
         {
             Dispose();
-            if(profile!=null)
+            if (profile != null)
             {
-                foreach(var recipe in profile.Parts) Add(parent,seed,recipe,material);
-            }
-            else if(preset==HLStonePreset.Monolith)
-                Add(parent,seed,new HLStonePart{Shape=HLStonePresets.Monolith,SeedSalt=1,PaletteIndex=2},material);
-            else
-            {
-                float top=0;
-                for(int i=0;i<3;i++)
+                foreach (HLStonePart recipe in profile.parts)
                 {
-                    HLStoneSettings shape;
-                    if(preset==HLStonePreset.Cairn) shape=HLStonePresets.Shape(new[]{.55f,.42f,.29f}[i],new[]{.65f,.75f,.95f}[i]);
-                    else shape=HLStonePresets.Shape(new[]{.58f,.33f,.23f}[i],i==0?.85f:1.15f,.9f,.14f);
-                    Add(parent,seed,new HLStonePart{Shape=shape,SeedSalt=(uint)i+1,PaletteIndex=preset==HLStonePreset.Cairn?(i==2?3:2-i):i,
-                        LocalEulerAngles=new Vector3(0,(HLStoneSeed.ForPart(seed,(uint)i+31)%360),0)},material);
-                    var part=Parts[i]; Bounds b=PartBounds(part);
-                    if(preset==HLStonePreset.Cairn) { part.Transform.localPosition=new Vector3(0,top-b.min.y,0); top+=b.size.y*.92f; }
-                    else part.Transform.localPosition=new Vector3(new[]{-.08f,.23f,-.22f}[i],-b.min.y+(i==0?0:.22f),new[]{0f,.06f,-.16f}[i]);
+                    Add(parent, seed, recipe, material);
                 }
             }
-            Fit(.9f,preset==HLStonePreset.Cairn?1.05f:preset==HLStonePreset.Monolith?1.45f:.8f);
-        }
-        public void Fit(float width,float height)
-        {
-            RecalculateBounds();
-            float xz=Mathf.Min(1,width/Mathf.Max(LocalBounds.size.x,LocalBounds.size.z));
-            float y=height/LocalBounds.size.y;
-            Vector3 scale=new Vector3(xz,y,xz),offset=new Vector3(LocalBounds.center.x,LocalBounds.min.y,LocalBounds.center.z);
-            foreach(var p in Parts) { p.Transform.localPosition=Vector3.Scale(p.Transform.localPosition-offset,scale); p.Transform.localScale=Vector3.Scale(p.Transform.localScale,scale); }
-            RecalculateBounds();
-        }
-        public void ApplyFracture(float healthFraction,uint seed,Color? statusTint=null)
-        {
-            float damage=1-Mathf.Clamp01(float.IsFinite(healthFraction)?healthFraction:1);
-            var block=fractureBlock??(fractureBlock=new MaterialPropertyBlock());
-            for(int i=0;i<Parts.Count;i++)
+            else if (preset == HLStonePreset.Monolith)
             {
-                // A seeded connected run across the cluster, leaving one boulder uncracked.
-                int order=(i+(int)(seed%(uint)Mathf.Max(1,Parts.Count)))%Parts.Count;
-                float weight=Parts.Count==1?1:order==Parts.Count-1?0:1-order/(float)Parts.Count;
-                var part=Parts[i]; part.Renderer.GetPropertyBlock(block);
-                var healthColor=Color.Lerp(part.BaseColor,((Color)new Color32(66,89,138,255)).linear,damage*weight*.85f);
-                if(statusTint.HasValue && statusTint.Value!=Color.white) healthColor=Color.Lerp(healthColor,statusTint.Value,.42f);
-                block.SetVector("_BaseColor",healthColor);
-                part.Renderer.SetPropertyBlock(block);
+                HLStonePart recipe = new HLStonePart();
+                recipe.shape = HLStonePresets.Monolith;
+                recipe.seedSalt = 1;
+                recipe.paletteIndex = 2;
+                Add(parent, seed, recipe, material);
+            }
+            else
+            {
+                BuildCluster(parent, seed, preset, material);
+            }
+
+            float height = 0.8f;
+            if (preset == HLStonePreset.Cairn)
+            {
+                height = 1.05f;
+            }
+            else if (preset == HLStonePreset.Monolith)
+            {
+                height = 1.45f;
+            }
+            Fit(0.9f, height);
+        }
+
+        void BuildCluster(Transform parent, uint seed, HLStonePreset preset, Material material)
+        {
+            float[] cairnSizes = { 0.55f, 0.42f, 0.29f };
+            float[] cairnElongations = { 0.65f, 0.75f, 0.95f };
+            float[] boulderSizes = { 0.58f, 0.33f, 0.23f };
+            float[] boulderX = { -0.08f, 0.23f, -0.22f };
+            float[] boulderZ = { 0f, 0.06f, -0.16f };
+            bool isCairn = preset == HLStonePreset.Cairn;
+            float top = 0f;
+            for (int i = 0; i < 3; i++)
+            {
+                HLStonePart recipe = new HLStonePart();
+                if (isCairn)
+                {
+                    recipe.shape = HLStonePresets.Shape(cairnSizes[i], cairnElongations[i]);
+                    // The top stone takes the ochre accent.
+                    recipe.paletteIndex = i == 2 ? 3 : 2 - i;
+                }
+                else
+                {
+                    recipe.shape = HLStonePresets.Shape(boulderSizes[i], i == 0 ? 0.85f : 1.15f, 0.9f, 0.14f);
+                    recipe.paletteIndex = i;
+                }
+                recipe.seedSalt = (uint)i + 1;
+                recipe.localEulerAngles = new Vector3(0f, HLStoneSeed.ForPart(seed, (uint)i + 31) % 360, 0f);
+                Add(parent, seed, recipe, material);
+
+                Part part = parts[i];
+                Bounds bounds = PartBounds(part);
+                if (isCairn)
+                {
+                    part.transform.localPosition = new Vector3(0f, top - bounds.min.y, 0f);
+                    top += bounds.size.y * 0.92f;
+                }
+                else
+                {
+                    float lift = i == 0 ? 0f : 0.22f;
+                    part.transform.localPosition = new Vector3(boulderX[i], -bounds.min.y + lift, boulderZ[i]);
+                }
             }
         }
+
+        public void Fit(float width, float height)
+        {
+            RecalculateBounds();
+            float xz = Mathf.Min(1f, width / Mathf.Max(localBounds.size.x, localBounds.size.z));
+            float y = height / localBounds.size.y;
+            Vector3 scale = new Vector3(xz, y, xz);
+            Vector3 offset = new Vector3(localBounds.center.x, localBounds.min.y, localBounds.center.z);
+            foreach (Part part in parts)
+            {
+                part.transform.localPosition = Vector3.Scale(part.transform.localPosition - offset, scale);
+                part.transform.localScale = Vector3.Scale(part.transform.localScale, scale);
+            }
+            RecalculateBounds();
+        }
+
+        public void ApplyFracture(float healthFraction, uint seed, Color? statusTint = null)
+        {
+            float damage = 1f - Mathf.Clamp01(float.IsFinite(healthFraction) ? healthFraction : 1f);
+            if (_fractureBlock == null)
+            {
+                _fractureBlock = new MaterialPropertyBlock();
+            }
+
+            Color crackColor = ((Color)new Color32(66, 89, 138, 255)).linear;
+            for (int i = 0; i < parts.Count; i++)
+            {
+                // A seeded connected run across the cluster, leaving one boulder uncracked.
+                int order = (i + (int)(seed % (uint)Mathf.Max(1, parts.Count))) % parts.Count;
+                float weight;
+                if (parts.Count == 1)
+                {
+                    weight = 1f;
+                }
+                else if (order == parts.Count - 1)
+                {
+                    weight = 0f;
+                }
+                else
+                {
+                    weight = 1f - order / (float)parts.Count;
+                }
+
+                Part part = parts[i];
+                part.renderer.GetPropertyBlock(_fractureBlock);
+                Color healthColor = Color.Lerp(part.baseColor, crackColor, damage * weight * 0.85f);
+                if (statusTint.HasValue && statusTint.Value != Color.white)
+                {
+                    healthColor = Color.Lerp(healthColor, statusTint.Value, 0.42f);
+                }
+                _fractureBlock.SetVector("_BaseColor", healthColor);
+                part.renderer.SetPropertyBlock(_fractureBlock);
+            }
+        }
+
         public void RecalculateBounds()
         {
-            if(Parts.Count==0) { LocalBounds=default; return; }
-            Bounds b=PartBounds(Parts[0]); for(int i=1;i<Parts.Count;i++) b.Encapsulate(PartBounds(Parts[i])); LocalBounds=b;
+            if (parts.Count == 0)
+            {
+                localBounds = default;
+                return;
+            }
+
+            Bounds bounds = PartBounds(parts[0]);
+            for (int i = 1; i < parts.Count; i++)
+            {
+                bounds.Encapsulate(PartBounds(parts[i]));
+            }
+            localBounds = bounds;
         }
+
         static Bounds PartBounds(Part part)
         {
-            Matrix4x4 m=Matrix4x4.TRS(part.Transform.localPosition,part.Transform.localRotation,part.Transform.localScale);
-            var vertices=part.Lease.Data.Vertices; var b=new Bounds(m.MultiplyPoint3x4(vertices[0]),Vector3.zero);
-            foreach(var v in vertices) b.Encapsulate(m.MultiplyPoint3x4(v)); return b;
+            Transform partTransform = part.transform;
+            Matrix4x4 matrix = Matrix4x4.TRS(partTransform.localPosition, partTransform.localRotation,
+                partTransform.localScale);
+            Vector3[] vertices = part.lease.data.vertices;
+            Bounds bounds = new Bounds(matrix.MultiplyPoint3x4(vertices[0]), Vector3.zero);
+            foreach (Vector3 vertex in vertices)
+            {
+                bounds.Encapsulate(matrix.MultiplyPoint3x4(vertex));
+            }
+            return bounds;
         }
+
         public void Dispose()
         {
-            foreach(var part in Parts) { if(part.Transform!=null) { part.Transform.gameObject.SetActive(false); HLStoneMeshCache.DestroyOwned(part.Transform.gameObject); } part.Lease.Dispose(); }
-            Parts.Clear();
+            foreach (Part part in parts)
+            {
+                if (part.transform != null)
+                {
+                    part.transform.gameObject.SetActive(false);
+                    HLStoneMeshCache.DestroyOwned(part.transform.gameObject);
+                }
+                part.lease.Dispose();
+            }
+            parts.Clear();
         }
     }
 }

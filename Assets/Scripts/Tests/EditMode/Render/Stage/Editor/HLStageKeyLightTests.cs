@@ -36,12 +36,12 @@ namespace HealerLike.Render.Stage
             try
             {
                 var clump=go.AddComponent<HLStoneTerrainClump>();
-                Assert.That(clump.GroundShadowEnabled,Is.True);
+                Assert.That(clump.groundShadowEnabled,Is.True);
                 Assert.That(HLStageKeyLight.ApplyCheapShadows(true,null,new[]{clump}),Is.EqualTo(1));
-                Assert.That(clump.GroundShadowEnabled,Is.False);
+                Assert.That(clump.groundShadowEnabled,Is.False);
                 Assert.That(HLStageKeyLight.ApplyCheapShadows(true,null,new[]{clump}),Is.Zero,"already off");
                 Assert.That(HLStageKeyLight.ApplyCheapShadows(false,null,new[]{clump}),Is.Zero);
-                Assert.That(clump.GroundShadowEnabled,Is.True);
+                Assert.That(clump.groundShadowEnabled,Is.True);
                 Assert.DoesNotThrow(()=>HLStageKeyLight.ApplyCheapShadows(true,new HLStoneEnemyVisual[]{null},null));
             }
             finally { Object.DestroyImmediate(go); }

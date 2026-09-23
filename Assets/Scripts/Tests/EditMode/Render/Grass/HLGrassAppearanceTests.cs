@@ -55,8 +55,8 @@ namespace HealerLike.Render.Grass
                 for(int i=0;i<3;i++)
                 {
                     var stone=Make("HLFixtureStone"+i);stone.transform.position=new Vector3((i-1)*2.2f,0,1.6f);
-                    var clump=stone.AddComponent<HLStoneTerrainClump>();TestHelpers.SetPrivateField(clump,"stoneMaterial",material);
-                    clump.Initialize((uint)(i+3),1.3f);clump.GroundShadowEnabled=false;
+                    var clump=stone.AddComponent<HLStoneTerrainClump>();TestHelpers.SetPrivateField(clump,"_stoneMaterial",material);
+                    clump.Initialize((uint)(i+3),1.3f);clump.groundShadowEnabled=false;
                     registry.Add(HLZoneKind.Trample,stone.transform.position,.8f,1);
                 }
                 registry.Add(HLZoneKind.Heal,new Vector3(-1.7f,0,-1.2f),1.3f,1);

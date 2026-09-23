@@ -1,74 +1,219 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
+
 namespace HealerLike.Render.Stones
 {
-    public sealed class HLStoneTerrainClump : MonoBehaviour
+    public class HLStoneTerrainClump : MonoBehaviour
     {
-        [SerializeField] Material stoneMaterial;
-        [SerializeField] bool groundShadowEnabled=true;
-        [SerializeField] Vector3 directionToKeyLight=new Vector3(-1,2,-1);
-        HLStoneGroundShadow groundShadow;
-        HLStoneGroundRing groundRing;
-        HLStoneLife life;
-        Mesh ochreMesh;
-        GameObject ochreFace;
-        public float BareGroundRadius=>groundRing!=null?groundRing.Radius:0;
-        public Vector3 BareGroundCenter=>groundRing!=null?groundRing.Center:transform.position;
-        public bool GroundShadowEnabled { get=>groundShadowEnabled; set { groundShadowEnabled=value; if(groundShadow!=null) groundShadow.Visible=value; } }
-        readonly HLStoneAssembly assembly=new HLStoneAssembly();
-        public HLStoneAssembly Assembly=>assembly;
-        public void Initialize(uint seed,float cellSize)
+        [FormerlySerializedAs("stoneMaterial")]
+        [SerializeField] Material _stoneMaterial;
+        [FormerlySerializedAs("groundShadowEnabled")]
+        [SerializeField] bool _groundShadowEnabled = true;
+        [FormerlySerializedAs("directionToKeyLight")]
+        [SerializeField] Vector3 _directionToKeyLight = new Vector3(-1f, 2f, -1f);
+
+        HLStoneGroundShadow _groundShadow;
+        HLStoneGroundRing _groundRing;
+        HLStoneLife _life;
+        Mesh _ochreMesh;
+        GameObject _ochreFace;
+
+        readonly HLStoneAssembly _assembly = new HLStoneAssembly();
+        public HLStoneAssembly assembly { get { return _assembly; } }
+
+        public float bareGroundRadius { get { return _groundRing != null ? _groundRing.radius : 0f; } }
+
+        public Vector3 bareGroundCenter
         {
-            if(!float.IsFinite(cellSize) || cellSize<=0) throw new ArgumentOutOfRangeException(nameof(cellSize));
-            ClearFace(); assembly.Dispose(); var r=new HLStoneRandom(HLStoneSeed.ForPart(seed,401));
-            int count=3+(int)(r.Next()%3);
-            int silhouette=(int)(seed%3);
-            for(int i=0;i<count;i++)
+            get
             {
-                float size=i==0?.65f:r.Range(.27f,.42f);
-                var part=new HLStonePart {
-                    Shape=HLStonePresets.Shape(size,i==0?(silhouette==0?2.4f:silhouette==1?.8f:1.45f):r.Range(.7f,1.35f),r.Range(.6f,1f),.16f,0),
-                    SeedSalt=501u+(uint)i,PaletteIndex=(int)(r.Next()%3),
-                    LocalEulerAngles=new Vector3(0,r.Range(0,360),0),
-                    LocalPosition=i==0?Vector3.zero:new Vector3(Mathf.Cos(i*2.4f)*.28f,0,Mathf.Sin(i*2.4f)*.28f)
-                };
-                assembly.Add(transform,seed,part,stoneMaterial);
-                var p=assembly.Parts[i]; var pos=p.Transform.localPosition; pos.y=-p.Lease.Data.Bounds.min.y; p.Transform.localPosition=pos;
+                return _groundRing != null ? _groundRing.center : transform.position;
             }
-            assembly.Fit(.96f,r.Range(.7f,1.2f));
-            foreach(var p in assembly.Parts) { p.Transform.localPosition*=cellSize; p.Transform.localScale*=cellSize; }
-            assembly.RecalculateBounds();
-            if(groundShadow==null) groundShadow=gameObject.AddComponent<HLStoneGroundShadow>();
-            groundShadow.Configure(assembly.LocalBounds,directionToKeyLight,groundShadowEnabled);
-            if(groundRing==null) groundRing=gameObject.AddComponent<HLStoneGroundRing>();
-            groundRing.Configure(assembly.LocalBounds);
-            if(life==null) life=gameObject.AddComponent<HLStoneLife>();
-            life.Configure(null,seed,BareGroundRadius,true);
-            if(HLStoneLifeState.Ochre(seed)) CreateFace();
         }
+
+        public bool groundShadowEnabled
+        {
+            get
+            {
+                return _groundShadowEnabled;
+            }
+            set
+            {
+                _groundShadowEnabled = value;
+                if (_groundShadow != null)
+                {
+                    _groundShadow.visible = value;
+                }
+            }
+        }
+
+        public void Initialize(uint seed, float cellSize)
+        {
+            if (!float.IsFinite(cellSize) || cellSize <= 0f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(cellSize));
+            }
+
+            ClearFace();
+            _assembly.Dispose();
+            HLStoneRandom random = new HLStoneRandom(HLStoneSeed.ForPart(seed, 401));
+            int count = 3 + (int)(random.Next() % 3);
+            int silhouette = (int)(seed % 3);
+            for (int i = 0; i < count; i++)
+            {
+                // The random draws below keep their order: size, elongation, depth, palette, yaw.
+                float size = 0.65f;
+                if (i > 0)
+                {
+                    size = random.Range(0.27f, 0.42f);
+                }
+
+                float elongation;
+                if (i > 0)
+                {
+                    elongation = random.Range(0.7f, 1.35f);
+                }
+                else if (silhouette == 0)
+                {
+                    elongation = 2.4f;
+                }
+                else if (silhouette == 1)
+                {
+                    elongation = 0.8f;
+                }
+                else
+                {
+                    elongation = 1.45f;
+                }
+
+                HLStonePart recipe = new HLStonePart();
+                recipe.shape = HLStonePresets.Shape(size, elongation, random.Range(0.6f, 1f), 0.16f, 0);
+                recipe.seedSalt = 501u + (uint)i;
+                recipe.paletteIndex = (int)(random.Next() % 3);
+                recipe.localEulerAngles = new Vector3(0f, random.Range(0f, 360f), 0f);
+                if (i > 0)
+                {
+                    recipe.localPosition = new Vector3(Mathf.Cos(i * 2.4f) * 0.28f, 0f, Mathf.Sin(i * 2.4f) * 0.28f);
+                }
+                _assembly.Add(transform, seed, recipe, _stoneMaterial);
+
+                HLStoneAssembly.Part part = _assembly.parts[i];
+                Vector3 position = part.transform.localPosition;
+                position.y = -part.lease.data.bounds.min.y;
+                part.transform.localPosition = position;
+            }
+
+            _assembly.Fit(0.96f, random.Range(0.7f, 1.2f));
+            foreach (HLStoneAssembly.Part part in _assembly.parts)
+            {
+                part.transform.localPosition *= cellSize;
+                part.transform.localScale *= cellSize;
+            }
+            _assembly.RecalculateBounds();
+
+            if (_groundShadow == null)
+            {
+                _groundShadow = gameObject.AddComponent<HLStoneGroundShadow>();
+            }
+            _groundShadow.Configure(_assembly.localBounds, _directionToKeyLight, _groundShadowEnabled);
+            if (_groundRing == null)
+            {
+                _groundRing = gameObject.AddComponent<HLStoneGroundRing>();
+            }
+            _groundRing.Configure(_assembly.localBounds);
+            if (_life == null)
+            {
+                _life = gameObject.AddComponent<HLStoneLife>();
+            }
+            _life.Configure(null, seed, bareGroundRadius, true);
+            if (HLStoneLifeState.Ochre(seed))
+            {
+                CreateFace();
+            }
+        }
+
         void CreateFace()
         {
-            var part=assembly.Parts[0]; var mesh=part.Lease.Mesh;
-            var vertices=mesh.vertices; var normals=mesh.normals; int face=0;
-            for(int i=3;i<vertices.Length;i+=3) if(normals[i].x+normals[i].y*.5f>normals[face].x+normals[face].y*.5f) face=i;
-            ochreMesh=new Mesh{name="HLOchreFacet"};
-            ochreMesh.vertices=new[]{vertices[face]+normals[face]*.002f,vertices[face+1]+normals[face]*.002f,vertices[face+2]+normals[face]*.002f};
-            ochreMesh.triangles=new[]{0,1,2}; ochreMesh.RecalculateNormals(); ochreMesh.RecalculateBounds();
-            ochreFace=new GameObject("HLOchreFace"); ochreFace.layer=gameObject.layer; ochreFace.transform.SetParent(part.Transform,false);
-            ochreFace.AddComponent<MeshFilter>().sharedMesh=ochreMesh;
-            var renderer=ochreFace.AddComponent<MeshRenderer>(); renderer.sharedMaterial=stoneMaterial;
-            var block=new MaterialPropertyBlock(); block.SetVector("_BaseColor",HLStoneAssembly.Palette[3].linear); renderer.SetPropertyBlock(block);
+            HLStoneAssembly.Part part = _assembly.parts[0];
+            Mesh mesh = part.lease.mesh;
+            Vector3[] vertices = mesh.vertices;
+            Vector3[] normals = mesh.normals;
+            int face = 0;
+            for (int i = 3; i < vertices.Length; i += 3)
+            {
+                if (normals[i].x + normals[i].y * 0.5f > normals[face].x + normals[face].y * 0.5f)
+                {
+                    face = i;
+                }
+            }
+
+            Vector3 lift = normals[face] * 0.002f;
+            _ochreMesh = new Mesh { name = "HLOchreFacet" };
+            _ochreMesh.vertices = new Vector3[]
+            {
+                vertices[face] + lift,
+                vertices[face + 1] + lift,
+                vertices[face + 2] + lift
+            };
+            _ochreMesh.triangles = new int[] { 0, 1, 2 };
+            _ochreMesh.RecalculateNormals();
+            _ochreMesh.RecalculateBounds();
+
+            _ochreFace = new GameObject("HLOchreFace");
+            _ochreFace.layer = gameObject.layer;
+            _ochreFace.transform.SetParent(part.transform, false);
+            _ochreFace.AddComponent<MeshFilter>().sharedMesh = _ochreMesh;
+            MeshRenderer renderer = _ochreFace.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = _stoneMaterial;
+            MaterialPropertyBlock block = new MaterialPropertyBlock();
+            block.SetVector("_BaseColor", HLStoneAssembly.Palette[3].linear);
+            renderer.SetPropertyBlock(block);
         }
-        void ClearFace() { HLStoneMeshCache.DestroyOwned(ochreFace); HLStoneMeshCache.DestroyOwned(ochreMesh); }
+
+        void ClearFace()
+        {
+            HLStoneMeshCache.DestroyOwned(_ochreFace);
+            HLStoneMeshCache.DestroyOwned(_ochreMesh);
+        }
+
         void SetVisible(bool value)
         {
-            foreach(var part in assembly.Parts) if(part.Transform!=null) part.Transform.gameObject.SetActive(value);
-            if(groundShadow!=null) groundShadow.enabled=value;
-            if(groundRing!=null) groundRing.enabled=value;
-            if(life!=null) life.enabled=value;
+            foreach (HLStoneAssembly.Part part in _assembly.parts)
+            {
+                if (part.transform != null)
+                {
+                    part.transform.gameObject.SetActive(value);
+                }
+            }
+            if (_groundShadow != null)
+            {
+                _groundShadow.enabled = value;
+            }
+            if (_groundRing != null)
+            {
+                _groundRing.enabled = value;
+            }
+            if (_life != null)
+            {
+                _life.enabled = value;
+            }
         }
-        void OnEnable() => SetVisible(true);
-        void OnDisable() => SetVisible(false);
-        void OnDestroy() { ClearFace(); assembly.Dispose(); }
+
+        void OnEnable()
+        {
+            SetVisible(true);
+        }
+
+        void OnDisable()
+        {
+            SetVisible(false);
+        }
+
+        void OnDestroy()
+        {
+            ClearFace();
+            _assembly.Dispose();
+        }
     }
 }

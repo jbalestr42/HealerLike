@@ -37,8 +37,8 @@ namespace HealerLike.Render.Stage
         public static int ApplyCheapShadows(bool realShadows, HLStoneEnemyVisual[] enemies, HLStoneTerrainClump[] clumps)
         {
             int off = 0;
-            if (enemies != null) foreach (var e in enemies) if (e && e.GroundShadowEnabled == realShadows) { e.GroundShadowEnabled = !realShadows; if (realShadows) off++; }
-            if (clumps != null) foreach (var c in clumps) if (c && c.GroundShadowEnabled == realShadows) { c.GroundShadowEnabled = !realShadows; if (realShadows) off++; }
+            if (enemies != null) foreach (var e in enemies) if (e && e.groundShadowEnabled == realShadows) { e.groundShadowEnabled = !realShadows; if (realShadows) off++; }
+            if (clumps != null) foreach (var c in clumps) if (c && c.groundShadowEnabled == realShadows) { c.groundShadowEnabled = !realShadows; if (realShadows) off++; }
             return off;
         }
 

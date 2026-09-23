@@ -1,104 +1,254 @@
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
+
 namespace HealerLike.Render.Stones
 {
     public class HLStoneEnemyVisualTests
     {
-        sealed class MotionSource : IHLStoneMotionSource
+        class MotionSource : IHLStoneMotionSource
         {
-            public bool TrySample(out Vector3 velocityWS,out Quaternion facingWS)
-            { velocityWS=Vector3.right; facingWS=Quaternion.Euler(0,90,0); return true; }
+            public bool TrySample(out Vector3 velocityWS, out Quaternion facingWS)
+            {
+                velocityWS = Vector3.right;
+                facingWS = Quaternion.Euler(0f, 90f, 0f);
+                return true;
+            }
         }
-        [Test] public void MotionUsesLookAtTargetCachedDuringInitialization()
+
+        class Consumer : AConsumer
         {
-            var pivot=target.transform.Find("BodyPivot");
-            var look=pivot.gameObject.AddComponent<LookAtTarget>();
-            visual.Initialize(health,15,fx);
-            TestHelpers.SetPrivateField(visual,"motion",new MotionSource());
-            TestHelpers.InvokePrivate(visual,"LateUpdate");
-            Assert.AreEqual(Quaternion.identity,pivot.rotation);
-            Object.DestroyImmediate(look);
-            TestHelpers.InvokePrivate(visual,"LateUpdate");
-            Assert.Less(Quaternion.Angle(Quaternion.Euler(0,90,0),pivot.rotation),.001f);
-            // New components are picked up only on initialization, never by the moving frame path.
-            pivot.gameObject.AddComponent<LookAtTarget>(); pivot.rotation=Quaternion.identity;
-            TestHelpers.InvokePrivate(visual,"LateUpdate");
-            Assert.Less(Quaternion.Angle(Quaternion.Euler(0,90,0),pivot.rotation),.001f);
-            visual.Initialize(health,15,fx); pivot.rotation=Quaternion.identity;
-            TestHelpers.SetPrivateField(visual,"motion",new MotionSource());
-            TestHelpers.InvokePrivate(visual,"LateUpdate");
-            Assert.AreEqual(Quaternion.identity,pivot.rotation);
+            readonly float _amount;
+
+            public Consumer(float amount)
+            {
+                _amount = amount;
+            }
+
+            public override float GetValue()
+            {
+                return _amount;
+            }
+
+            public override bool ignoreDamageReduction { get { return true; } }
+
+            public override bool ignoreConsumerPrevention { get { return false; } }
         }
-        sealed class Consumer : AConsumer
+
+        GameObject _target;
+        GameObject _source;
+        GameObject _fxObject;
+        ResourceAttribute _health;
+        HLStoneEnemyVisual _visual;
+        HLStoneEffects _fx;
+
+        int visibleCount { get { return _visual.parts.Count(part => part.transform.gameObject.activeSelf); } }
+
+        [SetUp]
+        public void Setup()
         {
-            readonly float amount; public Consumer(float amount){this.amount=amount;}
-            public override float GetValue()=>amount;
-            public override bool ignoreDamageReduction=>true;
-            public override bool ignoreConsumerPrevention=>false;
+            _target = new GameObject("HLTarget");
+            _source = new GameObject("HLSource");
+            _fxObject = new GameObject("HLEffects");
+            _health = TestHelpers.CreateResourceAttribute(_target, AttributeType.HealthMax, 100);
+            TestHelpers.CreateAttributeManager(_source);
+            _fx = _fxObject.AddComponent<HLStoneEffects>();
+            _visual = _target.AddComponent<HLStoneEnemyVisual>();
+            _visual.Initialize(_health, 15, _fx);
         }
-        GameObject target,source,fxObject; ResourceAttribute health; HLStoneEnemyVisual visual; HLStoneEffects fx;
-        [SetUp] public void Setup()
+
+        [TearDown]
+        public void Teardown()
         {
-            target=new GameObject("HLTarget"); source=new GameObject("HLSource"); fxObject=new GameObject("HLEffects");
-            health=TestHelpers.CreateResourceAttribute(target,AttributeType.HealthMax,100); TestHelpers.CreateAttributeManager(source);
-            fx=fxObject.AddComponent<HLStoneEffects>(); visual=target.AddComponent<HLStoneEnemyVisual>(); visual.Initialize(health,15,fx);
+            if (_visual != null)
+            {
+                TestHelpers.InvokePrivate(_visual, "OnDestroy");
+            }
+            TestHelpers.InvokePrivate(_fx, "OnDestroy");
+            Object.DestroyImmediate(_target);
+            Object.DestroyImmediate(_source);
+            Object.DestroyImmediate(_fxObject);
         }
-        [TearDown] public void Teardown(){if(visual!=null)TestHelpers.InvokePrivate(visual,"OnDestroy");TestHelpers.InvokePrivate(fx,"OnDestroy");Object.DestroyImmediate(target);Object.DestroyImmediate(source);Object.DestroyImmediate(fxObject);}
+
         ResourceModifier Queue(float delta)
         {
-            var m=new ResourceModifier{source=source}; m.consumers.Add(new Consumer(delta)); health.AddResourceModifier(m); return m;
+            ResourceModifier modifier = new ResourceModifier { source = _source };
+            modifier.consumers.Add(new Consumer(delta));
+            _health.AddResourceModifier(modifier);
+            return modifier;
         }
-        void Drain(){TestHelpers.InvokePrivate(health,"Update");visual.CompleteHealthBatch();}
-        int Visible=>visual.Parts.Count(p=>p.Transform.gameObject.activeSelf);
-        [Test] public void FakeHealthShedsOnceAtFiftyAndSurvivorsNeverMove()
+
+        void Drain()
         {
-            var first=visual.Parts[0].Transform.localToWorldMatrix; var second=visual.Parts[1].Transform.localToWorldMatrix;
-            Queue(-49); Drain(); Assert.AreEqual(3,Visible);
-            Queue(-1); Drain(); Assert.AreEqual(2,Visible); Assert.AreEqual(first,visual.Parts[0].Transform.localToWorldMatrix); Assert.AreEqual(second,visual.Parts[1].Transform.localToWorldMatrix);
-            Queue(50); Drain(); Queue(-70); Drain(); Assert.AreEqual(2,Visible);
-            visual.Initialize(health,15,fx); Assert.AreEqual(3,Visible);
+            TestHelpers.InvokePrivate(_health, "Update");
+            _visual.CompleteHealthBatch();
         }
-        [Test] public void ReenableRestoresPresentationWithoutResurrectingShedParts()
+
+        [Test]
+        public void MotionUsesLookAtTargetCachedDuringInitialization()
         {
-            Queue(-60); Drain(); Assert.AreEqual(2,Visible);
-            visual.enabled=false; TestHelpers.InvokePrivate(visual,"OnDisable");
-            Assert.IsFalse(visual.Parts[0].Transform.gameObject.activeInHierarchy);
-            visual.enabled=true; TestHelpers.InvokePrivate(visual,"OnEnable");
-            Assert.AreEqual(2,Visible);
-            Assert.IsTrue(visual.Parts[0].Transform.gameObject.activeInHierarchy);
+            Transform pivot = _target.transform.Find("BodyPivot");
+            LookAtTarget look = pivot.gameObject.AddComponent<LookAtTarget>();
+            _visual.Initialize(_health, 15, _fx);
+            TestHelpers.SetPrivateField(_visual, "_motion", new MotionSource());
+            TestHelpers.InvokePrivate(_visual, "LateUpdate");
+            Assert.AreEqual(Quaternion.identity, pivot.rotation);
+
+            Object.DestroyImmediate(look);
+            TestHelpers.InvokePrivate(_visual, "LateUpdate");
+            Assert.Less(Quaternion.Angle(Quaternion.Euler(0f, 90f, 0f), pivot.rotation), 0.001f);
+
+            // New components are picked up only on initialization, never by the moving frame path.
+            pivot.gameObject.AddComponent<LookAtTarget>();
+            pivot.rotation = Quaternion.identity;
+            TestHelpers.InvokePrivate(_visual, "LateUpdate");
+            Assert.Less(Quaternion.Angle(Quaternion.Euler(0f, 90f, 0f), pivot.rotation), 0.001f);
+
+            _visual.Initialize(_health, 15, _fx);
+            pivot.rotation = Quaternion.identity;
+            TestHelpers.SetPrivateField(_visual, "_motion", new MotionSource());
+            TestHelpers.InvokePrivate(_visual, "LateUpdate");
+            Assert.AreEqual(Quaternion.identity, pivot.rotation);
         }
-        [Test] public void DamageAndHealingInSameBatchAndMaxOnlyChangesDoNotShed()
+
+        [Test]
+        public void FakeHealthShedsOnceAtFiftyAndSurvivorsNeverMove()
         {
-            Queue(-80);Queue(80);Drain(); Assert.AreEqual(3,Visible);
-            var max=target.GetComponent<AttributeManager>().Get(AttributeType.HealthMax); max.BaseValue=200; max.Update();
-            visual.CompleteHealthBatch(); Assert.AreEqual(3,Visible);
+            Matrix4x4 first = _visual.parts[0].transform.localToWorldMatrix;
+            Matrix4x4 second = _visual.parts[1].transform.localToWorldMatrix;
+            Queue(-49);
+            Drain();
+            Assert.AreEqual(3, visibleCount);
+
+            Queue(-1);
+            Drain();
+            Assert.AreEqual(2, visibleCount);
+            Assert.AreEqual(first, _visual.parts[0].transform.localToWorldMatrix);
+            Assert.AreEqual(second, _visual.parts[1].transform.localToWorldMatrix);
+
+            Queue(50);
+            Drain();
+            Queue(-70);
+            Drain();
+            Assert.AreEqual(2, visibleCount);
+
+            _visual.Initialize(_health, 15, _fx);
+            Assert.AreEqual(3, visibleCount);
+        }
+
+        [Test]
+        public void ReenableRestoresPresentationWithoutResurrectingShedParts()
+        {
+            Queue(-60);
+            Drain();
+            Assert.AreEqual(2, visibleCount);
+
+            _visual.enabled = false;
+            TestHelpers.InvokePrivate(_visual, "OnDisable");
+            Assert.IsFalse(_visual.parts[0].transform.gameObject.activeInHierarchy);
+
+            _visual.enabled = true;
+            TestHelpers.InvokePrivate(_visual, "OnEnable");
+            Assert.AreEqual(2, visibleCount);
+            Assert.IsTrue(_visual.parts[0].transform.gameObject.activeInHierarchy);
+        }
+
+        [Test]
+        public void DamageAndHealingInSameBatchAndMaxOnlyChangesDoNotShed()
+        {
+            Queue(-80);
+            Queue(80);
+            Drain();
+            Assert.AreEqual(3, visibleCount);
+
+            Attribute max = _target.GetComponent<AttributeManager>().Get(AttributeType.HealthMax);
+            max.BaseValue = 200;
+            max.Update();
+            _visual.CompleteHealthBatch();
+            Assert.AreEqual(3, visibleCount);
+
             // No final value event is emitted when damage and healing return to the previous value.
-            Queue(-160);Queue(160);Drain(); TestHelpers.InvokePrivate(visual,"LateUpdate"); Assert.AreEqual(3,Visible);
+            Queue(-160);
+            Queue(160);
+            Drain();
+            TestHelpers.InvokePrivate(_visual, "LateUpdate");
+            Assert.AreEqual(3, visibleCount);
         }
-        [Test] public void RecordedContactConsumedOnlyByExactModifierAndZeroDamageEmitsOnlyDust()
+
+        [Test]
+        public void RecordedContactConsumedOnlyByExactModifierAndZeroDamageEmitsOnlyDust()
         {
-            var m=Queue(-1); var point=new Vector3(23,7,4);
-            visual.RecordImpact(m,new HLStoneImpact(point,Vector3.up,Vector3.zero,false));
-            Drain(); Assert.AreEqual(0,visual.PendingImpactCount); Assert.AreEqual(14,fx.LiveCount);
-            foreach(var filter in fxObject.GetComponentsInChildren<MeshFilter>()) Assert.That(Vector3.Distance(filter.transform.position,filter.sharedMesh.name=="HLFlatCone"?point+Vector3.up*.005f:point),Is.LessThan(1e-5));
-            fx.Advance(1); var zero=Queue(0); visual.RecordImpact(zero,new HLStoneImpact(point,Vector3.up,Vector3.zero,false)); Drain();
-            Assert.AreEqual(0,visual.PendingImpactCount); Assert.AreEqual(5,fx.LiveCount);
+            ResourceModifier modifier = Queue(-1);
+            Vector3 point = new Vector3(23f, 7f, 4f);
+            _visual.RecordImpact(modifier, new HLStoneImpact(point, Vector3.up, Vector3.zero, false));
+            Drain();
+            Assert.AreEqual(0, _visual.pendingImpactCount);
+            Assert.AreEqual(14, _fx.liveCount);
+            foreach (MeshFilter filter in _fxObject.GetComponentsInChildren<MeshFilter>())
+            {
+                Vector3 expected = filter.sharedMesh.name == "HLFlatCone" ? point + Vector3.up * 0.005f : point;
+                Assert.That(Vector3.Distance(filter.transform.position, expected), Is.LessThan(1e-5));
+            }
+
+            _fx.Advance(1f);
+            ResourceModifier zero = Queue(0);
+            _visual.RecordImpact(zero, new HLStoneImpact(point, Vector3.up, Vector3.zero, false));
+            Drain();
+            Assert.AreEqual(0, _visual.pendingImpactCount);
+            Assert.AreEqual(5, _fx.liveCount);
         }
-        [Test] public void ExpiryUnbindReenableAndReinitDoNotDuplicateListeners()
+
+        [Test]
+        public void ExpiryUnbindReenableAndReinitDoNotDuplicateListeners()
         {
-            visual.RecordImpact(new ResourceModifier(),default); TestHelpers.InvokePrivate(visual,"LateUpdate"); Assert.AreEqual(1,visual.PendingImpactCount);
-            TestHelpers.InvokePrivate(visual,"LateUpdate"); Assert.AreEqual(0,visual.PendingImpactCount);
-            visual.enabled=false; TestHelpers.InvokePrivate(visual,"OnDisable"); visual.RecordImpact(new ResourceModifier(),default); Assert.AreEqual(0,visual.PendingImpactCount);
-            fx.Advance(1); visual.enabled=true; visual.Initialize(health,15,fx); Queue(-1);Drain();Assert.AreEqual(14,fx.LiveCount);
+            _visual.RecordImpact(new ResourceModifier(), default);
+            TestHelpers.InvokePrivate(_visual, "LateUpdate");
+            Assert.AreEqual(1, _visual.pendingImpactCount);
+
+            TestHelpers.InvokePrivate(_visual, "LateUpdate");
+            Assert.AreEqual(0, _visual.pendingImpactCount);
+
+            _visual.enabled = false;
+            TestHelpers.InvokePrivate(_visual, "OnDisable");
+            _visual.RecordImpact(new ResourceModifier(), default);
+            Assert.AreEqual(0, _visual.pendingImpactCount);
+
+            _fx.Advance(1f);
+            _visual.enabled = true;
+            _visual.Initialize(_health, 15, _fx);
+            Queue(-1);
+            Drain();
+            Assert.AreEqual(14, _fx.liveCount);
         }
-        [Test] public void LethalBatchCollapsesOnlyOnceAndDebrisSurvivesOwner()
+
+        [Test]
+        public void LethalBatchCollapsesOnlyOnceAndDebrisSurvivesOwner()
         {
-            Queue(-100);Drain(); Assert.AreEqual(0,Visible); Assert.AreEqual(31,fx.LiveCount);
-            visual.Collapse(); Assert.AreEqual(31,fx.LiveCount);
-            TestHelpers.InvokePrivate(visual,"OnDestroy"); Object.DestroyImmediate(target); target=null; Assert.AreEqual(31,fx.LiveCount); fx.Advance(.81f); Assert.AreEqual(0,fx.LiveCount);
+            Queue(-100);
+            Drain();
+            Assert.AreEqual(0, visibleCount);
+            Assert.AreEqual(31, _fx.liveCount);
+
+            _visual.Collapse();
+            Assert.AreEqual(31, _fx.liveCount);
+
+            TestHelpers.InvokePrivate(_visual, "OnDestroy");
+            Object.DestroyImmediate(_target);
+            _target = null;
+            Assert.AreEqual(31, _fx.liveCount);
+
+            _fx.Advance(0.81f);
+            Assert.AreEqual(0, _fx.liveCount);
         }
-        [Test] public void DisableOrLivingRemovalDoesNotEmitDeath()
-        {visual.enabled=false;TestHelpers.InvokePrivate(visual,"OnDestroy");Object.DestroyImmediate(target);target=null;Assert.AreEqual(0,fx.LiveCount);}
+
+        [Test]
+        public void DisableOrLivingRemovalDoesNotEmitDeath()
+        {
+            _visual.enabled = false;
+            TestHelpers.InvokePrivate(_visual, "OnDestroy");
+            Object.DestroyImmediate(_target);
+            _target = null;
+            Assert.AreEqual(0, _fx.liveCount);
+        }
     }
 }
