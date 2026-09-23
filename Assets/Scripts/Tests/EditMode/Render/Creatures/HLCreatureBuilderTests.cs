@@ -31,7 +31,7 @@ namespace HealerLike.Render.Creatures
             target = new GameObject("HLAuthoredTarget"); target.transform.SetParent(model.transform, false); target.transform.localPosition = Vector3.up; target.AddComponent<SkillTargetPointTag>();
             recipe = HLCreatureValidatorTests.Recipe(); material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             builder = model.AddComponent<HLCreatureBuilder>(); builder.SetRecipe(recipe, material);
-            sink = new HLSink(); registry = new HLRenderRegistry { SpellSink = sink }; registry.Register(source, sink);
+            sink = new HLSink(); registry = new HLRenderRegistry { spellSink = sink }; registry.Register(source, sink);
             builder.Configure(registry, 1, Vector3.zero, Vector3.up); entityModel.Init(entity);
         }
         [TearDown] public void Cleanup() { if (builder) TestHelpers.InvokePrivate(builder, "OnDestroy"); Object.DestroyImmediate(owner); Object.DestroyImmediate(recipe); Object.DestroyImmediate(material); HLPrimitiveMeshes.ReleaseAll(); }

@@ -37,7 +37,7 @@ namespace HealerLike.Render.Stage
                 var second=HLStageBeautyWiring.AttachTrample(go,2);
                 Assert.That(second,Is.SameAs(first));
                 Assert.That(go.GetComponents<HLTrampleZone>().Length,Is.EqualTo(1));
-                Assert.That(second.Radius,Is.EqualTo(2.15f).Within(1e-6f));
+                Assert.That(second.radius,Is.EqualTo(2.15f).Within(1e-6f));
             } finally { Object.DestroyImmediate(go); }
         }
         [Test] public void DisableClearsItsOwnGustTargetOnly()

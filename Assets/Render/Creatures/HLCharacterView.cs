@@ -41,7 +41,7 @@ namespace HealerLike.Render.Creatures
             {
                 if (!statusObserver) statusObserver = GetComponent<HLStatusObserver>();
                 if (!statusObserver) statusObserver = gameObject.AddComponent<HLStatusObserver>();
-                statusObserver.Bind(character.buffManager, injected ? injectedRegistry?.SpellSink : null);
+                statusObserver.Bind(character.buffManager, injected ? injectedRegistry?.spellSink : null);
                 boundManager = character.buffManager;
             }
         }
@@ -80,7 +80,7 @@ namespace HealerLike.Render.Creatures
             if (Rig == null) Rig = HLCreatureRig.Build(recipe, visualAnchor, material, cellSize);
             Rig.SetVisible(isActiveAndEnabled);
             if (!isActiveAndEnabled) return;
-            var registry = injected ? injectedRegistry : HLRenderRegistry.Current;
+            var registry = injected ? injectedRegistry : HLRenderRegistry.current;
             if (registeredRegistry != registry) { Unregister(); registeredRegistry = registry; registeredSource = character.gameObject; registeredRegistry?.Register(registeredSource, this); }
         }
         public void OnHealResolved(GameObject target, float value, bool critical)

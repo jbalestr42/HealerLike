@@ -100,7 +100,7 @@ namespace HealerLike.Render.Environment
 
         void LateUpdate()
         {
-            var buffer = zoneRegistry ? zoneRegistry.Buffer : null;
+            var buffer = zoneRegistry ? zoneRegistry.buffer : null;
             foreach (var field in fields) if (field) field.SetZoneSnapshot(buffer, 0);
         }
 

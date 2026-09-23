@@ -37,29 +37,29 @@ namespace HealerLike.Render.Spells
         }
         [Test] public void RegistryCallsCannotRepopulateDisabledSinkAndEnableStartsClean()
         {
-            var previous = HLRenderRegistry.Current;
+            var previous = HLRenderRegistry.current;
             try
             {
-                HLRenderRegistry.Current = new HLRenderRegistry { SpellSink = sink };
+                HLRenderRegistry.current = new HLRenderRegistry { spellSink = sink };
                 sink.SetStatus(null,target,factory,1,0,4,HLClockKind.Simulation);
                 var root = sink.GetStatus(target,factory);
                 sink.enabled = false; TestHelpers.InvokePrivate(sink,"OnDisable");
                 Assert.IsFalse(root);
-                HLRenderRegistry.Current.SpellSink.SetStatus(null,target,factory,1,0,4,HLClockKind.Simulation);
-                HLRenderRegistry.Current.SpellSink.ShowImpact(null,target,HLResourceKind.Health,2,false);
+                HLRenderRegistry.current.spellSink.SetStatus(null,target,factory,1,0,4,HLClockKind.Simulation);
+                HLRenderRegistry.current.spellSink.ShowImpact(null,target,HLResourceKind.Health,2,false);
                 sink.PulseArea(Vector3.zero,1,HLZoneKind.Heal,1);
                 Assert.IsNull(sink.ShowLink(Vector3.zero,Vector3.one));
                 Assert.AreEqual(0,sink.StatusCount);
                 Assert.AreEqual(0,sink.ImpactCount);
                 sink.enabled = true; TestHelpers.InvokePrivate(sink,"OnEnable");
-                Assert.AreSame(sink,HLRenderRegistry.Current.SpellSink);
+                Assert.AreSame(sink,HLRenderRegistry.current.spellSink);
                 Assert.AreEqual(0,sink.StatusCount);
                 sink.SetStatus(null,target,factory,1,0,4,HLClockKind.Simulation);
                 Assert.AreEqual(1,sink.StatusCount);
                 TestHelpers.InvokePrivate(sink,"OnEnable");
                 Assert.AreEqual(0,sink.StatusCount);
             }
-            finally { HLRenderRegistry.Current = previous; }
+            finally { HLRenderRegistry.current = previous; }
         }
         [TestCase(false)] [TestCase(true)]
         public void RepeatedStatusAndIdleSinkFramesAllocateNothing(bool populated)
@@ -152,18 +152,18 @@ namespace HealerLike.Render.Spells
         }
         [Test] public void NullDelegateFallsBackToRegistryZoneOwner()
         {
-            var previous=HLRenderRegistry.Current;var owner=new HLOwnerSpy();
+            var previous=HLRenderRegistry.current;var owner=new HLOwnerSpy();
             try
             {
-                HLRenderRegistry.Current=new HLRenderRegistry{ZoneOwner=owner};
+                HLRenderRegistry.current=new HLRenderRegistry{zoneOwner=owner};
                 sink.PulseArea(Vector3.one,3,HLZoneKind.Hostile,.5f);
                 Assert.AreEqual(1,owner.calls);Assert.AreEqual(3,owner.radius);Assert.AreEqual(HLZoneKind.Hostile,owner.kind);Assert.AreEqual(HLSpellVisualSink.PulseSeconds,owner.seconds);
                 sink.PulseArea(Vector3.one,-1,HLZoneKind.Hostile,.5f);Assert.AreEqual(1,owner.calls);
                 int injected=0;sink.AreaPulse=(p,r,k,s)=>injected++;sink.PulseArea(Vector3.one,3,HLZoneKind.Heal,.5f);
                 Assert.AreEqual(1,injected);Assert.AreEqual(1,owner.calls);
-                sink.AreaPulse=null;HLRenderRegistry.Current=null;Assert.DoesNotThrow(()=>sink.PulseArea(Vector3.one,3,HLZoneKind.Heal,.5f));
+                sink.AreaPulse=null;HLRenderRegistry.current=null;Assert.DoesNotThrow(()=>sink.PulseArea(Vector3.one,3,HLZoneKind.Heal,.5f));
             }
-            finally{HLRenderRegistry.Current=previous;}
+            finally{HLRenderRegistry.current=previous;}
         }
         [Test] public void DestroyedTargetAndDisableReleaseVisuals()
         {

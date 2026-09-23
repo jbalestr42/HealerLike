@@ -98,7 +98,7 @@ namespace HealerLike.Render.Creatures
         }
         void SyncRegistry()
         {
-            var registry = hasInjection ? injectedRegistry : HLRenderRegistry.Current;
+            var registry = hasInjection ? injectedRegistry : HLRenderRegistry.current;
             if (registeredRegistry == registry) return;
             Unregister(); registeredRegistry = registry;
             registeredSource = entity ? entity.gameObject : null;

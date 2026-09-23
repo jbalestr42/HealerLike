@@ -229,7 +229,7 @@ namespace HealerLike.Render.Stage
             try
             {
                 if (!go.GetComponent<HealerLike.Render.Spells.HLStatusObserver>()) go.AddComponent<HealerLike.Render.Spells.HLStatusObserver>();
-                if (ally && !go.GetComponent<HealerLike.Render.Zones.HLRangePreview>()) go.AddComponent<HealerLike.Render.Zones.HLRangePreview>().ObservePointer = false;
+                if (ally && !go.GetComponent<HealerLike.Render.Zones.HLRangePreview>()) go.AddComponent<HealerLike.Render.Zones.HLRangePreview>().observePointer = false;
                 // Finding 8: any entity that heals gets its resolved-heal pulse; EntityModel.Init walks it as an IVisualBehaviour.
                 if (!go.GetComponent<HLHealPulse>()) go.AddComponent<HLHealPulse>();
                 // Grass wave 5: enemy range readout; it clears itself on non-Computer entities.
@@ -371,23 +371,23 @@ namespace HealerLike.Render.Stage
         }
         static void Calibrate(Behaviour look, Camera camera, Bounds bounds)
         {
-            var so = new SerializedObject(look); var settings = so.FindProperty("settings");
+            var so = new SerializedObject(look); var settings = so.FindProperty("_settings");
             if (settings == null) throw new InvalidOperationException("Review HLLookController settings ABI.");
             var fog = WaveThreeFog(camera, bounds);
-            settings.FindPropertyRelative("FogColor").colorValue = new Color32(191,210,224,255);
-            settings.FindPropertyRelative("FogStart").floatValue = fog.x; settings.FindPropertyRelative("FogEnd").floatValue = fog.y;
-            settings.FindPropertyRelative("FogBands").intValue = 6;
-            settings.FindPropertyRelative("ShadowTint").colorValue = new Color32(63,91,148,255);
-            settings.FindPropertyRelative("InkStrength").floatValue = .75f;
+            settings.FindPropertyRelative("fogColor").colorValue = new Color32(191,210,224,255);
+            settings.FindPropertyRelative("fogStart").floatValue = fog.x; settings.FindPropertyRelative("fogEnd").floatValue = fog.y;
+            settings.FindPropertyRelative("fogBands").intValue = 6;
+            settings.FindPropertyRelative("shadowTint").colorValue = new Color32(63,91,148,255);
+            settings.FindPropertyRelative("inkStrength").floatValue = .75f;
             float spacing = HLStageCalibration.HatchSpacing(camera,CentreDepth(camera,bounds),HLStageCalibration.PortraitHeight);
-            settings.FindPropertyRelative("InkScale").floatValue = spacing;
-            settings.FindPropertyRelative("InkWidth").floatValue = spacing*.04f;
-            settings.FindPropertyRelative("InkDistStart").floatValue = fog.x;
-            settings.FindPropertyRelative("InkFarSpacing").floatValue = spacing*1.2f;
+            settings.FindPropertyRelative("inkScale").floatValue = spacing;
+            settings.FindPropertyRelative("inkWidth").floatValue = spacing*.04f;
+            settings.FindPropertyRelative("inkDistStart").floatValue = fog.x;
+            settings.FindPropertyRelative("inkFarSpacing").floatValue = spacing*1.2f;
             // Look beauty: outlines are pixel-normalized now, so no distance-derived inflation.
-            settings.FindPropertyRelative("OutlineWidthPixels").floatValue = 1f;
+            settings.FindPropertyRelative("outlineWidthPixels").floatValue = 1f;
             // Look wave 5: pixel-space hatch spacing; a serialized controller predating the field would read zero.
-            settings.FindPropertyRelative("InkSpacingPixels").floatValue = 3.5f;
+            settings.FindPropertyRelative("inkSpacingPixels").floatValue = 3.5f;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
         // Wave-3 capture review: fog from the near edge washed out the back half of the board. Start at the
@@ -579,13 +579,13 @@ namespace HealerLike.Render.Stage
         // density penalty 35 deg, grass opted out through the normal-alpha mask.
         public static void EdgeSettings(SerializedObject outlines)
         {
-            outlines.FindProperty("DepthNormalEdges").boolValue = true;
-            outlines.FindProperty("DepthThresholdWorld").floatValue = 1;
-            outlines.FindProperty("ReferenceDistance").floatValue = 31;
-            outlines.FindProperty("DistanceScale").floatValue = 1;
-            outlines.FindProperty("NormalAngleDegrees").floatValue = 55;
-            outlines.FindProperty("NormalDensityDegrees").floatValue = 35;
-            outlines.FindProperty("UseNormalEdgeMask").boolValue = true;
+            outlines.FindProperty("depthNormalEdges").boolValue = true;
+            outlines.FindProperty("depthThresholdWorld").floatValue = 1;
+            outlines.FindProperty("referenceDistance").floatValue = 31;
+            outlines.FindProperty("distanceScale").floatValue = 1;
+            outlines.FindProperty("normalAngleDegrees").floatValue = 55;
+            outlines.FindProperty("normalDensityDegrees").floatValue = 35;
+            outlines.FindProperty("useNormalEdgeMask").boolValue = true;
         }
         // Look wave 5's tested Very High setup on every tier: the stage resolves to whichever tier Graphics/Quality
         // settings pick (Low today, through the missing Ultra slot), and the board sits 42 to 48 units from the camera.
@@ -622,7 +622,7 @@ namespace HealerLike.Render.Stage
                         feature=placeholder; todo.Add(AssetDatabase.GetAssetPath(data)+": replace HLOutlines_PLACEHOLDER (hull tag only) with T1 HLOutlines depth/normal feature.");
                     }
                     feature.name=type!=null?"HLOutlines":"HLOutlines_PLACEHOLDER";
-                    if(type!=null) { var fso=new SerializedObject(feature); var shader=fso.FindProperty("edgeShader"); if(shader!=null) shader.objectReferenceValue=Shader.Find("Hidden/HL/Look/DepthNormalOutline");
+                    if(type!=null) { var fso=new SerializedObject(feature); var shader=fso.FindProperty("_edgeShader"); if(shader!=null) shader.objectReferenceValue=Shader.Find("Hidden/HL/Look/DepthNormalOutline");
                         // Look wave 5: grass writes zero normal-edge eligibility, so the screen pass no longer inks every blade.
                         EdgeSettings(fso); fso.ApplyModifiedPropertiesWithoutUndo(); }
                     AssetDatabase.AddObjectToAsset(feature,data); data.rendererFeatures.Add(feature); feature.SetActive(true);

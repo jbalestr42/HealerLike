@@ -219,7 +219,7 @@ namespace HealerLike.Render.Stage
                     var data=new uint[5]; if(args!=null && args.IsValid()) args.GetData(data);
                     Debug.Log($"HL capture grass: {field.name} enabled={field.isActiveAndEnabled} ready={field.IsReady} blades={field.BladeCount} drawn={data[1]}");
                 }
-                Debug.Log($"HL screenshot: {path} at game time {Time.time-gameStartTime:F2}s; attacks={attacks} heals={heals} zones={HealerLike.Render.Zones.HLZoneRegistry.Current?.Count ?? -1}");
+                Debug.Log($"HL screenshot: {path} at game time {Time.time-gameStartTime:F2}s; attacks={attacks} heals={heals} zones={HealerLike.Render.Zones.HLZoneRegistry.current?.count ?? -1}");
             }
             finally { RenderTexture.active=previous; RenderTexture.ReleaseTemporary(target); UnityEngine.Object.DestroyImmediate(texture); }
         }

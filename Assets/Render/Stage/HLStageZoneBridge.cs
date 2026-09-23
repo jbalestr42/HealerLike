@@ -25,7 +25,7 @@ namespace HealerLike.Render.Stage
         public void Configure(HLZoneRegistry zones, HLGrassField field)
         {
             zoneRegistry=zones; grassField=field;
-            if(zones && field) Configure(()=>zones.Buffer,()=>zones.Count,field.SetZoneSnapshot);
+            if(zones && field) Configure(()=>zones.buffer,()=>zones.count,field.SetZoneSnapshot);
         }
         void OnEnable() { if(zoneRegistry && grassField) Configure(zoneRegistry,grassField); }
         void LateUpdate() { if(publish!=null) publish(buffer(),count()); }

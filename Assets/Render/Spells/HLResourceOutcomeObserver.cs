@@ -42,9 +42,9 @@ namespace HealerLike.Render.Spells
         void Publish(GameObject owner, ResourceModifier modifier, HLResourceKind kind, float amount, bool critical)
         {
             if (!isActiveAndEnabled || !owner || amount == 0 || float.IsNaN(amount) || float.IsInfinity(amount)) return;
-            var registry = hasInjection ? injected : HLRenderRegistry.Current;
+            var registry = hasInjection ? injected : HLRenderRegistry.current;
             var source = modifier?.source;
-            registry?.SpellSink?.ShowImpact(source, owner, kind, amount, critical);
+            registry?.spellSink?.ShowImpact(source, owner, kind, amount, critical);
             if (kind == HLResourceKind.Health && amount > 0) registry?.NotifyHeal(source, owner, amount, critical);
             Outcome?.Invoke(source, owner, kind, amount, critical);
         }

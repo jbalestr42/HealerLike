@@ -10,7 +10,7 @@ namespace HealerLike.Render.Spells
         public const float PulseSeconds = 0.8f;
         public HLSpellStyleTable styles;
         public Material material;
-        // Injected adapter wins; when null, PulseArea falls back to HLRenderRegistry.Current.ZoneOwner (contract v2).
+        // Injected adapter wins; when null, PulseArea falls back to HLRenderRegistry.current.zoneOwner (contract v2).
         public Action<Vector3, float, HLZoneKind, float> AreaPulse { get; set; }
         struct HLStatusVisual
         {
@@ -147,7 +147,7 @@ namespace HealerLike.Render.Spells
             }
             // The zone owner has an independent lifetime; forwarding does not create sink children.
             if(AreaPulse!=null) AreaPulse(center,radius,kind,zone.strength);
-            else HLRenderRegistry.Current?.ZoneOwner?.AddPulse(kind,center,radius,zone.strength,PulseSeconds);
+            else HLRenderRegistry.current?.zoneOwner?.AddPulse(kind,center,radius,zone.strength,PulseSeconds);
         }
         public HLSpellEffect ShowLink(Vector3 start, Vector3 end)
         {

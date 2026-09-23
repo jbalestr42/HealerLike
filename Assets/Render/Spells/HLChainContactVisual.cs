@@ -14,7 +14,7 @@ namespace HealerLike.Render.Spells
         public override void Init(GameObject source)
         {
             Bind(projectile ? projectile : GetComponent<Projectile>(),
-                Sink ? Sink : HLRenderRegistry.Current?.SpellSink as HLSpellVisualSink);
+                Sink ? Sink : HLRenderRegistry.current?.spellSink as HLSpellVisualSink);
         }
         public void Bind(Projectile observed, HLSpellVisualSink sink)
         {

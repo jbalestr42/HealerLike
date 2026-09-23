@@ -40,7 +40,7 @@ namespace HealerLike.Render.Spells
                 var health = TestHelpers.CreateResourceAttribute(owner, AttributeType.HealthMax, 100);
                 var manaGo = new GameObject("HLMana"); manaGo.transform.SetParent(owner.transform);
                 var mana = TestHelpers.CreateResourceAttribute(manaGo, AttributeType.ManaMax, 100);
-                var spy = new Sink(); var registry = new HLRenderRegistry { SpellSink = spy };
+                var spy = new Sink(); var registry = new HLRenderRegistry { spellSink = spy };
                 var healed = new HealSink(); registry.Register(caster, healed);
                 var observer = owner.AddComponent<HLResourceOutcomeObserver>();
                 for (int i=0;i<5;i++) observer.Bind(health, mana, registry, true);

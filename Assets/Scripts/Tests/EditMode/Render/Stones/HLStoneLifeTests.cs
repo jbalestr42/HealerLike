@@ -6,7 +6,7 @@ namespace HealerLike.Render.Stones
     {
         sealed class HLUpload : HealerLike.Render.Zones.IHLZoneUpload
         {
-            public GraphicsBuffer Buffer=>null;
+            public GraphicsBuffer buffer=>null;
             public void Upload(HealerLike.Render.Zones.HLZone[] zones) { }
             public void Bind() { } public void PublishCount(int count) { } public void Unbind() { } public void Dispose() { }
         }

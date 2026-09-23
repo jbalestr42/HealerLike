@@ -37,8 +37,8 @@ namespace HealerLike.Render.Stones
             wobbleAge+=float.IsFinite(dt)?Mathf.Max(0,dt):0;
             if(top!=null && top.gameObject.activeSelf) top.localRotation=rest*Quaternion.Euler(HLStoneLifeState.Wobble(wobbleAge),0,HLStoneLifeState.Wobble(wobbleAge)*.4f);
             if(!terrain) return;
-            var registry=HLZoneRegistry.Current;
-            var snapshot=registry!=null?registry.Snapshot:default;
+            var registry=HLZoneRegistry.current;
+            var snapshot=registry!=null?registry.snapshot:default;
             int pulses=state.PollZones(snapshot,transform.position,radius);
             for(int i=0;i<pulses;i++) Effects()?.EmitDust(transform.position+Vector3.up*.1f,seed+ ++index);
         }

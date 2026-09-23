@@ -48,21 +48,21 @@ namespace HealerLike.Render.Spells
         {
             var go=new GameObject("HLObserver"); var host=new GameObject("HLSink");
             var factory=ScriptableObject.CreateInstance<BuffHandlerFactory>(); var modifier=ScriptableObject.CreateInstance<FlatModifierFactory>();
-            var previous=HLRenderRegistry.Current;
+            var previous=HLRenderRegistry.current;
             try
             {
                 modifier.data=new FlatModifierData {value=1};
                 factory.data=new BuffHandlerData {durationType=DurationType.Infinite,buffFactoryList=new List<ABuffFactory>{modifier}};
                 var manager=go.AddComponent<BuffManager>(); var observer=go.AddComponent<HLStatusObserver>();
                 var sink=host.AddComponent<HLSpellVisualSink>();
-                HLRenderRegistry.Current=new HLRenderRegistry {SpellSink=sink}; observer.Bind(manager,null);
+                HLRenderRegistry.current=new HLRenderRegistry {spellSink=sink}; observer.Bind(manager,null);
                 manager.OnBuffHandlerStarted.Invoke(new BuffManager.BuffHandlerData {target=go,buffHandlerFactory=factory,currentStacks=1});
                 Assert.AreEqual(1,sink.StatusCount);
                 sink.enabled=false; TestHelpers.InvokePrivate(sink,"OnDisable"); observer.Reconcile(); Assert.AreEqual(0,sink.StatusCount);
                 sink.enabled=true; TestHelpers.InvokePrivate(sink,"OnEnable"); observer.Reconcile(); Assert.AreEqual(1,sink.StatusCount);
                 sink.Clear(); observer.Reconcile(); Assert.AreEqual(1,sink.StatusCount);
             }
-            finally { HLRenderRegistry.Current=previous; DestroyHost(go); DestroyHost(host); Object.DestroyImmediate(factory); Object.DestroyImmediate(modifier); }
+            finally { HLRenderRegistry.current=previous; DestroyHost(go); DestroyHost(host); Object.DestroyImmediate(factory); Object.DestroyImmediate(modifier); }
         }
         [Test] public void EventsReconcilePreStartStacksRefreshAndIndependentSourceGroups()
         {

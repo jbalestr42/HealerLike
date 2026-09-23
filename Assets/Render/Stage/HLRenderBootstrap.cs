@@ -52,7 +52,7 @@ namespace HealerLike.Render.Stage
             if(grid && lookController is HealerLike.Render.Look.HLLookController look)
             {
                 var fog=HLStageCalibration.BackgroundFog(position, new Bounds(grid.transform.position,new Vector3(grid.width*grid.size,0,grid.height*grid.size)));
-                var settings=look.Settings; settings.FogStart=fog.x; settings.FogEnd=fog.y; look.Settings=settings; look.ApplyGlobals();
+                var settings=look.settings; settings.fogStart=fog.x; settings.fogEnd=fog.y; look.settings=settings; look.ApplyGlobals();
             }
         }
 
@@ -60,7 +60,7 @@ namespace HealerLike.Render.Stage
         public void Configure(IHLSpellVisualSink sink, Behaviour look, Behaviour zones)
         {
             if (owns) throw new InvalidOperationException("Disable bootstrap before rewiring.");
-            registry = new HLRenderRegistry { SpellSink = sink, ZoneOwner = zones as IHLZoneOwner };
+            registry = new HLRenderRegistry { spellSink = sink, zoneOwner = zones as IHLZoneOwner };
             spellVisualSink = sink as MonoBehaviour;
             lookController = look;
             zoneRegistry = zones;
@@ -69,13 +69,13 @@ namespace HealerLike.Render.Stage
         {
             if (owns) return;
             ApplyFraming();
-            if (HLRenderRegistry.Current != null)
+            if (HLRenderRegistry.current != null)
             {
                 Debug.LogWarning("HL stage registry already has an owner.", this);
                 return;
             }
-            if (registry == null) registry = new HLRenderRegistry { SpellSink = spellVisualSink as IHLSpellVisualSink, ZoneOwner = zoneRegistry as IHLZoneOwner };
-            HLRenderRegistry.Current = registry;
+            if (registry == null) registry = new HLRenderRegistry { spellSink = spellVisualSink as IHLSpellVisualSink, zoneOwner = zoneRegistry as IHLZoneOwner };
+            HLRenderRegistry.current = registry;
             owns = true;
             if (zoneRegistry) zoneRegistry.enabled = true;
             // Explicit stage adapter; the sink would otherwise reach the same owner through the registry.
@@ -97,7 +97,7 @@ namespace HealerLike.Render.Stage
             if (grassField) grassField.enabled = false;
             if (lookController) lookController.enabled = false;
             if (zoneRegistry) zoneRegistry.enabled = false;
-            if (ReferenceEquals(HLRenderRegistry.Current, registry)) HLRenderRegistry.Current = null;
+            if (ReferenceEquals(HLRenderRegistry.current, registry)) HLRenderRegistry.current = null;
             owns = false;
         }
     }

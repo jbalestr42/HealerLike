@@ -41,7 +41,7 @@ namespace HealerLike.Render.Spells
             bool remains=_observed.Exists(x=>x.target==data.target&&x.buffHandlerFactory==data.buffHandlerFactory);
             if(!remains)
             {
-                (_injected??HLRenderRegistry.Current?.SpellSink)?.RemoveStatus(null,data.target,data.buffHandlerFactory);
+                (_injected??HLRenderRegistry.current?.spellSink)?.RemoveStatus(null,data.target,data.buffHandlerFactory);
                 _published.Remove((data.target,data.buffHandlerFactory));
             }
             Reconcile();
@@ -50,7 +50,7 @@ namespace HealerLike.Render.Spells
         public void Reconcile()
         {
             if (!isActiveAndEnabled) return;
-            var sink=_injected??HLRenderRegistry.Current?.SpellSink;
+            var sink=_injected??HLRenderRegistry.current?.spellSink;
             int version = sink is HLSpellVisualSink visual ? visual.PresentationVersion : 0;
             if(!ReferenceEquals(sink,_lastSink) || version != _sinkVersion)
             {

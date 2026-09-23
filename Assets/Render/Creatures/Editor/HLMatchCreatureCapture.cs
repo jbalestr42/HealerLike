@@ -25,7 +25,7 @@ namespace HealerLike.Render.Creatures
             var light=new GameObject("HLGallerySun").AddComponent<Light>(); light.type=LightType.Directional; light.intensity=1;
             light.transform.rotation=Quaternion.Euler(45,-35,0); RenderSettings.sun=light;
             var look=new GameObject("HLGalleryLook").AddComponent<HLLookController>();
-            var settings=HLLookSettings.Default; settings.FogStart=50; settings.FogEnd=80; look.Settings=settings; look.ApplyGlobals();
+            var settings=HLLookSettings.Default; settings.fogStart=50; settings.fogEnd=80; look.settings=settings; look.ApplyGlobals();
             string[] names={"HLSpiralFern","HLHangingArch","HLHealer","HLSphereStack","HLBladeRosette"};
             for(int i=0;i<names.Length;i++)
             {

@@ -33,7 +33,7 @@ namespace HealerLike.Render.Spells
             {
                 var go = new GameObject("HLObservedHitArmor"); go.transform.SetParent(anchor, false);
                 effect = go.AddComponent<HLSpellEffect>(); effect.kind = HLSpellEffectKind.Shield;
-                effect.material = material ? material : (HLRenderRegistry.Current?.SpellSink as HLSpellVisualSink)?.material;
+                effect.material = material ? material : (HLRenderRegistry.current?.spellSink as HLSpellVisualSink)?.material;
                 effect.Initialize(); born = Time.time;
                 effect.SetStatus(1, 0, float.PositiveInfinity, HLClockKind.Simulation,
                     new HLSpellSignature { operation = HLOperation.Attribute, sign = HLSign.Positive, hasAttribute = true,
