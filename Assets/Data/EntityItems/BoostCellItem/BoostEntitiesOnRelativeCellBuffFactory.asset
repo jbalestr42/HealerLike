@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
-  m_Name: BuffEntity_BuffHandlerFactory
-  m_EditorClassIdentifier: HealerLike.Runtime::BuffHandlerFactory
+  m_Script: {fileID: 11500000, guid: 4bfaf2529e3ef9b44b7b9426b3fa728e, type: 3}
+  m_Name: BoostEntitiesOnRelativeCellBuffFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::BoostEntitiesOnRelativeCellBuffFactory
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
@@ -21,14 +21,9 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  uniqueID: e1a0864e-92b9-4eb1-b926-efd2a571c37a
+  uniqueID: 74970afb-2d12-4678-9d7e-24cc37c9f82e
   data:
-    durationType: 2
-    duration: 0
-    isPeriodic: 0
-    periodDuration: 0
-    buffFactoryList:
-    - {fileID: 11400000, guid: ab7652ea48905d643a62299e27d30964, type: 2}
-    buffEffect: {fileID: 0}
-    tags:
-    - {fileID: 11400000, guid: d38ac4ec04597cb4aa6ebb8581d9072e, type: 2}
+    buffHandlerFactory: {fileID: 11400000, guid: 9681fe640fdf8a048805ed340c67a424, type: 2}
+    pattern: 1
+    range: 3
+    boostCellPrefab: {fileID: 8024899264034113169, guid: 6becec7d33252ee4280b906038fc8adf, type: 3}

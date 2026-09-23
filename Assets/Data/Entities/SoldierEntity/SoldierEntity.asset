@@ -100,7 +100,6 @@ MonoBehaviour:
   description: first bad enemy
   targetBehaviourType: 0
   targetValidators: []
-  passives: []
-  onHitEffects: []
+  items: []
   skillFactories:
   - {fileID: 11400000, guid: dd6c272587b45b947b4c9e814ba179a2, type: 2}

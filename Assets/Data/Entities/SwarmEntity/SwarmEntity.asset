@@ -100,7 +100,6 @@ MonoBehaviour:
   description: 
   targetBehaviourType: 0
   targetValidators: []
-  passives: []
-  onHitEffects: []
+  items: []
   skillFactories:
   - {fileID: 11400000, guid: 9d719a7c1884f9e4da5971200a61b619, type: 2}

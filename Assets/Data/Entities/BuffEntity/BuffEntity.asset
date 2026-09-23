@@ -65,7 +65,6 @@ MonoBehaviour:
     value: 100
   targetBehaviourType: 0
   targetValidators: []
-  passives:
-  - {fileID: 11400000, guid: c6e6e638856078a4ca9dc0a131687a2b, type: 2}
-  onHitEffects: []
+  items:
+  - {fileID: 11400000, guid: 32cd44640ef249bbac0ad415bbb5aeba, type: 2}
   skillFactories: []
