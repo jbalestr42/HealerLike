@@ -13,15 +13,12 @@ namespace HealerLike.Render.Stage
     public sealed class HLStageBeautyWiring : MonoBehaviour
     {
         public const float GridStrength = .12f, TipLight = .035f, TrampleMargin = .15f;
-        // Generation normally finishes within a few frames of the cells existing; never wait forever.
-        public const float ClumpWaitSeconds = 10;
         static readonly int GridOrigin = Shader.PropertyToID("_HLGridOrigin"), GridCell = Shader.PropertyToID("_HLGridCell"),
             GridExtent = Shader.PropertyToID("_HLGridExtent"), GridStrengthId = Shader.PropertyToID("_HLGridStrength"),
             TipLightId = Shader.PropertyToID("_HLTipLight"), BaseColor = Shader.PropertyToID("_BaseColor");
         [SerializeField] HLRenderBootstrap bootstrap;
         [SerializeField] GridManager grid;
         [SerializeField] HLEnvironmentGust gust;
-        [SerializeField] HLStoneGridEntry stoneGridEntry;
         [SerializeField] Material groundMaterial;
         [SerializeField] HLCharacterView healerView;
         [SerializeField] Character healer;
@@ -30,8 +27,8 @@ namespace HealerLike.Render.Stage
         [SerializeField] Material healerMaterial;
         public int WiredClumps { get; private set; }
 
-        public void Configure(HLRenderBootstrap owner, GridManager board, HLEnvironmentGust environmentGust, HLStoneGridEntry stones, Material ground)
-        { bootstrap = owner; grid = board; gust = environmentGust; stoneGridEntry = stones; groundMaterial = ground; }
+        public void Configure(HLRenderBootstrap owner, GridManager board, HLEnvironmentGust environmentGust, Material ground)
+        { bootstrap = owner; grid = board; gust = environmentGust; groundMaterial = ground; }
         public void ConfigureHealer(HLCharacterView view, Character character, HLCreatureRecipe recipe, Transform anchor, Material material)
         { healerView = view; healer = character; healerRecipe = recipe; healerAnchor = anchor; healerMaterial = material; }
 
@@ -80,20 +77,11 @@ namespace HealerLike.Render.Stage
         {
             if (healerView && healer)
                 healerView.Bind(healer, healerRecipe, healerAnchor, healerMaterial, bootstrap ? bootstrap.Registry : HLRenderRegistry.Current, grid ? grid.size : 1);
-            if (!stoneGridEntry || !grid) yield break;
-            while (grid.cells == null || grid.cells.Length != grid.width * grid.height) yield return null;
-            // HLRenderBootstrap.Start calls Generate once the cells exist; wait for it to start and finish.
-            float deadline = Time.realtimeSinceStartup + ClumpWaitSeconds; bool seen = false;
-            while (Time.realtimeSinceStartup < deadline)
-            {
-                if (stoneGridEntry.IsGenerating) seen = true;
-                else if (seen) break;
-                yield return null;
-            }
+            // Attach presentation only to already-existing cosmetic environment clumps.
             yield return null;
             WiredClumps = 0;
             foreach (var clump in FindObjectsByType<HLStoneTerrainClump>(FindObjectsSortMode.None)) { WireClump(clump, groundMaterial); WiredClumps++; }
-            Debug.Log($"HL stage wiring: trample on {WiredClumps} terrain clumps (generation {(seen ? "observed" : "not observed")})");
+            Debug.Log($"HL stage wiring: trample on {WiredClumps} existing cosmetic clumps; no grid generation");
         }
         void OnDisable()
         {

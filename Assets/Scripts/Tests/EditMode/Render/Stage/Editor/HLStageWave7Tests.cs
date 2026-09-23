@@ -54,7 +54,8 @@ namespace HealerLike.Render.Stage
         {
             string yaml=File.ReadAllText(HLStageBuilder.ScenePath);
             Assert.That(yaml,Does.Match(@"gust: \{fileID: [1-9]"));
-            Assert.That(yaml,Does.Match(@"stoneGridEntry: \{fileID: [1-9]"));
+            Assert.That(yaml,Does.Not.Contain("stoneGridEntry:"));
+            Assert.That(yaml,Does.Not.Contain("HLStoneGeneration"),"Render stage must not add gameplay blockers or regenerate walkability");
             Assert.That(yaml,Does.Match(@"healerView: \{fileID: [1-9]"));
             Assert.That(yaml,Does.Match(@"viewCamera: \{fileID: [1-9]"));
         }

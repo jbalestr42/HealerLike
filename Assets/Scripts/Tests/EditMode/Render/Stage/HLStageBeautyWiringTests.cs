@@ -46,7 +46,7 @@ namespace HealerLike.Render.Stage
             var saved=HLStageLaunchGust.Target;
             try {
                 var gust=go.AddComponent<HLEnvironmentGust>(); var wiring=go.AddComponent<HLStageBeautyWiring>();
-                wiring.Configure(null,null,gust,null,null);
+                wiring.Configure(null,null,gust,null);
                 TestHelpers.InvokePrivate(wiring,"OnEnable"); Assert.That(HLStageLaunchGust.Target,Is.SameAs(gust));
                 TestHelpers.InvokePrivate(wiring,"OnDisable"); Assert.That(HLStageLaunchGust.Target,Is.Null);
                 var other=new GameObject("HLOtherGust").AddComponent<HLEnvironmentGust>();

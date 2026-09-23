@@ -201,6 +201,9 @@ namespace HealerLike.Render.Stage
         static void RoundEnd()
         {
             if(finished) return;
+            var focus=UnityEngine.Object.FindAnyObjectByType<HLBattleFocus>();
+            if(focus && focus.IsFocused) { Finish(false,"round-end did not restore Overview"); return; }
+            Debug.Log("HL focus round-end Overview="+(focus && !focus.IsFocused));
             roundsDone++; LogRound(actedRound,false);
             if(roundsDone>=Rounds) Finish(exceptions==0,null);
         }
