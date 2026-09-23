@@ -47,7 +47,8 @@ namespace HealerLike.Render.Creatures
             View("HLMultiShot", arch, material, meshes);
             View("HLRandomShoot", fern, material, meshes);
             View("HLChainLightning", stack, material, meshes);
-            View("HLChanneling", stack, material, meshes);
+            // SlowTowerModel's root scale, which the stage copies size their trample zone from
+            View("HLChanneling", stack, material, meshes, 0.9f);
             View("HLSoldier", stack, material, meshes);
             View("HLHitArmorBuffer", rosette, material, meshes);
             CharacterView(healer, material, meshes);
@@ -304,9 +305,12 @@ namespace HealerLike.Render.Creatures
             return recipe;
         }
 
-        static void View(string name, HLCreatureRecipe recipe, Material material, HLPrimitiveMeshes meshes)
+        static void View(string name, HLCreatureRecipe recipe, Material material, HLPrimitiveMeshes meshes,
+            float scale = 1f)
         {
+            // The rig cancels ancestor scale, so the root scale never changes the body size
             GameObject view = new GameObject(name);
+            view.transform.localScale = Vector3.one * scale;
             view.AddComponent<HLCreatureBuilder>().SetRecipe(recipe, material, meshes);
             PrefabUtility.SaveAsPrefabAsset(view, root + "Prefabs/" + name + ".prefab");
             Object.DestroyImmediate(view);
