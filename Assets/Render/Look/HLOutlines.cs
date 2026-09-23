@@ -45,14 +45,12 @@ namespace HealerLike.Render.Look
         Material _edgeMaterial;
         HLOutlinesPass _pass;
 
+        public Shader edgeShader { get { return _edgeShader; } set { _edgeShader = value; } }
+
         public override void Create()
         {
             CoreUtils.Destroy(_edgeMaterial);
-            if (_edgeShader == null)
-            {
-                _edgeShader = Shader.Find("Hidden/HL/Look/DepthNormalOutline");
-            }
-
+            // Without the edge shader only the hulls draw, the renderer asset references it
             _edgeMaterial = _edgeShader != null ? CoreUtils.CreateEngineMaterial(_edgeShader) : null;
             ApplyEdgeSettings();
             _pass = new HLOutlinesPass(layerMask, depthNormalEdges ? _edgeMaterial : null);

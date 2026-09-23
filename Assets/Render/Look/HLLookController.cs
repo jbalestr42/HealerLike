@@ -2,15 +2,18 @@ using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
+using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Look
 {
+    // Stays until D2, the edit mode preview of the copied stage scene still needs it
     [ExecuteAlways]
     public class HLLookController : MonoBehaviour
     {
         [FormerlySerializedAs("settings")]
         [SerializeField] HLLookSettings _settings = HLLookSettings.Default;
 
+        // One active look per scene until the RenderManager holds the one controller, removed in D2
         static HLLookController _owner;
 
         static readonly int shadowTintId = Shader.PropertyToID("_HLShadowTint");
@@ -58,6 +61,31 @@ namespace HealerLike.Render.Look
             RenderPipelineManager.beginFrameRendering -= OnBeginFrameRendering;
             RenderPipelineManager.beginFrameRendering += OnBeginFrameRendering;
             RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
+        }
+
+        // Fog and hatching scale follow the camera distance to the board
+        public void Init(Camera camera, Bounds board)
+        {
+            if (camera == null)
+            {
+                Debug.LogError("[HLLookController] Init needs the camera the look is calibrated for.");
+                return;
+            }
+
+            Vector3 position = camera.transform.position;
+            Vector2 fog = HLStageCalibration.BackgroundFog(position, board);
+            float depth = Vector3.Distance(position, board.center);
+            float spacing = HLStageCalibration.HatchSpacing(camera, depth, HLStageCalibration.PortraitHeight);
+
+            HLLookSettings value = _settings;
+            value.fogStart = fog.x;
+            value.fogEnd = fog.y;
+            value.inkScale = spacing;
+            value.inkWidth = spacing * 0.04f;
+            value.inkDistStart = fog.x;
+            value.inkFarSpacing = spacing * 1.2f;
+            settings = value;
+            ApplyGlobals();
         }
 
         void OnDisable()

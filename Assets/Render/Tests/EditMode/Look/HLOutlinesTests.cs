@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Look
@@ -10,6 +11,11 @@ namespace HealerLike.Render.Look
         static Type featureType
         {
             get { return typeof(HLLookSettings).Assembly.GetType("HealerLike.Render.Look.HLOutlines", true); }
+        }
+
+        static Shader LoadEdgeShader()
+        {
+            return AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/HLOutlinesEdges.shader");
         }
 
         [Test]
@@ -23,6 +29,7 @@ namespace HealerLike.Render.Look
 
                 FieldInfo materialField = featureType.GetField("_edgeMaterial",
                                                                BindingFlags.Instance | BindingFlags.NonPublic);
+                featureType.GetProperty("edgeShader").SetValue(feature, LoadEdgeShader());
                 featureType.GetMethod("Create").Invoke(feature, null);
                 Material first = (Material)materialField.GetValue(feature);
                 Assert.That(first != null, Is.True);
@@ -72,6 +79,21 @@ namespace HealerLike.Render.Look
             {
                 UnityEngine.Object.DestroyImmediate(feature);
             }
+        }
+
+        [Test]
+        public void Create_WithoutEdgeShader_DrawsHullsOnly()
+        {
+            HLOutlines feature = ScriptableObject.CreateInstance<HLOutlines>();
+            feature.edgeShader = null;
+
+            feature.Create();
+
+            FieldInfo materialField = typeof(HLOutlines).GetField("_edgeMaterial",
+                                                                  BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNull(materialField.GetValue(feature));
+
+            UnityEngine.Object.DestroyImmediate(feature);
         }
     }
 }
