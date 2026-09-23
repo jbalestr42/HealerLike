@@ -76,8 +76,9 @@ HLGrassPlacement HLPlaceGrassBlade(float3 positionOS, float3 normalOS, uint inst
 
     float spike = step(0.5, state.leanHeightSpike.w);
     float height01 = saturate(positionOS.y + 0.5);
-    float2 lean = state.leanHeightSpike.xy;
     float heightScale = lerp(_HL_BladeHeightScale, 1.0, spike);
+    // Lean scales with height so a shortened blade keeps the silhouette of a spike
+    float2 lean = state.leanHeightSpike.xy * heightScale;
     float height = max(1e-4, seed.heightPhaseWidthRandom.x * state.leanHeightSpike.z * heightScale);
     float spikeWidth = 2.0 * lerp(0.065, 0.045, saturate(2.0 * state.leanHeightSpike.w - 1.0));
     float width = lerp(seed.heightPhaseWidthRandom.z, spikeWidth, spike);
