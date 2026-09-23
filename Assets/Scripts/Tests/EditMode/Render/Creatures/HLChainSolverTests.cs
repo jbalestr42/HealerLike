@@ -6,72 +6,163 @@ namespace HealerLike.Render.Creatures
 {
     public class HLChainSolverTests
     {
-        static float[] Lengths(int n = 24) { var a = new float[n]; for (int i = 0; i < n; i++) a[i] = .2f; return a; }
-        internal static Vector3[] Rest(int n = 24)
+        public static Vector3[] Rest(int n = 24)
         {
-            var a = new Vector3[n + 1];
-            for (int i = 0; i < n; i++) a[i + 1] = a[i] + new Vector3(Mathf.Cos(i * .4f), Mathf.Sin(i * .4f), 0) * .2f;
-            return a;
-        }
-        static void Check(Vector3[] a, Vector3 root)
-        {
-            Assert.That(Vector3.Distance(a[0], root), Is.LessThan(1e-6));
-            for (int i = 1; i < a.Length; i++) { Assert.IsTrue(HLChainSolver.Finite(a[i])); Assert.That(Vector3.Distance(a[i], a[i - 1]), Is.EqualTo(.2f).Within(1e-5)); }
-        }
-        [TestCase(2, 1, .5f)] [TestCase(-1, .4f, 2)] [TestCase(0, 0, 0)]
-        public void ReachableTargetPreservesLengths(float x, float y, float z)
-        {
-            var a = Rest(); var target = new Vector3(x, y, z);
-            var result = new HLChainSolver().Solve(a, Lengths(), Vector3.zero, target, Vector3.up, 128);
-            Assert.IsTrue(result.reached, result.error.ToString()); Assert.LessOrEqual(Vector3.Distance(a[24], target), .001f); Check(a, Vector3.zero);
-        }
-        [Test] public void BeyondReachClampsAndFullReachDoesNotFalseClamp()
-        {
-            var a = Rest(); var solver = new HLChainSolver();
-            var r = solver.Solve(a, Lengths(), Vector3.zero, new Vector3(20, 0, 0), Vector3.up);
-            Assert.IsTrue(r.clamped); Assert.IsFalse(r.reached); Assert.Less(r.error, 1e-5); Assert.That(a[24].x, Is.EqualTo(4.8f).Within(1e-5)); Check(a, Vector3.zero);
-            r = solver.Solve(a, Lengths(), Vector3.zero, new Vector3(4.8f, 0, 0), Vector3.up);
-            Assert.IsTrue(r.reached); Assert.IsFalse(r.clamped);
-        }
-        [TestCase(0)] [TestCase(1)] [TestCase(2)]
-        public void DegenerateChainsReachDeterministically(int mode)
-        {
-            var a = new Vector3[25]; for (int i = 0; i < a.Length; i++) if (mode != 0) a[i] = Vector3.up * .2f * i;
-            var b = (Vector3[])a.Clone(); Vector3 target = mode == 2 ? Vector3.zero : Vector3.up;
-            var solver = new HLChainSolver(); var r = solver.Solve(a, Lengths(), Vector3.zero, target, Vector3.up);
-            var s = solver.Solve(b, Lengths(), Vector3.zero, target, Vector3.up);
-            Assert.IsTrue(r.reached); Assert.AreEqual(r.error, s.error); CollectionAssert.AreEqual(a, b); Check(a, Vector3.zero);
-        }
-        [Test] public void SeededSweepAndTranslatedRoot()
-        {
-            var random = new System.Random(1943); var root = new Vector3(3, 2, -4);
-            for (int k = 0; k < 60; k++)
+            Vector3[] joints = new Vector3[n + 1];
+            for (int i = 0; i < n; i++)
             {
-                var a = Rest(); for (int i = 0; i < a.Length; i++) a[i] += root;
-                var target = root + new Vector3((float)random.NextDouble() * 5 - 2.5f, (float)random.NextDouble() * 2, (float)random.NextDouble() * 5 - 2.5f);
-                var r = new HLChainSolver().Solve(a, Lengths(), root, target, Vector3.up, 256);
-                Assert.IsTrue(r.reached, $"{k}: {r.error}"); Check(a, root);
+                joints[i + 1] = joints[i] + new Vector3(Mathf.Cos(i * 0.4f), Mathf.Sin(i * 0.4f), 0f) * 0.2f;
+            }
+
+            return joints;
+        }
+
+        static float[] Lengths(int n = 24)
+        {
+            float[] lengths = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                lengths[i] = 0.2f;
+            }
+
+            return lengths;
+        }
+
+        static void Check(Vector3[] joints, Vector3 root)
+        {
+            Assert.That(Vector3.Distance(joints[0], root), Is.LessThan(0.000001));
+            for (int i = 1; i < joints.Length; i++)
+            {
+                Assert.IsTrue(HLChainSolver.Finite(joints[i]));
+                Assert.That(Vector3.Distance(joints[i], joints[i - 1]), Is.EqualTo(0.2f).Within(0.00001));
             }
         }
-        [Test] public void InvalidInputsAreRejected()
+
+        [TestCase(2f, 1f, 0.5f)]
+        [TestCase(-1f, 0.4f, 2f)]
+        [TestCase(0f, 0f, 0f)]
+        public void ReachableTargetPreservesLengths(float x, float y, float z)
         {
-            var l = Lengths(); l[3] = .3f;
-            Assert.Throws<ArgumentException>(() => new HLChainSolver().Solve(Rest(), l, Vector3.zero, Vector3.one, Vector3.up));
-            l[3] = float.NaN;
-            Assert.Throws<ArgumentException>(() => new HLChainSolver().Solve(Rest(), l, Vector3.zero, Vector3.one, Vector3.up));
-            Assert.Throws<ArgumentException>(() => new HLChainSolver().Solve(Rest(), Lengths(), Vector3.zero, Vector3.one, Vector3.up, 0));
-            var a = Rest(); a[2].x = float.PositiveInfinity;
-            Assert.Throws<ArgumentException>(() => new HLChainSolver().Solve(a, Lengths(), Vector3.zero, Vector3.one, Vector3.up));
+            Vector3[] joints = Rest();
+            Vector3 target = new Vector3(x, y, z);
+
+            HLChainResult result = new HLChainSolver().Solve(joints, Lengths(), Vector3.zero, target, Vector3.up, 128);
+
+            Assert.IsTrue(result.reached, result.error.ToString());
+            Assert.LessOrEqual(Vector3.Distance(joints[24], target), 0.001f);
+            Check(joints, Vector3.zero);
         }
-        [Test] public void IterationLimitReportsActualResidual()
+
+        [Test]
+        public void BeyondReachClampsAndFullReachDoesNotFalseClamp()
         {
-            var a = Rest(); var r = new HLChainSolver().Solve(a, Lengths(), Vector3.zero, new Vector3(4, 1, 0), Vector3.up, 1, 1e-7f);
-            Assert.AreEqual(1, r.iterations); Assert.AreEqual(r.error <= 1e-7f, r.reached); Check(a, Vector3.zero);
+            Vector3[] joints = Rest();
+            HLChainSolver solver = new HLChainSolver();
+
+            HLChainResult result = solver.Solve(joints, Lengths(), Vector3.zero, new Vector3(20f, 0f, 0f), Vector3.up);
+
+            Assert.IsTrue(result.clamped);
+            Assert.IsFalse(result.reached);
+            Assert.Less(result.error, 0.00001);
+            Assert.That(joints[24].x, Is.EqualTo(4.8f).Within(0.00001));
+            Check(joints, Vector3.zero);
+            result = solver.Solve(joints, Lengths(), Vector3.zero, new Vector3(4.8f, 0f, 0f), Vector3.up);
+            Assert.IsTrue(result.reached);
+            Assert.IsFalse(result.clamped);
         }
-        [Test] public void RestPoseAlreadyReachedRemainsWithinTolerance()
+
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(2)]
+        public void DegenerateChainsReachDeterministically(int mode)
         {
-            var a = Rest(); var r = new HLChainSolver().Solve(a, Lengths(), a[0], a[24], Vector3.up);
-            Assert.IsTrue(r.reached); Check(a, Vector3.zero);
+            Vector3[] joints = new Vector3[25];
+            for (int i = 0; i < joints.Length; i++)
+            {
+                if (mode != 0)
+                {
+                    joints[i] = Vector3.up * 0.2f * i;
+                }
+            }
+
+            Vector3[] copy = (Vector3[])joints.Clone();
+            Vector3 target = mode == 2 ? Vector3.zero : Vector3.up;
+            HLChainSolver solver = new HLChainSolver();
+
+            HLChainResult result = solver.Solve(joints, Lengths(), Vector3.zero, target, Vector3.up);
+            HLChainResult again = solver.Solve(copy, Lengths(), Vector3.zero, target, Vector3.up);
+
+            Assert.IsTrue(result.reached);
+            Assert.AreEqual(result.error, again.error);
+            CollectionAssert.AreEqual(joints, copy);
+            Check(joints, Vector3.zero);
+        }
+
+        [Test]
+        public void SeededSweepAndTranslatedRoot()
+        {
+            System.Random random = new System.Random(1943);
+            Vector3 root = new Vector3(3f, 2f, -4f);
+            for (int k = 0; k < 60; k++)
+            {
+                Vector3[] joints = Rest();
+                for (int i = 0; i < joints.Length; i++)
+                {
+                    joints[i] += root;
+                }
+
+                float x = (float)random.NextDouble() * 5f - 2.5f;
+                float y = (float)random.NextDouble() * 2f;
+                float z = (float)random.NextDouble() * 5f - 2.5f;
+                Vector3 target = root + new Vector3(x, y, z);
+
+                HLChainResult result = new HLChainSolver().Solve(joints, Lengths(), root, target, Vector3.up, 256);
+
+                Assert.IsTrue(result.reached, $"{k}: {result.error}");
+                Check(joints, root);
+            }
+        }
+
+        [Test]
+        public void InvalidInputsAreRejected()
+        {
+            HLChainSolver solver = new HLChainSolver();
+            Vector3 root = Vector3.zero;
+            Vector3 target = Vector3.one;
+            float[] lengths = Lengths();
+            lengths[3] = 0.3f;
+            Assert.Throws<ArgumentException>(() => solver.Solve(Rest(), lengths, root, target, Vector3.up));
+            lengths[3] = float.NaN;
+            Assert.Throws<ArgumentException>(() => solver.Solve(Rest(), lengths, root, target, Vector3.up));
+            Assert.Throws<ArgumentException>(() => solver.Solve(Rest(), Lengths(), root, target, Vector3.up, 0));
+            Vector3[] joints = Rest();
+            joints[2].x = float.PositiveInfinity;
+            Assert.Throws<ArgumentException>(() => solver.Solve(joints, Lengths(), root, target, Vector3.up));
+        }
+
+        [Test]
+        public void IterationLimitReportsActualResidual()
+        {
+            Vector3[] joints = Rest();
+            Vector3 target = new Vector3(4f, 1f, 0f);
+            HLChainSolver solver = new HLChainSolver();
+
+            HLChainResult result = solver.Solve(joints, Lengths(), Vector3.zero, target, Vector3.up, 1, 0.0000001f);
+
+            Assert.AreEqual(1, result.iterations);
+            Assert.AreEqual(result.error <= 0.0000001f, result.reached);
+            Check(joints, Vector3.zero);
+        }
+
+        [Test]
+        public void RestPoseAlreadyReachedRemainsWithinTolerance()
+        {
+            Vector3[] joints = Rest();
+
+            HLChainResult result = new HLChainSolver().Solve(joints, Lengths(), joints[0], joints[24], Vector3.up);
+
+            Assert.IsTrue(result.reached);
+            Check(joints, Vector3.zero);
         }
     }
 }
