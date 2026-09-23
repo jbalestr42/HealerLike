@@ -24,7 +24,7 @@ MonoBehaviour:
   data:
     onSkillTriggerFactory: []
     projectiles:
-    - projectilePrefab: {fileID: 6532691711001668678, guid: 2eedc5cae33144a6aa409a46b730fe2d, type: 3}
+    - projectilePrefab: {fileID: 792154394993758948, guid: 2eedc5cae33144a6aa409a46b730fe2d, type: 3}
       onHitConsumer:
       - {fileID: 11400000, guid: 90fb2913354849128d7978ab3fccf0e4, type: 2}
       numberOfProjectileToShootPerTarget: 1

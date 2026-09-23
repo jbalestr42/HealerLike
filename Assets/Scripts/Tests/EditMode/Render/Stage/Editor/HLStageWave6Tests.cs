@@ -116,5 +116,19 @@ namespace HealerLike.Render.Stage
             Assert.That(yaml,Does.Match(@"healPulse: \{fileID: [1-9]"));
             Assert.That(yaml,Does.Match(@"healSource: \{fileID: [1-9]"));
         }
+        [Test] public void AreaVariantsKeepGameplayAndGrassPulseWithoutLegacyFilledEffects()
+        {
+            var paths=Directory.GetFiles(HLStageBuilder.Root+"Prefabs/Area","*.prefab");
+            Assert.That(paths.Length,Is.GreaterThan(0));
+            foreach(var path in paths) {
+                var go=AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                Assert.That(go.GetComponent<AreaOfEffect>().enabled,Is.True,path);
+                Assert.That(go.GetComponent<HLAreaPulse>().enabled,Is.True,path);
+                Assert.That(go.GetComponent<HLLegacyAreaVisualMask>(),Is.Not.Null,path);
+                Assert.That(((Behaviour)go.GetComponent("DestroyOnDone")).enabled,Is.True,path);
+                foreach(var effect in go.GetComponentsInChildren<Behaviour>(true))
+                    if(effect.GetType().FullName=="UnityEngine.VFX.VisualEffect") Assert.That(effect.enabled,Is.True,path);
+            }
+        }
     }
 }

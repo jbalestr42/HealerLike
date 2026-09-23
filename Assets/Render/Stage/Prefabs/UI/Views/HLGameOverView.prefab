@@ -149,7 +149,7 @@ GameObject:
   - component: {fileID: 2122740656}
   - component: {fileID: 2122740655}
   - component: {fileID: 2122740654}
-  - component: {fileID: 5510297662851052087}
+  - component: {fileID: 2866983806161063237}
   m_Layer: 5
   m_Name: RestartButton
   m_TagString: Untagged
@@ -259,7 +259,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5510297662851052087}
+      - m_Target: {fileID: 2866983806161063237}
         m_TargetAssemblyTypeName: HealerLike.Render.Stage.HLStageSceneLoader, HealerLike.Render
         m_MethodName: LoadMenu
         m_Mode: 0
@@ -271,7 +271,7 @@ MonoBehaviour:
           m_StringArgument:
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &5510297662851052087
+--- !u!114 &2866983806161063237
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

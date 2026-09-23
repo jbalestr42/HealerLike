@@ -304,7 +304,13 @@ namespace HealerLike.Render.Stage
                 // otherwise (creatures fix 3), so the variant keeps the original renderer states.
                 LegacyChainVisualOff(go);
             }
-            if (go.GetComponent<AreaOfEffect>()) { go.name = Path.GetFileNameWithoutExtension(destination); Optional(go,"HLAreaPulse"); }
+            if (go.GetComponent<AreaOfEffect>())
+            {
+                go.name=Path.GetFileNameWithoutExtension(destination); Optional(go,"HLAreaPulse");
+                // The inherited explosion graph is an opaque HDR disk that covers the authored grass footprint.
+                // Preserve AreaOfEffect and lifetime scripts; only the render-owned variant silences legacy visuals.
+                Optional(go,"HLLegacyAreaVisualMask");
+            }
             PrefabUtility.SaveAsPrefabAsset(go,destination); Object.DestroyImmediate(go);
         }
         public static bool IsLightning(string path) { string n = Path.GetFileNameWithoutExtension(path); return n.Contains("ChainLightning") || n.Contains("ChannelingLightning"); }
@@ -538,7 +544,7 @@ namespace HealerLike.Render.Stage
                 go.name="HLGrassField";
                 var field=(Behaviour)go.AddComponent(fieldType); var fso=new SerializedObject(field);
                 fso.FindProperty("grid").objectReferenceValue=grid; fso.FindProperty("ground").objectReferenceValue=ground;
-                fso.FindProperty("bladeHeightScale").floatValue=.45f;
+                fso.FindProperty("bladeHeightScale").floatValue=.30f;
                 fso.FindProperty("gameplayCamera").objectReferenceValue=camera;
                 fso.FindProperty("updateGrass").objectReferenceValue=AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute");
                 fso.FindProperty("grassShader").objectReferenceValue=AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrass.shader");

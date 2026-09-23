@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &7248383233957158830
+--- !u!1001 &49715814980354898
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -62,29 +62,29 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1985067714463758, guid: d7f619fa465538548a98377b43738ac6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4796841105002670652}
+      addedObject: {fileID: 6496266326702208186}
     - targetCorrespondingSourceObject: {fileID: 1985067714463758, guid: d7f619fa465538548a98377b43738ac6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6105293756012890528}
+      addedObject: {fileID: 8593765795438251972}
     - targetCorrespondingSourceObject: {fileID: 1985067714463758, guid: d7f619fa465538548a98377b43738ac6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2647743183799229956}
+      addedObject: {fileID: 8018141105695334124}
     - targetCorrespondingSourceObject: {fileID: 1985067714463758, guid: d7f619fa465538548a98377b43738ac6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3462736227388412392}
+      addedObject: {fileID: 7296912751341053439}
   m_SourcePrefab: {fileID: 100100000, guid: d7f619fa465538548a98377b43738ac6, type: 3}
---- !u!1 &7246400984280209312 stripped
+--- !u!1 &51700332281351004 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1985067714463758, guid: d7f619fa465538548a98377b43738ac6, type: 3}
-  m_PrefabInstance: {fileID: 7248383233957158830}
+  m_PrefabInstance: {fileID: 49715814980354898}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4796841105002670652
+--- !u!114 &6496266326702208186
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7246400984280209312}
+  m_GameObject: {fileID: 51700332281351004}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 88c2ca8cf908f497296bf92110ed7d8e, type: 3}
@@ -93,38 +93,38 @@ MonoBehaviour:
   presentation: 0
   deliveryStyle: 1
   preserveContactPath: 0
---- !u!114 &6105293756012890528
+--- !u!114 &8593765795438251972
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7246400984280209312}
+  m_GameObject: {fileID: 51700332281351004}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0c8d48ce7f4d64b2191ff8031b63299a, type: 3}
   m_Name:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.HLStoneProjectileImpactBridge
---- !u!114 &2647743183799229956
+--- !u!114 &8018141105695334124
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7246400984280209312}
+  m_GameObject: {fileID: 51700332281351004}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dcdfc54c6a52f4f45a7e8e26ed5a3bf7, type: 3}
   m_Name:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLLaunchWave
   _field: {fileID: 0}
---- !u!114 &3462736227388412392
+--- !u!114 &7296912751341053439
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7246400984280209312}
+  m_GameObject: {fileID: 51700332281351004}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bc93387ec41ed49f39fe46835329f00f, type: 3}
