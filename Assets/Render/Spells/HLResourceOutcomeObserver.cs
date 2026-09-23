@@ -3,55 +3,134 @@ using UnityEngine;
 
 namespace HealerLike.Render.Spells
 {
-    /// <summary>One subscriber per resource owner. Outcomes retain explicit resource identity.</summary>
-    [DisallowMultipleComponent]
-    public sealed class HLResourceOutcomeObserver : MonoBehaviour, IVisualBehaviour
+    public class HLResourceOutcomeObserver : MonoBehaviour, IVisualBehaviour
     {
         public static event Action<GameObject, GameObject, HLResourceKind, float, bool> Outcome;
-        ResourceAttribute health, mana;
-        HLRenderRegistry injected;
-        bool hasInjection;
-        public static HLResourceOutcomeObserver Ensure(Entity entity, HLRenderRegistry registry = null, bool inject = false)
+
+        ResourceAttribute _health;
+        ResourceAttribute _mana;
+        HLRenderRegistry _injected;
+        bool _hasInjection;
+
+        public static HLResourceOutcomeObserver Ensure(
+            Entity entity,
+            HLRenderRegistry registry = null,
+            bool inject = false
+        )
         {
-            if (!entity) return null;
-            var observer = entity.GetComponent<HLResourceOutcomeObserver>();
-            if (!observer) observer = entity.gameObject.AddComponent<HLResourceOutcomeObserver>();
+            if (!entity)
+            {
+                return null;
+            }
+            HLResourceOutcomeObserver observer = entity.GetComponent<HLResourceOutcomeObserver>();
+            if (!observer)
+            {
+                observer = entity.gameObject.AddComponent<HLResourceOutcomeObserver>();
+            }
             observer.Bind(entity.health, null, registry, inject);
             return observer;
         }
-        public void Init(Entity entity) { if (entity) Bind(entity.health, null); }
-        public void Bind(ResourceAttribute healthResource, ResourceAttribute manaResource, HLRenderRegistry registry = null, bool inject = false)
+
+        public void Init(Entity entity)
         {
-            injected = registry; hasInjection = inject;
-            if (health == healthResource && mana == manaResource) return;
-            Unsubscribe(); health = healthResource; mana = manaResource;
-            if (isActiveAndEnabled) Subscribe();
+            if (entity)
+            {
+                Bind(entity.health, null);
+            }
         }
+
+        void OnEnable()
+        {
+            Unsubscribe();
+            Subscribe();
+        }
+
+        void OnDisable()
+        {
+            Unsubscribe();
+        }
+
+        void OnDestroy()
+        {
+            Unsubscribe();
+        }
+
+        public void Bind(
+            ResourceAttribute healthResource,
+            ResourceAttribute manaResource,
+            HLRenderRegistry registry = null,
+            bool inject = false
+        )
+        {
+            _injected = registry;
+            _hasInjection = inject;
+            if (_health == healthResource && _mana == manaResource)
+            {
+                return;
+            }
+            Unsubscribe();
+            _health = healthResource;
+            _mana = manaResource;
+            if (isActiveAndEnabled)
+            {
+                Subscribe();
+            }
+        }
+
         void Subscribe()
         {
-            if (health) health.OnAllConsumerProcessed.AddListener(Health);
-            if (mana && mana != health) mana.OnAllConsumerProcessed.AddListener(Mana);
+            if (_health)
+            {
+                _health.OnAllConsumerProcessed.AddListener(OnHealth);
+            }
+            if (_mana && _mana != _health)
+            {
+                _mana.OnAllConsumerProcessed.AddListener(OnMana);
+            }
         }
+
         void Unsubscribe()
         {
-            if (health) health.OnAllConsumerProcessed.RemoveListener(Health);
-            if (mana && mana != health) mana.OnAllConsumerProcessed.RemoveListener(Mana);
+            if (_health)
+            {
+                _health.OnAllConsumerProcessed.RemoveListener(OnHealth);
+            }
+            if (_mana && _mana != _health)
+            {
+                _mana.OnAllConsumerProcessed.RemoveListener(OnMana);
+            }
         }
-        void Health(GameObject owner, ResourceModifier modifier, float amount, bool critical) => Publish(owner, modifier, HLResourceKind.Health, amount, critical);
-        void Mana(GameObject owner, ResourceModifier modifier, float amount, bool critical) => Publish(owner, modifier, HLResourceKind.Mana, amount, critical);
+
+        void OnHealth(GameObject owner, ResourceModifier modifier, float amount, bool critical)
+        {
+            Publish(owner, modifier, HLResourceKind.Health, amount, critical);
+        }
+
+        void OnMana(GameObject owner, ResourceModifier modifier, float amount, bool critical)
+        {
+            Publish(owner, modifier, HLResourceKind.Mana, amount, critical);
+        }
+
         void Publish(GameObject owner, ResourceModifier modifier, HLResourceKind kind, float amount, bool critical)
         {
-            if (!isActiveAndEnabled || !owner || amount == 0 || float.IsNaN(amount) || float.IsInfinity(amount)) return;
-            var registry = hasInjection ? injected : HLRenderRegistry.Current;
-            var source = modifier?.source;
+            if (!isActiveAndEnabled || !owner || amount == 0f || float.IsNaN(amount) || float.IsInfinity(amount))
+            {
+                return;
+            }
+            HLRenderRegistry registry = _hasInjection ? _injected : HLRenderRegistry.Current;
+            GameObject source = modifier != null ? modifier.source : null;
             registry?.SpellSink?.ShowImpact(source, owner, kind, amount, critical);
-            if (kind == HLResourceKind.Health && amount > 0) registry?.NotifyHeal(source, owner, amount, critical);
+            if (kind == HLResourceKind.Health && amount > 0f)
+            {
+                registry?.NotifyHeal(source, owner, amount, critical);
+            }
             Outcome?.Invoke(source, owner, kind, amount, critical);
         }
-        void OnEnable() { Unsubscribe(); Subscribe(); }
-        void OnDisable() => Unsubscribe();
-        void OnDestroy() => Unsubscribe();
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetEvents() => Outcome = null;
+        static void ResetEvents()
+        {
+            Outcome = null;
+        }
     }
 }

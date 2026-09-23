@@ -49,11 +49,11 @@ namespace HealerLike.Render.Stage
                 bootstrap.Configure(sink, null, zones);
                 TestHelpers.InvokePrivate(bootstrap, "OnEnable");
                 Assert.That(HLRenderRegistry.Current.ZoneOwner, Is.SameAs(zones));
-                Assert.That(sink.AreaPulse, Is.Not.Null);
+                Assert.That(sink.areaPulse, Is.Not.Null);
                 sink.PulseArea(Vector3.zero, 2, HLZoneKind.Hostile, 1);
                 Assert.That(zones.LiveCount, Is.EqualTo(1));
                 TestHelpers.InvokePrivate(bootstrap, "OnDisable");
-                Assert.That(sink.AreaPulse, Is.Null);
+                Assert.That(sink.areaPulse, Is.Null);
             }
             finally { zones.Release(); }
         }

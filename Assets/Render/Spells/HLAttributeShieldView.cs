@@ -1,57 +1,118 @@
 using UnityEngine;
+
 namespace HealerLike.Render.Spells
 {
-    /// <summary>HitArmor is an attribute, including instant grants that emit no buff-start event.</summary>
-    [DisallowMultipleComponent]
-    public sealed class HLAttributeShieldView : MonoBehaviour, IVisualBehaviour
+    // HitArmor is an attribute and instant grants emit no buff-start event, so the attribute itself is watched.
+    public class HLAttributeShieldView : MonoBehaviour, IVisualBehaviour
     {
-        AttributeManager attributes;
-        Entity entity;
-        Transform anchor;
-        Material material;
-        HLSpellEffect effect;
-        float born;
-        public HLSpellEffect Effect => effect;
+        AttributeManager _attributes;
+        Entity _entity;
+        Transform _anchor;
+        Material _material;
+        float _born;
+
+        HLSpellEffect _effect;
+        public HLSpellEffect effect { get { return _effect; } }
+
         public void Init(Entity entity)
         {
-            this.entity = entity;
-            if (!entity) { Bind(null, null); return; }
+            _entity = entity;
+            if (!entity)
+            {
+                Bind(null, null);
+                return;
+            }
             Bind(entity.attributeManager, entity.targetPoint ? entity.targetPoint.transform : entity.transform);
         }
-        public void Bind(AttributeManager manager, Transform target, Material sharedMaterial = null)
+
+        void LateUpdate()
         {
-            if (attributes != manager || anchor != target) Clear();
-            attributes = manager; anchor = target; material = sharedMaterial;
             Refresh();
         }
+
+        void OnDisable()
+        {
+            Clear();
+        }
+
+        void OnDestroy()
+        {
+            Clear();
+        }
+
+        public void Bind(AttributeManager manager, Transform target, Material sharedMaterial = null)
+        {
+            if (_attributes != manager || _anchor != target)
+            {
+                Clear();
+            }
+            _attributes = manager;
+            _anchor = target;
+            _material = sharedMaterial;
+            Refresh();
+        }
+
         public void Refresh()
         {
-            if (entity && entity.targetPoint) anchor = entity.targetPoint.transform;
-            float charges = attributes && attributes.Has(AttributeType.HitArmor) ? attributes.Get(AttributeType.HitArmor).Value : 0;
-            if (!isActiveAndEnabled || !anchor || !(charges > 0) || float.IsInfinity(charges)) { Clear(); return; }
-            if (!effect)
+            if (_entity && _entity.targetPoint)
             {
-                var go = new GameObject("HLObservedHitArmor"); go.transform.SetParent(anchor, false);
-                effect = go.AddComponent<HLSpellEffect>(); effect.kind = HLSpellEffectKind.Shield;
-                effect.material = material ? material : (HLRenderRegistry.Current?.SpellSink as HLSpellVisualSink)?.material;
-                effect.Initialize(); born = Time.time;
-                effect.SetStatus(1, 0, float.PositiveInfinity, HLClockKind.Simulation,
-                    new HLSpellSignature { operation = HLOperation.Attribute, sign = HLSign.Positive, hasAttribute = true,
-                        attribute = AttributeType.HitArmor, topology = HLTopology.Single, duration = HLDurationShape.Infinite, tempo = HLTempo.Continuous });
+                _anchor = _entity.targetPoint.transform;
             }
-            effect.SetStatus(1, Mathf.Max(0,Time.time-born), float.PositiveInfinity, HLClockKind.Simulation, effect.Signature);
-            effect.SetShieldState(charges);
+            float charges = 0f;
+            if (_attributes && _attributes.Has(AttributeType.HitArmor))
+            {
+                charges = _attributes.Get(AttributeType.HitArmor).Value;
+            }
+            if (!isActiveAndEnabled || !_anchor || !(charges > 0f) || float.IsInfinity(charges))
+            {
+                Clear();
+                return;
+            }
+            if (!_effect)
+            {
+                GameObject go = new GameObject("HLObservedHitArmor");
+                go.transform.SetParent(_anchor, false);
+                _effect = go.AddComponent<HLSpellEffect>();
+                _effect.kind = HLSpellEffectKind.Shield;
+                _effect.material = _material
+                    ? _material
+                    : (HLRenderRegistry.Current?.SpellSink as HLSpellVisualSink)?.material;
+                _effect.Initialize();
+                _born = Time.time;
+                HLSpellSignature signature = new HLSpellSignature
+                {
+                    operation = HLOperation.Attribute,
+                    sign = HLSign.Positive,
+                    hasAttribute = true,
+                    attribute = AttributeType.HitArmor,
+                    topology = HLTopology.Single,
+                    duration = HLDurationShape.Infinite,
+                    tempo = HLTempo.Continuous
+                };
+                _effect.SetStatus(1, 0f, float.PositiveInfinity, HLClockKind.Simulation, signature);
+            }
+            float elapsed = Mathf.Max(0f, Time.time - _born);
+            _effect.SetStatus(1, elapsed, float.PositiveInfinity, HLClockKind.Simulation, _effect.signature);
+            _effect.SetShieldState(charges);
         }
-        void LateUpdate() => Refresh();
-        void OnDisable() => Clear();
-        void OnDestroy() => Clear();
+
         void Clear()
         {
-            if (!effect) return;
-            effect.gameObject.SetActive(false);
-            if (Application.isPlaying) Destroy(effect.gameObject);
-            else { effect.ReleaseResources(); DestroyImmediate(effect.gameObject); }
-            effect = null;
+            if (!_effect)
+            {
+                return;
+            }
+            _effect.gameObject.SetActive(false);
+            if (Application.isPlaying)
+            {
+                Destroy(_effect.gameObject);
+            }
+            else
+            {
+                _effect.ReleaseResources();
+                DestroyImmediate(_effect.gameObject);
+            }
+            _effect = null;
         }
     }
 }

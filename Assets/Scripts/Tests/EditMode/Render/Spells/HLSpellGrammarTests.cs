@@ -6,77 +6,230 @@ namespace HealerLike.Render.Spells
 {
     public class HLSpellGrammarTests
     {
-        readonly HLSpellGrammar grammar=new HLSpellGrammar();
-        static ConsumerData Flat(float value,bool bypass=true)=>new ConsumerData { value=new FlatValue { data=new FlatValueData { value=value } },ignoreDamageReduction=bypass };
-        [TestCase(5,HLSign.Negative)] [TestCase(-5,HLSign.Positive)] [TestCase(0,HLSign.Zero)]
-        public void ConsumerInvertsFlatValue(float value,HLSign sign)
-        {var r=grammar.DescribeData(Flat(value));Assert.AreEqual(sign,r.Signature.sign);Assert.AreEqual(-value,r.PreviewAmount);}
-        [Test] public void SourceReadIsNotDestinationAndPostReductionMultiplierIsPreserved()
+        readonly HLSpellGrammar _grammar = new HLSpellGrammar();
+
+        static ConsumerData Flat(float value, bool bypass = true)
         {
-            var c=new HLGrammarContext { SourceAttribute=t=>t==AttributeType.HealPower?20:null };
-            var r=grammar.Consumer(new ConsumerData { value=new AttributeValue { data=new AttributeValueData { type=AttributeType.HealPower,multiplier=1 } },ignoreConsumerPrevention=true },c,multiplier:-.8f);
-            Assert.AreEqual(16,r.PreviewAmount);Assert.AreEqual(AttributeType.HealthMax,r.Signature.attribute);Assert.AreEqual(AttributeType.HealPower,r.ReadAttribute);Assert.IsFalse(r.IgnoreReduction);Assert.IsTrue(r.IgnorePrevention);
+            return new ConsumerData
+            {
+                value = new FlatValue { data = new FlatValueData { value = value } },
+                ignoreDamageReduction = bypass
+            };
         }
-        [Test] public void HealthProvenanceSurvivesEqualMagnitudeAndMaxIgnoresInverse()
+
+        [TestCase(5, HLSign.Negative)]
+        [TestCase(-5, HLSign.Positive)]
+        [TestCase(0, HLSign.Zero)]
+        public void ConsumerInvertsFlatValue(float value, HLSign sign)
         {
-            var c=new HLGrammarContext { SourceHealth=50,SourceMaxHealth=100 };
-            var data=new ConsumerData { value=new CurrentHealthValue { data=new CurrentHealthValueData { multiplier=.1f } } };
-            var a=grammar.DescribeData(data,c);((CurrentHealthValue)data.value).data.inverse=true;var b=grammar.DescribeData(data,c);
-            Assert.AreEqual(a.PreviewAmount,b.PreviewAmount);Assert.AreNotEqual(a.Expression,b.Expression);
-            data.value=new MaxHealthValue { data=new MaxHealthValueData { multiplier=.1f,inverse=true } };
-            Assert.AreEqual(-10,grammar.DescribeData(data,c).PreviewAmount);
+            HLVisualRecipe r = _grammar.DescribeData(Flat(value));
+            Assert.AreEqual(sign, r.signature.sign);
+            Assert.AreEqual(-value, r.previewAmount);
         }
-        [Test] public void ActiveAndInstantMultiplyDifferAndFlatArmorIsHarmful()
+
+        [Test]
+        public void SourceReadIsNotDestinationAndPostReductionMultiplierIsPreserved()
         {
-            var r=grammar.DescribeData(new FlatModifierData {type=AttributeType.Damage,modifierType=AttributeModifierType.Multiply,value=.5f});
-            Assert.AreEqual(HLSign.Negative,r.Signature.sign);
-            r=grammar.DescribeData(new FlatModifierData {type=AttributeType.FlatArmor,value=2});Assert.AreEqual(HLSign.Negative,r.Signature.sign);
+            HLGrammarContext c = new HLGrammarContext
+            {
+                sourceAttribute = t => t == AttributeType.HealPower ? 20 : null
+            };
+            HLVisualRecipe r = _grammar.Consumer(
+                new ConsumerData
+                {
+                    value = new AttributeValue
+                    {
+                        data = new AttributeValueData { type = AttributeType.HealPower, multiplier = 1f }
+                    },
+                    ignoreConsumerPrevention = true
+                },
+                c,
+                multiplier: -0.8f
+            );
+            Assert.AreEqual(16, r.previewAmount);
+            Assert.AreEqual(AttributeType.HealthMax, r.signature.attribute);
+            Assert.AreEqual(AttributeType.HealPower, r.readAttribute);
+            Assert.IsFalse(r.ignoreReduction);
+            Assert.IsTrue(r.ignorePrevention);
         }
-        [Test] public void BrokenModifiersAndUnknownDataAreInvalidWithoutConstruction()
-        {Assert.IsFalse(grammar.DescribeData(new SlowModifierData()).IsValid);Assert.IsFalse(grammar.DescribeData(new TimeModifierData()).IsValid);Assert.IsFalse(grammar.DescribeData(new object()).IsValid);Assert.IsFalse(grammar.DescribeData(Flat(float.NaN)).IsValid);}
-        [Test] public void HandlerPreservesDuplicateAtomsAndPeriodicLifetime()
+
+        [Test]
+        public void HealthProvenanceSurvivesEqualMagnitudeAndMaxIgnoresInverse()
         {
-            var f=ScriptableObject.CreateInstance<ApplyConsumerBuffFactory>();var consumer=ScriptableObject.CreateInstance<ConsumerFactory>();consumer.data=Flat(5);f.data=new ApplyConsumerBuffData {consumerFactory=consumer};
+            HLGrammarContext c = new HLGrammarContext { sourceHealth = 50f, sourceMaxHealth = 100f };
+            ConsumerData data = new ConsumerData
+            {
+                value = new CurrentHealthValue { data = new CurrentHealthValueData { multiplier = 0.1f } }
+            };
+            HLVisualRecipe a = _grammar.DescribeData(data, c);
+            ((CurrentHealthValue)data.value).data.inverse = true;
+            HLVisualRecipe b = _grammar.DescribeData(data, c);
+            Assert.AreEqual(a.previewAmount, b.previewAmount);
+            Assert.AreNotEqual(a.expression, b.expression);
+            data.value = new MaxHealthValue
+            {
+                data = new MaxHealthValueData { multiplier = 0.1f, inverse = true }
+            };
+            Assert.AreEqual(-10, _grammar.DescribeData(data, c).previewAmount);
+        }
+
+        [Test]
+        public void ActiveAndInstantMultiplyDifferAndFlatArmorIsHarmful()
+        {
+            HLVisualRecipe r = _grammar.DescribeData(
+                new FlatModifierData
+                {
+                    type = AttributeType.Damage,
+                    modifierType = AttributeModifierType.Multiply,
+                    value = 0.5f
+                }
+            );
+            Assert.AreEqual(HLSign.Negative, r.signature.sign);
+            r = _grammar.DescribeData(new FlatModifierData { type = AttributeType.FlatArmor, value = 2f });
+            Assert.AreEqual(HLSign.Negative, r.signature.sign);
+        }
+
+        [Test]
+        public void BrokenModifiersAndUnknownDataAreInvalidWithoutConstruction()
+        {
+            Assert.IsFalse(_grammar.DescribeData(new SlowModifierData()).isValid);
+            Assert.IsFalse(_grammar.DescribeData(new TimeModifierData()).isValid);
+            Assert.IsFalse(_grammar.DescribeData(new object()).isValid);
+            Assert.IsFalse(_grammar.DescribeData(Flat(float.NaN)).isValid);
+        }
+
+        [Test]
+        public void HandlerPreservesDuplicateAtomsAndPeriodicLifetime()
+        {
+            ApplyConsumerBuffFactory f = ScriptableObject.CreateInstance<ApplyConsumerBuffFactory>();
+            ConsumerFactory consumer = ScriptableObject.CreateInstance<ConsumerFactory>();
+            consumer.data = Flat(5);
+            f.data = new ApplyConsumerBuffData { consumerFactory = consumer };
             try
             {
-                var r=grammar.DescribeData(new BuffHandlerData {durationType=DurationType.Infinite,isPeriodic=true,periodDuration=1.5f,buffFactoryList=new List<ABuffFactory>{f,f}});
-                Assert.AreEqual(2,r.Children.Count);Assert.AreEqual(HLDurationShape.Infinite,r.Children[0].Signature.duration);Assert.AreEqual(1.5f,r.Children[0].PeriodSeconds);Assert.AreEqual(HLTempo.HandlerTick,r.Children[0].Signature.tempo);
-            }finally{Object.DestroyImmediate(f);Object.DestroyImmediate(consumer);}
+                HLVisualRecipe r = _grammar.DescribeData(
+                    new BuffHandlerData
+                    {
+                        durationType = DurationType.Infinite,
+                        isPeriodic = true,
+                        periodDuration = 1.5f,
+                        buffFactoryList = new List<ABuffFactory> { f, f }
+                    }
+                );
+                Assert.AreEqual(2, r.children.Count);
+                Assert.AreEqual(HLDurationShape.Infinite, r.children[0].signature.duration);
+                Assert.AreEqual(1.5f, r.children[0].periodSeconds);
+                Assert.AreEqual(HLTempo.HandlerTick, r.children[0].signature.tempo);
+            }
+            finally
+            {
+                Object.DestroyImmediate(f);
+                Object.DestroyImmediate(consumer);
+            }
         }
-        [Test] public void CharacterGroupIsNotAreaAndNamesDoNotClassify()
+
+        [Test]
+        public void CharacterGroupIsNotAreaAndNamesDoNotClassify()
         {
-            var f=ScriptableObject.CreateInstance<ConsumerFactory>();f.data=Flat(10);
+            ConsumerFactory f = ScriptableObject.CreateInstance<ConsumerFactory>();
+            f.data = Flat(10);
             try
             {
-                var data=new ApplyConsumerCharacterSkillData {consumer=f,isSingle=false,multiplier=-1,name="Anything"};
-                var a=grammar.DescribeData(data);data.name="Changed";var b=grammar.DescribeData(data);
-                Assert.AreEqual(HLTopology.Group,a.Signature.topology);Assert.AreEqual(HLSign.Positive,a.Children[0].Signature.sign);Assert.AreEqual(a.DeliveryData,b.DeliveryData);
-            }finally{Object.DestroyImmediate(f);}
+                ApplyConsumerCharacterSkillData data = new ApplyConsumerCharacterSkillData
+                {
+                    consumer = f,
+                    isSingle = false,
+                    multiplier = -1f,
+                    name = "Anything"
+                };
+                HLVisualRecipe a = _grammar.DescribeData(data);
+                data.name = "Changed";
+                HLVisualRecipe b = _grammar.DescribeData(data);
+                Assert.AreEqual(HLTopology.Group, a.signature.topology);
+                Assert.AreEqual(HLSign.Positive, a.children[0].signature.sign);
+                Assert.AreEqual(a.deliveryData, b.deliveryData);
+            }
+            finally
+            {
+                Object.DestroyImmediate(f);
+            }
         }
-        [Test] public void SnapshotPreservesOrderDuplicatesAndOmitsIdentity()
+
+        [Test]
+        public void SnapshotPreservesOrderDuplicatesAndOmitsIdentity()
         {
-            var a=ScriptableObject.CreateInstance<FlatModifierFactory>();var b=ScriptableObject.CreateInstance<FlatModifierFactory>();
-            try{a.data=new FlatModifierData {value=1};b.data=new FlatModifierData {value=2};
-                Assert.AreNotEqual(HLSpellGrammar.Snapshot(new[]{a,b}),HLSpellGrammar.Snapshot(new[]{b,a}));
-                Assert.AreNotEqual(HLSpellGrammar.Snapshot(new[]{a,a}),HLSpellGrammar.Snapshot(new[]{a}));
-                string before=HLSpellGrammar.Snapshot(a);a.name="Renamed";a.uniqueID="new-id";Assert.AreEqual(before,HLSpellGrammar.Snapshot(a));
-            }finally{Object.DestroyImmediate(a);Object.DestroyImmediate(b);}
+            FlatModifierFactory a = ScriptableObject.CreateInstance<FlatModifierFactory>();
+            FlatModifierFactory b = ScriptableObject.CreateInstance<FlatModifierFactory>();
+            try
+            {
+                a.data = new FlatModifierData { value = 1f };
+                b.data = new FlatModifierData { value = 2f };
+                Assert.AreNotEqual(HLSpellGrammar.Snapshot(new[] { a, b }), HLSpellGrammar.Snapshot(new[] { b, a }));
+                Assert.AreNotEqual(HLSpellGrammar.Snapshot(new[] { a, a }), HLSpellGrammar.Snapshot(new[] { a }));
+                string before = HLSpellGrammar.Snapshot(a);
+                a.name = "Renamed";
+                a.uniqueID = "new-id";
+                Assert.AreEqual(before, HLSpellGrammar.Snapshot(a));
+            }
+            finally
+            {
+                Object.DestroyImmediate(a);
+                Object.DestroyImmediate(b);
+            }
         }
-        [Test] public void CharacterCostsAreSeparateSelfManaAtoms()
+
+        [Test]
+        public void CharacterCostsAreSeparateSelfManaAtoms()
         {
-            var consumer=ScriptableObject.CreateInstance<ConsumerFactory>();var cost=ScriptableObject.CreateInstance<ResourceValidatorFactory>();
-            try { consumer.data=Flat(10);cost.data=new ResourceValidatorData{consumer=consumer};
-                var data=new ApplyConsumerCharacterSkillData{consumer=consumer,multiplier=-1,validators=new List<ACharacterSkillValidatorFactory>{cost}};
-                var recipe=grammar.DescribeData(data);Assert.AreEqual(2,recipe.Children.Count);Assert.AreEqual(AttributeType.ManaMax,recipe.Children[1].Signature.attribute);Assert.AreEqual(HLTopology.Self,recipe.Children[1].Signature.topology);Assert.AreEqual(HLSign.Negative,recipe.Children[1].Signature.sign);
-            } finally { Object.DestroyImmediate(consumer);Object.DestroyImmediate(cost); }
+            ConsumerFactory consumer = ScriptableObject.CreateInstance<ConsumerFactory>();
+            ResourceValidatorFactory cost = ScriptableObject.CreateInstance<ResourceValidatorFactory>();
+            try
+            {
+                consumer.data = Flat(10);
+                cost.data = new ResourceValidatorData { consumer = consumer };
+                ApplyConsumerCharacterSkillData data = new ApplyConsumerCharacterSkillData
+                {
+                    consumer = consumer,
+                    multiplier = -1f,
+                    validators = new List<ACharacterSkillValidatorFactory> { cost }
+                };
+                HLVisualRecipe recipe = _grammar.DescribeData(data);
+                Assert.AreEqual(2, recipe.children.Count);
+                Assert.AreEqual(AttributeType.ManaMax, recipe.children[1].signature.attribute);
+                Assert.AreEqual(HLTopology.Self, recipe.children[1].signature.topology);
+                Assert.AreEqual(HLSign.Negative, recipe.children[1].signature.sign);
+            }
+            finally
+            {
+                Object.DestroyImmediate(consumer);
+                Object.DestroyImmediate(cost);
+            }
         }
-        [Test] public void CurveSnapshotRetainsCurveKeys()
+
+        [Test]
+        public void CurveSnapshotRetainsCurveKeys()
         {
-            var a=new ParticleSystem.MinMaxCurve(1,new AnimationCurve(new Keyframe(0,0),new Keyframe(1,1)));
-            var b=new ParticleSystem.MinMaxCurve(1,new AnimationCurve(new Keyframe(0,0),new Keyframe(1,2)));
-            Assert.AreNotEqual(HLSpellGrammar.Snapshot(a),HLSpellGrammar.Snapshot(b));
+            ParticleSystem.MinMaxCurve a = new ParticleSystem.MinMaxCurve(
+                1,
+                new AnimationCurve(new Keyframe(0, 0), new Keyframe(1, 1))
+            );
+            ParticleSystem.MinMaxCurve b = new ParticleSystem.MinMaxCurve(
+                1,
+                new AnimationCurve(new Keyframe(0, 0), new Keyframe(1, 2))
+            );
+            Assert.AreNotEqual(HLSpellGrammar.Snapshot(a), HLSpellGrammar.Snapshot(b));
         }
-        [Test] public void MissingStatsRemainUnknownAndNoBypassHealIsConditional()
-        {Assert.AreEqual(HLSign.Conditional,grammar.DescribeData(new ConsumerData {value=new AttributeValue {data=new AttributeValueData()}}).Signature.sign);Assert.AreEqual(HLSign.Conditional,grammar.DescribeData(Flat(-2,false)).Signature.sign);}
+
+        [Test]
+        public void MissingStatsRemainUnknownAndNoBypassHealIsConditional()
+        {
+            Assert.AreEqual(
+                HLSign.Conditional,
+                _grammar
+                    .DescribeData(new ConsumerData { value = new AttributeValue { data = new AttributeValueData() } })
+                    .signature.sign
+            );
+            Assert.AreEqual(HLSign.Conditional, _grammar.DescribeData(Flat(-2, false)).signature.sign);
+        }
     }
 }

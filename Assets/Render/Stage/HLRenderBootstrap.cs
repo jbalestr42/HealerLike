@@ -80,7 +80,7 @@ namespace HealerLike.Render.Stage
             if (zoneRegistry) zoneRegistry.enabled = true;
             // Explicit stage adapter; the sink would otherwise reach the same owner through the registry.
             if (spellVisualSink is HLSpellVisualSink sink && zoneRegistry is HLZoneRegistry zones)
-                sink.AreaPulse = (center, radius, kind, strength) => zones.AddPulse(kind, center, radius, strength, HLSpellVisualSink.PulseSeconds);
+                sink.areaPulse = (center, radius, kind, strength) => zones.AddPulse(kind, center, radius, strength, HLSpellVisualSink.PulseSeconds);
             if (spellVisualSink) spellVisualSink.enabled = true;
             if (healPulse) healPulse.Initialize(healSource);
             if (lookController) lookController.enabled = true;
@@ -90,7 +90,7 @@ namespace HealerLike.Render.Stage
         void OnDisable()
         {
             if (!owns) return;
-            if (spellVisualSink is HLSpellVisualSink sink) sink.AreaPulse = null;
+            if (spellVisualSink is HLSpellVisualSink sink) sink.areaPulse = null;
             if (healPulse) healPulse.Initialize(null);
             if (spellVisualSink) spellVisualSink.enabled = false;
             if (zoneBridge) zoneBridge.enabled = false;
