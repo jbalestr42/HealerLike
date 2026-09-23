@@ -456,8 +456,8 @@ namespace HealerLike.Render.Stage
             var planeRenderer = plane.GetComponent<MeshRenderer>(); planeRenderer.sharedMaterial = groundMaterial; planeRenderer.shadowCastingMode = ShadowCastingMode.Off;
             var gridRect = HealerLike.Render.Environment.HLEnvironmentScatter.GridRect(grid);
             var proxies = new List<GridManager>(); var fields = new List<HealerLike.Render.Grass.HLGrassField>();
-            var main = Object.FindAnyObjectByType<HealerLike.Render.Grass.HLGrassField>();
-            float boardDensity = (main ? main.bladeBudget : HealerLike.Render.Grass.HLGrassLayout.DefaultBudget) / (gridRect.width * gridRect.height);
+            // The ring keeps the default board density even though the board field itself runs at half budget.
+            float boardDensity = HealerLike.Render.Grass.HLGrassLayout.DefaultBudget / (gridRect.width * gridRect.height);
             // Wave-4 capture: a quarter-density ring read as bare ground in a hard rectangle. Graded bands instead, dense at
             // the board edge and thinning outward; the first two bands cover the camera's near edge (z -12.6) and beyond.
             var strips = HealerLike.Render.Environment.HLEnvironmentGrass.Bands(gridRect, RingWidths, RingFractions, boardDensity);
@@ -544,7 +544,8 @@ namespace HealerLike.Render.Stage
                 go.name="HLGrassField";
                 var field=(Behaviour)go.AddComponent(fieldType); var fso=new SerializedObject(field);
                 fso.FindProperty("_grid").objectReferenceValue=grid; fso.FindProperty("_ground").objectReferenceValue=ground;
-                fso.FindProperty("_bladeHeightScale").floatValue=.30f;
+                // Half the default budget at 0.6 height: short upright spikes in clumps that keep actor roots and ground shadows readable.
+                fso.FindProperty("_bladeHeightScale").floatValue=.6f; fso.FindProperty("_bladeBudget").intValue=32768;
                 fso.FindProperty("_gameplayCamera").objectReferenceValue=camera;
                 fso.FindProperty("_updateGrass").objectReferenceValue=AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute");
                 fso.FindProperty("_lookMaterial").objectReferenceValue=AssetDatabase.LoadAssetAtPath<Material>(LookDefault);
