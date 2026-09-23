@@ -161,7 +161,7 @@ public class GrassLayoutTests
     [Test]
     public void Generate_InvalidInputs_LogsAndReturnsNoSeeds()
     {
-        Regex rejected = new Regex(@"^\[HLGrassLayout\] Rejected");
+        Regex rejected = new Regex(@"^\[GrassLayout\] Rejected");
         for (int i = 0; i < 6; i++)
         {
             LogAssert.Expect(LogType.Error, rejected);

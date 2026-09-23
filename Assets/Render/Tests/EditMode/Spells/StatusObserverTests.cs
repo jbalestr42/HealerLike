@@ -58,7 +58,7 @@ namespace HealerLike.Render.Spells
         [TestCase(true)]
         public void IdleReconciliationAllocatesNothingAndDoesNotRepublish(bool populated)
         {
-            GameObject go = new GameObject("HLObserver");
+            GameObject go = new GameObject("Observer");
             BuffHandlerFactory factory = ScriptableObject.CreateInstance<BuffHandlerFactory>();
             try
             {
@@ -107,8 +107,8 @@ namespace HealerLike.Render.Spells
         [Test]
         public void UnchangedStatusReturnsWhenTheSinkIsReenabled()
         {
-            GameObject go = new GameObject("HLObserver");
-            GameObject host = new GameObject("HLSink");
+            GameObject go = new GameObject("Observer");
+            GameObject host = new GameObject("Sink");
             BuffHandlerFactory factory = ScriptableObject.CreateInstance<BuffHandlerFactory>();
             FlatModifierFactory modifier = ScriptableObject.CreateInstance<FlatModifierFactory>();
             try
@@ -159,8 +159,8 @@ namespace HealerLike.Render.Spells
         [Test]
         public void EventsReconcilePreStartStacksRefreshAndIndependentSourceGroups()
         {
-            GameObject go = new GameObject("HLObserver");
-            GameObject host = new GameObject("HLSink");
+            GameObject go = new GameObject("Observer");
+            GameObject host = new GameObject("Sink");
             BuffHandlerFactory f = ScriptableObject.CreateInstance<BuffHandlerFactory>();
             FlatModifierFactory m = ScriptableObject.CreateInstance<FlatModifierFactory>();
             try

@@ -28,9 +28,9 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void CharacterViewUsesAnchorAndRegistryWithoutEntityOrCharacterInit()
         {
-            GameObject go = new GameObject("HLCharacterFixture");
-            GameObject anchor = new GameObject("HLAnchor");
-            GameObject target = new GameObject("HLHealTarget");
+            GameObject go = new GameObject("CharacterFixture");
+            GameObject anchor = new GameObject("Anchor");
+            GameObject target = new GameObject("HealTarget");
             CreatureRecipe recipe = CreatureValidatorTests.Recipe();
             Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
             try
@@ -90,8 +90,8 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void RegisteredCharacterOutcomesManaAnchorsAndNoGlobalDiscovery()
         {
-            GameObject go = new GameObject("HLCharacter");
-            GameObject target = new GameObject("HLRecipient");
+            GameObject go = new GameObject("Character");
+            GameObject target = new GameObject("Recipient");
             string recipePath = "Assets/Render/Creatures/Data/Healer.asset";
             CreatureRecipe recipe = UnityEditor.AssetDatabase.LoadAssetAtPath<CreatureRecipe>(recipePath);
             Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
@@ -171,8 +171,8 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void Init_ViewPrefab_AnchorsBodyOnItself()
         {
-            GameObject characterGo = new GameObject("HLCharacter");
-            GameObject managerGo = new GameObject("HLRenderManager");
+            GameObject characterGo = new GameObject("Character");
+            GameObject managerGo = new GameObject("RenderManager");
             string path = "Assets/Render/Creatures/Prefabs/HealerCharacter.prefab";
             GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
             GameObject viewGo = Object.Instantiate(prefab, characterGo.transform);

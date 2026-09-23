@@ -51,7 +51,7 @@ namespace HealerLike.Render.Grass
             }
 
             Array.Sort(_samples);
-            Debug.Log($"[HLGrassBenchmark] {_scenario}: {SampleFrames} frames after {WarmupFrames} warmup; " +
+            Debug.Log($"[GrassBenchmark] {_scenario}: {SampleFrames} frames after {WarmupFrames} warmup; " +
                 $"average {averageFrameMilliseconds:F3} ms; p95 {_samples[284]:F3} ms; {Describe()}. " +
                 "Whole-frame wall time only; grass GPU and main-thread budgets need a profiler capture.", this);
         }
@@ -69,7 +69,7 @@ namespace HealerLike.Render.Grass
         {
             if (!double.IsFinite(milliseconds) || milliseconds < 0)
             {
-                Debug.LogError($"[HLGrassBenchmark] Ignored invalid frame time {milliseconds}.");
+                Debug.LogError($"[GrassBenchmark] Ignored invalid frame time {milliseconds}.");
                 return false;
             }
 

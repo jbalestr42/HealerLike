@@ -82,20 +82,20 @@ namespace HealerLike.Render.Creatures
         {
             if (!CreatureValidator.TryValidate(data, out string error))
             {
-                Debug.LogError($"[HLCreatureRig] {error}");
+                Debug.LogError($"[CreatureRig] {error}");
                 return false;
             }
 
             if (!parent || !material || !meshes || !float.IsFinite(cellSize) || cellSize <= 0f)
             {
-                Debug.LogError("[HLCreatureRig] Needs a parent, a material, the meshes and a positive cell size.");
+                Debug.LogError("[CreatureRig] Needs a parent, a material, the meshes and a positive cell size.");
                 return false;
             }
 
             Vector3 scale = parent.lossyScale;
             if (scale.x <= 0f || Mathf.Abs(scale.x - scale.y) > 0.0001f || Mathf.Abs(scale.x - scale.z) > 0.0001f)
             {
-                Debug.LogError("[HLCreatureRig] Creature rig ancestors must have positive uniform scale.");
+                Debug.LogError("[CreatureRig] Creature rig ancestors must have positive uniform scale.");
                 return false;
             }
 
@@ -103,10 +103,10 @@ namespace HealerLike.Render.Creatures
             _material = material;
             _meshes = meshes;
             _cellSize = cellSize;
-            _root = new GameObject("HLGeneratedCreature").transform;
+            _root = new GameObject("GeneratedCreature").transform;
             _root.SetParent(parent, false);
             _root.localScale = Vector3.one / parent.lossyScale.x;
-            _sway = new GameObject("HLSway").transform;
+            _sway = new GameObject("Sway").transform;
             _sway.SetParent(_root, false);
             _pivots = new Transform[data.parts.Length];
             _geometry = new Transform[data.parts.Length];
@@ -122,18 +122,18 @@ namespace HealerLike.Render.Creatures
                 _pivots[i].SetParent(part.parent < 0 ? _sway : _pivots[part.parent], false);
                 _pivots[i].localPosition = part.localPosition * cellSize;
                 _pivots[i].localRotation = Quaternion.Euler(part.localEuler);
-                _geometry[i] = PrimitiveMeshes.Geometry("HLGeometry", _pivots[i], meshes.GetMesh(part.primitive),
+                _geometry[i] = PrimitiveMeshes.Geometry("Geometry", _pivots[i], meshes.GetMesh(part.primitive),
                     material, _colours[i], part.glow);
                 _geometry[i].localScale = part.dimensions * cellSize;
                 _bodyRenderers[i] = _geometry[i].GetComponent<Renderer>();
             }
 
-            budAnchors = Array.FindAll(_pivots, pivot => pivot.name.StartsWith("HLBud", StringComparison.Ordinal));
+            budAnchors = Array.FindAll(_pivots, pivot => pivot.name.StartsWith("Bud", StringComparison.Ordinal));
             _roots = new Transform[data.roots.count * 2];
             for (int i = 0; i < _roots.Length; i++)
             {
                 Color rootColour = BeautyMotion.Vary(data.roots.colour, _idle.seed);
-                _roots[i] = PrimitiveMeshes.Geometry("HLRoot", _root, meshes.cone, material, rootColour);
+                _roots[i] = PrimitiveMeshes.Geometry("Root", _root, meshes.cone, material, rootColour);
             }
 
             for (int i = 0; i < data.arms.Length; i++)
@@ -323,10 +323,10 @@ namespace HealerLike.Render.Creatures
             for (int i = 0; i < _geometry.Length; i++)
             {
                 Part part = _recipe.parts[i];
-                bool isHead = part.primitive == Primitive.Sphere || part.glow > 0f || part.id == "HLBulb";
+                bool isHead = part.primitive == Primitive.Sphere || part.glow > 0f || part.id == "Bulb";
                 float swell = 1f + _crownPulse * 0.06f + (isHead ? _charge * 0.24f : 0f);
                 _geometry[i].localScale = Vector3.Scale(part.dimensions, idlePose.bodyScale) * _cellSize * swell;
-                if (part.id == "HLCrown")
+                if (part.id == "Crown")
                 {
                     Quaternion spin = Quaternion.AngleAxis(time * 18f, Vector3.up);
                     _pivots[i].localRotation = Quaternion.Euler(part.localEuler) * spin;

@@ -8,7 +8,7 @@ namespace HealerLike.Render.Stones
         [Test]
         public void StatusTintComposesWithCurrentFractureAndRemovalRestoresHealthColor()
         {
-            GameObject root = new GameObject("HLTintAssembly");
+            GameObject root = new GameObject("TintAssembly");
             StoneAssembly assembly = new StoneAssembly();
             StoneMeshCache meshes = new StoneMeshCache();
             assembly.Init(meshes);
@@ -42,7 +42,7 @@ namespace HealerLike.Render.Stones
         [Test]
         public void SeededSubsetDarkensProgressivelyAndRestoresWithoutMaterialMutation()
         {
-            GameObject root = new GameObject("HLAssembly");
+            GameObject root = new GameObject("Assembly");
             StoneAssembly assembly = new StoneAssembly();
             StoneMeshCache meshes = new StoneMeshCache();
             assembly.Init(meshes);

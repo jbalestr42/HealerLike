@@ -9,7 +9,7 @@ namespace HealerLike.Render.Stones
         {
             Transform pivot = new GameObject("BodyPivot").transform;
             pivot.SetParent(target.transform, false);
-            Transform presentation = new GameObject("HLStonePresentation").transform;
+            Transform presentation = new GameObject("StonePresentation").transform;
             presentation.SetParent(pivot, false);
             StoneEnemyVisual visual = target.AddComponent<StoneEnemyVisual>();
             TestHelpers.SetPrivateField(visual, "_bodyPivot", pivot);
@@ -21,8 +21,8 @@ namespace HealerLike.Render.Stones
         public void UsesCallbackTargetAfterProjectileTargetClearedAndUnsubscribes()
         {
             StoneEnemyVisual visual = null;
-            GameObject target = new GameObject("HLTarget");
-            GameObject projectileObject = new GameObject("HLProjectile");
+            GameObject target = new GameObject("Target");
+            GameObject projectileObject = new GameObject("Projectile");
             try
             {
                 ResourceAttribute health = TestHelpers.CreateResourceAttribute(target, AttributeType.HealthMax, 100);

@@ -70,7 +70,7 @@ namespace HealerLike.Render.Environment
         {
             if (manager == null || manager.meshes == null)
             {
-                Debug.LogError("[HLEnvironmentScatter] Init needs the render manager and its primitive meshes.");
+                Debug.LogError("[EnvironmentScatter] Init needs the render manager and its primitive meshes.");
                 return;
             }
 
@@ -163,14 +163,14 @@ namespace HealerLike.Render.Environment
         {
             if (_meshes == null)
             {
-                Debug.LogError("[HLEnvironmentScatter] Build needs the primitive meshes.");
+                Debug.LogError("[EnvironmentScatter] Build needs the primitive meshes.");
                 return;
             }
 
             Clear();
             _builtAt = Time.timeAsDouble;
             _items = EnvironmentLayout.Generate(_settings, gridRect, cellSize, _surfaceY);
-            _root = new GameObject("HLEnvironmentItems").transform;
+            _root = new GameObject("EnvironmentItems").transform;
             _root.SetParent(transform, false);
             _properties = new MaterialPropertyBlock();
             foreach (EnvironmentItem item in _items)
@@ -293,7 +293,7 @@ namespace HealerLike.Render.Environment
                 float length = 0.3f * s;
                 for (int i = 0; i < 9; i++)
                 {
-                    Transform joint = new GameObject("HLCurlJoint").transform;
+                    Transform joint = new GameObject("CurlJoint").transform;
                     joint.SetParent(linkParent, false);
                     joint.localPosition = i == 0 ? Vector3.zero : Vector3.up * length / 0.88f;
                     float curl = i == 0 ? random.Range(10f, 25f) : 22f + i * 5f;
@@ -392,7 +392,7 @@ namespace HealerLike.Render.Environment
         Vector3 Stone(Transform parent, uint seed, StoneSettings shape, Vector3 bottom, float scale, int palette)
         {
             Mesh mesh = StoneMesh.CreateMesh(seed, shape);
-            mesh.name = "HLEnvironmentStone";
+            mesh.name = "EnvironmentStone";
             _ownedMeshes.Add(mesh);
             // Sink each stone a little into the ground so it reads as rooted
             Vector3 sunkBottom = bottom - Vector3.up * (mesh.bounds.size.y * scale * 0.12f);

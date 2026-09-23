@@ -56,7 +56,7 @@ namespace HealerLike.Render.Environment
         {
             if (manager == null || manager.meshes == null)
             {
-                Debug.LogError("[HLEnvironmentRidge] Init needs the render manager and its primitive meshes.");
+                Debug.LogError("[EnvironmentRidge] Init needs the render manager and its primitive meshes.");
                 return;
             }
 
@@ -95,7 +95,7 @@ namespace HealerLike.Render.Environment
         {
             if (fogBands < 1 || !(fogStart >= 0f) || !(fogEnd > fogStart) || !float.IsFinite(fogEnd))
             {
-                Debug.LogError($"[HLEnvironmentRidge] Rejected fog from {fogStart} to {fogEnd} in {fogBands} bands.");
+                Debug.LogError($"[EnvironmentRidge] Rejected fog from {fogStart} to {fogEnd} in {fogBands} bands.");
                 return Vector2.zero;
             }
 
@@ -122,7 +122,7 @@ namespace HealerLike.Render.Environment
 
             if (!(grid.width > 0f) || !(grid.height > 0f) || !float.IsFinite(groundY))
             {
-                Debug.LogError($"[HLEnvironmentRidge] Rejected grid {grid} with ground {groundY}.");
+                Debug.LogError($"[EnvironmentRidge] Rejected grid {grid} with ground {groundY}.");
                 return new List<RidgeItem>();
             }
 
@@ -198,7 +198,7 @@ namespace HealerLike.Render.Environment
         {
             Clear();
             _items = Layout(cameraPosition, _fogStart, _fogEnd, _fogBands, _grid, _groundY, _seed);
-            _root = new GameObject("HLRidgeItems").transform;
+            _root = new GameObject("RidgeItems").transform;
             _root.SetParent(transform, false);
             _properties = new MaterialPropertyBlock();
             foreach (RidgeItem item in _items)
@@ -232,7 +232,7 @@ namespace HealerLike.Render.Environment
             if (item.kind == RidgeKind.Monolith)
             {
                 Mesh mesh = StoneMesh.CreateMesh(item.seed, StonePresets.Monolith);
-                mesh.name = "HLRidgeStone";
+                mesh.name = "RidgeStone";
                 _ownedMeshes.Add(mesh);
                 Vector3 size = mesh.bounds.size;
                 float across = item.width / Mathf.Max(size.x, 0.0001f);

@@ -30,7 +30,7 @@ public class GrassBoundsTests
     [Test]
     public void Calculate_EnvelopeUnderTheBlade_LogsAndReturnsEmptyBounds()
     {
-        LogAssert.Expect(LogType.Error, new Regex(@"^\[HLGrassBounds\] Rejected a 1 x 1 footprint"));
+        LogAssert.Expect(LogType.Error, new Regex(@"^\[GrassBounds\] Rejected a 1 x 1 footprint"));
 
         Bounds bounds = GrassBounds.Calculate(1, 1, 1f, Vector3.zero, 0f, 0.1f);
 
@@ -40,7 +40,7 @@ public class GrassBoundsTests
     [Test]
     public void Calculate_NegativeWidth_LogsAndReturnsEmptyBounds()
     {
-        LogAssert.Expect(LogType.Error, new Regex(@"^\[HLGrassBounds\] Rejected a -1 x 1 footprint"));
+        LogAssert.Expect(LogType.Error, new Regex(@"^\[GrassBounds\] Rejected a -1 x 1 footprint"));
 
         Bounds bounds = GrassBounds.Calculate(-1, 1, 1f, Vector3.zero, 0f);
 

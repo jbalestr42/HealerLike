@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SphereStack
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.CreatureRecipe
   parts:
-  - id: HLConicalRoot
+  - id: ConicalRoot
     parent: -1
     primitive: 2
     localPosition: {x: 0, y: 0.34, z: 0}
@@ -22,7 +22,7 @@ MonoBehaviour:
     colour: {r: 0.18, g: 0.49, b: 0.31, a: 1}
     torusTubeRatio: 0.2
     glow: 0
-  - id: HLBottomSphere
+  - id: BottomSphere
     parent: 0
     primitive: 0
     localPosition: {x: 0, y: 0.578, z: 0}
@@ -31,7 +31,7 @@ MonoBehaviour:
     colour: {r: 0.5, g: 0.79, b: 0.25, a: 1}
     torusTubeRatio: 0.2
     glow: 0
-  - id: HLMiddleSphere
+  - id: MiddleSphere
     parent: 0
     primitive: 0
     localPosition: {x: 0.06525, y: 1.173, z: 0}
@@ -40,7 +40,7 @@ MonoBehaviour:
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
     glow: 0
-  - id: HLTopSphere
+  - id: TopSphere
     parent: 0
     primitive: 0
     localPosition: {x: -0.029000001, y: 1.615, z: 0}
@@ -49,7 +49,7 @@ MonoBehaviour:
     colour: {r: 0.5, g: 0.79, b: 0.25, a: 1}
     torusTubeRatio: 0.2
     glow: 0.7
-  - id: HLRing
+  - id: Ring
     parent: 0
     primitive: 3
     localPosition: {x: 0, y: 0.952, z: 0}

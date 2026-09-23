@@ -8,10 +8,10 @@ namespace HealerLike.Render.Spells
         [Test]
         public void ThreadsUseContactOrderAndRebindClearsPreviousContact()
         {
-            GameObject host = new GameObject("HLContacts");
-            GameObject sinkHost = new GameObject("HLSink");
-            GameObject a = new GameObject("HLFirst");
-            GameObject b = new GameObject("HLSecond");
+            GameObject host = new GameObject("Contacts");
+            GameObject sinkHost = new GameObject("Sink");
+            GameObject a = new GameObject("First");
+            GameObject b = new GameObject("Second");
             ChainContactVisual observer = null;
             SpellVisualSink sink = null;
             try
@@ -66,8 +66,8 @@ namespace HealerLike.Render.Spells
         [Test]
         public void InvalidContactsAndRepeatedInactiveSinkContactsAllocateNothing()
         {
-            GameObject host = new GameObject("HLContacts");
-            GameObject target = new GameObject("HLTarget");
+            GameObject host = new GameObject("Contacts");
+            GameObject target = new GameObject("Target");
             ChainContactVisual observer = null;
             try
             {

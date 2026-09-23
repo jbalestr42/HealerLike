@@ -20,7 +20,7 @@ namespace HealerLike.Render.Creatures
             string meshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
             PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesPath);
 
-            Camera camera = new GameObject("HLGalleryCamera").AddComponent<Camera>();
+            Camera camera = new GameObject("GalleryCamera").AddComponent<Camera>();
             camera.tag = "MainCamera";
             camera.transform.position = new Vector3(0f, 5.5f, -10f);
             camera.transform.LookAt(new Vector3(0f, 1f, 0f));
@@ -30,13 +30,13 @@ namespace HealerLike.Render.Creatures
             camera.backgroundColor = new Color(0.75f, 0.82f, 0.86f);
             camera.aspect = 2f;
 
-            Light light = new GameObject("HLGallerySun").AddComponent<Light>();
+            Light light = new GameObject("GallerySun").AddComponent<Light>();
             light.type = LightType.Directional;
             light.intensity = 1f;
             light.transform.rotation = Quaternion.Euler(45f, -35f, 0f);
             RenderSettings.sun = light;
 
-            LookController look = new GameObject("HLGalleryLook").AddComponent<LookController>();
+            LookController look = new GameObject("GalleryLook").AddComponent<LookController>();
             LookSettings settings = LookSettings.Default;
             settings.fogStart = 50f;
             settings.fogEnd = 80f;
@@ -75,7 +75,7 @@ namespace HealerLike.Render.Creatures
             texture.Apply();
             string capturePath = "/Users/fc/Documents/healerlike-render-specs/captures/wave9-creature-gallery.png";
             File.WriteAllBytes(capturePath, texture.EncodeToPNG());
-            Debug.Log("HL visual-only gallery: " + capturePath);
+            Debug.Log("Visual-only gallery: " + capturePath);
             RenderTexture.active = null;
             Object.DestroyImmediate(texture);
             target.Release();

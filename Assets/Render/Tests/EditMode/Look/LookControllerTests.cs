@@ -12,7 +12,7 @@ namespace HealerLike.Render.Look
     public class LookControllerTests
     {
         static readonly int applied = Shader.PropertyToID("_HLLookApplied");
-        static readonly string ownerWarning = "HLLookController already has an active owner; "
+        static readonly string ownerWarning = "LookController already has an active owner; "
                                               + "this controller remains inactive.";
 
         readonly Dictionary<int, float> _floats = new Dictionary<int, float>();
@@ -79,7 +79,7 @@ namespace HealerLike.Render.Look
 
         LookController CreateController(bool active = true)
         {
-            GameObject go = new GameObject("HL look test");
+            GameObject go = new GameObject("Look test");
             _objects.Add(go);
             go.SetActive(false);
             LookController controller = go.AddComponent<LookController>();
@@ -104,9 +104,9 @@ namespace HealerLike.Render.Look
         public void KeyDirectionSelectsSunThenBrightestAndClearsOnDisable()
         {
             LookController controller = CreateController();
-            Light sun = CreateDirectionalLight("HL key");
+            Light sun = CreateDirectionalLight("Key");
             sun.transform.rotation = Quaternion.Euler(45f, -35f, 0f);
-            Light other = CreateDirectionalLight("HL brighter");
+            Light other = CreateDirectionalLight("Brighter");
             other.intensity = 4f;
             Vector3 expected = -sun.transform.forward;
             Vector4 expectedDirection = new Vector4(expected.x, expected.y, expected.z, 0f);
@@ -148,12 +148,12 @@ namespace HealerLike.Render.Look
         public void SteadyPublicationAllocatesNothingAndDisabledSunClearsFallback()
         {
             LookController controller = CreateController();
-            Light sun = CreateDirectionalLight("HL allocation sun");
+            Light sun = CreateDirectionalLight("Allocation sun");
             Light previous = RenderSettings.sun;
             try
             {
                 RenderSettings.sun = sun;
-                GameObject cameraGo = new GameObject("HL allocation camera");
+                GameObject cameraGo = new GameObject("Allocation camera");
                 _objects.Add(cameraGo);
                 Camera camera = cameraGo.AddComponent<Camera>();
                 MethodInfo method = typeof(LookController).GetMethod("OnBeginCameraRendering",
@@ -296,7 +296,7 @@ namespace HealerLike.Render.Look
 
         Camera CreatePortraitCamera()
         {
-            GameObject go = new GameObject("HL look camera");
+            GameObject go = new GameObject("Look camera");
             _objects.Add(go);
             Camera camera = go.AddComponent<Camera>();
             camera.fieldOfView = 40f;
@@ -356,7 +356,7 @@ namespace HealerLike.Render.Look
             LookController controller = CreateController();
             LookSettings before = controller.settings;
 
-            LogAssert.Expect(LogType.Error, "[HLLookController] Init needs the camera the look is calibrated for.");
+            LogAssert.Expect(LogType.Error, "[LookController] Init needs the camera the look is calibrated for.");
             controller.Init(null, new Bounds(Vector3.zero, Vector3.one));
 
             Assert.AreEqual(before.fogStart, controller.settings.fogStart);

@@ -178,7 +178,7 @@ namespace HealerLike.Render.Creatures
             if (!float.IsFinite(size) || size <= 0f || !isOriginFinite || !isNormalFinite
                 || normal.sqrMagnitude < 0.00000001f)
             {
-                Debug.LogError("[HLCreatureBuilder] Invalid ground frame.");
+                Debug.LogError("[CreatureBuilder] Invalid ground frame.");
                 return;
             }
 

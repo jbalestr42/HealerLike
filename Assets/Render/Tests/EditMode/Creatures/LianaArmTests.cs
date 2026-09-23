@@ -46,7 +46,7 @@ namespace HealerLike.Render.Creatures
         {
             string path = "Assets/Render/Creatures/Data/Healer.asset";
             CreatureRecipe authored = UnityEditor.AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
-            GameObject parent = new GameObject("HLArmFixture");
+            GameObject parent = new GameObject("ArmFixture");
             Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));
             LianaArm rendered = CreateArm(authored.arms[0], parent.transform, material);
             Mesh mesh = null;
@@ -116,7 +116,7 @@ namespace HealerLike.Render.Creatures
         {
             string path = "Assets/Render/Creatures/Data/Healer.asset";
             CreatureRecipe authored = UnityEditor.AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
-            GameObject parent = new GameObject("HLArmFixture");
+            GameObject parent = new GameObject("ArmFixture");
             Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));
             LianaArm rendered = CreateArm(authored.arms[0], parent.transform, material);
             try
@@ -205,7 +205,7 @@ namespace HealerLike.Render.Creatures
             ArmDefinition definition = _recipe.arms[0];
             definition.restJoints = new Vector3[3];
             LianaArm arm = new LianaArm();
-            LogAssert.Expect(LogType.Error, "[HLLianaArm] Invalid arm definition.");
+            LogAssert.Expect(LogType.Error, "[LianaArm] Invalid arm definition.");
 
             bool isInitialized = arm.Init(definition, null, null, PrimitiveMeshesTests.Meshes());
 
@@ -217,13 +217,13 @@ namespace HealerLike.Render.Creatures
         {
             string path = "Assets/Render/Creatures/Data/Healer.asset";
             CreatureRecipe authored = UnityEditor.AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
-            GameObject parent = new GameObject("HLArmFixture");
+            GameObject parent = new GameObject("ArmFixture");
             Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));
             LianaArm rendered = CreateArm(authored.arms[0], parent.transform, material);
             Renderer renderer = parent.GetComponentInChildren<Renderer>(true);
             rendered.Begin(1, GestureKind.Attack, Vector3.one);
             rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);
-            LogAssert.Expect(LogType.Error, "[HLLianaArm] The chain has no finite solution, it stays hidden this frame.");
+            LogAssert.Expect(LogType.Error, "[LianaArm] The chain has no finite solution, it stays hidden this frame.");
 
             rendered.SetTipGoal(1, Vector3.one * float.NaN);
             rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);

@@ -15,7 +15,7 @@ namespace HealerLike.Render.Stones
             GameObject body = new GameObject("BodyPivot");
             body.transform.SetParent(modelGo.transform, false);
             body.AddComponent<LookAtTarget>();
-            GameObject presentation = new GameObject("HLStonePresentation");
+            GameObject presentation = new GameObject("StonePresentation");
             presentation.transform.SetParent(body.transform, false);
 
             StoneEnemyVisual visual = modelGo.AddComponent<StoneEnemyVisual>();

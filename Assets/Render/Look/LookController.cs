@@ -58,7 +58,7 @@ namespace HealerLike.Render.Look
         {
             if (camera == null)
             {
-                Debug.LogError("[HLLookController] Init needs the camera the look is calibrated for.");
+                Debug.LogError("[LookController] Init needs the camera the look is calibrated for.");
                 return;
             }
 

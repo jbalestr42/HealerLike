@@ -16,7 +16,7 @@ namespace HealerLike.Render.Stones
         {
             Transform pivot = new GameObject("BodyPivot").transform;
             pivot.SetParent(target.transform, false);
-            Transform presentation = new GameObject("HLStonePresentation").transform;
+            Transform presentation = new GameObject("StonePresentation").transform;
             presentation.SetParent(pivot, false);
             StoneEnemyVisual visual = target.AddComponent<StoneEnemyVisual>();
             TestHelpers.SetPrivateField(visual, "_bodyPivot", pivot);
@@ -29,9 +29,9 @@ namespace HealerLike.Render.Stones
         {
             StoneEnemyVisual visual = null;
             StoneEffects fx = CreateEffects();
-            GameObject target = new GameObject("HLTarget");
+            GameObject target = new GameObject("Target");
             GameObject effectsObject = fx.gameObject;
-            GameObject bridgeObject = new GameObject("HLBridge");
+            GameObject bridgeObject = new GameObject("Bridge");
             try
             {
                 ResourceAttribute health = TestHelpers.CreateResourceAttribute(target, AttributeType.HealthMax, 100);

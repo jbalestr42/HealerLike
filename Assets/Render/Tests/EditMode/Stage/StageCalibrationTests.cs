@@ -14,7 +14,7 @@ namespace HealerLike.Render.Stage
         }
         [Test] public void HatchScalesWithProjectionAndResolution()
         {
-            var go = new GameObject("HLCamera");
+            var go = new GameObject("Camera");
             try {
                 var camera = go.AddComponent<Camera>(); camera.fieldOfView = 40;
                 Assert.That(StageCalibration.HatchSpacing(camera, 30,1080), Is.EqualTo(.08088f).Within(.0001));
@@ -25,7 +25,7 @@ namespace HealerLike.Render.Stage
         }
         [Test] public void PortraitFrameFitsTheBoardWidthAtTheNearEdgeAndPlacesTheCentre()
         {
-            var go = new GameObject("HLCamera");
+            var go = new GameObject("Camera");
             try {
                 var camera = go.AddComponent<Camera>(); camera.fieldOfView = 40; camera.aspect = 9f/16f;
                 var board = new Bounds(new Vector3(0,.505f,0), new Vector3(16,0,16));

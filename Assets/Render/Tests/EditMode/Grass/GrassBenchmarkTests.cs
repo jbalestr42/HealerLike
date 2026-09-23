@@ -12,7 +12,7 @@ public class GrassBenchmarkTests
     [SetUp]
     public void SetUp()
     {
-        _go = new GameObject("HLGrassBenchmarkTest");
+        _go = new GameObject("GrassBenchmarkTest");
         _benchmark = _go.AddComponent<GrassBenchmark>();
         _benchmark.ResetCapture();
     }

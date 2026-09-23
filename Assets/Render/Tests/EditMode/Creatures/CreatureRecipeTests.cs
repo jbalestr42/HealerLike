@@ -13,8 +13,8 @@ namespace HealerLike.Render.Creatures
             string path = "Assets/Render/Creatures/Data/Healer.asset";
             CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
             Assert.NotNull(recipe);
-            Part bulb = Array.Find(recipe.parts, part => part.id == "HLBulb");
-            Part hip = Array.Find(recipe.parts, part => part.id == "HLHip");
+            Part bulb = Array.Find(recipe.parts, part => part.id == "Bulb");
+            Part hip = Array.Find(recipe.parts, part => part.id == "Hip");
 
             Assert.AreEqual(Primitive.Cone, bulb.primitive);
             Assert.Less(Vector3.Dot(Quaternion.Euler(bulb.localEuler) * Vector3.up, Vector3.up), -0.99f,
@@ -40,7 +40,7 @@ namespace HealerLike.Render.Creatures
             string path = "Assets/Render/Creatures/Data/SphereStack.asset";
             CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
             Assert.NotNull(recipe);
-            Part cone = Array.Find(recipe.parts, part => part.id == "HLConicalRoot");
+            Part cone = Array.Find(recipe.parts, part => part.id == "ConicalRoot");
 
             float bottom = cone.localPosition.y - cone.dimensions.y * 0.5f;
             float kneeFraction = (recipe.roots.kneeHeight - bottom) / cone.dimensions.y;

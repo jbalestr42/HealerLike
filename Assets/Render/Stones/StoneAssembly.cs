@@ -39,7 +39,7 @@ namespace HealerLike.Render.Stones
         {
             if (_meshes == null)
             {
-                Debug.LogError("[HLStoneAssembly] Init the assembly with a StoneMeshCache before adding parts.");
+                Debug.LogError("[StoneAssembly] Init the assembly with a StoneMeshCache before adding parts.");
                 return false;
             }
 
@@ -50,7 +50,7 @@ namespace HealerLike.Render.Stones
                 return false;
             }
 
-            GameObject partGo = new GameObject("HLStonePart");
+            GameObject partGo = new GameObject("StonePart");
             partGo.layer = parent.gameObject.layer;
             partGo.transform.SetParent(parent, false);
             partGo.transform.localPosition = recipe.localPosition;

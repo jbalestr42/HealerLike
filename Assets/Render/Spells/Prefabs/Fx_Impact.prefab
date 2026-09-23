@@ -102,7 +102,7 @@ GameObject:
   - component: {fileID: 3326234195794979114}
   - component: {fileID: 8793611318064574173}
   m_Layer: 0
-  m_Name: HLPrimitive
+  m_Name: Primitive
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -192,7 +192,7 @@ GameObject:
   - component: {fileID: 7428613723085531911}
   - component: {fileID: 6888294818051121824}
   m_Layer: 0
-  m_Name: HLPrimitive
+  m_Name: Primitive
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -282,7 +282,7 @@ GameObject:
   - component: {fileID: 2472829489422881449}
   - component: {fileID: 3246150405909312012}
   m_Layer: 0
-  m_Name: HLPrimitive
+  m_Name: Primitive
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -912,7 +912,7 @@ GameObject:
   - component: {fileID: 5930236411577237235}
   - component: {fileID: 1742870085761298131}
   m_Layer: 0
-  m_Name: HLPrimitive
+  m_Name: Primitive
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1449,7 +1449,7 @@ GameObject:
   - component: {fileID: 2831751515256892564}
   - component: {fileID: 7286242445327453226}
   m_Layer: 0
-  m_Name: HLPrimitive
+  m_Name: Primitive
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

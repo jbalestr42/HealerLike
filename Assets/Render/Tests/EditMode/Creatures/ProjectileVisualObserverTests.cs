@@ -63,15 +63,15 @@ namespace HealerLike.Render.Creatures
         [SetUp]
         public void Setup()
         {
-            _source = new GameObject("HLSource");
+            _source = new GameObject("Source");
             Entity entity = EntityFixture(_source);
-            _first = new GameObject("HLFirst");
+            _first = new GameObject("First");
             EntityFixture(_first);
             _first.transform.position = Vector3.one;
-            _second = new GameObject("HLSecond");
+            _second = new GameObject("Second");
             EntityFixture(_second);
             _second.transform.position = Vector3.right * 2f;
-            GameObject model = new GameObject("HLModel");
+            GameObject model = new GameObject("Model");
             model.transform.SetParent(_source.transform, false);
             EntityModel entityModel = model.AddComponent<EntityModel>();
             TestHelpers.SetPrivateField(entity, "_model", entityModel);
@@ -80,10 +80,10 @@ namespace HealerLike.Render.Creatures
             _builder = model.AddComponent<CreatureBuilder>();
             _builder.SetRecipe(_recipe, _material, PrimitiveMeshesTests.Meshes());
             _builder.Init(entity);
-            _projectileObject = new GameObject("HLProjectile", typeof(LineRenderer));
+            _projectileObject = new GameObject("Projectile", typeof(LineRenderer));
             _projectile = _projectileObject.AddComponent<Projectile>();
             _observer = _projectileObject.AddComponent<ProjectileVisualObserver>();
-            _managerGo = new GameObject("HLRenderManager");
+            _managerGo = new GameObject("RenderManager");
             _observer.Init(_managerGo.AddComponent<RenderManager>(), null);
             _projectile.Init(_source, _first, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
         }
@@ -141,7 +141,7 @@ namespace HealerLike.Render.Creatures
             _observer.Init(_source);
             LineRenderer visible = _projectileObject.GetComponent<LineRenderer>();
             Assert.IsTrue(visible.enabled);
-            GameObject child = new GameObject("HLHiddenRenderer", typeof(MeshRenderer));
+            GameObject child = new GameObject("HiddenRenderer", typeof(MeshRenderer));
             child.transform.SetParent(_projectileObject.transform);
             Renderer hidden = child.GetComponent<Renderer>();
             hidden.enabled = false;
@@ -238,7 +238,7 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void Init_WithManager_TakesTokensFromManager()
         {
-            GameObject managerGo = new GameObject("HLRenderManager");
+            GameObject managerGo = new GameObject("RenderManager");
             RenderManager manager = managerGo.AddComponent<RenderManager>();
             int previous = manager.NextDeliveryToken();
             _observer.Init(manager, null);

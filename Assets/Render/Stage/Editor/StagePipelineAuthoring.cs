@@ -68,7 +68,7 @@ namespace HealerLike.Render.Stage
             }
 
             Outlines outlines = ScriptableObject.CreateInstance<Outlines>();
-            outlines.name = "HLOutlines";
+            outlines.name = "Outlines";
             outlines.edgeShader = AssetDatabase.LoadAssetAtPath<Shader>(EdgeShaderPath);
             if (outlines.edgeShader == null)
             {

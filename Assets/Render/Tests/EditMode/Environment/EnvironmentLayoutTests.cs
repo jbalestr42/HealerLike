@@ -123,8 +123,8 @@ namespace HealerLike.Render.Environment
         {
             EnvironmentSettings settings = EnvironmentSettings.Default;
             settings.ringDistance = 0f;
-            LogAssert.Expect(LogType.Error, new Regex(@"^\[HLEnvironmentLayout\] Rejected grid"));
-            LogAssert.Expect(LogType.Error, new Regex(@"^\[HLEnvironmentLayout\] Rejected grid"));
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[EnvironmentLayout\] Rejected grid"));
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[EnvironmentLayout\] Rejected grid"));
 
             Assert.IsEmpty(EnvironmentLayout.Generate(EnvironmentSettings.Default, grid, 0f, 0f));
             Assert.IsEmpty(EnvironmentLayout.Generate(settings, grid, 1f, 0f));

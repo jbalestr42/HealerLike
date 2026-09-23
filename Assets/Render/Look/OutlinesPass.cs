@@ -28,7 +28,7 @@ namespace HealerLike.Render.Look
             _layerMask = layerMask;
             _edgeMaterial = edgeMaterial;
             renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
-            profilingSampler = new ProfilingSampler("HLOutlines");
+            profilingSampler = new ProfilingSampler("Outlines");
             if (edgeMaterial != null)
             {
                 ConfigureInput(ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Normal);
@@ -47,7 +47,7 @@ namespace HealerLike.Render.Look
             RendererListParams listParams = new RendererListParams(rendering.cullResults, drawing, filtering);
             RendererListHandle list = renderGraph.CreateRendererList(listParams);
             using (IRasterRenderGraphBuilder builder = renderGraph.AddRasterRenderPass<HullData>(
-                       "HL primitive outlines", out HullData data, profilingSampler))
+                       "Primitive outlines", out HullData data, profilingSampler))
             {
                 data.renderers = list;
                 builder.UseRendererList(list);
@@ -67,7 +67,7 @@ namespace HealerLike.Render.Look
 
             // Hardware blending keeps the fill, so no colour copy and no read/write feedback
             using (IRasterRenderGraphBuilder builder = renderGraph.AddRasterRenderPass<EdgeData>(
-                       "HL depth normal outlines", out EdgeData data, profilingSampler))
+                       "Depth normal outlines", out EdgeData data, profilingSampler))
             {
                 data.material = _edgeMaterial;
                 builder.UseTexture(resources.cameraDepthTexture, AccessFlags.Read);

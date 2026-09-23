@@ -70,7 +70,7 @@ namespace HealerLike.Render.Stones
         {
             if (!float.IsFinite(cellSize) || cellSize <= 0f)
             {
-                Debug.LogError($"[HLStoneTerrainClump] Cell size must be positive, not {cellSize}.");
+                Debug.LogError($"[StoneTerrainClump] Cell size must be positive, not {cellSize}.");
                 return;
             }
 
@@ -197,7 +197,7 @@ namespace HealerLike.Render.Stones
             }
 
             Vector3 lift = normals[face] * 0.002f;
-            _ochreMesh = new Mesh { name = "HLOchreFacet" };
+            _ochreMesh = new Mesh { name = "OchreFacet" };
             _ochreMesh.vertices = new Vector3[]
             {
                 vertices[face] + lift,

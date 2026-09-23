@@ -51,7 +51,7 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void Dispose_LiveRigs_LeaveSharedMeshesAlive()
         {
-            GameObject parent = new GameObject("HLMeshOwner");
+            GameObject parent = new GameObject("MeshOwner");
             CreatureRecipe recipe = CreatureValidatorTests.Recipe();
             Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));
             CreatureRig rig = new CreatureRig();

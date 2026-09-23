@@ -19,7 +19,7 @@ namespace HealerLike.Render.Creatures
             PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesPath);
             if (!material || !meshes)
             {
-                Debug.LogError($"[HLCreatureAssetAuthoring] Missing {materialPath} or {meshesPath}.");
+                Debug.LogError($"[CreatureAssetAuthoring] Missing {materialPath} or {meshesPath}.");
                 return;
             }
 
@@ -50,7 +50,7 @@ namespace HealerLike.Render.Creatures
             CharacterView(healer, material, meshes);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("[HLCreatureAssetAuthoring] Creature recipes and view prefabs authored.");
+            Debug.Log("[CreatureAssetAuthoring] Creature recipes and view prefabs authored.");
         }
 
         // Recipe-only refresh keeps existing prefab presentation and delivery overrides intact

@@ -19,7 +19,7 @@ namespace HealerLike.Render.Spells
         {
             if (entity == null || manager == null)
             {
-                Debug.LogError("[HLAttributeShieldView] Init needs an entity and the RenderManager.");
+                Debug.LogError("[AttributeShieldView] Init needs an entity and the RenderManager.");
                 return;
             }
 

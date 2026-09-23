@@ -71,7 +71,7 @@ namespace HealerLike.Render.Stones
             if (_fragmentPrefab == null || _meshes == null || _stoneMaterial == null || _coralMaterial == null
                 || _dustMaterial == null)
             {
-                Debug.LogError("[HLStoneEffects] Wire the fragment prefab, meshes and materials on the effects prefab.");
+                Debug.LogError("[StoneEffects] Wire the fragment prefab, meshes and materials on the effects prefab.");
                 return false;
             }
 
@@ -307,7 +307,7 @@ namespace HealerLike.Render.Stones
             StoneRandom random = new StoneRandom(seed);
             // A copy belongs to the effects owner, so releasing the enemy's cache lease cannot invalidate it.
             Mesh copy = Instantiate(mesh);
-            copy.name = "HLDetachedStone";
+            copy.name = "DetachedStone";
             Vector3 direction = new Vector3(random.Range(-1f, 1f), 0f, random.Range(-1f, 1f)).normalized;
             Material partMaterial = material != null ? material : _stoneMaterial;
             Vector3 velocity = velocityWS + direction * random.Range(0.6f, 1.2f) + Vector3.up * 0.2f;

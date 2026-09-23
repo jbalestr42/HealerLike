@@ -32,7 +32,7 @@ namespace HealerLike.Render.Environment
             _strips.Clear();
             if (_stripTemplate == null || zones == null)
             {
-                Debug.LogError("[HLEnvironmentGrass] Init needs the strip template and the zone registry.");
+                Debug.LogError("[EnvironmentGrass] Init needs the strip template and the zone registry.");
                 return;
             }
 
@@ -75,7 +75,7 @@ namespace HealerLike.Render.Environment
         {
             if (!float.IsFinite(ring) || ring <= 0f)
             {
-                Debug.LogError($"[HLEnvironmentGrass] Rejected ring width {ring}.");
+                Debug.LogError($"[EnvironmentGrass] Rejected ring width {ring}.");
                 return new Rect[0];
             }
 
@@ -106,20 +106,20 @@ namespace HealerLike.Render.Environment
         {
             if (widths == null || densityFractions == null || widths.Length == 0 || widths.Length != densityFractions.Length)
             {
-                Debug.LogError("[HLEnvironmentGrass] Widths and density fractions must be non-empty and of equal length.");
+                Debug.LogError("[EnvironmentGrass] Widths and density fractions must be non-empty and of equal length.");
                 return new RingStrip[0];
             }
 
             if (!float.IsFinite(boardDensity) || boardDensity <= 0f)
             {
-                Debug.LogError($"[HLEnvironmentGrass] Rejected board density {boardDensity}.");
+                Debug.LogError($"[EnvironmentGrass] Rejected board density {boardDensity}.");
                 return new RingStrip[0];
             }
 
             bool isWholeGrid = Mathf.Approximately(grid.width, Mathf.Round(grid.width)) && Mathf.Approximately(grid.height, Mathf.Round(grid.height));
             if (grid.width <= 0f || grid.height <= 0f || !isWholeGrid)
             {
-                Debug.LogError($"[HLEnvironmentGrass] Rejected grid {grid}, it needs a whole number of cells.");
+                Debug.LogError($"[EnvironmentGrass] Rejected grid {grid}, it needs a whole number of cells.");
                 return new RingStrip[0];
             }
 
@@ -129,7 +129,7 @@ namespace HealerLike.Render.Environment
                 float fraction = densityFractions[band];
                 if (!Mathf.Approximately(width, Mathf.Round(width)) || width < 1f || !float.IsFinite(fraction) || fraction <= 0f)
                 {
-                    Debug.LogError($"[HLEnvironmentGrass] Rejected band {band}: width {width}, density fraction {fraction}.");
+                    Debug.LogError($"[EnvironmentGrass] Rejected band {band}: width {width}, density fraction {fraction}.");
                     return new RingStrip[0];
                 }
             }

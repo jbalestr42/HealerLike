@@ -126,7 +126,7 @@ namespace HealerLike.Render.Stones
             _effects = effects;
             if (_bodyPivot == null || _presentation == null)
             {
-                Debug.LogError("[HLStoneEnemyVisual] The model prefab needs its BodyPivot and presentation children.");
+                Debug.LogError("[StoneEnemyVisual] The model prefab needs its BodyPivot and presentation children.");
                 return;
             }
 

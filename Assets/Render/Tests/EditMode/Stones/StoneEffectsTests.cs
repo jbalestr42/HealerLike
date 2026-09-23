@@ -16,7 +16,7 @@ namespace HealerLike.Render.Stones
         {
             Transform pivot = new GameObject("BodyPivot").transform;
             pivot.SetParent(target.transform, false);
-            Transform presentation = new GameObject("HLStonePresentation").transform;
+            Transform presentation = new GameObject("StonePresentation").transform;
             presentation.SetParent(pivot, false);
             StoneEnemyVisual visual = target.AddComponent<StoneEnemyVisual>();
             TestHelpers.SetPrivateField(visual, "_bodyPivot", pivot);
@@ -74,7 +74,7 @@ namespace HealerLike.Render.Stones
         {
             StoneEffects fx = CreateEffects();
             GameObject go = fx.gameObject;
-            GameObject source = new GameObject("HLSourceVisual");
+            GameObject source = new GameObject("SourceVisual");
             StoneEnemyVisual visual = CreateVisual(source);
             Mesh mesh = StoneMesh.CreateMesh(1, StonePresets.Boulder);
             try

@@ -277,7 +277,7 @@ namespace HealerLike.Render
         [Test]
         public void RemovingEarlierSinkUsesStableNewestFirstSnapshot()
         {
-            GameObject source = NewObject("HLSource");
+            GameObject source = NewObject("Source");
             List<string> calls = new List<string>();
             CallbackSink a = new CallbackSink { callback = () => calls.Add("A") };
             CallbackSink b = new CallbackSink { callback = () => calls.Add("B") };
@@ -303,7 +303,7 @@ namespace HealerLike.Render
         [Test]
         public void NestedNotificationHasIndependentSnapshot()
         {
-            GameObject source = NewObject("HLSource");
+            GameObject source = NewObject("Source");
             List<string> calls = new List<string>();
             bool nested = false;
             CallbackSink a = new CallbackSink { callback = () => calls.Add("A") };
@@ -331,7 +331,7 @@ namespace HealerLike.Render
         [Test]
         public void DestroyedSourceCanRemoveItsLastRegistration()
         {
-            GameObject source = NewObject("HLSource");
+            GameObject source = NewObject("Source");
             RecordingHealSink sink = new RecordingHealSink();
             _registry.Register(source, sink);
             UnityEngine.Object.DestroyImmediate(source);

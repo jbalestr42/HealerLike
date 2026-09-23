@@ -8,7 +8,7 @@ namespace HealerLike.Render.Stones
     {
         static StoneGroundDisc CreateDisc(Transform parent, bool isShadow)
         {
-            GameObject discGo = new GameObject("HLDisc", typeof(MeshFilter), typeof(MeshRenderer));
+            GameObject discGo = new GameObject("Disc", typeof(MeshFilter), typeof(MeshRenderer));
             discGo.transform.SetParent(parent, false);
             StoneGroundDisc disc = discGo.AddComponent<StoneGroundDisc>();
             TestHelpers.SetPrivateField(disc, "_renderer", discGo.GetComponent<MeshRenderer>());
@@ -19,7 +19,7 @@ namespace HealerLike.Render.Stones
         [Test]
         public void ShadowPointsAwayFromLightStaysFlatAndCanBeHidden()
         {
-            GameObject go = new GameObject("HLShadowOwner");
+            GameObject go = new GameObject("ShadowOwner");
             try
             {
                 StoneGroundDisc shadow = CreateDisc(go.transform, true);
@@ -48,7 +48,7 @@ namespace HealerLike.Render.Stones
         [Test]
         public void BareEarthRadiusCoversScaledClumpAndColourGoesThroughTheBlock()
         {
-            GameObject root = new GameObject("HLRing");
+            GameObject root = new GameObject("Ring");
             try
             {
                 StoneGroundDisc ring = CreateDisc(root.transform, false);

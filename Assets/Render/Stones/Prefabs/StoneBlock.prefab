@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 218573050040619521}
   - component: {fileID: 1588626751379893323}
   m_Layer: 15
-  m_Name: HLOchreFace
+  m_Name: OchreFace
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -359,7 +359,7 @@ GameObject:
   - component: {fileID: 6410360205917306424}
   - component: {fileID: 7029295413621873545}
   m_Layer: 15
-  m_Name: HLStoneClump
+  m_Name: StoneClump
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

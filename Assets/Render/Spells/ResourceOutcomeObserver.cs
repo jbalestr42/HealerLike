@@ -31,7 +31,7 @@ namespace HealerLike.Render.Spells
         {
             if (entity == null || manager == null)
             {
-                Debug.LogError("[HLResourceOutcomeObserver] Init needs an entity and the RenderManager.");
+                Debug.LogError("[ResourceOutcomeObserver] Init needs an entity and the RenderManager.");
                 return;
             }
 

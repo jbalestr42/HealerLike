@@ -10,7 +10,7 @@ namespace HealerLike.Render.Creatures
             CreatureRecipe recipe = ScriptableObject.CreateInstance<CreatureRecipe>();
             recipe.parts = new Part[]
             {
-                new Part { id = "HLBody", parent = -1, dimensions = Vector3.one, colour = Color.green }
+                new Part { id = "Body", parent = -1, dimensions = Vector3.one, colour = Color.green }
             };
             recipe.sourceLocal = new Vector3[] { Vector3.up };
             recipe.arms = new ArmDefinition[]
@@ -59,7 +59,7 @@ namespace HealerLike.Render.Creatures
                 for (int i = 0; i < count; i++)
                 {
                     recipe.parts[i] = body;
-                    recipe.parts[i].id = "HLPart" + i;
+                    recipe.parts[i].id = "Part" + i;
                     recipe.parts[i].parent = i == 0 ? -1 : 0;
                 }
 

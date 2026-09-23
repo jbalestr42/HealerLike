@@ -44,7 +44,7 @@ namespace HealerLike.Render.Zones
 
     public class ZoneRegistryTests
     {
-        static readonly string overflowWarning = "HLZoneRegistry: cosmetic zone capacity exceeded; "
+        static readonly string overflowWarning = "ZoneRegistry: cosmetic zone capacity exceeded; "
                                                  + "feedback reserved before decorative footprints; "
                                                  + "first registered wins within each kind.";
 
@@ -253,7 +253,7 @@ namespace HealerLike.Render.Zones
             _registry.PublishFrame(0.5f);
             _upload.calls.Clear();
 
-            LogAssert.Expect(LogType.Error, new Regex(@"^\[HLZoneRegistry\] PublishFrame needs a finite delta time"));
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[ZoneRegistry\] PublishFrame needs a finite delta time"));
             _registry.PublishFrame(-1f);
 
             Assert.AreEqual(0, _upload.calls.Count);
@@ -267,7 +267,7 @@ namespace HealerLike.Render.Zones
             Add(1f);
             _upload.calls.Clear();
 
-            LogAssert.Expect(LogType.Error, new Regex(@"^\[HLZoneRegistry\] PublishFrame needs a finite delta time"));
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[ZoneRegistry\] PublishFrame needs a finite delta time"));
             _registry.PublishFrame(float.NaN);
 
             Assert.AreEqual(0, _upload.calls.Count);

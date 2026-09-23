@@ -11,7 +11,7 @@ namespace HealerLike.Render.Creatures
             result = default;
             if (joints == null || lengths == null || lengths.Length < 2 || joints.Length != lengths.Length + 1)
             {
-                Debug.LogError("[HLChainSolver] A chain requires N equal links and N+1 joints, N >= 2.");
+                Debug.LogError("[ChainSolver] A chain requires N equal links and N+1 joints, N >= 2.");
                 return false;
             }
 
@@ -21,7 +21,7 @@ namespace HealerLike.Render.Creatures
             if (!isRootFinite || !isTargetFinite || !isPoleFinite || !float.IsFinite(tolerance) || tolerance <= 0f
                 || maxIterations < 1)
             {
-                Debug.LogError("[HLChainSolver] Invalid solver settings.");
+                Debug.LogError("[ChainSolver] Invalid solver settings.");
                 return false;
             }
 
@@ -31,7 +31,7 @@ namespace HealerLike.Render.Creatures
                 bool isEqual = Mathf.Abs(lengths[i] - lengths[0]) <= lengths[0] * 0.000001f;
                 if (!float.IsFinite(lengths[i]) || lengths[i] <= 0f || !isEqual)
                 {
-                    Debug.LogError("[HLChainSolver] Lengths must be finite, positive and equal.");
+                    Debug.LogError("[ChainSolver] Lengths must be finite, positive and equal.");
                     return false;
                 }
 
@@ -42,14 +42,14 @@ namespace HealerLike.Render.Creatures
             {
                 if (!float.IsFinite(joints[i].x) || !float.IsFinite(joints[i].y) || !float.IsFinite(joints[i].z))
                 {
-                    Debug.LogError("[HLChainSolver] Nonfinite joint.");
+                    Debug.LogError("[ChainSolver] Nonfinite joint.");
                     return false;
                 }
             }
 
             if (!float.IsFinite(total))
             {
-                Debug.LogError("[HLChainSolver] Chain length overflow.");
+                Debug.LogError("[ChainSolver] Chain length overflow.");
                 return false;
             }
 
@@ -58,7 +58,7 @@ namespace HealerLike.Render.Creatures
             float distance = delta.magnitude;
             if (!float.IsFinite(distance))
             {
-                Debug.LogError("[HLChainSolver] Target distance overflow.");
+                Debug.LogError("[ChainSolver] Target distance overflow.");
                 return false;
             }
 

@@ -34,7 +34,7 @@ namespace HealerLike.Render.Grass
         {
             if (!IsValid(width, height, cellSize, gridOrigin, surfaceY) || totalBladeBudget < 0)
             {
-                Debug.LogError($"[HLGrassLayout] Rejected a {width} x {height} grid of size {cellSize} with budget {totalBladeBudget}.");
+                Debug.LogError($"[GrassLayout] Rejected a {width} x {height} grid of size {cellSize} with budget {totalBladeBudget}.");
                 return new BladeSeed[0];
             }
 
@@ -69,7 +69,7 @@ namespace HealerLike.Render.Grass
             bool isFarCornerValid = float.IsFinite(rect.xMax) && float.IsFinite(rect.yMax);
             if (!float.IsFinite(density) || density < 0f || budget < 0 || !isRectValid || !isFarCornerValid)
             {
-                Debug.LogError($"[HLGrassLayout] Rejected rect {rect} with density {density} and budget {budget}.");
+                Debug.LogError($"[GrassLayout] Rejected rect {rect} with density {density} and budget {budget}.");
                 return new BladeSeed[0];
             }
 

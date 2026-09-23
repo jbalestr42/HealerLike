@@ -811,7 +811,7 @@ GameObject:
   - component: {fileID: 6672899894960130959}
   - component: {fileID: 104560175242429611}
   m_Layer: 0
-  m_Name: HLPrimitive
+  m_Name: Primitive
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

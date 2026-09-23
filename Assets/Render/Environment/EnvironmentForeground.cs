@@ -48,7 +48,7 @@ namespace HealerLike.Render.Environment
         {
             if (manager == null || manager.meshes == null)
             {
-                Debug.LogError("[HLEnvironmentForeground] Init needs the render manager and its primitive meshes.");
+                Debug.LogError("[EnvironmentForeground] Init needs the render manager and its primitive meshes.");
                 return;
             }
 
@@ -111,7 +111,7 @@ namespace HealerLike.Render.Environment
             bool isLensValid = verticalFov > 1f && verticalFov < 179f && float.IsFinite(aspect) && aspect > 0f;
             if (!isLensValid || !float.IsFinite(groundY))
             {
-                Debug.LogError($"[HLEnvironmentForeground] Rejected field of view {verticalFov}, aspect {aspect}, ground {groundY}.");
+                Debug.LogError($"[EnvironmentForeground] Rejected field of view {verticalFov}, aspect {aspect}, ground {groundY}.");
                 return result;
             }
 
@@ -121,7 +121,7 @@ namespace HealerLike.Render.Environment
                 Vector2 viewport = new Vector2(side, 0f);
                 if (!GroundHit(cameraPosition, cameraRotation, verticalFov, aspect, viewport, groundY, out corners[side]))
                 {
-                    Debug.LogError("[HLEnvironmentForeground] The bottom corners of the frame do not see the ground.");
+                    Debug.LogError("[EnvironmentForeground] The bottom corners of the frame do not see the ground.");
                     return result;
                 }
             }
@@ -195,7 +195,7 @@ namespace HealerLike.Render.Environment
         {
             Clear();
             _items = Layout(cameraPosition, cameraRotation, verticalFov, frameAspect, _groundY, _seed);
-            _root = new GameObject("HLForegroundItems").transform;
+            _root = new GameObject("ForegroundItems").transform;
             _root.SetParent(transform, false);
             _properties = new MaterialPropertyBlock();
             foreach (ForegroundItem item in _items)
@@ -230,7 +230,7 @@ namespace HealerLike.Render.Environment
             if (item.kind == ForegroundKind.Boulder)
             {
                 Mesh mesh = StoneMesh.CreateMesh(item.seed, StonePresets.Boulder);
-                mesh.name = "HLForegroundStone";
+                mesh.name = "ForegroundStone";
                 _ownedMeshes.Add(mesh);
                 float k = item.scale / Mathf.Max(mesh.bounds.extents.x, mesh.bounds.extents.z, 0.0001f);
                 // Sink a quarter of the height so the boulder reads as half buried

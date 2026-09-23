@@ -81,14 +81,14 @@ namespace HealerLike.Render.Grass
             bool isCapacityValid = zoneCapacity >= 1 && zoneCapacity <= MaxZones;
             if (!isBufferValid || !isCapacityValid || zoneCapacity > zones.count)
             {
-                Debug.LogError("[HLGrassField] Borrow a live zone buffer with the 32-byte stride and capacity 1..64.");
+                Debug.LogError("[GrassField] Borrow a live zone buffer with the 32-byte stride and capacity 1..64.");
                 return;
             }
 
             bool isAreaValid = float.IsFinite(area.width) && float.IsFinite(area.height) && area.width > 0f && area.height > 0f;
             if (!isAreaValid || !float.IsFinite(cellSize) || cellSize <= 0f || !float.IsFinite(surfaceY))
             {
-                Debug.LogError($"[HLGrassField] Rejected area {area} with cell size {cellSize} and surface {surfaceY}.");
+                Debug.LogError($"[GrassField] Rejected area {area} with cell size {cellSize} and surface {surfaceY}.");
                 return;
             }
 
@@ -129,7 +129,7 @@ namespace HealerLike.Render.Grass
         {
             if (zones == null)
             {
-                Debug.LogError("[HLGrassField] UpdateField needs the zone registry.");
+                Debug.LogError("[GrassField] UpdateField needs the zone registry.");
                 return;
             }
 
@@ -160,7 +160,7 @@ namespace HealerLike.Render.Grass
             bool isBufferValid = buffer == null ? validCount == 0 : buffer.stride == Zone.Stride && validCount <= buffer.count;
             if (!isCountValid || !isBufferValid)
             {
-                Debug.LogError($"[HLGrassField] Rejected zone snapshot with count {validCount}.");
+                Debug.LogError($"[GrassField] Rejected zone snapshot with count {validCount}.");
                 return;
             }
 
@@ -249,7 +249,7 @@ namespace HealerLike.Render.Grass
             BladeSeed[] layout = CanBuild() ? key.GenerateLayout() : null;
             if (layout == null)
             {
-                Debug.LogError("[HLGrassField] Grass disabled: it needs compute, indirect draws, its assets and a finite area.", this);
+                Debug.LogError("[GrassField] Grass disabled: it needs compute, indirect draws, its assets and a finite area.", this);
                 enabled = false;
                 return false;
             }
@@ -266,7 +266,7 @@ namespace HealerLike.Render.Grass
             _seeds.SetData(layout);
             _states = new GraphicsBuffer(GraphicsBuffer.Target.Structured, _bladeCount, BladeState.Stride);
             _visibleBlades = new GraphicsBuffer(GraphicsBuffer.Target.Append, _bladeCount, 4);
-            _kernel = _updateGrass.FindKernel("HLUpdateGrass");
+            _kernel = _updateGrass.FindKernel("UpdateGrass");
 
             Bounds bounds = key.CalculateBounds();
             _bladeDraw = new GrassDraw(_meshes.bladeCone, _lookMaterial, 0, bounds, gameObject.layer);

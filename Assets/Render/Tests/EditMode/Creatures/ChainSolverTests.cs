@@ -144,10 +144,10 @@ namespace HealerLike.Render.Creatures
             lengths[3] = 0.3f;
             Vector3[] joints = Rest();
             joints[2].x = float.PositiveInfinity;
-            LogAssert.Expect(LogType.Error, "[HLChainSolver] Lengths must be finite, positive and equal.");
-            LogAssert.Expect(LogType.Error, "[HLChainSolver] Lengths must be finite, positive and equal.");
-            LogAssert.Expect(LogType.Error, "[HLChainSolver] Invalid solver settings.");
-            LogAssert.Expect(LogType.Error, "[HLChainSolver] Nonfinite joint.");
+            LogAssert.Expect(LogType.Error, "[ChainSolver] Lengths must be finite, positive and equal.");
+            LogAssert.Expect(LogType.Error, "[ChainSolver] Lengths must be finite, positive and equal.");
+            LogAssert.Expect(LogType.Error, "[ChainSolver] Invalid solver settings.");
+            LogAssert.Expect(LogType.Error, "[ChainSolver] Nonfinite joint.");
 
             bool isUnequalSolved = solver.Solve(Rest(), lengths, root, target, Vector3.up, out ChainResult result);
             lengths[3] = float.NaN;

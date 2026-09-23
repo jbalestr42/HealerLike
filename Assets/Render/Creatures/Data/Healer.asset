@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Healer
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.CreatureRecipe
   parts:
-  - id: HLStem
+  - id: Stem
     parent: -1
     primitive: 1
     localPosition: {x: 0, y: 0.5125, z: 0}
@@ -22,7 +22,7 @@ MonoBehaviour:
     colour: {r: 0.18, g: 0.49, b: 0.31, a: 1}
     torusTubeRatio: 0.2
     glow: 0
-  - id: HLBulb
+  - id: Bulb
     parent: 0
     primitive: 2
     localPosition: {x: 0, y: 0.98399997, z: 0}
@@ -31,7 +31,7 @@ MonoBehaviour:
     colour: {r: 0.5, g: 0.79, b: 0.25, a: 1}
     torusTubeRatio: 0.2
     glow: 0
-  - id: HLHip
+  - id: Hip
     parent: 0
     primitive: 0
     localPosition: {x: 0, y: 0.081999995, z: 0}
@@ -40,7 +40,7 @@ MonoBehaviour:
     colour: {r: 0.5, g: 0.79, b: 0.25, a: 1}
     torusTubeRatio: 0.2
     glow: 0
-  - id: HLCrown
+  - id: Crown
     parent: 0
     primitive: 3
     localPosition: {x: 0, y: 1.763, z: 0}
@@ -49,7 +49,7 @@ MonoBehaviour:
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
     glow: 0.4
-  - id: HLBud0
+  - id: Bud0
     parent: 0
     primitive: 0
     localPosition: {x: 0.348, y: 1.4145, z: 0}
@@ -58,7 +58,7 @@ MonoBehaviour:
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
     glow: 1.6
-  - id: HLBud1
+  - id: Bud1
     parent: 0
     primitive: 0
     localPosition: {x: -0.17400002, y: 1.4145, z: 0.30137685}
@@ -67,7 +67,7 @@ MonoBehaviour:
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
     glow: 1.6
-  - id: HLBud2
+  - id: Bud2
     parent: 0
     primitive: 0
     localPosition: {x: -0.17399997, y: 1.4145, z: -0.30137685}
@@ -76,7 +76,7 @@ MonoBehaviour:
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
     glow: 1.6
-  - id: HLJoint0
+  - id: Joint0
     parent: 0
     primitive: 0
     localPosition: {x: 0, y: 0.3895, z: 0}

@@ -10,7 +10,7 @@ namespace HealerLike.Render.Grass
             bool isFootprintValid = GrassLayout.IsValid(width, height, cellSize, gridOrigin, surfaceY);
             if (!isFootprintValid || !float.IsFinite(bladeEnvelope) || bladeEnvelope < 0.85f)
             {
-                Debug.LogError($"[HLGrassBounds] Rejected a {width} x {height} footprint with envelope {bladeEnvelope}.");
+                Debug.LogError($"[GrassBounds] Rejected a {width} x {height} footprint with envelope {bladeEnvelope}.");
                 return new Bounds();
             }
 

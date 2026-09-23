@@ -11,7 +11,7 @@ namespace HealerLike.Render.Look
         [Test]
         public void PassRequestsDepthAndNormalsOnlyForEdgeMaterial()
         {
-            Type type = typeof(LookSettings).Assembly.GetType("HealerLike.Render.Look.HLOutlinesPass", true);
+            Type type = typeof(LookSettings).Assembly.GetType("HealerLike.Render.Look.OutlinesPass", true);
             Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/OutlinesEdges.shader");
             Assert.That(shader, Is.Not.Null);
             Material material = new Material(shader);

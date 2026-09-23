@@ -45,7 +45,7 @@ namespace HealerLike.Render.Environment
         [Test]
         public void Strips_ZeroRing_LogsAndReturnsNoStrips()
         {
-            LogAssert.Expect(LogType.Error, new Regex(@"^\[HLEnvironmentGrass\] Rejected ring width"));
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[EnvironmentGrass\] Rejected ring width"));
 
             Rect[] strips = EnvironmentGrass.Strips(new Rect(0f, 0f, 1f, 1f), 0f);
 
@@ -139,7 +139,7 @@ namespace HealerLike.Render.Environment
         {
             Rect grid = new Rect(-8f, -8f, 16f, 16f);
             Rect halfCellGrid = new Rect(0f, 0f, 2.5f, 3f);
-            Regex rejected = new Regex(@"^\[HLEnvironmentGrass\] (Rejected|Widths)");
+            Regex rejected = new Regex(@"^\[EnvironmentGrass\] (Rejected|Widths)");
             for (int i = 0; i < 8; i++)
             {
                 LogAssert.Expect(LogType.Error, rejected);
@@ -163,9 +163,9 @@ namespace HealerLike.Render.Environment
                 Assert.Ignore("Zone buffers need a graphics device; run with Metal.");
             }
 
-            GameObject go = new GameObject("HLRingGrass");
-            GameObject zonesGo = new GameObject("HLRingZones");
-            GameObject managerGo = new GameObject("HLRingManager");
+            GameObject go = new GameObject("RingGrass");
+            GameObject zonesGo = new GameObject("RingZones");
+            GameObject managerGo = new GameObject("RingManager");
             ZoneRegistry zones = zonesGo.AddComponent<ZoneRegistry>();
             try
             {
@@ -205,7 +205,7 @@ namespace HealerLike.Render.Environment
         [Test]
         public void UpdateStripsWithoutInitOrRegistryIsSafe()
         {
-            GameObject go = new GameObject("HLRingGrass");
+            GameObject go = new GameObject("RingGrass");
             try
             {
                 EnvironmentGrass grass = go.AddComponent<EnvironmentGrass>();

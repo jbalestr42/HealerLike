@@ -10,7 +10,7 @@ namespace HealerLike.Render.Look
     {
         static Type featureType
         {
-            get { return typeof(LookSettings).Assembly.GetType("HealerLike.Render.Look.HLOutlines", true); }
+            get { return typeof(LookSettings).Assembly.GetType("HealerLike.Render.Look.Outlines", true); }
         }
 
         static Shader LoadEdgeShader()

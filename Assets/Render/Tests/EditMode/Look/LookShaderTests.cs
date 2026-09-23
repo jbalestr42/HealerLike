@@ -77,7 +77,7 @@ namespace HealerLike.Render.Look
                         Compile(material, "HLDepthNormals", instanced, "_GBUFFER_NORMALS_OCT");
                     }
 
-                    Debug.Log("HL primitive: synchronously compiled 52 pass/keyword combinations on "
+                    Debug.Log("Primitive: synchronously compiled 52 pass/keyword combinations on "
                               + SystemInfo.graphicsDeviceType);
                 }
 
@@ -103,7 +103,7 @@ namespace HealerLike.Render.Look
                     Assert.That(shader.isSupported, Is.True);
                     Compile(material, "HLDepthNormalEdges", false);
                     Compile(material, "HLDepthNormalEdges", false, "_GBUFFER_NORMALS_OCT");
-                    Debug.Log("HL edges: synchronously compiled both normal encodings on "
+                    Debug.Log("Edges: synchronously compiled both normal encodings on "
                               + SystemInfo.graphicsDeviceType);
                 }
 
@@ -153,7 +153,7 @@ namespace HealerLike.Render.Look
                 owned.Add(renderer);
                 rendererProperty.objectReferenceValue = renderer;
                 pipelineData.ApplyModifiedPropertiesWithoutUndo();
-                Type featureType = typeof(LookSettings).Assembly.GetType("HealerLike.Render.Look.HLOutlines");
+                Type featureType = typeof(LookSettings).Assembly.GetType("HealerLike.Render.Look.Outlines");
                 ScriptableObject feature = ScriptableObject.CreateInstance(featureType);
                 owned.Add(feature);
                 featureType.GetField("layerMask").SetValue(feature, (LayerMask)0);
@@ -166,7 +166,7 @@ namespace HealerLike.Render.Look
                 rendererData.ApplyModifiedPropertiesWithoutUndo();
                 QualitySettings.renderPipeline = pipeline;
 
-                Camera camera = new GameObject("HL portrait camera").AddComponent<Camera>();
+                Camera camera = new GameObject("Portrait camera").AddComponent<Camera>();
                 owned.Add(camera.gameObject);
                 camera.cullingMask = 1 << 30;
                 camera.fieldOfView = 40f;
@@ -177,7 +177,7 @@ namespace HealerLike.Render.Look
                 camera.transform.position = -camera.transform.forward * 31f;
                 camera.clearFlags = CameraClearFlags.SolidColor;
                 camera.backgroundColor = new Color(0.75f, 0.82f, 0.88f);
-                Light light = new GameObject("HL upper left key").AddComponent<Light>();
+                Light light = new GameObject("Upper left key").AddComponent<Light>();
                 owned.Add(light.gameObject);
                 light.type = LightType.Directional;
                 light.intensity = 1f;
@@ -186,7 +186,7 @@ namespace HealerLike.Render.Look
                 light.shadowBias = 0.03f;
                 light.shadowNormalBias = 0.15f;
                 RenderSettings.sun = light;
-                LookController look = new GameObject("HL capture look").AddComponent<LookController>();
+                LookController look = new GameObject("Capture look").AddComponent<LookController>();
                 owned.Add(look.gameObject);
                 LookSettings settings = LookSettings.Default;
                 settings.fogStart = 70f;
@@ -214,9 +214,9 @@ namespace HealerLike.Render.Look
                     return go;
                 }
 
-                GameObject ground = Make(PrimitiveType.Plane, "HL receiving ground", Vector3.zero, Vector3.one * 3f,
+                GameObject ground = Make(PrimitiveType.Plane, "Receiving ground", Vector3.zero, Vector3.one * 3f,
                                          1f);
-                GameObject sphere = Make(PrimitiveType.Sphere, "HL casting sphere", new Vector3(-1f, 2.1f, 0f),
+                GameObject sphere = Make(PrimitiveType.Sphere, "Casting sphere", new Vector3(-1f, 2.1f, 0f),
                                          Vector3.one * 4f, 1f);
                 MaterialPropertyBlock sphereProperties = new MaterialPropertyBlock();
                 sphereProperties.SetColor("_BaseColor", new Color(0.55f, 0.58f, 0.64f));
@@ -243,7 +243,7 @@ namespace HealerLike.Render.Look
                     byte[] bytes = texture.EncodeToPNG();
                     File.WriteAllBytes(Path.Combine(directory, name + ".png"), bytes);
                     Assert.That(bytes.Length, Is.GreaterThan(10000));
-                    Debug.Log("HL D5 capture: " + name + " on " + SystemInfo.graphicsDeviceType);
+                    Debug.Log("D5 capture: " + name + " on " + SystemInfo.graphicsDeviceType);
                     return bytes;
                 }
 
@@ -294,7 +294,7 @@ namespace HealerLike.Render.Look
 
                     Assert.That(changedGridPixels, Is.GreaterThan(1000));
                     Assert.That(escapedGridPixels, Is.Zero, "Grid must remain inside the battlefield rectangle.");
-                    Debug.Log("HL beauty grid: " + changedGridPixels + " changed pixels, " + escapedGridPixels
+                    Debug.Log("Beauty grid: " + changedGridPixels + " changed pixels, " + escapedGridPixels
                               + " outside bounds");
 
                     settings.fogStart = 43.837f;
@@ -363,7 +363,7 @@ namespace HealerLike.Render.Look
                         Assert.That(widths[1], Is.InRange(1, 2), "one pixel right " + label);
                         Assert.That(widths[2], Is.InRange(2, 3), "two pixels left " + label);
                         Assert.That(widths[3], Is.InRange(2, 3), "two pixels right " + label);
-                        Debug.Log("HL beauty outline " + label + ": " + string.Join(",", widths));
+                        Debug.Log("Beauty outline " + label + ": " + string.Join(",", widths));
                     }
 
                     Material probe = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/LookBeautyProbe.shader"));
@@ -388,7 +388,7 @@ namespace HealerLike.Render.Look
                     for (int x = 0; x < 18; x++)
                     {
                         Vector3 bladePosition = new Vector3((x - 9) * 0.38f, 0.3f, -2.8f - z * 0.38f);
-                        GameObject blade = Make(PrimitiveType.Cube, "HL masked blade", bladePosition,
+                        GameObject blade = Make(PrimitiveType.Cube, "Masked blade", bladePosition,
                                                 new Vector3(0.045f, 0.6f, 0.09f), 0f);
                         blade.transform.rotation = Quaternion.Euler(0f, (x * 37 + z * 23) % 180, (x % 3 - 1) * 15);
                         blade.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;

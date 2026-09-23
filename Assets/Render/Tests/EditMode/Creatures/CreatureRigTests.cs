@@ -23,7 +23,7 @@ namespace HealerLike.Render.Creatures
         [SetUp]
         public void Setup()
         {
-            _parent = new GameObject("HLTestRig");
+            _parent = new GameObject("TestRig");
             _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
             _recipe = CreatureValidatorTests.Recipe();
             _recipe.idle = default;
@@ -42,7 +42,7 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void ShortDirectDeliveryDoesNotDrawUnusedBoardLengthAsCoils()
         {
-            GameObject host = new GameObject("HLShortDelivery");
+            GameObject host = new GameObject("ShortDelivery");
             string path = "Assets/Render/Creatures/Data/SpiralFern.asset";
             CreatureRecipe data = UnityEditor.AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
             Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
@@ -57,7 +57,7 @@ namespace HealerLike.Render.Creatures
                     body.ContactDelivery(500, target, null);
                     body.Tick(0.02f, 0.02f, new FootFrame(Vector3.zero, Vector3.up, 1f));
 
-                    MeshFilter arm = body.root.Find("HLLianaArm").GetComponent<MeshFilter>();
+                    MeshFilter arm = body.root.Find("LianaArm").GetComponent<MeshFilter>();
                     Assert.Less(arm.sharedMesh.bounds.size.magnitude, 4f,
                         "A two-cell real delivery must not loop the unused 24-cell reach around the actor.");
                 }
@@ -72,7 +72,7 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void Tick_LiveProjectile_ArmFollowsWithoutObserverPush()
         {
-            GameObject projectile = new GameObject("HLProjectile");
+            GameObject projectile = new GameObject("Projectile");
             projectile.transform.position = new Vector3(1f, 1f, 0f);
             FootFrame frame = new FootFrame(Vector3.zero, Vector3.up, 1f);
             Assert.IsTrue(_rig.BeginDelivery(7, DeliveryStyle.Direct, projectile.transform, Vector3.one));
@@ -186,7 +186,7 @@ namespace HealerLike.Render.Creatures
 
             Assert.AreEqual(before, _parent.transform.position);
             Assert.AreEqual(new Vector3(3f, 0.5f, 4f), _rig.root.position);
-            Transform root = _rig.root.Find("HLRoot");
+            Transform root = _rig.root.Find("Root");
             Assert.NotNull(root);
             Assert.IsEmpty(_parent.GetComponentsInChildren<Collider>());
         }
@@ -197,7 +197,7 @@ namespace HealerLike.Render.Creatures
             _rig.Dispose();
             Part child = new Part
             {
-                id = "HLChild",
+                id = "Child",
                 parent = 0,
                 localPosition = Vector3.up,
                 dimensions = Vector3.one,
@@ -208,7 +208,7 @@ namespace HealerLike.Render.Creatures
 
             _rig = CreateRig(_recipe, _parent.transform, _material);
 
-            Transform pivot = _rig.root.Find("HLSway/HLBody/HLChild");
+            Transform pivot = _rig.root.Find("Sway/Body/Child");
             Assert.AreEqual(Vector3.up, pivot.localPosition);
             Assert.AreEqual(Vector3.one, pivot.lossyScale);
         }
@@ -235,7 +235,7 @@ namespace HealerLike.Render.Creatures
         {
             _parent.transform.localScale = new Vector3(1f, 2f, 1f);
             CreatureRig rig = new CreatureRig();
-            LogAssert.Expect(LogType.Error, "[HLCreatureRig] Creature rig ancestors must have positive uniform scale.");
+            LogAssert.Expect(LogType.Error, "[CreatureRig] Creature rig ancestors must have positive uniform scale.");
 
             bool isInitialized = rig.Init(_recipe, _parent.transform, _material, PrimitiveMeshesTests.Meshes());
 
@@ -280,7 +280,7 @@ namespace HealerLike.Render.Creatures
             _rig.Tick(1f, 0.1f, new FootFrame(Vector3.zero, Vector3.up, 1f));
             Assert.Greater(_rig.aim.eulerAngles.y, 0);
             Assert.Less(_rig.aim.eulerAngles.y, 90);
-            Transform sway = _rig.root.Find("HLSway");
+            Transform sway = _rig.root.Find("Sway");
             Assert.Less(sway.localPosition.y, 0);
             _rig.SetReadout(Vector3.right * 4f, 1f, 0f, 0f);
             _rig.Tick(2f, 1f, new FootFrame(Vector3.zero, Vector3.up, 1f));
@@ -295,7 +295,7 @@ namespace HealerLike.Render.Creatures
             _rig.SetReadout(Vector3.forward, 0.1f, 0f, 0f);
             _rig.Hit();
             _rig.Tick(0f, 0.01f, frame);
-            Transform sway = _rig.root.Find("HLSway");
+            Transform sway = _rig.root.Find("Sway");
             Assert.Greater(Mathf.Abs(sway.localRotation.z), 0.001f);
             Renderer renderer = sway.GetComponentInChildren<Renderer>();
             MaterialPropertyBlock block = new MaterialPropertyBlock();

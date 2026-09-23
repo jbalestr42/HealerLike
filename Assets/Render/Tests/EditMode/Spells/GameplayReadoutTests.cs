@@ -9,7 +9,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void InstantHitArmorGrantCreatesPlatesWithoutAStartedHandler()
         {
-            GameObject go = new GameObject("HLShieldRecipient");
+            GameObject go = new GameObject("ShieldRecipient");
             BuffHandlerFactory factory = ScriptableObject.CreateInstance<BuffHandlerFactory>();
             FlatModifierFactory modifier = ScriptableObject.CreateInstance<FlatModifierFactory>();
             try
@@ -25,7 +25,7 @@ namespace HealerLike.Render.Spells
                     modifierType = AttributeModifierType.Add,
                     value = 2f
                 };
-                factory.uniqueID = "HLInstantShieldFixture";
+                factory.uniqueID = "InstantShieldFixture";
                 factory.data = new BuffHandlerData
                 {
                     durationType = DurationType.Instant,
@@ -78,12 +78,12 @@ namespace HealerLike.Render.Spells
         [Test]
         public void ResourceBindingsNeverDoubleSubscribeAndManaIsNotHealth()
         {
-            GameObject owner = new GameObject("HLResourceOwner");
-            GameObject caster = new GameObject("HLCaster");
+            GameObject owner = new GameObject("ResourceOwner");
+            GameObject caster = new GameObject("Caster");
             try
             {
                 ResourceAttribute health = TestHelpers.CreateResourceAttribute(owner, AttributeType.HealthMax, 100);
-                GameObject manaGo = new GameObject("HLMana");
+                GameObject manaGo = new GameObject("Mana");
                 manaGo.transform.SetParent(owner.transform);
                 ResourceAttribute mana = TestHelpers.CreateResourceAttribute(manaGo, AttributeType.ManaMax, 100);
                 sink spy = new sink();
@@ -121,8 +121,8 @@ namespace HealerLike.Render.Spells
         [Test]
         public void PoisonTintSurvivesAnotherStatusAndClearsWithSink()
         {
-            GameObject host = new GameObject("HLTintSink");
-            GameObject target = new GameObject("HLTintTarget");
+            GameObject host = new GameObject("TintSink");
+            GameObject target = new GameObject("TintTarget");
             BuffHandlerFactory poison = UnityEditor.AssetDatabase.LoadAssetAtPath<BuffHandlerFactory>(
                 "Assets/Data/CharacterSkills/PoisonSingleTarget/PoisonSingleTarget_BuffHandlerFactory.asset"
             );

@@ -29,7 +29,7 @@ namespace HealerLike.Render.Stones
             AssetType asset = AssetDatabase.LoadAssetAtPath<AssetType>(path);
             if (asset == null)
             {
-                Debug.LogError($"[HLStonePrefabBuilder] Missing {path}");
+                Debug.LogError($"[StonePrefabBuilder] Missing {path}");
             }
             return asset;
         }
@@ -48,7 +48,7 @@ namespace HealerLike.Render.Stones
                 Object.DestroyImmediate(meshFilter);
             }
 
-            GameObject child = new GameObject("HLStoneClump");
+            GameObject child = new GameObject("StoneClump");
             child.layer = blockGo.layer;
             child.transform.SetParent(blockGo.transform, false);
             StoneTerrainClump clump = child.AddComponent<StoneTerrainClump>();
@@ -68,7 +68,7 @@ namespace HealerLike.Render.Stones
 
         static void AddClumpChildren(StoneTerrainClump clump)
         {
-            GameObject face = new GameObject("HLOchreFace", typeof(MeshFilter), typeof(MeshRenderer));
+            GameObject face = new GameObject("OchreFace", typeof(MeshFilter), typeof(MeshRenderer));
             face.layer = clump.gameObject.layer;
             face.transform.SetParent(clump.transform, false);
             face.GetComponent<MeshRenderer>().sharedMaterial = Load<Material>(StoneMaterialPath);

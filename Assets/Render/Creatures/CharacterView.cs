@@ -99,7 +99,7 @@ namespace HealerLike.Render.Creatures
         {
             if (owner == null || manager == null)
             {
-                Debug.LogError("[HLCharacterView] Init needs the character and the RenderManager.");
+                Debug.LogError("[CharacterView] Init needs the character and the RenderManager.");
                 return;
             }
 

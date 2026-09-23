@@ -29,14 +29,14 @@ namespace HealerLike.Render.Grass
             try
             {
                 QualitySettings.renderPipeline=AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>("Assets/Settings/Very High_PipelineAsset.asset");
-                var camera=Make("HLGroundFixtureCamera").AddComponent<Camera>();
+                var camera=Make("GroundFixtureCamera").AddComponent<Camera>();
                 camera.cullingMask=1<<30; camera.fieldOfView=44; camera.aspect=1.5f;
                 camera.transform.rotation=Quaternion.Euler(48,0,0); camera.transform.position=-camera.transform.forward*12;
                 camera.clearFlags=CameraClearFlags.SolidColor; camera.backgroundColor=new Color(.74f,.82f,.83f);
-                var light=Make("HLGroundFixtureKey").AddComponent<Light>(); light.type=LightType.Directional;
+                var light=Make("GroundFixtureKey").AddComponent<Light>(); light.type=LightType.Directional;
                 light.transform.rotation=Quaternion.Euler(45,-35,0); light.shadows=LightShadows.Soft; light.intensity=1;
                 RenderSettings.sun=light;
-                var look=Make("HLGroundFixtureLook").AddComponent<LookController>();
+                var look=Make("GroundFixtureLook").AddComponent<LookController>();
                 var settings=LookSettings.Default; settings.fogStart=25;settings.fogEnd=60;
                 settings.shadowTint=new Color32(63,91,148,255);settings.inkStrength=.75f;look.settings=settings;
                 var material=new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));owned.Add(material);
@@ -44,8 +44,8 @@ namespace HealerLike.Render.Grass
                 var ground=GameObject.CreatePrimitive(PrimitiveType.Cube);owned.Add(ground);ground.layer=30;
                 ground.transform.localScale=new Vector3(8,.2f,8);ground.transform.position=Vector3.down*.1f;
                 ground.GetComponent<Renderer>().sharedMaterial=material;
-                var registry=Make("HLGroundFixtureZones").AddComponent<ZoneRegistry>();registry.Init();
-                var field=Make("HLGroundFixtureGrass").AddComponent<GrassField>();
+                var registry=Make("GroundFixtureZones").AddComponent<ZoneRegistry>();registry.Init();
+                var field=Make("GroundFixtureGrass").AddComponent<GrassField>();
                 field.Init(new Rect(-4f,-4f,8f,8f),1f,0f,camera,registry.buffer,64); field.bladeBudget=16384;
                 TestHelpers.InvokePrivate(field,"OnEnable");
                 TestHelpers.SetPrivateField(field,"_meshes",AssetDatabase.LoadAssetAtPath<HealerLike.Render.Creatures.PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset"));
@@ -54,7 +54,7 @@ namespace HealerLike.Render.Grass
                 TestHelpers.SetPrivateField(field,"_ringMaterial",AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/HealRing.mat"));
                 for(int i=0;i<3;i++)
                 {
-                    var stone=Make("HLFixtureStone"+i);stone.transform.position=new Vector3((i-1)*2.2f,0,1.6f);
+                    var stone=Make("FixtureStone"+i);stone.transform.position=new Vector3((i-1)*2.2f,0,1.6f);
                     var clump=stone.AddComponent<StoneTerrainClump>();TestHelpers.SetPrivateField(clump,"_stoneMaterial",material);
                     clump.Init((uint)(i+3),1.3f,null,null);clump.groundShadowEnabled=false;
                     registry.Add(ZoneKind.Trample,stone.transform.position,.8f,1);
@@ -84,7 +84,7 @@ namespace HealerLike.Render.Grass
                 RenderPipeline.SubmitRenderRequest(camera,new RenderPipeline.StandardRequest{destination=target});
                 RenderTexture.active=target;texture.ReadPixels(new Rect(0,0,1440,960),0,0);texture.Apply();
                 Assert.Less(GreenPixels(),firstGrassPixels*.1f,"Revoking the borrowed zone snapshot must stop camera submissions.");
-                Debug.Log("HL wave9 ground fixture: broad grass, three seeded clumps, explicit heal/hostile/trample zones. Visual fixture, not gameplay events.");
+                Debug.Log("Wave9 ground fixture: broad grass, three seeded clumps, explicit heal/hostile/trample zones. Visual fixture, not gameplay events.");
             }
             finally
             {

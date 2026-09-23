@@ -154,26 +154,26 @@ namespace HealerLike.Render.Stones
         {
             StoneSettings settings = StonePresets.Boulder;
             settings.size = float.NaN;
-            LogAssert.Expect(LogType.Error, new Regex(@"\[HLStoneMesh\] No stone"));
+            LogAssert.Expect(LogType.Error, new Regex(@"\[StoneMesh\] No stone"));
             Assert.IsNull(StoneMesh.Generate(0, settings).vertices);
 
             settings = StonePresets.Boulder;
             settings.elongation = 0f;
-            LogAssert.Expect(LogType.Error, new Regex(@"\[HLStoneMesh\] No stone"));
+            LogAssert.Expect(LogType.Error, new Regex(@"\[StoneMesh\] No stone"));
             Assert.IsNull(StoneMesh.Generate(0, settings).vertices);
 
             settings = StonePresets.Boulder;
             settings.depthRatio = 3f;
-            LogAssert.Expect(LogType.Error, new Regex(@"\[HLStoneMesh\] No stone"));
+            LogAssert.Expect(LogType.Error, new Regex(@"\[StoneMesh\] No stone"));
             Assert.IsNull(StoneMesh.Generate(0, settings).vertices);
 
             settings = StonePresets.Boulder;
             settings.roughness = 0.19f;
             Assert.IsFalse(StoneMesh.TryGenerate(0, settings, out StoneMeshData rejected));
             Assert.IsNull(rejected.vertices);
-            LogAssert.Expect(LogType.Error, new Regex(@"\[HLStoneMesh\] No stone mesh"));
+            LogAssert.Expect(LogType.Error, new Regex(@"\[StoneMesh\] No stone mesh"));
             Assert.IsNull(StoneMesh.CreateMesh(0, settings));
-            LogAssert.Expect(LogType.Error, new Regex(@"\[HLStoneMesh\] Subdivisions"));
+            LogAssert.Expect(LogType.Error, new Regex(@"\[StoneMesh\] Subdivisions"));
             Assert.AreEqual(0, StoneMesh.VertexCount(3));
 
             StoneMeshData data = StoneMesh.Generate(8, StonePresets.Boulder);

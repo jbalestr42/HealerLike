@@ -60,7 +60,7 @@ namespace HealerLike.Render.Creatures
                     continue;
                 }
 
-                parts.Add(Part("HLJoint" + i, Primitive.Sphere, Vector3.up * (stemPart.dimensions.y * 0.38f),
+                parts.Add(Part("Joint" + i, Primitive.Sphere, Vector3.up * (stemPart.dimensions.y * 0.38f),
                     Vector3.one * (stemPart.dimensions.x * 1.5f), bud, parent: i));
             }
 

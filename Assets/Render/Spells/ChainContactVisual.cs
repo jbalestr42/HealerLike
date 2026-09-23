@@ -15,7 +15,7 @@ namespace HealerLike.Render.Spells
         {
             if (manager == null)
             {
-                Debug.LogError("[HLChainContactVisual] Init needs the RenderManager.");
+                Debug.LogError("[ChainContactVisual] Init needs the RenderManager.");
                 return;
             }
 

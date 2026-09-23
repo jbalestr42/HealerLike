@@ -18,7 +18,7 @@ namespace HealerLike.Render.Stones
             Assert.AreEqual(0, model.GetComponentsInChildren<SkillSource>(true).Length);
             Assert.AreEqual(0, model.GetComponentsInChildren<SkinnedMeshRenderer>(true).Length);
             Assert.IsNotNull(model.transform.Find("BodyPivot").GetComponent<LookAtTarget>());
-            Assert.IsNotNull(model.transform.Find("BodyPivot/HLStonePresentation"));
+            Assert.IsNotNull(model.transform.Find("BodyPivot/StonePresentation"));
             StoneGroundDisc shadow = model.transform.Find("GroundShadow").GetComponent<StoneGroundDisc>();
             Assert.IsTrue(shadow.isShadow);
             Assert.IsFalse(shadow.gameObject.activeSelf);

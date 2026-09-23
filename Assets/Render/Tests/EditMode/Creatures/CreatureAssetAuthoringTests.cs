@@ -22,13 +22,13 @@ namespace HealerLike.Render.Creatures
             Assert.That(recipe.roots.count, Is.InRange(6, 8));
             if (name == "Healer")
             {
-                Part bulb = System.Array.Find(recipe.parts, part => part.id == "HLBulb");
-                Part crown = System.Array.Find(recipe.parts, part => part.id == "HLCrown");
+                Part bulb = System.Array.Find(recipe.parts, part => part.id == "Bulb");
+                Part crown = System.Array.Find(recipe.parts, part => part.id == "Crown");
                 Assert.AreEqual(Primitive.Cone, bulb.primitive);
                 Assert.AreEqual(Primitive.Torus, crown.primitive);
             }
 
-            GameObject parent = new GameObject("HLRecipeFixture");
+            GameObject parent = new GameObject("RecipeFixture");
             try
             {
                 Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
@@ -37,7 +37,7 @@ namespace HealerLike.Render.Creatures
                     rig.Tick(1f, 0.016f, new FootFrame(Vector3.zero, Vector3.up, 1f));
                     if (name == "Healer")
                     {
-                        Transform crown = rig.root.Find("HLSway/HLStem/HLCrown");
+                        Transform crown = rig.root.Find("Sway/Stem/Crown");
                         Quaternion before = crown.localRotation;
                         rig.Tick(11f, 0.016f, new FootFrame(Vector3.zero, Vector3.up, 1f));
                         Assert.That(Quaternion.Angle(before, crown.localRotation), Is.EqualTo(180).Within(0.01f));
@@ -46,7 +46,7 @@ namespace HealerLike.Render.Creatures
                     // Body parts share the baked meshes, only the arm chains are generated per rig
                     foreach (MeshFilter filter in parent.GetComponentsInChildren<MeshFilter>())
                     {
-                        bool isChain = filter.name == "HLLianaArm";
+                        bool isChain = filter.name == "LianaArm";
                         Assert.AreEqual(!isChain, AssetDatabase.Contains(filter.sharedMesh), filter.name);
                     }
 

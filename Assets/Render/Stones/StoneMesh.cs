@@ -23,7 +23,7 @@ namespace HealerLike.Render.Stones
         {
             if (subdivisions < 0 || subdivisions > 2)
             {
-                Debug.LogError($"[HLStoneMesh] Subdivisions must be 0, 1 or 2, not {subdivisions}.");
+                Debug.LogError($"[StoneMesh] Subdivisions must be 0, 1 or 2, not {subdivisions}.");
                 return 0;
             }
             return 20 << (subdivisions * 2);
@@ -40,7 +40,7 @@ namespace HealerLike.Render.Stones
             StoneMeshData data;
             if (!TryGenerate(seed, settings, out data))
             {
-                Debug.LogError($"[HLStoneMesh] No stone for seed {seed}, the settings are out of range.");
+                Debug.LogError($"[StoneMesh] No stone for seed {seed}, the settings are out of range.");
             }
             return data;
         }
@@ -196,7 +196,7 @@ namespace HealerLike.Render.Stones
             StoneMeshData data;
             if (!TryGenerate(seed, settings, out data))
             {
-                Debug.LogError($"[HLStoneMesh] No stone mesh for seed {seed}, the settings are out of range.");
+                Debug.LogError($"[StoneMesh] No stone mesh for seed {seed}, the settings are out of range.");
                 return null;
             }
             return CreateMesh(data);
@@ -204,7 +204,7 @@ namespace HealerLike.Render.Stones
 
         public static Mesh CreateMesh(StoneMeshData data)
         {
-            Mesh mesh = new Mesh { name = "HLStone" };
+            Mesh mesh = new Mesh { name = "Stone" };
             mesh.vertices = data.vertices;
             mesh.normals = data.normals;
             mesh.triangles = data.indices;

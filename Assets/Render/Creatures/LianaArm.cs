@@ -85,13 +85,13 @@ namespace HealerLike.Render.Creatures
             if (definition.restJoints == null || definition.restJoints.Length != definition.segmentCount + 1
                 || definition.segmentCount < 2 || !float.IsFinite(cellSize) || cellSize <= 0f)
             {
-                Debug.LogError("[HLLianaArm] Invalid arm definition.");
+                Debug.LogError("[LianaArm] Invalid arm definition.");
                 return false;
             }
 
             if (parent && !meshes)
             {
-                Debug.LogError("[HLLianaArm] A drawn arm needs the primitive meshes.");
+                Debug.LogError("[LianaArm] A drawn arm needs the primitive meshes.");
                 return false;
             }
 
@@ -126,9 +126,9 @@ namespace HealerLike.Render.Creatures
             }
 
             _detailColour.SetVectorArray("_BaseColor", detailColours);
-            _container = new GameObject("HLLianaArm").transform;
+            _container = new GameObject("LianaArm").transform;
             _container.SetParent(parent, false);
-            _mesh = new Mesh { name = "HLLianaChain", hideFlags = HideFlags.DontSave };
+            _mesh = new Mesh { name = "LianaChain", hideFlags = HideFlags.DontSave };
             _mesh.MarkDynamic();
             _vertices = new Vector3[_joints.Length * sides + 2];
             _normals = new Vector3[_vertices.Length];
@@ -393,7 +393,7 @@ namespace HealerLike.Render.Creatures
 
             if (!_hasLoggedSolveError)
             {
-                Debug.LogError("[HLLianaArm] The chain has no finite solution, it stays hidden this frame.");
+                Debug.LogError("[LianaArm] The chain has no finite solution, it stays hidden this frame.");
                 _hasLoggedSolveError = true;
             }
         }

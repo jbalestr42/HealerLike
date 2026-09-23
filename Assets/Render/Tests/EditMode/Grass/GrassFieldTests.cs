@@ -28,7 +28,7 @@ public class GrassFieldTests
     [SetUp]
     public void SetUp()
     {
-        _go = new GameObject("HLGrassFieldTest");
+        _go = new GameObject("GrassFieldTest");
         _field = _go.AddComponent<GrassField>();
     }
 
@@ -133,7 +133,7 @@ public class GrassFieldTests
     [Test]
     public void Init_WithoutZoneBuffer_LogsAndStaysUnbuilt()
     {
-        LogAssert.Expect(LogType.Error, "[HLGrassField] Borrow a live zone buffer with the 32-byte stride and capacity 1..64.");
+        LogAssert.Expect(LogType.Error, "[GrassField] Borrow a live zone buffer with the 32-byte stride and capacity 1..64.");
 
         _field.Init(oneCell, 1f, 0.5f, null, null, GrassField.MaxZones);
         _field.UpdateField(null, 0);
@@ -151,7 +151,7 @@ public class GrassFieldTests
         }
 
         _borrowedZones = new GraphicsBuffer(GraphicsBuffer.Target.Structured, GrassField.MaxZones, Zone.Stride);
-        LogAssert.Expect(LogType.Error, new Regex(@"^\[HLGrassField\] Rejected area .* with cell size NaN"));
+        LogAssert.Expect(LogType.Error, new Regex(@"^\[GrassField\] Rejected area .* with cell size NaN"));
 
         _field.Init(oneCell, float.NaN, 0.5f, null, _borrowedZones, GrassField.MaxZones);
 

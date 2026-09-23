@@ -24,7 +24,7 @@ namespace HealerLike.Render.Environment
         [SetUp]
         public void Setup()
         {
-            _go = new GameObject("HLForegroundTest");
+            _go = new GameObject("ForegroundTest");
         }
 
         [TearDown]
@@ -133,9 +133,9 @@ namespace HealerLike.Render.Environment
         [Test]
         public void InvalidInputLogsAndLaysOutNothing()
         {
-            LogAssert.Expect(LogType.Error, new Regex(@"^\[HLEnvironmentForeground\] Rejected field of view"));
-            LogAssert.Expect(LogType.Error, new Regex(@"^\[HLEnvironmentForeground\] Rejected field of view"));
-            LogAssert.Expect(LogType.Error, "[HLEnvironmentForeground] The bottom corners of the frame do not see the ground.");
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[EnvironmentForeground\] Rejected field of view"));
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[EnvironmentForeground\] Rejected field of view"));
+            LogAssert.Expect(LogType.Error, "[EnvironmentForeground] The bottom corners of the frame do not see the ground.");
 
             Assert.IsEmpty(EnvironmentForeground.Layout(position, rotation, 0f, aspect, ground, 1));
             Assert.IsEmpty(EnvironmentForeground.Layout(position, rotation, fov, 0f, ground, 1));
@@ -189,8 +189,8 @@ namespace HealerLike.Render.Environment
         [Test]
         public void InitFromACameraMatchesTheLayout()
         {
-            GameObject cameraGo = new GameObject("HLForegroundCamera");
-            GameObject managerGo = new GameObject("HLForegroundManager");
+            GameObject cameraGo = new GameObject("ForegroundCamera");
+            GameObject managerGo = new GameObject("ForegroundManager");
             try
             {
                 Camera camera = cameraGo.AddComponent<Camera>();

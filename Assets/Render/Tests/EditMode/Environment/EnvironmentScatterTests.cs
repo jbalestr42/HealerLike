@@ -16,8 +16,8 @@ namespace HealerLike.Render.Environment
         [SetUp]
         public void Setup()
         {
-            _go = new GameObject("HLScatterTest");
-            _otherGo = new GameObject("HLScatterOther");
+            _go = new GameObject("ScatterTest");
+            _otherGo = new GameObject("ScatterOther");
             _meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
         }
 
@@ -113,7 +113,7 @@ namespace HealerLike.Render.Environment
         [Test]
         public void InitBuildsFromTheManagerMeshes()
         {
-            GameObject managerGo = new GameObject("HLScatterManager");
+            GameObject managerGo = new GameObject("ScatterManager");
             try
             {
                 RenderManager manager = managerGo.AddComponent<RenderManager>();

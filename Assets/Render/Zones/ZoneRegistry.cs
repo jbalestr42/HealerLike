@@ -216,7 +216,7 @@ namespace HealerLike.Render.Zones
 
             if (!float.IsFinite(deltaTime) || deltaTime < 0f)
             {
-                Debug.LogError($"[HLZoneRegistry] PublishFrame needs a finite delta time of zero or more, got {deltaTime}.");
+                Debug.LogError($"[ZoneRegistry] PublishFrame needs a finite delta time of zero or more, got {deltaTime}.");
                 return;
             }
 
@@ -283,7 +283,7 @@ namespace HealerLike.Render.Zones
             _overflowCount = overflow;
             if (overflow > 0 && !_overflowing)
             {
-                Debug.LogWarning("HLZoneRegistry: cosmetic zone capacity exceeded; "
+                Debug.LogWarning("ZoneRegistry: cosmetic zone capacity exceeded; "
                                  + "feedback reserved before decorative footprints; "
                                  + "first registered wins within each kind.", this);
             }

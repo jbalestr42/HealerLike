@@ -28,14 +28,14 @@ namespace HealerLike.Render.Stones
             {
                 clump.Init(5, 1f, null, null);
                 Assert.Greater(clump.bareGroundRadius, clump.assembly.localBounds.extents.x);
-                Transform facet = clump.assembly.parts[0].transform.Find("HLOchreFace");
+                Transform facet = clump.assembly.parts[0].transform.Find("OchreFace");
                 Assert.IsNotNull(facet);
                 Assert.IsTrue(facet.gameObject.activeSelf);
                 Assert.AreEqual(3, facet.GetComponent<MeshFilter>().sharedMesh.vertexCount);
 
                 clump.Init(6, 1f, null, null);
-                Assert.IsNull(clump.assembly.parts[0].transform.Find("HLOchreFace"));
-                Assert.IsFalse(clump.transform.Find("HLOchreFace").gameObject.activeSelf);
+                Assert.IsNull(clump.assembly.parts[0].transform.Find("OchreFace"));
+                Assert.IsFalse(clump.transform.Find("OchreFace").gameObject.activeSelf);
             }
             finally
             {
@@ -96,8 +96,8 @@ namespace HealerLike.Render.Stones
         [Test]
         public void BoundsAndCellOrderDeterminism()
         {
-            GameObject a = new GameObject("HLA");
-            GameObject b = new GameObject("HLB");
+            GameObject a = new GameObject("A");
+            GameObject b = new GameObject("B");
             StoneTerrainClump clumpA = a.AddComponent<StoneTerrainClump>();
             StoneTerrainClump clumpB = b.AddComponent<StoneTerrainClump>();
             try
@@ -126,7 +126,7 @@ namespace HealerLike.Render.Stones
                 }
 
                 int count = clumpA.assembly.parts.Count;
-                LogAssert.Expect(LogType.Error, new Regex(@"\[HLStoneTerrainClump\] Cell size"));
+                LogAssert.Expect(LogType.Error, new Regex(@"\[StoneTerrainClump\] Cell size"));
                 clumpA.Init(1, float.NaN, null, null);
                 Assert.AreEqual(count, clumpA.assembly.parts.Count); // the bad call left the clump as it was
             }

@@ -15,7 +15,7 @@ namespace HealerLike.Render.Stage
         }
         [Test] public void RealShadowsNeedPipelineShadowsLightShadowsAndDistance()
         {
-            var go=new GameObject("HLKeyLightTest"); var light=go.AddComponent<Light>(); light.type=LightType.Directional; light.shadows=LightShadows.Soft;
+            var go=new GameObject("KeyLightTest"); var light=go.AddComponent<Light>(); light.type=LightType.Directional; light.shadows=LightShadows.Soft;
             var pipeline=ScriptableObject.CreateInstance<UniversalRenderPipelineAsset>();
             try
             {
@@ -32,7 +32,7 @@ namespace HealerLike.Render.Stage
         }
         [Test] public void CheapEllipsesTurnOffWithRealShadowsAndBackOnWithout()
         {
-            var go=new GameObject("HLClumpTest"); go.SetActive(false);
+            var go=new GameObject("ClumpTest"); go.SetActive(false);
             try
             {
                 var clump=go.AddComponent<StoneTerrainClump>();

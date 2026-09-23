@@ -70,7 +70,7 @@ namespace HealerLike.Render.Look
                         block.SetVector("_BaseColor", linear);
                     }
 
-                    Debug.Log("HL COLOR mode=" + mode + " GetColor=" + block.GetColor("_BaseColor").ToString("F5")
+                    Debug.Log("COLOR mode=" + mode + " GetColor=" + block.GetColor("_BaseColor").ToString("F5")
                               + " GetVector=" + block.GetVector("_BaseColor").ToString("F5"));
                     using (CommandBuffer command = new CommandBuffer())
                     {
@@ -85,7 +85,7 @@ namespace HealerLike.Render.Look
                     texture.ReadPixels(new Rect(0f, 0f, 16f, 16f), 0, 0);
                     texture.Apply();
                     Color color = texture.GetPixel(8, 8);
-                    Debug.Log("HL COLOR pixel=" + color.ToString("F5"));
+                    Debug.Log("COLOR pixel=" + color.ToString("F5"));
                     return color;
                 }
 
@@ -99,7 +99,7 @@ namespace HealerLike.Render.Look
                             "Double conversion must be detected by GPU readback");
                 Assert.That(((Vector4)c - (Vector4)linear).magnitude, Is.LessThan(0.004f),
                             "Explicit working vector should reach GPU unchanged");
-                Debug.Log("HL COLOR active=" + QualitySettings.activeColorSpace + " artist=" + artist.ToString("F5")
+                Debug.Log("COLOR active=" + QualitySettings.activeColorSpace + " artist=" + artist.ToString("F5")
                           + " linear=" + linear.ToString("F5") + " A=" + a.ToString("F5") + " B=" + b.ToString("F5")
                           + " C=" + c.ToString("F5"));
             }

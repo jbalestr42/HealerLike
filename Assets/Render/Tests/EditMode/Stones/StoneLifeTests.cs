@@ -41,8 +41,8 @@ namespace HealerLike.Render.Stones
         [Test]
         public void TerrainReadsPublishedRegistryAndEmitsOncePerHostilePulse()
         {
-            GameObject root = new GameObject("HLTerrainLife");
-            GameObject zoneRoot = new GameObject("HLZones");
+            GameObject root = new GameObject("TerrainLife");
+            GameObject zoneRoot = new GameObject("Zones");
             StoneEffects fx = CreateEffects();
             GameObject fxRoot = fx.gameObject;
             StoneLife life = root.AddComponent<StoneLife>();
@@ -83,8 +83,8 @@ namespace HealerLike.Render.Stones
         [Test]
         public void NearbyImpactWobblesTopAndDisableRestoresIt()
         {
-            GameObject root = new GameObject("HLLife");
-            GameObject top = new GameObject("HLTop");
+            GameObject root = new GameObject("Life");
+            GameObject top = new GameObject("Top");
             StoneEffects fx = CreateEffects();
             GameObject fxRoot = fx.gameObject;
             StoneLife life = root.AddComponent<StoneLife>();

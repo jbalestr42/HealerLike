@@ -25,7 +25,7 @@ namespace HealerLike.Render.Environment
         [SetUp]
         public void Setup()
         {
-            _go = new GameObject("HLRidgeTest");
+            _go = new GameObject("RidgeTest");
         }
 
         [TearDown]
@@ -130,7 +130,7 @@ namespace HealerLike.Render.Environment
         [Test]
         public void InvalidInputLogsAndLaysOutNothing()
         {
-            Regex rejected = new Regex(@"^\[HLEnvironmentRidge\] Rejected");
+            Regex rejected = new Regex(@"^\[EnvironmentRidge\] Rejected");
             for (int i = 0; i < 5; i++)
             {
                 LogAssert.Expect(LogType.Error, rejected);
@@ -188,8 +188,8 @@ namespace HealerLike.Render.Environment
         [Test]
         public void InitBuildsFromTheCameraWithTheManagerMeshes()
         {
-            GameObject cameraGo = new GameObject("HLRidgeCamera");
-            GameObject managerGo = new GameObject("HLRidgeManager");
+            GameObject cameraGo = new GameObject("RidgeCamera");
+            GameObject managerGo = new GameObject("RidgeManager");
             try
             {
                 Camera camera = cameraGo.AddComponent<Camera>();

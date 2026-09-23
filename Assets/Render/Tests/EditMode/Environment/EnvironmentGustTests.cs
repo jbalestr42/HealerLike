@@ -8,7 +8,7 @@ namespace HealerLike.Render.Environment
         [Test]
         public void EnvelopeUsesDirectionExpiresAndRejectsInvalidInput()
         {
-            GameObject go = new GameObject("HLGustTest");
+            GameObject go = new GameObject("GustTest");
             try
             {
                 EnvironmentGust gust = go.AddComponent<EnvironmentGust>();
@@ -35,7 +35,7 @@ namespace HealerLike.Render.Environment
         [Test]
         public void OverlapIsBoundedAndDisableClearsPulsesWithoutAllocation()
         {
-            GameObject go = new GameObject("HLGustTest");
+            GameObject go = new GameObject("GustTest");
             try
             {
                 EnvironmentGust gust = go.AddComponent<EnvironmentGust>();
