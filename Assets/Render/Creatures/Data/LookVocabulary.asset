@@ -8747,10 +8747,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.0299999863
+      Data: 0.35
     - Name: 
       Entry: 4
-      Data: 0.2
+      Data: 0.225
     - Name: 
       Entry: 4
       Data: 0
@@ -8768,7 +8768,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 302.005371
+      Data: 302.735229
     - Name: 
       Entry: 8
       Data: 
@@ -8780,7 +8780,7 @@ MonoBehaviour:
       Data: 0.12
     - Name: 
       Entry: 4
-      Data: 0.8747185
+      Data: 0.952165842
     - Name: 
       Entry: 4
       Data: 0.12
@@ -8828,10 +8828,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.0299999863
+      Data: 0.35
     - Name: 
       Entry: 4
-      Data: 0.2
+      Data: 0.225
     - Name: 
       Entry: 4
       Data: 0
@@ -8849,7 +8849,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 302.005371
+      Data: 302.735229
     - Name: 
       Entry: 8
       Data: 
@@ -8861,7 +8861,7 @@ MonoBehaviour:
       Data: 0.12
     - Name: 
       Entry: 4
-      Data: 0.8747185
+      Data: 0.952165842
     - Name: 
       Entry: 4
       Data: 0.12
@@ -8888,10 +8888,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.35
+      Data: 0.7
     - Name: 
       Entry: 4
-      Data: 0.4
+      Data: 0.45
     - Name: 
       Entry: 4
       Data: 0
@@ -8924,7 +8924,7 @@ MonoBehaviour:
       Data: 44|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
-      Data: 2
+      Data: 3
     - Name: 
       Entry: 7
       Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
@@ -8945,10 +8945,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.15
+      Data: 0.4
     - Name: 
       Entry: 4
-      Data: -0.025
+      Data: 0.06
     - Name: 
       Entry: 4
       Data: 0
@@ -8966,7 +8966,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 260.537659
+      Data: 278.530762
     - Name: 
       Entry: 8
       Data: 
@@ -8978,10 +8978,79 @@ MonoBehaviour:
       Data: 0.1
     - Name: 
       Entry: 4
-      Data: 0.404138118
+      Data: 0.90895
     - Name: 
       Entry: 4
       Data: 0.1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0
+    - Name: minCount
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
+      Data: Hook
+    - Name: primitive
+      Entry: 3
+      Data: 1
+    - Name: role
+      Entry: 3
+      Data: 5
+    - Name: colour
+      Entry: 3
+      Data: 0
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.924999952
+    - Name: 
+      Entry: 4
+      Data: 0.06
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 244.358978
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.09
+    - Name: 
+      Entry: 4
+      Data: 0.367308438
+    - Name: 
+      Entry: 4
+      Data: 0.09
     - Name: 
       Entry: 8
       Data: 
@@ -9014,7 +9083,7 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.4
+      Data: 1.1
     - Name: 
       Entry: 4
       Data: -0.2
@@ -9035,7 +9104,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 210
+      Data: 160
     - Name: 
       Entry: 8
       Data: 
@@ -9074,7 +9143,7 @@ MonoBehaviour:
       Data: 45|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
-      Data: 2
+      Data: 3
     - Name: 
       Entry: 7
       Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
@@ -9095,10 +9164,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.15
+      Data: 0.4
     - Name: 
       Entry: 4
-      Data: -0.025
+      Data: 0.06
     - Name: 
       Entry: 4
       Data: 0
@@ -9116,7 +9185,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 260.537659
+      Data: 278.530762
     - Name: 
       Entry: 8
       Data: 
@@ -9128,10 +9197,79 @@ MonoBehaviour:
       Data: 0.1
     - Name: 
       Entry: 4
-      Data: 0.404138118
+      Data: 0.90895
     - Name: 
       Entry: 4
       Data: 0.1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0
+    - Name: minCount
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
+      Data: Hook
+    - Name: primitive
+      Entry: 3
+      Data: 1
+    - Name: role
+      Entry: 3
+      Data: 5
+    - Name: colour
+      Entry: 3
+      Data: 0
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.924999952
+    - Name: 
+      Entry: 4
+      Data: 0.06
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 244.358978
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.09
+    - Name: 
+      Entry: 4
+      Data: 0.367308438
+    - Name: 
+      Entry: 4
+      Data: 0.09
     - Name: 
       Entry: 8
       Data: 
@@ -9164,7 +9302,7 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.4
+      Data: 1.1
     - Name: 
       Entry: 4
       Data: -0.2
@@ -9185,7 +9323,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 210
+      Data: 160
     - Name: 
       Entry: 8
       Data: 
@@ -9281,10 +9419,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.075
+      Data: 0.375
     - Name: 
       Entry: 4
-      Data: 0.65
+      Data: 0.6
     - Name: 
       Entry: 4
       Data: 0
@@ -9302,7 +9440,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 353.41806
+      Data: 327.994629
     - Name: 
       Entry: 8
       Data: 
@@ -9314,7 +9452,7 @@ MonoBehaviour:
       Data: 0.06
     - Name: 
       Entry: 4
-      Data: 1.36862516
+      Data: 1.47509718
     - Name: 
       Entry: 4
       Data: 0.06
@@ -9350,10 +9488,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.15
+      Data: 0.75
     - Name: 
       Entry: 4
-      Data: 1.3
+      Data: 1.2
     - Name: 
       Entry: 4
       Data: 0
@@ -9431,10 +9569,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.075
+      Data: 0.375
     - Name: 
       Entry: 4
-      Data: 0.65
+      Data: 0.6
     - Name: 
       Entry: 4
       Data: 0
@@ -9452,7 +9590,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 353.41806
+      Data: 327.994629
     - Name: 
       Entry: 8
       Data: 
@@ -9464,7 +9602,7 @@ MonoBehaviour:
       Data: 0.06
     - Name: 
       Entry: 4
-      Data: 1.36862516
+      Data: 1.47509718
     - Name: 
       Entry: 4
       Data: 0.06
@@ -9500,10 +9638,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.15
+      Data: 0.75
     - Name: 
       Entry: 4
-      Data: 1.3
+      Data: 1.2
     - Name: 
       Entry: 4
       Data: 0
@@ -9617,7 +9755,7 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.845
+      Data: 0.97
     - Name: 
       Entry: 4
       Data: 0
@@ -9638,7 +9776,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 90
+      Data: -90
     - Name: 
       Entry: 8
       Data: 
@@ -9647,13 +9785,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 4
-      Data: 0.36
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 8
       Data: 
@@ -9686,13 +9824,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.4225
+      Data: 0.61
     - Name: 
       Entry: 4
       Data: 0
     - Name: 
       Entry: 4
-      Data: -0.7317915
+      Data: 0.56118
     - Name: 
       Entry: 8
       Data: 
@@ -9704,10 +9842,10 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 300
+      Data: -60
     - Name: 
       Entry: 4
-      Data: 90
+      Data: -90
     - Name: 
       Entry: 8
       Data: 
@@ -9716,13 +9854,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 4
-      Data: 0.36
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 8
       Data: 
@@ -9755,13 +9893,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.4225001
+      Data: -0.11
     - Name: 
       Entry: 4
       Data: 0
     - Name: 
       Entry: 4
-      Data: -0.7317915
+      Data: 0.56118
     - Name: 
       Entry: 8
       Data: 
@@ -9773,10 +9911,10 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 240
+      Data: -120
     - Name: 
       Entry: 4
-      Data: 90
+      Data: -90
     - Name: 
       Entry: 8
       Data: 
@@ -9785,13 +9923,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 4
-      Data: 0.36
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 8
       Data: 
@@ -9824,13 +9962,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.845
+      Data: -0.47
     - Name: 
       Entry: 4
       Data: 0
     - Name: 
       Entry: 4
-      Data: 7.387225E-08
+      Data: 0
     - Name: 
       Entry: 8
       Data: 
@@ -9842,10 +9980,10 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 180
+      Data: -180
     - Name: 
       Entry: 4
-      Data: 90
+      Data: -90
     - Name: 
       Entry: 8
       Data: 
@@ -9854,13 +9992,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 4
-      Data: 0.36
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 8
       Data: 
@@ -9893,13 +10031,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.4225
+      Data: -0.11
     - Name: 
       Entry: 4
       Data: 0
     - Name: 
       Entry: 4
-      Data: 0.731791556
+      Data: -0.56118
     - Name: 
       Entry: 8
       Data: 
@@ -9911,10 +10049,10 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 119.999992
+      Data: 120
     - Name: 
       Entry: 4
-      Data: 90
+      Data: -90
     - Name: 
       Entry: 8
       Data: 
@@ -9923,13 +10061,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 4
-      Data: 0.36
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 8
       Data: 
@@ -9962,13 +10100,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.422499925
+      Data: 0.61
     - Name: 
       Entry: 4
       Data: 0
     - Name: 
       Entry: 4
-      Data: 0.731791556
+      Data: -0.56118
     - Name: 
       Entry: 8
       Data: 
@@ -9980,10 +10118,10 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 60.0000076
+      Data: 60
     - Name: 
       Entry: 4
-      Data: 90
+      Data: -90
     - Name: 
       Entry: 8
       Data: 
@@ -9992,13 +10130,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 4
-      Data: 0.36
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 8
       Data: 
@@ -10043,7 +10181,7 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.845
+      Data: 0.97
     - Name: 
       Entry: 4
       Data: 0
@@ -10064,7 +10202,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 90
+      Data: -90
     - Name: 
       Entry: 8
       Data: 
@@ -10073,13 +10211,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 4
-      Data: 0.36
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 8
       Data: 
@@ -10112,13 +10250,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.4225
+      Data: 0.61
     - Name: 
       Entry: 4
       Data: 0
     - Name: 
       Entry: 4
-      Data: -0.7317915
+      Data: 0.56118
     - Name: 
       Entry: 8
       Data: 
@@ -10130,10 +10268,10 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 300
+      Data: -60
     - Name: 
       Entry: 4
-      Data: 90
+      Data: -90
     - Name: 
       Entry: 8
       Data: 
@@ -10142,13 +10280,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 4
-      Data: 0.36
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 8
       Data: 
@@ -10181,13 +10319,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.4225001
+      Data: -0.11
     - Name: 
       Entry: 4
       Data: 0
     - Name: 
       Entry: 4
-      Data: -0.7317915
+      Data: 0.56118
     - Name: 
       Entry: 8
       Data: 
@@ -10199,10 +10337,10 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 240
+      Data: -120
     - Name: 
       Entry: 4
-      Data: 90
+      Data: -90
     - Name: 
       Entry: 8
       Data: 
@@ -10211,13 +10349,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 4
-      Data: 0.36
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 8
       Data: 
@@ -10250,13 +10388,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.845
+      Data: -0.47
     - Name: 
       Entry: 4
       Data: 0
     - Name: 
       Entry: 4
-      Data: 7.387225E-08
+      Data: 0
     - Name: 
       Entry: 8
       Data: 
@@ -10268,10 +10406,10 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 180
+      Data: -180
     - Name: 
       Entry: 4
-      Data: 90
+      Data: -90
     - Name: 
       Entry: 8
       Data: 
@@ -10280,13 +10418,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 4
-      Data: 0.36
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 8
       Data: 
@@ -10319,13 +10457,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.4225
+      Data: -0.11
     - Name: 
       Entry: 4
       Data: 0
     - Name: 
       Entry: 4
-      Data: 0.731791556
+      Data: -0.56118
     - Name: 
       Entry: 8
       Data: 
@@ -10337,10 +10475,10 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 119.999992
+      Data: 120
     - Name: 
       Entry: 4
-      Data: 90
+      Data: -90
     - Name: 
       Entry: 8
       Data: 
@@ -10349,13 +10487,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 4
-      Data: 0.36
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 8
       Data: 
@@ -10388,13 +10526,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.422499925
+      Data: 0.61
     - Name: 
       Entry: 4
       Data: 0
     - Name: 
       Entry: 4
-      Data: 0.731791556
+      Data: -0.56118
     - Name: 
       Entry: 8
       Data: 
@@ -10406,10 +10544,10 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 60.0000076
+      Data: 60
     - Name: 
       Entry: 4
-      Data: 90
+      Data: -90
     - Name: 
       Entry: 8
       Data: 
@@ -10418,13 +10556,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 4
-      Data: 0.36
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.14
     - Name: 
       Entry: 8
       Data: 
@@ -10505,10 +10643,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.05
     - Name: 
       Entry: 4
       Data: 0
@@ -10526,7 +10664,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 0
+      Data: -12
     - Name: 
       Entry: 8
       Data: 
@@ -10535,13 +10673,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.74000013
+      Data: 1.5
     - Name: 
       Entry: 4
       Data: 0.14
     - Name: 
       Entry: 4
-      Data: 1.74000013
+      Data: 1.5
     - Name: 
       Entry: 8
       Data: 
@@ -10574,10 +10712,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 0.4
     - Name: 
       Entry: 4
-      Data: 0.32
+      Data: 0.25
     - Name: 
       Entry: 4
       Data: 0
@@ -10595,7 +10733,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 0
+      Data: -12
     - Name: 
       Entry: 8
       Data: 
@@ -10604,13 +10742,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.56000006
+      Data: 1.35
     - Name: 
       Entry: 4
       Data: 0.14
     - Name: 
       Entry: 4
-      Data: 1.56000006
+      Data: 1.35
     - Name: 
       Entry: 8
       Data: 
@@ -10643,10 +10781,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 0.35
     - Name: 
       Entry: 4
-      Data: 0.52
+      Data: 0.45
     - Name: 
       Entry: 4
       Data: 0
@@ -10664,7 +10802,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 0
+      Data: -12
     - Name: 
       Entry: 8
       Data: 
@@ -10673,13 +10811,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.38000011
+      Data: 1.2
     - Name: 
       Entry: 4
       Data: 0.14
     - Name: 
       Entry: 4
-      Data: 1.38000011
+      Data: 1.2
     - Name: 
       Entry: 8
       Data: 
@@ -10724,10 +10862,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.12
+      Data: 0.05
     - Name: 
       Entry: 4
       Data: 0
@@ -10745,7 +10883,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 0
+      Data: -12
     - Name: 
       Entry: 8
       Data: 
@@ -10754,13 +10892,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.74000013
+      Data: 1.5
     - Name: 
       Entry: 4
       Data: 0.14
     - Name: 
       Entry: 4
-      Data: 1.74000013
+      Data: 1.5
     - Name: 
       Entry: 8
       Data: 
@@ -10793,10 +10931,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 0.4
     - Name: 
       Entry: 4
-      Data: 0.32
+      Data: 0.25
     - Name: 
       Entry: 4
       Data: 0
@@ -10814,7 +10952,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 0
+      Data: -12
     - Name: 
       Entry: 8
       Data: 
@@ -10823,13 +10961,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.56000006
+      Data: 1.35
     - Name: 
       Entry: 4
       Data: 0.14
     - Name: 
       Entry: 4
-      Data: 1.56000006
+      Data: 1.35
     - Name: 
       Entry: 8
       Data: 
@@ -10862,10 +11000,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 0.35
     - Name: 
       Entry: 4
-      Data: 0.52
+      Data: 0.45
     - Name: 
       Entry: 4
       Data: 0
@@ -10883,7 +11021,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 0
+      Data: -12
     - Name: 
       Entry: 8
       Data: 
@@ -10892,13 +11030,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.38000011
+      Data: 1.2
     - Name: 
       Entry: 4
       Data: 0.14
     - Name: 
       Entry: 4
-      Data: 1.38000011
+      Data: 1.2
     - Name: 
       Entry: 8
       Data: 
@@ -10979,10 +11117,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.925
+      Data: 0.25
     - Name: 
       Entry: 4
-      Data: -0.15
+      Data: -0.12
     - Name: 
       Entry: 4
       Data: 0.1
@@ -11048,13 +11186,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.925
+      Data: 0.52
     - Name: 
       Entry: 4
-      Data: -0.15
+      Data: -0.28
     - Name: 
       Entry: 4
-      Data: 0.1
+      Data: -0.08
     - Name: 
       Entry: 8
       Data: 
@@ -11129,10 +11267,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.925
+      Data: 0.25
     - Name: 
       Entry: 4
-      Data: -0.15
+      Data: -0.12
     - Name: 
       Entry: 4
       Data: 0.1
@@ -11198,13 +11336,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.925
+      Data: 0.52
     - Name: 
       Entry: 4
-      Data: -0.15
+      Data: -0.28
     - Name: 
       Entry: 4
-      Data: 0.1
+      Data: -0.08
     - Name: 
       Entry: 8
       Data: 
@@ -11315,10 +11453,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.1
+      Data: 0.375
     - Name: 
       Entry: 4
-      Data: 0.35
+      Data: 0.375
     - Name: 
       Entry: 4
       Data: 0
@@ -11336,7 +11474,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 344.0546
+      Data: 315
     - Name: 
       Entry: 8
       Data: 
@@ -11348,7 +11486,7 @@ MonoBehaviour:
       Data: 0.05
     - Name: 
       Entry: 4
-      Data: 0.778010964
+      Data: 1.11066008
     - Name: 
       Entry: 4
       Data: 0.05
@@ -11384,10 +11522,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.0899999961
+      Data: 0.3375
     - Name: 
       Entry: 4
-      Data: 0.315
+      Data: 0.3375
     - Name: 
       Entry: 4
       Data: 0
@@ -11453,10 +11591,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.144000009
+      Data: 0.54
     - Name: 
       Entry: 4
-      Data: 0.504
+      Data: 0.54
     - Name: 
       Entry: 4
       Data: 0
@@ -11522,10 +11660,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.198
+      Data: 0.7425
     - Name: 
       Entry: 4
-      Data: 0.693
+      Data: 0.7425
     - Name: 
       Entry: 4
       Data: 0
@@ -11597,16 +11735,16 @@ MonoBehaviour:
       Data: 5
     - Name: colour
       Entry: 3
-      Data: 3
+      Data: 2
     - Name: position
       Entry: 7
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.1
+      Data: 0.375
     - Name: 
       Entry: 4
-      Data: 0.35
+      Data: 0.375
     - Name: 
       Entry: 4
       Data: 0
@@ -11624,7 +11762,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 344.0546
+      Data: 315
     - Name: 
       Entry: 8
       Data: 
@@ -11636,7 +11774,7 @@ MonoBehaviour:
       Data: 0.05
     - Name: 
       Entry: 4
-      Data: 0.778010964
+      Data: 1.11066008
     - Name: 
       Entry: 4
       Data: 0.05
@@ -11672,10 +11810,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.0899999961
+      Data: 0.3375
     - Name: 
       Entry: 4
-      Data: 0.315
+      Data: 0.3375
     - Name: 
       Entry: 4
       Data: 0
@@ -11741,10 +11879,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.144000009
+      Data: 0.54
     - Name: 
       Entry: 4
-      Data: 0.504
+      Data: 0.54
     - Name: 
       Entry: 4
       Data: 0
@@ -11810,10 +11948,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.198
+      Data: 0.7425
     - Name: 
       Entry: 4
-      Data: 0.693
+      Data: 0.7425
     - Name: 
       Entry: 4
       Data: 0
@@ -11927,10 +12065,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: -0.1
+      Data: 0
     - Name: 
       Entry: 4
       Data: 0
@@ -11942,13 +12080,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 18.0000038
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 2.24427652E-07
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 348
+      Data: 12
     - Name: 
       Entry: 8
       Data: 
@@ -11957,13 +12095,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.75
+      Data: 1.4
     - Name: 
       Entry: 4
       Data: 0.16
     - Name: 
       Entry: 4
-      Data: 0.75
+      Data: 1.4
     - Name: 
       Entry: 8
       Data: 
@@ -12008,10 +12146,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: -0.1
+      Data: 0
     - Name: 
       Entry: 4
       Data: 0
@@ -12023,13 +12161,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 18.0000038
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 2.24427652E-07
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 348
+      Data: 12
     - Name: 
       Entry: 8
       Data: 
@@ -12038,13 +12176,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.75
+      Data: 1.4
     - Name: 
       Entry: 4
       Data: 0.16
     - Name: 
       Entry: 4
-      Data: 0.75
+      Data: 1.4
     - Name: 
       Entry: 8
       Data: 
@@ -12104,7 +12242,7 @@ MonoBehaviour:
       Data: 65|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
-      Data: 4
+      Data: 5
     - Name: 
       Entry: 7
       Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
@@ -12125,13 +12263,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.2763183
+      Data: 0.55
     - Name: 
       Entry: 4
       Data: -0.1
     - Name: 
       Entry: 4
-      Data: 0.116825506
+      Data: -0.55
     - Name: 
       Entry: 8
       Data: 
@@ -12158,7 +12296,7 @@ MonoBehaviour:
       Data: 0.12
     - Name: 
       Entry: 4
-      Data: 0.34
+      Data: 0.36
     - Name: 
       Entry: 4
       Data: 0.12
@@ -12194,13 +12332,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.116825514
+      Data: 1.02631
     - Name: 
       Entry: 4
       Data: -0.1
     - Name: 
       Entry: 4
-      Data: 0.2763183
+      Data: -0.275
     - Name: 
       Entry: 8
       Data: 
@@ -12227,7 +12365,7 @@ MonoBehaviour:
       Data: 0.12
     - Name: 
       Entry: 4
-      Data: 0.34
+      Data: 0.36
     - Name: 
       Entry: 4
       Data: 0.12
@@ -12263,13 +12401,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.276318282
+      Data: 1.02631
     - Name: 
       Entry: 4
       Data: -0.1
     - Name: 
       Entry: 4
-      Data: -0.116825558
+      Data: 0.275
     - Name: 
       Entry: 8
       Data: 
@@ -12296,7 +12434,7 @@ MonoBehaviour:
       Data: 0.12
     - Name: 
       Entry: 4
-      Data: 0.34
+      Data: 0.36
     - Name: 
       Entry: 4
       Data: 0.12
@@ -12332,13 +12470,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.116825543
+      Data: 0.55
     - Name: 
       Entry: 4
       Data: -0.1
     - Name: 
       Entry: 4
-      Data: -0.2763183
+      Data: 0.55
     - Name: 
       Entry: 8
       Data: 
@@ -12365,7 +12503,76 @@ MonoBehaviour:
       Data: 0.12
     - Name: 
       Entry: 4
-      Data: 0.34
+      Data: 0.36
+    - Name: 
+      Entry: 4
+      Data: 0.12
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0.3
+    - Name: minCount
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
+      Data: Spike
+    - Name: primitive
+      Entry: 3
+      Data: 2
+    - Name: role
+      Entry: 3
+      Data: 5
+    - Name: colour
+      Entry: 3
+      Data: 7
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 1.1
+    - Name: 
+      Entry: 4
+      Data: -0.1
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 180
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.12
+    - Name: 
+      Entry: 4
+      Data: 0.36
     - Name: 
       Entry: 4
       Data: 0.12
@@ -12392,7 +12599,7 @@ MonoBehaviour:
       Data: 66|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
-      Data: 4
+      Data: 5
     - Name: 
       Entry: 7
       Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
@@ -12413,13 +12620,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.2763183
+      Data: 0.55
     - Name: 
       Entry: 4
       Data: -0.1
     - Name: 
       Entry: 4
-      Data: 0.116825506
+      Data: -0.55
     - Name: 
       Entry: 8
       Data: 
@@ -12446,7 +12653,7 @@ MonoBehaviour:
       Data: 0.12
     - Name: 
       Entry: 4
-      Data: 0.34
+      Data: 0.36
     - Name: 
       Entry: 4
       Data: 0.12
@@ -12482,13 +12689,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.116825514
+      Data: 1.02631
     - Name: 
       Entry: 4
       Data: -0.1
     - Name: 
       Entry: 4
-      Data: 0.2763183
+      Data: -0.275
     - Name: 
       Entry: 8
       Data: 
@@ -12515,7 +12722,7 @@ MonoBehaviour:
       Data: 0.12
     - Name: 
       Entry: 4
-      Data: 0.34
+      Data: 0.36
     - Name: 
       Entry: 4
       Data: 0.12
@@ -12551,13 +12758,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.276318282
+      Data: 1.02631
     - Name: 
       Entry: 4
       Data: -0.1
     - Name: 
       Entry: 4
-      Data: -0.116825558
+      Data: 0.275
     - Name: 
       Entry: 8
       Data: 
@@ -12584,7 +12791,7 @@ MonoBehaviour:
       Data: 0.12
     - Name: 
       Entry: 4
-      Data: 0.34
+      Data: 0.36
     - Name: 
       Entry: 4
       Data: 0.12
@@ -12620,13 +12827,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.116825543
+      Data: 0.55
     - Name: 
       Entry: 4
       Data: -0.1
     - Name: 
       Entry: 4
-      Data: -0.2763183
+      Data: 0.55
     - Name: 
       Entry: 8
       Data: 
@@ -12653,7 +12860,76 @@ MonoBehaviour:
       Data: 0.12
     - Name: 
       Entry: 4
-      Data: 0.34
+      Data: 0.36
+    - Name: 
+      Entry: 4
+      Data: 0.12
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0.3
+    - Name: minCount
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
+      Data: Spike
+    - Name: primitive
+      Entry: 3
+      Data: 7
+    - Name: role
+      Entry: 3
+      Data: 5
+    - Name: colour
+      Entry: 3
+      Data: 7
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 1.1
+    - Name: 
+      Entry: 4
+      Data: -0.1
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 180
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.12
+    - Name: 
+      Entry: 4
+      Data: 0.36
     - Name: 
       Entry: 4
       Data: 0.12
@@ -12716,7 +12992,7 @@ MonoBehaviour:
       Data: 68|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
-      Data: 4
+      Data: 5
     - Name: 
       Entry: 7
       Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
@@ -12737,10 +13013,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.275
+      Data: 0.325
     - Name: 
       Entry: 4
-      Data: 0.025
+      Data: 0.075
     - Name: 
       Entry: 4
       Data: 0
@@ -12758,7 +13034,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 275.194427
+      Data: 282.994629
     - Name: 
       Entry: 8
       Data: 
@@ -12770,10 +13046,79 @@ MonoBehaviour:
       Data: 0.07
     - Name: 
       Entry: 4
-      Data: 0.6222681
+      Data: 0.7370832
     - Name: 
       Entry: 4
       Data: 0.07
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0
+    - Name: minCount
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
+      Data: Dropper
+    - Name: primitive
+      Entry: 3
+      Data: 1
+    - Name: role
+      Entry: 3
+      Data: 5
+    - Name: colour
+      Entry: 3
+      Data: 1
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.849999964
+    - Name: 
+      Entry: 4
+      Data: 0.1
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 255.96376
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.06
+    - Name: 
+      Entry: 4
+      Data: 0.472310543
+    - Name: 
+      Entry: 4
+      Data: 0.06
     - Name: 
       Entry: 8
       Data: 
@@ -12806,10 +13151,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.55
+      Data: 1.08
     - Name: 
       Entry: 4
-      Data: -0.15
+      Data: -0.12
     - Name: 
       Entry: 4
       Data: 0
@@ -12875,10 +13220,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.6
+      Data: 1.11
     - Name: 
       Entry: 4
-      Data: -0.35
+      Data: -0.32
     - Name: 
       Entry: 4
       Data: 0
@@ -12944,10 +13289,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.650000036
+      Data: 1.14
     - Name: 
       Entry: 4
-      Data: -0.55
+      Data: -0.52
     - Name: 
       Entry: 4
       Data: 0
@@ -13004,7 +13349,7 @@ MonoBehaviour:
       Data: 69|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
-      Data: 4
+      Data: 5
     - Name: 
       Entry: 7
       Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
@@ -13025,10 +13370,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.275
+      Data: 0.325
     - Name: 
       Entry: 4
-      Data: 0.025
+      Data: 0.075
     - Name: 
       Entry: 4
       Data: 0
@@ -13046,7 +13391,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 275.194427
+      Data: 282.994629
     - Name: 
       Entry: 8
       Data: 
@@ -13058,10 +13403,79 @@ MonoBehaviour:
       Data: 0.07
     - Name: 
       Entry: 4
-      Data: 0.6222681
+      Data: 0.7370832
     - Name: 
       Entry: 4
       Data: 0.07
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0
+    - Name: minCount
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
+      Data: Dropper
+    - Name: primitive
+      Entry: 3
+      Data: 1
+    - Name: role
+      Entry: 3
+      Data: 5
+    - Name: colour
+      Entry: 3
+      Data: 2
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.849999964
+    - Name: 
+      Entry: 4
+      Data: 0.1
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 255.96376
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.06
+    - Name: 
+      Entry: 4
+      Data: 0.472310543
+    - Name: 
+      Entry: 4
+      Data: 0.06
     - Name: 
       Entry: 8
       Data: 
@@ -13094,10 +13508,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.55
+      Data: 1.08
     - Name: 
       Entry: 4
-      Data: -0.15
+      Data: -0.12
     - Name: 
       Entry: 4
       Data: 0
@@ -13163,10 +13577,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.6
+      Data: 1.11
     - Name: 
       Entry: 4
-      Data: -0.35
+      Data: -0.32
     - Name: 
       Entry: 4
       Data: 0
@@ -13232,10 +13646,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.650000036
+      Data: 1.14
     - Name: 
       Entry: 4
-      Data: -0.55
+      Data: -0.52
     - Name: 
       Entry: 4
       Data: 0
@@ -13349,13 +13763,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.7144709
+      Data: 0.2867
+    - Name: 
+      Entry: 4
+      Data: 0.20075
     - Name: 
       Entry: 4
       Data: 0
-    - Name: 
-      Entry: 4
-      Data: -0.412500083
     - Name: 
       Entry: 8
       Data: 
@@ -13364,13 +13778,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -3.41509462E-06
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 210
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 70
+      Data: -55
     - Name: 
       Entry: 8
       Data: 
@@ -13382,7 +13796,7 @@ MonoBehaviour:
       Data: 0.16
     - Name: 
       Entry: 4
-      Data: 0.42
+      Data: 0.7
     - Name: 
       Entry: 4
       Data: 0.16
@@ -13418,13 +13832,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.825000048
+      Data: 0.35
     - Name: 
       Entry: 4
       Data: 0
     - Name: 
       Entry: 4
-      Data: 7.21238E-08
+      Data: 0
     - Name: 
       Entry: 8
       Data: 
@@ -13436,10 +13850,10 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 180
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 70
+      Data: -90
     - Name: 
       Entry: 8
       Data: 
@@ -13451,7 +13865,7 @@ MonoBehaviour:
       Data: 0.16
     - Name: 
       Entry: 4
-      Data: 0.42
+      Data: 0.7
     - Name: 
       Entry: 4
       Data: 0.16
@@ -13487,13 +13901,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.7144709
+      Data: 0.2867
+    - Name: 
+      Entry: 4
+      Data: -0.20075
     - Name: 
       Entry: 4
       Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0.412500024
     - Name: 
       Entry: 8
       Data: 
@@ -13502,13 +13916,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 4.26886845E-06
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 150
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 70
+      Data: -125
     - Name: 
       Entry: 8
       Data: 
@@ -13520,7 +13934,7 @@ MonoBehaviour:
       Data: 0.16
     - Name: 
       Entry: 4
-      Data: 0.42
+      Data: 0.7
     - Name: 
       Entry: 4
       Data: 0.16
@@ -13568,13 +13982,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.7144709
+      Data: 0.2867
+    - Name: 
+      Entry: 4
+      Data: 0.20075
     - Name: 
       Entry: 4
       Data: 0
-    - Name: 
-      Entry: 4
-      Data: -0.412500083
     - Name: 
       Entry: 8
       Data: 
@@ -13583,13 +13997,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -3.41509462E-06
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 210
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 70
+      Data: -55
     - Name: 
       Entry: 8
       Data: 
@@ -13601,7 +14015,7 @@ MonoBehaviour:
       Data: 0.16
     - Name: 
       Entry: 4
-      Data: 0.42
+      Data: 0.7
     - Name: 
       Entry: 4
       Data: 0.16
@@ -13637,13 +14051,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.825000048
+      Data: 0.35
     - Name: 
       Entry: 4
       Data: 0
     - Name: 
       Entry: 4
-      Data: 7.21238E-08
+      Data: 0
     - Name: 
       Entry: 8
       Data: 
@@ -13655,10 +14069,10 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 180
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 70
+      Data: -90
     - Name: 
       Entry: 8
       Data: 
@@ -13670,7 +14084,7 @@ MonoBehaviour:
       Data: 0.16
     - Name: 
       Entry: 4
-      Data: 0.42
+      Data: 0.7
     - Name: 
       Entry: 4
       Data: 0.16
@@ -13706,13 +14120,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.7144709
+      Data: 0.2867
+    - Name: 
+      Entry: 4
+      Data: -0.20075
     - Name: 
       Entry: 4
       Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0.412500024
     - Name: 
       Entry: 8
       Data: 
@@ -13721,13 +14135,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 4.26886845E-06
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 150
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 70
+      Data: -125
     - Name: 
       Entry: 8
       Data: 
@@ -13739,7 +14153,7 @@ MonoBehaviour:
       Data: 0.16
     - Name: 
       Entry: 4
-      Data: 0.42
+      Data: 0.7
     - Name: 
       Entry: 4
       Data: 0.16
