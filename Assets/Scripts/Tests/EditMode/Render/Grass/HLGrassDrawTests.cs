@@ -19,7 +19,6 @@ public class HLGrassDrawTests
         {
             Assert.Ignore("Indirect argument buffers need a graphics device; run with -force-metal.");
         }
-        HLPrimitiveMeshes.Retain();
         _mesh = HLPrimitiveMeshes.Get(HLPrimitive.Cone, HLGrassField.BladeSides, 2);
         _material = new Material(Shader.Find("HL/Look/Primitive"));
         _draw = new HLGrassDraw(_mesh, _material, 7, new Bounds(Vector3.zero, Vector3.one), 3);
@@ -31,8 +30,8 @@ public class HLGrassDrawTests
         if (_draw != null)
         {
             _draw.Release();
-            HLPrimitiveMeshes.Release();
         }
+        HLPrimitiveMeshes.ReleaseAll();
     }
 
     [Test]
