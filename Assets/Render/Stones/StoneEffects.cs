@@ -46,6 +46,7 @@ namespace HealerLike.Render.Stones
         readonly Stack<Fragment> _pool = new Stack<Fragment>(MaxLiveFragments);
         readonly Dictionary<Transform, Fragment> _shards = new Dictionary<Transform, Fragment>();
         readonly List<StoneAssembly.Part> _surviving = new List<StoneAssembly.Part>(8);
+        readonly List<Transform> _standing = new List<Transform>(8);
         StoneMeshCache.Lease _dustLease;
 
         readonly StoneMeshCache _stoneMeshes = new StoneMeshCache();
@@ -353,6 +354,51 @@ namespace HealerLike.Render.Stones
             }
             EmitDust(visual.transform.position + Vector3.up * 0.15f, seed);
             visual.HideParts();
+        }
+
+        // Breaks the parts still standing into debris and dust, the caller hides them
+        public void CollapseParts(IReadOnlyList<Transform> parts, Vector3 velocityWS, float groundY, uint seed)
+        {
+            if (!isActiveAndEnabled || !HasAssets() || parts == null)
+            {
+                return;
+            }
+
+            _standing.Clear();
+            Vector3 centre = Vector3.zero;
+            foreach (Transform part in parts)
+            {
+                if (part != null && part.gameObject.activeSelf)
+                {
+                    _standing.Add(part);
+                    centre += part.position;
+                }
+            }
+
+            if (_standing.Count == 0)
+            {
+                return;
+            }
+
+            StoneRandom random = new StoneRandom(seed);
+            int count = 12;
+            for (int i = 0; i < count; i++)
+            {
+                Transform part = _standing[i % _standing.Count];
+                float angle = i * Mathf.PI * 2f / count;
+                Vector3 outward = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * random.Range(1.2f, 1.8f);
+                Bounds bounds = part.GetComponent<Renderer>().bounds;
+                Vector3 offset = new Vector3(random.Range(-0.8f, 0.8f), random.Range(-0.8f, 0.8f), random.Range(-0.8f, 0.8f));
+                Vector3 position = bounds.center + Vector3.Scale(bounds.extents, offset);
+                Material material = i % 4 == 0 ? _coralMaterial : _stoneMaterial;
+                Vector3 scale = Vector3.one * random.Range(0.06f, 0.16f);
+                Vector3 velocity = velocityWS + outward + Vector3.up * random.Range(0.7f, 1.5f);
+                Spawn(_meshes.pyramid, material, position, part.rotation, scale, velocity, 0.8f, groundY, true,
+                    random.Next());
+            }
+
+            centre /= _standing.Count;
+            EmitDust(new Vector3(centre.x, groundY + 0.15f, centre.z), seed);
         }
 
         public static Vector3 PositionAt(Vector3 start, Vector3 velocity, float age, float ground, bool bounce)
