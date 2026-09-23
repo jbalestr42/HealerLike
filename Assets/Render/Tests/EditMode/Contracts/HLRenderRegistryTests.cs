@@ -17,17 +17,6 @@ namespace HealerLike.Render
         }
     }
 
-    public class ThrowingHealSink : IHLHealVisualSink
-    {
-        public int callCount;
-
-        public void OnHealResolved(GameObject target, float value, bool critical)
-        {
-            callCount++;
-            throw new InvalidOperationException("deliberate test failure");
-        }
-    }
-
     public class SelfUnregisteringHealSink : IHLHealVisualSink
     {
         readonly HLRenderRegistry _registry;
@@ -136,6 +125,18 @@ namespace HealerLike.Render
 
             _registry.spellSink = null;
             Assert.IsNull(_registry.spellSink, "clearing the sink silences spell visuals");
+        }
+
+        [Test]
+        public void Init_SinkAndZoneOwner_SetsBoth()
+        {
+            RecordingSpellSink sink = new RecordingSpellSink();
+            RecordingZoneOwner owner = new RecordingZoneOwner();
+
+            _registry.Init(sink, owner);
+
+            Assert.AreSame(sink, _registry.spellSink);
+            Assert.AreSame(owner, _registry.zoneOwner);
         }
 
         [Test]
@@ -260,22 +261,6 @@ namespace HealerLike.Render
 
             Assert.AreEqual(1, sink.calls.Count);
             Assert.IsNull(sink.calls[0].target);
-        }
-
-        [Test]
-        public void AThrowingSinkDoesNotStopTheOthers()
-        {
-            GameObject healer = NewObject("healer");
-            ThrowingHealSink broken = new ThrowingHealSink();
-            RecordingHealSink healthy = new RecordingHealSink();
-            _registry.Register(healer, broken);
-            _registry.Register(healer, healthy);
-
-            TestHelpers.WithLoggingDisabled(() =>
-                _registry.NotifyHeal(healer, NewObject("target"), 1f, false));
-
-            Assert.AreEqual(1, broken.callCount);
-            Assert.AreEqual(1, healthy.calls.Count, "the healthy sink still ran");
         }
 
         [Test]

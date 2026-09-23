@@ -1,21 +1,26 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace HealerLike.Render
 {
-    // Plain class and not a Singleton so it creates no DontDestroyOnLoad object and a test can build one.
-    // Every caller null checks current, so a scene without the render layer just has nobody listening.
+    // Plain class so a test can build one, the RenderManager owns one and hands it to the views through Init
     public class HLRenderRegistry
     {
+        readonly Dictionary<GameObject, List<IHLHealVisualSink>> _healSinks =
+            new Dictionary<GameObject, List<IHLHealVisualSink>>();
+
+        // Read by the folders not yet on Init, removed in D2
         public static HLRenderRegistry current { get; set; }
 
         public IHLSpellVisualSink spellSink { get; set; }
 
         public IHLZoneOwner zoneOwner { get; set; }
 
-        readonly Dictionary<GameObject, List<IHLHealVisualSink>> _healSinks =
-            new Dictionary<GameObject, List<IHLHealVisualSink>>();
+        public void Init(IHLSpellVisualSink spellSink, IHLZoneOwner zoneOwner)
+        {
+            this.spellSink = spellSink;
+            this.zoneOwner = zoneOwner;
+        }
 
         public void Register(GameObject source, IHLHealVisualSink sink)
         {
@@ -72,15 +77,7 @@ namespace HealerLike.Render
             IHLHealVisualSink[] snapshot = sinks.ToArray();
             for (int i = snapshot.Length - 1; i >= 0; i--)
             {
-                IHLHealVisualSink sink = snapshot[i];
-                try
-                {
-                    sink.OnHealResolved(target, value, critical);
-                }
-                catch (Exception exception)
-                {
-                    Debug.LogException(exception);
-                }
+                snapshot[i].OnHealResolved(target, value, critical);
             }
         }
     }
