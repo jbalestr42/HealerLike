@@ -20,6 +20,7 @@ public class RenderManagerTests
     GameObject _sunGo;
     GameObject _decorationGo;
     GameObject _otherDecorationGo;
+    GameObject _farGroundGo;
     RenderManager _manager;
     EntityManager _entityManager;
     PlayerBehaviour _player;
@@ -65,6 +66,8 @@ public class RenderManagerTests
         _decorationGo.name = "MiddleLine";
         _otherDecorationGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         _otherDecorationGo.name = "Sphere";
+        _farGroundGo = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        _farGroundGo.name = "Ground";
 
         _gameGo = new GameObject("Game");
         _entityManager = _gameGo.AddComponent<EntityManager>();
@@ -85,6 +88,7 @@ public class RenderManagerTests
         Object.DestroyImmediate(_gameGo);
         Object.DestroyImmediate(_createdCameraGo);
         Object.DestroyImmediate(_otherDecorationGo);
+        Object.DestroyImmediate(_farGroundGo);
         Object.DestroyImmediate(_sunGo);
         Object.DestroyImmediate(_decorationGo);
     }
@@ -137,6 +141,8 @@ public class RenderManagerTests
         Assert.AreEqual(AmbientMode.Flat, RenderSettings.ambientMode);
         Assert.AreEqual("HLStageGround", _ground.sharedMaterial.name);
         Assert.IsFalse(_decorationGo.GetComponent<Renderer>().enabled);
+        Assert.IsFalse(_farGroundGo.GetComponent<Renderer>().enabled);
+        Assert.IsTrue(_ground.enabled); // the board ground shares the name and stays
         Assert.AreEqual(16f, _manager.board.size.x);
     }
 
