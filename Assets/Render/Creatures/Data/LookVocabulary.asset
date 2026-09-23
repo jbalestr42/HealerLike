@@ -701,7 +701,7 @@ MonoBehaviour:
       Data: 1
     - Name: role
       Entry: 3
-      Data: 1
+      Data: 3
     - Name: colour
       Entry: 3
       Data: 0
@@ -770,7 +770,7 @@ MonoBehaviour:
       Data: 1
     - Name: role
       Entry: 3
-      Data: 1
+      Data: 3
     - Name: colour
       Entry: 3
       Data: 0
@@ -839,7 +839,7 @@ MonoBehaviour:
       Data: 1
     - Name: role
       Entry: 3
-      Data: 1
+      Data: 3
     - Name: colour
       Entry: 3
       Data: 0
@@ -908,7 +908,7 @@ MonoBehaviour:
       Data: 1
     - Name: role
       Entry: 3
-      Data: 1
+      Data: 3
     - Name: colour
       Entry: 3
       Data: 0
@@ -977,7 +977,7 @@ MonoBehaviour:
       Data: 1
     - Name: role
       Entry: 3
-      Data: 1
+      Data: 3
     - Name: colour
       Entry: 3
       Data: 0
