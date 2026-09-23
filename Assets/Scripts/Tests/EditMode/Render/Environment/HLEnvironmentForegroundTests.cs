@@ -1,117 +1,208 @@
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
+
 namespace HealerLike.Render.Environment
 {
     public class HLEnvironmentForegroundTests
     {
-        static readonly Vector3 Position = new Vector3(0, 43.224f, -9.837f);
-        static readonly Quaternion Rotation = Quaternion.Euler(73.70f, 0, 0);
-        const float Fov = 40, Aspect = 9f / 16f, Ground = .5f;
-        static readonly Rect Grid = new Rect(-8, -8, 16, 16);
-        GameObject go;
-        [SetUp] public void Setup() { go = new GameObject("HLForegroundTest"); }
-        [TearDown] public void Cleanup() { Object.DestroyImmediate(go); }
+        static readonly Vector3 position = new Vector3(0f, 43.224f, -9.837f);
+        static readonly Quaternion rotation = Quaternion.Euler(73.70f, 0f, 0f);
+        static readonly float fov = 40f;
+        static readonly float aspect = 9f / 16f;
+        static readonly float ground = 0.5f;
+        static readonly Rect grid = new Rect(-8f, -8f, 16f, 16f);
 
-        [Test] public void GroundHitMatchesTheMeasuredBottomEdge()
+        GameObject _go;
+
+        [SetUp]
+        public void Setup()
         {
-            var left = HLEnvironmentForeground.GroundHit(Position, Rotation, Fov, Aspect, new Vector2(0, 0), Ground);
-            var right = HLEnvironmentForeground.GroundHit(Position, Rotation, Fov, Aspect, new Vector2(1, 0), Ground);
-            Assert.AreEqual(-12.6f, left.z, .1f); Assert.AreEqual(left.z, right.z, 1e-3f); Assert.AreEqual(-left.x, right.x, 1e-3f);
-            Assert.That(right.x, Is.InRange(7.5f, 9f)); Assert.AreEqual(Ground, left.y, 1e-4f);
-            var back = HLEnvironmentForeground.ToViewport(right, Position, Rotation, Fov, Aspect);
-            Assert.AreEqual(1, back.x, 1e-3f); Assert.AreEqual(0, back.y, 1e-3f);
+            _go = new GameObject("HLForegroundTest");
         }
-        [Test] public void SameSeedGivesTheSameLayoutAndAnotherSeedDiffers()
+
+        [TearDown]
+        public void Cleanup()
         {
-            var a = HLEnvironmentForeground.Layout(Position, Rotation, Fov, Aspect, Ground, 3);
-            var b = HLEnvironmentForeground.Layout(Position, Rotation, Fov, Aspect, Ground, 3);
-            var c = HLEnvironmentForeground.Layout(Position, Rotation, Fov, Aspect, Ground, 4);
+            Object.DestroyImmediate(_go);
+        }
+
+        [Test]
+        public void GroundHitMatchesTheMeasuredBottomEdge()
+        {
+            Vector3 left = HLEnvironmentForeground.GroundHit(position, rotation, fov, aspect,
+                new Vector2(0f, 0f), ground);
+            Vector3 right = HLEnvironmentForeground.GroundHit(position, rotation, fov, aspect,
+                new Vector2(1f, 0f), ground);
+
+            Assert.AreEqual(-12.6f, left.z, 0.1f);
+            Assert.AreEqual(left.z, right.z, 0.001f);
+            Assert.AreEqual(-left.x, right.x, 0.001f);
+            Assert.That(right.x, Is.InRange(7.5f, 9f));
+            Assert.AreEqual(ground, left.y, 0.0001f);
+
+            Vector2 back = HLEnvironmentForeground.ToViewport(right, position, rotation, fov, aspect);
+            Assert.AreEqual(1f, back.x, 0.001f);
+            Assert.AreEqual(0f, back.y, 0.001f);
+        }
+
+        [Test]
+        public void SameSeedGivesTheSameLayoutAndAnotherSeedDiffers()
+        {
+            List<HLForegroundItem> a = HLEnvironmentForeground.Layout(position, rotation, fov, aspect, ground, 3);
+            List<HLForegroundItem> b = HLEnvironmentForeground.Layout(position, rotation, fov, aspect, ground, 3);
+            List<HLForegroundItem> c = HLEnvironmentForeground.Layout(position, rotation, fov, aspect, ground, 4);
+
             Assert.AreEqual(a.Count, b.Count);
             for (int i = 0; i < a.Count; i++)
             {
-                Assert.AreEqual(a[i].Kind, b[i].Kind); Assert.AreEqual(a[i].Position, b[i].Position);
-                Assert.AreEqual(a[i].Scale, b[i].Scale); Assert.AreEqual(a[i].Yaw, b[i].Yaw); Assert.AreEqual(a[i].Seed, b[i].Seed);
+                Assert.AreEqual(a[i].kind, b[i].kind);
+                Assert.AreEqual(a[i].position, b[i].position);
+                Assert.AreEqual(a[i].scale, b[i].scale);
+                Assert.AreEqual(a[i].yaw, b[i].yaw);
+                Assert.AreEqual(a[i].seed, b[i].seed);
             }
-            Assert.IsFalse(a.Select(i => i.Position).SequenceEqual(c.Select(i => i.Position)));
+            Assert.IsFalse(a.Select(i => i.position).SequenceEqual(c.Select(i => i.position)));
         }
-        [Test] public void EachBottomCornerGetsLargeBouldersAndRosettesCroppedByTheFrame()
+
+        [Test]
+        public void EachBottomCornerGetsLargeBouldersAndRosettesCroppedByTheFrame()
         {
             for (int seed = 0; seed < 24; seed++)
             {
-                var items = HLEnvironmentForeground.Layout(Position, Rotation, Fov, Aspect, Ground, seed);
-                foreach (float side in new[] { -1f, 1f })
+                List<HLForegroundItem> items = HLEnvironmentForeground.Layout(position, rotation, fov, aspect, ground,
+                    seed);
+                foreach (float side in new float[] { -1f, 1f })
                 {
-                    var corner = items.Where(i => Mathf.Sign(i.Position.x) == side).ToList();
-                    Assert.That(corner.Count(i => i.Kind == HLForegroundKind.Boulder), Is.InRange(2, 3), "seed " + seed);
-                    Assert.That(corner.Count(i => i.Kind == HLForegroundKind.Rosette), Is.InRange(1, 2), "seed " + seed);
+                    List<HLForegroundItem> corner = items.Where(i => Mathf.Sign(i.position.x) == side).ToList();
+                    Assert.That(corner.Count(i => i.kind == HLForegroundKind.Boulder), Is.InRange(2, 3),
+                        "seed " + seed);
+                    Assert.That(corner.Count(i => i.kind == HLForegroundKind.Rosette), Is.InRange(1, 2),
+                        "seed " + seed);
                 }
-                foreach (var item in items)
+                foreach (HLForegroundItem item in items)
                 {
-                    string label = $"seed {seed} {item.Kind} at {item.Position}";
-                    Assert.That(item.Scale, item.Kind == HLForegroundKind.Boulder ? Is.InRange(1.4f, 2.45f) : Is.InRange(2.1f, 3.5f), label);
-                    Assert.AreEqual(Ground, item.Position.y, label);
-                    var vp = HLEnvironmentForeground.ToViewport(item.Position, Position, Rotation, Fov, Aspect);
-                    Assert.That(vp.y, Is.LessThan(.2f), label); Assert.IsTrue(vp.x < .25f || vp.x > .75f, label);
-                    // Partly outside: the footprint's outer-lower rim leaves the frame.
-                    var rim = item.Position + new Vector3(Mathf.Sign(item.Position.x) * item.Radius, 0, -item.Radius) * .7071f;
-                    var rv = HLEnvironmentForeground.ToViewport(rim, Position, Rotation, Fov, Aspect);
-                    Assert.IsTrue(rv.x < 0 || rv.x > 1 || rv.y < 0, label);
-                    // For the stage pose nothing reaches over the board.
-                    Assert.That(item.Position.z + item.Radius, Is.LessThan(Grid.yMin), label);
+                    string label = $"seed {seed} {item.kind} at {item.position}";
+                    if (item.kind == HLForegroundKind.Boulder)
+                    {
+                        Assert.That(item.scale, Is.InRange(1.4f, 2.45f), label);
+                    }
+                    else
+                    {
+                        Assert.That(item.scale, Is.InRange(2.1f, 3.5f), label);
+                    }
+                    Assert.AreEqual(ground, item.position.y, label);
+
+                    Vector2 viewport = HLEnvironmentForeground.ToViewport(item.position, position, rotation, fov,
+                        aspect);
+                    Assert.That(viewport.y, Is.LessThan(0.2f), label);
+                    Assert.IsTrue(viewport.x < 0.25f || viewport.x > 0.75f, label);
+
+                    // Partly outside: the outer-lower rim of the footprint leaves the frame
+                    Vector3 outward = new Vector3(Mathf.Sign(item.position.x) * item.radius, 0f, -item.radius);
+                    Vector3 rim = item.position + outward * 0.7071f;
+                    Vector2 rimViewport = HLEnvironmentForeground.ToViewport(rim, position, rotation, fov, aspect);
+                    Assert.IsTrue(rimViewport.x < 0f || rimViewport.x > 1f || rimViewport.y < 0f, label);
+
+                    // For the stage pose nothing reaches over the board
+                    Assert.That(item.position.z + item.radius, Is.LessThan(grid.yMin), label);
                 }
             }
         }
-        [Test] public void InvalidInputThrows()
+
+        [Test]
+        public void InvalidInputThrows()
         {
-            Assert.Catch<System.ArgumentException>(() => HLEnvironmentForeground.Layout(Position, Rotation, 0, Aspect, Ground, 1));
-            Assert.Catch<System.ArgumentException>(() => HLEnvironmentForeground.Layout(Position, Rotation, Fov, 0, Ground, 1));
-            Assert.Catch<System.ArgumentException>(() => HLEnvironmentForeground.Layout(Position, Quaternion.Euler(-30, 0, 0), Fov, Aspect, Ground, 1));
+            Assert.Catch<System.ArgumentException>(() =>
+                HLEnvironmentForeground.Layout(position, rotation, 0f, aspect, ground, 1));
+            Assert.Catch<System.ArgumentException>(() =>
+                HLEnvironmentForeground.Layout(position, rotation, fov, 0f, ground, 1));
+            Assert.Catch<System.ArgumentException>(() =>
+                HLEnvironmentForeground.Layout(position, Quaternion.Euler(-30f, 0f, 0f), fov, aspect, ground, 1));
         }
-        [Test] public void BuildMakesOneColliderFreeChildPerItemColouredThroughThePropertyBlock()
+
+        [Test]
+        public void BuildMakesOneColliderFreeChildPerItemColouredThroughThePropertyBlock()
         {
-            var foreground = go.AddComponent<HLEnvironmentForeground>();
-            foreground.Configure(null, null, null, Ground, 5);
-            Assert.DoesNotThrow(() => foreground.Build()); Assert.IsNull(foreground.Root);
-            foreground.Build(Position, Rotation, Fov, Aspect);
-            Assert.That(foreground.Items.Count, Is.InRange(6, 10));
-            Assert.AreEqual(foreground.Items.Count, foreground.Root.childCount);
-            for (int i = 0; i < foreground.Items.Count; i++)
+            HLEnvironmentForeground foreground = _go.AddComponent<HLEnvironmentForeground>();
+            foreground.Configure(null, null, null, ground, 5);
+
+            Assert.DoesNotThrow(() => foreground.Build());
+            Assert.IsNull(foreground.root);
+
+            foreground.Build(position, rotation, fov, aspect);
+
+            Assert.That(foreground.items.Count, Is.InRange(6, 10));
+            Assert.AreEqual(foreground.items.Count, foreground.root.childCount);
+            for (int i = 0; i < foreground.items.Count; i++)
             {
-                var pivot = foreground.Root.GetChild(i);
-                Assert.That(Vector3.Distance(foreground.Items[i].Position, pivot.position), Is.LessThan(1e-3f));
-                Assert.That(pivot.childCount, Is.GreaterThanOrEqualTo(foreground.Items[i].Kind == HLForegroundKind.Boulder ? 1 : 7));
+                Transform pivot = foreground.root.GetChild(i);
+                Assert.That(Vector3.Distance(foreground.items[i].position, pivot.position), Is.LessThan(0.001f));
+                int minimumParts = foreground.items[i].kind == HLForegroundKind.Boulder ? 1 : 7;
+                Assert.That(pivot.childCount, Is.GreaterThanOrEqualTo(minimumParts));
             }
-            Assert.AreEqual(0, go.GetComponentsInChildren<Collider>().Length);
-            var renderers = foreground.Root.GetComponentsInChildren<MeshRenderer>();
-            Assert.That(renderers.Length, Is.GreaterThan(foreground.Items.Count));
-            var block = new MaterialPropertyBlock();
-            foreach (var r in renderers) { Assert.IsTrue(r.HasPropertyBlock(), r.name); r.GetPropertyBlock(block); Assert.That(block.GetColor("_BaseColor").a, Is.GreaterThan(0)); }
+            Assert.AreEqual(0, _go.GetComponentsInChildren<Collider>().Length);
+
+            MeshRenderer[] renderers = foreground.root.GetComponentsInChildren<MeshRenderer>();
+            Assert.That(renderers.Length, Is.GreaterThan(foreground.items.Count));
+            MaterialPropertyBlock block = new MaterialPropertyBlock();
+            foreach (MeshRenderer meshRenderer in renderers)
+            {
+                Assert.IsTrue(meshRenderer.HasPropertyBlock(), meshRenderer.name);
+                meshRenderer.GetPropertyBlock(block);
+                Assert.That(block.GetColor("_BaseColor").a, Is.GreaterThan(0f));
+            }
         }
-        [Test] public void BuildFromACameraMatchesTheLayoutAndRebuildsIdentically()
+
+        [Test]
+        public void BuildFromACameraMatchesTheLayoutAndRebuildsIdentically()
         {
-            var cameraObject = new GameObject("HLForegroundCamera");
+            GameObject cameraGo = new GameObject("HLForegroundCamera");
             try
             {
-                var camera = cameraObject.AddComponent<Camera>(); camera.fieldOfView = Fov; camera.aspect=Aspect;
-                cameraObject.transform.SetPositionAndRotation(Position, Rotation);
-                var foreground = go.AddComponent<HLEnvironmentForeground>();
-                foreground.Configure(camera, null, null, Ground, 11);
+                Camera camera = cameraGo.AddComponent<Camera>();
+                camera.fieldOfView = fov;
+                camera.aspect = aspect;
+                cameraGo.transform.SetPositionAndRotation(position, rotation);
+                HLEnvironmentForeground foreground = _go.AddComponent<HLEnvironmentForeground>();
+                foreground.Configure(camera, null, null, ground, 11);
+
                 foreground.Build();
-                var expected = HLEnvironmentForeground.Layout(Position, Rotation, Fov, Aspect, Ground, 11);
-                Assert.AreEqual(expected.Count, foreground.Items.Count);
-                // The camera transform round-trips the pose through its own storage; compare within float tolerance.
-                for (int i = 0; i < expected.Count; i++) Assert.That(Vector3.Distance(expected[i].Position, foreground.Items[i].Position), Is.LessThan(1e-3f), i.ToString());
-                int children = foreground.Root.childCount; foreground.Build();
-                Assert.AreEqual(children, foreground.Root.childCount); Assert.AreEqual(1, go.transform.childCount);
+
+                List<HLForegroundItem> expected = HLEnvironmentForeground.Layout(position, rotation, fov, aspect,
+                    ground, 11);
+                Assert.AreEqual(expected.Count, foreground.items.Count);
+                // The camera transform round-trips the pose through its own storage, so compare within float tolerance
+                for (int i = 0; i < expected.Count; i++)
+                {
+                    Assert.That(Vector3.Distance(expected[i].position, foreground.items[i].position),
+                        Is.LessThan(0.001f), i.ToString());
+                }
+
+                int children = foreground.root.childCount;
+                foreground.Build();
+
+                Assert.AreEqual(children, foreground.root.childCount);
+                Assert.AreEqual(1, _go.transform.childCount);
             }
-            finally { Object.DestroyImmediate(cameraObject); }
+            finally
+            {
+                Object.DestroyImmediate(cameraGo);
+            }
         }
-        [Test] public void ClearRemovesEverything()
+
+        [Test]
+        public void ClearRemovesEverything()
         {
-            var foreground = go.AddComponent<HLEnvironmentForeground>(); foreground.Configure(null, null, null, Ground, 2);
-            foreground.Build(Position, Rotation, Fov, Aspect);
-            foreground.Clear(); Assert.IsNull(foreground.Root); Assert.AreEqual(0, go.transform.childCount);
+            HLEnvironmentForeground foreground = _go.AddComponent<HLEnvironmentForeground>();
+            foreground.Configure(null, null, null, ground, 2);
+            foreground.Build(position, rotation, fov, aspect);
+
+            foreground.Clear();
+
+            Assert.IsNull(foreground.root);
+            Assert.AreEqual(0, _go.transform.childCount);
         }
     }
 }

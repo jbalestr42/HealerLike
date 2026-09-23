@@ -1,98 +1,167 @@
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Rendering;
+
 namespace HealerLike.Render.Environment
 {
     public class HLEnvironmentRidgeTests
     {
-        static readonly Vector3 Eye = new Vector3(0, 43.224f, -9.837f);
-        static readonly Rect Grid = new Rect(-8, -8, 16, 16);
-        const float FogStart = 43.837f, FogEnd = 50.356f, Ground = .5f;
-        const int Bands = 6;
-        GameObject go;
-        [SetUp] public void Setup() { go = new GameObject("HLRidgeTest"); }
-        [TearDown] public void Cleanup() { Object.DestroyImmediate(go); }
+        static readonly Vector3 eye = new Vector3(0f, 43.224f, -9.837f);
+        static readonly Rect grid = new Rect(-8f, -8f, 16f, 16f);
+        static readonly float fogStart = 43.837f;
+        static readonly float fogEnd = 50.356f;
+        static readonly float ground = 0.5f;
+        static readonly int bands = 6;
 
-        [Test] public void LastBandIsTheFinalSixthOfTheFog()
+        GameObject _go;
+
+        [SetUp]
+        public void Setup()
         {
-            var band = HLEnvironmentRidge.LastBand(FogStart, FogEnd, Bands);
-            Assert.AreEqual(49.27f, band.x, .01f); Assert.AreEqual(FogEnd, band.y, 1e-4f);
-            Assert.AreEqual(new Vector2(0, 10), HLEnvironmentRidge.LastBand(0, 10, 1));
+            _go = new GameObject("HLRidgeTest");
         }
-        [Test] public void SameSeedGivesTheSameLayoutAndAnotherSeedDiffers()
+
+        [TearDown]
+        public void Cleanup()
         {
-            var a = HLEnvironmentRidge.Layout(Eye, FogStart, FogEnd, Bands, Grid, Ground, 8);
-            var b = HLEnvironmentRidge.Layout(Eye, FogStart, FogEnd, Bands, Grid, Ground, 8);
-            var c = HLEnvironmentRidge.Layout(Eye, FogStart, FogEnd, Bands, Grid, Ground, 9);
+            Object.DestroyImmediate(_go);
+        }
+
+        [Test]
+        public void LastBandIsTheFinalSixthOfTheFog()
+        {
+            Vector2 band = HLEnvironmentRidge.LastBand(fogStart, fogEnd, bands);
+
+            Assert.AreEqual(49.27f, band.x, 0.01f);
+            Assert.AreEqual(fogEnd, band.y, 0.0001f);
+            Assert.AreEqual(new Vector2(0f, 10f), HLEnvironmentRidge.LastBand(0f, 10f, 1));
+        }
+
+        [Test]
+        public void SameSeedGivesTheSameLayoutAndAnotherSeedDiffers()
+        {
+            List<HLRidgeItem> a = HLEnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, ground, 8);
+            List<HLRidgeItem> b = HLEnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, ground, 8);
+            List<HLRidgeItem> c = HLEnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, ground, 9);
+
             Assert.AreEqual(a.Count, b.Count);
             for (int i = 0; i < a.Count; i++)
             {
-                Assert.AreEqual(a[i].Kind, b[i].Kind); Assert.AreEqual(a[i].Position, b[i].Position);
-                Assert.AreEqual(a[i].Height, b[i].Height); Assert.AreEqual(a[i].Seed, b[i].Seed); Assert.AreEqual(a[i].Yaw, b[i].Yaw);
+                Assert.AreEqual(a[i].kind, b[i].kind);
+                Assert.AreEqual(a[i].position, b[i].position);
+                Assert.AreEqual(a[i].height, b[i].height);
+                Assert.AreEqual(a[i].seed, b[i].seed);
+                Assert.AreEqual(a[i].yaw, b[i].yaw);
             }
-            Assert.IsFalse(a.Select(i => i.Position).SequenceEqual(c.Select(i => i.Position)));
+            Assert.IsFalse(a.Select(i => i.position).SequenceEqual(c.Select(i => i.position)));
         }
-        [Test] public void EveryMidHeightSitsInTheLastBandBeyondTheGrid()
+
+        [Test]
+        public void EveryMidHeightSitsInTheLastBandBeyondTheGrid()
         {
-            var band = HLEnvironmentRidge.LastBand(FogStart, FogEnd, Bands);
+            Vector2 band = HLEnvironmentRidge.LastBand(fogStart, fogEnd, bands);
             for (int seed = 0; seed < 24; seed++)
             {
-                var items = HLEnvironmentRidge.Layout(Eye, FogStart, FogEnd, Bands, Grid, Ground, seed);
-                Assert.That(items.Count(i => i.Kind == HLRidgeKind.Monolith), Is.InRange(8, 12), "seed " + seed);
-                Assert.That(items.Count(i => i.Kind == HLRidgeKind.Mushroom), Is.InRange(8, 12), "seed " + seed);
-                foreach (var item in items)
+                List<HLRidgeItem> items = HLEnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, ground, seed);
+
+                Assert.That(items.Count(i => i.kind == HLRidgeKind.Monolith), Is.InRange(8, 12), "seed " + seed);
+                Assert.That(items.Count(i => i.kind == HLRidgeKind.Mushroom), Is.InRange(8, 12), "seed " + seed);
+                foreach (HLRidgeItem item in items)
                 {
-                    string label = $"seed {seed} {item.Kind} at {item.Position}";
-                    float distance = Vector3.Distance(HLEnvironmentRidge.MidHeight(item), Eye);
+                    string label = $"seed {seed} {item.kind} at {item.position}";
+                    float distance = Vector3.Distance(HLEnvironmentRidge.MidHeight(item), eye);
                     Assert.That(distance, Is.GreaterThanOrEqualTo(band.x).And.LessThan(band.y), label);
-                    Assert.That(item.Position.z, Is.GreaterThanOrEqualTo(Grid.yMax + HLEnvironmentRidge.GridClearance), label);
-                    Assert.That(item.Position.x, Is.InRange(-HLEnvironmentRidge.SpreadX, HLEnvironmentRidge.SpreadX), label);
-                    Assert.AreEqual(Ground, item.Position.y, label);
-                    if (item.Kind == HLRidgeKind.Monolith) { Assert.That(item.Height, Is.InRange(6f, 12f), label); Assert.AreEqual(0f, item.CapDiameter, label); }
+                    Assert.That(item.position.z,
+                        Is.GreaterThanOrEqualTo(grid.yMax + HLEnvironmentRidge.GridClearance), label);
+                    Assert.That(item.position.x, Is.InRange(-HLEnvironmentRidge.SpreadX, HLEnvironmentRidge.SpreadX),
+                        label);
+                    Assert.AreEqual(ground, item.position.y, label);
+                    if (item.kind == HLRidgeKind.Monolith)
+                    {
+                        Assert.That(item.height, Is.InRange(6f, 12f), label);
+                        Assert.AreEqual(0f, item.capDiameter, label);
+                    }
                     else
                     {
-                        Assert.That(item.Height - .3f * item.CapThickness, Is.InRange(7f - 1e-3f, 14f + 1e-3f), label);
-                        Assert.That(item.CapDiameter, Is.GreaterThan(item.Width * 3), label); Assert.That(item.CapThickness, Is.LessThan(item.CapDiameter * .5f), label);
+                        Assert.That(item.height - 0.3f * item.capThickness, Is.InRange(7f - 0.001f, 14f + 0.001f),
+                            label);
+                        Assert.That(item.capDiameter, Is.GreaterThan(item.width * 3f), label);
+                        Assert.That(item.capThickness, Is.LessThan(item.capDiameter * 0.5f), label);
                     }
                 }
-                var xs = items.Select(i => i.Position.x).ToList();
-                Assert.That(xs.Min(), Is.LessThan(-10)); Assert.That(xs.Max(), Is.GreaterThan(10));
+                List<float> xs = items.Select(i => i.position.x).ToList();
+                Assert.That(xs.Min(), Is.LessThan(-10f));
+                Assert.That(xs.Max(), Is.GreaterThan(10f));
             }
         }
-        [Test] public void ItemsTheBandCannotReachAreClampedPastTheGrid()
+
+        [Test]
+        public void ItemsTheBandCannotReachAreClampedPastTheGrid()
         {
-            // A camera far behind puts the band short of the grid: every item is clamped to the clearance line.
-            foreach (var item in HLEnvironmentRidge.Layout(new Vector3(0, 10, -80), FogStart, FogEnd, Bands, Grid, Ground, 1))
-                Assert.AreEqual(Grid.yMax + HLEnvironmentRidge.GridClearance, item.Position.z, 1e-4f);
-        }
-        [Test] public void InvalidInputThrows()
-        {
-            Assert.Catch<System.ArgumentException>(() => HLEnvironmentRidge.Layout(Eye, FogStart, FogEnd, 0, Grid, Ground, 1));
-            Assert.Catch<System.ArgumentException>(() => HLEnvironmentRidge.Layout(Eye, FogEnd, FogStart, Bands, Grid, Ground, 1));
-            Assert.Catch<System.ArgumentException>(() => HLEnvironmentRidge.Layout(Eye, FogStart, float.PositiveInfinity, Bands, Grid, Ground, 1));
-            Assert.Catch<System.ArgumentException>(() => HLEnvironmentRidge.Layout(Eye, FogStart, FogEnd, Bands, new Rect(0, 0, 0, 4), Ground, 1));
-            Assert.Catch<System.ArgumentException>(() => HLEnvironmentRidge.Layout(Eye, FogStart, FogEnd, Bands, Grid, float.NaN, 1));
-        }
-        [Test] public void BuildMakesOneShadowlessColliderFreeChildPerItem()
-        {
-            var ridge = go.AddComponent<HLEnvironmentRidge>();
-            ridge.Configure(null, null, null, Grid, Ground, FogStart, FogEnd, Bands, 4);
-            Assert.DoesNotThrow(() => ridge.Build()); Assert.IsNull(ridge.Root);
-            ridge.Build(Eye);
-            Assert.AreEqual(ridge.Items.Count, ridge.Root.childCount);
-            for (int i = 0; i < ridge.Items.Count; i++)
+            // A camera far behind puts the band short of the grid: every item is clamped to the clearance line
+            Vector3 farEye = new Vector3(0f, 10f, -80f);
+            foreach (HLRidgeItem item in HLEnvironmentRidge.Layout(farEye, fogStart, fogEnd, bands, grid, ground, 1))
             {
-                var item = ridge.Items[i]; var pivot = ridge.Root.GetChild(i);
-                Assert.AreEqual(item.Kind == HLRidgeKind.Monolith ? 1 : 2, pivot.childCount);
-                var bounds = pivot.GetComponentsInChildren<MeshRenderer>().Select(r => r.bounds).Aggregate((x, y) => { x.Encapsulate(y); return x; });
-                Assert.AreEqual(item.Position.y + item.Height, bounds.max.y, .05f * item.Height, item.Kind.ToString());
-                Assert.AreEqual(item.Position.y, bounds.min.y, .05f * item.Height, item.Kind.ToString());
+                Assert.AreEqual(grid.yMax + HLEnvironmentRidge.GridClearance, item.position.z, 0.0001f);
             }
-            Assert.AreEqual(0, go.GetComponentsInChildren<Collider>().Length);
-            foreach (var r in ridge.Root.GetComponentsInChildren<MeshRenderer>())
-            { Assert.AreEqual(ShadowCastingMode.Off, r.shadowCastingMode); Assert.IsTrue(r.HasPropertyBlock()); }
-            ridge.Clear(); Assert.IsNull(ridge.Root); Assert.AreEqual(0, go.transform.childCount);
+        }
+
+        [Test]
+        public void InvalidInputThrows()
+        {
+            Assert.Catch<System.ArgumentException>(() =>
+                HLEnvironmentRidge.Layout(eye, fogStart, fogEnd, 0, grid, ground, 1));
+            Assert.Catch<System.ArgumentException>(() =>
+                HLEnvironmentRidge.Layout(eye, fogEnd, fogStart, bands, grid, ground, 1));
+            Assert.Catch<System.ArgumentException>(() =>
+                HLEnvironmentRidge.Layout(eye, fogStart, float.PositiveInfinity, bands, grid, ground, 1));
+            Assert.Catch<System.ArgumentException>(() =>
+                HLEnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, new Rect(0f, 0f, 0f, 4f), ground, 1));
+            Assert.Catch<System.ArgumentException>(() =>
+                HLEnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, float.NaN, 1));
+        }
+
+        [Test]
+        public void BuildMakesOneShadowlessColliderFreeChildPerItem()
+        {
+            HLEnvironmentRidge ridge = _go.AddComponent<HLEnvironmentRidge>();
+            ridge.Configure(null, null, null, grid, ground, fogStart, fogEnd, bands, 4);
+
+            Assert.DoesNotThrow(() => ridge.Build());
+            Assert.IsNull(ridge.root);
+
+            ridge.Build(eye);
+
+            Assert.AreEqual(ridge.items.Count, ridge.root.childCount);
+            for (int i = 0; i < ridge.items.Count; i++)
+            {
+                HLRidgeItem item = ridge.items[i];
+                Transform pivot = ridge.root.GetChild(i);
+                Assert.AreEqual(item.kind == HLRidgeKind.Monolith ? 1 : 2, pivot.childCount);
+                Bounds bounds = pivot.GetComponentsInChildren<MeshRenderer>()
+                    .Select(r => r.bounds)
+                    .Aggregate((x, y) =>
+                    {
+                        x.Encapsulate(y);
+                        return x;
+                    });
+                Assert.AreEqual(item.position.y + item.height, bounds.max.y, 0.05f * item.height,
+                    item.kind.ToString());
+                Assert.AreEqual(item.position.y, bounds.min.y, 0.05f * item.height, item.kind.ToString());
+            }
+            Assert.AreEqual(0, _go.GetComponentsInChildren<Collider>().Length);
+            foreach (MeshRenderer meshRenderer in ridge.root.GetComponentsInChildren<MeshRenderer>())
+            {
+                Assert.AreEqual(ShadowCastingMode.Off, meshRenderer.shadowCastingMode);
+                Assert.IsTrue(meshRenderer.HasPropertyBlock());
+            }
+
+            ridge.Clear();
+
+            Assert.IsNull(ridge.root);
+            Assert.AreEqual(0, _go.transform.childCount);
         }
     }
 }
