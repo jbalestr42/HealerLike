@@ -49,3 +49,5 @@ values clamped to 0.25..1. Stage requested 0.8 on the board to keep actors
 readable; environment strips retain 1. Width, density and hostile cone height
 are unchanged. The focused Grass suite passed all 24 tests after the camera
 submission and revoked-snapshot correction.
+
+Final actor color defect: Metal HLForward readback confirmed MPB.SetColor converts artist colors to linear, so passing an already-linear stone palette converted it twice. Artist RGB (.4,.6,.8) reached the GPU as (.01590,.08276,.32303) through the old path, instead of (.13287,.31855,.60383). Four stone assignments now use SetVector for existing working-space values. Fracture tests inspect raw GetVector values because GetColor roundtrip concealed the bug. New HLForward GPU regression compares all three upload paths and verifies correct linear readback. Full current clone suite: 639 passed, zero failed, three skipped; exact XML/log /tmp/w9-colour-final.*. Actual focused GameView acceptance remains with Stage integration. Plant input colors were already correct; its uniform lit fill remains the authored binary toon behavior, not this conversion defect.

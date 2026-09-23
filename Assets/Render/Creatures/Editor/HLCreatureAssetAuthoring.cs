@@ -68,7 +68,8 @@ namespace HealerLike.Render.Creatures
         static List<HLPart> Healer()
         {
             var p = Base();
-            p.Add(Part("HLBulb", HLPrimitive.Cone, new Vector3(0, .48f, 0), new Vector3(.5f, .62f, .45f), Body));
+            p.Add(Part("HLBulb", HLPrimitive.Cone, new Vector3(0, .48f, 0), new Vector3(.5f, .62f, .45f), Body, new Vector3(0, 0, 180)));
+            p.Add(Part("HLHip", HLPrimitive.Sphere, new Vector3(0, .04f, 0), new Vector3(.38f, .30f, .38f), Body));
             p.Add(Part("HLCrown", HLPrimitive.Torus, new Vector3(0, .86f, 0), new Vector3(.60f, .3f, .48f), Bud, glow: .4f));
             for (int i = 0; i < 3; i++)
             {
@@ -158,6 +159,14 @@ namespace HealerLike.Render.Creatures
                     Vector3.one * (stem.dimensions.x * 1.5f), Bud, parent: i));
             }
             recipe.parts = parts.ToArray(); recipe.roots.count = roots; recipe.idle.seed = seed; recipe.roots.thickness = .042f; recipe.roots.footRadius = .41f; recipe.roots.hipHeight = .26f; recipe.roots.kneeHeight = .14f;
+            if (name == "HLHealer")
+            {
+                // Body geometry was enlarged independently of the crown. Join the inverted bowl
+                // to a visible hip above the grass without changing the legal cell footprint.
+                recipe.roots.hipHeight = .60f;
+                recipe.roots.kneeHeight = .32f;
+                recipe.roots.thickness = .049f;
+            }
             recipe.idle.swayFrequency = .25f;
             recipe.targetLocal = Vector3.up * .8f; recipe.sourceLocal = new Vector3[armCount]; recipe.arms = new HLArmDefinition[armCount];
             for (int j = 0; j < armCount; j++)
