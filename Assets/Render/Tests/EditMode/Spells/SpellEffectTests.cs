@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -10,14 +12,32 @@ public class SpellEffectTests
 {
     readonly List<GameObject> _objects = new List<GameObject>();
 
-    SpellEffect CreateEffect(string prefab)
+    static EffectVocabulary LoadVocabulary()
     {
-        GameObject asset = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Spells/Prefabs/" + prefab + ".prefab");
-        GameObject go = Object.Instantiate(asset);
+        return AssetDatabase.LoadAssetAtPath<EffectVocabulary>("Assets/Render/Spells/Data/EffectVocabulary.asset");
+    }
+
+    SpellEffect CreateEffect(EffectElement element, EffectFamily family, EffectTempo tempo, float period = 0f, int stacks = 1)
+    {
+        EffectRecipe recipe = EffectComposer.Compose(LoadVocabulary(), element, family, tempo, period, stacks, 0f, 0f);
+        GameObject go = new GameObject(element.ToString());
         _objects.Add(go);
-        SpellEffect effect = go.GetComponent<SpellEffect>();
-        effect.Init();
+        SpellEffect effect = go.AddComponent<SpellEffect>();
+        effect.Init(recipe, AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(SpellSinkFixture.MeshesPath), null);
         return effect;
+    }
+
+    static float LargestShape(SpellEffect effect)
+    {
+        float largest = 0f;
+        foreach (Transform shape in effect.shapes)
+        {
+            if (shape.gameObject.activeSelf)
+            {
+                largest = Mathf.Max(largest, shape.localScale.magnitude);
+            }
+        }
+        return largest;
     }
 
     [TearDown]
@@ -30,311 +50,72 @@ public class SpellEffectTests
         _objects.Clear();
     }
 
-    [TestCase("Fx_HealSpheres")]
-    [TestCase("Fx_Impact")]
-    [TestCase("Status_Buff")]
-    [TestCase("Status_Shield")]
-    [TestCase("Fx_ChainBeam")]
-    [TestCase("Fx_PoisonDrips")]
-    [TestCase("Fx_HostileLitter")]
-    public void Advance_AfterWarmup_AllocatesNothing(string prefab)
+    [Test]
+    public void Init_Recipe_BuildsOneChildPerVocabularyPart()
     {
-        SpellEffect effect = CreateEffect(prefab);
-        effect.SetEndpoints(Vector3.zero, Vector3.right * 4f);
-        for (int i = 0; i < 16; i++)
-        {
-            effect.Advance(0.001f);
-        }
+        ElementEntry entry = LoadVocabulary().GetEntry(EffectElement.Stalks);
 
-        long before = System.GC.GetAllocatedBytesForCurrentThread();
-        for (int i = 0; i < 64; i++)
-        {
-            effect.Advance(0.001f);
-        }
-        long allocated = System.GC.GetAllocatedBytesForCurrentThread() - before;
+        SpellEffect effect = CreateEffect(EffectElement.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
 
-        Assert.AreEqual(0, allocated);
+        int expected = entry.parts.Length + entry.stackBeads.Length + entry.criticalRings.Length + entry.sideRim.Length;
+        Assert.AreEqual(expected, effect.transform.childCount);
+        Assert.AreEqual(effect.shapes.Count, effect.stalks.Count);
     }
 
     [Test]
-    public void Advance_Heal_BudsGrowThenPopAndStalksStayConnected()
+    public void Advance_OnceImpactPastItsCycle_ShowsNothing()
     {
-        SpellEffect effect = CreateEffect("Fx_HealSpheres");
-        effect.Advance(0f);
-        float seed = effect.parts[0].localScale.x;
+        SpellEffect effect = CreateEffect(EffectElement.Burst, EffectFamily.Damage, EffectTempo.Once);
 
-        effect.Advance(effect.lifetime * 0.6f);
-
-        Assert.Greater(effect.parts[0].localScale.x, seed);
-        for (int i = 0; i < effect.parts.Length; i++)
-        {
-            Transform stalk = effect.stalks[i];
-            Assert.AreEqual(effect.parts[i].localPosition.y, stalk.localPosition.y + stalk.localScale.y, 0.00001f);
-            Assert.AreEqual(-0.12f, stalk.localPosition.y - stalk.localScale.y, 0.00001f);
-        }
-
-        effect.Advance(effect.lifetime * 0.35f);
-
-        Assert.AreEqual(0f, effect.parts[0].localScale.x, 0.00001f);
-        Assert.AreEqual(0f, effect.stalks[0].localScale.x, 0.00001f);
-    }
-
-    [Test]
-    public void SetStatus_PeriodicHeal_BudsReadOnlyTickTime()
-    {
-        SpellEffect effect = CreateEffect("Fx_HealSpheres");
-        effect.SetPeriod(true, 2f);
-
-        effect.SetStatus(1, 1f, 10f, ClockKind.Simulation);
-        Assert.AreEqual(Vector3.zero, effect.parts[0].localScale); // before the first tick
-
-        effect.SetStatus(1, 2.6f, 10f, ClockKind.Simulation);
-        Vector3 position = effect.parts[0].localPosition;
-        Vector3 scale = effect.parts[0].localScale;
-        Assert.Greater(scale.x, 0f);
-
-        effect.Advance(1f);
-        Assert.AreEqual(position, effect.parts[0].localPosition);
-        Assert.AreEqual(scale, effect.parts[0].localScale);
-
-        effect.SetStatus(1, 3.9f, 10f, ClockKind.Simulation);
-        Assert.AreEqual(Vector3.zero, effect.parts[0].localScale); // popped at the end of the period
-    }
-
-    [Test]
-    public void Advance_Impact_StarKeepsItsRotationAndShardsFall()
-    {
-        SpellEffect effect = CreateEffect("Fx_Impact");
-        Quaternion rest = effect.parts[0].localRotation;
-
-        float start = effect.parts[1].localPosition.y;
-        effect.Advance(0.2f);
-        float peak = effect.parts[1].localPosition.y;
-        effect.Advance(0.4f);
-
-        Assert.AreEqual(rest, effect.parts[0].localRotation); // a solid, it never turns to the camera
-        Assert.Greater(peak, start);
-        Assert.Less(effect.parts[1].localPosition.y, start);
-        Assert.AreEqual(5, effect.parts.Length);
-    }
-
-    [Test]
-    public void SetStatus_Buff_OrbitAndGlowFollowObservedTime()
-    {
-        SpellEffect effect = CreateEffect("Status_Buff");
-        effect.SetStatus(1, 0f, 10f, ClockKind.Simulation);
-        Vector3 normal = effect.parts[0].up;
-        Vector3 scale = effect.parts[0].localScale;
-        MaterialPropertyBlock block = new MaterialPropertyBlock();
-        effect.parts[0].GetComponent<Renderer>().GetPropertyBlock(block);
-        Color color = block.GetColor("_BaseColor");
-
-        effect.SetStatus(1, 1f, 10f, ClockKind.Simulation);
-
-        effect.parts[0].GetComponent<Renderer>().GetPropertyBlock(block);
-        Assert.AreNotEqual(normal, effect.parts[0].up);
-        Assert.AreNotEqual(scale, effect.parts[0].localScale);
-        Assert.AreNotEqual(color, block.GetColor("_BaseColor"));
-    }
-
-    [Test]
-    public void Advance_Litter_EmergesThenSinks()
-    {
-        SpellEffect effect = CreateEffect("Fx_HostileLitter");
-        effect.Advance(0f);
-        float buried = effect.parts[0].localPosition.y;
-
-        effect.Advance(0.2f);
-        float emerged = effect.parts[0].localPosition.y;
+        effect.Advance(effect.lifetime * 0.5f);
+        float during = LargestShape(effect);
         effect.Advance(effect.lifetime);
 
-        Assert.Greater(emerged, buried);
-        Assert.Less(effect.parts[0].localPosition.y, emerged);
+        Assert.Greater(during, 0f);
+        Assert.AreEqual(0f, LargestShape(effect), 0.0001f);
     }
 
     [Test]
-    public void SetStatus_Drip_WaitsForTheFirstTick()
+    public void SetStatus_PerPeriodBeforeTheFirstTick_ShowsNothingThenDrips()
     {
-        SpellEffect effect = CreateEffect("Fx_PoisonDrips");
-        effect.SetPeriod(true, 2f);
+        SpellEffect effect = CreateEffect(EffectElement.Drips, EffectFamily.Rot, EffectTempo.PerPeriod, 2f);
 
-        effect.SetStatus(1, 1.9f, 10f, ClockKind.Simulation);
-        Assert.AreEqual(Vector3.zero, effect.parts[0].localScale);
+        effect.SetStatus(1, 1f, 6f, ClockKind.Simulation);
+        float before = LargestShape(effect);
+        effect.SetStatus(1, 2.5f, 6f, ClockKind.Simulation);
 
-        effect.SetStatus(1, 2f, 10f, ClockKind.Simulation);
-        Vector3 position = effect.parts[0].localPosition;
-        effect.Advance(1f);
-
-        Assert.Greater(effect.parts[0].localScale.y, 0f);
-        Assert.AreEqual(position, effect.parts[0].localPosition);
+        Assert.AreEqual(0f, before, 0.0001f);
+        Assert.Greater(LargestShape(effect), 0f);
     }
 
     [Test]
-    public void SetStatus_Drip_FollowsPeriod()
+    public void SetStatus_RenewPastItsFirstPeriod_StalksReachTheirSpheres()
     {
-        SpellEffect effect = CreateEffect("Fx_PoisonDrips");
-        effect.SetPeriod(true, 2f);
+        SpellEffect effect = CreateEffect(EffectElement.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
 
-        effect.SetStatus(1, 2f, 6f, ClockKind.Simulation);
-        Vector3 position = effect.parts[0].localPosition;
+        effect.SetStatus(1, 1.5f, 6f, ClockKind.Simulation);
 
-        effect.SetStatus(1, 3f, 6f, ClockKind.Simulation);
-        Assert.Less(effect.parts[0].localPosition.y, position.y);
-
-        effect.SetStatus(1, 4f, 6f, ClockKind.Simulation);
-        Assert.AreEqual(position, effect.parts[0].localPosition);
+        Transform sphere = effect.shapes[0];
+        Transform stalk = effect.stalks[0];
+        Assert.Greater(sphere.localPosition.y, 0f);
+        Assert.AreEqual(sphere.localPosition.y, stalk.localScale.y, 0.0001f);
     }
 
     [Test]
-    public void SetEndpoints_ContactThread_HidesBeadsAndEndsOnTheContact()
+    public void Advance_ForDurationFall_LoopsUntilRemoval()
     {
-        SpellEffect effect = CreateEffect("Fx_ChainBeam");
-        effect.contactThread = true;
+        SpellEffect effect = CreateEffect(EffectElement.Drips, EffectFamily.Rot, EffectTempo.ForDuration);
+        effect.SetStatus(1, 0f, float.PositiveInfinity, ClockKind.Simulation);
 
-        effect.SetEndpoints(Vector3.zero, Vector3.right * 4f);
+        effect.Advance(effect.lifetime * 3.25f);
 
-        Transform last = effect.parts[30];
-        Vector3 tip = last.position + last.up * last.localScale.y;
-        Assert.IsFalse(effect.parts[1].gameObject.activeSelf);
-        Assert.AreEqual(0f, effect.parts[0].position.y, 0.00001f);
-        Assert.Less(Vector3.Distance(Vector3.right * 4f, tip), 0.00001f);
-
-        effect.SetEndpoints(Vector3.one, Vector3.one);
-
-        foreach (Transform part in effect.parts)
-        {
-            Assert.IsFalse(float.IsNaN(part.position.x));
-        }
+        Assert.Greater(LargestShape(effect), 0f);
     }
 
     [Test]
-    public void SetShieldState_Repeated_AllocatesNothing()
+    public void SetStatus_Stacks_ShowOneBeadEach()
     {
-        SpellEffect effect = CreateEffect("Status_Shield");
-        for (int i = 0; i < 32; i++)
-        {
-            effect.SetStatus(2, 1f, 4f, ClockKind.Simulation);
-            effect.SetSide(Entity.EntityType.Player);
-            effect.SetShieldState(2f);
-        }
-
-        long before = System.GC.GetAllocatedBytesForCurrentThread();
-        for (int i = 0; i < 32; i++)
-        {
-            effect.SetStatus(2, 1f, 4f, ClockKind.Simulation);
-            effect.SetSide(Entity.EntityType.Player);
-            effect.SetShieldState(2f);
-        }
-        long allocated = System.GC.GetAllocatedBytesForCurrentThread() - before;
-
-        Assert.AreEqual(0, allocated);
-    }
-
-    [Test]
-    public void SetShieldState_Charges_ShowsOnePlatePerCharge()
-    {
-        SpellEffect effect = CreateEffect("Status_Shield");
-        effect.SetStatus(9, 0f, 4f, ClockKind.Simulation);
-
-        effect.SetShieldState(2f);
-
-        int count = 0;
-        foreach (Transform part in effect.parts)
-        {
-            if (part.gameObject.activeSelf)
-            {
-                count++;
-            }
-        }
-        Assert.AreEqual(2, count);
-        Assert.AreEqual(9, effect.stacks);
-
-        effect.SetShieldState(3f);
-
-        Assert.IsTrue(effect.parts[2].gameObject.activeSelf);
-    }
-
-    [Test]
-    public void SetStatus_Buff_PoseOnlyMovesWithObservedTime()
-    {
-        SpellEffect effect = CreateEffect("Status_Buff");
-        effect.SetStatus(1, 1f, 4f, ClockKind.Simulation);
-        Quaternion pose = effect.parts[0].localRotation;
-
-        effect.Advance(7f);
-        Assert.AreEqual(pose, effect.parts[0].localRotation);
-
-        effect.SetStatus(2, 2f, 4f, ClockKind.Simulation);
-        Assert.AreNotEqual(pose, effect.parts[0].localRotation);
-    }
-
-    [Test]
-    public void BeginRemoval_Shield_OpensThePlates()
-    {
-        SpellEffect effect = CreateEffect("Status_Shield");
-        effect.SetStatus(1, 0.25f, 4f, ClockKind.Simulation);
-        Quaternion closed = effect.parts[0].localRotation;
-        float closedRadius = effect.parts[0].localPosition.magnitude;
-
-        effect.BeginRemoval();
-        effect.Advance(0.25f);
-
-        Assert.IsTrue(effect.removalComplete);
-        Assert.AreNotEqual(closed, effect.parts[0].localRotation);
-        Assert.Greater(effect.parts[0].localPosition.magnitude, closedRadius);
-    }
-
-    [Test]
-    public void Advance_Chain_BeadsTravelAboveTheChord()
-    {
-        SpellEffect effect = CreateEffect("Fx_ChainBeam");
-        effect.SetEndpoints(Vector3.zero, Vector3.right * 4f);
-
-        Assert.AreEqual(Vector3.zero, effect.parts[1].position);
-        Assert.Greater(effect.parts[17].position.y, 0f);
-        Assert.AreEqual(32, effect.parts.Length);
-
-        effect.Advance(0.15f);
-
-        Assert.Greater(effect.parts[1].position.x, 0f);
-        Assert.Greater(effect.parts[1].position.y, 0f);
-    }
-
-    [Test]
-    public void SetSide_Twice_ReusesTheAuthoredRim()
-    {
-        SpellEffect effect = CreateEffect("Fx_HealSpheres");
-        int count = effect.transform.childCount;
-
-        effect.SetSide(Entity.EntityType.Player);
-        effect.SetSide(Entity.EntityType.Computer);
-
-        Assert.AreEqual(count, effect.transform.childCount);
-        Assert.IsTrue(effect.transform.Find("SideRim").gameObject.activeSelf);
-    }
-
-    [Test]
-    public void ShowCritical_Heal_ShowsTwoRings()
-    {
-        SpellEffect effect = CreateEffect("Fx_HealSpheres");
-
-        effect.ShowCritical();
-
-        int rings = 0;
-        foreach (Transform child in effect.transform)
-        {
-            if (child.name == "CriticalRing" && child.gameObject.activeSelf)
-            {
-                rings++;
-            }
-        }
-        Assert.AreEqual(2, rings);
-    }
-
-    [Test]
-    public void SetStatus_Stacks_ShowsOneBeadPerStack()
-    {
-        SpellEffect effect = CreateEffect("Status_Buff");
+        SpellEffect effect = CreateEffect(EffectElement.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
 
         effect.SetStatus(3, 0f, 4f, ClockKind.Simulation);
 
@@ -350,34 +131,92 @@ public class SpellEffectTests
     }
 
     [Test]
-    public void Advance_Status_DoesNotExpire()
+    public void SetCount_FewerCharges_HidesThePlatesThatFell()
     {
-        SpellEffect heal = CreateEffect("Fx_HealSpheres");
-        SpellEffect status = CreateEffect("Status_Buff");
-        float before = heal.parts[0].localPosition.y;
+        SpellEffect effect = CreateEffect(EffectElement.Plates, EffectFamily.Boon, EffectTempo.ForDuration);
 
-        heal.Advance(0.2f);
-        status.SetStatus(3, 2f, 4f, ClockKind.Realtime);
-        status.Advance(10f);
+        effect.SetCount(2);
 
-        Assert.Greater(heal.parts[0].localPosition.y, before);
-        Assert.AreEqual(3, status.stacks);
-        Assert.AreEqual(2f, status.elapsedSeconds);
+        int shown = 0;
+        foreach (Transform plate in effect.shapes)
+        {
+            if (plate.gameObject.activeSelf)
+            {
+                shown++;
+            }
+        }
+        Assert.AreEqual(2, shown);
     }
 
     [Test]
-    public void SetColor_Tint_ColoursEveryPart()
+    public void Advance_Orbit_TurnsTheTiltedPlane()
     {
-        SpellEffect effect = CreateEffect("Status_Buff");
-        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        SpellEffect effect = CreateEffect(EffectElement.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
+        effect.SetStatus(1, 0f, 10f, ClockKind.Simulation);
+        Quaternion start = effect.shapes[0].localRotation;
 
-        effect.SetColor(Color.red);
+        effect.Advance(1f);
 
-        foreach (Transform part in effect.parts)
+        Assert.Greater(Quaternion.Angle(start, effect.shapes[0].localRotation), 1f);
+    }
+
+    [Test]
+    public void BeginRemoval_QuarterSecond_CompletesAndHides()
+    {
+        SpellEffect effect = CreateEffect(EffectElement.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
+        effect.SetStatus(1, 0f, 10f, ClockKind.Simulation);
+
+        effect.BeginRemoval();
+        effect.Advance(0.25f);
+
+        Assert.IsTrue(effect.removalComplete);
+        Assert.AreEqual(0f, LargestShape(effect), 0.0001f);
+    }
+
+    [Test]
+    public void SetSide_Computer_ShowsTheRimInTheLitBaneColour()
+    {
+        SpellEffect effect = CreateEffect(EffectElement.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
+
+        effect.SetSide(Entity.EntityType.Computer);
+
+        Transform rim = null;
+        foreach (Transform child in effect.transform)
         {
-            part.GetComponent<Renderer>().GetPropertyBlock(block);
-            Assert.AreEqual(Color.red, block.GetColor("_BaseColor"));
+            if (child.name == "SideRim")
+            {
+                rim = child;
+            }
         }
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        rim.GetComponent<Renderer>().GetPropertyBlock(block);
+        Assert.IsTrue(rim.gameObject.activeSelf);
+        Assert.Less(Vector4.Distance(LoadVocabulary().palette.baneLit, block.GetColor("_BaseColor")), 0.0001f);
+    }
+
+    [Test]
+    public void SetEndpoints_Beam_StartsAtTheFirstPoint()
+    {
+        SpellEffect effect = CreateEffect(EffectElement.Beam, EffectFamily.Heal, EffectTempo.Once);
+
+        effect.SetEndpoints(Vector3.left, Vector3.right, false);
+
+        Transform first = effect.stalks[0];
+        Vector3 start = first.position - first.up * first.localScale.y * 0.5f;
+        Assert.Less(Vector3.Distance(Vector3.left, start), 0.0001f);
+    }
+
+    [Test]
+    public void Init_NoRecipe_LogsAndBuildsNothing()
+    {
+        GameObject go = new GameObject("Empty");
+        _objects.Add(go);
+        SpellEffect effect = go.AddComponent<SpellEffect>();
+
+        UnityEngine.TestTools.LogAssert.Expect(LogType.Error, "[SpellEffect] Init needs a recipe and the primitive meshes.");
+        effect.Init(null, null, null);
+
+        Assert.AreEqual(0, go.transform.childCount);
     }
 }
 

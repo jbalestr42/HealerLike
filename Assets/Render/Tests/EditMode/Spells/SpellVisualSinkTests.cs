@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Zones;
 using NUnit.Framework;
 using UnityEditor;
@@ -6,6 +8,64 @@ using UnityEngine;
 
 namespace HealerLike.Render.Spells
 {
+
+// A sink wired like the shipped prefab, with the meshes the RenderManager would hand it
+public static class SpellSinkFixture
+{
+    public static readonly string SinkPath = "Assets/Render/Spells/Prefabs/SpellVisualSink.prefab";
+    public static readonly string MeshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
+
+    public static SpellVisualSink Add(GameObject host)
+    {
+        SpellVisualSink shipped = AssetDatabase.LoadAssetAtPath<GameObject>(SinkPath).GetComponent<SpellVisualSink>();
+        SpellVisualSink sink = host.AddComponent<SpellVisualSink>();
+        sink.looks = shipped.looks;
+        sink.vocabulary = shipped.vocabulary;
+        sink.material = shipped.material;
+        sink.meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(MeshesPath);
+        return sink;
+    }
+
+    public static BuffHandlerFactory Modifier(AttributeType type, float value, List<Object> created)
+    {
+        FlatModifierFactory modifier = ScriptableObject.CreateInstance<FlatModifierFactory>();
+        modifier.data = new FlatModifierData { type = type, modifierType = AttributeModifierType.Add, value = value };
+        return Handler(modifier, false, 0f, created);
+    }
+
+    public static BuffHandlerFactory Consumer(float value, float period, List<Object> created)
+    {
+        ConsumerFactory consumer = ScriptableObject.CreateInstance<ConsumerFactory>();
+        FlatValue flat = new FlatValue();
+        flat.data = new FlatValueData { value = value };
+        consumer.data = new ConsumerData { value = flat };
+        created.Add(consumer);
+        ApplyConsumerBuffFactory buff = ScriptableObject.CreateInstance<ApplyConsumerBuffFactory>();
+        buff.data = new ApplyConsumerBuffData { consumerFactory = consumer };
+        return Handler(buff, period > 0f, period, created);
+    }
+
+    public static BuffHandlerFactory Invincible(List<Object> created)
+    {
+        return Handler(ScriptableObject.CreateInstance<InvincibilityBuffFactory>(), false, 0f, created);
+    }
+
+    static BuffHandlerFactory Handler(ABuffFactory buff, bool isPeriodic, float period, List<Object> created)
+    {
+        created.Add(buff);
+        BuffHandlerFactory handler = ScriptableObject.CreateInstance<BuffHandlerFactory>();
+        handler.data = new BuffHandlerData
+        {
+            durationType = DurationType.Duration,
+            duration = 6f,
+            isPeriodic = isPeriodic,
+            periodDuration = period,
+            buffFactoryList = new List<ABuffFactory> { buff }
+        };
+        created.Add(handler);
+        return handler;
+    }
+}
 
 public class SpellVisualSinkTests
 {
@@ -15,12 +75,7 @@ public class SpellVisualSinkTests
     SpellVisualSink _sink;
     BuffHandlerFactory _factory;
     BuffHandlerFactory _second;
-    FlatModifierFactory _modifier;
-
-    static SpellLooks LoadLooks()
-    {
-        return AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
-    }
+    readonly List<Object> _created = new List<Object>();
 
     [SetUp]
     public void SetUp()
@@ -28,19 +83,9 @@ public class SpellVisualSinkTests
         _host = new GameObject("Host");
         _target = new GameObject("Target");
         _other = new GameObject("Other");
-        _sink = _host.AddComponent<SpellVisualSink>();
-        _sink.looks = LoadLooks();
-        _modifier = ScriptableObject.CreateInstance<FlatModifierFactory>();
-        _modifier.data = new FlatModifierData { type = AttributeType.Damage, value = 2f };
-        _factory = ScriptableObject.CreateInstance<BuffHandlerFactory>();
-        _factory.data = new BuffHandlerData
-        {
-            durationType = DurationType.Duration,
-            duration = 4f,
-            buffFactoryList = new List<ABuffFactory> { _modifier }
-        };
-        _second = ScriptableObject.CreateInstance<BuffHandlerFactory>();
-        _second.data = _factory.data;
+        _sink = SpellSinkFixture.Add(_host);
+        _factory = SpellSinkFixture.Modifier(AttributeType.Damage, 2f, _created);
+        _second = SpellSinkFixture.Modifier(AttributeType.Damage, 3f, _created);
     }
 
     [TearDown]
@@ -53,32 +98,130 @@ public class SpellVisualSinkTests
             Object.DestroyImmediate(_target);
         }
         Object.DestroyImmediate(_other);
-        Object.DestroyImmediate(_factory);
-        Object.DestroyImmediate(_second);
-        Object.DestroyImmediate(_modifier);
+        foreach (Object created in _created)
+        {
+            Object.DestroyImmediate(created);
+        }
+        _created.Clear();
     }
 
     [Test]
-    public void PulseArea_Hostile_SpawnsSlateLitter()
+    public void Shipped_Sink_CarriesLooksVocabularyAndTheLookMaterial()
     {
-        _sink.PulseArea(Vector3.one, 2f, ZoneKind.Hostile, 1f);
+        SpellVisualSink shipped = AssetDatabase.LoadAssetAtPath<GameObject>(SpellSinkFixture.SinkPath).GetComponent<SpellVisualSink>();
 
-        SpellEffect effect = _host.GetComponentInChildren<SpellEffect>();
+        Assert.AreSame(AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset"), shipped.looks);
+        Assert.AreSame(AssetDatabase.LoadAssetAtPath<EffectVocabulary>("Assets/Render/Spells/Data/EffectVocabulary.asset"), shipped.vocabulary);
+        Assert.AreSame(AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat"), shipped.material);
+    }
+
+    [Test]
+    public void SetStatus_DerivedBoon_BuildsTheOrbitWithoutAPrefab()
+    {
+        _sink.SetStatus(null, _target, _factory, 1, 0.25f, 4f, ClockKind.Simulation);
+
+        SpellEffect effect = _sink.GetStatus(_target, _factory).GetComponent<SpellEffect>();
+        Assert.AreEqual(EffectElement.Orbit, effect.element);
+        Assert.AreEqual(_target.transform, effect.transform.parent);
+        Assert.IsNull(PrefabUtility.GetCorrespondingObjectFromSource(effect.gameObject));
+        foreach (Transform part in effect.parts)
+        {
+            Assert.AreSame(_sink.material, part.GetComponent<Renderer>().sharedMaterial);
+        }
+    }
+
+    [Test]
+    public void SetStatus_HarmfulModifierFromAnEnemy_PressesInTheBaneAccent()
+    {
+        BuffHandlerFactory harm = SpellSinkFixture.Modifier(AttributeType.Damage, -2f, _created);
+        Entity caster = null;
+        Entity recipient = null;
+        TestHelpers.WithLoggingDisabled(() =>
+        {
+            caster = _other.AddComponent<Entity>();
+            recipient = _target.AddComponent<Entity>();
+        });
+        caster.entityType = Entity.EntityType.Computer;
+        recipient.entityType = Entity.EntityType.Player;
+
+        _sink.SetStatus(_other, _target, harm, 1, 0f, 4f, ClockKind.Simulation);
+
+        SpellEffect effect = _sink.GetStatus(_target, harm).GetComponent<SpellEffect>();
         MaterialPropertyBlock block = new MaterialPropertyBlock();
-        effect.parts[0].GetComponent<Renderer>().GetPropertyBlock(block);
-        Assert.AreEqual(SpellEffectKind.Litter, effect.kind);
-        Assert.AreEqual(SpellVisualSink.PulseSeconds, effect.lifetime);
-        Assert.AreEqual(Vector3.one, effect.transform.position);
-        Assert.Less(Vector4.Distance((Color)new Color32(58, 66, 87, 255), block.GetColor("_BaseColor")), 0.00001f);
+        effect.shapes[0].GetComponent<Renderer>().GetPropertyBlock(block);
+        Assert.AreEqual(EffectElement.Press, effect.element);
+        Assert.Less(Vector4.Distance(_sink.vocabulary.palette.bane, block.GetColor("_BaseColor")), 0.0001f);
     }
 
     [Test]
-    public void ShowContactLink_Contacts_DrawsAThread()
+    public void SetStatus_TwoBoonHandlers_OneOrbitWithTwoStacks()
     {
-        SpellEffect thread = _sink.ShowContactLink(Vector3.zero, Vector3.right);
+        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, _second, 1, 0f, 4f, ClockKind.Simulation);
 
-        Assert.IsTrue(thread.contactThread);
-        Assert.IsFalse(thread.parts[1].gameObject.activeSelf);
+        SpellEffect orbit = _sink.GetElement(_target, EffectElement.Orbit);
+        Assert.AreEqual(1, _sink.statusCount);
+        Assert.AreSame(orbit.gameObject, _sink.GetStatus(_target, _second));
+        Assert.AreEqual(2, orbit.stacks);
+        Assert.AreEqual(3, orbit.count); // two tori, one more for the second stack
+
+        _sink.RemoveStatus(null, _target, _factory);
+        Assert.AreEqual(1, _sink.statusCount);
+        Assert.AreEqual(1, orbit.stacks);
+
+        _sink.RemoveStatus(null, _target, _second);
+        Assert.AreEqual(0, _sink.statusCount);
+    }
+
+    [Test]
+    public void SetStatus_SameTargetAndFactory_KeepsOneStatus()
+    {
+        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
+        GameObject first = _sink.GetStatus(_target, _factory);
+
+        _sink.SetStatus(_other, _target, _factory, 3, 2f, 4f, ClockKind.Realtime);
+        _sink.SetStatus(null, _other, _factory, 1, 0f, 4f, ClockKind.Simulation);
+
+        Assert.AreSame(first, _sink.GetStatus(_target, _factory));
+        Assert.AreEqual(3, first.GetComponent<SpellEffect>().stacks);
+        Assert.AreEqual(2, _sink.statusCount);
+
+        _sink.RemoveStatus(_other, _target, _factory);
+        _sink.RemoveStatus(_other, _target, _factory);
+
+        Assert.AreEqual(1, _sink.statusCount);
+    }
+
+    [Test]
+    public void SetCharges_BoonDefenceAndHitArmor_ShareThePlates()
+    {
+        BuffHandlerFactory armor = SpellSinkFixture.Modifier(AttributeType.HitArmor, 2f, _created);
+        _sink.SetStatus(null, _target, armor, 1, 0f, 4f, ClockKind.Simulation);
+
+        _sink.SetCharges(_target, 3f);
+
+        SpellEffect plates = _sink.GetElement(_target, EffectElement.Plates);
+        Assert.AreEqual(1, _sink.statusCount);
+        Assert.AreEqual(3, plates.count);
+
+        _sink.RemoveStatus(null, _target, armor);
+        Assert.AreEqual(1, _sink.statusCount);
+        _sink.SetCharges(_target, 0f);
+        Assert.AreEqual(0, _sink.statusCount);
+    }
+
+    [Test]
+    public void RemoveStatus_Removed_KeepsOnlyTheCosmeticTail()
+    {
+        _sink.SetStatus(null, _target, _factory, 1, 0.25f, 4f, ClockKind.Simulation);
+        SpellEffect effect = _sink.GetStatus(_target, _factory).GetComponent<SpellEffect>();
+
+        _sink.RemoveStatus(null, _target, _factory);
+        effect.Advance(0.25f);
+
+        Assert.AreEqual(0, _sink.statusCount);
+        Assert.IsTrue(effect);
+        Assert.IsTrue(effect.removalComplete);
     }
 
     [Test]
@@ -143,62 +286,17 @@ public class SpellVisualSinkTests
     }
 
     [Test]
-    public void SetStatus_UnmappedBuff_UsesTheBoonLook()
+    public void PulseArea_Hostile_SpawnsTheLitterInTheBaneAccent()
     {
-        _sink.SetStatus(null, _target, _factory, 1, 0.25f, 4f, ClockKind.Simulation);
+        _sink.PulseArea(Vector3.one, 2f, ZoneKind.Hostile, 1f);
 
-        SpellEffect effect = _sink.GetStatus(_target, _factory).GetComponent<SpellEffect>();
-        Assert.AreEqual(_sink.looks.boon.effectPrefab.kind, effect.kind);
-        Assert.AreEqual(_target.transform, effect.transform.parent);
-    }
-
-    [Test]
-    public void SetStatus_MappedSpeedBuff_SitsAtTheLookOffset()
-    {
-        ABuffHandlerFactory slow = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(
-            "Assets/Data/EntityItems/SlowItem/BuffHandlerFactory.asset");
-
-        _sink.SetStatus(null, _target, slow, 1, 0.25f, 4f, ClockKind.Simulation);
-
-        GameObject status = _sink.GetStatus(_target, slow);
-        Assert.AreEqual(_sink.looks.GetLook(slow, true).offset, status.transform.localPosition);
-        Assert.Less(status.transform.localPosition.y, 0f);
-    }
-
-    [Test]
-    public void SetStatus_HarmfulModifierFromAnEnemy_UsesTheBaneLook()
-    {
-        _modifier.data.value = -2f;
-        Entity caster = null;
-        Entity recipient = null;
-        TestHelpers.WithLoggingDisabled(() =>
-        {
-            caster = _other.AddComponent<Entity>();
-            recipient = _target.AddComponent<Entity>();
-        });
-        caster.entityType = Entity.EntityType.Computer;
-        recipient.entityType = Entity.EntityType.Player;
-
-        _sink.SetStatus(_other, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
-
+        SpellEffect effect = _host.GetComponentInChildren<SpellEffect>();
         MaterialPropertyBlock block = new MaterialPropertyBlock();
-        SpellEffect effect = _sink.GetStatus(_target, _factory).GetComponent<SpellEffect>();
-        effect.parts[0].GetComponent<Renderer>().GetPropertyBlock(block);
-        Assert.AreEqual(_sink.looks.bane.tint.g * 1.12f, block.GetColor("_BaseColor").g, 0.001f); // first glow frame
-    }
-
-    [Test]
-    public void RemoveStatus_Removed_KeepsOnlyTheCosmeticTail()
-    {
-        _sink.SetStatus(null, _target, _factory, 1, 0.25f, 4f, ClockKind.Simulation);
-        SpellEffect effect = _sink.GetStatus(_target, _factory).GetComponent<SpellEffect>();
-
-        _sink.RemoveStatus(null, _target, _factory);
-        effect.Advance(0.25f);
-
-        Assert.AreEqual(0, _sink.statusCount);
-        Assert.IsTrue(effect);
-        Assert.IsTrue(effect.removalComplete);
+        effect.shapes[0].GetComponent<Renderer>().GetPropertyBlock(block);
+        Assert.AreEqual(EffectElement.Litter, effect.element);
+        Assert.AreEqual(SpellVisualSink.PulseSeconds, effect.lifetime);
+        Assert.AreEqual(Vector3.one, effect.transform.position);
+        Assert.Less(Vector4.Distance(_sink.vocabulary.palette.bane, block.GetColor("_BaseColor")), 0.0001f);
     }
 
     [Test]
@@ -207,47 +305,82 @@ public class SpellVisualSinkTests
         _sink.PulseArea(Vector3.right, 2f, ZoneKind.Heal, 0.3f);
 
         SpellEffect ring = _host.GetComponentInChildren<SpellEffect>();
-        Assert.AreEqual(SpellEffectKind.Area, ring.kind);
+        Assert.AreEqual(EffectElement.Ring, ring.element);
         Assert.AreEqual(Vector3.right, ring.transform.position);
         Assert.AreEqual(Vector3.one * 2f, ring.transform.localScale);
     }
 
     [Test]
-    public void ShowImpact_LargerAmount_DrawsALargerImpact()
+    public void PulseArea_Forwarded_KeepsRadiusAndRejectsInvalidGeometry()
     {
-        _sink.ShowImpact(null, _target, ResourceKind.Health, 1f, false);
+        int calls = 0;
+        _sink.areaPulse = (center, radius, kind, strength) =>
+        {
+            calls++;
+            Assert.AreEqual(2f, radius);
+            Assert.AreEqual(ZoneKind.Heal, kind);
+        };
+
+        _sink.PulseArea(Vector3.zero, 2f, ZoneKind.Heal, 0.5f);
+        _sink.PulseArea(Vector3.zero, -1f, ZoneKind.Heal, 0.5f);
+
+        Assert.AreEqual(1, calls);
+    }
+
+    [Test]
+    public void ShowContactLink_Contacts_DrawsAThreadWithoutBeads()
+    {
+        SpellEffect thread = _sink.ShowContactLink(Vector3.zero, Vector3.right);
+
+        Assert.IsTrue(thread.isContactThread);
+        Assert.AreEqual(EffectElement.Beam, thread.element);
+        Assert.IsFalse(thread.shapes[0].gameObject.activeSelf);
+        Assert.IsTrue(thread.stalks[0].gameObject.activeSelf);
+    }
+
+    [Test]
+    public void ShowImpact_LargerAmount_DrawsALargerBurst()
+    {
+        _sink.ShowImpact(null, _target, ResourceKind.Health, -1f, false);
         float small = _host.GetComponentInChildren<SpellEffect>().transform.localScale.x;
         _sink.Clear();
 
-        _sink.ShowImpact(null, _target, ResourceKind.Health, 100f, false);
+        _sink.ShowImpact(null, _target, ResourceKind.Health, -100f, false);
 
         Assert.Greater(_host.GetComponentInChildren<SpellEffect>().transform.localScale.x, small);
     }
 
     [Test]
-    public void FlushHealLinks_SameFrameCharacterHeals_LinksEachRecipientOnce()
+    public void ShowImpact_LargerHeal_RaisesMoreSpheres()
     {
-        int links = 0;
-        _sink.isCharacterSource = source => source == _host;
-        _sink.healerAnchor = source => _other.transform;
-        _other.transform.position = Vector3.up * 2f;
-        _sink.linkObserved = (start, end) =>
-        {
-            links++;
-            Assert.AreEqual(_other.transform.position, start);
-        };
-        _sink.ShowImpact(_host, _target, ResourceKind.Health, 3f, false);
-        _sink.ShowImpact(_host, _target, ResourceKind.Health, 4f, false);
-        _sink.ShowImpact(_host, _other, ResourceKind.Health, 2f, false);
-        _sink.ShowImpact(_other, _target, ResourceKind.Health, 2f, false);
-        _sink.ShowImpact(_host, _target, ResourceKind.Health, -2f, false);
-        _sink.ShowImpact(_host, _target, ResourceKind.Mana, 2f, false);
-        Assert.AreEqual(0, links);
+        _sink.ShowImpact(null, _target, ResourceKind.Health, 1f, false);
+        int few = _host.GetComponentInChildren<SpellEffect>().count;
+        _sink.Clear();
 
-        _sink.FlushHealLinks();
-        _sink.FlushHealLinks();
+        _sink.ShowImpact(null, _target, ResourceKind.Health, 100f, false);
 
-        Assert.AreEqual(2, links); // one per recipient, the second flush has nothing left
+        Assert.AreEqual(3, few);
+        Assert.AreEqual(8, _host.GetComponentInChildren<SpellEffect>().count);
+    }
+
+    [Test]
+    public void ShowImpact_SignedFiniteAmounts_PickTheElement()
+    {
+        _sink.ShowImpact(null, _target, ResourceKind.Health, 0f, false);
+        _sink.ShowImpact(null, _target, ResourceKind.Health, float.NaN, false);
+        Assert.AreEqual(0, _sink.impactCount);
+
+        _sink.ShowImpact(null, _target, ResourceKind.Health, 5f, false);
+        _sink.ShowImpact(null, _target, ResourceKind.Health, -5f, false);
+        _sink.ShowImpact(null, _target, ResourceKind.Mana, 5f, false);
+        _sink.ShowImpact(null, _target, ResourceKind.Mana, -5f, false);
+
+        SpellEffect[] effects = _host.GetComponentsInChildren<SpellEffect>();
+        Assert.AreEqual(4, _sink.impactCount);
+        Assert.AreEqual(EffectElement.Rise, effects[0].element);
+        Assert.AreEqual(EffectElement.Burst, effects[1].element);
+        Assert.AreEqual(EffectElement.ManaUp, effects[2].element);
+        Assert.AreEqual(EffectElement.ManaDown, effects[3].element);
     }
 
     [Test]
@@ -267,9 +400,9 @@ public class SpellVisualSinkTests
     }
 
     [Test]
-    public void ShowImpact_NoLooks_ShowsNothing()
+    public void ShowImpact_NoVocabulary_ShowsNothing()
     {
-        _sink.looks = null;
+        _sink.vocabulary = null;
 
         _sink.ShowImpact(null, _target, ResourceKind.Health, 3f, false);
         _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
@@ -279,74 +412,52 @@ public class SpellVisualSinkTests
     }
 
     [Test]
-    public void SetStatus_SameTargetAndFactory_KeepsOneStatus()
+    public void FlushLinks_OneCharacterHealingTwoRecipients_LinksEachOnceInLime()
     {
-        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
-        GameObject first = _sink.GetStatus(_target, _factory);
-
-        _sink.SetStatus(_other, _target, _factory, 3, 2f, 4f, ClockKind.Realtime);
-        _sink.SetStatus(null, _other, _factory, 1, 0f, 4f, ClockKind.Simulation);
-        _sink.SetStatus(null, _target, _second, 1, 0f, 4f, ClockKind.Simulation);
-
-        Assert.AreSame(first, _sink.GetStatus(_target, _factory));
-        Assert.AreEqual(3, first.GetComponent<SpellEffect>().stacks);
-        Assert.AreEqual(3, _sink.statusCount);
-
-        _sink.RemoveStatus(_other, _target, _factory);
-        _sink.RemoveStatus(_other, _target, _factory);
-
-        Assert.AreEqual(2, _sink.statusCount);
-    }
-
-    [Test]
-    public void SetStatus_TargetPoint_AnchorsOnIt()
-    {
-        Entity entity = null;
-        TestHelpers.WithLoggingDisabled(() => entity = _target.AddComponent<Entity>());
-        GameObject anchor = new GameObject("Anchor");
-        anchor.transform.SetParent(_target.transform);
-        TestHelpers.SetPrivateField(entity, "_targetPoint", anchor);
-
-        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
-        _sink.SetStatus(null, _other, _factory, 1, 0f, 4f, ClockKind.Simulation);
-
-        Assert.AreEqual(anchor.transform, _sink.GetStatus(_target, _factory).transform.parent);
-        Assert.AreEqual(_other.transform, _sink.GetStatus(_other, _factory).transform.parent);
-    }
-
-    [Test]
-    public void ShowImpact_SignedFiniteAmounts_PickTheResourceLook()
-    {
-        _sink.ShowImpact(null, _target, ResourceKind.Health, 0f, false);
-        _sink.ShowImpact(null, _target, ResourceKind.Health, float.NaN, false);
-        Assert.AreEqual(0, _sink.impactCount);
-
-        _sink.ShowImpact(null, _target, ResourceKind.Health, 5f, false);
-        _sink.ShowImpact(null, _target, ResourceKind.Health, -5f, false);
-        _sink.ShowImpact(null, _target, ResourceKind.Mana, -5f, false);
-
-        SpellEffect[] effects = _host.GetComponentsInChildren<SpellEffect>();
-        Assert.AreEqual(3, _sink.impactCount);
-        Assert.AreEqual(SpellEffectKind.Heal, effects[0].kind);
-        Assert.AreEqual(SpellEffectKind.Impact, effects[1].kind);
-        Assert.AreEqual(SpellEffectKind.Mana, effects[2].kind);
-    }
-
-    [Test]
-    public void PulseArea_Forwarded_KeepsRadiusAndRejectsInvalidGeometry()
-    {
-        int calls = 0;
-        _sink.areaPulse = (center, radius, kind, strength) =>
+        int links = 0;
+        _sink.isCharacterSource = source => source == _host;
+        _sink.healerAnchor = source => _other.transform;
+        _other.transform.position = Vector3.up * 2f;
+        _sink.linkObserved = (start, end) =>
         {
-            calls++;
-            Assert.AreEqual(2f, radius);
-            Assert.AreEqual(ZoneKind.Heal, kind);
+            links++;
+            Assert.AreEqual(_other.transform.position, start);
         };
+        _sink.ShowImpact(_host, _target, ResourceKind.Health, 3f, false);
+        _sink.ShowImpact(_host, _target, ResourceKind.Health, 4f, false);
+        _sink.ShowImpact(_host, _other, ResourceKind.Health, 2f, false);
+        _sink.ShowImpact(_other, _target, ResourceKind.Health, 2f, false);
+        _sink.ShowImpact(_host, _target, ResourceKind.Mana, 2f, false);
+        Assert.AreEqual(0, links);
 
-        _sink.PulseArea(Vector3.zero, 2f, ZoneKind.Heal, 0.5f);
-        _sink.PulseArea(Vector3.zero, -1f, ZoneKind.Heal, 0.5f);
+        _sink.FlushLinks();
+        _sink.FlushLinks();
 
-        Assert.AreEqual(1, calls);
+        Assert.AreEqual(2, links); // one per recipient, the second flush has nothing left
+        SpellEffect beam = null;
+        foreach (SpellEffect effect in _host.GetComponentsInChildren<SpellEffect>())
+        {
+            if (effect.element == EffectElement.Beam)
+            {
+                beam = effect;
+            }
+        }
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        beam.stalks[0].GetComponent<Renderer>().GetPropertyBlock(block);
+        Assert.Less(Vector4.Distance(_sink.vocabulary.palette.heal, block.GetColor("_BaseColor")), 0.0001f);
+    }
+
+    [Test]
+    public void FlushLinks_SingleRecipient_DrawsNoBeam()
+    {
+        int links = 0;
+        _sink.isCharacterSource = source => source == _host;
+        _sink.linkObserved = (start, end) => links++;
+        _sink.ShowImpact(_host, _target, ResourceKind.Health, 3f, false);
+
+        _sink.FlushLinks();
+
+        Assert.AreEqual(0, links);
     }
 
     [Test]

@@ -2,27 +2,46 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Stage;
 using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Spells
 {
+    // Builds every status, impact, link and area pulse from the effect vocabulary, one element per target and element
     public class SpellVisualSink : MonoBehaviour, ISpellVisualSink
     {
         public static readonly float PulseSeconds = 0.8f;
         public static readonly int MaxImpacts = 128;
 
-        [SerializeField] SpellLooks _looks;
+        // Every handler that resolved to one element on one target, summed into that element
+        class Status
+        {
+            public SpellEffect effect;
+            public Dictionary<ABuffHandlerFactory, int> sources = new Dictionary<ABuffHandlerFactory, int>();
+            public float charges;
+        }
 
-        readonly Dictionary<(GameObject, ABuffHandlerFactory), SpellEffect> _statuses =
-            new Dictionary<(GameObject, ABuffHandlerFactory), SpellEffect>();
-        readonly List<(GameObject, ABuffHandlerFactory)> _dead = new List<(GameObject, ABuffHandlerFactory)>();
+        [SerializeField] SpellLooks _looks;
+        [SerializeField] EffectVocabulary _vocabulary;
+        [SerializeField] Material _material;
+
+        readonly Dictionary<(GameObject, int), Status> _statuses = new Dictionary<(GameObject, int), Status>();
+        // The element each handler fed on each target, so a handler is read from his data once
+        readonly Dictionary<(GameObject, ABuffHandlerFactory), int> _elements = new Dictionary<(GameObject, ABuffHandlerFactory), int>();
+        readonly List<(GameObject, int)> _dead = new List<(GameObject, int)>();
+        readonly List<(GameObject, ABuffHandlerFactory)> _deadSources = new List<(GameObject, ABuffHandlerFactory)>();
         readonly List<SpellEffect> _remainingEffects = new List<SpellEffect>();
         readonly List<GameObject> _impacts = new List<GameObject>();
-        readonly HashSet<(GameObject source, GameObject target)> _heals = new HashSet<(GameObject, GameObject)>();
+        readonly Dictionary<GameObject, List<(GameObject, EffectFamily)>> _groups = new Dictionary<GameObject, List<(GameObject, EffectFamily)>>();
         readonly List<GameObject> _removing = new List<GameObject>();
 
         public SpellLooks looks { get { return _looks; } set { _looks = value; } }
+        public EffectVocabulary vocabulary { get { return _vocabulary; } set { _vocabulary = value; } }
+        public Material material { get { return _material; } set { _material = value; } }
+
+        PrimitiveMeshes _meshes;
+        public PrimitiveMeshes meshes { get { return _meshes; } set { _meshes = value; } }
 
         // Set by Init to reach the zone owner
         public Action<Vector3, float, ZoneKind, float> areaPulse { get; set; }
@@ -77,13 +96,14 @@ namespace HealerLike.Render.Spells
                 _looks = manager.spellLooks;
             }
 
+            _meshes = manager.meshes;
             ZoneRegistry zones = manager.zones;
             areaPulse = (center, radius, kind, strength) => zones.AddPulse(kind, center, radius, strength, PulseSeconds);
         }
 
         void LateUpdate()
         {
-            FlushHealLinks();
+            FlushLinks();
             for (int i = _removing.Count - 1; i >= 0; i--)
             {
                 _remainingEffects.Clear();
@@ -94,15 +114,29 @@ namespace HealerLike.Render.Spells
 
                 if (_remainingEffects.Count == 0)
                 {
-                    Dispose(_removing[i]);
+                    SpellEffect.Dispose(_removing[i]);
                     _removing.RemoveAt(i);
                 }
             }
 
-            _dead.Clear();
-            foreach (KeyValuePair<(GameObject, ABuffHandlerFactory), SpellEffect> pair in _statuses)
+            _deadSources.Clear();
+            foreach (KeyValuePair<(GameObject, ABuffHandlerFactory), int> pair in _elements)
             {
-                if (pair.Key.Item1 == null || pair.Key.Item2 == null || pair.Value == null)
+                if (pair.Key.Item2 == null && pair.Key.Item1 != null)
+                {
+                    _deadSources.Add(pair.Key);
+                }
+            }
+
+            foreach ((GameObject, ABuffHandlerFactory) key in _deadSources)
+            {
+                Drop(key.Item1, key.Item2);
+            }
+
+            _dead.Clear();
+            foreach (KeyValuePair<(GameObject, int), Status> pair in _statuses)
+            {
+                if (pair.Key.Item1 == null || pair.Value.effect == null)
                 {
                     _dead.Add(pair.Key);
                 }
@@ -113,19 +147,35 @@ namespace HealerLike.Render.Spells
                 _presentationVersion++;
             }
 
-            foreach ((GameObject, ABuffHandlerFactory) key in _dead)
+            foreach ((GameObject, int) key in _dead)
             {
-                Dispose(_statuses[key] != null ? _statuses[key].gameObject : null);
+                SpellEffect effect = _statuses[key].effect;
+                SpellEffect.Dispose(effect != null ? effect.gameObject : null);
                 _statuses.Remove(key);
+            }
+
+            if (_dead.Count > 0)
+            {
+                ForgetDeadTargets();
             }
             _impacts.RemoveAll(impact => impact == null);
         }
 
         public GameObject GetStatus(GameObject target, ABuffHandlerFactory factory)
         {
-            if (_statuses.TryGetValue((target, factory), out SpellEffect effect) && effect != null)
+            if (_elements.TryGetValue((target, factory), out int element))
             {
-                return effect.gameObject;
+                SpellEffect effect = GetElement(target, (EffectElement)element);
+                return effect != null ? effect.gameObject : null;
+            }
+            return null;
+        }
+
+        public SpellEffect GetElement(GameObject target, EffectElement element)
+        {
+            if (_statuses.TryGetValue((target, (int)element), out Status status) && status.effect != null)
+            {
+                return status.effect;
             }
             return null;
         }
@@ -138,26 +188,42 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            SpellLook look = ImpactLook(resource, preClampAmount > 0f);
-            if (look == null || look.effectPrefab == null)
+            bool isGain = preClampAmount > 0f;
+            EffectFamily family = isGain ? EffectFamily.Heal : EffectFamily.Damage;
+            EffectElement element = isGain ? EffectElement.Rise : EffectElement.Burst;
+            if (resource == ResourceKind.Mana)
+            {
+                element = EffectComposer.Mana(isGain);
+            }
+
+            Entity entity = target.GetComponent<Entity>();
+            float maximum = entity != null && entity.health != null ? entity.health.Max : 100f;
+            float amount = Mathf.Clamp01(Mathf.Abs(preClampAmount) / Mathf.Max(maximum, 1f));
+            EffectRecipe recipe = EffectComposer.Compose(_vocabulary, element, family, EffectTempo.Once, 0f, 1, 0f, amount);
+            SpellEffect effect = Create(recipe);
+            if (effect == null)
             {
                 return;
             }
 
-            if (resource == ResourceKind.Health && preClampAmount > 0f && source != null && IsCharacter(source))
+            if (resource == ResourceKind.Health && source != null && IsCharacter(source))
             {
-                _heals.Add((source, target));
+                AddGroupRecipient(source, target, family);
             }
 
-            SpellEffect effect = Spawn(look, transform);
-            effect.transform.position = Anchor(target).position + look.offset;
+            EffectPlacement.Place(effect, transform, EffectPlacement.Anchors(target));
+            if (element == EffectElement.Burst)
+            {
+                // A bigger hit draws a bigger star, turned to the camera because it is flat
+                effect.transform.localScale *= Mathf.Lerp(0.8f, 1.6f, Mathf.Sqrt(amount));
+                if (Camera.main != null)
+                {
+                    effect.transform.rotation = Camera.main.transform.rotation;
+                }
+            }
+
             Entity owner = source != null ? source.GetComponent<Entity>() : null;
             effect.SetSide(owner != null ? owner.entityType : Entity.EntityType.None);
-            Entity entity = target.GetComponent<Entity>();
-            float maximum = entity != null && entity.health != null ? entity.health.Max : 100f;
-            float amount = Mathf.Clamp01(Mathf.Abs(preClampAmount) / Mathf.Max(maximum, 1f));
-            float radius = Mathf.Lerp(0.1f, 0.26f, Mathf.Sqrt(amount));
-            effect.transform.localScale = Vector3.one * (radius / 0.1f);
             if (isCritical)
             {
                 effect.ShowCritical();
@@ -184,30 +250,28 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            (GameObject, ABuffHandlerFactory) key = (target, factory);
-            if (!_statuses.TryGetValue(key, out SpellEffect effect) || effect == null)
+            Status status = null;
+            if (_elements.TryGetValue((target, factory), out int known))
             {
-                SpellLook look = StatusLook(factory, source, target);
-                if (look == null || look.effectPrefab == null)
+                _statuses.TryGetValue((target, known), out status);
+            }
+
+            if (status == null || status.effect == null)
+            {
+                status = Open(source, target, factory);
+                if (status == null)
                 {
                     return;
                 }
-
-                effect = Spawn(look, Anchor(target));
-                effect.transform.localPosition = look.offset;
-                effect.transform.localScale = Vector3.one * 1.35f;
-
-                // The handler the factory builds says whether the status ticks, every ticking handler is a BuffHandler
-                ABuffHandler handler = factory.GetBuffHandler();
-                BuffHandler buffHandler = handler as BuffHandler;
-                effect.SetPeriod(handler != null && handler.isPeriodic,
-                                 buffHandler != null ? buffHandler.data.periodDuration : 0f);
-                _statuses[key] = effect;
             }
 
-            effect.SetStatus(stacks, elapsedSeconds, durationSeconds, clock);
+            status.sources[factory] = stacks;
+            Refresh(status, elapsedSeconds, durationSeconds, clock);
             Entity caster = source != null ? source.GetComponent<Entity>() : null;
-            effect.SetSide(caster != null ? caster.entityType : Entity.EntityType.None);
+            if (caster != null)
+            {
+                status.effect.SetSide(caster.entityType);
+            }
         }
 
         public void RemoveStatus(GameObject source, GameObject target, ABuffHandlerFactory factory)
@@ -217,11 +281,44 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            if (_statuses.Remove((target, factory), out SpellEffect effect) && effect != null)
+            Drop(target, factory);
+        }
+
+        // HitArmor charges feed the plates of their target like one more source, the last charge takes them away
+        public void SetCharges(GameObject target, float charges)
+        {
+            if (target == null)
             {
-                effect.transform.SetParent(transform, true);
-                effect.BeginRemoval();
-                _removing.Add(effect.gameObject);
+                return;
+            }
+
+            bool hasCharges = isActiveAndEnabled && float.IsFinite(charges) && charges > 0f;
+            _statuses.TryGetValue((target, (int)EffectElement.Plates), out Status status);
+            if (!hasCharges)
+            {
+                if (status != null)
+                {
+                    status.charges = 0f;
+                    Close(target, (int)EffectElement.Plates, status);
+                }
+                return;
+            }
+
+            if (status == null || status.effect == null)
+            {
+                EffectRecipe recipe = EffectComposer.Compose(_vocabulary, EffectElement.Plates, EffectFamily.Boon, EffectTempo.ForDuration,
+                                                             0f, 1, charges, 0f);
+                status = Open(target, (int)EffectElement.Plates, recipe);
+                if (status == null)
+                {
+                    return;
+                }
+            }
+
+            if (status.charges != charges)
+            {
+                status.charges = charges;
+                Refresh(status, status.effect.elapsedSeconds, float.PositiveInfinity, ClockKind.Simulation);
             }
         }
 
@@ -232,20 +329,22 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            SpellLook look = null;
-            if (_looks != null)
+            if (isActiveAndEnabled)
             {
-                look = kind == ZoneKind.Hostile ? _looks.hostileArea : _looks.area;
-            }
-
-            if (isActiveAndEnabled && look != null && look.effectPrefab != null)
-            {
-                SpellEffect ring = Spawn(look, transform);
-                ring.lifetime = PulseSeconds;
-                ring.transform.position = center + look.offset;
-                ring.transform.localScale = Vector3.one * radius;
-                ring.SetSide(kind == ZoneKind.Hostile ? Entity.EntityType.Computer : Entity.EntityType.Player);
-                AddImpact(ring.gameObject);
+                bool isHostile = kind == ZoneKind.Hostile;
+                EffectRecipe recipe = EffectComposer.Compose(_vocabulary, isHostile ? EffectElement.Litter : EffectElement.Ring,
+                                                             isHostile ? EffectFamily.Bane : EffectFamily.Heal, EffectTempo.Once, 0f, 1, 0f, 0f);
+                SpellEffect ring = Create(recipe);
+                if (ring != null)
+                {
+                    recipe.cycleSeconds = PulseSeconds;
+                    ring.transform.SetParent(transform, false);
+                    ring.transform.position = center;
+                    ring.transform.localScale = Vector3.one * radius;
+                    ring.SetSide(isHostile ? Entity.EntityType.Computer : Entity.EntityType.Player);
+                    ring.Advance(0f);
+                    AddImpact(ring.gameObject);
+                }
             }
 
             // The zone owner has its own lifetime, forwarding creates no child here
@@ -257,132 +356,254 @@ namespace HealerLike.Render.Spells
 
         public SpellEffect ShowLink(Vector3 start, Vector3 end)
         {
-            if (!isActiveAndEnabled || _looks == null || _looks.chain == null || _looks.chain.effectPrefab == null)
-            {
-                return null;
-            }
-
-            if (!float.IsFinite(start.x) || !float.IsFinite(start.y) || !float.IsFinite(start.z)
-                || !float.IsFinite(end.x) || !float.IsFinite(end.y) || !float.IsFinite(end.z))
-            {
-                return null;
-            }
-
-            SpellEffect effect = Spawn(_looks.chain, transform);
-            effect.lifetime = 0.6f;
-            effect.SetEndpoints(start, end);
-            AddImpact(effect.gameObject);
-            return effect;
+            return ShowLink(start, end, EffectFamily.Heal, false);
         }
 
         public SpellEffect ShowContactLink(Vector3 previousContact, Vector3 contact)
         {
-            SpellEffect effect = ShowLink(previousContact, contact);
-            if (effect != null)
+            return ShowLink(previousContact, contact, EffectFamily.Damage, true);
+        }
+
+        // A beam in the family's accent, lime for a heal so gold stays with Boon
+        public SpellEffect ShowLink(Vector3 start, Vector3 end, EffectFamily family, bool isContactThread)
+        {
+            if (!isActiveAndEnabled || !IsFinite(start) || !IsFinite(end))
             {
-                effect.contactThread = true;
-                effect.SetEndpoints(previousContact, contact);
+                return null;
             }
+
+            SpellEffect effect = Create(EffectComposer.Compose(_vocabulary, EffectElement.Beam, family, EffectTempo.Once, 0f, 1, 0f, 0f));
+            if (effect == null)
+            {
+                return null;
+            }
+
+            effect.transform.SetParent(transform, false);
+            effect.SetEndpoints(start, end, isContactThread);
+            AddImpact(effect.gameObject);
             return effect;
         }
 
-        public void FlushHealLinks()
+        // A character that reached two or more recipients in one frame cast on a group, each gets a beam from it
+        public void FlushLinks()
         {
             if (!isActiveAndEnabled)
             {
-                _heals.Clear();
+                ClearGroups();
                 return;
             }
 
-            foreach ((GameObject source, GameObject target) pair in _heals)
+            foreach (KeyValuePair<GameObject, List<(GameObject, EffectFamily)>> group in _groups)
             {
-                if (pair.source == null || pair.target == null)
+                if (group.Key == null || group.Value.Count < 2)
                 {
                     continue;
                 }
 
-                Transform anchor = healerAnchor != null ? healerAnchor(pair.source) : null;
+                Transform anchor = healerAnchor != null ? healerAnchor(group.Key) : null;
                 if (anchor == null)
                 {
-                    CharacterView view = pair.source.GetComponentInChildren<CharacterView>();
+                    CharacterView view = group.Key.GetComponentInChildren<CharacterView>();
                     anchor = view != null ? view.bud0 : null;
                 }
 
-                Vector3 start = anchor != null ? anchor.position : pair.source.transform.position;
-                Vector3 end = Anchor(pair.target).position;
-                ShowLink(start, end);
-                if (linkObserved != null)
+                Vector3 start = anchor != null ? anchor.position : group.Key.transform.position;
+                foreach ((GameObject target, EffectFamily family) recipient in group.Value)
                 {
-                    linkObserved(start, end);
+                    if (recipient.target == null)
+                    {
+                        continue;
+                    }
+
+                    Vector3 end = EffectPlacement.Anchors(recipient.target).bodyCentre;
+                    ShowLink(start, end, recipient.family, false);
+                    if (linkObserved != null)
+                    {
+                        linkObserved(start, end);
+                    }
                 }
             }
-            _heals.Clear();
+            ClearGroups();
         }
 
         public void Clear()
         {
             _presentationVersion++;
-            _heals.Clear();
+            ClearGroups();
             foreach (GameObject root in _removing)
             {
-                Dispose(root);
+                SpellEffect.Dispose(root);
             }
             _removing.Clear();
 
-            foreach (KeyValuePair<(GameObject, ABuffHandlerFactory), SpellEffect> pair in _statuses)
+            foreach (KeyValuePair<(GameObject, int), Status> pair in _statuses)
             {
-                Dispose(pair.Value != null ? pair.Value.gameObject : null);
+                SpellEffect.Dispose(pair.Value.effect != null ? pair.Value.effect.gameObject : null);
             }
             _statuses.Clear();
+            _elements.Clear();
 
             foreach (GameObject impact in _impacts)
             {
-                Dispose(impact);
+                SpellEffect.Dispose(impact);
             }
             _impacts.Clear();
         }
 
-        SpellLook ImpactLook(ResourceKind resource, bool isGain)
+        // Reads the handler once: an authored row wins, else its channels pick the element
+        Status Open(GameObject source, GameObject target, ABuffHandlerFactory factory)
         {
-            if (_looks == null)
+            if (_vocabulary == null)
             {
                 return null;
             }
 
-            if (resource == ResourceKind.Mana)
+            EffectRecipe recipe;
+            SpellLook row = _looks != null ? _looks.GetLook(factory) : null;
+            if (row != null)
             {
-                return isGain ? _looks.manaGain : _looks.manaLoss;
+                recipe = EffectComposer.Compose(_vocabulary, row.element, row.family, row.tempo, EffectDerivation.Period(factory), 1, 0f, 0f);
             }
-            return isGain ? _looks.heal : _looks.impact;
-        }
+            else
+            {
+                recipe = EffectComposer.Compose(_vocabulary, EffectDerivation.Channels(factory, IsSameSide(source, target)), 1, 0f);
+            }
 
-        SpellLook StatusLook(ABuffHandlerFactory factory, GameObject source, GameObject target)
-        {
-            if (_looks == null)
+            if (recipe == null)
             {
                 return null;
             }
 
-            // TODO: read the caster from BuffHandlerData.source once it exists (S4), until then only a caller that
-            // knows the caster picks bane, and the healer's Character, which is not an Entity, plays for the player
-            bool isSameSide = true;
-            if (source != null)
+            int element = (int)recipe.element;
+            _elements[(target, factory)] = element;
+            if (_statuses.TryGetValue((target, element), out Status status) && status.effect != null)
             {
-                Entity caster = source.GetComponent<Entity>();
-                Entity recipient = target.GetComponent<Entity>();
-                Entity.EntityType casterSide = caster != null ? caster.entityType : Entity.EntityType.Player;
-                Entity.EntityType recipientSide = recipient != null ? recipient.entityType : Entity.EntityType.Player;
-                isSameSide = casterSide == recipientSide;
+                return status;
             }
-            return _looks.GetLook(factory, isSameSide);
+            return Open(target, element, recipe);
         }
 
-        SpellEffect Spawn(SpellLook look, Transform parent)
+        Status Open(GameObject target, int element, EffectRecipe recipe)
         {
-            SpellEffect effect = Instantiate(look.effectPrefab, parent, false);
-            effect.Init();
-            effect.SetColor(look.tint);
+            SpellEffect effect = Create(recipe);
+            if (effect == null)
+            {
+                return null;
+            }
+
+            EffectPlacement.Place(effect, Parent(target), EffectPlacement.Anchors(target));
+            Status status = new Status();
+            status.effect = effect;
+            _statuses[(target, element)] = status;
+            return status;
+        }
+
+        void Refresh(Status status, float elapsedSeconds, float durationSeconds, ClockKind clock)
+        {
+            int stacks = 0;
+            foreach (KeyValuePair<ABuffHandlerFactory, int> source in status.sources)
+            {
+                stacks += source.Value;
+            }
+
+            SpellEffect effect = status.effect;
+            effect.SetCount(EffectComposer.Count(effect.recipe.entry, Mathf.Max(1, stacks), status.charges, 0f));
+            effect.SetStatus(Mathf.Max(1, stacks), elapsedSeconds, durationSeconds, clock);
+        }
+
+        void Drop(GameObject target, ABuffHandlerFactory factory)
+        {
+            if (!_elements.TryGetValue((target, factory), out int element))
+            {
+                return;
+            }
+
+            _elements.Remove((target, factory));
+            if (!_statuses.TryGetValue((target, element), out Status status))
+            {
+                return;
+            }
+
+            status.sources.Remove(factory);
+            if (!Close(target, element, status) && status.effect != null)
+            {
+                Refresh(status, status.effect.elapsedSeconds, status.effect.durationSeconds, status.effect.clock);
+            }
+        }
+
+        // The element leaves with its last source and keeps only its cosmetic tail
+        bool Close(GameObject target, int element, Status status)
+        {
+            if (status.sources.Count > 0 || status.charges > 0f)
+            {
+                return false;
+            }
+
+            _statuses.Remove((target, element));
+            if (status.effect != null)
+            {
+                status.effect.transform.SetParent(transform, true);
+                status.effect.BeginRemoval();
+                _removing.Add(status.effect.gameObject);
+            }
+            return true;
+        }
+
+        void ForgetDeadTargets()
+        {
+            _deadSources.Clear();
+            foreach (KeyValuePair<(GameObject, ABuffHandlerFactory), int> pair in _elements)
+            {
+                if (pair.Key.Item1 == null)
+                {
+                    _deadSources.Add(pair.Key);
+                }
+            }
+
+            foreach ((GameObject, ABuffHandlerFactory) key in _deadSources)
+            {
+                _elements.Remove(key);
+            }
+        }
+
+        SpellEffect Create(EffectRecipe recipe)
+        {
+            if (recipe == null || _meshes == null)
+            {
+                return null;
+            }
+
+            GameObject effectGo = new GameObject(recipe.element.ToString());
+            effectGo.transform.SetParent(transform, false);
+            SpellEffect effect = effectGo.AddComponent<SpellEffect>();
+            effect.Init(recipe, _meshes, _material);
             return effect;
+        }
+
+        void AddGroupRecipient(GameObject source, GameObject target, EffectFamily family)
+        {
+            if (!_groups.TryGetValue(source, out List<(GameObject, EffectFamily)> recipients))
+            {
+                recipients = new List<(GameObject, EffectFamily)>();
+                _groups[source] = recipients;
+            }
+
+            foreach ((GameObject, EffectFamily) recipient in recipients)
+            {
+                if (recipient.Item1 == target)
+                {
+                    return;
+                }
+            }
+            recipients.Add((target, family));
+        }
+
+        void ClearGroups()
+        {
+            if (_groups.Count > 0)
+            {
+                _groups.Clear();
+            }
         }
 
         void AddImpact(GameObject impact)
@@ -390,7 +611,7 @@ namespace HealerLike.Render.Spells
             _impacts.Add(impact);
             if (_impacts.Count > MaxImpacts)
             {
-                Dispose(_impacts[0]);
+                SpellEffect.Dispose(_impacts[0]);
                 _impacts.RemoveAt(0);
             }
         }
@@ -404,29 +625,32 @@ namespace HealerLike.Render.Spells
             return source.GetComponent<Character>() != null;
         }
 
-        static Transform Anchor(GameObject target)
+        // TODO: read the caster from BuffHandlerData.source once it exists (S4), until then only a caller that
+        // knows the caster picks bane, and the healer's Character, which is not an Entity, plays for the player
+        static bool IsSameSide(GameObject source, GameObject target)
+        {
+            if (source == null)
+            {
+                return true;
+            }
+
+            Entity caster = source.GetComponent<Entity>();
+            Entity recipient = target.GetComponent<Entity>();
+            Entity.EntityType casterSide = caster != null ? caster.entityType : Entity.EntityType.Player;
+            Entity.EntityType recipientSide = recipient != null ? recipient.entityType : Entity.EntityType.Player;
+            return casterSide == recipientSide;
+        }
+
+        // A status follows its unit, so it hangs under the target point
+        static Transform Parent(GameObject target)
         {
             Entity entity = target.GetComponent<Entity>();
             return entity != null && entity.targetPoint != null ? entity.targetPoint.transform : target.transform;
         }
 
-        // Also runs from edit mode tests, where Destroy is not allowed
-        static void Dispose(GameObject effect)
+        static bool IsFinite(Vector3 point)
         {
-            if (effect == null)
-            {
-                return;
-            }
-
-            effect.SetActive(false);
-            if (Application.isPlaying)
-            {
-                Destroy(effect);
-            }
-            else
-            {
-                DestroyImmediate(effect);
-            }
+            return float.IsFinite(point.x) && float.IsFinite(point.y) && float.IsFinite(point.z);
         }
     }
 }
