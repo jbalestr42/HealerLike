@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using HealerLike.Render.Spells;
+using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Creatures
 {
     // Presentation at an authored anchor. Character.Init and Entity.Init are never called from here.
-    [DefaultExecutionOrder(-200)]
     public class HLCharacterView : MonoBehaviour, IHLHealVisualSink, IHLDeliverySource
     {
         [FormerlySerializedAs("character")]
@@ -18,6 +18,7 @@ namespace HealerLike.Render.Creatures
         [SerializeField] Transform _visualAnchor;
         [FormerlySerializedAs("material")]
         [SerializeField] Material _material;
+        [SerializeField] HLPrimitiveMeshes _meshes;
         [FormerlySerializedAs("cellSize")]
         [SerializeField] float _cellSize = 1f;
 
@@ -94,6 +95,30 @@ namespace HealerLike.Render.Creatures
             }
         }
 
+        // The view prefab carries recipe, material and meshes, and anchors the body on itself
+        public void Init(Character owner, RenderManager manager)
+        {
+            if (!_meshes && manager)
+            {
+                _meshes = manager.meshes;
+            }
+
+            StopObserving();
+            Unregister();
+            _character = owner;
+            if (!_visualAnchor)
+            {
+                _visualAnchor = transform;
+            }
+
+            // No registry is handed over yet, so the view registers with HLRenderRegistry.current (D2)
+            _injectedRegistry = null;
+            _injected = false;
+            BuildAndRegister();
+            ObserveResources();
+        }
+
+        // The stage wiring still binds through here until the manager creates the view (D2)
         public void Bind(Character owner, HLCreatureRecipe data, Transform anchor, Material sharedMaterial,
             HLRenderRegistry registry, float size = 1f)
         {
@@ -214,7 +239,13 @@ namespace HealerLike.Render.Creatures
 
             if (rig == null)
             {
-                rig = HLCreatureRig.Build(_recipe, _visualAnchor, _material, _cellSize);
+                HLCreatureRig created = new HLCreatureRig();
+                if (!created.Init(_recipe, _visualAnchor, _material, _meshes, _cellSize))
+                {
+                    return;
+                }
+
+                rig = created;
             }
 
             rig.SetVisible(isActiveAndEnabled);
@@ -223,6 +254,7 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
+            // HLRenderRegistry.current stays the fallback until the manager hands the registry through Init (D2)
             HLRenderRegistry registry = _injected ? _injectedRegistry : HLRenderRegistry.current;
             if (_registeredRegistry != registry)
             {
@@ -251,7 +283,7 @@ namespace HealerLike.Render.Creatures
 
         public void OnHealResolved(GameObject target, float value, bool critical)
         {
-            if (value <= 0f || !target || !HLChainSolver.Finite(value))
+            if (value <= 0f || !target || !float.IsFinite(value))
             {
                 return;
             }

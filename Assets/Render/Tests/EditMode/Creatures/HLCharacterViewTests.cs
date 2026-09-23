@@ -4,6 +4,7 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using HealerLike.Render.Spells;
+using HealerLike.Render.Stage;
 using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Creatures
@@ -25,6 +26,7 @@ namespace HealerLike.Render.Creatures
                 anchor.transform.position = new Vector3(5f, 1f, 2f);
                 target.transform.position = anchor.transform.position + Vector3.one;
                 HLCharacterView view = anchor.AddComponent<HLCharacterView>();
+                TestHelpers.SetPrivateField(view, "_meshes", HLPrimitiveMeshesTests.Meshes());
                 HLRenderRegistry registry = new HLRenderRegistry();
                 view.Bind(character, recipe, anchor.transform, material, registry);
                 HLCreatureRig rig = view.rig;
@@ -68,7 +70,6 @@ namespace HealerLike.Render.Creatures
                 Object.DestroyImmediate(target);
                 Object.DestroyImmediate(recipe);
                 Object.DestroyImmediate(material);
-                HLPrimitiveMeshes.ReleaseAll();
             }
         }
 
@@ -88,6 +89,7 @@ namespace HealerLike.Render.Creatures
                 TestHelpers.SetPrivateField(character, "_mana", mana);
                 ResourceAttribute health = TestHelpers.CreateResourceAttribute(target, AttributeType.HealthMax, 100);
                 HLCharacterView view = go.AddComponent<HLCharacterView>();
+                TestHelpers.SetPrivateField(view, "_meshes", HLPrimitiveMeshesTests.Meshes());
                 HLRenderRegistry registry = new HLRenderRegistry();
                 view.Bind(character, recipe, go.transform, material, registry);
                 HLResourceOutcomeObserver observer = target.AddComponent<HLResourceOutcomeObserver>();
@@ -149,8 +151,30 @@ namespace HealerLike.Render.Creatures
                 Object.DestroyImmediate(go);
                 Object.DestroyImmediate(target);
                 Object.DestroyImmediate(material);
-                HLPrimitiveMeshes.ReleaseAll();
             }
+        }
+
+        [Test]
+        public void Init_ViewPrefab_AnchorsBodyOnItself()
+        {
+            GameObject characterGo = new GameObject("HLCharacter");
+            GameObject managerGo = new GameObject("HLRenderManager");
+            string path = "Assets/Render/Creatures/Prefabs/HLHealerCharacter.prefab";
+            GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            GameObject viewGo = Object.Instantiate(prefab, characterGo.transform);
+            Character character = null;
+            TestHelpers.WithLoggingDisabled(() => character = characterGo.AddComponent<Character>());
+            RenderManager manager = managerGo.AddComponent<RenderManager>();
+            TestHelpers.SetPrivateField(manager, "_meshes", HLPrimitiveMeshesTests.Meshes());
+            HLCharacterView view = viewGo.GetComponent<HLCharacterView>();
+
+            view.Init(character, manager);
+
+            Assert.NotNull(view.rig);
+            Assert.AreSame(viewGo.transform, view.rig.root.parent);
+            TestHelpers.InvokePrivate(view, "OnDestroy");
+            Object.DestroyImmediate(characterGo);
+            Object.DestroyImmediate(managerGo);
         }
     }
 }

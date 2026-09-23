@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
+using HealerLike.Render.Stage;
 using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Creatures
@@ -83,7 +85,7 @@ namespace HealerLike.Render.Creatures
             _recipe = HLCreatureValidatorTests.Recipe();
             _material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             _builder = _model.AddComponent<HLCreatureBuilder>();
-            _builder.SetRecipe(_recipe, _material);
+            _builder.SetRecipe(_recipe, _material, HLPrimitiveMeshesTests.Meshes());
             _sink = new HLSink();
             _registry = new HLRenderRegistry { spellSink = _sink };
             _registry.Register(_source, _sink);
@@ -102,7 +104,6 @@ namespace HealerLike.Render.Creatures
             Object.DestroyImmediate(_owner);
             Object.DestroyImmediate(_recipe);
             Object.DestroyImmediate(_material);
-            HLPrimitiveMeshes.ReleaseAll();
         }
 
         [Test]
@@ -223,6 +224,35 @@ namespace HealerLike.Render.Creatures
             TestHelpers.SetPrivateField(_health, "_value", 100f);
             TestHelpers.InvokePrivate(_builder, "LateUpdate");
             Assert.AreEqual(1, _builder.rig.healthFraction);
+        }
+
+        [Test]
+        public void Configure_NonfiniteGround_LogsAndKeepsFrame()
+        {
+            HLCreatureRig rig = _builder.rig;
+            LogAssert.Expect(LogType.Error, "[HLCreatureBuilder] Invalid ground frame.");
+
+            _builder.Configure(_registry, float.NaN, Vector3.zero, Vector3.up);
+
+            Assert.AreSame(rig, _builder.rig);
+        }
+
+        [Test]
+        public void Init_ManagerOnly_TakesMeshesFromManager()
+        {
+            GameObject managerGo = new GameObject("HLRenderManager");
+            RenderManager manager = managerGo.AddComponent<RenderManager>();
+            TestHelpers.SetPrivateField(manager, "_meshes", HLPrimitiveMeshesTests.Meshes());
+            GameObject viewGo = new GameObject("HLView");
+            viewGo.transform.SetParent(_model.transform, false);
+            HLCreatureBuilder view = viewGo.AddComponent<HLCreatureBuilder>();
+            view.SetRecipe(_recipe, _material, null);
+
+            view.Init(_entity, manager);
+
+            Assert.NotNull(view.rig);
+            TestHelpers.InvokePrivate(view, "OnDestroy");
+            Object.DestroyImmediate(managerGo);
         }
     }
 }
