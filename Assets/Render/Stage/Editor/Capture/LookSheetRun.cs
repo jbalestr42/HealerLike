@@ -27,6 +27,7 @@ namespace HealerLike.Render.Stage
         // Where the unit's foot sits in its mask window, from the bottom
         public static readonly float FootHeight = 0.4f;
         public static readonly int MaskTolerance = 24;
+        public static readonly int ClosestPairs = 10;
         public static readonly float[] Moments = { 0.3f, 2.5f };
         public static readonly string Folder = StagePlay.CaptureFolder + "look-sheets/";
 
@@ -241,6 +242,14 @@ namespace HealerLike.Render.Stage
                 foreach (SilhouetteOverlap.Pair pair in pairs)
                 {
                     text.AppendLine($"{pair.iou:0.000}  {labels[pair.first]}  {labels[pair.second]}");
+                }
+
+                // The nearest pairs under the threshold too, so a list with no collision still says how close it came
+                List<SilhouetteOverlap.Pair> closest = SilhouetteOverlap.Collisions(_masks[camera], 0f);
+                text.AppendLine($"### {camera} camera, the {Mathf.Min(ClosestPairs, closest.Count)} closest pairs");
+                for (int i = 0; i < Mathf.Min(ClosestPairs, closest.Count); i++)
+                {
+                    text.AppendLine($"{closest[i].iou:0.000}  {labels[closest[i].first]}  {labels[closest[i].second]}");
                 }
                 Debug.Log($"[LookSheetRun] Collisions {camera} {pairs.Count}");
             }
