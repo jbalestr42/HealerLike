@@ -6,18 +6,18 @@ namespace HealerLike.Render.Creatures
     // The part lists of the authored creature recipes
     public static class CreatureRecipeParts
     {
-        public static List<Part> Base()
+        public static List<CreaturePart> Base()
         {
-            return new List<Part>
+            return new List<CreaturePart>
             {
                 CreatureRecipeAuthoring.Part("Stem", Primitive.Capsule, new Vector3(0f, 0.25f, 0f), new Vector3(0.11f, 0.5f, 0.11f), CreatureRecipeAuthoring.stem,
                     parent: -1)
             };
         }
 
-        public static List<Part> Healer()
+        public static List<CreaturePart> Healer()
         {
-            List<Part> parts = Base();
+            List<CreaturePart> parts = Base();
             parts.Add(CreatureRecipeAuthoring.Part("Bulb", Primitive.Cone, new Vector3(0f, 0.48f, 0f), new Vector3(0.5f, 0.62f, 0.45f),
                 CreatureRecipeAuthoring.body, new Vector3(0f, 0f, 180f)));
             parts.Add(CreatureRecipeAuthoring.Part("Hip", Primitive.Sphere, new Vector3(0f, 0.04f, 0f), new Vector3(0.38f, 0.30f, 0.38f),
@@ -36,9 +36,9 @@ namespace HealerLike.Render.Creatures
             return parts;
         }
 
-        public static List<Part> Rosette()
+        public static List<CreaturePart> Rosette()
         {
-            List<Part> parts = new List<Part>
+            List<CreaturePart> parts = new List<CreaturePart>
             {
                 CreatureRecipeAuthoring.Part("Rosette", Primitive.Sphere, Vector3.up * 0.15f, new Vector3(0.4f, 0.3f, 0.4f), CreatureRecipeAuthoring.body,
                     parent: -1)
@@ -56,9 +56,9 @@ namespace HealerLike.Render.Creatures
             return parts;
         }
 
-        public static List<Part> Fern()
+        public static List<CreaturePart> Fern()
         {
-            List<Part> parts = Base();
+            List<CreaturePart> parts = Base();
             Vector3 previous = Vector3.zero;
             for (int i = 0; i < 10; i++)
             {
@@ -82,9 +82,9 @@ namespace HealerLike.Render.Creatures
             return parts;
         }
 
-        public static List<Part> Arch()
+        public static List<CreaturePart> Arch()
         {
-            List<Part> parts = Base();
+            List<CreaturePart> parts = Base();
             parts[0] = CreatureRecipeAuthoring.Part("ArchFoot", Primitive.Capsule, new Vector3(-0.29f, 0.2f, 0f),
                 new Vector3(0.10f, 0.4f, 0.1f), CreatureRecipeAuthoring.stem, parent: -1);
             Vector3 previous = new Vector3(0f, 0.12f, 0f);
@@ -112,9 +112,9 @@ namespace HealerLike.Render.Creatures
             return parts;
         }
 
-        public static List<Part> Stack()
+        public static List<CreaturePart> Stack()
         {
-            List<Part> parts = new List<Part>
+            List<CreaturePart> parts = new List<CreaturePart>
             {
                 CreatureRecipeAuthoring.Part("ConicalRoot", Primitive.Cone, new Vector3(0f, 0.2f, 0f), new Vector3(0.30f, 0.4f, 0.30f),
                     CreatureRecipeAuthoring.stem, parent: -1)

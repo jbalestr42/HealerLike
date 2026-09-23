@@ -4,7 +4,7 @@ using UnityEngine;
 namespace HealerLike.Render.Creatures
 {
     [Serializable]
-    public struct Part
+    public struct CreaturePart
     {
         public string id;
         public int parent;

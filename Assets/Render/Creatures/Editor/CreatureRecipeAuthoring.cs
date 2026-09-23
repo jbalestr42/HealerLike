@@ -12,10 +12,10 @@ namespace HealerLike.Render.Creatures
         public static readonly Color stem = new Color(0.18f, 0.49f, 0.31f);
         public static readonly Color bud = new Color(0.78f, 0.95f, 0.29f);
 
-        public static Part Part(string id, Primitive primitive, Vector3 position, Vector3 dimensions, Color colour,
+        public static CreaturePart Part(string id, Primitive primitive, Vector3 position, Vector3 dimensions, Color colour,
             Vector3 euler = default, int parent = 0, float glow = 0f)
         {
-            return new Part
+            return new CreaturePart
             {
                 id = id,
                 parent = parent,
@@ -29,7 +29,7 @@ namespace HealerLike.Render.Creatures
             };
         }
 
-        public static CreatureRecipe SaveRecipe(string name, List<Part> parts, int roots, int armCount, int seed)
+        public static CreatureRecipe SaveRecipe(string name, List<CreaturePart> parts, int roots, int armCount, int seed)
         {
             string path = root + "Data/" + name + ".asset";
             CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
@@ -44,7 +44,7 @@ namespace HealerLike.Render.Creatures
             Vector3 displayScale = new Vector3(1.45f, displayHeight, 1.45f);
             for (int i = 0; i < parts.Count; i++)
             {
-                Part part = parts[i];
+                CreaturePart part = parts[i];
                 part.localPosition = Vector3.Scale(part.localPosition, displayScale);
                 part.dimensions = Vector3.Scale(part.dimensions, displayScale);
                 parts[i] = part;
@@ -54,7 +54,7 @@ namespace HealerLike.Render.Creatures
             int stemCount = parts.Count;
             for (int i = 0; i < stemCount; i++)
             {
-                Part stemPart = parts[i];
+                CreaturePart stemPart = parts[i];
                 if (stemPart.primitive != Primitive.Capsule)
                 {
                     continue;

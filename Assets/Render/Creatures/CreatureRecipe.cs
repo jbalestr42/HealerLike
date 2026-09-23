@@ -15,7 +15,7 @@ namespace HealerLike.Render.Creatures
     [CreateAssetMenu(menuName = "Custom/Data/Render/CreatureRecipe")]
     public class CreatureRecipe : ScriptableObject
     {
-        public Part[] parts = Array.Empty<Part>();
+        public CreaturePart[] parts = Array.Empty<CreaturePart>();
         public ArmDefinition[] arms = Array.Empty<ArmDefinition>();
         public RootDefinition roots = new RootDefinition
         {

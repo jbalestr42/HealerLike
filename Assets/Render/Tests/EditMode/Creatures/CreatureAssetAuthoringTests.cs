@@ -37,8 +37,8 @@ public class CreatureAssetAuthoringTests
         Assert.That(recipe.roots.count, Is.InRange(6, 8));
         if (name == "Healer")
         {
-            Part bulb = System.Array.Find(recipe.parts, part => part.id == "Bulb");
-            Part crown = System.Array.Find(recipe.parts, part => part.id == "Crown");
+            CreaturePart bulb = System.Array.Find(recipe.parts, part => part.id == "Bulb");
+            CreaturePart crown = System.Array.Find(recipe.parts, part => part.id == "Crown");
             Assert.AreEqual(Primitive.Cone, bulb.primitive);
             Assert.AreEqual(Primitive.Torus, crown.primitive);
         }

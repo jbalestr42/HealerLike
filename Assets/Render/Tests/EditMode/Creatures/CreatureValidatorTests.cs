@@ -9,9 +9,9 @@ public class CreatureValidatorTests
     public static CreatureRecipe Recipe()
     {
         CreatureRecipe recipe = ScriptableObject.CreateInstance<CreatureRecipe>();
-        recipe.parts = new Part[]
+        recipe.parts = new CreaturePart[]
         {
-            new Part { id = "Body", parent = -1, dimensions = Vector3.one, colour = Color.green }
+            new CreaturePart { id = "Body", parent = -1, dimensions = Vector3.one, colour = Color.green }
         };
         recipe.sourceLocal = new Vector3[] { Vector3.up };
         recipe.arms = new ArmDefinition[]
@@ -59,8 +59,8 @@ public class CreatureValidatorTests
     [TestCase(41, false)]
     public void TryValidate_PartCount_AcceptsUpToForty(int count, bool valid)
     {
-        Part body = _recipe.parts[0];
-        _recipe.parts = new Part[count];
+        CreaturePart body = _recipe.parts[0];
+        _recipe.parts = new CreaturePart[count];
         for (int i = 0; i < count; i++)
         {
             _recipe.parts[i] = body;
@@ -91,7 +91,7 @@ public class CreatureValidatorTests
 
         if (mode == 1)
         {
-            _recipe.parts = new Part[] { _recipe.parts[0], _recipe.parts[0] };
+            _recipe.parts = new CreaturePart[] { _recipe.parts[0], _recipe.parts[0] };
         }
 
         if (mode == 2)

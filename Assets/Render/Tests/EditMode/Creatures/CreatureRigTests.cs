@@ -184,7 +184,7 @@ public class CreatureRigTests
     public void Init_ScaledParentPart_KeepsChildPivotUnscaled()
     {
         _rig.Dispose();
-        Part child = new Part
+        CreaturePart child = new CreaturePart
         {
             id = "Child",
             parent = 0,
@@ -192,7 +192,7 @@ public class CreatureRigTests
             dimensions = Vector3.one,
             colour = Color.green
         };
-        _recipe.parts = new Part[] { _recipe.parts[0], child };
+        _recipe.parts = new CreaturePart[] { _recipe.parts[0], child };
         _recipe.parts[0].dimensions = Vector3.one * 3f;
 
         _rig = CreateRig(_recipe, _parent.transform, _material);

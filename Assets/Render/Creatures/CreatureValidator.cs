@@ -16,7 +16,7 @@ namespace HealerLike.Render.Creatures
             HashSet<string> ids = new HashSet<string>();
             for (int i = 0; i < data.parts.Length; i++)
             {
-                Part part = data.parts[i];
+                CreaturePart part = data.parts[i];
                 bool isParentValid = i == 0 ? part.parent == -1 : part.parent >= 0 && part.parent < i;
                 if (string.IsNullOrEmpty(part.id) || !ids.Add(part.id) || !isParentValid)
                 {

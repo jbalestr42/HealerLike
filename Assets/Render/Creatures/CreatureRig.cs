@@ -116,7 +116,7 @@ namespace HealerLike.Render.Creatures
             _idle.seed ^= parent.GetEntityId().GetHashCode();
             for (int i = 0; i < data.parts.Length; i++)
             {
-                Part part = data.parts[i];
+                CreaturePart part = data.parts[i];
                 _colours[i] = BeautyMotion.Vary(part.colour, _idle.seed);
                 _pivots[i] = new GameObject(part.id).transform;
                 _pivots[i].SetParent(part.parent < 0 ? _sway : _pivots[part.parent], false);
@@ -322,7 +322,7 @@ namespace HealerLike.Render.Creatures
             _crownPulse = Mathf.Max(0f, _crownPulse - dt / 0.2f);
             for (int i = 0; i < _geometry.Length; i++)
             {
-                Part part = _recipe.parts[i];
+                CreaturePart part = _recipe.parts[i];
                 bool isHead = part.primitive == Primitive.Sphere || part.glow > 0f || part.id == "Bulb";
                 float swell = 1f + _crownPulse * 0.06f + (isHead ? _charge * 0.24f : 0f);
                 _geometry[i].localScale = Vector3.Scale(part.dimensions, idlePose.bodyScale) * _cellSize * swell;
