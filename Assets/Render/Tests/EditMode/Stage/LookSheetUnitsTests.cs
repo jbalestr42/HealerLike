@@ -60,6 +60,7 @@ public class LookSheetUnitsTests
     {
         Texture2D texture = new Texture2D(64, 32, TextureFormat.RGB24, false);
         _created.Add(texture);
+        texture.SetPixels32(new Color32[64 * 32]);
 
         SheetFont.Draw(texture, "HEAL", 2, 30, 2, Color.white);
 
