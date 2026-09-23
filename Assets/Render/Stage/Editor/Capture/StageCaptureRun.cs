@@ -16,7 +16,7 @@ namespace HealerLike.Render.Stage
 
         public StageCaptureRun(bool isLandscape)
         {
-            __isLandscape = isLandscape;
+            _isLandscape = isLandscape;
         }
 
         protected override IEnumerator Run()
@@ -24,7 +24,7 @@ namespace HealerLike.Render.Stage
             _manager.SetLandscape(_isLandscape);
             float started = Time.time;
             yield return Wait(0.5f);
-            PlaceAllies(LoadAllies());
+            _player.PlaceAllies(_manager, StagePlayer.LoadAllies());
             _hud.nextWaveButton.onClick.Invoke();
             float nextCast = Time.time + 2f;
             while (Time.time - started < CaptureAt)
@@ -34,7 +34,7 @@ namespace HealerLike.Render.Stage
                     nextCast = Time.time + 1f;
                     Entity.EntityType side = _heals == 0 ? Entity.EntityType.Player : Entity.EntityType.Computer;
                     GameObject targetGo = FirstOf(side);
-                    CastOn(targetGo != null ? targetGo.GetComponent<Entity>() : null);
+                    _player.CastOn(_manager, targetGo != null ? targetGo.GetComponent<Entity>() : null);
                 }
 
                 yield return NextFrame();

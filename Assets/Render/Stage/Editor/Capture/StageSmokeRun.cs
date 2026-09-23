@@ -22,14 +22,14 @@ namespace HealerLike.Render.Stage
             Application.logMessageReceived += OnLog;
             AscensionGameType.OnRoundEnd.AddListener(OnRoundEnd);
             Time.timeScale = 3f;
-            List<EntityData> allies = LoadAllies();
+            List<EntityData> allies = StagePlayer.LoadAllies();
             float nextCast = 0f;
             while (_roundsDone < Rounds && _state != AscensionGameType.State.GameOver)
             {
                 if (_state == AscensionGameType.State.WaitForRoundToStart)
                 {
                     yield return Wait(1f);
-                    PlaceAllies(allies);
+                    _player.PlaceAllies(_manager, allies);
                     _state = AscensionGameType.State.None;
                     _hud.nextWaveButton.onClick.Invoke();
                 }
@@ -43,7 +43,7 @@ namespace HealerLike.Render.Stage
                 {
                     nextCast = Time.time + 1f;
                     List<GameObject> friends = _manager.entityManager.GetEntities(Entity.EntityType.Player);
-                    CastOn(friends.Count > 0 && friends[0] != null ? friends[0].GetComponent<Entity>() : null);
+                    _player.CastOn(_manager, friends.Count > 0 && friends[0] != null ? friends[0].GetComponent<Entity>() : null);
                 }
 
                 yield return NextFrame();
