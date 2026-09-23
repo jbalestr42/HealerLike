@@ -2,10 +2,19 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using HealerLike.Render.Creatures;
+using UnityEngine.Events;
 
-namespace HealerLike.Render.Spells
+namespace HealerLike.Render.Grammar
 {
+
+public class FakeCharacterSkill : ACharacterSkill<CharacterSkillData>
+{
+    public override void Use(GameObject source, UnityAction<bool> onSkillComplete)
+    {
+    }
+}
+
+public class FakeCharacterSkillFactory : CharacterSkillFactory<FakeCharacterSkill, CharacterSkillData> {}
 
 public class EffectDerivationTests
 {
@@ -65,6 +74,65 @@ public class EffectDerivationTests
 
         Assert.AreEqual(family, EffectDerivation.Family(handler, isSameSide));
         Assert.AreEqual(tempo, EffectDerivation.Tempo(handler));
+    }
+
+    // The same twenty handlers, read at once; only the poisons and the regen tick
+    [TestCase("CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
+    [TestCase("CharacterSkills/MultiTargetReduceDamage/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.ForDuration, 0f)]
+    [TestCase("CharacterSkills/PoisonSingleTarget/PoisonSingleTarget_BuffHandlerFactory", false, EffectFamily.Rot, EffectTempo.PerPeriod, 2f)]
+    [TestCase("CharacterSkills/SingleTargetBuffAttackRate/BuffHandlerFactory", true, EffectFamily.Bane, EffectTempo.ForDuration, 0f)]
+    [TestCase("Entities/HitArmorBufferEntityEntity/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.Once, 0f)]
+    [TestCase("EntityItems/BounceItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
+    [TestCase("EntityItems/ConclaveItem/New Buff Handler Factory", true, EffectFamily.Bane, EffectTempo.ForDuration, 0f)]
+    [TestCase("EntityItems/ConclaveItem/New Buff Handler Factory 1", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
+    [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory 1", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
+    [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
+    [TestCase("EntityItems/IncreaseDamagePerHitItem/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.Once, 0f)]
+    [TestCase("EntityItems/IncreaseDamageWithProjectileDistanceItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
+    [TestCase("EntityItems/MultipleShootItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
+    [TestCase("EntityItems/PoisonItem/BuffHandlerFactory", false, EffectFamily.Rot, EffectTempo.PerPeriod, 1.5f)]
+    [TestCase("EntityItems/RegenHpItem/RegenHpItem_BuffHandlerFactory", true, EffectFamily.Renew, EffectTempo.PerPeriod, 2f)]
+    [TestCase("EntityItems/SlowItem/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.ForDuration, 0f)]
+    [TestCase("EntityItems/TrinityItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
+    [TestCase("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", true, EffectFamily.Damage, EffectTempo.ForDuration, 0f)]
+    [TestCase("PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory", true, EffectFamily.Heal, EffectTempo.ForDuration, 0f)]
+    [TestCase("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", true, EffectFamily.Heal, EffectTempo.ForDuration, 0f)]
+    public void Channels_LiveHandler_ReadsFamilyGroupTempoAndPeriod(string path, bool isSameSide, EffectFamily family,
+        EffectTempo tempo, float periodSeconds)
+    {
+        ABuffHandlerFactory handler = Handler(path);
+
+        EffectChannels channels = EffectDerivation.Channels(handler, isSameSide);
+
+        Assert.AreEqual(family, channels.family);
+        Assert.AreEqual(EffectDerivation.Group(handler), channels.group);
+        Assert.AreEqual(tempo, channels.tempo);
+        Assert.AreEqual(periodSeconds, channels.periodSeconds, 0.0001f);
+    }
+
+    // The seven character skills of his data, isSingle as authored
+    [TestCase("DamageAllEnemy", EffectTopology.Group)]
+    [TestCase("HealMultiTarget", EffectTopology.Group)]
+    [TestCase("HealSingleTarget", EffectTopology.Single)]
+    [TestCase("MultiTargetBuffAttackRate", EffectTopology.Group)]
+    [TestCase("MultiTargetReduceDamage", EffectTopology.Group)]
+    [TestCase("PoisonSingleTarget", EffectTopology.Single)]
+    [TestCase("SingleTargetBuffAttackRate", EffectTopology.Group)] // authored with isSingle off
+    public void Topology_LiveCharacterSkill_ReadsIsSingle(string name, EffectTopology expected)
+    {
+        ACharacterSkillFactory skill = AssetDatabase.LoadAssetAtPath<ACharacterSkillFactory>(data + "CharacterSkills/" + name + "/" + name + ".asset");
+        Assert.NotNull(skill, name);
+
+        Assert.AreEqual(expected, EffectDerivation.Topology(skill));
+    }
+
+    [Test]
+    public void Topology_NoBaseData_IsSingle()
+    {
+        FakeCharacterSkillFactory skill = CreateTracked<FakeCharacterSkillFactory>();
+        skill.data = new CharacterSkillData();
+
+        Assert.AreEqual(EffectTopology.Single, EffectDerivation.Topology(skill));
     }
 
     [TestCase(true, EffectFamily.Boon)]

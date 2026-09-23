@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using HealerLike.Render.Spells;
+using HealerLike.Render.Grammar;
 using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Creatures

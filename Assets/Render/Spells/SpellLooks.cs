@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Spells
 {

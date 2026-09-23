@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-using HealerLike.Render.Spells;
+using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Creatures
 {

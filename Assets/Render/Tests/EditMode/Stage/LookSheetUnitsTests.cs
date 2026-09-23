@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
-using HealerLike.Render.Creatures;
-using HealerLike.Render.Spells;
+using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Stage
 {

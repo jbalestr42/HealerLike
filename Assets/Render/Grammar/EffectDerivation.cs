@@ -1,7 +1,6 @@
 using UnityEngine;
-using HealerLike.Render.Creatures;
 
-namespace HealerLike.Render.Spells
+namespace HealerLike.Render.Grammar
 {
     // What an effect does to its holder, the accent and the shape of its look come from it
     public enum EffectFamily
@@ -28,11 +27,39 @@ namespace HealerLike.Render.Spells
         Prevention
     }
 
+    // Who a character skill lands on, one picked target or every target of its side
+    public enum EffectTopology
+    {
+        Single,
+        Group,
+        Area
+    }
+
+    // Everything the look of an effect reads from its handler, decided once when it lands
+    public struct EffectChannels
+    {
+        public EffectFamily family;
+        public AttributeGroup group;
+        public EffectTempo tempo;
+        // Seconds between two ticks, 0 when the handler does not tick
+        public float periodSeconds;
+    }
+
     // Reads the family, tempo and delivery of his buffs and projectiles from their data, never from a name
     public static class EffectDerivation
     {
         // A curved homing prefab bent at least this much flies as a swarm, SwarmBullet is 3 and the others 1
         public static readonly float SwarmCurve = 2f;
+
+        public static EffectChannels Channels(ABuffHandlerFactory handler, bool isSameSide)
+        {
+            EffectChannels channels = new EffectChannels();
+            channels.family = Family(handler, isSameSide);
+            channels.group = Group(handler);
+            channels.tempo = Tempo(handler);
+            channels.periodSeconds = Period(handler);
+            return channels;
+        }
 
         public static EffectFamily Family(ABuffHandlerFactory handler, bool isSameSide)
         {
@@ -155,6 +182,32 @@ namespace HealerLike.Render.Spells
                 return EffectTempo.Once;
             }
             return IsPeriodic(handler) ? EffectTempo.PerPeriod : EffectTempo.ForDuration;
+        }
+
+        public static float Period(ABuffHandlerFactory handler)
+        {
+            BuffHandlerFactory factory = handler as BuffHandlerFactory;
+            if (factory == null || !IsPeriodic(handler))
+            {
+                return 0f;
+            }
+            return factory.data.periodDuration;
+        }
+
+        // A skill without his base data has no target rule, it is read as a single target
+        public static EffectTopology Topology(ACharacterSkillFactory skill)
+        {
+            if (skill == null)
+            {
+                return EffectTopology.Single;
+            }
+
+            BaseCharacterSkillData data = skill.Create().GetData() as BaseCharacterSkillData;
+            if (data == null || data.isSingle)
+            {
+                return EffectTopology.Single;
+            }
+            return EffectTopology.Group;
         }
 
         // Projectiles take the same reading as the head, so a unit's head and its shot agree

@@ -4,9 +4,8 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
-using HealerLike.Render.Spells;
 
-namespace HealerLike.Render.Creatures
+namespace HealerLike.Render.Grammar
 {
 
 public class LookDerivationTests

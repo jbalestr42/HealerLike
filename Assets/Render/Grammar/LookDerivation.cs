@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using HealerLike.Render.Spells;
 
-namespace HealerLike.Render.Creatures
+namespace HealerLike.Render.Grammar
 {
     public enum LookSide
     {
