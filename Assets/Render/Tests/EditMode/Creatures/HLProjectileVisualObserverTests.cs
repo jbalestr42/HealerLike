@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using HealerLike.Render.Stage;
 
@@ -75,7 +76,7 @@ namespace HealerLike.Render.Creatures
             EntityModel entityModel = model.AddComponent<EntityModel>();
             TestHelpers.SetPrivateField(entity, "_model", entityModel);
             _recipe = HLCreatureValidatorTests.Recipe();
-            _material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
             _builder = model.AddComponent<HLCreatureBuilder>();
             _builder.SetRecipe(_recipe, _material, HLPrimitiveMeshesTests.Meshes());
             _builder.Init(entity);

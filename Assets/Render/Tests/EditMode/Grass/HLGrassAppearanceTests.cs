@@ -39,7 +39,7 @@ namespace HealerLike.Render.Grass
                 var look=Make("HLGroundFixtureLook").AddComponent<HLLookController>();
                 var settings=HLLookSettings.Default; settings.fogStart=25;settings.fogEnd=60;
                 settings.shadowTint=new Color32(63,91,148,255);settings.inkStrength=.75f;look.settings=settings;
-                var material=new Material(Shader.Find("HL/Look/Primitive"));owned.Add(material);
+                var material=new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLLook.shader"));owned.Add(material);
                 material.SetColor("_BaseColor",((Color)new Color32(78,126,87,255)).linear);
                 var ground=GameObject.CreatePrimitive(PrimitiveType.Cube);owned.Add(ground);ground.layer=30;
                 ground.transform.localScale=new Vector3(8,.2f,8);ground.transform.position=Vector3.down*.1f;

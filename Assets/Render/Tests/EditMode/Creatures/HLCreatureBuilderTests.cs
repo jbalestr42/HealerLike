@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 using HealerLike.Render.Stage;
@@ -89,7 +90,7 @@ namespace HealerLike.Render.Creatures
             _target.transform.localPosition = Vector3.up;
             _target.AddComponent<SkillTargetPointTag>();
             _recipe = HLCreatureValidatorTests.Recipe();
-            _material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
             _builder = _model.AddComponent<HLCreatureBuilder>();
             _builder.SetRecipe(_recipe, _material, HLPrimitiveMeshesTests.Meshes());
             _sink = new HLSink();

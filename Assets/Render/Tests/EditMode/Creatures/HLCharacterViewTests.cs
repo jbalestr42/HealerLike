@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Reflection;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
@@ -31,7 +32,7 @@ namespace HealerLike.Render.Creatures
             GameObject anchor = new GameObject("HLAnchor");
             GameObject target = new GameObject("HLHealTarget");
             HLCreatureRecipe recipe = HLCreatureValidatorTests.Recipe();
-            Material material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
             try
             {
                 Character character = null;
@@ -93,7 +94,7 @@ namespace HealerLike.Render.Creatures
             GameObject target = new GameObject("HLRecipient");
             string recipePath = "Assets/Render/Creatures/Data/HLHealer.asset";
             HLCreatureRecipe recipe = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(recipePath);
-            Material material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
             try
             {
                 Character character = null;

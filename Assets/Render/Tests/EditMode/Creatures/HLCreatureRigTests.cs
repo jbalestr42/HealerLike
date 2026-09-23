@@ -1,5 +1,6 @@
 using System.Reflection;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -23,7 +24,7 @@ namespace HealerLike.Render.Creatures
         public void Setup()
         {
             _parent = new GameObject("HLTestRig");
-            _material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
             _recipe = HLCreatureValidatorTests.Recipe();
             _recipe.idle = default;
             _rig = CreateRig(_recipe, _parent.transform, _material);
@@ -44,7 +45,7 @@ namespace HealerLike.Render.Creatures
             GameObject host = new GameObject("HLShortDelivery");
             string path = "Assets/Render/Creatures/Data/HLSpiralFern.asset";
             HLCreatureRecipe data = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
-            Material material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
             try
             {
                 using (HLCreatureRig body = CreateRig(data, host.transform, material))

@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -14,7 +15,7 @@ namespace HealerLike.Render.Look
                 Assert.Ignore("Requires graphics readback");
             }
 
-            Material material = new Material(Shader.Find("HL/Look/Primitive"));
+            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLLook.shader"));
             Mesh mesh = new Mesh
             {
                 vertices = new[]
