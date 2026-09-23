@@ -151,7 +151,7 @@ namespace HealerLike.Render.Stones
 
         static int Midpoint(int a, int b, List<Vector3> points, Dictionary<ulong, int> cache)
         {
-            ulong key = ((ulong)(uint)Math.Min(a, b) << 32) | (uint)Math.Max(a, b);
+            ulong key = ((ulong)(uint)System.Math.Min(a, b) << 32) | (uint)System.Math.Max(a, b);
             if (cache.TryGetValue(key, out int index))
             {
                 return index;
