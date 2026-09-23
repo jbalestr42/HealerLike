@@ -12,4 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d00cc2158bd74ecd87ccc77eb9e48930, type: 3}
   m_Name: StoneVariants
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.StoneVariants
-  meshes: []
+  meshes:
+  - {fileID: 4300000, guid: 6ab7a048bcfbc47be9f5ccf31224f14b, type: 2}
+  - {fileID: 4300000, guid: cb4fa65b0ad7c4d1eadedfc587388b8d, type: 2}
+  - {fileID: 4300000, guid: dd812989aa25f4820ae5bd63a65c3280, type: 2}
+  - {fileID: 4300000, guid: 147c56901146c429aadd836f21460f37, type: 2}
+  - {fileID: 4300000, guid: 3b5c5bd0b95754146ac3266010399cdd, type: 2}
+  - {fileID: 4300000, guid: 5e22f4d93aa6e44eda8a67c3c740addb, type: 2}
+  - {fileID: 4300000, guid: b0a4e7008621b496d8241930de21424f, type: 2}
+  - {fileID: 4300000, guid: 7d32cdf2e07934050956076d5b0bbb73, type: 2}
+  - {fileID: 4300000, guid: 1429d191ada08429c93695eb61b14b28, type: 2}
+  - {fileID: 4300000, guid: 1dac5009e8fb24203a026ff649d1dad4, type: 2}
+  - {fileID: 4300000, guid: 15f1641016d0a445f80f1b0085e59de1, type: 2}
+  - {fileID: 4300000, guid: 36e7a8aa7be2d4e3fa9e706c1fdb4e1e, type: 2}

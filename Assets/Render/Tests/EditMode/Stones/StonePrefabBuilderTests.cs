@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using HealerLike.Render.Creatures;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -10,23 +12,19 @@ public class StonePrefabBuilderTests
     static readonly string root = "Assets/Render/Stones/Prefabs/";
 
     [Test]
-    public void StoneSoldierModel_ShippedPrefab_IsAPlainViewWithBodyPresentationAndShadow()
+    public void DerivedStone_ShippedPrefab_CarriesTheBuilderThenTheBodyAndAHiddenShadow()
     {
-        GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(root + "StoneSoldierModel.prefab");
+        GameObject stone = AssetDatabase.LoadAssetAtPath<GameObject>(root + "DerivedStone.prefab");
 
-        Assert.AreEqual(PrefabAssetType.Regular, PrefabUtility.GetPrefabAssetType(model));
-        Assert.IsNull(model.GetComponent<EntityModel>()); // his model keeps its sockets and HUD
-        Assert.AreEqual(0, model.GetComponentsInChildren<SkillSource>(true).Length);
-        Assert.AreEqual(0, model.GetComponentsInChildren<SkinnedMeshRenderer>(true).Length);
-        Assert.IsNotNull(model.transform.Find("BodyPivot").GetComponent<LookAtTarget>());
-        Assert.IsNotNull(model.transform.Find("BodyPivot/StonePresentation"));
-        StoneGroundDisc shadow = model.transform.Find("GroundShadow").GetComponent<StoneGroundDisc>();
+        List<Component> components = new List<Component>(stone.GetComponents<Component>());
+        CreatureBuilder builder = stone.GetComponent<CreatureBuilder>();
+        StoneBody body = stone.GetComponent<StoneBody>();
+        Assert.Less(components.IndexOf(builder), components.IndexOf(body)); // the builder makes the rig first
+        StoneGroundDisc shadow = stone.transform.Find("GroundShadow").GetComponent<StoneGroundDisc>();
         Assert.IsTrue(shadow.isShadow);
         Assert.IsFalse(shadow.gameObject.activeSelf);
-        SerializedObject visual = new SerializedObject(model.GetComponent<StoneEnemyVisual>());
-        Assert.AreSame(shadow, visual.FindProperty("_groundShadow").objectReferenceValue);
-        Assert.IsNotNull(visual.FindProperty("_presentation").objectReferenceValue);
-        Assert.IsNull(visual.FindProperty("_effects").objectReferenceValue); // the manager hands its effects
+        SerializedObject bodySO = new SerializedObject(body);
+        Assert.AreSame(shadow, bodySO.FindProperty("_groundShadow").objectReferenceValue);
     }
 
     [Test]
