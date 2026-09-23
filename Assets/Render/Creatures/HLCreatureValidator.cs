@@ -25,25 +25,30 @@ namespace HealerLike.Render.Creatures
 
                 float ratio = part.torusTubeRatio;
                 bool isTorusValid = part.primitive != HLPrimitive.Torus
-                    || (HLChainSolver.Finite(ratio) && ratio > 0f && ratio < 1f);
-                if (!HLChainSolver.Finite(part.localPosition) || !HLChainSolver.Finite(part.localEuler)
-                    || !Positive(part.dimensions) || !Colour(part.colour)
-                    || !HLChainSolver.Finite(part.glow) || part.glow < 0f
+                    || (float.IsFinite(ratio) && ratio > 0f && ratio < 1f);
+                Vector3 position = part.localPosition;
+                Vector3 euler = part.localEuler;
+                bool isPositionFinite = float.IsFinite(position.x) && float.IsFinite(position.y)
+                    && float.IsFinite(position.z);
+                bool isEulerFinite = float.IsFinite(euler.x) && float.IsFinite(euler.y) && float.IsFinite(euler.z);
+                if (!isPositionFinite || !isEulerFinite || !Positive(part.dimensions) || !Colour(part.colour)
+                    || !float.IsFinite(part.glow) || part.glow < 0f
                     || (int)part.primitive < 0 || (int)part.primitive > 4 || !isTorusValid)
                 {
                     return Fail("Invalid primitive settings.", out error);
                 }
             }
 
-            if (!HLChainSolver.Finite(data.targetLocal) || data.sourceLocal == null || data.arms == null
-                || data.arms.Length > 8)
+            Vector3 target = data.targetLocal;
+            bool isTargetFinite = float.IsFinite(target.x) && float.IsFinite(target.y) && float.IsFinite(target.z);
+            if (!isTargetFinite || data.sourceLocal == null || data.arms == null || data.arms.Length > 8)
             {
                 return Fail("Invalid sockets or arms.", out error);
             }
 
             foreach (Vector3 source in data.sourceLocal)
             {
-                if (!HLChainSolver.Finite(source))
+                if (!float.IsFinite(source.x) || !float.IsFinite(source.y) || !float.IsFinite(source.z))
                 {
                     return Fail("Nonfinite socket.", out error);
                 }
@@ -51,11 +56,16 @@ namespace HealerLike.Render.Creatures
 
             foreach (HLArmDefinition arm in data.arms)
             {
+                Vector3 rootLocal = arm.rootLocal;
+                Vector3 pole = arm.bendPole;
+                bool isRootFinite = float.IsFinite(rootLocal.x) && float.IsFinite(rootLocal.y)
+                    && float.IsFinite(rootLocal.z);
+                bool isPoleFinite = float.IsFinite(pole.x) && float.IsFinite(pole.y) && float.IsFinite(pole.z);
                 if (arm.bodyPart < 0 || arm.bodyPart >= data.parts.Length
                     || arm.sourceSocketIndex < 0 || arm.sourceSocketIndex >= data.sourceLocal.Length
                     || arm.segmentCount < 2 || arm.segmentCount > 128
                     || !Positive(arm.segmentLength) || !Positive(arm.radius)
-                    || !HLChainSolver.Finite(arm.rootLocal) || !HLChainSolver.Finite(arm.bendPole)
+                    || !isRootFinite || !isPoleFinite
                     || !Colour(arm.colour)
                     || arm.restJoints == null || arm.restJoints.Length != arm.segmentCount + 1
                     || arm.restJoints[0] != Vector3.zero)
@@ -65,7 +75,8 @@ namespace HealerLike.Render.Creatures
 
                 for (int i = 0; i <= arm.segmentCount; i++)
                 {
-                    if (!HLChainSolver.Finite(arm.restJoints[i]))
+                    Vector3 joint = arm.restJoints[i];
+                    if (!float.IsFinite(joint.x) || !float.IsFinite(joint.y) || !float.IsFinite(joint.z))
                     {
                         return Fail("Rest pose does not preserve link lengths.", out error);
                     }
@@ -85,7 +96,7 @@ namespace HealerLike.Render.Creatures
             if (roots.count < 4 || roots.count > 8 || !Positive(roots.footRadius) || !Positive(roots.thickness)
                 || roots.footRadius + roots.thickness > 0.46f
                 || !Positive(roots.hipHeight) || !Positive(roots.kneeHeight)
-                || !HLChainSolver.Finite(roots.angularOffset) || !Colour(roots.colour))
+                || !float.IsFinite(roots.angularOffset) || !Colour(roots.colour))
             {
                 return Fail("Roots exceed the cell footprint or have invalid settings.", out error);
             }
@@ -102,12 +113,12 @@ namespace HealerLike.Render.Creatures
 
         static bool Positive(float value)
         {
-            return HLChainSolver.Finite(value) && value > 0f;
+            return float.IsFinite(value) && value > 0f;
         }
 
         static bool Nonnegative(float value)
         {
-            return HLChainSolver.Finite(value) && value >= 0f;
+            return float.IsFinite(value) && value >= 0f;
         }
 
         static bool Positive(Vector3 value)
@@ -117,8 +128,8 @@ namespace HealerLike.Render.Creatures
 
         static bool Colour(Color colour)
         {
-            return HLChainSolver.Finite(colour.r) && HLChainSolver.Finite(colour.g)
-                && HLChainSolver.Finite(colour.b) && HLChainSolver.Finite(colour.a);
+            return float.IsFinite(colour.r) && float.IsFinite(colour.g)
+                && float.IsFinite(colour.b) && float.IsFinite(colour.a);
         }
 
         static bool Fail(string message, out string error)

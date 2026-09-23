@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace HealerLike.Render.Creatures
@@ -6,27 +5,34 @@ namespace HealerLike.Render.Creatures
     // Equal-link FABRIK that allocates nothing and reads no scene, clock or random state
     public class HLChainSolver
     {
-        public HLChainResult Solve(Vector3[] joints, float[] lengths, Vector3 root, Vector3 target,
-            Vector3 bendPole, int maxIterations = 32, float tolerance = 0.001f)
+        public bool Solve(Vector3[] joints, float[] lengths, Vector3 root, Vector3 target, Vector3 bendPole,
+            out HLChainResult result, int maxIterations = 32, float tolerance = 0.001f)
         {
+            result = default;
             if (joints == null || lengths == null || lengths.Length < 2 || joints.Length != lengths.Length + 1)
             {
-                throw new ArgumentException("A chain requires N equal links and N+1 joints, N >= 2.");
+                Debug.LogError("[HLChainSolver] A chain requires N equal links and N+1 joints, N >= 2.");
+                return false;
             }
 
-            if (!Finite(root) || !Finite(target) || !Finite(bendPole) || !Finite(tolerance) || tolerance <= 0f
+            bool isRootFinite = float.IsFinite(root.x) && float.IsFinite(root.y) && float.IsFinite(root.z);
+            bool isTargetFinite = float.IsFinite(target.x) && float.IsFinite(target.y) && float.IsFinite(target.z);
+            bool isPoleFinite = float.IsFinite(bendPole.x) && float.IsFinite(bendPole.y) && float.IsFinite(bendPole.z);
+            if (!isRootFinite || !isTargetFinite || !isPoleFinite || !float.IsFinite(tolerance) || tolerance <= 0f
                 || maxIterations < 1)
             {
-                throw new ArgumentException("Invalid solver settings.");
+                Debug.LogError("[HLChainSolver] Invalid solver settings.");
+                return false;
             }
 
             float total = 0f;
             for (int i = 0; i < lengths.Length; i++)
             {
                 bool isEqual = Mathf.Abs(lengths[i] - lengths[0]) <= lengths[0] * 0.000001f;
-                if (!Finite(lengths[i]) || lengths[i] <= 0f || !isEqual)
+                if (!float.IsFinite(lengths[i]) || lengths[i] <= 0f || !isEqual)
                 {
-                    throw new ArgumentException("Lengths must be finite, positive and equal.");
+                    Debug.LogError("[HLChainSolver] Lengths must be finite, positive and equal.");
+                    return false;
                 }
 
                 total += lengths[i];
@@ -34,23 +40,26 @@ namespace HealerLike.Render.Creatures
 
             for (int i = 0; i < joints.Length; i++)
             {
-                if (!Finite(joints[i]))
+                if (!float.IsFinite(joints[i].x) || !float.IsFinite(joints[i].y) || !float.IsFinite(joints[i].z))
                 {
-                    throw new ArgumentException("Nonfinite joint.");
+                    Debug.LogError("[HLChainSolver] Nonfinite joint.");
+                    return false;
                 }
             }
 
-            if (!Finite(total))
+            if (!float.IsFinite(total))
             {
-                throw new ArgumentException("Chain length overflow.");
+                Debug.LogError("[HLChainSolver] Chain length overflow.");
+                return false;
             }
 
             int n = lengths.Length;
             Vector3 delta = target - root;
             float distance = delta.magnitude;
-            if (!Finite(distance))
+            if (!float.IsFinite(distance))
             {
-                throw new ArgumentException("Target distance overflow.");
+                Debug.LogError("[HLChainSolver] Target distance overflow.");
+                return false;
             }
 
             Vector3 aim = Direction(delta, Vector3.up);
@@ -65,7 +74,8 @@ namespace HealerLike.Render.Creatures
                 Vector3 effective = root + aim * total;
                 bool isReached = (joints[n] - target).magnitude <= tolerance;
                 bool isClamped = distance > total + tolerance;
-                return new HLChainResult(isReached, isClamped, effective, (joints[n] - effective).magnitude, 0);
+                result = new HLChainResult(isReached, isClamped, effective, (joints[n] - effective).magnitude, 0);
+                return true;
             }
 
             Vector3 side = bendPole - aim * Vector3.Dot(bendPole, aim);
@@ -146,17 +156,8 @@ namespace HealerLike.Render.Creatures
             }
             while (error > tolerance && iterations < maxIterations);
 
-            return new HLChainResult(error <= tolerance, false, target, error, iterations);
-        }
-
-        public static bool Finite(float value)
-        {
-            return !float.IsNaN(value) && !float.IsInfinity(value);
-        }
-
-        public static bool Finite(Vector3 value)
-        {
-            return Finite(value.x) && Finite(value.y) && Finite(value.z);
+            result = new HLChainResult(error <= tolerance, false, target, error, iterations);
+            return true;
         }
 
         static Vector3 Direction(Vector3 value, Vector3 fallback)

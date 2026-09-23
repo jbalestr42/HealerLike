@@ -1,6 +1,6 @@
-using System;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Creatures
 {
@@ -33,7 +33,8 @@ namespace HealerLike.Render.Creatures
             Assert.That(Vector3.Distance(joints[0], root), Is.LessThan(0.000001));
             for (int i = 1; i < joints.Length; i++)
             {
-                Assert.IsTrue(HLChainSolver.Finite(joints[i]));
+                Assert.IsTrue(float.IsFinite(joints[i].x) && float.IsFinite(joints[i].y)
+                    && float.IsFinite(joints[i].z));
                 Assert.That(Vector3.Distance(joints[i], joints[i - 1]), Is.EqualTo(0.2f).Within(0.00001));
             }
         }
@@ -46,8 +47,10 @@ namespace HealerLike.Render.Creatures
             Vector3[] joints = Rest();
             Vector3 target = new Vector3(x, y, z);
 
-            HLChainResult result = new HLChainSolver().Solve(joints, Lengths(), Vector3.zero, target, Vector3.up, 128);
+            bool isSolved = new HLChainSolver().Solve(joints, Lengths(), Vector3.zero, target, Vector3.up,
+                out HLChainResult result, 128);
 
+            Assert.IsTrue(isSolved);
             Assert.IsTrue(result.reached, result.error.ToString());
             Assert.LessOrEqual(Vector3.Distance(joints[24], target), 0.001f);
             Check(joints, Vector3.zero);
@@ -59,14 +62,17 @@ namespace HealerLike.Render.Creatures
             Vector3[] joints = Rest();
             HLChainSolver solver = new HLChainSolver();
 
-            HLChainResult result = solver.Solve(joints, Lengths(), Vector3.zero, new Vector3(20f, 0f, 0f), Vector3.up);
+            bool isSolved = solver.Solve(joints, Lengths(), Vector3.zero, new Vector3(20f, 0f, 0f), Vector3.up,
+                out HLChainResult result);
 
+            Assert.IsTrue(isSolved);
             Assert.IsTrue(result.clamped);
             Assert.IsFalse(result.reached);
             Assert.Less(result.error, 0.00001);
             Assert.That(joints[24].x, Is.EqualTo(4.8f).Within(0.00001));
             Check(joints, Vector3.zero);
-            result = solver.Solve(joints, Lengths(), Vector3.zero, new Vector3(4.8f, 0f, 0f), Vector3.up);
+            Assert.IsTrue(solver.Solve(joints, Lengths(), Vector3.zero, new Vector3(4.8f, 0f, 0f), Vector3.up,
+                out result));
             Assert.IsTrue(result.reached);
             Assert.IsFalse(result.clamped);
         }
@@ -89,9 +95,12 @@ namespace HealerLike.Render.Creatures
             Vector3 target = mode == 2 ? Vector3.zero : Vector3.up;
             HLChainSolver solver = new HLChainSolver();
 
-            HLChainResult result = solver.Solve(joints, Lengths(), Vector3.zero, target, Vector3.up);
-            HLChainResult again = solver.Solve(copy, Lengths(), Vector3.zero, target, Vector3.up);
+            bool isSolved = solver.Solve(joints, Lengths(), Vector3.zero, target, Vector3.up, out HLChainResult result);
+            bool isSolvedAgain = solver.Solve(copy, Lengths(), Vector3.zero, target, Vector3.up,
+                out HLChainResult again);
 
+            Assert.IsTrue(isSolved);
+            Assert.IsTrue(isSolvedAgain);
             Assert.IsTrue(result.reached);
             Assert.AreEqual(result.error, again.error);
             CollectionAssert.AreEqual(joints, copy);
@@ -116,8 +125,10 @@ namespace HealerLike.Render.Creatures
                 float z = (float)random.NextDouble() * 5f - 2.5f;
                 Vector3 target = root + new Vector3(x, y, z);
 
-                HLChainResult result = new HLChainSolver().Solve(joints, Lengths(), root, target, Vector3.up, 256);
+                bool isSolved = new HLChainSolver().Solve(joints, Lengths(), root, target, Vector3.up,
+                    out HLChainResult result, 256);
 
+                Assert.IsTrue(isSolved);
                 Assert.IsTrue(result.reached, $"{k}: {result.error}");
                 Check(joints, root);
             }
@@ -131,13 +142,23 @@ namespace HealerLike.Render.Creatures
             Vector3 target = Vector3.one;
             float[] lengths = Lengths();
             lengths[3] = 0.3f;
-            Assert.Throws<ArgumentException>(() => solver.Solve(Rest(), lengths, root, target, Vector3.up));
-            lengths[3] = float.NaN;
-            Assert.Throws<ArgumentException>(() => solver.Solve(Rest(), lengths, root, target, Vector3.up));
-            Assert.Throws<ArgumentException>(() => solver.Solve(Rest(), Lengths(), root, target, Vector3.up, 0));
             Vector3[] joints = Rest();
             joints[2].x = float.PositiveInfinity;
-            Assert.Throws<ArgumentException>(() => solver.Solve(joints, Lengths(), root, target, Vector3.up));
+            LogAssert.Expect(LogType.Error, "[HLChainSolver] Lengths must be finite, positive and equal.");
+            LogAssert.Expect(LogType.Error, "[HLChainSolver] Lengths must be finite, positive and equal.");
+            LogAssert.Expect(LogType.Error, "[HLChainSolver] Invalid solver settings.");
+            LogAssert.Expect(LogType.Error, "[HLChainSolver] Nonfinite joint.");
+
+            bool isUnequalSolved = solver.Solve(Rest(), lengths, root, target, Vector3.up, out HLChainResult result);
+            lengths[3] = float.NaN;
+            bool isNaNSolved = solver.Solve(Rest(), lengths, root, target, Vector3.up, out result);
+            bool isZeroIterationSolved = solver.Solve(Rest(), Lengths(), root, target, Vector3.up, out result, 0);
+            bool isInfiniteJointSolved = solver.Solve(joints, Lengths(), root, target, Vector3.up, out result);
+
+            Assert.IsFalse(isUnequalSolved);
+            Assert.IsFalse(isNaNSolved);
+            Assert.IsFalse(isZeroIterationSolved);
+            Assert.IsFalse(isInfiniteJointSolved);
         }
 
         [Test]
@@ -147,8 +168,10 @@ namespace HealerLike.Render.Creatures
             Vector3 target = new Vector3(4f, 1f, 0f);
             HLChainSolver solver = new HLChainSolver();
 
-            HLChainResult result = solver.Solve(joints, Lengths(), Vector3.zero, target, Vector3.up, 1, 0.0000001f);
+            bool isSolved = solver.Solve(joints, Lengths(), Vector3.zero, target, Vector3.up, out HLChainResult result,
+                1, 0.0000001f);
 
+            Assert.IsTrue(isSolved);
             Assert.AreEqual(1, result.iterations);
             Assert.AreEqual(result.error <= 0.0000001f, result.reached);
             Check(joints, Vector3.zero);
@@ -159,8 +182,10 @@ namespace HealerLike.Render.Creatures
         {
             Vector3[] joints = Rest();
 
-            HLChainResult result = new HLChainSolver().Solve(joints, Lengths(), joints[0], joints[24], Vector3.up);
+            bool isSolved = new HLChainSolver().Solve(joints, Lengths(), joints[0], joints[24], Vector3.up,
+                out HLChainResult result);
 
+            Assert.IsTrue(isSolved);
             Assert.IsTrue(result.reached);
             Check(joints, Vector3.zero);
         }
