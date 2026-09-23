@@ -111,9 +111,6 @@ MonoBehaviour:
   - 0.85
   - 0.6
   - 0.15
-  _zoneRegistry: {fileID: 0}
-  _proxies: []
-  _fields: []
 --- !u!114 &5586027874303797383
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126,7 +123,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f24cebe9b916b434c9d978fbb9966302, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.HLEnvironmentScatter
-  _grid: {fileID: 0}
   _plantMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
   _stoneMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
   _surfaceY: 0.5
@@ -210,10 +206,6 @@ MonoBehaviour:
   _seed: 1
   _bladeHeightScale: 1
   _surfaceY: 0.5
-  _grid: {fileID: 0}
-  _ground: {fileID: 0}
-  _gameplayCamera: {fileID: 0}
-  _ringShader: {fileID: 0}
   _wind:
     direction: {x: 1, y: 0.35}
     speed: 1.2

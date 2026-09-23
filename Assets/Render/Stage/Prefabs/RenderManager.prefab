@@ -212,10 +212,6 @@ MonoBehaviour:
   _seed: 1
   _bladeHeightScale: 0.6
   _surfaceY: 0.5
-  _grid: {fileID: 0}
-  _ground: {fileID: 0}
-  _gameplayCamera: {fileID: 0}
-  _ringShader: {fileID: 0}
   _wind:
     direction: {x: 1, y: 0.35}
     speed: 1.2
