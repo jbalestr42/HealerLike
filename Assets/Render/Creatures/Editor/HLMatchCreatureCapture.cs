@@ -17,10 +17,8 @@ namespace HealerLike.Render.Creatures
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             List<HLCreatureRig> rigs = new List<HLCreatureRig>();
             Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/HLLook_Default.mat");
-            if (!material)
-            {
-                material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Creatures/Data/HLPlaceholder.mat");
-            }
+            string meshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
+            HLPrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<HLPrimitiveMeshes>(meshesPath);
 
             Camera camera = new GameObject("HLGalleryCamera").AddComponent<Camera>();
             camera.tag = "MainCamera";
@@ -52,7 +50,12 @@ namespace HealerLike.Render.Creatures
                 root.transform.position = new Vector3((i - 2) * 2.0f, 0f, 0f);
                 string path = "Assets/Render/Creatures/Data/" + names[i] + ".asset";
                 HLCreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
-                HLCreatureRig rig = HLCreatureRig.Build(recipe, root.transform, material);
+                HLCreatureRig rig = new HLCreatureRig();
+                if (!rig.Init(recipe, root.transform, material, meshes))
+                {
+                    return;
+                }
+
                 rigs.Add(rig);
                 rig.SetReadout(null, 1f, 0f, 0.8f);
                 rig.Tick(0f, 0.016f, new HLFootFrame(root.transform.position, Vector3.up, 1f));
