@@ -27,23 +27,24 @@ namespace HealerLike.Render.Creatures
         static readonly int leafCount = 5;
 
         readonly HLChainSolver _solver = new HLChainSolver();
-        readonly Vector3[] _rest;
-        readonly Vector3[] _joints;
-        readonly float[] _lengths;
-        readonly Transform _container;
-        readonly Mesh _mesh;
-        readonly MeshRenderer _renderer;
-        readonly Vector3[] _vertices;
-        readonly Vector3[] _normals;
         readonly Matrix4x4[] _leaves = new Matrix4x4[leafCount];
         readonly Matrix4x4[] _beads = new Matrix4x4[leafCount + 1];
-        readonly Mesh _leafMesh;
-        readonly Mesh _beadMesh;
-        readonly Material _detailMaterial;
-        readonly MaterialPropertyBlock _detailColour;
-        readonly float _radius;
-        readonly Vector3 _pole;
+        Vector3[] _rest;
+        Vector3[] _joints;
+        float[] _lengths;
+        Transform _container;
+        Mesh _mesh;
+        MeshRenderer _renderer;
+        Vector3[] _vertices;
+        Vector3[] _normals;
+        Mesh _leafMesh;
+        Mesh _beadMesh;
+        Material _detailMaterial;
+        MaterialPropertyBlock _detailColour;
+        float _radius;
+        Vector3 _pole;
         bool _isDisposed;
+        bool _hasLoggedSolveError;
         bool _isVisible = true;
         float _elapsed;
         Vector3 _startGoal;
@@ -77,12 +78,21 @@ namespace HealerLike.Render.Creatures
 
         public bool isAvailable { get { return phase == HLGesturePhase.Rest; } }
 
-        public HLLianaArm(HLArmDefinition definition, Transform parent, Material material, float cellSize = 1f)
+        // Without a parent the arm only solves its chain and draws nothing
+        public bool Init(HLArmDefinition definition, Transform parent, Material material, HLPrimitiveMeshes meshes,
+            float cellSize = 1f)
         {
             if (definition.restJoints == null || definition.restJoints.Length != definition.segmentCount + 1
-                || definition.segmentCount < 2 || !HLChainSolver.Finite(cellSize) || cellSize <= 0f)
+                || definition.segmentCount < 2 || !float.IsFinite(cellSize) || cellSize <= 0f)
             {
-                throw new ArgumentException("Invalid arm definition.");
+                Debug.LogError("[HLLianaArm] Invalid arm definition.");
+                return false;
+            }
+
+            if (parent && !meshes)
+            {
+                Debug.LogError("[HLLianaArm] A drawn arm needs the primitive meshes.");
+                return false;
             }
 
             _rest = new Vector3[definition.restJoints.Length];
@@ -102,12 +112,11 @@ namespace HealerLike.Render.Creatures
             _pole = definition.bendPole;
             if (!parent)
             {
-                return;
+                return true;
             }
 
-            HLPrimitiveMeshes.Retain();
-            _leafMesh = HLPrimitiveMeshes.Get(HLPrimitive.Cone);
-            _beadMesh = HLPrimitiveMeshes.Get(HLPrimitive.Sphere);
+            _leafMesh = meshes.cone;
+            _beadMesh = meshes.sphere;
             _detailMaterial = material;
             _detailColour = new MaterialPropertyBlock();
             Vector4[] detailColours = new Vector4[leafCount + 1];
@@ -166,6 +175,7 @@ namespace HealerLike.Render.Creatures
             block.SetColor("_BaseColor", definition.colour);
             _renderer.SetPropertyBlock(block);
             _renderer.enabled = false;
+            return true;
         }
 
         public Matrix4x4 LeafMatrix(int index)
@@ -253,6 +263,15 @@ namespace HealerLike.Render.Creatures
             }
             else
             {
+                bool isRootFinite = float.IsFinite(rootWorld.x) && float.IsFinite(rootWorld.y)
+                    && float.IsFinite(rootWorld.z);
+                bool isGoalFinite = float.IsFinite(_goal.x) && float.IsFinite(_goal.y) && float.IsFinite(_goal.z);
+                if (!isRootFinite || !isGoalFinite)
+                {
+                    HideForFrame();
+                    return;
+                }
+
                 Vector3 target = _goal;
                 if (phase == HLGesturePhase.Extend)
                 {
@@ -280,7 +299,14 @@ namespace HealerLike.Render.Creatures
                     || style == HLDeliveryStyle.ChainSync;
                 if (!deliveryProfile)
                 {
-                    lastResult = _solver.Solve(_joints, _lengths, rootWorld, target, restOrientation * _pole, 64);
+                    if (!_solver.Solve(_joints, _lengths, rootWorld, target, restOrientation * _pole,
+                        out HLChainResult result, 64))
+                    {
+                        HideForFrame();
+                        return;
+                    }
+
+                    lastResult = result;
                 }
                 else if (isRod)
                 {
@@ -339,18 +365,37 @@ namespace HealerLike.Render.Creatures
             }
 
             _isDisposed = true;
-            if (_leafMesh)
+            if (!_container)
             {
-                HLPrimitiveMeshes.Release();
+                return;
             }
 
-            if (_container)
+            // The chain mesh is rewritten every frame, so it belongs to this arm alone
+            _container.gameObject.SetActive(false);
+            if (Application.isPlaying)
             {
-                _container.gameObject.SetActive(false);
-                HLPrimitiveMeshes.DestroyOwned(_container.gameObject);
+                UnityEngine.Object.Destroy(_container.gameObject);
+                UnityEngine.Object.Destroy(_mesh);
+            }
+            else
+            {
+                UnityEngine.Object.DestroyImmediate(_container.gameObject);
+                UnityEngine.Object.DestroyImmediate(_mesh);
+            }
+        }
+
+        void HideForFrame()
+        {
+            if (_renderer)
+            {
+                _renderer.enabled = false;
             }
 
-            HLPrimitiveMeshes.DestroyOwned(_mesh);
+            if (!_hasLoggedSolveError)
+            {
+                Debug.LogError("[HLLianaArm] The chain has no finite solution, it stays hidden this frame.");
+                _hasLoggedSolveError = true;
+            }
         }
 
         void StartReturn()

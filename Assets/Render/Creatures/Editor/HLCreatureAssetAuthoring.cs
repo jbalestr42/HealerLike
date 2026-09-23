@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -13,55 +12,46 @@ namespace HealerLike.Render.Creatures
         static readonly Color stem = new Color(0.18f, 0.49f, 0.31f);
         static readonly Color bud = new Color(0.78f, 0.95f, 0.29f);
 
-        [MenuItem("HL/Creatures/Author Presentation Assets")]
+        static readonly string materialPath = "Assets/Render/Look/HLLook_Default.mat";
+        static readonly string meshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
+
+        [MenuItem("Tools/Render/Author Creature Assets")]
         public static void Author()
         {
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+            HLPrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<HLPrimitiveMeshes>(meshesPath);
+            if (!material || !meshes)
+            {
+                Debug.LogError($"[HLCreatureAssetAuthoring] Missing {materialPath} or {meshesPath}.");
+                return;
+            }
+
             Directory.CreateDirectory(root + "Data");
             Directory.CreateDirectory(root + "Prefabs");
-            Material material = null;
-            if (AssetDatabase.IsValidFolder("Assets/Render/Look"))
-            {
-                foreach (string guid in AssetDatabase.FindAssets("t:Material", new string[] { "Assets/Render/Look" }))
-                {
-                    material = AssetDatabase.LoadAssetAtPath<Material>(AssetDatabase.GUIDToAssetPath(guid));
-                    if (material)
-                    {
-                        break;
-                    }
-                }
-            }
-
-            if (!material)
-            {
-                string path = root + "Data/HLPlaceholder.mat";
-                material = AssetDatabase.LoadAssetAtPath<Material>(path);
-                if (!material)
-                {
-                    Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-                    material = new Material(shader) { name = "HLPlaceholder", enableInstancing = true };
-                    material.SetColor("_BaseColor", Color.white);
-                    material.SetFloat("_Smoothness", 0.2f);
-                    AssetDatabase.CreateAsset(material, path);
-                }
-            }
-
             HLCreatureRecipe healer = SaveRecipe("HLHealer", Healer(), 6, 2, 17);
             HLCreatureRecipe fern = SaveRecipe("HLSpiralFern", Fern(), 7, 2, 31);
             HLCreatureRecipe arch = SaveRecipe("HLHangingArch", Arch(), 6, 4, 57);
             HLCreatureRecipe rosette = SaveRecipe("HLBladeRosette", Rosette(), 6, 2, 103);
             HLCreatureRecipe stack = SaveRecipe("HLSphereStack", Stack(), 8, 1, 89);
-            Model("HLNormal", "Assets/Models/Jomon.prefab", fern, material);
-            Model("HLTest", "Assets/Models/Jomon.prefab", stack, material);
-            Model("HLSwarm", "Assets/Models/Jomon.prefab", arch, material);
-            Model("HLFastShoot", "Assets/Models/OwlZun.prefab", fern, material);
-            Model("HLTripleShoot", "Assets/Models/OwlZun.prefab", arch, material);
-            Model("HLMultiShot", "Assets/Models/LakshmiTower.prefab", arch, material);
-            Model("HLRandomShoot", "Assets/Models/LakshmiTower.prefab", fern, material);
-            Model("HLChainLightning", "Assets/Models/LightningTower.prefab", stack, material);
-            Model("HLChanneling", "Assets/Models/SlowTowerModel.prefab", stack, material);
-            Model("HLSoldier", "Assets/Models/Kawaii Slime/Prefabs/Slime_01_Viking.prefab", stack, material);
-            Model("HLHitArmorBuffer", "Assets/Models/Kawaii Slime/Prefabs/Slime_03 Leaf.prefab", rosette, material);
-            CharacterView(healer, material);
+            if (!healer || !fern || !arch || !rosette || !stack)
+            {
+                return;
+            }
+
+            // Views are instantiated under his models, which keep their own sockets and colliders
+            View("HLNormal", fern, material, meshes);
+            View("HLTest", stack, material, meshes);
+            View("HLSwarm", arch, material, meshes);
+            View("HLFastShoot", fern, material, meshes);
+            View("HLTripleShoot", arch, material, meshes);
+            View("HLMultiShot", arch, material, meshes);
+            View("HLRandomShoot", fern, material, meshes);
+            View("HLChainLightning", stack, material, meshes);
+            // SlowTowerModel's root scale, which the stage copies size their trample zone from
+            View("HLChanneling", stack, material, meshes, 0.9f);
+            View("HLSoldier", stack, material, meshes);
+            View("HLHitArmorBuffer", rosette, material, meshes);
+            CharacterView(healer, material, meshes);
             foreach (string path in Directory.GetFiles("Assets/Prefabs/Projectiles", "*.prefab"))
             {
                 ProjectileView(path);
@@ -69,7 +59,7 @@ namespace HealerLike.Render.Creatures
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("HL creature recipes and presentation prefab variants authored.");
+            Debug.Log("[HLCreatureAssetAuthoring] Creature recipes and view prefabs authored.");
         }
 
         // Recipe-only refresh keeps existing prefab presentation and delivery overrides intact
@@ -307,86 +297,37 @@ namespace HealerLike.Render.Creatures
 
             if (!HLCreatureValidator.TryValidate(recipe, out string error))
             {
-                throw new InvalidOperationException(error);
+                Debug.LogError($"[HLCreatureAssetAuthoring] {name}: {error}");
+                return null;
             }
 
             EditorUtility.SetDirty(recipe);
             return recipe;
         }
 
-        static void Model(string name, string original, HLCreatureRecipe recipe, Material material)
+        static void View(string name, HLCreatureRecipe recipe, Material material, HLPrimitiveMeshes meshes,
+            float scale = 1f)
         {
-            GameObject source = AssetDatabase.LoadAssetAtPath<GameObject>(original);
-            if (!source)
-            {
-                throw new InvalidOperationException("Missing model: " + original);
-            }
-
-            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(source);
-            try
-            {
-                instance.name = name;
-                // Keep transforms, EntityModel, SkillSource subclasses, target tags and colliders
-                foreach (Renderer renderer in instance.GetComponentsInChildren<Renderer>(true))
-                {
-                    UnityEngine.Object.DestroyImmediate(renderer);
-                }
-
-                foreach (MeshFilter filter in instance.GetComponentsInChildren<MeshFilter>(true))
-                {
-                    UnityEngine.Object.DestroyImmediate(filter);
-                }
-
-                foreach (Animator animator in instance.GetComponentsInChildren<Animator>(true))
-                {
-                    UnityEngine.Object.DestroyImmediate(animator);
-                }
-
-                foreach (Animation animation in instance.GetComponentsInChildren<Animation>(true))
-                {
-                    UnityEngine.Object.DestroyImmediate(animation);
-                }
-
-                foreach (MonoBehaviour behaviour in instance.GetComponentsInChildren<MonoBehaviour>(true))
-                {
-                    if (behaviour is IVisualBehaviour)
-                    {
-                        UnityEngine.Object.DestroyImmediate(behaviour);
-                    }
-                }
-
-                HLCreatureBuilder builder = instance.AddComponent<HLCreatureBuilder>();
-                builder.SetRecipe(recipe, material);
-                PrefabUtility.SaveAsPrefabAsset(instance, root + "Prefabs/" + name + ".prefab");
-            }
-            finally
-            {
-                UnityEngine.Object.DestroyImmediate(instance);
-            }
+            // The rig cancels ancestor scale, so the root scale never changes the body size
+            GameObject view = new GameObject(name);
+            view.transform.localScale = Vector3.one * scale;
+            view.AddComponent<HLCreatureBuilder>().SetRecipe(recipe, material, meshes);
+            PrefabUtility.SaveAsPrefabAsset(view, root + "Prefabs/" + name + ".prefab");
+            Object.DestroyImmediate(view);
         }
 
-        static void CharacterView(HLCreatureRecipe recipe, Material material)
+        static void CharacterView(HLCreatureRecipe recipe, Material material, HLPrimitiveMeshes meshes)
         {
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Character.prefab");
-            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
-            try
-            {
-                instance.name = "HLHealerCharacter";
-                Transform anchor = new GameObject("HLHealerAnchor").transform;
-                anchor.SetParent(instance.transform, false);
-                HLCharacterView view = anchor.gameObject.AddComponent<HLCharacterView>();
-                SerializedObject data = new SerializedObject(view);
-                data.FindProperty("_character").objectReferenceValue = instance.GetComponent<Character>();
-                data.FindProperty("_recipe").objectReferenceValue = recipe;
-                data.FindProperty("_visualAnchor").objectReferenceValue = anchor;
-                data.FindProperty("_material").objectReferenceValue = material;
-                data.ApplyModifiedPropertiesWithoutUndo();
-                PrefabUtility.SaveAsPrefabAsset(instance, root + "Prefabs/HLHealerCharacter.prefab");
-            }
-            finally
-            {
-                UnityEngine.Object.DestroyImmediate(instance);
-            }
+            GameObject view = new GameObject("HLHealerCharacter");
+            HLCharacterView characterView = view.AddComponent<HLCharacterView>();
+            SerializedObject data = new SerializedObject(characterView);
+            data.FindProperty("_recipe").objectReferenceValue = recipe;
+            data.FindProperty("_visualAnchor").objectReferenceValue = view.transform;
+            data.FindProperty("_material").objectReferenceValue = material;
+            data.FindProperty("_meshes").objectReferenceValue = meshes;
+            data.ApplyModifiedPropertiesWithoutUndo();
+            PrefabUtility.SaveAsPrefabAsset(view, root + "Prefabs/HLHealerCharacter.prefab");
+            Object.DestroyImmediate(view);
         }
 
         static void ProjectileView(string original)
@@ -408,7 +349,7 @@ namespace HealerLike.Render.Creatures
             }
             finally
             {
-                UnityEngine.Object.DestroyImmediate(instance);
+                Object.DestroyImmediate(instance);
             }
         }
     }

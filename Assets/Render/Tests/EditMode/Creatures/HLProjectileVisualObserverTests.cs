@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Creatures
 {
@@ -74,7 +75,7 @@ namespace HealerLike.Render.Creatures
             _recipe = HLCreatureValidatorTests.Recipe();
             _material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             _builder = model.AddComponent<HLCreatureBuilder>();
-            _builder.SetRecipe(_recipe, _material);
+            _builder.SetRecipe(_recipe, _material, HLPrimitiveMeshesTests.Meshes());
             _builder.Init(entity);
             _projectileObject = new GameObject("HLProjectile", typeof(LineRenderer));
             _projectile = _projectileObject.AddComponent<Projectile>();
@@ -101,7 +102,6 @@ namespace HealerLike.Render.Creatures
             Object.DestroyImmediate(_second);
             Object.DestroyImmediate(_recipe);
             Object.DestroyImmediate(_material);
-            HLPrimitiveMeshes.ReleaseAll();
         }
 
         [Test]
@@ -118,7 +118,7 @@ namespace HealerLike.Render.Creatures
             Assert.AreEqual(1, probe.begins);
             Assert.AreEqual(HLDeliveryStyle.Arc, probe.style);
             TestHelpers.InvokePrivate(_observer, "LateUpdate");
-            Assert.AreEqual(1, probe.updates);
+            Assert.AreEqual(0, probe.updates); // the source follows the projectile itself
             _projectile.OnHit.Invoke(new OnHitData { target = _first });
             Assert.AreEqual(1, probe.contacts);
             _observer.enabled = false;
@@ -230,14 +230,17 @@ namespace HealerLike.Render.Creatures
         }
 
         [Test]
-        public void ExecutionOrderPrecedesBuilder()
+        public void Init_WithManager_TakesTokensFromManager()
         {
-            DefaultExecutionOrder observerOrder = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(
-                typeof(HLProjectileVisualObserver), typeof(DefaultExecutionOrder));
-            DefaultExecutionOrder builderOrder = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(
-                typeof(HLCreatureBuilder), typeof(DefaultExecutionOrder));
+            GameObject managerGo = new GameObject("HLRenderManager");
+            RenderManager manager = managerGo.AddComponent<RenderManager>();
+            int previous = manager.NextDeliveryToken();
+            _observer.Init(manager);
 
-            Assert.Less(observerOrder.order, builderOrder.order);
+            _observer.Init(_source);
+
+            Assert.AreEqual(previous + 1, _observer.gestureToken);
+            Object.DestroyImmediate(managerGo);
         }
 
         [Test]

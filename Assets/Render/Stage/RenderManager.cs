@@ -28,6 +28,8 @@ namespace HealerLike.Render.Stage
         public SpellLooks spellLooks { get { return _spellLooks; } }
         public HLPrimitiveMeshes meshes { get { return _meshes; } }
 
+        int _deliveryToken;
+
         void Awake()
         {
             DontDestroyOnLoad(gameObject);
@@ -49,6 +51,17 @@ namespace HealerLike.Render.Stage
 
             _entityManager = entityManager;
             _player = player;
+        }
+
+        // One counter for every projectile, so a token never names two deliveries on one rig
+        public int NextDeliveryToken()
+        {
+            if (++_deliveryToken == 0)
+            {
+                ++_deliveryToken;
+            }
+
+            return _deliveryToken;
         }
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)

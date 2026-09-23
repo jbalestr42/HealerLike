@@ -31,8 +31,8 @@ namespace HealerLike.Render.Creatures
             GameObject parent = new GameObject("HLRecipeFixture");
             try
             {
-                Material material = AssetDatabase.LoadAssetAtPath<Material>(root + "Data/HLPlaceholder.mat");
-                using (HLCreatureRig rig = HLCreatureRig.Build(recipe, parent.transform, material))
+                Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/HLLook_Default.mat");
+                using (HLCreatureRig rig = HLCreatureRigTests.CreateRig(recipe, parent.transform, material))
                 {
                     rig.Tick(1f, 0.016f, new HLFootFrame(Vector3.zero, Vector3.up, 1f));
                     if (name == "HLHealer")
@@ -43,9 +43,11 @@ namespace HealerLike.Render.Creatures
                         Assert.That(Quaternion.Angle(before, crown.localRotation), Is.EqualTo(180).Within(0.01f));
                     }
 
+                    // Body parts share the baked meshes, only the arm chains are generated per rig
                     foreach (MeshFilter filter in parent.GetComponentsInChildren<MeshFilter>())
                     {
-                        Assert.IsFalse(AssetDatabase.Contains(filter.sharedMesh));
+                        bool isChain = filter.name == "HLLianaArm";
+                        Assert.AreEqual(!isChain, AssetDatabase.Contains(filter.sharedMesh), filter.name);
                     }
 
                     Assert.IsEmpty(parent.GetComponentsInChildren<Collider>());
@@ -54,39 +56,36 @@ namespace HealerLike.Render.Creatures
             finally
             {
                 Object.DestroyImmediate(parent);
-                HLPrimitiveMeshes.ReleaseAll();
             }
         }
 
-        [TestCase("HLNormal", "Assets/Models/Jomon.prefab")]
-        [TestCase("HLTest", "Assets/Models/Jomon.prefab")]
-        [TestCase("HLSwarm", "Assets/Models/Jomon.prefab")]
-        [TestCase("HLFastShoot", "Assets/Models/OwlZun.prefab")]
-        [TestCase("HLTripleShoot", "Assets/Models/OwlZun.prefab")]
-        [TestCase("HLMultiShot", "Assets/Models/LakshmiTower.prefab")]
-        [TestCase("HLRandomShoot", "Assets/Models/LakshmiTower.prefab")]
-        [TestCase("HLChainLightning", "Assets/Models/LightningTower.prefab")]
-        [TestCase("HLChanneling", "Assets/Models/SlowTowerModel.prefab")]
-        [TestCase("HLSoldier", "Assets/Models/Kawaii Slime/Prefabs/Slime_01_Viking.prefab")]
-        [TestCase("HLHitArmorBuffer", "Assets/Models/Kawaii Slime/Prefabs/Slime_03 Leaf.prefab")]
-        public void ModelVariantPreservesOriginalSocketsAndGameplayColliders(string name, string originalPath)
+        [TestCase("HLNormal", "HLSpiralFern")]
+        [TestCase("HLTest", "HLSphereStack")]
+        [TestCase("HLSwarm", "HLHangingArch")]
+        [TestCase("HLFastShoot", "HLSpiralFern")]
+        [TestCase("HLTripleShoot", "HLHangingArch")]
+        [TestCase("HLMultiShot", "HLHangingArch")]
+        [TestCase("HLRandomShoot", "HLSpiralFern")]
+        [TestCase("HLChainLightning", "HLSphereStack")]
+        [TestCase("HLChanneling", "HLSphereStack")]
+        [TestCase("HLSoldier", "HLSphereStack")]
+        [TestCase("HLHitArmorBuffer", "HLBladeRosette")]
+        public void View_ShippedPrefab_HasNoBaseModelAndCarriesItsLook(string name, string recipeName)
         {
-            GameObject original = AssetDatabase.LoadAssetAtPath<GameObject>(originalPath);
-            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(root + "Prefabs/" + name + ".prefab");
-            Assert.NotNull(model);
-            Assert.AreEqual(PrefabAssetType.Variant, PrefabUtility.GetPrefabAssetType(model));
-            Assert.NotNull(model.GetComponent<EntityModel>());
-            Assert.NotNull(model.GetComponent<HLCreatureBuilder>());
-            Assert.IsEmpty(model.GetComponentsInChildren<Renderer>(true));
-            Assert.IsEmpty(model.GetComponentsInChildren<MeshFilter>(true));
-            Assert.IsEmpty(model.GetComponentsInChildren<Animator>(true));
-            Assert.AreEqual(original.transform.localScale, model.transform.localScale);
-            CompareSockets(original.GetComponentsInChildren<SkillSource>(true),
-                model.GetComponentsInChildren<SkillSource>(true), original.transform, model.transform);
-            CompareSockets(original.GetComponentsInChildren<SkillTargetPointTag>(true),
-                model.GetComponentsInChildren<SkillTargetPointTag>(true), original.transform, model.transform);
-            Assert.AreEqual(original.GetComponentsInChildren<Collider>(true).Length,
-                model.GetComponentsInChildren<Collider>(true).Length);
+            GameObject view = AssetDatabase.LoadAssetAtPath<GameObject>(root + "Prefabs/" + name + ".prefab");
+
+            Assert.NotNull(view);
+            Assert.AreEqual(PrefabAssetType.Regular, PrefabUtility.GetPrefabAssetType(view));
+            Assert.IsNull(view.GetComponent<EntityModel>());
+            Assert.IsEmpty(view.GetComponentsInChildren<Renderer>(true));
+            Assert.IsEmpty(view.GetComponentsInChildren<Collider>(true));
+            HLCreatureBuilder builder = view.GetComponent<HLCreatureBuilder>();
+            Assert.NotNull(builder);
+            Assert.AreEqual(recipeName, builder.recipe.name);
+            SerializedObject data = new SerializedObject(builder);
+            Assert.AreEqual("Assets/Render/Look/HLLook_Default.mat",
+                AssetDatabase.GetAssetPath(data.FindProperty("_material").objectReferenceValue));
+            Assert.AreSame(HLPrimitiveMeshesTests.Meshes(), data.FindProperty("_meshes").objectReferenceValue);
         }
 
         [Test]
@@ -128,7 +127,7 @@ namespace HealerLike.Render.Creatures
         {
             string path = root + "Data/" + name + ".asset";
             HLCreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
-            using (HLLianaArm arm = new HLLianaArm(recipe.arms[0], null, null))
+            using (HLLianaArm arm = HLLianaArmTests.CreateArm(recipe.arms[0]))
             {
                 arm.Tick(0f, Vector3.zero, Quaternion.identity);
                 Vector3 target = new Vector3(15f, 4f, 15f);
@@ -149,30 +148,18 @@ namespace HealerLike.Render.Creatures
         }
 
         [Test]
-        public void HealerVariantRetainsCharacterAndAuthoredAnchor()
+        public void CharacterView_ShippedPrefab_HasNoBaseCharacterAndAnchorsOnItself()
         {
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(root + "Prefabs/HLHealerCharacter.prefab");
-            Assert.NotNull(prefab.GetComponent<Character>());
-            Assert.IsNull(prefab.GetComponent<Entity>());
-            Assert.NotNull(prefab.transform.Find("HLHealerAnchor").GetComponent<HLCharacterView>());
-        }
 
-        static void CompareSockets<SocketType>(SocketType[] before, SocketType[] after, Transform original,
-            Transform model)
-            where SocketType : Component
-        {
-            Assert.AreEqual(before.Length, after.Length);
-            for (int i = 0; i < before.Length; i++)
-            {
-                Assert.AreEqual(before[i].GetType(), after[i].GetType());
-                Assert.AreEqual(AnimationUtility.CalculateTransformPath(before[i].transform, original),
-                    AnimationUtility.CalculateTransformPath(after[i].transform, model));
-                Vector3 beforeLocal = original.InverseTransformPoint(before[i].transform.position);
-                Vector3 afterLocal = model.InverseTransformPoint(after[i].transform.position);
-                Assert.Less(Vector3.Distance(beforeLocal, afterLocal), 0.00001);
-                Assert.Less(Quaternion.Angle(before[i].transform.rotation, after[i].transform.rotation), 0.001f);
-                Assert.AreEqual(before[i].gameObject.activeSelf, after[i].gameObject.activeSelf);
-            }
+            Assert.AreEqual(PrefabAssetType.Regular, PrefabUtility.GetPrefabAssetType(prefab));
+            Assert.IsNull(prefab.GetComponent<Character>());
+            HLCharacterView view = prefab.GetComponent<HLCharacterView>();
+            Assert.NotNull(view);
+            SerializedObject data = new SerializedObject(view);
+            Assert.AreSame(prefab.transform, data.FindProperty("_visualAnchor").objectReferenceValue);
+            Assert.AreEqual("HLHealer", data.FindProperty("_recipe").objectReferenceValue.name);
+            Assert.AreSame(HLPrimitiveMeshesTests.Meshes(), data.FindProperty("_meshes").objectReferenceValue);
         }
     }
 }

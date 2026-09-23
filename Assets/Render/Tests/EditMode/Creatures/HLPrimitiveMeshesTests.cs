@@ -1,14 +1,14 @@
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Creatures
 {
     public class HLPrimitiveMeshesTests
     {
-        [TearDown]
-        public void Cleanup()
+        public static HLPrimitiveMeshes Meshes()
         {
-            HLPrimitiveMeshes.ReleaseAll();
+            return AssetDatabase.LoadAssetAtPath<HLPrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
         }
 
         [TestCase(HLPrimitive.Sphere)]
@@ -16,13 +16,13 @@ namespace HealerLike.Render.Creatures
         [TestCase(HLPrimitive.Cone)]
         [TestCase(HLPrimitive.Torus)]
         [TestCase(HLPrimitive.CylinderSegment)]
-        public void GeometryIsFiniteNormalizedBoundedAndDeterministic(HLPrimitive type)
+        public void GetMesh_BakedPrimitive_IsFiniteNormalizedAndBounded(HLPrimitive type)
         {
-            Mesh mesh = HLPrimitiveMeshes.Get(type, 12, 6);
+            Mesh mesh = Meshes().GetMesh(type);
+
             Vector3[] vertices = mesh.vertices;
             Vector3[] normals = mesh.normals;
             int[] indices = mesh.triangles;
-
             Assert.Greater(indices.Length, 0);
             Assert.AreEqual(vertices.Length, normals.Length);
             foreach (int index in indices)
@@ -32,7 +32,7 @@ namespace HealerLike.Render.Creatures
 
             foreach (Vector3 vertex in vertices)
             {
-                Assert.IsTrue(HLChainSolver.Finite(vertex));
+                Assert.IsTrue(float.IsFinite(vertex.x) && float.IsFinite(vertex.y) && float.IsFinite(vertex.z));
                 Assert.LessOrEqual(Mathf.Abs(vertex.x), 0.50001f);
                 Assert.LessOrEqual(Mathf.Abs(vertex.y), 0.50001f);
                 Assert.LessOrEqual(Mathf.Abs(vertex.z), 0.50001f);
@@ -44,36 +44,27 @@ namespace HealerLike.Render.Creatures
             }
 
             Assert.That(mesh.bounds.size.x, Is.EqualTo(1).Within(0.00001));
-            float height = type == HLPrimitive.Torus ? Mathf.Sqrt(3f) * 0.1f : 1f;
+            float height = type == HLPrimitive.Torus ? Mathf.Sqrt(3f) / 12f : 1f; // tube ratio 0.2, six rings
             Assert.That(mesh.bounds.size.y, Is.EqualTo(height).Within(0.00001));
-            HLPrimitiveMeshes.ReleaseAll();
-            Mesh again = HLPrimitiveMeshes.Get(type, 12, 6);
-            CollectionAssert.AreEqual(vertices, again.vertices);
-            CollectionAssert.AreEqual(indices, again.triangles);
         }
 
         [Test]
-        public void ReleaseAllCannotInvalidateMeshesUsedByLiveRig()
+        public void Dispose_LiveRigs_LeaveSharedMeshesAlive()
         {
             GameObject parent = new GameObject("HLMeshOwner");
             HLCreatureRecipe recipe = HLCreatureValidatorTests.Recipe();
             Material material = new Material(Shader.Find("HL/Look/Primitive"));
-            HLCreatureRig rig = HLCreatureRig.Build(recipe, parent.transform, material);
+            HLCreatureRig rig = new HLCreatureRig();
+            rig.Init(recipe, parent.transform, material, Meshes());
             Mesh mesh = rig.root.GetComponentInChildren<MeshFilter>().sharedMesh;
-            try
-            {
-                HLPrimitiveMeshes.ReleaseAll();
-                Assert.IsTrue(mesh);
-            }
-            finally
-            {
-                rig.Dispose();
-                Object.DestroyImmediate(parent);
-                Object.DestroyImmediate(recipe);
-                Object.DestroyImmediate(material);
-            }
 
-            Assert.IsFalse(mesh);
+            rig.Dispose();
+
+            Assert.IsTrue(mesh);
+            Assert.IsTrue(AssetDatabase.Contains(mesh));
+            Object.DestroyImmediate(parent);
+            Object.DestroyImmediate(recipe);
+            Object.DestroyImmediate(material);
         }
     }
 }

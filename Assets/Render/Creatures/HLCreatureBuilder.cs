@@ -4,16 +4,18 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.Serialization;
 using HealerLike.Render.Spells;
+using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Creatures
 {
-    [DefaultExecutionOrder(200)]
-    public class HLCreatureBuilder : MonoBehaviour, IVisualBehaviour, IHLHealVisualSink, IHLDeliverySource
+    public class HLCreatureBuilder : MonoBehaviour, IEntityView, IVisualBehaviour, IHLHealVisualSink,
+        IHLDeliverySource
     {
         [FormerlySerializedAs("recipe")]
         [SerializeField] HLCreatureRecipe _recipe;
         [FormerlySerializedAs("material")]
         [SerializeField] Material _material;
+        [SerializeField] HLPrimitiveMeshes _meshes;
         [FormerlySerializedAs("cellSize")]
         [SerializeField] float _cellSize = 1f;
 
@@ -67,6 +69,17 @@ namespace HealerLike.Render.Creatures
             rig = null;
         }
 
+        public void Init(Entity owner, RenderManager manager)
+        {
+            if (!_meshes && manager)
+            {
+                _meshes = manager.meshes;
+            }
+
+            Init(owner);
+        }
+
+        // The stage copies still reach this through EntityModel until the manager attaches views (D2)
         public void Init(Entity owner)
         {
             Detach();
@@ -130,7 +143,7 @@ namespace HealerLike.Render.Creatures
                 }
 
                 float remaining = pair.Value();
-                if (HLChainSolver.Finite(remaining))
+                if (float.IsFinite(remaining))
                 {
                     readiness = Mathf.Max(readiness, 1f - Mathf.Clamp01(remaining));
                 }
@@ -145,9 +158,9 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        public void SetRecipe(HLCreatureRecipe value, Material sharedMaterial)
+        public void SetRecipe(HLCreatureRecipe value, Material sharedMaterial, HLPrimitiveMeshes meshes)
         {
-            if (_recipe == value && _material == sharedMaterial)
+            if (_recipe == value && _material == sharedMaterial && _meshes == meshes)
             {
                 return;
             }
@@ -160,14 +173,18 @@ namespace HealerLike.Render.Creatures
             rig = null;
             _recipe = value;
             _material = sharedMaterial;
+            _meshes = meshes;
         }
 
         public void Configure(HLRenderRegistry registry, float size, Vector3 origin, Vector3 normal)
         {
-            if (!HLChainSolver.Finite(size) || size <= 0f || !HLChainSolver.Finite(origin)
-                || !HLChainSolver.Finite(normal) || normal.sqrMagnitude < 0.00000001f)
+            bool isOriginFinite = float.IsFinite(origin.x) && float.IsFinite(origin.y) && float.IsFinite(origin.z);
+            bool isNormalFinite = float.IsFinite(normal.x) && float.IsFinite(normal.y) && float.IsFinite(normal.z);
+            if (!float.IsFinite(size) || size <= 0f || !isOriginFinite || !isNormalFinite
+                || normal.sqrMagnitude < 0.00000001f)
             {
-                throw new ArgumentException("Invalid ground frame.");
+                Debug.LogError("[HLCreatureBuilder] Invalid ground frame.");
+                return;
             }
 
             Unregister();
@@ -241,25 +258,38 @@ namespace HealerLike.Render.Creatures
                     continue;
                 }
 
-                // The runtime exposes a generic cooldown base, with no non-generic interface
-                for (Type type = skill.GetType(); type != null; type = type.BaseType)
+                Func<float> progress = CreateCooldownReader(skill);
+                if (progress != null)
                 {
-                    if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ACooldownSkill<>))
-                    {
-                        MethodInfo getter = type.GetProperty("cooldownProgress").GetGetMethod();
-                        Delegate progress = Delegate.CreateDelegate(typeof(Func<float>), skill, getter);
-                        _cooldowns.Add(skill, (Func<float>)progress);
-                        break;
-                    }
+                    _cooldowns.Add(skill, progress);
                 }
             }
+        }
+
+        // Reflection until ACooldownSkill exposes cooldownProgress through ICooldownSkill (seam S3)
+        static Func<float> CreateCooldownReader(ASkill skill)
+        {
+            for (Type type = skill.GetType(); type != null; type = type.BaseType)
+            {
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ACooldownSkill<>))
+                {
+                    MethodInfo getter = type.GetProperty("cooldownProgress").GetGetMethod();
+                    return (Func<float>)Delegate.CreateDelegate(typeof(Func<float>), skill, getter);
+                }
+            }
+
+            return null;
         }
 
         void EnsureRig()
         {
             if (rig == null && _recipe && _material)
             {
-                rig = HLCreatureRig.Build(_recipe, transform, _material, _cellSize);
+                HLCreatureRig created = new HLCreatureRig();
+                if (created.Init(_recipe, transform, _material, _meshes, _cellSize))
+                {
+                    rig = created;
+                }
             }
 
             if (rig != null)
@@ -318,6 +348,7 @@ namespace HealerLike.Render.Creatures
             }
         }
 
+        // HLRenderRegistry.current stays the fallback until the manager hands the registry through Init (D2)
         void SyncRegistry()
         {
             HLRenderRegistry registry = _hasInjection ? _injectedRegistry : HLRenderRegistry.current;
@@ -365,7 +396,7 @@ namespace HealerLike.Render.Creatures
 
         void OnHealthProcessed(GameObject owner, ResourceModifier modifier, float value, bool critical)
         {
-            if (!isActiveAndEnabled || value == 0f || !HLChainSolver.Finite(value))
+            if (!isActiveAndEnabled || value == 0f || !float.IsFinite(value))
             {
                 return;
             }
