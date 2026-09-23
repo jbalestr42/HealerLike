@@ -3,9 +3,8 @@ using HealerLike.Render.Grass;
 
 namespace HealerLike.Render.Zones
 {
-    /// <summary>Projectile.Init calls this once per launch, including reused projectile instances.</summary>
-    [DisallowMultipleComponent]
-    public sealed class HLLaunchWave : AProjectileBehaviour
+
+        public class HLLaunchWave : AProjectileBehaviour
     {
         [SerializeField] HLGrassField _field;
         public HLGrassField Field { get => _field; set => _field = value; }

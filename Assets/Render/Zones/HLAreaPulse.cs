@@ -2,12 +2,9 @@ using UnityEngine;
 
 namespace HealerLike.Render.Zones
 {
-    /// <summary>
-    /// Cosmetic one-shot AoE footprint, not an authoritative or persistent damage/heal field.
-    /// Stage attaches this to the AoE prefab variant; Start reads radius after caller initialization.
-    /// </summary>
+
     [RequireComponent(typeof(AreaOfEffect))]
-    public sealed class HLAreaPulse : MonoBehaviour
+    public class HLAreaPulse : MonoBehaviour
     {
         [SerializeField] HLZoneKind _kind = HLZoneKind.Hostile;
         HLZoneRegistry _owner;

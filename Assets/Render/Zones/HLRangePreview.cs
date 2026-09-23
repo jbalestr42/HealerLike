@@ -2,8 +2,8 @@ using UnityEngine;
 
 namespace HealerLike.Render.Zones
 {
-    /// <summary>Public-state range preview with one shared collider hover raycast per frame.</summary>
-    public sealed class HLRangePreview : MonoBehaviour, IVisualBehaviour
+
+    public class HLRangePreview : MonoBehaviour, IVisualBehaviour
     {
         [SerializeField] bool _observePointer = true;
         [SerializeField] Camera _camera;
@@ -24,8 +24,6 @@ namespace HealerLike.Render.Zones
         HLZoneRegistry _owner;
         int _handle;
         bool _selected, _dragging;
-        // Legacy stage mode flag; selection now comes exclusively through SetPreviewState.
-        // Hover remains independent so Featured mode does not disable the range under the cursor.
         public bool ObservePointer { get => _observePointer; set => _observePointer = value; }
         public Camera PreviewCamera { get => _camera; set => _camera = value; }
 
@@ -41,7 +39,6 @@ namespace HealerLike.Render.Zones
             if (_entity == null) Init(GetComponentInParent<Entity>());
         }
 
-        /// <summary>Render-owned state input for stage wiring, including non-pointer selection. Published by Update.</summary>
         public void SetPreviewState(bool selected, bool dragging)
         {
             _selected = selected;
@@ -50,7 +47,6 @@ namespace HealerLike.Render.Zones
 
         void Update() => Refresh();
 
-        /// <summary>Samples current public range/position. Missing attributes or inactive entities hide it.</summary>
         public void Refresh()
         {
             Camera camera = ObserveHover ? (_camera != null ? _camera : Camera.main) : null;

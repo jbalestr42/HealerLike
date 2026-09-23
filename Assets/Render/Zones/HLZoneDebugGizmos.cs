@@ -2,8 +2,8 @@ using UnityEngine;
 
 namespace HealerLike.Render.Zones
 {
-    /// <summary>Cosmetic debug view of the published zones; does not allocate or own render resources.</summary>
-    public sealed class HLZoneDebugGizmos : MonoBehaviour
+
+    public class HLZoneDebugGizmos : MonoBehaviour
     {
         [SerializeField] HLZoneRegistry _registry;
         public HLZoneRegistry Registry { get => _registry; set => _registry = value; }

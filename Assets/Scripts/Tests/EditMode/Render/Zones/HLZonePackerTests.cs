@@ -46,9 +46,6 @@ namespace HealerLike.Render.Zones
         [Test]
         public void FieldOffsetsMatchTheWireLayout()
         {
-            // The explicit layout is the GPU ABI: position 0, radius 12, kind 16, strength 20,
-            // age 24, reserved 28. Reinterpreting the 32 bytes must find each field where the
-            // second 16-byte lane of HLZoneStorage expects its bit pattern.
             HLZone zone = Raw(new Vector3(1f, 2f, 3f), 4f, HLZoneKind.Hostile, 0.5f, 6f);
             byte[] bytes = new byte[HLZone.Stride];
             IntPtr buffer = System.Runtime.InteropServices.Marshal.AllocHGlobal(HLZone.Stride);
@@ -173,9 +170,9 @@ namespace HealerLike.Render.Zones
             HLZone[] source =
             {
                 Raw(Vector3.zero, 1f, HLZoneKind.Heal, 1f),
-                Raw(Vector3.zero, 0f, HLZoneKind.Heal, 1f),      // radius rejected
-                Raw(Vector3.zero, 1f, HLZoneKind.None, 1f),      // kind rejected
-                Raw(new Vector3(float.NaN, 0f, 0f), 1f, HLZoneKind.Heal, 1f) // position rejected
+                Raw(Vector3.zero, 0f, HLZoneKind.Heal, 1f),
+                Raw(Vector3.zero, 1f, HLZoneKind.None, 1f),
+                Raw(new Vector3(float.NaN, 0f, 0f), 1f, HLZoneKind.Heal, 1f)
             };
             HLZone[] destination = new HLZone[8];
 
@@ -192,7 +189,7 @@ namespace HealerLike.Render.Zones
             HLZone[] source =
             {
                 Raw(Vector3.zero, 1f, HLZoneKind.Heal, 0f),
-                Raw(Vector3.zero, 1f, HLZoneKind.Heal, -0.5f), // clamps to zero, so inactive
+                Raw(Vector3.zero, 1f, HLZoneKind.Heal, -0.5f),
                 Raw(Vector3.zero, 1f, HLZoneKind.Heal, 0.1f)
             };
             HLZone[] destination = new HLZone[8];

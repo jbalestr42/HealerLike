@@ -5,7 +5,7 @@ using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Zones
 {
-    public sealed class HLZoneFakeUpload : IHLZoneUpload
+    public class HLZoneFakeUpload : IHLZoneUpload
     {
         public GraphicsBuffer Buffer => null;
         public readonly List<string> Calls = new List<string>();
@@ -43,10 +43,10 @@ namespace HealerLike.Render.Zones
         [Test] public void ActsAsTheRegistryZoneOwner()
         {
             IHLZoneOwner owner = _registry;
-            int handle = owner.AddPulse(HLZoneKind.Hostile, Vector3.zero, 2, 1, .8f);
+            int handle = owner.AddPulse(HLZoneKind.Hostile, Vector3.zero, 2, 1, 0.8f);
             Assert.That(handle, Is.GreaterThan(0));
             Assert.IsTrue(_registry.Contains(handle));
-            _registry.PublishFrame(.8f);
+            _registry.PublishFrame(0.8f);
             Assert.IsFalse(_registry.Contains(handle));
         }
 
@@ -88,20 +88,20 @@ namespace HealerLike.Render.Zones
         [Test] public void PersistentFootprintsCannotStarveHealAndExpiredFeedbackReturnsCapacity()
         {
             for (int i = 0; i < 80; i++) _registry.Add(HLZoneKind.Trample, Vector3.right * i, 1, 1);
-            int heal = _registry.AddPulse(HLZoneKind.Heal, Vector3.right * 100, 2, 1, .45f);
-            _registry.AddPulse(HLZoneKind.Hostile, Vector3.right * 101, 2, 1, .8f);
+            int heal = _registry.AddPulse(HLZoneKind.Heal, Vector3.right * 100, 2, 1, 0.45f);
+            _registry.AddPulse(HLZoneKind.Hostile, Vector3.right * 101, 2, 1, 0.8f);
             LogAssert.Expect(LogType.Warning, "HLZoneRegistry: cosmetic zone capacity exceeded; feedback reserved before decorative footprints; first registered wins within each kind.");
-            _registry.PublishFrame(.1f);
+            _registry.PublishFrame(0.1f);
             Assert.AreEqual(64, _registry.Count); Assert.AreEqual(82, _registry.LiveCount);
             Assert.AreEqual(18, _registry.OverflowCount);
             for (int i = 0; i < 62; i++) Assert.AreEqual(i, _registry.Snapshot[i].position.x);
             Assert.AreEqual((int)HLZoneKind.Heal, _registry.Snapshot[62].kind);
             Assert.AreEqual((int)HLZoneKind.Hostile, _registry.Snapshot[63].kind);
-            _registry.PublishFrame(.4f);
+            _registry.PublishFrame(0.4f);
             Assert.IsFalse(_registry.Contains(heal));
             Assert.AreEqual(62, _registry.Snapshot[62].position.x);
             Assert.AreEqual((int)HLZoneKind.Hostile, _registry.Snapshot[63].kind);
-            _registry.PublishFrame(.4f);
+            _registry.PublishFrame(0.4f);
             Assert.AreEqual(63, _registry.Snapshot[63].position.x);
         }
 

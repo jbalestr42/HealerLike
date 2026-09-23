@@ -70,19 +70,19 @@ namespace HealerLike.Render.Look
             Assert.That((double)value.FogEnd - value.FogStart, Is.GreaterThanOrEqualTo(.001));
             Assert.That(value.FogBands, Is.EqualTo(1));
             Assert.That(value.OutlineWidthPixels, Is.Zero);
-            Assert.That(value.ShadowStrength, Is.EqualTo(.01f));
-            Assert.That(value.ToonThreshold, Is.EqualTo(.999f));
+            Assert.That(value.ShadowStrength, Is.EqualTo(0.01f));
+            Assert.That(value.ToonThreshold, Is.EqualTo(0.999f));
             Assert.That(value.InkStrength, Is.EqualTo(1f));
-            Assert.That(value.InkScale, Is.EqualTo(.0001f));
+            Assert.That(value.InkScale, Is.EqualTo(0.0001f));
             Assert.That(value.InkWidth, Is.Zero);
             Assert.That(value.InkStart, Is.EqualTo(1f));
-            Assert.That(value.InkRange, Is.EqualTo(.001f));
+            Assert.That(value.InkRange, Is.EqualTo(0.001f));
             Assert.That(value.DensityMul, Is.EqualTo(1f));
             Assert.That(value.InkWarp, Is.Zero);
             Assert.That(value.InkWarpFreq, Is.Zero);
-            Assert.That(value.DashAmount, Is.EqualTo(.92f));
-            Assert.That(value.DashScale, Is.EqualTo(.001f));
-            Assert.That(value.InkDistStart, Is.EqualTo(.001f));
+            Assert.That(value.DashAmount, Is.EqualTo(0.92f));
+            Assert.That(value.DashScale, Is.EqualTo(0.001f));
+            Assert.That(value.InkDistStart, Is.EqualTo(0.001f));
             Assert.That(value.InkFarSpacing, Is.Zero);
             Assert.That(value.Validated(), Is.EqualTo(value));
         }
@@ -119,11 +119,11 @@ namespace HealerLike.Render.Look
             var settings = HLLookSettings.Default;
             settings.ShadowTint = new Color(-1, -2, -3, 0);
             settings.OutlineColor = Color.clear;
-            settings.FogColor = new Color(-1, 2, .4f, float.NaN);
+            settings.FogColor = new Color(-1, 2, 0.4f, float.NaN);
             var value = settings.Validated();
             Assert.That(value.ShadowTint, Is.EqualTo(HLLookSettings.Default.ShadowTint));
             Assert.That(value.OutlineColor, Is.EqualTo(HLLookSettings.Default.OutlineColor));
-            Assert.That(value.FogColor, Is.EqualTo(new Color(0, 1, .4f, 1)));
+            Assert.That(value.FogColor, Is.EqualTo(new Color(0, 1, 0.4f, 1)));
             settings.FogColor = Color.clear;
             Assert.That(settings.Validated().FogColor, Is.EqualTo(Color.black));
         }

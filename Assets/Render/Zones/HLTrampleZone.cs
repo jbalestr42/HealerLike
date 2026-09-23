@@ -2,9 +2,8 @@ using UnityEngine;
 
 namespace HealerLike.Render.Zones
 {
-    /// <summary>Authored obstacle footprint in world units. Reads the root transform, never gameplay occupancy.</summary>
-    [DisallowMultipleComponent]
-    public sealed class HLTrampleZone : MonoBehaviour
+
+        public class HLTrampleZone : MonoBehaviour
     {
         [Min(0)] public float Radius = 0.65f;
         [Range(0, 1)] public float Strength = 1;

@@ -85,8 +85,6 @@ namespace HealerLike.Render.Look
             finally { Object.DestroyImmediate(material); }
         }
 
-        // Opt-in graphics integration fixture. Builds an isolated in-memory test scene;
-        // renderer and pipeline assets are cloned, never saved or dirtied on disk.
         [TestCase(false)]
         [TestCase(true)]
         public void CapturePortraitShadowsAndMaskedEdges(bool beauty)
@@ -115,7 +113,7 @@ namespace HealerLike.Render.Look
                 rendererProperty.objectReferenceValue = renderer; pipelineData.ApplyModifiedPropertiesWithoutUndo();
                 var featureType = typeof(HLLookSettings).Assembly.GetType("HealerLike.Render.Look.HLOutlines");
                 var feature = ScriptableObject.CreateInstance(featureType); owned.Add(feature);
-                featureType.GetField("LayerMask").SetValue(feature, (LayerMask)0); // isolate screen edges
+                featureType.GetField("LayerMask").SetValue(feature, (LayerMask)0);
                 featureType.GetField("DepthNormalEdges").SetValue(feature, false);
                 featureType.GetMethod("Create").Invoke(feature, null);
                 var rendererData = new SerializedObject(renderer);
@@ -127,15 +125,15 @@ namespace HealerLike.Render.Look
                 var camera = new GameObject("HL portrait camera").AddComponent<Camera>();
                 owned.Add(camera.gameObject);
                 camera.cullingMask = 1 << 30; camera.fieldOfView = 40; camera.aspect = 1080f / 1920f;
-                camera.nearClipPlane = .1f; camera.farClipPlane = 100;
+                camera.nearClipPlane = 0.1f; camera.farClipPlane = 100;
                 camera.transform.rotation = Quaternion.Euler(50, 0, 0);
                 camera.transform.position = -camera.transform.forward * 31;
-                camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = new Color(.75f, .82f, .88f);
+                camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = new Color(0.75f, 0.82f, 0.88f);
                 var light = new GameObject("HL upper left key").AddComponent<Light>();
                 owned.Add(light.gameObject);
                 light.type = LightType.Directional; light.intensity = 1;
                 light.transform.rotation = Quaternion.Euler(50, 40, 0);
-                light.shadows = LightShadows.Soft; light.shadowBias = .03f; light.shadowNormalBias = .15f;
+                light.shadows = LightShadows.Soft; light.shadowBias = 0.03f; light.shadowNormalBias = 0.15f;
                 RenderSettings.sun = light;
                 var look = new GameObject("HL capture look").AddComponent<HLLookController>();
                 owned.Add(look.gameObject);
@@ -143,7 +141,7 @@ namespace HealerLike.Render.Look
                 settings.InkStrength = 0; settings.OutlineWidthPixels = 1;
                 look.Settings = settings;
                 var material = new Material(Shader.Find("HL/Look/Primitive")); owned.Add(material);
-                material.SetColor("_BaseColor", new Color(.6f, .78f, .3f));
+                material.SetColor("_BaseColor", new Color(0.6f, 0.78f, 0.3f));
                 GameObject Make(PrimitiveType shape, string name, Vector3 position, Vector3 scale, float normalMask)
                 {
                     var go = GameObject.CreatePrimitive(shape); owned.Add(go); go.name = name; go.layer = 30;
@@ -154,7 +152,7 @@ namespace HealerLike.Render.Look
                 }
                 var ground = Make(PrimitiveType.Plane, "HL receiving ground", Vector3.zero, Vector3.one * 3, 1);
                 var sphere = Make(PrimitiveType.Sphere, "HL casting sphere", new Vector3(-1, 2.1f, 0), Vector3.one * 4, 1);
-                var sphereProperties = new MaterialPropertyBlock(); sphereProperties.SetColor("_BaseColor", new Color(.55f, .58f, .64f));
+                var sphereProperties = new MaterialPropertyBlock(); sphereProperties.SetColor("_BaseColor", new Color(0.55f, 0.58f, 0.64f));
                 sphereProperties.SetFloat("_HLNormalEdges", 1); sphere.GetComponent<Renderer>().SetPropertyBlock(sphereProperties);
                 var target = new RenderTexture(1080, 1920, 24, RenderTextureFormat.ARGB32); owned.Add(target); target.Create();
                 var texture = new Texture2D(1080, 1920, TextureFormat.RGB24, false); owned.Add(texture);
@@ -183,7 +181,7 @@ namespace HealerLike.Render.Look
                     Shader.SetGlobalFloat("_HLGridStrength", 0);
                     var gridOff = Capture("beauty-look-grid-off");
                     var gridOffPixels = texture.GetPixels32();
-                    Shader.SetGlobalFloat("_HLGridStrength", .16f);
+                    Shader.SetGlobalFloat("_HLGridStrength", 0.16f);
                     var gridOn = Capture("beauty-look-grid");
                     Assert.That(gridOn.SequenceEqual(gridOff), Is.False);
                     var gridOnPixels = texture.GetPixels32();
@@ -193,8 +191,8 @@ namespace HealerLike.Render.Look
                     {
                         if (gridOnPixels[i].Equals(gridOffPixels[i])) continue;
                         changedGridPixels++;
-                        var ray = camera.ViewportPointToRay(new Vector3((i % 1080 + .5f) / 1080,
-                            (i / 1080 + .5f) / 1920, 0));
+                        var ray = camera.ViewportPointToRay(new Vector3((i % 1080 + 0.5f) / 1080,
+                            (i / 1080 + 0.5f) / 1920, 0));
                         if (!groundPlane.Raycast(ray, out float hit)) { escapedGridPixels++; continue; }
                         var point = ray.GetPoint(hit);
                         if (Mathf.Abs(point.x) > 8.04f || Mathf.Abs(point.z) > 8.04f) escapedGridPixels++;
@@ -251,25 +249,22 @@ namespace HealerLike.Render.Look
                         Debug.Log("HL beauty outline " + label + ": " + string.Join(",", widths));
                     }
                     var probe = new Material(Shader.Find("Hidden/HL/Look/BeautyProbe")); owned.Add(probe);
-                    Shader.SetGlobalFloat("_HLTipLight", .12f);
+                    Shader.SetGlobalFloat("_HLTipLight", 0.12f);
                     Graphics.Blit(Texture2D.whiteTexture, target, probe);
                     RenderTexture.active = target;
                     texture.ReadPixels(new Rect(0, 0, 1080, 1920), 0, 0); texture.Apply();
                     File.WriteAllBytes(Path.Combine(directory, "beauty-look-tip.png"), texture.EncodeToPNG());
-                    // Left half is shadow, right is lit. Only lit tips brighten.
                     Assert.That(texture.GetPixel(800, 1800).g, Is.GreaterThan(texture.GetPixel(800, 100).g));
                     Assert.That(texture.GetPixel(200, 1800), Is.EqualTo(texture.GetPixel(200, 100)));
                     return;
                 }
                 Capture("wave5-shadow");
-                // The ground shadow must contain the actual authored blue, rather than black or green-grey.
                 var pixels = texture.GetPixels32();
                 Assert.That(pixels.Count(c => c.b > c.g * 1.3f && c.b > c.r * 1.5f), Is.GreaterThan(1000));
-                // Dense blade-shaped primitives exercise the same zero-alpha normal-mask seam as grass.
                 for (int z = 0; z < 12; z++) for (int x = 0; x < 18; x++)
                 {
-                    var blade = Make(PrimitiveType.Cube, "HL masked blade", new Vector3((x - 9) * .38f, .3f, -2.8f - z * .38f),
-                        new Vector3(.045f, .6f, .09f), 0);
+                    var blade = Make(PrimitiveType.Cube, "HL masked blade", new Vector3((x - 9) * 0.38f, 0.3f, -2.8f - z * 0.38f),
+                        new Vector3(0.045f, 0.6f, 0.09f), 0);
                     blade.transform.rotation = Quaternion.Euler(0, (x * 37 + z * 23) % 180, (x % 3 - 1) * 15);
                     blade.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
                 }
@@ -313,7 +308,7 @@ namespace HealerLike.Render.Look
             }
         }
 
-        private static void Compile(Material material, string passName, bool instanced, params string[] keywords)
+        static void Compile(Material material, string passName, bool instanced, params string[] keywords)
         {
             material.enableInstancing = instanced;
             material.shaderKeywords = keywords.Where(k => k.Length != 0)
@@ -324,7 +319,7 @@ namespace HealerLike.Render.Look
             AssertNoErrors(material.shader);
         }
 
-        private static void AssertNoErrors(Shader shader)
+        static void AssertNoErrors(Shader shader)
         {
             var errors = ShaderUtil.GetShaderMessages(shader).Where(m => m.severity == ShaderCompilerMessageSeverity.Error);
             Assert.That(errors.Select(m => m.message + " at " + m.file + ":" + m.line), Is.Empty);

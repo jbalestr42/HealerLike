@@ -2,8 +2,8 @@ using UnityEngine;
 
 namespace HealerLike.Render.Zones
 {
-    /// <summary>Enemy range readout. Stage attaches to enemy models before EntityModel.Init.</summary>
-    public sealed class HLBruiseZone : MonoBehaviour, IVisualBehaviour
+
+    public class HLBruiseZone : MonoBehaviour, IVisualBehaviour
     {
         Entity _entity;
         HLZoneRegistry _owner;

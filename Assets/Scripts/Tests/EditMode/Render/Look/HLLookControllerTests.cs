@@ -9,10 +9,10 @@ namespace HealerLike.Render.Look
 {
     public class HLLookControllerTests
     {
-        private readonly Dictionary<int, float> floats = new Dictionary<int, float>();
-        private readonly Dictionary<int, Vector4> vectors = new Dictionary<int, Vector4>();
-        private readonly List<GameObject> objects = new List<GameObject>();
-        private static readonly int Applied = Shader.PropertyToID("_HLLookApplied");
+        readonly Dictionary<int, float> floats = new Dictionary<int, float>();
+        readonly Dictionary<int, Vector4> vectors = new Dictionary<int, Vector4>();
+        readonly List<GameObject> objects = new List<GameObject>();
+        static readonly int Applied = Shader.PropertyToID("_HLLookApplied");
 
         [SetUp]
         public void SaveGlobalState()
@@ -38,7 +38,7 @@ namespace HealerLike.Render.Look
             vectors.Clear();
         }
 
-        private HLLookController CreateController(bool active = true)
+        HLLookController CreateController(bool active = true)
         {
             var go = new GameObject("HL look test");
             objects.Add(go);
@@ -115,7 +115,7 @@ namespace HealerLike.Render.Look
         [TestCase(ColorSpace.Linear)]
         public void ColorConversionIsExplicitAndAlphaIsOne(ColorSpace space)
         {
-            var color = new Color(.2f, .5f, .8f, .3f);
+            var color = new Color(0.2f, 0.5f, 0.8f, 0.3f);
             var expected = space == ColorSpace.Linear ? color.linear : color;
             Assert.That(HLLookController.ToWorkingColor(color, space),
                 Is.EqualTo(new Vector4(expected.r, expected.g, expected.b, 1f)));

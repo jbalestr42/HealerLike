@@ -7,12 +7,11 @@ namespace HealerLike.Render.Look
 {
     public class HLOutlinesTests
     {
-        private static Type FeatureType => typeof(HLLookSettings).Assembly.GetType("HealerLike.Render.Look.HLOutlines", true);
+        static Type FeatureType => typeof(HLLookSettings).Assembly.GetType("HealerLike.Render.Look.HLOutlines", true);
 
         [Test]
         public void FeatureDefaultsAndRecreationRetainShaderAndReleaseMaterial()
         {
-            // Reflection keeps this existing test assembly independent of URP's transitive types.
             var feature = ScriptableObject.CreateInstance(FeatureType);
             try
             {
@@ -24,11 +23,11 @@ namespace HealerLike.Render.Look
                 Assert.That(first != null, Is.True);
                 Assert.That(first.GetVector("_HLEdgeDepth"), Is.EqualTo(new Vector4(1f, 31f, 1f, 0)));
                 Assert.That(first.GetVector("_HLEdgeNormals"), Is.EqualTo(new Vector4(55f, 35f, 1f, 0)));
-                FeatureType.GetField("DepthThresholdWorld").SetValue(feature, -.5f);
+                FeatureType.GetField("DepthThresholdWorld").SetValue(feature, -0.5f);
                 FeatureType.GetField("UseNormalEdgeMask").SetValue(feature, false);
                 TestHelpers.SetPrivateField(feature, "edgeMaterial", first);
                 FeatureType.GetMethod("ApplyEdgeSettings").Invoke(feature, null);
-                Assert.That(first.GetVector("_HLEdgeDepth").x, Is.EqualTo(.001f));
+                Assert.That(first.GetVector("_HLEdgeDepth").x, Is.EqualTo(0.001f));
                 Assert.That(first.GetVector("_HLEdgeNormals").z, Is.Zero);
                 Assert.That(first.shader.name, Is.EqualTo("Hidden/HL/Look/DepthNormalOutline"));
                 FeatureType.GetMethod("Create").Invoke(feature, null);

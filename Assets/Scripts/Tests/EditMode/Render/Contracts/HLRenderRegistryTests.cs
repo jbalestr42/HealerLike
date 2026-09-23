@@ -6,7 +6,7 @@ using HealerLike.Render.Zones;
 
 namespace HealerLike.Render
 {
-    /// <summary>Records what the registry forwarded, so a test can assert on target/value/critical.</summary>
+
     class RecordingHealSink : IHLHealVisualSink
     {
         public readonly List<(GameObject target, float value, bool critical)> Calls =
@@ -18,7 +18,6 @@ namespace HealerLike.Render
         }
     }
 
-    /// <summary>A sink that always fails, to prove one broken cosmetic does not silence the others.</summary>
     class ThrowingHealSink : IHLHealVisualSink
     {
         public int CallCount;
@@ -30,7 +29,6 @@ namespace HealerLike.Render
         }
     }
 
-    /// <summary>Unregisters itself the moment it is notified: the registry must survive that.</summary>
     class SelfUnregisteringHealSink : IHLHealVisualSink
     {
         readonly HLRenderRegistry _registry;
@@ -50,10 +48,6 @@ namespace HealerLike.Render
         }
     }
 
-    /// <summary>
-    /// Proves the frozen IHLSpellVisualSink is implementable from outside the render assembly.
-    /// It only records; nothing here touches gameplay.
-    /// </summary>
     class RecordingSpellSink : IHLSpellVisualSink
     {
         public int ImpactCount;
@@ -295,7 +289,7 @@ namespace HealerLike.Render
             Assert.AreEqual(1, selfRemoving.CallCount, "it really did leave");
         }
 
-        sealed class HLCallbackSink : IHLHealVisualSink
+         class HLCallbackSink : IHLHealVisualSink
         {
             public Action Callback;
             public void OnHealResolved(GameObject target, float value, bool critical) => Callback();
@@ -370,7 +364,7 @@ namespace HealerLike.Render
             Assert.AreEqual(HLZoneKind.Hostile, sink.LastZoneKind);
         }
 
-        sealed class RecordingZoneOwner : IHLZoneOwner
+         class RecordingZoneOwner : IHLZoneOwner
         {
             public int Calls;
             public float LastSeconds;
@@ -388,7 +382,7 @@ namespace HealerLike.Render
             var owner = new RecordingZoneOwner();
             registry.ZoneOwner = owner;
             Assert.AreSame(owner, registry.ZoneOwner);
-            Assert.AreEqual(1, registry.ZoneOwner.AddPulse(HLZoneKind.Heal, Vector3.zero, 1, 1, .8f));
+            Assert.AreEqual(1, registry.ZoneOwner.AddPulse(HLZoneKind.Heal, Vector3.zero, 1, 1, 0.8f));
             registry.ZoneOwner = null;
             Assert.IsNull(registry.ZoneOwner);
         }

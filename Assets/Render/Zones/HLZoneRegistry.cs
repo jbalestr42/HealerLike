@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Zones
 {
-    /// <summary>Upload boundary for the cosmetic zone owner; tests supply a CPU-only fake.</summary>
+
     public interface IHLZoneUpload : IDisposable
     {
         GraphicsBuffer Buffer { get; }
@@ -14,18 +14,8 @@ namespace HealerLike.Render.Zones
         void Unbind();
     }
 
-    /// <summary>
-    /// Single owner of cosmetic zones. Gameplay feedback reserves capacity before decorative Trample.
-    /// Within the selected set, registration order is preserved and the frozen packer is unchanged.
-    /// Trample fills remaining slots, first registered first; dropped footprints remain live.
-    /// Overflow registrations remain live and can enter the snapshot when earlier zones disappear.
-    /// Handles are never reused during this component's lifetime; zero denotes a rejected add.
-    /// Producers update in Update; the snapshot is published in early LateUpdate before grass draws.
-    /// Consumers borrow Buffer and Count, bind both explicitly for compute, and never dispose Buffer.
-    /// Stop consumer submissions before disabling this owner.
-    /// </summary>
     [DefaultExecutionOrder(-1000)]
-    public sealed class HLZoneRegistry : MonoBehaviour, IHLZoneOwner
+    public class HLZoneRegistry : MonoBehaviour, IHLZoneOwner
     {
         struct Entry
         {
@@ -37,16 +27,16 @@ namespace HealerLike.Render.Zones
             public bool followsTarget;
         }
 
-        public static HLZoneRegistry Current { get; private set; }
+        public static HLZoneRegistry Current { get; set; }
         readonly List<Entry> _entries = new List<Entry>();
         readonly HLZone[] _packed = new HLZone[HLZonePacker.MaxZones];
         HLZone[] _source = new HLZone[HLZonePacker.MaxZones];
         IHLZoneUpload _upload;
         int _nextHandle;
         bool _overflowing;
-        public int Count { get; private set; }
+        public int Count { get; set; }
         public int LiveCount => _entries.Count;
-        public int OverflowCount { get; private set; }
+        public int OverflowCount { get; set; }
         public GraphicsBuffer Buffer => _upload?.Buffer;
         public ReadOnlySpan<HLZone> Snapshot => new ReadOnlySpan<HLZone>(_packed, 0, Count);
 
@@ -55,7 +45,6 @@ namespace HealerLike.Render.Zones
             if (Application.isPlaying) Initialize();
         }
 
-        /// <summary>Claims sole ownership. An injected uploader is owned and disposed by this registry.</summary>
         public void Initialize(IHLZoneUpload upload = null)
         {
             if (_upload != null) return;
@@ -77,7 +66,6 @@ namespace HealerLike.Render.Zones
             return handle;
         }
 
-        /// <summary>Adds a cosmetic pulse with linear decay on scaled game time, then auto-removal.</summary>
         public int AddPulse(HLZoneKind kind, Vector3 position, float radius, float strength, float duration)
         {
             if (!(duration > 0) || float.IsInfinity(duration)) return 0;
@@ -91,7 +79,6 @@ namespace HealerLike.Render.Zones
             return handle;
         }
 
-        /// <summary>Target-following heal pulse. Its radius blooms in the shared GPU loader.</summary>
         public int AddHealPulse(Transform target, float radius, float strength = 1)
         {
             if (!target) return 0;
@@ -118,12 +105,9 @@ namespace HealerLike.Render.Zones
             return handle;
         }
 
-        // Wave 4 owns the Update -> UpdateZone rename; this is the only producer call site.
         public void RefreshZone(int handle, HLZoneKind kind, Vector3 position, float radius, float strength)
             => UpdateZone(handle, kind, position, radius, strength);
 
-        /// <summary>Updates in place without reordering or resetting age. Invalid/zero values remove it.
-        /// Updating a pulse's strength changes its initial strength, retaining its fade clock.</summary>
         public void UpdateZone(int handle, HLZoneKind kind, Vector3 position, float radius, float strength)
         {
             int i = Find(handle);
@@ -156,7 +140,6 @@ namespace HealerLike.Render.Zones
 
         void LateUpdate() => PublishFrame(Time.deltaTime);
 
-        /// <summary>Advances scaled seconds and publishes one stable packed snapshot, including count zero.</summary>
         public void PublishFrame(float deltaTime)
         {
             if (_upload == null) return;
@@ -181,8 +164,6 @@ namespace HealerLike.Render.Zones
                 _source[written++] = entry.zone;
             }
             if (written < _entries.Count) _entries.RemoveRange(written, _entries.Count - written);
-            // Explicit admission policy, not a sort: reserve space for non-Trample records,
-            // then scan the original order. Persistent footprints cannot starve short feedback.
             int feedback = 0;
             for (int i = 0; i < written; i++) if (_source[i].kind != (int)HLZoneKind.Trample) feedback++;
             int footprints = Mathf.Max(0, HLZonePacker.MaxZones - feedback);
@@ -205,7 +186,6 @@ namespace HealerLike.Render.Zones
         void OnDisable() => Release();
         void OnDestroy() => Release();
 
-        /// <summary>Publishes zero, unbinds, then disposes. Safe to call repeatedly.</summary>
         public void Release()
         {
             if (_upload != null)
@@ -222,7 +202,7 @@ namespace HealerLike.Render.Zones
             _overflowing = false;
         }
 
-        sealed class GraphicsUpload : IHLZoneUpload
+         class GraphicsUpload : IHLZoneUpload
         {
             static readonly int ZonesId = Shader.PropertyToID("_HL_Zones");
             static readonly int CountId = Shader.PropertyToID("_HL_ZoneCount");

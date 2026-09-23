@@ -5,13 +5,12 @@ using UnityEngine.Rendering.Universal;
 
 namespace HealerLike.Render.Look
 {
-    /// <summary>RenderGraph outline submission. Grass must contribute matching deformed
-    /// depth/normals; indirect draws are never inferred from the hull renderer list.</summary>
-    public sealed class HLOutlinesPass : ScriptableRenderPass
+
+    public class HLOutlinesPass : ScriptableRenderPass
     {
-        private readonly int layerMask;
-        private readonly Material edgeMaterial;
-        private static readonly ShaderTagId OutlineTag = new ShaderTagId("HLOutline");
+        readonly int layerMask;
+        readonly Material edgeMaterial;
+        static readonly ShaderTagId OutlineTag = new ShaderTagId("HLOutline");
 
         public HLOutlinesPass(int layerMask, Material edgeMaterial)
         {
@@ -23,12 +22,12 @@ namespace HealerLike.Render.Look
                 ConfigureInput(ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Normal);
         }
 
-        private sealed class HullData
+        class HullData
         {
             public RendererListHandle Renderers;
         }
 
-        private sealed class EdgeData
+        class EdgeData
         {
             public Material Material;
         }
@@ -57,7 +56,6 @@ namespace HealerLike.Render.Look
                 data.Material = edgeMaterial;
                 builder.UseTexture(resources.cameraDepthTexture, AccessFlags.Read);
                 builder.UseTexture(resources.cameraNormalsTexture, AccessFlags.Read);
-                // Hardware blending retains fill without a colour copy or read/write feedback.
                 builder.SetRenderAttachment(resources.activeColorTexture, 0, AccessFlags.ReadWrite);
                 builder.SetRenderFunc(static (EdgeData data, RasterGraphContext context) =>
                     context.cmd.DrawProcedural(Matrix4x4.identity, data.Material, 0, MeshTopology.Triangles, 3, 1));

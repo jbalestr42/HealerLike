@@ -2,13 +2,8 @@ using UnityEngine;
 
 namespace HealerLike.Render.Zones
 {
-    /// <summary>
-    /// Cosmetic resolved-heal pulses, not persistent healing fields. Attach to each healer's model:
-    /// IVisualBehaviour.Init registers this sink for that source with HLRenderRegistry.NotifyHeal.
-    /// Pulses follow the target, bloom over 0.3 scaled seconds, fade over 0.45 seconds and expire
-    /// independently of the source. Set CellSize from the stage grid (default one world unit).
-    /// </summary>
-    public sealed class HLHealPulse : MonoBehaviour, IVisualBehaviour, IHLHealVisualSink
+
+    public class HLHealPulse : MonoBehaviour, IVisualBehaviour, IHLHealVisualSink
     {
         [SerializeField, Min(0.001f)] float _cellSize = 1;
         GameObject _source;
