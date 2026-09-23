@@ -112,6 +112,17 @@ public class SpellEffectTests
     }
 
     [Test]
+    public void Advance_RenewPastItsDuration_KeepsGrowing()
+    {
+        SpellEffect effect = CreateEffect(EffectElement.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
+        effect.SetStatus(1, 2.5f, 6f, ClockKind.Simulation);
+
+        effect.Advance(4f);
+
+        Assert.Greater(LargestShape(effect), 0.1f);
+    }
+
+    [Test]
     public void Advance_ForDurationFall_LoopsUntilRemoval()
     {
         SpellEffect effect = CreateEffect(EffectElement.Drips, EffectFamily.Rot, EffectTempo.ForDuration);

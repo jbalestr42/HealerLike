@@ -430,14 +430,11 @@ namespace HealerLike.Render.Spells
             return Vector3.Lerp(_linkStart, _linkEnd, t) + Vector3.up * height;
         }
 
+        // Keeps running past the duration: gameplay removes the status, and a clock frozen on a period boundary
+        // would hold a growing element at nothing
         float StatusTime()
         {
-            float time = _elapsedSeconds + _sinceStatus;
-            if (float.IsFinite(_durationSeconds) && _durationSeconds > 0f)
-            {
-                time = Mathf.Min(time, _durationSeconds);
-            }
-            return time;
+            return _elapsedSeconds + _sinceStatus;
         }
 
         void Fade(float fade)
