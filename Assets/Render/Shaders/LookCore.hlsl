@@ -139,17 +139,31 @@ float3 HLApplyBandedFog(float3 positionWS, float3 color)
 // Illumination is remapped main-light facing multiplied by shadow attenuation.
 // The hatch follows the shade past inkStart, not the toon mask, so it carries no step.
 // hatch scales the ink, zero draws none (the grass).
-float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor, float hatch)
+// A material may move the toon threshold by thresholdOffset and give its own shade faces a tint:
+// shadeTint.rgb is the working colour, shadeTint.a its strength, and alpha zero keeps the global tint.
+// Cast shadow, a face the global threshold calls lit but the shadow map darkens, keeps the global tint.
+float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, float3 baseColor, float hatch,
+                      float thresholdOffset, float4 shadeTint)
 {
-    illum = saturate(illum);
-    float threshold = HL_G(_HLToonThreshold, HL_DEF_TOONTHRESHOLD);
+    facing = saturate(facing);
+    float illum = saturate(facing * shadowAttenuation);
+    float globalThreshold = HL_G(_HLToonThreshold, HL_DEF_TOONTHRESHOLD);
+    float threshold = globalThreshold + thresholdOffset;
     float softness = max(HL_G(_HLToonSoftness, HL_DEF_TOONSOFTNESS), 1e-4);
     float lit = smoothstep(threshold - softness, threshold + softness, illum);
+    float3 globalTint = HL_G(_HLShadowTint, HL_DEF_SHADOWTINT).rgb;
+    float globalStrength = HL_G(_HLShadowStrength, HL_DEF_SHADOWSTRENGTH);
+    float hasShadeTint = step(0.001, shadeTint.a);
+    float3 tint = lerp(globalTint, shadeTint.rgb, hasShadeTint);
+    float strength = lerp(globalStrength, saturate(shadeTint.a), hasShadeTint);
+    float cast = (1.0 - saturate(shadowAttenuation)) *
+        smoothstep(globalThreshold - softness, globalThreshold + softness, facing);
+    tint = lerp(tint, globalTint, cast);
+    strength = lerp(strength, globalStrength, cast);
     // Deep cast shadows converge to the authored ultramarine, instead of retaining
     // enough green base colour to read as grey/teal. Strength controls the toon boundary.
-    float tintStrength = lerp(HL_G(_HLShadowStrength, HL_DEF_SHADOWSTRENGTH), 1.0,
-        saturate(1.0 - illum / max(.001, threshold)));
-    float3 shadowColor = lerp(baseColor, HL_G(_HLShadowTint, HL_DEF_SHADOWTINT).rgb, tintStrength);
+    float tintStrength = lerp(strength, 1.0, saturate(1.0 - illum / max(.001, threshold)));
+    float3 shadowColor = lerp(baseColor, tint, tintStrength);
     float3 color = lerp(shadowColor, baseColor, lit);
     float tone = saturate(((1.0 - illum) - HL_G(_HLInkStart, HL_DEF_INKSTART)) /
                           max(0.001, HL_G(_HLInkRange, HL_DEF_INKRANGE)));
@@ -172,6 +186,11 @@ float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor, float ha
     // Full ink colour where a stroke is, then the contrast punch; fog comes after
     color = lerp(color, HL_G(_HLOutlineColor, HL_DEF_OUTLINECOLOR).rgb, ink);
     return saturate((color - 0.5) * HL_G(_HLContrast, HL_DEF_CONTRAST) + 0.5);
+}
+
+float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor, float hatch)
+{
+    return HLShadeSurface(positionWS, illum, 1.0, baseColor, hatch, 0.0, float4(0, 0, 0, 0));
 }
 
 float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor)

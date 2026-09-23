@@ -10,6 +10,8 @@ Shader "HL/Look/Primitive"
         [MainColor] _BaseColor ("Base Color", Color) = (1,1,1,1)
         [Toggle] _HLNormalEdges ("Normal Edges (zero keeps depth edges only)", Float) = 1
         _HLHatchMultiplier ("Hatch Multiplier", Float) = 1
+        _HLToonThresholdOffset ("Toon Threshold Offset (added to the global threshold)", Float) = 0
+        _HLShadeTint ("Shade Tint (alpha is its strength, zero keeps the global tint)", Color) = (0,0,0,0)
     }
     SubShader
     {
@@ -111,8 +113,8 @@ Shader "HL/Look/Primitive"
                 #endif
                 Light mainLight = GetMainLight(shadowCoord, input.positionWS, half4(1, 1, 1, 1));
                 float facing = dot(normalize(input.normalWS), mainLight.direction) * 0.5 + 0.5;
-                float illum = saturate(facing * mainLight.shadowAttenuation);
-                float3 color = HLShadeSurface(input.positionWS, illum, HLSurfaceColor(input), _HLHatchMultiplier);
+                float3 color = HLShadeSurface(input.positionWS, facing, mainLight.shadowAttenuation, HLSurfaceColor(input),
+                                              _HLHatchMultiplier, _HLToonThresholdOffset, _HLShadeTint);
                 if (_HLGroundGrid > 0.5)
                 {
                     color = HLApplyBattlefieldGrid(input.positionWS, color);

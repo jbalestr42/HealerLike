@@ -131,7 +131,7 @@ public class LookShaderTests
             Assert.That(material.FindPass(pass), Is.GreaterThanOrEqualTo(0), pass);
         }
 
-        Assert.That(shader.GetPropertyCount(), Is.EqualTo(6));
+        Assert.That(shader.GetPropertyCount(), Is.EqualTo(8));
         Assert.That(shader.GetPropertyName(3), Is.EqualTo("_BaseColor"));
         if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null)
         {

@@ -7,6 +7,8 @@ CBUFFER_START(UnityPerMaterial)
     float _HLGroundGrid;
     float _HLSmoothOutlineNormals;
     float _HLHatchMultiplier;
+    float _HLToonThresholdOffset;
+    float4 _HLShadeTint;
 CBUFFER_END
 
 #if defined(UNITY_INSTANCING_ENABLED)
