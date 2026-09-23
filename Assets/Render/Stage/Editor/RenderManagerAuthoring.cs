@@ -18,8 +18,8 @@ namespace HealerLike.Render.Stage
         public static readonly string BoardMaterialPath = "Assets/Render/Stage/Materials/HLStageGround.mat";
         public static readonly string SinkPath = "Assets/Render/Spells/Prefabs/HLSpellVisualSink.prefab";
         public static readonly string StoneEffectsPath = "Assets/Render/Stones/Prefabs/StoneEffects.prefab";
-        // Decoration in his Main that the render preview hides
-        public static readonly string[] HiddenObjects = { "MiddleLine", "Sphere" };
+        // Decoration in his Main that the render preview hides, and his far ground under the environment plane
+        public static readonly string[] HiddenObjects = { "MiddleLine", "Sphere", "Ground" };
         // His Main directional light colour
         static readonly Color keyColor = new Color(1f, 0.95686275f, 0.8392157f);
 

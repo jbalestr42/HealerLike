@@ -18,6 +18,12 @@ namespace HealerLike.Render.Stage
     // Attaches the render layer to every loaded scene that holds an EntityManager, and draws its entities
     public class RenderManager : MonoBehaviour
     {
+        static readonly int gridOriginId = Shader.PropertyToID("_HLGridOrigin");
+        static readonly int gridCellId = Shader.PropertyToID("_HLGridCell");
+        static readonly int gridExtentId = Shader.PropertyToID("_HLGridExtent");
+        static readonly int gridStrengthId = Shader.PropertyToID("_HLGridStrength");
+        static readonly int tipLightId = Shader.PropertyToID("_HLTipLight");
+
         [SerializeField] CreatureLooks _creatureLooks;
         [SerializeField] SpellLooks _spellLooks;
         [SerializeField] HLPrimitiveMeshes _meshes;
@@ -26,6 +32,8 @@ namespace HealerLike.Render.Stage
         [SerializeField] Color _backgroundColor = new Color32(191, 210, 224, 255);
         [SerializeField] Color _ambientColor = new Color(0.35f, 0.4f, 0.5f);
         [SerializeField] List<string> _hiddenObjectNames = new List<string>();
+        [SerializeField] float _gridStrength = 0.12f;
+        [SerializeField] float _tipLight = 0.035f;
         [SerializeField] GameObject _environmentPrefab;
         [SerializeField] HLLookController _look;
         [SerializeField] HLZoneRegistry _zones;
@@ -40,6 +48,7 @@ namespace HealerLike.Render.Stage
         HLRenderRegistry _registry = new HLRenderRegistry();
         RenderPipelineAsset _previousPipeline;
         Scene _scene;
+        Renderer _boardGround;
         GameObject _environment;
         HLEnvironmentGrass _environmentGrass;
         HLEnvironmentRidge _ridge;
@@ -268,6 +277,7 @@ namespace HealerLike.Render.Stage
             // TODO: read GridManager.ground once S5 lands, until then the ground is the grid's one renderer
             Renderer groundRenderer = grid.GetComponentInChildren<Renderer>();
 #endif
+            _boardGround = groundRenderer;
             float surfaceY = 0.5f;
             if (groundRenderer != null)
             {
@@ -287,6 +297,13 @@ namespace HealerLike.Render.Stage
             _gameCamera.aspect = _isLandscape ? 16f / 9f : HLStageCalibration.PortraitAspect;
             _gameCamera.transform.SetPositionAndRotation(overviewPose.position, overviewPose.rotation);
 
+            // The board ground draws the cell grid from these, the grass tips catch the light
+            Shader.SetGlobalVector(gridOriginId, _board.min);
+            Shader.SetGlobalFloat(gridCellId, grid.size);
+            Shader.SetGlobalVector(gridExtentId, _board.size);
+            Shader.SetGlobalFloat(gridStrengthId, _gridStrength);
+            Shader.SetGlobalFloat(tipLightId, _tipLight);
+
             foreach (string hiddenName in _hiddenObjectNames)
             {
                 if (!Hide(hiddenName))
@@ -303,7 +320,8 @@ namespace HealerLike.Render.Stage
             {
                 foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
                 {
-                    if (child.name == objectName && child.TryGetComponent(out Renderer hidden))
+                    // His far ground shares the board ground's name, the board itself stays
+                    if (child.name == objectName && child.TryGetComponent(out Renderer hidden) && hidden != _boardGround)
                     {
                         hidden.enabled = false;
                         isFound = true;
@@ -384,6 +402,9 @@ namespace HealerLike.Render.Stage
             {
                 Destroy(_environment);
             }
+
+            Shader.SetGlobalFloat(gridStrengthId, 0f);
+            Shader.SetGlobalFloat(tipLightId, 0f);
 
             // The children can go first when the manager itself is destroyed
             if (_grass != null)

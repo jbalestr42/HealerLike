@@ -64,6 +64,7 @@ MonoBehaviour:
   _hiddenObjectNames:
   - MiddleLine
   - Sphere
+  - Ground
   _environmentPrefab: {fileID: 5244087420897047793, guid: a8358bd0073da4481a6a1f17d7d3380f, type: 3}
   _look: {fileID: 6672015439819253328}
   _zones: {fileID: 8708550167893978255}
