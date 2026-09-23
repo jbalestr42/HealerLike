@@ -1,3 +1,4 @@
+using HealerLike.Render.Look;
 using HealerLike.Render.Stones;
 using NUnit.Framework;
 using UnityEngine;
@@ -43,6 +44,42 @@ public class StageKeyLightTests
         Assert.That(StageKeyLight.KeyDirection.x, Is.GreaterThan(0));
         Assert.That(StageKeyLight.KeyDirection.y, Is.GreaterThan(0));
         Assert.That(StageKeyLight.KeyDirection.z, Is.GreaterThan(0));
+    }
+
+    [Test]
+    public void KeyDirection_DefaultToonThreshold_SplitsASphereAboutHalfLitFromThePortraitCamera()
+    {
+        Vector3 toLight = StageKeyLight.KeyDirection.normalized;
+        Vector3 toCamera = Quaternion.Euler(StageCalibration.PortraitPitch, 0f, 0f) * Vector3.back;
+        float threshold = LookSettings.Default.toonThreshold;
+        float lit = 0f;
+        float seen = 0f;
+
+        // Projected area of the visible half, over a latitude and longitude grid
+        for (int i = 0; i < 90; i++)
+        {
+            float latitude = ((i + 0.5f) / 90f - 0.5f) * Mathf.PI;
+            for (int j = 0; j < 180; j++)
+            {
+                float longitude = (j + 0.5f) / 180f * 2f * Mathf.PI;
+                Vector3 normal = new Vector3(Mathf.Cos(latitude) * Mathf.Cos(longitude), Mathf.Sin(latitude),
+                                             Mathf.Cos(latitude) * Mathf.Sin(longitude));
+                float area = Vector3.Dot(normal, toCamera) * Mathf.Cos(latitude);
+                if (area <= 0f)
+                {
+                    continue;
+                }
+
+                seen += area;
+                // Same facing as Look.shader: half Lambert against the toon threshold
+                if (Vector3.Dot(normal, toLight) * 0.5f + 0.5f > threshold)
+                {
+                    lit += area;
+                }
+            }
+        }
+
+        Assert.That(lit / seen, Is.InRange(0.45f, 0.55f));
     }
 
     [Test]

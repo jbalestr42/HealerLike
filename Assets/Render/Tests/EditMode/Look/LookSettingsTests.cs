@@ -68,6 +68,15 @@ public class LookSettingsTests
     }
 
     [Test]
+    public void Default_ShadowTintAndFog_AreTheReferenceColours()
+    {
+        LookSettings defaults = LookSettings.Default;
+
+        Assert.That((Color32)defaults.shadowTint, Is.EqualTo(new Color32(30, 87, 125, 255))); // #1e577d, plant shade
+        Assert.That((Color32)defaults.fogColor, Is.EqualTo(new Color32(154, 188, 211, 255))); // #9abcd3, far ridge
+    }
+
+    [Test]
     public void Validated_DegenerateRanges_ClampWithoutMutatingInput()
     {
         LookSettings input = new LookSettings
