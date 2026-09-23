@@ -24,6 +24,8 @@ namespace HealerLike.Render.Creatures
         public static readonly float AccessoryReach = 0.45f;
         public static readonly int ArmCount = 2;
         public static readonly Color StoneWilt = new Color(0.22f, 0.25f, 0.33f);
+        // A sturdy stone stands about 2.2 body units tall, the study's central enemy stone
+        public static readonly float StoneScale = 1.6f;
 
         public static CreatureRecipe Compose(UnitChannels channels)
         {
@@ -167,8 +169,8 @@ namespace HealerLike.Render.Creatures
             }
             else
             {
-                // Stones stand on boulder limbs, the stem band is the limb length
-                float scale = mass * 1.3f;
+                // Stones stand on boulder limbs, the stem band is the limb length, and start larger than plants
+                float scale = mass * StoneScale;
                 float limb = StemLength(channels.stem) * 0.6f;
                 bodyRadius = 0.5f * scale;
                 bodyCentre = Vector3.up * (limb + bodyRadius * 0.8f);

@@ -123,7 +123,7 @@ namespace HealerLike.Render.Stage
         public static readonly int Spacing = 3;
         // A crop spans this many cells across and up, enough for the longest roots and the tallest stem
         public static readonly float CropCells = 2.8f;
-        public static readonly int CellPixels = 260;
+        public static readonly int CellPixels = 330;
         public static readonly int LabelScale = 3;
 
         static readonly DeliveryStyle[] styles =
