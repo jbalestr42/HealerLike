@@ -428,7 +428,7 @@ namespace HealerLike.Render.Stage
                     bounds.Encapsulate(renderer.bounds);
                 }
             }
-            return new Vector3(bounds.center.x, bounds.center.y, bounds.center.z);
+            return bounds.center;
         }
 
         static void Blit(Texture2D source, int x, int y, int crop, int zoom, Texture2D target, int left, int bottom)
