@@ -7,7 +7,7 @@ namespace HealerLike.Render.Zones
     // Obstacle footprint in world units, reads the root transform and never the gameplay occupancy
     public class TrampleZone : MonoBehaviour, IEntityView
     {
-        // Julien's grid cell is one unit, the ring clears the root crown by this margin
+        // The game's grid cell is one unit, the ring clears the root crown by this margin
         public static readonly float CellSize = 1f;
         public static readonly float Margin = 0.15f;
 

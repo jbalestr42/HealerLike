@@ -51,7 +51,7 @@ namespace HealerLike.Render.Stage
             SetReference(field, "_ringMaterial", Load<Material>(RingMaterialPath));
         }
 
-        // The Julien scale ground, a thousand units wide, never intercepting gameplay raycasts
+        // The game-scale ground, a thousand units wide, never intercepting gameplay raycasts
         static void CreateGround(GameObject root)
         {
             GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
