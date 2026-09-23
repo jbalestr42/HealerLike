@@ -39,24 +39,27 @@ public class StoneDeathBridgeTests
     public void HandleDeparture_LivingThenLethal_CollapsesOnlyOnceOnTheLethalDeparture()
     {
         ResourceAttribute health = TestHelpers.CreateResourceAttribute(_target, AttributeType.HealthMax, 100);
+        Entity entity = null;
+        TestHelpers.WithLoggingDisabled(() => entity = _target.AddComponent<Entity>());
+        TestHelpers.SetPrivateField(entity, "_health", health);
         _visual = StoneEnemyVisualTests.CreateVisual(_target);
         _visual.Init(health, 1, _fx);
         StoneDeathBridge bridge = _bridgeObject.AddComponent<StoneDeathBridge>();
         bridge.Bind(null, _fx);
 
-        bridge.HandleDeparture(health, _visual);
+        bridge.HandleDeparture(entity);
         Assert.AreEqual(0, _fx.liveCount);
 
         TestHelpers.SetPrivateField(health, "_value", 0f);
-        bridge.HandleDeparture(health, _visual);
+        bridge.HandleDeparture(entity);
         Assert.AreEqual(17, _fx.liveCount);
 
-        bridge.HandleDeparture(health, _visual);
+        bridge.HandleDeparture(entity);
         Assert.AreEqual(17, _fx.liveCount);
 
         _visual.Init(health, 1, _fx);
         bridge.enabled = false;
-        bridge.HandleDeparture(health, _visual);
+        bridge.HandleDeparture(entity);
         Assert.AreEqual(17, _fx.liveCount);
     }
 }

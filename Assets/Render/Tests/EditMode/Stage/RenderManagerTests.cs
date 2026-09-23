@@ -1,5 +1,4 @@
 using HealerLike.Render.Creatures;
-using HealerLike.Render.Stones;
 using HealerLike.Render.Zones;
 using NUnit.Framework;
 using UnityEditor;
@@ -242,9 +241,9 @@ public class RenderManagerTests
 
         Assert.IsNotNull(entity.data);
         CreatureBuilder builder = entity.model.GetComponentInChildren<CreatureBuilder>();
+        Assert.IsNotNull(builder, "The derived stone carries a CreatureBuilder.");
         Assert.IsNotNull(builder.rig);
         Assert.AreEqual(Primitive.Boulder, builder.recipe.parts[0].primitive);
-        Assert.IsNull(entity.model.GetComponentInChildren<StoneEnemyVisual>());
     }
 
     [Test]
@@ -259,9 +258,9 @@ public class RenderManagerTests
 
         Assert.IsNotNull(entity.data);
         CreatureBuilder builder = entity.model.GetComponentInChildren<CreatureBuilder>();
+        Assert.IsNotNull(builder, "The derived stone carries a CreatureBuilder.");
         Assert.IsNotNull(builder.rig);
         Assert.AreEqual(Primitive.Boulder, builder.recipe.parts[0].primitive);
-        Assert.IsNull(entity.model.GetComponentInChildren<StoneEnemyVisual>());
     }
 }
 

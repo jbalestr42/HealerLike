@@ -30,17 +30,19 @@ namespace HealerLike.Render.Stones
 
         void OnEntityKilled(Entity entity)
         {
-            if (entity == null)
+            HandleDeparture(entity);
+        }
+
+        // Only a lethal departure collapses, and only a stone view under the entity
+        public void HandleDeparture(Entity entity)
+        {
+            if (!isActiveAndEnabled || entity == null || entity.health == null || entity.health.Value > 0f)
             {
                 return;
             }
 
-            HandleDeparture(entity.health, entity.GetComponentInChildren<StoneEnemyVisual>());
-        }
-
-        public void HandleDeparture(ResourceAttribute health, StoneEnemyVisual visual)
-        {
-            if (!isActiveAndEnabled || health == null || health.Value > 0f || visual == null)
+            StoneEnemyVisual visual = entity.GetComponentInChildren<StoneEnemyVisual>();
+            if (visual == null)
             {
                 return;
             }

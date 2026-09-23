@@ -20,7 +20,7 @@ public class StoneGroundDiscTests
         Object.DestroyImmediate(_owner);
     }
 
-    static StoneGroundDisc CreateDisc(Transform parent, bool isShadow)
+    public static StoneGroundDisc CreateDisc(Transform parent, bool isShadow)
     {
         GameObject discGo = new GameObject("Disc", typeof(MeshFilter), typeof(MeshRenderer));
         discGo.transform.SetParent(parent, false);
@@ -73,6 +73,26 @@ public class StoneGroundDiscTests
         Assert.IsFalse(block.isEmpty);
         Assert.AreEqual(colour, ring.colour);
         Assert.AreEqual(0, _owner.GetComponentsInChildren<Collider>().Length);
+    }
+
+    [Test]
+    public void IsAllowed_Off_HidesAShownDiscAndOnRestoresOnlyWhatTheOwnerShows()
+    {
+        StoneGroundDisc shadow = CreateDisc(_owner.transform, true);
+        shadow.Show(true);
+
+        shadow.isAllowed = false;
+        Assert.IsFalse(shadow.gameObject.activeSelf);
+
+        shadow.Show(true);
+        Assert.IsFalse(shadow.gameObject.activeSelf, "the owner cannot show a disc the key light turned off");
+
+        shadow.Show(false);
+        shadow.isAllowed = true;
+        Assert.IsFalse(shadow.gameObject.activeSelf);
+
+        shadow.Show(true);
+        Assert.IsTrue(shadow.gameObject.activeSelf);
     }
 }
 

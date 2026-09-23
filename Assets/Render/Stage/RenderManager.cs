@@ -475,7 +475,7 @@ namespace HealerLike.Render.Stage
         {
             if (entity != null)
             {
-                _stoneDeath.HandleDeparture(entity.health, entity.GetComponentInChildren<StoneEnemyVisual>());
+                _stoneDeath.HandleDeparture(entity);
             }
 
             _battleFocus.MarkDirty();

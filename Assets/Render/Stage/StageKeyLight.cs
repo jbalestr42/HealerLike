@@ -47,8 +47,9 @@ namespace HealerLike.Render.Stage
             _next = Time.unscaledTime + _pollSeconds;
             realShadows = RendersRealShadows(GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset, _keyLight,
                                              _requiredDistance);
-            suppressed += ApplyCheapShadows(realShadows, FindObjectsByType<StoneEnemyVisual>(FindObjectsSortMode.None),
-                                            FindObjectsByType<StoneTerrainClump>(FindObjectsSortMode.None));
+            // Discs the key light already hid are inactive, so they are searched too
+            suppressed += ApplyCheapShadows(realShadows, FindObjectsByType<StoneGroundDisc>(FindObjectsInactive.Include,
+                                                                                         FindObjectsSortMode.None));
         }
 
         // Rotation whose back points toward the light along the given direction
@@ -70,30 +71,20 @@ namespace HealerLike.Render.Stage
         }
 
         // Returns how many cheap ellipses were switched off
-        public static int ApplyCheapShadows(bool realShadows, StoneEnemyVisual[] enemies, StoneTerrainClump[] clumps)
+        public static int ApplyCheapShadows(bool realShadows, StoneGroundDisc[] discs)
         {
             int off = 0;
-            if (enemies != null)
+            if (discs == null)
             {
-                foreach (StoneEnemyVisual enemy in enemies)
-                {
-                    if (enemy != null && enemy.groundShadowEnabled == realShadows)
-                    {
-                        enemy.groundShadowEnabled = !realShadows;
-                        off += realShadows ? 1 : 0;
-                    }
-                }
+                return off;
             }
 
-            if (clumps != null)
+            foreach (StoneGroundDisc disc in discs)
             {
-                foreach (StoneTerrainClump clump in clumps)
+                if (disc != null && disc.isShadow && disc.isAllowed == realShadows)
                 {
-                    if (clump != null && clump.groundShadowEnabled == realShadows)
-                    {
-                        clump.groundShadowEnabled = !realShadows;
-                        off += realShadows ? 1 : 0;
-                    }
+                    disc.isAllowed = !realShadows;
+                    off += realShadows ? 1 : 0;
                 }
             }
 

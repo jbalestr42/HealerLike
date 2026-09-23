@@ -11,7 +11,7 @@ public class StageKeyLightTests
     GameObject _lightGo;
     Light _light;
     UniversalRenderPipelineAsset _pipeline;
-    GameObject _clumpGo;
+    GameObject _discGo;
 
     [SetUp]
     public void SetUp()
@@ -21,8 +21,7 @@ public class StageKeyLightTests
         _light.type = LightType.Directional;
         _light.shadows = LightShadows.Soft;
         _pipeline = ScriptableObject.CreateInstance<UniversalRenderPipelineAsset>();
-        _clumpGo = new GameObject("ClumpTest");
-        _clumpGo.SetActive(false);
+        _discGo = new GameObject("DiscTest");
     }
 
     [TearDown]
@@ -30,7 +29,7 @@ public class StageKeyLightTests
     {
         Object.DestroyImmediate(_lightGo);
         Object.DestroyImmediate(_pipeline);
-        Object.DestroyImmediate(_clumpGo);
+        Object.DestroyImmediate(_discGo);
     }
 
     [Test]
@@ -80,16 +79,21 @@ public class StageKeyLightTests
     [Test]
     public void ApplyCheapShadows_RealShadowsToggled_TurnsEllipsesOffAndBackOn()
     {
-        StoneTerrainClump clump = _clumpGo.AddComponent<StoneTerrainClump>();
-        Assert.That(clump.groundShadowEnabled, Is.True);
+        StoneGroundDisc shadow = StoneGroundDiscTests.CreateDisc(_discGo.transform, true);
+        StoneGroundDisc earth = StoneGroundDiscTests.CreateDisc(_discGo.transform, false);
+        shadow.Show(true);
+        earth.Show(true);
+        StoneGroundDisc[] discs = new StoneGroundDisc[] { shadow, earth };
 
-        Assert.That(StageKeyLight.ApplyCheapShadows(true, null, new[] { clump }), Is.EqualTo(1));
-        Assert.That(clump.groundShadowEnabled, Is.False);
-        Assert.That(StageKeyLight.ApplyCheapShadows(true, null, new[] { clump }), Is.Zero, "already off");
+        Assert.That(StageKeyLight.ApplyCheapShadows(true, discs), Is.EqualTo(1));
+        Assert.That(shadow.gameObject.activeSelf, Is.False);
+        Assert.That(earth.gameObject.activeSelf, Is.True, "the bare earth is not a shadow");
+        Assert.That(StageKeyLight.ApplyCheapShadows(true, discs), Is.Zero, "already off");
 
-        Assert.That(StageKeyLight.ApplyCheapShadows(false, null, new[] { clump }), Is.Zero);
-        Assert.That(clump.groundShadowEnabled, Is.True);
-        Assert.DoesNotThrow(() => StageKeyLight.ApplyCheapShadows(true, new StoneEnemyVisual[] { null }, null));
+        Assert.That(StageKeyLight.ApplyCheapShadows(false, discs), Is.Zero);
+        Assert.That(shadow.gameObject.activeSelf, Is.True);
+        Assert.DoesNotThrow(() => StageKeyLight.ApplyCheapShadows(true, new StoneGroundDisc[] { null }));
+        Assert.DoesNotThrow(() => StageKeyLight.ApplyCheapShadows(true, null));
     }
 }
 

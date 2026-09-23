@@ -18,8 +18,24 @@ namespace HealerLike.Render.Stones
         Bounds _bounds;
         Vector3 _directionToLight;
         float _radius;
+        bool _isShown;
 
         public bool isShadow { get { return _isShadow; } }
+
+        // The key light turns cheap shadows off while it casts real ones, whatever the owner shows
+        bool _isAllowed = true;
+        public bool isAllowed
+        {
+            get
+            {
+                return _isAllowed;
+            }
+            set
+            {
+                _isAllowed = value;
+                gameObject.SetActive(_isShown && _isAllowed);
+            }
+        }
 
         public Color colour
         {
@@ -58,7 +74,8 @@ namespace HealerLike.Render.Stones
 
         public void Show(bool show)
         {
-            gameObject.SetActive(show);
+            _isShown = show;
+            gameObject.SetActive(_isShown && _isAllowed);
         }
 
         public void Refresh()
