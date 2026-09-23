@@ -34,14 +34,15 @@ public class StageKeyLightTests
     }
 
     [Test]
-    public void Aim_StoneKeyDirection_PointsTheLightAlongIt()
+    public void Aim_KeyDirection_PointsTheLightAlongIt()
     {
-        Quaternion rotation = StageKeyLight.Aim(StageKeyLight.StoneKeyDirection);
+        Quaternion rotation = StageKeyLight.Aim(StageKeyLight.KeyDirection);
 
-        Assert.That(Vector3.Angle(-(rotation * Vector3.forward), StageKeyLight.StoneKeyDirection), Is.LessThan(0.01f));
-        // Upper left: the light sits at -x and above the ground.
-        Assert.That(StageKeyLight.StoneKeyDirection.x, Is.LessThan(0));
-        Assert.That(StageKeyLight.StoneKeyDirection.y, Is.GreaterThan(0));
+        Assert.That(Vector3.Angle(-(rotation * Vector3.forward), StageKeyLight.KeyDirection), Is.LessThan(0.01f));
+        // Upper right behind the board: the light sits at +x, +z and above the ground
+        Assert.That(StageKeyLight.KeyDirection.x, Is.GreaterThan(0));
+        Assert.That(StageKeyLight.KeyDirection.y, Is.GreaterThan(0));
+        Assert.That(StageKeyLight.KeyDirection.z, Is.GreaterThan(0));
     }
 
     [Test]

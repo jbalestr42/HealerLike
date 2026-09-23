@@ -5,12 +5,12 @@ using HealerLike.Render.Stones;
 
 namespace HealerLike.Render.Stage
 {
-    // The stage key light, aimed along the stones' cheap shadow direction. When the pipeline renders real
-    // main light shadows out to the board, the cheap ground ellipses are turned off.
+    // The stage key light. When the pipeline renders real main light shadows out to the board, the stones'
+    // cheap ground ellipses are turned off.
     public class StageKeyLight : MonoBehaviour
     {
-        // Upper left toward the camera, as StoneEnemyVisual and StoneTerrainClump directionToKeyLight
-        public static readonly Vector3 StoneKeyDirection = new Vector3(-1f, 2f, -1f);
+        // Upper right behind the board, so cast shadows fall to the lower left of the portrait view
+        public static readonly Vector3 KeyDirection = new Vector3(1f, 2f, 1f);
 
         [SerializeField] Light _keyLight;
         // Farthest board distance from the camera that real shadows must cover

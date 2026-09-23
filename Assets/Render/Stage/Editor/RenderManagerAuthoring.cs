@@ -88,12 +88,12 @@ namespace HealerLike.Render.Stage
             return settings;
         }
 
-        // Aimed along the stones' cheap shadow direction, so real and cheap shadows agree
+        // The prefab carries the key light's aim, the manager only makes it the sun
         static StageKeyLight CreateKeyLight(GameObject root)
         {
             GameObject lightGo = new GameObject("KeyLight");
             lightGo.transform.SetParent(root.transform, false);
-            lightGo.transform.rotation = StageKeyLight.Aim(StageKeyLight.StoneKeyDirection);
+            lightGo.transform.rotation = StageKeyLight.Aim(StageKeyLight.KeyDirection);
             Light keyLight = lightGo.AddComponent<Light>();
             keyLight.type = LightType.Directional;
             keyLight.color = keyColor;
