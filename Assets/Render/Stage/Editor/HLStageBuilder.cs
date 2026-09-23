@@ -538,7 +538,7 @@ namespace HealerLike.Render.Stage
                 go.name="HLGrassField";
                 var field=(Behaviour)go.AddComponent(fieldType); var fso=new SerializedObject(field);
                 fso.FindProperty("grid").objectReferenceValue=grid; fso.FindProperty("ground").objectReferenceValue=ground;
-                fso.FindProperty("bladeHeightScale").floatValue=.8f;
+                fso.FindProperty("bladeHeightScale").floatValue=.45f;
                 fso.FindProperty("gameplayCamera").objectReferenceValue=camera;
                 fso.FindProperty("updateGrass").objectReferenceValue=AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute");
                 fso.FindProperty("grassShader").objectReferenceValue=AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrass.shader");
