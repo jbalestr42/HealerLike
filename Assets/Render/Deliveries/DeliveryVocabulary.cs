@@ -41,14 +41,5 @@ namespace HealerLike.Render.Deliveries
             }
             return tips[style];
         }
-
-        public Color Accent(EffectFamily family, Color fallback)
-        {
-            if (!palette)
-            {
-                return fallback;
-            }
-            return palette.Accent(family);
-        }
     }
 }
