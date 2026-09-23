@@ -1,9 +1,12 @@
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.TestTools;
+using HealerLike.Render.Creatures;
 using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Grass
@@ -11,6 +14,8 @@ namespace HealerLike.Render.Grass
 
 public class HLGrassFieldTests
 {
+    static readonly Rect oneCell = new Rect(-0.5f, -0.5f, 1f, 1f);
+
     GameObject _go;
     HLGrassField _field;
     GraphicsBuffer _borrowedZones;
@@ -41,25 +46,27 @@ public class HLGrassFieldTests
         }
     }
 
+    void SetAssets()
+    {
+        TestHelpers.SetPrivateField(_field, "_meshes", AssetDatabase.LoadAssetAtPath<HLPrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset"));
+        TestHelpers.SetPrivateField(_field, "_updateGrass", AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute"));
+        TestHelpers.SetPrivateField(_field, "_lookMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat"));
+        TestHelpers.SetPrivateField(_field, "_ringMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/HealRing.mat"));
+    }
+
     void BuildOneCellField()
     {
-        GridManager grid = _go.GetComponent<GridManager>();
-        if (grid == null)
+        if (_borrowedZones == null)
         {
-            grid = _go.AddComponent<GridManager>();
-            grid.width = 1;
-            grid.height = 1;
-            grid.size = 1f;
             _borrowedZones = new GraphicsBuffer(GraphicsBuffer.Target.Structured, HLGrassField.MaxZones, HLZone.Stride);
         }
-        _field.Init(grid, _go.transform, null, _borrowedZones, HLGrassField.MaxZones);
+
+        _field.Init(oneCell, 1f, 0.5f, null, _borrowedZones, HLGrassField.MaxZones);
         _field.bladeBudget = 65;
-        TestHelpers.SetPrivateField(_field, "_updateGrass", AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute"));
-        TestHelpers.SetPrivateField(_field, "_lookMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/HLLook_Default.mat"));
-        TestHelpers.SetPrivateField(_field, "_ringShader", AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrassRing.shader"));
+        SetAssets();
 
         MethodInfo build = typeof(HLGrassField).GetMethod("Build", BindingFlags.Instance | BindingFlags.NonPublic);
-        HLGrassBuildKey key = new HLGrassBuildKey(grid, 0.5f, 1, _field.bladeBudget);
+        HLGrassBuildKey key = new HLGrassBuildKey(oneCell, 1f, 0.5f, 1, _field.bladeBudget);
         Assert.IsTrue((bool)build.Invoke(_field, new object[] { key }));
     }
 
@@ -123,13 +130,32 @@ public class HLGrassFieldTests
     }
 
     [Test]
-    public void Init_WithoutZoneBuffer_StaysUnbuilt()
+    public void Init_WithoutZoneBuffer_LogsAndStaysUnbuilt()
     {
-        TestHelpers.WithLoggingDisabled(() => _field.Init(null, null, null, null, HLGrassField.MaxZones));
-        TestHelpers.InvokePrivate(_field, "LateUpdate");
+        LogAssert.Expect(LogType.Error, "[HLGrassField] Borrow a live zone buffer with the 32-byte stride and capacity 1..64.");
+
+        _field.Init(oneCell, 1f, 0.5f, null, null, HLGrassField.MaxZones);
+        _field.UpdateField(null, 0);
 
         Assert.IsFalse(_field.isReady);
         Assert.AreEqual(0, _field.bladeCount);
+    }
+
+    [Test]
+    public void Init_NonFiniteCellSize_LogsAndStaysUnbuilt()
+    {
+        if (!HasGraphicsDevice())
+        {
+            Assert.Ignore("Requires a graphics device; run with -force-metal.");
+        }
+
+        _borrowedZones = new GraphicsBuffer(GraphicsBuffer.Target.Structured, HLGrassField.MaxZones, HLZone.Stride);
+        LogAssert.Expect(LogType.Error, new Regex(@"^\[HLGrassField\] Rejected area .* with cell size NaN"));
+
+        _field.Init(oneCell, float.NaN, 0.5f, null, _borrowedZones, HLGrassField.MaxZones);
+
+        Assert.IsFalse(_field.isReady);
+        Assert.AreEqual(0, _field.activeZoneCount);
     }
 
     [Test]
@@ -149,6 +175,34 @@ public class HLGrassFieldTests
         _field.TriggerGust(Vector3.forward);
 
         Assert.AreEqual(1f, _field.wind.current.y);
+    }
+
+    [Test]
+    public void UpdateField_WithCamera_BuildsFromTheInitArea()
+    {
+        if (!HasGraphicsDevice())
+        {
+            Assert.Ignore("Requires a graphics device; run with -force-metal.");
+        }
+
+        Camera camera = _go.AddComponent<Camera>();
+        _borrowedZones = new GraphicsBuffer(GraphicsBuffer.Target.Structured, HLGrassField.MaxZones, HLZone.Stride);
+        _field.Init(new Rect(2f, -3f, 4f, 2f), 1f, 0.5f, camera, _borrowedZones, HLGrassField.MaxZones);
+        _field.bladeBudget = 80;
+        SetAssets();
+
+        _field.UpdateField(_borrowedZones, 3);
+
+        Assert.IsTrue(_field.isReady);
+        Assert.AreEqual(80, _field.bladeCount);
+        Assert.AreEqual(3, _field.activeZoneCount);
+        Assert.AreEqual(new Vector3(4f, 0.505f, -2f), BladeBoundsCenter()); // area centre, surface plus root lift
+    }
+
+    Vector3 BladeBoundsCenter()
+    {
+        FieldInfo key = typeof(HLGrassField).GetField("_builtKey", BindingFlags.Instance | BindingFlags.NonPublic);
+        return ((HLGrassBuildKey)key.GetValue(_field)).CalculateBounds().center;
     }
 
     [Test]
@@ -172,7 +226,7 @@ public class HLGrassFieldTests
     }
 
     [Test]
-    public void OnDisable_BuiltField_ReleasesOwnedResourcesAndKeepsBorrowedZones()
+    public void OnDisable_BuiltField_ReleasesOwnedBuffersAndKeepsBorrowedZonesAndMaterials()
     {
         if (!HasGraphicsDevice())
         {
@@ -193,8 +247,8 @@ public class HLGrassFieldTests
             {
                 Assert.IsFalse(buffer.IsValid());
             }
-            Assert.IsTrue(bladeMaterial == null);
-            Assert.IsTrue(ringMaterial == null);
+            Assert.IsTrue(bladeMaterial != null);
+            Assert.IsTrue(ringMaterial != null);
             Assert.IsTrue(_borrowedZones.IsValid());
             Assert.IsFalse(_field.isReady);
             Assert.IsNull(_field.bladeDraw);

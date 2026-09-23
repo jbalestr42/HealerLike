@@ -44,14 +44,14 @@ namespace HealerLike.Render.Grass
                 var ground=GameObject.CreatePrimitive(PrimitiveType.Cube);owned.Add(ground);ground.layer=30;
                 ground.transform.localScale=new Vector3(8,.2f,8);ground.transform.position=Vector3.down*.1f;
                 ground.GetComponent<Renderer>().sharedMaterial=material;
-                var grid=Make("HLGroundFixtureGrid").AddComponent<GridManager>();grid.width=grid.height=8;grid.size=1;grid.cells=new GridCell[64];
                 var registry=Make("HLGroundFixtureZones").AddComponent<HLZoneRegistry>();registry.Initialize();
                 var field=Make("HLGroundFixtureGrass").AddComponent<HLGrassField>();
-                field.Init(grid,ground.transform,camera,registry.buffer,64); field.bladeBudget=16384;
+                field.Init(new Rect(-4f,-4f,8f,8f),1f,0f,camera,registry.buffer,64); field.bladeBudget=16384;
                 TestHelpers.InvokePrivate(field,"OnEnable");
+                TestHelpers.SetPrivateField(field,"_meshes",AssetDatabase.LoadAssetAtPath<HealerLike.Render.Creatures.HLPrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset"));
                 TestHelpers.SetPrivateField(field,"_updateGrass",AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute"));
-                TestHelpers.SetPrivateField(field,"_lookMaterial",material);
-                TestHelpers.SetPrivateField(field,"_ringShader",AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrassRing.shader"));
+                TestHelpers.SetPrivateField(field,"_lookMaterial",AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat"));
+                TestHelpers.SetPrivateField(field,"_ringMaterial",AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/HealRing.mat"));
                 for(int i=0;i<3;i++)
                 {
                     var stone=Make("HLFixtureStone"+i);stone.transform.position=new Vector3((i-1)*2.2f,0,1.6f);
@@ -61,10 +61,10 @@ namespace HealerLike.Render.Grass
                 }
                 registry.Add(HLZoneKind.Heal,new Vector3(-1.7f,0,-1.2f),1.3f,1);
                 registry.Add(HLZoneKind.Hostile,new Vector3(1.7f,0,-.9f),1.2f,.85f);
-                registry.PublishFrame(.32f);field.SetZoneSnapshot(registry.buffer,registry.count);
+                registry.PublishFrame(.32f);
                 var target=new RenderTexture(1440,960,24,RenderTextureFormat.ARGB32);owned.Add(target);target.Create();
                 var texture=new Texture2D(1440,960,TextureFormat.RGB24,false);owned.Add(texture);
-                look.ApplyGlobals();TestHelpers.InvokePrivate(field,"LateUpdate");
+                look.ApplyGlobals();field.UpdateField(registry);
                 RenderPipeline.SubmitRenderRequest(camera,new RenderPipeline.StandardRequest{destination=target});
                 RenderTexture.active=target;texture.ReadPixels(new Rect(0,0,1440,960),0,0);texture.Apply();
                 int GreenPixels() => texture.GetPixels32().Count(c => c.g > 140 && c.g > c.r * 1.1f && c.g > c.b * 1.3f);

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace HealerLike.Render.Grass
@@ -10,22 +9,14 @@ namespace HealerLike.Render.Grass
         public static readonly int MaxBudget = 98304;
         public static readonly float RootLift = 0.005f;
 
-        public static bool Finite(float value)
+        public static bool IsValid(int width, int height, float size, Vector3 origin, float surfaceY)
         {
-            return !float.IsNaN(value) && !float.IsInfinity(value);
-        }
-
-        public static void Validate(int width, int height, float size, Vector3 origin, float surfaceY)
-        {
-            bool isGridValid = width > 0 && height > 0 && (long)width * height <= int.MaxValue && Finite(size) && size > 0f;
-            bool isOriginValid = Finite(origin.x) && Finite(origin.y) && Finite(origin.z) && Finite(surfaceY);
-            bool isExtentValid = Finite(width * size) && Finite(height * size);
-            bool isMaxValid = Finite(origin.x + width * size) && Finite(origin.z + height * size);
-            bool isMinValid = Finite(origin.x - width * size) && Finite(origin.z - height * size);
-            if (!isGridValid || !isOriginValid || !isExtentValid || !isMaxValid || !isMinValid)
-            {
-                throw new ArgumentOutOfRangeException(nameof(size), "Grass requires a finite axis-aligned footprint.");
-            }
+            bool isGridValid = width > 0 && height > 0 && (long)width * height <= int.MaxValue && float.IsFinite(size) && size > 0f;
+            bool isOriginValid = float.IsFinite(origin.x) && float.IsFinite(origin.y) && float.IsFinite(origin.z) && float.IsFinite(surfaceY);
+            bool isExtentValid = float.IsFinite(width * size) && float.IsFinite(height * size);
+            bool isMaxValid = float.IsFinite(origin.x + width * size) && float.IsFinite(origin.z + height * size);
+            bool isMinValid = float.IsFinite(origin.x - width * size) && float.IsFinite(origin.z - height * size);
+            return isGridValid && isOriginValid && isExtentValid && isMaxValid && isMinValid;
         }
 
         public static HLBladeSeed[] Generate(int width, int height, float cellSize, Vector3 gridOrigin, float surfaceY)
@@ -38,12 +29,13 @@ namespace HealerLike.Render.Grass
             return Generate(width, height, cellSize, gridOrigin, surfaceY, totalBladeBudget, 1);
         }
 
+        // Returns no seeds and logs when the footprint is not finite or the budget is negative
         public static HLBladeSeed[] Generate(int width, int height, float cellSize, Vector3 gridOrigin, float surfaceY, int totalBladeBudget, uint seed)
         {
-            Validate(width, height, cellSize, gridOrigin, surfaceY);
-            if (totalBladeBudget < 0)
+            if (!IsValid(width, height, cellSize, gridOrigin, surfaceY) || totalBladeBudget < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(totalBladeBudget));
+                Debug.LogError($"[HLGrassLayout] Rejected a {width} x {height} grid of size {cellSize} with budget {totalBladeBudget}.");
+                return new HLBladeSeed[0];
             }
 
             int count = System.Math.Min(totalBladeBudget, MaxBudget);
@@ -61,6 +53,7 @@ namespace HealerLike.Render.Grass
                     index = FillCell(result, index, cell, quota, width, cellSize, minimum, surfaceY, seed);
                 }
             }
+
             return result;
         }
 
@@ -72,21 +65,17 @@ namespace HealerLike.Render.Grass
 
         public static HLBladeSeed[] Generate(Rect rect, float surfaceY, float density, uint seed, int budget)
         {
-            bool isRectValid = Finite(rect.width) && Finite(rect.height) && rect.width > 0f && rect.height > 0f;
-            if (!Finite(density) || density < 0f || budget < 0 || !isRectValid)
+            bool isRectValid = rect.width > 0f && rect.height > 0f && IsValid(1, 1, 1f, new Vector3(rect.xMin, 0f, rect.yMin), surfaceY);
+            bool isFarCornerValid = float.IsFinite(rect.xMax) && float.IsFinite(rect.yMax);
+            if (!float.IsFinite(density) || density < 0f || budget < 0 || !isRectValid || !isFarCornerValid)
             {
-                throw new ArgumentOutOfRangeException(nameof(density));
+                Debug.LogError($"[HLGrassLayout] Rejected rect {rect} with density {density} and budget {budget}.");
+                return new HLBladeSeed[0];
             }
 
             double desired = System.Math.Floor((double)rect.width * rect.height * density);
             int count = (int)System.Math.Min(System.Math.Min(desired, budget), MaxBudget);
             HLBladeSeed[] result = Generate(1, 1, 1f, Vector3.zero, surfaceY, count, seed);
-            Validate(1, 1, 1f, new Vector3(rect.xMin, 0f, rect.yMin), surfaceY);
-            if (!Finite(rect.xMax) || !Finite(rect.yMax))
-            {
-                throw new ArgumentOutOfRangeException(nameof(rect));
-            }
-
             for (int i = 0; i < result.Length; i++)
             {
                 Vector4 position = result[i].positionYaw;
@@ -94,6 +83,7 @@ namespace HealerLike.Render.Grass
                 position.z = rect.yMin + (position.z + 0.5f) * rect.height;
                 result[i].positionYaw = position;
             }
+
             return result;
         }
 
@@ -134,6 +124,7 @@ namespace HealerLike.Render.Grass
                     int wanted = 3 + (int)(Sample(seed, cell, clump, 8) * 5);
                     blades = Mathf.Clamp(wanted, Mathf.Max(3, remaining - 7 * left), Mathf.Min(7, remaining - 3 * left));
                 }
+
                 remaining -= blades;
 
                 // Every row holds an even share of the clumps and jitters across its whole stratum,
@@ -155,6 +146,7 @@ namespace HealerLike.Render.Grass
                     {
                         height = 0.22f + 0.14f * Sample(seed, cell, clump, 4);
                     }
+
                     float bladeWidth = 0.095f + 0.055f * Sample(seed, cell, blade, 6);
                     result[index].positionYaw = new Vector4(root.x, root.y, root.z, Mathf.Repeat(yaw + fan, Mathf.PI * 2f));
                     // Phase is also the shared rest-lean heading; w is the seeded cell-patch hue
@@ -162,6 +154,7 @@ namespace HealerLike.Render.Grass
                     index++;
                 }
             }
+
             return index;
         }
     }
