@@ -148,6 +148,8 @@ namespace HealerLike.Render.Deliveries
             _detailColour.SetVectorArray("_BaseColor", detailColours);
             _container = new GameObject("LianaArm").transform;
             _container.SetParent(parent, false);
+            // Lets a projectile's observer find the arm its delivery took, the rig keeps its arms to itself
+            _container.gameObject.AddComponent<LianaArmView>().arm = this;
             _mesh = new Mesh { name = "LianaChain", hideFlags = HideFlags.DontSave };
             _mesh.MarkDynamic();
             _vertices = new Vector3[_joints.Length * sides + 2];

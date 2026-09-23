@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 
@@ -18,7 +19,9 @@ namespace HealerLike.Render.Deliveries
         [SerializeField] bool _preserveContactPath;
 
         readonly List<ProjectileContact> _contacts = new List<ProjectileContact>();
+        readonly List<LianaArm> _arms = new List<LianaArm>();
         RenderManager _manager;
+        DeliveryVocabulary _vocabulary;
         IDeliverySource _delivery;
         MonoBehaviour _deliveryComponent;
         Projectile _subscribed;
@@ -26,7 +29,9 @@ namespace HealerLike.Render.Deliveries
         CreatureRig _rig;
         Renderer[] _renderers;
         bool[] _rendererStates;
+        List<AConsumerFactory> _consumers;
         int _token;
+        int _lease;
         bool _isInitialized;
 
         public DeliveryStyle deliveryStyle { get { return _deliveryStyle; } }
@@ -38,6 +43,9 @@ namespace HealerLike.Render.Deliveries
         public GameObject capturedTargetPoint { get; private set; }
 
         public int gestureToken { get { return _token; } }
+
+        // The arms the delivery took, their tips carry its family
+        public IReadOnlyList<LianaArm> arms { get { return _arms; } }
 
         // The manager adds the observer to a spawned projectile and calls this before Projectile.Init
         public void Init(RenderManager manager, ProjectileLook look)
@@ -66,11 +74,17 @@ namespace HealerLike.Render.Deliveries
                 return;
             }
 
+            if (!_vocabulary)
+            {
+                _vocabulary = DeliveryVocabulary.Load();
+            }
+
             // Bind before any Start callback can apply synchronous chain hits
             _subscribed = projectile;
             _subscribed.OnHit.AddListener(OnProjectileHit);
             capturedTarget = projectile.target;
             capturedTargetPoint = projectile.targetPoint;
+            _consumers = OnHitConsumers();
             Entity entity = source ? source.GetComponent<Entity>() : null;
             GameObject model = entity && entity.model ? entity.model.gameObject : source;
             int token = NextToken();
@@ -110,6 +124,8 @@ namespace HealerLike.Render.Deliveries
                 return;
             }
 
+            FindArms(true);
+            TintArms();
             _renderers = GetComponentsInChildren<Renderer>(true);
             _rendererStates = new bool[_renderers.Length];
             for (int i = 0; i < _renderers.Length; i++)
@@ -153,6 +169,7 @@ namespace HealerLike.Render.Deliveries
             }
 
             HideRenderers();
+            TintArms();
             // Retarget listeners have all finished by now. Never replace ordered hit contacts
             // with the final target, which can already be null for an instant chain.
             if (_subscribed.ShouldDestroyProjectile())
@@ -165,6 +182,94 @@ namespace HealerLike.Render.Deliveries
         int NextToken()
         {
             return _manager ? _manager.NextDeliveryToken() : 0;
+        }
+
+        // What the projectile applies on hit decides the family its tip shows
+        List<AConsumerFactory> OnHitConsumers()
+        {
+#if HEALERLIKE_SEAMS
+            return projectile.onHitConsumers;
+#else
+            // TODO: read Projectile.onHitConsumers once it is public, until then the tip keeps its rest colour
+            return null;
+#endif
+        }
+
+        // The family of the first consumer, or no accent when the projectile carries none
+        bool TryAccent(out Color accent)
+        {
+            accent = Color.clear;
+            if (_consumers == null || !_vocabulary || !_vocabulary.palette)
+            {
+                return false;
+            }
+
+            foreach (AConsumerFactory consumer in _consumers)
+            {
+                if (consumer != null)
+                {
+                    accent = _vocabulary.palette.Accent(EffectDerivation.ConsumerFamily(consumer, 1f, false));
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // The rig begins one arm per delivery and its lease is the newest token among its arms. A chain
+        // contact later branches new arms under the same lease, so a hit looks again.
+        void FindArms(bool isNewLease)
+        {
+            _arms.Clear();
+            Transform root = _rig != null ? _rig.root : null;
+            if (!root && _deliveryComponent)
+            {
+                root = _deliveryComponent.transform;
+            }
+
+            if (!root)
+            {
+                return;
+            }
+
+            LianaArmView[] views = root.GetComponentsInChildren<LianaArmView>(true);
+            if (isNewLease)
+            {
+                _lease = 0;
+                foreach (LianaArmView view in views)
+                {
+                    if (view.arm != null && !view.arm.isAvailable && view.arm.token > _lease)
+                    {
+                        _lease = view.arm.token;
+                    }
+                }
+            }
+
+            if (_lease == 0)
+            {
+                return;
+            }
+
+            foreach (LianaArmView view in views)
+            {
+                if (view.arm != null && view.arm.token == _lease)
+                {
+                    _arms.Add(view.arm);
+                }
+            }
+        }
+
+        void TintArms()
+        {
+            if (!TryAccent(out Color accent))
+            {
+                return;
+            }
+
+            foreach (LianaArm arm in _arms)
+            {
+                arm.SetTipAccent(_lease, accent);
+            }
         }
 
         void HideRenderers()
@@ -209,6 +314,9 @@ namespace HealerLike.Render.Deliveries
             {
                 _delivery.ContactDelivery(_token, point, hit.target);
             }
+
+            FindArms(false);
+            TintArms();
         }
 
         void EndLease()
@@ -219,6 +327,8 @@ namespace HealerLike.Render.Deliveries
             }
 
             _token = 0;
+            _lease = 0;
+            _arms.Clear();
             if (_renderers != null)
             {
                 for (int i = 0; i < _renderers.Length; i++)

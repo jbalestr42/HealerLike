@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Stage;
 using NUnit.Framework;
 using UnityEditor;
@@ -52,6 +53,7 @@ public class ProjectileVisualObserverTests
     Material _material;
     CreatureBuilder _builder;
     GameObject _managerGo;
+    readonly List<Object> _scriptableObjects = new List<Object>();
 
     static Entity EntityFixture(GameObject go)
     {
@@ -59,6 +61,29 @@ public class ProjectileVisualObserverTests
         TestHelpers.WithLoggingDisabled(() => entity = go.AddComponent<Entity>());
         TestHelpers.SetPrivateField(entity, "_targetPoint", go);
         return entity;
+    }
+
+    T CreateTracked<T>() where T : ScriptableObject
+    {
+        T instance = ScriptableObject.CreateInstance<T>();
+        _scriptableObjects.Add(instance);
+        return instance;
+    }
+
+    // A positive flat value is damage, a negative one heals
+    ConsumerFactory CreateConsumer(float value)
+    {
+        ConsumerFactory consumer = CreateTracked<ConsumerFactory>();
+        FlatValue flat = new FlatValue();
+        flat.data = new FlatValueData { value = value };
+        consumer.data = new ConsumerData { value = flat };
+        return consumer;
+    }
+
+    // Stands in for Projectile.onHitConsumers, which his class keeps private until it exposes it
+    void SeedConsumers(params AConsumerFactory[] consumers)
+    {
+        TestHelpers.SetPrivateField(_observer, "_consumers", new List<AConsumerFactory>(consumers));
     }
 
     [SetUp]
@@ -109,6 +134,67 @@ public class ProjectileVisualObserverTests
         Object.DestroyImmediate(_second);
         Object.DestroyImmediate(_recipe);
         Object.DestroyImmediate(_material);
+        foreach (Object scriptableObject in _scriptableObjects)
+        {
+            Object.DestroyImmediate(scriptableObject);
+        }
+
+        _scriptableObjects.Clear();
+    }
+
+    [Test]
+    public void Init_ClaimedByRig_FindsTheArmItsDeliveryTook()
+    {
+        Assert.AreNotEqual(0, _observer.gestureToken);
+
+        Assert.AreEqual(1, _observer.arms.Count);
+        Assert.IsFalse(_observer.arms[0].isAvailable);
+    }
+
+    [Test]
+    public void LateUpdate_HealingConsumer_ColoursTipLime()
+    {
+        SeedConsumers(CreateConsumer(-5f));
+
+        TestHelpers.InvokePrivate(_observer, "LateUpdate");
+
+        Color lime = DeliveryVocabularyTests.Vocabulary().palette.heal;
+        Assert.AreEqual(lime, _observer.arms[0].tipColour);
+    }
+
+    [Test]
+    public void LateUpdate_DamagingConsumer_ColoursTipCoral()
+    {
+        SeedConsumers(CreateConsumer(10f));
+
+        TestHelpers.InvokePrivate(_observer, "LateUpdate");
+
+        Color coral = DeliveryVocabularyTests.Vocabulary().palette.damage;
+        Assert.AreEqual(coral, _observer.arms[0].tipColour);
+    }
+
+    [Test]
+    public void LateUpdate_NoConsumer_TipKeepsRestColour()
+    {
+        SeedConsumers();
+
+        TestHelpers.InvokePrivate(_observer, "LateUpdate");
+
+        Assert.AreEqual(_observer.arms[0].restTipColour, _observer.arms[0].tipColour);
+    }
+
+    [Test]
+    public void EndDelivery_AfterAccent_TipReturnsToRestColour()
+    {
+        SeedConsumers(CreateConsumer(10f));
+        TestHelpers.InvokePrivate(_observer, "LateUpdate");
+        LianaArm arm = _observer.arms[0];
+
+        _observer.enabled = false;
+        TestHelpers.InvokePrivate(_observer, "OnDisable");
+        arm.Tick(1f, Vector3.zero, Quaternion.identity);
+
+        Assert.AreEqual(arm.restTipColour, arm.tipColour);
     }
 
     [Test]
