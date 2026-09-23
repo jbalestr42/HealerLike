@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac18394351a54881a2ecbd946d70f16e, type: 3}
+  m_Name: PrimitiveMeshes
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.HLPrimitiveMeshes
+  sphere: {fileID: 4300000, guid: 85eb09a6a9ae24c289fb7e52d08cac31, type: 2}
+  capsule: {fileID: 4300000, guid: 97553aed2647c4081a8baa6fc7bf3ca6, type: 2}
+  cone: {fileID: 4300000, guid: 19601afcbc7464549b5782a31aed9a37, type: 2}
+  cylinder: {fileID: 4300000, guid: be66ac6504765428bbfa960336810a73, type: 2}
+  torus: {fileID: 4300000, guid: 01162d430a2d549fb83b6b4fd8e1172a, type: 2}
+  thinTorus: {fileID: 4300000, guid: 156ea4454016f41939c9efe30aab77f9, type: 2}
+  bladeCone: {fileID: 4300000, guid: 0a6f7a6917c3c41629caab5cccf8d488, type: 2}
+  pyramid: {fileID: 4300000, guid: 61a70983f668e45ff980e1f5e0621aec, type: 2}
+  star: {fileID: 4300000, guid: 24beb1ec4bdc54b3abedf668c02a6f60, type: 2}
+  boulder: {fileID: 4300000, guid: 3a227576ac46e47819f24eff9d95c9d8, type: 2}
+  disc: {fileID: 4300000, guid: 6004ac616f55048d99bb98f8daed1cb9, type: 2}
+  annulus: {fileID: 4300000, guid: 6310fa2283f7348d7be855d0115a7adf, type: 2}
