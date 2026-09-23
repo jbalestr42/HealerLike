@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a867614a5a8491cb038a28ccffb89e9, type: 3}
+  m_Name: LookPalette
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grammar.LookPalette
+  plantBody: {r: 0.5, g: 0.79, b: 0.25, a: 1}
+  plantStem: {r: 0.18, g: 0.49, b: 0.31, a: 1}
+  stoneBody: {r: 0.56, g: 0.58, b: 0.63, a: 1}
+  stoneLimb: {r: 0.45, g: 0.48, b: 0.55, a: 1}
+  stoneOchre: {r: 0.7254902, g: 0.6235294, b: 0.427451, a: 1}
+  moss: {r: 0.47, g: 0.72, b: 0.3, a: 1}
+  damage: {r: 0.9647059, g: 0.5882353, b: 0.6039216, a: 1}
+  heal: {r: 0.8392157, g: 0.972549, b: 0.2980392, a: 1}
+  rot: {r: 0.5568627, g: 0.3568627, b: 0.8392157, a: 1}
+  renew: {r: 0.8392157, g: 0.972549, b: 0.2980392, a: 1}
+  boon: {r: 0.8745098, g: 0.6862745, b: 0.2039216, a: 1}
+  bane: {r: 0.1254902, g: 0.2313725, b: 0.3921569, a: 1}
+  baneLit: {r: 0.5058824, g: 0.5372549, b: 0.6470588, a: 1}
+  mana: {r: 0.9490196, g: 0.7607843, b: 0.1882353, a: 1}
