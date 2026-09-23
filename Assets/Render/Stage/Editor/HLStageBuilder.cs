@@ -118,7 +118,7 @@ namespace HealerLike.Render.Stage
                 HLStageBeautyWiring.AttachTrample(anchor, CreatureFootprint(anchor.transform));
                 var bso = new SerializedObject(bootstrap); bso.FindProperty("healPulse").objectReferenceValue = pulse; bso.FindProperty("healSource").objectReferenceValue = character.gameObject; bso.ApplyModifiedPropertiesWithoutUndo();
                 if (view) healer = (view as HLCharacterView, character, anchor.transform);
-                if (view) { var vso=new SerializedObject(view); vso.FindProperty("character").objectReferenceValue=character; vso.FindProperty("visualAnchor").objectReferenceValue=anchor.transform; vso.FindProperty("recipe").objectReferenceValue=AssetDatabase.LoadMainAssetAtPath("Assets/Render/Creatures/Data/HLHealer.asset"); vso.FindProperty("material").objectReferenceValue=green; vso.ApplyModifiedPropertiesWithoutUndo(); }
+                if (view) { var vso=new SerializedObject(view); vso.FindProperty("_character").objectReferenceValue=character; vso.FindProperty("_visualAnchor").objectReferenceValue=anchor.transform; vso.FindProperty("_recipe").objectReferenceValue=AssetDatabase.LoadMainAssetAtPath("Assets/Render/Creatures/Data/HLHealer.asset"); vso.FindProperty("_material").objectReferenceValue=green; vso.ApplyModifiedPropertiesWithoutUndo(); }
             }
             Grass(stage.transform, bounds, grid, ground.transform, camera, zones, bootstrap);
             var battleFocus=stage.AddComponent<HLBattleFocus>();
@@ -326,7 +326,7 @@ namespace HealerLike.Render.Stage
             else todo.Add("No creature-authored observer for " + projectileName + "; default observer settings kept.");
             var styles = AssetDatabase.LoadAssetAtPath<HLDeliveryStyles>(DeliveryStylesPath);
             var so = new SerializedObject(observer);
-            so.FindProperty("deliveryStyle").intValue = (int)(styles ? styles.ForName(projectileName) : HLDeliveryStyle.Direct);
+            so.FindProperty("_deliveryStyle").intValue = (int)(styles ? styles.ForName(projectileName) : HLDeliveryStyle.Direct);
             so.ApplyModifiedPropertiesWithoutUndo();
         }
         // Review finding 2: the legacy chain coroutine draws a LineRenderer from Entity.skillStartPoint every frame, which

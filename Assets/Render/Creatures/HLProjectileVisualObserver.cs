@@ -1,105 +1,248 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Creatures
 {
-    public readonly struct HLProjectileContact
-    {
-        public readonly GameObject target;
-        public readonly Vector3 position;
-        public HLProjectileContact(GameObject target, Vector3 position) { this.target = target; this.position = position; }
-    }
     [DefaultExecutionOrder(100)]
-    [DisallowMultipleComponent]
-    public sealed class HLProjectileVisualObserver : AProjectileBehaviour
+    public class HLProjectileVisualObserver : AProjectileBehaviour
     {
-        [SerializeField] HLGestureKind presentation = HLGestureKind.Attack;
-        [SerializeField] HLDeliveryStyle deliveryStyle = HLDeliveryStyle.Direct;
-        public HLDeliveryStyle DeliveryStyle => deliveryStyle;
-        static int nextToken;
-        IHLDeliverySource delivery;
-        MonoBehaviour deliveryComponent;
-        [SerializeField] bool preserveContactPath;
-        readonly List<HLProjectileContact> contacts = new List<HLProjectileContact>();
-        Projectile subscribed;
-        HLCreatureBuilder builder;
-        HLCreatureRig rig;
-        Renderer[] renderers;
-        bool[] rendererStates;
-        int token, contactFrame = -1;
-        bool initialized;
-        public IReadOnlyList<HLProjectileContact> Contacts => contacts;
-        public GameObject CapturedTarget { get; private set; }
-        public GameObject CapturedTargetPoint { get; private set; }
-        public int GestureToken => token;
+        static int _nextToken;
+
+        [FormerlySerializedAs("presentation")]
+        [SerializeField] HLGestureKind _presentation = HLGestureKind.Attack;
+        [FormerlySerializedAs("deliveryStyle")]
+        [SerializeField] HLDeliveryStyle _deliveryStyle = HLDeliveryStyle.Direct;
+        [FormerlySerializedAs("preserveContactPath")]
+        [SerializeField] bool _preserveContactPath;
+
+        readonly List<HLProjectileContact> _contacts = new List<HLProjectileContact>();
+        IHLDeliverySource _delivery;
+        MonoBehaviour _deliveryComponent;
+        Projectile _subscribed;
+        HLCreatureBuilder _builder;
+        HLCreatureRig _rig;
+        Renderer[] _renderers;
+        bool[] _rendererStates;
+        int _token;
+        int _contactFrame = -1;
+        bool _isInitialized;
+
+        public HLDeliveryStyle deliveryStyle { get { return _deliveryStyle; } }
+
+        public IReadOnlyList<HLProjectileContact> contacts { get { return _contacts; } }
+
+        public GameObject capturedTarget { get; private set; }
+
+        public GameObject capturedTargetPoint { get; private set; }
+
+        public int gestureToken { get { return _token; } }
+
         public override void Init(GameObject source)
         {
-            Unbind(); contacts.Clear(); contactFrame = -1; initialized = true;
-            if (!projectile) projectile = GetComponent<Projectile>();
-            if (!projectile) return;
-            // Bind before any Start callback can apply synchronous chain hits.
-            subscribed = projectile; subscribed.OnHit.AddListener(OnProjectileHit);
-            CapturedTarget = projectile.target; CapturedTargetPoint = projectile.targetPoint;
-            var entity = source ? source.GetComponent<Entity>() : null;
-            var model = entity && entity.model ? entity.model.gameObject : source;
-            if (++nextToken == 0) ++nextToken;
-            if (model) foreach (var component in model.GetComponentsInChildren<MonoBehaviour>())
+            Unbind();
+            _contacts.Clear();
+            _contactFrame = -1;
+            _isInitialized = true;
+            if (!projectile)
             {
-                if (!(component is IHLDeliverySource candidate) || !component.isActiveAndEnabled) continue;
-                if (!candidate.BeginDelivery(nextToken, preserveContactPath ? HLDeliveryStyle.ChainSync : deliveryStyle,
-                    projectile.transform, CapturedTargetPoint ? CapturedTargetPoint.transform.position : projectile.transform.position)) continue;
-                delivery = candidate; deliveryComponent = component; token = nextToken;
-                builder = component as HLCreatureBuilder; rig = builder ? builder.Rig : null;
-                break;
+                projectile = GetComponent<Projectile>();
             }
-            if (token == 0) return;
-            renderers = GetComponentsInChildren<Renderer>(true);
-            rendererStates = new bool[renderers.Length];
-            for (int i = 0; i < renderers.Length; i++) rendererStates[i] = renderers[i].enabled;
+
+            if (!projectile)
+            {
+                return;
+            }
+
+            // Bind before any Start callback can apply synchronous chain hits
+            _subscribed = projectile;
+            _subscribed.OnHit.AddListener(OnProjectileHit);
+            capturedTarget = projectile.target;
+            capturedTargetPoint = projectile.targetPoint;
+            Entity entity = source ? source.GetComponent<Entity>() : null;
+            GameObject model = entity && entity.model ? entity.model.gameObject : source;
+            if (++_nextToken == 0)
+            {
+                ++_nextToken;
+            }
+
+            if (model)
+            {
+                foreach (MonoBehaviour component in model.GetComponentsInChildren<MonoBehaviour>())
+                {
+                    if (!(component is IHLDeliverySource candidate) || !component.isActiveAndEnabled)
+                    {
+                        continue;
+                    }
+
+                    HLDeliveryStyle style = _preserveContactPath ? HLDeliveryStyle.ChainSync : _deliveryStyle;
+                    Vector3 end = projectile.transform.position;
+                    if (capturedTargetPoint)
+                    {
+                        end = capturedTargetPoint.transform.position;
+                    }
+
+                    if (!candidate.BeginDelivery(_nextToken, style, projectile.transform, end))
+                    {
+                        continue;
+                    }
+
+                    _delivery = candidate;
+                    _deliveryComponent = component;
+                    _token = _nextToken;
+                    _builder = component as HLCreatureBuilder;
+                    _rig = _builder ? _builder.rig : null;
+                    break;
+                }
+            }
+
+            if (_token == 0)
+            {
+                return;
+            }
+
+            _renderers = GetComponentsInChildren<Renderer>(true);
+            _rendererStates = new bool[_renderers.Length];
+            for (int i = 0; i < _renderers.Length; i++)
+            {
+                _rendererStates[i] = _renderers[i].enabled;
+            }
+
             HideRenderers();
+        }
+
+        void OnEnable()
+        {
+            if (_isInitialized && projectile && projectile.source)
+            {
+                Init(projectile.source);
+            }
+        }
+
+        void OnDisable()
+        {
+            Unbind();
+        }
+
+        void OnDestroy()
+        {
+            Unbind();
+        }
+
+        void LateUpdate()
+        {
+            if (_token == 0)
+            {
+                return;
+            }
+
+            if (!_subscribed || !_subscribed.source || !_deliveryComponent || !_deliveryComponent.isActiveAndEnabled
+                || (_builder && _builder.rig != _rig))
+            {
+                EndLease();
+                return;
+            }
+
+            HideRenderers();
+            // Retarget listeners have all finished by now. Never replace ordered hit contacts
+            // with the final target, which can already be null for an instant chain.
+            if (_subscribed.ShouldDestroyProjectile())
+            {
+                EndLease();
+                return;
+            }
+
+            bool isPathHeld = _preserveContactPath && _contacts.Count > 0;
+            if (_subscribed.target && _contactFrame != Time.frameCount && !isPathHeld)
+            {
+                if (_delivery != null)
+                {
+                    _delivery.UpdateDelivery(_token, _subscribed.transform.position);
+                }
+            }
         }
 
         void HideRenderers()
         {
-            if (token == 0 || renderers == null) return;
-            foreach (var renderer in renderers) if (renderer) renderer.enabled = false;
+            if (_token == 0 || _renderers == null)
+            {
+                return;
+            }
+
+            foreach (Renderer renderer in _renderers)
+            {
+                if (renderer)
+                {
+                    renderer.enabled = false;
+                }
+            }
         }
+
         void OnProjectileHit(OnHitData hit)
         {
-            if (!isActiveAndEnabled || hit == null || token == 0) return;
-            Vector3 point = hit.target ? HLCreatureBuilder.TargetPosition(hit.target)
-                : contacts.Count > 0 ? contacts[contacts.Count - 1].position : transform.position;
-            contacts.Add(new HLProjectileContact(hit.target, point)); contactFrame = Time.frameCount;
-            if (preserveContactPath && builder && rig != null) rig.ContactDeliveryPath(token, point, true);
-            else delivery?.ContactDelivery(token, point, hit.target);
+            if (!isActiveAndEnabled || hit == null || _token == 0)
+            {
+                return;
+            }
+
+            Vector3 point = transform.position;
+            if (hit.target)
+            {
+                point = HLCreatureBuilder.TargetPosition(hit.target);
+            }
+            else if (_contacts.Count > 0)
+            {
+                point = _contacts[_contacts.Count - 1].position;
+            }
+
+            _contacts.Add(new HLProjectileContact(hit.target, point));
+            _contactFrame = Time.frameCount;
+            if (_preserveContactPath && _builder && _rig != null)
+            {
+                _rig.ContactDeliveryPath(_token, point, true);
+            }
+            else if (_delivery != null)
+            {
+                _delivery.ContactDelivery(_token, point, hit.target);
+            }
         }
-        void LateUpdate()
-        {
-            if (token == 0) return;
-            if (!subscribed || !subscribed.source || !deliveryComponent || !deliveryComponent.isActiveAndEnabled || (builder && builder.Rig != rig))
-            { EndLease(); return; }
-            HideRenderers();
-            // Retarget listeners have all finished by now. Never replace ordered hit contacts
-            // with the final target, which can already be null for an instant chain.
-            if (subscribed.ShouldDestroyProjectile()) { EndLease(); return; }
-            if (subscribed.target && contactFrame != Time.frameCount && !(preserveContactPath && contacts.Count > 0))
-                delivery?.UpdateDelivery(token, subscribed.transform.position);
-        }
+
         void EndLease()
         {
-            if (token != 0 && deliveryComponent) delivery?.EndDelivery(token);
-            token = 0;
-            if (renderers != null)
-                for (int i = 0; i < renderers.Length; i++) if (renderers[i]) renderers[i].enabled = rendererStates[i];
-            renderers = null; rendererStates = null;
+            if (_token != 0 && _deliveryComponent && _delivery != null)
+            {
+                _delivery.EndDelivery(_token);
+            }
+
+            _token = 0;
+            if (_renderers != null)
+            {
+                for (int i = 0; i < _renderers.Length; i++)
+                {
+                    if (_renderers[i])
+                    {
+                        _renderers[i].enabled = _rendererStates[i];
+                    }
+                }
+            }
+
+            _renderers = null;
+            _rendererStates = null;
         }
+
         void Unbind()
         {
-            if (subscribed) subscribed.OnHit.RemoveListener(OnProjectileHit);
-            subscribed = null; EndLease(); rig = null; builder = null; delivery = null; deliveryComponent = null;
+            if (_subscribed)
+            {
+                _subscribed.OnHit.RemoveListener(OnProjectileHit);
+            }
+
+            _subscribed = null;
+            EndLease();
+            _rig = null;
+            _builder = null;
+            _delivery = null;
+            _deliveryComponent = null;
         }
-        void OnEnable() { if (initialized && projectile && projectile.source) Init(projectile.source); }
-        void OnDisable() => Unbind();
-        void OnDestroy() => Unbind();
     }
 }

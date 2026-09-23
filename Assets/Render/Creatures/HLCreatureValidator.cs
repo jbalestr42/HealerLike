@@ -9,45 +9,122 @@ namespace HealerLike.Render.Creatures
         {
             error = null;
             if (!data || data.parts == null || data.parts.Length == 0 || data.parts.Length > 40)
+            {
                 return Fail("Require 1..40 parts.", out error);
-            var ids = new HashSet<string>();
+            }
+
+            HashSet<string> ids = new HashSet<string>();
             for (int i = 0; i < data.parts.Length; i++)
             {
-                var p = data.parts[i];
-                if (string.IsNullOrEmpty(p.id) || !ids.Add(p.id) || (i == 0 ? p.parent != -1 : p.parent < 0 || p.parent >= i))
+                HLPart part = data.parts[i];
+                bool isParentValid = i == 0 ? part.parent == -1 : part.parent >= 0 && part.parent < i;
+                if (string.IsNullOrEmpty(part.id) || !ids.Add(part.id) || !isParentValid)
+                {
                     return Fail("Require unique IDs, one root, and earlier parents.", out error);
-                if (!HLChainSolver.Finite(p.localPosition) || !HLChainSolver.Finite(p.localEuler) || !Positive(p.dimensions)
-                    || !Colour(p.colour) || !HLChainSolver.Finite(p.glow) || p.glow < 0 || (int)p.primitive < 0 || (int)p.primitive > 4
-                    || (p.primitive == HLPrimitive.Torus && (!HLChainSolver.Finite(p.torusTubeRatio) || p.torusTubeRatio <= 0 || p.torusTubeRatio >= 1)))
+                }
+
+                float ratio = part.torusTubeRatio;
+                bool isTorusValid = part.primitive != HLPrimitive.Torus
+                    || (HLChainSolver.Finite(ratio) && ratio > 0f && ratio < 1f);
+                if (!HLChainSolver.Finite(part.localPosition) || !HLChainSolver.Finite(part.localEuler)
+                    || !Positive(part.dimensions) || !Colour(part.colour)
+                    || !HLChainSolver.Finite(part.glow) || part.glow < 0f
+                    || (int)part.primitive < 0 || (int)part.primitive > 4 || !isTorusValid)
+                {
                     return Fail("Invalid primitive settings.", out error);
+                }
             }
-            if (!HLChainSolver.Finite(data.targetLocal) || data.sourceLocal == null || data.arms == null || data.arms.Length > 8)
-                return Fail("Invalid sockets or arms.", out error);
-            foreach (var source in data.sourceLocal) if (!HLChainSolver.Finite(source)) return Fail("Nonfinite socket.", out error);
-            foreach (var a in data.arms)
+
+            if (!HLChainSolver.Finite(data.targetLocal) || data.sourceLocal == null || data.arms == null
+                || data.arms.Length > 8)
             {
-                if (a.bodyPart < 0 || a.bodyPart >= data.parts.Length || a.sourceSocketIndex < 0 || a.sourceSocketIndex >= data.sourceLocal.Length
-                    || a.segmentCount < 2 || a.segmentCount > 128 || !Positive(a.segmentLength) || !Positive(a.radius)
-                    || !HLChainSolver.Finite(a.rootLocal) || !HLChainSolver.Finite(a.bendPole) || !Colour(a.colour)
-                    || a.restJoints == null || a.restJoints.Length != a.segmentCount + 1 || a.restJoints[0] != Vector3.zero)
-                    return Fail("Invalid arm or missing source socket.", out error);
-                for (int i = 0; i <= a.segmentCount; i++)
-                    if (!HLChainSolver.Finite(a.restJoints[i]) || (i > 0 && Mathf.Abs(Vector3.Distance(a.restJoints[i - 1], a.restJoints[i]) - a.segmentLength) > 1e-5f))
-                        return Fail("Rest pose does not preserve link lengths.", out error);
+                return Fail("Invalid sockets or arms.", out error);
             }
-            var r = data.roots;
-            if (r.count < 4 || r.count > 8 || !Positive(r.footRadius) || !Positive(r.thickness) || r.footRadius + r.thickness > .46f
-                || !Positive(r.hipHeight) || !Positive(r.kneeHeight) || !HLChainSolver.Finite(r.angularOffset) || !Colour(r.colour))
+
+            foreach (Vector3 source in data.sourceLocal)
+            {
+                if (!HLChainSolver.Finite(source))
+                {
+                    return Fail("Nonfinite socket.", out error);
+                }
+            }
+
+            foreach (HLArmDefinition arm in data.arms)
+            {
+                if (arm.bodyPart < 0 || arm.bodyPart >= data.parts.Length
+                    || arm.sourceSocketIndex < 0 || arm.sourceSocketIndex >= data.sourceLocal.Length
+                    || arm.segmentCount < 2 || arm.segmentCount > 128
+                    || !Positive(arm.segmentLength) || !Positive(arm.radius)
+                    || !HLChainSolver.Finite(arm.rootLocal) || !HLChainSolver.Finite(arm.bendPole)
+                    || !Colour(arm.colour)
+                    || arm.restJoints == null || arm.restJoints.Length != arm.segmentCount + 1
+                    || arm.restJoints[0] != Vector3.zero)
+                {
+                    return Fail("Invalid arm or missing source socket.", out error);
+                }
+
+                for (int i = 0; i <= arm.segmentCount; i++)
+                {
+                    if (!HLChainSolver.Finite(arm.restJoints[i]))
+                    {
+                        return Fail("Rest pose does not preserve link lengths.", out error);
+                    }
+
+                    if (i > 0)
+                    {
+                        float link = Vector3.Distance(arm.restJoints[i - 1], arm.restJoints[i]);
+                        if (Mathf.Abs(link - arm.segmentLength) > 0.00001f)
+                        {
+                            return Fail("Rest pose does not preserve link lengths.", out error);
+                        }
+                    }
+                }
+            }
+
+            HLRootDefinition roots = data.roots;
+            if (roots.count < 4 || roots.count > 8 || !Positive(roots.footRadius) || !Positive(roots.thickness)
+                || roots.footRadius + roots.thickness > 0.46f
+                || !Positive(roots.hipHeight) || !Positive(roots.kneeHeight)
+                || !HLChainSolver.Finite(roots.angularOffset) || !Colour(roots.colour))
+            {
                 return Fail("Roots exceed the cell footprint or have invalid settings.", out error);
-            var idle = data.idle;
+            }
+
+            HLIdleDefinition idle = data.idle;
             if (!Nonnegative(idle.swayDegrees) || !Nonnegative(idle.swayFrequency) || !Nonnegative(idle.breathAmount)
-                || idle.breathAmount >= 1 || !Nonnegative(idle.breathFrequency)) return Fail("Invalid idle settings.", out error);
+                || idle.breathAmount >= 1f || !Nonnegative(idle.breathFrequency))
+            {
+                return Fail("Invalid idle settings.", out error);
+            }
+
             return true;
         }
-        static bool Positive(float v) => HLChainSolver.Finite(v) && v > 0;
-        static bool Nonnegative(float v) => HLChainSolver.Finite(v) && v >= 0;
-        static bool Positive(Vector3 v) => Positive(v.x) && Positive(v.y) && Positive(v.z);
-        static bool Colour(Color c) => HLChainSolver.Finite(c.r) && HLChainSolver.Finite(c.g) && HLChainSolver.Finite(c.b) && HLChainSolver.Finite(c.a);
-        static bool Fail(string message, out string error) { error = message; return false; }
+
+        static bool Positive(float value)
+        {
+            return HLChainSolver.Finite(value) && value > 0f;
+        }
+
+        static bool Nonnegative(float value)
+        {
+            return HLChainSolver.Finite(value) && value >= 0f;
+        }
+
+        static bool Positive(Vector3 value)
+        {
+            return Positive(value.x) && Positive(value.y) && Positive(value.z);
+        }
+
+        static bool Colour(Color colour)
+        {
+            return HLChainSolver.Finite(colour.r) && HLChainSolver.Finite(colour.g)
+                && HLChainSolver.Finite(colour.b) && HLChainSolver.Finite(colour.a);
+        }
+
+        static bool Fail(string message, out string error)
+        {
+            error = message;
+            return false;
+        }
     }
 }

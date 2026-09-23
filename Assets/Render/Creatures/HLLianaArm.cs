@@ -1,237 +1,452 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace HealerLike.Render.Creatures
 {
-    public enum HLGestureKind { Attack, Heal, Channel }
-    public enum HLGesturePhase { Rest, Extend, Contact, Hold, Retract }
-
-    /// <summary>A source-owned render chain; gestures change goals, never link lengths or gameplay.</summary>
-    public sealed class HLLianaArm : IDisposable
+    public enum HLGestureKind
     {
-        readonly HLChainSolver solver = new HLChainSolver();
-        readonly Vector3[] rest, joints;
-        readonly float[] lengths;
-        readonly Transform container;
-        readonly Mesh mesh;
-        readonly MeshRenderer renderer;
-        readonly Vector3[] vertices, normals;
-        const int Sides = 6;
-        const int LeafCount = 5;
-        readonly Matrix4x4[] leaves = new Matrix4x4[LeafCount];
-        readonly Matrix4x4[] beads = new Matrix4x4[LeafCount + 1];
-        readonly Mesh leafMesh, beadMesh;
-        readonly Material detailMaterial;
-        readonly MaterialPropertyBlock detailColour;
-        bool disposed;
-        public int ActiveLeafCount => visible && Phase != HLGesturePhase.Rest ? LeafCount : 0;
-        public Matrix4x4 LeafMatrix(int index) => leaves[index];
-        public Matrix4x4 TipMatrix => beads[LeafCount];
-        bool visible = true;
-        public int MeshRevision { get; private set; }
-        readonly float radius;
-        readonly Vector3 pole;
-        int token;
-        float elapsed;
-        Vector3 goal, startGoal, returnGoal;
-        bool pendingEnd;
-        HLGestureKind kind;
-        public HLDeliveryStyle Style { get; set; }
-        public bool DeliveryProfile { get; set; }
-        public HLGesturePhase Phase { get; private set; }
-        public HLChainResult LastResult { get; private set; }
-        public Vector3 Tip => joints[joints.Length - 1];
-        public Vector3 Goal => goal;
-        public int Token => token;
-        public Vector3 Joint(int index) => joints[index];
-        public int SegmentCount => lengths.Length;
-        public bool IsAvailable => Phase == HLGesturePhase.Rest;
+        Attack,
+        Heal,
+        Channel
+    }
 
-        public HLLianaArm(in HLArmDefinition definition, Transform parent, Material material, float cellSize = 1)
+    public enum HLGesturePhase
+    {
+        Rest,
+        Extend,
+        Contact,
+        Hold,
+        Retract
+    }
+
+    // A render chain owned by its source. Gestures change goals, never link lengths or gameplay.
+    public class HLLianaArm : IDisposable
+    {
+        static readonly int sides = 6;
+        static readonly int leafCount = 5;
+
+        readonly HLChainSolver _solver = new HLChainSolver();
+        readonly Vector3[] _rest;
+        readonly Vector3[] _joints;
+        readonly float[] _lengths;
+        readonly Transform _container;
+        readonly Mesh _mesh;
+        readonly MeshRenderer _renderer;
+        readonly Vector3[] _vertices;
+        readonly Vector3[] _normals;
+        readonly Matrix4x4[] _leaves = new Matrix4x4[leafCount];
+        readonly Matrix4x4[] _beads = new Matrix4x4[leafCount + 1];
+        readonly Mesh _leafMesh;
+        readonly Mesh _beadMesh;
+        readonly Material _detailMaterial;
+        readonly MaterialPropertyBlock _detailColour;
+        readonly float _radius;
+        readonly Vector3 _pole;
+        bool _isDisposed;
+        bool _isVisible = true;
+        float _elapsed;
+        Vector3 _startGoal;
+        Vector3 _returnGoal;
+        bool _isEndPending;
+        HLGestureKind _kind;
+
+        int _token;
+        public int token { get { return _token; } }
+
+        Vector3 _goal;
+        public Vector3 goal { get { return _goal; } }
+
+        public HLDeliveryStyle style { get; set; }
+
+        public bool deliveryProfile { get; set; }
+
+        public HLGesturePhase phase { get; private set; }
+
+        public HLChainResult lastResult { get; private set; }
+
+        public int meshRevision { get; private set; }
+
+        public int activeLeafCount { get { return _isVisible && phase != HLGesturePhase.Rest ? leafCount : 0; } }
+
+        public Matrix4x4 tipMatrix { get { return _beads[leafCount]; } }
+
+        public Vector3 tip { get { return _joints[_joints.Length - 1]; } }
+
+        public int segmentCount { get { return _lengths.Length; } }
+
+        public bool isAvailable { get { return phase == HLGesturePhase.Rest; } }
+
+        public HLLianaArm(HLArmDefinition definition, Transform parent, Material material, float cellSize = 1f)
         {
-            if (definition.restJoints == null || definition.restJoints.Length != definition.segmentCount + 1 || definition.segmentCount < 2
-                || !HLChainSolver.Finite(cellSize) || cellSize <= 0) throw new ArgumentException("Invalid arm definition.");
-            rest = new Vector3[definition.restJoints.Length]; joints = new Vector3[rest.Length]; lengths = new float[definition.segmentCount];
-            for (int i = 0; i < rest.Length; i++) rest[i] = definition.restJoints[i] * cellSize;
-            for (int i = 0; i < lengths.Length; i++) lengths[i] = definition.segmentLength * cellSize;
-            radius = definition.radius * cellSize; pole = definition.bendPole;
-            if (parent)
+            if (definition.restJoints == null || definition.restJoints.Length != definition.segmentCount + 1
+                || definition.segmentCount < 2 || !HLChainSolver.Finite(cellSize) || cellSize <= 0f)
             {
-                HLPrimitiveMeshes.Retain();
-                leafMesh = HLPrimitiveMeshes.Get(HLPrimitive.Cone);
-                beadMesh = HLPrimitiveMeshes.Get(HLPrimitive.Sphere);
-                detailMaterial = material;
-                detailColour = new MaterialPropertyBlock();
-                var detailColours = new Vector4[LeafCount + 1];
-                for (int i = 0; i < detailColours.Length; i++) detailColours[i] = definition.colour;
-                detailColour.SetVectorArray("_BaseColor", detailColours);
-                container = new GameObject("HLLianaArm").transform; container.SetParent(parent, false);
-                mesh = new Mesh { name = "HLLianaChain", hideFlags = HideFlags.DontSave };
-                mesh.MarkDynamic();
-                vertices = new Vector3[joints.Length * Sides + 2]; normals = new Vector3[vertices.Length];
-                var triangles = new int[lengths.Length * Sides * 6 + Sides * 6];
-                int index = 0;
-                for (int j = 0; j < lengths.Length; j++) for (int side = 0; side < Sides; side++)
-                {
-                    int a = j * Sides + side, next = j * Sides + (side + 1) % Sides;
-                    int b = a + Sides, nextB = next + Sides;
-                    triangles[index++] = a; triangles[index++] = next; triangles[index++] = b;
-                    triangles[index++] = next; triangles[index++] = nextB; triangles[index++] = b;
-                }
-                for (int side = 0; side < Sides; side++)
-                {
-                    int next = (side + 1) % Sides, end = lengths.Length * Sides;
-                    triangles[index++] = vertices.Length - 2; triangles[index++] = next; triangles[index++] = side;
-                    triangles[index++] = vertices.Length - 1; triangles[index++] = end + side; triangles[index++] = end + next;
-                }
-                // Every vertex carries a normal from creation: gameplay's SelectableEntity adds QuickOutline, whose Awake
-                // reads one normal per vertex of every child mesh, before the first gesture uploads real normals.
-                mesh.vertices = vertices; mesh.normals = normals; mesh.triangles = triangles;
-                container.gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
-                renderer = container.gameObject.AddComponent<MeshRenderer>(); renderer.sharedMaterial = material;
-                var block = new MaterialPropertyBlock(); block.SetColor("_BaseColor", definition.colour); renderer.SetPropertyBlock(block);
-                renderer.enabled = false;
+                throw new ArgumentException("Invalid arm definition.");
             }
+
+            _rest = new Vector3[definition.restJoints.Length];
+            _joints = new Vector3[_rest.Length];
+            _lengths = new float[definition.segmentCount];
+            for (int i = 0; i < _rest.Length; i++)
+            {
+                _rest[i] = definition.restJoints[i] * cellSize;
+            }
+
+            for (int i = 0; i < _lengths.Length; i++)
+            {
+                _lengths[i] = definition.segmentLength * cellSize;
+            }
+
+            _radius = definition.radius * cellSize;
+            _pole = definition.bendPole;
+            if (!parent)
+            {
+                return;
+            }
+
+            HLPrimitiveMeshes.Retain();
+            _leafMesh = HLPrimitiveMeshes.Get(HLPrimitive.Cone);
+            _beadMesh = HLPrimitiveMeshes.Get(HLPrimitive.Sphere);
+            _detailMaterial = material;
+            _detailColour = new MaterialPropertyBlock();
+            Vector4[] detailColours = new Vector4[leafCount + 1];
+            for (int i = 0; i < detailColours.Length; i++)
+            {
+                detailColours[i] = definition.colour;
+            }
+
+            _detailColour.SetVectorArray("_BaseColor", detailColours);
+            _container = new GameObject("HLLianaArm").transform;
+            _container.SetParent(parent, false);
+            _mesh = new Mesh { name = "HLLianaChain", hideFlags = HideFlags.DontSave };
+            _mesh.MarkDynamic();
+            _vertices = new Vector3[_joints.Length * sides + 2];
+            _normals = new Vector3[_vertices.Length];
+            int[] triangles = new int[_lengths.Length * sides * 6 + sides * 6];
+            int index = 0;
+            for (int j = 0; j < _lengths.Length; j++)
+            {
+                for (int side = 0; side < sides; side++)
+                {
+                    int a = j * sides + side;
+                    int next = j * sides + (side + 1) % sides;
+                    int b = a + sides;
+                    int nextB = next + sides;
+                    triangles[index++] = a;
+                    triangles[index++] = next;
+                    triangles[index++] = b;
+                    triangles[index++] = next;
+                    triangles[index++] = nextB;
+                    triangles[index++] = b;
+                }
+            }
+
+            for (int side = 0; side < sides; side++)
+            {
+                int next = (side + 1) % sides;
+                int end = _lengths.Length * sides;
+                triangles[index++] = _vertices.Length - 2;
+                triangles[index++] = next;
+                triangles[index++] = side;
+                triangles[index++] = _vertices.Length - 1;
+                triangles[index++] = end + side;
+                triangles[index++] = end + next;
+            }
+
+            // Every vertex carries a normal from creation: SelectableEntity adds QuickOutline, whose Awake
+            // reads one normal per vertex of every child mesh, before the first gesture uploads real normals.
+            _mesh.vertices = _vertices;
+            _mesh.normals = _normals;
+            _mesh.triangles = triangles;
+            _container.gameObject.AddComponent<MeshFilter>().sharedMesh = _mesh;
+            _renderer = _container.gameObject.AddComponent<MeshRenderer>();
+            _renderer.sharedMaterial = material;
+            MaterialPropertyBlock block = new MaterialPropertyBlock();
+            block.SetColor("_BaseColor", definition.colour);
+            _renderer.SetPropertyBlock(block);
+            _renderer.enabled = false;
         }
+
+        public Matrix4x4 LeafMatrix(int index)
+        {
+            return _leaves[index];
+        }
+
+        public Vector3 Joint(int index)
+        {
+            return _joints[index];
+        }
+
         public void Begin(int gestureToken, HLGestureKind gestureKind, Vector3 worldTarget)
         {
-            token = gestureToken; kind = gestureKind; goal = worldTarget; startGoal = Tip; pendingEnd = false;
-            Phase = HLGesturePhase.Extend; elapsed = 0;
+            _token = gestureToken;
+            _kind = gestureKind;
+            _goal = worldTarget;
+            _startGoal = tip;
+            _isEndPending = false;
+            phase = HLGesturePhase.Extend;
+            _elapsed = 0f;
         }
+
         public void SetTipGoal(int gestureToken, Vector3 worldPosition)
         {
-            if (token != gestureToken || Phase == HLGesturePhase.Rest || Phase == HLGesturePhase.Retract) return;
-            goal = worldPosition;
-            // Projectile travel is already the authoritative extension timing.
-            if (Phase != HLGesturePhase.Contact || Style == HLDeliveryStyle.Bounce) Phase = HLGesturePhase.Hold;
+            if (_token != gestureToken || phase == HLGesturePhase.Rest || phase == HLGesturePhase.Retract)
+            {
+                return;
+            }
+
+            _goal = worldPosition;
+            // Projectile travel already sets the extension timing
+            if (phase != HLGesturePhase.Contact || style == HLDeliveryStyle.Bounce)
+            {
+                phase = HLGesturePhase.Hold;
+            }
         }
+
         public void Contact(int gestureToken, Vector3 worldPosition)
         {
-            if (token != gestureToken || Phase == HLGesturePhase.Rest) return;
-            goal = worldPosition; Phase = HLGesturePhase.Contact; elapsed = 0;
+            if (_token != gestureToken || phase == HLGesturePhase.Rest)
+            {
+                return;
+            }
+
+            _goal = worldPosition;
+            phase = HLGesturePhase.Contact;
+            _elapsed = 0f;
         }
+
         public void End(int gestureToken)
         {
-            if (token != gestureToken || Phase == HLGesturePhase.Rest || Phase == HLGesturePhase.Retract) return;
-            if (Phase == HLGesturePhase.Contact && elapsed < .04f) { pendingEnd = true; return; }
+            if (_token != gestureToken || phase == HLGesturePhase.Rest || phase == HLGesturePhase.Retract)
+            {
+                return;
+            }
+
+            if (phase == HLGesturePhase.Contact && _elapsed < 0.04f)
+            {
+                _isEndPending = true;
+                return;
+            }
+
             StartReturn();
         }
-        public void Cancel(int gestureToken) => End(gestureToken);
-        void StartReturn() { returnGoal = Tip; Phase = HLGesturePhase.Retract; elapsed = 0; pendingEnd = false; }
+
+        public void Cancel(int gestureToken)
+        {
+            End(gestureToken);
+        }
+
         public void Tick(float deltaTime, Vector3 rootWorld, Quaternion restOrientation)
         {
-            float dt = Mathf.Max(0, deltaTime);
-            float retractSeconds = DeliveryProfile && Style == HLDeliveryStyle.Rigid ? .045f : .20f;
-            Vector3 restTip = rootWorld + restOrientation * rest[rest.Length - 1];
-            elapsed += dt;
-            if (Phase == HLGesturePhase.Rest || (Phase == HLGesturePhase.Retract && elapsed >= retractSeconds))
+            float dt = Mathf.Max(0f, deltaTime);
+            float retractSeconds = deliveryProfile && style == HLDeliveryStyle.Rigid ? 0.045f : 0.2f;
+            Vector3 restTip = rootWorld + restOrientation * _rest[_rest.Length - 1];
+            _elapsed += dt;
+            if (phase == HLGesturePhase.Rest || (phase == HLGesturePhase.Retract && _elapsed >= retractSeconds))
             {
-                Phase = HLGesturePhase.Rest;
-                for (int i = 0; i < joints.Length; i++) joints[i] = rootWorld + restOrientation * rest[i];
+                phase = HLGesturePhase.Rest;
+                for (int i = 0; i < _joints.Length; i++)
+                {
+                    _joints[i] = rootWorld + restOrientation * _rest[i];
+                }
             }
             else
             {
-                Vector3 target = goal;
-                if (Phase == HLGesturePhase.Extend)
+                Vector3 target = _goal;
+                if (phase == HLGesturePhase.Extend)
                 {
-                    target = Vector3.Lerp(startGoal, goal, Mathf.Clamp01(elapsed / .10f));
-                    if (elapsed >= .10f) { Phase = HLGesturePhase.Hold; elapsed = 0; }
+                    target = Vector3.Lerp(_startGoal, _goal, Mathf.Clamp01(_elapsed / 0.1f));
+                    if (_elapsed >= 0.1f)
+                    {
+                        phase = HLGesturePhase.Hold;
+                        _elapsed = 0f;
+                    }
                 }
-                if (Phase == HLGesturePhase.Retract)
+
+                if (phase == HLGesturePhase.Retract)
                 {
-                    float blend = Mathf.Clamp01(elapsed / retractSeconds);
-                    target = Vector3.Lerp(returnGoal, restTip, blend);
-                    // This is only an initial guess; FABRIK projects every link immediately below.
-                    for (int i = 0; i < joints.Length; i++) joints[i] = Vector3.Lerp(joints[i], rootWorld + restOrientation * rest[i], blend);
+                    float blend = Mathf.Clamp01(_elapsed / retractSeconds);
+                    target = Vector3.Lerp(_returnGoal, restTip, blend);
+                    // Only an initial guess, FABRIK projects every link right below
+                    for (int i = 0; i < _joints.Length; i++)
+                    {
+                        _joints[i] = Vector3.Lerp(_joints[i], rootWorld + restOrientation * _rest[i], blend);
+                    }
                 }
-                if (!DeliveryProfile) LastResult = solver.Solve(joints, lengths, rootWorld, target, restOrientation * pole, 64);
-                else if (Style == HLDeliveryStyle.Rigid || Style == HLDeliveryStyle.Direct || Style == HLDeliveryStyle.Swarm || Style == HLDeliveryStyle.Bounce || Style == HLDeliveryStyle.ChainSync)
+
+                bool isRod = style == HLDeliveryStyle.Rigid || style == HLDeliveryStyle.Direct
+                    || style == HLDeliveryStyle.Swarm || style == HLDeliveryStyle.Bounce
+                    || style == HLDeliveryStyle.ChainSync;
+                if (!deliveryProfile)
                 {
-                    // Delivery rods telescope visually; the projectile endpoint remains authoritative.
-                    if (Style == HLDeliveryStyle.Rigid && Phase != HLGesturePhase.Retract) target = goal;
-                    for (int i = 0; i < joints.Length; i++) joints[i] = Vector3.Lerp(rootWorld, target, (float)i / (joints.Length - 1));
+                    lastResult = _solver.Solve(_joints, _lengths, rootWorld, target, restOrientation * _pole, 64);
+                }
+                else if (isRod)
+                {
+                    // Delivery rods telescope visually, the projectile endpoint stays authoritative
+                    if (style == HLDeliveryStyle.Rigid && phase != HLGesturePhase.Retract)
+                    {
+                        target = _goal;
+                    }
+
+                    for (int i = 0; i < _joints.Length; i++)
+                    {
+                        _joints[i] = Vector3.Lerp(rootWorld, target, (float)i / (_joints.Length - 1));
+                    }
                 }
                 else
                 {
-                    for (int i = 0; i < joints.Length; i++)
+                    for (int i = 0; i < _joints.Length; i++)
                     {
-                        float t = (float)i / (joints.Length - 1);
-                        joints[i] = Vector3.Lerp(rootWorld, target, t) + Vector3.up * (4 * t * (1 - t) * Mathf.Min(2, Vector3.Distance(rootWorld, target) * .4f));
+                        float t = (float)i / (_joints.Length - 1);
+                        float lift = 4f * t * (1f - t) * Mathf.Min(2f, Vector3.Distance(rootWorld, target) * 0.4f);
+                        _joints[i] = Vector3.Lerp(rootWorld, target, t) + Vector3.up * lift;
                     }
                 }
-                if (Phase == HLGesturePhase.Contact && elapsed >= .04f)
+
+                if (phase == HLGesturePhase.Contact && _elapsed >= 0.04f)
                 {
-                    if (pendingEnd || kind == HLGestureKind.Heal) StartReturn(); else { Phase = HLGesturePhase.Hold; elapsed = 0; }
+                    if (_isEndPending || _kind == HLGestureKind.Heal)
+                    {
+                        StartReturn();
+                    }
+                    else
+                    {
+                        phase = HLGesturePhase.Hold;
+                        _elapsed = 0f;
+                    }
                 }
             }
+
             Draw();
         }
-        void Draw()
-        {
-            if (!container) return;
-            renderer.enabled = visible && Phase != HLGesturePhase.Rest;
-            if (!renderer.enabled) return;
-            UpdateDetails();
-            Matrix4x4 worldToLocal = container.worldToLocalMatrix;
-            for (int j = 0; j < joints.Length; j++)
-            {
-                Vector3 tangent = joints[Mathf.Min(j + 1, joints.Length - 1)] - joints[Mathf.Max(j - 1, 0)];
-                if (tangent.sqrMagnitude < 1e-12f) tangent = Vector3.up;
-                tangent.Normalize();
-                Vector3 axis = Mathf.Abs(tangent.y) < .9f ? Vector3.up : Vector3.right;
-                Vector3 u = Vector3.Cross(tangent, axis).normalized, v = Vector3.Cross(tangent, u);
-                float width = Mathf.Lerp(radius, radius * .65f, (float)j / lengths.Length) * (Style == HLDeliveryStyle.Swarm ? .6f : 1);
-                // Narrow collars between broader internodes read as a jointed plant arm at gameplay scale.
-                width *= (j % 3 == 0) ? .76f : 1.12f;
-                for (int side = 0; side < Sides; side++)
-                {
-                    float angle = side * Mathf.PI * 2 / Sides;
-                    Vector3 normal = u * Mathf.Cos(angle) + v * Mathf.Sin(angle);
-                    int index = j * Sides + side;
-                    vertices[index] = worldToLocal.MultiplyPoint3x4(joints[j] + normal * width);
-                    normals[index] = worldToLocal.MultiplyVector(normal);
-                }
-            }
-            vertices[vertices.Length - 2] = worldToLocal.MultiplyPoint3x4(joints[0]);
-            vertices[vertices.Length - 1] = worldToLocal.MultiplyPoint3x4(Tip);
-            normals[normals.Length - 2] = worldToLocal.MultiplyVector((joints[0] - joints[1]).normalized);
-            normals[normals.Length - 1] = worldToLocal.MultiplyVector((Tip - joints[joints.Length - 2]).normalized);
-            mesh.vertices = vertices; mesh.normals = normals; mesh.RecalculateBounds(); MeshRevision++;
-        }
-        void UpdateDetails()
-        {
-            float width = Style == HLDeliveryStyle.Swarm ? .45f : 1;
-            for (int i = 0; i < LeafCount; i++)
-            {
-                int j = Mathf.Clamp((i + 1) * lengths.Length / (LeafCount + 1), 1, lengths.Length - 1);
-                Vector3 tangent = (joints[j + 1] - joints[j - 1]).normalized;
-                if (tangent.sqrMagnitude < .001f) tangent = Vector3.up;
-                Vector3 side = Vector3.Cross(tangent, Mathf.Abs(tangent.y) < .9f ? Vector3.up : Vector3.right).normalized;
-                Vector3 direction = (side * (i % 2 == 0 ? 1 : -1) + tangent * .45f).normalized;
-                float length = radius * 9 * width;
-                leaves[i] = Matrix4x4.TRS(joints[j] + direction * length * .45f,
-                    Quaternion.FromToRotation(Vector3.up, direction), new Vector3(length * .38f, length, length * .22f));
-                beads[i] = Matrix4x4.TRS(joints[j], Quaternion.identity, Vector3.one * radius * 2.4f * width);
-            }
-            beads[LeafCount] = Matrix4x4.TRS(Tip, Quaternion.identity, Vector3.one * radius * 4.5f * width);
-            if (!SystemInfo.supportsInstancing || !detailMaterial || !detailMaterial.enableInstancing || !container.gameObject.activeInHierarchy) return;
-            Graphics.DrawMeshInstanced(leafMesh, 0, detailMaterial, leaves, LeafCount, detailColour,
-                UnityEngine.Rendering.ShadowCastingMode.On, true, container.gameObject.layer);
-            Graphics.DrawMeshInstanced(beadMesh, 0, detailMaterial, beads, LeafCount + 1, detailColour,
-                UnityEngine.Rendering.ShadowCastingMode.On, true, container.gameObject.layer);
-        }
+
         public void SetVisible(bool value)
         {
-            visible = value;
-            if (renderer && (!visible || Phase == HLGesturePhase.Rest)) renderer.enabled = false;
+            _isVisible = value;
+            if (_renderer && (!_isVisible || phase == HLGesturePhase.Rest))
+            {
+                _renderer.enabled = false;
+            }
         }
+
         public void Dispose()
         {
-            if (disposed) return;
-            disposed = true;
-            if (leafMesh) HLPrimitiveMeshes.Release();
-            if (container) { container.gameObject.SetActive(false); HLPrimitiveMeshes.DestroyOwned(container.gameObject); }
-            HLPrimitiveMeshes.DestroyOwned(mesh);
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            _isDisposed = true;
+            if (_leafMesh)
+            {
+                HLPrimitiveMeshes.Release();
+            }
+
+            if (_container)
+            {
+                _container.gameObject.SetActive(false);
+                HLPrimitiveMeshes.DestroyOwned(_container.gameObject);
+            }
+
+            HLPrimitiveMeshes.DestroyOwned(_mesh);
+        }
+
+        void StartReturn()
+        {
+            _returnGoal = tip;
+            phase = HLGesturePhase.Retract;
+            _elapsed = 0f;
+            _isEndPending = false;
+        }
+
+        void Draw()
+        {
+            if (!_container)
+            {
+                return;
+            }
+
+            _renderer.enabled = _isVisible && phase != HLGesturePhase.Rest;
+            if (!_renderer.enabled)
+            {
+                return;
+            }
+
+            UpdateDetails();
+            Matrix4x4 worldToLocal = _container.worldToLocalMatrix;
+            for (int j = 0; j < _joints.Length; j++)
+            {
+                Vector3 tangent = _joints[Mathf.Min(j + 1, _joints.Length - 1)] - _joints[Mathf.Max(j - 1, 0)];
+                if (tangent.sqrMagnitude < 0.000000000001f)
+                {
+                    tangent = Vector3.up;
+                }
+
+                tangent.Normalize();
+                Vector3 axis = Mathf.Abs(tangent.y) < 0.9f ? Vector3.up : Vector3.right;
+                Vector3 u = Vector3.Cross(tangent, axis).normalized;
+                Vector3 v = Vector3.Cross(tangent, u);
+                float width = Mathf.Lerp(_radius, _radius * 0.65f, (float)j / _lengths.Length);
+                width *= style == HLDeliveryStyle.Swarm ? 0.6f : 1f;
+                // Narrow collars between broader internodes read as a jointed plant arm at gameplay scale
+                width *= (j % 3 == 0) ? 0.76f : 1.12f;
+                for (int side = 0; side < sides; side++)
+                {
+                    float angle = side * Mathf.PI * 2f / sides;
+                    Vector3 normal = u * Mathf.Cos(angle) + v * Mathf.Sin(angle);
+                    int index = j * sides + side;
+                    _vertices[index] = worldToLocal.MultiplyPoint3x4(_joints[j] + normal * width);
+                    _normals[index] = worldToLocal.MultiplyVector(normal);
+                }
+            }
+
+            _vertices[_vertices.Length - 2] = worldToLocal.MultiplyPoint3x4(_joints[0]);
+            _vertices[_vertices.Length - 1] = worldToLocal.MultiplyPoint3x4(tip);
+            _normals[_normals.Length - 2] = worldToLocal.MultiplyVector((_joints[0] - _joints[1]).normalized);
+            Vector3 tipDirection = (tip - _joints[_joints.Length - 2]).normalized;
+            _normals[_normals.Length - 1] = worldToLocal.MultiplyVector(tipDirection);
+            _mesh.vertices = _vertices;
+            _mesh.normals = _normals;
+            _mesh.RecalculateBounds();
+            meshRevision++;
+        }
+
+        void UpdateDetails()
+        {
+            float width = style == HLDeliveryStyle.Swarm ? 0.45f : 1f;
+            for (int i = 0; i < leafCount; i++)
+            {
+                int j = Mathf.Clamp((i + 1) * _lengths.Length / (leafCount + 1), 1, _lengths.Length - 1);
+                Vector3 tangent = (_joints[j + 1] - _joints[j - 1]).normalized;
+                if (tangent.sqrMagnitude < 0.001f)
+                {
+                    tangent = Vector3.up;
+                }
+
+                Vector3 axis = Mathf.Abs(tangent.y) < 0.9f ? Vector3.up : Vector3.right;
+                Vector3 side = Vector3.Cross(tangent, axis).normalized;
+                Vector3 direction = (side * (i % 2 == 0 ? 1f : -1f) + tangent * 0.45f).normalized;
+                float length = _radius * 9f * width;
+                Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
+                Vector3 leafScale = new Vector3(length * 0.38f, length, length * 0.22f);
+                _leaves[i] = Matrix4x4.TRS(_joints[j] + direction * length * 0.45f, rotation, leafScale);
+                _beads[i] = Matrix4x4.TRS(_joints[j], Quaternion.identity, Vector3.one * _radius * 2.4f * width);
+            }
+
+            _beads[leafCount] = Matrix4x4.TRS(tip, Quaternion.identity, Vector3.one * _radius * 4.5f * width);
+            if (!SystemInfo.supportsInstancing || !_detailMaterial || !_detailMaterial.enableInstancing
+                || !_container.gameObject.activeInHierarchy)
+            {
+                return;
+            }
+
+            int layer = _container.gameObject.layer;
+            Graphics.DrawMeshInstanced(_leafMesh, 0, _detailMaterial, _leaves, leafCount, _detailColour,
+                ShadowCastingMode.On, true, layer);
+            Graphics.DrawMeshInstanced(_beadMesh, 0, _detailMaterial, _beads, leafCount + 1, _detailColour,
+                ShadowCastingMode.On, true, layer);
         }
     }
 }
