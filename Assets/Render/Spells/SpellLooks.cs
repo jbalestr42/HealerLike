@@ -6,7 +6,7 @@ using HealerLike.Render.Creatures;
 
 namespace HealerLike.Render.Spells
 {
-    // The look drawn for each buff and projectile, an unmapped buff gets boon or bane from the caster's side
+    // The look drawn for each buff and projectile: an authored row wins, else the look is derived from the data
     [CreateAssetMenu(menuName = "Custom/Data/Render/SpellLooks")]
     public class SpellLooks : SerializedScriptableObject
     {
@@ -18,6 +18,8 @@ namespace HealerLike.Render.Spells
 
         public SpellLook boon;
         public SpellLook bane;
+        public SpellLook rot;
+        public SpellLook renew;
 
         public SpellLook heal;
         public SpellLook impact;
@@ -36,7 +38,27 @@ namespace HealerLike.Render.Spells
             {
                 return buffs[factory];
             }
-            return isSameSide ? boon : bane;
+            return GetLook(EffectDerivation.Family(factory, isSameSide), EffectDerivation.Group(factory));
+        }
+
+        // Defence and prevention boons close plates around the body, offence boons orbit it
+        public SpellLook GetLook(EffectFamily family, AttributeGroup group)
+        {
+            switch (family)
+            {
+                case EffectFamily.Damage:
+                    return impact;
+                case EffectFamily.Heal:
+                    return heal;
+                case EffectFamily.Rot:
+                    return rot;
+                case EffectFamily.Renew:
+                    return renew;
+                case EffectFamily.Boon:
+                    return group == AttributeGroup.Offence ? boon : shield;
+                default:
+                    return bane;
+            }
         }
 
         public ProjectileLook GetProjectileLook(GameObject prefab)
@@ -45,7 +67,7 @@ namespace HealerLike.Render.Spells
             {
                 return projectiles[prefab];
             }
-            return new ProjectileLook();
+            return new ProjectileLook { style = EffectDerivation.Delivery(prefab) };
         }
     }
 

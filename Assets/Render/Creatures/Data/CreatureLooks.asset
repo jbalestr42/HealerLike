@@ -16,27 +16,6 @@ MonoBehaviour:
     SerializedFormat: 2
     SerializedBytes: 
     ReferencedUnityObjects:
-    - {fileID: 11400000, guid: ff864edc5e8dfdc47ad1e7a7cd3ec589, type: 2}
-    - {fileID: 6580333430975781026, guid: a176f45470e2341739440fa5e971b089, type: 3}
-    - {fileID: 11400000, guid: dfb176ea6bd99a14e889bdf14b58b2da, type: 2}
-    - {fileID: 6350323384339046233, guid: 0cf4acc14a05a4b94920c36ada0e5f76, type: 3}
-    - {fileID: 11400000, guid: d7aba650df8a23549b88525d3bb92910, type: 2}
-    - {fileID: 5768717481693098150, guid: 7b700dac4eed641c58aaea989651db87, type: 3}
-    - {fileID: 11400000, guid: 0e42156d42eb9244db24d1871321181b, type: 2}
-    - {fileID: 2888724125122612438, guid: fb0a0be9a0e284370a66185c03acbe26, type: 3}
-    - {fileID: 11400000, guid: 255dff38d4e43e54496d1a01bd3b147d, type: 2}
-    - {fileID: 5416744701153718543, guid: 8efb7aadff8a64b3e8e5a1ec5f7fe6ae, type: 3}
-    - {fileID: 11400000, guid: 1031ee4e52da5ab41a03527d522aeee3, type: 2}
-    - {fileID: 4959760490394476807, guid: 5079704bf339c41d392e422eedf81374, type: 3}
-    - {fileID: 11400000, guid: 41e68c97d2ab0cf4b868a3a3098b1e3d, type: 2}
-    - {fileID: 2441901764677228129, guid: 799236eda4a7f4fd9810f0fa460bf830, type: 3}
-    - {fileID: 11400000, guid: 19f30c8aca7684b4eb7fbd3a5e0f4b16, type: 2}
-    - {fileID: 4075585955230317254, guid: 17642493ed3a84ac49ec51ba40b1c2f5, type: 3}
-    - {fileID: 11400000, guid: 54a4a578c5855404698780caa3b60094, type: 2}
-    - {fileID: 7434484748434799511, guid: 520737a4e44d94e908cb5fa7d4a15f6f, type: 3}
-    - {fileID: 11400000, guid: 26dbd27e829bb32408f456f507d1393f, type: 2}
-    - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
-    - {fileID: 6302393034784345853, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
     - {fileID: 11400000, guid: b6564d3df55530743a8bae3f230c6101, type: 2}
     - {fileID: 8779204663335450006, guid: f3d0be9e8d9e5446c970e3f1915de7d3, type: 3}
     - {fileID: 11400000, guid: d5522b5142b13b74bbf81471208c72e0, type: 2}
@@ -56,139 +35,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 11
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 10
       Data: 0
-    - Name: $v
-      Entry: 10
-      Data: 1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 10
-      Data: 2
-    - Name: $v
-      Entry: 10
-      Data: 3
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 10
-      Data: 4
-    - Name: $v
-      Entry: 10
-      Data: 5
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 10
-      Data: 6
-    - Name: $v
-      Entry: 10
-      Data: 7
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 10
-      Data: 8
-    - Name: $v
-      Entry: 10
-      Data: 9
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 10
-      Data: 10
-    - Name: $v
-      Entry: 10
-      Data: 11
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 10
-      Data: 12
-    - Name: $v
-      Entry: 10
-      Data: 13
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 10
-      Data: 14
-    - Name: $v
-      Entry: 10
-      Data: 15
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 10
-      Data: 16
-    - Name: $v
-      Entry: 10
-      Data: 17
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 10
-      Data: 18
-    - Name: $v
-      Entry: 10
-      Data: 20
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 10
-      Data: 19
-    - Name: $v
-      Entry: 10
-      Data: 20
-    - Name: 
-      Entry: 8
-      Data: 
     - Name: 
       Entry: 13
       Data: 
@@ -212,10 +59,10 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 10
-      Data: 21
+      Data: 0
     - Name: $v
       Entry: 10
-      Data: 22
+      Data: 1
     - Name: 
       Entry: 8
       Data: 
@@ -224,10 +71,10 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 10
-      Data: 23
+      Data: 2
     - Name: $v
       Entry: 10
-      Data: 22
+      Data: 1
     - Name: 
       Entry: 8
       Data: 
@@ -237,6 +84,6 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  ally: {fileID: 6580333430975781026, guid: a176f45470e2341739440fa5e971b089, type: 3}
-  enemy: {fileID: 6302393034784345853, guid: 332517fbaf33c44c9b895d1b8b3fe73a, type: 3}
+  plant: {fileID: 6580333430975781026, guid: f3681cd4a3a14e3f93a606c27a69fd00, type: 3}
+  stone: {fileID: 6580333430975781026, guid: 107d713a6215458dbc7aef841f403985, type: 3}
   character: {fileID: 8779204663335450006, guid: f3d0be9e8d9e5446c970e3f1915de7d3, type: 3}

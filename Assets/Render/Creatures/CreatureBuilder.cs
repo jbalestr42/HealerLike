@@ -76,6 +76,13 @@ namespace HealerLike.Render.Creatures
             }
 
             _registry = manager ? manager.registry : null;
+
+            // A view without an authored recipe draws the one derived from the entity's data
+            if (!_recipe && owner && manager && manager.creatureLooks)
+            {
+                _recipe = manager.creatureLooks.GetRecipe(owner.data, owner.entityType);
+            }
+
             Init(owner);
         }
 

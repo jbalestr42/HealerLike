@@ -173,6 +173,7 @@ public class RenderManagerTests
     {
         _manager.Init(_entityManager, _player);
         Entity entity = CreateEntity(_gameGo.transform, Entity.EntityType.Player, out Renderer modelRenderer);
+        entity.data = AssetDatabase.LoadAssetAtPath<EntityData>("Assets/Data/Entities/NormalEntity/NormalEntity.asset");
 
         _entityManager.OnEntitySpawned.Invoke(entity);
 
@@ -184,7 +185,7 @@ public class RenderManagerTests
     }
 
     [Test]
-    public void OnEntitySpawned_Enemy_GetsTheStoneView()
+    public void OnEntitySpawned_Enemy_GetsTheStoneHost()
     {
         _manager.Init(_entityManager, _player);
         Entity entity = CreateEntity(_gameGo.transform, Entity.EntityType.Computer, out Renderer modelRenderer);
@@ -192,7 +193,8 @@ public class RenderManagerTests
         _entityManager.OnEntitySpawned.Invoke(entity);
 
         Assert.IsFalse(modelRenderer.enabled);
-        Assert.IsNotNull(entity.model.GetComponentInChildren<StoneEnemyVisual>());
+        Assert.IsNotNull(entity.model.GetComponentInChildren<CreatureBuilder>());
+        Assert.IsNotNull(entity.model.GetComponentInChildren<BruiseZone>());
         Assert.IsNull(entity.model.GetComponentInChildren<RangePreview>());
     }
 
@@ -230,7 +232,7 @@ public class RenderManagerTests
     }
 
     [Test]
-    public void OnEntitySpawned_SoldierEnemy_GetsTheStoneView()
+    public void OnEntitySpawned_SoldierEnemy_GetsADerivedStone()
     {
         _manager.Init(_entityManager, _player);
         Entity entity = CreateEntity(_gameGo.transform, Entity.EntityType.Computer, out Renderer modelRenderer);
@@ -239,12 +241,14 @@ public class RenderManagerTests
         _entityManager.OnEntitySpawned.Invoke(entity);
 
         Assert.IsNotNull(entity.data);
-        Assert.IsNotNull(entity.model.GetComponentInChildren<StoneEnemyVisual>());
-        Assert.IsNull(entity.model.GetComponentInChildren<CreatureBuilder>());
+        CreatureBuilder builder = entity.model.GetComponentInChildren<CreatureBuilder>();
+        Assert.IsNotNull(builder.rig);
+        Assert.AreEqual(Primitive.Boulder, builder.recipe.parts[0].primitive);
+        Assert.IsNull(entity.model.GetComponentInChildren<StoneEnemyVisual>());
     }
 
     [Test]
-    public void OnEntitySpawned_HitArmorBufferEnemy_GetsTheStoneView()
+    public void OnEntitySpawned_HitArmorBufferEnemy_GetsADerivedStone()
     {
         _manager.Init(_entityManager, _player);
         Entity entity = CreateEntity(_gameGo.transform, Entity.EntityType.Computer, out Renderer modelRenderer);
@@ -254,8 +258,10 @@ public class RenderManagerTests
         _entityManager.OnEntitySpawned.Invoke(entity);
 
         Assert.IsNotNull(entity.data);
-        Assert.IsNotNull(entity.model.GetComponentInChildren<StoneEnemyVisual>());
-        Assert.IsNull(entity.model.GetComponentInChildren<CreatureBuilder>());
+        CreatureBuilder builder = entity.model.GetComponentInChildren<CreatureBuilder>();
+        Assert.IsNotNull(builder.rig);
+        Assert.AreEqual(Primitive.Boulder, builder.recipe.parts[0].primitive);
+        Assert.IsNull(entity.model.GetComponentInChildren<StoneEnemyVisual>());
     }
 }
 

@@ -78,6 +78,48 @@ public class SpellLooksTests
         Assert.AreSame(looks.bane, result);
     }
 
+    [TestCase(EffectFamily.Damage, AttributeGroup.Offence, "impact")]
+    [TestCase(EffectFamily.Heal, AttributeGroup.Offence, "heal")]
+    [TestCase(EffectFamily.Rot, AttributeGroup.Offence, "rot")]
+    [TestCase(EffectFamily.Renew, AttributeGroup.Offence, "renew")]
+    [TestCase(EffectFamily.Boon, AttributeGroup.Offence, "boon")]
+    [TestCase(EffectFamily.Boon, AttributeGroup.Defence, "shield")]
+    [TestCase(EffectFamily.Boon, AttributeGroup.Prevention, "shield")]
+    [TestCase(EffectFamily.Bane, AttributeGroup.Offence, "bane")]
+    public void GetLook_Family_PicksTheLookOfItsShape(EffectFamily family, AttributeGroup group, string expected)
+    {
+        SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
+        Dictionary<string, SpellLook> named = new Dictionary<string, SpellLook>
+        {
+            { "impact", looks.impact }, { "heal", looks.heal }, { "rot", looks.rot }, { "renew", looks.renew },
+            { "boon", looks.boon }, { "shield", looks.shield }, { "bane", looks.bane }
+        };
+
+        Assert.AreSame(named[expected], looks.GetLook(family, group));
+    }
+
+    [Test]
+    public void GetLook_UnmappedPoisonHandler_DerivesTheDrips()
+    {
+        SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
+        SpellLooks copy = CreateLooks();
+        copy.rot = looks.rot;
+        ABuffHandlerFactory poison = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(
+            "Assets/Data/EntityItems/PoisonItem/BuffHandlerFactory.asset");
+
+        Assert.AreSame(looks.rot, copy.GetLook(poison, false));
+        Assert.AreEqual(SpellEffectKind.Drip, looks.rot.effectPrefab.kind);
+    }
+
+    [Test]
+    public void GetProjectileLook_UnmappedPrefab_DerivesItsDelivery()
+    {
+        SpellLooks looks = CreateLooks();
+        GameObject swarm = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/SwarmBullet.prefab");
+
+        Assert.AreEqual(DeliveryStyle.Swarm, looks.GetProjectileLook(swarm).style);
+    }
+
     [Test]
     public void GetProjectileLook_MappedPrefab_ReturnsMappedLook()
     {
@@ -109,7 +151,7 @@ public class SpellLooksTests
 
         Assert.AreEqual(20, looks.buffs.Count);
         Assert.AreEqual(9, looks.projectiles.Count);
-        foreach (SpellLook look in new[] { looks.boon, looks.bane, looks.heal, looks.impact, looks.manaGain,
+        foreach (SpellLook look in new[] { looks.boon, looks.bane, looks.rot, looks.renew, looks.heal, looks.impact, looks.manaGain,
                                            looks.manaLoss, looks.chain, looks.shield, looks.area, looks.hostileArea })
         {
             Assert.IsNotNull(look.effectPrefab);

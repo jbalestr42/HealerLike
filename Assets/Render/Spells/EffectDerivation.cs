@@ -37,7 +37,7 @@ namespace HealerLike.Render.Spells
         public static EffectFamily Family(ABuffHandlerFactory handler, bool isSameSide)
         {
             EffectFamily sideFamily = isSameSide ? EffectFamily.Boon : EffectFamily.Bane;
-            if (handler == null || handler.buffFactoryList == null)
+            if (!HasBuffs(handler))
             {
                 return sideFamily;
             }
@@ -128,7 +128,7 @@ namespace HealerLike.Render.Spells
 
         public static AttributeGroup Group(ABuffHandlerFactory handler)
         {
-            if (handler == null || handler.buffFactoryList == null)
+            if (!HasBuffs(handler))
             {
                 return AttributeGroup.Offence;
             }
@@ -150,7 +150,7 @@ namespace HealerLike.Render.Spells
 
         public static EffectTempo Tempo(ABuffHandlerFactory handler)
         {
-            if (handler == null || handler.durationType == DurationType.Instant)
+            if (!HasData(handler) || handler.durationType == DurationType.Instant)
             {
                 return EffectTempo.Once;
             }
@@ -187,7 +187,7 @@ namespace HealerLike.Render.Spells
 
         public static bool IsPeriodic(ABuffHandlerFactory handler)
         {
-            if (handler == null || handler.durationType == DurationType.Instant)
+            if (!HasData(handler) || handler.durationType == DurationType.Instant)
             {
                 return false;
             }
@@ -264,6 +264,18 @@ namespace HealerLike.Render.Spells
                 return data != null;
             }
             return true;
+        }
+
+        // A handler made in memory can come without its data, its members would then throw
+        static bool HasData(ABuffHandlerFactory handler)
+        {
+            BuffHandlerFactory factory = handler as BuffHandlerFactory;
+            return handler != null && (factory == null || factory.data != null);
+        }
+
+        static bool HasBuffs(ABuffHandlerFactory handler)
+        {
+            return HasData(handler) && handler.buffFactoryList != null;
         }
 
         static bool IsDefence(AttributeType type)
