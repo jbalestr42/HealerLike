@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using HealerLike.Render.Stage;
 
@@ -57,6 +58,8 @@ namespace HealerLike.Render.Creatures
             return entity;
         }
 
+        GameObject _managerGo;
+
         [SetUp]
         public void Setup()
         {
@@ -73,13 +76,15 @@ namespace HealerLike.Render.Creatures
             EntityModel entityModel = model.AddComponent<EntityModel>();
             TestHelpers.SetPrivateField(entity, "_model", entityModel);
             _recipe = HLCreatureValidatorTests.Recipe();
-            _material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
             _builder = model.AddComponent<HLCreatureBuilder>();
             _builder.SetRecipe(_recipe, _material, HLPrimitiveMeshesTests.Meshes());
             _builder.Init(entity);
             _projectileObject = new GameObject("HLProjectile", typeof(LineRenderer));
             _projectile = _projectileObject.AddComponent<Projectile>();
             _observer = _projectileObject.AddComponent<HLProjectileVisualObserver>();
+            _managerGo = new GameObject("HLRenderManager");
+            _observer.Init(_managerGo.AddComponent<RenderManager>(), null);
             _projectile.Init(_source, _first, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
         }
 
@@ -97,6 +102,7 @@ namespace HealerLike.Render.Creatures
             }
 
             Object.DestroyImmediate(_projectileObject);
+            Object.DestroyImmediate(_managerGo);
             Object.DestroyImmediate(_source);
             Object.DestroyImmediate(_first);
             Object.DestroyImmediate(_second);
@@ -235,7 +241,7 @@ namespace HealerLike.Render.Creatures
             GameObject managerGo = new GameObject("HLRenderManager");
             RenderManager manager = managerGo.AddComponent<RenderManager>();
             int previous = manager.NextDeliveryToken();
-            _observer.Init(manager);
+            _observer.Init(manager, null);
 
             _observer.Init(_source);
 

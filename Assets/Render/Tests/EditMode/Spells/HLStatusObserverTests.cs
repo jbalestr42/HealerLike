@@ -105,13 +105,12 @@ namespace HealerLike.Render.Spells
         }
 
         [Test]
-        public void UnchangedStatusReturnsWhenRegistrySinkIsReenabled()
+        public void UnchangedStatusReturnsWhenTheSinkIsReenabled()
         {
             GameObject go = new GameObject("HLObserver");
             GameObject host = new GameObject("HLSink");
             BuffHandlerFactory factory = ScriptableObject.CreateInstance<BuffHandlerFactory>();
             FlatModifierFactory modifier = ScriptableObject.CreateInstance<FlatModifierFactory>();
-            HLRenderRegistry previous = HLRenderRegistry.current;
             try
             {
                 modifier.data = new FlatModifierData { value = 1f };
@@ -126,8 +125,7 @@ namespace HealerLike.Render.Spells
                 sink.looks = UnityEditor.AssetDatabase.LoadAssetAtPath<SpellLooks>(
                     "Assets/Render/Spells/Data/SpellLooks.asset"
                 );
-                HLRenderRegistry.current = new HLRenderRegistry { spellSink = sink };
-                observer.Bind(manager, null);
+                observer.Bind(manager, sink);
                 manager.OnBuffHandlerStarted.Invoke(
                     new BuffManager.BuffHandlerData
                     {
@@ -151,7 +149,6 @@ namespace HealerLike.Render.Spells
             }
             finally
             {
-                HLRenderRegistry.current = previous;
                 DestroyHost(go);
                 DestroyHost(host);
                 Object.DestroyImmediate(factory);
@@ -246,6 +243,7 @@ namespace HealerLike.Render.Spells
                 sink.looks = UnityEditor.AssetDatabase.LoadAssetAtPath<SpellLooks>(
                     "Assets/Render/Spells/Data/SpellLooks.asset"
                 );
+                TestHelpers.SetPrivateField(renderManager, "_spellSink", sink);
                 HLStatusObserver observer = go.AddComponent<HLStatusObserver>();
 
                 observer.Init(entity, renderManager);

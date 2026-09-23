@@ -23,16 +23,12 @@ namespace HealerLike.Render.Zones
             _entity.attributeManager = attributes;
             _entity.entityType = Entity.EntityType.Player;
             _preview = _entityGo.AddComponent<HLRangePreview>();
-            _preview.observePointer = false;
-            _preview.observeHover = false;
-            HLRangePreview.allRanges = false;
-            _preview.Init(_entity);
+            _preview.Init(_entity, _owner);
         }
 
         [TearDown]
         public void TearDown()
         {
-            HLRangePreview.allRanges = false;
             Object.DestroyImmediate(_entityGo);
             Object.DestroyImmediate(_ownerGo);
         }
@@ -125,9 +121,9 @@ namespace HealerLike.Render.Zones
         }
 
         [Test]
-        public void AllRangesUsesLowStrengthAndExcludesEnemies()
+        public void ShowAllUsesLowStrengthAndExcludesEnemies()
         {
-            HLRangePreview.allRanges = true;
+            _preview.Show(false, true);
             _preview.Refresh();
             _owner.PublishFrame(0f);
             Assert.AreEqual(0.15f, _owner.snapshot[0].strength);
@@ -142,36 +138,15 @@ namespace HealerLike.Render.Zones
         }
 
         [Test]
-        public void HoverUsesEntityColliderAndCachesOnlyOneRaycastPerFrame()
-        {
-            _entityGo.AddComponent<BoxCollider>();
-            Physics.SyncTransforms();
-            Ray hit = new Ray(Vector3.back * 3f, Vector3.forward);
-            Ray miss = new Ray(Vector3.back * 3f, Vector3.back);
-
-            Assert.AreSame(_entity, HLRangePreview.SampleHover(hit, -100));
-            Assert.AreSame(_entity, HLRangePreview.SampleHover(miss, -100));
-            Assert.IsNull(HLRangePreview.SampleHover(miss, -99));
-            Assert.AreEqual(0, _owner.liveCount, "Hover does not invent selection state.");
-        }
-
-        [Test]
         public void HoverShowsRangeWithoutOverwritingExplicitSelection()
         {
-            _entityGo.AddComponent<BoxCollider>();
-            Physics.SyncTransforms();
-            GameObject cameraGo = new GameObject("preview camera");
-            cameraGo.transform.SetParent(_entityGo.transform);
-            _preview.previewCamera = cameraGo.AddComponent<Camera>();
-            _preview.observeHover = true;
-
-            HLRangePreview.SampleHover(new Ray(Vector3.back * 3f, Vector3.forward), Time.frameCount);
+            _preview.Show(true, false);
             _preview.Refresh();
             _owner.PublishFrame(0f);
             Assert.AreEqual(3, _owner.snapshot[0].kind);
 
             _preview.SetPreviewState(true, false);
-            _preview.observeHover = false;
+            _preview.Show(false, false);
             _preview.Refresh();
             Assert.AreEqual(1, _owner.liveCount);
 
@@ -187,7 +162,7 @@ namespace HealerLike.Render.Zones
             _preview.SetPreviewState(true, false);
             Assert.AreEqual(0, _owner.liveCount);
 
-            _preview.Init(null);
+            _preview.Init(null, _owner);
             _preview.SetPreviewState(true, true);
             Assert.AreEqual(0, _owner.liveCount);
         }
@@ -215,10 +190,8 @@ namespace HealerLike.Render.Zones
         }
 
         [Test]
-        public void Show_NeitherHoveredNorShowAll_IgnoresTheStaticAllRanges()
+        public void Show_NeitherHoveredNorShowAll_HidesTheRange()
         {
-            HLRangePreview.allRanges = true;
-
             _preview.Show(false, false);
             _preview.Refresh();
 
@@ -236,9 +209,9 @@ namespace HealerLike.Render.Zones
         }
 
         [Test]
-        public void Init_WithoutZones_IgnoresTheStaticRegistry()
+        public void Init_WithoutZones_ShowsNothing()
         {
-            _preview.Init(_entity, null);
+            _preview.Init(_entity, (HLZoneRegistry)null);
 
             _preview.Show(true, false);
             _preview.Refresh();

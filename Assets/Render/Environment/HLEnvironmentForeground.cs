@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
-using HealerLike.Render.Grass;
 using HealerLike.Render.Stage;
 using HealerLike.Render.Stones;
 using UnityEngine;
@@ -37,11 +36,7 @@ namespace HealerLike.Render.Environment
 
         readonly List<Mesh> _ownedMeshes = new List<Mesh>();
         MaterialPropertyBlock _properties;
-        RenderManager _manager;
         HLPrimitiveMeshes _meshes;
-
-        // Runtime meshes for the stage scene, removed in D2
-        HLPrimitiveMeshes _stageMeshes;
 
         List<HLForegroundItem> _items = new List<HLForegroundItem>();
         public IReadOnlyList<HLForegroundItem> items { get { return _items; } }
@@ -57,20 +52,10 @@ namespace HealerLike.Render.Environment
                 return;
             }
 
-            _manager = manager;
             _meshes = manager.meshes;
             _stageCamera = stageCamera;
             _groundY = surfaceY;
             Build();
-        }
-
-        // The stage scene builds from its own camera until the render manager attaches it, removed in D2
-        void Start()
-        {
-            if (_manager == null)
-            {
-                Build();
-            }
         }
 
         void OnEnable()
@@ -92,21 +77,6 @@ namespace HealerLike.Render.Environment
         void OnDestroy()
         {
             Clear();
-            if (_stageMeshes != null)
-            {
-                StageSceneMeshes.Release(_stageMeshes);
-                _stageMeshes = null;
-            }
-        }
-
-        // The stage builder wires the scene instance, removed in D2
-        public void Configure(Camera stage, Material stones, Material plants, float surfaceY, int layoutSeed)
-        {
-            _stageCamera = stage;
-            _stoneMaterial = stones;
-            _plantMaterial = plants;
-            _groundY = surfaceY;
-            _seed = layoutSeed;
         }
 
         // Ground point seen through a viewport point (0..1, origin bottom-left); false when the ray misses the ground
@@ -223,12 +193,6 @@ namespace HealerLike.Render.Environment
 
         public void Build(Vector3 cameraPosition, Quaternion cameraRotation, float verticalFov, float frameAspect)
         {
-            if (_manager == null && _meshes == null)
-            {
-                _stageMeshes = StageSceneMeshes.Create();
-                _meshes = _stageMeshes;
-            }
-
             Clear();
             _items = Layout(cameraPosition, cameraRotation, verticalFov, frameAspect, _groundY, _seed);
             _root = new GameObject("HLForegroundItems").transform;

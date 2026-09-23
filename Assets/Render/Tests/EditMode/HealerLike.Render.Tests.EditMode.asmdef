@@ -5,7 +5,6 @@
         "HealerLike.Runtime",
         "HealerLike.Render",
         "HealerLike.Render.Creatures.Editor",
-        "HealerLike.Render.Spells.Editor",
         "HealerLike.Render.Stage.Editor",
         "HealerLike.Render.Stones.Editor",
         "HealerLike.Tests.EditMode",

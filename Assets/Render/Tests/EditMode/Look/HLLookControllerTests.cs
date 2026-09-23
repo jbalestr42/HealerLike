@@ -135,7 +135,7 @@ namespace HealerLike.Render.Look
                 Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(expectedDirection));
 
                 controller.enabled = false;
-                HLLookController.PublishMainLightDirection(sun);
+                TestHelpers.InvokePrivate(controller, "OnDisable");
                 Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(Vector4.zero));
             }
             finally
@@ -265,49 +265,15 @@ namespace HealerLike.Render.Look
         }
 
         [Test]
-        public void ConflictingControllerCannotPublishOrClearOwnerGlobals()
+        public void OnDisable_AppliedLook_ClearsTheAppliedFlag()
         {
-            HLLookController first = CreateController();
-            first.ApplyGlobals();
-            LogAssert.Expect(LogType.Warning, ownerWarning);
-            HLLookController second = CreateController();
-            HLLookSettings other = HLLookSettings.Default;
-            other.fogBands = 13;
-            second.settings = other;
+            HLLookController controller = CreateController();
+            controller.ApplyGlobals();
 
-            second.ApplyGlobals();
-            Assert.That(Shader.GetGlobalFloat("_HLFogBands"), Is.EqualTo(6f));
+            controller.enabled = false;
+            TestHelpers.InvokePrivate(controller, "OnDisable");
 
-            second.enabled = false;
-            Assert.That(Shader.GetGlobalFloat(applied), Is.EqualTo(1f));
-
-            first.enabled = false;
             Assert.That(Shader.GetGlobalFloat(applied), Is.Zero);
-
-            second.enabled = true;
-            second.ApplyGlobals();
-            Assert.That(Shader.GetGlobalFloat("_HLFogBands"), Is.EqualTo(13f));
-        }
-
-        [Test]
-        public void OwnerDisableSelectsFallbackAndReplacementMustExplicitlyEnable()
-        {
-            HLLookController first = CreateController();
-            LogAssert.Expect(LogType.Warning, ownerWarning);
-            HLLookController second = CreateController();
-            first.ApplyGlobals();
-
-            first.enabled = false;
-            Assert.That(Shader.GetGlobalFloat(applied), Is.Zero);
-
-            first.ApplyGlobals();
-            second.ApplyGlobals();
-            Assert.That(Shader.GetGlobalFloat(applied), Is.Zero);
-
-            second.enabled = false;
-            second.enabled = true;
-            second.ApplyGlobals();
-            Assert.That(Shader.GetGlobalFloat(applied), Is.EqualTo(1f));
         }
 
         [Test]

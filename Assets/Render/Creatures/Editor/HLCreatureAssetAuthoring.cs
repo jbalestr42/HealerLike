@@ -1,17 +1,14 @@
-using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using HealerLike.Render.Spells;
+using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Creatures
 {
     public static class HLCreatureAssetAuthoring
     {
         static readonly string root = "Assets/Render/Creatures/";
-        static readonly Color body = new Color(0.50f, 0.79f, 0.25f);
-        static readonly Color stem = new Color(0.18f, 0.49f, 0.31f);
-        static readonly Color bud = new Color(0.78f, 0.95f, 0.29f);
-
         static readonly string materialPath = "Assets/Render/Look/HLLook_Default.mat";
         static readonly string meshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
 
@@ -28,11 +25,11 @@ namespace HealerLike.Render.Creatures
 
             Directory.CreateDirectory(root + "Data");
             Directory.CreateDirectory(root + "Prefabs");
-            HLCreatureRecipe healer = SaveRecipe("HLHealer", Healer(), 6, 2, 17);
-            HLCreatureRecipe fern = SaveRecipe("HLSpiralFern", Fern(), 7, 2, 31);
-            HLCreatureRecipe arch = SaveRecipe("HLHangingArch", Arch(), 6, 4, 57);
-            HLCreatureRecipe rosette = SaveRecipe("HLBladeRosette", Rosette(), 6, 2, 103);
-            HLCreatureRecipe stack = SaveRecipe("HLSphereStack", Stack(), 8, 1, 89);
+            HLCreatureRecipe healer = CreatureRecipeAuthoring.SaveRecipe("HLHealer", CreatureRecipeParts.Healer(), 6, 2, 17);
+            HLCreatureRecipe fern = CreatureRecipeAuthoring.SaveRecipe("HLSpiralFern", CreatureRecipeParts.Fern(), 7, 2, 31);
+            HLCreatureRecipe arch = CreatureRecipeAuthoring.SaveRecipe("HLHangingArch", CreatureRecipeParts.Arch(), 6, 4, 57);
+            HLCreatureRecipe rosette = CreatureRecipeAuthoring.SaveRecipe("HLBladeRosette", CreatureRecipeParts.Rosette(), 6, 2, 103);
+            HLCreatureRecipe stack = CreatureRecipeAuthoring.SaveRecipe("HLSphereStack", CreatureRecipeParts.Stack(), 8, 1, 89);
             if (!healer || !fern || !arch || !rosette || !stack)
             {
                 return;
@@ -47,16 +44,10 @@ namespace HealerLike.Render.Creatures
             View("HLMultiShot", arch, material, meshes);
             View("HLRandomShoot", fern, material, meshes);
             View("HLChainLightning", stack, material, meshes);
-            // SlowTowerModel's root scale, which the stage copies size their trample zone from
-            View("HLChanneling", stack, material, meshes, 0.9f);
+            View("HLChanneling", stack, material, meshes);
             View("HLSoldier", stack, material, meshes);
             View("HLHitArmorBuffer", rosette, material, meshes);
             CharacterView(healer, material, meshes);
-            foreach (string path in Directory.GetFiles("Assets/Prefabs/Projectiles", "*.prefab"))
-            {
-                ProjectileView(path);
-            }
-
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[HLCreatureAssetAuthoring] Creature recipes and view prefabs authored.");
@@ -65,253 +56,23 @@ namespace HealerLike.Render.Creatures
         // Recipe-only refresh keeps existing prefab presentation and delivery overrides intact
         public static void AuthorBeautyRecipes()
         {
-            SaveRecipe("HLHealer", Healer(), 6, 2, 17);
-            SaveRecipe("HLSpiralFern", Fern(), 7, 2, 31);
-            SaveRecipe("HLHangingArch", Arch(), 6, 4, 57);
-            SaveRecipe("HLBladeRosette", Rosette(), 6, 2, 103);
-            SaveRecipe("HLSphereStack", Stack(), 8, 1, 89);
+            CreatureRecipeAuthoring.SaveRecipe("HLHealer", CreatureRecipeParts.Healer(), 6, 2, 17);
+            CreatureRecipeAuthoring.SaveRecipe("HLSpiralFern", CreatureRecipeParts.Fern(), 7, 2, 31);
+            CreatureRecipeAuthoring.SaveRecipe("HLHangingArch", CreatureRecipeParts.Arch(), 6, 4, 57);
+            CreatureRecipeAuthoring.SaveRecipe("HLBladeRosette", CreatureRecipeParts.Rosette(), 6, 2, 103);
+            CreatureRecipeAuthoring.SaveRecipe("HLSphereStack", CreatureRecipeParts.Stack(), 8, 1, 89);
             AssetDatabase.SaveAssets();
         }
 
-        static HLPart Part(string id, HLPrimitive primitive, Vector3 position, Vector3 dimensions, Color colour,
-            Vector3 euler = default, int parent = 0, float glow = 0f)
+        // The view sits under his model, which carries the model scale, so the root stays at scale one
+        static void View(string name, HLCreatureRecipe recipe, Material material, HLPrimitiveMeshes meshes)
         {
-            return new HLPart
-            {
-                id = id,
-                parent = parent,
-                primitive = primitive,
-                localPosition = position,
-                dimensions = dimensions,
-                colour = colour,
-                localEuler = euler,
-                torusTubeRatio = 0.2f,
-                glow = glow
-            };
-        }
-
-        static List<HLPart> Base()
-        {
-            return new List<HLPart>
-            {
-                Part("HLStem", HLPrimitive.Capsule, new Vector3(0f, 0.25f, 0f), new Vector3(0.11f, 0.5f, 0.11f), stem,
-                    parent: -1)
-            };
-        }
-
-        static List<HLPart> Healer()
-        {
-            List<HLPart> parts = Base();
-            parts.Add(Part("HLBulb", HLPrimitive.Cone, new Vector3(0f, 0.48f, 0f), new Vector3(0.5f, 0.62f, 0.45f),
-                body, new Vector3(0f, 0f, 180f)));
-            parts.Add(Part("HLHip", HLPrimitive.Sphere, new Vector3(0f, 0.04f, 0f), new Vector3(0.38f, 0.30f, 0.38f),
-                body));
-            parts.Add(Part("HLCrown", HLPrimitive.Torus, new Vector3(0f, 0.86f, 0f), new Vector3(0.60f, 0.3f, 0.48f),
-                bud, glow: 0.4f));
-            for (int i = 0; i < 3; i++)
-            {
-                float angle = i * Mathf.PI * 2f / 3f;
-                Vector3 position = new Vector3(Mathf.Cos(angle) * 0.24f, 0.69f, Mathf.Sin(angle) * 0.24f);
-                Vector3 euler = new Vector3(0f, -angle * Mathf.Rad2Deg, -25f);
-                Vector3 size = new Vector3(0.13f, 0.23f, 0.13f);
-                parts.Add(Part("HLBud" + i, HLPrimitive.Sphere, position, size, bud, euler, glow: 1.6f));
-            }
-
-            return parts;
-        }
-
-        static List<HLPart> Rosette()
-        {
-            List<HLPart> parts = new List<HLPart>
-            {
-                Part("HLRosette", HLPrimitive.Sphere, Vector3.up * 0.15f, new Vector3(0.4f, 0.3f, 0.4f), body,
-                    parent: -1)
-            };
-            for (int i = 0; i < 6; i++)
-            {
-                float angle = i * Mathf.PI / 3f;
-                Vector3 position = new Vector3(0.26f * Mathf.Cos(angle), 0.28f, 0.26f * Mathf.Sin(angle));
-                Vector3 facing = new Vector3(Mathf.Cos(angle), 0.65f, Mathf.Sin(angle));
-                Vector3 euler = Quaternion.FromToRotation(Vector3.up, facing).eulerAngles;
-                Vector3 size = new Vector3(0.2f, 0.72f, 0.1f);
-                parts.Add(Part("HLBud" + i, HLPrimitive.Cone, position, size, body, euler, glow: 0.7f));
-            }
-
-            return parts;
-        }
-
-        static List<HLPart> Fern()
-        {
-            List<HLPart> parts = Base();
-            Vector3 previous = Vector3.zero;
-            for (int i = 0; i < 10; i++)
-            {
-                float angle = i * 0.53f;
-                float radius = 0.31f * (1f - i * 0.055f);
-                float height = 0.13f + i * 0.075f;
-                Vector3 point = new Vector3(Mathf.Sin(angle) * radius, height, Mathf.Cos(angle) * radius * 0.35f);
-                Vector3 delta = point - previous;
-                Vector3 stemSize = new Vector3(0.065f, delta.magnitude + 0.035f, 0.065f);
-                Vector3 stemEuler = Quaternion.FromToRotation(Vector3.up, delta).eulerAngles;
-                Vector3 middle = (point + previous) * 0.5f;
-                parts.Add(Part("HLFernStem" + i, HLPrimitive.Capsule, middle, stemSize, stem, stemEuler));
-                Vector3 frondSize = new Vector3(0.28f * (1f - i * 0.04f), 0.07f, 0.15f);
-                Vector3 frondEuler = new Vector3(0f, i * 29f, i % 2 == 0 ? 32f : -32f);
-                Color frondColour = i % 2 == 0 ? body : bud;
-                parts.Add(Part("HLFrond" + i, HLPrimitive.Sphere, point, frondSize, frondColour, frondEuler,
-                    glow: i > 6 ? 0.45f : 0f));
-                previous = point;
-            }
-
-            return parts;
-        }
-
-        static List<HLPart> Arch()
-        {
-            List<HLPart> parts = Base();
-            parts[0] = Part("HLArchFoot", HLPrimitive.Capsule, new Vector3(-0.29f, 0.2f, 0f),
-                new Vector3(0.10f, 0.4f, 0.1f), stem, parent: -1);
-            Vector3 previous = new Vector3(0f, 0.12f, 0f);
-            for (int i = 1; i <= 8; i++)
-            {
-                float angle = Mathf.PI - i * Mathf.PI / 8f;
-                Vector3 point = new Vector3(0.29f + Mathf.Cos(angle) * 0.29f, 0.12f + Mathf.Sin(angle) * 0.75f, 0f);
-                Vector3 delta = point - previous;
-                Vector3 size = new Vector3(0.09f, delta.magnitude + 0.04f, 0.09f);
-                Vector3 euler = Quaternion.FromToRotation(Vector3.up, delta).eulerAngles;
-                parts.Add(Part("HLArch" + i, HLPrimitive.Capsule, (point + previous) * 0.5f, size, body, euler));
-                previous = point;
-            }
-
-            for (int i = 0; i < 3; i++)
-            {
-                float x = 0.13f + i * 0.16f;
-                float y = i == 1 ? 0.58f : 0.41f;
-                parts.Add(Part("HLPodStem" + i, HLPrimitive.CylinderSegment, new Vector3(x, y + 0.12f, 0f),
-                    new Vector3(0.028f, 0.25f, 0.028f), stem));
-                parts.Add(Part("HLPod" + i, HLPrimitive.Sphere, new Vector3(x, y - 0.06f, 0f),
-                    new Vector3(0.16f, 0.28f, 0.18f), bud, glow: 0.6f));
-            }
-
-            return parts;
-        }
-
-        static List<HLPart> Stack()
-        {
-            List<HLPart> parts = new List<HLPart>
-            {
-                Part("HLConicalRoot", HLPrimitive.Cone, new Vector3(0f, 0.2f, 0f), new Vector3(0.30f, 0.4f, 0.30f),
-                    stem, parent: -1)
-            };
-            parts.Add(Part("HLBottomSphere", HLPrimitive.Sphere, new Vector3(0f, 0.34f, 0f), Vector3.one * 0.43f,
-                body));
-            parts.Add(Part("HLMiddleSphere", HLPrimitive.Sphere, new Vector3(0.045f, 0.69f, 0f), Vector3.one * 0.32f,
-                bud));
-            parts.Add(Part("HLTopSphere", HLPrimitive.Sphere, new Vector3(-0.02f, 0.95f, 0f), Vector3.one * 0.22f,
-                body, glow: 0.7f));
-            parts.Add(Part("HLRing", HLPrimitive.Torus, new Vector3(0f, 0.56f, 0f), new Vector3(0.48f, 0.26f, 0.48f),
-                stem));
-            return parts;
-        }
-
-        static HLCreatureRecipe SaveRecipe(string name, List<HLPart> parts, int roots, int armCount, int seed)
-        {
-            string path = root + "Data/" + name + ".asset";
-            HLCreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
-            if (!recipe)
-            {
-                recipe = ScriptableObject.CreateInstance<HLCreatureRecipe>();
-                AssetDatabase.CreateAsset(recipe, path);
-            }
-
-            // Geometry-only readability: root footprint and gameplay sockets stay unchanged
-            float displayHeight = name == "HLHealer" ? 2.05f : 1.7f;
-            Vector3 displayScale = new Vector3(1.45f, displayHeight, 1.45f);
-            for (int i = 0; i < parts.Count; i++)
-            {
-                HLPart part = parts[i];
-                part.localPosition = Vector3.Scale(part.localPosition, displayScale);
-                part.dimensions = Vector3.Scale(part.dimensions, displayScale);
-                parts[i] = part;
-            }
-
-            // A rounded collar makes capsule endpoints readable without moving their pivots
-            int stemCount = parts.Count;
-            for (int i = 0; i < stemCount; i++)
-            {
-                HLPart stemPart = parts[i];
-                if (stemPart.primitive != HLPrimitive.Capsule)
-                {
-                    continue;
-                }
-
-                parts.Add(Part("HLJoint" + i, HLPrimitive.Sphere, Vector3.up * (stemPart.dimensions.y * 0.38f),
-                    Vector3.one * (stemPart.dimensions.x * 1.5f), bud, parent: i));
-            }
-
-            recipe.parts = parts.ToArray();
-            recipe.roots.count = roots;
-            recipe.idle.seed = seed;
-            recipe.roots.thickness = 0.042f;
-            recipe.roots.footRadius = 0.41f;
-            recipe.roots.hipHeight = 0.26f;
-            recipe.roots.kneeHeight = 0.14f;
-            if (name == "HLHealer")
-            {
-                // The body grew independently of the crown. Join the inverted bowl
-                // to a visible hip above the grass without changing the legal cell footprint.
-                recipe.roots.hipHeight = 0.60f;
-                recipe.roots.kneeHeight = 0.32f;
-                recipe.roots.thickness = 0.049f;
-            }
-
-            recipe.idle.swayFrequency = 0.25f;
-            recipe.targetLocal = Vector3.up * 0.8f;
-            recipe.sourceLocal = new Vector3[armCount];
-            recipe.arms = new HLArmDefinition[armCount];
-            for (int j = 0; j < armCount; j++)
-            {
-                recipe.sourceLocal[j] = new Vector3(j % 2 == 0 ? -0.26f : 0.26f, 1.1f, 0f);
-                Vector3[] rest = new Vector3[49];
-                // Four compact coils: 48 x 0.5 = 24 cells covers the current 16 x 16 board.
-                // Larger boards and targets outside the board still clamp without changing gameplay.
-                for (int i = 0; i < 48; i++)
-                {
-                    float angle = i * Mathf.PI * 2f / 12f;
-                    rest[i + 1] = rest[i] + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0.015f).normalized * 0.5f;
-                }
-
-                recipe.arms[j] = new HLArmDefinition
-                {
-                    bodyPart = 0,
-                    rootLocal = recipe.sourceLocal[j] - parts[0].localPosition,
-                    sourceSocketIndex = j,
-                    segmentCount = 48,
-                    segmentLength = 0.5f,
-                    radius = 0.045f,
-                    restJoints = rest,
-                    bendPole = Vector3.up,
-                    colour = stem
-                };
-            }
-
-            if (!HLCreatureValidator.TryValidate(recipe, out string error))
-            {
-                Debug.LogError($"[HLCreatureAssetAuthoring] {name}: {error}");
-                return null;
-            }
-
-            EditorUtility.SetDirty(recipe);
-            return recipe;
-        }
-
-        static void View(string name, HLCreatureRecipe recipe, Material material, HLPrimitiveMeshes meshes,
-            float scale = 1f)
-        {
-            // The rig cancels ancestor scale, so the root scale never changes the body size
             GameObject view = new GameObject(name);
-            view.transform.localScale = Vector3.one * scale;
             view.AddComponent<HLCreatureBuilder>().SetRecipe(recipe, material, meshes);
+            view.AddComponent<HLStatusObserver>();
+            view.AddComponent<HLHealPulse>();
+            view.AddComponent<HLTrampleZone>();
+            view.AddComponent<HLRangePreview>();
             PrefabUtility.SaveAsPrefabAsset(view, root + "Prefabs/" + name + ".prefab");
             Object.DestroyImmediate(view);
         }
@@ -326,31 +87,10 @@ namespace HealerLike.Render.Creatures
             data.FindProperty("_material").objectReferenceValue = material;
             data.FindProperty("_meshes").objectReferenceValue = meshes;
             data.ApplyModifiedPropertiesWithoutUndo();
+            view.AddComponent<HLHealPulse>();
+            view.AddComponent<HLTrampleZone>();
             PrefabUtility.SaveAsPrefabAsset(view, root + "Prefabs/HLHealerCharacter.prefab");
             Object.DestroyImmediate(view);
-        }
-
-        static void ProjectileView(string original)
-        {
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(original);
-            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
-            try
-            {
-                instance.name = "HLProjectile" + Path.GetFileNameWithoutExtension(original);
-                HLProjectileVisualObserver observer = instance.AddComponent<HLProjectileVisualObserver>();
-                SerializedObject data = new SerializedObject(observer);
-                bool isChain = instance.GetComponent<ChainLightningProjectile>() != null;
-                bool isChanneling = original.Contains("Channeling");
-                HLGestureKind presentation = isChanneling ? HLGestureKind.Channel : HLGestureKind.Attack;
-                data.FindProperty("_preserveContactPath").boolValue = isChain;
-                data.FindProperty("_presentation").enumValueIndex = (int)presentation;
-                data.ApplyModifiedPropertiesWithoutUndo();
-                PrefabUtility.SaveAsPrefabAsset(instance, root + "Prefabs/" + instance.name + ".prefab");
-            }
-            finally
-            {
-                Object.DestroyImmediate(instance);
-            }
         }
     }
 }

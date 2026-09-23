@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 using HealerLike.Render.Stage;
@@ -20,8 +21,14 @@ namespace HealerLike.Render.Creatures
             public float amount;
             public bool critical;
 
+            // Like every heal sink, only the positive changes are heals
             public void OnHealResolved(GameObject target, float value, bool critical)
             {
+                if (value <= 0f)
+                {
+                    return;
+                }
+
                 heals++;
                 this.target = target;
                 amount = value;
@@ -83,7 +90,7 @@ namespace HealerLike.Render.Creatures
             _target.transform.localPosition = Vector3.up;
             _target.AddComponent<SkillTargetPointTag>();
             _recipe = HLCreatureValidatorTests.Recipe();
-            _material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
             _builder = _model.AddComponent<HLCreatureBuilder>();
             _builder.SetRecipe(_recipe, _material, HLPrimitiveMeshesTests.Meshes());
             _sink = new HLSink();
@@ -91,6 +98,7 @@ namespace HealerLike.Render.Creatures
             _registry.Register(_source, _sink);
             _builder.Configure(_registry, 1f, Vector3.zero, Vector3.up);
             entityModel.Init(_entity);
+            _builder.Init(_entity);
         }
 
         [TearDown]

@@ -5,7 +5,7 @@ using UnityEngine.VFX;
 namespace HealerLike.Render.Stage
 {
     // Keep GPU particle simulation and DestroyOnDone unchanged; silence only exposed output colours.
-    public sealed class HLLegacyAreaVisualMask : MonoBehaviour
+    public class HLLegacyAreaVisualMask : MonoBehaviour
     {
         readonly List<Action> restore=new();
         public int MaskedPropertyCount => restore.Count;

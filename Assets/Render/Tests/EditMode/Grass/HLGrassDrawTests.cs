@@ -21,7 +21,7 @@ public class HLGrassDrawTests
             Assert.Ignore("Indirect argument buffers need a graphics device; run with -force-metal.");
         }
         _mesh = AssetDatabase.LoadAssetAtPath<HLPrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset").bladeCone;
-        _material = new Material(Shader.Find("HL/Look/Primitive"));
+        _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLLook.shader"));
         _draw = new HLGrassDraw(_mesh, _material, 7, new Bounds(Vector3.zero, Vector3.one), 3);
     }
 

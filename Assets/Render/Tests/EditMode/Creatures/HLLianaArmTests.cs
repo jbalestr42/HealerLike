@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -46,7 +47,7 @@ namespace HealerLike.Render.Creatures
             string path = "Assets/Render/Creatures/Data/HLHealer.asset";
             HLCreatureRecipe authored = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
             GameObject parent = new GameObject("HLArmFixture");
-            Material material = new Material(Shader.Find("HL/Look/Primitive"));
+            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLLook.shader"));
             HLLianaArm rendered = CreateArm(authored.arms[0], parent.transform, material);
             Mesh mesh = null;
             try
@@ -116,7 +117,7 @@ namespace HealerLike.Render.Creatures
             string path = "Assets/Render/Creatures/Data/HLHealer.asset";
             HLCreatureRecipe authored = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
             GameObject parent = new GameObject("HLArmFixture");
-            Material material = new Material(Shader.Find("HL/Look/Primitive"));
+            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLLook.shader"));
             HLLianaArm rendered = CreateArm(authored.arms[0], parent.transform, material);
             try
             {
@@ -217,7 +218,7 @@ namespace HealerLike.Render.Creatures
             string path = "Assets/Render/Creatures/Data/HLHealer.asset";
             HLCreatureRecipe authored = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
             GameObject parent = new GameObject("HLArmFixture");
-            Material material = new Material(Shader.Find("HL/Look/Primitive"));
+            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLLook.shader"));
             HLLianaArm rendered = CreateArm(authored.arms[0], parent.transform, material);
             Renderer renderer = parent.GetComponentInChildren<Renderer>(true);
             rendered.Begin(1, HLGestureKind.Attack, Vector3.one);

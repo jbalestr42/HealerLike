@@ -9,9 +9,6 @@ namespace HealerLike.Render
         readonly Dictionary<GameObject, List<IHLHealVisualSink>> _healSinks =
             new Dictionary<GameObject, List<IHLHealVisualSink>>();
 
-        // Read by the folders not yet on Init, removed in D2
-        public static HLRenderRegistry current { get; set; }
-
         public IHLSpellVisualSink spellSink { get; set; }
 
         public IHLZoneOwner zoneOwner { get; set; }
@@ -61,6 +58,7 @@ namespace HealerLike.Render
             }
         }
 
+        // Every health change a source caused, negative for damage; the heal sinks draw the positive ones
         public void NotifyHeal(GameObject source, GameObject target, float value, bool critical)
         {
             if (source == null)

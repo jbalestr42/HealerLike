@@ -31,7 +31,7 @@ namespace HealerLike.Render.Zones
                 entity.entityType = Entity.EntityType.Computer;
 
                 HLBruiseZone bruise = actor.AddComponent<HLBruiseZone>();
-                bruise.Init(entity);
+                bruise.Init(entity, owner);
                 owner.PublishFrame(0f);
 
                 Assert.AreEqual(4, owner.snapshot[0].kind);
@@ -97,11 +97,38 @@ namespace HealerLike.Render.Zones
             Entity entity = CreateEnemy(actor, 3f);
             HLBruiseZone bruise = actor.AddComponent<HLBruiseZone>();
 
-            bruise.Init(entity, null);
+            bruise.Init(entity, (HLZoneRegistry)null);
             bruise.Refresh();
 
             Assert.AreEqual(0, owner.liveCount);
 
+            Object.DestroyImmediate(actor);
+            Object.DestroyImmediate(root);
+        }
+
+        [TestCase(3f, true)]
+        [TestCase(15.9f, true)]
+        [TestCase(16f, false)]
+        [TestCase(100f, false)]
+        [TestCase(0f, false)]
+        public void Bruises_Range_OnlyUnderTheBoardWidth(float range, bool expected)
+        {
+            Assert.AreEqual(expected, HLBruiseZone.Bruises(range));
+        }
+
+        [Test]
+        public void Refresh_BoardWideRange_AddsNoBruise()
+        {
+            GameObject root = new GameObject("zones");
+            GameObject actor = new GameObject("enemy");
+            HLZoneRegistry owner = root.AddComponent<HLZoneRegistry>();
+            owner.Init(new HLZoneFakeUpload());
+            Entity entity = CreateEnemy(actor, 100f);
+            HLBruiseZone bruise = actor.AddComponent<HLBruiseZone>();
+
+            bruise.Init(entity, owner);
+
+            Assert.AreEqual(0, owner.liveCount); // the Soldier's 100 would cover every cell
             Object.DestroyImmediate(actor);
             Object.DestroyImmediate(root);
         }

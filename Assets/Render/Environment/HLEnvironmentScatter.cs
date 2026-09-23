@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
-using HealerLike.Render.Grass;
 using HealerLike.Render.Stage;
 using HealerLike.Render.Stones;
 using UnityEngine;
@@ -33,8 +32,6 @@ namespace HealerLike.Render.Environment
             public float uncurl;
         }
 
-        [FormerlySerializedAs("grid")]
-        [SerializeField] GridManager _grid;
         [FormerlySerializedAs("plantMaterial")]
         [SerializeField] Material _plantMaterial;
         [FormerlySerializedAs("stoneMaterial")]
@@ -53,11 +50,7 @@ namespace HealerLike.Render.Environment
         double _builtAt;
         uint _colourSeed;
         MaterialPropertyBlock _properties;
-        RenderManager _manager;
         HLPrimitiveMeshes _meshes;
-
-        // Runtime meshes for the stage scene, removed in D2
-        HLPrimitiveMeshes _stageMeshes;
 
         [FormerlySerializedAs("settings")]
         [SerializeField] HLEnvironmentSettings _settings = HLEnvironmentSettings.Default;
@@ -81,27 +74,10 @@ namespace HealerLike.Render.Environment
                 return;
             }
 
-            _manager = manager;
             _meshes = manager.meshes;
             _surfaceY = surfaceY;
             ConfigureMotion(viewCamera, gust, fogEnd);
             Build(board, cellSize);
-        }
-
-        // The stage scene builds from its own grid until the render manager attaches it, removed in D2
-        void Start()
-        {
-            if (_manager != null)
-            {
-                return;
-            }
-
-            if (_grid && _grid.width > 0 && _grid.height > 0 && _grid.size > 0f)
-            {
-                _stageMeshes = StageSceneMeshes.Create();
-                _meshes = _stageMeshes;
-                Build(GridRect(_grid), _grid.size);
-            }
         }
 
         void Update()
@@ -136,11 +112,6 @@ namespace HealerLike.Render.Environment
         void OnDestroy()
         {
             Clear();
-            if (_stageMeshes != null)
-            {
-                StageSceneMeshes.Release(_stageMeshes);
-                _stageMeshes = null;
-            }
         }
 
         public static Rect GridRect(GridManager grid)

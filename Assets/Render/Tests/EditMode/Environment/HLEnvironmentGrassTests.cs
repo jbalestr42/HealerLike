@@ -175,7 +175,7 @@ namespace HealerLike.Render.Environment
                 HLGrassField template = templateGo.AddComponent<HLGrassField>();
                 HLEnvironmentGrass grass = go.AddComponent<HLEnvironmentGrass>();
                 TestHelpers.SetPrivateField(grass, "_stripTemplate", template);
-                zones.Initialize();
+                zones.Init();
                 RenderManager manager = managerGo.AddComponent<RenderManager>();
                 Rect board = new Rect(-8f, -8f, 16f, 16f);
                 float boardDensity = HLGrassLayout.DefaultBudget / (16f * 16f);
@@ -203,45 +203,16 @@ namespace HealerLike.Render.Environment
         }
 
         [Test]
-        public void EnsureCellsSizesTheProxyGridOnce()
-        {
-            GameObject go = new GameObject("HLRingProxy");
-            try
-            {
-                GridManager proxy = go.AddComponent<GridManager>();
-                proxy.width = 48;
-                proxy.height = 16;
-                proxy.size = 1f;
-
-                HLEnvironmentGrass.EnsureCells(proxy);
-
-                Assert.AreEqual(48 * 16, proxy.cells.Length);
-                GridCell[] cells = proxy.cells;
-
-                HLEnvironmentGrass.EnsureCells(proxy);
-
-                Assert.AreSame(cells, proxy.cells);
-                Assert.AreEqual(new Vector2Int(47, 15), proxy.cells[proxy.cells.Length - 1].coord);
-            }
-            finally
-            {
-                Object.DestroyImmediate(go);
-            }
-        }
-
-        [Test]
-        public void LateUpdateWithoutRegistryOrFieldsIsSafe()
+        public void UpdateStripsWithoutInitOrRegistryIsSafe()
         {
             GameObject go = new GameObject("HLRingGrass");
             try
             {
                 HLEnvironmentGrass grass = go.AddComponent<HLEnvironmentGrass>();
-                grass.Configure(null, null, null);
 
                 Assert.DoesNotThrow(() =>
                 {
-                    TestHelpers.InvokePrivate(grass, "Start");
-                    TestHelpers.InvokePrivate(grass, "LateUpdate");
+                    grass.UpdateStrips(null);
                     TestHelpers.InvokePrivate(grass, "OnDisable");
                 });
             }

@@ -1,58 +1,102 @@
-using HealerLike.Render.Stones;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using HealerLike.Render.Stones;
 
 namespace HealerLike.Render.Stage
 {
-    /// <summary>
-    /// One key light for the stage. HLLookController publishes its direction as _HLKeyLightDir; the builder aims
-    /// the light along the stones' serialized cheap-shadow direction so both agree. When the active pipeline
-    /// really renders main-light shadows for this light out to the board, the cheap ellipses are turned off.
-    /// </summary>
-    [DefaultExecutionOrder(-1900)]
-    public sealed class HLStageKeyLight : MonoBehaviour
+    // The stage key light, aimed along the stones' cheap shadow direction. When the pipeline renders real
+    // main light shadows out to the board, the cheap ground ellipses are turned off.
+    public class HLStageKeyLight : MonoBehaviour
     {
-        // Matches HLStoneEnemyVisual / HLStoneTerrainClump directionToKeyLight: upper left, toward the camera.
-        public static readonly Vector3 StoneKeyDirection = new Vector3(-1, 2, -1);
-        [SerializeField] Light keyLight;
-        [Tooltip("Farthest board distance from the camera that real shadows must cover.")]
-        [SerializeField, Min(1)] float requiredDistance = 50;
-        [SerializeField, Min(.05f)] float pollSeconds = .5f;
+        // Upper left toward the camera, as HLStoneEnemyVisual and HLStoneTerrainClump directionToKeyLight
+        public static readonly Vector3 StoneKeyDirection = new Vector3(-1f, 2f, -1f);
+
+        [SerializeField] Light _keyLight;
+        // Farthest board distance from the camera that real shadows must cover
+        [SerializeField] float _requiredDistance = 50f;
+        [SerializeField] float _pollSeconds = 0.5f;
+
         float _next;
-        public Light KeyLight { get => keyLight; set => keyLight = value; }
-        public bool RealShadows { get; private set; }
-        public int Suppressed { get; private set; }
+        bool _isInitialized = false;
 
-        /// <summary>Rotation whose -forward points toward the light along the given direction.</summary>
-        public static Quaternion Aim(Vector3 directionToLight) => Quaternion.LookRotation(-directionToLight.normalized, Vector3.up);
+        public Light keyLight { get { return _keyLight; } set { _keyLight = value; } }
 
-        /// <summary>True when the pipeline's main light casts shadows from this light over the required distance.</summary>
-        public static bool RendersRealShadows(UniversalRenderPipelineAsset pipeline, Light light, float requiredDistance)
-            => pipeline && light && light.isActiveAndEnabled && light.type == LightType.Directional && light.shadows != LightShadows.None &&
-               pipeline.mainLightRenderingMode == LightRenderingMode.PerPixel && pipeline.supportsMainLightShadows &&
-               pipeline.shadowDistance >= requiredDistance;
+        public bool realShadows { get; private set; }
 
-        /// <summary>Cheap ellipses stay on only where real shadows are missing. Returns how many were switched off.</summary>
-        public static int ApplyCheapShadows(bool realShadows, HLStoneEnemyVisual[] enemies, HLStoneTerrainClump[] clumps)
+        public int suppressed { get; private set; }
+
+        public void Init()
         {
-            int off = 0;
-            if (enemies != null) foreach (var e in enemies) if (e && e.groundShadowEnabled == realShadows) { e.groundShadowEnabled = !realShadows; if (realShadows) off++; }
-            if (clumps != null) foreach (var c in clumps) if (c && c.groundShadowEnabled == realShadows) { c.groundShadowEnabled = !realShadows; if (realShadows) off++; }
-            return off;
+            _isInitialized = true;
+            Refresh();
         }
 
-        void OnEnable() { _next = 0; Refresh(); }
-
-        // Stones appear with enemies and the terrain generator; poll at a low rate rather than per frame.
-        void Update() { if (Time.unscaledTime >= _next) Refresh(); }
+        // Stones appear with enemies, so this polls at a low rate rather than every frame
+        void Update()
+        {
+            if (_isInitialized && Time.unscaledTime >= _next)
+            {
+                Refresh();
+            }
+        }
 
         public void Refresh()
         {
-            _next = Time.unscaledTime + pollSeconds;
-            RealShadows = RendersRealShadows(GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset, keyLight, requiredDistance);
-            Suppressed += ApplyCheapShadows(RealShadows,
-                FindObjectsByType<HLStoneEnemyVisual>(FindObjectsSortMode.None), FindObjectsByType<HLStoneTerrainClump>(FindObjectsSortMode.None));
+            _next = Time.unscaledTime + _pollSeconds;
+            realShadows = RendersRealShadows(GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset, _keyLight,
+                                             _requiredDistance);
+            suppressed += ApplyCheapShadows(realShadows, FindObjectsByType<HLStoneEnemyVisual>(FindObjectsSortMode.None),
+                                            FindObjectsByType<HLStoneTerrainClump>(FindObjectsSortMode.None));
+        }
+
+        // Rotation whose back points toward the light along the given direction
+        public static Quaternion Aim(Vector3 directionToLight)
+        {
+            return Quaternion.LookRotation(-directionToLight.normalized, Vector3.up);
+        }
+
+        public static bool RendersRealShadows(UniversalRenderPipelineAsset pipeline, Light light, float requiredDistance)
+        {
+            if (pipeline == null || light == null || !light.isActiveAndEnabled)
+            {
+                return false;
+            }
+
+            return light.type == LightType.Directional && light.shadows != LightShadows.None
+                   && pipeline.mainLightRenderingMode == LightRenderingMode.PerPixel && pipeline.supportsMainLightShadows
+                   && pipeline.shadowDistance >= requiredDistance;
+        }
+
+        // Returns how many cheap ellipses were switched off
+        public static int ApplyCheapShadows(bool realShadows, HLStoneEnemyVisual[] enemies, HLStoneTerrainClump[] clumps)
+        {
+            int off = 0;
+            if (enemies != null)
+            {
+                foreach (HLStoneEnemyVisual enemy in enemies)
+                {
+                    if (enemy != null && enemy.groundShadowEnabled == realShadows)
+                    {
+                        enemy.groundShadowEnabled = !realShadows;
+                        off += realShadows ? 1 : 0;
+                    }
+                }
+            }
+
+            if (clumps != null)
+            {
+                foreach (HLStoneTerrainClump clump in clumps)
+                {
+                    if (clump != null && clump.groundShadowEnabled == realShadows)
+                    {
+                        clump.groundShadowEnabled = !realShadows;
+                        off += realShadows ? 1 : 0;
+                    }
+                }
+            }
+
+            return off;
         }
     }
 }

@@ -10,20 +10,18 @@ namespace HealerLike.Render.Zones
         HLZoneRegistry _zones;
         HLZoneRegistry _owner;
         int _handle;
-        bool _isInitialized = false;
 
         public HLZoneKind kind { get { return _kind; } set { _kind = value; } }
 
         public void Init(HLZoneRegistry zones)
         {
             _zones = zones;
-            _isInitialized = true;
         }
 
         void Start()
         {
             AreaOfEffect area = GetComponent<AreaOfEffect>();
-            _owner = GetZones();
+            _owner = _zones;
             if (_owner != null)
             {
                 _handle = _owner.AddPulse(_kind, area.transform.position, area.radius, 1f, 0.8f);
@@ -39,12 +37,6 @@ namespace HealerLike.Render.Zones
 
             _handle = 0;
             _owner = null;
-        }
-
-        // Falls back to the static registry until the RenderManager calls Init, removed in D2
-        HLZoneRegistry GetZones()
-        {
-            return _isInitialized ? _zones : HLZoneRegistry.current;
         }
     }
 }

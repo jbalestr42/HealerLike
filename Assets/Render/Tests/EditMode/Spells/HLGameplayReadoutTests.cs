@@ -93,7 +93,7 @@ namespace HealerLike.Render.Spells
                 HLResourceOutcomeObserver observer = owner.AddComponent<HLResourceOutcomeObserver>();
                 for (int i = 0; i < 5; i++)
                 {
-                    observer.Bind(health, mana, registry, true);
+                    observer.Bind(health, mana, spy, registry);
                 }
                 ResourceModifier modifier = new ResourceModifier { source = caster };
                 health.OnAllConsumerProcessed.Invoke(owner, modifier, 7, false);
@@ -109,7 +109,7 @@ namespace HealerLike.Render.Spells
                 TestHelpers.InvokePrivate(observer, "OnEnable");
                 health.OnAllConsumerProcessed.Invoke(owner, modifier, -2, false);
                 Assert.AreEqual(3, spy.impacts);
-                Assert.AreEqual(1, healed.count);
+                Assert.AreEqual(2, healed.count, "damage reaches the registry too, each sink filters by sign");
             }
             finally
             {

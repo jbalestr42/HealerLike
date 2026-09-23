@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Stones
 {
-    public class HLStoneEnemyVisual : MonoBehaviour, IVisualBehaviour, IEntityView, IHLDeliverySource
+    public class HLStoneEnemyVisual : MonoBehaviour, IEntityView, IHLDeliverySource
     {
         struct ImpactRecord
         {
@@ -92,22 +92,19 @@ namespace HealerLike.Render.Stones
 
         public int pendingImpactCount { get { return _impacts.Count; } }
 
-        // The effects owner is a child of the manager prefab
+        // The view is added after EntityModel.Init, so its body turn is set up here
         public void Init(Entity entity, RenderManager manager)
         {
-            Init(entity, manager.GetComponentInChildren<HLStoneEffects>());
-        }
-
-        // removed in D2: the old stage reaches the visual through EntityModel and has no manager
-        public void Init(Entity owner)
-        {
-            Init(owner, Effects());
+            Init(entity, manager.stoneEffects);
+            if (_bodyLookAtTarget != null)
+            {
+                _bodyLookAtTarget.Init(entity);
+            }
         }
 
         public void Init(Entity owner, HLStoneEffects effects)
         {
             _entity = owner;
-            HLResourceOutcomeObserver.Ensure(owner);
             _targets = owner.GetComponent<TargetProvider>();
             Init(owner.health, _seed, effects);
             foreach (MonoBehaviour component in owner.GetComponents<MonoBehaviour>())
@@ -232,22 +229,6 @@ namespace HealerLike.Render.Stones
                 }
             }
             return new HLStoneImpact(point, normal, incomingVelocityWS, true);
-        }
-
-        // removed in D2: without a manager the model prefab points at the effects prefab, brought in once per scene
-        HLStoneEffects Effects()
-        {
-            if (_effects == null || _effects.gameObject.scene.IsValid() || !Application.isPlaying)
-            {
-                return _effects;
-            }
-
-            HLStoneEffects existing = FindAnyObjectByType<HLStoneEffects>();
-            if (existing != null)
-            {
-                return existing;
-            }
-            return Instantiate(_effects);
         }
 
         void OnConsumersProcessed(GameObject owner, ResourceModifier modifier, float delta, bool critical)

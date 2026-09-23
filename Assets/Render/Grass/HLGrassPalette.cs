@@ -7,18 +7,6 @@ namespace HealerLike.Render.Grass
     {
         public static readonly string InstancedKeyword = "HL_GRASS_INSTANCED";
 
-        // The stage scene copies the look material at runtime instead of referencing GrassBlade.mat, removed in D2
-        public static Material CreateBladeMaterial(Material lookMaterial)
-        {
-            Material material = new Material(lookMaterial);
-            material.name = "HLGrassBladeRuntime";
-            material.enableInstancing = true;
-            material.EnableKeyword(InstancedKeyword);
-            // Grass keeps depth edges only, normal edges would ink every blade
-            material.SetFloat("_HLNormalEdges", 0f);
-            return material;
-        }
-
         public static void Apply(MaterialPropertyBlock properties)
         {
             SetColor(properties, "_HL_RootColor", 43, 110, 87);

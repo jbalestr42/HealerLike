@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4543650985477941120}
   - component: {fileID: 3844665851161517888}
+  - component: {fileID: 5829805107776706031}
+  - component: {fileID: 7959280919119806704}
   m_Layer: 0
   m_Name: HLHealerCharacter
   m_TagString: Untagged
@@ -42,7 +44,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e23edee68ceab417ea5177d97a00a4d4, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.HLCharacterView
   _character: {fileID: 0}
   _recipe: {fileID: 11400000, guid: 265a00ac0c6c743d08a762c0950e82e1, type: 2}
@@ -50,3 +52,30 @@ MonoBehaviour:
   _material: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
   _meshes: {fileID: 11400000, guid: 4ee00372052f248838ebdf645b1e9727, type: 2}
   _cellSize: 1
+--- !u!114 &5829805107776706031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8779204663335450006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff72fcddce784a6396cd2bda1d8abbd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLHealPulse
+  _cellSize: 1
+--- !u!114 &7959280919119806704
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8779204663335450006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ebaf268b45a843f582ee963235f25ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLTrampleZone
+  radius: 0.65
+  strength: 1

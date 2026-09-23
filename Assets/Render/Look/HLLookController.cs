@@ -6,15 +6,11 @@ using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Look
 {
-    // Stays until D2, the edit mode preview of the copied stage scene still needs it
-    [ExecuteAlways]
+    // The one look of the render stage, set up by the RenderManager at attach
     public class HLLookController : MonoBehaviour
     {
         [FormerlySerializedAs("settings")]
         [SerializeField] HLLookSettings _settings = HLLookSettings.Default;
-
-        // One active look per scene until the RenderManager holds the one controller, removed in D2
-        static HLLookController _owner;
 
         static readonly int shadowTintId = Shader.PropertyToID("_HLShadowTint");
         static readonly int outlineColorId = Shader.PropertyToID("_HLOutlineColor");
@@ -45,19 +41,13 @@ namespace HealerLike.Render.Look
         static readonly Action<int, float> setGlobalFloat = Shader.SetGlobalFloat;
         static readonly Action<int, Vector4> setGlobalVector = Shader.SetGlobalVector;
 
+        Bounds _board;
+
         public HLLookSettings settings { get { return _settings; } set { _settings = value.Validated(); } }
 
         void OnEnable()
         {
             _settings = _settings.Validated();
-            if (_owner != null && _owner != this)
-            {
-                Debug.LogWarning("HLLookController already has an active owner; "
-                                 + "this controller remains inactive.", this);
-                return;
-            }
-
-            _owner = this;
             RenderPipelineManager.beginFrameRendering -= OnBeginFrameRendering;
             RenderPipelineManager.beginFrameRendering += OnBeginFrameRendering;
             RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
@@ -72,6 +62,7 @@ namespace HealerLike.Render.Look
                 return;
             }
 
+            _board = board;
             Vector3 position = camera.transform.position;
             Vector2 fog = HLStageCalibration.BackgroundFog(position, board);
             float depth = Vector3.Distance(position, board.center);
@@ -88,16 +79,21 @@ namespace HealerLike.Render.Look
             ApplyGlobals();
         }
 
+        // The fog starts past every playable corner seen from wherever the camera moved
+        public void UpdateFog(Vector3 cameraPosition)
+        {
+            Vector2 fog = HLStageCalibration.BackgroundFog(cameraPosition, _board);
+            HLLookSettings value = _settings;
+            value.fogStart = fog.x;
+            value.fogEnd = fog.y;
+            settings = value;
+            ApplyGlobals();
+        }
+
         void OnDisable()
         {
             RenderPipelineManager.beginFrameRendering -= OnBeginFrameRendering;
             RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
-            if (_owner != this)
-            {
-                return;
-            }
-
-            _owner = null;
             Shader.SetGlobalFloat(lookAppliedId, 0f);
             Shader.SetGlobalVector(keyLightDirId, Vector4.zero);
         }
@@ -114,7 +110,7 @@ namespace HealerLike.Render.Look
 
         void OnBeginCameraRendering(ScriptableRenderContext context, Camera camera)
         {
-            if (_owner != this || !isActiveAndEnabled)
+            if (!isActiveAndEnabled)
             {
                 return;
             }
@@ -122,10 +118,9 @@ namespace HealerLike.Render.Look
             PublishSunDirection(camera.cullingMask);
         }
 
-        // Only the active owner publishes, the other controllers stay silent
         public void ApplyGlobals()
         {
-            if (_owner != this || !isActiveAndEnabled)
+            if (!isActiveAndEnabled)
             {
                 return;
             }
@@ -169,14 +164,10 @@ namespace HealerLike.Render.Look
             return new Vector4(direction.x, direction.y, direction.z, 0f);
         }
 
-        // HLOutlines calls this with the main light URP actually culled, before drawing
+        // HLOutlines calls this with the main light URP actually culled, before drawing. The outlines live only
+        // in the stage renderer, so only the stage publishes.
         public static void PublishMainLightDirection(Light mainLight)
         {
-            if (!_owner || !_owner.isActiveAndEnabled)
-            {
-                return;
-            }
-
             Vector3 direction = Vector3.zero;
             if (mainLight && mainLight.type == LightType.Directional)
             {

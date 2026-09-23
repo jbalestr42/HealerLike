@@ -15,6 +15,7 @@ namespace HealerLike.Render.Stones
         [SerializeField] StoneGroundDisc _groundDisc;
         [SerializeField] StoneGroundDisc _groundShadow;
         [SerializeField] MeshFilter _ochreFace;
+        [SerializeField] HLTrampleZone _trample;
 
         HLStoneLife _life;
         StoneMeshCache _ownMeshes;
@@ -62,12 +63,6 @@ namespace HealerLike.Render.Stones
                     _groundShadow.Show(value && isActiveAndEnabled);
                 }
             }
-        }
-
-        // removed in D2: the old stage path has no effects owner or zones to hand over
-        public void Initialize(uint seed, float cellSize)
-        {
-            Init(seed, cellSize, null, null);
         }
 
         // Without an effects owner the clump keeps its own stone meshes
@@ -166,6 +161,15 @@ namespace HealerLike.Render.Stones
                 _life = gameObject.AddComponent<HLStoneLife>();
             }
             _life.Init(effects, zones, seed, bareGroundRadius, true);
+
+            // The bare disc may sit off the pivot, the flattened grass follows the disc
+            if (_trample != null)
+            {
+                _trample.transform.position = bareGroundCenter;
+                _trample.radius = HLTrampleZone.TrampleRadius(bareGroundRadius);
+                _trample.Init(zones);
+            }
+
             if (HLStoneLifeState.Ochre(seed))
             {
                 CreateFace();

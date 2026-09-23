@@ -15,6 +15,7 @@ namespace HealerLike.Render.Zones
                 HLZoneRegistry registry = root.AddComponent<HLZoneRegistry>();
                 registry.Init(new HLZoneFakeUpload());
                 HLTrampleZone zone = obstacle.AddComponent<HLTrampleZone>();
+                zone.Init(registry);
                 zone.Refresh();
                 registry.PublishFrame(1f);
                 Assert.AreEqual(6, registry.snapshot[0].kind);
@@ -67,6 +68,7 @@ namespace HealerLike.Render.Zones
                 HLZoneRegistry registry = root.AddComponent<HLZoneRegistry>();
                 registry.Init(new HLZoneFakeUpload());
                 HLTrampleZone zone = obstacle.AddComponent<HLTrampleZone>();
+                zone.Init(registry);
                 for (int i = 0; i < 100; i++)
                 {
                     zone.Refresh();
@@ -90,7 +92,7 @@ namespace HealerLike.Render.Zones
         }
 
         [Test]
-        public void ReacquiresRegistryAfterOwnerRecreation()
+        public void InitAfterOwnerRecreationMovesTheFootprint()
         {
             GameObject root = new GameObject("zones");
             GameObject obstacle = new GameObject("obstacle");
@@ -99,6 +101,7 @@ namespace HealerLike.Render.Zones
                 HLZoneRegistry registry = root.AddComponent<HLZoneRegistry>();
                 registry.Init(new HLZoneFakeUpload());
                 HLTrampleZone zone = obstacle.AddComponent<HLTrampleZone>();
+                zone.Init(registry);
                 zone.Refresh();
                 Object.DestroyImmediate(root);
                 zone.Refresh();
@@ -106,6 +109,7 @@ namespace HealerLike.Render.Zones
                 registry = root.AddComponent<HLZoneRegistry>();
                 registry.Init(new HLZoneFakeUpload());
 
+                zone.Init(registry);
                 zone.Refresh();
 
                 Assert.AreEqual(1, registry.liveCount);
@@ -117,6 +121,20 @@ namespace HealerLike.Render.Zones
             }
         }
 
+
+        [Test]
+        public void CreatureFootprint_ScaledRoot_IsHalfTheLargerHorizontalScale()
+        {
+            GameObject root = new GameObject("creature");
+            root.transform.localScale = new Vector3(0.9f, 3f, -1.2f);
+
+            float footprint = HLTrampleZone.CreatureFootprint(root.transform);
+
+            Assert.AreEqual(0.6f, footprint, 0.0001f); // 1 cell * 0.5 * |-1.2|
+            Assert.AreEqual(0.75f, HLTrampleZone.TrampleRadius(footprint), 0.0001f); // + 0.15 margin
+            Assert.AreEqual(0.15f, HLTrampleZone.TrampleRadius(-1f), 0.0001f);
+            Object.DestroyImmediate(root);
+        }
 
         [Test]
         public void Refresh_InitWithZones_AddsOneFootprintThere()
@@ -138,7 +156,7 @@ namespace HealerLike.Render.Zones
         }
 
         [Test]
-        public void Refresh_InitWithoutZones_IgnoresTheStaticRegistry()
+        public void Refresh_InitWithoutZones_AddsNothing()
         {
             GameObject root = new GameObject("zones");
             GameObject obstacle = new GameObject("obstacle");

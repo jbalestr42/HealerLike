@@ -1,40 +1,35 @@
 using UnityEngine;
+using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Zones
 {
     // Enemy range readout on the enemy views
-    public class HLBruiseZone : MonoBehaviour, IVisualBehaviour
+    public class HLBruiseZone : MonoBehaviour, IEntityView
     {
+        // A range as wide as the board bruises every cell and carries no information (the Soldier's is 100)
+        public static readonly float BruiseMaxRange = 16f;
+
         Entity _entity;
         HLZoneRegistry _zones;
         HLZoneRegistry _owner;
         int _handle;
-        bool _isInitialized = false;
 
         public void Init(Entity entity, HLZoneRegistry zones)
         {
             Clear();
             _zones = zones;
-            _isInitialized = true;
             _entity = entity;
             Refresh();
         }
 
-        // Called by EntityModel.Init on the staged model copies, removed in D2
-        public void Init(Entity entity)
+        public void Init(Entity entity, RenderManager manager)
         {
-            Clear();
-            _entity = entity;
-            Refresh();
+            Init(entity, manager.zones);
         }
 
-        void Start()
+        public static bool Bruises(float range)
         {
-            // Staged model copies only, removed in D2
-            if (!_entity)
-            {
-                Init(GetComponentInParent<Entity>());
-            }
+            return range > 0f && range < BruiseMaxRange;
         }
 
         void Update()
@@ -44,7 +39,7 @@ namespace HealerLike.Render.Zones
 
         public void Refresh()
         {
-            HLZoneRegistry zones = GetZones();
+            HLZoneRegistry zones = _zones;
             if (_owner != zones)
             {
                 Clear();
@@ -66,6 +61,12 @@ namespace HealerLike.Render.Zones
             }
 
             float radius = _entity.attributeManager.Get(AttributeType.Range).Value;
+            if (!Bruises(radius))
+            {
+                Clear();
+                return;
+            }
+
             if (!_owner.Contains(_handle))
             {
                 _handle = _owner.Add(HLZoneKind.Bruise, _entity.transform.position, radius, 1f);
@@ -95,12 +96,6 @@ namespace HealerLike.Render.Zones
         void OnDestroy()
         {
             Clear();
-        }
-
-        // Falls back to the static registry until the RenderManager calls Init, removed in D2
-        HLZoneRegistry GetZones()
-        {
-            return _isInitialized ? _zones : HLZoneRegistry.current;
         }
     }
 }

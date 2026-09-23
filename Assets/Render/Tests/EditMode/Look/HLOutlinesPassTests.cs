@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Look
@@ -11,7 +12,7 @@ namespace HealerLike.Render.Look
         public void PassRequestsDepthAndNormalsOnlyForEdgeMaterial()
         {
             Type type = typeof(HLLookSettings).Assembly.GetType("HealerLike.Render.Look.HLOutlinesPass", true);
-            Shader shader = Shader.Find("Hidden/HL/Look/DepthNormalOutline");
+            Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/HLOutlinesEdges.shader");
             Assert.That(shader, Is.Not.Null);
             Material material = new Material(shader);
             try

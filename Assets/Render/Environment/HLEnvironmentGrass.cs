@@ -3,7 +3,6 @@ using HealerLike.Render.Grass;
 using HealerLike.Render.Stage;
 using HealerLike.Render.Zones;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Environment
 {
@@ -19,22 +18,12 @@ namespace HealerLike.Render.Environment
         [SerializeField] float[] _widths = { 3f, 5f, 16f };
         [SerializeField] float[] _fractions = { 0.85f, 0.6f, 0.15f };
 
-        // Stage scene wiring: proxy grids the stage builder sized for each strip, removed in D2
-        [FormerlySerializedAs("zoneRegistry")]
-        [SerializeField] HLZoneRegistry _zoneRegistry;
-        [FormerlySerializedAs("proxies")]
-        [SerializeField] GridManager[] _proxies = new GridManager[0];
-        [FormerlySerializedAs("fields")]
-        [SerializeField] HLGrassField[] _fields = new HLGrassField[0];
-
-        RenderManager _manager;
         List<HLGrassField> _strips = new List<HLGrassField>();
 
         public IReadOnlyList<HLGrassField> strips { get { return _strips; } }
 
         public void Init(Rect board, float cellSize, float surfaceY, Camera camera, HLZoneRegistry zones, RenderManager manager)
         {
-            _manager = manager;
             foreach (HLGrassField strip in _strips)
             {
                 Destroy(strip.gameObject);
@@ -70,55 +59,8 @@ namespace HealerLike.Render.Environment
             }
         }
 
-        // The stage builder wires the proxy strips, removed in D2
-        public void Configure(HLZoneRegistry zones, GridManager[] proxyGrids, HLGrassField[] grassFields)
-        {
-            _zoneRegistry = zones;
-            _proxies = proxyGrids != null ? proxyGrids : new GridManager[0];
-            _fields = grassFields != null ? grassFields : new HLGrassField[0];
-        }
-
-        void Start()
-        {
-            if (_manager != null)
-            {
-                return;
-            }
-
-            foreach (GridManager proxy in _proxies)
-            {
-                EnsureCells(proxy);
-            }
-        }
-
-        // The stage scene hands its strips the zone buffer here until the render manager attaches it, removed in D2
-        void LateUpdate()
-        {
-            if (_manager != null)
-            {
-                return;
-            }
-
-            GraphicsBuffer buffer = _zoneRegistry ? _zoneRegistry.buffer : null;
-            foreach (HLGrassField field in _fields)
-            {
-                if (field)
-                {
-                    field.SetZoneSnapshot(buffer, 0);
-                }
-            }
-        }
-
         void OnDisable()
         {
-            foreach (HLGrassField field in _fields)
-            {
-                if (field)
-                {
-                    field.SetZoneSnapshot(null, 0);
-                }
-            }
-
             foreach (HLGrassField strip in _strips)
             {
                 if (strip)
@@ -206,27 +148,6 @@ namespace HealerLike.Render.Environment
             }
 
             return result.ToArray();
-        }
-
-        public static void EnsureCells(GridManager proxy)
-        {
-            if (!proxy || proxy.width <= 0 || proxy.height <= 0)
-            {
-                return;
-            }
-
-            if (proxy.cells != null && proxy.cells.Length == proxy.width * proxy.height)
-            {
-                return;
-            }
-
-            GridCell[] cells = new GridCell[proxy.width * proxy.height];
-            for (int i = 0; i < cells.Length; i++)
-            {
-                cells[i] = new GridCell { coord = new Vector2Int(i % proxy.width, i / proxy.width) };
-            }
-
-            proxy.cells = cells;
         }
 
         static void Split(Rect strip, float density, int band, List<HLRingStrip> into)

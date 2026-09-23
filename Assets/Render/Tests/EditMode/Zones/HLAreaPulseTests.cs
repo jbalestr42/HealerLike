@@ -19,6 +19,7 @@ namespace HealerLike.Render.Zones
                 area.radius = 3.25f;
                 areaGo.transform.position = new Vector3(2f, 3f, 4f);
                 areaGo.transform.localScale = Vector3.one * 99f;
+                pulse.Init(owner);
 
                 TestHelpers.InvokePrivate(pulse, "Start");
                 owner.PublishFrame(0f);
@@ -52,6 +53,7 @@ namespace HealerLike.Render.Zones
                 owner.Init(new HLZoneFakeUpload());
                 HLAreaPulse pulse = areaGo.AddComponent<HLAreaPulse>();
                 pulse.kind = HLZoneKind.Heal;
+                pulse.Init(owner);
 
                 TestHelpers.InvokePrivate(pulse, "Start");
                 owner.PublishFrame(0f);
@@ -89,7 +91,7 @@ namespace HealerLike.Render.Zones
         }
 
         [Test]
-        public void Start_InitWithoutZones_IgnoresTheStaticRegistry()
+        public void Start_InitWithoutZones_PulsesNothing()
         {
             GameObject ownerGo = new GameObject("zones");
             GameObject areaGo = new GameObject("area");
@@ -101,7 +103,7 @@ namespace HealerLike.Render.Zones
             pulse.Init(null);
             TestHelpers.InvokePrivate(pulse, "Start");
 
-            Assert.AreEqual(0, owner.liveCount); // current is set, but Init said no zones
+            Assert.AreEqual(0, owner.liveCount);
 
             Object.DestroyImmediate(areaGo);
             Object.DestroyImmediate(ownerGo);

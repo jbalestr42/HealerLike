@@ -155,7 +155,8 @@ namespace HealerLike.Render.Environment
         public void BuildMakesOneColliderFreeChildPerItemColouredThroughThePropertyBlock()
         {
             HLEnvironmentForeground foreground = _go.AddComponent<HLEnvironmentForeground>();
-            foreground.Configure(null, null, null, ground, 5);
+            TestHelpers.SetPrivateField(foreground, "_groundY", ground);
+            TestHelpers.SetPrivateField(foreground, "_seed", 5);
             TestHelpers.SetPrivateField(foreground, "_meshes", LoadMeshes());
 
             Assert.DoesNotThrow(() => foreground.Build());

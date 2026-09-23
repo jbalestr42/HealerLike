@@ -78,7 +78,6 @@ namespace HealerLike.Render
     {
         HLRenderRegistry _registry;
         readonly List<GameObject> _objects = new List<GameObject>();
-        HLRenderRegistry _previousCurrent;
 
         GameObject NewObject(string name)
         {
@@ -90,14 +89,12 @@ namespace HealerLike.Render
         [SetUp]
         public void SetUp()
         {
-            _previousCurrent = HLRenderRegistry.current;
             _registry = new HLRenderRegistry();
         }
 
         [TearDown]
         public void TearDown()
         {
-            HLRenderRegistry.current = _previousCurrent;
             foreach (GameObject go in _objects)
             {
                 if (go != null)
@@ -137,16 +134,6 @@ namespace HealerLike.Render
 
             Assert.AreSame(sink, _registry.spellSink);
             Assert.AreSame(owner, _registry.zoneOwner);
-        }
-
-        [Test]
-        public void CurrentRoundTripsAndClears()
-        {
-            HLRenderRegistry.current = _registry;
-            Assert.AreSame(_registry, HLRenderRegistry.current);
-
-            HLRenderRegistry.current = null;
-            Assert.IsNull(HLRenderRegistry.current, "the bootstrap clears Current on disable");
         }
 
         [Test]

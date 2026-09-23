@@ -39,12 +39,12 @@ namespace HealerLike.Render.Grass
                 var look=Make("HLGroundFixtureLook").AddComponent<HLLookController>();
                 var settings=HLLookSettings.Default; settings.fogStart=25;settings.fogEnd=60;
                 settings.shadowTint=new Color32(63,91,148,255);settings.inkStrength=.75f;look.settings=settings;
-                var material=new Material(Shader.Find("HL/Look/Primitive"));owned.Add(material);
+                var material=new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLLook.shader"));owned.Add(material);
                 material.SetColor("_BaseColor",((Color)new Color32(78,126,87,255)).linear);
                 var ground=GameObject.CreatePrimitive(PrimitiveType.Cube);owned.Add(ground);ground.layer=30;
                 ground.transform.localScale=new Vector3(8,.2f,8);ground.transform.position=Vector3.down*.1f;
                 ground.GetComponent<Renderer>().sharedMaterial=material;
-                var registry=Make("HLGroundFixtureZones").AddComponent<HLZoneRegistry>();registry.Initialize();
+                var registry=Make("HLGroundFixtureZones").AddComponent<HLZoneRegistry>();registry.Init();
                 var field=Make("HLGroundFixtureGrass").AddComponent<HLGrassField>();
                 field.Init(new Rect(-4f,-4f,8f,8f),1f,0f,camera,registry.buffer,64); field.bladeBudget=16384;
                 TestHelpers.InvokePrivate(field,"OnEnable");
@@ -56,7 +56,7 @@ namespace HealerLike.Render.Grass
                 {
                     var stone=Make("HLFixtureStone"+i);stone.transform.position=new Vector3((i-1)*2.2f,0,1.6f);
                     var clump=stone.AddComponent<HLStoneTerrainClump>();TestHelpers.SetPrivateField(clump,"_stoneMaterial",material);
-                    clump.Initialize((uint)(i+3),1.3f);clump.groundShadowEnabled=false;
+                    clump.Init((uint)(i+3),1.3f,null,null);clump.groundShadowEnabled=false;
                     registry.Add(HLZoneKind.Trample,stone.transform.position,.8f,1);
                 }
                 registry.Add(HLZoneKind.Heal,new Vector3(-1.7f,0,-1.2f),1.3f,1);

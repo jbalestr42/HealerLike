@@ -17,8 +17,7 @@ namespace HealerLike.Render.Zones
 
         void OnDrawGizmos()
         {
-            // The static fallback goes in D2, the RenderManager prefab then sets the registry
-            HLZoneRegistry owner = _registry != null ? _registry : HLZoneRegistry.current;
+            HLZoneRegistry owner = _registry;
             if (owner == null)
             {
                 return;

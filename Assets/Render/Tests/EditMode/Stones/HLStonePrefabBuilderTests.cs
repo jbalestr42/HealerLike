@@ -8,29 +8,24 @@ namespace HealerLike.Render.Stones
     {
         static readonly string root = "Assets/Render/Stones/Prefabs/";
 
-        [TestCase("HLStoneSoldierModel")]
-        [TestCase("HLStoneCairnModel")]
-        public void ModelVariantsKeepSourceTargetAndHudContracts(string name)
+        [Test]
+        public void SoldierModel_IsAPlainViewWithItsBodyPresentationAndShadow()
         {
-            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(root + name + ".prefab");
-            Assert.IsNotNull(model);
-            Assert.AreEqual(PrefabAssetType.Variant, PrefabUtility.GetPrefabAssetType(model));
-            Assert.IsNotNull(model.GetComponent<EntityModel>());
-            Assert.IsNotNull(model.GetComponent<HLStoneEnemyVisual>());
-            Assert.AreEqual(1, model.GetComponentsInChildren<SkillSource>(true).Length);
-            Assert.AreEqual(1, model.GetComponentsInChildren<SkillTargetPointTag>(true).Length);
-            Assert.IsNotNull(model.GetComponentInChildren<EntityHUD>(true));
+            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(root + "HLStoneSoldierModel.prefab");
+
+            Assert.AreEqual(PrefabAssetType.Regular, PrefabUtility.GetPrefabAssetType(model));
+            Assert.IsNull(model.GetComponent<EntityModel>()); // his model keeps its sockets and HUD
+            Assert.AreEqual(0, model.GetComponentsInChildren<SkillSource>(true).Length);
             Assert.AreEqual(0, model.GetComponentsInChildren<SkinnedMeshRenderer>(true).Length);
             Assert.IsNotNull(model.transform.Find("BodyPivot").GetComponent<LookAtTarget>());
             Assert.IsNotNull(model.transform.Find("BodyPivot/HLStonePresentation"));
             StoneGroundDisc shadow = model.transform.Find("GroundShadow").GetComponent<StoneGroundDisc>();
             Assert.IsTrue(shadow.isShadow);
             Assert.IsFalse(shadow.gameObject.activeSelf);
-
             SerializedObject visual = new SerializedObject(model.GetComponent<HLStoneEnemyVisual>());
             Assert.AreSame(shadow, visual.FindProperty("_groundShadow").objectReferenceValue);
             Assert.IsNotNull(visual.FindProperty("_presentation").objectReferenceValue);
-            Assert.IsNotNull(visual.FindProperty("_effects").objectReferenceValue);
+            Assert.IsNull(visual.FindProperty("_effects").objectReferenceValue); // the manager hands its effects
         }
 
         [Test]
@@ -57,6 +52,7 @@ namespace HealerLike.Render.Stones
             Assert.AreEqual("GroundShadow", shadow.GetComponent<MeshRenderer>().sharedMaterial.name);
             Assert.AreEqual("Disc", disc.GetComponent<MeshFilter>().sharedMesh.name);
             Assert.IsNotNull(clumpSO.FindProperty("_ochreFace").objectReferenceValue);
+            Assert.IsNotNull(clumpSO.FindProperty("_trample").objectReferenceValue);
         }
 
         [Test]
@@ -76,23 +72,5 @@ namespace HealerLike.Render.Stones
             Assert.AreEqual("HealerLike/Stones/Dust", dust.shader.name);
         }
 
-        [Test]
-        public void ProjectileVariantsHaveBridgeWithoutAlteringOriginal()
-        {
-            foreach (string path in System.IO.Directory.GetFiles("Assets/Prefabs/Projectiles", "*.prefab"))
-            {
-                GameObject original = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-                if (original.GetComponent<Projectile>() == null)
-                {
-                    continue;
-                }
-
-                string variantPath = root + "HLStone" + original.name + ".prefab";
-                GameObject variant = AssetDatabase.LoadAssetAtPath<GameObject>(variantPath);
-                Assert.IsNotNull(variant);
-                Assert.IsNotNull(variant.GetComponent<HLStoneProjectileImpactBridge>());
-                Assert.IsNull(original.GetComponent<HLStoneProjectileImpactBridge>());
-            }
-        }
     }
 }
