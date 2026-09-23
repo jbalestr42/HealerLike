@@ -1,16 +1,16 @@
-using System;
 using System.Collections.Generic;
+using HealerLike.Render.Creatures;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEngine.Events;
 using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Stones
 {
+    // The one owner of stone debris, dust and thrown shards, and of the stone meshes shared by every stone
     public class HLStoneEffects : MonoBehaviour
     {
         class Fragment
         {
-            public HLStoneEffects owner;
             public GameObject gameObject;
             public MeshFilter filter;
             public MeshRenderer renderer;
@@ -28,45 +28,32 @@ namespace HealerLike.Render.Stones
             public MaterialPropertyBlock block = new MaterialPropertyBlock();
             public uint seed;
             public Mesh ownedMesh;
-            public LinkedListNode<Fragment> globalNode;
         }
 
         public static readonly int MaxLiveFragments = 256;
-        public static event Action<Vector3> ImpactRecorded;
+        static readonly int baseColorId = Shader.PropertyToID("_BaseColor");
 
-        static readonly LinkedList<Fragment> _global = new LinkedList<Fragment>();
-        static readonly Dictionary<Scene, HLStoneEffects> _sceneOwners = new Dictionary<Scene, HLStoneEffects>();
+        [HideInInspector] public UnityEvent<Vector3> OnImpactRecorded = new UnityEvent<Vector3>();
 
         [FormerlySerializedAs("stoneMaterial")]
         [SerializeField] Material _stoneMaterial;
+        [SerializeField] Material _coralMaterial;
+        [SerializeField] Material _dustMaterial;
+        [SerializeField] HLPrimitiveMeshes _meshes;
+        [SerializeField] GameObject _fragmentPrefab;
 
         readonly List<Fragment> _active = new List<Fragment>(MaxLiveFragments);
         readonly Stack<Fragment> _pool = new Stack<Fragment>(MaxLiveFragments);
+        readonly Dictionary<Transform, Fragment> _shards = new Dictionary<Transform, Fragment>();
         readonly List<HLStoneAssembly.Part> _surviving = new List<HLStoneAssembly.Part>(8);
-        Material _fallback;
-        Material _coral;
-        Material _dust;
-        Mesh _cone;
-        Mesh _sphere;
+        StoneMeshCache.Lease _dustLease;
+
+        readonly StoneMeshCache _stoneMeshes = new StoneMeshCache();
+        public StoneMeshCache stoneMeshes { get { return _stoneMeshes; } }
+
+        public Material stoneMaterial { get { return _stoneMaterial; } }
 
         public int liveCount { get { return _active.Count; } }
-
-        public static int globalLiveCount { get { return _global.Count; } }
-
-        public static HLStoneEffects ForScene(Scene scene, Material material)
-        {
-            if (_sceneOwners.TryGetValue(scene, out HLStoneEffects owner) && owner != null)
-            {
-                return owner;
-            }
-
-            GameObject effectsGo = new GameObject("HLStoneEffects");
-            SceneManager.MoveGameObjectToScene(effectsGo, scene);
-            owner = effectsGo.AddComponent<HLStoneEffects>();
-            owner._stoneMaterial = material;
-            _sceneOwners[scene] = owner;
-            return owner;
-        }
 
         public void RecordImpact(Vector3 position, uint seed)
         {
@@ -76,93 +63,62 @@ namespace HealerLike.Render.Stones
             }
 
             EmitDust(position, seed);
-            ImpactRecorded?.Invoke(position);
+            OnImpactRecorded.Invoke(position);
         }
 
-        void EnsureAssets()
+        bool HasAssets()
         {
-            if (_cone == null)
+            if (_fragmentPrefab == null || _meshes == null || _stoneMaterial == null || _coralMaterial == null
+                || _dustMaterial == null)
             {
-                _cone = CreateCone();
+                Debug.LogError("[HLStoneEffects] Wire the fragment prefab, meshes and materials on the effects prefab.");
+                return false;
             }
-            if (_sphere == null)
+
+            if (_dustLease == null)
             {
-                _sphere = HLStoneMesh.CreateMesh(123, HLStonePresets.Shape(1f, 1f, 1f, 0f, 1));
+                _dustLease = _stoneMeshes.Acquire(123, HLStonePresets.Shape(1f, 1f, 1f, 0f, 1));
             }
-            if (_dust == null)
-            {
-                _dust = new Material(Shader.Find("HealerLike/Stones/Dust")) { name = "HLGreyDust" };
-            }
-            if (_stoneMaterial == null)
-            {
-                _fallback = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "HLPlaceholderStone" };
-                _fallback.SetColor("_BaseColor", HLStoneAssembly.Palette[2]);
-                _stoneMaterial = _fallback;
-            }
-            if (_coral == null)
-            {
-                _coral = new Material(_stoneMaterial) { name = "HLCoralSpark" };
-                _coral.SetColor("_BaseColor", new Color32(242, 96, 122, 255));
-            }
+            return true;
         }
 
-        static Mesh CreateCone()
+        Fragment Take()
         {
-            Vector3[] points =
+            if (_pool.Count > 0)
             {
-                new Vector3(-0.5f, 0f, -0.5f),
-                new Vector3(0.5f, 0f, -0.5f),
-                new Vector3(0.5f, 0f, 0.5f),
-                new Vector3(-0.5f, 0f, 0.5f),
-                Vector3.up
-            };
-            int[] faces = { 0, 4, 1, 1, 4, 2, 2, 4, 3, 3, 4, 0, 0, 1, 2, 0, 2, 3 };
-            Vector3[] vertices = new Vector3[18];
-            Vector3[] normals = new Vector3[18];
-            int[] indices = new int[18];
-            for (int i = 0; i < 18; i += 3)
-            {
-                Vector3 origin = points[faces[i]];
-                Vector3 normal = Vector3.Cross(points[faces[i + 1]] - origin, points[faces[i + 2]] - origin).normalized;
-                for (int j = 0; j < 3; j++)
-                {
-                    vertices[i + j] = points[faces[i + j]];
-                    normals[i + j] = normal;
-                    indices[i + j] = i + j;
-                }
+                return _pool.Pop();
             }
 
-            Mesh mesh = new Mesh { name = "HLFlatCone" };
-            mesh.vertices = vertices;
-            mesh.normals = normals;
-            mesh.triangles = indices;
-            mesh.RecalculateBounds();
-            return mesh;
+            GameObject fragmentGo = Instantiate(_fragmentPrefab, transform, false);
+            Fragment fragment = new Fragment();
+            fragment.gameObject = fragmentGo;
+            fragment.filter = fragmentGo.GetComponent<MeshFilter>();
+            fragment.renderer = fragmentGo.GetComponent<MeshRenderer>();
+            return fragment;
+        }
+
+        void Return(Fragment fragment)
+        {
+            // Scene teardown can destroy the children before the owner receives OnDestroy
+            if (fragment.gameObject == null)
+            {
+                return;
+            }
+
+            fragment.gameObject.SetActive(false);
+            fragment.filter.sharedMesh = null;
+            _pool.Push(fragment);
         }
 
         Fragment Spawn(Mesh mesh, Material material, Vector3 position, Quaternion rotation, Vector3 scale,
             Vector3 velocity, float life, float ground, bool bounce, uint seed, Mesh owned = null, bool split = false)
         {
-            while (_global.Count >= MaxLiveFragments)
+            while (_active.Count >= MaxLiveFragments)
             {
-                _global.First.Value.owner.Release(_global.First.Value);
+                Release(_active[0]);
             }
 
-            Fragment fragment;
-            if (_pool.Count > 0)
-            {
-                fragment = _pool.Pop();
-            }
-            else
-            {
-                GameObject fragmentGo = new GameObject("HLStoneFragment");
-                fragmentGo.transform.SetParent(transform, false);
-                fragment = new Fragment();
-                fragment.owner = this;
-                fragment.gameObject = fragmentGo;
-                fragment.filter = fragmentGo.AddComponent<MeshFilter>();
-                fragment.renderer = fragmentGo.AddComponent<MeshRenderer>();
-            }
+            Fragment fragment = Take();
 
             fragment.filter.sharedMesh = mesh;
             fragment.renderer.sharedMaterial = material;
@@ -183,11 +139,6 @@ namespace HealerLike.Render.Stones
             fragment.isDust = false;
             fragment.scale = scale;
             fragment.renderer.SetPropertyBlock(null);
-            if (fragment.globalNode == null)
-            {
-                fragment.globalNode = new LinkedListNode<Fragment>(fragment);
-            }
-            _global.AddLast(fragment.globalNode);
             _active.Add(fragment);
             return fragment;
         }
@@ -195,18 +146,50 @@ namespace HealerLike.Render.Stones
         void Release(Fragment fragment)
         {
             _active.Remove(fragment);
-            _global.Remove(fragment.globalNode);
-            HLStoneMeshCache.DestroyOwned(fragment.ownedMesh);
-            fragment.ownedMesh = null;
-            // Scene teardown can destroy child objects before their owner receives OnDestroy.
-            if (fragment.gameObject == null)
+            if (fragment.ownedMesh != null)
+            {
+                if (Application.isPlaying)
+                {
+                    Destroy(fragment.ownedMesh);
+                }
+                else
+                {
+                    DestroyImmediate(fragment.ownedMesh);
+                }
+                fragment.ownedMesh = null;
+            }
+            Return(fragment);
+        }
+
+        // A shard that follows a thrown projectile; it is not simulated and goes back with ReturnShard
+        public Transform TakeShard(Mesh mesh, Color colour)
+        {
+            if (!isActiveAndEnabled || !HasAssets())
+            {
+                return null;
+            }
+
+            Fragment fragment = Take();
+            fragment.filter.sharedMesh = mesh;
+            fragment.renderer.sharedMaterial = _stoneMaterial;
+            fragment.block.Clear();
+            fragment.block.SetVector(baseColorId, colour.linear);
+            fragment.renderer.SetPropertyBlock(fragment.block);
+            fragment.gameObject.transform.localScale = Vector3.one;
+            fragment.gameObject.SetActive(true);
+            _shards.Add(fragment.gameObject.transform, fragment);
+            return fragment.gameObject.transform;
+        }
+
+        public void ReturnShard(Transform shard)
+        {
+            if (shard == null || !_shards.TryGetValue(shard, out Fragment fragment))
             {
                 return;
             }
 
-            fragment.gameObject.SetActive(false);
-            fragment.filter.sharedMesh = null;
-            _pool.Push(fragment);
+            _shards.Remove(shard);
+            Return(fragment);
         }
 
         static Vector3 Direction(ref HLStoneRandom random, Vector3 normal)
@@ -222,12 +205,11 @@ namespace HealerLike.Render.Stones
 
         public void EmitDust(Vector3 position, uint seed)
         {
-            if (!isActiveAndEnabled)
+            if (!isActiveAndEnabled || !HasAssets())
             {
                 return;
             }
 
-            EnsureAssets();
             HLStoneRandom random = new HLStoneRandom(seed);
             for (int i = 0; i < 5; i++)
             {
@@ -236,8 +218,8 @@ namespace HealerLike.Render.Stones
                 float y = random.Range(0.25f, 0.5f);
                 float z = random.Range(-0.24f, 0.24f);
                 Vector3 velocity = new Vector3(x, y, z);
-                Fragment fragment = Spawn(_sphere, _dust, position, Quaternion.identity, scale, velocity, 0.65f,
-                    position.y, false, random.Next());
+                Fragment fragment = Spawn(_dustLease.mesh, _dustMaterial, position, Quaternion.identity, scale, velocity,
+                    0.65f, position.y, false, random.Next());
                 fragment.isDust = true;
                 fragment.spin = Vector3.zero;
             }
@@ -245,27 +227,26 @@ namespace HealerLike.Render.Stones
 
         public void EmitTrickle(Vector3 position, uint seed)
         {
-            if (!isActiveAndEnabled)
+            if (!isActiveAndEnabled || !HasAssets())
             {
                 return;
             }
 
-            EnsureAssets();
             HLStoneRandom random = new HLStoneRandom(seed);
             Quaternion rotation = Quaternion.Euler(15f, seed % 360, 30f);
             Vector3 scale = Vector3.one * random.Range(0.025f, 0.045f);
             Vector3 velocity = new Vector3(random.Range(-0.25f, 0.25f), 0.08f, random.Range(-0.25f, 0.25f));
-            Spawn(_cone, _stoneMaterial, position, rotation, scale, velocity, 0.7f, position.y - 0.5f, true, seed);
+            Spawn(_meshes.pyramid, _stoneMaterial, position, rotation, scale, velocity, 0.7f, position.y - 0.5f, true,
+                seed);
         }
 
-        public void EmitHit(in HLStoneImpact impact, bool critical, uint seed)
+        public void EmitHit(HLStoneImpact impact, bool critical, uint seed)
         {
-            if (!isActiveAndEnabled)
+            if (!isActiveAndEnabled || !HasAssets())
             {
                 return;
             }
 
-            EnsureAssets();
             HLStoneRandom random = new HLStoneRandom(seed);
             int sparks = critical ? 9 : 6;
             int shards = critical ? 5 : 3;
@@ -274,26 +255,25 @@ namespace HealerLike.Render.Stones
             {
                 bool isSpark = i < sparks;
                 float size = random.Range(0.025f, 0.07f);
-                Material material = isSpark || i % 3 == 0 ? _coral : _stoneMaterial;
+                Material material = isSpark || i % 3 == 0 ? _coralMaterial : _stoneMaterial;
                 Vector3 scale = isSpark ? new Vector3(size * 0.25f, size, size * 0.25f) : Vector3.one * size;
                 // Keep the random draws in order: direction, speed, then life.
                 Vector3 velocity = Direction(ref random, normal) * random.Range(0.6f, 1.4f);
                 float life = isSpark ? random.Range(0.12f, 0.22f) : random.Range(0.35f, 0.55f);
                 Vector3 position = impact.pointWS + normal * 0.005f;
                 Quaternion rotation = Quaternion.FromToRotation(Vector3.up, normal);
-                Spawn(_cone, material, position, rotation, scale, velocity, life, impact.pointWS.y - 1f, false,
+                Spawn(_meshes.pyramid, material, position, rotation, scale, velocity, life, impact.pointWS.y - 1f, false,
                     random.Next());
             }
         }
 
         public void EmitThrownContact(Vector3 contact, uint seed)
         {
-            if (!isActiveAndEnabled)
+            if (!isActiveAndEnabled || !HasAssets())
             {
                 return;
             }
 
-            EnsureAssets();
             HLStoneRandom random = new HLStoneRandom(seed);
             int count = 3 + (int)(random.Next() % 3);
             for (int i = 0; i < count; i++)
@@ -301,7 +281,7 @@ namespace HealerLike.Render.Stones
                 Quaternion rotation = Quaternion.Euler(random.Range(0f, 180f), random.Range(0f, 360f), 0f);
                 Vector3 scale = Vector3.one * random.Range(0.055f, 0.11f);
                 Vector3 velocity = Direction(ref random, Vector3.up) * random.Range(0.6f, 1.3f);
-                Spawn(_cone, _stoneMaterial, contact, rotation, scale, velocity, 0.45f, contact.y, false,
+                Spawn(_meshes.pyramid, _stoneMaterial, contact, rotation, scale, velocity, 0.45f, contact.y, false,
                     random.Next());
             }
 
@@ -309,21 +289,21 @@ namespace HealerLike.Render.Stones
             for (int i = 0; i < 5; i++)
             {
                 Vector3 ray = Quaternion.AngleAxis(i * 72f, Vector3.forward) * Vector3.up;
-                Fragment star = Spawn(_cone, _coral, contact, Quaternion.FromToRotation(Vector3.up, ray),
-                    new Vector3(0.055f, 0.2f, 0.035f), Vector3.up * 0.15f, 0.18f, contact.y, false, random.Next());
+                Quaternion rotation = Quaternion.FromToRotation(Vector3.up, ray);
+                Fragment star = Spawn(_meshes.pyramid, _coralMaterial, contact, rotation, new Vector3(0.055f, 0.2f, 0.035f),
+                    Vector3.up * 0.15f, 0.18f, contact.y, false, random.Next());
                 star.spin = Vector3.zero;
             }
         }
 
-        public void EmitDetachedPart(Mesh mesh, Material material, in Matrix4x4 pose, Vector3 velocityWS, float groundY,
+        public void EmitDetachedPart(Mesh mesh, Material material, Matrix4x4 pose, Vector3 velocityWS, float groundY,
             uint seed)
         {
-            if (!isActiveAndEnabled)
+            if (!isActiveAndEnabled || !HasAssets())
             {
                 return;
             }
 
-            EnsureAssets();
             HLStoneRandom random = new HLStoneRandom(seed);
             // A copy belongs to the effects owner, so releasing the enemy's cache lease cannot invalidate it.
             Mesh copy = Instantiate(mesh);
@@ -337,7 +317,7 @@ namespace HealerLike.Render.Stones
 
         public void CollapseOnce(HLStoneEnemyVisual visual, uint seed)
         {
-            if (!isActiveAndEnabled)
+            if (!isActiveAndEnabled || !HasAssets())
             {
                 return;
             }
@@ -346,7 +326,6 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            EnsureAssets();
             HLStoneRandom random = new HLStoneRandom(seed);
             _surviving.Clear();
             for (int i = 0; i < visual.parts.Count; i++)
@@ -366,11 +345,11 @@ namespace HealerLike.Render.Stones
                 Vector3[] vertices = part.lease.data.vertices;
                 int vertex = (int)(random.Next() % (uint)vertices.Length);
                 Vector3 position = part.transform.TransformPoint(vertices[vertex]);
-                Material material = i % 4 == 0 ? _coral : _stoneMaterial;
+                Material material = i % 4 == 0 ? _coralMaterial : _stoneMaterial;
                 Vector3 scale = Vector3.one * random.Range(0.06f, 0.16f);
                 Vector3 velocity = visual.planarVelocity + outward + Vector3.up * random.Range(0.7f, 1.5f);
-                Spawn(_cone, material, position, part.transform.rotation, scale, velocity, 0.8f, visual.groundY, true,
-                    random.Next());
+                Spawn(_meshes.pyramid, material, position, part.transform.rotation, scale, velocity, 0.8f, visual.groundY,
+                    true, random.Next());
             }
             EmitDust(visual.transform.position + Vector3.up * 0.15f, seed);
             visual.HideParts();
@@ -408,7 +387,7 @@ namespace HealerLike.Render.Stones
                     fragmentTransform.position = fragment.start + fragment.velocity * fragment.age;
                     float fade = Mathf.Clamp01(1f - fragment.age / fragment.life);
                     fragmentTransform.localScale = fragment.scale * (1f + fragment.age * 0.8f);
-                    fragment.block.SetColor("_BaseColor", new Color(0.48f, 0.49f, 0.51f, fade * 0.55f));
+                    fragment.block.SetColor(baseColorId, new Color(0.48f, 0.49f, 0.51f, fade * 0.55f));
                     fragment.renderer.SetPropertyBlock(fragment.block);
                 }
                 else
@@ -441,7 +420,7 @@ namespace HealerLike.Render.Stones
             {
                 Vector3 scale = Vector3.one * random.Range(0.04f, 0.07f);
                 Vector3 velocity = new Vector3(random.Range(-0.3f, 0.3f), 0.3f, random.Range(-0.3f, 0.3f));
-                Spawn(_cone, _stoneMaterial, position, Quaternion.identity, scale, velocity, 0.25f, ground, true,
+                Spawn(_meshes.pyramid, _stoneMaterial, position, Quaternion.identity, scale, velocity, 0.25f, ground, true,
                     random.Next());
             }
         }
@@ -469,23 +448,14 @@ namespace HealerLike.Render.Stones
         void OnDestroy()
         {
             OnDisable();
-            foreach (Fragment fragment in _pool)
-            {
-                if (fragment.gameObject != null)
-                {
-                    HLStoneMeshCache.DestroyOwned(fragment.gameObject);
-                }
-            }
+            _shards.Clear();
             _pool.Clear();
-            HLStoneMeshCache.DestroyOwned(_sphere);
-            HLStoneMeshCache.DestroyOwned(_dust);
-            HLStoneMeshCache.DestroyOwned(_cone);
-            HLStoneMeshCache.DestroyOwned(_coral);
-            HLStoneMeshCache.DestroyOwned(_fallback);
-            if (_sceneOwners.TryGetValue(gameObject.scene, out HLStoneEffects owner) && owner == this)
+            if (_dustLease != null)
             {
-                _sceneOwners.Remove(gameObject.scene);
+                _dustLease.Dispose();
+                _dustLease = null;
             }
+            _stoneMeshes.Clear();
         }
     }
 }

@@ -10,6 +10,8 @@ namespace HealerLike.Render.Stones
         {
             GameObject root = new GameObject("HLTintAssembly");
             HLStoneAssembly assembly = new HLStoneAssembly();
+            StoneMeshCache meshes = new StoneMeshCache();
+            assembly.Init(meshes);
             try
             {
                 assembly.BuildEnemy(root.transform, 17, HLStonePreset.Boulder, null);
@@ -32,6 +34,7 @@ namespace HealerLike.Render.Stones
             finally
             {
                 assembly.Dispose();
+                meshes.Clear();
                 Object.DestroyImmediate(root);
             }
         }
@@ -41,6 +44,8 @@ namespace HealerLike.Render.Stones
         {
             GameObject root = new GameObject("HLAssembly");
             HLStoneAssembly assembly = new HLStoneAssembly();
+            StoneMeshCache meshes = new StoneMeshCache();
+            assembly.Init(meshes);
             try
             {
                 assembly.BuildEnemy(root.transform, 17, HLStonePreset.Boulder, null);
@@ -78,6 +83,7 @@ namespace HealerLike.Render.Stones
             finally
             {
                 assembly.Dispose();
+                meshes.Clear();
                 Object.DestroyImmediate(root);
             }
         }

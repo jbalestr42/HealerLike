@@ -1,49 +1,63 @@
+using System.Text.RegularExpressions;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Stones
 {
     public class HLStoneTerrainClumpTests
     {
+        static HLStoneTerrainClump CreateClump()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/HLStoneBlock.prefab");
+            return Object.Instantiate(prefab).GetComponentInChildren<HLStoneTerrainClump>();
+        }
+
+        static void DestroyClump(HLStoneTerrainClump clump)
+        {
+            TestHelpers.InvokePrivate(clump, "OnDestroy");
+            Object.DestroyImmediate(clump.transform.root.gameObject);
+        }
+
         [Test]
         public void OchreIsOneFaceAndRingIsPublic()
         {
-            GameObject go = new GameObject("HLTerrain");
-            HLStoneTerrainClump clump = go.AddComponent<HLStoneTerrainClump>();
+            HLStoneTerrainClump clump = CreateClump();
             try
             {
-                clump.Initialize(5, 1f);
+                clump.Init(5, 1f, null, null);
                 Assert.Greater(clump.bareGroundRadius, clump.assembly.localBounds.extents.x);
                 Transform facet = clump.assembly.parts[0].transform.Find("HLOchreFace");
                 Assert.IsNotNull(facet);
+                Assert.IsTrue(facet.gameObject.activeSelf);
                 Assert.AreEqual(3, facet.GetComponent<MeshFilter>().sharedMesh.vertexCount);
 
-                clump.Initialize(6, 1f);
+                clump.Init(6, 1f, null, null);
                 Assert.IsNull(clump.assembly.parts[0].transform.Find("HLOchreFace"));
+                Assert.IsFalse(clump.transform.Find("HLOchreFace").gameObject.activeSelf);
             }
             finally
             {
-                TestHelpers.InvokePrivate(clump, "OnDestroy");
-                Object.DestroyImmediate(go);
+                DestroyClump(clump);
             }
         }
 
         [Test]
         public void DisableHidesOwnedPartsAndFootprintsAndEnableRestoresThem()
         {
-            GameObject go = new GameObject("HLTerrain");
-            HLStoneTerrainClump clump = go.AddComponent<HLStoneTerrainClump>();
+            HLStoneTerrainClump clump = CreateClump();
             try
             {
-                clump.Initialize(5, 1f);
+                clump.Init(5, 1f, null, null);
                 clump.enabled = false;
                 TestHelpers.InvokePrivate(clump, "OnDisable");
                 foreach (HLStoneAssembly.Part part in clump.assembly.parts)
                 {
                     Assert.IsFalse(part.transform.gameObject.activeSelf);
                 }
-                Assert.IsFalse(go.GetComponent<HLStoneGroundShadow>().enabled);
-                Assert.IsFalse(go.GetComponent<HLStoneGroundRing>().enabled);
+                Assert.IsFalse(clump.transform.Find("GroundShadow").gameObject.activeSelf);
+                Assert.IsFalse(clump.transform.Find("GroundDisc").gameObject.activeSelf);
 
                 clump.enabled = true;
                 TestHelpers.InvokePrivate(clump, "OnEnable");
@@ -51,11 +65,31 @@ namespace HealerLike.Render.Stones
                 {
                     Assert.IsTrue(part.transform.gameObject.activeSelf);
                 }
+                Assert.IsTrue(clump.transform.Find("GroundShadow").gameObject.activeSelf);
+                Assert.IsTrue(clump.transform.Find("GroundDisc").gameObject.activeSelf);
             }
             finally
             {
-                TestHelpers.InvokePrivate(clump, "OnDestroy");
-                Object.DestroyImmediate(go);
+                DestroyClump(clump);
+            }
+        }
+
+        [Test]
+        public void SharesStoneMeshesWithTheEffectsOwner()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
+            HLStoneEffects effects = Object.Instantiate(prefab).GetComponent<HLStoneEffects>();
+            HLStoneTerrainClump clump = CreateClump();
+            try
+            {
+                clump.Init(5, 1f, effects, null);
+                Assert.AreEqual(clump.assembly.parts.Count, effects.stoneMeshes.count);
+            }
+            finally
+            {
+                DestroyClump(clump);
+                TestHelpers.InvokePrivate(effects, "OnDestroy");
+                Object.DestroyImmediate(effects.gameObject);
             }
         }
 
@@ -71,16 +105,16 @@ namespace HealerLike.Render.Stones
                 for (int i = 0; i < 32; i++)
                 {
                     uint seed = HLStoneSeed.ForCell(-12, new Vector2Int(i, -i));
-                    clumpA.Initialize(seed, 2f);
-                    clumpB.Initialize(seed + 1, 2f);
-                    clumpB.Initialize(seed, 2f);
+                    clumpA.Init(seed, 2f, null, null);
+                    clumpB.Init(seed + 1, 2f, null, null);
+                    clumpB.Init(seed, 2f, null, null);
                     Assert.That(clumpA.assembly.parts.Count, Is.InRange(3, 5));
                     Assert.AreEqual(clumpA.assembly.parts.Count, clumpB.assembly.parts.Count);
 
                     Bounds bounds = clumpA.assembly.localBounds;
                     Assert.That(bounds.size.x, Is.LessThanOrEqualTo(1.92001f));
                     Assert.That(bounds.size.z, Is.LessThanOrEqualTo(1.92001f));
-                    Assert.That(bounds.min.y, Is.EqualTo(0).Within(1e-5));
+                    Assert.That(bounds.min.y, Is.EqualTo(0).Within(0.00001f));
                     Assert.That(bounds.max.y, Is.InRange(1.39999f, 2.40001f));
                     for (int j = 0; j < clumpA.assembly.parts.Count; j++)
                     {
@@ -90,7 +124,11 @@ namespace HealerLike.Render.Stones
                         Assert.AreEqual(partA.transform.localPosition, partB.transform.localPosition);
                     }
                 }
-                Assert.Throws<System.ArgumentOutOfRangeException>(() => clumpA.Initialize(1, float.NaN));
+
+                int count = clumpA.assembly.parts.Count;
+                LogAssert.Expect(LogType.Error, new Regex(@"\[HLStoneTerrainClump\] Cell size"));
+                clumpA.Init(1, float.NaN, null, null);
+                Assert.AreEqual(count, clumpA.assembly.parts.Count); // the bad call left the clump as it was
             }
             finally
             {

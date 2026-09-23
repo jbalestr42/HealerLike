@@ -1,5 +1,6 @@
 using System.Linq;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Stones
@@ -35,6 +36,24 @@ namespace HealerLike.Render.Stones
             public override bool ignoreConsumerPrevention { get { return false; } }
         }
 
+        static HLStoneEffects CreateEffects()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
+            return Object.Instantiate(prefab).GetComponent<HLStoneEffects>();
+        }
+
+        static HLStoneEnemyVisual CreateVisual(GameObject target)
+        {
+            Transform pivot = new GameObject("BodyPivot").transform;
+            pivot.SetParent(target.transform, false);
+            Transform presentation = new GameObject("HLStonePresentation").transform;
+            presentation.SetParent(pivot, false);
+            HLStoneEnemyVisual visual = target.AddComponent<HLStoneEnemyVisual>();
+            TestHelpers.SetPrivateField(visual, "_bodyPivot", pivot);
+            TestHelpers.SetPrivateField(visual, "_presentation", presentation);
+            return visual;
+        }
+
         GameObject _target;
         GameObject _source;
         GameObject _fxObject;
@@ -49,12 +68,12 @@ namespace HealerLike.Render.Stones
         {
             _target = new GameObject("HLTarget");
             _source = new GameObject("HLSource");
-            _fxObject = new GameObject("HLEffects");
             _health = TestHelpers.CreateResourceAttribute(_target, AttributeType.HealthMax, 100);
             TestHelpers.CreateAttributeManager(_source);
-            _fx = _fxObject.AddComponent<HLStoneEffects>();
-            _visual = _target.AddComponent<HLStoneEnemyVisual>();
-            _visual.Initialize(_health, 15, _fx);
+            _fx = CreateEffects();
+            _fxObject = _fx.gameObject;
+            _visual = CreateVisual(_target);
+            _visual.Init(_health, 15, _fx);
         }
 
         [TearDown]
@@ -89,7 +108,7 @@ namespace HealerLike.Render.Stones
         {
             Transform pivot = _target.transform.Find("BodyPivot");
             LookAtTarget look = pivot.gameObject.AddComponent<LookAtTarget>();
-            _visual.Initialize(_health, 15, _fx);
+            _visual.Init(_health, 15, _fx);
             TestHelpers.SetPrivateField(_visual, "_motion", new MotionSource());
             TestHelpers.InvokePrivate(_visual, "LateUpdate");
             Assert.AreEqual(Quaternion.identity, pivot.rotation);
@@ -104,7 +123,7 @@ namespace HealerLike.Render.Stones
             TestHelpers.InvokePrivate(_visual, "LateUpdate");
             Assert.Less(Quaternion.Angle(Quaternion.Euler(0f, 90f, 0f), pivot.rotation), 0.001f);
 
-            _visual.Initialize(_health, 15, _fx);
+            _visual.Init(_health, 15, _fx);
             pivot.rotation = Quaternion.identity;
             TestHelpers.SetPrivateField(_visual, "_motion", new MotionSource());
             TestHelpers.InvokePrivate(_visual, "LateUpdate");
@@ -132,7 +151,7 @@ namespace HealerLike.Render.Stones
             Drain();
             Assert.AreEqual(2, visibleCount);
 
-            _visual.Initialize(_health, 15, _fx);
+            _visual.Init(_health, 15, _fx);
             Assert.AreEqual(3, visibleCount);
         }
 
@@ -186,7 +205,7 @@ namespace HealerLike.Render.Stones
             Assert.AreEqual(14, _fx.liveCount);
             foreach (MeshFilter filter in _fxObject.GetComponentsInChildren<MeshFilter>())
             {
-                Vector3 expected = filter.sharedMesh.name == "HLFlatCone" ? point + Vector3.up * 0.005f : point;
+                Vector3 expected = filter.sharedMesh.name == "Pyramid" ? point + Vector3.up * 0.005f : point;
                 Assert.That(Vector3.Distance(filter.transform.position, expected), Is.LessThan(1e-5));
             }
 
@@ -215,7 +234,7 @@ namespace HealerLike.Render.Stones
 
             _fx.Advance(1f);
             _visual.enabled = true;
-            _visual.Initialize(_health, 15, _fx);
+            _visual.Init(_health, 15, _fx);
             Queue(-1);
             Drain();
             Assert.AreEqual(14, _fx.liveCount);

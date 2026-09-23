@@ -1,5 +1,6 @@
 using HealerLike.Render.Zones;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Stones
@@ -31,19 +32,25 @@ namespace HealerLike.Render.Stones
             }
         }
 
+        static HLStoneEffects CreateEffects()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
+            return Object.Instantiate(prefab).GetComponent<HLStoneEffects>();
+        }
+
         [Test]
         public void TerrainReadsPublishedRegistryAndEmitsOncePerHostilePulse()
         {
             GameObject root = new GameObject("HLTerrainLife");
-            GameObject fxRoot = new GameObject("HLFX");
             GameObject zoneRoot = new GameObject("HLZones");
-            HLStoneEffects fx = fxRoot.AddComponent<HLStoneEffects>();
+            HLStoneEffects fx = CreateEffects();
+            GameObject fxRoot = fx.gameObject;
             HLStoneLife life = root.AddComponent<HLStoneLife>();
             HLZoneRegistry zones = zoneRoot.AddComponent<HLZoneRegistry>();
             try
             {
                 zones.Initialize(new HLUpload());
-                life.Configure(fx, 1, 0.5f, true);
+                life.Init(fx, zones, 1, 0.5f, true);
                 zones.AddPulse(HLZoneKind.Heal, Vector3.zero, 1f, 1f, 1f);
                 zones.PublishFrame(0.01f);
                 life.Advance(0.01f);
@@ -78,15 +85,15 @@ namespace HealerLike.Render.Stones
         {
             GameObject root = new GameObject("HLLife");
             GameObject top = new GameObject("HLTop");
-            GameObject fxRoot = new GameObject("HLFX");
-            HLStoneEffects fx = fxRoot.AddComponent<HLStoneEffects>();
+            HLStoneEffects fx = CreateEffects();
+            GameObject fxRoot = fx.gameObject;
             HLStoneLife life = root.AddComponent<HLStoneLife>();
             top.transform.SetParent(root.transform);
             Quaternion rest = Quaternion.Euler(0f, 30f, 0f);
             top.transform.localRotation = rest;
             try
             {
-                life.Configure(fx, 1, 0.5f, false, top.transform);
+                life.Init(fx, null, 1, 0.5f, false, top.transform);
                 fx.RecordImpact(Vector3.right * 20f, 1);
                 life.Advance(0.05f);
                 Assert.Less(Quaternion.Angle(rest, top.transform.localRotation), 0.03f);

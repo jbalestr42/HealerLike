@@ -12,6 +12,8 @@ namespace HealerLike.Render.Stones
         {
             GameObject go = new GameObject("HLTest");
             HLStoneAssembly assembly = new HLStoneAssembly();
+            StoneMeshCache meshes = new StoneMeshCache();
+            assembly.Init(meshes);
             try
             {
                 assembly.BuildEnemy(go.transform, 17, preset, null);
@@ -32,6 +34,7 @@ namespace HealerLike.Render.Stones
             finally
             {
                 assembly.Dispose();
+                meshes.Clear();
                 Object.DestroyImmediate(go);
             }
         }

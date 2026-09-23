@@ -1,4 +1,4 @@
-using System;
+using HealerLike.Render.Zones;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -12,23 +12,39 @@ namespace HealerLike.Render.Stones
         [SerializeField] bool _groundShadowEnabled = true;
         [FormerlySerializedAs("directionToKeyLight")]
         [SerializeField] Vector3 _directionToKeyLight = new Vector3(-1f, 2f, -1f);
+        [SerializeField] StoneGroundDisc _groundDisc;
+        [SerializeField] StoneGroundDisc _groundShadow;
+        [SerializeField] MeshFilter _ochreFace;
 
-        HLStoneGroundShadow _groundShadow;
-        HLStoneGroundRing _groundRing;
         HLStoneLife _life;
+        StoneMeshCache _ownMeshes;
         Mesh _ochreMesh;
-        GameObject _ochreFace;
 
         readonly HLStoneAssembly _assembly = new HLStoneAssembly();
         public HLStoneAssembly assembly { get { return _assembly; } }
 
-        public float bareGroundRadius { get { return _groundRing != null ? _groundRing.radius : 0f; } }
+        public float bareGroundRadius { get { return _groundDisc != null ? _groundDisc.radius : 0f; } }
 
         public Vector3 bareGroundCenter
         {
             get
             {
-                return _groundRing != null ? _groundRing.center : transform.position;
+                return _groundDisc != null ? _groundDisc.center : transform.position;
+            }
+        }
+
+        public Color groundColour
+        {
+            get
+            {
+                return _groundDisc != null ? _groundDisc.colour : Color.clear;
+            }
+            set
+            {
+                if (_groundDisc != null)
+                {
+                    _groundDisc.colour = value;
+                }
             }
         }
 
@@ -43,20 +59,40 @@ namespace HealerLike.Render.Stones
                 _groundShadowEnabled = value;
                 if (_groundShadow != null)
                 {
-                    _groundShadow.visible = value;
+                    _groundShadow.Show(value && isActiveAndEnabled);
                 }
             }
         }
 
+        // removed in D2: the old stage path has no effects owner or zones to hand over
         public void Initialize(uint seed, float cellSize)
+        {
+            Init(seed, cellSize, null, null);
+        }
+
+        // Without an effects owner the clump keeps its own stone meshes
+        public void Init(uint seed, float cellSize, HLStoneEffects effects, HLZoneRegistry zones)
         {
             if (!float.IsFinite(cellSize) || cellSize <= 0f)
             {
-                throw new ArgumentOutOfRangeException(nameof(cellSize));
+                Debug.LogError($"[HLStoneTerrainClump] Cell size must be positive, not {cellSize}.");
+                return;
             }
 
             ClearFace();
-            _assembly.Dispose();
+            if (effects != null)
+            {
+                _assembly.Init(effects.stoneMeshes);
+            }
+            else
+            {
+                if (_ownMeshes == null)
+                {
+                    _ownMeshes = new StoneMeshCache();
+                }
+                _assembly.Init(_ownMeshes);
+            }
+
             HLStoneRandom random = new HLStoneRandom(HLStoneSeed.ForPart(seed, 401));
             int count = 3 + (int)(random.Next() % 3);
             int silhouette = (int)(seed % 3);
@@ -96,7 +132,10 @@ namespace HealerLike.Render.Stones
                 {
                     recipe.localPosition = new Vector3(Mathf.Cos(i * 2.4f) * 0.28f, 0f, Mathf.Sin(i * 2.4f) * 0.28f);
                 }
-                _assembly.Add(transform, seed, recipe, _stoneMaterial);
+                if (!_assembly.Add(transform, seed, recipe, _stoneMaterial))
+                {
+                    return;
+                }
 
                 HLStoneAssembly.Part part = _assembly.parts[i];
                 Vector3 position = part.transform.localPosition;
@@ -112,21 +151,21 @@ namespace HealerLike.Render.Stones
             }
             _assembly.RecalculateBounds();
 
-            if (_groundShadow == null)
+            if (_groundShadow != null)
             {
-                _groundShadow = gameObject.AddComponent<HLStoneGroundShadow>();
+                _groundShadow.Init(_assembly.localBounds, _directionToKeyLight);
+                _groundShadow.Show(_groundShadowEnabled && isActiveAndEnabled);
             }
-            _groundShadow.Configure(_assembly.localBounds, _directionToKeyLight, _groundShadowEnabled);
-            if (_groundRing == null)
+            if (_groundDisc != null)
             {
-                _groundRing = gameObject.AddComponent<HLStoneGroundRing>();
+                _groundDisc.Init(_assembly.localBounds, _directionToKeyLight);
+                _groundDisc.Show(isActiveAndEnabled);
             }
-            _groundRing.Configure(_assembly.localBounds);
             if (_life == null)
             {
                 _life = gameObject.AddComponent<HLStoneLife>();
             }
-            _life.Configure(null, seed, bareGroundRadius, true);
+            _life.Init(effects, zones, seed, bareGroundRadius, true);
             if (HLStoneLifeState.Ochre(seed))
             {
                 CreateFace();
@@ -135,6 +174,11 @@ namespace HealerLike.Render.Stones
 
         void CreateFace()
         {
+            if (_ochreFace == null)
+            {
+                return;
+            }
+
             HLStoneAssembly.Part part = _assembly.parts[0];
             Mesh mesh = part.lease.mesh;
             Vector3[] vertices = mesh.vertices;
@@ -160,12 +204,11 @@ namespace HealerLike.Render.Stones
             _ochreMesh.RecalculateNormals();
             _ochreMesh.RecalculateBounds();
 
-            _ochreFace = new GameObject("HLOchreFace");
-            _ochreFace.layer = gameObject.layer;
+            // The facet rides on the first part, which is rebuilt on every Init
+            _ochreFace.sharedMesh = _ochreMesh;
             _ochreFace.transform.SetParent(part.transform, false);
-            _ochreFace.AddComponent<MeshFilter>().sharedMesh = _ochreMesh;
-            MeshRenderer renderer = _ochreFace.AddComponent<MeshRenderer>();
-            renderer.sharedMaterial = _stoneMaterial;
+            _ochreFace.gameObject.SetActive(true);
+            MeshRenderer renderer = _ochreFace.GetComponent<MeshRenderer>();
             MaterialPropertyBlock block = new MaterialPropertyBlock();
             block.SetVector("_BaseColor", HLStoneAssembly.Palette[3].linear);
             renderer.SetPropertyBlock(block);
@@ -173,8 +216,29 @@ namespace HealerLike.Render.Stones
 
         void ClearFace()
         {
-            HLStoneMeshCache.DestroyOwned(_ochreFace);
-            HLStoneMeshCache.DestroyOwned(_ochreMesh);
+            if (_ochreFace != null)
+            {
+                _ochreFace.gameObject.SetActive(false);
+                _ochreFace.transform.SetParent(transform, false);
+                _ochreFace.sharedMesh = null;
+            }
+            DestroyFaceMesh();
+        }
+
+        void DestroyFaceMesh()
+        {
+            if (_ochreMesh != null)
+            {
+                if (Application.isPlaying)
+                {
+                    Destroy(_ochreMesh);
+                }
+                else
+                {
+                    DestroyImmediate(_ochreMesh);
+                }
+                _ochreMesh = null;
+            }
         }
 
         void SetVisible(bool value)
@@ -188,11 +252,11 @@ namespace HealerLike.Render.Stones
             }
             if (_groundShadow != null)
             {
-                _groundShadow.enabled = value;
+                _groundShadow.Show(value && _groundShadowEnabled);
             }
-            if (_groundRing != null)
+            if (_groundDisc != null)
             {
-                _groundRing.enabled = value;
+                _groundDisc.Show(value);
             }
             if (_life != null)
             {
@@ -212,8 +276,12 @@ namespace HealerLike.Render.Stones
 
         void OnDestroy()
         {
-            ClearFace();
+            DestroyFaceMesh();
             _assembly.Dispose();
+            if (_ownMeshes != null)
+            {
+                _ownMeshes.Clear();
+            }
         }
     }
 }

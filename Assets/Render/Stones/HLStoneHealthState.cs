@@ -1,4 +1,4 @@
-using System;
+using UnityEngine;
 
 namespace HealerLike.Render.Stones
 {
@@ -20,7 +20,8 @@ namespace HealerLike.Render.Stones
         {
             if (!float.IsFinite(thresholdFraction) || thresholdFraction <= 0f || thresholdFraction >= 1f)
             {
-                throw new ArgumentOutOfRangeException(nameof(thresholdFraction));
+                Debug.LogError($"[HLStoneHealthState] Shed threshold {thresholdFraction} is outside (0, 1), clamping it.");
+                thresholdFraction = float.IsNaN(thresholdFraction) ? 0.5f : Mathf.Clamp(thresholdFraction, 0.01f, 0.99f);
             }
 
             _threshold = thresholdFraction;

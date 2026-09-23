@@ -1,17 +1,24 @@
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Stones
 {
     public class HLStoneEffectsDeliveryTests
     {
+        static HLStoneEffects CreateEffects()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
+            return Object.Instantiate(prefab).GetComponent<HLStoneEffects>();
+        }
+
         [Test]
         public void ContactBurstExpiresAndReusesPool()
         {
-            GameObject go = new GameObject("HLContactEffects");
+            HLStoneEffects effects = CreateEffects();
+            GameObject go = effects.gameObject;
             try
             {
-                HLStoneEffects effects = go.AddComponent<HLStoneEffects>();
                 effects.EmitThrownContact(Vector3.one, 91);
                 int count = effects.liveCount;
                 Assert.That(count, Is.InRange(8, 10));
@@ -28,7 +35,7 @@ namespace HealerLike.Render.Stones
             }
             finally
             {
-                TestHelpers.InvokePrivate(go.GetComponent<HLStoneEffects>(), "OnDestroy");
+                TestHelpers.InvokePrivate(effects, "OnDestroy");
                 Object.DestroyImmediate(go);
             }
         }
