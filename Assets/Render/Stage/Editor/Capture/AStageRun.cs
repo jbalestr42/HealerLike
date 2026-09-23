@@ -6,8 +6,9 @@ using UnityEngine;
 namespace HealerLike.Render.Stage
 {
     // A scripted player on his real game: it presses his buttons and places allies through his public calls,
-    // and counts the attacks, heals and zones the render layer sees
-    public abstract class AStageRun : MonoBehaviour
+    // and counts the attacks, heals and zones the render layer sees. Editor scripts cannot be components,
+    // so StagePlay steps it from the editor update while the game plays.
+    public abstract class AStageRun
     {
         protected static readonly string[] Allies =
         {
@@ -26,6 +27,45 @@ namespace HealerLike.Render.Stage
         protected int _heals;
         protected int _maxZones;
 
+        readonly Stack<IEnumerator> _steps = new Stack<IEnumerator>();
+
+        public void Begin()
+        {
+            _steps.Clear();
+            _steps.Push(Start());
+        }
+
+        // Runs until the next yield, a yielded enumerator runs first
+        public void Step()
+        {
+            while (_steps.Count > 0)
+            {
+                IEnumerator step = _steps.Peek();
+                if (!step.MoveNext())
+                {
+                    _steps.Pop();
+                    continue;
+                }
+
+                if (step.Current is IEnumerator inner)
+                {
+                    _steps.Push(inner);
+                    continue;
+                }
+
+                return;
+            }
+        }
+
+        protected static IEnumerator Wait(float seconds)
+        {
+            float end = Time.realtimeSinceStartup + seconds;
+            while (Time.realtimeSinceStartup < end)
+            {
+                yield return null;
+            }
+        }
+
         IEnumerator Start()
         {
             // The launcher loads Main, the manager attaches on sceneLoaded
@@ -39,8 +79,8 @@ namespace HealerLike.Render.Stage
                     yield break;
                 }
 
-                _manager = FindAnyObjectByType<RenderManager>();
-                GameView gameView = FindAnyObjectByType<GameView>();
+                _manager = Object.FindAnyObjectByType<RenderManager>();
+                GameView gameView = Object.FindAnyObjectByType<GameView>();
                 _hud = gameView != null ? gameView.gameHUD : null;
                 yield return null;
             }
@@ -51,16 +91,16 @@ namespace HealerLike.Render.Stage
 
         protected abstract IEnumerator Run();
 
-        // Every frame's final state, after the manager's LateUpdate
-        protected IEnumerator EndOfFrame()
+        // The editor update runs between frames, after the manager's LateUpdate
+        protected IEnumerator NextFrame()
         {
-            yield return new WaitForEndOfFrame();
             Observe();
+            yield return null;
         }
 
         protected void Observe()
         {
-            foreach (ResourceAttribute resource in FindObjectsByType<ResourceAttribute>(FindObjectsSortMode.None))
+            foreach (ResourceAttribute resource in Object.FindObjectsByType<ResourceAttribute>(FindObjectsSortMode.None))
             {
                 if (_observed.Add(resource))
                 {

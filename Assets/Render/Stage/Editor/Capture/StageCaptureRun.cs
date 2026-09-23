@@ -12,13 +12,18 @@ namespace HealerLike.Render.Stage
         public static readonly int Width = 1080;
         public static readonly int Height = 1920;
 
-        public bool isLandscape { get; set; }
+        bool _isLandscape;
+
+        public StageCaptureRun(bool isLandscape)
+        {
+            __isLandscape = isLandscape;
+        }
 
         protected override IEnumerator Run()
         {
-            _manager.SetLandscape(isLandscape);
+            _manager.SetLandscape(_isLandscape);
             float started = Time.time;
-            yield return new WaitForSeconds(0.5f);
+            yield return Wait(0.5f);
             PlaceAllies(LoadAllies());
             _hud.nextWaveButton.onClick.Invoke();
             float nextCast = Time.time + 2f;
@@ -32,10 +37,10 @@ namespace HealerLike.Render.Stage
                     CastOn(targetGo != null ? targetGo.GetComponent<Entity>() : null);
                 }
 
-                yield return EndOfFrame();
+                yield return NextFrame();
             }
 
-            string path = StagePlay.CaptureFolder + (isLandscape ? "d2-stage-landscape.png" : "d2-stage-portrait.png");
+            string path = StagePlay.CaptureFolder + (_isLandscape ? "d2-stage-landscape.png" : "d2-stage-portrait.png");
             bool isCaptured = Capture(path);
             Debug.Log($"[StageCaptureRun] {path} attacks {_attacks} heals {_heals} zones {_maxZones}");
             StagePlay.Finish(isCaptured);
@@ -57,8 +62,8 @@ namespace HealerLike.Render.Stage
         bool Capture(string path)
         {
             Camera camera = _manager.gameCamera;
-            int width = isLandscape ? Height : Width;
-            int height = isLandscape ? Width : Height;
+            int width = _isLandscape ? Height : Width;
+            int height = _isLandscape ? Width : Height;
             RenderTexture target = RenderTexture.GetTemporary(width, height, 24, RenderTextureFormat.ARGB32);
             RenderTexture previous = RenderTexture.active;
             Texture2D texture = new Texture2D(width, height, TextureFormat.RGB24, false);
@@ -73,7 +78,7 @@ namespace HealerLike.Render.Stage
             RenderTexture.ReleaseTemporary(target);
             Directory.CreateDirectory(StagePlay.CaptureFolder);
             File.WriteAllBytes(path, texture.EncodeToPNG());
-            Destroy(texture);
+            Object.Destroy(texture);
             return File.Exists(path);
         }
     }

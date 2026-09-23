@@ -17,6 +17,7 @@ namespace HealerLike.Render.Stage
         static readonly string codeKey = "StagePlay.Code";
         static readonly string deadlineKey = "StagePlay.Deadline";
         static EditorWindow _gameView;
+        static AStageRun _run;
 
         static StagePlay()
         {
@@ -36,6 +37,7 @@ namespace HealerLike.Render.Stage
         // Called by the run when it is done
         public static void Finish(bool isPassed)
         {
+            _run = null;
             SessionState.SetInt(codeKey, isPassed ? 0 : 1);
             EditorApplication.isPlaying = false;
         }
@@ -50,16 +52,8 @@ namespace HealerLike.Render.Stage
 
             if (change == PlayModeStateChange.EnteredPlayMode)
             {
-                GameObject runGo = new GameObject("StageRun");
-                UnityEngine.Object.DontDestroyOnLoad(runGo);
-                if (mode == "smoke")
-                {
-                    runGo.AddComponent<StageSmokeRun>();
-                }
-                else
-                {
-                    runGo.AddComponent<StageCaptureRun>().isLandscape = mode == "landscape";
-                }
+                _run = mode == "smoke" ? new StageSmokeRun() : (AStageRun)new StageCaptureRun(mode == "landscape");
+                _run.Begin();
             }
 
             if (change == PlayModeStateChange.EnteredEditMode)
@@ -89,6 +83,10 @@ namespace HealerLike.Render.Stage
             if (EditorApplication.isPlaying)
             {
                 RepaintGameView();
+                if (_run != null)
+                {
+                    _run.Step();
+                }
             }
         }
 

@@ -28,14 +28,14 @@ namespace HealerLike.Render.Stage
             {
                 if (_state == AscensionGameType.State.WaitForRoundToStart)
                 {
-                    yield return new WaitForSecondsRealtime(1f);
+                    yield return Wait(1f);
                     PlaceAllies(allies);
                     _state = AscensionGameType.State.None;
                     _hud.nextWaveButton.onClick.Invoke();
                 }
                 else if (_state == AscensionGameType.State.SelectUpgrade)
                 {
-                    yield return new WaitForSecondsRealtime(1f);
+                    yield return Wait(1f);
                     _state = AscensionGameType.State.None;
                     PickUpgrade();
                 }
@@ -46,7 +46,7 @@ namespace HealerLike.Render.Stage
                     CastOn(friends.Count > 0 && friends[0] != null ? friends[0].GetComponent<Entity>() : null);
                 }
 
-                yield return EndOfFrame();
+                yield return NextFrame();
             }
 
             Application.logMessageReceived -= OnLog;
@@ -66,14 +66,14 @@ namespace HealerLike.Render.Stage
         // His upgrade view offers buttons, the first one is picked through its own call
         void PickUpgrade()
         {
-            SelectItemUpgradeButton item = FindAnyObjectByType<SelectItemUpgradeButton>();
+            SelectItemUpgradeButton item = UnityEngine.Object.FindAnyObjectByType<SelectItemUpgradeButton>();
             if (item != null)
             {
                 item.SelectUpgrade();
                 return;
             }
 
-            SelectPlayerItemUpgradeButton playerItem = FindAnyObjectByType<SelectPlayerItemUpgradeButton>();
+            SelectPlayerItemUpgradeButton playerItem = UnityEngine.Object.FindAnyObjectByType<SelectPlayerItemUpgradeButton>();
             if (playerItem != null)
             {
                 playerItem.SelectUpgrade();
