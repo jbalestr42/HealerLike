@@ -153,7 +153,7 @@ namespace HealerLike.Render.Stones
             TestHelpers.SetPrivateField(owner, "_health", _health);
             TestHelpers.SetPrivateField(provider, "_targets", new List<GameObject> { _projectile });
             _projectile.transform.position = Vector3.forward * 8f;
-            _visual.Init(owner);
+            _visual.Init(owner, (HLStoneEffects)null);
 
             // Entity creates skills after model Init. Verify they are discovered on a later poll.
             ShootProjectileSkill skill = _root.AddComponent<ShootProjectileSkill>();

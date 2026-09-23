@@ -11,6 +11,19 @@ namespace HealerLike.Render.Creatures
 {
     public class HLCharacterViewTests
     {
+        // What Init takes from the view prefab and the manager, without a manager
+        static void Bind(HLCharacterView view, Character character, HLCreatureRecipe recipe, Transform anchor,
+            Material material, HLRenderRegistry registry)
+        {
+            TestHelpers.SetPrivateField(view, "_character", character);
+            TestHelpers.SetPrivateField(view, "_recipe", recipe);
+            TestHelpers.SetPrivateField(view, "_visualAnchor", anchor);
+            TestHelpers.SetPrivateField(view, "_material", material);
+            TestHelpers.SetPrivateField(view, "_registry", registry);
+            TestHelpers.InvokePrivate(view, "BuildAndRegister");
+            TestHelpers.InvokePrivate(view, "ObserveResources");
+        }
+
         [Test]
         public void CharacterViewUsesAnchorAndRegistryWithoutEntityOrCharacterInit()
         {
@@ -28,9 +41,9 @@ namespace HealerLike.Render.Creatures
                 HLCharacterView view = anchor.AddComponent<HLCharacterView>();
                 TestHelpers.SetPrivateField(view, "_meshes", HLPrimitiveMeshesTests.Meshes());
                 HLRenderRegistry registry = new HLRenderRegistry();
-                view.Bind(character, recipe, anchor.transform, material, registry);
+                Bind(view, character, recipe, anchor.transform, material, registry);
                 HLCreatureRig rig = view.rig;
-                view.Bind(character, recipe, anchor.transform, material, registry);
+                Bind(view, character, recipe, anchor.transform, material, registry);
                 Assert.AreSame(rig, view.rig);
                 TestHelpers.InvokePrivate(view, "LateUpdate");
                 Assert.AreEqual(anchor.transform.position, rig.root.position);
@@ -91,9 +104,9 @@ namespace HealerLike.Render.Creatures
                 HLCharacterView view = go.AddComponent<HLCharacterView>();
                 TestHelpers.SetPrivateField(view, "_meshes", HLPrimitiveMeshesTests.Meshes());
                 HLRenderRegistry registry = new HLRenderRegistry();
-                view.Bind(character, recipe, go.transform, material, registry);
+                Bind(view, character, recipe, go.transform, material, registry);
                 HLResourceOutcomeObserver observer = target.AddComponent<HLResourceOutcomeObserver>();
-                observer.Bind(health, null, registry, true);
+                observer.Bind(health, null, null, registry);
                 BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
                 MethodInfo updateMethod = typeof(HLCharacterView).GetMethod("Update", flags);
                 Action update = (Action)Delegate.CreateDelegate(typeof(Action), view, updateMethod);

@@ -1,34 +1,57 @@
-using HealerLike.Render.Environment;
 using NUnit.Framework;
 using UnityEngine;
+using HealerLike.Render.Environment;
+
 namespace HealerLike.Render.Stage
 {
-    public class HLStageLaunchGustTests
+
+public class HLStageLaunchGustTests
+{
+    GameObject _go;
+    HLEnvironmentGust _gust;
+
+    [SetUp]
+    public void SetUp()
     {
-        [Test] public void LaunchPushesTheGustAlongSourceToTarget()
-        {
-            var go=new GameObject("HLGustTest");
-            try {
-                var gust=go.AddComponent<HLEnvironmentGust>();
-                Assert.That(HLStageLaunchGust.Launch(gust,new Vector3(1,0,1),new Vector3(1,3,5)),Is.True);
-                var wind=gust.Sample(Time.timeAsDouble+HLStageLaunchGust.Seconds*.5f);
-                Assert.That(wind.z,Is.EqualTo(HLStageLaunchGust.Strength).Within(1e-3f));
-                Assert.That(wind.x,Is.EqualTo(0).Within(1e-5f)); Assert.That(wind.y,Is.Zero);
-                Assert.That(gust.Sample(Time.timeAsDouble+HLStageLaunchGust.Seconds+.01f).sqrMagnitude,Is.Zero);
-            } finally { Object.DestroyImmediate(go); }
-        }
-        [Test] public void MissingGustIsANoOp() => Assert.That(HLStageLaunchGust.Launch(null,Vector3.zero,Vector3.forward),Is.False);
-        [Test] public void InitWithoutProjectileTargetDoesNothing()
-        {
-            var go=new GameObject("HLGustTest"); var target=new GameObject("HLGustTarget");
-            var saved=HLStageLaunchGust.Target;
-            try {
-                var gust=target.AddComponent<HLEnvironmentGust>(); HLStageLaunchGust.Target=gust;
-                var launch=go.AddComponent<HLStageLaunchGust>();
-                Assert.DoesNotThrow(()=>launch.Init(go));
-                Assert.DoesNotThrow(()=>launch.Init(null));
-                Assert.That(gust.Sample(Time.timeAsDouble+.1).sqrMagnitude,Is.Zero);
-            } finally { HLStageLaunchGust.Target=saved; Object.DestroyImmediate(go); Object.DestroyImmediate(target); }
-        }
+        _go = new GameObject("gust");
+        _gust = _go.AddComponent<HLEnvironmentGust>();
     }
+
+    [TearDown]
+    public void TearDown()
+    {
+        Object.DestroyImmediate(_go);
+    }
+
+    [Test]
+    public void Launch_SourceToTarget_PushesTheGustAlongIt()
+    {
+        bool isLaunched = HLStageLaunchGust.Launch(_gust, new Vector3(1f, 0f, 1f), new Vector3(1f, 3f, 5f));
+
+        Vector3 wind = _gust.Sample(Time.timeAsDouble + HLStageLaunchGust.Seconds * 0.5f);
+        Assert.IsTrue(isLaunched);
+        Assert.AreEqual(HLStageLaunchGust.Strength, wind.z, 0.001f);
+        Assert.AreEqual(0f, wind.x, 0.00001f);
+        Assert.AreEqual(0f, wind.y);
+        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + HLStageLaunchGust.Seconds + 0.01f).sqrMagnitude);
+    }
+
+    [Test]
+    public void Launch_NoGust_ReturnsFalse()
+    {
+        Assert.IsFalse(HLStageLaunchGust.Launch(null, Vector3.zero, Vector3.forward));
+    }
+
+    [Test]
+    public void Init_NoProjectileTarget_LeavesTheGustStill()
+    {
+        HLStageLaunchGust launch = _go.AddComponent<HLStageLaunchGust>();
+        launch.Init(_gust);
+
+        launch.Init(_go);
+        launch.Init((GameObject)null);
+
+        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + 0.1).sqrMagnitude);
+    }
+}
 }

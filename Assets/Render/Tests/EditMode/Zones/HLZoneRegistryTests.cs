@@ -225,7 +225,6 @@ namespace HealerLike.Render.Zones
             _registry.Release();
 
             CollectionAssert.AreEqual(new[] { "count:0", "unbind", "dispose" }, _upload.calls);
-            Assert.IsNull(HLZoneRegistry.current);
             Assert.AreEqual(0, _registry.count);
             Assert.AreEqual(0, Add(2f));
 
@@ -275,24 +274,5 @@ namespace HealerLike.Render.Zones
             Assert.AreEqual(0, _registry.count);
         }
 
-        [Test]
-        public void SecondOwnerCannotPublishOrClearFirstOwnersState()
-        {
-            GameObject other = new GameObject("second owner");
-            try
-            {
-                HLZoneRegistry registry = other.AddComponent<HLZoneRegistry>();
-                Assert.Throws<System.InvalidOperationException>(() => registry.Init(new HLZoneFakeUpload()));
-
-                registry.Release();
-
-                Assert.AreSame(_registry, HLZoneRegistry.current);
-                Assert.AreEqual(1, _upload.calls.Count);
-            }
-            finally
-            {
-                Object.DestroyImmediate(other);
-            }
-        }
     }
 }

@@ -31,7 +31,7 @@ namespace HealerLike.Render.Zones
                 entity.entityType = Entity.EntityType.Computer;
 
                 HLBruiseZone bruise = actor.AddComponent<HLBruiseZone>();
-                bruise.Init(entity);
+                bruise.Init(entity, owner);
                 owner.PublishFrame(0f);
 
                 Assert.AreEqual(4, owner.snapshot[0].kind);

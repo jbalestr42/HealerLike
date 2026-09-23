@@ -147,7 +147,12 @@ namespace HealerLike.Render.Environment
         public void BuildMakesOneShadowlessColliderFreeChildPerItem()
         {
             HLEnvironmentRidge ridge = _go.AddComponent<HLEnvironmentRidge>();
-            ridge.Configure(null, null, null, grid, ground, fogStart, fogEnd, bands, 4);
+            TestHelpers.SetPrivateField(ridge, "_grid", grid);
+            TestHelpers.SetPrivateField(ridge, "_groundY", ground);
+            TestHelpers.SetPrivateField(ridge, "_fogStart", fogStart);
+            TestHelpers.SetPrivateField(ridge, "_fogEnd", fogEnd);
+            TestHelpers.SetPrivateField(ridge, "_fogBands", bands);
+            TestHelpers.SetPrivateField(ridge, "_seed", 4);
             TestHelpers.SetPrivateField(ridge, "_meshes", LoadMeshes());
 
             Assert.DoesNotThrow(() => ridge.Build());

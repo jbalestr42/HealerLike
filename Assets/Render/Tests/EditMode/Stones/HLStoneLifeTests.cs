@@ -49,7 +49,7 @@ namespace HealerLike.Render.Stones
             HLZoneRegistry zones = zoneRoot.AddComponent<HLZoneRegistry>();
             try
             {
-                zones.Initialize(new HLUpload());
+                zones.Init(new HLUpload());
                 life.Init(fx, zones, 1, 0.5f, true);
                 zones.AddPulse(HLZoneKind.Heal, Vector3.zero, 1f, 1f, 1f);
                 zones.PublishFrame(0.01f);
