@@ -72,7 +72,8 @@ namespace HealerLike.Render.Stones
             GameObject fragment = (GameObject)effectsSO.FindProperty("_fragmentPrefab").objectReferenceValue;
             Assert.IsNotNull(fragment.GetComponent<MeshFilter>());
             Assert.IsNotNull(fragment.GetComponent<MeshRenderer>());
-            Assert.AreEqual("HealerLike/Stones/Dust", ((Material)effectsSO.FindProperty("_dustMaterial").objectReferenceValue).shader.name);
+            Material dust = (Material)effectsSO.FindProperty("_dustMaterial").objectReferenceValue;
+            Assert.AreEqual("HealerLike/Stones/Dust", dust.shader.name);
         }
 
         [Test]
