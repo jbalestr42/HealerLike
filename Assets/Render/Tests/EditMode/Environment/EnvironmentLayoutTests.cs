@@ -13,7 +13,7 @@ public class EnvironmentLayoutTests
     static readonly Rect grid = new Rect(-8f, -8f, 16f, 16f);
 
     [Test]
-    public void SameSeedGivesTheSameLayout()
+    public void Generate_SameSeed_GivesSameLayout()
     {
         List<EnvironmentItem> a = EnvironmentLayout.Generate(EnvironmentSettings.Default, grid, 1f, 0.5f);
         List<EnvironmentItem> b = EnvironmentLayout.Generate(EnvironmentSettings.Default, grid, 1f, 0.5f);
@@ -31,7 +31,7 @@ public class EnvironmentLayoutTests
     }
 
     [Test]
-    public void DifferentSeedGivesADifferentLayout()
+    public void Generate_DifferentSeed_GivesDifferentLayout()
     {
         EnvironmentSettings settings = EnvironmentSettings.Default;
         List<EnvironmentItem> a = EnvironmentLayout.Generate(settings, grid, 1f, 0.5f);
@@ -43,7 +43,7 @@ public class EnvironmentLayoutTests
     }
 
     [Test]
-    public void NothingInsideTheGridOrItsOneCellMargin()
+    public void Generate_AnySeed_PlacesNothingInsideGridMargin()
     {
         foreach (int seed in new int[] { 1, 1707, 99 })
         {
@@ -61,7 +61,7 @@ public class EnvironmentLayoutTests
     }
 
     [Test]
-    public void CountsAreBoundedPerKindAndByTheCap()
+    public void Generate_HugeCounts_AreCappedPerKind()
     {
         EnvironmentSettings settings = EnvironmentSettings.Default;
         settings.counts = new EnvironmentCounts
@@ -87,7 +87,7 @@ public class EnvironmentLayoutTests
     }
 
     [Test]
-    public void MonolithsAreFarSideAndTallKindsNeverOnTheCameraSide()
+    public void Generate_Monoliths_StayFarSideAndTallKindsOffCameraSide()
     {
         EnvironmentSettings settings = EnvironmentSettings.Default;
         settings.counts.monoliths = 12;
@@ -104,7 +104,7 @@ public class EnvironmentLayoutTests
     }
 
     [Test]
-    public void DensityFallsOffAndStonesGrowWithDistance()
+    public void Generate_Default_ThinsOutAndGrowsStonesWithDistance()
     {
         List<EnvironmentItem> items = EnvironmentLayout.Generate(EnvironmentSettings.Default, grid, 1f, 0f);
 
@@ -120,7 +120,7 @@ public class EnvironmentLayoutTests
     }
 
     [Test]
-    public void InvalidInputLogsAndPlacesNothing()
+    public void Generate_InvalidInput_LogsAndReturnsEmpty()
     {
         EnvironmentSettings settings = EnvironmentSettings.Default;
         settings.ringDistance = 0f;

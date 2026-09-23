@@ -12,21 +12,24 @@ public class EnvironmentScatterTests
 {
     GameObject _go;
     GameObject _otherGo;
+    GameObject _managerGo;
     PrimitiveMeshes _meshes;
 
     [SetUp]
-    public void Setup()
+    public void SetUp()
     {
         _go = new GameObject("ScatterTest");
         _otherGo = new GameObject("ScatterOther");
+        _managerGo = new GameObject("ScatterManager");
         _meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
     }
 
     [TearDown]
-    public void Cleanup()
+    public void TearDown()
     {
         DestroyWithGeneratedMeshes(_go);
         DestroyWithGeneratedMeshes(_otherGo);
+        Object.DestroyImmediate(_managerGo);
     }
 
     // Stones are generated per seed; the baked primitive meshes are assets and stay
@@ -83,7 +86,7 @@ public class EnvironmentScatterTests
     }
 
     [Test]
-    public void BuildSpawnsOnePivotPerItemOutsideTheGridAndIsDeterministic()
+    public void Build_SameSeed_SpawnsSamePivotsOutsideGrid()
     {
         EnvironmentScatter scatter = Make(5);
         Rect grid = new Rect(-8f, -8f, 16f, 16f);
@@ -112,31 +115,23 @@ public class EnvironmentScatterTests
     }
 
     [Test]
-    public void InitBuildsFromTheManagerMeshes()
+    public void Init_ManagerMeshesOnly_BuildsFromManagerMeshes()
     {
-        GameObject managerGo = new GameObject("ScatterManager");
-        try
-        {
-            RenderManager manager = managerGo.AddComponent<RenderManager>();
-            TestHelpers.SetPrivateField(manager, "_meshes", _meshes);
-            EnvironmentScatter scatter = Make(3);
-            TestHelpers.SetPrivateField(scatter, "_meshes", null);
+        RenderManager manager = _managerGo.AddComponent<RenderManager>();
+        TestHelpers.SetPrivateField(manager, "_meshes", _meshes);
+        EnvironmentScatter scatter = Make(3);
+        TestHelpers.SetPrivateField(scatter, "_meshes", null);
 
-            scatter.Init(new Rect(-8f, -8f, 16f, 16f), 1f, 0.5f, null, null, 60f, manager);
+        scatter.Init(new Rect(-8f, -8f, 16f, 16f), 1f, 0.5f, null, null, 60f, manager);
 
-            Assert.That(scatter.items.Count, Is.GreaterThan(0));
-            Assert.AreEqual(scatter.items.Count, scatter.root.childCount);
-            Assert.IsTrue(scatter.root.GetComponentsInChildren<MeshFilter>().Any(f => f.sharedMesh == _meshes.capsule));
-            Assert.IsTrue(scatter.items.All(i => i.position.y == 0.5f));
-        }
-        finally
-        {
-            Object.DestroyImmediate(managerGo);
-        }
+        Assert.That(scatter.items.Count, Is.GreaterThan(0));
+        Assert.AreEqual(scatter.items.Count, scatter.root.childCount);
+        Assert.IsTrue(scatter.root.GetComponentsInChildren<MeshFilter>().Any(f => f.sharedMesh == _meshes.capsule));
+        Assert.IsTrue(scatter.items.All(i => i.position.y == 0.5f));
     }
 
     [Test]
-    public void AllPlantKindsSwayAndStonesDoNot()
+    public void Build_MixedKinds_OnlyPlantsSway()
     {
         EnvironmentScatter scatter = Make(9);
 
@@ -150,7 +145,7 @@ public class EnvironmentScatterTests
     }
 
     [Test]
-    public void MotionFreezesBeyondFogAndResumesWithoutAccumulating()
+    public void Animate_BeyondFog_FreezesAndResumesWithoutAccumulating()
     {
         EnvironmentScatter scatter = Make(5);
         scatter.Build(new Rect(-8f, -8f, 16f, 16f), 1f);
@@ -172,7 +167,7 @@ public class EnvironmentScatterTests
     }
 
     [Test]
-    public void GustOpensFernJointsAndCapsHaveSeparateNod()
+    public void Animate_Gust_OpensFernJointsAndNodsCaps()
     {
         EnvironmentScatter scatter = Make(5);
         scatter.Build(new Rect(-8f, -8f, 16f, 16f), 1f);
@@ -199,7 +194,7 @@ public class EnvironmentScatterTests
     }
 
     [Test]
-    public void SpawnSettleDecaysAndAbsoluteSamplingIsStable()
+    public void Animate_AfterSpawn_SettleDecaysAndSamplingIsStable()
     {
         EnvironmentScatter scatter = Make(5);
         scatter.Build(new Rect(-8f, -8f, 16f, 16f), 1f);
@@ -220,7 +215,7 @@ public class EnvironmentScatterTests
     }
 
     [Test]
-    public void ColourVariationIsRepeatableAndBounded()
+    public void VaryColor_Seed_IsRepeatableAndBounded()
     {
         Color basis = new Color(0.4f, 0.7f, 0.3f);
 
@@ -235,7 +230,7 @@ public class EnvironmentScatterTests
     }
 
     [Test]
-    public void AnimateAllocatesNothingAfterWarmup()
+    public void Animate_AfterWarmup_AllocatesNothing()
     {
         EnvironmentScatter scatter = Make(5);
         scatter.Build(new Rect(-8f, -8f, 16f, 16f), 1f);

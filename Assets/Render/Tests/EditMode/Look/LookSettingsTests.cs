@@ -12,7 +12,7 @@ namespace HealerLike.Render.Look
 public class LookSettingsTests
 {
     [Test]
-    public void DefaultsMatchEveryShaderFallback()
+    public void Default_EveryField_MatchesShaderFallback()
     {
         string core = File.ReadAllText(Path.Combine(Application.dataPath, "Render/Shaders/LookCore.hlsl"));
         LookSettings defaults = LookSettings.Default;
@@ -45,7 +45,7 @@ public class LookSettingsTests
     [TestCase(float.NaN)]
     [TestCase(float.PositiveInfinity)]
     [TestCase(float.NegativeInfinity)]
-    public void NonfiniteScalarsAndColorChannelsUseTheirDefaults(float invalid)
+    public void Validated_NonfiniteField_UsesItsDefault(float invalid)
     {
         foreach (FieldInfo field in typeof(LookSettings).GetFields(BindingFlags.Instance | BindingFlags.Public))
         {
@@ -68,7 +68,7 @@ public class LookSettingsTests
     }
 
     [Test]
-    public void DegenerateRangesClampWithoutMutatingInput()
+    public void Validated_DegenerateRanges_ClampWithoutMutatingInput()
     {
         LookSettings input = new LookSettings
         {
@@ -117,7 +117,7 @@ public class LookSettingsTests
     }
 
     [Test]
-    public void PixelDensitySupportsLegacyZeroAndClampsUnsafeValues()
+    public void Validated_InkSpacingPixels_KeepsZeroAndClampsUnsafeValues()
     {
         LookSettings settings = LookSettings.Default;
         Assert.That(settings.inkSpacingPixels, Is.EqualTo(3.5f));
@@ -135,7 +135,7 @@ public class LookSettingsTests
     [TestCase(0f)]
     [TestCase(1000000f)]
     [TestCase(float.MaxValue)]
-    public void ExtremeFogRangesRemainFiniteAndSeparated(float start)
+    public void Validated_ExtremeFogRange_StaysFiniteAndSeparated(float start)
     {
         LookSettings settings = LookSettings.Default;
         settings.fogStart = start;
@@ -148,7 +148,7 @@ public class LookSettingsTests
     }
 
     [Test]
-    public void ColorValidationKeepsInkAndTintNonblackButAllowsBlackFog()
+    public void Validated_BlackColours_KeepInkAndTintButAllowBlackFog()
     {
         LookSettings settings = LookSettings.Default;
         settings.shadowTint = new Color(-1f, -2f, -3f, 0f);

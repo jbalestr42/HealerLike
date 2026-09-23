@@ -19,6 +19,7 @@ public class LookControllerTests
     readonly Dictionary<int, float> _floats = new Dictionary<int, float>();
     readonly Dictionary<int, Vector4> _vectors = new Dictionary<int, Vector4>();
     readonly List<GameObject> _objects = new List<GameObject>();
+    Light _previousSun;
 
     // The settings fields are camelCase, their shader globals are _HL plus the PascalCase name
     static int GlobalId(FieldInfo field)
@@ -33,8 +34,9 @@ public class LookControllerTests
     }
 
     [SetUp]
-    public void SaveGlobalState()
+    public void SetUp()
     {
+        _previousSun = RenderSettings.sun;
         foreach (FieldInfo field in SettingsFields())
         {
             int id = GlobalId(field);
@@ -53,8 +55,9 @@ public class LookControllerTests
     }
 
     [TearDown]
-    public void RestoreGlobalState()
+    public void TearDown()
     {
+        RenderSettings.sun = _previousSun;
         foreach (GameObject go in _objects)
         {
             if (go != null)
@@ -102,7 +105,7 @@ public class LookControllerTests
     }
 
     [Test]
-    public void KeyDirectionSelectsSunThenBrightestAndClearsOnDisable()
+    public void SelectKeyLightDirection_SunOrBrightest_PublishesAndClearsOnDisable()
     {
         LookController controller = CreateController();
         Light sun = CreateDirectionalLight("Key");
@@ -122,78 +125,62 @@ public class LookControllerTests
         Assert.That(LookController.SelectKeyLightDirection(new[] { sun, other }, sun, ~(1 << 7)),
                     Is.EqualTo(Vector4.zero));
 
-        Light previousSun = RenderSettings.sun;
-        try
-        {
-            RenderSettings.sun = sun;
-            controller.ApplyGlobals();
-            Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(expectedDirection));
+        RenderSettings.sun = sun;
+        controller.ApplyGlobals();
+        Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(expectedDirection));
 
-            LookController.PublishMainLightDirection(null);
-            Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(Vector4.zero));
+        LookController.PublishMainLightDirection(null);
+        Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(Vector4.zero));
 
-            LookController.PublishMainLightDirection(sun);
-            Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(expectedDirection));
+        LookController.PublishMainLightDirection(sun);
+        Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(expectedDirection));
 
-            controller.enabled = false;
-            TestHelpers.InvokePrivate(controller, "OnDisable");
-            Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(Vector4.zero));
-        }
-        finally
-        {
-            RenderSettings.sun = previousSun;
-        }
+        controller.enabled = false;
+        TestHelpers.InvokePrivate(controller, "OnDisable");
+        Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(Vector4.zero));
     }
 
     [Test]
-    public void SteadyPublicationAllocatesNothingAndDisabledSunClearsFallback()
+    public void ApplyGlobals_SteadyFrames_AllocatesNothingAndDisabledSunClearsDirection()
     {
         LookController controller = CreateController();
         Light sun = CreateDirectionalLight("Allocation sun");
-        Light previous = RenderSettings.sun;
-        try
+        RenderSettings.sun = sun;
+        GameObject cameraGo = new GameObject("Allocation camera");
+        _objects.Add(cameraGo);
+        Camera camera = cameraGo.AddComponent<Camera>();
+        MethodInfo method = typeof(LookController).GetMethod("OnBeginCameraRendering",
+                                                               BindingFlags.Instance | BindingFlags.NonPublic);
+        Action<ScriptableRenderContext, Camera> callback = (Action<ScriptableRenderContext, Camera>)
+            Delegate.CreateDelegate(typeof(Action<ScriptableRenderContext, Camera>), controller, method);
+        for (int i = 0; i < 8; i++)
         {
-            RenderSettings.sun = sun;
-            GameObject cameraGo = new GameObject("Allocation camera");
-            _objects.Add(cameraGo);
-            Camera camera = cameraGo.AddComponent<Camera>();
-            MethodInfo method = typeof(LookController).GetMethod("OnBeginCameraRendering",
-                                                                   BindingFlags.Instance | BindingFlags.NonPublic);
-            Action<ScriptableRenderContext, Camera> callback = (Action<ScriptableRenderContext, Camera>)
-                Delegate.CreateDelegate(typeof(Action<ScriptableRenderContext, Camera>), controller, method);
-            for (int i = 0; i < 8; i++)
-            {
-                controller.ApplyGlobals();
-                callback(default, camera);
-            }
-
-            long before = GC.GetAllocatedBytesForCurrentThread();
-            for (int i = 0; i < 128; i++)
-            {
-                controller.ApplyGlobals();
-                callback(default, camera);
-            }
-
-            long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
-            Assert.That(allocated, Is.Zero);
-
-            camera.cullingMask = 0;
-            callback(default, camera);
-            Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(Vector4.zero));
-
-            sun.enabled = false;
             controller.ApplyGlobals();
-            Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(Vector4.zero));
+            callback(default, camera);
         }
-        finally
+
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        for (int i = 0; i < 128; i++)
         {
-            RenderSettings.sun = previous;
+            controller.ApplyGlobals();
+            callback(default, camera);
         }
+
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+        Assert.That(allocated, Is.Zero);
+
+        camera.cullingMask = 0;
+        callback(default, camera);
+        Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(Vector4.zero));
+
+        sun.enabled = false;
+        controller.ApplyGlobals();
+        Assert.That(Shader.GetGlobalVector("_HLKeyLightDir"), Is.EqualTo(Vector4.zero));
     }
 
     [TestCase(ColorSpace.Gamma)]
     [TestCase(ColorSpace.Linear)]
-    public void ColorConversionIsExplicitAndAlphaIsOne(ColorSpace space)
+    public void ToWorkingColor_ColorSpace_ConvertsExplicitlyWithOpaqueAlpha(ColorSpace space)
     {
         Color color = new Color(0.2f, 0.5f, 0.8f, 0.3f);
         Color expected = space == ColorSpace.Linear ? color.linear : color;
@@ -203,7 +190,7 @@ public class LookControllerTests
     }
 
     [Test]
-    public void UploadPublishesAllValidatedValuesAndFlagLast()
+    public void UploadGlobals_InvalidInput_PublishesValidatedValuesWithFlagLast()
     {
         LookSettings input = LookSettings.Default;
         input.shadowStrength = float.NaN;
@@ -278,7 +265,7 @@ public class LookControllerTests
     }
 
     [Test]
-    public void ValidationIsLocalUntilExplicitPublication()
+    public void OnValidate_InvalidSettings_ValidatesLocallyWithoutPublishing()
     {
         LookController controller = CreateController();
         controller.ApplyGlobals();

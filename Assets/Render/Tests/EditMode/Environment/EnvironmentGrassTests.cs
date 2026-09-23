@@ -13,8 +13,31 @@ namespace HealerLike.Render.Environment
 
 public class EnvironmentGrassTests
 {
+    GameObject _go;
+    GameObject _zonesGo;
+    GameObject _managerGo;
+    ZoneRegistry _zones;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _go = new GameObject("RingGrass");
+        _zonesGo = new GameObject("RingZones");
+        _managerGo = new GameObject("RingManager");
+        _zones = _zonesGo.AddComponent<ZoneRegistry>();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        _zones.Release();
+        Object.DestroyImmediate(_go);
+        Object.DestroyImmediate(_zonesGo);
+        Object.DestroyImmediate(_managerGo);
+    }
+
     [Test]
-    public void StripsTileTheRingWithoutTouchingTheGrid()
+    public void Strips_Ring_TileItWithoutTouchingGrid()
     {
         Rect grid = new Rect(-8f, -8f, 16f, 16f);
 
@@ -36,7 +59,7 @@ public class EnvironmentGrassTests
     }
 
     [Test]
-    public void BudgetIsAreaTimesDensityCappedByTheGrassMaximum()
+    public void Budget_AreaAndDensity_IsCappedByGrassMaximum()
     {
         Assert.AreEqual(48 * 16 * 64, EnvironmentGrass.Budget(new Rect(0f, 0f, 48f, 16f), 64f));
         Assert.AreEqual(GrassLayout.MaxBudget, EnvironmentGrass.Budget(new Rect(0f, 0f, 1000f, 1000f), 64f));
@@ -54,7 +77,7 @@ public class EnvironmentGrassTests
     }
 
     [Test]
-    public void BandsTileTheAnnulusInWholeCellsWithoutTouchingTheGrid()
+    public void Bands_DefaultWidths_TileAnnulusInWholeCells()
     {
         Rect grid = new Rect(-8f, -8f, 16f, 16f);
 
@@ -87,7 +110,7 @@ public class EnvironmentGrassTests
     }
 
     [Test]
-    public void BandBudgetsStayUnderTheCapAndDensityFallsOutward()
+    public void Bands_DefaultWidths_StayUnderCapAndThinOutward()
     {
         RingStrip[] strips = EnvironmentGrass.Bands(new Rect(-8f, -8f, 16f, 16f));
 
@@ -110,7 +133,7 @@ public class EnvironmentGrassTests
     }
 
     [Test]
-    public void OverBudgetStripsAreSplitWithoutLosingDensity()
+    public void Bands_OverBudgetStrip_SplitsWithoutLosingDensity()
     {
         // One 16-wide band at full board density: top and bottom are 48 x 16 x 256 = two budgets each
         RingStrip[] strips = EnvironmentGrass.Bands(new Rect(-8f, -8f, 16f, 16f), new float[] { 16f },
@@ -136,7 +159,7 @@ public class EnvironmentGrassTests
     }
 
     [Test]
-    public void BandsRejectInvalidInput()
+    public void Bands_InvalidInput_LogsAndReturnsEmpty()
     {
         Rect grid = new Rect(-8f, -8f, 16f, 16f);
         Rect halfCellGrid = new Rect(0f, 0f, 2.5f, 3f);
@@ -157,70 +180,48 @@ public class EnvironmentGrassTests
     }
 
     [Test]
-    public void InitCopiesTheTemplateOncePerBandStripAndUpdatesThemWithoutZones()
+    public void Init_StripTemplate_CopiesItOncePerBandStripWithoutZones()
     {
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
         {
             Assert.Ignore("Zone buffers need a graphics device; run with Metal.");
         }
 
-        GameObject go = new GameObject("RingGrass");
-        GameObject zonesGo = new GameObject("RingZones");
-        GameObject managerGo = new GameObject("RingManager");
-        ZoneRegistry zones = zonesGo.AddComponent<ZoneRegistry>();
-        try
-        {
-            GameObject templateGo = new GameObject("GrassStrip");
-            templateGo.transform.SetParent(go.transform, false);
-            templateGo.SetActive(false);
-            GrassField template = templateGo.AddComponent<GrassField>();
-            EnvironmentGrass grass = go.AddComponent<EnvironmentGrass>();
-            TestHelpers.SetPrivateField(grass, "_stripTemplate", template);
-            zones.Init();
-            RenderManager manager = managerGo.AddComponent<RenderManager>();
-            Rect board = new Rect(-8f, -8f, 16f, 16f);
-            float boardDensity = GrassLayout.DefaultBudget / (16f * 16f);
-            RingStrip[] bands = EnvironmentGrass.Bands(board, EnvironmentGrass.DefaultWidths, EnvironmentGrass.DefaultFractions, boardDensity);
+        GameObject templateGo = new GameObject("GrassStrip");
+        templateGo.transform.SetParent(_go.transform, false);
+        templateGo.SetActive(false);
+        GrassField template = templateGo.AddComponent<GrassField>();
+        EnvironmentGrass grass = _go.AddComponent<EnvironmentGrass>();
+        TestHelpers.SetPrivateField(grass, "_stripTemplate", template);
+        _zones.Init();
+        RenderManager manager = _managerGo.AddComponent<RenderManager>();
+        Rect board = new Rect(-8f, -8f, 16f, 16f);
+        float boardDensity = GrassLayout.DefaultBudget / (16f * 16f);
+        RingStrip[] bands = EnvironmentGrass.Bands(board, EnvironmentGrass.DefaultWidths, EnvironmentGrass.DefaultFractions, boardDensity);
 
-            grass.Init(board, 1f, 0.5f, null, zones, manager);
-            grass.UpdateStrips(zones);
+        grass.Init(board, 1f, 0.5f, null, _zones, manager);
+        grass.UpdateStrips(_zones);
 
-            Assert.AreEqual(bands.Length, grass.strips.Count);
-            for (int i = 0; i < bands.Length; i++)
-            {
-                Assert.AreEqual(bands[i].budget, grass.strips[i].bladeBudget);
-                Assert.AreEqual(0, grass.strips[i].activeZoneCount);
-                Assert.AreSame(go.transform, grass.strips[i].transform.parent);
-            }
-            Assert.IsFalse(templateGo.activeSelf);
-        }
-        finally
+        Assert.AreEqual(bands.Length, grass.strips.Count);
+        for (int i = 0; i < bands.Length; i++)
         {
-            zones.Release();
-            Object.DestroyImmediate(go);
-            Object.DestroyImmediate(zonesGo);
-            Object.DestroyImmediate(managerGo);
+            Assert.AreEqual(bands[i].budget, grass.strips[i].bladeBudget);
+            Assert.AreEqual(0, grass.strips[i].activeZoneCount);
+            Assert.AreSame(_go.transform, grass.strips[i].transform.parent);
         }
+        Assert.IsFalse(templateGo.activeSelf);
     }
 
     [Test]
-    public void UpdateStripsWithoutInitOrRegistryIsSafe()
+    public void UpdateStrips_WithoutInitOrRegistry_DoesNotThrow()
     {
-        GameObject go = new GameObject("RingGrass");
-        try
-        {
-            EnvironmentGrass grass = go.AddComponent<EnvironmentGrass>();
+        EnvironmentGrass grass = _go.AddComponent<EnvironmentGrass>();
 
-            Assert.DoesNotThrow(() =>
-            {
-                grass.UpdateStrips(null);
-                TestHelpers.InvokePrivate(grass, "OnDisable");
-            });
-        }
-        finally
+        Assert.DoesNotThrow(() =>
         {
-            Object.DestroyImmediate(go);
-        }
+            grass.UpdateStrips(null);
+            TestHelpers.InvokePrivate(grass, "OnDisable");
+        });
     }
 }
 

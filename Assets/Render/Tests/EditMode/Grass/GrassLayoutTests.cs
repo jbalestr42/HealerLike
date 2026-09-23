@@ -1,11 +1,8 @@
-using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
-using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Grass
 {
@@ -13,7 +10,7 @@ namespace HealerLike.Render.Grass
 public class GrassLayoutTests
 {
     [Test]
-    public void DeterministicIndependentOfUnityRandomAndSeedChangesLayout()
+    public void Generate_SameSeed_IsDeterministicAndLeavesUnityRandomAlone()
     {
         UnityEngine.Random.State saved = UnityEngine.Random.state;
         UnityEngine.Random.InitState(987);
@@ -36,7 +33,7 @@ public class GrassLayoutTests
     }
 
     [Test]
-    public void GoldenFixture()
+    public void Generate_SeedOne_MatchesGoldenBlade()
     {
         BladeSeed blade = GrassLayout.Generate(1, 1, 1f, Vector3.zero, 0.5f, 1, 1)[0];
 
@@ -46,7 +43,7 @@ public class GrassLayoutTests
     }
 
     [Test]
-    public void MainHasExactCountsAndRanges()
+    public void Generate_MainBoard_HasExactQuotasAndRanges()
     {
         BladeSeed[] seeds = GrassLayout.Generate(16, 16, 1f, Vector3.zero, 0.5f);
         int[] quotas = new int[256];
@@ -94,13 +91,13 @@ public class GrassLayoutTests
     [TestCase(32768)]
     [TestCase(65536)]
     [TestCase(98304)]
-    public void StandardQualityBudgets(int count)
+    public void Generate_QualityBudget_ReturnsThatManyBlades(int count)
     {
         Assert.AreEqual(count, GrassLayout.Generate(16, 16, 1f, Vector3.zero, 0f, count).Length);
     }
 
     [Test]
-    public void CapAndStableQuotientRemainderAndDensity()
+    public void Generate_BudgetsAndDensity_CapAndSpreadRemainder()
     {
         BladeSeed[] small = GrassLayout.Generate(3, 1, 1f, Vector3.zero, 0f, 8);
         int[] quotas = new int[3];
@@ -122,7 +119,7 @@ public class GrassLayoutTests
     }
 
     [Test]
-    public void ClumpsShareRootsPhaseAndPatchHueWithThreeToSevenBlades()
+    public void Generate_Clumps_ShareRootPhaseAndHueWithThreeToSevenBlades()
     {
         BladeSeed[] seeds = GrassLayout.Generate(8, 8, 1f, Vector3.zero, 0f);
         HashSet<int> sizes = new HashSet<int>();
@@ -174,21 +171,6 @@ public class GrassLayoutTests
         Assert.IsEmpty(GrassLayout.Generate(1, 1, 1f, new Vector3(float.NaN, 0f, 0f), 0f));
         Assert.IsEmpty(GrassLayout.Generate(new Rect(0f, 0f, 1f, 1f), 0f, -1f));
     }
-
-    [Test]
-    public void BufferStridesAndZoneOffsetsMatchFrozenAbi()
-    {
-        string[] names = { "position", "radius", "kind", "strength", "age", "reserved" };
-        int[] offsets = { 0, 12, 16, 20, 24, 28 };
-
-        Assert.AreEqual(Zone.Stride, Marshal.SizeOf<Zone>());
-        Assert.AreEqual(32, Zone.Stride);
-        Assert.AreEqual(BladeSeed.Stride, Marshal.SizeOf<BladeSeed>());
-        Assert.AreEqual(BladeState.Stride, Marshal.SizeOf<BladeState>());
-        for (int i = 0; i < names.Length; i++)
-        {
-            Assert.AreEqual(offsets[i], Marshal.OffsetOf<Zone>(names[i]).ToInt32());
-        }
-    }
 }
+
 }

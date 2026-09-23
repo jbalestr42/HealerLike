@@ -21,15 +21,19 @@ public class EnvironmentForegroundTests
     static readonly Rect grid = new Rect(-8f, -8f, 16f, 16f);
 
     GameObject _go;
+    GameObject _cameraGo;
+    GameObject _managerGo;
 
     [SetUp]
-    public void Setup()
+    public void SetUp()
     {
         _go = new GameObject("ForegroundTest");
+        _cameraGo = new GameObject("ForegroundCamera");
+        _managerGo = new GameObject("ForegroundManager");
     }
 
     [TearDown]
-    public void Cleanup()
+    public void TearDown()
     {
         // Stones are generated per seed; the baked primitive meshes are assets and stay
         foreach (MeshFilter filter in _go.GetComponentsInChildren<MeshFilter>(true))
@@ -41,6 +45,8 @@ public class EnvironmentForegroundTests
         }
 
         Object.DestroyImmediate(_go);
+        Object.DestroyImmediate(_cameraGo);
+        Object.DestroyImmediate(_managerGo);
     }
 
     static PrimitiveMeshes LoadMeshes()
@@ -49,7 +55,7 @@ public class EnvironmentForegroundTests
     }
 
     [Test]
-    public void GroundHitMatchesTheMeasuredBottomEdge()
+    public void GroundHit_BottomCorners_MatchMeasuredEdge()
     {
         Assert.IsTrue(EnvironmentForeground.GroundHit(position, rotation, fov, aspect, new Vector2(0f, 0f), ground,
             out Vector3 left));
@@ -68,7 +74,7 @@ public class EnvironmentForegroundTests
     }
 
     [Test]
-    public void SameSeedGivesTheSameLayoutAndAnotherSeedDiffers()
+    public void Layout_SameSeed_RepeatsAndOtherSeedDiffers()
     {
         List<ForegroundItem> a = EnvironmentForeground.Layout(position, rotation, fov, aspect, ground, 3);
         List<ForegroundItem> b = EnvironmentForeground.Layout(position, rotation, fov, aspect, ground, 3);
@@ -87,7 +93,7 @@ public class EnvironmentForegroundTests
     }
 
     [Test]
-    public void EachBottomCornerGetsLargeBouldersAndRosettesCroppedByTheFrame()
+    public void Layout_AnySeed_FillsBothBottomCornersCroppedByFrame()
     {
         for (int seed = 0; seed < 24; seed++)
         {
@@ -132,7 +138,7 @@ public class EnvironmentForegroundTests
     }
 
     [Test]
-    public void InvalidInputLogsAndLaysOutNothing()
+    public void Layout_InvalidInput_LogsAndReturnsEmpty()
     {
         LogAssert.Expect(LogType.Error, new Regex(@"^\[EnvironmentForeground\] Rejected field of view"));
         LogAssert.Expect(LogType.Error, new Regex(@"^\[EnvironmentForeground\] Rejected field of view"));
@@ -144,7 +150,7 @@ public class EnvironmentForegroundTests
     }
 
     [Test]
-    public void GroundHitLookingUpMissesTheGround()
+    public void GroundHit_LookingUp_MissesGround()
     {
         bool isHit = EnvironmentForeground.GroundHit(position, Quaternion.Euler(-30f, 0f, 0f), fov, aspect,
             new Vector2(0.5f, 0.5f), ground, out Vector3 hit);
@@ -153,7 +159,7 @@ public class EnvironmentForegroundTests
     }
 
     [Test]
-    public void BuildMakesOneColliderFreeChildPerItemColouredThroughThePropertyBlock()
+    public void Build_StagePose_MakesOneColliderFreeChildPerItem()
     {
         EnvironmentForeground foreground = _go.AddComponent<EnvironmentForeground>();
         TestHelpers.SetPrivateField(foreground, "_groundY", ground);
@@ -188,39 +194,29 @@ public class EnvironmentForegroundTests
     }
 
     [Test]
-    public void InitFromACameraMatchesTheLayout()
+    public void Init_Camera_MatchesTheLayoutForItsPose()
     {
-        GameObject cameraGo = new GameObject("ForegroundCamera");
-        GameObject managerGo = new GameObject("ForegroundManager");
-        try
-        {
-            Camera camera = cameraGo.AddComponent<Camera>();
-            camera.fieldOfView = fov;
-            camera.aspect = aspect;
-            cameraGo.transform.SetPositionAndRotation(position, rotation);
-            RenderManager manager = managerGo.AddComponent<RenderManager>();
-            TestHelpers.SetPrivateField(manager, "_meshes", LoadMeshes());
-            EnvironmentForeground foreground = _go.AddComponent<EnvironmentForeground>();
-            TestHelpers.SetPrivateField(foreground, "_seed", 11);
+        Camera camera = _cameraGo.AddComponent<Camera>();
+        camera.fieldOfView = fov;
+        camera.aspect = aspect;
+        _cameraGo.transform.SetPositionAndRotation(position, rotation);
+        RenderManager manager = _managerGo.AddComponent<RenderManager>();
+        TestHelpers.SetPrivateField(manager, "_meshes", LoadMeshes());
+        EnvironmentForeground foreground = _go.AddComponent<EnvironmentForeground>();
+        TestHelpers.SetPrivateField(foreground, "_seed", 11);
 
-            foreground.Init(camera, ground, manager);
+        foreground.Init(camera, ground, manager);
 
-            List<ForegroundItem> expected = EnvironmentForeground.Layout(position, rotation, fov, aspect,
-                ground, 11);
-            Assert.AreEqual(expected.Count, foreground.items.Count);
-            // The camera transform round-trips the pose through its own storage, so compare within float tolerance
-            for (int i = 0; i < expected.Count; i++)
-            {
-                Assert.That(Vector3.Distance(expected[i].position, foreground.items[i].position),
-                    Is.LessThan(0.001f), i.ToString());
-            }
-            Assert.AreEqual(1, _go.transform.childCount);
-        }
-        finally
+        List<ForegroundItem> expected = EnvironmentForeground.Layout(position, rotation, fov, aspect,
+            ground, 11);
+        Assert.AreEqual(expected.Count, foreground.items.Count);
+        // The camera transform round-trips the pose through its own storage, so compare within float tolerance
+        for (int i = 0; i < expected.Count; i++)
         {
-            Object.DestroyImmediate(cameraGo);
-            Object.DestroyImmediate(managerGo);
+            Assert.That(Vector3.Distance(expected[i].position, foreground.items[i].position),
+                Is.LessThan(0.001f), i.ToString());
         }
+        Assert.AreEqual(1, _go.transform.childCount);
     }
 }
 

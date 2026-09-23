@@ -22,15 +22,19 @@ public class EnvironmentRidgeTests
     static readonly int bands = 6;
 
     GameObject _go;
+    GameObject _cameraGo;
+    GameObject _managerGo;
 
     [SetUp]
-    public void Setup()
+    public void SetUp()
     {
         _go = new GameObject("RidgeTest");
+        _cameraGo = new GameObject("RidgeCamera");
+        _managerGo = new GameObject("RidgeManager");
     }
 
     [TearDown]
-    public void Cleanup()
+    public void TearDown()
     {
         // Stones are generated per seed; the baked primitive meshes are assets and stay
         foreach (MeshFilter filter in _go.GetComponentsInChildren<MeshFilter>(true))
@@ -42,6 +46,8 @@ public class EnvironmentRidgeTests
         }
 
         Object.DestroyImmediate(_go);
+        Object.DestroyImmediate(_cameraGo);
+        Object.DestroyImmediate(_managerGo);
     }
 
     static PrimitiveMeshes LoadMeshes()
@@ -50,7 +56,7 @@ public class EnvironmentRidgeTests
     }
 
     [Test]
-    public void LastBandIsTheFinalSixthOfTheFog()
+    public void LastBand_SixBands_IsFinalSixthOfFog()
     {
         Vector2 band = EnvironmentRidge.LastBand(fogStart, fogEnd, bands);
 
@@ -60,7 +66,7 @@ public class EnvironmentRidgeTests
     }
 
     [Test]
-    public void SameSeedGivesTheSameLayoutAndAnotherSeedDiffers()
+    public void Layout_SameSeed_RepeatsAndOtherSeedDiffers()
     {
         List<RidgeItem> a = EnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, ground, 8);
         List<RidgeItem> b = EnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, ground, 8);
@@ -79,7 +85,7 @@ public class EnvironmentRidgeTests
     }
 
     [Test]
-    public void EveryMidHeightSitsInTheLastBandBeyondTheGrid()
+    public void Layout_AnySeed_PutsEveryMidHeightInLastBandBeyondGrid()
     {
         Vector2 band = EnvironmentRidge.LastBand(fogStart, fogEnd, bands);
         for (int seed = 0; seed < 24; seed++)
@@ -118,7 +124,7 @@ public class EnvironmentRidgeTests
     }
 
     [Test]
-    public void ItemsTheBandCannotReachAreClampedPastTheGrid()
+    public void Layout_BandShortOfGrid_ClampsItemsPastGrid()
     {
         // A camera far behind puts the band short of the grid: every item is clamped to the clearance line
         Vector3 farEye = new Vector3(0f, 10f, -80f);
@@ -129,7 +135,7 @@ public class EnvironmentRidgeTests
     }
 
     [Test]
-    public void InvalidInputLogsAndLaysOutNothing()
+    public void Layout_InvalidInput_LogsAndReturnsEmpty()
     {
         Regex rejected = new Regex(@"^\[EnvironmentRidge\] Rejected");
         for (int i = 0; i < 5; i++)
@@ -145,7 +151,7 @@ public class EnvironmentRidgeTests
     }
 
     [Test]
-    public void BuildMakesOneShadowlessColliderFreeChildPerItem()
+    public void Build_Eye_MakesOneShadowlessColliderFreeChildPerItem()
     {
         EnvironmentRidge ridge = _go.AddComponent<EnvironmentRidge>();
         TestHelpers.SetPrivateField(ridge, "_grid", grid);
@@ -187,30 +193,20 @@ public class EnvironmentRidgeTests
     }
 
     [Test]
-    public void InitBuildsFromTheCameraWithTheManagerMeshes()
+    public void Init_CameraAndManager_BuildsLayoutWithManagerMeshes()
     {
-        GameObject cameraGo = new GameObject("RidgeCamera");
-        GameObject managerGo = new GameObject("RidgeManager");
-        try
-        {
-            Camera camera = cameraGo.AddComponent<Camera>();
-            cameraGo.transform.position = eye;
-            RenderManager manager = managerGo.AddComponent<RenderManager>();
-            TestHelpers.SetPrivateField(manager, "_meshes", LoadMeshes());
-            EnvironmentRidge ridge = _go.AddComponent<EnvironmentRidge>();
+        Camera camera = _cameraGo.AddComponent<Camera>();
+        _cameraGo.transform.position = eye;
+        RenderManager manager = _managerGo.AddComponent<RenderManager>();
+        TestHelpers.SetPrivateField(manager, "_meshes", LoadMeshes());
+        EnvironmentRidge ridge = _go.AddComponent<EnvironmentRidge>();
 
-            ridge.Init(camera, grid, ground, fogStart, fogEnd, manager);
+        ridge.Init(camera, grid, ground, fogStart, fogEnd, manager);
 
-            List<RidgeItem> expected = EnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, ground, 1707);
-            Assert.AreEqual(expected.Count, ridge.items.Count);
-            Assert.AreEqual(expected.Count, ridge.root.childCount);
-            Assert.IsTrue(ridge.root.GetComponentsInChildren<MeshFilter>().Any(f => f.sharedMesh == LoadMeshes().capsule));
-        }
-        finally
-        {
-            Object.DestroyImmediate(cameraGo);
-            Object.DestroyImmediate(managerGo);
-        }
+        List<RidgeItem> expected = EnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, ground, 1707);
+        Assert.AreEqual(expected.Count, ridge.items.Count);
+        Assert.AreEqual(expected.Count, ridge.root.childCount);
+        Assert.IsTrue(ridge.root.GetComponentsInChildren<MeshFilter>().Any(f => f.sharedMesh == LoadMeshes().capsule));
     }
 }
 

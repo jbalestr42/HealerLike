@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -8,15 +7,99 @@ using UnityEditor;
 using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Rendering;
+using HealerLike.Render.Grass;
 using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Look
 {
 
+// Look.shader and its companions are assets, not classes: these tests import, compile and render them
 public class LookShaderTests
 {
+    // Globals the tests overwrite: the beauty capture's grid and tip light, then the colour readback's look
+    static readonly string[] savedGlobals =
+    {
+        "_HLGridCell", "_HLGridStrength", "_HLTipLight",
+        "_HLLookApplied", "_HLToonThreshold", "_HLFogStart", "_HLFogEnd", "_HLFogBands", "_HLInkStrength"
+    };
+
+    readonly List<Object> _owned = new List<Object>();
+    readonly List<LookController> _disabledLooks = new List<LookController>();
+    RenderPipelineAsset _previousPipeline;
+    Light _previousSun;
+    RenderTexture _previousTarget;
+    float[] _previousGlobals;
+    Vector4 _previousGridOrigin;
+    Vector4 _previousGridExtent;
+
+    // The capture scene, built only by the opt-in capture tests
+    Outlines _outlines;
+    Camera _camera;
+    LookController _look;
+    LookSettings _settings;
+    Material _material;
+    GameObject _ground;
+    GameObject _sphere;
+    RenderTexture _target;
+    Texture2D _texture;
+    string _directory;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _previousPipeline = QualitySettings.renderPipeline;
+        _previousSun = RenderSettings.sun;
+        _previousTarget = RenderTexture.active;
+        _previousGlobals = savedGlobals.Select(Shader.GetGlobalFloat).ToArray();
+        _previousGridOrigin = Shader.GetGlobalVector("_HLGridOrigin");
+        _previousGridExtent = Shader.GetGlobalVector("_HLGridExtent");
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        for (int i = 0; i < savedGlobals.Length; i++)
+        {
+            Shader.SetGlobalFloat(savedGlobals[i], _previousGlobals[i]);
+        }
+
+        Shader.SetGlobalVector("_HLGridOrigin", _previousGridOrigin);
+        Shader.SetGlobalVector("_HLGridExtent", _previousGridExtent);
+        RenderTexture.active = _previousTarget;
+        QualitySettings.renderPipeline = _previousPipeline;
+        RenderSettings.sun = _previousSun;
+        for (int i = _owned.Count - 1; i >= 0; i--)
+        {
+            if (_owned[i])
+            {
+                Object.DestroyImmediate(_owned[i]);
+            }
+        }
+        _owned.Clear();
+
+        foreach (LookController controller in _disabledLooks)
+        {
+            if (controller)
+            {
+                controller.enabled = true;
+            }
+        }
+        _disabledLooks.Clear();
+    }
+
+    T Track<T>(T item) where T : Object
+    {
+        _owned.Add(item);
+        return item;
+    }
+
+    T CreateTracked<T>() where T : ScriptableObject
+    {
+        return Track(ScriptableObject.CreateInstance<T>());
+    }
+
     [Test]
-    public void DefaultMaterialUsesAllyGreenAndInstancing()
+    public void DefaultMaterial_ShippedAsset_UsesAllyGreenAndInstancing()
     {
         Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
 
@@ -34,435 +117,488 @@ public class LookShaderTests
     }
 
     [Test]
-    public void PrimitivePassesImportAndCompileSupportedVariantsWhenGraphicsAvailable()
+    public void CompilePass_PrimitiveShader_ImportsAndCompilesSupportedVariants()
     {
         Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader");
         Assert.That(shader, Is.Not.Null);
-        Material material = new Material(shader);
-        try
+        Material material = Track(new Material(shader));
+
+        string[] passes = { "HLForward", "HLShadowCaster", "HLOutline", "HLDepthOnly", "HLDepthNormals" };
+        foreach (string pass in passes)
         {
-            string[] passes = { "HLForward", "HLShadowCaster", "HLOutline", "HLDepthOnly", "HLDepthNormals" };
-            foreach (string pass in passes)
-            {
-                Assert.That(material.FindPass(pass), Is.GreaterThanOrEqualTo(0), pass);
-            }
+            Assert.That(material.FindPass(pass), Is.GreaterThanOrEqualTo(0), pass);
+        }
 
-            Assert.That(shader.GetPropertyCount(), Is.EqualTo(5));
-            Assert.That(shader.GetPropertyName(3), Is.EqualTo("_BaseColor"));
-            if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null)
+        Assert.That(shader.GetPropertyCount(), Is.EqualTo(5));
+        Assert.That(shader.GetPropertyName(3), Is.EqualTo("_BaseColor"));
+        if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null)
+        {
+            Assert.That(shader.isSupported, Is.True);
+            string[] mainKeywords =
             {
-                Assert.That(shader.isSupported, Is.True);
-                string[] mainKeywords =
+                "", "_MAIN_LIGHT_SHADOWS", "_MAIN_LIGHT_SHADOWS_CASCADE", "_MAIN_LIGHT_SHADOWS_SCREEN"
+            };
+            string[] softKeywords =
+            {
+                "", "_SHADOWS_SOFT", "_SHADOWS_SOFT_LOW", "_SHADOWS_SOFT_MEDIUM", "_SHADOWS_SOFT_HIGH"
+            };
+            foreach (bool instanced in new[] { false, true })
+            {
+                foreach (string main in mainKeywords)
                 {
-                    "", "_MAIN_LIGHT_SHADOWS", "_MAIN_LIGHT_SHADOWS_CASCADE", "_MAIN_LIGHT_SHADOWS_SCREEN"
-                };
-                string[] softKeywords =
-                {
-                    "", "_SHADOWS_SOFT", "_SHADOWS_SOFT_LOW", "_SHADOWS_SOFT_MEDIUM", "_SHADOWS_SOFT_HIGH"
-                };
-                foreach (bool instanced in new[] { false, true })
-                {
-                    foreach (string main in mainKeywords)
+                    foreach (string soft in softKeywords)
                     {
-                        foreach (string soft in softKeywords)
-                        {
-                            Compile(material, "HLForward", instanced, main, soft);
-                        }
+                        Compile(material, "HLForward", instanced, main, soft);
                     }
-
-                    Compile(material, "HLShadowCaster", instanced);
-                    Compile(material, "HLShadowCaster", instanced, "_CASTING_PUNCTUAL_LIGHT_SHADOW");
-                    Compile(material, "HLOutline", instanced);
-                    Compile(material, "HLDepthOnly", instanced);
-                    Compile(material, "HLDepthNormals", instanced);
-                    Compile(material, "HLDepthNormals", instanced, "_GBUFFER_NORMALS_OCT");
                 }
 
-                Debug.Log("Primitive: synchronously compiled 52 pass/keyword combinations on "
-                          + SystemInfo.graphicsDeviceType);
+                Compile(material, "HLShadowCaster", instanced);
+                Compile(material, "HLShadowCaster", instanced, "_CASTING_PUNCTUAL_LIGHT_SHADOW");
+                Compile(material, "HLOutline", instanced);
+                Compile(material, "HLDepthOnly", instanced);
+                Compile(material, "HLDepthNormals", instanced);
+                Compile(material, "HLDepthNormals", instanced, "_GBUFFER_NORMALS_OCT");
             }
 
-            AssertNoErrors(shader);
+            Debug.Log("[LookShaderTests] Primitive: synchronously compiled 52 pass/keyword combinations on "
+                      + SystemInfo.graphicsDeviceType);
         }
-        finally
+
+        AssertNoErrors(shader);
+    }
+
+    [Test]
+    public void DrawMesh_WorkingSpaceColourVector_ReachesPrimitiveShaderUnchanged()
+    {
+        if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
         {
-            Object.DestroyImmediate(material);
+            Assert.Ignore("Requires graphics readback");
+        }
+
+        Material material = Track(new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader")));
+        Mesh mesh = Track(new Mesh
+        {
+            vertices = new[]
+            {
+                new Vector3(-0.8f, -0.8f, 0f),
+                new Vector3(-0.8f, 0.8f, 0f),
+                new Vector3(0.8f, 0.8f, 0f),
+                new Vector3(0.8f, -0.8f, 0f)
+            },
+            triangles = new[] { 0, 1, 2, 0, 2, 3 },
+            normals = new[] { Vector3.back, Vector3.back, Vector3.back, Vector3.back }
+        });
+        RenderTexture target = Track(new RenderTexture(16, 16, 0, RenderTextureFormat.ARGBFloat,
+                                                       RenderTextureReadWrite.Linear));
+        target.Create();
+        Texture2D texture = Track(new Texture2D(16, 16, TextureFormat.RGBAFloat, false, true));
+        Shader.SetGlobalFloat("_HLLookApplied", 1f);
+        Shader.SetGlobalFloat("_HLToonThreshold", 0f);
+        Shader.SetGlobalFloat("_HLFogStart", 10000f);
+        Shader.SetGlobalFloat("_HLFogEnd", 20000f);
+        Shader.SetGlobalFloat("_HLFogBands", 6f);
+        Shader.SetGlobalFloat("_HLInkStrength", 0f);
+        Color artist = new Color(0.4f, 0.6f, 0.8f, 1f);
+        Color linear = artist.linear;
+
+        MaterialPropertyBlock artistColor = new MaterialPropertyBlock();
+        artistColor.SetColor("_BaseColor", artist);
+        MaterialPropertyBlock linearColor = new MaterialPropertyBlock();
+        linearColor.SetColor("_BaseColor", linear);
+        MaterialPropertyBlock linearVector = new MaterialPropertyBlock();
+        linearVector.SetVector("_BaseColor", linear);
+        Color a = ReadCentre(material, mesh, target, texture, artistColor);
+        Color b = ReadCentre(material, mesh, target, texture, linearColor);
+        Color c = ReadCentre(material, mesh, target, texture, linearVector);
+
+        Assert.That(((Vector4)a - (Vector4)c).magnitude, Is.LessThan(0.004f),
+                    "Artist SetColor and working SetVector must agree");
+        Assert.That(((Vector4)b - (Vector4)c).magnitude, Is.GreaterThan(0.2f),
+                    "Double conversion must be detected by GPU readback");
+        Assert.That(((Vector4)c - (Vector4)linear).magnitude, Is.LessThan(0.004f),
+                    "Explicit working vector should reach GPU unchanged");
+        Debug.Log("[LookShaderTests] Colour: active=" + QualitySettings.activeColorSpace + " artist=" + artist.ToString("F5")
+                  + " linear=" + linear.ToString("F5") + " A=" + a.ToString("F5") + " B=" + b.ToString("F5")
+                  + " C=" + c.ToString("F5"));
+    }
+
+    [Test]
+    public void CompilePass_GrassInstancingKeywords_CompilesLookAndRingShaders()
+    {
+        if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+        {
+            Assert.Ignore("Shader compilation needs a graphics device.");
+        }
+
+        foreach (string path in new[] { "Assets/Render/Shaders/Look.shader", "Assets/Render/Shaders/GrassRing.shader" })
+        {
+            Shader shader = AssetDatabase.LoadAssetAtPath<Shader>(path);
+            Assert.NotNull(shader);
+            Material material = Track(new Material(shader) { enableInstancing = true });
+            foreach (string shadow in new[] { "", "_MAIN_LIGHT_SHADOWS", "_MAIN_LIGHT_SHADOWS_CASCADE", "_MAIN_LIGHT_SHADOWS_SCREEN" })
+            {
+                foreach (bool isOctahedral in new[] { false, true })
+                {
+                    string normals = isOctahedral ? "_GBUFFER_NORMALS_OCT" : "";
+                    material.shaderKeywords = new[] { "PROCEDURAL_INSTANCING_ON", GrassPalette.InstancedKeyword, shadow, normals, "_SHADOWS_SOFT" };
+                    for (int pass = 0; pass < material.passCount; pass++)
+                    {
+                        ShaderUtil.CompilePass(material, pass, true);
+                        Assert.IsTrue(ShaderUtil.IsPassCompiled(material, pass), path + " pass " + pass);
+                    }
+                }
+            }
+
+            foreach (ShaderMessage message in ShaderUtil.GetShaderMessages(shader))
+            {
+                Assert.AreNotEqual(ShaderCompilerMessageSeverity.Error, message.severity, message.message);
+            }
         }
     }
 
     [Test]
-    public void ScreenEdgesImportAndCompileBothNormalEncodingsWhenGraphicsAvailable()
+    public void CompilePass_ScreenEdgesShader_CompilesBothNormalEncodings()
     {
         Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/OutlinesEdges.shader");
         Assert.That(shader, Is.Not.Null);
-        Material material = new Material(shader);
-        try
+        Material material = Track(new Material(shader));
+
+        Assert.That(material.FindPass("HLDepthNormalEdges"), Is.GreaterThanOrEqualTo(0));
+        if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null)
         {
-            Assert.That(material.FindPass("HLDepthNormalEdges"), Is.GreaterThanOrEqualTo(0));
-            if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null)
+            Assert.That(shader.isSupported, Is.True);
+            Compile(material, "HLDepthNormalEdges", false);
+            Compile(material, "HLDepthNormalEdges", false, "_GBUFFER_NORMALS_OCT");
+            Debug.Log("[LookShaderTests] Edges: synchronously compiled both normal encodings on "
+                      + SystemInfo.graphicsDeviceType);
+        }
+
+        AssertNoErrors(shader);
+    }
+
+    [Test]
+    public void Capture_BeautyScene_KeepsGridInsideBoardAndOutlinesAtPixelWidth()
+    {
+        IgnoreUnlessCapturing("HL_B6_CAPTURE");
+        BuildCaptureScene("Assets/Render/Look/captures");
+        _camera.transform.rotation = Quaternion.Euler(73.7f, 0f, 0f);
+        _camera.transform.position = -_camera.transform.forward * 43.837f;
+        Material groundMaterial = Track(new Material(_material));
+        _ground.GetComponent<Renderer>().sharedMaterial = groundMaterial;
+        groundMaterial.SetFloat("_HLGroundGrid", 1f);
+        Shader.SetGlobalVector("_HLGridOrigin", new Vector4(-8f, 0f, -8f, 0f));
+        Shader.SetGlobalVector("_HLGridExtent", new Vector4(16f, 0f, 16f, 0f));
+        Shader.SetGlobalFloat("_HLGridCell", 1f);
+        Shader.SetGlobalFloat("_HLGridStrength", 0f);
+
+        byte[] gridOff = Capture("beauty-look-grid-off");
+        Color32[] gridOffPixels = _texture.GetPixels32();
+        Shader.SetGlobalFloat("_HLGridStrength", 0.16f);
+        byte[] gridOn = Capture("beauty-look-grid");
+        Assert.That(gridOn.SequenceEqual(gridOff), Is.False);
+
+        Color32[] gridOnPixels = _texture.GetPixels32();
+        int changedGridPixels = 0;
+        int escapedGridPixels = 0;
+        Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+        for (int i = 0; i < gridOnPixels.Length; i++)
+        {
+            if (gridOnPixels[i].Equals(gridOffPixels[i]))
             {
-                Assert.That(shader.isSupported, Is.True);
-                Compile(material, "HLDepthNormalEdges", false);
-                Compile(material, "HLDepthNormalEdges", false, "_GBUFFER_NORMALS_OCT");
-                Debug.Log("Edges: synchronously compiled both normal encodings on "
-                          + SystemInfo.graphicsDeviceType);
+                continue;
             }
 
-            AssertNoErrors(shader);
+            changedGridPixels++;
+            Vector3 viewport = new Vector3((i % 1080 + 0.5f) / 1080, (i / 1080 + 0.5f) / 1920, 0f);
+            Ray ray = _camera.ViewportPointToRay(viewport);
+            if (!groundPlane.Raycast(ray, out float hit))
+            {
+                escapedGridPixels++;
+                continue;
+            }
+
+            Vector3 point = ray.GetPoint(hit);
+            if (Mathf.Abs(point.x) > 8.04f || Mathf.Abs(point.z) > 8.04f)
+            {
+                escapedGridPixels++;
+            }
         }
-        finally
+
+        Assert.That(changedGridPixels, Is.GreaterThan(1000));
+        Assert.That(escapedGridPixels, Is.Zero, "Grid must remain inside the battlefield rectangle.");
+        Debug.Log("[LookShaderTests] Beauty grid: " + changedGridPixels + " changed pixels, " + escapedGridPixels
+                  + " outside bounds");
+
+        _settings.fogStart = 43.837f;
+        _settings.fogEnd = 50.356f;
+        _look.settings = _settings;
+        Capture("beauty-look-grid-fade");
+        Shader.SetGlobalFloat("_HLGridStrength", 0f);
+        Capture("beauty-look-fog");
+
+        _settings.fogStart = 70f;
+        _settings.fogEnd = 100f;
+        _settings.inkStrength = 1f;
+        _settings.inkWarp = 0f;
+        _settings.dashAmount = 0f;
+        _look.settings = _settings;
+        foreach (float distance in new[] { 42.8f, 43.837f, 47.8f })
         {
-            Object.DestroyImmediate(material);
+            _camera.transform.position = -_camera.transform.forward * distance;
+            Capture("beauty-look-hatch-" + distance.ToString(CultureInfo.InvariantCulture));
+        }
+
+        _settings.inkStrength = 0f;
+        _look.settings = _settings;
+        _outlines.layerMask = 1 << 30;
+        _outlines.Create();
+        float[] distances = { 26f, 42.8f, 47.8f, 43.837f };
+        bool[] orthographic = { false, false, false, true };
+        for (int s = 0; s < distances.Length; s++)
+        {
+            AssertOutlineWidths(distances[s], orthographic[s]);
+        }
+
+        Material probe = Track(new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/LookBeautyProbe.shader")));
+        Shader.SetGlobalFloat("_HLTipLight", 0.12f);
+        Graphics.Blit(Texture2D.whiteTexture, _target, probe);
+        RenderTexture.active = _target;
+        _texture.ReadPixels(new Rect(0f, 0f, 1080f, 1920f), 0, 0);
+        _texture.Apply();
+        File.WriteAllBytes(Path.Combine(_directory, "beauty-look-tip.png"), _texture.EncodeToPNG());
+        Assert.That(_texture.GetPixel(800, 1800).g, Is.GreaterThan(_texture.GetPixel(800, 100).g));
+        Assert.That(_texture.GetPixel(200, 1800), Is.EqualTo(_texture.GetPixel(200, 100)));
+    }
+
+    [Test]
+    public void Capture_PortraitScene_ShowsShadowsAndMasksNormalEdges()
+    {
+        IgnoreUnlessCapturing("HL_D5_CAPTURE");
+        BuildCaptureScene("/Users/fc/Documents/healerlike-render-specs/captures");
+
+        Capture("wave5-shadow");
+        Color32[] pixels = _texture.GetPixels32();
+        Assert.That(pixels.Count(c => c.b > c.g * 1.3f && c.b > c.r * 1.5f), Is.GreaterThan(1000));
+
+        for (int z = 0; z < 12; z++)
+        {
+            for (int x = 0; x < 18; x++)
+            {
+                Vector3 bladePosition = new Vector3((x - 9) * 0.38f, 0.3f, -2.8f - z * 0.38f);
+                GameObject blade = CreatePrimitive(PrimitiveType.Cube, "Masked blade", bladePosition,
+                                                   new Vector3(0.045f, 0.6f, 0.09f), 0f);
+                blade.transform.rotation = Quaternion.Euler(0f, (x * 37 + z * 23) % 180, (x % 3 - 1) * 15);
+                blade.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+            }
+        }
+
+        byte[] off = Capture("wave5-edges-off");
+        _outlines.depthNormalEdges = true;
+        _outlines.Create();
+        byte[] on = Capture("wave5-edges-on");
+        Assert.That(on.SequenceEqual(off), Is.False, "Screen pass must change the image.");
+
+        Texture2D left = Track(new Texture2D(2, 2));
+        left.LoadImage(off);
+        Texture2D pair = Track(new Texture2D(2160, 1920, TextureFormat.RGB24, false));
+        pair.SetPixels(0, 0, 1080, 1920, left.GetPixels());
+        pair.SetPixels(1080, 0, 1080, 1920, _texture.GetPixels());
+        pair.Apply();
+        File.WriteAllBytes(Path.Combine(_directory, "wave5-edges-side-by-side.png"), pair.EncodeToPNG());
+
+        _outlines.useNormalEdgeMask = false;
+        _outlines.ApplyEdgeSettings();
+        byte[] unmasked = Capture("wave5-edges-unmasked");
+        Assert.That(unmasked.SequenceEqual(on), Is.False,
+                    "Mask must suppress normal edges independently of the depth threshold.");
+
+        _outlines.useNormalEdgeMask = true;
+        _outlines.ApplyEdgeSettings();
+        _settings.inkStrength = 1f;
+        _settings.inkWarp = 0f;
+        _settings.dashAmount = 0f;
+        _look.settings = _settings;
+        Capture("wave5-hatch-31");
+        foreach (float distance in new[] { 26f, 40f })
+        {
+            _camera.transform.position = -_camera.transform.forward * distance;
+            Capture("wave5-hatch-" + distance);
         }
     }
 
-    [TestCase(false)]
-    [TestCase(true)]
-    public void CapturePortraitShadowsAndMaskedEdges(bool beauty)
+    static void IgnoreUnlessCapturing(string captureVariable)
     {
-        string captureVariable = beauty ? "HL_B6_CAPTURE" : "HL_D5_CAPTURE";
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null
             || System.Environment.GetEnvironmentVariable(captureVariable) != "1")
         {
-            Assert.Ignore("Opt-in: HL_D5_CAPTURE=1 with -force-metal.");
+            Assert.Ignore("Opt-in: " + captureVariable + "=1 with -force-metal.");
         }
+    }
 
-        List<Object> owned = new List<Object>();
-        RenderPipelineAsset previousPipeline = QualitySettings.renderPipeline;
-        Light previousSun = RenderSettings.sun;
-        RenderTexture previousTarget = RenderTexture.active;
-        string[] beautyNames = { "_HLGridCell", "_HLGridStrength", "_HLTipLight" };
-        float[] beautyValues = beautyNames.Select(Shader.GetGlobalFloat).ToArray();
-        Vector4 previousGridOrigin = Shader.GetGlobalVector("_HLGridOrigin");
-        Vector4 previousGridExtent = Shader.GetGlobalVector("_HLGridExtent");
-        LookController[] disabled = Object.FindObjectsByType<LookController>(FindObjectsSortMode.None)
-            .Where(c => c.enabled).ToArray();
-        foreach (LookController controller in disabled)
+    // A private pipeline copy with only our outline feature, a key light, a look, a ground and a casting sphere
+    void BuildCaptureScene(string directory)
+    {
+        foreach (LookController controller in Object.FindObjectsByType<LookController>(FindObjectsSortMode.None))
         {
-            controller.enabled = false;
+            if (controller.enabled)
+            {
+                controller.enabled = false;
+                _disabledLooks.Add(controller);
+            }
         }
 
-        try
+        RenderPipelineAsset pipeline = Track(Object.Instantiate(AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(
+            "Assets/Settings/Very High_PipelineAsset.asset")));
+        SerializedObject pipelineData = new SerializedObject(pipeline);
+        SerializedProperty rendererProperty = pipelineData.FindProperty("m_RendererDataList")
+            .GetArrayElementAtIndex(0);
+        Object renderer = Track(Object.Instantiate(rendererProperty.objectReferenceValue));
+        rendererProperty.objectReferenceValue = renderer;
+        pipelineData.ApplyModifiedPropertiesWithoutUndo();
+        _outlines = CreateTracked<Outlines>();
+        _outlines.layerMask = 0;
+        _outlines.depthNormalEdges = false;
+        _outlines.Create();
+        SerializedObject rendererData = new SerializedObject(renderer);
+        SerializedProperty features = rendererData.FindProperty("m_RendererFeatures");
+        features.arraySize = 1;
+        features.GetArrayElementAtIndex(0).objectReferenceValue = _outlines;
+        rendererData.ApplyModifiedPropertiesWithoutUndo();
+        QualitySettings.renderPipeline = pipeline;
+
+        _camera = Track(new GameObject("Portrait camera")).AddComponent<Camera>();
+        _camera.cullingMask = 1 << 30;
+        _camera.fieldOfView = 40f;
+        _camera.aspect = 1080f / 1920f;
+        _camera.nearClipPlane = 0.1f;
+        _camera.farClipPlane = 100f;
+        _camera.transform.rotation = Quaternion.Euler(50f, 0f, 0f);
+        _camera.transform.position = -_camera.transform.forward * 31f;
+        _camera.clearFlags = CameraClearFlags.SolidColor;
+        _camera.backgroundColor = new Color(0.75f, 0.82f, 0.88f);
+        Light light = Track(new GameObject("Upper left key")).AddComponent<Light>();
+        light.type = LightType.Directional;
+        light.intensity = 1f;
+        light.transform.rotation = Quaternion.Euler(50f, 40f, 0f);
+        light.shadows = LightShadows.Soft;
+        light.shadowBias = 0.03f;
+        light.shadowNormalBias = 0.15f;
+        RenderSettings.sun = light;
+        _look = Track(new GameObject("Capture look")).AddComponent<LookController>();
+        _settings = LookSettings.Default;
+        _settings.fogStart = 70f;
+        _settings.fogEnd = 100f;
+        _settings.inkStrength = 0f;
+        _settings.outlineWidthPixels = 1f;
+        _look.settings = _settings;
+        _material = Track(new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader")));
+        _material.SetColor("_BaseColor", new Color(0.6f, 0.78f, 0.3f));
+
+        _ground = CreatePrimitive(PrimitiveType.Plane, "Receiving ground", Vector3.zero, Vector3.one * 3f, 1f);
+        _sphere = CreatePrimitive(PrimitiveType.Sphere, "Casting sphere", new Vector3(-1f, 2.1f, 0f),
+                                  Vector3.one * 4f, 1f);
+        MaterialPropertyBlock sphereProperties = new MaterialPropertyBlock();
+        sphereProperties.SetColor("_BaseColor", new Color(0.55f, 0.58f, 0.64f));
+        sphereProperties.SetFloat("_HLNormalEdges", 1f);
+        _sphere.GetComponent<Renderer>().SetPropertyBlock(sphereProperties);
+        _target = Track(new RenderTexture(1080, 1920, 24, RenderTextureFormat.ARGB32));
+        _target.Create();
+        _texture = Track(new Texture2D(1080, 1920, TextureFormat.RGB24, false));
+        _directory = directory;
+        Directory.CreateDirectory(_directory);
+    }
+
+    GameObject CreatePrimitive(PrimitiveType shape, string name, Vector3 position, Vector3 scale, float normalMask)
+    {
+        GameObject go = Track(GameObject.CreatePrimitive(shape));
+        go.name = name;
+        go.layer = 30;
+        go.transform.position = position;
+        go.transform.localScale = scale;
+        Renderer meshRenderer = go.GetComponent<Renderer>();
+        meshRenderer.sharedMaterial = _material;
+        MaterialPropertyBlock properties = new MaterialPropertyBlock();
+        properties.SetFloat("_HLNormalEdges", normalMask);
+        meshRenderer.SetPropertyBlock(properties);
+        return go;
+    }
+
+    byte[] Capture(string name)
+    {
+        _look.ApplyGlobals();
+        RenderPipeline.SubmitRenderRequest(_camera, new RenderPipeline.StandardRequest { destination = _target });
+        RenderTexture.active = _target;
+        _texture.ReadPixels(new Rect(0f, 0f, 1080f, 1920f), 0, 0);
+        _texture.Apply();
+        byte[] bytes = _texture.EncodeToPNG();
+        File.WriteAllBytes(Path.Combine(_directory, name + ".png"), bytes);
+        Assert.That(bytes.Length, Is.GreaterThan(10000));
+        Debug.Log("[LookShaderTests] Capture: " + name + " on " + SystemInfo.graphicsDeviceType);
+        return bytes;
+    }
+
+    // Measures the ink added around the sphere's middle row at one and two pixel outline widths
+    void AssertOutlineWidths(float distance, bool isOrthographic)
+    {
+        _camera.orthographic = isOrthographic;
+        _camera.orthographicSize = 16f;
+        string label = distance.ToString(CultureInfo.InvariantCulture) + (isOrthographic ? "-ortho" : "");
+        _camera.transform.position = -_camera.transform.forward * distance;
+        _material.SetFloat("_HLOutlineWidthMultiplier", 0f);
+        byte[] noOutline = Capture("beauty-look-outline-" + label + "-off");
+        Color32[] uninked = _texture.GetPixels32();
+        _material.SetFloat("_HLOutlineWidthMultiplier", 1f);
+        byte[] one = Capture("beauty-look-outline-" + label + "-1px");
+        Color32[] onePixels = _texture.GetPixels32();
+        _material.SetFloat("_HLOutlineWidthMultiplier", 2f);
+        byte[] two = Capture("beauty-look-outline-" + label + "-2px");
+        Assert.That(one.SequenceEqual(noOutline), Is.False);
+        Assert.That(two.SequenceEqual(one), Is.False);
+
+        Color32[] twoPixels = _texture.GetPixels32();
+        Vector3 center = _camera.WorldToViewportPoint(_sphere.transform.position);
+        int row = Mathf.RoundToInt(center.y * 1920);
+        int middle = Mathf.RoundToInt(center.x * 1080);
+        int[] widths = new int[4];
+        for (int x = 0; x < 1080; x++)
         {
-            RenderPipelineAsset pipeline = Object.Instantiate(AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(
-                "Assets/Settings/Very High_PipelineAsset.asset"));
-            owned.Add(pipeline);
-            SerializedObject pipelineData = new SerializedObject(pipeline);
-            SerializedProperty rendererProperty = pipelineData.FindProperty("m_RendererDataList")
-                .GetArrayElementAtIndex(0);
-            Object renderer = Object.Instantiate(rendererProperty.objectReferenceValue);
-            owned.Add(renderer);
-            rendererProperty.objectReferenceValue = renderer;
-            pipelineData.ApplyModifiedPropertiesWithoutUndo();
-            Type featureType = typeof(LookSettings).Assembly.GetType("HealerLike.Render.Look.Outlines");
-            ScriptableObject feature = ScriptableObject.CreateInstance(featureType);
-            owned.Add(feature);
-            featureType.GetField("layerMask").SetValue(feature, (LayerMask)0);
-            featureType.GetField("depthNormalEdges").SetValue(feature, false);
-            featureType.GetMethod("Create").Invoke(feature, null);
-            SerializedObject rendererData = new SerializedObject(renderer);
-            SerializedProperty features = rendererData.FindProperty("m_RendererFeatures");
-            features.arraySize = 1;
-            features.GetArrayElementAtIndex(0).objectReferenceValue = feature;
-            rendererData.ApplyModifiedPropertiesWithoutUndo();
-            QualitySettings.renderPipeline = pipeline;
-
-            Camera camera = new GameObject("Portrait camera").AddComponent<Camera>();
-            owned.Add(camera.gameObject);
-            camera.cullingMask = 1 << 30;
-            camera.fieldOfView = 40f;
-            camera.aspect = 1080f / 1920f;
-            camera.nearClipPlane = 0.1f;
-            camera.farClipPlane = 100f;
-            camera.transform.rotation = Quaternion.Euler(50f, 0f, 0f);
-            camera.transform.position = -camera.transform.forward * 31f;
-            camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.75f, 0.82f, 0.88f);
-            Light light = new GameObject("Upper left key").AddComponent<Light>();
-            owned.Add(light.gameObject);
-            light.type = LightType.Directional;
-            light.intensity = 1f;
-            light.transform.rotation = Quaternion.Euler(50f, 40f, 0f);
-            light.shadows = LightShadows.Soft;
-            light.shadowBias = 0.03f;
-            light.shadowNormalBias = 0.15f;
-            RenderSettings.sun = light;
-            LookController look = new GameObject("Capture look").AddComponent<LookController>();
-            owned.Add(look.gameObject);
-            LookSettings settings = LookSettings.Default;
-            settings.fogStart = 70f;
-            settings.fogEnd = 100f;
-            settings.inkStrength = 0f;
-            settings.outlineWidthPixels = 1f;
-            look.settings = settings;
-            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));
-            owned.Add(material);
-            material.SetColor("_BaseColor", new Color(0.6f, 0.78f, 0.3f));
-
-            GameObject Make(PrimitiveType shape, string name, Vector3 position, Vector3 scale, float normalMask)
+            int index = row * 1080 + x;
+            int side = x < middle ? 0 : 1;
+            if (!uninked[index].Equals(onePixels[index]))
             {
-                GameObject go = GameObject.CreatePrimitive(shape);
-                owned.Add(go);
-                go.name = name;
-                go.layer = 30;
-                go.transform.position = position;
-                go.transform.localScale = scale;
-                Renderer meshRenderer = go.GetComponent<Renderer>();
-                meshRenderer.sharedMaterial = material;
-                MaterialPropertyBlock properties = new MaterialPropertyBlock();
-                properties.SetFloat("_HLNormalEdges", normalMask);
-                meshRenderer.SetPropertyBlock(properties);
-                return go;
+                widths[side]++;
             }
 
-            GameObject ground = Make(PrimitiveType.Plane, "Receiving ground", Vector3.zero, Vector3.one * 3f,
-                                     1f);
-            GameObject sphere = Make(PrimitiveType.Sphere, "Casting sphere", new Vector3(-1f, 2.1f, 0f),
-                                     Vector3.one * 4f, 1f);
-            MaterialPropertyBlock sphereProperties = new MaterialPropertyBlock();
-            sphereProperties.SetColor("_BaseColor", new Color(0.55f, 0.58f, 0.64f));
-            sphereProperties.SetFloat("_HLNormalEdges", 1f);
-            sphere.GetComponent<Renderer>().SetPropertyBlock(sphereProperties);
-            RenderTexture target = new RenderTexture(1080, 1920, 24, RenderTextureFormat.ARGB32);
-            owned.Add(target);
-            target.Create();
-            Texture2D texture = new Texture2D(1080, 1920, TextureFormat.RGB24, false);
-            owned.Add(texture);
-            string directory = beauty
-                ? "Assets/Render/Look/captures"
-                : "/Users/fc/Documents/healerlike-render-specs/captures";
-            Directory.CreateDirectory(directory);
-
-            byte[] Capture(string name)
+            if (!uninked[index].Equals(twoPixels[index]))
             {
-                look.ApplyGlobals();
-                RenderPipeline.SubmitRenderRequest(camera,
-                                                   new RenderPipeline.StandardRequest { destination = target });
-                RenderTexture.active = target;
-                texture.ReadPixels(new Rect(0f, 0f, 1080f, 1920f), 0, 0);
-                texture.Apply();
-                byte[] bytes = texture.EncodeToPNG();
-                File.WriteAllBytes(Path.Combine(directory, name + ".png"), bytes);
-                Assert.That(bytes.Length, Is.GreaterThan(10000));
-                Debug.Log("D5 capture: " + name + " on " + SystemInfo.graphicsDeviceType);
-                return bytes;
-            }
-
-            if (beauty)
-            {
-                camera.transform.rotation = Quaternion.Euler(73.7f, 0f, 0f);
-                camera.transform.position = -camera.transform.forward * 43.837f;
-                Material groundMaterial = new Material(material);
-                owned.Add(groundMaterial);
-                ground.GetComponent<Renderer>().sharedMaterial = groundMaterial;
-                groundMaterial.SetFloat("_HLGroundGrid", 1f);
-                Shader.SetGlobalVector("_HLGridOrigin", new Vector4(-8f, 0f, -8f, 0f));
-                Shader.SetGlobalVector("_HLGridExtent", new Vector4(16f, 0f, 16f, 0f));
-                Shader.SetGlobalFloat("_HLGridCell", 1f);
-                Shader.SetGlobalFloat("_HLGridStrength", 0f);
-                byte[] gridOff = Capture("beauty-look-grid-off");
-                Color32[] gridOffPixels = texture.GetPixels32();
-                Shader.SetGlobalFloat("_HLGridStrength", 0.16f);
-                byte[] gridOn = Capture("beauty-look-grid");
-                Assert.That(gridOn.SequenceEqual(gridOff), Is.False);
-
-                Color32[] gridOnPixels = texture.GetPixels32();
-                int changedGridPixels = 0;
-                int escapedGridPixels = 0;
-                Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
-                for (int i = 0; i < gridOnPixels.Length; i++)
-                {
-                    if (gridOnPixels[i].Equals(gridOffPixels[i]))
-                    {
-                        continue;
-                    }
-
-                    changedGridPixels++;
-                    Vector3 viewport = new Vector3((i % 1080 + 0.5f) / 1080, (i / 1080 + 0.5f) / 1920, 0f);
-                    Ray ray = camera.ViewportPointToRay(viewport);
-                    if (!groundPlane.Raycast(ray, out float hit))
-                    {
-                        escapedGridPixels++;
-                        continue;
-                    }
-
-                    Vector3 point = ray.GetPoint(hit);
-                    if (Mathf.Abs(point.x) > 8.04f || Mathf.Abs(point.z) > 8.04f)
-                    {
-                        escapedGridPixels++;
-                    }
-                }
-
-                Assert.That(changedGridPixels, Is.GreaterThan(1000));
-                Assert.That(escapedGridPixels, Is.Zero, "Grid must remain inside the battlefield rectangle.");
-                Debug.Log("Beauty grid: " + changedGridPixels + " changed pixels, " + escapedGridPixels
-                          + " outside bounds");
-
-                settings.fogStart = 43.837f;
-                settings.fogEnd = 50.356f;
-                look.settings = settings;
-                Capture("beauty-look-grid-fade");
-                Shader.SetGlobalFloat("_HLGridStrength", 0f);
-                Capture("beauty-look-fog");
-
-                settings.fogStart = 70f;
-                settings.fogEnd = 100f;
-                settings.inkStrength = 1f;
-                settings.inkWarp = 0f;
-                settings.dashAmount = 0f;
-                look.settings = settings;
-                foreach (float distance in new[] { 42.8f, 43.837f, 47.8f })
-                {
-                    camera.transform.position = -camera.transform.forward * distance;
-                    Capture("beauty-look-hatch-" + distance.ToString(CultureInfo.InvariantCulture));
-                }
-
-                settings.inkStrength = 0f;
-                look.settings = settings;
-                featureType.GetField("layerMask").SetValue(feature, (LayerMask)(1 << 30));
-                featureType.GetMethod("Create").Invoke(feature, null);
-                (float, bool)[] samples = { (26f, false), (42.8f, false), (47.8f, false), (43.837f, true) };
-                foreach ((float, bool) sample in samples)
-                {
-                    float distance = sample.Item1;
-                    camera.orthographic = sample.Item2;
-                    camera.orthographicSize = 16f;
-                    string label = distance.ToString(CultureInfo.InvariantCulture) + (sample.Item2 ? "-ortho" : "");
-                    camera.transform.position = -camera.transform.forward * distance;
-                    material.SetFloat("_HLOutlineWidthMultiplier", 0f);
-                    byte[] noOutline = Capture("beauty-look-outline-" + label + "-off");
-                    Color32[] uninked = texture.GetPixels32();
-                    material.SetFloat("_HLOutlineWidthMultiplier", 1f);
-                    byte[] one = Capture("beauty-look-outline-" + label + "-1px");
-                    Color32[] onePixels = texture.GetPixels32();
-                    material.SetFloat("_HLOutlineWidthMultiplier", 2f);
-                    byte[] two = Capture("beauty-look-outline-" + label + "-2px");
-                    Assert.That(one.SequenceEqual(noOutline), Is.False);
-                    Assert.That(two.SequenceEqual(one), Is.False);
-
-                    Color32[] twoPixels = texture.GetPixels32();
-                    Vector3 center = camera.WorldToViewportPoint(sphere.transform.position);
-                    int row = Mathf.RoundToInt(center.y * 1920);
-                    int middle = Mathf.RoundToInt(center.x * 1080);
-                    int[] widths = new int[4];
-                    for (int x = 0; x < 1080; x++)
-                    {
-                        int index = row * 1080 + x;
-                        int side = x < middle ? 0 : 1;
-                        if (!uninked[index].Equals(onePixels[index]))
-                        {
-                            widths[side]++;
-                        }
-
-                        if (!uninked[index].Equals(twoPixels[index]))
-                        {
-                            widths[side + 2]++;
-                        }
-                    }
-
-                    Assert.That(widths[0], Is.InRange(1, 2), "one pixel left " + label);
-                    Assert.That(widths[1], Is.InRange(1, 2), "one pixel right " + label);
-                    Assert.That(widths[2], Is.InRange(2, 3), "two pixels left " + label);
-                    Assert.That(widths[3], Is.InRange(2, 3), "two pixels right " + label);
-                    Debug.Log("Beauty outline " + label + ": " + string.Join(",", widths));
-                }
-
-                Material probe = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/LookBeautyProbe.shader"));
-                owned.Add(probe);
-                Shader.SetGlobalFloat("_HLTipLight", 0.12f);
-                Graphics.Blit(Texture2D.whiteTexture, target, probe);
-                RenderTexture.active = target;
-                texture.ReadPixels(new Rect(0f, 0f, 1080f, 1920f), 0, 0);
-                texture.Apply();
-                File.WriteAllBytes(Path.Combine(directory, "beauty-look-tip.png"), texture.EncodeToPNG());
-                Assert.That(texture.GetPixel(800, 1800).g, Is.GreaterThan(texture.GetPixel(800, 100).g));
-                Assert.That(texture.GetPixel(200, 1800), Is.EqualTo(texture.GetPixel(200, 100)));
-                return;
-            }
-
-            Capture("wave5-shadow");
-            Color32[] pixels = texture.GetPixels32();
-            Assert.That(pixels.Count(c => c.b > c.g * 1.3f && c.b > c.r * 1.5f), Is.GreaterThan(1000));
-
-            for (int z = 0; z < 12; z++)
-            {
-                for (int x = 0; x < 18; x++)
-                {
-                    Vector3 bladePosition = new Vector3((x - 9) * 0.38f, 0.3f, -2.8f - z * 0.38f);
-                    GameObject blade = Make(PrimitiveType.Cube, "Masked blade", bladePosition,
-                                            new Vector3(0.045f, 0.6f, 0.09f), 0f);
-                    blade.transform.rotation = Quaternion.Euler(0f, (x * 37 + z * 23) % 180, (x % 3 - 1) * 15);
-                    blade.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
-                }
-            }
-
-            byte[] off = Capture("wave5-edges-off");
-            featureType.GetField("depthNormalEdges").SetValue(feature, true);
-            featureType.GetMethod("Create").Invoke(feature, null);
-            byte[] on = Capture("wave5-edges-on");
-            Assert.That(on.SequenceEqual(off), Is.False, "Screen pass must change the image.");
-
-            Texture2D left = new Texture2D(2, 2);
-            owned.Add(left);
-            left.LoadImage(off);
-            Texture2D pair = new Texture2D(2160, 1920, TextureFormat.RGB24, false);
-            owned.Add(pair);
-            pair.SetPixels(0, 0, 1080, 1920, left.GetPixels());
-            pair.SetPixels(1080, 0, 1080, 1920, texture.GetPixels());
-            pair.Apply();
-            File.WriteAllBytes(Path.Combine(directory, "wave5-edges-side-by-side.png"), pair.EncodeToPNG());
-
-            featureType.GetField("useNormalEdgeMask").SetValue(feature, false);
-            featureType.GetMethod("ApplyEdgeSettings").Invoke(feature, null);
-            byte[] unmasked = Capture("wave5-edges-unmasked");
-            Assert.That(unmasked.SequenceEqual(on), Is.False,
-                        "Mask must suppress normal edges independently of the depth threshold.");
-
-            featureType.GetField("useNormalEdgeMask").SetValue(feature, true);
-            featureType.GetMethod("ApplyEdgeSettings").Invoke(feature, null);
-            settings.inkStrength = 1f;
-            settings.inkWarp = 0f;
-            settings.dashAmount = 0f;
-            look.settings = settings;
-            Capture("wave5-hatch-31");
-            foreach (float distance in new[] { 26f, 40f })
-            {
-                camera.transform.position = -camera.transform.forward * distance;
-                Capture("wave5-hatch-" + distance);
+                widths[side + 2]++;
             }
         }
-        finally
+
+        Assert.That(widths[0], Is.InRange(1, 2), "one pixel left " + label);
+        Assert.That(widths[1], Is.InRange(1, 2), "one pixel right " + label);
+        Assert.That(widths[2], Is.InRange(2, 3), "two pixels left " + label);
+        Assert.That(widths[3], Is.InRange(2, 3), "two pixels right " + label);
+        Debug.Log("[LookShaderTests] Beauty outline " + label + ": " + string.Join(",", widths));
+    }
+
+    // Draws the quad through the forward pass and reads back the centre pixel
+    static Color ReadCentre(Material material, Mesh mesh, RenderTexture target, Texture2D texture,
+        MaterialPropertyBlock block)
+    {
+        using (CommandBuffer command = new CommandBuffer())
         {
-            if (beauty)
-            {
-                for (int i = 0; i < beautyNames.Length; i++)
-                {
-                    Shader.SetGlobalFloat(beautyNames[i], beautyValues[i]);
-                }
-
-                Shader.SetGlobalVector("_HLGridOrigin", previousGridOrigin);
-                Shader.SetGlobalVector("_HLGridExtent", previousGridExtent);
-            }
-
-            RenderTexture.active = previousTarget;
-            QualitySettings.renderPipeline = previousPipeline;
-            RenderSettings.sun = previousSun;
-            foreach (Object item in owned.AsEnumerable().Reverse())
-            {
-                if (item)
-                {
-                    Object.DestroyImmediate(item);
-                }
-            }
-
-            foreach (LookController controller in disabled)
-            {
-                if (controller)
-                {
-                    controller.enabled = true;
-                }
-            }
+            command.SetRenderTarget(target);
+            command.ClearRenderTarget(false, true, Color.magenta);
+            command.SetViewProjectionMatrices(Matrix4x4.identity, Matrix4x4.identity);
+            command.DrawMesh(mesh, Matrix4x4.identity, material, 0, material.FindPass("HLForward"), block);
+            Graphics.ExecuteCommandBuffer(command);
         }
+
+        RenderTexture.active = target;
+        texture.ReadPixels(new Rect(0f, 0f, 16f, 16f), 0, 0);
+        texture.Apply();
+        return texture.GetPixel(8, 8);
     }
 
     static void Compile(Material material, string passName, bool instanced, params string[] keywords)
