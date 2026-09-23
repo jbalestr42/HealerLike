@@ -18,7 +18,7 @@ public class PrimitiveMeshBakerTests
         Mesh[] all =
         {
             meshes.sphere, meshes.capsule, meshes.cone, meshes.cylinder, meshes.torus, meshes.thinTorus,
-            meshes.bladeCone, meshes.pyramid, meshes.star, meshes.boulder, meshes.disc, meshes.annulus
+            meshes.tuft, meshes.pyramid, meshes.star, meshes.boulder, meshes.disc, meshes.annulus
         };
         foreach (Mesh mesh in all)
         {
@@ -29,13 +29,13 @@ public class PrimitiveMeshBakerTests
     }
 
     [Test]
-    public void Bake_ShippedAsset_BladeConeHasGrassSides()
+    public void Bake_ShippedAsset_TuftHasThreeCappedPyramids()
     {
         PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesAssetPath);
 
-        uint indexCount = meshes.bladeCone.GetIndexCount(0);
+        uint indexCount = meshes.tuft.GetIndexCount(0);
 
-        Assert.AreEqual(9u * (uint)Grass.GrassField.BladeSides, indexCount); // side quads and base cap
+        Assert.AreEqual(54u, indexCount); // 3 pyramids * (4 sides + 2 cap triangles) * 3
     }
 }
 

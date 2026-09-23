@@ -268,7 +268,7 @@ public class GrassFieldTests
     }
 
     [Test]
-    public void Build_OnGraphicsDevice_DrawsOneConeListWithTheLookShader()
+    public void Build_OnGraphicsDevice_DrawsOneTuftListWithTheLookShader()
     {
         if (!HasGraphicsDevice())
         {
@@ -283,7 +283,7 @@ public class GrassFieldTests
         Assert.IsTrue(_field.bladeDraw.material.IsKeywordEnabled(GrassPalette.InstancedKeyword));
         uint[] data = new uint[5];
         _field.bladeDraw.arguments.GetData(data);
-        Assert.AreEqual(9u * (uint)GrassField.BladeSides, data[0]); // one cone: side quads and base cap
+        Assert.AreEqual((uint)(GrassTuft.BodyCount * GrassTuft.IndicesPerBody), data[0]); // one tuft of three capped pyramids
         Assert.AreEqual(5, OwnedBuffers().Count); // seeds, states, visible ids, blade and ring arguments
         Assert.AreEqual(ShadowCastingMode.On, _field.bladeDraw.shadowCastingMode);
         Assert.AreEqual(ShadowCastingMode.Off, _field.ringDraw.shadowCastingMode);

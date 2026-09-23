@@ -210,9 +210,9 @@ MonoBehaviour:
   _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
   _lookMaterial: {fileID: 2100000, guid: a45a203a5ecb94dbd839ab29df6ae56b, type: 2}
   _ringMaterial: {fileID: 2100000, guid: 63795723cc05e4b7fa691f99ca76cc12, type: 2}
-  _bladeBudget: 65536
+  _bladeBudget: 24576
   _seed: 1
-  _bladeHeightScale: 0.6
+  _bladeHeightScale: 1
   _surfaceY: 0.5
   _wind:
     direction: {x: 1, y: 0.35}

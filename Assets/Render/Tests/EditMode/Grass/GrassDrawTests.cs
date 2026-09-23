@@ -20,7 +20,7 @@ public class GrassDrawTests
         {
             Assert.Ignore("Indirect argument buffers need a graphics device; run with -force-metal.");
         }
-        _mesh = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset").bladeCone;
+        _mesh = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset").tuft;
         _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));
         _draw = new GrassDraw(_mesh, _material, 7, new Bounds(Vector3.zero, Vector3.one), 3);
     }
@@ -48,7 +48,7 @@ public class GrassDrawTests
 
         Assert.AreEqual(_mesh.GetIndexCount(0), data[0]);
         Assert.AreEqual(7u, data[1]);
-        Assert.AreEqual(9u * (uint)GrassField.BladeSides, data[0]); // side quads and base cap
+        Assert.AreEqual((uint)(GrassTuft.BodyCount * GrassTuft.IndicesPerBody), data[0]); // three capped pyramids
     }
 
     [Test]

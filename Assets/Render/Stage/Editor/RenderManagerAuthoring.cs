@@ -39,8 +39,9 @@ namespace HealerLike.Render.Stage
             grassGo.transform.SetParent(root.transform, false);
             GrassField grass = grassGo.AddComponent<GrassField>();
             EnvironmentAuthoring.SetGrass(grass);
-            // A closed carpet of short spikes that leaves actor roots readable
-            grass.bladeHeightScale = 0.6f;
+            // The tufts are laid out at the reference size, the ring strips keep the same scale
+            grass.bladeHeightScale = 1f;
+            grass.bladeBudget = GrassLayout.DefaultBudget;
 
             SpellVisualSink sink = Nest<SpellVisualSink>(SinkPath, root);
             StoneEffects stoneEffects = Nest<StoneEffects>(StoneEffectsPath, root);
