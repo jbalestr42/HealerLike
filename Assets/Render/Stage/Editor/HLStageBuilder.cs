@@ -457,7 +457,7 @@ namespace HealerLike.Render.Stage
             var gridRect = HealerLike.Render.Environment.HLEnvironmentScatter.GridRect(grid);
             var proxies = new List<GridManager>(); var fields = new List<HealerLike.Render.Grass.HLGrassField>();
             var main = Object.FindAnyObjectByType<HealerLike.Render.Grass.HLGrassField>();
-            float boardDensity = (main ? main.BladeBudget : HealerLike.Render.Grass.HLGrassLayout.DefaultBudget) / (gridRect.width * gridRect.height);
+            float boardDensity = (main ? main.bladeBudget : HealerLike.Render.Grass.HLGrassLayout.DefaultBudget) / (gridRect.width * gridRect.height);
             // Wave-4 capture: a quarter-density ring read as bare ground in a hard rectangle. Graded bands instead, dense at
             // the board edge and thinning outward; the first two bands cover the camera's near edge (z -12.6) and beyond.
             var strips = HealerLike.Render.Environment.HLEnvironmentGrass.Bands(gridRect, RingWidths, RingFractions, boardDensity);
@@ -470,13 +470,13 @@ namespace HealerLike.Render.Stage
                 pso.FindProperty("_width").intValue = Mathf.RoundToInt(rect.width / grid.size); pso.FindProperty("_height").intValue = Mathf.RoundToInt(rect.height / grid.size);
                 pso.FindProperty("_size").floatValue = grid.size; pso.ApplyModifiedPropertiesWithoutUndo();
                 var field = strip.AddComponent<HealerLike.Render.Grass.HLGrassField>(); var fso = new SerializedObject(field);
-                fso.FindProperty("grid").objectReferenceValue = proxy; fso.FindProperty("ground").objectReferenceValue = ground;
-                fso.FindProperty("gameplayCamera").objectReferenceValue = camera;
-                fso.FindProperty("updateGrass").objectReferenceValue = AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute");
-                fso.FindProperty("grassShader").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrass.shader");
-                fso.FindProperty("ringShader").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrassRing.shader");
-                fso.FindProperty("bladeBudget").intValue = strips[i].Budget;
-                fso.FindProperty("seed").longValue = 11 + i; fso.ApplyModifiedPropertiesWithoutUndo();
+                fso.FindProperty("_grid").objectReferenceValue = proxy; fso.FindProperty("_ground").objectReferenceValue = ground;
+                fso.FindProperty("_gameplayCamera").objectReferenceValue = camera;
+                fso.FindProperty("_updateGrass").objectReferenceValue = AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute");
+                fso.FindProperty("_lookMaterial").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Material>(LookDefault);
+                fso.FindProperty("_ringShader").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrassRing.shader");
+                fso.FindProperty("_bladeBudget").intValue = strips[i].Budget;
+                fso.FindProperty("_seed").longValue = 11 + i; fso.ApplyModifiedPropertiesWithoutUndo();
                 proxies.Add(proxy); fields.Add(field);
                 Debug.Log($"HL grass ring {i}: band {strips[i].Band} rect {rect} density {strips[i].Density:F1} blades {strips[i].Budget}");
             }
@@ -543,12 +543,12 @@ namespace HealerLike.Render.Stage
             {
                 go.name="HLGrassField";
                 var field=(Behaviour)go.AddComponent(fieldType); var fso=new SerializedObject(field);
-                fso.FindProperty("grid").objectReferenceValue=grid; fso.FindProperty("ground").objectReferenceValue=ground;
-                fso.FindProperty("bladeHeightScale").floatValue=.30f;
-                fso.FindProperty("gameplayCamera").objectReferenceValue=camera;
-                fso.FindProperty("updateGrass").objectReferenceValue=AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute");
-                fso.FindProperty("grassShader").objectReferenceValue=AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrass.shader");
-                fso.FindProperty("ringShader").objectReferenceValue=AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrassRing.shader"); fso.ApplyModifiedPropertiesWithoutUndo();
+                fso.FindProperty("_grid").objectReferenceValue=grid; fso.FindProperty("_ground").objectReferenceValue=ground;
+                fso.FindProperty("_bladeHeightScale").floatValue=.30f;
+                fso.FindProperty("_gameplayCamera").objectReferenceValue=camera;
+                fso.FindProperty("_updateGrass").objectReferenceValue=AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute");
+                fso.FindProperty("_lookMaterial").objectReferenceValue=AssetDatabase.LoadAssetAtPath<Material>(LookDefault);
+                fso.FindProperty("_ringShader").objectReferenceValue=AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrassRing.shader"); fso.ApplyModifiedPropertiesWithoutUndo();
                 var bridge=parent.gameObject.AddComponent<HLStageZoneBridge>(); var bso=new SerializedObject(bridge);
                 bso.FindProperty("zoneRegistry").objectReferenceValue=zones; bso.FindProperty("grassField").objectReferenceValue=field; bso.ApplyModifiedPropertiesWithoutUndo();
                 var bootstrapSO=new SerializedObject(bootstrap); bootstrapSO.FindProperty("zoneBridge").objectReferenceValue=bridge; bootstrapSO.FindProperty("grassField").objectReferenceValue=field; bootstrapSO.ApplyModifiedPropertiesWithoutUndo();

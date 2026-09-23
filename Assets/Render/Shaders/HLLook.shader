@@ -50,7 +50,7 @@ Shader "HL/Look/Primitive"
             UNITY_TRANSFER_INSTANCE_ID(input, output);
             UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
             #if defined(HL_GRASS_INSTANCED)
-            HLGrassBlade blade = HLPlaceGrassBlade(input.positionOS.xyz, input.normalOS, input.instanceID);
+            HLGrassPlacement blade = HLPlaceGrassBlade(input.positionOS.xyz, input.normalOS, input.instanceID);
             output.positionWS = blade.positionWS;
             output.normalWS = blade.normalWS;
             output.grassColor = blade.color;

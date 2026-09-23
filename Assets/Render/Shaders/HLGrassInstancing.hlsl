@@ -25,7 +25,7 @@ struct HLBladeState
     float4 rampHealReserved;
 };
 
-struct HLGrassBlade
+struct HLGrassPlacement
 {
     float3 positionWS;
     float3 normalWS;
@@ -67,7 +67,7 @@ float3 HLGrassColor(HLBladeSeed seed, HLBladeState state, float height01)
 }
 
 // positionOS and normalOS are the unit cone of HLPrimitiveMeshes: base at y -0.5, apex at y 0.5, radius 0.5
-HLGrassBlade HLPlaceGrassBlade(float3 positionOS, float3 normalOS, uint instanceID)
+HLGrassPlacement HLPlaceGrassBlade(float3 positionOS, float3 normalOS, uint instanceID)
 {
     InitIndirectDrawArgs(0);
     uint bladeID = _HL_VisibleBladeIDs[GetIndirectInstanceID(instanceID)];
@@ -93,7 +93,7 @@ HLGrassBlade HLPlaceGrassBlade(float3 positionOS, float3 normalOS, uint instance
     float3 horizontal = (across * normalOS.x + along * normalOS.z) / width;
     float vertical = (normalOS.y - dot(horizontal.xz, lean)) / height;
 
-    HLGrassBlade blade;
+    HLGrassPlacement blade;
     blade.positionWS = seed.positionYaw.xyz + radial * width + lift;
     blade.normalWS = normalize(float3(horizontal.x, vertical, horizontal.z));
     blade.color = HLGrassColor(seed, state, height01);
