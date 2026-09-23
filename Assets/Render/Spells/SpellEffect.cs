@@ -323,7 +323,12 @@ namespace HealerLike.Render.Spells
                 case EffectMotion.Grow:
                 {
                     float emerge = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(phase / 0.3f));
-                    float exit = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((phase - 0.8f) / 0.2f));
+                    // A single run sinks away at its end, a ticking or held one stays up until it grows again
+                    float exit = 0f;
+                    if (_recipe.tempo == EffectTempo.Once || !_isStatus)
+                    {
+                        exit = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((phase - 0.8f) / 0.2f));
+                    }
                     position = new Vector3(part.position.x, part.position.y * emerge - part.size.y * 0.5f * exit, part.position.z);
                     scale = part.size * (emerge * (1f - exit));
                     break;

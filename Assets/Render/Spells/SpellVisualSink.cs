@@ -222,8 +222,13 @@ namespace HealerLike.Render.Spells
                 }
             }
 
-            Entity owner = source != null ? source.GetComponent<Entity>() : null;
-            effect.SetSide(owner != null ? owner.entityType : Entity.EntityType.None);
+            // The flat star turns to the camera, a rim under it would read as a bar
+            if (element != EffectElement.Burst)
+            {
+                Entity owner = source != null ? source.GetComponent<Entity>() : null;
+                effect.SetSide(owner != null ? owner.entityType : Entity.EntityType.None);
+            }
+
             if (isCritical)
             {
                 effect.ShowCritical();
@@ -384,7 +389,7 @@ namespace HealerLike.Render.Spells
             return effect;
         }
 
-        // A character that reached two or more recipients in one frame cast on a group, each gets a beam from it
+        // A character that reached two or more recipients of one family in one frame cast on a group, each gets a beam
         public void FlushLinks()
         {
             if (!isActiveAndEnabled)
@@ -395,7 +400,7 @@ namespace HealerLike.Render.Spells
 
             foreach (KeyValuePair<GameObject, List<(GameObject, EffectFamily)>> group in _groups)
             {
-                if (group.Key == null || group.Value.Count < 2)
+                if (group.Key == null)
                 {
                     continue;
                 }
@@ -410,7 +415,7 @@ namespace HealerLike.Render.Spells
                 Vector3 start = anchor != null ? anchor.position : group.Key.transform.position;
                 foreach ((GameObject target, EffectFamily family) recipient in group.Value)
                 {
-                    if (recipient.target == null)
+                    if (recipient.target == null || Recipients(group.Value, recipient.family) < 2)
                     {
                         continue;
                     }
@@ -596,6 +601,19 @@ namespace HealerLike.Render.Spells
                 }
             }
             recipients.Add((target, family));
+        }
+
+        static int Recipients(List<(GameObject, EffectFamily)> recipients, EffectFamily family)
+        {
+            int count = 0;
+            foreach ((GameObject, EffectFamily) recipient in recipients)
+            {
+                if (recipient.Item2 == family)
+                {
+                    count++;
+                }
+            }
+            return count;
         }
 
         void ClearGroups()

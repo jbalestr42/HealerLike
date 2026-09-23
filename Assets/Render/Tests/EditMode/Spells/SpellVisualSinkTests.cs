@@ -461,6 +461,20 @@ public class SpellVisualSinkTests
     }
 
     [Test]
+    public void FlushLinks_OneHealAndOneHit_DrawsNoBeam()
+    {
+        int links = 0;
+        _sink.isCharacterSource = source => source == _host;
+        _sink.linkObserved = (start, end) => links++;
+        _sink.ShowImpact(_host, _target, ResourceKind.Health, 3f, false);
+        _sink.ShowImpact(_host, _other, ResourceKind.Health, -3f, false);
+
+        _sink.FlushLinks();
+
+        Assert.AreEqual(0, links);
+    }
+
+    [Test]
     public void LateUpdate_DestroyedTarget_ReleasesTheStatus()
     {
         _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
