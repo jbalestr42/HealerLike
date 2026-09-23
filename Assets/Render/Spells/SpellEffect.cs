@@ -61,6 +61,7 @@ namespace HealerLike.Render.Spells
         public List<Transform> shapes { get { return _shapes; } }
         public List<Transform> stalks { get { return _stalks; } }
         public List<Transform> parts { get { return _all; } }
+        public List<Transform> rings { get { return _rings; } }
         public bool removalComplete { get { return _isRemoving && _removalAge >= removalSeconds; } }
 
         // Ticking or held statuses last, and so does a single run longer than the lasting limit

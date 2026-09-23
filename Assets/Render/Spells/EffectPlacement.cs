@@ -9,6 +9,12 @@ namespace HealerLike.Render.Spells
         public static readonly float FallbackBodyRadius = 0.3f;
         // Press sits a quarter of a body unit (the body's diameter) over the head, in body radii
         public static readonly float AboveHeadGap = 0.5f;
+        // A lasting element keeps out of the head sphere grown by a tenth of a body unit, in body radii
+        public static readonly float HeadMargin = 0.2f;
+        static readonly int samples = 16;
+        static readonly int attempts = 24;
+        // Long enough for both orbit spins to turn once
+        static readonly float orbitSpan = 13f;
 
         public static EffectAnchors Anchors(GameObject target)
         {
@@ -64,16 +70,104 @@ namespace HealerLike.Render.Spells
             root.rotation = Quaternion.identity;
             float parentScale = parent != null ? Mathf.Max(0.0001f, parent.lossyScale.x) : 1f;
             root.localScale = Vector3.one * (anchors.bodyRadius / parentScale);
-            if (effect.recipe.socket == EffectSocket.UnderHead)
-            {
-                effect.SetFallDistance((root.position.y - anchors.foot.y) / anchors.bodyRadius);
-            }
-
             if (effect.recipe.element == EffectElement.Bud)
             {
                 FitToNeck(effect, anchors);
             }
+
+            if (effect.isLasting)
+            {
+                KeepOffHead(effect, anchors);
+            }
+
+            // Drops fall from where they ended up to the ground
+            if (effect.recipe.socket == EffectSocket.UnderHead)
+            {
+                effect.SetFallDistance((root.position.y - anchors.foot.y) / anchors.bodyRadius);
+            }
             effect.Advance(0f);
+        }
+
+        // Moves the element away from the head until no pose of its motion reaches into it: down for what hangs on
+        // the body, up for what presses from above, and flatter for what rises from the feet
+        static void KeepOffHead(SpellEffect effect, EffectAnchors anchors)
+        {
+            EffectSocket socket = effect.recipe.socket;
+            if (socket == EffectSocket.Link || socket == EffectSocket.Ground)
+            {
+                return;
+            }
+
+            Transform root = effect.transform;
+            bool isUp = socket == EffectSocket.AboveHead;
+            float nudge = 0.02f * anchors.bodyRadius;
+            for (int i = 0; i < attempts; i++)
+            {
+                float overlap = HeadOverlap(effect, anchors, isUp);
+                if (overlap <= 0f)
+                {
+                    return;
+                }
+
+                if (socket == EffectSocket.Feet)
+                {
+                    Vector3 scale = root.localScale;
+                    scale.y *= 0.85f;
+                    root.localScale = scale;
+                }
+                else
+                {
+                    root.position += (isUp ? Vector3.up : Vector3.down) * (overlap + nudge);
+                }
+            }
+            Debug.LogError($"[EffectPlacement] {effect.recipe.element} still reaches the head after {attempts} moves.");
+        }
+
+        // How far the element must move to clear the grown head sphere, over sampled poses of its motion. Every
+        // part counts, shown or not, because stacks and charges can show more later; critical rings belong to impacts.
+        public static float HeadOverlap(SpellEffect effect, EffectAnchors anchors, bool isUp)
+        {
+            float radius = anchors.headRadius + HeadMargin * anchors.bodyRadius;
+            float span = effect.recipe.motion == EffectMotion.Orbit ? orbitSpan : effect.recipe.cycleSeconds;
+            float worst = 0f;
+            for (int i = 0; i < samples; i++)
+            {
+                float phase = (float)i / (samples - 1);
+                effect.Pose(phase, phase * span);
+                foreach (Transform part in effect.parts)
+                {
+                    if (effect.rings.Contains(part))
+                    {
+                        continue;
+                    }
+
+                    Bounds bounds = WorldBounds(part);
+                    if (bounds.size.sqrMagnitude > 0.00000001f)
+                    {
+                        worst = Mathf.Max(worst, Overlap(bounds, anchors.headCentre, radius, isUp));
+                    }
+                }
+            }
+            return worst;
+        }
+
+        // The vertical move that takes a box out of a sphere, zero when the box is beside it or already clear
+        public static float Overlap(Bounds bounds, Vector3 centre, float radius, bool isUp)
+        {
+            float dx = Mathf.Max(0f, Mathf.Max(bounds.min.x - centre.x, centre.x - bounds.max.x));
+            float dz = Mathf.Max(0f, Mathf.Max(bounds.min.z - centre.z, centre.z - bounds.max.z));
+            float flat = dx * dx + dz * dz;
+            if (flat >= radius * radius)
+            {
+                return 0f;
+            }
+
+            float half = Mathf.Sqrt(radius * radius - flat);
+            if (isUp)
+            {
+                return bounds.max.y <= centre.y - half ? 0f : Mathf.Max(0f, centre.y + half - bounds.min.y);
+            }
+            return bounds.min.y >= centre.y + half ? 0f : Mathf.Max(0f, bounds.max.y - (centre.y - half));
         }
 
         // The bud closes up to the neck, never over the head
