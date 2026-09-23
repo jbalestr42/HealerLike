@@ -4,9 +4,22 @@ using UnityEngine;
 
 namespace HealerLike.Render.Creatures
 {
-    // Shared meshes without textures. Cylinder height and sphere diameter are one.
-    public static class HLPrimitiveMeshes
+    // Shared meshes without textures, baked by PrimitiveMeshBaker. Cylinder height and sphere diameter are one.
+    public class HLPrimitiveMeshes : ScriptableObject
     {
+        public Mesh sphere;
+        public Mesh capsule;
+        public Mesh cone;
+        public Mesh cylinder;
+        public Mesh torus;
+        public Mesh thinTorus;
+        public Mesh bladeCone;
+        public Mesh pyramid;
+        public Mesh star;
+        public Mesh boulder;
+        public Mesh disc;
+        public Mesh annulus;
+
         static readonly Dictionary<(HLPrimitive, int, int, float), Mesh> _cache =
             new Dictionary<(HLPrimitive, int, int, float), Mesh>();
         static int _owners;
