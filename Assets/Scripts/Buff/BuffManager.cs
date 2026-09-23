@@ -10,6 +10,7 @@ public class BuffManager : SerializedMonoBehaviour
     [HideInInspector] public UnityEvent<BuffData> OnBuffAdded = new UnityEvent<BuffData>();
     [HideInInspector] public UnityEvent<BuffData> OnBuffRemoved = new UnityEvent<BuffData>();
     [HideInInspector] public UnityEvent<BuffHandlerData> OnBuffHandlerStarted = new UnityEvent<BuffHandlerData>();
+    [HideInInspector] public UnityEvent<BuffHandlerData> OnBuffHandlerRefreshed = new UnityEvent<BuffHandlerData>();
     [HideInInspector] public UnityEvent<BuffHandlerData> OnBuffHandlerStopped = new UnityEvent<BuffHandlerData>();
 
     [Serializable]
@@ -164,6 +165,7 @@ public class BuffManager : SerializedMonoBehaviour
                                 buffHandlerData.currentStacks--;
                             }
                             buffHandlerData.refreshStacks = 0;
+                            OnBuffHandlerRefreshed.Invoke(buffHandlerData);
                         }
 
                         buffHandlerData.buffHandler.Update(Time.deltaTime);

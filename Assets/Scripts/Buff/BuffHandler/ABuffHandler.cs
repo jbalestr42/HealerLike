@@ -18,6 +18,7 @@ public abstract class ABuffHandlerFactory : SerializedScriptableObject
     public abstract ABuffHandler GetBuffHandler();
     public abstract List<ABuffFactory> buffFactoryList { get; }
     public abstract GameObject buffEffect { get; }
+    public abstract Sprite icon { get; }
     public abstract DurationType durationType { get; }
     public abstract float duration { get; }
     public abstract bool hasDuration { get; }
@@ -39,6 +40,7 @@ public class BuffHandlerFactory<BuffHandlerType, DataType> : ABuffHandlerFactory
 
     public override List<ABuffFactory> buffFactoryList => data.buffFactoryList;
     public override GameObject buffEffect => data.buffEffect;
+    public override Sprite icon => data.icon;
     public override DurationType durationType => data.durationType;
     public override float duration => data.duration;
     public override bool hasDuration => data.durationType != DurationType.Instant;
@@ -77,6 +79,11 @@ public class BuffHandlerBaseData
 
     [AssetsOnly]
     public GameObject buffEffect; // TODO IBuffEffect ? to manage start and stop visual effect
+
+    // Displayed over the target while the handler is active (no icon = not displayed)
+    [PreviewField(50)]
+    [AssetsOnly]
+    public Sprite icon;
 
     public List<GameplayTag> tags = new List<GameplayTag>();
 }
