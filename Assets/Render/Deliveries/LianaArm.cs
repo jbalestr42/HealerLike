@@ -87,6 +87,9 @@ namespace HealerLike.Render.Deliveries
 
         public Matrix4x4 tipMatrix { get { return _beads[leafCount]; } }
 
+        // The width of one tip unit in world space
+        public float tipWidth { get { return _radius * 4.5f; } }
+
         public Vector3 tip { get { return _joints[_joints.Length - 1]; } }
 
         public int segmentCount { get { return _lengths.Length; } }
@@ -515,7 +518,7 @@ namespace HealerLike.Render.Deliveries
                 _beads[i] = Matrix4x4.TRS(_joints[j], Quaternion.identity, Vector3.one * _radius * 2.4f * width);
             }
 
-            _beads[leafCount] = DeliveryTip.Frame(tip, tip - _joints[_joints.Length - 2], _radius * 4.5f);
+            _beads[leafCount] = DeliveryTip.Frame(tip, tip - _joints[_joints.Length - 2], tipWidth);
             if (!_tip.isSet || _tip.style != style)
             {
                 _tip.SetStyle(style, vocabulary, _meshes);

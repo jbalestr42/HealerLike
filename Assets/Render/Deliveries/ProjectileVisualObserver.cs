@@ -478,7 +478,7 @@ namespace HealerLike.Render.Deliveries
             if (_arms.Count > 0)
             {
                 colour = _arms[0].tipColour;
-                size = _arms[0].tipMatrix.lossyScale.x;
+                size = _arms[0].tipWidth;
             }
 
             TipDrop drop = new GameObject("TipDrop").AddComponent<TipDrop>();
