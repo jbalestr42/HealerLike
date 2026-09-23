@@ -181,4 +181,5 @@ public class SpellLooksTests
         Assert.AreSame(looks, sink.looks);
     }
 }
+
 }

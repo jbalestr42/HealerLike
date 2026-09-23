@@ -29,23 +29,11 @@ public class StoneProjectileImpactBridgeTests
         Object.DestroyImmediate(_projectileObject);
     }
 
-    static StoneEnemyVisual CreateVisual(GameObject target)
-    {
-        Transform pivot = new GameObject("BodyPivot").transform;
-        pivot.SetParent(target.transform, false);
-        Transform presentation = new GameObject("StonePresentation").transform;
-        presentation.SetParent(pivot, false);
-        StoneEnemyVisual visual = target.AddComponent<StoneEnemyVisual>();
-        TestHelpers.SetPrivateField(visual, "_bodyPivot", pivot);
-        TestHelpers.SetPrivateField(visual, "_presentation", presentation);
-        return visual;
-    }
-
     [Test]
     public void OnHit_ProjectileTargetCleared_UsesTheCallbackTargetUntilDisabled()
     {
         ResourceAttribute health = TestHelpers.CreateResourceAttribute(_target, AttributeType.HealthMax, 100);
-        _visual = CreateVisual(_target);
+        _visual = StoneEnemyVisualTests.CreateVisual(_target);
         _visual.Init(health, 1, null);
         Projectile projectile = _projectileObject.AddComponent<Projectile>();
         StoneProjectileImpactBridge bridge = _projectileObject.AddComponent<StoneProjectileImpactBridge>();

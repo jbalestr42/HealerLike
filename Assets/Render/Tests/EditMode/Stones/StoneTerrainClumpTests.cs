@@ -109,8 +109,7 @@ public class StoneTerrainClumpTests
     [Test]
     public void Init_WithEffects_SharesStoneMeshesWithTheEffectsOwner()
     {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
-        _effects = Object.Instantiate(prefab).GetComponent<StoneEffects>();
+        _effects = StoneEffectsTests.CreateEffects();
 
         _clump.Init(5, 1f, _effects, null);
 

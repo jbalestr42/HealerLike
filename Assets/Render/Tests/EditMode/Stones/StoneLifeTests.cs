@@ -1,6 +1,5 @@
 using HealerLike.Render.Zones;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Stones
@@ -8,31 +7,6 @@ namespace HealerLike.Render.Stones
 
 public class StoneLifeTests
 {
-    class FakeUpload : IZoneUpload
-    {
-        public GraphicsBuffer buffer { get { return null; } }
-
-        public void Upload(Zone[] zones)
-        {
-        }
-
-        public void Bind()
-        {
-        }
-
-        public void PublishCount(int count)
-        {
-        }
-
-        public void Unbind()
-        {
-        }
-
-        public void Dispose()
-        {
-        }
-    }
-
     GameObject _root;
     GameObject _top;
     GameObject _zoneRoot;
@@ -48,8 +22,7 @@ public class StoneLifeTests
         _top = new GameObject("Top");
         _top.transform.SetParent(_root.transform);
         _zoneRoot = new GameObject("Zones");
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
-        _fx = Object.Instantiate(prefab).GetComponent<StoneEffects>();
+        _fx = StoneEffectsTests.CreateEffects();
         _fxRoot = _fx.gameObject;
         _life = _root.AddComponent<StoneLife>();
         _zones = _zoneRoot.AddComponent<ZoneRegistry>();
@@ -69,7 +42,7 @@ public class StoneLifeTests
     [Test]
     public void Advance_PublishedHostilePulse_EmitsOncePerPulse()
     {
-        _zones.Init(new FakeUpload());
+        _zones.Init(new ZoneFakeUpload());
         _life.Init(_fx, _zones, 1, 0.5f, true);
 
         _zones.AddPulse(ZoneKind.Heal, Vector3.zero, 1f, 1f, 1f);

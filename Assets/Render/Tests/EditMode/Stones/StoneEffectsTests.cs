@@ -39,22 +39,10 @@ public class StoneEffectsTests
         }
     }
 
-    static StoneEffects CreateEffects()
+    public static StoneEffects CreateEffects()
     {
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
         return Object.Instantiate(prefab).GetComponent<StoneEffects>();
-    }
-
-    static StoneEnemyVisual CreateVisual(GameObject target)
-    {
-        Transform pivot = new GameObject("BodyPivot").transform;
-        pivot.SetParent(target.transform, false);
-        Transform presentation = new GameObject("StonePresentation").transform;
-        presentation.SetParent(pivot, false);
-        StoneEnemyVisual visual = target.AddComponent<StoneEnemyVisual>();
-        TestHelpers.SetPrivateField(visual, "_bodyPivot", pivot);
-        TestHelpers.SetPrivateField(visual, "_presentation", presentation);
-        return visual;
     }
 
     [Test]
@@ -95,7 +83,7 @@ public class StoneEffectsTests
     [TestCase(true)]
     public void OnDisable_LiveEffects_ClearsCopiesAndRejectsEveryEmission(bool deactivateObject)
     {
-        _visual = CreateVisual(_source);
+        _visual = StoneEnemyVisualTests.CreateVisual(_source);
         _visual.Init(null, 1, _fx);
         _fx.EmitDetachedPart(_mesh, null, Matrix4x4.identity, Vector3.zero, 0f, 1);
         Mesh copy = _go.GetComponentInChildren<MeshFilter>().sharedMesh;

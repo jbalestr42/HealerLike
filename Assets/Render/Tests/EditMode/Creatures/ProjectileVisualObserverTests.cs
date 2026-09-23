@@ -1,8 +1,8 @@
 using System.Collections.Generic;
+using HealerLike.Render.Stage;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Creatures
 {

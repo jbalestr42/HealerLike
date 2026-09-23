@@ -94,4 +94,5 @@ public class GrassWindTests
         Assert.AreEqual(baseline, wind.current);
     }
 }
+
 }

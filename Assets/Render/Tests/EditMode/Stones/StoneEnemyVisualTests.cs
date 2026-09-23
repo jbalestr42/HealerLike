@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Stones
@@ -39,13 +38,8 @@ public class StoneEnemyVisualTests
         public override bool ignoreConsumerPrevention { get { return false; } }
     }
 
-    static StoneEffects CreateEffects()
-    {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
-        return Object.Instantiate(prefab).GetComponent<StoneEffects>();
-    }
-
-    static StoneEnemyVisual CreateVisual(GameObject target)
+    // A stone view the way the prefab lays it out: a body pivot holding the presentation
+    public static StoneEnemyVisual CreateVisual(GameObject target)
     {
         Transform pivot = new GameObject("BodyPivot").transform;
         pivot.SetParent(target.transform, false);
@@ -75,7 +69,7 @@ public class StoneEnemyVisualTests
         _projectile = new GameObject("Projectile");
         _health = TestHelpers.CreateResourceAttribute(_target, AttributeType.HealthMax, 100);
         TestHelpers.CreateAttributeManager(_source);
-        _fx = CreateEffects();
+        _fx = StoneEffectsTests.CreateEffects();
         _fxObject = _fx.gameObject;
         _visual = CreateVisual(_target);
         _visual.Init(_health, 15, _fx);

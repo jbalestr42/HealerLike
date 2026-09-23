@@ -38,4 +38,5 @@ public class PrimitiveMeshBakerTests
         Assert.AreEqual(9u * (uint)Grass.GrassField.BladeSides, indexCount); // side quads and base cap
     }
 }
+
 }

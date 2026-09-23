@@ -1,8 +1,8 @@
+using HealerLike.Render.Creatures;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
-using HealerLike.Render.Creatures;
 
 namespace HealerLike.Render.Grass
 {
@@ -71,4 +71,5 @@ public class GrassDrawTests
         Assert.IsNull(_draw.arguments);
     }
 }
+
 }

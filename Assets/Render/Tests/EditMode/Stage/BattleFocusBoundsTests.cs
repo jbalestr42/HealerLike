@@ -1,6 +1,6 @@
+using HealerLike.Render.Environment;
 using NUnit.Framework;
 using UnityEngine;
-using HealerLike.Render.Environment;
 
 namespace HealerLike.Render.Stage
 {

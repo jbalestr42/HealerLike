@@ -1,11 +1,11 @@
 using System;
 using System.Collections;
 using System.Reflection;
+using HealerLike.Render.Spells;
+using HealerLike.Render.Stage;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using HealerLike.Render.Spells;
-using HealerLike.Render.Stage;
 using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Creatures

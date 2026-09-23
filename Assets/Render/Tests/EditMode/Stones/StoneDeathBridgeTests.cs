@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Stones
@@ -16,8 +15,7 @@ public class StoneDeathBridgeTests
     [SetUp]
     public void SetUp()
     {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
-        _fx = Object.Instantiate(prefab).GetComponent<StoneEffects>();
+        _fx = StoneEffectsTests.CreateEffects();
         _effectsObject = _fx.gameObject;
         _target = new GameObject("Target");
         _bridgeObject = new GameObject("Bridge");
@@ -37,23 +35,11 @@ public class StoneDeathBridgeTests
         Object.DestroyImmediate(_effectsObject);
     }
 
-    static StoneEnemyVisual CreateVisual(GameObject target)
-    {
-        Transform pivot = new GameObject("BodyPivot").transform;
-        pivot.SetParent(target.transform, false);
-        Transform presentation = new GameObject("StonePresentation").transform;
-        presentation.SetParent(pivot, false);
-        StoneEnemyVisual visual = target.AddComponent<StoneEnemyVisual>();
-        TestHelpers.SetPrivateField(visual, "_bodyPivot", pivot);
-        TestHelpers.SetPrivateField(visual, "_presentation", presentation);
-        return visual;
-    }
-
     [Test]
     public void HandleDeparture_LivingThenLethal_CollapsesOnlyOnceOnTheLethalDeparture()
     {
         ResourceAttribute health = TestHelpers.CreateResourceAttribute(_target, AttributeType.HealthMax, 100);
-        _visual = CreateVisual(_target);
+        _visual = StoneEnemyVisualTests.CreateVisual(_target);
         _visual.Init(health, 1, _fx);
         StoneDeathBridge bridge = _bridgeObject.AddComponent<StoneDeathBridge>();
         bridge.Bind(null, _fx);

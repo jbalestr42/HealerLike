@@ -1,6 +1,6 @@
+using HealerLike.Render.Stage;
 using NUnit.Framework;
 using UnityEngine;
-using HealerLike.Render.Stage;
 
 namespace HealerLike.Render
 {
@@ -79,4 +79,5 @@ public class IEntityViewTests
         Assert.AreEqual(1, view.initCount);
     }
 }
+
 }
