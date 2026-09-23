@@ -142,8 +142,8 @@ namespace HealerLike.Render.Grass
                 float phase = Sample(seed, cell, tuft, 5) * Mathf.PI * 2f;
                 float height = TuftHeight * (0.92f + 0.16f * Sample(seed, cell, tuft, 4));
                 float tuftWidth = TuftWidth * (0.9f + 0.2f * Sample(seed, cell, tuft, 6));
-                // A little per-tuft grain over the soft lane, so its blend between greens never shows a line
-                float patch = Mathf.Clamp01(PatchLane(seed, x, z) + 0.15f * (Sample(seed, cell, tuft, 7) - 0.5f));
+                // Per-tuft grain over the soft lane: neighbours differ a little, so each tuft reads against the next
+                float patch = Mathf.Clamp01(PatchLane(seed, x, z) + 0.4f * (Sample(seed, cell, tuft, 7) - 0.5f));
                 Vector3 root = new Vector3(minimum.x + x * cellSize, surfaceY + RootLift, minimum.y + z * cellSize);
                 result[index].positionYaw = new Vector4(root.x, root.y, root.z, yaw);
                 // Phase is also the rest-lean heading; w is the soft patch lane
