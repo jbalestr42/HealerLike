@@ -12,7 +12,7 @@ namespace HealerLike.Render.Stones
             public Color baseColor;
             public Transform transform;
             public MeshRenderer renderer;
-            public HLStoneMeshCache.Lease lease;
+            public StoneMeshCache.Lease lease;
         }
 
         public static readonly Color[] Palette =
@@ -24,14 +24,32 @@ namespace HealerLike.Render.Stones
         };
 
         public readonly List<Part> parts = new List<Part>();
+        StoneMeshCache _meshes;
         MaterialPropertyBlock _fractureBlock;
 
         public Bounds localBounds { get; private set; }
 
-        public void Add(Transform parent, uint seed, HLStonePart recipe, Material material)
+        public void Init(StoneMeshCache meshes)
         {
+            Dispose();
+            _meshes = meshes;
+        }
+
+        public bool Add(Transform parent, uint seed, HLStonePart recipe, Material material)
+        {
+            if (_meshes == null)
+            {
+                Debug.LogError("[HLStoneAssembly] Init the assembly with a StoneMeshCache before adding parts.");
+                return false;
+            }
+
             uint partSeed = HLStoneSeed.ForPart(seed, recipe.seedSalt);
-            HLStoneMeshCache.Lease lease = HLStoneMeshCache.Acquire(partSeed, recipe.shape);
+            StoneMeshCache.Lease lease = _meshes.Acquire(partSeed, recipe.shape);
+            if (lease == null)
+            {
+                return false;
+            }
+
             GameObject partGo = new GameObject("HLStonePart");
             partGo.layer = parent.gameObject.layer;
             partGo.transform.SetParent(parent, false);
@@ -52,6 +70,7 @@ namespace HealerLike.Render.Stones
             part.renderer = renderer;
             part.lease = lease;
             parts.Add(part);
+            return true;
         }
 
         public void BuildEnemy(Transform parent, uint seed, HLStonePreset preset, Material material,
@@ -62,7 +81,10 @@ namespace HealerLike.Render.Stones
             {
                 foreach (HLStonePart recipe in profile.parts)
                 {
-                    Add(parent, seed, recipe, material);
+                    if (!Add(parent, seed, recipe, material))
+                    {
+                        return;
+                    }
                 }
             }
             else if (preset == HLStonePreset.Monolith)
@@ -71,11 +93,14 @@ namespace HealerLike.Render.Stones
                 recipe.shape = HLStonePresets.Monolith;
                 recipe.seedSalt = 1;
                 recipe.paletteIndex = 2;
-                Add(parent, seed, recipe, material);
+                if (!Add(parent, seed, recipe, material))
+                {
+                    return;
+                }
             }
-            else
+            else if (!BuildCluster(parent, seed, preset, material))
             {
-                BuildCluster(parent, seed, preset, material);
+                return;
             }
 
             float height = 0.8f;
@@ -90,7 +115,7 @@ namespace HealerLike.Render.Stones
             Fit(0.9f, height);
         }
 
-        void BuildCluster(Transform parent, uint seed, HLStonePreset preset, Material material)
+        bool BuildCluster(Transform parent, uint seed, HLStonePreset preset, Material material)
         {
             float[] cairnSizes = { 0.55f, 0.42f, 0.29f };
             float[] cairnElongations = { 0.65f, 0.75f, 0.95f };
@@ -115,7 +140,10 @@ namespace HealerLike.Render.Stones
                 }
                 recipe.seedSalt = (uint)i + 1;
                 recipe.localEulerAngles = new Vector3(0f, HLStoneSeed.ForPart(seed, (uint)i + 31) % 360, 0f);
-                Add(parent, seed, recipe, material);
+                if (!Add(parent, seed, recipe, material))
+                {
+                    return false;
+                }
 
                 Part part = parts[i];
                 Bounds bounds = PartBounds(part);
@@ -130,6 +158,7 @@ namespace HealerLike.Render.Stones
                     part.transform.localPosition = new Vector3(boulderX[i], -bounds.min.y + lift, boulderZ[i]);
                 }
             }
+            return true;
         }
 
         public void Fit(float width, float height)
@@ -223,7 +252,14 @@ namespace HealerLike.Render.Stones
                 if (part.transform != null)
                 {
                     part.transform.gameObject.SetActive(false);
-                    HLStoneMeshCache.DestroyOwned(part.transform.gameObject);
+                    if (Application.isPlaying)
+                    {
+                        UnityEngine.Object.Destroy(part.transform.gameObject);
+                    }
+                    else
+                    {
+                        UnityEngine.Object.DestroyImmediate(part.transform.gameObject);
+                    }
                 }
                 part.lease.Dispose();
             }

@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HealerLike.Render.Spells;
+using HealerLike.Render.Stage;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Stones
 {
-    public class HLStoneEnemyVisual : MonoBehaviour, IVisualBehaviour, IHLDeliverySource
+    public class HLStoneEnemyVisual : MonoBehaviour, IVisualBehaviour, IEntityView, IHLDeliverySource
     {
         struct ImpactRecord
         {
@@ -15,8 +16,17 @@ namespace HealerLike.Render.Stones
             public int frame;
         }
 
+        class Delivery
+        {
+            public Transform shard;
+            public Transform projectile;
+            public StoneMeshCache.Lease lease;
+        }
+
         [FormerlySerializedAs("bodyPivot")]
         [SerializeField] Transform _bodyPivot;
+        [SerializeField] Transform _presentation;
+        [SerializeField] StoneGroundDisc _groundShadow;
         [FormerlySerializedAs("preset")]
         [SerializeField] HLStonePreset _preset;
         [FormerlySerializedAs("profile")]
@@ -33,13 +43,12 @@ namespace HealerLike.Render.Stones
         [SerializeField] Vector3 _directionToKeyLight = new Vector3(-1f, 2f, -1f);
 
         LookAtTarget _bodyLookAtTarget;
-        Transform _presentation;
-        HLStoneGroundShadow _groundShadow;
         HLStoneLife _life;
         TargetProvider _targets;
         Entity _entity;
         ResourceAttribute _health;
         IHLStoneMotionSource _motion;
+        StoneMeshCache _ownMeshes;
         float _settleAge;
         Vector3 _tricklePoint;
         bool _isBound;
@@ -49,8 +58,7 @@ namespace HealerLike.Render.Stones
 
         readonly List<ASkill> _skills = new List<ASkill>();
         readonly Dictionary<ASkill, Func<float>> _cooldownReaders = new Dictionary<ASkill, Func<float>>();
-        readonly Dictionary<int, (Transform shard, Transform projectile, HLStoneMeshCache.Lease lease)> _deliveries =
-            new Dictionary<int, (Transform, Transform, HLStoneMeshCache.Lease)>();
+        readonly Dictionary<int, Delivery> _deliveries = new Dictionary<int, Delivery>();
         readonly List<int> _endedDeliveries = new List<int>();
         readonly HLStoneAssembly _assembly = new HLStoneAssembly();
         readonly HLStoneHealthState _state = new HLStoneHealthState();
@@ -71,7 +79,7 @@ namespace HealerLike.Render.Stones
                 _groundShadowEnabled = value;
                 if (_groundShadow != null)
                 {
-                    _groundShadow.visible = value;
+                    _groundShadow.Show(value && !_isCollapsed && isActiveAndEnabled);
                 }
             }
         }
@@ -84,12 +92,24 @@ namespace HealerLike.Render.Stones
 
         public int pendingImpactCount { get { return _impacts.Count; } }
 
+        // The effects owner is a child of the manager prefab
+        public void Init(Entity entity, RenderManager manager)
+        {
+            Init(entity, manager.GetComponentInChildren<HLStoneEffects>());
+        }
+
+        // removed in D2: the old stage reaches the visual through EntityModel and has no manager
         public void Init(Entity owner)
+        {
+            Init(owner, Effects());
+        }
+
+        public void Init(Entity owner, HLStoneEffects effects)
         {
             _entity = owner;
             HLResourceOutcomeObserver.Ensure(owner);
             _targets = owner.GetComponent<TargetProvider>();
-            Initialize(owner.health, _seed, _effects);
+            Init(owner.health, _seed, effects);
             foreach (MonoBehaviour component in owner.GetComponents<MonoBehaviour>())
             {
                 if (component is IHLStoneMotionSource source)
@@ -100,33 +120,41 @@ namespace HealerLike.Render.Stones
             }
         }
 
-        // Explicit resource injection also permits isolated tests without Entity.Init or global managers.
-        public void Initialize(ResourceAttribute resource, uint visualSeed, HLStoneEffects effectsOwner)
+        // Taking the resource directly lets tests run without Entity.Init or the game managers
+        public void Init(ResourceAttribute resource, uint visualSeed, HLStoneEffects effects)
         {
             Unbind();
             _health = resource;
             _seed = visualSeed;
-            _effects = effectsOwner;
-            if (_bodyPivot == null)
+            _effects = effects;
+            if (_bodyPivot == null || _presentation == null)
             {
-                Transform child = transform.Find("BodyPivot");
-                if (child == null)
-                {
-                    child = new GameObject("BodyPivot").transform;
-                    child.SetParent(transform, false);
-                }
-                _bodyPivot = child;
+                Debug.LogError("[HLStoneEnemyVisual] The model prefab needs its BodyPivot and presentation children.");
+                return;
             }
+
             _bodyLookAtTarget = _bodyPivot.GetComponent<LookAtTarget>();
-            if (_presentation == null)
-            {
-                _presentation = new GameObject("HLStonePresentation").transform;
-                _presentation.SetParent(_bodyPivot, false);
-            }
             _presentation.localRotation = Quaternion.identity;
             _settleAge = 0f;
 
+            if (_effects != null)
+            {
+                _assembly.Init(_effects.stoneMeshes);
+            }
+            else
+            {
+                if (_ownMeshes == null)
+                {
+                    _ownMeshes = new StoneMeshCache();
+                }
+                _assembly.Init(_ownMeshes);
+            }
             _assembly.BuildEnemy(_presentation, _seed, _preset, _stoneMaterial, _profile);
+            if (_assembly.parts.Count == 0)
+            {
+                return;
+            }
+
             Vector3[] vertices = _assembly.parts[0].lease.data.vertices;
             _tricklePoint = vertices[0];
             for (int i = 1; i < vertices.Length; i++)
@@ -137,11 +165,11 @@ namespace HealerLike.Render.Stones
                 }
             }
 
-            if (_groundShadow == null)
+            if (_groundShadow != null)
             {
-                _groundShadow = gameObject.AddComponent<HLStoneGroundShadow>();
+                _groundShadow.Init(_assembly.localBounds, _directionToKeyLight);
+                _groundShadow.Show(_groundShadowEnabled && isActiveAndEnabled);
             }
-            _groundShadow.Configure(_assembly.localBounds, _directionToKeyLight, _groundShadowEnabled);
             _state.Reset(_profile != null ? _profile.shedHealthFraction : 0.5f);
             _isCollapsed = false;
             _hitIndex = 0;
@@ -157,7 +185,7 @@ namespace HealerLike.Render.Stones
             {
                 cairnTop = _assembly.parts[_assembly.parts.Count - 1].transform;
             }
-            _life.Configure(_effects, _seed, _assembly.localBounds.extents.magnitude, false, cairnTop);
+            _life.Init(_effects, null, _seed, _assembly.localBounds.extents.magnitude, false, cairnTop);
 
             _motion = null;
             _sampler.Reset();
@@ -165,7 +193,7 @@ namespace HealerLike.Render.Stones
             Bind();
         }
 
-        public void RecordImpact(ResourceModifier modifier, in HLStoneImpact impact)
+        public void RecordImpact(ResourceModifier modifier, HLStoneImpact impact)
         {
             if (modifier == null || !_isBound || !isActiveAndEnabled)
             {
@@ -173,7 +201,10 @@ namespace HealerLike.Render.Stones
             }
 
             _impacts[modifier] = new ImpactRecord { impact = impact, frame = _completedFrames };
-            Effects()?.RecordImpact(impact.pointWS, HLStoneSeed.ForPart(_seed, ++_hitIndex + 100));
+            if (_effects != null)
+            {
+                _effects.RecordImpact(impact.pointWS, HLStoneSeed.ForPart(_seed, ++_hitIndex + 100));
+            }
         }
 
         public HLStoneImpact EstimateImpact(Vector3 queryWS, Vector3 incomingVelocityWS)
@@ -203,13 +234,20 @@ namespace HealerLike.Render.Stones
             return new HLStoneImpact(point, normal, incomingVelocityWS, true);
         }
 
+        // removed in D2: without a manager the model prefab points at the effects prefab, brought in once per scene
         HLStoneEffects Effects()
         {
-            if (_effects == null && Application.isPlaying)
+            if (_effects == null || _effects.gameObject.scene.IsValid() || !Application.isPlaying)
             {
-                _effects = HLStoneEffects.ForScene(gameObject.scene, _stoneMaterial);
+                return _effects;
             }
-            return _effects;
+
+            HLStoneEffects existing = FindAnyObjectByType<HLStoneEffects>();
+            if (existing != null)
+            {
+                return existing;
+            }
+            return Instantiate(_effects);
         }
 
         void OnConsumersProcessed(GameObject owner, ResourceModifier modifier, float delta, bool critical)
@@ -234,9 +272,15 @@ namespace HealerLike.Render.Stones
                     query = modifier.source.transform.position;
                 }
                 impact = EstimateImpact(query, Vector3.zero);
-                Effects()?.RecordImpact(impact.pointWS, HLStoneSeed.ForPart(_seed, ++_hitIndex + 100));
+                if (_effects != null)
+                {
+                    _effects.RecordImpact(impact.pointWS, HLStoneSeed.ForPart(_seed, ++_hitIndex + 100));
+                }
             }
-            Effects()?.EmitHit(impact, critical, HLStoneSeed.ForPart(_seed, ++_hitIndex + 100));
+            if (_effects != null)
+            {
+                _effects.EmitHit(impact, critical, HLStoneSeed.ForPart(_seed, ++_hitIndex + 100));
+            }
         }
 
         void OnHealthChanged(ResourceAttribute resource)
@@ -293,7 +337,10 @@ namespace HealerLike.Render.Stones
             Material material = part.renderer.sharedMaterial;
             Matrix4x4 pose = part.transform.localToWorldMatrix;
             uint seed = HLStoneSeed.ForPart(_seed, 201);
-            Effects()?.EmitDetachedPart(part.lease.mesh, material, pose, planarVelocity, groundY, seed);
+            if (_effects != null)
+            {
+                _effects.EmitDetachedPart(part.lease.mesh, material, pose, planarVelocity, groundY, seed);
+            }
             part.transform.gameObject.SetActive(false);
         }
 
@@ -304,10 +351,9 @@ namespace HealerLike.Render.Stones
                 _effects = owner;
             }
 
-            HLStoneEffects effects = Effects();
-            if (effects != null)
+            if (_effects != null)
             {
-                effects.CollapseOnce(this, HLStoneSeed.ForPart(_seed, 301));
+                _effects.CollapseOnce(this, HLStoneSeed.ForPart(_seed, 301));
             }
             else if (TryBeginCollapse())
             {
@@ -331,7 +377,7 @@ namespace HealerLike.Render.Stones
         {
             if (_groundShadow != null)
             {
-                _groundShadow.visible = false;
+                _groundShadow.Show(false);
             }
             foreach (HLStoneAssembly.Part part in _assembly.parts)
             {
@@ -383,6 +429,11 @@ namespace HealerLike.Render.Stones
                 {
                     _bodyPivot.rotation = Quaternion.LookRotation(planarVelocity, Vector3.up);
                 }
+            }
+
+            if (_groundShadow != null && !_isCollapsed)
+            {
+                _groundShadow.Refresh();
             }
 
             _completedFrames++;
@@ -482,7 +533,7 @@ namespace HealerLike.Render.Stones
             else
             {
                 targetDirection.y = 0f;
-                if (targetDirection.sqrMagnitude > 1e-6f)
+                if (targetDirection.sqrMagnitude > 0.000001f)
                 {
                     float anticipation = float.IsFinite(remaining) ? 1f - Mathf.Clamp01(remaining / 0.3f) : 0f;
                     Vector3 side = Vector3.Cross(Vector3.up, targetDirection.normalized);
@@ -494,9 +545,11 @@ namespace HealerLike.Render.Stones
             _presentation.localRotation = Quaternion.Slerp(_presentation.localRotation, desired, blend);
         }
 
+        #region IHLDeliverySource
+
         public bool BeginDelivery(int token, HLDeliveryStyle style, Transform projectile, Vector3 intendedEnd)
         {
-            if (!isActiveAndEnabled || _isCollapsed || projectile == null || _presentation == null
+            if (!isActiveAndEnabled || _isCollapsed || projectile == null || _presentation == null || _effects == null
                 || _deliveries.ContainsKey(token))
             {
                 return false;
@@ -507,23 +560,32 @@ namespace HealerLike.Render.Stones
             }
 
             HLStoneSettings shardShape = HLStonePresets.Shape(0.15f, 1.7f, 0.65f, 0.18f, 0);
-            HLStoneMeshCache.Lease lease = HLStoneMeshCache.Acquire(HLStoneSeed.ForPart(_seed, 701), shardShape);
-            Transform shard = new GameObject("HLThrownShard").transform;
-            shard.SetParent(transform, false);
+            StoneMeshCache.Lease lease = _effects.stoneMeshes.Acquire(HLStoneSeed.ForPart(_seed, 701), shardShape);
+            if (lease == null)
+            {
+                return false;
+            }
+
+            Transform shard = _effects.TakeShard(lease.mesh, HLStoneAssembly.Palette[1]);
+            if (shard == null)
+            {
+                lease.Dispose();
+                return false;
+            }
+
             shard.position = _presentation.TransformPoint(_assembly.localBounds.center);
-            shard.gameObject.AddComponent<MeshFilter>().sharedMesh = lease.mesh;
-            MeshRenderer renderer = shard.gameObject.AddComponent<MeshRenderer>();
-            renderer.sharedMaterial = _stoneMaterial;
-            MaterialPropertyBlock block = new MaterialPropertyBlock();
-            block.SetVector("_BaseColor", HLStoneAssembly.Palette[1].linear);
-            renderer.SetPropertyBlock(block);
-            _deliveries.Add(token, (shard, projectile, lease));
+            shard.rotation = Quaternion.identity;
+            Delivery delivery = new Delivery();
+            delivery.shard = shard;
+            delivery.projectile = projectile;
+            delivery.lease = lease;
+            _deliveries.Add(token, delivery);
 
             if (_preset == HLStonePreset.Boulder)
             {
                 Vector3 direction = intendedEnd - transform.position;
                 direction.y = 0f;
-                if (direction.sqrMagnitude > 1e-6f)
+                if (direction.sqrMagnitude > 0.000001f)
                 {
                     Vector3 side = Vector3.Cross(Vector3.up, direction.normalized);
                     Vector3 axis = _bodyPivot.InverseTransformDirection(side);
@@ -535,25 +597,54 @@ namespace HealerLike.Render.Stones
 
         public void UpdateDelivery(int token, Vector3 projectilePosition)
         {
-            if (!_deliveries.TryGetValue(token,
-                out (Transform shard, Transform projectile, HLStoneMeshCache.Lease lease) delivery))
+            if (!_deliveries.TryGetValue(token, out Delivery delivery))
             {
                 return;
             }
 
             Vector3 travel = projectilePosition - delivery.shard.position;
-            if (travel.sqrMagnitude > 1e-8f)
+            if (travel.sqrMagnitude > 0.00000001f)
             {
                 delivery.shard.rotation = Quaternion.FromToRotation(Vector3.up, travel.normalized);
             }
             delivery.shard.position = projectilePosition;
         }
 
+        public void ContactDelivery(int token, Vector3 contactPosition, GameObject target)
+        {
+            if (!_deliveries.ContainsKey(token))
+            {
+                return;
+            }
+
+            if (_effects != null)
+            {
+                _effects.EmitThrownContact(contactPosition, HLStoneSeed.ForPart(_seed, ++_hitIndex + 801));
+            }
+            EndDelivery(token);
+        }
+
+        public void EndDelivery(int token)
+        {
+            if (!_deliveries.TryGetValue(token, out Delivery delivery))
+            {
+                return;
+            }
+
+            _deliveries.Remove(token);
+            if (_effects != null)
+            {
+                _effects.ReturnShard(delivery.shard);
+            }
+            delivery.lease.Dispose();
+        }
+
+        #endregion
+
         void FollowDeliveries()
         {
             _endedDeliveries.Clear();
-            foreach (KeyValuePair<int, (Transform shard, Transform projectile, HLStoneMeshCache.Lease lease)> pair
-                in _deliveries)
+            foreach (KeyValuePair<int, Delivery> pair in _deliveries)
             {
                 Transform projectile = pair.Value.projectile;
                 if (projectile == null || !projectile.gameObject.activeInHierarchy)
@@ -569,31 +660,6 @@ namespace HealerLike.Render.Stones
             {
                 EndDelivery(token);
             }
-        }
-
-        public void ContactDelivery(int token, Vector3 contactPosition, GameObject target)
-        {
-            if (!_deliveries.ContainsKey(token))
-            {
-                return;
-            }
-
-            Effects()?.EmitThrownContact(contactPosition, HLStoneSeed.ForPart(_seed, ++_hitIndex + 801));
-            EndDelivery(token);
-        }
-
-        public void EndDelivery(int token)
-        {
-            if (!_deliveries.TryGetValue(token,
-                out (Transform shard, Transform projectile, HLStoneMeshCache.Lease lease) delivery))
-            {
-                return;
-            }
-
-            _deliveries.Remove(token);
-            delivery.shard.gameObject.SetActive(false);
-            HLStoneMeshCache.DestroyOwned(delivery.shard.gameObject);
-            delivery.lease.Dispose();
         }
 
         void ClearDeliveries()
@@ -645,7 +711,7 @@ namespace HealerLike.Render.Stones
             }
             if (_groundShadow != null)
             {
-                _groundShadow.enabled = value;
+                _groundShadow.Show(value && _groundShadowEnabled && !_isCollapsed);
             }
         }
 
@@ -669,6 +735,10 @@ namespace HealerLike.Render.Stones
         {
             Unbind();
             _assembly.Dispose();
+            if (_ownMeshes != null)
+            {
+                _ownMeshes.Clear();
+            }
         }
     }
 }

@@ -40,12 +40,12 @@ namespace HealerLike.Render.Stones
 
         public void HandleDeparture(ResourceAttribute health, HLStoneEnemyVisual visual)
         {
-            if (!isActiveAndEnabled || health == null || health.Value > 0f)
+            if (!isActiveAndEnabled || health == null || health.Value > 0f || visual == null)
             {
                 return;
             }
 
-            visual?.Collapse(_effects);
+            visual.Collapse(_effects);
         }
 
         void Unbind()

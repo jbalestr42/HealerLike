@@ -1,12 +1,31 @@
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Stones
 {
     public class HLStoneDynamicsTests
     {
+        static HLStoneEffects CreateEffects()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
+            return Object.Instantiate(prefab).GetComponent<HLStoneEffects>();
+        }
+
+        static HLStoneEnemyVisual CreateVisual(GameObject target)
+        {
+            Transform pivot = new GameObject("BodyPivot").transform;
+            pivot.SetParent(target.transform, false);
+            Transform presentation = new GameObject("HLStonePresentation").transform;
+            presentation.SetParent(pivot, false);
+            HLStoneEnemyVisual visual = target.AddComponent<HLStoneEnemyVisual>();
+            TestHelpers.SetPrivateField(visual, "_bodyPivot", pivot);
+            TestHelpers.SetPrivateField(visual, "_presentation", presentation);
+            return visual;
+        }
+
         GameObject _root;
         GameObject _projectile;
         GameObject _fxRoot;
@@ -19,16 +38,17 @@ namespace HealerLike.Render.Stones
         {
             _root = new GameObject("HLRoot");
             _projectile = new GameObject("HLProjectile");
-            _fxRoot = new GameObject("HLFX");
             _health = TestHelpers.CreateResourceAttribute(_root, AttributeType.HealthMax, 100);
-            _fx = _fxRoot.AddComponent<HLStoneEffects>();
-            _visual = _root.AddComponent<HLStoneEnemyVisual>();
-            _visual.Initialize(_health, 17, _fx);
+            _fx = CreateEffects();
+            _fxRoot = _fx.gameObject;
+            _visual = CreateVisual(_root);
+            _visual.Init(_health, 17, _fx);
         }
 
         [TearDown]
         public void TearDown()
         {
+            TestHelpers.InvokePrivate(_visual, "OnDestroy");
             TestHelpers.InvokePrivate(_fx, "OnDestroy");
             Object.DestroyImmediate(_root);
             Object.DestroyImmediate(_projectile);
@@ -57,12 +77,12 @@ namespace HealerLike.Render.Stones
         public void RigidPresetsIgnoreTargetCooldownAndLaunch(HLStonePreset preset)
         {
             TestHelpers.SetPrivateField(_visual, "_preset", preset);
-            _visual.Initialize(_health, 17, _fx);
+            _visual.Init(_health, 17, _fx);
             Transform pivot = _visual.parts[0].transform.parent;
             _visual.AdvancePresentation(Vector3.forward, 0f, 0.2f);
             Quaternion first = pivot.localRotation;
 
-            _visual.Initialize(_health, 17, _fx);
+            _visual.Init(_health, 17, _fx);
             _visual.AdvancePresentation(Vector3.left, 1f, 0.2f);
             Assert.AreEqual(first, pivot.localRotation);
 
@@ -83,7 +103,8 @@ namespace HealerLike.Render.Stones
 
             _projectile.transform.position = new Vector3(4f, 3f, 2f);
             TestHelpers.InvokePrivate(_visual, "LateUpdate");
-            Assert.AreEqual(_projectile.transform.position, _root.transform.Find("HLThrownShard").position);
+            Transform shard = _fxRoot.GetComponentInChildren<MeshFilter>().transform;
+            Assert.AreEqual(_projectile.transform.position, shard.position);
 
             _visual.ContactDelivery(1, Vector3.one * 7f, null);
             Assert.AreEqual(0, _visual.liveDeliveryCount);

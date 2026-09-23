@@ -5,6 +5,18 @@ namespace HealerLike.Render.Stones
 {
     public class HLStoneProjectileImpactBridgeTests
     {
+        static HLStoneEnemyVisual CreateVisual(GameObject target)
+        {
+            Transform pivot = new GameObject("BodyPivot").transform;
+            pivot.SetParent(target.transform, false);
+            Transform presentation = new GameObject("HLStonePresentation").transform;
+            presentation.SetParent(pivot, false);
+            HLStoneEnemyVisual visual = target.AddComponent<HLStoneEnemyVisual>();
+            TestHelpers.SetPrivateField(visual, "_bodyPivot", pivot);
+            TestHelpers.SetPrivateField(visual, "_presentation", presentation);
+            return visual;
+        }
+
         [Test]
         public void UsesCallbackTargetAfterProjectileTargetClearedAndUnsubscribes()
         {
@@ -14,8 +26,8 @@ namespace HealerLike.Render.Stones
             try
             {
                 ResourceAttribute health = TestHelpers.CreateResourceAttribute(target, AttributeType.HealthMax, 100);
-                visual = target.AddComponent<HLStoneEnemyVisual>();
-                visual.Initialize(health, 1, null);
+                visual = CreateVisual(target);
+                visual.Init(health, 1, null);
                 Projectile projectile = projectileObject.AddComponent<Projectile>();
                 HLStoneProjectileImpactBridge bridge = projectileObject.AddComponent<HLStoneProjectileImpactBridge>();
                 TestHelpers.InvokePrivate(bridge, "OnEnable");

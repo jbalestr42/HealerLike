@@ -1,15 +1,34 @@
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Stones
 {
     public class HLStoneEffectsTests
     {
+        static HLStoneEffects CreateEffects()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
+            return Object.Instantiate(prefab).GetComponent<HLStoneEffects>();
+        }
+
+        static HLStoneEnemyVisual CreateVisual(GameObject target)
+        {
+            Transform pivot = new GameObject("BodyPivot").transform;
+            pivot.SetParent(target.transform, false);
+            Transform presentation = new GameObject("HLStonePresentation").transform;
+            presentation.SetParent(pivot, false);
+            HLStoneEnemyVisual visual = target.AddComponent<HLStoneEnemyVisual>();
+            TestHelpers.SetPrivateField(visual, "_bodyPivot", pivot);
+            TestHelpers.SetPrivateField(visual, "_presentation", presentation);
+            return visual;
+        }
+
         [Test]
         public void DustRisesFadesExpiresAndReusesWithoutAllocating()
         {
-            GameObject go = new GameObject("HLDustTest");
-            HLStoneEffects fx = go.AddComponent<HLStoneEffects>();
+            HLStoneEffects fx = CreateEffects();
+            GameObject go = fx.gameObject;
             try
             {
                 fx.EmitDust(Vector3.zero, 1);
@@ -53,19 +72,14 @@ namespace HealerLike.Render.Stones
         [TestCase(true)]
         public void DisableClearsCopiesSlotsAndRejectsEveryEmission(bool deactivateObject)
         {
-            GameObject go = new GameObject("HLDisableEffects");
-            HLStoneEffects fx = go.AddComponent<HLStoneEffects>();
+            HLStoneEffects fx = CreateEffects();
+            GameObject go = fx.gameObject;
             GameObject source = new GameObject("HLSourceVisual");
-            HLStoneEnemyVisual visual = source.AddComponent<HLStoneEnemyVisual>();
+            HLStoneEnemyVisual visual = CreateVisual(source);
             Mesh mesh = HLStoneMesh.CreateMesh(1, HLStonePresets.Boulder);
-            GameObject other = new GameObject("HLOtherEffects");
-            HLStoneEffects second = other.AddComponent<HLStoneEffects>();
-            int baseline = HLStoneEffects.globalLiveCount;
             try
             {
-                visual.Initialize(null, 1, fx);
-                second.EmitThrownContact(Vector3.zero, 1);
-                int otherCount = second.liveCount;
+                visual.Init(null, 1, fx);
                 fx.EmitDetachedPart(mesh, null, Matrix4x4.identity, Vector3.zero, 0f, 1);
                 Mesh copy = go.GetComponentInChildren<MeshFilter>().sharedMesh;
                 fx.EmitThrownContact(Vector3.zero, 1);
@@ -80,7 +94,6 @@ namespace HealerLike.Render.Stones
                 TestHelpers.InvokePrivate(fx, "OnDisable");
                 Assert.AreEqual(0, fx.liveCount);
                 Assert.IsTrue(copy == null);
-                Assert.AreEqual(baseline + otherCount, HLStoneEffects.globalLiveCount);
                 foreach (MeshFilter filter in go.GetComponentsInChildren<MeshFilter>(true))
                 {
                     Assert.IsFalse(filter.gameObject.activeSelf);
@@ -107,40 +120,36 @@ namespace HealerLike.Render.Stones
                 fx.EmitThrownContact(Vector3.zero, 1);
                 Assert.Greater(fx.liveCount, 0);
                 Assert.AreEqual(pooled, go.transform.childCount);
-
-                TestHelpers.InvokePrivate(fx, "OnDestroy");
-                Object.DestroyImmediate(go);
-                Assert.AreEqual(baseline + otherCount, HLStoneEffects.globalLiveCount);
             }
             finally
             {
-                if (fx != null)
-                {
-                    TestHelpers.InvokePrivate(fx, "OnDestroy");
-                }
-                TestHelpers.InvokePrivate(second, "OnDestroy");
+                TestHelpers.InvokePrivate(visual, "OnDestroy");
+                TestHelpers.InvokePrivate(fx, "OnDestroy");
                 Object.DestroyImmediate(go);
                 Object.DestroyImmediate(source);
-                Object.DestroyImmediate(other);
                 Object.DestroyImmediate(mesh);
             }
-            Assert.AreEqual(baseline, HLStoneEffects.globalLiveCount);
         }
 
         [Test]
-        public void SceneLookupPreservesDisabledOwnerWithoutSpawning()
+        public void ImpactRaisesTheEventAndDisabledOwnerStaysSilent()
         {
-            UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-            HLStoneEffects fx = HLStoneEffects.ForScene(scene, null);
+            HLStoneEffects fx = CreateEffects();
+            int impacts = 0;
+            fx.OnImpactRecorded.AddListener(position => impacts++);
             try
             {
+                fx.RecordImpact(Vector3.zero, 1);
+                Assert.AreEqual(1, impacts);
+                Assert.AreEqual(5, fx.liveCount);
+
+                fx.Advance(1f);
                 fx.enabled = false;
                 TestHelpers.InvokePrivate(fx, "OnDisable");
-                Assert.AreSame(fx, HLStoneEffects.ForScene(fx.gameObject.scene, null));
-
+                fx.RecordImpact(Vector3.zero, 1);
                 fx.EmitThrownContact(Vector3.zero, 1);
+                Assert.AreEqual(1, impacts);
                 Assert.AreEqual(0, fx.liveCount);
-                Assert.AreEqual(0, fx.transform.childCount);
             }
             finally
             {
@@ -150,12 +159,10 @@ namespace HealerLike.Render.Stones
         }
 
         [Test]
-        public void HitCountsGlobalCapAndLifetime()
+        public void HitCountsCapAndLifetime()
         {
-            GameObject go = new GameObject("HLEffectsTest");
-            HLStoneEffects fx = go.AddComponent<HLStoneEffects>();
-            GameObject other = new GameObject("HLEffectsOther");
-            HLStoneEffects second = other.AddComponent<HLStoneEffects>();
+            HLStoneEffects fx = CreateEffects();
+            GameObject go = fx.gameObject;
             try
             {
                 HLStoneImpact impact = new HLStoneImpact(Vector3.up, Vector3.up, Vector3.zero, true);
@@ -170,31 +177,27 @@ namespace HealerLike.Render.Stones
 
                 for (uint i = 0; i < 40; i++)
                 {
-                    HLStoneEffects owner = i % 2 == 0 ? fx : second;
-                    owner.EmitHit(impact, true, i);
+                    fx.EmitHit(impact, true, i);
                 }
-                Assert.AreEqual(256, HLStoneEffects.globalLiveCount);
+                Assert.AreEqual(HLStoneEffects.MaxLiveFragments, fx.liveCount); // 41 * 14 fragments asked, 256 kept
 
                 fx.Advance(1f);
-                second.Advance(1f);
-                Assert.AreEqual(0, HLStoneEffects.globalLiveCount);
+                Assert.AreEqual(0, fx.liveCount);
                 Assert.AreEqual(0, go.GetComponentsInChildren<Collider>().Length);
                 Assert.AreEqual(0, go.GetComponentsInChildren<Rigidbody>().Length);
             }
             finally
             {
                 TestHelpers.InvokePrivate(fx, "OnDestroy");
-                TestHelpers.InvokePrivate(second, "OnDestroy");
                 Object.DestroyImmediate(go);
-                Object.DestroyImmediate(other);
             }
         }
 
         [Test]
         public void DetachedCopySurvivesSourceReleaseAndSplitsIntoThree()
         {
-            GameObject go = new GameObject("HLEffectsTest");
-            HLStoneEffects fx = go.AddComponent<HLStoneEffects>();
+            HLStoneEffects fx = CreateEffects();
+            GameObject go = fx.gameObject;
             Mesh mesh = HLStoneMesh.CreateMesh(1, HLStonePresets.Boulder);
             try
             {
@@ -219,6 +222,31 @@ namespace HealerLike.Render.Stones
                 }
                 TestHelpers.InvokePrivate(fx, "OnDestroy");
                 Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void ShardComesFromThePoolAndGoesBack()
+        {
+            HLStoneEffects fx = CreateEffects();
+            Mesh mesh = HLStoneMesh.CreateMesh(1, HLStonePresets.Boulder);
+            try
+            {
+                Transform shard = fx.TakeShard(mesh, Color.white);
+                Assert.IsTrue(shard.gameObject.activeSelf);
+                Assert.AreSame(mesh, shard.GetComponent<MeshFilter>().sharedMesh);
+                Assert.AreEqual(0, fx.liveCount);
+
+                fx.ReturnShard(shard);
+                Assert.IsFalse(shard.gameObject.activeSelf);
+                fx.EmitTrickle(Vector3.zero, 1);
+                Assert.AreEqual(1, fx.transform.childCount);
+            }
+            finally
+            {
+                TestHelpers.InvokePrivate(fx, "OnDestroy");
+                Object.DestroyImmediate(fx.gameObject);
+                Object.DestroyImmediate(mesh);
             }
         }
 

@@ -20,7 +20,11 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            GameObject target = data.attackable?.owner;
+            GameObject target = null;
+            if (data.attackable != null)
+            {
+                target = data.attackable.owner;
+            }
             if (target == null)
             {
                 target = data.target;

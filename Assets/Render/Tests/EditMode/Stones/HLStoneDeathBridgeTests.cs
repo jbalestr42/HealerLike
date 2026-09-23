@@ -1,24 +1,42 @@
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Stones
 {
     public class HLStoneDeathBridgeTests
     {
+        static HLStoneEffects CreateEffects()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
+            return Object.Instantiate(prefab).GetComponent<HLStoneEffects>();
+        }
+
+        static HLStoneEnemyVisual CreateVisual(GameObject target)
+        {
+            Transform pivot = new GameObject("BodyPivot").transform;
+            pivot.SetParent(target.transform, false);
+            Transform presentation = new GameObject("HLStonePresentation").transform;
+            presentation.SetParent(pivot, false);
+            HLStoneEnemyVisual visual = target.AddComponent<HLStoneEnemyVisual>();
+            TestHelpers.SetPrivateField(visual, "_bodyPivot", pivot);
+            TestHelpers.SetPrivateField(visual, "_presentation", presentation);
+            return visual;
+        }
+
         [Test]
         public void LivingRemovalDoesNothingAndLethalDepartureCollapsesSynchronouslyOnce()
         {
             HLStoneEnemyVisual visual = null;
-            HLStoneEffects fx = null;
+            HLStoneEffects fx = CreateEffects();
             GameObject target = new GameObject("HLTarget");
-            GameObject effectsObject = new GameObject("HLEffects");
+            GameObject effectsObject = fx.gameObject;
             GameObject bridgeObject = new GameObject("HLBridge");
             try
             {
                 ResourceAttribute health = TestHelpers.CreateResourceAttribute(target, AttributeType.HealthMax, 100);
-                visual = target.AddComponent<HLStoneEnemyVisual>();
-                fx = effectsObject.AddComponent<HLStoneEffects>();
-                visual.Initialize(health, 1, fx);
+                visual = CreateVisual(target);
+                visual.Init(health, 1, fx);
                 HLStoneDeathBridge bridge = bridgeObject.AddComponent<HLStoneDeathBridge>();
                 bridge.Bind(null, fx);
 
@@ -32,7 +50,7 @@ namespace HealerLike.Render.Stones
                 bridge.HandleDeparture(health, visual);
                 Assert.AreEqual(17, fx.liveCount);
 
-                visual.Initialize(health, 1, fx);
+                visual.Init(health, 1, fx);
                 bridge.enabled = false;
                 bridge.HandleDeparture(health, visual);
                 Assert.AreEqual(17, fx.liveCount);
@@ -43,10 +61,7 @@ namespace HealerLike.Render.Stones
                 {
                     TestHelpers.InvokePrivate(visual, "OnDestroy");
                 }
-                if (fx != null)
-                {
-                    TestHelpers.InvokePrivate(fx, "OnDestroy");
-                }
+                TestHelpers.InvokePrivate(fx, "OnDestroy");
                 Object.DestroyImmediate(bridgeObject);
                 Object.DestroyImmediate(target);
                 Object.DestroyImmediate(effectsObject);

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,28 +7,24 @@ namespace HealerLike.Render.Stones
     {
         public static readonly int GeneratorVersion = 1;
 
-        public static void Validate(in HLStoneSettings settings)
+        public static bool IsValid(HLStoneSettings settings)
         {
-            Range(settings.size, 0.02f, 8f, nameof(settings.size));
-            Range(settings.elongation, 0.25f, 5f, nameof(settings.elongation));
-            Range(settings.depthRatio, 0.25f, 2f, nameof(settings.depthRatio));
-            Range(settings.roughness, 0f, 0.18f, nameof(settings.roughness));
-            TriangleCount(settings.subdivisions);
+            return InRange(settings.size, 0.02f, 8f) && InRange(settings.elongation, 0.25f, 5f)
+                && InRange(settings.depthRatio, 0.25f, 2f) && InRange(settings.roughness, 0f, 0.18f)
+                && settings.subdivisions >= 0 && settings.subdivisions <= 2;
         }
 
-        static void Range(float value, float min, float max, string name)
+        static bool InRange(float value, float min, float max)
         {
-            if (float.IsNaN(value) || float.IsInfinity(value) || value < min || value > max)
-            {
-                throw new ArgumentOutOfRangeException(name);
-            }
+            return float.IsFinite(value) && value >= min && value <= max;
         }
 
         public static int TriangleCount(int subdivisions)
         {
             if (subdivisions < 0 || subdivisions > 2)
             {
-                throw new ArgumentOutOfRangeException(nameof(subdivisions));
+                Debug.LogError($"[HLStoneMesh] Subdivisions must be 0, 1 or 2, not {subdivisions}.");
+                return 0;
             }
             return 20 << (subdivisions * 2);
         }
@@ -39,9 +34,25 @@ namespace HealerLike.Render.Stones
             return TriangleCount(subdivisions) * 3;
         }
 
-        public static HLStoneMeshData Generate(uint seed, in HLStoneSettings settings)
+        // Logs and returns empty data when the settings are out of range
+        public static HLStoneMeshData Generate(uint seed, HLStoneSettings settings)
         {
-            Validate(settings);
+            HLStoneMeshData data;
+            if (!TryGenerate(seed, settings, out data))
+            {
+                Debug.LogError($"[HLStoneMesh] No stone for seed {seed}, the settings are out of range.");
+            }
+            return data;
+        }
+
+        public static bool TryGenerate(uint seed, HLStoneSettings settings, out HLStoneMeshData data)
+        {
+            data = default;
+            if (!IsValid(settings))
+            {
+                return false;
+            }
+
             float t = (1f + Mathf.Sqrt(5f)) * 0.5f;
             List<Vector3> points = new List<Vector3>
             {
@@ -108,7 +119,7 @@ namespace HealerLike.Render.Stones
                 }
                 if (attempt > 5)
                 {
-                    throw new InvalidOperationException("Invalid stone template");
+                    return false;
                 }
             }
 
@@ -134,7 +145,7 @@ namespace HealerLike.Render.Stones
                 if (!(cross.sqrMagnitude > 0f) || !float.IsFinite(cross.sqrMagnitude)
                     || Vector3.Dot(cross, a + b + c) <= 0f)
                 {
-                    throw new InvalidOperationException("Degenerate scaled stone face");
+                    return false;
                 }
 
                 Vector3 normal = cross / Mathf.Sqrt(cross.sqrMagnitude);
@@ -146,7 +157,8 @@ namespace HealerLike.Render.Stones
                     bounds.Encapsulate(vertices[i + j]);
                 }
             }
-            return new HLStoneMeshData(vertices, normals, indices, bounds, displaced, faces.ToArray());
+            data = new HLStoneMeshData(vertices, normals, indices, bounds, displaced, faces.ToArray());
+            return true;
         }
 
         static int Midpoint(int a, int b, List<Vector3> points, Dictionary<ulong, int> cache)
@@ -179,12 +191,18 @@ namespace HealerLike.Render.Stones
             return true;
         }
 
-        public static Mesh CreateMesh(uint seed, in HLStoneSettings settings)
+        public static Mesh CreateMesh(uint seed, HLStoneSettings settings)
         {
-            return CreateMesh(Generate(seed, settings));
+            HLStoneMeshData data;
+            if (!TryGenerate(seed, settings, out data))
+            {
+                Debug.LogError($"[HLStoneMesh] No stone mesh for seed {seed}, the settings are out of range.");
+                return null;
+            }
+            return CreateMesh(data);
         }
 
-        public static Mesh CreateMesh(in HLStoneMeshData data)
+        public static Mesh CreateMesh(HLStoneMeshData data)
         {
             Mesh mesh = new Mesh { name = "HLStone" };
             mesh.vertices = data.vertices;

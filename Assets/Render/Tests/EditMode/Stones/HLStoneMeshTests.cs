@@ -1,5 +1,7 @@
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Stones
 {
@@ -152,20 +154,27 @@ namespace HealerLike.Render.Stones
         {
             HLStoneSettings settings = HLStonePresets.Boulder;
             settings.size = float.NaN;
-            Assert.Throws<System.ArgumentOutOfRangeException>(() => HLStoneMesh.Generate(0, settings));
+            LogAssert.Expect(LogType.Error, new Regex(@"\[HLStoneMesh\] No stone"));
+            Assert.IsNull(HLStoneMesh.Generate(0, settings).vertices);
 
             settings = HLStonePresets.Boulder;
             settings.elongation = 0f;
-            Assert.Throws<System.ArgumentOutOfRangeException>(() => HLStoneMesh.Generate(0, settings));
+            LogAssert.Expect(LogType.Error, new Regex(@"\[HLStoneMesh\] No stone"));
+            Assert.IsNull(HLStoneMesh.Generate(0, settings).vertices);
 
             settings = HLStonePresets.Boulder;
             settings.depthRatio = 3f;
-            Assert.Throws<System.ArgumentOutOfRangeException>(() => HLStoneMesh.Generate(0, settings));
+            LogAssert.Expect(LogType.Error, new Regex(@"\[HLStoneMesh\] No stone"));
+            Assert.IsNull(HLStoneMesh.Generate(0, settings).vertices);
 
             settings = HLStonePresets.Boulder;
             settings.roughness = 0.19f;
-            Assert.Throws<System.ArgumentOutOfRangeException>(() => HLStoneMesh.Generate(0, settings));
-            Assert.Throws<System.ArgumentOutOfRangeException>(() => HLStoneMesh.VertexCount(3));
+            Assert.IsFalse(HLStoneMesh.TryGenerate(0, settings, out HLStoneMeshData rejected));
+            Assert.IsNull(rejected.vertices);
+            LogAssert.Expect(LogType.Error, new Regex(@"\[HLStoneMesh\] No stone mesh"));
+            Assert.IsNull(HLStoneMesh.CreateMesh(0, settings));
+            LogAssert.Expect(LogType.Error, new Regex(@"\[HLStoneMesh\] Subdivisions"));
+            Assert.AreEqual(0, HLStoneMesh.VertexCount(3));
 
             HLStoneMeshData data = HLStoneMesh.Generate(8, HLStonePresets.Boulder);
             Mesh mesh = HLStoneMesh.CreateMesh(data);

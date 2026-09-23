@@ -8,6 +8,7 @@ namespace HealerLike.Render.Stones
     {
         HLStoneLifeState _state = new HLStoneLifeState();
         HLStoneEffects _effects;
+        HLZoneRegistry _zones;
         Transform _top;
         Quaternion _rest;
         float _wobbleAge = 2f;
@@ -17,12 +18,15 @@ namespace HealerLike.Render.Stones
         bool _isTerrain;
         bool _isSubscribed;
 
-        public void Configure(HLStoneEffects owner, uint visualSeed, float footprint, bool isTerrain,
+        // Zones are read only by terrain stones, which puff dust under hostile pulses
+        public void Init(HLStoneEffects effects, HLZoneRegistry zones, uint visualSeed, float footprint, bool isTerrain,
             Transform cairnTop = null)
         {
+            Unsubscribe();
             Restore();
             _state = new HLStoneLifeState();
-            _effects = owner;
+            _effects = effects;
+            _zones = zones;
             _seed = visualSeed;
             _index = 0;
             _radius = footprint;
@@ -35,13 +39,22 @@ namespace HealerLike.Render.Stones
 
         void Subscribe()
         {
-            if (_isSubscribed)
+            if (_isSubscribed || _effects == null)
             {
                 return;
             }
 
-            HLStoneEffects.ImpactRecorded += OnImpact;
+            _effects.OnImpactRecorded.AddListener(OnImpact);
             _isSubscribed = true;
+        }
+
+        void Unsubscribe()
+        {
+            if (_isSubscribed && _effects != null)
+            {
+                _effects.OnImpactRecorded.RemoveListener(OnImpact);
+            }
+            _isSubscribed = false;
         }
 
         void OnEnable()
@@ -51,11 +64,7 @@ namespace HealerLike.Render.Stones
 
         void OnDisable()
         {
-            if (_isSubscribed)
-            {
-                HLStoneEffects.ImpactRecorded -= OnImpact;
-            }
-            _isSubscribed = false;
+            Unsubscribe();
             Restore();
             _wobbleAge = 2f;
         }
@@ -81,20 +90,11 @@ namespace HealerLike.Render.Stones
             }
         }
 
-        HLStoneEffects Effects()
-        {
-            if (_effects == null && Application.isPlaying)
-            {
-                _effects = HLStoneEffects.ForScene(gameObject.scene, null);
-            }
-            return _effects;
-        }
-
         public void PollHealth(float fraction, float dt, Vector3 origin)
         {
-            if (isActiveAndEnabled && _state.PollHealth(fraction, dt))
+            if (isActiveAndEnabled && _state.PollHealth(fraction, dt) && _effects != null)
             {
-                Effects()?.EmitTrickle(origin, _seed + ++_index);
+                _effects.EmitTrickle(origin, _seed + ++_index);
             }
         }
 
@@ -119,12 +119,16 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            HLZoneRegistry registry = HLZoneRegistry.current;
-            ReadOnlySpan<HLZone> snapshot = registry != null ? registry.snapshot : default;
+            ReadOnlySpan<HLZone> snapshot = _zones != null ? _zones.snapshot : default;
             int pulses = _state.PollZones(snapshot, transform.position, _radius);
+            if (_effects == null)
+            {
+                return;
+            }
+
             for (int i = 0; i < pulses; i++)
             {
-                Effects()?.EmitDust(transform.position + Vector3.up * 0.1f, _seed + ++_index);
+                _effects.EmitDust(transform.position + Vector3.up * 0.1f, _seed + ++_index);
             }
         }
 
