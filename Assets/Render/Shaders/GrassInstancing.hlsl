@@ -38,25 +38,19 @@ StructuredBuffer<uint> _HL_VisibleBladeIDs;
 float4 _HL_DarkGreen;
 float4 _HL_MidGreen;
 float4 _HL_LightGreen;
+float4 _HL_TipGreen;
 float4 _HL_HealColor;
 float4 _HL_SlateColor;
 float _HL_BladeHeightScale;
 
-// One flat colour per blade, like a plant part: a green picked by the patch lane,
-// leaning toward the heal colour when healed and turning slate as the spike rises
-float3 HLGrassColor(HLBladeSeed seed, HLBladeState state)
+// One flat colour per tuft, like a plant part: a green between the three picked by the soft patch lane,
+// the tip green on the tip band, then the heal colour when healed and the slate as the spike rises
+float3 HLGrassColor(HLBladeSeed seed, HLBladeState state, float tip)
 {
-    float patch = seed.heightPhaseWidthRandom.w;
-    float3 color = _HL_MidGreen.rgb;
-    if (patch < 0.3333)
-    {
-        color = _HL_DarkGreen.rgb;
-    }
-    else if (patch >= 0.6667)
-    {
-        color = _HL_LightGreen.rgb;
-    }
-
+    float patch = saturate(seed.heightPhaseWidthRandom.w);
+    float3 color = lerp(_HL_DarkGreen.rgb, _HL_MidGreen.rgb, saturate(2.0 * patch));
+    color = lerp(color, _HL_LightGreen.rgb, saturate(2.0 * patch - 1.0));
+    color = lerp(color, _HL_TipGreen.rgb, tip);
     color = lerp(color, _HL_HealColor.rgb, 0.72 * state.rampHealReserved.y);
     return lerp(color, _HL_SlateColor.rgb, saturate(2.0 * state.leanHeightSpike.w));
 }
@@ -79,10 +73,10 @@ float3 HLYawGrassTuft(float3 v, float yaw)
     return float3(v.x * c + v.z * s, v.y, v.z * c - v.x * s);
 }
 
-// positionOS and normalOS are the unit tuft of GrassTuft: base on y 0, main tip at y 1, main width 1.
-// The tuft moves as a rigid body: scale, yaw, one tilt about its root, then the root position.
-// GrassTuft.Place and PlaceNormal mirror this on the CPU.
-HLGrassPlacement HLPlaceGrassBlade(float3 positionOS, float3 normalOS, uint instanceID)
+// positionOS and normalOS are the unit tuft of GrassTuft: base on y 0, tip at y 1, base width 1;
+// tip is its vertex colour red, 1 on the tip band. The tuft moves as a rigid body: scale, yaw,
+// one tilt about its root, then the root position. GrassTuft.Place and PlaceNormal mirror this on the CPU.
+HLGrassPlacement HLPlaceGrassBlade(float3 positionOS, float3 normalOS, float tip, uint instanceID)
 {
     InitIndirectDrawArgs(0);
     uint bladeID = _HL_VisibleBladeIDs[GetIndirectInstanceID(instanceID)];
@@ -103,7 +97,7 @@ HLGrassPlacement HLPlaceGrassBlade(float3 positionOS, float3 normalOS, uint inst
     HLGrassPlacement tuft;
     tuft.positionWS = seed.positionYaw.xyz + HLTiltGrassTuft(HLYawGrassTuft(scaledPosition, yaw), lean);
     tuft.normalWS = normalize(HLTiltGrassTuft(HLYawGrassTuft(scaledNormal, yaw), lean));
-    tuft.color = HLGrassColor(seed, state);
+    tuft.color = HLGrassColor(seed, state, tip);
     return tuft;
 }
 #endif

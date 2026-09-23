@@ -125,7 +125,7 @@ public class GrassTuftTests
     {
         Dictionary<string, int> edges = CountEdges(_mesh);
 
-        Assert.AreEqual(GrassTuft.BodyCount * GrassTuft.IndicesPerBody, _mesh.triangles.Length);
+        Assert.AreEqual(GrassTuft.IndexCount, _mesh.triangles.Length);
         foreach (KeyValuePair<string, int> edge in edges)
         {
             Assert.AreEqual(2, edge.Value, edge.Key);
@@ -133,28 +133,40 @@ public class GrassTuftTests
     }
 
     [Test]
-    public void CreateMesh_FacetNormals_PointOutOfEachBody()
+    public void CreateMesh_FacetNormals_PointOutOfTheBody()
     {
         Vector3[] vertices = _mesh.vertices;
         Vector3[] normals = _mesh.normals;
         int[] triangles = _mesh.triangles;
+        Vector3 inside = new Vector3(0f, 0.3f, 0f);
 
-        // Each body is 18 indices; its centroid is inside it, so every facet faces away from it
-        for (int body = 0; body < GrassTuft.BodyCount; body++)
+        // The spike is convex, so every facet faces away from a point on its axis
+        for (int i = 0; i < triangles.Length; i += 3)
         {
-            int start = body * GrassTuft.IndicesPerBody;
-            Vector3 centroid = Vector3.zero;
-            for (int i = start; i < start + GrassTuft.IndicesPerBody; i++)
-            {
-                centroid += vertices[triangles[i]] / GrassTuft.IndicesPerBody;
-            }
+            Vector3 face = (vertices[triangles[i]] + vertices[triangles[i + 1]] + vertices[triangles[i + 2]]) / 3f;
+            Assert.Greater(Vector3.Dot(normals[triangles[i]], face - inside), 0f);
+        }
+    }
 
-            for (int i = start; i < start + GrassTuft.IndicesPerBody; i += 3)
+    [Test]
+    public void CreateMesh_TipBand_IsMarkedInVertexColourRed()
+    {
+        Vector3[] vertices = _mesh.vertices;
+        Color[] colors = _mesh.colors;
+        int tipVertices = 0;
+
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            if (colors[i].r > 0.5f)
             {
-                Vector3 face = (vertices[triangles[i]] + vertices[triangles[i + 1]] + vertices[triangles[i + 2]]) / 3f;
-                Assert.Greater(Vector3.Dot(normals[triangles[i]], face - centroid), 0f);
+                Assert.That(vertices[i].y, Is.GreaterThanOrEqualTo(GrassTuft.TipBand - 0.00001f));
+                tipVertices++;
             }
         }
+
+        Assert.AreEqual(12, tipVertices); // one tip triangle per side
+        Assert.AreEqual(1f, _mesh.bounds.max.y);
+        Assert.AreEqual(0f, _mesh.bounds.min.y);
     }
 
     [Test]

@@ -283,7 +283,7 @@ public class GrassFieldTests
         Assert.IsTrue(_field.bladeDraw.material.IsKeywordEnabled(GrassPalette.InstancedKeyword));
         uint[] data = new uint[5];
         _field.bladeDraw.arguments.GetData(data);
-        Assert.AreEqual((uint)(GrassTuft.BodyCount * GrassTuft.IndicesPerBody), data[0]); // one tuft of three capped pyramids
+        Assert.AreEqual((uint)GrassTuft.IndexCount, data[0]); // one tuft: faceted sides and base cap
         Assert.AreEqual(5, OwnedBuffers().Count); // seeds, states, visible ids, blade and ring arguments
         Assert.AreEqual(ShadowCastingMode.On, _field.bladeDraw.shadowCastingMode);
         Assert.AreEqual(ShadowCastingMode.Off, _field.ringDraw.shadowCastingMode);

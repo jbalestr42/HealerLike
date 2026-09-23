@@ -29,13 +29,13 @@ public class PrimitiveMeshBakerTests
     }
 
     [Test]
-    public void Bake_ShippedAsset_TuftHasThreeCappedPyramids()
+    public void Bake_ShippedAsset_TuftHasFourFacetedSidesAndACap()
     {
         PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesAssetPath);
 
         uint indexCount = meshes.tuft.GetIndexCount(0);
 
-        Assert.AreEqual(54u, indexCount); // 3 pyramids * (4 sides + 2 cap triangles) * 3
+        Assert.AreEqual(66u, indexCount); // (4 sides * 5 triangles + 2 cap triangles) * 3
     }
 }
 

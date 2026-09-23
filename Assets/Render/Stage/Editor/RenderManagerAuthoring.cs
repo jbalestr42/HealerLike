@@ -41,7 +41,6 @@ namespace HealerLike.Render.Stage
             EnvironmentAuthoring.SetGrass(grass);
             // The tufts are laid out at the reference size, the ring strips keep the same scale
             grass.bladeHeightScale = 1f;
-            grass.bladeBudget = GrassLayout.DefaultBudget;
 
             SpellVisualSink sink = Nest<SpellVisualSink>(SinkPath, root);
             StoneEffects stoneEffects = Nest<StoneEffects>(StoneEffectsPath, root);

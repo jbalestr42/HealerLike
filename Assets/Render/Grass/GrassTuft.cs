@@ -3,34 +3,48 @@ using UnityEngine;
 
 namespace HealerLike.Render.Grass
 {
-    // One grass tuft: three fused four-sided pyramids, each closed by its base cap.
-    // x and z are in tuft widths and y in tuft heights, the main body spans -0.5..0.5 and 0..1.
-    // Place mirrors HLPlaceGrassTuft in GrassInstancing.hlsl, a rigid transform with no bending.
+    // One grass tuft: a slender four-sided spike, widest a little above its base, closed by a base cap.
+    // x and z are in tuft widths and y in tuft heights: the base spans -0.5..0.5 and the tip is at y 1.
+    // Vertex colour red marks the tip band, the top fifth, which takes the palette tip green.
+    // Place mirrors HLPlaceGrassBlade in GrassInstancing.hlsl, a rigid transform with no bending.
     public static class GrassTuft
     {
-        public static readonly int BodyCount = 3;
-        public static readonly int IndicesPerBody = 18;
-
-        // Offset x, z, sink y, then width, height, tilt and spin in degrees, one row per body
-        static readonly float[,] bodies =
-        {
-            { 0f, -0.08f, 0f, 1f, 1f, 0f, 0f },
-            { 0.3f, 0.16f, -0.07f, 0.72f, 0.78f, 14f, 35f },
-            { -0.3f, 0.14f, -0.07f, 0.62f, 0.64f, 17f, 20f }
-        };
+        public static readonly int IndexCount = 66;
+        public static readonly float ShoulderHeight = 0.3f;
+        public static readonly float ShoulderWidth = 1.12f;
+        public static readonly float TipBand = 0.8f;
 
         public static Mesh CreateMesh()
         {
+            Vector3 apex = Vector3.up;
+            Vector3[] bases = new Vector3[4];
+            Vector3[] shoulders = new Vector3[4];
+            Vector3[] bands = new Vector3[4];
+            for (int i = 0; i < 4; i++)
+            {
+                // Corners in the order of FacetedMeshes.CreatePyramid, so the same winding faces out
+                float x = i == 1 || i == 2 ? 0.5f : -0.5f;
+                float z = i >= 2 ? 0.5f : -0.5f;
+                bases[i] = new Vector3(x, 0f, z);
+                shoulders[i] = new Vector3(x * ShoulderWidth, ShoulderHeight, z * ShoulderWidth);
+                bands[i] = Vector3.Lerp(shoulders[i], apex, (TipBand - ShoulderHeight) / (1f - ShoulderHeight));
+            }
+
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
-            for (int i = 0; i < BodyCount; i++)
+            List<Color> colors = new List<Color>();
+            for (int i = 0; i < 4; i++)
             {
-                Vector3 offset = new Vector3(bodies[i, 0], bodies[i, 2], bodies[i, 1]);
-                Vector2 outward = new Vector2(offset.x, offset.z).normalized;
-                Vector2 tilt = outward * (bodies[i, 5] * Mathf.Deg2Rad);
-                Quaternion rotation = Quaternion.AngleAxis(bodies[i, 6], Vector3.up);
-                AddPyramid(vertices, normals, offset, bodies[i, 3], bodies[i, 4], rotation, tilt);
+                int j = (i + 1) % 4;
+                AddTriangle(vertices, normals, colors, bases[i], shoulders[i], shoulders[j], 0f);
+                AddTriangle(vertices, normals, colors, bases[i], shoulders[j], bases[j], 0f);
+                AddTriangle(vertices, normals, colors, shoulders[i], bands[i], bands[j], 0f);
+                AddTriangle(vertices, normals, colors, shoulders[i], bands[j], shoulders[j], 0f);
+                AddTriangle(vertices, normals, colors, bands[i], apex, bands[j], 1f);
             }
+
+            AddTriangle(vertices, normals, colors, bases[0], bases[1], bases[2], 0f);
+            AddTriangle(vertices, normals, colors, bases[0], bases[2], bases[3], 0f);
 
             int[] triangles = new int[vertices.Count];
             for (int i = 0; i < triangles.Length; i++)
@@ -41,37 +55,24 @@ namespace HealerLike.Render.Grass
             Mesh mesh = new Mesh { name = "Tuft" };
             mesh.SetVertices(vertices);
             mesh.SetNormals(normals);
+            mesh.SetColors(colors);
             mesh.SetTriangles(triangles, 0);
             mesh.RecalculateBounds();
             return mesh;
         }
 
-        // Flat-shaded pyramid, sides then a two-triangle base cap, the winding of FacetedMeshes.CreatePyramid
-        static void AddPyramid(List<Vector3> vertices, List<Vector3> normals, Vector3 offset, float width, float height, Quaternion spin, Vector2 tilt)
+        // One flat-shaded facet; tip is 1 on the tip band and 0 elsewhere
+        static void AddTriangle(List<Vector3> vertices, List<Vector3> normals, List<Color> colors, Vector3 a, Vector3 b, Vector3 c, float tip)
         {
-            Vector3[] points =
+            Vector3 normal = Vector3.Cross(b - a, c - a).normalized;
+            Color color = new Color(tip, 0f, 0f, 1f);
+            vertices.Add(a);
+            vertices.Add(b);
+            vertices.Add(c);
+            for (int i = 0; i < 3; i++)
             {
-                new Vector3(-0.5f * width, 0f, -0.5f * width),
-                new Vector3(0.5f * width, 0f, -0.5f * width),
-                new Vector3(0.5f * width, 0f, 0.5f * width),
-                new Vector3(-0.5f * width, 0f, 0.5f * width),
-                new Vector3(0f, height, 0f)
-            };
-            for (int i = 0; i < points.Length; i++)
-            {
-                points[i] = Tilt(spin * points[i], tilt) + offset;
-            }
-
-            int[] faces = { 0, 4, 1, 1, 4, 2, 2, 4, 3, 3, 4, 0, 0, 1, 2, 0, 2, 3 };
-            for (int i = 0; i < faces.Length; i += 3)
-            {
-                Vector3 origin = points[faces[i]];
-                Vector3 normal = Vector3.Cross(points[faces[i + 1]] - origin, points[faces[i + 2]] - origin).normalized;
-                for (int j = 0; j < 3; j++)
-                {
-                    vertices.Add(points[faces[i + j]]);
-                    normals.Add(normal);
-                }
+                normals.Add(normal);
+                colors.Add(color);
             }
         }
 

@@ -8,7 +8,7 @@ namespace HealerLike.Render.Grass
 public class GrassPaletteTests
 {
     [Test]
-    public void GrassBladeMaterial_Asset_IsTheLookShaderWithGrassKeywordAndDepthEdgesOnly()
+    public void GrassBladeMaterial_Asset_IsTheLookShaderWithGrassKeywordDepthEdgesOnlyAndNoHatch()
     {
         Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat");
 
@@ -16,6 +16,7 @@ public class GrassPaletteTests
         Assert.IsTrue(material.IsKeywordEnabled(GrassPalette.InstancedKeyword));
         Assert.IsTrue(material.enableInstancing);
         Assert.AreEqual(0f, material.GetFloat("_HLNormalEdges"));
+        Assert.AreEqual(0f, material.GetFloat("_HLHatchMultiplier"));
     }
 
     [Test]
@@ -34,7 +35,7 @@ public class GrassPaletteTests
 
         new GrassPalette().Apply(properties);
 
-        foreach (string name in new[] { "_HL_DarkGreen", "_HL_MidGreen", "_HL_LightGreen", "_HL_HealColor", "_HL_SlateColor" })
+        foreach (string name in new[] { "_HL_DarkGreen", "_HL_MidGreen", "_HL_LightGreen", "_HL_TipGreen", "_HL_HealColor", "_HL_SlateColor" })
         {
             Assert.IsTrue(properties.HasVector(name), name);
         }

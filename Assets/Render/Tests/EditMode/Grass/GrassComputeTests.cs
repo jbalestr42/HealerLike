@@ -259,7 +259,7 @@ public class GrassComputeTests
         }
 
         Assert.That(largest, Is.InRange(0.05f, 0.3501f)); // 20 degrees
-        Assert.That(gustLargest, Is.InRange(largest, 0.5634f)); // 1.3 * 0.13 / 0.3 radians, about 32 degrees
+        Assert.That(gustLargest, Is.InRange(largest, 0.5201f)); // 4 * 0.13 radians, about 30 degrees
     }
 }
 
