@@ -3,21 +3,23 @@ using UnityEngine;
 
 namespace HealerLike.Render.Stones
 {
-    public class StoneAssemblyProfileTests
+
+public class StoneAssemblyProfileTests
+{
+    [Test]
+    public void ProfileKeepsDefaultSingleThreshold()
     {
-        [Test]
-        public void ProfileKeepsDefaultSingleThreshold()
+        StoneAssemblyProfile profile = ScriptableObject.CreateInstance<StoneAssemblyProfile>();
+        try
         {
-            StoneAssemblyProfile profile = ScriptableObject.CreateInstance<StoneAssemblyProfile>();
-            try
-            {
-                Assert.AreEqual(0.5f, profile.shedHealthFraction);
-                Assert.AreEqual(2, profile.detachablePartIndex);
-            }
-            finally
-            {
-                Object.DestroyImmediate(profile);
-            }
+            Assert.AreEqual(0.5f, profile.shedHealthFraction);
+            Assert.AreEqual(2, profile.detachablePartIndex);
+        }
+        finally
+        {
+            Object.DestroyImmediate(profile);
         }
     }
+}
+
 }

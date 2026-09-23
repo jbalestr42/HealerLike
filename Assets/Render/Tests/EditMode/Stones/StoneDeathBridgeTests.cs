@@ -4,68 +4,70 @@ using UnityEngine;
 
 namespace HealerLike.Render.Stones
 {
-    public class StoneDeathBridgeTests
+
+public class StoneDeathBridgeTests
+{
+    static StoneEffects CreateEffects()
     {
-        static StoneEffects CreateEffects()
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
+        return Object.Instantiate(prefab).GetComponent<StoneEffects>();
+    }
+
+    static StoneEnemyVisual CreateVisual(GameObject target)
+    {
+        Transform pivot = new GameObject("BodyPivot").transform;
+        pivot.SetParent(target.transform, false);
+        Transform presentation = new GameObject("StonePresentation").transform;
+        presentation.SetParent(pivot, false);
+        StoneEnemyVisual visual = target.AddComponent<StoneEnemyVisual>();
+        TestHelpers.SetPrivateField(visual, "_bodyPivot", pivot);
+        TestHelpers.SetPrivateField(visual, "_presentation", presentation);
+        return visual;
+    }
+
+    [Test]
+    public void LivingRemovalDoesNothingAndLethalDepartureCollapsesSynchronouslyOnce()
+    {
+        StoneEnemyVisual visual = null;
+        StoneEffects fx = CreateEffects();
+        GameObject target = new GameObject("Target");
+        GameObject effectsObject = fx.gameObject;
+        GameObject bridgeObject = new GameObject("Bridge");
+        try
         {
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
-            return Object.Instantiate(prefab).GetComponent<StoneEffects>();
+            ResourceAttribute health = TestHelpers.CreateResourceAttribute(target, AttributeType.HealthMax, 100);
+            visual = CreateVisual(target);
+            visual.Init(health, 1, fx);
+            StoneDeathBridge bridge = bridgeObject.AddComponent<StoneDeathBridge>();
+            bridge.Bind(null, fx);
+
+            bridge.HandleDeparture(health, visual);
+            Assert.AreEqual(0, fx.liveCount);
+
+            TestHelpers.SetPrivateField(health, "_value", 0f);
+            bridge.HandleDeparture(health, visual);
+            Assert.AreEqual(17, fx.liveCount);
+
+            bridge.HandleDeparture(health, visual);
+            Assert.AreEqual(17, fx.liveCount);
+
+            visual.Init(health, 1, fx);
+            bridge.enabled = false;
+            bridge.HandleDeparture(health, visual);
+            Assert.AreEqual(17, fx.liveCount);
         }
-
-        static StoneEnemyVisual CreateVisual(GameObject target)
+        finally
         {
-            Transform pivot = new GameObject("BodyPivot").transform;
-            pivot.SetParent(target.transform, false);
-            Transform presentation = new GameObject("StonePresentation").transform;
-            presentation.SetParent(pivot, false);
-            StoneEnemyVisual visual = target.AddComponent<StoneEnemyVisual>();
-            TestHelpers.SetPrivateField(visual, "_bodyPivot", pivot);
-            TestHelpers.SetPrivateField(visual, "_presentation", presentation);
-            return visual;
-        }
-
-        [Test]
-        public void LivingRemovalDoesNothingAndLethalDepartureCollapsesSynchronouslyOnce()
-        {
-            StoneEnemyVisual visual = null;
-            StoneEffects fx = CreateEffects();
-            GameObject target = new GameObject("Target");
-            GameObject effectsObject = fx.gameObject;
-            GameObject bridgeObject = new GameObject("Bridge");
-            try
+            if (visual != null)
             {
-                ResourceAttribute health = TestHelpers.CreateResourceAttribute(target, AttributeType.HealthMax, 100);
-                visual = CreateVisual(target);
-                visual.Init(health, 1, fx);
-                StoneDeathBridge bridge = bridgeObject.AddComponent<StoneDeathBridge>();
-                bridge.Bind(null, fx);
-
-                bridge.HandleDeparture(health, visual);
-                Assert.AreEqual(0, fx.liveCount);
-
-                TestHelpers.SetPrivateField(health, "_value", 0f);
-                bridge.HandleDeparture(health, visual);
-                Assert.AreEqual(17, fx.liveCount);
-
-                bridge.HandleDeparture(health, visual);
-                Assert.AreEqual(17, fx.liveCount);
-
-                visual.Init(health, 1, fx);
-                bridge.enabled = false;
-                bridge.HandleDeparture(health, visual);
-                Assert.AreEqual(17, fx.liveCount);
+                TestHelpers.InvokePrivate(visual, "OnDestroy");
             }
-            finally
-            {
-                if (visual != null)
-                {
-                    TestHelpers.InvokePrivate(visual, "OnDestroy");
-                }
-                TestHelpers.InvokePrivate(fx, "OnDestroy");
-                Object.DestroyImmediate(bridgeObject);
-                Object.DestroyImmediate(target);
-                Object.DestroyImmediate(effectsObject);
-            }
+            TestHelpers.InvokePrivate(fx, "OnDestroy");
+            Object.DestroyImmediate(bridgeObject);
+            Object.DestroyImmediate(target);
+            Object.DestroyImmediate(effectsObject);
         }
     }
+}
+
 }
