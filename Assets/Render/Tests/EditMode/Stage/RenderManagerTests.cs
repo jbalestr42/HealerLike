@@ -16,8 +16,10 @@ public class RenderManagerTests
     GameObject _managerGo;
     GameObject _gameGo;
     GameObject _cameraGo;
+    GameObject _createdCameraGo;
     GameObject _sunGo;
     GameObject _decorationGo;
+    GameObject _otherDecorationGo;
     RenderManager _manager;
     EntityManager _entityManager;
     PlayerBehaviour _player;
@@ -52,13 +54,17 @@ public class RenderManagerTests
 
         _managerGo = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath));
         _manager = _managerGo.GetComponent<RenderManager>();
-        _cameraGo = new GameObject("Main Camera");
-        _cameraGo.tag = "MainCamera";
-        _cameraGo.AddComponent<Camera>();
+        // The test scene may already hold a main camera, the manager adopts whichever Camera.main returns
+        _createdCameraGo = new GameObject("Main Camera");
+        _createdCameraGo.tag = "MainCamera";
+        _createdCameraGo.AddComponent<Camera>();
+        _cameraGo = Camera.main.gameObject;
         _sunGo = new GameObject("Directional Light");
         _sunGo.AddComponent<Light>().type = LightType.Directional;
         _decorationGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         _decorationGo.name = "MiddleLine";
+        _otherDecorationGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        _otherDecorationGo.name = "Sphere";
 
         _gameGo = new GameObject("Game");
         _entityManager = _gameGo.AddComponent<EntityManager>();
@@ -77,7 +83,8 @@ public class RenderManagerTests
         RenderSettings.ambientMode = _previousAmbient;
         Object.DestroyImmediate(_managerGo);
         Object.DestroyImmediate(_gameGo);
-        Object.DestroyImmediate(_cameraGo);
+        Object.DestroyImmediate(_createdCameraGo);
+        Object.DestroyImmediate(_otherDecorationGo);
         Object.DestroyImmediate(_sunGo);
         Object.DestroyImmediate(_decorationGo);
     }
