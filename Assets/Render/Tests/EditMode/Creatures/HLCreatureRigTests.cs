@@ -1,5 +1,7 @@
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Creatures
 {
@@ -10,6 +12,13 @@ namespace HealerLike.Render.Creatures
         HLCreatureRecipe _recipe;
         HLCreatureRig _rig;
 
+        public static HLCreatureRig CreateRig(HLCreatureRecipe recipe, Transform parent, Material material)
+        {
+            HLCreatureRig rig = new HLCreatureRig();
+            rig.Init(recipe, parent, material, HLPrimitiveMeshesTests.Meshes());
+            return rig;
+        }
+
         [SetUp]
         public void Setup()
         {
@@ -17,7 +26,7 @@ namespace HealerLike.Render.Creatures
             _material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             _recipe = HLCreatureValidatorTests.Recipe();
             _recipe.idle = default;
-            _rig = HLCreatureRig.Build(_recipe, _parent.transform, _material);
+            _rig = CreateRig(_recipe, _parent.transform, _material);
         }
 
         [TearDown]
@@ -27,7 +36,6 @@ namespace HealerLike.Render.Creatures
             Object.DestroyImmediate(_parent);
             Object.DestroyImmediate(_material);
             Object.DestroyImmediate(_recipe);
-            HLPrimitiveMeshes.ReleaseAll();
         }
 
         [Test]
@@ -39,7 +47,7 @@ namespace HealerLike.Render.Creatures
             Material material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             try
             {
-                using (HLCreatureRig body = HLCreatureRig.Build(data, host.transform, material))
+                using (HLCreatureRig body = CreateRig(data, host.transform, material))
                 {
                     body.Tick(0f, 0f, new HLFootFrame(Vector3.zero, Vector3.up, 1f));
                     Vector3 target = new Vector3(2f, 1.3f, 0f);
@@ -57,25 +65,25 @@ namespace HealerLike.Render.Creatures
             {
                 Object.DestroyImmediate(host);
                 Object.DestroyImmediate(material);
-                HLPrimitiveMeshes.ReleaseAll();
             }
         }
 
         [Test]
-        public void LastRigReleasesSharedMeshesEvenWhenParentWasDestroyed()
+        public void Tick_LiveProjectile_ArmFollowsWithoutObserverPush()
         {
-            HLCreatureRig other = HLCreatureRig.Build(_recipe, _parent.transform, _material);
-            Mesh mesh = _rig.root.GetComponentInChildren<MeshFilter>().sharedMesh;
-            Assert.AreSame(mesh, other.root.GetComponentInChildren<MeshFilter>().sharedMesh);
+            GameObject projectile = new GameObject("HLProjectile");
+            projectile.transform.position = new Vector3(1f, 1f, 0f);
+            HLFootFrame frame = new HLFootFrame(Vector3.zero, Vector3.up, 1f);
+            Assert.IsTrue(_rig.BeginDelivery(7, HLDeliveryStyle.Direct, projectile.transform, Vector3.one));
+            _rig.Tick(0f, 0.2f, frame);
 
-            _rig.Dispose();
-            _rig.Dispose();
-            Assert.IsTrue(mesh);
-            Object.DestroyImmediate(_parent);
-            other.Dispose();
-            other.Dispose();
+            projectile.transform.position = new Vector3(2f, 1f, 0f);
+            _rig.Tick(0.2f, 0.016f, frame);
 
-            Assert.IsFalse(mesh);
+            FieldInfo field = typeof(HLCreatureRig).GetField("_arms", BindingFlags.Instance | BindingFlags.NonPublic);
+            HLLianaArm[] arms = (HLLianaArm[])field.GetValue(_rig);
+            Assert.That(Vector3.Distance(arms[0].goal, projectile.transform.position), Is.LessThan(0.00001f));
+            Object.DestroyImmediate(projectile);
         }
 
         [Test]
@@ -84,7 +92,7 @@ namespace HealerLike.Render.Creatures
             _rig.Dispose();
             _recipe.parts[0].glow = 2f;
             _recipe.parts[0].colour = new Color(0.2f, 0.4f, 0.1f, 0.7f);
-            _rig = HLCreatureRig.Build(_recipe, _parent.transform, _material);
+            _rig = CreateRig(_recipe, _parent.transform, _material);
             Renderer renderer = _rig.root.GetComponentInChildren<Renderer>();
             MaterialPropertyBlock block = new MaterialPropertyBlock();
             renderer.GetPropertyBlock(block);
@@ -105,7 +113,7 @@ namespace HealerLike.Render.Creatures
         {
             _rig.Dispose();
             _recipe.parts[0].glow = 1f;
-            _rig = HLCreatureRig.Build(_recipe, _parent.transform, _material);
+            _rig = CreateRig(_recipe, _parent.transform, _material);
             Renderer renderer = _rig.root.GetComponentInChildren<Renderer>();
             MaterialPropertyBlock block = new MaterialPropertyBlock();
             HLFootFrame frame = new HLFootFrame(Vector3.zero, Vector3.up, 1f);
@@ -197,7 +205,7 @@ namespace HealerLike.Render.Creatures
             _recipe.parts = new HLPart[] { _recipe.parts[0], child };
             _recipe.parts[0].dimensions = Vector3.one * 3f;
 
-            _rig = HLCreatureRig.Build(_recipe, _parent.transform, _material);
+            _rig = CreateRig(_recipe, _parent.transform, _material);
 
             Transform pivot = _rig.root.Find("HLSway/HLBody/HLChild");
             Assert.AreEqual(Vector3.up, pivot.localPosition);
@@ -222,11 +230,16 @@ namespace HealerLike.Render.Creatures
         }
 
         [Test]
-        public void NonuniformAncestorsAreRejected()
+        public void Init_NonuniformAncestors_LogsAndLeavesViewEmpty()
         {
             _parent.transform.localScale = new Vector3(1f, 2f, 1f);
+            HLCreatureRig rig = new HLCreatureRig();
+            LogAssert.Expect(LogType.Error, "[HLCreatureRig] Creature rig ancestors must have positive uniform scale.");
 
-            Assert.Throws<System.ArgumentException>(() => HLCreatureRig.Build(_recipe, _parent.transform, _material));
+            bool isInitialized = rig.Init(_recipe, _parent.transform, _material, HLPrimitiveMeshesTests.Meshes());
+
+            Assert.IsFalse(isInitialized);
+            Assert.IsNull(rig.root);
         }
 
         [Test]

@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Creatures
 {
@@ -8,11 +9,19 @@ namespace HealerLike.Render.Creatures
         HLCreatureRecipe _recipe;
         HLLianaArm _arm;
 
+        public static HLLianaArm CreateArm(HLArmDefinition definition, Transform parent = null,
+            Material material = null)
+        {
+            HLLianaArm arm = new HLLianaArm();
+            arm.Init(definition, parent, material, HLPrimitiveMeshesTests.Meshes());
+            return arm;
+        }
+
         [SetUp]
         public void Setup()
         {
             _recipe = HLCreatureValidatorTests.Recipe();
-            _arm = new HLLianaArm(_recipe.arms[0], null, null);
+            _arm = CreateArm(_recipe.arms[0]);
             _arm.Tick(0f, Vector3.zero, Quaternion.identity);
         }
 
@@ -38,7 +47,7 @@ namespace HealerLike.Render.Creatures
             HLCreatureRecipe authored = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
             GameObject parent = new GameObject("HLArmFixture");
             Material material = new Material(Shader.Find("HL/Look/Primitive"));
-            HLLianaArm rendered = new HLLianaArm(authored.arms[0], parent.transform, material);
+            HLLianaArm rendered = CreateArm(authored.arms[0], parent.transform, material);
             Mesh mesh = null;
             try
             {
@@ -56,7 +65,8 @@ namespace HealerLike.Render.Creatures
                 Assert.That(Vector3.Distance(rendered.tipMatrix.GetColumn(3), rendered.tip), Is.LessThan(0.00001f));
                 for (int i = 0; i < 5; i++)
                 {
-                    Assert.IsTrue(HLChainSolver.Finite(rendered.LeafMatrix(i).GetColumn(3)));
+                    Vector4 leaf = rendered.LeafMatrix(i).GetColumn(3);
+                    Assert.IsTrue(float.IsFinite(leaf.x) && float.IsFinite(leaf.y) && float.IsFinite(leaf.z));
                 }
 
                 for (int i = 0; i < 10; i++)
@@ -75,7 +85,7 @@ namespace HealerLike.Render.Creatures
                 Assert.Greater(mesh.vertexCount, 0);
                 foreach (Vector3 vertex in mesh.vertices)
                 {
-                    Assert.IsTrue(HLChainSolver.Finite(vertex));
+                    Assert.IsTrue(float.IsFinite(vertex.x) && float.IsFinite(vertex.y) && float.IsFinite(vertex.z));
                 }
 
                 Assert.That(Vector3.Distance(rendered.tip, Vector3.one), Is.LessThan(0.001f));
@@ -107,7 +117,7 @@ namespace HealerLike.Render.Creatures
             HLCreatureRecipe authored = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
             GameObject parent = new GameObject("HLArmFixture");
             Material material = new Material(Shader.Find("HL/Look/Primitive"));
-            HLLianaArm rendered = new HLLianaArm(authored.arms[0], parent.transform, material);
+            HLLianaArm rendered = CreateArm(authored.arms[0], parent.transform, material);
             try
             {
                 Mesh mesh = parent.GetComponentInChildren<MeshFilter>().sharedMesh;
@@ -186,6 +196,42 @@ namespace HealerLike.Render.Creatures
 
             Assert.AreEqual(HLGesturePhase.Contact, _arm.phase);
             Assert.Less(Vector3.Distance(_arm.tip, Vector3.one), 0.001f);
+        }
+
+        [Test]
+        public void Init_MismatchedRestJoints_LogsAndReturnsFalse()
+        {
+            HLArmDefinition definition = _recipe.arms[0];
+            definition.restJoints = new Vector3[3];
+            HLLianaArm arm = new HLLianaArm();
+            LogAssert.Expect(LogType.Error, "[HLLianaArm] Invalid arm definition.");
+
+            bool isInitialized = arm.Init(definition, null, null, HLPrimitiveMeshesTests.Meshes());
+
+            Assert.IsFalse(isInitialized);
+        }
+
+        [Test]
+        public void Tick_NonfiniteGoal_HidesChainAndLogsOnce()
+        {
+            string path = "Assets/Render/Creatures/Data/HLHealer.asset";
+            HLCreatureRecipe authored = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
+            GameObject parent = new GameObject("HLArmFixture");
+            Material material = new Material(Shader.Find("HL/Look/Primitive"));
+            HLLianaArm rendered = CreateArm(authored.arms[0], parent.transform, material);
+            Renderer renderer = parent.GetComponentInChildren<Renderer>(true);
+            rendered.Begin(1, HLGestureKind.Attack, Vector3.one);
+            rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);
+            LogAssert.Expect(LogType.Error, "[HLLianaArm] The chain has no finite solution, it stays hidden this frame.");
+
+            rendered.SetTipGoal(1, Vector3.one * float.NaN);
+            rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);
+            rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);
+
+            Assert.IsFalse(renderer.enabled);
+            rendered.Dispose();
+            Object.DestroyImmediate(parent);
+            Object.DestroyImmediate(material);
         }
 
         [TestCase(HLDeliveryStyle.Arc)]

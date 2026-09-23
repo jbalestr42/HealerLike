@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -20,15 +19,36 @@ namespace HealerLike.Render.Creatures
         public Mesh disc;
         public Mesh annulus;
 
+        // Recipes only author torus parts at the baked 0.2 tube ratio
+        public Mesh GetMesh(HLPrimitive primitive)
+        {
+            switch (primitive)
+            {
+                case HLPrimitive.Capsule:
+                    return capsule;
+                case HLPrimitive.Cone:
+                    return cone;
+                case HLPrimitive.Torus:
+                    return torus;
+                case HLPrimitive.CylinderSegment:
+                    return cylinder;
+                default:
+                    return sphere;
+            }
+        }
+
+        // removed in D2: the runtime cache below, once Grass and Environment read the baked fields
         static readonly Dictionary<(HLPrimitive, int, int, float), Mesh> _cache =
             new Dictionary<(HLPrimitive, int, int, float), Mesh>();
         static int _owners;
 
+        // removed in D2
         public static void Retain()
         {
             _owners++;
         }
 
+        // removed in D2
         public static void Release()
         {
             if (_owners == 0)
@@ -42,14 +62,16 @@ namespace HealerLike.Render.Creatures
             }
         }
 
+        // removed in D2
         public static Mesh Get(HLPrimitive primitive, int radialSegments = 10, int axialSegments = 6,
             float torusTubeRatio = 0.25f)
         {
             if ((int)primitive < 0 || (int)primitive > 4 || radialSegments < 3 || radialSegments > 128
                 || axialSegments < 2 || axialSegments > 128
-                || !HLChainSolver.Finite(torusTubeRatio) || torusTubeRatio <= 0f || torusTubeRatio >= 1f)
+                || !float.IsFinite(torusTubeRatio) || torusTubeRatio <= 0f || torusTubeRatio >= 1f)
             {
-                throw new ArgumentException("Invalid mesh settings.");
+                Debug.LogError("[HLPrimitiveMeshes] Invalid mesh settings.");
+                return null;
             }
 
             (HLPrimitive, int, int, float) key = (primitive, radialSegments, axialSegments, torusTubeRatio);
@@ -159,6 +181,7 @@ namespace HealerLike.Render.Creatures
             return mesh;
         }
 
+        // removed in D2
         public static void ReleaseAll()
         {
             if (_owners != 0)
@@ -174,6 +197,7 @@ namespace HealerLike.Render.Creatures
             _cache.Clear();
         }
 
+        // removed in D2
         public static void DestroyOwned(UnityEngine.Object value)
         {
             if (!value)
@@ -191,13 +215,12 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        public static Transform Geometry(string name, Transform parent, HLPrimitive kind, Material material,
-            Color colour, float ratio = 0.25f, float glow = 0f)
+        public static Transform Geometry(string name, Transform parent, Mesh mesh, Material material, Color colour,
+            float glow = 0f)
         {
             GameObject go = new GameObject(name, typeof(MeshFilter), typeof(MeshRenderer));
             go.transform.SetParent(parent, false);
-            int radialSegments = kind == HLPrimitive.CylinderSegment ? 6 : 12;
-            go.GetComponent<MeshFilter>().sharedMesh = Get(kind, radialSegments, 6, ratio);
+            go.GetComponent<MeshFilter>().sharedMesh = mesh;
             MeshRenderer renderer = go.GetComponent<MeshRenderer>();
             renderer.sharedMaterial = material;
             MaterialPropertyBlock block = new MaterialPropertyBlock();

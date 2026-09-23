@@ -8,24 +8,34 @@ namespace HealerLike.Render.Creatures
     {
         public static readonly int MaxArms = 8;
 
-        readonly HLCreatureRecipe _recipe;
-        readonly Material _material;
-        readonly float _cellSize;
-        readonly Transform _root;
-        readonly Transform _sway;
-        readonly Transform[] _pivots;
-        readonly Transform[] _geometry;
-        readonly Transform[] _roots;
-        readonly Renderer[] _bodyRenderers;
-        readonly Color[] _colours;
-        readonly HLIdleDefinition _idle;
+        // A projectile the rig follows until its delivery ends
+        class Delivery
+        {
+            public int lease;
+            public HLDeliveryStyle style;
+            public Vector3? contact;
+            public Transform projectile;
+            public bool hasFreshContact;
+        }
+
         readonly HLLianaArm[] _arms = new HLLianaArm[MaxArms];
         readonly int[] _tokens = new int[MaxArms];
         readonly int[] _definitions = new int[MaxArms];
         readonly Vector3?[] _branchRoots = new Vector3?[MaxArms];
         readonly MaterialPropertyBlock _colourBlock = new MaterialPropertyBlock();
-        readonly Dictionary<int, (int lease, HLDeliveryStyle style, Vector3? contact)> _deliveries =
-            new Dictionary<int, (int, HLDeliveryStyle, Vector3?)>();
+        readonly Dictionary<int, Delivery> _deliveries = new Dictionary<int, Delivery>();
+        HLCreatureRecipe _recipe;
+        Material _material;
+        HLPrimitiveMeshes _meshes;
+        float _cellSize;
+        Transform _root;
+        Transform _sway;
+        Transform[] _pivots;
+        Transform[] _geometry;
+        Transform[] _roots;
+        Renderer[] _bodyRenderers;
+        Color[] _colours;
+        HLIdleDefinition _idle;
         int _nextToken;
         bool _isDisposed;
         float _crownPulse;
@@ -66,33 +76,32 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        public static HLCreatureRig Build(HLCreatureRecipe data, Transform parent, Material material,
+        // A recipe that fails validation logs and leaves the view empty
+        public bool Init(HLCreatureRecipe data, Transform parent, Material material, HLPrimitiveMeshes meshes,
             float cellSize = 1f)
         {
             if (!HLCreatureValidator.TryValidate(data, out string error))
             {
-                throw new ArgumentException(error);
+                Debug.LogError($"[HLCreatureRig] {error}");
+                return false;
             }
 
-            if (!parent || !material || !HLChainSolver.Finite(cellSize) || cellSize <= 0f)
+            if (!parent || !material || !meshes || !float.IsFinite(cellSize) || cellSize <= 0f)
             {
-                throw new ArgumentException("Rig requires parent, material and positive cell size.");
+                Debug.LogError("[HLCreatureRig] Needs a parent, a material, the meshes and a positive cell size.");
+                return false;
             }
 
             Vector3 scale = parent.lossyScale;
             if (scale.x <= 0f || Mathf.Abs(scale.x - scale.y) > 0.0001f || Mathf.Abs(scale.x - scale.z) > 0.0001f)
             {
-                throw new ArgumentException("Creature rig ancestors must have positive uniform scale.");
+                Debug.LogError("[HLCreatureRig] Creature rig ancestors must have positive uniform scale.");
+                return false;
             }
 
-            return new HLCreatureRig(data, parent, material, cellSize);
-        }
-
-        HLCreatureRig(HLCreatureRecipe data, Transform parent, Material material, float cellSize)
-        {
-            HLPrimitiveMeshes.Retain();
             _recipe = data;
             _material = material;
+            _meshes = meshes;
             _cellSize = cellSize;
             _root = new GameObject("HLGeneratedCreature").transform;
             _root.SetParent(parent, false);
@@ -113,9 +122,8 @@ namespace HealerLike.Render.Creatures
                 _pivots[i].SetParent(part.parent < 0 ? _sway : _pivots[part.parent], false);
                 _pivots[i].localPosition = part.localPosition * cellSize;
                 _pivots[i].localRotation = Quaternion.Euler(part.localEuler);
-                float ratio = part.primitive == HLPrimitive.Torus ? part.torusTubeRatio : 0.25f;
-                _geometry[i] = HLPrimitiveMeshes.Geometry("HLGeometry", _pivots[i], part.primitive, material,
-                    _colours[i], ratio, part.glow);
+                _geometry[i] = HLPrimitiveMeshes.Geometry("HLGeometry", _pivots[i], meshes.GetMesh(part.primitive),
+                    material, _colours[i], part.glow);
                 _geometry[i].localScale = part.dimensions * cellSize;
                 _bodyRenderers[i] = _geometry[i].GetComponent<Renderer>();
             }
@@ -125,13 +133,15 @@ namespace HealerLike.Render.Creatures
             for (int i = 0; i < _roots.Length; i++)
             {
                 Color rootColour = HLBeautyMotion.Vary(data.roots.colour, _idle.seed);
-                _roots[i] = HLPrimitiveMeshes.Geometry("HLRoot", _root, HLPrimitive.Cone, material, rootColour);
+                _roots[i] = HLPrimitiveMeshes.Geometry("HLRoot", _root, meshes.cone, material, rootColour);
             }
 
             for (int i = 0; i < data.arms.Length; i++)
             {
                 CreateArm(i, i);
             }
+
+            return true;
         }
 
         public void SetStatusTint(Color tint)
@@ -142,9 +152,9 @@ namespace HealerLike.Render.Creatures
         public void SetReadout(Vector3? target, float health, float readiness, float glow)
         {
             _aimTarget = target;
-            _healthFraction = HLChainSolver.Finite(health) ? Mathf.Clamp01(health) : 1f;
-            _charge = HLChainSolver.Finite(readiness) ? Mathf.Clamp01(readiness) : 0f;
-            _budPower = HLChainSolver.Finite(glow) ? Mathf.Clamp01(glow) : 0f;
+            _healthFraction = float.IsFinite(health) ? Mathf.Clamp01(health) : 1f;
+            _charge = float.IsFinite(readiness) ? Mathf.Clamp01(readiness) : 0f;
+            _budPower = float.IsFinite(glow) ? Mathf.Clamp01(glow) : 0f;
         }
 
         public void Hit()
@@ -154,14 +164,15 @@ namespace HealerLike.Render.Creatures
 
         public void ContactDeliveryPath(int token, Vector3 position, bool preserve)
         {
-            if (!_deliveries.TryGetValue(token, out (int lease, HLDeliveryStyle style, Vector3? contact) delivery))
+            if (!_deliveries.TryGetValue(token, out Delivery delivery))
             {
                 return;
             }
 
             bool isBranch = preserve || delivery.style == HLDeliveryStyle.ChainSync;
             Contact(delivery.lease, position, isBranch ? delivery.contact : null);
-            _deliveries[token] = (delivery.lease, delivery.style, position);
+            delivery.contact = position;
+            delivery.hasFreshContact = true;
         }
 
         public int Begin(HLGestureKind kind, Vector3 goal)
@@ -289,6 +300,7 @@ namespace HealerLike.Render.Creatures
 
             _previousOrigin = frame.origin;
             _isPlaced = true;
+            FollowProjectiles();
             _root.SetPositionAndRotation(frame.origin, Quaternion.FromToRotation(Vector3.up, frame.normal));
             _root.localScale = Vector3.one / _root.parent.lossyScale.x;
             float dt = Mathf.Max(0f, deltaTime);
@@ -390,13 +402,20 @@ namespace HealerLike.Render.Creatures
                 }
             }
 
-            if (_root)
+            if (!_root)
             {
-                _root.gameObject.SetActive(false);
-                HLPrimitiveMeshes.DestroyOwned(_root.gameObject);
+                return;
             }
 
-            HLPrimitiveMeshes.Release();
+            _root.gameObject.SetActive(false);
+            if (Application.isPlaying)
+            {
+                UnityEngine.Object.Destroy(_root.gameObject);
+            }
+            else
+            {
+                UnityEngine.Object.DestroyImmediate(_root.gameObject);
+            }
         }
 
         void CreateArm(int slot, int definitionIndex)
@@ -404,7 +423,8 @@ namespace HealerLike.Render.Creatures
             _definitions[slot] = definitionIndex;
             HLArmDefinition definition = _recipe.arms[definitionIndex];
             definition.colour = HLBeautyMotion.Vary(definition.colour, _idle.seed);
-            _arms[slot] = new HLLianaArm(definition, _root, _material, _cellSize);
+            _arms[slot] = new HLLianaArm();
+            _arms[slot].Init(definition, _root, _material, _meshes, _cellSize);
             Vector3 shoulder = _pivots[definition.bodyPart].TransformPoint(definition.rootLocal * _cellSize);
             _arms[slot].Tick(0f, shoulder, _root.rotation);
         }
@@ -430,6 +450,24 @@ namespace HealerLike.Render.Creatures
             }
 
             return -1;
+        }
+
+        // The rig reads the projectile itself, so no observer has to update before it
+        void FollowProjectiles()
+        {
+            foreach (Delivery delivery in _deliveries.Values)
+            {
+                if (delivery.hasFreshContact)
+                {
+                    delivery.hasFreshContact = false;
+                    continue;
+                }
+
+                if (delivery.projectile && !(delivery.style == HLDeliveryStyle.ChainSync && delivery.contact.HasValue))
+                {
+                    SetTipGoal(delivery.lease, delivery.projectile.position);
+                }
+            }
         }
 
         void CoalesceContact(Vector3 goal)
@@ -459,7 +497,7 @@ namespace HealerLike.Render.Creatures
             if (style == HLDeliveryStyle.Swarm)
             {
                 int count = 0;
-                foreach ((int lease, HLDeliveryStyle style, Vector3? contact) item in _deliveries.Values)
+                foreach (Delivery item in _deliveries.Values)
                 {
                     if (item.style == style)
                     {
@@ -479,7 +517,7 @@ namespace HealerLike.Render.Creatures
                 return false;
             }
 
-            _deliveries.Add(token, (leaseToken, style, null));
+            _deliveries.Add(token, new Delivery { lease = leaseToken, style = style, projectile = projectile });
             for (int i = 0; i < MaxArms; i++)
             {
                 if (_tokens[i] == leaseToken)
@@ -495,7 +533,7 @@ namespace HealerLike.Render.Creatures
 
         public void UpdateDelivery(int token, Vector3 position)
         {
-            if (!_deliveries.TryGetValue(token, out (int lease, HLDeliveryStyle style, Vector3? contact) delivery))
+            if (!_deliveries.TryGetValue(token, out Delivery delivery))
             {
                 return;
             }
@@ -515,7 +553,7 @@ namespace HealerLike.Render.Creatures
 
         public void EndDelivery(int token)
         {
-            if (!_deliveries.TryGetValue(token, out (int lease, HLDeliveryStyle style, Vector3? contact) delivery))
+            if (!_deliveries.TryGetValue(token, out Delivery delivery))
             {
                 return;
             }
