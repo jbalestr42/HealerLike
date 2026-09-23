@@ -7,7 +7,7 @@ using HealerLike.Render.Creatures;
 namespace HealerLike.Render.Spells
 {
     // The look drawn for each buff and projectile, an unmapped buff gets boon or bane from the caster's side
-    [CreateAssetMenu(menuName = "Custom/Render/SpellLooks")]
+    [CreateAssetMenu(menuName = "Custom/Data/Render/SpellLooks")]
     public class SpellLooks : SerializedScriptableObject
     {
         [DictionaryDrawerSettings(KeyLabel = "Buff", ValueLabel = "Look")]

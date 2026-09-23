@@ -5,7 +5,7 @@ using UnityEngine;
 namespace HealerLike.Render.Creatures
 {
     // The view prefab drawn for each entity and character, an unmapped one gets the default of its side
-    [CreateAssetMenu(menuName = "Custom/Render/CreatureLooks")]
+    [CreateAssetMenu(menuName = "Custom/Data/Render/CreatureLooks")]
     public class CreatureLooks : SerializedScriptableObject
     {
         [DictionaryDrawerSettings(KeyLabel = "Entity", ValueLabel = "View")]

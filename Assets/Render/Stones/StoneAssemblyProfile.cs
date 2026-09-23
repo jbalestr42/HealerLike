@@ -3,7 +3,7 @@ using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Stones
 {
-    [CreateAssetMenu(menuName = "HealerLike/Stone assembly")]
+    [CreateAssetMenu(menuName = "Custom/Data/Render/StoneAssemblyProfile")]
     public class StoneAssemblyProfile : ScriptableObject
     {
         [FormerlySerializedAs("Parts")]

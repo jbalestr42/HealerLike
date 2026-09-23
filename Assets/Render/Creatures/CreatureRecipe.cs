@@ -12,7 +12,7 @@ namespace HealerLike.Render.Creatures
         CylinderSegment
     }
 
-    [CreateAssetMenu(menuName = "HL/Creature Recipe")]
+    [CreateAssetMenu(menuName = "Custom/Data/Render/CreatureRecipe")]
     public class CreatureRecipe : ScriptableObject
     {
         public Part[] parts = Array.Empty<Part>();
