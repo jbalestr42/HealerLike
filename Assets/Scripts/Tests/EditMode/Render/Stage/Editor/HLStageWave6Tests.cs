@@ -103,12 +103,16 @@ namespace HealerLike.Render.Stage
             Assert.That(HLStageBuilder.Bruises(HLStageBuilder.BruiseMaxRange),Is.False);
             Assert.That(HLStageBuilder.Bruises(0),Is.False);
         }
-        [Test] public void StageSceneOptsItsStoneEntryIntoDemoGenerationAndWiresTheHealerPulse()
+        [Test] public void StagePreservesGameplayGridGeneratorAndWiresTheHealerPulse()
         {
             string yaml=File.ReadAllText(HLStageBuilder.ScenePath);
-            // HLStoneGeneration is a prefab instance: the opt-in is stored as a modification of the stones prefab's false default.
-            Assert.That(yaml,Does.Match(@"propertyPath: demoSceneOnly\s+value: 1"));
-            Assert.That(yaml,Does.Not.Match(@"propertyPath: demoSceneOnly\s+value: 0"));
+            Assert.That(yaml,Does.Not.Contain("HLStoneGeneration"));
+            Assert.That(yaml,Does.Not.Contain("stoneGridEntry:"));
+            const string generator=@"_gridGenerator: \{fileID: -?\d+\}";
+            var original=System.Text.RegularExpressions.Regex.Match(File.ReadAllText("Assets/Scenes/Main.unity"),generator);
+            var render=System.Text.RegularExpressions.Regex.Match(yaml,generator);
+            Assert.That(original.Success && render.Success,Is.True,"Player grid generator reference must exist");
+            Assert.That(render.Value,Is.EqualTo(original.Value),"Render copy must retain gameplay generator ownership");
             Assert.That(yaml,Does.Match(@"healPulse: \{fileID: [1-9]"));
             Assert.That(yaml,Does.Match(@"healSource: \{fileID: [1-9]"));
         }
