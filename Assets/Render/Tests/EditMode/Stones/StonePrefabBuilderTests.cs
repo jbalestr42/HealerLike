@@ -10,7 +10,7 @@ public class StonePrefabBuilderTests
     static readonly string root = "Assets/Render/Stones/Prefabs/";
 
     [Test]
-    public void SoldierModel_IsAPlainViewWithItsBodyPresentationAndShadow()
+    public void StoneSoldierModel_ShippedPrefab_IsAPlainViewWithBodyPresentationAndShadow()
     {
         GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(root + "StoneSoldierModel.prefab");
 
@@ -30,7 +30,7 @@ public class StonePrefabBuilderTests
     }
 
     [Test]
-    public void BlockPreservesColliderAndCarriesItsDiscsAndFacet()
+    public void StoneBlock_ShippedPrefab_KeepsHisColliderAndCarriesDiscsAndFacet()
     {
         GameObject original = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Grid/Block.prefab");
         GameObject block = AssetDatabase.LoadAssetAtPath<GameObject>(root + "StoneBlock.prefab");
@@ -57,7 +57,7 @@ public class StonePrefabBuilderTests
     }
 
     [Test]
-    public void EffectsPrefabWiresFragmentMeshesAndMaterials()
+    public void StoneEffects_ShippedPrefab_WiresFragmentMeshesAndMaterials()
     {
         GameObject effects = AssetDatabase.LoadAssetAtPath<GameObject>(root + "StoneEffects.prefab");
         SerializedObject effectsSO = new SerializedObject(effects.GetComponent<StoneEffects>());
@@ -72,7 +72,6 @@ public class StonePrefabBuilderTests
         Material dust = (Material)effectsSO.FindProperty("_dustMaterial").objectReferenceValue;
         Assert.AreEqual("HealerLike/Stones/Dust", dust.shader.name);
     }
-
 }
 
 }

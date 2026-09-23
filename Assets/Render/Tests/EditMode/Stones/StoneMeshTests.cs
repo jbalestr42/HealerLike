@@ -8,10 +8,29 @@ namespace HealerLike.Render.Stones
 
 public class StoneMeshTests
 {
+    Random.State _randomState;
+    Mesh _mesh;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _randomState = Random.state;
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        Random.state = _randomState;
+        if (_mesh != null)
+        {
+            Object.DestroyImmediate(_mesh);
+        }
+    }
+
     [TestCase(0, 60)]
     [TestCase(1, 240)]
     [TestCase(2, 960)]
-    public void CountsAndFlatNormals(int n, int count)
+    public void Generate_Subdivisions_HasExpectedCountsAndFlatOutwardNormals(int n, int count)
     {
         StoneSettings settings = StonePresets.Boulder;
         settings.subdivisions = n;
@@ -23,16 +42,16 @@ public class StoneMeshTests
             Vector3 a = data.vertices[i];
             Vector3 b = data.vertices[i + 1];
             Vector3 c = data.vertices[i + 2];
-            Assert.That(data.normals[i].magnitude, Is.EqualTo(1).Within(1e-5));
+            Assert.That(data.normals[i].magnitude, Is.EqualTo(1).Within(0.00001));
             Assert.AreEqual(data.normals[i], data.normals[i + 1]);
             Assert.AreEqual(data.normals[i], data.normals[i + 2]);
             Assert.That(Vector3.Dot(data.normals[i], (a + b + c)), Is.GreaterThan(0));
             Vector3 faceNormal = Vector3.Cross(b - a, c - a).normalized;
-            Assert.That(Vector3.Distance(data.normals[i], faceNormal), Is.LessThan(1e-5));
+            Assert.That(Vector3.Distance(data.normals[i], faceNormal), Is.LessThan(0.00001));
             for (int j = 0; j < 3; j++)
             {
                 Vector3 vertex = data.vertices[i + j];
-                Assert.That(Vector3.Distance(data.bounds.ClosestPoint(vertex), vertex), Is.LessThan(1e-6));
+                Assert.That(Vector3.Distance(data.bounds.ClosestPoint(vertex), vertex), Is.LessThan(0.000001));
             }
         }
     }
@@ -41,31 +60,24 @@ public class StoneMeshTests
     [TestCase(1u)]
     [TestCase(uint.MaxValue)]
     [TestCase(827361u)]
-    public void DeterministicAndIndependentOfGlobalRandom(uint seed)
+    public void Generate_SameSeed_IsDeterministicAndLeavesUnityRandomAlone(uint seed)
     {
-        Random.State state = Random.state;
-        try
-        {
-            StoneMeshData a = StoneMesh.Generate(seed, StonePresets.Boulder);
-            Assert.AreEqual(state, Random.state);
+        StoneMeshData a = StoneMesh.Generate(seed, StonePresets.Boulder);
+        Assert.AreEqual(_randomState, Random.state);
 
-            Random.InitState(128);
-            StoneMesh.Generate(seed + 1, StonePresets.Monolith);
-            StoneMeshData b = StoneMesh.Generate(seed, StonePresets.Boulder);
-            CollectionAssert.AreEqual(a.vertices, b.vertices);
-            CollectionAssert.AreEqual(a.normals, b.normals);
-            CollectionAssert.AreEqual(a.indices, b.indices);
-            StoneMeshData next = StoneMesh.Generate(seed + 1, StonePresets.Boulder);
-            CollectionAssert.AreNotEqual(a.vertices, next.vertices);
-        }
-        finally
-        {
-            Random.state = state;
-        }
+        Random.InitState(128);
+        StoneMesh.Generate(seed + 1, StonePresets.Monolith);
+        StoneMeshData b = StoneMesh.Generate(seed, StonePresets.Boulder);
+
+        CollectionAssert.AreEqual(a.vertices, b.vertices);
+        CollectionAssert.AreEqual(a.normals, b.normals);
+        CollectionAssert.AreEqual(a.indices, b.indices);
+        StoneMeshData next = StoneMesh.Generate(seed + 1, StonePresets.Boulder);
+        CollectionAssert.AreNotEqual(a.vertices, next.vertices);
     }
 
     [Test]
-    public void SweepAllSeedsPresetsAndExtremeScalesWithoutDegeneracy()
+    public void Generate_EverySeedPresetAndExtremeScale_HasNoDegenerateFace()
     {
         StoneSettings[] shapes = { StonePresets.Boulder, StonePresets.Cairn, StonePresets.Monolith };
         float[] roughnessValues = { 0f, 0.18f };
@@ -110,11 +122,11 @@ public class StoneMeshTests
             {
                 Assert.Fail($"Bad scaled face seed {seed}, n {n}");
             }
-            if (Vector3.Cross(Vector3.Scale(b - a, inv), Vector3.Scale(c - a, inv)).magnitude <= 1e-10f)
+            if (Vector3.Cross(Vector3.Scale(b - a, inv), Vector3.Scale(c - a, inv)).magnitude <= 0.0000000001f)
             {
                 Assert.Fail("Degenerate normalized face");
             }
-            if (Mathf.Abs(data.normals[i].magnitude - 1f) > 1e-5f)
+            if (Mathf.Abs(data.normals[i].magnitude - 1f) > 0.00001f)
             {
                 Assert.Fail("Non-unit normal");
             }
@@ -122,7 +134,7 @@ public class StoneMeshTests
     }
 
     [Test]
-    public void CanonicalGeometryHashIsPinned()
+    public void Generate_CanonicalSeed_MatchesPinnedGeometryHash()
     {
         uint hash = 2166136261;
         StoneMeshData data = StoneMesh.Generate(827361, StonePresets.Boulder);
@@ -145,13 +157,13 @@ public class StoneMeshTests
     {
         foreach (float component in new float[] { value.x, value.y, value.z })
         {
-            hash = StoneSeed.ForPart(hash, unchecked((uint)System.BitConverter.SingleToInt32Bits(component)));
+            hash = StoneSeed.ForPart(hash, (uint)System.BitConverter.SingleToInt32Bits(component));
         }
         return hash;
     }
 
     [Test]
-    public void InvalidSettingsRejectedAndMeshCopiesData()
+    public void Generate_InvalidSettings_LogsAndReturnsNoStone()
     {
         StoneSettings settings = StonePresets.Boulder;
         settings.size = float.NaN;
@@ -176,19 +188,18 @@ public class StoneMeshTests
         Assert.IsNull(StoneMesh.CreateMesh(0, settings));
         LogAssert.Expect(LogType.Error, new Regex(@"\[StoneMesh\] Subdivisions"));
         Assert.AreEqual(0, StoneMesh.VertexCount(3));
+    }
 
+    [Test]
+    public void CreateMesh_GeneratedData_CopiesVerticesAndNormals()
+    {
         StoneMeshData data = StoneMesh.Generate(8, StonePresets.Boulder);
-        Mesh mesh = StoneMesh.CreateMesh(data);
-        try
-        {
-            CollectionAssert.AreEqual(data.vertices, mesh.vertices);
-            CollectionAssert.AreEqual(data.normals, mesh.normals);
-            Assert.AreEqual(240, mesh.vertexCount);
-        }
-        finally
-        {
-            Object.DestroyImmediate(mesh);
-        }
+
+        _mesh = StoneMesh.CreateMesh(data);
+
+        CollectionAssert.AreEqual(data.vertices, _mesh.vertices);
+        CollectionAssert.AreEqual(data.normals, _mesh.normals);
+        Assert.AreEqual(240, _mesh.vertexCount);
     }
 }
 

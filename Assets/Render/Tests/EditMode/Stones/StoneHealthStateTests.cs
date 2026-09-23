@@ -6,7 +6,7 @@ namespace HealerLike.Render.Stones
 public class StoneHealthStateTests
 {
     [Test]
-    public void ThresholdOnceWithHealingAndReset()
+    public void CompleteBatch_CrossingHalfHealth_ShedsOnceUntilReset()
     {
         StoneHealthState state = new StoneHealthState();
         state.Reset(0.5f);
@@ -27,7 +27,7 @@ public class StoneHealthStateTests
     }
 
     [Test]
-    public void FinalBatchWinsAndMaxChangeAloneDoesNotShed()
+    public void CompleteBatch_NetZeroOrUntrackedDelta_UsesTheFinalBatch()
     {
         StoneHealthState state = new StoneHealthState();
         state.Reset(0.5f);
@@ -43,7 +43,7 @@ public class StoneHealthStateTests
     }
 
     [Test]
-    public void DeathPrecedesShedAndIsIdempotent()
+    public void CompleteBatch_Lethal_CollapsesBeforeSheddingOnce()
     {
         StoneHealthState state = new StoneHealthState();
         state.RecordProcessedDelta(-100f);

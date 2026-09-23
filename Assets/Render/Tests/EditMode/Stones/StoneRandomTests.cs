@@ -6,7 +6,7 @@ namespace HealerLike.Render.Stones
 public class StoneRandomTests
 {
     [Test]
-    public void ZeroSeedIsValidAndSequencePinned()
+    public void Next_ZeroSeed_ReturnsPinnedSequenceInRange()
     {
         StoneRandom random = new StoneRandom(0);
         Assert.AreEqual(1013904223u, random.Next());

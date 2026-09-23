@@ -7,7 +7,7 @@ namespace HealerLike.Render.Stones
 public class StoneMotionSamplerTests
 {
     [Test]
-    public void StationarySpawnDragTeleportAndVerticalMotionDoNothing()
+    public void Sample_StationarySpawnDragTeleportOrVertical_ReturnsZero()
     {
         StoneMotionSampler sampler = new StoneMotionSampler();
         Assert.AreEqual(Vector3.zero, sampler.Sample(Vector3.one * 10f, 0.02f, false));

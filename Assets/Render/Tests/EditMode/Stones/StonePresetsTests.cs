@@ -6,7 +6,7 @@ namespace HealerLike.Render.Stones
 public class StonePresetsTests
 {
     [Test]
-    public void PresetsAreValidDistinctParameterSets()
+    public void Presets_Shipped_AreValidDistinctParameterSets()
     {
         Assert.IsTrue(StoneMesh.IsValid(StonePresets.Boulder));
         Assert.IsTrue(StoneMesh.IsValid(StonePresets.Cairn));

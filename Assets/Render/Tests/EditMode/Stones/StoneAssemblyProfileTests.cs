@@ -6,19 +6,25 @@ namespace HealerLike.Render.Stones
 
 public class StoneAssemblyProfileTests
 {
-    [Test]
-    public void ProfileKeepsDefaultSingleThreshold()
+    StoneAssemblyProfile _profile;
+
+    [SetUp]
+    public void SetUp()
     {
-        StoneAssemblyProfile profile = ScriptableObject.CreateInstance<StoneAssemblyProfile>();
-        try
-        {
-            Assert.AreEqual(0.5f, profile.shedHealthFraction);
-            Assert.AreEqual(2, profile.detachablePartIndex);
-        }
-        finally
-        {
-            Object.DestroyImmediate(profile);
-        }
+        _profile = ScriptableObject.CreateInstance<StoneAssemblyProfile>();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        Object.DestroyImmediate(_profile);
+    }
+
+    [Test]
+    public void CreateInstance_Defaults_ShedsTheThirdPartAtHalfHealth()
+    {
+        Assert.AreEqual(0.5f, _profile.shedHealthFraction);
+        Assert.AreEqual(2, _profile.detachablePartIndex);
     }
 }
 

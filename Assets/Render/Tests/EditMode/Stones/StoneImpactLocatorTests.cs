@@ -7,7 +7,7 @@ namespace HealerLike.Render.Stones
 public class StoneImpactLocatorTests
 {
     [Test]
-    public void ClosestFacePointUnderRotationAndNonuniformScale()
+    public void TryClosestPoint_RotatedNonuniformMesh_FindsTheClosestFacePoint()
     {
         Vector3[] vertices = { Vector3.zero, Vector3.right, Vector3.up };
         Vector3[] normals = { Vector3.forward, Vector3.forward, Vector3.forward };
@@ -21,7 +21,7 @@ public class StoneImpactLocatorTests
         bool found = StoneImpactLocator.TryClosestPoint(data, matrix, query,
             out Vector3 point, out Vector3 normal);
         Assert.IsTrue(found);
-        Assert.That(Vector3.Distance(expected, point), Is.LessThan(1e-5));
+        Assert.That(Vector3.Distance(expected, point), Is.LessThan(0.00001));
         Assert.That(Vector3.Dot(faceNormal, normal), Is.GreaterThan(0.99999f));
 
         query = new Vector3(-1f, -1f, 0f);

@@ -6,7 +6,7 @@ namespace HealerLike.Render.Stones
 public class StoneMeshCacheTests
 {
     [Test]
-    public void SharedUntilLastLeaseAndDisposalIdempotent()
+    public void Acquire_SameSeed_SharesMeshUntilLastLeaseDisposed()
     {
         StoneMeshCache cache = new StoneMeshCache();
         StoneMeshCache.Lease a = cache.Acquire(23, StonePresets.Boulder);
@@ -31,7 +31,7 @@ public class StoneMeshCacheTests
     }
 
     [Test]
-    public void TwoCachesNeverShareMeshes()
+    public void Acquire_TwoCaches_NeverShareMeshes()
     {
         StoneMeshCache first = new StoneMeshCache();
         StoneMeshCache second = new StoneMeshCache();

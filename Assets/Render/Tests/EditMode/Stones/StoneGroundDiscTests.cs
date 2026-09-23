@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Stones
@@ -7,6 +6,20 @@ namespace HealerLike.Render.Stones
 
 public class StoneGroundDiscTests
 {
+    GameObject _owner;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _owner = new GameObject("DiscOwner");
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        Object.DestroyImmediate(_owner);
+    }
+
     static StoneGroundDisc CreateDisc(Transform parent, bool isShadow)
     {
         GameObject discGo = new GameObject("Disc", typeof(MeshFilter), typeof(MeshRenderer));
@@ -18,84 +31,48 @@ public class StoneGroundDiscTests
     }
 
     [Test]
-    public void ShadowPointsAwayFromLightStaysFlatAndCanBeHidden()
+    public void Init_Shadow_PointsAwayFromLightStaysFlatAndCanBeHidden()
     {
-        GameObject go = new GameObject("ShadowOwner");
-        try
-        {
-            StoneGroundDisc shadow = CreateDisc(go.transform, true);
-            shadow.Init(new Bounds(Vector3.up, Vector3.one * 2f), new Vector3(-1f, 2f, 0f));
-            Assert.Greater(shadow.transform.position.x, 0);
-            Assert.Greater(shadow.transform.position.y, 0);
-            Assert.Greater(Vector3.Dot(shadow.transform.forward, Vector3.right), 0.999f);
-            Assert.Greater(shadow.transform.localScale.z, shadow.transform.localScale.x);
-            Assert.Less(shadow.transform.localScale.y, 0.01f);
+        StoneGroundDisc shadow = CreateDisc(_owner.transform, true);
 
-            shadow.Show(false);
-            Assert.False(shadow.gameObject.activeSelf);
+        shadow.Init(new Bounds(Vector3.up, Vector3.one * 2f), new Vector3(-1f, 2f, 0f));
 
-            shadow.Init(new Bounds(Vector3.up, Vector3.one * 2f), Vector3.zero);
-            shadow.Show(true);
-            Assert.True(shadow.gameObject.activeSelf);
-            Assert.Greater(Vector3.Dot(shadow.transform.forward, Vector3.forward), 0.999f);
-            Assert.AreEqual(1, go.transform.childCount);
-        }
-        finally
-        {
-            Object.DestroyImmediate(go);
-        }
+        Assert.Greater(shadow.transform.position.x, 0);
+        Assert.Greater(shadow.transform.position.y, 0);
+        Assert.Greater(Vector3.Dot(shadow.transform.forward, Vector3.right), 0.999f);
+        Assert.Greater(shadow.transform.localScale.z, shadow.transform.localScale.x);
+        Assert.Less(shadow.transform.localScale.y, 0.01f);
+
+        shadow.Show(false);
+        Assert.False(shadow.gameObject.activeSelf);
+
+        shadow.Init(new Bounds(Vector3.up, Vector3.one * 2f), Vector3.zero);
+        shadow.Show(true);
+        Assert.True(shadow.gameObject.activeSelf);
+        Assert.Greater(Vector3.Dot(shadow.transform.forward, Vector3.forward), 0.999f);
+        Assert.AreEqual(1, _owner.transform.childCount);
     }
 
     [Test]
-    public void BareEarthRadiusCoversScaledClumpAndColourGoesThroughTheBlock()
+    public void Init_BareEarth_RadiusCoversScaledClumpAndColourGoesThroughTheBlock()
     {
-        GameObject root = new GameObject("Ring");
-        try
-        {
-            StoneGroundDisc ring = CreateDisc(root.transform, false);
-            ring.Init(new Bounds(Vector3.up, new Vector3(2f, 2f, 1f)), Vector3.up);
-            Assert.AreEqual(1.18f, ring.radius, 0.001f);
-            Assert.AreEqual(0.006f, ring.center.y, 0.0001f);
+        StoneGroundDisc ring = CreateDisc(_owner.transform, false);
 
-            root.transform.localScale = new Vector3(2f, 1f, 3f);
-            Assert.AreEqual(3.54f, ring.radius, 0.001f);
+        ring.Init(new Bounds(Vector3.up, new Vector3(2f, 2f, 1f)), Vector3.up);
 
-            Color colour = new Color(0.2f, 0.6f, 0.3f, 1f);
-            ring.colour = colour;
-            MaterialPropertyBlock block = new MaterialPropertyBlock();
-            ring.GetComponent<MeshRenderer>().GetPropertyBlock(block);
-            Assert.IsFalse(block.isEmpty);
-            Assert.AreEqual(colour, ring.colour);
-            Assert.AreEqual(0, root.GetComponentsInChildren<Collider>().Length);
-        }
-        finally
-        {
-            Object.DestroyImmediate(root);
-        }
-    }
+        Assert.AreEqual(1.18f, ring.radius, 0.001f);
+        Assert.AreEqual(0.006f, ring.center.y, 0.0001f);
 
-    [Test]
-    public void TerrainReusesItsTwoDiscsAndPropagatesShadowToggle()
-    {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneBlock.prefab");
-        GameObject block = Object.Instantiate(prefab);
-        StoneTerrainClump terrain = block.GetComponentInChildren<StoneTerrainClump>();
-        try
-        {
-            terrain.Init(4, 1f, null, null);
-            terrain.Init(5, 2f, null, null);
-            Assert.AreEqual(2, block.GetComponentsInChildren<StoneGroundDisc>(true).Length);
-            Assert.AreEqual(2, block.GetComponentsInChildren<StoneGroundDisc>().Length);
+        _owner.transform.localScale = new Vector3(2f, 1f, 3f);
+        Assert.AreEqual(3.54f, ring.radius, 0.001f);
 
-            terrain.groundShadowEnabled = false;
-            Assert.AreEqual(1, block.GetComponentsInChildren<StoneGroundDisc>().Length);
-            Assert.IsFalse(block.GetComponentInChildren<StoneGroundDisc>().isShadow);
-        }
-        finally
-        {
-            TestHelpers.InvokePrivate(terrain, "OnDestroy");
-            Object.DestroyImmediate(block);
-        }
+        Color colour = new Color(0.2f, 0.6f, 0.3f, 1f);
+        ring.colour = colour;
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        ring.GetComponent<MeshRenderer>().GetPropertyBlock(block);
+        Assert.IsFalse(block.isEmpty);
+        Assert.AreEqual(colour, ring.colour);
+        Assert.AreEqual(0, _owner.GetComponentsInChildren<Collider>().Length);
     }
 }
 

@@ -9,7 +9,7 @@ namespace HealerLike.Render.Stones
 public class StoneLifeStateTests
 {
     [Test]
-    public void ThresholdStartsBoundedTrickleAndHealingRearms()
+    public void PollHealth_BelowHalf_TricklesBoundedAndHealingRearms()
     {
         StoneLifeState state = new StoneLifeState();
         Assert.False(state.PollHealth(0.5f, 0.1f));
@@ -33,7 +33,7 @@ public class StoneLifeStateTests
     }
 
     [Test]
-    public void HostileOverlapIsOncePerPulseAndIgnoresSnapshotCompaction()
+    public void PollZones_HostileOverlap_CountsOncePerPulseDespiteCompaction()
     {
         StoneLifeState state = new StoneLifeState();
         Zone zone = new Zone
@@ -62,7 +62,7 @@ public class StoneLifeStateTests
     }
 
     [Test]
-    public void ConcurrentOverlappingPulsesEachTriggerAndThenStayQuiet()
+    public void PollZones_TwoConcurrentPulses_EachCountOnceThenStayQuiet()
     {
         StoneLifeState state = new StoneLifeState();
         Zone[] zones =
@@ -75,13 +75,18 @@ public class StoneLifeStateTests
     }
 
     [Test]
-    public void WobbleSettlesAndOchreFrequencyIsOneInFive()
+    public void Wobble_AfterImpact_KicksThenSettles()
     {
         Assert.AreEqual(0, StoneLifeState.Wobble(0f));
         Assert.AreEqual(0, StoneLifeState.Wobble(1.2f));
         Assert.Greater(Mathf.Abs(StoneLifeState.Wobble(0.05f)), 3);
+    }
 
+    [Test]
+    public void Ochre_HundredSeeds_PicksOneInFive()
+    {
         int count = 0;
+
         for (uint i = 0; i < 100; i++)
         {
             if (StoneLifeState.Ochre(i))
@@ -89,11 +94,12 @@ public class StoneLifeStateTests
                 count++;
             }
         }
+
         Assert.AreEqual(20, count);
     }
 
     [Test]
-    public void PollingAllocatesNothingAfterConstruction()
+    public void PollZonesAndHealth_Repeated_AllocateNothing()
     {
         StoneLifeState state = new StoneLifeState();
         Zone[] zones = { new Zone { kind = 2, radius = 1f, strength = 1f } };
