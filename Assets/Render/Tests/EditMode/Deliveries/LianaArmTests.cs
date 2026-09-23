@@ -269,6 +269,89 @@ public class LianaArmTests
         _arm.Tick(0.016f, Vector3.zero, Quaternion.identity);
         Assert.That(Vector3.Distance(_arm.tip, Vector3.forward), Is.LessThan(0.001f));
     }
+
+    [Test]
+    public void Init_TipColourSet_TipRestsInIt()
+    {
+        ArmDefinition definition = _recipe.arms[0];
+        definition.tipColour = Color.magenta;
+
+        LianaArm arm = CreateArm(definition);
+
+        Assert.AreEqual(Color.magenta, arm.tipColour);
+        Assert.AreEqual(Color.magenta, arm.restTipColour);
+    }
+
+    [Test]
+    public void Init_TipColourAlphaZero_TipRestsInArmColour()
+    {
+        ArmDefinition definition = _recipe.arms[0];
+        definition.tipColour = new Color(1f, 0f, 1f, 0f);
+
+        LianaArm arm = CreateArm(definition);
+
+        Assert.AreEqual(definition.colour, arm.tipColour);
+    }
+
+    [Test]
+    public void SetTipAccent_LiveGesture_ColoursTipUntilRest()
+    {
+        _arm.Begin(1, GestureKind.Attack, Vector3.one);
+
+        _arm.SetTipAccent(2, Color.cyan); // another lease
+        Color stale = _arm.tipColour;
+        _arm.SetTipAccent(1, Color.red);
+        Color live = _arm.tipColour;
+        _arm.End(1);
+        _arm.Tick(1f, Vector3.zero, Quaternion.identity);
+
+        Assert.AreEqual(_arm.restTipColour, stale);
+        Assert.AreEqual(Color.red, live);
+        Assert.AreEqual(GesturePhase.Rest, _arm.phase);
+        Assert.AreEqual(_arm.restTipColour, _arm.tipColour);
+    }
+
+    [Test]
+    public void SetTipAccent_AtRest_KeepsRestColour()
+    {
+        _arm.SetTipAccent(0, Color.red);
+
+        Assert.AreEqual(_arm.restTipColour, _arm.tipColour);
+    }
+
+    [TestCase(DeliveryStyle.Direct, 1)]
+    [TestCase(DeliveryStyle.Arc, 2)]
+    [TestCase(DeliveryStyle.Swarm, 3)]
+    [TestCase(DeliveryStyle.Thrown, 0)]
+    public void Tick_Style_TipDrawsItsFragment(DeliveryStyle style, int expectedParts)
+    {
+        LianaArm rendered = CreateRenderedArm();
+        rendered.style = style;
+        rendered.deliveryProfile = true;
+
+        rendered.Begin(1, GestureKind.Attack, Vector3.right);
+        rendered.SetTipGoal(1, Vector3.right);
+        rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);
+
+        Assert.AreSame(DeliveryVocabularyTests.Vocabulary(), rendered.vocabulary);
+        Assert.AreEqual(style, rendered.tipFragment.style);
+        Assert.AreEqual(expectedParts, rendered.tipFragment.partCount);
+    }
+
+    [Test]
+    public void Tick_TipFrame_LooksAlongTheLastLink()
+    {
+        LianaArm rendered = CreateRenderedArm();
+        rendered.style = DeliveryStyle.Rigid;
+        rendered.deliveryProfile = true;
+
+        rendered.Begin(1, GestureKind.Attack, Vector3.right * 2f);
+        rendered.SetTipGoal(1, Vector3.right * 2f);
+        rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);
+
+        Vector3 forward = rendered.tipMatrix.MultiplyVector(Vector3.forward).normalized;
+        Assert.That(Vector3.Dot(forward, Vector3.right), Is.GreaterThan(0.99f));
+    }
 }
 
 }

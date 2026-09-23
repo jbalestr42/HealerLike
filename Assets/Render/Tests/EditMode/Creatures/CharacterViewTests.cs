@@ -186,6 +186,16 @@ public class CharacterViewTests
     }
 
     [Test]
+    public void TryGetAnchors_BeforeTheRig_ReturnsFalse()
+    {
+        CharacterView view = _characterGo.AddComponent<CharacterView>();
+
+        bool hasAnchors = view.TryGetAnchors(out _);
+
+        Assert.IsFalse(hasAnchors);
+    }
+
+    [Test]
     public void Init_ViewPrefab_AnchorsBodyOnItself()
     {
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Creatures/Prefabs/HealerCharacter.prefab");

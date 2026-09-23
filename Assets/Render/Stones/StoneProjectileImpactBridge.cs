@@ -29,8 +29,8 @@ namespace HealerLike.Render.Stones
             {
                 target = data.target;
             }
-            StoneEnemyVisual visual = target != null ? target.GetComponentInChildren<StoneEnemyVisual>() : null;
-            if (visual == null)
+            StoneBody body = target != null ? target.GetComponentInChildren<StoneBody>() : null;
+            if (body == null)
             {
                 return;
             }
@@ -41,7 +41,7 @@ namespace HealerLike.Render.Stones
             {
                 direction = (transform.position - data.source.transform.position).normalized;
             }
-            visual.RecordImpact(data.resourceModifier, visual.EstimateImpact(transform.position, direction));
+            body.RecordImpact(data.resourceModifier, body.EstimateImpact(transform.position, direction));
         }
 
         void OnDisable()

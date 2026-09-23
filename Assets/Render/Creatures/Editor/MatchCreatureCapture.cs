@@ -9,7 +9,7 @@ using HealerLike.Render.Spells;
 
 namespace HealerLike.Render.Creatures
 {
-    // Visual-only gallery of the shipped recipes, it runs no gameplay
+    // Visual-only gallery of the authored healer recipe, it runs no gameplay
     public static class MatchCreatureCapture
     {
         public static void Run()
@@ -43,11 +43,11 @@ namespace HealerLike.Render.Creatures
             look.settings = settings;
             look.ApplyGlobals();
 
-            string[] names = { "SpiralFern", "HangingArch", "Healer", "SphereStack", "BladeRosette" };
+            string[] names = { "Healer" };
             for (int i = 0; i < names.Length; i++)
             {
                 GameObject root = new GameObject(names[i]);
-                root.transform.position = new Vector3((i - 2) * 2.0f, 0f, 0f);
+                root.transform.position = new Vector3(i * 2.0f, 0f, 0f);
                 string path = "Assets/Render/Creatures/Data/" + names[i] + ".asset";
                 CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
                 CreatureRig rig = new CreatureRig();
@@ -64,7 +64,7 @@ namespace HealerLike.Render.Creatures
             Vector3 reach = new Vector3(-2.1f, 1.3f, -1f);
             rigs[0].BeginDelivery(1001, DeliveryStyle.Direct, null, reach);
             rigs[0].ContactDelivery(1001, reach, null);
-            rigs[0].Tick(0.1f, 0.016f, new FootFrame(new Vector3(-4f, 0f, 0f), Vector3.up, 1f));
+            rigs[0].Tick(0.1f, 0.016f, new FootFrame(Vector3.zero, Vector3.up, 1f));
 
             RenderTexture target = new RenderTexture(1600, 800, 24, RenderTextureFormat.ARGB32);
             target.Create();

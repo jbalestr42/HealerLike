@@ -33,7 +33,7 @@ namespace HealerLike.Render.Stones
             HandleDeparture(entity);
         }
 
-        // Only a lethal departure collapses, and only a stone view under the entity
+        // Only a lethal departure collapses, and only a stone body under the entity
         public void HandleDeparture(Entity entity)
         {
             if (!isActiveAndEnabled || entity == null || entity.health == null || entity.health.Value > 0f)
@@ -41,13 +41,13 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            StoneEnemyVisual visual = entity.GetComponentInChildren<StoneEnemyVisual>();
-            if (visual == null)
+            StoneBody body = entity.GetComponentInChildren<StoneBody>();
+            if (body == null)
             {
                 return;
             }
 
-            visual.Collapse(_effects);
+            body.Collapse(_effects);
         }
 
         void Unbind()

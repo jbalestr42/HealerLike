@@ -8,6 +8,12 @@ namespace HealerLike.Render.Creatures
     public class CreatureRig : IDisposable, IDeliverySource
     {
         public static readonly int MaxArms = 8;
+        // Tips draw a wider outline, so a coral tip on a green body separates by an edge and not only by hue
+        public static readonly float TipOutlineWidth = 1.5f;
+        // How dark a tip gets on a dying unit, its hue kept
+        public static readonly float WiltedTipValue = 0.45f;
+        static readonly int baseColourId = Shader.PropertyToID("_BaseColor");
+        static readonly int outlineWidthId = Shader.PropertyToID("_HLOutlineWidthMultiplier");
 
         // A projectile the rig follows until its delivery ends
         class Delivery
@@ -24,6 +30,8 @@ namespace HealerLike.Render.Creatures
         readonly int[] _definitions = new int[MaxArms];
         readonly Vector3?[] _branchRoots = new Vector3?[MaxArms];
         readonly MaterialPropertyBlock _colourBlock = new MaterialPropertyBlock();
+        readonly MaterialPropertyBlock _tipBlock = new MaterialPropertyBlock();
+        readonly MaterialPropertyBlock _ochreBlock = new MaterialPropertyBlock();
         readonly Dictionary<int, Delivery> _deliveries = new Dictionary<int, Delivery>();
         CreatureRecipe _recipe;
         Material _material;
@@ -36,6 +44,7 @@ namespace HealerLike.Render.Creatures
         Transform[] _roots;
         Transform[] _rootJoints;
         Renderer[] _bodyRenderers;
+        bool[] _hasOchreFaces;
         Color[] _colours;
         IdleDefinition _idle;
         int _nextToken;
@@ -61,6 +70,8 @@ namespace HealerLike.Render.Creatures
         public Transform root { get { return _root; } }
 
         public CreatureRecipe recipe { get { return _recipe; } }
+
+        public float cellSize { get { return _cellSize; } }
 
         // One per recipe part, the transform carrying that part's mesh
         public IReadOnlyList<Transform> partTransforms
@@ -127,24 +138,42 @@ namespace HealerLike.Render.Creatures
             _pivots = new Transform[data.parts.Length];
             _geometry = new Transform[data.parts.Length];
             _bodyRenderers = new Renderer[data.parts.Length];
+            _hasOchreFaces = new bool[data.parts.Length];
             _colours = new Color[data.parts.Length];
             _idle = data.idle;
             _idle.seed ^= parent.GetEntityId().GetHashCode();
             for (int i = 0; i < data.parts.Length; i++)
             {
                 CreaturePart part = data.parts[i];
-                _colours[i] = BeautyMotion.Vary(part.colour, _idle.seed);
+                // The accent stays the palette's own colour, only the body varies from unit to unit
+                _colours[i] = part.role == PartRole.Tip ? part.colour : BeautyMotion.Vary(part.colour, _idle.seed);
                 _pivots[i] = new GameObject(part.id).transform;
                 _pivots[i].SetParent(part.parent < 0 ? _sway : _pivots[part.parent], false);
                 _pivots[i].localPosition = part.localPosition * cellSize;
                 _pivots[i].localRotation = Quaternion.Euler(part.localEuler);
-                _geometry[i] = PrimitiveMeshes.Geometry("Geometry", _pivots[i], meshes.GetMesh(part.primitive, part.variant),
-                    material, _colours[i], part.glow);
+                Mesh mesh = meshes.GetMesh(part.primitive, part.variant);
+                _geometry[i] = PrimitiveMeshes.Geometry("Geometry", _pivots[i], mesh, material, _colours[i], part.glow);
                 _geometry[i].localScale = part.dimensions * cellSize;
                 _bodyRenderers[i] = _geometry[i].GetComponent<Renderer>();
+                _hasOchreFaces[i] = mesh && mesh.subMeshCount > 1;
+                if (_hasOchreFaces[i])
+                {
+                    _bodyRenderers[i].sharedMaterials = new Material[] { material, material };
+                }
+
+                Paint(i, _colours[i], part.glow);
             }
 
-            budAnchors = Array.FindAll(_pivots, pivot => pivot.name.StartsWith("Bud", StringComparison.Ordinal));
+            List<Transform> buds = new List<Transform>();
+            for (int i = 0; i < data.parts.Length; i++)
+            {
+                if (data.parts[i].role == PartRole.Tip)
+                {
+                    buds.Add(_pivots[i]);
+                }
+            }
+
+            budAnchors = buds.ToArray();
             int segments = data.roots.segments;
             _roots = new Transform[data.roots.count * segments];
             _rootJoints = new Transform[data.roots.count * (segments - 1)];
@@ -339,30 +368,31 @@ namespace HealerLike.Render.Creatures
             _sway.localRotation = _aim * idlePose.sway * wilt;
             _sway.localPosition = Vector3.down * ((1f - _healthFraction) * 0.08f * _cellSize);
             _crownPulse = Mathf.Max(0f, _crownPulse - dt / 0.2f);
+            float light = Mathf.Max(_budPower, _charge) * _healthFraction;
             for (int i = 0; i < _geometry.Length; i++)
             {
                 CreaturePart part = _recipe.parts[i];
-                bool isHead = part.primitive == Primitive.Sphere || part.glow > 0f || part.id == "Bulb";
-                float swell = 1f + _crownPulse * 0.06f + (isHead ? _charge * 0.24f : 0f);
+                bool isSwelling = part.role == PartRole.Head || part.role == PartRole.Tip;
+                float swell = 1f + _crownPulse * 0.06f + (isSwelling ? _charge * 0.24f : 0f);
                 _geometry[i].localScale = Vector3.Scale(part.dimensions, idlePose.bodyScale) * _cellSize * swell;
-                if (part.id == "Crown")
+                if (part.role == PartRole.Crown)
                 {
                     Quaternion spin = Quaternion.AngleAxis(time * 18f, Vector3.up);
                     _pivots[i].localRotation = Quaternion.Euler(part.localEuler) * spin;
                 }
 
-                Color wiltColour = _recipe.wiltColour;
-                wiltColour.a = _colours[i].a;
-                Color colour = Color.Lerp(wiltColour, _colours[i], _healthFraction);
-                float light = Mathf.Max(_budPower, _charge) * _healthFraction;
-                if (part.glow > 0f)
+                if (part.role == PartRole.Tip)
                 {
-                    Color dim = new Color(colour.r * 0.55f, colour.g * 0.55f, colour.b * 0.55f, colour.a);
-                    colour = Color.Lerp(dim, new Color(0.78f, 0.95f, 0.29f, colour.a), light);
+                    // The accent keeps its hue: charge brightens it, the wilt darkens it
+                    float value = Mathf.Lerp(WiltedTipValue, 1f, _healthFraction);
+                    Color tip = _colours[i];
+                    Paint(i, new Color(tip.r * value, tip.g * value, tip.b * value, tip.a), part.glow * light);
+                    continue;
                 }
 
-                _colourBlock.SetColor("_BaseColor", PrimitiveMeshes.Brighten(colour, part.glow * light));
-                _bodyRenderers[i].SetPropertyBlock(_colourBlock);
+                Color wiltColour = _recipe.wiltColour;
+                wiltColour.a = _colours[i].a;
+                Paint(i, Color.Lerp(wiltColour, _colours[i], _healthFraction), part.glow * light);
             }
 
             RootDefinition roots = _recipe.roots;
@@ -416,6 +446,60 @@ namespace HealerLike.Render.Creatures
             }
         }
 
+        // The body, neck, head and foot as they stand now, read from the recipe's roles and the live transforms
+        public bool TryGetAnchors(out EffectAnchors anchors)
+        {
+            anchors = new EffectAnchors();
+            if (!_root || _geometry == null || _geometry.Length == 0)
+            {
+                return false;
+            }
+
+            int body = -1;
+            int head = -1;
+            for (int i = 0; i < _geometry.Length; i++)
+            {
+                PartRole role = _recipe.parts[i].role;
+                if (role == PartRole.Body && body < 0)
+                {
+                    body = i;
+                }
+
+                bool isHead = role == PartRole.Head || role == PartRole.Tip;
+                if (isHead && (head < 0 || _geometry[i].position.y > _geometry[head].position.y))
+                {
+                    head = i;
+                }
+            }
+
+            Vector3 neck = _recipe.neckLocal;
+            if (neck == Vector3.zero && _recipe.sourceLocal.Length > 0)
+            {
+                foreach (Vector3 source in _recipe.sourceLocal)
+                {
+                    neck += source;
+                }
+                neck /= _recipe.sourceLocal.Length;
+            }
+
+            Bounds bodyBounds = _bodyRenderers[Mathf.Max(0, body)].bounds;
+            anchors.foot = _root.position;
+            anchors.bodyCentre = bodyBounds.center;
+            anchors.bodyRadius = Mathf.Max(bodyBounds.extents.x, bodyBounds.extents.z);
+            anchors.neck = _pivots[0].TransformPoint((neck - _recipe.parts[0].localPosition) * _cellSize);
+            if (head < 0)
+            {
+                anchors.headCentre = anchors.neck;
+                anchors.headRadius = 0f;
+                return true;
+            }
+
+            Bounds headBounds = _bodyRenderers[head].bounds;
+            anchors.headCentre = headBounds.center;
+            anchors.headRadius = Mathf.Max(headBounds.extents.x, Mathf.Max(headBounds.extents.y, headBounds.extents.z));
+            return true;
+        }
+
         public void SetVisible(bool visible)
         {
             if (_root)
@@ -454,6 +538,32 @@ namespace HealerLike.Render.Creatures
             {
                 UnityEngine.Object.DestroyImmediate(_root.gameObject);
             }
+        }
+
+        // A tip carries its wider outline, a stone's ochre faces take the recipe's ochre at the same brightness
+        void Paint(int index, Color colour, float glow)
+        {
+            Color lit = PrimitiveMeshes.Brighten(colour, glow);
+            bool isTip = _recipe.parts[index].role == PartRole.Tip;
+            MaterialPropertyBlock block = isTip ? _tipBlock : _colourBlock;
+            block.SetColor(baseColourId, lit);
+            if (isTip)
+            {
+                block.SetFloat(outlineWidthId, TipOutlineWidth);
+            }
+
+            Renderer renderer = _bodyRenderers[index];
+            if (!_hasOchreFaces[index])
+            {
+                renderer.SetPropertyBlock(block);
+                return;
+            }
+
+            renderer.SetPropertyBlock(block, 0);
+            float wilt = _healthFraction;
+            Color ochre = Color.Lerp(_recipe.wiltColour, _recipe.stoneOchre, wilt);
+            _ochreBlock.SetColor(baseColourId, PrimitiveMeshes.Brighten(ochre, glow));
+            renderer.SetPropertyBlock(_ochreBlock, 1);
         }
 
         void CreateArm(int slot, int definitionIndex)

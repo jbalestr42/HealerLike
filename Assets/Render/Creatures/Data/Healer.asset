@@ -22,6 +22,8 @@ MonoBehaviour:
     colour: {r: 0.18, g: 0.49, b: 0.31, a: 1}
     torusTubeRatio: 0.2
     glow: 0
+    role: 1
+    variant: 0
   - id: Bulb
     parent: 0
     primitive: 2
@@ -31,6 +33,8 @@ MonoBehaviour:
     colour: {r: 0.5, g: 0.79, b: 0.25, a: 1}
     torusTubeRatio: 0.2
     glow: 0
+    role: 0
+    variant: 0
   - id: Hip
     parent: 0
     primitive: 0
@@ -40,6 +44,8 @@ MonoBehaviour:
     colour: {r: 0.5, g: 0.79, b: 0.25, a: 1}
     torusTubeRatio: 0.2
     glow: 0
+    role: 0
+    variant: 0
   - id: Crown
     parent: 0
     primitive: 3
@@ -49,6 +55,8 @@ MonoBehaviour:
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
     glow: 0.4
+    role: 6
+    variant: 0
   - id: Bud0
     parent: 0
     primitive: 0
@@ -58,6 +66,8 @@ MonoBehaviour:
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
     glow: 1.6
+    role: 4
+    variant: 0
   - id: Bud1
     parent: 0
     primitive: 0
@@ -67,6 +77,8 @@ MonoBehaviour:
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
     glow: 1.6
+    role: 4
+    variant: 0
   - id: Bud2
     parent: 0
     primitive: 0
@@ -76,6 +88,8 @@ MonoBehaviour:
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
     glow: 1.6
+    role: 4
+    variant: 0
   - id: Joint0
     parent: 0
     primitive: 0
@@ -85,6 +99,8 @@ MonoBehaviour:
     colour: {r: 0.78, g: 0.95, b: 0.29, a: 1}
     torusTubeRatio: 0.2
     glow: 0
+    role: 1
+    variant: 0
   arms:
   - bodyPart: 0
     rootLocal: {x: -0.26, y: 0.58750004, z: 0}

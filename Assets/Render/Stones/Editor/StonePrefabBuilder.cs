@@ -18,7 +18,7 @@ namespace HealerLike.Render.Stones
         {
             Directory.CreateDirectory(root + "Prefabs");
             BuildEffects();
-            StoneModelAuthoring.Build(root + "Prefabs/StoneSoldierModel.prefab", "StoneSoldierModel", StonePreset.Boulder);
+            BuildDerivedStone();
             BuildBlock();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -32,6 +32,22 @@ namespace HealerLike.Render.Stones
                 Debug.LogError($"[StonePrefabBuilder] Missing {path}");
             }
             return asset;
+        }
+
+        // The derived stone keeps the CreatureBuilder that draws it and gains the body that sheds, collapses and throws
+        public static void BuildDerivedStone()
+        {
+            string path = root + "Prefabs/DerivedStone.prefab";
+            GameObject stoneGo = PrefabUtility.LoadPrefabContents(path);
+            if (stoneGo.GetComponent<StoneBody>() == null)
+            {
+                StoneBody body = stoneGo.AddComponent<StoneBody>();
+                SerializedObject bodySO = new SerializedObject(body);
+                bodySO.FindProperty("_groundShadow").objectReferenceValue = AddDisc(stoneGo.transform, true);
+                bodySO.ApplyModifiedPropertiesWithoutUndo();
+            }
+            PrefabUtility.SaveAsPrefabAsset(stoneGo, path);
+            PrefabUtility.UnloadPrefabContents(stoneGo);
         }
 
         static void BuildBlock()

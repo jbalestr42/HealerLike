@@ -243,7 +243,7 @@ public class RenderManagerTests
         CreatureBuilder builder = entity.model.GetComponentInChildren<CreatureBuilder>();
         Assert.IsNotNull(builder, "The derived stone carries a CreatureBuilder.");
         Assert.IsNotNull(builder.rig);
-        Assert.AreEqual(Primitive.Boulder, builder.recipe.parts[0].primitive);
+        Assert.AreEqual(Primitive.Stone, builder.recipe.parts[0].primitive);
     }
 
     [Test]
@@ -260,7 +260,7 @@ public class RenderManagerTests
         CreatureBuilder builder = entity.model.GetComponentInChildren<CreatureBuilder>();
         Assert.IsNotNull(builder, "The derived stone carries a CreatureBuilder.");
         Assert.IsNotNull(builder.rig);
-        Assert.AreEqual(Primitive.Boulder, builder.recipe.parts[0].primitive);
+        Assert.AreEqual(Primitive.Stone, builder.recipe.parts[0].primitive);
     }
 }
 
