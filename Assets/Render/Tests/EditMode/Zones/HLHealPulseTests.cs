@@ -19,7 +19,7 @@ namespace HealerLike.Render.Zones
             HLRenderRegistry.current = new HLRenderRegistry();
             _ownerGo = new GameObject("zones");
             _owner = _ownerGo.AddComponent<HLZoneRegistry>();
-            _owner.Initialize(new HLZoneFakeUpload());
+            _owner.Init(new HLZoneFakeUpload());
             _source = new GameObject("source");
             _target = new GameObject("target");
             _target.transform.position = new Vector3(1f, 2f, 3f);
@@ -115,6 +115,46 @@ namespace HealerLike.Render.Zones
             HLRenderRegistry.current.NotifyHeal(_source, null, 1, false);
 
             Assert.AreEqual(0, _owner.liveCount);
+        }
+
+
+        [Test]
+        public void Init_WithRegistryAndZones_PulsesOnlyForTheGivenRegistry()
+        {
+            HLRenderRegistry registry = new HLRenderRegistry();
+
+            _pulse.Init(_source, registry, _owner);
+            HLRenderRegistry.current.NotifyHeal(_source, _target, 1f, false);
+
+            Assert.AreEqual(0, _owner.liveCount);
+
+            registry.NotifyHeal(_source, _target, 1f, false);
+
+            Assert.AreEqual(1, _owner.liveCount);
+        }
+
+        [Test]
+        public void Init_WithoutZones_IgnoresTheStaticZoneRegistry()
+        {
+            HLRenderRegistry registry = new HLRenderRegistry();
+
+            _pulse.Init(_source, registry, null);
+            registry.NotifyHeal(_source, _target, 1f, false);
+
+            Assert.AreEqual(0, _owner.liveCount);
+        }
+
+        [Test]
+        public void Update_AfterInit_KeepsTheGivenRegistry()
+        {
+            HLRenderRegistry registry = new HLRenderRegistry();
+            _pulse.Init(_source, registry, _owner);
+
+            HLRenderRegistry.current = new HLRenderRegistry();
+            TestHelpers.InvokePrivate(_pulse, "Update");
+            registry.NotifyHeal(_source, _target, 1f, false);
+
+            Assert.AreEqual(1, _owner.liveCount);
         }
     }
 }

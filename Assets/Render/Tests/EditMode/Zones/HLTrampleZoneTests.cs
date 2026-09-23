@@ -13,7 +13,7 @@ namespace HealerLike.Render.Zones
             try
             {
                 HLZoneRegistry registry = root.AddComponent<HLZoneRegistry>();
-                registry.Initialize(new HLZoneFakeUpload());
+                registry.Init(new HLZoneFakeUpload());
                 HLTrampleZone zone = obstacle.AddComponent<HLTrampleZone>();
                 zone.Refresh();
                 registry.PublishFrame(1f);
@@ -65,7 +65,7 @@ namespace HealerLike.Render.Zones
             try
             {
                 HLZoneRegistry registry = root.AddComponent<HLZoneRegistry>();
-                registry.Initialize(new HLZoneFakeUpload());
+                registry.Init(new HLZoneFakeUpload());
                 HLTrampleZone zone = obstacle.AddComponent<HLTrampleZone>();
                 for (int i = 0; i < 100; i++)
                 {
@@ -97,14 +97,14 @@ namespace HealerLike.Render.Zones
             try
             {
                 HLZoneRegistry registry = root.AddComponent<HLZoneRegistry>();
-                registry.Initialize(new HLZoneFakeUpload());
+                registry.Init(new HLZoneFakeUpload());
                 HLTrampleZone zone = obstacle.AddComponent<HLTrampleZone>();
                 zone.Refresh();
                 Object.DestroyImmediate(root);
                 zone.Refresh();
                 root = new GameObject("replacement");
                 registry = root.AddComponent<HLZoneRegistry>();
-                registry.Initialize(new HLZoneFakeUpload());
+                registry.Init(new HLZoneFakeUpload());
 
                 zone.Refresh();
 
@@ -115,6 +115,44 @@ namespace HealerLike.Render.Zones
                 Object.DestroyImmediate(obstacle);
                 Object.DestroyImmediate(root);
             }
+        }
+
+
+        [Test]
+        public void Refresh_InitWithZones_AddsOneFootprintThere()
+        {
+            GameObject root = new GameObject("zones");
+            GameObject obstacle = new GameObject("obstacle");
+            HLZoneRegistry registry = root.AddComponent<HLZoneRegistry>();
+            registry.Init(new HLZoneFakeUpload());
+            HLTrampleZone zone = obstacle.AddComponent<HLTrampleZone>();
+
+            zone.Init(registry);
+            zone.Refresh();
+            zone.Refresh();
+
+            Assert.AreEqual(1, registry.liveCount);
+
+            Object.DestroyImmediate(obstacle);
+            Object.DestroyImmediate(root);
+        }
+
+        [Test]
+        public void Refresh_InitWithoutZones_IgnoresTheStaticRegistry()
+        {
+            GameObject root = new GameObject("zones");
+            GameObject obstacle = new GameObject("obstacle");
+            HLZoneRegistry registry = root.AddComponent<HLZoneRegistry>();
+            registry.Init(new HLZoneFakeUpload());
+            HLTrampleZone zone = obstacle.AddComponent<HLTrampleZone>();
+
+            zone.Init(null);
+            zone.Refresh();
+
+            Assert.AreEqual(0, registry.liveCount);
+
+            Object.DestroyImmediate(obstacle);
+            Object.DestroyImmediate(root);
         }
     }
 }

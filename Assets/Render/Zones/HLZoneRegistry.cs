@@ -5,7 +5,6 @@ using UnityEngine;
 namespace HealerLike.Render.Zones
 {
     // Producers update their zones in Update, the snapshot is published in LateUpdate before the grass draws
-    [DefaultExecutionOrder(-1000)]
     public class HLZoneRegistry : MonoBehaviour, IHLZoneOwner
     {
         struct Entry
@@ -52,6 +51,7 @@ namespace HealerLike.Render.Zones
             }
         }
 
+        // Read by the folders not yet on Init, removed in D2
         static HLZoneRegistry _current;
         public static HLZoneRegistry current { get { return _current; } }
 
@@ -78,17 +78,21 @@ namespace HealerLike.Render.Zones
         {
             if (Application.isPlaying)
             {
-                Initialize();
+                Init();
             }
         }
 
-        public void Initialize(IHLZoneUpload upload = null)
+        // removed in D2
+        public void Initialize(IHLZoneUpload upload = null) { Init(upload); }
+
+        public void Init(IHLZoneUpload upload = null)
         {
             if (_upload != null)
             {
                 return;
             }
 
+            // Stays until D2 removes current, then the RenderManager owns the one registry
             if (_current != null && _current != this)
             {
                 throw new InvalidOperationException("Only one HLZoneRegistry may publish zones.");
@@ -237,9 +241,10 @@ namespace HealerLike.Render.Zones
                 return;
             }
 
-            if (float.IsNaN(deltaTime) || float.IsInfinity(deltaTime) || deltaTime < 0)
+            if (!float.IsFinite(deltaTime) || deltaTime < 0f)
             {
-                throw new ArgumentOutOfRangeException(nameof(deltaTime));
+                Debug.LogError($"[HLZoneRegistry] PublishFrame needs a finite delta time of zero or more, got {deltaTime}.");
+                return;
             }
 
             int written = 0;

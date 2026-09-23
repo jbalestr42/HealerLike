@@ -13,7 +13,7 @@ namespace HealerLike.Render.Zones
             try
             {
                 HLZoneRegistry owner = ownerGo.AddComponent<HLZoneRegistry>();
-                owner.Initialize(new HLZoneFakeUpload());
+                owner.Init(new HLZoneFakeUpload());
                 HLAreaPulse pulse = areaGo.AddComponent<HLAreaPulse>();
                 AreaOfEffect area = areaGo.GetComponent<AreaOfEffect>();
                 area.radius = 3.25f;
@@ -49,7 +49,7 @@ namespace HealerLike.Render.Zones
             try
             {
                 HLZoneRegistry owner = ownerGo.AddComponent<HLZoneRegistry>();
-                owner.Initialize(new HLZoneFakeUpload());
+                owner.Init(new HLZoneFakeUpload());
                 HLAreaPulse pulse = areaGo.AddComponent<HLAreaPulse>();
                 pulse.kind = HLZoneKind.Heal;
 
@@ -66,6 +66,45 @@ namespace HealerLike.Render.Zones
                 Object.DestroyImmediate(areaGo);
                 Object.DestroyImmediate(ownerGo);
             }
+        }
+
+
+        [Test]
+        public void Start_InitWithZones_PulsesOnTheGivenRegistry()
+        {
+            GameObject ownerGo = new GameObject("zones");
+            GameObject areaGo = new GameObject("area");
+            HLZoneRegistry owner = ownerGo.AddComponent<HLZoneRegistry>();
+            owner.Init(new HLZoneFakeUpload());
+            HLAreaPulse pulse = areaGo.AddComponent<HLAreaPulse>();
+            areaGo.GetComponent<AreaOfEffect>().radius = 2f;
+
+            pulse.Init(owner);
+            TestHelpers.InvokePrivate(pulse, "Start");
+
+            Assert.AreEqual(1, owner.liveCount);
+
+            Object.DestroyImmediate(areaGo);
+            Object.DestroyImmediate(ownerGo);
+        }
+
+        [Test]
+        public void Start_InitWithoutZones_IgnoresTheStaticRegistry()
+        {
+            GameObject ownerGo = new GameObject("zones");
+            GameObject areaGo = new GameObject("area");
+            HLZoneRegistry owner = ownerGo.AddComponent<HLZoneRegistry>();
+            owner.Init(new HLZoneFakeUpload());
+            HLAreaPulse pulse = areaGo.AddComponent<HLAreaPulse>();
+            areaGo.GetComponent<AreaOfEffect>().radius = 2f;
+
+            pulse.Init(null);
+            TestHelpers.InvokePrivate(pulse, "Start");
+
+            Assert.AreEqual(0, owner.liveCount); // current is set, but Init said no zones
+
+            Object.DestroyImmediate(areaGo);
+            Object.DestroyImmediate(ownerGo);
         }
     }
 }
