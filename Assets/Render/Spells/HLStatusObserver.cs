@@ -74,7 +74,7 @@ namespace HealerLike.Render.Spells
             {
                 return;
             }
-            IHLSpellVisualSink sink = _injected ?? HLRenderRegistry.Current?.SpellSink;
+            IHLSpellVisualSink sink = _injected ?? HLRenderRegistry.current?.spellSink;
             int version = sink is HLSpellVisualSink visual ? visual.presentationVersion : 0;
             if (!ReferenceEquals(sink, _lastSink) || version != _sinkVersion)
             {
@@ -209,7 +209,7 @@ namespace HealerLike.Render.Spells
             );
             if (!remains)
             {
-                (_injected ?? HLRenderRegistry.Current?.SpellSink)?.RemoveStatus(
+                (_injected ?? HLRenderRegistry.current?.spellSink)?.RemoveStatus(
                     null,
                     data.target,
                     data.buffHandlerFactory

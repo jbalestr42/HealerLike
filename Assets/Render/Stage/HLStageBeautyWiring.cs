@@ -49,7 +49,7 @@ namespace HealerLike.Render.Stage
         {
             var trample = obstacleRoot.GetComponent<HLTrampleZone>();
             if (!trample) trample = obstacleRoot.AddComponent<HLTrampleZone>();
-            trample.Radius = TrampleRadius(footprintWorldRadius);
+            trample.radius = TrampleRadius(footprintWorldRadius);
             return trample;
         }
         // Grass beauty report: the zone sits at the footprint centre. A clump's bare disc may be offset from its pivot.
@@ -76,7 +76,7 @@ namespace HealerLike.Render.Stage
         IEnumerator Start()
         {
             if (healerView && healer)
-                healerView.Bind(healer, healerRecipe, healerAnchor, healerMaterial, bootstrap ? bootstrap.Registry : HLRenderRegistry.Current, grid ? grid.size : 1);
+                healerView.Bind(healer, healerRecipe, healerAnchor, healerMaterial, bootstrap ? bootstrap.Registry : HLRenderRegistry.current, grid ? grid.size : 1);
             // Attach presentation only to already-existing cosmetic environment clumps.
             yield return null;
             WiredClumps = 0;

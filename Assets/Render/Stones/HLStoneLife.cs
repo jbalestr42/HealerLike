@@ -119,8 +119,8 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            HLZoneRegistry registry = HLZoneRegistry.Current;
-            ReadOnlySpan<HLZone> snapshot = registry != null ? registry.Snapshot : default;
+            HLZoneRegistry registry = HLZoneRegistry.current;
+            ReadOnlySpan<HLZone> snapshot = registry != null ? registry.snapshot : default;
             int pulses = _state.PollZones(snapshot, transform.position, _radius);
             for (int i = 0; i < pulses; i++)
             {

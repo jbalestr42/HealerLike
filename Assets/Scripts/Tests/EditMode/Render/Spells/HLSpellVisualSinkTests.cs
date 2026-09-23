@@ -97,16 +97,16 @@ namespace HealerLike.Render.Spells
         [Test]
         public void RegistryCallsCannotRepopulateDisabledSinkAndEnableStartsClean()
         {
-            HLRenderRegistry previous = HLRenderRegistry.Current;
+            HLRenderRegistry previous = HLRenderRegistry.current;
             try
             {
-                HLRenderRegistry.Current = new HLRenderRegistry { SpellSink = _sink };
+                HLRenderRegistry.current = new HLRenderRegistry { spellSink = _sink };
                 _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, HLClockKind.Simulation);
                 GameObject root = _sink.GetStatus(_target, _factory);
                 _sink.enabled = false;
                 TestHelpers.InvokePrivate(_sink, "OnDisable");
                 Assert.IsFalse(root);
-                IHLSpellVisualSink registered = HLRenderRegistry.Current.SpellSink;
+                IHLSpellVisualSink registered = HLRenderRegistry.current.spellSink;
                 registered.SetStatus(null, _target, _factory, 1, 0f, 4f, HLClockKind.Simulation);
                 registered.ShowImpact(null, _target, HLResourceKind.Health, 2f, false);
                 _sink.PulseArea(Vector3.zero, 1f, HLZoneKind.Heal, 1f);
@@ -115,7 +115,7 @@ namespace HealerLike.Render.Spells
                 Assert.AreEqual(0, _sink.impactCount);
                 _sink.enabled = true;
                 TestHelpers.InvokePrivate(_sink, "OnEnable");
-                Assert.AreSame(_sink, HLRenderRegistry.Current.SpellSink);
+                Assert.AreSame(_sink, HLRenderRegistry.current.spellSink);
                 Assert.AreEqual(0, _sink.statusCount);
                 _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, HLClockKind.Simulation);
                 Assert.AreEqual(1, _sink.statusCount);
@@ -124,7 +124,7 @@ namespace HealerLike.Render.Spells
             }
             finally
             {
-                HLRenderRegistry.Current = previous;
+                HLRenderRegistry.current = previous;
             }
         }
 
@@ -329,11 +329,11 @@ namespace HealerLike.Render.Spells
         [Test]
         public void NullDelegateFallsBackToRegistryZoneOwner()
         {
-            HLRenderRegistry previous = HLRenderRegistry.Current;
+            HLRenderRegistry previous = HLRenderRegistry.current;
             HLOwnerSpy owner = new HLOwnerSpy();
             try
             {
-                HLRenderRegistry.Current = new HLRenderRegistry { ZoneOwner = owner };
+                HLRenderRegistry.current = new HLRenderRegistry { zoneOwner = owner };
                 _sink.PulseArea(Vector3.one, 3f, HLZoneKind.Hostile, 0.5f);
                 Assert.AreEqual(1, owner.calls);
                 Assert.AreEqual(3, owner.radius);
@@ -347,12 +347,12 @@ namespace HealerLike.Render.Spells
                 Assert.AreEqual(1, injected);
                 Assert.AreEqual(1, owner.calls);
                 _sink.areaPulse = null;
-                HLRenderRegistry.Current = null;
+                HLRenderRegistry.current = null;
                 Assert.DoesNotThrow(() => _sink.PulseArea(Vector3.one, 3f, HLZoneKind.Heal, 0.5f));
             }
             finally
             {
-                HLRenderRegistry.Current = previous;
+                HLRenderRegistry.current = previous;
             }
         }
 

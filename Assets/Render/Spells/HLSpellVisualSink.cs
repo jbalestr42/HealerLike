@@ -30,7 +30,7 @@ namespace HealerLike.Render.Spells
         readonly List<GameObject> _removing = new List<GameObject>();
         bool _ownsPrimitives;
 
-        // Injected adapter wins; when null, PulseArea falls back to HLRenderRegistry.Current.ZoneOwner.
+        // Injected adapter wins; when null, PulseArea falls back to HLRenderRegistry.current.zoneOwner.
         public Action<Vector3, float, HLZoneKind, float> areaPulse { get; set; }
 
         // Optional bud adapter supplied by the creature view.
@@ -325,7 +325,7 @@ namespace HealerLike.Render.Spells
             }
             else
             {
-                HLRenderRegistry.Current?.ZoneOwner?.AddPulse(kind, center, radius, zone.strength, PulseSeconds);
+                HLRenderRegistry.current?.zoneOwner?.AddPulse(kind, center, radius, zone.strength, PulseSeconds);
             }
         }
 

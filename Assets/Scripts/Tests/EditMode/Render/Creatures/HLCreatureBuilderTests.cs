@@ -85,7 +85,7 @@ namespace HealerLike.Render.Creatures
             _builder = _model.AddComponent<HLCreatureBuilder>();
             _builder.SetRecipe(_recipe, _material);
             _sink = new HLSink();
-            _registry = new HLRenderRegistry { SpellSink = _sink };
+            _registry = new HLRenderRegistry { spellSink = _sink };
             _registry.Register(_source, _sink);
             _builder.Configure(_registry, 1f, Vector3.zero, Vector3.up);
             entityModel.Init(_entity);

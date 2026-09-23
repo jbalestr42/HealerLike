@@ -117,9 +117,9 @@ namespace HealerLike.Render.Spells
             {
                 return;
             }
-            HLRenderRegistry registry = _hasInjection ? _injected : HLRenderRegistry.Current;
+            HLRenderRegistry registry = _hasInjection ? _injected : HLRenderRegistry.current;
             GameObject source = modifier != null ? modifier.source : null;
-            registry?.SpellSink?.ShowImpact(source, owner, kind, amount, critical);
+            registry?.spellSink?.ShowImpact(source, owner, kind, amount, critical);
             if (kind == HLResourceKind.Health && amount > 0f)
             {
                 registry?.NotifyHeal(source, owner, amount, critical);

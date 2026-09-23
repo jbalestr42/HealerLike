@@ -320,7 +320,7 @@ namespace HealerLike.Render.Creatures
 
         void SyncRegistry()
         {
-            HLRenderRegistry registry = _hasInjection ? _injectedRegistry : HLRenderRegistry.Current;
+            HLRenderRegistry registry = _hasInjection ? _injectedRegistry : HLRenderRegistry.current;
             if (_registeredRegistry == registry)
             {
                 return;

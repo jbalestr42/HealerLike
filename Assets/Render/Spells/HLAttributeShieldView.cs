@@ -76,7 +76,7 @@ namespace HealerLike.Render.Spells
                 _effect.kind = HLSpellEffectKind.Shield;
                 _effect.material = _material
                     ? _material
-                    : (HLRenderRegistry.Current?.SpellSink as HLSpellVisualSink)?.material;
+                    : (HLRenderRegistry.current?.spellSink as HLSpellVisualSink)?.material;
                 _effect.Initialize();
                 _born = Time.time;
                 HLSpellSignature signature = new HLSpellSignature

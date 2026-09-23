@@ -15,8 +15,8 @@ namespace HealerLike.Render.Stage
         }
         GameObject root;
         HLRenderRegistry previous;
-        [SetUp] public void Setup() { previous = HLRenderRegistry.Current; HLRenderRegistry.Current = null; root = new GameObject("HLTest"); root.SetActive(false); }
-        [TearDown] public void Cleanup() { Object.DestroyImmediate(root); HLRenderRegistry.Current = previous; }
+        [SetUp] public void Setup() { previous = HLRenderRegistry.current; HLRenderRegistry.current = null; root = new GameObject("HLTest"); root.SetActive(false); }
+        [TearDown] public void Cleanup() { Object.DestroyImmediate(root); HLRenderRegistry.current = previous; }
         [Test] public void PublishesInjectedSinkAndOwnsComponentLifetimes()
         {
             var bootstrap = root.AddComponent<HLRenderBootstrap>();
@@ -29,14 +29,14 @@ namespace HealerLike.Render.Stage
             look.enabled = zones.enabled = bridge.enabled = grass.enabled = false;
             var fake = new HLFakeSink(); bootstrap.Configure(fake, look, zones);
             TestHelpers.InvokePrivate(bootstrap, "OnEnable");
-            Assert.That(HLRenderRegistry.Current, Is.SameAs(bootstrap.Registry));
-            HLRenderRegistry.Current.SpellSink.PulseArea(Vector3.zero, 1, HLZoneKind.Heal, 1);
+            Assert.That(HLRenderRegistry.current, Is.SameAs(bootstrap.Registry));
+            HLRenderRegistry.current.spellSink.PulseArea(Vector3.zero, 1, HLZoneKind.Heal, 1);
             Assert.That(fake.pulses, Is.EqualTo(1)); Assert.That(look.enabled && zones.enabled && bridge.enabled && grass.enabled, Is.True);
             Assert.Throws<System.InvalidOperationException>(() => bootstrap.Configure(fake, look, zones));
             TestHelpers.InvokePrivate(bootstrap, "OnDisable");
-            Assert.That(HLRenderRegistry.Current, Is.Null); Assert.That(look.enabled || zones.enabled || bridge.enabled || grass.enabled, Is.False);
+            Assert.That(HLRenderRegistry.current, Is.Null); Assert.That(look.enabled || zones.enabled || bridge.enabled || grass.enabled, Is.False);
             TestHelpers.InvokePrivate(bootstrap, "OnEnable");
-            Assert.That(HLRenderRegistry.Current.SpellSink, Is.SameAs(fake));
+            Assert.That(HLRenderRegistry.current.spellSink, Is.SameAs(fake));
         }
         [Test] public void BindsZoneOwnerAndSinkAreaPulseThenClearsOnDisable()
         {
@@ -48,10 +48,10 @@ namespace HealerLike.Render.Stage
             {
                 bootstrap.Configure(sink, null, zones);
                 TestHelpers.InvokePrivate(bootstrap, "OnEnable");
-                Assert.That(HLRenderRegistry.Current.ZoneOwner, Is.SameAs(zones));
+                Assert.That(HLRenderRegistry.current.zoneOwner, Is.SameAs(zones));
                 Assert.That(sink.areaPulse, Is.Not.Null);
                 sink.PulseArea(Vector3.zero, 2, HLZoneKind.Hostile, 1);
-                Assert.That(zones.LiveCount, Is.EqualTo(1));
+                Assert.That(zones.liveCount, Is.EqualTo(1));
                 TestHelpers.InvokePrivate(bootstrap, "OnDisable");
                 Assert.That(sink.areaPulse, Is.Null);
             }
@@ -83,15 +83,15 @@ namespace HealerLike.Render.Stage
                 var second = other.AddComponent<HLRenderBootstrap>();
                 TestHelpers.WithLoggingDisabled(() => TestHelpers.InvokePrivate(second, "OnEnable"));
                 TestHelpers.InvokePrivate(second, "OnDisable");
-                Assert.That(HLRenderRegistry.Current, Is.SameAs(first.Registry));
+                Assert.That(HLRenderRegistry.current, Is.SameAs(first.Registry));
             } finally { Object.DestroyImmediate(other); }
         }
         [Test] public void DisableDoesNotClearAReplacementRegistry()
         {
             var bootstrap = root.AddComponent<HLRenderBootstrap>(); TestHelpers.InvokePrivate(bootstrap, "OnEnable");
-            var replacement = new HLRenderRegistry(); HLRenderRegistry.Current = replacement;
+            var replacement = new HLRenderRegistry(); HLRenderRegistry.current = replacement;
             TestHelpers.InvokePrivate(bootstrap, "OnDisable");
-            Assert.That(HLRenderRegistry.Current, Is.SameAs(replacement));
+            Assert.That(HLRenderRegistry.current, Is.SameAs(replacement));
         }
         [Test] public void AppliesPortraitByDefaultAndLandscapeOnRequest()
         {

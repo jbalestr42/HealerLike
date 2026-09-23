@@ -6,36 +6,33 @@ using HealerLike.Render.Zones;
 
 namespace HealerLike.Render
 {
-    /// <summary>Records what the registry forwarded, so a test can assert on target/value/critical.</summary>
-    class RecordingHealSink : IHLHealVisualSink
+    public class RecordingHealSink : IHLHealVisualSink
     {
-        public readonly List<(GameObject target, float value, bool critical)> Calls =
+        public readonly List<(GameObject target, float value, bool critical)> calls =
             new List<(GameObject, float, bool)>();
 
         public void OnHealResolved(GameObject target, float value, bool critical)
         {
-            Calls.Add((target, value, critical));
+            calls.Add((target, value, critical));
         }
     }
 
-    /// <summary>A sink that always fails, to prove one broken cosmetic does not silence the others.</summary>
-    class ThrowingHealSink : IHLHealVisualSink
+    public class ThrowingHealSink : IHLHealVisualSink
     {
-        public int CallCount;
+        public int callCount;
 
         public void OnHealResolved(GameObject target, float value, bool critical)
         {
-            CallCount++;
+            callCount++;
             throw new InvalidOperationException("deliberate test failure");
         }
     }
 
-    /// <summary>Unregisters itself the moment it is notified: the registry must survive that.</summary>
-    class SelfUnregisteringHealSink : IHLHealVisualSink
+    public class SelfUnregisteringHealSink : IHLHealVisualSink
     {
         readonly HLRenderRegistry _registry;
         readonly GameObject _source;
-        public int CallCount;
+        public int callCount;
 
         public SelfUnregisteringHealSink(HLRenderRegistry registry, GameObject source)
         {
@@ -45,50 +42,46 @@ namespace HealerLike.Render
 
         public void OnHealResolved(GameObject target, float value, bool critical)
         {
-            CallCount++;
+            callCount++;
             _registry.Unregister(_source, this);
         }
     }
 
-    /// <summary>
-    /// Proves the frozen IHLSpellVisualSink is implementable from outside the render assembly.
-    /// It only records; nothing here touches gameplay.
-    /// </summary>
-    class RecordingSpellSink : IHLSpellVisualSink
+    public class RecordingSpellSink : IHLSpellVisualSink
     {
-        public int ImpactCount;
-        public int StatusCount;
-        public int RemoveCount;
-        public int PulseCount;
-        public HLResourceKind LastResource;
-        public float LastAmount;
-        public HLClockKind LastClock;
-        public HLZoneKind LastZoneKind;
+        public int impactCount;
+        public int statusCount;
+        public int removeCount;
+        public int pulseCount;
+        public HLResourceKind lastResource;
+        public float lastAmount;
+        public HLClockKind lastClock;
+        public HLZoneKind lastZoneKind;
 
         public void ShowImpact(GameObject source, GameObject target, HLResourceKind resource,
             float preClampAmount, bool isCritical)
         {
-            ImpactCount++;
-            LastResource = resource;
-            LastAmount = preClampAmount;
+            impactCount++;
+            lastResource = resource;
+            lastAmount = preClampAmount;
         }
 
         public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
             float elapsedSeconds, float durationSeconds, HLClockKind clock)
         {
-            StatusCount++;
-            LastClock = clock;
+            statusCount++;
+            lastClock = clock;
         }
 
         public void RemoveStatus(GameObject source, GameObject target, ABuffHandlerFactory factory)
         {
-            RemoveCount++;
+            removeCount++;
         }
 
         public void PulseArea(Vector3 center, float radius, HLZoneKind kind, float strength)
         {
-            PulseCount++;
-            LastZoneKind = kind;
+            pulseCount++;
+            lastZoneKind = kind;
         }
     }
 
@@ -108,25 +101,29 @@ namespace HealerLike.Render
         [SetUp]
         public void SetUp()
         {
-            _previousCurrent = HLRenderRegistry.Current;
+            _previousCurrent = HLRenderRegistry.current;
             _registry = new HLRenderRegistry();
         }
 
         [TearDown]
         public void TearDown()
         {
-            HLRenderRegistry.Current = _previousCurrent;
+            HLRenderRegistry.current = _previousCurrent;
             foreach (GameObject go in _objects)
             {
-                if (go != null) UnityEngine.Object.DestroyImmediate(go);
+                if (go != null)
+                {
+                    UnityEngine.Object.DestroyImmediate(go);
+                }
             }
+
             _objects.Clear();
         }
 
         [Test]
         public void ANewRegistryHasNoSpellSink()
         {
-            Assert.IsNull(_registry.SpellSink);
+            Assert.IsNull(_registry.spellSink);
         }
 
         [Test]
@@ -134,21 +131,21 @@ namespace HealerLike.Render
         {
             RecordingSpellSink sink = new RecordingSpellSink();
 
-            _registry.SpellSink = sink;
-            Assert.AreSame(sink, _registry.SpellSink);
+            _registry.spellSink = sink;
+            Assert.AreSame(sink, _registry.spellSink);
 
-            _registry.SpellSink = null;
-            Assert.IsNull(_registry.SpellSink, "clearing the sink silences spell visuals");
+            _registry.spellSink = null;
+            Assert.IsNull(_registry.spellSink, "clearing the sink silences spell visuals");
         }
 
         [Test]
         public void CurrentRoundTripsAndClears()
         {
-            HLRenderRegistry.Current = _registry;
-            Assert.AreSame(_registry, HLRenderRegistry.Current);
+            HLRenderRegistry.current = _registry;
+            Assert.AreSame(_registry, HLRenderRegistry.current);
 
-            HLRenderRegistry.Current = null;
-            Assert.IsNull(HLRenderRegistry.Current, "the bootstrap clears Current on disable");
+            HLRenderRegistry.current = null;
+            Assert.IsNull(HLRenderRegistry.current, "the bootstrap clears Current on disable");
         }
 
         [Test]
@@ -161,10 +158,10 @@ namespace HealerLike.Render
 
             _registry.NotifyHeal(healer, target, 12.5f, true);
 
-            Assert.AreEqual(1, sink.Calls.Count);
-            Assert.AreSame(target, sink.Calls[0].target);
-            Assert.AreEqual(12.5f, sink.Calls[0].value);
-            Assert.IsTrue(sink.Calls[0].critical);
+            Assert.AreEqual(1, sink.calls.Count);
+            Assert.AreSame(target, sink.calls[0].target);
+            Assert.AreEqual(12.5f, sink.calls[0].value);
+            Assert.IsTrue(sink.calls[0].critical);
         }
 
         [Test]
@@ -177,7 +174,7 @@ namespace HealerLike.Render
 
             _registry.NotifyHeal(healer, NewObject("target"), 1f, false);
 
-            Assert.AreEqual(1, sink.Calls.Count, "a re-initialised component must not double its visuals");
+            Assert.AreEqual(1, sink.calls.Count, "a re-initialised component must not double its visuals");
         }
 
         [Test]
@@ -191,8 +188,8 @@ namespace HealerLike.Render
 
             _registry.NotifyHeal(healer, NewObject("target"), 3f, false);
 
-            Assert.AreEqual(1, first.Calls.Count);
-            Assert.AreEqual(1, second.Calls.Count);
+            Assert.AreEqual(1, first.calls.Count);
+            Assert.AreEqual(1, second.calls.Count);
         }
 
         [Test]
@@ -205,7 +202,7 @@ namespace HealerLike.Render
 
             _registry.NotifyHeal(otherHealer, NewObject("target"), 1f, false);
 
-            Assert.AreEqual(0, sink.Calls.Count);
+            Assert.AreEqual(0, sink.calls.Count);
         }
 
         [Test]
@@ -218,7 +215,7 @@ namespace HealerLike.Render
 
             _registry.NotifyHeal(healer, NewObject("target"), 1f, false);
 
-            Assert.AreEqual(0, sink.Calls.Count);
+            Assert.AreEqual(0, sink.calls.Count);
         }
 
         [Test]
@@ -233,8 +230,8 @@ namespace HealerLike.Render
             _registry.Unregister(healer, dropped);
             _registry.NotifyHeal(healer, NewObject("target"), 1f, false);
 
-            Assert.AreEqual(1, kept.Calls.Count);
-            Assert.AreEqual(0, dropped.Calls.Count);
+            Assert.AreEqual(1, kept.calls.Count);
+            Assert.AreEqual(0, dropped.calls.Count);
         }
 
         [Test]
@@ -261,8 +258,8 @@ namespace HealerLike.Render
 
             _registry.NotifyHeal(healer, null, 2f, false);
 
-            Assert.AreEqual(1, sink.Calls.Count);
-            Assert.IsNull(sink.Calls[0].target);
+            Assert.AreEqual(1, sink.calls.Count);
+            Assert.IsNull(sink.calls[0].target);
         }
 
         [Test]
@@ -277,8 +274,8 @@ namespace HealerLike.Render
             TestHelpers.WithLoggingDisabled(() =>
                 _registry.NotifyHeal(healer, NewObject("target"), 1f, false));
 
-            Assert.AreEqual(1, broken.CallCount);
-            Assert.AreEqual(1, healthy.Calls.Count, "the healthy sink still ran");
+            Assert.AreEqual(1, broken.callCount);
+            Assert.AreEqual(1, healthy.calls.Count, "the healthy sink still ran");
         }
 
         [Test]
@@ -289,29 +286,43 @@ namespace HealerLike.Render
             _registry.Register(healer, selfRemoving);
 
             Assert.DoesNotThrow(() => _registry.NotifyHeal(healer, NewObject("target"), 1f, false));
-            Assert.AreEqual(1, selfRemoving.CallCount);
+            Assert.AreEqual(1, selfRemoving.callCount);
 
             _registry.NotifyHeal(healer, NewObject("target"), 1f, false);
-            Assert.AreEqual(1, selfRemoving.CallCount, "it really did leave");
+            Assert.AreEqual(1, selfRemoving.callCount, "it really did leave");
         }
 
-        sealed class HLCallbackSink : IHLHealVisualSink
+        class HLCallbackSink : IHLHealVisualSink
         {
-            public Action Callback;
-            public void OnHealResolved(GameObject target, float value, bool critical) => Callback();
+            public Action callback;
+
+            public void OnHealResolved(GameObject target, float value, bool critical)
+            {
+                callback();
+            }
         }
 
         [Test]
         public void RemovingEarlierSinkUsesStableNewestFirstSnapshot()
         {
-            var source = NewObject("HLSource");
-            var calls = new List<string>();
-            var a = new HLCallbackSink { Callback = () => calls.Add("A") };
-            var b = new HLCallbackSink { Callback = () => calls.Add("B") };
-            var c = new HLCallbackSink { Callback = () => { calls.Add("C"); _registry.Unregister(source, a); } };
-            _registry.Register(source, a); _registry.Register(source, b); _registry.Register(source, c);
+            GameObject source = NewObject("HLSource");
+            List<string> calls = new List<string>();
+            HLCallbackSink a = new HLCallbackSink { callback = () => calls.Add("A") };
+            HLCallbackSink b = new HLCallbackSink { callback = () => calls.Add("B") };
+            HLCallbackSink c = new HLCallbackSink();
+            c.callback = () =>
+            {
+                calls.Add("C");
+                _registry.Unregister(source, a);
+            };
+            _registry.Register(source, a);
+            _registry.Register(source, b);
+            _registry.Register(source, c);
+
             _registry.NotifyHeal(source, null, 1, false);
+
             CollectionAssert.AreEqual(new[] { "C", "B", "A" }, calls);
+
             calls.Clear();
             _registry.NotifyHeal(source, null, 1, false);
             CollectionAssert.AreEqual(new[] { "C", "B" }, calls);
@@ -320,31 +331,42 @@ namespace HealerLike.Render
         [Test]
         public void NestedNotificationHasIndependentSnapshot()
         {
-            var source = NewObject("HLSource");
-            var calls = new List<string>();
+            GameObject source = NewObject("HLSource");
+            List<string> calls = new List<string>();
             bool nested = false;
-            var a = new HLCallbackSink { Callback = () => calls.Add("A") };
-            var b = new HLCallbackSink { Callback = () =>
+            HLCallbackSink a = new HLCallbackSink { callback = () => calls.Add("A") };
+            HLCallbackSink b = new HLCallbackSink();
+            b.callback = () =>
             {
                 calls.Add("B");
-                if (nested) return;
-                nested = true; _registry.Unregister(source, a);
+                if (nested)
+                {
+                    return;
+                }
+
+                nested = true;
+                _registry.Unregister(source, a);
                 _registry.NotifyHeal(source, null, 1, false);
-            } };
-            _registry.Register(source, a); _registry.Register(source, b);
+            };
+            _registry.Register(source, a);
+            _registry.Register(source, b);
+
             _registry.NotifyHeal(source, null, 1, false);
+
             CollectionAssert.AreEqual(new[] { "B", "B", "A" }, calls);
         }
 
         [Test]
         public void DestroyedSourceCanRemoveItsLastRegistration()
         {
-            var source = NewObject("HLSource");
-            var sink = new RecordingHealSink();
+            GameObject source = NewObject("HLSource");
+            RecordingHealSink sink = new RecordingHealSink();
             _registry.Register(source, sink);
             UnityEngine.Object.DestroyImmediate(source);
+
             _registry.Unregister(source, sink);
-            var field = typeof(HLRenderRegistry).GetField("_healSinks",
+
+            System.Reflection.FieldInfo field = typeof(HLRenderRegistry).GetField("_healSinks",
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
             Assert.AreEqual(0, ((System.Collections.IDictionary)field.GetValue(_registry)).Count);
         }
@@ -353,44 +375,50 @@ namespace HealerLike.Render
         public void TheSpellSinkContractIsImplementableFromAnotherAssembly()
         {
             RecordingSpellSink sink = new RecordingSpellSink();
-            _registry.SpellSink = sink;
+            _registry.spellSink = sink;
 
-            _registry.SpellSink.ShowImpact(null, null, HLResourceKind.Health, -7f, true);
-            _registry.SpellSink.SetStatus(null, null, null, 2, 0.5f, 3f, HLClockKind.Simulation);
-            _registry.SpellSink.RemoveStatus(null, null, null);
-            _registry.SpellSink.PulseArea(Vector3.zero, 1.5f, HLZoneKind.Hostile, 0.5f);
+            _registry.spellSink.ShowImpact(null, null, HLResourceKind.Health, -7f, true);
+            _registry.spellSink.SetStatus(null, null, null, 2, 0.5f, 3f, HLClockKind.Simulation);
+            _registry.spellSink.RemoveStatus(null, null, null);
+            _registry.spellSink.PulseArea(Vector3.zero, 1.5f, HLZoneKind.Hostile, 0.5f);
 
-            Assert.AreEqual(1, sink.ImpactCount);
-            Assert.AreEqual(HLResourceKind.Health, sink.LastResource);
-            Assert.AreEqual(-7f, sink.LastAmount, "the pre-clamp delta keeps its sign");
-            Assert.AreEqual(1, sink.StatusCount);
-            Assert.AreEqual(HLClockKind.Simulation, sink.LastClock);
-            Assert.AreEqual(1, sink.RemoveCount);
-            Assert.AreEqual(1, sink.PulseCount);
-            Assert.AreEqual(HLZoneKind.Hostile, sink.LastZoneKind);
+            Assert.AreEqual(1, sink.impactCount);
+            Assert.AreEqual(HLResourceKind.Health, sink.lastResource);
+            Assert.AreEqual(-7f, sink.lastAmount, "the pre-clamp delta keeps its sign");
+            Assert.AreEqual(1, sink.statusCount);
+            Assert.AreEqual(HLClockKind.Simulation, sink.lastClock);
+            Assert.AreEqual(1, sink.removeCount);
+            Assert.AreEqual(1, sink.pulseCount);
+            Assert.AreEqual(HLZoneKind.Hostile, sink.lastZoneKind);
         }
 
-        sealed class RecordingZoneOwner : IHLZoneOwner
+        class RecordingZoneOwner : IHLZoneOwner
         {
-            public int Calls;
-            public float LastSeconds;
+            public int calls;
+            public float lastSeconds;
+
             public int AddPulse(HLZoneKind kind, Vector3 center, float radius, float strength, float seconds)
             {
-                Calls++; LastSeconds = seconds; return Calls;
+                calls++;
+                lastSeconds = seconds;
+                return calls;
             }
         }
 
         [Test]
         public void ZoneOwner_DefaultsToNullAndRoundTrips()
         {
-            var registry = new HLRenderRegistry();
-            Assert.IsNull(registry.ZoneOwner);
-            var owner = new RecordingZoneOwner();
-            registry.ZoneOwner = owner;
-            Assert.AreSame(owner, registry.ZoneOwner);
-            Assert.AreEqual(1, registry.ZoneOwner.AddPulse(HLZoneKind.Heal, Vector3.zero, 1, 1, .8f));
-            registry.ZoneOwner = null;
-            Assert.IsNull(registry.ZoneOwner);
+            HLRenderRegistry registry = new HLRenderRegistry();
+            Assert.IsNull(registry.zoneOwner);
+            RecordingZoneOwner owner = new RecordingZoneOwner();
+
+            registry.zoneOwner = owner;
+
+            Assert.AreSame(owner, registry.zoneOwner);
+            Assert.AreEqual(1, registry.zoneOwner.AddPulse(HLZoneKind.Heal, Vector3.zero, 1, 1, 0.8f));
+
+            registry.zoneOwner = null;
+            Assert.IsNull(registry.zoneOwner);
         }
     }
 }

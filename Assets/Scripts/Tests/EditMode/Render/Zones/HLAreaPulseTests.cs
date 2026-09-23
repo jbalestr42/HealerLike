@@ -5,50 +5,67 @@ namespace HealerLike.Render.Zones
 {
     public class HLAreaPulseTests
     {
-        [Test] public void StartReadsInitializedRadiusAndPositionNotTransformScaleAndDisableRemoves()
+        [Test]
+        public void StartReadsInitializedRadiusAndPositionNotTransformScaleAndDisableRemoves()
         {
-            var ownerGo = new GameObject("zones");
-            var areaGo = new GameObject("area");
+            GameObject ownerGo = new GameObject("zones");
+            GameObject areaGo = new GameObject("area");
             try
             {
-                var owner = ownerGo.AddComponent<HLZoneRegistry>();
+                HLZoneRegistry owner = ownerGo.AddComponent<HLZoneRegistry>();
                 owner.Initialize(new HLZoneFakeUpload());
-                var pulse = areaGo.AddComponent<HLAreaPulse>();
-                var area = areaGo.GetComponent<AreaOfEffect>();
+                HLAreaPulse pulse = areaGo.AddComponent<HLAreaPulse>();
+                AreaOfEffect area = areaGo.GetComponent<AreaOfEffect>();
                 area.radius = 3.25f;
-                areaGo.transform.position = new Vector3(2, 3, 4);
-                areaGo.transform.localScale = Vector3.one * 99;
+                areaGo.transform.position = new Vector3(2f, 3f, 4f);
+                areaGo.transform.localScale = Vector3.one * 99f;
+
                 TestHelpers.InvokePrivate(pulse, "Start");
-                owner.PublishFrame(0);
-                Assert.AreEqual((int)HLZoneKind.Hostile, owner.Snapshot[0].kind);
-                Assert.AreEqual(3.25f, owner.Snapshot[0].radius);
-                Assert.AreEqual(areaGo.transform.position, owner.Snapshot[0].position);
+                owner.PublishFrame(0f);
+
+                Assert.AreEqual((int)HLZoneKind.Hostile, owner.snapshot[0].kind);
+                Assert.AreEqual(3.25f, owner.snapshot[0].radius);
+                Assert.AreEqual(areaGo.transform.position, owner.snapshot[0].position);
+
                 owner.PublishFrame(0.4f);
-                Assert.AreEqual(0.5f, owner.Snapshot[0].strength);
+                Assert.AreEqual(0.5f, owner.snapshot[0].strength);
+
                 TestHelpers.InvokePrivate(pulse, "OnDisable");
-                owner.PublishFrame(0);
-                Assert.AreEqual(0, owner.Count);
+                owner.PublishFrame(0f);
+                Assert.AreEqual(0, owner.count);
             }
-            finally { Object.DestroyImmediate(areaGo); Object.DestroyImmediate(ownerGo); }
+            finally
+            {
+                Object.DestroyImmediate(areaGo);
+                Object.DestroyImmediate(ownerGo);
+            }
         }
 
-        [Test] public void AuthoredKindIsHonouredAndPulseExpiresAtEightTenths()
+        [Test]
+        public void AuthoredKindIsHonouredAndPulseExpiresAtEightTenths()
         {
-            var ownerGo = new GameObject("zones");
-            var areaGo = new GameObject("area");
+            GameObject ownerGo = new GameObject("zones");
+            GameObject areaGo = new GameObject("area");
             try
             {
-                var owner = ownerGo.AddComponent<HLZoneRegistry>();
+                HLZoneRegistry owner = ownerGo.AddComponent<HLZoneRegistry>();
                 owner.Initialize(new HLZoneFakeUpload());
-                var pulse = areaGo.AddComponent<HLAreaPulse>();
-                pulse.Kind = HLZoneKind.Heal;
+                HLAreaPulse pulse = areaGo.AddComponent<HLAreaPulse>();
+                pulse.kind = HLZoneKind.Heal;
+
                 TestHelpers.InvokePrivate(pulse, "Start");
-                owner.PublishFrame(0);
-                Assert.AreEqual((int)HLZoneKind.Heal, owner.Snapshot[0].kind);
+                owner.PublishFrame(0f);
+
+                Assert.AreEqual((int)HLZoneKind.Heal, owner.snapshot[0].kind);
+
                 owner.PublishFrame(0.8f);
-                Assert.AreEqual(0, owner.LiveCount);
+                Assert.AreEqual(0, owner.liveCount);
             }
-            finally { Object.DestroyImmediate(areaGo); Object.DestroyImmediate(ownerGo); }
+            finally
+            {
+                Object.DestroyImmediate(areaGo);
+                Object.DestroyImmediate(ownerGo);
+            }
         }
     }
 }

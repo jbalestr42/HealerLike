@@ -37,8 +37,8 @@ namespace HealerLike.Render.Grass
                 light.transform.rotation=Quaternion.Euler(45,-35,0); light.shadows=LightShadows.Soft; light.intensity=1;
                 RenderSettings.sun=light;
                 var look=Make("HLGroundFixtureLook").AddComponent<HLLookController>();
-                var settings=HLLookSettings.Default; settings.FogStart=25;settings.FogEnd=60;
-                settings.ShadowTint=new Color32(63,91,148,255);settings.InkStrength=.75f;look.Settings=settings;
+                var settings=HLLookSettings.Default; settings.fogStart=25;settings.fogEnd=60;
+                settings.shadowTint=new Color32(63,91,148,255);settings.inkStrength=.75f;look.settings=settings;
                 var material=new Material(Shader.Find("HL/Look/Primitive"));owned.Add(material);
                 material.SetColor("_BaseColor",((Color)new Color32(78,126,87,255)).linear);
                 var ground=GameObject.CreatePrimitive(PrimitiveType.Cube);owned.Add(ground);ground.layer=30;
@@ -47,7 +47,7 @@ namespace HealerLike.Render.Grass
                 var grid=Make("HLGroundFixtureGrid").AddComponent<GridManager>();grid.width=grid.height=8;grid.size=1;grid.cells=new GridCell[64];
                 var registry=Make("HLGroundFixtureZones").AddComponent<HLZoneRegistry>();registry.Initialize();
                 var field=Make("HLGroundFixtureGrass").AddComponent<HLGrassField>();
-                field.Init(grid,ground.transform,camera,registry.Buffer,64); field.bladeBudget=16384;
+                field.Init(grid,ground.transform,camera,registry.buffer,64); field.bladeBudget=16384;
                 TestHelpers.InvokePrivate(field,"OnEnable");
                 TestHelpers.SetPrivateField(field,"_updateGrass",AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute"));
                 TestHelpers.SetPrivateField(field,"_lookMaterial",material);
@@ -61,7 +61,7 @@ namespace HealerLike.Render.Grass
                 }
                 registry.Add(HLZoneKind.Heal,new Vector3(-1.7f,0,-1.2f),1.3f,1);
                 registry.Add(HLZoneKind.Hostile,new Vector3(1.7f,0,-.9f),1.2f,.85f);
-                registry.PublishFrame(.32f);field.SetZoneSnapshot(registry.Buffer,registry.Count);
+                registry.PublishFrame(.32f);field.SetZoneSnapshot(registry.buffer,registry.count);
                 var target=new RenderTexture(1440,960,24,RenderTextureFormat.ARGB32);owned.Add(target);target.Create();
                 var texture=new Texture2D(1440,960,TextureFormat.RGB24,false);owned.Add(texture);
                 look.ApplyGlobals();TestHelpers.InvokePrivate(field,"LateUpdate");

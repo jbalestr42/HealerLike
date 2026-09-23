@@ -16,7 +16,7 @@ namespace HealerLike.Render.Spells
         {
             Bind(
                 projectile ? projectile : GetComponent<Projectile>(),
-                sink ? sink : HLRenderRegistry.Current?.SpellSink as HLSpellVisualSink
+                sink ? sink : HLRenderRegistry.current?.spellSink as HLSpellVisualSink
             );
         }
 

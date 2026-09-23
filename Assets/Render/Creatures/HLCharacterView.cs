@@ -158,7 +158,7 @@ namespace HealerLike.Render.Creatures
                     _statusObserver = gameObject.AddComponent<HLStatusObserver>();
                 }
 
-                IHLSpellVisualSink sink = _injected && _injectedRegistry != null ? _injectedRegistry.SpellSink : null;
+                IHLSpellVisualSink sink = _injected && _injectedRegistry != null ? _injectedRegistry.spellSink : null;
                 _statusObserver.Bind(_character.buffManager, sink);
                 _boundManager = _character.buffManager;
             }
@@ -223,7 +223,7 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
-            HLRenderRegistry registry = _injected ? _injectedRegistry : HLRenderRegistry.Current;
+            HLRenderRegistry registry = _injected ? _injectedRegistry : HLRenderRegistry.current;
             if (_registeredRegistry != registry)
             {
                 Unregister();

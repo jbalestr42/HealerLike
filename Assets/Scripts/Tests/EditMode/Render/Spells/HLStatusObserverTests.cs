@@ -115,7 +115,7 @@ namespace HealerLike.Render.Spells
             GameObject host = new GameObject("HLSink");
             BuffHandlerFactory factory = ScriptableObject.CreateInstance<BuffHandlerFactory>();
             FlatModifierFactory modifier = ScriptableObject.CreateInstance<FlatModifierFactory>();
-            HLRenderRegistry previous = HLRenderRegistry.Current;
+            HLRenderRegistry previous = HLRenderRegistry.current;
             try
             {
                 modifier.data = new FlatModifierData { value = 1f };
@@ -127,7 +127,7 @@ namespace HealerLike.Render.Spells
                 BuffManager manager = go.AddComponent<BuffManager>();
                 HLStatusObserver observer = go.AddComponent<HLStatusObserver>();
                 HLSpellVisualSink sink = host.AddComponent<HLSpellVisualSink>();
-                HLRenderRegistry.Current = new HLRenderRegistry { SpellSink = sink };
+                HLRenderRegistry.current = new HLRenderRegistry { spellSink = sink };
                 observer.Bind(manager, null);
                 manager.OnBuffHandlerStarted.Invoke(
                     new BuffManager.BuffHandlerData
@@ -152,7 +152,7 @@ namespace HealerLike.Render.Spells
             }
             finally
             {
-                HLRenderRegistry.Current = previous;
+                HLRenderRegistry.current = previous;
                 DestroyHost(go);
                 DestroyHost(host);
                 Object.DestroyImmediate(factory);

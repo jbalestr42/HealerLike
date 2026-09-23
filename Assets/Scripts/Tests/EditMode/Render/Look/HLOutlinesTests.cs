@@ -7,54 +7,71 @@ namespace HealerLike.Render.Look
 {
     public class HLOutlinesTests
     {
-        private static Type FeatureType => typeof(HLLookSettings).Assembly.GetType("HealerLike.Render.Look.HLOutlines", true);
+        static Type featureType
+        {
+            get { return typeof(HLLookSettings).Assembly.GetType("HealerLike.Render.Look.HLOutlines", true); }
+        }
 
         [Test]
         public void FeatureDefaultsAndRecreationRetainShaderAndReleaseMaterial()
         {
-            // Reflection keeps this existing test assembly independent of URP's transitive types.
-            var feature = ScriptableObject.CreateInstance(FeatureType);
+            ScriptableObject feature = ScriptableObject.CreateInstance(featureType);
             try
             {
-                Assert.That((int)(LayerMask)FeatureType.GetField("LayerMask").GetValue(feature), Is.EqualTo(-1));
-                Assert.That(FeatureType.GetField("DepthNormalEdges").GetValue(feature), Is.EqualTo(true));
-                var materialField = FeatureType.GetField("edgeMaterial", BindingFlags.Instance | BindingFlags.NonPublic);
-                FeatureType.GetMethod("Create").Invoke(feature, null);
-                var first = (Material)materialField.GetValue(feature);
+                Assert.That((int)(LayerMask)featureType.GetField("layerMask").GetValue(feature), Is.EqualTo(-1));
+                Assert.That(featureType.GetField("depthNormalEdges").GetValue(feature), Is.EqualTo(true));
+
+                FieldInfo materialField = featureType.GetField("_edgeMaterial",
+                                                               BindingFlags.Instance | BindingFlags.NonPublic);
+                featureType.GetMethod("Create").Invoke(feature, null);
+                Material first = (Material)materialField.GetValue(feature);
                 Assert.That(first != null, Is.True);
-                Assert.That(first.GetVector("_HLEdgeDepth"), Is.EqualTo(new Vector4(1f, 31f, 1f, 0)));
-                Assert.That(first.GetVector("_HLEdgeNormals"), Is.EqualTo(new Vector4(55f, 35f, 1f, 0)));
-                FeatureType.GetField("DepthThresholdWorld").SetValue(feature, -.5f);
-                FeatureType.GetField("UseNormalEdgeMask").SetValue(feature, false);
-                TestHelpers.SetPrivateField(feature, "edgeMaterial", first);
-                FeatureType.GetMethod("ApplyEdgeSettings").Invoke(feature, null);
-                Assert.That(first.GetVector("_HLEdgeDepth").x, Is.EqualTo(.001f));
+                Assert.That(first.GetVector("_HLEdgeDepth"), Is.EqualTo(new Vector4(1f, 31f, 1f, 0f)));
+                Assert.That(first.GetVector("_HLEdgeNormals"), Is.EqualTo(new Vector4(55f, 35f, 1f, 0f)));
+
+                featureType.GetField("depthThresholdWorld").SetValue(feature, -0.5f);
+                featureType.GetField("useNormalEdgeMask").SetValue(feature, false);
+                TestHelpers.SetPrivateField(feature, "_edgeMaterial", first);
+                featureType.GetMethod("ApplyEdgeSettings").Invoke(feature, null);
+                Assert.That(first.GetVector("_HLEdgeDepth").x, Is.EqualTo(0.001f));
                 Assert.That(first.GetVector("_HLEdgeNormals").z, Is.Zero);
                 Assert.That(first.shader.name, Is.EqualTo("Hidden/HL/Look/DepthNormalOutline"));
-                FeatureType.GetMethod("Create").Invoke(feature, null);
+
+                featureType.GetMethod("Create").Invoke(feature, null);
                 Assert.That(first == null, Is.True, "Recreation must destroy the previous material.");
-                var second = (Material)materialField.GetValue(feature);
+                Material second = (Material)materialField.GetValue(feature);
                 Assert.That(second != null, Is.True);
-                FeatureType.GetMethod("Dispose", BindingFlags.Instance | BindingFlags.NonPublic,
-                    null, new[] { typeof(bool) }, null).Invoke(feature, new object[] { true });
+
+                MethodInfo dispose = featureType.GetMethod("Dispose", BindingFlags.Instance | BindingFlags.NonPublic,
+                                                           null, new[] { typeof(bool) }, null);
+                dispose.Invoke(feature, new object[] { true });
                 Assert.That(second == null, Is.True);
                 Assert.That(materialField.GetValue(feature), Is.Null);
             }
-            finally { UnityEngine.Object.DestroyImmediate(feature); }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(feature);
+            }
         }
 
         [Test]
         public void HullOnlyFeatureDoesNotRequestDepthNormalInputs()
         {
-            var feature = ScriptableObject.CreateInstance(FeatureType);
+            ScriptableObject feature = ScriptableObject.CreateInstance(featureType);
             try
             {
-                FeatureType.GetField("DepthNormalEdges").SetValue(feature, false);
-                FeatureType.GetMethod("Create").Invoke(feature, null);
-                object pass = FeatureType.GetField("pass", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(feature);
+                featureType.GetField("depthNormalEdges").SetValue(feature, false);
+
+                featureType.GetMethod("Create").Invoke(feature, null);
+
+                object pass = featureType.GetField("_pass", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .GetValue(feature);
                 Assert.That(Convert.ToInt32(pass.GetType().GetProperty("input").GetValue(pass)), Is.Zero);
             }
-            finally { UnityEngine.Object.DestroyImmediate(feature); }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(feature);
+            }
         }
     }
 }

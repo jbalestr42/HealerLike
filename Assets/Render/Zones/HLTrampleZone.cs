@@ -1,28 +1,75 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Zones
 {
-    /// <summary>Authored obstacle footprint in world units. Reads the root transform, never gameplay occupancy.</summary>
-    [DisallowMultipleComponent]
-    public sealed class HLTrampleZone : MonoBehaviour
+    // Obstacle footprint in world units, reads the root transform and never the gameplay occupancy
+    public class HLTrampleZone : MonoBehaviour
     {
-        [Min(0)] public float Radius = 0.65f;
-        [Range(0, 1)] public float Strength = 1;
-        HLZoneRegistry owner;
-        int handle;
+        [FormerlySerializedAs("Radius")]
+        [Min(0)]
+        public float radius = 0.65f;
 
-        void Update() => Refresh();
+        [FormerlySerializedAs("Strength")]
+        [Range(0, 1)]
+        public float strength = 1;
+
+        HLZoneRegistry _owner;
+        int _handle;
+
+        void Update()
+        {
+            Refresh();
+        }
+
         public void Refresh()
         {
-            if (owner != HLZoneRegistry.Current) Clear();
-            if (!isActiveAndEnabled) { Clear(); return; }
-            owner = HLZoneRegistry.Current;
-            if (!owner) return;
-            if (!owner.Contains(handle)) handle = owner.Add(HLZoneKind.Trample, transform.position, Radius, Strength);
-            else owner.RefreshZone(handle, HLZoneKind.Trample, transform.position, Radius, Strength);
+            if (_owner != HLZoneRegistry.current)
+            {
+                Clear();
+            }
+
+            if (!isActiveAndEnabled)
+            {
+                Clear();
+                return;
+            }
+
+            _owner = HLZoneRegistry.current;
+            if (!_owner)
+            {
+                return;
+            }
+
+            if (!_owner.Contains(_handle))
+            {
+                _handle = _owner.Add(HLZoneKind.Trample, transform.position, radius, strength);
+            }
+            else
+            {
+                _owner.RefreshZone(_handle, HLZoneKind.Trample, transform.position, radius, strength);
+            }
         }
-        void Clear() { if (owner) owner.Remove(handle); owner = null; handle = 0; }
-        void OnDisable() => Clear();
-        void OnDestroy() => Clear();
+
+        void Clear()
+        {
+            if (_owner)
+            {
+                _owner.Remove(_handle);
+            }
+
+            _owner = null;
+            _handle = 0;
+        }
+
+        void OnDisable()
+        {
+            Clear();
+        }
+
+        void OnDestroy()
+        {
+            Clear();
+        }
     }
 }

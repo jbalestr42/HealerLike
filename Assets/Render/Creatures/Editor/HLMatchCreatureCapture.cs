@@ -41,9 +41,9 @@ namespace HealerLike.Render.Creatures
 
             HLLookController look = new GameObject("HLGalleryLook").AddComponent<HLLookController>();
             HLLookSettings settings = HLLookSettings.Default;
-            settings.FogStart = 50f;
-            settings.FogEnd = 80f;
-            look.Settings = settings;
+            settings.fogStart = 50f;
+            settings.fogEnd = 80f;
+            look.settings = settings;
             look.ApplyGlobals();
 
             string[] names = { "HLSpiralFern", "HLHangingArch", "HLHealer", "HLSphereStack", "HLBladeRosette" };

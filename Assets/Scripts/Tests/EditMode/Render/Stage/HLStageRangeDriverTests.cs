@@ -29,13 +29,13 @@ namespace HealerLike.Render.Stage
             driver.Mode = HLStageRangeDriver.PreviewMode.Featured;
             driver.Apply(new List<HLRangePreview> { a, b });
             Assert.AreSame(a, driver.Featured);
-            Assert.IsFalse(a.ObservePointer); Assert.IsFalse(b.ObservePointer);
+            Assert.IsFalse(a.observePointer); Assert.IsFalse(b.observePointer);
             driver.Mode = HLStageRangeDriver.PreviewMode.Hidden;
             driver.Apply(new List<HLRangePreview> { a, b });
             Assert.IsNull(driver.Featured);
             driver.Mode = HLStageRangeDriver.PreviewMode.Pointer;
             driver.Apply(new List<HLRangePreview> { a, b });
-            Assert.IsTrue(a.ObservePointer); Assert.IsTrue(b.ObservePointer);
+            Assert.IsTrue(a.observePointer); Assert.IsTrue(b.observePointer);
         }
         [Test] public void DisabledPreviewDoesNotForceAScanEveryFrame()
         {
@@ -45,8 +45,8 @@ namespace HealerLike.Render.Stage
         }
         [Test] public void HiddenDisablesHoverAndPointerRestoresIt()
         {
-            driver.Mode=HLStageRangeDriver.PreviewMode.Hidden; driver.Apply(new[]{a,b}); Assert.IsFalse(a.ObserveHover);
-            driver.Mode=HLStageRangeDriver.PreviewMode.Pointer; driver.Apply(new[]{a,b}); Assert.IsTrue(a.ObserveHover);
+            driver.Mode=HLStageRangeDriver.PreviewMode.Hidden; driver.Apply(new[]{a,b}); Assert.IsFalse(a.observeHover);
+            driver.Mode=HLStageRangeDriver.PreviewMode.Pointer; driver.Apply(new[]{a,b}); Assert.IsTrue(a.observeHover);
         }
         [Test] public void TickRescansOnlyWhenDueOrStale()
         {

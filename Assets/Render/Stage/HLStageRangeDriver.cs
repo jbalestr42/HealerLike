@@ -52,8 +52,8 @@ namespace HealerLike.Render.Stage
             {
                 var preview = previews[i];
                 if (!preview) continue;
-                preview.ObservePointer = mode == PreviewMode.Pointer;
-                preview.ObserveHover = mode == PreviewMode.Pointer;
+                preview.observePointer = mode == PreviewMode.Pointer;
+                preview.observeHover = mode == PreviewMode.Pointer;
                 preview.SetPreviewState(i == featured, false);
             }
             _applied = mode; _appliedFeatured = Featured;

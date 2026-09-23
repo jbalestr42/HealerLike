@@ -70,8 +70,8 @@ namespace HealerLike.Render.Stage
                 {
                     var data=(ScriptableRendererData)list.GetArrayElementAtIndex(i).objectReferenceValue;
                     var outlines=data.rendererFeatures.OfType<HLOutlines>().Single();
-                    Assert.That(outlines.DepthNormalEdges && outlines.UseNormalEdgeMask,Is.True,data.name);
-                    Assert.That(outlines.NormalAngleDegrees,Is.EqualTo(55)); Assert.That(outlines.DepthThresholdWorld,Is.EqualTo(1));
+                    Assert.That(outlines.depthNormalEdges && outlines.useNormalEdgeMask,Is.True,data.name);
+                    Assert.That(outlines.normalAngleDegrees,Is.EqualTo(55)); Assert.That(outlines.depthThresholdWorld,Is.EqualTo(1));
                 }
             }
         }

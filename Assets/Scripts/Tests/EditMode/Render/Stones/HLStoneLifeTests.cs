@@ -8,7 +8,7 @@ namespace HealerLike.Render.Stones
     {
         class HLUpload : IHLZoneUpload
         {
-            public GraphicsBuffer Buffer { get { return null; } }
+            public GraphicsBuffer buffer { get { return null; } }
 
             public void Upload(HLZone[] zones)
             {

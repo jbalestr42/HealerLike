@@ -37,7 +37,7 @@ namespace HealerLike.Render.Stage
                 var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(path);
                 var trample=prefab.GetComponent<HLTrampleZone>();
                 Assert.That(trample,Is.Not.Null,path);
-                Assert.That(trample.Radius,Is.EqualTo(HLStageBeautyWiring.TrampleRadius(HLStageBuilder.CreatureFootprint(prefab.transform))).Within(1e-5f),path);
+                Assert.That(trample.radius,Is.EqualTo(HLStageBeautyWiring.TrampleRadius(HLStageBuilder.CreatureFootprint(prefab.transform))).Within(1e-5f),path);
                 models++;
             }
             Assert.That(models,Is.GreaterThan(0));

@@ -41,7 +41,7 @@ namespace HealerLike.Render.Environment
 
         void LateUpdate()
         {
-            GraphicsBuffer buffer = _zoneRegistry ? _zoneRegistry.Buffer : null;
+            GraphicsBuffer buffer = _zoneRegistry ? _zoneRegistry.buffer : null;
             foreach (HLGrassField field in _fields)
             {
                 if (field)
