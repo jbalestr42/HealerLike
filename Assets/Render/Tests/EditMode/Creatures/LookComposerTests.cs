@@ -260,6 +260,16 @@ public class LookComposerTests
     }
 
     [Test]
+    public void Compose_Plant_GivesTheLianaTipTheAccent()
+    {
+        UnitChannels channels = CreateChannels(LookSide.Plant, HeadKind.Bud);
+
+        CreatureRecipe recipe = Compose(channels);
+
+        Assert.AreEqual(_vocabulary.palette.Accent(channels.accent), recipe.arms[0].tipColour);
+    }
+
+    [Test]
     public void Compose_HeavyMass_AddsABasePartRatherThanOnlyScaling()
     {
         int light = Compose(CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Light)).parts.Length;

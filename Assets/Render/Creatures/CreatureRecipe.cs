@@ -46,6 +46,8 @@ namespace HealerLike.Render.Creatures
         // The body colour a wilting creature fades toward, plant green unless the recipe says otherwise
         public Color wiltColour = new Color(0.18f, 0.49f, 0.31f);
         public Vector3[] sourceLocal = Array.Empty<Vector3>();
+        // Where the head sits on the body, zero lets the view take the middle of the sources
+        public Vector3 neckLocal;
         // A stone mesh's second submesh, its ochre faces, draws in this colour
         public Color stoneOchre = new Color(0.7254902f, 0.6235294f, 0.427451f);
     }

@@ -8,7 +8,7 @@ using HealerLike.Render.Stage;
 namespace HealerLike.Render.Creatures
 {
     // Presentation at an authored anchor. Character.Init and Entity.Init are never called from here.
-    public class CharacterView : MonoBehaviour, IHealVisualSink, IDeliverySource
+    public class CharacterView : MonoBehaviour, IHealVisualSink, IDeliverySource, IEffectAnchors
     {
         [FormerlySerializedAs("character")]
         [SerializeField] Character _character;
@@ -260,6 +260,20 @@ namespace HealerLike.Render.Creatures
             {
                 rig.EndDelivery(token);
             }
+        }
+
+        #endregion
+
+        #region IEffectAnchors
+
+        public bool TryGetAnchors(out EffectAnchors anchors)
+        {
+            if (rig == null)
+            {
+                anchors = new EffectAnchors();
+                return false;
+            }
+            return rig.TryGetAnchors(out anchors);
         }
 
         #endregion

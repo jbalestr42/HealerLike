@@ -9,7 +9,7 @@ using HealerLike.Render.Stage;
 namespace HealerLike.Render.Creatures
 {
     public class CreatureBuilder : MonoBehaviour, IEntityView, IHealVisualSink,
-        IDeliverySource
+        IDeliverySource, IEffectAnchors
     {
         [FormerlySerializedAs("recipe")]
         [SerializeField] CreatureRecipe _recipe;
@@ -440,6 +440,20 @@ namespace HealerLike.Render.Creatures
             {
                 rig.EndDelivery(token);
             }
+        }
+
+        #endregion
+
+        #region IEffectAnchors
+
+        public bool TryGetAnchors(out EffectAnchors anchors)
+        {
+            if (rig == null)
+            {
+                anchors = new EffectAnchors();
+                return false;
+            }
+            return rig.TryGetAnchors(out anchors);
         }
 
         #endregion

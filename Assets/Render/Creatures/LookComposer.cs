@@ -153,10 +153,12 @@ namespace HealerLike.Render.Creatures
             recipe.targetLocal = sockets.body * vocabulary.bodyUnit;
             recipe.idle.seed = seed;
             recipe.stoneOchre = vocabulary.palette.stoneOchre;
+            recipe.neckLocal = sockets.neck * vocabulary.bodyUnit;
             if (channels.side == LookSide.Plant)
             {
                 recipe.roots = Roots(channels.reach, vocabulary);
-                Arms(recipe, sockets.neck, vocabulary.armCount, vocabulary.bodyUnit, vocabulary.palette.plantStem);
+                Arms(recipe, sockets.neck, vocabulary.armCount, vocabulary.bodyUnit, vocabulary.palette.plantStem,
+                    vocabulary.palette.Accent(channels.accent));
             }
             else
             {
@@ -438,7 +440,7 @@ namespace HealerLike.Render.Creatures
         }
 
         // Lianas from the neck: four coils of 48 half-cell links reach across the 16-cell board
-        static void Arms(CreatureRecipe recipe, Vector3 neck, int armCount, float bodyUnit, Color colour)
+        static void Arms(CreatureRecipe recipe, Vector3 neck, int armCount, float bodyUnit, Color colour, Color accent)
         {
             Vector3 bodyPivot = recipe.parts[0].localPosition;
             recipe.sourceLocal = new Vector3[armCount];
@@ -463,7 +465,8 @@ namespace HealerLike.Render.Creatures
                     radius = 0.045f,
                     restJoints = rest,
                     bendPole = Vector3.up,
-                    colour = colour
+                    colour = colour,
+                    tipColour = accent
                 };
             }
         }

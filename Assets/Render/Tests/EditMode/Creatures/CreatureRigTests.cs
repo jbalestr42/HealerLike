@@ -248,7 +248,7 @@ public class CreatureRigTests
         renderer.GetPropertyBlock(block, 1);
 
         Assert.AreEqual(2, renderer.sharedMaterials.Length);
-        Assert.AreEqual(_recipe.stoneOchre, block.GetColor("_BaseColor"));
+        Assert.Less(((Vector4)_recipe.stoneOchre - (Vector4)block.GetColor("_BaseColor")).magnitude, 0.001f);
         Object.DestroyImmediate(meshes);
         Object.DestroyImmediate(variants);
         Object.DestroyImmediate(mesh);

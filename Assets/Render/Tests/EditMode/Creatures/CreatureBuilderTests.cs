@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Stage;
 using HealerLike.Render.Zones;
 using NUnit.Framework;
@@ -113,6 +114,45 @@ public class CreatureBuilderTests
         Object.DestroyImmediate(_owner);
         Object.DestroyImmediate(_recipe);
         Object.DestroyImmediate(_material);
+    }
+
+    [Test]
+    public void TryGetAnchors_EveryHeadOnBothSides_PutsTheHeadAboveTheNeckAndOutsideTheBody()
+    {
+        List<CreatureRecipe> recipes = new List<CreatureRecipe>();
+        foreach (LookSide side in System.Enum.GetValues(typeof(LookSide)))
+        {
+            foreach (HeadKind head in System.Enum.GetValues(typeof(HeadKind)))
+            {
+                CreatureRecipe recipe = LookComposer.Compose(LookComposerTests.CreateChannels(side, head), LookVocabularyTests.Vocabulary());
+                recipes.Add(recipe);
+                _builder.SetRecipe(recipe, _material, PrimitiveMeshesTests.Meshes());
+                _builder.Init(_entity);
+
+                bool hasAnchors = _builder.TryGetAnchors(out EffectAnchors anchors);
+
+                Assert.IsTrue(hasAnchors, $"{side} {head}");
+                Assert.Greater(anchors.headCentre.y, anchors.neck.y, $"{side} {head}");
+                Assert.Greater(Vector3.Distance(anchors.headCentre, anchors.bodyCentre), anchors.bodyRadius, $"{side} {head}");
+                Assert.Greater(anchors.neck.y, anchors.foot.y, $"{side} {head}");
+            }
+        }
+
+        _builder.SetRecipe(_recipe, _material, PrimitiveMeshesTests.Meshes());
+        foreach (CreatureRecipe recipe in recipes)
+        {
+            Object.DestroyImmediate(recipe);
+        }
+    }
+
+    [Test]
+    public void TryGetAnchors_BeforeTheRig_ReturnsFalse()
+    {
+        CreatureBuilder builder = _owner.AddComponent<CreatureBuilder>();
+
+        bool hasAnchors = builder.TryGetAnchors(out _);
+
+        Assert.IsFalse(hasAnchors);
     }
 
     [Test]

@@ -71,6 +71,8 @@ namespace HealerLike.Render.Creatures
 
         public CreatureRecipe recipe { get { return _recipe; } }
 
+        public float cellSize { get { return _cellSize; } }
+
         // One per recipe part, the transform carrying that part's mesh
         public IReadOnlyList<Transform> partTransforms
         {
@@ -442,6 +444,60 @@ namespace HealerLike.Render.Creatures
                     _arms[i].SetVisible(i < _recipe.arms.Length);
                 }
             }
+        }
+
+        // The body, neck, head and foot as they stand now, read from the recipe's roles and the live transforms
+        public bool TryGetAnchors(out EffectAnchors anchors)
+        {
+            anchors = new EffectAnchors();
+            if (!_root || _geometry == null || _geometry.Length == 0)
+            {
+                return false;
+            }
+
+            int body = -1;
+            int head = -1;
+            for (int i = 0; i < _geometry.Length; i++)
+            {
+                PartRole role = _recipe.parts[i].role;
+                if (role == PartRole.Body && body < 0)
+                {
+                    body = i;
+                }
+
+                bool isHead = role == PartRole.Head || role == PartRole.Tip;
+                if (isHead && (head < 0 || _geometry[i].position.y > _geometry[head].position.y))
+                {
+                    head = i;
+                }
+            }
+
+            Vector3 neck = _recipe.neckLocal;
+            if (neck == Vector3.zero && _recipe.sourceLocal.Length > 0)
+            {
+                foreach (Vector3 source in _recipe.sourceLocal)
+                {
+                    neck += source;
+                }
+                neck /= _recipe.sourceLocal.Length;
+            }
+
+            Bounds bodyBounds = _bodyRenderers[Mathf.Max(0, body)].bounds;
+            anchors.foot = _root.position;
+            anchors.bodyCentre = bodyBounds.center;
+            anchors.bodyRadius = Mathf.Max(bodyBounds.extents.x, bodyBounds.extents.z);
+            anchors.neck = _pivots[0].TransformPoint((neck - _recipe.parts[0].localPosition) * _cellSize);
+            if (head < 0)
+            {
+                anchors.headCentre = anchors.neck;
+                anchors.headRadius = 0f;
+                return true;
+            }
+
+            Bounds headBounds = _bodyRenderers[head].bounds;
+            anchors.headCentre = headBounds.center;
+            anchors.headRadius = Mathf.Max(headBounds.extents.x, Mathf.Max(headBounds.extents.y, headBounds.extents.z));
+            return true;
         }
 
         public void SetVisible(bool visible)
