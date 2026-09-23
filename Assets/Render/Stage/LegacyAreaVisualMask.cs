@@ -2,51 +2,95 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VFX;
+
 namespace HealerLike.Render.Stage
 {
-    // Keep GPU particle simulation and DestroyOnDone unchanged; silence only exposed output colours.
+    // Keeps GPU particle simulation and DestroyOnDone unchanged, silences only the exposed output colours
     public class LegacyAreaVisualMask : MonoBehaviour
     {
-        readonly List<Action> restore=new();
-        public int MaskedPropertyCount => restore.Count;
+        readonly List<Action> _restore = new List<Action>();
+
+        public int maskedPropertyCount { get { return _restore.Count; } }
+
         void OnEnable()
         {
-            var properties=new List<VFXExposedProperty>();
-            foreach(var effect in GetComponentsInChildren<VisualEffect>(true))
+            List<VFXExposedProperty> properties = new List<VFXExposedProperty>();
+            foreach (VisualEffect effect in GetComponentsInChildren<VisualEffect>(true))
             {
-                if(!effect.visualEffectAsset) continue;
-                properties.Clear(); effect.visualEffectAsset.GetExposedProperties(properties);
-                foreach(var property in properties)
+                if (!effect.visualEffectAsset)
                 {
-                    string name=property.name;
-                    bool colour=name.IndexOf("Color",StringComparison.OrdinalIgnoreCase)>=0;
-                    if(colour && property.type==typeof(Vector4))
-                    {
-                        Vector4 previous=effect.GetVector4(name);
-                        restore.Add(()=> { if(effect) effect.SetVector4(name,previous); });
-                        effect.SetVector4(name,Vector4.zero);
-                    }
-                    else if(colour && property.type==typeof(Vector3))
-                    {
-                        Vector3 previous=effect.GetVector3(name);
-                        restore.Add(()=> { if(effect) effect.SetVector3(name,previous); });
-                        effect.SetVector3(name,Vector3.zero);
-                    }
-                    else if(property.type==typeof(Gradient) && (colour || name.Contains("Alpha") || name=="Gradient"))
-                    {
-                        Gradient previous=effect.GetGradient(name);
-                        restore.Add(()=> { if(effect) effect.SetGradient(name,previous); });
-                        var silent=new Gradient();
-                        silent.SetKeys(new[]{new GradientColorKey(Color.black,0),new GradientColorKey(Color.black,1)},new[]{new GradientAlphaKey(0,0),new GradientAlphaKey(0,1)});
-                        effect.SetGradient(name,silent);
-                    }
+                    continue;
+                }
+
+                properties.Clear();
+                effect.visualEffectAsset.GetExposedProperties(properties);
+                foreach (VFXExposedProperty property in properties)
+                {
+                    Mask(effect, property);
                 }
             }
         }
+
         void OnDisable()
         {
-            foreach(var undo in restore) undo();
-            restore.Clear();
+            foreach (Action undo in _restore)
+            {
+                undo();
+            }
+
+            _restore.Clear();
+        }
+
+        void Mask(VisualEffect effect, VFXExposedProperty property)
+        {
+            string name = property.name;
+            bool isColour = name.IndexOf("Color", StringComparison.OrdinalIgnoreCase) >= 0;
+            if (isColour && property.type == typeof(Vector4))
+            {
+                Vector4 previous = effect.GetVector4(name);
+                _restore.Add(() => RestoreVector4(effect, name, previous));
+                effect.SetVector4(name, Vector4.zero);
+            }
+            else if (isColour && property.type == typeof(Vector3))
+            {
+                Vector3 previous = effect.GetVector3(name);
+                _restore.Add(() => RestoreVector3(effect, name, previous));
+                effect.SetVector3(name, Vector3.zero);
+            }
+            else if (property.type == typeof(Gradient) && (isColour || name.Contains("Alpha") || name == "Gradient"))
+            {
+                Gradient previous = effect.GetGradient(name);
+                _restore.Add(() => RestoreGradient(effect, name, previous));
+                Gradient silent = new Gradient();
+                silent.SetKeys(
+                    new GradientColorKey[] { new GradientColorKey(Color.black, 0f), new GradientColorKey(Color.black, 1f) },
+                    new GradientAlphaKey[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(0f, 1f) });
+                effect.SetGradient(name, silent);
+            }
+        }
+
+        static void RestoreVector4(VisualEffect effect, string name, Vector4 value)
+        {
+            if (effect)
+            {
+                effect.SetVector4(name, value);
+            }
+        }
+
+        static void RestoreVector3(VisualEffect effect, string name, Vector3 value)
+        {
+            if (effect)
+            {
+                effect.SetVector3(name, value);
+            }
+        }
+
+        static void RestoreGradient(VisualEffect effect, string name, Gradient value)
+        {
+            if (effect)
+            {
+                effect.SetGradient(name, value);
+            }
         }
     }
 }
