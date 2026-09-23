@@ -23,6 +23,7 @@ namespace HealerLike.Render.Stage
         static readonly List<Entity> allies=new();
         static readonly HashSet<BuffManager> buffManagers=new();
         static readonly UnityAction<BuffManager.BuffHandlerData> buffStarted=OnBuffStarted;
+        static uint lifetimeMax; static int lifetimeSample;
         static AreaOfEffect lifetimeArea; static float lifetimeBorn; static bool lifetimeStarted,lifetimeLive,lifetimeDestroyed;
         static float hostileFinishAt; static int hostileAreas; static readonly HashSet<EntityId> seenAreas=new();
         static int statuses; static bool speedValid; static bool overviewRequested,overviewVerified,refocusRequested;
@@ -55,7 +56,7 @@ namespace HealerLike.Render.Stage
             {
                 start=EditorApplication.timeSinceStartup; frame=positiveHealth=negativeHealth=casts=projectiles=0;
                 gameStart=nextFrame=nextHeal=0; menuPressed=gameStarted=placed=wave=groupCast=buffCast=finished=firstHit=screenshotHeal=false;
-                events.Clear(); stillFrames.Clear(); pendingStills.Clear(); seen.Clear(); allies.Clear(); listeners.Clear(); buffManagers.Clear(); lifetimeArea=null; lifetimeBorn=0; lifetimeStarted=lifetimeLive=lifetimeDestroyed=false; hostileFinishAt=0; statuses=hostileAreas=0; seenAreas.Clear(); speedValid=true; overviewRequested=overviewVerified=refocusRequested=false;
+                events.Clear(); stillFrames.Clear(); pendingStills.Clear(); seen.Clear(); allies.Clear(); listeners.Clear(); buffManagers.Clear(); lifetimeArea=null; lifetimeBorn=0; lifetimeMax=0; lifetimeSample=-1; lifetimeStarted=lifetimeLive=lifetimeDestroyed=false; hostileFinishAt=0; statuses=hostileAreas=0; seenAreas.Clear(); speedValid=true; overviewRequested=overviewVerified=refocusRequested=false;
                 var go=new GameObject("HLRealEventCapture"); Object.DontDestroyOnLoad(go); go.AddComponent<HLEventCaptureHook>().Late=Late;
                 ScreenCapture.CaptureScreenshot(Folder+"menu-ui.png");
             }
@@ -107,15 +108,18 @@ namespace HealerLike.Render.Stage
                 if(seen.Add(p.GetEntityId())) { projectiles++; if(projectiles<8) Log("projectile "+p.name+" source="+(p.source?p.source.name:"null")); }
             if(Hostile) foreach(var area in Object.FindObjectsByType<AreaOfEffect>(FindObjectsSortMode.None))
                 if(area.source && area.source.TryGetComponent<Entity>(out var enemy) && enemy.entityType==Entity.EntityType.Computer && seenAreas.Add(area.GetEntityId()))
-                { if(!lifetimeStarted) { lifetimeArea=area; lifetimeBorn=t; lifetimeStarted=true; } hostileAreas++; Log("actual hostile AreaOfEffect source="+area.source.name+" radius="+area.radius+" position="+area.transform.position+" pulse="+(area.GetComponent<HealerLike.Render.Zones.HLAreaPulse>()!=null)); if(!stillFrames.ContainsKey("hostile-area-ui.png") && !pendingStills.Contains("hostile-area-ui.png")) pendingStills.Add("hostile-area-ui.png"); }
+                { if(System.Environment.GetEnvironmentVariable("HL_CAPTURE_LEGACY")=="1") { var mask=area.GetComponent<HLLegacyAreaVisualMask>(); if(mask) mask.enabled=false; } if(!lifetimeStarted) { lifetimeArea=area; lifetimeBorn=t; lifetimeStarted=true; } hostileAreas++; Log("actual hostile AreaOfEffect source="+area.source.name+" radius="+area.radius+" position="+area.transform.position+" pulse="+(area.GetComponent<HealerLike.Render.Zones.HLAreaPulse>()!=null)); if(!stillFrames.ContainsKey("hostile-area-ui.png") && !pendingStills.Contains("hostile-area-ui.png")) pendingStills.Add("hostile-area-ui.png"); }
             if(Hostile && lifetimeStarted) {
                 if(lifetimeArea) {
                     var vfx=lifetimeArea.GetComponentsInChildren<Behaviour>(true).FirstOrDefault(b=>b.GetType().FullName=="UnityEngine.VFX.VisualEffect");
-                    if(vfx && t-lifetimeBorn>1 && !lifetimeLive) {
+                    if(vfx) {
                         uint alive=Convert.ToUInt32(vfx.GetType().GetProperty("aliveParticleCount").GetValue(vfx));
-                        if(alive>0) { lifetimeLive=true; Log("legacy area VFX still simulates after one second: alive="+alive+" age="+(t-lifetimeBorn)+" masked="+lifetimeArea.GetComponentsInChildren<Renderer>(true).All(r=>r.forceRenderingOff)); }
+                        lifetimeMax=System.Math.Max(lifetimeMax,alive);
+                        int bucket=Mathf.FloorToInt((t-lifetimeBorn)*4);
+                        if(bucket>lifetimeSample) { lifetimeSample=bucket; Log("legacy area particle sample alive="+alive+" age="+(t-lifetimeBorn)+" masked="+(lifetimeArea.GetComponent<HLLegacyAreaVisualMask>() ? lifetimeArea.GetComponent<HLLegacyAreaVisualMask>().MaskedPropertyCount : 0)); }
+                        if(alive>0 && t-lifetimeBorn>1) lifetimeLive=true;
                     }
-                } else if(!lifetimeDestroyed) { lifetimeDestroyed=true; Log("legacy area destroyed naturally at age="+(t-lifetimeBorn)+"; observed live particles after one second="+lifetimeLive); }
+                } else if(!lifetimeDestroyed) { lifetimeDestroyed=true; Log("legacy area destroyed naturally at age="+(t-lifetimeBorn)+"; peak particles="+lifetimeMax+"; observed live particles after one second="+lifetimeLive); }
             }
             var injured=allies.Find(a=>a && a.health && a.health.Value<a.health.Max-.5f);
             if(injured && t>3 && t>nextHeal && positiveHealth==0) { nextHeal=t+1; Cast("Heal",injured); }
@@ -133,7 +137,7 @@ namespace HealerLike.Render.Stage
             if(negativeHealth>0 && !firstHit) { firstHit=true; pendingStills.Add("first-contact.png"); }
             if(positiveHealth>0 && !screenshotHeal) { screenshotHeal=true; pendingStills.Add("heal-ui.png"); }
             if(Hostile) {
-                if(hostileFinishAt>0 && t>=hostileFinishAt && lifetimeDestroyed) Finish(hostileAreas>0 && negativeHealth>0 && speedValid && lifetimeLive,"supplemental actual debug-inventory hostile area plus damage; source and radius logged; waited for queued still");
+                if(hostileFinishAt>0 && t>=hostileFinishAt && lifetimeDestroyed) Finish(hostileAreas>0 && negativeHealth>0 && speedValid && lifetimeMax>=1536 && lifetimeLive && t-lifetimeBorn>=2.3f && t-lifetimeBorn<=3f,"supplemental actual debug-inventory hostile area plus damage; source and radius logged; waited for queued still");
                 else if(t>=14) Finish(false,"no real hostile area recorded from existing inventory");
                 return;
             }
