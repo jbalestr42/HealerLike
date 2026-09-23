@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Stage;
 using NUnit.Framework;
 using UnityEditor;
@@ -52,6 +53,7 @@ public class ProjectileVisualObserverTests
     Material _material;
     CreatureBuilder _builder;
     GameObject _managerGo;
+    readonly List<Object> _scriptableObjects = new List<Object>();
 
     static Entity EntityFixture(GameObject go)
     {
@@ -59,6 +61,29 @@ public class ProjectileVisualObserverTests
         TestHelpers.WithLoggingDisabled(() => entity = go.AddComponent<Entity>());
         TestHelpers.SetPrivateField(entity, "_targetPoint", go);
         return entity;
+    }
+
+    T CreateTracked<T>() where T : ScriptableObject
+    {
+        T instance = ScriptableObject.CreateInstance<T>();
+        _scriptableObjects.Add(instance);
+        return instance;
+    }
+
+    // A positive flat value is damage, a negative one heals
+    ConsumerFactory CreateConsumer(float value)
+    {
+        ConsumerFactory consumer = CreateTracked<ConsumerFactory>();
+        FlatValue flat = new FlatValue();
+        flat.data = new FlatValueData { value = value };
+        consumer.data = new ConsumerData { value = flat };
+        return consumer;
+    }
+
+    // Stands in for Projectile.onHitConsumers, which his class keeps private until it exposes it
+    void SeedConsumers(params AConsumerFactory[] consumers)
+    {
+        TestHelpers.SetPrivateField(_observer, "_consumers", new List<AConsumerFactory>(consumers));
     }
 
     [SetUp]
@@ -109,6 +134,72 @@ public class ProjectileVisualObserverTests
         Object.DestroyImmediate(_second);
         Object.DestroyImmediate(_recipe);
         Object.DestroyImmediate(_material);
+        foreach (TipDrop drop in Object.FindObjectsByType<TipDrop>(FindObjectsSortMode.None))
+        {
+            Object.DestroyImmediate(drop.gameObject);
+        }
+
+        foreach (Object scriptableObject in _scriptableObjects)
+        {
+            Object.DestroyImmediate(scriptableObject);
+        }
+
+        _scriptableObjects.Clear();
+    }
+
+    [Test]
+    public void Init_ClaimedByRig_FindsTheArmItsDeliveryTook()
+    {
+        Assert.AreNotEqual(0, _observer.gestureToken);
+
+        Assert.AreEqual(1, _observer.arms.Count);
+        Assert.IsFalse(_observer.arms[0].isAvailable);
+    }
+
+    [Test]
+    public void LateUpdate_HealingConsumer_ColoursTipLime()
+    {
+        SeedConsumers(CreateConsumer(-5f));
+
+        TestHelpers.InvokePrivate(_observer, "LateUpdate");
+
+        Color lime = DeliveryVocabularyTests.Vocabulary().palette.heal;
+        Assert.AreEqual(lime, _observer.arms[0].tipColour);
+    }
+
+    [Test]
+    public void LateUpdate_DamagingConsumer_ColoursTipCoral()
+    {
+        SeedConsumers(CreateConsumer(10f));
+
+        TestHelpers.InvokePrivate(_observer, "LateUpdate");
+
+        Color coral = DeliveryVocabularyTests.Vocabulary().palette.damage;
+        Assert.AreEqual(coral, _observer.arms[0].tipColour);
+    }
+
+    [Test]
+    public void LateUpdate_NoConsumer_TipKeepsRestColour()
+    {
+        SeedConsumers();
+
+        TestHelpers.InvokePrivate(_observer, "LateUpdate");
+
+        Assert.AreEqual(_observer.arms[0].restTipColour, _observer.arms[0].tipColour);
+    }
+
+    [Test]
+    public void EndDelivery_AfterAccent_TipReturnsToRestColour()
+    {
+        SeedConsumers(CreateConsumer(10f));
+        TestHelpers.InvokePrivate(_observer, "LateUpdate");
+        LianaArm arm = _observer.arms[0];
+
+        _observer.enabled = false;
+        TestHelpers.InvokePrivate(_observer, "OnDisable");
+        arm.Tick(1f, Vector3.zero, Quaternion.identity);
+
+        Assert.AreEqual(arm.restTipColour, arm.tipColour);
     }
 
     [Test]
@@ -134,14 +225,12 @@ public class ProjectileVisualObserverTests
     }
 
     [Test]
-    public void Init_MissingOrDecliningSource_KeepsOriginalRendererStates()
+    public void Init_MissingOrDecliningSource_FliesAsItsOwnTipAndRestoresRenderersAfter()
     {
         GameObject model = _builder.gameObject;
         TestHelpers.InvokePrivate(_builder, "OnDestroy");
         Object.DestroyImmediate(_builder);
-        _observer.Init(_source);
         LineRenderer visible = _projectileObject.GetComponent<LineRenderer>();
-        Assert.IsTrue(visible.enabled);
         GameObject child = new GameObject("HiddenRenderer", typeof(MeshRenderer));
         child.transform.SetParent(_projectileObject.transform);
         Renderer hidden = child.GetComponent<Renderer>();
@@ -154,18 +243,87 @@ public class ProjectileVisualObserverTests
         _projectile.OnHit.Invoke(new OnHitData { target = _first });
 
         Assert.AreEqual(0, _observer.gestureToken);
-        Assert.IsTrue(visible.enabled);
+        Assert.IsTrue(_observer.isFree);
+        Assert.IsFalse(visible.enabled);
         Assert.IsFalse(hidden.enabled);
-        Assert.AreEqual(0, probe.updates);
         Assert.AreEqual(0, probe.contacts);
         probe.accepts = true;
         _observer.Init(_source);
+        Assert.IsFalse(_observer.isFree);
         Assert.IsFalse(visible.enabled);
         probe.enabled = false;
         TestHelpers.InvokePrivate(_observer, "LateUpdate");
+        Assert.AreEqual(1, probe.ends);
+        Assert.IsTrue(_observer.isFree); // the claimer left, the shot keeps its tip
+        Assert.IsFalse(visible.enabled);
+        _observer.enabled = false;
+        TestHelpers.InvokePrivate(_observer, "OnDisable");
         Assert.IsTrue(visible.enabled);
         Assert.IsFalse(hidden.enabled);
-        Assert.AreEqual(1, probe.ends);
+    }
+
+    [Test]
+    public void Init_UnclaimedShot_HidesHisRenderersAndDrawsTheTipAlongTheFlight()
+    {
+        TestHelpers.InvokePrivate(_builder, "OnDestroy");
+        Object.DestroyImmediate(_builder);
+
+        _observer.Init(_source);
+        _projectileObject.transform.position = Vector3.right;
+        TestHelpers.InvokePrivate(_observer, "LateUpdate");
+
+        Assert.IsTrue(_observer.isFree);
+        Assert.IsFalse(_projectileObject.GetComponent<LineRenderer>().enabled);
+        Assert.AreEqual(1, _observer.freeTip.partCount);
+        Assert.AreEqual(Vector3.right, (Vector3)_observer.freeTipFrame.GetColumn(3));
+        Vector3 forward = _observer.freeTipFrame.MultiplyVector(Vector3.forward).normalized;
+        Assert.That(Vector3.Dot(forward, Vector3.right), Is.GreaterThan(0.99f));
+    }
+
+    [Test]
+    public void Init_ClaimedShot_LeavesTheDrawingToTheClaimer()
+    {
+        Assert.AreNotEqual(0, _observer.gestureToken);
+
+        Assert.IsFalse(_observer.isFree);
+        Assert.AreEqual(1, _observer.arms.Count);
+        Assert.IsFalse(_projectileObject.GetComponent<LineRenderer>().enabled);
+    }
+
+    [Test]
+    public void Init_BounceGrantedByItem_DeliversAsBounce()
+    {
+        BounceProjectileBehaviourFactory bounce = CreateTracked<BounceProjectileBehaviourFactory>();
+        bounce.data = new BounceProjectileBehaviourData();
+        ProjectileBehaviourBuff buff = new ProjectileBehaviourBuff
+        {
+            data = new ProjectileBehaviourBuffData { projectileBehaviour = bounce }
+        };
+        buff.Add(_source, _projectileObject);
+
+        _observer.Init(_source);
+
+        Assert.AreEqual(DeliveryStyle.Bounce, _observer.deliveryStyle);
+        Assert.AreEqual(DeliveryStyle.Bounce, _observer.arms[0].style);
+    }
+
+    [Test]
+    public void OnHit_AreaItem_DropsOnePodThatFallsAndGoes()
+    {
+        _projectileObject.AddComponent<AreaOfEffectProjectileBehaviour>();
+        _observer.Init(_source);
+
+        _projectile.OnHit.Invoke(new OnHitData { target = _first });
+        _projectile.OnHit.Invoke(new OnHitData { target = _second });
+        TipDrop[] drops = Object.FindObjectsByType<TipDrop>(FindObjectsSortMode.None);
+
+        Assert.AreEqual(1, drops.Length);
+        TipDrop drop = drops[0];
+        Vector3 start = drop.transform.position;
+        drop.Tick(0.15f);
+        Assert.Less(drop.transform.position.y, start.y);
+        drop.Tick(0.16f);
+        Assert.IsFalse(drop);
     }
 
     [Test]

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using HealerLike.Render.Grammar;
 using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Creatures
@@ -48,28 +49,23 @@ public class CreatureRecipeTests
         Assert.LessOrEqual(Mathf.Abs(stemFootY), 0.01f, "The stem stands on the ground.");
         Assert.LessOrEqual(recipe.roots.hipHeight, stemFootY + 0.1f, "The roots leave the body at its base.");
         Assert.LessOrEqual(recipe.roots.kneeHeight, 0.1f, "The knee is only slightly raised.");
-        Assert.AreEqual(LookComposer.LongReach * LookComposer.BodyUnit, recipe.roots.footRadius, 0.0001f);
+        LookVocabulary vocabulary = LookVocabularyTests.Vocabulary();
+        Assert.AreEqual(vocabulary.roots[ReachBand.Long].reach * vocabulary.bodyUnit, recipe.roots.footRadius, 0.0001f);
         Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, CreatureValidator.MaxRootReach);
         Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);
     }
 
     [Test]
-    public void Roots_SphereStackAsset_KneeClearsConicalBase()
+    public void Parts_HealerAsset_ValidatesWithItsRoles()
     {
-        string path = "Assets/Render/Creatures/Data/SphereStack.asset";
-        CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
-        Assert.NotNull(recipe);
-        CreaturePart cone = Array.Find(recipe.parts, part => part.id == "ConicalRoot");
+        CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
 
-        float bottom = cone.localPosition.y - cone.dimensions.y * 0.5f;
-        float kneeFraction = (recipe.roots.kneeHeight - bottom) / cone.dimensions.y;
-        float coneRadiusAtKnee = Mathf.Max(cone.dimensions.x, cone.dimensions.z) * 0.5f * (1f - kneeFraction);
-        float kneeInnerRadius = recipe.roots.footRadius * 0.6f - recipe.roots.thickness;
+        CreaturePart crown = Array.Find(recipe.parts, part => part.id == "Crown");
+        CreaturePart[] tips = Array.FindAll(recipe.parts, part => part.role == PartRole.Tip);
 
-        Assert.Greater(kneeInnerRadius, coneRadiusAtKnee,
-            "Root knees must emerge outside the opaque conical base.");
-        Assert.AreEqual(LookComposer.PinnedReach * LookComposer.BodyUnit, recipe.roots.footRadius, 0.0001f);
-        Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, CreatureValidator.MaxRootReach);
+        Assert.AreEqual(PartRole.Crown, crown.role);
+        Assert.AreEqual(3, tips.Length);
+        Assert.IsTrue(Array.TrueForAll(tips, part => part.id.StartsWith("Bud", StringComparison.Ordinal)));
         Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);
     }
 

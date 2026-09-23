@@ -10,7 +10,6 @@ public class StoneEffectsTests
     StoneEffects _fx;
     GameObject _go;
     GameObject _source;
-    StoneEnemyVisual _visual;
     Mesh _mesh;
 
     [SetUp]
@@ -25,11 +24,6 @@ public class StoneEffectsTests
     [TearDown]
     public void TearDown()
     {
-        if (_visual != null)
-        {
-            TestHelpers.InvokePrivate(_visual, "OnDestroy");
-            _visual = null;
-        }
         TestHelpers.InvokePrivate(_fx, "OnDestroy");
         Object.DestroyImmediate(_go);
         Object.DestroyImmediate(_source);
@@ -83,8 +77,9 @@ public class StoneEffectsTests
     [TestCase(true)]
     public void OnDisable_LiveEffects_ClearsCopiesAndRejectsEveryEmission(bool deactivateObject)
     {
-        _visual = StoneEnemyVisualTests.CreateVisual(_source);
-        _visual.Init(null, 1, _fx);
+        GameObject partGo = new GameObject("Part", typeof(MeshFilter), typeof(MeshRenderer));
+        partGo.transform.SetParent(_source.transform, false);
+        Transform[] parts = new Transform[] { partGo.transform };
         _fx.EmitDetachedPart(_mesh, null, Matrix4x4.identity, Vector3.zero, 0f, 1);
         Mesh copy = _go.GetComponentInChildren<MeshFilter>().sharedMesh;
         _fx.EmitThrownContact(Vector3.zero, 1);
@@ -110,10 +105,9 @@ public class StoneEffectsTests
         _fx.EmitHit(default, false, 1);
         _fx.EmitThrownContact(Vector3.zero, 1);
         _fx.EmitDetachedPart(_mesh, null, Matrix4x4.identity, Vector3.zero, 0f, 1);
-        _fx.CollapseOnce(_visual, 1);
+        _fx.CollapseParts(parts, Vector3.zero, 0f, 1);
         Assert.AreEqual(0, _fx.liveCount);
-        Assert.IsTrue(_visual.parts[0].transform.gameObject.activeSelf);
-        Assert.IsTrue(_visual.TryBeginCollapse(), "Inactive effects must not consume collapse state");
+        Assert.IsTrue(partGo.activeSelf);
 
         int pooled = _go.transform.childCount;
         if (deactivateObject)
@@ -226,6 +220,38 @@ public class StoneEffectsTests
         _fx.EmitThrownContact(Vector3.one, 91);
         Assert.AreEqual(count, _fx.liveCount);
         Assert.AreEqual(count, _go.transform.childCount);
+    }
+
+    [Test]
+    public void CollapseParts_StandingAndHiddenParts_BreaksOnlyTheStandingOnes()
+    {
+        GameObject standing = new GameObject("Standing", typeof(MeshFilter), typeof(MeshRenderer));
+        GameObject hidden = new GameObject("Hidden", typeof(MeshFilter), typeof(MeshRenderer));
+        standing.transform.SetParent(_source.transform, false);
+        hidden.transform.SetParent(_source.transform, false);
+        hidden.transform.position = Vector3.right * 50f;
+        hidden.SetActive(false);
+
+        _fx.CollapseParts(new Transform[] { standing.transform, hidden.transform }, Vector3.zero, 0f, 1);
+
+        Assert.AreEqual(17, _fx.liveCount); // 12 debris and 5 dust
+        foreach (MeshFilter filter in _go.GetComponentsInChildren<MeshFilter>())
+        {
+            Assert.Less(filter.transform.position.x, 25f);
+        }
+        Assert.IsTrue(standing.activeSelf); // the caller hides its own parts
+    }
+
+    [Test]
+    public void CollapseParts_NothingStanding_EmitsNothing()
+    {
+        GameObject hidden = new GameObject("Hidden", typeof(MeshFilter), typeof(MeshRenderer));
+        hidden.transform.SetParent(_source.transform, false);
+        hidden.SetActive(false);
+
+        _fx.CollapseParts(new Transform[] { hidden.transform }, Vector3.zero, 0f, 1);
+
+        Assert.AreEqual(0, _fx.liveCount);
     }
 
     [Test]

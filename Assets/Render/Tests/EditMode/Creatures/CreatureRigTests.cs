@@ -4,6 +4,8 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 using HealerLike.Render.Deliveries;
+using HealerLike.Render.Grammar;
+using HealerLike.Render.Stones;
 
 namespace HealerLike.Render.Creatures
 {
@@ -45,7 +47,7 @@ public class CreatureRigTests
     public void ContactDelivery_ShortDirectReach_DoesNotCoilUnusedLength()
     {
         _rig.Dispose();
-        CreatureRecipe data = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/SpiralFern.asset");
+        CreatureRecipe data = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
         _rig = CreateRig(data, _parent.transform, _material);
         _rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
         Vector3 target = new Vector3(2f, 1.3f, 0f);
@@ -104,6 +106,7 @@ public class CreatureRigTests
     {
         _rig.Dispose();
         _recipe.parts[0].glow = 1f;
+        _recipe.parts[0].role = PartRole.Tip;
         _rig = CreateRig(_recipe, _parent.transform, _material);
         Renderer renderer = _rig.root.GetComponentInChildren<Renderer>();
         MaterialPropertyBlock block = new MaterialPropertyBlock();
@@ -124,6 +127,131 @@ public class CreatureRigTests
         _rig.Tick(0f, 0f, frame);
         renderer.GetPropertyBlock(block);
         Assert.Less(block.GetColor("_BaseColor").g, 0.5f);
+    }
+
+    CreatureRig CreateDerivedRig(LookSide side)
+    {
+        _rig.Dispose();
+        Object.DestroyImmediate(_recipe);
+        _recipe = LookComposer.Compose(LookComposerTests.CreateChannels(side, HeadKind.Bud), LookVocabularyTests.Vocabulary());
+        _rig = CreateRig(_recipe, _parent.transform, _material);
+        return _rig;
+    }
+
+    Color TipColour(int tip)
+    {
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        _rig.partTransforms[tip].GetComponent<Renderer>().GetPropertyBlock(block);
+        return block.GetColor("_BaseColor");
+    }
+
+    [Test]
+    public void Tick_FullCharge_PlantBodySphereDoesNotSwell()
+    {
+        CreateDerivedRig(LookSide.Plant);
+        FootFrame frame = new FootFrame(Vector3.zero, Vector3.up, 1f);
+        _rig.SetReadout(null, 1f, 0f, 0f);
+        _rig.Tick(0f, 0f, frame);
+        Vector3 rest = _rig.partTransforms[0].localScale;
+
+        _rig.SetReadout(null, 1f, 1f, 0f);
+        _rig.Tick(0f, 0f, frame);
+
+        Assert.AreEqual(Primitive.Sphere, _recipe.parts[0].primitive);
+        Assert.AreEqual(rest.x, _rig.partTransforms[0].localScale.x, 0.0001f);
+    }
+
+    [Test]
+    public void Tick_Charge_TipKeepsItsHueAndBrightens()
+    {
+        CreateDerivedRig(LookSide.Plant);
+        int tip = System.Array.FindIndex(_recipe.parts, part => part.role == PartRole.Tip);
+        FootFrame frame = new FootFrame(Vector3.zero, Vector3.up, 1f);
+        _rig.SetReadout(null, 1f, 0f, 0f);
+        _rig.Tick(0f, 0f, frame);
+        Color rest = TipColour(tip);
+
+        _rig.SetReadout(null, 1f, 1f, 0f);
+        _rig.Tick(0f, 0f, frame);
+        Color charged = TipColour(tip);
+
+        Color.RGBToHSV(rest, out float restHue, out _, out float restValue);
+        Color.RGBToHSV(charged, out float chargedHue, out _, out float chargedValue);
+        Assert.AreEqual(restHue, chargedHue, 0.01f);
+        Assert.Greater(chargedValue, restValue);
+        Assert.AreEqual(_recipe.parts[tip].colour, rest); // the palette accent at full value at rest
+    }
+
+    [Test]
+    public void Tick_Wilt_TipDarkensWithoutMovingItsHue()
+    {
+        CreateDerivedRig(LookSide.Plant);
+        int tip = System.Array.FindIndex(_recipe.parts, part => part.role == PartRole.Tip);
+        FootFrame frame = new FootFrame(Vector3.zero, Vector3.up, 1f);
+
+        _rig.SetReadout(null, 0f, 0f, 0f);
+        _rig.Tick(0f, 0f, frame);
+
+        Color.RGBToHSV(_recipe.parts[tip].colour, out float hue, out _, out float value);
+        Color.RGBToHSV(TipColour(tip), out float wiltedHue, out _, out float wiltedValue);
+        Assert.AreEqual(hue, wiltedHue, 0.01f);
+        Assert.Less(wiltedValue, value);
+    }
+
+    [Test]
+    public void Init_Tip_DrawsAWiderOutline()
+    {
+        CreateDerivedRig(LookSide.Plant);
+        int tip = System.Array.FindIndex(_recipe.parts, part => part.role == PartRole.Tip);
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
+
+        _rig.partTransforms[tip].GetComponent<Renderer>().GetPropertyBlock(block);
+
+        Assert.AreEqual(CreatureRig.TipOutlineWidth, block.GetFloat("_HLOutlineWidthMultiplier"));
+    }
+
+    [Test]
+    public void Tick_Crown_SpinsByRoleNotById()
+    {
+        _rig.Dispose();
+        _recipe.parts[0].role = PartRole.Crown;
+        _recipe.parts[0].id = "Ring";
+        _rig = CreateRig(_recipe, _parent.transform, _material);
+        FootFrame frame = new FootFrame(Vector3.zero, Vector3.up, 1f);
+        _rig.Tick(0f, 0f, frame);
+        Quaternion before = _rig.partTransforms[0].parent.localRotation;
+
+        _rig.Tick(5f, 0f, frame);
+
+        Assert.Greater(Quaternion.Angle(before, _rig.partTransforms[0].parent.localRotation), 1f);
+    }
+
+    [Test]
+    public void Init_TwoFacedStone_DrawsOchreOnTheSecondSubmesh()
+    {
+        _rig.Dispose();
+        Mesh mesh = new Mesh();
+        mesh.vertices = new Vector3[] { Vector3.zero, Vector3.up, Vector3.right, Vector3.forward };
+        mesh.subMeshCount = 2;
+        mesh.SetTriangles(new int[] { 0, 1, 2 }, 0);
+        mesh.SetTriangles(new int[] { 0, 2, 3 }, 1);
+        StoneVariants variants = ScriptableObject.CreateInstance<StoneVariants>();
+        variants.meshes = new Mesh[] { mesh };
+        PrimitiveMeshes meshes = Object.Instantiate(PrimitiveMeshesTests.Meshes());
+        meshes.stoneVariants = variants;
+        _recipe.parts[0].primitive = Primitive.Stone;
+        _rig = new CreatureRig();
+        _rig.Init(_recipe, _parent.transform, _material, meshes);
+        Renderer renderer = _rig.partTransforms[0].GetComponent<Renderer>();
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
+
+        renderer.GetPropertyBlock(block, 1);
+
+        Assert.AreEqual(2, renderer.sharedMaterials.Length);
+        Assert.Less(((Vector4)_recipe.stoneOchre - (Vector4)block.GetColor("_BaseColor")).magnitude, 0.001f);
+        Object.DestroyImmediate(meshes);
+        Object.DestroyImmediate(variants);
+        Object.DestroyImmediate(mesh);
     }
 
     [Test]
@@ -291,7 +419,7 @@ public class CreatureRigTests
     }
 
     [Test]
-    public void Init_StonePartWithoutVariants_BuildsOnTheBoulder()
+    public void Init_StonePart_BuildsOnItsSeededVariant()
     {
         _rig.Dispose();
         _recipe.parts[0].primitive = Primitive.Stone;
@@ -300,14 +428,15 @@ public class CreatureRigTests
         _rig = CreateRig(_recipe, _parent.transform, _material);
 
         Mesh mesh = _rig.partTransforms[0].GetComponent<MeshFilter>().sharedMesh;
-        Assert.AreEqual(PrimitiveMeshesTests.Meshes().boulder, mesh);
+        Mesh[] variants = PrimitiveMeshesTests.Meshes().stoneVariants.meshes;
+        Assert.AreEqual(variants[3 % variants.Length], mesh);
     }
 
     [Test]
     public void Init_Recipe_OnePartTransformPerPart()
     {
         _rig.Dispose();
-        CreatureRecipe data = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/SpiralFern.asset");
+        CreatureRecipe data = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
 
         _rig = CreateRig(data, _parent.transform, _material);
 

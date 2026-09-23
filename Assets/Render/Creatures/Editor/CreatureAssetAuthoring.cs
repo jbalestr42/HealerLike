@@ -1,7 +1,6 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using HealerLike.Render.Spells;
 using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Creatures
@@ -26,55 +25,23 @@ namespace HealerLike.Render.Creatures
             Directory.CreateDirectory(root + "Data");
             Directory.CreateDirectory(root + "Prefabs");
             CreatureRecipe healer = CreatureRecipeAuthoring.SaveRecipe("Healer", CreatureRecipeParts.Healer(), 13, 2, 17);
-            CreatureRecipe fern = CreatureRecipeAuthoring.SaveRecipe("SpiralFern", CreatureRecipeParts.Fern(), 10, 2, 31);
-            CreatureRecipe arch = CreatureRecipeAuthoring.SaveRecipe("HangingArch", CreatureRecipeParts.Arch(), 9, 4, 57);
-            CreatureRecipe rosette = CreatureRecipeAuthoring.SaveRecipe("BladeRosette", CreatureRecipeParts.Rosette(), 9, 2, 103);
-            CreatureRecipe stack = CreatureRecipeAuthoring.SaveRecipe("SphereStack", CreatureRecipeParts.Stack(), 10, 1, 89);
-            if (!healer || !fern || !arch || !rosette || !stack)
+            if (!healer)
             {
                 return;
             }
 
-            // Views are instantiated under his models, which keep their own sockets and colliders
-            View("Normal", fern, material, meshes);
-            View("Test", stack, material, meshes);
-            View("Swarm", arch, material, meshes);
-            View("FastShoot", fern, material, meshes);
-            View("TripleShoot", arch, material, meshes);
-            View("MultiShot", arch, material, meshes);
-            View("RandomShoot", fern, material, meshes);
-            View("ChainLightning", stack, material, meshes);
-            View("Channeling", stack, material, meshes);
-            View("Soldier", stack, material, meshes);
-            View("HitArmorBuffer", rosette, material, meshes);
+            // Every other unit is derived from its data, the healer is the one authored view
             CharacterView(healer, material, meshes);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("[CreatureAssetAuthoring] Creature recipes and view prefabs authored.");
+            Debug.Log("[CreatureAssetAuthoring] Healer recipe and view prefab authored.");
         }
 
-        // Recipe-only refresh keeps existing prefab presentation and delivery overrides intact
+        // Recipe-only refresh keeps the existing prefab presentation intact
         public static void AuthorBeautyRecipes()
         {
             CreatureRecipeAuthoring.SaveRecipe("Healer", CreatureRecipeParts.Healer(), 13, 2, 17);
-            CreatureRecipeAuthoring.SaveRecipe("SpiralFern", CreatureRecipeParts.Fern(), 10, 2, 31);
-            CreatureRecipeAuthoring.SaveRecipe("HangingArch", CreatureRecipeParts.Arch(), 9, 4, 57);
-            CreatureRecipeAuthoring.SaveRecipe("BladeRosette", CreatureRecipeParts.Rosette(), 9, 2, 103);
-            CreatureRecipeAuthoring.SaveRecipe("SphereStack", CreatureRecipeParts.Stack(), 10, 1, 89);
             AssetDatabase.SaveAssets();
-        }
-
-        // The view sits under his model, which carries the model scale, so the root stays at scale one
-        static void View(string name, CreatureRecipe recipe, Material material, PrimitiveMeshes meshes)
-        {
-            GameObject view = new GameObject(name);
-            view.AddComponent<CreatureBuilder>().SetRecipe(recipe, material, meshes);
-            view.AddComponent<StatusObserver>();
-            view.AddComponent<HealPulse>();
-            view.AddComponent<TrampleZone>();
-            view.AddComponent<RangePreview>();
-            PrefabUtility.SaveAsPrefabAsset(view, root + "Prefabs/" + name + ".prefab");
-            Object.DestroyImmediate(view);
         }
 
         static void CharacterView(CreatureRecipe recipe, Material material, PrimitiveMeshes meshes)
