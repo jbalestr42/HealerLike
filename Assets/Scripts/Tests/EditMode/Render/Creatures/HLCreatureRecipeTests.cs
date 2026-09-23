@@ -1,54 +1,75 @@
-using NUnit.Framework;
-using UnityEngine;
-using UnityEditor;
 using System;
+using NUnit.Framework;
+using UnityEditor;
+using UnityEngine;
+
 namespace HealerLike.Render.Creatures
 {
     public class HLCreatureRecipeTests
     {
-        [Test] public void AuthoredHealerBowlPointsDownAndJoinsRaisedRootCrown()
+        [Test]
+        public void AuthoredHealerBowlPointsDownAndJoinsRaisedRootCrown()
         {
-            var recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>("Assets/Render/Creatures/Data/HLHealer.asset");
+            string path = "Assets/Render/Creatures/Data/HLHealer.asset";
+            HLCreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
             Assert.NotNull(recipe);
-            var bulb = Array.Find(recipe.parts, p => p.id == "HLBulb");
-            var hip = Array.Find(recipe.parts, p => p.id == "HLHip");
+            HLPart bulb = Array.Find(recipe.parts, part => part.id == "HLBulb");
+            HLPart hip = Array.Find(recipe.parts, part => part.id == "HLHip");
+
             Assert.AreEqual(HLPrimitive.Cone, bulb.primitive);
-            Assert.Less(Vector3.Dot(Quaternion.Euler(bulb.localEuler) * Vector3.up, Vector3.up), -.99f,
+            Assert.Less(Vector3.Dot(Quaternion.Euler(bulb.localEuler) * Vector3.up, Vector3.up), -0.99f,
                 "The bowl must taper down toward the roots, not point up into the crown.");
             Assert.AreEqual(HLPrimitive.Sphere, hip.primitive);
             Assert.AreEqual(bulb.parent, hip.parent);
             float parentY = recipe.parts[hip.parent].localPosition.y;
             float hipY = parentY + hip.localPosition.y;
-            float bowlTipY = parentY + bulb.localPosition.y - bulb.dimensions.y * .5f;
-            Assert.LessOrEqual(Mathf.Abs(recipe.roots.hipHeight - hipY), hip.dimensions.y * .5f);
-            Assert.LessOrEqual(Mathf.Abs(bowlTipY - hipY), hip.dimensions.y * .5f + .025f,
+            float bowlTipY = parentY + bulb.localPosition.y - bulb.dimensions.y * 0.5f;
+            Assert.LessOrEqual(Mathf.Abs(recipe.roots.hipHeight - hipY), hip.dimensions.y * 0.5f);
+            Assert.LessOrEqual(Mathf.Abs(bowlTipY - hipY), hip.dimensions.y * 0.5f + 0.025f,
                 "The hip joint must connect the bowl to the root crown.");
-            Assert.GreaterOrEqual(recipe.roots.hipHeight, .55f);
-            Assert.GreaterOrEqual(recipe.roots.kneeHeight, .30f);
-            Assert.AreEqual(.41f, recipe.roots.footRadius, .0001f);
-            Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, .46f);
+            Assert.GreaterOrEqual(recipe.roots.hipHeight, 0.55f);
+            Assert.GreaterOrEqual(recipe.roots.kneeHeight, 0.30f);
+            Assert.AreEqual(0.41f, recipe.roots.footRadius, 0.0001f);
+            Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, 0.46f);
             Assert.IsTrue(HLCreatureValidator.TryValidate(recipe, out string error), error);
         }
-        [Test] public void StackRootKneeClearsConicalBaseWithoutChangingFootprint()
+
+        [Test]
+        public void StackRootKneeClearsConicalBaseWithoutChangingFootprint()
         {
-            var recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>("Assets/Render/Creatures/Data/HLSphereStack.asset");
+            string path = "Assets/Render/Creatures/Data/HLSphereStack.asset";
+            HLCreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
             Assert.NotNull(recipe);
-            var cone = Array.Find(recipe.parts, p => p.id == "HLConicalRoot");
-            float bottom = cone.localPosition.y - cone.dimensions.y * .5f;
+            HLPart cone = Array.Find(recipe.parts, part => part.id == "HLConicalRoot");
+
+            float bottom = cone.localPosition.y - cone.dimensions.y * 0.5f;
             float kneeFraction = (recipe.roots.kneeHeight - bottom) / cone.dimensions.y;
-            float coneRadiusAtKnee = Mathf.Max(cone.dimensions.x, cone.dimensions.z) * .5f * (1 - kneeFraction);
-            float kneeInnerRadius = recipe.roots.footRadius * .6f - recipe.roots.thickness;
+            float coneRadiusAtKnee = Mathf.Max(cone.dimensions.x, cone.dimensions.z) * 0.5f * (1f - kneeFraction);
+            float kneeInnerRadius = recipe.roots.footRadius * 0.6f - recipe.roots.thickness;
+
             Assert.Greater(kneeInnerRadius, coneRadiusAtKnee,
                 "Root knees must emerge outside the opaque conical base.");
-            Assert.AreEqual(.41f, recipe.roots.footRadius, .0001f);
-            Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, .46f);
+            Assert.AreEqual(0.41f, recipe.roots.footRadius, 0.0001f);
+            Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, 0.46f);
             Assert.IsTrue(HLCreatureValidator.TryValidate(recipe, out string error), error);
         }
-        [Test] public void DefaultsHaveBoundedRootsAndIndependentArrays()
+
+        [Test]
+        public void DefaultsHaveBoundedRootsAndIndependentArrays()
         {
-            var a = ScriptableObject.CreateInstance<HLCreatureRecipe>();
-            try { Assert.AreEqual(4, a.roots.count); Assert.Less(a.roots.footRadius + a.roots.thickness, .46f); Assert.NotNull(a.parts); Assert.NotNull(a.arms); Assert.NotNull(a.sourceLocal); }
-            finally { UnityEngine.Object.DestroyImmediate(a); }
+            HLCreatureRecipe recipe = ScriptableObject.CreateInstance<HLCreatureRecipe>();
+            try
+            {
+                Assert.AreEqual(4, recipe.roots.count);
+                Assert.Less(recipe.roots.footRadius + recipe.roots.thickness, 0.46f);
+                Assert.NotNull(recipe.parts);
+                Assert.NotNull(recipe.arms);
+                Assert.NotNull(recipe.sourceLocal);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(recipe);
+            }
         }
     }
 }

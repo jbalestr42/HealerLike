@@ -24,12 +24,12 @@ namespace HealerLike.Render.Stage
                 var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(path);
                 var observer=prefab.GetComponent<HLProjectileVisualObserver>();
                 Assert.That(observer,Is.Not.Null,path);
-                Assert.That(observer.DeliveryStyle,Is.EqualTo(styles.For(prefab)),path);
+                Assert.That(observer.deliveryStyle,Is.EqualTo(styles.For(prefab)),path);
                 var creature=AssetDatabase.LoadAssetAtPath<GameObject>(HLStageBuilder.CreatureProjectiles+prefab.name.Substring(2)+".prefab");
                 Assert.That(creature,Is.Not.Null,path);
                 var expected=new SerializedObject(creature.GetComponent<HLProjectileVisualObserver>());
                 var actual=new SerializedObject(observer);
-                foreach(var field in new[]{"preserveContactPath","presentation"})
+                foreach(var field in new[]{"_preserveContactPath","_presentation"})
                     Assert.That(actual.FindProperty(field).intValue,Is.EqualTo(expected.FindProperty(field).intValue),path+" "+field);
                 Assert.That(prefab.GetComponent<HLLaunchWave>(),Is.Not.Null,path);
             }

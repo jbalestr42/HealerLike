@@ -170,7 +170,7 @@ namespace HealerLike.Render.Spells
             {
                 if (!pair.source || !pair.target) continue;
                 var anchor = HealerAnchor?.Invoke(pair.source);
-                if (!anchor) anchor = pair.source.GetComponentInChildren<HealerLike.Render.Creatures.HLCharacterView>()?.Bud0;
+                if (!anchor) anchor = pair.source.GetComponentInChildren<HealerLike.Render.Creatures.HLCharacterView>()?.bud0;
                 var start = anchor ? anchor.position : pair.source.transform.position;
                 var end = Anchor(pair.target).position;
                 ShowLink(start,end); LinkObserved?.Invoke(start,end);

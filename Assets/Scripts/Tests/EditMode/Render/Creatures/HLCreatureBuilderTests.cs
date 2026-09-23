@@ -1,106 +1,228 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using HealerLike.Render.Zones;
+
 namespace HealerLike.Render.Creatures
 {
     public class HLCreatureBuilderTests
     {
-        GameObject owner, model, source, target;
-        HLCreatureRecipe recipe;
-        Material material;
-        Entity entity;
-        ResourceAttribute health;
-        HLCreatureBuilder builder;
-        HLRenderRegistry registry;
-        HLSink sink;
-        internal sealed class HLSink : IHLHealVisualSink, IHLSpellVisualSink
+        public class HLSink : IHLHealVisualSink, IHLSpellVisualSink
         {
-            public int heals, impacts; public GameObject target, source; public float amount; public bool critical;
-            public void OnHealResolved(GameObject target, float value, bool critical) { heals++; this.target = target; amount = value; this.critical = critical; }
-            public void ShowImpact(GameObject source, GameObject target, HLResourceKind resource, float amount, bool critical) { impacts++; this.source = source; this.target = target; this.amount = amount; this.critical = critical; }
-            public void SetStatus(GameObject s, GameObject t, ABuffHandlerFactory f, int stacks, float e, float d, HLClockKind c) { }
-            public void RemoveStatus(GameObject s, GameObject t, ABuffHandlerFactory f) { }
-            public void PulseArea(Vector3 center, float radius, HLZoneKind kind, float strength) { }
+            public int heals;
+            public int impacts;
+            public GameObject target;
+            public GameObject source;
+            public float amount;
+            public bool critical;
+
+            public void OnHealResolved(GameObject target, float value, bool critical)
+            {
+                heals++;
+                this.target = target;
+                amount = value;
+                this.critical = critical;
+            }
+
+            public void ShowImpact(GameObject source, GameObject target, HLResourceKind resource, float amount,
+                bool critical)
+            {
+                impacts++;
+                this.source = source;
+                this.target = target;
+                this.amount = amount;
+                this.critical = critical;
+            }
+
+            public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
+                float elapsed, float duration, HLClockKind clock)
+            {
+            }
+
+            public void RemoveStatus(GameObject source, GameObject target, ABuffHandlerFactory factory)
+            {
+            }
+
+            public void PulseArea(Vector3 center, float radius, HLZoneKind kind, float strength)
+            {
+            }
         }
-        [SetUp] public void Setup()
+
+        GameObject _owner;
+        GameObject _model;
+        GameObject _source;
+        GameObject _target;
+        HLCreatureRecipe _recipe;
+        Material _material;
+        Entity _entity;
+        ResourceAttribute _health;
+        HLCreatureBuilder _builder;
+        HLRenderRegistry _registry;
+        HLSink _sink;
+
+        [SetUp]
+        public void Setup()
         {
-            owner = new GameObject("HLEntityFixture"); health = TestHelpers.CreateResourceAttribute(owner, AttributeType.HealthMax, 100);
-            TestHelpers.WithLoggingDisabled(() => entity = owner.AddComponent<Entity>()); TestHelpers.SetPrivateField(entity, "_health", health);
-            model = new GameObject("HLModel"); model.transform.SetParent(owner.transform, false); var entityModel = model.AddComponent<EntityModel>();
-            source = new GameObject("HLAuthoredSource"); source.transform.SetParent(model.transform, false); source.transform.localPosition = Vector3.up * 1.7f; source.AddComponent<SkillSource>();
-            target = new GameObject("HLAuthoredTarget"); target.transform.SetParent(model.transform, false); target.transform.localPosition = Vector3.up; target.AddComponent<SkillTargetPointTag>();
-            recipe = HLCreatureValidatorTests.Recipe(); material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            builder = model.AddComponent<HLCreatureBuilder>(); builder.SetRecipe(recipe, material);
-            sink = new HLSink(); registry = new HLRenderRegistry { SpellSink = sink }; registry.Register(source, sink);
-            builder.Configure(registry, 1, Vector3.zero, Vector3.up); entityModel.Init(entity);
+            _owner = new GameObject("HLEntityFixture");
+            _health = TestHelpers.CreateResourceAttribute(_owner, AttributeType.HealthMax, 100);
+            TestHelpers.WithLoggingDisabled(() => _entity = _owner.AddComponent<Entity>());
+            TestHelpers.SetPrivateField(_entity, "_health", _health);
+            _model = new GameObject("HLModel");
+            _model.transform.SetParent(_owner.transform, false);
+            EntityModel entityModel = _model.AddComponent<EntityModel>();
+            _source = new GameObject("HLAuthoredSource");
+            _source.transform.SetParent(_model.transform, false);
+            _source.transform.localPosition = Vector3.up * 1.7f;
+            _source.AddComponent<SkillSource>();
+            _target = new GameObject("HLAuthoredTarget");
+            _target.transform.SetParent(_model.transform, false);
+            _target.transform.localPosition = Vector3.up;
+            _target.AddComponent<SkillTargetPointTag>();
+            _recipe = HLCreatureValidatorTests.Recipe();
+            _material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            _builder = _model.AddComponent<HLCreatureBuilder>();
+            _builder.SetRecipe(_recipe, _material);
+            _sink = new HLSink();
+            _registry = new HLRenderRegistry { SpellSink = _sink };
+            _registry.Register(_source, _sink);
+            _builder.Configure(_registry, 1f, Vector3.zero, Vector3.up);
+            entityModel.Init(_entity);
         }
-        [TearDown] public void Cleanup() { if (builder) TestHelpers.InvokePrivate(builder, "OnDestroy"); Object.DestroyImmediate(owner); Object.DestroyImmediate(recipe); Object.DestroyImmediate(material); HLPrimitiveMeshes.ReleaseAll(); }
-        [Test] public void DoubleInitKeepsOneRigAndListenerAndPreservesSourceCache()
+
+        [TearDown]
+        public void Cleanup()
         {
-            var rig = builder.Rig; int count = model.GetComponentsInChildren<Transform>().Length;
-            builder.Init(entity); builder.Init(entity); Assert.AreSame(rig, builder.Rig); Assert.AreEqual(count, model.GetComponentsInChildren<Transform>().Length);
-            Assert.AreSame(source.GetComponent<SkillSource>(), model.GetComponent<EntityModel>().GetSourcePoint());
-            health.OnAllConsumerProcessed.Invoke(owner, new ResourceModifier { source = source }, 20, true);
-            Assert.AreEqual(1, sink.heals); Assert.AreEqual(1, sink.impacts); Assert.AreSame(owner, sink.target); Assert.IsNull(rig.Root.Find("HLHealMote"));
+            if (_builder)
+            {
+                TestHelpers.InvokePrivate(_builder, "OnDestroy");
+            }
+
+            Object.DestroyImmediate(_owner);
+            Object.DestroyImmediate(_recipe);
+            Object.DestroyImmediate(_material);
+            HLPrimitiveMeshes.ReleaseAll();
         }
-        [Test] public void DisableEnableAndRebindDetachOldHealthExactlyOnce()
+
+        [Test]
+        public void DoubleInitKeepsOneRigAndListenerAndPreservesSourceCache()
         {
-            builder.enabled = false; TestHelpers.InvokePrivate(builder, "OnDisable"); health.OnAllConsumerProcessed.Invoke(owner, new ResourceModifier { source = source }, 10, false); Assert.AreEqual(0, sink.heals);
-            builder.enabled = true; TestHelpers.InvokePrivate(builder, "OnEnable"); health.OnAllConsumerProcessed.Invoke(owner, new ResourceModifier { source = source }, 10, false); Assert.AreEqual(1, sink.heals);
-            builder.Init(null); health.OnAllConsumerProcessed.Invoke(owner, new ResourceModifier { source = source }, 10, false); Assert.AreEqual(1, sink.heals);
+            HLCreatureRig rig = _builder.rig;
+            int count = _model.GetComponentsInChildren<Transform>().Length;
+
+            _builder.Init(_entity);
+            _builder.Init(_entity);
+
+            Assert.AreSame(rig, _builder.rig);
+            Assert.AreEqual(count, _model.GetComponentsInChildren<Transform>().Length);
+            Assert.AreSame(_source.GetComponent<SkillSource>(), _model.GetComponent<EntityModel>().GetSourcePoint());
+            _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 20f, true);
+            Assert.AreEqual(1, _sink.heals);
+            Assert.AreEqual(1, _sink.impacts);
+            Assert.AreSame(_owner, _sink.target);
+            Assert.IsNull(rig.root.Find("HLHealMote"));
         }
-        [Test] public void DamageZeroOverhealAndSourcelessHealUseSignedOutcome()
+
+        [Test]
+        public void DisableEnableAndRebindDetachOldHealthExactlyOnce()
         {
-            health.OnAllConsumerProcessed.Invoke(owner, new ResourceModifier { source = source }, 0, false);
-            Assert.AreEqual(0, sink.impacts); Assert.AreEqual(0, sink.heals);
-            health.OnAllConsumerProcessed.Invoke(owner, new ResourceModifier { source = source }, -7, true);
-            Assert.AreEqual(1, sink.impacts); Assert.AreEqual(0, sink.heals); Assert.AreEqual(-7, sink.amount);
-            health.OnAllConsumerProcessed.Invoke(owner, new ResourceModifier { source = source }, 200, false);
-            Assert.AreEqual(1, sink.heals); Assert.AreEqual(200, sink.amount); Assert.AreEqual(100, health.Value);
-            health.OnAllConsumerProcessed.Invoke(owner, new ResourceModifier(), 2, false); Assert.IsNull(builder.Rig.Root.Find("HLHealMote"));
+            _builder.enabled = false;
+            TestHelpers.InvokePrivate(_builder, "OnDisable");
+            _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 10f, false);
+            Assert.AreEqual(0, _sink.heals);
+            _builder.enabled = true;
+            TestHelpers.InvokePrivate(_builder, "OnEnable");
+            _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 10f, false);
+            Assert.AreEqual(1, _sink.heals);
+            _builder.Init(null);
+            _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 10f, false);
+            Assert.AreEqual(1, _sink.heals);
         }
-        [Test] public void DestroyedEntityStillUnregistersExternallyAnchoredBuilder()
+
+        [Test]
+        public void DamageZeroOverhealAndSourcelessHealUseSignedOutcome()
         {
-            model.transform.SetParent(null);
-            registry.Unregister(source, sink);
-            Object.DestroyImmediate(owner);
-            builder.enabled = false; TestHelpers.InvokePrivate(builder, "OnDisable");
-            var field = typeof(HLRenderRegistry).GetField("_healSinks",
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            Assert.AreEqual(0, ((System.Collections.IDictionary)field.GetValue(registry)).Count);
-            TestHelpers.InvokePrivate(builder, "OnDestroy");
-            Object.DestroyImmediate(model);
+            _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 0f, false);
+            Assert.AreEqual(0, _sink.impacts);
+            Assert.AreEqual(0, _sink.heals);
+            _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, -7f, true);
+            Assert.AreEqual(1, _sink.impacts);
+            Assert.AreEqual(0, _sink.heals);
+            Assert.AreEqual(-7, _sink.amount);
+            _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 200f, false);
+            Assert.AreEqual(1, _sink.heals);
+            Assert.AreEqual(200, _sink.amount);
+            Assert.AreEqual(100, _health.Value);
+            _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier(), 2f, false);
+            Assert.IsNull(_builder.rig.root.Find("HLHealMote"));
         }
-        [Test] public void BreathingAndDragNeverRelocateAuthoredSockets()
+
+        [Test]
+        public void DestroyedEntityStillUnregistersExternallyAnchoredBuilder()
         {
-            Vector3 s = source.transform.localPosition, t = target.transform.localPosition;
-            owner.transform.position = new Vector3(4, 2, 3); TestHelpers.InvokePrivate(builder, "LateUpdate");
-            Assert.AreEqual(s, source.transform.localPosition); Assert.AreEqual(t, target.transform.localPosition);
-            Assert.AreEqual(new Vector3(4, 0, 3), builder.Rig.Root.position); Assert.AreEqual(new Vector3(4, 2, 3), owner.transform.position);
+            _model.transform.SetParent(null);
+            _registry.Unregister(_source, _sink);
+            Object.DestroyImmediate(_owner);
+            _builder.enabled = false;
+            TestHelpers.InvokePrivate(_builder, "OnDisable");
+            BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            FieldInfo field = typeof(HLRenderRegistry).GetField("_healSinks", flags);
+            Assert.AreEqual(0, ((IDictionary)field.GetValue(_registry)).Count);
+            TestHelpers.InvokePrivate(_builder, "OnDestroy");
+            Object.DestroyImmediate(_model);
         }
-        [Test] public void PublicTargetsHealthAndLateAddedCooldownArePolled()
+
+        [Test]
+        public void BreathingAndDragNeverRelocateAuthoredSockets()
         {
-            TargetProvider provider = null; TestHelpers.WithLoggingDisabled(() => provider = owner.AddComponent<TargetProvider>());
-            target.transform.position = Vector3.right * 3;
-            TestHelpers.SetPrivateField(provider, "_targets", new System.Collections.Generic.List<GameObject> { target });
-            var skill = owner.AddComponent<ShootProjectileSkill>();
+            Vector3 source = _source.transform.localPosition;
+            Vector3 target = _target.transform.localPosition;
+
+            _owner.transform.position = new Vector3(4f, 2f, 3f);
+            TestHelpers.InvokePrivate(_builder, "LateUpdate");
+
+            Assert.AreEqual(source, _source.transform.localPosition);
+            Assert.AreEqual(target, _target.transform.localPosition);
+            Assert.AreEqual(new Vector3(4f, 0f, 3f), _builder.rig.root.position);
+            Assert.AreEqual(new Vector3(4f, 2f, 3f), _owner.transform.position);
+        }
+
+        [Test]
+        public void PublicTargetsHealthAndLateAddedCooldownArePolled()
+        {
+            TargetProvider provider = null;
+            TestHelpers.WithLoggingDisabled(() => provider = _owner.AddComponent<TargetProvider>());
+            _target.transform.position = Vector3.right * 3f;
+            TestHelpers.SetPrivateField(provider, "_targets", new List<GameObject> { _target });
+            ShootProjectileSkill skill = _owner.AddComponent<ShootProjectileSkill>();
             TestHelpers.SetPrivateField(skill, "_cooldownDuration", new Attribute(2));
             skill.isEnabled = true;
-            TestHelpers.SetPrivateField(health, "_value", 25f);
-            TestHelpers.InvokePrivate(builder, "LateUpdate");
-            Assert.AreEqual(1, builder.CooldownSkillCount); Assert.AreEqual(1, builder.Rig.Charge);
-            Assert.AreEqual(.25f, builder.Rig.HealthFraction);
-            typeof(ACooldownSkill<ShootProjectileSkillData>).GetField("_cooldown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(skill, .5f);
-            TestHelpers.InvokePrivate(builder, "LateUpdate"); Assert.AreEqual(.75f, builder.Rig.Charge);
-            typeof(ACooldownSkill<ShootProjectileSkillData>).GetField("_cooldown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(skill, 2f);
-            TestHelpers.InvokePrivate(builder, "LateUpdate"); Assert.AreEqual(0, builder.Rig.Charge);
-            Assert.IsFalse(builder.BeginDelivery(200, HLDeliveryStyle.Thrown, null, Vector3.one));
-            Assert.IsTrue(builder.BeginDelivery(201, HLDeliveryStyle.Direct, null, Vector3.one));
-            Assert.AreEqual(0, builder.Rig.Charge);
-            Object.DestroyImmediate(skill); TestHelpers.InvokePrivate(builder, "LateUpdate");
-            Assert.AreEqual(0, builder.CooldownSkillCount); Assert.AreEqual(0, builder.Rig.Charge);
-            TestHelpers.SetPrivateField(health, "_value", 100f); TestHelpers.InvokePrivate(builder, "LateUpdate");
-            Assert.AreEqual(1, builder.Rig.HealthFraction);
+            TestHelpers.SetPrivateField(_health, "_value", 25f);
+            FieldInfo cooldown = typeof(ACooldownSkill<ShootProjectileSkillData>).GetField("_cooldown",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+
+            TestHelpers.InvokePrivate(_builder, "LateUpdate");
+
+            Assert.AreEqual(1, _builder.cooldownSkillCount);
+            Assert.AreEqual(1, _builder.rig.charge);
+            Assert.AreEqual(0.25f, _builder.rig.healthFraction);
+            cooldown.SetValue(skill, 0.5f);
+            TestHelpers.InvokePrivate(_builder, "LateUpdate");
+            Assert.AreEqual(0.75f, _builder.rig.charge);
+            cooldown.SetValue(skill, 2f);
+            TestHelpers.InvokePrivate(_builder, "LateUpdate");
+            Assert.AreEqual(0, _builder.rig.charge);
+            Assert.IsFalse(_builder.BeginDelivery(200, HLDeliveryStyle.Thrown, null, Vector3.one));
+            Assert.IsTrue(_builder.BeginDelivery(201, HLDeliveryStyle.Direct, null, Vector3.one));
+            Assert.AreEqual(0, _builder.rig.charge);
+            Object.DestroyImmediate(skill);
+            TestHelpers.InvokePrivate(_builder, "LateUpdate");
+            Assert.AreEqual(0, _builder.cooldownSkillCount);
+            Assert.AreEqual(0, _builder.rig.charge);
+            TestHelpers.SetPrivateField(_health, "_value", 100f);
+            TestHelpers.InvokePrivate(_builder, "LateUpdate");
+            Assert.AreEqual(1, _builder.rig.healthFraction);
         }
     }
 }

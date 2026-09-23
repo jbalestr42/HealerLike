@@ -1,108 +1,217 @@
 using NUnit.Framework;
 using UnityEngine;
+
 namespace HealerLike.Render.Creatures
 {
     public class HLLianaArmTests
     {
-        HLCreatureRecipe recipe;
-        HLLianaArm arm;
-        [SetUp] public void Setup() { recipe = HLCreatureValidatorTests.Recipe(); arm = new HLLianaArm(recipe.arms[0], null, null); arm.Tick(0, Vector3.zero, Quaternion.identity); }
-        [TearDown] public void Cleanup() { arm.Dispose(); Object.DestroyImmediate(recipe); }
-        void Lengths() { for (int i = 0; i < arm.SegmentCount; i++) Assert.That(Vector3.Distance(arm.Joint(i), arm.Joint(i + 1)), Is.EqualTo(.2f).Within(1e-5)); }
-        [Test] public void AuthoredArmUsesOneMeshOnlyDuringGesturesAndDisposesIt()
+        HLCreatureRecipe _recipe;
+        HLLianaArm _arm;
+
+        [SetUp]
+        public void Setup()
         {
-            var authored = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>("Assets/Render/Creatures/Data/HLHealer.asset");
-            var parent = new GameObject("HLArmFixture");
-            var material = new Material(Shader.Find("HL/Look/Primitive"));
-            var rendered = new HLLianaArm(authored.arms[0], parent.transform, material);
+            _recipe = HLCreatureValidatorTests.Recipe();
+            _arm = new HLLianaArm(_recipe.arms[0], null, null);
+            _arm.Tick(0f, Vector3.zero, Quaternion.identity);
+        }
+
+        [TearDown]
+        public void Cleanup()
+        {
+            _arm.Dispose();
+            Object.DestroyImmediate(_recipe);
+        }
+
+        void Lengths()
+        {
+            for (int i = 0; i < _arm.segmentCount; i++)
+            {
+                Assert.That(Vector3.Distance(_arm.Joint(i), _arm.Joint(i + 1)), Is.EqualTo(0.2f).Within(0.00001));
+            }
+        }
+
+        [Test]
+        public void AuthoredArmUsesOneMeshOnlyDuringGesturesAndDisposesIt()
+        {
+            string path = "Assets/Render/Creatures/Data/HLHealer.asset";
+            HLCreatureRecipe authored = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
+            GameObject parent = new GameObject("HLArmFixture");
+            Material material = new Material(Shader.Find("HL/Look/Primitive"));
+            HLLianaArm rendered = new HLLianaArm(authored.arms[0], parent.transform, material);
             Mesh mesh = null;
             try
             {
-                var renderers = parent.GetComponentsInChildren<Renderer>(true);
-                Assert.AreEqual(1, renderers.Length); Assert.IsFalse(renderers[0].enabled);
-                rendered.Tick(0, Vector3.zero, Quaternion.identity);
-                Assert.AreEqual(0, rendered.MeshRevision); Assert.AreEqual(0, rendered.ActiveLeafCount);
+                Renderer[] renderers = parent.GetComponentsInChildren<Renderer>(true);
+                Assert.AreEqual(1, renderers.Length);
+                Assert.IsFalse(renderers[0].enabled);
+                rendered.Tick(0f, Vector3.zero, Quaternion.identity);
+                Assert.AreEqual(0, rendered.meshRevision);
+                Assert.AreEqual(0, rendered.activeLeafCount);
                 rendered.Begin(1, HLGestureKind.Attack, Vector3.one);
                 rendered.SetTipGoal(1, Vector3.one);
-                rendered.Tick(.016f, Vector3.zero, Quaternion.identity);
+                rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);
                 Assert.IsTrue(renderers[0].enabled);
-                Assert.AreEqual(5, rendered.ActiveLeafCount);
-                Assert.That(Vector3.Distance(rendered.TipMatrix.GetColumn(3), rendered.Tip), Is.LessThan(.00001f));
-                for (int i = 0; i < 5; i++) Assert.IsTrue(HLChainSolver.Finite(rendered.LeafMatrix(i).GetColumn(3)));
-                for (int i = 0; i < 10; i++) rendered.Tick(.016f, Vector3.zero, Quaternion.identity);
+                Assert.AreEqual(5, rendered.activeLeafCount);
+                Assert.That(Vector3.Distance(rendered.tipMatrix.GetColumn(3), rendered.tip), Is.LessThan(0.00001f));
+                for (int i = 0; i < 5; i++)
+                {
+                    Assert.IsTrue(HLChainSolver.Finite(rendered.LeafMatrix(i).GetColumn(3)));
+                }
+
+                for (int i = 0; i < 10; i++)
+                {
+                    rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);
+                }
+
                 long before = System.GC.GetAllocatedBytesForCurrentThread();
-                for (int i = 0; i < 20; i++) rendered.Tick(.016f, Vector3.zero, Quaternion.identity);
+                for (int i = 0; i < 20; i++)
+                {
+                    rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);
+                }
+
                 Assert.AreEqual(0, System.GC.GetAllocatedBytesForCurrentThread() - before);
                 mesh = parent.GetComponentInChildren<MeshFilter>().sharedMesh;
                 Assert.Greater(mesh.vertexCount, 0);
-                foreach (var vertex in mesh.vertices) Assert.IsTrue(HLChainSolver.Finite(vertex));
-                Assert.That(Vector3.Distance(rendered.Tip, Vector3.one), Is.LessThan(.001f));
-                rendered.End(1); rendered.Tick(1, Vector3.zero, Quaternion.identity);
+                foreach (Vector3 vertex in mesh.vertices)
+                {
+                    Assert.IsTrue(HLChainSolver.Finite(vertex));
+                }
+
+                Assert.That(Vector3.Distance(rendered.tip, Vector3.one), Is.LessThan(0.001f));
+                rendered.End(1);
+                rendered.Tick(1f, Vector3.zero, Quaternion.identity);
                 Assert.IsFalse(renderers[0].enabled);
-                int revision = rendered.MeshRevision;
-                var vertices = mesh.vertices;
-                rendered.SetVisible(true); rendered.Tick(1, Vector3.one, Quaternion.identity);
-                Assert.IsFalse(renderers[0].enabled); Assert.AreEqual(revision, rendered.MeshRevision);
+                int revision = rendered.meshRevision;
+                Vector3[] vertices = mesh.vertices;
+                rendered.SetVisible(true);
+                rendered.Tick(1f, Vector3.one, Quaternion.identity);
+                Assert.IsFalse(renderers[0].enabled);
+                Assert.AreEqual(revision, rendered.meshRevision);
                 CollectionAssert.AreEqual(vertices, mesh.vertices);
             }
-            finally { rendered.Dispose(); Object.DestroyImmediate(parent); Object.DestroyImmediate(material); }
+            finally
+            {
+                rendered.Dispose();
+                Object.DestroyImmediate(parent);
+                Object.DestroyImmediate(material);
+            }
+
             Assert.IsFalse(mesh);
         }
-        [Test] public void RestMeshHasOneNormalPerVertexBeforeAnyGesture()
+
+        [Test]
+        public void RestMeshHasOneNormalPerVertexBeforeAnyGesture()
         {
-            var authored = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>("Assets/Render/Creatures/Data/HLHealer.asset");
-            var parent = new GameObject("HLArmFixture");
-            var material = new Material(Shader.Find("HL/Look/Primitive"));
-            var rendered = new HLLianaArm(authored.arms[0], parent.transform, material);
+            string path = "Assets/Render/Creatures/Data/HLHealer.asset";
+            HLCreatureRecipe authored = UnityEditor.AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
+            GameObject parent = new GameObject("HLArmFixture");
+            Material material = new Material(Shader.Find("HL/Look/Primitive"));
+            HLLianaArm rendered = new HLLianaArm(authored.arms[0], parent.transform, material);
             try
             {
-                var mesh = parent.GetComponentInChildren<MeshFilter>().sharedMesh;
+                Mesh mesh = parent.GetComponentInChildren<MeshFilter>().sharedMesh;
                 Assert.Greater(mesh.vertexCount, 0);
-                Assert.AreEqual(mesh.vertexCount, mesh.normals.Length, "QuickOutline indexes normals per vertex on Awake");
+                Assert.AreEqual(mesh.vertexCount, mesh.normals.Length,
+                    "QuickOutline indexes normals per vertex on Awake");
             }
-            finally { rendered.Dispose(); Object.DestroyImmediate(parent); Object.DestroyImmediate(material); }
+            finally
+            {
+                rendered.Dispose();
+                Object.DestroyImmediate(parent);
+                Object.DestroyImmediate(material);
+            }
         }
-        [Test] public void ContactBypassesAnticipationAndReturnRestoresExactPose()
+
+        [Test]
+        public void ContactBypassesAnticipationAndReturnRestoresExactPose()
         {
-            arm.Begin(1, HLGestureKind.Heal, Vector3.one); arm.Contact(1, Vector3.one); arm.Tick(.001f, Vector3.zero, Quaternion.identity);
-            Assert.Less(Vector3.Distance(arm.Tip, Vector3.one), .001f); Lengths();
-            for (int i = 0; i < 30; i++) { arm.Tick(.01f, Vector3.zero, Quaternion.identity); Lengths(); }
-            Assert.AreEqual(HLGesturePhase.Rest, arm.Phase);
-            for (int i = 0; i <= arm.SegmentCount; i++) Assert.AreEqual(recipe.arms[0].restJoints[i], arm.Joint(i));
+            _arm.Begin(1, HLGestureKind.Heal, Vector3.one);
+            _arm.Contact(1, Vector3.one);
+            _arm.Tick(0.001f, Vector3.zero, Quaternion.identity);
+            Assert.Less(Vector3.Distance(_arm.tip, Vector3.one), 0.001f);
+            Lengths();
+            for (int i = 0; i < 30; i++)
+            {
+                _arm.Tick(0.01f, Vector3.zero, Quaternion.identity);
+                Lengths();
+            }
+
+            Assert.AreEqual(HLGesturePhase.Rest, _arm.phase);
+            for (int i = 0; i <= _arm.segmentCount; i++)
+            {
+                Assert.AreEqual(_recipe.arms[0].restJoints[i], _arm.Joint(i));
+            }
         }
-        [Test] public void StaleAndRepeatedEndsDoNotRetractNewGesture()
+
+        [Test]
+        public void StaleAndRepeatedEndsDoNotRetractNewGesture()
         {
-            arm.Begin(1, HLGestureKind.Attack, Vector3.one); arm.Begin(2, HLGestureKind.Attack, Vector3.up);
-            arm.End(1); arm.Cancel(1); Assert.AreEqual(HLGesturePhase.Extend, arm.Phase);
-            arm.Tick(.02f, Vector3.zero, Quaternion.identity); arm.Cancel(2); arm.Cancel(2);
-            Assert.AreEqual(HLGesturePhase.Retract, arm.Phase);
-            arm.Tick(.1f, Vector3.zero, Quaternion.identity); Lengths(); arm.End(2);
-            arm.Tick(.11f, Vector3.zero, Quaternion.identity); Assert.AreEqual(HLGesturePhase.Rest, arm.Phase);
+            _arm.Begin(1, HLGestureKind.Attack, Vector3.one);
+            _arm.Begin(2, HLGestureKind.Attack, Vector3.up);
+            _arm.End(1);
+            _arm.Cancel(1);
+            Assert.AreEqual(HLGesturePhase.Extend, _arm.phase);
+            _arm.Tick(0.02f, Vector3.zero, Quaternion.identity);
+            _arm.Cancel(2);
+            _arm.Cancel(2);
+            Assert.AreEqual(HLGesturePhase.Retract, _arm.phase);
+            _arm.Tick(0.1f, Vector3.zero, Quaternion.identity);
+            Lengths();
+            _arm.End(2);
+            _arm.Tick(0.11f, Vector3.zero, Quaternion.identity);
+            Assert.AreEqual(HLGesturePhase.Rest, _arm.phase);
         }
-        [Test] public void ProjectileGoalIsFollowedWithoutInventedExtension()
+
+        [Test]
+        public void ProjectileGoalIsFollowedWithoutInventedExtension()
         {
-            arm.Begin(1, HLGestureKind.Attack, Vector3.one); arm.SetTipGoal(1, Vector3.up * 2);
-            arm.Tick(.001f, Vector3.zero, Quaternion.identity);
-            Assert.Less(Vector3.Distance(arm.Tip, Vector3.up * 2), .001f); Lengths();
+            _arm.Begin(1, HLGestureKind.Attack, Vector3.one);
+            _arm.SetTipGoal(1, Vector3.up * 2f);
+
+            _arm.Tick(0.001f, Vector3.zero, Quaternion.identity);
+
+            Assert.Less(Vector3.Distance(_arm.tip, Vector3.up * 2f), 0.001f);
+            Lengths();
         }
-        [Test] public void DestructionAfterHitStillDisplaysContactBeforeReturn()
+
+        [Test]
+        public void DestructionAfterHitStillDisplaysContactBeforeReturn()
         {
-            arm.Begin(1, HLGestureKind.Attack, Vector3.one); arm.Contact(1, Vector3.one); arm.End(1);
-            arm.Tick(.016f, Vector3.zero, Quaternion.identity);
-            Assert.AreEqual(HLGesturePhase.Contact, arm.Phase); Assert.Less(Vector3.Distance(arm.Tip, Vector3.one), .001f);
+            _arm.Begin(1, HLGestureKind.Attack, Vector3.one);
+            _arm.Contact(1, Vector3.one);
+            _arm.End(1);
+
+            _arm.Tick(0.016f, Vector3.zero, Quaternion.identity);
+
+            Assert.AreEqual(HLGesturePhase.Contact, _arm.phase);
+            Assert.Less(Vector3.Distance(_arm.tip, Vector3.one), 0.001f);
         }
-        [TestCase(HLDeliveryStyle.Arc)] [TestCase(HLDeliveryStyle.Rigid)] [TestCase(HLDeliveryStyle.Bounce)]
+
+        [TestCase(HLDeliveryStyle.Arc)]
+        [TestCase(HLDeliveryStyle.Rigid)]
+        [TestCase(HLDeliveryStyle.Bounce)]
         public void DeliveryProfilesFollowLiveEndpoint(HLDeliveryStyle style)
         {
-            arm.Style = style; arm.DeliveryProfile = true;
-            arm.Begin(1, HLGestureKind.Attack, Vector3.right * 2); arm.SetTipGoal(1, Vector3.right * 2);
-            arm.Tick(.016f, Vector3.zero, Quaternion.identity);
-            Assert.That(Vector3.Distance(arm.Tip, Vector3.right * 2), Is.LessThan(.001f));
-            if (style == HLDeliveryStyle.Arc) Assert.Greater(arm.Joint(arm.SegmentCount / 2).y, .1f);
-            else Assert.AreEqual(0, arm.Joint(arm.SegmentCount / 2).y);
-            arm.Contact(1, Vector3.right * 2); arm.SetTipGoal(1, Vector3.forward);
-            arm.Tick(.016f, Vector3.zero, Quaternion.identity);
-            Assert.That(Vector3.Distance(arm.Tip, Vector3.forward), Is.LessThan(.001f));
+            _arm.style = style;
+            _arm.deliveryProfile = true;
+            _arm.Begin(1, HLGestureKind.Attack, Vector3.right * 2f);
+            _arm.SetTipGoal(1, Vector3.right * 2f);
+            _arm.Tick(0.016f, Vector3.zero, Quaternion.identity);
+            Assert.That(Vector3.Distance(_arm.tip, Vector3.right * 2f), Is.LessThan(0.001f));
+            if (style == HLDeliveryStyle.Arc)
+            {
+                Assert.Greater(_arm.Joint(_arm.segmentCount / 2).y, 0.1f);
+            }
+            else
+            {
+                Assert.AreEqual(0, _arm.Joint(_arm.segmentCount / 2).y);
+            }
+
+            _arm.Contact(1, Vector3.right * 2f);
+            _arm.SetTipGoal(1, Vector3.forward);
+            _arm.Tick(0.016f, Vector3.zero, Quaternion.identity);
+            Assert.That(Vector3.Distance(_arm.tip, Vector3.forward), Is.LessThan(0.001f));
         }
     }
 }

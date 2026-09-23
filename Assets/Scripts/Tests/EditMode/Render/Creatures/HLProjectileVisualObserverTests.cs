@@ -6,132 +6,251 @@ namespace HealerLike.Render.Creatures
 {
     public class HLProjectileVisualObserverTests
     {
-        public sealed class HLDeliveryProbe : MonoBehaviour, IHLDeliverySource
+        public class HLDeliveryProbe : MonoBehaviour, IHLDeliverySource
         {
-            public int begins, updates, contacts, ends;
+            public int begins;
+            public int updates;
+            public int contacts;
+            public int ends;
             public bool accepts = true;
             public HLDeliveryStyle style;
-            public bool BeginDelivery(int token, HLDeliveryStyle value, Transform projectile, Vector3 end) { begins++; style = value; return accepts; }
-            public void UpdateDelivery(int token, Vector3 position) { updates++; }
-            public void ContactDelivery(int token, Vector3 position, GameObject target) { contacts++; }
-            public void EndDelivery(int token) { ends++; }
+
+            public bool BeginDelivery(int token, HLDeliveryStyle value, Transform projectile, Vector3 end)
+            {
+                begins++;
+                style = value;
+                return accepts;
+            }
+
+            public void UpdateDelivery(int token, Vector3 position)
+            {
+                updates++;
+            }
+
+            public void ContactDelivery(int token, Vector3 position, GameObject target)
+            {
+                contacts++;
+            }
+
+            public void EndDelivery(int token)
+            {
+                ends++;
+            }
         }
-        [Test] public void ObserverDispatchesThroughInterfaceWithoutCreatureBuilder()
-        {
-            var model = builder.gameObject;
-            TestHelpers.InvokePrivate(builder, "OnDestroy");
-            Object.DestroyImmediate(builder);
-            var probe = model.AddComponent<HLDeliveryProbe>();
-            TestHelpers.SetPrivateField(observer, "deliveryStyle", HLDeliveryStyle.Arc);
-            observer.Init(source);
-            Assert.AreEqual(1, probe.begins); Assert.AreEqual(HLDeliveryStyle.Arc, probe.style);
-            TestHelpers.InvokePrivate(observer, "LateUpdate"); Assert.AreEqual(1, probe.updates);
-            projectile.OnHit.Invoke(new OnHitData { target = first }); Assert.AreEqual(1, probe.contacts);
-            observer.enabled = false; TestHelpers.InvokePrivate(observer, "OnDisable");
-            Assert.AreEqual(1, probe.ends);
-        }
-        [Test] public void MissingOrDecliningSourcePreservesOriginalRendererStates()
-        {
-            var model = builder.gameObject;
-            TestHelpers.InvokePrivate(builder, "OnDestroy");
-            Object.DestroyImmediate(builder);
-            observer.Init(source);
-            var visible = projectileObject.GetComponent<LineRenderer>();
-            Assert.IsTrue(visible.enabled);
-            var child = new GameObject("HLHiddenRenderer", typeof(MeshRenderer));
-            child.transform.SetParent(projectileObject.transform);
-            var hidden = child.GetComponent<Renderer>(); hidden.enabled = false;
-            var probe = model.AddComponent<HLDeliveryProbe>(); probe.accepts = false;
-            observer.Init(source); TestHelpers.InvokePrivate(observer, "LateUpdate");
-            projectile.OnHit.Invoke(new OnHitData { target = first });
-            Assert.AreEqual(0, observer.GestureToken); Assert.IsTrue(visible.enabled); Assert.IsFalse(hidden.enabled);
-            Assert.AreEqual(0, probe.updates); Assert.AreEqual(0, probe.contacts);
-            probe.accepts = true; observer.Init(source);
-            Assert.IsFalse(visible.enabled);
-            probe.enabled = false; TestHelpers.InvokePrivate(observer, "LateUpdate");
-            Assert.IsTrue(visible.enabled); Assert.IsFalse(hidden.enabled); Assert.AreEqual(1, probe.ends);
-        }
-        [Test] public void DecliningAdapterDoesNotPreventAnotherAdapterPresenting()
-        {
-            var model = builder.gameObject;
-            TestHelpers.InvokePrivate(builder, "OnDestroy");
-            Object.DestroyImmediate(builder);
-            model.AddComponent<HLDeliveryProbe>().accepts = false;
-            var accepted = model.AddComponent<HLDeliveryProbe>();
-            observer.Init(source);
-            Assert.AreEqual(1, accepted.begins); Assert.AreNotEqual(0, observer.GestureToken);
-            Assert.IsFalse(projectileObject.GetComponent<LineRenderer>().enabled);
-        }
-        GameObject source, first, second, projectileObject;
-        Projectile projectile;
-        HLProjectileVisualObserver observer;
-        HLCreatureRecipe recipe;
-        Material material;
-        HLCreatureBuilder builder;
+
+        GameObject _source;
+        GameObject _first;
+        GameObject _second;
+        GameObject _projectileObject;
+        Projectile _projectile;
+        HLProjectileVisualObserver _observer;
+        HLCreatureRecipe _recipe;
+        Material _material;
+        HLCreatureBuilder _builder;
+
         static Entity EntityFixture(GameObject go)
         {
-            Entity e = null; TestHelpers.WithLoggingDisabled(() => e = go.AddComponent<Entity>());
-            TestHelpers.SetPrivateField(e, "_targetPoint", go); return e;
+            Entity entity = null;
+            TestHelpers.WithLoggingDisabled(() => entity = go.AddComponent<Entity>());
+            TestHelpers.SetPrivateField(entity, "_targetPoint", go);
+            return entity;
         }
-        [SetUp] public void Setup()
+
+        [SetUp]
+        public void Setup()
         {
-            source = new GameObject("HLSource"); var entity = EntityFixture(source);
-            first = new GameObject("HLFirst"); EntityFixture(first); first.transform.position = Vector3.one;
-            second = new GameObject("HLSecond"); EntityFixture(second); second.transform.position = Vector3.right * 2;
-            var model = new GameObject("HLModel"); model.transform.SetParent(source.transform, false);
-            var entityModel = model.AddComponent<EntityModel>(); TestHelpers.SetPrivateField(entity, "_model", entityModel);
-            recipe = HLCreatureValidatorTests.Recipe(); material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            builder = model.AddComponent<HLCreatureBuilder>(); builder.SetRecipe(recipe, material); builder.Init(entity);
-            projectileObject = new GameObject("HLProjectile", typeof(LineRenderer)); projectile = projectileObject.AddComponent<Projectile>();
-            observer = projectileObject.AddComponent<HLProjectileVisualObserver>();
-            projectile.Init(source, first, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
+            _source = new GameObject("HLSource");
+            Entity entity = EntityFixture(_source);
+            _first = new GameObject("HLFirst");
+            EntityFixture(_first);
+            _first.transform.position = Vector3.one;
+            _second = new GameObject("HLSecond");
+            EntityFixture(_second);
+            _second.transform.position = Vector3.right * 2f;
+            GameObject model = new GameObject("HLModel");
+            model.transform.SetParent(_source.transform, false);
+            EntityModel entityModel = model.AddComponent<EntityModel>();
+            TestHelpers.SetPrivateField(entity, "_model", entityModel);
+            _recipe = HLCreatureValidatorTests.Recipe();
+            _material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            _builder = model.AddComponent<HLCreatureBuilder>();
+            _builder.SetRecipe(_recipe, _material);
+            _builder.Init(entity);
+            _projectileObject = new GameObject("HLProjectile", typeof(LineRenderer));
+            _projectile = _projectileObject.AddComponent<Projectile>();
+            _observer = _projectileObject.AddComponent<HLProjectileVisualObserver>();
+            _projectile.Init(_source, _first, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
         }
-        [TearDown] public void Cleanup()
+
+        [TearDown]
+        public void Cleanup()
         {
-            if (observer) TestHelpers.InvokePrivate(observer, "OnDestroy");
-            if (builder) TestHelpers.InvokePrivate(builder, "OnDestroy");
-            Object.DestroyImmediate(projectileObject); Object.DestroyImmediate(source); Object.DestroyImmediate(first); Object.DestroyImmediate(second);
-            Object.DestroyImmediate(recipe); Object.DestroyImmediate(material); HLPrimitiveMeshes.ReleaseAll();
+            if (_observer)
+            {
+                TestHelpers.InvokePrivate(_observer, "OnDestroy");
+            }
+
+            if (_builder)
+            {
+                TestHelpers.InvokePrivate(_builder, "OnDestroy");
+            }
+
+            Object.DestroyImmediate(_projectileObject);
+            Object.DestroyImmediate(_source);
+            Object.DestroyImmediate(_first);
+            Object.DestroyImmediate(_second);
+            Object.DestroyImmediate(_recipe);
+            Object.DestroyImmediate(_material);
+            HLPrimitiveMeshes.ReleaseAll();
         }
-        [Test] public void InitBindsBeforeSynchronousHitsAndPreservesOrderedTargets()
+
+        [Test]
+        public void ObserverDispatchesThroughInterfaceWithoutCreatureBuilder()
         {
-            Assert.AreSame(first, observer.CapturedTarget); Assert.AreSame(first, observer.CapturedTargetPoint); Assert.AreNotEqual(0, observer.GestureToken);
-            TestHelpers.SetPrivateField(observer, "preserveContactPath", true);
-            projectile.OnHit.Invoke(new OnHitData { source = source, target = first });
-            projectile.OnHit.Invoke(new OnHitData { source = source, target = second });
-            projectile.SetTarget(null);
-            Assert.AreEqual(2, observer.Contacts.Count); Assert.AreSame(first, observer.Contacts[0].target); Assert.AreSame(second, observer.Contacts[1].target);
-            Assert.AreEqual(first.transform.position, observer.Contacts[0].position); Assert.AreEqual(2, builder.Rig.ActiveArmCount);
-            Assert.IsFalse(projectileObject.GetComponent<LineRenderer>().enabled); Assert.IsTrue(projectile.enabled);
+            GameObject model = _builder.gameObject;
+            TestHelpers.InvokePrivate(_builder, "OnDestroy");
+            Object.DestroyImmediate(_builder);
+            HLDeliveryProbe probe = model.AddComponent<HLDeliveryProbe>();
+            TestHelpers.SetPrivateField(_observer, "_deliveryStyle", HLDeliveryStyle.Arc);
+
+            _observer.Init(_source);
+
+            Assert.AreEqual(1, probe.begins);
+            Assert.AreEqual(HLDeliveryStyle.Arc, probe.style);
+            TestHelpers.InvokePrivate(_observer, "LateUpdate");
+            Assert.AreEqual(1, probe.updates);
+            _projectile.OnHit.Invoke(new OnHitData { target = _first });
+            Assert.AreEqual(1, probe.contacts);
+            _observer.enabled = false;
+            TestHelpers.InvokePrivate(_observer, "OnDisable");
+            Assert.AreEqual(1, probe.ends);
         }
-        [Test] public void LateRetargetDoesNotOverwriteContactAndDisableUnsubscribes()
+
+        [Test]
+        public void MissingOrDecliningSourcePreservesOriginalRendererStates()
         {
-            projectile.OnHit.AddListener(_ => projectile.SetTarget(second));
-            projectile.OnHit.Invoke(new OnHitData { target = first }); TestHelpers.InvokePrivate(observer, "LateUpdate");
-            Assert.AreSame(first, observer.Contacts[0].target); Assert.AreSame(second, projectile.target);
-            observer.enabled = false; TestHelpers.InvokePrivate(observer, "OnDisable"); projectile.OnHit.Invoke(new OnHitData { target = second });
-            Assert.AreEqual(1, observer.Contacts.Count); Assert.AreEqual(0, observer.GestureToken);
+            GameObject model = _builder.gameObject;
+            TestHelpers.InvokePrivate(_builder, "OnDestroy");
+            Object.DestroyImmediate(_builder);
+            _observer.Init(_source);
+            LineRenderer visible = _projectileObject.GetComponent<LineRenderer>();
+            Assert.IsTrue(visible.enabled);
+            GameObject child = new GameObject("HLHiddenRenderer", typeof(MeshRenderer));
+            child.transform.SetParent(_projectileObject.transform);
+            Renderer hidden = child.GetComponent<Renderer>();
+            hidden.enabled = false;
+            HLDeliveryProbe probe = model.AddComponent<HLDeliveryProbe>();
+            probe.accepts = false;
+
+            _observer.Init(_source);
+            TestHelpers.InvokePrivate(_observer, "LateUpdate");
+            _projectile.OnHit.Invoke(new OnHitData { target = _first });
+
+            Assert.AreEqual(0, _observer.gestureToken);
+            Assert.IsTrue(visible.enabled);
+            Assert.IsFalse(hidden.enabled);
+            Assert.AreEqual(0, probe.updates);
+            Assert.AreEqual(0, probe.contacts);
+            probe.accepts = true;
+            _observer.Init(_source);
+            Assert.IsFalse(visible.enabled);
+            probe.enabled = false;
+            TestHelpers.InvokePrivate(_observer, "LateUpdate");
+            Assert.IsTrue(visible.enabled);
+            Assert.IsFalse(hidden.enabled);
+            Assert.AreEqual(1, probe.ends);
         }
-        [Test] public void ReinitDoesNotDuplicateListenerOrMoveProjectile()
+
+        [Test]
+        public void DecliningAdapterDoesNotPreventAnotherAdapterPresenting()
         {
-            Vector3 position = projectile.transform.position;
-            observer.Init(source); observer.Init(source); projectile.OnHit.Invoke(new OnHitData { target = first });
-            Assert.AreEqual(1, observer.Contacts.Count); Assert.AreEqual(position, projectile.transform.position);
-            Assert.AreSame(first, projectile.target);
+            GameObject model = _builder.gameObject;
+            TestHelpers.InvokePrivate(_builder, "OnDestroy");
+            Object.DestroyImmediate(_builder);
+            model.AddComponent<HLDeliveryProbe>().accepts = false;
+            HLDeliveryProbe accepted = model.AddComponent<HLDeliveryProbe>();
+
+            _observer.Init(_source);
+
+            Assert.AreEqual(1, accepted.begins);
+            Assert.AreNotEqual(0, _observer.gestureToken);
+            Assert.IsFalse(_projectileObject.GetComponent<LineRenderer>().enabled);
         }
-        [Test] public void ExecutionOrderPrecedesBuilder()
+
+        [Test]
+        public void InitBindsBeforeSynchronousHitsAndPreservesOrderedTargets()
         {
-            var observerOrder = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(typeof(HLProjectileVisualObserver), typeof(DefaultExecutionOrder));
-            var builderOrder = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(typeof(HLCreatureBuilder), typeof(DefaultExecutionOrder));
+            Assert.AreSame(_first, _observer.capturedTarget);
+            Assert.AreSame(_first, _observer.capturedTargetPoint);
+            Assert.AreNotEqual(0, _observer.gestureToken);
+            TestHelpers.SetPrivateField(_observer, "_preserveContactPath", true);
+
+            _projectile.OnHit.Invoke(new OnHitData { source = _source, target = _first });
+            _projectile.OnHit.Invoke(new OnHitData { source = _source, target = _second });
+            _projectile.SetTarget(null);
+
+            Assert.AreEqual(2, _observer.contacts.Count);
+            Assert.AreSame(_first, _observer.contacts[0].target);
+            Assert.AreSame(_second, _observer.contacts[1].target);
+            Assert.AreEqual(_first.transform.position, _observer.contacts[0].position);
+            Assert.AreEqual(2, _builder.rig.activeArmCount);
+            Assert.IsFalse(_projectileObject.GetComponent<LineRenderer>().enabled);
+            Assert.IsTrue(_projectile.enabled);
+        }
+
+        [Test]
+        public void LateRetargetDoesNotOverwriteContactAndDisableUnsubscribes()
+        {
+            _projectile.OnHit.AddListener(_ => _projectile.SetTarget(_second));
+
+            _projectile.OnHit.Invoke(new OnHitData { target = _first });
+            TestHelpers.InvokePrivate(_observer, "LateUpdate");
+
+            Assert.AreSame(_first, _observer.contacts[0].target);
+            Assert.AreSame(_second, _projectile.target);
+            _observer.enabled = false;
+            TestHelpers.InvokePrivate(_observer, "OnDisable");
+            _projectile.OnHit.Invoke(new OnHitData { target = _second });
+            Assert.AreEqual(1, _observer.contacts.Count);
+            Assert.AreEqual(0, _observer.gestureToken);
+        }
+
+        [Test]
+        public void ReinitDoesNotDuplicateListenerOrMoveProjectile()
+        {
+            Vector3 position = _projectile.transform.position;
+
+            _observer.Init(_source);
+            _observer.Init(_source);
+            _projectile.OnHit.Invoke(new OnHitData { target = _first });
+
+            Assert.AreEqual(1, _observer.contacts.Count);
+            Assert.AreEqual(position, _projectile.transform.position);
+            Assert.AreSame(_first, _projectile.target);
+        }
+
+        [Test]
+        public void ExecutionOrderPrecedesBuilder()
+        {
+            DefaultExecutionOrder observerOrder = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(
+                typeof(HLProjectileVisualObserver), typeof(DefaultExecutionOrder));
+            DefaultExecutionOrder builderOrder = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(
+                typeof(HLCreatureBuilder), typeof(DefaultExecutionOrder));
+
             Assert.Less(observerOrder.order, builderOrder.order);
         }
-        [Test] public void AuthoredThrownStyleIsRejectedWithoutMovingProjectile()
+
+        [Test]
+        public void AuthoredThrownStyleIsRejectedWithoutMovingProjectile()
         {
-            TestHelpers.SetPrivateField(observer, "deliveryStyle", HLDeliveryStyle.Thrown);
-            observer.Init(source); Assert.AreEqual(0, observer.GestureToken);
-            Assert.AreEqual(HLDeliveryStyle.Thrown, observer.DeliveryStyle);
-            Assert.IsTrue(projectileObject.GetComponent<LineRenderer>().enabled);
-            Assert.AreEqual(Vector3.zero, projectile.transform.position);
+            TestHelpers.SetPrivateField(_observer, "_deliveryStyle", HLDeliveryStyle.Thrown);
+
+            _observer.Init(_source);
+
+            Assert.AreEqual(0, _observer.gestureToken);
+            Assert.AreEqual(HLDeliveryStyle.Thrown, _observer.deliveryStyle);
+            Assert.IsTrue(_projectileObject.GetComponent<LineRenderer>().enabled);
+            Assert.AreEqual(Vector3.zero, _projectile.transform.position);
         }
     }
 }
