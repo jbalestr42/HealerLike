@@ -106,7 +106,7 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        // Where the composer put the body, in body units from the foot
+        // Where the composer put the body, in its side's body units from the foot
         public struct Sockets
         {
             public Vector3 foot;
@@ -139,9 +139,10 @@ namespace HealerLike.Render.Creatures
                 parts = Parts(channels, vocabulary, copies, seed, out sockets);
             }
 
+            float unit = vocabulary.Unit(channels.side);
             if (channels.accessory != AccessoryKind.None)
             {
-                float reach = OutlineReach(parts, vocabulary.bodyUnit);
+                float reach = OutlineReach(parts, unit);
                 float needed = channels.side == LookSide.Plant ? PlantAccessoryReach : StoneAccessoryReach;
                 if (reach < needed)
                 {
@@ -150,14 +151,14 @@ namespace HealerLike.Render.Creatures
             }
 
             recipe.parts = parts.ToArray();
-            recipe.targetLocal = sockets.body * vocabulary.bodyUnit;
+            recipe.targetLocal = sockets.body * unit;
             recipe.idle.seed = seed;
             recipe.stoneOchre = vocabulary.palette.stoneOchre;
-            recipe.neckLocal = sockets.neck * vocabulary.bodyUnit;
+            recipe.neckLocal = sockets.neck * unit;
             if (channels.side == LookSide.Plant)
             {
                 recipe.roots = Roots(channels.reach, vocabulary);
-                Arms(recipe, sockets.neck, vocabulary.armCount, vocabulary.bodyUnit, vocabulary.palette.plantStem,
+                Arms(recipe, sockets.neck, vocabulary.armCount, unit, vocabulary.palette.plantStem,
                     vocabulary.palette.Accent(channels.accent));
             }
             else
@@ -166,7 +167,7 @@ namespace HealerLike.Render.Creatures
                 recipe.idle.swayDegrees = 0.6f;
                 recipe.idle.breathAmount = 0.01f;
                 recipe.wiltColour = vocabulary.stoneWilt;
-                recipe.sourceLocal = new Vector3[] { sockets.neck * vocabulary.bodyUnit };
+                recipe.sourceLocal = new Vector3[] { sockets.neck * unit };
             }
 
             if (!CreatureValidator.TryValidate(recipe, out string error))
@@ -187,7 +188,7 @@ namespace HealerLike.Render.Creatures
             }
 
             PartList parts = Parts(channels, vocabulary, Copies(channels.count), Seed(channels), out _);
-            return OutlineReach(parts, vocabulary.bodyUnit);
+            return OutlineReach(parts, vocabulary.Unit(channels.side));
         }
 
         public static int Copies(CountBand count)
@@ -232,7 +233,8 @@ namespace HealerLike.Render.Creatures
             sockets.bodyRadius = bodyParts[0].size.x * 0.5f * stoneScale;
             if (isPlant)
             {
-                sockets.body = Vector3.up * (0.42f * body.scale);
+                // The sphere sinks a little into the ground, the body's centre sits at 0.84 of its radius
+                sockets.body = Vector3.up * (0.84f * sockets.bodyRadius);
                 sockets.neck = sockets.body + Vector3.up * (sockets.bodyRadius * 0.8f + stem.length);
             }
             else
@@ -285,7 +287,7 @@ namespace HealerLike.Render.Creatures
 
         static PartList Parts(UnitChannels channels, LookVocabulary vocabulary, int copies, int seed, out Sockets sockets)
         {
-            PartList parts = new PartList(vocabulary.bodyUnit);
+            PartList parts = new PartList(vocabulary.Unit(channels.side));
             sockets = Place(channels, vocabulary);
             LookVocabulary.BodyEntry body = vocabulary.bodies[channels.mass];
             LookVocabulary.StemEntry stem = vocabulary.stems[channels.stem];

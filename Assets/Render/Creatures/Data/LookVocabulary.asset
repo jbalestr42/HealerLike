@@ -14291,13 +14291,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.85
+      Data: 0.7
     - Name: 
       Entry: 4
-      Data: 0.85
+      Data: 0.7
     - Name: 
       Entry: 4
-      Data: 0.85
+      Data: 0.7
     - Name: 
       Entry: 8
       Data: 
@@ -15083,6 +15083,7 @@ MonoBehaviour:
       Data: 
   palette: {fileID: 11400000, guid: 97a6ebe080b14b84947880de49d6bb14, type: 2}
   bodyUnit: 0.55
+  plantScale: 1.8
   stoneScale: 2.2
   accessoryReach: 0.45
   maxParts: 40
