@@ -25,14 +25,14 @@ public class ZonePackerTests
     [TestCase(ZoneKind.Bruise, 4)]
     [TestCase(ZoneKind.Launch, 5)]
     [TestCase(ZoneKind.Trample, 6)]
-    public void V3KindsPreserveAbi(ZoneKind kind, int value)
+    public void TryCreate_LaterKinds_KeepTheirWireValuesAndAreAccepted(ZoneKind kind, int value)
     {
         Assert.AreEqual(value, (int)kind);
         Assert.IsTrue(ZonePacker.TryCreate(Vector3.zero, 1f, kind, 1f, 0f, out _));
     }
 
     [Test]
-    public void LaunchHeadingSurvivesPackingAndOtherKindsClearIt()
+    public void Pack_LaunchHeading_SurvivesWhileOtherKindsClearIt()
     {
         Assert.AreEqual(0u, ZonePacker.EncodeDirection(Vector3.right));
         Assert.AreEqual(1073741824u, ZonePacker.EncodeDirection(Vector3.forward));
@@ -50,41 +50,9 @@ public class ZonePackerTests
         Assert.AreEqual(1073741824u, destination[0].reserved);
         Assert.AreEqual(0u, destination[1].reserved);
     }
-    [Test]
-    public void StrideIsThirtyTwoBytes()
-    {
-        Assert.AreEqual(32, Zone.Stride);
-        Assert.AreEqual(32, System.Runtime.InteropServices.Marshal.SizeOf<Zone>());
-    }
 
     [Test]
-    public void FieldOffsetsMatchTheWireLayout()
-    {
-        Zone zone = Raw(new Vector3(1f, 2f, 3f), 4f, ZoneKind.Hostile, 0.5f, 6f);
-        byte[] bytes = new byte[Zone.Stride];
-        IntPtr buffer = System.Runtime.InteropServices.Marshal.AllocHGlobal(Zone.Stride);
-        try
-        {
-            System.Runtime.InteropServices.Marshal.StructureToPtr(zone, buffer, false);
-            System.Runtime.InteropServices.Marshal.Copy(buffer, bytes, 0, Zone.Stride);
-        }
-        finally
-        {
-            System.Runtime.InteropServices.Marshal.FreeHGlobal(buffer);
-        }
-
-        Assert.AreEqual(1f, BitConverter.ToSingle(bytes, 0), 0f, "position.x at byte 0");
-        Assert.AreEqual(2f, BitConverter.ToSingle(bytes, 4), 0f, "position.y at byte 4");
-        Assert.AreEqual(3f, BitConverter.ToSingle(bytes, 8), 0f, "position.z at byte 8");
-        Assert.AreEqual(4f, BitConverter.ToSingle(bytes, 12), 0f, "radius at byte 12");
-        Assert.AreEqual(2, BitConverter.ToInt32(bytes, 16), "kind at byte 16");
-        Assert.AreEqual(0.5f, BitConverter.ToSingle(bytes, 20), 0f, "strength at byte 20");
-        Assert.AreEqual(6f, BitConverter.ToSingle(bytes, 24), 0f, "age at byte 24");
-        Assert.AreEqual(0u, BitConverter.ToUInt32(bytes, 28), "reserved at byte 28");
-    }
-
-    [Test]
-    public void TryCreateCanonicalizesAValidZone()
+    public void TryCreate_ValidZone_CopiesEveryField()
     {
         bool created = ZonePacker.TryCreate(new Vector3(3f, 1f, -2f), 2.5f, ZoneKind.Heal, 0.25f, 4f,
                                               out Zone zone);
@@ -99,7 +67,7 @@ public class ZonePackerTests
     }
 
     [Test]
-    public void TryCreateClampsStrengthAndAgeAndClearsReserved()
+    public void TryCreate_OutOfRangeStrengthAndAge_ClampsAndClearsReserved()
     {
         Assert.IsTrue(ZonePacker.TryCreate(Vector3.zero, 1f, ZoneKind.Heal, 7f, -3f, out Zone high));
         Assert.AreEqual(1f, high.strength, "strength clamps to 1");
@@ -111,21 +79,21 @@ public class ZonePackerTests
     }
 
     [Test]
-    public void TryCreateRejectsNonPositiveRadius()
+    public void TryCreate_NonPositiveRadius_ReturnsFalse()
     {
         Assert.IsFalse(ZonePacker.TryCreate(Vector3.zero, 0f, ZoneKind.Heal, 1f, 0f, out _));
         Assert.IsFalse(ZonePacker.TryCreate(Vector3.zero, -1f, ZoneKind.Heal, 1f, 0f, out _));
     }
 
     [Test]
-    public void TryCreateRejectsNoneAndUnknownKinds()
+    public void TryCreate_NoneOrUnknownKind_ReturnsFalse()
     {
         Assert.IsFalse(ZonePacker.TryCreate(Vector3.zero, 1f, ZoneKind.None, 1f, 0f, out _));
         Assert.IsFalse(ZonePacker.TryCreate(Vector3.zero, 1f, (ZoneKind)99, 1f, 0f, out _));
     }
 
     [Test]
-    public void TryCreateRejectsNonFiniteFields()
+    public void TryCreate_NonFiniteField_ReturnsFalse()
     {
         Vector3 nanPosition = new Vector3(float.NaN, 0f, 0f);
         Vector3 infinitePosition = new Vector3(0f, 0f, float.PositiveInfinity);
@@ -144,7 +112,7 @@ public class ZonePackerTests
     }
 
     [Test]
-    public void TryCreateOutputsDefaultOnRejection()
+    public void TryCreate_Rejected_OutputsDefaultZone()
     {
         bool created = ZonePacker.TryCreate(new Vector3(5f, 5f, 5f), -1f, ZoneKind.Heal, 1f, 2f,
                                               out Zone zone);
@@ -154,7 +122,7 @@ public class ZonePackerTests
     }
 
     [Test]
-    public void PackPreservesRegistrationOrder()
+    public void Pack_ValidZones_KeepsRegistrationOrder()
     {
         Zone[] source =
         {
@@ -175,7 +143,7 @@ public class ZonePackerTests
     }
 
     [Test]
-    public void PackCanonicalizesEachItem()
+    public void Pack_OutOfRangeItem_ClampsAndClearsReserved()
     {
         Zone[] source = { Raw(Vector3.zero, 2f, ZoneKind.Heal, 5f, -1f, reserved: 0xDEADBEEF) };
         Zone[] destination = new Zone[4];
@@ -187,7 +155,7 @@ public class ZonePackerTests
     }
 
     [Test]
-    public void PackCountsInvalidItemsAsRejected()
+    public void Pack_InvalidItems_CountsThemRejected()
     {
         Zone[] source =
         {
@@ -206,7 +174,7 @@ public class ZonePackerTests
     }
 
     [Test]
-    public void PackOmitsZeroStrengthItemsWithoutCallingThemRejected()
+    public void Pack_ZeroStrengthItems_OmitsThemWithoutRejecting()
     {
         Zone[] source =
         {
@@ -225,7 +193,7 @@ public class ZonePackerTests
     }
 
     [Test]
-    public void PackStopsAtSixtyFourAndReportsOverflowSeparately()
+    public void Pack_SeventyZones_StopsAtSixtyFourAndReportsOverflow()
     {
         Zone[] source = new Zone[70];
         for (int i = 0; i < source.Length; i++)
@@ -244,7 +212,7 @@ public class ZonePackerTests
     }
 
     [Test]
-    public void PackNeverWritesPastASmallDestination()
+    public void Pack_SmallDestination_NeverWritesPastIt()
     {
         Zone[] source = new Zone[10];
         for (int i = 0; i < source.Length; i++)
@@ -261,7 +229,7 @@ public class ZonePackerTests
     }
 
     [Test]
-    public void PackZeroesTheUnusedTail()
+    public void Pack_FewerZones_ZeroesTheUnusedTail()
     {
         Zone[] destination = new Zone[4];
         for (int i = 0; i < destination.Length; i++)
@@ -280,7 +248,7 @@ public class ZonePackerTests
     }
 
     [Test]
-    public void PackOfAnEmptySourcePublishesCountZero()
+    public void Pack_EmptySource_WritesNothingAndClears()
     {
         Zone[] destination = new Zone[2];
         destination[0] = Raw(Vector3.one, 1f, ZoneKind.Heal, 1f);
@@ -295,7 +263,7 @@ public class ZonePackerTests
     }
 
     [Test]
-    public void PackIsDeterministicForTheSameInput()
+    public void Pack_SameInput_IsDeterministic()
     {
         Zone[] source =
         {

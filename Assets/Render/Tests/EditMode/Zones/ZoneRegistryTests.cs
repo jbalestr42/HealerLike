@@ -74,7 +74,7 @@ public class ZoneRegistryTests
     }
 
     [Test]
-    public void InvalidLaunchAndMissingHealTargetAreRejected()
+    public void AddLaunchAndAddHealPulse_InvalidInput_ReturnNoHandle()
     {
         Assert.AreEqual(0, _registry.AddLaunch(Vector3.zero, Vector3.up));
         Assert.AreEqual(0, _registry.AddLaunch(Vector3.zero, new Vector3(float.NaN, 0, 0)));
@@ -83,7 +83,7 @@ public class ZoneRegistryTests
     }
 
     [Test]
-    public void ActsAsTheRegistryZoneOwner()
+    public void AddPulse_AsZoneOwner_AddsAPulseThatExpires()
     {
         IZoneOwner owner = _registry;
         int handle = owner.AddPulse(ZoneKind.Hostile, Vector3.zero, 2f, 1f, 0.8f);
@@ -95,7 +95,7 @@ public class ZoneRegistryTests
     }
 
     [Test]
-    public void UpdatesPreserveOrderAndPublishCanonicalSnapshotEveryFrame()
+    public void PublishFrame_UpdatedZone_KeepsOrderAndUploadsEveryFrame()
     {
         int first = Add(1f);
         Add(2f);
@@ -117,7 +117,7 @@ public class ZoneRegistryTests
     }
 
     [Test]
-    public void OverflowKeepsFirst64AndReportsOncePerEpisode()
+    public void PublishFrame_Overflow_KeepsFirst64AndWarnsOncePerEpisode()
     {
         int first = Add(0f);
         for (int i = 1; i < 65; i++)
@@ -145,7 +145,7 @@ public class ZoneRegistryTests
     }
 
     [Test]
-    public void PersistentFootprintsCannotStarveHealAndExpiredFeedbackReturnsCapacity()
+    public void PublishFrame_FootprintOverflow_ReservesFeedbackAndReturnsCapacity()
     {
         for (int i = 0; i < 80; i++)
         {
@@ -179,7 +179,7 @@ public class ZoneRegistryTests
     }
 
     [Test]
-    public void RemovedSlotsAreReusedWithoutReusingHandlesOrReordering()
+    public void Remove_ThenAdd_ReusesTheSlotWithoutReusingHandleOrReordering()
     {
         int old = Add(1f);
         Add(2f);
@@ -198,7 +198,7 @@ public class ZoneRegistryTests
     }
 
     [Test]
-    public void PulseFadesLinearlyAndAutoRemovesAtDuration()
+    public void AddPulse_OverItsDuration_FadesLinearlyThenRemoves()
     {
         int pulse = _registry.AddPulse(ZoneKind.Hostile, Vector3.one, 2f, 0.8f, 0.8f);
 
@@ -216,7 +216,7 @@ public class ZoneRegistryTests
     }
 
     [Test]
-    public void TeardownPublishesZeroBeforeUnbindingAndDisposingExactlyOnce()
+    public void Release_CalledTwice_PublishesZeroUnbindsAndDisposesOnce()
     {
         int old = Add(1f);
         _registry.PublishFrame(0f);
@@ -234,7 +234,7 @@ public class ZoneRegistryTests
     }
 
     [Test]
-    public void InvalidInputCannotCreateOrKeepAnActiveZone()
+    public void AddAndUpdateZone_InvalidInput_CreateOrKeepNoZone()
     {
         Assert.AreEqual(0, _registry.Add(ZoneKind.None, Vector3.zero, 1f, 1f));
         Assert.AreEqual(0, _registry.Add(ZoneKind.Heal, Vector3.zero, 0f, 1f));
@@ -274,7 +274,6 @@ public class ZoneRegistryTests
         Assert.AreEqual(0, _upload.calls.Count);
         Assert.AreEqual(0, _registry.count);
     }
-
 }
 
 }

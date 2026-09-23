@@ -8,104 +8,89 @@ namespace HealerLike.Render.Zones
 
 public class LaunchWaveTests
 {
-    [Test]
-    public void ProjectileInitEmitsDirectionalPulseAndGustWhichOutliveProjectile()
+    GameObject _root;
+    GameObject _shot;
+    GameObject _source;
+    GameObject _target;
+    ZoneRegistry _owner;
+    GrassField _field;
+    Projectile _projectile;
+    LaunchWave _wave;
+
+    [SetUp]
+    public void SetUp()
     {
-        GameObject root = new GameObject("zones");
-        GameObject shot = new GameObject("projectile");
-        GameObject source = new GameObject("source");
-        GameObject target = new GameObject("target");
-        try
-        {
-            ZoneRegistry owner = root.AddComponent<ZoneRegistry>();
-            owner.Init(new ZoneFakeUpload());
-            GrassField field = root.AddComponent<GrassField>();
-            TestHelpers.WithLoggingDisabled(() => target.AddComponent<Entity>());
-            target.transform.position = Vector3.forward * 4f;
-            Projectile projectile = shot.AddComponent<Projectile>();
-            LaunchWave wave = shot.AddComponent<LaunchWave>();
-            wave.Init(owner, field);
-
-            projectile.Init(source, target, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
-            owner.PublishFrame(0f);
-
-            Assert.AreEqual(1, owner.count);
-            Assert.AreEqual(5, owner.snapshot[0].kind);
-            Assert.AreEqual(4, owner.snapshot[0].radius);
-            Assert.AreEqual(1073741824u, owner.snapshot[0].reserved);
-            Assert.AreEqual(source.transform.position, owner.snapshot[0].position);
-            Assert.AreEqual(1, field.wind.current.y);
-            Assert.AreEqual(0.13f, field.wind.current.w, 0.0001f);
-
-            Object.DestroyImmediate(shot);
-            owner.PublishFrame(0.2f);
-            Assert.AreEqual(1, owner.count);
-
-            owner.PublishFrame(0.2f);
-            Assert.AreEqual(0, owner.count);
-        }
-        finally
-        {
-            Object.DestroyImmediate(shot);
-            Object.DestroyImmediate(source);
-            Object.DestroyImmediate(target);
-            Object.DestroyImmediate(root);
-        }
+        _root = new GameObject("zones");
+        _shot = new GameObject("projectile");
+        _source = new GameObject("source");
+        _target = new GameObject("target");
+        _owner = _root.AddComponent<ZoneRegistry>();
+        _owner.Init(new ZoneFakeUpload());
+        _field = _root.AddComponent<GrassField>();
+        TestHelpers.WithLoggingDisabled(() => _target.AddComponent<Entity>());
+        _target.transform.position = Vector3.forward * 4f;
+        _projectile = _shot.AddComponent<Projectile>();
+        _wave = _shot.AddComponent<LaunchWave>();
     }
 
+    [TearDown]
+    public void TearDown()
+    {
+        Object.DestroyImmediate(_shot);
+        Object.DestroyImmediate(_source);
+        Object.DestroyImmediate(_target);
+        Object.DestroyImmediate(_root);
+    }
+
+    void Launch()
+    {
+        _projectile.Init(_source, _target, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
+    }
+
+    [Test]
+    public void Init_ProjectileLaunched_EmitsDirectionalPulseAndGustThatOutliveIt()
+    {
+        _wave.Init(_owner, _field);
+
+        Launch();
+        _owner.PublishFrame(0f);
+
+        Assert.AreEqual(1, _owner.count);
+        Assert.AreEqual(5, _owner.snapshot[0].kind);
+        Assert.AreEqual(4, _owner.snapshot[0].radius);
+        Assert.AreEqual(1073741824u, _owner.snapshot[0].reserved);
+        Assert.AreEqual(_source.transform.position, _owner.snapshot[0].position);
+        Assert.AreEqual(1, _field.wind.current.y);
+        Assert.AreEqual(0.13f, _field.wind.current.w, 0.0001f);
+
+        Object.DestroyImmediate(_shot);
+        _owner.PublishFrame(0.2f);
+        Assert.AreEqual(1, _owner.count);
+
+        _owner.PublishFrame(0.2f);
+        Assert.AreEqual(0, _owner.count);
+    }
 
     [Test]
     public void Init_WithZonesAndField_LaunchesOnBoth()
     {
-        GameObject root = new GameObject("zones");
-        GameObject shot = new GameObject("projectile");
-        GameObject source = new GameObject("source");
-        GameObject target = new GameObject("target");
-        ZoneRegistry owner = root.AddComponent<ZoneRegistry>();
-        owner.Init(new ZoneFakeUpload());
-        GrassField field = root.AddComponent<GrassField>();
-        TestHelpers.WithLoggingDisabled(() => target.AddComponent<Entity>());
-        target.transform.position = Vector3.forward * 4f;
-        Projectile projectile = shot.AddComponent<Projectile>();
-        LaunchWave wave = shot.AddComponent<LaunchWave>();
+        _wave.Init(_owner, _field);
 
-        wave.Init(owner, field);
-        projectile.Init(source, target, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
+        Launch();
 
-        Assert.AreEqual(1, owner.liveCount);
-        Assert.AreEqual(1f, field.wind.current.y);
-
-        Object.DestroyImmediate(shot);
-        Object.DestroyImmediate(source);
-        Object.DestroyImmediate(target);
-        Object.DestroyImmediate(root);
+        Assert.AreEqual(1, _owner.liveCount);
+        Assert.AreEqual(1f, _field.wind.current.y);
     }
 
     [Test]
     public void Init_WithoutZones_StillGustsTheField()
     {
-        GameObject root = new GameObject("zones");
-        GameObject shot = new GameObject("projectile");
-        GameObject source = new GameObject("source");
-        GameObject target = new GameObject("target");
-        ZoneRegistry owner = root.AddComponent<ZoneRegistry>();
-        owner.Init(new ZoneFakeUpload());
-        GrassField field = root.AddComponent<GrassField>();
-        TestHelpers.WithLoggingDisabled(() => target.AddComponent<Entity>());
-        target.transform.position = Vector3.forward * 4f;
-        Projectile projectile = shot.AddComponent<Projectile>();
-        LaunchWave wave = shot.AddComponent<LaunchWave>();
+        _wave.Init(null, _field);
 
-        wave.Init(null, field);
-        projectile.Init(source, target, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
+        Launch();
 
-        Assert.AreEqual(0, owner.liveCount); // current is set, but Init said no zones
-        Assert.AreEqual(1f, field.wind.current.y);
-
-        Object.DestroyImmediate(shot);
-        Object.DestroyImmediate(source);
-        Object.DestroyImmediate(target);
-        Object.DestroyImmediate(root);
+        Assert.AreEqual(0, _owner.liveCount); // current is set, but Init said no zones
+        Assert.AreEqual(1f, _field.wind.current.y);
     }
 }
 

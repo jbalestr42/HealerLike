@@ -7,7 +7,7 @@ namespace HealerLike.Render.Zones
 public class ZoneDebugGizmosTests
 {
     [Test]
-    public void HealAndHostileHaveDistinctColoursAndClampedStrengthAlpha()
+    public void ColorFor_HealAndHostile_DistinctColoursWithClampedAlpha()
     {
         Zone zone = new Zone { kind = (int)ZoneKind.Heal, strength = 0.35f };
 

@@ -37,7 +37,7 @@ public class RangePreviewTests
     [TestCase(true, false)]
     [TestCase(false, true)]
     [TestCase(true, true)]
-    public void SelectionOrDragShowsOneCosmeticZoneAtCurrentEntityPosition(bool selected, bool dragging)
+    public void Refresh_SelectedOrDragged_ShowsOneZoneThatFollowsTheEntity(bool selected, bool dragging)
     {
         _entityGo.transform.position = Vector3.one * 4f;
 
@@ -63,7 +63,7 @@ public class RangePreviewTests
     }
 
     [Test]
-    public void StateChangesPublishOnlyOnUpdate()
+    public void SetPreviewState_Changed_PublishesOnlyOnUpdate()
     {
         _preview.SetPreviewState(true, false);
         Assert.AreEqual(0, _owner.liveCount);
@@ -79,7 +79,7 @@ public class RangePreviewTests
     }
 
     [Test]
-    public void DeselectionDisableAndInvalidRangeRemovePreview()
+    public void Refresh_DeselectedDisabledOrInvalidRange_RemovesThePreview()
     {
         _preview.SetPreviewState(true, false);
         _preview.Refresh();
@@ -108,7 +108,7 @@ public class RangePreviewTests
     }
 
     [Test]
-    public void RegistryRestartRecreatesPreviewWithoutStaleHandleUse()
+    public void Refresh_RegistryRestarted_RecreatesThePreview()
     {
         _preview.SetPreviewState(true, false);
         _preview.Refresh();
@@ -122,7 +122,7 @@ public class RangePreviewTests
     }
 
     [Test]
-    public void ShowAllUsesLowStrengthAndExcludesEnemies()
+    public void Show_ShowAllOnEnemy_UsesLowStrengthAndExcludesEnemies()
     {
         _preview.Show(false, true);
         _preview.Refresh();
@@ -139,7 +139,7 @@ public class RangePreviewTests
     }
 
     [Test]
-    public void HoverShowsRangeWithoutOverwritingExplicitSelection()
+    public void Show_Hovered_KeepsTheExplicitSelection()
     {
         _preview.Show(true, false);
         _preview.Refresh();
@@ -157,7 +157,7 @@ public class RangePreviewTests
     }
 
     [Test]
-    public void MissingRangeAndDestroyedEntityAreSafe()
+    public void SetPreviewState_NoRangeOrEntity_ShowsNothing()
     {
         _entity.attributeManager = null;
         _preview.SetPreviewState(true, false);
@@ -167,7 +167,6 @@ public class RangePreviewTests
         _preview.SetPreviewState(true, true);
         Assert.AreEqual(0, _owner.liveCount);
     }
-
 
     [Test]
     public void Show_Hovered_ShowsTheRangeAtFullPreviewStrength()
