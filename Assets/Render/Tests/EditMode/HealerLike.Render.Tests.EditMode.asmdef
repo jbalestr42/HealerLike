@@ -6,6 +6,7 @@
         "HealerLike.Render",
         "HealerLike.Render.Creatures.Editor",
         "HealerLike.Render.Stage.Editor",
+        "HealerLike.Render.Stage.Capture.Editor",
         "HealerLike.Render.Stones.Editor",
         "HealerLike.Tests.EditMode",
         "UnityEngine.TestRunner",
