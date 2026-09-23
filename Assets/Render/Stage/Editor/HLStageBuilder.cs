@@ -516,7 +516,7 @@ namespace HealerLike.Render.Stage
             foreach (var r in instance.GetComponentsInChildren<Renderer>()) r.enabled = false;
             var entry = instance.GetComponent<HLStoneGridEntry>();
             // Finding 5: this scene is the demo fixture; the stones fix refuses Generate unless the entry opts in.
-            var eso = new SerializedObject(entry); eso.FindProperty("demoSceneOnly").boolValue = true; eso.ApplyModifiedPropertiesWithoutUndo();
+            var eso = new SerializedObject(entry); eso.FindProperty("_demoSceneOnly").boolValue = true; eso.ApplyModifiedPropertiesWithoutUndo();
             SpreadStoneRecipes(entry);
             return entry;
         }
@@ -525,7 +525,7 @@ namespace HealerLike.Render.Stage
         public static readonly Vector2Int[] StoneBlockSizes = { new Vector2Int(1, 3), new Vector2Int(1, 2) };
         static void SpreadStoneRecipes(HLStoneGridEntry entry)
         {
-            var systems = new SerializedObject(entry).FindProperty("systems");
+            var systems = new SerializedObject(entry).FindProperty("_systems");
             for (int i = 0; i < systems.arraySize && i < StoneBlockCounts.Length; i++)
             {
                 var system = systems.GetArrayElementAtIndex(i).objectReferenceValue; if (!system) continue;

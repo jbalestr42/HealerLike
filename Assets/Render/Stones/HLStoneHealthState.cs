@@ -1,30 +1,68 @@
 using System;
+
 namespace HealerLike.Render.Stones
 {
-    public enum HLStoneHealthAction { None, ShedPart, Collapse }
-    public sealed class HLStoneHealthState
+    public class HLStoneHealthState
     {
-        float threshold = .5f;
-        bool hadDamage, shed, collapsed;
+        float _threshold = 0.5f;
+        bool _hadDamage;
+        bool _isShed;
+        bool _isCollapsed;
+
         public void Reset(float thresholdFraction)
         {
-            if (!float.IsFinite(thresholdFraction) || thresholdFraction <= 0 || thresholdFraction >= 1)
+            if (!float.IsFinite(thresholdFraction) || thresholdFraction <= 0f || thresholdFraction >= 1f)
+            {
                 throw new ArgumentOutOfRangeException(nameof(thresholdFraction));
-            threshold=thresholdFraction; hadDamage=shed=collapsed=false;
+            }
+
+            _threshold = thresholdFraction;
+            _hadDamage = false;
+            _isShed = false;
+            _isCollapsed = false;
         }
-        public void RecordProcessedDelta(float delta) { if (delta < 0) hadDamage=true; }
+
+        public void RecordProcessedDelta(float delta)
+        {
+            if (delta < 0f)
+            {
+                _hadDamage = true;
+            }
+        }
+
         public HLStoneHealthAction CompleteBatch(float health, float maxHealth)
         {
-            bool damage=hadDamage; hadDamage=false;
-            if (collapsed) return HLStoneHealthAction.None;
-            if (health <= 0) { TryBeginCollapse(); return HLStoneHealthAction.Collapse; }
-            if (damage && !shed && maxHealth > 0 && health <= maxHealth * threshold)
-            { shed=true; return HLStoneHealthAction.ShedPart; }
+            bool hasDamage = _hadDamage;
+            _hadDamage = false;
+            if (_isCollapsed)
+            {
+                return HLStoneHealthAction.None;
+            }
+
+            if (health <= 0f)
+            {
+                TryBeginCollapse();
+                return HLStoneHealthAction.Collapse;
+            }
+
+            if (hasDamage && !_isShed && maxHealth > 0f && health <= maxHealth * _threshold)
+            {
+                _isShed = true;
+                return HLStoneHealthAction.ShedPart;
+            }
             return HLStoneHealthAction.None;
         }
+
         public bool TryBeginCollapse()
         {
-            if (collapsed) return false; collapsed=true; hadDamage=false; return true;
+            if (_isCollapsed)
+            {
+                return false;
+            }
+
+            _isCollapsed = true;
+            _hadDamage = false;
+            return true;
         }
     }
 }

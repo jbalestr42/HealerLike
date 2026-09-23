@@ -1,20 +1,16 @@
-using System;
 using UnityEngine;
+using UnityEngine.Serialization;
+
 namespace HealerLike.Render.Stones
 {
-    [Serializable]
-    public struct HLStonePart
+    [CreateAssetMenu(menuName = "HealerLike/Stone assembly")]
+    public class HLStoneAssemblyProfile : ScriptableObject
     {
-        public HLStoneSettings Shape;
-        public Vector3 LocalPosition, LocalEulerAngles;
-        public uint SeedSalt;
-        public int PaletteIndex;
-    }
-    [CreateAssetMenu(menuName="HealerLike/Stone assembly")]
-    public sealed class HLStoneAssemblyProfile : ScriptableObject
-    {
-        public HLStonePart[] Parts;
-        public int DetachablePartIndex=2;
-        public float ShedHealthFraction=.5f;
+        [FormerlySerializedAs("Parts")]
+        public HLStonePart[] parts;
+        [FormerlySerializedAs("DetachablePartIndex")]
+        public int detachablePartIndex = 2;
+        [FormerlySerializedAs("ShedHealthFraction")]
+        public float shedHealthFraction = 0.5f;
     }
 }
