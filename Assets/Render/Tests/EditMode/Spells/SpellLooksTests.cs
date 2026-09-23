@@ -77,6 +77,37 @@ public class SpellLooksTests
 
         Assert.AreEqual(DeliveryStyle.Direct, looks.GetProjectileLook(null).style);
     }
+
+    // Only rows where the grammar is wrong for the handler stay: the three listener items on the healer, whose
+    // Infinite handler would loop their look for the whole run
+    [TestCase("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", EffectElement.ManaUp)]
+    [TestCase("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", EffectElement.Burst)]
+    [TestCase("PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory", EffectElement.Rise)]
+    public void Shipped_KeptBuffRow_DrawsOnceWithItsElement(string path, EffectElement expected)
+    {
+        SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
+        ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>("Assets/Data/" + path + ".asset");
+
+        SpellLook row = looks.GetLook(handler);
+
+        Assert.AreEqual(3, looks.buffs.Count);
+        Assert.AreEqual(expected, row.element);
+        Assert.AreEqual(EffectTempo.Once, row.tempo);
+    }
+
+    [Test]
+    public void Shipped_ProjectileRows_OnlyTheChainsKeepTheirContactPath()
+    {
+        SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
+        GameObject laser = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/LaserBullet.prefab");
+
+        Assert.AreEqual(2, looks.projectiles.Count);
+        foreach (KeyValuePair<GameObject, ProjectileLook> row in looks.projectiles)
+        {
+            Assert.IsTrue(row.Value.preserveContactPath, row.Key.name);
+        }
+        Assert.AreEqual(DeliveryStyle.Arc, looks.GetProjectileLook(laser).style); // its baked motion is a ballistic arc
+    }
 }
 
 }
