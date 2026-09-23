@@ -334,7 +334,6 @@ MonoBehaviour:
   stalks: []
   parts:
   - {fileID: 1256671601038695083}
-  facingCamera: {fileID: 0}
   contactThread: 0
   _sideRim: {fileID: 5392822859097153568}
   _stackBeads:

@@ -166,7 +166,6 @@ MonoBehaviour:
   - {fileID: 7796007646478589822}
   - {fileID: 5319375896111656414}
   - {fileID: 4106213373629212738}
-  facingCamera: {fileID: 0}
   contactThread: 0
   _sideRim: {fileID: 406029511208845138}
   _stackBeads:

@@ -24,8 +24,6 @@ namespace HealerLike.Render.Spells
         public float lifetime = 0.65f;
         public Transform[] stalks = new Transform[0];
         public Transform[] parts = new Transform[0];
-        // Optional explicit camera, otherwise the main camera is read in LateUpdate
-        public Transform facingCamera;
         public bool contactThread;
 
         [SerializeField] Renderer _sideRim;
@@ -87,21 +85,6 @@ namespace HealerLike.Render.Spells
             {
                 Destroy(gameObject);
             }
-        }
-
-        void LateUpdate()
-        {
-            if (kind != SpellEffectKind.Impact)
-            {
-                return;
-            }
-
-            Transform cameraTransform = facingCamera;
-            if (cameraTransform == null && Camera.main != null)
-            {
-                cameraTransform = Camera.main.transform;
-            }
-            FaceCamera(cameraTransform);
         }
 
         void OnDisable()
@@ -249,14 +232,6 @@ namespace HealerLike.Render.Spells
             _isRemoving = true;
             _removalAge = 0f;
             SetBodyTint(Color.white);
-        }
-
-        public void FaceCamera(Transform cameraTransform)
-        {
-            if (kind == SpellEffectKind.Impact && cameraTransform != null && parts.Length > 0)
-            {
-                parts[0].rotation = cameraTransform.rotation;
-            }
         }
 
         public void Advance(float delta)

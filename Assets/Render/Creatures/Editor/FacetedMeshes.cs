@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace HealerLike.Render.Creatures
 {
-    // Flat-shaded and planar shapes for the primitive baker
+    // Flat-shaded shapes for the primitive baker
     public static class FacetedMeshes
     {
         // The stones' flat-shaded four-sided cone, base on the ground
@@ -40,29 +41,77 @@ namespace HealerLike.Render.Creatures
             return mesh;
         }
 
-        // Two-sided planar fan: eight long rays alternating with short notches
+        // Solid eight-point star: the rim is a thin band, a low apex sits on each face
         public static Mesh CreateStar()
         {
-            Vector3[] vertices = new Vector3[34];
-            int[] triangles = new int[96];
-            for (int i = 0; i < 16; i++)
+            int points = 16;
+            float band = 0.06f;
+            float apex = 0.3f;
+            Vector3 front = new Vector3(0f, 0f, -apex);
+            Vector3 back = new Vector3(0f, 0f, apex);
+            List<Vector3> corners = new List<Vector3>();
+            for (int i = 0; i < points; i++)
             {
-                float angle = i * Mathf.PI / 8f;
-                float radius = i % 2 == 0 ? 1f : 0.32f;
-                vertices[i + 1] = new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0f);
-                vertices[i + 18] = vertices[i + 1];
-
-                int next = (i + 1) % 16 + 1;
-                int offset = i * 6;
-                triangles[offset] = 0;
-                triangles[offset + 1] = i + 1;
-                triangles[offset + 2] = next;
-                triangles[offset + 3] = 17;
-                triangles[offset + 4] = next + 17;
-                triangles[offset + 5] = i + 18;
+                Vector3 a = StarRim(i);
+                Vector3 b = StarRim(i + 1);
+                Vector3 frontA = a + Vector3.back * band;
+                Vector3 frontB = b + Vector3.back * band;
+                Vector3 backA = a + Vector3.forward * band;
+                Vector3 backB = b + Vector3.forward * band;
+                corners.AddRange(new Vector3[] { front, frontA, frontB });
+                corners.AddRange(new Vector3[] { back, backA, backB });
+                corners.AddRange(new Vector3[] { frontA, backA, backB });
+                corners.AddRange(new Vector3[] { frontA, backB, frontB });
             }
 
-            return PrimitiveMeshBaker.CreateMesh("Star", vertices, triangles);
+            return CreateFlatShaded("Star", corners);
+        }
+
+        // Eight long rays alternating with short notches, in the XY plane
+        static Vector3 StarRim(int index)
+        {
+            float angle = index * Mathf.PI / 8f;
+            float radius = index % 2 == 0 ? 1f : 0.32f;
+            return new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0f);
+        }
+
+        // One normal per triangle. The shapes are star-shaped around the origin, so a triangle whose normal
+        // points at the origin is turned around.
+        static Mesh CreateFlatShaded(string name, List<Vector3> corners)
+        {
+            Vector3[] vertices = new Vector3[corners.Count];
+            Vector3[] normals = new Vector3[corners.Count];
+            int[] triangles = new int[corners.Count];
+            for (int i = 0; i < corners.Count; i += 3)
+            {
+                Vector3 a = corners[i];
+                Vector3 b = corners[i + 1];
+                Vector3 c = corners[i + 2];
+                Vector3 normal = Vector3.Cross(b - a, c - a).normalized;
+                if (Vector3.Dot(normal, a + b + c) < 0f)
+                {
+                    Vector3 swap = b;
+                    b = c;
+                    c = swap;
+                    normal = -normal;
+                }
+
+                vertices[i] = a;
+                vertices[i + 1] = b;
+                vertices[i + 2] = c;
+                for (int j = 0; j < 3; j++)
+                {
+                    normals[i + j] = normal;
+                    triangles[i + j] = i + j;
+                }
+            }
+
+            Mesh mesh = new Mesh { name = name };
+            mesh.vertices = vertices;
+            mesh.normals = normals;
+            mesh.triangles = triangles;
+            mesh.RecalculateBounds();
+            return mesh;
         }
 
         // Flat-shaded octahedron, kept asymmetric on purpose
