@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Grass
@@ -157,14 +159,20 @@ public class HLGrassLayoutTests
     }
 
     [Test]
-    public void RejectsInvalidInputs()
+    public void Generate_InvalidInputs_LogsAndReturnsNoSeeds()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => HLGrassLayout.Generate(0, 1, 1f, Vector3.zero, 0f));
-        Assert.Throws<ArgumentOutOfRangeException>(() => HLGrassLayout.Generate(1, 1, float.NaN, Vector3.zero, 0f));
-        Assert.Throws<ArgumentOutOfRangeException>(() => HLGrassLayout.Generate(1, 1, 1f, Vector3.zero, 0f, -1));
-        Assert.Throws<ArgumentOutOfRangeException>(() => HLGrassLayout.Generate(1, 1, 1f, Vector3.zero, float.PositiveInfinity));
-        Assert.Throws<ArgumentOutOfRangeException>(() => HLGrassLayout.Generate(1, 1, 1f, new Vector3(float.NaN, 0f, 0f), 0f));
-        Assert.Throws<ArgumentOutOfRangeException>(() => HLGrassLayout.Generate(new Rect(0f, 0f, 1f, 1f), 0f, -1f));
+        Regex rejected = new Regex(@"^\[HLGrassLayout\] Rejected");
+        for (int i = 0; i < 6; i++)
+        {
+            LogAssert.Expect(LogType.Error, rejected);
+        }
+
+        Assert.IsEmpty(HLGrassLayout.Generate(0, 1, 1f, Vector3.zero, 0f));
+        Assert.IsEmpty(HLGrassLayout.Generate(1, 1, float.NaN, Vector3.zero, 0f));
+        Assert.IsEmpty(HLGrassLayout.Generate(1, 1, 1f, Vector3.zero, 0f, -1));
+        Assert.IsEmpty(HLGrassLayout.Generate(1, 1, 1f, Vector3.zero, float.PositiveInfinity));
+        Assert.IsEmpty(HLGrassLayout.Generate(1, 1, 1f, new Vector3(float.NaN, 0f, 0f), 0f));
+        Assert.IsEmpty(HLGrassLayout.Generate(new Rect(0f, 0f, 1f, 1f), 0f, -1f));
     }
 
     [Test]

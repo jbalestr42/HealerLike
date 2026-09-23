@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace HealerLike.Render.Grass
@@ -14,12 +13,13 @@ namespace HealerLike.Render.Grass
         public uint seed;
         public int budget;
 
-        public HLGrassBuildKey(GridManager grid, float surfaceY, uint seed, int budget)
+        // The area is in world XZ and holds whole cells
+        public HLGrassBuildKey(Rect area, float cellSize, float surfaceY, uint seed, int budget)
         {
-            width = grid.width;
-            height = grid.height;
-            cellSize = grid.size;
-            origin = grid.transform.position;
+            width = Mathf.RoundToInt(area.width / cellSize);
+            height = Mathf.RoundToInt(area.height / cellSize);
+            this.cellSize = cellSize;
+            origin = new Vector3(area.center.x, 0f, area.center.y);
             this.surfaceY = surfaceY;
             this.seed = seed;
             this.budget = budget;
@@ -34,15 +34,12 @@ namespace HealerLike.Render.Grass
         // Returns null when the footprint is not finite
         public HLBladeSeed[] GenerateLayout()
         {
-            // HLGrassLayout still validates by exception
-            try
-            {
-                return HLGrassLayout.Generate(width, height, cellSize, origin, surfaceY, budget, seed);
-            }
-            catch (ArgumentOutOfRangeException)
+            if (!HLGrassLayout.IsValid(width, height, cellSize, origin, surfaceY) || budget < 0)
             {
                 return null;
             }
+
+            return HLGrassLayout.Generate(width, height, cellSize, origin, surfaceY, budget, seed);
         }
 
         public Bounds CalculateBounds()

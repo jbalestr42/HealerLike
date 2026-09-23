@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 using HealerLike.Render.Creatures;
@@ -19,7 +20,7 @@ public class HLGrassDrawTests
         {
             Assert.Ignore("Indirect argument buffers need a graphics device; run with -force-metal.");
         }
-        _mesh = HLPrimitiveMeshes.Get(HLPrimitive.Cone, HLGrassField.BladeSides, 2);
+        _mesh = AssetDatabase.LoadAssetAtPath<HLPrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset").bladeCone;
         _material = new Material(Shader.Find("HL/Look/Primitive"));
         _draw = new HLGrassDraw(_mesh, _material, 7, new Bounds(Vector3.zero, Vector3.one), 3);
     }
@@ -31,7 +32,11 @@ public class HLGrassDrawTests
         {
             _draw.Release();
         }
-        HLPrimitiveMeshes.ReleaseAll();
+
+        if (_material != null)
+        {
+            Object.DestroyImmediate(_material);
+        }
     }
 
     [Test]
@@ -54,14 +59,14 @@ public class HLGrassDrawTests
     }
 
     [Test]
-    public void Release_OwnedResources_DisposesArgumentsAndMaterialButNotMesh()
+    public void Release_OwnedResources_DisposesArgumentsButNotMeshOrMaterial()
     {
         GraphicsBuffer arguments = _draw.arguments;
 
         _draw.Release();
 
         Assert.IsFalse(arguments.IsValid());
-        Assert.IsTrue(_material == null);
+        Assert.IsTrue(_material != null);
         Assert.IsTrue(_mesh != null);
         Assert.IsNull(_draw.arguments);
     }

@@ -1,10 +1,9 @@
 using UnityEngine;
 using UnityEngine.Rendering;
-using HealerLike.Render.Creatures;
 
 namespace HealerLike.Render.Grass
 {
-    // One indirect draw over a borrowed mesh; owns its material and its argument buffer
+    // One indirect draw over a borrowed mesh and material; owns its argument buffer
     public class HLGrassDraw
     {
         Mesh _mesh;
@@ -56,7 +55,7 @@ namespace HealerLike.Render.Grass
                 _arguments.Dispose();
                 _arguments = null;
             }
-            HLPrimitiveMeshes.DestroyOwned(_material);
+
             _material = null;
             _mesh = null;
         }

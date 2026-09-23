@@ -6,30 +6,18 @@ namespace HealerLike.Render.Grass
 
 public class HLGrassBuildKeyTests
 {
-    GameObject _gridObject;
-    GridManager _grid;
+    // Four by two cells of 1.5 centred on (2, -1)
+    static readonly Rect area = new Rect(-1f, -2.5f, 6f, 3f);
 
-    [SetUp]
-    public void SetUp()
+    static HLGrassBuildKey CreateKey(float cellSize = 1.5f, float surfaceY = 0.5f, uint seed = 3, int budget = 100)
     {
-        _gridObject = new GameObject("HLGrassBuildKeyGrid");
-        _gridObject.transform.position = new Vector3(2f, 0f, -1f);
-        _grid = _gridObject.AddComponent<GridManager>();
-        _grid.width = 4;
-        _grid.height = 2;
-        _grid.size = 1.5f;
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        Object.DestroyImmediate(_gridObject);
+        return new HLGrassBuildKey(area, cellSize, surfaceY, seed, budget);
     }
 
     [Test]
-    public void Constructor_Grid_CopiesFootprint()
+    public void Constructor_Area_CopiesFootprint()
     {
-        HLGrassBuildKey key = new HLGrassBuildKey(_grid, 0.5f, 3, 100);
+        HLGrassBuildKey key = CreateKey();
 
         Assert.AreEqual(4, key.width);
         Assert.AreEqual(2, key.height);
@@ -43,27 +31,26 @@ public class HLGrassBuildKeyTests
     [Test]
     public void Matches_SameInputs_ReturnsTrue()
     {
-        HLGrassBuildKey key = new HLGrassBuildKey(_grid, 0.5f, 3, 100);
+        HLGrassBuildKey key = CreateKey();
 
-        Assert.IsTrue(key.Matches(new HLGrassBuildKey(_grid, 0.5f, 3, 100)));
+        Assert.IsTrue(key.Matches(CreateKey()));
     }
 
     [Test]
     public void Matches_AnyInputChanged_ReturnsFalse()
     {
-        HLGrassBuildKey key = new HLGrassBuildKey(_grid, 0.5f, 3, 100);
+        HLGrassBuildKey key = CreateKey();
 
-        Assert.IsFalse(key.Matches(new HLGrassBuildKey(_grid, 0.6f, 3, 100)));
-        Assert.IsFalse(key.Matches(new HLGrassBuildKey(_grid, 0.5f, 4, 100)));
-        Assert.IsFalse(key.Matches(new HLGrassBuildKey(_grid, 0.5f, 3, 101)));
-        _gridObject.transform.position = Vector3.zero;
-        Assert.IsFalse(key.Matches(new HLGrassBuildKey(_grid, 0.5f, 3, 100)));
+        Assert.IsFalse(key.Matches(CreateKey(surfaceY: 0.6f)));
+        Assert.IsFalse(key.Matches(CreateKey(seed: 4)));
+        Assert.IsFalse(key.Matches(CreateKey(budget: 101)));
+        Assert.IsFalse(key.Matches(new HLGrassBuildKey(new Rect(-3f, -1.5f, 6f, 3f), 1.5f, 0.5f, 3, 100)));
     }
 
     [Test]
-    public void GenerateLayout_FiniteGrid_ReturnsBudgetBlades()
+    public void GenerateLayout_FiniteArea_ReturnsBudgetBlades()
     {
-        HLGrassBuildKey key = new HLGrassBuildKey(_grid, 0.5f, 3, 100);
+        HLGrassBuildKey key = CreateKey();
 
         HLBladeSeed[] layout = key.GenerateLayout();
 
@@ -73,16 +60,15 @@ public class HLGrassBuildKeyTests
     [Test]
     public void GenerateLayout_NonFiniteCellSize_ReturnsNull()
     {
-        _grid.size = float.NaN;
-        HLGrassBuildKey key = new HLGrassBuildKey(_grid, 0.5f, 3, 100);
+        HLGrassBuildKey key = CreateKey(cellSize: float.NaN);
 
         Assert.IsNull(key.GenerateLayout());
     }
 
     [Test]
-    public void FieldRect_Grid_ReturnsWorldCorners()
+    public void FieldRect_Area_ReturnsWorldCorners()
     {
-        HLGrassBuildKey key = new HLGrassBuildKey(_grid, 0.5f, 3, 100);
+        HLGrassBuildKey key = CreateKey();
 
         Vector4 rect = key.FieldRect();
 
@@ -90,9 +76,9 @@ public class HLGrassBuildKeyTests
     }
 
     [Test]
-    public void CalculateBounds_Grid_CoversFieldAndBladeEnvelope()
+    public void CalculateBounds_Area_CoversFieldAndBladeEnvelope()
     {
-        HLGrassBuildKey key = new HLGrassBuildKey(_grid, 0.5f, 3, 100);
+        HLGrassBuildKey key = CreateKey();
 
         Bounds bounds = key.CalculateBounds();
 

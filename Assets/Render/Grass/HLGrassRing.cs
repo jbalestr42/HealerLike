@@ -1,30 +1,55 @@
-using System;
 using UnityEngine;
+
 namespace HealerLike.Render.Grass
 {
+    // The heal ring built at runtime for the stage scene; the render manager path uses the baked annulus. Removed in D2.
     public static class HLGrassRing
     {
         public static Mesh CreateAnnulus(int segments = 128)
         {
-            if (segments < 3 || segments > 16000) throw new ArgumentOutOfRangeException(nameof(segments));
-            var vertices = new Vector3[(segments + 1) * 2]; var uv = new Vector2[vertices.Length];
-            var indices = new int[segments * 6];
+            if (segments < 3 || segments > 16000)
+            {
+                Debug.LogError($"[HLGrassRing] Rejected {segments} segments, the ring needs 3 to 16000.");
+                return null;
+            }
+
+            Vector3[] vertices = new Vector3[(segments + 1) * 2];
+            Vector2[] uv = new Vector2[vertices.Length];
+            int[] indices = new int[segments * 6];
             for (int i = 0; i <= segments; i++)
             {
-                float a = (i % segments) * Mathf.PI * 2 / segments;
+                float angle = (i % segments) * Mathf.PI * 2f / segments;
+                Vector2 direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
                 for (int side = 0; side < 2; side++)
                 {
-                    var direction = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
-                    vertices[i * 2 + side] = new Vector3(direction.x, 0, direction.y) * (1 + (side - 0.5f) * 0.025f);
-                    uv[i * 2 + side] = new Vector2(a, side - 0.5f);
+                    float radius = 1f + (side - 0.5f) * 0.025f;
+                    vertices[i * 2 + side] = new Vector3(direction.x, 0f, direction.y) * radius;
+                    uv[i * 2 + side] = new Vector2(angle, side - 0.5f);
                 }
-                if (i == segments) continue;
-                int v = i * 2, t = i * 6;
-                indices[t] = v; indices[t + 1] = v + 2; indices[t + 2] = v + 1;
-                indices[t + 3] = v + 1; indices[t + 4] = v + 2; indices[t + 5] = v + 3;
+
+                if (i == segments)
+                {
+                    continue;
+                }
+
+                int vertex = i * 2;
+                int triangle = i * 6;
+                indices[triangle] = vertex;
+                indices[triangle + 1] = vertex + 2;
+                indices[triangle + 2] = vertex + 1;
+                indices[triangle + 3] = vertex + 1;
+                indices[triangle + 4] = vertex + 2;
+                indices[triangle + 5] = vertex + 3;
             }
-            var mesh = new Mesh { name = "HLGrassHealRing", vertices = vertices, uv = uv, triangles = indices };
-            mesh.RecalculateNormals(); mesh.RecalculateBounds(); return mesh;
+
+            Mesh mesh = new Mesh();
+            mesh.name = "HLGrassHealRing";
+            mesh.vertices = vertices;
+            mesh.uv = uv;
+            mesh.triangles = indices;
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
         }
     }
 }

@@ -2,11 +2,12 @@ using UnityEngine;
 
 namespace HealerLike.Render.Grass
 {
-    // The blade is the plant look material with the grass instancing keyword and the grass colours
+    // The blade is the plant look material with the grass instancing keyword (GrassBlade.mat) and the grass colours
     public static class HLGrassPalette
     {
         public static readonly string InstancedKeyword = "HL_GRASS_INSTANCED";
 
+        // The stage scene copies the look material at runtime instead of referencing GrassBlade.mat, removed in D2
         public static Material CreateBladeMaterial(Material lookMaterial)
         {
             Material material = new Material(lookMaterial);
@@ -35,6 +36,7 @@ namespace HealerLike.Render.Grass
             {
                 color = color.linear;
             }
+
             properties.SetVector(name, color);
         }
     }

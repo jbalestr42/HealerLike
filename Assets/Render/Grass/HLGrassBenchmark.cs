@@ -24,7 +24,7 @@ namespace HealerLike.Render.Grass
 
         public double averageFrameMilliseconds
         {
-            get { return _collectedFrames == 0 ? 0 : _total / _collectedFrames; }
+            get { return _collectedFrames == 0 ? 0d : _total / _collectedFrames; }
         }
 
         public bool isComplete { get { return _collectedFrames == SampleFrames; } }
@@ -44,6 +44,7 @@ namespace HealerLike.Render.Grass
                 ResetCapture();
                 return;
             }
+
             if (isComplete || !RecordFrame(elapsed))
             {
                 return;
@@ -66,11 +67,12 @@ namespace HealerLike.Render.Grass
         // True exactly on the final sample
         public bool RecordFrame(double milliseconds)
         {
-            if (double.IsNaN(milliseconds) || double.IsInfinity(milliseconds) || milliseconds < 0)
+            if (!double.IsFinite(milliseconds) || milliseconds < 0)
             {
                 Debug.LogError($"[HLGrassBenchmark] Ignored invalid frame time {milliseconds}.");
                 return false;
             }
+
             if (isComplete)
             {
                 return false;
@@ -81,6 +83,7 @@ namespace HealerLike.Render.Grass
             {
                 return false;
             }
+
             _samples[_collectedFrames] = milliseconds;
             _collectedFrames++;
             _total += milliseconds;
@@ -95,6 +98,7 @@ namespace HealerLike.Render.Grass
             {
                 msaa = pipeline.msaaSampleCount;
             }
+
             int blades = _field != null ? _field.bladeCount : 0;
             int zones = _field != null ? _field.activeZoneCount : 0;
             return $"blades={blades}; {Screen.width}x{Screen.height}; MSAA={msaa}; zones={zones}; " +

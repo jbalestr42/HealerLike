@@ -26,7 +26,7 @@ namespace HealerLike.Render.Grass
                 {
                     heading = _gustDirection;
                 }
-                else if (direction.sqrMagnitude > 1e-8f)
+                else if (direction.sqrMagnitude > 0.00000001f)
                 {
                     heading = direction.normalized;
                 }
@@ -36,6 +36,7 @@ namespace HealerLike.Render.Grass
                 {
                     lean *= 2f;
                 }
+
                 return new Vector4(heading.x, heading.y, Mathf.Max(0f, speed), lean);
             }
         }
@@ -45,10 +46,11 @@ namespace HealerLike.Render.Grass
         {
             Vector2 heading = new Vector2(towardTarget.x, towardTarget.z);
             float lengthSquared = heading.sqrMagnitude;
-            if (float.IsNaN(lengthSquared) || float.IsInfinity(lengthSquared) || lengthSquared < 1e-8f)
+            if (!float.IsFinite(lengthSquared) || lengthSquared < 0.00000001f)
             {
                 return;
             }
+
             _gustDirection = heading.normalized;
             _gustRemaining = GustSeconds;
         }

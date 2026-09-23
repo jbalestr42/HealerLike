@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Grass
@@ -42,6 +43,26 @@ public class HLGrassPaletteTests
 
         Assert.AreNotSame(_lookMaterial, _bladeMaterial);
         Assert.IsFalse(_lookMaterial.IsKeywordEnabled(HLGrassPalette.InstancedKeyword));
+    }
+
+    [Test]
+    public void GrassBladeMaterial_Asset_IsTheLookShaderWithGrassKeywordAndDepthEdgesOnly()
+    {
+        Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat");
+
+        Assert.AreEqual("HL/Look/Primitive", material.shader.name);
+        Assert.IsTrue(material.IsKeywordEnabled(HLGrassPalette.InstancedKeyword));
+        Assert.IsTrue(material.enableInstancing);
+        Assert.AreEqual(0f, material.GetFloat("_HLNormalEdges"));
+    }
+
+    [Test]
+    public void HealRingMaterial_Asset_IsTheRingShaderWithInstancing()
+    {
+        Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/HealRing.mat");
+
+        Assert.AreEqual(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrassRing.shader"), material.shader);
+        Assert.IsTrue(material.enableInstancing);
     }
 
     [Test]

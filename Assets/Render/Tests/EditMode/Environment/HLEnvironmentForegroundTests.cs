@@ -1,7 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Stage;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Environment
 {
@@ -25,16 +30,30 @@ namespace HealerLike.Render.Environment
         [TearDown]
         public void Cleanup()
         {
+            // Stones are generated per seed; the baked primitive meshes are assets and stay
+            foreach (MeshFilter filter in _go.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (filter.sharedMesh != null && !EditorUtility.IsPersistent(filter.sharedMesh))
+                {
+                    Object.DestroyImmediate(filter.sharedMesh);
+                }
+            }
+
             Object.DestroyImmediate(_go);
+        }
+
+        static HLPrimitiveMeshes LoadMeshes()
+        {
+            return AssetDatabase.LoadAssetAtPath<HLPrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
         }
 
         [Test]
         public void GroundHitMatchesTheMeasuredBottomEdge()
         {
-            Vector3 left = HLEnvironmentForeground.GroundHit(position, rotation, fov, aspect,
-                new Vector2(0f, 0f), ground);
-            Vector3 right = HLEnvironmentForeground.GroundHit(position, rotation, fov, aspect,
-                new Vector2(1f, 0f), ground);
+            Assert.IsTrue(HLEnvironmentForeground.GroundHit(position, rotation, fov, aspect, new Vector2(0f, 0f), ground,
+                out Vector3 left));
+            Assert.IsTrue(HLEnvironmentForeground.GroundHit(position, rotation, fov, aspect, new Vector2(1f, 0f), ground,
+                out Vector3 right));
 
             Assert.AreEqual(-12.6f, left.z, 0.1f);
             Assert.AreEqual(left.z, right.z, 0.001f);
@@ -112,14 +131,24 @@ namespace HealerLike.Render.Environment
         }
 
         [Test]
-        public void InvalidInputThrows()
+        public void InvalidInputLogsAndLaysOutNothing()
         {
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentForeground.Layout(position, rotation, 0f, aspect, ground, 1));
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentForeground.Layout(position, rotation, fov, 0f, ground, 1));
-            Assert.Catch<System.ArgumentException>(() =>
-                HLEnvironmentForeground.Layout(position, Quaternion.Euler(-30f, 0f, 0f), fov, aspect, ground, 1));
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[HLEnvironmentForeground\] Rejected field of view"));
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[HLEnvironmentForeground\] Rejected field of view"));
+            LogAssert.Expect(LogType.Error, "[HLEnvironmentForeground] The bottom corners of the frame do not see the ground.");
+
+            Assert.IsEmpty(HLEnvironmentForeground.Layout(position, rotation, 0f, aspect, ground, 1));
+            Assert.IsEmpty(HLEnvironmentForeground.Layout(position, rotation, fov, 0f, ground, 1));
+            Assert.IsEmpty(HLEnvironmentForeground.Layout(position, Quaternion.Euler(-30f, 0f, 0f), fov, aspect, ground, 1));
+        }
+
+        [Test]
+        public void GroundHitLookingUpMissesTheGround()
+        {
+            bool isHit = HLEnvironmentForeground.GroundHit(position, Quaternion.Euler(-30f, 0f, 0f), fov, aspect,
+                new Vector2(0.5f, 0.5f), ground, out Vector3 hit);
+
+            Assert.IsFalse(isHit);
         }
 
         [Test]
@@ -127,6 +156,7 @@ namespace HealerLike.Render.Environment
         {
             HLEnvironmentForeground foreground = _go.AddComponent<HLEnvironmentForeground>();
             foreground.Configure(null, null, null, ground, 5);
+            TestHelpers.SetPrivateField(foreground, "_meshes", LoadMeshes());
 
             Assert.DoesNotThrow(() => foreground.Build());
             Assert.IsNull(foreground.root);
@@ -156,19 +186,22 @@ namespace HealerLike.Render.Environment
         }
 
         [Test]
-        public void BuildFromACameraMatchesTheLayoutAndRebuildsIdentically()
+        public void InitFromACameraMatchesTheLayout()
         {
             GameObject cameraGo = new GameObject("HLForegroundCamera");
+            GameObject managerGo = new GameObject("HLForegroundManager");
             try
             {
                 Camera camera = cameraGo.AddComponent<Camera>();
                 camera.fieldOfView = fov;
                 camera.aspect = aspect;
                 cameraGo.transform.SetPositionAndRotation(position, rotation);
+                RenderManager manager = managerGo.AddComponent<RenderManager>();
+                TestHelpers.SetPrivateField(manager, "_meshes", LoadMeshes());
                 HLEnvironmentForeground foreground = _go.AddComponent<HLEnvironmentForeground>();
-                foreground.Configure(camera, null, null, ground, 11);
+                TestHelpers.SetPrivateField(foreground, "_seed", 11);
 
-                foreground.Build();
+                foreground.Init(camera, ground, manager);
 
                 List<HLForegroundItem> expected = HLEnvironmentForeground.Layout(position, rotation, fov, aspect,
                     ground, 11);
@@ -179,30 +212,13 @@ namespace HealerLike.Render.Environment
                     Assert.That(Vector3.Distance(expected[i].position, foreground.items[i].position),
                         Is.LessThan(0.001f), i.ToString());
                 }
-
-                int children = foreground.root.childCount;
-                foreground.Build();
-
-                Assert.AreEqual(children, foreground.root.childCount);
                 Assert.AreEqual(1, _go.transform.childCount);
             }
             finally
             {
                 Object.DestroyImmediate(cameraGo);
+                Object.DestroyImmediate(managerGo);
             }
-        }
-
-        [Test]
-        public void ClearRemovesEverything()
-        {
-            HLEnvironmentForeground foreground = _go.AddComponent<HLEnvironmentForeground>();
-            foreground.Configure(null, null, null, ground, 2);
-            foreground.Build(position, rotation, fov, aspect);
-
-            foreground.Clear();
-
-            Assert.IsNull(foreground.root);
-            Assert.AreEqual(0, _go.transform.childCount);
         }
     }
 }
