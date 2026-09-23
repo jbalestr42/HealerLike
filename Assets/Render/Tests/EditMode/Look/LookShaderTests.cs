@@ -176,18 +176,8 @@ public class LookShaderTests
         }
 
         Material material = Track(new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader")));
-        Mesh mesh = Track(new Mesh
-        {
-            vertices = new[]
-            {
-                new Vector3(-0.8f, -0.8f, 0f),
-                new Vector3(-0.8f, 0.8f, 0f),
-                new Vector3(0.8f, 0.8f, 0f),
-                new Vector3(0.8f, -0.8f, 0f)
-            },
-            triangles = new[] { 0, 1, 2, 0, 2, 3 },
-            normals = new[] { Vector3.back, Vector3.back, Vector3.back, Vector3.back }
-        });
+        // Built-in asset, not tracked: TearDown must not destroy it
+        Mesh mesh = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
         RenderTexture target = Track(new RenderTexture(16, 16, 0, RenderTextureFormat.ARGBFloat,
                                                        RenderTextureReadWrite.Linear));
         target.Create();
