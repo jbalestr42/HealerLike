@@ -42,7 +42,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a99ca9a8282a64d3fa1694fe1054f8b2, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.HLSpellVisualSink
-  styles: {fileID: 11400000, guid: eabe338c9be104258ab442776bc156f3, type: 2}
-  material: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  _looks: {fileID: 11400000, guid: 3f7bcc3db75d049a78cca2b5cf1fb20c, type: 2}
