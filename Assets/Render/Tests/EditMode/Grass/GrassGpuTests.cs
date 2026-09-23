@@ -23,7 +23,7 @@ namespace HealerLike.Render.Grass
             }
             try
             {
-                int kernel = compute.FindKernel("UpdateGrass");
+                int kernel = compute.FindKernel("HLUpdateGrass");
                 var layout = GrassLayout.Generate(1, 1, 1, Vector3.zero, 0.5f, 65);
                 for (int i = 0; i < layout.Length; i++) layout[i].positionYaw = new Vector4(i == 0 ? -2 : i == 1 ? 2 : 20, 0.505f, 0, 0);
                 var seedBuffer = Make(GraphicsBuffer.Target.Structured, 65, BladeSeed.Stride); seedBuffer.SetData(layout);

@@ -266,7 +266,7 @@ namespace HealerLike.Render.Grass
             _seeds.SetData(layout);
             _states = new GraphicsBuffer(GraphicsBuffer.Target.Structured, _bladeCount, BladeState.Stride);
             _visibleBlades = new GraphicsBuffer(GraphicsBuffer.Target.Append, _bladeCount, 4);
-            _kernel = _updateGrass.FindKernel("UpdateGrass");
+            _kernel = _updateGrass.FindKernel("HLUpdateGrass");
 
             Bounds bounds = key.CalculateBounds();
             _bladeDraw = new GrassDraw(_meshes.bladeCone, _lookMaterial, 0, bounds, gameObject.layer);
