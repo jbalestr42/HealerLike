@@ -62,7 +62,11 @@ namespace HealerLike.Render.Stage
                 Gradient previous = effect.GetGradient(name);
                 _restore.Add(() => RestoreGradient(effect, name, previous));
                 Gradient silent = new Gradient();
-                GradientColorKey[] colours = { new GradientColorKey(Color.black, 0f), new GradientColorKey(Color.black, 1f) };
+                GradientColorKey[] colours =
+                {
+                    new GradientColorKey(Color.black, 0f),
+                    new GradientColorKey(Color.black, 1f)
+                };
                 GradientAlphaKey[] alphas = { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(0f, 1f) };
                 silent.SetKeys(colours, alphas);
                 effect.SetGradient(name, silent);
