@@ -1,235 +1,322 @@
-using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+using HealerLike.Render.Creatures;
 using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Grass
 {
-    /// <summary>One flat battlefield and one camera. Borrow the zone owner's snapshot before LateUpdate.</summary>
+    // One flat battlefield and one camera. Borrow the zone owner's snapshot before LateUpdate.
     [DefaultExecutionOrder(10000)]
-    public sealed class HLGrassField : MonoBehaviour
+    public class HLGrassField : MonoBehaviour
     {
-        [SerializeField] GridManager grid;
-        [SerializeField] Transform ground;
-        [SerializeField] Camera gameplayCamera;
-        [SerializeField] ComputeShader updateGrass;
-        [SerializeField] Shader grassShader;
-        [SerializeField] Shader ringShader;
-        [SerializeField, Range(0, HLGrassLayout.MaxBudget)] int bladeBudget = HLGrassLayout.DefaultBudget;
-        [SerializeField] uint seed = 1;
-        [SerializeField, Range(.25f, 1f)] float bladeHeightScale = 1;
-        [SerializeField] Vector2 windDirection = new Vector2(1, 0.35f);
-        [SerializeField, Min(0)] float windSpeed = 1.2f;
-        [SerializeField, Range(0, 0.1f)] float windAmplitude = 0.065f;
-        [Tooltip("Used when no ground Renderer is present. World-space surface top, before root lift.")]
-        [SerializeField] float surfaceY = 0.5f;
-        GraphicsBuffer zones;
-        int zoneCount;
-        GraphicsBuffer seeds, states, visibleGrass, visibleCones, grassArgs, coneArgs, ringArgs;
-        Mesh bladeMesh, coneMesh, ringMesh;
-        Material bladeMaterial, coneMaterial, ringMaterial;
-        ComputeShader compute;
-        RenderParams bladeParams, coneParams, ringParams;
-        readonly Plane[] planes = new Plane[6];
-        readonly Vector4[] planeVectors = new Vector4[6];
-        Renderer groundRenderer;
-        int kernel, count, builtWidth, builtHeight, builtBudget;
-        uint builtSeed;
-        float builtSize, builtSurface;
-        Vector3 builtOrigin;
-        bool ready;
-        float gustRemaining;
-        Vector2 gustDirection;
-        /// <summary>Cosmetic 0.5-second response to a public projectile launch.</summary>
-        public void TriggerGust(Vector3 towardTarget)
+        public static readonly int BladeSides = 5;
+        public static readonly int MaxZones = 64;
+
+        [SerializeField] GridManager _grid;
+        [SerializeField] Transform _ground;
+        [SerializeField] Camera _gameplayCamera;
+        [SerializeField] ComputeShader _updateGrass;
+        [SerializeField] Material _lookMaterial;
+        [SerializeField] Shader _ringShader;
+        [SerializeField] int _bladeBudget = HLGrassLayout.DefaultBudget;
+        [SerializeField] uint _seed = 1;
+        [SerializeField] float _bladeHeightScale = 1f;
+        // World-space surface top used when the ground has no Renderer, before root lift
+        [SerializeField] float _surfaceY = 0.5f;
+
+        GraphicsBuffer _zones;
+        GraphicsBuffer _seeds;
+        GraphicsBuffer _states;
+        GraphicsBuffer _visibleBlades;
+        Mesh _ringMesh;
+        ComputeShader _compute;
+        Plane[] _planes = new Plane[6];
+        Vector4[] _planeVectors = new Vector4[6];
+        Renderer _groundRenderer;
+        int _kernel;
+        HLGrassBuildKey _builtKey;
+
+        [SerializeField] HLGrassWind _wind = new HLGrassWind();
+        public HLGrassWind wind { get { return _wind; } }
+
+        HLGrassDraw _bladeDraw;
+        public HLGrassDraw bladeDraw { get { return _bladeDraw; } }
+
+        HLGrassDraw _ringDraw;
+        public HLGrassDraw ringDraw { get { return _ringDraw; } }
+
+        int _zoneCount;
+        public int activeZoneCount { get { return _zoneCount; } }
+
+        int _bladeCount;
+        public int bladeCount { get { return _bladeCount; } }
+
+        bool _isReady;
+        public bool isReady { get { return _isReady; } }
+
+        public int bladeBudget
         {
-            Vector2 direction = new Vector2(towardTarget.x, towardTarget.z);
-            if (float.IsNaN(direction.sqrMagnitude) || float.IsInfinity(direction.sqrMagnitude) || direction.sqrMagnitude < 1e-8f) return;
-            gustDirection = direction.normalized; gustRemaining = 0.5f;
+            get { return _bladeBudget; }
+            set { _bladeBudget = Mathf.Clamp(value, 0, HLGrassLayout.MaxBudget); }
         }
-        public void AdvanceGust(float scaledSeconds)
+
+        // Presentation-only grass height; spike height, blade width and density stay unchanged
+        public float bladeHeightScale
         {
-            if (scaledSeconds >= 0 && !float.IsInfinity(scaledSeconds)) gustRemaining = Mathf.Max(0, gustRemaining - scaledSeconds);
-        }
-        public Vector4 Wind
-        {
-            get
-            {
-                Vector2 direction = gustRemaining > 0 ? gustDirection : windDirection.sqrMagnitude > 1e-8f ? windDirection.normalized : Vector2.right;
-                return new Vector4(direction.x, direction.y, Mathf.Max(0, windSpeed), Mathf.Clamp(windAmplitude, 0, 0.1f) * (gustRemaining > 0 ? 2 : 1));
-            }
-        }
-        void Update() => AdvanceGust(Time.deltaTime);
-        public int BladeCount => count;
-        public int ActiveZoneCount => zoneCount;
-        public bool IsReady => ready;
-        public int BladeBudget { get => bladeBudget; set => bladeBudget = Mathf.Clamp(value, 0, HLGrassLayout.MaxBudget); }
-        /// <summary>Presentation-only strip height; cone height, blade width and density stay unchanged.</summary>
-        public float BladeHeightScale
-        {
-            get => bladeHeightScale;
+            get { return _bladeHeightScale; }
             set
             {
-                bladeHeightScale = HLGrassLayout.Finite(value) ? Mathf.Clamp(value, .25f, 1f) : 1f;
-                if (bladeMaterial) bladeMaterial.SetFloat("_HL_BladeHeightScale", bladeHeightScale);
+                _bladeHeightScale = ClampHeightScale(value);
+                if (_bladeDraw != null)
+                {
+                    _bladeDraw.properties.SetFloat("_HL_BladeHeightScale", _bladeHeightScale);
+                }
             }
         }
 
-        public void Initialize(GridManager assignedGrid, Transform assignedGround, Camera camera,
-            GraphicsBuffer zoneBuffer, int zoneCapacity)
+        public void Init(GridManager grid, Transform ground, Camera gameplayCamera, GraphicsBuffer zoneBuffer, int zoneCapacity)
         {
-            if (zoneBuffer == null || zoneCapacity < 1 || zoneCapacity > 64 || zoneCapacity > zoneBuffer.count || zoneBuffer.stride != HLZone.Stride)
-                throw new ArgumentException("Borrow a live zone buffer with the frozen 32-byte stride and capacity 1..64.");
+            bool isCapacityValid = zoneCapacity >= 1 && zoneCapacity <= MaxZones;
+            if (zoneBuffer == null || !isCapacityValid || zoneCapacity > zoneBuffer.count || zoneBuffer.stride != HLZone.Stride)
+            {
+                Debug.LogError("[HLGrassField] Borrow a live zone buffer with the 32-byte stride and capacity 1..64.");
+                return;
+            }
+
             Release();
-            grid = assignedGrid; ground = assignedGround; gameplayCamera = camera;
-            groundRenderer = ground != null ? ground.GetComponent<Renderer>() : null;
+            _grid = grid;
+            _ground = ground;
+            _gameplayCamera = gameplayCamera;
+            _groundRenderer = ground != null ? ground.GetComponent<Renderer>() : null;
             SetZoneSnapshot(zoneBuffer, 0);
         }
 
-        /// <summary>Stage bridge calls after the registry publishes, including count zero and owner replacement.
-        /// The same buffer/count must be globally published by the zone owner for the ring draw.</summary>
-        public void SetZoneSnapshot(GraphicsBuffer buffer, int validCount)
-        {
-            if (validCount < 0 || validCount > 64 || (buffer == null && validCount != 0) ||
-                (buffer != null && (buffer.stride != HLZone.Stride || validCount > buffer.count)))
-                throw new ArgumentOutOfRangeException(nameof(validCount));
-            zones = buffer; zoneCount = validCount;
-        }
-        public void SetZoneCount(int validCount) => SetZoneSnapshot(zones, validCount);
-
         void OnEnable()
         {
-            groundRenderer = ground != null ? ground.GetComponent<Renderer>() : null;
+            _groundRenderer = _ground != null ? _ground.GetComponent<Renderer>() : null;
             RenderPipelineManager.beginCameraRendering -= BeginCameraRendering;
             RenderPipelineManager.beginCameraRendering += BeginCameraRendering;
         }
-        void BeginCameraRendering(ScriptableRenderContext context, Camera camera)
+
+        void Update()
         {
-            if (camera != gameplayCamera || !isActiveAndEnabled || !ready || count == 0 ||
-                zones == null || !zones.IsValid()) return;
-            // Indirect submissions last for one render. Queue them for the camera consuming them,
-            // including Editor repaints that do not run another player-loop LateUpdate.
-            bladeParams.camera = coneParams.camera = ringParams.camera = camera;
-            Graphics.RenderMeshIndirect(in bladeParams, bladeMesh, grassArgs);
-            Graphics.RenderMeshIndirect(in coneParams, coneMesh, coneArgs);
-            if (zoneCount > 0) Graphics.RenderMeshIndirect(in ringParams, ringMesh, ringArgs);
-        }
-        void LateUpdate()
-        {
-            if (grid == null || ground == null || gameplayCamera == null || zones == null || !zones.IsValid()) return;
-            if (grid.width <= 0 || grid.height <= 0 || grid.cells == null || grid.cells.LongLength != (long)grid.width * grid.height) return;
-            float top = groundRenderer != null ? groundRenderer.bounds.max.y : surfaceY;
-            if (ready && (builtWidth != grid.width || builtHeight != grid.height || builtSize != grid.size ||
-                builtOrigin != grid.transform.position || builtSurface != top || builtSeed != seed || builtBudget != bladeBudget)) ReleaseOwned();
-            if (!ready && !Build(top)) return;
-            if (count == 0) return;
-            GeometryUtility.CalculateFrustumPlanes(gameplayCamera, planes);
-            for (int i = 0; i < 6; i++) planeVectors[i] = new Vector4(planes[i].normal.x, planes[i].normal.y, planes[i].normal.z, planes[i].distance);
-            compute.SetVectorArray("_HL_FrustumPlanes", planeVectors);
-            compute.SetFloat("_HL_Time", Time.time);
-            compute.SetVector("_HL_Wind", Wind);
-            compute.SetBuffer(kernel, "_HL_Zones", zones);
-            compute.SetInt("_HL_ZoneCount", zoneCount);
-            visibleGrass.SetCounterValue(0); visibleCones.SetCounterValue(0);
-            compute.Dispatch(kernel, (count + 63) / 64, 1, 1);
-            GraphicsBuffer.CopyCount(visibleGrass, grassArgs, 4);
-            GraphicsBuffer.CopyCount(visibleCones, coneArgs, 4);
+            _wind.Advance(Time.deltaTime);
         }
 
-        bool Build(float top)
+        void LateUpdate()
+        {
+            if (!CanUpdate())
+            {
+                return;
+            }
+
+            HLGrassBuildKey key = new HLGrassBuildKey(_grid, SurfaceTop(), _seed, _bladeBudget);
+            if (_isReady && !key.Matches(_builtKey))
+            {
+                ReleaseOwned();
+            }
+            if (!_isReady && !Build(key))
+            {
+                return;
+            }
+            if (_bladeCount == 0)
+            {
+                return;
+            }
+
+            GeometryUtility.CalculateFrustumPlanes(_gameplayCamera, _planes);
+            for (int i = 0; i < _planes.Length; i++)
+            {
+                Vector3 normal = _planes[i].normal;
+                _planeVectors[i] = new Vector4(normal.x, normal.y, normal.z, _planes[i].distance);
+            }
+            _compute.SetVectorArray("_HL_FrustumPlanes", _planeVectors);
+            _compute.SetFloat("_HL_Time", Time.time);
+            _compute.SetVector("_HL_Wind", _wind.current);
+            _compute.SetBuffer(_kernel, "_HL_Zones", _zones);
+            _compute.SetInt("_HL_ZoneCount", _zoneCount);
+            _visibleBlades.SetCounterValue(0);
+            _compute.Dispatch(_kernel, (_bladeCount + 63) / 64, 1, 1);
+            GraphicsBuffer.CopyCount(_visibleBlades, _bladeDraw.arguments, 4);
+        }
+
+        void OnDisable()
+        {
+            RenderPipelineManager.beginCameraRendering -= BeginCameraRendering;
+            _wind.ClearGust();
+            ReleaseOwned();
+        }
+
+        void OnDestroy()
+        {
+            RenderPipelineManager.beginCameraRendering -= BeginCameraRendering;
+            Release();
+        }
+
+        public void TriggerGust(Vector3 towardTarget)
+        {
+            _wind.TriggerGust(towardTarget);
+        }
+
+        // The stage bridge calls this after the registry publishes, including count zero and owner replacement.
+        // The zone owner publishes the same buffer and count globally for the ring draw.
+        public void SetZoneSnapshot(GraphicsBuffer buffer, int validCount)
+        {
+            bool isCountValid = validCount >= 0 && validCount <= MaxZones;
+            bool isBufferValid = buffer == null ? validCount == 0 : buffer.stride == HLZone.Stride && validCount <= buffer.count;
+            if (!isCountValid || !isBufferValid)
+            {
+                Debug.LogError($"[HLGrassField] Rejected zone snapshot with count {validCount}.");
+                return;
+            }
+            _zones = buffer;
+            _zoneCount = validCount;
+        }
+
+        public void SetZoneCount(int validCount)
+        {
+            SetZoneSnapshot(_zones, validCount);
+        }
+
+        public void Release()
+        {
+            ReleaseOwned();
+            _zones = null;
+            _zoneCount = 0;
+        }
+
+        bool CanUpdate()
+        {
+            if (_grid == null || _ground == null || _gameplayCamera == null || _zones == null || !_zones.IsValid())
+            {
+                return false;
+            }
+            if (_grid.width <= 0 || _grid.height <= 0 || _grid.cells == null)
+            {
+                return false;
+            }
+            return _grid.cells.LongLength == (long)_grid.width * _grid.height;
+        }
+
+        float SurfaceTop()
+        {
+            return _groundRenderer != null ? _groundRenderer.bounds.max.y : _surfaceY;
+        }
+
+        void BeginCameraRendering(ScriptableRenderContext context, Camera camera)
+        {
+            if (camera != _gameplayCamera || !isActiveAndEnabled || !_isReady || _bladeCount == 0)
+            {
+                return;
+            }
+            if (_zones == null || !_zones.IsValid())
+            {
+                return;
+            }
+
+            // Queued here rather than in LateUpdate so Editor repaints without a player-loop tick still draw
+            _bladeDraw.Submit(camera);
+            if (_zoneCount > 0)
+            {
+                _ringDraw.Submit(camera);
+            }
+        }
+
+        bool Build(HLGrassBuildKey key)
+        {
+            HLBladeSeed[] layout = CanBuild() ? key.GenerateLayout() : null;
+            if (layout == null)
+            {
+                Debug.LogError("[HLGrassField] Grass disabled: it needs compute, indirect draws, its assets and a finite grid.", this);
+                enabled = false;
+                return false;
+            }
+
+            _builtKey = key;
+            _bladeCount = layout.Length;
+            _isReady = true;
+            if (_bladeCount == 0)
+            {
+                return true;
+            }
+
+            _seeds = new GraphicsBuffer(GraphicsBuffer.Target.Structured, _bladeCount, HLBladeSeed.Stride);
+            _seeds.SetData(layout);
+            _states = new GraphicsBuffer(GraphicsBuffer.Target.Structured, _bladeCount, HLBladeState.Stride);
+            _visibleBlades = new GraphicsBuffer(GraphicsBuffer.Target.Append, _bladeCount, 4);
+
+            Bounds bounds = key.CalculateBounds();
+            HLPrimitiveMeshes.Retain();
+            Mesh bladeMesh = HLPrimitiveMeshes.Get(HLPrimitive.Cone, BladeSides, 2);
+            _bladeDraw = new HLGrassDraw(bladeMesh, HLGrassPalette.CreateBladeMaterial(_lookMaterial), 0, bounds, gameObject.layer);
+            _bladeDraw.properties.SetBuffer("_HL_BladeSeeds", _seeds);
+            _bladeDraw.properties.SetBuffer("_HL_BladeStates", _states);
+            _bladeDraw.properties.SetBuffer("_HL_VisibleBladeIDs", _visibleBlades);
+            _bladeDraw.properties.SetFloat("_HL_BladeHeightScale", ClampHeightScale(_bladeHeightScale));
+            HLGrassPalette.Apply(_bladeDraw.properties);
+
+            _ringMesh = HLGrassRing.CreateAnnulus();
+            Material ringMaterial = new Material(_ringShader);
+            ringMaterial.name = "HLGrassRingRuntime";
+            ringMaterial.enableInstancing = true;
+            _ringDraw = new HLGrassDraw(_ringMesh, ringMaterial, (uint)MaxZones, bounds, gameObject.layer);
+            _ringDraw.properties.SetFloat("_HL_SurfaceY", key.surfaceY);
+            _ringDraw.properties.SetVector("_HL_FieldRect", key.FieldRect());
+
+            _compute = Instantiate(_updateGrass);
+            _kernel = _compute.FindKernel("HLUpdateGrass");
+            _compute.SetInt("_HL_BladeCount", _bladeCount);
+            _compute.SetBuffer(_kernel, "_HL_BladeSeeds", _seeds);
+            _compute.SetBuffer(_kernel, "_HL_BladeStates", _states);
+            _compute.SetBuffer(_kernel, "_HL_VisibleBlades", _visibleBlades);
+            return true;
+        }
+
+        bool CanBuild()
         {
             if (!SystemInfo.supportsComputeShaders || !SystemInfo.supportsInstancing || !SystemInfo.supportsIndirectArgumentsBuffer)
             {
-                Debug.LogWarning("HLGrassField disabled: compute, instancing and indirect arguments are required.", this);
-                enabled = false; return false;
+                return false;
             }
-            if (updateGrass == null || grassShader == null || ringShader == null)
-            {
-                Debug.LogWarning("HLGrassField requires its compute, grass and ring shader assets; assign them in the stage.", this);
-                enabled = false; return false;
-            }
-            try
-            {
-                var layout = HLGrassLayout.Generate(grid.width, grid.height, grid.size, grid.transform.position, top, bladeBudget, seed);
-                count = layout.Length;
-                builtWidth = grid.width; builtHeight = grid.height; builtSize = grid.size;
-                builtOrigin = grid.transform.position; builtSurface = top; builtSeed = seed; builtBudget = bladeBudget;
-                if (count == 0) { ready = true; return true; }
-                Bounds bounds = HLGrassBounds.Calculate(grid.width, grid.height, grid.size, builtOrigin, top);
-                seeds = new GraphicsBuffer(GraphicsBuffer.Target.Structured, count, HLBladeSeed.Stride); seeds.SetData(layout);
-                states = new GraphicsBuffer(GraphicsBuffer.Target.Structured, count, HLBladeState.Stride);
-                visibleGrass = new GraphicsBuffer(GraphicsBuffer.Target.Append, count, 4);
-                visibleCones = new GraphicsBuffer(GraphicsBuffer.Target.Append, count, 4);
-                bladeMesh = HLGrassBlade.CreateStrip(); coneMesh = HLGrassCone.CreateCone(); ringMesh = HLGrassRing.CreateAnnulus();
-                grassArgs = CreateArguments(bladeMesh, 0); coneArgs = CreateArguments(coneMesh, 0); ringArgs = CreateArguments(ringMesh, 64);
-                bladeMaterial = CreateGrassMaterial(false); coneMaterial = CreateGrassMaterial(true);
-                ringMaterial = new Material(ringShader) { name = "HLGrassRingRuntime", enableInstancing = true };
-                bladeParams = Parameters(bladeMaterial, bounds, visibleGrass);
-                coneParams = Parameters(coneMaterial, bounds, visibleCones);
-                ringParams = Parameters(ringMaterial, bounds, null);
-                ringParams.matProps.SetFloat("_HL_SurfaceY", top);
-                ringParams.matProps.SetVector("_HL_FieldRect", new Vector4(builtOrigin.x - grid.width * grid.size / 2,
-                    builtOrigin.z - grid.height * grid.size / 2, builtOrigin.x + grid.width * grid.size / 2, builtOrigin.z + grid.height * grid.size / 2));
-                compute = Instantiate(updateGrass); kernel = compute.FindKernel("HLUpdateGrass");
-                compute.SetInt("_HL_BladeCount", count);
-                compute.SetBuffer(kernel, "_HL_BladeSeeds", seeds); compute.SetBuffer(kernel, "_HL_BladeStates", states);
-                compute.SetBuffer(kernel, "_HL_VisibleGrass", visibleGrass); compute.SetBuffer(kernel, "_HL_VisibleCones", visibleCones);
-                ready = true; return true;
-            }
-            catch (Exception e) { ReleaseOwned(); Debug.LogException(e, this); enabled = false; return false; }
+            return _updateGrass != null && _lookMaterial != null && _ringShader != null;
         }
-        Material CreateGrassMaterial(bool cone)
+
+        static float ClampHeightScale(float value)
         {
-            var material = new Material(grassShader) { name = cone ? "HLGrassConeRuntime" : "HLGrassBladeRuntime", enableInstancing = true };
-            material.SetFloat("_HL_BladeHeightScale", HLGrassLayout.Finite(bladeHeightScale) ? Mathf.Clamp(bladeHeightScale, .25f, 1f) : 1f);
-            material.SetFloat("_HL_Cone", cone ? 1 : 0); material.SetFloat("_HL_Cull", cone ? 2 : 0);
-            material.SetVector("_HL_InstanceTint", Vector4.one);
-            SetColor(material, "_HL_RootColor", 43, 110, 87); SetColor(material, "_HL_MidColor", 101, 159, 89);
-            SetColor(material, "_HL_TipColor", 169, 204, 96); SetColor(material, "_HL_HealColor", 198, 242, 74);
-            SetColor(material, "_HL_SlateRoot", 58, 66, 87); SetColor(material, "_HL_SlateTip", 74, 84, 104);
-            return material;
+            return HLGrassLayout.Finite(value) ? Mathf.Clamp(value, 0.25f, 1f) : 1f;
         }
-        static void SetColor(Material material, string property, byte r, byte g, byte b)
-        {
-            Color color = new Color32(r, g, b, 255);
-            material.SetVector(property, QualitySettings.activeColorSpace == ColorSpace.Linear ? color.linear : color);
-        }
-        RenderParams Parameters(Material material, Bounds bounds, GraphicsBuffer visible)
-        {
-            var properties = new MaterialPropertyBlock();
-            if (visible != null)
-            {
-                properties.SetBuffer("_HL_BladeSeeds", seeds); properties.SetBuffer("_HL_BladeStates", states);
-                properties.SetBuffer("_HL_VisibleBladeIDs", visible);
-            }
-            return new RenderParams(material) { camera = gameplayCamera, worldBounds = bounds, matProps = properties,
-                layer = gameObject.layer, shadowCastingMode = ShadowCastingMode.Off, receiveShadows = true,
-                lightProbeUsage = LightProbeUsage.Off, reflectionProbeUsage = ReflectionProbeUsage.Off };
-        }
-        static GraphicsBuffer CreateArguments(Mesh mesh, uint instances)
-        {
-            var buffer = new GraphicsBuffer(GraphicsBuffer.Target.IndirectArguments, 1, GraphicsBuffer.IndirectDrawIndexedArgs.size);
-            buffer.SetData(new[] { new GraphicsBuffer.IndirectDrawIndexedArgs { indexCountPerInstance = mesh.GetIndexCount(0),
-                instanceCount = instances, startIndex = mesh.GetIndexStart(0), baseVertexIndex = (uint)mesh.GetBaseVertex(0), startInstance = 0 } });
-            return buffer;
-        }
-        void OnDisable() { RenderPipelineManager.beginCameraRendering -= BeginCameraRendering; gustRemaining = 0; ReleaseOwned(); }
-        void OnDestroy() { RenderPipelineManager.beginCameraRendering -= BeginCameraRendering; Release(); }
-        public void Release() { ReleaseOwned(); zones = null; zoneCount = 0; }
+
         void ReleaseOwned()
         {
-            ready = false; count = 0;
-            seeds?.Dispose(); seeds = null; states?.Dispose(); states = null;
-            visibleGrass?.Dispose(); visibleGrass = null; visibleCones?.Dispose(); visibleCones = null;
-            grassArgs?.Dispose(); grassArgs = null; coneArgs?.Dispose(); coneArgs = null; ringArgs?.Dispose(); ringArgs = null;
-            DisposeObject(bladeMesh); bladeMesh = null; DisposeObject(coneMesh); coneMesh = null; DisposeObject(ringMesh); ringMesh = null;
-            DisposeObject(bladeMaterial); bladeMaterial = null; DisposeObject(coneMaterial); coneMaterial = null;
-            DisposeObject(ringMaterial); ringMaterial = null; DisposeObject(compute); compute = null;
+            _isReady = false;
+            _bladeCount = 0;
+            _seeds = DisposeBuffer(_seeds);
+            _states = DisposeBuffer(_states);
+            _visibleBlades = DisposeBuffer(_visibleBlades);
+            if (_bladeDraw != null)
+            {
+                _bladeDraw.Release();
+                _bladeDraw = null;
+                HLPrimitiveMeshes.Release();
+            }
+            if (_ringDraw != null)
+            {
+                _ringDraw.Release();
+                _ringDraw = null;
+            }
+            HLPrimitiveMeshes.DestroyOwned(_ringMesh);
+            HLPrimitiveMeshes.DestroyOwned(_compute);
+            _ringMesh = null;
+            _compute = null;
         }
-        static void DisposeObject(UnityEngine.Object value)
+
+        static GraphicsBuffer DisposeBuffer(GraphicsBuffer buffer)
         {
-            if (value == null) return;
-            if (Application.isPlaying) Destroy(value); else DestroyImmediate(value);
+            if (buffer != null)
+            {
+                buffer.Dispose();
+            }
+            return null;
         }
     }
 }

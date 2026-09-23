@@ -22,7 +22,7 @@ namespace HealerLike.Render.Zones
                 Assert.AreEqual(1, owner.Count); Assert.AreEqual(5, owner.Snapshot[0].kind);
                 Assert.AreEqual(4, owner.Snapshot[0].radius); Assert.AreEqual(1073741824u, owner.Snapshot[0].reserved);
                 Assert.AreEqual(source.transform.position, owner.Snapshot[0].position);
-                Assert.AreEqual(1, field.Wind.y); Assert.AreEqual(0.13f, field.Wind.w, 0.0001f);
+                Assert.AreEqual(1, field.wind.current.y); Assert.AreEqual(0.13f, field.wind.current.w, 0.0001f);
                 Object.DestroyImmediate(shot); owner.PublishFrame(0.2f); Assert.AreEqual(1, owner.Count);
                 owner.PublishFrame(0.2f); Assert.AreEqual(0, owner.Count);
             }
