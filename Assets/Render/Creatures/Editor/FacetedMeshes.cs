@@ -75,11 +75,11 @@ namespace HealerLike.Render.Creatures
             return new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0f);
         }
 
-        // Tall leaf with a diamond section: a narrow base cap, widest low, a pointed tip. One unit on each axis.
+        // Tall leaf with a diamond section: widest at the base cap, tapering to a sharp tip. One unit on each axis.
         public static Mesh CreateLeaf()
         {
-            float[] heights = { -0.5f, -0.2f, 0.15f, 0.5f };
-            float[] widths = { 0.55f, 1f, 0.7f, 0f };
+            float[] heights = { -0.5f, -0.1f, 0.2f, 0.5f };
+            float[] widths = { 1f, 0.8f, 0.5f, 0f };
             List<Vector3> corners = new List<Vector3>();
             for (int level = 0; level < heights.Length - 1; level++)
             {
