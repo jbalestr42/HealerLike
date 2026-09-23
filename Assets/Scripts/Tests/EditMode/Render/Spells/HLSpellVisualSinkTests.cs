@@ -250,7 +250,7 @@ namespace HealerLike.Render.Spells
         public void KeyIsTargetAndFactoryNotSourceOrSignature()
         {
             sink.SetStatus(null, target, factory, 1, 0, 4, HLClockKind.Simulation);
-            HLSpellEffect first = sink.GetStatus(target, factory);
+            GameObject first = sink.GetStatus(target, factory);
             sink.SetStatus(other, target, factory, 3, 2, 4, HLClockKind.Realtime);
             Assert.AreSame(first, sink.GetStatus(target, factory));
             Assert.AreEqual(3, first.GetComponentInChildren<HLSpellEffect>().Stacks);

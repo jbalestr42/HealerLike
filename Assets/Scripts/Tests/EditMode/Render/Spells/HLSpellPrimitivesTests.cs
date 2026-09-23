@@ -104,7 +104,7 @@ namespace HealerLike.Render.Spells
                 first.ShowImpact(null, b, HLResourceKind.Health, -1, false);
                 Mesh torus = HLSpellPrimitives.Torus;
                 Mesh cone = HLSpellPrimitives.Cone;
-                Renderer fallback = a.GetComponentInChildren<Renderer>().sharedMaterial;
+                Material fallback = a.GetComponentInChildren<Renderer>().sharedMaterial;
                 DestroyHost(a);
                 Assert.IsTrue(torus);
                 Assert.IsTrue(cone);
