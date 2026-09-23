@@ -22,14 +22,13 @@ namespace HealerLike.Render.Creatures
         [FormerlySerializedAs("cellSize")]
         [SerializeField] float _cellSize = 1f;
 
-        HLRenderRegistry _injectedRegistry;
+        HLRenderRegistry _registry;
         HLRenderRegistry _registeredRegistry;
-        bool _injected;
+        IHLSpellVisualSink _sink;
         GameObject _registeredSource;
         HLResourceOutcomeObserver _resourceObserver;
         HLStatusObserver _statusObserver;
         BuffManager _boundManager;
-        bool _isListening;
 
         public HLCreatureRig rig { get; private set; }
 
@@ -98,7 +97,13 @@ namespace HealerLike.Render.Creatures
         // The view prefab carries recipe, material and meshes, and anchors the body on itself
         public void Init(Character owner, RenderManager manager)
         {
-            if (!_meshes && manager)
+            if (owner == null || manager == null)
+            {
+                Debug.LogError("[HLCharacterView] Init needs the character and the RenderManager.");
+                return;
+            }
+
+            if (!_meshes)
             {
                 _meshes = manager.meshes;
             }
@@ -106,42 +111,13 @@ namespace HealerLike.Render.Creatures
             StopObserving();
             Unregister();
             _character = owner;
+            _registry = manager.registry;
+            _sink = manager.spellSink;
             if (!_visualAnchor)
             {
                 _visualAnchor = transform;
             }
 
-            _injectedRegistry = manager ? manager.registry : null;
-            _injected = true;
-            BuildAndRegister();
-            ObserveResources();
-        }
-
-        // The stage wiring still binds through here until the manager creates the view (D2)
-        public void Bind(Character owner, HLCreatureRecipe data, Transform anchor, Material sharedMaterial,
-            HLRenderRegistry registry, float size = 1f)
-        {
-            StopObserving();
-            Unregister();
-            bool hasChanged = _recipe != data || _visualAnchor != anchor || _material != sharedMaterial
-                || _cellSize != size;
-            if (hasChanged)
-            {
-                if (rig != null)
-                {
-                    rig.Dispose();
-                }
-
-                rig = null;
-            }
-
-            _character = owner;
-            _recipe = data;
-            _visualAnchor = anchor;
-            _material = sharedMaterial;
-            _cellSize = size;
-            _injectedRegistry = registry;
-            _injected = true;
             BuildAndRegister();
             ObserveResources();
         }
@@ -155,21 +131,10 @@ namespace HealerLike.Render.Creatures
 
             if (!_resourceObserver)
             {
-                _resourceObserver = _character.GetComponent<HLResourceOutcomeObserver>();
+                _resourceObserver = HLResourceOutcomeObserver.Ensure(_character.gameObject);
             }
 
-            if (!_resourceObserver)
-            {
-                _resourceObserver = _character.gameObject.AddComponent<HLResourceOutcomeObserver>();
-            }
-
-            _resourceObserver.Bind(null, _character.mana, _injectedRegistry, _injected);
-            if (!_isListening)
-            {
-                HLResourceOutcomeObserver.Outcome += OnOutcome;
-                _isListening = true;
-            }
-
+            _resourceObserver.Bind(null, _character.mana, _sink, _registry);
             if (_character.buffManager && _boundManager != _character.buffManager)
             {
                 if (!_statusObserver)
@@ -182,18 +147,8 @@ namespace HealerLike.Render.Creatures
                     _statusObserver = gameObject.AddComponent<HLStatusObserver>();
                 }
 
-                IHLSpellVisualSink sink = _injected && _injectedRegistry != null ? _injectedRegistry.spellSink : null;
-                _statusObserver.Bind(_character.buffManager, sink);
+                _statusObserver.Bind(_character.buffManager, _sink);
                 _boundManager = _character.buffManager;
-            }
-        }
-
-        void OnOutcome(GameObject source, GameObject owner, HLResourceKind kind, float amount, bool critical)
-        {
-            // Positive health already arrives once through the heal registry, and mana is never a heal gesture
-            if (_character && source == _character.gameObject && kind == HLResourceKind.Health && amount < 0f)
-            {
-                Cast(owner);
             }
         }
 
@@ -210,15 +165,9 @@ namespace HealerLike.Render.Creatures
 
         void StopObserving()
         {
-            if (_isListening)
-            {
-                HLResourceOutcomeObserver.Outcome -= OnOutcome;
-            }
-
-            _isListening = false;
             if (_resourceObserver)
             {
-                _resourceObserver.Bind(null, null, _injectedRegistry, _injected);
+                _resourceObserver.Bind(null, null, _sink, _registry);
             }
 
             if (_statusObserver)
@@ -253,12 +202,10 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
-            // HLRenderRegistry.current stays the fallback until the manager hands the registry through Init (D2)
-            HLRenderRegistry registry = _injected ? _injectedRegistry : HLRenderRegistry.current;
-            if (_registeredRegistry != registry)
+            if (_registeredRegistry != _registry)
             {
                 Unregister();
-                _registeredRegistry = registry;
+                _registeredRegistry = _registry;
                 _registeredSource = _character.gameObject;
                 if (_registeredRegistry != null)
                 {
@@ -280,9 +227,10 @@ namespace HealerLike.Render.Creatures
 
         #region IHLHealVisualSink
 
+        // The registry reports every health change the character caused, heals and damage both gesture
         public void OnHealResolved(GameObject target, float value, bool critical)
         {
-            if (value <= 0f || !target || !float.IsFinite(value))
+            if (value == 0f || !target || !float.IsFinite(value))
             {
                 return;
             }
@@ -297,14 +245,6 @@ namespace HealerLike.Render.Creatures
         public bool BeginDelivery(int token, HLDeliveryStyle style, Transform projectile, Vector3 end)
         {
             return isActiveAndEnabled && rig != null && rig.BeginDelivery(token, style, projectile, end);
-        }
-
-        public void UpdateDelivery(int token, Vector3 position)
-        {
-            if (rig != null)
-            {
-                rig.UpdateDelivery(token, position);
-            }
         }
 
         public void ContactDelivery(int token, Vector3 position, GameObject target)

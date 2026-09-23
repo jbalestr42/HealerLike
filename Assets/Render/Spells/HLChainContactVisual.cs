@@ -22,15 +22,10 @@ namespace HealerLike.Render.Spells
             _sink = manager.spellSink;
         }
 
-        // Called by the projectile, the sink comes from the manager or, on the old stage path, from the registry
+        // Called by the projectile after the manager handed the sink
         public override void Init(GameObject source)
         {
-            HLSpellVisualSink sink = _sink;
-            if (sink == null && HLRenderRegistry.current != null)
-            {
-                sink = HLRenderRegistry.current.spellSink as HLSpellVisualSink;
-            }
-            Bind(projectile != null ? projectile : GetComponent<Projectile>(), sink);
+            Bind(projectile != null ? projectile : GetComponent<Projectile>(), _sink);
         }
 
         void OnDisable()

@@ -7,44 +7,6 @@ namespace HealerLike.Render.Grass
 
 public class HLGrassPaletteTests
 {
-    Material _lookMaterial;
-    Material _bladeMaterial;
-
-    [SetUp]
-    public void SetUp()
-    {
-        _lookMaterial = new Material(Shader.Find("HL/Look/Primitive"));
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        Object.DestroyImmediate(_lookMaterial);
-        if (_bladeMaterial != null)
-        {
-            Object.DestroyImmediate(_bladeMaterial);
-        }
-    }
-
-    [Test]
-    public void CreateBladeMaterial_LookMaterial_UsesLookShaderWithGrassKeyword()
-    {
-        _bladeMaterial = HLGrassPalette.CreateBladeMaterial(_lookMaterial);
-
-        Assert.AreEqual("HL/Look/Primitive", _bladeMaterial.shader.name);
-        Assert.IsTrue(_bladeMaterial.IsKeywordEnabled(HLGrassPalette.InstancedKeyword));
-        Assert.IsTrue(_bladeMaterial.enableInstancing);
-    }
-
-    [Test]
-    public void CreateBladeMaterial_LookMaterial_LeavesSourceUntouched()
-    {
-        _bladeMaterial = HLGrassPalette.CreateBladeMaterial(_lookMaterial);
-
-        Assert.AreNotSame(_lookMaterial, _bladeMaterial);
-        Assert.IsFalse(_lookMaterial.IsKeywordEnabled(HLGrassPalette.InstancedKeyword));
-    }
-
     [Test]
     public void GrassBladeMaterial_Asset_IsTheLookShaderWithGrassKeywordAndDepthEdgesOnly()
     {

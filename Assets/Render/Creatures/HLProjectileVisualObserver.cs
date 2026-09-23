@@ -9,9 +9,6 @@ namespace HealerLike.Render.Creatures
     // Signals begin, contact and end to the source's view, which follows the projectile itself
     public class HLProjectileVisualObserver : AProjectileBehaviour
     {
-        // removed in D2: the stage copies have no manager to hand out tokens
-        static int _nextToken;
-
         [FormerlySerializedAs("presentation")]
         [SerializeField] HLGestureKind _presentation = HLGestureKind.Attack;
         [FormerlySerializedAs("deliveryStyle")]
@@ -163,19 +160,10 @@ namespace HealerLike.Render.Creatures
             }
         }
 
+        // Zero means no delivery, a projectile the manager did not set up draws no gesture
         int NextToken()
         {
-            if (_manager)
-            {
-                return _manager.NextDeliveryToken();
-            }
-
-            if (++_nextToken == 0)
-            {
-                ++_nextToken;
-            }
-
-            return _nextToken;
+            return _manager ? _manager.NextDeliveryToken() : 0;
         }
 
         void HideRenderers()

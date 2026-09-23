@@ -21,11 +21,6 @@ namespace HealerLike.Render.Grass
         // World-space surface top used when the ground has no Renderer, before root lift
         [SerializeField] float _surfaceY = 0.5f;
 
-        // Stage scene wiring, removed in D2
-        [SerializeField] GridManager _grid;
-        [SerializeField] Transform _ground;
-        [SerializeField] Camera _gameplayCamera;
-        [SerializeField] Shader _ringShader;
 
         GraphicsBuffer _zones;
         GraphicsBuffer _seeds;
@@ -33,17 +28,12 @@ namespace HealerLike.Render.Grass
         GraphicsBuffer _visibleBlades;
         Plane[] _planes = new Plane[6];
         Vector4[] _planeVectors = new Vector4[6];
-        Renderer _groundRenderer;
+        Camera _gameplayCamera;
         int _kernel;
         HLGrassBuildKey _builtKey;
         Rect _area;
         float _cellSize;
         bool _isInitialized;
-
-        // Runtime copies for the stage scene, removed in D2
-        HLPrimitiveMeshes _stageMeshes;
-        Material _stageBladeMaterial;
-        Material _stageRingMaterial;
 
         [SerializeField] HLGrassWind _wind = new HLGrassWind();
         public HLGrassWind wind { get { return _wind; } }
@@ -113,7 +103,6 @@ namespace HealerLike.Render.Grass
 
         void OnEnable()
         {
-            _groundRenderer = _ground != null ? _ground.GetComponent<Renderer>() : null;
             RenderPipelineManager.beginCameraRendering -= BeginCameraRendering;
             RenderPipelineManager.beginCameraRendering += BeginCameraRendering;
         }
@@ -121,32 +110,6 @@ namespace HealerLike.Render.Grass
         void Update()
         {
             _wind.Advance(Time.deltaTime);
-        }
-
-        // The stage scene drives its fields here until the render manager attaches it, removed in D2
-        void LateUpdate()
-        {
-            if (_isInitialized || _grid == null || _ground == null)
-            {
-                return;
-            }
-
-            if (_grid.width <= 0 || _grid.height <= 0 || _grid.cells == null)
-            {
-                return;
-            }
-
-            if (_grid.cells.LongLength != (long)_grid.width * _grid.height)
-            {
-                return;
-            }
-
-            Vector3 center = _grid.transform.position;
-            float width = _grid.width * _grid.size;
-            float height = _grid.height * _grid.size;
-            float surfaceY = _groundRenderer != null ? _groundRenderer.bounds.max.y : _surfaceY;
-            Rect area = new Rect(center.x - width * 0.5f, center.z - height * 0.5f, width, height);
-            Dispatch(new HLGrassBuildKey(area, _grid.size, surfaceY, _seed, _bladeBudget));
         }
 
         void OnDisable()
@@ -305,26 +268,15 @@ namespace HealerLike.Render.Grass
             _visibleBlades = new GraphicsBuffer(GraphicsBuffer.Target.Append, _bladeCount, 4);
             _kernel = _updateGrass.FindKernel("HLUpdateGrass");
 
-            HLPrimitiveMeshes meshes = _meshes;
-            Material bladeMaterial = _lookMaterial;
-            Material ringMaterial = _ringMaterial;
-            if (!_isInitialized)
-            {
-                CreateStageResources();
-                meshes = _stageMeshes;
-                bladeMaterial = _stageBladeMaterial;
-                ringMaterial = _stageRingMaterial;
-            }
-
             Bounds bounds = key.CalculateBounds();
-            _bladeDraw = new HLGrassDraw(meshes.bladeCone, bladeMaterial, 0, bounds, gameObject.layer);
+            _bladeDraw = new HLGrassDraw(_meshes.bladeCone, _lookMaterial, 0, bounds, gameObject.layer);
             _bladeDraw.properties.SetBuffer("_HL_BladeSeeds", _seeds);
             _bladeDraw.properties.SetBuffer("_HL_BladeStates", _states);
             _bladeDraw.properties.SetBuffer("_HL_VisibleBladeIDs", _visibleBlades);
             _bladeDraw.properties.SetFloat("_HL_BladeHeightScale", ClampHeightScale(_bladeHeightScale));
             HLGrassPalette.Apply(_bladeDraw.properties);
 
-            _ringDraw = new HLGrassDraw(meshes.annulus, ringMaterial, (uint)MaxZones, bounds, gameObject.layer);
+            _ringDraw = new HLGrassDraw(_meshes.annulus, _ringMaterial, (uint)MaxZones, bounds, gameObject.layer);
             _ringDraw.properties.SetFloat("_HL_SurfaceY", key.surfaceY);
             _ringDraw.properties.SetVector("_HL_FieldRect", key.FieldRect());
             return true;
@@ -337,25 +289,7 @@ namespace HealerLike.Render.Grass
                 return false;
             }
 
-            if (!_isInitialized)
-            {
-                return _updateGrass != null && _lookMaterial != null && _ringShader != null;
-            }
-
             return _updateGrass != null && _meshes != null && _lookMaterial != null && _ringMaterial != null;
-        }
-
-        // The stage scene references the look material and the ring shader, not the grass assets, removed in D2
-        void CreateStageResources()
-        {
-            if (_stageMeshes == null)
-            {
-                _stageMeshes = StageSceneMeshes.Create();
-                _stageBladeMaterial = HLGrassPalette.CreateBladeMaterial(_lookMaterial);
-                _stageRingMaterial = new Material(_ringShader);
-                _stageRingMaterial.name = "HLGrassRingRuntime";
-                _stageRingMaterial.enableInstancing = true;
-            }
         }
 
         static float ClampHeightScale(float value)
@@ -380,14 +314,6 @@ namespace HealerLike.Render.Grass
             {
                 _ringDraw.Release();
                 _ringDraw = null;
-            }
-
-            if (_stageMeshes != null)
-            {
-                StageSceneMeshes.Release(_stageMeshes);
-                Destroy(_stageBladeMaterial);
-                Destroy(_stageRingMaterial);
-                _stageMeshes = null;
             }
         }
 

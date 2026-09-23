@@ -5,7 +5,7 @@ using HealerLike.Render.Stage;
 namespace HealerLike.Render.Spells
 {
     // Groups the running buff handlers of one entity by target and factory and publishes them to the sink
-    public class HLStatusObserver : MonoBehaviour, IVisualBehaviour, IEntityView
+    public class HLStatusObserver : MonoBehaviour, IEntityView
     {
         struct StatusState
         {
@@ -33,22 +33,8 @@ namespace HealerLike.Render.Spells
             }
 
             Bind(entity.buffManager != null ? entity.buffManager : entity.GetComponent<BuffManager>(), manager.spellSink);
-            HLResourceOutcomeObserver.Ensure(entity).Init(entity, manager);
+            HLResourceOutcomeObserver.Ensure(entity.gameObject).Init(entity, manager);
             GetShieldView().Init(entity, manager);
-        }
-
-        // Old path while the stage prefabs still walk IVisualBehaviour, the sink then comes from the registry
-        public void Init(Entity entity)
-        {
-            if (entity == null)
-            {
-                Bind(null, _injected);
-                return;
-            }
-
-            Bind(entity.buffManager != null ? entity.buffManager : entity.GetComponent<BuffManager>(), _injected);
-            HLResourceOutcomeObserver.Ensure(entity);
-            GetShieldView().Init(entity);
         }
 
         void OnEnable()
@@ -223,11 +209,7 @@ namespace HealerLike.Render.Spells
 
         IHLSpellVisualSink CurrentSink()
         {
-            if (_injected != null)
-            {
-                return _injected;
-            }
-            return HLRenderRegistry.current != null ? HLRenderRegistry.current.spellSink : null;
+            return _injected;
         }
 
         void RemovePublished()

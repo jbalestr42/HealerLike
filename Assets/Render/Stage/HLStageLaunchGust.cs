@@ -9,9 +9,6 @@ namespace HealerLike.Render.Stage
         public static readonly float Strength = 0.65f;
         public static readonly float Seconds = 0.8f;
 
-        // removed in D2
-        public static HLEnvironmentGust Target { get; set; }
-
         HLEnvironmentGust _gust;
 
         // The manager hands the environment gust before Projectile.Init runs the behaviours
@@ -37,7 +34,7 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
-            Launch(_gust != null ? _gust : Target, source.transform.position, projectile.target.transform.position);
+            Launch(_gust, source.transform.position, projectile.target.transform.position);
         }
 
         public static bool Launch(HLEnvironmentGust gust, Vector3 sourcePosition, Vector3 targetPosition)

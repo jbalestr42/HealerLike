@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Zones
 {
-    // Producers update their zones in Update, the snapshot is published in LateUpdate before the grass draws
+    // Producers update their zones in Update, the RenderManager publishes the snapshot before the grass draws
     public class HLZoneRegistry : MonoBehaviour, IHLZoneOwner
     {
         struct Entry
@@ -51,10 +51,6 @@ namespace HealerLike.Render.Zones
             }
         }
 
-        // Read by the folders not yet on Init, removed in D2
-        static HLZoneRegistry _current;
-        public static HLZoneRegistry current { get { return _current; } }
-
         readonly List<Entry> _entries = new List<Entry>();
         readonly HLZone[] _packed = new HLZone[HLZonePacker.MaxZones];
         HLZone[] _source = new HLZone[HLZonePacker.MaxZones];
@@ -74,17 +70,6 @@ namespace HealerLike.Render.Zones
 
         public ReadOnlySpan<HLZone> snapshot { get { return new ReadOnlySpan<HLZone>(_packed, 0, _count); } }
 
-        void OnEnable()
-        {
-            if (Application.isPlaying)
-            {
-                Init();
-            }
-        }
-
-        // removed in D2
-        public void Initialize(IHLZoneUpload upload = null) { Init(upload); }
-
         public void Init(IHLZoneUpload upload = null)
         {
             if (_upload != null)
@@ -92,20 +77,8 @@ namespace HealerLike.Render.Zones
                 return;
             }
 
-            // Stays until D2 removes current, then the RenderManager owns the one registry
-            if (_current != null && _current != this)
-            {
-                throw new InvalidOperationException("Only one HLZoneRegistry may publish zones.");
-            }
-
-            _upload = upload ?? new GraphicsUpload();
-            _current = this;
+            _upload = upload != null ? upload : new GraphicsUpload();
             _upload.PublishCount(0);
-        }
-
-        void LateUpdate()
-        {
-            PublishFrame(Time.deltaTime);
         }
 
         public int Add(HLZoneKind kind, Vector3 position, float radius, float strength)
@@ -340,11 +313,6 @@ namespace HealerLike.Render.Zones
                 _upload.Unbind();
                 _upload.Dispose();
                 _upload = null;
-            }
-
-            if (_current == this)
-            {
-                _current = null;
             }
 
             _entries.Clear();

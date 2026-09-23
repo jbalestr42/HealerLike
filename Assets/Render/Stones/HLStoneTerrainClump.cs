@@ -65,12 +65,6 @@ namespace HealerLike.Render.Stones
             }
         }
 
-        // removed in D2: the old stage path has no effects owner or zones to hand over
-        public void Initialize(uint seed, float cellSize)
-        {
-            Init(seed, cellSize, null, null);
-        }
-
         // Without an effects owner the clump keeps its own stone meshes
         public void Init(uint seed, float cellSize, HLStoneEffects effects, HLZoneRegistry zones)
         {

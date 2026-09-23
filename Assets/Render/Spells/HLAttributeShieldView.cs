@@ -4,7 +4,7 @@ using HealerLike.Render.Stage;
 namespace HealerLike.Render.Spells
 {
     // HitArmor is an attribute and instant grants emit no buff start event, so the attribute itself is watched
-    public class HLAttributeShieldView : MonoBehaviour, IVisualBehaviour, IEntityView
+    public class HLAttributeShieldView : MonoBehaviour, IEntityView
     {
         AttributeManager _attributes;
         Entity _entity;
@@ -25,22 +25,6 @@ namespace HealerLike.Render.Spells
 
             _entity = entity;
             Bind(entity.attributeManager, Anchor(entity), manager.spellLooks);
-        }
-
-        // Old path while the stage prefabs still walk IVisualBehaviour, the looks then come from the registry sink
-        public void Init(Entity entity)
-        {
-            _entity = entity;
-            if (entity == null)
-            {
-                Bind(null, null, null);
-                return;
-            }
-
-            HLSpellVisualSink sink = HLRenderRegistry.current != null
-                ? HLRenderRegistry.current.spellSink as HLSpellVisualSink
-                : null;
-            Bind(entity.attributeManager, Anchor(entity), sink != null ? sink.looks : null);
         }
 
         void LateUpdate()

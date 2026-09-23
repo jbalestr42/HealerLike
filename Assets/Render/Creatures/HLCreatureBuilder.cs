@@ -8,7 +8,7 @@ using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Creatures
 {
-    public class HLCreatureBuilder : MonoBehaviour, IEntityView, IVisualBehaviour, IHLHealVisualSink,
+    public class HLCreatureBuilder : MonoBehaviour, IEntityView, IHLHealVisualSink,
         IHLDeliverySource
     {
         [FormerlySerializedAs("recipe")]
@@ -27,8 +27,7 @@ namespace HealerLike.Render.Creatures
         HLResourceOutcomeObserver _outcomeObserver;
         GameObject _registeredSource;
         HLRenderRegistry _registeredRegistry;
-        HLRenderRegistry _injectedRegistry;
-        bool _hasInjection;
+        HLRenderRegistry _registry;
         bool _hasConfiguredPlane;
         Vector3 _groundOrigin;
         Vector3 _groundNormal = Vector3.up;
@@ -76,12 +75,11 @@ namespace HealerLike.Render.Creatures
                 _meshes = manager.meshes;
             }
 
-            _injectedRegistry = manager ? manager.registry : null;
-            _hasInjection = true;
+            _registry = manager ? manager.registry : null;
             Init(owner);
         }
 
-        // The stage copies still reach this through EntityModel until the manager attaches views (D2)
+        // Taking the entity alone lets tests run without the manager, Configure then hands the registry
         public void Init(Entity owner)
         {
             Detach();
@@ -92,11 +90,6 @@ namespace HealerLike.Render.Creatures
 
             _entity = owner;
             RefreshSkills();
-            if (_entity)
-            {
-                _outcomeObserver = HLResourceOutcomeObserver.Ensure(_entity, _injectedRegistry, _hasInjection);
-            }
-
             if (!_entity)
             {
                 if (rig != null)
@@ -190,8 +183,7 @@ namespace HealerLike.Render.Creatures
             }
 
             Unregister();
-            _injectedRegistry = registry;
-            _hasInjection = true;
+            _registry = registry;
             if (_cellSize != size)
             {
                 if (rig != null)
@@ -321,8 +313,10 @@ namespace HealerLike.Render.Creatures
 
             if (!_outcomeObserver)
             {
-                _outcomeObserver = HLResourceOutcomeObserver.Ensure(_entity, _injectedRegistry, _hasInjection);
+                _outcomeObserver = HLResourceOutcomeObserver.Ensure(_entity.gameObject);
             }
+
+            _outcomeObserver.Bind(_entity.health, null, _registry != null ? _registry.spellSink : null, _registry);
 
             if (_health != _entity.health)
             {
@@ -350,17 +344,15 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        // HLRenderRegistry.current stays the fallback until the manager hands the registry through Init (D2)
         void SyncRegistry()
         {
-            HLRenderRegistry registry = _hasInjection ? _injectedRegistry : HLRenderRegistry.current;
-            if (_registeredRegistry == registry)
+            if (_registeredRegistry == _registry)
             {
                 return;
             }
 
             Unregister();
-            _registeredRegistry = registry;
+            _registeredRegistry = _registry;
             _registeredSource = _entity ? _entity.gameObject : null;
             if (_registeredRegistry != null)
             {
@@ -426,14 +418,6 @@ namespace HealerLike.Render.Creatures
         public bool BeginDelivery(int token, HLDeliveryStyle style, Transform projectile, Vector3 end)
         {
             return isActiveAndEnabled && rig != null && rig.BeginDelivery(token, style, projectile, end);
-        }
-
-        public void UpdateDelivery(int token, Vector3 position)
-        {
-            if (rig != null)
-            {
-                rig.UpdateDelivery(token, position);
-            }
         }
 
         public void ContactDelivery(int token, Vector3 position, GameObject target)

@@ -240,7 +240,7 @@ MonoBehaviour:
   _profile: {fileID: 0}
   _stoneMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
   _seed: 1
-  _effects: {fileID: 6906850454273908350, guid: c1f07ef3823f04ea18e65526efe2e16a, type: 3}
+  _effects: {fileID: 0}
   _groundShadowEnabled: 1
   _directionToKeyLight: {x: -1, y: 2, z: -1}
 --- !u!114 &1570025757360252079

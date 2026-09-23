@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
-using HealerLike.Render.Grass;
 using HealerLike.Render.Stage;
 using HealerLike.Render.Stones;
 using UnityEngine;
@@ -45,11 +44,7 @@ namespace HealerLike.Render.Environment
 
         readonly List<Mesh> _ownedMeshes = new List<Mesh>();
         MaterialPropertyBlock _properties;
-        RenderManager _manager;
         HLPrimitiveMeshes _meshes;
-
-        // Runtime meshes for the stage scene, removed in D2
-        HLPrimitiveMeshes _stageMeshes;
 
         List<HLRidgeItem> _items = new List<HLRidgeItem>();
         public IReadOnlyList<HLRidgeItem> items { get { return _items; } }
@@ -65,7 +60,6 @@ namespace HealerLike.Render.Environment
                 return;
             }
 
-            _manager = manager;
             _meshes = manager.meshes;
             _stageCamera = stageCamera;
             _grid = board;
@@ -73,15 +67,6 @@ namespace HealerLike.Render.Environment
             _fogStart = fogStart;
             _fogEnd = fogEnd;
             Build();
-        }
-
-        // The stage scene builds from its own camera until the render manager attaches it, removed in D2
-        void Start()
-        {
-            if (_manager == null)
-            {
-                Build();
-            }
         }
 
         void OnEnable()
@@ -103,26 +88,6 @@ namespace HealerLike.Render.Environment
         void OnDestroy()
         {
             Clear();
-            if (_stageMeshes != null)
-            {
-                StageSceneMeshes.Release(_stageMeshes);
-                _stageMeshes = null;
-            }
-        }
-
-        // The stage builder wires the scene instance, removed in D2
-        public void Configure(Camera stage, Material stones, Material plants, Rect gridRect, float surfaceY,
-            float start, float end, int bands, int layoutSeed)
-        {
-            _stageCamera = stage;
-            _stoneMaterial = stones;
-            _plantMaterial = plants;
-            _grid = gridRect;
-            _groundY = surfaceY;
-            _fogStart = start;
-            _fogEnd = end;
-            _fogBands = bands;
-            _seed = layoutSeed;
         }
 
         // Camera distances of the last visible fog band, [min, max); zero and a log when the fog is not valid
@@ -231,12 +196,6 @@ namespace HealerLike.Render.Environment
 
         public void Build(Vector3 cameraPosition)
         {
-            if (_manager == null && _meshes == null)
-            {
-                _stageMeshes = StageSceneMeshes.Create();
-                _meshes = _stageMeshes;
-            }
-
             Clear();
             _items = Layout(cameraPosition, _fogStart, _fogEnd, _fogBands, _grid, _groundY, _seed);
             _root = new GameObject("HLRidgeItems").transform;

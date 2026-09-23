@@ -103,5 +103,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf58c31fa93f4debbbc945cc08f71fc7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLRangePreview
-  _observePointer: 0
-  _camera: {fileID: 0}
