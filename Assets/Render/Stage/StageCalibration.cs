@@ -22,22 +22,6 @@ namespace HealerLike.Render.Stage
             return new Vector2(near, Mathf.Max(near + 1f, far + (far - near) * 0.2f));
         }
 
-        public static float HatchSpacing(Camera camera, float depth, int height)
-        {
-            float span;
-            if (camera.orthographic)
-            {
-                span = 2f * camera.orthographicSize;
-            }
-            else
-            {
-                span = 2f * depth * Mathf.Tan(camera.fieldOfView * Mathf.Deg2Rad * 0.5f);
-            }
-
-            // Four target pixels per stroke
-            return Mathf.Max(0.0001f, span / Mathf.Max(1, height) * 4f);
-        }
-
         // Perspective pose at a fixed pitch whose view fits the board's width plus margin at its near edge
         // (the widest it projects), with the board centre drawn at the given viewport height
         public static Pose Frame(Bounds board, float pitchDegrees, float fieldOfView, float aspect, float margin,

@@ -11,6 +11,7 @@
 float4 _HLShadowTint;
 float  _HLShadowStrength;
 float  _HLToonThreshold;
+float  _HLToonSoftness;
 float4 _HLOutlineColor;
 float  _HLOutlineWidthPixels;
 float4 _HLFogColor;
@@ -29,6 +30,7 @@ float  _HLDashAmount;
 float  _HLDashScale;
 float  _HLInkDistStart;
 float  _HLInkFarSpacing;
+float  _HLContrast;
 float  _HLLookApplied;
 // Additive beauty controls. Stage owns grid bounds and tip strength; zero disables both.
 float4 _HLGridOrigin; // xyz: world-space minimum board corner
@@ -36,7 +38,6 @@ float _HLGridCell; // square cell size in world units
 float4 _HLGridExtent; // x/z: board width/depth in world units
 float _HLGridStrength; // 0..1, recommended .12
 float _HLTipLight; // 0..1, recommended .12; consumed by grass adapter
-float _HLInkSpacingPixels;
 float4 _HLKeyLightDir; // World-space direction toward main light, w=0; zero when absent.
 
 #define HL_G(uniformName, fallbackValue) \
@@ -60,24 +61,25 @@ float3 HLWorkingColor(float3 srgb)
 #define HL_DEF_FOGCOLOR float4(HLWorkingColor(float3(191,210,224)/255.0),1)
 #define HL_DEF_SHADOWSTRENGTH 0.65
 #define HL_DEF_TOONTHRESHOLD 0.5
+#define HL_DEF_TOONSOFTNESS 0.08
 #define HL_DEF_OUTLINEWIDTHPIXELS 1.0
 // Provisional world-unit fog distances; calibrate against the gameplay camera.
 #define HL_DEF_FOGSTART 20.0
 #define HL_DEF_FOGEND 60.0
 #define HL_DEF_FOGBANDS 6.0
 #define HL_DEF_INKSTRENGTH 1.0
-#define HL_DEF_INKSPACINGPIXELS 3.5
 #define HL_DEF_INKSCALE 0.05
-#define HL_DEF_INKWIDTH 0.001
-#define HL_DEF_INKSTART 0.0
+#define HL_DEF_INKWIDTH 0.0001
+#define HL_DEF_INKSTART 0.46
 #define HL_DEF_INKRANGE 1.0
-#define HL_DEF_DENSITYMUL 0.55
-#define HL_DEF_INKWARP 0.006
+#define HL_DEF_DENSITYMUL 1.0
+#define HL_DEF_INKWARP 0.06
 #define HL_DEF_INKWARPFREQ 2.44
 #define HL_DEF_DASHAMOUNT 0.1
 #define HL_DEF_DASHSCALE 0.01
-#define HL_DEF_INKDISTSTART 10.0
-#define HL_DEF_INKFARSPACING 0.06
+#define HL_DEF_INKDISTSTART 15.0
+#define HL_DEF_INKFARSPACING 0.6
+#define HL_DEF_CONTRAST 1.15
 
 float HLHash11(float p)
 {
@@ -104,9 +106,9 @@ float HLLine(float coord, float warp, float spacing,
     float footprint = max(fwidth(u), 1e-6);
     float aa = min(footprint, 0.25);
     float hw = clamp(inkWidth, 0.0, 0.24 * spacing) / spacing;
-    // Fade unresolved strokes above the two-pixel frequency limit.
-    float resolved = 1.0 - smoothstep(0.25, 0.5, footprint);
-    return (1.0 - smoothstep(hw, hw + aa, d)) * resolved;
+    // No minification fade: d never exceeds half a period, so strokes too fine to resolve
+    // merge into solid ink instead of fading out, which is the look
+    return 1.0 - smoothstep(hw, hw + aa, d);
 }
 
 float HLShadowMask(float illum)
@@ -135,30 +137,28 @@ float3 HLApplyBandedFog(float3 positionWS, float3 color)
 
 // Shared HL surface shading; positionWS and baseColor are adapter inputs.
 // Illumination is remapped main-light facing multiplied by shadow attenuation.
-// Hatch is restricted to the same binary shadow mask as the toon fill.
+// The hatch follows the shade past inkStart, not the toon mask, so it carries no step.
 float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor)
 {
     illum = saturate(illum);
-    float shadowMask = HLShadowMask(illum);
+    float threshold = HL_G(_HLToonThreshold, HL_DEF_TOONTHRESHOLD);
+    float softness = max(HL_G(_HLToonSoftness, HL_DEF_TOONSOFTNESS), 1e-4);
+    float lit = smoothstep(threshold - softness, threshold + softness, illum);
     // Deep cast shadows converge to the authored ultramarine, instead of retaining
     // enough green base colour to read as grey/teal. Strength controls the toon boundary.
     float tintStrength = lerp(HL_G(_HLShadowStrength, HL_DEF_SHADOWSTRENGTH), 1.0,
-        saturate(1.0 - illum / max(.001, HL_G(_HLToonThreshold, HL_DEF_TOONTHRESHOLD))));
+        saturate(1.0 - illum / max(.001, threshold)));
     float3 shadowColor = lerp(baseColor, HL_G(_HLShadowTint, HL_DEF_SHADOWTINT).rgb, tintStrength);
-    float3 color = lerp(baseColor, shadowColor, shadowMask);
+    float3 color = lerp(shadowColor, baseColor, lit);
     float tone = saturate(((1.0 - illum) - HL_G(_HLInkStart, HL_DEF_INKSTART)) /
                           max(0.001, HL_G(_HLInkRange, HL_DEF_INKRANGE)));
     float hcoord = dot(positionWS, normalize(float3(1.0, 0.35, 0.6)));
     float hwarp = dot(positionWS, normalize(float3(-0.6, 0.0, 1.0)));
     float spacing = HL_G(_HLInkScale, HL_DEF_INKSCALE) * lerp(1.0, HL_G(_HLDensityMul, HL_DEF_DENSITYMUL), tone);
+    // Widen the world spacing past inkDistStart so the on-screen period does not collapse
     float dist = distance(positionWS, GetCameraPositionWS());
     spacing *= 1.0 + HL_G(_HLInkFarSpacing, HL_DEF_INKFARSPACING) *
         max(0.0, dist / max(0.001, HL_G(_HLInkDistStart, HL_DEF_INKDISTSTART)) - 1.0);
-    // Projected hatch-coordinate footprint follows camera distance, FOV and render scale.
-    // Pixel mode bypasses tone compression so dense shadows remain readable.
-    float pixelSpacing = HL_G(_HLInkSpacingPixels, HL_DEF_INKSPACINGPIXELS);
-    float footprintWS = length(float2(ddx(hcoord), ddy(hcoord)));
-    if (pixelSpacing > 0.0) spacing = footprintWS * pixelSpacing;
     spacing = max(spacing, 1e-4);
     // Derivatives must run for every lane, including lit fragments.
     float ink = HLLine(hcoord, hwarp, spacing, HL_G(_HLInkWarp, HL_DEF_INKWARP),
@@ -167,8 +167,10 @@ float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor)
     float dn = HLDashNoise(hwarp / max(0.001, HL_G(_HLDashScale, HL_DEF_DASHSCALE)) + lineId * 7.31);
     float dashAmount = HL_G(_HLDashAmount, HL_DEF_DASHAMOUNT);
     ink *= smoothstep(dashAmount, dashAmount + 0.08, dn);
-    ink = saturate(ink * shadowMask * step(0.004, tone) * HL_G(_HLInkStrength, HL_DEF_INKSTRENGTH));
-    return lerp(color, HL_G(_HLOutlineColor, HL_DEF_OUTLINECOLOR).rgb, ink * 0.65);
+    ink = saturate(ink * step(0.004, tone) * HL_G(_HLInkStrength, HL_DEF_INKSTRENGTH));
+    // Full ink colour where a stroke is, then the contrast punch; fog comes after
+    color = lerp(color, HL_G(_HLOutlineColor, HL_DEF_OUTLINECOLOR).rgb, ink);
+    return saturate((color - 0.5) * HL_G(_HLContrast, HL_DEF_CONTRAST) + 0.5);
 }
 
 float3 HLEvaluateSurface(float3 positionWS, float illum, float3 baseColor)

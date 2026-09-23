@@ -23,6 +23,9 @@ namespace HealerLike.Render.Look
         [FormerlySerializedAs("ToonThreshold")]
         public float toonThreshold;
 
+        // Half width of the soft terminator around the toon threshold
+        public float toonSoftness;
+
         [FormerlySerializedAs("OutlineWidthPixels")]
         public float outlineWidthPixels;
 
@@ -34,10 +37,6 @@ namespace HealerLike.Render.Look
 
         [FormerlySerializedAs("InkStrength")]
         public float inkStrength;
-
-        // Stroke spacing in pixels, zero falls back to the old world spacing
-        [FormerlySerializedAs("InkSpacingPixels")]
-        public float inkSpacingPixels;
 
         [FormerlySerializedAs("InkScale")]
         public float inkScale;
@@ -72,6 +71,9 @@ namespace HealerLike.Render.Look
         [FormerlySerializedAs("InkFarSpacing")]
         public float inkFarSpacing;
 
+        // Contrast punch after the ink, before the fog
+        public float contrast;
+
         [FormerlySerializedAs("FogBands")]
         public int fogBands;
 
@@ -86,22 +88,23 @@ namespace HealerLike.Render.Look
                     fogColor = new Color(191 / 255f, 210 / 255f, 224 / 255f, 1f),
                     shadowStrength = 0.65f,
                     toonThreshold = 0.5f,
+                    toonSoftness = 0.08f,
                     outlineWidthPixels = 1f,
                     fogStart = 20f,
                     fogEnd = 60f,
                     inkStrength = 1f,
-                    inkSpacingPixels = 3.5f,
                     inkScale = 0.05f,
-                    inkWidth = 0.001f,
-                    inkStart = 0f,
+                    inkWidth = 0.0001f,
+                    inkStart = 0.46f,
                     inkRange = 1f,
-                    densityMul = 0.55f,
-                    inkWarp = 0.006f,
+                    densityMul = 1f,
+                    inkWarp = 0.06f,
                     inkWarpFreq = 2.44f,
                     dashAmount = 0.1f,
                     dashScale = 0.01f,
-                    inkDistStart = 10f,
-                    inkFarSpacing = 0.06f,
+                    inkDistStart = 15f,
+                    inkFarSpacing = 0.6f,
+                    contrast = 1.15f,
                     fogBands = 6
                 };
             }
@@ -116,11 +119,11 @@ namespace HealerLike.Render.Look
             value.fogColor = ValidateColor(fogColor, defaults.fogColor, false);
             value.shadowStrength = Mathf.Clamp(Finite(shadowStrength, defaults.shadowStrength), 0.01f, 1f);
             value.toonThreshold = Mathf.Clamp(Finite(toonThreshold, defaults.toonThreshold), 0.001f, 0.999f);
+            value.toonSoftness = Mathf.Clamp(Finite(toonSoftness, defaults.toonSoftness), 0f, 0.5f);
             value.outlineWidthPixels = Mathf.Max(0f, Finite(outlineWidthPixels, defaults.outlineWidthPixels));
             value.fogStart = Mathf.Max(0f, Finite(fogStart, defaults.fogStart));
             value.fogEnd = Mathf.Max(0f, Finite(fogEnd, defaults.fogEnd));
             value.inkStrength = Mathf.Clamp(Finite(inkStrength, defaults.inkStrength), 0f, 1f);
-            value.inkSpacingPixels = Mathf.Clamp(Finite(inkSpacingPixels, defaults.inkSpacingPixels), 0f, 16f);
             value.inkScale = Mathf.Max(0.0001f, Finite(inkScale, defaults.inkScale));
             value.inkWidth = Mathf.Max(0f, Finite(inkWidth, defaults.inkWidth));
             value.inkStart = Mathf.Clamp(Finite(inkStart, defaults.inkStart), 0f, 1f);
@@ -132,6 +135,7 @@ namespace HealerLike.Render.Look
             value.dashScale = Mathf.Max(0.001f, Finite(dashScale, defaults.dashScale));
             value.inkDistStart = Mathf.Max(0.001f, Finite(inkDistStart, defaults.inkDistStart));
             value.inkFarSpacing = Mathf.Max(0f, Finite(inkFarSpacing, defaults.inkFarSpacing));
+            value.contrast = Mathf.Clamp(Finite(contrast, defaults.contrast), 1f, 1.6f);
             value.fogBands = Mathf.Max(1, fogBands);
 
             // At the largest float there is no finite end greater than the start

@@ -106,22 +106,23 @@ MonoBehaviour:
     fogColor: {r: 0.7490196, g: 0.8235294, b: 0.8784314, a: 1}
     shadowStrength: 0.65
     toonThreshold: 0.5
+    toonSoftness: 0.08
     outlineWidthPixels: 1
     fogStart: 20
     fogEnd: 60
-    inkStrength: 0.75
-    inkSpacingPixels: 3.5
+    inkStrength: 1
     inkScale: 0.05
-    inkWidth: 0.001
-    inkStart: 0
+    inkWidth: 0.0001
+    inkStart: 0.46
     inkRange: 1
-    densityMul: 0.55
-    inkWarp: 0.006
+    densityMul: 1
+    inkWarp: 0.06
     inkWarpFreq: 2.44
     dashAmount: 0.1
     dashScale: 0.01
-    inkDistStart: 10
-    inkFarSpacing: 0.06
+    inkDistStart: 15
+    inkFarSpacing: 0.6
+    contrast: 1.15
     fogBands: 6
 --- !u!114 &8708550167893978255
 MonoBehaviour:

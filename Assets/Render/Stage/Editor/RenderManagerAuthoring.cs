@@ -77,16 +77,14 @@ namespace HealerLike.Render.Stage
             return prefab;
         }
 
-        // The camera independent half of the look, the manager computes fog and hatch spacing at attach
+        // The camera independent half of the look, the manager computes the fog at attach
         public static LookSettings StageLookSettings()
         {
             LookSettings settings = LookSettings.Default;
             settings.shadowTint = new Color32(63, 91, 148, 255);
-            settings.inkStrength = 0.75f;
             settings.fogColor = new Color32(191, 210, 224, 255);
             settings.fogBands = 6;
             settings.outlineWidthPixels = 1f;
-            settings.inkSpacingPixels = 3.5f;
             return settings;
         }
 

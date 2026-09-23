@@ -17,12 +17,12 @@ namespace HealerLike.Render.Look
         static readonly int fogColorId = Shader.PropertyToID("_HLFogColor");
         static readonly int shadowStrengthId = Shader.PropertyToID("_HLShadowStrength");
         static readonly int toonThresholdId = Shader.PropertyToID("_HLToonThreshold");
+        static readonly int toonSoftnessId = Shader.PropertyToID("_HLToonSoftness");
         static readonly int outlineWidthPixelsId = Shader.PropertyToID("_HLOutlineWidthPixels");
         static readonly int fogStartId = Shader.PropertyToID("_HLFogStart");
         static readonly int fogEndId = Shader.PropertyToID("_HLFogEnd");
         static readonly int inkStrengthId = Shader.PropertyToID("_HLInkStrength");
         static readonly int keyLightDirId = Shader.PropertyToID("_HLKeyLightDir");
-        static readonly int inkSpacingPixelsId = Shader.PropertyToID("_HLInkSpacingPixels");
         static readonly int inkScaleId = Shader.PropertyToID("_HLInkScale");
         static readonly int inkWidthId = Shader.PropertyToID("_HLInkWidth");
         static readonly int inkStartId = Shader.PropertyToID("_HLInkStart");
@@ -34,6 +34,7 @@ namespace HealerLike.Render.Look
         static readonly int dashScaleId = Shader.PropertyToID("_HLDashScale");
         static readonly int inkDistStartId = Shader.PropertyToID("_HLInkDistStart");
         static readonly int inkFarSpacingId = Shader.PropertyToID("_HLInkFarSpacing");
+        static readonly int contrastId = Shader.PropertyToID("_HLContrast");
         static readonly int fogBandsId = Shader.PropertyToID("_HLFogBands");
         static readonly int lookAppliedId = Shader.PropertyToID("_HLLookApplied");
 
@@ -53,7 +54,7 @@ namespace HealerLike.Render.Look
             RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
         }
 
-        // Fog and hatching scale follow the camera distance to the board
+        // Fog follows the camera distance to the board, the hatch keeps its authored world spacing
         public void Init(Camera camera, Bounds board)
         {
             if (camera == null)
@@ -65,16 +66,10 @@ namespace HealerLike.Render.Look
             _board = board;
             Vector3 position = camera.transform.position;
             Vector2 fog = StageCalibration.BackgroundFog(position, board);
-            float depth = Vector3.Distance(position, board.center);
-            float spacing = StageCalibration.HatchSpacing(camera, depth, StageCalibration.PortraitHeight);
 
             LookSettings value = _settings;
             value.fogStart = fog.x;
             value.fogEnd = fog.y;
-            value.inkScale = spacing;
-            value.inkWidth = spacing * 0.04f;
-            value.inkDistStart = fog.x;
-            value.inkFarSpacing = spacing * 1.2f;
             settings = value;
             ApplyGlobals();
         }
@@ -205,11 +200,11 @@ namespace HealerLike.Render.Look
             setVector(fogColorId, ToWorkingColor(value.fogColor, colorSpace));
             setFloat(shadowStrengthId, value.shadowStrength);
             setFloat(toonThresholdId, value.toonThreshold);
+            setFloat(toonSoftnessId, value.toonSoftness);
             setFloat(outlineWidthPixelsId, value.outlineWidthPixels);
             setFloat(fogStartId, value.fogStart);
             setFloat(fogEndId, value.fogEnd);
             setFloat(inkStrengthId, value.inkStrength);
-            setFloat(inkSpacingPixelsId, value.inkSpacingPixels);
             setFloat(inkScaleId, value.inkScale);
             setFloat(inkWidthId, value.inkWidth);
             setFloat(inkStartId, value.inkStart);
@@ -221,6 +216,7 @@ namespace HealerLike.Render.Look
             setFloat(dashScaleId, value.dashScale);
             setFloat(inkDistStartId, value.inkDistStart);
             setFloat(inkFarSpacingId, value.inkFarSpacing);
+            setFloat(contrastId, value.contrast);
             setFloat(fogBandsId, value.fogBands);
             // The flag goes last so no shader reads a half published set
             setFloat(lookAppliedId, 1f);
