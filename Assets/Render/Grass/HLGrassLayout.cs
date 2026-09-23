@@ -46,7 +46,7 @@ namespace HealerLike.Render.Grass
                 throw new ArgumentOutOfRangeException(nameof(totalBladeBudget));
             }
 
-            int count = Math.Min(totalBladeBudget, MaxBudget);
+            int count = System.Math.Min(totalBladeBudget, MaxBudget);
             HLBladeSeed[] result = new HLBladeSeed[count];
             int cells = width * height;
             int quotient = count / cells;
@@ -78,8 +78,8 @@ namespace HealerLike.Render.Grass
                 throw new ArgumentOutOfRangeException(nameof(density));
             }
 
-            double desired = Math.Floor((double)rect.width * rect.height * density);
-            int count = (int)Math.Min(Math.Min(desired, budget), MaxBudget);
+            double desired = System.Math.Floor((double)rect.width * rect.height * density);
+            int count = (int)System.Math.Min(System.Math.Min(desired, budget), MaxBudget);
             HLBladeSeed[] result = Generate(1, 1, 1f, Vector3.zero, surfaceY, count, seed);
             Validate(1, 1, 1f, new Vector3(rect.xMin, 0f, rect.yMin), surfaceY);
             if (!Finite(rect.xMax) || !Finite(rect.yMax))
