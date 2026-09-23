@@ -64,6 +64,19 @@ public class LianaArmTests
     }
 
     [Test]
+    public void Tick_Gesture_DrawsAClosedChain()
+    {
+        LianaArm rendered = CreateRenderedArm();
+        rendered.Tick(0f, Vector3.zero, Quaternion.identity);
+
+        rendered.Begin(1, GestureKind.Attack, Vector3.one);
+        rendered.SetTipGoal(1, Vector3.one);
+        rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);
+
+        PrimitiveMeshBakerTests.AssertClosed(_parent.GetComponentInChildren<MeshFilter>().sharedMesh);
+    }
+
+    [Test]
     public void Tick_AuthoredArm_ShowsOneMeshOnlyDuringGesturesAndDisposeDestroysIt()
     {
         LianaArm rendered = CreateRenderedArm();
