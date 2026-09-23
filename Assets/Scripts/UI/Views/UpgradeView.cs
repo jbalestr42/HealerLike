@@ -25,12 +25,12 @@ public class UpgradeView : AView
             if (Random.Range(0f, 1f) < DataManager.instance.data.playerItemChance)
             {
                 upgradeButton = Instantiate(_upgradePlayerItem);
-                upgradeButton.GetComponent<SelectPlayerItemUpgradeButton>().Init(DataManager.instance.GetRandomPlayerItem());
+                upgradeButton.GetComponent<SelectPlayerItemUpgradeButton>().Init(DataManager.instance.GetRandomItemWithTag("Player"));
             }
             else
             {
                 upgradeButton = Instantiate(_upgradeItem);
-                upgradeButton.GetComponent<SelectItemUpgradeButton>().Init(DataManager.instance.GetRandomItem());
+                upgradeButton.GetComponent<SelectItemUpgradeButton>().Init(DataManager.instance.GetRandomItemWithTag("Entity"));
             }
             upgradeButton.transform.SetParent(_upgradeContainer.transform);
             _upgradeButtons.Add(upgradeButton);

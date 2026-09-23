@@ -9,21 +9,27 @@ public class DataManager : Singleton<DataManager>
 
     public List<CharacterData> characters { get { return _data.characters; } set { _data.characters = value; } } 
     public List<AItemFactory> items { get { return _data.items; } set { _data.items = value; } } 
-    public List<AItemFactory> playerItems { get { return _data.playerItems; } set { _data.playerItems = value; } } 
 
     public CharacterData GetRandomCharacter()
     {
         return _data.characters[Random.Range(0, _data.characters.Count)];
     }
 
-    public AItem GetRandomItem()
+    // Items having the tag, or one of its descendants
+    public List<AItemFactory> GetItemsWithTag(GameplayTag tag)
     {
-        return _data.items[Random.Range(0, _data.items.Count)].GetItem();
+        return _data.items.FindAll(item => item != null && item.tags.Exists(itemTag => itemTag == tag || itemTag.IsDescendantOf(tag)));
     }
 
-    public AItem GetRandomPlayerItem()
+    public List<AItemFactory> GetItemsWithTag(string tagName)
     {
-        return _data.playerItems[Random.Range(0, _data.playerItems.Count)].GetItem();
+        return GetItemsWithTag(GetTagWithName(tagName));
+    }
+
+    public AItem GetRandomItemWithTag(string tagName)
+    {
+        List<AItemFactory> items = GetItemsWithTag(tagName);
+        return items[Random.Range(0, items.Count)].GetItem();
     }
 
     public WavePatternData GetWavePattern(int round)

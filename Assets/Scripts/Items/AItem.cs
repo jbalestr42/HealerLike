@@ -7,6 +7,7 @@ public abstract class AItemFactory : SerializedScriptableObject
 {
     public abstract AItem GetItem();
     public abstract string title { get; }
+    public abstract List<GameplayTag> tags { get; }
 }
 
 public class ItemFactory<ItemType, DataType> : AItemFactory
@@ -23,6 +24,7 @@ public class ItemFactory<ItemType, DataType> : AItemFactory
     }
 
     public override string title => data != null ? data.name : "None";
+    public override List<GameplayTag> tags => data != null ? data.tags : new List<GameplayTag>();
 }
 
 [Serializable]

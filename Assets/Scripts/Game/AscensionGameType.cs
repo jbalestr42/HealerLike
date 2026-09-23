@@ -45,7 +45,7 @@ public class AscensionGameType : AGameType
 
         if (_debug)
         {
-            foreach (var item in DataManager.instance.items)
+            foreach (var item in DataManager.instance.GetItemsWithTag("Entity"))
             {
                 _gameView.playerInventory.AddItem(item.GetItem());
             }

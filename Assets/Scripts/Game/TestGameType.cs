@@ -7,7 +7,7 @@ public class TestGameType : AGameType
     public override void StartGame()
     {
         PlayerInventory playerInventory = UIManager.instance.GetView<GameView>(ViewType.Game).playerInventory;
-        foreach (AItemFactory itemFactory in DataManager.instance.items)
+        foreach (AItemFactory itemFactory in DataManager.instance.GetItemsWithTag("Entity"))
         {
             playerInventory.AddItem(itemFactory.GetItem());
             playerInventory.AddItem(itemFactory.GetItem());
