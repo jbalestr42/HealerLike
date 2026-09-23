@@ -8,14 +8,14 @@ namespace HealerLike.Render.Grass
 public class GrassPaletteTests
 {
     [Test]
-    public void GrassBladeMaterial_Asset_IsTheLookShaderWithGrassKeywordAndDepthEdgesOnly()
+    public void GrassBladeMaterial_Asset_IsTheLookShaderWithGrassKeywordAndNormalEdges()
     {
         Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat");
 
         Assert.AreEqual("HL/Look/Primitive", material.shader.name);
         Assert.IsTrue(material.IsKeywordEnabled(GrassPalette.InstancedKeyword));
         Assert.IsTrue(material.enableInstancing);
-        Assert.AreEqual(0f, material.GetFloat("_HLNormalEdges"));
+        Assert.AreEqual(1f, material.GetFloat("_HLNormalEdges"));
     }
 
     [Test]
