@@ -85,7 +85,7 @@ namespace HealerLike.Render.Look
                 {
                     shadowTint = new Color(30 / 255f, 87 / 255f, 125 / 255f, 1f),
                     outlineColor = new Color(24 / 255f, 38 / 255f, 63 / 255f, 1f),
-                    fogColor = new Color(191 / 255f, 210 / 255f, 224 / 255f, 1f),
+                    fogColor = new Color(154 / 255f, 188 / 255f, 211 / 255f, 1f),
                     shadowStrength = 0.8f,
                     toonThreshold = 0.64f,
                     toonSoftness = 0.08f,

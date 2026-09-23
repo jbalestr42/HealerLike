@@ -81,7 +81,6 @@ namespace HealerLike.Render.Stage
         public static LookSettings StageLookSettings()
         {
             LookSettings settings = LookSettings.Default;
-            settings.fogColor = new Color32(191, 210, 224, 255);
             settings.fogBands = 6;
             settings.outlineWidthPixels = 1f;
             return settings;
