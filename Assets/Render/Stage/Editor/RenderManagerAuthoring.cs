@@ -29,7 +29,7 @@ namespace HealerLike.Render.Stage
             RenderManager manager = root.AddComponent<RenderManager>();
             root.AddComponent<StageLauncher>();
             LookController look = root.AddComponent<LookController>();
-            look.settings = LookSettings();
+            look.settings = StageLookSettings();
             ZoneRegistry zones = root.AddComponent<ZoneRegistry>();
             StageRangeDriver rangeDriver = root.AddComponent<StageRangeDriver>();
             StoneDeathBridge stoneDeath = root.AddComponent<StoneDeathBridge>();
@@ -78,7 +78,7 @@ namespace HealerLike.Render.Stage
         }
 
         // The camera independent half of the look, the manager computes fog and hatch spacing at attach
-        public static LookSettings LookSettings()
+        public static LookSettings StageLookSettings()
         {
             LookSettings settings = LookSettings.Default;
             settings.shadowTint = new Color32(63, 91, 148, 255);
