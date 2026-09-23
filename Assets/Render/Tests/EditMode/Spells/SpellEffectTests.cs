@@ -123,6 +123,17 @@ public class SpellEffectTests
     }
 
     [Test]
+    public void SetStatus_RenewJustAfterALaterTick_StalksStillStand()
+    {
+        SpellEffect effect = CreateEffect(EffectElement.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
+
+        effect.SetStatus(1, 3.02f, 6f, ClockKind.Simulation);
+
+        Assert.Greater(LargestShape(effect), 0.1f);
+        Assert.Greater(effect.shapes[0].localPosition.y, 1f);
+    }
+
+    [Test]
     public void Advance_ForDurationFall_LoopsUntilRemoval()
     {
         SpellEffect effect = CreateEffect(EffectElement.Drips, EffectFamily.Rot, EffectTempo.ForDuration);

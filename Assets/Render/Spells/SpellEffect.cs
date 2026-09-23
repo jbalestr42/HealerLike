@@ -329,6 +329,13 @@ namespace HealerLike.Render.Spells
                     {
                         exit = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((phase - 0.8f) / 0.2f));
                     }
+                    // After its first growth a ticking or held element stays up and each tick lifts it from lower down
+                    if (_isStatus && _recipe.tempo != EffectTempo.Once && time >= 2f * _recipe.cycleSeconds)
+                    {
+                        position = new Vector3(part.position.x, part.position.y * (0.7f + 0.3f * emerge), part.position.z);
+                        break;
+                    }
+
                     position = new Vector3(part.position.x, part.position.y * emerge - part.size.y * 0.5f * exit, part.position.z);
                     scale = part.size * (emerge * (1f - exit));
                     break;
