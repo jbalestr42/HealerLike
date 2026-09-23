@@ -239,9 +239,9 @@ namespace HealerLike.Render.Environment
                 return;
             }
 
-            // Rosette: long flat blades fanned from one root, each tilted outward, thin across its tilt plane
+            // Rosette: long solid leaves fanned from one root, each tilted outward, thin across its tilt plane
             int blades = 7 + (int)(random.Next01() * 5f);
-            Mesh cone = _meshes.cone;
+            Mesh leaf = _meshes.leaf;
             for (int i = 0; i < blades; i++)
             {
                 float length = random.Range(0.8f, BladeLength) * item.scale;
@@ -250,7 +250,7 @@ namespace HealerLike.Render.Environment
                 Quaternion rotation = Quaternion.Euler(0f, around, random.Range(20f, MaxTilt));
                 Color color = Color.Lerp(_rosetteTint, _tint, random.Range(0f, 0.35f));
                 Vector3 scale = new Vector3(width * 0.3f, length, width);
-                Part(pivot, cone, _plantMaterial, Vector3.zero, rotation, scale, color, "Blade");
+                Part(pivot, leaf, _plantMaterial, Vector3.zero, rotation, scale, color, "Leaf");
             }
         }
 

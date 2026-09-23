@@ -33,6 +33,7 @@ namespace HealerLike.Render.Creatures
         Transform[] _pivots;
         Transform[] _geometry;
         Transform[] _roots;
+        Transform[] _rootJoints;
         Renderer[] _bodyRenderers;
         Color[] _colours;
         IdleDefinition _idle;
@@ -129,11 +130,19 @@ namespace HealerLike.Render.Creatures
             }
 
             budAnchors = Array.FindAll(_pivots, pivot => pivot.name.StartsWith("Bud", StringComparison.Ordinal));
-            _roots = new Transform[data.roots.count * 2];
+            int segments = data.roots.segments;
+            _roots = new Transform[data.roots.count * segments];
+            _rootJoints = new Transform[data.roots.count * (segments - 1)];
+            Color rootColour = BeautyMotion.Vary(data.roots.colour, _idle.seed);
             for (int i = 0; i < _roots.Length; i++)
             {
-                Color rootColour = BeautyMotion.Vary(data.roots.colour, _idle.seed);
-                _roots[i] = PrimitiveMeshes.Geometry("Root", _root, meshes.cone, material, rootColour);
+                _roots[i] = PrimitiveMeshes.Geometry("Root", _root, meshes.cylinder, material, rootColour);
+            }
+
+            // Lighter knuckles fill the bends between segments
+            for (int i = 0; i < _rootJoints.Length; i++)
+            {
+                _rootJoints[i] = PrimitiveMeshes.Geometry("RootJoint", _root, meshes.sphere, material, rootColour, 0.35f);
             }
 
             for (int i = 0; i < data.arms.Length; i++)
@@ -354,8 +363,26 @@ namespace HealerLike.Render.Creatures
                 Vector3 kneeLocal = radial * (roots.footRadius * 0.6f) + Vector3.up * roots.kneeHeight;
                 Vector3 knee = _root.TransformPoint(kneeLocal * _cellSize);
                 Vector3 foot = _root.TransformPoint(radial * roots.footRadius * _cellSize);
-                PrimitiveMeshes.Segment(_roots[i * 2], hip, knee, roots.thickness * _cellSize);
-                PrimitiveMeshes.Segment(_roots[i * 2 + 1], knee, foot, roots.thickness * 0.65f * _cellSize);
+
+                // A curve from hip to foot through the raised knee, cut into equal steps, thinning toward the foot
+                Vector3 bend = knee * 2f - (hip + foot) * 0.5f;
+                Vector3 start = hip;
+                for (int k = 0; k < roots.segments; k++)
+                {
+                    float t = (k + 1f) / roots.segments;
+                    Vector3 end = (1f - t) * (1f - t) * hip + 2f * t * (1f - t) * bend + t * t * foot;
+                    float taper = Mathf.Lerp(1f, 0.65f, (float)k / Mathf.Max(1, roots.segments - 1));
+                    float radius = roots.thickness * taper * _cellSize;
+                    PrimitiveMeshes.Segment(_roots[i * roots.segments + k], start, end, radius);
+                    if (k > 0)
+                    {
+                        Transform joint = _rootJoints[i * (roots.segments - 1) + k - 1];
+                        joint.position = start;
+                        joint.localScale = Vector3.one * (radius * 2.8f / _root.lossyScale.x);
+                    }
+
+                    start = end;
+                }
             }
 
             for (int i = 0; i < MaxArms; i++)

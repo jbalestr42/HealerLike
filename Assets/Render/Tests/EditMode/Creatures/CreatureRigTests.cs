@@ -166,6 +166,33 @@ public class CreatureRigTests
     }
 
     [Test]
+    public void Tick_Roots_AreJointedCylinderChainsDownToTheFoot()
+    {
+        _rig.Tick(0f, 0.016f, new FootFrame(Vector3.zero, Vector3.up, 1f));
+
+        int segments = 0;
+        int joints = 0;
+        float lowest = float.MaxValue;
+        foreach (Transform child in _rig.root)
+        {
+            if (child.name == "Root")
+            {
+                segments++;
+                Assert.AreSame(PrimitiveMeshesTests.Meshes().cylinder, child.GetComponent<MeshFilter>().sharedMesh);
+                lowest = Mathf.Min(lowest, child.GetComponent<Renderer>().bounds.min.y);
+            }
+            else if (child.name == "RootJoint")
+            {
+                joints++;
+            }
+        }
+
+        Assert.AreEqual(_recipe.roots.count * _recipe.roots.segments, segments);
+        Assert.AreEqual(_recipe.roots.count * (_recipe.roots.segments - 1), joints);
+        Assert.That(lowest, Is.LessThan(_recipe.roots.thickness)); // the last segment lies on the ground
+    }
+
+    [Test]
     public void Tick_TranslatedFootFrame_ReplantsRootsWithoutMovingParent()
     {
         _parent.transform.position = new Vector3(3f, 2f, 4f);

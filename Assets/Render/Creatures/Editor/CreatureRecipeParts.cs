@@ -50,7 +50,7 @@ namespace HealerLike.Render.Creatures
                 Vector3 facing = new Vector3(Mathf.Cos(angle), 0.65f, Mathf.Sin(angle));
                 Vector3 euler = Quaternion.FromToRotation(Vector3.up, facing).eulerAngles;
                 Vector3 size = new Vector3(0.2f, 0.72f, 0.1f);
-                parts.Add(CreatureRecipeAuthoring.Part("Bud" + i, Primitive.Cone, position, size, CreatureRecipeAuthoring.body, euler, glow: 0.7f));
+                parts.Add(CreatureRecipeAuthoring.Part("Bud" + i, Primitive.Leaf, position, size, CreatureRecipeAuthoring.body, euler, glow: 0.7f));
             }
 
             return parts;

@@ -37,6 +37,7 @@ public class PrimitiveMeshesTests
     [TestCase(Primitive.Cone)]
     [TestCase(Primitive.Torus)]
     [TestCase(Primitive.CylinderSegment)]
+    [TestCase(Primitive.Leaf)]
     public void GetMesh_BakedPrimitive_IsFiniteNormalizedAndBounded(Primitive type)
     {
         Mesh mesh = Meshes().GetMesh(type);

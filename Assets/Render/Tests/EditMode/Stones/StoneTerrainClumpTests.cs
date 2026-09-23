@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using HealerLike.Render.Creatures;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -59,7 +60,7 @@ public class StoneTerrainClumpTests
         Transform facet = _clump.assembly.parts[0].transform.Find("OchreFace");
         Assert.IsNotNull(facet);
         Assert.IsTrue(facet.gameObject.activeSelf);
-        Assert.AreEqual(3, facet.GetComponent<MeshFilter>().sharedMesh.vertexCount);
+        PrimitiveMeshBakerTests.AssertClosed(facet.GetComponent<MeshFilter>().sharedMesh);
 
         _clump.Init(6, 1f, null, null);
         Assert.IsNull(_clump.assembly.parts[0].transform.Find("OchreFace"));

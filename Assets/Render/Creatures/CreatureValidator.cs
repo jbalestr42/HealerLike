@@ -33,7 +33,7 @@ namespace HealerLike.Render.Creatures
                 bool isEulerFinite = float.IsFinite(euler.x) && float.IsFinite(euler.y) && float.IsFinite(euler.z);
                 if (!isPositionFinite || !isEulerFinite || !Positive(part.dimensions) || !Colour(part.colour)
                     || !float.IsFinite(part.glow) || part.glow < 0f
-                    || (int)part.primitive < 0 || (int)part.primitive > 4 || !isTorusValid)
+                    || (int)part.primitive < 0 || (int)part.primitive > 5 || !isTorusValid)
                 {
                     return Fail("Invalid primitive settings.", out error);
                 }
@@ -93,7 +93,8 @@ namespace HealerLike.Render.Creatures
             }
 
             RootDefinition roots = data.roots;
-            if (roots.count < 4 || roots.count > 8 || !Positive(roots.footRadius) || !Positive(roots.thickness)
+            if (roots.count < 4 || roots.count > 14 || roots.segments < 1 || roots.segments > 4
+                || !Positive(roots.footRadius) || !Positive(roots.thickness)
                 || roots.footRadius + roots.thickness > 0.46f
                 || !Positive(roots.hipHeight) || !Positive(roots.kneeHeight)
                 || !float.IsFinite(roots.angularOffset) || !Colour(roots.colour))
