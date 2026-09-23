@@ -43,8 +43,7 @@ public class ChainContactVisualTests
     [Test]
     public void OnHit_SecondContact_DrawsThreadFromFirstAndRebindForgetsIt()
     {
-        SpellVisualSink sink = _sinkHost.AddComponent<SpellVisualSink>();
-        sink.looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
+        SpellVisualSink sink = SpellSinkFixture.Add(_sinkHost);
         TestHelpers.InvokePrivate(sink, "OnEnable");
         _observer.Bind(_projectile, sink);
         _first.transform.position = Vector3.left;
@@ -56,8 +55,8 @@ public class ChainContactVisualTests
 
         Assert.AreEqual(1, sink.impactCount);
         SpellEffect thread = _sinkHost.GetComponentInChildren<SpellEffect>();
-        Assert.IsTrue(thread.contactThread);
-        Vector3 threadStart = thread.parts[0].position - thread.parts[0].up * thread.parts[0].localScale.y;
+        Assert.IsTrue(thread.isContactThread);
+        Vector3 threadStart = thread.stalks[0].position - thread.stalks[0].up * thread.stalks[0].localScale.y * 0.5f;
         Assert.Less(Vector3.Distance(_first.transform.position, threadStart), 0.0001f);
 
         _observer.Bind(_projectile, sink);

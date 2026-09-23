@@ -7,7 +7,7 @@ using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Spells
 {
-    // The look drawn for each buff and projectile: an authored row wins, else the look is derived from the data
+    // Rows for the buffs and projectiles the grammar gets wrong; a row replaces the whole derived look for its key
     [CreateAssetMenu(menuName = "Custom/Data/Render/SpellLooks")]
     public class SpellLooks : SerializedScriptableObject
     {
@@ -17,54 +17,19 @@ namespace HealerLike.Render.Spells
         [DictionaryDrawerSettings(KeyLabel = "Projectile", ValueLabel = "Look")]
         public Dictionary<GameObject, ProjectileLook> projectiles = new Dictionary<GameObject, ProjectileLook>();
 
-        public SpellLook boon;
-        public SpellLook bane;
-        public SpellLook rot;
-        public SpellLook renew;
-
-        public SpellLook heal;
-        public SpellLook impact;
-        public SpellLook manaGain;
-        public SpellLook manaLoss;
-        public SpellLook chain;
-        public SpellLook shield;
-
-        // Area pulses, the hostile one is the slate litter
-        public SpellLook area;
-        public SpellLook hostileArea;
-
-        public SpellLook GetLook(ABuffHandlerFactory factory, bool isSameSide)
+        // The authored row, or null when the look is derived
+        public SpellLook GetLook(ABuffHandlerFactory factory)
         {
-            if (factory != null && buffs.ContainsKey(factory))
+            if (factory != null && buffs != null && buffs.ContainsKey(factory))
             {
                 return buffs[factory];
             }
-            return GetLook(EffectDerivation.Family(factory, isSameSide), EffectDerivation.Group(factory));
-        }
-
-        // Defence and prevention boons close plates around the body, offence boons orbit it
-        public SpellLook GetLook(EffectFamily family, AttributeGroup group)
-        {
-            switch (family)
-            {
-                case EffectFamily.Damage:
-                    return impact;
-                case EffectFamily.Heal:
-                    return heal;
-                case EffectFamily.Rot:
-                    return rot;
-                case EffectFamily.Renew:
-                    return renew;
-                case EffectFamily.Boon:
-                    return group == AttributeGroup.Offence ? boon : shield;
-                default:
-                    return bane;
-            }
+            return null;
         }
 
         public ProjectileLook GetProjectileLook(GameObject prefab)
         {
-            if (prefab != null && projectiles.ContainsKey(prefab))
+            if (prefab != null && projectiles != null && projectiles.ContainsKey(prefab))
             {
                 return projectiles[prefab];
             }
@@ -75,11 +40,10 @@ namespace HealerLike.Render.Spells
     [Serializable]
     public class SpellLook
     {
-        [AssetsOnly]
-        public SpellEffect effectPrefab;
-        // Colour of the effect parts, not the body tint
-        public Color tint = Color.white;
-        public Vector3 offset = Vector3.zero;
+        public EffectElement element;
+        // Picks the colour, mana elements keep their own
+        public EffectFamily family;
+        public EffectTempo tempo;
     }
 
     [Serializable]

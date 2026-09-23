@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Spells
@@ -9,6 +8,8 @@ namespace HealerLike.Render.Spells
 public class AttributeShieldViewTests
 {
     GameObject _go;
+    GameObject _sinkGo;
+    SpellVisualSink _sink;
     BuffHandlerFactory _factory;
     FlatModifierFactory _modifier;
 
@@ -16,6 +17,8 @@ public class AttributeShieldViewTests
     public void SetUp()
     {
         _go = new GameObject("ShieldRecipient");
+        _sinkGo = new GameObject("Sink");
+        _sink = SpellSinkFixture.Add(_sinkGo);
         _factory = ScriptableObject.CreateInstance<BuffHandlerFactory>();
         _modifier = ScriptableObject.CreateInstance<FlatModifierFactory>();
     }
@@ -24,12 +27,14 @@ public class AttributeShieldViewTests
     public void TearDown()
     {
         Object.DestroyImmediate(_go);
+        TestHelpers.InvokePrivate(_sink, "OnDestroy");
+        Object.DestroyImmediate(_sinkGo);
         Object.DestroyImmediate(_factory);
         Object.DestroyImmediate(_modifier);
     }
 
     [Test]
-    public void Refresh_InstantHitArmorGrant_ShowsPlatesWithoutAStartedHandler()
+    public void Refresh_InstantHitArmorGrant_ShowsOnePlatePerChargeWithoutAStartedHandler()
     {
         AttributeManager attributes = TestHelpers.CreateAttributeManager(_go, AttributeType.HitArmor, 0);
         BuffManager manager = _go.AddComponent<BuffManager>();
@@ -49,7 +54,7 @@ public class AttributeShieldViewTests
             buffFactoryList = new List<ABuffFactory> { _modifier }
         };
         AttributeShieldView view = _go.AddComponent<AttributeShieldView>();
-        view.Bind(attributes, _go.transform, AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset"));
+        view.Bind(attributes, _go, _sink);
         Assert.IsNull(view.effect);
 
         TestHelpers.WithLoggingDisabled(() =>
@@ -63,15 +68,8 @@ public class AttributeShieldViewTests
         Assert.AreEqual(0, starts, "The real instant gameplay path must not be replaced with a fabricated start event.");
         Assert.AreEqual(2, attributes.Get(AttributeType.HitArmor).Value);
         Assert.NotNull(view.effect);
-        int plates = 0;
-        foreach (Transform plate in view.effect.parts)
-        {
-            if (plate.gameObject.activeSelf)
-            {
-                plates++;
-            }
-        }
-        Assert.AreEqual(2, plates);
+        Assert.AreEqual(EffectElement.Plates, view.effect.element);
+        Assert.AreEqual(2, view.effect.count);
 
         attributes.Get(AttributeType.HitArmor).BaseValue = 0f;
         attributes.Get(AttributeType.HitArmor).Update();

@@ -4,16 +4,14 @@ using HealerLike.Render.Stage;
 namespace HealerLike.Render.Spells
 {
     // HitArmor is an attribute and instant grants emit no buff start event, so the attribute itself is watched
+    // and its charges go to the sink, which draws them as the plates of the target
     public class AttributeShieldView : MonoBehaviour, IEntityView
     {
         AttributeManager _attributes;
-        Entity _entity;
-        Transform _anchor;
-        SpellLooks _looks;
-        float _born;
+        GameObject _target;
+        SpellVisualSink _sink;
 
-        SpellEffect _effect;
-        public SpellEffect effect { get { return _effect; } }
+        public SpellEffect effect { get { return _sink != null && _target != null ? _sink.GetElement(_target, EffectElement.Plates) : null; } }
 
         public void Init(Entity entity, RenderManager manager)
         {
@@ -23,8 +21,7 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            _entity = entity;
-            Bind(entity.attributeManager, Anchor(entity), manager.spellLooks);
+            Bind(entity.attributeManager, entity.gameObject, manager.spellSink);
         }
 
         void LateUpdate()
@@ -42,79 +39,45 @@ namespace HealerLike.Render.Spells
             Clear();
         }
 
-        public void Bind(AttributeManager attributes, Transform anchor, SpellLooks looks)
+        public void Bind(AttributeManager attributes, GameObject target, SpellVisualSink sink)
         {
-            if (_attributes != attributes || _anchor != anchor || _looks != looks)
+            if (_attributes != attributes || _target != target || _sink != sink)
             {
                 Clear();
             }
 
             _attributes = attributes;
-            _anchor = anchor;
-            _looks = looks;
+            _target = target;
+            _sink = sink;
             Refresh();
         }
 
         public void Refresh()
         {
-            if (_entity != null && _entity.targetPoint != null)
+            if (_sink == null || _target == null)
             {
-                _anchor = _entity.targetPoint.transform;
+                return;
             }
 
             float charges = 0f;
-            if (_attributes != null && _attributes.Has(AttributeType.HitArmor))
+            if (isActiveAndEnabled && _attributes != null && _attributes.Has(AttributeType.HitArmor))
             {
                 charges = _attributes.Get(AttributeType.HitArmor).Value;
             }
 
-            if (!isActiveAndEnabled || _anchor == null || !(charges > 0f) || float.IsInfinity(charges))
+            if (float.IsInfinity(charges))
             {
-                Clear();
-                return;
+                charges = 0f;
             }
-
-            if (_effect == null)
-            {
-                if (_looks == null || _looks.shield == null || _looks.shield.effectPrefab == null)
-                {
-                    return;
-                }
-
-                _effect = Instantiate(_looks.shield.effectPrefab, _anchor, false);
-                _effect.transform.localPosition = _looks.shield.offset;
-                _effect.Init();
-                _effect.SetColor(_looks.shield.tint);
-                _born = Time.time;
-            }
-
-            float elapsed = Mathf.Max(0f, Time.time - _born);
-            _effect.SetStatus(1, elapsed, float.PositiveInfinity, ClockKind.Simulation);
-            _effect.SetShieldState(charges);
+            _sink.SetCharges(_target, charges);
         }
 
         void Clear()
         {
-            if (_effect == null)
+            if (_sink != null && _target != null)
             {
-                return;
+                _sink.SetCharges(_target, 0f);
             }
-
-            _effect.gameObject.SetActive(false);
-            if (Application.isPlaying)
-            {
-                Destroy(_effect.gameObject);
-            }
-            else
-            {
-                DestroyImmediate(_effect.gameObject);
-            }
-            _effect = null;
-        }
-
-        static Transform Anchor(Entity entity)
-        {
-            return entity.targetPoint != null ? entity.targetPoint.transform : entity.transform;
         }
     }
 }
