@@ -342,9 +342,11 @@ namespace HealerLike.Render.Spells
                 }
                 case EffectMotion.Fall:
                 {
+                    // A drop swells where it hangs for the first part of the cycle, then falls and shrinks at the end
                     float own = Mathf.Clamp01(phase * 1.15f - index * 0.03f);
-                    position = part.position + Vector3.down * (own * own * _fallDistance);
-                    scale = part.size * Mathf.Clamp01((1f - own) * 4f);
+                    float fall = Mathf.Clamp01((own - 0.4f) / 0.6f);
+                    position = part.position + Vector3.down * (fall * fall * _fallDistance);
+                    scale = part.size * (Mathf.SmoothStep(0.3f, 1f, Mathf.Clamp01(own / 0.2f)) * Mathf.Clamp01((1f - fall) * 6f));
                     break;
                 }
                 case EffectMotion.Orbit:
