@@ -36,18 +36,6 @@ public class StageCalibrationTests
     }
 
     [Test]
-    public void HatchSpacing_PerspectiveAndOrthographic_ScalesWithProjectionAndResolution()
-    {
-        Assert.That(StageCalibration.HatchSpacing(_camera, 30f, 1080), Is.EqualTo(0.08088f).Within(0.0001));
-
-        _camera.orthographic = true;
-        _camera.orthographicSize = 10f;
-
-        Assert.That(StageCalibration.HatchSpacing(_camera, 5f, 1000), Is.EqualTo(0.08f).Within(0.0001));
-        Assert.That(StageCalibration.HatchSpacing(_camera, 50f, 2000), Is.EqualTo(0.04f).Within(0.0001));
-    }
-
-    [Test]
     public void Frame_PortraitBoard_FitsWidthAtNearEdgeAndPlacesTheCentre()
     {
         _camera.aspect = 9f / 16f;

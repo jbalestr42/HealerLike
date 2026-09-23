@@ -16,11 +16,13 @@ namespace HealerLike.Render.Look
 // Look.shader and its companions are assets, not classes: these tests import, compile and render them
 public class LookShaderTests
 {
-    // Globals the tests overwrite: the beauty capture's grid and tip light, then the colour readback's look
+    // Globals the tests overwrite: the beauty capture's grid and tip light, then the readbacks' look
     static readonly string[] savedGlobals =
     {
         "_HLGridCell", "_HLGridStrength", "_HLTipLight",
-        "_HLLookApplied", "_HLToonThreshold", "_HLFogStart", "_HLFogEnd", "_HLFogBands", "_HLInkStrength"
+        "_HLLookApplied", "_HLToonThreshold", "_HLToonSoftness", "_HLFogStart", "_HLFogEnd", "_HLFogBands",
+        "_HLInkStrength", "_HLContrast", "_HLInkScale", "_HLInkWidth", "_HLInkStart", "_HLInkRange",
+        "_HLDensityMul", "_HLInkWarp", "_HLDashAmount", "_HLDashScale", "_HLInkDistStart", "_HLInkFarSpacing"
     };
 
     readonly List<Object> _owned = new List<Object>();
@@ -182,12 +184,15 @@ public class LookShaderTests
                                                        RenderTextureReadWrite.Linear));
         target.Create();
         Texture2D texture = Track(new Texture2D(16, 16, TextureFormat.RGBAFloat, false, true));
+        // Below any illumination the fill stays lit, and a contrast of 1 leaves the colour as it is
         Shader.SetGlobalFloat("_HLLookApplied", 1f);
-        Shader.SetGlobalFloat("_HLToonThreshold", 0f);
+        Shader.SetGlobalFloat("_HLToonThreshold", -1f);
+        Shader.SetGlobalFloat("_HLToonSoftness", 0f);
         Shader.SetGlobalFloat("_HLFogStart", 10000f);
         Shader.SetGlobalFloat("_HLFogEnd", 20000f);
         Shader.SetGlobalFloat("_HLFogBands", 6f);
         Shader.SetGlobalFloat("_HLInkStrength", 0f);
+        Shader.SetGlobalFloat("_HLContrast", 1f);
         Color artist = new Color(0.4f, 0.6f, 0.8f, 1f);
         Color linear = artist.linear;
 
@@ -210,6 +215,66 @@ public class LookShaderTests
         Debug.Log("[LookShaderTests] Colour: active=" + QualitySettings.activeColorSpace + " artist=" + artist.ToString("F5")
                   + " linear=" + linear.ToString("F5") + " A=" + a.ToString("F5") + " B=" + b.ToString("F5")
                   + " C=" + c.ToString("F5"));
+    }
+
+    [Test]
+    public void DrawMesh_SubPixelHatch_MergesIntoInkInsteadOfFading()
+    {
+        if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+        {
+            Assert.Ignore("Requires graphics readback");
+        }
+
+        Material material = Track(new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader")));
+        // Built-in asset, not tracked: TearDown must not destroy it
+        Mesh mesh = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
+        RenderTexture target = Track(new RenderTexture(16, 16, 0, RenderTextureFormat.ARGBFloat,
+                                                       RenderTextureReadWrite.Linear));
+        target.Create();
+        Texture2D texture = Track(new Texture2D(16, 16, TextureFormat.RGBAFloat, false, true));
+        MaterialPropertyBlock white = new MaterialPropertyBlock();
+        white.SetVector("_BaseColor", Vector4.one);
+        // Strokes a thousand times finer than a pixel, in full shade, no dashes and no fog
+        Shader.SetGlobalFloat("_HLLookApplied", 1f);
+        Shader.SetGlobalFloat("_HLToonThreshold", -1f);
+        Shader.SetGlobalFloat("_HLToonSoftness", 0f);
+        Shader.SetGlobalFloat("_HLFogStart", 10000f);
+        Shader.SetGlobalFloat("_HLFogEnd", 20000f);
+        Shader.SetGlobalFloat("_HLFogBands", 6f);
+        Shader.SetGlobalFloat("_HLContrast", 1f);
+        Shader.SetGlobalFloat("_HLInkScale", 0.0001f);
+        Shader.SetGlobalFloat("_HLInkWidth", 1f);
+        Shader.SetGlobalFloat("_HLInkStart", -1f);
+        Shader.SetGlobalFloat("_HLInkRange", 1f);
+        Shader.SetGlobalFloat("_HLDensityMul", 1f);
+        Shader.SetGlobalFloat("_HLInkWarp", 0f);
+        Shader.SetGlobalFloat("_HLDashAmount", 0f);
+        Shader.SetGlobalFloat("_HLDashScale", 1f);
+        Shader.SetGlobalFloat("_HLInkDistStart", 10000f);
+        Shader.SetGlobalFloat("_HLInkFarSpacing", 0f);
+
+        Shader.SetGlobalFloat("_HLInkStrength", 0f);
+        ReadCentre(material, mesh, target, texture, white);
+        float paper = MeanBrightness(texture);
+        Shader.SetGlobalFloat("_HLInkStrength", 1f);
+        ReadCentre(material, mesh, target, texture, white);
+        float inked = MeanBrightness(texture);
+
+        Assert.That(paper - inked, Is.GreaterThan(0.1f), "Unresolved strokes must darken, not fade out");
+        Debug.Log("[LookShaderTests] Sub-pixel hatch: paper=" + paper.ToString("F4") + " inked=" + inked.ToString("F4"));
+    }
+
+    // The quad covers the middle eight by eight pixels, the rest is the clear colour
+    static float MeanBrightness(Texture2D texture)
+    {
+        Color[] pixels = texture.GetPixels(4, 4, 8, 8);
+        float sum = 0f;
+        foreach (Color pixel in pixels)
+        {
+            sum += (pixel.r + pixel.g + pixel.b) / 3f;
+        }
+
+        return sum / pixels.Length;
     }
 
     [Test]

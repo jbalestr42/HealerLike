@@ -213,10 +213,10 @@ public class LookControllerTests
         typeof(LookController).GetMethod("PublishGlobals", BindingFlags.Static | BindingFlags.NonPublic)
             .Invoke(null, new object[] { input, ColorSpace.Linear, scalar, color });
 
-        Assert.That(writes.Count, Is.EqualTo(23));
-        Assert.That(writes[22], Is.EqualTo(applied));
+        Assert.That(writes.Count, Is.EqualTo(24));
+        Assert.That(writes[23], Is.EqualTo(applied));
         Assert.That(scalarWrites[applied], Is.EqualTo(1f));
-        Assert.That(scalarWrites.Count, Is.EqualTo(20));
+        Assert.That(scalarWrites.Count, Is.EqualTo(21));
         Assert.That(colorWrites.Count, Is.EqualTo(3));
         foreach (FieldInfo field in SettingsFields())
         {
@@ -304,23 +304,22 @@ public class LookControllerTests
         Vector2 fog = StageCalibration.BackgroundFog(camera.transform.position, board);
         Assert.AreEqual(fog.x, controller.settings.fogStart);
         Assert.AreEqual(fog.y, controller.settings.fogEnd);
-        Assert.AreEqual(fog.x, controller.settings.inkDistStart);
     }
 
     [Test]
-    public void Init_CameraAndBoard_ScalesTheHatchingToTheBoardCentre()
+    public void Init_CameraAndBoard_KeepsTheAuthoredHatch()
     {
         LookController controller = CreateController();
-        Camera camera = CreatePortraitCamera();
-        Bounds board = new Bounds(Vector3.zero, new Vector3(6f, 0f, 10f));
+        LookSettings authored = LookSettings.Default;
+        authored.inkScale = 0.08f;
+        controller.settings = authored;
 
-        controller.Init(camera, board);
+        controller.Init(CreatePortraitCamera(), new Bounds(Vector3.zero, new Vector3(6f, 0f, 10f)));
 
-        float depth = Vector3.Distance(camera.transform.position, board.center);
-        float spacing = StageCalibration.HatchSpacing(camera, depth, 1920);
-        Assert.AreEqual(spacing, controller.settings.inkScale, 0.00001f);
-        Assert.AreEqual(spacing * 0.04f, controller.settings.inkWidth, 0.00001f);
-        Assert.AreEqual(spacing * 1.2f, controller.settings.inkFarSpacing, 0.00001f);
+        Assert.AreEqual(0.08f, controller.settings.inkScale);
+        Assert.AreEqual(authored.inkWidth, controller.settings.inkWidth);
+        Assert.AreEqual(authored.inkDistStart, controller.settings.inkDistStart);
+        Assert.AreEqual(authored.inkFarSpacing, controller.settings.inkFarSpacing);
     }
 
     [Test]

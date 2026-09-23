@@ -78,6 +78,7 @@ public class LookSettingsTests
             outlineWidthPixels = -1f,
             shadowStrength = -1f,
             toonThreshold = 2f,
+            toonSoftness = -1f,
             inkStrength = 2f,
             inkScale = -1f,
             inkWidth = -1f,
@@ -89,7 +90,8 @@ public class LookSettingsTests
             dashAmount = 2f,
             dashScale = -1f,
             inkDistStart = -1f,
-            inkFarSpacing = -1f
+            inkFarSpacing = -1f,
+            contrast = -1f
         };
 
         LookSettings value = input.Validated();
@@ -101,6 +103,7 @@ public class LookSettingsTests
         Assert.That(value.outlineWidthPixels, Is.Zero);
         Assert.That(value.shadowStrength, Is.EqualTo(0.01f));
         Assert.That(value.toonThreshold, Is.EqualTo(0.999f));
+        Assert.That(value.toonSoftness, Is.Zero);
         Assert.That(value.inkStrength, Is.EqualTo(1f));
         Assert.That(value.inkScale, Is.EqualTo(0.0001f));
         Assert.That(value.inkWidth, Is.Zero);
@@ -113,23 +116,21 @@ public class LookSettingsTests
         Assert.That(value.dashScale, Is.EqualTo(0.001f));
         Assert.That(value.inkDistStart, Is.EqualTo(0.001f));
         Assert.That(value.inkFarSpacing, Is.Zero);
+        Assert.That(value.contrast, Is.EqualTo(1f));
         Assert.That(value.Validated(), Is.EqualTo(value));
     }
 
     [Test]
-    public void Validated_InkSpacingPixels_KeepsZeroAndClampsUnsafeValues()
+    public void Validated_LargeSoftnessAndContrast_ClampToTheirMaximum()
     {
         LookSettings settings = LookSettings.Default;
-        Assert.That(settings.inkSpacingPixels, Is.EqualTo(3.5f));
+        settings.toonSoftness = 2f;
+        settings.contrast = 5f;
 
-        settings.inkSpacingPixels = -1f;
-        Assert.That(settings.Validated().inkSpacingPixels, Is.Zero);
+        LookSettings value = settings.Validated();
 
-        settings.inkSpacingPixels = 100f;
-        Assert.That(settings.Validated().inkSpacingPixels, Is.EqualTo(16));
-
-        settings.inkSpacingPixels = 0f;
-        Assert.That(settings.Validated().inkSpacingPixels, Is.Zero);
+        Assert.That(value.toonSoftness, Is.EqualTo(0.5f));
+        Assert.That(value.contrast, Is.EqualTo(1.6f));
     }
 
     [TestCase(0f)]
