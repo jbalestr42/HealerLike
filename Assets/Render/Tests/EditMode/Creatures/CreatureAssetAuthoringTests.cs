@@ -25,11 +25,7 @@ public class CreatureAssetAuthoringTests
         Object.DestroyImmediate(_parent);
     }
 
-    [TestCase("BladeRosette")]
     [TestCase("Healer")]
-    [TestCase("SpiralFern")]
-    [TestCase("HangingArch")]
-    [TestCase("SphereStack")]
     public void Recipe_ShippedAsset_ValidatesAndBuildsFromBakedMeshes(string name)
     {
         string path = root + "Data/" + name + ".asset";
@@ -68,40 +64,17 @@ public class CreatureAssetAuthoringTests
         }
     }
 
-    [TestCase("Normal", "SpiralFern")]
-    [TestCase("Test", "SphereStack")]
-    [TestCase("Swarm", "HangingArch")]
-    [TestCase("FastShoot", "SpiralFern")]
-    [TestCase("TripleShoot", "HangingArch")]
-    [TestCase("MultiShot", "HangingArch")]
-    [TestCase("RandomShoot", "SpiralFern")]
-    [TestCase("ChainLightning", "SphereStack")]
-    [TestCase("Channeling", "SphereStack")]
-    [TestCase("Soldier", "SphereStack")]
-    [TestCase("HitArmorBuffer", "BladeRosette")]
-    public void View_ShippedPrefab_HasNoBaseModelAndCarriesItsLook(string name, string recipeName)
+    [Test]
+    public void Prefabs_Folder_KeepsOnlyTheHostsAndTheHealer()
     {
-        GameObject view = AssetDatabase.LoadAssetAtPath<GameObject>(root + "Prefabs/" + name + ".prefab");
+        string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { root + "Prefabs" });
 
-        Assert.NotNull(view);
-        Assert.AreEqual(PrefabAssetType.Regular, PrefabUtility.GetPrefabAssetType(view));
-        Assert.IsNull(view.GetComponent<EntityModel>());
-        Assert.IsEmpty(view.GetComponentsInChildren<Renderer>(true));
-        Assert.IsEmpty(view.GetComponentsInChildren<Collider>(true));
-        CreatureBuilder builder = view.GetComponent<CreatureBuilder>();
-        Assert.NotNull(builder);
-        Assert.AreEqual(recipeName, builder.recipe.name);
-        SerializedObject data = new SerializedObject(builder);
-        Assert.AreEqual("Assets/Render/Look/Look_Default.mat",
-            AssetDatabase.GetAssetPath(data.FindProperty("_material").objectReferenceValue));
-        Assert.AreSame(PrimitiveMeshesTests.Meshes(), data.FindProperty("_meshes").objectReferenceValue);
+        string[] names = System.Array.ConvertAll(guids, guid => Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(guid)));
+
+        CollectionAssert.AreEquivalent(new[] { "DerivedPlant", "HealerCharacter" }, names);
     }
 
-    [TestCase("BladeRosette")]
     [TestCase("Healer")]
-    [TestCase("SpiralFern")]
-    [TestCase("HangingArch")]
-    [TestCase("SphereStack")]
     public void Arm_ShippedRecipe_ReachesAcrossBoardAndClampsOutsideIt(string name)
     {
         string path = root + "Data/" + name + ".asset";
