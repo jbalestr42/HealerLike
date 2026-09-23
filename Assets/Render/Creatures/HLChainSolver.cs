@@ -100,11 +100,11 @@ namespace HealerLike.Render.Creatures
                 // A straight chain cannot find a bend through projection alone. Seed a regular
                 // arc in the pole plane, bisection picks its chord without random jitter.
                 double low = 0.0;
-                double high = 2.0 * Math.PI / n;
+                double high = 2.0 * System.Math.PI / n;
                 for (int k = 0; k < 48; k++)
                 {
                     double angle = (low + high) * 0.5;
-                    double chord = lengths[0] * Math.Sin(n * angle * 0.5) / Math.Sin(angle * 0.5);
+                    double chord = lengths[0] * System.Math.Sin(n * angle * 0.5) / System.Math.Sin(angle * 0.5);
                     if (chord > distance)
                     {
                         low = angle;
@@ -120,7 +120,7 @@ namespace HealerLike.Render.Creatures
                 for (int i = 0; i < n; i++)
                 {
                     double angle = (i - (n - 1) * 0.5) * step;
-                    Vector3 direction = aim * (float)Math.Cos(angle) + side * (float)Math.Sin(angle);
+                    Vector3 direction = aim * (float)System.Math.Cos(angle) + side * (float)System.Math.Sin(angle);
                     joints[i + 1] = joints[i] + lengths[i] * direction;
                 }
             }
