@@ -340,9 +340,9 @@ public class GrassFieldTests
     [UnityTest]
     public IEnumerator UpdateField_CaptureOnMetal_DrawsCarpetAcrossRepaintsUntilSnapshotRevoked()
     {
-        if (System.Environment.GetEnvironmentVariable("HL_GROUND_CAPTURE") != "1" || SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+        if (System.Environment.GetEnvironmentVariable("RENDER_CAPTURE_GROUND") != "1" || SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
         {
-            Assert.Ignore("Opt-in visual fixture: HL_GROUND_CAPTURE=1 with Metal.");
+            Assert.Ignore("Opt-in visual fixture: RENDER_CAPTURE_GROUND=1 with Metal.");
         }
 
         foreach (LookController owner in Object.FindObjectsByType<LookController>(FindObjectsSortMode.None))
@@ -426,7 +426,7 @@ public class GrassFieldTests
         Assert.AreEqual(16384, field.bladeCount);
         string directory = "/Users/fc/Documents/healerlike-render-specs/captures";
         Directory.CreateDirectory(directory);
-        File.WriteAllBytes(Path.Combine(directory, "wave9-ground-fixture.png"), bytes);
+        File.WriteAllBytes(Path.Combine(directory, "render-ground-fixture.png"), bytes);
 
         field.SetZoneSnapshot(null, 0);
         yield return null;

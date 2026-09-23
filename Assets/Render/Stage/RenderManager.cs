@@ -167,7 +167,7 @@ namespace HealerLike.Render.Stage
             return _deliveryToken;
         }
 
-        // Landscape keeps the wave 3 framing, the look is calibrated for portrait
+        // Landscape keeps the wide framing, the look is calibrated for portrait
         public void SetLandscape(bool isLandscape)
         {
             _isLandscape = isLandscape;

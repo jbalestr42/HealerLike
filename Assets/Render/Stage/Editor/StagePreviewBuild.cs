@@ -21,7 +21,7 @@ namespace HealerLike.Render.Stage
         [MenuItem("Tools/Render/Build Render Preview")]
         public static void BuildPlayer()
         {
-            string output = System.Environment.GetEnvironmentVariable("HL_PLAYER_OUTPUT");
+            string output = System.Environment.GetEnvironmentVariable("RENDER_PLAYER_OUTPUT");
             if (string.IsNullOrEmpty(output))
             {
                 output = "/tmp/HealerLikeRender.app";

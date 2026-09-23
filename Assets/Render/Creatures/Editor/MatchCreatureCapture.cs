@@ -73,7 +73,7 @@ namespace HealerLike.Render.Creatures
             Texture2D texture = new Texture2D(1600, 800, TextureFormat.RGB24, false);
             texture.ReadPixels(new Rect(0f, 0f, 1600f, 800f), 0, 0);
             texture.Apply();
-            string capturePath = "/Users/fc/Documents/healerlike-render-specs/captures/wave9-creature-gallery.png";
+            string capturePath = "/Users/fc/Documents/healerlike-render-specs/captures/render-creature-gallery.png";
             File.WriteAllBytes(capturePath, texture.EncodeToPNG());
             Debug.Log("Visual-only gallery: " + capturePath);
             RenderTexture.active = null;

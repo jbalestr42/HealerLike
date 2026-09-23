@@ -269,7 +269,7 @@ public class LookShaderTests
     [Test]
     public void Capture_BeautyScene_KeepsGridInsideBoardAndOutlinesAtPixelWidth()
     {
-        IgnoreUnlessCapturing("HL_B6_CAPTURE");
+        IgnoreUnlessCapturing("RENDER_CAPTURE_BEAUTY");
         BuildCaptureScene("Assets/Render/Look/captures");
         _camera.transform.rotation = Quaternion.Euler(73.7f, 0f, 0f);
         _camera.transform.position = -_camera.transform.forward * 43.837f;
@@ -363,10 +363,10 @@ public class LookShaderTests
     [Test]
     public void Capture_PortraitScene_ShowsShadowsAndMasksNormalEdges()
     {
-        IgnoreUnlessCapturing("HL_D5_CAPTURE");
+        IgnoreUnlessCapturing("RENDER_CAPTURE_PORTRAIT");
         BuildCaptureScene("/Users/fc/Documents/healerlike-render-specs/captures");
 
-        Capture("wave5-shadow");
+        Capture("render-look-shadow");
         Color32[] pixels = _texture.GetPixels32();
         Assert.That(pixels.Count(c => c.b > c.g * 1.3f && c.b > c.r * 1.5f), Is.GreaterThan(1000));
 
@@ -382,10 +382,10 @@ public class LookShaderTests
             }
         }
 
-        byte[] off = Capture("wave5-edges-off");
+        byte[] off = Capture("render-look-edges-off");
         _outlines.depthNormalEdges = true;
         _outlines.Create();
-        byte[] on = Capture("wave5-edges-on");
+        byte[] on = Capture("render-look-edges-on");
         Assert.That(on.SequenceEqual(off), Is.False, "Screen pass must change the image.");
 
         Texture2D left = Track(new Texture2D(2, 2));
@@ -394,11 +394,11 @@ public class LookShaderTests
         pair.SetPixels(0, 0, 1080, 1920, left.GetPixels());
         pair.SetPixels(1080, 0, 1080, 1920, _texture.GetPixels());
         pair.Apply();
-        File.WriteAllBytes(Path.Combine(_directory, "wave5-edges-side-by-side.png"), pair.EncodeToPNG());
+        File.WriteAllBytes(Path.Combine(_directory, "render-look-edges-side-by-side.png"), pair.EncodeToPNG());
 
         _outlines.useNormalEdgeMask = false;
         _outlines.ApplyEdgeSettings();
-        byte[] unmasked = Capture("wave5-edges-unmasked");
+        byte[] unmasked = Capture("render-look-edges-unmasked");
         Assert.That(unmasked.SequenceEqual(on), Is.False,
                     "Mask must suppress normal edges independently of the depth threshold.");
 
@@ -408,11 +408,11 @@ public class LookShaderTests
         _settings.inkWarp = 0f;
         _settings.dashAmount = 0f;
         _look.settings = _settings;
-        Capture("wave5-hatch-31");
+        Capture("render-look-hatch-31");
         foreach (float distance in new[] { 26f, 40f })
         {
             _camera.transform.position = -_camera.transform.forward * distance;
-            Capture("wave5-hatch-" + distance);
+            Capture("render-look-hatch-" + distance);
         }
     }
 
