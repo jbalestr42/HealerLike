@@ -5,6 +5,16 @@ namespace HealerLike.Render.Zones
 {
     public class HLBruiseZoneTests
     {
+        static Entity CreateEnemy(GameObject go, float range)
+        {
+            AttributeManager attributes = TestHelpers.CreateAttributeManager(go, AttributeType.Range, range);
+            Entity entity = null;
+            TestHelpers.WithLoggingDisabled(() => entity = go.AddComponent<Entity>());
+            entity.attributeManager = attributes;
+            entity.entityType = Entity.EntityType.Computer;
+            return entity;
+        }
+
         [Test]
         public void EnemyRangeFollowsPositionAndAttributeAndCleansUp()
         {
@@ -13,7 +23,7 @@ namespace HealerLike.Render.Zones
             try
             {
                 HLZoneRegistry owner = root.AddComponent<HLZoneRegistry>();
-                owner.Initialize(new HLZoneFakeUpload());
+                owner.Init(new HLZoneFakeUpload());
                 AttributeManager attributes = TestHelpers.CreateAttributeManager(actor, AttributeType.Range, 3);
                 Entity entity = null;
                 TestHelpers.WithLoggingDisabled(() => entity = actor.AddComponent<Entity>());
@@ -54,6 +64,46 @@ namespace HealerLike.Render.Zones
                 Object.DestroyImmediate(actor);
                 Object.DestroyImmediate(root);
             }
+        }
+
+
+        [Test]
+        public void Init_WithZones_AddsTheBruiseThere()
+        {
+            GameObject root = new GameObject("zones");
+            GameObject actor = new GameObject("enemy");
+            HLZoneRegistry owner = root.AddComponent<HLZoneRegistry>();
+            owner.Init(new HLZoneFakeUpload());
+            Entity entity = CreateEnemy(actor, 3f);
+            HLBruiseZone bruise = actor.AddComponent<HLBruiseZone>();
+
+            bruise.Init(entity, owner);
+            owner.PublishFrame(0f);
+
+            Assert.AreEqual((int)HLZoneKind.Bruise, owner.snapshot[0].kind);
+            Assert.AreEqual(3f, owner.snapshot[0].radius);
+
+            Object.DestroyImmediate(actor);
+            Object.DestroyImmediate(root);
+        }
+
+        [Test]
+        public void Init_WithoutZones_IgnoresTheStaticRegistry()
+        {
+            GameObject root = new GameObject("zones");
+            GameObject actor = new GameObject("enemy");
+            HLZoneRegistry owner = root.AddComponent<HLZoneRegistry>();
+            owner.Init(new HLZoneFakeUpload());
+            Entity entity = CreateEnemy(actor, 3f);
+            HLBruiseZone bruise = actor.AddComponent<HLBruiseZone>();
+
+            bruise.Init(entity, null);
+            bruise.Refresh();
+
+            Assert.AreEqual(0, owner.liveCount);
+
+            Object.DestroyImmediate(actor);
+            Object.DestroyImmediate(root);
         }
     }
 }

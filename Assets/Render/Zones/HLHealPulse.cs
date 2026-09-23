@@ -2,20 +2,38 @@ using UnityEngine;
 
 namespace HealerLike.Render.Zones
 {
-    // Goes on each healer model, Init registers it for that healer's resolved heals
+    // Goes on each healer view, Init registers it for that healer's resolved heals
     public class HLHealPulse : MonoBehaviour, IVisualBehaviour, IHLHealVisualSink
     {
-        [SerializeField, Min(0.001f)] float _cellSize = 1;
+        [SerializeField] float _cellSize = 1f;
         GameObject _source;
+        HLRenderRegistry _injectedRegistry;
         HLRenderRegistry _registry;
+        HLZoneRegistry _zones;
+        bool _isInitialized = false;
 
         public float cellSize { get { return _cellSize; } set { _cellSize = value; } }
 
+        public void Init(GameObject source, HLRenderRegistry registry, HLZoneRegistry zones)
+        {
+            Unsubscribe();
+            _source = source;
+            _injectedRegistry = registry;
+            _zones = zones;
+            _isInitialized = true;
+            if (isActiveAndEnabled)
+            {
+                Subscribe();
+            }
+        }
+
+        // Called by EntityModel.Init on the staged model copies, removed in D2
         public void Init(Entity entity)
         {
             Initialize(entity != null ? entity.gameObject : null);
         }
 
+        // Called by HLRenderBootstrap for the healer, removed in D2
         public void Initialize(GameObject source)
         {
             Unsubscribe();
@@ -33,7 +51,8 @@ namespace HealerLike.Render.Zones
 
         void Update()
         {
-            if (_registry != HLRenderRegistry.current)
+            // Follows the static registry until the RenderManager calls Init, removed in D2
+            if (!_isInitialized && _registry != HLRenderRegistry.current)
             {
                 Unsubscribe();
                 Subscribe();
@@ -52,12 +71,19 @@ namespace HealerLike.Render.Zones
 
         public int Pulse(Transform target)
         {
-            return HLZoneRegistry.current?.AddHealPulse(target, 0.6f * _cellSize) ?? 0;
+            // Falls back to the static registry until the RenderManager calls Init, removed in D2
+            HLZoneRegistry zones = _isInitialized ? _zones : HLZoneRegistry.current;
+            if (zones == null)
+            {
+                return 0;
+            }
+
+            return zones.AddHealPulse(target, 0.6f * _cellSize);
         }
 
         public void OnHealResolved(GameObject target, float value, bool critical)
         {
-            if (!isActiveAndEnabled || target == null || !(value > 0) || float.IsInfinity(value))
+            if (!isActiveAndEnabled || target == null || !(value > 0f) || float.IsInfinity(value))
             {
                 return;
             }
@@ -72,7 +98,8 @@ namespace HealerLike.Render.Zones
                 return;
             }
 
-            _registry = HLRenderRegistry.current;
+            // Falls back to the static registry until the RenderManager calls Init, removed in D2
+            _registry = _isInitialized ? _injectedRegistry : HLRenderRegistry.current;
             if (_registry != null)
             {
                 _registry.Register(_source, this);

@@ -155,7 +155,7 @@ namespace HealerLike.Render.Look
 
         static float Finite(float value, float fallback)
         {
-            return float.IsNaN(value) || float.IsInfinity(value) ? fallback : value;
+            return float.IsFinite(value) ? value : fallback;
         }
 
         static Color ValidateColor(Color value, Color fallback, bool nonblack)

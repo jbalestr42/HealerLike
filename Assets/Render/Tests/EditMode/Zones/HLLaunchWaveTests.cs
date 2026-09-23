@@ -17,7 +17,7 @@ namespace HealerLike.Render.Zones
             try
             {
                 HLZoneRegistry owner = root.AddComponent<HLZoneRegistry>();
-                owner.Initialize(new HLZoneFakeUpload());
+                owner.Init(new HLZoneFakeUpload());
                 HLGrassField field = root.AddComponent<HLGrassField>();
                 TestHelpers.WithLoggingDisabled(() => target.AddComponent<Entity>());
                 target.transform.position = Vector3.forward * 4f;
@@ -50,6 +50,61 @@ namespace HealerLike.Render.Zones
                 Object.DestroyImmediate(target);
                 Object.DestroyImmediate(root);
             }
+        }
+
+
+        [Test]
+        public void Init_WithZonesAndField_LaunchesOnBoth()
+        {
+            GameObject root = new GameObject("zones");
+            GameObject shot = new GameObject("projectile");
+            GameObject source = new GameObject("source");
+            GameObject target = new GameObject("target");
+            HLZoneRegistry owner = root.AddComponent<HLZoneRegistry>();
+            owner.Init(new HLZoneFakeUpload());
+            HLGrassField field = root.AddComponent<HLGrassField>();
+            TestHelpers.WithLoggingDisabled(() => target.AddComponent<Entity>());
+            target.transform.position = Vector3.forward * 4f;
+            Projectile projectile = shot.AddComponent<Projectile>();
+            HLLaunchWave wave = shot.AddComponent<HLLaunchWave>();
+
+            wave.Init(owner, field);
+            projectile.Init(source, target, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
+
+            Assert.AreEqual(1, owner.liveCount);
+            Assert.AreEqual(1f, field.wind.current.y);
+
+            Object.DestroyImmediate(shot);
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(target);
+            Object.DestroyImmediate(root);
+        }
+
+        [Test]
+        public void Init_WithoutZones_StillGustsTheField()
+        {
+            GameObject root = new GameObject("zones");
+            GameObject shot = new GameObject("projectile");
+            GameObject source = new GameObject("source");
+            GameObject target = new GameObject("target");
+            HLZoneRegistry owner = root.AddComponent<HLZoneRegistry>();
+            owner.Init(new HLZoneFakeUpload());
+            HLGrassField field = root.AddComponent<HLGrassField>();
+            TestHelpers.WithLoggingDisabled(() => target.AddComponent<Entity>());
+            target.transform.position = Vector3.forward * 4f;
+            Projectile projectile = shot.AddComponent<Projectile>();
+            HLLaunchWave wave = shot.AddComponent<HLLaunchWave>();
+
+            wave.Init(null, field);
+            projectile.Init(source, target, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
+
+            Assert.AreEqual(0, owner.liveCount); // current is set, but Init said no zones
+            Assert.AreEqual(1f, field.wind.current.y);
+
+            Object.DestroyImmediate(shot);
+            Object.DestroyImmediate(source);
+            Object.DestroyImmediate(target);
+            Object.DestroyImmediate(root);
         }
     }
 }

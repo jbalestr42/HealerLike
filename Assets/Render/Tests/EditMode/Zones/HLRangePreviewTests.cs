@@ -16,7 +16,7 @@ namespace HealerLike.Render.Zones
         {
             _ownerGo = new GameObject("zones");
             _owner = _ownerGo.AddComponent<HLZoneRegistry>();
-            _owner.Initialize(new HLZoneFakeUpload());
+            _owner.Init(new HLZoneFakeUpload());
             _entityGo = new GameObject("entity");
             AttributeManager attributes = TestHelpers.CreateAttributeManager(_entityGo, AttributeType.Range, 3);
             TestHelpers.WithLoggingDisabled(() => _entity = _entityGo.AddComponent<Entity>());
@@ -116,7 +116,7 @@ namespace HealerLike.Render.Zones
             _preview.SetPreviewState(true, false);
             _preview.Refresh();
             _owner.Release();
-            _owner.Initialize(new HLZoneFakeUpload());
+            _owner.Init(new HLZoneFakeUpload());
 
             _preview.Refresh();
             _owner.PublishFrame(0f);
@@ -189,6 +189,60 @@ namespace HealerLike.Render.Zones
 
             _preview.Init(null);
             _preview.SetPreviewState(true, true);
+            Assert.AreEqual(0, _owner.liveCount);
+        }
+
+
+        [Test]
+        public void Show_Hovered_ShowsTheRangeAtFullPreviewStrength()
+        {
+            _preview.Show(true, false);
+            _preview.Refresh();
+            _owner.PublishFrame(0f);
+
+            Assert.AreEqual(1, _owner.count);
+            Assert.AreEqual(0.35f, _owner.snapshot[0].strength);
+        }
+
+        [Test]
+        public void Show_ShowAll_UsesTheLowStrength()
+        {
+            _preview.Show(false, true);
+            _preview.Refresh();
+            _owner.PublishFrame(0f);
+
+            Assert.AreEqual(0.15f, _owner.snapshot[0].strength);
+        }
+
+        [Test]
+        public void Show_NeitherHoveredNorShowAll_IgnoresTheStaticAllRanges()
+        {
+            HLRangePreview.allRanges = true;
+
+            _preview.Show(false, false);
+            _preview.Refresh();
+
+            Assert.AreEqual(0, _owner.liveCount);
+        }
+
+        [Test]
+        public void Show_Selected_StillShowsWhenNotHovered()
+        {
+            _preview.Show(false, false);
+            _preview.SetPreviewState(true, false);
+            _preview.Refresh();
+
+            Assert.AreEqual(1, _owner.liveCount);
+        }
+
+        [Test]
+        public void Init_WithoutZones_IgnoresTheStaticRegistry()
+        {
+            _preview.Init(_entity, null);
+
+            _preview.Show(true, false);
+            _preview.Refresh();
+
             Assert.AreEqual(0, _owner.liveCount);
         }
     }

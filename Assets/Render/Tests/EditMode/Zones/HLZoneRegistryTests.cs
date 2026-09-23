@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -57,7 +58,7 @@ namespace HealerLike.Render.Zones
             _go = new GameObject("zone test");
             _registry = _go.AddComponent<HLZoneRegistry>();
             _upload = new HLZoneFakeUpload();
-            _registry.Initialize(_upload);
+            _registry.Init(_upload);
         }
 
         [TearDown]
@@ -228,7 +229,7 @@ namespace HealerLike.Render.Zones
             Assert.AreEqual(0, _registry.count);
             Assert.AreEqual(0, Add(2f));
 
-            _registry.Initialize(new HLZoneFakeUpload());
+            _registry.Init(new HLZoneFakeUpload());
             Assert.AreNotEqual(old, Add(3f));
         }
 
@@ -244,8 +245,34 @@ namespace HealerLike.Render.Zones
             int handle = Add(1f);
             _registry.UpdateZone(handle, HLZoneKind.Heal, Vector3.zero, 1f, float.NaN);
             Assert.IsFalse(_registry.Contains(handle));
+        }
 
-            Assert.Throws<System.ArgumentOutOfRangeException>(() => _registry.PublishFrame(-1));
+        [Test]
+        public void PublishFrame_NegativeDeltaTime_LogsAndLeavesTheSnapshot()
+        {
+            Add(1f);
+            _registry.PublishFrame(0.5f);
+            _upload.calls.Clear();
+
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[HLZoneRegistry\] PublishFrame needs a finite delta time"));
+            _registry.PublishFrame(-1f);
+
+            Assert.AreEqual(0, _upload.calls.Count);
+            Assert.AreEqual(1, _registry.count);
+            Assert.AreEqual(0.5f, _upload.data[0].age);
+        }
+
+        [Test]
+        public void PublishFrame_NaNDeltaTime_LogsAndLeavesTheSnapshot()
+        {
+            Add(1f);
+            _upload.calls.Clear();
+
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[HLZoneRegistry\] PublishFrame needs a finite delta time"));
+            _registry.PublishFrame(float.NaN);
+
+            Assert.AreEqual(0, _upload.calls.Count);
+            Assert.AreEqual(0, _registry.count);
         }
 
         [Test]
@@ -255,7 +282,7 @@ namespace HealerLike.Render.Zones
             try
             {
                 HLZoneRegistry registry = other.AddComponent<HLZoneRegistry>();
-                Assert.Throws<System.InvalidOperationException>(() => registry.Initialize(new HLZoneFakeUpload()));
+                Assert.Throws<System.InvalidOperationException>(() => registry.Init(new HLZoneFakeUpload()));
 
                 registry.Release();
 

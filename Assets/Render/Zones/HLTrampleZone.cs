@@ -14,8 +14,17 @@ namespace HealerLike.Render.Zones
         [Range(0, 1)]
         public float strength = 1;
 
+        HLZoneRegistry _zones;
         HLZoneRegistry _owner;
         int _handle;
+        bool _isInitialized = false;
+
+        public void Init(HLZoneRegistry zones)
+        {
+            Clear();
+            _zones = zones;
+            _isInitialized = true;
+        }
 
         void Update()
         {
@@ -24,7 +33,8 @@ namespace HealerLike.Render.Zones
 
         public void Refresh()
         {
-            if (_owner != HLZoneRegistry.current)
+            HLZoneRegistry zones = GetZones();
+            if (_owner != zones)
             {
                 Clear();
             }
@@ -35,7 +45,7 @@ namespace HealerLike.Render.Zones
                 return;
             }
 
-            _owner = HLZoneRegistry.current;
+            _owner = zones;
             if (!_owner)
             {
                 return;
@@ -70,6 +80,12 @@ namespace HealerLike.Render.Zones
         void OnDestroy()
         {
             Clear();
+        }
+
+        // Falls back to the static registry until the RenderManager calls Init, removed in D2
+        HLZoneRegistry GetZones()
+        {
+            return _isInitialized ? _zones : HLZoneRegistry.current;
         }
     }
 }

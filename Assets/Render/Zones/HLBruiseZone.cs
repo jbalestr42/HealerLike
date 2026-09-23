@@ -2,13 +2,25 @@ using UnityEngine;
 
 namespace HealerLike.Render.Zones
 {
-    // Enemy range readout, added to the enemy models before EntityModel.Init
+    // Enemy range readout on the enemy views
     public class HLBruiseZone : MonoBehaviour, IVisualBehaviour
     {
         Entity _entity;
+        HLZoneRegistry _zones;
         HLZoneRegistry _owner;
         int _handle;
+        bool _isInitialized = false;
 
+        public void Init(Entity entity, HLZoneRegistry zones)
+        {
+            Clear();
+            _zones = zones;
+            _isInitialized = true;
+            _entity = entity;
+            Refresh();
+        }
+
+        // Called by EntityModel.Init on the staged model copies, removed in D2
         public void Init(Entity entity)
         {
             Clear();
@@ -18,6 +30,7 @@ namespace HealerLike.Render.Zones
 
         void Start()
         {
+            // Staged model copies only, removed in D2
             if (!_entity)
             {
                 Init(GetComponentInParent<Entity>());
@@ -31,21 +44,22 @@ namespace HealerLike.Render.Zones
 
         public void Refresh()
         {
-            if (_owner != HLZoneRegistry.current)
+            HLZoneRegistry zones = GetZones();
+            if (_owner != zones)
             {
                 Clear();
             }
 
             if (!isActiveAndEnabled || !_entity || !_entity.isActiveAndEnabled
                 || _entity.entityType != Entity.EntityType.Computer
-                || (_entity.health != null && _entity.health.Value <= 0)
+                || (_entity.health != null && _entity.health.Value <= 0f)
                 || _entity.attributeManager == null || !_entity.attributeManager.Has(AttributeType.Range))
             {
                 Clear();
                 return;
             }
 
-            _owner = HLZoneRegistry.current;
+            _owner = zones;
             if (!_owner)
             {
                 return;
@@ -54,11 +68,11 @@ namespace HealerLike.Render.Zones
             float radius = _entity.attributeManager.Get(AttributeType.Range).Value;
             if (!_owner.Contains(_handle))
             {
-                _handle = _owner.Add(HLZoneKind.Bruise, _entity.transform.position, radius, 1);
+                _handle = _owner.Add(HLZoneKind.Bruise, _entity.transform.position, radius, 1f);
             }
             else
             {
-                _owner.RefreshZone(_handle, HLZoneKind.Bruise, _entity.transform.position, radius, 1);
+                _owner.RefreshZone(_handle, HLZoneKind.Bruise, _entity.transform.position, radius, 1f);
             }
         }
 
@@ -81,6 +95,12 @@ namespace HealerLike.Render.Zones
         void OnDestroy()
         {
             Clear();
+        }
+
+        // Falls back to the static registry until the RenderManager calls Init, removed in D2
+        HLZoneRegistry GetZones()
+        {
+            return _isInitialized ? _zones : HLZoneRegistry.current;
         }
     }
 }

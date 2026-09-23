@@ -5,6 +5,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.TestTools;
+using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Look
 {
@@ -325,6 +326,75 @@ namespace HealerLike.Render.Look
 
             controller.ApplyGlobals();
             Assert.That(Shader.GetGlobalFloat("_HLFogBands"), Is.EqualTo(1f));
+        }
+
+        Camera CreatePortraitCamera()
+        {
+            GameObject go = new GameObject("HL look camera");
+            _objects.Add(go);
+            Camera camera = go.AddComponent<Camera>();
+            camera.fieldOfView = 40f;
+            camera.transform.SetPositionAndRotation(new Vector3(0f, 20f, -15f), Quaternion.Euler(52f, 0f, 0f));
+            return camera;
+        }
+
+        [Test]
+        public void Init_CameraAndBoard_SetsFogFromTheBoardCorners()
+        {
+            HLLookController controller = CreateController();
+            Camera camera = CreatePortraitCamera();
+            Bounds board = new Bounds(Vector3.zero, new Vector3(6f, 0f, 10f));
+
+            controller.Init(camera, board);
+
+            Vector2 fog = HLStageCalibration.BackgroundFog(camera.transform.position, board);
+            Assert.AreEqual(fog.x, controller.settings.fogStart);
+            Assert.AreEqual(fog.y, controller.settings.fogEnd);
+            Assert.AreEqual(fog.x, controller.settings.inkDistStart);
+        }
+
+        [Test]
+        public void Init_CameraAndBoard_ScalesTheHatchingToTheBoardCentre()
+        {
+            HLLookController controller = CreateController();
+            Camera camera = CreatePortraitCamera();
+            Bounds board = new Bounds(Vector3.zero, new Vector3(6f, 0f, 10f));
+
+            controller.Init(camera, board);
+
+            float depth = Vector3.Distance(camera.transform.position, board.center);
+            float spacing = HLStageCalibration.HatchSpacing(camera, depth, 1920);
+            Assert.AreEqual(spacing, controller.settings.inkScale, 0.00001f);
+            Assert.AreEqual(spacing * 0.04f, controller.settings.inkWidth, 0.00001f);
+            Assert.AreEqual(spacing * 1.2f, controller.settings.inkFarSpacing, 0.00001f);
+        }
+
+        [Test]
+        public void Init_CameraAndBoard_KeepsTheAuthoredColours()
+        {
+            HLLookController controller = CreateController();
+            HLLookSettings authored = HLLookSettings.Default;
+            authored.shadowTint = new Color(63f / 255f, 91f / 255f, 148f / 255f, 1f);
+            authored.inkStrength = 0.75f;
+            controller.settings = authored;
+
+            controller.Init(CreatePortraitCamera(), new Bounds(Vector3.zero, new Vector3(6f, 0f, 10f)));
+
+            Assert.AreEqual(authored.shadowTint, controller.settings.shadowTint);
+            Assert.AreEqual(0.75f, controller.settings.inkStrength);
+        }
+
+        [Test]
+        public void Init_NoCamera_LogsAndKeepsTheSettings()
+        {
+            HLLookController controller = CreateController();
+            HLLookSettings before = controller.settings;
+
+            LogAssert.Expect(LogType.Error, "[HLLookController] Init needs the camera the look is calibrated for.");
+            controller.Init(null, new Bounds(Vector3.zero, Vector3.one));
+
+            Assert.AreEqual(before.fogStart, controller.settings.fogStart);
+            Assert.AreEqual(before.inkScale, controller.settings.inkScale);
         }
     }
 }
