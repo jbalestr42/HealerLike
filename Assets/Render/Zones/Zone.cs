@@ -15,7 +15,7 @@ namespace HealerLike.Render.Zones
         Trample = 6
     }
 
-    // Matches the 32 bytes element of _HL_Zones in HLZoneData.hlsl
+    // Matches the 32 bytes element of _HL_Zones in ZoneData.hlsl
     [StructLayout(LayoutKind.Explicit, Size = 32)]
     public struct Zone
     {

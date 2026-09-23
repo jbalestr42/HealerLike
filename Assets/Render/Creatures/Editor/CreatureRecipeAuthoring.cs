@@ -40,7 +40,7 @@ namespace HealerLike.Render.Creatures
             }
 
             // Geometry-only readability: root footprint and gameplay sockets stay unchanged
-            float displayHeight = name == "HLHealer" ? 2.05f : 1.7f;
+            float displayHeight = name == "Healer" ? 2.05f : 1.7f;
             Vector3 displayScale = new Vector3(1.45f, displayHeight, 1.45f);
             for (int i = 0; i < parts.Count; i++)
             {
@@ -71,7 +71,7 @@ namespace HealerLike.Render.Creatures
             recipe.roots.footRadius = 0.41f;
             recipe.roots.hipHeight = 0.26f;
             recipe.roots.kneeHeight = 0.14f;
-            if (name == "HLHealer")
+            if (name == "Healer")
             {
                 // The body grew independently of the crown. Join the inverted bowl
                 // to a visible hip above the grass without changing the legal cell footprint.

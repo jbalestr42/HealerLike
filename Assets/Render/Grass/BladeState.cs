@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Grass
 {
-    // GPU layout of one blade state, written by HLGrass.compute every frame
+    // GPU layout of one blade state, written by Grass.compute every frame
     [StructLayout(LayoutKind.Sequential, Pack = 4, Size = Stride)]
     public struct BladeState
     {

@@ -23,7 +23,7 @@ public class GrassPaletteTests
     {
         Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/HealRing.mat");
 
-        Assert.AreEqual(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrassRing.shader"), material.shader);
+        Assert.AreEqual(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/GrassRing.shader"), material.shader);
         Assert.IsTrue(material.enableInstancing);
     }
 

@@ -10,7 +10,7 @@ namespace HealerLike.Render.Stones
     {
         static StoneTerrainClump CreateClump()
         {
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/HLStoneBlock.prefab");
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneBlock.prefab");
             return Object.Instantiate(prefab).GetComponentInChildren<StoneTerrainClump>();
         }
 

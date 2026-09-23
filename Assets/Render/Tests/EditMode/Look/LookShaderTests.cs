@@ -17,7 +17,7 @@ namespace HealerLike.Render.Look
         [Test]
         public void DefaultMaterialUsesAllyGreenAndInstancing()
         {
-            Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/HLLook_Default.mat");
+            Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
 
             Assert.That(material, Is.Not.Null);
             Assert.That(material.shader.name, Is.EqualTo("HL/Look/Primitive"));
@@ -35,7 +35,7 @@ namespace HealerLike.Render.Look
         [Test]
         public void PrimitivePassesImportAndCompileSupportedVariantsWhenGraphicsAvailable()
         {
-            Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLLook.shader");
+            Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader");
             Assert.That(shader, Is.Not.Null);
             Material material = new Material(shader);
             try
@@ -92,7 +92,7 @@ namespace HealerLike.Render.Look
         [Test]
         public void ScreenEdgesImportAndCompileBothNormalEncodingsWhenGraphicsAvailable()
         {
-            Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/HLOutlinesEdges.shader");
+            Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/OutlinesEdges.shader");
             Assert.That(shader, Is.Not.Null);
             Material material = new Material(shader);
             try
@@ -194,7 +194,7 @@ namespace HealerLike.Render.Look
                 settings.inkStrength = 0f;
                 settings.outlineWidthPixels = 1f;
                 look.settings = settings;
-                Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLLook.shader"));
+                Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));
                 owned.Add(material);
                 material.SetColor("_BaseColor", new Color(0.6f, 0.78f, 0.3f));
 
@@ -366,7 +366,7 @@ namespace HealerLike.Render.Look
                         Debug.Log("HL beauty outline " + label + ": " + string.Join(",", widths));
                     }
 
-                    Material probe = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/HLLookBeautyProbe.shader"));
+                    Material probe = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/LookBeautyProbe.shader"));
                     owned.Add(probe);
                     Shader.SetGlobalFloat("_HLTipLight", 0.12f);
                     Graphics.Blit(Texture2D.whiteTexture, target, probe);

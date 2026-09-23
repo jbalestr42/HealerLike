@@ -13,7 +13,7 @@ namespace HealerLike.Render.Look
         [Test]
         public void DefaultsMatchEveryShaderFallback()
         {
-            string core = File.ReadAllText(Path.Combine(Application.dataPath, "Render/Shaders/HLLookCore.hlsl"));
+            string core = File.ReadAllText(Path.Combine(Application.dataPath, "Render/Shaders/LookCore.hlsl"));
             LookSettings defaults = LookSettings.Default;
 
             Assert.That(defaults.Validated(), Is.EqualTo(defaults));

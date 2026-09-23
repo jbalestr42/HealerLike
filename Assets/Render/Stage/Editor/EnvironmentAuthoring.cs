@@ -11,11 +11,11 @@ namespace HealerLike.Render.Stage
     public static class EnvironmentAuthoring
     {
         public static readonly string PrefabPath = "Assets/Render/Environment/Prefabs/Environment.prefab";
-        public static readonly string PlantMaterialPath = "Assets/Render/Look/HLLook_Default.mat";
-        public static readonly string StoneMaterialPath = "Assets/Render/Look/HLLook_Stone.mat";
-        public static readonly string GroundMaterialPath = "Assets/Render/Environment/HLLook_Ground.mat";
+        public static readonly string PlantMaterialPath = "Assets/Render/Look/Look_Default.mat";
+        public static readonly string StoneMaterialPath = "Assets/Render/Look/Look_Stone.mat";
+        public static readonly string GroundMaterialPath = "Assets/Render/Environment/Look_Ground.mat";
         public static readonly string MeshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
-        public static readonly string GrassComputePath = "Assets/Render/Shaders/HLGrass.compute";
+        public static readonly string GrassComputePath = "Assets/Render/Shaders/Grass.compute";
         public static readonly string BladeMaterialPath = "Assets/Render/Grass/Materials/GrassBlade.mat";
         public static readonly string RingMaterialPath = "Assets/Render/Grass/Materials/HealRing.mat";
 

@@ -15,7 +15,7 @@ namespace HealerLike.Render.Look
 
         static Shader LoadEdgeShader()
         {
-            return AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/HLOutlinesEdges.shader");
+            return AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/OutlinesEdges.shader");
         }
 
         [Test]

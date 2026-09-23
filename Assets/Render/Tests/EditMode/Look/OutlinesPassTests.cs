@@ -12,7 +12,7 @@ namespace HealerLike.Render.Look
         public void PassRequestsDepthAndNormalsOnlyForEdgeMaterial()
         {
             Type type = typeof(LookSettings).Assembly.GetType("HealerLike.Render.Look.HLOutlinesPass", true);
-            Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/HLOutlinesEdges.shader");
+            Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/OutlinesEdges.shader");
             Assert.That(shader, Is.Not.Null);
             Material material = new Material(shader);
             try

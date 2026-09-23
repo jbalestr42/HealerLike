@@ -10,7 +10,7 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void AuthoredHealerBowlPointsDownAndJoinsRaisedRootCrown()
         {
-            string path = "Assets/Render/Creatures/Data/HLHealer.asset";
+            string path = "Assets/Render/Creatures/Data/Healer.asset";
             CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
             Assert.NotNull(recipe);
             Part bulb = Array.Find(recipe.parts, part => part.id == "HLBulb");
@@ -37,7 +37,7 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void StackRootKneeClearsConicalBaseWithoutChangingFootprint()
         {
-            string path = "Assets/Render/Creatures/Data/HLSphereStack.asset";
+            string path = "Assets/Render/Creatures/Data/SphereStack.asset";
             CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
             Assert.NotNull(recipe);
             Part cone = Array.Find(recipe.parts, part => part.id == "HLConicalRoot");

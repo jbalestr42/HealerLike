@@ -11,7 +11,7 @@ namespace HealerLike.Render.Stones
         [Test]
         public void SoldierModel_IsAPlainViewWithItsBodyPresentationAndShadow()
         {
-            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(root + "HLStoneSoldierModel.prefab");
+            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(root + "StoneSoldierModel.prefab");
 
             Assert.AreEqual(PrefabAssetType.Regular, PrefabUtility.GetPrefabAssetType(model));
             Assert.IsNull(model.GetComponent<EntityModel>()); // his model keeps its sockets and HUD
@@ -32,7 +32,7 @@ namespace HealerLike.Render.Stones
         public void BlockPreservesColliderAndCarriesItsDiscsAndFacet()
         {
             GameObject original = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Grid/Block.prefab");
-            GameObject block = AssetDatabase.LoadAssetAtPath<GameObject>(root + "HLStoneBlock.prefab");
+            GameObject block = AssetDatabase.LoadAssetAtPath<GameObject>(root + "StoneBlock.prefab");
             Assert.AreEqual(original.layer, block.layer);
             BoxCollider a = original.GetComponentInChildren<BoxCollider>();
             BoxCollider b = block.GetComponentInChildren<BoxCollider>();

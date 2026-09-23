@@ -9,7 +9,7 @@ namespace HealerLike.Render.Creatures
     public static class CreatureAssetAuthoring
     {
         static readonly string root = "Assets/Render/Creatures/";
-        static readonly string materialPath = "Assets/Render/Look/HLLook_Default.mat";
+        static readonly string materialPath = "Assets/Render/Look/Look_Default.mat";
         static readonly string meshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
 
         [MenuItem("Tools/Render/Author Creature Assets")]
@@ -25,28 +25,28 @@ namespace HealerLike.Render.Creatures
 
             Directory.CreateDirectory(root + "Data");
             Directory.CreateDirectory(root + "Prefabs");
-            CreatureRecipe healer = CreatureRecipeAuthoring.SaveRecipe("HLHealer", CreatureRecipeParts.Healer(), 6, 2, 17);
-            CreatureRecipe fern = CreatureRecipeAuthoring.SaveRecipe("HLSpiralFern", CreatureRecipeParts.Fern(), 7, 2, 31);
-            CreatureRecipe arch = CreatureRecipeAuthoring.SaveRecipe("HLHangingArch", CreatureRecipeParts.Arch(), 6, 4, 57);
-            CreatureRecipe rosette = CreatureRecipeAuthoring.SaveRecipe("HLBladeRosette", CreatureRecipeParts.Rosette(), 6, 2, 103);
-            CreatureRecipe stack = CreatureRecipeAuthoring.SaveRecipe("HLSphereStack", CreatureRecipeParts.Stack(), 8, 1, 89);
+            CreatureRecipe healer = CreatureRecipeAuthoring.SaveRecipe("Healer", CreatureRecipeParts.Healer(), 6, 2, 17);
+            CreatureRecipe fern = CreatureRecipeAuthoring.SaveRecipe("SpiralFern", CreatureRecipeParts.Fern(), 7, 2, 31);
+            CreatureRecipe arch = CreatureRecipeAuthoring.SaveRecipe("HangingArch", CreatureRecipeParts.Arch(), 6, 4, 57);
+            CreatureRecipe rosette = CreatureRecipeAuthoring.SaveRecipe("BladeRosette", CreatureRecipeParts.Rosette(), 6, 2, 103);
+            CreatureRecipe stack = CreatureRecipeAuthoring.SaveRecipe("SphereStack", CreatureRecipeParts.Stack(), 8, 1, 89);
             if (!healer || !fern || !arch || !rosette || !stack)
             {
                 return;
             }
 
             // Views are instantiated under his models, which keep their own sockets and colliders
-            View("HLNormal", fern, material, meshes);
-            View("HLTest", stack, material, meshes);
-            View("HLSwarm", arch, material, meshes);
-            View("HLFastShoot", fern, material, meshes);
-            View("HLTripleShoot", arch, material, meshes);
-            View("HLMultiShot", arch, material, meshes);
-            View("HLRandomShoot", fern, material, meshes);
-            View("HLChainLightning", stack, material, meshes);
-            View("HLChanneling", stack, material, meshes);
-            View("HLSoldier", stack, material, meshes);
-            View("HLHitArmorBuffer", rosette, material, meshes);
+            View("Normal", fern, material, meshes);
+            View("Test", stack, material, meshes);
+            View("Swarm", arch, material, meshes);
+            View("FastShoot", fern, material, meshes);
+            View("TripleShoot", arch, material, meshes);
+            View("MultiShot", arch, material, meshes);
+            View("RandomShoot", fern, material, meshes);
+            View("ChainLightning", stack, material, meshes);
+            View("Channeling", stack, material, meshes);
+            View("Soldier", stack, material, meshes);
+            View("HitArmorBuffer", rosette, material, meshes);
             CharacterView(healer, material, meshes);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -56,11 +56,11 @@ namespace HealerLike.Render.Creatures
         // Recipe-only refresh keeps existing prefab presentation and delivery overrides intact
         public static void AuthorBeautyRecipes()
         {
-            CreatureRecipeAuthoring.SaveRecipe("HLHealer", CreatureRecipeParts.Healer(), 6, 2, 17);
-            CreatureRecipeAuthoring.SaveRecipe("HLSpiralFern", CreatureRecipeParts.Fern(), 7, 2, 31);
-            CreatureRecipeAuthoring.SaveRecipe("HLHangingArch", CreatureRecipeParts.Arch(), 6, 4, 57);
-            CreatureRecipeAuthoring.SaveRecipe("HLBladeRosette", CreatureRecipeParts.Rosette(), 6, 2, 103);
-            CreatureRecipeAuthoring.SaveRecipe("HLSphereStack", CreatureRecipeParts.Stack(), 8, 1, 89);
+            CreatureRecipeAuthoring.SaveRecipe("Healer", CreatureRecipeParts.Healer(), 6, 2, 17);
+            CreatureRecipeAuthoring.SaveRecipe("SpiralFern", CreatureRecipeParts.Fern(), 7, 2, 31);
+            CreatureRecipeAuthoring.SaveRecipe("HangingArch", CreatureRecipeParts.Arch(), 6, 4, 57);
+            CreatureRecipeAuthoring.SaveRecipe("BladeRosette", CreatureRecipeParts.Rosette(), 6, 2, 103);
+            CreatureRecipeAuthoring.SaveRecipe("SphereStack", CreatureRecipeParts.Stack(), 8, 1, 89);
             AssetDatabase.SaveAssets();
         }
 
@@ -79,7 +79,7 @@ namespace HealerLike.Render.Creatures
 
         static void CharacterView(CreatureRecipe recipe, Material material, PrimitiveMeshes meshes)
         {
-            GameObject view = new GameObject("HLHealerCharacter");
+            GameObject view = new GameObject("HealerCharacter");
             CharacterView characterView = view.AddComponent<CharacterView>();
             SerializedObject data = new SerializedObject(characterView);
             data.FindProperty("_recipe").objectReferenceValue = recipe;
@@ -89,7 +89,7 @@ namespace HealerLike.Render.Creatures
             data.ApplyModifiedPropertiesWithoutUndo();
             view.AddComponent<HealPulse>();
             view.AddComponent<TrampleZone>();
-            PrefabUtility.SaveAsPrefabAsset(view, root + "Prefabs/HLHealerCharacter.prefab");
+            PrefabUtility.SaveAsPrefabAsset(view, root + "Prefabs/HealerCharacter.prefab");
             Object.DestroyImmediate(view);
         }
     }

@@ -10,7 +10,7 @@ namespace HealerLike.Render.Stones
         [TestCase(StonePreset.Monolith, 1, 1.45f)]
         public void LayoutFitsFootprintAndDisposes(StonePreset preset, int count, float height)
         {
-            GameObject go = new GameObject("HLTest");
+            GameObject go = new GameObject("Test");
             StoneAssembly assembly = new StoneAssembly();
             StoneMeshCache meshes = new StoneMeshCache();
             assembly.Init(meshes);

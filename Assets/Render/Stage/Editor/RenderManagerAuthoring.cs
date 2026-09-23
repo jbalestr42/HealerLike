@@ -15,8 +15,8 @@ namespace HealerLike.Render.Stage
         public static readonly string PrefabPath = "Assets/Render/Stage/Prefabs/RenderManager.prefab";
         public static readonly string CreatureLooksPath = "Assets/Render/Creatures/Data/CreatureLooks.asset";
         public static readonly string SpellLooksPath = "Assets/Render/Spells/Data/SpellLooks.asset";
-        public static readonly string BoardMaterialPath = "Assets/Render/Stage/Materials/HLStageGround.mat";
-        public static readonly string SinkPath = "Assets/Render/Spells/Prefabs/HLSpellVisualSink.prefab";
+        public static readonly string BoardMaterialPath = "Assets/Render/Stage/Materials/StageGround.mat";
+        public static readonly string SinkPath = "Assets/Render/Spells/Prefabs/SpellVisualSink.prefab";
         public static readonly string StoneEffectsPath = "Assets/Render/Stones/Prefabs/StoneEffects.prefab";
         // Decoration in his Main that the render preview hides, and his far ground under the environment plane
         public static readonly string[] HiddenObjects = { "MiddleLine", "Sphere", "Ground" };

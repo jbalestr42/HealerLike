@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Grass
 {
-    // GPU layout of one blade seed, read by HLGrass.compute and HLGrassInstancing.hlsl
+    // GPU layout of one blade seed, read by Grass.compute and GrassInstancing.hlsl
     [StructLayout(LayoutKind.Sequential, Pack = 4, Size = Stride)]
     public struct BladeSeed
     {

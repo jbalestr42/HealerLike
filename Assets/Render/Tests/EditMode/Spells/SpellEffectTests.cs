@@ -37,13 +37,13 @@ public class SpellEffectTests
         _objects.Clear();
     }
 
-    [TestCase("HLFx_HealSpheres")]
-    [TestCase("HLFx_Impact")]
-    [TestCase("HLStatus_Buff")]
-    [TestCase("HLStatus_Shield")]
-    [TestCase("HLFx_ChainBeam")]
-    [TestCase("HLFx_PoisonDrips")]
-    [TestCase("HLFx_HostileLitter")]
+    [TestCase("Fx_HealSpheres")]
+    [TestCase("Fx_Impact")]
+    [TestCase("Status_Buff")]
+    [TestCase("Status_Shield")]
+    [TestCase("Fx_ChainBeam")]
+    [TestCase("Fx_PoisonDrips")]
+    [TestCase("Fx_HostileLitter")]
     public void Advance_AfterWarmup_AllocatesNothing(string prefab)
     {
         SpellEffect effect = CreateEffect(prefab);
@@ -66,7 +66,7 @@ public class SpellEffectTests
     [Test]
     public void Advance_Heal_BudsGrowThenPopAndStalksStayConnected()
     {
-        SpellEffect effect = CreateEffect("HLFx_HealSpheres");
+        SpellEffect effect = CreateEffect("Fx_HealSpheres");
         effect.Advance(0f);
         float seed = effect.parts[0].localScale.x;
 
@@ -89,7 +89,7 @@ public class SpellEffectTests
     [Test]
     public void SetStatus_PeriodicHeal_BudsReadOnlyTickTime()
     {
-        SpellEffect effect = CreateEffect("HLFx_HealSpheres");
+        SpellEffect effect = CreateEffect("Fx_HealSpheres");
         effect.SetPeriod(true, 2f);
 
         effect.SetStatus(1, 1f, 10f, ClockKind.Simulation);
@@ -111,7 +111,7 @@ public class SpellEffectTests
     [Test]
     public void FaceCamera_Impact_StarFacesCameraAndShardsFall()
     {
-        SpellEffect effect = CreateEffect("HLFx_Impact");
+        SpellEffect effect = CreateEffect("Fx_Impact");
         GameObject camera = CreateObject("Camera");
         camera.transform.rotation = Quaternion.Euler(35f, 20f, 0f);
 
@@ -130,7 +130,7 @@ public class SpellEffectTests
     [Test]
     public void SetStatus_Buff_OrbitAndGlowFollowObservedTime()
     {
-        SpellEffect effect = CreateEffect("HLStatus_Buff");
+        SpellEffect effect = CreateEffect("Status_Buff");
         effect.SetStatus(1, 0f, 10f, ClockKind.Simulation);
         Vector3 normal = effect.parts[0].up;
         Vector3 scale = effect.parts[0].localScale;
@@ -149,7 +149,7 @@ public class SpellEffectTests
     [Test]
     public void Advance_Litter_EmergesThenSinks()
     {
-        SpellEffect effect = CreateEffect("HLFx_HostileLitter");
+        SpellEffect effect = CreateEffect("Fx_HostileLitter");
         effect.Advance(0f);
         float buried = effect.parts[0].localPosition.y;
 
@@ -164,7 +164,7 @@ public class SpellEffectTests
     [Test]
     public void SetStatus_Drip_WaitsForTheFirstTick()
     {
-        SpellEffect effect = CreateEffect("HLFx_PoisonDrips");
+        SpellEffect effect = CreateEffect("Fx_PoisonDrips");
         effect.SetPeriod(true, 2f);
 
         effect.SetStatus(1, 1.9f, 10f, ClockKind.Simulation);
@@ -181,7 +181,7 @@ public class SpellEffectTests
     [Test]
     public void SetStatus_Drip_FollowsPeriodAndBodyTintResetsOnRemoval()
     {
-        SpellEffect effect = CreateEffect("HLFx_PoisonDrips");
+        SpellEffect effect = CreateEffect("Fx_PoisonDrips");
         effect.SetPeriod(true, 2f);
         Color tint = Color.clear;
         effect.OnBodyTint.AddListener(color => tint = color);
@@ -203,7 +203,7 @@ public class SpellEffectTests
     [Test]
     public void SetEndpoints_ContactThread_HidesBeadsAndEndsOnTheContact()
     {
-        SpellEffect effect = CreateEffect("HLFx_ChainBeam");
+        SpellEffect effect = CreateEffect("Fx_ChainBeam");
         effect.contactThread = true;
 
         effect.SetEndpoints(Vector3.zero, Vector3.right * 4f);
@@ -225,7 +225,7 @@ public class SpellEffectTests
     [Test]
     public void SetShieldState_Repeated_AllocatesNothing()
     {
-        SpellEffect effect = CreateEffect("HLStatus_Shield");
+        SpellEffect effect = CreateEffect("Status_Shield");
         for (int i = 0; i < 32; i++)
         {
             effect.SetStatus(2, 1f, 4f, ClockKind.Simulation);
@@ -248,7 +248,7 @@ public class SpellEffectTests
     [Test]
     public void SetShieldState_Charges_ShowsOnePlatePerCharge()
     {
-        SpellEffect effect = CreateEffect("HLStatus_Shield");
+        SpellEffect effect = CreateEffect("Status_Shield");
         effect.SetStatus(9, 0f, 4f, ClockKind.Simulation);
 
         effect.SetShieldState(2f);
@@ -272,7 +272,7 @@ public class SpellEffectTests
     [Test]
     public void SetStatus_Buff_PoseOnlyMovesWithObservedTime()
     {
-        SpellEffect effect = CreateEffect("HLStatus_Buff");
+        SpellEffect effect = CreateEffect("Status_Buff");
         effect.SetStatus(1, 1f, 4f, ClockKind.Simulation);
         Quaternion pose = effect.parts[0].localRotation;
 
@@ -286,7 +286,7 @@ public class SpellEffectTests
     [Test]
     public void BeginRemoval_Shield_OpensThePlates()
     {
-        SpellEffect effect = CreateEffect("HLStatus_Shield");
+        SpellEffect effect = CreateEffect("Status_Shield");
         effect.SetStatus(1, 0.25f, 4f, ClockKind.Simulation);
         Quaternion closed = effect.parts[0].localRotation;
         float closedRadius = effect.parts[0].localPosition.magnitude;
@@ -302,7 +302,7 @@ public class SpellEffectTests
     [Test]
     public void Advance_Chain_BeadsTravelAboveTheChord()
     {
-        SpellEffect effect = CreateEffect("HLFx_ChainBeam");
+        SpellEffect effect = CreateEffect("Fx_ChainBeam");
         effect.SetEndpoints(Vector3.zero, Vector3.right * 4f);
 
         Assert.AreEqual(Vector3.zero, effect.parts[1].position);
@@ -318,7 +318,7 @@ public class SpellEffectTests
     [Test]
     public void SetSide_Twice_ReusesTheAuthoredRim()
     {
-        SpellEffect effect = CreateEffect("HLFx_HealSpheres");
+        SpellEffect effect = CreateEffect("Fx_HealSpheres");
         int count = effect.transform.childCount;
 
         effect.SetSide(Entity.EntityType.Player);
@@ -331,7 +331,7 @@ public class SpellEffectTests
     [Test]
     public void ShowCritical_Heal_ShowsTwoRings()
     {
-        SpellEffect effect = CreateEffect("HLFx_HealSpheres");
+        SpellEffect effect = CreateEffect("Fx_HealSpheres");
 
         effect.ShowCritical();
 
@@ -349,7 +349,7 @@ public class SpellEffectTests
     [Test]
     public void SetStatus_Stacks_ShowsOneBeadPerStack()
     {
-        SpellEffect effect = CreateEffect("HLStatus_Buff");
+        SpellEffect effect = CreateEffect("Status_Buff");
 
         effect.SetStatus(3, 0f, 4f, ClockKind.Simulation);
 
@@ -367,8 +367,8 @@ public class SpellEffectTests
     [Test]
     public void Advance_Status_DoesNotExpire()
     {
-        SpellEffect heal = CreateEffect("HLFx_HealSpheres");
-        SpellEffect status = CreateEffect("HLStatus_Buff");
+        SpellEffect heal = CreateEffect("Fx_HealSpheres");
+        SpellEffect status = CreateEffect("Status_Buff");
         float before = heal.parts[0].localPosition.y;
 
         heal.Advance(0.2f);
@@ -383,7 +383,7 @@ public class SpellEffectTests
     [Test]
     public void SetColor_Tint_ColoursEveryPart()
     {
-        SpellEffect effect = CreateEffect("HLStatus_Buff");
+        SpellEffect effect = CreateEffect("Status_Buff");
         MaterialPropertyBlock block = new MaterialPropertyBlock();
 
         effect.SetColor(Color.red);

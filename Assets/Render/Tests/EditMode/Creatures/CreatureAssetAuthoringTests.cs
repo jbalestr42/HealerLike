@@ -9,18 +9,18 @@ namespace HealerLike.Render.Creatures
     {
         static readonly string root = "Assets/Render/Creatures/";
 
-        [TestCase("HLBladeRosette")]
-        [TestCase("HLHealer")]
-        [TestCase("HLSpiralFern")]
-        [TestCase("HLHangingArch")]
-        [TestCase("HLSphereStack")]
+        [TestCase("BladeRosette")]
+        [TestCase("Healer")]
+        [TestCase("SpiralFern")]
+        [TestCase("HangingArch")]
+        [TestCase("SphereStack")]
         public void ShippedRecipeValidatesAndBuildsWithoutImportedGeometry(string name)
         {
             string path = root + "Data/" + name + ".asset";
             CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
             Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);
             Assert.That(recipe.roots.count, Is.InRange(6, 8));
-            if (name == "HLHealer")
+            if (name == "Healer")
             {
                 Part bulb = System.Array.Find(recipe.parts, part => part.id == "HLBulb");
                 Part crown = System.Array.Find(recipe.parts, part => part.id == "HLCrown");
@@ -31,11 +31,11 @@ namespace HealerLike.Render.Creatures
             GameObject parent = new GameObject("HLRecipeFixture");
             try
             {
-                Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/HLLook_Default.mat");
+                Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
                 using (CreatureRig rig = CreatureRigTests.CreateRig(recipe, parent.transform, material))
                 {
                     rig.Tick(1f, 0.016f, new FootFrame(Vector3.zero, Vector3.up, 1f));
-                    if (name == "HLHealer")
+                    if (name == "Healer")
                     {
                         Transform crown = rig.root.Find("HLSway/HLStem/HLCrown");
                         Quaternion before = crown.localRotation;
@@ -59,17 +59,17 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        [TestCase("HLNormal", "HLSpiralFern")]
-        [TestCase("HLTest", "HLSphereStack")]
-        [TestCase("HLSwarm", "HLHangingArch")]
-        [TestCase("HLFastShoot", "HLSpiralFern")]
-        [TestCase("HLTripleShoot", "HLHangingArch")]
-        [TestCase("HLMultiShot", "HLHangingArch")]
-        [TestCase("HLRandomShoot", "HLSpiralFern")]
-        [TestCase("HLChainLightning", "HLSphereStack")]
-        [TestCase("HLChanneling", "HLSphereStack")]
-        [TestCase("HLSoldier", "HLSphereStack")]
-        [TestCase("HLHitArmorBuffer", "HLBladeRosette")]
+        [TestCase("Normal", "SpiralFern")]
+        [TestCase("Test", "SphereStack")]
+        [TestCase("Swarm", "HangingArch")]
+        [TestCase("FastShoot", "SpiralFern")]
+        [TestCase("TripleShoot", "HangingArch")]
+        [TestCase("MultiShot", "HangingArch")]
+        [TestCase("RandomShoot", "SpiralFern")]
+        [TestCase("ChainLightning", "SphereStack")]
+        [TestCase("Channeling", "SphereStack")]
+        [TestCase("Soldier", "SphereStack")]
+        [TestCase("HitArmorBuffer", "BladeRosette")]
         public void View_ShippedPrefab_HasNoBaseModelAndCarriesItsLook(string name, string recipeName)
         {
             GameObject view = AssetDatabase.LoadAssetAtPath<GameObject>(root + "Prefabs/" + name + ".prefab");
@@ -83,16 +83,16 @@ namespace HealerLike.Render.Creatures
             Assert.NotNull(builder);
             Assert.AreEqual(recipeName, builder.recipe.name);
             SerializedObject data = new SerializedObject(builder);
-            Assert.AreEqual("Assets/Render/Look/HLLook_Default.mat",
+            Assert.AreEqual("Assets/Render/Look/Look_Default.mat",
                 AssetDatabase.GetAssetPath(data.FindProperty("_material").objectReferenceValue));
             Assert.AreSame(PrimitiveMeshesTests.Meshes(), data.FindProperty("_meshes").objectReferenceValue);
         }
 
-        [TestCase("HLBladeRosette")]
-        [TestCase("HLHealer")]
-        [TestCase("HLSpiralFern")]
-        [TestCase("HLHangingArch")]
-        [TestCase("HLSphereStack")]
+        [TestCase("BladeRosette")]
+        [TestCase("Healer")]
+        [TestCase("SpiralFern")]
+        [TestCase("HangingArch")]
+        [TestCase("SphereStack")]
         public void ShippedArmsReachAcrossCurrentBoardAndClampOutsideIt(string name)
         {
             string path = root + "Data/" + name + ".asset";
@@ -120,7 +120,7 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void CharacterView_ShippedPrefab_HasNoBaseCharacterAndAnchorsOnItself()
         {
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(root + "Prefabs/HLHealerCharacter.prefab");
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(root + "Prefabs/HealerCharacter.prefab");
 
             Assert.AreEqual(PrefabAssetType.Regular, PrefabUtility.GetPrefabAssetType(prefab));
             Assert.IsNull(prefab.GetComponent<Character>());
@@ -128,7 +128,7 @@ namespace HealerLike.Render.Creatures
             Assert.NotNull(view);
             SerializedObject data = new SerializedObject(view);
             Assert.AreSame(prefab.transform, data.FindProperty("_visualAnchor").objectReferenceValue);
-            Assert.AreEqual("HLHealer", data.FindProperty("_recipe").objectReferenceValue.name);
+            Assert.AreEqual("Healer", data.FindProperty("_recipe").objectReferenceValue.name);
             Assert.AreSame(PrimitiveMeshesTests.Meshes(), data.FindProperty("_meshes").objectReferenceValue);
         }
     }

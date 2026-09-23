@@ -15,7 +15,7 @@ namespace HealerLike.Render.Look
                 Assert.Ignore("Requires graphics readback");
             }
 
-            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLLook.shader"));
+            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));
             Mesh mesh = new Mesh
             {
                 vertices = new[]

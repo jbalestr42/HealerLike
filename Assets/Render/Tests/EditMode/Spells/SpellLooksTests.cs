@@ -125,20 +125,20 @@ public class SpellLooksTests
         }
     }
 
-    [TestCase("HLStatus_Buff", SpellEffectKind.Buff)]
-    [TestCase("HLStatus_Shield", SpellEffectKind.Shield)]
-    [TestCase("HLFx_HealSpheres", SpellEffectKind.Heal)]
-    [TestCase("HLFx_Impact", SpellEffectKind.Impact)]
-    [TestCase("HLFx_ChainBeam", SpellEffectKind.Chain)]
-    [TestCase("HLFx_HostileLitter", SpellEffectKind.Litter)]
-    [TestCase("HLFx_HealRing", SpellEffectKind.Area)]
-    [TestCase("HLFx_PoisonDrips", SpellEffectKind.Drip)]
-    [TestCase("HLResolved_ManaMaxPositive", SpellEffectKind.Mana)]
-    [TestCase("HLResolved_ManaMaxNegative", SpellEffectKind.Mana)]
+    [TestCase("Status_Buff", SpellEffectKind.Buff)]
+    [TestCase("Status_Shield", SpellEffectKind.Shield)]
+    [TestCase("Fx_HealSpheres", SpellEffectKind.Heal)]
+    [TestCase("Fx_Impact", SpellEffectKind.Impact)]
+    [TestCase("Fx_ChainBeam", SpellEffectKind.Chain)]
+    [TestCase("Fx_HostileLitter", SpellEffectKind.Litter)]
+    [TestCase("Fx_HealRing", SpellEffectKind.Area)]
+    [TestCase("Fx_PoisonDrips", SpellEffectKind.Drip)]
+    [TestCase("Resolved_ManaMaxPositive", SpellEffectKind.Mana)]
+    [TestCase("Resolved_ManaMaxNegative", SpellEffectKind.Mana)]
     public void Shipped_EffectPrefab_IsAuthoredWithBakedMeshesAndTheLookMaterial(string name, SpellEffectKind kind)
     {
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Spells/Prefabs/" + name + ".prefab");
-        Material look = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/HLLook_Default.mat");
+        Material look = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
 
         SpellEffect effect = prefab.GetComponent<SpellEffect>();
         SerializedObject serialized = new SerializedObject(effect);
@@ -162,7 +162,7 @@ public class SpellLooksTests
     [Test]
     public void Shipped_HealPrefab_HasOneStalkPerBud()
     {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Spells/Prefabs/HLFx_HealSpheres.prefab");
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Spells/Prefabs/Fx_HealSpheres.prefab");
 
         SpellEffect effect = prefab.GetComponent<SpellEffect>();
 
@@ -173,7 +173,7 @@ public class SpellLooksTests
     [Test]
     public void Shipped_Sink_UsesTheSeededLooks()
     {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Spells/Prefabs/HLSpellVisualSink.prefab");
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Spells/Prefabs/SpellVisualSink.prefab");
         SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
 
         SpellVisualSink sink = prefab.GetComponent<SpellVisualSink>();

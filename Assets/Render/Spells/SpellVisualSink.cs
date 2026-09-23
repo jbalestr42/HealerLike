@@ -68,7 +68,7 @@ namespace HealerLike.Render.Spells
         {
             if (manager == null)
             {
-                Debug.LogError("[HLSpellVisualSink] Init needs the RenderManager.");
+                Debug.LogError("[SpellVisualSink] Init needs the RenderManager.");
                 return;
             }
 

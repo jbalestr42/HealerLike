@@ -340,7 +340,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 426481555694381639, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
       propertyPath: m_Name
-      value: HLSpellVisualSink
+      value: SpellVisualSink
       objectReference: {fileID: 0}
     - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
       propertyPath: m_LocalPosition.x

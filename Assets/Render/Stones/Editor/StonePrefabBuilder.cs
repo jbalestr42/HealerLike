@@ -11,14 +11,14 @@ namespace HealerLike.Render.Stones
     {
         static readonly string root = "Assets/Render/Stones/";
 
-        public static readonly string StoneMaterialPath = "Assets/Render/Look/HLLook_Stone.mat";
+        public static readonly string StoneMaterialPath = "Assets/Render/Look/Look_Stone.mat";
 
         [MenuItem("Tools/Render/Author Stone Prefabs")]
         public static void Build()
         {
             Directory.CreateDirectory(root + "Prefabs");
             BuildEffects();
-            StoneModelAuthoring.Build(root + "Prefabs/HLStoneSoldierModel.prefab", "HLStoneSoldierModel", StonePreset.Boulder);
+            StoneModelAuthoring.Build(root + "Prefabs/StoneSoldierModel.prefab", "StoneSoldierModel", StonePreset.Boulder);
             BuildBlock();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -38,7 +38,7 @@ namespace HealerLike.Render.Stones
         {
             GameObject sourceBlock = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Grid/Block.prefab");
             GameObject blockGo = (GameObject)PrefabUtility.InstantiatePrefab(sourceBlock);
-            blockGo.name = "HLStoneBlock";
+            blockGo.name = "StoneBlock";
             foreach (MeshRenderer meshRenderer in blockGo.GetComponentsInChildren<MeshRenderer>())
             {
                 Object.DestroyImmediate(meshRenderer);
@@ -62,7 +62,7 @@ namespace HealerLike.Render.Stones
             clumpSO.Update();
             clumpSO.FindProperty("_trample").objectReferenceValue = trampleGo.AddComponent<TrampleZone>();
             clumpSO.ApplyModifiedPropertiesWithoutUndo();
-            PrefabUtility.SaveAsPrefabAsset(blockGo, root + "Prefabs/HLStoneBlock.prefab");
+            PrefabUtility.SaveAsPrefabAsset(blockGo, root + "Prefabs/StoneBlock.prefab");
             Object.DestroyImmediate(blockGo);
         }
 

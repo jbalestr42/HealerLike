@@ -43,7 +43,7 @@ namespace HealerLike.Render.Creatures
         public void ShortDirectDeliveryDoesNotDrawUnusedBoardLengthAsCoils()
         {
             GameObject host = new GameObject("HLShortDelivery");
-            string path = "Assets/Render/Creatures/Data/HLSpiralFern.asset";
+            string path = "Assets/Render/Creatures/Data/SpiralFern.asset";
             CreatureRecipe data = UnityEditor.AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
             Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
             try

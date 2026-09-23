@@ -92,7 +92,7 @@ namespace HealerLike.Render.Creatures
         {
             GameObject go = new GameObject("HLCharacter");
             GameObject target = new GameObject("HLRecipient");
-            string recipePath = "Assets/Render/Creatures/Data/HLHealer.asset";
+            string recipePath = "Assets/Render/Creatures/Data/Healer.asset";
             CreatureRecipe recipe = UnityEditor.AssetDatabase.LoadAssetAtPath<CreatureRecipe>(recipePath);
             Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
             try
@@ -173,7 +173,7 @@ namespace HealerLike.Render.Creatures
         {
             GameObject characterGo = new GameObject("HLCharacter");
             GameObject managerGo = new GameObject("HLRenderManager");
-            string path = "Assets/Render/Creatures/Prefabs/HLHealerCharacter.prefab";
+            string path = "Assets/Render/Creatures/Prefabs/HealerCharacter.prefab";
             GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
             GameObject viewGo = Object.Instantiate(prefab, characterGo.transform);
             Character character = null;

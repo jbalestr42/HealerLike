@@ -13,7 +13,7 @@ namespace HealerLike.Render.Grass
         {
             if (!SystemInfo.supportsComputeShaders || SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
                 Assert.Ignore("Requires a graphics device; run the grass suite with -force-metal.");
-            var asset = AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute");
+            var asset = AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/Grass.compute");
             Assert.NotNull(asset);
             var compute = Object.Instantiate(asset);
             var buffers = new List<GraphicsBuffer>();
@@ -110,7 +110,7 @@ namespace HealerLike.Render.Grass
         [Test] public void LookAndRingShaderPassesCompileWithGrassInstancingOnGraphicsDevice()
         {
             if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null) Assert.Ignore("Shader compilation needs a graphics device.");
-            foreach (string path in new[] { "Assets/Render/Shaders/HLLook.shader", "Assets/Render/Shaders/HLGrassRing.shader" })
+            foreach (string path in new[] { "Assets/Render/Shaders/Look.shader", "Assets/Render/Shaders/GrassRing.shader" })
             {
                 var shader = AssetDatabase.LoadAssetAtPath<Shader>(path); Assert.NotNull(shader);
                 var material = new Material(shader) { enableInstancing = true };

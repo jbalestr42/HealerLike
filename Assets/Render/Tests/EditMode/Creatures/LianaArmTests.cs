@@ -44,10 +44,10 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void AuthoredArmUsesOneMeshOnlyDuringGesturesAndDisposesIt()
         {
-            string path = "Assets/Render/Creatures/Data/HLHealer.asset";
+            string path = "Assets/Render/Creatures/Data/Healer.asset";
             CreatureRecipe authored = UnityEditor.AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
             GameObject parent = new GameObject("HLArmFixture");
-            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLLook.shader"));
+            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));
             LianaArm rendered = CreateArm(authored.arms[0], parent.transform, material);
             Mesh mesh = null;
             try
@@ -114,10 +114,10 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void RestMeshHasOneNormalPerVertexBeforeAnyGesture()
         {
-            string path = "Assets/Render/Creatures/Data/HLHealer.asset";
+            string path = "Assets/Render/Creatures/Data/Healer.asset";
             CreatureRecipe authored = UnityEditor.AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
             GameObject parent = new GameObject("HLArmFixture");
-            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLLook.shader"));
+            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));
             LianaArm rendered = CreateArm(authored.arms[0], parent.transform, material);
             try
             {
@@ -215,10 +215,10 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void Tick_NonfiniteGoal_HidesChainAndLogsOnce()
         {
-            string path = "Assets/Render/Creatures/Data/HLHealer.asset";
+            string path = "Assets/Render/Creatures/Data/Healer.asset";
             CreatureRecipe authored = UnityEditor.AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
             GameObject parent = new GameObject("HLArmFixture");
-            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLLook.shader"));
+            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));
             LianaArm rendered = CreateArm(authored.arms[0], parent.transform, material);
             Renderer renderer = parent.GetComponentInChildren<Renderer>(true);
             rendered.Begin(1, GestureKind.Attack, Vector3.one);

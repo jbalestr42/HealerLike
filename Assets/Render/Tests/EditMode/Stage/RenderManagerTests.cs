@@ -139,7 +139,7 @@ public class RenderManagerTests
         Assert.IsFalse(_sunGo.GetComponent<Light>().enabled);
         Assert.AreEqual("KeyLight", RenderSettings.sun.name);
         Assert.AreEqual(AmbientMode.Flat, RenderSettings.ambientMode);
-        Assert.AreEqual("HLStageGround", _ground.sharedMaterial.name);
+        Assert.AreEqual("StageGround", _ground.sharedMaterial.name);
         Assert.IsFalse(_decorationGo.GetComponent<Renderer>().enabled);
         Assert.IsFalse(_farGroundGo.GetComponent<Renderer>().enabled);
         Assert.IsTrue(_ground.enabled); // the board ground shares the name and stays

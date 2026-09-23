@@ -16,7 +16,7 @@ namespace HealerLike.Render.Creatures
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             List<CreatureRig> rigs = new List<CreatureRig>();
-            Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/HLLook_Default.mat");
+            Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
             string meshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
             PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesPath);
 
@@ -43,7 +43,7 @@ namespace HealerLike.Render.Creatures
             look.settings = settings;
             look.ApplyGlobals();
 
-            string[] names = { "HLSpiralFern", "HLHangingArch", "HLHealer", "HLSphereStack", "HLBladeRosette" };
+            string[] names = { "SpiralFern", "HangingArch", "Healer", "SphereStack", "BladeRosette" };
             for (int i = 0; i < names.Length; i++)
             {
                 GameObject root = new GameObject(names[i]);

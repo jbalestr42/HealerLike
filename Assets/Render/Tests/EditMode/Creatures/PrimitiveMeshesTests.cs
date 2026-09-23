@@ -53,7 +53,7 @@ namespace HealerLike.Render.Creatures
         {
             GameObject parent = new GameObject("HLMeshOwner");
             CreatureRecipe recipe = CreatureValidatorTests.Recipe();
-            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLLook.shader"));
+            Material material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));
             CreatureRig rig = new CreatureRig();
             rig.Init(recipe, parent.transform, material, Meshes());
             Mesh mesh = rig.root.GetComponentInChildren<MeshFilter>().sharedMesh;

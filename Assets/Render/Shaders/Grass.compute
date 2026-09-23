@@ -1,0 +1,158 @@
+#pragma kernel HLUpdateGrass
+#include "GrassZones.hlsl"
+
+struct HLBladeSeed
+{
+    float4 positionYaw;
+    float4 heightPhaseWidthRandom;
+};
+
+struct HLBladeState
+{
+    float4 leanHeightSpike;
+    float4 rampHealReserved;
+};
+
+StructuredBuffer<HLBladeSeed> _HL_BladeSeeds;
+RWStructuredBuffer<HLBladeState> _HL_BladeStates;
+AppendStructuredBuffer<uint> _HL_VisibleBlades;
+uint _HL_BladeCount;
+float4 _HL_FrustumPlanes[6];
+float _HL_Time;
+float4 _HL_Wind;
+
+float2 HLCapLean(float2 lean, float limit)
+{
+    return lean * min(1.0, limit / max(length(lean), 1e-5));
+}
+
+float2 HLWindFlow(float2 position, float phase, float timeSeconds)
+{
+    float2 direction = _HL_Wind.xy;
+    float2 across = float2(-direction.y, direction.x);
+
+    // Two broad travelling modes, fundamental 0.05 Hz, coherent across many clumps
+    float slow = sin(dot(position, float2(0.19, 0.13)) - timeSeconds * 0.3141593);
+    float crossFlow = sin(dot(position, float2(-0.11, 0.17)) + timeSeconds * 0.1941611);
+    direction = normalize(direction + across * (0.45 * slow + 0.2 * crossFlow));
+    across = float2(-direction.y, direction.x);
+
+    float travel = dot(position, direction) - _HL_Wind.z * timeSeconds;
+    float gust = 0.65 + 0.15 * slow + 0.25 * sin(6.2831853 * travel / 3.5);
+    gust += 0.10 * sin(6.2831853 * (travel / 1.3 + dot(position, across) / 5.0));
+    float2 along = direction * (_HL_Wind.w * gust);
+    float2 flutter = across * (_HL_Wind.w * (0.012 / 0.065) * sin(6.2831853 * travel / 2.2 + phase));
+    return HLCapLean(along + flutter, max(0.10, _HL_Wind.w * (0.10 / 0.065)));
+}
+
+HLBladeState HLEvaluateBlade(HLBladeSeed blade)
+{
+    float2 position = blade.positionYaw.xz;
+    float heal = 0.0;
+    float spike = 0.0;
+    float bruise = 0.0;
+    float spikeHeight = 0.0;
+    float spikePresence = 0.0;
+    float weightSum = 0.0;
+    float ringClear = 0.0;
+    float trample = 0.0;
+    float2 launch = 0.0;
+    float2 outwardSum = 0.0;
+    float2 yaw = float2(cos(blade.positionYaw.w), sin(blade.positionYaw.w));
+
+    for (int i = 0; i < min(_HL_ZoneCount, 64); i++)
+    {
+        HLZone zone = HLLoadZone(i);
+        float weight = HLGrassZoneWeight(zone, position);
+        if (zone.kind == 2)
+        {
+            spike = max(spike, weight);
+            // Presence keeps the same spike geometry during both emergence and sinking
+            if (weight > 0.0)
+            {
+                spikePresence = 1.0;
+            }
+            spikeHeight = max(spikeHeight, weight * smoothstep(0.0, 0.15, zone.age));
+        }
+        if (zone.kind == 6)
+        {
+            // Smooth irregular flattening, rather than a shaved disc with a hard circular rim
+            float2 delta = position - zone.position.xz;
+            float radius = zone.radius * (0.88 + 0.12 * sin(dot(position, float2(9.7, 6.3))));
+            float footprint = HLGrassZoneOnset(zone) * (1.0 - smoothstep(radius * 0.35, radius, length(delta)));
+            trample = max(trample, footprint);
+        }
+        if (zone.kind == 4)
+        {
+            bruise = max(bruise, weight);
+        }
+        if (zone.kind == 5 && zone.radius > 0.0)
+        {
+            float2 delta = position - zone.position.xz;
+            float front = zone.radius * saturate(zone.age / 0.4);
+            float band = max(0.15, zone.radius * 0.12);
+            float wave = (1.0 - smoothstep(0.0, band, abs(length(delta) - front))) * weight;
+            launch += zone.direction * wave * saturate(dot(delta / max(length(delta), 1e-5), zone.direction));
+        }
+        if ((zone.kind != 1 && zone.kind != 3) || zone.radius <= 0.0)
+        {
+            continue;
+        }
+        heal = max(heal, weight * (zone.kind == 3 ? 0.35 : 1.0));
+        float2 offset = position - zone.position.xz;
+        float distanceToZone = length(offset);
+        outwardSum += weight * (distanceToZone < 1e-5 ? yaw : offset / distanceToZone);
+        weightSum += weight;
+        float inner = min(0.06, zone.radius * 0.08);
+        float outer = min(0.22, zone.radius * 0.25);
+        float edge = 1.0 - smoothstep(inner, outer, abs(distanceToZone - zone.radius));
+        ringClear = max(ringClear, HLGrassZoneOnset(zone) * edge);
+    }
+
+    HLBladeState state;
+    if (spikePresence > 0.0 && trample < 0.5)
+    {
+        float2 spikeLean = yaw * (0.04 * blade.heightPhaseWidthRandom.w);
+        state.leanHeightSpike = float4(spikeLean, max(0.001, 1.5 * spikeHeight), max(0.5, spike));
+        state.rampHealReserved = float4(2.0, 0.0, 0.0, 0.0);
+        return state;
+    }
+
+    float height = blade.heightPhaseWidthRandom.x;
+    float phase = blade.heightPhaseWidthRandom.y;
+    float2 outward = outwardSum / max(1.0, weightSum);
+    float2 restLean = (float2(cos(phase), sin(phase)) * 0.055 + yaw * 0.10) * (height / 0.30);
+    float2 windLean = HLWindFlow(position, phase, _HL_Time) * (1.0 - 0.65 * heal);
+    float2 lean = HLCapLean(windLean + restLean + 0.20 * outward + 0.22 * launch, 0.36) * (1.0 - 2.0 * spike);
+    float scale = lerp((1.0 + 0.8 * heal) * (1.0 - 0.65 * bruise), 0.005 / height, ringClear);
+    scale = lerp(scale, 0.055 / height, trample);
+    lean = lerp(lean, yaw * 0.10, trample);
+    spike *= 1.0 - trample;
+
+    // Flatten the edge band as a whole, including sideways displacement
+    state.leanHeightSpike = float4(lean * (1.0 - ringClear), scale, spike);
+    state.rampHealReserved = float4(heal > 0.0 ? 1.0 : 0.0, heal, bruise, 0.0);
+    return state;
+}
+
+[numthreads(64, 1, 1)]
+void HLUpdateGrass(uint3 dispatchID : SV_DispatchThreadID)
+{
+    uint index = dispatchID.x;
+    if (index >= _HL_BladeCount)
+    {
+        return;
+    }
+
+    HLBladeSeed blade = _HL_BladeSeeds[index];
+    for (int plane = 0; plane < 6; plane++)
+    {
+        if (dot(_HL_FrustumPlanes[plane].xyz, blade.positionYaw.xyz) + _HL_FrustumPlanes[plane].w < -0.85)
+        {
+            return;
+        }
+    }
+
+    _HL_BladeStates[index] = HLEvaluateBlade(blade);
+    _HL_VisibleBlades.Append(index);
+}

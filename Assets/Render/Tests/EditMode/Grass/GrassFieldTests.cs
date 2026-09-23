@@ -50,7 +50,7 @@ public class GrassFieldTests
     void SetAssets()
     {
         TestHelpers.SetPrivateField(_field, "_meshes", AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset"));
-        TestHelpers.SetPrivateField(_field, "_updateGrass", AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute"));
+        TestHelpers.SetPrivateField(_field, "_updateGrass", AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/Grass.compute"));
         TestHelpers.SetPrivateField(_field, "_lookMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat"));
         TestHelpers.SetPrivateField(_field, "_ringMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/HealRing.mat"));
     }

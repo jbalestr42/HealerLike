@@ -76,7 +76,7 @@ namespace HealerLike.Render.Stones
         [Test]
         public void TerrainReusesItsTwoDiscsAndPropagatesShadowToggle()
         {
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/HLStoneBlock.prefab");
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneBlock.prefab");
             GameObject block = Object.Instantiate(prefab);
             StoneTerrainClump terrain = block.GetComponentInChildren<StoneTerrainClump>();
             try
