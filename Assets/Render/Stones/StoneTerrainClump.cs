@@ -196,15 +196,38 @@ namespace HealerLike.Render.Stones
                 }
             }
 
+            // A thin slab rather than a decal: half sunk into the stone, closed on every side
             Vector3 lift = normals[face] * 0.002f;
-            _ochreMesh = new Mesh { name = "OchreFacet" };
-            _ochreMesh.vertices = new Vector3[]
+            Vector3[] top = { vertices[face] + lift, vertices[face + 1] + lift, vertices[face + 2] + lift };
+            Vector3[] bottom = { vertices[face] - lift, vertices[face + 1] - lift, vertices[face + 2] - lift };
+            Vector3[] corners = new Vector3[24];
+            corners[0] = top[0];
+            corners[1] = top[1];
+            corners[2] = top[2];
+            corners[3] = bottom[0];
+            corners[4] = bottom[2];
+            corners[5] = bottom[1];
+            for (int i = 0; i < 3; i++)
             {
-                vertices[face] + lift,
-                vertices[face + 1] + lift,
-                vertices[face + 2] + lift
-            };
-            _ochreMesh.triangles = new int[] { 0, 1, 2 };
+                int j = (i + 1) % 3;
+                int k = 6 + i * 6;
+                corners[k] = bottom[i];
+                corners[k + 1] = bottom[j];
+                corners[k + 2] = top[j];
+                corners[k + 3] = bottom[i];
+                corners[k + 4] = top[j];
+                corners[k + 5] = top[i];
+            }
+
+            int[] triangles = new int[corners.Length];
+            for (int i = 0; i < triangles.Length; i++)
+            {
+                triangles[i] = i;
+            }
+
+            _ochreMesh = new Mesh { name = "OchreFacet" };
+            _ochreMesh.vertices = corners;
+            _ochreMesh.triangles = triangles;
             _ochreMesh.RecalculateNormals();
             _ochreMesh.RecalculateBounds();
 
