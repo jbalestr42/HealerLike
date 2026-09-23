@@ -125,6 +125,7 @@ namespace HealerLike.Render.Stage
         public static readonly float CropCells = 2.8f;
         public static readonly int CellPixels = 330;
         public static readonly int LabelScale = 3;
+        public static readonly float StatusSeconds = 2.5f;
 
         static readonly DeliveryStyle[] styles =
         {
@@ -217,8 +218,8 @@ namespace HealerLike.Render.Stage
         IEnumerator SpawnEffects()
         {
             EntityData plant = AssetDatabase.LoadAssetAtPath<EntityData>(LookSheetUnits.Roster[0]);
-            List<Vector3> cells = Cells(LookSheetUnits.Families.Length + styles.Length);
-            for (int i = 0; i < cells.Count; i++)
+            List<Vector3> cells = Cells(LookSheetUnits.Families.Length + styles.Length + 1);
+            for (int i = 0; i < cells.Count - 1; i++)
             {
                 string label = i < LookSheetUnits.Families.Length
                     ? LookSheetUnits.Families[i]
@@ -226,9 +227,16 @@ namespace HealerLike.Render.Stage
                 Spawn(plant, Entity.EntityType.Player, cells[i], label);
             }
 
+            // The healer stands in the last cell, so its heal links start clear of the other cells
+            Character character = _manager.player.character;
+            if (character != null)
+            {
+                character.transform.position = cells[cells.Count - 1];
+            }
+
             // The rigs are built on spawn, a frame lets them settle before the gestures start
             yield return NextFrame();
-            if (_cells.Count != cells.Count)
+            if (_cells.Count != cells.Count - 1)
             {
                 Debug.LogError("[LookSheetRun] A plant was refused a cell, the effects would land on the wrong one");
                 yield break;
@@ -241,7 +249,8 @@ namespace HealerLike.Render.Stage
                 ABuffHandlerFactory handler = LookSheetUnits.Handler(LookSheetUnits.Families[i], _created);
                 if (handler != null)
                 {
-                    sink.SetStatus(source, _cells[i].gameObject, handler, 1, 0.8f, 6f, ClockKind.Simulation);
+                    // Past the first period, so a ticking status shows its drop or its rising bud
+                    sink.SetStatus(source, _cells[i].gameObject, handler, 1, StatusSeconds, 6f, ClockKind.Simulation);
                 }
             }
 
