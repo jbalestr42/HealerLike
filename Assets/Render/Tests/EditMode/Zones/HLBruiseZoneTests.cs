@@ -97,7 +97,7 @@ namespace HealerLike.Render.Zones
             Entity entity = CreateEnemy(actor, 3f);
             HLBruiseZone bruise = actor.AddComponent<HLBruiseZone>();
 
-            bruise.Init(entity, null);
+            bruise.Init(entity, (HLZoneRegistry)null);
             bruise.Refresh();
 
             Assert.AreEqual(0, owner.liveCount);

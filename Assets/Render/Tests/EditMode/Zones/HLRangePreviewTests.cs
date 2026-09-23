@@ -238,7 +238,7 @@ namespace HealerLike.Render.Zones
         [Test]
         public void Init_WithoutZones_IgnoresTheStaticRegistry()
         {
-            _preview.Init(_entity, null);
+            _preview.Init(_entity, (HLZoneRegistry)null);
 
             _preview.Show(true, false);
             _preview.Refresh();
