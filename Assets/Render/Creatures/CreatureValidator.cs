@@ -5,6 +5,9 @@ namespace HealerLike.Render.Creatures
 {
     public static class CreatureValidator
     {
+        // Roots reach at most the healer's 2.1 body units, a little over one cell, plus their thickness
+        public static readonly float MaxRootReach = 1.25f;
+
         public static bool TryValidate(CreatureRecipe data, out string error)
         {
             error = null;
@@ -33,7 +36,7 @@ namespace HealerLike.Render.Creatures
                 bool isEulerFinite = float.IsFinite(euler.x) && float.IsFinite(euler.y) && float.IsFinite(euler.z);
                 if (!isPositionFinite || !isEulerFinite || !Positive(part.dimensions) || !Colour(part.colour)
                     || !float.IsFinite(part.glow) || part.glow < 0f
-                    || (int)part.primitive < 0 || (int)part.primitive > 5 || !isTorusValid)
+                    || (int)part.primitive < 0 || part.primitive > Primitive.Pyramid || !isTorusValid)
                 {
                     return Fail("Invalid primitive settings.", out error);
                 }
@@ -93,13 +96,15 @@ namespace HealerLike.Render.Creatures
             }
 
             RootDefinition roots = data.roots;
-            if (roots.count < 4 || roots.count > 14 || roots.segments < 1 || roots.segments > 4
+            // A stone stands on its limbs and grows no roots
+            bool isRootCountValid = roots.count == 0 || (roots.count >= 4 && roots.count <= 14);
+            if (!isRootCountValid || roots.segments < 1 || roots.segments > 4
                 || !Positive(roots.footRadius) || !Positive(roots.thickness)
-                || roots.footRadius + roots.thickness > 0.46f
+                || roots.footRadius + roots.thickness > MaxRootReach
                 || !Positive(roots.hipHeight) || !Positive(roots.kneeHeight)
                 || !float.IsFinite(roots.angularOffset) || !Colour(roots.colour))
             {
-                return Fail("Roots exceed the cell footprint or have invalid settings.", out error);
+                return Fail("Roots reach past the longest band or have invalid settings.", out error);
             }
 
             IdleDefinition idle = data.idle;

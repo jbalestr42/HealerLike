@@ -10,7 +10,9 @@ namespace HealerLike.Render.Creatures
         Cone,
         Torus,
         CylinderSegment,
-        Leaf
+        Leaf,
+        Boulder,
+        Pyramid
     }
 
     [CreateAssetMenu(menuName = "Custom/Data/Render/CreatureRecipe")]
@@ -39,6 +41,8 @@ namespace HealerLike.Render.Creatures
 
         // Socket hints only guide new authoring, the runtime never relocates authored sockets
         public Vector3 targetLocal;
+        // The body colour a wilting creature fades toward, plant green unless the recipe says otherwise
+        public Color wiltColour = new Color(0.18f, 0.49f, 0.31f);
         public Vector3[] sourceLocal = Array.Empty<Vector3>();
     }
 }

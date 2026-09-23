@@ -30,29 +30,26 @@ public class CreatureRecipeTests
     }
 
     [Test]
-    public void Parts_HealerAsset_BowlPointsDownAndJoinsRootCrown()
+    public void Parts_HealerAsset_BowlPointsDownAndRootsLieFromTheStemFoot()
     {
         string path = "Assets/Render/Creatures/Data/Healer.asset";
         CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
         Assert.NotNull(recipe);
         CreaturePart bulb = Array.Find(recipe.parts, part => part.id == "Bulb");
         CreaturePart hip = Array.Find(recipe.parts, part => part.id == "Hip");
+        CreaturePart stem = recipe.parts[0];
 
         Assert.AreEqual(Primitive.Cone, bulb.primitive);
         Assert.Less(Vector3.Dot(Quaternion.Euler(bulb.localEuler) * Vector3.up, Vector3.up), -0.99f,
             "The bowl must taper down toward the roots, not point up into the crown.");
         Assert.AreEqual(Primitive.Sphere, hip.primitive);
         Assert.AreEqual(bulb.parent, hip.parent);
-        float parentY = recipe.parts[hip.parent].localPosition.y;
-        float hipY = parentY + hip.localPosition.y;
-        float bowlTipY = parentY + bulb.localPosition.y - bulb.dimensions.y * 0.5f;
-        Assert.LessOrEqual(Mathf.Abs(recipe.roots.hipHeight - hipY), hip.dimensions.y * 0.5f);
-        Assert.LessOrEqual(Mathf.Abs(bowlTipY - hipY), hip.dimensions.y * 0.5f + 0.025f,
-            "The hip joint must connect the bowl to the root crown.");
-        Assert.GreaterOrEqual(recipe.roots.hipHeight, 0.55f);
-        Assert.GreaterOrEqual(recipe.roots.kneeHeight, 0.30f);
-        Assert.AreEqual(0.41f, recipe.roots.footRadius, 0.0001f);
-        Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, 0.46f);
+        float stemFootY = stem.localPosition.y - stem.dimensions.y * 0.5f;
+        Assert.LessOrEqual(Mathf.Abs(stemFootY), 0.01f, "The stem stands on the ground.");
+        Assert.LessOrEqual(recipe.roots.hipHeight, stemFootY + 0.1f, "The roots leave the body at its base.");
+        Assert.LessOrEqual(recipe.roots.kneeHeight, 0.1f, "The knee is only slightly raised.");
+        Assert.AreEqual(LookComposer.LongReach * LookComposer.BodyUnit, recipe.roots.footRadius, 0.0001f);
+        Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, CreatureValidator.MaxRootReach);
         Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);
     }
 
@@ -71,8 +68,8 @@ public class CreatureRecipeTests
 
         Assert.Greater(kneeInnerRadius, coneRadiusAtKnee,
             "Root knees must emerge outside the opaque conical base.");
-        Assert.AreEqual(0.41f, recipe.roots.footRadius, 0.0001f);
-        Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, 0.46f);
+        Assert.AreEqual(LookComposer.PinnedReach * LookComposer.BodyUnit, recipe.roots.footRadius, 0.0001f);
+        Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, CreatureValidator.MaxRootReach);
         Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);
     }
 
@@ -82,7 +79,7 @@ public class CreatureRecipeTests
         CreatureRecipe recipe = CreateTracked<CreatureRecipe>();
 
         Assert.AreEqual(4, recipe.roots.count);
-        Assert.Less(recipe.roots.footRadius + recipe.roots.thickness, 0.46f);
+        Assert.Less(recipe.roots.footRadius + recipe.roots.thickness, CreatureValidator.MaxRootReach);
         Assert.NotNull(recipe.parts);
         Assert.NotNull(recipe.arms);
         Assert.NotNull(recipe.sourceLocal);

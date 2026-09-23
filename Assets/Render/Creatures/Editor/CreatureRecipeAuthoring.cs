@@ -68,16 +68,16 @@ namespace HealerLike.Render.Creatures
             recipe.roots.count = roots;
             recipe.roots.segments = 3;
             recipe.idle.seed = seed;
-            recipe.roots.thickness = 0.042f;
-            recipe.roots.footRadius = 0.41f;
-            recipe.roots.hipHeight = 0.26f;
-            recipe.roots.kneeHeight = 0.14f;
+            // Roots lie along the ground from the body's base, reaching as far as the derived units
+            recipe.roots.thickness = LookComposer.RootThickness;
+            recipe.roots.footRadius = LookComposer.PinnedReach * LookComposer.BodyUnit;
+            recipe.roots.hipHeight = LookComposer.RootHip;
+            recipe.roots.kneeHeight = LookComposer.RootKnee;
             if (name == "Healer")
             {
-                // The body grew independently of the crown. Join the inverted bowl
-                // to a visible hip above the grass without changing the legal cell footprint.
-                recipe.roots.hipHeight = 0.60f;
-                recipe.roots.kneeHeight = 0.32f;
+                // The healer's rosette reaches 2.1 body units, from the foot of its stem
+                recipe.roots.footRadius = LookComposer.LongReach * LookComposer.BodyUnit;
+                recipe.roots.kneeHeight = 0.07f;
                 recipe.roots.thickness = 0.049f;
             }
 

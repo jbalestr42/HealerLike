@@ -341,7 +341,9 @@ namespace HealerLike.Render.Creatures
                     _pivots[i].localRotation = Quaternion.Euler(part.localEuler) * spin;
                 }
 
-                Color colour = Color.Lerp(new Color(0.18f, 0.49f, 0.31f, _colours[i].a), _colours[i], _healthFraction);
+                Color wiltColour = _recipe.wiltColour;
+                wiltColour.a = _colours[i].a;
+                Color colour = Color.Lerp(wiltColour, _colours[i], _healthFraction);
                 float light = Mathf.Max(_budPower, _charge) * _healthFraction;
                 if (part.glow > 0f)
                 {

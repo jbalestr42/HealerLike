@@ -44,11 +44,12 @@ public class CreatureValidatorTests
         Object.DestroyImmediate(_recipe);
     }
 
+    [TestCase(0, true)]
     [TestCase(3, false)]
     [TestCase(8, true)]
     [TestCase(14, true)]
     [TestCase(15, false)]
-    public void TryValidate_RootCount_AcceptsFourToFourteen(int count, bool valid)
+    public void TryValidate_RootCount_AcceptsNoneOrFourToFourteen(int count, bool valid)
     {
         _recipe.roots.count = count;
 
@@ -62,6 +63,17 @@ public class CreatureValidatorTests
     public void TryValidate_RootSegments_AcceptsOneToFour(int segments, bool valid)
     {
         _recipe.roots.segments = segments;
+
+        Assert.AreEqual(valid, CreatureValidator.TryValidate(_recipe, out _));
+    }
+
+    [TestCase(0.6f, true)] // the short band, 1.1 body units
+    [TestCase(1.16f, true)] // the long band, 2.1 body units
+    [TestCase(1.3f, false)]
+    public void TryValidate_RootReach_AcceptsEveryReachBand(float footRadius, bool valid)
+    {
+        _recipe.roots.footRadius = footRadius;
+        _recipe.roots.thickness = 0.042f;
 
         Assert.AreEqual(valid, CreatureValidator.TryValidate(_recipe, out _));
     }
@@ -117,7 +129,7 @@ public class CreatureValidatorTests
 
         if (mode == 4)
         {
-            _recipe.roots.footRadius = 1f;
+            _recipe.roots.footRadius = CreatureValidator.MaxRootReach;
         }
 
         Assert.IsFalse(CreatureValidator.TryValidate(_recipe, out _));

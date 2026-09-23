@@ -35,6 +35,10 @@ namespace HealerLike.Render.Creatures
                     return cylinder;
                 case Primitive.Leaf:
                     return leaf;
+                case Primitive.Boulder:
+                    return boulder;
+                case Primitive.Pyramid:
+                    return pyramid;
                 default:
                     return sphere;
             }
