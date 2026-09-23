@@ -1,39 +1,33 @@
 using System;
 using System.Collections.Generic;
-using HealerLike.Render.Zones;
 using UnityEngine;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Stage;
+using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Spells
 {
     public class HLSpellVisualSink : MonoBehaviour, IHLSpellVisualSink
     {
         public static readonly float PulseSeconds = 0.8f;
+        public static readonly int MaxImpacts = 128;
 
-        struct HLStatusVisual
-        {
-            public GameObject root;
-            public HLSpellEffect[] effects;
-            public AttributeManager attributes;
-        }
+        [SerializeField] SpellLooks _looks;
 
-        public HLSpellStyleTable styles;
-        public Material material;
-
-        readonly HLSpellGrammar _grammar = new HLSpellGrammar();
-        readonly Dictionary<(GameObject, ABuffHandlerFactory), HLStatusVisual> _statuses =
-            new Dictionary<(GameObject, ABuffHandlerFactory), HLStatusVisual>();
+        readonly Dictionary<(GameObject, ABuffHandlerFactory), HLSpellEffect> _statuses =
+            new Dictionary<(GameObject, ABuffHandlerFactory), HLSpellEffect>();
         readonly List<(GameObject, ABuffHandlerFactory)> _dead = new List<(GameObject, ABuffHandlerFactory)>();
         readonly List<HLSpellEffect> _remainingEffects = new List<HLSpellEffect>();
         readonly List<GameObject> _impacts = new List<GameObject>();
         readonly HashSet<(GameObject source, GameObject target)> _heals = new HashSet<(GameObject, GameObject)>();
-        readonly HashSet<HLSpellSignature> _unknown = new HashSet<HLSpellSignature>();
         readonly List<GameObject> _removing = new List<GameObject>();
-        bool _ownsPrimitives;
 
-        // Injected adapter wins; when null, PulseArea falls back to HLRenderRegistry.current.zoneOwner.
+        public SpellLooks looks { get { return _looks; } set { _looks = value; } }
+
+        // Set by the stage to reach the zone owner
         public Action<Vector3, float, HLZoneKind, float> areaPulse { get; set; }
 
-        // Optional bud adapter supplied by the creature view.
+        // Optional bud adapter supplied by the creature view
         public Func<GameObject, Transform> healerAnchor { get; set; }
 
         public Func<GameObject, bool> isCharacterSource { get; set; }
@@ -49,15 +43,14 @@ namespace HealerLike.Render.Spells
         {
             get
             {
-                _impacts.RemoveAll(x => !x);
+                _impacts.RemoveAll(impact => impact == null);
                 return _impacts.Count;
             }
         }
 
         void OnEnable()
         {
-            RetainPrimitives();
-            // The registry may retain this sink across disable/enable.
+            // The registry may keep this sink across disable and enable
             Clear();
         }
 
@@ -69,10 +62,19 @@ namespace HealerLike.Render.Spells
         void OnDestroy()
         {
             Clear();
-            if (_ownsPrimitives)
+        }
+
+        public void Init(RenderManager manager)
+        {
+            if (manager == null)
             {
-                _ownsPrimitives = false;
-                HLSpellPrimitives.ReleaseUser();
+                Debug.LogError("[HLSpellVisualSink] Init needs the RenderManager.");
+                return;
+            }
+
+            if (manager.spellLooks != null)
+            {
+                _looks = manager.spellLooks;
             }
         }
 
@@ -82,196 +84,127 @@ namespace HealerLike.Render.Spells
             for (int i = _removing.Count - 1; i >= 0; i--)
             {
                 _remainingEffects.Clear();
-                if (_removing[i])
+                if (_removing[i] != null)
                 {
                     _removing[i].GetComponentsInChildren(false, _remainingEffects);
                 }
+
                 if (_remainingEffects.Count == 0)
                 {
                     Dispose(_removing[i]);
                     _removing.RemoveAt(i);
                 }
             }
+
             _dead.Clear();
-            foreach (KeyValuePair<(GameObject, ABuffHandlerFactory), HLStatusVisual> pair in _statuses)
+            foreach (KeyValuePair<(GameObject, ABuffHandlerFactory), HLSpellEffect> pair in _statuses)
             {
-                if (!pair.Key.Item1 || !pair.Key.Item2 || !pair.Value.root)
+                if (pair.Key.Item1 == null || pair.Key.Item2 == null || pair.Value == null)
                 {
                     _dead.Add(pair.Key);
-                    continue;
-                }
-                AttributeManager attributes = pair.Value.attributes;
-                foreach (HLSpellEffect effect in pair.Value.effects)
-                {
-                    effect.SetShieldState(
-                        attributes && attributes.Has(AttributeType.HitArmor)
-                            ? attributes.Get(AttributeType.HitArmor).Value
-                            : null
-                    );
                 }
             }
+
             if (_dead.Count > 0)
             {
                 _presentationVersion++;
             }
+
             foreach ((GameObject, ABuffHandlerFactory) key in _dead)
             {
-                Dispose(_statuses[key].root);
+                Dispose(_statuses[key] != null ? _statuses[key].gameObject : null);
                 _statuses.Remove(key);
             }
-            _impacts.RemoveAll(x => !x);
+            _impacts.RemoveAll(impact => impact == null);
         }
 
         public GameObject GetStatus(GameObject target, ABuffHandlerFactory factory)
         {
-            return _statuses.TryGetValue((target, factory), out HLStatusVisual status) ? status.root : null;
+            if (_statuses.TryGetValue((target, factory), out HLSpellEffect effect) && effect != null)
+            {
+                return effect.gameObject;
+            }
+            return null;
         }
 
-        public void ShowImpact(
-            GameObject source,
-            GameObject target,
-            HLResourceKind resource,
-            float preClampAmount,
-            bool isCritical
-        )
+        public void ShowImpact(GameObject source, GameObject target, HLResourceKind resource, float preClampAmount,
+                               bool isCritical)
         {
-            if (!isActiveAndEnabled || !target || !HLSpellGrammar.Finite(preClampAmount) || preClampAmount == 0f)
+            if (!isActiveAndEnabled || target == null || !float.IsFinite(preClampAmount) || preClampAmount == 0f)
             {
                 return;
             }
-            HLSpellEffectKind kind = HLSpellEffectKind.Impact;
-            if (resource == HLResourceKind.Mana)
+
+            SpellLook look = ImpactLook(resource, preClampAmount > 0f);
+            if (look == null || look.effectPrefab == null)
             {
-                kind = HLSpellEffectKind.Mana;
+                return;
             }
-            else if (preClampAmount > 0f)
-            {
-                kind = HLSpellEffectKind.Heal;
-            }
-            GameObject prefab = null;
-            if (styles && kind == HLSpellEffectKind.Heal)
-            {
-                prefab = styles.heal;
-            }
-            else if (styles && kind == HLSpellEffectKind.Impact)
-            {
-                prefab = styles.impact;
-            }
-            HLSpellSignature signature = new HLSpellSignature
-            {
-                operation = HLOperation.Resource,
-                sign = HLSpellGrammar.Sign(preClampAmount),
-                hasAttribute = true,
-                attribute = resource == HLResourceKind.Health ? AttributeType.HealthMax : AttributeType.ManaMax,
-                topology = HLTopology.Single,
-                duration = HLDurationShape.Instant,
-                tempo = HLTempo.Immediate
-            };
-            if (styles)
-            {
-                if (!styles.TryGet(signature, out GameObject mapped))
-                {
-                    Unknown(signature);
-                    return;
-                }
-                prefab = mapped;
-            }
-            if (
-                resource == HLResourceKind.Health
-                && preClampAmount > 0f
-                && source
-                && IsCharacter(source)
-            )
+
+            if (resource == HLResourceKind.Health && preClampAmount > 0f && source != null && IsCharacter(source))
             {
                 _heals.Add((source, target));
             }
-            HLSpellEffect effect = Spawn(prefab, kind, transform);
-            effect.transform.position = Anchor(target).position;
-            Entity owner = source ? source.GetComponent<Entity>() : null;
-            effect.SetSide(owner ? owner.entityType : Entity.EntityType.None);
+
+            HLSpellEffect effect = Spawn(look, transform);
+            effect.transform.position = Anchor(target).position + look.offset;
+            Entity owner = source != null ? source.GetComponent<Entity>() : null;
+            effect.SetSide(owner != null ? owner.entityType : Entity.EntityType.None);
             Entity entity = target.GetComponent<Entity>();
-            float maximum = entity && entity.health ? entity.health.Max : 100f;
-            float radius = Mathf.Lerp(
-                0.10f,
-                0.26f,
-                Mathf.Sqrt(Mathf.Clamp01(Mathf.Abs(preClampAmount) / Mathf.Max(maximum, 1f)))
-            );
+            float maximum = entity != null && entity.health != null ? entity.health.Max : 100f;
+            float amount = Mathf.Clamp01(Mathf.Abs(preClampAmount) / Mathf.Max(maximum, 1f));
+            float radius = Mathf.Lerp(0.1f, 0.26f, Mathf.Sqrt(amount));
             effect.transform.localScale = Vector3.one * (radius / 0.1f);
             if (isCritical)
             {
-                HLSpellPrimitives.AddCritical(effect);
+                effect.ShowCritical();
             }
-            _impacts.Add(effect.gameObject);
-            if (_impacts.Count > 128)
-            {
-                Dispose(_impacts[0]);
-                _impacts.RemoveAt(0);
-            }
+            AddImpact(effect.gameObject);
         }
 
-        public void SetStatus(
-            GameObject source,
-            GameObject target,
-            ABuffHandlerFactory factory,
-            int stacks,
-            float elapsedSeconds,
-            float durationSeconds,
-            HLClockKind clock
-        )
+        public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
+                              float elapsedSeconds, float durationSeconds, HLClockKind clock)
         {
-            if (!isActiveAndEnabled || !target || !factory)
+            if (!isActiveAndEnabled || target == null || factory == null)
             {
                 return;
             }
+
             if (stacks <= 0)
             {
                 RemoveStatus(source, target, factory);
                 return;
             }
-            if (!HLSpellGrammar.Finite(elapsedSeconds) || float.IsNaN(durationSeconds))
+
+            if (!float.IsFinite(elapsedSeconds) || float.IsNaN(durationSeconds))
             {
                 return;
             }
+
             (GameObject, ABuffHandlerFactory) key = (target, factory);
-            if (!_statuses.TryGetValue(key, out HLStatusVisual status) || !status.root)
+            if (!_statuses.TryGetValue(key, out HLSpellEffect effect) || effect == null)
             {
-                HLVisualRecipe recipe = _grammar.Describe(factory, source, target);
-                if (!recipe.isValid)
+                SpellLook look = StatusLook(factory, source, target);
+                if (look == null || look.effectPrefab == null)
                 {
-                    Unknown(recipe.signature);
                     return;
                 }
-                GameObject root = new GameObject("HLStatus");
-                root.transform.SetParent(Anchor(target), false);
-                root.transform.localScale = Vector3.one * 1.35f;
-                AddStatusAtoms(root.transform, recipe);
-                HLSpellEffect[] effects = root.GetComponentsInChildren<HLSpellEffect>();
-                if (effects.Length == 0)
-                {
-                    Dispose(root);
-                    return;
-                }
-                Entity entity = target.GetComponent<Entity>();
-                status = new HLStatusVisual
-                {
-                    root = root,
-                    effects = effects,
-                    attributes = entity ? entity.attributeManager : null
-                };
-                _statuses[key] = status;
+
+                effect = Spawn(look, Anchor(target));
+                effect.transform.localPosition = look.offset;
+                effect.transform.localScale = Vector3.one * 1.35f;
+
+                // The handler the factory builds says whether the status ticks, every ticking handler is a BuffHandler
+                ABuffHandler handler = factory.GetBuffHandler();
+                BuffHandler buffHandler = handler as BuffHandler;
+                effect.SetPeriod(handler != null && handler.isPeriodic,
+                                 buffHandler != null ? buffHandler.data.periodDuration : 0f);
+                _statuses[key] = effect;
             }
-            foreach (HLSpellEffect effect in status.effects)
-            {
-                effect.SetStatus(stacks, elapsedSeconds, durationSeconds, clock, effect.signature);
-                AttributeManager attributes = status.attributes;
-                effect.SetShieldState(
-                    attributes && attributes.Has(AttributeType.HitArmor)
-                        ? attributes.Get(AttributeType.HitArmor).Value
-                        : null
-                );
-                Entity caster = source ? source.GetComponent<Entity>() : null;
-                effect.SetSide(caster ? caster.entityType : Entity.EntityType.None);
-            }
+
+            effect.SetStatus(stacks, elapsedSeconds, durationSeconds, clock);
+            Entity caster = source != null ? source.GetComponent<Entity>() : null;
+            effect.SetSide(caster != null ? caster.entityType : Entity.EntityType.None);
             RefreshBodyTint(target);
         }
 
@@ -281,15 +214,12 @@ namespace HealerLike.Render.Spells
             {
                 return;
             }
-            if (_statuses.Remove((target, factory), out HLStatusVisual status) && status.root)
+
+            if (_statuses.Remove((target, factory), out HLSpellEffect effect) && effect != null)
             {
-                GameObject root = status.root;
-                root.transform.SetParent(transform, true);
-                foreach (HLSpellEffect effect in status.effects)
-                {
-                    effect.BeginRemoval();
-                }
-                _removing.Add(root);
+                effect.transform.SetParent(transform, true);
+                effect.BeginRemoval();
+                _removing.Add(effect.gameObject);
                 RefreshBodyTint(target);
             }
         }
@@ -300,65 +230,54 @@ namespace HealerLike.Render.Spells
             {
                 return;
             }
-            if (isActiveAndEnabled)
+
+            SpellLook look = null;
+            if (_looks != null)
             {
-                HLSpellEffect ring = Spawn(
-                    null,
-                    kind == HLZoneKind.Hostile ? HLSpellEffectKind.Litter : HLSpellEffectKind.Area,
-                    transform
-                );
+                look = kind == HLZoneKind.Hostile ? _looks.hostileArea : _looks.area;
+            }
+
+            if (isActiveAndEnabled && look != null && look.effectPrefab != null)
+            {
+                HLSpellEffect ring = Spawn(look, transform);
                 ring.lifetime = PulseSeconds;
-                ring.transform.position = center;
+                ring.transform.position = center + look.offset;
                 ring.transform.localScale = Vector3.one * radius;
                 ring.SetSide(kind == HLZoneKind.Hostile ? Entity.EntityType.Computer : Entity.EntityType.Player);
-                _impacts.Add(ring.gameObject);
-                if (_impacts.Count > 128)
-                {
-                    Dispose(_impacts[0]);
-                    _impacts.RemoveAt(0);
-                }
+                AddImpact(ring.gameObject);
             }
-            // The zone owner has an independent lifetime; forwarding does not create sink children.
+
+            // The zone owner has its own lifetime, forwarding creates no child here
             if (areaPulse != null)
             {
                 areaPulse(center, radius, kind, zone.strength);
-            }
-            else
-            {
-                HLRenderRegistry.current?.zoneOwner?.AddPulse(kind, center, radius, zone.strength, PulseSeconds);
             }
         }
 
         public HLSpellEffect ShowLink(Vector3 start, Vector3 end)
         {
-            if (
-                !isActiveAndEnabled
-                || !HLSpellGrammar.Finite(start.x)
-                || !HLSpellGrammar.Finite(start.y)
-                || !HLSpellGrammar.Finite(start.z)
-                || !HLSpellGrammar.Finite(end.x)
-                || !HLSpellGrammar.Finite(end.y)
-                || !HLSpellGrammar.Finite(end.z)
-            )
+            if (!isActiveAndEnabled || _looks == null || _looks.chain == null || _looks.chain.effectPrefab == null)
             {
                 return null;
             }
-            HLSpellEffect effect = Spawn(styles ? styles.chain : null, HLSpellEffectKind.Chain, transform);
+
+            if (!float.IsFinite(start.x) || !float.IsFinite(start.y) || !float.IsFinite(start.z)
+                || !float.IsFinite(end.x) || !float.IsFinite(end.y) || !float.IsFinite(end.z))
+            {
+                return null;
+            }
+
+            HLSpellEffect effect = Spawn(_looks.chain, transform);
             effect.lifetime = 0.6f;
             effect.SetEndpoints(start, end);
-            _impacts.Add(effect.gameObject);
-            if (_impacts.Count > 128)
-            {
-                Dispose(_impacts[0]);
-                _impacts.RemoveAt(0);
-            }
+            AddImpact(effect.gameObject);
             return effect;
         }
 
         public HLSpellEffect ShowContactLink(Vector3 previousContact, Vector3 contact)
         {
             HLSpellEffect effect = ShowLink(previousContact, contact);
-            if (effect)
+            if (effect != null)
             {
                 effect.contactThread = true;
                 effect.SetEndpoints(previousContact, contact);
@@ -373,21 +292,28 @@ namespace HealerLike.Render.Spells
                 _heals.Clear();
                 return;
             }
+
             foreach ((GameObject source, GameObject target) pair in _heals)
             {
-                if (!pair.source || !pair.target)
+                if (pair.source == null || pair.target == null)
                 {
                     continue;
                 }
-                Transform anchor = healerAnchor?.Invoke(pair.source);
-                if (!anchor)
+
+                Transform anchor = healerAnchor != null ? healerAnchor(pair.source) : null;
+                if (anchor == null)
                 {
-                    anchor = pair.source.GetComponentInChildren<HealerLike.Render.Creatures.HLCharacterView>()?.bud0;
+                    HLCharacterView view = pair.source.GetComponentInChildren<HLCharacterView>();
+                    anchor = view != null ? view.bud0 : null;
                 }
-                Vector3 start = anchor ? anchor.position : pair.source.transform.position;
+
+                Vector3 start = anchor != null ? anchor.position : pair.source.transform.position;
                 Vector3 end = Anchor(pair.target).position;
                 ShowLink(start, end);
-                linkObserved?.Invoke(start, end);
+                if (linkObserved != null)
+                {
+                    linkObserved(start, end);
+                }
             }
             _heals.Clear();
         }
@@ -401,118 +327,103 @@ namespace HealerLike.Render.Spells
                 Dispose(root);
             }
             _removing.Clear();
-            foreach (KeyValuePair<(GameObject, ABuffHandlerFactory), HLStatusVisual> pair in _statuses)
+
+            foreach (KeyValuePair<(GameObject, ABuffHandlerFactory), HLSpellEffect> pair in _statuses)
             {
-                HLBodyTintState state = pair.Key.Item1 ? pair.Key.Item1.GetComponent<HLBodyTintState>() : null;
-                if (state)
+                HLBodyTintState state = pair.Key.Item1 != null ? pair.Key.Item1.GetComponent<HLBodyTintState>() : null;
+                if (state != null)
                 {
                     state.Set(Color.white);
                 }
-                Dispose(pair.Value.root);
+                Dispose(pair.Value != null ? pair.Value.gameObject : null);
             }
             _statuses.Clear();
-            foreach (GameObject root in _impacts)
+
+            foreach (GameObject impact in _impacts)
             {
-                Dispose(root);
+                Dispose(impact);
             }
             _impacts.Clear();
         }
 
+        SpellLook ImpactLook(HLResourceKind resource, bool isGain)
+        {
+            if (_looks == null)
+            {
+                return null;
+            }
+
+            if (resource == HLResourceKind.Mana)
+            {
+                return isGain ? _looks.manaGain : _looks.manaLoss;
+            }
+            return isGain ? _looks.heal : _looks.impact;
+        }
+
+        SpellLook StatusLook(ABuffHandlerFactory factory, GameObject source, GameObject target)
+        {
+            if (_looks == null)
+            {
+                return null;
+            }
+
+            // TODO: read the caster from BuffHandlerData.source once it exists (S4), until then only a caller that
+            // knows the caster picks bane, and the healer's Character, which is not an Entity, plays for the player
+            bool isSameSide = true;
+            if (source != null)
+            {
+                Entity caster = source.GetComponent<Entity>();
+                Entity recipient = target.GetComponent<Entity>();
+                Entity.EntityType casterSide = caster != null ? caster.entityType : Entity.EntityType.Player;
+                Entity.EntityType recipientSide = recipient != null ? recipient.entityType : Entity.EntityType.Player;
+                isSameSide = casterSide == recipientSide;
+            }
+            return _looks.GetLook(factory, isSameSide);
+        }
+
         void RefreshBodyTint(GameObject target)
         {
-            if (!target)
+            if (target == null)
             {
                 return;
             }
+
             Color tint = Color.white;
-            foreach (KeyValuePair<(GameObject, ABuffHandlerFactory), HLStatusVisual> pair in _statuses)
+            foreach (KeyValuePair<(GameObject, ABuffHandlerFactory), HLSpellEffect> pair in _statuses)
             {
-                if (pair.Key.Item1 == target)
+                if (pair.Key.Item1 == target && pair.Value != null && pair.Value.bodyTint != Color.white)
                 {
-                    foreach (HLSpellEffect effect in pair.Value.effects)
-                    {
-                        if (effect && effect.tint != Color.white)
-                        {
-                            tint = effect.tint;
-                        }
-                    }
+                    tint = pair.Value.bodyTint;
                 }
             }
+
             HLBodyTintState state = target.GetComponent<HLBodyTintState>();
-            if (!state && tint != Color.white)
+            if (state == null && tint != Color.white)
             {
                 state = target.AddComponent<HLBodyTintState>();
             }
-            if (state)
+
+            if (state != null)
             {
                 state.Set(tint);
             }
         }
 
-        void AddStatusAtoms(Transform root, HLVisualRecipe recipe)
+        HLSpellEffect Spawn(SpellLook look, Transform parent)
         {
-            if (!recipe.isValid)
-            {
-                Unknown(recipe.signature);
-                return;
-            }
-            if (recipe.children.Count > 0)
-            {
-                foreach (HLVisualRecipe child in recipe.children)
-                {
-                    AddStatusAtoms(root, child);
-                }
-                return;
-            }
-            HLSpellSignature signature = recipe.signature;
-            GameObject prefab = null;
-            if (styles && !styles.TryGet(signature, out prefab))
-            {
-                Unknown(signature);
-                return;
-            }
-            HLSpellEffect effect = Spawn(prefab, HLSpellPrimitives.Kind(signature), root);
-            effect.periodSeconds = recipe.periodSeconds;
-            effect.SetStatus(1, 0f, recipe.durationSeconds, recipe.clock, signature);
-            if (signature.hasAttribute && signature.attribute == AttributeType.Speed)
-            {
-                effect.transform.localPosition = Vector3.down * 0.35f;
-            }
-        }
-
-        HLSpellEffect Spawn(GameObject prefab, HLSpellEffectKind kind, Transform parent)
-        {
-            GameObject go = prefab ? Instantiate(prefab, parent, false) : new GameObject("HL" + kind);
-            go.transform.SetParent(parent, false);
-            HLSpellEffect effect = go.GetComponent<HLSpellEffect>();
-            if (!effect)
-            {
-                effect = go.AddComponent<HLSpellEffect>();
-            }
-            effect.kind = kind;
-            if (material)
-            {
-                effect.material = material;
-            }
-            effect.Initialize();
+            HLSpellEffect effect = Instantiate(look.effectPrefab, parent, false);
+            effect.Init();
+            effect.SetColor(look.tint);
             return effect;
         }
 
-        void RetainPrimitives()
+        void AddImpact(GameObject impact)
         {
-            if (_ownsPrimitives)
+            _impacts.Add(impact);
+            if (_impacts.Count > MaxImpacts)
             {
-                return;
-            }
-            HLSpellPrimitives.Retain();
-            _ownsPrimitives = true;
-        }
-
-        void Unknown(HLSpellSignature signature)
-        {
-            if (_unknown.Add(signature))
-            {
-                Debug.LogWarning("HL unmapped spell signature: " + signature);
+                Dispose(_impacts[0]);
+                _impacts.RemoveAt(0);
             }
         }
 
@@ -528,27 +439,25 @@ namespace HealerLike.Render.Spells
         static Transform Anchor(GameObject target)
         {
             Entity entity = target.GetComponent<Entity>();
-            return entity && entity.targetPoint ? entity.targetPoint.transform : target.transform;
+            return entity != null && entity.targetPoint != null ? entity.targetPoint.transform : target.transform;
         }
 
-        static void Dispose(GameObject go)
+        // Also runs from edit mode tests, where Destroy is not allowed
+        static void Dispose(GameObject effect)
         {
-            if (!go)
+            if (effect == null)
             {
                 return;
             }
-            go.SetActive(false);
+
+            effect.SetActive(false);
             if (Application.isPlaying)
             {
-                Destroy(go);
+                Destroy(effect);
             }
             else
             {
-                foreach (HLSpellEffect effect in go.GetComponentsInChildren<HLSpellEffect>(true))
-                {
-                    effect.ReleaseResources();
-                }
-                DestroyImmediate(go);
+                DestroyImmediate(effect);
             }
         }
     }

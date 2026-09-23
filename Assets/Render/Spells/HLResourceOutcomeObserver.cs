@@ -1,29 +1,31 @@
 using System;
 using UnityEngine;
+using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Spells
 {
-    public class HLResourceOutcomeObserver : MonoBehaviour, IVisualBehaviour
+    // Turns every processed health or mana change of an entity into an impact on the sink
+    public class HLResourceOutcomeObserver : MonoBehaviour, IVisualBehaviour, IEntityView
     {
+        // removed in D2
         public static event Action<GameObject, GameObject, HLResourceKind, float, bool> Outcome;
 
         ResourceAttribute _health;
         ResourceAttribute _mana;
+        IHLSpellVisualSink _sink;
         HLRenderRegistry _injected;
-        bool _hasInjection;
+        bool _hasInjection = false;
 
-        public static HLResourceOutcomeObserver Ensure(
-            Entity entity,
-            HLRenderRegistry registry = null,
-            bool inject = false
-        )
+        public static HLResourceOutcomeObserver Ensure(Entity entity, HLRenderRegistry registry = null,
+                                                       bool inject = false)
         {
-            if (!entity)
+            if (entity == null)
             {
                 return null;
             }
+
             HLResourceOutcomeObserver observer = entity.GetComponent<HLResourceOutcomeObserver>();
-            if (!observer)
+            if (observer == null)
             {
                 observer = entity.gameObject.AddComponent<HLResourceOutcomeObserver>();
             }
@@ -31,9 +33,23 @@ namespace HealerLike.Render.Spells
             return observer;
         }
 
+        public void Init(Entity entity, RenderManager manager)
+        {
+            if (entity == null || manager == null)
+            {
+                Debug.LogError("[HLResourceOutcomeObserver] Init needs an entity and the RenderManager.");
+                return;
+            }
+
+            // TODO: take the heal registry from the manager once it holds one
+            Bind(entity.health, null, null, true);
+            _sink = manager.GetComponentInChildren<HLSpellVisualSink>();
+        }
+
+        // Old path while the stage prefabs still walk IVisualBehaviour, the sink then comes from the registry
         public void Init(Entity entity)
         {
-            if (entity)
+            if (entity != null)
             {
                 Bind(entity.health, null);
             }
@@ -55,19 +71,17 @@ namespace HealerLike.Render.Spells
             Unsubscribe();
         }
 
-        public void Bind(
-            ResourceAttribute healthResource,
-            ResourceAttribute manaResource,
-            HLRenderRegistry registry = null,
-            bool inject = false
-        )
+        public void Bind(ResourceAttribute healthResource, ResourceAttribute manaResource,
+                         HLRenderRegistry registry = null, bool inject = false)
         {
+            _sink = null;
             _injected = registry;
             _hasInjection = inject;
             if (_health == healthResource && _mana == manaResource)
             {
                 return;
             }
+
             Unsubscribe();
             _health = healthResource;
             _mana = manaResource;
@@ -79,52 +93,69 @@ namespace HealerLike.Render.Spells
 
         void Subscribe()
         {
-            if (_health)
+            if (_health != null)
             {
-                _health.OnAllConsumerProcessed.AddListener(OnHealth);
+                _health.OnAllConsumerProcessed.AddListener(OnHealthProcessed);
             }
-            if (_mana && _mana != _health)
+
+            if (_mana != null && _mana != _health)
             {
-                _mana.OnAllConsumerProcessed.AddListener(OnMana);
+                _mana.OnAllConsumerProcessed.AddListener(OnManaProcessed);
             }
         }
 
         void Unsubscribe()
         {
-            if (_health)
+            if (_health != null)
             {
-                _health.OnAllConsumerProcessed.RemoveListener(OnHealth);
+                _health.OnAllConsumerProcessed.RemoveListener(OnHealthProcessed);
             }
-            if (_mana && _mana != _health)
+
+            if (_mana != null && _mana != _health)
             {
-                _mana.OnAllConsumerProcessed.RemoveListener(OnMana);
+                _mana.OnAllConsumerProcessed.RemoveListener(OnManaProcessed);
             }
         }
 
-        void OnHealth(GameObject owner, ResourceModifier modifier, float amount, bool critical)
+        void OnHealthProcessed(GameObject owner, ResourceModifier modifier, float amount, bool isCritical)
         {
-            Publish(owner, modifier, HLResourceKind.Health, amount, critical);
+            Publish(owner, modifier, HLResourceKind.Health, amount, isCritical);
         }
 
-        void OnMana(GameObject owner, ResourceModifier modifier, float amount, bool critical)
+        void OnManaProcessed(GameObject owner, ResourceModifier modifier, float amount, bool isCritical)
         {
-            Publish(owner, modifier, HLResourceKind.Mana, amount, critical);
+            Publish(owner, modifier, HLResourceKind.Mana, amount, isCritical);
         }
 
-        void Publish(GameObject owner, ResourceModifier modifier, HLResourceKind kind, float amount, bool critical)
+        void Publish(GameObject owner, ResourceModifier modifier, HLResourceKind kind, float amount, bool isCritical)
         {
-            if (!isActiveAndEnabled || !owner || amount == 0f || float.IsNaN(amount) || float.IsInfinity(amount))
+            if (!isActiveAndEnabled || owner == null || amount == 0f || !float.IsFinite(amount))
             {
                 return;
             }
+
             HLRenderRegistry registry = _hasInjection ? _injected : HLRenderRegistry.current;
-            GameObject source = modifier != null ? modifier.source : null;
-            registry?.spellSink?.ShowImpact(source, owner, kind, amount, critical);
-            if (kind == HLResourceKind.Health && amount > 0f)
+            IHLSpellVisualSink sink = _sink;
+            if (sink == null && registry != null)
             {
-                registry?.NotifyHeal(source, owner, amount, critical);
+                sink = registry.spellSink;
             }
-            Outcome?.Invoke(source, owner, kind, amount, critical);
+
+            GameObject source = modifier != null ? modifier.source : null;
+            if (sink != null)
+            {
+                sink.ShowImpact(source, owner, kind, amount, isCritical);
+            }
+
+            if (registry != null && kind == HLResourceKind.Health && amount > 0f)
+            {
+                registry.NotifyHeal(source, owner, amount, isCritical);
+            }
+
+            if (Outcome != null)
+            {
+                Outcome(source, owner, kind, amount, isCritical);
+            }
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

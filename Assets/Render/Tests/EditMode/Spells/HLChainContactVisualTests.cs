@@ -19,6 +19,9 @@ namespace HealerLike.Render.Spells
                 Projectile projectile = host.AddComponent<Projectile>();
                 observer = host.AddComponent<HLChainContactVisual>();
                 sink = sinkHost.AddComponent<HLSpellVisualSink>();
+                sink.looks = UnityEditor.AssetDatabase.LoadAssetAtPath<SpellLooks>(
+                    "Assets/Render/Spells/Data/SpellLooks.asset"
+                );
                 TestHelpers.InvokePrivate(sink, "OnEnable");
                 observer.Bind(projectile, sink);
                 a.transform.position = Vector3.left;

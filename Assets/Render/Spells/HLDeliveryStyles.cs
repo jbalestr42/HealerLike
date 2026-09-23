@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Spells
 {
+    // removed in D2, SpellLooks.projectiles holds the styles and the stage builder is the last reader
     [CreateAssetMenu(menuName = "HealerLike/Render/Delivery Styles")]
     public class HLDeliveryStyles : ScriptableObject
     {

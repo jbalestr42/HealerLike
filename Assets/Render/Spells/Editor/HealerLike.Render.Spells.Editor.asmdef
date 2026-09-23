@@ -1,12 +1,19 @@
 {
     "name": "HealerLike.Render.Spells.Editor",
-    "rootNamespace": "HealerLike.Render.Spells",
+    "rootNamespace": "",
     "references": [
-        "HealerLike.Render",
-        "HealerLike.Runtime"
+        "HealerLike.Runtime",
+        "HealerLike.Render"
     ],
     "includePlatforms": [
         "Editor"
     ],
-    "autoReferenced": true
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
