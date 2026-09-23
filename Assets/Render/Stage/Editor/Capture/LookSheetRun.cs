@@ -490,11 +490,18 @@ namespace HealerLike.Render.Stage
             }
         }
 
+        // Every unit on the board, the Transfusion giver included, draws without its health bar
         void HideHud()
         {
-            foreach (Transform cell in _cells)
+            List<Transform> shown = new List<Transform>(_cells);
+            foreach (GameObject entityGo in _spawned)
             {
-                foreach (Canvas canvas in cell.GetComponentsInChildren<Canvas>(true))
+                shown.Add(entityGo.transform);
+            }
+
+            foreach (Transform unit in shown)
+            {
+                foreach (Canvas canvas in unit.GetComponentsInChildren<Canvas>(true))
                 {
                     canvas.enabled = false;
                 }
