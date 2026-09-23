@@ -10,7 +10,10 @@ namespace HealerLike.Render.Zones
         int _handle;
         public void Init(Entity entity) { Clear(); _entity = entity; Refresh(); }
         void Start() { if (!_entity) Init(GetComponentInParent<Entity>()); }
-        void Update() => Refresh();
+        void Update()
+        {
+            Refresh();
+        }
         public void Refresh()
         {
             if (_owner != HLZoneRegistry.Current) Clear();
@@ -26,7 +29,14 @@ namespace HealerLike.Render.Zones
             else _owner.RefreshZone(_handle, HLZoneKind.Bruise, _entity.transform.position, radius, 1);
         }
         void Clear() { if (_owner) _owner.Remove(_handle); _owner = null; _handle = 0; }
-        void OnDisable() => Clear();
-        void OnDestroy() => Clear();
+        void OnDisable()
+        {
+            Clear();
+        }
+
+        void OnDestroy()
+        {
+            Clear();
+        }
     }
 }

@@ -45,7 +45,10 @@ namespace HealerLike.Render.Zones
             _dragging = dragging;
         }
 
-        void Update() => Refresh();
+        void Update()
+        {
+            Refresh();
+        }
 
         public void Refresh()
         {
@@ -79,6 +82,9 @@ namespace HealerLike.Render.Zones
             ClearZone();
             _selected = _dragging = false;
         }
-        void OnDestroy() => ClearZone();
+        void OnDestroy()
+        {
+            ClearZone();
+        }
     }
 }

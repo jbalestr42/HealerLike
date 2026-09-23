@@ -10,7 +10,10 @@ namespace HealerLike.Render.Zones
         HLZoneRegistry owner;
         int handle;
 
-        void Update() => Refresh();
+        void Update()
+        {
+            Refresh();
+        }
         public void Refresh()
         {
             if (owner != HLZoneRegistry.Current) Clear();
@@ -21,7 +24,14 @@ namespace HealerLike.Render.Zones
             else owner.RefreshZone(handle, HLZoneKind.Trample, transform.position, Radius, Strength);
         }
         void Clear() { if (owner) owner.Remove(handle); owner = null; handle = 0; }
-        void OnDisable() => Clear();
-        void OnDestroy() => Clear();
+        void OnDisable()
+        {
+            Clear();
+        }
+
+        void OnDestroy()
+        {
+            Clear();
+        }
     }
 }

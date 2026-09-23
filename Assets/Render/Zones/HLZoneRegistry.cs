@@ -14,7 +14,6 @@ namespace HealerLike.Render.Zones
         void Unbind();
     }
 
-    [DefaultExecutionOrder(-1000)]
     public class HLZoneRegistry : MonoBehaviour, IHLZoneOwner
     {
         struct Entry
