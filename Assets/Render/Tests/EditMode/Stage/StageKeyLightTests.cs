@@ -34,14 +34,28 @@ public class StageKeyLightTests
     }
 
     [Test]
-    public void Aim_StoneKeyDirection_PointsTheLightAlongIt()
+    public void Aim_KeyDirection_PointsTheLightAlongIt()
     {
-        Quaternion rotation = StageKeyLight.Aim(StageKeyLight.StoneKeyDirection);
+        Quaternion rotation = StageKeyLight.Aim(StageKeyLight.KeyDirection);
 
-        Assert.That(Vector3.Angle(-(rotation * Vector3.forward), StageKeyLight.StoneKeyDirection), Is.LessThan(0.01f));
-        // Upper left: the light sits at -x and above the ground.
-        Assert.That(StageKeyLight.StoneKeyDirection.x, Is.LessThan(0));
-        Assert.That(StageKeyLight.StoneKeyDirection.y, Is.GreaterThan(0));
+        Assert.That(Vector3.Angle(-(rotation * Vector3.forward), StageKeyLight.KeyDirection), Is.LessThan(0.01f));
+        // Upper right behind the board: the light sits at +x, +z and above the ground
+        Assert.That(StageKeyLight.KeyDirection.x, Is.GreaterThan(0));
+        Assert.That(StageKeyLight.KeyDirection.y, Is.GreaterThan(0));
+        Assert.That(StageKeyLight.KeyDirection.z, Is.GreaterThan(0));
+    }
+
+    [Test]
+    public void KeyDirection_PortraitCamera_CastsShadowsToTheLowerLeft()
+    {
+        Quaternion camera = Quaternion.Euler(StageCalibration.PortraitPitch, 0f, 0f);
+        Vector3 toLight = StageKeyLight.KeyDirection.normalized;
+        // Where a point above the ground lands along the light, seen in the camera's axes
+        Vector3 shadow = Quaternion.Inverse(camera) * new Vector3(-toLight.x, 0f, -toLight.z);
+
+        Assert.That(shadow.x, Is.LessThan(0f));
+        Assert.That(shadow.y, Is.LessThan(0f));
+        Assert.That(Mathf.Atan2(-shadow.y, -shadow.x) * Mathf.Rad2Deg, Is.InRange(10f, 45f)); // below the horizontal
     }
 
     [Test]

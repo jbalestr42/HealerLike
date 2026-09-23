@@ -12,6 +12,8 @@ namespace HealerLike.Render.Stage
         public static readonly float PortraitCentreY = 0.48f;
         public static readonly int PortraitWidth = 1080;
         public static readonly int PortraitHeight = 1920;
+        // Fog from clear to full over this many units past the far edge, well inside the environment ring
+        public static readonly float BackgroundFogDepth = 10f;
 
         public static Vector2 FogRange(Vector3 camera, Bounds board)
         {
@@ -57,11 +59,13 @@ namespace HealerLike.Render.Stage
             return new Pose(target - rotation * Vector3.forward * distance, rotation);
         }
 
-        // The fog starts past every playable corner, so the board keeps its authored colours
+        // The fog starts at the board's far edge, as in the references, and the ring past it turns pale within
+        // a few units; the ridge stands in the last band
         public static Vector2 BackgroundFog(Vector3 camera, Bounds board)
         {
-            float far = Mathf.Max(0f, FarthestCorner(camera, board));
-            return new Vector2(far + 2f, far + 36f);
+            Vector3 farEdge = new Vector3(Mathf.Clamp(camera.x, board.min.x, board.max.x), board.center.y, board.max.z);
+            float start = Vector3.Distance(camera, farEdge);
+            return new Vector2(start, start + BackgroundFogDepth);
         }
 
         // Fits both axes, keeping room above the back row and below the front row for the HUD

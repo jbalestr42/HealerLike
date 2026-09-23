@@ -56,11 +56,11 @@ float3 HLWorkingColor(float3 srgb)
 // HLLookController uploads every global before setting _HLLookApplied to 1.
 // When the flag is 0, use the complete baked HL defaults.
 // Keep HLLookSettings defaults and shader fallback values identical.
-#define HL_DEF_SHADOWTINT float4(HLWorkingColor(float3(43,75,143)/255.0),1)
+#define HL_DEF_SHADOWTINT float4(HLWorkingColor(float3(30,87,125)/255.0),1)
 #define HL_DEF_OUTLINECOLOR float4(HLWorkingColor(float3(24,38,63)/255.0),1)
-#define HL_DEF_FOGCOLOR float4(HLWorkingColor(float3(191,210,224)/255.0),1)
-#define HL_DEF_SHADOWSTRENGTH 0.65
-#define HL_DEF_TOONTHRESHOLD 0.5
+#define HL_DEF_FOGCOLOR float4(HLWorkingColor(float3(154,188,211)/255.0),1)
+#define HL_DEF_SHADOWSTRENGTH 0.7
+#define HL_DEF_TOONTHRESHOLD 0.45
 #define HL_DEF_TOONSOFTNESS 0.08
 #define HL_DEF_OUTLINEWIDTHPIXELS 1.0
 // Provisional world-unit fog distances; calibrate against the gameplay camera.

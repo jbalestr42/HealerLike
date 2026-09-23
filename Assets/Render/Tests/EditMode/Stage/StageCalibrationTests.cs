@@ -36,6 +36,30 @@ public class StageCalibrationTests
     }
 
     [Test]
+    public void BackgroundFog_PortraitCamera_StartsAtTheFarEdgeAndSpansTheFogDepth()
+    {
+        Bounds board = new Bounds(new Vector3(0f, 0.5f, 0f), new Vector3(16f, 0f, 16f));
+        Vector3 camera = new Vector3(3f, 20f, -17f);
+
+        Vector2 fog = StageCalibration.BackgroundFog(camera, board);
+
+        float farEdge = Vector3.Distance(camera, new Vector3(3f, 0.5f, 8f));
+        Assert.That(fog.x, Is.EqualTo(farEdge).Within(0.001f));
+        Assert.That(fog.y - fog.x, Is.EqualTo(StageCalibration.BackgroundFogDepth).Within(0.001f));
+    }
+
+    [Test]
+    public void BackgroundFog_CameraPastTheSide_MeasuresToTheFarCorner()
+    {
+        Bounds board = new Bounds(new Vector3(0f, 0.5f, 0f), new Vector3(16f, 0f, 16f));
+        Vector3 camera = new Vector3(12f, 20f, -17f);
+
+        Vector2 fog = StageCalibration.BackgroundFog(camera, board);
+
+        Assert.That(fog.x, Is.EqualTo(Vector3.Distance(camera, new Vector3(8f, 0.5f, 8f))).Within(0.001f));
+    }
+
+    [Test]
     public void Frame_PortraitBoard_FitsWidthAtNearEdgeAndPlacesTheCentre()
     {
         _camera.aspect = 9f / 16f;
