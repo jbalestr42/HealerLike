@@ -463,8 +463,8 @@ namespace HealerLike.Render.Stage
             var strips = HealerLike.Render.Environment.HLEnvironmentGrass.Bands(gridRect, RingWidths, RingFractions, boardDensity);
             for (int i = 0; i < strips.Length; i++)
             {
-                var rect = strips[i].Rect;
-                var strip = new GameObject("HLGrassRing" + i + "_band" + strips[i].Band); strip.transform.SetParent(root.transform,false);
+                var rect = strips[i].rect;
+                var strip = new GameObject("HLGrassRing" + i + "_band" + strips[i].band); strip.transform.SetParent(root.transform,false);
                 strip.transform.position = new Vector3(rect.center.x, grid.transform.position.y, rect.center.y);
                 var proxy = strip.AddComponent<GridManager>(); var pso = new SerializedObject(proxy);
                 pso.FindProperty("_width").intValue = Mathf.RoundToInt(rect.width / grid.size); pso.FindProperty("_height").intValue = Mathf.RoundToInt(rect.height / grid.size);
@@ -475,15 +475,15 @@ namespace HealerLike.Render.Stage
                 fso.FindProperty("_updateGrass").objectReferenceValue = AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute");
                 fso.FindProperty("_lookMaterial").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Material>(LookDefault);
                 fso.FindProperty("_ringShader").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrassRing.shader");
-                fso.FindProperty("_bladeBudget").intValue = strips[i].Budget;
+                fso.FindProperty("_bladeBudget").intValue = strips[i].budget;
                 fso.FindProperty("_seed").longValue = 11 + i; fso.ApplyModifiedPropertiesWithoutUndo();
                 proxies.Add(proxy); fields.Add(field);
-                Debug.Log($"HL grass ring {i}: band {strips[i].Band} rect {rect} density {strips[i].Density:F1} blades {strips[i].Budget}");
+                Debug.Log($"HL grass ring {i}: band {strips[i].band} rect {rect} density {strips[i].density:F1} blades {strips[i].budget}");
             }
             root.AddComponent<HealerLike.Render.Environment.HLEnvironmentGrass>().Configure(zones, proxies.ToArray(), fields.ToArray());
             var scatter = root.AddComponent<HealerLike.Render.Environment.HLEnvironmentScatter>(); var sso = new SerializedObject(scatter);
-            sso.FindProperty("grid").objectReferenceValue = grid; sso.FindProperty("plantMaterial").objectReferenceValue = green;
-            sso.FindProperty("stoneMaterial").objectReferenceValue = stone; sso.FindProperty("surfaceY").floatValue = top;
+            sso.FindProperty("_grid").objectReferenceValue = grid; sso.FindProperty("_plantMaterial").objectReferenceValue = green;
+            sso.FindProperty("_stoneMaterial").objectReferenceValue = stone; sso.FindProperty("_surfaceY").floatValue = top;
             sso.ApplyModifiedPropertiesWithoutUndo();
             var fog = WaveThreeFog(camera, new Bounds(new Vector3(grid.transform.position.x,.505f,grid.transform.position.z), new Vector3(grid.width*grid.size,0,grid.height*grid.size)));
             // Environment beauty: sway, uncurl and distance LOD read this gust and the calibrated fog end.
@@ -498,8 +498,8 @@ namespace HealerLike.Render.Stage
             var ridge = new GameObject("HLFarRidge").AddComponent<HealerLike.Render.Environment.HLEnvironmentRidge>();
             ridge.transform.SetParent(root.transform,false);
             ridge.Configure(camera, stone, green, gridRect, top, fog.x, fog.y, 6, 1707);
-            var preview = HealerLike.Render.Environment.HLEnvironmentLayout.Generate(scatter.Settings, gridRect, grid.size, top);
-            Debug.Log("HL environment scatter: " + string.Join(", ", preview.GroupBy(item => item.Kind).Select(g => g.Key + "=" + g.Count())) + $" total={preview.Count}");
+            var preview = HealerLike.Render.Environment.HLEnvironmentLayout.Generate(scatter.settings, gridRect, grid.size, top);
+            Debug.Log("HL environment scatter: " + string.Join(", ", preview.GroupBy(item => item.kind).Select(g => g.Key + "=" + g.Count())) + $" total={preview.Count}");
             return gust;
         }
         public static readonly float[] RingWidths = { 3, 5, 16 };

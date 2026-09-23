@@ -4,157 +4,274 @@ using HealerLike.Render.Creatures;
 using HealerLike.Render.Stones;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Environment
 {
-    public enum HLRidgeKind { Monolith, Mushroom }
-
-    /// <summary>Height is the full standing height; CapDiameter is zero for monoliths.</summary>
-    public struct HLRidgeItem
+    // A row of tall silhouettes past the far edge, each standing so its mid-height sits in the last visible fog band.
+    public class HLEnvironmentRidge : MonoBehaviour
     {
-        public HLRidgeKind Kind;
-        public Vector3 Position;
-        public float Height, Width, CapDiameter, CapThickness, Yaw;
-        public uint Seed;
-    }
+        public static readonly uint Salt = 0x52494447u;
+        public static readonly float SpreadX = 14f;
+        public static readonly float GridClearance = 3f;
+        // The cap's bottom sits this far below the stem top, in cap thicknesses; the rest stands above it
+        static readonly float capSink = 0.7f;
 
-    /// <summary>A row of tall silhouettes past the far edge, each standing so its mid-height sits in the last visible fog band.</summary>
-    [DisallowMultipleComponent]
-    public sealed class HLEnvironmentRidge : MonoBehaviour
-    {
-        public const uint Salt = 0x52494447u;
-        public const float SpreadX = 14, GridClearance = 3;
-        // The cap's bottom sits this far below the stem top, in cap thicknesses; the rest stands above it.
-        const float CapSink = .7f;
+        [FormerlySerializedAs("stageCamera")]
+        [SerializeField] Camera _stageCamera;
+        [FormerlySerializedAs("stoneMaterial")]
+        [SerializeField] Material _stoneMaterial;
+        [FormerlySerializedAs("plantMaterial")]
+        [SerializeField] Material _plantMaterial;
+        [FormerlySerializedAs("grid")]
+        [SerializeField] Rect _grid = new Rect(-8f, -8f, 16f, 16f);
+        [FormerlySerializedAs("groundY")]
+        [SerializeField] float _groundY = 0.5f;
+        [FormerlySerializedAs("seed")]
+        [SerializeField] int _seed = 1707;
+        [FormerlySerializedAs("fogStart")]
+        [SerializeField] float _fogStart = 43.837f;
+        [FormerlySerializedAs("fogEnd")]
+        [SerializeField] float _fogEnd = 50.356f;
+        [FormerlySerializedAs("fogBands")]
+        [SerializeField] int _fogBands = 6;
+        [FormerlySerializedAs("stoneColor")]
+        [SerializeField] Color _stoneColor = new Color32(168, 184, 172, 255);
+        [FormerlySerializedAs("stemColor")]
+        [SerializeField] Color _stemColor = new Color32(184, 200, 180, 255);
+        [FormerlySerializedAs("capColor")]
+        [SerializeField] Color _capColor = new Color32(156, 180, 162, 255);
 
-        [SerializeField] Camera stageCamera;
-        [SerializeField] Material stoneMaterial;
-        [SerializeField] Material plantMaterial;
-        [SerializeField] Rect grid = new Rect(-8, -8, 16, 16);
-        [SerializeField] float groundY = .5f;
-        [SerializeField] int seed = 1707;
-        [SerializeField] float fogStart = 43.837f;
-        [SerializeField] float fogEnd = 50.356f;
-        [SerializeField] int fogBands = 6;
-        [SerializeField] Color stoneColor = new Color32(168, 184, 172, 255);
-        [SerializeField] Color stemColor = new Color32(184, 200, 180, 255);
-        [SerializeField] Color capColor = new Color32(156, 180, 162, 255);
-        readonly List<Mesh> ownedMeshes = new List<Mesh>();
-        List<HLRidgeItem> items = new List<HLRidgeItem>();
-        Transform root;
-        bool retained;
-        MaterialPropertyBlock properties;
+        readonly List<Mesh> _ownedMeshes = new List<Mesh>();
+        bool _isRetained;
+        MaterialPropertyBlock _properties;
 
-        public IReadOnlyList<HLRidgeItem> Items => items;
-        public Transform Root => root;
+        List<HLRidgeItem> _items = new List<HLRidgeItem>();
+        public IReadOnlyList<HLRidgeItem> items { get { return _items; } }
 
-        public void Configure(Camera stage, Material stones, Material plants, Rect gridRect, float surfaceY, float start, float end, int bands, int layoutSeed)
+        Transform _root;
+        public Transform root { get { return _root; } }
+
+        void Start()
         {
-            stageCamera = stage; stoneMaterial = stones; plantMaterial = plants; grid = gridRect; groundY = surfaceY;
-            fogStart = start; fogEnd = end; fogBands = bands; seed = layoutSeed;
+            Build();
         }
 
-        /// <summary>Camera distances of the last visible fog band, [min, max).</summary>
+        void OnEnable()
+        {
+            if (_root)
+            {
+                _root.gameObject.SetActive(true);
+            }
+        }
+
+        void OnDisable()
+        {
+            if (_root)
+            {
+                _root.gameObject.SetActive(false);
+            }
+        }
+
+        void OnDestroy()
+        {
+            Clear();
+        }
+
+        public void Configure(Camera stage, Material stones, Material plants, Rect gridRect, float surfaceY,
+            float start, float end, int bands, int layoutSeed)
+        {
+            _stageCamera = stage;
+            _stoneMaterial = stones;
+            _plantMaterial = plants;
+            _grid = gridRect;
+            _groundY = surfaceY;
+            _fogStart = start;
+            _fogEnd = end;
+            _fogBands = bands;
+            _seed = layoutSeed;
+        }
+
+        // Camera distances of the last visible fog band, [min, max)
         public static Vector2 LastBand(float fogStart, float fogEnd, int fogBands)
         {
-            if (fogBands < 1 || !(fogStart >= 0) || !(fogEnd > fogStart) || float.IsInfinity(fogEnd)) throw new ArgumentOutOfRangeException(nameof(fogBands));
+            if (fogBands < 1 || !(fogStart >= 0f) || !(fogEnd > fogStart) || float.IsInfinity(fogEnd))
+            {
+                throw new ArgumentOutOfRangeException(nameof(fogBands));
+            }
             return new Vector2(fogStart + (fogBands - 1f) / fogBands * (fogEnd - fogStart), fogEnd);
         }
 
-        public static Vector3 MidHeight(in HLRidgeItem item) => item.Position + Vector3.up * (item.Height * .5f);
-
-        /// <summary>Eight to twelve monoliths and eight to twelve mushroom stems across x in [-SpreadX, SpreadX], beyond the grid's far (+z) edge.
-        /// Items the band cannot reach are clamped to z >= grid.yMax + GridClearance.</summary>
-        public static List<HLRidgeItem> Layout(Vector3 cameraPosition, float fogStart, float fogEnd, int fogBands, Rect grid, float groundY, int seed)
+        public static Vector3 MidHeight(HLRidgeItem item)
         {
-            var band = LastBand(fogStart, fogEnd, fogBands);
-            if (!(grid.width > 0) || !(grid.height > 0) || float.IsNaN(groundY) || float.IsInfinity(groundY)) throw new ArgumentOutOfRangeException(nameof(grid));
+            return item.position + Vector3.up * (item.height * 0.5f);
+        }
+
+        // Eight to twelve monoliths and eight to twelve mushroom stems across x in [-SpreadX, SpreadX],
+        // past the far (+z) edge.
+        // Items the band cannot reach are clamped to z >= grid.yMax + GridClearance.
+        public static List<HLRidgeItem> Layout(Vector3 cameraPosition, float fogStart, float fogEnd, int fogBands,
+            Rect grid, float groundY, int seed)
+        {
+            Vector2 band = LastBand(fogStart, fogEnd, fogBands);
+            if (!(grid.width > 0f) || !(grid.height > 0f) || float.IsNaN(groundY) || float.IsInfinity(groundY))
+            {
+                throw new ArgumentOutOfRangeException(nameof(grid));
+            }
+
             uint baseSeed = HLStoneSeed.ForPart((uint)seed, Salt);
-            var random = new HLStoneRandom(baseSeed);
-            int monoliths = 8 + (int)(random.Next01() * 5), mushrooms = 8 + (int)(random.Next01() * 5), total = monoliths + mushrooms;
-            // Deal the kinds into x slots with a seeded shuffle so the row alternates irregularly.
-            var kinds = new HLRidgeKind[total];
-            for (int i = 0; i < total; i++) kinds[i] = i < monoliths ? HLRidgeKind.Monolith : HLRidgeKind.Mushroom;
-            for (int i = total - 1; i > 0; i--) { int j = (int)(random.Next01() * (i + 1)); var t = kinds[i]; kinds[i] = kinds[j]; kinds[j] = t; }
-            float spacing = 2 * SpreadX / total, depth = band.y - band.x;
-            var result = new List<HLRidgeItem>(total);
+            HLStoneRandom random = new HLStoneRandom(baseSeed);
+            int monoliths = 8 + (int)(random.Next01() * 5f);
+            int mushrooms = 8 + (int)(random.Next01() * 5f);
+            int total = monoliths + mushrooms;
+
+            // Deal the kinds into x slots with a seeded shuffle so the row alternates irregularly
+            HLRidgeKind[] kinds = new HLRidgeKind[total];
             for (int i = 0; i < total; i++)
             {
-                var item = new HLRidgeItem { Kind = kinds[i], Yaw = random.Range(0, 360), Seed = HLStoneSeed.ForPart(baseSeed, (uint)i + 1) };
-                if (item.Kind == HLRidgeKind.Monolith) { item.Height = random.Range(6, 12); item.Width = item.Height * random.Range(.18f, .26f); }
+                kinds[i] = i < monoliths ? HLRidgeKind.Monolith : HLRidgeKind.Mushroom;
+            }
+            for (int i = total - 1; i > 0; i--)
+            {
+                int j = (int)(random.Next01() * (i + 1));
+                HLRidgeKind swap = kinds[i];
+                kinds[i] = kinds[j];
+                kinds[j] = swap;
+            }
+
+            float spacing = 2f * SpreadX / total;
+            float depth = band.y - band.x;
+            List<HLRidgeItem> result = new List<HLRidgeItem>(total);
+            for (int i = 0; i < total; i++)
+            {
+                HLRidgeItem item = new HLRidgeItem
+                {
+                    kind = kinds[i],
+                    yaw = random.Range(0f, 360f),
+                    seed = HLStoneSeed.ForPart(baseSeed, (uint)i + 1)
+                };
+                if (item.kind == HLRidgeKind.Monolith)
+                {
+                    item.height = random.Range(6f, 12f);
+                    item.width = item.height * random.Range(0.18f, 0.26f);
+                }
                 else
                 {
-                    float stem = random.Range(7, 14);
-                    item.Width = random.Range(.35f, .6f); item.CapDiameter = random.Range(2.5f, 5); item.CapThickness = item.CapDiameter * random.Range(.25f, .35f);
-                    item.Height = stem + (1 - CapSink) * item.CapThickness;
+                    float stem = random.Range(7f, 14f);
+                    item.width = random.Range(0.35f, 0.6f);
+                    item.capDiameter = random.Range(2.5f, 5f);
+                    item.capThickness = item.capDiameter * random.Range(0.25f, 0.35f);
+                    item.height = stem + (1f - capSink) * item.capThickness;
                 }
-                float x = Mathf.Clamp(-SpreadX + (i + .5f) * spacing + random.Range(-.35f, .35f) * spacing, -SpreadX, SpreadX);
-                float distance = random.Range(band.x + .2f * depth, band.y - .2f * depth);
-                float dx = x - cameraPosition.x, dy = groundY + item.Height * .5f - cameraPosition.y, reach = distance * distance - dx * dx - dy * dy;
-                float z = cameraPosition.z + Mathf.Sqrt(Mathf.Max(0, reach));
-                item.Position = new Vector3(x, groundY, Mathf.Max(z, grid.yMax + GridClearance));
+
+                float slot = -SpreadX + (i + 0.5f) * spacing + random.Range(-0.35f, 0.35f) * spacing;
+                float x = Mathf.Clamp(slot, -SpreadX, SpreadX);
+                float distance = random.Range(band.x + 0.2f * depth, band.y - 0.2f * depth);
+                float dx = x - cameraPosition.x;
+                float dy = groundY + item.height * 0.5f - cameraPosition.y;
+                float reach = distance * distance - dx * dx - dy * dy;
+                float z = cameraPosition.z + Mathf.Sqrt(Mathf.Max(0f, reach));
+                item.position = new Vector3(x, groundY, Mathf.Max(z, grid.yMax + GridClearance));
                 result.Add(item);
             }
             return result;
         }
 
-        void Start() => Build();
-
         public void Build()
         {
-            if (stageCamera) Build(stageCamera.transform.position);
+            if (_stageCamera)
+            {
+                Build(_stageCamera.transform.position);
+            }
         }
 
         public void Build(Vector3 cameraPosition)
         {
             Clear();
-            HLPrimitiveMeshes.Retain(); retained=true;
-            items = Layout(cameraPosition, fogStart, fogEnd, fogBands, grid, groundY, seed);
-            root = new GameObject("HLRidgeItems").transform; root.SetParent(transform, false);
-            properties = new MaterialPropertyBlock();
-            foreach (var item in items) Spawn(item);
+            HLPrimitiveMeshes.Retain();
+            _isRetained = true;
+            _items = Layout(cameraPosition, _fogStart, _fogEnd, _fogBands, _grid, _groundY, _seed);
+            _root = new GameObject("HLRidgeItems").transform;
+            _root.SetParent(transform, false);
+            _properties = new MaterialPropertyBlock();
+            foreach (HLRidgeItem item in _items)
+            {
+                Spawn(item);
+            }
         }
 
         public void Clear()
         {
-            if (root) Dispose(root.gameObject); root = null;
-            foreach (var mesh in ownedMeshes) Dispose(mesh);
-            ownedMeshes.Clear();
-            if(retained) { HLPrimitiveMeshes.Release(); retained=false; }
-        }
-        void OnEnable() { if(root) root.gameObject.SetActive(true); }
-        void OnDisable() { if(root) root.gameObject.SetActive(false); }
-        void OnDestroy() => Clear();
-        static void Dispose(Object value) { if (Application.isPlaying) Destroy(value); else DestroyImmediate(value); }
-
-        void Spawn(in HLRidgeItem item)
-        {
-            var pivot = new GameObject(item.Kind.ToString()).transform; pivot.SetParent(root, true);
-            pivot.position = item.Position; pivot.rotation = Quaternion.Euler(0, item.Yaw, 0);
-            if (item.Kind == HLRidgeKind.Monolith)
+            if (_root)
             {
-                var mesh = HLStoneMesh.CreateMesh(item.Seed, HLStonePresets.Monolith); mesh.name = "HLRidgeStone"; ownedMeshes.Add(mesh);
-                var size = mesh.bounds.size;
-                var scale = new Vector3(item.Width / Mathf.Max(size.x, 1e-4f), item.Height / Mathf.Max(size.y, 1e-4f), item.Width / Mathf.Max(size.x, 1e-4f));
-                Part(pivot, mesh, stoneMaterial, Vector3.zero, scale, stoneColor);
+                Dispose(_root.gameObject);
+            }
+            _root = null;
+            foreach (Mesh mesh in _ownedMeshes)
+            {
+                Dispose(mesh);
+            }
+            _ownedMeshes.Clear();
+            if (_isRetained)
+            {
+                HLPrimitiveMeshes.Release();
+                _isRetained = false;
+            }
+        }
+
+        static void Dispose(Object value)
+        {
+            if (Application.isPlaying)
+            {
+                Destroy(value);
+            }
+            else
+            {
+                DestroyImmediate(value);
+            }
+        }
+
+        void Spawn(HLRidgeItem item)
+        {
+            Transform pivot = new GameObject(item.kind.ToString()).transform;
+            pivot.SetParent(_root, true);
+            pivot.position = item.position;
+            pivot.rotation = Quaternion.Euler(0f, item.yaw, 0f);
+            if (item.kind == HLRidgeKind.Monolith)
+            {
+                Mesh mesh = HLStoneMesh.CreateMesh(item.seed, HLStonePresets.Monolith);
+                mesh.name = "HLRidgeStone";
+                _ownedMeshes.Add(mesh);
+                Vector3 size = mesh.bounds.size;
+                float across = item.width / Mathf.Max(size.x, 0.0001f);
+                Vector3 scale = new Vector3(across, item.height / Mathf.Max(size.y, 0.0001f), across);
+                Part(pivot, mesh, _stoneMaterial, Vector3.zero, scale, _stoneColor);
                 return;
             }
-            float stem = item.Height - (1 - CapSink) * item.CapThickness;
-            Part(pivot, HLPrimitiveMeshes.Get(HLPrimitive.Capsule), plantMaterial, Vector3.zero, new Vector3(item.Width, stem, item.Width), stemColor);
-            Part(pivot, HLPrimitiveMeshes.Get(HLPrimitive.Sphere), plantMaterial, Vector3.up * (stem - CapSink * item.CapThickness),
-                new Vector3(item.CapDiameter, item.CapThickness, item.CapDiameter), capColor);
+
+            float stem = item.height - (1f - capSink) * item.capThickness;
+            Mesh capsule = HLPrimitiveMeshes.Get(HLPrimitive.Capsule);
+            Part(pivot, capsule, _plantMaterial, Vector3.zero, new Vector3(item.width, stem, item.width), _stemColor);
+            Mesh sphere = HLPrimitiveMeshes.Get(HLPrimitive.Sphere);
+            Vector3 capBottom = Vector3.up * (stem - capSink * item.capThickness);
+            Vector3 capScale = new Vector3(item.capDiameter, item.capThickness, item.capDiameter);
+            Part(pivot, sphere, _plantMaterial, capBottom, capScale, _capColor);
         }
 
         void Part(Transform parent, Mesh mesh, Material material, Vector3 bottom, Vector3 scale, Color color)
         {
-            var go = new GameObject(mesh.name); go.transform.SetParent(parent, false);
-            go.transform.localScale = scale;
-            go.transform.localPosition = bottom + new Vector3(0, -mesh.bounds.min.y * scale.y, 0);
-            go.AddComponent<MeshFilter>().sharedMesh = mesh;
-            var renderer = go.AddComponent<MeshRenderer>(); renderer.sharedMaterial = material;
-            renderer.shadowCastingMode = ShadowCastingMode.Off; renderer.receiveShadows = false;
-            properties.SetColor("_BaseColor", color.linear); renderer.SetPropertyBlock(properties);
+            GameObject partGo = new GameObject(mesh.name);
+            partGo.transform.SetParent(parent, false);
+            partGo.transform.localScale = scale;
+            partGo.transform.localPosition = bottom + new Vector3(0f, -mesh.bounds.min.y * scale.y, 0f);
+            partGo.AddComponent<MeshFilter>().sharedMesh = mesh;
+            MeshRenderer meshRenderer = partGo.AddComponent<MeshRenderer>();
+            meshRenderer.sharedMaterial = material;
+            meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
+            meshRenderer.receiveShadows = false;
+            _properties.SetColor("_BaseColor", color.linear);
+            meshRenderer.SetPropertyBlock(_properties);
         }
     }
 }
