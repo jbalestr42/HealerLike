@@ -1,55 +1,39 @@
+using System.Collections.Generic;
 using UnityEngine;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Spells
 {
-    public enum SpellEffectKind
-    {
-        Buff,
-        Shield,
-        Heal,
-        Impact,
-        Chain,
-        Mana,
-        Drip,
-        Area,
-        Litter
-    }
-
+    // One element built from its recipe, no prefab: the parts come from the vocabulary and move by the recipe's motion
     public class SpellEffect : MonoBehaviour
     {
-        public SpellEffectKind kind;
-        public float lifetime = 0.65f;
-        public Transform[] stalks = new Transform[0];
-        public Transform[] parts = new Transform[0];
-        public bool contactThread;
-
-        [SerializeField] Renderer _sideRim;
-        [SerializeField] Transform[] _stackBeads = new Transform[0];
-        [SerializeField] Renderer[] _criticalRings = new Renderer[0];
+        // An element alive longer than this keeps clear of the head
+        public static readonly float LastingSeconds = 0.6f;
 
         static readonly int baseColorId = Shader.PropertyToID("_BaseColor");
-        static readonly Color gold = new Color32(242, 194, 48, 255);
-        static readonly Color lime = new Color32(198, 242, 74, 255);
-        static readonly Color coral = new Color32(242, 96, 122, 255);
-        static readonly Color slate = new Color32(58, 66, 87, 255);
+        static readonly float riseHeight = 1.8f;
+        static readonly float pressDepth = 0.2f;
+        static readonly float removalSeconds = 0.25f;
+        static readonly float threadWidth = 0.012f;
+        static readonly float beamWidth = 0.025f;
 
-        Renderer[] _renderers;
-        Color _baseColor;
-        Vector3[] _positions;
-        Vector3[] _scales;
-        Quaternion[] _rotations;
-        MaterialPropertyBlock _propertyBlock;
+        EffectRecipe _recipe;
+        readonly List<Transform> _shapes = new List<Transform>();
+        readonly List<LookPart> _shapeParts = new List<LookPart>();
+        readonly List<Transform> _stalks = new List<Transform>();
+        readonly List<LookPart> _stalkParts = new List<LookPart>();
+        readonly List<Transform> _beads = new List<Transform>();
+        readonly List<Transform> _rings = new List<Transform>();
+        readonly List<Transform> _rims = new List<Transform>();
+        readonly List<Transform> _all = new List<Transform>();
+        MaterialPropertyBlock _block;
         float _age;
-        bool _isReady = false;
+        float _sinceStatus;
         bool _isStatus = false;
-        bool _isPeriodic = false;
-        float _periodSeconds;
-        Entity.EntityType _side;
-        bool _hasSide = false;
-        bool _hasShieldState = false;
-        float _shieldState;
         bool _isRemoving = false;
         float _removalAge;
+        float _fallDistance = 1f;
         Vector3 _linkStart;
         Vector3 _linkEnd;
 
@@ -65,11 +49,28 @@ namespace HealerLike.Render.Spells
         ClockKind _clock;
         public ClockKind clock { get { return _clock; } }
 
-        public bool removalComplete { get { return _isRemoving && _removalAge >= 0.25f; } }
+        int _count;
+        public int count { get { return _count; } }
 
-        void Start()
+        bool _isContactThread = false;
+        public bool isContactThread { get { return _isContactThread; } }
+
+        public EffectRecipe recipe { get { return _recipe; } }
+        public EffectElement element { get { return _recipe != null ? _recipe.element : EffectElement.Burst; } }
+        public float lifetime { get { return _recipe != null ? _recipe.cycleSeconds : 0f; } }
+        public List<Transform> shapes { get { return _shapes; } }
+        public List<Transform> stalks { get { return _stalks; } }
+        public List<Transform> parts { get { return _all; } }
+        public List<Transform> rings { get { return _rings; } }
+        public bool removalComplete { get { return _isRemoving && _removalAge >= removalSeconds; } }
+
+        // Ticking or held statuses last, and so does a single run longer than the lasting limit
+        public bool isLasting
         {
-            Init();
+            get
+            {
+                return _recipe != null && (_recipe.tempo != EffectTempo.Once || _recipe.cycleSeconds > LastingSeconds);
+            }
         }
 
         void Update()
@@ -77,135 +78,125 @@ namespace HealerLike.Render.Spells
             Advance(_clock == ClockKind.Realtime ? Time.unscaledDeltaTime : Time.deltaTime);
             if (removalComplete || (!_isStatus && _age >= lifetime))
             {
-                Destroy(gameObject);
+                Dispose(gameObject);
             }
         }
 
-        public void Init()
+        public void Init(EffectRecipe recipe, PrimitiveMeshes meshes, Material material)
         {
-            if (_isReady)
+            if (recipe == null || meshes == null)
             {
+                Debug.LogError("[SpellEffect] Init needs a recipe and the primitive meshes.");
                 return;
             }
 
-            _propertyBlock = new MaterialPropertyBlock();
-            _renderers = new Renderer[parts.Length];
-            _positions = new Vector3[parts.Length];
-            _scales = new Vector3[parts.Length];
-            _rotations = new Quaternion[parts.Length];
-            for (int i = 0; i < parts.Length; i++)
+            _recipe = recipe;
+            _block = new MaterialPropertyBlock();
+            foreach (LookPart part in recipe.entry.parts)
             {
-                _renderers[i] = parts[i].GetComponent<Renderer>();
-                _positions[i] = parts[i].localPosition;
-                _scales[i] = parts[i].localScale;
-                _rotations[i] = parts[i].localRotation;
-            }
-
-            SetColor(DefaultColor());
-            _propertyBlock.SetColor(baseColorId, gold);
-            foreach (Transform bead in _stackBeads)
-            {
-                bead.GetComponent<Renderer>().SetPropertyBlock(_propertyBlock);
-            }
-            _isReady = true;
-        }
-
-        // Colours every part, a look sets its own tint right after spawning
-        public void SetColor(Color color)
-        {
-            if (_propertyBlock == null)
-            {
-                _propertyBlock = new MaterialPropertyBlock();
-            }
-
-            _baseColor = color;
-            _propertyBlock.SetColor(baseColorId, color);
-            foreach (Transform part in parts)
-            {
-                if (part != null)
+                bool isStalk = part.role == PartRole.Stem;
+                Transform built = Build(part, meshes, material, Colour(part));
+                if (isStalk)
                 {
-                    part.GetComponent<Renderer>().SetPropertyBlock(_propertyBlock);
+                    _stalks.Add(built);
+                    _stalkParts.Add(part);
+                }
+                else
+                {
+                    _shapes.Add(built);
+                    _shapeParts.Add(part);
                 }
             }
+
+            BuildAll(recipe.entry.stackBeads, meshes, material, _beads);
+            BuildAll(recipe.entry.criticalRings, meshes, material, _rings);
+            BuildAll(recipe.entry.sideRim, meshes, material, _rims);
+            if (recipe.socket == EffectSocket.Link)
+            {
+                SortByX(_shapes, _shapeParts);
+                SortByX(_stalks, _stalkParts);
+            }
+
+            SetCount(recipe.count);
+            Advance(0f);
         }
 
-        // Read from the buff handler, a periodic heal or drip only moves on its ticks
-        public void SetPeriod(bool isPeriodic, float periodSeconds)
+        public void SetCount(int shown)
         {
-            _isPeriodic = isPeriodic && float.IsFinite(periodSeconds) && periodSeconds > 0f;
-            _periodSeconds = _isPeriodic ? periodSeconds : 0f;
+            _count = Mathf.Clamp(shown, 0, _shapes.Count);
+            for (int i = 0; i < _shapes.Count; i++)
+            {
+                _shapes[i].gameObject.SetActive(i < _count);
+                if (i < _stalks.Count)
+                {
+                    _stalks[i].gameObject.SetActive(i < _count);
+                }
+            }
         }
 
         public void SetStatus(int stacks, float elapsed, float duration, ClockKind clock)
         {
-            Init();
             int visibleStacks = Mathf.Max(0, stacks);
             if (!_isStatus || _stacks != visibleStacks)
             {
-                for (int i = 0; i < _stackBeads.Length; i++)
+                for (int i = 0; i < _beads.Count; i++)
                 {
-                    _stackBeads[i].gameObject.SetActive(i < Mathf.Min(_stackBeads.Length, visibleStacks));
+                    _beads[i].gameObject.SetActive(i < visibleStacks);
                 }
+            }
+
+            float safeElapsed = float.IsFinite(elapsed) ? Mathf.Max(0f, elapsed) : 0f;
+            if (!_isStatus || safeElapsed != _elapsedSeconds)
+            {
+                _sinceStatus = 0f;
             }
 
             _isStatus = true;
             _stacks = visibleStacks;
-            _elapsedSeconds = Mathf.Max(0f, elapsed);
+            _elapsedSeconds = safeElapsed;
             _durationSeconds = duration;
             _clock = clock;
             Advance(0f);
         }
 
+        // How far a drop falls, in the element's own units
+        public void SetFallDistance(float distance)
+        {
+            if (float.IsFinite(distance) && distance > 0f)
+            {
+                _fallDistance = distance;
+            }
+        }
+
         public void SetSide(Entity.EntityType side)
         {
-            if (_sideRim == null || (_hasSide && _side == side))
+            if (_rims.Count == 0 || _recipe == null || _recipe.palette == null)
             {
                 return;
             }
 
-            Init();
-            _hasSide = true;
-            _side = side;
-            _sideRim.gameObject.SetActive(true);
-
-            Color color = new Color32(201, 196, 180, 255);
+            Color colour = _recipe.palette.stoneBody;
             if (side == Entity.EntityType.Player)
             {
-                color = new Color32(155, 210, 74, 255);
+                colour = _recipe.palette.plantBody;
             }
             else if (side == Entity.EntityType.Computer)
             {
-                color = slate;
+                colour = _recipe.palette.baneLit;
             }
-            _propertyBlock.SetColor(baseColorId, color);
-            _sideRim.SetPropertyBlock(_propertyBlock);
+
+            foreach (Transform rim in _rims)
+            {
+                rim.gameObject.SetActive(true);
+                Paint(rim, colour);
+            }
         }
 
         public void ShowCritical()
         {
-            Init();
-            _propertyBlock.SetColor(baseColorId, kind == SpellEffectKind.Impact ? coral : lime);
-            foreach (Renderer ring in _criticalRings)
+            foreach (Transform ring in _rings)
             {
                 ring.gameObject.SetActive(true);
-                ring.SetPropertyBlock(_propertyBlock);
-            }
-        }
-
-        // One plate per observed charge
-        public void SetShieldState(float charges)
-        {
-            if (kind != SpellEffectKind.Shield || (_hasShieldState && _shieldState == charges))
-            {
-                return;
-            }
-
-            _hasShieldState = true;
-            _shieldState = charges;
-            int visible = Mathf.Clamp(Mathf.CeilToInt(charges), 0, parts.Length);
-            for (int i = 0; i < parts.Length; i++)
-            {
-                parts[i].gameObject.SetActive(i < visible);
             }
         }
 
@@ -215,200 +206,328 @@ namespace HealerLike.Render.Spells
             _removalAge = 0f;
         }
 
+        public void SetEndpoints(Vector3 start, Vector3 end, bool isContactThread)
+        {
+            _linkStart = start;
+            _linkEnd = end;
+            _isContactThread = isContactThread;
+            Advance(0f);
+        }
+
         public void Advance(float delta)
         {
-            Init();
-            if (!float.IsFinite(delta) || delta < 0f)
+            if (_recipe == null || !float.IsFinite(delta) || delta < 0f)
             {
                 return;
             }
 
             _age += delta;
+            _sinceStatus += delta;
             if (_isRemoving)
             {
                 _removalAge += delta;
             }
 
-            float statusTime = _elapsedSeconds;
-            if (float.IsFinite(_durationSeconds) && _durationSeconds > 0f)
+            float time = _isStatus ? StatusTime() : _age;
+            if (_recipe.socket == EffectSocket.Link)
             {
-                statusTime = Mathf.Min(statusTime, _durationSeconds);
+                PoseLink();
+                return;
             }
 
-            if (kind == SpellEffectKind.Chain)
+            float cycle = Mathf.Max(0.01f, _recipe.cycleSeconds);
+            bool isVisible = true;
+            float phase;
+            if (_recipe.tempo == EffectTempo.PerPeriod && _isStatus)
             {
-                SetEndpoints(_linkStart, _linkEnd);
+                // A ticking status moves on its ticks, so nothing shows before the first one
+                isVisible = time >= cycle;
+                phase = Mathf.Repeat(time, cycle) / cycle;
+            }
+            else if (_recipe.tempo == EffectTempo.ForDuration && _isStatus)
+            {
+                phase = Mathf.Repeat(time, cycle) / cycle;
+            }
+            else
+            {
+                phase = Mathf.Clamp01(time / cycle);
+                isVisible = time < cycle || _recipe.motion == EffectMotion.Close || _recipe.motion == EffectMotion.Orbit;
             }
 
-            float fade = Mathf.Clamp01(1f - _age / Mathf.Max(0.01f, lifetime));
-            for (int i = 0; i < parts.Length; i++)
+            Pose(phase, time);
+            float fade = _isRemoving ? 1f - Mathf.Clamp01(_removalAge / removalSeconds) : 1f;
+            if (!isVisible || fade < 1f)
             {
-                if (parts[i] == null)
-                {
-                    continue;
-                }
-
-                if (kind == SpellEffectKind.Buff)
-                {
-                    // Rotate the tilted plane around the body, spinning a torus in its own plane is invisible
-                    float spin = i % 2 == 0 ? 34f : -28f;
-                    parts[i].localRotation = Quaternion.Euler(0f, statusTime * spin, 0f) * _rotations[i];
-                    parts[i].localScale = _scales[i] * (1f + 0.035f * Mathf.Sin(statusTime * 2.4f + i));
-                    Brighten(i, 1.12f + 0.12f * Mathf.Sin(statusTime * 2.4f + i));
-                }
-                else if (kind == SpellEffectKind.Shield)
-                {
-                    float closure = _isRemoving ? 1f - Mathf.Clamp01(_removalAge * 4f) : Mathf.Clamp01(statusTime * 4f);
-                    parts[i].localRotation = _rotations[i] * Quaternion.Euler(0f, 0f, Mathf.Lerp(-32f, 0f, closure));
-                    parts[i].localPosition = _positions[i] * Mathf.Lerp(1.3f, 1f, closure);
-                }
-                else if (kind == SpellEffectKind.Drip)
-                {
-                    bool isTicking = _isPeriodic && statusTime >= _periodSeconds;
-                    float phase = isTicking ? Mathf.Repeat(statusTime, _periodSeconds) / _periodSeconds : 0f;
-                    parts[i].localPosition = _positions[i] + Vector3.down * phase * phase * 0.6f;
-                    parts[i].localScale = _scales[i] * (isTicking ? Mathf.Clamp01((1f - phase) * 4f) : 0f);
-                }
-                else if (kind == SpellEffectKind.Area)
-                {
-                    parts[i].localScale = _scales[i] * Mathf.Clamp01(_age / 0.3f);
-                }
-                else if (kind == SpellEffectKind.Litter)
-                {
-                    float emergence = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_age / 0.15f));
-                    float sinking = Mathf.Clamp01((_age - lifetime * 0.55f) / (lifetime * 0.45f));
-                    float sink = Mathf.SmoothStep(0f, 1f, sinking);
-                    parts[i].localPosition = _positions[i] + Vector3.down * (0.22f * (1f - emergence + sink));
-                    parts[i].localScale = _scales[i] * emergence;
-                }
-                else if (kind == SpellEffectKind.Heal)
-                {
-                    AdvanceBud(i, statusTime);
-                }
-                else if (kind == SpellEffectKind.Mana)
-                {
-                    float rise = _isStatus ? 0f : _age;
-                    parts[i].localPosition = _positions[i] + Vector3.up * (rise * (0.55f + i * 0.04f));
-                }
-                else if (kind == SpellEffectKind.Impact && i > 0)
-                {
-                    float time = _isStatus ? 0f : _age;
-                    Vector3 velocity = new Vector3(_positions[i].x * 4f, 1.1f + i * 0.12f, _positions[i].z * 4f);
-                    parts[i].localPosition = _positions[i] + velocity * time + Vector3.down * (2.8f * time * time);
-                    parts[i].localRotation = _rotations[i] * Quaternion.Euler(time * 180f, time * 70f, 0f);
-                }
-
-                if (!_isStatus && (kind == SpellEffectKind.Buff || kind == SpellEffectKind.Shield
-                    || kind == SpellEffectKind.Mana || kind == SpellEffectKind.Impact))
-                {
-                    parts[i].localScale = _scales[i] * Mathf.Sqrt(fade);
-                }
+                Fade(isVisible ? fade : 0f);
             }
         }
 
-        public void SetEndpoints(Vector3 start, Vector3 end)
+        // Lays every shape and stalk at one point of the motion, the sink samples it to keep lasting elements off the head
+        public void Pose(float phase, float time)
         {
-            Init();
-            if (kind != SpellEffectKind.Chain)
+            if (_recipe == null)
             {
                 return;
             }
 
-            _linkStart = start;
-            _linkEnd = end;
-            float width = contactThread ? 0.012f : 0.025f;
-            for (int i = 0; i < parts.Length; i++)
+            for (int i = 0; i < _shapes.Count; i++)
             {
-                // Even parts are segments, odd parts are the beads travelling along them
-                float t = (i / 2) / 16f;
-                Vector3 point = LinkPoint(start, end, t);
-                if (i % 2 == 0)
+                LookPart part = _shapeParts[i];
+                Quaternion rotation = Quaternion.Euler(part.euler);
+                Vector3 position = part.position;
+                Vector3 scale = part.size;
+                PoseShape(i, part, phase, time, ref position, ref rotation, ref scale);
+                _shapes[i].localPosition = position;
+                _shapes[i].localRotation = rotation;
+                _shapes[i].localScale = scale;
+                if (i < _stalks.Count)
                 {
-                    Vector3 next = LinkPoint(start, end, Mathf.Min(1f, t + 1f / 16f));
-                    parts[i].position = (point + next) * 0.5f;
-                    parts[i].rotation = next == point ? Quaternion.identity : Quaternion.FromToRotation(Vector3.up, next - point);
-                    parts[i].localScale = new Vector3(width, Vector3.Distance(point, next) * 0.5f, width);
+                    PoseStalk(i, position, scale.x / Mathf.Max(0.0001f, part.size.x));
                 }
-                else
+            }
+        }
+
+        void PoseShape(int index, LookPart part, float phase, float time, ref Vector3 position, ref Quaternion rotation,
+                       ref Vector3 scale)
+        {
+            switch (_recipe.motion)
+            {
+                case EffectMotion.Burst:
                 {
-                    parts[i].gameObject.SetActive(!contactThread);
-                    parts[i].position = Curve(start, end, Mathf.Repeat(t + _age / 0.6f, 1f));
+                    Vector3 flat = new Vector3(part.position.x, 0f, part.position.z);
+                    float seconds = phase * _recipe.cycleSeconds;
+                    float shrink = Mathf.Sqrt(1f - phase);
+                    // The flat star pops in place, the cones are its shards
+                    if (part.primitive != Primitive.Cone)
+                    {
+                        scale = part.size * ((0.6f + 0.4f * Mathf.SmoothStep(0f, 1f, phase / 0.3f)) * shrink);
+                        break;
+                    }
+
+                    // Shards fly outward and fall
+                    Vector3 velocity = flat * 4f + Vector3.up * (5.5f + index * 0.6f);
+                    position = part.position + velocity * seconds + Vector3.down * (14f * seconds * seconds);
+                    rotation = rotation * Quaternion.Euler(seconds * 180f, seconds * 70f, 0f);
+                    scale = part.size * shrink;
+                    break;
                 }
-                Brighten(i, 1.15f + 0.25f * Mathf.Sin(Mathf.PI * Mathf.Clamp01(_age / Mathf.Max(0.01f, lifetime))));
+                case EffectMotion.Rise:
+                {
+                    float own = Mathf.Clamp01(phase * (1f + index * 0.025f));
+                    float grow = Mathf.SmoothStep(0.2f, 1f, Mathf.Clamp01(own / 0.6f));
+                    float pop = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((own - 0.78f) / 0.16f));
+                    position = part.position + Vector3.up * (own * riseHeight);
+                    scale = part.size * (grow * (1f - pop));
+                    break;
+                }
+                case EffectMotion.Grow:
+                {
+                    float emerge = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(phase / 0.3f));
+                    // A single run sinks away at its end, a ticking or held one stays up until it grows again
+                    float exit = 0f;
+                    if (_recipe.tempo == EffectTempo.Once || !_isStatus)
+                    {
+                        exit = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((phase - 0.8f) / 0.2f));
+                    }
+                    // After its first growth a ticking or held element stays up and each tick lifts it from lower down
+                    if (_isStatus && _recipe.tempo != EffectTempo.Once && time >= 2f * _recipe.cycleSeconds)
+                    {
+                        position = new Vector3(part.position.x, part.position.y * (0.7f + 0.3f * emerge), part.position.z);
+                        break;
+                    }
+
+                    position = new Vector3(part.position.x, part.position.y * emerge - part.size.y * 0.5f * exit, part.position.z);
+                    scale = part.size * (emerge * (1f - exit));
+                    break;
+                }
+                case EffectMotion.Fall:
+                {
+                    // A drop swells where it hangs for the first part of the cycle, then falls and shrinks at the end
+                    float own = Mathf.Clamp01(phase * 1.15f - index * 0.03f);
+                    float fall = Mathf.Clamp01((own - 0.4f) / 0.6f);
+                    position = part.position + Vector3.down * (fall * fall * _fallDistance);
+                    scale = part.size * (Mathf.SmoothStep(0.3f, 1f, Mathf.Clamp01(own / 0.2f)) * Mathf.Clamp01((1f - fall) * 6f));
+                    break;
+                }
+                case EffectMotion.Orbit:
+                {
+                    // The tilted plane turns around the body, spinning a torus in its own plane would not show
+                    float spin = index % 2 == 0 ? 34f : -28f;
+                    rotation = Quaternion.Euler(0f, time * spin, 0f) * rotation;
+                    scale = part.size * (1f + 0.035f * Mathf.Sin(time * 2.4f + index));
+                    break;
+                }
+                case EffectMotion.Close:
+                {
+                    float closure = Mathf.Clamp01(time / Mathf.Max(0.01f, _recipe.cycleSeconds));
+                    if (_isRemoving)
+                    {
+                        closure = 1f - Mathf.Clamp01(_removalAge / removalSeconds);
+                    }
+
+                    rotation = rotation * Quaternion.Euler(0f, 0f, Mathf.Lerp(-32f, 0f, closure));
+                    position = new Vector3(part.position.x * Mathf.Lerp(1.3f, 1f, closure), part.position.y,
+                                           part.position.z * Mathf.Lerp(1.3f, 1f, closure));
+                    break;
+                }
+                case EffectMotion.Press:
+                {
+                    position = part.position + Vector3.down * (pressDepth * (0.5f - 0.5f * Mathf.Cos(phase * Mathf.PI * 2f)));
+                    break;
+                }
+                case EffectMotion.Shed:
+                {
+                    float own = Mathf.Repeat(phase + index * 0.13f, 1f);
+                    float fall = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((own - 0.55f) / 0.45f));
+                    float appear = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(own / 0.15f));
+                    Vector3 outward = new Vector3(part.position.x, 0f, part.position.z).normalized;
+                    position = part.position + Vector3.down * (fall * 0.6f) + outward * (fall * 0.25f);
+                    rotation = rotation * Quaternion.Euler(fall * 25f, 0f, 0f);
+                    scale = part.size * (appear * (1f - fall));
+                    break;
+                }
             }
         }
 
-        void AdvanceBud(int index, float statusTime)
+        // A stalk runs from the socket's floor up to its shape
+        void PoseStalk(int index, Vector3 top, float width)
         {
-            bool isPeriodic = _isStatus && _isPeriodic;
-            float time = isPeriodic ? Mathf.Repeat(statusTime, _periodSeconds) / _periodSeconds : _age / Mathf.Max(0.01f, lifetime);
-            bool isStill = _isStatus && !isPeriodic;
-            float phase = isStill ? 0f : Mathf.Clamp01(time * (1f + index * 0.025f));
-            float bud = 1f;
-            if (!isStill)
+            LookPart part = _stalkParts[index];
+            float height = Mathf.Max(0f, top.y);
+            _stalks[index].localPosition = new Vector3(top.x, height * 0.5f, top.z);
+            _stalks[index].localRotation = Quaternion.identity;
+            _stalks[index].localScale = new Vector3(part.size.x * width, height, part.size.z * width);
+        }
+
+        // Beads travel along segments on a curve from start to end, a contact thread keeps only the segments
+        void PoseLink()
+        {
+            int segments = Mathf.Max(1, _stalks.Count);
+            float width = _isContactThread ? threadWidth : beamWidth;
+            for (int i = 0; i < _stalks.Count; i++)
             {
-                float grow = Mathf.SmoothStep(0.2f, 1f, Mathf.Clamp01(phase / 0.6f));
-                float pop = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((phase - 0.78f) / 0.16f));
-                bud = grow * (1f - pop);
+                float t = (float)i / segments;
+                Vector3 point = LinkPoint(t);
+                Vector3 next = LinkPoint(Mathf.Min(1f, t + 1f / segments));
+                _stalks[i].position = (point + next) * 0.5f;
+                _stalks[i].rotation = next == point ? Quaternion.identity : Quaternion.FromToRotation(Vector3.up, next - point);
+                _stalks[i].localScale = new Vector3(width, Vector3.Distance(point, next), width);
             }
 
-            if (isPeriodic && statusTime < _periodSeconds)
+            for (int i = 0; i < _shapes.Count; i++)
             {
-                bud = 0f;
-            }
-
-            parts[index].localPosition = _positions[index] + Vector3.up * phase * (0.45f + index * 0.025f);
-            parts[index].localScale = _scales[index] * bud;
-            if (index < stalks.Length && stalks[index] != null)
-            {
-                float height = parts[index].localPosition.y + 0.12f;
-                stalks[index].localPosition = new Vector3(_positions[index].x, height * 0.5f - 0.12f, _positions[index].z);
-                stalks[index].localScale = new Vector3(0.009f * bud, height * 0.5f, 0.009f * bud);
+                _shapes[i].gameObject.SetActive(!_isContactThread && i < _count);
+                _shapes[i].position = Curve(Mathf.Repeat((float)i / Mathf.Max(1, _shapes.Count) + _age / 0.6f, 1f));
             }
         }
 
-        Color DefaultColor()
+        Vector3 LinkPoint(float t)
         {
-            switch (kind)
+            if (!_isContactThread)
             {
-                case SpellEffectKind.Heal:
-                    return lime;
-                case SpellEffectKind.Impact:
-                case SpellEffectKind.Drip:
-                    return coral;
-                case SpellEffectKind.Litter:
-                    return slate;
-                case SpellEffectKind.Area:
-                    return Color.white;
-                default:
-                    return gold;
-            }
-        }
-
-        void Brighten(int index, float brightness)
-        {
-            Color color = _baseColor * brightness;
-            color.a = 1f;
-            _propertyBlock.SetColor(baseColorId, color);
-            _renderers[index].SetPropertyBlock(_propertyBlock);
-        }
-
-        Vector3 LinkPoint(Vector3 start, Vector3 end, float t)
-        {
-            if (!contactThread)
-            {
-                return Curve(start, end, t);
+                return Curve(t);
             }
 
-            Vector3 side = Vector3.Cross((end - start).normalized, Vector3.up);
+            Vector3 side = Vector3.Cross((_linkEnd - _linkStart).normalized, Vector3.up);
             float wave = Mathf.Sin(t * Mathf.PI * 8f) * Mathf.Sin(t * Mathf.PI) * 0.035f;
-            return Vector3.Lerp(start, end, t) + side * wave;
+            return Vector3.Lerp(_linkStart, _linkEnd, t) + side * wave;
         }
 
-        static Vector3 Curve(Vector3 start, Vector3 end, float t)
+        Vector3 Curve(float t)
         {
-            float height = 4f * t * (1f - t) * Mathf.Min(0.7f, Vector3.Distance(start, end) * 0.2f);
-            return Vector3.Lerp(start, end, t) + Vector3.up * height;
+            float height = 4f * t * (1f - t) * Mathf.Min(0.7f, Vector3.Distance(_linkStart, _linkEnd) * 0.2f);
+            return Vector3.Lerp(_linkStart, _linkEnd, t) + Vector3.up * height;
+        }
+
+        // Keeps running past the duration: gameplay removes the status, and a clock frozen on a period boundary
+        // would hold a growing element at nothing
+        float StatusTime()
+        {
+            return _elapsedSeconds + _sinceStatus;
+        }
+
+        void Fade(float fade)
+        {
+            foreach (Transform shape in _shapes)
+            {
+                shape.localScale *= fade;
+            }
+
+            foreach (Transform stalk in _stalks)
+            {
+                stalk.localScale *= fade;
+            }
+        }
+
+        Color Colour(LookPart part)
+        {
+            // A beam's segments and beads all take the accent
+            if (part.colour == ColourRole.Accent || _recipe.socket == EffectSocket.Link || _recipe.palette == null)
+            {
+                return _recipe.colour;
+            }
+            return _recipe.palette.Colour(part.colour, _recipe.family);
+        }
+
+        void BuildAll(LookPart[] source, PrimitiveMeshes meshes, Material material, List<Transform> built)
+        {
+            foreach (LookPart part in source)
+            {
+                Transform partTransform = Build(part, meshes, material, Colour(part));
+                partTransform.gameObject.SetActive(false);
+                built.Add(partTransform);
+            }
+        }
+
+        Transform Build(LookPart part, PrimitiveMeshes meshes, Material material, Color colour)
+        {
+            Transform built = PrimitiveMeshes.Geometry(part.id, transform, meshes.GetMesh(part.primitive, 0), material, colour, part.glow);
+            built.localPosition = part.position;
+            built.localRotation = Quaternion.Euler(part.euler);
+            built.localScale = part.size;
+            _all.Add(built);
+            return built;
+        }
+
+        void Paint(Transform part, Color colour)
+        {
+            _block.SetColor(baseColorId, colour);
+            part.GetComponent<Renderer>().SetPropertyBlock(_block);
+        }
+
+        static void SortByX(List<Transform> built, List<LookPart> source)
+        {
+            for (int i = 1; i < source.Count; i++)
+            {
+                for (int j = i; j > 0 && source[j].position.x < source[j - 1].position.x; j--)
+                {
+                    LookPart part = source[j];
+                    source[j] = source[j - 1];
+                    source[j - 1] = part;
+                    Transform swap = built[j];
+                    built[j] = built[j - 1];
+                    built[j - 1] = swap;
+                }
+            }
+        }
+
+        // Also runs from edit mode tests, where Destroy is not allowed
+        public static void Dispose(GameObject effect)
+        {
+            if (effect == null)
+            {
+                return;
+            }
+
+            effect.SetActive(false);
+            if (Application.isPlaying)
+            {
+                Destroy(effect);
+            }
+            else
+            {
+                DestroyImmediate(effect);
+            }
         }
     }
 }
