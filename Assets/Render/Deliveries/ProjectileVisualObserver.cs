@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
+using HealerLike.Render.Creatures;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 
-namespace HealerLike.Render.Creatures
+namespace HealerLike.Render.Deliveries
 {
     // Signals begin, contact and end to the source's view, which follows the projectile itself
     public class ProjectileVisualObserver : AProjectileBehaviour

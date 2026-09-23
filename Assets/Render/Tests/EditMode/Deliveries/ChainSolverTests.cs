@@ -2,7 +2,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace HealerLike.Render.Creatures
+namespace HealerLike.Render.Deliveries
 {
 
 public class ChainSolverTests

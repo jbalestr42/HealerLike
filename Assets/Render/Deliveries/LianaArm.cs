@@ -1,8 +1,9 @@
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+using HealerLike.Render.Creatures;
 
-namespace HealerLike.Render.Creatures
+namespace HealerLike.Render.Deliveries
 {
     public enum GestureKind
     {

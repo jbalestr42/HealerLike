@@ -2,8 +2,9 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
+using HealerLike.Render.Creatures;
 
-namespace HealerLike.Render.Creatures
+namespace HealerLike.Render.Deliveries
 {
 
 public class LianaArmTests

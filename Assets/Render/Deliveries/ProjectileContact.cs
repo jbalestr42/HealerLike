@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace HealerLike.Render.Creatures
+namespace HealerLike.Render.Deliveries
 {
     public readonly struct ProjectileContact
     {

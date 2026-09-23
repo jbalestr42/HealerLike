@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace HealerLike.Render.Creatures
+namespace HealerLike.Render.Deliveries
 {
     // Equal-link FABRIK that allocates nothing and reads no scene, clock or random state
     public class ChainSolver

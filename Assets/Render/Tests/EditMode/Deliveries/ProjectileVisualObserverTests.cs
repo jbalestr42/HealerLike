@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using HealerLike.Render.Creatures;
 using HealerLike.Render.Stage;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 
-namespace HealerLike.Render.Creatures
+namespace HealerLike.Render.Deliveries
 {
 
 public class ProjectileVisualObserverTests
