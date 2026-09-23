@@ -10,9 +10,10 @@ namespace HealerLike.Render.Grass
     {
         public static readonly string InstancedKeyword = "HL_GRASS_INSTANCED";
 
-        // Picked by the blade's patch lane, so neighbouring cells share a green
-        public Color darkGreen = new Color(0.18f, 0.49f, 0.31f);
-        public Color midGreen = new Color(0.34f, 0.64f, 0.28f);
+        // Picked by the blade's patch lane, so neighbouring cells share a green. The light one is the plant
+        // base green, the other two step a sixth and a third of the way to the plant dark green
+        public Color darkGreen = new Color(0.39f, 0.69f, 0.27f);
+        public Color midGreen = new Color(0.45f, 0.74f, 0.26f);
         public Color lightGreen = new Color(0.5f, 0.79f, 0.25f);
         // Healed blades lean toward it, spikes take the slate
         public Color heal = new Color(0.78f, 0.95f, 0.29f);
