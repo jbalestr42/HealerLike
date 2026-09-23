@@ -47,7 +47,7 @@ public class CreatureRigTests
     public void ContactDelivery_ShortDirectReach_DoesNotCoilUnusedLength()
     {
         _rig.Dispose();
-        CreatureRecipe data = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/SpiralFern.asset");
+        CreatureRecipe data = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
         _rig = CreateRig(data, _parent.transform, _material);
         _rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
         Vector3 target = new Vector3(2f, 1.3f, 0f);
@@ -419,7 +419,7 @@ public class CreatureRigTests
     }
 
     [Test]
-    public void Init_StonePartWithoutVariants_BuildsOnTheBoulder()
+    public void Init_StonePart_BuildsOnItsSeededVariant()
     {
         _rig.Dispose();
         _recipe.parts[0].primitive = Primitive.Stone;
@@ -428,14 +428,15 @@ public class CreatureRigTests
         _rig = CreateRig(_recipe, _parent.transform, _material);
 
         Mesh mesh = _rig.partTransforms[0].GetComponent<MeshFilter>().sharedMesh;
-        Assert.AreEqual(PrimitiveMeshesTests.Meshes().boulder, mesh);
+        Mesh[] variants = PrimitiveMeshesTests.Meshes().stoneVariants.meshes;
+        Assert.AreEqual(variants[3 % variants.Length], mesh);
     }
 
     [Test]
     public void Init_Recipe_OnePartTransformPerPart()
     {
         _rig.Dispose();
-        CreatureRecipe data = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/SpiralFern.asset");
+        CreatureRecipe data = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
 
         _rig = CreateRig(data, _parent.transform, _material);
 

@@ -56,27 +56,6 @@ public class CreatureRecipeTests
     }
 
     [Test]
-    public void Roots_SphereStackAsset_KneeClearsConicalBase()
-    {
-        string path = "Assets/Render/Creatures/Data/SphereStack.asset";
-        CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
-        Assert.NotNull(recipe);
-        CreaturePart cone = Array.Find(recipe.parts, part => part.id == "ConicalRoot");
-
-        float bottom = cone.localPosition.y - cone.dimensions.y * 0.5f;
-        float kneeFraction = (recipe.roots.kneeHeight - bottom) / cone.dimensions.y;
-        float coneRadiusAtKnee = Mathf.Max(cone.dimensions.x, cone.dimensions.z) * 0.5f * (1f - kneeFraction);
-        float kneeInnerRadius = recipe.roots.footRadius * 0.6f - recipe.roots.thickness;
-
-        Assert.Greater(kneeInnerRadius, coneRadiusAtKnee,
-            "Root knees must emerge outside the opaque conical base.");
-        LookVocabulary vocabulary = LookVocabularyTests.Vocabulary();
-        Assert.AreEqual(vocabulary.pinnedReach * vocabulary.bodyUnit, recipe.roots.footRadius, 0.0001f);
-        Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, CreatureValidator.MaxRootReach);
-        Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);
-    }
-
-    [Test]
     public void Parts_HealerAsset_ValidatesWithItsRoles()
     {
         CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");

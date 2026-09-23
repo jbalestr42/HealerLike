@@ -10,6 +10,7 @@ namespace HealerLike.Render.Creatures
 public class CreatureLooksTests
 {
     readonly List<Object> _objects = new List<Object>();
+    readonly List<string> _bakedPaths = new List<string>();
 
     [TearDown]
     public void TearDown()
@@ -19,6 +20,11 @@ public class CreatureLooksTests
             Object.DestroyImmediate(trackedObject);
         }
         _objects.Clear();
+        foreach (string path in _bakedPaths)
+        {
+            AssetDatabase.DeleteAsset(path);
+        }
+        _bakedPaths.Clear();
     }
 
     T CreateTracked<T>() where T : ScriptableObject
@@ -114,6 +120,28 @@ public class CreatureLooksTests
         Assert.AreSame(plant, looks.GetRecipe(data, Entity.EntityType.Player));
         Assert.AreEqual(Primitive.Stone, stone.parts[0].primitive);
         Assert.AreEqual(Primitive.Sphere, plant.parts[0].primitive);
+    }
+
+    [Test]
+    public void BakeToOverride_DerivedEntity_SavesItsRecipeAndAddsItsRow()
+    {
+        CreatureLooks looks = CreateTracked<CreatureLooks>();
+        looks.plant = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Creatures/Prefabs/DerivedPlant.prefab");
+        looks.vocabulary = LookVocabularyTests.Vocabulary();
+        EntityData data = LookDerivationTests.LoadEntity("NormalEntity");
+
+        GameObject view = looks.BakeToOverride(data, Entity.EntityType.Player);
+
+        string prefabPath = AssetDatabase.GetAssetPath(view);
+        CreatureRecipe recipe = view.GetComponent<CreatureBuilder>().recipe;
+        string recipePath = AssetDatabase.GetAssetPath(recipe);
+        _bakedPaths.Add(prefabPath);
+        _bakedPaths.Add(recipePath);
+        Assert.AreSame(view, looks.GetView(data, Entity.EntityType.Player));
+        Assert.IsNull(looks.GetRecipe(data, Entity.EntityType.Player));
+        StringAssert.StartsWith("Assets/Render/Creatures/Data/", recipePath);
+        StringAssert.StartsWith("Assets/Render/Creatures/Prefabs/", prefabPath);
+        Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);
     }
 
     [Test]
