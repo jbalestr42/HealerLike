@@ -335,6 +335,62 @@ public class LookShaderTests
     }
 
     [Test]
+    public void ShadeControls_ShippedMaterials_BodiesAndGrassShiftStonesKeepTheGlobals()
+    {
+        Material body = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
+        Material grass = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat");
+        Material stone = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Stone.mat");
+
+        Assert.That(body.GetFloat("_HLToonThresholdOffset"), Is.GreaterThan(0f));
+        Assert.That(body.GetColor("_HLShadeTint").a, Is.GreaterThan(0f));
+        Assert.That(grass.GetColor("_HLShadeTint").a, Is.GreaterThan(0f));
+        Assert.That(stone.GetFloat("_HLToonThresholdOffset"), Is.Zero);
+        Assert.That(stone.GetColor("_HLShadeTint").a, Is.Zero); // zero strength keeps the global tint
+    }
+
+    [Test]
+    public void Render_UnitSphereUnderKeyLight_BodyMaterialSplitsAboutHalf()
+    {
+        if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+        {
+            Assert.Ignore("Requires graphics readback");
+        }
+
+        Material body = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
+        BuildKeyLightScene(6f, 25f);
+        CreateKeyLightSphere(body);
+
+        RenderKeyLightScene();
+
+        float litShare = LitShare(_texture);
+        Assert.That(litShare, Is.InRange(0.45f, 0.6f));
+        Debug.Log("[LookShaderTests] Body sphere lit share " + litShare.ToString("F3"));
+    }
+
+    [Test]
+    public void Render_FlatGrassPatchUnderKeyLight_ShadeShareStaysUnderHalf()
+    {
+        if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null || !SystemInfo.supportsComputeShaders
+            || !SystemInfo.supportsIndirectArgumentsBuffer)
+        {
+            Assert.Ignore("Requires compute, indirect draws and graphics readback");
+        }
+
+        // The grass teal is too green to tell from the lit blades, so a copy paints its shade magenta
+        Material marked = Track(new Material(AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat")));
+        marked.SetColor("_HLShadeTint", new Color(1f, 0f, 1f, 1f));
+        BuildKeyLightScene(20f, 20f);
+        CreateGrassPatch(marked);
+
+        RenderKeyLightScene();
+
+        float shadeShare = ShadeShare(_texture);
+        Assert.That(shadeShare, Is.GreaterThan(0.1f));
+        Assert.That(shadeShare, Is.LessThan(0.5f));
+        Debug.Log("[LookShaderTests] Grass shade share " + shadeShare.ToString("F3"));
+    }
+
+    [Test]
     public void Render_StoneShadowOnGrass_ConvergesToTheGlobalUltramarine()
     {
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null || !SystemInfo.supportsComputeShaders
@@ -757,6 +813,28 @@ public class LookShaderTests
         _texture.Apply();
     }
 
+    // Lit pixels are the green body colour; the teal shade and the ultramarine cast shadow are bluer than green
+    static float LitShare(Texture2D texture)
+    {
+        int covered = 0;
+        int lit = 0;
+        foreach (Color32 pixel in texture.GetPixels32())
+        {
+            if (pixel.r == 255 && pixel.g == 255 && pixel.b == 255)
+            {
+                continue;
+            }
+
+            covered++;
+            if (pixel.g > pixel.r && pixel.g > pixel.b)
+            {
+                lit++;
+            }
+        }
+
+        return covered == 0 ? 0f : (float)lit / covered;
+    }
+
     // Channel by channel median of the square of the given half size around a pixel
     static Color32 MedianColour(Texture2D texture, int x, int y, int halfSize)
     {
@@ -779,6 +857,28 @@ public class LookShaderTests
         blues.Sort();
         int middle = reds.Count / 2;
         return new Color32(reds[middle], greens[middle], blues[middle], 255);
+    }
+
+    // Shade pixels carry the magenta marker, so they are redder than green
+    static float ShadeShare(Texture2D texture)
+    {
+        int covered = 0;
+        int shade = 0;
+        foreach (Color32 pixel in texture.GetPixels32())
+        {
+            if (pixel.r == 255 && pixel.g == 255 && pixel.b == 255)
+            {
+                continue;
+            }
+
+            covered++;
+            if (pixel.r > pixel.g)
+            {
+                shade++;
+            }
+        }
+
+        return covered == 0 ? 0f : (float)shade / covered;
     }
 
     // Draws the quad through the forward pass and reads back the centre pixel
