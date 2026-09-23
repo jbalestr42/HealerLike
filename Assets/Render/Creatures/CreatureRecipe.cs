@@ -9,7 +9,8 @@ namespace HealerLike.Render.Creatures
         Capsule,
         Cone,
         Torus,
-        CylinderSegment
+        CylinderSegment,
+        Leaf
     }
 
     [CreateAssetMenu(menuName = "Custom/Data/Render/CreatureRecipe")]

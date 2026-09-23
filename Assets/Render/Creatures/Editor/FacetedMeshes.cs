@@ -75,6 +75,45 @@ namespace HealerLike.Render.Creatures
             return new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0f);
         }
 
+        // Tall leaf with a diamond section: a narrow base cap, widest low, a pointed tip. One unit on each axis.
+        public static Mesh CreateLeaf()
+        {
+            float[] heights = { -0.5f, -0.2f, 0.15f, 0.5f };
+            float[] widths = { 0.55f, 1f, 0.7f, 0f };
+            List<Vector3> corners = new List<Vector3>();
+            for (int level = 0; level < heights.Length - 1; level++)
+            {
+                for (int side = 0; side < 4; side++)
+                {
+                    Vector3 a = LeafCorner(side, heights[level], widths[level]);
+                    Vector3 b = LeafCorner(side + 1, heights[level], widths[level]);
+                    Vector3 c = LeafCorner(side, heights[level + 1], widths[level + 1]);
+                    Vector3 d = LeafCorner(side + 1, heights[level + 1], widths[level + 1]);
+                    corners.AddRange(new Vector3[] { a, c, b });
+                    if (widths[level + 1] > 0f)
+                    {
+                        corners.AddRange(new Vector3[] { b, c, d });
+                    }
+                }
+            }
+
+            Vector3[] cap = new Vector3[4];
+            for (int side = 0; side < 4; side++)
+            {
+                cap[side] = LeafCorner(side, heights[0], widths[0]);
+            }
+
+            corners.AddRange(new Vector3[] { cap[0], cap[1], cap[2] });
+            corners.AddRange(new Vector3[] { cap[0], cap[2], cap[3] });
+            return CreateFlatShaded("Leaf", corners);
+        }
+
+        static Vector3 LeafCorner(int side, float height, float width)
+        {
+            float angle = (side % 4) * Mathf.PI * 0.5f;
+            return new Vector3(Mathf.Cos(angle) * width * 0.5f, height, Mathf.Sin(angle) * width * 0.5f);
+        }
+
         // One normal per triangle. The shapes are star-shaped around the origin, so a triangle whose normal
         // points at the origin is turned around.
         static Mesh CreateFlatShaded(string name, List<Vector3> corners)

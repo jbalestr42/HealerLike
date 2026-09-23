@@ -35,13 +35,14 @@ namespace HealerLike.Render.Creatures
             meshes.bladeCone = Save(RevolvedMeshes.Create("BladeCone", Primitive.Cone, GrassField.BladeSides, 2, 0.2f));
             meshes.pyramid = Save(FacetedMeshes.CreatePyramid());
             meshes.star = Save(FacetedMeshes.CreateStar());
+            meshes.leaf = Save(FacetedMeshes.CreateLeaf());
             meshes.boulder = Save(FacetedMeshes.CreateBoulder());
             meshes.disc = Save(RingMeshes.CreateDisc(32));
             meshes.annulus = Save(RingMeshes.CreateAnnulus(128));
 
             EditorUtility.SetDirty(meshes);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[PrimitiveMeshBaker] Baked 12 meshes into {meshesFolder}");
+            Debug.Log($"[PrimitiveMeshBaker] Baked 13 meshes into {meshesFolder}");
         }
 
         static Mesh Save(Mesh mesh)

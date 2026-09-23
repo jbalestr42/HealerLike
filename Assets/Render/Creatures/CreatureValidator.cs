@@ -33,7 +33,7 @@ namespace HealerLike.Render.Creatures
                 bool isEulerFinite = float.IsFinite(euler.x) && float.IsFinite(euler.y) && float.IsFinite(euler.z);
                 if (!isPositionFinite || !isEulerFinite || !Positive(part.dimensions) || !Colour(part.colour)
                     || !float.IsFinite(part.glow) || part.glow < 0f
-                    || (int)part.primitive < 0 || (int)part.primitive > 4 || !isTorusValid)
+                    || (int)part.primitive < 0 || (int)part.primitive > 5 || !isTorusValid)
                 {
                     return Fail("Invalid primitive settings.", out error);
                 }
