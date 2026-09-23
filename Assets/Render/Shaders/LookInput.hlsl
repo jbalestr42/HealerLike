@@ -6,6 +6,7 @@ CBUFFER_START(UnityPerMaterial)
     float _HLOutlineWidthMultiplier;
     float _HLGroundGrid;
     float _HLSmoothOutlineNormals;
+    float _HLHatchMultiplier;
 CBUFFER_END
 
 #if defined(UNITY_INSTANCING_ENABLED)

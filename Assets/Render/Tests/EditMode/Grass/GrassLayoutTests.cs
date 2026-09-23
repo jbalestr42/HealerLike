@@ -39,7 +39,7 @@ public class GrassLayoutTests
 
         Assert.That(blade.positionYaw.x, Is.EqualTo(0.3113201856613159f).Within(0.000001f));
         Assert.That(blade.positionYaw.z, Is.EqualTo(0.26609694957733154f).Within(0.000001f));
-        Assert.That(blade.heightPhaseWidthRandom.x, Is.EqualTo(0.3229929780960083f).Within(0.000001f));
+        Assert.That(blade.heightPhaseWidthRandom.x, Is.EqualTo(0.2594265639781952f).Within(0.000001f));
     }
 
     [Test]
@@ -55,9 +55,9 @@ public class GrassLayoutTests
             Assert.That(blade.positionYaw.z, Is.GreaterThanOrEqualTo(-8f).And.LessThan(8f));
             Assert.AreEqual(0.505f, blade.positionYaw.y);
             Assert.That(blade.positionYaw.w, Is.InRange(0f, 2f * Mathf.PI));
-            Assert.That(blade.heightPhaseWidthRandom.x, Is.InRange(0.17f, 0.42f));
+            Assert.That(blade.heightPhaseWidthRandom.x, Is.InRange(0.23f, 0.27f));
             Assert.That(blade.heightPhaseWidthRandom.y, Is.InRange(0f, 2f * Mathf.PI));
-            Assert.That(blade.heightPhaseWidthRandom.z, Is.InRange(0.095f, 0.15f));
+            Assert.That(blade.heightPhaseWidthRandom.z, Is.InRange(0.0747f, 0.0914f));
             Assert.That(blade.heightPhaseWidthRandom.w, Is.InRange(0f, 1f));
             quotas[Mathf.FloorToInt(blade.positionYaw.x + 8f) + 16 * Mathf.FloorToInt(blade.positionYaw.z + 8f)]++;
         }
@@ -80,7 +80,7 @@ public class GrassLayoutTests
             columns[Mathf.FloorToInt(Mathf.Repeat(blade.positionYaw.x + 8f, 1f) * 8f)]++;
         }
 
-        // 65536 blades over 8 bands is 8192 each; a sparse last row or gaps between rows fall far below
+        // 65536 tufts over 8 bands is 8192 each; a sparse last row or gaps between rows fall far below
         for (int i = 0; i < 8; i++)
         {
             Assert.That(rows[i], Is.InRange(8192 * 0.8f, 8192 * 1.2f), "row band " + i);
@@ -119,40 +119,40 @@ public class GrassLayoutTests
     }
 
     [Test]
-    public void Generate_Clumps_ShareRootPhaseAndHueWithThreeToSevenBlades()
+    public void Generate_PatchLane_VariesSoftlyBetweenNeighbourCells()
     {
-        BladeSeed[] seeds = GrassLayout.Generate(8, 8, 1f, Vector3.zero, 0f);
-        HashSet<int> sizes = new HashSet<int>();
-        float shortest = 1f;
-        float tallest = 0f;
-        int i = 0;
+        BladeSeed[] seeds = GrassLayout.Generate(16, 16, 1f, Vector3.zero, 0f);
+        float[] means = new float[256];
+        HashSet<Vector3> roots = new HashSet<Vector3>();
 
-        while (i < seeds.Length)
+        foreach (BladeSeed blade in seeds)
         {
-            BladeSeed first = seeds[i];
-            int end = i + 1;
-            while (end < seeds.Length && (Vector3)seeds[end].positionYaw == (Vector3)first.positionYaw)
-            {
-                end++;
-            }
-            Assert.That(end - i, Is.InRange(3, 7));
-            sizes.Add(end - i);
-            for (int j = i; j < end; j++)
-            {
-                Assert.AreEqual(first.heightPhaseWidthRandom.y, seeds[j].heightPhaseWidthRandom.y);
-                Assert.AreEqual(first.heightPhaseWidthRandom.w, seeds[j].heightPhaseWidthRandom.w);
-                shortest = Mathf.Min(shortest, seeds[j].heightPhaseWidthRandom.x);
-                tallest = Mathf.Max(tallest, seeds[j].heightPhaseWidthRandom.x);
-            }
-            i = end;
+            roots.Add(blade.positionYaw);
+            Assert.That(blade.heightPhaseWidthRandom.w, Is.InRange(0f, 1f));
+            means[Mathf.FloorToInt(blade.positionYaw.x + 8f) + 16 * Mathf.FloorToInt(blade.positionYaw.z + 8f)] += blade.heightPhaseWidthRandom.w / 256f;
         }
 
-        Assert.AreEqual(5, sizes.Count);
-        Assert.Less(shortest, 0.19f);
-        Assert.Greater(tallest, 0.40f);
-        // The first 2x2 cells always belong to one patch, whatever the seeded 2..4 patch scale
-        Assert.AreEqual(seeds[0].heightPhaseWidthRandom.w, seeds[1024].heightPhaseWidthRandom.w);
-        Assert.AreEqual(seeds[0].heightPhaseWidthRandom.w, seeds[8192].heightPhaseWidthRandom.w);
+        // Every tuft stands on its own root, no clumps
+        Assert.AreEqual(seeds.Length, roots.Count);
+        float largestStep = 0f;
+        float lowest = 1f;
+        float highest = 0f;
+        for (int cell = 0; cell < 256; cell++)
+        {
+            lowest = Mathf.Min(lowest, means[cell]);
+            highest = Mathf.Max(highest, means[cell]);
+            if (cell % 16 < 15)
+            {
+                largestStep = Mathf.Max(largestStep, Mathf.Abs(means[cell + 1] - means[cell]));
+            }
+            if (cell < 240)
+            {
+                largestStep = Mathf.Max(largestStep, Mathf.Abs(means[cell + 16] - means[cell]));
+            }
+        }
+        // A lattice point every 5 cells moves the lane by at most about a quarter of its range per cell
+        Assert.Less(largestStep, 0.3f); // 0.25 measured for seed 1
+        Assert.Greater(highest - lowest, 0.2f);
     }
 
     [Test]

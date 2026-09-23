@@ -149,7 +149,9 @@ public class GrassComputeTests
         Assert.That(_states[0].leanHeightSpike.z, Is.EqualTo(1.32f).Within(0.0001));
         Assert.That(_states[1].leanHeightSpike.w, Is.EqualTo(0.759375f).Within(0.0001));
         Assert.AreEqual(2f, _states[1].rampHealReserved.x);
-        Assert.That(_states[1].leanHeightSpike.z, Is.EqualTo(1.5f * 0.759375f * 0.648f).Within(0.0001));
+        float spikeHeight = 0.759375f * 0.648f; // weight * rise
+        float spikeTall = _states[1].leanHeightSpike.z * _layout[1].heightPhaseWidthRandom.x;
+        Assert.That(spikeTall, Is.InRange(0.26f * spikeHeight - 0.0001f, 0.63f * spikeHeight + 0.0001f));
         Assert.AreEqual(Vector4.one * 123f, _states[65].leanHeightSpike);
         uint[] ids = new uint[65];
         _visible.GetData(ids, 0, 0, 65);
@@ -225,6 +227,39 @@ public class GrassComputeTests
         {
             Assert.AreNotEqual(ShaderCompilerMessageSeverity.Error, message.severity, message.message);
         }
+    }
+
+    [Test]
+    public void Dispatch_WindAndGust_KeepsLeanUnderRigidTiltLimit()
+    {
+        _compute.SetInt("_HL_ZoneCount", 0);
+        float largest = 0f;
+        for (int step = 0; step < 20; step++)
+        {
+            _compute.SetFloat("_HL_Time", step * 0.37f);
+            Dispatch();
+            ReadStates();
+            for (int i = 0; i < 65; i++)
+            {
+                largest = Mathf.Max(largest, new Vector2(_states[i].leanHeightSpike.x, _states[i].leanHeightSpike.y).magnitude);
+            }
+        }
+
+        _compute.SetVector("_HL_Wind", new Vector4(1f, 0f, 1.2f, 0.13f));
+        float gustLargest = 0f;
+        for (int step = 0; step < 20; step++)
+        {
+            _compute.SetFloat("_HL_Time", step * 0.37f);
+            Dispatch();
+            ReadStates();
+            for (int i = 0; i < 65; i++)
+            {
+                gustLargest = Mathf.Max(gustLargest, new Vector2(_states[i].leanHeightSpike.x, _states[i].leanHeightSpike.y).magnitude);
+            }
+        }
+
+        Assert.That(largest, Is.InRange(0.05f, 0.3501f)); // 20 degrees
+        Assert.That(gustLargest, Is.InRange(largest, 0.5201f)); // 4 * 0.13 radians, about 30 degrees
     }
 }
 

@@ -28,6 +28,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _HLGroundGrid: 0
+    - _HLHatchMultiplier: 0
     - _HLNormalEdges: 0
     - _HLOutlineWidthMultiplier: 1
     - _HLSmoothOutlineNormals: 0

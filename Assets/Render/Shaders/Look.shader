@@ -9,6 +9,7 @@ Shader "HL/Look/Primitive"
         [Toggle] _HLSmoothOutlineNormals ("Use Authored TEXCOORD3 Outline Normals", Float) = 0
         [MainColor] _BaseColor ("Base Color", Color) = (1,1,1,1)
         [Toggle] _HLNormalEdges ("Normal Edges (zero keeps depth edges only)", Float) = 1
+        _HLHatchMultiplier ("Hatch Multiplier", Float) = 1
     }
     SubShader
     {
@@ -28,6 +29,9 @@ Shader "HL/Look/Primitive"
             UNITY_VERTEX_INPUT_INSTANCE_ID
             #if defined(HL_GRASS_INSTANCED) && !UNITY_ANY_INSTANCING_ENABLED
             uint instanceID : SV_InstanceID;
+            #endif
+            #if defined(HL_GRASS_INSTANCED)
+            float4 grassTip : COLOR;
             #endif
         };
 
@@ -50,7 +54,7 @@ Shader "HL/Look/Primitive"
             UNITY_TRANSFER_INSTANCE_ID(input, output);
             UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
             #if defined(HL_GRASS_INSTANCED)
-            HLGrassPlacement blade = HLPlaceGrassBlade(input.positionOS.xyz, input.normalOS, input.instanceID);
+            HLGrassPlacement blade = HLPlaceGrassBlade(input.positionOS.xyz, input.normalOS, input.grassTip.r, input.instanceID);
             output.positionWS = blade.positionWS;
             output.normalWS = blade.normalWS;
             output.grassColor = blade.color;
@@ -108,7 +112,7 @@ Shader "HL/Look/Primitive"
                 Light mainLight = GetMainLight(shadowCoord, input.positionWS, half4(1, 1, 1, 1));
                 float facing = dot(normalize(input.normalWS), mainLight.direction) * 0.5 + 0.5;
                 float illum = saturate(facing * mainLight.shadowAttenuation);
-                float3 color = HLShadeSurface(input.positionWS, illum, HLSurfaceColor(input));
+                float3 color = HLShadeSurface(input.positionWS, illum, HLSurfaceColor(input), _HLHatchMultiplier);
                 if (_HLGroundGrid > 0.5)
                 {
                     color = HLApplyBattlefieldGrid(input.positionWS, color);

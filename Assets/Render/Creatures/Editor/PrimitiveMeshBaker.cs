@@ -32,7 +32,7 @@ namespace HealerLike.Render.Creatures
             meshes.cylinder = Save(RevolvedMeshes.Create("Cylinder", Primitive.CylinderSegment, 6, 6, 0.2f));
             meshes.torus = Save(RevolvedMeshes.Create("Torus", Primitive.Torus, 12, 6, 0.2f));
             meshes.thinTorus = Save(RingMeshes.CreateThinTorus());
-            meshes.bladeCone = Save(RevolvedMeshes.Create("BladeCone", Primitive.Cone, GrassField.BladeSides, 2, 0.2f));
+            meshes.tuft = Save(GrassTuft.CreateMesh());
             meshes.pyramid = Save(FacetedMeshes.CreatePyramid());
             meshes.star = Save(FacetedMeshes.CreateStar());
             meshes.leaf = Save(FacetedMeshes.CreateLeaf());
