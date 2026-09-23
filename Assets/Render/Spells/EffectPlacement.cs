@@ -89,7 +89,7 @@ namespace HealerLike.Render.Spells
         }
 
         // Moves the element away from the head until no pose of its motion reaches into it: down for what hangs on
-        // the body, up for what presses from above, and flatter for what rises from the feet
+        // the body, up for what presses from above, and wider for what rises from the feet
         static void KeepOffHead(SpellEffect effect, EffectAnchors anchors)
         {
             EffectSocket socket = effect.recipe.socket;
@@ -111,8 +111,10 @@ namespace HealerLike.Render.Spells
 
                 if (socket == EffectSocket.Feet)
                 {
+                    // The ring widens rather than sinks, so the stalks keep their height
                     Vector3 scale = root.localScale;
-                    scale.y *= 0.85f;
+                    scale.x *= 1.1f;
+                    scale.z *= 1.1f;
                     root.localScale = scale;
                 }
                 else

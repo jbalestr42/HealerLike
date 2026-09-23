@@ -158,6 +158,28 @@ public class EffectPlacementTests
     }
 
     [Test]
+    public void SetStatus_RenewUnderALargeHead_StalksWidenAndKeepTheirHeight()
+    {
+        EffectAnchors anchors = Tall();
+        anchors.headCentre = new Vector3(0f, 0.75f, 0f);
+        anchors.headRadius = 0.4f;
+        _target.AddComponent<FakeEffectAnchors>().anchors = anchors;
+        BuffHandlerFactory renew = Handler(EffectElement.Stalks);
+
+        _sink.SetStatus(null, _target, renew, 1, 1.5f, 6f, ClockKind.Simulation);
+
+        float top = 0f;
+        foreach (Transform sphere in _sink.GetElement(_target, EffectElement.Stalks).shapes)
+        {
+            if (sphere.gameObject.activeSelf)
+            {
+                top = Mathf.Max(top, sphere.position.y - anchors.foot.y);
+            }
+        }
+        Assert.Greater(top, 2f * anchors.bodyRadius);
+    }
+
+    [Test]
     public void SetStatus_Weaken_ConesSitAQuarterUnitOverTheHead()
     {
         EffectAnchors anchors = Squat();
