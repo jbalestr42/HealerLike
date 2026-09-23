@@ -47,11 +47,11 @@ namespace HealerLike.Render.Grass
                 var grid=Make("HLGroundFixtureGrid").AddComponent<GridManager>();grid.width=grid.height=8;grid.size=1;grid.cells=new GridCell[64];
                 var registry=Make("HLGroundFixtureZones").AddComponent<HLZoneRegistry>();registry.Initialize();
                 var field=Make("HLGroundFixtureGrass").AddComponent<HLGrassField>();
-                field.Initialize(grid,ground.transform,camera,registry.Buffer,64); field.BladeBudget=16384;
+                field.Init(grid,ground.transform,camera,registry.Buffer,64); field.bladeBudget=16384;
                 TestHelpers.InvokePrivate(field,"OnEnable");
-                TestHelpers.SetPrivateField(field,"updateGrass",AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute"));
-                TestHelpers.SetPrivateField(field,"grassShader",Shader.Find("HL/Grass/BladeAndCone"));
-                TestHelpers.SetPrivateField(field,"ringShader",AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrassRing.shader"));
+                TestHelpers.SetPrivateField(field,"_updateGrass",AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute"));
+                TestHelpers.SetPrivateField(field,"_lookMaterial",material);
+                TestHelpers.SetPrivateField(field,"_ringShader",AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrassRing.shader"));
                 for(int i=0;i<3;i++)
                 {
                     var stone=Make("HLFixtureStone"+i);stone.transform.position=new Vector3((i-1)*2.2f,0,1.6f);
@@ -76,7 +76,7 @@ namespace HealerLike.Render.Grass
                 RenderPipeline.SubmitRenderRequest(camera,new RenderPipeline.StandardRequest{destination=target});
                 RenderTexture.active=target;texture.ReadPixels(new Rect(0,0,1440,960),0,0);texture.Apply();
                 Assert.Greater(GreenPixels(),firstGrassPixels*.9f,"Repaint must resubmit prepared grass without another field LateUpdate.");
-                var bytes=texture.EncodeToPNG();Assert.Greater(bytes.Length,10000);Assert.AreEqual(16384,field.BladeCount);
+                var bytes=texture.EncodeToPNG();Assert.Greater(bytes.Length,10000);Assert.AreEqual(16384,field.bladeCount);
                 const string directory="/Users/fc/Documents/healerlike-render-specs/captures";Directory.CreateDirectory(directory);
                 File.WriteAllBytes(Path.Combine(directory,"wave9-ground-fixture.png"),bytes);
                 field.SetZoneSnapshot(null,0);
