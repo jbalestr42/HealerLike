@@ -5,6 +5,16 @@ namespace HealerLike.Render.Zones
 {
     public class HLBruiseZoneTests
     {
+        static Entity CreateEnemy(GameObject go, float range)
+        {
+            AttributeManager attributes = TestHelpers.CreateAttributeManager(go, AttributeType.Range, range);
+            Entity entity = null;
+            TestHelpers.WithLoggingDisabled(() => entity = go.AddComponent<Entity>());
+            entity.attributeManager = attributes;
+            entity.entityType = Entity.EntityType.Computer;
+            return entity;
+        }
+
         [Test]
         public void EnemyRangeFollowsPositionAndAttributeAndCleansUp()
         {
@@ -56,16 +66,6 @@ namespace HealerLike.Render.Zones
             }
         }
 
-
-        static Entity CreateEnemy(GameObject go, float range)
-        {
-            AttributeManager attributes = TestHelpers.CreateAttributeManager(go, AttributeType.Range, range);
-            Entity entity = null;
-            TestHelpers.WithLoggingDisabled(() => entity = go.AddComponent<Entity>());
-            entity.attributeManager = attributes;
-            entity.entityType = Entity.EntityType.Computer;
-            return entity;
-        }
 
         [Test]
         public void Init_WithZones_AddsTheBruiseThere()
