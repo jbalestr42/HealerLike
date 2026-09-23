@@ -232,7 +232,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5213feb2d8a414b50ae33b0e2b2273c0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.HLStoneEnemyVisual
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.StoneEnemyVisual
   _bodyPivot: {fileID: 8422120432104562012}
   _presentation: {fileID: 6335932898581894840}
   _groundShadow: {fileID: 1754940713814127132}
@@ -254,7 +254,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 95883ece797a642eb85c1765fa3e1b22, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.HLStatusObserver
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.StatusObserver
 --- !u!114 &3930716647515381901
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -266,7 +266,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff72fcddce784a6396cd2bda1d8abbd4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLHealPulse
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HealPulse
   _cellSize: 1
 --- !u!114 &6096882615546962639
 MonoBehaviour:
@@ -279,7 +279,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2ebaf268b45a843f582ee963235f25ad, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLTrampleZone
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.TrampleZone
   radius: 0.65
   strength: 1
 --- !u!114 &8871626346568647886
@@ -293,4 +293,4 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a6b9a014428bf4236adc3d74ffbd7977, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLBruiseZone
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.BruiseZone

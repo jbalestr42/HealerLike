@@ -60,14 +60,14 @@ namespace HealerLike.Render.Stage
         {
             foreach (ScriptableRendererFeature old in rendererData.rendererFeatures.ToArray())
             {
-                if (old is HLOutlines)
+                if (old is Outlines)
                 {
                     rendererData.rendererFeatures.Remove(old);
                     Object.DestroyImmediate(old, true);
                 }
             }
 
-            HLOutlines outlines = ScriptableObject.CreateInstance<HLOutlines>();
+            Outlines outlines = ScriptableObject.CreateInstance<Outlines>();
             outlines.name = "HLOutlines";
             outlines.edgeShader = AssetDatabase.LoadAssetAtPath<Shader>(EdgeShaderPath);
             if (outlines.edgeShader == null)
@@ -95,7 +95,7 @@ namespace HealerLike.Render.Stage
         }
 
         // Grass writes no normal edge eligibility, so the screen pass does not ink every blade
-        public static void SetEdges(HLOutlines outlines)
+        public static void SetEdges(Outlines outlines)
         {
             outlines.depthNormalEdges = true;
             outlines.depthThresholdWorld = 1f;

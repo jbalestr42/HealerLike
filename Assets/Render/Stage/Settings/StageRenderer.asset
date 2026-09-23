@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2f68311c93d43d1ad9965fda1d33f89, type: 3}
   m_Name: HLOutlines
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Look.HLOutlines
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Look.Outlines
   m_Active: 1
   layerMask:
     serializedVersion: 2

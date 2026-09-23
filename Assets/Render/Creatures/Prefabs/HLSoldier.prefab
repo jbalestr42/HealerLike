@@ -43,7 +43,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a556e8eba114a46318504f3d26157b81, type: 3}
   m_Name:
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.HLCreatureBuilder
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.CreatureBuilder
   _recipe: {fileID: 11400000, guid: 44e914ad4ebd44f81b99664206f22efd, type: 2}
   _material: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
   _meshes: {fileID: 11400000, guid: 4ee00372052f248838ebdf645b1e9727, type: 2}

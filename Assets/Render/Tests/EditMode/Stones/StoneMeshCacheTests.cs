@@ -8,9 +8,9 @@ namespace HealerLike.Render.Stones
         public void SharedUntilLastLeaseAndDisposalIdempotent()
         {
             StoneMeshCache cache = new StoneMeshCache();
-            StoneMeshCache.Lease a = cache.Acquire(23, HLStonePresets.Boulder);
-            StoneMeshCache.Lease b = cache.Acquire(23, HLStonePresets.Boulder);
-            StoneMeshCache.Lease c = cache.Acquire(24, HLStonePresets.Boulder);
+            StoneMeshCache.Lease a = cache.Acquire(23, StonePresets.Boulder);
+            StoneMeshCache.Lease b = cache.Acquire(23, StonePresets.Boulder);
+            StoneMeshCache.Lease c = cache.Acquire(24, StonePresets.Boulder);
             Assert.AreSame(a.mesh, b.mesh);
             Assert.AreNotSame(a.mesh, c.mesh);
             Assert.AreEqual(2, cache.count);
@@ -34,8 +34,8 @@ namespace HealerLike.Render.Stones
         {
             StoneMeshCache first = new StoneMeshCache();
             StoneMeshCache second = new StoneMeshCache();
-            StoneMeshCache.Lease a = first.Acquire(23, HLStonePresets.Boulder);
-            StoneMeshCache.Lease b = second.Acquire(23, HLStonePresets.Boulder);
+            StoneMeshCache.Lease a = first.Acquire(23, StonePresets.Boulder);
+            StoneMeshCache.Lease b = second.Acquire(23, StonePresets.Boulder);
 
             Assert.AreNotSame(a.mesh, b.mesh);
 

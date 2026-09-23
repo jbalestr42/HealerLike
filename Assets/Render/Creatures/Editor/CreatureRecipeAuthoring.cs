@@ -12,10 +12,10 @@ namespace HealerLike.Render.Creatures
         public static readonly Color stem = new Color(0.18f, 0.49f, 0.31f);
         public static readonly Color bud = new Color(0.78f, 0.95f, 0.29f);
 
-        public static HLPart Part(string id, HLPrimitive primitive, Vector3 position, Vector3 dimensions, Color colour,
+        public static Part Part(string id, Primitive primitive, Vector3 position, Vector3 dimensions, Color colour,
             Vector3 euler = default, int parent = 0, float glow = 0f)
         {
-            return new HLPart
+            return new Part
             {
                 id = id,
                 parent = parent,
@@ -29,13 +29,13 @@ namespace HealerLike.Render.Creatures
             };
         }
 
-        public static HLCreatureRecipe SaveRecipe(string name, List<HLPart> parts, int roots, int armCount, int seed)
+        public static CreatureRecipe SaveRecipe(string name, List<Part> parts, int roots, int armCount, int seed)
         {
             string path = root + "Data/" + name + ".asset";
-            HLCreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>(path);
+            CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
             if (!recipe)
             {
-                recipe = ScriptableObject.CreateInstance<HLCreatureRecipe>();
+                recipe = ScriptableObject.CreateInstance<CreatureRecipe>();
                 AssetDatabase.CreateAsset(recipe, path);
             }
 
@@ -44,7 +44,7 @@ namespace HealerLike.Render.Creatures
             Vector3 displayScale = new Vector3(1.45f, displayHeight, 1.45f);
             for (int i = 0; i < parts.Count; i++)
             {
-                HLPart part = parts[i];
+                Part part = parts[i];
                 part.localPosition = Vector3.Scale(part.localPosition, displayScale);
                 part.dimensions = Vector3.Scale(part.dimensions, displayScale);
                 parts[i] = part;
@@ -54,13 +54,13 @@ namespace HealerLike.Render.Creatures
             int stemCount = parts.Count;
             for (int i = 0; i < stemCount; i++)
             {
-                HLPart stemPart = parts[i];
-                if (stemPart.primitive != HLPrimitive.Capsule)
+                Part stemPart = parts[i];
+                if (stemPart.primitive != Primitive.Capsule)
                 {
                     continue;
                 }
 
-                parts.Add(Part("HLJoint" + i, HLPrimitive.Sphere, Vector3.up * (stemPart.dimensions.y * 0.38f),
+                parts.Add(Part("HLJoint" + i, Primitive.Sphere, Vector3.up * (stemPart.dimensions.y * 0.38f),
                     Vector3.one * (stemPart.dimensions.x * 1.5f), bud, parent: i));
             }
 
@@ -83,7 +83,7 @@ namespace HealerLike.Render.Creatures
             recipe.idle.swayFrequency = 0.25f;
             recipe.targetLocal = Vector3.up * 0.8f;
             recipe.sourceLocal = new Vector3[armCount];
-            recipe.arms = new HLArmDefinition[armCount];
+            recipe.arms = new ArmDefinition[armCount];
             for (int j = 0; j < armCount; j++)
             {
                 recipe.sourceLocal[j] = new Vector3(j % 2 == 0 ? -0.26f : 0.26f, 1.1f, 0f);
@@ -96,7 +96,7 @@ namespace HealerLike.Render.Creatures
                     rest[i + 1] = rest[i] + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0.015f).normalized * 0.5f;
                 }
 
-                recipe.arms[j] = new HLArmDefinition
+                recipe.arms[j] = new ArmDefinition
                 {
                     bodyPart = 0,
                     rootLocal = recipe.sourceLocal[j] - parts[0].localPosition,
@@ -110,7 +110,7 @@ namespace HealerLike.Render.Creatures
                 };
             }
 
-            if (!HLCreatureValidator.TryValidate(recipe, out string error))
+            if (!CreatureValidator.TryValidate(recipe, out string error))
             {
                 Debug.LogError($"[CreatureRecipeAuthoring] {name}: {error}");
                 return null;

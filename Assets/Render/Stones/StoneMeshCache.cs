@@ -10,9 +10,9 @@ namespace HealerLike.Render.Stones
         struct Key : IEquatable<Key>
         {
             uint _seed;
-            HLStoneSettings _settings;
+            StoneSettings _settings;
 
-            public Key(uint seed, HLStoneSettings settings)
+            public Key(uint seed, StoneSettings settings)
             {
                 _seed = seed;
                 _settings = settings;
@@ -31,14 +31,14 @@ namespace HealerLike.Render.Stones
             // Only for the lookup, never for geometry or visual seeding
             public override int GetHashCode()
             {
-                return (int)_seed * 397 ^ _settings.GetHashCode() ^ HLStoneMesh.GeneratorVersion;
+                return (int)_seed * 397 ^ _settings.GetHashCode() ^ StoneMesh.GeneratorVersion;
             }
         }
 
         class Entry
         {
             public Mesh mesh;
-            public HLStoneMeshData data;
+            public StoneMeshData data;
             public int references;
         }
 
@@ -46,15 +46,15 @@ namespace HealerLike.Render.Stones
         {
             StoneMeshCache _cache;
             uint _seed;
-            HLStoneSettings _settings;
+            StoneSettings _settings;
 
             Mesh _mesh;
             public Mesh mesh { get { return _mesh; } }
 
-            HLStoneMeshData _data;
-            public HLStoneMeshData data { get { return _data; } }
+            StoneMeshData _data;
+            public StoneMeshData data { get { return _data; } }
 
-            public Lease(StoneMeshCache cache, uint seed, HLStoneSettings settings, Mesh mesh, HLStoneMeshData data)
+            public Lease(StoneMeshCache cache, uint seed, StoneSettings settings, Mesh mesh, StoneMeshData data)
             {
                 _cache = cache;
                 _seed = seed;
@@ -79,13 +79,13 @@ namespace HealerLike.Render.Stones
 
         public int count { get { return _entries.Count; } }
 
-        public Lease Acquire(uint seed, HLStoneSettings settings)
+        public Lease Acquire(uint seed, StoneSettings settings)
         {
             Key key = new Key(seed, settings);
             if (!_entries.TryGetValue(key, out Entry entry))
             {
-                HLStoneMeshData meshData;
-                if (!HLStoneMesh.TryGenerate(seed, settings, out meshData))
+                StoneMeshData meshData;
+                if (!StoneMesh.TryGenerate(seed, settings, out meshData))
                 {
                     Debug.LogError($"[StoneMeshCache] No stone mesh for seed {seed}, the settings are out of range.");
                     return null;
@@ -93,7 +93,7 @@ namespace HealerLike.Render.Stones
 
                 entry = new Entry();
                 entry.data = meshData;
-                entry.mesh = HLStoneMesh.CreateMesh(meshData);
+                entry.mesh = StoneMesh.CreateMesh(meshData);
                 _entries.Add(key, entry);
             }
             entry.references++;

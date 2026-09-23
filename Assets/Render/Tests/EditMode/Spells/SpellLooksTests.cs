@@ -84,7 +84,7 @@ public class SpellLooksTests
         SpellLooks looks = CreateLooks();
         GameObject prefab = new GameObject("Projectile");
         _objects.Add(prefab);
-        ProjectileLook look = new ProjectileLook { style = HLDeliveryStyle.Arc };
+        ProjectileLook look = new ProjectileLook { style = DeliveryStyle.Arc };
         looks.projectiles[prefab] = look;
 
         ProjectileLook result = looks.GetProjectileLook(prefab);
@@ -99,7 +99,7 @@ public class SpellLooksTests
 
         ProjectileLook result = looks.GetProjectileLook(null);
 
-        Assert.AreEqual(HLDeliveryStyle.Direct, result.style);
+        Assert.AreEqual(DeliveryStyle.Direct, result.style);
     }
 
     [Test]
@@ -125,22 +125,22 @@ public class SpellLooksTests
         }
     }
 
-    [TestCase("HLStatus_Buff", HLSpellEffectKind.Buff)]
-    [TestCase("HLStatus_Shield", HLSpellEffectKind.Shield)]
-    [TestCase("HLFx_HealSpheres", HLSpellEffectKind.Heal)]
-    [TestCase("HLFx_Impact", HLSpellEffectKind.Impact)]
-    [TestCase("HLFx_ChainBeam", HLSpellEffectKind.Chain)]
-    [TestCase("HLFx_HostileLitter", HLSpellEffectKind.Litter)]
-    [TestCase("HLFx_HealRing", HLSpellEffectKind.Area)]
-    [TestCase("HLFx_PoisonDrips", HLSpellEffectKind.Drip)]
-    [TestCase("HLResolved_ManaMaxPositive", HLSpellEffectKind.Mana)]
-    [TestCase("HLResolved_ManaMaxNegative", HLSpellEffectKind.Mana)]
-    public void Shipped_EffectPrefab_IsAuthoredWithBakedMeshesAndTheLookMaterial(string name, HLSpellEffectKind kind)
+    [TestCase("HLStatus_Buff", SpellEffectKind.Buff)]
+    [TestCase("HLStatus_Shield", SpellEffectKind.Shield)]
+    [TestCase("HLFx_HealSpheres", SpellEffectKind.Heal)]
+    [TestCase("HLFx_Impact", SpellEffectKind.Impact)]
+    [TestCase("HLFx_ChainBeam", SpellEffectKind.Chain)]
+    [TestCase("HLFx_HostileLitter", SpellEffectKind.Litter)]
+    [TestCase("HLFx_HealRing", SpellEffectKind.Area)]
+    [TestCase("HLFx_PoisonDrips", SpellEffectKind.Drip)]
+    [TestCase("HLResolved_ManaMaxPositive", SpellEffectKind.Mana)]
+    [TestCase("HLResolved_ManaMaxNegative", SpellEffectKind.Mana)]
+    public void Shipped_EffectPrefab_IsAuthoredWithBakedMeshesAndTheLookMaterial(string name, SpellEffectKind kind)
     {
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Spells/Prefabs/" + name + ".prefab");
         Material look = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/HLLook_Default.mat");
 
-        HLSpellEffect effect = prefab.GetComponent<HLSpellEffect>();
+        SpellEffect effect = prefab.GetComponent<SpellEffect>();
         SerializedObject serialized = new SerializedObject(effect);
         Assert.AreEqual(kind, effect.kind);
         Assert.Greater(effect.parts.Length, 0);
@@ -164,7 +164,7 @@ public class SpellLooksTests
     {
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Spells/Prefabs/HLFx_HealSpheres.prefab");
 
-        HLSpellEffect effect = prefab.GetComponent<HLSpellEffect>();
+        SpellEffect effect = prefab.GetComponent<SpellEffect>();
 
         Assert.AreEqual(7, effect.parts.Length);
         Assert.AreEqual(7, effect.stalks.Length);
@@ -176,7 +176,7 @@ public class SpellLooksTests
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Spells/Prefabs/HLSpellVisualSink.prefab");
         SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
 
-        HLSpellVisualSink sink = prefab.GetComponent<HLSpellVisualSink>();
+        SpellVisualSink sink = prefab.GetComponent<SpellVisualSink>();
 
         Assert.AreSame(looks, sink.looks);
     }

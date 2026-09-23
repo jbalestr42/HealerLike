@@ -78,7 +78,7 @@ namespace HealerLike.Render.Stones
         {
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/HLStoneBlock.prefab");
             GameObject block = Object.Instantiate(prefab);
-            HLStoneTerrainClump terrain = block.GetComponentInChildren<HLStoneTerrainClump>();
+            StoneTerrainClump terrain = block.GetComponentInChildren<StoneTerrainClump>();
             try
             {
                 terrain.Init(4, 1f, null, null);

@@ -20,20 +20,20 @@ namespace HealerLike.Render.Creatures
                 AssetDatabase.CreateFolder(creaturesFolder, "Meshes");
             }
 
-            HLPrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<HLPrimitiveMeshes>(meshesAssetPath);
+            PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesAssetPath);
             if (meshes == null)
             {
-                meshes = ScriptableObject.CreateInstance<HLPrimitiveMeshes>();
+                meshes = ScriptableObject.CreateInstance<PrimitiveMeshes>();
                 AssetDatabase.CreateAsset(meshes, meshesAssetPath);
             }
 
-            meshes.sphere = Save(CreateRevolved("Sphere", HLPrimitive.Sphere, 12, 6, 0.2f));
-            meshes.capsule = Save(CreateRevolved("Capsule", HLPrimitive.Capsule, 12, 6, 0.2f));
-            meshes.cone = Save(CreateRevolved("Cone", HLPrimitive.Cone, 12, 6, 0.2f));
-            meshes.cylinder = Save(CreateRevolved("Cylinder", HLPrimitive.CylinderSegment, 6, 6, 0.2f));
-            meshes.torus = Save(CreateRevolved("Torus", HLPrimitive.Torus, 12, 6, 0.2f));
+            meshes.sphere = Save(CreateRevolved("Sphere", Primitive.Sphere, 12, 6, 0.2f));
+            meshes.capsule = Save(CreateRevolved("Capsule", Primitive.Capsule, 12, 6, 0.2f));
+            meshes.cone = Save(CreateRevolved("Cone", Primitive.Cone, 12, 6, 0.2f));
+            meshes.cylinder = Save(CreateRevolved("Cylinder", Primitive.CylinderSegment, 6, 6, 0.2f));
+            meshes.torus = Save(CreateRevolved("Torus", Primitive.Torus, 12, 6, 0.2f));
             meshes.thinTorus = Save(CreateThinTorus());
-            meshes.bladeCone = Save(CreateRevolved("BladeCone", HLPrimitive.Cone, HLGrassField.BladeSides, 2, 0.2f));
+            meshes.bladeCone = Save(CreateRevolved("BladeCone", Primitive.Cone, GrassField.BladeSides, 2, 0.2f));
             meshes.pyramid = Save(CreatePyramid());
             meshes.star = Save(CreateStar());
             meshes.boulder = Save(CreateBoulder());
@@ -61,18 +61,18 @@ namespace HealerLike.Render.Creatures
         }
 
         // Sphere, capsule, cone, cylinder and torus around the Y axis, one unit high and wide
-        static Mesh CreateRevolved(string name, HLPrimitive primitive, int radialSegments, int axialSegments,
+        static Mesh CreateRevolved(string name, Primitive primitive, int radialSegments, int axialSegments,
             float torusTubeRatio)
         {
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
             List<int> triangles = new List<int>();
             int rows = axialSegments;
-            if (primitive == HLPrimitive.Cone || primitive == HLPrimitive.CylinderSegment)
+            if (primitive == Primitive.Cone || primitive == Primitive.CylinderSegment)
             {
                 rows = 1;
             }
-            else if (primitive == HLPrimitive.Capsule)
+            else if (primitive == Primitive.Capsule)
             {
                 rows = axialSegments * 2 + 1;
             }
@@ -86,7 +86,7 @@ namespace HealerLike.Render.Creatures
                     Vector3 radial = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
                     Vector3 point;
                     Vector3 normal;
-                    if (primitive == HLPrimitive.Torus)
+                    if (primitive == Primitive.Torus)
                     {
                         float minor = 0.5f * torusTubeRatio / (1f + torusTubeRatio);
                         float major = 0.5f - minor;
@@ -94,17 +94,17 @@ namespace HealerLike.Render.Creatures
                         normal = radial * Mathf.Cos(phi) + Vector3.up * Mathf.Sin(phi);
                         point = radial * major + normal * minor;
                     }
-                    else if (primitive == HLPrimitive.Cone)
+                    else if (primitive == Primitive.Cone)
                     {
                         point = radial * (0.5f * (1f - v)) + Vector3.up * (v - 0.5f);
                         normal = (radial + Vector3.up * 0.5f).normalized;
                     }
-                    else if (primitive == HLPrimitive.CylinderSegment)
+                    else if (primitive == Primitive.CylinderSegment)
                     {
                         point = radial * 0.5f + Vector3.up * (v - 0.5f);
                         normal = radial;
                     }
-                    else if (primitive == HLPrimitive.Capsule)
+                    else if (primitive == Primitive.Capsule)
                     {
                         bool isBottom = j <= axialSegments;
                         float phi;
@@ -151,10 +151,10 @@ namespace HealerLike.Render.Creatures
                 }
             }
 
-            if (primitive == HLPrimitive.Cone || primitive == HLPrimitive.CylinderSegment)
+            if (primitive == Primitive.Cone || primitive == Primitive.CylinderSegment)
             {
                 AddCap(-0.5f, 0.5f, false, radialSegments, vertices, normals, triangles);
-                if (primitive == HLPrimitive.CylinderSegment)
+                if (primitive == Primitive.CylinderSegment)
                 {
                     AddCap(0.5f, 0.5f, true, radialSegments, vertices, normals, triangles);
                 }

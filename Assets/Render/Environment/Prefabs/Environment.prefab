@@ -43,7 +43,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1f164aaa9761246d3bb69f3939299a49, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.HLEnvironmentForeground
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.EnvironmentForeground
   _stageCamera: {fileID: 0}
   _stoneMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
   _plantMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
@@ -101,7 +101,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2b177175541a34ec28e2519c6b8c7fe3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.HLEnvironmentGrass
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.EnvironmentGrass
   _stripTemplate: {fileID: 1335713569007997101}
   _widths:
   - 3
@@ -122,7 +122,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f24cebe9b916b434c9d978fbb9966302, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.HLEnvironmentScatter
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.EnvironmentScatter
   _plantMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
   _stoneMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
   _surfaceY: 0.5
@@ -153,7 +153,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2852e16c7035e495f8c3af76977e6ac9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.HLEnvironmentGust
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.EnvironmentGust
 --- !u!1 &5909526321914253073
 GameObject:
   m_ObjectHideFlags: 0
@@ -197,7 +197,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.GrassField
   _meshes: {fileID: 11400000, guid: 4ee00372052f248838ebdf645b1e9727, type: 2}
   _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
   _lookMaterial: {fileID: 2100000, guid: a45a203a5ecb94dbd839ab29df6ae56b, type: 2}
@@ -253,7 +253,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ad799066c7b6643c19123f607fe687de, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.HLEnvironmentRidge
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.EnvironmentRidge
   _stageCamera: {fileID: 0}
   _stoneMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
   _plantMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}

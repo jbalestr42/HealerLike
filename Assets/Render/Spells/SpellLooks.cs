@@ -53,7 +53,7 @@ namespace HealerLike.Render.Spells
     public class SpellLook
     {
         [AssetsOnly]
-        public HLSpellEffect effectPrefab;
+        public SpellEffect effectPrefab;
         // Colour of the effect parts, not the body tint
         public Color tint = Color.white;
         public Vector3 offset = Vector3.zero;
@@ -62,8 +62,8 @@ namespace HealerLike.Render.Spells
     [Serializable]
     public class ProjectileLook
     {
-        public HLDeliveryStyle style = HLDeliveryStyle.Direct;
-        public HLGestureKind presentation = HLGestureKind.Attack;
+        public DeliveryStyle style = DeliveryStyle.Direct;
+        public GestureKind presentation = GestureKind.Attack;
         public bool preserveContactPath;
     }
 }

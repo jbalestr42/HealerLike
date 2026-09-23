@@ -26,7 +26,7 @@ namespace HealerLike.Render.Stage
 
         [SerializeField] CreatureLooks _creatureLooks;
         [SerializeField] SpellLooks _spellLooks;
-        [SerializeField] HLPrimitiveMeshes _meshes;
+        [SerializeField] PrimitiveMeshes _meshes;
         [SerializeField] RenderPipelineAsset _pipeline;
         [SerializeField] Material _groundMaterial;
         [SerializeField] Color _backgroundColor = new Color32(191, 210, 224, 255);
@@ -35,23 +35,23 @@ namespace HealerLike.Render.Stage
         [SerializeField] float _gridStrength = 0.12f;
         [SerializeField] float _tipLight = 0.035f;
         [SerializeField] GameObject _environmentPrefab;
-        [SerializeField] HLLookController _look;
-        [SerializeField] HLZoneRegistry _zones;
-        [SerializeField] HLGrassField _grass;
-        [SerializeField] HLSpellVisualSink _spellSink;
-        [SerializeField] HLStoneEffects _stoneEffects;
-        [SerializeField] HLStoneDeathBridge _stoneDeath;
-        [SerializeField] HLBattleFocus _battleFocus;
-        [SerializeField] HLStageRangeDriver _rangeDriver;
-        [SerializeField] HLStageKeyLight _keyLight;
+        [SerializeField] LookController _look;
+        [SerializeField] ZoneRegistry _zones;
+        [SerializeField] GrassField _grass;
+        [SerializeField] SpellVisualSink _spellSink;
+        [SerializeField] StoneEffects _stoneEffects;
+        [SerializeField] StoneDeathBridge _stoneDeath;
+        [SerializeField] BattleFocus _battleFocus;
+        [SerializeField] StageRangeDriver _rangeDriver;
+        [SerializeField] StageKeyLight _keyLight;
 
-        HLRenderRegistry _registry = new HLRenderRegistry();
+        RenderRegistry _registry = new RenderRegistry();
         RenderPipelineAsset _previousPipeline;
         Scene _scene;
         Renderer _boardGround;
         GameObject _environment;
-        HLEnvironmentGrass _environmentGrass;
-        HLEnvironmentRidge _ridge;
+        EnvironmentGrass _environmentGrass;
+        EnvironmentRidge _ridge;
         Button _nextWaveButton;
         Pose _portraitPose;
         Pose _landscapePose;
@@ -70,27 +70,27 @@ namespace HealerLike.Render.Stage
         Bounds _board;
         public Bounds board { get { return _board; } }
 
-        HLEnvironmentGust _gust;
-        public HLEnvironmentGust gust { get { return _gust; } }
+        EnvironmentGust _gust;
+        public EnvironmentGust gust { get { return _gust; } }
 
-        HLEnvironmentForeground _foreground;
-        public HLEnvironmentForeground foreground { get { return _foreground; } }
+        EnvironmentForeground _foreground;
+        public EnvironmentForeground foreground { get { return _foreground; } }
 
         bool _isLandscape = false;
         public bool isLandscape { get { return _isLandscape; } }
 
         public Pose overviewPose { get { return _isLandscape ? _landscapePose : _portraitPose; } }
 
-        public HLRenderRegistry registry { get { return _registry; } }
-        public HLZoneRegistry zones { get { return _zones; } }
-        public HLGrassField grass { get { return _grass; } }
-        public HLLookController look { get { return _look; } }
-        public HLSpellVisualSink spellSink { get { return _spellSink; } }
-        public HLStoneEffects stoneEffects { get { return _stoneEffects; } }
+        public RenderRegistry registry { get { return _registry; } }
+        public ZoneRegistry zones { get { return _zones; } }
+        public GrassField grass { get { return _grass; } }
+        public LookController look { get { return _look; } }
+        public SpellVisualSink spellSink { get { return _spellSink; } }
+        public StoneEffects stoneEffects { get { return _stoneEffects; } }
         public StoneMeshCache stoneMeshes { get { return _stoneEffects.stoneMeshes; } }
         public CreatureLooks creatureLooks { get { return _creatureLooks; } }
         public SpellLooks spellLooks { get { return _spellLooks; } }
-        public HLPrimitiveMeshes meshes { get { return _meshes; } }
+        public PrimitiveMeshes meshes { get { return _meshes; } }
 
         void Awake()
         {
@@ -134,7 +134,7 @@ namespace HealerLike.Render.Stage
             _zones.Init();
             _registry.Init(_spellSink, _zones);
             Rect boardRect = BoardRect();
-            _grass.Init(boardRect, player.grid.size, _board.max.y, _gameCamera, _zones.buffer, HLGrassField.MaxZones);
+            _grass.Init(boardRect, player.grid.size, _board.max.y, _gameCamera, _zones.buffer, GrassField.MaxZones);
             InitEnvironment(boardRect);
             _spellSink.Init(this);
             _battleFocus.Init(this);
@@ -176,7 +176,7 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
-            _gameCamera.aspect = isLandscape ? 16f / 9f : HLStageCalibration.PortraitAspect;
+            _gameCamera.aspect = isLandscape ? 16f / 9f : StageCalibration.PortraitAspect;
             _gameCamera.transform.SetPositionAndRotation(overviewPose.position, overviewPose.rotation);
             _look.Init(_gameCamera, _board);
             _foreground.Build();
@@ -234,7 +234,7 @@ namespace HealerLike.Render.Stage
 
             _gameCamera.clearFlags = CameraClearFlags.SolidColor;
             _gameCamera.backgroundColor = _backgroundColor;
-            _gameCamera.fieldOfView = HLStageCalibration.PortraitFov;
+            _gameCamera.fieldOfView = StageCalibration.PortraitFov;
             _gameCamera.nearClipPlane = 0.1f;
             _gameCamera.farClipPlane = 200f;
             _gameCamera.GetUniversalAdditionalCameraData().renderPostProcessing = false;
@@ -291,10 +291,10 @@ namespace HealerLike.Render.Stage
 
             Vector3 center = grid.transform.position;
             _board = new Bounds(new Vector3(center.x, surfaceY, center.z), new Vector3(grid.width * grid.size, 0f, grid.height * grid.size));
-            _portraitPose = HLStageCalibration.PlayableFrame(_board, HLStageCalibration.PortraitPitch, HLStageCalibration.PortraitFov,
-                                                             HLStageCalibration.PortraitAspect, HLStageCalibration.PortraitCentreY);
-            _landscapePose = HLStageCalibration.PlayableFrame(_board, 46f, HLStageCalibration.PortraitFov, 16f / 9f, 0.46f);
-            _gameCamera.aspect = _isLandscape ? 16f / 9f : HLStageCalibration.PortraitAspect;
+            _portraitPose = StageCalibration.PlayableFrame(_board, StageCalibration.PortraitPitch, StageCalibration.PortraitFov,
+                                                             StageCalibration.PortraitAspect, StageCalibration.PortraitCentreY);
+            _landscapePose = StageCalibration.PlayableFrame(_board, 46f, StageCalibration.PortraitFov, 16f / 9f, 0.46f);
+            _gameCamera.aspect = _isLandscape ? 16f / 9f : StageCalibration.PortraitAspect;
             _gameCamera.transform.SetPositionAndRotation(overviewPose.position, overviewPose.rotation);
 
             // The board ground draws the cell grid from these, the grass tips catch the light
@@ -336,10 +336,10 @@ namespace HealerLike.Render.Stage
         {
             float surfaceY = _board.max.y;
             _environment = Instantiate(_environmentPrefab, transform);
-            _environmentGrass = _environment.GetComponent<HLEnvironmentGrass>();
-            _gust = _environment.GetComponent<HLEnvironmentGust>();
-            _foreground = _environment.GetComponentInChildren<HLEnvironmentForeground>();
-            _ridge = _environment.GetComponentInChildren<HLEnvironmentRidge>();
+            _environmentGrass = _environment.GetComponent<EnvironmentGrass>();
+            _gust = _environment.GetComponent<EnvironmentGust>();
+            _foreground = _environment.GetComponentInChildren<EnvironmentForeground>();
+            _ridge = _environment.GetComponentInChildren<EnvironmentRidge>();
 
             // The plane sits a hair under the board top
             Transform ground = _environment.transform.Find("Ground");
@@ -348,9 +348,9 @@ namespace HealerLike.Render.Stage
                 ground.position = new Vector3(_board.center.x, surfaceY - 0.01f, _board.center.z);
             }
 
-            HLLookSettings lookSettings = _look.settings;
+            LookSettings lookSettings = _look.settings;
             _environmentGrass.Init(boardRect, _player.grid.size, surfaceY, _gameCamera, _zones, this);
-            _environment.GetComponent<HLEnvironmentScatter>().Init(boardRect, _player.grid.size, surfaceY, _gameCamera, _gust,
+            _environment.GetComponent<EnvironmentScatter>().Init(boardRect, _player.grid.size, surfaceY, _gameCamera, _gust,
                                                                    lookSettings.fogEnd, this);
             _foreground.Init(_gameCamera, surfaceY, this);
             _ridge.Init(_gameCamera, boardRect, surfaceY, lookSettings.fogStart, lookSettings.fogEnd, this);
@@ -447,7 +447,7 @@ namespace HealerLike.Render.Stage
                 view.Init(entity, this);
             }
 
-            foreach (HLRangePreview preview in viewGo.GetComponentsInChildren<HLRangePreview>())
+            foreach (RangePreview preview in viewGo.GetComponentsInChildren<RangePreview>())
             {
                 _rangeDriver.Add(preview);
             }
@@ -458,13 +458,13 @@ namespace HealerLike.Render.Stage
         void OnCharacterInit(Character character)
         {
             GameObject viewGo = Instantiate(_creatureLooks.GetView(character.data), character.transform);
-            viewGo.GetComponent<HLCharacterView>().Init(character, this);
-            foreach (HLHealPulse pulse in viewGo.GetComponentsInChildren<HLHealPulse>())
+            viewGo.GetComponent<CharacterView>().Init(character, this);
+            foreach (HealPulse pulse in viewGo.GetComponentsInChildren<HealPulse>())
             {
                 pulse.Init(character.gameObject, _registry, _zones);
             }
 
-            foreach (HLTrampleZone trample in viewGo.GetComponentsInChildren<HLTrampleZone>())
+            foreach (TrampleZone trample in viewGo.GetComponentsInChildren<TrampleZone>())
             {
                 trample.InitFootprint(_zones);
             }
@@ -474,7 +474,7 @@ namespace HealerLike.Render.Stage
         {
             if (entity != null)
             {
-                _stoneDeath.HandleDeparture(entity.health, entity.GetComponentInChildren<HLStoneEnemyVisual>());
+                _stoneDeath.HandleDeparture(entity.health, entity.GetComponentInChildren<StoneEnemyVisual>());
             }
 
             _battleFocus.MarkDirty();
@@ -495,13 +495,13 @@ namespace HealerLike.Render.Stage
         void OnProjectileSpawned(GameObject prefab, GameObject projectileGo)
         {
             ProjectileLook projectileLook = _spellLooks.GetProjectileLook(prefab);
-            projectileGo.AddComponent<HLProjectileVisualObserver>().Init(this, projectileLook);
-            projectileGo.AddComponent<HLStoneProjectileImpactBridge>();
-            projectileGo.AddComponent<HLLaunchWave>().Init(_zones, _grass);
-            projectileGo.AddComponent<HLStageLaunchGust>().Init(_gust);
+            projectileGo.AddComponent<ProjectileVisualObserver>().Init(this, projectileLook);
+            projectileGo.AddComponent<StoneProjectileImpactBridge>();
+            projectileGo.AddComponent<LaunchWave>().Init(_zones, _grass);
+            projectileGo.AddComponent<StageLaunchGust>().Init(_gust);
             if (projectileGo.GetComponent<ChainLightningProjectile>() != null)
             {
-                projectileGo.AddComponent<HLChainContactVisual>().Init(this);
+                projectileGo.AddComponent<ChainContactVisual>().Init(this);
             }
 
             foreach (LineRenderer line in projectileGo.GetComponentsInChildren<LineRenderer>(true))
@@ -513,8 +513,8 @@ namespace HealerLike.Render.Stage
         // S2
         void OnAreaOfEffectStarted(AreaOfEffect area)
         {
-            area.gameObject.AddComponent<HLAreaPulse>().Init(_zones);
-            area.gameObject.AddComponent<HLLegacyAreaVisualMask>();
+            area.gameObject.AddComponent<AreaPulse>().Init(_zones);
+            area.gameObject.AddComponent<LegacyAreaVisualMask>();
         }
 #endif
 

@@ -23,17 +23,17 @@ namespace HealerLike.Render.Stage
         {
             GameObject root = new GameObject("Environment");
             GameObject strip = Child(root, "GrassStrip");
-            HLGrassField stripField = strip.AddComponent<HLGrassField>();
+            GrassField stripField = strip.AddComponent<GrassField>();
             SetGrass(stripField);
             strip.SetActive(false);
 
-            HLEnvironmentGrass grass = root.AddComponent<HLEnvironmentGrass>();
+            EnvironmentGrass grass = root.AddComponent<EnvironmentGrass>();
             SetReference(grass, "_stripTemplate", stripField);
-            HLEnvironmentScatter scatter = root.AddComponent<HLEnvironmentScatter>();
+            EnvironmentScatter scatter = root.AddComponent<EnvironmentScatter>();
             SetMaterials(scatter);
-            root.AddComponent<HLEnvironmentGust>();
-            SetMaterials(Child(root, "Foreground").AddComponent<HLEnvironmentForeground>());
-            SetMaterials(Child(root, "FarRidge").AddComponent<HLEnvironmentRidge>());
+            root.AddComponent<EnvironmentGust>();
+            SetMaterials(Child(root, "Foreground").AddComponent<EnvironmentForeground>());
+            SetMaterials(Child(root, "FarRidge").AddComponent<EnvironmentRidge>());
             CreateGround(root);
 
             Directory.CreateDirectory(Path.GetDirectoryName(PrefabPath));
@@ -43,7 +43,7 @@ namespace HealerLike.Render.Stage
         }
 
         // The grass field settings shared by the board and the strips
-        public static void SetGrass(HLGrassField field)
+        public static void SetGrass(GrassField field)
         {
             SetReference(field, "_meshes", Load<Object>(MeshesPath));
             SetReference(field, "_updateGrass", Load<ComputeShader>(GrassComputePath));

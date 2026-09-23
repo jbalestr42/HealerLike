@@ -43,7 +43,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 00810a1f2cd554a669366cdc0f1bdfae, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.HLStoneEffects
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.StoneEffects
   OnImpactRecorded:
     m_PersistentCalls:
       m_Calls: []

@@ -99,7 +99,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2cb5ba83a5304f8f9445eca291e9b4fb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Look.HLLookController
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Look.LookController
   _settings:
     shadowTint: {r: 0.24705882, g: 0.35686275, b: 0.5803922, a: 1}
     outlineColor: {r: 0.09411765, g: 0.14901961, b: 0.24705882, a: 1}
@@ -134,7 +134,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c7446c1c3fa041349b776e8964cdfbda, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLZoneRegistry
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.ZoneRegistry
 --- !u!114 &260637357020886478
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -146,7 +146,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4ec1f25bb1e4572a78033e6481ba946, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageRangeDriver
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.StageRangeDriver
 --- !u!114 &3997228221956938455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -158,7 +158,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 34b6407ca14424797b1fd0d2a5068360, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.HLStoneDeathBridge
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.StoneDeathBridge
   _manager: {fileID: 0}
   _effects: {fileID: 0}
 --- !u!1 &3416314069946268383
@@ -204,7 +204,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.GrassField
   _meshes: {fileID: 11400000, guid: 4ee00372052f248838ebdf645b1e9727, type: 2}
   _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
   _lookMaterial: {fileID: 2100000, guid: a45a203a5ecb94dbd839ab29df6ae56b, type: 2}
@@ -326,7 +326,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73b08733deced4ef1996987e3fa52a17, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageKeyLight
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.StageKeyLight
   _keyLight: {fileID: 3377824928514919083}
   _requiredDistance: 50
   _pollSeconds: 0.5
@@ -397,7 +397,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a99ca9a8282a64d3fa1694fe1054f8b2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.HLSpellVisualSink
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.SpellVisualSink
 --- !u!4 &2776909576636715745 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
@@ -515,7 +515,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2e178b7223d446a8a0bfb8db14b40b5, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLBattleFocus
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.BattleFocus
 --- !u!1001 &4026254648642736862
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -588,4 +588,4 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 00810a1f2cd554a669366cdc0f1bdfae, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.HLStoneEffects
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.StoneEffects

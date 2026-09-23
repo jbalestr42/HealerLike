@@ -45,7 +45,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e23edee68ceab417ea5177d97a00a4d4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.HLCharacterView
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.CharacterView
   _character: {fileID: 0}
   _recipe: {fileID: 11400000, guid: 265a00ac0c6c743d08a762c0950e82e1, type: 2}
   _visualAnchor: {fileID: 4543650985477941120}
@@ -63,7 +63,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff72fcddce784a6396cd2bda1d8abbd4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLHealPulse
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HealPulse
   _cellSize: 1
 --- !u!114 &7959280919119806704
 MonoBehaviour:
@@ -76,6 +76,6 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2ebaf268b45a843f582ee963235f25ad, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLTrampleZone
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.TrampleZone
   radius: 0.65
   strength: 1

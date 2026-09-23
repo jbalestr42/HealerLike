@@ -28,23 +28,23 @@ namespace HealerLike.Render.Stage
             GameObject root = new GameObject("RenderManager");
             RenderManager manager = root.AddComponent<RenderManager>();
             root.AddComponent<StageLauncher>();
-            HLLookController look = root.AddComponent<HLLookController>();
+            LookController look = root.AddComponent<LookController>();
             look.settings = LookSettings();
-            HLZoneRegistry zones = root.AddComponent<HLZoneRegistry>();
-            HLStageRangeDriver rangeDriver = root.AddComponent<HLStageRangeDriver>();
-            HLStoneDeathBridge stoneDeath = root.AddComponent<HLStoneDeathBridge>();
+            ZoneRegistry zones = root.AddComponent<ZoneRegistry>();
+            StageRangeDriver rangeDriver = root.AddComponent<StageRangeDriver>();
+            StoneDeathBridge stoneDeath = root.AddComponent<StoneDeathBridge>();
 
-            HLStageKeyLight keyLight = CreateKeyLight(root);
+            StageKeyLight keyLight = CreateKeyLight(root);
             GameObject grassGo = new GameObject("Grass");
             grassGo.transform.SetParent(root.transform, false);
-            HLGrassField grass = grassGo.AddComponent<HLGrassField>();
+            GrassField grass = grassGo.AddComponent<GrassField>();
             EnvironmentAuthoring.SetGrass(grass);
             // A closed carpet of short spikes that leaves actor roots readable
             grass.bladeHeightScale = 0.6f;
 
-            HLSpellVisualSink sink = Nest<HLSpellVisualSink>(SinkPath, root);
-            HLStoneEffects stoneEffects = Nest<HLStoneEffects>(StoneEffectsPath, root);
-            HLBattleFocus battleFocus = Nest<HLBattleFocus>(AssetDatabase.GetAssetPath(controls), root);
+            SpellVisualSink sink = Nest<SpellVisualSink>(SinkPath, root);
+            StoneEffects stoneEffects = Nest<StoneEffects>(StoneEffectsPath, root);
+            BattleFocus battleFocus = Nest<BattleFocus>(AssetDatabase.GetAssetPath(controls), root);
 
             SerializedObject data = new SerializedObject(manager);
             data.FindProperty("_creatureLooks").objectReferenceValue = EnvironmentAuthoring.Load<Object>(CreatureLooksPath);
@@ -78,9 +78,9 @@ namespace HealerLike.Render.Stage
         }
 
         // The camera independent half of the look, the manager computes fog and hatch spacing at attach
-        public static HLLookSettings LookSettings()
+        public static LookSettings LookSettings()
         {
-            HLLookSettings settings = HLLookSettings.Default;
+            LookSettings settings = LookSettings.Default;
             settings.shadowTint = new Color32(63, 91, 148, 255);
             settings.inkStrength = 0.75f;
             settings.fogColor = new Color32(191, 210, 224, 255);
@@ -91,18 +91,18 @@ namespace HealerLike.Render.Stage
         }
 
         // Aimed along the stones' cheap shadow direction, so real and cheap shadows agree
-        static HLStageKeyLight CreateKeyLight(GameObject root)
+        static StageKeyLight CreateKeyLight(GameObject root)
         {
             GameObject lightGo = new GameObject("KeyLight");
             lightGo.transform.SetParent(root.transform, false);
-            lightGo.transform.rotation = HLStageKeyLight.Aim(HLStageKeyLight.StoneKeyDirection);
+            lightGo.transform.rotation = StageKeyLight.Aim(StageKeyLight.StoneKeyDirection);
             Light keyLight = lightGo.AddComponent<Light>();
             keyLight.type = LightType.Directional;
             keyLight.color = keyColor;
             keyLight.intensity = 1f;
             keyLight.shadows = LightShadows.Soft;
             keyLight.lightmapBakeType = LightmapBakeType.Realtime;
-            HLStageKeyLight stageKeyLight = lightGo.AddComponent<HLStageKeyLight>();
+            StageKeyLight stageKeyLight = lightGo.AddComponent<StageKeyLight>();
             stageKeyLight.keyLight = keyLight;
             return stageKeyLight;
         }

@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2764b20835df4455a1165fd5d1359402, type: 3}
   m_Name: HLBladeRosette
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.HLCreatureRecipe
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.CreatureRecipe
   parts:
   - id: HLRosette
     parent: -1

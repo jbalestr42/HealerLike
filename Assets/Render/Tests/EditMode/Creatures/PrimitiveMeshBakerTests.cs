@@ -12,7 +12,7 @@ public class PrimitiveMeshBakerTests
     [Test]
     public void Bake_ShippedAsset_ReferencesEveryMesh()
     {
-        HLPrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<HLPrimitiveMeshes>(meshesAssetPath);
+        PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesAssetPath);
 
         Assert.IsNotNull(meshes);
         Mesh[] all =
@@ -31,11 +31,11 @@ public class PrimitiveMeshBakerTests
     [Test]
     public void Bake_ShippedAsset_BladeConeHasGrassSides()
     {
-        HLPrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<HLPrimitiveMeshes>(meshesAssetPath);
+        PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesAssetPath);
 
         uint indexCount = meshes.bladeCone.GetIndexCount(0);
 
-        Assert.AreEqual(9u * (uint)Grass.HLGrassField.BladeSides, indexCount); // side quads and base cap
+        Assert.AreEqual(9u * (uint)Grass.GrassField.BladeSides, indexCount); // side quads and base cap
     }
 }
 }

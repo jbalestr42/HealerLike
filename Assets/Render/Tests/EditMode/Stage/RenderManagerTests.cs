@@ -177,10 +177,10 @@ public class RenderManagerTests
         _entityManager.OnEntitySpawned.Invoke(entity);
 
         Assert.IsFalse(modelRenderer.enabled);
-        HLRangePreview preview = entity.model.GetComponentInChildren<HLRangePreview>();
+        RangePreview preview = entity.model.GetComponentInChildren<RangePreview>();
         Assert.IsNotNull(preview);
         Assert.AreSame(entity, preview.entity);
-        Assert.IsNotNull(entity.model.GetComponentInChildren<HLCreatureBuilder>().rig);
+        Assert.IsNotNull(entity.model.GetComponentInChildren<CreatureBuilder>().rig);
     }
 
     [Test]
@@ -192,8 +192,8 @@ public class RenderManagerTests
         _entityManager.OnEntitySpawned.Invoke(entity);
 
         Assert.IsFalse(modelRenderer.enabled);
-        Assert.IsNotNull(entity.model.GetComponentInChildren<HLStoneEnemyVisual>());
-        Assert.IsNull(entity.model.GetComponentInChildren<HLRangePreview>());
+        Assert.IsNotNull(entity.model.GetComponentInChildren<StoneEnemyVisual>());
+        Assert.IsNull(entity.model.GetComponentInChildren<RangePreview>());
     }
 
     [Test]
@@ -207,15 +207,15 @@ public class RenderManagerTests
 
         _player.OnCharacterInit.Invoke(character);
 
-        Assert.IsNotNull(characterGo.GetComponentInChildren<HLCharacterView>());
-        Assert.IsNotNull(characterGo.GetComponentInChildren<HLHealPulse>());
+        Assert.IsNotNull(characterGo.GetComponentInChildren<CharacterView>());
+        Assert.IsNotNull(characterGo.GetComponentInChildren<HealPulse>());
     }
 
     [Test]
     public void LateUpdate_Attached_PublishesTheFrameZones()
     {
         _manager.Init(_entityManager, _player);
-        _manager.zones.Add(HLZoneKind.Heal, Vector3.zero, 1f, 1f);
+        _manager.zones.Add(ZoneKind.Heal, Vector3.zero, 1f, 1f);
 
         TestHelpers.InvokePrivate(_manager, "LateUpdate");
 

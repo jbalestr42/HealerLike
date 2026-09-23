@@ -194,7 +194,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2e178b7223d446a8a0bfb8db14b40b5, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLBattleFocus
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.BattleFocus
   _toggle: {fileID: 5919920414614203066}
   _label: {fileID: 7217916212068581081}
   _pitch: 52

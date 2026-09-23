@@ -58,7 +58,7 @@ namespace HealerLike.Render.Stage
             label.raycastTarget = false;
             label.text = "Focus battle";
 
-            HLBattleFocus battleFocus = root.AddComponent<HLBattleFocus>();
+            BattleFocus battleFocus = root.AddComponent<BattleFocus>();
             SerializedObject data = new SerializedObject(battleFocus);
             data.FindProperty("_toggle").objectReferenceValue = buttonGo.GetComponent<Button>();
             data.FindProperty("_label").objectReferenceValue = label;
