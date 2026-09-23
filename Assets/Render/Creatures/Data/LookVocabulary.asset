@@ -14939,7 +14939,7 @@ MonoBehaviour:
       Data: 1.2
     - Name: thickness
       Entry: 4
-      Data: 0.2
+      Data: 0.16
     - Name: limbLength
       Entry: 4
       Data: 0.72
@@ -14963,7 +14963,7 @@ MonoBehaviour:
       Data: 0.8
     - Name: thickness
       Entry: 4
-      Data: 0.2
+      Data: 0.16
     - Name: limbLength
       Entry: 4
       Data: 0.480000019
@@ -14987,7 +14987,7 @@ MonoBehaviour:
       Data: 0.5
     - Name: thickness
       Entry: 4
-      Data: 0.28
+      Data: 0.26
     - Name: limbLength
       Entry: 4
       Data: 0.3
