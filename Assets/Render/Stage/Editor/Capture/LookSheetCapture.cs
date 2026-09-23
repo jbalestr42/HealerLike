@@ -119,9 +119,11 @@ namespace HealerLike.Render.Stage
         public static readonly int Width = 1080;
         public static readonly int Height = 1920;
         public static readonly int Columns = 4;
-        public static readonly float Spacing = 2.5f;
-        public static readonly int CropWidth = 250;
-        public static readonly int CropHeight = 290;
+        // Whole cells between two units, so every unit lands on a cell centre
+        public static readonly int Spacing = 3;
+        // A crop spans this many cells across and up, enough for the longest roots and the tallest stem
+        public static readonly float CropCells = 2.8f;
+        public static readonly int CellPixels = 260;
         public static readonly int LabelScale = 3;
 
         static readonly DeliveryStyle[] styles =
@@ -309,7 +311,11 @@ namespace HealerLike.Render.Stage
                 for (int column = 0; column < Columns && cells.Count < count; column++)
                 {
                     Vector3 offset = new Vector3(column - (Columns - 1) * 0.5f, 0f, (rows - 1) * 0.5f - row) * (Spacing * grid.size);
-                    Vector3 cell = grid.GetNearestWalkablePosition(centre + offset);
+                    // Rounded onto a cell centre first, so no position sits between two cells
+                    Vector3 point = centre + offset - _manager.board.min;
+                    point.x = (Mathf.Floor(point.x / grid.size) + 0.5f) * grid.size;
+                    point.z = (Mathf.Floor(point.z / grid.size) + 0.5f) * grid.size;
+                    Vector3 cell = grid.GetNearestWalkablePosition(point + _manager.board.min);
                     Vector3 viewport = camera.WorldToViewportPoint(cell);
                     if (viewport.x < 0.05f || viewport.x > 0.95f || viewport.y < 0.05f || viewport.y > 0.9f)
                     {
@@ -373,13 +379,18 @@ namespace HealerLike.Render.Stage
             return grey;
         }
 
-        // One cell per unit: its colour crop, its greyscale crop, and its label under both
+        // One cell per unit: its colour crop, its greyscale crop, and its label under both, crops enlarged by whole pixels
         Texture2D Contact(Texture2D colour, Texture2D grey)
         {
             Camera camera = _manager.gameCamera;
+            float size = _manager.player.grid.size;
+            Vector3 origin = camera.WorldToViewportPoint(_manager.board.center);
+            Vector3 across = camera.WorldToViewportPoint(_manager.board.center + Vector3.right * size);
+            int crop = Mathf.Max(8, Mathf.RoundToInt((across.x - origin.x) * Width * CropCells));
+            int zoom = Mathf.Max(1, CellPixels / crop);
             int labelHeight = 8 * LabelScale + 12;
-            int cellWidth = CropWidth * 2 + 12;
-            int cellHeight = CropHeight + labelHeight;
+            int cellWidth = crop * zoom * 2 + 12;
+            int cellHeight = crop * zoom + labelHeight;
             int rows = Mathf.CeilToInt((float)_cells.Count / Columns);
             Texture2D sheet = new Texture2D(cellWidth * Columns, cellHeight * rows, TextureFormat.RGB24, false);
             Color32[] background = new Color32[sheet.width * sheet.height];
@@ -391,28 +402,43 @@ namespace HealerLike.Render.Stage
 
             for (int i = 0; i < _cells.Count; i++)
             {
-                Vector3 viewport = camera.WorldToViewportPoint(_cells[i].position + Vector3.up * (0.6f * _manager.player.grid.size));
-                int x = Mathf.RoundToInt(viewport.x * Width) - CropWidth / 2;
-                int y = Mathf.RoundToInt(viewport.y * Height) - CropHeight / 2;
+                Vector3 viewport = camera.WorldToViewportPoint(Centre(_cells[i]));
+                int x = Mathf.RoundToInt(viewport.x * Width) - crop / 2;
+                int y = Mathf.RoundToInt(viewport.y * Height) - crop / 2;
                 int left = (i % Columns) * cellWidth;
                 int bottom = (rows - 1 - i / Columns) * cellHeight;
-                Blit(colour, x, y, sheet, left, bottom + labelHeight);
-                Blit(grey, x, y, sheet, left + CropWidth + 12, bottom + labelHeight);
+                Blit(colour, x, y, crop, zoom, sheet, left, bottom + labelHeight);
+                Blit(grey, x, y, crop, zoom, sheet, left + crop * zoom + 12, bottom + labelHeight);
                 SheetFont.Draw(sheet, _labels[i], left + 6, bottom + labelHeight - 6, LabelScale, Color.white);
             }
 
             sheet.Apply();
+            Debug.Log($"[LookSheetRun] Contact crops of {crop} px, drawn {zoom} times larger");
             return sheet;
         }
 
-        static void Blit(Texture2D source, int x, int y, Texture2D target, int left, int bottom)
+        // The middle of what the unit draws, his hidden model aside
+        static Vector3 Centre(Transform cell)
         {
-            for (int row = 0; row < CropHeight; row++)
+            Bounds bounds = new Bounds(cell.position, Vector3.zero);
+            foreach (Renderer renderer in cell.GetComponentsInChildren<Renderer>())
             {
-                for (int column = 0; column < CropWidth; column++)
+                if (renderer.enabled && renderer is MeshRenderer)
                 {
-                    int sx = x + column;
-                    int sy = y + row;
+                    bounds.Encapsulate(renderer.bounds);
+                }
+            }
+            return new Vector3(bounds.center.x, bounds.center.y, bounds.center.z);
+        }
+
+        static void Blit(Texture2D source, int x, int y, int crop, int zoom, Texture2D target, int left, int bottom)
+        {
+            for (int row = 0; row < crop * zoom; row++)
+            {
+                for (int column = 0; column < crop * zoom; column++)
+                {
+                    int sx = x + column / zoom;
+                    int sy = y + row / zoom;
                     Color pixel = sx >= 0 && sy >= 0 && sx < source.width && sy < source.height
                         ? source.GetPixel(sx, sy)
                         : Color.black;
