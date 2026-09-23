@@ -60,6 +60,21 @@ namespace HealerLike.Render.Creatures
 
         public Transform root { get { return _root; } }
 
+        public CreatureRecipe recipe { get { return _recipe; } }
+
+        // One per recipe part, the transform carrying that part's mesh
+        public IReadOnlyList<Transform> partTransforms
+        {
+            get
+            {
+                if (_geometry == null)
+                {
+                    return Array.Empty<Transform>();
+                }
+                return _geometry;
+            }
+        }
+
         public int activeArmCount
         {
             get
@@ -123,7 +138,7 @@ namespace HealerLike.Render.Creatures
                 _pivots[i].SetParent(part.parent < 0 ? _sway : _pivots[part.parent], false);
                 _pivots[i].localPosition = part.localPosition * cellSize;
                 _pivots[i].localRotation = Quaternion.Euler(part.localEuler);
-                _geometry[i] = PrimitiveMeshes.Geometry("Geometry", _pivots[i], meshes.GetMesh(part.primitive),
+                _geometry[i] = PrimitiveMeshes.Geometry("Geometry", _pivots[i], meshes.GetMesh(part.primitive, part.variant),
                     material, _colours[i], part.glow);
                 _geometry[i].localScale = part.dimensions * cellSize;
                 _bodyRenderers[i] = _geometry[i].GetComponent<Renderer>();

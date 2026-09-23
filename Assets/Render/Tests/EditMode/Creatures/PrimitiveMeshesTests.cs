@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using HealerLike.Render.Stones;
 
 namespace HealerLike.Render.Creatures
 {
@@ -68,6 +69,33 @@ public class PrimitiveMeshesTests
         Assert.That(mesh.bounds.size.x, Is.EqualTo(1).Within(0.00001));
         float height = type == Primitive.Torus ? Mathf.Sqrt(3f) / 12f : 1f; // tube ratio 0.2, six rings
         Assert.That(mesh.bounds.size.y, Is.EqualTo(height).Within(0.00001));
+    }
+
+    [TestCase(0, 0)]
+    [TestCase(1, 1)]
+    [TestCase(5, 1)] // wraps round the two variants
+    public void GetMesh_StoneVariant_PicksByIndex(int variant, int expected)
+    {
+        PrimitiveMeshes meshes = ScriptableObject.CreateInstance<PrimitiveMeshes>();
+        StoneVariants variants = ScriptableObject.CreateInstance<StoneVariants>();
+        Mesh first = new Mesh();
+        Mesh second = new Mesh();
+        variants.meshes = new Mesh[] { first, second };
+        meshes.stoneVariants = variants;
+
+        Mesh mesh = meshes.GetMesh(Primitive.Stone, variant);
+
+        Assert.AreEqual(variants.meshes[expected], mesh);
+        Object.DestroyImmediate(first);
+        Object.DestroyImmediate(second);
+        Object.DestroyImmediate(variants);
+        Object.DestroyImmediate(meshes);
+    }
+
+    [Test]
+    public void GetMesh_OtherPrimitiveWithVariant_IgnoresTheVariant()
+    {
+        Assert.AreEqual(Meshes().cone, Meshes().GetMesh(Primitive.Cone, 4));
     }
 
     [Test]

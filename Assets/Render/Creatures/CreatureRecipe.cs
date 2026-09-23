@@ -12,7 +12,9 @@ namespace HealerLike.Render.Creatures
         CylinderSegment,
         Leaf,
         Boulder,
-        Pyramid
+        Pyramid,
+        // A seeded stone from StoneVariants, picked by the part's variant
+        Stone
     }
 
     [CreateAssetMenu(menuName = "Custom/Data/Render/CreatureRecipe")]

@@ -290,6 +290,36 @@ public class CreatureRigTests
     }
 
     [Test]
+    public void Init_StonePartWithoutVariants_BuildsOnTheBoulder()
+    {
+        _rig.Dispose();
+        _recipe.parts[0].primitive = Primitive.Stone;
+        _recipe.parts[0].variant = 3;
+
+        _rig = CreateRig(_recipe, _parent.transform, _material);
+
+        Mesh mesh = _rig.partTransforms[0].GetComponent<MeshFilter>().sharedMesh;
+        Assert.AreEqual(PrimitiveMeshesTests.Meshes().boulder, mesh);
+    }
+
+    [Test]
+    public void Init_Recipe_OnePartTransformPerPart()
+    {
+        _rig.Dispose();
+        CreatureRecipe data = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/SpiralFern.asset");
+
+        _rig = CreateRig(data, _parent.transform, _material);
+
+        Assert.AreEqual(data, _rig.recipe);
+        Assert.AreEqual(data.parts.Length, _rig.partTransforms.Count);
+        for (int i = 0; i < data.parts.Length; i++)
+        {
+            Assert.AreEqual(data.parts[i].id, _rig.partTransforms[i].parent.name);
+            Assert.NotNull(_rig.partTransforms[i].GetComponent<MeshFilter>());
+        }
+    }
+
+    [Test]
     public void SetReadout_AimAndHealth_DampAndRecoverWithoutMovingRoot()
     {
         _rig.SetReadout(Vector3.right * 4f, 0.2f, 0.8f, 0.8f);

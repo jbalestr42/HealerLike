@@ -1,4 +1,5 @@
 using UnityEngine;
+using HealerLike.Render.Stones;
 
 namespace HealerLike.Render.Creatures
 {
@@ -19,6 +20,24 @@ namespace HealerLike.Render.Creatures
         public Mesh boulder;
         public Mesh disc;
         public Mesh annulus;
+        public StoneVariants stoneVariants;
+
+        // A stone part takes one of the seeded variants, the boulder until any are baked
+        public Mesh GetMesh(Primitive primitive, int variant)
+        {
+            if (primitive != Primitive.Stone)
+            {
+                return GetMesh(primitive);
+            }
+
+            if (stoneVariants == null || stoneVariants.meshes == null || stoneVariants.meshes.Length == 0)
+            {
+                return boulder;
+            }
+
+            int count = stoneVariants.meshes.Length;
+            return stoneVariants.meshes[((variant % count) + count) % count];
+        }
 
         // Recipes only author torus parts at the baked 0.2 tube ratio
         public Mesh GetMesh(Primitive primitive)
@@ -36,6 +55,7 @@ namespace HealerLike.Render.Creatures
                 case Primitive.Leaf:
                     return leaf;
                 case Primitive.Boulder:
+                case Primitive.Stone:
                     return boulder;
                 case Primitive.Pyramid:
                     return pyramid;

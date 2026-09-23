@@ -25,3 +25,4 @@ MonoBehaviour:
   boulder: {fileID: 4300000, guid: 3a227576ac46e47819f24eff9d95c9d8, type: 2}
   disc: {fileID: 4300000, guid: 6004ac616f55048d99bb98f8daed1cb9, type: 2}
   annulus: {fileID: 4300000, guid: 6310fa2283f7348d7be855d0115a7adf, type: 2}
+  stoneVariants: {fileID: 11400000, guid: f338777f463b481eb110c7162482b28c, type: 2}

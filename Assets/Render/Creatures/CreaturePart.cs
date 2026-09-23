@@ -15,5 +15,7 @@ namespace HealerLike.Render.Creatures
         public Color colour;
         public float torusTubeRatio;
         public float glow;
+        public PartRole role;
+        public int variant;
     }
 }
