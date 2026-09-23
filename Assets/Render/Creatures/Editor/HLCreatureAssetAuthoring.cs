@@ -128,7 +128,7 @@ namespace HealerLike.Render.Creatures
         }
         static List<HLPart> Stack()
         {
-            var p = new List<HLPart> { Part("HLConicalRoot", HLPrimitive.Cone, new Vector3(0, .2f, 0), new Vector3(.5f, .4f, .5f), Stem, parent: -1) };
+            var p = new List<HLPart> { Part("HLConicalRoot", HLPrimitive.Cone, new Vector3(0, .2f, 0), new Vector3(.30f, .4f, .30f), Stem, parent: -1) };
             p.Add(Part("HLBottomSphere", HLPrimitive.Sphere, new Vector3(0, .34f, 0), Vector3.one * .43f, Body));
             p.Add(Part("HLMiddleSphere", HLPrimitive.Sphere, new Vector3(.045f, .69f, 0), Vector3.one * .32f, Bud));
             p.Add(Part("HLTopSphere", HLPrimitive.Sphere, new Vector3(-.02f, .95f, 0), Vector3.one * .22f, Body, glow: .7f));
