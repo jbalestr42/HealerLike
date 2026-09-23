@@ -2717,7 +2717,7 @@ MonoBehaviour:
       Data: -1.47703171
     - Name: 
       Entry: 4
-      Data: 0.8
+      Data: 2
     - Name: 
       Entry: 4
       Data: -0.261490732
@@ -2744,13 +2744,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.534000039
+      Data: 0.961200058
     - Name: 
       Entry: 4
-      Data: 0.534000039
+      Data: 0.961200058
     - Name: 
       Entry: 4
-      Data: 0.534000039
+      Data: 0.961200058
     - Name: 
       Entry: 8
       Data: 
@@ -2786,7 +2786,7 @@ MonoBehaviour:
       Data: 0.131248757
     - Name: 
       Entry: 4
-      Data: 0.933333337
+      Data: 2.2
     - Name: 
       Entry: 4
       Data: -1.494247
@@ -2813,13 +2813,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.462
+      Data: 0.8316
     - Name: 
       Entry: 4
-      Data: 0.462
+      Data: 0.8316
     - Name: 
       Entry: 4
-      Data: 0.462
+      Data: 0.8316
     - Name: 
       Entry: 8
       Data: 
@@ -2855,7 +2855,7 @@ MonoBehaviour:
       Data: 1.26578093
     - Name: 
       Entry: 4
-      Data: 1.06666672
+      Data: 2.4
     - Name: 
       Entry: 4
       Data: -0.8048594
@@ -2882,13 +2882,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.57
+      Data: 1.0259999
     - Name: 
       Entry: 4
-      Data: 0.57
+      Data: 1.0259999
     - Name: 
       Entry: 4
-      Data: 0.57
+      Data: 1.0259999
     - Name: 
       Entry: 8
       Data: 
@@ -2924,7 +2924,7 @@ MonoBehaviour:
       Data: 1.5
     - Name: 
       Entry: 4
-      Data: 1.2
+      Data: 2.6
     - Name: 
       Entry: 4
       Data: 0
@@ -2951,13 +2951,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.390000015
+      Data: 0.702
     - Name: 
       Entry: 4
-      Data: 0.390000015
+      Data: 0.702
     - Name: 
       Entry: 4
-      Data: 0.390000015
+      Data: 0.702
     - Name: 
       Entry: 8
       Data: 
@@ -2993,7 +2993,7 @@ MonoBehaviour:
       Data: 0.912526667
     - Name: 
       Entry: 4
-      Data: 1.33333337
+      Data: 2.8
     - Name: 
       Entry: 4
       Data: 1.190502
@@ -3020,13 +3020,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.498
+      Data: 0.8964
     - Name: 
       Entry: 4
-      Data: 0.498
+      Data: 0.8964
     - Name: 
       Entry: 4
-      Data: 0.498
+      Data: 0.8964
     - Name: 
       Entry: 8
       Data: 
@@ -3062,7 +3062,7 @@ MonoBehaviour:
       Data: -0.389726847
     - Name: 
       Entry: 4
-      Data: 1.4666667
+      Data: 3
     - Name: 
       Entry: 4
       Data: 1.44848633
@@ -3089,13 +3089,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.606
+      Data: 1.09079993
     - Name: 
       Entry: 4
-      Data: 0.606
+      Data: 1.09079993
     - Name: 
       Entry: 4
-      Data: 0.606
+      Data: 1.09079993
     - Name: 
       Entry: 8
       Data: 
@@ -3131,7 +3131,7 @@ MonoBehaviour:
       Data: -1.10609055
     - Name: 
       Entry: 4
-      Data: 1.6
+      Data: 3.2
     - Name: 
       Entry: 4
       Data: 1.01319456
@@ -3158,13 +3158,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.425999969
+      Data: 0.7667999
     - Name: 
       Entry: 4
-      Data: 0.425999969
+      Data: 0.7667999
     - Name: 
       Entry: 4
-      Data: 0.425999969
+      Data: 0.7667999
     - Name: 
       Entry: 8
       Data: 
