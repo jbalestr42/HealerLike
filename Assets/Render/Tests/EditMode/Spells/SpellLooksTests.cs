@@ -1,8 +1,9 @@
 using System.Collections.Generic;
+using HealerLike.Render.Deliveries;
+using HealerLike.Render.Grammar;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Spells
 {
@@ -28,94 +29,30 @@ public class SpellLooksTests
         return instance;
     }
 
-    SpellLooks CreateLooks()
+    [Test]
+    public void GetLook_MappedBuff_ReturnsTheRow()
     {
         SpellLooks looks = CreateTracked<SpellLooks>();
-        looks.boon = new SpellLook();
-        looks.bane = new SpellLook();
-        return looks;
-    }
-
-    [Test]
-    public void GetLook_MappedBuff_ReturnsMappedLook()
-    {
-        SpellLooks looks = CreateLooks();
         BuffHandlerFactory factory = CreateTracked<BuffHandlerFactory>();
-        SpellLook look = new SpellLook();
+        SpellLook look = new SpellLook { element = EffectElement.ManaUp };
         looks.buffs[factory] = look;
 
-        SpellLook result = looks.GetLook(factory, false);
-
-        Assert.AreSame(look, result);
+        Assert.AreSame(look, looks.GetLook(factory));
     }
 
     [Test]
-    public void GetLook_UnmappedBuffSameSide_ReturnsBoon()
+    public void GetLook_UnmappedBuff_ReturnsNullSoTheLookIsDerived()
     {
-        SpellLooks looks = CreateLooks();
+        SpellLooks looks = CreateTracked<SpellLooks>();
 
-        SpellLook result = looks.GetLook(CreateTracked<BuffHandlerFactory>(), true);
-
-        Assert.AreSame(looks.boon, result);
-    }
-
-    [Test]
-    public void GetLook_UnmappedBuffOtherSide_ReturnsBane()
-    {
-        SpellLooks looks = CreateLooks();
-
-        SpellLook result = looks.GetLook(CreateTracked<BuffHandlerFactory>(), false);
-
-        Assert.AreSame(looks.bane, result);
-    }
-
-    [Test]
-    public void GetLook_NullFactory_ReturnsSideDefault()
-    {
-        SpellLooks looks = CreateLooks();
-
-        SpellLook result = looks.GetLook(null, false);
-
-        Assert.AreSame(looks.bane, result);
-    }
-
-    [TestCase(EffectFamily.Damage, AttributeGroup.Offence, "impact")]
-    [TestCase(EffectFamily.Heal, AttributeGroup.Offence, "heal")]
-    [TestCase(EffectFamily.Rot, AttributeGroup.Offence, "rot")]
-    [TestCase(EffectFamily.Renew, AttributeGroup.Offence, "renew")]
-    [TestCase(EffectFamily.Boon, AttributeGroup.Offence, "boon")]
-    [TestCase(EffectFamily.Boon, AttributeGroup.Defence, "shield")]
-    [TestCase(EffectFamily.Boon, AttributeGroup.Prevention, "shield")]
-    [TestCase(EffectFamily.Bane, AttributeGroup.Offence, "bane")]
-    public void GetLook_Family_PicksTheLookOfItsShape(EffectFamily family, AttributeGroup group, string expected)
-    {
-        SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
-        Dictionary<string, SpellLook> named = new Dictionary<string, SpellLook>
-        {
-            { "impact", looks.impact }, { "heal", looks.heal }, { "rot", looks.rot }, { "renew", looks.renew },
-            { "boon", looks.boon }, { "shield", looks.shield }, { "bane", looks.bane }
-        };
-
-        Assert.AreSame(named[expected], looks.GetLook(family, group));
-    }
-
-    [Test]
-    public void GetLook_UnmappedPoisonHandler_DerivesTheDrips()
-    {
-        SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
-        SpellLooks copy = CreateLooks();
-        copy.rot = looks.rot;
-        ABuffHandlerFactory poison = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(
-            "Assets/Data/EntityItems/PoisonItem/BuffHandlerFactory.asset");
-
-        Assert.AreSame(looks.rot, copy.GetLook(poison, false));
-        Assert.AreEqual(SpellEffectKind.Drip, looks.rot.effectPrefab.kind);
+        Assert.IsNull(looks.GetLook(CreateTracked<BuffHandlerFactory>()));
+        Assert.IsNull(looks.GetLook(null));
     }
 
     [Test]
     public void GetProjectileLook_UnmappedPrefab_DerivesItsDelivery()
     {
-        SpellLooks looks = CreateLooks();
+        SpellLooks looks = CreateTracked<SpellLooks>();
         GameObject swarm = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/SwarmBullet.prefab");
 
         Assert.AreEqual(DeliveryStyle.Swarm, looks.GetProjectileLook(swarm).style);
@@ -124,104 +61,52 @@ public class SpellLooksTests
     [Test]
     public void GetProjectileLook_MappedPrefab_ReturnsMappedLook()
     {
-        SpellLooks looks = CreateLooks();
+        SpellLooks looks = CreateTracked<SpellLooks>();
         GameObject prefab = new GameObject("Projectile");
         _objects.Add(prefab);
         ProjectileLook look = new ProjectileLook { style = DeliveryStyle.Arc };
         looks.projectiles[prefab] = look;
 
-        ProjectileLook result = looks.GetProjectileLook(prefab);
-
-        Assert.AreSame(look, result);
+        Assert.AreSame(look, looks.GetProjectileLook(prefab));
     }
 
     [Test]
-    public void GetProjectileLook_UnmappedPrefab_ReturnsDirect()
+    public void GetProjectileLook_NoPrefab_ReturnsDirect()
     {
-        SpellLooks looks = CreateLooks();
+        SpellLooks looks = CreateTracked<SpellLooks>();
 
-        ProjectileLook result = looks.GetProjectileLook(null);
-
-        Assert.AreEqual(DeliveryStyle.Direct, result.style);
+        Assert.AreEqual(DeliveryStyle.Direct, looks.GetProjectileLook(null).style);
     }
 
-    [Test]
-    public void Shipped_SeededAsset_HasEveryOutcomeAndBuffRows()
+    // Only rows where the grammar is wrong for the handler stay: the three listener items on the healer, whose
+    // Infinite handler would loop their look for the whole run
+    [TestCase("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", EffectElement.ManaUp)]
+    [TestCase("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", EffectElement.Burst)]
+    [TestCase("PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory", EffectElement.Rise)]
+    public void Shipped_KeptBuffRow_DrawsOnceWithItsElement(string path, EffectElement expected)
     {
         SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
+        ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>("Assets/Data/" + path + ".asset");
 
-        Assert.AreEqual(20, looks.buffs.Count);
-        Assert.AreEqual(9, looks.projectiles.Count);
-        foreach (SpellLook look in new[] { looks.boon, looks.bane, looks.rot, looks.renew, looks.heal, looks.impact, looks.manaGain,
-                                           looks.manaLoss, looks.chain, looks.shield, looks.area, looks.hostileArea })
-        {
-            Assert.IsNotNull(look.effectPrefab);
-        }
-        foreach (KeyValuePair<ABuffHandlerFactory, SpellLook> row in looks.buffs)
-        {
-            Assert.IsNotNull(row.Key);
-            Assert.IsNotNull(row.Value.effectPrefab, row.Key.name);
-        }
+        SpellLook row = looks.GetLook(handler);
+
+        Assert.AreEqual(3, looks.buffs.Count);
+        Assert.AreEqual(expected, row.element);
+        Assert.AreEqual(EffectTempo.Once, row.tempo);
+    }
+
+    [Test]
+    public void Shipped_ProjectileRows_OnlyTheChainsKeepTheirContactPath()
+    {
+        SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
+        GameObject laser = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/LaserBullet.prefab");
+
+        Assert.AreEqual(2, looks.projectiles.Count);
         foreach (KeyValuePair<GameObject, ProjectileLook> row in looks.projectiles)
         {
-            Assert.IsNotNull(row.Key);
+            Assert.IsTrue(row.Value.preserveContactPath, row.Key.name);
         }
-    }
-
-    [TestCase("Status_Buff", SpellEffectKind.Buff)]
-    [TestCase("Status_Shield", SpellEffectKind.Shield)]
-    [TestCase("Fx_HealSpheres", SpellEffectKind.Heal)]
-    [TestCase("Fx_Impact", SpellEffectKind.Impact)]
-    [TestCase("Fx_ChainBeam", SpellEffectKind.Chain)]
-    [TestCase("Fx_HostileLitter", SpellEffectKind.Litter)]
-    [TestCase("Fx_HealRing", SpellEffectKind.Area)]
-    [TestCase("Fx_PoisonDrips", SpellEffectKind.Drip)]
-    [TestCase("Resolved_ManaMaxPositive", SpellEffectKind.Mana)]
-    [TestCase("Resolved_ManaMaxNegative", SpellEffectKind.Mana)]
-    public void Shipped_EffectPrefab_IsAuthoredWithBakedMeshesAndTheLookMaterial(string name, SpellEffectKind kind)
-    {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Spells/Prefabs/" + name + ".prefab");
-        Material look = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
-
-        SpellEffect effect = prefab.GetComponent<SpellEffect>();
-        SerializedObject serialized = new SerializedObject(effect);
-        Assert.AreEqual(kind, effect.kind);
-        Assert.Greater(effect.parts.Length, 0);
-        Assert.IsNotNull(serialized.FindProperty("_sideRim").objectReferenceValue);
-        Assert.AreEqual(8, serialized.FindProperty("_stackBeads").arraySize);
-        Assert.AreEqual(2, serialized.FindProperty("_criticalRings").arraySize);
-        Assert.IsEmpty(prefab.GetComponentsInChildren<Collider>(true));
-        foreach (MeshFilter filter in prefab.GetComponentsInChildren<MeshFilter>(true))
-        {
-            Assert.IsTrue(EditorUtility.IsPersistent(filter.sharedMesh), filter.name);
-            StringAssert.DoesNotStartWith("Assets/Render/Spells", AssetDatabase.GetAssetPath(filter.sharedMesh));
-        }
-        foreach (Renderer renderer in prefab.GetComponentsInChildren<Renderer>(true))
-        {
-            Assert.AreSame(look, renderer.sharedMaterial, renderer.name);
-        }
-    }
-
-    [Test]
-    public void Shipped_HealPrefab_HasOneStalkPerBud()
-    {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Spells/Prefabs/Fx_HealSpheres.prefab");
-
-        SpellEffect effect = prefab.GetComponent<SpellEffect>();
-
-        Assert.AreEqual(7, effect.parts.Length);
-        Assert.AreEqual(7, effect.stalks.Length);
-    }
-
-    [Test]
-    public void Shipped_Sink_UsesTheSeededLooks()
-    {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Spells/Prefabs/SpellVisualSink.prefab");
-        SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
-
-        SpellVisualSink sink = prefab.GetComponent<SpellVisualSink>();
-
-        Assert.AreSame(looks, sink.looks);
+        Assert.AreEqual(DeliveryStyle.Arc, looks.GetProjectileLook(laser).style); // its baked motion is a ballistic arc
     }
 }
 

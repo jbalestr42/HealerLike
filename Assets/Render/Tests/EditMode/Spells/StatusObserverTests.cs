@@ -76,9 +76,7 @@ public class StatusObserverTests
 
     SpellVisualSink CreateSink()
     {
-        SpellVisualSink sink = _sinkGo.AddComponent<SpellVisualSink>();
-        sink.looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
-        return sink;
+        return SpellSinkFixture.Add(_sinkGo);
     }
 
     [TestCase(false)]
