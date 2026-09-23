@@ -91,6 +91,15 @@ namespace HealerLike.Render.Stage
         {
             GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(soldierPath));
             PrefabUtility.UnpackPrefabInstance(instance, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            // His model keeps its own sockets, the view needs none
+            foreach (Transform socket in instance.GetComponentsInChildren<Transform>(true))
+            {
+                if (socket != null && (socket.name == "SkillSource" || socket.name == "SkillTargetPoint"))
+                {
+                    Object.DestroyImmediate(socket.gameObject);
+                }
+            }
+
             Strip(instance.transform, true);
             PrefabUtility.SaveAsPrefabAsset(instance, soldierPath);
             Object.DestroyImmediate(instance);
