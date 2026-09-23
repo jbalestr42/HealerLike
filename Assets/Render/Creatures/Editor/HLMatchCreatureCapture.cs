@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -85,4 +84,3 @@ namespace HealerLike.Render.Creatures
         }
     }
 }
-#endif

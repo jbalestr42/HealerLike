@@ -1,10 +1,18 @@
 {
-    "name": "HealerLike.Tests.EditMode",
+    "name": "HealerLike.Render.Tests.EditMode",
     "rootNamespace": "",
     "references": [
         "HealerLike.Runtime",
+        "HealerLike.Render",
+        "HealerLike.Render.Creatures.Editor",
+        "HealerLike.Render.Spells.Editor",
+        "HealerLike.Render.Stage.Editor",
+        "HealerLike.Render.Stones.Editor",
+        "HealerLike.Tests.EditMode",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
     ],
     "includePlatforms": [
         "Editor"

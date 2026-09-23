@@ -1,11 +1,9 @@
 {
-    "name": "HealerLike.Render.Stage.Editor",
+    "name": "HealerLike.Render.Stones.Editor",
     "rootNamespace": "",
     "references": [
         "HealerLike.Runtime",
-        "HealerLike.Render",
-        "Unity.RenderPipelines.Universal.Runtime",
-        "Unity.RenderPipelines.Core.Runtime"
+        "HealerLike.Render"
     ],
     "includePlatforms": [
         "Editor"

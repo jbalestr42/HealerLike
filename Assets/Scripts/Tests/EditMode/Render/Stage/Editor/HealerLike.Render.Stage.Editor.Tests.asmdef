@@ -1,9 +1,0 @@
-{
- "name":"HealerLike.Render.Stage.Editor.Tests",
- "references":["HealerLike.Render.Stage.Editor","HealerLike.Render","HealerLike.Runtime","UnityEngine.TestRunner","UnityEditor.TestRunner","Unity.RenderPipelines.Universal.Runtime","Unity.RenderPipelines.Core.Runtime"],
- "includePlatforms":["Editor"],
- "overrideReferences":true,
- "precompiledReferences":["nunit.framework.dll"],
- "autoReferenced":false,
- "defineConstraints":["UNITY_INCLUDE_TESTS"]
-}
