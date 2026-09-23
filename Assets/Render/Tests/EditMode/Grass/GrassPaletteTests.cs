@@ -61,16 +61,26 @@ public class GrassPaletteTests
     }
 
     [Test]
-    public void LightGreen_Default_IsThePlantBaseColour()
+    public void Greens_Default_AreTheReferenceCarpet()
     {
-        Material plant = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
+        GrassPalette palette = new GrassPalette();
 
-        Color lightGreen = new GrassPalette().lightGreen;
+        Assert.That((Color32)palette.darkGreen, Is.EqualTo(new Color32(76, 125, 81, 255))); // #4c7d51
+        Assert.That((Color32)palette.midGreen, Is.EqualTo(new Color32(91, 144, 85, 255))); // #5b9055, the body
+        Assert.That((Color32)palette.lightGreen, Is.EqualTo(new Color32(97, 154, 92, 255))); // #619a5c
+        Assert.That((Color32)palette.tipGreen, Is.EqualTo(new Color32(140, 186, 108, 255))); // #8cba6c
+    }
 
-        Color baseColor = plant.GetColor("_BaseColor");
-        Assert.AreEqual(baseColor.r, lightGreen.r, 0.005f);
-        Assert.AreEqual(baseColor.g, lightGreen.g, 0.005f);
-        Assert.AreEqual(baseColor.b, lightGreen.b, 0.005f);
+    [Test]
+    public void Greens_Default_StayBetween35And50PercentSaturation()
+    {
+        GrassPalette palette = new GrassPalette();
+
+        foreach (Color green in new[] { palette.darkGreen, palette.midGreen, palette.lightGreen, palette.tipGreen })
+        {
+            Color.RGBToHSV(green, out float hue, out float saturation, out float value);
+            Assert.That(saturation, Is.InRange(0.35f, 0.5f), green.ToString());
+        }
     }
 }
 
