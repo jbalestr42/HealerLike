@@ -10,6 +10,7 @@ namespace HealerLike.Render.Creatures
     {
         readonly List<CreaturePart> _parts = new List<CreaturePart>();
         readonly List<Vector3> _positions = new List<Vector3>();
+        readonly List<LookPart> _sources = new List<LookPart>();
         readonly HashSet<string> _ids = new HashSet<string>();
         float _unit;
 
@@ -22,8 +23,18 @@ namespace HealerLike.Render.Creatures
 
         // Size is the part's bounding box in body units, whatever the mesh's own pivot
         public int Add(string id, Primitive primitive, Vector3 centre, Vector3 size, Color colour, Vector3 euler = default,
-            float glow = 0f)
+            float glow = 0f, PartRole role = PartRole.Body)
         {
+            _sources.Add(new LookPart
+            {
+                id = id,
+                primitive = primitive,
+                role = role,
+                position = centre,
+                euler = euler,
+                size = size,
+                glow = glow
+            });
             Vector3 dimensions = size;
             Vector3 pivot = centre;
             Quaternion rotation = Quaternion.Euler(euler);
@@ -52,19 +63,31 @@ namespace HealerLike.Render.Creatures
                 dimensions = dimensions * _unit,
                 colour = colour,
                 torusTubeRatio = 0.2f,
-                glow = glow
+                glow = glow,
+                role = role
             });
             _positions.Add(pivot);
             return _parts.Count - 1;
         }
 
         // A capsule from one point to another
-        public int Link(string id, Vector3 from, Vector3 to, float thickness, Color colour)
+        public int Link(string id, Vector3 from, Vector3 to, float thickness, Color colour, PartRole role = PartRole.Stem)
         {
             Vector3 delta = to - from;
             Vector3 euler = Quaternion.FromToRotation(Vector3.up, delta).eulerAngles;
             return Add(id, Primitive.Capsule, (from + to) * 0.5f, new Vector3(thickness, delta.magnitude + thickness, thickness),
-                colour, euler);
+                colour, euler, 0f, role);
+        }
+
+        // The part as it was added, centre and bounding box in body units before any pivot or mesh correction
+        public LookPart Source(int index)
+        {
+            return _sources[index];
+        }
+
+        public Color Colour(int index)
+        {
+            return _parts[index].colour;
         }
 
         public CreaturePart[] ToArray()
@@ -247,30 +270,55 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        // The accessory at the hip or the neck, reaching past the body's outline
-        public static void Accessory(PartList parts, AccessoryKind kind, HeadKind miniHead, LookSide side, Vector3 hip, Vector3 neck,
-            float bodyRadius, Color accent)
+        // Where a mini head sits from its socket, and its scale
+        public static readonly Vector3 MiniHeadAt = new Vector3(-0.35f, 0.4f, 0f);
+        public static readonly float MiniHeadScale = 0.5f;
+        // The body radius the accessories were drawn around, a sturdy plant's plus half the accessory reach
+        static readonly float accessoryRadius = 0.725f;
+
+        public static AccessorySocket Socket(AccessoryKind kind)
+        {
+            switch (kind)
+            {
+                case AccessoryKind.SmallTorus:
+                case AccessoryKind.ConeCrown:
+                    return AccessorySocket.NeckOrbit;
+                case AccessoryKind.TierRings:
+                case AccessoryKind.ThornCollar:
+                    return AccessorySocket.HipOrbit;
+                case AccessoryKind.DripBeads:
+                case AccessoryKind.Hook:
+                    return AccessorySocket.Crook;
+                case AccessoryKind.TwinSeeds:
+                case AccessoryKind.ShardBarbs:
+                    return AccessorySocket.Flank;
+                default:
+                    return AccessorySocket.Shoulder;
+            }
+        }
+
+        // The accessory around its socket, offsets fixed so the same parts fit every body; a mini head is added by the composer
+        public static void Accessory(PartList parts, AccessoryKind kind, LookSide side, Vector3 socket, Color accent)
         {
             bool isPlant = side == LookSide.Plant;
             Color body = Body(side);
-            Vector3 outward = Vector3.left;
-            Vector3 edge = hip + outward * bodyRadius;
+            Color stem = isPlant ? PlantStem : StoneLimb;
+            PartRole role = PartRole.Accessory;
+            float radius = accessoryRadius;
             switch (kind)
             {
                 case AccessoryKind.MiniHead:
-                    Vector3 end = edge + new Vector3(-0.35f, 0.4f, 0f);
-                    parts.Link("Offshoot", hip + outward * (bodyRadius * 0.6f), end, 0.12f, isPlant ? PlantStem : StoneLimb);
-                    Head(parts, miniHead, side, end, 0.5f, 1, accent);
+                    parts.Link("Offshoot", socket + new Vector3(radius * 0.4f, 0f, 0f), socket + MiniHeadAt, 0.12f, stem, role);
                     break;
                 case AccessoryKind.Hook:
-                    Vector3 bend = neck + new Vector3(-0.3f, -0.05f, 0f);
-                    parts.Link("Hook", neck, bend, 0.1f, body);
+                    Vector3 bend = socket + new Vector3(-0.3f, -0.05f, 0f);
+                    parts.Link("Hook", socket, bend, 0.1f, body, role);
                     parts.Add("Barb", isPlant ? Primitive.Cone : Primitive.Pyramid, bend + new Vector3(-0.1f, -0.15f, 0f),
-                        new Vector3(0.14f, 0.4f, 0.14f), body, new Vector3(0f, 0f, 150f));
+                        new Vector3(0.14f, 0.4f, 0.14f), body, new Vector3(0f, 0f, 150f), 0f, role);
                     break;
                 case AccessoryKind.Antenna:
-                    Vector3 top = new Vector3(edge.x - 0.15f, neck.y + 0.7f, 0f);
-                    parts.Link("Antenna", edge, top, 0.06f, isPlant ? PlantStem : StoneLimb);
+                    Vector3 top = socket + new Vector3(-0.15f, 1.3f, 0f);
+                    parts.Link("Antenna", socket, top, 0.06f, stem, role);
                     Tip(parts, top, 0.2f, accent);
                     break;
                 case AccessoryKind.ThornCollar:
@@ -278,65 +326,67 @@ namespace HealerLike.Render.Creatures
                     {
                         float angle = i * 60f;
                         Quaternion around = Quaternion.Euler(0f, angle, 0f);
-                        Vector3 point = hip + around * (Vector3.right * (bodyRadius + 0.12f));
+                        Vector3 point = socket + around * (Vector3.right * (radius + 0.12f));
                         Vector3 euler = (around * Quaternion.Euler(0f, 0f, -90f)).eulerAngles;
-                        parts.Add("Thorn", isPlant ? Primitive.Cone : Primitive.Pyramid, point, new Vector3(0.12f, 0.36f, 0.12f), body, euler);
+                        parts.Add("Thorn", isPlant ? Primitive.Cone : Primitive.Pyramid, point, new Vector3(0.12f, 0.36f, 0.12f), body,
+                            euler, 0f, role);
                     }
                     break;
                 case AccessoryKind.TierRings:
                     for (int i = 0; i < 3; i++)
                     {
-                        float width = bodyRadius * 2.4f - i * 0.18f;
-                        parts.Add("Tier", Primitive.Torus, hip + Vector3.up * (0.12f + i * 0.2f), new Vector3(width, 0.14f, width), accent,
-                            default, TipGlow * 0.5f);
+                        float width = radius * 2.4f - i * 0.18f;
+                        parts.Add("Tier", Primitive.Torus, socket + Vector3.up * (0.12f + i * 0.2f), new Vector3(width, 0.14f, width),
+                            accent, default, TipGlow * 0.5f, role);
                     }
                     break;
                 case AccessoryKind.TwinSeeds:
                     for (int i = -1; i <= 1; i += 2)
                     {
-                        Vector3 seed = hip + new Vector3((bodyRadius + 0.2f) * i, -0.15f, 0.1f);
-                        parts.Add("Seed", isPlant ? Primitive.Sphere : Primitive.Boulder, seed, Vector3.one * 0.26f, body);
+                        Vector3 seed = socket + new Vector3((radius + 0.2f) * i, -0.15f, 0.1f);
+                        parts.Add("Seed", isPlant ? Primitive.Sphere : Primitive.Boulder, seed, Vector3.one * 0.26f, body, default, 0f,
+                            role);
                     }
                     break;
                 case AccessoryKind.StalkBeads:
-                    Vector3 stalkTop = edge + new Vector3(-0.2f, 0.7f, 0f);
-                    parts.Link("Stalk", edge, stalkTop, 0.05f, PlantStem);
+                    Vector3 stalkTop = socket + new Vector3(-0.2f, 0.7f, 0f);
+                    parts.Link("Stalk", socket, stalkTop, 0.05f, isPlant ? PlantStem : Moss, role);
                     for (int i = 0; i < 3; i++)
                     {
-                        Tip(parts, Vector3.Lerp(edge, stalkTop, 0.45f + i * 0.27f), 0.14f, accent);
+                        Tip(parts, Vector3.Lerp(socket, stalkTop, 0.45f + i * 0.27f), 0.14f, accent);
                     }
                     break;
                 case AccessoryKind.SmallTorus:
-                    parts.Add("Halo", Primitive.Torus, neck + Vector3.down * 0.1f, new Vector3(0.75f, 0.16f, 0.75f),
-                        Accent(EffectFamily.Boon), new Vector3(18f, 0f, 12f), TipGlow);
+                    parts.Add("Halo", Primitive.Torus, socket + Vector3.down * 0.1f, new Vector3(0.75f, 0.16f, 0.75f),
+                        Accent(EffectFamily.Boon), new Vector3(18f, 0f, 12f), TipGlow, role);
                     break;
                 case AccessoryKind.ConeCrown:
                     for (int i = 0; i < 4; i++)
                     {
                         float angle = i * Mathf.PI * 0.5f + 0.4f;
-                        Vector3 point = neck + new Vector3(Mathf.Cos(angle) * 0.3f, -0.1f, Mathf.Sin(angle) * 0.3f);
+                        Vector3 point = socket + new Vector3(Mathf.Cos(angle) * 0.3f, -0.1f, Mathf.Sin(angle) * 0.3f);
                         parts.Add("Spike", isPlant ? Primitive.Cone : Primitive.Pyramid, point, new Vector3(0.12f, 0.34f, 0.12f),
-                            Accent(EffectFamily.Bane), new Vector3(0f, 0f, 180f), TipGlow * 0.5f);
+                            Accent(EffectFamily.Bane), new Vector3(0f, 0f, 180f), TipGlow * 0.5f, role);
                     }
                     break;
                 case AccessoryKind.DripBeads:
-                    Vector3 arm = edge + new Vector3(-0.25f, 0.35f, 0f);
-                    parts.Link("Dropper", edge, arm, 0.07f, isPlant ? PlantStem : StoneLimb);
+                    Vector3 arm = socket + new Vector3(-0.55f, 0.05f, 0f);
+                    parts.Link("Dropper", socket, arm, 0.07f, stem, role);
                     for (int i = 0; i < 3; i++)
                     {
                         Vector3 drop = arm + new Vector3(-0.05f * i, -0.2f - i * 0.2f, 0f);
                         parts.Add("Drip", Primitive.Sphere, drop, new Vector3(0.14f, 0.24f, 0.14f), Accent(EffectFamily.Rot),
-                            default, TipGlow);
+                            default, TipGlow, role);
                     }
                     break;
                 case AccessoryKind.ShardBarbs:
                     for (int i = 0; i < 3; i++)
                     {
                         Quaternion around = Quaternion.Euler(0f, 150f + i * 30f, 0f);
-                        Vector3 point = hip + around * (Vector3.right * (bodyRadius + 0.1f));
+                        Vector3 point = socket + around * (Vector3.right * (radius + 0.1f));
                         Vector3 euler = (around * Quaternion.Euler(0f, 0f, -70f)).eulerAngles;
                         parts.Add("Shard", Primitive.Pyramid, point, new Vector3(0.16f, 0.42f, 0.16f), Accent(EffectFamily.Bane), euler,
-                            TipGlow * 0.5f);
+                            TipGlow * 0.5f, role);
                     }
                     break;
             }
@@ -345,7 +395,7 @@ namespace HealerLike.Render.Creatures
         // The accent sits on the tip alone, lit so it separates from the body by an edge and not only by hue
         static void Tip(PartList parts, Vector3 at, float size, Color accent)
         {
-            parts.Add("Bud", Primitive.Sphere, at, Vector3.one * size, accent, default, TipGlow);
+            parts.Add("Bud", Primitive.Sphere, at, Vector3.one * size, accent, default, TipGlow, PartRole.Tip);
         }
 
         // A bent neck with 1, 3 or 5 pods hanging from it
@@ -372,21 +422,34 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        // Stones stacked into a cairn, one more stone per band of count
+        // Five stones stacked into a cairn, the top two from three copies up, and one accent pebble per copy on their flanks
         static void Cairn(PartList parts, Vector3 at, float scale, int pods, Color accent)
         {
-            int stones = 2 + Mathf.Clamp(pods, 1, 3);
             Vector3 point = at;
-            for (int i = 0; i < stones; i++)
+            Vector3[] flanks = new Vector3[5];
+            for (int i = 0; i < flanks.Length; i++)
             {
                 float size = (0.7f - i * 0.1f) * scale;
                 point += Vector3.up * (size * 0.22f);
-                parts.Add("Cairn", Primitive.Boulder, point, new Vector3(size, size * 0.45f, size), StoneBody,
-                    new Vector3(0f, i * 40f, 0f));
+                if (i < 3 || pods >= 3)
+                {
+                    parts.Add("Cairn", Primitive.Boulder, point, new Vector3(size, size * 0.45f, size), StoneBody,
+                        new Vector3(0f, i * 40f, 0f), 0f, PartRole.Head);
+                }
+
+                flanks[i] = point + new Vector3(size * 0.5f, size * 0.1f, 0f);
                 point += Vector3.up * (size * 0.22f);
             }
 
-            Tip(parts, point + Vector3.up * (0.1f * scale), 0.2f * scale, accent);
+            // The third stone carries the one pebble, the upper two join at three, the lower two at five
+            for (int i = 0; i < flanks.Length; i++)
+            {
+                bool isShown = i == 2 || (i > 2 && pods >= 3) || pods >= 5;
+                if (isShown)
+                {
+                    Tip(parts, flanks[i], 0.2f * scale, accent);
+                }
+            }
         }
 
         static Color Hex(int rgb)
