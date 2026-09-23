@@ -9,7 +9,8 @@ namespace HealerLike.Render.Creatures
         Capsule,
         Cone,
         Torus,
-        CylinderSegment
+        CylinderSegment,
+        Leaf
     }
 
     [CreateAssetMenu(menuName = "Custom/Data/Render/CreatureRecipe")]
@@ -20,6 +21,7 @@ namespace HealerLike.Render.Creatures
         public RootDefinition roots = new RootDefinition
         {
             count = 4,
+            segments = 3,
             footRadius = 0.38f,
             hipHeight = 0.18f,
             kneeHeight = 0.09f,

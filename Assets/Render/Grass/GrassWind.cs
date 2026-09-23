@@ -16,7 +16,7 @@ namespace HealerLike.Render.Grass
         float _gustRemaining;
         Vector2 _gustDirection;
 
-        // xy heading, z travel speed, w lean amplitude, as the grass compute reads it
+        // xy heading, z travel speed, w sway amplitude in radians of tuft tilt, as the grass compute reads it
         public Vector4 current
         {
             get

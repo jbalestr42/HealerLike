@@ -318,9 +318,11 @@ namespace HealerLike.Render.Environment
             {
                 float around = i * 360f / blades + random.Range(-10f, 10f);
                 Quaternion rotation = Quaternion.Euler(0f, around, random.Range(15f, 45f));
-                Vector3 scale = new Vector3(0.32f * s, random.Range(0.8f, 1.6f) * s, 0.065f * s);
+                // A solid leaf about six times as long as it is wide at the base, a third as thick
+                float length = random.Range(0.8f, 1.6f) * s;
+                Vector3 scale = new Vector3(length * 0.16f, length, length * 0.05f);
                 Color color = Color.Lerp(Greens[0], Greens[2], random.Next01());
-                Part(pivot, _meshes.cone, Vector3.zero, rotation, scale, color);
+                Part(pivot, _meshes.leaf, Vector3.zero, rotation, scale, color);
             }
 
             Sway(pivot, item.seed, 0.45f * s);

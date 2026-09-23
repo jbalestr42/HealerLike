@@ -11,9 +11,11 @@ namespace HealerLike.Render.Creatures
         public Mesh cylinder;
         public Mesh torus;
         public Mesh thinTorus;
-        public Mesh bladeCone;
+        // Grass tuft from GrassTuft, base on the ground and tip at one
+        public Mesh tuft;
         public Mesh pyramid;
         public Mesh star;
+        public Mesh leaf;
         public Mesh boulder;
         public Mesh disc;
         public Mesh annulus;
@@ -31,6 +33,8 @@ namespace HealerLike.Render.Creatures
                     return torus;
                 case Primitive.CylinderSegment:
                     return cylinder;
+                case Primitive.Leaf:
+                    return leaf;
                 default:
                     return sphere;
             }

@@ -212,7 +212,7 @@ MonoBehaviour:
   _ringMaterial: {fileID: 2100000, guid: 63795723cc05e4b7fa691f99ca76cc12, type: 2}
   _bladeBudget: 65536
   _seed: 1
-  _bladeHeightScale: 0.6
+  _bladeHeightScale: 1
   _surfaceY: 0.5
   _wind:
     direction: {x: 1, y: 0.35}

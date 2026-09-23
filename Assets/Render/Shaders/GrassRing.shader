@@ -7,7 +7,7 @@ Shader "HL/Grass/HealRing"
         {
             Name "HLGrassHealRing"
             Tags { "LightMode"="UniversalForwardOnly" }
-            Cull Off ZWrite Off ZTest LEqual Blend SrcAlpha OneMinusSrcAlpha
+            Cull Back ZWrite Off ZTest LEqual Blend SrcAlpha OneMinusSrcAlpha
             HLSLPROGRAM
             #pragma target 4.5
             #pragma vertex HLGrassRingVertex

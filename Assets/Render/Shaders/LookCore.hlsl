@@ -138,7 +138,8 @@ float3 HLApplyBandedFog(float3 positionWS, float3 color)
 // Shared HL surface shading; positionWS and baseColor are adapter inputs.
 // Illumination is remapped main-light facing multiplied by shadow attenuation.
 // The hatch follows the shade past inkStart, not the toon mask, so it carries no step.
-float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor)
+// hatch scales the ink, zero draws none (the grass).
+float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor, float hatch)
 {
     illum = saturate(illum);
     float threshold = HL_G(_HLToonThreshold, HL_DEF_TOONTHRESHOLD);
@@ -167,10 +168,15 @@ float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor)
     float dn = HLDashNoise(hwarp / max(0.001, HL_G(_HLDashScale, HL_DEF_DASHSCALE)) + lineId * 7.31);
     float dashAmount = HL_G(_HLDashAmount, HL_DEF_DASHAMOUNT);
     ink *= smoothstep(dashAmount, dashAmount + 0.08, dn);
-    ink = saturate(ink * step(0.004, tone) * HL_G(_HLInkStrength, HL_DEF_INKSTRENGTH));
+    ink = saturate(ink * step(0.004, tone) * HL_G(_HLInkStrength, HL_DEF_INKSTRENGTH) * hatch);
     // Full ink colour where a stroke is, then the contrast punch; fog comes after
     color = lerp(color, HL_G(_HLOutlineColor, HL_DEF_OUTLINECOLOR).rgb, ink);
     return saturate((color - 0.5) * HL_G(_HLContrast, HL_DEF_CONTRAST) + 0.5);
+}
+
+float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor)
+{
+    return HLShadeSurface(positionWS, illum, baseColor, 1.0);
 }
 
 float3 HLEvaluateSurface(float3 positionWS, float illum, float3 baseColor)

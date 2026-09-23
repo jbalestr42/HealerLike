@@ -20,13 +20,6 @@ public class SpellEffectTests
         return effect;
     }
 
-    GameObject CreateObject(string name)
-    {
-        GameObject go = new GameObject(name);
-        _objects.Add(go);
-        return go;
-    }
-
     [TearDown]
     public void TearDown()
     {
@@ -109,19 +102,17 @@ public class SpellEffectTests
     }
 
     [Test]
-    public void FaceCamera_Impact_StarFacesCameraAndShardsFall()
+    public void Advance_Impact_StarKeepsItsRotationAndShardsFall()
     {
         SpellEffect effect = CreateEffect("Fx_Impact");
-        GameObject camera = CreateObject("Camera");
-        camera.transform.rotation = Quaternion.Euler(35f, 20f, 0f);
+        Quaternion rest = effect.parts[0].localRotation;
 
-        effect.FaceCamera(camera.transform);
         float start = effect.parts[1].localPosition.y;
         effect.Advance(0.2f);
         float peak = effect.parts[1].localPosition.y;
         effect.Advance(0.4f);
 
-        Assert.Less(Quaternion.Angle(camera.transform.rotation, effect.parts[0].rotation), 0.001f);
+        Assert.AreEqual(rest, effect.parts[0].localRotation); // a solid, it never turns to the camera
         Assert.Greater(peak, start);
         Assert.Less(effect.parts[1].localPosition.y, start);
         Assert.AreEqual(5, effect.parts.Length);

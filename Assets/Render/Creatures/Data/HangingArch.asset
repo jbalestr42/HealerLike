@@ -463,7 +463,8 @@ MonoBehaviour:
     bendPole: {x: 0, y: 1, z: 0}
     colour: {r: 0.18, g: 0.49, b: 0.31, a: 1}
   roots:
-    count: 6
+    count: 9
+    segments: 3
     footRadius: 0.41
     hipHeight: 0.26
     kneeHeight: 0.14

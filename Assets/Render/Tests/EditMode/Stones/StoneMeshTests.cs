@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using HealerLike.Render.Creatures;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -25,6 +26,14 @@ public class StoneMeshTests
         {
             Object.DestroyImmediate(_mesh);
         }
+    }
+
+    [Test]
+    public void CreateMesh_Boulder_IsClosedAndFacesOutward()
+    {
+        _mesh = StoneMesh.CreateMesh(3u, StonePresets.Boulder);
+
+        PrimitiveMeshBakerTests.AssertClosed(_mesh);
     }
 
     [TestCase(0, 60)]

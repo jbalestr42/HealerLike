@@ -44,13 +44,24 @@ public class CreatureValidatorTests
         Object.DestroyImmediate(_recipe);
     }
 
-    [TestCase(6, true)]
-    [TestCase(7, true)]
+    [TestCase(3, false)]
     [TestCase(8, true)]
-    [TestCase(9, false)]
-    public void TryValidate_RootCount_AcceptsUpToEight(int count, bool valid)
+    [TestCase(14, true)]
+    [TestCase(15, false)]
+    public void TryValidate_RootCount_AcceptsFourToFourteen(int count, bool valid)
     {
         _recipe.roots.count = count;
+
+        Assert.AreEqual(valid, CreatureValidator.TryValidate(_recipe, out _));
+    }
+
+    [TestCase(0, false)]
+    [TestCase(1, true)]
+    [TestCase(4, true)]
+    [TestCase(5, false)]
+    public void TryValidate_RootSegments_AcceptsOneToFour(int segments, bool valid)
+    {
+        _recipe.roots.segments = segments;
 
         Assert.AreEqual(valid, CreatureValidator.TryValidate(_recipe, out _));
     }

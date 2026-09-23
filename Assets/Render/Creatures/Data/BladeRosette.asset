@@ -24,7 +24,7 @@ MonoBehaviour:
     glow: 0
   - id: Bud0
     parent: 0
-    primitive: 2
+    primitive: 5
     localPosition: {x: 0.377, y: 0.476, z: 0}
     localEuler: {x: 0, y: 0, z: 303.02386}
     dimensions: {x: 0.29000002, y: 1.2240001, z: 0.14500001}
@@ -33,7 +33,7 @@ MonoBehaviour:
     glow: 0.7
   - id: Bud1
     parent: 0
-    primitive: 2
+    primitive: 5
     localPosition: {x: 0.18849997, y: 0.476, z: 0.3264916}
     localEuler: {x: 46.56156, y: 343.34836, z: 322.4314}
     dimensions: {x: 0.29000002, y: 1.2240001, z: 0.14500001}
@@ -42,7 +42,7 @@ MonoBehaviour:
     glow: 0.7
   - id: Bud2
     parent: 0
-    primitive: 2
+    primitive: 5
     localPosition: {x: -0.18850002, y: 0.476, z: 0.32649156}
     localEuler: {x: 46.561554, y: 16.651628, z: 37.568592}
     dimensions: {x: 0.29000002, y: 1.2240001, z: 0.14500001}
@@ -51,7 +51,7 @@ MonoBehaviour:
     glow: 0.7
   - id: Bud3
     parent: 0
-    primitive: 2
+    primitive: 5
     localPosition: {x: -0.377, y: 0.476, z: -0.000000032958386}
     localEuler: {x: -0.0000041997278, y: -0.0000022791337, z: 56.97614}
     dimensions: {x: 0.29000002, y: 1.2240001, z: 0.14500001}
@@ -60,7 +60,7 @@ MonoBehaviour:
     glow: 0.7
   - id: Bud4
     parent: 0
-    primitive: 2
+    primitive: 5
     localPosition: {x: -0.18849996, y: 0.476, z: -0.3264916}
     localEuler: {x: 313.43845, y: 343.34836, z: 37.568592}
     dimensions: {x: 0.29000002, y: 1.2240001, z: 0.14500001}
@@ -69,7 +69,7 @@ MonoBehaviour:
     glow: 0.7
   - id: Bud5
     parent: 0
-    primitive: 2
+    primitive: 5
     localPosition: {x: 0.18849996, y: 0.476, z: -0.3264916}
     localEuler: {x: 313.43845, y: 16.651628, z: 322.4314}
     dimensions: {x: 0.29000002, y: 1.2240001, z: 0.14500001}
@@ -194,7 +194,8 @@ MonoBehaviour:
     bendPole: {x: 0, y: 1, z: 0}
     colour: {r: 0.18, g: 0.49, b: 0.31, a: 1}
   roots:
-    count: 6
+    count: 9
+    segments: 3
     footRadius: 0.41
     hipHeight: 0.26
     kneeHeight: 0.14

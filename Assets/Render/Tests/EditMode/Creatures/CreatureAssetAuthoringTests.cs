@@ -34,7 +34,8 @@ public class CreatureAssetAuthoringTests
         string path = root + "Data/" + name + ".asset";
         CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
         Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);
-        Assert.That(recipe.roots.count, Is.InRange(6, 8));
+        Assert.That(recipe.roots.count, Is.InRange(8, 14));
+        Assert.AreEqual(3, recipe.roots.segments);
         if (name == "Healer")
         {
             CreaturePart bulb = System.Array.Find(recipe.parts, part => part.id == "Bulb");

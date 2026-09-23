@@ -8,7 +8,6 @@ namespace HealerLike.Render.Grass
     // One flat grass area seen by one camera. The zone owner publishes first, then the field updates.
     public class GrassField : MonoBehaviour
     {
-        public static readonly int BladeSides = 4;
         public static readonly int MaxZones = 64;
 
         [SerializeField] PrimitiveMeshes _meshes;
@@ -64,7 +63,7 @@ namespace HealerLike.Render.Grass
 
         public uint seed { get { return _seed; } set { _seed = value; } }
 
-        // Presentation-only grass height; spike height, blade width and density stay unchanged
+        // Presentation-only tuft height; spike height, tuft width and density stay unchanged
         public float bladeHeightScale
         {
             get { return _bladeHeightScale; }
@@ -272,7 +271,7 @@ namespace HealerLike.Render.Grass
             _kernel = _updateGrass.FindKernel("HLUpdateGrass");
 
             Bounds bounds = key.CalculateBounds();
-            _bladeDraw = new GrassDraw(_meshes.bladeCone, _lookMaterial, 0, bounds, gameObject.layer);
+            _bladeDraw = new GrassDraw(_meshes.tuft, _lookMaterial, 0, bounds, gameObject.layer);
             _bladeDraw.shadowCastingMode = ShadowCastingMode.On;
             _bladeDraw.properties.SetBuffer("_HL_BladeSeeds", _seeds);
             _bladeDraw.properties.SetBuffer("_HL_BladeStates", _states);

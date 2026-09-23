@@ -21,6 +21,7 @@ float4 _HL_FrustumPlanes[6];
 float _HL_Time;
 float4 _HL_Wind;
 
+// A lean is a tilt of the rigid tuft about its root, in radians, pointing where the tip goes
 float2 HLCapLean(float2 lean, float limit)
 {
     return lean * min(1.0, limit / max(length(lean), 1e-5));
@@ -28,10 +29,11 @@ float2 HLCapLean(float2 lean, float limit)
 
 float2 HLWindFlow(float2 position, float phase, float timeSeconds)
 {
+    // A slow sway of a few degrees on top of each tuft's own rest tilt; the amplitude is in radians
     float2 direction = _HL_Wind.xy;
     float2 across = float2(-direction.y, direction.x);
 
-    // Two broad travelling modes, fundamental 0.05 Hz, coherent across many clumps
+    // Two broad travelling modes, fundamental 0.05 Hz, coherent across many tufts
     float slow = sin(dot(position, float2(0.19, 0.13)) - timeSeconds * 0.3141593);
     float crossFlow = sin(dot(position, float2(-0.11, 0.17)) + timeSeconds * 0.1941611);
     direction = normalize(direction + across * (0.45 * slow + 0.2 * crossFlow));
@@ -41,8 +43,8 @@ float2 HLWindFlow(float2 position, float phase, float timeSeconds)
     float gust = 0.65 + 0.15 * slow + 0.25 * sin(6.2831853 * travel / 3.5);
     gust += 0.10 * sin(6.2831853 * (travel / 1.3 + dot(position, across) / 5.0));
     float2 along = direction * (_HL_Wind.w * gust);
-    float2 flutter = across * (_HL_Wind.w * (0.012 / 0.065) * sin(6.2831853 * travel / 2.2 + phase));
-    return HLCapLean(along + flutter, max(0.10, _HL_Wind.w * (0.10 / 0.065)));
+    float2 flutter = across * (_HL_Wind.w * 0.18 * sin(6.2831853 * travel / 2.2 + phase));
+    return HLCapLean(along + flutter, 1.5 * _HL_Wind.w);
 }
 
 HLBladeState HLEvaluateBlade(HLBladeSeed blade)
@@ -110,23 +112,29 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
     }
 
     HLBladeState state;
+    float height = blade.heightPhaseWidthRandom.x;
+    float phase = blade.heightPhaseWidthRandom.y;
     if (spikePresence > 0.0 && trample < 0.5)
     {
-        float2 spikeLean = yaw * (0.04 * blade.heightPhaseWidthRandom.w);
-        state.leanHeightSpike = float4(spikeLean, max(0.001, 1.5 * spikeHeight), max(0.5, spike));
+        // Spikes keep their own world height, 0.26 to 0.63 by a hash of the root, whatever the tuft height
+        float2 spikeLean = yaw * (0.10 * blade.heightPhaseWidthRandom.w);
+        float spikeRandom = frac(sin(dot(position, float2(12.9898, 78.233))) * 43758.5453);
+        float spikeTall = spikeHeight * (0.26 + 0.37 * spikeRandom);
+        state.leanHeightSpike = float4(spikeLean, max(0.001, spikeTall / height), max(0.5, spike));
         state.rampHealReserved = float4(2.0, 0.0, 0.0, 0.0);
         return state;
     }
 
-    float height = blade.heightPhaseWidthRandom.x;
-    float phase = blade.heightPhaseWidthRandom.y;
     float2 outward = outwardSum / max(1.0, weightSum);
-    float2 restLean = (float2(cos(phase), sin(phase)) * 0.055 + yaw * 0.10) * (height / 0.30);
+    // Each tuft keeps its own fixed tilt, up to about 10 degrees, in no shared direction
+    float2 restLean = float2(cos(phase), sin(phase)) * 0.12 + yaw * 0.05;
     float2 windLean = HLWindFlow(position, phase, _HL_Time) * (1.0 - 0.65 * heal);
-    float2 lean = HLCapLean(windLean + restLean + 0.20 * outward + 0.22 * launch, 0.36) * (1.0 - 2.0 * spike);
+    // About 20 degrees at most, up to 40 pushed out of a heal zone and 30 while a gust doubles the wind
+    float limit = min(0.7, max(0.35 + 0.35 * heal, 4.0 * _HL_Wind.w));
+    float2 lean = HLCapLean(windLean + restLean + 0.55 * outward + 0.45 * launch, limit) * (1.0 - 2.0 * spike);
     float scale = lerp((1.0 + 0.8 * heal) * (1.0 - 0.65 * bruise), 0.005 / height, ringClear);
     scale = lerp(scale, 0.055 / height, trample);
-    lean = lerp(lean, yaw * 0.10, trample);
+    lean = lerp(lean, yaw * 0.5, trample);
     spike *= 1.0 - trample;
 
     // Flatten the edge band as a whole, including sideways displacement

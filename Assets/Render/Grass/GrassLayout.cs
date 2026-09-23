@@ -5,9 +5,15 @@ namespace HealerLike.Render.Grass
     // Stable world-space strata. Never consumes gameplay or Unity random state.
     public static class GrassLayout
     {
+        // 256 tufts per square unit on the 16 by 16 board, about seven across a healer body
         public static readonly int DefaultBudget = 65536;
         public static readonly int MaxBudget = 98304;
         public static readonly float RootLift = 0.005f;
+        // Mean tuft size in world units, 0.45 and 0.15 of the healer's 0.55 body sphere
+        public static readonly float TuftHeight = 0.25f;
+        public static readonly float TuftWidth = 0.083f;
+        // Cells between the lattice points of the soft patch lane
+        public static readonly int PatchCells = 5;
 
         public static bool IsValid(int width, int height, float size, Vector3 origin, float surfaceY)
         {
@@ -103,56 +109,46 @@ namespace HealerLike.Render.Grass
             return (Hash(key) >> 8) * (1f / 16777216f);
         }
 
+        // Smooth value noise over the grid, one lattice point every PatchCells cells, in 0..1
+        static float PatchLane(uint seed, float x, float z)
+        {
+            float latticeX = x / PatchCells;
+            float latticeZ = z / PatchCells;
+            int column = Mathf.FloorToInt(latticeX);
+            int row = Mathf.FloorToInt(latticeZ);
+            float blendX = Mathf.SmoothStep(0f, 1f, latticeX - column);
+            float blendZ = Mathf.SmoothStep(0f, 1f, latticeZ - row);
+            float bottom = Mathf.Lerp(Sample(seed, column, row, 7), Sample(seed, column + 1, row, 7), blendX);
+            float top = Mathf.Lerp(Sample(seed, column, row + 1, 7), Sample(seed, column + 1, row + 1, 7), blendX);
+            return Mathf.Lerp(bottom, top, blendZ);
+        }
+
+        // Tufts spread evenly over the cell in jittered rows, each with its own rest heading
         static int FillCell(BladeSeed[] result, int index, int cell, int quota, int width, float cellSize, Vector2 minimum, float surfaceY, uint seed)
         {
-            // Sparse budgets keep their exact per-cell quota; ordinary cells split into clumps of 3 to 7
-            int clumps = Mathf.Max(1, (quota + 4) / 5);
-            int rows = Mathf.CeilToInt(Mathf.Sqrt(clumps));
-            // Rows that get one clump more than their neighbours move from cell to cell
+            int rows = Mathf.CeilToInt(Mathf.Sqrt(quota));
+            // Rows that get one tuft more than their neighbours move from cell to cell
             int rowShift = (int)(Sample(seed, cell, 0, 9) * rows);
-            int remaining = quota;
-            int patchSize = 2 + (int)(Hash(seed) % 3);
-            int patchColumns = (width + patchSize - 1) / patchSize;
-            int patch = cell % width / patchSize + (cell / width / patchSize) * patchColumns;
-            float hue = Sample(seed, patch, 0, 7);
-            for (int clump = 0; clump < clumps; clump++)
+            for (int tuft = 0; tuft < quota; tuft++)
             {
-                int left = clumps - clump - 1;
-                int blades = remaining;
-                if (left > 0)
-                {
-                    int wanted = 3 + (int)(Sample(seed, cell, clump, 8) * 5);
-                    blades = Mathf.Clamp(wanted, Mathf.Max(3, remaining - 7 * left), Mathf.Min(7, remaining - 3 * left));
-                }
-
-                remaining -= blades;
-
-                // Every row holds an even share of the clumps and jitters across its whole stratum,
+                // Every row holds an even share of the tufts and jitters across its whole stratum,
                 // so no cell leaves a sparse last row or empty gaps between rows
-                int row = clump * rows / clumps;
-                int rowStart = (row * clumps + rows - 1) / rows;
-                int rowEnd = ((row + 1) * clumps + rows - 1) / rows;
-                float x = (clump - rowStart + Sample(seed, cell, clump, 1)) / (rowEnd - rowStart);
-                float z = ((row + rowShift) % rows + Sample(seed, cell, clump, 2)) / rows;
-                float yaw = Sample(seed, cell, clump, 3) * Mathf.PI * 2f;
-                float phase = Sample(seed, cell, clump, 5) * Mathf.PI * 2f;
-                float heightScale = 0.6f + 0.8f * Sample(seed, cell, clump, 4);
-                Vector3 root = new Vector3(minimum.x + (cell % width + x) * cellSize, surfaceY + RootLift, minimum.y + (cell / width + z) * cellSize);
-                for (int blade = 0; blade < blades; blade++)
-                {
-                    float fan = blades == 1 ? 0f : ((float)blade / (blades - 1) - 0.5f) * 1.8f;
-                    float height = 0.30f * heightScale * (1f - 0.055f * Mathf.Abs(fan));
-                    if (quota < 3)
-                    {
-                        height = 0.22f + 0.14f * Sample(seed, cell, clump, 4);
-                    }
-
-                    float bladeWidth = 0.095f + 0.055f * Sample(seed, cell, blade, 6);
-                    result[index].positionYaw = new Vector4(root.x, root.y, root.z, Mathf.Repeat(yaw + fan, Mathf.PI * 2f));
-                    // Phase is also the shared rest-lean heading; w is the seeded cell-patch hue
-                    result[index].heightPhaseWidthRandom = new Vector4(height, phase, bladeWidth, hue);
-                    index++;
-                }
+                int row = tuft * rows / quota;
+                int rowStart = (row * quota + rows - 1) / rows;
+                int rowEnd = ((row + 1) * quota + rows - 1) / rows;
+                float x = cell % width + (tuft - rowStart + Sample(seed, cell, tuft, 1)) / (rowEnd - rowStart);
+                float z = cell / width + ((row + rowShift) % rows + Sample(seed, cell, tuft, 2)) / rows;
+                float yaw = Sample(seed, cell, tuft, 3) * Mathf.PI * 2f;
+                float phase = Sample(seed, cell, tuft, 5) * Mathf.PI * 2f;
+                float height = TuftHeight * (0.92f + 0.16f * Sample(seed, cell, tuft, 4));
+                float tuftWidth = TuftWidth * (0.9f + 0.2f * Sample(seed, cell, tuft, 6));
+                // Per-tuft grain over the soft lane: neighbours differ a little, so each tuft reads against the next
+                float patch = Mathf.Clamp01(PatchLane(seed, x, z) + 0.4f * (Sample(seed, cell, tuft, 7) - 0.5f));
+                Vector3 root = new Vector3(minimum.x + x * cellSize, surfaceY + RootLift, minimum.y + z * cellSize);
+                result[index].positionYaw = new Vector4(root.x, root.y, root.z, yaw);
+                // Phase is also the rest-lean heading; w is the soft patch lane
+                result[index].heightPhaseWidthRandom = new Vector4(height, phase, tuftWidth, patch);
+                index++;
             }
 
             return index;
