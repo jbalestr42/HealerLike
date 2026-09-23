@@ -17,6 +17,12 @@ namespace HealerLike.Render.Grass
 
         public MaterialPropertyBlock properties { get { return _parameters.matProps; } }
 
+        public ShadowCastingMode shadowCastingMode
+        {
+            get { return _parameters.shadowCastingMode; }
+            set { _parameters.shadowCastingMode = value; }
+        }
+
         public GrassDraw(Mesh mesh, Material material, uint instanceCount, Bounds bounds, int layer)
         {
             _mesh = mesh;

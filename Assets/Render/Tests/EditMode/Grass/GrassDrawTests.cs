@@ -59,6 +59,20 @@ public class GrassDrawTests
     }
 
     [Test]
+    public void Constructor_Default_CastsNoShadow()
+    {
+        Assert.AreEqual(ShadowCastingMode.Off, _draw.shadowCastingMode);
+    }
+
+    [Test]
+    public void ShadowCastingMode_On_IsKept()
+    {
+        _draw.shadowCastingMode = ShadowCastingMode.On;
+
+        Assert.AreEqual(ShadowCastingMode.On, _draw.shadowCastingMode);
+    }
+
+    [Test]
     public void Release_OwnedResources_DisposesArgumentsButNotMeshOrMaterial()
     {
         GraphicsBuffer arguments = _draw.arguments;

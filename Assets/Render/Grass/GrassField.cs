@@ -273,6 +273,7 @@ namespace HealerLike.Render.Grass
 
             Bounds bounds = key.CalculateBounds();
             _bladeDraw = new GrassDraw(_meshes.bladeCone, _lookMaterial, 0, bounds, gameObject.layer);
+            _bladeDraw.shadowCastingMode = ShadowCastingMode.On;
             _bladeDraw.properties.SetBuffer("_HL_BladeSeeds", _seeds);
             _bladeDraw.properties.SetBuffer("_HL_BladeStates", _states);
             _bladeDraw.properties.SetBuffer("_HL_VisibleBladeIDs", _visibleBlades);
