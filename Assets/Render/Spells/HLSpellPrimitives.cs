@@ -508,7 +508,7 @@ namespace HealerLike.Render.Spells
         {
             int rings = 32;
             int sides = 6;
-            Vector3 v = new Vector3[rings * sides];
+            Vector3[] v = new Vector3[rings * sides];
             int[] t = new int[rings * sides * 6];
             for (int i = 0; i < rings; i++)
             {

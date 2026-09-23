@@ -29,7 +29,7 @@ namespace HealerLike.Render.Spells
                 return false;
             }
             bool found = false;
-            foreach (HLDeliveryStyles.HLEntry entry in entries)
+            foreach (HLEntry entry in entries)
             {
                 if (entry.signature.Equals(signature))
                 {

@@ -385,7 +385,7 @@ namespace HealerLike.Render.Spells
                 _heals.Clear();
                 return;
             }
-            foreach (ValueTuple<GameObject, GameObject> pair in _heals)
+            foreach ((GameObject source, GameObject target) pair in _heals)
             {
                 if (!pair.source || !pair.target)
                 {

@@ -140,7 +140,7 @@ namespace HealerLike.Render.Spells
                 "LateUpdate",
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
             );
-            System.Action update =System.Delegate.CreateDelegate(typeof(System.Action), sink, method);
+            System.Action update = (System.Action)System.Delegate.CreateDelegate(typeof(System.Action), sink, method);
             for (int i = 0; i < 32; i++)
             {
                 if (populated)

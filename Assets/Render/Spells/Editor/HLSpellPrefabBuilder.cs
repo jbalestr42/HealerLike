@@ -94,7 +94,7 @@ namespace HealerLike.Render.Spells
                 HLSpellEffectKind.Area,
                 HLSpellEffectKind.Drip,
             };
-            GameObject prefabs = new GameObject[names.Length];
+            GameObject[] prefabs = new GameObject[names.Length];
             for (int i = 0; i < names.Length; i++)
             {
                 GameObject go = new GameObject(names[i]);
@@ -216,7 +216,7 @@ namespace HealerLike.Render.Spells
             }
             if (value is IEnumerable list)
             {
-                foreach (HLVisualRecipe child in list)
+                foreach (object child in list)
                 {
                     Walk(child, path, grammar, rows, seen, depth + 1);
                 }

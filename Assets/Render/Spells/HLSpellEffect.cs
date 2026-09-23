@@ -191,7 +191,7 @@ namespace HealerLike.Render.Spells
             }
         }
 
-        void RetainPrimitives()
+        public void RetainPrimitives()
         {
             if (!_ownsPrimitives)
             {
