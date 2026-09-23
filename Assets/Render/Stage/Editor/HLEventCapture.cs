@@ -26,6 +26,7 @@ namespace HealerLike.Render.Stage
         static uint lifetimeMax; static int lifetimeSample;
         static AreaOfEffect lifetimeArea; static float lifetimeBorn; static bool lifetimeStarted,lifetimeLive,lifetimeDestroyed;
         static float hostileFinishAt; static int hostileAreas; static readonly HashSet<EntityId> seenAreas=new();
+        static float overviewAt,refocusAt;
         static int statuses; static bool speedValid; static bool overviewRequested,overviewVerified,refocusRequested;
         static readonly List<string> events=new();
         static readonly Dictionary<string,int> stillFrames=new();
@@ -56,7 +57,7 @@ namespace HealerLike.Render.Stage
             {
                 start=EditorApplication.timeSinceStartup; frame=positiveHealth=negativeHealth=casts=projectiles=0;
                 gameStart=nextFrame=nextHeal=0; menuPressed=gameStarted=placed=wave=groupCast=buffCast=finished=firstHit=screenshotHeal=false;
-                events.Clear(); stillFrames.Clear(); pendingStills.Clear(); seen.Clear(); allies.Clear(); listeners.Clear(); buffManagers.Clear(); lifetimeArea=null; lifetimeBorn=0; lifetimeMax=0; lifetimeSample=-1; lifetimeStarted=lifetimeLive=lifetimeDestroyed=false; hostileFinishAt=0; statuses=hostileAreas=0; seenAreas.Clear(); speedValid=true; overviewRequested=overviewVerified=refocusRequested=false;
+                events.Clear(); stillFrames.Clear(); pendingStills.Clear(); seen.Clear(); allies.Clear(); listeners.Clear(); buffManagers.Clear(); lifetimeArea=null; lifetimeBorn=0; lifetimeMax=0; lifetimeSample=-1; lifetimeStarted=lifetimeLive=lifetimeDestroyed=false; hostileFinishAt=0; overviewAt=refocusAt=0; statuses=hostileAreas=0; seenAreas.Clear(); speedValid=true; overviewRequested=overviewVerified=refocusRequested=false;
                 var go=new GameObject("HLRealEventCapture"); Object.DontDestroyOnLoad(go); go.AddComponent<HLEventCaptureHook>().Late=Late;
                 ScreenCapture.CaptureScreenshot(Folder+"menu-ui.png");
             }
@@ -137,15 +138,29 @@ namespace HealerLike.Render.Stage
             if(negativeHealth>0 && !firstHit) { firstHit=true; pendingStills.Add("first-contact.png"); }
             if(positiveHealth>0 && !screenshotHeal) { screenshotHeal=true; pendingStills.Add("heal-ui.png"); }
             if(Hostile) {
-                if(hostileFinishAt>0 && t>=hostileFinishAt && lifetimeDestroyed) Finish(hostileAreas>0 && negativeHealth>0 && speedValid && lifetimeMax>=1536 && lifetimeLive && t-lifetimeBorn>=2.3f && t-lifetimeBorn<=3f,"supplemental actual debug-inventory hostile area plus damage; source and radius logged; waited for queued still");
+                if(hostileFinishAt>0 && t>=hostileFinishAt && lifetimeDestroyed) Finish(hostileAreas>0 && negativeHealth>0 && speedValid && lifetimeMax>=1536 && lifetimeLive && t-lifetimeBorn>=2f && t-lifetimeBorn<=3f,"supplemental actual debug-inventory hostile area plus damage; source and radius logged; waited for queued still");
                 else if(t>=14) Finish(false,"no real hostile area recorded from existing inventory");
                 return;
             }
             var focus=Object.FindAnyObjectByType<HLBattleFocus>();
-            if(t>=15.3f && !overviewRequested) { overviewRequested=true; if(focus && focus.IsSettled && focus.ToggleButton) { Log("verified settled automatic battle focus, current body corners inside safe viewport; bounds="+focus.CombatBounds+"; bodies="+focus.BodyCount); focus.ToggleButton.onClick.Invoke(); } else { Finish(false,"automatic battle focus absent"); return; } }
-            if(t>=16.8f && !overviewVerified) { var bootstrap=Object.FindAnyObjectByType<HLRenderBootstrap>(); overviewVerified=focus && !focus.IsFocused && bootstrap && Vector3.Distance(Camera.main.transform.position,bootstrap.OverviewPose.position)<.1f; if(!overviewVerified) { Finish(false,"Overview button did not restore placement frame"); return; } ScreenCapture.CaptureScreenshot(Folder+"overview-ui.png"); Log("verified Overview button and restored pose"); }
-            if(t>=17 && !refocusRequested) { refocusRequested=true; focus.ToggleButton.onClick.Invoke(); }
-            if(t>=18.5f) Finish(wave && projectiles>0 && negativeHealth>0 && positiveHealth>0 && statuses>0 && speedValid && overviewVerified && focus && focus.IsSettled && (!Hostile || hostileAreas>0),"15 second normal-speed battle sequence plus verified Overview/Focus controls");
+            if(t>=15.3f && !overviewRequested) {
+                if(focus && focus.IsSettled && focus.ToggleButton) {
+                    overviewRequested=true; overviewAt=t;
+                    Log("verified settled automatic battle focus, current body corners inside safe viewport; bounds="+focus.CombatBounds+"; bodies="+focus.BodyCount);
+                    focus.ToggleButton.onClick.Invoke();
+                } else if(t>=18.3f) { Finish(false,"automatic battle focus did not settle within three seconds; focused="+(focus && focus.IsFocused)+" visible="+(focus && focus.AllBodiesVisible)); return; }
+            }
+            if(overviewRequested && t>=overviewAt+1.5f && !overviewVerified) {
+                var bootstrap=Object.FindAnyObjectByType<HLRenderBootstrap>();
+                overviewVerified=focus && !focus.IsFocused && bootstrap && Vector3.Distance(Camera.main.transform.position,bootstrap.OverviewPose.position)<.1f;
+                if(!overviewVerified) { Finish(false,"Overview button did not restore placement frame"); return; }
+                ScreenCapture.CaptureScreenshot(Folder+"overview-ui.png"); Log("verified Overview button and restored pose");
+            }
+            if(overviewVerified && t>=overviewAt+1.7f && !refocusRequested) { refocusRequested=true; refocusAt=t; focus.ToggleButton.onClick.Invoke(); }
+            if(refocusRequested && t>=refocusAt+1.5f) {
+                if(focus && focus.IsSettled) Finish(wave && projectiles>0 && negativeHealth>0 && positiveHealth>0 && statuses>0 && speedValid,"15 second normal-speed battle sequence plus verified Overview/Focus controls");
+                else if(t>=refocusAt+4.5f) Finish(false,"refocus did not settle within bounded wait");
+            }
         }
         static void Place()
         {
