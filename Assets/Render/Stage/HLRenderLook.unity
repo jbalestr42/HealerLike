@@ -519,6 +519,81 @@ Transform:
   - {fileID: 49173423}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &115212753
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 115212755}
+  - component: {fileID: 115212756}
+  - component: {fileID: 115212754}
+  m_Layer: 0
+  m_Name: HLGrassRing7_band1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &115212754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115212753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
+  _grid: {fileID: 115212756}
+  _ground: {fileID: 9158114157369665995}
+  _gameplayCamera: {fileID: 1133649934}
+  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
+  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
+  _bladeBudget: 16896
+  _seed: 18
+  _bladeHeightScale: 1
+  _surfaceY: 0.5
+  _wind:
+    direction: {x: 1, y: 0.35}
+    speed: 1.2
+    amplitude: 0.065
+--- !u!4 &115212755
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115212753}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 13.5, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1232665465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &115212756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115212753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
+  _ground: {fileID: 0}
+  _width: 5
+  _height: 22
+  _size: 1
 --- !u!1 &138231900
 GameObject:
   m_ObjectHideFlags: 0
@@ -771,81 +846,6 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!1 &171521235
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 171521237}
-  - component: {fileID: 171521238}
-  - component: {fileID: 171521236}
-  m_Layer: 0
-  m_Name: HLGrassRing6_band1
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &171521236
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 171521235}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
-  _grid: {fileID: 171521238}
-  _ground: {fileID: 9158114157369665995}
-  _gameplayCamera: {fileID: 1133649934}
-  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
-  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
-  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
-  _bladeBudget: 16896
-  _seed: 17
-  _bladeHeightScale: 1
-  _surfaceY: 0.5
-  _wind:
-    direction: {x: 1, y: 0.35}
-    speed: 1.2
-    amplitude: 0.065
---- !u!4 &171521237
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 171521235}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -13.5, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1399548621}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &171521238
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 171521235}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
-  _ground: {fileID: 0}
-  _width: 5
-  _height: 22
-  _size: 1
 --- !u!850595691 &239066034
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -921,6 +921,156 @@ LightingSettings:
   m_LightGridMaxCells: 262144
   m_DirectEmissiveSamplingMode: 2
   m_IndirectEmissiveSamplingMode: 1
+--- !u!1 &247520624
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 247520626}
+  - component: {fileID: 247520627}
+  - component: {fileID: 247520625}
+  m_Layer: 0
+  m_Name: HLGrassRing1_band0
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &247520625
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 247520624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
+  _grid: {fileID: 247520627}
+  _ground: {fileID: 9158114157369665995}
+  _gameplayCamera: {fileID: 1133649934}
+  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
+  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
+  _bladeBudget: 14362
+  _seed: 12
+  _bladeHeightScale: 1
+  _surfaceY: 0.5
+  _wind:
+    direction: {x: 1, y: 0.35}
+    speed: 1.2
+    amplitude: 0.065
+--- !u!4 &247520626
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 247520624}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -9.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1232665465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &247520627
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 247520624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
+  _ground: {fileID: 0}
+  _width: 22
+  _height: 3
+  _size: 1
+--- !u!1 &250664048
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 250664050}
+  - component: {fileID: 250664051}
+  - component: {fileID: 250664049}
+  m_Layer: 0
+  m_Name: HLGrassRing6_band1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &250664049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 250664048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
+  _grid: {fileID: 250664051}
+  _ground: {fileID: 9158114157369665995}
+  _gameplayCamera: {fileID: 1133649934}
+  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
+  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
+  _bladeBudget: 16896
+  _seed: 17
+  _bladeHeightScale: 1
+  _surfaceY: 0.5
+  _wind:
+    direction: {x: 1, y: 0.35}
+    speed: 1.2
+    amplitude: 0.065
+--- !u!4 &250664050
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 250664048}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -13.5, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1232665465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &250664051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 250664048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
+  _ground: {fileID: 0}
+  _width: 5
+  _height: 22
+  _size: 1
 --- !u!1 &259564915
 GameObject:
   m_ObjectHideFlags: 0
@@ -953,7 +1103,7 @@ Transform:
   - {fileID: 505884229}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &272428264
+--- !u!1 &296707222
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -961,163 +1111,146 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 272428265}
-  - component: {fileID: 272428267}
-  - component: {fileID: 272428266}
+  - component: {fileID: 296707224}
+  - component: {fileID: 296707225}
+  - component: {fileID: 296707223}
   m_Layer: 0
-  m_Name: HLEnvironmentGround
+  m_Name: HLGrassRing2_band0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &272428265
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 272428264}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.49, z: 0}
-  m_LocalScale: {x: 100, y: 1, z: 100}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1399548621}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!23 &272428266
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 272428264}
-  m_Enabled: 1
-  m_CastShadows: 0
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 2a8b81dadb9c243d7bb6e17e48f090f8, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 1
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &272428267
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 272428264}
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &312988025
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 312988027}
-  - component: {fileID: 312988028}
-  - component: {fileID: 312988026}
-  m_Layer: 0
-  m_Name: HLGrassRing9_band2
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &312988026
+--- !u!114 &296707223
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 312988025}
+  m_GameObject: {fileID: 296707222}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
-  _grid: {fileID: 312988028}
+  _grid: {fileID: 296707225}
   _ground: {fileID: 9158114157369665995}
   _gameplayCamera: {fileID: 1133649934}
   _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
   _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
   _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
-  _bladeBudget: 39322
-  _seed: 20
+  _bladeBudget: 10445
+  _seed: 13
   _bladeHeightScale: 1
   _surfaceY: 0.5
   _wind:
     direction: {x: 1, y: 0.35}
     speed: 1.2
     amplitude: 0.065
---- !u!4 &312988027
+--- !u!4 &296707224
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 312988025}
+  m_GameObject: {fileID: 296707222}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -24}
+  m_LocalPosition: {x: -9.5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1399548621}
+  m_Father: {fileID: 1232665465}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &312988028
+--- !u!114 &296707225
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 312988025}
+  m_GameObject: {fileID: 296707222}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Runtime::GridManager
   _ground: {fileID: 0}
-  _width: 64
+  _width: 3
   _height: 16
   _size: 1
+--- !u!1001 &357662247
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1156435974}
+    m_Modifications:
+    - target: {fileID: 426481555694381639, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_Name
+      value: HLSpellVisualSink
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+--- !u!114 &357662248 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1258488744135845347, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+  m_PrefabInstance: {fileID: 357662247}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a99ca9a8282a64d3fa1694fe1054f8b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.HLSpellVisualSink
+--- !u!4 &357662249 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
+  m_PrefabInstance: {fileID: 357662247}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &373557865
 GameObject:
   m_ObjectHideFlags: 0
@@ -1323,7 +1456,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8038a1d030d6e844585a7a0a41168016, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &437443782
+--- !u!1 &427057308
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1331,71 +1464,71 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 437443784}
-  - component: {fileID: 437443785}
-  - component: {fileID: 437443783}
+  - component: {fileID: 427057310}
+  - component: {fileID: 427057311}
+  - component: {fileID: 427057309}
   m_Layer: 0
-  m_Name: HLGrassRing8_band2
+  m_Name: HLGrassRing3_band0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &437443783
+--- !u!114 &427057309
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 437443782}
+  m_GameObject: {fileID: 427057308}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
-  _grid: {fileID: 437443785}
+  _grid: {fileID: 427057311}
   _ground: {fileID: 9158114157369665995}
   _gameplayCamera: {fileID: 1133649934}
   _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
   _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
   _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
-  _bladeBudget: 39322
-  _seed: 19
+  _bladeBudget: 10445
+  _seed: 14
   _bladeHeightScale: 1
   _surfaceY: 0.5
   _wind:
     direction: {x: 1, y: 0.35}
     speed: 1.2
     amplitude: 0.065
---- !u!4 &437443784
+--- !u!4 &427057310
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 437443782}
+  m_GameObject: {fileID: 427057308}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 24}
+  m_LocalPosition: {x: 9.5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1399548621}
+  m_Father: {fileID: 1232665465}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &437443785
+--- !u!114 &427057311
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 437443782}
+  m_GameObject: {fileID: 427057308}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Runtime::GridManager
   _ground: {fileID: 0}
-  _width: 64
+  _width: 3
   _height: 16
   _size: 1
 --- !u!1 &456427446
@@ -1715,6 +1848,58 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!1 &551998293
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 551998294}
+  - component: {fileID: 551998295}
+  m_Layer: 0
+  m_Name: HLForeground
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &551998294
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 551998293}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1232665465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &551998295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 551998293}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f164aaa9761246d3bb69f3939299a49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.HLEnvironmentForeground
+  stageCamera: {fileID: 1133649934}
+  stoneMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
+  plantMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  groundY: 0.5
+  seed: 1707
+  aspect: 0
+  tint: {r: 0.16862746, g: 0.29411766, b: 0.56078434, a: 1}
+  rosetteTint: {r: 0.23921569, g: 0.45490196, b: 0.38431373, a: 1}
 --- !u!1 &569752321
 GameObject:
   m_ObjectHideFlags: 0
@@ -1976,81 +2161,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72d43883f286b57438b5318f784ede2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &649662708
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 649662710}
-  - component: {fileID: 649662711}
-  - component: {fileID: 649662709}
-  m_Layer: 0
-  m_Name: HLGrassRing5_band1
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &649662709
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 649662708}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
-  _grid: {fileID: 649662711}
-  _ground: {fileID: 9158114157369665995}
-  _gameplayCamera: {fileID: 1133649934}
-  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
-  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
-  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
-  _bladeBudget: 24576
-  _seed: 16
-  _bladeHeightScale: 1
-  _surfaceY: 0.5
-  _wind:
-    direction: {x: 1, y: 0.35}
-    speed: 1.2
-    amplitude: 0.065
---- !u!4 &649662710
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 649662708}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -13.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1399548621}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &649662711
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 649662708}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
-  _ground: {fileID: 0}
-  _width: 32
-  _height: 5
-  _size: 1
 --- !u!1001 &658297189
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2207,6 +2317,96 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &684044644
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 684044645}
+  - component: {fileID: 684044647}
+  - component: {fileID: 684044646}
+  m_Layer: 0
+  m_Name: HLEnvironmentGround
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &684044645
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 684044644}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.49, z: 0}
+  m_LocalScale: {x: 100, y: 1, z: 100}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1232665465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &684044646
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 684044644}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 2a8b81dadb9c243d7bb6e17e48f090f8, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 1
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &684044647
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 684044644}
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &711645735
 GameObject:
   m_ObjectHideFlags: 0
@@ -2331,81 +2531,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _debug: 1
---- !u!1 &717294601
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 717294603}
-  - component: {fileID: 717294604}
-  - component: {fileID: 717294602}
-  m_Layer: 0
-  m_Name: HLGrassRing4_band1
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &717294602
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 717294601}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
-  _grid: {fileID: 717294604}
-  _ground: {fileID: 9158114157369665995}
-  _gameplayCamera: {fileID: 1133649934}
-  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
-  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
-  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
-  _bladeBudget: 24576
-  _seed: 15
-  _bladeHeightScale: 1
-  _surfaceY: 0.5
-  _wind:
-    direction: {x: 1, y: 0.35}
-    speed: 1.2
-    amplitude: 0.065
---- !u!4 &717294603
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 717294601}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 13.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1399548621}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &717294604
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 717294601}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
-  _ground: {fileID: 0}
-  _width: 32
-  _height: 5
-  _size: 1
 --- !u!1 &860277655
 GameObject:
   m_ObjectHideFlags: 0
@@ -2518,7 +2643,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &904037384
+--- !u!1 &860440789
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2526,148 +2651,56 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 904037386}
-  - component: {fileID: 904037387}
-  - component: {fileID: 904037385}
+  - component: {fileID: 860440791}
+  - component: {fileID: 860440790}
   m_Layer: 0
-  m_Name: HLGrassRing2_band0
+  m_Name: HLGrassField
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &904037385
+--- !u!114 &860440790
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 904037384}
-  m_Enabled: 1
+  m_GameObject: {fileID: 860440789}
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
-  _grid: {fileID: 904037387}
+  _grid: {fileID: 9158114156218484085}
   _ground: {fileID: 9158114157369665995}
   _gameplayCamera: {fileID: 1133649934}
   _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
   _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
   _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
-  _bladeBudget: 10445
-  _seed: 13
-  _bladeHeightScale: 1
+  _bladeBudget: 65536
+  _seed: 1
+  _bladeHeightScale: 0.6
   _surfaceY: 0.5
   _wind:
     direction: {x: 1, y: 0.35}
     speed: 1.2
     amplitude: 0.065
---- !u!4 &904037386
+--- !u!4 &860440791
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 904037384}
+  m_GameObject: {fileID: 860440789}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -9.5, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.505, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1399548621}
+  m_Father: {fileID: 1156435974}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &904037387
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 904037384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
-  _ground: {fileID: 0}
-  _width: 3
-  _height: 16
-  _size: 1
---- !u!1 &951878642
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 951878644}
-  - component: {fileID: 951878645}
-  - component: {fileID: 951878643}
-  m_Layer: 0
-  m_Name: HLGrassRing7_band1
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &951878643
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 951878642}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
-  _grid: {fileID: 951878645}
-  _ground: {fileID: 9158114157369665995}
-  _gameplayCamera: {fileID: 1133649934}
-  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
-  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
-  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
-  _bladeBudget: 16896
-  _seed: 18
-  _bladeHeightScale: 1
-  _surfaceY: 0.5
-  _wind:
-    direction: {x: 1, y: 0.35}
-    speed: 1.2
-    amplitude: 0.065
---- !u!4 &951878644
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 951878642}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.5, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1399548621}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &951878645
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 951878642}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
-  _ground: {fileID: 0}
-  _width: 5
-  _height: 22
-  _size: 1
 --- !u!1 &981129123
 GameObject:
   m_ObjectHideFlags: 0
@@ -2971,154 +3004,6 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
---- !u!1 &1112416033
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1112416035}
-  - component: {fileID: 1112416036}
-  - component: {fileID: 1112416034}
-  m_Layer: 0
-  m_Name: HLGrassRing10_band2
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1112416034
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1112416033}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
-  _grid: {fileID: 1112416036}
-  _ground: {fileID: 9158114157369665995}
-  _gameplayCamera: {fileID: 1133649934}
-  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
-  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
-  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
-  _bladeBudget: 19661
-  _seed: 21
-  _bladeHeightScale: 1
-  _surfaceY: 0.5
-  _wind:
-    direction: {x: 1, y: 0.35}
-    speed: 1.2
-    amplitude: 0.065
---- !u!4 &1112416035
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1112416033}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -24, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1399548621}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1112416036
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1112416033}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
-  _ground: {fileID: 0}
-  _width: 16
-  _height: 32
-  _size: 1
---- !u!1001 &1117461742
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 1824321169}
-    m_Modifications:
-    - target: {fileID: 426481555694381639, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_Name
-      value: HLSpellVisualSink
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
---- !u!114 &1117461743 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1258488744135845347, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-  m_PrefabInstance: {fileID: 1117461742}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a99ca9a8282a64d3fa1694fe1054f8b2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.HLSpellVisualSink
---- !u!4 &1117461744 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3793986787728505183, guid: 36858738b51884d6ca9d4a8cc8d5639b, type: 3}
-  m_PrefabInstance: {fileID: 1117461742}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1117896677
 GameObject:
   m_ObjectHideFlags: 0
@@ -3486,7 +3371,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   CustomBlends: {fileID: 0}
---- !u!1 &1225613350
+--- !u!1 &1156435965
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3494,74 +3379,196 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1225613352}
-  - component: {fileID: 1225613353}
-  - component: {fileID: 1225613351}
+  - component: {fileID: 1156435974}
+  - component: {fileID: 1156435973}
+  - component: {fileID: 1156435972}
+  - component: {fileID: 1156435971}
+  - component: {fileID: 1156435970}
+  - component: {fileID: 1156435969}
+  - component: {fileID: 1156435968}
+  - component: {fileID: 1156435967}
+  - component: {fileID: 1156435966}
   m_Layer: 0
-  m_Name: HLGrassRing11_band2
+  m_Name: HLRenderStage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1225613351
+--- !u!114 &1156435966
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1225613350}
+  m_GameObject: {fileID: 1156435965}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
+  m_Script: {fileID: 11500000, guid: 99dc5b3989fb74627bbebabc718b1808, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
-  _grid: {fileID: 1225613353}
-  _ground: {fileID: 9158114157369665995}
-  _gameplayCamera: {fileID: 1133649934}
-  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
-  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
-  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
-  _bladeBudget: 19661
-  _seed: 22
-  _bladeHeightScale: 1
-  _surfaceY: 0.5
-  _wind:
-    direction: {x: 1, y: 0.35}
-    speed: 1.2
-    amplitude: 0.065
---- !u!4 &1225613352
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageBeautyWiring
+  bootstrap: {fileID: 1156435973}
+  grid: {fileID: 9158114156218484085}
+  gust: {fileID: 1232665462}
+  groundMaterial: {fileID: 2100000, guid: 2a8b81dadb9c243d7bb6e17e48f090f8, type: 2}
+  healerView: {fileID: 1239115927}
+  healer: {fileID: 5820983543368096141}
+  healerRecipe: {fileID: 11400000, guid: 265a00ac0c6c743d08a762c0950e82e1, type: 2}
+  healerAnchor: {fileID: 1239115924}
+  healerMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+--- !u!114 &1156435967
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1156435965}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73b08733deced4ef1996987e3fa52a17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageKeyLight
+  keyLight: {fileID: 170076734}
+  requiredDistance: 50
+  pollSeconds: 0.5
+--- !u!114 &1156435968
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1156435965}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4ec1f25bb1e4572a78033e6481ba946, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageRangeDriver
+  mode: 0
+  rescanSeconds: 0.5
+--- !u!114 &1156435969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1156435965}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2e178b7223d446a8a0bfb8db14b40b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLBattleFocus
+  stageCamera: {fileID: 1133649934}
+  bootstrap: {fileID: 1156435973}
+  nextWave: {fileID: 658297192}
+--- !u!114 &1156435970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1156435965}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dcbc6b07b7984d4a8883c6209631513, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageZoneBridge
+  zoneRegistry: {fileID: 1156435971}
+  grassField: {fileID: 860440790}
+--- !u!114 &1156435971
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1156435965}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7446c1c3fa041349b776e8964cdfbda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLZoneRegistry
+--- !u!114 &1156435972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1156435965}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cb5ba83a5304f8f9445eca291e9b4fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Look.HLLookController
+  settings:
+    ShadowTint: {r: 0.24705882, g: 0.35686275, b: 0.5803922, a: 1}
+    OutlineColor: {r: 0.09411765, g: 0.14901961, b: 0.24705882, a: 1}
+    FogColor: {r: 0.7490196, g: 0.8235294, b: 0.8784314, a: 1}
+    ShadowStrength: 0.65
+    ToonThreshold: 0.5
+    OutlineWidthPixels: 1
+    FogStart: 53.57261
+    FogEnd: 87.57261
+    InkStrength: 0.75
+    InkSpacingPixels: 3.5
+    InkScale: 0.06932862
+    InkWidth: 0.0027731447
+    InkStart: 0
+    InkRange: 1
+    DensityMul: 0.55
+    InkWarp: 0.006
+    InkWarpFreq: 2.44
+    DashAmount: 0.1
+    DashScale: 0.01
+    InkDistStart: 53.57261
+    InkFarSpacing: 0.083194345
+    FogBands: 6
+--- !u!114 &1156435973
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1156435965}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d0817ab340d54e0ca7f505e653f397e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLRenderBootstrap
+  lookController: {fileID: 1156435972}
+  zoneRegistry: {fileID: 1156435971}
+  zoneBridge: {fileID: 1156435970}
+  grassField: {fileID: 860440790}
+  spellVisualSink: {fileID: 357662248}
+  grid: {fileID: 9158114156218484085}
+  ground: {fileID: 9158114157369665995}
+  healPulse: {fileID: 1239115926}
+  healSource: {fileID: 5820983543368096140}
+  framing: 0
+  stageCamera: {fileID: 1133649934}
+  portraitPose:
+    position: {x: 0, y: 36.934742, z: -27.617521}
+    rotation: {x: 0.43837115, y: 0, z: 0, w: 0.89879405}
+  landscapePose:
+    position: {x: 0, y: 21.460032, z: -19.488747}
+    rotation: {x: 0.39073113, y: 0, z: 0, w: 0.92050487}
+--- !u!4 &1156435974
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1225613350}
+  m_GameObject: {fileID: 1156435965}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 24, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1399548621}
+  m_Children:
+  - {fileID: 357662249}
+  - {fileID: 860440791}
+  - {fileID: 1232665465}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1225613353
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1225613350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
-  _ground: {fileID: 0}
-  _width: 16
-  _height: 32
-  _size: 1
---- !u!1 &1399548617
+--- !u!1 &1232665461
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3569,10 +3576,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1399548621}
-  - component: {fileID: 1399548620}
-  - component: {fileID: 1399548619}
-  - component: {fileID: 1399548618}
+  - component: {fileID: 1232665465}
+  - component: {fileID: 1232665464}
+  - component: {fileID: 1232665463}
+  - component: {fileID: 1232665462}
   m_Layer: 0
   m_Name: HLEnvironment
   m_TagString: Untagged
@@ -3580,25 +3587,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1399548618
+--- !u!114 &1232665462
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1399548617}
+  m_GameObject: {fileID: 1232665461}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2852e16c7035e495f8c3af76977e6ac9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.HLEnvironmentGust
---- !u!114 &1399548619
+--- !u!114 &1232665463
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1399548617}
+  m_GameObject: {fileID: 1232665461}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f24cebe9b916b434c9d978fbb9966302, type: 3}
@@ -3622,77 +3629,291 @@ MonoBehaviour:
       bladeRosettes: 120
       sphereClusters: 70
   viewCamera: {fileID: 1133649934}
-  gust: {fileID: 1399548618}
+  gust: {fileID: 1232665462}
   farDistance: 87.57261
---- !u!114 &1399548620
+--- !u!114 &1232665464
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1399548617}
+  m_GameObject: {fileID: 1232665461}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2b177175541a34ec28e2519c6b8c7fe3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.HLEnvironmentGrass
-  zoneRegistry: {fileID: 1824321166}
+  zoneRegistry: {fileID: 1156435971}
   proxies:
-  - {fileID: 2033316574}
-  - {fileID: 1530010867}
-  - {fileID: 904037387}
-  - {fileID: 1983818163}
-  - {fileID: 717294604}
-  - {fileID: 649662711}
-  - {fileID: 171521238}
-  - {fileID: 951878645}
-  - {fileID: 437443785}
-  - {fileID: 312988028}
-  - {fileID: 1112416036}
-  - {fileID: 1225613353}
+  - {fileID: 1884121941}
+  - {fileID: 247520627}
+  - {fileID: 296707225}
+  - {fileID: 427057311}
+  - {fileID: 1876046913}
+  - {fileID: 2133597067}
+  - {fileID: 250664051}
+  - {fileID: 115212756}
+  - {fileID: 1641952784}
+  - {fileID: 1869859784}
+  - {fileID: 2113841948}
+  - {fileID: 1472595006}
   fields:
-  - {fileID: 2033316572}
-  - {fileID: 1530010865}
-  - {fileID: 904037385}
-  - {fileID: 1983818161}
-  - {fileID: 717294602}
-  - {fileID: 649662709}
-  - {fileID: 171521236}
-  - {fileID: 951878643}
-  - {fileID: 437443783}
-  - {fileID: 312988026}
-  - {fileID: 1112416034}
-  - {fileID: 1225613351}
---- !u!4 &1399548621
+  - {fileID: 1884121939}
+  - {fileID: 247520625}
+  - {fileID: 296707223}
+  - {fileID: 427057309}
+  - {fileID: 1876046911}
+  - {fileID: 2133597065}
+  - {fileID: 250664049}
+  - {fileID: 115212754}
+  - {fileID: 1641952782}
+  - {fileID: 1869859782}
+  - {fileID: 2113841946}
+  - {fileID: 1472595004}
+--- !u!4 &1232665465
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1399548617}
+  m_GameObject: {fileID: 1232665461}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 272428265}
-  - {fileID: 2033316573}
-  - {fileID: 1530010866}
-  - {fileID: 904037386}
-  - {fileID: 1983818162}
-  - {fileID: 717294603}
-  - {fileID: 649662710}
-  - {fileID: 171521237}
-  - {fileID: 951878644}
-  - {fileID: 437443784}
-  - {fileID: 312988027}
-  - {fileID: 1112416035}
-  - {fileID: 1225613352}
-  - {fileID: 1528999649}
-  - {fileID: 2051127141}
-  m_Father: {fileID: 1824321169}
+  - {fileID: 684044645}
+  - {fileID: 1884121940}
+  - {fileID: 247520626}
+  - {fileID: 296707224}
+  - {fileID: 427057310}
+  - {fileID: 1876046912}
+  - {fileID: 2133597066}
+  - {fileID: 250664050}
+  - {fileID: 115212755}
+  - {fileID: 1641952783}
+  - {fileID: 1869859783}
+  - {fileID: 2113841947}
+  - {fileID: 1472595005}
+  - {fileID: 551998294}
+  - {fileID: 1250395464}
+  m_Father: {fileID: 1156435974}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1239115923
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1239115924}
+  - component: {fileID: 1239115927}
+  - component: {fileID: 1239115926}
+  - component: {fileID: 1239115925}
+  m_Layer: 0
+  m_Name: HLHealerAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1239115924
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1239115923}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5820983543368096139}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1239115925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1239115923}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ebaf268b45a843f582ee963235f25ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLTrampleZone
+  Radius: 0.65
+  Strength: 1
+--- !u!114 &1239115926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1239115923}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff72fcddce784a6396cd2bda1d8abbd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLHealPulse
+  _cellSize: 1
+--- !u!114 &1239115927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1239115923}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e23edee68ceab417ea5177d97a00a4d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.HLCharacterView
+  character: {fileID: 5820983543368096141}
+  recipe: {fileID: 11400000, guid: 265a00ac0c6c743d08a762c0950e82e1, type: 2}
+  visualAnchor: {fileID: 1239115924}
+  material: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  cellSize: 1
+--- !u!1 &1250395463
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1250395464}
+  - component: {fileID: 1250395465}
+  m_Layer: 0
+  m_Name: HLFarRidge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1250395464
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1250395463}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1232665465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1250395465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1250395463}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad799066c7b6643c19123f607fe687de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.HLEnvironmentRidge
+  stageCamera: {fileID: 1133649934}
+  stoneMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
+  plantMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  grid:
+    serializedVersion: 2
+    x: -8
+    y: -8
+    width: 16
+    height: 16
+  groundY: 0.5
+  seed: 1707
+  fogStart: 53.57261
+  fogEnd: 87.57261
+  fogBands: 6
+  stoneColor: {r: 0.65882355, g: 0.72156864, b: 0.6745098, a: 1}
+  stemColor: {r: 0.72156864, g: 0.78431374, b: 0.7058824, a: 1}
+  capColor: {r: 0.6117647, g: 0.7058824, b: 0.63529414, a: 1}
+--- !u!1 &1472595003
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1472595005}
+  - component: {fileID: 1472595006}
+  - component: {fileID: 1472595004}
+  m_Layer: 0
+  m_Name: HLGrassRing11_band2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1472595004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1472595003}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
+  _grid: {fileID: 1472595006}
+  _ground: {fileID: 9158114157369665995}
+  _gameplayCamera: {fileID: 1133649934}
+  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
+  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
+  _bladeBudget: 19661
+  _seed: 22
+  _bladeHeightScale: 1
+  _surfaceY: 0.5
+  _wind:
+    direction: {x: 1, y: 0.35}
+    speed: 1.2
+    amplitude: 0.065
+--- !u!4 &1472595005
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1472595003}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 24, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1232665465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1472595006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1472595003}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
+  _ground: {fileID: 0}
+  _width: 16
+  _height: 32
+  _size: 1
 --- !u!1 &1504872536
 GameObject:
   m_ObjectHideFlags: 0
@@ -3831,133 +4052,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1504872536}
   m_CullTransparentMesh: 1
---- !u!1 &1528999648
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1528999649}
-  - component: {fileID: 1528999650}
-  m_Layer: 0
-  m_Name: HLForeground
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1528999649
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1528999648}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1399548621}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1528999650
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1528999648}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f164aaa9761246d3bb69f3939299a49, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.HLEnvironmentForeground
-  stageCamera: {fileID: 1133649934}
-  stoneMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
-  plantMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
-  groundY: 0.5
-  seed: 1707
-  aspect: 0
-  tint: {r: 0.16862746, g: 0.29411766, b: 0.56078434, a: 1}
-  rosetteTint: {r: 0.23921569, g: 0.45490196, b: 0.38431373, a: 1}
---- !u!1 &1530010864
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1530010866}
-  - component: {fileID: 1530010867}
-  - component: {fileID: 1530010865}
-  m_Layer: 0
-  m_Name: HLGrassRing1_band0
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1530010865
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1530010864}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
-  _grid: {fileID: 1530010867}
-  _ground: {fileID: 9158114157369665995}
-  _gameplayCamera: {fileID: 1133649934}
-  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
-  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
-  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
-  _bladeBudget: 14362
-  _seed: 12
-  _bladeHeightScale: 1
-  _surfaceY: 0.5
-  _wind:
-    direction: {x: 1, y: 0.35}
-    speed: 1.2
-    amplitude: 0.065
---- !u!4 &1530010866
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1530010864}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -9.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1399548621}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1530010867
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1530010864}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
-  _ground: {fileID: 0}
-  _width: 22
-  _height: 3
-  _size: 1
 --- !u!1 &1586038517
 GameObject:
   m_ObjectHideFlags: 0
@@ -4116,7 +4210,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1682345966
+--- !u!1 &1641952781
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4124,76 +4218,73 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1682345967}
-  - component: {fileID: 1682345970}
-  - component: {fileID: 1682345969}
-  - component: {fileID: 1682345968}
+  - component: {fileID: 1641952783}
+  - component: {fileID: 1641952784}
+  - component: {fileID: 1641952782}
   m_Layer: 0
-  m_Name: HLHealerAnchor
+  m_Name: HLGrassRing8_band2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1682345967
+--- !u!114 &1641952782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1641952781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
+  _grid: {fileID: 1641952784}
+  _ground: {fileID: 9158114157369665995}
+  _gameplayCamera: {fileID: 1133649934}
+  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
+  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
+  _bladeBudget: 39322
+  _seed: 19
+  _bladeHeightScale: 1
+  _surfaceY: 0.5
+  _wind:
+    direction: {x: 1, y: 0.35}
+    speed: 1.2
+    amplitude: 0.065
+--- !u!4 &1641952783
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1682345966}
+  m_GameObject: {fileID: 1641952781}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 24}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5820983543368096139}
+  m_Father: {fileID: 1232665465}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1682345968
+--- !u!114 &1641952784
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1682345966}
+  m_GameObject: {fileID: 1641952781}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ebaf268b45a843f582ee963235f25ad, type: 3}
+  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLTrampleZone
-  Radius: 0.65
-  Strength: 1
---- !u!114 &1682345969
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1682345966}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ff72fcddce784a6396cd2bda1d8abbd4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLHealPulse
-  _cellSize: 1
---- !u!114 &1682345970
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1682345966}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e23edee68ceab417ea5177d97a00a4d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.HLCharacterView
-  character: {fileID: 5820983543368096141}
-  recipe: {fileID: 11400000, guid: 265a00ac0c6c743d08a762c0950e82e1, type: 2}
-  visualAnchor: {fileID: 1682345967}
-  material: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
-  cellSize: 1
+  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
+  _ground: {fileID: 0}
+  _width: 64
+  _height: 16
+  _size: 1
 --- !u!1 &1683452383
 GameObject:
   m_ObjectHideFlags: 0
@@ -4282,64 +4373,6 @@ MonoBehaviour:
   m_MaximumFOV: 60
   m_MinimumOrthoSize: 1
   m_MaximumOrthoSize: 5000
---- !u!1 &1726837534
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1726837536}
-  - component: {fileID: 1726837535}
-  m_Layer: 0
-  m_Name: HLGrassField
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1726837535
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1726837534}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
-  _grid: {fileID: 9158114156218484085}
-  _ground: {fileID: 9158114157369665995}
-  _gameplayCamera: {fileID: 1133649934}
-  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
-  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
-  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
-  _bladeBudget: 65536
-  _seed: 1
-  _bladeHeightScale: 0.3
-  _surfaceY: 0.5
-  _wind:
-    direction: {x: 1, y: 0.35}
-    speed: 1.2
-    amplitude: 0.065
---- !u!4 &1726837536
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1726837534}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.505, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1824321169}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1800498750
 GameObject:
   m_ObjectHideFlags: 0
@@ -4481,7 +4514,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1824321160
+--- !u!1 &1869859781
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4489,195 +4522,223 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1824321169}
-  - component: {fileID: 1824321168}
-  - component: {fileID: 1824321167}
-  - component: {fileID: 1824321166}
-  - component: {fileID: 1824321165}
-  - component: {fileID: 1824321164}
-  - component: {fileID: 1824321163}
-  - component: {fileID: 1824321162}
-  - component: {fileID: 1824321161}
+  - component: {fileID: 1869859783}
+  - component: {fileID: 1869859784}
+  - component: {fileID: 1869859782}
   m_Layer: 0
-  m_Name: HLRenderStage
+  m_Name: HLGrassRing9_band2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1824321161
+--- !u!114 &1869859782
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1824321160}
+  m_GameObject: {fileID: 1869859781}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 99dc5b3989fb74627bbebabc718b1808, type: 3}
+  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageBeautyWiring
-  bootstrap: {fileID: 1824321168}
-  grid: {fileID: 9158114156218484085}
-  gust: {fileID: 1399548618}
-  groundMaterial: {fileID: 2100000, guid: 2a8b81dadb9c243d7bb6e17e48f090f8, type: 2}
-  healerView: {fileID: 1682345970}
-  healer: {fileID: 5820983543368096141}
-  healerRecipe: {fileID: 11400000, guid: 265a00ac0c6c743d08a762c0950e82e1, type: 2}
-  healerAnchor: {fileID: 1682345967}
-  healerMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
---- !u!114 &1824321162
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1824321160}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73b08733deced4ef1996987e3fa52a17, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageKeyLight
-  keyLight: {fileID: 170076734}
-  requiredDistance: 50
-  pollSeconds: 0.5
---- !u!114 &1824321163
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1824321160}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4ec1f25bb1e4572a78033e6481ba946, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageRangeDriver
-  mode: 0
-  rescanSeconds: 0.5
---- !u!114 &1824321164
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1824321160}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2e178b7223d446a8a0bfb8db14b40b5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLBattleFocus
-  stageCamera: {fileID: 1133649934}
-  bootstrap: {fileID: 1824321168}
-  nextWave: {fileID: 658297192}
---- !u!114 &1824321165
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1824321160}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4dcbc6b07b7984d4a8883c6209631513, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLStageZoneBridge
-  zoneRegistry: {fileID: 1824321166}
-  grassField: {fileID: 1726837535}
---- !u!114 &1824321166
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1824321160}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c7446c1c3fa041349b776e8964cdfbda, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HLZoneRegistry
---- !u!114 &1824321167
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1824321160}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2cb5ba83a5304f8f9445eca291e9b4fb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Look.HLLookController
-  settings:
-    ShadowTint: {r: 0.24705882, g: 0.35686275, b: 0.5803922, a: 1}
-    OutlineColor: {r: 0.09411765, g: 0.14901961, b: 0.24705882, a: 1}
-    FogColor: {r: 0.7490196, g: 0.8235294, b: 0.8784314, a: 1}
-    ShadowStrength: 0.65
-    ToonThreshold: 0.5
-    OutlineWidthPixels: 1
-    FogStart: 53.57261
-    FogEnd: 87.57261
-    InkStrength: 0.75
-    InkSpacingPixels: 3.5
-    InkScale: 0.06932862
-    InkWidth: 0.0027731447
-    InkStart: 0
-    InkRange: 1
-    DensityMul: 0.55
-    InkWarp: 0.006
-    InkWarpFreq: 2.44
-    DashAmount: 0.1
-    DashScale: 0.01
-    InkDistStart: 53.57261
-    InkFarSpacing: 0.083194345
-    FogBands: 6
---- !u!114 &1824321168
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1824321160}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d0817ab340d54e0ca7f505e653f397e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.HLRenderBootstrap
-  lookController: {fileID: 1824321167}
-  zoneRegistry: {fileID: 1824321166}
-  zoneBridge: {fileID: 1824321165}
-  grassField: {fileID: 1726837535}
-  spellVisualSink: {fileID: 1117461743}
-  grid: {fileID: 9158114156218484085}
-  ground: {fileID: 9158114157369665995}
-  healPulse: {fileID: 1682345969}
-  healSource: {fileID: 5820983543368096140}
-  framing: 0
-  stageCamera: {fileID: 1133649934}
-  portraitPose:
-    position: {x: 0, y: 36.934742, z: -27.617521}
-    rotation: {x: 0.43837115, y: 0, z: 0, w: 0.89879405}
-  landscapePose:
-    position: {x: 0, y: 21.460032, z: -19.488747}
-    rotation: {x: 0.39073113, y: 0, z: 0, w: 0.92050487}
---- !u!4 &1824321169
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
+  _grid: {fileID: 1869859784}
+  _ground: {fileID: 9158114157369665995}
+  _gameplayCamera: {fileID: 1133649934}
+  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
+  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
+  _bladeBudget: 39322
+  _seed: 20
+  _bladeHeightScale: 1
+  _surfaceY: 0.5
+  _wind:
+    direction: {x: 1, y: 0.35}
+    speed: 1.2
+    amplitude: 0.065
+--- !u!4 &1869859783
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1824321160}
+  m_GameObject: {fileID: 1869859781}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -24}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1117461744}
-  - {fileID: 1726837536}
-  - {fileID: 1399548621}
-  m_Father: {fileID: 0}
+  m_Children: []
+  m_Father: {fileID: 1232665465}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1869859784
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1869859781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
+  _ground: {fileID: 0}
+  _width: 64
+  _height: 16
+  _size: 1
+--- !u!1 &1876046910
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1876046912}
+  - component: {fileID: 1876046913}
+  - component: {fileID: 1876046911}
+  m_Layer: 0
+  m_Name: HLGrassRing4_band1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1876046911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1876046910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
+  _grid: {fileID: 1876046913}
+  _ground: {fileID: 9158114157369665995}
+  _gameplayCamera: {fileID: 1133649934}
+  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
+  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
+  _bladeBudget: 24576
+  _seed: 15
+  _bladeHeightScale: 1
+  _surfaceY: 0.5
+  _wind:
+    direction: {x: 1, y: 0.35}
+    speed: 1.2
+    amplitude: 0.065
+--- !u!4 &1876046912
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1876046910}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 13.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1232665465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1876046913
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1876046910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
+  _ground: {fileID: 0}
+  _width: 32
+  _height: 5
+  _size: 1
+--- !u!1 &1884121938
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1884121940}
+  - component: {fileID: 1884121941}
+  - component: {fileID: 1884121939}
+  m_Layer: 0
+  m_Name: HLGrassRing0_band0
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1884121939
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1884121938}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
+  _grid: {fileID: 1884121941}
+  _ground: {fileID: 9158114157369665995}
+  _gameplayCamera: {fileID: 1133649934}
+  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
+  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
+  _bladeBudget: 14362
+  _seed: 11
+  _bladeHeightScale: 1
+  _surfaceY: 0.5
+  _wind:
+    direction: {x: 1, y: 0.35}
+    speed: 1.2
+    amplitude: 0.065
+--- !u!4 &1884121940
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1884121938}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 9.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1232665465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1884121941
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1884121938}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
+  _ground: {fileID: 0}
+  _width: 22
+  _height: 3
+  _size: 1
 --- !u!1 &1920080223
 GameObject:
   m_ObjectHideFlags: 0
@@ -4805,156 +4866,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac0b09e7857660247b1477e93731de29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &1983818160
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1983818162}
-  - component: {fileID: 1983818163}
-  - component: {fileID: 1983818161}
-  m_Layer: 0
-  m_Name: HLGrassRing3_band0
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1983818161
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1983818160}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
-  _grid: {fileID: 1983818163}
-  _ground: {fileID: 9158114157369665995}
-  _gameplayCamera: {fileID: 1133649934}
-  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
-  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
-  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
-  _bladeBudget: 10445
-  _seed: 14
-  _bladeHeightScale: 1
-  _surfaceY: 0.5
-  _wind:
-    direction: {x: 1, y: 0.35}
-    speed: 1.2
-    amplitude: 0.065
---- !u!4 &1983818162
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1983818160}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 9.5, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1399548621}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1983818163
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1983818160}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
-  _ground: {fileID: 0}
-  _width: 3
-  _height: 16
-  _size: 1
---- !u!1 &2033316571
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2033316573}
-  - component: {fileID: 2033316574}
-  - component: {fileID: 2033316572}
-  m_Layer: 0
-  m_Name: HLGrassRing0_band0
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2033316572
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2033316571}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
-  _grid: {fileID: 2033316574}
-  _ground: {fileID: 9158114157369665995}
-  _gameplayCamera: {fileID: 1133649934}
-  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
-  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
-  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
-  _bladeBudget: 14362
-  _seed: 11
-  _bladeHeightScale: 1
-  _surfaceY: 0.5
-  _wind:
-    direction: {x: 1, y: 0.35}
-    speed: 1.2
-    amplitude: 0.065
---- !u!4 &2033316573
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2033316571}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 9.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1399548621}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2033316574
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2033316571}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
-  _ground: {fileID: 0}
-  _width: 22
-  _height: 3
-  _size: 1
 --- !u!1 &2041496519
 GameObject:
   m_ObjectHideFlags: 0
@@ -5088,67 +4999,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2041496519}
   m_CullTransparentMesh: 1
---- !u!1 &2051127140
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2051127141}
-  - component: {fileID: 2051127142}
-  m_Layer: 0
-  m_Name: HLFarRidge
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2051127141
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2051127140}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1399548621}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2051127142
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2051127140}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad799066c7b6643c19123f607fe687de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.HLEnvironmentRidge
-  stageCamera: {fileID: 1133649934}
-  stoneMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
-  plantMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
-  grid:
-    serializedVersion: 2
-    x: -8
-    y: -8
-    width: 16
-    height: 16
-  groundY: 0.5
-  seed: 1707
-  fogStart: 53.57261
-  fogEnd: 87.57261
-  fogBands: 6
-  stoneColor: {r: 0.65882355, g: 0.72156864, b: 0.6745098, a: 1}
-  stemColor: {r: 0.72156864, g: 0.78431374, b: 0.7058824, a: 1}
-  capColor: {r: 0.6117647, g: 0.7058824, b: 0.63529414, a: 1}
 --- !u!1 &2082412431
 GameObject:
   m_ObjectHideFlags: 0
@@ -5195,6 +5045,81 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2113841945
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2113841947}
+  - component: {fileID: 2113841948}
+  - component: {fileID: 2113841946}
+  m_Layer: 0
+  m_Name: HLGrassRing10_band2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2113841946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2113841945}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
+  _grid: {fileID: 2113841948}
+  _ground: {fileID: 9158114157369665995}
+  _gameplayCamera: {fileID: 1133649934}
+  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
+  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
+  _bladeBudget: 19661
+  _seed: 21
+  _bladeHeightScale: 1
+  _surfaceY: 0.5
+  _wind:
+    direction: {x: 1, y: 0.35}
+    speed: 1.2
+    amplitude: 0.065
+--- !u!4 &2113841947
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2113841945}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -24, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1232665465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2113841948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2113841945}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
+  _ground: {fileID: 0}
+  _width: 16
+  _height: 32
+  _size: 1
 --- !u!1001 &2120812392
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5456,6 +5381,81 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 68365923239026581, guid: 55c0bebeb1c9413db3bd9f9dfdc9868e, type: 3}
   m_PrefabInstance: {fileID: 2128122846}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2133597064
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2133597066}
+  - component: {fileID: 2133597067}
+  - component: {fileID: 2133597065}
+  m_Layer: 0
+  m_Name: HLGrassRing5_band1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2133597065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133597064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe14c01cca9184a659233f807feb0973, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grass.HLGrassField
+  _grid: {fileID: 2133597067}
+  _ground: {fileID: 9158114157369665995}
+  _gameplayCamera: {fileID: 1133649934}
+  _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
+  _lookMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  _ringShader: {fileID: 4800000, guid: faa5582def7544c17a11bba4f68da8c7, type: 3}
+  _bladeBudget: 24576
+  _seed: 16
+  _bladeHeightScale: 1
+  _surfaceY: 0.5
+  _wind:
+    direction: {x: 1, y: 0.35}
+    speed: 1.2
+    amplitude: 0.065
+--- !u!4 &2133597066
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133597064}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -13.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1232665465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2133597067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133597064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66084ae8600fc7d4a9a1d72ece06ba79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Runtime::GridManager
+  _ground: {fileID: 0}
+  _width: 32
+  _height: 5
+  _size: 1
 --- !u!4 &1594884831425630262
 Transform:
   m_ObjectHideFlags: 0
@@ -5638,7 +5638,7 @@ PrefabInstance:
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 3997629714499954772, guid: 50dfaada6bcd48039625695569d546bc, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1682345967}
+      addedObject: {fileID: 1239115924}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 50dfaada6bcd48039625695569d546bc, type: 3}
 --- !u!4 &5820983543368096139 stripped
@@ -5933,4 +5933,4 @@ SceneRoots:
   - {fileID: 645146370}
   - {fileID: 711645745}
   - {fileID: 4378792853192872687}
-  - {fileID: 1824321169}
+  - {fileID: 1156435974}
