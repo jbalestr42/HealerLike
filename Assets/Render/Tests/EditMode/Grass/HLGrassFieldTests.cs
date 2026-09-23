@@ -43,6 +43,7 @@ public class HLGrassFieldTests
         if (_borrowedZones != null)
         {
             _borrowedZones.Dispose();
+            _borrowedZones = null;
         }
     }
 

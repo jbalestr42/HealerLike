@@ -87,8 +87,9 @@ namespace HealerLike.Render.Grass
 
         public void Init(Rect area, float cellSize, float surfaceY, Camera camera, GraphicsBuffer zones, int zoneCapacity)
         {
+            bool isBufferValid = zones != null && zones.IsValid() && zones.stride == HLZone.Stride;
             bool isCapacityValid = zoneCapacity >= 1 && zoneCapacity <= MaxZones;
-            if (zones == null || !isCapacityValid || zoneCapacity > zones.count || zones.stride != HLZone.Stride)
+            if (!isBufferValid || !isCapacityValid || zoneCapacity > zones.count)
             {
                 Debug.LogError("[HLGrassField] Borrow a live zone buffer with the 32-byte stride and capacity 1..64.");
                 return;
