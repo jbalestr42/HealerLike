@@ -29,6 +29,21 @@ namespace HealerLike.Render.Creatures
             Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, .46f);
             Assert.IsTrue(HLCreatureValidator.TryValidate(recipe, out string error), error);
         }
+        [Test] public void StackRootKneeClearsConicalBaseWithoutChangingFootprint()
+        {
+            var recipe = AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>("Assets/Render/Creatures/Data/HLSphereStack.asset");
+            Assert.NotNull(recipe);
+            var cone = Array.Find(recipe.parts, p => p.id == "HLConicalRoot");
+            float bottom = cone.localPosition.y - cone.dimensions.y * .5f;
+            float kneeFraction = (recipe.roots.kneeHeight - bottom) / cone.dimensions.y;
+            float coneRadiusAtKnee = Mathf.Max(cone.dimensions.x, cone.dimensions.z) * .5f * (1 - kneeFraction);
+            float kneeInnerRadius = recipe.roots.footRadius * .6f - recipe.roots.thickness;
+            Assert.Greater(kneeInnerRadius, coneRadiusAtKnee,
+                "Root knees must emerge outside the opaque conical base.");
+            Assert.AreEqual(.41f, recipe.roots.footRadius, .0001f);
+            Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, .46f);
+            Assert.IsTrue(HLCreatureValidator.TryValidate(recipe, out string error), error);
+        }
         [Test] public void DefaultsHaveBoundedRootsAndIndependentArrays()
         {
             var a = ScriptableObject.CreateInstance<HLCreatureRecipe>();
