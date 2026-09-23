@@ -61,9 +61,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44c4e52034d8b44b383f8eb14a1b07ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.SpellEffect
-  OnBodyTint:
-    m_PersistentCalls:
-      m_Calls: []
   kind: 1
   lifetime: 0.65
   stalks: []

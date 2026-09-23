@@ -43,7 +43,6 @@ namespace HealerLike.Render.Creatures
         float _hitPulse;
         Vector3? _aimTarget;
         float _budPower;
-        Color _statusTint = Color.white;
         Vector3 _previousOrigin;
         bool _isPlaced;
 
@@ -166,11 +165,6 @@ namespace HealerLike.Render.Creatures
             }
 
             return true;
-        }
-
-        public void SetStatusTint(Color tint)
-        {
-            _statusTint = tint;
         }
 
         public void SetReadout(Vector3? target, float health, float readiness, float glow)
@@ -366,7 +360,6 @@ namespace HealerLike.Render.Creatures
                     colour = Color.Lerp(dim, new Color(0.78f, 0.95f, 0.29f, colour.a), light);
                 }
 
-                colour = _statusTint == Color.white ? colour : Color.Lerp(colour, _statusTint, 0.42f);
                 _colourBlock.SetColor("_BaseColor", PrimitiveMeshes.Brighten(colour, part.glow * light));
                 _bodyRenderers[i].SetPropertyBlock(_colourBlock);
             }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -280,12 +279,7 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            Color tint = Color.white;
-            if (_entity)
-            {
-                tint = BodyTintState.Read(_entity.gameObject);
-            }
-            _assembly.ApplyFracture(_health.Max > 0f ? _health.Value / _health.Max : 1f, _seed, tint);
+            _assembly.ApplyFracture(_health.Max > 0f ? _health.Value / _health.Max : 1f, _seed);
 
             StoneHealthAction action = _state.CompleteBatch(_health.Value, _health.Max);
             if (action == StoneHealthAction.Collapse)

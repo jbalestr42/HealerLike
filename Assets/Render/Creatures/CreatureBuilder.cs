@@ -153,7 +153,6 @@ namespace HealerLike.Render.Creatures
 
             if (rig != null)
             {
-                rig.SetStatusTint(BodyTintState.Read(_entity.gameObject));
                 float healthFraction = _health && _health.Max > 0 ? _health.Value / _health.Max : 1f;
                 rig.SetReadout(target, healthFraction, readiness, readiness);
                 rig.Tick(Time.time, Time.deltaTime, Frame());

@@ -81,7 +81,6 @@ namespace HealerLike.Render.Creatures
             BuildAndRegister();
             if (rig != null && _character)
             {
-                rig.SetStatusTint(BodyTintState.Read(_character.gameObject));
                 ResourceAttribute mana = _character.mana;
                 float manaFraction = mana && mana.Max > 0 ? mana.Value / mana.Max : 0f;
                 rig.SetReadout(null, 1f, 0f, manaFraction);

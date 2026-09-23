@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace HealerLike.Render.Spells
 {
@@ -18,8 +17,6 @@ namespace HealerLike.Render.Spells
 
     public class SpellEffect : MonoBehaviour
     {
-        public UnityEvent<Color> OnBodyTint = new UnityEvent<Color>();
-
         public SpellEffectKind kind;
         public float lifetime = 0.65f;
         public Transform[] stalks = new Transform[0];
@@ -56,9 +53,6 @@ namespace HealerLike.Render.Spells
         Vector3 _linkStart;
         Vector3 _linkEnd;
 
-        Color _bodyTint = Color.white;
-        public Color bodyTint { get { return _bodyTint; } }
-
         int _stacks;
         public int stacks { get { return _stacks; } }
 
@@ -84,14 +78,6 @@ namespace HealerLike.Render.Spells
             if (removalComplete || (!_isStatus && _age >= lifetime))
             {
                 Destroy(gameObject);
-            }
-        }
-
-        void OnDisable()
-        {
-            if (_bodyTint != Color.white)
-            {
-                SetBodyTint(Color.white);
             }
         }
 
@@ -167,10 +153,6 @@ namespace HealerLike.Render.Spells
             _elapsedSeconds = Mathf.Max(0f, elapsed);
             _durationSeconds = duration;
             _clock = clock;
-            if (kind == SpellEffectKind.Drip)
-            {
-                SetBodyTint(coral);
-            }
             Advance(0f);
         }
 
@@ -231,7 +213,6 @@ namespace HealerLike.Render.Spells
         {
             _isRemoving = true;
             _removalAge = 0f;
-            SetBodyTint(Color.white);
         }
 
         public void Advance(float delta)
@@ -402,12 +383,6 @@ namespace HealerLike.Render.Spells
                 default:
                     return gold;
             }
-        }
-
-        void SetBodyTint(Color color)
-        {
-            _bodyTint = color;
-            OnBodyTint.Invoke(color);
         }
 
         void Brighten(int index, float brightness)

@@ -208,7 +208,6 @@ namespace HealerLike.Render.Spells
             effect.SetStatus(stacks, elapsedSeconds, durationSeconds, clock);
             Entity caster = source != null ? source.GetComponent<Entity>() : null;
             effect.SetSide(caster != null ? caster.entityType : Entity.EntityType.None);
-            RefreshBodyTint(target);
         }
 
         public void RemoveStatus(GameObject source, GameObject target, ABuffHandlerFactory factory)
@@ -223,7 +222,6 @@ namespace HealerLike.Render.Spells
                 effect.transform.SetParent(transform, true);
                 effect.BeginRemoval();
                 _removing.Add(effect.gameObject);
-                RefreshBodyTint(target);
             }
         }
 
@@ -333,11 +331,6 @@ namespace HealerLike.Render.Spells
 
             foreach (KeyValuePair<(GameObject, ABuffHandlerFactory), SpellEffect> pair in _statuses)
             {
-                BodyTintState state = pair.Key.Item1 != null ? pair.Key.Item1.GetComponent<BodyTintState>() : null;
-                if (state != null)
-                {
-                    state.Set(Color.white);
-                }
                 Dispose(pair.Value != null ? pair.Value.gameObject : null);
             }
             _statuses.Clear();
@@ -382,34 +375,6 @@ namespace HealerLike.Render.Spells
                 isSameSide = casterSide == recipientSide;
             }
             return _looks.GetLook(factory, isSameSide);
-        }
-
-        void RefreshBodyTint(GameObject target)
-        {
-            if (target == null)
-            {
-                return;
-            }
-
-            Color tint = Color.white;
-            foreach (KeyValuePair<(GameObject, ABuffHandlerFactory), SpellEffect> pair in _statuses)
-            {
-                if (pair.Key.Item1 == target && pair.Value != null && pair.Value.bodyTint != Color.white)
-                {
-                    tint = pair.Value.bodyTint;
-                }
-            }
-
-            BodyTintState state = target.GetComponent<BodyTintState>();
-            if (state == null && tint != Color.white)
-            {
-                state = target.AddComponent<BodyTintState>();
-            }
-
-            if (state != null)
-            {
-                state.Set(tint);
-            }
         }
 
         SpellEffect Spawn(SpellLook look, Transform parent)

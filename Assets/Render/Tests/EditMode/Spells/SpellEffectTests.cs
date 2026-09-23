@@ -170,25 +170,19 @@ public class SpellEffectTests
     }
 
     [Test]
-    public void SetStatus_Drip_FollowsPeriodAndBodyTintResetsOnRemoval()
+    public void SetStatus_Drip_FollowsPeriod()
     {
         SpellEffect effect = CreateEffect("Fx_PoisonDrips");
         effect.SetPeriod(true, 2f);
-        Color tint = Color.clear;
-        effect.OnBodyTint.AddListener(color => tint = color);
 
         effect.SetStatus(1, 2f, 6f, ClockKind.Simulation);
         Vector3 position = effect.parts[0].localPosition;
-        Assert.AreEqual((Color)new Color32(242, 96, 122, 255), tint);
 
         effect.SetStatus(1, 3f, 6f, ClockKind.Simulation);
         Assert.Less(effect.parts[0].localPosition.y, position.y);
 
         effect.SetStatus(1, 4f, 6f, ClockKind.Simulation);
         Assert.AreEqual(position, effect.parts[0].localPosition);
-
-        effect.BeginRemoval();
-        Assert.AreEqual(Color.white, tint);
     }
 
     [Test]
