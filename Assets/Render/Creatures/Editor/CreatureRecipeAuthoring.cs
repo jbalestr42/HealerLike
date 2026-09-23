@@ -15,7 +15,7 @@ namespace HealerLike.Render.Creatures
         public static readonly Color bud = new Color(0.78f, 0.95f, 0.29f);
 
         public static CreaturePart Part(string id, Primitive primitive, Vector3 position, Vector3 dimensions, Color colour,
-            Vector3 euler = default, int parent = 0, float glow = 0f)
+            Vector3 euler = default, int parent = 0, float glow = 0f, PartRole role = PartRole.Body)
         {
             return new CreaturePart
             {
@@ -27,7 +27,8 @@ namespace HealerLike.Render.Creatures
                 colour = colour,
                 localEuler = euler,
                 torusTubeRatio = 0.2f,
-                glow = glow
+                glow = glow,
+                role = role
             };
         }
 
@@ -63,7 +64,7 @@ namespace HealerLike.Render.Creatures
                 }
 
                 parts.Add(Part("Joint" + i, Primitive.Sphere, Vector3.up * (stemPart.dimensions.y * 0.38f),
-                    Vector3.one * (stemPart.dimensions.x * 1.5f), bud, parent: i));
+                    Vector3.one * (stemPart.dimensions.x * 1.5f), bud, parent: i, role: PartRole.Stem));
             }
 
             recipe.parts = parts.ToArray();

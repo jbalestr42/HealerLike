@@ -152,6 +152,7 @@ namespace HealerLike.Render.Creatures
             recipe.parts = parts.ToArray();
             recipe.targetLocal = sockets.body * vocabulary.bodyUnit;
             recipe.idle.seed = seed;
+            recipe.stoneOchre = vocabulary.palette.stoneOchre;
             if (channels.side == LookSide.Plant)
             {
                 recipe.roots = Roots(channels.reach, vocabulary);

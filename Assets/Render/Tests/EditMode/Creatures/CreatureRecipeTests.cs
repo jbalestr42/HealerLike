@@ -77,6 +77,20 @@ public class CreatureRecipeTests
     }
 
     [Test]
+    public void Parts_HealerAsset_ValidatesWithItsRoles()
+    {
+        CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
+
+        CreaturePart crown = Array.Find(recipe.parts, part => part.id == "Crown");
+        CreaturePart[] tips = Array.FindAll(recipe.parts, part => part.role == PartRole.Tip);
+
+        Assert.AreEqual(PartRole.Crown, crown.role);
+        Assert.AreEqual(3, tips.Length);
+        Assert.IsTrue(Array.TrueForAll(tips, part => part.id.StartsWith("Bud", StringComparison.Ordinal)));
+        Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);
+    }
+
+    [Test]
     public void CreateInstance_Defaults_HaveBoundedRootsAndArrays()
     {
         CreatureRecipe recipe = CreateTracked<CreatureRecipe>();
