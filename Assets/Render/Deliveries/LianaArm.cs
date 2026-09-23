@@ -30,6 +30,7 @@ namespace HealerLike.Render.Deliveries
         readonly ChainSolver _solver = new ChainSolver();
         readonly Matrix4x4[] _leaves = new Matrix4x4[leafCount];
         readonly Matrix4x4[] _beads = new Matrix4x4[leafCount + 1];
+        readonly DeliveryTip _tip = new DeliveryTip();
         Vector3[] _rest;
         Vector3[] _joints;
         float[] _lengths;
@@ -40,6 +41,7 @@ namespace HealerLike.Render.Deliveries
         Vector3[] _normals;
         Mesh _leafMesh;
         Mesh _beadMesh;
+        PrimitiveMeshes _meshes;
         Material _detailMaterial;
         MaterialPropertyBlock _detailColour;
         float _radius;
@@ -52,6 +54,8 @@ namespace HealerLike.Render.Deliveries
         Vector3 _returnGoal;
         bool _isEndPending;
         GestureKind _kind;
+        Color _colour;
+        Color _restTipColour;
 
         int _token;
         public int token { get { return _token; } }
@@ -60,6 +64,16 @@ namespace HealerLike.Render.Deliveries
         public Vector3 goal { get { return _goal; } }
 
         public DeliveryStyle style { get; set; }
+
+        // The tip shape of each style, loaded when the arm is drawn
+        public DeliveryVocabulary vocabulary { get; set; }
+
+        Color _tipColour;
+        public Color tipColour { get { return _tipColour; } }
+
+        public Color restTipColour { get { return _restTipColour; } }
+
+        public DeliveryTip tipFragment { get { return _tip; } }
 
         public bool deliveryProfile { get; set; }
 
@@ -111,11 +125,16 @@ namespace HealerLike.Render.Deliveries
 
             _radius = definition.radius * cellSize;
             _pole = definition.bendPole;
+            _colour = definition.colour;
+            _restTipColour = definition.tipColour.a > 0f ? definition.tipColour : definition.colour;
+            _tipColour = _restTipColour;
             if (!parent)
             {
                 return true;
             }
 
+            vocabulary = DeliveryVocabulary.Load();
+            _meshes = meshes;
             _leafMesh = meshes.cone;
             _beadMesh = meshes.sphere;
             _detailMaterial = material;
@@ -189,8 +208,20 @@ namespace HealerLike.Render.Deliveries
             return _joints[index];
         }
 
+        // The tip takes the family of the live delivery until the arm is back at rest
+        public void SetTipAccent(int gestureToken, Color colour)
+        {
+            if (_token != gestureToken || phase == GesturePhase.Rest)
+            {
+                return;
+            }
+
+            _tipColour = colour;
+        }
+
         public void Begin(int gestureToken, GestureKind gestureKind, Vector3 worldTarget)
         {
+            _tipColour = _restTipColour;
             _token = gestureToken;
             _kind = gestureKind;
             _goal = worldTarget;
@@ -257,6 +288,7 @@ namespace HealerLike.Render.Deliveries
             if (phase == GesturePhase.Rest || (phase == GesturePhase.Retract && _elapsed >= retractSeconds))
             {
                 phase = GesturePhase.Rest;
+                _tipColour = _restTipColour;
                 for (int i = 0; i < _joints.Length; i++)
                 {
                     _joints[i] = rootWorld + restOrientation * _rest[i];
@@ -481,7 +513,12 @@ namespace HealerLike.Render.Deliveries
                 _beads[i] = Matrix4x4.TRS(_joints[j], Quaternion.identity, Vector3.one * _radius * 2.4f * width);
             }
 
-            _beads[leafCount] = Matrix4x4.TRS(tip, Quaternion.identity, Vector3.one * _radius * 4.5f * width);
+            _beads[leafCount] = DeliveryTip.Frame(tip, tip - _joints[_joints.Length - 2], _radius * 4.5f);
+            if (!_tip.isSet || _tip.style != style)
+            {
+                _tip.SetStyle(style, vocabulary, _meshes);
+            }
+
             if (!SystemInfo.supportsInstancing || !_detailMaterial || !_detailMaterial.enableInstancing
                 || !_container.gameObject.activeInHierarchy)
             {
@@ -491,8 +528,9 @@ namespace HealerLike.Render.Deliveries
             int layer = _container.gameObject.layer;
             Graphics.DrawMeshInstanced(_leafMesh, 0, _detailMaterial, _leaves, leafCount, _detailColour,
                 ShadowCastingMode.On, true, layer);
-            Graphics.DrawMeshInstanced(_beadMesh, 0, _detailMaterial, _beads, leafCount + 1, _detailColour,
+            Graphics.DrawMeshInstanced(_beadMesh, 0, _detailMaterial, _beads, leafCount, _detailColour,
                 ShadowCastingMode.On, true, layer);
+            _tip.Draw(_beads[leafCount], _detailMaterial, _tipColour, _colour, layer);
         }
     }
 }
