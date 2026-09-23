@@ -101,11 +101,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Look.LookController
   _settings:
-    shadowTint: {r: 0.24705882, g: 0.35686275, b: 0.5803922, a: 1}
+    shadowTint: {r: 0.11764706, g: 0.34117648, b: 0.49019608, a: 1}
     outlineColor: {r: 0.09411765, g: 0.14901961, b: 0.24705882, a: 1}
     fogColor: {r: 0.7490196, g: 0.8235294, b: 0.8784314, a: 1}
-    shadowStrength: 0.65
-    toonThreshold: 0.5
+    shadowStrength: 0.8
+    toonThreshold: 0.64
     toonSoftness: 0.08
     outlineWidthPixels: 1
     fogStart: 20
