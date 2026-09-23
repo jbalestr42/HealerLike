@@ -162,12 +162,11 @@ public class BuffManagerTests
     }
 
     [Test]
-    public void RemoveBuffWithTag_DiscardsMatchingHandlerBookkeepingWithoutStoppingIt()
+    public void RemoveBuffWithTag_StopsMatchingHandlerAndRemovesItsBuff()
     {
-        // RemoveBuffWithTag only drops the handler entry from BuffManager's internal tracking -
-        // it never calls buffHandler.Stop() or buff.Remove(), so the buff's own effect is not
-        // reversed by this call. Asserting that behaviour as-is (rather than what one might expect)
-        // so a future change to this method shows up here.
+        // RemoveBuffWithTag properly tears the handler down: all stacks of its buff are removed at
+        // once (a single Remove, no Unstack) and the handler is stopped, so the buff's effect never
+        // stays attached to its target.
         GameplayTag tag = CreateTracked<GameplayTag>();
         FakeStackableBuffFactory buffFactory = CreateTracked<FakeStackableBuffFactory>();
         buffFactory.data = _data;
@@ -179,10 +178,10 @@ public class BuffManagerTests
         _buffManager.ForceUpdate(); // Add, Stack -> 2 stacks
 
         _buffManager.RemoveBuffWithTag(tag);
-        _buffManager.ForceUpdate();
+        _buffManager.ForceUpdate(); // The handler is gone: nothing is re-applied
 
-        CollectionAssert.AreEqual(new[] { "Add", "Stack" }, _data.log);
-        Assert.AreEqual(0, stoppedCount);
+        CollectionAssert.AreEqual(new[] { "Add", "Stack", "Remove" }, _data.log);
+        Assert.AreEqual(1, stoppedCount);
     }
 
     [Test]
