@@ -1,0 +1,61 @@
+using System;
+using System.Collections.Generic;
+using Sirenix.OdinInspector;
+using UnityEngine;
+
+namespace HealerLike.Render.Spells
+{
+    // The look drawn for each buff and projectile, an unmapped buff gets boon or bane from the caster's side
+    [CreateAssetMenu(menuName = "Custom/Render/SpellLooks")]
+    public class SpellLooks : SerializedScriptableObject
+    {
+        [DictionaryDrawerSettings(KeyLabel = "Buff", ValueLabel = "Look")]
+        public Dictionary<ABuffHandlerFactory, SpellLook> buffs = new Dictionary<ABuffHandlerFactory, SpellLook>();
+
+        [DictionaryDrawerSettings(KeyLabel = "Projectile", ValueLabel = "Look")]
+        public Dictionary<GameObject, ProjectileLook> projectiles = new Dictionary<GameObject, ProjectileLook>();
+
+        public SpellLook boon;
+        public SpellLook bane;
+
+        public SpellLook heal;
+        public SpellLook impact;
+        public SpellLook manaGain;
+        public SpellLook manaLoss;
+        public SpellLook chain;
+        public SpellLook shield;
+
+        public SpellLook GetLook(ABuffHandlerFactory factory, bool isSameSide)
+        {
+            if (factory != null && buffs.ContainsKey(factory))
+            {
+                return buffs[factory];
+            }
+            return isSameSide ? boon : bane;
+        }
+
+        public ProjectileLook GetProjectileLook(GameObject prefab)
+        {
+            if (prefab != null && projectiles.ContainsKey(prefab))
+            {
+                return projectiles[prefab];
+            }
+            return new ProjectileLook();
+        }
+    }
+
+    [Serializable]
+    public class SpellLook
+    {
+        [AssetsOnly]
+        public HLSpellEffect effectPrefab;
+        public Color tint = Color.white;
+        public Vector3 offset = Vector3.zero;
+    }
+
+    [Serializable]
+    public class ProjectileLook
+    {
+        public HLDeliveryStyle style = HLDeliveryStyle.Direct;
+    }
+}
