@@ -15,6 +15,7 @@ namespace HealerLike.Render.Stones
         [SerializeField] StoneGroundDisc _groundDisc;
         [SerializeField] StoneGroundDisc _groundShadow;
         [SerializeField] MeshFilter _ochreFace;
+        [SerializeField] HLTrampleZone _trample;
 
         HLStoneLife _life;
         StoneMeshCache _ownMeshes;
@@ -166,6 +167,15 @@ namespace HealerLike.Render.Stones
                 _life = gameObject.AddComponent<HLStoneLife>();
             }
             _life.Init(effects, zones, seed, bareGroundRadius, true);
+
+            // The bare disc may sit off the pivot, the flattened grass follows the disc
+            if (_trample != null)
+            {
+                _trample.transform.position = bareGroundCenter;
+                _trample.radius = HLTrampleZone.TrampleRadius(bareGroundRadius);
+                _trample.Init(zones);
+            }
+
             if (HLStoneLifeState.Ochre(seed))
             {
                 CreateFace();
