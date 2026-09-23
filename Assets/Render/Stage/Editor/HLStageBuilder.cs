@@ -106,8 +106,6 @@ namespace HealerLike.Render.Stage
             so.FindProperty("spellVisualSink").objectReferenceValue = sink;
             so.FindProperty("grid").objectReferenceValue = grid;
             so.FindProperty("ground").objectReferenceValue = ground.transform;
-            var entry = StoneGrid(stage, grid);
-            so.FindProperty("stoneGridEntry").objectReferenceValue = entry;
             so.ApplyModifiedPropertiesWithoutUndo(); stage.SetActive(true);
             var character = Object.FindAnyObjectByType<Character>();
             (HLCharacterView view, Character character, Transform anchor) healer = default;
@@ -123,13 +121,16 @@ namespace HealerLike.Render.Stage
                 if (view) { var vso=new SerializedObject(view); vso.FindProperty("character").objectReferenceValue=character; vso.FindProperty("visualAnchor").objectReferenceValue=anchor.transform; vso.FindProperty("recipe").objectReferenceValue=AssetDatabase.LoadMainAssetAtPath("Assets/Render/Creatures/Data/HLHealer.asset"); vso.FindProperty("material").objectReferenceValue=green; vso.ApplyModifiedPropertiesWithoutUndo(); }
             }
             Grass(stage.transform, bounds, grid, ground.transform, camera, zones, bootstrap);
+            var battleFocus=stage.AddComponent<HLBattleFocus>();
+            var gameView=Object.FindAnyObjectByType<GameView>(FindObjectsInactive.Include);
+            battleFocus.Configure(camera,bootstrap,gameView ? gameView.gameHUD.nextWaveButton : null);
             var range = stage.AddComponent<HLStageRangeDriver>(); range.Mode = HLStageRangeDriver.PreviewMode.Pointer;
             if (key) stage.AddComponent<HLStageKeyLight>().KeyLight = key;
             var groundMaterial = StageGroundMaterial(GroundMaterial());
             if (ground.TryGetComponent<Renderer>(out var renderer)) renderer.sharedMaterial = groundMaterial;
             var gust = Environment(stage.transform, grid, ground.transform, camera, zones as HealerLike.Render.Zones.HLZoneRegistry, groundMaterial);
             var wiring = stage.AddComponent<HLStageBeautyWiring>();
-            wiring.Configure(bootstrap, grid, gust, entry as HLStoneGridEntry, groundMaterial);
+            wiring.Configure(bootstrap, grid, gust, groundMaterial);
             if (healer.view) wiring.ConfigureHealer(healer.view, healer.character, AssetDatabase.LoadAssetAtPath<HLCreatureRecipe>("Assets/Render/Creatures/Data/HLHealer.asset"), healer.anchor, green);
             EditorUtility.SetDirty(wiring);
             WireRenderers();
@@ -537,6 +538,7 @@ namespace HealerLike.Render.Stage
                 go.name="HLGrassField";
                 var field=(Behaviour)go.AddComponent(fieldType); var fso=new SerializedObject(field);
                 fso.FindProperty("grid").objectReferenceValue=grid; fso.FindProperty("ground").objectReferenceValue=ground;
+                fso.FindProperty("bladeHeightScale").floatValue=.8f;
                 fso.FindProperty("gameplayCamera").objectReferenceValue=camera;
                 fso.FindProperty("updateGrass").objectReferenceValue=AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/HLGrass.compute");
                 fso.FindProperty("grassShader").objectReferenceValue=AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/HLGrass.shader");

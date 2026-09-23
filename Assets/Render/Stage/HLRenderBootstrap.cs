@@ -17,12 +17,9 @@ namespace HealerLike.Render.Stage
         [SerializeField] MonoBehaviour spellVisualSink;
         [SerializeField] GridManager grid;
         [SerializeField] Transform ground;
-        [Tooltip("Demo-scene stone terrain. The entry's own demoSceneOnly flag must be on; production scenes leave this empty.")]
-        [SerializeField] HLStoneGridEntry stoneGridEntry;
         [Tooltip("The healer's resolved-heal pulse. A Character is not an Entity, so no EntityModel walk initializes it.")]
         [SerializeField] HLHealPulse healPulse;
         [SerializeField] GameObject healSource;
-        [SerializeField] int stoneSeed = 1707;
         public enum Framing { Portrait, Landscape }
         [Tooltip("Portrait is Julien's device orientation; landscape keeps the wave-3 50 degree framing. Look calibration is for portrait.")]
         [SerializeField] Framing framing = Framing.Portrait;
@@ -32,6 +29,8 @@ namespace HealerLike.Render.Stage
         HLRenderRegistry registry;
         bool owns;
         public HLRenderRegistry Registry => registry;
+        public Pose OverviewPose => framing==Framing.Portrait ? portraitPose : landscapePose;
+        public Camera StageCamera => stageCamera;
         public Framing CameraFraming { get => framing; set { framing = value; ApplyFraming(); } }
         public void ConfigureFraming(Camera camera, Pose portrait, Pose landscape)
         {
@@ -43,13 +42,18 @@ namespace HealerLike.Render.Stage
             var pose = framing == Framing.Portrait ? portraitPose : landscapePose;
             stageCamera.transform.SetPositionAndRotation(pose.position, pose.rotation);
             stageCamera.aspect=framing==Framing.Portrait ? 9f/16f : 16f/9f;
-            if(grid && lookController is HealerLike.Render.Look.HLLookController look)
-            {
-                var fog=HLStageCalibration.BackgroundFog(pose.position, new Bounds(grid.transform.position,new Vector3(grid.width*grid.size,0,grid.height*grid.size)));
-                var settings=look.Settings; settings.FogStart=fog.x; settings.FogEnd=fog.y; look.Settings=settings; look.ApplyGlobals();
-            }
+            UpdateCameraFog(pose.position);
             if(Application.isPlaying)
                 foreach(var foreground in GetComponentsInChildren<HealerLike.Render.Environment.HLEnvironmentForeground>()) foreground.Build();
+        }
+
+        public void UpdateCameraFog(Vector3 position)
+        {
+            if(grid && lookController is HealerLike.Render.Look.HLLookController look)
+            {
+                var fog=HLStageCalibration.BackgroundFog(position, new Bounds(grid.transform.position,new Vector3(grid.width*grid.size,0,grid.height*grid.size)));
+                var settings=look.Settings; settings.FogStart=fog.x; settings.FogEnd=fog.y; look.Settings=settings; look.ApplyGlobals();
+            }
         }
 
         // Explicit injection keeps ownership testable without a scene or gameplay singleton.
@@ -82,13 +86,6 @@ namespace HealerLike.Render.Stage
             if (lookController) lookController.enabled = true;
             if (zoneBridge) zoneBridge.enabled = true;
             if (grassField) grassField.enabled = true;
-        }
-        IEnumerator Start()
-        {
-            if (!owns || !stoneGridEntry || !grid || !ground) yield break;
-            // PlayerBehaviour creates cells in Start. Never generate them a second time.
-            while (grid.cells == null || grid.cells.Length != grid.width * grid.height) yield return null;
-            stoneGridEntry.Generate(grid, ground, stoneSeed);
         }
         void OnDisable()
         {

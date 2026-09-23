@@ -17,12 +17,14 @@ namespace HealerLike.Render.Stage
     {
         const string Key="HLEventCapture.Active";
         const string Output="/Users/fc/Documents/healerlike-render-specs/captures/wave9-events/";
+        static bool Hostile=>System.Environment.GetEnvironmentVariable("HL_CAPTURE_HOSTILE")=="1";
         static bool Landscape=>System.Environment.GetEnvironmentVariable("HL_CAPTURE_LANDSCAPE")=="1";
         static readonly Dictionary<ResourceAttribute,UnityAction<GameObject,ResourceModifier,float,bool>> listeners=new();
         static readonly List<Entity> allies=new();
         static readonly HashSet<BuffManager> buffManagers=new();
         static readonly UnityAction<BuffManager.BuffHandlerData> buffStarted=OnBuffStarted;
-        static int statuses; static bool speedValid;
+        static int hostileAreas; static readonly HashSet<EntityId> seenAreas=new();
+        static int statuses; static bool speedValid; static bool overviewRequested,overviewVerified,refocusRequested;
         static readonly List<string> events=new();
         static readonly Dictionary<string,int> stillFrames=new();
         static readonly List<string> pendingStills=new();
@@ -36,7 +38,7 @@ namespace HealerLike.Render.Stage
         static HLEventCapture() { EditorApplication.update+=Tick; EditorApplication.playModeStateChanged+=Changed; }
         public static void Run()
         {
-            SessionState.SetString(Key+"Folder",Output+(Landscape?"landscape-":"portrait-")+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")+"/");
+            SessionState.SetString(Key+"Folder",Output+(Hostile?"hostile-":"")+(Landscape?"landscape-":"portrait-")+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")+"/");
             Directory.CreateDirectory(Folder); Debug.Log("HL real capture output: "+Folder);
             HLStageMenu.BuildMenuScene();
             SetGameViewSize(Landscape?1280:720,Landscape?720:1280);
@@ -52,7 +54,7 @@ namespace HealerLike.Render.Stage
             {
                 start=EditorApplication.timeSinceStartup; frame=positiveHealth=negativeHealth=casts=projectiles=0;
                 gameStart=nextFrame=nextHeal=0; menuPressed=gameStarted=placed=wave=groupCast=buffCast=finished=firstHit=screenshotHeal=false;
-                events.Clear(); stillFrames.Clear(); pendingStills.Clear(); seen.Clear(); allies.Clear(); listeners.Clear(); buffManagers.Clear(); statuses=0; speedValid=true;
+                events.Clear(); stillFrames.Clear(); pendingStills.Clear(); seen.Clear(); allies.Clear(); listeners.Clear(); buffManagers.Clear(); statuses=hostileAreas=0; seenAreas.Clear(); speedValid=true; overviewRequested=overviewVerified=refocusRequested=false;
                 var go=new GameObject("HLRealEventCapture"); Object.DontDestroyOnLoad(go); go.AddComponent<HLEventCaptureHook>().Late=Late;
                 ScreenCapture.CaptureScreenshot(Folder+"menu-ui.png");
             }
@@ -94,7 +96,7 @@ namespace HealerLike.Render.Stage
             float t=Time.time-gameStart;
             speedValid &= Mathf.Approximately(Time.timeScale,1);
             Observe();
-            if(!placed && t>.7f) { placed=true; Place(); }
+            if(!placed && t>.7f) { placed=true; Place(); if(Hostile) EquipExistingExplosion(); }
             if(placed && !wave && allies.Count>0)
             {
                 var view=Object.FindAnyObjectByType<GameView>();
@@ -102,8 +104,11 @@ namespace HealerLike.Render.Stage
             }
             foreach(var p in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 if(seen.Add(p.GetEntityId())) { projectiles++; if(projectiles<8) Log("projectile "+p.name+" source="+(p.source?p.source.name:"null")); }
+            if(Hostile) foreach(var area in Object.FindObjectsByType<AreaOfEffect>(FindObjectsSortMode.None))
+                if(area.source && area.source.TryGetComponent<Entity>(out var enemy) && enemy.entityType==Entity.EntityType.Computer && seenAreas.Add(area.GetEntityId()))
+                { hostileAreas++; Log("actual hostile AreaOfEffect source="+area.source.name+" radius="+area.radius+" position="+area.transform.position+" pulse="+(area.GetComponent<HealerLike.Render.Zones.HLAreaPulse>()!=null)); if(t>4 && !stillFrames.ContainsKey("hostile-area-ui.png") && !pendingStills.Contains("hostile-area-ui.png")) pendingStills.Add("hostile-area-ui.png"); }
             var injured=allies.Find(a=>a && a.health && a.health.Value<a.health.Max-.5f);
-            if(injured && t>nextHeal && positiveHealth==0) { nextHeal=t+1; Cast("Heal",injured); }
+            if(injured && t>3 && t>nextHeal && positiveHealth==0) { nextHeal=t+1; Cast("Heal",injured); }
             if(t>8 && !groupCast) { groupCast=Cast("Heal group",null); }
             if(t>10 && !buffCast) { buffCast=Cast("Buff attack speed",null); }
             if(t<15 && t>=nextFrame)
@@ -112,11 +117,15 @@ namespace HealerLike.Render.Stage
                 RenderFrame("motion-"+frame.ToString("D5")+".png",Landscape?960:540,Landscape?540:960);
                 events.Add($"FRAME,{frame},{t:F5},{Time.realtimeSinceStartup:F5}"); frame++;
                 foreach(var name in pendingStills) stillFrames[name]=frame-1; pendingStills.Clear();
-                if(frame==12) stillFrames["gameplay-ui.png"]=frame-1;
+                if(frame==48) stillFrames["gameplay-ui.png"]=frame-1;
             }
             if(negativeHealth>0 && !firstHit) { firstHit=true; pendingStills.Add("first-contact.png"); }
             if(positiveHealth>0 && !screenshotHeal) { screenshotHeal=true; pendingStills.Add("heal-ui.png"); }
-            if(t>=15.3f) Finish(wave && projectiles>0 && negativeHealth>0 && positiveHealth>0 && statuses>0 && speedValid,"15 second normal-speed sequence; waited after final queued screenshot");
+            var focus=Object.FindAnyObjectByType<HLBattleFocus>();
+            if(t>=15.3f && !overviewRequested) { overviewRequested=true; if(focus && focus.IsSettled && focus.ToggleButton) { Log("verified settled automatic battle focus, current body corners inside safe viewport; bounds="+focus.CombatBounds+"; bodies="+focus.BodyCount); focus.ToggleButton.onClick.Invoke(); } else { Finish(false,"automatic battle focus absent"); return; } }
+            if(t>=16.8f && !overviewVerified) { var bootstrap=Object.FindAnyObjectByType<HLRenderBootstrap>(); overviewVerified=focus && !focus.IsFocused && bootstrap && Vector3.Distance(Camera.main.transform.position,bootstrap.OverviewPose.position)<.1f; if(!overviewVerified) { Finish(false,"Overview button did not restore placement frame"); return; } ScreenCapture.CaptureScreenshot(Folder+"overview-ui.png"); Log("verified Overview button and restored pose"); }
+            if(t>=17 && !refocusRequested) { refocusRequested=true; focus.ToggleButton.onClick.Invoke(); }
+            if(t>=18.5f) Finish(wave && projectiles>0 && negativeHealth>0 && positiveHealth>0 && statuses>0 && speedValid && overviewVerified && focus && focus.IsSettled && (!Hostile || hostileAreas>0),"15 second normal-speed battle sequence plus verified Overview/Focus controls");
         }
         static void Place()
         {
@@ -143,6 +152,29 @@ namespace HealerLike.Render.Stage
             }
             allies.AddRange(Object.FindObjectsByType<Entity>(FindObjectsSortMode.None).Where(e=>e.entityType==Entity.EntityType.Player));
             Log("live allies="+allies.Count);
+        }
+        static void EquipExistingExplosion()
+        {
+            var view=Object.FindAnyObjectByType<GameView>();
+            var enemy=Object.FindObjectsByType<Entity>(FindObjectsSortMode.None).FirstOrDefault(e=>e.entityType==Entity.EntityType.Computer);
+            if(!view || !enemy) { Log("hostile route absent view/enemy"); return; }
+            var inventory=view.playerInventory.inventory;
+            var data=inventory.inventoryHandler.items.FirstOrDefault(i=>i.item.title=="ExplodeOnHit");
+            if(data==null) { Log("existing debug inventory has no ExplodeOnHit; no item created"); return; }
+            view.gameHUD.inventoryButton.onClick.Invoke();
+            var slot=inventory.GetComponentsInChildren<SlotInventoryItem>(true).FirstOrDefault(i=>i.index==data.inventoryIndex);
+            var item=slot?slot.GetComponentInChildren<InventoryItem>(true):null;
+            var selectable=enemy.GetComponent<SelectableEntity>();
+            if(!item || !selectable) { Log("hostile inventory UI route unavailable"); return; }
+            InteractionManager.instance.Select(selectable);
+            var panel=Object.FindAnyObjectByType<PanelEntity>();
+            var targetInventory=panel?panel.GetComponentsInChildren<SlotInventory>(true).FirstOrDefault(i=>ReferenceEquals(i.inventoryHandler,enemy.inventoryHandler)):null;
+            if(!targetInventory) { InteractionManager.instance.CancelSelection(); Log("enemy inventory panel unavailable"); return; }
+            var pointer=new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current) { pointerDrag=item.gameObject };
+            item.OnBeginDrag(pointer); targetInventory.GetEmptySlot().OnDrop(pointer); item.OnEndDrag(pointer);
+            Log("actual debug-inventory drag/drop equipped existing "+data.item.title+" on "+enemy.name+"; sourceType="+enemy.entityType);
+            InteractionManager.instance.CancelSelection();
+            if(view.playerInventory.IsInventoryVisible()) view.gameHUD.inventoryButton.onClick.Invoke();
         }
         static bool Cast(string name,Entity target)
         {
@@ -192,7 +224,7 @@ namespace HealerLike.Render.Stage
             }
             success &= missing==0 && stillFrames.ContainsKey("heal-ui.png");
             reason+="; missing current-run frame files="+missing;
-            Log($"result={success} {reason}; frames={frame}; healthPositive={positiveHealth}; healthNegative={negativeHealth}; projectiles={projectiles}; casts={casts}; observedStatuses={statuses}; normalSpeedThroughout={speedValid}; no transient hostile AoE is claimed without its real item event");
+            Log($"result={success} {reason}; frames={frame}; healthPositive={positiveHealth}; healthNegative={negativeHealth}; projectiles={projectiles}; casts={casts}; observedStatuses={statuses}; actualHostileAreas={hostileAreas}; normalSpeedThroughout={speedValid}; hostile evidence requires actual source/radius item event");
             File.WriteAllLines(Folder+"events.csv",events); SessionState.SetInt(Key+"Code",success?0:1); EditorApplication.isPlaying=false;
         }
         static void RenderFrame(string name,int width,int height)

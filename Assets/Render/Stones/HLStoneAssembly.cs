@@ -21,7 +21,8 @@ namespace HealerLike.Render.Stones
             go.transform.localPosition=recipe.LocalPosition; go.transform.localRotation=Quaternion.Euler(recipe.LocalEulerAngles);
             go.AddComponent<MeshFilter>().sharedMesh=lease.Mesh;
             var renderer=go.AddComponent<MeshRenderer>(); renderer.sharedMaterial=material;
-            var properties=new MaterialPropertyBlock(); properties.SetColor("_BaseColor",Palette[Mathf.Clamp(recipe.PaletteIndex,0,3)].linear); renderer.SetPropertyBlock(properties);
+            // Palette/fracture colors are already linear. SetColor would convert them a second time.
+            var properties=new MaterialPropertyBlock(); properties.SetVector("_BaseColor",Palette[Mathf.Clamp(recipe.PaletteIndex,0,3)].linear); renderer.SetPropertyBlock(properties);
             Parts.Add(new Part { BaseColor=Palette[Mathf.Clamp(recipe.PaletteIndex,0,3)].linear,Transform=go.transform,Renderer=renderer,Lease=lease });
         }
         public void BuildEnemy(Transform parent,uint seed,HLStonePreset preset,Material material,HLStoneAssemblyProfile profile=null)
@@ -71,7 +72,7 @@ namespace HealerLike.Render.Stones
                 var part=Parts[i]; part.Renderer.GetPropertyBlock(block);
                 var healthColor=Color.Lerp(part.BaseColor,((Color)new Color32(66,89,138,255)).linear,damage*weight*.85f);
                 if(statusTint.HasValue && statusTint.Value!=Color.white) healthColor=Color.Lerp(healthColor,statusTint.Value,.42f);
-                block.SetColor("_BaseColor",healthColor);
+                block.SetVector("_BaseColor",healthColor);
                 part.Renderer.SetPropertyBlock(block);
             }
         }

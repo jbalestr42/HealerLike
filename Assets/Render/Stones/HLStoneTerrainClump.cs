@@ -57,7 +57,7 @@ namespace HealerLike.Render.Stones
             ochreFace=new GameObject("HLOchreFace"); ochreFace.layer=gameObject.layer; ochreFace.transform.SetParent(part.Transform,false);
             ochreFace.AddComponent<MeshFilter>().sharedMesh=ochreMesh;
             var renderer=ochreFace.AddComponent<MeshRenderer>(); renderer.sharedMaterial=stoneMaterial;
-            var block=new MaterialPropertyBlock(); block.SetColor("_BaseColor",HLStoneAssembly.Palette[3].linear); renderer.SetPropertyBlock(block);
+            var block=new MaterialPropertyBlock(); block.SetVector("_BaseColor",HLStoneAssembly.Palette[3].linear); renderer.SetPropertyBlock(block);
         }
         void ClearFace() { HLStoneMeshCache.DestroyOwned(ochreFace); HLStoneMeshCache.DestroyOwned(ochreMesh); }
         void SetVisible(bool value)
