@@ -229,18 +229,19 @@ namespace HealerLike.Render.Spells
             }
         }
 
-        // Leaves the grammar could describe, a broken sibling no longer hides them
+        // Leaves with a known signature, the grammar's gameplay diagnostics do not change the look
         static void CollectLeaves(HLVisualRecipe recipe, List<HLVisualRecipe> leaves)
         {
             if (recipe.children.Count == 0)
             {
-                if (recipe.diagnostic == null && recipe.signature.operation != HLOperation.Unknown)
+                if (recipe.signature.operation != HLOperation.Unknown)
                 {
                     leaves.Add(recipe);
                 }
-                else
+
+                if (recipe.diagnostic != null)
                 {
-                    Debug.Log($"[SpellLooksSeeder] skipped atom {recipe.signature}: {recipe.diagnostic}");
+                    Debug.Log($"[SpellLooksSeeder] atom {recipe.signature}: {recipe.diagnostic}");
                 }
                 return;
             }
