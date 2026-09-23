@@ -83,6 +83,18 @@ public class ItemTests
     }
 
     [Test]
+    public void Tags_ReturnsItemDataTags()
+    {
+        GameplayTag tag = CreateTracked<GameplayTag>();
+        ItemFactory itemFactory = CreateTracked<ItemFactory>();
+        itemFactory.data = new ItemData { tags = new List<GameplayTag> { tag } };
+
+        AItem item = itemFactory.GetItem();
+
+        CollectionAssert.AreEqual(new[] { tag }, item.tags);
+    }
+
+    [Test]
     public void Equip_ItemWithBuff_AddsBuffHandlerOnTheTargetItself()
     {
         ABuffHandlerFactory passive = CreateHandlerFactory();

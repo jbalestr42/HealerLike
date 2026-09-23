@@ -22,9 +22,11 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: e4c3aa7b966f34f49bcac030376d2ee3, type: 3}
     name: HealAllEntitiesOnRoundEnd
     description: 
+    tags:
+    - {fileID: 11400000, guid: c62124ce56224930993248ec27464a56, type: 2}
     buffs:
     - {fileID: 11400000, guid: c525ccce07e5a4b46ab825826ae77ee4, type: 2}
     onHitEffects: []

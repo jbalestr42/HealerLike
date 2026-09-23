@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -40,6 +41,10 @@ public class BaseItemData
     [VerticalGroup("Split/Data")]
     [LabelWidth(100)]
     public string description;
+
+    [VerticalGroup("Split/Data")]
+    [LabelWidth(100)]
+    public List<GameplayTag> tags = new List<GameplayTag>();
 }
 
 public abstract class AItem
@@ -48,6 +53,7 @@ public abstract class AItem
     public abstract void Unequip(GameObject target);
     public abstract string title { get; }
     public abstract Sprite icon { get; }
+    public abstract List<GameplayTag> tags { get; }
 }
 
 public abstract class AItem<DataType> : AItem where DataType : BaseItemData
@@ -55,4 +61,5 @@ public abstract class AItem<DataType> : AItem where DataType : BaseItemData
     public DataType data;
     public override string title => data.name;
     public override Sprite icon => data.icon;
+    public override List<GameplayTag> tags => data.tags;
 }

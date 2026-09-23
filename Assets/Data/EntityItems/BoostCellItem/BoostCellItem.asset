@@ -25,6 +25,8 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 97d86a1e589756a41a7320ebe81b0c8e, type: 3}
     name: BoostCell
     description: 
+    tags:
+    - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     buffs:
     - {fileID: 11400000, guid: c6e6e638856078a4ca9dc0a131687a2b, type: 2}
     onHitEffects: []
