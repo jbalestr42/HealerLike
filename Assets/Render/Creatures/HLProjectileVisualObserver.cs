@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
+using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Creatures
@@ -41,9 +42,15 @@ namespace HealerLike.Render.Creatures
         public int gestureToken { get { return _token; } }
 
         // The manager adds the observer to a spawned projectile and calls this before Projectile.Init
-        public void Init(RenderManager manager)
+        public void Init(RenderManager manager, ProjectileLook look)
         {
             _manager = manager;
+            if (look != null)
+            {
+                _deliveryStyle = look.style;
+                _presentation = look.presentation;
+                _preserveContactPath = look.preserveContactPath;
+            }
         }
 
         public override void Init(GameObject source)

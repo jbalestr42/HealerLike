@@ -45,6 +45,8 @@ namespace HealerLike.Render.Look
         static readonly Action<int, float> setGlobalFloat = Shader.SetGlobalFloat;
         static readonly Action<int, Vector4> setGlobalVector = Shader.SetGlobalVector;
 
+        Bounds _board;
+
         public HLLookSettings settings { get { return _settings; } set { _settings = value.Validated(); } }
 
         void OnEnable()
@@ -72,6 +74,7 @@ namespace HealerLike.Render.Look
                 return;
             }
 
+            _board = board;
             Vector3 position = camera.transform.position;
             Vector2 fog = HLStageCalibration.BackgroundFog(position, board);
             float depth = Vector3.Distance(position, board.center);
@@ -84,6 +87,17 @@ namespace HealerLike.Render.Look
             value.inkWidth = spacing * 0.04f;
             value.inkDistStart = fog.x;
             value.inkFarSpacing = spacing * 1.2f;
+            settings = value;
+            ApplyGlobals();
+        }
+
+        // The fog starts past every playable corner seen from wherever the camera moved
+        public void UpdateFog(Vector3 cameraPosition)
+        {
+            Vector2 fog = HLStageCalibration.BackgroundFog(cameraPosition, _board);
+            HLLookSettings value = _settings;
+            value.fogStart = fog.x;
+            value.fogEnd = fog.y;
             settings = value;
             ApplyGlobals();
         }

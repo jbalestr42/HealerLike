@@ -92,10 +92,14 @@ namespace HealerLike.Render.Stones
 
         public int pendingImpactCount { get { return _impacts.Count; } }
 
-        // The effects owner is a child of the manager prefab
+        // The view is added after EntityModel.Init, so its body turn is set up here
         public void Init(Entity entity, RenderManager manager)
         {
-            Init(entity, manager.GetComponentInChildren<HLStoneEffects>());
+            Init(entity, manager.stoneEffects);
+            if (_bodyLookAtTarget != null)
+            {
+                _bodyLookAtTarget.Init(entity);
+            }
         }
 
         // removed in D2: the old stage reaches the visual through EntityModel and has no manager

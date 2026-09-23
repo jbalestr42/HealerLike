@@ -24,7 +24,7 @@ namespace HealerLike.Render.Spells
 
         public SpellLooks looks { get { return _looks; } set { _looks = value; } }
 
-        // Set by the stage to reach the zone owner
+        // Set by Init to reach the zone owner
         public Action<Vector3, float, HLZoneKind, float> areaPulse { get; set; }
 
         // Optional bud adapter supplied by the creature view
@@ -76,6 +76,9 @@ namespace HealerLike.Render.Spells
             {
                 _looks = manager.spellLooks;
             }
+
+            HLZoneRegistry zones = manager.zones;
+            areaPulse = (center, radius, kind, strength) => zones.AddPulse(kind, center, radius, strength, PulseSeconds);
         }
 
         void LateUpdate()

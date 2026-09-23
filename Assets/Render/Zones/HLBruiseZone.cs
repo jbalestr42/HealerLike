@@ -1,10 +1,14 @@
 using UnityEngine;
+using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Zones
 {
     // Enemy range readout on the enemy views
-    public class HLBruiseZone : MonoBehaviour, IVisualBehaviour
+    public class HLBruiseZone : MonoBehaviour, IVisualBehaviour, IEntityView
     {
+        // A range as wide as the board bruises every cell and carries no information (the Soldier's is 100)
+        public static readonly float BruiseMaxRange = 16f;
+
         Entity _entity;
         HLZoneRegistry _zones;
         HLZoneRegistry _owner;
@@ -18,6 +22,16 @@ namespace HealerLike.Render.Zones
             _isInitialized = true;
             _entity = entity;
             Refresh();
+        }
+
+        public void Init(Entity entity, RenderManager manager)
+        {
+            Init(entity, manager.zones);
+        }
+
+        public static bool Bruises(float range)
+        {
+            return range > 0f && range < BruiseMaxRange;
         }
 
         // Called by EntityModel.Init on the staged model copies, removed in D2
@@ -66,6 +80,12 @@ namespace HealerLike.Render.Zones
             }
 
             float radius = _entity.attributeManager.Get(AttributeType.Range).Value;
+            if (!Bruises(radius))
+            {
+                Clear();
+                return;
+            }
+
             if (!_owner.Contains(_handle))
             {
                 _handle = _owner.Add(HLZoneKind.Bruise, _entity.transform.position, radius, 1f);

@@ -3,6 +3,7 @@
     "rootNamespace": "HealerLike.Render",
     "references": [
         "HealerLike.Runtime",
+        "Unity.Cinemachine",
         "Unity.RenderPipelines.Universal.Runtime",
         "Unity.RenderPipelines.Core.Runtime"
     ],

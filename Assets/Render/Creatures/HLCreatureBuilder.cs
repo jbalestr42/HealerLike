@@ -76,6 +76,8 @@ namespace HealerLike.Render.Creatures
                 _meshes = manager.meshes;
             }
 
+            _injectedRegistry = manager ? manager.registry : null;
+            _hasInjection = true;
             Init(owner);
         }
 

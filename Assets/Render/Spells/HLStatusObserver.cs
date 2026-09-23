@@ -32,8 +32,7 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            HLSpellVisualSink sink = manager.GetComponentInChildren<HLSpellVisualSink>();
-            Bind(entity.buffManager != null ? entity.buffManager : entity.GetComponent<BuffManager>(), sink);
+            Bind(entity.buffManager != null ? entity.buffManager : entity.GetComponent<BuffManager>(), manager.spellSink);
             HLResourceOutcomeObserver.Ensure(entity).Init(entity, manager);
             GetShieldView().Init(entity, manager);
         }

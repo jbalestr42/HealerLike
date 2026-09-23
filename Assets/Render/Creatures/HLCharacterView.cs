@@ -111,9 +111,8 @@ namespace HealerLike.Render.Creatures
                 _visualAnchor = transform;
             }
 
-            // No registry is handed over yet, so the view registers with HLRenderRegistry.current (D2)
-            _injectedRegistry = null;
-            _injected = false;
+            _injectedRegistry = manager ? manager.registry : null;
+            _injected = true;
             BuildAndRegister();
             ObserveResources();
         }

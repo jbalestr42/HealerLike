@@ -19,7 +19,7 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            _sink = manager.GetComponentInChildren<HLSpellVisualSink>();
+            _sink = manager.spellSink;
         }
 
         // Called by the projectile, the sink comes from the manager or, on the old stage path, from the registry

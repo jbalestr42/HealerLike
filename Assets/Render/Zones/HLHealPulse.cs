@@ -1,9 +1,10 @@
 using UnityEngine;
+using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Zones
 {
     // Goes on each healer view, Init registers it for that healer's resolved heals
-    public class HLHealPulse : MonoBehaviour, IVisualBehaviour, IHLHealVisualSink
+    public class HLHealPulse : MonoBehaviour, IVisualBehaviour, IEntityView, IHLHealVisualSink
     {
         [SerializeField] float _cellSize = 1f;
         GameObject _source;
@@ -25,6 +26,11 @@ namespace HealerLike.Render.Zones
             {
                 Subscribe();
             }
+        }
+
+        public void Init(Entity entity, RenderManager manager)
+        {
+            Init(entity.gameObject, manager.registry, manager.zones);
         }
 
         // Called by EntityModel.Init on the staged model copies, removed in D2

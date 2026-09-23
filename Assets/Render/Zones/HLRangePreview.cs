@@ -1,9 +1,10 @@
 using UnityEngine;
+using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Zones
 {
     // Range preview of an ally, the range driver tells it whether it is hovered and whether every range shows
-    public class HLRangePreview : MonoBehaviour, IVisualBehaviour
+    public class HLRangePreview : MonoBehaviour, IVisualBehaviour, IEntityView
     {
         [SerializeField] bool _observePointer = true;
         [SerializeField] Camera _camera;
@@ -60,6 +61,13 @@ namespace HealerLike.Render.Zones
             _selected = false;
             _dragging = false;
             _entity = entity;
+        }
+
+        public Entity entity { get { return _entity; } }
+
+        public void Init(Entity entity, RenderManager manager)
+        {
+            Init(entity, manager.zones);
         }
 
         // Called by EntityModel.Init on the staged model copies, removed in D2

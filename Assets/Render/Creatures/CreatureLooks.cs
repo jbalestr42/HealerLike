@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Creatures
 {
-    // The view prefab drawn for each entity and character, an unmapped entity gets the default of its side
+    // The view prefab drawn for each entity and character, an unmapped one gets the default of its side
     [CreateAssetMenu(menuName = "Custom/Render/CreatureLooks")]
     public class CreatureLooks : SerializedScriptableObject
     {
@@ -20,6 +20,9 @@ namespace HealerLike.Render.Creatures
         [AssetsOnly]
         public GameObject enemy;
 
+        [AssetsOnly]
+        public GameObject character;
+
         public GameObject GetView(EntityData data, Entity.EntityType entityType)
         {
             if (data != null && entities.ContainsKey(data))
@@ -27,6 +30,15 @@ namespace HealerLike.Render.Creatures
                 return entities[data];
             }
             return entityType == Entity.EntityType.Player ? ally : enemy;
+        }
+
+        public GameObject GetView(CharacterData data)
+        {
+            if (data != null && characters.ContainsKey(data))
+            {
+                return characters[data];
+            }
+            return character;
         }
     }
 }

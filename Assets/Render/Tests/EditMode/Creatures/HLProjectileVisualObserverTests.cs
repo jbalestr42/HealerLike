@@ -235,7 +235,7 @@ namespace HealerLike.Render.Creatures
             GameObject managerGo = new GameObject("HLRenderManager");
             RenderManager manager = managerGo.AddComponent<RenderManager>();
             int previous = manager.NextDeliveryToken();
-            _observer.Init(manager);
+            _observer.Init(manager, null);
 
             _observer.Init(_source);
 

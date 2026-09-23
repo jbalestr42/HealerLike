@@ -121,11 +121,7 @@ namespace HealerLike.Render.Stage
                 if (view) { var vso=new SerializedObject(view); vso.FindProperty("_character").objectReferenceValue=character; vso.FindProperty("_visualAnchor").objectReferenceValue=anchor.transform; vso.FindProperty("_recipe").objectReferenceValue=AssetDatabase.LoadMainAssetAtPath("Assets/Render/Creatures/Data/HLHealer.asset"); vso.FindProperty("_material").objectReferenceValue=green; vso.ApplyModifiedPropertiesWithoutUndo(); }
             }
             Grass(stage.transform, bounds, grid, ground.transform, camera, zones, bootstrap);
-            var battleFocus=stage.AddComponent<HLBattleFocus>();
-            var gameView=Object.FindAnyObjectByType<GameView>(FindObjectsInactive.Include);
-            battleFocus.Configure(camera,bootstrap,gameView ? gameView.gameHUD.nextWaveButton : null);
-            var range = stage.AddComponent<HLStageRangeDriver>(); range.Mode = HLStageRangeDriver.PreviewMode.Pointer;
-            if (key) stage.AddComponent<HLStageKeyLight>().KeyLight = key;
+            if (key) stage.AddComponent<HLStageKeyLight>().keyLight = key;
             var groundMaterial = StageGroundMaterial(GroundMaterial());
             if (ground.TryGetComponent<Renderer>(out var renderer)) renderer.sharedMaterial = groundMaterial;
             var gust = Environment(stage.transform, grid, ground.transform, camera, zones as HealerLike.Render.Zones.HLZoneRegistry, groundMaterial);

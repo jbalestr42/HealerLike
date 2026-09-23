@@ -41,9 +41,8 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            // TODO: take the heal registry from the manager once it holds one
-            Bind(entity.health, null, null, true);
-            _sink = manager.GetComponentInChildren<HLSpellVisualSink>();
+            Bind(entity.health, null, manager.registry, true);
+            _sink = manager.spellSink;
         }
 
         // Old path while the stage prefabs still walk IVisualBehaviour, the sink then comes from the registry
