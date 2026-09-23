@@ -75,7 +75,7 @@ namespace HealerLike.Render.Creatures
             texture.Apply();
             string capturePath = "/Users/fc/Documents/healerlike-render-specs/captures/render-creature-gallery.png";
             File.WriteAllBytes(capturePath, texture.EncodeToPNG());
-            Debug.Log("Visual-only gallery: " + capturePath);
+            Debug.Log("[MatchCreatureCapture] Visual-only gallery: " + capturePath);
             RenderTexture.active = null;
             Object.DestroyImmediate(texture);
             target.Release();

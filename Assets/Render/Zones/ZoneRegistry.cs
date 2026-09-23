@@ -283,7 +283,7 @@ namespace HealerLike.Render.Zones
             _overflowCount = overflow;
             if (overflow > 0 && !_overflowing)
             {
-                Debug.LogWarning("ZoneRegistry: cosmetic zone capacity exceeded; "
+                Debug.LogWarning("[ZoneRegistry] Cosmetic zone capacity exceeded; "
                                  + "feedback reserved before decorative footprints; "
                                  + "first registered wins within each kind.", this);
             }

@@ -45,7 +45,7 @@ public class ZoneFakeUpload : IZoneUpload
 
 public class ZoneRegistryTests
 {
-    static readonly string overflowWarning = "ZoneRegistry: cosmetic zone capacity exceeded; "
+    static readonly string overflowWarning = "[ZoneRegistry] Cosmetic zone capacity exceeded; "
                                              + "feedback reserved before decorative footprints; "
                                              + "first registered wins within each kind.";
 
