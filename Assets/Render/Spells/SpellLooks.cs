@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using HealerLike.Render.Creatures;
 
 namespace HealerLike.Render.Spells
 {
@@ -24,6 +25,10 @@ namespace HealerLike.Render.Spells
         public SpellLook manaLoss;
         public SpellLook chain;
         public SpellLook shield;
+
+        // Area pulses, the hostile one is the slate litter
+        public SpellLook area;
+        public SpellLook hostileArea;
 
         public SpellLook GetLook(ABuffHandlerFactory factory, bool isSameSide)
         {
@@ -49,6 +54,7 @@ namespace HealerLike.Render.Spells
     {
         [AssetsOnly]
         public HLSpellEffect effectPrefab;
+        // Colour of the effect parts, not the body tint
         public Color tint = Color.white;
         public Vector3 offset = Vector3.zero;
     }
@@ -57,5 +63,7 @@ namespace HealerLike.Render.Spells
     public class ProjectileLook
     {
         public HLDeliveryStyle style = HLDeliveryStyle.Direct;
+        public HLGestureKind presentation = HLGestureKind.Attack;
+        public bool preserveContactPath;
     }
 }

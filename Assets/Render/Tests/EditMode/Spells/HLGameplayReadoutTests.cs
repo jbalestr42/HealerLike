@@ -32,7 +32,11 @@ namespace HealerLike.Render.Spells
                     buffFactoryList = new List<ABuffFactory> { modifier }
                 };
                 HLAttributeShieldView view = go.AddComponent<HLAttributeShieldView>();
-                view.Bind(attributes, go.transform);
+                view.Bind(
+                    attributes,
+                    go.transform,
+                    UnityEditor.AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset")
+                );
                 Assert.IsNull(view.effect);
                 TestHelpers.WithLoggingDisabled(() =>
                 {
@@ -120,15 +124,17 @@ namespace HealerLike.Render.Spells
             GameObject host = new GameObject("HLTintSink");
             GameObject target = new GameObject("HLTintTarget");
             BuffHandlerFactory poison = UnityEditor.AssetDatabase.LoadAssetAtPath<BuffHandlerFactory>(
-                "Assets/Render/Stage/Data/CharacterSkills/PoisonSingleTarget/"
-                + "HLPoisonSingleTarget_BuffHandlerFactory.asset"
+                "Assets/Data/CharacterSkills/PoisonSingleTarget/PoisonSingleTarget_BuffHandlerFactory.asset"
             );
             BuffHandlerFactory buff = UnityEditor.AssetDatabase.LoadAssetAtPath<BuffHandlerFactory>(
-                "Assets/Render/Stage/Data/CharacterSkills/MultiTargetBuffAttackRate/HLBuffHandlerFactory.asset"
+                "Assets/Data/CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory.asset"
             );
             try
             {
                 HLSpellVisualSink sink = host.AddComponent<HLSpellVisualSink>();
+                sink.looks = UnityEditor.AssetDatabase.LoadAssetAtPath<SpellLooks>(
+                    "Assets/Render/Spells/Data/SpellLooks.asset"
+                );
                 sink.SetStatus(null, target, poison, 1, 1f, 5f, HLClockKind.Simulation);
                 Assert.AreNotEqual(Color.white, HLBodyTintState.Read(target));
                 sink.SetStatus(null, target, buff, 1, 1f, 5f, HLClockKind.Simulation);

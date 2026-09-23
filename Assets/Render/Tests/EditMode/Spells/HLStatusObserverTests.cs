@@ -12,10 +12,6 @@ namespace HealerLike.Render.Spells
             {
                 return;
             }
-            foreach (HLSpellEffect effect in go.GetComponentsInChildren<HLSpellEffect>(true))
-            {
-                TestHelpers.InvokePrivate(effect, "OnDestroy");
-            }
             foreach (HLSpellVisualSink sink in go.GetComponentsInChildren<HLSpellVisualSink>(true))
             {
                 TestHelpers.InvokePrivate(sink, "OnDestroy");
@@ -127,6 +123,9 @@ namespace HealerLike.Render.Spells
                 BuffManager manager = go.AddComponent<BuffManager>();
                 HLStatusObserver observer = go.AddComponent<HLStatusObserver>();
                 HLSpellVisualSink sink = host.AddComponent<HLSpellVisualSink>();
+                sink.looks = UnityEditor.AssetDatabase.LoadAssetAtPath<SpellLooks>(
+                    "Assets/Render/Spells/Data/SpellLooks.asset"
+                );
                 HLRenderRegistry.current = new HLRenderRegistry { spellSink = sink };
                 observer.Bind(manager, null);
                 manager.OnBuffHandlerStarted.Invoke(
@@ -179,6 +178,9 @@ namespace HealerLike.Render.Spells
                 BuffManager manager = go.AddComponent<BuffManager>();
                 HLStatusObserver observer = go.AddComponent<HLStatusObserver>();
                 HLSpellVisualSink sink = host.AddComponent<HLSpellVisualSink>();
+                sink.looks = UnityEditor.AssetDatabase.LoadAssetAtPath<SpellLooks>(
+                    "Assets/Render/Spells/Data/SpellLooks.asset"
+                );
                 observer.Bind(manager, sink);
                 BuffManager.BuffHandlerData data = new BuffManager.BuffHandlerData
                 {
@@ -188,12 +190,12 @@ namespace HealerLike.Render.Spells
                     refreshStacks = 1
                 };
                 manager.OnBuffHandlerStarted.Invoke(data);
-                Assert.AreEqual(1, sink.GetStatus(go, f).GetComponentInChildren<HLSpellEffect>().stacks);
+                Assert.AreEqual(1, sink.GetStatus(go, f).GetComponent<HLSpellEffect>().stacks);
                 data.currentStacks = 3;
                 data.refreshStacks = 0;
                 ((BuffHandler)data.buffHandler).durationTimer = 2f;
                 observer.Reconcile();
-                Assert.AreEqual(3, sink.GetStatus(go, f).GetComponentInChildren<HLSpellEffect>().stacks);
+                Assert.AreEqual(3, sink.GetStatus(go, f).GetComponent<HLSpellEffect>().stacks);
                 BuffManager.BuffHandlerData second = new BuffManager.BuffHandlerData
                 {
                     target = go,
@@ -202,7 +204,7 @@ namespace HealerLike.Render.Spells
                     currentStacks = 2
                 };
                 manager.OnBuffHandlerStarted.Invoke(second);
-                Assert.AreEqual(5, sink.GetStatus(go, f).GetComponentInChildren<HLSpellEffect>().stacks);
+                Assert.AreEqual(5, sink.GetStatus(go, f).GetComponent<HLSpellEffect>().stacks);
                 manager.OnBuffHandlerStopped.Invoke(data);
                 Assert.AreEqual(1, sink.statusCount);
                 manager.OnBuffHandlerStopped.Invoke(second);
@@ -217,6 +219,48 @@ namespace HealerLike.Render.Spells
                 DestroyHost(host);
                 Object.DestroyImmediate(f);
                 Object.DestroyImmediate(m);
+            }
+        }
+    
+        [Test]
+        public void Init_Manager_PublishesToTheManagerSink()
+        {
+            GameObject go = new GameObject("Observed");
+            GameObject managerGo = new GameObject("RenderManager");
+            GameObject sinkGo = new GameObject("Sink");
+            BuffHandlerFactory factory = ScriptableObject.CreateInstance<BuffHandlerFactory>();
+            try
+            {
+                factory.data = new BuffHandlerData { durationType = DurationType.Infinite };
+                Entity entity = null;
+                TestHelpers.WithLoggingDisabled(() => entity = go.AddComponent<Entity>());
+                BuffManager manager = go.GetComponent<BuffManager>();
+                if (manager == null)
+                {
+                    manager = go.AddComponent<BuffManager>();
+                }
+                HealerLike.Render.Stage.RenderManager renderManager =
+                    managerGo.AddComponent<HealerLike.Render.Stage.RenderManager>();
+                sinkGo.transform.SetParent(managerGo.transform);
+                HLSpellVisualSink sink = sinkGo.AddComponent<HLSpellVisualSink>();
+                sink.looks = UnityEditor.AssetDatabase.LoadAssetAtPath<SpellLooks>(
+                    "Assets/Render/Spells/Data/SpellLooks.asset"
+                );
+                HLStatusObserver observer = go.AddComponent<HLStatusObserver>();
+
+                observer.Init(entity, renderManager);
+                manager.OnBuffHandlerStarted.Invoke(
+                    new BuffManager.BuffHandlerData { target = go, buffHandlerFactory = factory, currentStacks = 1 }
+                );
+
+                Assert.AreEqual(1, sink.statusCount);
+                Assert.IsNotNull(go.GetComponent<HLAttributeShieldView>());
+            }
+            finally
+            {
+                DestroyHost(go);
+                DestroyHost(managerGo);
+                Object.DestroyImmediate(factory);
             }
         }
     }

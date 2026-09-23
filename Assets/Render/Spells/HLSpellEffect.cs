@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Spells
 {
@@ -19,60 +18,48 @@ namespace HealerLike.Render.Spells
 
     public class HLSpellEffect : MonoBehaviour
     {
-        public UnityEvent<Color> OnTint = new UnityEvent<Color>();
+        public UnityEvent<Color> OnBodyTint = new UnityEvent<Color>();
 
         public HLSpellEffectKind kind;
-        public Material material;
         public float lifetime = 0.65f;
-        [FormerlySerializedAs("PeriodSeconds")]
-        public float periodSeconds;
-        public bool hasAuthoredSignature;
-        public HLSpellSignature authoredSignature;
         public Transform[] stalks = new Transform[0];
         public Transform[] parts = new Transform[0];
-        // Optional explicit camera; otherwise the tagged main camera is read in LateUpdate.
-        [FormerlySerializedAs("FacingCamera")]
+        // Optional explicit camera, otherwise the main camera is read in LateUpdate
         public Transform facingCamera;
-        [FormerlySerializedAs("ContactThread")]
         public bool contactThread;
 
+        [SerializeField] Renderer _sideRim;
+        [SerializeField] Transform[] _stackBeads = new Transform[0];
+        [SerializeField] Renderer[] _criticalRings = new Renderer[0];
+
         static readonly int baseColorId = Shader.PropertyToID("_BaseColor");
+        static readonly Color gold = new Color32(242, 194, 48, 255);
+        static readonly Color lime = new Color32(198, 242, 74, 255);
+        static readonly Color coral = new Color32(242, 96, 122, 255);
+        static readonly Color slate = new Color32(58, 66, 87, 255);
 
         Renderer[] _renderers;
         Color _baseColor;
         Vector3[] _positions;
         Vector3[] _scales;
         Quaternion[] _rotations;
+        MaterialPropertyBlock _propertyBlock;
         float _age;
-        bool _ready;
-        bool _hasSignature;
-        bool _ownsPrimitives;
-        Transform[] _stackBeads;
-        Renderer _sideRim;
+        bool _isReady = false;
+        bool _isStatus = false;
+        bool _isPeriodic = false;
+        float _periodSeconds;
         Entity.EntityType _side;
-        bool _hasSide;
-        bool _hasShieldState;
-        float? _shieldState;
-        bool _removing;
+        bool _hasSide = false;
+        bool _hasShieldState = false;
+        float _shieldState;
+        bool _isRemoving = false;
         float _removalAge;
         Vector3 _linkStart;
         Vector3 _linkEnd;
 
-        MaterialPropertyBlock _propertyBlock;
-        MaterialPropertyBlock propertyBlock
-        {
-            get
-            {
-                if (_propertyBlock == null)
-                {
-                    _propertyBlock = new MaterialPropertyBlock();
-                }
-                return _propertyBlock;
-            }
-        }
-
-        Color _tint = Color.white;
-        public Color tint { get { return _tint; } }
+        Color _bodyTint = Color.white;
+        public Color bodyTint { get { return _bodyTint; } }
 
         int _stacks;
         public int stacks { get { return _stacks; } }
@@ -86,20 +73,17 @@ namespace HealerLike.Render.Spells
         HLClockKind _clock;
         public HLClockKind clock { get { return _clock; } }
 
-        HLSpellSignature _signature;
-        public HLSpellSignature signature { get { return _signature; } }
-
-        public bool removalComplete { get { return _removing && _removalAge >= 0.25f; } }
+        public bool removalComplete { get { return _isRemoving && _removalAge >= 0.25f; } }
 
         void Start()
         {
-            Initialize();
+            Init();
         }
 
         void Update()
         {
             Advance(_clock == HLClockKind.Realtime ? Time.unscaledDeltaTime : Time.deltaTime);
-            if (removalComplete || (!_hasSignature && _age >= lifetime))
+            if (removalComplete || (!_isStatus && _age >= lifetime))
             {
                 Destroy(gameObject);
             }
@@ -111,42 +95,31 @@ namespace HealerLike.Render.Spells
             {
                 return;
             }
+
             Transform cameraTransform = facingCamera;
-            if (!cameraTransform)
+            if (cameraTransform == null && Camera.main != null)
             {
-                Camera camera = Camera.main;
-                if (camera)
-                {
-                    cameraTransform = camera.transform;
-                }
+                cameraTransform = Camera.main.transform;
             }
             FaceCamera(cameraTransform);
         }
 
         void OnDisable()
         {
-            if (_tint != Color.white)
+            if (_bodyTint != Color.white)
             {
-                SetTint(Color.white);
+                SetBodyTint(Color.white);
             }
         }
 
-        void OnDestroy()
+        public void Init()
         {
-            ReleaseResources();
-        }
-
-        public void Initialize()
-        {
-            if (_ready)
+            if (_isReady)
             {
                 return;
             }
-            RetainPrimitives();
-            if (parts == null || parts.Length == 0)
-            {
-                HLSpellPrimitives.Build(this);
-            }
+
+            _propertyBlock = new MaterialPropertyBlock();
             _renderers = new Renderer[parts.Length];
             _positions = new Vector3[parts.Length];
             _scales = new Vector3[parts.Length];
@@ -159,94 +132,76 @@ namespace HealerLike.Render.Spells
                 _rotations[i] = parts[i].localRotation;
             }
 
-            Color color = new Color32(242, 194, 48, 255);
-            if (kind == HLSpellEffectKind.Heal)
+            SetColor(DefaultColor());
+            _propertyBlock.SetColor(baseColorId, gold);
+            foreach (Transform bead in _stackBeads)
             {
-                color = new Color32(198, 242, 74, 255);
+                bead.GetComponent<Renderer>().SetPropertyBlock(_propertyBlock);
             }
-            else if (kind == HLSpellEffectKind.Impact || kind == HLSpellEffectKind.Drip)
-            {
-                color = new Color32(242, 96, 122, 255);
-            }
-            else if (kind == HLSpellEffectKind.Litter)
-            {
-                color = new Color32(58, 66, 87, 255);
-            }
-            else if (kind == HLSpellEffectKind.Area)
-            {
-                color = Color.white;
-            }
-            _baseColor = color;
-            MaterialPropertyBlock block = propertyBlock;
-            block.SetColor(baseColorId, color);
-            foreach (Renderer renderer in GetComponentsInChildren<Renderer>())
-            {
-                if (material)
-                {
-                    renderer.sharedMaterial = material;
-                }
-                renderer.SetPropertyBlock(block);
-            }
-            if (hasAuthoredSignature)
-            {
-                ApplySignatureColor(authoredSignature);
-            }
-            _ready = true;
+            _isReady = true;
         }
 
-        public void SetStatus(int stacks, float elapsed, float duration, HLClockKind clock, HLSpellSignature signature)
+        // Colours every part, a look sets its own tint right after spawning
+        public void SetColor(Color color)
         {
-            Initialize();
-            bool signatureChanged = !_hasSignature || !_signature.Equals(signature);
-            if (!_hasSignature)
+            if (_propertyBlock == null)
             {
-                if (!hasAuthoredSignature)
+                _propertyBlock = new MaterialPropertyBlock();
+            }
+
+            _baseColor = color;
+            _propertyBlock.SetColor(baseColorId, color);
+            foreach (Transform part in parts)
+            {
+                if (part != null)
                 {
-                    HLSpellPrimitives.AddMarker(this, signature);
+                    part.GetComponent<Renderer>().SetPropertyBlock(_propertyBlock);
                 }
-                _hasSignature = true;
             }
-            bool stacksChanged = _stackBeads == null || _stacks != Mathf.Max(0, stacks);
-            if (_stackBeads == null)
-            {
-                _stackBeads = HLSpellPrimitives.StackBeads(this);
-            }
-            if (stacksChanged)
+        }
+
+        // Read from the buff handler, a periodic heal or drip only moves on its ticks
+        public void SetPeriod(bool isPeriodic, float periodSeconds)
+        {
+            _isPeriodic = isPeriodic && float.IsFinite(periodSeconds) && periodSeconds > 0f;
+            _periodSeconds = _isPeriodic ? periodSeconds : 0f;
+        }
+
+        public void SetStatus(int stacks, float elapsed, float duration, HLClockKind clock)
+        {
+            Init();
+            int visibleStacks = Mathf.Max(0, stacks);
+            if (!_isStatus || _stacks != visibleStacks)
             {
                 for (int i = 0; i < _stackBeads.Length; i++)
                 {
-                    _stackBeads[i].gameObject.SetActive(i < Mathf.Min(8, stacks));
+                    _stackBeads[i].gameObject.SetActive(i < Mathf.Min(_stackBeads.Length, visibleStacks));
                 }
             }
-            _stacks = Mathf.Max(0, stacks);
+
+            _isStatus = true;
+            _stacks = visibleStacks;
             _elapsedSeconds = Mathf.Max(0f, elapsed);
             _durationSeconds = duration;
             _clock = clock;
-            _signature = signature;
-            if (signatureChanged)
+            if (kind == HLSpellEffectKind.Drip)
             {
-                ApplySignatureColor(signature);
-                _hasShieldState = false;
-            }
-            if (kind == HLSpellEffectKind.Drip && signature.sign != HLSign.Positive)
-            {
-                SetTint(new Color32(242, 96, 122, 255));
+                SetBodyTint(coral);
             }
             Advance(0f);
         }
 
         public void SetSide(Entity.EntityType side)
         {
-            if (_hasSide && _side == side && _sideRim)
+            if (_sideRim == null || (_hasSide && _side == side))
             {
                 return;
             }
+
+            Init();
             _hasSide = true;
             _side = side;
-            if (!_sideRim)
-            {
-                _sideRim = HLSpellPrimitives.SideRim(this);
-            }
+            _sideRim.gameObject.SetActive(true);
 
             Color color = new Color32(201, 196, 180, 255);
             if (side == Entity.EntityType.Player)
@@ -255,65 +210,50 @@ namespace HealerLike.Render.Spells
             }
             else if (side == Entity.EntityType.Computer)
             {
-                color = new Color32(58, 66, 87, 255);
+                color = slate;
             }
-            MaterialPropertyBlock block = propertyBlock;
-            block.SetColor("_BaseColor", color);
-            _sideRim.SetPropertyBlock(block);
+            _propertyBlock.SetColor(baseColorId, color);
+            _sideRim.SetPropertyBlock(_propertyBlock);
         }
 
-        public void SetShieldState(float? observedCharges)
+        public void ShowCritical()
         {
-            if (kind != HLSpellEffectKind.Shield)
+            Init();
+            _propertyBlock.SetColor(baseColorId, kind == HLSpellEffectKind.Impact ? coral : lime);
+            foreach (Renderer ring in _criticalRings)
+            {
+                ring.gameObject.SetActive(true);
+                ring.SetPropertyBlock(_propertyBlock);
+            }
+        }
+
+        // One plate per observed charge
+        public void SetShieldState(float charges)
+        {
+            if (kind != HLSpellEffectKind.Shield || (_hasShieldState && _shieldState == charges))
             {
                 return;
             }
-            if (_hasShieldState && _shieldState == observedCharges)
-            {
-                return;
-            }
+
             _hasShieldState = true;
-            _shieldState = observedCharges;
-            bool isHitArmor = _signature.operation == HLOperation.Attribute
-                && _signature.attribute == AttributeType.HitArmor;
+            _shieldState = charges;
+            int visible = Mathf.Clamp(Mathf.CeilToInt(charges), 0, parts.Length);
             for (int i = 0; i < parts.Length; i++)
             {
-                bool visible = !isHitArmor
-                    || !observedCharges.HasValue
-                    || i < Mathf.Clamp(Mathf.CeilToInt(observedCharges.Value), 0, 6);
-                parts[i].gameObject.SetActive(visible);
+                parts[i].gameObject.SetActive(i < visible);
             }
         }
 
         public void BeginRemoval()
         {
-            _removing = true;
+            _isRemoving = true;
             _removalAge = 0f;
-            SetTint(Color.white);
-        }
-
-        // Explicit teardown also supports editor authoring, where runtime messages do not run.
-        public void ReleaseResources()
-        {
-            if (_ownsPrimitives)
-            {
-                _ownsPrimitives = false;
-                HLSpellPrimitives.ReleaseUser();
-            }
-        }
-
-        public void RetainPrimitives()
-        {
-            if (!_ownsPrimitives)
-            {
-                HLSpellPrimitives.Retain();
-                _ownsPrimitives = true;
-            }
+            SetBodyTint(Color.white);
         }
 
         public void FaceCamera(Transform cameraTransform)
         {
-            if (kind == HLSpellEffectKind.Impact && cameraTransform && parts.Length > 0)
+            if (kind == HLSpellEffectKind.Impact && cameraTransform != null && parts.Length > 0)
             {
                 parts[0].rotation = cameraTransform.rotation;
             }
@@ -321,35 +261,40 @@ namespace HealerLike.Render.Spells
 
         public void Advance(float delta)
         {
-            Initialize();
-            if (!HLSpellGrammar.Finite(delta) || delta < 0f)
+            Init();
+            if (!float.IsFinite(delta) || delta < 0f)
             {
                 return;
             }
+
             _age += delta;
-            if (_removing)
+            if (_isRemoving)
             {
                 _removalAge += delta;
             }
+
             float statusTime = _elapsedSeconds;
-            if (HLSpellGrammar.Finite(_durationSeconds) && _durationSeconds > 0f)
+            if (float.IsFinite(_durationSeconds) && _durationSeconds > 0f)
             {
                 statusTime = Mathf.Min(statusTime, _durationSeconds);
             }
+
             if (kind == HLSpellEffectKind.Chain)
             {
                 SetEndpoints(_linkStart, _linkEnd);
             }
+
             float fade = Mathf.Clamp01(1f - _age / Mathf.Max(0.01f, lifetime));
             for (int i = 0; i < parts.Length; i++)
             {
-                if (!parts[i])
+                if (parts[i] == null)
                 {
                     continue;
                 }
+
                 if (kind == HLSpellEffectKind.Buff)
                 {
-                    // Rotate the tilted plane around the body; spinning a torus in its own plane is invisible.
+                    // Rotate the tilted plane around the body, spinning a torus in its own plane is invisible
                     float spin = i % 2 == 0 ? 34f : -28f;
                     parts[i].localRotation = Quaternion.Euler(0f, statusTime * spin, 0f) * _rotations[i];
                     parts[i].localScale = _scales[i] * (1f + 0.035f * Mathf.Sin(statusTime * 2.4f + i));
@@ -357,28 +302,16 @@ namespace HealerLike.Render.Spells
                 }
                 else if (kind == HLSpellEffectKind.Shield)
                 {
-                    float closure = _removing
-                        ? 1f - Mathf.Clamp01(_removalAge * 4f)
-                        : Mathf.Clamp01(statusTime * 4f);
-                    float closedAngle = 0f;
-                    if (_signature.operation == HLOperation.Attribute
-                        && _signature.attribute == AttributeType.PercentArmor)
-                    {
-                        closedAngle = -16f;
-                    }
-                    parts[i].localRotation =
-                        _rotations[i] * Quaternion.Euler(0f, 0f, Mathf.Lerp(-32f, closedAngle, closure));
+                    float closure = _isRemoving ? 1f - Mathf.Clamp01(_removalAge * 4f) : Mathf.Clamp01(statusTime * 4f);
+                    parts[i].localRotation = _rotations[i] * Quaternion.Euler(0f, 0f, Mathf.Lerp(-32f, 0f, closure));
                     parts[i].localPosition = _positions[i] * Mathf.Lerp(1.3f, 1f, closure);
                 }
                 else if (kind == HLSpellEffectKind.Drip)
                 {
-                    bool ticking = HLSpellGrammar.Finite(periodSeconds)
-                        && periodSeconds > 0f
-                        && statusTime >= periodSeconds;
-                    float phase = ticking ? Mathf.Repeat(statusTime, periodSeconds) / periodSeconds : 0f;
-                    Vector3 direction = _signature.sign == HLSign.Positive ? Vector3.up : Vector3.down;
-                    parts[i].localPosition = _positions[i] + direction * phase * phase * 0.6f;
-                    parts[i].localScale = _scales[i] * (ticking ? Mathf.Clamp01((1f - phase) * 4f) : 0f);
+                    bool isTicking = _isPeriodic && statusTime >= _periodSeconds;
+                    float phase = isTicking ? Mathf.Repeat(statusTime, _periodSeconds) / _periodSeconds : 0f;
+                    parts[i].localPosition = _positions[i] + Vector3.down * phase * phase * 0.6f;
+                    parts[i].localScale = _scales[i] * (isTicking ? Mathf.Clamp01((1f - phase) * 4f) : 0f);
                 }
                 else if (kind == HLSpellEffectKind.Area)
                 {
@@ -394,58 +327,23 @@ namespace HealerLike.Render.Spells
                 }
                 else if (kind == HLSpellEffectKind.Heal)
                 {
-                    bool periodic = _hasSignature
-                        && _signature.tempo == HLTempo.HandlerTick
-                        && HLSpellGrammar.Finite(periodSeconds)
-                        && periodSeconds > 0f;
-                    float time = periodic
-                        ? Mathf.Repeat(statusTime, periodSeconds) / periodSeconds
-                        : _age / Mathf.Max(0.01f, lifetime);
-                    bool isStill = _hasSignature && !periodic;
-                    float phase = isStill ? 0f : Mathf.Clamp01(time * (1f + i * 0.025f));
-                    float bud = 1f;
-                    if (!isStill)
-                    {
-                        float grow = Mathf.SmoothStep(0.2f, 1f, Mathf.Clamp01(phase / 0.6f));
-                        float pop = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((phase - 0.78f) / 0.16f));
-                        bud = grow * (1f - pop);
-                    }
-                    if (periodic && statusTime < periodSeconds)
-                    {
-                        bud = 0f;
-                    }
-                    parts[i].localPosition = _positions[i] + Vector3.up * phase * (0.45f + i * 0.025f);
-                    parts[i].localScale = _scales[i] * bud;
-                    if (i < stalks.Length && stalks[i])
-                    {
-                        float height = parts[i].localPosition.y + 0.12f;
-                        stalks[i].localPosition = new Vector3(_positions[i].x, height * 0.5f - 0.12f, _positions[i].z);
-                        stalks[i].localScale = new Vector3(0.009f * bud, height * 0.5f, 0.009f * bud);
-                    }
+                    AdvanceBud(i, statusTime);
                 }
                 else if (kind == HLSpellEffectKind.Mana)
                 {
-                    float rise = _hasSignature ? 0f : _age;
+                    float rise = _isStatus ? 0f : _age;
                     parts[i].localPosition = _positions[i] + Vector3.up * (rise * (0.55f + i * 0.04f));
                 }
-                else if (kind == HLSpellEffectKind.Impact)
+                else if (kind == HLSpellEffectKind.Impact && i > 0)
                 {
-                    float time = _hasSignature ? 0f : _age;
-                    if (i > 0)
-                    {
-                        Vector3 velocity = new Vector3(_positions[i].x * 4f, 1.1f + i * 0.12f, _positions[i].z * 4f);
-                        parts[i].localPosition = _positions[i] + velocity * time + Vector3.down * (2.8f * time * time);
-                        parts[i].localRotation = _rotations[i] * Quaternion.Euler(time * 180f, time * 70f, 0f);
-                    }
+                    float time = _isStatus ? 0f : _age;
+                    Vector3 velocity = new Vector3(_positions[i].x * 4f, 1.1f + i * 0.12f, _positions[i].z * 4f);
+                    parts[i].localPosition = _positions[i] + velocity * time + Vector3.down * (2.8f * time * time);
+                    parts[i].localRotation = _rotations[i] * Quaternion.Euler(time * 180f, time * 70f, 0f);
                 }
-                if (
-                    !_hasSignature
-                    && kind != HLSpellEffectKind.Chain
-                    && kind != HLSpellEffectKind.Area
-                    && kind != HLSpellEffectKind.Heal
-                    && kind != HLSpellEffectKind.Litter
-                    && kind != HLSpellEffectKind.Drip
-                )
+
+                if (!_isStatus && (kind == HLSpellEffectKind.Buff || kind == HLSpellEffectKind.Shield
+                    || kind == HLSpellEffectKind.Mana || kind == HLSpellEffectKind.Impact))
                 {
                     parts[i].localScale = _scales[i] * Mathf.Sqrt(fade);
                 }
@@ -454,25 +352,26 @@ namespace HealerLike.Render.Spells
 
         public void SetEndpoints(Vector3 start, Vector3 end)
         {
-            Initialize();
+            Init();
             if (kind != HLSpellEffectKind.Chain)
             {
                 return;
             }
+
             _linkStart = start;
             _linkEnd = end;
             float width = contactThread ? 0.012f : 0.025f;
             for (int i = 0; i < parts.Length; i++)
             {
-                // Even parts are segments, odd parts are the beads travelling along them.
+                // Even parts are segments, odd parts are the beads travelling along them
                 float t = (i / 2) / 16f;
-                Vector3 p = LinkPoint(start, end, t);
+                Vector3 point = LinkPoint(start, end, t);
                 if (i % 2 == 0)
                 {
-                    Vector3 q = LinkPoint(start, end, Mathf.Min(1f, t + 1f / 16f));
-                    parts[i].position = (p + q) * 0.5f;
-                    parts[i].rotation = q == p ? Quaternion.identity : Quaternion.FromToRotation(Vector3.up, q - p);
-                    parts[i].localScale = new Vector3(width, Vector3.Distance(p, q) * 0.5f, width);
+                    Vector3 next = LinkPoint(start, end, Mathf.Min(1f, t + 1f / 16f));
+                    parts[i].position = (point + next) * 0.5f;
+                    parts[i].rotation = next == point ? Quaternion.identity : Quaternion.FromToRotation(Vector3.up, next - point);
+                    parts[i].localScale = new Vector3(width, Vector3.Distance(point, next) * 0.5f, width);
                 }
                 else
                 {
@@ -483,67 +382,83 @@ namespace HealerLike.Render.Spells
             }
         }
 
-        void SetTint(Color color)
+        void AdvanceBud(int index, float statusTime)
         {
-            _tint = color;
-            OnTint.Invoke(color);
+            bool isPeriodic = _isStatus && _isPeriodic;
+            float time = isPeriodic ? Mathf.Repeat(statusTime, _periodSeconds) / _periodSeconds : _age / Mathf.Max(0.01f, lifetime);
+            bool isStill = _isStatus && !isPeriodic;
+            float phase = isStill ? 0f : Mathf.Clamp01(time * (1f + index * 0.025f));
+            float bud = 1f;
+            if (!isStill)
+            {
+                float grow = Mathf.SmoothStep(0.2f, 1f, Mathf.Clamp01(phase / 0.6f));
+                float pop = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((phase - 0.78f) / 0.16f));
+                bud = grow * (1f - pop);
+            }
+
+            if (isPeriodic && statusTime < _periodSeconds)
+            {
+                bud = 0f;
+            }
+
+            parts[index].localPosition = _positions[index] + Vector3.up * phase * (0.45f + index * 0.025f);
+            parts[index].localScale = _scales[index] * bud;
+            if (index < stalks.Length && stalks[index] != null)
+            {
+                float height = parts[index].localPosition.y + 0.12f;
+                stalks[index].localPosition = new Vector3(_positions[index].x, height * 0.5f - 0.12f, _positions[index].z);
+                stalks[index].localScale = new Vector3(0.009f * bud, height * 0.5f, 0.009f * bud);
+            }
         }
 
-        void ApplySignatureColor(HLSpellSignature signature)
+        Color DefaultColor()
         {
-            Color color = new Color32(242, 194, 48, 255);
-            if (kind == HLSpellEffectKind.Shield)
+            switch (kind)
             {
-                color = new Color32(151, 203, 99, 255);
+                case HLSpellEffectKind.Heal:
+                    return lime;
+                case HLSpellEffectKind.Impact:
+                case HLSpellEffectKind.Drip:
+                    return coral;
+                case HLSpellEffectKind.Litter:
+                    return slate;
+                case HLSpellEffectKind.Area:
+                    return Color.white;
+                default:
+                    return gold;
             }
-            else if (signature.sign == HLSign.Negative)
-            {
-                color = new Color32(242, 96, 122, 255);
-            }
-            else if (
-                signature.operation == HLOperation.Resource
-                && signature.sign == HLSign.Positive
-                && signature.attribute == AttributeType.HealthMax
-            )
-            {
-                color = new Color32(198, 242, 74, 255);
-            }
-            _baseColor = color;
-            MaterialPropertyBlock block = propertyBlock;
-            block.SetColor(baseColorId, color);
-            foreach (Transform part in parts)
-            {
-                if (part)
-                {
-                    part.GetComponent<Renderer>().SetPropertyBlock(block);
-                }
-            }
+        }
+
+        void SetBodyTint(Color color)
+        {
+            _bodyTint = color;
+            OnBodyTint.Invoke(color);
         }
 
         void Brighten(int index, float brightness)
         {
             Color color = _baseColor * brightness;
             color.a = 1f;
-            MaterialPropertyBlock block = propertyBlock;
-            block.SetColor(baseColorId, color);
-            _renderers[index].SetPropertyBlock(block);
+            _propertyBlock.SetColor(baseColorId, color);
+            _renderers[index].SetPropertyBlock(_propertyBlock);
         }
 
-        Vector3 LinkPoint(Vector3 a, Vector3 b, float t)
+        Vector3 LinkPoint(Vector3 start, Vector3 end, float t)
         {
             if (!contactThread)
             {
-                return Curve(a, b, t);
+                return Curve(start, end, t);
             }
-            Vector3 side = Vector3.Cross((b - a).normalized, Vector3.up);
+
+            Vector3 side = Vector3.Cross((end - start).normalized, Vector3.up);
             float wave = Mathf.Sin(t * Mathf.PI * 8f) * Mathf.Sin(t * Mathf.PI) * 0.035f;
-            return Vector3.Lerp(a, b, t) + side * wave;
+            return Vector3.Lerp(start, end, t) + side * wave;
         }
 
-        static Vector3 Curve(Vector3 a, Vector3 b, float t)
+        static Vector3 Curve(Vector3 start, Vector3 end, float t)
         {
-            float height = 4f * t * (1f - t) * Mathf.Min(0.7f, Vector3.Distance(a, b) * 0.2f);
-            return Vector3.Lerp(a, b, t) + Vector3.up * height;
+            float height = 4f * t * (1f - t) * Mathf.Min(0.7f, Vector3.Distance(start, end) * 0.2f);
+            return Vector3.Lerp(start, end, t) + Vector3.up * height;
         }
     }
 }
