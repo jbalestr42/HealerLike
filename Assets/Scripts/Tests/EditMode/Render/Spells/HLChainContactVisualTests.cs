@@ -24,9 +24,9 @@ namespace HealerLike.Render.Spells
                 a.transform.position = Vector3.left;
                 b.transform.position = Vector3.right;
                 projectile.OnHit.Invoke(new OnHitData { target = a });
-                Assert.AreEqual(0, sink.ImpactCount);
+                Assert.AreEqual(0, sink.impactCount);
                 projectile.OnHit.Invoke(new OnHitData { target = b });
-                Assert.AreEqual(1, sink.ImpactCount);
+                Assert.AreEqual(1, sink.impactCount);
                 HLSpellEffect thread = sinkHost.GetComponentInChildren<HLSpellEffect>();
                 Assert.IsTrue(thread.contactThread);
                 Assert.Less(
@@ -38,10 +38,10 @@ namespace HealerLike.Render.Spells
                 );
                 observer.Bind(projectile, sink);
                 projectile.OnHit.Invoke(new OnHitData { target = a });
-                Assert.AreEqual(1, sink.ImpactCount);
+                Assert.AreEqual(1, sink.impactCount);
                 TestHelpers.InvokePrivate(observer, "OnDisable");
                 projectile.OnHit.Invoke(new OnHitData { target = b });
-                Assert.AreEqual(1, sink.ImpactCount);
+                Assert.AreEqual(1, sink.impactCount);
             }
             finally
             {

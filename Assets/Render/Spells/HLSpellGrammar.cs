@@ -39,15 +39,15 @@ namespace HealerLike.Render.Spells
             Entity entity = source ? source.GetComponent<Entity>() : null;
             return new HLGrammarContext
             {
-                Topology = topology,
-                Side = entity ? entity.entityType : Entity.EntityType.None,
-                SourceAttribute = t => attributes != null && attributes.Has(t) ? attributes.Get(t).Value : null,
-                SourceHealth = entity && entity.health ? entity.health.Value : null,
-                SourceMaxHealth = entity && entity.health ? entity.health.Max : null,
-                SelectionData =
+                topology = topology,
+                side = entity ? entity.entityType : Entity.EntityType.None,
+                sourceAttribute = t => attributes != null && attributes.Has(t) ? attributes.Get(t).Value : null,
+                sourceHealth = entity && entity.health ? entity.health.Value : null,
+                sourceMaxHealth = entity && entity.health ? entity.health.Max : null,
+                selectionData =
                     entity && entity.data != null
                         ? Snapshot(new object[] { entity.data.targetBehaviourType, entity.data.targetValidators })
-                        : "",
+                        : ""
             };
         }
 
@@ -64,8 +64,8 @@ namespace HealerLike.Render.Spells
                 context ?? new HLGrammarContext(),
                 HLDurationShape.Instant,
                 HLTempo.Immediate,
-                0,
-                0,
+                0f,
+                0f,
                 0
             );
         }
@@ -102,12 +102,20 @@ namespace HealerLike.Render.Spells
             }
             if (input is BuffHandlerBaseData hd)
             {
-                HLDurationShape shape =
-                    hd.durationType == DurationType.Instant ? HLDurationShape.Instant
-                    : hd.durationType == DurationType.Infinite ? HLDurationShape.Infinite
-                    : HLDurationShape.Timed;
-                HLTempo beat =
-                    hd.isPeriodic && shape != HLDurationShape.Instant ? HLTempo.HandlerTick : HLTempo.Continuous;
+                HLDurationShape shape = HLDurationShape.Timed;
+                if (hd.durationType == DurationType.Instant)
+                {
+                    shape = HLDurationShape.Instant;
+                }
+                else if (hd.durationType == DurationType.Infinite)
+                {
+                    shape = HLDurationShape.Infinite;
+                }
+                HLTempo beat = HLTempo.Continuous;
+                if (hd.isPeriodic && shape != HLDurationShape.Instant)
+                {
+                    beat = HLTempo.HandlerTick;
+                }
                 List<HLVisualRecipe> children = new List<HLVisualRecipe>();
                 if (hd.buffFactoryList != null)
                 {
@@ -116,21 +124,21 @@ namespace HealerLike.Render.Spells
                         children.Add(Compile(f, c, shape, beat, hd.duration, hd.periodDuration, depth + 1));
                     }
                 }
-                return Bundle(
-                    children,
-                    c,
-                    shape,
-                    beat,
-                    hd.duration,
-                    hd.periodDuration,
-                    hd.buffFactoryList == null ? "Missing buff list."
-                        : (
-                            shape == HLDurationShape.Timed && (!Finite(hd.duration) || hd.duration <= 0)
-                            || beat == HLTempo.HandlerTick && (!Finite(hd.periodDuration) || hd.periodDuration <= 0)
-                        )
-                            ? "Invalid handler clock."
-                        : null
-                );
+                bool invalidDuration = !Finite(hd.duration) || hd.duration <= 0f;
+                bool invalidPeriod = !Finite(hd.periodDuration) || hd.periodDuration <= 0f;
+                string diagnostic = null;
+                if (hd.buffFactoryList == null)
+                {
+                    diagnostic = "Missing buff list.";
+                }
+                else if (
+                    shape == HLDurationShape.Timed && invalidDuration
+                    || beat == HLTempo.HandlerTick && invalidPeriod
+                )
+                {
+                    diagnostic = "Invalid handler clock.";
+                }
+                return Bundle(children, c, shape, beat, hd.duration, hd.periodDuration, diagnostic);
             }
             if (input is ABuffFactory bf)
             {
@@ -138,28 +146,52 @@ namespace HealerLike.Render.Spells
             }
             if (input is BaseData md)
             {
-                float value =
-                    md is FlatModifierData flat ? flat.value
-                    : md is UpgradeModifierData upgrade ? upgrade.value
-                    : 0;
-                HLExpression expression =
-                    md is HPBasedModifierData ? HLExpression.RecipientHealth
-                    : md is CurrentWaveModifierData ? HLExpression.Round
-                    : md is SlowModifierData || md is TimeModifierData ? HLExpression.Decay
-                    : HLExpression.Flat;
-                HLStackLaw law =
-                    md is FlatModifierData ? HLStackLaw.FlatPowers
-                    : md is UpgradeModifierData ? HLStackLaw.Linear
-                    : md is SlowModifierData ? HLStackLaw.Logarithmic
-                    : md is TimeModifierData ? HLStackLaw.Refresh
-                    : HLStackLaw.None;
+                float value = 0f;
+                if (md is FlatModifierData flat)
+                {
+                    value = flat.value;
+                }
+                else if (md is UpgradeModifierData upgrade)
+                {
+                    value = upgrade.value;
+                }
+                HLExpression expression = HLExpression.Flat;
+                if (md is HPBasedModifierData)
+                {
+                    expression = HLExpression.RecipientHealth;
+                }
+                else if (md is CurrentWaveModifierData)
+                {
+                    expression = HLExpression.Round;
+                }
+                else if (md is SlowModifierData || md is TimeModifierData)
+                {
+                    expression = HLExpression.Decay;
+                }
+                HLStackLaw law = HLStackLaw.None;
+                if (md is FlatModifierData)
+                {
+                    law = HLStackLaw.FlatPowers;
+                }
+                else if (md is UpgradeModifierData)
+                {
+                    law = HLStackLaw.Linear;
+                }
+                else if (md is SlowModifierData)
+                {
+                    law = HLStackLaw.Logarithmic;
+                }
+                else if (md is TimeModifierData)
+                {
+                    law = HLStackLaw.Refresh;
+                }
                 HLSign sign =
                     expression != HLExpression.Flat || md.modifierType == AttributeModifierType.Override
                         ? HLSign.Conditional
                         : Sign(value);
                 if (md.modifierType == AttributeModifierType.Multiply && duration == HLDurationShape.Instant)
                 {
-                    sign = Sign(value - 1);
+                    sign = Sign(value - 1f);
                 }
                 if (md.type == AttributeType.FlatArmor || md.type == AttributeType.Vulnerability)
                 {
@@ -174,14 +206,14 @@ namespace HealerLike.Render.Spells
                     sign = HLSign.Conditional;
                 }
                 return new HLVisualRecipe(
-                    Key(HLOperation.Attribute, sign, md.type, c.Topology, duration, tempo),
+                    Key(HLOperation.Attribute, sign, md.type, c.topology, duration, tempo),
                     expression,
                     scalar: value,
                     modifier: md.modifierType,
                     stackLaw: law,
                     duration: seconds,
                     period: period,
-                    side: c.Side,
+                    side: c.side,
                     deliveryData: Snapshot(md),
                     diagnostic: md is SlowModifierData || md is TimeModifierData
                         ? "Gameplay modifier constructor reads an unassigned handler."
@@ -199,7 +231,7 @@ namespace HealerLike.Render.Spells
             if (input is MultipleShootBuffData multi)
             {
                 return new HLVisualRecipe(
-                    Key(HLOperation.TargetCount, Sign(multi.value), null, c.Topology, duration, tempo),
+                    Key(HLOperation.TargetCount, Sign(multi.value), null, c.topology, duration, tempo),
                     scalar: multi.value,
                     stackLaw: HLStackLaw.Linear,
                     duration: seconds,
@@ -284,14 +316,14 @@ namespace HealerLike.Render.Spells
                     HLTopology.Self,
                     HLTempo.Immediate,
                     HLDurationShape.Instant,
-                    0
+                    0f
                 );
             }
             if (input is ApplyConsumerCharacterSkillData cs)
             {
                 HLGrammarContext cc = Copy(c, cs.isSingle ? HLTopology.Single : HLTopology.Group);
                 HLVisualRecipe payload = cs.consumer is ConsumerFactory cf
-                    ? Consumer(cf.data, cc, HLDurationShape.Instant, HLTempo.Immediate, 0, 0, cs.multiplier)
+                    ? Consumer(cf.data, cc, HLDurationShape.Instant, HLTempo.Immediate, 0f, 0f, cs.multiplier)
                     : Unknown("Unknown consumer type.");
                 List<HLVisualRecipe> children = new List<HLVisualRecipe> { payload };
                 AddCosts(cs, c, children);
@@ -300,8 +332,8 @@ namespace HealerLike.Render.Spells
                     cc,
                     HLDurationShape.Instant,
                     HLTempo.Immediate,
-                    0,
-                    0,
+                    0f,
+                    0f,
                     delivery: Snapshot(cs),
                     clock: HLClockKind.Realtime
                 );
@@ -333,16 +365,25 @@ namespace HealerLike.Render.Spells
             if (input is SkillDataBase || input is SkillStepDataBase)
             {
                 List<HLVisualRecipe> children = new List<HLVisualRecipe>();
-                HLGrammarContext cc = Copy(
-                    c,
-                    input is ApplyConsumerOnTimeData || input is ApplyBuffPeriodicallySkillData ? HLTopology.Self
-                        : input is AreaOfEffectSkillData ? HLTopology.Area
-                        : c.Topology
-                );
-                HLTempo beat =
-                    input is ConfigurableSkillData || input is RepeatSkillStepData ? HLTempo.Sequence
-                    : input is DurationSkillStepData ? HLTempo.Continuous
-                    : HLTempo.Cooldown;
+                HLTopology topology = c.topology;
+                if (input is ApplyConsumerOnTimeData || input is ApplyBuffPeriodicallySkillData)
+                {
+                    topology = HLTopology.Self;
+                }
+                else if (input is AreaOfEffectSkillData)
+                {
+                    topology = HLTopology.Area;
+                }
+                HLGrammarContext cc = Copy(c, topology);
+                HLTempo beat = HLTempo.Cooldown;
+                if (input is ConfigurableSkillData || input is RepeatSkillStepData)
+                {
+                    beat = HLTempo.Sequence;
+                }
+                else if (input is DurationSkillStepData)
+                {
+                    beat = HLTempo.Continuous;
+                }
                 // Traverse only payload-bearing fields; their serialized order is preserved in Snapshot.
                 foreach (FieldInfo field in input.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance))
                 {
@@ -374,8 +415,8 @@ namespace HealerLike.Render.Spells
                                     cc,
                                     HLDurationShape.Transit,
                                     HLTempo.Collision,
-                                    0,
-                                    0,
+                                    0f,
+                                    0f,
                                     delivery: Snapshot(phase)
                                 )
                             );
@@ -389,7 +430,7 @@ namespace HealerLike.Render.Spells
                     beat,
                     seconds,
                     period,
-                    delivery: Snapshot(input) + c.SelectionData,
+                    delivery: Snapshot(input) + c.selectionData,
                     operation: input is DurationSkillStepData ? HLOperation.Wait : HLOperation.Delivery
                 );
             }
@@ -400,7 +441,7 @@ namespace HealerLike.Render.Spells
                         HLOperation.Delivery,
                         HLSign.Unknown,
                         null,
-                        c.Topology,
+                        c.topology,
                         HLDurationShape.Transit,
                         projectile is ChainLightningProjectile ? HLTempo.Synchronous : HLTempo.Collision
                     ),
@@ -418,7 +459,7 @@ namespace HealerLike.Render.Spells
                         null,
                         input.GetType().Name.StartsWith("Bounce", StringComparison.Ordinal)
                             ? HLTopology.Sequential
-                            : c.Topology,
+                            : c.topology,
                         duration,
                         tempo
                     ),
@@ -456,12 +497,12 @@ namespace HealerLike.Render.Spells
             {
                 foreach (object item in list)
                 {
-                    children.Add(Compile(item, c, duration, tempo, 0, 0, depth + 1));
+                    children.Add(Compile(item, c, duration, tempo, 0f, 0f, depth + 1));
                 }
             }
             else
             {
-                children.Add(Compile(value, c, duration, tempo, 0, 0, depth + 1));
+                children.Add(Compile(value, c, duration, tempo, 0f, 0f, depth + 1));
             }
         }
 
@@ -476,7 +517,7 @@ namespace HealerLike.Render.Spells
         )
         {
             return f is ConsumerFactory cf
-                ? Consumer(cf.data, Copy(c, topology), duration, tempo, seconds, 0, 1, resource)
+                ? Consumer(cf.data, Copy(c, topology), duration, tempo, seconds, 0f, 1f, resource)
                 : Unknown("Unknown consumer type.");
         }
 
@@ -484,12 +525,12 @@ namespace HealerLike.Render.Spells
         {
             return new HLGrammarContext
             {
-                Topology = topology,
-                Side = c.Side,
-                SourceAttribute = c.SourceAttribute,
-                SourceHealth = c.SourceHealth,
-                SourceMaxHealth = c.SourceMaxHealth,
-                SelectionData = c.SelectionData,
+                topology = topology,
+                side = c.side,
+                sourceAttribute = c.sourceAttribute,
+                sourceHealth = c.sourceHealth,
+                sourceMaxHealth = c.sourceMaxHealth,
+                selectionData = c.selectionData
             };
         }
 
@@ -498,9 +539,9 @@ namespace HealerLike.Render.Spells
             HLGrammarContext c,
             HLDurationShape duration = HLDurationShape.Instant,
             HLTempo tempo = HLTempo.Immediate,
-            float seconds = 0,
-            float period = 0,
-            float multiplier = 1,
+            float seconds = 0f,
+            float period = 0f,
+            float multiplier = 1f,
             AttributeType resource = AttributeType.HealthMax
         )
         {
@@ -510,7 +551,7 @@ namespace HealerLike.Render.Spells
             }
             HLExpression expression = HLExpression.Unknown;
             AttributeType read = default;
-            float scalar = 0;
+            float scalar = 0f;
             float? value = null;
             switch (data.value)
             {
@@ -523,17 +564,17 @@ namespace HealerLike.Render.Spells
                     expression = HLExpression.SourceAttribute;
                     read = a.data.type;
                     scalar = a.data.multiplier;
-                    value = c.SourceAttribute?.Invoke(read) * scalar;
+                    value = c.sourceAttribute?.Invoke(read) * scalar;
                     break;
                 case CurrentHealthValue h when h.data != null:
                     expression = h.data.inverse ? HLExpression.SourceMissingHealth : HLExpression.SourceCurrentHealth;
                     scalar = h.data.multiplier;
-                    value = (h.data.inverse ? c.SourceMaxHealth - c.SourceHealth : c.SourceHealth) * scalar;
+                    value = (h.data.inverse ? c.sourceMaxHealth - c.sourceHealth : c.sourceHealth) * scalar;
                     break;
                 case MaxHealthValue m when m.data != null:
                     expression = HLExpression.SourceMaxHealth;
                     scalar = m.data.multiplier;
-                    value = c.SourceMaxHealth * scalar;
+                    value = c.sourceMaxHealth * scalar;
                     break;
             }
             float? raw = -value * multiplier;
@@ -545,12 +586,12 @@ namespace HealerLike.Render.Spells
             // Without reduction bypass a positive raw value is clamped to zero before multiplier.
             // Defense/critical state can still invert or suppress any preview: never emit from this value.
             HLSign sign = raw.HasValue ? Sign(raw.Value) : HLSign.Conditional;
-            if (!data.ignoreDamageReduction && value.HasValue && -value.Value > 0)
+            if (!data.ignoreDamageReduction && value.HasValue && -value.Value > 0f)
             {
                 sign = HLSign.Conditional;
             }
             return new HLVisualRecipe(
-                Key(HLOperation.Resource, invalid ? HLSign.Unknown : sign, resource, c.Topology, duration, tempo),
+                Key(HLOperation.Resource, invalid ? HLSign.Unknown : sign, resource, c.topology, duration, tempo),
                 expression,
                 read,
                 scalar,
@@ -561,7 +602,7 @@ namespace HealerLike.Render.Spells
                 stackLaw: HLStackLaw.Linear,
                 duration: seconds,
                 period: period,
-                side: c.Side,
+                side: c.side,
                 diagnostic: invalid ? "Invalid or unsupported value expression." : null
             );
         }
@@ -583,7 +624,7 @@ namespace HealerLike.Render.Spells
                 attribute = attribute ?? default,
                 topology = topology,
                 duration = duration,
-                tempo = tempo,
+                tempo = tempo
             };
         }
 
@@ -597,7 +638,7 @@ namespace HealerLike.Render.Spells
         )
         {
             return new HLVisualRecipe(
-                Key(op, HLSign.Conditional, null, c.Topology, d, t),
+                Key(op, HLSign.Conditional, null, c.topology, d, t),
                 duration: seconds,
                 period: period
             );
@@ -622,20 +663,20 @@ namespace HealerLike.Render.Spells
         )
         {
             List<HLVisualRecipe> list = new List<HLVisualRecipe>(children);
-            HLSign sign = list.Count == 0 ? HLSign.Unknown : list[0].Signature.sign;
+            HLSign sign = list.Count == 0 ? HLSign.Unknown : list[0].signature.sign;
             foreach (HLVisualRecipe child in list)
             {
-                if (child.Signature.sign != sign)
+                if (child.signature.sign != sign)
                 {
                     sign = HLSign.Mixed;
                 }
             }
             return new HLVisualRecipe(
-                Key(operation, sign, null, c.Topology, d, t),
+                Key(operation, sign, null, c.topology, d, t),
                 duration: seconds,
                 period: period,
                 clock: clock,
-                side: c.Side,
+                side: c.side,
                 diagnostic: diagnostic,
                 deliveryData: delivery,
                 children: list
@@ -649,17 +690,32 @@ namespace HealerLike.Render.Spells
 
         public static HLSign Sign(float value)
         {
-            return !Finite(value) ? HLSign.Unknown
-                : value > 0 ? HLSign.Positive
-                : value < 0 ? HLSign.Negative
-                : HLSign.Zero;
+            if (!Finite(value))
+            {
+                return HLSign.Unknown;
+            }
+            if (value > 0f)
+            {
+                return HLSign.Positive;
+            }
+            if (value < 0f)
+            {
+                return HLSign.Negative;
+            }
+            return HLSign.Zero;
         }
 
         static HLSign Reverse(HLSign sign)
         {
-            return sign == HLSign.Positive ? HLSign.Negative
-                : sign == HLSign.Negative ? HLSign.Positive
-                : sign;
+            if (sign == HLSign.Positive)
+            {
+                return HLSign.Negative;
+            }
+            if (sign == HLSign.Negative)
+            {
+                return HLSign.Positive;
+            }
+            return sign;
         }
 
         public static string Snapshot(object data)

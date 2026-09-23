@@ -5,6 +5,61 @@ namespace HealerLike.Render.Spells
 {
     public static class HLSpellPrimitives
     {
+        static Mesh _torus;
+        static Mesh _cone;
+        static Mesh _star;
+        static Mesh _boulder;
+        static Material _fallback;
+        static int _users;
+
+        public static Mesh torus
+        {
+            get
+            {
+                if (!_torus)
+                {
+                    _torus = CreateTorus();
+                }
+                return _torus;
+            }
+        }
+
+        public static Mesh cone
+        {
+            get
+            {
+                if (!_cone)
+                {
+                    _cone = CreateCone();
+                }
+                return _cone;
+            }
+        }
+
+        public static Mesh star
+        {
+            get
+            {
+                if (!_star)
+                {
+                    _star = CreateStar();
+                }
+                return _star;
+            }
+        }
+
+        public static Mesh boulder
+        {
+            get
+            {
+                if (!_boulder)
+                {
+                    _boulder = CreateBoulder();
+                }
+                return _boulder;
+            }
+        }
+
         public static HLSpellEffectKind Kind(HLSpellSignature s)
         {
             if (
@@ -33,13 +88,6 @@ namespace HealerLike.Render.Spells
             }
             return HLSpellEffectKind.Buff;
         }
-
-        static Mesh _torus,
-            _cone,
-            _star,
-            _boulder;
-        static Material _fallback;
-        static int _users;
 
         public static void Retain()
         {
@@ -100,9 +148,9 @@ namespace HealerLike.Render.Spells
         {
             effect.RetainPrimitives();
             List<Transform> parts = new List<Transform>();
-            Color gold = new Color32(242, 194, 48, 255),
-                lime = new Color32(198, 242, 74, 255),
-                coral = new Color32(242, 96, 122, 255);
+            Color gold = new Color32(242, 194, 48, 255);
+            Color lime = new Color32(198, 242, 74, 255);
+            Color coral = new Color32(242, 96, 122, 255);
             if (effect.kind == HLSpellEffectKind.Buff)
             {
                 for (int i = 0; i < 3; i++)
@@ -110,18 +158,19 @@ namespace HealerLike.Render.Spells
                     parts.Add(
                         Part(
                             effect,
-                            Torus,
+                            torus,
                             gold,
                             Vector3.up * (i - 1) * 0.12f,
                             Vector3.one * (0.55f + i * 0.16f),
-                            Quaternion.Euler(30 + i * 23, i * 60, 18)
+                            Quaternion.Euler(30f + i * 23f, i * 60f, 18f)
                         )
                     );
                 }
             }
             else if (effect.kind == HLSpellEffectKind.Area)
             {
-                parts.Add(Part(effect, Torus, lime, Vector3.up * 0.03f, new Vector3(2, 0.3f, 2), Quaternion.identity));
+                Vector3 scale = new Vector3(2f, 0.3f, 2f);
+                parts.Add(Part(effect, torus, lime, Vector3.up * 0.03f, scale, Quaternion.identity));
             }
             else if (effect.kind == HLSpellEffectKind.Drip)
             {
@@ -143,15 +192,15 @@ namespace HealerLike.Render.Spells
             {
                 for (int i = 0; i < 6; i++)
                 {
-                    float a = i * Mathf.PI / 3;
+                    float a = i * Mathf.PI / 3f;
                     parts.Add(
                         Primitive(
                             effect,
                             PrimitiveType.Sphere,
                             gold,
-                            new Vector3(Mathf.Cos(a) * 0.4f, 0, Mathf.Sin(a) * 0.4f),
+                            new Vector3(Mathf.Cos(a) * 0.4f, 0f, Mathf.Sin(a) * 0.4f),
                             new Vector3(0.14f, 0.9f, 0.46f),
-                            Quaternion.Euler(0, -i * 60, 12)
+                            Quaternion.Euler(0f, -i * 60f, 12f)
                         )
                     );
                 }
@@ -160,16 +209,16 @@ namespace HealerLike.Render.Spells
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    float a = i * 2.4f,
-                        r = 0.3f + i * 0.11f;
+                    float a = i * 2.4f;
+                    float r = 0.3f + i * 0.11f;
                     parts.Add(
                         Part(
                             effect,
-                            Boulder,
+                            boulder,
                             new Color32(58, 66, 87, 255),
                             new Vector3(Mathf.Cos(a) * r, 0.06f, Mathf.Sin(a) * r),
                             new Vector3(0.12f + i * 0.009f, 0.09f, 0.10f),
-                            Quaternion.Euler(i * 17, i * 43, 12)
+                            Quaternion.Euler(i * 17f, i * 43f, 12f)
                         )
                     );
                 }
@@ -184,18 +233,15 @@ namespace HealerLike.Render.Spells
                 {
                     float a = i * 2.4f;
                     Vector3 p = new Vector3(Mathf.Cos(a) * 0.25f, i * 0.035f, Mathf.Sin(a) * 0.25f);
-                    parts.Add(
-                        effect.kind == HLSpellEffectKind.Mana
-                            ? Part(effect, Torus, gold, p, Vector3.one * 0.12f, Quaternion.Euler(90, 0, 0))
-                            : Primitive(
-                                effect,
-                                PrimitiveType.Sphere,
-                                lime,
-                                p,
-                                Vector3.one * (0.065f + i * 0.006f),
-                                Quaternion.identity
-                            )
-                    );
+                    if (effect.kind == HLSpellEffectKind.Mana)
+                    {
+                        parts.Add(Part(effect, torus, gold, p, Vector3.one * 0.12f, Quaternion.Euler(90f, 0f, 0f)));
+                    }
+                    else
+                    {
+                        Vector3 scale = Vector3.one * (0.065f + i * 0.006f);
+                        parts.Add(Primitive(effect, PrimitiveType.Sphere, lime, p, scale, Quaternion.identity));
+                    }
                     if (effect.kind == HLSpellEffectKind.Heal)
                     {
                         effect.stalks[i] = Primitive(
@@ -211,7 +257,7 @@ namespace HealerLike.Render.Spells
             }
             else if (effect.kind == HLSpellEffectKind.Impact)
             {
-                parts.Add(Part(effect, Star, coral, Vector3.zero, Vector3.one * 0.28f, Quaternion.identity));
+                parts.Add(Part(effect, star, coral, Vector3.zero, Vector3.one * 0.28f, Quaternion.identity));
                 for (int i = 0; i < 4; i++)
                 {
                     float a = i * 2.4f;
@@ -219,7 +265,7 @@ namespace HealerLike.Render.Spells
                     parts.Add(
                         Part(
                             effect,
-                            Cone,
+                            cone,
                             coral,
                             p,
                             new Vector3(0.035f, 0.12f, 0.035f),
@@ -239,7 +285,7 @@ namespace HealerLike.Render.Spells
                             gold,
                             Vector3.right * i * 0.1f,
                             new Vector3(0.025f, 0.05f, 0.025f),
-                            Quaternion.Euler(0, 0, 90)
+                            Quaternion.Euler(0f, 0f, 90f)
                         )
                     );
                     parts.Add(
@@ -261,7 +307,7 @@ namespace HealerLike.Render.Spells
         {
             return Part(
                     effect,
-                    Torus,
+                    torus,
                     new Color32(201, 196, 180, 255),
                     Vector3.down * 0.18f,
                     new Vector3(0.72f, 0.2f, 0.72f),
@@ -272,12 +318,13 @@ namespace HealerLike.Render.Spells
 
         public static void AddCritical(HLSpellEffect effect)
         {
-            Color color =
-                effect.kind == HLSpellEffectKind.Impact
-                    ? new Color32(242, 96, 122, 255)
-                    : new Color32(198, 242, 74, 255);
-            Part(effect, Torus, color, Vector3.zero, Vector3.one * 0.7f, Quaternion.Euler(90, 0, 0));
-            Part(effect, Torus, color, Vector3.zero, Vector3.one * 0.85f, Quaternion.Euler(90, 0, 0));
+            Color color = new Color32(198, 242, 74, 255);
+            if (effect.kind == HLSpellEffectKind.Impact)
+            {
+                color = new Color32(242, 96, 122, 255);
+            }
+            Part(effect, torus, color, Vector3.zero, Vector3.one * 0.7f, Quaternion.Euler(90f, 0f, 0f));
+            Part(effect, torus, color, Vector3.zero, Vector3.one * 0.85f, Quaternion.Euler(90f, 0f, 0f));
         }
 
         public static Transform[] StackBeads(HLSpellEffect effect)
@@ -289,7 +336,7 @@ namespace HealerLike.Render.Spells
                     effect,
                     PrimitiveType.Sphere,
                     new Color32(242, 194, 48, 255),
-                    new Vector3((i - 3.5f) * 0.055f, 0.48f, 0),
+                    new Vector3((i - 3.5f) * 0.055f, 0.48f, 0f),
                     Vector3.one * 0.035f,
                     Quaternion.identity
                 );
@@ -301,12 +348,12 @@ namespace HealerLike.Render.Spells
         {
             bool harm = signature.sign == HLSign.Negative;
             Color color = harm ? new Color32(242, 96, 122, 255) : new Color32(242, 194, 48, 255);
-            Vector3 p = new Vector3(0.36f, 0, 0);
+            Vector3 p = new Vector3(0.36f, 0f, 0f);
             if (signature.operation == HLOperation.Resource)
             {
                 if (harm)
                 {
-                    Part(effect, Cone, color, p, new Vector3(0.07f, 0.16f, 0.07f), Quaternion.Euler(0, 0, 90));
+                    Part(effect, cone, color, p, new Vector3(0.07f, 0.16f, 0.07f), Quaternion.Euler(0f, 0f, 90f));
                 }
                 else
                 {
@@ -332,17 +379,17 @@ namespace HealerLike.Render.Spells
                 case AttributeType.Vulnerability:
                     Part(
                         effect,
-                        Cone,
+                        cone,
                         color,
                         p,
                         new Vector3(0.07f, 0.16f, 0.07f),
-                        Quaternion.Euler(0, 0, harm ? 90 : -90)
+                        Quaternion.Euler(0f, 0f, harm ? 90f : -90f)
                     );
                     break;
                 case AttributeType.ManaMax:
                 case AttributeType.Range:
                 case AttributeType.HealthMax:
-                    Part(effect, Torus, color, p, Vector3.one * 0.2f, Quaternion.Euler(90, 0, 0));
+                    Part(effect, torus, color, p, Vector3.one * 0.2f, Quaternion.Euler(90f, 0f, 0f));
                     break;
                 case AttributeType.CriticalChance:
                 case AttributeType.CriticalMultiplier:
@@ -430,7 +477,7 @@ namespace HealerLike.Render.Spells
                 _fallback = new Material(Shader.Find("Universal Render Pipeline/Lit"))
                 {
                     name = "HLSpellFallback",
-                    enableInstancing = true,
+                    enableInstancing = true
                 };
             }
             renderer.sharedMaterial = effect.material ? effect.material : _fallback;
@@ -440,11 +487,6 @@ namespace HealerLike.Render.Spells
             return go.transform;
         }
 
-        public static Mesh Torus => _torus ? _torus : _torus = CreateTorus();
-        public static Mesh Cone => _cone ? _cone : _cone = CreateCone();
-        public static Mesh Star => _star ? _star : _star = CreateStar();
-        public static Mesh Boulder => _boulder ? _boulder : _boulder = CreateBoulder();
-
         static Mesh CreateStar()
         {
             // Two-sided planar triangle fan: eight long rays alternating with short notches.
@@ -452,12 +494,12 @@ namespace HealerLike.Render.Spells
             int[] triangles = new int[96];
             for (int i = 0; i < 16; i++)
             {
-                float a = i * Mathf.PI / 8,
-                    r = i % 2 == 0 ? 1 : 0.32f;
-                vertices[i + 1] = new Vector3(Mathf.Cos(a) * r, Mathf.Sin(a) * r, 0);
+                float a = i * Mathf.PI / 8f;
+                float r = i % 2 == 0 ? 1f : 0.32f;
+                vertices[i + 1] = new Vector3(Mathf.Cos(a) * r, Mathf.Sin(a) * r, 0f);
                 vertices[i + 18] = vertices[i + 1];
-                int next = (i + 1) % 16 + 1,
-                    o = i * 6;
+                int next = (i + 1) % 16 + 1;
+                int o = i * 6;
                 triangles[o] = 0;
                 triangles[o + 1] = i + 1;
                 triangles[o + 2] = next;
@@ -480,13 +522,13 @@ namespace HealerLike.Render.Spells
             int[] triangles = new int[24];
             for (int i = 0; i < 4; i++)
             {
-                float a = i * Mathf.PI * 0.5f,
-                    b = (i + 1) * Mathf.PI * 0.5f;
-                Vector3 p = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
-                Vector3 q = new Vector3(Mathf.Cos(b), 0, Mathf.Sin(b));
+                float a = i * Mathf.PI * 0.5f;
+                float b = (i + 1) * Mathf.PI * 0.5f;
+                Vector3 p = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+                Vector3 q = new Vector3(Mathf.Cos(b), 0f, Mathf.Sin(b));
                 int k = i * 6;
                 vertices[k] = p;
-                vertices[k + 1] = new Vector3(0.15f, 1, 0);
+                vertices[k + 1] = new Vector3(0.15f, 1f, 0f);
                 vertices[k + 2] = q;
                 vertices[k + 3] = q;
                 vertices[k + 4] = new Vector3(-0.1f, -0.7f, 0.1f);
@@ -514,17 +556,17 @@ namespace HealerLike.Render.Spells
             {
                 for (int j = 0; j < sides; j++)
                 {
-                    float a = i * Mathf.PI * 2 / rings,
-                        b = j * Mathf.PI * 2 / sides;
+                    float a = i * Mathf.PI * 2f / rings;
+                    float b = j * Mathf.PI * 2f / sides;
                     int k = i * sides + j;
                     v[k] = new Vector3(
                         (0.5f + 0.025f * Mathf.Cos(b)) * Mathf.Cos(a),
                         0.025f * Mathf.Sin(b),
                         (0.5f + 0.025f * Mathf.Cos(b)) * Mathf.Sin(a)
                     );
-                    int n = ((i + 1) % rings) * sides + j,
-                        q = i * sides + (j + 1) % sides,
-                        r = ((i + 1) % rings) * sides + (j + 1) % sides;
+                    int n = ((i + 1) % rings) * sides + j;
+                    int q = i * sides + (j + 1) % sides;
+                    int r = ((i + 1) % rings) * sides + (j + 1) % sides;
                     int o = k * 6;
                     t[o] = k;
                     t[o + 1] = q;
@@ -548,10 +590,10 @@ namespace HealerLike.Render.Spells
             List<int> t = new List<int>();
             for (int i = 0; i < 8; i++)
             {
-                float a = i * Mathf.PI / 4,
-                    b = (i + 1) * Mathf.PI / 4;
-                Vector3 p = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
-                Vector3 q = new Vector3(Mathf.Cos(b), 0, Mathf.Sin(b));
+                float a = i * Mathf.PI / 4f;
+                float b = (i + 1) * Mathf.PI / 4f;
+                Vector3 p = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+                Vector3 q = new Vector3(Mathf.Cos(b), 0f, Mathf.Sin(b));
                 int k = v.Count;
                 v.Add(p);
                 v.Add(Vector3.up);

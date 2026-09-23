@@ -25,7 +25,7 @@ namespace HealerLike.Render.Spells
 
         class HLSinkSpy : IHLSpellVisualSink
         {
-            public int Calls;
+            public int calls;
 
             public void SetStatus(
                 GameObject source,
@@ -37,7 +37,7 @@ namespace HealerLike.Render.Spells
                 HLClockKind clock
             )
             {
-                Calls++;
+                calls++;
             }
 
             public void RemoveStatus(GameObject source, GameObject target, ABuffHandlerFactory factory) { }
@@ -75,7 +75,7 @@ namespace HealerLike.Render.Spells
                 {
                     target = go,
                     buffHandlerFactory = factory,
-                    currentStacks = 1,
+                    currentStacks = 1
                 };
                 if (populated)
                 {
@@ -85,7 +85,7 @@ namespace HealerLike.Render.Spells
                 {
                     observer.Reconcile();
                 }
-                int calls = sink.Calls;
+                int calls = sink.calls;
                 long before = System.GC.GetAllocatedBytesForCurrentThread();
                 for (int i = 0; i < 32; i++)
                 {
@@ -93,12 +93,12 @@ namespace HealerLike.Render.Spells
                 }
                 long allocated = System.GC.GetAllocatedBytesForCurrentThread() - before;
                 Assert.AreEqual(0, allocated);
-                Assert.AreEqual(calls, sink.Calls);
+                Assert.AreEqual(calls, sink.calls);
                 if (populated)
                 {
                     data.currentStacks = 2;
                     observer.Reconcile();
-                    Assert.AreEqual(calls + 1, sink.Calls);
+                    Assert.AreEqual(calls + 1, sink.calls);
                 }
             }
             finally
@@ -118,11 +118,11 @@ namespace HealerLike.Render.Spells
             HLRenderRegistry previous = HLRenderRegistry.Current;
             try
             {
-                modifier.data = new FlatModifierData { value = 1 };
+                modifier.data = new FlatModifierData { value = 1f };
                 factory.data = new BuffHandlerData
                 {
                     durationType = DurationType.Infinite,
-                    buffFactoryList = new List<ABuffFactory> { modifier },
+                    buffFactoryList = new List<ABuffFactory> { modifier }
                 };
                 BuffManager manager = go.AddComponent<BuffManager>();
                 HLStatusObserver observer = go.AddComponent<HLStatusObserver>();
@@ -134,21 +134,21 @@ namespace HealerLike.Render.Spells
                     {
                         target = go,
                         buffHandlerFactory = factory,
-                        currentStacks = 1,
+                        currentStacks = 1
                     }
                 );
-                Assert.AreEqual(1, sink.StatusCount);
+                Assert.AreEqual(1, sink.statusCount);
                 sink.enabled = false;
                 TestHelpers.InvokePrivate(sink, "OnDisable");
                 observer.Reconcile();
-                Assert.AreEqual(0, sink.StatusCount);
+                Assert.AreEqual(0, sink.statusCount);
                 sink.enabled = true;
                 TestHelpers.InvokePrivate(sink, "OnEnable");
                 observer.Reconcile();
-                Assert.AreEqual(1, sink.StatusCount);
+                Assert.AreEqual(1, sink.statusCount);
                 sink.Clear();
                 observer.Reconcile();
-                Assert.AreEqual(1, sink.StatusCount);
+                Assert.AreEqual(1, sink.statusCount);
             }
             finally
             {
@@ -169,12 +169,12 @@ namespace HealerLike.Render.Spells
             FlatModifierFactory m = ScriptableObject.CreateInstance<FlatModifierFactory>();
             try
             {
-                m.data = new FlatModifierData { value = 1 };
+                m.data = new FlatModifierData { value = 1f };
                 f.data = new BuffHandlerData
                 {
                     durationType = DurationType.Duration,
-                    duration = 4,
-                    buffFactoryList = new List<ABuffFactory> { m },
+                    duration = 4f,
+                    buffFactoryList = new List<ABuffFactory> { m }
                 };
                 BuffManager manager = go.AddComponent<BuffManager>();
                 HLStatusObserver observer = go.AddComponent<HLStatusObserver>();
@@ -185,31 +185,31 @@ namespace HealerLike.Render.Spells
                     target = go,
                     buffHandlerFactory = f,
                     buffHandler = new BuffHandler { data = f.data },
-                    refreshStacks = 1,
+                    refreshStacks = 1
                 };
                 manager.OnBuffHandlerStarted.Invoke(data);
-                Assert.AreEqual(1, sink.GetStatus(go, f).GetComponentInChildren<HLSpellEffect>().Stacks);
+                Assert.AreEqual(1, sink.GetStatus(go, f).GetComponentInChildren<HLSpellEffect>().stacks);
                 data.currentStacks = 3;
                 data.refreshStacks = 0;
-                ((BuffHandler)data.buffHandler).durationTimer = 2;
+                ((BuffHandler)data.buffHandler).durationTimer = 2f;
                 observer.Reconcile();
-                Assert.AreEqual(3, sink.GetStatus(go, f).GetComponentInChildren<HLSpellEffect>().Stacks);
+                Assert.AreEqual(3, sink.GetStatus(go, f).GetComponentInChildren<HLSpellEffect>().stacks);
                 BuffManager.BuffHandlerData second = new BuffManager.BuffHandlerData
                 {
                     target = go,
                     buffHandlerFactory = f,
                     buffHandler = new BuffHandler { data = f.data },
-                    currentStacks = 2,
+                    currentStacks = 2
                 };
                 manager.OnBuffHandlerStarted.Invoke(second);
-                Assert.AreEqual(5, sink.GetStatus(go, f).GetComponentInChildren<HLSpellEffect>().Stacks);
+                Assert.AreEqual(5, sink.GetStatus(go, f).GetComponentInChildren<HLSpellEffect>().stacks);
                 manager.OnBuffHandlerStopped.Invoke(data);
-                Assert.AreEqual(1, sink.StatusCount);
+                Assert.AreEqual(1, sink.statusCount);
                 manager.OnBuffHandlerStopped.Invoke(second);
-                Assert.AreEqual(0, sink.StatusCount);
+                Assert.AreEqual(0, sink.statusCount);
                 observer.Detach();
                 manager.OnBuffHandlerStarted.Invoke(data);
-                Assert.AreEqual(0, sink.StatusCount);
+                Assert.AreEqual(0, sink.statusCount);
             }
             finally
             {

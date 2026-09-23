@@ -23,17 +23,17 @@ namespace HealerLike.Render.Spells
                 {
                     type = AttributeType.HitArmor,
                     modifierType = AttributeModifierType.Add,
-                    value = 2,
+                    value = 2f
                 };
                 factory.uniqueID = "HLInstantShieldFixture";
                 factory.data = new BuffHandlerData
                 {
                     durationType = DurationType.Instant,
-                    buffFactoryList = new List<ABuffFactory> { modifier },
+                    buffFactoryList = new List<ABuffFactory> { modifier }
                 };
                 HLAttributeShieldView view = go.AddComponent<HLAttributeShieldView>();
                 view.Bind(attributes, go.transform);
-                Assert.IsNull(view.Effect);
+                Assert.IsNull(view.effect);
                 TestHelpers.WithLoggingDisabled(() =>
                 {
                     manager.AddHandler(factory, go, go);
@@ -47,9 +47,9 @@ namespace HealerLike.Render.Spells
                 );
                 Assert.AreEqual(2, attributes.Get(AttributeType.HitArmor).Value);
                 view.Refresh();
-                Assert.NotNull(view.Effect);
+                Assert.NotNull(view.effect);
                 int plates = 0;
-                foreach (Transform plate in view.Effect.parts)
+                foreach (Transform plate in view.effect.parts)
                 {
                     if (plate.gameObject.activeSelf)
                     {
@@ -57,10 +57,10 @@ namespace HealerLike.Render.Spells
                     }
                 }
                 Assert.AreEqual(2, plates);
-                attributes.Get(AttributeType.HitArmor).BaseValue = 0;
+                attributes.Get(AttributeType.HitArmor).BaseValue = 0f;
                 attributes.Get(AttributeType.HitArmor).Update();
                 view.Refresh();
-                Assert.IsNull(view.Effect);
+                Assert.IsNull(view.effect);
                 Object.DestroyImmediate(view);
             }
             finally
@@ -129,9 +129,9 @@ namespace HealerLike.Render.Spells
             try
             {
                 HLSpellVisualSink sink = host.AddComponent<HLSpellVisualSink>();
-                sink.SetStatus(null, target, poison, 1, 1, 5, HLClockKind.Simulation);
+                sink.SetStatus(null, target, poison, 1, 1f, 5f, HLClockKind.Simulation);
                 Assert.AreNotEqual(Color.white, HLBodyTintState.Read(target));
-                sink.SetStatus(null, target, buff, 1, 1, 5, HLClockKind.Simulation);
+                sink.SetStatus(null, target, buff, 1, 1f, 5f, HLClockKind.Simulation);
                 sink.RemoveStatus(null, target, buff);
                 Assert.AreNotEqual(
                     Color.white,

@@ -12,8 +12,8 @@ namespace HealerLike.Render.Spells
             new Dictionary<(GameObject, ABuffHandlerFactory), (int, float, float)>();
         int _sinkVersion;
         BuffManager _manager;
-        IHLSpellVisualSink _injected,
-            _lastSink;
+        IHLSpellVisualSink _injected;
+        IHLSpellVisualSink _lastSink;
 
         public void Init(Entity entity)
         {
@@ -31,6 +31,31 @@ namespace HealerLike.Render.Spells
             shield.Init(entity);
         }
 
+        void OnEnable()
+        {
+            Reconcile();
+        }
+
+        void OnDisable()
+        {
+            foreach (BuffManager.BuffHandlerData data in _observed)
+            {
+                _lastSink?.RemoveStatus(null, data.target, data.buffHandlerFactory);
+            }
+            _lastSink = null;
+            _published.Clear();
+        }
+
+        void OnDestroy()
+        {
+            Detach();
+        }
+
+        void LateUpdate()
+        {
+            Reconcile();
+        }
+
         public void Bind(BuffManager manager, IHLSpellVisualSink sink)
         {
             Detach();
@@ -43,47 +68,6 @@ namespace HealerLike.Render.Spells
             }
         }
 
-        void Started(BuffManager.BuffHandlerData data)
-        {
-            if (data == null || !data.target || !data.buffHandlerFactory)
-            {
-                return;
-            }
-            if (!_observed.Contains(data))
-            {
-                _observed.Add(data);
-            }
-            Reconcile();
-        }
-
-        void Stopped(BuffManager.BuffHandlerData data)
-        {
-            if (data == null)
-            {
-                return;
-            }
-            _observed.Remove(data);
-            // Multiple gameplay source groups collapse to the frozen (target, factory) visual key.
-            bool remains = _observed.Exists(x =>
-                x.target == data.target && x.buffHandlerFactory == data.buffHandlerFactory
-            );
-            if (!remains)
-            {
-                (_injected ?? HLRenderRegistry.Current?.SpellSink)?.RemoveStatus(
-                    null,
-                    data.target,
-                    data.buffHandlerFactory
-                );
-                _published.Remove((data.target, data.buffHandlerFactory));
-            }
-            Reconcile();
-        }
-
-        void LateUpdate()
-        {
-            Reconcile();
-        }
-
         public void Reconcile()
         {
             if (!isActiveAndEnabled)
@@ -91,7 +75,7 @@ namespace HealerLike.Render.Spells
                 return;
             }
             IHLSpellVisualSink sink = _injected ?? HLRenderRegistry.Current?.SpellSink;
-            int version = sink is HLSpellVisualSink visual ? visual.PresentationVersion : 0;
+            int version = sink is HLSpellVisualSink visual ? visual.presentationVersion : 0;
             if (!ReferenceEquals(sink, _lastSink) || version != _sinkVersion)
             {
                 if (!ReferenceEquals(sink, _lastSink))
@@ -122,7 +106,7 @@ namespace HealerLike.Render.Spells
                 }
                 (GameObject, ABuffHandlerFactory) key = (data.target, data.buffHandlerFactory);
                 int stacks = Mathf.Max(0, data.currentStacks + data.refreshStacks);
-                float elapsed = data.buffHandler is BuffHandler bh ? bh.durationTimer : 0;
+                float elapsed = data.buffHandler is BuffHandler bh ? bh.durationTimer : 0f;
                 float duration =
                     data.buffHandlerFactory.durationType == DurationType.Infinite
                         ? float.PositiveInfinity
@@ -180,26 +164,6 @@ namespace HealerLike.Render.Spells
             _groups = swap;
         }
 
-        void OnEnable()
-        {
-            Reconcile();
-        }
-
-        void OnDisable()
-        {
-            foreach (BuffManager.BuffHandlerData data in _observed)
-            {
-                _lastSink?.RemoveStatus(null, data.target, data.buffHandlerFactory);
-            }
-            _lastSink = null;
-            _published.Clear();
-        }
-
-        void OnDestroy()
-        {
-            Detach();
-        }
-
         // Keep subscriptions while disabled so stop/start events cannot leave stale status records.
         public void Detach()
         {
@@ -217,6 +181,42 @@ namespace HealerLike.Render.Spells
             _published.Clear();
             _manager = null;
             _lastSink = null;
+        }
+
+        void Started(BuffManager.BuffHandlerData data)
+        {
+            if (data == null || !data.target || !data.buffHandlerFactory)
+            {
+                return;
+            }
+            if (!_observed.Contains(data))
+            {
+                _observed.Add(data);
+            }
+            Reconcile();
+        }
+
+        void Stopped(BuffManager.BuffHandlerData data)
+        {
+            if (data == null)
+            {
+                return;
+            }
+            _observed.Remove(data);
+            // Several gameplay source groups share one (target, factory) visual key.
+            bool remains = _observed.Exists(x =>
+                x.target == data.target && x.buffHandlerFactory == data.buffHandlerFactory
+            );
+            if (!remains)
+            {
+                (_injected ?? HLRenderRegistry.Current?.SpellSink)?.RemoveStatus(
+                    null,
+                    data.target,
+                    data.buffHandlerFactory
+                );
+                _published.Remove((data.target, data.buffHandlerFactory));
+            }
+            Reconcile();
         }
     }
 }

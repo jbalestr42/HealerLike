@@ -17,7 +17,7 @@ namespace HealerLike.Render.Spells
                     sign = HLSign.Positive,
                     hasAttribute = true,
                     attribute = AttributeType.HealPower,
-                    topology = HLTopology.Single,
+                    topology = HLTopology.Single
                 };
                 table.entries.Add(new HLSpellStyleTable.HLEntry { signature = key, prefab = go });
                 table.entries.Add(new HLSpellStyleTable.HLEntry { signature = key, prefab = go });

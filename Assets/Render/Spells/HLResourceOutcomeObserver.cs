@@ -6,10 +6,11 @@ namespace HealerLike.Render.Spells
     public class HLResourceOutcomeObserver : MonoBehaviour, IVisualBehaviour
     {
         public static event Action<GameObject, GameObject, HLResourceKind, float, bool> Outcome;
-        ResourceAttribute health,
-            mana;
-        HLRenderRegistry injected;
-        bool hasInjection;
+
+        ResourceAttribute _health;
+        ResourceAttribute _mana;
+        HLRenderRegistry _injected;
+        bool _hasInjection;
 
         public static HLResourceOutcomeObserver Ensure(
             Entity entity,
@@ -38,78 +39,6 @@ namespace HealerLike.Render.Spells
             }
         }
 
-        public void Bind(
-            ResourceAttribute healthResource,
-            ResourceAttribute manaResource,
-            HLRenderRegistry registry = null,
-            bool inject = false
-        )
-        {
-            injected = registry;
-            hasInjection = inject;
-            if (health == healthResource && mana == manaResource)
-            {
-                return;
-            }
-            Unsubscribe();
-            health = healthResource;
-            mana = manaResource;
-            if (isActiveAndEnabled)
-            {
-                Subscribe();
-            }
-        }
-
-        void Subscribe()
-        {
-            if (health)
-            {
-                health.OnAllConsumerProcessed.AddListener(Health);
-            }
-            if (mana && mana != health)
-            {
-                mana.OnAllConsumerProcessed.AddListener(Mana);
-            }
-        }
-
-        void Unsubscribe()
-        {
-            if (health)
-            {
-                health.OnAllConsumerProcessed.RemoveListener(Health);
-            }
-            if (mana && mana != health)
-            {
-                mana.OnAllConsumerProcessed.RemoveListener(Mana);
-            }
-        }
-
-        void Health(GameObject owner, ResourceModifier modifier, float amount, bool critical)
-        {
-            Publish(owner, modifier, HLResourceKind.Health, amount, critical);
-        }
-
-        void Mana(GameObject owner, ResourceModifier modifier, float amount, bool critical)
-        {
-            Publish(owner, modifier, HLResourceKind.Mana, amount, critical);
-        }
-
-        void Publish(GameObject owner, ResourceModifier modifier, HLResourceKind kind, float amount, bool critical)
-        {
-            if (!isActiveAndEnabled || !owner || amount == 0 || float.IsNaN(amount) || float.IsInfinity(amount))
-            {
-                return;
-            }
-            HLRenderRegistry registry = hasInjection ? injected : HLRenderRegistry.Current;
-            GameObject source = modifier?.source;
-            registry?.SpellSink?.ShowImpact(source, owner, kind, amount, critical);
-            if (kind == HLResourceKind.Health && amount > 0)
-            {
-                registry?.NotifyHeal(source, owner, amount, critical);
-            }
-            Outcome?.Invoke(source, owner, kind, amount, critical);
-        }
-
         void OnEnable()
         {
             Unsubscribe();
@@ -124,6 +53,78 @@ namespace HealerLike.Render.Spells
         void OnDestroy()
         {
             Unsubscribe();
+        }
+
+        public void Bind(
+            ResourceAttribute healthResource,
+            ResourceAttribute manaResource,
+            HLRenderRegistry registry = null,
+            bool inject = false
+        )
+        {
+            _injected = registry;
+            _hasInjection = inject;
+            if (_health == healthResource && _mana == manaResource)
+            {
+                return;
+            }
+            Unsubscribe();
+            _health = healthResource;
+            _mana = manaResource;
+            if (isActiveAndEnabled)
+            {
+                Subscribe();
+            }
+        }
+
+        void Subscribe()
+        {
+            if (_health)
+            {
+                _health.OnAllConsumerProcessed.AddListener(OnHealth);
+            }
+            if (_mana && _mana != _health)
+            {
+                _mana.OnAllConsumerProcessed.AddListener(OnMana);
+            }
+        }
+
+        void Unsubscribe()
+        {
+            if (_health)
+            {
+                _health.OnAllConsumerProcessed.RemoveListener(OnHealth);
+            }
+            if (_mana && _mana != _health)
+            {
+                _mana.OnAllConsumerProcessed.RemoveListener(OnMana);
+            }
+        }
+
+        void OnHealth(GameObject owner, ResourceModifier modifier, float amount, bool critical)
+        {
+            Publish(owner, modifier, HLResourceKind.Health, amount, critical);
+        }
+
+        void OnMana(GameObject owner, ResourceModifier modifier, float amount, bool critical)
+        {
+            Publish(owner, modifier, HLResourceKind.Mana, amount, critical);
+        }
+
+        void Publish(GameObject owner, ResourceModifier modifier, HLResourceKind kind, float amount, bool critical)
+        {
+            if (!isActiveAndEnabled || !owner || amount == 0f || float.IsNaN(amount) || float.IsInfinity(amount))
+            {
+                return;
+            }
+            HLRenderRegistry registry = _hasInjection ? _injected : HLRenderRegistry.Current;
+            GameObject source = modifier != null ? modifier.source : null;
+            registry?.SpellSink?.ShowImpact(source, owner, kind, amount, critical);
+            if (kind == HLResourceKind.Health && amount > 0f)
+            {
+                registry?.NotifyHeal(source, owner, amount, critical);
+            }
+            Outcome?.Invoke(source, owner, kind, amount, critical);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

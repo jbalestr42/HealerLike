@@ -1,65 +1,9 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace HealerLike.Render.Spells
 {
-    public enum HLSign : byte
-    {
-        Unknown,
-        Negative,
-        Zero,
-        Positive,
-        Conditional,
-        Mixed,
-    }
-
-    public enum HLTopology : byte
-    {
-        Unknown,
-        Single,
-        Self,
-        Group,
-        Area,
-        Sequential,
-    }
-
-    public enum HLDurationShape : byte
-    {
-        Instant,
-        Timed,
-        Infinite,
-        Transit,
-        Decay,
-    }
-
-    public enum HLTempo : byte
-    {
-        Immediate,
-        Collision,
-        HandlerTick,
-        Cooldown,
-        Sequence,
-        Death,
-        RoundEnd,
-        Continuous,
-        Synchronous,
-    }
-
-    public enum HLOperation : byte
-    {
-        Unknown,
-        Resource,
-        Attribute,
-        Prevention,
-        TargetCount,
-        InstallSkill,
-        InstallBehaviour,
-        Delivery,
-        Wait,
-    }
-
-    public enum HLExpression : byte
+    public enum HLExpression
     {
         Unknown,
         Flat,
@@ -69,90 +13,83 @@ namespace HealerLike.Render.Spells
         SourceMaxHealth,
         RecipientHealth,
         Round,
-        Decay,
+        Decay
     }
 
-    public enum HLStackLaw : byte
+    public enum HLStackLaw
     {
         None,
         FlatPowers,
         Linear,
         Refresh,
         Logarithmic,
-        Delegated,
-    }
-
-    [Serializable]
-    public struct HLSpellSignature : IEquatable<HLSpellSignature>
-    {
-        public HLSign sign;
-        public AttributeType attribute;
-        public bool hasAttribute;
-        public HLOperation operation;
-        public HLTopology topology;
-        public HLDurationShape duration;
-        public HLTempo tempo;
-        public byte variant;
-
-        public override string ToString()
-        {
-            return $"{operation}/{sign}/{(hasAttribute ? attribute.ToString() : "none")}/"
-                + $"{topology}/{duration}/{tempo}/v{variant}";
-        }
-
-        public bool Equals(HLSpellSignature other)
-        {
-            return sign == other.sign
-                && attribute == other.attribute
-                && hasAttribute == other.hasAttribute
-                && operation == other.operation
-                && topology == other.topology
-                && duration == other.duration
-                && tempo == other.tempo
-                && variant == other.variant;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is HLSpellSignature other && Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(sign, attribute, hasAttribute, operation, topology, duration, tempo, variant);
-        }
+        Delegated
     }
 
     public class HLVisualRecipe
     {
-        public HLSpellSignature Signature { get; }
-        public HLExpression Expression { get; }
-        public AttributeType ReadAttribute { get; }
-        public float Scalar { get; }
-        public float ResourceMultiplier { get; }
-        public float? PreviewAmount { get; }
-        public bool IgnoreReduction { get; }
-        public bool IgnorePrevention { get; }
-        public AttributeModifierType Modifier { get; }
-        public HLStackLaw StackLaw { get; }
-        public float DurationSeconds { get; }
-        public float periodSeconds { get; }
-        public HLClockKind Clock { get; }
-        public Entity.EntityType Side { get; }
-        public string Diagnostic { get; }
-        public string DeliveryData { get; }
-        public IReadOnlyList<HLVisualRecipe> Children { get; }
-        public bool IsValid
+        HLSpellSignature _signature;
+        public HLSpellSignature signature { get { return _signature; } }
+
+        HLExpression _expression;
+        public HLExpression expression { get { return _expression; } }
+
+        AttributeType _readAttribute;
+        public AttributeType readAttribute { get { return _readAttribute; } }
+
+        float _scalar;
+        public float scalar { get { return _scalar; } }
+
+        float _resourceMultiplier;
+        public float resourceMultiplier { get { return _resourceMultiplier; } }
+
+        float? _previewAmount;
+        public float? previewAmount { get { return _previewAmount; } }
+
+        bool _ignoreReduction;
+        public bool ignoreReduction { get { return _ignoreReduction; } }
+
+        bool _ignorePrevention;
+        public bool ignorePrevention { get { return _ignorePrevention; } }
+
+        AttributeModifierType _modifier;
+        public AttributeModifierType modifier { get { return _modifier; } }
+
+        HLStackLaw _stackLaw;
+        public HLStackLaw stackLaw { get { return _stackLaw; } }
+
+        float _durationSeconds;
+        public float durationSeconds { get { return _durationSeconds; } }
+
+        float _periodSeconds;
+        public float periodSeconds { get { return _periodSeconds; } }
+
+        HLClockKind _clock;
+        public HLClockKind clock { get { return _clock; } }
+
+        Entity.EntityType _side;
+        public Entity.EntityType side { get { return _side; } }
+
+        string _diagnostic;
+        public string diagnostic { get { return _diagnostic; } }
+
+        string _deliveryData;
+        public string deliveryData { get { return _deliveryData; } }
+
+        IReadOnlyList<HLVisualRecipe> _children;
+        public IReadOnlyList<HLVisualRecipe> children { get { return _children; } }
+
+        public bool isValid
         {
             get
             {
-                if (Diagnostic != null)
+                if (_diagnostic != null)
                 {
                     return false;
                 }
-                foreach (HLVisualRecipe c in Children)
+                foreach (HLVisualRecipe child in _children)
                 {
-                    if (!c.IsValid)
+                    if (!child.isValid)
                     {
                         return false;
                     }
@@ -165,15 +102,15 @@ namespace HealerLike.Render.Spells
             HLSpellSignature signature,
             HLExpression expression = HLExpression.Unknown,
             AttributeType readAttribute = default,
-            float scalar = 0,
-            float multiplier = 1,
+            float scalar = 0f,
+            float multiplier = 1f,
             float? preview = null,
             bool ignoreReduction = false,
             bool ignorePrevention = false,
             AttributeModifierType modifier = default,
             HLStackLaw stackLaw = HLStackLaw.None,
-            float duration = 0,
-            float period = 0,
+            float duration = 0f,
+            float period = 0f,
             HLClockKind clock = HLClockKind.Simulation,
             Entity.EntityType side = Entity.EntityType.None,
             string diagnostic = null,
@@ -181,33 +118,23 @@ namespace HealerLike.Render.Spells
             IEnumerable<HLVisualRecipe> children = null
         )
         {
-            Signature = signature;
-            Expression = expression;
-            ReadAttribute = readAttribute;
-            Scalar = scalar;
-            ResourceMultiplier = multiplier;
-            PreviewAmount = preview;
-            IgnoreReduction = ignoreReduction;
-            IgnorePrevention = ignorePrevention;
-            Modifier = modifier;
-            StackLaw = stackLaw;
-            DurationSeconds = duration;
-            periodSeconds = period;
-            Clock = clock;
-            Side = side;
-            Diagnostic = diagnostic;
-            DeliveryData = deliveryData ?? "";
-            Children = new List<HLVisualRecipe>(children ?? Array.Empty<HLVisualRecipe>()).AsReadOnly();
+            _signature = signature;
+            _expression = expression;
+            _readAttribute = readAttribute;
+            _scalar = scalar;
+            _resourceMultiplier = multiplier;
+            _previewAmount = preview;
+            _ignoreReduction = ignoreReduction;
+            _ignorePrevention = ignorePrevention;
+            _modifier = modifier;
+            _stackLaw = stackLaw;
+            _durationSeconds = duration;
+            _periodSeconds = period;
+            _clock = clock;
+            _side = side;
+            _diagnostic = diagnostic;
+            _deliveryData = deliveryData ?? "";
+            _children = new List<HLVisualRecipe>(children ?? Array.Empty<HLVisualRecipe>()).AsReadOnly();
         }
-    }
-
-    public class HLGrammarContext
-    {
-        public Func<AttributeType, float?> SourceAttribute;
-        public float? SourceHealth,
-            SourceMaxHealth;
-        public HLTopology Topology = HLTopology.Single;
-        public Entity.EntityType Side;
-        public string SelectionData = "";
     }
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEditor;
+using UnityEditor.Build.Player;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -13,19 +14,19 @@ namespace HealerLike.Render.Spells
 {
     public static class HLSpellPrefabBuilder
     {
+        static readonly string root = "Assets/Render/Spells/";
+
         // Batch verification of actual player defines, without building or changing a scene.
         public static void VerifyPlayerCompilation()
         {
-            UnityEditor.Build.Player.ScriptCompilationSettings settings =
-                new UnityEditor.Build.Player.ScriptCompilationSettings
+            ScriptCompilationSettings settings = new ScriptCompilationSettings
             {
                 target = BuildTarget.StandaloneOSX,
-                group = BuildTargetGroup.Standalone,
+                group = BuildTargetGroup.Standalone
             };
             string output = Path.Combine(Path.GetTempPath(), "hl-f2-player-scripts");
             Directory.CreateDirectory(output);
-            UnityEditor.Build.Player.ScriptCompilationResult result =
-                UnityEditor.Build.Player.PlayerBuildInterface.CompilePlayerScripts(settings, output);
+            ScriptCompilationResult result = PlayerBuildInterface.CompilePlayerScripts(settings, output);
             try
             {
                 if (
@@ -39,7 +40,7 @@ namespace HealerLike.Render.Spells
                 {
                     throw new InvalidOperationException("HL spell authoring was included in the player.");
                 }
-                Debug.Log("HL StandaloneOSX player script compilation passed; spell authoring excluded.");
+                Debug.Log("HL StandaloneOSX player script compilation passed, spell authoring excluded.");
             }
             finally
             {
@@ -47,31 +48,29 @@ namespace HealerLike.Render.Spells
             }
         }
 
-        static readonly string Root = "Assets/Render/Spells/";
-
         [MenuItem("HealerLike/Render/Build Spell Prefabs")]
         public static void Build()
         {
-            Directory.CreateDirectory(Root + "Prefabs");
-            Directory.CreateDirectory(Root + "Data");
+            Directory.CreateDirectory(root + "Prefabs");
+            Directory.CreateDirectory(root + "Data");
             Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/HLLook_Default.mat");
             if (!material)
             {
-                material = AssetDatabase.LoadAssetAtPath<Material>(Root + "Data/HLSpellPlaceholder.mat");
+                material = AssetDatabase.LoadAssetAtPath<Material>(root + "Data/HLSpellPlaceholder.mat");
                 if (!material)
                 {
                     material = new Material(Shader.Find("Universal Render Pipeline/Lit"))
                     {
                         name = "HLSpellPlaceholder",
-                        enableInstancing = true,
+                        enableInstancing = true
                     };
-                    AssetDatabase.CreateAsset(material, Root + "Data/HLSpellPlaceholder.mat");
+                    AssetDatabase.CreateAsset(material, root + "Data/HLSpellPlaceholder.mat");
                 }
             }
-            SaveMesh(HLSpellPrimitives.Torus, "HLTorus");
-            SaveMesh(HLSpellPrimitives.Cone, "HLCone");
-            SaveMesh(HLSpellPrimitives.Star, "HLStar");
-            SaveMesh(HLSpellPrimitives.Boulder, "HLBoulder");
+            SaveMesh(HLSpellPrimitives.torus, "HLTorus");
+            SaveMesh(HLSpellPrimitives.cone, "HLCone");
+            SaveMesh(HLSpellPrimitives.star, "HLStar");
+            SaveMesh(HLSpellPrimitives.boulder, "HLBoulder");
             string[] names =
             {
                 "HLStatus_Buff",
@@ -81,7 +80,7 @@ namespace HealerLike.Render.Spells
                 "HLFx_ChainBeam",
                 "HLFx_HostileLitter",
                 "HLFx_HealRing",
-                "HLFx_PoisonDrips",
+                "HLFx_PoisonDrips"
             };
             HLSpellEffectKind[] kinds =
             {
@@ -92,7 +91,7 @@ namespace HealerLike.Render.Spells
                 HLSpellEffectKind.Chain,
                 HLSpellEffectKind.Litter,
                 HLSpellEffectKind.Area,
-                HLSpellEffectKind.Drip,
+                HLSpellEffectKind.Drip
             };
             GameObject[] prefabs = new GameObject[names.Length];
             for (int i = 0; i < names.Length; i++)
@@ -109,26 +108,26 @@ namespace HealerLike.Render.Spells
                 PersistBeautyMeshes(go);
                 foreach (MeshFilter filter in go.GetComponentsInChildren<MeshFilter>())
                 {
-                    if (filter.sharedMesh == HLSpellPrimitives.Torus)
+                    if (filter.sharedMesh == HLSpellPrimitives.torus)
                     {
-                        filter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(Root + "Data/HLTorus.asset");
+                        filter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(root + "Data/HLTorus.asset");
                     }
-                    else if (filter.sharedMesh == HLSpellPrimitives.Cone)
+                    else if (filter.sharedMesh == HLSpellPrimitives.cone)
                     {
-                        filter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(Root + "Data/HLCone.asset");
+                        filter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(root + "Data/HLCone.asset");
                     }
                 }
-                prefabs[i] = PrefabUtility.SaveAsPrefabAsset(go, Root + "Prefabs/" + names[i] + ".prefab");
+                prefabs[i] = PrefabUtility.SaveAsPrefabAsset(go, root + "Prefabs/" + names[i] + ".prefab");
                 effect.ReleaseResources();
                 Object.DestroyImmediate(go);
             }
             HLSpellStyleTable table = AssetDatabase.LoadAssetAtPath<HLSpellStyleTable>(
-                Root + "Data/HLSpellStyles.asset"
+                root + "Data/HLSpellStyles.asset"
             );
             if (!table)
             {
                 table = ScriptableObject.CreateInstance<HLSpellStyleTable>();
-                AssetDatabase.CreateAsset(table, Root + "Data/HLSpellStyles.asset");
+                AssetDatabase.CreateAsset(table, root + "Data/HLSpellStyles.asset");
             }
             table.buff = prefabs[0];
             table.shield = prefabs[1];
@@ -150,9 +149,9 @@ namespace HealerLike.Render.Spells
                                 attribute = AttributeType.HealthMax,
                                 topology = HLTopology.Single,
                                 duration = HLDurationShape.Instant,
-                                tempo = HLTempo.Immediate,
+                                tempo = HLTempo.Immediate
                             },
-                            prefab = sign == HLSign.Positive ? prefabs[2] : prefabs[3],
+                            prefab = sign == HLSign.Positive ? prefabs[2] : prefabs[3]
                         }
                     );
                 }
@@ -164,7 +163,7 @@ namespace HealerLike.Render.Spells
             HLSpellVisualSink sink = sinkGo.AddComponent<HLSpellVisualSink>();
             sink.styles = table;
             sink.material = material;
-            PrefabUtility.SaveAsPrefabAsset(sinkGo, Root + "Prefabs/HLSpellVisualSink.prefab");
+            PrefabUtility.SaveAsPrefabAsset(sinkGo, root + "Prefabs/HLSpellVisualSink.prefab");
             Object.DestroyImmediate(sinkGo);
             AssetDatabase.SaveAssets();
         }
@@ -181,12 +180,12 @@ namespace HealerLike.Render.Spells
                 {
                     continue;
                 }
-                UnityEngine.Object asset = AssetDatabase.LoadMainAssetAtPath(path);
+                Object asset = AssetDatabase.LoadMainAssetAtPath(path);
                 Walk(asset, path, grammar, rows, new HashSet<object>(), 0);
                 if (asset is ABuffHandlerFactory)
                 {
                     Collect(
-                        grammar.DescribeData(asset, new HLGrammarContext { Topology = HLTopology.Self }),
+                        grammar.DescribeData(asset, new HLGrammarContext { topology = HLTopology.Self }),
                         path + " (self)",
                         rows
                     );
@@ -209,7 +208,7 @@ namespace HealerLike.Render.Spells
                 return;
             }
             HLVisualRecipe recipe = grammar.DescribeData(value);
-            if (recipe.Signature.operation != HLOperation.Unknown)
+            if (recipe.signature.operation != HLOperation.Unknown)
             {
                 Collect(recipe, path, rows);
                 return;
@@ -234,17 +233,17 @@ namespace HealerLike.Render.Spells
             SortedDictionary<string, (HLSpellSignature signature, SortedSet<string> paths)> rows
         )
         {
-            if (recipe.Signature.operation != HLOperation.Unknown)
+            if (recipe.signature.operation != HLOperation.Unknown)
             {
-                string key = recipe.Signature.ToString();
+                string key = recipe.signature.ToString();
                 if (!rows.TryGetValue(key, out (HLSpellSignature signature, SortedSet<string> paths) row))
                 {
-                    row = (recipe.Signature, new SortedSet<string>(StringComparer.Ordinal));
+                    row = (recipe.signature, new SortedSet<string>(StringComparer.Ordinal));
                 }
-                row.paths.Add(path + (recipe.IsValid ? "" : " [diagnostic: " + recipe.Diagnostic + "]"));
+                row.paths.Add(path + (recipe.isValid ? "" : " [diagnostic: " + recipe.diagnostic + "]"));
                 rows[key] = row;
             }
-            foreach (HLVisualRecipe child in recipe.Children)
+            foreach (HLVisualRecipe child in recipe.children)
             {
                 Collect(child, path, rows);
             }
@@ -276,16 +275,16 @@ namespace HealerLike.Render.Spells
                 PersistBeautyMeshes(go);
                 foreach (MeshFilter filter in go.GetComponentsInChildren<MeshFilter>())
                 {
-                    if (filter.sharedMesh == HLSpellPrimitives.Torus)
+                    if (filter.sharedMesh == HLSpellPrimitives.torus)
                     {
-                        filter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(Root + "Data/HLTorus.asset");
+                        filter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(root + "Data/HLTorus.asset");
                     }
-                    if (filter.sharedMesh == HLSpellPrimitives.Cone)
+                    if (filter.sharedMesh == HLSpellPrimitives.cone)
                     {
-                        filter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(Root + "Data/HLCone.asset");
+                        filter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(root + "Data/HLCone.asset");
                     }
                 }
-                string path = Root + "Prefabs/" + name + ".prefab";
+                string path = root + "Prefabs/" + name + ".prefab";
                 GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
                 effect.ReleaseResources();
                 Object.DestroyImmediate(go);
@@ -301,7 +300,7 @@ namespace HealerLike.Render.Spells
                     .Append(string.Join("<br>", row.Value.paths))
                     .Append(" |\n");
             }
-            // Signed resolution seam cannot carry original topology/tempo or expression.
+            // Resolved resource outcomes only carry a sign, not the original topology, tempo or expression.
             foreach (AttributeType resource in new[] { AttributeType.HealthMax, AttributeType.ManaMax })
             {
                 foreach (HLSign sign in new[] { HLSign.Positive, HLSign.Negative })
@@ -314,7 +313,7 @@ namespace HealerLike.Render.Spells
                         sign = sign,
                         topology = HLTopology.Single,
                         duration = HLDurationShape.Instant,
-                        tempo = HLTempo.Immediate,
+                        tempo = HLTempo.Immediate
                     };
                     if (table.entries.Any(x => x.signature.Equals(signature)))
                     {
@@ -328,27 +327,27 @@ namespace HealerLike.Render.Spells
                     PersistBeautyMeshes(go);
                     foreach (MeshFilter f in go.GetComponentsInChildren<MeshFilter>())
                     {
-                        if (f.sharedMesh == HLSpellPrimitives.Torus)
+                        if (f.sharedMesh == HLSpellPrimitives.torus)
                         {
-                            f.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(Root + "Data/HLTorus.asset");
+                            f.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(root + "Data/HLTorus.asset");
                         }
-                        else if (f.sharedMesh == HLSpellPrimitives.Cone)
+                        else if (f.sharedMesh == HLSpellPrimitives.cone)
                         {
-                            f.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(Root + "Data/HLCone.asset");
+                            f.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(root + "Data/HLCone.asset");
                         }
                     }
-                    GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, Root + "Prefabs/" + go.name + ".prefab");
+                    GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, root + "Prefabs/" + go.name + ".prefab");
                     effect.ReleaseResources();
                     Object.DestroyImmediate(go);
                     table.entries.Add(new HLSpellStyleTable.HLEntry { signature = signature, prefab = prefab });
                 }
             }
-            File.WriteAllText(Root + "SIGNATURES.md", report.ToString());
+            File.WriteAllText(root + "SIGNATURES.md", report.ToString());
         }
 
         static void AuthorDeliveries()
         {
-            string path = Root + "Data/HLDeliveryStyles.asset";
+            string path = root + "Data/HLDeliveryStyles.asset";
             HLDeliveryStyles styles = AssetDatabase.LoadAssetAtPath<HLDeliveryStyles>(path);
             if (!styles)
             {
@@ -367,7 +366,7 @@ namespace HealerLike.Render.Spells
                     "CurveSphereBullet",
                     "LaserBullet",
                     "StraightLaserBullet",
-                    "SwarmBullet",
+                    "SwarmBullet"
                 }
             )
             {
@@ -395,7 +394,7 @@ namespace HealerLike.Render.Spells
                             bounce,
                             chain
                         ),
-                        evidence = evidence,
+                        evidence = evidence
                     }
                 );
             }
@@ -425,20 +424,20 @@ namespace HealerLike.Render.Spells
         {
             foreach (MeshFilter filter in go.GetComponentsInChildren<MeshFilter>())
             {
-                if (filter.sharedMesh == HLSpellPrimitives.Star)
+                if (filter.sharedMesh == HLSpellPrimitives.star)
                 {
-                    filter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(Root + "Data/HLStar.asset");
+                    filter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(root + "Data/HLStar.asset");
                 }
-                else if (filter.sharedMesh == HLSpellPrimitives.Boulder)
+                else if (filter.sharedMesh == HLSpellPrimitives.boulder)
                 {
-                    filter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(Root + "Data/HLBoulder.asset");
+                    filter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(root + "Data/HLBoulder.asset");
                 }
             }
         }
 
         static void SaveMesh(Mesh mesh, string name)
         {
-            string path = Root + "Data/" + name + ".asset";
+            string path = root + "Data/" + name + ".asset";
             Mesh old = AssetDatabase.LoadAssetAtPath<Mesh>(path);
             if (old)
             {

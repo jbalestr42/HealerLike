@@ -60,7 +60,8 @@ namespace HealerLike.Render.Spells
             }
             Assert.IsNotNull(builder);
             Assert.AreEqual("HealerLike.Render.Spells.Editor", builder.Assembly.GetName().Name);
-            System.Collections.IDictionary rows = (System.Collections.IDictionary)builder.GetMethod("Inventory").Invoke(null, null);
+            object inventory = builder.GetMethod("Inventory").Invoke(null, null);
+            System.Collections.IDictionary rows = (System.Collections.IDictionary)inventory;
             HLSpellStyleTable table = AssetDatabase.LoadAssetAtPath<HLSpellStyleTable>(
                 "Assets/Render/Spells/Data/HLSpellStyles.asset"
             );

@@ -25,7 +25,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void BeautyMeshesArePlanarSpikyAndFlatShaded()
         {
-            Mesh star = HLSpellPrimitives.Star;
+            Mesh star = HLSpellPrimitives.star;
             foreach (Vector3 vertex in star.vertices)
             {
                 Assert.AreEqual(0, vertex.z);
@@ -36,7 +36,7 @@ namespace HealerLike.Render.Spells
             {
                 Assert.Greater(normal.sqrMagnitude, 0.99f);
             }
-            Mesh boulder = HLSpellPrimitives.Boulder;
+            Mesh boulder = HLSpellPrimitives.boulder;
             Assert.AreEqual(24, boulder.vertexCount);
             Vector3[] normals = boulder.normals;
             for (int i = 0; i < normals.Length; i += 3)
@@ -86,7 +86,7 @@ namespace HealerLike.Render.Spells
             HLSpellPrimitives.Release();
             Assert.IsTrue(mesh);
             Assert.IsTrue(UnityEditor.EditorUtility.IsPersistent(mesh));
-            Assert.AreNotSame(mesh, HLSpellPrimitives.Torus);
+            Assert.AreNotSame(mesh, HLSpellPrimitives.torus);
             HLSpellPrimitives.Release();
         }
 
@@ -101,9 +101,9 @@ namespace HealerLike.Render.Spells
                 HLSpellVisualSink second = b.AddComponent<HLSpellVisualSink>();
                 TestHelpers.InvokePrivate(first, "OnEnable");
                 TestHelpers.InvokePrivate(second, "OnEnable");
-                first.ShowImpact(null, b, HLResourceKind.Health, -1, false);
-                Mesh torus = HLSpellPrimitives.Torus;
-                Mesh cone = HLSpellPrimitives.Cone;
+                first.ShowImpact(null, b, HLResourceKind.Health, -1f, false);
+                Mesh torus = HLSpellPrimitives.torus;
+                Mesh cone = HLSpellPrimitives.cone;
                 Material fallback = a.GetComponentInChildren<Renderer>().sharedMaterial;
                 DestroyHost(a);
                 Assert.IsTrue(torus);
@@ -114,8 +114,8 @@ namespace HealerLike.Render.Spells
                 Assert.IsFalse(cone);
                 Assert.IsFalse(fallback);
                 HLSpellPrimitives.Release(); // Idempotent.
-                Assert.IsTrue(HLSpellPrimitives.Torus);
-                Assert.AreNotSame(torus, HLSpellPrimitives.Torus);
+                Assert.IsTrue(HLSpellPrimitives.torus);
+                Assert.AreNotSame(torus, HLSpellPrimitives.torus);
             }
             finally
             {
@@ -140,7 +140,7 @@ namespace HealerLike.Render.Spells
             {
                 TestHelpers.InvokePrivate(host.AddComponent<HLSpellVisualSink>(), "OnEnable");
                 effectHost.AddComponent<HLSpellEffect>().Initialize();
-                Mesh mesh = HLSpellPrimitives.Torus;
+                Mesh mesh = HLSpellPrimitives.torus;
                 DestroyHost(host);
                 Assert.IsTrue(mesh);
                 DestroyHost(effectHost);
@@ -193,20 +193,21 @@ namespace HealerLike.Render.Spells
             HLSign sign,
             HLTempo tempo,
             HLSpellEffectKind expected
-        ) =>
-            Assert.AreEqual(
-                expected,
-                HLSpellPrimitives.Kind(
-                    new HLSpellSignature
-                    {
-                        operation = operation,
-                        attribute = attribute,
-                        hasAttribute = true,
-                        sign = sign,
-                        tempo = tempo,
-                    }
-                )
-            );
+        )
+        {
+            HLSpellSignature signature = new HLSpellSignature
+            {
+                operation = operation,
+                attribute = attribute,
+                hasAttribute = true,
+                sign = sign,
+                tempo = tempo
+            };
+
+            HLSpellEffectKind kind = HLSpellPrimitives.Kind(signature);
+
+            Assert.AreEqual(expected, kind);
+        }
 
         [TestCase(HLSpellEffectKind.Litter, 5)]
         [TestCase(HLSpellEffectKind.Drip, 5)]

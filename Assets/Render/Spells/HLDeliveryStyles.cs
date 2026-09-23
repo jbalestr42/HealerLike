@@ -33,7 +33,7 @@ namespace HealerLike.Render.Spells
             {
                 name = name.Substring(2);
             }
-            foreach (HLDeliveryStyles.HLEntry entry in entries)
+            foreach (HLEntry entry in entries)
             {
                 if (entry.prefabName == name)
                 {
@@ -46,12 +46,27 @@ namespace HealerLike.Render.Spells
         // Behaviour facts are supplied by authoring; no projectile is initialized or moved.
         public static HLDeliveryStyle Classify(bool curve, bool laser, bool swarm, bool bounce, bool chain)
         {
-            return chain ? HLDeliveryStyle.ChainSync
-                : bounce ? HLDeliveryStyle.Bounce
-                : swarm ? HLDeliveryStyle.Swarm
-                : laser ? HLDeliveryStyle.Rigid
-                : curve ? HLDeliveryStyle.Arc
-                : HLDeliveryStyle.Direct;
+            if (chain)
+            {
+                return HLDeliveryStyle.ChainSync;
+            }
+            if (bounce)
+            {
+                return HLDeliveryStyle.Bounce;
+            }
+            if (swarm)
+            {
+                return HLDeliveryStyle.Swarm;
+            }
+            if (laser)
+            {
+                return HLDeliveryStyle.Rigid;
+            }
+            if (curve)
+            {
+                return HLDeliveryStyle.Arc;
+            }
+            return HLDeliveryStyle.Direct;
         }
     }
 }

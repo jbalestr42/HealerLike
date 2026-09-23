@@ -6,14 +6,14 @@ namespace HealerLike.Render.Spells
 {
     public class HLSpellGrammarTests
     {
-        readonly HLSpellGrammar grammar = new HLSpellGrammar();
+        readonly HLSpellGrammar _grammar = new HLSpellGrammar();
 
         static ConsumerData Flat(float value, bool bypass = true)
         {
             return new ConsumerData
             {
                 value = new FlatValue { data = new FlatValueData { value = value } },
-                ignoreDamageReduction = bypass,
+                ignoreDamageReduction = bypass
             };
         }
 
@@ -22,9 +22,9 @@ namespace HealerLike.Render.Spells
         [TestCase(0, HLSign.Zero)]
         public void ConsumerInvertsFlatValue(float value, HLSign sign)
         {
-            HLVisualRecipe r = grammar.DescribeData(Flat(value));
-            Assert.AreEqual(sign, r.Signature.sign);
-            Assert.AreEqual(-value, r.PreviewAmount);
+            HLVisualRecipe r = _grammar.DescribeData(Flat(value));
+            Assert.AreEqual(sign, r.signature.sign);
+            Assert.AreEqual(-value, r.previewAmount);
         }
 
         [Test]
@@ -32,70 +32,70 @@ namespace HealerLike.Render.Spells
         {
             HLGrammarContext c = new HLGrammarContext
             {
-                SourceAttribute = t => t == AttributeType.HealPower ? 20 : null,
+                sourceAttribute = t => t == AttributeType.HealPower ? 20 : null
             };
-            HLVisualRecipe r = grammar.Consumer(
+            HLVisualRecipe r = _grammar.Consumer(
                 new ConsumerData
                 {
                     value = new AttributeValue
                     {
-                        data = new AttributeValueData { type = AttributeType.HealPower, multiplier = 1 },
+                        data = new AttributeValueData { type = AttributeType.HealPower, multiplier = 1f }
                     },
-                    ignoreConsumerPrevention = true,
+                    ignoreConsumerPrevention = true
                 },
                 c,
                 multiplier: -0.8f
             );
-            Assert.AreEqual(16, r.PreviewAmount);
-            Assert.AreEqual(AttributeType.HealthMax, r.Signature.attribute);
-            Assert.AreEqual(AttributeType.HealPower, r.ReadAttribute);
-            Assert.IsFalse(r.IgnoreReduction);
-            Assert.IsTrue(r.IgnorePrevention);
+            Assert.AreEqual(16, r.previewAmount);
+            Assert.AreEqual(AttributeType.HealthMax, r.signature.attribute);
+            Assert.AreEqual(AttributeType.HealPower, r.readAttribute);
+            Assert.IsFalse(r.ignoreReduction);
+            Assert.IsTrue(r.ignorePrevention);
         }
 
         [Test]
         public void HealthProvenanceSurvivesEqualMagnitudeAndMaxIgnoresInverse()
         {
-            HLGrammarContext c = new HLGrammarContext { SourceHealth = 50, SourceMaxHealth = 100 };
+            HLGrammarContext c = new HLGrammarContext { sourceHealth = 50f, sourceMaxHealth = 100f };
             ConsumerData data = new ConsumerData
             {
-                value = new CurrentHealthValue { data = new CurrentHealthValueData { multiplier = 0.1f } },
+                value = new CurrentHealthValue { data = new CurrentHealthValueData { multiplier = 0.1f } }
             };
-            HLVisualRecipe a = grammar.DescribeData(data, c);
+            HLVisualRecipe a = _grammar.DescribeData(data, c);
             ((CurrentHealthValue)data.value).data.inverse = true;
-            HLVisualRecipe b = grammar.DescribeData(data, c);
-            Assert.AreEqual(a.PreviewAmount, b.PreviewAmount);
-            Assert.AreNotEqual(a.Expression, b.Expression);
+            HLVisualRecipe b = _grammar.DescribeData(data, c);
+            Assert.AreEqual(a.previewAmount, b.previewAmount);
+            Assert.AreNotEqual(a.expression, b.expression);
             data.value = new MaxHealthValue
             {
-                data = new MaxHealthValueData { multiplier = 0.1f, inverse = true },
+                data = new MaxHealthValueData { multiplier = 0.1f, inverse = true }
             };
-            Assert.AreEqual(-10, grammar.DescribeData(data, c).PreviewAmount);
+            Assert.AreEqual(-10, _grammar.DescribeData(data, c).previewAmount);
         }
 
         [Test]
         public void ActiveAndInstantMultiplyDifferAndFlatArmorIsHarmful()
         {
-            HLVisualRecipe r = grammar.DescribeData(
+            HLVisualRecipe r = _grammar.DescribeData(
                 new FlatModifierData
                 {
                     type = AttributeType.Damage,
                     modifierType = AttributeModifierType.Multiply,
-                    value = 0.5f,
+                    value = 0.5f
                 }
             );
-            Assert.AreEqual(HLSign.Negative, r.Signature.sign);
-            r = grammar.DescribeData(new FlatModifierData { type = AttributeType.FlatArmor, value = 2 });
-            Assert.AreEqual(HLSign.Negative, r.Signature.sign);
+            Assert.AreEqual(HLSign.Negative, r.signature.sign);
+            r = _grammar.DescribeData(new FlatModifierData { type = AttributeType.FlatArmor, value = 2f });
+            Assert.AreEqual(HLSign.Negative, r.signature.sign);
         }
 
         [Test]
         public void BrokenModifiersAndUnknownDataAreInvalidWithoutConstruction()
         {
-            Assert.IsFalse(grammar.DescribeData(new SlowModifierData()).IsValid);
-            Assert.IsFalse(grammar.DescribeData(new TimeModifierData()).IsValid);
-            Assert.IsFalse(grammar.DescribeData(new object()).IsValid);
-            Assert.IsFalse(grammar.DescribeData(Flat(float.NaN)).IsValid);
+            Assert.IsFalse(_grammar.DescribeData(new SlowModifierData()).isValid);
+            Assert.IsFalse(_grammar.DescribeData(new TimeModifierData()).isValid);
+            Assert.IsFalse(_grammar.DescribeData(new object()).isValid);
+            Assert.IsFalse(_grammar.DescribeData(Flat(float.NaN)).isValid);
         }
 
         [Test]
@@ -107,19 +107,19 @@ namespace HealerLike.Render.Spells
             f.data = new ApplyConsumerBuffData { consumerFactory = consumer };
             try
             {
-                HLVisualRecipe r = grammar.DescribeData(
+                HLVisualRecipe r = _grammar.DescribeData(
                     new BuffHandlerData
                     {
                         durationType = DurationType.Infinite,
                         isPeriodic = true,
                         periodDuration = 1.5f,
-                        buffFactoryList = new List<ABuffFactory> { f, f },
+                        buffFactoryList = new List<ABuffFactory> { f, f }
                     }
                 );
-                Assert.AreEqual(2, r.Children.Count);
-                Assert.AreEqual(HLDurationShape.Infinite, r.Children[0].Signature.duration);
-                Assert.AreEqual(1.5f, r.Children[0].periodSeconds);
-                Assert.AreEqual(HLTempo.HandlerTick, r.Children[0].Signature.tempo);
+                Assert.AreEqual(2, r.children.Count);
+                Assert.AreEqual(HLDurationShape.Infinite, r.children[0].signature.duration);
+                Assert.AreEqual(1.5f, r.children[0].periodSeconds);
+                Assert.AreEqual(HLTempo.HandlerTick, r.children[0].signature.tempo);
             }
             finally
             {
@@ -139,15 +139,15 @@ namespace HealerLike.Render.Spells
                 {
                     consumer = f,
                     isSingle = false,
-                    multiplier = -1,
-                    name = "Anything",
+                    multiplier = -1f,
+                    name = "Anything"
                 };
-                HLVisualRecipe a = grammar.DescribeData(data);
+                HLVisualRecipe a = _grammar.DescribeData(data);
                 data.name = "Changed";
-                HLVisualRecipe b = grammar.DescribeData(data);
-                Assert.AreEqual(HLTopology.Group, a.Signature.topology);
-                Assert.AreEqual(HLSign.Positive, a.Children[0].Signature.sign);
-                Assert.AreEqual(a.DeliveryData, b.DeliveryData);
+                HLVisualRecipe b = _grammar.DescribeData(data);
+                Assert.AreEqual(HLTopology.Group, a.signature.topology);
+                Assert.AreEqual(HLSign.Positive, a.children[0].signature.sign);
+                Assert.AreEqual(a.deliveryData, b.deliveryData);
             }
             finally
             {
@@ -162,8 +162,8 @@ namespace HealerLike.Render.Spells
             FlatModifierFactory b = ScriptableObject.CreateInstance<FlatModifierFactory>();
             try
             {
-                a.data = new FlatModifierData { value = 1 };
-                b.data = new FlatModifierData { value = 2 };
+                a.data = new FlatModifierData { value = 1f };
+                b.data = new FlatModifierData { value = 2f };
                 Assert.AreNotEqual(HLSpellGrammar.Snapshot(new[] { a, b }), HLSpellGrammar.Snapshot(new[] { b, a }));
                 Assert.AreNotEqual(HLSpellGrammar.Snapshot(new[] { a, a }), HLSpellGrammar.Snapshot(new[] { a }));
                 string before = HLSpellGrammar.Snapshot(a);
@@ -190,14 +190,14 @@ namespace HealerLike.Render.Spells
                 ApplyConsumerCharacterSkillData data = new ApplyConsumerCharacterSkillData
                 {
                     consumer = consumer,
-                    multiplier = -1,
-                    validators = new List<ACharacterSkillValidatorFactory> { cost },
+                    multiplier = -1f,
+                    validators = new List<ACharacterSkillValidatorFactory> { cost }
                 };
-                HLVisualRecipe recipe = grammar.DescribeData(data);
-                Assert.AreEqual(2, recipe.Children.Count);
-                Assert.AreEqual(AttributeType.ManaMax, recipe.Children[1].Signature.attribute);
-                Assert.AreEqual(HLTopology.Self, recipe.Children[1].Signature.topology);
-                Assert.AreEqual(HLSign.Negative, recipe.Children[1].Signature.sign);
+                HLVisualRecipe recipe = _grammar.DescribeData(data);
+                Assert.AreEqual(2, recipe.children.Count);
+                Assert.AreEqual(AttributeType.ManaMax, recipe.children[1].signature.attribute);
+                Assert.AreEqual(HLTopology.Self, recipe.children[1].signature.topology);
+                Assert.AreEqual(HLSign.Negative, recipe.children[1].signature.sign);
             }
             finally
             {
@@ -225,11 +225,11 @@ namespace HealerLike.Render.Spells
         {
             Assert.AreEqual(
                 HLSign.Conditional,
-                grammar
+                _grammar
                     .DescribeData(new ConsumerData { value = new AttributeValue { data = new AttributeValueData() } })
-                    .Signature.sign
+                    .signature.sign
             );
-            Assert.AreEqual(HLSign.Conditional, grammar.DescribeData(Flat(-2, false)).Signature.sign);
+            Assert.AreEqual(HLSign.Conditional, _grammar.DescribeData(Flat(-2, false)).signature.sign);
         }
     }
 }

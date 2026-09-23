@@ -5,8 +5,9 @@ namespace HealerLike.Render.Spells
 {
     public class HLChainContactVisual : AProjectileBehaviour
     {
-        [FormerlySerializedAs("sink")]
+        [FormerlySerializedAs("Sink")]
         public HLSpellVisualSink sink;
+
         Projectile _subscribed;
         Vector3 _previous;
         bool _hasPrevious;
@@ -17,6 +18,16 @@ namespace HealerLike.Render.Spells
                 projectile ? projectile : GetComponent<Projectile>(),
                 sink ? sink : HLRenderRegistry.Current?.SpellSink as HLSpellVisualSink
             );
+        }
+
+        void OnDisable()
+        {
+            Unbind();
+        }
+
+        void OnDestroy()
+        {
+            Unbind();
         }
 
         public void Bind(Projectile observed, HLSpellVisualSink sink)
@@ -37,8 +48,11 @@ namespace HealerLike.Render.Spells
                 return;
             }
             Entity entity = hit.target.GetComponent<Entity>();
-            Vector3 contact =
-                entity && entity.targetPoint ? entity.targetPoint.transform.position : hit.target.transform.position;
+            Vector3 contact = hit.target.transform.position;
+            if (entity && entity.targetPoint)
+            {
+                contact = entity.targetPoint.transform.position;
+            }
             if (
                 !HLSpellGrammar.Finite(contact.x)
                 || !HLSpellGrammar.Finite(contact.y)
@@ -63,16 +77,6 @@ namespace HealerLike.Render.Spells
             }
             _subscribed = null;
             _hasPrevious = false;
-        }
-
-        void OnDisable()
-        {
-            Unbind();
-        }
-
-        void OnDestroy()
-        {
-            Unbind();
         }
     }
 }

@@ -15,11 +15,11 @@ namespace HealerLike.Render.Spells
         }
 
         public List<HLEntry> entries = new List<HLEntry>();
-        public GameObject buff,
-            shield,
-            heal,
-            impact,
-            chain;
+        public GameObject buff;
+        public GameObject shield;
+        public GameObject heal;
+        public GameObject impact;
+        public GameObject chain;
 
         public bool TryGet(HLSpellSignature signature, out GameObject prefab)
         {

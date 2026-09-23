@@ -39,7 +39,7 @@ namespace HealerLike.Render.Spells
                 fx.Initialize();
                 if (kind == HLSpellEffectKind.Chain)
                 {
-                    fx.SetEndpoints(Vector3.zero, Vector3.right * 4);
+                    fx.SetEndpoints(Vector3.zero, Vector3.right * 4f);
                 }
                 for (int i = 0; i < 16; i++)
                 {
@@ -67,7 +67,7 @@ namespace HealerLike.Render.Spells
             {
                 HLSpellEffect fx = go.AddComponent<HLSpellEffect>();
                 fx.kind = HLSpellEffectKind.Heal;
-                fx.Advance(0);
+                fx.Advance(0f);
                 float seed = fx.parts[0].localScale.x;
                 fx.Advance(fx.lifetime * 0.6f);
                 Assert.Greater(fx.parts[0].localScale.x, seed);
@@ -102,22 +102,22 @@ namespace HealerLike.Render.Spells
                     hasAttribute = true,
                     attribute = AttributeType.HealthMax,
                     sign = HLSign.Positive,
-                    tempo = HLTempo.HandlerTick,
+                    tempo = HLTempo.HandlerTick
                 };
                 HLSpellEffect fx = go.AddComponent<HLSpellEffect>();
                 fx.kind = HLSpellPrimitives.Kind(signature);
-                fx.periodSeconds = 2;
+                fx.periodSeconds = 2f;
                 Assert.AreEqual(HLSpellEffectKind.Heal, fx.kind);
-                fx.SetStatus(1, 1, 10, HLClockKind.Simulation, signature);
+                fx.SetStatus(1, 1f, 10f, HLClockKind.Simulation, signature);
                 Assert.AreEqual(Vector3.zero, fx.parts[0].localScale);
-                fx.SetStatus(1, 2.6f, 10, HLClockKind.Simulation, signature);
+                fx.SetStatus(1, 2.6f, 10f, HLClockKind.Simulation, signature);
                 Vector3 p = fx.parts[0].localPosition;
                 Vector3 size = fx.parts[0].localScale;
                 Assert.Greater(size.x, 0);
-                fx.Advance(1);
+                fx.Advance(1f);
                 Assert.AreEqual(p, fx.parts[0].localPosition);
                 Assert.AreEqual(size, fx.parts[0].localScale);
-                fx.SetStatus(1, 3.9f, 10, HLClockKind.Simulation, signature);
+                fx.SetStatus(1, 3.9f, 10f, HLClockKind.Simulation, signature);
                 Assert.AreEqual(Vector3.zero, fx.parts[0].localScale);
             }
             finally
@@ -136,7 +136,7 @@ namespace HealerLike.Render.Spells
                 HLSpellEffect fx = go.AddComponent<HLSpellEffect>();
                 fx.kind = HLSpellEffectKind.Impact;
                 fx.Initialize();
-                camera.transform.rotation = Quaternion.Euler(35, 20, 0);
+                camera.transform.rotation = Quaternion.Euler(35f, 20f, 0f);
                 fx.FaceCamera(camera.transform);
                 Assert.Less(Quaternion.Angle(camera.transform.rotation, fx.parts[0].rotation), 0.001f);
                 float start = fx.parts[1].localPosition.y;
@@ -162,13 +162,13 @@ namespace HealerLike.Render.Spells
             {
                 HLSpellEffect fx = go.AddComponent<HLSpellEffect>();
                 fx.kind = HLSpellEffectKind.Buff;
-                fx.SetStatus(1, 0, 10, HLClockKind.Simulation, default);
+                fx.SetStatus(1, 0f, 10f, HLClockKind.Simulation, default);
                 Vector3 normal = fx.parts[0].up;
                 Vector3 scale = fx.parts[0].localScale;
                 MaterialPropertyBlock block = new MaterialPropertyBlock();
                 fx.parts[0].GetComponent<Renderer>().GetPropertyBlock(block);
                 Color color = block.GetColor("_BaseColor");
-                fx.SetStatus(1, 1, 10, HLClockKind.Simulation, default);
+                fx.SetStatus(1, 1f, 10f, HLClockKind.Simulation, default);
                 Assert.AreNotEqual(normal, fx.parts[0].up);
                 Assert.AreNotEqual(scale, fx.parts[0].localScale);
                 fx.parts[0].GetComponent<Renderer>().GetPropertyBlock(block);
@@ -188,7 +188,7 @@ namespace HealerLike.Render.Spells
             {
                 HLSpellEffect fx = go.AddComponent<HLSpellEffect>();
                 fx.kind = HLSpellEffectKind.Litter;
-                fx.Advance(0);
+                fx.Advance(0f);
                 float buried = fx.parts[0].localPosition.y;
                 fx.Advance(0.2f);
                 float emerged = fx.parts[0].localPosition.y;
@@ -205,13 +205,13 @@ namespace HealerLike.Render.Spells
             {
                 HLSpellEffect fx = go.AddComponent<HLSpellEffect>();
                 fx.kind = HLSpellEffectKind.Drip;
-                fx.periodSeconds = 2;
-                fx.SetStatus(1, 1.9f, 10, HLClockKind.Simulation, default);
+                fx.periodSeconds = 2f;
+                fx.SetStatus(1, 1.9f, 10f, HLClockKind.Simulation, default);
                 Assert.AreEqual(Vector3.zero, fx.parts[0].localScale);
-                fx.SetStatus(1, 2, 10, HLClockKind.Simulation, default);
+                fx.SetStatus(1, 2f, 10f, HLClockKind.Simulation, default);
                 Assert.Greater(fx.parts[0].localScale.y, 0);
                 Vector3 p = fx.parts[0].localPosition;
-                fx.Advance(1);
+                fx.Advance(1f);
                 Assert.AreEqual(p, fx.parts[0].localPosition);
             }
             finally
@@ -229,11 +229,12 @@ namespace HealerLike.Render.Spells
                 HLSpellEffect fx = go.AddComponent<HLSpellEffect>();
                 fx.kind = HLSpellEffectKind.Chain;
                 fx.contactThread = true;
-                fx.SetEndpoints(Vector3.zero, Vector3.right * 4);
+                fx.SetEndpoints(Vector3.zero, Vector3.right * 4f);
                 Assert.IsFalse(fx.parts[1].gameObject.activeSelf);
                 Assert.AreEqual(0, fx.parts[0].position.y, 0.00001f);
                 Transform last = fx.parts[30];
-                Assert.Less(Vector3.Distance(Vector3.right * 4, last.position + last.up * last.localScale.y), 0.00001f);
+                Vector3 tip = last.position + last.up * last.localScale.y;
+                Assert.Less(Vector3.Distance(Vector3.right * 4f, tip), 0.00001f);
                 fx.SetEndpoints(Vector3.one, Vector3.one);
                 foreach (Transform part in fx.parts)
                 {
@@ -258,26 +259,26 @@ namespace HealerLike.Render.Spells
                 {
                     operation = HLOperation.Attribute,
                     attribute = AttributeType.HitArmor,
-                    hasAttribute = true,
+                    hasAttribute = true
                 };
                 for (int i = 0; i < 32; i++)
                 {
-                    effect.SetStatus(2, 1, 4, HLClockKind.Simulation, signature);
+                    effect.SetStatus(2, 1f, 4f, HLClockKind.Simulation, signature);
                     effect.SetSide(Entity.EntityType.Player);
-                    effect.SetShieldState(2);
+                    effect.SetShieldState(2f);
                 }
                 long before = System.GC.GetAllocatedBytesForCurrentThread();
                 for (int i = 0; i < 32; i++)
                 {
-                    effect.SetStatus(2, 1, 4, HLClockKind.Simulation, signature);
+                    effect.SetStatus(2, 1f, 4f, HLClockKind.Simulation, signature);
                     effect.SetSide(Entity.EntityType.Player);
-                    effect.SetShieldState(2);
+                    effect.SetShieldState(2f);
                 }
                 long allocated = System.GC.GetAllocatedBytesForCurrentThread() - before;
                 Assert.AreEqual(0, allocated);
-                effect.SetShieldState(1);
+                effect.SetShieldState(1f);
                 Assert.IsFalse(effect.parts[1].gameObject.activeSelf);
-                effect.SetShieldState(3);
+                effect.SetShieldState(3f);
                 Assert.IsTrue(effect.parts[2].gameObject.activeSelf);
             }
             finally
@@ -294,11 +295,11 @@ namespace HealerLike.Render.Spells
             {
                 HLSpellEffect fx = go.AddComponent<HLSpellEffect>();
                 fx.kind = HLSpellEffectKind.Buff;
-                fx.SetStatus(1, 1, 4, HLClockKind.Simulation, default);
+                fx.SetStatus(1, 1f, 4f, HLClockKind.Simulation, default);
                 Quaternion pose = fx.parts[0].localRotation;
-                fx.Advance(7);
+                fx.Advance(7f);
                 Assert.AreEqual(pose, fx.parts[0].localRotation);
-                fx.SetStatus(2, 2, 4, HLClockKind.Simulation, default);
+                fx.SetStatus(2, 2f, 4f, HLClockKind.Simulation, default);
                 Assert.AreNotEqual(pose, fx.parts[0].localRotation);
             }
             finally
@@ -310,12 +311,12 @@ namespace HealerLike.Render.Spells
             {
                 HLSpellEffect fx = go.AddComponent<HLSpellEffect>();
                 fx.kind = HLSpellEffectKind.Shield;
-                fx.SetStatus(1, 0.25f, 4, HLClockKind.Simulation, default);
+                fx.SetStatus(1, 0.25f, 4f, HLClockKind.Simulation, default);
                 Quaternion closed = fx.parts[0].localRotation;
                 float closedRadius = fx.parts[0].localPosition.magnitude;
                 fx.BeginRemoval();
                 fx.Advance(0.25f);
-                Assert.IsTrue(fx.RemovalComplete);
+                Assert.IsTrue(fx.removalComplete);
                 Assert.AreNotEqual(closed, fx.parts[0].localRotation);
                 Assert.Greater(fx.parts[0].localPosition.magnitude, closedRadius);
             }
@@ -333,15 +334,15 @@ namespace HealerLike.Render.Spells
             {
                 HLSpellEffect fx = go.AddComponent<HLSpellEffect>();
                 fx.kind = HLSpellEffectKind.Drip;
-                fx.periodSeconds = 2;
+                fx.periodSeconds = 2f;
                 Color tint = Color.clear;
                 fx.OnTint.AddListener(c => tint = c);
-                fx.SetStatus(1, 2, 6, HLClockKind.Simulation, default);
+                fx.SetStatus(1, 2f, 6f, HLClockKind.Simulation, default);
                 Vector3 position = fx.parts[0].localPosition;
                 Assert.AreEqual((Color)new Color32(242, 96, 122, 255), tint);
-                fx.SetStatus(1, 3, 6, HLClockKind.Simulation, default);
+                fx.SetStatus(1, 3f, 6f, HLClockKind.Simulation, default);
                 Assert.Less(fx.parts[0].localPosition.y, position.y);
-                fx.SetStatus(1, 4, 6, HLClockKind.Simulation, default);
+                fx.SetStatus(1, 4f, 6f, HLClockKind.Simulation, default);
                 Assert.AreEqual(position, fx.parts[0].localPosition);
                 fx.BeginRemoval();
                 Assert.AreEqual(Color.white, tint);
@@ -360,7 +361,7 @@ namespace HealerLike.Render.Spells
             {
                 HLSpellEffect fx = go.AddComponent<HLSpellEffect>();
                 fx.kind = HLSpellEffectKind.Chain;
-                fx.SetEndpoints(Vector3.zero, Vector3.right * 4);
+                fx.SetEndpoints(Vector3.zero, Vector3.right * 4f);
                 fx.Advance(0.15f);
                 Assert.Greater(fx.parts[1].position.x, 0);
                 Assert.Greater(fx.parts[1].position.y, 0);
@@ -407,10 +408,10 @@ namespace HealerLike.Render.Spells
                 fx.Advance(0.2f);
                 Assert.Greater(fx.parts[0].localPosition.y, before);
                 HLSpellEffect s = status.AddComponent<HLSpellEffect>();
-                s.SetStatus(3, 2, 4, HLClockKind.Realtime, default);
-                s.Advance(10);
-                Assert.AreEqual(3, s.Stacks);
-                Assert.AreEqual(2, s.ElapsedSeconds);
+                s.SetStatus(3, 2f, 4f, HLClockKind.Realtime, default);
+                s.Advance(10f);
+                Assert.AreEqual(3, s.stacks);
+                Assert.AreEqual(2, s.elapsedSeconds);
                 Assert.IsTrue(status);
             }
             finally
@@ -430,17 +431,17 @@ namespace HealerLike.Render.Spells
                 fx.kind = HLSpellEffectKind.Shield;
                 fx.SetStatus(
                     9,
-                    0,
-                    4,
+                    0f,
+                    4f,
                     HLClockKind.Simulation,
                     new HLSpellSignature
                     {
                         operation = HLOperation.Attribute,
                         attribute = AttributeType.HitArmor,
-                        hasAttribute = true,
+                        hasAttribute = true
                     }
                 );
-                fx.SetShieldState(2);
+                fx.SetShieldState(2f);
                 int count = 0;
                 foreach (Transform part in fx.parts)
                 {
@@ -450,7 +451,7 @@ namespace HealerLike.Render.Spells
                     }
                 }
                 Assert.AreEqual(2, count);
-                Assert.AreEqual(9, fx.Stacks);
+                Assert.AreEqual(9, fx.stacks);
             }
             finally
             {
@@ -466,7 +467,7 @@ namespace HealerLike.Render.Spells
             {
                 HLSpellEffect fx = go.AddComponent<HLSpellEffect>();
                 fx.kind = HLSpellEffectKind.Chain;
-                fx.SetEndpoints(Vector3.zero, Vector3.right * 4);
+                fx.SetEndpoints(Vector3.zero, Vector3.right * 4f);
                 Assert.AreEqual(Vector3.zero, fx.parts[1].position);
                 Assert.Greater(fx.parts[17].position.y, 0);
                 Assert.AreEqual(32, fx.parts.Length);

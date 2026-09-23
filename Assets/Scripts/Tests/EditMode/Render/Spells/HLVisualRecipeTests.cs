@@ -10,7 +10,7 @@ namespace HealerLike.Render.Spells
             HLVisualRecipe[] children = new[] { new HLVisualRecipe(default, diagnostic: "missing") };
             HLVisualRecipe r = new HLVisualRecipe(default, children: children);
             children[0] = new HLVisualRecipe(default);
-            Assert.IsFalse(r.IsValid);
+            Assert.IsFalse(r.isValid);
         }
 
         [Test]
