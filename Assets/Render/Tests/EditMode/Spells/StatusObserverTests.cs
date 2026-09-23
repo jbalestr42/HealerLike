@@ -1,12 +1,66 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
+using HealerLike.Render.Stage;
+using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Spells
 {
 
 public class StatusObserverTests
 {
+    class SinkSpy : ISpellVisualSink
+    {
+        public int calls;
+
+        public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
+            float elapsed, float duration, ClockKind clock)
+        {
+            calls++;
+        }
+
+        public void RemoveStatus(GameObject source, GameObject target, ABuffHandlerFactory factory)
+        {
+        }
+
+        public void ShowImpact(GameObject source, GameObject target, ResourceKind resource, float amount,
+            bool critical)
+        {
+        }
+
+        public void PulseArea(Vector3 center, float radius, ZoneKind kind, float strength)
+        {
+        }
+    }
+
+    GameObject _go;
+    GameObject _sinkGo;
+    GameObject _managerGo;
+    BuffHandlerFactory _factory;
+    FlatModifierFactory _modifier;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _go = new GameObject("Observer");
+        _sinkGo = new GameObject("Sink");
+        _managerGo = new GameObject("RenderManager");
+        _modifier = ScriptableObject.CreateInstance<FlatModifierFactory>();
+        _modifier.data = new FlatModifierData { value = 1f };
+        _factory = ScriptableObject.CreateInstance<BuffHandlerFactory>();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        DestroyHost(_go);
+        DestroyHost(_sinkGo);
+        DestroyHost(_managerGo);
+        Object.DestroyImmediate(_factory);
+        Object.DestroyImmediate(_modifier);
+    }
+
     static void DestroyHost(GameObject go)
     {
         if (!go)
@@ -20,247 +74,162 @@ public class StatusObserverTests
         Object.DestroyImmediate(go);
     }
 
-    class SinkSpy : ISpellVisualSink
+    SpellVisualSink CreateSink()
     {
-        public int calls;
-
-        public void SetStatus(
-            GameObject source,
-            GameObject target,
-            ABuffHandlerFactory factory,
-            int stacks,
-            float elapsed,
-            float duration,
-            ClockKind clock
-        )
-        {
-            calls++;
-        }
-
-        public void RemoveStatus(GameObject source, GameObject target, ABuffHandlerFactory factory) { }
-
-        public void ShowImpact(
-            GameObject source,
-            GameObject target,
-            ResourceKind resource,
-            float amount,
-            bool critical
-        ) { }
-
-        public void PulseArea(
-            Vector3 center,
-            float radius,
-            HealerLike.Render.Zones.ZoneKind kind,
-            float strength
-        ) { }
+        SpellVisualSink sink = _sinkGo.AddComponent<SpellVisualSink>();
+        sink.looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
+        return sink;
     }
 
     [TestCase(false)]
     [TestCase(true)]
-    public void IdleReconciliationAllocatesNothingAndDoesNotRepublish(bool populated)
+    public void Reconcile_Idle_AllocatesNothingAndDoesNotRepublish(bool populated)
     {
-        GameObject go = new GameObject("Observer");
-        BuffHandlerFactory factory = ScriptableObject.CreateInstance<BuffHandlerFactory>();
-        try
+        _factory.data = new BuffHandlerData { durationType = DurationType.Infinite };
+        BuffManager manager = _go.AddComponent<BuffManager>();
+        StatusObserver observer = _go.AddComponent<StatusObserver>();
+        SinkSpy sink = new SinkSpy();
+        observer.Bind(manager, sink);
+        BuffManager.BuffHandlerData data = new BuffManager.BuffHandlerData
         {
-            factory.data = new BuffHandlerData { durationType = DurationType.Infinite };
-            BuffManager manager = go.AddComponent<BuffManager>();
-            StatusObserver observer = go.AddComponent<StatusObserver>();
-            SinkSpy sink = new SinkSpy();
-            observer.Bind(manager, sink);
-            BuffManager.BuffHandlerData data = new BuffManager.BuffHandlerData
-            {
-                target = go,
-                buffHandlerFactory = factory,
-                currentStacks = 1
-            };
-            if (populated)
-            {
-                manager.OnBuffHandlerStarted.Invoke(data);
-            }
-            for (int i = 0; i < 32; i++)
-            {
-                observer.Reconcile();
-            }
-            int calls = sink.calls;
-            long before = System.GC.GetAllocatedBytesForCurrentThread();
-            for (int i = 0; i < 32; i++)
-            {
-                observer.Reconcile();
-            }
-            long allocated = System.GC.GetAllocatedBytesForCurrentThread() - before;
-            Assert.AreEqual(0, allocated);
-            Assert.AreEqual(calls, sink.calls);
-            if (populated)
-            {
-                data.currentStacks = 2;
-                observer.Reconcile();
-                Assert.AreEqual(calls + 1, sink.calls);
-            }
+            target = _go,
+            buffHandlerFactory = _factory,
+            currentStacks = 1
+        };
+        if (populated)
+        {
+            manager.OnBuffHandlerStarted.Invoke(data);
         }
-        finally
+        for (int i = 0; i < 32; i++)
         {
-            DestroyHost(go);
-            Object.DestroyImmediate(factory);
+            observer.Reconcile();
+        }
+        int calls = sink.calls;
+
+        long before = System.GC.GetAllocatedBytesForCurrentThread();
+        for (int i = 0; i < 32; i++)
+        {
+            observer.Reconcile();
+        }
+        long allocated = System.GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.AreEqual(0, allocated);
+        Assert.AreEqual(calls, sink.calls);
+        if (populated)
+        {
+            data.currentStacks = 2;
+            observer.Reconcile();
+            Assert.AreEqual(calls + 1, sink.calls);
         }
     }
 
     [Test]
-    public void UnchangedStatusReturnsWhenTheSinkIsReenabled()
+    public void Reconcile_SinkReenabled_RestoresUnchangedStatus()
     {
-        GameObject go = new GameObject("Observer");
-        GameObject host = new GameObject("Sink");
-        BuffHandlerFactory factory = ScriptableObject.CreateInstance<BuffHandlerFactory>();
-        FlatModifierFactory modifier = ScriptableObject.CreateInstance<FlatModifierFactory>();
-        try
+        _factory.data = new BuffHandlerData
         {
-            modifier.data = new FlatModifierData { value = 1f };
-            factory.data = new BuffHandlerData
-            {
-                durationType = DurationType.Infinite,
-                buffFactoryList = new List<ABuffFactory> { modifier }
-            };
-            BuffManager manager = go.AddComponent<BuffManager>();
-            StatusObserver observer = go.AddComponent<StatusObserver>();
-            SpellVisualSink sink = host.AddComponent<SpellVisualSink>();
-            sink.looks = UnityEditor.AssetDatabase.LoadAssetAtPath<SpellLooks>(
-                "Assets/Render/Spells/Data/SpellLooks.asset"
-            );
-            observer.Bind(manager, sink);
-            manager.OnBuffHandlerStarted.Invoke(
-                new BuffManager.BuffHandlerData
-                {
-                    target = go,
-                    buffHandlerFactory = factory,
-                    currentStacks = 1
-                }
-            );
-            Assert.AreEqual(1, sink.statusCount);
-            sink.enabled = false;
-            TestHelpers.InvokePrivate(sink, "OnDisable");
-            observer.Reconcile();
-            Assert.AreEqual(0, sink.statusCount);
-            sink.enabled = true;
-            TestHelpers.InvokePrivate(sink, "OnEnable");
-            observer.Reconcile();
-            Assert.AreEqual(1, sink.statusCount);
-            sink.Clear();
-            observer.Reconcile();
-            Assert.AreEqual(1, sink.statusCount);
-        }
-        finally
+            durationType = DurationType.Infinite,
+            buffFactoryList = new List<ABuffFactory> { _modifier }
+        };
+        BuffManager manager = _go.AddComponent<BuffManager>();
+        StatusObserver observer = _go.AddComponent<StatusObserver>();
+        SpellVisualSink sink = CreateSink();
+        observer.Bind(manager, sink);
+        manager.OnBuffHandlerStarted.Invoke(new BuffManager.BuffHandlerData
         {
-            DestroyHost(go);
-            DestroyHost(host);
-            Object.DestroyImmediate(factory);
-            Object.DestroyImmediate(modifier);
-        }
+            target = _go,
+            buffHandlerFactory = _factory,
+            currentStacks = 1
+        });
+        Assert.AreEqual(1, sink.statusCount);
+
+        sink.enabled = false;
+        TestHelpers.InvokePrivate(sink, "OnDisable");
+        observer.Reconcile();
+        Assert.AreEqual(0, sink.statusCount);
+
+        sink.enabled = true;
+        TestHelpers.InvokePrivate(sink, "OnEnable");
+        observer.Reconcile();
+        Assert.AreEqual(1, sink.statusCount);
+
+        sink.Clear();
+        observer.Reconcile();
+        Assert.AreEqual(1, sink.statusCount);
     }
 
     [Test]
-    public void EventsReconcilePreStartStacksRefreshAndIndependentSourceGroups()
+    public void Reconcile_StackEventsFromTwoHandlers_SumIntoOneStatusUntilBothStop()
     {
-        GameObject go = new GameObject("Observer");
-        GameObject host = new GameObject("Sink");
-        BuffHandlerFactory f = ScriptableObject.CreateInstance<BuffHandlerFactory>();
-        FlatModifierFactory m = ScriptableObject.CreateInstance<FlatModifierFactory>();
-        try
+        _factory.data = new BuffHandlerData
         {
-            m.data = new FlatModifierData { value = 1f };
-            f.data = new BuffHandlerData
-            {
-                durationType = DurationType.Duration,
-                duration = 4f,
-                buffFactoryList = new List<ABuffFactory> { m }
-            };
-            BuffManager manager = go.AddComponent<BuffManager>();
-            StatusObserver observer = go.AddComponent<StatusObserver>();
-            SpellVisualSink sink = host.AddComponent<SpellVisualSink>();
-            sink.looks = UnityEditor.AssetDatabase.LoadAssetAtPath<SpellLooks>(
-                "Assets/Render/Spells/Data/SpellLooks.asset"
-            );
-            observer.Bind(manager, sink);
-            BuffManager.BuffHandlerData data = new BuffManager.BuffHandlerData
-            {
-                target = go,
-                buffHandlerFactory = f,
-                buffHandler = new BuffHandler { data = f.data },
-                refreshStacks = 1
-            };
-            manager.OnBuffHandlerStarted.Invoke(data);
-            Assert.AreEqual(1, sink.GetStatus(go, f).GetComponent<SpellEffect>().stacks);
-            data.currentStacks = 3;
-            data.refreshStacks = 0;
-            ((BuffHandler)data.buffHandler).durationTimer = 2f;
-            observer.Reconcile();
-            Assert.AreEqual(3, sink.GetStatus(go, f).GetComponent<SpellEffect>().stacks);
-            BuffManager.BuffHandlerData second = new BuffManager.BuffHandlerData
-            {
-                target = go,
-                buffHandlerFactory = f,
-                buffHandler = new BuffHandler { data = f.data },
-                currentStacks = 2
-            };
-            manager.OnBuffHandlerStarted.Invoke(second);
-            Assert.AreEqual(5, sink.GetStatus(go, f).GetComponent<SpellEffect>().stacks);
-            manager.OnBuffHandlerStopped.Invoke(data);
-            Assert.AreEqual(1, sink.statusCount);
-            manager.OnBuffHandlerStopped.Invoke(second);
-            Assert.AreEqual(0, sink.statusCount);
-            observer.Detach();
-            manager.OnBuffHandlerStarted.Invoke(data);
-            Assert.AreEqual(0, sink.statusCount);
-        }
-        finally
+            durationType = DurationType.Duration,
+            duration = 4f,
+            buffFactoryList = new List<ABuffFactory> { _modifier }
+        };
+        BuffManager manager = _go.AddComponent<BuffManager>();
+        StatusObserver observer = _go.AddComponent<StatusObserver>();
+        SpellVisualSink sink = CreateSink();
+        observer.Bind(manager, sink);
+        BuffManager.BuffHandlerData data = new BuffManager.BuffHandlerData
         {
-            DestroyHost(go);
-            DestroyHost(host);
-            Object.DestroyImmediate(f);
-            Object.DestroyImmediate(m);
-        }
+            target = _go,
+            buffHandlerFactory = _factory,
+            buffHandler = new BuffHandler { data = _factory.data },
+            refreshStacks = 1
+        };
+
+        manager.OnBuffHandlerStarted.Invoke(data);
+        Assert.AreEqual(1, sink.GetStatus(_go, _factory).GetComponent<SpellEffect>().stacks);
+
+        data.currentStacks = 3;
+        data.refreshStacks = 0;
+        ((BuffHandler)data.buffHandler).durationTimer = 2f;
+        observer.Reconcile();
+        Assert.AreEqual(3, sink.GetStatus(_go, _factory).GetComponent<SpellEffect>().stacks);
+
+        BuffManager.BuffHandlerData second = new BuffManager.BuffHandlerData
+        {
+            target = _go,
+            buffHandlerFactory = _factory,
+            buffHandler = new BuffHandler { data = _factory.data },
+            currentStacks = 2
+        };
+        manager.OnBuffHandlerStarted.Invoke(second);
+        Assert.AreEqual(5, sink.GetStatus(_go, _factory).GetComponent<SpellEffect>().stacks);
+
+        manager.OnBuffHandlerStopped.Invoke(data);
+        Assert.AreEqual(1, sink.statusCount);
+        manager.OnBuffHandlerStopped.Invoke(second);
+        Assert.AreEqual(0, sink.statusCount);
+
+        observer.Detach();
+        manager.OnBuffHandlerStarted.Invoke(data);
+        Assert.AreEqual(0, sink.statusCount);
     }
 
     [Test]
     public void Init_Manager_PublishesToTheManagerSink()
     {
-        GameObject go = new GameObject("Observed");
-        GameObject managerGo = new GameObject("RenderManager");
-        GameObject sinkGo = new GameObject("Sink");
-        BuffHandlerFactory factory = ScriptableObject.CreateInstance<BuffHandlerFactory>();
-        try
+        _factory.data = new BuffHandlerData { durationType = DurationType.Infinite };
+        Entity entity = null;
+        TestHelpers.WithLoggingDisabled(() => entity = _go.AddComponent<Entity>());
+        BuffManager manager = _go.GetComponent<BuffManager>();
+        if (manager == null)
         {
-            factory.data = new BuffHandlerData { durationType = DurationType.Infinite };
-            Entity entity = null;
-            TestHelpers.WithLoggingDisabled(() => entity = go.AddComponent<Entity>());
-            BuffManager manager = go.GetComponent<BuffManager>();
-            if (manager == null)
-            {
-                manager = go.AddComponent<BuffManager>();
-            }
-            HealerLike.Render.Stage.RenderManager renderManager =
-                managerGo.AddComponent<HealerLike.Render.Stage.RenderManager>();
-            sinkGo.transform.SetParent(managerGo.transform);
-            SpellVisualSink sink = sinkGo.AddComponent<SpellVisualSink>();
-            sink.looks = UnityEditor.AssetDatabase.LoadAssetAtPath<SpellLooks>(
-                "Assets/Render/Spells/Data/SpellLooks.asset"
-            );
-            TestHelpers.SetPrivateField(renderManager, "_spellSink", sink);
-            StatusObserver observer = go.AddComponent<StatusObserver>();
-
-            observer.Init(entity, renderManager);
-            manager.OnBuffHandlerStarted.Invoke(
-                new BuffManager.BuffHandlerData { target = go, buffHandlerFactory = factory, currentStacks = 1 }
-            );
-
-            Assert.AreEqual(1, sink.statusCount);
-            Assert.IsNotNull(go.GetComponent<AttributeShieldView>());
+            manager = _go.AddComponent<BuffManager>();
         }
-        finally
-        {
-            DestroyHost(go);
-            DestroyHost(managerGo);
-            Object.DestroyImmediate(factory);
-        }
+        RenderManager renderManager = _managerGo.AddComponent<RenderManager>();
+        _sinkGo.transform.SetParent(_managerGo.transform);
+        SpellVisualSink sink = CreateSink();
+        TestHelpers.SetPrivateField(renderManager, "_spellSink", sink);
+        StatusObserver observer = _go.AddComponent<StatusObserver>();
+
+        observer.Init(entity, renderManager);
+        manager.OnBuffHandlerStarted.Invoke(new BuffManager.BuffHandlerData { target = _go, buffHandlerFactory = _factory, currentStacks = 1 });
+
+        Assert.AreEqual(1, sink.statusCount);
+        Assert.IsNotNull(_go.GetComponent<AttributeShieldView>());
     }
 }
 
