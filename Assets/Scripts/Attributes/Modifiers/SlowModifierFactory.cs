@@ -19,7 +19,7 @@ public class SlowModifier : AttributeModifier<SlowModifierData>, IStackableBuff
     float _stacks = 1f;
     float _duration = 1f;
 
-    public SlowModifier()
+    public override void Init(GameObject source, GameObject target)
     {
         _start = Time.time;
         _duration = buffHandler.hasDuration ? buffHandler.duration : 1f;

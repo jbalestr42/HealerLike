@@ -34,14 +34,14 @@ public class AttributeModifierBuff<ModifierType, DataType> : ABuff<DataType>, IS
 
     public override void Instant(GameObject source, GameObject target)
     {
-        _modifier = new ModifierType() { data = data };
+        _modifier = new ModifierType() { data = data, buffHandler = buffHandler };
         _modifier.Init(source, target);
         ComputeInstantValue(target.GetComponent<AttributeManager>().GetOrAdd(data.type), _modifier.ApplyModifier());
     }
 
     public override void Add(GameObject source, GameObject target)
     {
-        _modifier = new ModifierType() { data = data };
+        _modifier = new ModifierType() { data = data, buffHandler = buffHandler };
         _modifier.Init(source, target);
         target.GetComponent<AttributeManager>().GetOrAdd(data.type).AddModifier(data.modifierType, source, _modifier);
     }

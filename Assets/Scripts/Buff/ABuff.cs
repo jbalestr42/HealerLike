@@ -7,7 +7,7 @@ public abstract class ABuffFactory : SerializedScriptableObject
 {
     [HideInInlineEditors]
     public string uniqueID = Guid.NewGuid().ToString();
-    public abstract ABuff GetBuff();
+    public abstract ABuff GetBuff(ABuffHandler buffHandler);
 }
 
 public class BuffFactory<BuffType, DataType> : ABuffFactory where BuffType : ABuff<DataType>, new()
@@ -16,15 +16,17 @@ public class BuffFactory<BuffType, DataType> : ABuffFactory where BuffType : ABu
     [HideLabel]
     public DataType data;
 
-    public override ABuff GetBuff()
+    public override ABuff GetBuff(ABuffHandler buffHandler)
     {
-        return new BuffType() { data = this.data };
+        return new BuffType() { data = this.data, buffHandler = buffHandler };
     }
 }
 
 [Serializable]
 public abstract class ABuff
 {
+    public ABuffHandler buffHandler { get; set; }
+
     public abstract void Instant(GameObject source, GameObject target);
     public abstract void Add(GameObject source, GameObject target);
     public abstract void Remove(GameObject source, GameObject target);

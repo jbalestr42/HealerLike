@@ -126,7 +126,7 @@ public class BuffManager : SerializedMonoBehaviour
                             Debug.Log($"[BuffManager:{gameObject.name}] Instant buff {buffFactory.name} | refreshStacks={buffHandlerData.refreshStacks}");
                             for (int i = 0; i < buffHandlerData.refreshStacks; i++)
                             {
-                                ABuff buff = buffFactory.GetBuff();
+                                ABuff buff = buffFactory.GetBuff(buffHandlerData.buffHandler);
                                 buff.Instant(source, buffHandlerData.target);
                             }
                             _cachedIdsToRemove.Add(kvpBuffHandler.Key);
@@ -151,7 +151,7 @@ public class BuffManager : SerializedMonoBehaviour
                             {
                                 foreach (var buffFactory in buffHandlerFactory.buffFactoryList)
                                 {
-                                    Add(buffFactory, source, buffHandlerData.target);
+                                    Add(buffFactory, source, buffHandlerData.target, buffHandlerData.buffHandler);
                                 }
                                 buffHandlerData.currentStacks++;
                             }
@@ -383,7 +383,7 @@ public class BuffManager : SerializedMonoBehaviour
         }
     }
 
-    void Add(ABuffFactory buffFactory, GameObject source, GameObject target)
+    void Add(ABuffFactory buffFactory, GameObject source, GameObject target, ABuffHandler buffHandler)
     {
         if (string.IsNullOrEmpty(buffFactory.uniqueID))
         {
@@ -400,7 +400,7 @@ public class BuffManager : SerializedMonoBehaviour
         else
         {
             Debug.Log($"[BuffManager:{gameObject.name}] Add buff " + buffFactory.name);
-            ABuff buff = buffFactory.GetBuff();
+            ABuff buff = buffFactory.GetBuff(buffHandler);
             buffData.buffList.Add(buff);
             buff.Add(source, target);
         }
