@@ -84,4 +84,5 @@ public class CreatureLooksTests
         Assert.AreSame(looks.ally, result);
     }
 }
+
 }

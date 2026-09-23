@@ -55,4 +55,5 @@ public class GrassPaletteTests
         Assert.AreEqual((Vector4)tip, properties.GetVector("_HL_TipColor"));
     }
 }
+
 }

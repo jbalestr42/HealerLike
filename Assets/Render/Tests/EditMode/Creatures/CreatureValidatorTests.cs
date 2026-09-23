@@ -3,129 +3,114 @@ using UnityEngine;
 
 namespace HealerLike.Render.Creatures
 {
-    public class CreatureValidatorTests
+
+public class CreatureValidatorTests
+{
+    public static CreatureRecipe Recipe()
     {
-        public static CreatureRecipe Recipe()
+        CreatureRecipe recipe = ScriptableObject.CreateInstance<CreatureRecipe>();
+        recipe.parts = new Part[]
         {
-            CreatureRecipe recipe = ScriptableObject.CreateInstance<CreatureRecipe>();
-            recipe.parts = new Part[]
-            {
-                new Part { id = "Body", parent = -1, dimensions = Vector3.one, colour = Color.green }
-            };
-            recipe.sourceLocal = new Vector3[] { Vector3.up };
-            recipe.arms = new ArmDefinition[]
-            {
-                new ArmDefinition
-                {
-                    bodyPart = 0,
-                    segmentCount = 24,
-                    segmentLength = 0.2f,
-                    radius = 0.018f,
-                    restJoints = ChainSolverTests.Rest(),
-                    bendPole = Vector3.up,
-                    colour = Color.green
-                }
-            };
-            return recipe;
-        }
-
-        [TestCase(6, true)]
-        [TestCase(7, true)]
-        [TestCase(8, true)]
-        [TestCase(9, false)]
-        public void RootCrownSupportsEightLegsWithinCell(int count, bool valid)
+            new Part { id = "Body", parent = -1, dimensions = Vector3.one, colour = Color.green }
+        };
+        recipe.sourceLocal = new Vector3[] { Vector3.up };
+        recipe.arms = new ArmDefinition[]
         {
-            CreatureRecipe recipe = Recipe();
-            try
+            new ArmDefinition
             {
-                recipe.roots.count = count;
-                Assert.AreEqual(valid, CreatureValidator.TryValidate(recipe, out _));
+                bodyPart = 0,
+                segmentCount = 24,
+                segmentLength = 0.2f,
+                radius = 0.018f,
+                restJoints = ChainSolverTests.Rest(),
+                bendPole = Vector3.up,
+                colour = Color.green
             }
-            finally
-            {
-                Object.DestroyImmediate(recipe);
-            }
-        }
-
-        [TestCase(40, true)]
-        [TestCase(41, false)]
-        public void JointDetailStillHasBoundedPartBudget(int count, bool valid)
-        {
-            CreatureRecipe recipe = Recipe();
-            try
-            {
-                Part body = recipe.parts[0];
-                recipe.parts = new Part[count];
-                for (int i = 0; i < count; i++)
-                {
-                    recipe.parts[i] = body;
-                    recipe.parts[i].id = "Part" + i;
-                    recipe.parts[i].parent = i == 0 ? -1 : 0;
-                }
-
-                Assert.AreEqual(valid, CreatureValidator.TryValidate(recipe, out _));
-            }
-            finally
-            {
-                Object.DestroyImmediate(recipe);
-            }
-        }
-
-        [Test]
-        public void ValidTreeAndRestAreAccepted()
-        {
-            CreatureRecipe recipe = Recipe();
-            try
-            {
-                Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);
-            }
-            finally
-            {
-                Object.DestroyImmediate(recipe);
-            }
-        }
-
-        [TestCase(0)]
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        [TestCase(4)]
-        public void InvalidTreeSocketAndRestAreRejected(int mode)
-        {
-            CreatureRecipe recipe = Recipe();
-            try
-            {
-                if (mode == 0)
-                {
-                    recipe.parts[0].parent = 0;
-                }
-
-                if (mode == 1)
-                {
-                    recipe.parts = new Part[] { recipe.parts[0], recipe.parts[0] };
-                }
-
-                if (mode == 2)
-                {
-                    recipe.sourceLocal = new Vector3[0];
-                }
-
-                if (mode == 3)
-                {
-                    recipe.arms[0].restJoints[2] = Vector3.one * 100f;
-                }
-
-                if (mode == 4)
-                {
-                    recipe.roots.footRadius = 1f;
-                }
-
-                Assert.IsFalse(CreatureValidator.TryValidate(recipe, out _));
-            }
-            finally
-            {
-                Object.DestroyImmediate(recipe);
-            }
-        }
+        };
+        return recipe;
     }
+
+    CreatureRecipe _recipe;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _recipe = Recipe();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        Object.DestroyImmediate(_recipe);
+    }
+
+    [TestCase(6, true)]
+    [TestCase(7, true)]
+    [TestCase(8, true)]
+    [TestCase(9, false)]
+    public void TryValidate_RootCount_AcceptsUpToEight(int count, bool valid)
+    {
+        _recipe.roots.count = count;
+
+        Assert.AreEqual(valid, CreatureValidator.TryValidate(_recipe, out _));
+    }
+
+    [TestCase(40, true)]
+    [TestCase(41, false)]
+    public void TryValidate_PartCount_AcceptsUpToForty(int count, bool valid)
+    {
+        Part body = _recipe.parts[0];
+        _recipe.parts = new Part[count];
+        for (int i = 0; i < count; i++)
+        {
+            _recipe.parts[i] = body;
+            _recipe.parts[i].id = "Part" + i;
+            _recipe.parts[i].parent = i == 0 ? -1 : 0;
+        }
+
+        Assert.AreEqual(valid, CreatureValidator.TryValidate(_recipe, out _));
+    }
+
+    [Test]
+    public void TryValidate_ValidTreeAndRest_ReturnsTrue()
+    {
+        Assert.IsTrue(CreatureValidator.TryValidate(_recipe, out string error), error);
+    }
+
+    [TestCase(0)]
+    [TestCase(1)]
+    [TestCase(2)]
+    [TestCase(3)]
+    [TestCase(4)]
+    public void TryValidate_InvalidTreeSocketOrRest_ReturnsFalse(int mode)
+    {
+        if (mode == 0)
+        {
+            _recipe.parts[0].parent = 0;
+        }
+
+        if (mode == 1)
+        {
+            _recipe.parts = new Part[] { _recipe.parts[0], _recipe.parts[0] };
+        }
+
+        if (mode == 2)
+        {
+            _recipe.sourceLocal = new Vector3[0];
+        }
+
+        if (mode == 3)
+        {
+            _recipe.arms[0].restJoints[2] = Vector3.one * 100f;
+        }
+
+        if (mode == 4)
+        {
+            _recipe.roots.footRadius = 1f;
+        }
+
+        Assert.IsFalse(CreatureValidator.TryValidate(_recipe, out _));
+    }
+}
+
 }

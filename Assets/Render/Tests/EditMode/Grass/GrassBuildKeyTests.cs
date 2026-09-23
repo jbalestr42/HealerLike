@@ -88,4 +88,5 @@ public class GrassBuildKeyTests
         Assert.AreEqual(4.7f, bounds.size.z, 0.0001f); // 2 * 1.5 + 2 * 0.85
     }
 }
+
 }

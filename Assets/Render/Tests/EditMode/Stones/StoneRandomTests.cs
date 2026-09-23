@@ -2,18 +2,20 @@ using NUnit.Framework;
 
 namespace HealerLike.Render.Stones
 {
-    public class StoneRandomTests
+
+public class StoneRandomTests
+{
+    [Test]
+    public void Next_ZeroSeed_ReturnsPinnedSequenceInRange()
     {
-        [Test]
-        public void ZeroSeedIsValidAndSequencePinned()
+        StoneRandom random = new StoneRandom(0);
+        Assert.AreEqual(1013904223u, random.Next());
+        Assert.AreEqual(1196435762u, random.Next());
+        for (int i = 0; i < 1000; i++)
         {
-            StoneRandom random = new StoneRandom(0);
-            Assert.AreEqual(1013904223u, random.Next());
-            Assert.AreEqual(1196435762u, random.Next());
-            for (int i = 0; i < 1000; i++)
-            {
-                Assert.That(random.Next01(), Is.GreaterThanOrEqualTo(0).And.LessThan(1));
-            }
+            Assert.That(random.Next01(), Is.GreaterThanOrEqualTo(0).And.LessThan(1));
         }
     }
+}
+
 }

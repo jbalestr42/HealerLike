@@ -71,4 +71,5 @@ public class GrassBenchmarkTests
         Assert.AreEqual(0, _benchmark.collectedFrames);
     }
 }
+
 }

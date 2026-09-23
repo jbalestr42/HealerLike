@@ -46,6 +46,7 @@ public class SpellVisualSinkTests
     [TearDown]
     public void TearDown()
     {
+        TestHelpers.InvokePrivate(_sink, "OnDestroy");
         Object.DestroyImmediate(_host);
         if (_target != null)
         {
@@ -367,5 +368,24 @@ public class SpellVisualSinkTests
 
         Assert.AreEqual(0, _sink.impactCount);
     }
+
+    [Test]
+    public void RemoveStatus_UnrelatedStatus_KeepsPoisonTintUntilClear()
+    {
+        BuffHandlerFactory poison = AssetDatabase.LoadAssetAtPath<BuffHandlerFactory>(
+            "Assets/Data/CharacterSkills/PoisonSingleTarget/PoisonSingleTarget_BuffHandlerFactory.asset");
+        BuffHandlerFactory buff = AssetDatabase.LoadAssetAtPath<BuffHandlerFactory>(
+            "Assets/Data/CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory.asset");
+        _sink.SetStatus(null, _target, poison, 1, 1f, 5f, ClockKind.Simulation);
+        Assert.AreNotEqual(Color.white, BodyTintState.Read(_target));
+
+        _sink.SetStatus(null, _target, buff, 1, 1f, 5f, ClockKind.Simulation);
+        _sink.RemoveStatus(null, _target, buff);
+        Assert.AreNotEqual(Color.white, BodyTintState.Read(_target), "Removing an unrelated status must not erase poison.");
+
+        _sink.Clear();
+        Assert.AreEqual(Color.white, BodyTintState.Read(_target));
+    }
 }
+
 }

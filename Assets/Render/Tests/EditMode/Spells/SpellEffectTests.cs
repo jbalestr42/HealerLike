@@ -395,4 +395,5 @@ public class SpellEffectTests
         }
     }
 }
+
 }

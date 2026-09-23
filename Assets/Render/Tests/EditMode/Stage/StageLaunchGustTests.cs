@@ -1,6 +1,6 @@
+using HealerLike.Render.Environment;
 using NUnit.Framework;
 using UnityEngine;
-using HealerLike.Render.Environment;
 
 namespace HealerLike.Render.Stage
 {
@@ -54,4 +54,5 @@ public class StageLaunchGustTests
         Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + 0.1).sqrMagnitude);
     }
 }
+
 }

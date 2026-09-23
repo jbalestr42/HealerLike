@@ -1,10 +1,10 @@
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Stones;
+using HealerLike.Render.Zones;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
-using HealerLike.Render.Creatures;
-using HealerLike.Render.Stones;
-using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Stage
 {
@@ -258,4 +258,5 @@ public class RenderManagerTests
         Assert.IsNull(entity.model.GetComponentInChildren<CreatureBuilder>());
     }
 }
+
 }

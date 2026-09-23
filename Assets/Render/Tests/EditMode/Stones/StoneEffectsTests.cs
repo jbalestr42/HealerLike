@@ -4,261 +4,240 @@ using UnityEngine;
 
 namespace HealerLike.Render.Stones
 {
-    public class StoneEffectsTests
+
+public class StoneEffectsTests
+{
+    StoneEffects _fx;
+    GameObject _go;
+    GameObject _source;
+    StoneEnemyVisual _visual;
+    Mesh _mesh;
+
+    [SetUp]
+    public void SetUp()
     {
-        static StoneEffects CreateEffects()
+        _fx = CreateEffects();
+        _go = _fx.gameObject;
+        _source = new GameObject("SourceVisual");
+        _mesh = StoneMesh.CreateMesh(1, StonePresets.Boulder);
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        if (_visual != null)
         {
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
-            return Object.Instantiate(prefab).GetComponent<StoneEffects>();
+            TestHelpers.InvokePrivate(_visual, "OnDestroy");
+            _visual = null;
         }
-
-        static StoneEnemyVisual CreateVisual(GameObject target)
+        TestHelpers.InvokePrivate(_fx, "OnDestroy");
+        Object.DestroyImmediate(_go);
+        Object.DestroyImmediate(_source);
+        if (_mesh != null)
         {
-            Transform pivot = new GameObject("BodyPivot").transform;
-            pivot.SetParent(target.transform, false);
-            Transform presentation = new GameObject("StonePresentation").transform;
-            presentation.SetParent(pivot, false);
-            StoneEnemyVisual visual = target.AddComponent<StoneEnemyVisual>();
-            TestHelpers.SetPrivateField(visual, "_bodyPivot", pivot);
-            TestHelpers.SetPrivateField(visual, "_presentation", presentation);
-            return visual;
-        }
-
-        [Test]
-        public void DustRisesFadesExpiresAndReusesWithoutAllocating()
-        {
-            StoneEffects fx = CreateEffects();
-            GameObject go = fx.gameObject;
-            try
-            {
-                fx.EmitDust(Vector3.zero, 1);
-                Assert.AreEqual(5, fx.liveCount);
-
-                MeshRenderer renderer = go.GetComponentInChildren<MeshRenderer>();
-                MaterialPropertyBlock block = new MaterialPropertyBlock();
-                fx.Advance(0.1f);
-                renderer.GetPropertyBlock(block);
-                float alpha = block.GetColor("_BaseColor").a;
-                Assert.Greater(renderer.transform.position.y, 0);
-
-                fx.Advance(0.2f);
-                renderer.GetPropertyBlock(block);
-                Assert.Less(block.GetColor("_BaseColor").a, alpha);
-
-                fx.Advance(1f);
-                Assert.AreEqual(0, fx.liveCount);
-
-                fx.EmitDust(Vector3.zero, 1);
-                fx.Advance(0.01f);
-                long before = System.GC.GetAllocatedBytesForCurrentThread();
-                for (int i = 0; i < 10; i++)
-                {
-                    fx.Advance(1f);
-                    fx.EmitDust(Vector3.zero, 1);
-                    fx.Advance(0.01f);
-                }
-                long allocated = System.GC.GetAllocatedBytesForCurrentThread() - before;
-                Assert.AreEqual(0, allocated);
-                Assert.AreEqual(5, go.transform.childCount);
-            }
-            finally
-            {
-                TestHelpers.InvokePrivate(fx, "OnDestroy");
-                Object.DestroyImmediate(go);
-            }
-        }
-
-        [TestCase(false)]
-        [TestCase(true)]
-        public void DisableClearsCopiesSlotsAndRejectsEveryEmission(bool deactivateObject)
-        {
-            StoneEffects fx = CreateEffects();
-            GameObject go = fx.gameObject;
-            GameObject source = new GameObject("SourceVisual");
-            StoneEnemyVisual visual = CreateVisual(source);
-            Mesh mesh = StoneMesh.CreateMesh(1, StonePresets.Boulder);
-            try
-            {
-                visual.Init(null, 1, fx);
-                fx.EmitDetachedPart(mesh, null, Matrix4x4.identity, Vector3.zero, 0f, 1);
-                Mesh copy = go.GetComponentInChildren<MeshFilter>().sharedMesh;
-                fx.EmitThrownContact(Vector3.zero, 1);
-                if (deactivateObject)
-                {
-                    go.SetActive(false);
-                }
-                else
-                {
-                    fx.enabled = false;
-                }
-                TestHelpers.InvokePrivate(fx, "OnDisable");
-                Assert.AreEqual(0, fx.liveCount);
-                Assert.IsTrue(copy == null);
-                foreach (MeshFilter filter in go.GetComponentsInChildren<MeshFilter>(true))
-                {
-                    Assert.IsFalse(filter.gameObject.activeSelf);
-                    Assert.IsNull(filter.sharedMesh);
-                }
-
-                fx.EmitHit(default, false, 1);
-                fx.EmitThrownContact(Vector3.zero, 1);
-                fx.EmitDetachedPart(mesh, null, Matrix4x4.identity, Vector3.zero, 0f, 1);
-                fx.CollapseOnce(visual, 1);
-                Assert.AreEqual(0, fx.liveCount);
-                Assert.IsTrue(visual.parts[0].transform.gameObject.activeSelf);
-                Assert.IsTrue(visual.TryBeginCollapse(), "Inactive effects must not consume collapse state");
-
-                int pooled = go.transform.childCount;
-                if (deactivateObject)
-                {
-                    go.SetActive(true);
-                }
-                else
-                {
-                    fx.enabled = true;
-                }
-                fx.EmitThrownContact(Vector3.zero, 1);
-                Assert.Greater(fx.liveCount, 0);
-                Assert.AreEqual(pooled, go.transform.childCount);
-            }
-            finally
-            {
-                TestHelpers.InvokePrivate(visual, "OnDestroy");
-                TestHelpers.InvokePrivate(fx, "OnDestroy");
-                Object.DestroyImmediate(go);
-                Object.DestroyImmediate(source);
-                Object.DestroyImmediate(mesh);
-            }
-        }
-
-        [Test]
-        public void ImpactRaisesTheEventAndDisabledOwnerStaysSilent()
-        {
-            StoneEffects fx = CreateEffects();
-            int impacts = 0;
-            fx.OnImpactRecorded.AddListener(position => impacts++);
-            try
-            {
-                fx.RecordImpact(Vector3.zero, 1);
-                Assert.AreEqual(1, impacts);
-                Assert.AreEqual(5, fx.liveCount);
-
-                fx.Advance(1f);
-                fx.enabled = false;
-                TestHelpers.InvokePrivate(fx, "OnDisable");
-                fx.RecordImpact(Vector3.zero, 1);
-                fx.EmitThrownContact(Vector3.zero, 1);
-                Assert.AreEqual(1, impacts);
-                Assert.AreEqual(0, fx.liveCount);
-            }
-            finally
-            {
-                TestHelpers.InvokePrivate(fx, "OnDestroy");
-                Object.DestroyImmediate(fx.gameObject);
-            }
-        }
-
-        [Test]
-        public void HitCountsCapAndLifetime()
-        {
-            StoneEffects fx = CreateEffects();
-            GameObject go = fx.gameObject;
-            try
-            {
-                StoneImpact impact = new StoneImpact(Vector3.up, Vector3.up, Vector3.zero, true);
-                fx.EmitHit(impact, false, 1);
-                Assert.AreEqual(9, fx.liveCount);
-
-                fx.Advance(0.6f);
-                Assert.AreEqual(0, fx.liveCount);
-
-                fx.EmitHit(impact, true, 1);
-                Assert.AreEqual(14, fx.liveCount);
-
-                for (uint i = 0; i < 40; i++)
-                {
-                    fx.EmitHit(impact, true, i);
-                }
-                Assert.AreEqual(StoneEffects.MaxLiveFragments, fx.liveCount); // 41 * 14 fragments asked, 256 kept
-
-                fx.Advance(1f);
-                Assert.AreEqual(0, fx.liveCount);
-                Assert.AreEqual(0, go.GetComponentsInChildren<Collider>().Length);
-                Assert.AreEqual(0, go.GetComponentsInChildren<Rigidbody>().Length);
-            }
-            finally
-            {
-                TestHelpers.InvokePrivate(fx, "OnDestroy");
-                Object.DestroyImmediate(go);
-            }
-        }
-
-        [Test]
-        public void DetachedCopySurvivesSourceReleaseAndSplitsIntoThree()
-        {
-            StoneEffects fx = CreateEffects();
-            GameObject go = fx.gameObject;
-            Mesh mesh = StoneMesh.CreateMesh(1, StonePresets.Boulder);
-            try
-            {
-                Matrix4x4 pose = Matrix4x4.TRS(Vector3.up, Quaternion.identity, Vector3.one);
-                fx.EmitDetachedPart(mesh, null, pose, Vector3.zero, 0f, 1);
-                Object.DestroyImmediate(mesh);
-                fx.Advance(0.24f);
-                Assert.AreEqual(1, fx.liveCount);
-                Assert.IsNotNull(go.GetComponentInChildren<MeshFilter>().sharedMesh);
-
-                fx.Advance(0.01f);
-                Assert.AreEqual(3, fx.liveCount);
-
-                fx.Advance(0.25f);
-                Assert.AreEqual(0, fx.liveCount);
-            }
-            finally
-            {
-                if (mesh != null)
-                {
-                    Object.DestroyImmediate(mesh);
-                }
-                TestHelpers.InvokePrivate(fx, "OnDestroy");
-                Object.DestroyImmediate(go);
-            }
-        }
-
-        [Test]
-        public void ShardComesFromThePoolAndGoesBack()
-        {
-            StoneEffects fx = CreateEffects();
-            Mesh mesh = StoneMesh.CreateMesh(1, StonePresets.Boulder);
-            try
-            {
-                Transform shard = fx.TakeShard(mesh, Color.white);
-                Assert.IsTrue(shard.gameObject.activeSelf);
-                Assert.AreSame(mesh, shard.GetComponent<MeshFilter>().sharedMesh);
-                Assert.AreEqual(0, fx.liveCount);
-
-                fx.ReturnShard(shard);
-                Assert.IsFalse(shard.gameObject.activeSelf);
-                fx.EmitTrickle(Vector3.zero, 1);
-                Assert.AreEqual(1, fx.transform.childCount);
-            }
-            finally
-            {
-                TestHelpers.InvokePrivate(fx, "OnDestroy");
-                Object.DestroyImmediate(fx.gameObject);
-                Object.DestroyImmediate(mesh);
-            }
-        }
-
-        [Test]
-        public void OneAnalyticBounceNeverFallsBelowGround()
-        {
-            for (int i = 0; i < 100; i++)
-            {
-                Vector3 position = StoneEffects.PositionAt(Vector3.up, Vector3.right, i * 0.02f, 0f, true);
-                Assert.That(position.y, Is.GreaterThanOrEqualTo(0));
-            }
-            Assert.That(StoneEffects.PositionAt(Vector3.up, Vector3.right, 1f, 0f, false).y, Is.LessThan(0));
+            Object.DestroyImmediate(_mesh);
         }
     }
+
+    public static StoneEffects CreateEffects()
+    {
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
+        return Object.Instantiate(prefab).GetComponent<StoneEffects>();
+    }
+
+    [Test]
+    public void EmitDust_Advanced_RisesFadesExpiresAndReusesWithoutAllocating()
+    {
+        _fx.EmitDust(Vector3.zero, 1);
+        Assert.AreEqual(5, _fx.liveCount);
+
+        MeshRenderer renderer = _go.GetComponentInChildren<MeshRenderer>();
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        _fx.Advance(0.1f);
+        renderer.GetPropertyBlock(block);
+        float alpha = block.GetColor("_BaseColor").a;
+        Assert.Greater(renderer.transform.position.y, 0);
+
+        _fx.Advance(0.2f);
+        renderer.GetPropertyBlock(block);
+        Assert.Less(block.GetColor("_BaseColor").a, alpha);
+
+        _fx.Advance(1f);
+        Assert.AreEqual(0, _fx.liveCount);
+
+        _fx.EmitDust(Vector3.zero, 1);
+        _fx.Advance(0.01f);
+        long before = System.GC.GetAllocatedBytesForCurrentThread();
+        for (int i = 0; i < 10; i++)
+        {
+            _fx.Advance(1f);
+            _fx.EmitDust(Vector3.zero, 1);
+            _fx.Advance(0.01f);
+        }
+        long allocated = System.GC.GetAllocatedBytesForCurrentThread() - before;
+        Assert.AreEqual(0, allocated);
+        Assert.AreEqual(5, _go.transform.childCount);
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public void OnDisable_LiveEffects_ClearsCopiesAndRejectsEveryEmission(bool deactivateObject)
+    {
+        _visual = StoneEnemyVisualTests.CreateVisual(_source);
+        _visual.Init(null, 1, _fx);
+        _fx.EmitDetachedPart(_mesh, null, Matrix4x4.identity, Vector3.zero, 0f, 1);
+        Mesh copy = _go.GetComponentInChildren<MeshFilter>().sharedMesh;
+        _fx.EmitThrownContact(Vector3.zero, 1);
+
+        if (deactivateObject)
+        {
+            _go.SetActive(false);
+        }
+        else
+        {
+            _fx.enabled = false;
+        }
+        TestHelpers.InvokePrivate(_fx, "OnDisable");
+
+        Assert.AreEqual(0, _fx.liveCount);
+        Assert.IsTrue(copy == null);
+        foreach (MeshFilter filter in _go.GetComponentsInChildren<MeshFilter>(true))
+        {
+            Assert.IsFalse(filter.gameObject.activeSelf);
+            Assert.IsNull(filter.sharedMesh);
+        }
+
+        _fx.EmitHit(default, false, 1);
+        _fx.EmitThrownContact(Vector3.zero, 1);
+        _fx.EmitDetachedPart(_mesh, null, Matrix4x4.identity, Vector3.zero, 0f, 1);
+        _fx.CollapseOnce(_visual, 1);
+        Assert.AreEqual(0, _fx.liveCount);
+        Assert.IsTrue(_visual.parts[0].transform.gameObject.activeSelf);
+        Assert.IsTrue(_visual.TryBeginCollapse(), "Inactive effects must not consume collapse state");
+
+        int pooled = _go.transform.childCount;
+        if (deactivateObject)
+        {
+            _go.SetActive(true);
+        }
+        else
+        {
+            _fx.enabled = true;
+        }
+        _fx.EmitThrownContact(Vector3.zero, 1);
+        Assert.Greater(_fx.liveCount, 0);
+        Assert.AreEqual(pooled, _go.transform.childCount);
+    }
+
+    [Test]
+    public void RecordImpact_EnabledThenDisabled_RaisesTheEventOnlyWhileEnabled()
+    {
+        int impacts = 0;
+        _fx.OnImpactRecorded.AddListener(position => impacts++);
+
+        _fx.RecordImpact(Vector3.zero, 1);
+
+        Assert.AreEqual(1, impacts);
+        Assert.AreEqual(5, _fx.liveCount);
+
+        _fx.Advance(1f);
+        _fx.enabled = false;
+        TestHelpers.InvokePrivate(_fx, "OnDisable");
+        _fx.RecordImpact(Vector3.zero, 1);
+        _fx.EmitThrownContact(Vector3.zero, 1);
+
+        Assert.AreEqual(1, impacts);
+        Assert.AreEqual(0, _fx.liveCount);
+    }
+
+    [Test]
+    public void EmitHit_ManyHits_CapsFragmentsAndExpires()
+    {
+        StoneImpact impact = new StoneImpact(Vector3.up, Vector3.up, Vector3.zero, true);
+
+        _fx.EmitHit(impact, false, 1);
+        Assert.AreEqual(9, _fx.liveCount);
+
+        _fx.Advance(0.6f);
+        Assert.AreEqual(0, _fx.liveCount);
+
+        _fx.EmitHit(impact, true, 1);
+        Assert.AreEqual(14, _fx.liveCount);
+
+        for (uint i = 0; i < 40; i++)
+        {
+            _fx.EmitHit(impact, true, i);
+        }
+        Assert.AreEqual(StoneEffects.MaxLiveFragments, _fx.liveCount); // 41 * 14 fragments asked, 256 kept
+
+        _fx.Advance(1f);
+        Assert.AreEqual(0, _fx.liveCount);
+        Assert.AreEqual(0, _go.GetComponentsInChildren<Collider>().Length);
+        Assert.AreEqual(0, _go.GetComponentsInChildren<Rigidbody>().Length);
+    }
+
+    [Test]
+    public void EmitDetachedPart_SourceMeshDestroyed_CopySurvivesAndSplitsIntoThree()
+    {
+        Matrix4x4 pose = Matrix4x4.TRS(Vector3.up, Quaternion.identity, Vector3.one);
+        _fx.EmitDetachedPart(_mesh, null, pose, Vector3.zero, 0f, 1);
+        Object.DestroyImmediate(_mesh);
+        _mesh = null;
+
+        _fx.Advance(0.24f);
+        Assert.AreEqual(1, _fx.liveCount);
+        Assert.IsNotNull(_go.GetComponentInChildren<MeshFilter>().sharedMesh);
+
+        _fx.Advance(0.01f);
+        Assert.AreEqual(3, _fx.liveCount);
+
+        _fx.Advance(0.25f);
+        Assert.AreEqual(0, _fx.liveCount);
+    }
+
+    [Test]
+    public void TakeShard_ThenReturned_ComesFromAndGoesBackToThePool()
+    {
+        Transform shard = _fx.TakeShard(_mesh, Color.white);
+
+        Assert.IsTrue(shard.gameObject.activeSelf);
+        Assert.AreSame(_mesh, shard.GetComponent<MeshFilter>().sharedMesh);
+        Assert.AreEqual(0, _fx.liveCount);
+
+        _fx.ReturnShard(shard);
+        Assert.IsFalse(shard.gameObject.activeSelf);
+        _fx.EmitTrickle(Vector3.zero, 1);
+        Assert.AreEqual(1, _fx.transform.childCount);
+    }
+
+    [Test]
+    public void EmitThrownContact_Burst_ExpiresAndReusesThePool()
+    {
+        _fx.EmitThrownContact(Vector3.one, 91);
+        int count = _fx.liveCount;
+        Assert.That(count, Is.InRange(8, 10));
+
+        _fx.Advance(0.2f);
+        Assert.AreEqual(count - 5, _fx.liveCount);
+
+        _fx.Advance(0.3f);
+        Assert.AreEqual(0, _fx.liveCount);
+
+        _fx.EmitThrownContact(Vector3.one, 91);
+        Assert.AreEqual(count, _fx.liveCount);
+        Assert.AreEqual(count, _go.transform.childCount);
+    }
+
+    [Test]
+    public void PositionAt_Bouncing_NeverFallsBelowGround()
+    {
+        for (int i = 0; i < 100; i++)
+        {
+            Vector3 position = StoneEffects.PositionAt(Vector3.up, Vector3.right, i * 0.02f, 0f, true);
+            Assert.That(position.y, Is.GreaterThanOrEqualTo(0));
+        }
+        Assert.That(StoneEffects.PositionAt(Vector3.up, Vector3.right, 1f, 0f, false).y, Is.LessThan(0));
+    }
+}
+
 }

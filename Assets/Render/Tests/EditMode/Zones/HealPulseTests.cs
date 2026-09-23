@@ -141,4 +141,5 @@ public class HealPulseTests
         Assert.AreEqual(0, _zones.liveCount);
     }
 }
+
 }
