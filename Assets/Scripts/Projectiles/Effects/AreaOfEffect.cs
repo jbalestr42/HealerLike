@@ -15,6 +15,8 @@ public class AreaOfEffect : MonoBehaviour
 
     void Start()
     {
+        EntityManager.instance.OnAreaOfEffectStarted.Invoke(this);
+
         ATargetBehaviour targetBehaviour = ATargetBehaviour.Create(TargetBehaviourType.Nearest);
         targetBehaviour.targetCount = ATargetBehaviour.MaxTarget;
 
