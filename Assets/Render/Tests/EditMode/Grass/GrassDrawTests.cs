@@ -49,7 +49,7 @@ public class GrassDrawTests
 
         Assert.AreEqual(_mesh.GetIndexCount(0), data[0]);
         Assert.AreEqual(7u, data[1]);
-        Assert.AreEqual((uint)GrassTuft.IndexCount, data[0]); // four sides
+        Assert.AreEqual((uint)FacetedMeshes.TuftIndexCount, data[0]); // four sides
     }
 
     [Test]

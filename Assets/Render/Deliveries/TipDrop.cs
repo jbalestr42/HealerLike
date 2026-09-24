@@ -20,12 +20,7 @@ namespace HealerLike.Render.Deliveries
 
         public void Init(LookPart part, Mesh mesh, Material material, Color colour, Vector3 position, float size)
         {
-            gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
-            MeshRenderer renderer = gameObject.AddComponent<MeshRenderer>();
-            renderer.sharedMaterial = material;
-            MaterialPropertyBlock block = new MaterialPropertyBlock();
-            block.SetColor(RenderObjects.BaseColorId, PrimitiveMeshes.Brighten(colour, part.glow));
-            renderer.SetPropertyBlock(block);
+            PrimitiveMeshes.Geometry(gameObject, mesh, material, colour, part.glow, new MaterialPropertyBlock());
             _size = size;
             _start = position + part.position * size;
             _scale = part.size * size;

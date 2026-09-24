@@ -276,9 +276,9 @@ public class GrassFieldTests
         Assert.IsTrue(_field.bladeDraw.material.IsKeywordEnabled(GrassField.InstancedKeyword));
         uint[] data = new uint[5];
         _field.bladeDraw.arguments.GetData(data);
-        Assert.AreEqual((uint)GrassTuft.IndexCount, data[0]); // four sides
+        Assert.AreEqual((uint)FacetedMeshes.TuftIndexCount, data[0]); // four sides
         _field.socleDraw.arguments.GetData(data);
-        Assert.AreEqual((uint)GrassTuft.SocleIndexCount, data[0]); // eight fan triangles
+        Assert.AreEqual((uint)FacetedMeshes.SocleIndexCount, data[0]); // eight fan triangles
         Assert.AreEqual(6, OwnedBuffers().Count); // seeds, states, visible ids, tuft, socle and ring arguments
         Assert.AreEqual(ShadowCastingMode.On, _field.bladeDraw.shadowCastingMode);
         Assert.AreEqual(ShadowCastingMode.Off, _field.socleDraw.shadowCastingMode);

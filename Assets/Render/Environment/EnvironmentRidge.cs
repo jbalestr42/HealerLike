@@ -243,13 +243,9 @@ namespace HealerLike.Render.Environment
             partGo.transform.SetParent(parent, false);
             partGo.transform.localScale = scale;
             partGo.transform.localPosition = bottom + new Vector3(0f, -mesh.bounds.min.y * scale.y, 0f);
-            partGo.AddComponent<MeshFilter>().sharedMesh = mesh;
-            MeshRenderer meshRenderer = partGo.AddComponent<MeshRenderer>();
-            meshRenderer.sharedMaterial = material;
+            MeshRenderer meshRenderer = PrimitiveMeshes.Geometry(partGo, mesh, material, color.linear, 0f, _properties);
             meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             meshRenderer.receiveShadows = false;
-            _properties.SetColor(RenderObjects.BaseColorId, color.linear);
-            meshRenderer.SetPropertyBlock(_properties);
         }
     }
 }

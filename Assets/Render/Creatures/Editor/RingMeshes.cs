@@ -53,13 +53,7 @@ namespace HealerLike.Render.Creatures
                 triangles[offset + 5] = vertex + 3;
             }
 
-            Mesh mesh = new Mesh { name = "Annulus" };
-            mesh.vertices = vertices;
-            mesh.uv = uv;
-            mesh.triangles = triangles;
-            mesh.RecalculateNormals();
-            mesh.RecalculateBounds();
-            return mesh;
+            return PrimitiveMeshBaker.CreateMesh("Annulus", vertices, triangles, null, uv);
         }
     }
 }
