@@ -14,6 +14,31 @@ namespace HealerLike.Render.Creatures
         public static readonly float StoneAccessoryReach = 0.3f;
         // The longest branch of a fanned neck, in body units
         static readonly float maxBranch = 1.2f;
+        // Three heads on a fan are this much smaller than one and this many degrees apart, five heads smaller and
+        // closer; a stone's side by side heads sit this far out, in body units
+        static readonly float threeHeadScale = 0.72f;
+        static readonly float fiveHeadScale = 0.55f;
+        static readonly float threeHeadSpread = 40f;
+        static readonly float fiveHeadSpread = 28f;
+        static readonly float stoneBranch = 0.35f;
+        static readonly float branchThickness = 0.12f;
+        // A plant's sphere sinks into the ground, its centre at this share of its radius, and its stem leaves the
+        // body this far up; a stone's body rides this far above its limbs and its neck sits this far up
+        static readonly float plantBodySink = 0.84f;
+        static readonly float plantStemFoot = 0.8f;
+        static readonly float stoneBodyLift = 0.8f;
+        static readonly float stoneNeck = 0.75f;
+        // The shoulder socket sits out and up by this share of the body radius
+        static readonly float shoulderOffset = 0.7f;
+        // A stone's two limbs: their spread and depth in body units, their width and depth, their splay in degrees
+        static readonly float limbSpread = 0.36f;
+        static readonly float limbDepth = 0.05f;
+        static readonly float limbWidth = 0.42f;
+        static readonly float limbThickness = 0.45f;
+        static readonly float limbSplay = 25f;
+        // A stone barely moves at idle
+        static readonly float stoneSwayDegrees = 0.6f;
+        static readonly float stoneBreath = 0.01f;
         // The board camera's pitch, an accessory is measured on its screen plane
         static readonly Quaternion boardCamera = Quaternion.Euler(StageCalibration.PortraitPitch, 0f, 0f);
 
@@ -181,8 +206,8 @@ namespace HealerLike.Render.Creatures
             else
             {
                 recipe.roots.count = 0;
-                recipe.idle.swayDegrees = 0.6f;
-                recipe.idle.breathAmount = 0.01f;
+                recipe.idle.swayDegrees = stoneSwayDegrees;
+                recipe.idle.breathAmount = stoneBreath;
                 recipe.sourceLocal = new Vector3[] { sockets.neck * unit };
             }
 
@@ -262,15 +287,14 @@ namespace HealerLike.Render.Creatures
             sockets.bodyRadius = bodyParts[0].size.x * 0.5f * stoneScale;
             if (isPlant)
             {
-                // The sphere sinks a little into the ground, the body's centre sits at 0.84 of its radius
-                sockets.body = Vector3.up * (0.84f * sockets.bodyRadius);
-                sockets.neck = sockets.body + Vector3.up * (sockets.bodyRadius * 0.8f + stem.length);
+                sockets.body = Vector3.up * (plantBodySink * sockets.bodyRadius);
+                sockets.neck = sockets.body + Vector3.up * (sockets.bodyRadius * plantStemFoot + stem.length);
             }
             else
             {
                 // Stones stand on boulder limbs, the stem band is the limb length
-                sockets.body = Vector3.up * (stem.limbLength * sockets.scale + sockets.bodyRadius * 0.8f);
-                sockets.neck = sockets.body + Vector3.up * (sockets.bodyRadius * 0.75f);
+                sockets.body = Vector3.up * (stem.limbLength * sockets.scale + sockets.bodyRadius * stoneBodyLift);
+                sockets.neck = sockets.body + Vector3.up * (sockets.bodyRadius * stoneNeck);
             }
 
             sockets.hip = sockets.body;
@@ -287,7 +311,7 @@ namespace HealerLike.Render.Creatures
                 case AccessorySocket.Crook:
                     return sockets.neck;
                 case AccessorySocket.Shoulder:
-                    return sockets.body + new Vector3(radius * 0.7f, radius * 0.7f, 0f);
+                    return sockets.body + new Vector3(radius * shoulderOffset, radius * shoulderOffset, 0f);
                 case AccessorySocket.Flank:
                     return sockets.hip + Vector3.right * radius;
                 default:
@@ -330,7 +354,7 @@ namespace HealerLike.Render.Creatures
             if (isPlant)
             {
                 Fragment(parts, vocabulary, channels, body.plant, sockets.body, 1f, CountBand.One, seed);
-                Vector3 stemFoot = sockets.body + Vector3.up * (sockets.bodyRadius * 0.8f);
+                Vector3 stemFoot = sockets.body + Vector3.up * (sockets.bodyRadius * plantStemFoot);
                 parts.Link("Stem", stemFoot, sockets.neck, stem.thickness, stemColour, PartRole.Stem);
             }
             else
@@ -356,9 +380,15 @@ namespace HealerLike.Render.Creatures
             {
                 // Three or five smaller heads on a branching neck, spread so two neighbours never touch on screen;
                 // a stone carries them side by side
-                float copyScale = copies == 3 ? 0.72f : 0.55f;
-                float spread = copies == 3 ? 40f : 28f;
-                float length = 0.35f;
+                float copyScale = fiveHeadScale;
+                float spread = fiveHeadSpread;
+                if (copies == 3)
+                {
+                    copyScale = threeHeadScale;
+                    spread = threeHeadSpread;
+                }
+
+                float length = stoneBranch;
                 if (isPlant)
                 {
                     copyScale = CopyScale(headParts, copyScale, spread);
@@ -551,9 +581,10 @@ namespace HealerLike.Render.Creatures
             float height = limb + bodyRadius * 0.5f;
             for (int i = -1; i <= 1; i += 2)
             {
-                Vector3 foot = new Vector3(0.36f * i * scale, height * 0.5f, 0.05f);
-                parts.Add("Limb", Primitive.Stone, foot, new Vector3(0.42f * scale, height, 0.45f * scale), colour,
-                    new Vector3(0f, 25f * i, 0f), 0f, PartRole.Limb, Variant(seed, parts.count));
+                Vector3 foot = new Vector3(limbSpread * i * scale, height * 0.5f, limbDepth);
+                Vector3 size = new Vector3(limbWidth * scale, height, limbThickness * scale);
+                parts.Add("Limb", Primitive.Stone, foot, size, colour, new Vector3(0f, limbSplay * i, 0f), 0f,
+                    PartRole.Limb, Variant(seed, parts.count));
             }
         }
 
@@ -566,7 +597,7 @@ namespace HealerLike.Render.Creatures
             Vector3 end = top + direction * (length * scale);
             if (isPlant)
             {
-                parts.Link("Branch", top, end, 0.12f * scale, colour, PartRole.Stem);
+                parts.Link("Branch", top, end, branchThickness * scale, colour, PartRole.Stem);
             }
             else
             {
