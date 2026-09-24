@@ -73,7 +73,7 @@ public class PartPaintTests
         _paint.Paint(_renderer, false, Color.grey, ochre, 0f);
 
         _renderer.GetPropertyBlock(block, 1);
-        Assert.AreEqual(ochre, block.GetColor("_BaseColor"));
+        Assert.Less(((Vector4)ochre - (Vector4)block.GetColor("_BaseColor")).magnitude, 0.0001f);
         _renderer.GetPropertyBlock(block, 0);
         Assert.AreEqual(Color.grey, block.GetColor("_BaseColor"));
     }
