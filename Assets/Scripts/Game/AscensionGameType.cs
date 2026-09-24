@@ -63,7 +63,7 @@ public class AscensionGameType : AGameType
                 _gameView.gameHUD.inventoryButton.enabled = true;
                 _gameView.gameHUD.ShowManaBar(true);
 
-                PlayerBehaviour.instance.Init();
+                PlayerBehaviour.instance.Init(DataManager.instance.GetRandomCharacter());
                 _gameView.entityInventory.Init(PlayerBehaviour.instance.character.entityPool);
 
                 SetState(State.InitializeRound);

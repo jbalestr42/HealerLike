@@ -68,6 +68,21 @@ public class ResourceAttributeTests
     }
 
     [Test]
+    public void Refill_AfterDamage_RestoresValueToMax()
+    {
+        AddModifier(new FakeConsumer(-60f));
+        Drain();
+        int changedCount = 0;
+        _health.OnValueChanged.AddListener(_ => changedCount++);
+
+        _health.Refill();
+        Drain();
+
+        Assert.AreEqual(100f, _health.Value);
+        Assert.AreEqual(1, changedCount);
+    }
+
+    [Test]
     public void Percent_ReturnsValueOverMax()
     {
         AddModifier(new FakeConsumer(-25f));
