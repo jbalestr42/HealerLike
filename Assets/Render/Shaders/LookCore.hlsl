@@ -66,7 +66,7 @@ float3 HLWorkingColor(float3 srgb)
 #define HL_DEF_FOGEND 60.0
 #define HL_DEF_FOGBANDS 6.0
 #define HL_DEF_INKSTRENGTH 1.0
-#define HL_DEF_INKSCALE 0.05
+#define HL_DEF_INKSCALE 0.025
 #define HL_DEF_INKWIDTH 0.0001
 #define HL_DEF_INKSTART 0.46
 #define HL_DEF_INKRANGE 1.0

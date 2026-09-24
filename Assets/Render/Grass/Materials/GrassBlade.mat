@@ -26,6 +26,7 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
+    - _HLNormalEdges: 0
     - _HLToonThresholdOffset: 0
     m_Colors:
     - _BaseColor: {r: 0.35686275, g: 0.5647059, b: 0.33333334, a: 1}
