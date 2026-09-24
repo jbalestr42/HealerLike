@@ -44,6 +44,8 @@ uint _HLBladeCount;
 float4 _HLFrustumPlanes[6];
 // How far outside a frustum plane a root may sit and still draw, GrassBounds.Envelope
 float _HLCullMargin;
+float _HLWindTime;
+float _HLWindStrength;
 
 // A lean is a tilt of the rigid tuft about its root, in radians, pointing where the tip goes
 float2 HLCapLean(float2 lean, float limit)
@@ -136,10 +138,15 @@ HLTuftState HLEvaluateTuft(HLTuftSeed tuft)
     }
 
     float2 outward = outwardSum / max(1.0, weightSum);
-    // Each tuft keeps its own fixed rest tilt; zones push on top of it
+    // Slow coherent air over the fixed rest tilt, at most six degrees. The tuft turns rigidly at its root.
+    // Explicit time comes from the field because compute shaders do not inherit the material clock.
+    float phase = dot(position, float2(0.67, 0.43)) + tuft.positionYaw.w * 0.17;
+    float wave = sin(_HLWindTime * 1.7 + phase);
+    float cross = sin(_HLWindTime * 1.1 + phase * 1.31);
+    float2 wind = float2(wave, cross * 0.4) * (0.095 * saturate(_HLWindStrength));
     float2 push = HL_OUTWARD_SHARE * outward + HL_LAUNCH_SHARE * launch;
     float2 zoneLean = HLCapLean(push, HL_ZONE_LEAN + HL_ZONE_LEAN * heal);
-    float2 lean = (tuft.heightWidthLean.zw + zoneLean) * (1.0 - 2.0 * spike);
+    float2 lean = (tuft.heightWidthLean.zw + wind + zoneLean) * (1.0 - 2.0 * spike);
     float grown = (1.0 + HL_HEAL_LIFT * heal) * (1.0 - HL_BRUISE_SINK * bruise);
     float scale = lerp(grown, HL_RING_CLEAR_HEIGHT / height, ringClear);
     scale = lerp(scale, HL_TRAMPLE_HEIGHT / height, trample);

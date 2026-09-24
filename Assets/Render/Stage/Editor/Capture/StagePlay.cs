@@ -81,6 +81,10 @@ namespace HealerLike.Render.Stage
             {
                 return new GrassBenchRun();
             }
+            if (mode == "motion")
+            {
+                return new StageMotionRun();
+            }
             return new LookSheetRun(mode != "effects", mode != "units");
         }
 
