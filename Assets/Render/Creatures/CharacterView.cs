@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 
@@ -10,16 +9,11 @@ namespace HealerLike.Render.Creatures
     // Presentation at an authored anchor. Character.Init and Entity.Init are never called from here.
     public class CharacterView : MonoBehaviour, IHealVisualSink, IDeliverySource, IEffectAnchors
     {
-        [FormerlySerializedAs("character")]
         [SerializeField] Character _character;
-        [FormerlySerializedAs("recipe")]
         [SerializeField] CreatureRecipe _recipe;
-        [FormerlySerializedAs("visualAnchor")]
         [SerializeField] Transform _visualAnchor;
-        [FormerlySerializedAs("material")]
         [SerializeField] Material _material;
         [SerializeField] PrimitiveMeshes _meshes;
-        [FormerlySerializedAs("cellSize")]
         [SerializeField] float _cellSize = 1f;
 
         RenderRegistry _registry;
@@ -30,9 +24,20 @@ namespace HealerLike.Render.Creatures
         StatusObserver _statusObserver;
         BuffManager _boundManager;
 
-        public CreatureRig rig { get; private set; }
+        CreatureRig _rig;
+        public CreatureRig rig { get { return _rig; } }
 
-        public IReadOnlyList<Transform> budAnchors { get { return rig?.budAnchors ?? Array.Empty<Transform>(); } }
+        public IReadOnlyList<Transform> budAnchors
+        {
+            get
+            {
+                if (_rig == null || _rig.budAnchors == null)
+                {
+                    return Array.Empty<Transform>();
+                }
+                return _rig.budAnchors;
+            }
+        }
 
         public Transform bud0 { get { return budAnchors.Count > 0 ? budAnchors[0] : null; } }
 
@@ -40,7 +45,8 @@ namespace HealerLike.Render.Creatures
 
         public Transform bud2 { get { return budAnchors.Count > 2 ? budAnchors[2] : null; } }
 
-        public int castGestureCount { get; private set; }
+        int _castGestureCount;
+        public int castGestureCount { get { return _castGestureCount; } }
 
         void OnEnable()
         {
@@ -68,29 +74,7 @@ namespace HealerLike.Render.Creatures
                 rig.Dispose();
             }
 
-            rig = null;
-        }
-
-        void Update()
-        {
-            ObserveResources();
-        }
-
-        void LateUpdate()
-        {
-            BuildAndRegister();
-            if (rig != null && _character)
-            {
-                ResourceAttribute mana = _character.mana;
-                float manaFraction = mana && mana.Max > 0 ? mana.Value / mana.Max : 0f;
-                rig.SetReadout(null, 1f, 0f, manaFraction);
-            }
-
-            if (rig != null && _visualAnchor)
-            {
-                FootFrame frame = new FootFrame(_visualAnchor.position, _visualAnchor.up, _cellSize);
-                rig.Tick(Time.time, Time.deltaTime, frame);
-            }
+            _rig = null;
         }
 
         // The view prefab carries recipe, material and meshes, and anchors the body on itself
@@ -119,6 +103,28 @@ namespace HealerLike.Render.Creatures
 
             BuildAndRegister();
             ObserveResources();
+        }
+
+        void Update()
+        {
+            ObserveResources();
+        }
+
+        void LateUpdate()
+        {
+            BuildAndRegister();
+            if (rig != null && _character)
+            {
+                ResourceAttribute mana = _character.mana;
+                float manaFraction = mana && mana.Max > 0 ? mana.Value / mana.Max : 0f;
+                rig.SetReadout(null, 1f, 0f, manaFraction);
+            }
+
+            if (rig != null && _visualAnchor)
+            {
+                FootFrame frame = new FootFrame(_visualAnchor.position, _visualAnchor.up, _cellSize);
+                rig.Tick(Time.time, Time.deltaTime, frame);
+            }
         }
 
         void ObserveResources()
@@ -158,7 +164,7 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
-            castGestureCount++;
+            _castGestureCount++;
             rig.HealContact(CreatureBuilder.TargetPosition(target));
         }
 
@@ -192,7 +198,7 @@ namespace HealerLike.Render.Creatures
                     return;
                 }
 
-                rig = created;
+                _rig = created;
             }
 
             rig.SetVisible(isActiveAndEnabled);

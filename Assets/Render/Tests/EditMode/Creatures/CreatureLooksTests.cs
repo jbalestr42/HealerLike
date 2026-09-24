@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -145,7 +146,7 @@ public class CreatureLooksTests
     }
 
     [Test]
-    public void Shipped_Asset_DerivesEveryEntityAndKeepsTheHealerAuthored()
+    public void GetView_ShippedAsset_DerivesEveryEntityAndKeepsTheHealerAuthored()
     {
         CreatureLooks looks = AssetDatabase.LoadAssetAtPath<CreatureLooks>("Assets/Render/Creatures/Data/CreatureLooks.asset");
         CharacterData healer = AssetDatabase.LoadAssetAtPath<CharacterData>(
@@ -159,6 +160,19 @@ public class CreatureLooksTests
         Assert.AreEqual("HealerCharacter", looks.GetView(healer).name);
         Assert.IsNull(looks.plant.GetComponent<CreatureBuilder>().recipe);
         Assert.IsNull(looks.stone.GetComponent<CreatureBuilder>().recipe);
+    }
+
+    // The prefab folder holds the views the asset names and nothing else, every other unit is derived
+    [Test]
+    public void Character_PrefabsFolder_HoldsOnlyThePlantHostAndTheCharacterView()
+    {
+        CreatureLooks looks = AssetDatabase.LoadAssetAtPath<CreatureLooks>("Assets/Render/Creatures/Data/CreatureLooks.asset");
+
+        string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Render/Creatures/Prefabs" });
+
+        string[] names = System.Array.ConvertAll(guids,
+            guid => Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(guid)));
+        CollectionAssert.AreEquivalent(new[] { looks.plant.name, looks.character.name }, names);
     }
 }
 

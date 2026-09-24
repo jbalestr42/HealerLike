@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEditor;
@@ -16,6 +17,7 @@ public class CreatureRigTests
     Material _material;
     CreatureRecipe _recipe;
     CreatureRig _rig;
+    readonly List<Object> _objects = new List<Object>();
 
     public static CreatureRig CreateRig(CreatureRecipe recipe, Transform parent, Material material)
     {
@@ -38,9 +40,20 @@ public class CreatureRigTests
     public void TearDown()
     {
         _rig.Dispose();
+        foreach (Object trackedObject in _objects)
+        {
+            Object.DestroyImmediate(trackedObject);
+        }
+        _objects.Clear();
         Object.DestroyImmediate(_parent);
         Object.DestroyImmediate(_material);
         Object.DestroyImmediate(_recipe);
+    }
+
+    T Track<T>(T trackedObject) where T : Object
+    {
+        _objects.Add(trackedObject);
+        return trackedObject;
     }
 
     [Test]
@@ -64,7 +77,7 @@ public class CreatureRigTests
     [Test]
     public void Tick_LiveProjectile_ArmFollowsWithoutObserverPush()
     {
-        GameObject projectile = new GameObject("Projectile");
+        GameObject projectile = Track(new GameObject("Projectile"));
         projectile.transform.position = new Vector3(1f, 1f, 0f);
         FootFrame frame = new FootFrame(Vector3.zero, Vector3.up, 1f);
         Assert.IsTrue(_rig.BeginDelivery(7, DeliveryStyle.Direct, projectile.transform, Vector3.one));
@@ -76,7 +89,6 @@ public class CreatureRigTests
         FieldInfo field = typeof(CreatureRig).GetField("_arms", BindingFlags.Instance | BindingFlags.NonPublic);
         LianaArm[] arms = (LianaArm[])field.GetValue(_rig);
         Assert.That(Vector3.Distance(arms[0].goal, projectile.transform.position), Is.LessThan(0.00001f));
-        Object.DestroyImmediate(projectile);
     }
 
     [Test]
@@ -89,6 +101,7 @@ public class CreatureRigTests
         Renderer renderer = _rig.root.GetComponentInChildren<Renderer>();
         MaterialPropertyBlock block = new MaterialPropertyBlock();
         renderer.GetPropertyBlock(block);
+        // 0.4 lit by glow 2 is 1.2, give or take the 8% colour jitter
         Assert.That(block.GetColor("_BaseColor").g, Is.InRange(1.104f, 1.296f));
         Assert.That(block.GetColor("_BaseColor").a, Is.EqualTo(0.7f).Within(0.0001f));
         _rig.SetReadout(null, 1f, 0f, 1f);
@@ -230,14 +243,14 @@ public class CreatureRigTests
     public void Init_TwoFacedStone_DrawsOchreOnTheSecondSubmesh()
     {
         _rig.Dispose();
-        Mesh mesh = new Mesh();
+        Mesh mesh = Track(new Mesh());
         mesh.vertices = new Vector3[] { Vector3.zero, Vector3.up, Vector3.right, Vector3.forward };
         mesh.subMeshCount = 2;
         mesh.SetTriangles(new int[] { 0, 1, 2 }, 0);
         mesh.SetTriangles(new int[] { 0, 2, 3 }, 1);
-        StoneVariants variants = ScriptableObject.CreateInstance<StoneVariants>();
+        StoneVariants variants = Track(ScriptableObject.CreateInstance<StoneVariants>());
         variants.meshes = new Mesh[] { mesh };
-        PrimitiveMeshes meshes = Object.Instantiate(PrimitiveMeshesTests.Meshes());
+        PrimitiveMeshes meshes = Track(Object.Instantiate(PrimitiveMeshesTests.Meshes()));
         meshes.stoneVariants = variants;
         _recipe.parts[0].primitive = Primitive.Stone;
         _rig = new CreatureRig();
@@ -249,9 +262,6 @@ public class CreatureRigTests
 
         Assert.AreEqual(2, renderer.sharedMaterials.Length);
         Assert.Less(((Vector4)_recipe.stoneOchre - (Vector4)block.GetColor("_BaseColor")).magnitude, 0.001f);
-        Object.DestroyImmediate(meshes);
-        Object.DestroyImmediate(variants);
-        Object.DestroyImmediate(mesh);
     }
 
     [Test]
@@ -275,16 +285,16 @@ public class CreatureRigTests
     [Test]
     public void Begin_PoolSaturated_RefusesWithoutStealingAndDisposeIsIdempotent()
     {
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < CreatureRig.MaxArms; i++)
         {
             Assert.AreNotEqual(0, _rig.Begin(GestureKind.Attack, Vector3.one));
         }
 
         Assert.AreEqual(0, _rig.Begin(GestureKind.Attack, Vector3.one));
-        Assert.AreEqual(8, _rig.activeArmCount);
+        Assert.AreEqual(CreatureRig.MaxArms, _rig.activeArmCount);
         _rig.Contact(0, Vector3.one);
         _rig.End(0);
-        Assert.AreEqual(8, _rig.activeArmCount);
+        Assert.AreEqual(CreatureRig.MaxArms, _rig.activeArmCount);
         _rig.CancelAll();
         _rig.Tick(0.79f, 0.05f, new FootFrame(Vector3.zero, Vector3.up, 1f));
         _rig.Tick(1f, 0.21f, new FootFrame(Vector3.zero, Vector3.up, 1f));
@@ -482,6 +492,47 @@ public class CreatureRigTests
         renderer.GetPropertyBlock(block);
         Assert.AreNotEqual(hurt, block.GetColor("_BaseColor"));
         Assert.That(Quaternion.Angle(sway.localRotation, Quaternion.identity), Is.LessThan(0.001f));
+    }
+
+    [Test]
+    public void Dispose_LiveRig_LeavesSharedMeshesAlive()
+    {
+        Mesh mesh = _rig.root.GetComponentInChildren<MeshFilter>().sharedMesh;
+
+        _rig.Dispose();
+
+        Assert.IsTrue(mesh);
+        Assert.IsTrue(AssetDatabase.Contains(mesh));
+    }
+
+    [Test]
+    public void Init_HealerRecipe_BuildsOnBakedMeshesAndSpinsItsCrown()
+    {
+        string healerPath = "Assets/Render/Creatures/Data/Healer.asset";
+        CreatureRecipe healer = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(healerPath);
+        FootFrame frame = new FootFrame(Vector3.zero, Vector3.up, 1f);
+        _rig.Dispose();
+        _rig = CreateRig(healer, _parent.transform, _material);
+        _rig.Tick(1f, 0.016f, frame);
+        Transform crown = _rig.root.Find("Sway/Stem/Crown");
+        Quaternion before = crown.localRotation;
+
+        _rig.Tick(11f, 0.016f, frame);
+
+        Assert.IsTrue(CreatureValidator.TryValidate(healer, out string error), error);
+        Assert.That(healer.roots.count, Is.InRange(8, 14));
+        Assert.AreEqual(3, healer.roots.segments);
+        Assert.AreEqual(Primitive.Cone, System.Array.Find(healer.parts, part => part.id == "Bulb").primitive);
+        Assert.AreEqual(Primitive.Torus, System.Array.Find(healer.parts, part => part.id == "Crown").primitive);
+        float spin = CreatureRig.CrownSpinDegrees * 10f; // ten seconds between the two ticks
+        Assert.That(Quaternion.Angle(before, crown.localRotation), Is.EqualTo(spin).Within(0.01f));
+        // Body parts share the baked meshes, only the arm chains are generated per rig
+        foreach (MeshFilter filter in _parent.GetComponentsInChildren<MeshFilter>())
+        {
+            bool isChain = filter.name == "LianaArm";
+            Assert.AreEqual(!isChain, AssetDatabase.Contains(filter.sharedMesh), filter.name);
+        }
+        Assert.IsEmpty(_parent.GetComponentsInChildren<Collider>());
     }
 }
 

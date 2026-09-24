@@ -72,6 +72,8 @@ public class CreatureBuilderTests
     CreatureBuilder _builder;
     RenderRegistry _registry;
     Sink _sink;
+    readonly List<Object> _objects = new List<Object>();
+    readonly List<CreatureBuilder> _views = new List<CreatureBuilder>();
 
     [SetUp]
     public void SetUp()
@@ -111,21 +113,35 @@ public class CreatureBuilderTests
             TestHelpers.InvokePrivate(_builder, "OnDestroy");
         }
 
+        foreach (CreatureBuilder view in _views)
+        {
+            TestHelpers.InvokePrivate(view, "OnDestroy");
+        }
+        _views.Clear();
         Object.DestroyImmediate(_owner);
+        // A test can detach the model from its owner
+        if (_model)
+        {
+            Object.DestroyImmediate(_model);
+        }
+
+        foreach (Object trackedObject in _objects)
+        {
+            Object.DestroyImmediate(trackedObject);
+        }
+        _objects.Clear();
         Object.DestroyImmediate(_recipe);
         Object.DestroyImmediate(_material);
     }
-
     [Test]
     public void TryGetAnchors_EveryHeadOnBothSides_PutsTheHeadAboveTheNeckAndOutsideTheBody()
     {
-        List<CreatureRecipe> recipes = new List<CreatureRecipe>();
         foreach (LookSide side in System.Enum.GetValues(typeof(LookSide)))
         {
             foreach (HeadKind head in System.Enum.GetValues(typeof(HeadKind)))
             {
                 CreatureRecipe recipe = LookComposer.Compose(LookComposerTests.CreateChannels(side, head), LookVocabularyTests.Vocabulary());
-                recipes.Add(recipe);
+                _objects.Add(recipe);
                 _builder.SetRecipe(recipe, _material, PrimitiveMeshesTests.Meshes());
                 _builder.Init(_entity);
 
@@ -136,12 +152,6 @@ public class CreatureBuilderTests
                 Assert.Greater(Vector3.Distance(anchors.headCentre, anchors.bodyCentre), anchors.bodyRadius, $"{side} {head}");
                 Assert.Greater(anchors.neck.y, anchors.foot.y, $"{side} {head}");
             }
-        }
-
-        _builder.SetRecipe(_recipe, _material, PrimitiveMeshesTests.Meshes());
-        foreach (CreatureRecipe recipe in recipes)
-        {
-            Object.DestroyImmediate(recipe);
         }
     }
 
@@ -175,7 +185,7 @@ public class CreatureBuilderTests
     }
 
     [Test]
-    public void OnDisableAndRebind_HealthEvent_DetachesOldHealthOnce()
+    public void OnDisable_ThenEnabledAndInitWithoutEntity_DetachesOldHealthOnce()
     {
         _builder.enabled = false;
         TestHelpers.InvokePrivate(_builder, "OnDisable");
@@ -191,7 +201,7 @@ public class CreatureBuilderTests
     }
 
     [Test]
-    public void OnAllConsumerProcessed_DamageZeroOverhealSourceless_ReportsSignedOutcome()
+    public void Init_DamageZeroOverhealSourceless_ReportsSignedOutcome()
     {
         _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 0f, false);
         Assert.AreEqual(0, _sink.impacts);
@@ -219,8 +229,6 @@ public class CreatureBuilderTests
         BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
         FieldInfo field = typeof(RenderRegistry).GetField("_healSinks", flags);
         Assert.AreEqual(0, ((IDictionary)field.GetValue(_registry)).Count);
-        TestHelpers.InvokePrivate(_builder, "OnDestroy");
-        Object.DestroyImmediate(_model);
     }
 
     [Test]
@@ -290,18 +298,18 @@ public class CreatureBuilderTests
     public void Init_ManagerOnly_TakesMeshesFromManager()
     {
         GameObject managerGo = new GameObject("RenderManager");
+        _objects.Add(managerGo);
         RenderManager manager = managerGo.AddComponent<RenderManager>();
         TestHelpers.SetPrivateField(manager, "_meshes", PrimitiveMeshesTests.Meshes());
         GameObject viewGo = new GameObject("View");
         viewGo.transform.SetParent(_model.transform, false);
         CreatureBuilder view = viewGo.AddComponent<CreatureBuilder>();
+        _views.Add(view);
         view.SetRecipe(_recipe, _material, null);
 
         view.Init(_entity, manager);
 
         Assert.NotNull(view.rig);
-        TestHelpers.InvokePrivate(view, "OnDestroy");
-        Object.DestroyImmediate(managerGo);
     }
 }
 

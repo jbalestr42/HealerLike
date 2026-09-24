@@ -14,16 +14,27 @@ public class LookVocabularyTests
     }
 
     [Test]
-    public void Asset_EveryChannelValue_HasAnEntryOnBothSides()
+    public void Palette_ShippedAsset_IsSet()
+    {
+        Assert.NotNull(Vocabulary().palette);
+    }
+
+    [Test]
+    public void Heads_EveryHeadKind_HasPartsOnBothSides()
     {
         LookVocabulary vocabulary = Vocabulary();
 
-        Assert.NotNull(vocabulary.palette);
         foreach (HeadKind head in Enum.GetValues(typeof(HeadKind)))
         {
             Assert.IsNotEmpty(vocabulary.heads[head].plant, head.ToString());
             Assert.IsNotEmpty(vocabulary.heads[head].stone, head.ToString());
         }
+    }
+
+    [Test]
+    public void Accessories_EveryAccessoryKind_HasPartsOnBothSides()
+    {
+        LookVocabulary vocabulary = Vocabulary();
 
         foreach (AccessoryKind accessory in Enum.GetValues(typeof(AccessoryKind)))
         {
@@ -35,17 +46,35 @@ public class LookVocabularyTests
             Assert.IsNotEmpty(vocabulary.accessories[accessory].plant, accessory.ToString());
             Assert.IsNotEmpty(vocabulary.accessories[accessory].stone, accessory.ToString());
         }
+    }
+
+    [Test]
+    public void Bodies_EveryMassBand_StartsWithTheBodyOnBothSides()
+    {
+        LookVocabulary vocabulary = Vocabulary();
 
         foreach (MassBand mass in Enum.GetValues(typeof(MassBand)))
         {
             Assert.AreEqual(PartRole.Body, vocabulary.bodies[mass].plant[0].role, mass.ToString());
             Assert.AreEqual(PartRole.Body, vocabulary.bodies[mass].stone[0].role, mass.ToString());
         }
+    }
+
+    [Test]
+    public void Stems_EveryStemBand_HasALength()
+    {
+        LookVocabulary vocabulary = Vocabulary();
 
         foreach (StemBand stem in Enum.GetValues(typeof(StemBand)))
         {
             Assert.Greater(vocabulary.stems[stem].length, 0f, stem.ToString());
         }
+    }
+
+    [Test]
+    public void Roots_EveryReachBand_HasAReach()
+    {
+        LookVocabulary vocabulary = Vocabulary();
 
         foreach (ReachBand reach in Enum.GetValues(typeof(ReachBand)))
         {
@@ -66,8 +95,9 @@ public class LookVocabularyTests
         Assert.AreEqual(vocabulary.pinnedReach, reach);
     }
 
+    // A quicker cadence draws a longer stem: Steady is 1.6 and Quick 2.4 times the Slow stem, as the channel table sets
     [Test]
-    public void Stems_Bands_KeepTheSpecRatio()
+    public void Stems_Bands_KeepTheirRatioToTheSlowStem()
     {
         LookVocabulary vocabulary = Vocabulary();
 

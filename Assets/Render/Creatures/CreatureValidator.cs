@@ -21,7 +21,12 @@ namespace HealerLike.Render.Creatures
             for (int i = 0; i < data.parts.Length; i++)
             {
                 CreaturePart part = data.parts[i];
-                bool isParentValid = i == 0 ? part.parent == -1 : part.parent >= 0 && part.parent < i;
+                // The first part is the root, every other part hangs from an earlier one
+                bool isParentValid = part.parent >= 0 && part.parent < i;
+                if (i == 0)
+                {
+                    isParentValid = part.parent == -1;
+                }
                 if (string.IsNullOrEmpty(part.id) || !ids.Add(part.id) || !isParentValid)
                 {
                     return Fail("Require unique IDs, one root, and earlier parents.", out error);

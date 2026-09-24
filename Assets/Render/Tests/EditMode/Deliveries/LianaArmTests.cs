@@ -352,6 +352,30 @@ public class LianaArmTests
         Vector3 forward = rendered.tipMatrix.MultiplyVector(Vector3.forward).normalized;
         Assert.That(Vector3.Dot(forward, Vector3.right), Is.GreaterThan(0.99f));
     }
+
+    [Test]
+    public void Contact_HealerArm_ReachesAcrossBoardAndClampsOutsideIt()
+    {
+        LianaArm arm = CreateRenderedArm();
+        CreatureRecipe healer = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
+        arm.Tick(0f, Vector3.zero, Quaternion.identity);
+        Vector3 target = new Vector3(15f, 4f, 15f);
+        arm.Begin(1, GestureKind.Attack, target);
+        arm.Contact(1, target);
+        arm.Tick(0.016f, Vector3.zero, Quaternion.identity);
+        Assert.IsTrue(arm.lastResult.reached, arm.lastResult.error.ToString());
+        Assert.Less(Vector3.Distance(arm.tip, target), 0.001f);
+
+        arm.Contact(1, Vector3.right * 100f);
+        arm.Tick(0.016f, Vector3.zero, Quaternion.identity);
+
+        Assert.IsTrue(arm.lastResult.clamped);
+        for (int i = 0; i < arm.segmentCount; i++)
+        {
+            float link = Vector3.Distance(arm.Joint(i), arm.Joint(i + 1));
+            Assert.That(link, Is.EqualTo(healer.arms[0].segmentLength).Within(0.00001));
+        }
+    }
 }
 
 }

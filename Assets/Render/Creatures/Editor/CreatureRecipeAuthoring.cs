@@ -10,12 +10,12 @@ namespace HealerLike.Render.Creatures
     {
         static readonly string root = "Assets/Render/Creatures/";
         static readonly string vocabularyPath = "Assets/Render/Creatures/Data/LookVocabulary.asset";
-        public static readonly Color body = new Color(0.50f, 0.79f, 0.25f);
-        public static readonly Color stem = new Color(0.18f, 0.49f, 0.31f);
-        public static readonly Color bud = new Color(0.78f, 0.95f, 0.29f);
+        public static readonly Color Body = new Color(0.50f, 0.79f, 0.25f);
+        public static readonly Color Stem = new Color(0.18f, 0.49f, 0.31f);
+        public static readonly Color Bud = new Color(0.78f, 0.95f, 0.29f);
 
-        public static CreaturePart Part(string id, Primitive primitive, Vector3 position, Vector3 dimensions, Color colour,
-            Vector3 euler = default, int parent = 0, float glow = 0f, PartRole role = PartRole.Body)
+        public static CreaturePart Part(string id, Primitive primitive, Vector3 position, Vector3 dimensions,
+            Color colour, Vector3 euler = default, int parent = 0, float glow = 0f, PartRole role = PartRole.Body)
         {
             return new CreaturePart
             {
@@ -31,7 +31,8 @@ namespace HealerLike.Render.Creatures
             };
         }
 
-        public static CreatureRecipe SaveRecipe(string name, List<CreaturePart> parts, int roots, int armCount, int seed)
+        public static CreatureRecipe SaveRecipe(string name, List<CreaturePart> parts, int roots, int armCount,
+            int seed)
         {
             string path = root + "Data/" + name + ".asset";
             CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
@@ -62,7 +63,7 @@ namespace HealerLike.Render.Creatures
                 }
 
                 parts.Add(Part("Joint" + i, Primitive.Sphere, Vector3.up * (stemPart.dimensions.y * 0.38f),
-                    Vector3.one * (stemPart.dimensions.x * 1.5f), bud, parent: i, role: PartRole.Stem));
+                    Vector3.one * (stemPart.dimensions.x * 1.5f), Bud, parent: i, role: PartRole.Stem));
             }
 
             recipe.parts = parts.ToArray();
@@ -84,8 +85,14 @@ namespace HealerLike.Render.Creatures
             recipe.arms = new ArmDefinition[armCount];
             for (int j = 0; j < armCount; j++)
             {
-                recipe.sourceLocal[j] = new Vector3(j % 2 == 0 ? -0.26f : 0.26f, 1.1f, 0f);
-                recipe.arms[j] = LookComposer.Arm(recipe.sourceLocal[j] - parts[0].localPosition, stem, Color.clear);
+                // The arms leave the neck on either side, the first on the left
+                float side = 0.26f;
+                if (j % 2 == 0)
+                {
+                    side = -0.26f;
+                }
+                recipe.sourceLocal[j] = new Vector3(side, 1.1f, 0f);
+                recipe.arms[j] = LookComposer.Arm(recipe.sourceLocal[j] - parts[0].localPosition, Stem, Color.clear);
             }
 
             if (!CreatureValidator.TryValidate(recipe, out string error))

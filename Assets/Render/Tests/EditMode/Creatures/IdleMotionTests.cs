@@ -22,6 +22,7 @@ public class IdleMotionTests
         {
             IdlePose pose = IdleMotion.Evaluate(settings, i * 0.17f);
             Assert.That(pose.bodyScale.x, Is.InRange(0.975f, 1.025f));
+            // Both sway axes at their 2.5 degrees at once lean 2.5 times root two
             Assert.LessOrEqual(Quaternion.Angle(Quaternion.identity, pose.sway), 3.54f);
         }
 

@@ -88,7 +88,8 @@ namespace HealerLike.Render.Creatures
         [BoxGroup("Proportions")]
         public float bodyUnit = 0.55f;
 
-        // A plant's body and sockets grow by this much over the body unit, so a Sturdy body reads about one cell at the board camera
+        // A plant's body and sockets grow by this much over the body unit, so a Sturdy body reads about one cell at
+        // the board camera
         [BoxGroup("Proportions")]
         public float plantScale = 1.8f;
 

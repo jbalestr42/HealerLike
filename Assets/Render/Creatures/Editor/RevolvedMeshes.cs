@@ -65,7 +65,12 @@ namespace HealerLike.Render.Creatures
 
                         normal = radial * Mathf.Cos(phi) + Vector3.up * Mathf.Sin(phi);
                         // Radius 0.25 and a 0.5 cylindrical middle, then the XZ diameter is scaled back to one
-                        point = normal * 0.25f + Vector3.up * (isBottom ? -0.25f : 0.25f);
+                        float capCentre = 0.25f;
+                        if (isBottom)
+                        {
+                            capCentre = -0.25f;
+                        }
+                        point = normal * 0.25f + Vector3.up * capCentre;
                         point.x *= 2f;
                         point.z *= 2f;
                         normal = new Vector3(normal.x * 0.5f, normal.y, normal.z * 0.5f).normalized;
@@ -130,9 +135,17 @@ namespace HealerLike.Render.Creatures
 
             for (int i = 0; i < count; i++)
             {
+                // A top cap winds the other way round so it faces up
+                int first = center + 1 + i;
+                int second = center + 2 + i;
+                if (isTop)
+                {
+                    first = center + 2 + i;
+                    second = center + 1 + i;
+                }
                 triangles.Add(center);
-                triangles.Add(center + 1 + (isTop ? i + 1 : i));
-                triangles.Add(center + 1 + (isTop ? i : i + 1));
+                triangles.Add(first);
+                triangles.Add(second);
             }
         }
     }
