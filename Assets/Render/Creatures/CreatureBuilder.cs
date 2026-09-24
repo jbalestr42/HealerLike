@@ -14,6 +14,8 @@ namespace HealerLike.Render.Creatures
         [SerializeField] PrimitiveMeshes _meshes;
 
         readonly UnitReadout _readout = new UnitReadout();
+        // The recipe this view derived from its entity, released with it
+        CreatureRecipe _derivedRecipe;
         Entity _entity;
         ResourceAttribute _health;
         StatusObserver _statusObserver;
@@ -47,6 +49,8 @@ namespace HealerLike.Render.Creatures
         {
             Detach();
             ReleaseRig();
+            RenderObjects.Release(_derivedRecipe);
+            _derivedRecipe = null;
         }
 
         public void Init(Entity owner, RenderManager manager)
@@ -69,6 +73,7 @@ namespace HealerLike.Render.Creatures
             if (!_recipe && owner && manager && manager.creatureLooks)
             {
                 _recipe = manager.creatureLooks.GetRecipe(owner.data, owner.entityType);
+                _derivedRecipe = _recipe;
             }
 
             Init(owner);

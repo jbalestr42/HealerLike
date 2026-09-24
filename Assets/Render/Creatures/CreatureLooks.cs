@@ -35,10 +35,6 @@ namespace HealerLike.Render.Creatures
         static readonly string dataFolder = "Assets/Render/Creatures/Data/";
         static readonly string prefabFolder = "Assets/Render/Creatures/Prefabs/";
 
-        // Derived once per entity and side, the same data always draws the same creature
-        readonly Dictionary<EntityData, CreatureRecipe> _plants = new Dictionary<EntityData, CreatureRecipe>();
-        readonly Dictionary<EntityData, CreatureRecipe> _stones = new Dictionary<EntityData, CreatureRecipe>();
-
         public GameObject GetView(EntityData data, Entity.EntityType entityType)
         {
             if (data != null && entities.ContainsKey(data))
@@ -107,21 +103,15 @@ namespace HealerLike.Render.Creatures
 #endif
         }
 
-        // The recipe for a derived view, null when an authored view carries its own
+        // A new recipe for a derived view, owned by the caller; null when an authored view carries its own. The same
+        // data always composes the same creature, well under a millisecond, so nothing is kept on this shared asset.
         public CreatureRecipe GetRecipe(EntityData data, Entity.EntityType entityType)
         {
             if (data == null || entities.ContainsKey(data))
             {
                 return null;
             }
-
-            bool isPlant = LookDerivation.Side(entityType) == LookSide.Plant;
-            Dictionary<EntityData, CreatureRecipe> cache = isPlant ? _plants : _stones;
-            if (!cache.ContainsKey(data) || cache[data] == null)
-            {
-                cache[data] = LookComposer.Compose(LookDerivation.Channels(data, entityType), vocabulary);
-            }
-            return cache[data];
+            return LookComposer.Compose(LookDerivation.Channels(data, entityType), vocabulary);
         }
     }
 }
