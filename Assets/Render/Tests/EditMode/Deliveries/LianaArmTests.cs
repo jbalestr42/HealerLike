@@ -51,7 +51,8 @@ public class LianaArmTests
     // The shipped Healer arm, rendered under the fixture parent
     LianaArm CreateRenderedArm()
     {
-        CreatureRecipe authored = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
+        string healerPath = "Assets/Render/Creatures/Data/Healer.asset";
+        CreatureRecipe authored = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(healerPath);
         _rendered = CreateArm(authored.arms[0], _parent.transform, _material);
         return _rendered;
     }
@@ -60,7 +61,8 @@ public class LianaArmTests
     {
         for (int i = 0; i < _arm.segmentCount; i++)
         {
-            Assert.That(Vector3.Distance(_arm.Joint(i), _arm.Joint(i + 1)), Is.EqualTo(0.2f).Within(0.00001));
+            float link = Vector3.Distance(_arm.Joint(i), _arm.Joint(i + 1));
+            Assert.That(link, Is.EqualTo(_recipe.arms[0].segmentLength).Within(0.00001));
         }
     }
 
@@ -78,13 +80,12 @@ public class LianaArmTests
     }
 
     [Test]
-    public void Tick_AuthoredArm_ShowsOneMeshOnlyDuringGesturesAndDisposeDestroysIt()
+    public void Tick_Gesture_ShowsTheMeshAndItsLeaves()
     {
         LianaArm rendered = CreateRenderedArm();
         Renderer[] renderers = _parent.GetComponentsInChildren<Renderer>(true);
         Assert.AreEqual(1, renderers.Length);
         Assert.IsFalse(renderers[0].enabled);
-
         rendered.Tick(0f, Vector3.zero, Quaternion.identity);
         Assert.AreEqual(0, rendered.meshRevision);
         Assert.AreEqual(0, rendered.activeLeafCount);
@@ -92,16 +93,24 @@ public class LianaArmTests
         rendered.Begin(1, GestureKind.Attack, Vector3.one);
         rendered.SetTipGoal(1, Vector3.one);
         rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);
+
         Assert.IsTrue(renderers[0].enabled);
-        Assert.AreEqual(5, rendered.activeLeafCount);
+        Assert.AreEqual(LianaArm.LeafCount, rendered.activeLeafCount);
         Assert.That(Vector3.Distance(rendered.tipMatrix.GetColumn(3), rendered.tip), Is.LessThan(0.00001f));
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < LianaArm.LeafCount; i++)
         {
             Vector4 leaf = rendered.LeafMatrix(i).GetColumn(3);
             Assert.IsTrue(float.IsFinite(leaf.x) && float.IsFinite(leaf.y) && float.IsFinite(leaf.z));
         }
+    }
 
-        for (int i = 0; i < 10; i++)
+    [Test]
+    public void Tick_WarmGesture_AllocatesNothingAndReachesTheGoal()
+    {
+        LianaArm rendered = CreateRenderedArm();
+        rendered.Begin(1, GestureKind.Attack, Vector3.one);
+        rendered.SetTipGoal(1, Vector3.one);
+        for (int i = 0; i < 11; i++)
         {
             rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);
         }
@@ -119,22 +128,39 @@ public class LianaArmTests
         {
             Assert.IsTrue(float.IsFinite(vertex.x) && float.IsFinite(vertex.y) && float.IsFinite(vertex.z));
         }
-
         Assert.That(Vector3.Distance(rendered.tip, Vector3.one), Is.LessThan(0.001f));
+    }
 
+    [Test]
+    public void Tick_BackAtRest_HidesTheMeshAndStopsRewritingIt()
+    {
+        LianaArm rendered = CreateRenderedArm();
+        Renderer renderer = _parent.GetComponentInChildren<Renderer>(true);
+        Mesh mesh = _parent.GetComponentInChildren<MeshFilter>().sharedMesh;
+        rendered.Begin(1, GestureKind.Attack, Vector3.one);
+        rendered.SetTipGoal(1, Vector3.one);
+        rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);
         rendered.End(1);
         rendered.Tick(1f, Vector3.zero, Quaternion.identity);
-        Assert.IsFalse(renderers[0].enabled);
         int revision = rendered.meshRevision;
         Vector3[] vertices = mesh.vertices;
+
         rendered.SetVisible(true);
         rendered.Tick(1f, Vector3.one, Quaternion.identity);
-        Assert.IsFalse(renderers[0].enabled);
+
+        Assert.IsFalse(renderer.enabled);
         Assert.AreEqual(revision, rendered.meshRevision);
         CollectionAssert.AreEqual(vertices, mesh.vertices);
+    }
+
+    [Test]
+    public void Dispose_RenderedArm_DestroysItsMesh()
+    {
+        LianaArm rendered = CreateRenderedArm();
+        Mesh mesh = _parent.GetComponentInChildren<MeshFilter>().sharedMesh;
 
         rendered.Dispose();
-        _rendered = null;
+
         Assert.IsFalse(mesh);
     }
 
@@ -172,16 +198,16 @@ public class LianaArmTests
     }
 
     [Test]
-    public void EndAndCancel_StaleOrRepeatedToken_DoNotRetractNewGesture()
+    public void End_StaleOrRepeatedToken_DoesNotRetractNewGesture()
     {
         _arm.Begin(1, GestureKind.Attack, Vector3.one);
         _arm.Begin(2, GestureKind.Attack, Vector3.up);
         _arm.End(1);
-        _arm.Cancel(1);
+        _arm.End(1);
         Assert.AreEqual(GesturePhase.Extend, _arm.phase);
         _arm.Tick(0.02f, Vector3.zero, Quaternion.identity);
-        _arm.Cancel(2);
-        _arm.Cancel(2);
+        _arm.End(2);
+        _arm.End(2);
         Assert.AreEqual(GesturePhase.Retract, _arm.phase);
         _arm.Tick(0.1f, Vector3.zero, Quaternion.identity);
         Lengths();
@@ -250,7 +276,7 @@ public class LianaArmTests
     public void Tick_DeliveryProfile_FollowsLiveEndpoint(DeliveryStyle style)
     {
         _arm.style = style;
-        _arm.deliveryProfile = true;
+        _arm.isDeliveryProfile = true;
         _arm.Begin(1, GestureKind.Attack, Vector3.right * 2f);
         _arm.SetTipGoal(1, Vector3.right * 2f);
         _arm.Tick(0.016f, Vector3.zero, Quaternion.identity);
@@ -319,15 +345,15 @@ public class LianaArmTests
         Assert.AreEqual(_arm.restTipColour, _arm.tipColour);
     }
 
-    [TestCase(DeliveryStyle.Direct, 1)]
-    [TestCase(DeliveryStyle.Arc, 2)]
-    [TestCase(DeliveryStyle.Swarm, 3)]
-    [TestCase(DeliveryStyle.Thrown, 0)]
-    public void Tick_Style_TipDrawsItsFragment(DeliveryStyle style, int expectedParts)
+    [TestCase(DeliveryStyle.Direct)]
+    [TestCase(DeliveryStyle.Arc)]
+    [TestCase(DeliveryStyle.Swarm)]
+    [TestCase(DeliveryStyle.Thrown)]
+    public void Tick_Style_TipDrawsItsFragment(DeliveryStyle style)
     {
         LianaArm rendered = CreateRenderedArm();
         rendered.style = style;
-        rendered.deliveryProfile = true;
+        rendered.isDeliveryProfile = true;
 
         rendered.Begin(1, GestureKind.Attack, Vector3.right);
         rendered.SetTipGoal(1, Vector3.right);
@@ -335,6 +361,7 @@ public class LianaArmTests
 
         Assert.AreSame(DeliveryVocabularyTests.Vocabulary(), rendered.vocabulary);
         Assert.AreEqual(style, rendered.tipFragment.style);
+        int expectedParts = DeliveryVocabularyTests.Vocabulary().GetTip(style).Length;
         Assert.AreEqual(expectedParts, rendered.tipFragment.partCount);
     }
 
@@ -343,7 +370,7 @@ public class LianaArmTests
     {
         LianaArm rendered = CreateRenderedArm();
         rendered.style = DeliveryStyle.Rigid;
-        rendered.deliveryProfile = true;
+        rendered.isDeliveryProfile = true;
 
         rendered.Begin(1, GestureKind.Attack, Vector3.right * 2f);
         rendered.SetTipGoal(1, Vector3.right * 2f);

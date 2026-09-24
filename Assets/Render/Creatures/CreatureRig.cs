@@ -261,7 +261,7 @@ namespace HealerLike.Render.Creatures
 
             _tokens[slot] = _nextToken;
             _branchRoots[slot] = null;
-            _arms[slot].deliveryProfile = kind == GestureKind.Heal;
+            _arms[slot].isDeliveryProfile = kind == GestureKind.Heal;
             _arms[slot].style = kind == GestureKind.Heal ? DeliveryStyle.Arc : DeliveryStyle.Direct;
             _arms[slot].SetVisible(true);
             _arms[slot].Begin(_nextToken, kind, goal);
@@ -304,7 +304,7 @@ namespace HealerLike.Render.Creatures
                 _tokens[slot] = token;
                 _branchRoots[slot] = previousContact;
                 _arms[slot].style = DeliveryStyle.ChainSync;
-                _arms[slot].deliveryProfile = true;
+                _arms[slot].isDeliveryProfile = true;
                 _arms[slot].SetVisible(true);
                 _arms[slot].Begin(token, GestureKind.Attack, goal);
                 _arms[slot].Contact(token, goal);
@@ -344,7 +344,7 @@ namespace HealerLike.Render.Creatures
             {
                 if (_arms[i] != null)
                 {
-                    _arms[i].Cancel(_tokens[i]);
+                    _arms[i].End(_tokens[i]);
                     _tokens[i] = 0;
                 }
             }
@@ -709,7 +709,7 @@ namespace HealerLike.Render.Creatures
                 if (_tokens[i] == leaseToken)
                 {
                     _arms[i].style = style;
-                    _arms[i].deliveryProfile = true;
+                    _arms[i].isDeliveryProfile = true;
                 }
             }
 

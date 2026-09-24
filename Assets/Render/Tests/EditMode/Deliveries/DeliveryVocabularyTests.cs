@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -11,9 +12,21 @@ public class DeliveryVocabularyTests
 {
     static readonly string vocabularyPath = "Assets/Render/Deliveries/Data/Resources/DeliveryVocabulary.asset";
 
+    readonly List<Object> _objects = new List<Object>();
+
     public static DeliveryVocabulary Vocabulary()
     {
         return AssetDatabase.LoadAssetAtPath<DeliveryVocabulary>(vocabularyPath);
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        foreach (Object trackedObject in _objects)
+        {
+            Object.DestroyImmediate(trackedObject);
+        }
+        _objects.Clear();
     }
 
     [Test]
@@ -88,11 +101,11 @@ public class DeliveryVocabularyTests
     public void GetTip_MissingStyle_ReturnsEmpty()
     {
         DeliveryVocabulary vocabulary = ScriptableObject.CreateInstance<DeliveryVocabulary>();
+        _objects.Add(vocabulary);
 
         LookPart[] tip = vocabulary.GetTip(DeliveryStyle.Direct);
 
         Assert.AreEqual(0, tip.Length);
-        Object.DestroyImmediate(vocabulary);
     }
 }
 

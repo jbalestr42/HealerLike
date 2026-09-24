@@ -26,11 +26,38 @@ namespace HealerLike.Render.Deliveries
     public class LianaArm : IDisposable
     {
         static readonly int sides = 6;
-        static readonly int leafCount = 5;
+        // Leaves along the chain, and as many beads plus the tip
+        public static readonly int LeafCount = 5;
+        // A direction shorter than this has none
+        static readonly float zeroLengthSquared = 0.000000000001f;
+        // Gesture timings in seconds: the reach out, the pause at contact, the way back, and a rod's snap back
+        static readonly float extendSeconds = 0.1f;
+        static readonly float contactSeconds = 0.04f;
+        static readonly float retractSeconds = 0.2f;
+        static readonly float rigidRetractSeconds = 0.045f;
+        // An arc delivery lifts its middle by this much per cell of reach, never more than the cap
+        static readonly float arcLiftPerCell = 0.4f;
+        static readonly float arcMaxLift = 2f;
+        // Proportions in arm radii: the tip unit, the leaves and the beads
+        static readonly float tipWidthRadii = 4.5f;
+        static readonly float leafLengthRadii = 9f;
+        static readonly float beadRadii = 2.4f;
+        // The chain thins to this share of its radius at the tip, narrow collars between broader internodes
+        static readonly float tipTaper = 0.65f;
+        static readonly float collarWidth = 0.76f;
+        static readonly float internodeWidth = 1.12f;
+        // A leaf's width and depth for its length, its lean along the chain and where its centre sits along it
+        static readonly float leafWidth = 0.38f;
+        static readonly float leafDepth = 0.22f;
+        static readonly float leafLean = 0.45f;
+        static readonly float leafCentre = 0.45f;
+        // A swarm arm and its leaves are drawn thinner
+        static readonly float swarmWidth = 0.6f;
+        static readonly float swarmLeafWidth = 0.45f;
 
         readonly ChainSolver _solver = new ChainSolver();
-        readonly Matrix4x4[] _leaves = new Matrix4x4[leafCount];
-        readonly Matrix4x4[] _beads = new Matrix4x4[leafCount + 1];
+        readonly Matrix4x4[] _leaves = new Matrix4x4[LeafCount];
+        readonly Matrix4x4[] _beads = new Matrix4x4[LeafCount + 1];
         readonly DeliveryTip _tip = new DeliveryTip();
         Vector3[] _rest;
         Vector3[] _joints;
@@ -64,10 +91,12 @@ namespace HealerLike.Render.Deliveries
         Vector3 _goal;
         public Vector3 goal { get { return _goal; } }
 
-        public DeliveryStyle style { get; set; }
+        DeliveryStyle _style;
+        public DeliveryStyle style { get { return _style; } set { _style = value; } }
 
         // The tip shape of each style, loaded when the arm is drawn
-        public DeliveryVocabulary vocabulary { get; set; }
+        DeliveryVocabulary _vocabulary;
+        public DeliveryVocabulary vocabulary { get { return _vocabulary; } set { _vocabulary = value; } }
 
         Color _tipColour;
         public Color tipColour { get { return _tipColour; } }
@@ -76,20 +105,25 @@ namespace HealerLike.Render.Deliveries
 
         public DeliveryTip tipFragment { get { return _tip; } }
 
-        public bool deliveryProfile { get; set; }
+        // A delivery draws a rod or an arc to its projectile instead of solving a reaching chain
+        bool _isDeliveryProfile;
+        public bool isDeliveryProfile { get { return _isDeliveryProfile; } set { _isDeliveryProfile = value; } }
 
-        public GesturePhase phase { get; private set; }
+        GesturePhase _phase;
+        public GesturePhase phase { get { return _phase; } }
 
-        public ChainResult lastResult { get; private set; }
+        ChainResult _lastResult;
+        public ChainResult lastResult { get { return _lastResult; } }
 
-        public int meshRevision { get; private set; }
+        int _meshRevision;
+        public int meshRevision { get { return _meshRevision; } }
 
-        public int activeLeafCount { get { return _isVisible && phase != GesturePhase.Rest ? leafCount : 0; } }
+        public int activeLeafCount { get { return _isVisible && _phase != GesturePhase.Rest ? LeafCount : 0; } }
 
-        public Matrix4x4 tipMatrix { get { return _beads[leafCount]; } }
+        public Matrix4x4 tipMatrix { get { return _beads[LeafCount]; } }
 
         // The width of one tip unit in world space
-        public float tipWidth { get { return _radius * 4.5f; } }
+        public float tipWidth { get { return _radius * tipWidthRadii; } }
 
         public Vector3 tip { get { return _joints[_joints.Length - 1]; } }
 
@@ -143,7 +177,7 @@ namespace HealerLike.Render.Deliveries
             _beadMesh = meshes.sphere;
             _detailMaterial = material;
             _detailColour = new MaterialPropertyBlock();
-            Vector4[] detailColours = new Vector4[leafCount + 1];
+            Vector4[] detailColours = new Vector4[LeafCount + 1];
             for (int i = 0; i < detailColours.Length; i++)
             {
                 detailColours[i] = definition.colour;
@@ -233,7 +267,7 @@ namespace HealerLike.Render.Deliveries
             _goal = worldTarget;
             _startGoal = tip;
             _isEndPending = false;
-            phase = GesturePhase.Extend;
+            _phase = GesturePhase.Extend;
             _elapsed = 0f;
         }
 
@@ -248,7 +282,7 @@ namespace HealerLike.Render.Deliveries
             // Projectile travel already sets the extension timing
             if (phase != GesturePhase.Contact || style == DeliveryStyle.Bounce)
             {
-                phase = GesturePhase.Hold;
+                _phase = GesturePhase.Hold;
             }
         }
 
@@ -260,7 +294,7 @@ namespace HealerLike.Render.Deliveries
             }
 
             _goal = worldPosition;
-            phase = GesturePhase.Contact;
+            _phase = GesturePhase.Contact;
             _elapsed = 0f;
         }
 
@@ -271,7 +305,7 @@ namespace HealerLike.Render.Deliveries
                 return;
             }
 
-            if (phase == GesturePhase.Contact && _elapsed < 0.04f)
+            if (phase == GesturePhase.Contact && _elapsed < contactSeconds)
             {
                 _isEndPending = true;
                 return;
@@ -280,20 +314,20 @@ namespace HealerLike.Render.Deliveries
             StartReturn();
         }
 
-        public void Cancel(int gestureToken)
-        {
-            End(gestureToken);
-        }
-
         public void Tick(float deltaTime, Vector3 rootWorld, Quaternion restOrientation)
         {
             float dt = Mathf.Max(0f, deltaTime);
-            float retractSeconds = deliveryProfile && style == DeliveryStyle.Rigid ? 0.045f : 0.2f;
+            float retract = retractSeconds;
+            if (_isDeliveryProfile && style == DeliveryStyle.Rigid)
+            {
+                retract = rigidRetractSeconds;
+            }
+
             Vector3 restTip = rootWorld + restOrientation * _rest[_rest.Length - 1];
             _elapsed += dt;
-            if (phase == GesturePhase.Rest || (phase == GesturePhase.Retract && _elapsed >= retractSeconds))
+            if (phase == GesturePhase.Rest || (phase == GesturePhase.Retract && _elapsed >= retract))
             {
-                phase = GesturePhase.Rest;
+                _phase = GesturePhase.Rest;
                 _tipColour = _restTipColour;
                 for (int i = 0; i < _joints.Length; i++)
                 {
@@ -314,17 +348,17 @@ namespace HealerLike.Render.Deliveries
                 Vector3 target = _goal;
                 if (phase == GesturePhase.Extend)
                 {
-                    target = Vector3.Lerp(_startGoal, _goal, Mathf.Clamp01(_elapsed / 0.1f));
-                    if (_elapsed >= 0.1f)
+                    target = Vector3.Lerp(_startGoal, _goal, Mathf.Clamp01(_elapsed / extendSeconds));
+                    if (_elapsed >= extendSeconds)
                     {
-                        phase = GesturePhase.Hold;
+                        _phase = GesturePhase.Hold;
                         _elapsed = 0f;
                     }
                 }
 
                 if (phase == GesturePhase.Retract)
                 {
-                    float blend = Mathf.Clamp01(_elapsed / retractSeconds);
+                    float blend = Mathf.Clamp01(_elapsed / retract);
                     target = Vector3.Lerp(_returnGoal, restTip, blend);
                     // Only an initial guess, FABRIK projects every link right below
                     for (int i = 0; i < _joints.Length; i++)
@@ -336,7 +370,7 @@ namespace HealerLike.Render.Deliveries
                 bool isRod = style == DeliveryStyle.Rigid || style == DeliveryStyle.Direct
                     || style == DeliveryStyle.Swarm || style == DeliveryStyle.Bounce
                     || style == DeliveryStyle.ChainSync;
-                if (!deliveryProfile)
+                if (!_isDeliveryProfile)
                 {
                     if (!_solver.Solve(_joints, _lengths, rootWorld, target, restOrientation * _pole,
                         out ChainResult result, 64))
@@ -345,7 +379,7 @@ namespace HealerLike.Render.Deliveries
                         return;
                     }
 
-                    lastResult = result;
+                    _lastResult = result;
                 }
                 else if (isRod)
                 {
@@ -365,12 +399,14 @@ namespace HealerLike.Render.Deliveries
                     for (int i = 0; i < _joints.Length; i++)
                     {
                         float t = (float)i / (_joints.Length - 1);
-                        float lift = 4f * t * (1f - t) * Mathf.Min(2f, Vector3.Distance(rootWorld, target) * 0.4f);
+                        // A parabola through both ends, highest halfway
+                        float height = Mathf.Min(arcMaxLift, Vector3.Distance(rootWorld, target) * arcLiftPerCell);
+                        float lift = 4f * t * (1f - t) * height;
                         _joints[i] = Vector3.Lerp(rootWorld, target, t) + Vector3.up * lift;
                     }
                 }
 
-                if (phase == GesturePhase.Contact && _elapsed >= 0.04f)
+                if (phase == GesturePhase.Contact && _elapsed >= contactSeconds)
                 {
                     if (_isEndPending || _kind == GestureKind.Heal)
                     {
@@ -378,7 +414,7 @@ namespace HealerLike.Render.Deliveries
                     }
                     else
                     {
-                        phase = GesturePhase.Hold;
+                        _phase = GesturePhase.Hold;
                         _elapsed = 0f;
                     }
                 }
@@ -440,7 +476,7 @@ namespace HealerLike.Render.Deliveries
         void StartReturn()
         {
             _returnGoal = tip;
-            phase = GesturePhase.Retract;
+            _phase = GesturePhase.Retract;
             _elapsed = 0f;
             _isEndPending = false;
         }
@@ -463,7 +499,7 @@ namespace HealerLike.Render.Deliveries
             for (int j = 0; j < _joints.Length; j++)
             {
                 Vector3 tangent = _joints[Mathf.Min(j + 1, _joints.Length - 1)] - _joints[Mathf.Max(j - 1, 0)];
-                if (tangent.sqrMagnitude < 0.000000000001f)
+                if (tangent.sqrMagnitude < zeroLengthSquared)
                 {
                     tangent = Vector3.up;
                 }
@@ -472,10 +508,21 @@ namespace HealerLike.Render.Deliveries
                 Vector3 axis = Mathf.Abs(tangent.y) < 0.9f ? Vector3.up : Vector3.right;
                 Vector3 u = Vector3.Cross(tangent, axis).normalized;
                 Vector3 v = Vector3.Cross(tangent, u);
-                float width = Mathf.Lerp(_radius, _radius * 0.65f, (float)j / _lengths.Length);
-                width *= style == DeliveryStyle.Swarm ? 0.6f : 1f;
+                float width = Mathf.Lerp(_radius, _radius * tipTaper, (float)j / _lengths.Length);
+                if (style == DeliveryStyle.Swarm)
+                {
+                    width *= swarmWidth;
+                }
+
                 // Narrow collars between broader internodes read as a jointed plant arm at gameplay scale
-                width *= (j % 3 == 0) ? 0.76f : 1.12f;
+                if (j % 3 == 0)
+                {
+                    width *= collarWidth;
+                }
+                else
+                {
+                    width *= internodeWidth;
+                }
                 for (int side = 0; side < sides; side++)
                 {
                     float angle = side * Mathf.PI * 2f / sides;
@@ -494,32 +541,38 @@ namespace HealerLike.Render.Deliveries
             _mesh.vertices = _vertices;
             _mesh.normals = _normals;
             _mesh.RecalculateBounds();
-            meshRevision++;
+            _meshRevision++;
         }
 
         void UpdateDetails()
         {
-            float width = style == DeliveryStyle.Swarm ? 0.45f : 1f;
-            for (int i = 0; i < leafCount; i++)
+            float width = style == DeliveryStyle.Swarm ? swarmLeafWidth : 1f;
+            for (int i = 0; i < LeafCount; i++)
             {
-                int j = Mathf.Clamp((i + 1) * _lengths.Length / (leafCount + 1), 1, _lengths.Length - 1);
+                int j = Mathf.Clamp((i + 1) * _lengths.Length / (LeafCount + 1), 1, _lengths.Length - 1);
                 Vector3 tangent = (_joints[j + 1] - _joints[j - 1]).normalized;
-                if (tangent.sqrMagnitude < 0.001f)
+                if (tangent.sqrMagnitude < zeroLengthSquared)
                 {
                     tangent = Vector3.up;
                 }
 
                 Vector3 axis = Mathf.Abs(tangent.y) < 0.9f ? Vector3.up : Vector3.right;
                 Vector3 side = Vector3.Cross(tangent, axis).normalized;
-                Vector3 direction = (side * (i % 2 == 0 ? 1f : -1f) + tangent * 0.45f).normalized;
-                float length = _radius * 9f * width;
+                // The leaves alternate sides along the chain
+                if (i % 2 == 1)
+                {
+                    side = -side;
+                }
+
+                Vector3 direction = (side + tangent * leafLean).normalized;
+                float length = _radius * leafLengthRadii * width;
                 Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
-                Vector3 leafScale = new Vector3(length * 0.38f, length, length * 0.22f);
-                _leaves[i] = Matrix4x4.TRS(_joints[j] + direction * length * 0.45f, rotation, leafScale);
-                _beads[i] = Matrix4x4.TRS(_joints[j], Quaternion.identity, Vector3.one * _radius * 2.4f * width);
+                Vector3 leafScale = new Vector3(length * leafWidth, length, length * leafDepth);
+                _leaves[i] = Matrix4x4.TRS(_joints[j] + direction * length * leafCentre, rotation, leafScale);
+                _beads[i] = Matrix4x4.TRS(_joints[j], Quaternion.identity, Vector3.one * _radius * beadRadii * width);
             }
 
-            _beads[leafCount] = DeliveryTip.Frame(tip, tip - _joints[_joints.Length - 2], tipWidth);
+            _beads[LeafCount] = DeliveryTip.Frame(tip, tip - _joints[_joints.Length - 2], tipWidth);
             if (!_tip.isSet || _tip.style != style)
             {
                 _tip.SetStyle(style, vocabulary, _meshes);
@@ -532,11 +585,11 @@ namespace HealerLike.Render.Deliveries
             }
 
             int layer = _container.gameObject.layer;
-            Graphics.DrawMeshInstanced(_leafMesh, 0, _detailMaterial, _leaves, leafCount, _detailColour,
+            Graphics.DrawMeshInstanced(_leafMesh, 0, _detailMaterial, _leaves, LeafCount, _detailColour,
                 ShadowCastingMode.On, true, layer);
-            Graphics.DrawMeshInstanced(_beadMesh, 0, _detailMaterial, _beads, leafCount, _detailColour,
+            Graphics.DrawMeshInstanced(_beadMesh, 0, _detailMaterial, _beads, LeafCount, _detailColour,
                 ShadowCastingMode.On, true, layer);
-            _tip.Draw(_beads[leafCount], _detailMaterial, _tipColour, _colour, layer);
+            _tip.Draw(_beads[LeafCount], _detailMaterial, _tipColour, _colour, layer);
         }
     }
 }
