@@ -81,11 +81,12 @@ public class EnvironmentSwayTests
         _sway.Init(null, gust, 100f, 0d);
         _plant.localRotation = Quaternion.Euler(0f, 0f, -30f);
         _sway.Add(_plant, _plant, 5, 0.12f, -3f);
-        _sway.Animate(10);
+        double peak = Time.timeAsDouble + 1;
+        _sway.Animate(peak);
         float resting = _plant.localEulerAngles.z;
 
-        gust.GustAt(Vector3.forward, 1f, 2f, 9);
-        _sway.Animate(10);
+        gust.Gust(Vector3.forward, 1f, 2f);
+        _sway.Animate(peak);
 
         Assert.That(Mathf.DeltaAngle(resting, _plant.localEulerAngles.z), Is.GreaterThan(2f));
     }

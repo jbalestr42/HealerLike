@@ -22,6 +22,13 @@ namespace HealerLike.Render.Grass
         // Rest tilt in radians about the root, every tuft leaning the same way by its own amount
         public static readonly float MaxLean = 0.5f;
         public static readonly Vector2 LeanHeading = Vector2.up;
+        // A full heal lifts a tuft to this multiple of its height, HL_HEAL_LIFT in Grass.compute plus one
+        public static readonly float HealLift = 1.8f;
+        // A hostile spike stands at most this tall in world units whatever the tuft, HL_SPIKE_MIN_HEIGHT plus
+        // HL_SPIKE_HEIGHT_RANGE in Grass.compute, and at most this wide either side of its root,
+        // HL_SPIKE_HALF_WIDTH in GrassInstancing.hlsl
+        public static readonly float SpikeHeight = 0.63f;
+        public static readonly float SpikeHalfWidth = 0.065f;
 
         public static bool IsValid(int width, int height, float size, Vector3 origin, float surfaceY)
         {
@@ -42,20 +49,20 @@ namespace HealerLike.Render.Grass
         }
 
         // Returns no seeds and logs when the footprint is not finite or the budget is negative
-        public static BladeSeed[] Generate(int width, int height, float cellSize, Vector3 gridOrigin, float surfaceY,
+        public static TuftSeed[] Generate(int width, int height, float cellSize, Vector3 gridOrigin, float surfaceY,
                                            int budget, uint seed)
         {
             if (!IsValid(width, height, cellSize, gridOrigin, surfaceY) || budget < 0)
             {
                 Debug.LogError($"[GrassLayout] Rejected a {width} x {height} grid of size {cellSize} "
                                + $"with budget {budget}.");
-                return new BladeSeed[0];
+                return new TuftSeed[0];
             }
 
             int count = CountFor(width, height, budget);
             if (count == 0)
             {
-                return new BladeSeed[0];
+                return new TuftSeed[0];
             }
 
             // The widest step that still fits the count, the same on both axes
@@ -78,7 +85,7 @@ namespace HealerLike.Render.Grass
             float stepZ = (float)height / rows;
             Vector2 minimum = new Vector2(gridOrigin.x - width * cellSize * 0.5f,
                                           gridOrigin.z - height * cellSize * 0.5f);
-            BladeSeed[] result = new BladeSeed[columns * rows];
+            TuftSeed[] result = new TuftSeed[columns * rows];
             for (int row = 0; row < rows; row++)
             {
                 for (int column = 0; column < columns; column++)
@@ -111,16 +118,16 @@ namespace HealerLike.Render.Grass
         }
 
         // Uniform in 0..1
-        static float Sample(uint seed, int blade, uint channel)
+        static float Sample(uint seed, int tuft, uint channel)
         {
-            uint key = seed ^ ((uint)blade * 0x85ebca6bu) ^ (channel * 0xc2b2ae35u);
+            uint key = seed ^ ((uint)tuft * 0x85ebca6bu) ^ (channel * 0xc2b2ae35u);
             return (Hash(key) >> 8) * (1f / 16777216f);
         }
 
         // Uniform in -1..1
-        static float Signed(uint seed, int blade, uint channel)
+        static float Signed(uint seed, int tuft, uint channel)
         {
-            return Sample(seed, blade, channel) * 2f - 1f;
+            return Sample(seed, tuft, channel) * 2f - 1f;
         }
     }
 }

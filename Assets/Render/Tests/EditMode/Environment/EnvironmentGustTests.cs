@@ -23,44 +23,54 @@ public class EnvironmentGustTests
     }
 
     [Test]
-    public void Sample_AfterGust_FollowsDirectionThenExpiresAndIgnoresInvalidGusts()
+    public void Sample_AfterGust_FollowsDirectionThenExpires()
     {
-        _gust.GustAt(new Vector3(4f, 7f, 0f), 0.8f, 2f, 10);
+        double start = Time.timeAsDouble;
 
-        Assert.AreEqual(Vector3.zero, _gust.Sample(9));
+        _gust.Gust(new Vector3(4f, 7f, 0f), 0.8f, 2f);
+
+        Assert.AreEqual(Vector3.zero, _gust.Sample(start - 1));
         Assert.AreEqual(Vector3.zero, _gust.Sample(double.NaN));
-        Assert.That(Vector3.Distance(Vector3.right * 0.8f, _gust.Sample(11)), Is.LessThan(0.0001f));
-        Assert.AreEqual(Vector3.zero, _gust.Sample(12));
-
-        _gust.GustAt(Vector3.right, float.NaN, 2f, 12);
-        _gust.GustAt(Vector3.up, 1f, 2f, 12);
-        _gust.GustAt(Vector3.right, 1f, -2f, 12);
-
-        Assert.AreEqual(Vector3.zero, _gust.Sample(13));
+        Assert.That(Vector3.Distance(Vector3.right * 0.8f, _gust.Sample(start + 1)), Is.LessThan(0.0001f));
+        Assert.AreEqual(Vector3.zero, _gust.Sample(start + 2.5));
     }
 
     [Test]
-    public void GustAt_ManyOverlapping_StaysBoundedAllocatesNothingAndDisableClears()
+    public void Gust_InvalidPulses_AreIgnored()
     {
+        double start = Time.timeAsDouble;
+
+        _gust.Gust(Vector3.right, float.NaN, 2f);
+        _gust.Gust(Vector3.up, 1f, 2f);
+        _gust.Gust(Vector3.right, 1f, -2f);
+
+        Assert.AreEqual(Vector3.zero, _gust.Sample(start + 1));
+    }
+
+    [Test]
+    public void Gust_ManyOverlapping_StaysBoundedAllocatesNothingAndDisableClears()
+    {
+        double start = Time.timeAsDouble;
         for (int i = 0; i < 100; i++)
         {
-            _gust.GustAt(Vector3.right, 1f, 2f, 0);
+            _gust.Gust(Vector3.right, 1f, 2f);
         }
 
-        Assert.AreEqual(Vector3.right, _gust.Sample(1));
+        Assert.That(Vector3.Distance(Vector3.right, _gust.Sample(start + 1)), Is.LessThan(0.0001f));
 
         long before = System.GC.GetAllocatedBytesForCurrentThread();
         for (int i = 0; i < 100; i++)
         {
-            _gust.GustAt(Vector3.right, 1f, 2f, 0);
-            _gust.Sample(1);
+            _gust.Gust(Vector3.right, 1f, 2f);
+            _gust.Sample(start + 1);
         }
         long bytes = System.GC.GetAllocatedBytesForCurrentThread() - before;
+
         Assert.AreEqual(0, bytes);
 
         TestHelpers.InvokePrivate(_gust, "OnDisable");
 
-        Assert.AreEqual(Vector3.zero, _gust.Sample(1));
+        Assert.AreEqual(Vector3.zero, _gust.Sample(start + 1));
     }
 }
 

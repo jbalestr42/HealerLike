@@ -4,12 +4,12 @@ using NUnit.Framework;
 namespace HealerLike.Render.Grass
 {
 
-public class BladeStateTests
+public class TuftSeedTests
 {
     [Test]
     public void Stride_Struct_MatchesMarshalledSize()
     {
-        Assert.AreEqual(BladeState.Stride, Marshal.SizeOf<BladeState>());
+        Assert.AreEqual(TuftSeed.Stride, Marshal.SizeOf<TuftSeed>());
     }
 }
 

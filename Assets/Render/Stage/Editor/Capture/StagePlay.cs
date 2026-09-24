@@ -76,6 +76,11 @@ namespace HealerLike.Render.Stage
             {
                 return new GroundCaptureRun();
             }
+
+            if (mode == "grassbench")
+            {
+                return new GrassBenchRun();
+            }
             return new LookSheetRun(mode != "effects", mode != "units");
         }
 

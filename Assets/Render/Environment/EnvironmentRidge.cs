@@ -60,11 +60,6 @@ namespace HealerLike.Render.Environment
             return new Vector2(fogStart + (fogBands - 1f) / fogBands * (fogEnd - fogStart), fogEnd);
         }
 
-        public static Vector3 MidHeight(RidgeItem item)
-        {
-            return item.position + Vector3.up * (item.height * 0.5f);
-        }
-
         // Eight to twelve monoliths and eight to twelve mushroom stems across x in [-SpreadX, SpreadX],
         // past the far (+z) edge.
         // Items the band cannot reach are clamped to z >= grid.yMax + GridClearance.

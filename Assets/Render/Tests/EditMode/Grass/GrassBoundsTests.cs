@@ -9,34 +9,41 @@ namespace HealerLike.Render.Grass
 public class GrassBoundsTests
 {
     [Test]
-    public void Calculate_MainAndShiftedGrids_ContainDeformedTips()
+    public void Envelope_OneCell_ReachesTheTallestTuftAndTheTallestSpike()
+    {
+        float tallestTuft = GrassLayout.TuftHeight * GrassLayout.MaxScale * GrassLayout.HealLift;
+        float tuftHalfWidth = GrassLayout.TuftWidth * GrassLayout.MaxScale * 0.5f;
+
+        float envelope = GrassBounds.Envelope(1f);
+
+        Assert.That(envelope, Is.GreaterThanOrEqualTo(tallestTuft + tuftHalfWidth));
+        Assert.That(envelope, Is.GreaterThanOrEqualTo(GrassLayout.SpikeHeight + GrassLayout.SpikeHalfWidth));
+    }
+
+    [Test]
+    public void Envelope_LargeCells_GrowsWithTheTuft()
+    {
+        float tallestTuft = GrassLayout.TuftHeight * GrassLayout.MaxScale * GrassLayout.HealLift * 4f;
+
+        Assert.That(GrassBounds.Envelope(4f), Is.GreaterThan(tallestTuft));
+        Assert.That(GrassBounds.Envelope(4f), Is.GreaterThan(GrassBounds.Envelope(1f)));
+    }
+
+    [Test]
+    public void Calculate_MainAndShiftedGrids_GrowByTheEnvelope()
     {
         Bounds main = GrassBounds.Calculate(16, 16, 1f, Vector3.zero, 0.5f);
         Bounds shifted = GrassBounds.Calculate(3, 7, 2f, new Vector3(4f, 9f, -5f), 3f);
 
+        float mainEnvelope = GrassBounds.Envelope(1f);
         Assert.AreEqual(new Vector3(0f, 0.505f, 0f), main.center);
-        Assert.AreEqual(new Vector3(17.7f, 1.7f, 17.7f), main.size);
+        Assert.AreEqual(16f + 2f * mainEnvelope, main.size.x, 0.0001f);
+        Assert.AreEqual(2f * mainEnvelope, main.size.y, 0.0001f);
+        Assert.AreEqual(16f + 2f * mainEnvelope, main.size.z, 0.0001f);
+        float shiftedEnvelope = GrassBounds.Envelope(2f);
         Assert.AreEqual(new Vector3(4f, 3.005f, -5f), shifted.center);
-        foreach (int x in new[] { -1, 1 })
-        {
-            foreach (int z in new[] { -1, 1 })
-            {
-                Vector3 outer = new Vector3(x * (3f + 0.24f + 0.065f), 0.648f, z * (7f + 0.24f + 0.065f));
-                Assert.IsTrue(shifted.Contains(shifted.center + outer));
-                Vector3 inner = new Vector3(x * (3f + 0.065f), 0.54f, z * (7f + 0.065f));
-                Assert.IsTrue(shifted.Contains(shifted.center + inner));
-            }
-        }
-    }
-
-    [Test]
-    public void Calculate_EnvelopeUnderTheBlade_LogsAndReturnsEmptyBounds()
-    {
-        LogAssert.Expect(LogType.Error, new Regex(@"^\[GrassBounds\] Rejected a 1 x 1 footprint"));
-
-        Bounds bounds = GrassBounds.Calculate(1, 1, 1f, Vector3.zero, 0f, 0.1f);
-
-        Assert.AreEqual(new Bounds(), bounds);
+        Assert.AreEqual(6f + 2f * shiftedEnvelope, shifted.size.x, 0.0001f); // 3 cells of 2
+        Assert.AreEqual(14f + 2f * shiftedEnvelope, shifted.size.z, 0.0001f); // 7 cells of 2
     }
 
     [Test]

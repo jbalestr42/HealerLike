@@ -52,7 +52,7 @@ public class GrassBuildKeyTests
     {
         GrassBuildKey key = CreateKey();
 
-        BladeSeed[] layout = key.GenerateLayout();
+        TuftSeed[] layout = key.GenerateLayout();
 
         Assert.AreEqual(98, layout.Length); // 14 by 7, the widest grid of at most 100
     }
@@ -76,7 +76,7 @@ public class GrassBuildKeyTests
     }
 
     [Test]
-    public void CalculateBounds_Area_CoversFieldAndBladeEnvelope()
+    public void CalculateBounds_Area_CoversFieldAndTuftEnvelope()
     {
         GrassBuildKey key = CreateKey();
 
@@ -84,8 +84,9 @@ public class GrassBuildKeyTests
 
         Assert.AreEqual(2f, bounds.center.x);
         Assert.AreEqual(-1f, bounds.center.z);
-        Assert.AreEqual(7.7f, bounds.size.x, 0.0001f); // 4 * 1.5 + 2 * 0.85
-        Assert.AreEqual(4.7f, bounds.size.z, 0.0001f); // 2 * 1.5 + 2 * 0.85
+        float envelope = GrassBounds.Envelope(1.5f);
+        Assert.AreEqual(6f + 2f * envelope, bounds.size.x, 0.0001f); // 4 cells of 1.5
+        Assert.AreEqual(3f + 2f * envelope, bounds.size.z, 0.0001f); // 2 cells of 1.5
     }
 }
 

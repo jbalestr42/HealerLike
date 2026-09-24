@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Grass
 {
@@ -8,6 +10,8 @@ namespace HealerLike.Render.Grass
     {
         Mesh _mesh;
         RenderParams _parameters;
+        Camera _camera;
+        Func<bool> _isShown;
 
         Material _material;
         public Material material { get { return _material; } }
@@ -48,15 +52,66 @@ namespace HealerLike.Render.Grass
             _parameters.reflectionProbeUsage = ReflectionProbeUsage.Off;
         }
 
-        // Indirect submissions last for one render, so they are queued for the camera consuming them
-        public void Submit(Camera camera)
+        // A tuft or socle over the field's tufts; a lean of one tilts the mesh with its tuft, zero keeps it flat
+        public static GrassDraw Tufts(Mesh mesh, Material material, Bounds bounds, int layer, float lean)
         {
+            GrassDraw draw = new GrassDraw(mesh, material, 0, bounds, layer);
+            draw.properties.SetFloat("_HLTuftLean", lean);
+            return draw;
+        }
+
+        // One ring per zone slot, clipped to the field
+        public static GrassDraw Rings(Mesh mesh, Material material, Bounds bounds, int layer, GrassBuildKey key)
+        {
+            GrassDraw draw = new GrassDraw(mesh, material, (uint)ZonePacker.MaxZones, bounds, layer);
+            draw.properties.SetFloat("_HLSurfaceY", key.surfaceY);
+            draw.properties.SetVector("_HLFieldRect", key.FieldRect());
+            return draw;
+        }
+
+        // The tuft seeds and states the compute writes, the ids of the tufts it found visible, and the
+        // presentation-only height scale
+        public void BindTufts(GraphicsBuffer seeds, GraphicsBuffer states, GraphicsBuffer visibleIds,
+                              float heightScale)
+        {
+            properties.SetBuffer("_HLBladeSeeds", seeds);
+            properties.SetBuffer("_HLBladeStates", states);
+            properties.SetBuffer("_HLVisibleBladeIDs", visibleIds);
+            properties.SetFloat("_HLBladeHeightScale", heightScale);
+        }
+
+        // Draws on every render of the camera while isShown says so. Indirect submissions last for one render,
+        // so each is queued from the render of the camera consuming it, and Editor repaints without a
+        // player-loop tick still draw.
+        public void Show(Camera camera, Func<bool> isShown)
+        {
+            Hide();
+            _camera = camera;
+            _isShown = isShown;
+            RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
+        }
+
+        public void Hide()
+        {
+            RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
+            _camera = null;
+            _isShown = null;
+        }
+
+        void OnBeginCameraRendering(ScriptableRenderContext context, Camera camera)
+        {
+            if (camera != _camera || !_isShown())
+            {
+                return;
+            }
+
             _parameters.camera = camera;
             Graphics.RenderMeshIndirect(_parameters, _mesh, _arguments);
         }
 
         public void Release()
         {
+            Hide();
             if (_arguments != null)
             {
                 _arguments.Dispose();

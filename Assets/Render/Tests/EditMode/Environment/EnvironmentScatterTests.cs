@@ -162,11 +162,12 @@ public class EnvironmentScatterTests
         EnvironmentSway sway = scatter.root.GetComponent<EnvironmentSway>();
         Transform fern = FirstPivot(scatter, "SpiralFern");
         Transform joint = fern.GetChild(0).GetChild(0).GetChild(1);
-        sway.Animate(10);
+        double peak = Time.timeAsDouble + 1;
+        sway.Animate(peak);
         float resting = joint.localEulerAngles.z;
 
-        gust.GustAt(Vector3.forward, 1f, 2f, 9);
-        sway.Animate(10);
+        gust.Gust(Vector3.forward, 1f, 2f);
+        sway.Animate(peak);
 
         Assert.That(Mathf.DeltaAngle(resting, joint.localEulerAngles.z), Is.GreaterThan(2f));
         Transform mushroom = FirstPivot(scatter, "MushroomTree");
@@ -175,7 +176,7 @@ public class EnvironmentScatterTests
         Assert.AreEqual(2, cap.childCount);
 
         Quaternion before = cap.localRotation;
-        sway.Animate(11);
+        sway.Animate(peak + 1);
 
         Assert.That(Quaternion.Angle(before, cap.localRotation), Is.GreaterThan(0.001f));
     }

@@ -12,6 +12,10 @@ namespace HealerLike.Render.Environment
 
 public class EnvironmentGrassTests
 {
+    // The ring the environment prefab stores: band widths in cells and their share of the board density
+    static readonly float[] ringWidths = { 3f, 5f, 16f };
+    static readonly float[] ringFractions = { 0.85f, 0.6f, 0.15f };
+
     GameObject _go;
     GameObject _zonesGo;
     ZoneRegistry _zones;
@@ -77,9 +81,9 @@ public class EnvironmentGrassTests
     {
         Rect grid = new Rect(-8f, -8f, 16f, 16f);
 
-        RingStrip[] strips = EnvironmentGrass.Bands(grid);
+        RingStrip[] strips = EnvironmentGrass.Bands(grid, ringWidths, ringFractions, GrassLayout.Density);
 
-        float reach = EnvironmentGrass.DefaultWidths.Sum();
+        float reach = ringWidths.Sum();
         float area = 0f;
         Assert.AreEqual(24f, reach);
         Rect outer = new Rect(grid.xMin - reach, grid.yMin - reach,
@@ -108,16 +112,19 @@ public class EnvironmentGrassTests
     [Test]
     public void Bands_DefaultWidths_StayUnderCapAndThinOutward()
     {
-        RingStrip[] strips = EnvironmentGrass.Bands(new Rect(-8f, -8f, 16f, 16f));
+        Rect grid = new Rect(-8f, -8f, 16f, 16f);
+
+        RingStrip[] strips = EnvironmentGrass.Bands(grid, ringWidths, ringFractions, GrassLayout.Density);
+
 
         foreach (RingStrip strip in strips)
         {
             Assert.That(strip.budget, Is.LessThanOrEqualTo(GrassLayout.MaxBudget));
             Assert.AreEqual(Mathf.RoundToInt(strip.rect.width * strip.rect.height * strip.density), strip.budget);
-            Assert.AreEqual(EnvironmentGrass.BoardDensity * EnvironmentGrass.DefaultFractions[strip.band],
+            Assert.AreEqual(GrassLayout.Density * ringFractions[strip.band],
                 strip.density, 0.001f);
         }
-        for (int band = 1; band < EnvironmentGrass.DefaultWidths.Length; band++)
+        for (int band = 1; band < ringWidths.Length; band++)
         {
             float outerMax = strips.Where(s => s.band == band).Max(s => s.density);
             float innerMin = strips.Where(s => s.band == band - 1).Min(s => s.density);
@@ -192,8 +199,7 @@ public class EnvironmentGrassTests
         _zones.Init();
         Rect board = new Rect(-8f, -8f, 16f, 16f);
         float boardDensity = GrassLayout.Density;
-        RingStrip[] bands = EnvironmentGrass.Bands(board, EnvironmentGrass.DefaultWidths, EnvironmentGrass.DefaultFractions,
-                                                   boardDensity);
+        RingStrip[] bands = EnvironmentGrass.Bands(board, ringWidths, ringFractions, boardDensity);
 
         grass.Init(board, 1f, 0.5f, null, _zones);
         grass.UpdateStrips(_zones);
@@ -201,7 +207,7 @@ public class EnvironmentGrassTests
         Assert.AreEqual(bands.Length, grass.strips.Count);
         for (int i = 0; i < bands.Length; i++)
         {
-            Assert.AreEqual(bands[i].budget, grass.strips[i].bladeBudget);
+            Assert.AreEqual(bands[i].budget, grass.strips[i].tuftBudget);
             Assert.AreEqual(0, grass.strips[i].activeZoneCount);
             Assert.AreSame(_go.transform, grass.strips[i].transform.parent);
         }

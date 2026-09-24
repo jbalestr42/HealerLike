@@ -299,7 +299,7 @@ public class LookShaderTests
                 foreach (bool isOctahedral in new[] { false, true })
                 {
                     string normals = isOctahedral ? "_GBUFFER_NORMALS_OCT" : "";
-                    material.shaderKeywords = new[] { "PROCEDURAL_INSTANCING_ON", GrassField.InstancedKeyword, shadow, normals, "_SHADOWS_SOFT" };
+                    material.shaderKeywords = new[] { "PROCEDURAL_INSTANCING_ON", "HL_GRASS_INSTANCED", shadow, normals, "_SHADOWS_SOFT" };
                     for (int pass = 0; pass < material.passCount; pass++)
                     {
                         ShaderUtil.CompilePass(material, pass, true);
@@ -823,7 +823,7 @@ public class LookShaderTests
         GrassField field = Track(new GameObject("Key light grass")).AddComponent<GrassField>();
         field.gameObject.layer = 30;
         field.Init(new Rect(-4f, -4f, 8f, 8f), 1f, 0f, _camera, registry.buffer, ZonePacker.MaxZones);
-        field.bladeBudget = 16384;
+        field.tuftBudget = 16384;
         TestHelpers.InvokePrivate(field, "OnEnable");
         TestHelpers.SetPrivateField(field, "_meshes", AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset"));
         TestHelpers.SetPrivateField(field, "_updateGrass", AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/Grass.compute"));

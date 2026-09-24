@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Look;
@@ -19,6 +16,9 @@ namespace HealerLike.Render.Grass
 public class GrassFieldTests
 {
     static readonly Rect oneCell = new Rect(-0.5f, -0.5f, 1f, 1f);
+    // The keyword GrassBlade.mat carries so the look shader reads the tuft buffers
+    static readonly string instancedKeyword = "HL_GRASS_INSTANCED";
+    static readonly string meshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
 
     GameObject _go;
     GrassField _field;
@@ -26,7 +26,8 @@ public class GrassFieldTests
 
     static bool HasGraphicsDevice()
     {
-        return SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null && SystemInfo.supportsComputeShaders && SystemInfo.supportsIndirectArgumentsBuffer;
+        return SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null && SystemInfo.supportsComputeShaders
+               && SystemInfo.supportsIndirectArgumentsBuffer;
     }
 
     [SetUp]
@@ -43,6 +44,7 @@ public class GrassFieldTests
         {
             _field.Release();
         }
+
         Object.DestroyImmediate(_go);
         if (_borrowedZones != null)
         {
@@ -53,12 +55,16 @@ public class GrassFieldTests
 
     void SetAssets()
     {
-        TestHelpers.SetPrivateField(_field, "_meshes", AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset"));
-        TestHelpers.SetPrivateField(_field, "_updateGrass", AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/Grass.compute"));
-        TestHelpers.SetPrivateField(_field, "_lookMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat"));
-        TestHelpers.SetPrivateField(_field, "_ringMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/HealRing.mat"));
+        ComputeShader compute = AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/Grass.compute");
+        Material look = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat");
+        Material ring = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/HealRing.mat");
+        TestHelpers.SetPrivateField(_field, "_meshes", AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesPath));
+        TestHelpers.SetPrivateField(_field, "_updateGrass", compute);
+        TestHelpers.SetPrivateField(_field, "_lookMaterial", look);
+        TestHelpers.SetPrivateField(_field, "_ringMaterial", ring);
     }
 
+    // Built through the update a frame runs, with a camera to cull against
     void BuildOneCellField()
     {
         if (_borrowedZones == null)
@@ -66,46 +72,44 @@ public class GrassFieldTests
             _borrowedZones = new GraphicsBuffer(GraphicsBuffer.Target.Structured, ZonePacker.MaxZones, Zone.Stride);
         }
 
-        _field.Init(oneCell, 1f, 0.5f, null, _borrowedZones, ZonePacker.MaxZones);
-        _field.bladeBudget = 65;
-        SetAssets();
+        Camera camera = _go.GetComponent<Camera>();
+        if (camera == null)
+        {
+            camera = _go.AddComponent<Camera>();
+        }
 
-        MethodInfo build = typeof(GrassField).GetMethod("Build", BindingFlags.Instance | BindingFlags.NonPublic);
-        GrassBuildKey key = new GrassBuildKey(oneCell, 1f, 0.5f, 1, _field.bladeBudget);
-        Assert.IsTrue((bool)build.Invoke(_field, new object[] { key }));
+        _field.Init(oneCell, 1f, 0.5f, camera, _borrowedZones, ZonePacker.MaxZones);
+        _field.tuftBudget = 65;
+        SetAssets();
+        _field.UpdateField(_borrowedZones, 0);
+        Assert.IsTrue(_field.isReady);
     }
 
-    List<GraphicsBuffer> OwnedBuffers()
+    // The argument buffers of the two tuft draws, the ones a caller can reach
+    List<GraphicsBuffer> DrawBuffers()
     {
         List<GraphicsBuffer> buffers = new List<GraphicsBuffer>();
-        foreach (FieldInfo member in typeof(GrassField).GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
-        {
-            GraphicsBuffer buffer = member.GetValue(_field) as GraphicsBuffer;
-            if (buffer != null && !ReferenceEquals(buffer, _borrowedZones))
-            {
-                buffers.Add(buffer);
-            }
-        }
-        buffers.Add(_field.bladeDraw.arguments);
+        buffers.Add(_field.tuftDraw.arguments);
         buffers.Add(_field.socleDraw.arguments);
-        buffers.Add(_field.ringDraw.arguments);
         return buffers;
     }
 
     [Test]
-    public void BladeBudget_Default_IsTheMaximum()
+    public void TuftBudget_Default_IsTheMaximum()
     {
-        Assert.AreEqual(GrassLayout.MaxBudget, _field.bladeBudget);
+        Assert.AreEqual(GrassLayout.MaxBudget, _field.tuftBudget);
     }
 
     [Test]
-    public void BladeBudget_OutsideRange_Clamps()
+    public void TuftBudget_OutsideRange_Clamps()
     {
-        _field.bladeBudget = int.MaxValue;
-        Assert.AreEqual(GrassLayout.MaxBudget, _field.bladeBudget);
+        _field.tuftBudget = int.MaxValue;
 
-        _field.bladeBudget = -1;
-        Assert.AreEqual(0, _field.bladeBudget);
+        Assert.AreEqual(GrassLayout.MaxBudget, _field.tuftBudget);
+
+        _field.tuftBudget = -1;
+
+        Assert.AreEqual(0, _field.tuftBudget);
     }
 
     [Test]
@@ -130,7 +134,7 @@ public class GrassFieldTests
         _field.SetZoneSnapshot(null, 0);
 
         TestHelpers.WithLoggingDisabled(() => _field.SetZoneSnapshot(null, 1));
-        TestHelpers.WithLoggingDisabled(() => _field.SetZoneCount(ZonePacker.MaxZones + 1));
+        TestHelpers.WithLoggingDisabled(() => _field.SetZoneSnapshot(null, ZonePacker.MaxZones + 1));
 
         Assert.AreEqual(0, _field.activeZoneCount);
     }
@@ -138,13 +142,14 @@ public class GrassFieldTests
     [Test]
     public void Init_WithoutZoneBuffer_LogsAndStaysUnbuilt()
     {
-        LogAssert.Expect(LogType.Error, "[GrassField] Borrow a live zone buffer with the 32-byte stride and capacity 1..64.");
+        string message = "[GrassField] Borrow a live zone buffer with the 32-byte stride and capacity 1..64.";
+        LogAssert.Expect(LogType.Error, message);
 
         _field.Init(oneCell, 1f, 0.5f, null, null, ZonePacker.MaxZones);
         _field.UpdateField(null, 0);
 
         Assert.IsFalse(_field.isReady);
-        Assert.AreEqual(0, _field.bladeCount);
+        Assert.AreEqual(0, _field.tuftCount);
     }
 
     [Test]
@@ -171,7 +176,7 @@ public class GrassFieldTests
         _field.Release();
 
         Assert.IsFalse(_field.isReady);
-        Assert.AreEqual(0, _field.bladeCount);
+        Assert.AreEqual(0, _field.tuftCount);
         Assert.AreEqual(0, _field.activeZoneCount);
     }
 
@@ -186,21 +191,14 @@ public class GrassFieldTests
         Camera camera = _go.AddComponent<Camera>();
         _borrowedZones = new GraphicsBuffer(GraphicsBuffer.Target.Structured, ZonePacker.MaxZones, Zone.Stride);
         _field.Init(new Rect(2f, -3f, 4f, 2f), 1f, 0.5f, camera, _borrowedZones, ZonePacker.MaxZones);
-        _field.bladeBudget = 80;
+        _field.tuftBudget = 80;
         SetAssets();
 
         _field.UpdateField(_borrowedZones, 3);
 
         Assert.IsTrue(_field.isReady);
-        Assert.AreEqual(72, _field.bladeCount); // 12 by 6, the widest grid of at most 80
+        Assert.AreEqual(72, _field.tuftCount); // 12 by 6 on the 4 by 2 area, the widest grid of at most 80
         Assert.AreEqual(3, _field.activeZoneCount);
-        Assert.AreEqual(new Vector3(4f, 0.505f, -2f), BladeBoundsCenter()); // area centre, surface plus root lift
-    }
-
-    Vector3 BladeBoundsCenter()
-    {
-        FieldInfo key = typeof(GrassField).GetField("_builtKey", BindingFlags.Instance | BindingFlags.NonPublic);
-        return ((GrassBuildKey)key.GetValue(_field)).CalculateBounds().center;
     }
 
     [Test]
@@ -214,20 +212,18 @@ public class GrassFieldTests
         BuildOneCellField();
 
         Assert.IsTrue(_field.isReady);
-        Assert.AreEqual(64, _field.bladeCount); // 8 by 8, the widest grid of at most 65
-        Assert.AreEqual("HL/Look/Primitive", _field.bladeDraw.material.shader.name);
-        Assert.AreSame(_field.bladeDraw.material, _field.socleDraw.material);
-        Assert.IsTrue(_field.bladeDraw.material.IsKeywordEnabled(GrassField.InstancedKeyword));
+        Assert.AreEqual(64, _field.tuftCount); // 8 by 8, the widest grid of at most 65
+        Assert.AreEqual("HL/Look/Primitive", _field.tuftDraw.material.shader.name);
+        Assert.AreSame(_field.tuftDraw.material, _field.socleDraw.material);
+        Assert.IsTrue(_field.tuftDraw.material.IsKeywordEnabled(instancedKeyword));
         uint[] data = new uint[5];
-        _field.bladeDraw.arguments.GetData(data);
+        _field.tuftDraw.arguments.GetData(data);
         Assert.AreEqual((uint)FacetedMeshes.TuftIndexCount, data[0]); // four sides
         _field.socleDraw.arguments.GetData(data);
         Assert.AreEqual((uint)FacetedMeshes.SocleIndexCount, data[0]); // eight fan triangles
-        Assert.AreEqual(6, OwnedBuffers().Count); // seeds, states, visible ids, tuft, socle and ring arguments
-        Assert.AreEqual(ShadowCastingMode.On, _field.bladeDraw.shadowCastingMode);
+        Assert.AreEqual(ShadowCastingMode.On, _field.tuftDraw.shadowCastingMode);
         Assert.AreEqual(ShadowCastingMode.Off, _field.socleDraw.shadowCastingMode);
-        Assert.AreEqual(ShadowCastingMode.Off, _field.ringDraw.shadowCastingMode);
-        Assert.AreEqual(1f, _field.bladeDraw.properties.GetFloat("_HLTuftLean"));
+        Assert.AreEqual(1f, _field.tuftDraw.properties.GetFloat("_HLTuftLean"));
         Assert.AreEqual(0f, _field.socleDraw.properties.GetFloat("_HLTuftLean"));
     }
 
@@ -238,8 +234,8 @@ public class GrassFieldTests
         Material plant = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
 
         Assert.AreSame(plant.shader, grass.shader);
-        Assert.IsTrue(grass.IsKeywordEnabled(GrassField.InstancedKeyword));
-        CollectionAssert.AreEquivalent(plant.shaderKeywords.Append(GrassField.InstancedKeyword), grass.shaderKeywords);
+        Assert.IsTrue(grass.IsKeywordEnabled(instancedKeyword));
+        CollectionAssert.AreEquivalent(plant.shaderKeywords.Append(instancedKeyword), grass.shaderKeywords);
         Assert.AreEqual(plant.enableInstancing, grass.enableInstancing);
         Assert.AreEqual(plant.renderQueue, grass.renderQueue);
         Shader shader = grass.shader;
@@ -277,12 +273,13 @@ public class GrassFieldTests
     {
         Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/HealRing.mat");
 
-        Assert.AreEqual(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/GrassRing.shader"), material.shader);
+        Shader ring = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/GrassRing.shader");
+        Assert.AreEqual(ring, material.shader);
         Assert.IsTrue(material.enableInstancing);
     }
 
     [Test]
-    public void OnDisable_BuiltField_ReleasesOwnedBuffersAndKeepsBorrowedZonesAndMaterials()
+    public void OnDisable_BuiltField_ReleasesItsDrawsAndKeepsBorrowedZonesAndMaterials()
     {
         if (!HasGraphicsDevice())
         {
@@ -292,9 +289,8 @@ public class GrassFieldTests
         for (int cycle = 0; cycle < 3; cycle++)
         {
             BuildOneCellField();
-            List<GraphicsBuffer> buffers = OwnedBuffers();
-            Material bladeMaterial = _field.bladeDraw.material;
-            Material ringMaterial = _field.ringDraw.material;
+            List<GraphicsBuffer> buffers = DrawBuffers();
+            Material tuftMaterial = _field.tuftDraw.material;
 
             // Runtime messages do not run on their own in EditMode
             TestHelpers.InvokePrivate(_field, "OnDisable");
@@ -303,23 +299,23 @@ public class GrassFieldTests
             {
                 Assert.IsFalse(buffer.IsValid());
             }
-            Assert.IsTrue(bladeMaterial != null);
-            Assert.IsTrue(ringMaterial != null);
+            Assert.IsTrue(tuftMaterial != null);
             Assert.IsTrue(_borrowedZones.IsValid());
             Assert.IsFalse(_field.isReady);
-            Assert.IsNull(_field.bladeDraw);
+            Assert.IsNull(_field.tuftDraw);
+            Assert.IsNull(_field.socleDraw);
         }
     }
 
     [Test]
-    public void OnDestroy_BuiltField_ReleasesOwnedResources()
+    public void OnDestroy_BuiltField_ReleasesItsDraws()
     {
         if (!HasGraphicsDevice())
         {
             Assert.Ignore("Requires a graphics device; run with -force-metal.");
         }
         BuildOneCellField();
-        List<GraphicsBuffer> buffers = OwnedBuffers();
+        List<GraphicsBuffer> buffers = DrawBuffers();
 
         TestHelpers.InvokePrivate(_field, "OnDestroy");
         Object.DestroyImmediate(_field);

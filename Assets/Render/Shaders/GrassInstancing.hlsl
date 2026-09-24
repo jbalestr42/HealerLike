@@ -14,8 +14,13 @@ void HLGrassInstancingSetup()
 #include "UnityIndirect.cginc"
 #include "GrassTuftData.hlsl"
 
-StructuredBuffer<HLBladeSeed> _HLBladeSeeds;
-StructuredBuffer<HLBladeState> _HLBladeStates;
+// A spike's half width at its base, narrowing to the second as it fully rises; GrassLayout.SpikeHalfWidth is
+// the first
+#define HL_SPIKE_HALF_WIDTH 0.065
+#define HL_SPIKE_RISEN_HALF_WIDTH 0.045
+
+StructuredBuffer<HLTuftSeed> _HLBladeSeeds;
+StructuredBuffer<HLTuftState> _HLBladeStates;
 StructuredBuffer<uint> _HLVisibleBladeIDs;
 float _HLBladeHeightScale;
 // 1 on the tuft draw, 0 on the socle draw, which lies flat on the ground
@@ -42,17 +47,19 @@ float3 HLYawGrassTuft(float3 v, float yaw)
 // positionOS and normalOS are the unit tuft or socle of GrassTuft: base on y 0, apex at y 1, base width 1.
 // The tuft moves as a rigid body: scale, yaw, one tilt about its root, then the root position.
 // GrassTuft.Place and PlaceNormal mirror this on the CPU.
-void HLPlaceGrassBlade(float3 positionOS, float3 normalOS, uint instanceID, out float3 positionWS, out float3 normalWS)
+void HLPlaceGrassTuft(float3 positionOS, float3 normalOS, uint instanceID, out float3 positionWS,
+                      out float3 normalWS)
 {
     InitIndirectDrawArgs(0);
-    uint bladeID = _HLVisibleBladeIDs[GetIndirectInstanceID(instanceID)];
-    HLBladeSeed seed = _HLBladeSeeds[bladeID];
-    HLBladeState state = _HLBladeStates[bladeID];
+    uint tuftID = _HLVisibleBladeIDs[GetIndirectInstanceID(instanceID)];
+    HLTuftSeed seed = _HLBladeSeeds[tuftID];
+    HLTuftState state = _HLBladeStates[tuftID];
 
     float spike = step(0.5, state.leanHeightSpike.w);
     float heightScale = lerp(_HLBladeHeightScale, 1.0, spike);
     float height = max(1e-4, seed.heightWidthLean.x * state.leanHeightSpike.z * heightScale);
-    float spikeWidth = 2.0 * lerp(0.065, 0.045, saturate(2.0 * state.leanHeightSpike.w - 1.0));
+    float risen = saturate(2.0 * state.leanHeightSpike.w - 1.0);
+    float spikeWidth = 2.0 * lerp(HL_SPIKE_HALF_WIDTH, HL_SPIKE_RISEN_HALF_WIDTH, risen);
     float width = lerp(seed.heightWidthLean.y, spikeWidth, spike);
     float2 lean = state.leanHeightSpike.xy * _HLTuftLean;
     float yaw = seed.positionYaw.w;
