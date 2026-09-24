@@ -205,6 +205,28 @@ public class RenderManagerTests
     }
 
     [Test]
+    public void OnEntitySpawned_ModelWithTheHUD_KeepsTheEffectIconsShowing()
+    {
+        _manager.Init(_entityManager, _player);
+        Entity entity = CreateEntity(_gameGo.transform, Entity.EntityType.Player, out Renderer modelRenderer);
+        entity.data = AssetDatabase.LoadAssetAtPath<EntityData>("Assets/Data/Entities/NormalEntity/NormalEntity.asset");
+        GameObject hudGo = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/EntityHUD.prefab"),
+                                              entity.model.transform);
+        BuffIconBar bar = hudGo.GetComponentInChildren<BuffIconBar>(true);
+        Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/UI/BuffIcon.prefab"), bar.transform);
+
+        _entityManager.OnEntitySpawned.Invoke(entity);
+
+        Assert.IsFalse(modelRenderer.enabled);
+        Assert.IsTrue(hudGo.GetComponentInChildren<Canvas>(true).enabled);
+        Assert.AreEqual(0, bar.GetComponentsInChildren<Renderer>(true).Length); // the icons draw through the canvas
+        foreach (Behaviour behaviour in bar.GetComponentsInChildren<Behaviour>(true))
+        {
+            Assert.IsTrue(behaviour.enabled, behaviour.GetType().Name);
+        }
+    }
+
+    [Test]
     public void OnEntitySpawned_Enemy_GetsTheStoneHost()
     {
         _manager.Init(_entityManager, _player);

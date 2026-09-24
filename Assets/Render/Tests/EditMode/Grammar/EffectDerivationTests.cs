@@ -47,7 +47,7 @@ public class EffectDerivationTests
     [TestCase("EntityItems/ConclaveItem/New Buff Handler Factory 1", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)] // Damage Mul +0.2
     [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory 1", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)] // Damage +10, AttackRate Mul -0.5
     [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
-    [TestCase("EntityItems/IncreaseDamagePerHitItem/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.Once, 0f)] // Vulnerability +0.01
+    [TestCase("EntityItems/IncreaseDamagePerHitItem/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.ForDuration, 0f)] // Infinite Vulnerability +0.01
     [TestCase("EntityItems/IncreaseDamageWithProjectileDistanceItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
     [TestCase("EntityItems/MultipleShootItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
     [TestCase("EntityItems/PoisonItem/BuffHandlerFactory", false, EffectFamily.Rot, EffectTempo.PerPeriod, 1.5f)]
