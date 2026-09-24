@@ -331,7 +331,6 @@ public class RenderManagerTests
         Assert.AreEqual(DeliveryStyle.Direct, observer.deliveryStyle); // Homing at speed 15
         Assert.IsNotNull(projectile.GetComponent<StoneProjectileImpactBridge>());
         Assert.IsNotNull(projectile.GetComponent<LaunchWave>());
-        Assert.IsNotNull(projectile.GetComponent<StageLaunchGust>());
         Assert.IsNull(projectile.GetComponent<ChainContactVisual>());
     }
 
