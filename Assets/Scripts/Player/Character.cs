@@ -24,6 +24,10 @@ public class Character : MonoBehaviour, IBuffable
     InventoryHandler _inventoryHandler = new InventoryHandler();
     public InventoryHandler inventoryHandler => _inventoryHandler;
 
+    // Skills ignore their validators (no cost, no cooldown)
+    bool _hasUnrestrictedSkills;
+    public bool hasUnrestrictedSkills { get { return _hasUnrestrictedSkills; } set { _hasUnrestrictedSkills = value; } }
+
     public void Init()
     {
         _buffManager = GetComponent<BuffManager>();
@@ -50,7 +54,7 @@ public class Character : MonoBehaviour, IBuffable
             UseCharacterSkillButton skillButton = UIManager.instance.GetView<GameView>(ViewType.Game).characterSkillInventory.Create();
             CharacterSkillSlot skillSlot = gameObject.AddComponent<CharacterSkillSlot>();
             skillButton.character = this;
-            skillSlot.Init(skillFactory.Create(), skillButton);
+            skillSlot.Init(skillFactory.Create(), skillButton, !_hasUnrestrictedSkills);
             _skillSlots.Add(skillSlot);
         }
 

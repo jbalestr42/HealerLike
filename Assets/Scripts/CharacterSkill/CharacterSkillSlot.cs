@@ -14,7 +14,7 @@ public class CharacterSkillSlot : MonoBehaviour
     ACharacterSkill _skill;
     UseCharacterSkillButton _skillButton;
 
-    public void Init(ACharacterSkill skill, UseCharacterSkillButton skillButton)
+    public void Init(ACharacterSkill skill, UseCharacterSkillButton skillButton, bool useValidators = true)
     {
         _skill = skill;
         _data = _skill.GetData();
@@ -23,11 +23,14 @@ public class CharacterSkillSlot : MonoBehaviour
 
         _skillButton.button.onClick.AddListener(UseSkill);
 
-        foreach (ACharacterSkillValidatorFactory validatorFactory in data.validators)
+        if (useValidators)
         {
-            ACharacterSkillValidator validator = validatorFactory.Create();
-            validator.Init(_skillButton, gameObject);
-            _validators.Add(validator);
+            foreach (ACharacterSkillValidatorFactory validatorFactory in data.validators)
+            {
+                ACharacterSkillValidator validator = validatorFactory.Create();
+                validator.Init(_skillButton, gameObject);
+                _validators.Add(validator);
+            }
         }
 
         _skillButton.SetName(_data.name);

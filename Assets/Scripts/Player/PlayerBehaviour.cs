@@ -36,27 +36,24 @@ public class PlayerBehaviour : Singleton<PlayerBehaviour>
         _skillInputs.ForEach(input => input.asset.Enable());
     }
 
-    public void Init()
+    public void Init(CharacterData characterData)
     {
         gold = DataManager.instance.data.gold;
 
-        _character.data = DataManager.instance.GetRandomCharacter();
+        _character.data = characterData;
         _character.Init();
 
-        for (int i = 0; i < character.skillSlots.Count; i++)
+        // Skills without an input are still usable with their button
+        if (_skillInputs.Count < character.skillSlots.Count)
         {
-            if (_skillInputs.Count >= character.skillSlots.Count)
-            {
-                var skillSlot = character.skillSlots[i];
-                var input = _skillInputs[i];
+            Debug.LogWarning($"Not enough inputs: only the first {_skillInputs.Count} of {character.skillSlots.Count} skills have a shortcut");
+        }
+        for (int i = 0; i < Mathf.Min(_skillInputs.Count, character.skillSlots.Count); i++)
+        {
+            var skillSlot = character.skillSlots[i];
+            var input = _skillInputs[i];
 
-                input.action.started += (InputAction.CallbackContext ctx) => skillSlot.UseSkill();
-            }
-            else
-            {
-                Debug.LogError("Not Enough inputs");
-                break;
-            }
+            input.action.started += (InputAction.CallbackContext ctx) => skillSlot.UseSkill();
         }
 
         OnCharacterInit.Invoke(_character);

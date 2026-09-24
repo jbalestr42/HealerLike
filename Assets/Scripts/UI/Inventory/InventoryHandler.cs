@@ -30,6 +30,17 @@ public class InventoryHandler
         OnItemRemoved.Invoke(itemData);
     }
 
+    // Lowest inventory index not used by any item
+    public int GetFirstFreeIndex()
+    {
+        int index = 0;
+        while (_items.Exists(itemData => itemData.inventoryIndex == index))
+        {
+            index++;
+        }
+        return index;
+    }
+
     public void TransfertItem(AItem item, int inventoryIndex, InventoryHandler inventoryHandler)
     {
         inventoryHandler.RemoveItem(item);

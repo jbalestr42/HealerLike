@@ -61,6 +61,11 @@ public class ResourceAttribute : MonoBehaviour
         }
     }
 
+    public void Refill()
+    {
+        _value = _max.Value;
+    }
+
     public void AddResourceModifier(ResourceModifier resourceModifier)
     {
         _resourceModifiers.Add(resourceModifier);
