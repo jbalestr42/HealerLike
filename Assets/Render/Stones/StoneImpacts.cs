@@ -156,7 +156,7 @@ namespace HealerLike.Render.Stones
         uint NextSeed()
         {
             _hitIndex++;
-            return StoneSeed.ForPart(_seed, _hitIndex + hitSalt);
+            return SeededRandom.ForPart(_seed, _hitIndex + hitSalt);
         }
     }
 }

@@ -82,8 +82,7 @@ namespace HealerLike.Render.Stones
                 Bounds world = part.GetComponent<Renderer>().bounds;
                 for (int corner = 0; corner < 8; corner++)
                 {
-                    Vector3 sign = new Vector3(CornerSign(corner, 1), CornerSign(corner, 2), CornerSign(corner, 4));
-                    Vector3 point = space.InverseTransformPoint(world.center + Vector3.Scale(world.extents, sign));
+                    Vector3 point = space.InverseTransformPoint(RenderMath.Corner(world, corner));
                     if (isEmpty)
                     {
                         bounds = new Bounds(point, Vector3.zero);
@@ -96,16 +95,6 @@ namespace HealerLike.Render.Stones
                 }
             }
             return bounds;
-        }
-
-        // -1 or 1 along one axis of a box corner, the axis picked by its bit
-        static float CornerSign(int corner, int bit)
-        {
-            if ((corner & bit) == 0)
-            {
-                return -1f;
-            }
-            return 1f;
         }
     }
 }

@@ -26,5 +26,32 @@ namespace HealerLike.Render
         {
             return float.IsFinite(value) && value > 0f;
         }
+
+        // The sign of each axis for one of the eight corners of a box, bit 0 for x, 1 for y, 2 for z
+        public static Vector3 CornerSign(int corner)
+        {
+            Vector3 sign = -Vector3.one;
+            if ((corner & 1) != 0)
+            {
+                sign.x = 1f;
+            }
+
+            if ((corner & 2) != 0)
+            {
+                sign.y = 1f;
+            }
+
+            if ((corner & 4) != 0)
+            {
+                sign.z = 1f;
+            }
+
+            return sign;
+        }
+
+        public static Vector3 Corner(Bounds box, int corner)
+        {
+            return box.center + Vector3.Scale(box.extents, CornerSign(corner));
+        }
     }
 }

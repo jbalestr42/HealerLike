@@ -181,21 +181,6 @@ public class EnvironmentScatterTests
 
         Assert.That(Quaternion.Angle(before, cap.localRotation), Is.GreaterThan(0.001f));
     }
-
-    [Test]
-    public void VaryColor_Seed_IsRepeatableAndBounded()
-    {
-        Color basis = new Color(0.4f, 0.7f, 0.3f);
-
-        Color a = EnvironmentScatter.VaryColor(basis, 5);
-
-        Assert.AreEqual(a, EnvironmentScatter.VaryColor(basis, 5));
-        Assert.AreNotEqual(a, EnvironmentScatter.VaryColor(basis, 99));
-        Color.RGBToHSV(basis, out float h, out _, out float v);
-        Color.RGBToHSV(a, out float h2, out _, out float v2);
-        Assert.That(Mathf.Abs(Mathf.DeltaAngle(h * 360f, h2 * 360f)), Is.LessThanOrEqualTo(6.001f));
-        Assert.That(v2 / v, Is.InRange(0.9199f, 1.0801f));
-    }
 }
 
 }

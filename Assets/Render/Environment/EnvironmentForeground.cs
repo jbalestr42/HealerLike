@@ -90,8 +90,8 @@ namespace HealerLike.Render.Environment
                 }
             }
 
-            uint baseSeed = StoneSeed.ForPart((uint)seed, Salt);
-            StoneRandom random = new StoneRandom(baseSeed);
+            uint baseSeed = SeededRandom.ForPart((uint)seed, Salt);
+            SeededRandom random = new SeededRandom(baseSeed);
             for (int side = 0; side < 2; side++)
             {
                 float outward = side == 0 ? -1f : 1f;
@@ -137,7 +137,7 @@ namespace HealerLike.Render.Environment
                         scale = scale,
                         radius = radius,
                         yaw = random.Range(0f, 360f),
-                        seed = StoneSeed.ForPart(baseSeed, (uint)(side * 256 + n + 1))
+                        seed = SeededRandom.ForPart(baseSeed, (uint)(side * 256 + n + 1))
                     });
                 }
             }
@@ -173,7 +173,7 @@ namespace HealerLike.Render.Environment
             pivot.SetParent(root, true);
             pivot.position = item.position;
             pivot.rotation = Quaternion.Euler(0f, item.yaw, 0f);
-            StoneRandom random = new StoneRandom(item.seed);
+            SeededRandom random = new SeededRandom(item.seed);
             if (item.kind == ForegroundKind.Boulder)
             {
                 Mesh mesh = CreateStone(item.seed, StonePresets.Boulder, "ForegroundStone");

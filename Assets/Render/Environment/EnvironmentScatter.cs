@@ -9,9 +9,6 @@ namespace HealerLike.Render.Environment
     // Seeded ring of stones and plants around the grid, never inside it, built once
     public class EnvironmentScatter : AEnvironmentSpawner
     {
-        // Colour jitter per part: hue in degrees either way, value as a factor
-        static readonly float hueJitter = 6f;
-        static readonly Vector2 valueJitter = new Vector2(0.92f, 1.08f);
         // Counts are (fewest, extra up to): a cairn stacks two to four stones
         static readonly Vector2Int cairnLayers = new Vector2Int(2, 3);
         // Cairn: each stone smaller than the one below, off centre and resting partly inside it
@@ -98,22 +95,13 @@ namespace HealerLike.Render.Environment
             }
         }
 
-        public static Color VaryColor(Color colour, uint seed)
-        {
-            StoneRandom random = new StoneRandom(seed);
-            Color.RGBToHSV(colour, out float h, out float s, out float v);
-            float hue = Mathf.Repeat(h + random.Range(-hueJitter, hueJitter) / 360f, 1f);
-            float value = Mathf.Clamp01(v * random.Range(valueJitter.x, valueJitter.y));
-            return Color.HSVToRGB(hue, s, value);
-        }
-
         void Spawn(EnvironmentItem item)
         {
             Transform pivot = new GameObject(item.kind.ToString()).transform;
             pivot.SetParent(root, false);
             pivot.position = item.position;
             pivot.rotation = Quaternion.Euler(0f, item.yaw, 0f);
-            StoneRandom random = new StoneRandom(item.seed);
+            SeededRandom random = new SeededRandom(item.seed);
             float s = item.scale;
             _colourSeed = item.seed;
             switch (item.kind)
@@ -144,7 +132,7 @@ namespace HealerLike.Render.Environment
         }
 
         // Two to four stones shrinking upward, each resting on the one below
-        void SpawnCairn(Transform pivot, EnvironmentItem item, StoneRandom random, float s)
+        void SpawnCairn(Transform pivot, EnvironmentItem item, SeededRandom random, float s)
         {
             int layers = cairnLayers.x + (int)(random.Next01() * cairnLayers.y);
             float y = 0f;
@@ -153,13 +141,13 @@ namespace HealerLike.Render.Environment
                 float k = s * (1f - i * cairnShrink);
                 float x = random.Range(-cairnOffset, cairnOffset) * s;
                 float z = random.Range(-cairnOffset, cairnOffset) * s;
-                uint seed = StoneSeed.ForPart(item.seed, (uint)i + 1);
+                uint seed = SeededRandom.ForPart(item.seed, (uint)i + 1);
                 Vector3 part = Stone(pivot, seed, StonePresets.Cairn, new Vector3(x, y, z), k, item.paletteIndex + i);
                 y += part.y * cairnRest;
             }
         }
 
-        void SpawnMushroomTree(Transform pivot, EnvironmentItem item, StoneRandom random, float s)
+        void SpawnMushroomTree(Transform pivot, EnvironmentItem item, SeededRandom random, float s)
         {
             float stem = random.Range(mushroomStemHeight.x, mushroomStemHeight.y) * s;
             Vector3 stemScale = new Vector3(mushroomStemWidth * s, stem, mushroomStemWidth * s);
@@ -183,7 +171,7 @@ namespace HealerLike.Render.Environment
             _sway.Add(cap, pivot, item.seed + 1, mushroomNodDegrees, 0f);
         }
 
-        void SpawnSpiralFern(Transform pivot, EnvironmentItem item, StoneRandom random, float s)
+        void SpawnSpiralFern(Transform pivot, EnvironmentItem item, SeededRandom random, float s)
         {
             int fronds = fernFronds.x + (int)(random.Next01() * fernFronds.y);
             for (int f = 0; f < fronds; f++)
@@ -214,7 +202,7 @@ namespace HealerLike.Render.Environment
             _sway.Add(pivot, pivot, item.seed, fernSway * s, 0f);
         }
 
-        void SpawnBladeRosette(Transform pivot, EnvironmentItem item, StoneRandom random, float s)
+        void SpawnBladeRosette(Transform pivot, EnvironmentItem item, SeededRandom random, float s)
         {
             int leaves = rosetteLeaves.x + (int)(random.Next01() * rosetteLeaves.y);
             for (int i = 0; i < leaves; i++)
@@ -230,7 +218,7 @@ namespace HealerLike.Render.Environment
             _sway.Add(pivot, pivot, item.seed, rosetteSway * s, 0f);
         }
 
-        void SpawnSphereCluster(Transform pivot, EnvironmentItem item, StoneRandom random, float s)
+        void SpawnSphereCluster(Transform pivot, EnvironmentItem item, SeededRandom random, float s)
         {
             int stems = clusterStems.x + (int)(random.Next01() * clusterStems.y);
             for (int i = 0; i < stems; i++)
@@ -250,7 +238,7 @@ namespace HealerLike.Render.Environment
 
         void PlantPart(Transform parent, Mesh mesh, Vector3 bottom, Quaternion rotation, Vector3 scale, Color colour)
         {
-            Part(parent, mesh, _plantMaterial, bottom, rotation, scale, VaryColor(colour, _colourSeed), mesh.name);
+            Part(parent, mesh, _plantMaterial, bottom, rotation, scale, ColourJitter.VaryScenery(colour, _colourSeed), mesh.name);
         }
 
         // Scatter plants are plants, scatter rocks stones; each part varies its colour from the role's
@@ -290,7 +278,7 @@ namespace HealerLike.Render.Environment
         {
             Mesh mesh = CreateStone(seed, shape, "EnvironmentStone");
             Vector3 sunkBottom = bottom - Vector3.up * (mesh.bounds.size.y * scale * stoneSink);
-            Color colour = VaryColor(StoneColour(palette), _colourSeed);
+            Color colour = ColourJitter.VaryScenery(StoneColour(palette), _colourSeed);
             Vector3 size = Vector3.one * scale;
             Part(parent, mesh, _stoneMaterial, sunkBottom, Quaternion.identity, size, colour, "Stone");
             return Vector3.Scale(mesh.bounds.size, size);

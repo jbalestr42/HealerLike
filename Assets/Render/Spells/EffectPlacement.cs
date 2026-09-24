@@ -222,21 +222,9 @@ namespace HealerLike.Render.Spells
             Bounds world = new Bounds(matrix.MultiplyPoint3x4(local.center), Vector3.zero);
             for (int i = 0; i < 8; i++)
             {
-                Vector3 sign = new Vector3(CornerSign(i, 1), CornerSign(i, 2), CornerSign(i, 4));
-                Vector3 corner = local.center + Vector3.Scale(local.extents, sign);
-                world.Encapsulate(matrix.MultiplyPoint3x4(corner));
+                world.Encapsulate(matrix.MultiplyPoint3x4(RenderMath.Corner(local, i)));
             }
             return world;
-        }
-
-        // -1 or 1 along one axis of a box corner, the axis picked by its bit
-        static float CornerSign(int corner, int bit)
-        {
-            if ((corner & bit) == 0)
-            {
-                return -1f;
-            }
-            return 1f;
         }
 
         static bool IsValid(EffectAnchors anchors)

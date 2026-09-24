@@ -79,8 +79,8 @@ namespace HealerLike.Render.Environment
                 return new List<RidgeItem>();
             }
 
-            uint baseSeed = StoneSeed.ForPart((uint)seed, Salt);
-            StoneRandom random = new StoneRandom(baseSeed);
+            uint baseSeed = SeededRandom.ForPart((uint)seed, Salt);
+            SeededRandom random = new SeededRandom(baseSeed);
             int monoliths = 8 + (int)(random.Next01() * 5f);
             int mushrooms = 8 + (int)(random.Next01() * 5f);
             int total = monoliths + mushrooms;
@@ -109,7 +109,7 @@ namespace HealerLike.Render.Environment
                 {
                     kind = kinds[i],
                     yaw = random.Range(0f, 360f),
-                    seed = StoneSeed.ForPart(baseSeed, (uint)i + 1)
+                    seed = SeededRandom.ForPart(baseSeed, (uint)i + 1)
                 };
                 if (item.kind == RidgeKind.Monolith)
                 {

@@ -52,7 +52,7 @@ namespace HealerLike.Render.Environment
         // The pivot turns; the anchor is where its distance to the camera is measured from
         public void Add(Transform pivot, Transform anchor, uint seed, float degrees, float uncurl)
         {
-            StoneRandom random = new StoneRandom(seed);
+            SeededRandom random = new SeededRandom(seed);
             _motions.Add(new Motion
             {
                 pivot = pivot,
