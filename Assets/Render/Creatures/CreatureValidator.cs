@@ -5,8 +5,8 @@ namespace HealerLike.Render.Creatures
 {
     public static class CreatureValidator
     {
-        // Roots reach at most the healer's 2.1 body units, a little over one cell, plus their thickness
-        public static readonly float MaxRootReach = 1.25f;
+        // Roots reach at most the long band, 2.1 body units at a plant's one-cell body, plus their thickness
+        public static readonly float MaxRootReach = 2.2f;
 
         public static bool TryValidate(CreatureRecipe data, out string error)
         {

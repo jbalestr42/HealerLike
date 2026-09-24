@@ -2,7 +2,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using HealerLike.Render.Creatures;
 using HealerLike.Render.Grass;
+using HealerLike.Render.Stage;
+using HealerLike.Render.Zones;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.Rendering;
@@ -131,7 +134,7 @@ public class LookShaderTests
             Assert.That(material.FindPass(pass), Is.GreaterThanOrEqualTo(0), pass);
         }
 
-        Assert.That(shader.GetPropertyCount(), Is.EqualTo(6));
+        Assert.That(shader.GetPropertyCount(), Is.EqualTo(8));
         Assert.That(shader.GetPropertyName(3), Is.EqualTo("_BaseColor"));
         if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null)
         {
@@ -329,6 +332,92 @@ public class LookShaderTests
         }
 
         AssertNoErrors(shader);
+    }
+
+    [Test]
+    public void ShadeControls_ShippedMaterials_BodiesAndGrassShiftStonesKeepTheGlobals()
+    {
+        Material body = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
+        Material grass = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat");
+        Material stone = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Stone.mat");
+
+        Assert.That(body.GetFloat("_HLToonThresholdOffset"), Is.GreaterThan(0f));
+        Assert.That(body.GetColor("_HLShadeTint").a, Is.GreaterThan(0f));
+        Assert.That(grass.GetColor("_HLShadeTint").a, Is.GreaterThan(0f));
+        Assert.That(stone.GetFloat("_HLToonThresholdOffset"), Is.Zero);
+        Assert.That(stone.GetColor("_HLShadeTint").a, Is.Zero); // zero strength keeps the global tint
+    }
+
+    [Test]
+    public void Render_UnitSphereUnderKeyLight_BodyMaterialSplitsAboutHalf()
+    {
+        if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+        {
+            Assert.Ignore("Requires graphics readback");
+        }
+
+        Material body = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
+        BuildKeyLightScene(6f, 25f);
+        CreateKeyLightSphere(body);
+
+        RenderKeyLightScene();
+
+        float litShare = LitShare(_texture);
+        Assert.That(litShare, Is.InRange(0.45f, 0.6f));
+        Debug.Log("[LookShaderTests] Body sphere lit share " + litShare.ToString("F3"));
+    }
+
+    [Test]
+    public void Render_FlatGrassPatchUnderKeyLight_ShadeShareStaysUnderHalf()
+    {
+        if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null || !SystemInfo.supportsComputeShaders
+            || !SystemInfo.supportsIndirectArgumentsBuffer)
+        {
+            Assert.Ignore("Requires compute, indirect draws and graphics readback");
+        }
+
+        // The grass teal is too green to tell from the lit blades, so a copy paints its shade magenta
+        Material marked = Track(new Material(AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat")));
+        marked.SetColor("_HLShadeTint", new Color(1f, 0f, 1f, 1f));
+        BuildKeyLightScene(20f, 20f);
+        CreateGrassPatch(marked);
+
+        RenderKeyLightScene();
+
+        float shadeShare = ShadeShare(_texture);
+        Assert.That(shadeShare, Is.GreaterThan(0.1f));
+        Assert.That(shadeShare, Is.LessThan(0.5f));
+        Debug.Log("[LookShaderTests] Grass shade share " + shadeShare.ToString("F3"));
+    }
+
+    [Test]
+    public void Render_StoneShadowOnGrass_ConvergesToTheGlobalUltramarine()
+    {
+        if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null || !SystemInfo.supportsComputeShaders
+            || !SystemInfo.supportsIndirectArgumentsBuffer)
+        {
+            Assert.Ignore("Requires compute, indirect draws and graphics readback");
+        }
+
+        BuildKeyLightScene(20f, 20f);
+        CreateGrassPatch(AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat"));
+        GameObject stone = CreateKeyLightSphere(AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Stone.mat"));
+        stone.transform.position = new Vector3(0.5f, 1.2f, 0.5f);
+        stone.transform.localScale = Vector3.one * 1.4f;
+        // Where the stone's centre falls on the carpet, along the key light
+        Vector3 toLight = StageKeyLight.KeyDirection.normalized;
+        Vector3 shadowCentre = stone.transform.position - toLight * ((stone.transform.position.y - 0.2f) / toLight.y);
+
+        RenderKeyLightScene();
+
+        Vector3 viewport = _camera.WorldToViewportPoint(shadowCentre);
+        Color32 shadow = MedianColour(_texture, Mathf.RoundToInt(viewport.x * 256f), Mathf.RoundToInt(viewport.y * 256f), 4);
+        Color32 study = new Color32(19, 58, 113, 255); // #133a71, the 04 boulder's shadow
+        Assert.That(shadow.b - shadow.g, Is.GreaterThan(30), "The grass teal must stay out of cast shadow");
+        Assert.That(Mathf.Abs(shadow.r - study.r), Is.LessThanOrEqualTo(24));
+        Assert.That(Mathf.Abs(shadow.g - study.g), Is.LessThanOrEqualTo(24));
+        Assert.That(Mathf.Abs(shadow.b - study.b), Is.LessThanOrEqualTo(24));
+        Debug.Log("[LookShaderTests] Stone shadow on grass " + shadow);
     }
 
     [Test]
@@ -635,6 +724,161 @@ public class LookShaderTests
         Assert.That(widths[2], Is.InRange(2, 3), "two pixels left " + label);
         Assert.That(widths[3], Is.InRange(2, 3), "two pixels right " + label);
         Debug.Log("[LookShaderTests] Beauty outline " + label + ": " + string.Join(",", widths));
+    }
+
+    // A square view down the stage pitch at the origin, lit by the stage key light, on a white clear
+    void BuildKeyLightScene(float fieldOfView, float distance)
+    {
+        foreach (LookController controller in Object.FindObjectsByType<LookController>(FindObjectsSortMode.None))
+        {
+            if (controller.enabled)
+            {
+                controller.enabled = false;
+                _disabledLooks.Add(controller);
+            }
+        }
+
+        RenderPipelineAsset pipeline = Track(Object.Instantiate(AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(
+            "Assets/Settings/Very High_PipelineAsset.asset")));
+        SerializedObject pipelineData = new SerializedObject(pipeline);
+        SerializedProperty rendererProperty = pipelineData.FindProperty("m_RendererDataList").GetArrayElementAtIndex(0);
+        Object renderer = Track(Object.Instantiate(rendererProperty.objectReferenceValue));
+        rendererProperty.objectReferenceValue = renderer;
+        pipelineData.ApplyModifiedPropertiesWithoutUndo();
+        SerializedObject rendererData = new SerializedObject(renderer);
+        rendererData.FindProperty("m_RendererFeatures").arraySize = 0;
+        rendererData.ApplyModifiedPropertiesWithoutUndo();
+        QualitySettings.renderPipeline = pipeline;
+
+        _camera = Track(new GameObject("Key light camera")).AddComponent<Camera>();
+        _camera.cullingMask = 1 << 30;
+        _camera.fieldOfView = fieldOfView;
+        _camera.aspect = 1f;
+        _camera.nearClipPlane = 0.1f;
+        _camera.farClipPlane = 100f;
+        _camera.transform.rotation = Quaternion.Euler(StageCalibration.PortraitPitch, 0f, 0f);
+        _camera.transform.position = -_camera.transform.forward * distance;
+        _camera.clearFlags = CameraClearFlags.SolidColor;
+        _camera.backgroundColor = Color.white;
+        Light light = Track(new GameObject("Key light")).AddComponent<Light>();
+        light.type = LightType.Directional;
+        light.intensity = 1f;
+        light.shadows = LightShadows.Soft;
+        light.transform.rotation = StageKeyLight.Aim(StageKeyLight.KeyDirection);
+        RenderSettings.sun = light;
+        _look = Track(new GameObject("Key light look")).AddComponent<LookController>();
+        _settings = LookSettings.Default;
+        _settings.fogStart = 90f;
+        _settings.fogEnd = 99f;
+        _look.settings = _settings;
+        _target = Track(new RenderTexture(256, 256, 24, RenderTextureFormat.ARGB32));
+        _target.Create();
+        _texture = Track(new Texture2D(256, 256, TextureFormat.RGB24, false));
+    }
+
+    GameObject CreateKeyLightSphere(Material material)
+    {
+        GameObject sphere = Track(GameObject.CreatePrimitive(PrimitiveType.Sphere));
+        sphere.name = "Key light sphere";
+        sphere.layer = 30;
+        sphere.GetComponent<Renderer>().sharedMaterial = material;
+        return sphere;
+    }
+
+    // An eight by eight patch of the real field, its tufts drawn with the given blade material
+    GrassField CreateGrassPatch(Material bladeMaterial)
+    {
+        ZoneRegistry registry = Track(new GameObject("Key light zones")).AddComponent<ZoneRegistry>();
+        registry.Init();
+        GrassField field = Track(new GameObject("Key light grass")).AddComponent<GrassField>();
+        field.gameObject.layer = 30;
+        field.Init(new Rect(-4f, -4f, 8f, 8f), 1f, 0f, _camera, registry.buffer, GrassField.MaxZones);
+        field.bladeBudget = 16384;
+        TestHelpers.InvokePrivate(field, "OnEnable");
+        TestHelpers.SetPrivateField(field, "_meshes", AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset"));
+        TestHelpers.SetPrivateField(field, "_updateGrass", AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/Render/Shaders/Grass.compute"));
+        TestHelpers.SetPrivateField(field, "_lookMaterial", bladeMaterial);
+        TestHelpers.SetPrivateField(field, "_ringMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/HealRing.mat"));
+        registry.PublishFrame(0f);
+        field.UpdateField(registry);
+        return field;
+    }
+
+    void RenderKeyLightScene()
+    {
+        _look.ApplyGlobals();
+        RenderPipeline.SubmitRenderRequest(_camera, new RenderPipeline.StandardRequest { destination = _target });
+        RenderTexture.active = _target;
+        _texture.ReadPixels(new Rect(0f, 0f, 256f, 256f), 0, 0);
+        _texture.Apply();
+    }
+
+    // Lit pixels are the green body colour; the teal shade and the ultramarine cast shadow are bluer than green
+    static float LitShare(Texture2D texture)
+    {
+        int covered = 0;
+        int lit = 0;
+        foreach (Color32 pixel in texture.GetPixels32())
+        {
+            if (pixel.r == 255 && pixel.g == 255 && pixel.b == 255)
+            {
+                continue;
+            }
+
+            covered++;
+            if (pixel.g > pixel.r && pixel.g > pixel.b)
+            {
+                lit++;
+            }
+        }
+
+        return covered == 0 ? 0f : (float)lit / covered;
+    }
+
+    // Channel by channel median of the square of the given half size around a pixel
+    static Color32 MedianColour(Texture2D texture, int x, int y, int halfSize)
+    {
+        List<byte> reds = new List<byte>();
+        List<byte> greens = new List<byte>();
+        List<byte> blues = new List<byte>();
+        for (int dy = -halfSize; dy <= halfSize; dy++)
+        {
+            for (int dx = -halfSize; dx <= halfSize; dx++)
+            {
+                Color32 pixel = texture.GetPixel(x + dx, y + dy);
+                reds.Add(pixel.r);
+                greens.Add(pixel.g);
+                blues.Add(pixel.b);
+            }
+        }
+
+        reds.Sort();
+        greens.Sort();
+        blues.Sort();
+        int middle = reds.Count / 2;
+        return new Color32(reds[middle], greens[middle], blues[middle], 255);
+    }
+
+    // Shade pixels carry the magenta marker, so they are redder than green
+    static float ShadeShare(Texture2D texture)
+    {
+        int covered = 0;
+        int shade = 0;
+        foreach (Color32 pixel in texture.GetPixels32())
+        {
+            if (pixel.r == 255 && pixel.g == 255 && pixel.b == 255)
+            {
+                continue;
+            }
+
+            covered++;
+            if (pixel.r > pixel.g)
+            {
+                shade++;
+            }
+        }
+
+        return covered == 0 ? 0f : (float)shade / covered;
     }
 
     // Draws the quad through the forward pass and reads back the centre pixel
