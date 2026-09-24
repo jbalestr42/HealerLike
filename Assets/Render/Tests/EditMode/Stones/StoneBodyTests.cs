@@ -1,5 +1,6 @@
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
+using HealerLike.Render.Stage;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -30,7 +31,6 @@ public class StoneBodyTests
 
     GameObject _owner;
     GameObject _source;
-    GameObject _projectile;
     GameObject _fxObject;
     ResourceAttribute _health;
     CreatureRecipe _recipe;
@@ -59,14 +59,14 @@ public class StoneBodyTests
     {
         _owner = new GameObject("Stone");
         _source = new GameObject("Source");
-        _projectile = new GameObject("Projectile");
         _health = TestHelpers.CreateResourceAttribute(_owner, AttributeType.HealthMax, 100);
         TestHelpers.CreateAttributeManager(_source);
         _fx = RenderTestAssets.CreateStoneEffects();
         _fxObject = _fx.gameObject;
         _recipe = RenderTestAssets.CreateStoneRecipe();
         _material = new Material(RenderTestAssets.LoadLookMaterial());
-        _body = RenderTestAssets.CreateStoneBody(_owner, RenderTestAssets.CreateStoneEntity(_owner, _health), _recipe, _material);
+        Entity entity = RenderTestAssets.CreateStoneEntity(_owner, _health);
+        _body = RenderTestAssets.CreateStoneBody(_owner, entity, _recipe, _material);
         _body.Init(_health, 15, _fx);
     }
 
@@ -81,7 +81,6 @@ public class StoneBodyTests
         TestHelpers.InvokePrivate(_fx, "OnDestroy");
         Object.DestroyImmediate(_owner);
         Object.DestroyImmediate(_source);
-        Object.DestroyImmediate(_projectile);
         Object.DestroyImmediate(_fxObject);
         Object.DestroyImmediate(_recipe);
         Object.DestroyImmediate(_material);
@@ -122,8 +121,8 @@ public class StoneBodyTests
         Drain();
         Assert.AreEqual(3, visibleCount);
         Assert.AreEqual(PartRole.Limb, _recipe.parts[_body.shedPart].role);
-        int hit = StoneEffects.DustPuffs + StoneEffects.HitSparks + StoneEffects.HitChips;
-        Assert.AreEqual(2 * hit + 1, _fx.liveCount); // two hits of 14, and the falling limb
+        int hit = StoneEffects.DustPuffs + StoneEmitters.HitChips;
+        Assert.AreEqual(2 * hit + 1, _fx.liveCount); // two hits of 8, and the falling limb
 
         Queue(50);
         Drain();
@@ -170,9 +169,8 @@ public class StoneBodyTests
         _body.RecordImpact(modifier, new StoneImpact(point, Vector3.up));
         Drain();
 
-        Assert.AreEqual(0, _body.pendingImpactCount);
-        int hit = StoneEffects.DustPuffs + StoneEffects.HitSparks + StoneEffects.HitChips;
-        Assert.AreEqual(hit, _fx.liveCount); // 5 dust, 6 sparks and 3 chips
+        int hit = StoneEffects.DustPuffs + StoneEmitters.HitChips;
+        Assert.AreEqual(hit, _fx.liveCount); // 5 dust and 3 chips
         foreach (MeshFilter filter in _fxObject.GetComponentsInChildren<MeshFilter>())
         {
             Vector3 expected = filter.sharedMesh.name == "Pyramid" ? point + Vector3.up * 0.005f : point;
@@ -181,24 +179,12 @@ public class StoneBodyTests
     }
 
     [Test]
-    public void LateUpdate_TwoFramesWithoutConsumers_ExpiresTheImpact()
-    {
-        _body.RecordImpact(new ResourceModifier(), default);
-        TestHelpers.InvokePrivate(_body, "LateUpdate");
-        Assert.AreEqual(1, _body.pendingImpactCount);
-
-        TestHelpers.InvokePrivate(_body, "LateUpdate");
-
-        Assert.AreEqual(0, _body.pendingImpactCount);
-    }
-
-    [Test]
     public void Init_AfterDisableAndReenable_KeepsOneListener()
     {
         _body.enabled = false;
         TestHelpers.InvokePrivate(_body, "OnDisable");
         _body.RecordImpact(new ResourceModifier(), default);
-        Assert.AreEqual(0, _body.pendingImpactCount);
+        Assert.AreEqual(0, _fx.liveCount); // a recorded contact would have raised dust
 
         _fx.Advance(1f);
         _body.enabled = true;
@@ -207,18 +193,7 @@ public class StoneBodyTests
         Queue(-1);
         Drain();
 
-        Assert.AreEqual(14, _fx.liveCount);
-    }
-
-    [Test]
-    public void EstimateImpact_QueryAboveTheStone_LandsOnTheHead()
-    {
-        Transform head = _body.parts[3];
-
-        StoneImpact impact = _body.EstimateImpact(head.position + Vector3.up * 5f);
-
-        Assert.Greater(impact.point.y, head.GetComponent<Renderer>().bounds.center.y);
-        Assert.Greater(impact.normal.y, 0f);
+        Assert.AreEqual(StoneEffects.DustPuffs + StoneEmitters.HitChips, _fx.liveCount); // one hit
     }
 
     [Test]
@@ -228,9 +203,9 @@ public class StoneBodyTests
         Drain();
         Assert.AreEqual(0, visibleCount);
         Assert.IsTrue(_body.isCollapsed);
-        int hitAndCollapse = StoneEffects.DustPuffs + StoneEffects.HitSparks + StoneEffects.HitChips
+        int hitAndCollapse = StoneEffects.DustPuffs + StoneEmitters.HitChips
             + StoneEffects.CollapseDebris + StoneEffects.DustPuffs;
-        Assert.AreEqual(hitAndCollapse, _fx.liveCount); // 14 for the hit, 12 debris and 5 dust for the collapse
+        Assert.AreEqual(hitAndCollapse, _fx.liveCount); // 8 for the hit, 12 debris and 5 dust for the collapse
 
         _body.Collapse(null);
         Assert.AreEqual(hitAndCollapse, _fx.liveCount);
@@ -273,76 +248,17 @@ public class StoneBodyTests
     }
 
     [Test]
-    public void BeginDelivery_RigWithoutArms_TheBodyClaimsWhatTheBuilderRefuses()
+    public void Init_KeyLightWithRealShadows_HidesTheGroundShadow()
     {
-        CreatureBuilder builder = _body.GetComponent<CreatureBuilder>();
+        StoneGroundDisc shadow = RenderTestAssets.CreateGroundDisc(_body.transform, true);
+        StageKeyLight keyLight = _owner.AddComponent<StageKeyLight>();
+        TestHelpers.SetPrivateField(keyLight, "_realShadows", true);
+        TestHelpers.SetPrivateField(_body, "_groundShadow", shadow);
+        TestHelpers.SetPrivateField(_body, "_keyLight", keyLight);
 
-        bool isBuilderClaiming = builder.BeginDelivery(1, DeliveryStyle.Direct, _projectile.transform, Vector3.one);
-        bool isBodyClaiming = _body.BeginDelivery(1, DeliveryStyle.Direct, _projectile.transform, Vector3.one);
+        _body.Init(_health, 15, _fx);
 
-        Assert.IsFalse(isBuilderClaiming);
-        Assert.IsTrue(isBodyClaiming);
-    }
-
-    [TestCase(DeliveryStyle.Direct)]
-    [TestCase(DeliveryStyle.Arc)]
-    [TestCase(DeliveryStyle.Rigid)]
-    [TestCase(DeliveryStyle.Swarm)]
-    [TestCase(DeliveryStyle.Bounce)]
-    [TestCase(DeliveryStyle.ChainSync)]
-    [TestCase(DeliveryStyle.Thrown)]
-    public void BeginDelivery_AnyStyle_ThrowsAShardFromTheHeadThatFollowsTheProjectile(DeliveryStyle style)
-    {
-        Vector3 head = _body.parts[3].GetComponent<Renderer>().bounds.center;
-
-        Assert.IsTrue(_body.BeginDelivery(1, style, _projectile.transform, Vector3.forward));
-        Assert.IsFalse(_body.BeginDelivery(1, style, _projectile.transform, Vector3.forward));
-        Transform shard = _fxObject.GetComponentInChildren<MeshFilter>().transform;
-        Assert.AreEqual(head, shard.position);
-
-        _projectile.transform.position = new Vector3(4f, 3f, 2f);
-        TestHelpers.InvokePrivate(_body, "LateUpdate");
-        Assert.AreEqual(_projectile.transform.position, shard.position);
-
-        _body.ContactDelivery(1, Vector3.one * 7f, null);
-        Assert.AreEqual(0, _body.liveDeliveryCount);
-        int minimum = StoneEffects.MinThrownChips + StoneEffects.StarRays;
-        Assert.That(_fx.liveCount, Is.InRange(minimum, minimum + 2));
-    }
-
-    [Test]
-    public void BeginDelivery_Collapsed_Refuses()
-    {
-        _body.Collapse(null);
-
-        bool isClaimed = _body.BeginDelivery(1, DeliveryStyle.Thrown, _projectile.transform, Vector3.one);
-
-        Assert.IsFalse(isClaimed);
-    }
-
-    [Test]
-    public void OnDisable_LiveDeliveries_LeaksNothing()
-    {
-        _body.BeginDelivery(1, DeliveryStyle.Thrown, _projectile.transform, Vector3.one);
-        _body.BeginDelivery(2, DeliveryStyle.Thrown, _projectile.transform, Vector3.one);
-
-        _body.enabled = false;
-        TestHelpers.InvokePrivate(_body, "OnDisable");
-
-        Assert.AreEqual(0, _body.liveDeliveryCount);
-        Assert.AreEqual(0, _fx.liveCount);
-    }
-
-    [Test]
-    public void LateUpdate_DestroyedProjectile_ReleasesTheDeliveryWithoutContact()
-    {
-        _body.BeginDelivery(1, DeliveryStyle.Thrown, _projectile.transform, Vector3.one);
-
-        Object.DestroyImmediate(_projectile);
-        TestHelpers.InvokePrivate(_body, "LateUpdate");
-
-        Assert.AreEqual(0, _body.liveDeliveryCount);
-        Assert.AreEqual(0, _fx.liveCount);
+        Assert.IsFalse(shadow.gameObject.activeSelf);
     }
 
     [Test]

@@ -7,55 +7,33 @@ using UnityEngine;
 namespace HealerLike.Render.Stones
 {
     // What makes a derived unit behave like a stone, on the parts the CreatureBuilder beside it built:
-    // it chips where it is hit, sheds a limb when hurt, collapses on death and throws a shard for every shot
-    public class StoneBody : MonoBehaviour, IEntityView, IDeliverySource
+    // it chips where it is hit, sheds a limb when hurt and collapses on death; the StoneThrow beside it throws
+    public class StoneBody : MonoBehaviour, IEntityView
     {
-        struct ImpactRecord
-        {
-            public StoneImpact impact;
-            public int frame;
-        }
-
-        class Delivery
-        {
-            public Transform shard;
-            public Transform projectile;
-            public StoneMeshCache.Lease lease;
-        }
-
         // Seed salts, one per kind of emission so two kinds never share a random stream
-        static readonly uint hitSalt = 100;
         static readonly uint shedSalt = 201;
         static readonly uint collapseSalt = 301;
-        static readonly uint shardMeshSalt = 701;
-        static readonly uint contactSalt = 801;
-        static readonly StoneSettings shardShape = StonePresets.Shape(0.15f, 1.7f, 0.65f, 0.18f, 0);
+        static readonly Transform[] noParts = new Transform[0];
 
         [SerializeField] StoneGroundDisc _groundShadow;
         [SerializeField] float _shedHealthFraction = 0.5f;
+        // The thrown shard's colour, handed to the StoneThrow
         [SerializeField] LookPalette _palette;
 
         CreatureBuilder _builder;
         CreatureRig _rig;
+        StoneThrow _throw;
         StoneEffects _effects;
+        StageKeyLight _keyLight;
         Entity _entity;
         ResourceAttribute _health;
-        StoneMeshData[] _partMeshes = new StoneMeshData[0];
         uint _seed;
-        uint _hitIndex;
-        int _completedFrames;
+        Vector3 _planarVelocity;
         bool _isBound;
 
-        readonly Dictionary<int, Delivery> _deliveries = new Dictionary<int, Delivery>();
-        readonly List<int> _endedDeliveries = new List<int>();
         readonly StoneHealthState _state = new StoneHealthState();
         readonly StoneMotionSampler _sampler = new StoneMotionSampler();
-        readonly Dictionary<ResourceModifier, ImpactRecord> _impacts = new Dictionary<ResourceModifier, ImpactRecord>();
-        readonly List<ResourceModifier> _expired = new List<ResourceModifier>();
-
-        public int liveDeliveryCount { get { return _deliveries.Count; } }
-
-        public int pendingImpactCount { get { return _impacts.Count; } }
+        readonly StoneImpacts _impacts = new StoneImpacts();
 
         bool _isCollapsed;
         public bool isCollapsed { get { return _isCollapsed; } }
@@ -64,41 +42,14 @@ namespace HealerLike.Render.Stones
         int _shedPart = -1;
         public int shedPart { get { return _shedPart; } }
 
-        Vector3 _planarVelocity;
-        public Vector3 planarVelocity { get { return _planarVelocity; } }
-
-        public float groundY { get { return transform.position.y; } }
-
-        public IReadOnlyList<Transform> parts
-        {
-            get
-            {
-                if (_rig == null)
-                {
-                    return System.Array.Empty<Transform>();
-                }
-                return _rig.partTransforms;
-            }
-        }
+        public IReadOnlyList<Transform> parts { get { return _rig != null ? _rig.partTransforms : noParts; } }
 
         public void Init(Entity entity, RenderManager manager)
         {
-            StoneEffects effects = null;
-            if (manager != null)
-            {
-                effects = manager.stoneEffects;
-            }
-            Init(entity, effects);
-        }
-
-        public void Init(Entity owner, StoneEffects effects)
-        {
-            _entity = owner;
-            ResourceAttribute health = null;
-            if (owner != null)
-            {
-                health = owner.health;
-            }
+            _entity = entity;
+            _keyLight = manager != null ? manager.keyLight : null;
+            StoneEffects effects = manager != null ? manager.stoneEffects : null;
+            ResourceAttribute health = entity != null ? entity.health : null;
             Init(health, (uint)transform.GetEntityId().GetHashCode(), effects);
         }
 
@@ -111,20 +62,23 @@ namespace HealerLike.Render.Stones
             _effects = effects;
             _builder = GetComponent<CreatureBuilder>();
             _rig = null;
-            _partMeshes = new StoneMeshData[0];
             _state.Reset(_shedHealthFraction);
             _shedPart = -1;
             _isCollapsed = false;
-            _hitIndex = 0;
-            _completedFrames = 0;
             _sampler.Reset();
             _planarVelocity = Vector3.zero;
+            _impacts.Init(transform, effects, visualSeed);
+            _throw = GetComponent<StoneThrow>();
+            if (_throw != null)
+            {
+                _throw.Init(_builder, effects, _palette, visualSeed);
+            }
             FindRig();
             Subscribe();
         }
 
-        // The builder makes its rig at Init and again when the ground frame changes,
-        // so the rig is looked up every frame
+        // CreatureBuilder rebuilds its rig without telling anyone, so every frame compares the one it holds
+        // with the one this body last read: one reference compare while nothing changed
         void FindRig()
         {
             CreatureRig rig = _builder != null ? _builder.rig : null;
@@ -135,16 +89,7 @@ namespace HealerLike.Render.Stones
 
             _rig = rig;
             IReadOnlyList<Transform> partTransforms = parts;
-            _partMeshes = new StoneMeshData[partTransforms.Count];
-            for (int i = 0; i < partTransforms.Count; i++)
-            {
-                Mesh mesh = partTransforms[i].GetComponent<MeshFilter>().sharedMesh;
-                if (mesh != null)
-                {
-                    _partMeshes[i] = new StoneMeshData(mesh.vertices, mesh.normals, mesh.triangles, mesh.bounds);
-                }
-            }
-
+            _impacts.ReadParts(partTransforms);
             if (_isCollapsed)
             {
                 HideParts();
@@ -159,45 +104,10 @@ namespace HealerLike.Render.Stones
 
             if (_groundShadow != null && partTransforms.Count > 0)
             {
-                _groundShadow.Init(LocalBounds(partTransforms), StageKeyLight.KeyDirection);
+                Bounds bounds = StoneGroundDisc.Measure(transform, partTransforms);
+                _groundShadow.Init(bounds, StageKeyLight.KeyDirection, _keyLight);
                 _groundShadow.Show(isActiveAndEnabled);
             }
-        }
-
-        // The parts' box in this view's space, which the ground shadow stretches away from the key light
-        Bounds LocalBounds(IReadOnlyList<Transform> partTransforms)
-        {
-            Bounds bounds = new Bounds(Vector3.zero, Vector3.zero);
-            bool isEmpty = true;
-            foreach (Transform part in partTransforms)
-            {
-                Bounds world = part.GetComponent<Renderer>().bounds;
-                for (int corner = 0; corner < 8; corner++)
-                {
-                    Vector3 sign = new Vector3(CornerSign(corner, 1), CornerSign(corner, 2), CornerSign(corner, 4));
-                    Vector3 point = transform.InverseTransformPoint(world.center + Vector3.Scale(world.extents, sign));
-                    if (isEmpty)
-                    {
-                        bounds = new Bounds(point, Vector3.zero);
-                        isEmpty = false;
-                    }
-                    else
-                    {
-                        bounds.Encapsulate(point);
-                    }
-                }
-            }
-            return bounds;
-        }
-
-        // -1 or 1 along one axis of a box corner, the axis picked by its bit
-        static float CornerSign(int corner, int bit)
-        {
-            if ((corner & bit) == 0)
-            {
-                return -1f;
-            }
-            return 1f;
         }
 
         public void RecordImpact(ResourceModifier modifier, StoneImpact impact)
@@ -207,74 +117,18 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            _impacts[modifier] = new ImpactRecord { impact = impact, frame = _completedFrames };
-            if (_effects != null)
-            {
-                _effects.RecordImpact(impact.point, StoneSeed.ForPart(_seed, ++_hitIndex + hitSalt));
-            }
+            _impacts.Record(modifier, impact);
         }
 
         public StoneImpact EstimateImpact(Vector3 query)
         {
-            Vector3 point = transform.position + Vector3.up * 0.5f;
-            Vector3 normal = Vector3.up;
-            float best = float.PositiveInfinity;
-            IReadOnlyList<Transform> partTransforms = parts;
-            for (int i = 0; i < partTransforms.Count && i < _partMeshes.Length; i++)
-            {
-                if (!partTransforms[i].gameObject.activeSelf)
-                {
-                    continue;
-                }
-
-                if (StoneImpactLocator.TryClosestPoint(_partMeshes[i], partTransforms[i].localToWorldMatrix, query,
-                    out Vector3 partPoint, out Vector3 partNormal))
-                {
-                    float distance = (partPoint - query).sqrMagnitude;
-                    if (distance < best)
-                    {
-                        best = distance;
-                        point = partPoint;
-                        normal = partNormal;
-                    }
-                }
-            }
-            return new StoneImpact(point, normal);
+            return _impacts.Estimate(query);
         }
 
         void OnConsumersProcessed(GameObject owner, ResourceModifier modifier, float delta, bool critical)
         {
-            bool isRecorded = modifier != null && _impacts.ContainsKey(modifier);
-            StoneImpact impact = isRecorded ? _impacts[modifier].impact : default;
-            if (modifier != null)
-            {
-                _impacts.Remove(modifier);
-            }
-
             _state.RecordProcessedDelta(delta);
-            if (!(delta < 0f) || _isCollapsed)
-            {
-                return;
-            }
-
-            if (!isRecorded)
-            {
-                Vector3 query = transform.position + Vector3.up * 2f;
-                if (modifier != null && modifier.source != null)
-                {
-                    query = modifier.source.transform.position;
-                }
-                impact = EstimateImpact(query);
-                if (_effects != null)
-                {
-                    _effects.RecordImpact(impact.point, StoneSeed.ForPart(_seed, ++_hitIndex + hitSalt));
-                }
-            }
-
-            if (_effects != null)
-            {
-                _effects.EmitHit(impact, critical, StoneSeed.ForPart(_seed, ++_hitIndex + hitSalt));
-            }
+            _impacts.Resolve(modifier, delta < 0f && !_isCollapsed, critical);
         }
 
         void OnHealthChanged(ResourceAttribute resource)
@@ -330,13 +184,10 @@ namespace HealerLike.Render.Stones
 
             _shedPart = candidates[(int)(_seed % (uint)candidates.Count)];
             Transform part = partTransforms[_shedPart];
-            if (_effects != null)
-            {
-                Mesh mesh = part.GetComponent<MeshFilter>().sharedMesh;
-                Material material = part.GetComponent<Renderer>().sharedMaterial;
-                _effects.EmitDetachedPart(mesh, material, part.localToWorldMatrix, planarVelocity, groundY,
-                    StoneSeed.ForPart(_seed, shedSalt));
-            }
+            Mesh mesh = part.GetComponent<MeshFilter>().sharedMesh;
+            Material material = part.GetComponent<Renderer>().sharedMaterial;
+            StoneEmitters.DetachedPart(_effects, mesh, material, part.localToWorldMatrix, _planarVelocity,
+                transform.position.y, StoneSeed.ForPart(_seed, shedSalt));
             part.gameObject.SetActive(false);
         }
 
@@ -355,11 +206,12 @@ namespace HealerLike.Render.Stones
 
             _isCollapsed = true;
             _state.TryBeginCollapse();
-            ClearDeliveries();
-            if (_effects != null)
+            if (_throw != null)
             {
-                _effects.CollapseParts(parts, planarVelocity, groundY, StoneSeed.ForPart(_seed, collapseSalt));
+                _throw.Enable(false);
             }
+            uint seed = StoneSeed.ForPart(_seed, collapseSalt);
+            StoneEmitters.Collapse(_effects, parts, _planarVelocity, transform.position.y, seed);
             HideParts();
         }
 
@@ -379,7 +231,6 @@ namespace HealerLike.Render.Stones
         void LateUpdate()
         {
             FindRig();
-            FollowDeliveries();
             if (!_isBound)
             {
                 return;
@@ -392,181 +243,7 @@ namespace HealerLike.Render.Stones
             {
                 _groundShadow.Refresh();
             }
-
-            _completedFrames++;
-            _expired.Clear();
-            foreach (KeyValuePair<ResourceModifier, ImpactRecord> pair in _impacts)
-            {
-                if (_completedFrames - pair.Value.frame >= 2)
-                {
-                    _expired.Add(pair.Key);
-                }
-            }
-
-            foreach (ResourceModifier key in _expired)
-            {
-                _impacts.Remove(key);
-            }
-        }
-
-        // The highest head throws, or the highest part of a stone that has no head
-        Transform ThrowingPart()
-        {
-            if (_rig == null)
-            {
-                return null;
-            }
-
-            IReadOnlyList<Transform> partTransforms = _rig.partTransforms;
-            Transform best = null;
-            bool isBestHead = false;
-            for (int i = 0; i < partTransforms.Count; i++)
-            {
-                Transform part = partTransforms[i];
-                if (!part.gameObject.activeInHierarchy)
-                {
-                    continue;
-                }
-
-                bool isHead = _rig.recipe.parts[i].role == PartRole.Head;
-                bool isHigher = best == null || part.position.y > best.position.y;
-                if ((isHead && !isBestHead) || (isHead == isBestHead && isHigher))
-                {
-                    best = part;
-                    isBestHead = isHead;
-                }
-            }
-            return best;
-        }
-
-        #region IDeliverySource
-
-        // The armless stone rig refuses every shot, so the stone claims them all
-        public bool BeginDelivery(int token, DeliveryStyle style, Transform projectile, Vector3 intendedEnd)
-        {
-            if (!isActiveAndEnabled || _isCollapsed || projectile == null || _effects == null
-                || _deliveries.ContainsKey(token))
-            {
-                return false;
-            }
-
-            Transform thrower = ThrowingPart();
-            if (thrower == null)
-            {
-                return false;
-            }
-
-            uint shardSeed = StoneSeed.ForPart(_seed, shardMeshSalt);
-            StoneMeshCache.Lease lease = _effects.stoneMeshes.Acquire(shardSeed, shardShape);
-            if (lease == null)
-            {
-                return false;
-            }
-
-            Transform shard = _effects.TakeShard(lease.mesh, ShardColour());
-            if (shard == null)
-            {
-                lease.Dispose();
-                return false;
-            }
-
-            shard.position = thrower.GetComponent<Renderer>().bounds.center;
-            shard.rotation = Quaternion.identity;
-            Delivery delivery = new Delivery();
-            delivery.shard = shard;
-            delivery.projectile = projectile;
-            delivery.lease = lease;
-            _deliveries.Add(token, delivery);
-            return true;
-        }
-
-        public void UpdateDelivery(int token, Vector3 projectilePosition)
-        {
-            if (!_deliveries.TryGetValue(token, out Delivery delivery))
-            {
-                return;
-            }
-
-            Vector3 travel = projectilePosition - delivery.shard.position;
-            if (travel.sqrMagnitude > 0.00000001f)
-            {
-                delivery.shard.rotation = Quaternion.FromToRotation(Vector3.up, travel.normalized);
-            }
-            delivery.shard.position = projectilePosition;
-        }
-
-        public void ContactDelivery(int token, Vector3 contactPosition, GameObject target)
-        {
-            if (!_deliveries.ContainsKey(token))
-            {
-                return;
-            }
-
-            if (_effects != null)
-            {
-                _effects.EmitThrownContact(contactPosition, StoneSeed.ForPart(_seed, ++_hitIndex + contactSalt));
-            }
-            EndDelivery(token);
-        }
-
-        public void EndDelivery(int token)
-        {
-            if (!_deliveries.TryGetValue(token, out Delivery delivery))
-            {
-                return;
-            }
-
-            _deliveries.Remove(token);
-            if (_effects != null)
-            {
-                _effects.ReturnShard(delivery.shard);
-            }
-            delivery.lease.Dispose();
-        }
-
-        #endregion
-
-        void FollowDeliveries()
-        {
-            _endedDeliveries.Clear();
-            foreach (KeyValuePair<int, Delivery> pair in _deliveries)
-            {
-                Transform projectile = pair.Value.projectile;
-                if (projectile == null || !projectile.gameObject.activeInHierarchy)
-                {
-                    _endedDeliveries.Add(pair.Key);
-                }
-                else
-                {
-                    UpdateDelivery(pair.Key, projectile.position);
-                }
-            }
-
-            foreach (int token in _endedDeliveries)
-            {
-                EndDelivery(token);
-            }
-        }
-
-        // A thrown shard is a piece of the stone's body
-        Color ShardColour()
-        {
-            if (_palette == null)
-            {
-                Debug.LogError("[StoneBody] No palette.");
-                return Color.magenta;
-            }
-            return _palette.Colour(ColourRole.Body, EffectFamily.Damage, LookSide.Stone);
-        }
-
-        void ClearDeliveries()
-        {
-            _endedDeliveries.Clear();
-            _endedDeliveries.AddRange(_deliveries.Keys);
-            foreach (int token in _endedDeliveries)
-            {
-                EndDelivery(token);
-            }
+            _impacts.CompleteFrame();
         }
 
         void Subscribe()
@@ -589,7 +266,6 @@ namespace HealerLike.Render.Stones
                 _health.OnValueChanged.RemoveListener(OnHealthChanged);
             }
 
-            ClearDeliveries();
             _isBound = false;
             _impacts.Clear();
             _sampler.Reset();

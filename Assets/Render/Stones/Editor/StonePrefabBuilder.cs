@@ -33,7 +33,8 @@ namespace HealerLike.Render.Stones
             return asset;
         }
 
-        // The derived stone keeps the CreatureBuilder that draws it and gains the body that sheds, collapses and throws
+        // The derived stone keeps the CreatureBuilder that draws it and gains the body that sheds and collapses,
+        // then the thrower
         public static void BuildDerivedStone()
         {
             string path = root + "Prefabs/DerivedStone.prefab";
@@ -45,6 +46,11 @@ namespace HealerLike.Render.Stones
                 bodySO.FindProperty("_groundShadow").objectReferenceValue = AddShadow(stoneGo.transform);
                 bodySO.FindProperty("_palette").objectReferenceValue = Load<Object>(PalettePath);
                 bodySO.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            if (stoneGo.GetComponent<StoneThrow>() == null)
+            {
+                stoneGo.AddComponent<StoneThrow>();
             }
             PrefabUtility.SaveAsPrefabAsset(stoneGo, path);
             PrefabUtility.UnloadPrefabContents(stoneGo);

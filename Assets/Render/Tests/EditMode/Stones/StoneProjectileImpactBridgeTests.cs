@@ -13,6 +13,7 @@ public class StoneProjectileImpactBridgeTests
     CreatureRecipe _recipe;
     Material _material;
     StoneBody _body;
+    StoneEffects _fx;
 
     [SetUp]
     public void SetUp()
@@ -21,6 +22,7 @@ public class StoneProjectileImpactBridgeTests
         _projectileObject = new GameObject("Projectile");
         _recipe = RenderTestAssets.CreateStoneRecipe();
         _material = new Material(RenderTestAssets.LoadLookMaterial());
+        _fx = RenderTestAssets.CreateStoneEffects();
     }
 
     [TearDown]
@@ -32,6 +34,8 @@ public class StoneProjectileImpactBridgeTests
             TestHelpers.InvokePrivate(_body.GetComponent<CreatureBuilder>(), "OnDestroy");
             _body = null;
         }
+        TestHelpers.InvokePrivate(_fx, "OnDestroy");
+        Object.DestroyImmediate(_fx.gameObject);
         Object.DestroyImmediate(_target);
         Object.DestroyImmediate(_projectileObject);
         Object.DestroyImmediate(_recipe);
@@ -42,8 +46,9 @@ public class StoneProjectileImpactBridgeTests
     public void OnHit_ProjectileTargetCleared_UsesTheCallbackTargetUntilDisabled()
     {
         ResourceAttribute health = TestHelpers.CreateResourceAttribute(_target, AttributeType.HealthMax, 100);
-        _body = RenderTestAssets.CreateStoneBody(_target, RenderTestAssets.CreateStoneEntity(_target, health), _recipe, _material);
-        _body.Init(health, 1, null);
+        Entity entity = RenderTestAssets.CreateStoneEntity(_target, health);
+        _body = RenderTestAssets.CreateStoneBody(_target, entity, _recipe, _material);
+        _body.Init(health, 1, _fx);
         Projectile projectile = _projectileObject.AddComponent<Projectile>();
         StoneProjectileImpactBridge bridge = _projectileObject.AddComponent<StoneProjectileImpactBridge>();
         TestHelpers.InvokePrivate(bridge, "OnEnable");
@@ -52,12 +57,12 @@ public class StoneProjectileImpactBridgeTests
 
         projectile.OnHit.Invoke(new OnHitData { target = _target, resourceModifier = modifier });
 
-        Assert.AreEqual(1, _body.pendingImpactCount);
+        Assert.AreEqual(StoneEffects.DustPuffs, _fx.liveCount); // the recorded contact raises dust
 
         bridge.enabled = false;
         TestHelpers.InvokePrivate(bridge, "OnDisable");
         projectile.OnHit.Invoke(new OnHitData { target = _target, resourceModifier = new ResourceModifier() });
-        Assert.AreEqual(1, _body.pendingImpactCount);
+        Assert.AreEqual(StoneEffects.DustPuffs, _fx.liveCount);
     }
 }
 

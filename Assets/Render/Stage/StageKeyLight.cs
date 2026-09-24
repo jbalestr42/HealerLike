@@ -1,12 +1,11 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using HealerLike.Render.Stones;
 
 namespace HealerLike.Render.Stage
 {
-    // The stage key light. When the pipeline renders real main light shadows out to the board, the stones'
-    // cheap ground ellipses are turned off.
+    // The stage key light, and whether the pipeline renders its real shadows out to the board.
+    // The stones' cheap ground shadows read that and hide while real ones are drawn
     public class StageKeyLight : MonoBehaviour
     {
         // Upper right, a little behind the board, so cast shadows fall to the lower left of the portrait view.
@@ -32,7 +31,7 @@ namespace HealerLike.Render.Stage
             Refresh();
         }
 
-        // Stones appear with enemies, so this polls at a low rate rather than every frame
+        // The pipeline can be swapped after Init, so this polls at a low rate rather than every frame
         void Update()
         {
             if (_isInitialized && Time.unscaledTime >= _next)
@@ -47,10 +46,6 @@ namespace HealerLike.Render.Stage
             RenderPipelineAsset current = GraphicsSettings.currentRenderPipeline;
             UniversalRenderPipelineAsset pipeline = current as UniversalRenderPipelineAsset;
             _realShadows = RendersRealShadows(pipeline, _keyLight, _requiredDistance);
-            // Discs the key light already hid are inactive, so they are searched too
-            StoneGroundDisc[] discs = FindObjectsByType<StoneGroundDisc>(FindObjectsInactive.Include,
-                                                                         FindObjectsSortMode.None);
-            ApplyCheapShadows(_realShadows, discs);
         }
 
         // Rotation whose back points toward the light along the given direction
@@ -73,25 +68,5 @@ namespace HealerLike.Render.Stage
                    && pipeline.shadowDistance >= requiredDistance;
         }
 
-        // Returns how many cheap ellipses were switched off
-        public static int ApplyCheapShadows(bool realShadows, StoneGroundDisc[] discs)
-        {
-            int off = 0;
-            if (discs == null)
-            {
-                return off;
-            }
-
-            foreach (StoneGroundDisc disc in discs)
-            {
-                if (disc != null && disc.isShadow && disc.isAllowed == realShadows)
-                {
-                    disc.isAllowed = !realShadows;
-                    off += realShadows ? 1 : 0;
-                }
-            }
-
-            return off;
-        }
     }
 }
