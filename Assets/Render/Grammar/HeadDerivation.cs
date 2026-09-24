@@ -3,14 +3,15 @@ using UnityEngine;
 
 namespace HealerLike.Render.Grammar
 {
-    // The silhouette half of the reading: the head, the accessory and the accent the skills draw
-    public static partial class LookDerivation
+    // The silhouette half of a unit's reading: the head, the accessory and the accent its skills draw.
+    // LookDerivation reads the rest and calls this for those three.
+    public static class HeadDerivation
     {
         public static HeadKind Head(ASkillFactory skill)
         {
             if (skill is ShootProjectileSkillFactory || skill is ConfigurableSkillFactory)
             {
-                return Delivery(SkillWalker.DominantPrefab(skill));
+                return LookDerivation.Delivery(SkillWalker.DominantPrefab(skill));
             }
 
             if (skill is ApplyBuffOnTargetSkillFactory support)
@@ -51,20 +52,20 @@ namespace HealerLike.Render.Grammar
             {
                 name = skill.GetType().Name;
             }
-            Debug.LogError($"[LookDerivation] No head for {name}");
+            Debug.LogError($"[HeadDerivation] No head for {name}");
             return HeadKind.Bud;
         }
 
         // One slot: a second skill or delivery, then a baked behaviour, then the first passive, then an on-hit effect
         public static AccessoryKind Accessory(EntityData data)
         {
-            ASkillFactory primary = Primary(data);
+            ASkillFactory primary = LookDerivation.Primary(data);
             return Accessory(data, PrimaryHead(primary), Accent(primary), out HeadKind accessoryHead);
         }
 
         public static HeadKind AccessoryHead(EntityData data)
         {
-            TryMiniHead(data, PrimaryHead(Primary(data)), out HeadKind head);
+            TryMiniHead(data, PrimaryHead(LookDerivation.Primary(data)), out HeadKind head);
             return head;
         }
 
@@ -111,7 +112,8 @@ namespace HealerLike.Render.Grammar
         }
 
         // The accessory and its small head, read once from the head and the accent already derived
-        static AccessoryKind Accessory(EntityData data, HeadKind head, EffectFamily accent, out HeadKind accessoryHead)
+        public static AccessoryKind Accessory(EntityData data, HeadKind head, EffectFamily accent,
+            out HeadKind accessoryHead)
         {
             if (TryMiniHead(data, head, out accessoryHead))
             {
@@ -123,7 +125,7 @@ namespace HealerLike.Render.Grammar
                 return AccessoryKind.None;
             }
 
-            foreach (GameObject prefab in SkillWalker.Prefabs(Primary(data)))
+            foreach (GameObject prefab in SkillWalker.Prefabs(LookDerivation.Primary(data)))
             {
                 if (prefab.GetComponent<BackstabProjectileBehaviour>() != null)
                 {
@@ -186,14 +188,14 @@ namespace HealerLike.Render.Grammar
         static bool TryMiniHead(EntityData data, HeadKind main, out HeadKind head)
         {
             head = HeadKind.Bud;
-            ASkillFactory secondary = Secondary(data);
+            ASkillFactory secondary = LookDerivation.Secondary(data);
             if (secondary != null)
             {
                 head = Head(secondary);
                 return true;
             }
 
-            ASkillFactory primary = Primary(data);
+            ASkillFactory primary = LookDerivation.Primary(data);
             if (primary == null)
             {
                 return false;
@@ -201,7 +203,7 @@ namespace HealerLike.Render.Grammar
 
             foreach (GameObject prefab in SkillWalker.Prefabs(primary))
             {
-                HeadKind other = Delivery(prefab);
+                HeadKind other = LookDerivation.Delivery(prefab);
                 if (other != main)
                 {
                     head = other;

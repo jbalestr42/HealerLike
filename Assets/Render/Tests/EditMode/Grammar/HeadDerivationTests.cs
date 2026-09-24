@@ -8,8 +8,8 @@ using UnityEngine.TestTools;
 namespace HealerLike.Render.Grammar
 {
 
-// The head, accessory and accent readings of LookDerivation
-public class LookDerivationHeadsTests
+// The head, accessory and accent readings of HeadDerivation
+public class HeadDerivationTests
 {
     readonly List<Object> _objects = new List<Object>();
 
@@ -74,15 +74,15 @@ public class LookDerivationHeadsTests
     [TestCase("HitArmorBufferEntityEntity", HeadKind.GiftBoonDefence)]
     public void Head_PrimarySkill_ReadsTheDominantDeliveryElseTheSkillKind(string folder, HeadKind expected)
     {
-        Assert.AreEqual(expected, LookDerivation.Head(LookDerivation.Primary(RenderTestAssets.LoadEntity(folder))));
+        Assert.AreEqual(expected, HeadDerivation.Head(LookDerivation.Primary(RenderTestAssets.LoadEntity(folder))));
     }
 
     [Test]
     public void Head_NoSkill_LogsAndFallsBackToBud()
     {
-        LogAssert.Expect(LogType.Error, new Regex(@"\[LookDerivation\] No head"));
+        LogAssert.Expect(LogType.Error, new Regex(@"\[HeadDerivation\] No head"));
 
-        HeadKind head = LookDerivation.Head(null);
+        HeadKind head = HeadDerivation.Head(null);
 
         Assert.AreEqual(HeadKind.Bud, head);
     }
@@ -93,8 +93,8 @@ public class LookDerivationHeadsTests
     {
         EntityData data = RenderTestAssets.LoadEntity(folder);
 
-        Assert.AreEqual(AccessoryKind.MiniHead, LookDerivation.Accessory(data));
-        Assert.AreEqual(expected, LookDerivation.AccessoryHead(data));
+        Assert.AreEqual(AccessoryKind.MiniHead, HeadDerivation.Accessory(data));
+        Assert.AreEqual(expected, HeadDerivation.AccessoryHead(data));
     }
 
     [Test]
@@ -106,8 +106,8 @@ public class LookDerivationHeadsTests
         shoot.data.projectiles.Add(new ShootProjectileSkillData.ProjectileData { projectilePrefab = RenderTestAssets.LoadProjectile("BulletSpeed") });
         data.skillFactories = new List<ASkillFactory> { shoot, RenderTestAssets.LoadEntity("HitArmorBufferEntityEntity").skillFactories[0] };
 
-        Assert.AreEqual(AccessoryKind.MiniHead, LookDerivation.Accessory(data));
-        Assert.AreEqual(HeadKind.GiftBoonDefence, LookDerivation.AccessoryHead(data));
+        Assert.AreEqual(AccessoryKind.MiniHead, HeadDerivation.Accessory(data));
+        Assert.AreEqual(HeadKind.GiftBoonDefence, HeadDerivation.AccessoryHead(data));
     }
 
     [Test]
@@ -117,7 +117,7 @@ public class LookDerivationHeadsTests
         ABuffHandlerFactory poison = RenderTestAssets.LoadHandler("PoisonItem/BuffHandlerFactory");
         data.items = new List<AItemFactory> { CreateItem(onHitEffects: new List<ABuffHandlerFactory> { poison }) };
 
-        Assert.AreEqual(AccessoryKind.DripBeads, LookDerivation.Accessory(data));
+        Assert.AreEqual(AccessoryKind.DripBeads, HeadDerivation.Accessory(data));
     }
 
     [Test]
@@ -129,7 +129,7 @@ public class LookDerivationHeadsTests
             CreateItem(buffs: new List<ABuffHandlerFactory> { RenderTestAssets.LoadHandler("ConclaveItem/New Buff Handler Factory 1") })
         };
 
-        Assert.AreEqual(AccessoryKind.SmallTorus, LookDerivation.Accessory(data));
+        Assert.AreEqual(AccessoryKind.SmallTorus, HeadDerivation.Accessory(data));
     }
 
     [Test]
@@ -137,7 +137,7 @@ public class LookDerivationHeadsTests
     {
         EntityData data = ShooterWith<BackstabProjectileBehaviour>();
 
-        Assert.AreEqual(AccessoryKind.Hook, LookDerivation.Accessory(data));
+        Assert.AreEqual(AccessoryKind.Hook, HeadDerivation.Accessory(data));
     }
 
     [Test]
@@ -145,7 +145,7 @@ public class LookDerivationHeadsTests
     {
         EntityData data = ShooterWith<IncreaseDamageOnDistanceProjectileBehaviour>();
 
-        Assert.AreEqual(AccessoryKind.Antenna, LookDerivation.Accessory(data));
+        Assert.AreEqual(AccessoryKind.Antenna, HeadDerivation.Accessory(data));
     }
 
     [Test]
@@ -158,7 +158,7 @@ public class LookDerivationHeadsTests
         passive.data = new BuffHandlerData { durationType = DurationType.Infinite, buffFactoryList = new List<ABuffFactory> { modifier } };
         data.items = new List<AItemFactory> { CreateItem(buffs: new List<ABuffHandlerFactory> { passive }) };
 
-        Assert.AreEqual(AccessoryKind.TierRings, LookDerivation.Accessory(data));
+        Assert.AreEqual(AccessoryKind.TierRings, HeadDerivation.Accessory(data));
     }
 
     [Test]
@@ -167,7 +167,7 @@ public class LookDerivationHeadsTests
         EntityData data = Copy(RenderTestAssets.LoadEntity("NormalEntity"));
         data.items = new List<AItemFactory> { CreateItem(buffs: new List<ABuffHandlerFactory> { RenderTestAssets.LoadHandler("RegenHpItem/RegenHpItem_BuffHandlerFactory") }) };
 
-        Assert.AreEqual(AccessoryKind.StalkBeads, LookDerivation.Accessory(data));
+        Assert.AreEqual(AccessoryKind.StalkBeads, HeadDerivation.Accessory(data));
     }
 
     [Test]
@@ -176,7 +176,7 @@ public class LookDerivationHeadsTests
         EntityData data = Copy(RenderTestAssets.LoadEntity("NormalEntity"));
         data.items = new List<AItemFactory> { CreateItem(buffs: new List<ABuffHandlerFactory> { RenderTestAssets.LoadHandler("ConclaveItem/New Buff Handler Factory") }) }; // AttackRate Mul +0.2
 
-        Assert.AreEqual(AccessoryKind.ConeCrown, LookDerivation.Accessory(data));
+        Assert.AreEqual(AccessoryKind.ConeCrown, HeadDerivation.Accessory(data));
     }
 
     [Test]
@@ -185,7 +185,7 @@ public class LookDerivationHeadsTests
         EntityData data = Copy(RenderTestAssets.LoadEntity("SoldierEntity"));
         data.items = new List<AItemFactory> { CreateItem(onHitEffects: new List<ABuffHandlerFactory> { RenderTestAssets.LoadHandler("SlowItem/BuffHandlerFactory") }) }; // Speed Mul -0.1
 
-        Assert.AreEqual(AccessoryKind.ShardBarbs, LookDerivation.Accessory(data));
+        Assert.AreEqual(AccessoryKind.ShardBarbs, HeadDerivation.Accessory(data));
     }
 }
 
