@@ -1,14 +1,11 @@
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Serialization;
-using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Look
 {
     // The one look of the render stage, set up by the RenderManager at attach
     public class LookController : MonoBehaviour
     {
-        [FormerlySerializedAs("settings")]
         [SerializeField] LookSettings _settings = LookSettings.Default;
 
         static readonly int shadowTintId = Shader.PropertyToID("_HLShadowTint");
@@ -36,44 +33,26 @@ namespace HealerLike.Render.Look
         static readonly int fogBandsId = Shader.PropertyToID("_HLFogBands");
         static readonly int lookAppliedId = Shader.PropertyToID("_HLLookApplied");
 
-        Bounds _board;
-
         public LookSettings settings { get { return _settings; } set { _settings = value.Validated(); } }
 
         void OnEnable()
         {
-            _settings = _settings.Validated();
             RenderPipelineManager.beginFrameRendering -= OnBeginFrameRendering;
             RenderPipelineManager.beginFrameRendering += OnBeginFrameRendering;
         }
 
-        // Fog follows the camera distance to the board, the hatch keeps its authored world spacing
-        public void Init(Camera camera, Bounds board)
+        // The fog range comes from the camera distance to the board, the hatch keeps its authored world spacing
+        public void Init(Vector2 fogRange)
         {
-            if (camera == null)
-            {
-                Debug.LogError("[LookController] Init needs the camera the look is calibrated for.");
-                return;
-            }
-
-            _board = board;
-            Vector3 position = camera.transform.position;
-            Vector2 fog = StageCalibration.BackgroundFog(position, board);
-
-            LookSettings value = _settings;
-            value.fogStart = fog.x;
-            value.fogEnd = fog.y;
-            settings = value;
-            ApplyGlobals();
+            UpdateFog(fogRange);
         }
 
         // The fog starts past every playable corner seen from wherever the camera moved
-        public void UpdateFog(Vector3 cameraPosition)
+        public void UpdateFog(Vector2 fogRange)
         {
-            Vector2 fog = StageCalibration.BackgroundFog(cameraPosition, _board);
             LookSettings value = _settings;
-            value.fogStart = fog.x;
-            value.fogEnd = fog.y;
+            value.fogStart = fogRange.x;
+            value.fogEnd = fogRange.y;
             settings = value;
             ApplyGlobals();
         }
@@ -82,11 +61,6 @@ namespace HealerLike.Render.Look
         {
             RenderPipelineManager.beginFrameRendering -= OnBeginFrameRendering;
             Shader.SetGlobalFloat(lookAppliedId, 0f);
-        }
-
-        void OnValidate()
-        {
-            _settings = _settings.Validated();
         }
 
         void OnBeginFrameRendering(ScriptableRenderContext context, Camera[] cameras)
@@ -101,7 +75,7 @@ namespace HealerLike.Render.Look
                 return;
             }
 
-            UploadGlobals(in _settings);
+            PublishGlobals(_settings, QualitySettings.activeColorSpace);
         }
 
         public static Vector4 ToWorkingColor(Color srgb, ColorSpace colorSpace)
@@ -110,14 +84,9 @@ namespace HealerLike.Render.Look
             return new Vector4(color.r, color.g, color.b, 1f);
         }
 
-        public static void UploadGlobals(in LookSettings settings)
+        // The settings setter already validated these
+        static void PublishGlobals(LookSettings value, ColorSpace colorSpace)
         {
-            PublishGlobals(settings, QualitySettings.activeColorSpace);
-        }
-
-        static void PublishGlobals(LookSettings settings, ColorSpace colorSpace)
-        {
-            LookSettings value = settings.Validated();
             Shader.SetGlobalVector(shadowTintId, ToWorkingColor(value.shadowTint, colorSpace));
             Shader.SetGlobalVector(outlineColorId, ToWorkingColor(value.outlineColor, colorSpace));
             Shader.SetGlobalVector(fogColorId, ToWorkingColor(value.fogColor, colorSpace));

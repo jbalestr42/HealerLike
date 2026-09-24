@@ -556,7 +556,7 @@ namespace HealerLike.Render.Stage
             }
 
             game.transform.SetPositionAndRotation(pose.position, pose.rotation);
-            _manager.look.UpdateFog(pose.position);
+            _manager.look.UpdateFog(StageCalibration.BackgroundFog(pose.position, _manager.board));
             for (int i = 0; i < 3; i++)
             {
                 yield return NextFrame();
@@ -709,7 +709,7 @@ namespace HealerLike.Render.Stage
 
             Pose pose = _manager.overviewPose;
             _manager.gameCamera.transform.SetPositionAndRotation(pose.position, pose.rotation);
-            _manager.look.UpdateFog(pose.position);
+            _manager.look.UpdateFog(StageCalibration.BackgroundFog(pose.position, _manager.board));
         }
 
         #endregion

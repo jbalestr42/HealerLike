@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using HealerLike.Render.Stage;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Look
 {
@@ -122,14 +120,16 @@ public class LookControllerTests
     }
 
     [Test]
-    public void UploadGlobals_InvalidInput_PublishesValidatedValuesAndTheFlag()
+    public void ApplyGlobals_InvalidSettings_PublishesValidatedValuesAndTheFlag()
     {
+        LookController controller = CreateController();
         LookSettings input = LookSettings.Default;
         input.shadowStrength = float.NaN;
         input.fogBands = 0;
         LookSettings validated = input.Validated();
+        controller.settings = input;
 
-        LookController.UploadGlobals(in input);
+        controller.ApplyGlobals();
 
         Assert.That(Shader.GetGlobalFloat(applied), Is.EqualTo(1f));
         foreach (FieldInfo field in SettingsFields())
@@ -160,57 +160,29 @@ public class LookControllerTests
         Assert.That(Shader.GetGlobalFloat(applied), Is.Zero);
     }
 
+    static readonly Vector2 fogRange = new Vector2(31f, 41f);
+
     [Test]
-    public void OnValidate_InvalidSettings_ValidatesLocallyWithoutPublishing()
+    public void Init_FogRange_SetsTheFog()
     {
         LookController controller = CreateController();
-        controller.ApplyGlobals();
-        LookSettings input = LookSettings.Default;
-        input.fogBands = 0;
 
-        TestHelpers.SetPrivateField(controller, "_settings", input);
-        TestHelpers.InvokePrivate(controller, "OnValidate");
+        controller.Init(fogRange);
 
-        Assert.That(controller.settings.fogBands, Is.EqualTo(1));
-        Assert.That(Shader.GetGlobalFloat("_HLFogBands"), Is.EqualTo(6f));
-
-        controller.ApplyGlobals();
-        Assert.That(Shader.GetGlobalFloat("_HLFogBands"), Is.EqualTo(1f));
-    }
-
-    Camera CreatePortraitCamera()
-    {
-        GameObject go = new GameObject("Look camera");
-        _objects.Add(go);
-        Camera camera = go.AddComponent<Camera>();
-        camera.fieldOfView = 40f;
-        camera.transform.SetPositionAndRotation(new Vector3(0f, 20f, -15f), Quaternion.Euler(52f, 0f, 0f));
-        return camera;
+        Assert.AreEqual(fogRange.x, controller.settings.fogStart);
+        Assert.AreEqual(fogRange.y, controller.settings.fogEnd);
+        Assert.AreEqual(fogRange.x, Shader.GetGlobalFloat("_HLFogStart"));
     }
 
     [Test]
-    public void Init_CameraAndBoard_SetsFogFromTheBoardCorners()
-    {
-        LookController controller = CreateController();
-        Camera camera = CreatePortraitCamera();
-        Bounds board = new Bounds(Vector3.zero, new Vector3(6f, 0f, 10f));
-
-        controller.Init(camera, board);
-
-        Vector2 fog = StageCalibration.BackgroundFog(camera.transform.position, board);
-        Assert.AreEqual(fog.x, controller.settings.fogStart);
-        Assert.AreEqual(fog.y, controller.settings.fogEnd);
-    }
-
-    [Test]
-    public void Init_CameraAndBoard_KeepsTheAuthoredHatch()
+    public void Init_FogRange_KeepsTheAuthoredHatch()
     {
         LookController controller = CreateController();
         LookSettings authored = LookSettings.Default;
         authored.inkScale = 0.08f;
         controller.settings = authored;
 
-        controller.Init(CreatePortraitCamera(), new Bounds(Vector3.zero, new Vector3(6f, 0f, 10f)));
+        controller.Init(fogRange);
 
         Assert.AreEqual(0.08f, controller.settings.inkScale);
         Assert.AreEqual(authored.inkWidth, controller.settings.inkWidth);
@@ -219,7 +191,7 @@ public class LookControllerTests
     }
 
     [Test]
-    public void Init_CameraAndBoard_KeepsTheAuthoredColours()
+    public void Init_FogRange_KeepsTheAuthoredColours()
     {
         LookController controller = CreateController();
         LookSettings authored = LookSettings.Default;
@@ -227,23 +199,10 @@ public class LookControllerTests
         authored.inkStrength = 0.75f;
         controller.settings = authored;
 
-        controller.Init(CreatePortraitCamera(), new Bounds(Vector3.zero, new Vector3(6f, 0f, 10f)));
+        controller.Init(fogRange);
 
         Assert.AreEqual(authored.shadowTint, controller.settings.shadowTint);
         Assert.AreEqual(0.75f, controller.settings.inkStrength);
-    }
-
-    [Test]
-    public void Init_NoCamera_LogsAndKeepsTheSettings()
-    {
-        LookController controller = CreateController();
-        LookSettings before = controller.settings;
-
-        LogAssert.Expect(LogType.Error, "[LookController] Init needs the camera the look is calibrated for.");
-        controller.Init(null, new Bounds(Vector3.zero, Vector3.one));
-
-        Assert.AreEqual(before.fogStart, controller.settings.fogStart);
-        Assert.AreEqual(before.inkScale, controller.settings.inkScale);
     }
 }
 

@@ -129,7 +129,7 @@ namespace HealerLike.Render.Stage
             Subscribe();
 
             // Init chain
-            _look.Init(_gameCamera, _board);
+            _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board));
             _zones.Init();
             _registry.Init(_spellSink, _zones);
             Rect boardRect = BoardRect();
@@ -177,7 +177,7 @@ namespace HealerLike.Render.Stage
 
             _gameCamera.aspect = isLandscape ? 16f / 9f : StageCalibration.PortraitAspect;
             _gameCamera.transform.SetPositionAndRotation(overviewPose.position, overviewPose.rotation);
-            _look.Init(_gameCamera, _board);
+            _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board));
             _foreground.Build();
             _ridge.Build();
         }

@@ -84,7 +84,7 @@ namespace HealerLike.Render.Stage
             if (Time.unscaledTime >= _fogAt)
             {
                 _fogAt = Time.unscaledTime + 0.1f;
-                _manager.look.UpdateFog(cameraTransform.position);
+                _manager.look.UpdateFog(StageCalibration.BackgroundFog(cameraTransform.position, _manager.board));
             }
 
             if (!_isFocused && !_isSettled && Vector3.Distance(cameraTransform.position, _target.position) < 0.03f)
