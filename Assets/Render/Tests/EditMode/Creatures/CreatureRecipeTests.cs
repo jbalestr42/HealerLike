@@ -53,12 +53,17 @@ public class CreatureRecipeTests
         Assert.AreEqual(vocabulary.roots[ReachBand.Long].reach * vocabulary.bodyUnit, recipe.roots.footRadius, 0.0001f);
         Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, CreatureValidator.MaxRootReach);
         Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);
+        Assert.That(recipe.roots.count, Is.InRange(8, 14));
+        Assert.AreEqual(3, recipe.roots.segments);
+        Assert.AreEqual(Primitive.Cone, Array.Find(recipe.parts, part => part.id == "Bulb").primitive);
+        Assert.AreEqual(Primitive.Torus, crown.primitive);
     }
 
     [Test]
     public void Parts_HealerAsset_ValidatesWithItsRoles()
     {
-        CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
+        string path = "Assets/Render/Creatures/Data/Healer.asset";
+        CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
 
         CreaturePart crown = Array.Find(recipe.parts, part => part.id == "Crown");
         CreaturePart[] tips = Array.FindAll(recipe.parts, part => part.role == PartRole.Tip);

@@ -115,7 +115,7 @@ public class DeliveryClaimTests
     }
 
     [Test]
-    public void isLost_SourceSwitchedOff_IsTrue()
+    public void IsLost_SourceSwitchedOff_IsTrue()
     {
         _claim.TryClaim(_model, 7, DeliveryStyle.Arc, _projectile.transform, Vector3.one);
 
