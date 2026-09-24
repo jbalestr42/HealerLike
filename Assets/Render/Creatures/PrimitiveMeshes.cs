@@ -63,6 +63,38 @@ namespace HealerLike.Render.Creatures
             }
         }
 
+        // The span of a baked mesh at unit scale and the height of its middle over its pivot, for the meshes that are
+        // not a unit box around their pivot: the boulder spans two units across and 1.7 from -0.7 to 1, and a stone
+        // variant falls back to it; the pyramid stands on its base, apex one unit up
+        public static void GetSpan(Primitive primitive, out Vector3 span, out float middle)
+        {
+            switch (primitive)
+            {
+                case Primitive.Boulder:
+                case Primitive.Stone:
+                    span = new Vector3(2f, 1.7f, 2f);
+                    middle = 0.15f;
+                    return;
+                case Primitive.Pyramid:
+                    span = Vector3.one;
+                    middle = 0.5f;
+                    return;
+                default:
+                    span = Vector3.one;
+                    middle = 0f;
+                    return;
+            }
+        }
+
+        // The scale and the pivot that fit a part's mesh to the box it is authored as, centre and size in any unit
+        public static void Fit(Primitive primitive, Vector3 centre, Vector3 size, Quaternion rotation,
+            out Vector3 dimensions, out Vector3 pivot)
+        {
+            GetSpan(primitive, out Vector3 span, out float middle);
+            dimensions = new Vector3(size.x / span.x, size.y / span.y, size.z / span.z);
+            pivot = centre - rotation * (Vector3.up * (middle * dimensions.y));
+        }
+
         public static Transform Geometry(string name, Transform parent, Mesh mesh, Material material, Color colour,
             float glow = 0f)
         {

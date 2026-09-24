@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using HealerLike.Render.Creatures;
 
@@ -16,7 +17,20 @@ namespace HealerLike.Render.Deliveries
         bool _isInitialized;
 
         float _elapsed;
-        public float elapsed { get { return _elapsed; } }
+
+        // The pod an area shot drops at its first contact, in the shot's colour and at its size
+        public static void Splash(DeliveryVocabulary vocabulary, PrimitiveMeshes meshes,
+            List<AConsumerFactory> consumers, Vector3 point)
+        {
+            if (!vocabulary || !meshes || !vocabulary.material)
+            {
+                return;
+            }
+
+            TipDrop drop = new GameObject("TipDrop").AddComponent<TipDrop>();
+            drop.Init(vocabulary.splashPod, meshes.GetMesh(vocabulary.splashPod.primitive), vocabulary.material,
+                vocabulary.ShotColour(consumers), point, vocabulary.bulletSize);
+        }
 
         public void Init(LookPart part, Mesh mesh, Material material, Color colour, Vector3 position, float size)
         {

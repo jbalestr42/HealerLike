@@ -105,7 +105,7 @@ public class CreatureLooksTests
     }
 
     [Test]
-    public void GetRecipe_UnmappedEntity_DerivesOncePerSide()
+    public void GetRecipe_UnmappedEntity_DerivesTheSameCreatureEachTimePerSide()
     {
         CreatureLooks looks = CreateLooks();
         EntityData data = RenderTestAssets.LoadEntity("SoldierEntity");
@@ -118,7 +118,10 @@ public class CreatureLooksTests
         Assert.NotNull(plant);
         Assert.NotNull(stone);
         Assert.AreNotSame(plant, stone);
-        Assert.AreSame(plant, looks.GetRecipe(data, Entity.EntityType.Player));
+        CreatureRecipe again = looks.GetRecipe(data, Entity.EntityType.Player);
+        _objects.Add(again);
+        Assert.AreNotSame(plant, again);
+        Assert.AreEqual(plant.parts.Length, again.parts.Length);
         Assert.AreEqual(Primitive.Stone, stone.parts[0].primitive);
         Assert.AreEqual(Primitive.Sphere, plant.parts[0].primitive);
     }

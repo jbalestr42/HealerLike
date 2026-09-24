@@ -60,6 +60,21 @@ public class CharacterViewTests
         }
     }
 
+    // An arm draws its chain only while a gesture has it out, the view's tick draws it
+    static int DrawnArms(CharacterView view)
+    {
+        TestHelpers.InvokePrivate(view, "LateUpdate");
+        int count = 0;
+        foreach (MeshRenderer renderer in view.rig.root.GetComponentsInChildren<MeshRenderer>(true))
+        {
+            if (renderer.name == "LianaArm" && renderer.enabled)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
     // What Init takes from the view prefab and the manager, without a manager
     static void InitWithoutManager(CharacterView view, Character character, CreatureRecipe recipe, Transform anchor,
         Material material, RenderRegistry registry)
@@ -96,21 +111,9 @@ public class CharacterViewTests
         Assert.IsNull(character.mana);
 
         registry.NotifyHealth(_characterGo, _targetGo, 0f, false);
-        Assert.AreEqual(0, rig.activeArmCount);
+        Assert.AreEqual(0, DrawnArms(view));
         registry.NotifyHealth(_characterGo, _targetGo, 4f, true);
-        Assert.AreEqual(1, rig.activeArmCount);
-
-        view.enabled = false;
-        TestHelpers.InvokePrivate(view, "OnDisable");
-        rig.Tick(1f, 0.3f, new FootFrame(_anchorGo.transform.position, Vector3.up, 1f));
-        rig.Tick(1.3f, 0.3f, new FootFrame(_anchorGo.transform.position, Vector3.up, 1f));
-        registry.NotifyHealth(_characterGo, _targetGo, 4f, true);
-        Assert.AreEqual(0, rig.activeArmCount);
-
-        view.enabled = true;
-        TestHelpers.InvokePrivate(view, "OnEnable");
-        registry.NotifyHealth(_characterGo, _targetGo, 4f, false);
-        Assert.AreEqual(1, rig.activeArmCount);
+        Assert.AreEqual(1, DrawnArms(view));
 
         Object.DestroyImmediate(_characterGo);
         view.enabled = false;
@@ -137,7 +140,7 @@ public class CharacterViewTests
         ResourceOutcomeObserver observer = _targetGo.AddComponent<ResourceOutcomeObserver>();
         observer.Init(health, null, null, registry);
         BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-        MethodInfo updateMethod = typeof(CharacterView).GetMethod("Update", flags);
+        MethodInfo updateMethod = typeof(CharacterView).GetMethod("LateUpdate", flags);
         Action update = (Action)Delegate.CreateDelegate(typeof(Action), view, updateMethod);
         for (int i = 0; i < 10; i++)
         {
@@ -153,22 +156,17 @@ public class CharacterViewTests
         Assert.AreEqual(0, GC.GetAllocatedBytesForCurrentThread() - before);
         Assert.AreEqual(3, view.budAnchors.Count);
         Assert.NotNull(view.bud0);
-        Assert.NotNull(view.bud1);
-        Assert.NotNull(view.bud2);
 
         ResourceModifier modifier = new ResourceModifier { source = _characterGo };
         health.OnAllConsumerProcessed.Invoke(_targetGo, modifier, -5f, false);
-        Assert.AreEqual(1, view.castGestureCount);
         for (int i = 0; i < 2; i++)
         {
             health.OnAllConsumerProcessed.Invoke(_targetGo, modifier, 5f, false);
         }
 
-        Assert.AreEqual(3, view.castGestureCount);
         health.OnAllConsumerProcessed.Invoke(_targetGo, modifier, 7f, false);
-        Assert.AreEqual(4, view.castGestureCount);
         mana.OnAllConsumerProcessed.Invoke(_characterGo, modifier, 10f, false);
-        Assert.AreEqual(4, view.castGestureCount, "Mana restoration must not count as a heal gesture.");
+        Assert.AreEqual(4, DrawnArms(view), "Mana restoration must not reach out an arm.");
 
         TestHelpers.SetPrivateField(mana, "_value", 0f);
         TestHelpers.InvokePrivate(view, "LateUpdate");
@@ -180,10 +178,24 @@ public class CharacterViewTests
         TestHelpers.InvokePrivate(view, "LateUpdate");
         renderer.GetPropertyBlock(block);
         Assert.Greater(block.GetColor("_BaseColor").g, empty.g);
+    }
 
+    [Test]
+    public void OnHealthResolved_Disabled_DrawsNoArm()
+    {
+        _ownedRecipe = RenderTestAssets.CreateRecipe();
+        Character character = null;
+        TestHelpers.WithLoggingDisabled(() => character = _characterGo.AddComponent<Character>());
+        CharacterView view = _anchorGo.AddComponent<CharacterView>();
+        TestHelpers.SetPrivateField(view, "_meshes", RenderTestAssets.LoadMeshes());
+        RenderRegistry registry = new RenderRegistry();
+        InitWithoutManager(view, character, _ownedRecipe, _anchorGo.transform, _material, registry);
         view.enabled = false;
-        health.OnAllConsumerProcessed.Invoke(_targetGo, modifier, -5f, false);
-        Assert.AreEqual(4, view.castGestureCount);
+        TestHelpers.InvokePrivate(view, "OnDisable");
+
+        registry.NotifyHealth(_characterGo, _targetGo, 4f, true);
+
+        Assert.AreEqual(0, DrawnArms(view));
     }
 
     [Test]

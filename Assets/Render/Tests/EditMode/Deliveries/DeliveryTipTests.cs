@@ -7,6 +7,23 @@ namespace HealerLike.Render.Deliveries
 
 public class DeliveryTipTests
 {
+    GameObject _parent;
+    Material _material;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _parent = new GameObject("TipParent");
+        _material = new Material(RenderTestAssets.LoadLookMaterial());
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        Object.DestroyImmediate(_parent);
+        Object.DestroyImmediate(_material);
+    }
+
     static DeliveryTip CreateTip(DeliveryStyle style, bool hasVocabulary = true)
     {
         DeliveryTip tip = new DeliveryTip();
@@ -74,14 +91,64 @@ public class DeliveryTipTests
     }
 
     [Test]
-    public void PartMatrix_RigidSpike_ApexLeadsTheTravel()
+    public void Draw_RigidSpike_ApexLeadsTheTravel()
     {
         DeliveryTip tip = CreateTip(DeliveryStyle.Rigid);
         Matrix4x4 frame = DeliveryTip.Frame(Vector3.zero, Vector3.right, 1f);
 
-        Vector3 apex = tip.PartMatrix(frame, 0).MultiplyPoint3x4(Vector3.up * 0.5f);
+        tip.Draw(_parent.transform, frame, _material, Color.red, Color.green);
 
-        Assert.Greater(apex.x, 0.9f);
+        Transform spike = _parent.GetComponentInChildren<Renderer>().transform;
+        Assert.Greater(spike.TransformPoint(Vector3.up * 0.5f).x, 0.9f);
+    }
+
+    [Test]
+    public void Draw_Arc_EveryPartARendererAndOnlyTheTipWidensItsOutline()
+    {
+        DeliveryTip tip = CreateTip(DeliveryStyle.Arc);
+        Matrix4x4 frame = DeliveryTip.Frame(Vector3.right, Vector3.right, 0.5f);
+
+        tip.Draw(_parent.transform, frame, _material, Color.red, Color.green);
+
+        Renderer[] renderers = _parent.GetComponentsInChildren<Renderer>();
+        Assert.AreEqual(tip.partCount, renderers.Length);
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            renderers[i].GetPropertyBlock(block);
+            bool isTip = tip.Part(i).role == PartRole.Tip;
+            Assert.AreEqual(isTip, block.HasFloat("_HLOutlineWidthMultiplier"), tip.Part(i).id);
+            if (isTip)
+            {
+                Assert.AreEqual(PartPaint.TipOutlineWidth, block.GetFloat("_HLOutlineWidthMultiplier"));
+            }
+            Assert.AreEqual(tip.PartColour(i, Color.red, Color.green), block.GetColor("_BaseColor"));
+        }
+    }
+
+    [Test]
+    public void Draw_Frame_PlacesEachPartWhereItsMatrixSays()
+    {
+        DeliveryTip tip = CreateTip(DeliveryStyle.Rigid);
+        Matrix4x4 frame = DeliveryTip.Frame(Vector3.one, Vector3.forward, 0.25f);
+
+        tip.Draw(_parent.transform, frame, _material, Color.red, Color.green);
+
+        Transform part = _parent.GetComponentInChildren<Renderer>().transform;
+        Vector3 expected = frame.MultiplyPoint3x4(tip.Part(0).position);
+        Assert.That(Vector3.Distance(expected, part.position), Is.LessThan(0.0001f));
+    }
+
+    [Test]
+    public void Hide_DrawnTip_ShowsNoRenderer()
+    {
+        DeliveryTip tip = CreateTip(DeliveryStyle.Direct);
+        tip.Draw(_parent.transform, DeliveryTip.Frame(Vector3.zero, Vector3.right, 1f), _material, Color.red,
+            Color.green);
+
+        tip.Hide();
+
+        Assert.IsEmpty(_parent.GetComponentsInChildren<Renderer>());
     }
 }
 

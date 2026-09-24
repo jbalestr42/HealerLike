@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using HealerLike.Render.Deliveries;
 
 namespace HealerLike.Render.Creatures
 {
@@ -43,7 +44,7 @@ namespace HealerLike.Render.Creatures
             }
 
             // Arm j grows from source socket j, so every arm needs its socket
-            if (data.sourceLocal == null || data.arms == null || data.arms.Length > CreatureRig.MaxArms
+            if (data.sourceLocal == null || data.arms == null || data.arms.Length > ArmPool.MaxArms
                 || data.arms.Length > data.sourceLocal.Length)
             {
                 return Fail("Invalid sockets or arms.", out error);

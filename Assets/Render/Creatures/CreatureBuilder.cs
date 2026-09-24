@@ -1,27 +1,26 @@
-using System.Collections.Generic;
 using UnityEngine;
+using HealerLike.Render.Deliveries;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Creatures
 {
-    public class CreatureBuilder : MonoBehaviour, IEntityView, IHealthVisualSink,
-        IDeliverySource, IEffectAnchors
+    // The view of a spawned entity: derives or takes its recipe, reads the entity's skills, target and health
+    public class CreatureBuilder : ARigHost, IEntityView
     {
         [SerializeField] CreatureRecipe _recipe;
         [SerializeField] Material _material;
         [SerializeField] Material _bodyMaterial;
         [SerializeField] PrimitiveMeshes _meshes;
 
+        readonly UnitReadout _readout = new UnitReadout();
+        // The recipe this view derived from its entity, released with it
+        CreatureRecipe _derivedRecipe;
         Entity _entity;
-        readonly List<ASkill> _skills = new List<ASkill>();
-        readonly Dictionary<ASkill, ICooldownSkill> _cooldowns = new Dictionary<ASkill, ICooldownSkill>();
-        readonly List<ASkill> _removedSkills = new List<ASkill>();
         ResourceAttribute _health;
         StatusObserver _statusObserver;
-        GameObject _registeredSource;
-        RenderRegistry _registeredRegistry;
         RenderRegistry _registry;
+        DeliveryVocabulary _deliveryVocabulary;
         ISpellVisualSink _spellSink;
         // The game's cell unless Configure hands another ground frame
         float _cellSize = StageCalibration.CellSize;
@@ -29,12 +28,7 @@ namespace HealerLike.Render.Creatures
         Vector3 _groundOrigin;
         Vector3 _groundNormal = Vector3.up;
 
-        CreatureRig _rig;
-        public CreatureRig rig { get { return _rig; } }
-
         public CreatureRecipe recipe { get { return _recipe; } }
-
-        public int cooldownSkillCount { get { return _cooldowns.Count; } }
 
         void OnEnable()
         {
@@ -48,22 +42,15 @@ namespace HealerLike.Render.Creatures
         void OnDisable()
         {
             Detach();
-            if (rig != null)
-            {
-                rig.CancelAll();
-                rig.SetVisible(false);
-            }
+            HideRig();
         }
 
         void OnDestroy()
         {
             Detach();
-            if (rig != null)
-            {
-                rig.Dispose();
-            }
-
-            _rig = null;
+            ReleaseRig();
+            RenderObjects.Release(_derivedRecipe);
+            _derivedRecipe = null;
         }
 
         public void Init(Entity owner, RenderManager manager)
@@ -79,12 +66,14 @@ namespace HealerLike.Render.Creatures
             {
                 _registry = manager.registry;
                 _spellSink = manager.spellSink;
+                _deliveryVocabulary = manager.deliveryVocabulary;
             }
 
             // A view without an authored recipe draws the one derived from the entity's data
             if (!_recipe && owner && manager && manager.creatureLooks)
             {
                 _recipe = manager.creatureLooks.GetRecipe(owner.data, owner.entityType);
+                _derivedRecipe = _recipe;
             }
 
             Init(owner);
@@ -94,13 +83,13 @@ namespace HealerLike.Render.Creatures
         public void Init(Entity owner)
         {
             Detach();
-            if (_entity != owner && rig != null)
+            if (_entity != owner)
             {
-                rig.CancelAll();
+                CancelGestures();
             }
 
             _entity = owner;
-            RefreshSkills();
+            _readout.Init(_entity);
             ObserveOutcomes();
             if (!_entity)
             {
@@ -119,49 +108,17 @@ namespace HealerLike.Render.Creatures
             }
         }
 
+        // After his Update has moved the entity and its skills; the readout is the one thing polled every frame
         void LateUpdate()
         {
-            if (!_entity)
+            if (!_entity || rig == null)
             {
                 return;
             }
 
-            Attach();
-            RefreshSkills();
-            TargetProvider provider = _entity.targetProvider;
-            if (!provider)
-            {
-                provider = _entity.GetComponent<TargetProvider>();
-            }
-
-            List<GameObject> targets = provider ? provider.GetTargets() : null;
-            Vector3? target = null;
-            if (targets != null && targets.Count > 0 && targets[0])
-            {
-                target = targets[0].transform.position;
-            }
-
-            float readiness = 0f;
-            foreach (KeyValuePair<ASkill, ICooldownSkill> pair in _cooldowns)
-            {
-                if (!pair.Key || !pair.Key.isEnabled)
-                {
-                    continue;
-                }
-
-                float remaining = pair.Value.cooldownProgress;
-                if (float.IsFinite(remaining))
-                {
-                    readiness = Mathf.Max(readiness, 1f - Mathf.Clamp01(remaining));
-                }
-            }
-
-            if (rig != null)
-            {
-                float healthFraction = _health && _health.Max > 0 ? _health.Value / _health.Max : 1f;
-                rig.SetReadout(target, healthFraction, readiness, readiness);
-                rig.Tick(Time.time, Time.deltaTime, Frame());
-            }
+            _readout.Read();
+            rig.SetReadout(_readout.target, _readout.healthFraction, _readout.readiness, _readout.readiness);
+            TickRig(Time.time, Time.deltaTime, Frame());
         }
 
         public void SetRecipe(CreatureRecipe value, Material sharedMaterial, PrimitiveMeshes meshes)
@@ -171,12 +128,7 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
-            if (rig != null)
-            {
-                rig.Dispose();
-            }
-
-            _rig = null;
+            ReleaseRig();
             _recipe = value;
             _material = sharedMaterial;
             _meshes = meshes;
@@ -196,12 +148,7 @@ namespace HealerLike.Render.Creatures
             ObserveOutcomes();
             if (_cellSize != size)
             {
-                if (rig != null)
-                {
-                    rig.Dispose();
-                }
-
-                _rig = null;
+                ReleaseRig();
             }
 
             _cellSize = size;
@@ -229,53 +176,17 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        void RefreshSkills()
-        {
-            if (!_entity)
-            {
-                _cooldowns.Clear();
-                return;
-            }
-
-            _entity.GetComponents(_skills);
-            _removedSkills.Clear();
-            foreach (ASkill skill in _cooldowns.Keys)
-            {
-                if (!skill || !_skills.Contains(skill))
-                {
-                    _removedSkills.Add(skill);
-                }
-            }
-
-            foreach (ASkill skill in _removedSkills)
-            {
-                _cooldowns.Remove(skill);
-            }
-
-            foreach (ASkill skill in _skills)
-            {
-                if (!_cooldowns.ContainsKey(skill) && skill is ICooldownSkill cooldownSkill)
-                {
-                    _cooldowns.Add(skill, cooldownSkill);
-                }
-            }
-        }
-
         void EnsureRig()
         {
             if (rig == null && _recipe && _material)
             {
-                CreatureRig created = new CreatureRig();
-                if (created.Init(_recipe, transform, _material, _bodyMaterial, _meshes, _cellSize))
-                {
-                    _rig = created;
-                }
+                BuildRig(_recipe, transform, _material, _bodyMaterial, _meshes, _deliveryVocabulary, _cellSize);
             }
 
             if (rig != null)
             {
                 rig.SetVisible(isActiveAndEnabled);
-                rig.Tick(Time.time, 0f, Frame());
+                TickRig(Time.time, 0f, Frame());
             }
         }
 
@@ -313,38 +224,11 @@ namespace HealerLike.Render.Creatures
                 }
             }
 
-            SyncRegistry();
+            Register(_registry, _entity.gameObject);
             if (rig != null)
             {
                 rig.SetVisible(true);
             }
-        }
-
-        void SyncRegistry()
-        {
-            if (_registeredRegistry == _registry)
-            {
-                return;
-            }
-
-            Unregister();
-            _registeredRegistry = _registry;
-            _registeredSource = _entity ? _entity.gameObject : null;
-            if (_registeredRegistry != null)
-            {
-                _registeredRegistry.Register(_registeredSource, this);
-            }
-        }
-
-        void Unregister()
-        {
-            if (_registeredRegistry != null)
-            {
-                _registeredRegistry.Unregister(_registeredSource, this);
-            }
-
-            _registeredRegistry = null;
-            _registeredSource = null;
         }
 
         void Detach()
@@ -374,51 +258,12 @@ namespace HealerLike.Render.Creatures
         #region IHealthVisualSink
 
         // Damage reaches this sink too, only a heal draws the contact
-        public void OnHealthResolved(GameObject target, float value, bool critical)
+        public override void OnHealthResolved(GameObject target, float value, bool critical)
         {
-            if (isActiveAndEnabled && target && value > 0f && rig != null)
+            if (isActiveAndEnabled && target && value > 0f)
             {
-                rig.HealContact(RenderTargets.Point(target));
+                HealContact(target);
             }
-        }
-
-        #endregion
-
-        #region IDeliverySource
-
-        public bool BeginDelivery(int token, DeliveryStyle style, Transform projectile, Vector3 end)
-        {
-            return isActiveAndEnabled && rig != null && rig.BeginDelivery(token, style, projectile, end);
-        }
-
-        public void ContactDelivery(int token, Vector3 position, GameObject target)
-        {
-            if (rig != null)
-            {
-                rig.ContactDelivery(token, position, target);
-            }
-        }
-
-        public void EndDelivery(int token)
-        {
-            if (rig != null)
-            {
-                rig.EndDelivery(token);
-            }
-        }
-
-        #endregion
-
-        #region IEffectAnchors
-
-        public bool TryGetAnchors(out EffectAnchors anchors)
-        {
-            if (rig == null)
-            {
-                anchors = new EffectAnchors();
-                return false;
-            }
-            return rig.TryGetAnchors(out anchors);
         }
 
         #endregion

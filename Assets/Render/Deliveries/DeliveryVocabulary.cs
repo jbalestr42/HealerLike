@@ -24,8 +24,6 @@ namespace HealerLike.Render.Deliveries
     [CreateAssetMenu(menuName = "Custom/Data/Render/DeliveryVocabulary")]
     public class DeliveryVocabulary : SerializedScriptableObject
     {
-        // TODO: take it from RenderManager once it holds a reference, Resources is the only road from here
-        public static readonly string ResourcePath = "DeliveryVocabulary";
         // The tip width of a shot no view claims when there is no vocabulary to read it from
         public static readonly float DefaultBulletSize = 0.2f;
 
@@ -41,15 +39,10 @@ namespace HealerLike.Render.Deliveries
         // The pod an area item drops from the tip at contact
         public LookPart splashPod;
 
-        // A shot no view claims draws its tip at this width in world units, with these meshes and material
+        // A shot no view claims draws its tip at this width in world units, with this material, since it has no
+        // rig to borrow one from
         public float bulletSize = DefaultBulletSize;
-        public PrimitiveMeshes meshes;
         public Material material;
-
-        public static DeliveryVocabulary Load()
-        {
-            return Resources.Load<DeliveryVocabulary>(ResourcePath);
-        }
 
         public ArmStyle GetArm(DeliveryStyle style)
         {
@@ -58,6 +51,48 @@ namespace HealerLike.Render.Deliveries
                 return BendingArm;
             }
             return arms[style];
+        }
+
+        // The accent of the first consumer's family, false when the shot carries none
+        public bool TryAccent(List<AConsumerFactory> consumers, out Color accent)
+        {
+            accent = Color.clear;
+            if (consumers == null)
+            {
+                return false;
+            }
+
+            if (!palette)
+            {
+                Debug.LogError("[DeliveryVocabulary] No palette.");
+                accent = Color.magenta;
+                return true;
+            }
+
+            foreach (AConsumerFactory consumer in consumers)
+            {
+                if (consumer != null)
+                {
+                    accent = palette.Colour(ColourRole.Accent, EffectDerivation.ConsumerFamily(consumer, false));
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // The family's accent, or the damage accent for a shot that carries no consumer
+        public Color ShotColour(List<AConsumerFactory> consumers)
+        {
+            if (TryAccent(consumers, out Color accent))
+            {
+                return accent;
+            }
+
+            if (palette)
+            {
+                return palette.Accent(EffectFamily.Damage);
+            }
+            return Color.white;
         }
 
         // A style without an entry draws nothing

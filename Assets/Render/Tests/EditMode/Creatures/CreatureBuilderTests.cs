@@ -212,40 +212,13 @@ public class CreatureBuilderTests
     }
 
     [Test]
-    public void LateUpdate_LateAddedCooldownSkill_PollsChargeAndHealth()
+    public void BeginDelivery_ThrownOrDirect_ClaimsOnlyWhatAnArmDraws()
     {
-        TargetProvider provider = null;
-        TestHelpers.WithLoggingDisabled(() => provider = _owner.AddComponent<TargetProvider>());
-        _target.transform.position = Vector3.right * 3f;
-        TestHelpers.SetPrivateField(provider, "_targets", new List<GameObject> { _target });
-        ShootProjectileSkill skill = _owner.AddComponent<ShootProjectileSkill>();
-        TestHelpers.SetPrivateField(skill, "_cooldownDuration", new Attribute(2));
-        skill.isEnabled = true;
-        TestHelpers.SetPrivateField(_health, "_value", 25f);
-        FieldInfo cooldown = typeof(ACooldownSkill<ShootProjectileSkillData>).GetField("_cooldown",
-            BindingFlags.NonPublic | BindingFlags.Instance);
+        bool isThrownClaimed = _builder.BeginDelivery(200, DeliveryStyle.Thrown, null, Vector3.one);
+        bool isDirectClaimed = _builder.BeginDelivery(201, DeliveryStyle.Direct, null, Vector3.one);
 
-        TestHelpers.InvokePrivate(_builder, "LateUpdate");
-
-        Assert.AreEqual(1, _builder.cooldownSkillCount);
-        Assert.AreEqual(1, _builder.rig.charge);
-        Assert.AreEqual(0.25f, _builder.rig.healthFraction);
-        cooldown.SetValue(skill, 0.5f);
-        TestHelpers.InvokePrivate(_builder, "LateUpdate");
-        Assert.AreEqual(0.75f, _builder.rig.charge);
-        cooldown.SetValue(skill, 2f);
-        TestHelpers.InvokePrivate(_builder, "LateUpdate");
-        Assert.AreEqual(0, _builder.rig.charge);
-        Assert.IsFalse(_builder.BeginDelivery(200, DeliveryStyle.Thrown, null, Vector3.one));
-        Assert.IsTrue(_builder.BeginDelivery(201, DeliveryStyle.Direct, null, Vector3.one));
-        Assert.AreEqual(0, _builder.rig.charge);
-        Object.DestroyImmediate(skill);
-        TestHelpers.InvokePrivate(_builder, "LateUpdate");
-        Assert.AreEqual(0, _builder.cooldownSkillCount);
-        Assert.AreEqual(0, _builder.rig.charge);
-        TestHelpers.SetPrivateField(_health, "_value", 100f);
-        TestHelpers.InvokePrivate(_builder, "LateUpdate");
-        Assert.AreEqual(1, _builder.rig.healthFraction);
+        Assert.IsFalse(isThrownClaimed);
+        Assert.IsTrue(isDirectClaimed);
     }
 
     [Test]

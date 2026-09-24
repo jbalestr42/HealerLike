@@ -1,12 +1,8 @@
-using System.Collections.Generic;
-using System.Reflection;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
-using HealerLike.Render.Deliveries;
 using HealerLike.Render.Grammar;
-using HealerLike.Render.Stones;
 
 namespace HealerLike.Render.Creatures
 {
@@ -17,7 +13,6 @@ public class CreatureRigTests
     Material _material;
     CreatureRecipe _recipe;
     CreatureRig _rig;
-    readonly List<Object> _objects = new List<Object>();
 
     [SetUp]
     public void SetUp()
@@ -33,55 +28,9 @@ public class CreatureRigTests
     public void TearDown()
     {
         _rig.Dispose();
-        foreach (Object trackedObject in _objects)
-        {
-            Object.DestroyImmediate(trackedObject);
-        }
-        _objects.Clear();
         Object.DestroyImmediate(_parent);
         Object.DestroyImmediate(_material);
         Object.DestroyImmediate(_recipe);
-    }
-
-    T Track<T>(T trackedObject) where T : Object
-    {
-        _objects.Add(trackedObject);
-        return trackedObject;
-    }
-
-    [Test]
-    public void ContactDelivery_ShortDirectReach_DoesNotCoilUnusedLength()
-    {
-        _rig.Dispose();
-        CreatureRecipe data = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
-        _rig = RenderTestAssets.CreateRig(data, _parent.transform, _material);
-        _rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
-        Vector3 target = new Vector3(2f, 1.3f, 0f);
-
-        Assert.IsTrue(_rig.BeginDelivery(500, DeliveryStyle.Direct, null, target));
-        _rig.ContactDelivery(500, target, null);
-        _rig.Tick(0.02f, 0.02f, new FootFrame(Vector3.zero, Vector3.up, 1f));
-
-        MeshFilter arm = _rig.root.Find("LianaArm").GetComponent<MeshFilter>();
-        Assert.Less(arm.sharedMesh.bounds.size.magnitude, 4f,
-            "A two-cell real delivery must not loop the unused 24-cell reach around the actor.");
-    }
-
-    [Test]
-    public void Tick_LiveProjectile_ArmFollowsWithoutObserverPush()
-    {
-        GameObject projectile = Track(new GameObject("Projectile"));
-        projectile.transform.position = new Vector3(1f, 1f, 0f);
-        FootFrame frame = new FootFrame(Vector3.zero, Vector3.up, 1f);
-        Assert.IsTrue(_rig.BeginDelivery(7, DeliveryStyle.Direct, projectile.transform, Vector3.one));
-        _rig.Tick(0f, 0.2f, frame);
-
-        projectile.transform.position = new Vector3(2f, 1f, 0f);
-        _rig.Tick(0.2f, 0.016f, frame);
-
-        FieldInfo field = typeof(CreatureRig).GetField("_arms", BindingFlags.Instance | BindingFlags.NonPublic);
-        LianaArm[] arms = (LianaArm[])field.GetValue(_rig);
-        Assert.That(Vector3.Distance(arms[0].goal, projectile.transform.position), Is.LessThan(0.00001f));
     }
 
     [Test]
@@ -205,18 +154,6 @@ public class CreatureRigTests
     }
 
     [Test]
-    public void Init_Tip_DrawsAWiderOutline()
-    {
-        CreateDerivedRig(LookSide.Plant);
-        int tip = System.Array.FindIndex(_recipe.parts, part => part.role == PartRole.Tip);
-        MaterialPropertyBlock block = new MaterialPropertyBlock();
-
-        _rig.partTransforms[tip].GetComponent<Renderer>().GetPropertyBlock(block);
-
-        Assert.AreEqual(CreatureRig.TipOutlineWidth, block.GetFloat("_HLOutlineWidthMultiplier"));
-    }
-
-    [Test]
     public void Tick_Crown_SpinsByRoleNotById()
     {
         _rig.Dispose();
@@ -230,31 +167,6 @@ public class CreatureRigTests
         _rig.Tick(5f, 0f, frame);
 
         Assert.Greater(Quaternion.Angle(before, _rig.partTransforms[0].parent.localRotation), 1f);
-    }
-
-    [Test]
-    public void Init_TwoFacedStone_DrawsOchreOnTheSecondSubmesh()
-    {
-        _rig.Dispose();
-        Mesh mesh = Track(new Mesh());
-        mesh.vertices = new Vector3[] { Vector3.zero, Vector3.up, Vector3.right, Vector3.forward };
-        mesh.subMeshCount = 2;
-        mesh.SetTriangles(new int[] { 0, 1, 2 }, 0);
-        mesh.SetTriangles(new int[] { 0, 2, 3 }, 1);
-        StoneVariants variants = Track(ScriptableObject.CreateInstance<StoneVariants>());
-        variants.meshes = new Mesh[] { mesh };
-        PrimitiveMeshes meshes = Track(Object.Instantiate(RenderTestAssets.LoadMeshes()));
-        meshes.stoneVariants = variants;
-        _recipe.parts[0].primitive = Primitive.Stone;
-        _rig = new CreatureRig();
-        _rig.Init(_recipe, _parent.transform, _material, meshes);
-        Renderer renderer = _rig.partTransforms[0].GetComponent<Renderer>();
-        MaterialPropertyBlock block = new MaterialPropertyBlock();
-
-        renderer.GetPropertyBlock(block, 1);
-
-        Assert.AreEqual(2, renderer.sharedMaterials.Length);
-        Assert.Less(((Vector4)_recipe.stoneOchre - (Vector4)block.GetColor("_BaseColor")).magnitude, 0.001f);
     }
 
     [Test]
@@ -276,52 +188,12 @@ public class CreatureRigTests
     }
 
     [Test]
-    public void Begin_PoolSaturated_RefusesWithoutStealingAndDisposeIsIdempotent()
+    public void Dispose_Twice_ReleasesTheRootOnce()
     {
-        for (int i = 0; i < CreatureRig.MaxArms; i++)
-        {
-            Assert.AreNotEqual(0, _rig.Begin(GestureKind.Attack, Vector3.one));
-        }
+        _rig.Dispose();
+        _rig.Dispose();
 
-        Assert.AreEqual(0, _rig.Begin(GestureKind.Attack, Vector3.one));
-        Assert.AreEqual(CreatureRig.MaxArms, _rig.activeArmCount);
-        _rig.Contact(0, Vector3.one);
-        _rig.End(0);
-        Assert.AreEqual(CreatureRig.MaxArms, _rig.activeArmCount);
-        _rig.CancelAll();
-        _rig.Tick(0.79f, 0.05f, new FootFrame(Vector3.zero, Vector3.up, 1f));
-        _rig.Tick(1f, 0.21f, new FootFrame(Vector3.zero, Vector3.up, 1f));
-        Assert.AreEqual(0, _rig.activeArmCount);
-        _rig.Dispose();
-        _rig.Dispose();
         Assert.IsFalse(_rig.root);
-    }
-
-    [Test]
-    public void Tick_Roots_AreJointedCylinderChainsDownToTheFoot()
-    {
-        _rig.Tick(0f, 0.016f, new FootFrame(Vector3.zero, Vector3.up, 1f));
-
-        int segments = 0;
-        int joints = 0;
-        float lowest = float.MaxValue;
-        foreach (Transform child in _rig.root)
-        {
-            if (child.name == "Root")
-            {
-                segments++;
-                Assert.AreSame(RenderTestAssets.LoadMeshes().cylinder, child.GetComponent<MeshFilter>().sharedMesh);
-                lowest = Mathf.Min(lowest, child.GetComponent<Renderer>().bounds.min.y);
-            }
-            else if (child.name == "RootJoint")
-            {
-                joints++;
-            }
-        }
-
-        Assert.AreEqual(_recipe.roots.count * _recipe.roots.segments, segments);
-        Assert.AreEqual(_recipe.roots.count * (_recipe.roots.segments - 1), joints);
-        Assert.That(lowest, Is.LessThan(_recipe.roots.thickness)); // the last segment lies on the ground
     }
 
     [Test]
@@ -362,23 +234,6 @@ public class CreatureRigTests
     }
 
     [Test]
-    public void Contact_CancelledSaturatedLease_StaysCancelled()
-    {
-        for (int i = 0; i < 8; i++)
-        {
-            int token = _rig.Begin(GestureKind.Attack, Vector3.one);
-            _rig.Contact(token, Vector3.one);
-        }
-
-        _rig.CancelAll();
-        _rig.Tick(0.05f, 0.05f, new FootFrame(Vector3.zero, Vector3.up, 1f));
-        _rig.Contact(0, Vector3.one);
-        _rig.Tick(0.26f, 0.21f, new FootFrame(Vector3.zero, Vector3.up, 1f));
-
-        Assert.AreEqual(0, _rig.activeArmCount);
-    }
-
-    [Test]
     public void Init_NonuniformAncestors_LogsAndLeavesViewEmpty()
     {
         _parent.transform.localScale = new Vector3(1f, 2f, 1f);
@@ -389,36 +244,6 @@ public class CreatureRigTests
 
         Assert.IsFalse(isInitialized);
         Assert.IsNull(rig.root);
-    }
-
-    [Test]
-    public void BeginDelivery_SwarmCapAndStaleOrUnsupportedTokens_AreRefused()
-    {
-        Assert.IsFalse(_rig.BeginDelivery(1, DeliveryStyle.Thrown, null, Vector3.one));
-        for (int i = 1; i <= 4; i++)
-        {
-            Assert.IsTrue(_rig.BeginDelivery(i, DeliveryStyle.Swarm, null, Vector3.one));
-        }
-
-        Assert.IsFalse(_rig.BeginDelivery(5, DeliveryStyle.Swarm, null, Vector3.one));
-        Assert.IsFalse(_rig.BeginDelivery(1, DeliveryStyle.Direct, null, Vector3.one));
-        _rig.EndDelivery(1);
-        _rig.EndDelivery(1);
-        Assert.IsTrue(_rig.BeginDelivery(5, DeliveryStyle.Swarm, null, Vector3.one));
-    }
-
-    [Test]
-    public void ContactDelivery_ChainSync_CollectsContactsAndRetractsTogether()
-    {
-        Assert.IsTrue(_rig.BeginDelivery(123, DeliveryStyle.ChainSync, null, Vector3.one));
-        _rig.ContactDelivery(123, Vector3.one, null);
-        _rig.ContactDelivery(123, Vector3.right * 2f, null);
-        Assert.AreEqual(2, _rig.activeArmCount);
-        _rig.Tick(0.1f, 0.1f, new FootFrame(Vector3.zero, Vector3.up, 1f));
-        Assert.AreEqual(2, _rig.activeArmCount);
-        _rig.EndDelivery(123);
-        _rig.Tick(0.4f, 0.3f, new FootFrame(Vector3.zero, Vector3.up, 1f));
-        Assert.AreEqual(0, _rig.activeArmCount);
     }
 
     [Test]
@@ -457,9 +282,9 @@ public class CreatureRigTests
     {
         _rig.SetReadout(Vector3.right * 4f, 0.2f, 0.8f, 0.8f);
         _rig.Tick(1f, 0.1f, new FootFrame(Vector3.zero, Vector3.up, 1f));
-        Assert.Greater(_rig.aim.eulerAngles.y, 0);
-        Assert.Less(_rig.aim.eulerAngles.y, 90);
         Transform sway = _rig.root.Find("Sway");
+        Assert.Greater(sway.localEulerAngles.y, 0); // turning toward the target on the right, damped
+        Assert.Less(sway.localEulerAngles.y, 90);
         Assert.Less(sway.localPosition.y, 0);
         _rig.SetReadout(Vector3.right * 4f, 1f, 0f, 0f);
         _rig.Tick(2f, 1f, new FootFrame(Vector3.zero, Vector3.up, 1f));

@@ -10,8 +10,6 @@ namespace HealerLike.Render.Deliveries
 
 public class DeliveryVocabularyTests
 {
-    static readonly string vocabularyPath = "Assets/Render/Deliveries/Data/Resources/DeliveryVocabulary.asset";
-
     readonly List<Object> _objects = new List<Object>();
 
     [TearDown]
@@ -22,17 +20,6 @@ public class DeliveryVocabularyTests
             Object.DestroyImmediate(trackedObject);
         }
         _objects.Clear();
-    }
-
-    [Test]
-    public void Load_Resources_ReturnsTheAuthoredAsset()
-    {
-        DeliveryVocabulary vocabulary = DeliveryVocabulary.Load();
-
-        Assert.AreSame(RenderTestAssets.LoadDeliveryVocabulary(), vocabulary);
-        Assert.IsNotNull(vocabulary.palette);
-        Assert.IsNotNull(vocabulary.meshes);
-        Assert.IsNotNull(vocabulary.material);
     }
 
     [TestCase(DeliveryStyle.Direct, new[] { Primitive.Sphere })]

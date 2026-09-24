@@ -102,7 +102,7 @@ namespace HealerLike.Render.Creatures
                     side = -0.26f;
                 }
                 recipe.sourceLocal[j] = new Vector3(side, 1.1f, 0f);
-                recipe.arms[j] = LookComposer.Arm(recipe.sourceLocal[j] - parts[0].localPosition,
+                recipe.arms[j] = LianaShape.Arm(recipe.sourceLocal[j] - parts[0].localPosition,
                     Colour(vocabulary, ColourRole.Stem), Color.clear);
             }
 
