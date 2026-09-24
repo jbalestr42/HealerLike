@@ -32,7 +32,9 @@ Material:
     - _HLNormalEdges: 0
     - _HLOutlineWidthMultiplier: 1
     - _HLSmoothOutlineNormals: 0
+    - _HLToonThresholdOffset: -0.07
     m_Colors:
     - _BaseColor: {r: 0.49803922, g: 0.7882353, b: 0.24705882, a: 1}
+    - _HLShadeTint: {r: 0.30588236, g: 0.40784314, b: 0.39215687, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
