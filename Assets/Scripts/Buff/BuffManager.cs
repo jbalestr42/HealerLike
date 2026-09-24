@@ -39,6 +39,7 @@ public class BuffManager : SerializedMonoBehaviour
         public ABuffHandlerFactory buffHandlerFactory = null;
         public ABuffHandler buffHandler = null;
         public GameObject target = null;
+        public GameObject source = null;
         public int refreshStacks = 0;
         public int currentStacks = 0;
         public bool hasStarted => currentStacks != 0;
@@ -354,6 +355,7 @@ public class BuffManager : SerializedMonoBehaviour
             buffHandlerData.buffHandler = buffHandlerFactory.GetBuffHandler();
             buffHandlerData.buffHandlerFactory = buffHandlerFactory;
             buffHandlerData.target = target;
+            buffHandlerData.source = source;
         }
         else
         {

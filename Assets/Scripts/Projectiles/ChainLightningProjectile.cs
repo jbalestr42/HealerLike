@@ -27,6 +27,14 @@ public class ChainLightningProjectile : Projectile
         lineRenderer.positionCount = targets.Count + 1;
 
         float effectDuration = _effectMode == EffectMode.FixedDuration ? _effectDuration : (1f / source.GetComponent<AttributeManager>().Get(AttributeType.AttackRate).Value) + 0.05f;
+
+        // Read once so the source point round-robin advances once per shot, not once per frame
+        SkillSource skillStartPoint = null;
+        if (source != null)
+        {
+            skillStartPoint = source.GetComponent<Entity>().skillStartPoint;
+        }
+
         float timer = 0f;
         while (timer <= effectDuration)
         {
@@ -36,7 +44,7 @@ public class ChainLightningProjectile : Projectile
             }
 
             timer += Time.deltaTime;
-            Vector3 sourcePosition = source.GetComponent<Entity>().skillStartPoint.transform.position;
+            Vector3 sourcePosition = skillStartPoint.transform.position;
             int position = 0;
             bool hasValidTarget = false;
             foreach (GameObject target in targets)
