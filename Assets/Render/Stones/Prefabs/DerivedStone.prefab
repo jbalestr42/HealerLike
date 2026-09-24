@@ -120,6 +120,7 @@ GameObject:
   - component: {fileID: 458933529464818769}
   - component: {fileID: 1136262338558914628}
   - component: {fileID: 9046565687459949015}
+  - component: {fileID: 922290028462785620}
   m_Layer: 0
   m_Name: DerivedStone
   m_TagString: Untagged
@@ -224,3 +225,15 @@ MonoBehaviour:
   _groundShadow: {fileID: 1735226342536893352}
   _shedHealthFraction: 0.5
   _palette: {fileID: 11400000, guid: 97a6ebe080b14b84947880de49d6bb14, type: 2}
+--- !u!114 &922290028462785620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6580333430975781026}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474b56b009af4c0bb84b7ec9bbf8c1ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.StoneThrow
