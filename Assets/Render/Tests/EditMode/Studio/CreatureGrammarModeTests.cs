@@ -140,7 +140,7 @@ public class CreatureGrammarModeTests
         EntityData entity = RenderTestAssets.LoadEntity("SoldierEntity");
         CreatureRecipe recipe = Track(RenderTestAssets.CreateRecipe());
         GameObject view = Track(new GameObject("Authored view"));
-        view.AddComponent<CreatureBuilder>().SetRecipe(recipe, RenderTestAssets.LoadLookMaterial(),
+        RenderTestAssets.SetRecipe(view.AddComponent<CreatureBuilder>(), recipe, RenderTestAssets.LoadLookMaterial(),
             RenderTestAssets.LoadMeshes());
         CreatureLooks table = Track(ScriptableObject.CreateInstance<CreatureLooks>());
         table.entities[entity] = view;

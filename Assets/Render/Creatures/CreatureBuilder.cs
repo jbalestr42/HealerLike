@@ -22,11 +22,6 @@ namespace HealerLike.Render.Creatures
         RenderRegistry _registry;
         DeliveryVocabulary _deliveryVocabulary;
         ISpellVisualSink _spellSink;
-        // The game's cell unless Configure hands another ground frame
-        float _cellSize = StageCalibration.CellSize;
-        bool _hasConfiguredPlane;
-        Vector3 _groundOrigin;
-        Vector3 _groundNormal = Vector3.up;
 
         public CreatureRecipe recipe { get { return _recipe; } }
 
@@ -79,7 +74,7 @@ namespace HealerLike.Render.Creatures
             Init(owner);
         }
 
-        // Taking the entity alone lets tests run without the manager, Configure then hands the registry
+        // Taking the entity alone lets the studio and tests run without the manager
         public void Init(Entity owner)
         {
             Detach();
@@ -121,47 +116,6 @@ namespace HealerLike.Render.Creatures
             TickRig(Time.time, Time.deltaTime, Frame());
         }
 
-        public void SetRecipe(CreatureRecipe value, Material sharedMaterial, PrimitiveMeshes meshes)
-        {
-            if (_recipe == value && _material == sharedMaterial && _meshes == meshes)
-            {
-                return;
-            }
-
-            ReleaseRig();
-            _recipe = value;
-            _material = sharedMaterial;
-            _meshes = meshes;
-        }
-
-        public void Configure(RenderRegistry registry, float size, Vector3 origin, Vector3 normal)
-        {
-            if (!RenderMath.IsPositive(size) || !RenderMath.IsFinite(origin) || !RenderMath.IsFinite(normal)
-                || normal.sqrMagnitude < 0.00000001f)
-            {
-                Debug.LogError("[CreatureBuilder] Invalid ground frame.");
-                return;
-            }
-
-            Unregister();
-            _registry = registry;
-            ObserveOutcomes();
-            if (_cellSize != size)
-            {
-                ReleaseRig();
-            }
-
-            _cellSize = size;
-            _groundOrigin = origin;
-            _groundNormal = normal.normalized;
-            _hasConfiguredPlane = true;
-            if (_entity)
-            {
-                EnsureRig();
-                Attach();
-            }
-        }
-
         // The view prefab carries the status observer, which wires the outcome observers too
         void ObserveOutcomes()
         {
@@ -180,7 +134,8 @@ namespace HealerLike.Render.Creatures
         {
             if (rig == null && _recipe && _material)
             {
-                BuildRig(_recipe, transform, _material, _bodyMaterial, _meshes, _deliveryVocabulary, _cellSize);
+                BuildRig(_recipe, transform, _material, _bodyMaterial, _meshes, _deliveryVocabulary,
+                    StageCalibration.CellSize);
             }
 
             if (rig != null)
@@ -192,15 +147,7 @@ namespace HealerLike.Render.Creatures
 
         FootFrame Frame()
         {
-            Vector3 origin = transform.position;
-            Vector3 normal = transform.up;
-            if (_hasConfiguredPlane)
-            {
-                origin -= _groundNormal * Vector3.Dot(origin - _groundOrigin, _groundNormal);
-                normal = _groundNormal;
-            }
-
-            return new FootFrame(origin, normal, _cellSize);
+            return new FootFrame(transform.position, transform.up, StageCalibration.CellSize);
         }
 
         void Attach()

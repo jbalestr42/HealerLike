@@ -54,13 +54,13 @@ public class CreatureBuilderTests
         // Like the derived prefabs, the view carries the status observer that wires the outcome observers
         _statusObserver = _model.AddComponent<StatusObserver>();
         _builder = _model.AddComponent<CreatureBuilder>();
-        _builder.SetRecipe(_recipe, _material, RenderTestAssets.LoadMeshes());
+        RenderTestAssets.SetRecipe(_builder, _recipe, _material, RenderTestAssets.LoadMeshes());
         _spellSink = new RecordingSpellSink();
         _healthSink = new RecordingHealthSink();
         _registry = new RenderRegistry();
         _registry.Register(_source, _healthSink);
         TestHelpers.SetPrivateField(_builder, "_spellSink", _spellSink);
-        _builder.Configure(_registry, 1f, Vector3.zero, Vector3.up);
+        TestHelpers.SetPrivateField(_builder, "_registry", _registry);
         entityModel.Init(_entity);
         _builder.Init(_entity);
     }
@@ -102,7 +102,7 @@ public class CreatureBuilderTests
             {
                 CreatureRecipe recipe = LookComposer.Compose(RenderTestAssets.CreateChannels(side, head), RenderTestAssets.LoadLookVocabulary());
                 _objects.Add(recipe);
-                _builder.SetRecipe(recipe, _material, RenderTestAssets.LoadMeshes());
+                RenderTestAssets.SetRecipe(_builder, recipe, _material, RenderTestAssets.LoadMeshes());
                 _builder.Init(_entity);
 
                 bool hasAnchors = _builder.TryGetAnchors(out EffectAnchors anchors);
@@ -222,17 +222,6 @@ public class CreatureBuilderTests
     }
 
     [Test]
-    public void Configure_NonfiniteGround_LogsAndKeepsFrame()
-    {
-        CreatureRig rig = _builder.rig;
-        LogAssert.Expect(LogType.Error, "[CreatureBuilder] Invalid ground frame.");
-
-        _builder.Configure(_registry, float.NaN, Vector3.zero, Vector3.up);
-
-        Assert.AreSame(rig, _builder.rig);
-    }
-
-    [Test]
     public void Init_ManagerOnly_TakesMeshesFromManager()
     {
         GameObject managerGo = new GameObject("RenderManager");
@@ -243,7 +232,7 @@ public class CreatureBuilderTests
         viewGo.transform.SetParent(_model.transform, false);
         CreatureBuilder view = viewGo.AddComponent<CreatureBuilder>();
         _views.Add(view);
-        view.SetRecipe(_recipe, _material, null);
+        RenderTestAssets.SetRecipe(view, _recipe, _material, null);
 
         view.Init(_entity, manager);
 

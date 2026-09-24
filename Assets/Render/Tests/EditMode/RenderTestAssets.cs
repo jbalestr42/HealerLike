@@ -172,13 +172,23 @@ public static class RenderTestAssets
         };
     }
 
+    // What an authored view's prefab carries, set the way the Inspector would; a rig built from the old recipe goes
+    public static void SetRecipe(CreatureBuilder builder, CreatureRecipe recipe, Material material,
+        PrimitiveMeshes meshes)
+    {
+        TestHelpers.InvokePrivate(builder, "ReleaseRig");
+        TestHelpers.SetPrivateField(builder, "_recipe", recipe);
+        TestHelpers.SetPrivateField(builder, "_material", material);
+        TestHelpers.SetPrivateField(builder, "_meshes", meshes);
+    }
+
     // A derived stone the way the prefab lays it out: the builder builds the rig, then the body joins it
     public static StoneBody CreateStoneBody(GameObject owner, Entity entity, CreatureRecipe recipe, Material material)
     {
         GameObject viewGo = new GameObject("DerivedStone");
         viewGo.transform.SetParent(owner.transform, false);
         CreatureBuilder builder = viewGo.AddComponent<CreatureBuilder>();
-        builder.SetRecipe(recipe, material, LoadMeshes());
+        SetRecipe(builder, recipe, material, LoadMeshes());
         builder.Init(entity);
         StoneBody body = viewGo.AddComponent<StoneBody>();
         TestHelpers.SetPrivateField(body, "_palette", LoadPalette());
