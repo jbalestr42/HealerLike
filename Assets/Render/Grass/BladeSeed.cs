@@ -11,6 +11,7 @@ namespace HealerLike.Render.Grass
         public const int Stride = 32;
 
         public Vector4 positionYaw;
-        public Vector4 heightPhaseWidthRandom;
+        // x height, y width, zw rest lean: the tilt toward that heading, its length in radians
+        public Vector4 heightWidthLean;
     }
 }

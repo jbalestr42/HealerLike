@@ -144,14 +144,15 @@ public class GrassFieldTests
             }
         }
         buffers.Add(_field.bladeDraw.arguments);
+        buffers.Add(_field.socleDraw.arguments);
         buffers.Add(_field.ringDraw.arguments);
         return buffers;
     }
 
     [Test]
-    public void BladeBudget_Default_IsLayoutDefault()
+    public void BladeBudget_Default_IsTheMaximum()
     {
-        Assert.AreEqual(GrassLayout.DefaultBudget, _field.bladeBudget);
+        Assert.AreEqual(GrassLayout.MaxBudget, _field.bladeBudget);
     }
 
     [Test]
@@ -232,14 +233,6 @@ public class GrassFieldTests
     }
 
     [Test]
-    public void TriggerGust_TowardTarget_TurnsTheWind()
-    {
-        _field.TriggerGust(Vector3.forward);
-
-        Assert.AreEqual(1f, _field.wind.current.y);
-    }
-
-    [Test]
     public void UpdateField_WithCamera_BuildsFromTheInitArea()
     {
         if (!HasGraphicsDevice())
@@ -256,7 +249,7 @@ public class GrassFieldTests
         _field.UpdateField(_borrowedZones, 3);
 
         Assert.IsTrue(_field.isReady);
-        Assert.AreEqual(80, _field.bladeCount);
+        Assert.AreEqual(72, _field.bladeCount); // 12 by 6, the widest grid of at most 80
         Assert.AreEqual(3, _field.activeZoneCount);
         Assert.AreEqual(new Vector3(4f, 0.505f, -2f), BladeBoundsCenter()); // area centre, surface plus root lift
     }
@@ -268,7 +261,7 @@ public class GrassFieldTests
     }
 
     [Test]
-    public void Build_OnGraphicsDevice_DrawsOneTuftListWithTheLookShader()
+    public void Build_OnGraphicsDevice_DrawsTuftsAndSoclesWithTheLookShader()
     {
         if (!HasGraphicsDevice())
         {
@@ -278,15 +271,71 @@ public class GrassFieldTests
         BuildOneCellField();
 
         Assert.IsTrue(_field.isReady);
-        Assert.AreEqual(65, _field.bladeCount);
+        Assert.AreEqual(64, _field.bladeCount); // 8 by 8, the widest grid of at most 65
         Assert.AreEqual("HL/Look/Primitive", _field.bladeDraw.material.shader.name);
-        Assert.IsTrue(_field.bladeDraw.material.IsKeywordEnabled(GrassPalette.InstancedKeyword));
+        Assert.AreSame(_field.bladeDraw.material, _field.socleDraw.material);
+        Assert.IsTrue(_field.bladeDraw.material.IsKeywordEnabled(GrassField.InstancedKeyword));
         uint[] data = new uint[5];
         _field.bladeDraw.arguments.GetData(data);
-        Assert.AreEqual((uint)GrassTuft.IndexCount, data[0]); // one tuft: faceted sides and base cap
-        Assert.AreEqual(5, OwnedBuffers().Count); // seeds, states, visible ids, blade and ring arguments
+        Assert.AreEqual((uint)GrassTuft.IndexCount, data[0]); // four sides
+        _field.socleDraw.arguments.GetData(data);
+        Assert.AreEqual((uint)GrassTuft.SocleIndexCount, data[0]); // eight fan triangles
+        Assert.AreEqual(6, OwnedBuffers().Count); // seeds, states, visible ids, tuft, socle and ring arguments
         Assert.AreEqual(ShadowCastingMode.On, _field.bladeDraw.shadowCastingMode);
+        Assert.AreEqual(ShadowCastingMode.Off, _field.socleDraw.shadowCastingMode);
         Assert.AreEqual(ShadowCastingMode.Off, _field.ringDraw.shadowCastingMode);
+        Assert.AreEqual(1f, _field.bladeDraw.properties.GetFloat("_HL_TuftLean"));
+        Assert.AreEqual(0f, _field.socleDraw.properties.GetFloat("_HL_TuftLean"));
+    }
+
+    [Test]
+    public void GrassBladeMaterial_Asset_IsThePlantMaterialInTheGrassGreen()
+    {
+        Material grass = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat");
+        Material plant = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
+
+        Assert.AreSame(plant.shader, grass.shader);
+        Assert.IsTrue(grass.IsKeywordEnabled(GrassField.InstancedKeyword));
+        CollectionAssert.AreEquivalent(plant.shaderKeywords.Append(GrassField.InstancedKeyword), grass.shaderKeywords);
+        Assert.AreEqual(plant.enableInstancing, grass.enableInstancing);
+        Assert.AreEqual(plant.renderQueue, grass.renderQueue);
+        Shader shader = grass.shader;
+        for (int i = 0; i < shader.GetPropertyCount(); i++)
+        {
+            string name = shader.GetPropertyName(i);
+            switch (shader.GetPropertyType(i))
+            {
+                case ShaderPropertyType.Color:
+                    if (name != "_BaseColor")
+                    {
+                        Assert.AreEqual(plant.GetColor(name), grass.GetColor(name), name);
+                    }
+                    break;
+                case ShaderPropertyType.Vector:
+                    Assert.AreEqual(plant.GetVector(name), grass.GetVector(name), name);
+                    break;
+                case ShaderPropertyType.Float:
+                case ShaderPropertyType.Range:
+                    Assert.AreEqual(plant.GetFloat(name), grass.GetFloat(name), name);
+                    break;
+                case ShaderPropertyType.Int:
+                    Assert.AreEqual(plant.GetInteger(name), grass.GetInteger(name), name);
+                    break;
+                case ShaderPropertyType.Texture:
+                    Assert.AreEqual(plant.GetTexture(name), grass.GetTexture(name), name);
+                    break;
+            }
+        }
+        Assert.That((Color32)grass.GetColor("_BaseColor"), Is.EqualTo(new Color32(91, 144, 85, 255))); // #5b9055
+    }
+
+    [Test]
+    public void HealRingMaterial_Asset_IsTheRingShaderWithInstancing()
+    {
+        Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/HealRing.mat");
+
+        Assert.AreEqual(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/GrassRing.shader"), material.shader);
+        Assert.IsTrue(material.enableInstancing);
     }
 
     [Test]

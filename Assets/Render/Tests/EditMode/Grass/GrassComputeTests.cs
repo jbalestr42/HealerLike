@@ -27,6 +27,18 @@ public class GrassComputeTests
     BladeState[] _states;
     Vector4[] _planes;
 
+    // 65 upright tufts of the mean size, so a zone's push is the whole lean
+    static BladeSeed[] CreateSeeds()
+    {
+        BladeSeed[] seeds = new BladeSeed[65];
+        for (int i = 0; i < seeds.Length; i++)
+        {
+            seeds[i].heightWidthLean = new Vector4(GrassLayout.TuftHeight, GrassLayout.TuftWidth, 0f, 0f);
+        }
+
+        return seeds;
+    }
+
     [SetUp]
     public void SetUp()
     {
@@ -41,7 +53,7 @@ public class GrassComputeTests
         _kernel = _compute.FindKernel("HLUpdateGrass");
 
         // Blade 0 sits under the heal zone, blade 1 under the hostile one, the rest far away
-        _layout = GrassLayout.Generate(1, 1, 1f, Vector3.zero, 0.5f, 65);
+        _layout = CreateSeeds();
         for (int i = 0; i < _layout.Length; i++)
         {
             float x = 20f;
@@ -85,7 +97,6 @@ public class GrassComputeTests
         _compute.SetInt("_HL_BladeCount", 65);
         _compute.SetInt("_HL_ZoneCount", 2);
         _compute.SetVectorArray("_HL_FrustumPlanes", _planes);
-        _compute.SetVector("_HL_Wind", new Vector4(1f, 0f, 1.2f, 0.065f));
     }
 
     [TearDown]
@@ -133,7 +144,6 @@ public class GrassComputeTests
         _zones[0] = new Zone { radius = radius, kind = kind, strength = strength, age = age, reserved = heading };
         _zoneBuffer.SetData(_zones);
         _compute.SetInt("_HL_ZoneCount", 1);
-        _compute.SetVector("_HL_Wind", new Vector4(1f, 0f, 1.2f, 0f));
         Dispatch();
         ReadStates();
         return _states[0];
@@ -145,12 +155,10 @@ public class GrassComputeTests
         Assert.AreEqual(65u, Dispatch());
 
         ReadStates();
-        Assert.That(_states[0].rampHealReserved.y, Is.EqualTo(0.4f).Within(0.0001));
-        Assert.That(_states[0].leanHeightSpike.z, Is.EqualTo(1.32f).Within(0.0001));
+        Assert.That(_states[0].leanHeightSpike.z, Is.EqualTo(1.32f).Within(0.0001)); // 1 + 0.8 * heal 0.4
         Assert.That(_states[1].leanHeightSpike.w, Is.EqualTo(0.759375f).Within(0.0001));
-        Assert.AreEqual(2f, _states[1].rampHealReserved.x);
         float spikeHeight = 0.759375f * 0.648f; // weight * rise
-        float spikeTall = _states[1].leanHeightSpike.z * _layout[1].heightPhaseWidthRandom.x;
+        float spikeTall = _states[1].leanHeightSpike.z * _layout[1].heightWidthLean.x;
         Assert.That(spikeTall, Is.InRange(0.26f * spikeHeight - 0.0001f, 0.63f * spikeHeight + 0.0001f));
         Assert.AreEqual(Vector4.one * 123f, _states[65].leanHeightSpike);
         uint[] ids = new uint[65];
@@ -160,10 +168,9 @@ public class GrassComputeTests
         Assert.IsTrue(unique.Contains(1), "The spike is drawn from the same list.");
 
         BladeState hostileState = _states[1];
-        _compute.SetFloat("_HL_Time", 50f);
         Dispatch();
         ReadStates();
-        Assert.AreEqual(hostileState, _states[1], "Spikes remain rigid as wind time changes.");
+        Assert.AreEqual(hostileState, _states[1], "Spikes stay still from frame to frame.");
 
         _compute.SetInt("_HL_ZoneCount", 64);
         Assert.AreEqual(65u, Dispatch());
@@ -178,13 +185,12 @@ public class GrassComputeTests
 
         BladeState range = Sample(3, Vector3.right, 3f, 1f);
         Assert.Greater(range.leanHeightSpike.x, 0f);
-        Assert.That(range.rampHealReserved.y, Is.InRange(0.01f, 0.4f));
+        Assert.That(range.leanHeightSpike.z, Is.InRange(1.008f, 1.2801f)); // heal 0.01 to 0.35
         Assert.AreEqual(0f, range.leanHeightSpike.w);
 
         BladeState bruise = Sample(4, Vector3.zero, 3f, 1f);
         Assert.Less(bruise.leanHeightSpike.z, 1f);
         Assert.AreEqual(0f, bruise.leanHeightSpike.w);
-        Assert.AreEqual(1f, bruise.rampHealReserved.z);
 
         BladeState calm = Sample(5, Vector3.back * 2f, 4f, 0.2f, strength: 0f);
         BladeState launch = Sample(5, Vector3.forward * 2f, 4f, 0.2f, heading: quarterTurn);
@@ -195,9 +201,8 @@ public class GrassComputeTests
         BladeState passed = Sample(5, Vector3.forward * 2f, 4f, 0.4f, heading: quarterTurn);
         Assert.AreEqual(calm.leanHeightSpike.y, passed.leanHeightSpike.y);
 
-        Assert.AreEqual(0f, Sample(1, Vector3.right, 2f, 0f).rampHealReserved.y);
-        Assert.AreEqual(0f, Sample(1, Vector3.right, 2f, 0.15f).rampHealReserved.y);
-        Assert.AreEqual(1f, Sample(1, Vector3.right, 2f, 0.3f).rampHealReserved.y);
+        Assert.AreEqual(1f, Sample(1, Vector3.right, 2f, 0f).leanHeightSpike.z);
+        Assert.That(Sample(1, Vector3.right, 2f, 0.3f).leanHeightSpike.z, Is.EqualTo(1.8f).Within(0.0001)); // grown, heal 1
 
         float rising = Sample(2, Vector3.zero, 3f, 0.075f).leanHeightSpike.z;
         float peak = Sample(2, Vector3.zero, 3f, 0.15f).leanHeightSpike.z;
@@ -207,7 +212,7 @@ public class GrassComputeTests
         Assert.GreaterOrEqual(_states[0].leanHeightSpike.w, 0.5f, "Sinking spikes retain their geometry until expiry.");
 
         BladeState trample = Sample(6, Vector3.zero, 1f, 1f);
-        Assert.That(trample.leanHeightSpike.z * _layout[0].heightPhaseWidthRandom.x, Is.EqualTo(0.055f).Within(0.0001));
+        Assert.That(trample.leanHeightSpike.z * _layout[0].heightWidthLean.x, Is.EqualTo(0.055f).Within(0.0001));
         Assert.AreEqual(0f, trample.leanHeightSpike.w);
         BladeState outside = Sample(6, Vector3.right * 1.1f, 1f, 1f);
         Assert.AreEqual(1f, outside.leanHeightSpike.z);
@@ -230,36 +235,38 @@ public class GrassComputeTests
     }
 
     [Test]
-    public void Dispatch_WindAndGust_KeepsLeanUnderRigidTiltLimit()
+    public void Dispatch_NoZones_KeepsEachTuftsRestLean()
     {
+        for (int i = 0; i < _layout.Length; i++)
+        {
+            _layout[i].heightWidthLean = new Vector4(GrassLayout.TuftHeight, GrassLayout.TuftWidth, 0f, i / 128f);
+        }
+        _seedBuffer.SetData(_layout);
         _compute.SetInt("_HL_ZoneCount", 0);
-        float largest = 0f;
-        for (int step = 0; step < 20; step++)
-        {
-            _compute.SetFloat("_HL_Time", step * 0.37f);
-            Dispatch();
-            ReadStates();
-            for (int i = 0; i < 65; i++)
-            {
-                largest = Mathf.Max(largest, new Vector2(_states[i].leanHeightSpike.x, _states[i].leanHeightSpike.y).magnitude);
-            }
-        }
 
-        _compute.SetVector("_HL_Wind", new Vector4(1f, 0f, 1.2f, 0.13f));
-        float gustLargest = 0f;
-        for (int step = 0; step < 20; step++)
-        {
-            _compute.SetFloat("_HL_Time", step * 0.37f);
-            Dispatch();
-            ReadStates();
-            for (int i = 0; i < 65; i++)
-            {
-                gustLargest = Mathf.Max(gustLargest, new Vector2(_states[i].leanHeightSpike.x, _states[i].leanHeightSpike.y).magnitude);
-            }
-        }
+        Dispatch();
+        ReadStates();
+        BladeState[] first = (BladeState[])_states.Clone();
+        Dispatch();
+        ReadStates();
 
-        Assert.That(largest, Is.InRange(0.05f, 0.3501f)); // 20 degrees
-        Assert.That(gustLargest, Is.InRange(largest, 0.5201f)); // 4 * 0.13 radians, about 30 degrees
+        for (int i = 0; i < 65; i++)
+        {
+            Assert.AreEqual(new Vector4(0f, i / 128f, 1f, 0f), _states[i].leanHeightSpike);
+            Assert.AreEqual(first[i], _states[i], "No wind, nothing moves between frames.");
+        }
+    }
+
+    [Test]
+    public void Dispatch_HealZone_PushesOnTopOfTheRestLean()
+    {
+        _layout[0].heightWidthLean = new Vector4(GrassLayout.TuftHeight, GrassLayout.TuftWidth, 0f, 0.5f);
+        _seedBuffer.SetData(_layout);
+
+        BladeState pushed = Sample(1, Vector3.right, 3f, 1f);
+
+        Assert.Greater(pushed.leanHeightSpike.x, 0.3f); // outward, away from the zone centre
+        Assert.That(pushed.leanHeightSpike.y, Is.EqualTo(0.5f).Within(0.0001f));
     }
 }
 

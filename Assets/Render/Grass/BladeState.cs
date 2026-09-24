@@ -8,9 +8,9 @@ namespace HealerLike.Render.Grass
     public struct BladeState
     {
         // The struct layout attribute needs a compile-time size
-        public const int Stride = 32;
+        public const int Stride = 16;
 
+        // xy lean in radians, z height scale, w spike
         public Vector4 leanHeightSpike;
-        public Vector4 rampHealReserved;
     }
 }

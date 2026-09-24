@@ -196,7 +196,7 @@ public class EnvironmentGrassTests
         _zones.Init();
         RenderManager manager = _managerGo.AddComponent<RenderManager>();
         Rect board = new Rect(-8f, -8f, 16f, 16f);
-        float boardDensity = GrassLayout.DefaultBudget / (16f * 16f);
+        float boardDensity = GrassLayout.Density;
         RingStrip[] bands = EnvironmentGrass.Bands(board, EnvironmentGrass.DefaultWidths, EnvironmentGrass.DefaultFractions, boardDensity);
 
         grass.Init(board, 1f, 0.5f, null, _zones, manager);

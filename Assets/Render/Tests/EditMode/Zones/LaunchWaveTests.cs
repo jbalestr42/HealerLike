@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using HealerLike.Render.Grass;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -13,7 +12,6 @@ public class LaunchWaveTests
     GameObject _source;
     GameObject _target;
     ZoneRegistry _owner;
-    GrassField _field;
     Projectile _projectile;
     LaunchWave _wave;
 
@@ -26,7 +24,6 @@ public class LaunchWaveTests
         _target = new GameObject("target");
         _owner = _root.AddComponent<ZoneRegistry>();
         _owner.Init(new ZoneFakeUpload());
-        _field = _root.AddComponent<GrassField>();
         TestHelpers.WithLoggingDisabled(() => _target.AddComponent<Entity>());
         _target.transform.position = Vector3.forward * 4f;
         _projectile = _shot.AddComponent<Projectile>();
@@ -48,9 +45,9 @@ public class LaunchWaveTests
     }
 
     [Test]
-    public void Init_ProjectileLaunched_EmitsDirectionalPulseAndGustThatOutliveIt()
+    public void Init_ProjectileLaunched_EmitsDirectionalPulseThatOutlivesIt()
     {
-        _wave.Init(_owner, _field);
+        _wave.Init(_owner);
 
         Launch();
         _owner.PublishFrame(0f);
@@ -60,8 +57,6 @@ public class LaunchWaveTests
         Assert.AreEqual(4, _owner.snapshot[0].radius);
         Assert.AreEqual(1073741824u, _owner.snapshot[0].reserved);
         Assert.AreEqual(_source.transform.position, _owner.snapshot[0].position);
-        Assert.AreEqual(1, _field.wind.current.y);
-        Assert.AreEqual(0.13f, _field.wind.current.w, 0.0001f);
 
         Object.DestroyImmediate(_shot);
         _owner.PublishFrame(0.2f);
@@ -72,25 +67,23 @@ public class LaunchWaveTests
     }
 
     [Test]
-    public void Init_WithZonesAndField_LaunchesOnBoth()
+    public void Init_WithZones_LaunchesOnePulse()
     {
-        _wave.Init(_owner, _field);
+        _wave.Init(_owner);
 
         Launch();
 
         Assert.AreEqual(1, _owner.liveCount);
-        Assert.AreEqual(1f, _field.wind.current.y);
     }
 
     [Test]
-    public void Init_WithoutZones_StillGustsTheField()
+    public void Init_WithoutZones_EmitsNothing()
     {
-        _wave.Init(null, _field);
+        _wave.Init(null);
 
         Launch();
 
-        Assert.AreEqual(0, _owner.liveCount); // current is set, but Init said no zones
-        Assert.AreEqual(1f, _field.wind.current.y);
+        Assert.AreEqual(0, _owner.liveCount);
     }
 }
 

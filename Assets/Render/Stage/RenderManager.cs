@@ -498,7 +498,7 @@ namespace HealerLike.Render.Stage
             ProjectileLook projectileLook = _spellLooks.GetProjectileLook(prefab);
             projectileGo.AddComponent<ProjectileVisualObserver>().Init(this, projectileLook);
             projectileGo.AddComponent<StoneProjectileImpactBridge>();
-            projectileGo.AddComponent<LaunchWave>().Init(_zones, _grass);
+            projectileGo.AddComponent<LaunchWave>().Init(_zones);
             projectileGo.AddComponent<StageLaunchGust>().Init(_gust);
             if (projectileGo.GetComponent<ChainLightningProjectile>() != null)
             {

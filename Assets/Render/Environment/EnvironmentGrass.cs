@@ -12,7 +12,8 @@ namespace HealerLike.Render.Environment
     {
         public static readonly float[] DefaultWidths = { 3f, 5f, 16f };
         public static readonly float[] DefaultFractions = { 0.85f, 0.6f, 0.15f };
-        public static readonly float BoardDensity = 256f;
+        // Tufts per square unit on a one-unit cell board
+        public static readonly float BoardDensity = GrassLayout.Density;
 
         [SerializeField] GrassField _stripTemplate;
         [SerializeField] float[] _widths = { 3f, 5f, 16f };
@@ -36,7 +37,7 @@ namespace HealerLike.Render.Environment
                 return;
             }
 
-            float boardDensity = GrassLayout.DefaultBudget / (board.width * board.height);
+            float boardDensity = GrassLayout.Density / (cellSize * cellSize);
             RingStrip[] bands = Bands(board, _widths, _fractions, boardDensity);
             for (int i = 0; i < bands.Length; i++)
             {
