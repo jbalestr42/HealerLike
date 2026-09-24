@@ -1,19 +1,19 @@
 using System;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Events;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Deliveries;
 using HealerLike.Render.Grammar;
-using Object = UnityEngine.Object;
 using HealerLike.Render.Spells;
+using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Studio.Editor
 {
-    /// <summary>Hosts the native asset inspectors, including Odin's serialized vocabulary dictionaries.</summary>
-    public sealed class RenderGrammarLibraryWindow : EditorWindow
+    // The renderer's shared vocabularies and override tables in one window, each drawn by its own Odin inspector
+    // so the serialized dictionaries stay editable. The studios listen to OnAssetChanged to preview edits at once.
+    public class RenderGrammarLibraryWindow : EditorWindow
     {
-        public static event Action<Object> AssetChanged;
-        public static void NotifyAssetChanged(Object value) => AssetChanged?.Invoke(value);
         public static readonly string[] AssetPaths =
         {
             "Assets/Render/Creatures/Data/LookVocabulary.asset",
@@ -23,133 +23,239 @@ namespace HealerLike.Render.Studio.Editor
             "Assets/Render/Grammar/Data/LookPalette.asset",
             "Assets/Render/Deliveries/Data/DeliveryVocabulary.asset"
         };
-        static readonly string[] Labels =
+
+        // Raised with the asset an editor changed, the unsaved creature drafts included
+        public static readonly UnityEvent<Object> OnAssetChanged = new UnityEvent<Object>();
+
+        static readonly string[] labels =
         {
-            "Creature grammar", "Creature overrides", "Spell grammar", "Spell overrides", "Shared palette", "Delivery grammar"
+            "Creature grammar", "Creature overrides", "Spell grammar", "Spell overrides", "Shared palette",
+            "Delivery grammar"
         };
-        static readonly string[] Descriptions =
+        static readonly string[] descriptions =
         {
             "Head and accessory fragments, body / stem / reach bands, and proportions used by LookComposer.",
-            "Entity and character prefab overrides take priority over generated looks. Plant, stone and character hosts are the fallbacks.",
+            "Entity and character prefab overrides take priority over generated looks. Plant, stone and character "
+                + "hosts are the fallbacks.",
             "Effect vocabulary defines the parts, motion, socket and count rule for every grammar element.",
-            "Buff-handler rows override generated element / family / tempo. Projectile rows select delivery style and contact-path preservation.",
+            "Buff-handler rows override generated element / family / tempo. Projectile rows select delivery style "
+                + "and contact-path preservation.",
             "Shared family accents and material colour roles used by the creature and effect composers.",
             "The vocabulary for projectile tips, drops and delivery motion. These are shared renderer settings."
         };
-        [SerializeField] Object asset;
-        [SerializeField] int selectedTab;
-        UnityEditor.Editor inspector;
-        Vector2 scroll;
-        public Object SelectedAsset => asset;
+
+        [SerializeField] Object _asset;
+        [SerializeField] int _selectedTab;
+        UnityEditor.Editor _inspector;
+        Vector2 _scroll;
+
+        public Object selectedAsset { get { return _asset; } }
 
         [MenuItem("Tools/Render/Grammar & Presets", false, 112)]
-        public static void OpenCreatures() => OpenAsset(AssetDatabase.LoadAssetAtPath<Object>(AssetPaths[0]));
-        public static void OpenSpells() => OpenAsset(AssetDatabase.LoadAssetAtPath<Object>(AssetPaths[2]));
+        public static void OpenCreatures()
+        {
+            OpenAsset(AssetDatabase.LoadAssetAtPath<Object>(AssetPaths[0]));
+        }
+
+        public static void OpenSpells()
+        {
+            OpenAsset(AssetDatabase.LoadAssetAtPath<Object>(AssetPaths[2]));
+        }
 
         public static void OpenAsset(Object value)
         {
-            var window = GetWindow<RenderGrammarLibraryWindow>();
+            RenderGrammarLibraryWindow window = GetWindow<RenderGrammarLibraryWindow>();
             window.SelectAsset(value);
             window.Show();
             window.Focus();
         }
 
+        // Odin's inspector replacement can be switched off in the project preferences, so its editor is asked for
+        public static UnityEditor.Editor CreateNativeInspector(Object value)
+        {
+            if (!value)
+            {
+                return null;
+            }
+            return UnityEditor.Editor.CreateEditor(value, typeof(Sirenix.OdinInspector.Editor.OdinEditor));
+        }
+
+        public static string Summary(Object value)
+        {
+            if (value is LookVocabulary creature)
+            {
+                return RenderGrammarSummary.Describe(creature);
+            }
+
+            if (value is CreatureLooks creatures)
+            {
+                return RenderGrammarSummary.Describe(creatures);
+            }
+
+            if (value is EffectVocabulary effects)
+            {
+                return RenderGrammarSummary.Count(effects.elements) + " effect element presets";
+            }
+
+            if (value is SpellLooks spells)
+            {
+                return RenderGrammarSummary.Describe(spells);
+            }
+
+            if (value is LookPalette)
+            {
+                return "Family accents and shared plant / stone / mana colour roles";
+            }
+
+            if (value is DeliveryVocabulary)
+            {
+                return "Projectile delivery shapes and motion vocabulary";
+            }
+
+            if (value)
+            {
+                return value.GetType().Name;
+            }
+            return "No asset selected";
+        }
+
         public void SelectAsset(Object value)
         {
-            if (inspector) DestroyImmediate(inspector);
-            inspector = null;
-            asset = value;
+            if (_inspector)
+            {
+                DestroyImmediate(_inspector);
+            }
+
+            _inspector = null;
+            _asset = value;
             int index = Array.IndexOf(AssetPaths, AssetDatabase.GetAssetPath(value));
-            if (index >= 0) selectedTab = index;
-            if (value) inspector = CreateNativeInspector(value);
-            scroll = Vector2.zero;
+            if (index >= 0)
+            {
+                _selectedTab = index;
+            }
+
+            if (value)
+            {
+                _inspector = CreateNativeInspector(value);
+            }
+
+            _scroll = Vector2.zero;
             Repaint();
         }
 
         void OnEnable()
         {
             titleContent = new GUIContent("Grammar & Presets");
-            minSize = new Vector2(780, 600);
-            Undo.undoRedoPerformed += OnUndo;
-            if (!asset) asset = AssetDatabase.LoadAssetAtPath<Object>(AssetPaths[Mathf.Clamp(selectedTab, 0, AssetPaths.Length - 1)]);
-            SelectAsset(asset);
+            minSize = new Vector2(780f, 600f);
+            Undo.undoRedoPerformed += OnUndoRedo;
+            if (!_asset)
+            {
+                int tab = Mathf.Clamp(_selectedTab, 0, AssetPaths.Length - 1);
+                _asset = AssetDatabase.LoadAssetAtPath<Object>(AssetPaths[tab]);
+            }
+            SelectAsset(_asset);
         }
 
         void OnDisable()
         {
-            Undo.undoRedoPerformed -= OnUndo;
-            if (inspector) DestroyImmediate(inspector);
-            inspector = null;
+            Undo.undoRedoPerformed -= OnUndoRedo;
+            if (_inspector)
+            {
+                DestroyImmediate(_inspector);
+            }
+            _inspector = null;
         }
 
-        void OnUndo() { AssetChanged?.Invoke(asset); Repaint(); }
+        void OnUndoRedo()
+        {
+            OnAssetChanged.Invoke(_asset);
+            Repaint();
+        }
 
         void OnGUI()
         {
-            GUILayout.Space(10);
-            GUILayout.Label("Grammar & Presets", new GUIStyle(EditorStyles.boldLabel) { fontSize = 20 });
-            EditorGUILayout.HelpBox("Grammar presets remember inputs. Vocabulary supplies shapes and proportions. Authored overrides win over generated looks.", MessageType.Info);
+            GUILayout.Space(10f);
+            GUIStyle title = new GUIStyle(EditorStyles.boldLabel);
+            title.fontSize = 20;
+            GUILayout.Label("Grammar & Presets", title);
+            EditorGUILayout.HelpBox("Grammar presets remember inputs. Vocabulary supplies shapes and proportions. "
+                + "Authored overrides win over generated looks.", MessageType.Info);
             GUILayout.BeginHorizontal();
-            GUILayout.BeginVertical(GUILayout.Width(185));
-            for (int i = 0; i < Labels.Length; i++)
-            {
-                bool active = selectedTab == i;
-                if (GUILayout.Toggle(active, Labels[i], "Button", GUILayout.Height(30)) && !active)
-                {
-                    selectedTab = i;
-                    SelectAsset(AssetDatabase.LoadAssetAtPath<Object>(AssetPaths[i]));
-                    GUIUtility.ExitGUI();
-                }
-            }
-            GUILayout.Space(14);
-            GUILayout.Label("Edit the shared asset here. Save commits these values to the renderer's vocabulary or override table.", EditorStyles.wordWrappedMiniLabel);
-            GUILayout.EndVertical();
+            DrawTabs();
             GUILayout.BeginVertical();
-            GUILayout.Label(Descriptions[Mathf.Clamp(selectedTab, 0, Descriptions.Length - 1)], EditorStyles.wordWrappedLabel);
+            GUILayout.Label(descriptions[Mathf.Clamp(_selectedTab, 0, descriptions.Length - 1)],
+                EditorStyles.wordWrappedLabel);
             EditorGUI.BeginChangeCheck();
-            Object next = EditorGUILayout.ObjectField("Asset", asset, typeof(ScriptableObject), false);
-            if (EditorGUI.EndChangeCheck()) { SelectAsset(next); GUIUtility.ExitGUI(); }
-            if (!asset)
+            Object next = EditorGUILayout.ObjectField("Asset", _asset, typeof(ScriptableObject), false);
+            if (EditorGUI.EndChangeCheck())
+            {
+                SelectAsset(next);
+                GUIUtility.ExitGUI();
+            }
+
+            if (!_asset)
             {
                 EditorGUILayout.HelpBox("Select a vocabulary or override asset to edit.", MessageType.Warning);
             }
             else
             {
-                GUILayout.Label(Summary(asset), EditorStyles.wordWrappedMiniLabel);
-                GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Locate asset")) EditorGUIUtility.PingObject(asset);
-                if (GUILayout.Button("Save changes")) { AssetDatabase.SaveAssetIfDirty(asset); AssetChanged?.Invoke(asset); }
-                GUILayout.EndHorizontal();
-                GUILayout.Space(8);
-                scroll = EditorGUILayout.BeginScrollView(scroll);
-                if (!inspector) inspector = CreateNativeInspector(asset);
-                EditorGUI.BeginChangeCheck();
-                inspector.OnInspectorGUI();
-                if (EditorGUI.EndChangeCheck()) AssetChanged?.Invoke(asset);
-                EditorGUILayout.EndScrollView();
+                DrawAsset();
             }
+
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
         }
 
-        // Odin's automatic inspector replacement can be disabled in project preferences.
-        // Request its editor explicitly so serialized dictionaries remain authorable.
-        public static UnityEditor.Editor CreateNativeInspector(Object value) => value
-            ? UnityEditor.Editor.CreateEditor(value, typeof(Sirenix.OdinInspector.Editor.OdinEditor))
-            : null;
-
-        public static string Summary(Object value)
+        void DrawTabs()
         {
-            if (value is LookVocabulary creature)
-                return $"{creature.heads?.Count ?? 0} head presets · {creature.accessories?.Count ?? 0} accessory presets · {creature.bodies?.Count ?? 0} body bands · {creature.stems?.Count ?? 0} stem bands · {creature.roots?.Count ?? 0} reach bands";
-            if (value is CreatureLooks creatures)
-                return $"{creatures.entities?.Count ?? 0} entity overrides · {creatures.characters?.Count ?? 0} character overrides. Empty tables mean those looks are generated from gameplay data.";
-            if (value is EffectVocabulary effects) return $"{effects.elements?.Count ?? 0} effect element presets";
-            if (value is SpellLooks spells)
-                return $"{spells.buffs?.Count ?? 0} buff overrides · {spells.projectiles?.Count ?? 0} projectile overrides. Empty tables mean the grammar supplies the look.";
-            if (value is LookPalette) return "Family accents and shared plant / stone / mana colour roles";
-            if (value is DeliveryVocabulary) return "Projectile delivery shapes and motion vocabulary";
-            return value ? value.GetType().Name : "No asset selected";
+            GUILayout.BeginVertical(GUILayout.Width(185f));
+            for (int i = 0; i < labels.Length; i++)
+            {
+                bool isActive = _selectedTab == i;
+                if (GUILayout.Toggle(isActive, labels[i], "Button", GUILayout.Height(30f)) && !isActive)
+                {
+                    _selectedTab = i;
+                    SelectAsset(AssetDatabase.LoadAssetAtPath<Object>(AssetPaths[i]));
+                    GUIUtility.ExitGUI();
+                }
+            }
+
+            GUILayout.Space(14f);
+            GUILayout.Label("Edit the shared asset here. Save commits these values to the renderer's vocabulary "
+                + "or override table.", EditorStyles.wordWrappedMiniLabel);
+            GUILayout.EndVertical();
+        }
+
+        void DrawAsset()
+        {
+            GUILayout.Label(Summary(_asset), EditorStyles.wordWrappedMiniLabel);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Locate asset"))
+            {
+                EditorGUIUtility.PingObject(_asset);
+            }
+
+            if (GUILayout.Button("Save changes"))
+            {
+                AssetDatabase.SaveAssetIfDirty(_asset);
+                OnAssetChanged.Invoke(_asset);
+            }
+
+            GUILayout.EndHorizontal();
+            GUILayout.Space(8f);
+            _scroll = EditorGUILayout.BeginScrollView(_scroll);
+            if (!_inspector)
+            {
+                _inspector = CreateNativeInspector(_asset);
+            }
+
+            EditorGUI.BeginChangeCheck();
+            _inspector.OnInspectorGUI();
+            if (EditorGUI.EndChangeCheck())
+            {
+                OnAssetChanged.Invoke(_asset);
+            }
+            EditorGUILayout.EndScrollView();
         }
     }
 }
