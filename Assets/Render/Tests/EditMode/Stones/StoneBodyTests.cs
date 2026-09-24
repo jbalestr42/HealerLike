@@ -101,6 +101,23 @@ public class StoneBodyTests
     }
 
     [Test]
+    public void RefreshRig_ReorderedParts_KeepsTheSameLostLimbByItsId()
+    {
+        Queue(-60);
+        Drain();
+        string lost = _recipe.parts[_body.shedPart].id;
+        CreaturePart swap = _recipe.parts[1];
+        _recipe.parts[1] = _recipe.parts[2];
+        _recipe.parts[2] = swap;
+        CreatureRig rig = _body.GetComponent<CreatureBuilder>().rig;
+        Assert.IsTrue(rig.Recompose(_recipe, _material, _material, RenderTestAssets.LoadMeshes()));
+        _body.RefreshRig();
+        Assert.AreEqual(lost, _recipe.parts[_body.shedPart].id);
+        Assert.IsFalse(_body.parts[_body.shedPart].gameObject.activeSelf);
+        Assert.AreEqual(3, visibleCount);
+    }
+
+    [Test]
     public void RefreshRig_InPlaceRecompose_KeepsShedLimbAndCollapsedBodyHidden()
     {
         Queue(-60);

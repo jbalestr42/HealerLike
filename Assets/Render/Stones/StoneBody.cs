@@ -41,6 +41,7 @@ namespace HealerLike.Render.Stones
 
         // The recipe part the stone lost when it was hurt, -1 while it is whole
         int _shedPart = -1;
+        string _shedId;
         public int shedPart { get { return _shedPart; } }
 
         public IReadOnlyList<Transform> parts { get { return _rig != null ? _rig.partTransforms : noParts; } }
@@ -65,6 +66,7 @@ namespace HealerLike.Render.Stones
             _rig = null;
             _state.Reset(_shedHealthFraction);
             _shedPart = -1;
+            _shedId = null;
             _isCollapsed = false;
             _sampler.Reset();
             _planarVelocity = Vector3.zero;
@@ -95,6 +97,10 @@ namespace HealerLike.Render.Stones
             _rig = rig;
             _rigRevision = rig != null ? rig.revision : 0;
             IReadOnlyList<Transform> partTransforms = parts;
+            if (_shedId != null && rig != null)
+            {
+                _shedPart = System.Array.FindIndex(rig.recipe.parts, part => part.id == _shedId);
+            }
             _impacts.ReadParts(partTransforms);
             if (_isCollapsed)
             {
@@ -189,6 +195,7 @@ namespace HealerLike.Render.Stones
             }
 
             _shedPart = candidates[(int)(_seed % (uint)candidates.Count)];
+            _shedId = _rig.recipe.parts[_shedPart].id;
             Transform part = partTransforms[_shedPart];
             Mesh mesh = part.GetComponent<MeshFilter>().sharedMesh;
             Material material = part.GetComponent<Renderer>().sharedMaterial;
