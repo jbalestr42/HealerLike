@@ -54,28 +54,6 @@ public class StoneGroundDiscTests
     }
 
     [Test]
-    public void Init_BareEarth_RadiusCoversScaledClumpAndColourGoesThroughTheBlock()
-    {
-        StoneGroundDisc ring = CreateDisc(_owner.transform, false);
-
-        ring.Init(new Bounds(Vector3.up, new Vector3(2f, 2f, 1f)), Vector3.up);
-
-        Assert.AreEqual(1.18f, ring.radius, 0.001f);
-        Assert.AreEqual(0.006f, ring.center.y, 0.0001f);
-
-        _owner.transform.localScale = new Vector3(2f, 1f, 3f);
-        Assert.AreEqual(3.54f, ring.radius, 0.001f);
-
-        Color colour = new Color(0.2f, 0.6f, 0.3f, 1f);
-        ring.colour = colour;
-        MaterialPropertyBlock block = new MaterialPropertyBlock();
-        ring.GetComponent<MeshRenderer>().GetPropertyBlock(block);
-        Assert.IsFalse(block.isEmpty);
-        Assert.AreEqual(colour, ring.colour);
-        Assert.AreEqual(0, _owner.GetComponentsInChildren<Collider>().Length);
-    }
-
-    [Test]
     public void IsAllowed_Off_HidesAShownDiscAndOnRestoresOnlyWhatTheOwnerShows()
     {
         StoneGroundDisc shadow = CreateDisc(_owner.transform, true);

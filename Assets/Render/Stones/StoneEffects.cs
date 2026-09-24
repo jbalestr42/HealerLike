@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Stones
@@ -33,8 +32,6 @@ namespace HealerLike.Render.Stones
         public static readonly int MaxLiveFragments = 256;
         static readonly int baseColorId = Shader.PropertyToID("_BaseColor");
 
-        [HideInInspector] public UnityEvent<Vector3> OnImpactRecorded = new UnityEvent<Vector3>();
-
         [FormerlySerializedAs("stoneMaterial")]
         [SerializeField] Material _stoneMaterial;
         [SerializeField] Material _coralMaterial;
@@ -63,7 +60,6 @@ namespace HealerLike.Render.Stones
             }
 
             EmitDust(position, seed);
-            OnImpactRecorded.Invoke(position);
         }
 
         bool HasAssets()
@@ -223,21 +219,6 @@ namespace HealerLike.Render.Stones
                 fragment.isDust = true;
                 fragment.spin = Vector3.zero;
             }
-        }
-
-        public void EmitTrickle(Vector3 position, uint seed)
-        {
-            if (!isActiveAndEnabled || !HasAssets())
-            {
-                return;
-            }
-
-            StoneRandom random = new StoneRandom(seed);
-            Quaternion rotation = Quaternion.Euler(15f, seed % 360, 30f);
-            Vector3 scale = Vector3.one * random.Range(0.025f, 0.045f);
-            Vector3 velocity = new Vector3(random.Range(-0.25f, 0.25f), 0.08f, random.Range(-0.25f, 0.25f));
-            Spawn(_meshes.pyramid, _stoneMaterial, position, rotation, scale, velocity, 0.7f, position.y - 0.5f, true,
-                seed);
         }
 
         public void EmitHit(StoneImpact impact, bool critical, uint seed)

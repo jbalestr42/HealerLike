@@ -124,14 +124,10 @@ public class StoneEffectsTests
     }
 
     [Test]
-    public void RecordImpact_EnabledThenDisabled_RaisesTheEventOnlyWhileEnabled()
+    public void RecordImpact_EnabledThenDisabled_EmitsDustOnlyWhileEnabled()
     {
-        int impacts = 0;
-        _fx.OnImpactRecorded.AddListener(position => impacts++);
-
         _fx.RecordImpact(Vector3.zero, 1);
 
-        Assert.AreEqual(1, impacts);
         Assert.AreEqual(5, _fx.liveCount);
 
         _fx.Advance(1f);
@@ -140,7 +136,6 @@ public class StoneEffectsTests
         _fx.RecordImpact(Vector3.zero, 1);
         _fx.EmitThrownContact(Vector3.zero, 1);
 
-        Assert.AreEqual(1, impacts);
         Assert.AreEqual(0, _fx.liveCount);
     }
 
@@ -200,8 +195,11 @@ public class StoneEffectsTests
 
         _fx.ReturnShard(shard);
         Assert.IsFalse(shard.gameObject.activeSelf);
-        _fx.EmitTrickle(Vector3.zero, 1);
         Assert.AreEqual(1, _fx.transform.childCount);
+
+        _fx.EmitDust(Vector3.zero, 1);
+
+        Assert.AreEqual(5, _fx.transform.childCount); // the returned shard is reused, four more are made
     }
 
     [Test]
