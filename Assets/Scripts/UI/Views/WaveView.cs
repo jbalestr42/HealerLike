@@ -18,7 +18,7 @@ public class WaveView : AView
 		for (int i = 0; i < _count; i++)
         {
             GameObject waveButton = Instantiate(_waveItem);
-            waveButton.GetComponent<SelectWaveButton>().Init(DataManager.instance.GetWavePattern(currentRound));
+            waveButton.GetComponent<SelectWaveButton>().Init(DataManager.instance.GetWavePattern(MapNodeType.Combat, currentRound, new System.Random()));
             waveButton.transform.SetParent(_waveContainer.transform);
             _waveButtons.Add(waveButton.GetComponent<SelectWaveButton>());
         }

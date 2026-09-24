@@ -26,6 +26,7 @@ public class AscensionGameType : AGameType
     EntityManager _entities = null;
     GameView _gameView;
     UpgradeView _upgradeView;
+    System.Random _random = new System.Random();
     int _currentRound = 0;
     public int currentRound => _currentRound;
 
@@ -76,7 +77,7 @@ public class AscensionGameType : AGameType
                 _gameView.entityInventory.Show(true);
 
                 // TODO: Later we can show multiple choice to the user
-                LoadEnemies(DataManager.instance.GetWavePattern(_currentRound));
+                LoadEnemies(DataManager.instance.GetWavePattern(MapNodeType.Combat, _currentRound, _random));
                 EnableAllEntities(false);
                 SetState(State.WaitForRoundToStart);
                 _currentRound++;

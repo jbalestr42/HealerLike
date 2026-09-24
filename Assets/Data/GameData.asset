@@ -135,7 +135,7 @@ MonoBehaviour:
       startingUpgradeCost: 10
       costIncreaseFactor: 4
       bonusPerUpgrade: 0.1
-  wavePerRound: []
+  wavePools: []
   characters:
   - {fileID: 11400000, guid: d5522b5142b13b74bbf81471208c72e0, type: 2}
   - {fileID: 11400000, guid: b6564d3df55530743a8bae3f230c6101, type: 2}
