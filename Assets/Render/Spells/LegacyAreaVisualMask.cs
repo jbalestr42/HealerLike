@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VFX;
 
-namespace HealerLike.Render.Stage
+namespace HealerLike.Render.Spells
 {
     // Keeps GPU particle simulation and DestroyOnDone unchanged, silences only the exposed output colours
     public class LegacyAreaVisualMask : MonoBehaviour
     {
         readonly List<Action> _restore = new List<Action>();
-
-        public int maskedPropertyCount { get { return _restore.Count; } }
 
         void OnEnable()
         {

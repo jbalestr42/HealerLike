@@ -18,6 +18,7 @@ public class RenderManagerTests
     static readonly string projectileFolder = "Assets/Prefabs/Projectiles/";
 
     readonly List<GameObject> _spawned = new List<GameObject>();
+    readonly List<Object> _created = new List<Object>();
 
     GameObject _managerGo;
     GameObject _gameGo;
@@ -96,6 +97,11 @@ public class RenderManagerTests
             Object.DestroyImmediate(spawnedGo);
         }
         _spawned.Clear();
+        foreach (Object created in _created)
+        {
+            Object.DestroyImmediate(created);
+        }
+        _created.Clear();
         Object.DestroyImmediate(_managerGo);
         Object.DestroyImmediate(_gameGo);
         Object.DestroyImmediate(_createdCameraGo);
@@ -125,6 +131,28 @@ public class RenderManagerTests
         GameObject projectileGo = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(projectileFolder + prefabName + ".prefab"));
         _spawned.Add(projectileGo);
         return projectileGo.GetComponent<Projectile>();
+    }
+
+    // An area as AreaOfEffect.Start hands it out, cast by an entity whose one on hit consumer takes this value
+    AreaOfEffect CreateArea(float consumerValue)
+    {
+        GameObject sourceGo = new GameObject("Source");
+        _spawned.Add(sourceGo);
+        Entity source = null;
+        TestHelpers.WithLoggingDisabled(() => source = sourceGo.AddComponent<Entity>());
+        ConsumerFactory consumer = ScriptableObject.CreateInstance<ConsumerFactory>();
+        _created.Add(consumer);
+        FlatValue value = new FlatValue();
+        value.data = new FlatValueData { value = consumerValue };
+        consumer.data = new ConsumerData { value = value };
+        source.AddOnHitConsumer(consumer);
+
+        GameObject areaGo = new GameObject("Area");
+        _spawned.Add(areaGo);
+        AreaOfEffect area = areaGo.AddComponent<AreaOfEffect>();
+        area.source = sourceGo;
+        area.radius = 2.5f;
+        return area;
     }
 
     [Test]
@@ -333,18 +361,24 @@ public class RenderManagerTests
         Assert.IsNull(projectile.GetComponent<ProjectileVisualObserver>());
     }
 
-    [Test]
-    public void OnAreaOfEffectStarted_Area_AttachesThePulseAndMasksItsOwnVisual()
+    [TestCase(-5f, ZoneKind.Heal, EffectElement.Ring)]
+    [TestCase(5f, ZoneKind.Hostile, EffectElement.Litter)]
+    public void OnAreaOfEffectStarted_Area_PulsesItsKindOnceAndMasksItsOwnVisual(float consumerValue, ZoneKind kind,
+        EffectElement element)
     {
         _manager.Init(_entityManager, _player);
-        GameObject areaGo = new GameObject("Area");
-        _spawned.Add(areaGo);
-        AreaOfEffect area = areaGo.AddComponent<AreaOfEffect>();
+        AreaOfEffect area = CreateArea(consumerValue);
 
         _entityManager.OnAreaOfEffectStarted.Invoke(area);
+        _manager.zones.PublishFrame(0f);
 
-        Assert.IsNotNull(areaGo.GetComponent<AreaPulse>());
-        Assert.IsNotNull(areaGo.GetComponent<LegacyAreaVisualMask>());
+        SpellEffect[] effects = _manager.spellSink.GetComponentsInChildren<SpellEffect>();
+        Assert.AreEqual(1, effects.Length);
+        Assert.AreEqual(element, effects[0].element);
+        Assert.AreEqual(1, _manager.zones.count);
+        Assert.AreEqual((int)kind, _manager.zones.snapshot[0].kind);
+        Assert.AreEqual(area.radius, _manager.zones.snapshot[0].radius);
+        Assert.IsNotNull(area.GetComponent<LegacyAreaVisualMask>());
     }
 }
 

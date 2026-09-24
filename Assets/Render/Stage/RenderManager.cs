@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Deliveries;
 using HealerLike.Render.Environment;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Grass;
 using HealerLike.Render.Look;
 using HealerLike.Render.Spells;
@@ -502,10 +503,47 @@ namespace HealerLike.Render.Stage
             }
         }
 
+        // AreaOfEffect.Start raises it once the caller has set the radius, before its own visual plays
         void OnAreaOfEffectStarted(AreaOfEffect area)
         {
-            area.gameObject.AddComponent<AreaPulse>().Init(_zones);
+            if (area == null)
+            {
+                return;
+            }
+
+            _spellSink.PulseArea(area.transform.position, area.radius, AreaKind(area.source), 1f);
             area.gameObject.AddComponent<LegacyAreaVisualMask>();
+        }
+
+        // An area whose every on hit consumer heals pulses as a heal, anything else as hostile
+        static ZoneKind AreaKind(GameObject source)
+        {
+            IAttacker attacker = null;
+            if (source != null)
+            {
+                attacker = source.GetComponent<IAttacker>();
+            }
+
+            if (attacker == null)
+            {
+                return ZoneKind.Hostile;
+            }
+
+            List<AConsumerFactory> consumers = attacker.GetOnHitConsumers();
+            if (consumers == null || consumers.Count == 0)
+            {
+                return ZoneKind.Hostile;
+            }
+
+            foreach (AConsumerFactory consumer in consumers)
+            {
+                if (EffectDerivation.ConsumerFamily(consumer, false) != EffectFamily.Heal)
+                {
+                    return ZoneKind.Hostile;
+                }
+            }
+
+            return ZoneKind.Heal;
         }
 
         Rect BoardRect()
