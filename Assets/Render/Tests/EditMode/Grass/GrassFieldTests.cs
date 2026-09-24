@@ -119,10 +119,10 @@ public class GrassFieldTests
     {
         if (_borrowedZones == null)
         {
-            _borrowedZones = new GraphicsBuffer(GraphicsBuffer.Target.Structured, GrassField.MaxZones, Zone.Stride);
+            _borrowedZones = new GraphicsBuffer(GraphicsBuffer.Target.Structured, ZonePacker.MaxZones, Zone.Stride);
         }
 
-        _field.Init(oneCell, 1f, 0.5f, null, _borrowedZones, GrassField.MaxZones);
+        _field.Init(oneCell, 1f, 0.5f, null, _borrowedZones, ZonePacker.MaxZones);
         _field.bladeBudget = 65;
         SetAssets();
 
@@ -186,7 +186,7 @@ public class GrassFieldTests
         _field.SetZoneSnapshot(null, 0);
 
         TestHelpers.WithLoggingDisabled(() => _field.SetZoneSnapshot(null, 1));
-        TestHelpers.WithLoggingDisabled(() => _field.SetZoneCount(GrassField.MaxZones + 1));
+        TestHelpers.WithLoggingDisabled(() => _field.SetZoneCount(ZonePacker.MaxZones + 1));
 
         Assert.AreEqual(0, _field.activeZoneCount);
     }
@@ -196,7 +196,7 @@ public class GrassFieldTests
     {
         LogAssert.Expect(LogType.Error, "[GrassField] Borrow a live zone buffer with the 32-byte stride and capacity 1..64.");
 
-        _field.Init(oneCell, 1f, 0.5f, null, null, GrassField.MaxZones);
+        _field.Init(oneCell, 1f, 0.5f, null, null, ZonePacker.MaxZones);
         _field.UpdateField(null, 0);
 
         Assert.IsFalse(_field.isReady);
@@ -211,10 +211,10 @@ public class GrassFieldTests
             Assert.Ignore("Requires a graphics device; run with -force-metal.");
         }
 
-        _borrowedZones = new GraphicsBuffer(GraphicsBuffer.Target.Structured, GrassField.MaxZones, Zone.Stride);
+        _borrowedZones = new GraphicsBuffer(GraphicsBuffer.Target.Structured, ZonePacker.MaxZones, Zone.Stride);
         LogAssert.Expect(LogType.Error, new Regex(@"^\[GrassField\] Rejected area .* with cell size NaN"));
 
-        _field.Init(oneCell, float.NaN, 0.5f, null, _borrowedZones, GrassField.MaxZones);
+        _field.Init(oneCell, float.NaN, 0.5f, null, _borrowedZones, ZonePacker.MaxZones);
 
         Assert.IsFalse(_field.isReady);
         Assert.AreEqual(0, _field.activeZoneCount);
@@ -240,8 +240,8 @@ public class GrassFieldTests
         }
 
         Camera camera = _go.AddComponent<Camera>();
-        _borrowedZones = new GraphicsBuffer(GraphicsBuffer.Target.Structured, GrassField.MaxZones, Zone.Stride);
-        _field.Init(new Rect(2f, -3f, 4f, 2f), 1f, 0.5f, camera, _borrowedZones, GrassField.MaxZones);
+        _borrowedZones = new GraphicsBuffer(GraphicsBuffer.Target.Structured, ZonePacker.MaxZones, Zone.Stride);
+        _field.Init(new Rect(2f, -3f, 4f, 2f), 1f, 0.5f, camera, _borrowedZones, ZonePacker.MaxZones);
         _field.bladeBudget = 80;
         SetAssets();
 
@@ -283,8 +283,8 @@ public class GrassFieldTests
         Assert.AreEqual(ShadowCastingMode.On, _field.bladeDraw.shadowCastingMode);
         Assert.AreEqual(ShadowCastingMode.Off, _field.socleDraw.shadowCastingMode);
         Assert.AreEqual(ShadowCastingMode.Off, _field.ringDraw.shadowCastingMode);
-        Assert.AreEqual(1f, _field.bladeDraw.properties.GetFloat("_HL_TuftLean"));
-        Assert.AreEqual(0f, _field.socleDraw.properties.GetFloat("_HL_TuftLean"));
+        Assert.AreEqual(1f, _field.bladeDraw.properties.GetFloat("_HLTuftLean"));
+        Assert.AreEqual(0f, _field.socleDraw.properties.GetFloat("_HLTuftLean"));
     }
 
     [Test]

@@ -12,24 +12,14 @@ void HLGrassInstancingSetup()
 #if defined(HL_GRASS_INSTANCED)
 #define UNITY_INDIRECT_DRAW_ARGS IndirectDrawIndexedArgs
 #include "UnityIndirect.cginc"
+#include "GrassTuftData.hlsl"
 
-struct HLBladeSeed
-{
-    float4 positionYaw;
-    float4 heightWidthLean;
-};
-
-struct HLBladeState
-{
-    float4 leanHeightSpike;
-};
-
-StructuredBuffer<HLBladeSeed> _HL_BladeSeeds;
-StructuredBuffer<HLBladeState> _HL_BladeStates;
-StructuredBuffer<uint> _HL_VisibleBladeIDs;
-float _HL_BladeHeightScale;
+StructuredBuffer<HLBladeSeed> _HLBladeSeeds;
+StructuredBuffer<HLBladeState> _HLBladeStates;
+StructuredBuffer<uint> _HLVisibleBladeIDs;
+float _HLBladeHeightScale;
 // 1 on the tuft draw, 0 on the socle draw, which lies flat on the ground
-float _HL_TuftLean;
+float _HLTuftLean;
 
 // Rotates v about the horizontal axis that tips +Y toward lean, by the length of lean in radians
 float3 HLTiltGrassTuft(float3 v, float2 lean)
@@ -55,16 +45,16 @@ float3 HLYawGrassTuft(float3 v, float yaw)
 void HLPlaceGrassBlade(float3 positionOS, float3 normalOS, uint instanceID, out float3 positionWS, out float3 normalWS)
 {
     InitIndirectDrawArgs(0);
-    uint bladeID = _HL_VisibleBladeIDs[GetIndirectInstanceID(instanceID)];
-    HLBladeSeed seed = _HL_BladeSeeds[bladeID];
-    HLBladeState state = _HL_BladeStates[bladeID];
+    uint bladeID = _HLVisibleBladeIDs[GetIndirectInstanceID(instanceID)];
+    HLBladeSeed seed = _HLBladeSeeds[bladeID];
+    HLBladeState state = _HLBladeStates[bladeID];
 
     float spike = step(0.5, state.leanHeightSpike.w);
-    float heightScale = lerp(_HL_BladeHeightScale, 1.0, spike);
+    float heightScale = lerp(_HLBladeHeightScale, 1.0, spike);
     float height = max(1e-4, seed.heightWidthLean.x * state.leanHeightSpike.z * heightScale);
     float spikeWidth = 2.0 * lerp(0.065, 0.045, saturate(2.0 * state.leanHeightSpike.w - 1.0));
     float width = lerp(seed.heightWidthLean.y, spikeWidth, spike);
-    float2 lean = state.leanHeightSpike.xy * _HL_TuftLean;
+    float2 lean = state.leanHeightSpike.xy * _HLTuftLean;
     float yaw = seed.positionYaw.w;
 
     float3 scaledPosition = float3(positionOS.x * width, positionOS.y * height, positionOS.z * width);

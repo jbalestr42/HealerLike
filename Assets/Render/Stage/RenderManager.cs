@@ -134,7 +134,7 @@ namespace HealerLike.Render.Stage
             _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board));
             _zones.Init();
             Rect boardRect = BoardRect();
-            _grass.Init(boardRect, player.grid.size, _board.max.y, _gameCamera, _zones.buffer, GrassField.MaxZones);
+            _grass.Init(boardRect, player.grid.size, _board.max.y, _gameCamera, _zones.buffer, ZonePacker.MaxZones);
             InitEnvironment(boardRect);
             _spellSink.Init(this);
             _battleFocus.Init(this);

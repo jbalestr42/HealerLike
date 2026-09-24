@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
 using NUnit.Framework;
 using UnityEngine;
@@ -8,7 +11,20 @@ namespace HealerLike.Render.Zones
 
 public class ZoneTests
 {
+    static readonly string zoneDataPath = "Assets/Render/Shaders/ZoneData.hlsl";
+
     IntPtr _buffer;
+
+    // Every HL_ZONE_ define of the shader include, by name
+    static Dictionary<string, int> ReadKindDefines()
+    {
+        Dictionary<string, int> defines = new Dictionary<string, int>();
+        foreach (Match match in Regex.Matches(File.ReadAllText(zoneDataPath), @"#define\s+(HL_ZONE_[A-Z]+)\s+(\d+)"))
+        {
+            defines[match.Groups[1].Value] = int.Parse(match.Groups[2].Value);
+        }
+        return defines;
+    }
 
     [SetUp]
     public void SetUp()
@@ -68,6 +84,21 @@ public class ZoneTests
         Assert.AreEqual(0.5f, BitConverter.ToSingle(bytes, 20), 0f, "strength at byte 20");
         Assert.AreEqual(6f, BitConverter.ToSingle(bytes, 24), 0f, "age at byte 24");
         Assert.AreEqual(0u, BitConverter.ToUInt32(bytes, 28), "reserved at byte 28");
+    }
+
+    [Test]
+    public void ZoneKind_ZoneDataInclude_DefinesEveryMemberWithItsValue()
+    {
+        Dictionary<string, int> defines = ReadKindDefines();
+
+        Array kinds = Enum.GetValues(typeof(ZoneKind));
+        Assert.AreEqual(kinds.Length, defines.Count);
+        foreach (ZoneKind kind in kinds)
+        {
+            string name = "HL_ZONE_" + kind.ToString().ToUpperInvariant();
+            Assert.IsTrue(defines.ContainsKey(name), name);
+            Assert.AreEqual((int)kind, defines[name], name);
+        }
     }
 }
 
