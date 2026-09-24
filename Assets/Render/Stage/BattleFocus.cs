@@ -10,7 +10,19 @@ namespace HealerLike.Render.Stage
     {
         [SerializeField] Button _toggle;
         [SerializeField] Text _label;
-        [SerializeField] float _pitch = 52f;
+        [SerializeField] float _pitch = StageCalibration.PortraitPitch;
+
+        // Camera easing: position smoothing time, rotation rate, and the distance at which the overview has settled
+        static readonly float smoothTime = 0.28f;
+        static readonly float slerpRate = 10f;
+        static readonly float settleDistance = 0.03f;
+        static readonly float fogInterval = 0.1f;
+        static readonly float boundsInterval = 0.4f;
+        // Room around the bodies for heads and roots
+        static readonly Vector3 boundsPadding = new Vector3(0.8f, 0.5f, 0.8f);
+        // A body with no mesh renderer yet, and the size past which a renderer is an effect rather than a body
+        static readonly Vector3 defaultBodySize = new Vector3(1.2f, 2f, 1.2f);
+        static readonly float maxBodySize = 8f;
 
         readonly Dictionary<Transform, Renderer[]> _bodies = new Dictionary<Transform, Renderer[]>();
         readonly List<Transform> _live = new List<Transform>();
@@ -24,14 +36,7 @@ namespace HealerLike.Render.Stage
         bool _isInitialized = false;
 
         bool _isFocused;
-        public bool isFocused { get { return _isFocused; } }
-
         Bounds _combatBounds;
-        public Bounds combatBounds { get { return _combatBounds; } }
-
-        public int bodyCount { get { return _live.Count; } }
-
-        public Button toggle { get { return _toggle; } }
 
         public void Init(RenderManager manager)
         {
@@ -69,25 +74,29 @@ namespace HealerLike.Render.Stage
 
             Transform cameraTransform = _camera.transform;
             float deltaTime = Time.unscaledDeltaTime;
-            cameraTransform.position = Vector3.SmoothDamp(cameraTransform.position, _target.position, ref _velocity, 0.28f,
-                                                          Mathf.Infinity, deltaTime);
-            cameraTransform.rotation = Quaternion.Slerp(cameraTransform.rotation, _target.rotation, 1f - Mathf.Exp(-10f * deltaTime));
+            cameraTransform.position = Vector3.SmoothDamp(cameraTransform.position, _target.position, ref _velocity,
+                                                          smoothTime, Mathf.Infinity, deltaTime);
+            float turn = 1f - Mathf.Exp(-slerpRate * deltaTime);
+            cameraTransform.rotation = Quaternion.Slerp(cameraTransform.rotation, _target.rotation, turn);
 
             // Widen at once when a spawn leaves the safe viewport, only the zoom in eases
             if (_isFocused && !AreAllBodiesVisible())
             {
-                Pose safe = BattleFocusBounds.Fit(_combatBounds, cameraTransform.eulerAngles.x, _camera.fieldOfView, _camera.aspect);
+                Pose safe = BattleFocusBounds.Fit(_combatBounds, cameraTransform.eulerAngles.x, _camera.fieldOfView,
+                                                  _camera.aspect);
                 cameraTransform.position = safe.position;
                 _velocity = Vector3.zero;
             }
 
             if (Time.unscaledTime >= _fogAt)
             {
-                _fogAt = Time.unscaledTime + 0.1f;
-                _manager.look.UpdateFog(StageCalibration.BackgroundFog(cameraTransform.position, _manager.board));
+                _fogAt = Time.unscaledTime + fogInterval;
+                Vector2 fogRange = StageCalibration.BackgroundFog(cameraTransform.position, _manager.board);
+                _manager.look.UpdateFog(fogRange);
             }
 
-            if (!_isFocused && !_isSettled && Vector3.Distance(cameraTransform.position, _target.position) < 0.03f)
+            float remaining = Vector3.Distance(cameraTransform.position, _target.position);
+            if (!_isFocused && !_isSettled && remaining < settleDistance)
             {
                 _isSettled = true;
                 ShowForeground(true);
@@ -148,8 +157,9 @@ namespace HealerLike.Render.Stage
 
             for (int corner = 0; corner < 8; corner++)
             {
-                Vector3 sign = new Vector3((corner & 1) == 0 ? -1f : 1f, (corner & 2) == 0 ? -1f : 1f, (corner & 4) == 0 ? -1f : 1f);
-                Vector3 viewport = _camera.WorldToViewportPoint(_combatBounds.center + Vector3.Scale(_combatBounds.extents, sign));
+                Vector3 sign = BattleFocusBounds.CornerSign(corner);
+                Vector3 viewport = _camera.WorldToViewportPoint(_combatBounds.center
+                                                                + Vector3.Scale(_combatBounds.extents, sign));
                 if (viewport.z <= _camera.nearClipPlane || viewport.x < 0.06f || viewport.x > 0.94f
                     || viewport.y < 0.18f || viewport.y > 0.84f)
                 {
@@ -162,7 +172,7 @@ namespace HealerLike.Render.Stage
 
         void RefreshBounds()
         {
-            _refreshAt = Time.unscaledTime + 0.4f;
+            _refreshAt = Time.unscaledTime + boundsInterval;
             _live.Clear();
             EntityManager entityManager = _manager.entityManager;
             if (entityManager != null && entityManager.entities != null)
@@ -212,7 +222,7 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
-            bounds.Expand(new Vector3(0.8f, 0.5f, 0.8f));
+            bounds.Expand(boundsPadding);
             _combatBounds = bounds;
             _target = BattleFocusBounds.Fit(bounds, _pitch, _camera.fieldOfView, _camera.aspect);
         }
@@ -227,11 +237,11 @@ namespace HealerLike.Render.Stage
             }
 
             bool hasMesh = false;
-            Bounds bounds = new Bounds(body.position + Vector3.up, new Vector3(1.2f, 2f, 1.2f));
+            Bounds bounds = new Bounds(body.position + Vector3.up, defaultBodySize);
             foreach (Renderer bodyRenderer in renderers)
             {
                 bool isBody = bodyRenderer != null && bodyRenderer.enabled && bodyRenderer.gameObject.activeInHierarchy
-                              && bodyRenderer is MeshRenderer && bodyRenderer.bounds.size.magnitude < 8f;
+                              && bodyRenderer is MeshRenderer && bodyRenderer.bounds.size.magnitude < maxBodySize;
                 if (!isBody)
                 {
                     continue;
@@ -297,15 +307,37 @@ namespace HealerLike.Render.Stage
             float distance = 2f;
             for (int corner = 0; corner < 8; corner++)
             {
-                Vector3 sign = new Vector3((corner & 1) == 0 ? -1f : 1f, (corner & 2) == 0 ? -1f : 1f, (corner & 4) == 0 ? -1f : 1f);
-                Vector3 local = inverse * Vector3.Scale(bounds.extents, sign);
+                Vector3 local = inverse * Vector3.Scale(bounds.extents, CornerSign(corner));
                 distance = Mathf.Max(distance, Mathf.Abs(local.x) / (0.84f * tan * aspect) - local.z);
                 distance = Mathf.Max(distance, (local.y - 0.64f * tan * local.z) / (0.58f * tan));
                 distance = Mathf.Max(distance, (-local.y - 0.6f * tan * local.z) / (0.66f * tan));
             }
 
-            Vector3 position = bounds.center - rotation * Vector3.forward * distance - rotation * Vector3.up * (0.06f * tan * distance);
+            Vector3 position = bounds.center - rotation * Vector3.forward * distance
+                               - rotation * Vector3.up * (0.06f * tan * distance);
             return new Pose(position, rotation);
+        }
+
+        // The sign of each axis for one of the eight corners of a box, bit 0 for x, 1 for y, 2 for z
+        public static Vector3 CornerSign(int corner)
+        {
+            Vector3 sign = -Vector3.one;
+            if ((corner & 1) != 0)
+            {
+                sign.x = 1f;
+            }
+
+            if ((corner & 2) != 0)
+            {
+                sign.y = 1f;
+            }
+
+            if ((corner & 4) != 0)
+            {
+                sign.z = 1f;
+            }
+
+            return sign;
         }
     }
 }

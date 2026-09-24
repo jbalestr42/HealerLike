@@ -24,18 +24,6 @@ public class StageCalibrationTests
     }
 
     [Test]
-    public void FogRange_PortraitCamera_LeavesForegroundClearAndFarCornerBelowFullFog()
-    {
-        Bounds board = new Bounds(new Vector3(0f, 0.5f, 0f), new Vector3(16f, 0f, 16f));
-        Vector3 camera = new Vector3(0f, 20f, -17f);
-
-        Vector2 range = StageCalibration.FogRange(camera, board);
-
-        Assert.That(range.x, Is.EqualTo(Vector3.Distance(camera, board.ClosestPoint(camera))).Within(0.001f));
-        Assert.That(range.y, Is.GreaterThan(Vector3.Distance(camera, new Vector3(8f, 0.5f, 8f))));
-    }
-
-    [Test]
     public void BackgroundFog_PortraitCamera_StartsAtTheFarEdgeAndSpansTheFogDepth()
     {
         Bounds board = new Bounds(new Vector3(0f, 0.5f, 0f), new Vector3(16f, 0f, 16f));

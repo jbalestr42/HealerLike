@@ -73,10 +73,11 @@ public class SilhouetteOverlapTests
     }
 
     [Test]
-    public void Mask_AgainstGroundColour_SetsTheDifferingPixels()
+    public void Mask_UniformGround_SetsThePixelsPastTheTolerance()
     {
-        Color32 ground = new Color32(91, 144, 85, 255);
-        Color32[] pixels = { ground, new Color32(95, 146, 86, 255), new Color32(200, 60, 60, 255) };
+        Color32 grass = new Color32(91, 144, 85, 255);
+        Color32[] ground = { grass, grass, grass };
+        Color32[] pixels = { grass, new Color32(95, 146, 86, 255), new Color32(200, 60, 60, 255) };
 
         bool[] mask = SilhouetteOverlap.Mask(pixels, ground, 24);
 

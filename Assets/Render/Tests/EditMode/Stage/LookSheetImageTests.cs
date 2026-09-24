@@ -27,7 +27,7 @@ public class LookSheetImageTests
     {
         Color32 grey = new Color32(128, 128, 128, 255);
 
-        Color32 simulated = LookSheetImage.Deuteranope(grey);
+        Color32 simulated = LookSheetImage.Deuteranope(new Color32[] { grey })[0];
 
         Assert.AreEqual(128, simulated.r, 1);
         Assert.AreEqual(128, simulated.g, 1);
@@ -39,7 +39,7 @@ public class LookSheetImageTests
     {
         Color32 red = new Color32(255, 0, 0, 255);
 
-        Color32 simulated = LookSheetImage.Deuteranope(red);
+        Color32 simulated = LookSheetImage.Deuteranope(new Color32[] { red })[0];
 
         Assert.AreEqual(163, simulated.r, 1); // linear 0.367 encoded
         Assert.AreEqual(144, simulated.g, 1); // linear 0.280 encoded
@@ -78,7 +78,10 @@ public class LookSheetImageTests
 
         Pose pose = LookSheetCamera.Board(centre, 1f, rotation, 40f, 9f / 16f, 1080);
 
-        Assert.AreEqual(67.5f, LookSheetCamera.CellPixels(pose, centre, 1f, 40f, 9f / 16f, 1080), 0.01f); // 1080 / 16
+        // The view is BoardCells cells wide at the centre's depth, so a cell spans 1080 / 16 = 67.5 px
+        float depth = Vector3.Distance(pose.position, centre);
+        float viewWidth = 2f * depth * Mathf.Tan(40f * Mathf.Deg2Rad * 0.5f) * (9f / 16f);
+        Assert.AreEqual(LookSheetCamera.BoardCells, viewWidth, 0.001f);
         Assert.AreEqual(rotation, pose.rotation);
     }
 

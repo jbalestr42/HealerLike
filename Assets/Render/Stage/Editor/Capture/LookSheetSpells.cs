@@ -5,8 +5,9 @@ using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Stage
 {
-    // The look grammar's Part 3.2 spells as the sheet applies them: a status through the sink's SetStatus, or an
-    // outcome through its ShowImpact. His character skill handlers are used where they exist, the rest live in memory
+    // The roster's spells as the sheet applies them: a status through the sink's SetStatus, or an outcome
+    // through its ShowImpact. The game's character skill handlers are used where they exist, the rest live
+    // in memory
     public static class LookSheetSpells
     {
         public static readonly string[] Spells =
@@ -18,7 +19,7 @@ namespace HealerLike.Render.Stage
         // Cast again on a stone, the side their family is meant for
         public static readonly string[] OnStone = { "Weaken", "Mark of ruin", "Blight" };
 
-        // A factory or an engine change his code does not have yet; the sheet draws the parts and stars the label
+        // A factory or an engine change the game does not have yet; the sheet draws the parts and stars the label
         public static readonly string[] StandIns = { "Overgrowth", "Lifebloom", "Sprout", "Transfusion" };
 
         static readonly string quickenPath = "Assets/Data/CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory.asset";
@@ -49,7 +50,7 @@ namespace HealerLike.Render.Stage
                 case "Weaken":
                     return LookSheetData.Load<ABuffHandlerFactory>(weakenPath);
                 case "Focus":
-                    // His SingleTargetBuffAttackRate with the sign the bestiary fixes
+                    // SingleTargetBuffAttackRate with the sign the roster fixes
                     return LookSheetData.Handler(DurationType.Duration, 2f, 0f, created,
                         LookSheetData.Modifier(AttributeType.AttackRate, AttributeModifierType.Multiply, -0.5f, created));
                 case "Renew":

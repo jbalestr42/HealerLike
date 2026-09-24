@@ -23,7 +23,7 @@ public class LookSheetSpellsTests
         _created.Clear();
     }
 
-    // The spec's Part 3.2 rows that leave a status, as the healer casts them
+    // The roster spells that leave a status, as the healer casts them
     [TestCase("Quicken", true, EffectFamily.Boon, AttributeGroup.Offence, EffectTempo.ForDuration)]
     [TestCase("Blight", false, EffectFamily.Rot, AttributeGroup.Offence, EffectTempo.PerPeriod)]
     [TestCase("Weaken", false, EffectFamily.Bane, AttributeGroup.Offence, EffectTempo.ForDuration)]
@@ -33,7 +33,7 @@ public class LookSheetSpellsTests
     [TestCase("Sanctuary", true, EffectFamily.Boon, AttributeGroup.Prevention, EffectTempo.ForDuration)]
     [TestCase("Mark of ruin", false, EffectFamily.Bane, AttributeGroup.Defence, EffectTempo.ForDuration)]
     [TestCase("Overgrowth", true, EffectFamily.Boon, AttributeGroup.Offence, EffectTempo.ForDuration)]
-    public void Handler_StatusSpell_DerivesTheSpecRow(string spell, bool isSameSide, EffectFamily family, AttributeGroup group,
+    public void Handler_StatusSpell_DerivesItsStatus(string spell, bool isSameSide, EffectFamily family, AttributeGroup group,
         EffectTempo tempo)
     {
         ABuffHandlerFactory handler = LookSheetSpells.Handler(spell, _created);

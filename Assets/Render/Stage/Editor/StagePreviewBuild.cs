@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Player;
@@ -7,8 +6,8 @@ using UnityEngine;
 
 namespace HealerLike.Render.Stage
 {
-    // A player of the render preview with its own scene list, so his Build Settings stay untouched.
-    // The throws are the non-zero exit code a batchmode run reads.
+    // A player of the render preview with its own scene list, so the project's Build Settings stay untouched.
+    // A failure logs and exits with code 1, the non-zero exit code a batchmode run reads.
     public static class StagePreviewBuild
     {
         public static readonly string[] Scenes =
@@ -36,7 +35,9 @@ namespace HealerLike.Render.Stage
             Debug.Log($"[StagePreviewBuild] {report.summary.result}, errors {report.summary.totalErrors}, output {output}");
             if (report.summary.result != BuildResult.Succeeded)
             {
-                throw new InvalidOperationException("[StagePreviewBuild] The render preview player build failed.");
+                Debug.LogError("[StagePreviewBuild] The render preview player build failed.");
+                EditorApplication.Exit(1);
+                return;
             }
         }
 
@@ -69,12 +70,16 @@ namespace HealerLike.Render.Stage
 
             if (!hasRender)
             {
-                throw new InvalidOperationException("[StagePreviewBuild] The player has no render assembly.");
+                Debug.LogError("[StagePreviewBuild] The player has no render assembly.");
+                EditorApplication.Exit(1);
+                return;
             }
 
             if (hasEditorCode)
             {
-                throw new InvalidOperationException("[StagePreviewBuild] Render editor code was included in the player.");
+                Debug.LogError("[StagePreviewBuild] Render editor code was included in the player.");
+                EditorApplication.Exit(1);
+                return;
             }
 
             Debug.Log("[StagePreviewBuild] StandaloneOSX player scripts compiled, render editor code excluded.");

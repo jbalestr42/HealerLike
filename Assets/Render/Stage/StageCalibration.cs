@@ -8,21 +8,19 @@ namespace HealerLike.Render.Stage
         public static readonly float PortraitPitch = 52f;
         public static readonly float PortraitFov = 40f;
         public static readonly float PortraitAspect = 9f / 16f;
-        public static readonly float PortraitMargin = 0.35f;
         public static readonly float PortraitCentreY = 0.48f;
         public static readonly int PortraitWidth = 1080;
         public static readonly int PortraitHeight = 1920;
+        // The landscape preview keeps the wide framing from a lower pitch
+        public static readonly float LandscapePitch = 46f;
+        public static readonly float LandscapeAspect = 16f / 9f;
+        public static readonly float LandscapeCentreY = 0.46f;
         // Fog from clear to full over this many units past the far edge, well inside the environment ring
         public static readonly float BackgroundFogDepth = 10f;
 
-        public static Vector2 FogRange(Vector3 camera, Bounds board)
-        {
-            float near = Vector3.Distance(camera, board.ClosestPoint(camera));
-            float far = Mathf.Max(near, FarthestCorner(camera, board));
-
-            // Keep the foreground clear and some colour in the far row (5/6 fog at most)
-            return new Vector2(near, Mathf.Max(near + 1f, far + (far - near) * 0.2f));
-        }
+        // Width margin of the first framing, then the step back until every board corner fits the HUD frame
+        static readonly float playableMargin = 0.35f;
+        static readonly float playableStepBack = 0.35f;
 
         // Perspective pose at a fixed pitch whose view fits the board's width plus margin at its near edge
         // (the widest it projects), with the board centre drawn at the given viewport height
@@ -71,7 +69,7 @@ namespace HealerLike.Render.Stage
         // Fits both axes, keeping room above the back row and below the front row for the HUD
         public static Pose PlayableFrame(Bounds board, float pitch, float fov, float aspect, float centreY)
         {
-            Pose pose = Frame(board, pitch, fov, aspect, 0.35f, centreY);
+            Pose pose = Frame(board, pitch, fov, aspect, playableMargin, centreY);
             Vector3 forward = pose.rotation * Vector3.forward;
             float tan = Mathf.Tan(fov * Mathf.Deg2Rad * 0.5f);
             for (int pass = 0; pass < 80; pass++)
@@ -81,7 +79,7 @@ namespace HealerLike.Render.Stage
                     return pose;
                 }
 
-                pose.position -= forward * 0.35f;
+                pose.position -= forward * playableStepBack;
             }
 
             return pose;
@@ -103,21 +101,6 @@ namespace HealerLike.Render.Stage
             }
 
             return fits;
-        }
-
-        static float FarthestCorner(Vector3 camera, Bounds board)
-        {
-            float far = float.NegativeInfinity;
-            for (int x = -1; x <= 1; x += 2)
-            {
-                for (int z = -1; z <= 1; z += 2)
-                {
-                    Vector3 corner = board.center + Vector3.Scale(board.extents, new Vector3(x, 0f, z));
-                    far = Mathf.Max(far, Vector3.Distance(camera, corner));
-                }
-            }
-
-            return far;
         }
     }
 }

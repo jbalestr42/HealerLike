@@ -28,7 +28,7 @@ public class RenderManagerTests
     Light _previousSun;
     AmbientMode _previousAmbient;
 
-    // His scene as the manager sees it: a main camera, a directional light, the grid and its ground, decoration
+    // The game scene as the manager sees it: a main camera, a directional light, the grid and its ground, decoration
     static GridManager CreateGrid(Transform parent, out Renderer ground)
     {
         GameObject gridGo = new GameObject("Grid");
@@ -116,7 +116,7 @@ public class RenderManagerTests
     }
 
     [Test]
-    public void Init_GameScene_AdoptsHisCameraAndSwapsThePipeline()
+    public void Init_GameScene_AdoptsTheGameCameraAndSwapsThePipeline()
     {
         RenderPipelineAsset stagePipeline = AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(
             "Assets/Render/Stage/Settings/StagePipeline.asset");
@@ -168,7 +168,7 @@ public class RenderManagerTests
     }
 
     [Test]
-    public void OnEntitySpawned_Ally_HidesHisModelAndInitsTheView()
+    public void OnEntitySpawned_Ally_HidesTheGameModelAndInitsTheView()
     {
         _manager.Init(_entityManager, _player);
         Entity entity = CreateEntity(_gameGo.transform, Entity.EntityType.Player, out Renderer modelRenderer);

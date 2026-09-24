@@ -6,7 +6,7 @@ using HealerLike.Render.Look;
 
 namespace HealerLike.Render.Stage
 {
-    // The stage pipeline and renderer, based on his Very High tier plus the outlines and the shadow reach
+    // The stage pipeline and renderer, based on the Very High tier plus the outlines and the shadow reach
     public static class StagePipelineAuthoring
     {
         public static readonly string SettingsFolder = "Assets/Render/Stage/Settings";

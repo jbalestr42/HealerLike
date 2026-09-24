@@ -5,7 +5,7 @@ using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Stage
 {
-    // The units on the sheet: every entity his data holds today, the roster the bestiary proposes and the spec's five
+    // The units on the sheet: every entity the game data holds today, the proposed roster and five invented units
     // units nobody designed, the last two built in memory only
     public static class LookSheetUnits
     {
@@ -15,14 +15,14 @@ namespace HealerLike.Render.Stage
             "ChainLightningEntity", "ChannelingEntity", "SwarmEntity", "TestEntity", "SoldierEntity", "HitArmorBufferEntity"
         };
 
-        // The look grammar's Part 3.1 rows that are not in his data yet, in its order
+        // The proposed roster units that are not in the game data yet, in roster order
         public static readonly string[] Proposed =
         {
             "Mender", "Warden", "Mortar", "Flanker", "Bramble", "Shieldbearer", "Brute", "Plague stone", "Hexer",
             "Mending stone", "Warded idol", "Rising stone", "Splitter", "Runner", "Warlord"
         };
 
-        // A factory or an engine change his code does not have yet; the sheet draws the nearest data and stars the label
+        // A factory or an engine change the game does not have yet; the sheet draws the nearest data and stars the label
         public static readonly string[] StandIns = { "Mortar", "Bramble", "Splitter", "Runner" };
 
         public static readonly string[] Undesigned = { "Stormreed", "Puffball", "Old fern", "Needle stone", "Storm idol" };
@@ -39,7 +39,7 @@ namespace HealerLike.Render.Stage
             "Assets/Data/EntityItems/IncreaseDamageWithProjectileDistanceItem/IncreaseDamageOnDistanceProjectileBehaviourFactory.asset";
         static readonly string armorPath = "Assets/Data/Entities/HitArmorBufferEntityEntity/BuffHandlerFactory.asset";
 
-        // Allies are plants and enemies stones, as the waves and the 3.1 table place them
+        // Allies are plants and enemies stones, as the game's waves and the roster place them
         public static Entity.EntityType Side(string unit)
         {
             return Array.IndexOf(stones, unit) >= 0 ? Entity.EntityType.Computer : Entity.EntityType.Player;
@@ -56,7 +56,7 @@ namespace HealerLike.Render.Stage
             return IsStandIn(unit) ? label + "*" : label;
         }
 
-        // His asset for a roster entity, else an EntityData that lives in memory only
+        // The game's asset for a roster entity, else an EntityData that lives in memory only
         public static EntityData Create(string unit, List<Object> created)
         {
             if (Array.IndexOf(Roster, unit) >= 0)
@@ -78,7 +78,7 @@ namespace HealerLike.Render.Stage
                     data = LookSheetData.Copy(buffer, unit, created);
                     break;
                 case "Mortar":
-                    // Stand-in: his area behaviour baked into the prefab reads as the splash factory would
+                    // Stand-in: the area behaviour baked into the prefab reads as the splash factory would
                     data.targetBehaviourType = TargetBehaviourType.Farest;
                     data.attributes[AttributeType.AttackRate] = 2f;
                     GameObject mortar = LookSheetData.Variant("LaserBullet", created,
@@ -150,7 +150,7 @@ namespace HealerLike.Render.Stage
                     data.passives.Add(LookSheetData.Handler(DurationType.Infinite, 0f, 0f, created));
                     break;
                 case "Runner":
-                    // Stand-in: a soldier at melee range, nothing in his code walks
+                    // Stand-in: a soldier at melee range, nothing in the game walks
                     data = LookSheetData.Copy(soldier, unit, created);
                     data.targetBehaviourType = TargetBehaviourType.Nearest;
                     data.attributes[AttributeType.HealthMax] = 100f;
@@ -169,7 +169,7 @@ namespace HealerLike.Render.Stage
             return data;
         }
 
-        // The spec's Part 3.3 rows
+        // Five units nobody designed, to test the grammar on inputs it was not tuned for
         static void Undesign(string unit, EntityData data, List<Object> created)
         {
             switch (unit)

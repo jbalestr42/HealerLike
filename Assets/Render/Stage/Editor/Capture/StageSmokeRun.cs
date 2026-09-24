@@ -5,8 +5,8 @@ using UnityEngine;
 
 namespace HealerLike.Render.Stage
 {
-    // Plays three rounds of his loop: allies, Next Wave, first upgrade, again. His round state is private,
-    // so it is read from his own "[AscensionGameType] A -> B" log line.
+    // Plays three rounds of the game loop: allies, Next Wave, first upgrade, again. AscensionGameType keeps its
+    // round state private, so it is read from its own "[AscensionGameType] A -> B" log line.
     public class StageSmokeRun : AStageRun
     {
         public static readonly int Rounds = 3;
@@ -63,7 +63,7 @@ namespace HealerLike.Render.Stage
             Debug.Log($"[StageSmokeRun] Round {_roundsDone} ended, attacks {_attacks} heals {_heals} zones {_maxZones}");
         }
 
-        // His upgrade view offers buttons, the first one is picked through its own call
+        // The upgrade view offers buttons, the first one is picked through its own call
         void PickUpgrade()
         {
             SelectItemUpgradeButton item = UnityEngine.Object.FindAnyObjectByType<SelectItemUpgradeButton>();
