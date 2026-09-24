@@ -64,9 +64,6 @@ namespace HealerLike.Render.Look
                 return;
             }
 
-            int main = renderingData.lightData.mainLightIndex;
-            Light mainLight = main >= 0 ? renderingData.lightData.visibleLights[main].light : null;
-            LookController.PublishMainLightDirection(mainLight);
             ApplyEdgeSettings();
             if (_pass != null)
             {

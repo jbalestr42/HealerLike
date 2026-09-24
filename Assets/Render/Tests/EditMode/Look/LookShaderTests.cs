@@ -19,10 +19,10 @@ namespace HealerLike.Render.Look
 // Look.shader and its companions are assets, not classes: these tests import, compile and render them
 public class LookShaderTests
 {
-    // Globals the tests overwrite: the beauty capture's grid and tip light, then the readbacks' look
+    // Globals the tests overwrite: the capture's grid, then the readbacks' look
     static readonly string[] savedGlobals =
     {
-        "_HLGridCell", "_HLGridStrength", "_HLTipLight",
+        "_HLGridCell", "_HLGridStrength",
         "_HLLookApplied", "_HLToonThreshold", "_HLToonSoftness", "_HLFogStart", "_HLFogEnd", "_HLFogBands",
         "_HLInkStrength", "_HLContrast", "_HLInkScale", "_HLInkWidth", "_HLInkStart", "_HLInkRange",
         "_HLDensityMul", "_HLInkWarp", "_HLDashAmount", "_HLDashScale", "_HLInkDistStart", "_HLInkFarSpacing"
@@ -502,16 +502,6 @@ public class LookShaderTests
         {
             AssertOutlineWidths(distances[s], orthographic[s]);
         }
-
-        Material probe = Track(new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/LookBeautyProbe.shader")));
-        Shader.SetGlobalFloat("_HLTipLight", 0.12f);
-        Graphics.Blit(Texture2D.whiteTexture, _target, probe);
-        RenderTexture.active = _target;
-        _texture.ReadPixels(new Rect(0f, 0f, 1080f, 1920f), 0, 0);
-        _texture.Apply();
-        File.WriteAllBytes(Path.Combine(_directory, "beauty-look-tip.png"), _texture.EncodeToPNG());
-        Assert.That(_texture.GetPixel(800, 1800).g, Is.GreaterThan(_texture.GetPixel(800, 100).g));
-        Assert.That(_texture.GetPixel(200, 1800), Is.EqualTo(_texture.GetPixel(200, 100)));
     }
 
     [Test]

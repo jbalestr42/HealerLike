@@ -23,7 +23,6 @@ namespace HealerLike.Render.Stage
         static readonly int gridCellId = Shader.PropertyToID("_HLGridCell");
         static readonly int gridExtentId = Shader.PropertyToID("_HLGridExtent");
         static readonly int gridStrengthId = Shader.PropertyToID("_HLGridStrength");
-        static readonly int tipLightId = Shader.PropertyToID("_HLTipLight");
 
         [SerializeField] CreatureLooks _creatureLooks;
         [SerializeField] SpellLooks _spellLooks;
@@ -34,7 +33,6 @@ namespace HealerLike.Render.Stage
         [SerializeField] Color _ambientColor = new Color(0.35f, 0.4f, 0.5f);
         [SerializeField] List<string> _hiddenObjectNames = new List<string>();
         [SerializeField] float _gridStrength = 0.12f;
-        [SerializeField] float _tipLight = 0.035f;
         [SerializeField] GameObject _environmentPrefab;
         [SerializeField] LookController _look;
         [SerializeField] ZoneRegistry _zones;
@@ -298,12 +296,11 @@ namespace HealerLike.Render.Stage
             _gameCamera.aspect = _isLandscape ? 16f / 9f : StageCalibration.PortraitAspect;
             _gameCamera.transform.SetPositionAndRotation(overviewPose.position, overviewPose.rotation);
 
-            // The board ground draws the cell grid from these, the grass tips catch the light
+            // The board ground draws the cell grid from these
             Shader.SetGlobalVector(gridOriginId, _board.min);
             Shader.SetGlobalFloat(gridCellId, grid.size);
             Shader.SetGlobalVector(gridExtentId, _board.size);
             Shader.SetGlobalFloat(gridStrengthId, _gridStrength);
-            Shader.SetGlobalFloat(tipLightId, _tipLight);
 
             foreach (string hiddenName in _hiddenObjectNames)
             {
@@ -405,7 +402,6 @@ namespace HealerLike.Render.Stage
             }
 
             Shader.SetGlobalFloat(gridStrengthId, 0f);
-            Shader.SetGlobalFloat(tipLightId, 0f);
 
             // The children can go first when the manager itself is destroyed
             if (_grass != null)

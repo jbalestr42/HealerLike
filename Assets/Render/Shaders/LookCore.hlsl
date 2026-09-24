@@ -37,8 +37,6 @@ float4 _HLGridOrigin; // xyz: world-space minimum board corner
 float _HLGridCell; // square cell size in world units
 float4 _HLGridExtent; // x/z: board width/depth in world units
 float _HLGridStrength; // 0..1, recommended .12
-float _HLTipLight; // 0..1, recommended .12; consumed by grass adapter
-float4 _HLKeyLightDir; // World-space direction toward main light, w=0; zero when absent.
 
 #define HL_G(uniformName, fallbackValue) \
     ((_HLLookApplied > 0.5) ? (uniformName) : (fallbackValue))
@@ -109,11 +107,6 @@ float HLLine(float coord, float warp, float spacing,
     // No minification fade: d never exceeds half a period, so strokes too fine to resolve
     // merge into solid ink instead of fading out, which is the look
     return 1.0 - smoothstep(hw, hw + aa, d);
-}
-
-float HLShadowMask(float illum)
-{
-    return 1.0 - step(HL_G(_HLToonThreshold, HL_DEF_TOONTHRESHOLD), saturate(illum));
 }
 
 float HLFogFactor(float3 positionWS)
@@ -221,13 +214,6 @@ float4 HLOutlineClip(float3 positionWS, float3 outlineNormalWS, float widthMulti
     return pCS;
 }
 
-// Frozen world-space API for existing adapters.
-float3 HLOutlineExtrude(float3 positionWS, float3 outlineNormalWS)
-{
-    float4 world = mul(UNITY_MATRIX_I_VP, HLOutlineClip(positionWS, outlineNormalWS, 1.0));
-    return world.xyz / world.w;
-}
-
 // Ground adapter only: never call from shared surface shading or plants/rocks.
 float3 HLApplyBattlefieldGrid(float3 positionWS, float3 color)
 {
@@ -247,14 +233,6 @@ float3 HLApplyBattlefieldGrid(float3 positionWS, float3 color)
     float resolved = 1.0 - smoothstep(.25, .5, max(footprint.x, footprint.y));
     return lerp(color, HLWorkingColor(float3(.82, .89, .83)),
         gridLine * inside * enabled * resolved * farFade * saturate(_HLGridStrength));
-}
-
-// Grass adapter calls before fog; bladeHeight01 is root=0, tip=1.
-float3 HLApplyTipLight(float3 color, float bladeHeight01, float illum)
-{
-    float amount = smoothstep(.65, 1.0, saturate(bladeHeight01)) *
-                   (1.0 - HLShadowMask(illum)) * saturate(_HLTipLight);
-    return lerp(color, HLWorkingColor(float3(.88, .96, .65)), amount);
 }
 
 float3 HLEvaluateOutline(float3 unextrudedPositionWS)
