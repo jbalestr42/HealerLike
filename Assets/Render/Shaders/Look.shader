@@ -5,10 +5,10 @@ Shader "HL/Look/Primitive"
     Properties
     {
         _HLOutlineWidthMultiplier ("Outline Width Multiplier", Float) = 1
-        [Toggle] _HLGroundGrid ("Battlefield Ground Grid", Float) = 0
-        [Toggle] _HLSmoothOutlineNormals ("Use Authored TEXCOORD3 Outline Normals", Float) = 0
+        [ToggleUI] _HLGroundGrid ("Battlefield Ground Grid", Float) = 0
+        [ToggleUI] _HLSmoothOutlineNormals ("Use Authored TEXCOORD3 Outline Normals", Float) = 0
         [MainColor] _BaseColor ("Base Color", Color) = (1,1,1,1)
-        [Toggle] _HLNormalEdges ("Normal Edges (zero keeps depth edges only)", Float) = 1
+        [ToggleUI] _HLNormalEdges ("Normal Edges (zero keeps depth edges only)", Float) = 1
         _HLHatchMultiplier ("Hatch Multiplier", Float) = 1
         _HLToonThresholdOffset ("Toon Threshold Offset (added to the global threshold)", Float) = 0
         _HLShadeTint ("Shade Tint (alpha is its strength, zero keeps the global tint)", Color) = (0,0,0,0)
@@ -50,7 +50,8 @@ Shader "HL/Look/Primitive"
             UNITY_TRANSFER_INSTANCE_ID(input, output);
             UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
             #if defined(HL_GRASS_INSTANCED)
-            HLPlaceGrassBlade(input.positionOS.xyz, input.normalOS, input.instanceID, output.positionWS, output.normalWS);
+            HLPlaceGrassBlade(input.positionOS.xyz, input.normalOS, input.instanceID,
+                              output.positionWS, output.normalWS);
             #else
             output.positionWS = TransformObjectToWorld(input.positionOS.xyz);
             output.normalWS = TransformObjectToWorldNormal(input.normalOS);
@@ -85,8 +86,9 @@ Shader "HL/Look/Primitive"
                 #endif
                 Light mainLight = GetMainLight(shadowCoord, input.positionWS, half4(1, 1, 1, 1));
                 float facing = dot(normalize(input.normalWS), mainLight.direction) * 0.5 + 0.5;
-                float3 color = HLShadeSurface(input.positionWS, facing, mainLight.shadowAttenuation, HLGetBaseColor().rgb,
-                                              _HLHatchMultiplier, _HLToonThresholdOffset, _HLShadeTint);
+                float3 color = HLShadeSurface(input.positionWS, facing, mainLight.shadowAttenuation,
+                                              HLGetBaseColor().rgb, _HLHatchMultiplier, _HLToonThresholdOffset,
+                                              _HLShadeTint);
                 if (_HLGroundGrid > 0.5)
                 {
                     color = HLApplyBattlefieldGrid(input.positionWS, color);

@@ -317,7 +317,7 @@ public class LookShaderTests
     [Test]
     public void CompilePass_ScreenEdgesShader_CompilesBothNormalEncodings()
     {
-        Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/OutlinesEdges.shader");
+        Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/OutlinesEdges.shader");
         Assert.That(shader, Is.Not.Null);
         Material material = Track(new Material(shader));
 

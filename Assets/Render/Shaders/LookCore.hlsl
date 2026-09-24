@@ -4,7 +4,7 @@
 
 // Shared HL look for primitive, grass and stone adapters.
 // Include URP Core.hlsl before this file. Fragment shading uses derivatives.
-// HLLookController publishes global tuning; material colour stays in HLLookInput.hlsl.
+// LookController publishes global tuning; material colour stays in LookInput.hlsl.
 // Keep all look globals outside UnityPerMaterial and shader Properties.
 
 // Full global ABI: outside UnityPerMaterial; absent from Properties.
@@ -32,11 +32,11 @@ float  _HLInkDistStart;
 float  _HLInkFarSpacing;
 float  _HLContrast;
 float  _HLLookApplied;
-// Additive beauty controls. Stage owns grid bounds and tip strength; zero disables both.
+// Board grid, published by the RenderManager; a zero cell or strength draws no grid.
 float4 _HLGridOrigin; // xyz: world-space minimum board corner
 float _HLGridCell; // square cell size in world units
 float4 _HLGridExtent; // x/z: board width/depth in world units
-float _HLGridStrength; // 0..1, recommended .12
+float _HLGridStrength; // 0 to 1, recommended 0.12
 
 #define HL_G(uniformName, fallbackValue) \
     ((_HLLookApplied > 0.5) ? (uniformName) : (fallbackValue))
@@ -51,9 +51,9 @@ float3 HLWorkingColor(float3 srgb)
 #endif
 }
 
-// HLLookController uploads every global before setting _HLLookApplied to 1.
+// LookController uploads every global before setting _HLLookApplied to 1.
 // When the flag is 0, use the complete baked HL defaults.
-// Keep HLLookSettings defaults and shader fallback values identical.
+// Keep LookSettings defaults and shader fallback values identical.
 #define HL_DEF_SHADOWTINT float4(HLWorkingColor(float3(30,87,125)/255.0),1)
 #define HL_DEF_OUTLINECOLOR float4(HLWorkingColor(float3(24,38,63)/255.0),1)
 #define HL_DEF_FOGCOLOR float4(HLWorkingColor(float3(154,188,211)/255.0),1)
@@ -61,7 +61,7 @@ float3 HLWorkingColor(float3 srgb)
 #define HL_DEF_TOONTHRESHOLD 0.45
 #define HL_DEF_TOONSOFTNESS 0.08
 #define HL_DEF_OUTLINEWIDTHPIXELS 1.0
-// Provisional world-unit fog distances; calibrate against the gameplay camera.
+// World-unit fog distances until LookController.Init publishes the calibrated range.
 #define HL_DEF_FOGSTART 20.0
 #define HL_DEF_FOGEND 60.0
 #define HL_DEF_FOGBANDS 6.0
@@ -117,9 +117,9 @@ float HLFogFactor(float3 positionWS)
     float f = saturate((distance(positionWS, GetCameraPositionWS()) - start) / max(0.001, end - start));
     // Static world-space threshold noise: stable while plants move, no invented clock.
     // Envelope preserves exactly clear near and fully fogged far endpoints.
-    float noise = (HLDashNoise(dot(positionWS.xz, float2(.37, .21))) * .65 +
-                   HLDashNoise(dot(positionWS.xz, float2(-.19, .43)) + 17.3) * .35) * 2.0 - 1.0;
-    float warped = saturate(f + noise * .32 / bands * saturate(f * bands) * saturate((1.0 - f) * bands));
+    float noise = (HLDashNoise(dot(positionWS.xz, float2(0.37, 0.21))) * 0.65 +
+                   HLDashNoise(dot(positionWS.xz, float2(-0.19, 0.43)) + 17.3) * 0.35) * 2.0 - 1.0;
+    float warped = saturate(f + noise * 0.32 / bands * saturate(f * bands) * saturate((1.0 - f) * bands));
     return floor(warped * bands) / bands;
 }
 
@@ -155,7 +155,7 @@ float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, 
     strength = lerp(strength, globalStrength, cast);
     // Deep cast shadows converge to the authored ultramarine, instead of retaining
     // enough green base colour to read as grey/teal. Strength controls the toon boundary.
-    float tintStrength = lerp(strength, 1.0, saturate(1.0 - illum / max(.001, threshold)));
+    float tintStrength = lerp(strength, 1.0, saturate(1.0 - illum / max(0.001, threshold)));
     float3 shadowColor = lerp(baseColor, tint, tintStrength);
     float3 color = lerp(shadowColor, baseColor, lit);
     float tone = saturate(((1.0 - illum) - HL_G(_HLInkStart, HL_DEF_INKSTART)) /
@@ -201,14 +201,22 @@ float4 HLOutlineClip(float3 positionWS, float3 outlineNormalWS, float widthMulti
 {
     float4 pCS = TransformWorldToHClip(positionWS);
     float lengthSquared = dot(outlineNormalWS, outlineNormalWS);
-    if (lengthSquared < 1e-12 || pCS.w <= 1e-5) return pCS;
+    if (lengthSquared < 1e-12 || pCS.w <= 1e-5)
+    {
+        return pCS;
+    }
+
     float4 nCS = mul(UNITY_MATRIX_VP, float4(outlineNormalWS * rsqrt(lengthSquared), 0));
     // Quotient derivative includes perspective and off-axis projection. Normalize in
     // pixel space, then offset clip XY without changing depth (orthographic works too).
     float2 size = max(_ScaledScreenParams.xy, float2(1, 1));
     float2 directionPixels = (nCS.xy * pCS.w - pCS.xy * nCS.w) * size;
     float directionLength = length(directionPixels);
-    if (directionLength < 1e-6) return pCS;
+    if (directionLength < 1e-6)
+    {
+        return pCS;
+    }
+
     pCS.xy += directionPixels / directionLength *
         HL_G(_HLOutlineWidthPixels, HL_DEF_OUTLINEWIDTHPIXELS) * max(0.0, widthMultiplier) * 2.0 / size * pCS.w;
     return pCS;
@@ -219,19 +227,19 @@ float3 HLApplyBattlefieldGrid(float3 positionWS, float3 color)
 {
     float2 local = positionWS.xz - _HLGridOrigin.xz;
     float2 extent = _HLGridExtent.xz;
-    float cell = max(_HLGridCell, .001);
+    float cell = max(_HLGridCell, 0.001);
     float2 coord = local / cell;
     float2 footprint = max(fwidth(coord), float2(1e-5, 1e-5));
-    float2 lineDistance = abs(frac(coord + .5) - .5) / footprint;
-    float gridLine = 1.0 - smoothstep(.25, 1.0, min(lineDistance.x, lineDistance.y));
+    float2 lineDistance = abs(frac(coord + 0.5) - 0.5) / footprint;
+    float gridLine = 1.0 - smoothstep(0.25, 1.0, min(lineDistance.x, lineDistance.y));
     float inside = step(0.0, local.x) * step(0.0, local.y) *
                    step(local.x, extent.x) * step(local.y, extent.y);
-    float enabled = step(.001, _HLGridCell) * step(.001, min(extent.x, extent.y));
+    float enabled = step(0.001, _HLGridCell) * step(0.001, min(extent.x, extent.y));
     float farFade = 1.0 - smoothstep(0.0, 1.0, saturate(
         (distance(positionWS, GetCameraPositionWS()) - HL_G(_HLFogStart, HL_DEF_FOGSTART)) /
-        max(.001, HL_G(_HLFogEnd, HL_DEF_FOGEND) - HL_G(_HLFogStart, HL_DEF_FOGSTART))));
-    float resolved = 1.0 - smoothstep(.25, .5, max(footprint.x, footprint.y));
-    return lerp(color, HLWorkingColor(float3(.82, .89, .83)),
+        max(0.001, HL_G(_HLFogEnd, HL_DEF_FOGEND) - HL_G(_HLFogStart, HL_DEF_FOGSTART))));
+    float resolved = 1.0 - smoothstep(0.25, 0.5, max(footprint.x, footprint.y));
+    return lerp(color, HLWorkingColor(float3(0.82, 0.89, 0.83)),
         gridLine * inside * enabled * resolved * farFade * saturate(_HLGridStrength));
 }
 

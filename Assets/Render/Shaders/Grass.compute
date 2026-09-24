@@ -51,8 +51,10 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
             {
                 spikePresence = 1.0;
             }
+
             spikeHeight = max(spikeHeight, weight * smoothstep(0.0, 0.15, zone.age));
         }
+
         if (zone.kind == 6)
         {
             // Smooth irregular flattening, rather than a shaved disc with a hard circular rim
@@ -61,10 +63,12 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
             float footprint = HLGrassZoneOnset(zone) * (1.0 - smoothstep(radius * 0.35, radius, length(delta)));
             trample = max(trample, footprint);
         }
+
         if (zone.kind == 4)
         {
             bruise = max(bruise, weight);
         }
+
         if (zone.kind == 5 && zone.radius > 0.0)
         {
             float2 delta = position - zone.position.xz;
@@ -73,10 +77,12 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
             float wave = (1.0 - smoothstep(0.0, band, abs(length(delta) - front))) * weight;
             launch += zone.direction * wave * saturate(dot(delta / max(length(delta), 1e-5), zone.direction));
         }
+
         if ((zone.kind != 1 && zone.kind != 3) || zone.radius <= 0.0)
         {
             continue;
         }
+
         heal = max(heal, weight * (zone.kind == 3 ? 0.35 : 1.0));
         float2 offset = position - zone.position.xz;
         float distanceToZone = length(offset);

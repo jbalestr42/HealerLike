@@ -16,7 +16,7 @@ Shader "Hidden/HL/Look/DepthNormalOutline"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
-            #include "../Shaders/LookCore.hlsl"
+            #include "LookCore.hlsl"
 
             float4 _HLEdgeDepth; // world threshold, reference distance, distance slope
             float4 _HLEdgeNormals; // angle degrees, density penalty degrees, mask enabled
@@ -63,8 +63,9 @@ Shader "Hidden/HL/Look/DepthNormalOutline"
                 // World-unit eye-depth discontinuity; only foreground side inks depth edges.
                 float depthEdge = step(threshold, neighborDepth - eyeDepth);
                 float angle = min(179.0, _HLEdgeNormals.x + density * _HLEdgeNormals.y);
-                float normalEdge = step(1.0 - cos(radians(angle)), 1.0 - clamp(dot(normalWS, neighborNormal), -1.0, 1.0));
-                normalEdge *= step(.5, dot(normalWS, normalWS)) * step(.5, dot(neighborNormal, neighborNormal));
+                float alignment = clamp(dot(normalWS, neighborNormal), -1.0, 1.0);
+                float normalEdge = step(1.0 - cos(radians(angle)), 1.0 - alignment);
+                normalEdge *= step(0.5, dot(normalWS, normalWS)) * step(0.5, dot(neighborNormal, neighborNormal));
                 normalEdge *= saturate(mask) * saturate(HLNormalMask(uv));
                 return max(depthEdge, normalEdge);
             }
@@ -74,16 +75,23 @@ Shader "Hidden/HL/Look/DepthNormalOutline"
                 float2 uv = GetNormalizedScreenSpaceUV(input.positionCS);
                 float rawDepth = SampleSceneDepth(uv);
                 #if UNITY_REVERSED_Z
-                if (rawDepth <= 1e-6) return 0;
+                if (rawDepth <= 1e-6)
+                {
+                    return 0;
+                }
                 #else
-                if (rawDepth >= 1.0 - 1e-6) return 0;
+                if (rawDepth >= 1.0 - 1e-6)
+                {
+                    return 0;
+                }
                 #endif
+
                 float width = max(0.0, HL_G(_HLOutlineWidthPixels, HL_DEF_OUTLINEWIDTHPIXELS));
                 float2 delta = width / max(_ScaledScreenParams.xy, 1.0);
                 float eyeDepth = HLEyeDepth(rawDepth);
                 float3 normalWS = SampleSceneNormals(uv);
                 // Dense alternating normals raise the angle threshold; coherent surfaces retain creases.
-                float density = saturate((length(ddx(normalWS)) + length(ddy(normalWS))) * .5);
+                float density = saturate((length(ddx(normalWS)) + length(ddy(normalWS))) * 0.5);
                 float mask = HLNormalMask(uv);
                 float edge = max(max(HLEdgeCoverage(uv + float2(delta.x, 0), eyeDepth, normalWS, mask, density),
                                      HLEdgeCoverage(uv - float2(delta.x, 0), eyeDepth, normalWS, mask, density)),

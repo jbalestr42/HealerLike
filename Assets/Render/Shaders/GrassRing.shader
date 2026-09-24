@@ -23,17 +23,40 @@ Shader "HL/Grass/HealRing"
             #include "LookCore.hlsl"
             float4 _HL_FieldRect;
             float _HL_SurfaceY;
-            struct HLGrassRingInput { float3 positionOS : POSITION; float2 uv : TEXCOORD0; uint instanceID : SV_InstanceID; };
-            struct HLGrassRingOutput { float4 positionCS : SV_POSITION; float3 positionWS : TEXCOORD0; nointerpolation float fade : TEXCOORD1; };
+
+            struct HLGrassRingInput
+            {
+                float3 positionOS : POSITION;
+                float2 uv : TEXCOORD0;
+                uint instanceID : SV_InstanceID;
+            };
+
+            struct HLGrassRingOutput
+            {
+                float4 positionCS : SV_POSITION;
+                float3 positionWS : TEXCOORD0;
+                nointerpolation float fade : TEXCOORD1;
+            };
+
             HLGrassRingOutput HLGrassRingVertex(HLGrassRingInput input)
             {
                 InitIndirectDrawArgs(0);
                 uint id = GetIndirectInstanceID(input.instanceID);
                 HLGrassRingOutput output = (HLGrassRingOutput)0;
                 // Fixed 64-instance draw, no CPU snapshot or GPU readback. Invalid slots are degenerate.
-                if (id >= (uint)_HL_ZoneCount) { output.positionCS = float4(0,0,0,1); return output; }
+                if (id >= (uint)_HL_ZoneCount)
+                {
+                    output.positionCS = float4(0.0, 0.0, 0.0, 1.0);
+                    return output;
+                }
+
                 HLZone zone = HLLoadZone(id);
-                if ((zone.kind != 1 && zone.kind != 3) || zone.radius <= 0) { output.positionCS = float4(0,0,0,1); return output; }
+                if ((zone.kind != 1 && zone.kind != 3) || zone.radius <= 0.0)
+                {
+                    output.positionCS = float4(0.0, 0.0, 0.0, 1.0);
+                    return output;
+                }
+
                 float radius = zone.radius + input.uv.y * min(0.018, zone.radius * 0.25);
                 float2 p = zone.position.xz + float2(cos(input.uv.x), sin(input.uv.x)) * radius;
                 output.positionWS = float3(p.x, _HL_SurfaceY + 0.10, p.y);
@@ -41,21 +64,26 @@ Shader "HL/Grass/HealRing"
                 output.fade = HLGrassZoneOnset(zone);
                 return output;
             }
+
             half4 HLGrassRingFragment(HLGrassRingOutput input) : SV_Target
             {
                 clip(input.fade - 0.0001);
                 clip(input.positionWS.xz - _HL_FieldRect.xy);
                 clip(_HL_FieldRect.zw - input.positionWS.xz);
-                float hostile = 0;
+                float hostile = 0.0;
                 for (int j = 0; j < min(_HL_ZoneCount, 64); j++)
                 {
                     HLZone z = HLLoadZone(j);
-                    if (z.kind == 2) hostile = max(hostile, HLGrassZoneWeight(z, input.positionWS.xz));
+                    if (z.kind == 2)
+                    {
+                        hostile = max(hostile, HLGrassZoneWeight(z, input.positionWS.xz));
+                    }
                 }
                 clip(0.49999 - hostile);
                 Light mainLight = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
-                float illum = saturate((dot(float3(0,1,0), mainLight.direction) * 0.5 + 0.5) * mainLight.shadowAttenuation);
-                return half4(HLEvaluateSurface(input.positionWS, illum, float3(1,1,1)), input.fade);
+                float facing = dot(float3(0.0, 1.0, 0.0), mainLight.direction) * 0.5 + 0.5;
+                float illum = saturate(facing * mainLight.shadowAttenuation);
+                return half4(HLEvaluateSurface(input.positionWS, illum, float3(1.0, 1.0, 1.0)), input.fade);
             }
             ENDHLSL
         }
