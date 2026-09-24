@@ -15086,7 +15086,7 @@ MonoBehaviour:
   plantScale: 1.8
   stoneScale: 2.2
   maxParts: 40
-  isReachPinned: 1
+  isReachPinned: 0
   pinnedReach: 1.3
   rootCount: 10
   rootThickness: 0.14

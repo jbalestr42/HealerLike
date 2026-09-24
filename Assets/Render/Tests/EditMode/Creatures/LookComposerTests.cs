@@ -133,14 +133,14 @@ public class LookComposerTests
     }
 
     [Test]
-    public void Compose_Plant_GrowsJointedRootsAtThePinnedReach()
+    public void Compose_Plant_GrowsJointedRootsAtTheDerivedReach()
     {
         CreatureRecipe recipe = Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud));
 
         Assert.AreEqual(_vocabulary.rootCount, recipe.roots.count);
         Assert.That(recipe.roots.segments, Is.InRange(2, 3));
         float unit = _vocabulary.Unit(LookSide.Plant);
-        Assert.AreEqual(_vocabulary.pinnedReach * unit, recipe.roots.footRadius, 0.0001f);
+        Assert.AreEqual(_vocabulary.Reach(ReachBand.Long) * unit, recipe.roots.footRadius, 0.0001f);
         Assert.That(recipe.roots.thickness * 2f / unit, Is.InRange(0.12f, 0.18f)); // diameter in plant body units
         Assert.Less(recipe.roots.hipHeight / unit, 0.2f); // the roots leave the body at its base
         Assert.AreEqual(2, recipe.arms.Length);

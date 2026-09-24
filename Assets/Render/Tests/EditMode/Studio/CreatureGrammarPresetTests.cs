@@ -118,16 +118,16 @@ public class CreatureGrammarPresetTests
     }
 
     [Test]
-    public void Compose_PinnedReach_IgnoresTheReachBand()
+    public void Compose_ShippedVocabulary_ReadsTheReachBand()
     {
-        Assume.That(_preset.vocabulary.isReachPinned, "The shipped vocabulary pins the plant reach");
+        Assert.IsFalse(_preset.vocabulary.isReachPinned);
         _preset.reach = ReachBand.Short;
         CreatureRecipe shortReach = Track(_preset.Compose());
 
         _preset.reach = ReachBand.Long;
         CreatureRecipe longReach = Track(_preset.Compose());
 
-        Assert.AreEqual(shortReach.roots.footRadius, longReach.roots.footRadius);
+        Assert.Less(shortReach.roots.footRadius, longReach.roots.footRadius);
     }
 
     [Test]

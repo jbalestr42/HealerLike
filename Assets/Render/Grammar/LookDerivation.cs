@@ -12,10 +12,11 @@ namespace HealerLike.Render.Grammar
         public static readonly float QuickCadence = 0.5f;
         public static readonly float SlowCadence = 1.5f;
         public static readonly float LightHealth = 120f;
-        public static readonly float HeavyHealth = 250f;
-        // Range in cells, a guess: nothing in the game data says what a short range is
-        public static readonly float ShortRange = 3f;
-        public static readonly float MidRange = 8f;
+        // The roster's 150-health Soldier stays Sturdy; the 200-health RandomShoot becomes Heavy.
+        public static readonly float HeavyHealth = 175f;
+        // The atlas dump found eight ranges at 100 and four at 1000; these are cosmetic bands.
+        public static readonly float ShortRange = 100f;
+        public static readonly float MidRange = 500f;
         public static readonly float DefaultHealth = 100f;
         public static readonly float DefaultAttackRate = 1f;
         public static readonly float DefaultRange = 1000f;
