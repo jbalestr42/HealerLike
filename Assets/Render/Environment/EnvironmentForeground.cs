@@ -257,7 +257,7 @@ namespace HealerLike.Render.Environment
             partGo.transform.localRotation = rotation;
             partGo.transform.localScale = scale;
             partGo.transform.localPosition = bottom + rotation * new Vector3(0f, -mesh.bounds.min.y * scale.y, 0f);
-            PrimitiveMeshes.Geometry(partGo, mesh, material, color.linear, 0f, _properties);
+            PrimitiveMeshes.Geometry(partGo, mesh, material, color, 0f, _properties);
         }
     }
 }

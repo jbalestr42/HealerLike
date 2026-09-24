@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Stage;
 using UnityEngine;
 
@@ -32,6 +33,7 @@ namespace HealerLike.Render.Stones
 
         [SerializeField] StoneGroundDisc _groundShadow;
         [SerializeField] float _shedHealthFraction = 0.5f;
+        [SerializeField] LookPalette _palette;
 
         CreatureBuilder _builder;
         CreatureRig _rig;
@@ -461,7 +463,7 @@ namespace HealerLike.Render.Stones
                 return false;
             }
 
-            Transform shard = _effects.TakeShard(lease.mesh, StoneAssembly.Palette[1]);
+            Transform shard = _effects.TakeShard(lease.mesh, ShardColour());
             if (shard == null)
             {
                 lease.Dispose();
@@ -544,6 +546,17 @@ namespace HealerLike.Render.Stones
             {
                 EndDelivery(token);
             }
+        }
+
+        // A thrown shard is a piece of the stone's body
+        Color ShardColour()
+        {
+            if (_palette == null)
+            {
+                Debug.LogError("[StoneBody] No palette.");
+                return Color.magenta;
+            }
+            return _palette.Colour(ColourRole.Body, EffectFamily.Damage, LookSide.Stone);
         }
 
         void ClearDeliveries()

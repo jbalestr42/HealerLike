@@ -1,4 +1,5 @@
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -66,7 +67,10 @@ public class StoneBodyTests
         builder.SetRecipe(recipe, material,
             AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset"));
         builder.Init(entity);
-        return viewGo.AddComponent<StoneBody>();
+        StoneBody body = viewGo.AddComponent<StoneBody>();
+        TestHelpers.SetPrivateField(body, "_palette",
+            AssetDatabase.LoadAssetAtPath<LookPalette>("Assets/Render/Grammar/Data/LookPalette.asset"));
+        return body;
     }
 
     public static Entity CreateEntity(GameObject owner, ResourceAttribute health)

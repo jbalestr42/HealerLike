@@ -1,5 +1,6 @@
 using System.Linq;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -50,6 +51,8 @@ public class EnvironmentScatterTests
     EnvironmentScatter Make(GameObject go, int seed)
     {
         EnvironmentScatter scatter = go.AddComponent<EnvironmentScatter>();
+        TestHelpers.SetPrivateField(scatter, "_palette",
+            AssetDatabase.LoadAssetAtPath<LookPalette>("Assets/Render/Grammar/Data/LookPalette.asset"));
         EnvironmentSettings settings = EnvironmentSettings.Default;
         settings.seed = seed;
         settings.counts = new EnvironmentCounts

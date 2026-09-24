@@ -20,6 +20,8 @@ namespace HealerLike.Render.Spells
         static readonly float beamWidth = 0.025f;
 
         EffectRecipe _recipe;
+        // The side of the unit the effect sits on, its body and stem parts take that side's colours
+        LookSide _targetSide = LookSide.Plant;
         readonly List<Transform> _shapes = new List<Transform>();
         readonly List<LookPart> _shapeParts = new List<LookPart>();
         readonly List<Transform> _stalks = new List<Transform>();
@@ -82,6 +84,11 @@ namespace HealerLike.Render.Spells
 
         public void Init(EffectRecipe recipe, PrimitiveMeshes meshes, Material material)
         {
+            Init(recipe, meshes, material, LookSide.Plant);
+        }
+
+        public void Init(EffectRecipe recipe, PrimitiveMeshes meshes, Material material, LookSide targetSide)
+        {
             if (recipe == null || meshes == null)
             {
                 Debug.LogError("[SpellEffect] Init needs a recipe and the primitive meshes.");
@@ -89,6 +96,7 @@ namespace HealerLike.Render.Spells
             }
 
             _recipe = recipe;
+            _targetSide = targetSide;
             _block = new MaterialPropertyBlock();
             foreach (LookPart part in recipe.entry.parts)
             {
@@ -172,14 +180,11 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            Color colour = _recipe.palette.stoneBody;
-            if (side == Entity.EntityType.Player)
+            // A caster on a side draws that side's rim, a sourceless effect the neutral stone body
+            Color colour = _recipe.palette.Colour(ColourRole.Body, _recipe.family, LookSide.Stone);
+            if (side != Entity.EntityType.None)
             {
-                colour = _recipe.palette.plantBody;
-            }
-            else if (side == Entity.EntityType.Computer)
-            {
-                colour = _recipe.palette.baneLit;
+                colour = _recipe.palette.Colour(ColourRole.Rim, _recipe.family, LookDerivation.Side(side));
             }
 
             foreach (Transform rim in _rims)
@@ -480,7 +485,7 @@ namespace HealerLike.Render.Spells
             {
                 return _recipe.colour;
             }
-            return _recipe.palette.Colour(part.colour, _recipe.family);
+            return _recipe.palette.Colour(part.colour, _recipe.family, _targetSide);
         }
 
         void BuildAll(LookPart[] source, PrimitiveMeshes meshes, Material material, List<Transform> built)

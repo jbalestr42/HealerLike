@@ -168,20 +168,21 @@ namespace HealerLike.Render.Creatures
 
             recipe.parts = parts.ToArray();
             recipe.idle.seed = seed;
-            recipe.stoneOchre = vocabulary.palette.stoneOchre;
+            recipe.stoneOchre = vocabulary.Colour(ColourRole.Ochre, channels.accent, channels.side);
+            recipe.wiltColour = vocabulary.Colour(ColourRole.Wilt, channels.accent, channels.side);
             recipe.neckLocal = sockets.neck * unit;
             if (channels.side == LookSide.Plant)
             {
                 recipe.roots = Roots(channels.reach, vocabulary);
-                Arms(recipe, sockets.neck, vocabulary.armCount, unit, vocabulary.palette.plantStem,
-                    vocabulary.palette.Accent(channels.accent));
+                Arms(recipe, sockets.neck, vocabulary.armCount, unit,
+                    vocabulary.Colour(ColourRole.Stem, channels.accent, LookSide.Plant),
+                    vocabulary.Colour(ColourRole.Accent, channels.accent, LookSide.Plant));
             }
             else
             {
                 recipe.roots.count = 0;
                 recipe.idle.swayDegrees = 0.6f;
                 recipe.idle.breathAmount = 0.01f;
-                recipe.wiltColour = vocabulary.stoneWilt;
                 recipe.sourceLocal = new Vector3[] { sockets.neck * unit };
             }
 
@@ -243,7 +244,8 @@ namespace HealerLike.Render.Creatures
                 hipHeight = vocabulary.rootHip * unit,
                 kneeHeight = vocabulary.rootKnee * unit,
                 thickness = vocabulary.rootThickness * 0.5f * unit,
-                colour = vocabulary.palette.plantStem
+                // The stem role takes no accent, any family reads the same colour
+                colour = vocabulary.Colour(ColourRole.Stem, EffectFamily.Damage, LookSide.Plant)
             };
         }
 

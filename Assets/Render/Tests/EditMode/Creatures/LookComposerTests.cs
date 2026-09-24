@@ -197,7 +197,7 @@ public class LookComposerTests
         Assert.IsEmpty(recipe.arms);
         Assert.AreEqual(Primitive.Stone, recipe.parts[0].primitive);
         Assert.AreEqual(2, FindAll(recipe, PartRole.Limb).Length);
-        Assert.AreEqual(_vocabulary.stoneWilt, recipe.wiltColour);
+        Assert.AreEqual(_vocabulary.palette.stoneWilt, recipe.wiltColour);
         HashSet<int> variants = new HashSet<int>();
         foreach (CreaturePart part in recipe.parts)
         {

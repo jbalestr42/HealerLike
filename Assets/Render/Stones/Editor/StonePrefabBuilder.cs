@@ -11,6 +11,7 @@ namespace HealerLike.Render.Stones
         static readonly string root = "Assets/Render/Stones/";
 
         public static readonly string StoneMaterialPath = "Assets/Render/Look/Look_Stone.mat";
+        public static readonly string PalettePath = "Assets/Render/Grammar/Data/LookPalette.asset";
 
         [MenuItem("Tools/Render/Author Stone Prefabs")]
         public static void Build()
@@ -42,6 +43,7 @@ namespace HealerLike.Render.Stones
                 StoneBody body = stoneGo.AddComponent<StoneBody>();
                 SerializedObject bodySO = new SerializedObject(body);
                 bodySO.FindProperty("_groundShadow").objectReferenceValue = AddShadow(stoneGo.transform);
+                bodySO.FindProperty("_palette").objectReferenceValue = Load<Object>(PalettePath);
                 bodySO.ApplyModifiedPropertiesWithoutUndo();
             }
             PrefabUtility.SaveAsPrefabAsset(stoneGo, path);

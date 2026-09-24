@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Stones;
 using UnityEngine;
 
@@ -8,14 +9,6 @@ namespace HealerLike.Render.Environment
     // Seeded ring of stones and plants around the grid, never inside it, built once.
     public class EnvironmentScatter : MonoBehaviour
     {
-        public static readonly Color[] Greens =
-        {
-            new Color32(46, 125, 79, 255),
-            new Color32(79, 168, 79, 255),
-            new Color32(155, 210, 74, 255),
-            new Color32(127, 201, 63, 255)
-        };
-
         static readonly int fogEndId = Shader.PropertyToID("_HLFogEnd");
         static readonly int lookAppliedId = Shader.PropertyToID("_HLLookApplied");
 
@@ -32,6 +25,7 @@ namespace HealerLike.Render.Environment
 
         [SerializeField] Material _plantMaterial;
         [SerializeField] Material _stoneMaterial;
+        [SerializeField] LookPalette _palette;
         [SerializeField] float _surfaceY = 0.5f;
         [SerializeField] Camera _viewCamera;
         [SerializeField] EnvironmentGust _gust;
@@ -259,7 +253,7 @@ namespace HealerLike.Render.Environment
             cap.SetParent(pivot, false);
             cap.localPosition = Vector3.up * (stem * 0.92f);
             Vector3 underScale = new Vector3(1.5f, 0.14f, 1.5f) * s;
-            Part(cap, _meshes.sphere, Vector3.down * 0.08f * s, Quaternion.identity, underScale, Greens[0]);
+            Part(cap, _meshes.sphere, Vector3.down * 0.08f * s, Quaternion.identity, underScale, Colour(ColourRole.Stem));
 
             bool isCone = random.Next01() < 0.4f;
             Mesh top = isCone ? _meshes.cone : _meshes.sphere;
@@ -289,7 +283,7 @@ namespace HealerLike.Render.Environment
                     float curl = i == 0 ? random.Range(10f, 25f) : 22f + i * 5f;
                     joint.localRotation = Quaternion.Euler(0f, 0f, -curl);
                     Vector3 scale = new Vector3(length * 0.9f, length * 1.15f, length * 0.9f);
-                    Color color = Color.Lerp(Greens[1], Greens[2], i / 8f);
+                    Color color = Color.Lerp(Colour(ColourRole.Stem), Colour(ColourRole.Body), i / 8f);
                     Part(joint, _meshes.sphere, Vector3.zero, Quaternion.identity, scale, color);
                     // A positive correction opens each negative curl angle during a gust
                     AddMotion(joint, pivot, item.seed + (uint)(f * 16 + i), 0.12f * s, -3f);
@@ -311,7 +305,7 @@ namespace HealerLike.Render.Environment
                 // A solid leaf about six times as long as it is wide at the base, a third as thick
                 float length = random.Range(0.8f, 1.6f) * s;
                 Vector3 scale = new Vector3(length * 0.16f, length, length * 0.05f);
-                Color color = Color.Lerp(Greens[0], Greens[2], random.Next01());
+                Color color = Color.Lerp(Colour(ColourRole.Stem), Colour(ColourRole.Body), random.Next01());
                 Part(pivot, _meshes.leaf, Vector3.zero, rotation, scale, color);
             }
 
@@ -328,10 +322,9 @@ namespace HealerLike.Render.Environment
                 float h = random.Range(0.6f, 1.6f) * s;
                 float d = random.Range(0.3f, 0.55f) * s;
                 Vector3 stemScale = new Vector3(0.05f * s, h, 0.05f * s);
-                Part(pivot, _meshes.cylinder, Vector3.zero, tilt, stemScale, Greens[1]);
+                Part(pivot, _meshes.cylinder, Vector3.zero, tilt, stemScale, Colour(ColourRole.Stem));
                 Vector3 bottom = tilt * Vector3.up * h - Vector3.up * (d * 0.2f);
-                Color color = i % 2 == 0 ? Greens[2] : Greens[3];
-                Part(pivot, _meshes.sphere, bottom, Quaternion.identity, Vector3.one * d, color);
+                Part(pivot, _meshes.sphere, bottom, Quaternion.identity, Vector3.one * d, Colour(ColourRole.Body));
             }
 
             Sway(pivot, item.seed, 1.2f * s);
@@ -368,13 +361,45 @@ namespace HealerLike.Render.Environment
             partGo.transform.localRotation = rotation;
             partGo.transform.localScale = scale;
             partGo.transform.localPosition = bottom + rotation * new Vector3(0f, -mesh.bounds.min.y * scale.y, 0f);
-            PrimitiveMeshes.Geometry(partGo, mesh, material, VaryColor(color, _colourSeed).linear, 0f, _properties);
+            PrimitiveMeshes.Geometry(partGo, mesh, material, VaryColor(color, _colourSeed), 0f, _properties);
             return Vector3.Scale(mesh.bounds.size, scale);
         }
 
         void Part(Transform parent, Mesh mesh, Vector3 bottom, Quaternion rotation, Vector3 scale, Color color)
         {
             Part(parent, mesh, _plantMaterial, bottom, rotation, scale, color, mesh.name);
+        }
+
+        // Scatter plants are plants, scatter rocks stones; each part varies its colour from the role's
+        Color Colour(ColourRole role)
+        {
+            return Colour(role, LookSide.Plant);
+        }
+
+        Color Colour(ColourRole role, LookSide side)
+        {
+            if (_palette == null)
+            {
+                Debug.LogError("[EnvironmentScatter] No palette.");
+                return Color.magenta;
+            }
+            return _palette.Colour(role, EffectFamily.Damage, side);
+        }
+
+        // A rock's palette index picks its body, its limb or its ochre
+        Color StoneColour(int index)
+        {
+            int clamped = Mathf.Clamp(index, 0, 3);
+            if (clamped == 0)
+            {
+                return Colour(ColourRole.Body, LookSide.Stone);
+            }
+
+            if (clamped == 3)
+            {
+                return Colour(ColourRole.Ochre, LookSide.Stone);
+            }
+            return Colour(ColourRole.Limb, LookSide.Stone);
         }
 
         Vector3 Stone(Transform parent, uint seed, StoneSettings shape, Vector3 bottom, float scale, int palette)
@@ -384,7 +409,7 @@ namespace HealerLike.Render.Environment
             _ownedMeshes.Add(mesh);
             // Sink each stone a little into the ground so it reads as rooted
             Vector3 sunkBottom = bottom - Vector3.up * (mesh.bounds.size.y * scale * 0.12f);
-            Color color = StoneAssembly.Palette[Mathf.Clamp(palette, 0, 3)];
+            Color color = StoneColour(palette);
             Vector3 size = Vector3.one * scale;
             return Part(parent, mesh, _stoneMaterial, sunkBottom, Quaternion.identity, size, color, "Stone");
         }

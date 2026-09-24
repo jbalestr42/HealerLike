@@ -14,7 +14,11 @@ namespace HealerLike.Render.Grammar
         Accent,
         BoonAccent,
         BaneAccent,
-        RotAccent
+        RotAccent,
+        // The colour a wilting part fades toward, the side rim under an effect, a mana element
+        Wilt,
+        Rim,
+        Mana
     }
 
     // Every colour the look grammar uses, so a unit or an effect names a role and never a colour
@@ -27,6 +31,7 @@ namespace HealerLike.Render.Grammar
         public Color stoneBody;
         public Color stoneLimb;
         public Color stoneOchre;
+        public Color stoneWilt;
         public Color moss;
 
         public Color damage;
@@ -88,6 +93,21 @@ namespace HealerLike.Render.Grammar
                     return bane;
                 case ColourRole.RotAccent:
                     return rot;
+                case ColourRole.Wilt:
+                    if (isStone)
+                    {
+                        return stoneWilt;
+                    }
+                    return plantStem;
+                // A plant's rim is its body, a stone's the lit bane
+                case ColourRole.Rim:
+                    if (isStone)
+                    {
+                        return baneLit;
+                    }
+                    return plantBody;
+                case ColourRole.Mana:
+                    return mana;
                 default:
                     return Accent(accent);
             }

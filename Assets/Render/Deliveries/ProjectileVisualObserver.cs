@@ -215,16 +215,23 @@ namespace HealerLike.Render.Deliveries
         bool TryAccent(out Color accent)
         {
             accent = Color.clear;
-            if (_consumers == null || !_vocabulary || !_vocabulary.palette)
+            if (_consumers == null || !_vocabulary)
             {
                 return false;
+            }
+
+            if (!_vocabulary.palette)
+            {
+                Debug.LogError("[ProjectileVisualObserver] No palette.");
+                accent = Color.magenta;
+                return true;
             }
 
             foreach (AConsumerFactory consumer in _consumers)
             {
                 if (consumer != null)
                 {
-                    accent = _vocabulary.palette.Accent(EffectDerivation.ConsumerFamily(consumer, false));
+                    accent = _vocabulary.palette.Colour(ColourRole.Accent, EffectDerivation.ConsumerFamily(consumer, false));
                     return true;
                 }
             }

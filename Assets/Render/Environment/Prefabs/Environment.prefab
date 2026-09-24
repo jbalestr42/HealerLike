@@ -50,8 +50,8 @@ MonoBehaviour:
   _groundY: 0.5
   _seed: 1707
   _aspect: 0
-  _tint: {r: 0.16862746, g: 0.29411766, b: 0.56078434, a: 1}
-  _rosetteTint: {r: 0.23921569, g: 0.45490196, b: 0.38431373, a: 1}
+  _tint: {r: 0.024157634, g: 0.0703601, b: 0.27467734, a: 1}
+  _rosetteTint: {r: 0.046665087, g: 0.1746474, b: 0.122138776, a: 1}
 --- !u!1 &5244087420897047793
 GameObject:
   m_ObjectHideFlags: 0
@@ -126,6 +126,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.EnvironmentScatter
   _plantMaterial: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
   _stoneMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
+  _palette: {fileID: 11400000, guid: 97a6ebe080b14b84947880de49d6bb14, type: 2}
   _surfaceY: 0.5
   _viewCamera: {fileID: 0}
   _gust: {fileID: 0}
@@ -283,9 +284,9 @@ MonoBehaviour:
   _fogStart: 43.837
   _fogEnd: 50.356
   _fogBands: 6
-  _stoneColor: {r: 0.65882355, g: 0.72156864, b: 0.6745098, a: 1}
-  _stemColor: {r: 0.72156864, g: 0.78431374, b: 0.7058824, a: 1}
-  _capColor: {r: 0.6117647, g: 0.7058824, b: 0.63529414, a: 1}
+  _stoneColor: {r: 0.3915725, g: 0.4793202, b: 0.41254264, a: 1}
+  _stemColor: {r: 0.4793202, g: 0.57758045, b: 0.45641103, a: 1}
+  _capColor: {r: 0.33245155, g: 0.45641103, b: 0.36130682, a: 1}
 --- !u!1 &8724457642767897973
 GameObject:
   m_ObjectHideFlags: 0

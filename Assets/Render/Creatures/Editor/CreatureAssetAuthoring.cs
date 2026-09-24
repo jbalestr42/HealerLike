@@ -21,17 +21,18 @@ namespace HealerLike.Render.Creatures
         {
             Material material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
             PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesPath);
-            if (!material || !meshes)
+            LookVocabulary vocabulary = CreatureRecipeAuthoring.LoadVocabulary();
+            if (!material || !meshes || !vocabulary)
             {
-                Debug.LogError($"[CreatureAssetAuthoring] Missing {materialPath} or {meshesPath}.");
+                Debug.LogError($"[CreatureAssetAuthoring] Missing {materialPath}, {meshesPath} or the vocabulary.");
                 return;
             }
 
             Directory.CreateDirectory(root + "Data");
             Directory.CreateDirectory(root + "Prefabs");
-            List<CreaturePart> parts = CreatureRecipeParts.Healer();
+            List<CreaturePart> parts = CreatureRecipeParts.Healer(vocabulary);
             CreatureRecipe healer = CreatureRecipeAuthoring.SaveRecipe("Healer", parts, healerRoots, healerArms,
-                healerSeed);
+                healerSeed, vocabulary);
             if (!healer)
             {
                 return;

@@ -357,7 +357,7 @@ namespace HealerLike.Render.Spells
 
         Status Open(GameObject target, EffectElement element, EffectRecipe recipe)
         {
-            SpellEffect effect = Create(recipe);
+            SpellEffect effect = Create(recipe, target);
             if (effect == null)
             {
                 return null;
@@ -441,15 +441,28 @@ namespace HealerLike.Render.Spells
 
         SpellEffect Create(EffectRecipe recipe)
         {
+            return Create(recipe, null);
+        }
+
+        // An effect on a unit colours its body and stem parts for the unit's side
+        SpellEffect Create(EffectRecipe recipe, GameObject target)
+        {
             if (recipe == null || _meshes == null)
             {
                 return null;
             }
 
+            LookSide targetSide = LookSide.Plant;
+            Entity entity = target != null ? target.GetComponent<Entity>() : null;
+            if (entity != null)
+            {
+                targetSide = LookDerivation.Side(entity.entityType);
+            }
+
             GameObject effectGo = new GameObject(recipe.element.ToString());
             effectGo.transform.SetParent(transform, false);
             SpellEffect effect = effectGo.AddComponent<SpellEffect>();
-            effect.Init(recipe, _meshes, _material);
+            effect.Init(recipe, _meshes, _material, targetSide);
             return effect;
         }
 
@@ -554,7 +567,7 @@ namespace HealerLike.Render.Spells
             float amount = Mathf.Clamp01(Mathf.Abs(preClampAmount) / Mathf.Max(maximum, 1f));
             EffectRecipe recipe = EffectComposer.Compose(_vocabulary, element, family, EffectTempo.Once, 0f, 1, 0f,
                 amount);
-            SpellEffect effect = Create(recipe);
+            SpellEffect effect = Create(recipe, target);
             if (effect == null)
             {
                 return;

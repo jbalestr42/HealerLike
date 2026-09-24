@@ -176,7 +176,7 @@ namespace HealerLike.Render.Stones
             fragment.filter.sharedMesh = mesh;
             fragment.renderer.sharedMaterial = _stoneMaterial;
             fragment.block.Clear();
-            fragment.block.SetVector(RenderObjects.BaseColorId, colour.linear);
+            fragment.block.SetColor(RenderObjects.BaseColorId, colour);
             fragment.renderer.SetPropertyBlock(fragment.block);
             fragment.gameObject.transform.localScale = Vector3.one;
             fragment.gameObject.SetActive(true);
@@ -387,7 +387,9 @@ namespace HealerLike.Render.Stones
                     fragmentTransform.position = fragment.start + fragment.velocity * fragment.age;
                     float fade = Mathf.Clamp01(1f - fragment.age / fragment.life);
                     fragmentTransform.localScale = fragment.scale * (1f + fragment.age * 0.8f);
-                    fragment.block.SetColor(RenderObjects.BaseColorId, new Color(0.48f, 0.49f, 0.51f, fade * 0.55f));
+                    Color dust = _dustMaterial.GetColor(RenderObjects.BaseColorId);
+                    dust.a *= fade;
+                    fragment.block.SetColor(RenderObjects.BaseColorId, dust);
                     fragment.renderer.SetPropertyBlock(fragment.block);
                 }
                 else

@@ -15,6 +15,7 @@ namespace HealerLike.Render.Stage
         public static readonly string StoneMaterialPath = "Assets/Render/Look/Look_Stone.mat";
         public static readonly string GroundMaterialPath = "Assets/Render/Environment/Look_Ground.mat";
         public static readonly string MeshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
+        public static readonly string PalettePath = "Assets/Render/Grammar/Data/LookPalette.asset";
         public static readonly string GrassComputePath = "Assets/Render/Shaders/Grass.compute";
         public static readonly string BladeMaterialPath = "Assets/Render/Grass/Materials/GrassBlade.mat";
         public static readonly string RingMaterialPath = "Assets/Render/Grass/Materials/HealRing.mat";
@@ -31,6 +32,7 @@ namespace HealerLike.Render.Stage
             SetReference(grass, "_stripTemplate", stripField);
             EnvironmentScatter scatter = root.AddComponent<EnvironmentScatter>();
             SetMaterials(scatter);
+            SetReference(scatter, "_palette", Load<Object>(PalettePath));
             EnvironmentGust gust = root.AddComponent<EnvironmentGust>();
             EnvironmentForeground foreground = Child(root, "Foreground").AddComponent<EnvironmentForeground>();
             SetMaterials(foreground);

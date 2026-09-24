@@ -222,3 +222,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.StoneBody
   _groundShadow: {fileID: 1735226342536893352}
   _shedHealthFraction: 0.5
+  _palette: {fileID: 11400000, guid: 97a6ebe080b14b84947880de49d6bb14, type: 2}

@@ -243,7 +243,7 @@ namespace HealerLike.Render.Environment
             partGo.transform.SetParent(parent, false);
             partGo.transform.localScale = scale;
             partGo.transform.localPosition = bottom + new Vector3(0f, -mesh.bounds.min.y * scale.y, 0f);
-            MeshRenderer meshRenderer = PrimitiveMeshes.Geometry(partGo, mesh, material, color.linear, 0f, _properties);
+            MeshRenderer meshRenderer = PrimitiveMeshes.Geometry(partGo, mesh, material, color, 0f, _properties);
             meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             meshRenderer.receiveShadows = false;
         }

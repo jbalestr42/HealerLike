@@ -123,9 +123,6 @@ namespace HealerLike.Render.Creatures
         [BoxGroup("Proportions")]
         public int armCount = 2;
 
-        [BoxGroup("Proportions")]
-        public Color stoneWilt = new Color(0.22f, 0.25f, 0.33f);
-
         // Cells per body unit on a side, a plant's parts and roots are laid out at its own scale
         public float Unit(LookSide side)
         {

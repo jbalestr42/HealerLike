@@ -144,14 +144,15 @@ namespace HealerLike.Render.Spells
         {
             if (palette == null)
             {
-                return Color.white;
+                Debug.LogError("[EffectComposer] No palette.");
+                return Color.magenta;
             }
 
             if (element == EffectElement.ManaUp || element == EffectElement.ManaDown)
             {
-                return palette.mana;
+                return palette.Colour(ColourRole.Mana, family);
             }
-            return palette.Accent(family);
+            return palette.Colour(ColourRole.Accent, family);
         }
     }
 }

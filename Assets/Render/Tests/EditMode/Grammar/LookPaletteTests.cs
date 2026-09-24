@@ -42,6 +42,9 @@ public class LookPaletteTests
         palette.boon = new Color(0.8f, 0f, 0f);
         palette.bane = new Color(0.9f, 0f, 0f);
         palette.rot = new Color(0.95f, 0f, 0f);
+        palette.stoneWilt = new Color(0.15f, 0f, 0f);
+        palette.baneLit = new Color(0.25f, 0f, 0f);
+        palette.mana = new Color(0.35f, 0f, 0f);
         return palette;
     }
 
@@ -82,6 +85,12 @@ public class LookPaletteTests
     [TestCase(ColourRole.BaneAccent, LookSide.Stone, 0.9f)]
     [TestCase(ColourRole.RotAccent, LookSide.Plant, 0.95f)]
     [TestCase(ColourRole.RotAccent, LookSide.Stone, 0.95f)]
+    [TestCase(ColourRole.Wilt, LookSide.Plant, 0.2f)] // plantStem
+    [TestCase(ColourRole.Wilt, LookSide.Stone, 0.15f)] // stoneWilt
+    [TestCase(ColourRole.Rim, LookSide.Plant, 0.1f)] // plantBody
+    [TestCase(ColourRole.Rim, LookSide.Stone, 0.25f)] // baneLit
+    [TestCase(ColourRole.Mana, LookSide.Plant, 0.35f)]
+    [TestCase(ColourRole.Mana, LookSide.Stone, 0.35f)]
     public void Colour_RoleAndSide_ReadsTheRolesField(ColourRole role, LookSide side, float expectedRed)
     {
         LookPalette palette = CreatePalette();
