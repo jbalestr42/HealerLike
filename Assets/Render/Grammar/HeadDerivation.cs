@@ -11,7 +11,7 @@ namespace HealerLike.Render.Grammar
         {
             if (skill is ShootProjectileSkillFactory || skill is ConfigurableSkillFactory)
             {
-                return LookDerivation.Delivery(SkillWalker.DominantPrefab(skill));
+                return LookDerivation.DeliveryHead(SkillWalker.DominantPrefab(skill));
             }
 
             if (skill is ApplyBuffOnTargetSkillFactory support)
@@ -203,7 +203,7 @@ namespace HealerLike.Render.Grammar
 
             foreach (GameObject prefab in SkillWalker.Prefabs(primary))
             {
-                HeadKind other = LookDerivation.Delivery(prefab);
+                HeadKind other = LookDerivation.DeliveryHead(prefab);
                 if (other != main)
                 {
                     head = other;

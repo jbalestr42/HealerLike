@@ -173,7 +173,7 @@ namespace HealerLike.Render.Grammar
                 return DeliveryStyle.Swarm;
             }
 
-            switch (LookDerivation.Delivery(projectilePrefab))
+            switch (LookDerivation.DeliveryHead(projectilePrefab))
             {
                 case HeadKind.Conductor:
                 case HeadKind.Fork:

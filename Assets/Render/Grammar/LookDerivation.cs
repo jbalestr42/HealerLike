@@ -61,7 +61,7 @@ namespace HealerLike.Render.Grammar
         }
 
         // The projectile class and its baked motion, the same reading for a unit's head and its shot
-        public static HeadKind Delivery(GameObject projectilePrefab)
+        public static HeadKind DeliveryHead(GameObject projectilePrefab)
         {
             if (projectilePrefab == null)
             {

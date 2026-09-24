@@ -80,9 +80,9 @@ public class LookDerivationTests
     [TestCase("LaserBullet", HeadKind.Arch)]
     [TestCase("StraightLaserBullet", HeadKind.Spear)]
     [TestCase("SwarmBullet", HeadKind.Arch)]
-    public void Delivery_ProjectilePrefab_ReadsClassMotionAndSpeed(string name, HeadKind expected)
+    public void DeliveryHead_ProjectilePrefab_ReadsClassMotionAndSpeed(string name, HeadKind expected)
     {
-        Assert.AreEqual(expected, LookDerivation.Delivery(RenderTestAssets.LoadProjectile(name)));
+        Assert.AreEqual(expected, LookDerivation.DeliveryHead(RenderTestAssets.LoadProjectile(name)));
     }
 
     [TestCase("NormalEntity", 1)]
