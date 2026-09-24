@@ -8,6 +8,7 @@ public class PartPaintTests
 {
     GameObject _partGo;
     MeshRenderer _renderer;
+    Material _material;
     PartPaint _paint;
 
     [SetUp]
@@ -15,6 +16,7 @@ public class PartPaintTests
     {
         _partGo = new GameObject("Part", typeof(MeshFilter), typeof(MeshRenderer));
         _renderer = _partGo.GetComponent<MeshRenderer>();
+        _material = new Material(RenderTestAssets.LoadLookMaterial());
         _paint = new PartPaint();
     }
 
@@ -22,6 +24,7 @@ public class PartPaintTests
     public void TearDown()
     {
         Object.DestroyImmediate(_partGo);
+        Object.DestroyImmediate(_material);
     }
 
     [Test]
@@ -64,6 +67,8 @@ public class PartPaintTests
     {
         Color ochre = new Color(0.72f, 0.62f, 0.43f, 1f);
         MaterialPropertyBlock block = new MaterialPropertyBlock();
+        // A two-faced stone draws its two submeshes with one material each, as the rig sets it up
+        _renderer.sharedMaterials = new Material[] { _material, _material };
 
         _paint.Paint(_renderer, false, Color.grey, ochre, 0f);
 
