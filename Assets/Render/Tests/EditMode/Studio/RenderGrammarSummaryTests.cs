@@ -25,11 +25,10 @@ public class RenderGrammarSummaryTests
     public void Describe_MissingTables_CountsThemEmpty()
     {
         _looks.buffs = null;
-        _looks.projectiles = null;
 
         string summary = RenderGrammarSummary.Describe(_looks);
 
-        StringAssert.StartsWith("0 buff overrides · 0 projectile overrides.", summary);
+        StringAssert.StartsWith("0 buff overrides.", summary);
     }
 
     [Test]

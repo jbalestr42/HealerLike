@@ -7,6 +7,7 @@ namespace HealerLike.Render.Deliveries
 {
     // Signals begin, contact and end to the source's view, which follows the projectile itself.
     // A shot no view claims flies as a FreeShot, its tip fragment in place of the projectile's own visual.
+    // A chain also draws a thread between the successive targets it hits.
     public class ProjectileVisualObserver : AProjectileBehaviour
     {
         DeliveryStyle _deliveryStyle = DeliveryStyle.Direct;
@@ -16,6 +17,7 @@ namespace HealerLike.Render.Deliveries
         DeliveryVocabulary _vocabulary;
         readonly DeliveryClaim _claim = new DeliveryClaim();
         readonly HiddenRenderers _hidden = new HiddenRenderers();
+        readonly ContactThread _thread = new ContactThread();
         Projectile _subscribed;
         List<AConsumerFactory> _consumers;
         FreeShot _freeShot;
@@ -31,24 +33,18 @@ namespace HealerLike.Render.Deliveries
         public int gestureToken { get { return _claim.token; } }
 
         // The manager adds the observer to a spawned projectile and calls this before Projectile.Init
-        public void Init(RenderManager manager, ProjectileLook look)
+        public void Init(RenderManager manager, DeliveryStyle style)
         {
             _manager = manager;
             _vocabulary = null;
+            _thread.Init(null);
             if (manager)
             {
                 _vocabulary = manager.deliveryVocabulary;
+                _thread.Init(manager.spellSink);
             }
 
-            // A shot that keeps its contact path is a chain whatever its authored style
-            if (look != null && look.preserveContactPath)
-            {
-                _deliveryStyle = DeliveryStyle.ChainSync;
-            }
-            else if (look != null)
-            {
-                _deliveryStyle = look.style;
-            }
+            _deliveryStyle = style;
         }
 
         public override void Init(GameObject source)
@@ -228,7 +224,17 @@ namespace HealerLike.Render.Deliveries
 
         void OnProjectileHit(OnHitData hit)
         {
-            if (!isActiveAndEnabled || hit == null || (!_claim.isClaimed && !IsFree()))
+            if (!isActiveAndEnabled || hit == null)
+            {
+                return;
+            }
+
+            if (_subscribed is ChainLightningProjectile)
+            {
+                _thread.Contact(hit.target);
+            }
+
+            if (!_claim.isClaimed && !IsFree())
             {
                 return;
             }
@@ -280,6 +286,7 @@ namespace HealerLike.Render.Deliveries
             }
 
             _subscribed = null;
+            _thread.Clear();
             EndLease();
             StopFree();
         }

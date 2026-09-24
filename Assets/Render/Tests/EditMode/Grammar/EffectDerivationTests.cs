@@ -139,6 +139,22 @@ public class EffectDerivationTests
     {
         Assert.AreEqual(expected, EffectDerivation.Delivery(RenderTestAssets.LoadProjectile(name)));
     }
+
+    // A spawned projectile carries no link to its prefab, so its delivery is read from the behaviours baked in it
+    [TestCase("BulletSpeed", DeliveryStyle.Direct)]
+    [TestCase("SwarmBullet", DeliveryStyle.Swarm)]
+    [TestCase("LaserBullet", DeliveryStyle.Arc)]
+    [TestCase("ChainLightning", DeliveryStyle.ChainSync)]
+    [TestCase("ChannelingLightning", DeliveryStyle.ChainSync)]
+    public void Delivery_SpawnedProjectile_ReadsItsBakedBehaviours(string name, DeliveryStyle expected)
+    {
+        GameObject projectileGo = Object.Instantiate(RenderTestAssets.LoadProjectile(name));
+
+        DeliveryStyle style = EffectDerivation.Delivery(projectileGo);
+
+        Object.DestroyImmediate(projectileGo);
+        Assert.AreEqual(expected, style);
+    }
 }
 
 }

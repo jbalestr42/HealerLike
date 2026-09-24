@@ -132,14 +132,11 @@ namespace HealerLike.Render.Stage
         void DressProjectile(Projectile projectile)
         {
             GameObject projectileGo = projectile.gameObject;
-            ProjectileLook projectileLook = _manager.spellLooks.GetSpawnedLook(projectile);
-            projectileGo.AddComponent<ProjectileVisualObserver>().Init(_manager, projectileLook);
+            // A spawned projectile carries no link to its prefab, so its delivery is read from its baked behaviours
+            DeliveryStyle style = EffectDerivation.Delivery(projectileGo);
+            projectileGo.AddComponent<ProjectileVisualObserver>().Init(_manager, style);
             projectileGo.AddComponent<StoneProjectileImpactBridge>();
             projectileGo.AddComponent<LaunchWave>().Init(_manager.zones, _manager.gust);
-            if (projectile is ChainLightningProjectile)
-            {
-                projectileGo.AddComponent<ChainContactVisual>().Init(_manager);
-            }
 
             foreach (LineRenderer line in projectileGo.GetComponentsInChildren<LineRenderer>(true))
             {

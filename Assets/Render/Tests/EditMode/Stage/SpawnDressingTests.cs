@@ -185,11 +185,10 @@ public class SpawnDressingTests
         Assert.AreEqual(DeliveryStyle.Direct, observer.deliveryStyle); // Homing at speed 15
         Assert.IsNotNull(projectile.GetComponent<StoneProjectileImpactBridge>());
         Assert.IsNotNull(projectile.GetComponent<LaunchWave>());
-        Assert.IsNull(projectile.GetComponent<ChainContactVisual>());
     }
 
     [Test]
-    public void OnProjectileSpawned_Chain_AddsTheContactVisualAndHidesItsLine()
+    public void OnProjectileSpawned_Chain_KeepsItsContactPathAndHidesItsLine()
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);
         Projectile projectile = SpawnProjectile("ChainLightning");
@@ -197,7 +196,6 @@ public class SpawnDressingTests
         _scene.entityManager.OnProjectileSpawned.Invoke(projectile);
 
         Assert.AreEqual(DeliveryStyle.ChainSync, projectile.GetComponent<ProjectileVisualObserver>().deliveryStyle);
-        Assert.IsNotNull(projectile.GetComponent<ChainContactVisual>());
         foreach (LineRenderer line in projectile.GetComponentsInChildren<LineRenderer>(true))
         {
             Assert.IsFalse(line.enabled);

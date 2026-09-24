@@ -85,18 +85,13 @@ namespace HealerLike.Render.Studio.Editor
         // What the preview shows about the projectile the preset looks up
         public static string ProjectileReadout(SpellStudioPreset preset)
         {
-            ProjectileLook projectile = preset.ResolveProjectile();
-            if (projectile == null)
-            {
-                return "The native projectile preset is empty. Edit the native table to fill or remove this row.";
-            }
-
+            DeliveryStyle style = preset.ResolveDelivery();
             string path = "";
-            if (projectile.preserveContactPath)
+            if (style == DeliveryStyle.ChainSync)
             {
                 path = " · preserves contact path";
             }
-            return "Delivery: " + projectile.style + path + "\nLookup only; this viewport previews the effect element.";
+            return "Delivery: " + style + path + "\nLookup only; this viewport previews the effect element.";
         }
 
         void DrawFields(StudioStyles styles, SpellStudioPreset selected)

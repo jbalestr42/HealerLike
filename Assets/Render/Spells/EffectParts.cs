@@ -30,7 +30,6 @@ namespace HealerLike.Render.Spells
         public List<Transform> shapes { get { return _shapes; } }
         public List<LookPart> shapeParts { get { return _shapeParts; } }
         public List<Transform> stalks { get { return _stalks; } }
-        public List<LookPart> stalkParts { get { return _stalkParts; } }
         public List<Transform> rings { get { return _rings; } }
         public List<Transform> all { get { return _all; } }
 

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using HealerLike.Render.Deliveries;
 using HealerLike.Render.Grammar;
 using NUnit.Framework;
 using UnityEditor;
@@ -69,35 +68,6 @@ public class SpellLooksTests
         Assert.IsNotNull(looks.GetLook(null, null, null));
     }
 
-    [Test]
-    public void GetProjectileLook_UnmappedPrefab_DerivesItsDelivery()
-    {
-        SpellLooks looks = CreateTracked<SpellLooks>();
-        GameObject swarm = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/SwarmBullet.prefab");
-
-        Assert.AreEqual(DeliveryStyle.Swarm, looks.GetProjectileLook(swarm).style);
-    }
-
-    [Test]
-    public void GetProjectileLook_MappedPrefab_ReturnsMappedLook()
-    {
-        SpellLooks looks = CreateTracked<SpellLooks>();
-        GameObject prefab = new GameObject("Projectile");
-        _objects.Add(prefab);
-        ProjectileLook look = new ProjectileLook { style = DeliveryStyle.Arc };
-        looks.projectiles[prefab] = look;
-
-        Assert.AreSame(look, looks.GetProjectileLook(prefab));
-    }
-
-    [Test]
-    public void GetProjectileLook_NoPrefab_ReturnsDirect()
-    {
-        SpellLooks looks = CreateTracked<SpellLooks>();
-
-        Assert.AreEqual(DeliveryStyle.Direct, looks.GetProjectileLook(null).style);
-    }
-
     // Only rows where the grammar is wrong for the handler stay: the three listener items on the healer, whose
     // Infinite handler would loop their look for the whole run
     [TestCase("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", EffectElement.ManaUp)]
@@ -128,49 +98,6 @@ public class SpellLooksTests
             Assert.AreEqual(DurationType.Infinite, handler.data.durationType, row.Key.name);
             Assert.AreEqual(EffectTempo.Once, row.Value.tempo, row.Key.name);
         }
-    }
-
-    [Test]
-    public void GetProjectileLook_ShippedRows_OnlyTheChainsKeepTheirContactPath()
-    {
-        SpellLooks looks = LoadShipped();
-        GameObject laser = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/LaserBullet.prefab");
-
-        foreach (KeyValuePair<GameObject, ProjectileLook> row in looks.projectiles)
-        {
-            Assert.IsTrue(row.Value.preserveContactPath, row.Key.name);
-        }
-        Assert.AreEqual(DeliveryStyle.Arc, looks.GetProjectileLook(laser).style); // its baked motion is a ballistic arc
-    }
-
-    [TestCase("ChainLightning")]
-    [TestCase("ChannelingLightning")]
-    public void GetSpawnedLook_Chain_ReadsWhatItsRowAuthors(string prefabName)
-    {
-        SpellLooks looks = LoadShipped();
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/" + prefabName + ".prefab");
-        GameObject projectileGo = Object.Instantiate(prefab);
-        _objects.Add(projectileGo);
-
-        ProjectileLook spawned = looks.GetSpawnedLook(projectileGo.GetComponent<Projectile>());
-
-        ProjectileLook row = looks.GetProjectileLook(prefab);
-        Assert.AreEqual(row.style, spawned.style);
-        Assert.AreEqual(row.preserveContactPath, spawned.preserveContactPath);
-    }
-
-    [TestCase("BulletSpeed", DeliveryStyle.Direct)]
-    [TestCase("SwarmBullet", DeliveryStyle.Swarm)]
-    [TestCase("LaserBullet", DeliveryStyle.Arc)]
-    public void GetSpawnedLook_Shot_DerivesFromItsBakedBehaviours(string prefabName, DeliveryStyle expected)
-    {
-        GameObject projectileGo = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/" + prefabName + ".prefab"));
-        _objects.Add(projectileGo);
-
-        ProjectileLook look = LoadShipped().GetSpawnedLook(projectileGo.GetComponent<Projectile>());
-
-        Assert.AreEqual(expected, look.style);
-        Assert.IsFalse(look.preserveContactPath);
     }
 }
 
