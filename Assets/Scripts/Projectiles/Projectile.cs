@@ -25,6 +25,7 @@ public class Projectile : MonoBehaviour, IBuffable
     public BuffManager buffManager { get { return _buffManager; } }
 
     List<AConsumerFactory> _onHitConsumers = new List<AConsumerFactory>();
+    public List<AConsumerFactory> onHitConsumers { get { return _onHitConsumers; } }
 
     public void Init(GameObject source, GameObject target, List<ABuffHandlerFactory> projectileBehaviours, List<AConsumerFactory> onHitConsumers)
     {

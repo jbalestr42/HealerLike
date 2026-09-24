@@ -6,6 +6,7 @@ using UnityEngine;
 public class GridManager : MonoBehaviour 
 {
     [SerializeField] GameObject _ground;
+    public GameObject ground { get { return _ground; } }
 
 
     [SerializeField] int _width;

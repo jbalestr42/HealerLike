@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public abstract class ACooldownSkill<SkillData> : ASkill<SkillData> where SkillData : SkillDataBase
+public abstract class ACooldownSkill<SkillData> : ASkill<SkillData>, ICooldownSkill where SkillData : SkillDataBase
 {
     float _cooldown = 0f;
     public float cooldownProgress => _cooldown / cooldownDuration;
