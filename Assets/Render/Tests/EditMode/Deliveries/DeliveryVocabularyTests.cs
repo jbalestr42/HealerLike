@@ -102,6 +102,35 @@ public class DeliveryVocabularyTests
 
         Assert.AreEqual(0, tip.Length);
     }
+
+    [TestCase(DeliveryStyle.Rigid, true)]
+    [TestCase(DeliveryStyle.Direct, true)]
+    [TestCase(DeliveryStyle.Swarm, true)]
+    [TestCase(DeliveryStyle.Bounce, true)]
+    [TestCase(DeliveryStyle.ChainSync, true)]
+    [TestCase(DeliveryStyle.Arc, false)]
+    [TestCase(DeliveryStyle.Thrown, false)]
+    public void GetArm_ShippedAsset_DrawsTheRodStylesAsRods(DeliveryStyle style, bool isRod)
+    {
+        DeliveryVocabulary vocabulary = RenderTestAssets.LoadDeliveryVocabulary();
+
+        ArmStyle arm = vocabulary.GetArm(style);
+
+        Assert.AreEqual(isRod, arm.isRod);
+    }
+
+    [Test]
+    public void GetArm_ShippedSwarm_IsThinnerAndRigidSnapsBack()
+    {
+        DeliveryVocabulary vocabulary = RenderTestAssets.LoadDeliveryVocabulary();
+
+        ArmStyle swarm = vocabulary.GetArm(DeliveryStyle.Swarm);
+        ArmStyle rigid = vocabulary.GetArm(DeliveryStyle.Rigid);
+
+        Assert.Less(swarm.width, 1f);
+        Assert.Less(swarm.leafWidth, 1f);
+        Assert.Greater(rigid.retractSeconds, 0f);
+    }
 }
 
 }
