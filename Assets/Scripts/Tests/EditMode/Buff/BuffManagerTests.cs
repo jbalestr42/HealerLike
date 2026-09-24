@@ -140,6 +140,21 @@ public class BuffManagerTests
     }
 
     [Test]
+    public void AddHandler_RecordsTheSourceOnTheHandlerData()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration);
+        GameObject startedSource = null;
+        _buffManager.OnBuffHandlerStarted.AddListener(buffHandlerData => startedSource = buffHandlerData.source);
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        Assert.AreSame(_source, startedSource);
+    }
+
+    [Test]
     public void RemoveHandler_NonStackableBuff_RemovesBuffAndStopsHandler()
     {
         FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
