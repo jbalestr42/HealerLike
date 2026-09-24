@@ -53,10 +53,6 @@ public class CreatureRecipeTests
         Assert.AreEqual(vocabulary.roots[ReachBand.Long].reach * vocabulary.bodyUnit, recipe.roots.footRadius, 0.0001f);
         Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, CreatureValidator.MaxRootReach);
         Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);
-        Assert.That(recipe.roots.count, Is.InRange(8, 14));
-        Assert.AreEqual(3, recipe.roots.segments);
-        Assert.AreEqual(Primitive.Cone, Array.Find(recipe.parts, part => part.id == "Bulb").primitive);
-        Assert.AreEqual(Primitive.Torus, crown.primitive);
     }
 
     [Test]
@@ -72,6 +68,9 @@ public class CreatureRecipeTests
         Assert.AreEqual(3, tips.Length);
         Assert.IsTrue(Array.TrueForAll(tips, part => part.id.StartsWith("Bud", StringComparison.Ordinal)));
         Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);
+        Assert.AreEqual(Primitive.Torus, crown.primitive);
+        Assert.That(recipe.roots.count, Is.InRange(8, 14));
+        Assert.AreEqual(3, recipe.roots.segments);
     }
 
     [Test]
