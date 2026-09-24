@@ -166,6 +166,86 @@ namespace HealerLike.Render.Creatures
         }
 
         [Test]
+        public void Validate_StoneIgnoresUnusedPlantAndRootSettings()
+        {
+            LookVocabulary custom = Object.Instantiate(preset.vocabulary);
+            try
+            {
+                // Selected stone data stays valid; these fields are never read by the stone composition path.
+                custom.roots = null;
+                custom.pinnedReach = float.NaN;
+                custom.plantScale = float.NaN;
+                var original = custom.stems[preset.stem];
+                custom.stems = new System.Collections.Generic.Dictionary<StemBand, LookVocabulary.StemEntry>(custom.stems);
+                custom.stems[preset.stem] = new LookVocabulary.StemEntry
+                    { length = float.NaN, thickness = float.NaN, limbLength = original.limbLength };
+                preset.vocabulary = custom; preset.side = LookSide.Stone;
+                Assert.IsEmpty(preset.Validate(), string.Join("; ", preset.Validate()));
+                CreatureRecipe actual = preset.Compose();
+                CreatureRecipe expected = LookComposer.Compose(preset.Channels(), custom);
+                try { Assert.NotNull(actual); CollectionAssert.AreEqual(expected.parts, actual.parts); }
+                finally { if (actual) Object.DestroyImmediate(actual); if (expected) Object.DestroyImmediate(expected); }
+            }
+            finally { Object.DestroyImmediate(custom); }
+        }
+
+        [Test]
+        public void Validate_UnpinnedPlantIgnoresUnusedFallbackAndRootBand()
+        {
+            LookVocabulary custom = Object.Instantiate(preset.vocabulary);
+            try
+            {
+                custom.isReachPinned = false; custom.pinnedReach = float.NaN;
+                custom.roots = new System.Collections.Generic.Dictionary<ReachBand, LookVocabulary.RootEntry>(custom.roots);
+                custom.roots[ReachBand.Short] = null;
+                custom.roots[ReachBand.Mid] = new LookVocabulary.RootEntry { reach = 0.8f };
+                custom.roots[ReachBand.Long] = new LookVocabulary.RootEntry { reach = 1f };
+                preset.vocabulary = custom; preset.reach = ReachBand.Long;
+                Assert.IsEmpty(preset.Validate(), string.Join("; ", preset.Validate()));
+                CreatureRecipe actual = preset.Compose();
+                try { Assert.NotNull(actual); Assert.AreEqual(custom.Unit(LookSide.Plant), actual.roots.footRadius); }
+                finally { if (actual) Object.DestroyImmediate(actual); }
+            }
+            finally { Object.DestroyImmediate(custom); }
+        }
+
+        [Test]
+        public void Validate_MeasuresAccessoryAfterMaxPartsReducesFannedHeadCopies()
+        {
+            LookVocabulary custom = ScriptableObject.CreateInstance<LookVocabulary>();
+            try
+            {
+                custom.palette = preset.vocabulary.palette;
+                custom.bodyUnit = 1f; custom.plantScale = 1f; custom.maxParts = 4;
+                var body = new LookPart { id = "Body", primitive = Primitive.Sphere, role = PartRole.Body,
+                    colour = ColourRole.Body, size = Vector3.one };
+                var crown = new LookPart { id = "Head", primitive = Primitive.Sphere, role = PartRole.Head,
+                    colour = ColourRole.Accent, size = Vector3.one };
+                custom.bodies[MassBand.Light] = new LookVocabulary.BodyEntry { plant = new[] { body } };
+                custom.heads[HeadKind.Bud] = new LookVocabulary.HeadEntry { plant = new[] { crown }, carriesCount = false };
+                custom.stems[StemBand.Steady] = new LookVocabulary.StemEntry { length = 1f, thickness = .1f, limbLength = .4f };
+                // This bead lies inside the outermost five-copy head but clearly outside the final single head.
+                var bead = new LookPart { id = "Bead", primitive = Primitive.Sphere, role = PartRole.Accessory,
+                    colour = ColourRole.Accent, size = Vector3.one * .05f,
+                    position = Quaternion.Euler(0f, 0f, -56f) * Vector3.up * 1.2f };
+                custom.accessories[AccessoryKind.SmallTorus] = new LookVocabulary.AccessoryEntry
+                    { socket = AccessorySocket.NeckOrbit, plant = new[] { bead } };
+                preset.vocabulary = custom; preset.count = CountBand.Many; preset.accessory = AccessoryKind.SmallTorus;
+                Assert.Less(LookComposer.AccessoryReach(preset.Channels(), custom), LookComposer.PlantAccessoryReach);
+                Assert.IsEmpty(preset.Validate(), string.Join("; ", preset.Validate()));
+                CreatureRecipe actual = preset.Compose();
+                CreatureRecipe expected = LookComposer.Compose(preset.Channels(), custom);
+                try
+                {
+                    Assert.NotNull(actual); Assert.AreEqual(4, actual.parts.Length);
+                    CollectionAssert.AreEqual(expected.parts, actual.parts);
+                }
+                finally { if (actual) Object.DestroyImmediate(actual); if (expected) Object.DestroyImmediate(expected); }
+            }
+            finally { Object.DestroyImmediate(custom); }
+        }
+
+        [Test]
         public void SavedPreset_ReloadsAllGrammarChannelsAndReferences()
         {
             string path = "Assets/__CreatureGrammarTest_" + System.Guid.NewGuid().ToString("N") + ".asset";

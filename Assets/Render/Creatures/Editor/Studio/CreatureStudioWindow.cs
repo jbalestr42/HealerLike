@@ -66,6 +66,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
         {
             foreach (var window in Resources.FindObjectsOfTypeAll<CreatureStudioWindow>())
                 if (window.selected == recipe) { window.serialized?.Update(); window.RefreshPreview(); window.Repaint(); }
+            HealerLike.Render.Spells.Editor.Studio.RenderGrammarLibraryWindow.NotifyAssetChanged(recipe);
         }
 
         private void OnEnable()
@@ -113,7 +114,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             lastTick=now;
         }
 
-        private void OnUndo() { serialized?.Update(); if (grammarMode) RegenerateGrammar(); RefreshPreview(); Repaint(); }
+        private void OnUndo() { serialized?.Update(); if (grammarMode) RegenerateGrammar(); else HealerLike.Render.Spells.Editor.Studio.RenderGrammarLibraryWindow.NotifyAssetChanged(selected); RefreshPreview(); Repaint(); }
         private void RefreshPreview() { validationDirty=true; preview?.Refresh(); }
 
         private void ReloadAssets()
@@ -386,10 +387,10 @@ namespace HealerLike.Render.Creatures.Editor.Studio
 
         private void Section(string label) { GUILayout.Space(14); GUILayout.Label(label,sectionStyle); GUILayout.Space(5); }
         private void Field(string name,string label,bool children=false) { var p=serialized.FindProperty(name); if (p!=null) EditorGUILayout.PropertyField(p,new GUIContent(label),children); }
-        private void ApplyEdits() { serialized.ApplyModifiedProperties(); RefreshPreview(); }
+        private void ApplyEdits() { serialized.ApplyModifiedProperties(); RefreshPreview(); HealerLike.Render.Spells.Editor.Studio.RenderGrammarLibraryWindow.NotifyAssetChanged(selected); }
         private static void EndMutationGUI() { EditorGUIUtility.labelWidth=0; GUIUtility.ExitGUI(); }
         private void RecordMutation(string name) { serialized.ApplyModifiedProperties(); Undo.RecordObject(selected,name); }
-        private void FinishMutation() { EditorUtility.SetDirty(selected); serialized.Update(); RefreshPreview(); Repaint(); }
+        private void FinishMutation() { EditorUtility.SetDirty(selected); serialized.Update(); RefreshPreview(); Repaint(); HealerLike.Render.Spells.Editor.Studio.RenderGrammarLibraryWindow.NotifyAssetChanged(selected); }
         private void AddPart()
         {
             RecordMutation("Add creature part");
@@ -413,7 +414,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             if (string.IsNullOrEmpty(path)) return;
             var copy=CreatureStudioAuthoring.Clone(selected); copy.hideFlags=HideFlags.None;
             copy.name=System.IO.Path.GetFileNameWithoutExtension(path);
-            AssetDatabase.CreateAsset(copy,AssetDatabase.GenerateUniqueAssetPath(path)); AssetDatabase.SaveAssets();
+            AssetDatabase.CreateAsset(copy,AssetDatabase.GenerateUniqueAssetPath(path)); AssetDatabase.SaveAssetIfDirty(copy);
             ReloadAssets(); SwitchToParts(copy); EditorGUIUtility.PingObject(copy); ShowNotification(new GUIContent("Creature recipe saved"));
         }
 

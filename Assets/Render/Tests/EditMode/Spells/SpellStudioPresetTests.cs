@@ -210,6 +210,49 @@ namespace HealerLike.Render.Spells
         }
 
         [Test]
+        public void GameplayHandler_MissingNestedModifierDataReturnsDiagnosticWithoutThrowing()
+        {
+            var handler = ScriptableObject.CreateInstance<BuffHandlerFactory>();
+            var modifier = ScriptableObject.CreateInstance<FlatModifierFactory>();
+            try
+            {
+                modifier.data = null;
+                handler.data = new BuffHandlerData { durationType = DurationType.Duration,
+                    buffFactoryList = new System.Collections.Generic.List<ABuffFactory> { modifier } };
+                preset.mode = SpellStudioMode.GameplayHandler; preset.sourceHandler = handler;
+                Assert.IsFalse(preset.TryResolve(out _, out _));
+                Assert.IsNull(preset.Compose());
+                Assert.That(string.Join(" ", preset.Validate()), Does.Contain("missing buff data"));
+                Assert.DoesNotThrow(() => { var channels = preset.ResolvedChannels; var duration = preset.PreviewDuration; });
+            }
+            finally { Object.DestroyImmediate(handler); Object.DestroyImmediate(modifier); }
+        }
+
+        [Test]
+        public void GameplayOverride_BypassesUnneededNestedBuffDerivationLikeRuntime()
+        {
+            var handler = ScriptableObject.CreateInstance<BuffHandlerFactory>();
+            var modifier = ScriptableObject.CreateInstance<FlatModifierFactory>();
+            var looks = ScriptableObject.CreateInstance<SpellLooks>();
+            try
+            {
+                modifier.data = null;
+                handler.data = new BuffHandlerData { durationType = DurationType.Duration, isPeriodic = true,
+                    periodDuration = 2f, buffFactoryList = new System.Collections.Generic.List<ABuffFactory> { modifier } };
+                looks.buffs[handler] = new SpellLook { element = EffectElement.Rise, family = EffectFamily.Heal, tempo = EffectTempo.PerPeriod };
+                preset.mode = SpellStudioMode.GameplayHandler; preset.sourceHandler = handler; preset.spellLooks = looks;
+                Assert.IsTrue(preset.TryResolve(out _, out _));
+                EffectRecipe actual = preset.Compose();
+                EffectRecipe expected = EffectComposer.Compose(vocabulary, EffectElement.Rise, EffectFamily.Heal,
+                    EffectTempo.PerPeriod, EffectDerivation.Period(handler), preset.stacks, preset.charges, preset.amount);
+                Assert.NotNull(actual); Assert.AreEqual(expected.element, actual.element);
+                Assert.AreEqual(expected.family, actual.family); Assert.AreEqual(expected.cycleSeconds, actual.cycleSeconds);
+                Assert.IsEmpty(preset.Validate());
+            }
+            finally { Object.DestroyImmediate(looks); Object.DestroyImmediate(handler); Object.DestroyImmediate(modifier); }
+        }
+
+        [Test]
         public void SavedAsset_ReloadsAuthoredPartsSettingsAndColour()
         {
             string path = "Assets/__SpellStudioPresetTest_" + System.Guid.NewGuid().ToString("N") + ".asset";

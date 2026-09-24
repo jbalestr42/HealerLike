@@ -112,6 +112,63 @@ namespace HealerLike.Render.Spells.Tests
         }
 
         [Test]
+        public void EmptyNativeProjectileRowHasRepairReadoutInsteadOfThrowing()
+        {
+            var preset = ScriptableObject.CreateInstance<SpellStudioPreset>();
+            var looks = ScriptableObject.CreateInstance<SpellLooks>();
+            var projectile = new GameObject("Null-row projectile");
+            try
+            {
+                preset.sourceProjectile = projectile;
+                preset.spellLooks = looks;
+                looks.projectiles[projectile] = null;
+                MethodInfo readout = typeof(SpellStudioWindow).GetMethod("ProjectileReadout", BindingFlags.NonPublic | BindingFlags.Static);
+                string text = null;
+                Assert.DoesNotThrow(() => text = (string)readout.Invoke(null, new object[] { preset }));
+                StringAssert.Contains("empty", text);
+                Assert.That(looks.projectiles[projectile], Is.Null, "The inspector must not silently repair native data.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(projectile);
+                Object.DestroyImmediate(looks);
+                Object.DestroyImmediate(preset);
+            }
+        }
+
+        [Test]
+        public void SavingPresetCopyDoesNotSaveOtherDirtyAssets()
+        {
+            string suffix = System.Guid.NewGuid().ToString("N");
+            string unrelatedPath = "Assets/__SpellStudioUnrelated_" + suffix + ".asset";
+            string copyPath = "Assets/__SpellStudioSavedCopy_" + suffix + ".asset";
+            var unrelated = ScriptableObject.CreateInstance<SpellStudioPreset>();
+            try
+            {
+                unrelated.displayName = "Original disk value";
+                AssetDatabase.CreateAsset(unrelated, unrelatedPath);
+                AssetDatabase.SaveAssetIfDirty(unrelated);
+                unrelated.displayName = "Unrelated unsaved edit";
+                EditorUtility.SetDirty(unrelated);
+                var source = Get<SpellStudioPreset>("selected");
+                MethodInfo save = typeof(SpellStudioWindow).GetMethod("CreatePresetAsset", BindingFlags.NonPublic | BindingFlags.Static);
+                var copy = (SpellStudioPreset)save.Invoke(null, new object[] { source, copyPath });
+                Assert.That(AssetDatabase.Contains(copy), Is.True);
+                Assert.That(EditorUtility.IsDirty(copy), Is.False);
+                Assert.That(EditorUtility.IsDirty(unrelated), Is.True);
+                StringAssert.Contains("Original disk value", System.IO.File.ReadAllText(unrelatedPath));
+                StringAssert.DoesNotContain("Unrelated unsaved edit", System.IO.File.ReadAllText(unrelatedPath));
+                Assert.That(copy.displayName, Is.EqualTo(source.displayName));
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(copyPath);
+                AssetDatabase.DeleteAsset(unrelatedPath);
+                if (unrelated && !AssetDatabase.Contains(unrelated)) Object.DestroyImmediate(unrelated);
+            }
+        }
+
+        [Test]
         public void DraftsSurviveWindowRecreationWithVocabularyAndAuthoredParts()
         {
             var selected = Get<SpellStudioPreset>("selected");

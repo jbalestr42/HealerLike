@@ -114,12 +114,43 @@ namespace HealerLike.Render.Creatures.Editor.Studio
         {
             if (Sample(recipe, time) == null) throw new InvalidOperationException(LastError ?? "Choose a creature to capture.");
             int safeWidth = Mathf.Clamp(width, 16, 4096), safeHeight = Mathf.Clamp(height, 16, 4096);
-            ConfigureCamera(safeWidth, safeHeight);
-            _preview.BeginStaticPreview(new Rect(0f, 0f, safeWidth, safeHeight));
-            Texture2D result = null;
-            try { using (new SpellStudioPreviewLookScope(_preview.camera)) _preview.Render(true, false); }
-            finally { result = _preview.EndStaticPreview(); }
-            return result;
+            Vector3 target = _target;
+            float distance = _distance, aspect = _aspect;
+            bool fitRequested = _fitRequested;
+            Camera camera = _preview.camera;
+            Vector3 cameraPosition = camera.transform.position;
+            Quaternion cameraRotation = camera.transform.rotation;
+            float cameraAspect = camera.aspect, fieldOfView = camera.fieldOfView;
+            float near = camera.nearClipPlane, far = camera.farClipPlane;
+            CameraClearFlags clearFlags = camera.clearFlags;
+            Color background = camera.backgroundColor;
+            bool allowHDR = camera.allowHDR;
+            try
+            {
+                ConfigureCamera(safeWidth, safeHeight, false);
+                _preview.BeginStaticPreview(new Rect(0f, 0f, safeWidth, safeHeight));
+                Texture2D result = null;
+                bool rendered = false;
+                try
+                {
+                    using (new SpellStudioPreviewLookScope(camera)) _preview.Render(true, false);
+                    rendered = true;
+                }
+                finally
+                {
+                    result = _preview.EndStaticPreview();
+                    if (!rendered && result) Object.DestroyImmediate(result);
+                }
+                return result;
+            }
+            finally
+            {
+                _target = target; _distance = distance; _aspect = aspect; _fitRequested = fitRequested;
+                camera.transform.SetPositionAndRotation(cameraPosition, cameraRotation);
+                camera.aspect = cameraAspect; camera.fieldOfView = fieldOfView;
+                camera.nearClipPlane = near; camera.farClipPlane = far;
+                camera.clearFlags = clearFlags; camera.backgroundColor = background; camera.allowHDR = allowHDR;
+            }
         }
 
         void EnsurePreview()
@@ -219,12 +250,12 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             _working = null;
         }
 
-        void ConfigureCamera(float width, float height)
+        void ConfigureCamera(float width, float height, bool refitAspect = true)
         {
             Camera camera = _preview.camera;
             camera.aspect = width / Mathf.Max(1f, height);
             camera.fieldOfView = 34f;
-            if (!Mathf.Approximately(_aspect, camera.aspect)) _fitRequested = true;
+            if (refitAspect && !Mathf.Approximately(_aspect, camera.aspect)) _fitRequested = true;
             _aspect = camera.aspect;
             if (_fitRequested)
             {

@@ -116,27 +116,62 @@ namespace HealerLike.Render.Spells.Editor.Studio
             if (!string.IsNullOrEmpty(_error)) throw new InvalidOperationException(_error);
             if (!string.IsNullOrEmpty(_referenceError)) throw new InvalidOperationException(_referenceError);
             if (!preset) throw new ArgumentNullException(nameof(preset));
-            ConfigureCamera(width, height);
-            _preview.BeginStaticPreview(new Rect(0f, 0f, Mathf.Clamp(width, 16, 4096), Mathf.Clamp(height, 16, 4096)));
-            Texture2D result = null;
+            Vector3 target = _target;
+            float distance = _distance, aspect = _frameAspect;
+            bool fitRequested = _fitRequested;
+            Camera camera = _preview.camera;
+            Vector3 cameraPosition = camera.transform.position;
+            Quaternion cameraRotation = camera.transform.rotation;
+            float cameraAspect = camera.aspect, fieldOfView = camera.fieldOfView;
+            float nearClip = camera.nearClipPlane, farClip = camera.farClipPlane;
+            CameraClearFlags clearFlags = camera.clearFlags;
+            Color background = camera.backgroundColor;
+            bool hdr = camera.allowHDR;
+            Bounds frameBounds = _frameBounds;
             try
             {
-                using (new SpellStudioPreviewLookScope(_preview.camera))
-                    _preview.Render(true, false);
+                int safeWidth = Mathf.Clamp(width, 16, 4096), safeHeight = Mathf.Clamp(height, 16, 4096);
+                ConfigureCamera(safeWidth, safeHeight, true);
+                _preview.BeginStaticPreview(new Rect(0f, 0f, safeWidth, safeHeight));
+                Texture2D result = null;
+                bool rendered = false;
+                try
+                {
+                    using (new SpellStudioPreviewLookScope(_preview.camera))
+                        _preview.Render(true, false);
+                    rendered = true;
+                }
+                finally
+                {
+                    result = _preview.EndStaticPreview();
+                    if (!rendered && result) Object.DestroyImmediate(result);
+                }
+                return result;
             }
             finally
             {
-                result = _preview.EndStaticPreview();
+                _target = target;
+                _distance = distance;
+                _frameAspect = aspect;
+                _fitRequested = fitRequested;
+                _frameBounds = frameBounds;
+                camera.aspect = cameraAspect;
+                camera.fieldOfView = fieldOfView;
+                camera.nearClipPlane = nearClip;
+                camera.farClipPlane = farClip;
+                camera.clearFlags = clearFlags;
+                camera.backgroundColor = background;
+                camera.allowHDR = hdr;
+                camera.transform.SetPositionAndRotation(cameraPosition, cameraRotation);
             }
-            return result;
         }
 
-        void ConfigureCamera(float width, float height)
+        void ConfigureCamera(float width, float height, bool preserveFraming = false)
         {
             Camera camera = _preview.camera;
             camera.aspect = Mathf.Max(0.1f, width / Mathf.Max(1f, height));
             camera.fieldOfView = 34f;
-            if (!Mathf.Approximately(_frameAspect, camera.aspect)) _fitRequested = true;
+            if (!preserveFraming && !Mathf.Approximately(_frameAspect, camera.aspect)) _fitRequested = true;
             _frameAspect = camera.aspect;
             if (_fitRequested)
             {

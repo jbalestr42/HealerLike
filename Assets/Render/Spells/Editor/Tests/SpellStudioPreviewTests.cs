@@ -191,6 +191,49 @@ namespace HealerLike.Render.Spells.Editor.Tests
         }
 
         [Test]
+        public void CapturePreservesEditedFramingAndRestoresExactCameraPose()
+        {
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+                Assert.Ignore("Image verification requires a graphics device.");
+            _preview.Sample(_preset, .2f);
+            const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+            Type type = typeof(SpellStudioPreview);
+            type.GetMethod("ConfigureCamera", flags).Invoke(_preview, new object[] { 600f, 600f, false });
+            Vector3 editedTarget = new Vector3(.6f, 1.2f, -.2f);
+            type.GetField("_target", flags).SetValue(_preview, editedTarget);
+            type.GetField("_distance", flags).SetValue(_preview, 7.25f);
+            type.GetMethod("ConfigureCamera", flags).Invoke(_preview, new object[] { 600f, 600f, false });
+            var utility = (PreviewRenderUtility)type.GetField("_preview", flags).GetValue(_preview);
+            Camera camera = utility.camera;
+            Vector3 position = camera.transform.position;
+            Quaternion rotation = camera.transform.rotation;
+            float aspect = camera.aspect, fieldOfView = camera.fieldOfView;
+            Vector3 renderPosition = Vector3.zero;
+            void Observe(UnityEngine.Rendering.ScriptableRenderContext context, Camera rendered)
+            { if (rendered == camera) renderPosition = rendered.transform.position; }
+            Texture2D capture = null;
+            try
+            {
+                UnityEngine.Rendering.RenderPipelineManager.beginCameraRendering += Observe;
+                capture = _preview.Capture(_preset, .2f, 640, 360);
+                Assert.That(Vector3.Distance(renderPosition, position), Is.LessThan(.0001f), "Export uses the user's zoom and pan.");
+                Assert.That(camera.transform.position, Is.EqualTo(position));
+                Assert.That(camera.transform.rotation, Is.EqualTo(rotation));
+                Assert.That(camera.aspect, Is.EqualTo(aspect));
+                Assert.That(camera.fieldOfView, Is.EqualTo(fieldOfView));
+                Assert.That((Vector3)type.GetField("_target", flags).GetValue(_preview), Is.EqualTo(editedTarget));
+                Assert.That((float)type.GetField("_distance", flags).GetValue(_preview), Is.EqualTo(7.25f));
+                Assert.That((float)type.GetField("_frameAspect", flags).GetValue(_preview), Is.EqualTo(1f));
+                Assert.That((bool)type.GetField("_fitRequested", flags).GetValue(_preview), Is.False);
+            }
+            finally
+            {
+                UnityEngine.Rendering.RenderPipelineManager.beginCameraRendering -= Observe;
+                if (capture) Object.DestroyImmediate(capture);
+            }
+        }
+
+        [Test]
         public void NullSelectionClearsPreviousEffectAndDisposalIsIdempotent()
         {
             SpellEffect previous = _preview.Sample(_preset, 0.1f);

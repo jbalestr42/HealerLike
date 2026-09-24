@@ -27,6 +27,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             public List<GrammarDraftRecord> items=new List<GrammarDraftRecord>();
             public int selectedIndex=-1;
             public string selectedAsset;
+            public string creatureLooksAsset;
             public bool grammarMode=true;
         }
         private static string GrammarDraftKey=>"HealerLike.CreatureStudio.GrammarDrafts."+Application.dataPath;
@@ -154,7 +155,9 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             grammarOutput=output;
             CreatureRecipe authored=OverrideRecipe();
             if (previewGameOverride && authored==null) previewGameOverride=false;
+            Vector2 previousScroll=inspectorScroll;
             Select(previewGameOverride ? authored : grammarOutput);
+            inspectorScroll=previousScroll;
             if (old!=null) DestroyImmediate(old);
             Repaint();
         }
@@ -259,8 +262,8 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             DrawSourceOverride();
             GUILayout.Space(14);
             using (new EditorGUI.DisabledScope(grammarOutput==null))
-                if (GUILayout.Button("Bake to editable recipe",GUILayout.Height(30))) { BakeGrammar(); EndMutationGUI(); }
-            GUILayout.Label("Baking makes an independent Parts draft. The grammar preset and source assets stay editable.",smallStyle);
+                if (GUILayout.Button("Bake grammar output to editable recipe",GUILayout.Height(30))) { BakeGrammar(); EndMutationGUI(); }
+            GUILayout.Label("Baking copies the generated grammar output, even while auditioning a game override. It creates an independent Parts draft.",smallStyle);
             GUILayout.Space(8);
             if (GUILayout.Button("Duplicate grammar preset")) { DuplicateGrammar(); EndMutationGUI(); }
             if (GUILayout.Button("Edit vocabulary & native preset tables")) RenderGrammarLibraryWindow.OpenAsset(grammarSelected.vocabulary);
@@ -308,13 +311,13 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             string path=EditorUtility.SaveFilePanelInProject("Save creature grammar preset",GrammarLabel(grammarSelected),"asset","Save the editable channels and vocabulary reference.","Assets/Render/Creatures/Data");
             if (string.IsNullOrEmpty(path)) return;
             var copy=Instantiate(grammarSelected); copy.hideFlags=HideFlags.None; copy.name=System.IO.Path.GetFileNameWithoutExtension(path);
-            AssetDatabase.CreateAsset(copy,AssetDatabase.GenerateUniqueAssetPath(path)); AssetDatabase.SaveAssets();
+            AssetDatabase.CreateAsset(copy,AssetDatabase.GenerateUniqueAssetPath(path)); AssetDatabase.SaveAssetIfDirty(copy);
             ReloadGrammarAssets(); SelectGrammar(copy); EditorGUIUtility.PingObject(copy);
         }
 
         private void PersistGrammarDrafts()
         {
-            var collection=new GrammarDraftCollection { grammarMode=grammarMode,selectedIndex=grammarDrafts.IndexOf(grammarSelected),selectedAsset=AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(grammarSelected)) };
+            var collection=new GrammarDraftCollection { creatureLooksAsset=AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(creatureLooks)),grammarMode=grammarMode,selectedIndex=grammarDrafts.IndexOf(grammarSelected),selectedAsset=AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(grammarSelected)) };
             foreach (var draft in grammarDrafts) if (draft!=null) collection.items.Add(new GrammarDraftRecord { json=JsonUtility.ToJson(draft),vocabulary=AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(draft.vocabulary)),source=AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(draft.sourceEntity)) });
             EditorPrefs.SetString(GrammarDraftKey,JsonUtility.ToJson(collection));
         }
@@ -326,6 +329,8 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             {
                 var collection=JsonUtility.FromJson<GrammarDraftCollection>(EditorPrefs.GetString(GrammarDraftKey));
                 if (collection?.items==null) return;
+                if (!string.IsNullOrEmpty(collection.creatureLooksAsset))
+                    creatureLooks=AssetDatabase.LoadAssetAtPath<CreatureLooks>(AssetDatabase.GUIDToAssetPath(collection.creatureLooksAsset));
                 foreach (var item in collection.items)
                 {
                     var preset=CreateInstance<CreatureGrammarPreset>(); grammarDrafts.Add(preset);

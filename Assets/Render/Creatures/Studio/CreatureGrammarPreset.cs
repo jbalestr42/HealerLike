@@ -73,15 +73,15 @@ namespace HealerLike.Render.Creatures.Studio
                 errors.Add("The vocabulary is missing the selected head entry.");
             if (vocabulary.stems == null || !vocabulary.stems.TryGetValue(c.stem, out var stemEntry) || stemEntry == null)
                 errors.Add("The vocabulary is missing the selected stem entry.");
-            if (vocabulary.roots == null) errors.Add("The vocabulary root table is missing.");
+            if (c.side == LookSide.Plant && vocabulary.roots == null) errors.Add("The vocabulary root table is missing.");
             if (c.accessory != AccessoryKind.None && (vocabulary.accessories == null ||
                 !vocabulary.accessories.TryGetValue(c.accessory, out var accessoryEntry) || accessoryEntry == null))
                 errors.Add("The vocabulary is missing the selected accessory entry.");
             if (c.accessory == AccessoryKind.MiniHead && (vocabulary.heads == null ||
                 !vocabulary.heads.TryGetValue(c.accessoryHead, out var mini) || mini == null))
                 errors.Add("The vocabulary is missing the selected miniature head entry.");
-            if (!Positive(vocabulary.bodyUnit) || !Positive(vocabulary.plantScale) || !Positive(vocabulary.stoneScale))
-                errors.Add("Body unit and side scales must be finite and positive.");
+            if (!Positive(vocabulary.bodyUnit) || !Positive(c.side == LookSide.Plant ? vocabulary.plantScale : vocabulary.stoneScale))
+                errors.Add("Body unit and the selected side scale must be finite and positive.");
             if (vocabulary.maxParts < 1 || vocabulary.maxParts > CreatureValidator.MaxParts)
                 errors.Add("Vocabulary maxParts must be between 1 and " + CreatureValidator.MaxParts + ".");
             if (errors.Count != 0) return errors.ToArray();
@@ -92,13 +92,13 @@ namespace HealerLike.Render.Creatures.Studio
             var s = vocabulary.stems[c.stem];
             CheckParts(plant ? b.plant : b.stone, "body", errors);
             CheckParts(plant ? h.plant : h.stone, "head", errors);
-            if (!Positive(b.scale) || !Positive(s.length) || !Positive(s.thickness) || !Positive(s.limbLength))
+            if (!Positive(b.scale) || (plant ? !Positive(s.length) || !Positive(s.thickness) : !Positive(s.limbLength)))
                 errors.Add("Body scale and stem dimensions must be finite and positive.");
             if (c.accessory != AccessoryKind.None)
             {
                 var a = vocabulary.accessories[c.accessory];
                 CheckParts(plant ? a.plant : a.stone, "accessory", errors);
-                if (!Defined(a.socket) || !Finite(a.miniHeadAt) || !Positive(a.miniHeadScale))
+                if (!Defined(a.socket) || (c.accessory == AccessoryKind.MiniHead && (!Finite(a.miniHeadAt) || !Positive(a.miniHeadScale))))
                     errors.Add("Accessory socket and miniature head settings are invalid.");
                 if (c.accessory == AccessoryKind.MiniHead)
                 {
@@ -106,11 +106,15 @@ namespace HealerLike.Render.Creatures.Studio
                     CheckParts(plant ? m.plant : m.stone, "miniature head", errors);
                 }
             }
-            foreach (var root in vocabulary.roots)
-                if (root.Value == null || !Positive(root.Value.reach)) { errors.Add("Root entries require finite positive reach."); break; }
-            if (!Positive(vocabulary.pinnedReach)) errors.Add("Pinned reach must be finite and positive.");
             if (plant)
             {
+                bool usesPinnedReach = vocabulary.isReachPinned || !vocabulary.roots.ContainsKey(c.reach);
+                if (usesPinnedReach && !Positive(vocabulary.pinnedReach)) errors.Add("Pinned reach must be finite and positive.");
+                if (!usesPinnedReach && (vocabulary.roots[c.reach] == null || !Positive(vocabulary.roots[c.reach].reach)))
+                    errors.Add("The selected root entry requires finite positive reach.");
+                // Mid reach is also consumed by LookComposer.Roots to choose the root segment count.
+                if (vocabulary.roots.TryGetValue(ReachBand.Mid, out var mid) && (mid == null || !Positive(mid.reach)))
+                    errors.Add("The middle root entry requires finite positive reach.");
                 float unit = vocabulary.Unit(c.side);
                 if (vocabulary.rootCount < 4 || vocabulary.rootCount > 14 || vocabulary.armCount < 0 ||
                     vocabulary.armCount > CreatureRig.MaxArms || !Positive(vocabulary.rootHip) ||
@@ -119,7 +123,7 @@ namespace HealerLike.Render.Creatures.Studio
                 if (errors.Count == 0 && (vocabulary.Reach(c.reach) + vocabulary.rootThickness * .5f) * unit > CreatureValidator.MaxRootReach)
                     errors.Add("The selected root reach and thickness exceed the renderer's maximum root extent.");
             }
-            if (!Finite(vocabulary.stoneWilt)) errors.Add("Stone wilt colour must be finite.");
+            if (!plant && !Finite(vocabulary.stoneWilt)) errors.Add("Stone wilt colour must be finite.");
             foreach (ColourRole role in Enum.GetValues(typeof(ColourRole)))
                 if (!Finite(vocabulary.Colour(role, c.accent, c.side))) { errors.Add("Palette colours must be finite."); break; }
             if (errors.Count != 0) return errors.ToArray();
@@ -128,7 +132,15 @@ namespace HealerLike.Render.Creatures.Studio
             if (c.accessory != AccessoryKind.None)
             {
                 float minimum = plant ? LookComposer.PlantAccessoryReach : LookComposer.StoneAccessoryReach;
-                if (LookComposer.AccessoryReach(c, vocabulary) < minimum)
+                // Compose reduces fanned head copies to fit maxParts before measuring the accessory silhouette.
+                UnitChannels finalChannels = c;
+                if (!h.carriesCount)
+                {
+                    int copies = LookComposer.Copies(c.count);
+                    while (PartCount(c, copies) > vocabulary.maxParts && copies > 1) copies = copies > 3 ? 3 : 1;
+                    finalChannels.count = copies == 1 ? CountBand.One : copies == 3 ? CountBand.Few : CountBand.Many;
+                }
+                if (LookComposer.AccessoryReach(finalChannels, vocabulary) < minimum)
                     errors.Add("The accessory does not extend far enough beyond the body/head silhouette for the production grammar.");
             }
             return errors.ToArray();

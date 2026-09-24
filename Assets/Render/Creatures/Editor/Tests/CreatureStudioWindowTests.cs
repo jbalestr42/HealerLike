@@ -74,6 +74,21 @@ namespace HealerLike.Render.Creatures.Tests
             Assert.That(recipe.parts.Length,Is.EqualTo(count));
             Assert.That(CreatureStudioAuthoring.Validate(recipe),Is.Empty);
         }
+        [Test] public void UnsavedPartEditsNotifyOtherRenderStudios()
+        {
+            var recipe=Get<CreatureRecipe>("selected");
+            UnityEngine.Object changed=null;
+            System.Action<UnityEngine.Object> listener=asset=>changed=asset;
+            HealerLike.Render.Spells.Editor.Studio.RenderGrammarLibraryWindow.AssetChanged+=listener;
+            try
+            {
+                Invoke("AddPart");
+                Assert.That(changed,Is.SameAs(recipe));
+                Assert.That(AssetDatabase.Contains(recipe),Is.False);
+            }
+            finally { HealerLike.Render.Spells.Editor.Studio.RenderGrammarLibraryWindow.AssetChanged-=listener; }
+        }
+
         [Test] public void OpenRecipeSelectsAnExternalRecipe()
         {
             var recipe=CreatureStudioAuthoring.BuildSample(1);

@@ -53,6 +53,8 @@ Images are written to `Logs/SpellStudioCaptures/` in that Unity project. Use a g
 
 ## Verified build
 
-Unity 6000.6.0f1, macOS Metal, 24 September 2026: **1,079 passed, 0 failed, 3 skipped** across the renderer and both studio assemblies. This includes grammar mapping, native handler override priority, real gameplay sources, saved references, native dictionary inspectors and old authored preset compatibility. The three skipped tests are existing opt-in renderer screenshot fixtures. All 14 spell vocabulary previews were previously captured and visually inspected. Manual mouse/keyboard acceptance testing was unavailable because Computer Use permissions were not granted.
+Unity 6000.6.0f1, macOS Metal, 24 September 2026: **1,298 passed, 0 failed, 3 skipped** across gameplay, renderer and both studio assemblies. This includes grammar mapping, native handler override priority, real gameplay sources, saved references, native dictionary inspectors and old authored preset compatibility. The three skipped tests are existing opt-in renderer screenshot fixtures. All 14 spell vocabulary previews were previously captured and visually inspected. Manual mouse/keyboard acceptance testing was unavailable because Computer Use permissions were not granted.
 
-The complete test report is in `Logs/RenderStudio-Grammar-Tests.xml`; individual preview PNGs are in `Logs/SpellStudioCaptures`.
+The complete test report is in `Logs/Studio-Audit-Tests.xml`; individual preview PNGs are in `Logs/SpellStudioCaptures`.
+
+See [the studio audit](StudioAudit.md) for the review scope and follow-up fixes.

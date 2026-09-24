@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -27,6 +28,47 @@ namespace HealerLike.Render.Creatures.Editor.Tests
         {
             _preview?.Dispose();
             if (_recipe) Object.DestroyImmediate(_recipe);
+        }
+
+        [Test]
+        public void ExportAtDifferentAspectPreservesOrbitPanZoomAndCamera()
+        {
+            _preview.Sample(_recipe,.5f);
+            var flags=BindingFlags.Instance|BindingFlags.NonPublic;
+            var type=typeof(CreatureStudioPreview);
+            var configure=type.GetMethod("ConfigureCamera",flags);
+            configure.Invoke(_preview,new object[]{400f,300f,true});
+            var target=new Vector3(.4f,1.3f,-.2f);
+            var orbit=new Vector2(24f,65f);
+            type.GetField("_target",flags).SetValue(_preview,target);
+            type.GetField("_distance",flags).SetValue(_preview,4.2f);
+            type.GetField("_orbit",flags).SetValue(_preview,orbit);
+            configure.Invoke(_preview,new object[]{400f,300f,true});
+            var utility=(PreviewRenderUtility)type.GetField("_preview",flags).GetValue(_preview);
+            Vector3 cameraPosition=utility.camera.transform.position;
+            Quaternion cameraRotation=utility.camera.transform.rotation;
+            float aspect=utility.camera.aspect;
+            utility.camera.clearFlags=CameraClearFlags.Depth;
+            Color background=new Color(.7f,.2f,.5f,.8f);
+            utility.camera.backgroundColor=background;
+            utility.camera.allowHDR=false;
+            Texture2D image=null;
+            try
+            {
+                image=_preview.Capture(_recipe,.5f,320,120);
+                Assert.That(image,Is.Not.Null);
+                Assert.That(type.GetField("_target",flags).GetValue(_preview),Is.EqualTo(target));
+                Assert.That(type.GetField("_distance",flags).GetValue(_preview),Is.EqualTo(4.2f));
+                Assert.That(type.GetField("_orbit",flags).GetValue(_preview),Is.EqualTo(orbit));
+                Assert.That((bool)type.GetField("_fitRequested",flags).GetValue(_preview),Is.False);
+                Assert.That(utility.camera.transform.position,Is.EqualTo(cameraPosition));
+                Assert.That(Quaternion.Angle(utility.camera.transform.rotation,cameraRotation),Is.LessThan(.001f));
+                Assert.That(utility.camera.aspect,Is.EqualTo(aspect));
+                Assert.That(utility.camera.clearFlags,Is.EqualTo(CameraClearFlags.Depth));
+                Assert.That(utility.camera.backgroundColor,Is.EqualTo(background));
+                Assert.That(utility.camera.allowHDR,Is.False);
+            }
+            finally { if (image) Object.DestroyImmediate(image); }
         }
 
         [TestCase(0)]

@@ -47,6 +47,30 @@ namespace HealerLike.Render.Creatures.Tests
             Assert.That(AssetDatabase.Contains(after),Is.False);
         }
 
+        [Test] public void RegenerationPreservesInspectorScroll()
+        {
+            var scroll=new Vector2(0,430);
+            typeof(CreatureStudioWindow).GetField("inspectorScroll",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(window,scroll);
+            Get<CreatureGrammarPreset>("grammarSelected").head=HeadKind.Spear;
+            Invoke("RegenerateGrammar");
+            Assert.That(Get<Vector2>("inspectorScroll"),Is.EqualTo(scroll));
+        }
+
+        [Test] public void ChosenGameOverrideTableSurvivesReopening()
+        {
+            var table=ScriptableObject.CreateInstance<CreatureLooks>();
+            string path=AssetDatabase.GenerateUniqueAssetPath("Assets/__CreatureStudioAlternateLooks.asset");
+            try
+            {
+                AssetDatabase.CreateAsset(table,path);
+                typeof(CreatureStudioWindow).GetField("creatureLooks",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(window,table);
+                Object.DestroyImmediate(window);
+                window=ScriptableObject.CreateInstance<CreatureStudioWindow>();
+                Assert.That(Get<CreatureLooks>("creatureLooks"),Is.SameAs(table));
+            }
+            finally { AssetDatabase.DeleteAsset(path); }
+        }
+
         [Test] public void BakeIsAnIndependentManualDraftAndKeepsGrammarPreset()
         {
             var preset=Get<CreatureGrammarPreset>("grammarSelected");

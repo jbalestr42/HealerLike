@@ -5,7 +5,8 @@
         "HealerLike.Render",
         "HealerLike.Render.Creatures.Editor",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "HealerLike.Render.Spells.Editor"
     ],
     "includePlatforms": [
         "Editor"

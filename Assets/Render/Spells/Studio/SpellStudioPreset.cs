@@ -100,6 +100,25 @@ namespace HealerLike.Render.Spells.Studio
         /// <summary>Resolves the same channels and native override priority as SpellVisualSink.Open.</summary>
         public bool TryResolve(out EffectChannels channels, out EffectElement resolvedElement)
         {
+            return TryResolve(out channels, out resolvedElement, out _);
+        }
+
+        bool TryResolve(out EffectChannels channels, out EffectElement resolvedElement, out string error)
+        {
+            error = null;
+            try { return Resolve(out channels, out resolvedElement); }
+            catch (NullReferenceException)
+            {
+                // Partially authored nested buff data must not break the editor's repaint/validation loop.
+                channels = default;
+                resolvedElement = Defined(element, EffectElement.Burst);
+                error = "The gameplay handler contains missing buff data. Complete its modifier or consumer settings before deriving an effect.";
+                return false;
+            }
+        }
+
+        bool Resolve(out EffectChannels channels, out EffectElement resolvedElement)
+        {
             channels = new EffectChannels
             {
                 family = Defined(family, EffectFamily.Damage), group = Defined(attributeGroup, AttributeGroup.Offence),
@@ -114,7 +133,7 @@ namespace HealerLike.Render.Spells.Studio
                 SpellLook row = useGameplayOverrides && spellLooks != null ? spellLooks.GetLook(sourceHandler) : null;
                 if (row != null)
                 {
-                    channels.group = EffectDerivation.Group(sourceHandler);
+                    // Native override rows bypass family/group derivation, exactly as SpellVisualSink.Open does.
                     channels.family = Defined(row.family, EffectFamily.Damage);
                     channels.tempo = Defined(row.tempo, EffectTempo.Once);
                     channels.periodSeconds = EffectDerivation.Period(sourceHandler);
@@ -161,6 +180,8 @@ namespace HealerLike.Render.Spells.Studio
         public string[] Validate()
         {
             var warnings = new List<string>();
+            TryResolve(out _, out _, out string resolutionError);
+            if (resolutionError != null) warnings.Add(resolutionError);
             if (mode == SpellStudioMode.GameplayHandler && sourceHandler == null)
                 warnings.Add("Choose a gameplay buff handler to derive its renderer grammar.");
             if (!Enum.IsDefined(typeof(SpellStudioMode), mode) || !Enum.IsDefined(typeof(AttributeGroup), attributeGroup))

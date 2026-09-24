@@ -44,4 +44,6 @@ Run the EditMode filters `CreatureStudio` and `SpellStudio`. To produce visual c
 
 Captures are written to `Logs/CreatureStudioCaptures/`.
 
-Verified in Unity 6000.6.0f1 on macOS Metal: **1,079 passed, 0 failed, 3 skipped** across the renderer and both studio assemblies. The three skips are existing opt-in screenshot fixtures. Tests include production grammar parity, native dictionary inspectors, source derivation, grammar preset persistence, draft lifecycle and preview isolation. Six grammar-generated creature captures were visually inspected, along with the earlier creature and spell captures. Manual mouse/keyboard acceptance testing remains unavailable because Computer Use permissions were not granted. Full results: `Logs/RenderStudio-Grammar-Tests.xml`.
+Verified in Unity 6000.6.0f1 on macOS Metal: **1,298 passed, 0 failed, 3 skipped** across gameplay, renderer and both studio assemblies. The three skips are existing opt-in screenshot fixtures. Tests include production grammar parity, native dictionary inspectors, source derivation, grammar preset persistence, draft lifecycle and preview isolation. Six grammar-generated creature captures were visually inspected, along with the earlier creature and spell captures. Manual mouse/keyboard acceptance testing remains unavailable because Computer Use permissions were not granted. Full results: `Logs/Studio-Audit-Tests.xml`.
+
+See [the studio audit](StudioAudit.md) for the review scope and follow-up fixes.

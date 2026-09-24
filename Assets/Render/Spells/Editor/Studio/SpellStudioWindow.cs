@@ -579,10 +579,18 @@ namespace HealerLike.Render.Spells.Editor.Studio
             Field("sourceProjectile", "Projectile lookup");
             if (selected.sourceProjectile != null)
             {
-                ProjectileLook projectile = selected.ResolveProjectile();
-                GUILayout.Label("Delivery: " + projectile.style + " · " + projectile.presentation +
-                    (projectile.preserveContactPath ? " · preserves contact path" : "") + "\nLookup only; this viewport previews the effect element.", smallStyle);
+                GUILayout.Label(ProjectileReadout(selected), smallStyle);
             }
+        }
+
+        internal static string ProjectileReadout(SpellStudioPreset preset)
+        {
+            ProjectileLook projectile = preset.ResolveProjectile();
+            if (projectile == null)
+                return "The native projectile preset is empty. Edit the native table to fill or remove this row.";
+            return "Delivery: " + projectile.style + " · " + projectile.presentation +
+                (projectile.preserveContactPath ? " · preserves contact path" : "") +
+                "\nLookup only; this viewport previews the effect element.";
         }
 
         private void Duplicate()
@@ -615,17 +623,31 @@ namespace HealerLike.Render.Spells.Editor.Studio
             finally { if (image != null) DestroyImmediate(image); }
         }
 
+        internal static SpellStudioPreset CreatePresetAsset(SpellStudioPreset source, string path)
+        {
+            var copy = Instantiate(source);
+            copy.hideFlags = HideFlags.None;
+            copy.name = System.IO.Path.GetFileNameWithoutExtension(path);
+            try
+            {
+                AssetDatabase.CreateAsset(copy, path);
+                AssetDatabase.SaveAssetIfDirty(copy);
+                return copy;
+            }
+            catch
+            {
+                if (copy && !AssetDatabase.Contains(copy)) DestroyImmediate(copy);
+                throw;
+            }
+        }
+
         private void SaveAs()
         {
             if (selected == null) return;
             string path = EditorUtility.SaveFilePanelInProject("Save spell preset",Label(selected),"asset","Choose where to store this spell preset.","Assets/Render/Spells/Data");
             if (string.IsNullOrEmpty(path)) return;
             path = AssetDatabase.GenerateUniqueAssetPath(path);
-            var copy = Instantiate(selected);
-            copy.hideFlags = HideFlags.None;
-            copy.name = System.IO.Path.GetFileNameWithoutExtension(path);
-            AssetDatabase.CreateAsset(copy,path);
-            AssetDatabase.SaveAssets();
+            var copy = CreatePresetAsset(selected, path);
             ReloadAssets();
             Select(copy);
             EditorGUIUtility.PingObject(copy);

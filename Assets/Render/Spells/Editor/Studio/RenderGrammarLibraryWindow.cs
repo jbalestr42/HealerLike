@@ -12,6 +12,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
     public sealed class RenderGrammarLibraryWindow : EditorWindow
     {
         public static event Action<Object> AssetChanged;
+        public static void NotifyAssetChanged(Object value) => AssetChanged?.Invoke(value);
         public static readonly string[] AssetPaths =
         {
             "Assets/Render/Creatures/Data/LookVocabulary.asset",
