@@ -50,6 +50,7 @@ namespace HealerLike.Render.Stones
             }
         }
 
+        // After the projectile's own Update has moved it, so the shard follows where it is this frame
         void LateUpdate()
         {
             _endedDeliveries.Clear();
@@ -161,7 +162,7 @@ namespace HealerLike.Render.Stones
                 return false;
             }
 
-            uint shardSeed = StoneSeed.ForPart(_seed, shardMeshSalt);
+            uint shardSeed = SeededRandom.ForPart(_seed, shardMeshSalt);
             StoneMeshCache.Lease lease = _effects.stoneMeshes.Acquire(shardSeed, shardShape);
             if (lease == null)
             {
@@ -195,7 +196,7 @@ namespace HealerLike.Render.Stones
             if (_effects != null)
             {
                 _contactIndex++;
-                uint seed = StoneSeed.ForPart(_seed, _contactIndex + contactSalt);
+                uint seed = SeededRandom.ForPart(_seed, _contactIndex + contactSalt);
                 StoneEmitters.ThrownContact(_effects, contactPosition, seed);
             }
             EndDelivery(token);

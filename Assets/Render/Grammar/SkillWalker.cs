@@ -27,7 +27,8 @@ namespace HealerLike.Render.Grammar
         class ChainModeReading
         {
             // Named as the serialized field of ChainLightningProjectile so the JSON matches it
-            public ChainLightningProjectile.EffectMode _effectMode = ChainLightningProjectile.EffectMode.FixedDuration;
+            public ChainLightningProjectile.EffectMode _effectMode =
+                ChainLightningProjectile.EffectMode.FixedDuration;
         }
 
         // The prefab shooting the most per cycle, the first one on a tie
@@ -57,8 +58,8 @@ namespace HealerLike.Render.Grammar
             return prefabs;
         }
 
-        // Shots per prefab in one cycle of the skill, in the order the data lists them: each entry fires once per cycle,
-        // a step once per execution
+        // Shots per prefab in one cycle of the skill, in the order the data lists them: each entry fires once per
+        // cycle, a step once per execution
         public static List<Shot> Shots(ASkillFactory skill)
         {
             List<Shot> shots = new List<Shot>();
@@ -160,20 +161,6 @@ namespace HealerLike.Render.Grammar
             return bounce.data.bounce;
         }
 
-        // Bounces installed by the unit's own items
-        public static int PassiveBounces(EntityData data)
-        {
-            int bounces = 0;
-            foreach (AProjectileBehaviourFactory behaviour in PassiveBehaviours(data))
-            {
-                if (behaviour is BounceProjectileBehaviourFactory bounce)
-                {
-                    bounces += bounce.data.bounce;
-                }
-            }
-            return bounces;
-        }
-
         public static bool HasSplash(ASkillFactory skill, EntityData data)
         {
             foreach (GameObject prefab in Prefabs(skill))
@@ -184,7 +171,7 @@ namespace HealerLike.Render.Grammar
                 }
             }
 
-            foreach (AProjectileBehaviourFactory behaviour in PassiveBehaviours(data))
+            foreach (AProjectileBehaviourFactory behaviour in ItemWalker.Behaviours(data))
             {
                 if (behaviour is AreaOfEffectProjectileBehaviourFactory)
                 {
@@ -246,92 +233,6 @@ namespace HealerLike.Render.Grammar
                 return 1f;
             }
             return unitBase;
-        }
-
-        // The handlers the unit's own items put on it at Init, its passives
-        public static List<ABuffHandlerFactory> ItemBuffs(EntityData data)
-        {
-            List<ABuffHandlerFactory> handlers = new List<ABuffHandlerFactory>();
-            foreach (ItemData item in Items(data))
-            {
-                AddHandlers(handlers, item.buffs);
-            }
-            return handlers;
-        }
-
-        // The handlers the unit's own items apply on every hit it deals
-        public static List<ABuffHandlerFactory> ItemOnHitEffects(EntityData data)
-        {
-            List<ABuffHandlerFactory> handlers = new List<ABuffHandlerFactory>();
-            foreach (ItemData item in Items(data))
-            {
-                AddHandlers(handlers, item.onHitEffects);
-            }
-            return handlers;
-        }
-
-        // The data of every item the unit carries in its EntityData, in the order the data lists them
-        static List<ItemData> Items(EntityData data)
-        {
-            List<ItemData> items = new List<ItemData>();
-            if (data == null || data.items == null)
-            {
-                return items;
-            }
-
-            foreach (AItemFactory itemFactory in data.items)
-            {
-                ItemFactory item = itemFactory as ItemFactory;
-                if (item != null && item.data != null)
-                {
-                    items.Add(item.data);
-                }
-            }
-            return items;
-        }
-
-        static void AddHandlers(List<ABuffHandlerFactory> handlers, List<ABuffHandlerFactory> source)
-        {
-            if (source == null)
-            {
-                return;
-            }
-
-            foreach (ABuffHandlerFactory handler in source)
-            {
-                if (handler != null)
-                {
-                    handlers.Add(handler);
-                }
-            }
-        }
-
-        // Behaviours the unit's own items add to its projectiles, through a buff or their projectile behaviour list
-        static List<AProjectileBehaviourFactory> PassiveBehaviours(EntityData data)
-        {
-            List<ABuffHandlerFactory> handlers = ItemBuffs(data);
-            foreach (ItemData item in Items(data))
-            {
-                AddHandlers(handlers, item.projectileBehaviours);
-            }
-
-            List<AProjectileBehaviourFactory> behaviours = new List<AProjectileBehaviourFactory>();
-            foreach (ABuffHandlerFactory handler in handlers)
-            {
-                if (handler.buffFactoryList == null)
-                {
-                    continue;
-                }
-
-                foreach (ABuffFactory buff in handler.buffFactoryList)
-                {
-                    if (buff is ProjectileBehaviourBuffFactory projectileBuff && projectileBuff.data.projectileBehaviour != null)
-                    {
-                        behaviours.Add(projectileBuff.data.projectileBehaviour);
-                    }
-                }
-            }
-            return behaviours;
         }
     }
 }

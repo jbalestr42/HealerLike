@@ -55,7 +55,8 @@ public class TipDropTests
     {
         int before = Object.FindObjectsByType<TipDrop>(FindObjectsSortMode.None).Length;
 
-        TipDrop.Splash(RenderTestAssets.LoadDeliveryVocabulary(), RenderTestAssets.LoadMeshes(), null, Vector3.one * 2f);
+        TipDrop.Splash(RenderTestAssets.LoadDeliveryVocabulary(), RenderTestAssets.LoadMeshes(), null,
+            Vector3.one * 2f);
 
         Assert.AreEqual(before + 1, Object.FindObjectsByType<TipDrop>(FindObjectsSortMode.None).Length);
     }

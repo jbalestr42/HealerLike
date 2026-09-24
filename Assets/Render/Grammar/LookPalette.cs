@@ -18,7 +18,11 @@ namespace HealerLike.Render.Grammar
         // The colour a wilting part fades toward, the side rim under an effect, a mana element
         Wilt,
         Rim,
-        Mana
+        Mana,
+        // Scenery: a mushroom tree's stem and its two cap tints
+        MushroomStem,
+        MushroomCap,
+        MushroomCapPale
     }
 
     // Every colour the look grammar uses, so a unit or an effect names a role and never a colour
@@ -44,6 +48,10 @@ namespace HealerLike.Render.Grammar
         public Color baneLit;
 
         public Color mana;
+
+        public Color mushroomStem;
+        public Color mushroomCap;
+        public Color mushroomCapPale;
 
         public Color Accent(EffectFamily family)
         {
@@ -108,6 +116,12 @@ namespace HealerLike.Render.Grammar
                     return plantBody;
                 case ColourRole.Mana:
                     return mana;
+                case ColourRole.MushroomStem:
+                    return mushroomStem;
+                case ColourRole.MushroomCap:
+                    return mushroomCap;
+                case ColourRole.MushroomCapPale:
+                    return mushroomCapPale;
                 default:
                     return Accent(accent);
             }

@@ -139,12 +139,13 @@ namespace HealerLike.Render.Studio.Editor
 
         bool Restore()
         {
-            if (!EditorPrefs.HasKey(key))
+            string json = StudioPrefs.ReadJson(key);
+            if (json == null)
             {
                 return false;
             }
 
-            SpellDraftCollection collection = JsonUtility.FromJson<SpellDraftCollection>(EditorPrefs.GetString(key));
+            SpellDraftCollection collection = JsonUtility.FromJson<SpellDraftCollection>(json);
             if (collection == null || collection.items == null)
             {
                 return false;

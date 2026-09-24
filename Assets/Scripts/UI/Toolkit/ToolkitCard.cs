@@ -65,7 +65,7 @@ public class ToolkitCard
         {
             _hasIcon = true;
             _iconSource = _model.iconSource;
-            _icon.style.backgroundImage = new StyleBackground(DataIconService.GetIcon(_iconSource));
+            _icon.style.backgroundImage = new StyleBackground(_view.icons.GetIcon(_iconSource));
         }
     }
 

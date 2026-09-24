@@ -108,6 +108,11 @@ public class ToolkitGameUI : MonoBehaviour
 
     void OnDestroy()
     {
+        if (_view != null)
+        {
+            _view.Release();
+        }
+
         if (_ownedPanel != null)
         {
             Destroy(_ownedPanel);

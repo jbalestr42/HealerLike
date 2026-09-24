@@ -6,13 +6,11 @@ namespace HealerLike.Render.Zones
     // Range preview of an ally, the range driver tells it whether it is hovered
     public class RangePreview : MonoBehaviour, IEntityView
     {
-        // Strength of the ring for the hovered, selected or dragged unit
+        // Strength of the ring for the hovered unit
         public static readonly float FocusStrength = 0.35f;
 
         Entity _entity;
         readonly ZoneHandle _zone = new ZoneHandle();
-        bool _selected;
-        bool _dragging;
         bool _isHovered;
 
         public Entity entity { get { return _entity; } }
@@ -25,8 +23,7 @@ namespace HealerLike.Render.Zones
         public void Init(Entity entity, ZoneRegistry zones)
         {
             _zone.Init(zones);
-            _selected = false;
-            _dragging = false;
+            _isHovered = false;
             _entity = entity;
         }
 
@@ -41,17 +38,10 @@ namespace HealerLike.Render.Zones
             _isHovered = isHovered;
         }
 
-        public void SetPreviewState(bool selected, bool dragging)
-        {
-            _selected = selected;
-            _dragging = dragging;
-        }
-
         public void Refresh()
         {
-            bool isShown = _selected || _dragging || _isHovered;
             if (!isActiveAndEnabled || _entity == null || !_entity.isActiveAndEnabled
-                || _entity.entityType != Entity.EntityType.Player || !isShown
+                || _entity.entityType != Entity.EntityType.Player || !_isHovered
                 || _entity.attributeManager == null
                 || !_entity.attributeManager.Has(AttributeType.Range))
             {
@@ -66,8 +56,7 @@ namespace HealerLike.Render.Zones
         void OnDisable()
         {
             _zone.Clear();
-            _selected = false;
-            _dragging = false;
+            _isHovered = false;
         }
 
         void OnDestroy()

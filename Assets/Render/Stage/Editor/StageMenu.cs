@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace HealerLike.Render.Stage
 {
-    // Opens the render stage and authors the render owned assets it runs on. The game's scenes and data are never written.
+    // Opens the render stage and authors the render owned assets it runs on. The game's scenes and data are
+    // never written.
     public static class StageMenu
     {
         [MenuItem("Tools/Render/Open Render Stage")]
@@ -12,7 +13,8 @@ namespace HealerLike.Render.Stage
         {
             if (AssetDatabase.LoadAssetAtPath<SceneAsset>(StageSceneAuthoring.ScenePath) == null)
             {
-                Debug.LogError($"[StageMenu] No {StageSceneAuthoring.ScenePath}, run Tools/Render/Author Render Stage first.");
+                Debug.LogError(
+                    $"[StageMenu] No {StageSceneAuthoring.ScenePath}, run Tools/Render/Author Render Stage first.");
                 return;
             }
 

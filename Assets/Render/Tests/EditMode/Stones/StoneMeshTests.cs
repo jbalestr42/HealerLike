@@ -157,7 +157,7 @@ public class StoneMeshTests
         }
         foreach (int index in data.indices)
         {
-            hash = StoneSeed.ForPart(hash, (uint)index);
+            hash = SeededRandom.ForPart(hash, (uint)index);
         }
         Assert.AreEqual(3051263645u, hash, "Version-1 geometry golden on Unity 6000.6");
     }
@@ -166,7 +166,7 @@ public class StoneMeshTests
     {
         foreach (float component in new float[] { value.x, value.y, value.z })
         {
-            hash = StoneSeed.ForPart(hash, (uint)System.BitConverter.SingleToInt32Bits(component));
+            hash = SeededRandom.ForPart(hash, (uint)System.BitConverter.SingleToInt32Bits(component));
         }
         return hash;
     }

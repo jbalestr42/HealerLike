@@ -32,7 +32,8 @@ namespace HealerLike.Render.Stage
             options.target = BuildTarget.StandaloneOSX;
             options.options = BuildOptions.Development;
             BuildReport report = BuildPipeline.BuildPlayer(options);
-            Debug.Log($"[StagePreviewBuild] {report.summary.result}, errors {report.summary.totalErrors}, output {output}");
+            Debug.Log(
+                $"[StagePreviewBuild] {report.summary.result}, errors {report.summary.totalErrors}, output {output}");
             if (report.summary.result != BuildResult.Succeeded)
             {
                 Debug.LogError("[StagePreviewBuild] The render preview player build failed.");

@@ -24,13 +24,18 @@ public class LookSheetUnitsTests
     }
 
     // Five units nobody designed, built in memory from the game's classes and prefabs
-    [TestCase("Stormreed", LookSide.Plant, HeadKind.Fork, CountBand.Few, StemBand.Quick, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("Puffball", LookSide.Plant, HeadKind.Pulse, CountBand.Many, StemBand.Steady, MassBand.Sturdy, AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("Old fern", LookSide.Plant, HeadKind.SelfTick, CountBand.One, StemBand.Slow, MassBand.Heavy, AccessoryKind.None, EffectFamily.Renew)]
-    [TestCase("Needle stone", LookSide.Stone, HeadKind.Spear, CountBand.Few, StemBand.Quick, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("Storm idol", LookSide.Stone, HeadKind.Conductor, CountBand.One, StemBand.Steady, MassBand.Heavy, AccessoryKind.DripBeads, EffectFamily.Damage)]
-    public void Create_UndesignedUnit_DerivesItsChannels(string unit, LookSide side, HeadKind head, CountBand count, StemBand stem,
-        MassBand mass, AccessoryKind accessory, EffectFamily accent)
+    [TestCase("Stormreed", LookSide.Plant, HeadKind.Fork, CountBand.Few, StemBand.Quick, MassBand.Light,
+              AccessoryKind.None, EffectFamily.Damage)]
+    [TestCase("Puffball", LookSide.Plant, HeadKind.Pulse, CountBand.Many, StemBand.Steady, MassBand.Sturdy,
+              AccessoryKind.None, EffectFamily.Damage)]
+    [TestCase("Old fern", LookSide.Plant, HeadKind.SelfTick, CountBand.One, StemBand.Slow, MassBand.Heavy,
+              AccessoryKind.None, EffectFamily.Renew)]
+    [TestCase("Needle stone", LookSide.Stone, HeadKind.Spear, CountBand.Few, StemBand.Quick, MassBand.Light,
+              AccessoryKind.None, EffectFamily.Damage)]
+    [TestCase("Storm idol", LookSide.Stone, HeadKind.Conductor, CountBand.One, StemBand.Steady, MassBand.Heavy,
+              AccessoryKind.DripBeads, EffectFamily.Damage)]
+    public void Create_UndesignedUnit_DerivesItsChannels(string unit, LookSide side, HeadKind head,
+        CountBand count, StemBand stem, MassBand mass, AccessoryKind accessory, EffectFamily accent)
     {
         EntityData data = LookSheetUnits.Create(unit, _created);
 
@@ -41,23 +46,38 @@ public class LookSheetUnitsTests
 
     // The proposed roster, built in memory. Bramble and Splitter stand in for a factory the game lacks and no
     // derivation line reads a thorn collar or twin seeds yet, so they pin what their data draws
-    [TestCase("Mender", LookSide.Plant, HeadKind.GiftHeal, CountBand.One, StemBand.Slow, MassBand.Light, AccessoryKind.None, EffectFamily.Heal)]
-    [TestCase("Warden", LookSide.Plant, HeadKind.GiftBoonDefence, CountBand.One, StemBand.Slow, MassBand.Light, AccessoryKind.None, EffectFamily.Boon)]
-    [TestCase("Mortar", LookSide.Plant, HeadKind.Arch, CountBand.Many, StemBand.Slow, MassBand.Light, AccessoryKind.Antenna, EffectFamily.Damage)]
-    [TestCase("Flanker", LookSide.Plant, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Light, AccessoryKind.Hook, EffectFamily.Damage)]
-    [TestCase("Bramble", LookSide.Plant, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Light, AccessoryKind.SmallTorus, EffectFamily.Damage)]
-    [TestCase("Shieldbearer", LookSide.Stone, HeadKind.GiftBoonDefence, CountBand.One, StemBand.Slow, MassBand.Light, AccessoryKind.None, EffectFamily.Boon)]
-    [TestCase("Brute", LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Slow, MassBand.Heavy, AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("Plague stone", LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Sturdy, AccessoryKind.DripBeads, EffectFamily.Damage)]
-    [TestCase("Hexer", LookSide.Stone, HeadKind.GiftBane, CountBand.One, StemBand.Slow, MassBand.Light, AccessoryKind.None, EffectFamily.Bane)]
-    [TestCase("Mending stone", LookSide.Stone, HeadKind.GiftHeal, CountBand.One, StemBand.Slow, MassBand.Light, AccessoryKind.None, EffectFamily.Heal)]
-    [TestCase("Warded idol", LookSide.Stone, HeadKind.Ward, CountBand.One, StemBand.Slow, MassBand.Light, AccessoryKind.None, EffectFamily.Boon)]
-    [TestCase("Rising stone", LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Sturdy, AccessoryKind.TierRings, EffectFamily.Damage)]
-    [TestCase("Splitter", LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Sturdy, AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("Runner", LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("Warlord", LookSide.Stone, HeadKind.Arch, CountBand.Many, StemBand.Slow, MassBand.Heavy, AccessoryKind.MiniHead, EffectFamily.Damage)]
-    public void Create_ProposedUnit_DerivesItsChannels(string unit, LookSide side, HeadKind head, CountBand count, StemBand stem,
-        MassBand mass, AccessoryKind accessory, EffectFamily accent)
+    [TestCase("Mender", LookSide.Plant, HeadKind.GiftHeal, CountBand.One, StemBand.Slow, MassBand.Light,
+              AccessoryKind.None, EffectFamily.Heal)]
+    [TestCase("Warden", LookSide.Plant, HeadKind.GiftBoonDefence, CountBand.One, StemBand.Slow, MassBand.Light,
+              AccessoryKind.None, EffectFamily.Boon)]
+    [TestCase("Mortar", LookSide.Plant, HeadKind.Arch, CountBand.Many, StemBand.Slow, MassBand.Light,
+              AccessoryKind.Antenna, EffectFamily.Damage)]
+    [TestCase("Flanker", LookSide.Plant, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Light,
+              AccessoryKind.Hook, EffectFamily.Damage)]
+    [TestCase("Bramble", LookSide.Plant, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Light,
+              AccessoryKind.SmallTorus, EffectFamily.Damage)]
+    [TestCase("Shieldbearer", LookSide.Stone, HeadKind.GiftBoonDefence, CountBand.One, StemBand.Slow, MassBand.Light,
+              AccessoryKind.None, EffectFamily.Boon)]
+    [TestCase("Brute", LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Slow, MassBand.Heavy, AccessoryKind.None,
+              EffectFamily.Damage)]
+    [TestCase("Plague stone", LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Sturdy,
+              AccessoryKind.DripBeads, EffectFamily.Damage)]
+    [TestCase("Hexer", LookSide.Stone, HeadKind.GiftBane, CountBand.One, StemBand.Slow, MassBand.Light,
+              AccessoryKind.None, EffectFamily.Bane)]
+    [TestCase("Mending stone", LookSide.Stone, HeadKind.GiftHeal, CountBand.One, StemBand.Slow, MassBand.Light,
+              AccessoryKind.None, EffectFamily.Heal)]
+    [TestCase("Warded idol", LookSide.Stone, HeadKind.Ward, CountBand.One, StemBand.Slow, MassBand.Light,
+              AccessoryKind.None, EffectFamily.Boon)]
+    [TestCase("Rising stone", LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Sturdy,
+              AccessoryKind.TierRings, EffectFamily.Damage)]
+    [TestCase("Splitter", LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Sturdy,
+              AccessoryKind.None, EffectFamily.Damage)]
+    [TestCase("Runner", LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Light,
+              AccessoryKind.None, EffectFamily.Damage)]
+    [TestCase("Warlord", LookSide.Stone, HeadKind.Arch, CountBand.Many, StemBand.Slow, MassBand.Heavy,
+              AccessoryKind.MiniHead, EffectFamily.Damage)]
+    public void Create_ProposedUnit_DerivesItsChannels(string unit, LookSide side, HeadKind head,
+        CountBand count, StemBand stem, MassBand mass, AccessoryKind accessory, EffectFamily accent)
     {
         EntityData data = LookSheetUnits.Create(unit, _created);
 
@@ -108,8 +128,8 @@ public class LookSheetUnitsTests
         Assert.AreEqual(expected, label);
     }
 
-    static void AssertRow(UnitChannels channels, LookSide side, HeadKind head, CountBand count, StemBand stem, MassBand mass,
-        AccessoryKind accessory, EffectFamily accent)
+    static void AssertRow(UnitChannels channels, LookSide side, HeadKind head, CountBand count, StemBand stem,
+        MassBand mass, AccessoryKind accessory, EffectFamily accent)
     {
         Assert.AreEqual(side, channels.side);
         Assert.AreEqual(head, channels.head);

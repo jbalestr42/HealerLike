@@ -268,7 +268,8 @@ public class StoneBodyTests
         Drain();
         CreatureBuilder builder = _body.GetComponent<CreatureBuilder>();
 
-        builder.Configure(null, 2f, Vector3.zero, Vector3.up);
+        TestHelpers.InvokePrivate(builder, "ReleaseRig");
+        TestHelpers.InvokePrivate(builder, "EnsureRig");
         TestHelpers.InvokePrivate(_body, "LateUpdate");
 
         Assert.AreEqual(3, visibleCount);

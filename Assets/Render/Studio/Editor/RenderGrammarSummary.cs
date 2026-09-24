@@ -23,8 +23,7 @@ namespace HealerLike.Render.Studio.Editor
 
         public static string Describe(SpellLooks looks)
         {
-            return Count(looks.buffs) + " buff overrides · " + Count(looks.projectiles) + " projectile overrides. "
-                + "Empty tables mean the grammar supplies the look.";
+            return Count(looks.buffs) + " buff overrides. Empty tables mean the grammar supplies the look.";
         }
 
         public static int Count(ICollection table)

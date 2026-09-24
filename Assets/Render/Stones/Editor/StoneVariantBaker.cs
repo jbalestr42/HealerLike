@@ -34,7 +34,7 @@ namespace HealerLike.Render.Stones
             Mesh[] meshes = new Mesh[VariantCount];
             for (int i = 0; i < VariantCount; i++)
             {
-                Mesh mesh = CreateVariant(StoneSeed.ForPart(VariantSeed, (uint)i));
+                Mesh mesh = CreateVariant(SeededRandom.ForPart(VariantSeed, (uint)i));
                 if (mesh == null)
                 {
                     return;
@@ -59,7 +59,7 @@ namespace HealerLike.Render.Stones
 
         public static Mesh CreateVariant(uint seed)
         {
-            StoneRandom random = new StoneRandom(StoneSeed.ForPart(seed, 1));
+            SeededRandom random = new SeededRandom(SeededRandom.ForPart(seed, 1));
             StoneSettings settings = StonePresets.Shape(1f, random.Range(0.8f, 1f), random.Range(0.85f, 1f),
                 random.Range(0.1f, 0.16f), 0);
             StoneMeshData data;
@@ -120,7 +120,7 @@ namespace HealerLike.Render.Stones
         }
 
         // Three to five of the faces turned up or toward the camera, shuffled by the seed
-        static HashSet<int> PickOchreFaces(Vector3[] normals, ref StoneRandom random)
+        static HashSet<int> PickOchreFaces(Vector3[] normals, ref SeededRandom random)
         {
             Vector3 view = ViewDirection();
             List<int> candidates = new List<int>();

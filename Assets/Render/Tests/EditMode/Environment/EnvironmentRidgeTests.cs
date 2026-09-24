@@ -201,7 +201,8 @@ public class EnvironmentRidgeTests
         List<RidgeItem> expected = EnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, ground, 1707);
         Assert.AreEqual(expected.Count, ridge.items.Count);
         Assert.AreEqual(expected.Count, ridge.root.childCount);
-        Assert.IsTrue(ridge.root.GetComponentsInChildren<MeshFilter>().Any(f => f.sharedMesh == RenderTestAssets.LoadMeshes().capsule));
+        Assert.IsTrue(ridge.root.GetComponentsInChildren<MeshFilter>()
+            .Any(f => f.sharedMesh == RenderTestAssets.LoadMeshes().capsule));
     }
 }
 

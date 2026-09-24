@@ -83,7 +83,8 @@ public class LookComposerTests
             {
                 foreach (CountBand count in Enum.GetValues(typeof(CountBand)))
                 {
-                    UnitChannels channels = RenderTestAssets.CreateChannels(side, head, count, StemBand.Quick, MassBand.Heavy);
+                    UnitChannels channels =
+                        RenderTestAssets.CreateChannels(side, head, count, StemBand.Quick, MassBand.Heavy);
 
                     CreatureRecipe recipe = Compose(channels);
 
@@ -101,7 +102,8 @@ public class LookComposerTests
         {
             foreach (AccessoryKind accessory in Enum.GetValues(typeof(AccessoryKind)))
             {
-                CreatureRecipe recipe = Compose(RenderTestAssets.CreateChannels(side, HeadKind.Bud, accessory: accessory));
+                CreatureRecipe recipe =
+                    Compose(RenderTestAssets.CreateChannels(side, HeadKind.Bud, accessory: accessory));
 
                 Assert.NotNull(recipe, $"{side} {accessory}");
             }
@@ -118,7 +120,8 @@ public class LookComposerTests
                 continue;
             }
 
-            CreatureRecipe recipe = Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, accessory: accessory));
+            CreatureRecipe recipe =
+                Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, accessory: accessory));
 
             float sum = 0f;
             foreach (CreaturePart part in FindAll(recipe, PartRole.Accessory))
@@ -168,7 +171,8 @@ public class LookComposerTests
     [Test]
     public void Compose_SturdyStone_BodyIsTwoPointTwoBodyUnitsAcross()
     {
-        CreatureRecipe recipe = Compose(RenderTestAssets.CreateChannels(LookSide.Stone, HeadKind.Bud, mass: MassBand.Sturdy));
+        CreatureRecipe recipe =
+            Compose(RenderTestAssets.CreateChannels(LookSide.Stone, HeadKind.Bud, mass: MassBand.Sturdy));
 
         float width = recipe.parts[0].dimensions.x * 2f / _vocabulary.bodyUnit; // the stone mesh spans two units across
 
@@ -190,8 +194,12 @@ public class LookComposerTests
     [Test]
     public void Compose_HeavierMass_GrowsTheHeadWithItsSocket()
     {
-        CreaturePart light = FindAll(Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Light)), PartRole.Tip)[0];
-        CreaturePart heavy = FindAll(Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Heavy)), PartRole.Tip)[0];
+        CreaturePart light = FindAll(
+            Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Light)),
+            PartRole.Tip)[0];
+        CreaturePart heavy = FindAll(
+            Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Heavy)),
+            PartRole.Tip)[0];
 
         float massRatio = _vocabulary.bodies[MassBand.Heavy].scale / _vocabulary.bodies[MassBand.Light].scale;
         Assert.AreEqual(massRatio, heavy.dimensions.x / light.dimensions.x, 0.001f);
@@ -241,8 +249,10 @@ public class LookComposerTests
     [Test]
     public void Compose_HeavyMass_AddsABasePartRatherThanOnlyScaling()
     {
-        int light = Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Light)).parts.Length;
-        int heavy = Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Heavy)).parts.Length;
+        int light =
+            Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Light)).parts.Length;
+        int heavy =
+            Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Heavy)).parts.Length;
 
         Assert.AreEqual(light + 1, heavy);
     }
@@ -252,7 +262,8 @@ public class LookComposerTests
     {
         UnityEngine.TestTools.LogAssert.Expect(LogType.Error, "[LookComposer] Needs a vocabulary with a palette.");
 
-        CreatureRecipe recipe = LookComposer.Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud), null);
+        CreatureRecipe recipe =
+            LookComposer.Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud), null);
 
         Assert.IsNull(recipe);
     }

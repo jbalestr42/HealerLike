@@ -15,7 +15,8 @@ public class SpellEffectTests
     SpellEffect CreateEffect(EffectElement element, EffectFamily family, EffectTempo tempo, float period = 0f,
                              int stacks = 1)
     {
-        EffectRecipe recipe = EffectComposer.Compose(RenderTestAssets.LoadEffectVocabulary(), element, family, tempo, period, stacks, 0f, 0f);
+        EffectRecipe recipe = EffectComposer.Compose(RenderTestAssets.LoadEffectVocabulary(), element, family, tempo,
+            period, stacks, 0f, 0f);
         GameObject go = new GameObject(element.ToString());
         _objects.Add(go);
         SpellEffect effect = go.AddComponent<SpellEffect>();
@@ -220,7 +221,9 @@ public class SpellEffectTests
         MaterialPropertyBlock block = new MaterialPropertyBlock();
         rim.GetComponent<Renderer>().GetPropertyBlock(block);
         Assert.IsTrue(rim.gameObject.activeSelf);
-        Assert.Less(Vector4.Distance(RenderTestAssets.LoadEffectVocabulary().palette.baneLit, block.GetColor("_BaseColor")), 0.0001f);
+        Assert.Less(
+            Vector4.Distance(RenderTestAssets.LoadEffectVocabulary().palette.baneLit, block.GetColor("_BaseColor")),
+            0.0001f);
     }
 
     [Test]

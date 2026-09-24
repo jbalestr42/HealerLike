@@ -78,7 +78,7 @@ namespace HealerLike.Render.Stones
             }
 
             Vector3[] displaced = new Vector3[points.Count];
-            StoneRandom random = new StoneRandom(seed);
+            SeededRandom random = new SeededRandom(seed);
             float[] noise = new float[points.Count];
             for (int i = 0; i < noise.Length; i++)
             {

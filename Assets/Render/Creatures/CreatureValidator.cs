@@ -35,7 +35,8 @@ namespace HealerLike.Render.Creatures
 
                 Vector3 position = part.localPosition;
                 Vector3 euler = part.localEuler;
-                if (!RenderMath.IsFinite(position) || !RenderMath.IsFinite(euler) || !Positive(part.dimensions) || !Colour(part.colour)
+                if (!RenderMath.IsFinite(position) || !RenderMath.IsFinite(euler) || !Positive(part.dimensions)
+                    || !Colour(part.colour)
                     || !float.IsFinite(part.glow) || part.glow < 0f
                     || (int)part.primitive < 0 || part.primitive > Primitive.Stone)
                 {

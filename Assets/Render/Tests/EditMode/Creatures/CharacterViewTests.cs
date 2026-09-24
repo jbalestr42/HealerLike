@@ -126,7 +126,8 @@ public class CharacterViewTests
     [Test]
     public void OnHealthResolved_RegisteredCharacter_CountsHealGesturesAndTintsBudsByManaWithoutAllocating()
     {
-        CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
+        CreatureRecipe recipe =
+            AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
         Character character = null;
         TestHelpers.WithLoggingDisabled(() => character = _characterGo.AddComponent<Character>());
         ResourceAttribute mana = TestHelpers.CreateResourceAttribute(_characterGo, AttributeType.ManaMax, 100);
@@ -201,7 +202,8 @@ public class CharacterViewTests
     [Test]
     public void TryGetAnchors_HealerRig_CastsFromTheFirstBud()
     {
-        CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
+        CreatureRecipe recipe =
+            AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
         Character character = null;
         TestHelpers.WithLoggingDisabled(() => character = _characterGo.AddComponent<Character>());
         CharacterView view = _characterGo.AddComponent<CharacterView>();
@@ -227,7 +229,8 @@ public class CharacterViewTests
     [Test]
     public void Init_ViewPrefab_AnchorsBodyOnItself()
     {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Creatures/Prefabs/HealerCharacter.prefab");
+        GameObject prefab =
+            AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Creatures/Prefabs/HealerCharacter.prefab");
         GameObject viewGo = Object.Instantiate(prefab, _characterGo.transform);
         Character character = null;
         TestHelpers.WithLoggingDisabled(() => character = _characterGo.AddComponent<Character>());
@@ -245,7 +248,8 @@ public class CharacterViewTests
     [Test]
     public void Init_ShippedPrefab_CarriesRecipeMeshesAndAnchorWithoutABaseCharacter()
     {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Creatures/Prefabs/HealerCharacter.prefab");
+        GameObject prefab =
+            AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Creatures/Prefabs/HealerCharacter.prefab");
 
         CharacterView view = prefab.GetComponent<CharacterView>();
 

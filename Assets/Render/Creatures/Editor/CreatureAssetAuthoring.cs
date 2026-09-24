@@ -55,7 +55,8 @@ namespace HealerLike.Render.Creatures
             data.FindProperty("_recipe").objectReferenceValue = recipe;
             data.FindProperty("_visualAnchor").objectReferenceValue = view.transform;
             data.FindProperty("_material").objectReferenceValue = material;
-            data.FindProperty("_bodyMaterial").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Material>(bodyMaterialPath);
+            data.FindProperty("_bodyMaterial").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Material>(bodyMaterialPath);
             data.FindProperty("_meshes").objectReferenceValue = meshes;
             data.ApplyModifiedPropertiesWithoutUndo();
             view.AddComponent<HealPulse>();

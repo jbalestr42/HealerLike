@@ -22,7 +22,7 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            StoneRandom random = new StoneRandom(seed);
+            SeededRandom random = new SeededRandom(seed);
             for (int i = 0; i < StoneEffects.DustPuffs; i++)
             {
                 Vector3 scale = Vector3.one * random.Range(0.09f, 0.17f);
@@ -42,7 +42,7 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            StoneRandom random = new StoneRandom(seed);
+            SeededRandom random = new SeededRandom(seed);
             int chips = critical ? CriticalHitChips : HitChips;
             Vector3 normal = impact.normal.sqrMagnitude > 0f ? impact.normal.normalized : Vector3.up;
             for (int i = 0; i < chips; i++)
@@ -70,7 +70,7 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            StoneRandom random = new StoneRandom(seed);
+            SeededRandom random = new SeededRandom(seed);
             int count = MinThrownChips + (int)(random.Next() % thrownChipSpread);
             for (int i = 0; i < count; i++)
             {
@@ -91,7 +91,7 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            StoneRandom random = new StoneRandom(seed);
+            SeededRandom random = new SeededRandom(seed);
             // A copy belongs to the effects owner, so releasing the enemy's cache lease cannot invalidate it
             Mesh copy = Object.Instantiate(mesh);
             copy.name = "DetachedStone";
@@ -109,7 +109,7 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            StoneRandom random = new StoneRandom(seed);
+            SeededRandom random = new SeededRandom(seed);
             for (int j = 0; j < SplitPieces; j++)
             {
                 Vector3 scale = Vector3.one * random.Range(0.04f, 0.07f);
@@ -144,7 +144,7 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            StoneRandom random = new StoneRandom(seed);
+            SeededRandom random = new SeededRandom(seed);
             int count = StoneEffects.CollapseDebris;
             for (int i = 0; i < count; i++)
             {
@@ -168,7 +168,7 @@ namespace HealerLike.Render.Stones
             Dust(effects, new Vector3(centre.x, groundY + 0.15f, centre.z), seed);
         }
 
-        static Vector3 Direction(ref StoneRandom random, Vector3 normal)
+        static Vector3 Direction(ref SeededRandom random, Vector3 normal)
         {
             Vector3 direction = new Vector3(random.Range(-1f, 1f), random.Range(0.2f, 1f), random.Range(-1f, 1f));
             if (Vector3.Dot(direction, normal) < 0f)

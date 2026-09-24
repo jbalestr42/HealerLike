@@ -92,7 +92,8 @@ namespace HealerLike.Render.Stage
 
         protected void Observe()
         {
-            foreach (ResourceAttribute resource in Object.FindObjectsByType<ResourceAttribute>(FindObjectsSortMode.None))
+            foreach (ResourceAttribute resource in
+                Object.FindObjectsByType<ResourceAttribute>(FindObjectsSortMode.None))
             {
                 if (_observed.Add(resource))
                 {

@@ -140,11 +140,9 @@ namespace HealerLike.Render.Stage
         public void FrameBoard(Bounds board)
         {
             _portraitPose = StageCalibration.PlayableFrame(board, StageCalibration.PortraitPitch,
-                                                             StageCalibration.PortraitFov, StageCalibration.PortraitAspect,
-                                                             StageCalibration.PortraitCentreY);
+                StageCalibration.PortraitFov, StageCalibration.PortraitAspect, StageCalibration.PortraitCentreY);
             _landscapePose = StageCalibration.PlayableFrame(board, StageCalibration.LandscapePitch,
-                                                              StageCalibration.PortraitFov, StageCalibration.LandscapeAspect,
-                                                              StageCalibration.LandscapeCentreY);
+                StageCalibration.PortraitFov, StageCalibration.LandscapeAspect, StageCalibration.LandscapeCentreY);
         }
 
         public Pose OverviewPose(bool isLandscape)

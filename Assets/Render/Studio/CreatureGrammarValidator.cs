@@ -48,7 +48,7 @@ namespace HealerLike.Render.Studio
 
             foreach (ColourRole role in Enum.GetValues(typeof(ColourRole)))
             {
-                if (!IsFinite(vocabulary.Colour(role, channels.accent, channels.side)))
+                if (!RenderMath.IsFinite(vocabulary.Colour(role, channels.accent, channels.side)))
                 {
                     errors.Add("Palette colours must be finite.");
                     break;
@@ -113,7 +113,7 @@ namespace HealerLike.Render.Studio
                 sideScale = vocabulary.plantScale;
             }
 
-            if (!IsPositive(vocabulary.bodyUnit) || !IsPositive(sideScale))
+            if (!RenderMath.IsPositive(vocabulary.bodyUnit) || !RenderMath.IsPositive(sideScale))
             {
                 errors.Add("Body unit and the selected side scale must be finite and positive.");
             }
@@ -135,13 +135,13 @@ namespace HealerLike.Render.Studio
             CheckParts(Pick(body.plant, body.stone, isPlant), "body", errors);
             CheckParts(Pick(head.plant, head.stone, isPlant), "head", errors);
 
-            bool isStemSized = IsPositive(stem.limbLength);
+            bool isStemSized = RenderMath.IsPositive(stem.limbLength);
             if (isPlant)
             {
-                isStemSized = IsPositive(stem.length) && IsPositive(stem.thickness);
+                isStemSized = RenderMath.IsPositive(stem.length) && RenderMath.IsPositive(stem.thickness);
             }
 
-            if (!IsPositive(body.scale) || !isStemSized)
+            if (!RenderMath.IsPositive(body.scale) || !isStemSized)
             {
                 errors.Add("Body scale and stem dimensions must be finite and positive.");
             }
@@ -154,7 +154,8 @@ namespace HealerLike.Render.Studio
             LookVocabulary.AccessoryEntry accessory = vocabulary.accessories[channels.accessory];
             bool isMiniHead = channels.accessory == AccessoryKind.MiniHead;
             CheckParts(Pick(accessory.plant, accessory.stone, isPlant), "accessory", errors);
-            bool isMiniHeadPlaced = IsFinite(accessory.miniHeadAt) && IsPositive(accessory.miniHeadScale);
+            bool isMiniHeadPlaced = RenderMath.IsFinite(accessory.miniHeadAt)
+                && RenderMath.IsPositive(accessory.miniHeadScale);
             if (!Enum.IsDefined(typeof(AccessorySocket), accessory.socket) || (isMiniHead && !isMiniHeadPlaced))
             {
                 errors.Add("Accessory socket and miniature head settings are invalid.");
@@ -171,7 +172,7 @@ namespace HealerLike.Render.Studio
         static void CheckRoots(LookVocabulary vocabulary, UnitChannels channels, List<string> errors)
         {
             bool usesPinnedReach = vocabulary.isReachPinned || !vocabulary.roots.ContainsKey(channels.reach);
-            if (usesPinnedReach && !IsPositive(vocabulary.pinnedReach))
+            if (usesPinnedReach && !RenderMath.IsPositive(vocabulary.pinnedReach))
             {
                 errors.Add("Pinned reach must be finite and positive.");
             }
@@ -189,8 +190,8 @@ namespace HealerLike.Render.Studio
 
             bool isRootCountSupported = vocabulary.rootCount >= 4 && vocabulary.rootCount <= 14;
             bool isArmCountSupported = vocabulary.armCount >= 0 && vocabulary.armCount <= ArmPool.MaxArms;
-            bool areRootsSized = IsPositive(vocabulary.rootHip) && IsPositive(vocabulary.rootKnee)
-                && IsPositive(vocabulary.rootThickness);
+            bool areRootsSized = RenderMath.IsPositive(vocabulary.rootHip) && RenderMath.IsPositive(vocabulary.rootKnee)
+                && RenderMath.IsPositive(vocabulary.rootThickness);
             if (!isRootCountSupported || !isArmCountSupported || !areRootsSized)
             {
                 errors.Add("Plant roots or arm count are outside the renderer's supported ranges.");
@@ -240,8 +241,9 @@ namespace HealerLike.Render.Studio
                 && Enum.IsDefined(typeof(PartRole), part.role);
             bool isToneKnown = Enum.IsDefined(typeof(ColourRole), part.colour)
                 && Enum.IsDefined(typeof(CountBand), part.minCount);
-            bool isPlaced = IsFinite(part.position) && IsFinite(part.euler);
-            bool isSized = IsPositive(part.size.x) && IsPositive(part.size.y) && IsPositive(part.size.z);
+            bool isPlaced = RenderMath.IsFinite(part.position) && RenderMath.IsFinite(part.euler);
+            bool isSized = RenderMath.IsPositive(part.size.x) && RenderMath.IsPositive(part.size.y)
+                && RenderMath.IsPositive(part.size.z);
             bool isGlowValid = float.IsFinite(part.glow) && part.glow >= 0f;
 
             return isNamed && isShapeKnown && isToneKnown && isPlaced && isSized && isGlowValid;
@@ -268,7 +270,7 @@ namespace HealerLike.Render.Studio
 
         static bool IsReachPositive(LookVocabulary.RootEntry root)
         {
-            return root != null && IsPositive(root.reach);
+            return root != null && RenderMath.IsPositive(root.reach);
         }
 
         public static LookPart[] Pick(LookPart[] plant, LookPart[] stone, bool isPlant)
@@ -278,22 +280,6 @@ namespace HealerLike.Render.Studio
                 return plant;
             }
             return stone;
-        }
-
-        static bool IsPositive(float value)
-        {
-            return float.IsFinite(value) && value > 0f;
-        }
-
-        static bool IsFinite(Vector3 value)
-        {
-            return float.IsFinite(value.x) && float.IsFinite(value.y) && float.IsFinite(value.z);
-        }
-
-        static bool IsFinite(Color value)
-        {
-            return float.IsFinite(value.r) && float.IsFinite(value.g) && float.IsFinite(value.b)
-                && float.IsFinite(value.a);
         }
     }
 }

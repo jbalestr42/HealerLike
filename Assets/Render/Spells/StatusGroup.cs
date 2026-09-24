@@ -13,7 +13,8 @@ namespace HealerLike.Render.Spells
 
         // Groups the observed handlers by target and factory: stacks add up, the youngest clock and the longest
         // duration win, the first source stays
-        public static void Collect(List<BuffManager.BuffHandlerData> observed, Dictionary<HandlerKey, StatusGroup> groups)
+        public static void Collect(List<BuffManager.BuffHandlerData> observed,
+            Dictionary<HandlerKey, StatusGroup> groups)
         {
             groups.Clear();
             foreach (BuffManager.BuffHandlerData data in observed)

@@ -110,7 +110,7 @@ namespace HealerLike.Render.Studio.Editor
                 warnings.Add("Neck coordinates must be finite.");
             }
 
-            if (!IsFinite(recipe.wiltColour) || !IsFinite(recipe.stoneOchre))
+            if (!RenderMath.IsFinite(recipe.wiltColour) || !RenderMath.IsFinite(recipe.stoneOchre))
             {
                 warnings.Add("Wilt and stone colours must be finite.");
             }
@@ -169,18 +169,12 @@ namespace HealerLike.Render.Studio.Editor
         {
             foreach (ArmDefinition arm in arms)
             {
-                if (!IsFinite(arm.tipColour))
+                if (!RenderMath.IsFinite(arm.tipColour))
                 {
                     return true;
                 }
             }
             return false;
-        }
-
-        static bool IsFinite(Color value)
-        {
-            return float.IsFinite(value.r) && float.IsFinite(value.g) && float.IsFinite(value.b)
-                && float.IsFinite(value.a);
         }
     }
 }

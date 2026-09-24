@@ -80,7 +80,8 @@ namespace HealerLike.Render.Spells
 
         void Listen()
         {
-            if (_hitArmor != null || !isActiveAndEnabled || _attributes == null || !_attributes.Has(AttributeType.HitArmor))
+            if (_hitArmor != null || !isActiveAndEnabled || _attributes == null
+                || !_attributes.Has(AttributeType.HitArmor))
             {
                 return;
             }

@@ -46,7 +46,7 @@ namespace HealerLike.Render.Stage
             List<EntityData> allies = new List<EntityData>();
             foreach (string path in Allies)
             {
-                allies.Add(EnvironmentAuthoring.Load<EntityData>(path));
+                allies.Add(RenderAssets.Load<EntityData>(path));
             }
             return allies;
         }
@@ -67,7 +67,8 @@ namespace HealerLike.Render.Stage
             Camera camera = manager.gameCamera;
             Vector3 aim = RenderTargets.Point(target.gameObject);
             Ray ray = new Ray(camera.transform.position, aim - camera.transform.position);
-            if (interaction != null && Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, interaction.GetLayerMask())
+            if (interaction != null
+                && Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, interaction.GetLayerMask())
                 && interaction.IsValidTarget(hit.transform.gameObject))
             {
                 interaction.OnMouseClick(hit);

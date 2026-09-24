@@ -144,7 +144,8 @@ public class LianaPoseTests
     [Test]
     public void Contact_HealerArm_ReachesAcrossBoardAndStopsShortOutsideIt()
     {
-        CreatureRecipe healer = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
+        CreatureRecipe healer =
+            AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
         LianaPose pose = CreatePose(healer.arms[0]);
         Vector3 target = new Vector3(15f, 4f, 15f);
         pose.Begin(1, GestureKind.Attack, target);

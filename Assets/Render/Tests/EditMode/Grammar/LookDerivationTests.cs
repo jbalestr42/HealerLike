@@ -28,19 +28,30 @@ public class LookDerivationTests
     }
 
     // The channel table rows for the eleven entities the game data holds today
-    [TestCase("NormalEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("FastShootEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Spear, CountBand.One, StemBand.Quick, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("TripleShootEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Spear, CountBand.Few, StemBand.Slow, MassBand.Light, AccessoryKind.MiniHead, EffectFamily.Damage)]
-    [TestCase("MultiShotEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Arch, CountBand.One, StemBand.Quick, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("RandomShootEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Arch, CountBand.One, StemBand.Steady, MassBand.Sturdy, AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("ChainLightningEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Conductor, CountBand.One, StemBand.Steady, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("ChannelingEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Fork, CountBand.One, StemBand.Steady, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("SwarmEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Arch, CountBand.Many, StemBand.Slow, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("TestEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Spear, CountBand.Many, StemBand.Slow, MassBand.Light, AccessoryKind.MiniHead, EffectFamily.Damage)]
-    [TestCase("SoldierEntity", Entity.EntityType.Computer, LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Sturdy, AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("HitArmorBufferEntityEntity", Entity.EntityType.Computer, LookSide.Stone, HeadKind.GiftBoonDefence, CountBand.One, StemBand.Slow, MassBand.Light, AccessoryKind.None, EffectFamily.Boon)]
-    public void Channels_LiveEntity_MatchesTableRow(string folder, Entity.EntityType entityType, LookSide side, HeadKind head,
-        CountBand count, StemBand stem, MassBand mass, AccessoryKind accessory, EffectFamily accent)
+    [TestCase("NormalEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Bud, CountBand.One, StemBand.Steady,
+              MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
+    [TestCase("FastShootEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Spear, CountBand.One,
+              StemBand.Quick, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
+    [TestCase("TripleShootEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Spear, CountBand.Few,
+              StemBand.Slow, MassBand.Light, AccessoryKind.MiniHead, EffectFamily.Damage)]
+    [TestCase("MultiShotEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Arch, CountBand.One, StemBand.Quick,
+              MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
+    [TestCase("RandomShootEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Arch, CountBand.One,
+              StemBand.Steady, MassBand.Sturdy, AccessoryKind.None, EffectFamily.Damage)]
+    [TestCase("ChainLightningEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Conductor, CountBand.One,
+              StemBand.Steady, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
+    [TestCase("ChannelingEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Fork, CountBand.One,
+              StemBand.Steady, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
+    [TestCase("SwarmEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Arch, CountBand.Many, StemBand.Slow,
+              MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
+    [TestCase("TestEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Spear, CountBand.Many, StemBand.Slow,
+              MassBand.Light, AccessoryKind.MiniHead, EffectFamily.Damage)]
+    [TestCase("SoldierEntity", Entity.EntityType.Computer, LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Steady,
+              MassBand.Sturdy, AccessoryKind.None, EffectFamily.Damage)]
+    [TestCase("HitArmorBufferEntityEntity", Entity.EntityType.Computer, LookSide.Stone, HeadKind.GiftBoonDefence,
+              CountBand.One, StemBand.Slow, MassBand.Light, AccessoryKind.None, EffectFamily.Boon)]
+    public void Channels_LiveEntity_MatchesTableRow(string folder, Entity.EntityType entityType, LookSide side,
+        HeadKind head, CountBand count, StemBand stem, MassBand mass, AccessoryKind accessory, EffectFamily accent)
     {
         UnitChannels channels = LookDerivation.Channels(RenderTestAssets.LoadEntity(folder), entityType);
 
@@ -69,9 +80,9 @@ public class LookDerivationTests
     [TestCase("LaserBullet", HeadKind.Arch)]
     [TestCase("StraightLaserBullet", HeadKind.Spear)]
     [TestCase("SwarmBullet", HeadKind.Arch)]
-    public void Delivery_ProjectilePrefab_ReadsClassMotionAndSpeed(string name, HeadKind expected)
+    public void DeliveryHead_ProjectilePrefab_ReadsClassMotionAndSpeed(string name, HeadKind expected)
     {
-        Assert.AreEqual(expected, LookDerivation.Delivery(RenderTestAssets.LoadProjectile(name)));
+        Assert.AreEqual(expected, LookDerivation.DeliveryHead(RenderTestAssets.LoadProjectile(name)));
     }
 
     [TestCase("NormalEntity", 1)]
@@ -154,9 +165,11 @@ public class LookDerivationTests
         EntityData data = CreateTracked<EntityData>();
         data.attributes[AttributeType.HealthMax] = 100f;
         FlatModifierFactory modifier = CreateTracked<FlatModifierFactory>();
-        modifier.data = new FlatModifierData { type = AttributeType.HealthMax, modifierType = AttributeModifierType.Add, value = 200f };
+        modifier.data = new FlatModifierData
+            { type = AttributeType.HealthMax, modifierType = AttributeModifierType.Add, value = 200f };
         BuffHandlerFactory passive = CreateTracked<BuffHandlerFactory>();
-        passive.data = new BuffHandlerData { durationType = DurationType.Infinite, buffFactoryList = new List<ABuffFactory> { modifier } };
+        passive.data = new BuffHandlerData
+            { durationType = DurationType.Infinite, buffFactoryList = new List<ABuffFactory> { modifier } };
         ItemFactory item = CreateTracked<ItemFactory>();
         item.data = new ItemData { buffs = new List<ABuffHandlerFactory> { passive } };
         data.items = new List<AItemFactory> { item };

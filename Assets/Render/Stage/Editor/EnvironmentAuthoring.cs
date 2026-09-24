@@ -29,10 +29,10 @@ namespace HealerLike.Render.Stage
             strip.SetActive(false);
 
             EnvironmentGrass grass = root.AddComponent<EnvironmentGrass>();
-            SetReference(grass, "_stripTemplate", stripField);
+            RenderAssets.SetReference(grass, "_stripTemplate", stripField);
             EnvironmentScatter scatter = root.AddComponent<EnvironmentScatter>();
             SetMaterials(scatter);
-            SetReference(scatter, "_palette", Load<Object>(PalettePath));
+            RenderAssets.SetReference(scatter, "_palette", RenderAssets.Load<Object>(PalettePath));
             EnvironmentGust gust = root.AddComponent<EnvironmentGust>();
             EnvironmentForeground foreground = Child(root, "Foreground").AddComponent<EnvironmentForeground>();
             SetMaterials(foreground);
@@ -41,12 +41,12 @@ namespace HealerLike.Render.Stage
             GameObject ground = CreateGround(root);
 
             EnvironmentRoot environment = root.AddComponent<EnvironmentRoot>();
-            SetReference(environment, "_scatter", scatter);
-            SetReference(environment, "_foreground", foreground);
-            SetReference(environment, "_ridge", ridge);
-            SetReference(environment, "_grass", grass);
-            SetReference(environment, "_gust", gust);
-            SetReference(environment, "_ground", ground.transform);
+            RenderAssets.SetReference(environment, "_scatter", scatter);
+            RenderAssets.SetReference(environment, "_foreground", foreground);
+            RenderAssets.SetReference(environment, "_ridge", ridge);
+            RenderAssets.SetReference(environment, "_grass", grass);
+            RenderAssets.SetReference(environment, "_gust", gust);
+            RenderAssets.SetReference(environment, "_ground", ground.transform);
 
             Directory.CreateDirectory(Path.GetDirectoryName(PrefabPath));
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
@@ -57,10 +57,10 @@ namespace HealerLike.Render.Stage
         // The grass field settings shared by the board and the strips
         public static void SetGrass(GrassField field)
         {
-            SetReference(field, "_meshes", Load<Object>(MeshesPath));
-            SetReference(field, "_updateGrass", Load<ComputeShader>(GrassComputePath));
-            SetReference(field, "_lookMaterial", Load<Material>(BladeMaterialPath));
-            SetReference(field, "_ringMaterial", Load<Material>(RingMaterialPath));
+            RenderAssets.SetReference(field, "_meshes", RenderAssets.Load<Object>(MeshesPath));
+            RenderAssets.SetReference(field, "_updateGrass", RenderAssets.Load<ComputeShader>(GrassComputePath));
+            RenderAssets.SetReference(field, "_lookMaterial", RenderAssets.Load<Material>(BladeMaterialPath));
+            RenderAssets.SetReference(field, "_ringMaterial", RenderAssets.Load<Material>(RingMaterialPath));
         }
 
         // The game-scale ground, a thousand units wide, never intercepting gameplay raycasts
@@ -73,15 +73,15 @@ namespace HealerLike.Render.Stage
             ground.transform.localPosition = new Vector3(0f, -0.01f, 0f);
             ground.transform.localScale = new Vector3(100f, 1f, 100f);
             MeshRenderer groundRenderer = ground.GetComponent<MeshRenderer>();
-            groundRenderer.sharedMaterial = Load<Material>(GroundMaterialPath);
+            groundRenderer.sharedMaterial = RenderAssets.Load<Material>(GroundMaterialPath);
             groundRenderer.shadowCastingMode = ShadowCastingMode.Off;
             return ground;
         }
 
         static void SetMaterials(Component component)
         {
-            SetReference(component, "_plantMaterial", Load<Material>(PlantMaterialPath));
-            SetReference(component, "_stoneMaterial", Load<Material>(StoneMaterialPath));
+            RenderAssets.SetReference(component, "_plantMaterial", RenderAssets.Load<Material>(PlantMaterialPath));
+            RenderAssets.SetReference(component, "_stoneMaterial", RenderAssets.Load<Material>(StoneMaterialPath));
         }
 
         static GameObject Child(GameObject parent, string name)
@@ -89,30 +89,6 @@ namespace HealerLike.Render.Stage
             GameObject child = new GameObject(name);
             child.transform.SetParent(parent.transform, false);
             return child;
-        }
-
-        public static AssetType Load<AssetType>(string path) where AssetType : Object
-        {
-            AssetType asset = AssetDatabase.LoadAssetAtPath<AssetType>(path);
-            if (asset == null)
-            {
-                Debug.LogError($"[EnvironmentAuthoring] Missing {path}.");
-            }
-            return asset;
-        }
-
-        public static void SetReference(Object target, string field, Object value)
-        {
-            SerializedObject serialized = new SerializedObject(target);
-            SerializedProperty property = serialized.FindProperty(field);
-            if (property == null)
-            {
-                Debug.LogError($"[EnvironmentAuthoring] {target.GetType().Name} has no field {field}.");
-                return;
-            }
-
-            property.objectReferenceValue = value;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
     }
 }

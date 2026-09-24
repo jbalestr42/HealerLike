@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Shared runtime entry point for data icons, the generated textures are owned here and not by the callers
-public static class DataIconService
+// The data icons of one view: baked ones come from the catalog, the generated textures are owned here
+public class DataIconService
 {
     public static readonly string CatalogResourcePath = "UIToolkit/DataIconCatalog";
 
-    static readonly Dictionary<string, Texture2D> cache = new Dictionary<string, Texture2D>();
-    static DataIconCatalog _catalog;
+    readonly Dictionary<string, Texture2D> _generated = new Dictionary<string, Texture2D>();
+    DataIconCatalog _catalog;
 
-    public static Texture2D GetIcon(object data)
+    public Texture2D GetIcon(object data)
     {
         if (!_catalog)
         {
@@ -36,14 +36,14 @@ public static class DataIconService
         }
 
         Texture2D cached;
-        if (cache.TryGetValue(descriptor.key, out cached) && cached)
+        if (_generated.TryGetValue(descriptor.key, out cached) && cached)
         {
             return cached;
         }
 
         // Keep the references alive while UI elements display them, Clear releases them
         Texture2D texture = ProceduralDataIcon.Create(descriptor);
-        cache[descriptor.key] = texture;
+        _generated[descriptor.key] = texture;
         return texture;
     }
 
@@ -58,10 +58,9 @@ public static class DataIconService
         return DataIconDescriptor.ReadField(nested, "icon") as Sprite;
     }
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    public static void Clear()
+    public void Clear()
     {
-        foreach (Texture2D texture in cache.Values)
+        foreach (Texture2D texture in _generated.Values)
         {
             if (!texture)
             {
@@ -78,7 +77,7 @@ public static class DataIconService
             }
         }
 
-        cache.Clear();
+        _generated.Clear();
         _catalog = null;
     }
 }

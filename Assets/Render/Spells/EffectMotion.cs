@@ -4,25 +4,6 @@ using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Spells
 {
-    // Where a shape part stands at one point of its element's motion, in the element's own space
-    public struct PartPose
-    {
-        public Vector3 position;
-        public Quaternion rotation;
-        public Vector3 scale;
-    }
-
-    // What of an element's own state its motion reads beside the recipe
-    public struct MotionState
-    {
-        public bool isStatus;
-        public bool isRemoving;
-        // How far through its removal the element is, from 0 as it begins to 1 once it has closed
-        public float removal;
-        // How far a drop falls, in the element's own units
-        public float fallDistance;
-    }
-
     // The eight motion kinds and the beam's curve: a pure function of the part, the phase of the cycle and the time
     public static class EffectMotion
     {

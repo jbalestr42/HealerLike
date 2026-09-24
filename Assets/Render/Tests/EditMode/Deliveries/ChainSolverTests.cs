@@ -139,10 +139,13 @@ public class ChainSolverTests
         LogAssert.Expect(LogType.Error, "[ChainSolver] Invalid solver settings.");
         LogAssert.Expect(LogType.Error, "[ChainSolver] Nonfinite joint.");
 
-        bool isUnequalSolved = solver.Solve(RenderTestAssets.CreateRestPose(), lengths, root, target, Vector3.up, out ChainResult result);
+        bool isUnequalSolved = solver.Solve(RenderTestAssets.CreateRestPose(), lengths, root, target, Vector3.up,
+            out ChainResult result);
         lengths[3] = float.NaN;
-        bool isNaNSolved = solver.Solve(RenderTestAssets.CreateRestPose(), lengths, root, target, Vector3.up, out result);
-        bool isZeroIterationSolved = solver.Solve(RenderTestAssets.CreateRestPose(), Lengths(), root, target, Vector3.up, out result, 0);
+        bool isNaNSolved =
+            solver.Solve(RenderTestAssets.CreateRestPose(), lengths, root, target, Vector3.up, out result);
+        bool isZeroIterationSolved =
+            solver.Solve(RenderTestAssets.CreateRestPose(), Lengths(), root, target, Vector3.up, out result, 0);
         bool isInfiniteJointSolved = solver.Solve(joints, Lengths(), root, target, Vector3.up, out result);
 
         Assert.IsFalse(isUnequalSolved);

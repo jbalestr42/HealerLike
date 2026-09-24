@@ -14,28 +14,20 @@ public static class DataIconBaker
 
     static readonly string rendererVersion = "3";
 
-    static bool _isPending = false;
-    static bool _isBaking = false;
-
     static DataIconBaker()
     {
         Schedule();
     }
 
+    // One pending bake at most, however many imports ask for it
     public static void Schedule()
     {
-        if (_isPending || _isBaking)
-        {
-            return;
-        }
-
-        _isPending = true;
+        EditorApplication.delayCall -= RunScheduled;
         EditorApplication.delayCall += RunScheduled;
     }
 
     static void RunScheduled()
     {
-        _isPending = false;
         if (EditorApplication.isCompiling || EditorApplication.isUpdating)
         {
             Schedule();
@@ -81,14 +73,10 @@ public static class DataIconBaker
         return true;
     }
 
+    // The icons and the catalog it writes sit in the catalog folder, which the import watcher ignores, so a bake
+    // never schedules another
     public static void Bake(bool force)
     {
-        if (_isBaking)
-        {
-            return;
-        }
-
-        _isBaking = true;
         Directory.CreateDirectory(OutputFolder);
         AssetDatabase.Refresh();
         DataIconCatalog catalog = AssetDatabase.LoadAssetAtPath<DataIconCatalog>(CatalogPath);
@@ -129,9 +117,6 @@ public static class DataIconBaker
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssetIfDirty(catalog);
         }
-
-        DataIconService.Clear();
-        _isBaking = false;
     }
 
     static bool BakeIcon(DataIconCatalog catalog, ScriptableObject data, bool force)

@@ -40,7 +40,8 @@ namespace HealerLike.Render.Stage
                 yield return NextFrame();
             }
 
-            string path = StagePlay.CaptureFolder + (_isLandscape ? "render-stage-landscape.png" : "render-stage-portrait.png");
+            string path = StagePlay.CaptureFolder
+                + (_isLandscape ? "render-stage-landscape.png" : "render-stage-portrait.png");
             bool isCaptured = Capture(path);
             Debug.Log($"[StageCaptureRun] {path} attacks {_attacks} heals {_heals} zones {_maxZones}");
             StagePlay.Finish(this, isCaptured);

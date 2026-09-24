@@ -36,27 +36,51 @@ public class EffectDerivationTests
         return instance;
     }
 
-    // All twenty handler factories of the game data, with the side each one is cast on; only the poisons and the regen tick
-    [TestCase("CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)] // AttackRate Mul -0.5
-    [TestCase("CharacterSkills/MultiTargetReduceDamage/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.ForDuration, 0f)] // Damage Mul -0.5
-    [TestCase("CharacterSkills/PoisonSingleTarget/PoisonSingleTarget_BuffHandlerFactory", false, EffectFamily.Rot, EffectTempo.PerPeriod, 2f)]
-    [TestCase("CharacterSkills/SingleTargetBuffAttackRate/BuffHandlerFactory", true, EffectFamily.Bane, EffectTempo.ForDuration, 0f)] // AttackRate Mul +1, slower under the interval reading
-    [TestCase("Entities/HitArmorBufferEntityEntity/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.Once, 0f)] // Instant HitArmor +2
+    // All twenty handler factories of the game data, with the side each one is cast on; only the poisons and the regen
+    // tick
+    // AttackRate Mul -0.5
+    [TestCase("CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory", true, EffectFamily.Boon,
+              EffectTempo.ForDuration, 0f)]
+    // Damage Mul -0.5
+    [TestCase("CharacterSkills/MultiTargetReduceDamage/BuffHandlerFactory", false, EffectFamily.Bane,
+              EffectTempo.ForDuration, 0f)]
+    [TestCase("CharacterSkills/PoisonSingleTarget/PoisonSingleTarget_BuffHandlerFactory", false, EffectFamily.Rot,
+              EffectTempo.PerPeriod, 2f)]
+    // AttackRate Mul +1, slower under the interval reading
+    [TestCase("CharacterSkills/SingleTargetBuffAttackRate/BuffHandlerFactory", true, EffectFamily.Bane,
+              EffectTempo.ForDuration, 0f)]
+    // Instant HitArmor +2
+    [TestCase("Entities/HitArmorBufferEntityEntity/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.Once, 0f)]
     [TestCase("EntityItems/BounceItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
-    [TestCase("EntityItems/ConclaveItem/New Buff Handler Factory", true, EffectFamily.Bane, EffectTempo.ForDuration, 0f)] // AttackRate Mul +0.2
-    [TestCase("EntityItems/ConclaveItem/New Buff Handler Factory 1", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)] // Damage Mul +0.2
-    [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory 1", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)] // Damage +10, AttackRate Mul -0.5
+    // AttackRate Mul +0.2
+    [TestCase("EntityItems/ConclaveItem/New Buff Handler Factory", true, EffectFamily.Bane,
+              EffectTempo.ForDuration, 0f)]
+    // Damage Mul +0.2
+    [TestCase("EntityItems/ConclaveItem/New Buff Handler Factory 1", true, EffectFamily.Boon, EffectTempo.ForDuration,
+              0f)]
+    // Damage +10, AttackRate Mul -0.5
+    [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory 1", true, EffectFamily.Boon,
+              EffectTempo.ForDuration, 0f)]
     [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
-    [TestCase("EntityItems/IncreaseDamagePerHitItem/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.ForDuration, 0f)] // Infinite Vulnerability +0.01
-    [TestCase("EntityItems/IncreaseDamageWithProjectileDistanceItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
+    // Infinite Vulnerability +0.01
+    [TestCase("EntityItems/IncreaseDamagePerHitItem/BuffHandlerFactory", false, EffectFamily.Bane,
+              EffectTempo.ForDuration, 0f)]
+    [TestCase("EntityItems/IncreaseDamageWithProjectileDistanceItem/BuffHandlerFactory", true, EffectFamily.Boon,
+              EffectTempo.ForDuration, 0f)]
     [TestCase("EntityItems/MultipleShootItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
     [TestCase("EntityItems/PoisonItem/BuffHandlerFactory", false, EffectFamily.Rot, EffectTempo.PerPeriod, 1.5f)]
-    [TestCase("EntityItems/RegenHpItem/RegenHpItem_BuffHandlerFactory", true, EffectFamily.Renew, EffectTempo.PerPeriod, 2f)]
-    [TestCase("EntityItems/SlowItem/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.ForDuration, 0f)] // Speed Mul -0.1
-    [TestCase("EntityItems/TrinityItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)] // one good, one bad, the side decides
-    [TestCase("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", true, EffectFamily.Damage, EffectTempo.ForDuration, 0f)]
-    [TestCase("PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory", true, EffectFamily.Heal, EffectTempo.ForDuration, 0f)]
-    [TestCase("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", true, EffectFamily.Heal, EffectTempo.ForDuration, 0f)]
+    [TestCase("EntityItems/RegenHpItem/RegenHpItem_BuffHandlerFactory", true, EffectFamily.Renew, EffectTempo.PerPeriod,
+              2f)]
+    // Speed Mul -0.1
+    [TestCase("EntityItems/SlowItem/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.ForDuration, 0f)]
+    // one good, one bad, the side decides
+    [TestCase("EntityItems/TrinityItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
+    [TestCase("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", true, EffectFamily.Damage, EffectTempo.ForDuration,
+              0f)]
+    [TestCase("PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory", true,
+              EffectFamily.Heal, EffectTempo.ForDuration, 0f)]
+    [TestCase("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", true, EffectFamily.Heal,
+              EffectTempo.ForDuration, 0f)]
     public void Channels_LiveHandler_ReadsFamilyGroupTempoAndPeriod(string path, bool isSameSide, EffectFamily family,
         EffectTempo tempo, float periodSeconds)
     {
@@ -138,6 +162,22 @@ public class EffectDerivationTests
     public void Delivery_ProjectilePrefab_AgreesWithTheHead(string name, DeliveryStyle expected)
     {
         Assert.AreEqual(expected, EffectDerivation.Delivery(RenderTestAssets.LoadProjectile(name)));
+    }
+
+    // A spawned projectile carries no link to its prefab, so its delivery is read from the behaviours baked in it
+    [TestCase("BulletSpeed", DeliveryStyle.Direct)]
+    [TestCase("SwarmBullet", DeliveryStyle.Swarm)]
+    [TestCase("LaserBullet", DeliveryStyle.Arc)]
+    [TestCase("ChainLightning", DeliveryStyle.ChainSync)]
+    [TestCase("ChannelingLightning", DeliveryStyle.ChainSync)]
+    public void Delivery_SpawnedProjectile_ReadsItsBakedBehaviours(string name, DeliveryStyle expected)
+    {
+        GameObject projectileGo = Object.Instantiate(RenderTestAssets.LoadProjectile(name));
+
+        DeliveryStyle style = EffectDerivation.Delivery(projectileGo);
+
+        Object.DestroyImmediate(projectileGo);
+        Assert.AreEqual(expected, style);
     }
 }
 

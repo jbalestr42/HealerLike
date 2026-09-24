@@ -46,7 +46,8 @@ namespace HealerLike.Render.Deliveries
 
         public DeliveryStyle style { get { return _pose.style; } set { _pose.style = value; } }
 
-        public bool isDeliveryProfile { get { return _pose.isDeliveryProfile; } set { _pose.isDeliveryProfile = value; } }
+        public bool isDeliveryProfile
+            { get { return _pose.isDeliveryProfile; } set { _pose.isDeliveryProfile = value; } }
 
         public GesturePhase phase { get { return _pose.phase; } }
 

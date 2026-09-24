@@ -37,31 +37,18 @@ public class SpellInspectorPaneTests
     }
 
     [Test]
-    public void ProjectileReadout_EmptyNativeRow_AsksForARepairAndLeavesTheRow()
+    public void ProjectileReadout_ChainPrefab_KeepsItsContactPath()
     {
-        _looks.projectiles[_projectile] = null;
+        _preset.sourceProjectile = RenderTestAssets.LoadProjectile("ChainLightning");
 
         string readout = SpellInspectorPane.ProjectileReadout(_preset);
 
-        StringAssert.Contains("empty", readout);
-        Assert.IsNull(_looks.projectiles[_projectile]); // the inspector never repairs native data on its own
+        StringAssert.StartsWith("Delivery: ChainSync · preserves contact path", readout);
     }
 
     [Test]
-    public void ProjectileReadout_NativeRow_NamesItsDelivery()
+    public void ProjectileReadout_BareProjectile_ReadsTheDerivedDelivery()
     {
-        _looks.projectiles[_projectile] = new ProjectileLook { style = DeliveryStyle.Arc, preserveContactPath = true };
-
-        string readout = SpellInspectorPane.ProjectileReadout(_preset);
-
-        StringAssert.StartsWith("Delivery: Arc · preserves contact path", readout);
-    }
-
-    [Test]
-    public void ProjectileReadout_NativeRowsOff_ReadsTheDerivedDelivery()
-    {
-        _preset.useGameplayOverrides = false;
-
         string readout = SpellInspectorPane.ProjectileReadout(_preset);
 
         StringAssert.StartsWith("Delivery: Direct", readout); // a bare GameObject flies straight

@@ -12,7 +12,8 @@ namespace HealerLike.Render.Stage
         public static readonly int Rounds = 3;
         // Errors that are not the render layer's: the package search index and its web fetch on the editor side, and
         // the game's own report that BasicHealer has six skills for the five inputs of Main
-        static readonly string[] knownErrors = { "Insecure connection not allowed", "SearchDatabase", "Not Enough inputs" };
+        static readonly string[] knownErrors =
+            { "Insecure connection not allowed", "SearchDatabase", "Not Enough inputs" };
 
         AscensionGameType.State _state = AscensionGameType.State.None;
         int _roundsDone;
@@ -44,7 +45,8 @@ namespace HealerLike.Render.Stage
                 {
                     nextCast = Time.time + 1f;
                     List<GameObject> friends = _manager.entityManager.GetEntities(Entity.EntityType.Player);
-                    _player.CastOn(_manager, friends.Count > 0 && friends[0] != null ? friends[0].GetComponent<Entity>() : null);
+                    _player.CastOn(_manager,
+                        friends.Count > 0 && friends[0] != null ? friends[0].GetComponent<Entity>() : null);
                 }
 
                 yield return NextFrame();
@@ -61,7 +63,8 @@ namespace HealerLike.Render.Stage
         void OnRoundEnd()
         {
             _roundsDone++;
-            Debug.Log($"[StageSmokeRun] Round {_roundsDone} ended, attacks {_attacks} heals {_heals} zones {_maxZones}");
+            Debug.Log($"[StageSmokeRun] Round {_roundsDone} ended, attacks {_attacks} heals {_heals} "
+                + $"zones {_maxZones}");
         }
 
         // The upgrade view offers buttons, the first one is picked through its own call
@@ -74,7 +77,8 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
-            SelectPlayerItemUpgradeButton playerItem = UnityEngine.Object.FindAnyObjectByType<SelectPlayerItemUpgradeButton>();
+            SelectPlayerItemUpgradeButton playerItem =
+                UnityEngine.Object.FindAnyObjectByType<SelectPlayerItemUpgradeButton>();
             if (playerItem != null)
             {
                 playerItem.SelectUpgrade();

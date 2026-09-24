@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using UnityEngine;
 
-namespace HealerLike.Render.Creatures
+namespace HealerLike.Render
 {
 
 public class ColourJitterTests
@@ -26,6 +26,21 @@ public class ColourJitterTests
 
         Assert.AreEqual(random, Random.state);
         Assert.AreNotEqual(ColourJitter.Vary(original, 1), ColourJitter.Vary(original, 2));
+    }
+
+    [Test]
+    public void VaryScenery_Seed_IsRepeatableAndBounded()
+    {
+        Color basis = new Color(0.4f, 0.7f, 0.3f);
+
+        Color a = ColourJitter.VaryScenery(basis, 5);
+
+        Assert.AreEqual(a, ColourJitter.VaryScenery(basis, 5));
+        Assert.AreNotEqual(a, ColourJitter.VaryScenery(basis, 99));
+        Color.RGBToHSV(basis, out float h, out _, out float v);
+        Color.RGBToHSV(a, out float h2, out _, out float v2);
+        Assert.That(Mathf.Abs(Mathf.DeltaAngle(h * 360f, h2 * 360f)), Is.LessThanOrEqualTo(6.001f));
+        Assert.That(v2 / v, Is.InRange(0.9199f, 1.0801f));
     }
 }
 

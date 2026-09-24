@@ -106,7 +106,7 @@ namespace HealerLike.Render.Stage
             float distance = 2f;
             for (int corner = 0; corner < 8; corner++)
             {
-                Vector3 local = inverse * Vector3.Scale(box.extents, CornerSign(corner));
+                Vector3 local = inverse * Vector3.Scale(box.extents, RenderMath.CornerSign(corner));
                 distance = Mathf.Max(distance, local.x / (right * tan * aspect) - local.z);
                 distance = Mathf.Max(distance, -local.x / (left * tan * aspect) - local.z);
                 distance = Mathf.Max(distance, (local.y - top * tan * local.z) / ((top - lift) * tan));
@@ -125,7 +125,7 @@ namespace HealerLike.Render.Stage
             float tan = Mathf.Tan(fov * Mathf.Deg2Rad * 0.5f);
             for (int corner = 0; corner < 8; corner++)
             {
-                Vector3 point = box.center + Vector3.Scale(box.extents, CornerSign(corner));
+                Vector3 point = RenderMath.Corner(box, corner);
                 Vector3 local = inverse * (point - pose.position);
                 if (local.z <= NearClip)
                 {
@@ -141,28 +141,6 @@ namespace HealerLike.Render.Stage
             }
 
             return true;
-        }
-
-        // The sign of each axis for one of the eight corners of a box, bit 0 for x, 1 for y, 2 for z
-        public static Vector3 CornerSign(int corner)
-        {
-            Vector3 sign = -Vector3.one;
-            if ((corner & 1) != 0)
-            {
-                sign.x = 1f;
-            }
-
-            if ((corner & 2) != 0)
-            {
-                sign.y = 1f;
-            }
-
-            if ((corner & 4) != 0)
-            {
-                sign.z = 1f;
-            }
-
-            return sign;
         }
     }
 }

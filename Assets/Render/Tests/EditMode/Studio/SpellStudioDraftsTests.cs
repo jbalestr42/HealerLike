@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools;
 using HealerLike.Render.Spells;
 
 namespace HealerLike.Render.Studio.Editor
@@ -129,6 +130,18 @@ public class SpellStudioDraftsTests
         Assert.AreEqual(SpellStudioMode.GameplayHandler, draft.mode);
         Assert.AreEqual("Multi Target Reduce Damage / BuffHandlerFactory", draft.displayName);
         Assert.IsTrue(draft.isSameSide);
+    }
+
+    [Test]
+    public void Init_CorruptedPrefs_LogsAndStartsFromTheDefaults()
+    {
+        string key = "HealerLike.SpellStudio.Drafts." + Application.dataPath;
+        EditorPrefs.SetString(key, "{\"items\":[{\"json\":\"");
+        LogAssert.Expect(LogType.Error, "[StudioPrefs] Dropped the unreadable drafts under " + key);
+
+        SpellStudioDrafts drafts = CreateDrafts();
+
+        Assert.Greater(drafts.items.Count, 0);
     }
 }
 

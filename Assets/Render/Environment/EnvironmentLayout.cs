@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using HealerLike.Render.Stones;
 using UnityEngine;
 
 namespace HealerLike.Render.Environment
@@ -40,8 +39,8 @@ namespace HealerLike.Render.Environment
                 return result;
             }
 
-            uint baseSeed = StoneSeed.ForPart((uint)settings.seed, Salt);
-            StoneRandom random = new StoneRandom(baseSeed);
+            uint baseSeed = SeededRandom.ForPart((uint)settings.seed, Salt);
+            SeededRandom random = new SeededRandom(baseSeed);
             float margin = settings.marginCells * cellSize;
             float span = settings.ringDistance;
             float xMin = grid.xMin - margin - span;
@@ -94,7 +93,7 @@ namespace HealerLike.Render.Environment
                             yaw = yaw * 360f,
                             scale = Scale(kind, t, jitter),
                             distance01 = t,
-                            seed = StoneSeed.ForPart(baseSeed, (uint)((int)kind * 65536 + n)),
+                            seed = SeededRandom.ForPart(baseSeed, (uint)((int)kind * 65536 + n)),
                             paletteIndex = (int)(jitter * 4f) & 3
                         });
                         break;

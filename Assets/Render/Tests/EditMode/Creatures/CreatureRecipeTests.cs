@@ -58,7 +58,8 @@ public class CreatureRecipeTests
     [Test]
     public void Parts_HealerAsset_ValidatesWithItsRoles()
     {
-        CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
+        string path = "Assets/Render/Creatures/Data/Healer.asset";
+        CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
 
         CreaturePart crown = Array.Find(recipe.parts, part => part.id == "Crown");
         CreaturePart[] tips = Array.FindAll(recipe.parts, part => part.role == PartRole.Tip);
@@ -67,6 +68,9 @@ public class CreatureRecipeTests
         Assert.AreEqual(3, tips.Length);
         Assert.IsTrue(Array.TrueForAll(tips, part => part.id.StartsWith("Bud", StringComparison.Ordinal)));
         Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);
+        Assert.AreEqual(Primitive.Torus, crown.primitive);
+        Assert.That(recipe.roots.count, Is.InRange(8, 14));
+        Assert.AreEqual(3, recipe.roots.segments);
     }
 
     [Test]

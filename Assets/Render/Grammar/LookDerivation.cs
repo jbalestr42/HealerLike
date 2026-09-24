@@ -61,7 +61,7 @@ namespace HealerLike.Render.Grammar
         }
 
         // The projectile class and its baked motion, the same reading for a unit's head and its shot
-        public static HeadKind Delivery(GameObject projectilePrefab)
+        public static HeadKind DeliveryHead(GameObject projectilePrefab)
         {
             if (projectilePrefab == null)
             {
@@ -100,13 +100,15 @@ namespace HealerLike.Render.Grammar
                 return ManyHits;
             }
 
-            int bounces = SkillWalker.PassiveBounces(data);
+            int bounces = ItemWalker.Bounces(data);
             if (skill is ShootProjectileSkillFactory shoot && shoot.data.projectiles != null)
             {
                 int hits = 1;
                 foreach (ShootProjectileSkillData.ProjectileData entry in shoot.data.projectiles)
                 {
-                    hits = Mathf.Max(hits, entry.numberOfProjectileToShootPerTarget + SkillWalker.Bounces(entry.projectilePrefab) + bounces);
+                    hits = Mathf.Max(hits,
+                        entry.numberOfProjectileToShootPerTarget + SkillWalker.Bounces(entry.projectilePrefab)
+                            + bounces);
                 }
                 return hits;
             }
@@ -208,7 +210,7 @@ namespace HealerLike.Render.Grammar
             float health = SkillWalker.ReadAttribute(data, AttributeType.HealthMax, DefaultHealth);
             float added = 0f;
             float multiplier = 1f;
-            foreach (ABuffHandlerFactory handler in SkillWalker.ItemBuffs(data))
+            foreach (ABuffHandlerFactory handler in ItemWalker.Buffs(data))
             {
                 if (handler.buffFactoryList == null)
                 {

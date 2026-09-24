@@ -47,6 +47,38 @@ public class RenderMathTests
         Assert.IsFalse(RenderMath.IsPositive(float.NaN));
         Assert.IsFalse(RenderMath.IsPositive(float.PositiveInfinity));
     }
+
+    [Test]
+    public void IsFinite_ColourWithANaNChannel_IsFalse()
+    {
+        Assert.IsTrue(RenderMath.IsFinite(new Color(0.1f, 0.2f, 0.3f, 1f)));
+        Assert.IsFalse(RenderMath.IsFinite(new Color(0.1f, float.NaN, 0.3f, 1f)));
+        Assert.IsFalse(RenderMath.IsFinite(new Color(0.1f, 0.2f, 0.3f, float.PositiveInfinity)));
+    }
+
+    [Test]
+    public void CornerSign_EveryCorner_PicksOneAxisPerBit()
+    {
+        Assert.AreEqual(new Vector3(-1f, -1f, -1f), RenderMath.CornerSign(0));
+        Assert.AreEqual(new Vector3(1f, -1f, -1f), RenderMath.CornerSign(1));
+        Assert.AreEqual(new Vector3(-1f, 1f, -1f), RenderMath.CornerSign(2));
+        Assert.AreEqual(new Vector3(1f, 1f, 1f), RenderMath.CornerSign(7));
+    }
+
+    [Test]
+    public void Corner_EightCorners_SpanTheBox()
+    {
+        Bounds box = new Bounds(new Vector3(1f, 2f, 3f), new Vector3(2f, 4f, 6f));
+        Bounds spanned = new Bounds(RenderMath.Corner(box, 0), Vector3.zero);
+
+        for (int corner = 1; corner < 8; corner++)
+        {
+            spanned.Encapsulate(RenderMath.Corner(box, corner));
+        }
+
+        Assert.AreEqual(box.min, spanned.min);
+        Assert.AreEqual(box.max, spanned.max);
+    }
 }
 
 }

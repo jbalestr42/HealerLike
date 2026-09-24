@@ -31,7 +31,7 @@ namespace HealerLike.Render.Stage
                 owner.enabled = false;
             }
 
-            QualitySettings.renderPipeline = EnvironmentAuthoring.Load<RenderPipelineAsset>(pipelinePath);
+            QualitySettings.renderPipeline = RenderAssets.Load<RenderPipelineAsset>(pipelinePath);
             Camera camera = CreateCamera();
             LookController look = Fixture("GroundFixtureLook").AddComponent<LookController>();
             LookSettings settings = LookSettings.Default;
@@ -104,7 +104,7 @@ namespace HealerLike.Render.Stage
         // An eight by eight carpet on a ground slab, three stones trampling it
         GrassField CreateField(Camera camera, ZoneRegistry registry)
         {
-            Material material = new Material(EnvironmentAuthoring.Load<Shader>(lookShaderPath));
+            Material material = new Material(RenderAssets.Load<Shader>(lookShaderPath));
             _owned.Add(material);
             // The slab's stored value is already linear, as the fixture was tuned, so it stays darker than the carpet
             material.SetColor(RenderObjects.BaseColorId, ((Color)new Color32(78, 126, 87, 255)).linear);

@@ -151,7 +151,8 @@ public class CreatureLooksTests
     [Test]
     public void GetView_ShippedAsset_DerivesEveryEntityAndKeepsTheHealerAuthored()
     {
-        CreatureLooks looks = AssetDatabase.LoadAssetAtPath<CreatureLooks>("Assets/Render/Creatures/Data/CreatureLooks.asset");
+        CreatureLooks looks =
+            AssetDatabase.LoadAssetAtPath<CreatureLooks>("Assets/Render/Creatures/Data/CreatureLooks.asset");
         CharacterData healer = AssetDatabase.LoadAssetAtPath<CharacterData>(
             "Assets/Data/Characters/BasicHealerCharacter/BasicHealerCharacter.asset");
 
@@ -169,7 +170,8 @@ public class CreatureLooksTests
     [Test]
     public void Character_PrefabsFolder_HoldsOnlyThePlantHostAndTheCharacterView()
     {
-        CreatureLooks looks = AssetDatabase.LoadAssetAtPath<CreatureLooks>("Assets/Render/Creatures/Data/CreatureLooks.asset");
+        CreatureLooks looks =
+            AssetDatabase.LoadAssetAtPath<CreatureLooks>("Assets/Render/Creatures/Data/CreatureLooks.asset");
 
         string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Render/Creatures/Prefabs" });
 

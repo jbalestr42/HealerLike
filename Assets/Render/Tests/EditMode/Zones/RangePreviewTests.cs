@@ -34,14 +34,12 @@ public class RangePreviewTests
         Object.DestroyImmediate(_ownerGo);
     }
 
-    [TestCase(true, false)]
-    [TestCase(false, true)]
-    [TestCase(true, true)]
-    public void Refresh_SelectedOrDragged_ShowsOneZoneThatFollowsTheEntity(bool selected, bool dragging)
+    [Test]
+    public void Refresh_Hovered_ShowsOneZoneThatFollowsTheEntity()
     {
         _entityGo.transform.position = Vector3.one * 4f;
 
-        _preview.SetPreviewState(selected, dragging);
+        _preview.Show(true);
         _preview.Refresh();
         _owner.PublishFrame(0f);
 
@@ -63,15 +61,15 @@ public class RangePreviewTests
     }
 
     [Test]
-    public void SetPreviewState_Changed_PublishesOnlyOnRefresh()
+    public void Show_Changed_PublishesOnlyOnRefresh()
     {
-        _preview.SetPreviewState(true, false);
+        _preview.Show(true);
         Assert.AreEqual(0, _owner.liveCount);
 
         _preview.Refresh();
         Assert.AreEqual(1, _owner.liveCount);
 
-        _preview.SetPreviewState(false, false);
+        _preview.Show(false);
         Assert.AreEqual(1, _owner.liveCount);
 
         _preview.Refresh();
@@ -79,17 +77,17 @@ public class RangePreviewTests
     }
 
     [Test]
-    public void Refresh_DeselectedDisabledOrInvalidRange_RemovesThePreview()
+    public void Refresh_UnhoveredDisabledOrInvalidRange_RemovesThePreview()
     {
-        _preview.SetPreviewState(true, false);
+        _preview.Show(true);
         _preview.Refresh();
         Assert.AreEqual(1, _owner.liveCount);
 
-        _preview.SetPreviewState(false, false);
+        _preview.Show(false);
         _preview.Refresh();
         Assert.AreEqual(0, _owner.liveCount);
 
-        _preview.SetPreviewState(true, false);
+        _preview.Show(true);
         _entity.attributeManager.Get(AttributeType.Range).BaseValue = 0;
         _entity.attributeManager.Get(AttributeType.Range).Update();
         _preview.Refresh();
@@ -110,7 +108,7 @@ public class RangePreviewTests
     [Test]
     public void Refresh_RegistryRestarted_RecreatesThePreview()
     {
-        _preview.SetPreviewState(true, false);
+        _preview.Show(true);
         _preview.Refresh();
         _owner.Release();
         _owner.Init(new ZoneFakeUpload());
@@ -133,32 +131,16 @@ public class RangePreviewTests
     }
 
     [Test]
-    public void Show_Hovered_KeepsTheExplicitSelection()
-    {
-        _preview.Show(true);
-        _preview.Refresh();
-        _owner.PublishFrame(0f);
-        Assert.AreEqual((int)ZoneKind.Range, _owner.snapshot[0].kind);
-
-        _preview.SetPreviewState(true, false);
-        _preview.Show(false);
-        _preview.Refresh();
-        Assert.AreEqual(1, _owner.liveCount);
-
-        _preview.SetPreviewState(false, false);
-        _preview.Refresh();
-        Assert.AreEqual(0, _owner.liveCount);
-    }
-
-    [Test]
-    public void SetPreviewState_NoRangeOrEntity_ShowsNothing()
+    public void Show_NoRangeOrEntity_ShowsNothing()
     {
         _entity.attributeManager = null;
-        _preview.SetPreviewState(true, false);
+        _preview.Show(true);
+        _preview.Refresh();
         Assert.AreEqual(0, _owner.liveCount);
 
         _preview.Init(null, _owner);
-        _preview.SetPreviewState(true, true);
+        _preview.Show(true);
+        _preview.Refresh();
         Assert.AreEqual(0, _owner.liveCount);
     }
 
@@ -180,16 +162,6 @@ public class RangePreviewTests
         _preview.Refresh();
 
         Assert.AreEqual(0, _owner.liveCount);
-    }
-
-    [Test]
-    public void Show_Selected_StillShowsWhenNotHovered()
-    {
-        _preview.Show(false);
-        _preview.SetPreviewState(true, false);
-        _preview.Refresh();
-
-        Assert.AreEqual(1, _owner.liveCount);
     }
 
     [Test]

@@ -48,9 +48,10 @@ namespace HealerLike.Render.Stage
             BattleFocus battleFocus = Nest<BattleFocus>(AssetDatabase.GetAssetPath(controls), root);
 
             SerializedObject data = new SerializedObject(manager);
-            data.FindProperty("_creatureLooks").objectReferenceValue = EnvironmentAuthoring.Load<Object>(CreatureLooksPath);
-            data.FindProperty("_spellLooks").objectReferenceValue = EnvironmentAuthoring.Load<Object>(SpellLooksPath);
-            data.FindProperty("_meshes").objectReferenceValue = EnvironmentAuthoring.Load<Object>(EnvironmentAuthoring.MeshesPath);
+            data.FindProperty("_creatureLooks").objectReferenceValue = RenderAssets.Load<Object>(CreatureLooksPath);
+            data.FindProperty("_spellLooks").objectReferenceValue = RenderAssets.Load<Object>(SpellLooksPath);
+            data.FindProperty("_meshes").objectReferenceValue =
+                RenderAssets.Load<Object>(EnvironmentAuthoring.MeshesPath);
             data.FindProperty("_dressing").objectReferenceValue = dressing;
             data.FindProperty("_environmentPrefab").objectReferenceValue = environment.GetComponent<EnvironmentRoot>();
             data.FindProperty("_look").objectReferenceValue = look;
@@ -61,12 +62,14 @@ namespace HealerLike.Render.Stage
             data.FindProperty("_battleFocus").objectReferenceValue = battleFocus;
             data.FindProperty("_rangeDriver").objectReferenceValue = rangeDriver;
             data.FindProperty("_keyLight").objectReferenceValue = keyLight;
-            data.FindProperty("_deliveryVocabulary").objectReferenceValue = EnvironmentAuthoring.Load<Object>(DeliveryVocabularyPath);
+            data.FindProperty("_deliveryVocabulary").objectReferenceValue =
+                RenderAssets.Load<Object>(DeliveryVocabularyPath);
             data.ApplyModifiedPropertiesWithoutUndo();
 
             SerializedObject dressingData = new SerializedObject(dressing);
             dressingData.FindProperty("_pipeline").objectReferenceValue = pipeline;
-            dressingData.FindProperty("_groundMaterial").objectReferenceValue = EnvironmentAuthoring.Load<Material>(BoardMaterialPath);
+            dressingData.FindProperty("_groundMaterial").objectReferenceValue =
+                RenderAssets.Load<Material>(BoardMaterialPath);
             SerializedProperty hidden = dressingData.FindProperty("_hiddenObjectNames");
             hidden.arraySize = HiddenObjects.Length;
             for (int i = 0; i < HiddenObjects.Length; i++)
@@ -101,7 +104,7 @@ namespace HealerLike.Render.Stage
 
         static ComponentType Nest<ComponentType>(string path, GameObject root) where ComponentType : Component
         {
-            GameObject prefab = EnvironmentAuthoring.Load<GameObject>(path);
+            GameObject prefab = RenderAssets.Load<GameObject>(path);
             if (prefab == null)
             {
                 return null;

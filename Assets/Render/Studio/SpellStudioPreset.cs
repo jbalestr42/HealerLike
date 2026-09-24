@@ -214,16 +214,9 @@ namespace HealerLike.Render.Studio
             return true;
         }
 
-        public ProjectileLook ResolveProjectile()
+        public DeliveryStyle ResolveDelivery()
         {
-            if (spellLooks != null && useGameplayOverrides)
-            {
-                return spellLooks.GetProjectileLook(sourceProjectile);
-            }
-
-            ProjectileLook look = new ProjectileLook();
-            look.style = EffectDerivation.Delivery(sourceProjectile);
-            return look;
+            return EffectDerivation.Delivery(sourceProjectile);
         }
 
         // Copies the vocabulary's entry for the resolved element into the preset, the shared asset stays as it is

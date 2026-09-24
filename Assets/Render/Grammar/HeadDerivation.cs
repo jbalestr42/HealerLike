@@ -11,7 +11,7 @@ namespace HealerLike.Render.Grammar
         {
             if (skill is ShootProjectileSkillFactory || skill is ConfigurableSkillFactory)
             {
-                return LookDerivation.Delivery(SkillWalker.DominantPrefab(skill));
+                return LookDerivation.DeliveryHead(SkillWalker.DominantPrefab(skill));
             }
 
             if (skill is ApplyBuffOnTargetSkillFactory support)
@@ -138,7 +138,7 @@ namespace HealerLike.Render.Grammar
                 }
             }
 
-            List<ABuffHandlerFactory> passives = SkillWalker.ItemBuffs(data);
+            List<ABuffHandlerFactory> passives = ItemWalker.Buffs(data);
             if (passives.Count > 0)
             {
                 AccessoryKind passive = PassiveAccessory(passives[0]);
@@ -148,7 +148,7 @@ namespace HealerLike.Render.Grammar
                 }
             }
 
-            foreach (ABuffHandlerFactory handler in SkillWalker.ItemOnHitEffects(data))
+            foreach (ABuffHandlerFactory handler in ItemWalker.OnHitEffects(data))
             {
                 EffectFamily family = EffectDerivation.Family(handler, false);
                 if (family == accent)
@@ -203,7 +203,7 @@ namespace HealerLike.Render.Grammar
 
             foreach (GameObject prefab in SkillWalker.Prefabs(primary))
             {
-                HeadKind other = LookDerivation.Delivery(prefab);
+                HeadKind other = LookDerivation.DeliveryHead(prefab);
                 if (other != main)
                 {
                     head = other;

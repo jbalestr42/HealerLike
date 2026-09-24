@@ -19,7 +19,8 @@ public class LianaArmTests
         Material material = null)
     {
         LianaArm arm = new LianaArm();
-        arm.Init(definition, parent, material, RenderTestAssets.LoadMeshes(), RenderTestAssets.LoadDeliveryVocabulary());
+        arm.Init(definition, parent, material, RenderTestAssets.LoadMeshes(),
+            RenderTestAssets.LoadDeliveryVocabulary());
         return arm;
     }
 
