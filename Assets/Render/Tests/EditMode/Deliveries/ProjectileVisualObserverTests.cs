@@ -105,6 +105,13 @@ public class ProjectileVisualObserverTests
         _builder.Init(_source.GetComponent<Entity>());
     }
 
+    // An unclaimed shot flies as its own tip
+    bool IsFree()
+    {
+        FreeShot shot = _projectileObject.GetComponent<FreeShot>();
+        return shot && shot.enabled;
+    }
+
     // Shoots the projectile again carrying the consumers, the observer reads them in its Init
     void Shoot(params AConsumerFactory[] consumers)
     {
@@ -191,7 +198,7 @@ public class ProjectileVisualObserverTests
         Assert.AreNotEqual(0, _observer.gestureToken);
         Assert.AreEqual(_observer.gestureToken, _probe.token);
         Assert.AreEqual(RenderTestAssets.LoadDeliveryVocabulary().palette.damage, _probe.accent);
-        Assert.IsFalse(_observer.isFree);
+        Assert.IsFalse(IsFree());
         Assert.IsFalse(_projectileObject.GetComponent<LineRenderer>().enabled);
     }
 
@@ -223,7 +230,7 @@ public class ProjectileVisualObserverTests
         _observer.Init(_source);
 
         Assert.AreNotEqual(0, _observer.gestureToken);
-        Assert.IsFalse(_observer.isFree);
+        Assert.IsFalse(IsFree());
     }
 
     [Test]
@@ -241,19 +248,19 @@ public class ProjectileVisualObserverTests
         _projectile.OnHit.Invoke(new OnHitData { target = _first });
 
         Assert.AreEqual(0, _observer.gestureToken);
-        Assert.IsTrue(_observer.isFree);
+        Assert.IsTrue(IsFree());
         Assert.IsFalse(visible.enabled);
         Assert.IsFalse(hidden.enabled);
         Assert.AreEqual(0, _probe.contacts);
         _probe.accepts = true;
         _observer.Init(_source);
-        Assert.IsFalse(_observer.isFree);
+        Assert.IsFalse(IsFree());
         Assert.IsFalse(visible.enabled);
         int ends = _probe.ends;
         _probe.enabled = false;
         TestHelpers.InvokePrivate(_observer, "LateUpdate");
         Assert.AreEqual(ends + 1, _probe.ends);
-        Assert.IsTrue(_observer.isFree); // the claimer left, the shot keeps its tip
+        Assert.IsTrue(IsFree()); // the claimer left, the shot keeps its tip
         Assert.IsFalse(visible.enabled);
         _observer.enabled = false;
         TestHelpers.InvokePrivate(_observer, "OnDisable");
@@ -267,14 +274,16 @@ public class ProjectileVisualObserverTests
         Object.DestroyImmediate(_probe);
 
         _observer.Init(_source);
+        FreeShot shot = _projectileObject.GetComponent<FreeShot>();
         _projectileObject.transform.position = Vector3.right;
         TestHelpers.InvokePrivate(_observer, "LateUpdate");
+        TestHelpers.InvokePrivate(shot, "LateUpdate");
 
-        Assert.IsTrue(_observer.isFree);
+        Assert.IsTrue(IsFree());
         Assert.IsFalse(_projectileObject.GetComponent<LineRenderer>().enabled);
-        Assert.AreEqual(1, _observer.freeTip.partCount);
-        Assert.AreEqual(Vector3.right, (Vector3)_observer.freeTipFrame.GetColumn(3));
-        Vector3 forward = _observer.freeTipFrame.MultiplyVector(Vector3.forward).normalized;
+        Assert.AreEqual(1, shot.tip.partCount);
+        Assert.AreEqual(Vector3.right, (Vector3)shot.frame.GetColumn(3));
+        Vector3 forward = shot.frame.MultiplyVector(Vector3.forward).normalized;
         Assert.That(Vector3.Dot(forward, Vector3.right), Is.GreaterThan(0.99f));
     }
 
@@ -324,7 +333,6 @@ public class ProjectileVisualObserverTests
     [Test]
     public void OnHit_SynchronousHitsAfterInit_RecordsOrderedContacts()
     {
-        Assert.AreSame(_first, _observer.capturedTarget);
         Assert.AreSame(_first, _observer.capturedTargetPoint);
         _observer.Init(_manager, new ProjectileLook { preserveContactPath = true });
         _observer.Init(_source);

@@ -1,57 +1,34 @@
 using System.Collections.Generic;
 using UnityEngine;
-using HealerLike.Render.Creatures;
-using HealerLike.Render.Grammar;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Deliveries
 {
     // Signals begin, contact and end to the source's view, which follows the projectile itself.
-    // A shot no view claims flies as its tip fragment instead of the projectile's own visual.
+    // A shot no view claims flies as a FreeShot, its tip fragment in place of the projectile's own visual.
     public class ProjectileVisualObserver : AProjectileBehaviour
     {
-        // A travel shorter than this has no direction
-        static readonly float stillSquared = 0.00000001f;
-
         DeliveryStyle _deliveryStyle = DeliveryStyle.Direct;
-        bool _preserveContactPath;
 
         readonly List<ProjectileContact> _contacts = new List<ProjectileContact>();
-        readonly DeliveryTip _freeTip = new DeliveryTip();
         RenderManager _manager;
         DeliveryVocabulary _vocabulary;
-        IDeliverySource _delivery;
-        IDeliveryAccent _accent;
-        MonoBehaviour _deliveryComponent;
+        readonly DeliveryClaim _claim = new DeliveryClaim();
+        readonly HiddenRenderers _hidden = new HiddenRenderers();
         Projectile _subscribed;
-        Renderer[] _renderers;
-        bool[] _rendererStates;
         List<AConsumerFactory> _consumers;
-        int _token;
-        Vector3 _lastPosition;
+        FreeShot _freeShot;
         bool _hasLanded;
 
         public DeliveryStyle deliveryStyle { get { return _deliveryStyle; } }
 
         public IReadOnlyList<ProjectileContact> contacts { get { return _contacts; } }
 
-        GameObject _capturedTarget;
-        public GameObject capturedTarget { get { return _capturedTarget; } }
-
         GameObject _capturedTargetPoint;
         public GameObject capturedTargetPoint { get { return _capturedTargetPoint; } }
 
-        public int gestureToken { get { return _token; } }
-
-        // True while the shot is unclaimed and draws its own tip
-        bool _isFree;
-        public bool isFree { get { return _isFree; } }
-
-        public DeliveryTip freeTip { get { return _freeTip; } }
-
-        Matrix4x4 _freeTipFrame;
-        public Matrix4x4 freeTipFrame { get { return _freeTipFrame; } }
+        public int gestureToken { get { return _claim.token; } }
 
         // The manager adds the observer to a spawned projectile and calls this before Projectile.Init
         public void Init(RenderManager manager, ProjectileLook look)
@@ -63,10 +40,14 @@ namespace HealerLike.Render.Deliveries
                 _vocabulary = manager.deliveryVocabulary;
             }
 
-            if (look != null)
+            // A shot that keeps its contact path is a chain whatever its authored style
+            if (look != null && look.preserveContactPath)
+            {
+                _deliveryStyle = DeliveryStyle.ChainSync;
+            }
+            else if (look != null)
             {
                 _deliveryStyle = look.style;
-                _preserveContactPath = look.preserveContactPath;
             }
         }
 
@@ -88,58 +69,33 @@ namespace HealerLike.Render.Deliveries
             // Bind before any Start callback can apply synchronous chain hits
             _subscribed = projectile;
             _subscribed.OnHit.AddListener(OnProjectileHit);
-            _capturedTarget = projectile.target;
             _capturedTargetPoint = projectile.targetPoint;
             // What the projectile applies on hit decides the family its tip shows
             _consumers = projectile.onHitConsumers;
             // An item can grant the bounce, so the live behaviour decides and not the prefab
             if (GetComponent<BounceProjectileBehaviour>() && _deliveryStyle != DeliveryStyle.ChainSync
-                && _deliveryStyle != DeliveryStyle.Thrown && !_preserveContactPath)
+                && _deliveryStyle != DeliveryStyle.Thrown)
             {
                 _deliveryStyle = DeliveryStyle.Bounce;
             }
 
-            Entity entity = source ? source.GetComponent<Entity>() : null;
-            GameObject model = entity && entity.model ? entity.model.gameObject : source;
+            // A projectile the manager did not set up takes no token and draws no gesture
             int token = NextToken();
             if (token == 0)
             {
                 return;
             }
 
-            if (model)
+            Vector3 end = projectile.transform.position;
+            if (_capturedTargetPoint)
             {
-                foreach (MonoBehaviour component in model.GetComponentsInChildren<MonoBehaviour>())
-                {
-                    if (!(component is IDeliverySource candidate) || !component.isActiveAndEnabled)
-                    {
-                        continue;
-                    }
-
-                    DeliveryStyle style = _preserveContactPath ? DeliveryStyle.ChainSync : _deliveryStyle;
-                    Vector3 end = projectile.transform.position;
-                    if (capturedTargetPoint)
-                    {
-                        end = capturedTargetPoint.transform.position;
-                    }
-
-                    if (!candidate.BeginDelivery(token, style, projectile.transform, end))
-                    {
-                        continue;
-                    }
-
-                    _delivery = candidate;
-                    _accent = component as IDeliveryAccent;
-                    _deliveryComponent = component;
-                    _token = token;
-                    break;
-                }
+                end = _capturedTargetPoint.transform.position;
             }
 
-            if (_token != 0)
+            if (_claim.TryClaim(Model(source), token, _deliveryStyle, projectile.transform, end))
             {
                 TintTip();
-                CaptureRenderers();
+                _hidden.Capture(gameObject);
                 return;
             }
 
@@ -160,18 +116,18 @@ namespace HealerLike.Render.Deliveries
         // retarget it first, and whether it is done can only be read after them
         void LateUpdate()
         {
-            if (_isFree)
+            if (IsFree())
             {
                 UpdateFree();
                 return;
             }
 
-            if (_token == 0)
+            if (!_claim.isClaimed)
             {
                 return;
             }
 
-            if (!_subscribed || !_subscribed.source || !_deliveryComponent || !_deliveryComponent.isActiveAndEnabled)
+            if (!_subscribed || !_subscribed.source || _claim.isLost)
             {
                 // The view that claimed the shot is gone, the shot keeps flying as its own tip
                 EndLease();
@@ -179,7 +135,7 @@ namespace HealerLike.Render.Deliveries
                 return;
             }
 
-            HideRenderers();
+            _hidden.Hide();
             TintTip();
             // Retarget listeners have all finished by now. Never replace ordered hit contacts
             // with the final target, which can already be null for an instant chain.
@@ -189,47 +145,44 @@ namespace HealerLike.Render.Deliveries
             }
         }
 
-        // Zero means no delivery, a projectile the manager did not set up draws no gesture
         int NextToken()
         {
-            return _manager ? _manager.NextDeliveryToken() : 0;
+            if (!_manager)
+            {
+                return 0;
+            }
+            return _manager.NextDeliveryToken();
         }
 
-        // The family of the first consumer, or no accent when the projectile carries none
-        bool TryAccent(out Color accent)
+        // The shooter's model carries its view, a source without an entity is its own model
+        static GameObject Model(GameObject source)
         {
-            accent = Color.clear;
-            if (_consumers == null || !_vocabulary)
+            Entity entity = null;
+            if (source)
             {
-                return false;
+                entity = source.GetComponent<Entity>();
             }
 
-            if (!_vocabulary.palette)
+            if (entity && entity.model)
             {
-                Debug.LogError("[ProjectileVisualObserver] No palette.");
-                accent = Color.magenta;
-                return true;
+                return entity.model.gameObject;
             }
-
-            foreach (AConsumerFactory consumer in _consumers)
-            {
-                if (consumer != null)
-                {
-                    accent = _vocabulary.palette.Colour(ColourRole.Accent, EffectDerivation.ConsumerFamily(consumer, false));
-                    return true;
-                }
-            }
-
-            return false;
+            return source;
         }
 
         // The claimer tints the tip its delivery took, when it can and the shot carries a family
         void TintTip()
         {
-            if (_accent != null && TryAccent(out Color accent))
+            if (_vocabulary && _vocabulary.TryAccent(_consumers, out Color accent))
             {
-                _accent.SetDeliveryAccent(_token, accent);
+                _claim.Tint(accent);
             }
+        }
+
+        // True while the shot is unclaimed and flies as its own tip
+        bool IsFree()
+        {
+            return _freeShot && _freeShot.enabled;
         }
 
         void StartFree()
@@ -239,20 +192,19 @@ namespace HealerLike.Render.Deliveries
                 return;
             }
 
-            DeliveryStyle style = _preserveContactPath ? DeliveryStyle.ChainSync : _deliveryStyle;
-            _freeTip.SetStyle(style, _vocabulary, _manager.meshes);
-            // A style without a tip, the thrown shard, has nothing to show in place of the projectile's own visual
-            if (_freeTip.partCount == 0)
+            if (!_freeShot)
             {
-                return;
+                _freeShot = gameObject.AddComponent<FreeShot>();
             }
 
-            _isFree = true;
-            _lastPosition = transform.position;
-            _freeTipFrame = DeliveryTip.Frame(transform.position, FreeTravel(), FreeSize());
-            CaptureRenderers();
+            _freeShot.enabled = _freeShot.Init(_subscribed, _deliveryStyle, _vocabulary, _manager.meshes);
+            if (_freeShot.enabled)
+            {
+                _hidden.Capture(gameObject);
+            }
         }
 
+        // The free shot draws itself, the projectile's own visual stays hidden until it is done
         void UpdateFree()
         {
             if (!_subscribed || _subscribed.ShouldDestroyProjectile())
@@ -261,107 +213,22 @@ namespace HealerLike.Render.Deliveries
                 return;
             }
 
-            HideRenderers();
-            Vector3 travel = transform.position - _lastPosition;
-            if (travel.sqrMagnitude < stillSquared)
-            {
-                travel = FreeTravel();
-            }
-
-            _lastPosition = transform.position;
-            _freeTipFrame = DeliveryTip.Frame(transform.position, travel, FreeSize());
-            if (_hasLanded || !_vocabulary)
-            {
-                return;
-            }
-
-            _freeTip.Draw(_freeTipFrame, _vocabulary.material, FreeColour(), FreeColour(), gameObject.layer);
+            _hidden.Hide();
         }
 
         void StopFree()
         {
-            _isFree = false;
-            RestoreRenderers();
-        }
-
-        // Before the first move the tip looks at its target
-        Vector3 FreeTravel()
-        {
-            if (capturedTargetPoint)
+            if (_freeShot)
             {
-                return capturedTargetPoint.transform.position - transform.position;
-            }
-            return Vector3.forward;
-        }
-
-        float FreeSize()
-        {
-            return _vocabulary ? _vocabulary.bulletSize : DeliveryVocabulary.DefaultBulletSize;
-        }
-
-        // The family's accent, or the damage accent for a shot that carries no consumer
-        Color FreeColour()
-        {
-            if (TryAccent(out Color accent))
-            {
-                return accent;
+                _freeShot.enabled = false;
             }
 
-            if (_vocabulary && _vocabulary.palette)
-            {
-                return _vocabulary.palette.Accent(EffectFamily.Damage);
-            }
-            return Color.white;
-        }
-
-        void CaptureRenderers()
-        {
-            _renderers = GetComponentsInChildren<Renderer>(true);
-            _rendererStates = new bool[_renderers.Length];
-            for (int i = 0; i < _renderers.Length; i++)
-            {
-                _rendererStates[i] = _renderers[i].enabled;
-            }
-
-            HideRenderers();
-        }
-
-        void HideRenderers()
-        {
-            if (_renderers == null)
-            {
-                return;
-            }
-
-            foreach (Renderer renderer in _renderers)
-            {
-                if (renderer)
-                {
-                    renderer.enabled = false;
-                }
-            }
-        }
-
-        void RestoreRenderers()
-        {
-            if (_renderers != null)
-            {
-                for (int i = 0; i < _renderers.Length; i++)
-                {
-                    if (_renderers[i])
-                    {
-                        _renderers[i].enabled = _rendererStates[i];
-                    }
-                }
-            }
-
-            _renderers = null;
-            _rendererStates = null;
+            _hidden.Restore();
         }
 
         void OnProjectileHit(OnHitData hit)
         {
-            if (!isActiveAndEnabled || hit == null || (_token == 0 && !_isFree))
+            if (!isActiveAndEnabled || hit == null || (!_claim.isClaimed && !IsFree()))
             {
                 return;
             }
@@ -377,46 +244,32 @@ namespace HealerLike.Render.Deliveries
             }
 
             _contacts.Add(new ProjectileContact(hit.target, point));
-            DropSplash(point);
-            if (_isFree)
+            // An area item shows as one pod falling from the tip at the first contact
+            if (_contacts.Count == 1 && GetComponent<AreaOfEffectProjectileBehaviour>() && _manager)
+            {
+                TipDrop.Splash(_vocabulary, _manager.meshes, _consumers, point);
+            }
+
+            if (IsFree())
             {
                 // A bounce keeps the tip flying toward its next target
                 _hasLanded = !GetComponent<BounceProjectileBehaviour>();
+                if (_hasLanded)
+                {
+                    _freeShot.Land();
+                }
                 return;
             }
 
             // A chain shot began as ChainSync, so its source keeps the path of its contacts
-            if (_delivery != null)
-            {
-                _delivery.ContactDelivery(_token, point, hit.target);
-            }
-
+            _claim.Contact(point, hit.target);
             TintTip();
-        }
-
-        // An area item shows as one pod falling from the tip at the first contact
-        void DropSplash(Vector3 point)
-        {
-            if (_contacts.Count != 1 || !GetComponent<AreaOfEffectProjectileBehaviour>() || !_vocabulary
-                || !_manager || !_manager.meshes || !_vocabulary.material)
-            {
-                return;
-            }
-
-            TipDrop drop = new GameObject("TipDrop").AddComponent<TipDrop>();
-            drop.Init(_vocabulary.splashPod, _manager.meshes.GetMesh(_vocabulary.splashPod.primitive),
-                _vocabulary.material, FreeColour(), point, FreeSize());
         }
 
         void EndLease()
         {
-            if (_token != 0 && _deliveryComponent && _delivery != null)
-            {
-                _delivery.EndDelivery(_token);
-            }
-
-            _token = 0;
-            RestoreRenderers();
+            _claim.Release();
+            _hidden.Restore();
         }
 
         void Unbind()
@@ -429,9 +282,6 @@ namespace HealerLike.Render.Deliveries
             _subscribed = null;
             EndLease();
             StopFree();
-            _delivery = null;
-            _accent = null;
-            _deliveryComponent = null;
         }
     }
 }
