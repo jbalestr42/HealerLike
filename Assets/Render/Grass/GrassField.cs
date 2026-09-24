@@ -35,6 +35,8 @@ namespace HealerLike.Render.Grass
         float _cellSize;
         bool _isInitialized;
 
+        public Material lookMaterial { get { return _lookMaterial; } }
+
         GrassDraw _bladeDraw;
         public GrassDraw bladeDraw { get { return _bladeDraw; } }
 

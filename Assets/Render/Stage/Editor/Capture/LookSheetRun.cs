@@ -650,7 +650,7 @@ namespace HealerLike.Render.Stage
             {
                 ground.GetPropertyBlock(saved);
                 ground.GetPropertyBlock(flat);
-                flat.SetColor("_BaseColor", _manager.grass.palette.midGreen);
+                flat.SetColor("_BaseColor", _manager.grass.lookMaterial.GetColor("_BaseColor"));
                 flat.SetFloat("_HLGroundGrid", 0f);
                 ground.SetPropertyBlock(flat);
             }
