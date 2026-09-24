@@ -83,6 +83,32 @@ public class ResourceAttributeTests
     }
 
     [Test]
+    public void Restore_AfterDamage_GivesBackAShareOfTheMax()
+    {
+        AddModifier(new FakeConsumer(-60f));
+        Drain();
+        int changedCount = 0;
+        _health.OnValueChanged.AddListener(_ => changedCount++);
+
+        _health.Restore(0.3f);
+        Drain();
+
+        Assert.AreEqual(70f, _health.Value, 0.001f);
+        Assert.AreEqual(1, changedCount);
+    }
+
+    [Test]
+    public void Restore_NeverGoesAboveMax()
+    {
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        _health.Restore(0.5f);
+
+        Assert.AreEqual(100f, _health.Value);
+    }
+
+    [Test]
     public void Percent_ReturnsValueOverMax()
     {
         AddModifier(new FakeConsumer(-25f));

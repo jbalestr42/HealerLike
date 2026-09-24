@@ -13,6 +13,10 @@ public class GameHUD : MonoBehaviour
     [SerializeField] UnityEngine.UI.Button _nextWaveButton;
     public UnityEngine.UI.Button nextWaveButton { get { return _nextWaveButton; } }
 
+    // Optional, opens the run map while arranging the units
+    [SerializeField] UnityEngine.UI.Button _mapButton;
+    public UnityEngine.UI.Button mapButton { get { return _mapButton; } }
+
     [SerializeField] UnityEngine.UI.Text _goldText;
     [SerializeField] UnityEngine.UI.Button _playSpeedx0Button;
     public UnityEngine.UI.Button playSpeedx0Button { get { return _playSpeedx0Button; } }

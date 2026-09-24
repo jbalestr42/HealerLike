@@ -1,5 +1,13 @@
 using System.Collections.Generic;
 
+public enum MapNodeState
+{
+    Locked,
+    Available,
+    Visited,
+    Current,
+}
+
 // Progress of the player on the run map: the room they are in and the path taken to reach it
 public class RunState
 {
@@ -60,5 +68,22 @@ public class RunState
     public bool IsVisited(MapNode node)
     {
         return _visitedNodes.Contains(node);
+    }
+
+    public MapNodeState GetNodeState(MapNode node)
+    {
+        if (node == _currentNode)
+        {
+            return MapNodeState.Current;
+        }
+        if (IsVisited(node))
+        {
+            return MapNodeState.Visited;
+        }
+        if (CanTravelTo(node))
+        {
+            return MapNodeState.Available;
+        }
+        return MapNodeState.Locked;
     }
 }

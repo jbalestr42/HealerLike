@@ -14,11 +14,10 @@ public class UpgradeView : AView
     [SerializeField] GameObject _upgradePlayerItem;
 
     List<GameObject> _upgradeButtons = new List<GameObject>();
-    int _count = 3;
 
-	public void FillChoices()
+	public void FillChoices(int count)
     {
-		for (int i = 0; i < _count; i++)
+		for (int i = 0; i < count; i++)
         {
             // TODO: improve with a bit of abstraction when we have more upgrade types
             GameObject upgradeButton = null;

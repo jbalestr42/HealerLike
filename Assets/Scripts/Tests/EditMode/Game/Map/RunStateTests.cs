@@ -111,6 +111,28 @@ public class RunStateTests
     }
 
     [Test]
+    public void GetNodeState_NewRun_StartRoomsAvailableOthersLocked()
+    {
+        Assert.AreEqual(MapNodeState.Available, _run.GetNodeState(_start0));
+        Assert.AreEqual(MapNodeState.Available, _run.GetNodeState(_start1));
+        Assert.AreEqual(MapNodeState.Locked, _run.GetNodeState(_middle0));
+        Assert.AreEqual(MapNodeState.Locked, _run.GetNodeState(_boss));
+    }
+
+    [Test]
+    public void GetNodeState_AfterTravelling_TracksCurrentVisitedAvailableAndLocked()
+    {
+        _run.TravelTo(_start1);
+        _run.TravelTo(_middle1);
+
+        Assert.AreEqual(MapNodeState.Visited, _run.GetNodeState(_start1));
+        Assert.AreEqual(MapNodeState.Current, _run.GetNodeState(_middle1));
+        Assert.AreEqual(MapNodeState.Available, _run.GetNodeState(_boss));
+        Assert.AreEqual(MapNodeState.Locked, _run.GetNodeState(_start0));
+        Assert.AreEqual(MapNodeState.Locked, _run.GetNodeState(_middle0));
+    }
+
+    [Test]
     public void TravelTo_NullRoom_IsRefused()
     {
         Assert.IsFalse(_run.TravelTo(null));

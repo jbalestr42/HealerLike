@@ -9,7 +9,8 @@ public enum ViewType
     Game,
     Upgrade,
     Wave,
-    GameOver
+    GameOver,
+    Map,
 }
 
 public class UIManager : Singleton<UIManager>
