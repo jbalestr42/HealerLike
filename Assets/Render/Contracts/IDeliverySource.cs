@@ -3,7 +3,7 @@ using UnityEngine;
 namespace HealerLike.Render
 {
     // Authored per projectile prefab variant, the values are serialized so only append new ones
-    public enum DeliveryStyle : byte
+    public enum DeliveryStyle
     {
         Direct = 0,
         Arc = 1,
