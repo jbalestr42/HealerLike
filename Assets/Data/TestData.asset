@@ -181,6 +181,16 @@ MonoBehaviour:
     maxFloor: 8
     wavePatterns:
     - {fileID: 11400000, guid: 74b5f35c770b3ac47bcec7c0cd201c7d, type: 2}
+  - roomType: 1
+    minFloor: 3
+    maxFloor: 4
+    wavePatterns:
+    - {fileID: 11400000, guid: c586266b2d0f45fc841138d1e95300ff, type: 2}
+  - roomType: 1
+    minFloor: 6
+    maxFloor: 8
+    wavePatterns:
+    - {fileID: 11400000, guid: 8c7aacf4b16749ee84b1a6152a73be45, type: 2}
   characters:
   - {fileID: 11400000, guid: b6564d3df55530743a8bae3f230c6101, type: 2}
   items:
