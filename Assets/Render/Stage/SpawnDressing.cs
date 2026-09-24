@@ -18,6 +18,25 @@ namespace HealerLike.Render.Stage
         PlayerBehaviour _player;
         StageRangeDriver _rangeDriver;
         BattleFocus _battleFocus;
+        readonly List<CreatureBuilder> _creatures = new List<CreatureBuilder>();
+
+        public int RebuildViews()
+        {
+            int rebuilt = 0;
+            for (int i = _creatures.Count - 1; i >= 0; i--)
+            {
+                if (!_creatures[i])
+                {
+                    _creatures.RemoveAt(i);
+                    continue;
+                }
+                if (_creatures[i].Rebuild(_manager))
+                {
+                    rebuilt++;
+                }
+            }
+            return rebuilt;
+        }
 
         public void Init(RenderManager manager, StageRangeDriver rangeDriver, BattleFocus battleFocus)
         {
@@ -49,6 +68,7 @@ namespace HealerLike.Render.Stage
 
             _entityManager = null;
             _player = null;
+            _creatures.Clear();
         }
 
         void OnEntitySpawned(Entity entity)
@@ -103,6 +123,10 @@ namespace HealerLike.Render.Stage
             foreach (IEntityView view in viewGo.GetComponentsInChildren<IEntityView>())
             {
                 view.Init(entity, _manager);
+                if (view is CreatureBuilder creature)
+                {
+                    _creatures.Add(creature);
+                }
             }
 
             foreach (RangePreview preview in viewGo.GetComponentsInChildren<RangePreview>())

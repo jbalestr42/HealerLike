@@ -94,6 +94,56 @@ public class SpawnDressingTests
     }
 
     [Test]
+    public void RebuildViews_LiveDeliveryAndPaletteEdit_PreservesOwnersCameraAndSourceAnchor()
+    {
+        CreatureLooks looks = Object.Instantiate(_scene.manager.creatureLooks);
+        _created.Add(looks);
+        LookVocabulary vocabulary = Object.Instantiate(looks.vocabulary);
+        _created.Add(vocabulary);
+        HealerLike.Render.Grammar.LookPalette palette = Object.Instantiate(vocabulary.palette);
+        _created.Add(palette);
+        vocabulary.palette = palette;
+        looks.vocabulary = vocabulary;
+        TestHelpers.SetPrivateField(_scene.manager, "_creatureLooks", looks);
+        _scene.manager.Init(_scene.entityManager, _scene.player);
+        Entity entity = CreateEntity(_scene.gameGo.transform, Entity.EntityType.Player, out _);
+        entity.data = AssetDatabase.LoadAssetAtPath<EntityData>("Assets/Data/Entities/NormalEntity/NormalEntity.asset");
+        ResourceAttribute health = TestHelpers.CreateResourceAttribute(entity.gameObject, AttributeType.HealthMax, 100);
+        TestHelpers.SetPrivateField(entity, "_health", health);
+        _scene.entityManager.OnEntitySpawned.Invoke(entity);
+        CreatureBuilder builder = entity.model.GetComponentInChildren<CreatureBuilder>();
+        CreatureRig rig = builder.rig;
+        Transform root = rig.root;
+        Transform body = rig.partTransforms[0];
+        Vector3 camera = _scene.manager.gameCamera.transform.position;
+        GameObject projectile = new GameObject("Held projectile");
+        _spawned.Add(projectile);
+        projectile.transform.position = Vector3.one * 2f;
+        Assert.IsTrue(builder.BeginDelivery(818, DeliveryStyle.Direct, projectile.transform, Vector3.one * 3f));
+        for (int i = 0; i < 3; i++)
+        {
+            palette.plantBody = Color.magenta;
+            Assert.AreEqual(1, _scene.manager.RebuildViews());
+            Assert.AreSame(rig, builder.rig);
+            Assert.AreSame(root, rig.root);
+            Assert.AreSame(body, rig.partTransforms[0]);
+            Assert.AreEqual(Color.magenta, builder.recipe.parts[0].colour);
+            Assert.IsTrue(builder.TryGetAnchors(out _));
+            Assert.IsFalse(builder.BeginDelivery(818, DeliveryStyle.Direct, projectile.transform, Vector3.one),
+                "The existing delivery still owns its token.");
+            Assert.AreEqual(100f, health.Value);
+            Assert.AreEqual(camera, _scene.manager.gameCamera.transform.position);
+            Assert.AreEqual(1, entity.model.GetComponentsInChildren<CreatureBuilder>().Length);
+        }
+        builder.ContactDelivery(818, Vector3.one * 4f, null);
+        builder.EndDelivery(818);
+        Assert.IsTrue(builder.BeginDelivery(819, DeliveryStyle.Direct, projectile.transform, Vector3.one));
+        builder.EndDelivery(819);
+        Object.DestroyImmediate(entity.gameObject);
+        Assert.AreEqual(0, _scene.manager.RebuildViews());
+    }
+
+    [Test]
     public void OnEntitySpawned_Ally_HidesTheGameModelAndInitsTheView()
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);

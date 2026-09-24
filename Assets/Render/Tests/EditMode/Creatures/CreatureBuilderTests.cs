@@ -119,6 +119,22 @@ public class CreatureBuilderTests
     }
 
     [Test]
+    public void Rebuild_RegisteredLivingView_KeepsOneListenerAndAuthoredSockets()
+    {
+        CreatureRig rig = _builder.rig;
+        for (int i = 0; i < 3; i++)
+        {
+            Assert.IsTrue(_builder.Rebuild(null));
+        }
+        Assert.AreSame(rig, _builder.rig);
+        Assert.AreSame(_source.GetComponent<SkillSource>(), _model.GetComponent<EntityModel>().GetSourcePoint());
+        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 20f, true);
+        Assert.AreEqual(1, _healthSink.healCount);
+        Assert.AreEqual(1, _spellSink.impactCount);
+        Assert.AreEqual(100f, _health.Value);
+    }
+
+    [Test]
     public void TryGetAnchors_BeforeTheRig_ReturnsFalse()
     {
         CreatureBuilder builder = _owner.AddComponent<CreatureBuilder>();
