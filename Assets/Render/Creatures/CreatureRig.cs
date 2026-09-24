@@ -114,9 +114,16 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        // A recipe that fails validation logs and leaves the view empty
         public bool Init(CreatureRecipe data, Transform parent, Material material, PrimitiveMeshes meshes,
             float cellSize = 1f)
+        {
+            return Init(data, parent, material, material, meshes, cellSize);
+        }
+
+        // A recipe that fails validation logs and leaves the view empty. Body parts draw with the body material,
+        // which shades a plant's body with its own threshold and tint, every other part with the shared one.
+        public bool Init(CreatureRecipe data, Transform parent, Material material, Material bodyMaterial,
+            PrimitiveMeshes meshes, float cellSize)
         {
             if (!CreatureValidator.TryValidate(data, out string error))
             {
@@ -139,6 +146,10 @@ namespace HealerLike.Render.Creatures
 
             _recipe = data;
             _material = material;
+            if (bodyMaterial == null)
+            {
+                bodyMaterial = material;
+            }
             _meshes = meshes;
             _cellSize = cellSize;
             _root = new GameObject("GeneratedCreature").transform;
@@ -168,13 +179,19 @@ namespace HealerLike.Render.Creatures
                 _pivots[i].localPosition = part.localPosition * cellSize;
                 _pivots[i].localRotation = Quaternion.Euler(part.localEuler);
                 Mesh mesh = meshes.GetMesh(part.primitive, part.variant);
-                _geometry[i] = PrimitiveMeshes.Geometry("Geometry", _pivots[i], mesh, material, _colours[i], part.glow);
+                Material partMaterial = material;
+                if (part.role == PartRole.Body)
+                {
+                    partMaterial = bodyMaterial;
+                }
+                _geometry[i] = PrimitiveMeshes.Geometry("Geometry", _pivots[i], mesh, partMaterial, _colours[i],
+                    part.glow);
                 _geometry[i].localScale = part.dimensions * cellSize;
                 _bodyRenderers[i] = _geometry[i].GetComponent<Renderer>();
                 _hasOchreFaces[i] = mesh && mesh.subMeshCount > 1;
                 if (_hasOchreFaces[i])
                 {
-                    _bodyRenderers[i].sharedMaterials = new Material[] { material, material };
+                    _bodyRenderers[i].sharedMaterials = new Material[] { partMaterial, partMaterial };
                 }
 
                 Paint(i, _colours[i], part.glow);

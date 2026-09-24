@@ -10,6 +10,7 @@ namespace HealerLike.Render.Creatures
     {
         [SerializeField] CreatureRecipe _recipe;
         [SerializeField] Material _material;
+        [SerializeField] Material _bodyMaterial;
         [SerializeField] PrimitiveMeshes _meshes;
 
         Entity _entity;
@@ -265,7 +266,7 @@ namespace HealerLike.Render.Creatures
             if (rig == null && _recipe && _material)
             {
                 CreatureRig created = new CreatureRig();
-                if (created.Init(_recipe, transform, _material, _meshes, _cellSize))
+                if (created.Init(_recipe, transform, _material, _bodyMaterial, _meshes, _cellSize))
                 {
                     _rig = created;
                 }

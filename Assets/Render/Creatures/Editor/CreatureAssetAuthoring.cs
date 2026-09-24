@@ -11,6 +11,7 @@ namespace HealerLike.Render.Creatures
     {
         static readonly string root = "Assets/Render/Creatures/";
         static readonly string materialPath = "Assets/Render/Look/Look_Default.mat";
+        static readonly string bodyMaterialPath = "Assets/Render/Look/Look_Body.mat";
         static readonly string meshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
         static readonly int healerRoots = 13;
         static readonly int healerArms = 2;
@@ -54,6 +55,7 @@ namespace HealerLike.Render.Creatures
             data.FindProperty("_recipe").objectReferenceValue = recipe;
             data.FindProperty("_visualAnchor").objectReferenceValue = view.transform;
             data.FindProperty("_material").objectReferenceValue = material;
+            data.FindProperty("_bodyMaterial").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Material>(bodyMaterialPath);
             data.FindProperty("_meshes").objectReferenceValue = meshes;
             data.ApplyModifiedPropertiesWithoutUndo();
             view.AddComponent<HealPulse>();

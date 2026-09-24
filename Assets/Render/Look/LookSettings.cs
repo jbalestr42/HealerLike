@@ -17,6 +17,8 @@ namespace HealerLike.Render.Look
 
         public float shadowStrength;
 
+        // Moves every surface's light and shade split: stones, ground, grass, heads, tips, effects and cast shadows.
+        // Plant bodies add Look_Body.mat's offset to it.
         public float toonThreshold;
 
         // Half width of the soft terminator around the toon threshold

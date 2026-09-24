@@ -7,12 +7,11 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: GrassBlade
+  m_Name: Look_Body
   m_Shader: {fileID: 4800000, guid: 46b483edcd04429798fffdedb543fd4e, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
-  - HL_GRASS_INSTANCED
+  m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
@@ -26,8 +25,8 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _HLToonThresholdOffset: 0
+    - _HLToonThresholdOffset: 0.28
     m_Colors:
-    - _BaseColor: {r: 0.35686275, g: 0.5647059, b: 0.33333334, a: 1}
-    - _HLShadeTint: {r: 0, g: 0, b: 0, a: 0}
+    - _BaseColor: {r: 0.49803922, g: 0.7882353, b: 0.24705882, a: 1}
+    - _HLShadeTint: {r: 0.30588236, g: 0.41960785, b: 0.5294118, a: 1}
   m_BuildTextureStacks: []

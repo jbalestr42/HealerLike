@@ -50,6 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.CreatureBuilder
   _recipe: {fileID: 0}
   _material: {fileID: 2100000, guid: f647ba1fbb054b24bbb73180b0a65d58, type: 2}
+  _bodyMaterial: {fileID: 2100000, guid: 88334c040dd24e38bc5ef1b7f557a762, type: 2}
   _meshes: {fileID: 11400000, guid: 4ee00372052f248838ebdf645b1e9727, type: 2}
 --- !u!114 &8612131674928595501
 MonoBehaviour:
