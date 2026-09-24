@@ -30,21 +30,21 @@ public class EntityManagerTests
     }
 
     [Test]
-    public void SpawnProjectile_InvokesOnProjectileSpawned_WithTheSpawnedProjectile()
+    public void SpawnProjectile_InvokesOnProjectileSpawned_WithTheSpawnedGameObject()
     {
-        Projectile spawnedProjectile = null;
-        _entityManager.OnProjectileSpawned.AddListener(projectile => spawnedProjectile = projectile);
+        GameObject spawnedGo = null;
+        _entityManager.OnProjectileSpawned.AddListener(go => spawnedGo = go);
 
         GameObject projectileGo = _entityManager.SpawnProjectile(_projectilePrefab, Vector3.zero, Quaternion.identity);
 
-        Assert.AreSame(projectileGo.GetComponent<Projectile>(), spawnedProjectile);
+        Assert.AreSame(projectileGo, spawnedGo);
     }
 
     [Test]
     public void SpawnProjectile_InvokesOnProjectileSpawned_BeforeProjectileInit()
     {
         bool hasSourceWhenSpawned = true;
-        _entityManager.OnProjectileSpawned.AddListener(projectile => hasSourceWhenSpawned = projectile.source != null);
+        _entityManager.OnProjectileSpawned.AddListener(go => hasSourceWhenSpawned = go.GetComponent<Projectile>().source != null);
 
         _entityManager.SpawnProjectile(_projectilePrefab, Vector3.zero, Quaternion.identity);
 

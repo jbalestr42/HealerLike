@@ -30,7 +30,7 @@ public class AreaOfEffectSkill : ACooldownSkill<AreaOfEffectSkillData>
     {
         if (IsRequirementValidated())
         {
-            GameObject areaOfEffectGo = Instantiate(data.areaOfEffectPrefab, source.transform.position, Quaternion.identity);
+            GameObject areaOfEffectGo = EntityManager.instance.SpawnProjectile(data.areaOfEffectPrefab, source.transform.position, Quaternion.identity);
             AreaOfEffect areaOfEffect = areaOfEffectGo.GetComponent<AreaOfEffect>();
             areaOfEffect.source = source;
             areaOfEffect.radius = _range.Value;
