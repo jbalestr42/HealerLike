@@ -91,6 +91,7 @@ namespace HealerLike.Render.Deliveries
             }
         }
 
+        // After the projectile's own Update has moved it, so the tip is drawn where the shot is this frame
         void LateUpdate()
         {
             if (!_projectile || _projectile.ShouldDestroyProjectile())

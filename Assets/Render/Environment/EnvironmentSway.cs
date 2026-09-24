@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using HealerLike.Render.Stones;
 using UnityEngine;
 
 namespace HealerLike.Render.Environment

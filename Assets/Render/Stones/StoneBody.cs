@@ -228,6 +228,7 @@ namespace HealerLike.Render.Stones
             }
         }
 
+        // After his Update: the health batch his consumers resolved this frame, and where the entity moved to
         void LateUpdate()
         {
             FindRig();

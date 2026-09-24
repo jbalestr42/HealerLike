@@ -50,6 +50,7 @@ namespace HealerLike.Render.Stones
             }
         }
 
+        // After the projectile's own Update has moved it, so the shard follows where it is this frame
         void LateUpdate()
         {
             _endedDeliveries.Clear();
