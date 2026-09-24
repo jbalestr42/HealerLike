@@ -72,7 +72,8 @@ public static class ToolkitUiValidation
                 ScriptableObject source = asset as ScriptableObject;
                 if (DataIconBaker.IsGameData(source) && catalog.Find(source) == null)
                 {
-                    Debug.LogError($"[ToolkitUiValidation] Missing generated icon: {AssetDatabase.GetAssetPath(source)}");
+                    string path = AssetDatabase.GetAssetPath(source);
+                    Debug.LogError($"[ToolkitUiValidation] Missing generated icon: {path}");
                     return false;
                 }
             }

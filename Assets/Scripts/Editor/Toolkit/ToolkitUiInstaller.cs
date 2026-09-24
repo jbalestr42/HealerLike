@@ -20,7 +20,8 @@ public static class ToolkitUiInstaller
 
         if (!scene.path.StartsWith(toolkitScenesFolder, System.StringComparison.Ordinal))
         {
-            Debug.LogError("[ToolkitUiInstaller] Install only in a Toolkit scene copy, use Create Separate Demo Scenes first");
+            Debug.LogError("[ToolkitUiInstaller] Install only in a Toolkit scene copy, "
+                + "use Create Separate Demo Scenes first");
             return;
         }
 
@@ -56,7 +57,8 @@ public static class ToolkitUiInstaller
     static bool CreateScene(string source, string destination)
     {
         // Existing demo scenes may contain design changes: never overwrite them
-        if (AssetDatabase.LoadAssetAtPath<SceneAsset>(destination) == null && !AssetDatabase.CopyAsset(source, destination))
+        bool isMissing = AssetDatabase.LoadAssetAtPath<SceneAsset>(destination) == null;
+        if (isMissing && !AssetDatabase.CopyAsset(source, destination))
         {
             Debug.LogError($"[ToolkitUiInstaller] Could not copy scene {source}");
             return false;

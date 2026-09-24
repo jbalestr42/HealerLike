@@ -42,6 +42,11 @@ public class ToolkitGameContext
 
     public bool IsPreparing()
     {
-        return ascension == null || LegacyUiReader.AscensionState(ascension) == AscensionGameType.State.WaitForRoundToStart;
+        if (ascension == null)
+        {
+            return true;
+        }
+
+        return LegacyUiReader.AscensionState(ascension) == AscensionGameType.State.WaitForRoundToStart;
     }
 }
