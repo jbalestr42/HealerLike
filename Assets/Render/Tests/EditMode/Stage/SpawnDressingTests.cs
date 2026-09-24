@@ -42,8 +42,16 @@ public class SpawnDressingTests
         return projectileGo.GetComponent<Projectile>();
     }
 
-    // An area as AreaOfEffect.Start hands it out, cast by an entity whose one on hit consumer takes this value
-    AreaOfEffect CreateArea(float consumerValue)
+    // An area as EntityManager.SpawnProjectile hands it out, before its caller sets the source and radius
+    AreaOfEffect SpawnArea()
+    {
+        GameObject areaGo = new GameObject("Area");
+        _spawned.Add(areaGo);
+        return areaGo.AddComponent<AreaOfEffect>();
+    }
+
+    // What the caller then sets: a source entity whose one on hit consumer takes this value, and the radius
+    void ConfigureArea(AreaOfEffect area, float consumerValue)
     {
         GameObject sourceGo = new GameObject("Source");
         _spawned.Add(sourceGo);
@@ -56,12 +64,8 @@ public class SpawnDressingTests
         consumer.data = new ConsumerData { value = value };
         source.AddOnHitConsumer(consumer);
 
-        GameObject areaGo = new GameObject("Area");
-        _spawned.Add(areaGo);
-        AreaOfEffect area = areaGo.AddComponent<AreaOfEffect>();
         area.source = sourceGo;
         area.radius = 2.5f;
-        return area;
     }
 
     [SetUp]
@@ -180,7 +184,7 @@ public class SpawnDressingTests
         _scene.manager.Init(_scene.entityManager, _scene.player);
         Projectile projectile = SpawnProjectile("BulletSpeed");
 
-        _scene.entityManager.OnProjectileSpawned.Invoke(projectile);
+        _scene.entityManager.OnProjectileSpawned.Invoke(projectile.gameObject);
 
         ProjectileVisualObserver observer = projectile.GetComponent<ProjectileVisualObserver>();
         Assert.IsNotNull(observer);
@@ -195,7 +199,7 @@ public class SpawnDressingTests
         _scene.manager.Init(_scene.entityManager, _scene.player);
         Projectile projectile = SpawnProjectile("ChainLightning");
 
-        _scene.entityManager.OnProjectileSpawned.Invoke(projectile);
+        _scene.entityManager.OnProjectileSpawned.Invoke(projectile.gameObject);
 
         Assert.AreEqual(DeliveryStyle.ChainSync, projectile.GetComponent<ProjectileVisualObserver>().deliveryStyle);
         foreach (LineRenderer line in projectile.GetComponentsInChildren<LineRenderer>(true))
@@ -209,20 +213,38 @@ public class SpawnDressingTests
     {
         Projectile projectile = SpawnProjectile("BulletSpeed");
 
-        _scene.entityManager.OnProjectileSpawned.Invoke(projectile);
+        _scene.entityManager.OnProjectileSpawned.Invoke(projectile.gameObject);
 
         Assert.IsNull(projectile.GetComponent<ProjectileVisualObserver>());
     }
 
-    [TestCase(-5f, ZoneKind.Heal, EffectElement.Ring)]
-    [TestCase(5f, ZoneKind.Hostile, EffectElement.Litter)]
-    public void OnAreaOfEffectStarted_Area_PulsesItsKindOnceAndMasksItsOwnVisual(float consumerValue, ZoneKind kind,
-        EffectElement element)
+    [Test]
+    public void OnProjectileSpawned_NeitherProjectileNorArea_AddsNothing()
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);
-        AreaOfEffect area = CreateArea(consumerValue);
+        GameObject spawnedGo = new GameObject("Spawned");
+        _spawned.Add(spawnedGo);
 
-        _scene.entityManager.OnAreaOfEffectStarted.Invoke(area);
+        _scene.entityManager.OnProjectileSpawned.Invoke(spawnedGo);
+
+        Assert.IsNull(spawnedGo.GetComponent<AreaPulseOnStart>());
+        Assert.IsNull(spawnedGo.GetComponent<LegacyAreaVisualMask>());
+        Assert.IsNull(spawnedGo.GetComponent<ProjectileVisualObserver>());
+    }
+
+    [TestCase(-5f, ZoneKind.Heal, EffectElement.Ring)]
+    [TestCase(5f, ZoneKind.Hostile, EffectElement.Litter)]
+    public void OnProjectileSpawned_Area_PulsesItsKindOnceAtStartAndMasksItsOwnVisual(float consumerValue,
+        ZoneKind kind, EffectElement element)
+    {
+        _scene.manager.Init(_scene.entityManager, _scene.player);
+        AreaOfEffect area = SpawnArea();
+
+        _scene.entityManager.OnProjectileSpawned.Invoke(area.gameObject);
+        ConfigureArea(area, consumerValue);
+
+        Assert.AreEqual(0, _scene.manager.spellSink.GetComponentsInChildren<SpellEffect>().Length);
+        TestHelpers.InvokePrivate(area.GetComponent<AreaPulseOnStart>(), "Start");
         _scene.manager.zones.PublishFrame(0f);
 
         SpellEffect[] effects = _scene.manager.spellSink.GetComponentsInChildren<SpellEffect>();
@@ -230,7 +252,7 @@ public class SpawnDressingTests
         Assert.AreEqual(element, effects[0].element);
         Assert.AreEqual(1, _scene.manager.zones.count);
         Assert.AreEqual((int)kind, _scene.manager.zones.snapshot[0].kind);
-        Assert.AreEqual(area.radius, _scene.manager.zones.snapshot[0].radius);
+        Assert.AreEqual(2.5f, _scene.manager.zones.snapshot[0].radius);
         Assert.IsNotNull(area.GetComponent<LegacyAreaVisualMask>());
     }
 }

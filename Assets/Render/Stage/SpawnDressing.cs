@@ -30,7 +30,6 @@ namespace HealerLike.Render.Stage
             _entityManager.OnEntitySpawned.AddListener(OnEntitySpawned);
             _entityManager.OnEntityKilled.AddListener(OnEntityKilled);
             _entityManager.OnProjectileSpawned.AddListener(OnProjectileSpawned);
-            _entityManager.OnAreaOfEffectStarted.AddListener(OnAreaOfEffectStarted);
             _player.OnCharacterInit.AddListener(OnCharacterInit);
         }
 
@@ -41,7 +40,6 @@ namespace HealerLike.Render.Stage
                 _entityManager.OnEntitySpawned.RemoveListener(OnEntitySpawned);
                 _entityManager.OnEntityKilled.RemoveListener(OnEntityKilled);
                 _entityManager.OnProjectileSpawned.RemoveListener(OnProjectileSpawned);
-                _entityManager.OnAreaOfEffectStarted.RemoveListener(OnAreaOfEffectStarted);
             }
 
             if (_player != null)
@@ -70,16 +68,17 @@ namespace HealerLike.Render.Stage
             DressCharacter(character);
         }
 
-        void OnProjectileSpawned(Projectile projectile)
+        // Areas of effect spawn through the projectile pool too
+        void OnProjectileSpawned(GameObject spawnedGo)
         {
+            Projectile projectile = spawnedGo.GetComponent<Projectile>();
             if (projectile != null)
             {
                 DressProjectile(projectile);
+                return;
             }
-        }
 
-        void OnAreaOfEffectStarted(AreaOfEffect area)
-        {
+            AreaOfEffect area = spawnedGo.GetComponent<AreaOfEffect>();
             if (area != null)
             {
                 DressArea(area);
@@ -144,11 +143,13 @@ namespace HealerLike.Render.Stage
             }
         }
 
-        // AreaOfEffect.Start raises OnAreaOfEffectStarted once the caller has set the radius, before its own
-        // visual plays
+        // The area is dressed at spawn, before its caller sets the source and radius, so the pulse that reads them
+        // waits for Start
         void DressArea(AreaOfEffect area)
         {
-            _manager.spellSink.PulseArea(area.transform.position, area.radius, AreaKind(area.source), 1f);
+            RenderManager manager = _manager;
+            area.gameObject.AddComponent<AreaPulseOnStart>().Init(() =>
+                manager.spellSink.PulseArea(area.transform.position, area.radius, AreaKind(area.source), 1f));
             area.gameObject.AddComponent<LegacyAreaVisualMask>();
         }
 
