@@ -80,14 +80,33 @@ public class LookVocabularyTests
     [TestCase(ReachBand.Short)]
     [TestCase(ReachBand.Mid)]
     [TestCase(ReachBand.Long)]
-    public void Reach_WhilePinned_IsOneValueForEveryBand(ReachBand band)
+    public void Reach_ShippedAsset_UsesEachBandsAuthoredSpread(ReachBand band)
     {
         LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
 
         float reach = vocabulary.Reach(band);
 
-        Assert.IsTrue(vocabulary.isReachPinned);
-        Assert.AreEqual(vocabulary.pinnedReach, reach);
+        Assert.IsFalse(vocabulary.isReachPinned);
+        Assert.AreEqual(vocabulary.roots[band].reach, reach);
+    }
+
+    [Test]
+    public void Reach_ExplicitPin_OverridesTheBand()
+    {
+        LookVocabulary vocabulary = UnityEngine.ScriptableObject.CreateInstance<LookVocabulary>();
+        try
+        {
+            vocabulary.isReachPinned = true;
+            vocabulary.pinnedReach = 1.7f;
+            foreach (ReachBand band in Enum.GetValues(typeof(ReachBand)))
+            {
+                Assert.AreEqual(1.7f, vocabulary.Reach(band));
+            }
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(vocabulary);
+        }
     }
 
     // A quicker cadence draws a longer stem: Steady is 1.6 and Quick 2.4 times the Slow stem, as the channel table sets

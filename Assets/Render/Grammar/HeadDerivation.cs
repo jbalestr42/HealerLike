@@ -120,6 +120,13 @@ namespace HealerLike.Render.Grammar
                 return AccessoryKind.MiniHead;
             }
 
+            return FallbackAccessory(data, accent);
+        }
+
+        // The non-head accessory, also exposed to the atlas when a speed edit removes a mini head.
+        public static AccessoryKind FallbackAccessory(EntityData data, EffectFamily accent)
+        {
+
             if (data == null)
             {
                 return AccessoryKind.None;

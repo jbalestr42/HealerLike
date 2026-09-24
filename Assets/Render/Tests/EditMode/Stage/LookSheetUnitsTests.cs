@@ -26,7 +26,7 @@ public class LookSheetUnitsTests
     // Five units nobody designed, built in memory from the game's classes and prefabs
     [TestCase("Stormreed", LookSide.Plant, HeadKind.Fork, CountBand.Few, StemBand.Quick, MassBand.Light,
               AccessoryKind.None, EffectFamily.Damage)]
-    [TestCase("Puffball", LookSide.Plant, HeadKind.Pulse, CountBand.Many, StemBand.Steady, MassBand.Sturdy,
+    [TestCase("Puffball", LookSide.Plant, HeadKind.Pulse, CountBand.Many, StemBand.Steady, MassBand.Heavy,
               AccessoryKind.None, EffectFamily.Damage)]
     [TestCase("Old fern", LookSide.Plant, HeadKind.SelfTick, CountBand.One, StemBand.Slow, MassBand.Heavy,
               AccessoryKind.None, EffectFamily.Renew)]

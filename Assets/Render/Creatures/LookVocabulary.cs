@@ -100,9 +100,9 @@ namespace HealerLike.Render.Creatures
         [BoxGroup("Proportions")]
         public int maxParts = CreatureValidator.MaxParts;
 
-        // Every live unit has a board-wide range, so reach stays at one value until the data has bands
+        // An optional art override; the roster normally uses its derived reach band.
         [BoxGroup("Proportions")]
-        public bool isReachPinned = true;
+        public bool isReachPinned;
 
         [BoxGroup("Proportions")]
         public float pinnedReach = 1.3f;
