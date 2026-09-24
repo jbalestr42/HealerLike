@@ -453,11 +453,8 @@ namespace HealerLike.Render.Deliveries
                 return;
             }
 
-            if (_preserveContactPath && _builder && _rig != null)
-            {
-                _rig.ContactDeliveryPath(_token, point, true);
-            }
-            else if (_delivery != null)
+            // A chain shot began as ChainSync, so its source keeps the path of its contacts
+            if (_delivery != null)
             {
                 _delivery.ContactDelivery(_token, point, hit.target);
             }

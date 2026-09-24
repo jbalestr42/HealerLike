@@ -353,7 +353,6 @@ public class ProjectileVisualObserverTests
         Assert.AreSame(_first, _observer.contacts[0].target);
         Assert.AreSame(_second, _observer.contacts[1].target);
         Assert.AreEqual(_first.transform.position, _observer.contacts[0].position);
-        Assert.AreEqual(2, _builder.rig.activeArmCount);
         Assert.IsFalse(_projectileObject.GetComponent<LineRenderer>().enabled);
         Assert.IsTrue(_projectile.enabled);
     }

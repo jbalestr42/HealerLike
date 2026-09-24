@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using HealerLike.Render.Deliveries;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 
@@ -29,6 +30,8 @@ namespace HealerLike.Render.Creatures
         Vector3 _groundOrigin;
         Vector3 _groundNormal = Vector3.up;
 
+        ArmPool _pool;
+
         CreatureRig _rig;
         public CreatureRig rig { get { return _rig; } }
 
@@ -50,7 +53,7 @@ namespace HealerLike.Render.Creatures
             Detach();
             if (rig != null)
             {
-                rig.CancelAll();
+                _pool.CancelAll();
                 rig.SetVisible(false);
             }
         }
@@ -58,12 +61,7 @@ namespace HealerLike.Render.Creatures
         void OnDestroy()
         {
             Detach();
-            if (rig != null)
-            {
-                rig.Dispose();
-            }
-
-            _rig = null;
+            ReleaseRig();
         }
 
         public void Init(Entity owner, RenderManager manager)
@@ -96,7 +94,7 @@ namespace HealerLike.Render.Creatures
             Detach();
             if (_entity != owner && rig != null)
             {
-                rig.CancelAll();
+                _pool.CancelAll();
             }
 
             _entity = owner;
@@ -161,6 +159,7 @@ namespace HealerLike.Render.Creatures
                 float healthFraction = _health && _health.Max > 0 ? _health.Value / _health.Max : 1f;
                 rig.SetReadout(target, healthFraction, readiness, readiness);
                 rig.Tick(Time.time, Time.deltaTime, Frame());
+                _pool.Tick(Time.deltaTime);
             }
         }
 
@@ -171,12 +170,7 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
-            if (rig != null)
-            {
-                rig.Dispose();
-            }
-
-            _rig = null;
+            ReleaseRig();
             _recipe = value;
             _material = sharedMaterial;
             _meshes = meshes;
@@ -196,12 +190,7 @@ namespace HealerLike.Render.Creatures
             ObserveOutcomes();
             if (_cellSize != size)
             {
-                if (rig != null)
-                {
-                    rig.Dispose();
-                }
-
-                _rig = null;
+                ReleaseRig();
             }
 
             _cellSize = size;
@@ -269,6 +258,8 @@ namespace HealerLike.Render.Creatures
                 if (created.Init(_recipe, transform, _material, _bodyMaterial, _meshes, _cellSize))
                 {
                     _rig = created;
+                    _pool = new ArmPool();
+                    _pool.Init(_rig, _material, _meshes);
                 }
             }
 
@@ -276,7 +267,20 @@ namespace HealerLike.Render.Creatures
             {
                 rig.SetVisible(isActiveAndEnabled);
                 rig.Tick(Time.time, 0f, Frame());
+                _pool.Tick(0f);
             }
+        }
+
+        void ReleaseRig()
+        {
+            if (rig != null)
+            {
+                _pool.Dispose();
+                rig.Dispose();
+            }
+
+            _rig = null;
+            _pool = null;
         }
 
         FootFrame Frame()
@@ -378,7 +382,8 @@ namespace HealerLike.Render.Creatures
         {
             if (isActiveAndEnabled && target && value > 0f && rig != null)
             {
-                rig.HealContact(RenderTargets.Point(target));
+                rig.Heal();
+                _pool.HealContact(RenderTargets.Point(target));
             }
         }
 
@@ -388,14 +393,14 @@ namespace HealerLike.Render.Creatures
 
         public bool BeginDelivery(int token, DeliveryStyle style, Transform projectile, Vector3 end)
         {
-            return isActiveAndEnabled && rig != null && rig.BeginDelivery(token, style, projectile, end);
+            return isActiveAndEnabled && rig != null && _pool.BeginDelivery(token, style, projectile, end);
         }
 
         public void ContactDelivery(int token, Vector3 position, GameObject target)
         {
             if (rig != null)
             {
-                rig.ContactDelivery(token, position, target);
+                _pool.ContactDelivery(token, position, target);
             }
         }
 
@@ -403,7 +408,7 @@ namespace HealerLike.Render.Creatures
         {
             if (rig != null)
             {
-                rig.EndDelivery(token);
+                _pool.EndDelivery(token);
             }
         }
 

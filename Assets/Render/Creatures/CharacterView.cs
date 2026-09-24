@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using HealerLike.Render.Deliveries;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 
@@ -22,6 +23,8 @@ namespace HealerLike.Render.Creatures
         ISpellVisualSink _sink;
         GameObject _registeredSource;
         StatusObserver _statusObserver;
+
+        ArmPool _pool;
 
         CreatureRig _rig;
         public CreatureRig rig { get { return _rig; } }
@@ -59,7 +62,7 @@ namespace HealerLike.Render.Creatures
             Unregister();
             if (rig != null)
             {
-                rig.CancelAll();
+                _pool.CancelAll();
                 rig.SetVisible(false);
             }
         }
@@ -70,10 +73,12 @@ namespace HealerLike.Render.Creatures
             Unregister();
             if (rig != null)
             {
+                _pool.Dispose();
                 rig.Dispose();
             }
 
             _rig = null;
+            _pool = null;
         }
 
         // The view prefab carries recipe, material and meshes, and anchors the body on itself
@@ -123,6 +128,7 @@ namespace HealerLike.Render.Creatures
             {
                 FootFrame frame = new FootFrame(_visualAnchor.position, _visualAnchor.up, _cellSize);
                 rig.Tick(Time.time, Time.deltaTime, frame);
+                _pool.Tick(Time.deltaTime);
             }
         }
 
@@ -153,7 +159,8 @@ namespace HealerLike.Render.Creatures
             }
 
             _castGestureCount++;
-            rig.HealContact(RenderTargets.Point(target));
+            rig.Heal();
+            _pool.HealContact(RenderTargets.Point(target));
         }
 
         void StopObserving()
@@ -180,6 +187,8 @@ namespace HealerLike.Render.Creatures
                 }
 
                 _rig = created;
+                _pool = new ArmPool();
+                _pool.Init(_rig, _material, _meshes);
             }
 
             rig.SetVisible(isActiveAndEnabled);
@@ -230,14 +239,14 @@ namespace HealerLike.Render.Creatures
 
         public bool BeginDelivery(int token, DeliveryStyle style, Transform projectile, Vector3 end)
         {
-            return isActiveAndEnabled && rig != null && rig.BeginDelivery(token, style, projectile, end);
+            return isActiveAndEnabled && rig != null && _pool.BeginDelivery(token, style, projectile, end);
         }
 
         public void ContactDelivery(int token, Vector3 position, GameObject target)
         {
             if (rig != null)
             {
-                rig.ContactDelivery(token, position, target);
+                _pool.ContactDelivery(token, position, target);
             }
         }
 
@@ -245,7 +254,7 @@ namespace HealerLike.Render.Creatures
         {
             if (rig != null)
             {
-                rig.EndDelivery(token);
+                _pool.EndDelivery(token);
             }
         }
 
