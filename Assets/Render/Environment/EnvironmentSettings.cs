@@ -5,9 +5,12 @@ namespace HealerLike.Render.Environment
     [Serializable]
     public struct EnvironmentSettings
     {
+        // One seed for the scatter, the foreground and the ridge, so the scene is the same on every run
+        public static readonly int DefaultSeed = 1707;
+
         public static readonly EnvironmentSettings Default = new EnvironmentSettings
         {
-            seed = 1707,
+            seed = DefaultSeed,
             marginCells = 1f,
             ringDistance = 17f,
             falloff = 3.2f,

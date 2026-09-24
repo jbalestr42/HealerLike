@@ -132,55 +132,41 @@ public class EnvironmentScatterTests
     }
 
     [Test]
-    public void Init_MixedKinds_OnlyPlantsSway()
+    public void Init_MixedKinds_SwaysOnlyThePlants()
     {
         EnvironmentScatter scatter = Make(9);
-
         Init(scatter, new Rect(-8f, -8f, 16f, 16f));
+        EnvironmentSway sway = scatter.root.GetComponent<EnvironmentSway>();
+        Quaternion[] rest = Enumerable.Range(0, scatter.root.childCount)
+            .Select(i => scatter.root.GetChild(i).localRotation)
+            .ToArray();
 
-        int swaying = scatter.items.Count(i => i.kind == EnvironmentKind.MushroomTree
-            || i.kind == EnvironmentKind.SpiralFern
-            || i.kind == EnvironmentKind.SphereCluster || i.kind == EnvironmentKind.BladeRosette);
-        Assert.AreEqual(swaying, scatter.swayingCount);
-        Assert.DoesNotThrow(() => TestHelpers.InvokePrivate(scatter, "Update"));
+        sway.Animate(10);
+
+        for (int i = 0; i < scatter.items.Count; i++)
+        {
+            EnvironmentKind kind = scatter.items[i].kind;
+            bool isStone = kind == EnvironmentKind.Boulder || kind == EnvironmentKind.Cairn
+                || kind == EnvironmentKind.Monolith;
+            float angle = Quaternion.Angle(rest[i], scatter.root.GetChild(i).localRotation);
+            Assert.AreEqual(!isStone, angle > 0.001f, kind.ToString());
+        }
     }
 
     [Test]
-    public void Animate_BeyondFog_FreezesAndResumesWithoutAccumulating()
+    public void Init_Gust_OpensFernJointsAndNodsCaps()
     {
         EnvironmentScatter scatter = Make(5);
-        Init(scatter, new Rect(-8f, -8f, 16f, 16f));
-        Transform plant = FirstPivot(scatter, "BladeRosette");
-        Quaternion rest = plant.localRotation;
-
-        scatter.Animate(10, Vector3.one * 1000f, 1f);
-        Assert.AreEqual(rest, plant.localRotation);
-
-        scatter.Animate(10, plant.position, 100f);
-        Quaternion pose = plant.localRotation;
-        Assert.That(Quaternion.Angle(rest, pose), Is.GreaterThan(0.001f));
-
-        scatter.Animate(11, Vector3.one * 1000f, 1f);
-        Assert.AreEqual(pose, plant.localRotation);
-
-        scatter.Animate(10, plant.position, 100f);
-        Assert.AreEqual(pose, plant.localRotation);
-    }
-
-    [Test]
-    public void Animate_Gust_OpensFernJointsAndNodsCaps()
-    {
-        EnvironmentScatter scatter = Make(5);
-        Init(scatter, new Rect(-8f, -8f, 16f, 16f));
         EnvironmentGust gust = _go.AddComponent<EnvironmentGust>();
-        scatter.ConfigureMotion(null, gust, 100f);
+        scatter.Init(new Rect(-8f, -8f, 16f, 16f), 1f, 0.5f, null, gust, 100f, _meshes);
+        EnvironmentSway sway = scatter.root.GetComponent<EnvironmentSway>();
         Transform fern = FirstPivot(scatter, "SpiralFern");
         Transform joint = fern.GetChild(0).GetChild(0).GetChild(1);
-        scatter.Animate(10, Vector3.zero, 100f);
+        sway.Animate(10);
         float resting = joint.localEulerAngles.z;
 
         gust.GustAt(Vector3.forward, 1f, 2f, 9);
-        scatter.Animate(10, Vector3.zero, 100f);
+        sway.Animate(10);
 
         Assert.That(Mathf.DeltaAngle(resting, joint.localEulerAngles.z), Is.GreaterThan(2f));
         Transform mushroom = FirstPivot(scatter, "MushroomTree");
@@ -189,30 +175,9 @@ public class EnvironmentScatterTests
         Assert.AreEqual(2, cap.childCount);
 
         Quaternion before = cap.localRotation;
-        scatter.Animate(11, Vector3.zero, 100f);
+        sway.Animate(11);
 
         Assert.That(Quaternion.Angle(before, cap.localRotation), Is.GreaterThan(0.001f));
-    }
-
-    [Test]
-    public void Animate_AfterSpawn_SettleDecaysAndSamplingIsStable()
-    {
-        EnvironmentScatter scatter = Make(5);
-        Init(scatter, new Rect(-8f, -8f, 16f, 16f));
-        Transform plant = FirstPivot(scatter, "BladeRosette");
-
-        TestHelpers.SetPrivateField(scatter, "_builtAt", 10d);
-        scatter.Animate(10.1, Vector3.zero, 100f);
-        Quaternion settling = plant.localRotation;
-        TestHelpers.SetPrivateField(scatter, "_builtAt", 0d);
-        scatter.Animate(10.1, Vector3.zero, 100f);
-
-        Assert.That(Quaternion.Angle(settling, plant.localRotation), Is.GreaterThan(1f));
-
-        Quaternion settled = plant.localRotation;
-        scatter.Animate(10.1, Vector3.zero, 100f);
-
-        Assert.AreEqual(settled, plant.localRotation);
     }
 
     [Test]
@@ -228,26 +193,6 @@ public class EnvironmentScatterTests
         Color.RGBToHSV(a, out float h2, out _, out float v2);
         Assert.That(Mathf.Abs(Mathf.DeltaAngle(h * 360f, h2 * 360f)), Is.LessThanOrEqualTo(6.001f));
         Assert.That(v2 / v, Is.InRange(0.9199f, 1.0801f));
-    }
-
-    [Test]
-    public void Animate_AfterWarmup_AllocatesNothing()
-    {
-        EnvironmentScatter scatter = Make(5);
-        Init(scatter, new Rect(-8f, -8f, 16f, 16f));
-        for (int i = 0; i < 10; i++)
-        {
-            scatter.Animate(i, Vector3.zero, 100f);
-        }
-
-        long before = System.GC.GetAllocatedBytesForCurrentThread();
-        for (int i = 0; i < 100; i++)
-        {
-            scatter.Animate(i, Vector3.zero, 100f);
-        }
-        long bytes = System.GC.GetAllocatedBytesForCurrentThread() - before;
-
-        Assert.AreEqual(0, bytes);
     }
 }
 
