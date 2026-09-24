@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using HealerLike.Render.Deliveries;
 using HealerLike.Render.Spells;
@@ -14,10 +13,8 @@ namespace HealerLike.Render.Creatures
         [SerializeField] Material _bodyMaterial;
         [SerializeField] PrimitiveMeshes _meshes;
 
+        readonly UnitReadout _readout = new UnitReadout();
         Entity _entity;
-        readonly List<ASkill> _skills = new List<ASkill>();
-        readonly Dictionary<ASkill, ICooldownSkill> _cooldowns = new Dictionary<ASkill, ICooldownSkill>();
-        readonly List<ASkill> _removedSkills = new List<ASkill>();
         ResourceAttribute _health;
         StatusObserver _statusObserver;
         RenderRegistry _registry;
@@ -30,8 +27,6 @@ namespace HealerLike.Render.Creatures
         Vector3 _groundNormal = Vector3.up;
 
         public CreatureRecipe recipe { get { return _recipe; } }
-
-        public int cooldownSkillCount { get { return _cooldowns.Count; } }
 
         void OnEnable()
         {
@@ -89,7 +84,7 @@ namespace HealerLike.Render.Creatures
             }
 
             _entity = owner;
-            RefreshSkills();
+            _readout.Init(_entity);
             ObserveOutcomes();
             if (!_entity)
             {
@@ -108,49 +103,17 @@ namespace HealerLike.Render.Creatures
             }
         }
 
+        // After his Update has moved the entity and its skills; the readout is the one thing polled every frame
         void LateUpdate()
         {
-            if (!_entity)
+            if (!_entity || rig == null)
             {
                 return;
             }
 
-            Attach();
-            RefreshSkills();
-            TargetProvider provider = _entity.targetProvider;
-            if (!provider)
-            {
-                provider = _entity.GetComponent<TargetProvider>();
-            }
-
-            List<GameObject> targets = provider ? provider.GetTargets() : null;
-            Vector3? target = null;
-            if (targets != null && targets.Count > 0 && targets[0])
-            {
-                target = targets[0].transform.position;
-            }
-
-            float readiness = 0f;
-            foreach (KeyValuePair<ASkill, ICooldownSkill> pair in _cooldowns)
-            {
-                if (!pair.Key || !pair.Key.isEnabled)
-                {
-                    continue;
-                }
-
-                float remaining = pair.Value.cooldownProgress;
-                if (float.IsFinite(remaining))
-                {
-                    readiness = Mathf.Max(readiness, 1f - Mathf.Clamp01(remaining));
-                }
-            }
-
-            if (rig != null)
-            {
-                float healthFraction = _health && _health.Max > 0 ? _health.Value / _health.Max : 1f;
-                rig.SetReadout(target, healthFraction, readiness, readiness);
-                TickRig(Time.time, Time.deltaTime, Frame());
-            }
+            _readout.Read();
+            rig.SetReadout(_readout.target, _readout.healthFraction, _readout.readiness, _readout.readiness);
+            TickRig(Time.time, Time.deltaTime, Frame());
         }
 
         public void SetRecipe(CreatureRecipe value, Material sharedMaterial, PrimitiveMeshes meshes)
@@ -205,38 +168,6 @@ namespace HealerLike.Render.Creatures
             if (_statusObserver != null)
             {
                 _statusObserver.Init(_entity, _spellSink, _registry);
-            }
-        }
-
-        void RefreshSkills()
-        {
-            if (!_entity)
-            {
-                _cooldowns.Clear();
-                return;
-            }
-
-            _entity.GetComponents(_skills);
-            _removedSkills.Clear();
-            foreach (ASkill skill in _cooldowns.Keys)
-            {
-                if (!skill || !_skills.Contains(skill))
-                {
-                    _removedSkills.Add(skill);
-                }
-            }
-
-            foreach (ASkill skill in _removedSkills)
-            {
-                _cooldowns.Remove(skill);
-            }
-
-            foreach (ASkill skill in _skills)
-            {
-                if (!_cooldowns.ContainsKey(skill) && skill is ICooldownSkill cooldownSkill)
-                {
-                    _cooldowns.Add(skill, cooldownSkill);
-                }
             }
         }
 

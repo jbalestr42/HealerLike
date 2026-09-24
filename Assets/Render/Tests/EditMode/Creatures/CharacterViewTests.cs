@@ -140,7 +140,7 @@ public class CharacterViewTests
         ResourceOutcomeObserver observer = _targetGo.AddComponent<ResourceOutcomeObserver>();
         observer.Init(health, null, null, registry);
         BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-        MethodInfo updateMethod = typeof(CharacterView).GetMethod("Update", flags);
+        MethodInfo updateMethod = typeof(CharacterView).GetMethod("LateUpdate", flags);
         Action update = (Action)Delegate.CreateDelegate(typeof(Action), view, updateMethod);
         for (int i = 0; i < 10; i++)
         {
@@ -156,8 +156,6 @@ public class CharacterViewTests
         Assert.AreEqual(0, GC.GetAllocatedBytesForCurrentThread() - before);
         Assert.AreEqual(3, view.budAnchors.Count);
         Assert.NotNull(view.bud0);
-        Assert.NotNull(view.bud1);
-        Assert.NotNull(view.bud2);
 
         ResourceModifier modifier = new ResourceModifier { source = _characterGo };
         health.OnAllConsumerProcessed.Invoke(_targetGo, modifier, -5f, false);

@@ -26,7 +26,7 @@ namespace HealerLike.Render.Creatures
         Transform _root;
         Transform _sway;
         Transform[] _pivots;
-        Transform[] _geometry;
+        Transform[] _geometry = Array.Empty<Transform>();
         Renderer[] _bodyRenderers;
         bool[] _hasOchreFaces;
         Color[] _colours;
@@ -36,15 +36,9 @@ namespace HealerLike.Render.Creatures
         Vector3? _aimTarget;
         float _budPower;
         bool _isDisposed;
-
         float _charge;
-        public float charge { get { return _charge; } }
-
         float _healthFraction = 1f;
-        public float healthFraction { get { return _healthFraction; } }
-
         Quaternion _aim = Quaternion.identity;
-        public Quaternion aim { get { return _aim; } }
 
         Transform[] _budAnchors;
         public Transform[] budAnchors { get { return _budAnchors; } }
@@ -56,17 +50,7 @@ namespace HealerLike.Render.Creatures
         public float cellSize { get { return _cellSize; } }
 
         // One per recipe part, the transform carrying that part's mesh
-        public IReadOnlyList<Transform> partTransforms
-        {
-            get
-            {
-                if (_geometry == null)
-                {
-                    return Array.Empty<Transform>();
-                }
-                return _geometry;
-            }
-        }
+        public IReadOnlyList<Transform> partTransforms { get { return _geometry; } }
 
         // The rotation the arms rest in: the root turned by the unit's aim, idle and wilt
         public Quaternion armRotation { get { return _root.rotation * _sway.localRotation; } }

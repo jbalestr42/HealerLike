@@ -50,8 +50,6 @@ namespace HealerLike.Render.Deliveries
 
         public GesturePhase phase { get { return _pose.phase; } }
 
-        public ChainResult lastResult { get { return _pose.lastResult; } }
-
         public Vector3 tip { get { return _pose.tip; } }
 
         public int segmentCount { get { return _pose.segmentCount; } }
@@ -63,24 +61,6 @@ namespace HealerLike.Render.Deliveries
 
         Color _restTipColour;
         public Color restTipColour { get { return _restTipColour; } }
-
-        public DeliveryTip tipFragment { get { return _tip; } }
-
-        public int meshRevision { get { return _mesh.revision; } }
-
-        public int activeLeafCount
-        {
-            get
-            {
-                if (_isVisible && _pose.phase != GesturePhase.Rest)
-                {
-                    return LeafCount;
-                }
-                return 0;
-            }
-        }
-
-        public Matrix4x4 tipMatrix { get { return _beads[LeafCount]; } }
 
         // The width of one tip unit in world space
         public float tipWidth { get { return _radius * tipWidthRadii; } }
@@ -287,7 +267,8 @@ namespace HealerLike.Render.Deliveries
                 Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
                 Vector3 leafScale = new Vector3(length * leafWidth, length, length * leafDepth);
                 _leaves[i] = Matrix4x4.TRS(_pose.Joint(j) + direction * length * leafCentre, rotation, leafScale);
-                _beads[i] = Matrix4x4.TRS(_pose.Joint(j), Quaternion.identity, Vector3.one * _radius * beadRadii * width);
+                Vector3 beadScale = Vector3.one * _radius * beadRadii * width;
+                _beads[i] = Matrix4x4.TRS(_pose.Joint(j), Quaternion.identity, beadScale);
             }
 
             Vector3 last = _pose.Joint(_pose.jointCount - 2);

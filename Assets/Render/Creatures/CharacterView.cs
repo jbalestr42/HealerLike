@@ -37,10 +37,6 @@ namespace HealerLike.Render.Creatures
 
         public Transform bud0 { get { return budAnchors.Count > 0 ? budAnchors[0] : null; } }
 
-        public Transform bud1 { get { return budAnchors.Count > 1 ? budAnchors[1] : null; } }
-
-        public Transform bud2 { get { return budAnchors.Count > 2 ? budAnchors[2] : null; } }
-
         void OnEnable()
         {
             BuildAndRegister();
@@ -90,18 +86,17 @@ namespace HealerLike.Render.Creatures
             ObserveResources();
         }
 
-        void Update()
-        {
-            ObserveResources();
-        }
-
+        // After the character's own Update has spent or restored its mana
         void LateUpdate()
         {
-            BuildAndRegister();
             if (rig != null && _character)
             {
                 ResourceAttribute mana = _character.mana;
-                float manaFraction = mana && mana.Max > 0 ? mana.Value / mana.Max : 0f;
+                float manaFraction = 0f;
+                if (mana && mana.Max > 0)
+                {
+                    manaFraction = mana.Value / mana.Max;
+                }
                 rig.SetReadout(null, 1f, 0f, manaFraction);
             }
 

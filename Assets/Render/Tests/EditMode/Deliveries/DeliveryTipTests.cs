@@ -91,14 +91,15 @@ public class DeliveryTipTests
     }
 
     [Test]
-    public void PartMatrix_RigidSpike_ApexLeadsTheTravel()
+    public void Draw_RigidSpike_ApexLeadsTheTravel()
     {
         DeliveryTip tip = CreateTip(DeliveryStyle.Rigid);
         Matrix4x4 frame = DeliveryTip.Frame(Vector3.zero, Vector3.right, 1f);
 
-        Vector3 apex = tip.PartMatrix(frame, 0).MultiplyPoint3x4(Vector3.up * 0.5f);
+        tip.Draw(_parent.transform, frame, _material, Color.red, Color.green);
 
-        Assert.Greater(apex.x, 0.9f);
+        Transform spike = _parent.GetComponentInChildren<Renderer>().transform;
+        Assert.Greater(spike.TransformPoint(Vector3.up * 0.5f).x, 0.9f);
     }
 
     [Test]
@@ -134,7 +135,7 @@ public class DeliveryTipTests
         tip.Draw(_parent.transform, frame, _material, Color.red, Color.green);
 
         Transform part = _parent.GetComponentInChildren<Renderer>().transform;
-        Vector3 expected = tip.PartMatrix(frame, 0).MultiplyPoint3x4(Vector3.zero);
+        Vector3 expected = frame.MultiplyPoint3x4(tip.Part(0).position);
         Assert.That(Vector3.Distance(expected, part.position), Is.LessThan(0.0001f));
     }
 

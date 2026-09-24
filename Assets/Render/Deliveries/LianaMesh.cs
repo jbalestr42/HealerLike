@@ -27,9 +27,6 @@ namespace HealerLike.Render.Deliveries
         MeshRenderer _renderer;
         public MeshRenderer renderer { get { return _renderer; } }
 
-        int _revision;
-        public int revision { get { return _revision; } }
-
         public void Init(Transform parent, Material material, Color colour, int jointCount)
         {
             int segments = jointCount - 1;
@@ -135,7 +132,6 @@ namespace HealerLike.Render.Deliveries
             _mesh.vertices = _vertices;
             _mesh.normals = _normals;
             _mesh.RecalculateBounds();
-            _revision++;
         }
 
         public void Dispose()

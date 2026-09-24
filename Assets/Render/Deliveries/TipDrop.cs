@@ -17,7 +17,6 @@ namespace HealerLike.Render.Deliveries
         bool _isInitialized;
 
         float _elapsed;
-        public float elapsed { get { return _elapsed; } }
 
         // The pod an area shot drops at its first contact, in the shot's colour and at its size
         public static void Splash(DeliveryVocabulary vocabulary, PrimitiveMeshes meshes,

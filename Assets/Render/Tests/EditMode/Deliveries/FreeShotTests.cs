@@ -19,6 +19,8 @@ public class FreeShotTests
         _projectileGo = new GameObject("Projectile");
         _projectile = _projectileGo.AddComponent<Projectile>();
         _projectile.targetPoint = _target;
+        // A shot with a target is still flying
+        TestHelpers.SetPrivateField(_projectile, "_target", _target);
         _shot = _projectileGo.AddComponent<FreeShot>();
     }
 
@@ -50,6 +52,20 @@ public class FreeShotTests
         Vector3 forward = _shot.frame.MultiplyVector(Vector3.forward);
         Assert.That(Vector3.Dot(forward.normalized, Vector3.right), Is.GreaterThan(0.99f));
         Assert.AreEqual(vocabulary.bulletSize, forward.magnitude, 0.0001f);
+    }
+
+    [Test]
+    public void LateUpdate_Moved_LooksAlongTheTravel()
+    {
+        _shot.Init(_projectile, DeliveryStyle.Direct, RenderTestAssets.LoadDeliveryVocabulary(),
+            RenderTestAssets.LoadMeshes());
+
+        _projectileGo.transform.position = Vector3.forward;
+        TestHelpers.InvokePrivate(_shot, "LateUpdate");
+
+        Assert.AreEqual(Vector3.forward, (Vector3)_shot.frame.GetColumn(3));
+        Vector3 forward = _shot.frame.MultiplyVector(Vector3.forward).normalized;
+        Assert.That(Vector3.Dot(forward, Vector3.forward), Is.GreaterThan(0.99f));
     }
 }
 

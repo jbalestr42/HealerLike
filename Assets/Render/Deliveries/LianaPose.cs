@@ -61,9 +61,6 @@ namespace HealerLike.Render.Deliveries
         GesturePhase _phase;
         public GesturePhase phase { get { return _phase; } }
 
-        ChainResult _lastResult;
-        public ChainResult lastResult { get { return _lastResult; } }
-
         public Vector3 tip { get { return _joints[_joints.Length - 1]; } }
 
         public int jointCount { get { return _joints.Length; } }
@@ -223,14 +220,8 @@ namespace HealerLike.Render.Deliveries
         {
             if (!_isDeliveryProfile)
             {
-                if (!_solver.Solve(_joints, _lengths, rootWorld, target, restOrientation * _pole,
-                    out ChainResult result, solveIterations))
-                {
-                    return false;
-                }
-
-                _lastResult = result;
-                return true;
+                return _solver.Solve(_joints, _lengths, rootWorld, target, restOrientation * _pole, out _,
+                    solveIterations);
             }
 
             if (isRod)

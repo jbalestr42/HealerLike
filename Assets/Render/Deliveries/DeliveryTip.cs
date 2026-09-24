@@ -60,12 +60,6 @@ namespace HealerLike.Render.Deliveries
             return _parts[index];
         }
 
-        public Matrix4x4 PartMatrix(Matrix4x4 frame, int index)
-        {
-            LookPart part = _parts[index];
-            return frame * Matrix4x4.TRS(part.position, Quaternion.Euler(part.euler), part.size);
-        }
-
         // The accent role takes the delivery's tip colour and the stem role the arm's own, every other role is
         // the palette's
         public Color PartColour(int index, Color tip, Color stem)

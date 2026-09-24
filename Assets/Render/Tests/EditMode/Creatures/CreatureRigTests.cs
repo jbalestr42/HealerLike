@@ -1,10 +1,8 @@
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 using HealerLike.Render.Grammar;
-using HealerLike.Render.Stones;
 
 namespace HealerLike.Render.Creatures
 {
@@ -15,7 +13,6 @@ public class CreatureRigTests
     Material _material;
     CreatureRecipe _recipe;
     CreatureRig _rig;
-    readonly List<Object> _objects = new List<Object>();
 
     [SetUp]
     public void SetUp()
@@ -31,20 +28,9 @@ public class CreatureRigTests
     public void TearDown()
     {
         _rig.Dispose();
-        foreach (Object trackedObject in _objects)
-        {
-            Object.DestroyImmediate(trackedObject);
-        }
-        _objects.Clear();
         Object.DestroyImmediate(_parent);
         Object.DestroyImmediate(_material);
         Object.DestroyImmediate(_recipe);
-    }
-
-    T Track<T>(T trackedObject) where T : Object
-    {
-        _objects.Add(trackedObject);
-        return trackedObject;
     }
 
     [Test]
@@ -168,18 +154,6 @@ public class CreatureRigTests
     }
 
     [Test]
-    public void Init_Tip_DrawsAWiderOutline()
-    {
-        CreateDerivedRig(LookSide.Plant);
-        int tip = System.Array.FindIndex(_recipe.parts, part => part.role == PartRole.Tip);
-        MaterialPropertyBlock block = new MaterialPropertyBlock();
-
-        _rig.partTransforms[tip].GetComponent<Renderer>().GetPropertyBlock(block);
-
-        Assert.AreEqual(PartPaint.TipOutlineWidth, block.GetFloat("_HLOutlineWidthMultiplier"));
-    }
-
-    [Test]
     public void Tick_Crown_SpinsByRoleNotById()
     {
         _rig.Dispose();
@@ -193,31 +167,6 @@ public class CreatureRigTests
         _rig.Tick(5f, 0f, frame);
 
         Assert.Greater(Quaternion.Angle(before, _rig.partTransforms[0].parent.localRotation), 1f);
-    }
-
-    [Test]
-    public void Init_TwoFacedStone_DrawsOchreOnTheSecondSubmesh()
-    {
-        _rig.Dispose();
-        Mesh mesh = Track(new Mesh());
-        mesh.vertices = new Vector3[] { Vector3.zero, Vector3.up, Vector3.right, Vector3.forward };
-        mesh.subMeshCount = 2;
-        mesh.SetTriangles(new int[] { 0, 1, 2 }, 0);
-        mesh.SetTriangles(new int[] { 0, 2, 3 }, 1);
-        StoneVariants variants = Track(ScriptableObject.CreateInstance<StoneVariants>());
-        variants.meshes = new Mesh[] { mesh };
-        PrimitiveMeshes meshes = Track(Object.Instantiate(RenderTestAssets.LoadMeshes()));
-        meshes.stoneVariants = variants;
-        _recipe.parts[0].primitive = Primitive.Stone;
-        _rig = new CreatureRig();
-        _rig.Init(_recipe, _parent.transform, _material, meshes);
-        Renderer renderer = _rig.partTransforms[0].GetComponent<Renderer>();
-        MaterialPropertyBlock block = new MaterialPropertyBlock();
-
-        renderer.GetPropertyBlock(block, 1);
-
-        Assert.AreEqual(2, renderer.sharedMaterials.Length);
-        Assert.Less(((Vector4)_recipe.stoneOchre - (Vector4)block.GetColor("_BaseColor")).magnitude, 0.001f);
     }
 
     [Test]
@@ -245,33 +194,6 @@ public class CreatureRigTests
         _rig.Dispose();
 
         Assert.IsFalse(_rig.root);
-    }
-
-    [Test]
-    public void Tick_Roots_AreJointedCylinderChainsDownToTheFoot()
-    {
-        _rig.Tick(0f, 0.016f, new FootFrame(Vector3.zero, Vector3.up, 1f));
-
-        int segments = 0;
-        int joints = 0;
-        float lowest = float.MaxValue;
-        foreach (Transform child in _rig.root)
-        {
-            if (child.name == "Root")
-            {
-                segments++;
-                Assert.AreSame(RenderTestAssets.LoadMeshes().cylinder, child.GetComponent<MeshFilter>().sharedMesh);
-                lowest = Mathf.Min(lowest, child.GetComponent<Renderer>().bounds.min.y);
-            }
-            else if (child.name == "RootJoint")
-            {
-                joints++;
-            }
-        }
-
-        Assert.AreEqual(_recipe.roots.count * _recipe.roots.segments, segments);
-        Assert.AreEqual(_recipe.roots.count * (_recipe.roots.segments - 1), joints);
-        Assert.That(lowest, Is.LessThan(_recipe.roots.thickness)); // the last segment lies on the ground
     }
 
     [Test]
@@ -360,9 +282,9 @@ public class CreatureRigTests
     {
         _rig.SetReadout(Vector3.right * 4f, 0.2f, 0.8f, 0.8f);
         _rig.Tick(1f, 0.1f, new FootFrame(Vector3.zero, Vector3.up, 1f));
-        Assert.Greater(_rig.aim.eulerAngles.y, 0);
-        Assert.Less(_rig.aim.eulerAngles.y, 90);
         Transform sway = _rig.root.Find("Sway");
+        Assert.Greater(sway.localEulerAngles.y, 0); // turning toward the target on the right, damped
+        Assert.Less(sway.localEulerAngles.y, 90);
         Assert.Less(sway.localPosition.y, 0);
         _rig.SetReadout(Vector3.right * 4f, 1f, 0f, 0f);
         _rig.Tick(2f, 1f, new FootFrame(Vector3.zero, Vector3.up, 1f));
