@@ -1,26 +1,25 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Deliveries
 {
-    // Draws the tip fragment of one delivery style, instanced once per mesh, in a frame that looks along the travel
+    // The tip fragment of one delivery style, its parts drawn under one root in a frame that looks along the travel.
+    // A tip part draws the rig's wider tip outline, so the accent separates from the arm by an edge.
     public class DeliveryTip
     {
         // A travel shorter than this has no direction
         static readonly float stillSquared = 0.000001f;
 
-        readonly List<Mesh> _meshes = new List<Mesh>();
-        readonly List<List<int>> _groups = new List<List<int>>();
-        Matrix4x4[][] _matrices = Array.Empty<Matrix4x4[]>();
-        Vector4[][] _colours = Array.Empty<Vector4[]>();
-        MaterialPropertyBlock[] _blocks = Array.Empty<MaterialPropertyBlock>();
+        readonly PartPaint _paint = new PartPaint();
         LookPart[] _parts = Array.Empty<LookPart>();
+        Mesh[] _meshes = Array.Empty<Mesh>();
+        Renderer[] _renderers = Array.Empty<Renderer>();
         LookPalette _palette;
+        Transform _root;
         bool _hasStyle;
+        bool _isBuilt;
 
         DeliveryStyle _style;
         public DeliveryStyle style { get { return _style; } }
@@ -34,38 +33,26 @@ namespace HealerLike.Render.Deliveries
         {
             _style = value;
             _hasStyle = true;
-            _parts = vocabulary ? vocabulary.GetTip(value) : Bead();
-            _palette = vocabulary ? vocabulary.palette : null;
-            _meshes.Clear();
-            _groups.Clear();
+            _parts = Bead();
+            _palette = null;
+            if (vocabulary)
+            {
+                _parts = vocabulary.GetTip(value);
+                _palette = vocabulary.palette;
+            }
+
             if (!meshes)
             {
                 _parts = Array.Empty<LookPart>();
             }
 
+            _meshes = new Mesh[_parts.Length];
             for (int i = 0; i < _parts.Length; i++)
             {
-                Mesh mesh = meshes.GetMesh(_parts[i].primitive);
-                int group = _meshes.IndexOf(mesh);
-                if (group < 0)
-                {
-                    _meshes.Add(mesh);
-                    _groups.Add(new List<int>());
-                    group = _meshes.Count - 1;
-                }
-
-                _groups[group].Add(i);
+                _meshes[i] = meshes.GetMesh(_parts[i].primitive);
             }
 
-            _matrices = new Matrix4x4[_groups.Count][];
-            _colours = new Vector4[_groups.Count][];
-            _blocks = new MaterialPropertyBlock[_groups.Count];
-            for (int g = 0; g < _groups.Count; g++)
-            {
-                _matrices[g] = new Matrix4x4[_groups[g].Count];
-                _colours[g] = new Vector4[_groups[g].Count];
-                _blocks[g] = new MaterialPropertyBlock();
-            }
+            ReleaseParts();
         }
 
         public LookPart Part(int index)
@@ -97,36 +84,60 @@ namespace HealerLike.Render.Deliveries
             return PrimitiveMeshes.Brighten(colour, part.glow);
         }
 
-        Color PaletteColour(ColourRole role)
+        // The parts are made under the parent on the first draw after a style change, then only move and recolour
+        public void Draw(Transform parent, Matrix4x4 frame, Material material, Color tip, Color stem)
         {
-            if (!_palette)
-            {
-                Debug.LogError("[DeliveryTip] No palette.");
-                return Color.magenta;
-            }
-            return _palette.Colour(role, EffectFamily.Damage);
-        }
-
-        public void Draw(Matrix4x4 frame, Material material, Color tip, Color stem, int layer)
-        {
-            if (_parts.Length == 0 || !material || !SystemInfo.supportsInstancing || !material.enableInstancing)
+            if (_parts.Length == 0 || !material)
             {
                 return;
             }
 
-            for (int g = 0; g < _groups.Count; g++)
+            if (!_root)
             {
-                List<int> group = _groups[g];
-                for (int k = 0; k < group.Count; k++)
-                {
-                    _matrices[g][k] = PartMatrix(frame, group[k]);
-                    _colours[g][k] = PartColour(group[k], tip, stem);
-                }
-
-                _blocks[g].SetVectorArray(RenderObjects.BaseColorId, _colours[g]);
-                Graphics.DrawMeshInstanced(_meshes[g], 0, material, _matrices[g], group.Count, _blocks[g],
-                    ShadowCastingMode.On, true, layer);
+                _root = new GameObject("DeliveryTip").transform;
+                _root.SetParent(parent, false);
+                _root.gameObject.layer = parent.gameObject.layer;
+                _isBuilt = false;
             }
+
+            if (!_isBuilt)
+            {
+                Build(material);
+            }
+
+            _root.gameObject.SetActive(true);
+            _root.SetPositionAndRotation(frame.GetColumn(3), frame.rotation);
+            float parentScale = 1f;
+            if (_root.parent)
+            {
+                parentScale = _root.parent.lossyScale.x;
+            }
+
+            _root.localScale = Vector3.one * (frame.lossyScale.x / parentScale);
+            for (int i = 0; i < _renderers.Length; i++)
+            {
+                _paint.Paint(_renderers[i], _parts[i].role == PartRole.Tip, PartColour(i, tip, stem), 0f);
+            }
+        }
+
+        public void Hide()
+        {
+            if (_root)
+            {
+                _root.gameObject.SetActive(false);
+            }
+        }
+
+        public void Release()
+        {
+            if (_root)
+            {
+                RenderObjects.Release(_root.gameObject);
+            }
+
+            _root = null;
+            _renderers = Array.Empty<Renderer>();
+            _isBuilt = false;
         }
 
         // A frame at the tip whose forward follows the travel, scaled to the tip's width
@@ -136,11 +147,58 @@ namespace HealerLike.Render.Deliveries
             if (travel.sqrMagnitude > stillSquared)
             {
                 Vector3 forward = travel.normalized;
-                Vector3 up = Mathf.Abs(forward.y) < 0.99f ? Vector3.up : Vector3.forward;
+                Vector3 up = Vector3.forward;
+                if (Mathf.Abs(forward.y) < 0.99f)
+                {
+                    up = Vector3.up;
+                }
+
                 rotation = Quaternion.LookRotation(forward, up);
             }
 
             return Matrix4x4.TRS(position, rotation, Vector3.one * width);
+        }
+
+        void Build(Material material)
+        {
+            ReleaseParts();
+            _renderers = new Renderer[_parts.Length];
+            for (int i = 0; i < _parts.Length; i++)
+            {
+                LookPart part = _parts[i];
+                Transform partTransform = PrimitiveMeshes.Geometry(part.id, _root, _meshes[i], material, Color.white);
+                partTransform.localPosition = part.position;
+                partTransform.localRotation = Quaternion.Euler(part.euler);
+                partTransform.localScale = part.size;
+                partTransform.gameObject.layer = _root.gameObject.layer;
+                _renderers[i] = partTransform.GetComponent<Renderer>();
+            }
+
+            _isBuilt = true;
+        }
+
+        void ReleaseParts()
+        {
+            foreach (Renderer renderer in _renderers)
+            {
+                if (renderer)
+                {
+                    RenderObjects.Release(renderer.gameObject);
+                }
+            }
+
+            _renderers = Array.Empty<Renderer>();
+            _isBuilt = false;
+        }
+
+        Color PaletteColour(ColourRole role)
+        {
+            if (!_palette)
+            {
+                Debug.LogError("[DeliveryTip] No palette.");
+                return Color.magenta;
+            }
+            return _palette.Colour(role, EffectFamily.Damage);
         }
 
         static LookPart[] Bead()

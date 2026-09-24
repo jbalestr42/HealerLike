@@ -198,6 +198,7 @@ namespace HealerLike.Render.Deliveries
             if (_mesh.renderer && (!_isVisible || _pose.phase == GesturePhase.Rest))
             {
                 _mesh.renderer.enabled = false;
+                _tip.Hide();
             }
         }
 
@@ -227,6 +228,7 @@ namespace HealerLike.Render.Deliveries
             if (_mesh.renderer)
             {
                 _mesh.renderer.enabled = false;
+                _tip.Hide();
             }
 
             if (!_hasLoggedSolveError)
@@ -246,6 +248,7 @@ namespace HealerLike.Render.Deliveries
             _mesh.renderer.enabled = _isVisible && _pose.phase != GesturePhase.Rest;
             if (!_mesh.renderer.enabled)
             {
+                _tip.Hide();
                 return;
             }
 
@@ -294,6 +297,7 @@ namespace HealerLike.Render.Deliveries
                 _tip.SetStyle(_pose.style, _vocabulary, _meshes);
             }
 
+            _tip.Draw(_mesh.container, _beads[LeafCount], _detailMaterial, _tipColour, _colour);
             GameObject container = _mesh.container.gameObject;
             if (!SystemInfo.supportsInstancing || !_detailMaterial || !_detailMaterial.enableInstancing
                 || !container.activeInHierarchy)
@@ -306,7 +310,6 @@ namespace HealerLike.Render.Deliveries
                 ShadowCastingMode.On, true, layer);
             Graphics.DrawMeshInstanced(_beadMesh, 0, _detailMaterial, _beads, LeafCount, _detailColour,
                 ShadowCastingMode.On, true, layer);
-            _tip.Draw(_beads[LeafCount], _detailMaterial, _tipColour, _colour, layer);
         }
     }
 }

@@ -25,6 +25,7 @@ public class FreeShotTests
     [TearDown]
     public void TearDown()
     {
+        TestHelpers.InvokePrivate(_shot, "OnDestroy");
         Object.DestroyImmediate(_projectileGo);
         Object.DestroyImmediate(_target);
     }

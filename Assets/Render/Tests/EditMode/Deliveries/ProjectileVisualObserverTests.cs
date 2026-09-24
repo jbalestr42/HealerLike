@@ -149,6 +149,11 @@ public class ProjectileVisualObserverTests
     public void TearDown()
     {
         TestHelpers.InvokePrivate(_observer, "OnDestroy");
+        foreach (FreeShot shot in _projectileObject.GetComponents<FreeShot>())
+        {
+            TestHelpers.InvokePrivate(shot, "OnDestroy");
+        }
+
         if (_builder)
         {
             TestHelpers.InvokePrivate(_builder, "OnDestroy");
