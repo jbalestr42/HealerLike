@@ -119,7 +119,7 @@ public class StoneBodyTests
         Drain();
         Assert.AreEqual(3, visibleCount);
         Assert.AreEqual(PartRole.Limb, _recipe.parts[_body.shedPart].role);
-        int hit = StoneEffects.DustPuffs + StoneEffects.HitChips;
+        int hit = StoneEffects.DustPuffs + StoneEmitters.HitChips;
         Assert.AreEqual(2 * hit + 1, _fx.liveCount); // two hits of 8, and the falling limb
 
         Queue(50);
@@ -168,7 +168,7 @@ public class StoneBodyTests
         Drain();
 
         Assert.AreEqual(0, _body.pendingImpactCount);
-        int hit = StoneEffects.DustPuffs + StoneEffects.HitChips;
+        int hit = StoneEffects.DustPuffs + StoneEmitters.HitChips;
         Assert.AreEqual(hit, _fx.liveCount); // 5 dust and 3 chips
         foreach (MeshFilter filter in _fxObject.GetComponentsInChildren<MeshFilter>())
         {
@@ -204,7 +204,7 @@ public class StoneBodyTests
         Queue(-1);
         Drain();
 
-        Assert.AreEqual(StoneEffects.DustPuffs + StoneEffects.HitChips, _fx.liveCount); // one hit
+        Assert.AreEqual(StoneEffects.DustPuffs + StoneEmitters.HitChips, _fx.liveCount); // one hit
     }
 
     [Test]
@@ -225,7 +225,7 @@ public class StoneBodyTests
         Drain();
         Assert.AreEqual(0, visibleCount);
         Assert.IsTrue(_body.isCollapsed);
-        int hitAndCollapse = StoneEffects.DustPuffs + StoneEffects.HitChips
+        int hitAndCollapse = StoneEffects.DustPuffs + StoneEmitters.HitChips
             + StoneEffects.CollapseDebris + StoneEffects.DustPuffs;
         Assert.AreEqual(hitAndCollapse, _fx.liveCount); // 8 for the hit, 12 debris and 5 dust for the collapse
 

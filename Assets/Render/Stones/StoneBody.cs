@@ -183,13 +183,10 @@ namespace HealerLike.Render.Stones
 
             _shedPart = candidates[(int)(_seed % (uint)candidates.Count)];
             Transform part = partTransforms[_shedPart];
-            if (_effects != null)
-            {
-                Mesh mesh = part.GetComponent<MeshFilter>().sharedMesh;
-                Material material = part.GetComponent<Renderer>().sharedMaterial;
-                _effects.EmitDetachedPart(mesh, material, part.localToWorldMatrix, _planarVelocity,
-                    transform.position.y, StoneSeed.ForPart(_seed, shedSalt));
-            }
+            Mesh mesh = part.GetComponent<MeshFilter>().sharedMesh;
+            Material material = part.GetComponent<Renderer>().sharedMaterial;
+            StoneEmitters.DetachedPart(_effects, mesh, material, part.localToWorldMatrix, _planarVelocity,
+                transform.position.y, StoneSeed.ForPart(_seed, shedSalt));
             part.gameObject.SetActive(false);
         }
 
@@ -212,11 +209,8 @@ namespace HealerLike.Render.Stones
             {
                 _throw.Enable(false);
             }
-            if (_effects != null)
-            {
-                uint seed = StoneSeed.ForPart(_seed, collapseSalt);
-                _effects.CollapseParts(parts, _planarVelocity, transform.position.y, seed);
-            }
+            uint seed = StoneSeed.ForPart(_seed, collapseSalt);
+            StoneEmitters.Collapse(_effects, parts, _planarVelocity, transform.position.y, seed);
             HideParts();
         }
 

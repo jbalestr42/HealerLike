@@ -197,7 +197,8 @@ namespace HealerLike.Render.Stones
             if (_effects != null)
             {
                 _contactIndex++;
-                _effects.EmitThrownContact(contactPosition, StoneSeed.ForPart(_seed, _contactIndex + contactSalt));
+                uint seed = StoneSeed.ForPart(_seed, _contactIndex + contactSalt);
+                StoneEmitters.ThrownContact(_effects, contactPosition, seed);
             }
             EndDelivery(token);
         }

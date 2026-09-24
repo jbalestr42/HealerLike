@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace HealerLike.Render.Stones
 {
-    // The one owner of stone debris, dust and thrown shards, and of the stone meshes shared by every stone
+    // The one owner of stone debris, dust and thrown shards, and of the stone meshes shared by every stone:
+    // the fragment pool, their ballistic flight and the shard lender. StoneEmitters holds the recipes
     public class StoneEffects : MonoBehaviour
     {
         class Fragment
@@ -30,16 +31,10 @@ namespace HealerLike.Render.Stones
 
         public static readonly int MaxLiveFragments = 256;
 
-        // Fragments each emitter spawns
+        // Fragments the dust and collapse recipes of StoneEmitters spawn
         public static readonly int DustPuffs = 5;
-        public static readonly int HitChips = 3;
-        public static readonly int CriticalHitChips = 5;
         public static readonly int CollapseDebris = 12;
-        public static readonly int SplitPieces = 3;
-        public static readonly int MinThrownChips = 3;
 
-        // A thrown contact draws from MinThrownChips to MinThrownChips + thrownChipSpread - 1 chips
-        static readonly uint thrownChipSpread = 3;
         static readonly float gravity = 8f;
         static readonly Vector3 fragmentSpin = new Vector3(70f, 120f, 45f);
         static readonly uint dustMeshSeed = 123;
@@ -53,7 +48,6 @@ namespace HealerLike.Render.Stones
         readonly List<Fragment> _active = new List<Fragment>(MaxLiveFragments);
         readonly Stack<Fragment> _pool = new Stack<Fragment>(MaxLiveFragments);
         readonly Dictionary<Transform, Fragment> _shards = new Dictionary<Transform, Fragment>();
-        readonly List<Transform> _standing = new List<Transform>(8);
         StoneMeshCache.Lease _dustLease;
 
         readonly StoneMeshCache _stoneMeshes = new StoneMeshCache();
@@ -61,16 +55,17 @@ namespace HealerLike.Render.Stones
 
         public Material stoneMaterial { get { return _stoneMaterial; } }
 
+        public Material coralMaterial { get { return _coralMaterial; } }
+
+        // The baked pyramid every chip and debris piece is drawn with
+        public Mesh debrisMesh { get { return _meshes.pyramid; } }
+
         public int liveCount { get { return _active.Count; } }
 
-        public void RecordImpact(Vector3 position, uint seed)
+        // Whether a recipe can spawn now: the effects are live and wired
+        public bool CanEmit()
         {
-            if (!isActiveAndEnabled)
-            {
-                return;
-            }
-
-            EmitDust(position, seed);
+            return isActiveAndEnabled && HasAssets();
         }
 
         bool HasAssets()
@@ -117,8 +112,24 @@ namespace HealerLike.Render.Stones
             _pool.Push(fragment);
         }
 
-        Fragment Spawn(Mesh mesh, Material material, Vector3 position, Quaternion rotation, Vector3 scale,
+        public void Spawn(Mesh mesh, Material material, Vector3 position, Quaternion rotation, Vector3 scale,
             Vector3 velocity, float life, float ground, bool bounce, uint seed, Mesh owned = null, bool split = false)
+        {
+            SpawnFragment(mesh, material, position, rotation, scale, velocity, life, ground, bounce, seed, owned,
+                split);
+        }
+
+        // A puff rises straight up and fades, it does not spin
+        public void SpawnDust(Vector3 position, Vector3 scale, Vector3 velocity, float life, uint seed)
+        {
+            Fragment fragment = SpawnFragment(_dustLease.mesh, _dustMaterial, position, Quaternion.identity, scale,
+                velocity, life, position.y, false, seed, null, false);
+            fragment.isDust = true;
+            fragment.spin = Vector3.zero;
+        }
+
+        Fragment SpawnFragment(Mesh mesh, Material material, Vector3 position, Quaternion rotation, Vector3 scale,
+            Vector3 velocity, float life, float ground, bool bounce, uint seed, Mesh owned, bool split)
         {
             while (_active.Count >= MaxLiveFragments)
             {
@@ -192,154 +203,6 @@ namespace HealerLike.Render.Stones
             Return(fragment);
         }
 
-        static Vector3 Direction(ref StoneRandom random, Vector3 normal)
-        {
-            Vector3 direction = new Vector3(random.Range(-1f, 1f), random.Range(0.2f, 1f), random.Range(-1f, 1f));
-            if (Vector3.Dot(direction, normal) < 0f)
-            {
-                direction -= 2f * Vector3.Dot(direction, normal) * normal;
-            }
-            Vector3 upwardTangent = Vector3.up - normal * Vector3.Dot(Vector3.up, normal);
-            return (direction + normal * 0.5f + upwardTangent * 0.3f).normalized;
-        }
-
-        public void EmitDust(Vector3 position, uint seed)
-        {
-            if (!isActiveAndEnabled || !HasAssets())
-            {
-                return;
-            }
-
-            StoneRandom random = new StoneRandom(seed);
-            for (int i = 0; i < DustPuffs; i++)
-            {
-                Vector3 scale = Vector3.one * random.Range(0.09f, 0.17f);
-                float x = random.Range(-0.24f, 0.24f);
-                float y = random.Range(0.25f, 0.5f);
-                float z = random.Range(-0.24f, 0.24f);
-                Vector3 velocity = new Vector3(x, y, z);
-                Fragment fragment = Spawn(_dustLease.mesh, _dustMaterial, position, Quaternion.identity, scale,
-                    velocity, 0.65f, position.y, false, random.Next());
-                fragment.isDust = true;
-                fragment.spin = Vector3.zero;
-            }
-        }
-
-        // Stone chips thrown off the face that was hit; the damage readout itself is the spell composer's
-        public void EmitHit(StoneImpact impact, bool critical, uint seed)
-        {
-            if (!isActiveAndEnabled || !HasAssets())
-            {
-                return;
-            }
-
-            StoneRandom random = new StoneRandom(seed);
-            int chips = critical ? CriticalHitChips : HitChips;
-            Vector3 normal = impact.normal.sqrMagnitude > 0f ? impact.normal.normalized : Vector3.up;
-            for (int i = 0; i < chips; i++)
-            {
-                float size = random.Range(0.025f, 0.07f);
-                Material material = _stoneMaterial;
-                if (i % 3 == 0)
-                {
-                    material = _coralMaterial;
-                }
-                // Keep the random draws in order: direction, speed, then life
-                Vector3 velocity = Direction(ref random, normal) * random.Range(0.6f, 1.4f);
-                float life = random.Range(0.35f, 0.55f);
-                Vector3 position = impact.point + normal * 0.005f;
-                Quaternion rotation = Quaternion.FromToRotation(Vector3.up, normal);
-                Spawn(_meshes.pyramid, material, position, rotation, Vector3.one * size, velocity, life,
-                    impact.point.y - 1f, false, random.Next());
-            }
-        }
-
-        public void EmitThrownContact(Vector3 contact, uint seed)
-        {
-            if (!isActiveAndEnabled || !HasAssets())
-            {
-                return;
-            }
-
-            StoneRandom random = new StoneRandom(seed);
-            int count = MinThrownChips + (int)(random.Next() % thrownChipSpread);
-            for (int i = 0; i < count; i++)
-            {
-                Quaternion rotation = Quaternion.Euler(random.Range(0f, 180f), random.Range(0f, 360f), 0f);
-                Vector3 scale = Vector3.one * random.Range(0.055f, 0.11f);
-                Vector3 velocity = Direction(ref random, Vector3.up) * random.Range(0.6f, 1.3f);
-                Spawn(_meshes.pyramid, _stoneMaterial, contact, rotation, scale, velocity, 0.45f, contact.y, false,
-                    random.Next());
-            }
-        }
-
-        public void EmitDetachedPart(Mesh mesh, Material material, Matrix4x4 pose, Vector3 stoneVelocity, float groundY,
-            uint seed)
-        {
-            if (!isActiveAndEnabled || !HasAssets())
-            {
-                return;
-            }
-
-            StoneRandom random = new StoneRandom(seed);
-            // A copy belongs to the effects owner, so releasing the enemy's cache lease cannot invalidate it
-            Mesh copy = Instantiate(mesh);
-            copy.name = "DetachedStone";
-            Vector3 direction = new Vector3(random.Range(-1f, 1f), 0f, random.Range(-1f, 1f)).normalized;
-            Material partMaterial = material != null ? material : _stoneMaterial;
-            Vector3 velocity = stoneVelocity + direction * random.Range(0.6f, 1.2f) + Vector3.up * 0.2f;
-            Spawn(copy, partMaterial, pose.GetColumn(3), pose.rotation, pose.lossyScale, velocity, 0.25f, groundY,
-                false, seed, copy, true);
-        }
-
-        // Breaks the parts still standing into debris and dust, the caller hides them
-        public void CollapseParts(IReadOnlyList<Transform> parts, Vector3 stoneVelocity, float groundY, uint seed)
-        {
-            if (!isActiveAndEnabled || !HasAssets() || parts == null)
-            {
-                return;
-            }
-
-            _standing.Clear();
-            Vector3 centre = Vector3.zero;
-            foreach (Transform part in parts)
-            {
-                if (part != null && part.gameObject.activeSelf)
-                {
-                    _standing.Add(part);
-                    centre += part.position;
-                }
-            }
-
-            if (_standing.Count == 0)
-            {
-                return;
-            }
-
-            StoneRandom random = new StoneRandom(seed);
-            int count = CollapseDebris;
-            for (int i = 0; i < count; i++)
-            {
-                Transform part = _standing[i % _standing.Count];
-                float angle = i * Mathf.PI * 2f / count;
-                Vector3 outward = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * random.Range(1.2f, 1.8f);
-                Bounds bounds = part.GetComponent<Renderer>().bounds;
-                float offsetX = random.Range(-0.8f, 0.8f);
-                float offsetY = random.Range(-0.8f, 0.8f);
-                float offsetZ = random.Range(-0.8f, 0.8f);
-                Vector3 offset = new Vector3(offsetX, offsetY, offsetZ);
-                Vector3 position = bounds.center + Vector3.Scale(bounds.extents, offset);
-                Material material = i % 4 == 0 ? _coralMaterial : _stoneMaterial;
-                Vector3 scale = Vector3.one * random.Range(0.06f, 0.16f);
-                Vector3 velocity = stoneVelocity + outward + Vector3.up * random.Range(0.7f, 1.5f);
-                Spawn(_meshes.pyramid, material, position, part.rotation, scale, velocity, 0.8f, groundY, true,
-                    random.Next());
-            }
-
-            centre /= _standing.Count;
-            EmitDust(new Vector3(centre.x, groundY + 0.15f, centre.z), seed);
-        }
-
         public static Vector3 PositionAt(Vector3 start, Vector3 velocity, float age, float ground, bool bounce)
         {
             Vector3 position = start + velocity * age + Vector3.down * (0.5f * gravity * age * age);
@@ -394,20 +257,8 @@ namespace HealerLike.Render.Stones
                 Release(fragment);
                 if (split)
                 {
-                    SpawnSplit(position, ground, seed);
+                    StoneEmitters.Split(this, position, ground, seed);
                 }
-            }
-        }
-
-        void SpawnSplit(Vector3 position, float ground, uint seed)
-        {
-            StoneRandom random = new StoneRandom(seed);
-            for (int j = 0; j < SplitPieces; j++)
-            {
-                Vector3 scale = Vector3.one * random.Range(0.04f, 0.07f);
-                Vector3 velocity = new Vector3(random.Range(-0.3f, 0.3f), 0.3f, random.Range(-0.3f, 0.3f));
-                Spawn(_meshes.pyramid, _stoneMaterial, position, Quaternion.identity, scale, velocity, 0.25f, ground,
-                    true, random.Next());
             }
         }
 

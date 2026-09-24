@@ -119,7 +119,7 @@ namespace HealerLike.Render.Stones
 
             if (_effects != null)
             {
-                _effects.EmitHit(impact, critical, NextSeed());
+                StoneEmitters.Hit(_effects, impact, critical, NextSeed());
             }
         }
 
@@ -151,7 +151,7 @@ namespace HealerLike.Render.Stones
         {
             if (_effects != null)
             {
-                _effects.RecordImpact(point, NextSeed());
+                StoneEmitters.Dust(_effects, point, NextSeed());
             }
         }
 

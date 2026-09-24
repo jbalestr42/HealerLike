@@ -80,7 +80,7 @@ public class StoneThrowTests
 
         _throw.ContactDelivery(1, Vector3.one * 7f, null);
         Assert.AreEqual(0, _throw.liveDeliveryCount);
-        Assert.That(_fx.liveCount, Is.InRange(StoneEffects.MinThrownChips, StoneEffects.MinThrownChips + 2));
+        Assert.That(_fx.liveCount, Is.InRange(StoneEmitters.MinThrownChips, StoneEmitters.MinThrownChips + 2));
     }
 
     [Test]
