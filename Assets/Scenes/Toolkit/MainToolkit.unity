@@ -1961,7 +1961,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 991ea95db85a1490ea8d4115824d04e4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Runtime::HealerLike.UI.Toolkit.ToolkitGameUI
+  m_EditorClassIdentifier: HealerLike.Runtime::ToolkitGameUI
   _gameplayScene: MainToolkit
   _menuScene: MenuToolkit
   _hideLegacyCanvases: 1

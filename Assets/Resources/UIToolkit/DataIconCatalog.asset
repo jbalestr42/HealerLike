@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 78aabedb117ed44f8b69e531441aaa0a, type: 3}
   m_Name: DataIconCatalog
-  m_EditorClassIdentifier: HealerLike.Runtime::HealerLike.UI.Toolkit.Icons.DataIconCatalog
+  m_EditorClassIdentifier: HealerLike.Runtime::DataIconCatalog
   entries:
   - source: {fileID: 11400000, guid: 01f54a23d3e411a4c831678d70e19e8a, type: 2}
     generated: {fileID: 2800000, guid: 49d5fd22e3a8644cfbd9085fb52bb337, type: 3}
