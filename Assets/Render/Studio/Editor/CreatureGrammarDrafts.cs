@@ -71,12 +71,12 @@ namespace HealerLike.Render.Studio.Editor
         // The kept collection, its drafts added to the list; null when nothing was kept
         public CreatureGrammarDraftCollection Restore()
         {
-            if (!EditorPrefs.HasKey(key))
+            string json = StudioPrefs.ReadJson(key);
+            if (json == null)
             {
                 return null;
             }
 
-            string json = EditorPrefs.GetString(key);
             CreatureGrammarDraftCollection collection = JsonUtility.FromJson<CreatureGrammarDraftCollection>(json);
             if (collection == null || collection.items == null)
             {

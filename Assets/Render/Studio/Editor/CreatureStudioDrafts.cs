@@ -118,12 +118,12 @@ namespace HealerLike.Render.Studio.Editor
 
         bool Restore()
         {
-            if (!EditorPrefs.HasKey(key))
+            string json = StudioPrefs.ReadJson(key);
+            if (json == null)
             {
                 return false;
             }
 
-            string json = EditorPrefs.GetString(key);
             CreatureDraftCollection collection = JsonUtility.FromJson<CreatureDraftCollection>(json);
             if (collection == null || collection.items == null)
             {
