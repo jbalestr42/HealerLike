@@ -41,8 +41,7 @@ namespace HealerLike.Render.Stage
             data.model = normal.model;
             data.targetBehaviourType = TargetBehaviourType.First;
             data.targetValidators = new List<ATargetValidatorFactory>();
-            data.passives = new List<ABuffHandlerFactory>();
-            data.onHitEffects = new List<ABuffHandlerFactory>();
+            data.items = new List<AItemFactory>();
             data.skillFactories = new List<ASkillFactory>();
             data.attributes[AttributeType.HealthMax] = 100f;
             data.attributes[AttributeType.AttackRate] = 1f;
@@ -51,23 +50,49 @@ namespace HealerLike.Render.Stage
             return data;
         }
 
-        // A copy of one of the game's entities, sharing its skill, passive and on-hit assets
+        // A copy of one of the game's entities, sharing its skill and item assets
         public static EntityData Copy(EntityData source, string title, List<Object> created)
         {
             EntityData data = Entity(title, created);
             data.targetBehaviourType = source.targetBehaviourType;
             data.attributes = new Dictionary<AttributeType, float>(source.attributes);
             data.skillFactories.AddRange(source.skillFactories);
-            if (source.passives != null)
+            if (source.items != null)
             {
-                data.passives.AddRange(source.passives);
-            }
-
-            if (source.onHitEffects != null)
-            {
-                data.onHitEffects.AddRange(source.onHitEffects);
+                data.items.AddRange(source.items);
             }
             return data;
+        }
+
+        // Gives the unit an item that puts the handler on itself when it spawns
+        public static void AddPassive(EntityData data, ABuffHandlerFactory handler, List<Object> created)
+        {
+            ItemFactory item = Item(created);
+            item.data.buffs.Add(handler);
+            data.items.Add(item);
+        }
+
+        // Gives the unit an item that applies the handler on every hit it deals
+        public static void AddOnHitEffect(EntityData data, ABuffHandlerFactory handler, List<Object> created)
+        {
+            ItemFactory item = Item(created);
+            item.data.onHitEffects.Add(handler);
+            data.items.Add(item);
+        }
+
+        // An empty item, every list set since Item.Equip walks them all
+        static ItemFactory Item(List<Object> created)
+        {
+            ItemFactory item = Track(ScriptableObject.CreateInstance<ItemFactory>(), created);
+            item.data = new ItemData
+            {
+                buffs = new List<ABuffHandlerFactory>(),
+                onHitEffects = new List<ABuffHandlerFactory>(),
+                onHitConsumers = new List<AConsumerFactory>(),
+                projectileBehaviours = new List<ABuffHandlerFactory>(),
+                skills = new List<ASkillFactory>()
+            };
+            return item;
         }
 
         public static BuffHandlerFactory Handler(DurationType durationType, float duration, float period, List<Object> created,

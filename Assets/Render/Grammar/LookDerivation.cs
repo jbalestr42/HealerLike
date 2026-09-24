@@ -201,20 +201,15 @@ namespace HealerLike.Render.Grammar
             return StemBand.Slow;
         }
 
-        // HealthMax after the unit's own flat modifier passives, as it spawns
+        // HealthMax after the flat modifiers the unit's own items put on it, as it spawns
         public static float Health(EntityData data)
         {
             float health = SkillWalker.ReadAttribute(data, AttributeType.HealthMax, DefaultHealth);
-            if (data == null || data.passives == null)
-            {
-                return health;
-            }
-
             float added = 0f;
             float multiplier = 1f;
-            foreach (ABuffHandlerFactory handler in data.passives)
+            foreach (ABuffHandlerFactory handler in SkillWalker.ItemBuffs(data))
             {
-                if (handler == null || handler.buffFactoryList == null)
+                if (handler.buffFactoryList == null)
                 {
                     continue;
                 }

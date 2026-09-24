@@ -167,7 +167,7 @@ public class LookDerivationTests
     }
 
     [Test]
-    public void Health_FlatHealthPassive_AddsBeforeTheBand()
+    public void Health_FlatHealthItem_AddsBeforeTheBand()
     {
         EntityData data = CreateTracked<EntityData>();
         data.attributes[AttributeType.HealthMax] = 100f;
@@ -175,7 +175,9 @@ public class LookDerivationTests
         modifier.data = new FlatModifierData { type = AttributeType.HealthMax, modifierType = AttributeModifierType.Add, value = 200f };
         BuffHandlerFactory passive = CreateTracked<BuffHandlerFactory>();
         passive.data = new BuffHandlerData { durationType = DurationType.Infinite, buffFactoryList = new List<ABuffFactory> { modifier } };
-        data.passives = new List<ABuffHandlerFactory> { passive };
+        ItemFactory item = CreateTracked<ItemFactory>();
+        item.data = new ItemData { buffs = new List<ABuffHandlerFactory> { passive } };
+        data.items = new List<AItemFactory> { item };
 
         float health = LookDerivation.Health(data);
 

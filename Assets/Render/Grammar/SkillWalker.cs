@@ -160,7 +160,7 @@ namespace HealerLike.Render.Grammar
             return bounce.data.bounce;
         }
 
-        // Bounces installed by a passive of the unit, items never count
+        // Bounces installed by the unit's own items
         public static int PassiveBounces(EntityData data)
         {
             int bounces = 0;
@@ -248,17 +248,77 @@ namespace HealerLike.Render.Grammar
             return unitBase;
         }
 
-        static List<AProjectileBehaviourFactory> PassiveBehaviours(EntityData data)
+        // The handlers the unit's own items put on it at Init, its passives
+        public static List<ABuffHandlerFactory> ItemBuffs(EntityData data)
         {
-            List<AProjectileBehaviourFactory> behaviours = new List<AProjectileBehaviourFactory>();
-            if (data == null || data.passives == null)
+            List<ABuffHandlerFactory> handlers = new List<ABuffHandlerFactory>();
+            foreach (ItemData item in Items(data))
             {
-                return behaviours;
+                AddHandlers(handlers, item.buffs);
+            }
+            return handlers;
+        }
+
+        // The handlers the unit's own items apply on every hit it deals
+        public static List<ABuffHandlerFactory> ItemOnHitEffects(EntityData data)
+        {
+            List<ABuffHandlerFactory> handlers = new List<ABuffHandlerFactory>();
+            foreach (ItemData item in Items(data))
+            {
+                AddHandlers(handlers, item.onHitEffects);
+            }
+            return handlers;
+        }
+
+        // The data of every item the unit carries in its EntityData, in the order the data lists them
+        static List<ItemData> Items(EntityData data)
+        {
+            List<ItemData> items = new List<ItemData>();
+            if (data == null || data.items == null)
+            {
+                return items;
             }
 
-            foreach (ABuffHandlerFactory handler in data.passives)
+            foreach (AItemFactory itemFactory in data.items)
             {
-                if (handler == null || handler.buffFactoryList == null)
+                ItemFactory item = itemFactory as ItemFactory;
+                if (item != null && item.data != null)
+                {
+                    items.Add(item.data);
+                }
+            }
+            return items;
+        }
+
+        static void AddHandlers(List<ABuffHandlerFactory> handlers, List<ABuffHandlerFactory> source)
+        {
+            if (source == null)
+            {
+                return;
+            }
+
+            foreach (ABuffHandlerFactory handler in source)
+            {
+                if (handler != null)
+                {
+                    handlers.Add(handler);
+                }
+            }
+        }
+
+        // Behaviours the unit's own items add to its projectiles, through a buff or their projectile behaviour list
+        static List<AProjectileBehaviourFactory> PassiveBehaviours(EntityData data)
+        {
+            List<ABuffHandlerFactory> handlers = ItemBuffs(data);
+            foreach (ItemData item in Items(data))
+            {
+                AddHandlers(handlers, item.projectileBehaviours);
+            }
+
+            List<AProjectileBehaviourFactory> behaviours = new List<AProjectileBehaviourFactory>();
+            foreach (ABuffHandlerFactory handler in handlers)
+            {
+                if (handler.buffFactoryList == null)
                 {
                     continue;
                 }

@@ -136,44 +136,37 @@ namespace HealerLike.Render.Grammar
                 }
             }
 
-            if (data.passives != null && data.passives.Count > 0 && data.passives[0] != null)
+            List<ABuffHandlerFactory> passives = SkillWalker.ItemBuffs(data);
+            if (passives.Count > 0)
             {
-                AccessoryKind passive = PassiveAccessory(data.passives[0]);
+                AccessoryKind passive = PassiveAccessory(passives[0]);
                 if (passive != AccessoryKind.None)
                 {
                     return passive;
                 }
             }
 
-            if (data.onHitEffects != null)
+            foreach (ABuffHandlerFactory handler in SkillWalker.ItemOnHitEffects(data))
             {
-                foreach (ABuffHandlerFactory handler in data.onHitEffects)
+                EffectFamily family = EffectDerivation.Family(handler, false);
+                if (family == accent)
                 {
-                    if (handler == null)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    EffectFamily family = EffectDerivation.Family(handler, false);
-                    if (family == accent)
-                    {
-                        continue;
-                    }
+                if (family == EffectFamily.Rot)
+                {
+                    return AccessoryKind.DripBeads;
+                }
 
-                    if (family == EffectFamily.Rot)
-                    {
-                        return AccessoryKind.DripBeads;
-                    }
+                if (family == EffectFamily.Bane)
+                {
+                    return AccessoryKind.ShardBarbs;
+                }
 
-                    if (family == EffectFamily.Bane)
-                    {
-                        return AccessoryKind.ShardBarbs;
-                    }
-
-                    if (family == EffectFamily.Boon)
-                    {
-                        return AccessoryKind.SmallTorus;
-                    }
+                if (family == EffectFamily.Boon)
+                {
+                    return AccessoryKind.SmallTorus;
                 }
             }
             return AccessoryKind.None;

@@ -105,7 +105,7 @@ namespace HealerLike.Render.Stage
                         factor = 1f,
                         threshold = 0.5f
                     };
-                    data.passives.Add(LookSheetData.Handler(DurationType.Infinite, 0f, 0f, created, thorns));
+                    LookSheetData.AddPassive(data, LookSheetData.Handler(DurationType.Infinite, 0f, 0f, created, thorns), created);
                     break;
                 case "Brute":
                     data = LookSheetData.Copy(soldier, unit, created);
@@ -116,7 +116,7 @@ namespace HealerLike.Render.Stage
                     break;
                 case "Plague stone":
                     data = LookSheetData.Copy(soldier, unit, created);
-                    data.onHitEffects.Add(LookSheetData.Load<ABuffHandlerFactory>(poisonPath));
+                    LookSheetData.AddOnHitEffect(data, LookSheetData.Load<ABuffHandlerFactory>(poisonPath), created);
                     break;
                 case "Hexer":
                     FlatModifierFactory slow = LookSheetData.Modifier(AttributeType.AttackRate, AttributeModifierType.Multiply, 0.5f, created);
@@ -142,12 +142,12 @@ namespace HealerLike.Render.Stage
                     break;
                 case "Rising stone":
                     data = LookSheetData.Copy(soldier, unit, created);
-                    data.passives.Add(Rising(created));
+                    LookSheetData.AddPassive(data, Rising(created), created);
                     break;
                 case "Splitter":
                     // Stand-in: a passive that does nothing, where the spawn on death would sit
                     data = LookSheetData.Copy(soldier, unit, created);
-                    data.passives.Add(LookSheetData.Handler(DurationType.Infinite, 0f, 0f, created));
+                    LookSheetData.AddPassive(data, LookSheetData.Handler(DurationType.Infinite, 0f, 0f, created), created);
                     break;
                 case "Runner":
                     // Stand-in: a soldier at melee range, nothing in the game walks
@@ -160,7 +160,7 @@ namespace HealerLike.Render.Stage
                     data.attributes[AttributeType.HealthMax] = 400f;
                     data.skillFactories.Add(Volley(created));
                     data.skillFactories.Add(LookSheetData.Support(LookSheetData.Load<ABuffHandlerFactory>(armorPath), true, 5f, created));
-                    data.passives.Add(Rising(created));
+                    LookSheetData.AddPassive(data, Rising(created), created);
                     break;
                 default:
                     Undesign(unit, data, created);
@@ -207,7 +207,7 @@ namespace HealerLike.Render.Stage
                 case "Storm idol":
                     data.attributes[AttributeType.HealthMax] = 400f;
                     data.skillFactories.Add(LookSheetData.Shoot(LookSheetData.Prefab("ChainLightning"), 1, created));
-                    data.onHitEffects.Add(LookSheetData.Load<ABuffHandlerFactory>(poisonPath));
+                    LookSheetData.AddOnHitEffect(data, LookSheetData.Load<ABuffHandlerFactory>(poisonPath), created);
                     break;
                 default:
                     Debug.LogError($"[LookSheetUnits] No unit named {unit}");

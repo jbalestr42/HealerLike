@@ -39,7 +39,15 @@ public class LookDerivationHeadsTests
         return instance;
     }
 
-    // A copy that shares the asset's skills and attributes, so a test can add passives without touching the asset
+    // An item carrying the handlers, as the unit's EntityData lists it
+    ItemFactory CreateItem(List<ABuffHandlerFactory> buffs = null, List<ABuffHandlerFactory> onHitEffects = null)
+    {
+        ItemFactory item = CreateTracked<ItemFactory>();
+        item.data = new ItemData { buffs = buffs, onHitEffects = onHitEffects };
+        return item;
+    }
+
+    // A copy that shares the asset's skills and attributes, so a test can add items without touching the asset
     EntityData Copy(EntityData source)
     {
         EntityData data = CreateTracked<EntityData>();
@@ -116,7 +124,7 @@ public class LookDerivationHeadsTests
     {
         EntityData data = Copy(LookDerivationTests.LoadEntity("SoldierEntity"));
         ABuffHandlerFactory poison = LoadHandler("PoisonItem/BuffHandlerFactory");
-        data.onHitEffects = new List<ABuffHandlerFactory> { poison };
+        data.items = new List<AItemFactory> { CreateItem(onHitEffects: new List<ABuffHandlerFactory> { poison }) };
 
         Assert.AreEqual(AccessoryKind.DripBeads, LookDerivation.Accessory(data));
     }
@@ -125,9 +133,9 @@ public class LookDerivationHeadsTests
     public void Accessory_StatPassive_IsASmallTorusForABoon()
     {
         EntityData data = Copy(LookDerivationTests.LoadEntity("NormalEntity"));
-        data.passives = new List<ABuffHandlerFactory>
+        data.items = new List<AItemFactory>
         {
-            LoadHandler("ConclaveItem/New Buff Handler Factory 1")
+            CreateItem(buffs: new List<ABuffHandlerFactory> { LoadHandler("ConclaveItem/New Buff Handler Factory 1") })
         };
 
         Assert.AreEqual(AccessoryKind.SmallTorus, LookDerivation.Accessory(data));
@@ -157,7 +165,7 @@ public class LookDerivationHeadsTests
         modifier.data = new CurrentWaveModifierData { type = AttributeType.Damage, modifierType = AttributeModifierType.Add, value = 1f };
         BuffHandlerFactory passive = CreateTracked<BuffHandlerFactory>();
         passive.data = new BuffHandlerData { durationType = DurationType.Infinite, buffFactoryList = new List<ABuffFactory> { modifier } };
-        data.passives = new List<ABuffHandlerFactory> { passive };
+        data.items = new List<AItemFactory> { CreateItem(buffs: new List<ABuffHandlerFactory> { passive }) };
 
         Assert.AreEqual(AccessoryKind.TierRings, LookDerivation.Accessory(data));
     }
@@ -166,7 +174,7 @@ public class LookDerivationHeadsTests
     public void Accessory_RenewPassive_HangsStalkBeads()
     {
         EntityData data = Copy(LookDerivationTests.LoadEntity("NormalEntity"));
-        data.passives = new List<ABuffHandlerFactory> { LoadHandler("RegenHpItem/RegenHpItem_BuffHandlerFactory") };
+        data.items = new List<AItemFactory> { CreateItem(buffs: new List<ABuffHandlerFactory> { LoadHandler("RegenHpItem/RegenHpItem_BuffHandlerFactory") }) };
 
         Assert.AreEqual(AccessoryKind.StalkBeads, LookDerivation.Accessory(data));
     }
@@ -175,7 +183,7 @@ public class LookDerivationHeadsTests
     public void Accessory_StatPassive_IsAConeCrownForABane()
     {
         EntityData data = Copy(LookDerivationTests.LoadEntity("NormalEntity"));
-        data.passives = new List<ABuffHandlerFactory> { LoadHandler("ConclaveItem/New Buff Handler Factory") }; // AttackRate Mul +0.2
+        data.items = new List<AItemFactory> { CreateItem(buffs: new List<ABuffHandlerFactory> { LoadHandler("ConclaveItem/New Buff Handler Factory") }) }; // AttackRate Mul +0.2
 
         Assert.AreEqual(AccessoryKind.ConeCrown, LookDerivation.Accessory(data));
     }
@@ -184,7 +192,7 @@ public class LookDerivationHeadsTests
     public void Accessory_BaneOnHitEffect_HangsShardBarbs()
     {
         EntityData data = Copy(LookDerivationTests.LoadEntity("SoldierEntity"));
-        data.onHitEffects = new List<ABuffHandlerFactory> { LoadHandler("SlowItem/BuffHandlerFactory") }; // Speed Mul -0.1
+        data.items = new List<AItemFactory> { CreateItem(onHitEffects: new List<ABuffHandlerFactory> { LoadHandler("SlowItem/BuffHandlerFactory") }) }; // Speed Mul -0.1
 
         Assert.AreEqual(AccessoryKind.ShardBarbs, LookDerivation.Accessory(data));
     }
