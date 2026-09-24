@@ -20,6 +20,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
         private SerializedObject serialized;
         private SpellStudioPreview preview;
         [SerializeField] private HealerLike.Render.Creatures.CreatureRecipe targetCreature;
+        [SerializeField] private int targetSurface; // 0 auto, 1 plant, 2 stone; preview-only context.
         private Vector2 libraryScroll, inspectorScroll;
         private string search = "";
         private string[] validationWarnings = Array.Empty<string>();
@@ -133,6 +134,8 @@ namespace HealerLike.Render.Spells.Editor.Studio
             minSize = new Vector2(1040, 640);
             preview = new SpellStudioPreview();
             preview.ReferenceRecipe = targetCreature;
+            if (targetSurface == 0) preview.AutomaticTargetSide = true;
+            else preview.TargetSide = targetSurface == 2 ? LookSide.Stone : LookSide.Plant;
             CreateDrafts();
             ReloadAssets();
             Select(selected != null ? selected : drafts.Count > 0 ? drafts[0] : null);
@@ -409,6 +412,14 @@ namespace HealerLike.Render.Spells.Editor.Studio
                 new GUIContent("Creature", "Reference recipe; None uses the built-in healer."), targetCreature,
                 typeof(HealerLike.Render.Creatures.CreatureRecipe), false);
             if (EditorGUI.EndChangeCheck()) { preview.ReferenceRecipe = targetCreature; Repaint(); }
+            EditorGUI.BeginChangeCheck();
+            targetSurface = EditorGUILayout.Popup(targetSurface, new[] { "Auto", "Plant", "Stone" }, GUILayout.Width(65));
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (targetSurface == 0) preview.AutomaticTargetSide = true;
+                else preview.TargetSide = targetSurface == 2 ? LookSide.Stone : LookSide.Plant;
+                Repaint();
+            }
             using (new EditorGUI.DisabledScope(targetCreature == null))
                 if (GUILayout.Button("Edit", GUILayout.Width(42))) AssetDatabase.OpenAsset(targetCreature);
             EditorGUILayout.EndHorizontal();
@@ -588,7 +599,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
             ProjectileLook projectile = preset.ResolveProjectile();
             if (projectile == null)
                 return "The native projectile preset is empty. Edit the native table to fill or remove this row.";
-            return "Delivery: " + projectile.style + " · " + projectile.presentation +
+            return "Delivery: " + projectile.style +
                 (projectile.preserveContactPath ? " · preserves contact path" : "") +
                 "\nLookup only; this viewport previews the effect element.";
         }

@@ -7,6 +7,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using HealerLike.Render.Creatures.Editor.Studio;
+using HealerLike.Render.Grammar;
 using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Creatures.Editor.Tests
@@ -28,6 +29,37 @@ namespace HealerLike.Render.Creatures.Editor.Tests
         {
             _preview?.Dispose();
             if (_recipe) Object.DestroyImmediate(_recipe);
+        }
+
+        [Test]
+        public void BodyPreviewHasLitAndShadedPixelsEvenWhenEditorPipelineDisablesMainLight()
+        {
+            var original=QualitySettings.renderPipeline;
+            var low=AssetDatabase.LoadAssetAtPath<UnityEngine.Rendering.RenderPipelineAsset>("Assets/Settings/Low_PipelineAsset.asset");
+            Object.DestroyImmediate(_recipe);
+            _recipe=ScriptableObject.CreateInstance<CreatureRecipe>();
+            _recipe.roots.count=0;
+            var palette=AssetDatabase.LoadAssetAtPath<LookPalette>("Assets/Render/Grammar/Data/LookPalette.asset");
+            _recipe.parts=new[]{new CreaturePart { id="Body",parent=-1,primitive=Primitive.Sphere,role=PartRole.Body,dimensions=Vector3.one,colour=palette.plantBody }};
+            _preview.ShowGround=false;
+            _preview.Side=LookSide.Plant;
+            Texture2D image=null;
+            try
+            {
+                QualitySettings.renderPipeline=low;
+                image=_preview.Capture(_recipe,0,256,256);
+                int green=0,shade=0;
+                for(int y=85;y<171;y++) for(int x=85;x<171;x++)
+                {
+                    Color colour=image.GetPixel(x,y);
+                    if(colour.g>colour.r*1.15f && colour.g>colour.b*1.3f && colour.g>.25f) green++;
+                    if(colour.b>colour.r*1.1f && colour.b>colour.g*1.04f && colour.g>.25f) shade++;
+                }
+                Assert.That(green,Is.GreaterThan(100),"Plant body lost its lit green surface; check the preview main-light pipeline.");
+                Assert.That(shade,Is.GreaterThan(20),"Plant body lost the production body-material shade.");
+                Assert.That(QualitySettings.renderPipeline,Is.SameAs(low),"Capture changed the editor's selected pipeline.");
+            }
+            finally { if(image) Object.DestroyImmediate(image); QualitySettings.renderPipeline=original; }
         }
 
         [Test]
@@ -78,6 +110,7 @@ namespace HealerLike.Render.Creatures.Editor.Tests
         {
             Object.DestroyImmediate(_recipe);
             _recipe = CreatureStudioAuthoring.BuildSample(index);
+            _preview.Side = index == 2 ? LookSide.Stone : LookSide.Plant;
             string before = EditorJsonUtility.ToJson(_recipe);
             CreatureRig rig = _preview.Sample(_recipe, 1.25f);
             Assert.That(rig, Is.Not.Null, _preview.LastError);
@@ -90,6 +123,27 @@ namespace HealerLike.Render.Creatures.Editor.Tests
             {
                 Assert.That(part.GetComponent<MeshFilter>().sharedMesh, Is.Not.Null);
                 Assert.That(part.GetComponent<Renderer>().sharedMaterial.shader.name, Is.EqualTo("HL/Look/Primitive"));
+            }
+        }
+
+        [TestCase(LookSide.Plant, 1)]
+        [TestCase(LookSide.Stone, 2)]
+        public void PreviewKeepsProductionBodyAndStoneMaterialProperties(LookSide side,int sample)
+        {
+            Object.DestroyImmediate(_recipe);
+            _recipe=CreatureStudioAuthoring.BuildSample(sample);
+            _preview.Side=side;
+            var rig=_preview.Sample(_recipe,0);
+            Assert.That(rig,Is.Not.Null,_preview.LastError);
+            for (int i=0;i<_recipe.parts.Length;i++)
+            {
+                string filename=side==LookSide.Stone ? "Look_Stone" : _recipe.parts[i].role==PartRole.Body ? "Look_Body" : "Look_Default";
+                var source=AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/"+filename+".mat");
+                var actual=rig.partTransforms[i].GetComponent<Renderer>().sharedMaterial;
+                Assert.That(actual,Is.Not.SameAs(source));
+                Assert.That(actual.GetFloat("_HLToonThresholdOffset"),Is.EqualTo(source.GetFloat("_HLToonThresholdOffset")));
+                Assert.That(actual.GetColor("_HLShadeTint"),Is.EqualTo(source.GetColor("_HLShadeTint")));
+                Assert.That(actual.GetFloat("_HLNormalEdges"),Is.EqualTo(source.GetFloat("_HLNormalEdges")));
             }
         }
 

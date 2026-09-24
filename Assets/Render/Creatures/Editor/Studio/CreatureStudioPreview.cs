@@ -2,6 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using HealerLike.Render.Spells.Editor.Studio;
+using HealerLike.Render.Grammar;
 using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Creatures.Editor.Studio
@@ -15,7 +16,8 @@ namespace HealerLike.Render.Creatures.Editor.Studio
         GameObject _root, _subject, _ground, _selection;
         Transform[] _selectionEdges;
         PrimitiveMeshes _meshes;
-        Material _material;
+        Material _material, _bodyMaterial, _stoneMaterial;
+        LookSide _side;
         CreatureRecipe _source, _working;
         CreatureRig _rig;
         float _time = -1f;
@@ -28,6 +30,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
         float _distance = 5f, _aspect = -1f;
         int _dragControl;
 
+        public LookSide Side { get => _side; set { if (_side != value) { _side = value; _dirty = true; } } }
         public bool ShowGround { get; set; } = true;
         public int SelectedPartIndex { get; set; } = -1;
         public int SelectedPart { get => SelectedPartIndex; set => SelectedPartIndex = value; }
@@ -99,6 +102,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             _preview.BeginPreview(rect, GUIStyle.none);
             try
             {
+                using (new SpellStudioPreviewPipelineScope())
                 using (new SpellStudioPreviewLookScope(_preview.camera)) _preview.Render(true, false);
             }
             finally
@@ -133,7 +137,8 @@ namespace HealerLike.Render.Creatures.Editor.Studio
                 bool rendered = false;
                 try
                 {
-                    using (new SpellStudioPreviewLookScope(camera)) _preview.Render(true, false);
+                    using (new SpellStudioPreviewPipelineScope())
+                using (new SpellStudioPreviewLookScope(camera)) _preview.Render(true, false);
                     rendered = true;
                 }
                 finally
@@ -170,15 +175,16 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             _preview.ambientColor = new Color(.35f, .39f, .45f);
             _meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
             Material source = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
-            if (!_meshes || !source)
+            Material bodySource = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Body.mat");
+            Material stoneSource = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Stone.mat");
+            if (!_meshes || !source || !bodySource || !stoneSource)
             {
-                LastError = "Preview requires PrimitiveMeshes.asset and Look_Default.mat from Assets/Render.";
+                LastError = "Preview requires PrimitiveMeshes.asset and Look_Default, Look_Body and Look_Stone materials from Assets/Render.";
                 return;
             }
             _material = new Material(source) { name = "Creature Studio Preview Material", hideFlags = HideFlags.HideAndDontSave };
-            _material.SetFloat("_HLToonThresholdOffset", 0f);
-            _material.SetColor("_HLShadeTint", Color.clear);
-            _material.SetFloat("_HLHatchMultiplier", .2f);
+            _bodyMaterial = new Material(bodySource) { name = "Creature Studio Body Material", hideFlags = HideFlags.HideAndDontSave };
+            _stoneMaterial = new Material(stoneSource) { name = "Creature Studio Stone Material", hideFlags = HideFlags.HideAndDontSave };
             _root = new GameObject("Creature Studio Preview") { hideFlags = HideFlags.HideAndDontSave };
             _preview.AddSingleGO(_root);
             _subject = new GameObject("Creature Preview Subject");
@@ -227,7 +233,9 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             idle.seed ^= _subject.transform.GetEntityId().GetHashCode();
             _working.idle = idle;
             _rig = new CreatureRig();
-            if (!_rig.Init(_working, _subject.transform, _material, _meshes))
+            Material shared = _side == LookSide.Stone ? _stoneMaterial : _material;
+            Material body = _side == LookSide.Stone ? _stoneMaterial : _bodyMaterial;
+            if (!_rig.Init(_working, _subject.transform, shared, body, _meshes, 1f))
             {
                 LastError = "The creature rig could not be built. Check the recipe diagnostics.";
                 DestroyRig();
@@ -361,6 +369,8 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             _preview?.Cleanup();
             _preview = null;
             if (_material) Object.DestroyImmediate(_material);
+            if (_bodyMaterial) Object.DestroyImmediate(_bodyMaterial);
+            if (_stoneMaterial) Object.DestroyImmediate(_stoneMaterial);
             _root = _subject = null;
         }
     }

@@ -31,7 +31,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
             "Head and accessory fragments, body / stem / reach bands, and proportions used by LookComposer.",
             "Entity and character prefab overrides take priority over generated looks. Plant, stone and character hosts are the fallbacks.",
             "Effect vocabulary defines the parts, motion, socket and count rule for every grammar element.",
-            "Buff-handler rows override generated element / family / tempo. Projectile rows select delivery presentation.",
+            "Buff-handler rows override generated element / family / tempo. Projectile rows select delivery style and contact-path preservation.",
             "Shared family accents and material colour roles used by the creature and effect composers.",
             "The vocabulary for projectile tips, drops and delivery motion. These are shared renderer settings."
         };

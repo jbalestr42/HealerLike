@@ -4,6 +4,7 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using HealerLike.Render.Creatures.Editor.Studio;
+using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Creatures.Tests
 {
@@ -85,6 +86,30 @@ namespace HealerLike.Render.Creatures.Tests
                 Invoke("AddPart");
                 Assert.That(changed,Is.SameAs(recipe));
                 Assert.That(AssetDatabase.Contains(recipe),Is.False);
+            }
+            finally { HealerLike.Render.Spells.Editor.Studio.RenderGrammarLibraryWindow.AssetChanged-=listener; }
+        }
+
+        [Test] public void PreviewSurfaceIsPerRecipeAndDoesNotDirtyOrNotifyRecipeData()
+        {
+            var recipe=Get<CreatureRecipe>("selected");
+            bool dirty=EditorUtility.IsDirty(recipe);
+            bool notified=false;
+            System.Action<UnityEngine.Object> listener=asset=>notified=true;
+            HealerLike.Render.Spells.Editor.Studio.RenderGrammarLibraryWindow.AssetChanged+=listener;
+            try
+            {
+                typeof(CreatureStudioWindow).GetMethod("RememberSurface",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(window,new object[]{recipe,LookSide.Stone});
+                Invoke("NewDraft");
+                Assert.That(Get<LookSide>("manualSurface"),Is.EqualTo(LookSide.Plant));
+                typeof(CreatureStudioWindow).GetMethod("SwitchToParts",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(window,new object[]{recipe});
+                Assert.That(Get<LookSide>("manualSurface"),Is.EqualTo(LookSide.Stone));
+                Assert.That(EditorUtility.IsDirty(recipe),Is.EqualTo(dirty));
+                Assert.That(notified,Is.False);
+                Object.DestroyImmediate(window);
+                window=ScriptableObject.CreateInstance<CreatureStudioWindow>();
+                ShowParts();
+                Assert.That(Get<LookSide>("manualSurface"),Is.EqualTo(LookSide.Stone));
             }
             finally { HealerLike.Render.Spells.Editor.Studio.RenderGrammarLibraryWindow.AssetChanged-=listener; }
         }

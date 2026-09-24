@@ -66,6 +66,8 @@ namespace HealerLike.Render.Spells.Studio
             EffectFamily safeFamily = channels.family;
             EffectTempo safeTempo = channels.tempo;
             LookPalette palette = vocabulary != null ? vocabulary.palette : null;
+            // The production composer requires a palette; a fully authored colour can still preview standalone geometry.
+            if (palette == null && !overrideColour) return null;
             // Mirror the runtime composer's recipe assembly, sharing its count and colour decisions.
             // No temporary Unity objects are needed while the timeline is being scrubbed.
             return new EffectRecipe
@@ -182,6 +184,8 @@ namespace HealerLike.Render.Spells.Studio
             var warnings = new List<string>();
             TryResolve(out _, out _, out string resolutionError);
             if (resolutionError != null) warnings.Add(resolutionError);
+            if (!overrideColour && (vocabulary == null || vocabulary.palette == null))
+                warnings.Add("Choose a vocabulary with a palette, or enable an authored colour override.");
             if (mode == SpellStudioMode.GameplayHandler && sourceHandler == null)
                 warnings.Add("Choose a gameplay buff handler to derive its renderer grammar.");
             if (!Enum.IsDefined(typeof(SpellStudioMode), mode) || !Enum.IsDefined(typeof(AttributeGroup), attributeGroup))

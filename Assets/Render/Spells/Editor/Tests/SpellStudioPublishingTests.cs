@@ -18,6 +18,7 @@ namespace HealerLike.Render.Spells.Studio.Editor.Tests
             preset.vocabulary = vocabulary;
             preset.element = EffectElement.Burst;
             preset.overrideEntry = true;
+            preset.overrideColour = true; // This fixture publishes geometry without a palette.
             preset.entry = new ElementEntry
             {
                 cycleSeconds = 1.2f,

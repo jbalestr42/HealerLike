@@ -123,7 +123,6 @@ namespace HealerLike.Render.Creatures.Studio
                 if (errors.Count == 0 && (vocabulary.Reach(c.reach) + vocabulary.rootThickness * .5f) * unit > CreatureValidator.MaxRootReach)
                     errors.Add("The selected root reach and thickness exceed the renderer's maximum root extent.");
             }
-            if (!plant && !Finite(vocabulary.stoneWilt)) errors.Add("Stone wilt colour must be finite.");
             foreach (ColourRole role in Enum.GetValues(typeof(ColourRole)))
                 if (!Finite(vocabulary.Colour(role, c.accent, c.side))) { errors.Add("Palette colours must be finite."); break; }
             if (errors.Count != 0) return errors.ToArray();

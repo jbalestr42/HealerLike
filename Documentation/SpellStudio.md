@@ -4,7 +4,7 @@ Creature authoring is also available through **Tools → Render → Render Studi
 
 Open **Tools → Render → Spell Studio** in Unity 6000.6.0f1. No Play mode is needed. You can also double-click a saved preset or use its **Open in Spell Studio** inspector button.
 
-The studio previews the existing `SpellEffect` renderer, its baked meshes, shader and placement rules against the healer reference. Neutral studio lighting keeps geometry and colour legible; the game stage can apply a different lighting calibration. It does not run gameplay or put preview objects in your scene.
+The studio previews the existing `SpellEffect` renderer, its baked meshes, shader and placement rules against the selected creature reference. Neutral studio lighting keeps geometry and colour legible; the game stage can apply a different lighting calibration. It does not run gameplay or put preview objects in your scene.
 
 ![Actual Unity spell previews](SpellStudio-Overview.jpg)
 
@@ -24,6 +24,8 @@ Existing authored presets retain their original element mode. Choose **New gramm
 4. Use **Play/Pause**, **Restart**, **Loop**, speed and the timeline. Scrubbing pauses playback. A periodic effect is invisible before its first period, just as in the renderer.
 5. Drag the preview to orbit, scroll to zoom, Shift-drag or middle-drag to pan. **Reset view** restores the default camera. Ground and target visibility can be toggled independently.
 6. Choose **Save as…** to create a reusable `.asset`. **Save** writes changes to a saved preset. **Duplicate** creates an independent draft. **Export PNG** captures the current camera and timeline position at 1600 × 1000.
+
+The preview target uses **Auto**, **Plant**, or **Stone**. Auto detects a stone body in the reference recipe; explicit choices override its preview materials and effect body/stem colours. The caster **Side** remains independent and controls the side rim. These controls do not modify the creature asset.
 
 **Space** toggles playback and **F** resets the camera when you are not editing text.
 
@@ -53,8 +55,8 @@ Images are written to `Logs/SpellStudioCaptures/` in that Unity project. Use a g
 
 ## Verified build
 
-Unity 6000.6.0f1, macOS Metal, 24 September 2026: **1,298 passed, 0 failed, 3 skipped** across gameplay, renderer and both studio assemblies. This includes grammar mapping, native handler override priority, real gameplay sources, saved references, native dictionary inspectors and old authored preset compatibility. The three skipped tests are existing opt-in renderer screenshot fixtures. All 14 spell vocabulary previews were previously captured and visually inspected. Manual mouse/keyboard acceptance testing was unavailable because Computer Use permissions were not granted.
+Unity 6000.6.0f1, macOS Metal, 24 September 2026: **1,335 passed, 0 failed, 2 skipped** across gameplay, renderer and both studio assemblies. This includes grammar mapping, native handler override priority, real gameplay sources, saved references, native dictionary inspectors and old authored preset compatibility. The two skipped tests are existing opt-in renderer screenshot fixtures. All 14 spell vocabulary previews were previously captured and visually inspected. Manual mouse/keyboard acceptance testing was unavailable because Computer Use permissions were not granted.
 
-The complete test report is in `Logs/Studio-Audit-Tests.xml`; individual preview PNGs are in `Logs/SpellStudioCaptures`.
+The complete test report is in `Logs/Studio-Merge-Tests.xml`; individual preview PNGs are in `Logs/SpellStudioCaptures`.
 
 See [the studio audit](StudioAudit.md) for the review scope and follow-up fixes.

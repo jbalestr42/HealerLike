@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Creatures.Editor.Studio
 {
@@ -15,6 +16,9 @@ namespace HealerLike.Render.Creatures.Editor.Studio
         private CreatureRecipe selected;
         private SerializedObject serialized;
         private CreatureStudioPreview preview;
+        private LookSide manualSurface;
+        private readonly Dictionary<CreatureRecipe,LookSide> recipeSurfaces=new Dictionary<CreatureRecipe,LookSide>();
+        private LookSide PreviewSide => grammarMode ? (previewGameOverride ? LookDerivation.Side(grammarSelected.sourceSide) : grammarChannels.side) : manualSurface;
         private int selectedPart, selectedArm;
         private Primitive newPrimitive = Primitive.Sphere;
         private string search = "";
@@ -24,7 +28,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
         private float time, speed = 1, duration = 8;
         private double lastTick;
         private string[] warnings = Array.Empty<string>();
-        [Serializable] private sealed class DraftRecord { public string name; public string json; }
+        [Serializable] private sealed class DraftRecord { public string name; public string json; public LookSide surface; public bool hasSurface; }
         [Serializable] private sealed class DraftCollection
         {
             public List<DraftRecord> items = new List<DraftRecord>();
@@ -135,6 +139,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             if (serialized != null && selected != null) serialized.ApplyModifiedProperties();
             serialized?.Dispose();
             selected=recipe;
+            if (!grammarMode && recipe!=null) manualSurface=RecipeSurface(recipe);
             serialized=recipe != null ? new SerializedObject(recipe) : null;
             selectedPart=0; time=0; inspectorScroll=Vector2.zero;
             RefreshPreview(); Repaint();
@@ -145,7 +150,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             var selection=grammarMode ? partsSelection : selected;
             var collection = new DraftCollection { selectedIndex=drafts.IndexOf(selection),
                 selectedAsset=selection != null && AssetDatabase.Contains(selection) ? AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(selection)) : "" };
-            foreach (var draft in drafts) if (draft != null) collection.items.Add(new DraftRecord { name=draft.name,json=JsonUtility.ToJson(draft) });
+            foreach (var draft in drafts) if (draft != null) collection.items.Add(new DraftRecord { name=draft.name,json=JsonUtility.ToJson(draft),surface=RecipeSurface(draft),hasSurface=true });
             EditorPrefs.SetString(DraftKey,JsonUtility.ToJson(collection));
         }
 
@@ -161,6 +166,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
                     var draft=CreateInstance<CreatureRecipe>(); drafts.Add(draft);
                     JsonUtility.FromJsonOverwrite(item.json,draft);
                     draft.name=item.name; draft.hideFlags=HideFlags.HideAndDontSave;
+                    if (item.hasSurface) recipeSurfaces[draft]=item.surface;
                 }
                 if (!string.IsNullOrEmpty(collection.selectedAsset)) selected=AssetDatabase.LoadAssetAtPath<CreatureRecipe>(AssetDatabase.GUIDToAssetPath(collection.selectedAsset));
                 if (selected == null && collection.selectedIndex >= 0 && collection.selectedIndex < drafts.Count) selected=drafts[collection.selectedIndex];
@@ -257,6 +263,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             if (GUI.Button(new Rect(rect.xMax-180,rect.y+7,87,23),"Export PNG")) ExportPreview();
             if (GUI.Button(new Rect(rect.xMax-87,rect.y+7,75,23),"Reset view")) { preview.ResetCamera(); Repaint(); }
             Rect render=new Rect(rect.x+1,rect.y+38,rect.width-2,rect.height-223);
+            preview.Side=PreviewSide;
             preview.SelectedPartIndex=grammarMode ? -1 : selectedPart;
             preview.Draw(render,selected,time);
             GUI.Label(new Rect(render.x+14,render.y+12,render.width-28,22),selected.name,EditorStyles.boldLabel);
@@ -302,6 +309,9 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             EditorGUI.BeginChangeCheck();
             Section("IDENTITY"); Field("m_Name","Name");
             if (EditorGUI.EndChangeCheck()) ApplyEdits();
+            EditorGUI.BeginChangeCheck();
+            manualSurface=(LookSide)EditorGUILayout.EnumPopup("Preview surface",manualSurface);
+            if (EditorGUI.EndChangeCheck()) { RememberSurface(selected,manualSurface); preview.Side=manualSurface; Repaint(); }
             Section("PART ASSEMBLY");
             var parts=serialized.FindProperty("parts");
             selectedPart=Mathf.Clamp(selectedPart,0,Mathf.Max(0,parts.arraySize-1));
@@ -385,6 +395,21 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             EditorGUILayout.EndScrollView(); GUILayout.EndArea();
         }
 
+        private LookSide RecipeSurface(CreatureRecipe recipe)
+        {
+            if (recipeSurfaces.TryGetValue(recipe,out var side)) return side;
+            string guid=AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(recipe));
+            string key="HealerLike.CreatureStudio.Surface."+Application.dataPath+"."+guid;
+            return !string.IsNullOrEmpty(guid) && EditorPrefs.HasKey(key) ? (LookSide)EditorPrefs.GetInt(key) : HealerLike.Render.Spells.Editor.Studio.SpellStudioPreview.InferReferenceSide(recipe);
+        }
+        private void RememberSurface(CreatureRecipe recipe,LookSide side)
+        {
+            if (recipe==null) return;
+            recipeSurfaces[recipe]=side;
+            string guid=AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(recipe));
+            if (!string.IsNullOrEmpty(guid)) EditorPrefs.SetInt("HealerLike.CreatureStudio.Surface."+Application.dataPath+"."+guid,(int)side);
+        }
+
         private void Section(string label) { GUILayout.Space(14); GUILayout.Label(label,sectionStyle); GUILayout.Space(5); }
         private void Field(string name,string label,bool children=false) { var p=serialized.FindProperty(name); if (p!=null) EditorGUILayout.PropertyField(p,new GUIContent(label),children); }
         private void ApplyEdits() { serialized.ApplyModifiedProperties(); RefreshPreview(); HealerLike.Render.Spells.Editor.Studio.RenderGrammarLibraryWindow.NotifyAssetChanged(selected); }
@@ -405,7 +430,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
         private void DuplicatePart() { RecordMutation("Duplicate creature part"); int index=CreatureStudioAuthoring.DuplicatePart(selected,selectedPart); if (index>=0) selectedPart=index; FinishMutation(); }
         private void RemovePart() { RecordMutation("Remove creature subtree"); if (CreatureStudioAuthoring.RemovePart(selected,selectedPart)) selectedPart=0; FinishMutation(); }
         private void NewDraft() { var draft=CreatureStudioAuthoring.BuildSample(1); if (draft == null) { ShowNotification(new GUIContent("Starter assets are unavailable")); return; } draft.name="Untitled creature"; draft.hideFlags=HideFlags.HideAndDontSave; drafts.Add(draft); SwitchToParts(draft); }
-        private void Duplicate() { if (selected==null) return; var draft=CreatureStudioAuthoring.Clone(selected); draft.name=selected.name+" copy"; draft.hideFlags=HideFlags.HideAndDontSave; drafts.Add(draft); SwitchToParts(draft); }
+        private void Duplicate() { if (selected==null) return; var draft=CreatureStudioAuthoring.Clone(selected); draft.name=selected.name+" copy"; draft.hideFlags=HideFlags.HideAndDontSave; RememberSurface(draft,manualSurface); drafts.Add(draft); SwitchToParts(draft); }
 
         private void SaveAs()
         {
@@ -414,7 +439,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             if (string.IsNullOrEmpty(path)) return;
             var copy=CreatureStudioAuthoring.Clone(selected); copy.hideFlags=HideFlags.None;
             copy.name=System.IO.Path.GetFileNameWithoutExtension(path);
-            AssetDatabase.CreateAsset(copy,AssetDatabase.GenerateUniqueAssetPath(path)); AssetDatabase.SaveAssetIfDirty(copy);
+            AssetDatabase.CreateAsset(copy,AssetDatabase.GenerateUniqueAssetPath(path)); AssetDatabase.SaveAssetIfDirty(copy); RememberSurface(copy,manualSurface);
             ReloadAssets(); SwitchToParts(copy); EditorGUIUtility.PingObject(copy); ShowNotification(new GUIContent("Creature recipe saved"));
         }
 
@@ -424,7 +449,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             string path=EditorUtility.SaveFilePanel("Export creature preview","",selected.name+".png","png");
             if (string.IsNullOrEmpty(path)) return;
             Texture2D image=null;
-            try { preview.SelectedPartIndex=-1; image=preview.Capture(selected,time,1600,1000); System.IO.File.WriteAllBytes(path,image.EncodeToPNG()); ShowNotification(new GUIContent("Preview exported at 1600 × 1000")); }
+            try { preview.Side=PreviewSide; preview.SelectedPartIndex=-1; image=preview.Capture(selected,time,1600,1000); System.IO.File.WriteAllBytes(path,image.EncodeToPNG()); ShowNotification(new GUIContent("Preview exported at 1600 × 1000")); }
             catch (Exception exception) { Debug.LogException(exception); EditorUtility.DisplayDialog("Could not export preview",exception.Message,"OK"); }
             finally { preview.SelectedPartIndex=grammarMode ? -1 : selectedPart; if (image!=null) DestroyImmediate(image); }
         }

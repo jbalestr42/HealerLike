@@ -56,7 +56,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
                     string[] errors = preset.Validate();
                     if (errors.Length != 0) throw new System.InvalidOperationException(Names[i] + ": " + string.Join("; ", errors));
                     recipe = preset.Compose();
-                    using (var preview = new CreatureStudioPreview())
+                    using (var preview = new CreatureStudioPreview { Side = preset.Channels().side })
                     {
                         var texture = preview.Capture(recipe, 1.2f, 800, 700);
                         try { File.WriteAllBytes(Path.Combine(folder, Names[i] + ".png"), texture.EncodeToPNG()); }

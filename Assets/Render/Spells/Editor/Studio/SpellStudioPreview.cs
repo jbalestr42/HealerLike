@@ -16,7 +16,9 @@ namespace HealerLike.Render.Spells.Editor.Studio
         SpellEffect _effect;
         CreatureRig _rig;
         PrimitiveMeshes _meshes;
-        Material _material;
+        Material _material, _bodyMaterial, _stoneMaterial;
+        LookSide _targetSide = LookSide.Plant;
+        bool _automaticTargetSide = true;
         SpellStudioPreset _preset;
         bool _dirty = true, _disposed, _fitRequested = true;
         Bounds _frameBounds;
@@ -35,6 +37,30 @@ namespace HealerLike.Render.Spells.Editor.Studio
         {
             get => _referenceRecipe;
             set { if (_referenceRecipe == value) return; _referenceRecipe = value; Refresh(); }
+        }
+
+        /// <summary>The target's side colours body/stem parts; the preset's side remains the caster's rim.</summary>
+        public LookSide TargetSide
+        {
+            get => _automaticTargetSide ? InferReferenceSide(_referenceRecipe) : _targetSide;
+            set { if (_targetSide == value && !_automaticTargetSide) return; _targetSide = value; _automaticTargetSide = false; Refresh(); }
+        }
+        public bool AutomaticTargetSide
+        {
+            get => _automaticTargetSide;
+            set { if (_automaticTargetSide == value) return; _automaticTargetSide = value; Refresh(); }
+        }
+
+        // Baked recipes carry no side metadata. This is an editor default, never a gameplay rule;
+        // an explicit Plant/Stone surface remains available for intentionally unusual silhouettes.
+        public static LookSide InferReferenceSide(CreatureRecipe recipe)
+        {
+            if (recipe && recipe.parts != null)
+                foreach (CreaturePart part in recipe.parts)
+                    if (part.role == PartRole.Body && (part.primitive == Primitive.Stone ||
+                        part.primitive == Primitive.Boulder || part.primitive == Primitive.Pyramid))
+                        return LookSide.Stone;
+            return LookSide.Plant;
         }
 
         public bool ShowGround { get; set; } = true;
@@ -78,6 +104,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
             try
             {
                 // The project material has a UniversalForwardOnly pass: rendering through SRP is essential.
+                using (new SpellStudioPreviewPipelineScope())
                 using (new SpellStudioPreviewLookScope(_preview.camera))
                     _preview.Render(true, false);
             }
@@ -137,7 +164,8 @@ namespace HealerLike.Render.Spells.Editor.Studio
                 bool rendered = false;
                 try
                 {
-                    using (new SpellStudioPreviewLookScope(_preview.camera))
+                    using (new SpellStudioPreviewPipelineScope())
+                using (new SpellStudioPreviewLookScope(_preview.camera))
                         _preview.Render(true, false);
                     rendered = true;
                 }
@@ -238,13 +266,19 @@ namespace HealerLike.Render.Spells.Editor.Studio
             _preview.ambientColor = new Color(0.35f, 0.39f, 0.45f);
             _meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
             Material source = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
-            if (!_meshes || !source)
+            Material bodySource = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Body.mat");
+            Material stoneSource = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Stone.mat");
+            if (!_meshes || !source || !bodySource || !stoneSource)
             {
-                _error = "Preview requires PrimitiveMeshes.asset and Look_Default.mat from Assets/Render.";
+                _error = "Preview requires PrimitiveMeshes.asset and the Look_Default, Look_Body and Look_Stone materials from Assets/Render.";
                 return;
             }
             _material = new Material(source) { name = "Spell Studio Preview Material", hideFlags = HideFlags.HideAndDontSave };
-            // Keep the runtime shader, with a neutral studio surface calibration.
+            _bodyMaterial = new Material(bodySource) { name = "Spell Studio Body Material", hideFlags = HideFlags.HideAndDontSave };
+            _stoneMaterial = new Material(stoneSource) { name = "Spell Studio Stone Material", hideFlags = HideFlags.HideAndDontSave };
+            _bodyMaterial.SetFloat("_HLHatchMultiplier", .2f);
+            _stoneMaterial.SetFloat("_HLHatchMultiplier", .2f);
+            // Keep the runtime shader and distinct plant-body treatment in the studio lighting.
             _material.SetFloat("_HLToonThresholdOffset", 0f);
             _material.SetColor("_HLShadeTint", Color.clear);
             _material.SetFloat("_HLHatchMultiplier", 0.2f);
@@ -284,7 +318,9 @@ namespace HealerLike.Render.Spells.Editor.Studio
             if (creature && CreatureValidator.TryValidate(creature, out string validationError))
             {
                 _rig = new CreatureRig();
-                if (_rig.Init(creature, _reference.transform, _material, _meshes))
+                Material shared = TargetSide == LookSide.Stone ? _stoneMaterial : _material;
+                Material body = TargetSide == LookSide.Stone ? _stoneMaterial : _bodyMaterial;
+                if (_rig.Init(creature, _reference.transform, shared, body, _meshes, 1f))
                     _rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
             }
             else if (creature)
@@ -315,7 +351,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
             effectObject.transform.SetParent(_root.transform, false);
             _effect = effectObject.AddComponent<SpellEffect>();
             _effect.enabled = false; // Only the editor timeline may advance this effect, including during Play mode.
-            _effect.Init(recipe, _meshes, _material);
+            _effect.Init(recipe, _meshes, _material, TargetSide);
             EffectAnchors anchors = new EffectAnchors
             {
                 foot = Vector3.zero, bodyCentre = Vector3.up * 0.3f, bodyRadius = 0.3f,
@@ -336,7 +372,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
             }
             _effect.transform.localScale *= _preset.SafeScale;
             if (recipe.tempo != EffectTempo.Once)
-                _effect.SetStatus(_preset.SafeStacks, 0f, _preset.PreviewDuration, ClockKind.Simulation);
+                _effect.SetStatus(_preset.SafeStacks, 0f, _preset.PreviewDuration);
             _effect.SetSide(_preset.SafeSide);
             if (_preset.critical) _effect.ShowCritical();
             HideTree(effectObject);
@@ -397,6 +433,8 @@ namespace HealerLike.Render.Spells.Editor.Studio
             _preview?.Cleanup();
             _preview = null;
             if (_material) Object.DestroyImmediate(_material);
+            if (_bodyMaterial) Object.DestroyImmediate(_bodyMaterial);
+            if (_stoneMaterial) Object.DestroyImmediate(_stoneMaterial);
             _root = null;
             _effect = null;
         }

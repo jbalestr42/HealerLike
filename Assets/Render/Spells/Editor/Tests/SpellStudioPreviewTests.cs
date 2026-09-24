@@ -96,7 +96,7 @@ namespace HealerLike.Render.Spells.Editor.Tests
             bool dirty = scene.isDirty;
             int sceneCount = EditorSceneManager.previewSceneCount;
             int rootCount = CountObjects("Spell Studio Preview");
-            int materials = Resources.FindObjectsOfTypeAll<Material>().Count(material => material.name == "Spell Studio Preview Material");
+            int materials = Resources.FindObjectsOfTypeAll<Material>().Count(material => material.name.StartsWith("Spell Studio ") && material.name.EndsWith(" Material"));
 
             for (int i = 0; i < 3; i++)
             {
@@ -110,10 +110,99 @@ namespace HealerLike.Render.Spells.Editor.Tests
 
             Assert.That(EditorSceneManager.previewSceneCount, Is.EqualTo(sceneCount));
             Assert.That(CountObjects("Spell Studio Preview"), Is.EqualTo(rootCount));
-            Assert.That(Resources.FindObjectsOfTypeAll<Material>().Count(material => material.name == "Spell Studio Preview Material"), Is.EqualTo(materials));
+            Assert.That(Resources.FindObjectsOfTypeAll<Material>().Count(material => material.name.StartsWith("Spell Studio ") && material.name.EndsWith(" Material")), Is.EqualTo(materials));
             Assert.That(SceneManager.GetActiveScene(), Is.EqualTo(scene));
             Assert.That(scene.isDirty, Is.EqualTo(dirty));
             CollectionAssert.AreEquivalent(roots, scene.GetRootGameObjects());
+        }
+
+        [Test]
+        public void BakedStoneReferenceAutomaticallySelectsStoneUnlessExplicitlyOverridden()
+        {
+            var reference = ScriptableObject.CreateInstance<HealerLike.Render.Creatures.CreatureRecipe>();
+            try
+            {
+                reference.parts = new[] { new HealerLike.Render.Creatures.CreaturePart
+                {
+                    primitive = HealerLike.Render.Creatures.Primitive.Stone,
+                    role = HealerLike.Render.Creatures.PartRole.Body
+                } };
+                _preview.ReferenceRecipe = reference;
+                Assert.That(_preview.AutomaticTargetSide, Is.True);
+                Assert.That(_preview.TargetSide, Is.EqualTo(LookSide.Stone));
+                _preview.TargetSide = LookSide.Plant;
+                Assert.That(_preview.AutomaticTargetSide, Is.False);
+                Assert.That(_preview.TargetSide, Is.EqualTo(LookSide.Plant));
+                _preview.AutomaticTargetSide = true;
+                Assert.That(_preview.TargetSide, Is.EqualTo(LookSide.Stone));
+            }
+            finally { Object.DestroyImmediate(reference); }
+        }
+
+        [Test]
+        public void ReferenceUsesProductionBodyMaterialAndTargetSideColoursEffects()
+        {
+            _preset.overrideEntry = true;
+            _preset.entry = new ElementEntry
+            {
+                parts = new[]
+                {
+                    new HealerLike.Render.Creatures.LookPart
+                    {
+                        id = "Body colour", primitive = HealerLike.Render.Creatures.Primitive.Sphere,
+                        role = HealerLike.Render.Creatures.PartRole.Body, colour = ColourRole.Body,
+                        size = Vector3.one * .2f
+                    }
+                },
+                sideRim = new[]
+                {
+                    new HealerLike.Render.Creatures.LookPart
+                    {
+                        id = "Caster rim", primitive = HealerLike.Render.Creatures.Primitive.Sphere,
+                        role = HealerLike.Render.Creatures.PartRole.Body, colour = ColourRole.Accent,
+                        size = Vector3.one * .1f
+                    }
+                },
+                cycleSeconds = 1f
+            };
+            _preset.side = Entity.EntityType.Player;
+            const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+            Material sourceBody = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Body.mat");
+            Material sourceStone = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Stone.mat");
+            SpellEffect plant = _preview.Sample(_preset, .2f);
+            var rig = (HealerLike.Render.Creatures.CreatureRig)typeof(SpellStudioPreview).GetField("_rig", flags).GetValue(_preview);
+            bool foundBody = false;
+            for (int i = 0; i < rig.partTransforms.Count; i++)
+            {
+                Material material = rig.partTransforms[i].GetComponent<Renderer>().sharedMaterial;
+                if (rig.recipe.parts[i].role == HealerLike.Render.Creatures.PartRole.Body)
+                {
+                    foundBody = true;
+                    Assert.That(material.GetFloat("_HLToonThresholdOffset"), Is.EqualTo(sourceBody.GetFloat("_HLToonThresholdOffset")));
+                    Assert.That(material.GetColor("_HLShadeTint"), Is.EqualTo(sourceBody.GetColor("_HLShadeTint")));
+                }
+                else Assert.That(material.name, Is.EqualTo("Spell Studio Preview Material"));
+            }
+            Assert.That(foundBody, Is.True);
+            var block = new MaterialPropertyBlock();
+            plant.parts[0].GetComponent<Renderer>().GetPropertyBlock(block);
+            Color plantColour = block.GetColor("_BaseColor");
+            Assert.That(Vector4.Distance(plantColour, _preset.vocabulary.palette.Colour(ColourRole.Body, _preset.family, LookSide.Plant)), Is.LessThan(.0001f));
+            _preview.TargetSide = LookSide.Stone;
+            SpellEffect stone = _preview.Sample(_preset, .2f);
+            stone.parts[0].GetComponent<Renderer>().GetPropertyBlock(block);
+            Color stoneColour = block.GetColor("_BaseColor");
+            Assert.That(Vector4.Distance(stoneColour, _preset.vocabulary.palette.Colour(ColourRole.Body, _preset.family, LookSide.Stone)), Is.LessThan(.0001f));
+            Assert.That(Vector4.Distance(plantColour, stoneColour), Is.GreaterThan(.05f), "Changing target side must change the body's palette colour.");
+            stone.parts.Find(part => part.name == "Caster rim").GetComponent<Renderer>().GetPropertyBlock(block);
+            Assert.That(Vector4.Distance(block.GetColor("_BaseColor"), _preset.vocabulary.palette.Colour(ColourRole.Rim, _preset.family, LookSide.Plant)), Is.LessThan(.0001f), "Caster rim stays the player's colour on a stone target.");
+            rig = (HealerLike.Render.Creatures.CreatureRig)typeof(SpellStudioPreview).GetField("_rig", flags).GetValue(_preview);
+            foreach (Transform part in rig.partTransforms)
+            {
+                Material material = part.GetComponent<Renderer>().sharedMaterial;
+                Assert.That(material.name, Is.EqualTo("Spell Studio Stone Material"));
+                Assert.That(material.shader, Is.EqualTo(sourceStone.shader));
+            }
         }
 
         [Test]

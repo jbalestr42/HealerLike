@@ -57,7 +57,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             CreaturePart part = new CreaturePart
             {
                 id = UniqueId(recipe, primitive.ToString()), parent = length == 0 ? -1 : parent,
-                primitive = primitive, dimensions = Vector3.one * 0.15f, colour = new Color(0.46f, 0.8f, 0.43f),
+                primitive = primitive, dimensions = Vector3.one * 0.15f, colour = length == 0 ? Color.white : recipe.parts[parent].colour,
                 role = length == 0 ? PartRole.Body : PartRole.Accessory, localPosition = Vector3.up * 0.2f
             };
             Array.Resize(ref recipe.parts, length + 1);
@@ -124,7 +124,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
                 bodyPart = bodyPart, rootLocal = Vector3.up * 0.1f,
                 segmentCount = 3, segmentLength = 0.15f, radius = 0.018f,
                 bendPole = Vector3.forward, colour = recipe.roots.colour,
-                tipColour = new Color(0.65f, 1f, 0.4f, 1f)
+                tipColour = AuthoredAccent(recipe, bodyPart)
             };
             Array.Resize(ref recipe.arms, index + 1);
             recipe.arms[index] = arm;
@@ -179,6 +179,13 @@ namespace HealerLike.Render.Creatures.Editor.Studio
                 foreach (ArmDefinition arm in recipe.arms)
                     if (!Finite(arm.tipColour)) { warnings.Add("Arm tip colours must be finite."); break; }
             return warnings.ToArray();
+        }
+
+        static Color AuthoredAccent(CreatureRecipe recipe, int bodyPart)
+        {
+            foreach (var arm in recipe.arms) if (arm.tipColour.a > 0f) return arm.tipColour;
+            foreach (var part in recipe.parts) if (part.role == PartRole.Tip || part.role == PartRole.Head) return part.colour;
+            return recipe.parts[bodyPart].colour;
         }
 
         static bool CanEdit(CreatureRecipe recipe, int index) => recipe != null && recipe.parts != null &&

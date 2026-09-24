@@ -34,11 +34,37 @@ namespace HealerLike.Render.Creatures
                 Assert.AreEqual(expected.roots, actual.roots);
                 Assert.AreEqual(expected.idle, actual.idle);
                 Assert.AreEqual(expected.neckLocal, actual.neckLocal);
+                Assert.AreEqual(expected.wiltColour, actual.wiltColour);
+                Assert.AreEqual(expected.stoneOchre, actual.stoneOchre);
                 Assert.AreEqual(expected.arms.Length, actual.arms.Length);
                 for (int i = 0; i < expected.arms.Length; i++)
                     CollectionAssert.AreEqual(expected.arms[i].restJoints, actual.arms[i].restJoints);
             }
             finally { if (actual != null) Object.DestroyImmediate(actual); if (expected != null) Object.DestroyImmediate(expected); }
+        }
+
+        [Test]
+        public void Compose_StoneWiltComesFromCentralPaletteAndInvalidColourIsReported()
+        {
+            LookVocabulary custom = Object.Instantiate(preset.vocabulary);
+            LookPalette customPalette = Object.Instantiate(preset.vocabulary.palette);
+            try
+            {
+                custom.palette = customPalette;
+                customPalette.stoneWilt = new Color(.2f, .4f, .6f, 1f);
+                preset.vocabulary = custom; preset.side = LookSide.Stone;
+                CreatureRecipe result = preset.Compose();
+                try
+                {
+                    Assert.NotNull(result);
+                    Assert.AreEqual(customPalette.Colour(ColourRole.Wilt, preset.accent, LookSide.Stone), result.wiltColour);
+                }
+                finally { if (result) Object.DestroyImmediate(result); }
+                customPalette.stoneWilt = new Color(float.NaN, 0f, 0f, 1f);
+                Assert.That(string.Join(" ", preset.Validate()), Does.Contain("Palette colours"));
+                Assert.IsNull(preset.Compose());
+            }
+            finally { Object.DestroyImmediate(custom); Object.DestroyImmediate(customPalette); }
         }
 
         [Test]

@@ -124,6 +124,21 @@ namespace HealerLike.Render.Spells
         }
 
         [Test]
+        public void MissingPalette_ReturnsDiagnosticUnlessColourIsExplicitlyAuthored()
+        {
+            vocabulary.palette = null;
+            Assert.IsNull(preset.Compose());
+            Assert.That(string.Join(" ", preset.Validate()), Does.Contain("palette"));
+            preset.overrideColour = true;
+            preset.colour = Color.cyan;
+            EffectRecipe result = preset.Compose();
+            Assert.NotNull(result);
+            Assert.IsNull(result.palette);
+            Assert.AreEqual(Color.cyan, result.colour);
+            Assert.IsEmpty(preset.Validate());
+        }
+
+        [Test]
         public void Compose_SanitizesMalformedDataWithoutEditingAuthoringFields()
         {
             preset.CaptureEntry();

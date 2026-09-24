@@ -20,7 +20,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
                 var recipe = CreatureStudioAuthoring.BuildSample(i);
                 try
                 {
-                    using (var preview = new CreatureStudioPreview())
+                    using (var preview = new CreatureStudioPreview { Side = i == 2 ? LookSide.Stone : LookSide.Plant })
                         Write(preview.Capture(recipe, 1.25f, 1000, 800), Path.Combine(output, recipe.name + ".png"));
 
                     var spell = ScriptableObject.CreateInstance<SpellStudioPreset>();
@@ -30,7 +30,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
                         spell.element = EffectElement.Orbit;
                         spell.family = EffectFamily.Boon;
                         spell.tempo = EffectTempo.ForDuration;
-                        using (var preview = new SpellStudioPreview { ReferenceRecipe = recipe })
+                        using (var preview = new SpellStudioPreview { ReferenceRecipe = recipe, TargetSide = i == 2 ? LookSide.Stone : LookSide.Plant })
                             Write(preview.Capture(spell, 1.25f, 1000, 800), Path.Combine(output, recipe.name + " + Spell.png"));
                     }
                     finally { Object.DestroyImmediate(spell); }

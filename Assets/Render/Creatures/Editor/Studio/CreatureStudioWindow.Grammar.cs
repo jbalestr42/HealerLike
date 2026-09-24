@@ -28,6 +28,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             public int selectedIndex=-1;
             public string selectedAsset;
             public string creatureLooksAsset;
+            public LookSide manualSurface;
             public bool grammarMode=true;
         }
         private static string GrammarDraftKey=>"HealerLike.CreatureStudio.GrammarDrafts."+Application.dataPath;
@@ -302,7 +303,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
         {
             if (grammarOutput==null) return;
             var recipe=CreatureStudioAuthoring.Clone(grammarOutput); recipe.name=GrammarLabel(grammarSelected)+" baked";
-            recipe.hideFlags=HideFlags.HideAndDontSave; drafts.Add(recipe); SwitchToParts(recipe);
+            recipe.hideFlags=HideFlags.HideAndDontSave; drafts.Add(recipe); RememberSurface(recipe,grammarChannels.side); SwitchToParts(recipe);
         }
 
         private void SaveGrammarAs()
@@ -317,7 +318,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
 
         private void PersistGrammarDrafts()
         {
-            var collection=new GrammarDraftCollection { creatureLooksAsset=AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(creatureLooks)),grammarMode=grammarMode,selectedIndex=grammarDrafts.IndexOf(grammarSelected),selectedAsset=AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(grammarSelected)) };
+            var collection=new GrammarDraftCollection { manualSurface=manualSurface,creatureLooksAsset=AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(creatureLooks)),grammarMode=grammarMode,selectedIndex=grammarDrafts.IndexOf(grammarSelected),selectedAsset=AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(grammarSelected)) };
             foreach (var draft in grammarDrafts) if (draft!=null) collection.items.Add(new GrammarDraftRecord { json=JsonUtility.ToJson(draft),vocabulary=AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(draft.vocabulary)),source=AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(draft.sourceEntity)) });
             EditorPrefs.SetString(GrammarDraftKey,JsonUtility.ToJson(collection));
         }
@@ -329,6 +330,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             {
                 var collection=JsonUtility.FromJson<GrammarDraftCollection>(EditorPrefs.GetString(GrammarDraftKey));
                 if (collection?.items==null) return;
+                manualSurface=collection.manualSurface;
                 if (!string.IsNullOrEmpty(collection.creatureLooksAsset))
                     creatureLooks=AssetDatabase.LoadAssetAtPath<CreatureLooks>(AssetDatabase.GUIDToAssetPath(collection.creatureLooksAsset));
                 foreach (var item in collection.items)

@@ -2,7 +2,7 @@
 
 Open **Tools → Render → Render Studio** or **Tools → Render → Creature Studio**. The header switches between creature and spell authoring.
 
-Creature Studio edits real `CreatureRecipe` assets consumed by the renderer. Its isolated 3D preview uses `CreatureRig`, baked meshes and the project's shader, with neutral studio lighting. No Play mode is required.
+Creature Studio edits real `CreatureRecipe` assets consumed by the renderer. Its isolated 3D preview uses `CreatureRig`, baked meshes and the production plant-body/stone materials, with neutral studio lighting. No Play mode is required.
 
 ![Creature and spell previews](CreatureStudio-Overview.jpg)
 
@@ -26,6 +26,8 @@ Some vocabulary settings deliberately pin reach or limit part counts. The studio
 - Play or scrub the preview; inspect health, charge and glow readouts. Orbit, pan and zoom the camera, or reset its framing.
 - Save as a reusable recipe, duplicate it for a variant, or export the preview as a PNG. Undo/Redo is supported. Double-clicking a saved recipe opens the studio.
 
+The **Preview surface** control selects plant or stone materials for a baked recipe without changing the asset. Grammar mode uses the derived side automatically.
+
 Recipe assets affect the game only when assigned to a renderer consumer such as a CharacterView. The studio does not alter entity balance, skill logic or game scenes.
 
 ## Preview spells on your creature
@@ -44,6 +46,6 @@ Run the EditMode filters `CreatureStudio` and `SpellStudio`. To produce visual c
 
 Captures are written to `Logs/CreatureStudioCaptures/`.
 
-Verified in Unity 6000.6.0f1 on macOS Metal: **1,298 passed, 0 failed, 3 skipped** across gameplay, renderer and both studio assemblies. The three skips are existing opt-in screenshot fixtures. Tests include production grammar parity, native dictionary inspectors, source derivation, grammar preset persistence, draft lifecycle and preview isolation. Six grammar-generated creature captures were visually inspected, along with the earlier creature and spell captures. Manual mouse/keyboard acceptance testing remains unavailable because Computer Use permissions were not granted. Full results: `Logs/Studio-Audit-Tests.xml`.
+Verified in Unity 6000.6.0f1 on macOS Metal: **1,335 passed, 0 failed, 2 skipped** across gameplay, renderer and both studio assemblies. The two skips are existing opt-in screenshot fixtures. Tests include production grammar parity, native dictionary inspectors, source derivation, grammar preset persistence, draft lifecycle and preview isolation. Six grammar-generated creature captures were visually inspected, along with the earlier creature and spell captures. Manual mouse/keyboard acceptance testing remains unavailable because Computer Use permissions were not granted. Full results: `Logs/Studio-Merge-Tests.xml`.
 
 See [the studio audit](StudioAudit.md) for the review scope and follow-up fixes.

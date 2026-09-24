@@ -248,6 +248,20 @@ namespace HealerLike.Render.Creatures.Editor.Studio.Tests
             Assert.IsFalse(CreatureStudioAuthoring.RebuildArmRestPose(recipe, 9));
         }
 
+        [Test]
+        public void NewPartsAndArmsInheritAuthoredColoursInsteadOfHardcodedPaletteValues()
+        {
+            CreatureStudioAuthoring.AddPart(recipe);
+            recipe.parts[0].colour = new Color(.1f,.3f,.8f);
+            int child = CreatureStudioAuthoring.AddPart(recipe,0);
+            Assert.AreEqual(recipe.parts[0].colour,recipe.parts[child].colour);
+            recipe.parts[child].role = PartRole.Head;
+            recipe.parts[child].colour = new Color(.9f,.1f,.6f);
+            int arm = CreatureStudioAuthoring.AddArm(recipe,0);
+            Assert.AreEqual(recipe.parts[child].colour,recipe.arms[arm].tipColour);
+            Assert.AreEqual(recipe.roots.colour,recipe.arms[arm].colour);
+        }
+
         static ArmDefinition Arm(int bodyPart) => new ArmDefinition
         {
             bodyPart = bodyPart, segmentCount = 2, segmentLength = 1f, radius = .03f,

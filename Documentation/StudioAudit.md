@@ -33,3 +33,11 @@ The skips are existing opt-in screenshot fixtures. Full report: `Logs/Studio-Aud
 Added assets have metadata, no duplicate GUIDs involving the additions, and no missing preset GUID references. Whitespace checks pass. Unity-generated importer, demo metadata and settings changes are restored after the editor exits; those unrelated changes are excluded from commits.
 
 Preview captures were inspected during implementation. Manual mouse/keyboard acceptance testing remains unverified because Computer Use access was unavailable. Automated rendering and camera-state tests cover both preview implementations.
+
+## Renderer merge preparation
+
+Merged renderer consolidation `8925d452` into `codex/spell-studio`. The textual merge was conflict-free; compatibility changes adapt the studios to centralized palette roles, separate body/stone materials, the simplified status API and projectile metadata. Target-side preview colour is independent of caster-side rim colour. The renderer's production implementations are preserved. Both previews temporarily use the production StagePipeline and restore the previous quality pipeline afterward; this keeps the body shading correct even when the project's default pipeline disables its main light. Exception-path restoration and rendered lit/shaded body regions have regression coverage.
+
+Full merged EditMode run: **1,335 passed, 0 failed, 2 skipped**. Report: `Logs/Studio-Merge-Tests.xml`. These results supersede the earlier pre-consolidation totals above. The two skipped tests are opt-in capture fixtures. Render settings changed by tests are restored before standalone visual captures and repository cleanup. Refreshed captures of six grammar creatures, three authored creatures and their spell combinations, and all 14 spell elements were visually inspected; the overview images reflect the consolidated renderer.
+
+The studio branch is pushed without a PR. The renderer branch is not advanced by this preparation; it can fast-forward to the studio candidate while its tip remains `8925d452`.
