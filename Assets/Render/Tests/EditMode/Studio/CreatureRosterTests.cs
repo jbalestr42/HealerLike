@@ -53,6 +53,22 @@ namespace HealerLike.Render.Studio.Editor
         }
 
         [Test]
+        public void Reload_AllRows_SharesOneFramingThatContainsEveryCreature()
+        {
+            _roster.Reload(_vocabulary, Entity.EntityType.Player);
+            Bounds frame = _roster.rows[0].preview.GetSubjectBounds();
+            foreach (CreatureRosterRow row in _roster.rows)
+            {
+                Assert.AreEqual(frame, row.preview.GetSubjectBounds());
+                Bounds content = row.preview.GetContentBounds();
+                Bounds tolerance = frame;
+                tolerance.Expand(0.001f);
+                Assert.IsTrue(tolerance.Contains(content.min), row.path);
+                Assert.IsTrue(tolerance.Contains(content.max), row.path);
+            }
+        }
+
+        [Test]
         public void Rebuild_PaletteEditAndUndo_ChangesTheRecipeAndPreservesSource()
         {
             _roster.Reload(_vocabulary, Entity.EntityType.Player);

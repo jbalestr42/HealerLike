@@ -44,7 +44,7 @@ namespace HealerLike.Render.Studio.Editor
                     Write(row.preview.Capture(row.recipe, 1.25f, 540, 450), Path.Combine(output, "palette-before.png"));
                     palette.plantBody = new Color(0.95f, 0.08f, 0.35f);
                     palette.plantStem = new Color(0.9f, 0.28f, 0.06f);
-                    row.Rebuild(copy, Entity.EntityType.Player);
+                    roster.Rebuild(copy, Entity.EntityType.Player);
                     Write(row.preview.Capture(row.recipe, 1.25f, 540, 450), Path.Combine(output, "palette-after.png"));
                 }
                 File.WriteAllText(Path.Combine(output, "roster.tsv"), manifest.ToString());

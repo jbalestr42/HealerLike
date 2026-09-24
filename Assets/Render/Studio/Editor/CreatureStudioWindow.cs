@@ -28,6 +28,7 @@ namespace HealerLike.Render.Studio.Editor
         readonly CreatureStudioHeader _header = new CreatureStudioHeader();
         readonly CreatureRosterPane _roster = new CreatureRosterPane();
         bool _isRosterMode;
+        bool _isRosterReady;
         CreatureRecipe _selected;
         SerializedObject _serialized;
         bool _isGrammarMode = true;
@@ -88,8 +89,8 @@ namespace HealerLike.Render.Studio.Editor
             _partsSelection = _selected;
             _grammar.Init(this);
             _isGrammarMode = true;
+            _isRosterMode = false;
             _grammar.Regenerate();
-            _roster.Init();
             EditorApplication.update += OnEditorUpdate;
             EditorApplication.projectChanged += ReloadAssets;
             Undo.undoRedoPerformed += OnUndoRedo;
@@ -107,6 +108,7 @@ namespace HealerLike.Render.Studio.Editor
             _drafts.Persist(selection);
             _grammar.Dispose();
             _roster.Dispose();
+            _isRosterReady = false;
             RenderGrammarLibraryWindow.OnAssetChanged.RemoveListener(OnGrammarLibraryChanged);
             EditorApplication.update -= OnEditorUpdate;
             EditorApplication.projectChanged -= ReloadAssets;
@@ -240,7 +242,10 @@ namespace HealerLike.Render.Studio.Editor
         {
             _library.Reload();
             _grammar.Reload();
-            _roster.Reload();
+            if (_isRosterReady)
+            {
+                _roster.Reload();
+            }
             RefreshPreview();
             Repaint();
         }
@@ -275,13 +280,24 @@ namespace HealerLike.Render.Studio.Editor
         public void SwitchToRoster()
         {
             _isRosterMode = true;
-            _roster.Refresh();
+            if (!_isRosterReady)
+            {
+                _roster.Init();
+                _isRosterReady = true;
+            }
+            else
+            {
+                _roster.Refresh();
+            }
             Repaint();
         }
 
         void OnUndoRedo()
         {
-            _roster.Refresh();
+            if (_isRosterReady)
+            {
+                _roster.Refresh();
+            }
             if (_serialized != null)
             {
                 _serialized.Update();
@@ -302,7 +318,10 @@ namespace HealerLike.Render.Studio.Editor
 
         void OnGrammarLibraryChanged(Object changed)
         {
-            _roster.Refresh();
+            if (_isRosterReady)
+            {
+                _roster.Refresh();
+            }
             if (_isGrammarMode)
             {
                 _grammar.Regenerate();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 using HealerLike.Render.Creatures;
 
 namespace HealerLike.Render.Studio.Editor
@@ -35,9 +36,28 @@ namespace HealerLike.Render.Studio.Editor
 
         public void Rebuild(LookVocabulary vocabulary, Entity.EntityType side)
         {
+            Bounds? bounds = null;
             foreach (CreatureRosterRow row in _rows)
             {
                 row.Rebuild(vocabulary, side);
+                if (row.preview.Sample(row.recipe, 1.25f) != null)
+                {
+                    Bounds content = row.preview.GetContentBounds();
+                    if (bounds.HasValue)
+                    {
+                        Bounds combined = bounds.Value;
+                        combined.Encapsulate(content);
+                        bounds = combined;
+                    }
+                    else
+                    {
+                        bounds = content;
+                    }
+                }
+            }
+            foreach (CreatureRosterRow row in _rows)
+            {
+                row.preview.framingBounds = bounds;
             }
         }
 
