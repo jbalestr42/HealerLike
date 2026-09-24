@@ -67,6 +67,35 @@ public class FreeShotTests
         Vector3 forward = _shot.frame.MultiplyVector(Vector3.forward).normalized;
         Assert.That(Vector3.Dot(forward, Vector3.forward), Is.GreaterThan(0.99f));
     }
+
+    [Test]
+    public void Land_ThenLateUpdate_StopsDrawingTheTip()
+    {
+        _shot.Init(_projectile, DeliveryStyle.Direct, RenderTestAssets.LoadDeliveryVocabulary(),
+            RenderTestAssets.LoadMeshes());
+        TestHelpers.InvokePrivate(_shot, "LateUpdate");
+        GameObject tip = GameObject.Find("FreeShot").transform.GetChild(0).gameObject;
+        Assert.IsTrue(tip.activeSelf);
+
+        _shot.Land();
+        TestHelpers.InvokePrivate(_shot, "LateUpdate");
+
+        Assert.IsFalse(tip.activeSelf);
+    }
+
+    [Test]
+    public void LateUpdate_ProjectileDone_HidesTheTip()
+    {
+        _shot.Init(_projectile, DeliveryStyle.Direct, RenderTestAssets.LoadDeliveryVocabulary(),
+            RenderTestAssets.LoadMeshes());
+        TestHelpers.InvokePrivate(_shot, "LateUpdate");
+        GameObject tip = GameObject.Find("FreeShot").transform.GetChild(0).gameObject;
+
+        TestHelpers.SetPrivateField(_projectile, "_target", null);
+        TestHelpers.InvokePrivate(_shot, "LateUpdate");
+
+        Assert.IsFalse(tip.activeSelf);
+    }
 }
 
 }
