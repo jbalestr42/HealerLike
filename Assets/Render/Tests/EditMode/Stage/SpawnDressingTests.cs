@@ -19,12 +19,19 @@ public class SpawnDressingTests
     readonly List<Object> _created = new List<Object>();
     StageSceneFixture _scene;
 
-    static Entity CreateEntity(Transform parent, Entity.EntityType entityType, out Renderer modelRenderer)
+    static Entity CreateEntity(Transform parent, Entity.EntityType entityType, out Renderer modelRenderer,
+        bool withHealth = false)
     {
         GameObject entityGo = new GameObject("Entity");
         entityGo.transform.SetParent(parent, false);
+        ResourceAttribute health = withHealth
+            ? TestHelpers.CreateResourceAttribute(entityGo, AttributeType.HealthMax, 100) : null;
         Entity entity = null;
         TestHelpers.WithLoggingDisabled(() => entity = entityGo.AddComponent<Entity>());
+        if (health)
+        {
+            TestHelpers.SetPrivateField(entity, "_health", health);
+        }
         entity.entityType = entityType;
         GameObject modelGo = GameObject.CreatePrimitive(PrimitiveType.Capsule);
         modelGo.transform.SetParent(entityGo.transform, false);
@@ -106,10 +113,9 @@ public class SpawnDressingTests
         looks.vocabulary = vocabulary;
         TestHelpers.SetPrivateField(_scene.manager, "_creatureLooks", looks);
         _scene.manager.Init(_scene.entityManager, _scene.player);
-        Entity entity = CreateEntity(_scene.gameGo.transform, Entity.EntityType.Player, out _);
+        Entity entity = CreateEntity(_scene.gameGo.transform, Entity.EntityType.Player, out _, true);
         entity.data = AssetDatabase.LoadAssetAtPath<EntityData>("Assets/Data/Entities/NormalEntity/NormalEntity.asset");
-        ResourceAttribute health = TestHelpers.CreateResourceAttribute(entity.gameObject, AttributeType.HealthMax, 100);
-        TestHelpers.SetPrivateField(entity, "_health", health);
+        ResourceAttribute health = entity.health;
         _scene.entityManager.OnEntitySpawned.Invoke(entity);
         CreatureBuilder builder = entity.model.GetComponentInChildren<CreatureBuilder>();
         CreatureRig rig = builder.rig;

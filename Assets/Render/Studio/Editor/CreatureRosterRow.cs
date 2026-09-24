@@ -69,9 +69,14 @@ namespace HealerLike.Render.Studio.Editor
 
         public string ChannelLabel()
         {
-            return $"{_channels.head} / {_channels.count} / {_channels.stem}\n"
+            string label = $"{_channels.head} / {_channels.count} / {_channels.stem}\n"
                 + $"{_channels.mass} / {_channels.reach} / {_channels.accent}\n"
                 + $"{_channels.accessory} ({_channels.accessoryHead})";
+            if (LookDerivation.Primary(_source) == null)
+            {
+                label += "\nPassive unit: Bud fallback";
+            }
+            return label;
         }
 
         public void Dispose()

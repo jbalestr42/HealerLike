@@ -220,7 +220,7 @@ namespace HealerLike.Render.Stage
                 }
                 if (primary == null)
                 {
-                    document.diagnostics.Add(path + ": no primary skill; real derivation logs an error and falls back to Bud.");
+                    document.diagnostics.Add(path + ": passive-only unit without primary skill; supported Bud fallback.");
                 }
             }
             foreach (string path in Paths<ABuffHandlerFactory>("Assets/Data"))
