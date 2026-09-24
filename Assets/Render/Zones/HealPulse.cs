@@ -6,6 +6,9 @@ namespace HealerLike.Render.Zones
     // Goes on each healer view, Init registers it for that healer's resolved heals
     public class HealPulse : MonoBehaviour, IEntityView, IHealVisualSink
     {
+        // A heal pulse reaches this far, in cells
+        static readonly float pulseCells = 0.6f;
+
         [SerializeField] float _cellSize = 1f;
         GameObject _source;
         RenderRegistry _registry;
@@ -53,7 +56,7 @@ namespace HealerLike.Render.Zones
                 return 0;
             }
 
-            return _zones.AddHealPulse(target, 0.6f * _cellSize);
+            return _zones.AddHealPulse(target, pulseCells * _cellSize);
         }
 
         #region IHealVisualSink

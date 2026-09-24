@@ -120,15 +120,15 @@ public class ZoneRegistryTests
     public void PublishFrame_Overflow_KeepsFirst64AndWarnsOncePerEpisode()
     {
         int first = Add(0f);
-        for (int i = 1; i < 65; i++)
+        for (int i = 1; i <= ZonePacker.MaxZones; i++)
         {
             Add(i);
         }
 
-        LogAssert.Expect(LogType.Warning, overflowWarning);
+        LogAssert.Expect(LogType.Error, overflowWarning);
         _registry.PublishFrame(0f);
 
-        Assert.AreEqual(64, _upload.count);
+        Assert.AreEqual(ZonePacker.MaxZones, _upload.count);
         Assert.AreEqual(1, _registry.overflowCount);
         Assert.AreEqual(63, _upload.data[63].position.x);
 
@@ -140,7 +140,7 @@ public class ZoneRegistryTests
         Assert.AreEqual(0, _registry.overflowCount);
 
         Add(65f);
-        LogAssert.Expect(LogType.Warning, overflowWarning);
+        LogAssert.Expect(LogType.Error, overflowWarning);
         _registry.PublishFrame(0f);
     }
 
@@ -152,13 +152,13 @@ public class ZoneRegistryTests
             _registry.Add(ZoneKind.Trample, Vector3.right * i, 1f, 1f);
         }
 
-        int heal = _registry.AddPulse(ZoneKind.Heal, Vector3.right * 100f, 2f, 1f, 0.45f);
+        int heal = _registry.AddPulse(ZoneKind.Heal, Vector3.right * 100f, 2f, 1f, ZoneRegistry.HealPulseSeconds);
         _registry.AddPulse(ZoneKind.Hostile, Vector3.right * 101f, 2f, 1f, 0.8f);
-        LogAssert.Expect(LogType.Warning, overflowWarning);
+        LogAssert.Expect(LogType.Error, overflowWarning);
 
         _registry.PublishFrame(0.1f);
 
-        Assert.AreEqual(64, _registry.count);
+        Assert.AreEqual(ZonePacker.MaxZones, _registry.count);
         Assert.AreEqual(82, _registry.liveCount);
         Assert.AreEqual(18, _registry.overflowCount);
         for (int i = 0; i < 62; i++)

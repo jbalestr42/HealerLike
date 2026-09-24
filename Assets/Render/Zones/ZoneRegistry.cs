@@ -17,39 +17,8 @@ namespace HealerLike.Render.Zones
             public bool followsTarget;
         }
 
-        class GraphicsUpload : IZoneUpload
-        {
-            static readonly int zonesId = Shader.PropertyToID("_HL_Zones");
-            static readonly int countId = Shader.PropertyToID("_HL_ZoneCount");
-
-            GraphicsBuffer _buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 64, Zone.Stride);
-            public GraphicsBuffer buffer { get { return _buffer; } }
-
-            public void Upload(Zone[] zones)
-            {
-                _buffer.SetData(zones);
-            }
-
-            public void Bind()
-            {
-                Shader.SetGlobalBuffer(zonesId, _buffer);
-            }
-
-            public void PublishCount(int count)
-            {
-                Shader.SetGlobalInt(countId, count);
-            }
-
-            public void Unbind()
-            {
-                Shader.SetGlobalBuffer(zonesId, (GraphicsBuffer)null);
-            }
-
-            public void Dispose()
-            {
-                _buffer.Dispose();
-            }
-        }
+        public static readonly float HealPulseSeconds = 0.45f;
+        public static readonly float LaunchSeconds = 0.4f;
 
         readonly List<Entry> _entries = new List<Entry>();
         readonly Zone[] _packed = new Zone[ZonePacker.MaxZones];
@@ -77,7 +46,7 @@ namespace HealerLike.Render.Zones
                 return;
             }
 
-            _upload = upload != null ? upload : new GraphicsUpload();
+            _upload = upload != null ? upload : new ZoneGraphicsUpload();
             _upload.PublishCount(0);
         }
 
@@ -132,7 +101,7 @@ namespace HealerLike.Render.Zones
                 return 0;
             }
 
-            int handle = AddPulse(ZoneKind.Heal, target.position, radius, strength, 0.45f);
+            int handle = AddPulse(ZoneKind.Heal, target.position, radius, strength, HealPulseSeconds);
             int i = Find(handle);
             if (i >= 0)
             {
@@ -149,7 +118,7 @@ namespace HealerLike.Render.Zones
         {
             Vector3 direction = target - source;
             direction.y = 0;
-            int handle = AddPulse(ZoneKind.Launch, source, direction.magnitude, 1, 0.4f);
+            int handle = AddPulse(ZoneKind.Launch, source, direction.magnitude, 1, LaunchSeconds);
             int i = Find(handle);
             if (i >= 0)
             {
@@ -159,11 +128,6 @@ namespace HealerLike.Render.Zones
             }
 
             return handle;
-        }
-
-        public void RefreshZone(int handle, ZoneKind kind, Vector3 position, float radius, float strength)
-        {
-            UpdateZone(handle, kind, position, radius, strength);
         }
 
         // Keeps the order and the age, an invalid value removes the zone
@@ -216,7 +180,9 @@ namespace HealerLike.Render.Zones
 
             if (!float.IsFinite(deltaTime) || deltaTime < 0f)
             {
-                Debug.LogError($"[ZoneRegistry] PublishFrame needs a finite delta time of zero or more, got {deltaTime}.");
+                string message = "[ZoneRegistry] PublishFrame needs a finite delta time of zero or more, got "
+                                 + deltaTime;
+                Debug.LogError(message);
                 return;
             }
 
@@ -254,36 +220,13 @@ namespace HealerLike.Render.Zones
                 _entries.RemoveRange(written, _entries.Count - written);
             }
 
-            // Not a sort: keep room for the gameplay feedback first, footprints get what is left
-            int feedback = 0;
-            for (int i = 0; i < written; i++)
-            {
-                if (_source[i].kind != (int)ZoneKind.Trample)
-                {
-                    feedback++;
-                }
-            }
-
-            int footprints = Mathf.Max(0, ZonePacker.MaxZones - feedback);
-            int selected = 0;
-            for (int i = 0; i < written; i++)
-            {
-                if (_source[i].kind == (int)ZoneKind.Trample && footprints-- <= 0)
-                {
-                    continue;
-                }
-
-                _source[selected] = _source[i];
-                selected++;
-            }
-
-            _count = ZonePacker.Pack(new ReadOnlySpan<Zone>(_source, 0, selected), _packed, out _,
-                                       out int overflow);
+            int selected = ZonePacker.ReserveFeedback(_source, written);
+            _count = ZonePacker.Pack(new ReadOnlySpan<Zone>(_source, 0, selected), _packed, out _, out int overflow);
             overflow += written - selected;
             _overflowCount = overflow;
             if (overflow > 0 && !_overflowing)
             {
-                Debug.LogWarning("[ZoneRegistry] Cosmetic zone capacity exceeded; "
+                Debug.LogError("[ZoneRegistry] Cosmetic zone capacity exceeded; "
                                  + "feedback reserved before decorative footprints; "
                                  + "first registered wins within each kind.", this);
             }

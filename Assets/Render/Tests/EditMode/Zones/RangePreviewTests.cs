@@ -48,7 +48,7 @@ public class RangePreviewTests
         Assert.AreEqual(1, _owner.count);
         Assert.AreEqual(3, _owner.snapshot[0].radius);
         Assert.AreEqual((int)ZoneKind.Range, _owner.snapshot[0].kind);
-        Assert.AreEqual(0.35f, _owner.snapshot[0].strength);
+        Assert.AreEqual(RangePreview.FocusStrength, _owner.snapshot[0].strength);
         Assert.AreEqual(_entityGo.transform.position, _owner.snapshot[0].position);
 
         _entityGo.transform.position = Vector3.right;
@@ -63,18 +63,18 @@ public class RangePreviewTests
     }
 
     [Test]
-    public void SetPreviewState_Changed_PublishesOnlyOnUpdate()
+    public void SetPreviewState_Changed_PublishesOnlyOnRefresh()
     {
         _preview.SetPreviewState(true, false);
         Assert.AreEqual(0, _owner.liveCount);
 
-        TestHelpers.InvokePrivate(_preview, "Update");
+        _preview.Refresh();
         Assert.AreEqual(1, _owner.liveCount);
 
         _preview.SetPreviewState(false, false);
         Assert.AreEqual(1, _owner.liveCount);
 
-        TestHelpers.InvokePrivate(_preview, "Update");
+        _preview.Refresh();
         Assert.AreEqual(0, _owner.liveCount);
     }
 
@@ -127,11 +127,11 @@ public class RangePreviewTests
         _preview.Show(false, true);
         _preview.Refresh();
         _owner.PublishFrame(0f);
-        Assert.AreEqual(0.15f, _owner.snapshot[0].strength);
+        Assert.AreEqual(RangePreview.ShowAllStrength, _owner.snapshot[0].strength);
 
         _preview.SetPreviewState(true, false);
         _owner.PublishFrame(0f);
-        Assert.AreEqual(0.15f, _owner.snapshot[0].strength);
+        Assert.AreEqual(RangePreview.ShowAllStrength, _owner.snapshot[0].strength);
 
         _entity.entityType = Entity.EntityType.Computer;
         _preview.Refresh();
@@ -144,7 +144,7 @@ public class RangePreviewTests
         _preview.Show(true, false);
         _preview.Refresh();
         _owner.PublishFrame(0f);
-        Assert.AreEqual(3, _owner.snapshot[0].kind);
+        Assert.AreEqual((int)ZoneKind.Range, _owner.snapshot[0].kind);
 
         _preview.SetPreviewState(true, false);
         _preview.Show(false, false);
@@ -176,7 +176,7 @@ public class RangePreviewTests
         _owner.PublishFrame(0f);
 
         Assert.AreEqual(1, _owner.count);
-        Assert.AreEqual(0.35f, _owner.snapshot[0].strength);
+        Assert.AreEqual(RangePreview.FocusStrength, _owner.snapshot[0].strength);
     }
 
     [Test]
@@ -186,7 +186,7 @@ public class RangePreviewTests
         _preview.Refresh();
         _owner.PublishFrame(0f);
 
-        Assert.AreEqual(0.15f, _owner.snapshot[0].strength);
+        Assert.AreEqual(RangePreview.ShowAllStrength, _owner.snapshot[0].strength);
     }
 
     [Test]

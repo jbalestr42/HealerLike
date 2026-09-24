@@ -6,10 +6,12 @@ namespace HealerLike.Render.Zones
     // Range preview of an ally, the range driver tells it whether it is hovered and whether every range shows
     public class RangePreview : MonoBehaviour, IEntityView
     {
+        // Strength of the ring for the hovered, selected or dragged unit, and when every range shows
+        public static readonly float FocusStrength = 0.35f;
+        public static readonly float ShowAllStrength = 0.15f;
+
         Entity _entity;
-        ZoneRegistry _zones;
-        ZoneRegistry _owner;
-        int _handle;
+        readonly ZoneHandle _zone = new ZoneHandle();
         bool _selected;
         bool _dragging;
         bool _isHovered;
@@ -24,8 +26,7 @@ namespace HealerLike.Render.Zones
 
         public void Init(Entity entity, ZoneRegistry zones)
         {
-            ClearZone();
-            _zones = zones;
+            _zone.Init(zones);
             _selected = false;
             _dragging = false;
             _entity = entity;
@@ -51,55 +52,31 @@ namespace HealerLike.Render.Zones
 
         public void Refresh()
         {
-            if (_owner != _zones)
-            {
-                ClearZone();
-            }
-
             bool isShown = _selected || _dragging || _isHovered || _showAll;
             if (!isActiveAndEnabled || _entity == null || !_entity.isActiveAndEnabled
                 || _entity.entityType != Entity.EntityType.Player || !isShown
-                || _zones == null || _entity.attributeManager == null
+                || _entity.attributeManager == null
                 || !_entity.attributeManager.Has(AttributeType.Range))
             {
-                ClearZone();
+                _zone.Clear();
                 return;
             }
 
-            float strength = _showAll ? 0.15f : 0.35f;
+            float strength = _showAll ? ShowAllStrength : FocusStrength;
             float radius = _entity.attributeManager.Get(AttributeType.Range).Value;
-            _owner = _zones;
-            if (!_owner.Contains(_handle))
-            {
-                _handle = _owner.Add(ZoneKind.Range, _entity.transform.position, radius, strength);
-            }
-            else
-            {
-                _owner.RefreshZone(_handle, ZoneKind.Range, _entity.transform.position, radius, strength);
-            }
-        }
-
-        void ClearZone()
-        {
-            if (_owner != null)
-            {
-                _owner.Remove(_handle);
-            }
-
-            _owner = null;
-            _handle = 0;
+            _zone.Refresh(ZoneKind.Range, _entity.transform.position, radius, strength);
         }
 
         void OnDisable()
         {
-            ClearZone();
+            _zone.Clear();
             _selected = false;
             _dragging = false;
         }
 
         void OnDestroy()
         {
-            ClearZone();
+            _zone.Clear();
         }
     }
 }

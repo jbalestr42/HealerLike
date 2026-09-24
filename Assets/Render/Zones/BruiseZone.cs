@@ -10,14 +10,11 @@ namespace HealerLike.Render.Zones
         public static readonly float BruiseMaxRange = 16f;
 
         Entity _entity;
-        ZoneRegistry _zones;
-        ZoneRegistry _owner;
-        int _handle;
+        readonly ZoneHandle _zone = new ZoneHandle();
 
         public void Init(Entity entity, ZoneRegistry zones)
         {
-            Clear();
-            _zones = zones;
+            _zone.Init(zones);
             _entity = entity;
             Refresh();
         }
@@ -39,63 +36,33 @@ namespace HealerLike.Render.Zones
 
         public void Refresh()
         {
-            ZoneRegistry zones = _zones;
-            if (_owner != zones)
-            {
-                Clear();
-            }
-
-            if (!isActiveAndEnabled || !_entity || !_entity.isActiveAndEnabled
+            if (!isActiveAndEnabled || _entity == null || !_entity.isActiveAndEnabled
                 || _entity.entityType != Entity.EntityType.Computer
                 || (_entity.health != null && _entity.health.Value <= 0f)
                 || _entity.attributeManager == null || !_entity.attributeManager.Has(AttributeType.Range))
             {
-                Clear();
-                return;
-            }
-
-            _owner = zones;
-            if (!_owner)
-            {
+                _zone.Clear();
                 return;
             }
 
             float radius = _entity.attributeManager.Get(AttributeType.Range).Value;
             if (!Bruises(radius))
             {
-                Clear();
+                _zone.Clear();
                 return;
             }
 
-            if (!_owner.Contains(_handle))
-            {
-                _handle = _owner.Add(ZoneKind.Bruise, _entity.transform.position, radius, 1f);
-            }
-            else
-            {
-                _owner.RefreshZone(_handle, ZoneKind.Bruise, _entity.transform.position, radius, 1f);
-            }
-        }
-
-        void Clear()
-        {
-            if (_owner)
-            {
-                _owner.Remove(_handle);
-            }
-
-            _owner = null;
-            _handle = 0;
+            _zone.Refresh(ZoneKind.Bruise, _entity.transform.position, radius, 1f);
         }
 
         void OnDisable()
         {
-            Clear();
+            _zone.Clear();
         }
 
         void OnDestroy()
         {
-            Clear();
+            _zone.Clear();
         }
     }
 }
