@@ -18,9 +18,32 @@ namespace HealerLike.Render.Creatures
         Transform[] _segments = new Transform[0];
         Transform[] _joints = new Transform[0];
 
+        public void Clear()
+        {
+            foreach (Transform segment in _segments)
+            {
+                if (segment)
+                {
+                    segment.gameObject.SetActive(false);
+                    RenderObjects.Release(segment.gameObject);
+                }
+            }
+            foreach (Transform joint in _joints)
+            {
+                if (joint)
+                {
+                    joint.gameObject.SetActive(false);
+                    RenderObjects.Release(joint.gameObject);
+                }
+            }
+            _segments = new Transform[0];
+            _joints = new Transform[0];
+        }
+
         public void Init(RootDefinition definition, Transform parent, PrimitiveMeshes meshes, Material material,
             Color colour)
         {
+            Clear();
             _definition = definition;
             int segments = definition.segments;
             _segments = new Transform[definition.count * segments];

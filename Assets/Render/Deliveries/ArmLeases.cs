@@ -15,12 +15,22 @@ namespace HealerLike.Render.Deliveries
         readonly int[] _tokens = new int[ArmPool.MaxArms];
         readonly int[] _definitions = new int[ArmPool.MaxArms];
         readonly Vector3?[] _branchRoots = new Vector3?[ArmPool.MaxArms];
+        readonly bool[] _refresh = new bool[ArmPool.MaxArms];
         CreatureRig _rig;
         Material _material;
         PrimitiveMeshes _meshes;
         DeliveryVocabulary _vocabulary;
         int _nextToken;
         bool _isDisposed;
+
+        // A held delivery keeps its arm and lease. Its next rest uses the edited recipe.
+        public void Refresh()
+        {
+            for (int i = 0; i < ArmPool.MaxArms; i++)
+            {
+                _refresh[i] = true;
+            }
+        }
 
         // One arm per arm of the rig's recipe, more are made on demand up to the cap
         public void Init(CreatureRig rig, Material material, PrimitiveMeshes meshes, DeliveryVocabulary vocabulary)
@@ -41,6 +51,21 @@ namespace HealerLike.Render.Deliveries
             Quaternion rest = _rig.armRotation;
             for (int i = 0; i < ArmPool.MaxArms; i++)
             {
+                if (_refresh[i] && (_arms[i] == null || _arms[i].isAvailable))
+                {
+                    if (_arms[i] != null)
+                    {
+                        _arms[i].Dispose();
+                    }
+                    _arms[i] = null;
+                    _tokens[i] = 0;
+                    _branchRoots[i] = null;
+                    _refresh[i] = false;
+                    if (i < _rig.recipe.arms.Length)
+                    {
+                        CreateArm(i, i);
+                    }
+                }
                 if (_arms[i] == null)
                 {
                     continue;

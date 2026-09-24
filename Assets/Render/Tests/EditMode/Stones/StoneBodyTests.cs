@@ -101,6 +101,28 @@ public class StoneBodyTests
     }
 
     [Test]
+    public void RefreshRig_InPlaceRecompose_KeepsShedLimbAndCollapsedBodyHidden()
+    {
+        Queue(-60);
+        Drain();
+        CreatureBuilder builder = _body.GetComponent<CreatureBuilder>();
+        CreatureRig rig = builder.rig;
+        int effects = _fx.liveCount;
+        Assert.IsTrue(rig.Recompose(_recipe, _material, _material, RenderTestAssets.LoadMeshes()));
+        _body.RefreshRig();
+        Assert.AreSame(rig, builder.rig);
+        Assert.AreEqual(3, visibleCount);
+        Assert.AreEqual(effects, _fx.liveCount);
+        _body.Collapse(null);
+        effects = _fx.liveCount;
+        Assert.IsTrue(rig.Recompose(_recipe, _material, _material, RenderTestAssets.LoadMeshes()));
+        _body.RefreshRig();
+        Assert.AreEqual(0, visibleCount);
+        Assert.IsTrue(_body.isCollapsed);
+        Assert.AreEqual(effects, _fx.liveCount);
+    }
+
+    [Test]
     public void Init_BuiltRig_ReadsEveryPartOfTheRig()
     {
         CreatureRig rig = _body.GetComponent<CreatureBuilder>().rig;

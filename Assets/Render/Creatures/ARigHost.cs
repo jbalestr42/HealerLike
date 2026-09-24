@@ -55,6 +55,14 @@ namespace HealerLike.Render.Creatures
             }
         }
 
+        protected void RefreshArms()
+        {
+            if (_pool != null)
+            {
+                _pool.Refresh();
+            }
+        }
+
         // Every gesture ends and the body hides, as when the view is switched off
         protected void HideRig()
         {

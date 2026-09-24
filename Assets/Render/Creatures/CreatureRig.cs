@@ -26,6 +26,8 @@ namespace HealerLike.Render.Creatures
         Transform _root;
         Transform _sway;
         Transform[] _pivots;
+        readonly List<Transform> _keptPivots = new List<Transform>();
+        readonly List<Transform> _keptGeometry = new List<Transform>();
         Transform[] _geometry = Array.Empty<Transform>();
         Renderer[] _bodyRenderers;
         bool[] _hasOchreFaces;
@@ -46,6 +48,8 @@ namespace HealerLike.Render.Creatures
         public Transform root { get { return _root; } }
 
         public CreatureRecipe recipe { get { return _recipe; } }
+        int _revision;
+        public int revision { get { return _revision; } }
 
         public float cellSize { get { return _cellSize; } }
 
@@ -85,38 +89,62 @@ namespace HealerLike.Render.Creatures
                 return false;
             }
 
-            _recipe = data;
-            if (bodyMaterial == null)
-            {
-                bodyMaterial = material;
-            }
             _cellSize = cellSize;
             _root = new GameObject("GeneratedCreature").transform;
             _root.SetParent(parent, false);
             _root.localScale = Vector3.one / parent.lossyScale.x;
             _sway = new GameObject("Sway").transform;
             _sway.SetParent(_root, false);
+            return Recompose(data, material, bodyMaterial, meshes);
+        }
+
+        // Keep the live root and pivots: held effects and projectiles can still resolve their source while the
+        // vocabulary changes. Spare pivots are reused after a topology edit, bounded by the validated part cap.
+        public bool Recompose(CreatureRecipe data, Material material, Material bodyMaterial, PrimitiveMeshes meshes)
+        {
+            if (_isDisposed || !_root || !material || !meshes
+                || !CreatureValidator.TryValidate(data, out _))
+            {
+                return false;
+            }
+            if (bodyMaterial == null)
+            {
+                bodyMaterial = material;
+            }
+            _recipe = data;
             _pivots = new Transform[data.parts.Length];
             _geometry = new Transform[data.parts.Length];
             _bodyRenderers = new Renderer[data.parts.Length];
             _hasOchreFaces = new bool[data.parts.Length];
             _colours = new Color[data.parts.Length];
             _idle = data.idle;
-            _idle.seed ^= parent.GetEntityId().GetHashCode();
+            _idle.seed ^= _root.parent.GetEntityId().GetHashCode();
+            foreach (Transform pivot in _keptPivots)
+            {
+                pivot.SetParent(_sway, false);
+                pivot.gameObject.SetActive(false);
+            }
             List<Transform> buds = new List<Transform>();
             for (int i = 0; i < data.parts.Length; i++)
             {
                 CreaturePart part = data.parts[i];
                 // The accent stays the palette's own colour, only the body varies from unit to unit
                 _colours[i] = part.role == PartRole.Tip ? part.colour : ColourJitter.Vary(part.colour, _idle.seed);
-                _pivots[i] = new GameObject(part.id).transform;
+                if (i == _keptPivots.Count)
+                {
+                    _keptPivots.Add(new GameObject(part.id).transform);
+                    _keptGeometry.Add(null);
+                }
+                _pivots[i] = _keptPivots[i];
+                _pivots[i].name = part.id;
+                _pivots[i].gameObject.SetActive(true);
                 Transform pivotParent = _sway;
                 if (part.parent >= 0)
                 {
                     pivotParent = _pivots[part.parent];
                 }
                 _pivots[i].SetParent(pivotParent, false);
-                _pivots[i].localPosition = part.localPosition * cellSize;
+                _pivots[i].localPosition = part.localPosition * _cellSize;
                 _pivots[i].localRotation = Quaternion.Euler(part.localEuler);
                 Mesh mesh = meshes.GetMesh(part.primitive, part.variant);
                 Material partMaterial = material;
@@ -124,10 +152,17 @@ namespace HealerLike.Render.Creatures
                 {
                     partMaterial = bodyMaterial;
                 }
-                _geometry[i] = PrimitiveMeshes.Geometry("Geometry", _pivots[i], mesh, partMaterial, _colours[i],
-                    part.glow);
-                _geometry[i].localScale = part.dimensions * cellSize;
+                if (!_keptGeometry[i])
+                {
+                    _keptGeometry[i] = PrimitiveMeshes.Geometry("Geometry", _pivots[i], mesh, partMaterial,
+                        _colours[i], part.glow);
+                }
+                _geometry[i] = _keptGeometry[i];
+                _geometry[i].gameObject.SetActive(true);
+                _geometry[i].GetComponent<MeshFilter>().sharedMesh = mesh;
+                _geometry[i].localScale = part.dimensions * _cellSize;
                 _bodyRenderers[i] = _geometry[i].GetComponent<Renderer>();
+                _bodyRenderers[i].sharedMaterials = new Material[] { partMaterial };
                 _hasOchreFaces[i] = mesh && mesh.subMeshCount > 1;
                 if (_hasOchreFaces[i])
                 {
@@ -143,6 +178,7 @@ namespace HealerLike.Render.Creatures
 
             _budAnchors = buds.ToArray();
             _roots.Init(data.roots, _root, meshes, material, ColourJitter.Vary(data.roots.colour, _idle.seed));
+            _revision++;
             return true;
         }
 
@@ -230,6 +266,11 @@ namespace HealerLike.Render.Creatures
         // Where arm index leaves the body now, in world space
         public Vector3 ArmSocket(int index)
         {
+            if (_recipe.arms.Length == 0)
+            {
+                return _sway.TransformPoint(_recipe.neckLocal * _cellSize);
+            }
+            index %= _recipe.arms.Length;
             ArmDefinition definition = _recipe.arms[index];
             return _pivots[definition.bodyPart].TransformPoint(definition.rootLocal * _cellSize);
         }

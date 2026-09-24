@@ -37,6 +37,11 @@ namespace HealerLike.Render.Deliveries
             _leases.Init(rig, material, meshes, vocabulary);
         }
 
+        public void Refresh()
+        {
+            _leases.Refresh();
+        }
+
         // After the rig's own tick, which places the root and the sway the arms hang from
         public void Tick(float deltaTime)
         {

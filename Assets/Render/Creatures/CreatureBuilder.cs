@@ -22,6 +22,7 @@ namespace HealerLike.Render.Creatures
         RenderRegistry _registry;
         DeliveryVocabulary _deliveryVocabulary;
         ISpellVisualSink _spellSink;
+        RenderManager _manager;
 
         public CreatureRecipe recipe { get { return _recipe; } }
 
@@ -50,6 +51,7 @@ namespace HealerLike.Render.Creatures
 
         public void Init(Entity owner, RenderManager manager)
         {
+            _manager = manager;
             if (!_meshes && manager)
             {
                 _meshes = manager.meshes;
@@ -72,6 +74,47 @@ namespace HealerLike.Render.Creatures
             }
 
             Init(owner);
+        }
+
+        // Recompose only the view. The owner, health subscriptions and delivery leases stay live.
+        public bool Rebuild(RenderManager manager)
+        {
+            if (manager != _manager || !_entity || rig == null)
+            {
+                return false;
+            }
+
+            CreatureRecipe next = _recipe;
+            bool isDerived = _derivedRecipe != null;
+            if (isDerived)
+            {
+                next = manager.creatureLooks.GetRecipe(_entity.data, _entity.entityType);
+            }
+            if (next == null || !rig.Recompose(next, _material, _bodyMaterial, _meshes))
+            {
+                if (isDerived)
+                {
+                    RenderObjects.Release(next);
+                }
+                return false;
+            }
+
+            if (isDerived)
+            {
+                RenderObjects.Release(_derivedRecipe);
+                _derivedRecipe = next;
+            }
+            _recipe = next;
+            RefreshArms();
+            _readout.Read();
+            rig.SetReadout(_readout.target, _readout.healthFraction, _readout.readiness, _readout.readiness);
+            TickRig(Time.time, 0f, Frame());
+            HealerLike.Render.Stones.StoneBody stone = GetComponent<HealerLike.Render.Stones.StoneBody>();
+            if (stone != null)
+            {
+                stone.RefreshRig();
+            }
+            return true;
         }
 
         // Taking the entity alone lets the studio and tests run without the manager

@@ -58,6 +58,50 @@ public class CreatureRigTests
     }
 
     [Test]
+    public void Recompose_RepeatedPaletteChanges_KeepsTransformsAndReadoutWithoutGrowingHierarchy()
+    {
+        Transform root = _rig.root;
+        Transform part = _rig.partTransforms[0];
+        int count = _parent.GetComponentsInChildren<Transform>(true).Length;
+        _rig.SetReadout(Vector3.right, 0.35f, 0.8f, 0.8f);
+        _rig.Tick(1f, 0.1f, ground);
+        Quaternion pose = part.parent.parent.localRotation;
+        for (int i = 0; i < 4; i++)
+        {
+            _recipe.parts[0].colour = Color.magenta;
+            Assert.IsTrue(_rig.Recompose(_recipe, _material, _material, RenderTestAssets.LoadMeshes()));
+            _rig.Tick(1f, 0f, ground);
+            Assert.AreSame(root, _rig.root);
+            Assert.AreSame(part, _rig.partTransforms[0]);
+            Assert.AreEqual(pose, part.parent.parent.localRotation);
+            Assert.AreEqual(count, _parent.GetComponentsInChildren<Transform>(true).Length);
+        }
+        Assert.Greater(BaseColour(part.GetComponent<Renderer>()).r, 0.1f);
+    }
+
+    [Test]
+    public void Recompose_TopologyShrinksThenGrows_ReusesAnchorsAndRejectsInvalidRecipe()
+    {
+        CreaturePart original = _recipe.parts[0];
+        _recipe.parts = new[] { original, new CreaturePart { id = "Tip", parent = 0,
+            dimensions = Vector3.one * 0.2f, role = PartRole.Tip, colour = Color.green } };
+        Assert.IsTrue(_rig.Recompose(_recipe, _material, _material, RenderTestAssets.LoadMeshes()));
+        Transform anchor = _rig.budAnchors[0];
+        int count = _parent.GetComponentsInChildren<Transform>(true).Length;
+        _recipe.parts = new[] { original };
+        Assert.IsTrue(_rig.Recompose(_recipe, _material, _material, RenderTestAssets.LoadMeshes()));
+        Assert.IsTrue(anchor);
+        Assert.IsFalse(anchor.gameObject.activeSelf);
+        _recipe.parts = new[] { original, new CreaturePart { id = "Tip", parent = 0,
+            dimensions = Vector3.one * 0.2f, role = PartRole.Tip, colour = Color.red } };
+        Assert.IsTrue(_rig.Recompose(_recipe, _material, _material, RenderTestAssets.LoadMeshes()));
+        Assert.AreSame(anchor, _rig.budAnchors[0]);
+        Assert.AreEqual(count, _parent.GetComponentsInChildren<Transform>(true).Length);
+        Assert.IsFalse(_rig.Recompose(null, _material, _material, RenderTestAssets.LoadMeshes()));
+        Assert.IsTrue(anchor);
+    }
+
+    [Test]
     public void Init_GlowingPart_BrightensBaseColourAndKeepsAlpha()
     {
         _rig.Dispose();

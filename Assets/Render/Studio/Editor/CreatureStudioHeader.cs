@@ -8,7 +8,7 @@ namespace HealerLike.Render.Studio.Editor
     // The creature studio's header: the mode switch and the new, save as and save buttons of the current mode
     public class CreatureStudioHeader
     {
-        static readonly string[] modeNames = { "Grammar", "Parts" };
+        static readonly string[] modeNames = { "Grammar", "Parts", "Roster" };
 
         CreatureStudioWindow _window;
 
@@ -34,21 +34,32 @@ namespace HealerLike.Render.Studio.Editor
             {
                 current = 0;
             }
+            if (_window.isRosterMode)
+            {
+                current = 2;
+            }
 
-            int mode = GUI.Toolbar(new Rect(390f, 17f, 180f, 25f), current, modeNames);
+            int mode = GUI.Toolbar(new Rect(390f, 17f, 260f, 25f), current, modeNames);
             if (mode != current)
             {
                 if (mode == 0)
                 {
                     _window.SwitchToGrammar();
                 }
-                else
+                else if (mode == 1)
                 {
                     _window.SwitchToParts(_window.partsSelection);
                 }
+                else
+                {
+                    _window.SwitchToRoster();
+                }
                 GUIUtility.ExitGUI();
             }
-            DrawSaveButtons(position);
+            if (!_window.isRosterMode)
+            {
+                DrawSaveButtons(position);
+            }
         }
 
         void DrawSaveButtons(Rect position)

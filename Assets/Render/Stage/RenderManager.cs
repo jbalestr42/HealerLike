@@ -149,6 +149,13 @@ namespace HealerLike.Render.Stage
             return _deliveryToken;
         }
 
+        // Asset tuning never detaches the game or reframes its camera. Existing views keep their owners and
+        // subscriptions; SpawnDressing continues to dress later spawns with the same edited vocabulary.
+        public int RebuildViews()
+        {
+            return _spawns.RebuildViews();
+        }
+
         // Landscape keeps the wide framing, the look is calibrated for portrait
         public void SetLandscape(bool isLandscape)
         {

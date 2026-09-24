@@ -26,6 +26,8 @@ namespace HealerLike.Render.Studio.Editor
         readonly CreatureGrammarInspector _grammarInspector = new CreatureGrammarInspector();
         readonly CreatureViewport _viewport = new CreatureViewport();
         readonly CreatureStudioHeader _header = new CreatureStudioHeader();
+        readonly CreatureRosterPane _roster = new CreatureRosterPane();
+        bool _isRosterMode;
         CreatureRecipe _selected;
         SerializedObject _serialized;
         bool _isGrammarMode = true;
@@ -45,6 +47,7 @@ namespace HealerLike.Render.Studio.Editor
         public StudioStyles styles { get { return _styles; } }
 
         public bool isGrammarMode { get { return _isGrammarMode; } }
+        public bool isRosterMode { get { return _isRosterMode; } }
 
         // The recipe parts mode returns to
         public CreatureRecipe partsSelection { get { return _partsSelection; } }
@@ -86,6 +89,7 @@ namespace HealerLike.Render.Studio.Editor
             _grammar.Init(this);
             _isGrammarMode = true;
             _grammar.Regenerate();
+            _roster.Init();
             EditorApplication.update += OnEditorUpdate;
             EditorApplication.projectChanged += ReloadAssets;
             Undo.undoRedoPerformed += OnUndoRedo;
@@ -102,6 +106,7 @@ namespace HealerLike.Render.Studio.Editor
 
             _drafts.Persist(selection);
             _grammar.Dispose();
+            _roster.Dispose();
             RenderGrammarLibraryWindow.OnAssetChanged.RemoveListener(OnGrammarLibraryChanged);
             EditorApplication.update -= OnEditorUpdate;
             EditorApplication.projectChanged -= ReloadAssets;
@@ -127,6 +132,11 @@ namespace HealerLike.Render.Studio.Editor
             StudioStyles.DrawBackground(position);
             _header.Draw(position);
             float height = position.height - 87f;
+            if (_isRosterMode)
+            {
+                _roster.Draw(new Rect(10f, top, position.width - 20f, height));
+                return;
+            }
             Rect library = new Rect(10f, top, libraryWidth, height);
             Rect inspector = new Rect(position.width - inspectorWidth - 10f, top, inspectorWidth, height);
             if (_isGrammarMode)
@@ -184,6 +194,7 @@ namespace HealerLike.Render.Studio.Editor
         // Parts mode on the recipe, else on the first draft
         public void SwitchToParts(CreatureRecipe recipe)
         {
+            _isRosterMode = false;
             _isGrammarMode = false;
             _partsSelection = recipe;
             if (_partsSelection == null && _drafts.items.Count > 0)
@@ -195,6 +206,7 @@ namespace HealerLike.Render.Studio.Editor
 
         public void SwitchToGrammar()
         {
+            _isRosterMode = false;
             if (!_isGrammarMode)
             {
                 _partsSelection = _selected;
@@ -206,6 +218,7 @@ namespace HealerLike.Render.Studio.Editor
 
         public void SelectGrammar(CreatureGrammarPreset preset)
         {
+            _isRosterMode = false;
             if (!_isGrammarMode)
             {
                 _partsSelection = _selected;
@@ -227,6 +240,7 @@ namespace HealerLike.Render.Studio.Editor
         {
             _library.Reload();
             _grammar.Reload();
+            _roster.Reload();
             RefreshPreview();
             Repaint();
         }
@@ -247,11 +261,27 @@ namespace HealerLike.Render.Studio.Editor
 
         void OnEditorUpdate()
         {
+            if (_isRosterMode)
+            {
+                if (_roster.RefreshIfChanged())
+                {
+                    Repaint();
+                }
+                return;
+            }
             _viewport.Tick();
+        }
+
+        public void SwitchToRoster()
+        {
+            _isRosterMode = true;
+            _roster.Refresh();
+            Repaint();
         }
 
         void OnUndoRedo()
         {
+            _roster.Refresh();
             if (_serialized != null)
             {
                 _serialized.Update();
@@ -272,6 +302,7 @@ namespace HealerLike.Render.Studio.Editor
 
         void OnGrammarLibraryChanged(Object changed)
         {
+            _roster.Refresh();
             if (_isGrammarMode)
             {
                 _grammar.Regenerate();

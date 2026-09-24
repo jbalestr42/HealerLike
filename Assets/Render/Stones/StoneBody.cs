@@ -22,6 +22,7 @@ namespace HealerLike.Render.Stones
 
         CreatureBuilder _builder;
         CreatureRig _rig;
+        int _rigRevision;
         StoneThrow _throw;
         StoneEffects _effects;
         StageKeyLight _keyLight;
@@ -77,17 +78,22 @@ namespace HealerLike.Render.Stones
             Subscribe();
         }
 
-        // CreatureBuilder rebuilds its rig without telling anyone, so every frame compares the one it holds
-        // with the one this body last read: one reference compare while nothing changed
+        // An in-place recompose changes the revision while keeping anchors and delivery leases alive.
+        public void RefreshRig()
+        {
+            FindRig();
+        }
+
         void FindRig()
         {
             CreatureRig rig = _builder != null ? _builder.rig : null;
-            if (rig == _rig)
+            if (rig == _rig && (rig == null || rig.revision == _rigRevision))
             {
                 return;
             }
 
             _rig = rig;
+            _rigRevision = rig != null ? rig.revision : 0;
             IReadOnlyList<Transform> partTransforms = parts;
             _impacts.ReadParts(partTransforms);
             if (_isCollapsed)
