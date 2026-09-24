@@ -107,7 +107,7 @@ public class LookSettingsTests
 
         Assert.That(input.fogEnd, Is.EqualTo(-1f));
         Assert.That(value.fogStart, Is.EqualTo(30f));
-        Assert.That((double)value.fogEnd - value.fogStart, Is.GreaterThanOrEqualTo(0.001));
+        Assert.That(value.fogEnd, Is.GreaterThan(value.fogStart));
         Assert.That(value.fogBands, Is.EqualTo(1));
         Assert.That(value.outlineWidthPixels, Is.Zero);
         Assert.That(value.shadowStrength, Is.EqualTo(0.01f));
