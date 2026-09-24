@@ -37,7 +37,7 @@ public class LookDerivationTests
     [TestCase("MultiShotEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Arch, CountBand.One, StemBand.Quick,
               MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
     [TestCase("RandomShootEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Arch, CountBand.One,
-              StemBand.Steady, MassBand.Sturdy, AccessoryKind.None, EffectFamily.Damage)]
+              StemBand.Steady, MassBand.Heavy, AccessoryKind.None, EffectFamily.Damage)]
     [TestCase("ChainLightningEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Conductor, CountBand.One,
               StemBand.Steady, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
     [TestCase("ChannelingEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Fork, CountBand.One,
@@ -152,7 +152,8 @@ public class LookDerivationTests
     [TestCase(100f, MassBand.Light)]
     [TestCase(120f, MassBand.Light)]
     [TestCase(150f, MassBand.Sturdy)]
-    [TestCase(250f, MassBand.Sturdy)]
+    [TestCase(175f, MassBand.Sturdy)]
+    [TestCase(175.01f, MassBand.Heavy)]
     [TestCase(400f, MassBand.Heavy)]
     public void Mass_Health_BandsLightSturdyHeavy(float health, MassBand expected)
     {
@@ -180,18 +181,20 @@ public class LookDerivationTests
         Assert.AreEqual(MassBand.Heavy, LookDerivation.Mass(health));
     }
 
-    [TestCase("NormalEntity")]
-    [TestCase("SwarmEntity")]
-    [TestCase("TestEntity")]
-    [TestCase("HitArmorBufferEntityEntity")]
-    public void Reach_LiveRange_IsLongOnEveryUnit(string folder)
+    [TestCase("NormalEntity", ReachBand.Short)]
+    [TestCase("SwarmEntity", ReachBand.Long)]
+    [TestCase("TestEntity", ReachBand.Long)]
+    [TestCase("HitArmorBufferEntityEntity", ReachBand.Long)]
+    public void Reach_LiveRange_UsesTheMeasuredRosterBands(string folder, ReachBand expected)
     {
-        Assert.AreEqual(ReachBand.Long, LookDerivation.Reach(RenderTestAssets.LoadEntity(folder)));
+        Assert.AreEqual(expected, LookDerivation.Reach(RenderTestAssets.LoadEntity(folder)));
     }
 
     [TestCase(2f, ReachBand.Short)]
-    [TestCase(6f, ReachBand.Mid)]
-    [TestCase(9f, ReachBand.Long)]
+    [TestCase(100f, ReachBand.Short)]
+    [TestCase(100.01f, ReachBand.Mid)]
+    [TestCase(500f, ReachBand.Mid)]
+    [TestCase(500.01f, ReachBand.Long)]
     public void Reach_RangeInCells_BandsShortMidLong(float range, ReachBand expected)
     {
         EntityData data = CreateTracked<EntityData>();
