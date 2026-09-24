@@ -25,6 +25,8 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 830168f764471444d8a47b35247f811c, type: 3}
     name: RegenHp
     description: 
+    tags:
+    - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     buffs:
     - {fileID: 11400000, guid: ba7f01930d9a3f54780c7fd6772eeefd, type: 2}
     onHitEffects: []

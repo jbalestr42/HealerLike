@@ -99,8 +99,7 @@ MonoBehaviour:
   title: Normal
   description: The most basic entity, well balanced
   price: 0
-  passives: []
-  onHitEffects: []
+  items: []
   onHitConsumer:
   - {fileID: 11400000, guid: a5c875660032e494eb87dec1e14511c7, type: 2}
   skillFactories:

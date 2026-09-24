@@ -25,6 +25,8 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 9a8ad968e4be589449263151b9b6739e, type: 3}
     name: Slow
     description: 
+    tags:
+    - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     buffList: []
     onHitEffects:
     - {fileID: 11400000, guid: 18b3c637233f7c7459355e646a9bc60b, type: 2}

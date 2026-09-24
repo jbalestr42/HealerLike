@@ -1,4 +1,4 @@
-using System;
+using System.Reflection;
 using System.Runtime.Serialization;
 using NUnit.Framework;
 using UnityEngine;
@@ -8,12 +8,35 @@ namespace Attributes.Modifiers
 
 public class TimeModifierTests
 {
-    [Test]
-    public void Constructor_ThrowsBecauseBuffHandlerIsNeverAssignedInProduction()
+    static ABuffHandler CreateHandler(DurationType durationType, float duration)
     {
-        // Same root cause as SlowModifier (see SlowModifierTests) - buffHandler is never assigned
-        // before construction, so TimeModifier's constructor NREs on buffHandler.hasDuration.
-        Assert.Throws<NullReferenceException>(() => new TimeModifier());
+        return new BuffHandler { data = new BuffHandlerData { durationType = durationType, duration = duration } };
+    }
+
+    static float GetDuration(TimeModifier modifier)
+    {
+        return (float)typeof(TimeModifier).GetField("_duration", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(modifier);
+    }
+
+    [Test]
+    public void Init_UsesTheHandlerDuration()
+    {
+        TimeModifier modifier = new TimeModifier { data = new TimeModifierData { value = 10f }, buffHandler = CreateHandler(DurationType.Duration, 4f) };
+
+        modifier.Init(null, null);
+
+        Assert.AreEqual(4f, GetDuration(modifier));
+        Assert.AreEqual(10f, modifier.ApplyModifier(), 0.0001f);
+    }
+
+    [Test]
+    public void Init_HandlerWithoutDuration_DefaultsToOneSecond()
+    {
+        TimeModifier modifier = new TimeModifier { data = new TimeModifierData { value = 10f }, buffHandler = CreateHandler(DurationType.Instant, 4f) };
+
+        modifier.Init(null, null);
+
+        Assert.AreEqual(1f, GetDuration(modifier));
     }
 
     static TimeModifier CreateModifierBypassingConstructor(float value, float secondsElapsed, float duration)

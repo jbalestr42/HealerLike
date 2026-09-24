@@ -10,6 +10,7 @@ public class BuffManager : SerializedMonoBehaviour
     [HideInInspector] public UnityEvent<BuffData> OnBuffAdded = new UnityEvent<BuffData>();
     [HideInInspector] public UnityEvent<BuffData> OnBuffRemoved = new UnityEvent<BuffData>();
     [HideInInspector] public UnityEvent<BuffHandlerData> OnBuffHandlerStarted = new UnityEvent<BuffHandlerData>();
+    [HideInInspector] public UnityEvent<BuffHandlerData> OnBuffHandlerRefreshed = new UnityEvent<BuffHandlerData>();
     [HideInInspector] public UnityEvent<BuffHandlerData> OnBuffHandlerStopped = new UnityEvent<BuffHandlerData>();
 
     [Serializable]
@@ -101,11 +102,6 @@ public class BuffManager : SerializedMonoBehaviour
 
     void Update()
     {
-        if (!isEnabled)
-        {
-            return;
-        }
-        
         foreach (var handlerPerSource in _buffHandlerPerSource)
         {
             GameObject source = handlerPerSource.Key;
@@ -118,7 +114,7 @@ public class BuffManager : SerializedMonoBehaviour
 
                     if (buffHandlerData.target == null)
                     {
-                        Debug.Log("[BuffManager] Target destroyed, discard buff handler " + buffHandlerFactory.name);
+                        Debug.Log($"[BuffManager:{gameObject.name}] Target destroyed, discard buff handler " + buffHandlerFactory.name);
                         _cachedIdsToRemove.Add(kvpBuffHandler.Key);
                         continue;
                     }
@@ -128,10 +124,10 @@ public class BuffManager : SerializedMonoBehaviour
                         foreach (var buffFactory in buffHandlerFactory.buffFactoryList)
                         {
                             // In some cases we are cumulating multiple instant buff, so we must appy all of them
-                            Debug.Log($"[BuffManager] Instant buff {buffFactory.name} | refreshStacks={buffHandlerData.refreshStacks}");
+                            Debug.Log($"[BuffManager:{gameObject.name}] Instant buff {buffFactory.name} | refreshStacks={buffHandlerData.refreshStacks}");
                             for (int i = 0; i < buffHandlerData.refreshStacks; i++)
                             {
-                                ABuff buff = buffFactory.GetBuff();
+                                ABuff buff = buffFactory.GetBuff(buffHandlerData.buffHandler);
                                 buff.Instant(source, buffHandlerData.target);
                             }
                             _cachedIdsToRemove.Add(kvpBuffHandler.Key);
@@ -142,7 +138,7 @@ public class BuffManager : SerializedMonoBehaviour
                         // First time we start the handler
                         if (!buffHandlerData.hasStarted)
                         {
-                            Debug.Log("[BuffManager] Start buff handler " + buffHandlerFactory.name);
+                            Debug.Log($"[BuffManager:{gameObject.name}] Start buff handler " + buffHandlerFactory.name);
                             buffHandlerData.buffHandler.Start(source, buffHandlerData.target);
                             OnBuffHandlerStarted.Invoke(buffHandlerData);
                         }
@@ -150,13 +146,13 @@ public class BuffManager : SerializedMonoBehaviour
                         // Handler need to stack/unstack
                         if (buffHandlerData.shouldRefresh)
                         {
-                            Debug.Log($"[BuffManager] Refresh buff handler {buffHandlerFactory.name} | currentStacks={buffHandlerData.currentStacks} | refreshStacks={buffHandlerData.refreshStacks}");
+                            Debug.Log($"[BuffManager:{gameObject.name}] Refresh buff handler {buffHandlerFactory.name} | currentStacks={buffHandlerData.currentStacks} | refreshStacks={buffHandlerData.refreshStacks}");
                             buffHandlerData.buffHandler.Refresh(source, buffHandlerData.target);
                             for (int i = 0; i < buffHandlerData.refreshStacks; i++)
                             {
                                 foreach (var buffFactory in buffHandlerFactory.buffFactoryList)
                                 {
-                                    Add(buffFactory, source, buffHandlerData.target);
+                                    Add(buffFactory, source, buffHandlerData.target, buffHandlerData.buffHandler);
                                 }
                                 buffHandlerData.currentStacks++;
                             }
@@ -169,6 +165,7 @@ public class BuffManager : SerializedMonoBehaviour
                                 buffHandlerData.currentStacks--;
                             }
                             buffHandlerData.refreshStacks = 0;
+                            OnBuffHandlerRefreshed.Invoke(buffHandlerData);
                         }
 
                         buffHandlerData.buffHandler.Update(Time.deltaTime);
@@ -179,9 +176,9 @@ public class BuffManager : SerializedMonoBehaviour
                             {
                                 BuffData buffData = GetBuffData(buffFactory, source);
                                 ABuff buff = buffData.first;
-                                if (buff != null)
+                                if (buff != null && isEnabled)
                                 {
-                                    Debug.Log("[BuffManager] Instant periodic buff " + buffFactory.name);
+                                    Debug.Log($"[BuffManager:{gameObject.name}] Instant periodic buff " + buffFactory.name);
                                     buff.Instant(source, buffHandlerData.target);
                                     buffHandlerData.buffHandler.ResetPeriodDuration();
                                 }
@@ -190,14 +187,8 @@ public class BuffManager : SerializedMonoBehaviour
 
                         if (buffHandlerData.buffHandler.isDone || buffHandlerData.shouldRemove)
                         {
-                            Debug.Log("[BuffManager] Stop buff handler " + buffHandlerFactory.name);
-                            foreach (var buffFactory in buffHandlerFactory.buffFactoryList)
-                            {
-                                Remove(buffFactory, source, buffHandlerData.target, removeAll: true);
-                            }
-                            buffHandlerData.buffHandler.Stop(source, buffHandlerData.target);
-                            OnBuffHandlerStopped.Invoke(buffHandlerData);
-                            _cachedIdsToRemove.Add(kvpBuffHandler.Key);
+                            Debug.Log($"[BuffManager:{gameObject.name}] Stop buff handler " + buffHandlerFactory.name);
+                            StopHandler(source, buffHandlerData);
                         }
                     }
                 }
@@ -216,14 +207,28 @@ public class BuffManager : SerializedMonoBehaviour
 
     public void RemoveBuffWithTag(GameplayTag tag)
     {
+        RemoveBuff(buffHandlerData => buffHandlerData.buffHandlerFactory.tags.Contains(tag));
+    }
+
+    public void RemoveBuffWithoutTag(GameplayTag tag)
+    {
+        RemoveBuff(buffHandlerData => !buffHandlerData.buffHandlerFactory.tags.Contains(tag));
+    }
+
+    // Stops and removes every initialized handler matching the predicate, across all sources -
+    // properly (Remove()+Stop()) instead of just discarding the entry, so the underlying buff
+    // (e.g. an AttributeModifier) never stays attached to its target forever.
+    public void RemoveBuff(Func<BuffHandlerData, bool> shouldRemove)
+    {
         foreach (var handlerPerSource in _buffHandlerPerSource)
         {
+            GameObject source = handlerPerSource.Key;
             foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
             {
                 BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
-                if (buffHandlerData.buffHandlerFactory.tags.Contains(tag))
+                if (buffHandlerData.isInit && shouldRemove(buffHandlerData))
                 {
-                    _cachedIdsToRemove.Add(kvpBuffHandler.Key);
+                    StopHandler(source, buffHandlerData);
                 }
             }
 
@@ -233,23 +238,20 @@ public class BuffManager : SerializedMonoBehaviour
         RemoveOutdatedSources();
     }
 
-    public void RemoveBuffWithoutTag(GameplayTag tag)
+    // Properly tears down an initialized handler (Remove() each of its buffs, then Stop()) and
+    // queues it for removal from its dictionary - shared by every place that discards a handler
+    // outside its normal isDone/shouldRemove flow (tag-based removal, a destroyed source), so none
+    // of them can go back to silently dropping the entry without ever removing the buff it applied.
+    // Callers still need to call RemoveCachedIdsFromHandler afterward to actually flush the queue.
+    void StopHandler(GameObject source, BuffHandlerData buffHandlerData)
     {
-        foreach (var handlerPerSource in _buffHandlerPerSource)
+        foreach (var buffFactory in buffHandlerData.buffHandlerFactory.buffFactoryList)
         {
-            foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
-            {
-                BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
-                if (!buffHandlerData.buffHandlerFactory.tags.Contains(tag))
-                {
-                    _cachedIdsToRemove.Add(kvpBuffHandler.Key);
-                }
-            }
-
-            RemoveCachedIdsFromHandler(handlerPerSource.Value.buffHandlerPerId);
+            Remove(buffFactory, source, buffHandlerData.target, removeAll: true);
         }
-
-        RemoveOutdatedSources();
+        buffHandlerData.buffHandler.Stop(source, buffHandlerData.target);
+        OnBuffHandlerStopped.Invoke(buffHandlerData);
+        _cachedIdsToRemove.Add(buffHandlerData.buffHandlerFactory.uniqueID);
     }
 
     void RemoveCachedIdsFromHandler(Dictionary<string, BuffHandlerData> buffHandlerPerId)
@@ -266,8 +268,24 @@ public class BuffManager : SerializedMonoBehaviour
         // Clean sources that do not have an active buff handler or sources that doesn't exists anymore
         foreach (var handlerPerSource in _buffHandlerPerSource)
         {
-            if (handlerPerSource.Key == null)
+            GameObject source = handlerPerSource.Key;
+            if (source == null)
             {
+                // The source (e.g. a booster tower) was destroyed before its handlers could be
+                // flushed normally - force-stop them here so their buffs get a proper Remove()
+                // instead of being silently discarded along with this now-orphaned entry.
+                foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
+                {
+                    BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
+                    if (buffHandlerData.isInit)
+                    {
+                        StopHandler(source, buffHandlerData);
+                    }
+                }
+                // The whole per-source entry is discarded below regardless, but StopHandler just
+                // queued ids in the shared _cachedIdsToRemove list - flush it now so those ids
+                // don't leak into some other source's cleanup later.
+                RemoveCachedIdsFromHandler(handlerPerSource.Value.buffHandlerPerId);
                 _cachedSourcesToRemove.Add(handlerPerSource.Key);
             }
             else if (handlerPerSource.Value.buffHandlerPerId.Count == 0)
@@ -326,57 +344,65 @@ public class BuffManager : SerializedMonoBehaviour
     {
         if (string.IsNullOrEmpty(buffHandlerFactory.uniqueID))
         {
-            Debug.LogError($"[BuffManager] uniqueId is null for factory '{buffHandlerFactory.name}'");
+            Debug.LogError($"[BuffManager:{gameObject.name}] uniqueId is null for factory '{buffHandlerFactory.name}'");
         }
 
         BuffHandlerData buffHandlerData = GetBuffHandlerData(buffHandlerFactory, source);
         if (!buffHandlerData.isInit)
         {
-            Debug.Log("[BuffManager] Init handler " + buffHandlerFactory.name);
+            Debug.Log($"[BuffManager:{gameObject.name}] Init handler " + buffHandlerFactory.name);
             buffHandlerData.buffHandler = buffHandlerFactory.GetBuffHandler();
             buffHandlerData.buffHandlerFactory = buffHandlerFactory;
             buffHandlerData.target = target;
         }
         else
         {
-            Debug.Log("[BuffManager] Refresh handler " + buffHandlerFactory.name);
+            Debug.Log($"[BuffManager:{gameObject.name}] Refresh handler " + buffHandlerFactory.name);
         }
         buffHandlerData.refreshStacks++;
     }
 
     public void RemoveHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target, bool removeAll = false)
     {
+        if (source == null)
+        {
+            // The source is already destroyed - RemoveOutdatedSources already force-stopped and
+            // cleaned up its handlers, so there is nothing left to decrement here. Without this
+            // guard, GetBuffHandlerData would silently recreate a dead, never-cleaned-up entry.
+            return;
+        }
+
         if (string.IsNullOrEmpty(buffHandlerFactory.uniqueID))
         {
-            Debug.LogError($"[BuffManager] uniqueId is null for factory '{buffHandlerFactory.name}'");
+            Debug.LogError($"[BuffManager:{gameObject.name}] uniqueId is null for factory '{buffHandlerFactory.name}'");
         }
 
         BuffHandlerData buffHandlerData = GetBuffHandlerData(buffHandlerFactory, source);
         if (buffHandlerData != null)
         {
-            Debug.Log("[BuffManager] Remove handler " + buffHandlerFactory.name);
+            Debug.Log($"[BuffManager:{gameObject.name}] Remove handler " + buffHandlerFactory.name);
             buffHandlerData.refreshStacks--;
         }
     }
 
-    void Add(ABuffFactory buffFactory, GameObject source, GameObject target)
+    void Add(ABuffFactory buffFactory, GameObject source, GameObject target, ABuffHandler buffHandler)
     {
         if (string.IsNullOrEmpty(buffFactory.uniqueID))
         {
-            Debug.LogError($"[BuffManager] UniqueId is null for factory '{buffFactory.name}'");
+            Debug.LogError($"[BuffManager:{gameObject.name}] UniqueId is null for factory '{buffFactory.name}'");
         }
 
         BuffData buffData = GetBuffData(buffFactory, source);
         if (buffData.shouldStack)
         {
-            Debug.Log("[BuffManager] Stack buff " + buffFactory.name + " | stacks=" + buffData.stacks);
+            Debug.Log($"[BuffManager:{gameObject.name}] Stack buff " + buffFactory.name + " | stacks=" + buffData.stacks);
             IStackableBuff stackableBuff = buffData.first as IStackableBuff;
             stackableBuff.Stack(source, target);
         }
         else
         {
-            Debug.Log("[BuffManager] Add buff " + buffFactory.name);
-            ABuff buff = buffFactory.GetBuff();
+            Debug.Log($"[BuffManager:{gameObject.name}] Add buff " + buffFactory.name);
+            ABuff buff = buffFactory.GetBuff(buffHandler);
             buffData.buffList.Add(buff);
             buff.Add(source, target);
         }
@@ -396,14 +422,14 @@ public class BuffManager : SerializedMonoBehaviour
                 {
                     if (buffData.shouldUnstack && !removeAll)
                     {
-                        Debug.Log("[BuffManager] Unstack buff " + buffFactory.name + " | stacks=" + buffData.stacks);
+                        Debug.Log($"[BuffManager:{gameObject.name}] Unstack buff " + buffFactory.name + " | stacks=" + buffData.stacks);
                         buffData.stacks--;
                         IStackableBuff stackableBuff = buffData.first as IStackableBuff;
                         stackableBuff.Unstack(source, target);
                     }
                     else
                     {
-                        Debug.Log("[BuffManager] Remove buff " + buffFactory.name + " | stacks=" + buffData.stacks);
+                        Debug.Log($"[BuffManager:{gameObject.name}] Remove buff " + buffFactory.name + " | stacks=" + buffData.stacks);
                         ABuff buff = buffData.first;
                         buffData.stacks = 0;
                         buffData.buffList.Remove(buff);

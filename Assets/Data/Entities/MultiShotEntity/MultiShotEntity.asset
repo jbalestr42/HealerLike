@@ -100,7 +100,6 @@ MonoBehaviour:
   description: Fast shoot but low damage
   targetBehaviourType: 5
   targetValidators: []
-  passives: []
-  onHitEffects: []
+  items: []
   skillFactories:
   - {fileID: 11400000, guid: 2e0862fec6e73cb4db8e1de0a6a8e64a, type: 2}

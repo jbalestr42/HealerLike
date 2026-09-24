@@ -15,16 +15,7 @@ MonoBehaviour:
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
-    ReferencedUnityObjects:
-    - {fileID: 11400000, guid: 46776799d2008614b9df9baa0ad8d107, type: 2}
-    - {fileID: 11400000, guid: 7017dc7573d67c24994a98a8e0a1f684, type: 2}
-    - {fileID: 11400000, guid: 1bf36ca141918c94ea485df9e025943a, type: 2}
-    - {fileID: 11400000, guid: 3b001c9f0efaeec429a2be36da0315a1, type: 2}
-    - {fileID: 11400000, guid: 691bb0f9e62ef6c40b3577089580cb15, type: 2}
-    - {fileID: 11400000, guid: d4932ebf4e6b0f045a9af1ce53c908c1, type: 2}
-    - {fileID: 11400000, guid: 56bf758b00def184fb1e593331f8fa0b, type: 2}
-    - {fileID: 11400000, guid: 99a4c735e2632514c92dc8163d03f0e9, type: 2}
-    - {fileID: 11400000, guid: 74b5f35c770b3ac47bcec7c0cd201c7d, type: 2}
+    ReferencedUnityObjects: []
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -32,12 +23,10 @@ MonoBehaviour:
     SerializationNodes:
     - Name: attributeUpgradeData
       Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, Assembly-CSharp],[GameData+AttributeUpgradeData,
-        Assembly-CSharp]], mscorlib
+      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, HealerLike.Runtime],[GameData+AttributeUpgradeData, HealerLike.Runtime]], mscorlib
     - Name: comparer
       Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, Assembly-CSharp]],
-        mscorlib
+      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, HealerLike.Runtime]], mscorlib
     - Name: 
       Entry: 12
       Data: 0
@@ -58,7 +47,7 @@ MonoBehaviour:
       Data: 2
     - Name: $v
       Entry: 7
-      Data: GameData+AttributeUpgradeData, Assembly-CSharp
+      Data: GameData+AttributeUpgradeData, HealerLike.Runtime
     - Name: startingUpgradeCost
       Entry: 3
       Data: 10
@@ -82,31 +71,7 @@ MonoBehaviour:
       Data: 1
     - Name: $v
       Entry: 7
-      Data: GameData+AttributeUpgradeData, Assembly-CSharp
-    - Name: startingUpgradeCost
-      Entry: 3
-      Data: 10
-    - Name: costIncreaseFactor
-      Entry: 4
-      Data: 4
-    - Name: bonusPerUpgrade
-      Entry: 4
-      Data: 0.1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 3
-    - Name: $v
-      Entry: 7
-      Data: GameData+AttributeUpgradeData, Assembly-CSharp
+      Data: GameData+AttributeUpgradeData, HealerLike.Runtime
     - Name: startingUpgradeCost
       Entry: 3
       Data: 10
@@ -123,237 +88,23 @@ MonoBehaviour:
       Entry: 8
       Data: 
     - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: wavePerRound
       Entry: 7
-      Data: 2|System.Collections.Generic.List`1[[GameData+WavePerRound, Assembly-CSharp]],
-        mscorlib
-    - Name: 
-      Entry: 12
-      Data: 9
-    - Name: 
-      Entry: 7
-      Data: 3|GameData+WavePerRound, Assembly-CSharp
-    - Name: round
-      Entry: 3
-      Data: 0
-    - Name: wavePatterns
-      Entry: 7
-      Data: 4|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
-        mscorlib
-    - Name: 
-      Entry: 12
-      Data: 1
-    - Name: 
-      Entry: 10
-      Data: 0
-    - Name: 
-      Entry: 13
       Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 5|GameData+WavePerRound, Assembly-CSharp
-    - Name: round
-      Entry: 3
-      Data: 1
-    - Name: wavePatterns
-      Entry: 7
-      Data: 6|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
-        mscorlib
-    - Name: 
-      Entry: 12
-      Data: 1
-    - Name: 
-      Entry: 10
-      Data: 1
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 7|GameData+WavePerRound, Assembly-CSharp
-    - Name: round
-      Entry: 3
-      Data: 2
-    - Name: wavePatterns
-      Entry: 7
-      Data: 8|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
-        mscorlib
-    - Name: 
-      Entry: 12
-      Data: 1
-    - Name: 
-      Entry: 10
-      Data: 2
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 9|GameData+WavePerRound, Assembly-CSharp
-    - Name: round
+    - Name: $k
       Entry: 3
       Data: 3
-    - Name: wavePatterns
+    - Name: $v
       Entry: 7
-      Data: 10|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
-        mscorlib
-    - Name: 
-      Entry: 12
-      Data: 1
-    - Name: 
-      Entry: 10
-      Data: 3
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 11|GameData+WavePerRound, Assembly-CSharp
-    - Name: round
+      Data: GameData+AttributeUpgradeData, HealerLike.Runtime
+    - Name: startingUpgradeCost
       Entry: 3
+      Data: 10
+    - Name: costIncreaseFactor
+      Entry: 4
       Data: 4
-    - Name: wavePatterns
-      Entry: 7
-      Data: 12|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
-        mscorlib
-    - Name: 
-      Entry: 12
-      Data: 1
-    - Name: 
-      Entry: 10
-      Data: 4
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 13|GameData+WavePerRound, Assembly-CSharp
-    - Name: round
-      Entry: 3
-      Data: 5
-    - Name: wavePatterns
-      Entry: 7
-      Data: 14|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
-        mscorlib
-    - Name: 
-      Entry: 12
-      Data: 1
-    - Name: 
-      Entry: 10
-      Data: 5
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 15|GameData+WavePerRound, Assembly-CSharp
-    - Name: round
-      Entry: 3
-      Data: 6
-    - Name: wavePatterns
-      Entry: 7
-      Data: 16|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
-        mscorlib
-    - Name: 
-      Entry: 12
-      Data: 1
-    - Name: 
-      Entry: 10
-      Data: 6
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 17|GameData+WavePerRound, Assembly-CSharp
-    - Name: round
-      Entry: 3
-      Data: 7
-    - Name: wavePatterns
-      Entry: 7
-      Data: 18|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
-        mscorlib
-    - Name: 
-      Entry: 12
-      Data: 1
-    - Name: 
-      Entry: 10
-      Data: 7
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 19|GameData+WavePerRound, Assembly-CSharp
-    - Name: round
-      Entry: 3
-      Data: 8
-    - Name: wavePatterns
-      Entry: 7
-      Data: 20|System.Collections.Generic.List`1[[WavePatternData, Assembly-CSharp]],
-        mscorlib
-    - Name: 
-      Entry: 12
-      Data: 1
-    - Name: 
-      Entry: 10
-      Data: 8
-    - Name: 
-      Entry: 13
-      Data: 
+    - Name: bonusPerUpgrade
+      Entry: 4
+      Data: 0.1
     - Name: 
       Entry: 8
       Data: 
@@ -368,9 +119,54 @@ MonoBehaviour:
       Data: 
   gold: 10000
   playerItemChance: 0.5
+  attributeUpgradeData:
+  - key: 2
+    value:
+      startingUpgradeCost: 10
+      costIncreaseFactor: 4
+      bonusPerUpgrade: 5
+  - key: 1
+    value:
+      startingUpgradeCost: 10
+      costIncreaseFactor: 4
+      bonusPerUpgrade: 0.1
+  - key: 3
+    value:
+      startingUpgradeCost: 10
+      costIncreaseFactor: 4
+      bonusPerUpgrade: 0.1
+  wavePerRound:
+  - round: 0
+    wavePatterns:
+    - {fileID: 11400000, guid: 46776799d2008614b9df9baa0ad8d107, type: 2}
+  - round: 1
+    wavePatterns:
+    - {fileID: 11400000, guid: 7017dc7573d67c24994a98a8e0a1f684, type: 2}
+  - round: 2
+    wavePatterns:
+    - {fileID: 11400000, guid: 1bf36ca141918c94ea485df9e025943a, type: 2}
+  - round: 3
+    wavePatterns:
+    - {fileID: 11400000, guid: 3b001c9f0efaeec429a2be36da0315a1, type: 2}
+  - round: 4
+    wavePatterns:
+    - {fileID: 11400000, guid: 691bb0f9e62ef6c40b3577089580cb15, type: 2}
+  - round: 5
+    wavePatterns:
+    - {fileID: 11400000, guid: d4932ebf4e6b0f045a9af1ce53c908c1, type: 2}
+  - round: 6
+    wavePatterns:
+    - {fileID: 11400000, guid: 56bf758b00def184fb1e593331f8fa0b, type: 2}
+  - round: 7
+    wavePatterns:
+    - {fileID: 11400000, guid: 99a4c735e2632514c92dc8163d03f0e9, type: 2}
+  - round: 8
+    wavePatterns:
+    - {fileID: 11400000, guid: 74b5f35c770b3ac47bcec7c0cd201c7d, type: 2}
   characters:
   - {fileID: 11400000, guid: b6564d3df55530743a8bae3f230c6101, type: 2}
   items:
+  - {fileID: 11400000, guid: 32cd44640ef249bbac0ad415bbb5aeba, type: 2}
   - {fileID: 11400000, guid: 863d741e86f47494a916f37a85d07d2f, type: 2}
   - {fileID: 11400000, guid: d442714162ee37b4ca94aed2ea781e32, type: 2}
   - {fileID: 11400000, guid: 059d0c2e8eebcdc45a72f7263323d9c4, type: 2}
@@ -383,9 +179,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e650e43fbec13764bac68e7b756e405f, type: 2}
   - {fileID: 11400000, guid: 84838603ada205643ab074dfd136f83b, type: 2}
   - {fileID: 11400000, guid: 60b337d5800dd0943ba5e16ee16359fd, type: 2}
-  playerItems:
   - {fileID: 11400000, guid: 0fe911b81aaae204fad2bb44dbdc001c, type: 2}
   - {fileID: 11400000, guid: 10e7a3acb9f60c54aa9701c4a92cf377, type: 2}
   - {fileID: 11400000, guid: 8bf1e981929ef5f4ab415aebf49800b4, type: 2}
   tags:
   - {fileID: 11400000, guid: 89edbaa6345fd89478db1b09b2b2150f, type: 2}
+  - {fileID: 11400000, guid: d38ac4ec04597cb4aa6ebb8581d9072e, type: 2}
+  - {fileID: 11400000, guid: 74cca3bd6163ba540b8b0168a3c22312, type: 2}
+  - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
+  - {fileID: 11400000, guid: c62124ce56224930993248ec27464a56, type: 2}

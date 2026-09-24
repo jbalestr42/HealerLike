@@ -17,7 +17,7 @@ public class TimeModifier : AttributeModifier<TimeModifierData>, IStackableBuff
     float _start = 0f;
     float _duration = 1f;
 
-    public TimeModifier()
+    public override void Init(GameObject source, GameObject target)
     {
         _start = Time.time;
         _duration = buffHandler.hasDuration ? buffHandler.duration : 1f;

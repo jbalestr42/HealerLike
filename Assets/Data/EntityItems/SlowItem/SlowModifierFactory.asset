@@ -23,8 +23,6 @@ MonoBehaviour:
     SerializationNodes: []
   uniqueID: fb13074b-e61e-4c2e-a9ab-3b23eb9d2018
   data:
-    type: 7
+    type: 1
     modifierType: 1
-    isRelative: 1
-    value: -0.1
-    duration: 1
+    value: 0.5

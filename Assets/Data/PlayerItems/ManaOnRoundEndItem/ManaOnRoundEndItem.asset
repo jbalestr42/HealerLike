@@ -22,9 +22,11 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 905aefa8652570842be8659ac40217a5, type: 3}
     name: ManaOnRoundEnd
     description: 
+    tags:
+    - {fileID: 11400000, guid: c62124ce56224930993248ec27464a56, type: 2}
     buffs:
     - {fileID: 11400000, guid: b7bf54a52d782b74fb35c1940ef00a62, type: 2}
     onHitEffects: []

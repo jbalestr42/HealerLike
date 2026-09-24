@@ -26,7 +26,15 @@ public class FakeStackableBuff : ABuff<FakeBuffData>, IStackableBuff
     public void Unstack(GameObject source, GameObject target) => data.log.Add("Unstack");
 }
 
+public class HandlerRecordingBuff : ABuff<List<ABuffHandler>>
+{
+    public override void Instant(GameObject source, GameObject target) => data.Add(buffHandler);
+    public override void Add(GameObject source, GameObject target) => data.Add(buffHandler);
+    public override void Remove(GameObject source, GameObject target) { }
+}
+
 public class FakeBuffFactory : BuffFactory<FakeBuff, FakeBuffData> { }
+public class HandlerRecordingBuffFactory : BuffFactory<HandlerRecordingBuff, List<ABuffHandler>> { }
 public class FakeStackableBuffFactory : BuffFactory<FakeStackableBuff, FakeBuffData> { }
 
 public class BuffManagerTests
@@ -78,6 +86,27 @@ public class BuffManagerTests
             tags = tags ?? new List<GameplayTag>(),
         };
         return handlerFactory;
+    }
+
+    [TestCase(DurationType.Instant)]
+    [TestCase(DurationType.Infinite)]
+    public void AddHandler_GivesTheBuffItsOwningHandler(DurationType durationType)
+    {
+        HandlerRecordingBuffFactory buffFactory = CreateTracked<HandlerRecordingBuffFactory>();
+        buffFactory.data = new List<ABuffHandler>();
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, durationType);
+        ABuffHandler handler = null;
+        _buffManager.OnBuffHandlerStarted.AddListener(buffHandlerData => handler = buffHandlerData.buffHandler);
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        Assert.AreEqual(1, buffFactory.data.Count);
+        Assert.IsNotNull(buffFactory.data[0]);
+        if (durationType != DurationType.Instant)
+        {
+            Assert.AreSame(handler, buffFactory.data[0]);
+        }
     }
 
     [Test]
@@ -162,12 +191,11 @@ public class BuffManagerTests
     }
 
     [Test]
-    public void RemoveBuffWithTag_DiscardsMatchingHandlerBookkeepingWithoutStoppingIt()
+    public void RemoveBuffWithTag_StopsMatchingHandlerAndRemovesItsBuff()
     {
-        // RemoveBuffWithTag only drops the handler entry from BuffManager's internal tracking -
-        // it never calls buffHandler.Stop() or buff.Remove(), so the buff's own effect is not
-        // reversed by this call. Asserting that behaviour as-is (rather than what one might expect)
-        // so a future change to this method shows up here.
+        // RemoveBuffWithTag properly tears the handler down: all stacks of its buff are removed at
+        // once (a single Remove, no Unstack) and the handler is stopped, so the buff's effect never
+        // stays attached to its target.
         GameplayTag tag = CreateTracked<GameplayTag>();
         FakeStackableBuffFactory buffFactory = CreateTracked<FakeStackableBuffFactory>();
         buffFactory.data = _data;
@@ -179,10 +207,10 @@ public class BuffManagerTests
         _buffManager.ForceUpdate(); // Add, Stack -> 2 stacks
 
         _buffManager.RemoveBuffWithTag(tag);
-        _buffManager.ForceUpdate();
+        _buffManager.ForceUpdate(); // The handler is gone: nothing is re-applied
 
-        CollectionAssert.AreEqual(new[] { "Add", "Stack" }, _data.log);
-        Assert.AreEqual(0, stoppedCount);
+        CollectionAssert.AreEqual(new[] { "Add", "Stack", "Remove" }, _data.log);
+        Assert.AreEqual(1, stoppedCount);
     }
 
     [Test]

@@ -99,8 +99,7 @@ MonoBehaviour:
   title: ChainLightning
   description: Create a lightning that chain from enemy to enemy
   price: 0
-  passives: []
-  onHitEffects: []
+  items: []
   onHitConsumer:
   - {fileID: 11400000, guid: f90b909a40221764b9cdf4bddffb8a68, type: 2}
   skillFactories:

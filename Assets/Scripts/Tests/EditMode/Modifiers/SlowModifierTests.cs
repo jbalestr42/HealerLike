@@ -1,4 +1,4 @@
-using System;
+using System.Reflection;
 using System.Runtime.Serialization;
 using NUnit.Framework;
 using UnityEngine;
@@ -8,23 +8,62 @@ namespace Attributes.Modifiers
 
 public class SlowModifierTests
 {
-    [Test]
-    public void Constructor_ThrowsBecauseBuffHandlerIsNeverAssignedInProduction()
+    static ABuffHandler CreateHandler(DurationType durationType, float duration)
     {
-        // AttributeModifier.buffHandler is a settable property, but nothing in the codebase ever
-        // assigns it before a modifier is constructed (SlowModifierFactory/AttributeModifierBuff
-        // just does `new ModifierType() { data = data }`). SlowModifier's constructor reads
-        // buffHandler.hasDuration immediately, so any buff wired to SlowModifierFactory currently
-        // crashes with NullReferenceException the moment it's applied in game. This test documents
-        // that crash so a real fix (ABuff.Add/Instant passing the owning ABuffHandler through)
-        // doesn't silently go untested. Flagged to the team separately - not fixed here.
-        Assert.Throws<NullReferenceException>(() => new SlowModifier());
+        return new BuffHandler { data = new BuffHandlerData { durationType = durationType, duration = duration } };
+    }
+
+    static float GetDuration(SlowModifier modifier)
+    {
+        return (float)typeof(SlowModifier).GetField("_duration", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(modifier);
+    }
+
+    [Test]
+    public void Init_UsesTheHandlerDuration()
+    {
+        SlowModifier modifier = new SlowModifier { data = new SlowModifierData { value = 0.5f }, buffHandler = CreateHandler(DurationType.Duration, 10f) };
+
+        modifier.Init(null, null);
+
+        Assert.AreEqual(10f, GetDuration(modifier));
+        Assert.AreEqual(0.5f, modifier.ApplyModifier(), 0.0001f);
+    }
+
+    [Test]
+    public void Init_HandlerWithoutDuration_DefaultsToOneSecond()
+    {
+        SlowModifier modifier = new SlowModifier { data = new SlowModifierData { value = 0.5f }, buffHandler = CreateHandler(DurationType.Instant, 10f) };
+
+        modifier.Init(null, null);
+
+        Assert.AreEqual(1f, GetDuration(modifier));
+    }
+
+    [Test]
+    public void AttributeModifierBuff_Add_PassesItsHandlerToTheModifier()
+    {
+        // Regression: the modifier used to read a never-assigned buffHandler and NRE when applied
+        GameObject target = new GameObject("Target");
+        try
+        {
+            TestHelpers.CreateAttributeManager(target, AttributeType.Speed, 1f);
+            var buff = new AttributeModifierBuff<SlowModifier, SlowModifierData>
+            {
+                data = new SlowModifierData { type = AttributeType.Speed, modifierType = AttributeModifierType.Multiply, value = -0.5f },
+                buffHandler = CreateHandler(DurationType.Duration, 2f),
+            };
+
+            Assert.DoesNotThrow(() => buff.Add(target, target));
+        }
+        finally
+        {
+            Object.DestroyImmediate(target);
+        }
     }
 
     static SlowModifier CreateModifierBypassingConstructor(float value, float secondsElapsed, float duration)
     {
-        // Bypasses the constructor (see the test above) purely so the rest of the class's logic
-        // (ApplyModifier/Stack/Unstack) can be exercised and protected by tests.
+        // Sets the private state directly so decay/stacking can be tested at a given elapsed time
         SlowModifier modifier = (SlowModifier)FormatterServices.GetUninitializedObject(typeof(SlowModifier));
         modifier.data = new SlowModifierData { value = value };
         TestHelpers.SetPrivateField(modifier, "_start", Time.time - secondsElapsed);
@@ -86,8 +125,8 @@ public class SlowModifierTests
     public void StackThenUnstack_MultipleCycles_RecomputesFromCurrentStackCount()
     {
         // NOTE: unlike FlatModifier, a full Stack/Unstack round trip does NOT return _stackFactor to
-        // its original value here. The constructor (bypassed above, see the crash test) would set it
-        // to 1f by field initializer, but Stack()/Unstack() always recompute it from the CURRENT
+        // its original value here. The field initializer sets it
+        // to 1f, but Stack()/Unstack() always recompute it from the CURRENT
         // _stacks count via Log(_stacks + 1) / 2 + 1 - which at _stacks == 1 evaluates to
         // Log(2)/2+1 (~1.35), not 1f. So 2 stacks followed by 2 unstacks lands on the formula's
         // value for 1 stack, not the field initializer's default. Documenting the actual behavior

@@ -25,6 +25,8 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 26de841f6d53c6a4da359d956be2c4f4, type: 3}
     name: ExplodeOnHit
     description: 
+    tags:
+    - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     buffs:
     - {fileID: 11400000, guid: c6d3037918c4cb44eb21c1138fe430e7, type: 2}
     onHitEffects: []

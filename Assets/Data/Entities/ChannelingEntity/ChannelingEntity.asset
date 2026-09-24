@@ -100,7 +100,6 @@ MonoBehaviour:
   description: Channel attack on the same target
   targetBehaviourType: 0
   targetValidators: []
-  passives: []
-  onHitEffects: []
+  items: []
   skillFactories:
   - {fileID: 11400000, guid: 74138de38d4bc1840a327912fa81228e, type: 2}

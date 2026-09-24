@@ -34,12 +34,8 @@ public class EntityData : SerializedScriptableObject
     public List<ATargetValidatorFactory> targetValidators;
 
     [Space]
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(passives)")]
-    public List<ABuffHandlerFactory> passives;
-
-    [Space]
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(onHitEffects)")]
-    public List<ABuffHandlerFactory> onHitEffects;
+    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<AItemFactory>, AItemFactory>(items)")]
+    public List<AItemFactory> items = new List<AItemFactory>();
 
     [Space]
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ASkillFactory>, ASkillFactory>(skillFactories)")]

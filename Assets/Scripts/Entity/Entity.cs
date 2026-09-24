@@ -49,6 +49,9 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
 
     List<ASkill> _skills = new List<ASkill>();
 
+    List<AItem> _items = new List<AItem>();
+    public List<AItem> items { get { return _items; } }
+
     bool _isDraggable;
     public bool isDraggable { get { return _isDraggable; } }
 
@@ -78,16 +81,12 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         _model.Init(this);
         _targetPoint = model.GetComponentInChildren<SkillTargetPointTag>()?.gameObject ?? gameObject;
 
-        // Init self buff from data
-        foreach (ABuffHandlerFactory passive in _data.passives)
+        // Init items (passives, on hit effects, ...) from data
+        foreach (AItemFactory itemFactory in _data.items)
         {
-            AddBuffHandler(passive, gameObject, gameObject);
-        }
-
-        // Init on hit effects from data
-        foreach (ABuffHandlerFactory onHitEffect in _data.onHitEffects)
-        {
-            AddOnHitEffect(onHitEffect);
+            AItem item = itemFactory.GetItem();
+            item.Equip(gameObject);
+            _items.Add(item);
         }
 
         // Init skills from data
@@ -131,7 +130,9 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     {
         _targetProvider.Reset();
         _buffManager.Reset();
-        _buffManager.RemoveBuffWithoutTag(DataManager.instance.GetTagWithName("FromItem"));
+
+        GameplayTag permanentTag = DataManager.instance.GetTagWithName("Permanent");
+        _buffManager.RemoveBuff(buffHandlerData => !buffHandlerData.buffHandlerFactory.tags.Exists(tag => tag.IsDescendantOf(permanentTag)));
 
         foreach (ASkill skill in _skills)
         {
