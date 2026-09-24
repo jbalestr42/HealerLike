@@ -10,7 +10,6 @@ namespace HealerLike.Render.Deliveries
         // A travel shorter than this has no direction
         static readonly float stillSquared = 0.00000001f;
 
-        readonly DeliveryTip _tip = new DeliveryTip();
         Transform _holder;
         Projectile _projectile;
         GameObject _targetPoint;
@@ -20,6 +19,8 @@ namespace HealerLike.Render.Deliveries
         Vector3 _lastPosition;
         bool _hasLanded;
 
+        // Made in Init, a property block cannot be made while Unity constructs the component
+        DeliveryTip _tip;
         public DeliveryTip tip { get { return _tip; } }
 
         Matrix4x4 _frame;
@@ -29,6 +30,11 @@ namespace HealerLike.Render.Deliveries
         public bool Init(Projectile projectile, DeliveryStyle style, DeliveryVocabulary vocabulary,
             PrimitiveMeshes meshes)
         {
+            if (_tip == null)
+            {
+                _tip = new DeliveryTip();
+            }
+
             _tip.SetStyle(style, vocabulary, meshes);
             if (_tip.partCount == 0)
             {
@@ -64,17 +70,21 @@ namespace HealerLike.Render.Deliveries
         public void Land()
         {
             _hasLanded = true;
-            _tip.Hide();
+            Hide();
         }
 
         void OnDisable()
         {
-            _tip.Hide();
+            Hide();
         }
 
         void OnDestroy()
         {
-            _tip.Release();
+            if (_tip != null)
+            {
+                _tip.Release();
+            }
+
             if (_holder)
             {
                 RenderObjects.Release(_holder.gameObject);
@@ -85,7 +95,7 @@ namespace HealerLike.Render.Deliveries
         {
             if (!_projectile || _projectile.ShouldDestroyProjectile())
             {
-                _tip.Hide();
+                Hide();
                 return;
             }
 
@@ -100,6 +110,14 @@ namespace HealerLike.Render.Deliveries
             if (!_hasLanded)
             {
                 _tip.Draw(_holder, _frame, _material, _colour, _colour);
+            }
+        }
+
+        void Hide()
+        {
+            if (_tip != null)
+            {
+                _tip.Hide();
             }
         }
 
