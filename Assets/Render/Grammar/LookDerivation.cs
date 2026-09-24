@@ -100,7 +100,7 @@ namespace HealerLike.Render.Grammar
                 return ManyHits;
             }
 
-            int bounces = SkillWalker.PassiveBounces(data);
+            int bounces = ItemWalker.Bounces(data);
             if (skill is ShootProjectileSkillFactory shoot && shoot.data.projectiles != null)
             {
                 int hits = 1;
@@ -208,7 +208,7 @@ namespace HealerLike.Render.Grammar
             float health = SkillWalker.ReadAttribute(data, AttributeType.HealthMax, DefaultHealth);
             float added = 0f;
             float multiplier = 1f;
-            foreach (ABuffHandlerFactory handler in SkillWalker.ItemBuffs(data))
+            foreach (ABuffHandlerFactory handler in ItemWalker.Buffs(data))
             {
                 if (handler.buffFactoryList == null)
                 {

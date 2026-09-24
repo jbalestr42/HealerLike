@@ -138,7 +138,7 @@ namespace HealerLike.Render.Grammar
                 }
             }
 
-            List<ABuffHandlerFactory> passives = SkillWalker.ItemBuffs(data);
+            List<ABuffHandlerFactory> passives = ItemWalker.Buffs(data);
             if (passives.Count > 0)
             {
                 AccessoryKind passive = PassiveAccessory(passives[0]);
@@ -148,7 +148,7 @@ namespace HealerLike.Render.Grammar
                 }
             }
 
-            foreach (ABuffHandlerFactory handler in SkillWalker.ItemOnHitEffects(data))
+            foreach (ABuffHandlerFactory handler in ItemWalker.OnHitEffects(data))
             {
                 EffectFamily family = EffectDerivation.Family(handler, false);
                 if (family == accent)
