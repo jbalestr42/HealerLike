@@ -275,6 +275,8 @@ public class LianaArmTests
     [TestCase(DeliveryStyle.Bounce)]
     public void Tick_DeliveryProfile_FollowsLiveEndpoint(DeliveryStyle style)
     {
+        // Which styles draw as a rod is the vocabulary's arm entry
+        _arm.vocabulary = RenderTestAssets.LoadDeliveryVocabulary();
         _arm.style = style;
         _arm.isDeliveryProfile = true;
         _arm.Begin(1, GestureKind.Attack, Vector3.right * 2f);
