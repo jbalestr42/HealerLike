@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
-using HealerLike.Render.Deliveries;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Creatures
 {
-    public class CreatureBuilder : MonoBehaviour, IEntityView, IHealthVisualSink,
-        IDeliverySource, IEffectAnchors
+    // The view of a spawned entity: derives or takes its recipe, reads the entity's skills, target and health
+    public class CreatureBuilder : ARigHost, IEntityView
     {
         [SerializeField] CreatureRecipe _recipe;
         [SerializeField] Material _material;
@@ -20,8 +19,6 @@ namespace HealerLike.Render.Creatures
         readonly List<ASkill> _removedSkills = new List<ASkill>();
         ResourceAttribute _health;
         StatusObserver _statusObserver;
-        GameObject _registeredSource;
-        RenderRegistry _registeredRegistry;
         RenderRegistry _registry;
         ISpellVisualSink _spellSink;
         // The game's cell unless Configure hands another ground frame
@@ -29,11 +26,6 @@ namespace HealerLike.Render.Creatures
         bool _hasConfiguredPlane;
         Vector3 _groundOrigin;
         Vector3 _groundNormal = Vector3.up;
-
-        ArmPool _pool;
-
-        CreatureRig _rig;
-        public CreatureRig rig { get { return _rig; } }
 
         public CreatureRecipe recipe { get { return _recipe; } }
 
@@ -51,11 +43,7 @@ namespace HealerLike.Render.Creatures
         void OnDisable()
         {
             Detach();
-            if (rig != null)
-            {
-                _pool.CancelAll();
-                rig.SetVisible(false);
-            }
+            HideRig();
         }
 
         void OnDestroy()
@@ -92,9 +80,9 @@ namespace HealerLike.Render.Creatures
         public void Init(Entity owner)
         {
             Detach();
-            if (_entity != owner && rig != null)
+            if (_entity != owner)
             {
-                _pool.CancelAll();
+                CancelGestures();
             }
 
             _entity = owner;
@@ -158,8 +146,7 @@ namespace HealerLike.Render.Creatures
             {
                 float healthFraction = _health && _health.Max > 0 ? _health.Value / _health.Max : 1f;
                 rig.SetReadout(target, healthFraction, readiness, readiness);
-                rig.Tick(Time.time, Time.deltaTime, Frame());
-                _pool.Tick(Time.deltaTime);
+                TickRig(Time.time, Time.deltaTime, Frame());
             }
         }
 
@@ -254,33 +241,14 @@ namespace HealerLike.Render.Creatures
         {
             if (rig == null && _recipe && _material)
             {
-                CreatureRig created = new CreatureRig();
-                if (created.Init(_recipe, transform, _material, _bodyMaterial, _meshes, _cellSize))
-                {
-                    _rig = created;
-                    _pool = new ArmPool();
-                    _pool.Init(_rig, _material, _meshes);
-                }
+                BuildRig(_recipe, transform, _material, _bodyMaterial, _meshes, _cellSize);
             }
 
             if (rig != null)
             {
                 rig.SetVisible(isActiveAndEnabled);
-                rig.Tick(Time.time, 0f, Frame());
-                _pool.Tick(0f);
+                TickRig(Time.time, 0f, Frame());
             }
-        }
-
-        void ReleaseRig()
-        {
-            if (rig != null)
-            {
-                _pool.Dispose();
-                rig.Dispose();
-            }
-
-            _rig = null;
-            _pool = null;
         }
 
         FootFrame Frame()
@@ -317,38 +285,11 @@ namespace HealerLike.Render.Creatures
                 }
             }
 
-            SyncRegistry();
+            Register(_registry, _entity.gameObject);
             if (rig != null)
             {
                 rig.SetVisible(true);
             }
-        }
-
-        void SyncRegistry()
-        {
-            if (_registeredRegistry == _registry)
-            {
-                return;
-            }
-
-            Unregister();
-            _registeredRegistry = _registry;
-            _registeredSource = _entity ? _entity.gameObject : null;
-            if (_registeredRegistry != null)
-            {
-                _registeredRegistry.Register(_registeredSource, this);
-            }
-        }
-
-        void Unregister()
-        {
-            if (_registeredRegistry != null)
-            {
-                _registeredRegistry.Unregister(_registeredSource, this);
-            }
-
-            _registeredRegistry = null;
-            _registeredSource = null;
         }
 
         void Detach()
@@ -378,52 +319,12 @@ namespace HealerLike.Render.Creatures
         #region IHealthVisualSink
 
         // Damage reaches this sink too, only a heal draws the contact
-        public void OnHealthResolved(GameObject target, float value, bool critical)
+        public override void OnHealthResolved(GameObject target, float value, bool critical)
         {
-            if (isActiveAndEnabled && target && value > 0f && rig != null)
+            if (isActiveAndEnabled && target && value > 0f)
             {
-                rig.Heal();
-                _pool.HealContact(RenderTargets.Point(target));
+                HealContact(target);
             }
-        }
-
-        #endregion
-
-        #region IDeliverySource
-
-        public bool BeginDelivery(int token, DeliveryStyle style, Transform projectile, Vector3 end)
-        {
-            return isActiveAndEnabled && rig != null && _pool.BeginDelivery(token, style, projectile, end);
-        }
-
-        public void ContactDelivery(int token, Vector3 position, GameObject target)
-        {
-            if (rig != null)
-            {
-                _pool.ContactDelivery(token, position, target);
-            }
-        }
-
-        public void EndDelivery(int token)
-        {
-            if (rig != null)
-            {
-                _pool.EndDelivery(token);
-            }
-        }
-
-        #endregion
-
-        #region IEffectAnchors
-
-        public bool TryGetAnchors(out EffectAnchors anchors)
-        {
-            if (rig == null)
-            {
-                anchors = new EffectAnchors();
-                return false;
-            }
-            return rig.TryGetAnchors(out anchors);
         }
 
         #endregion

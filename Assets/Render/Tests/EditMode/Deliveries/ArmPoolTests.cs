@@ -109,6 +109,34 @@ public class ArmPoolTests
             "A two-cell real delivery must not loop the unused 24-cell reach around the actor.");
     }
 
+    LianaArm[] Arms()
+    {
+        BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        ArmLeases leases = (ArmLeases)typeof(ArmPool).GetField("_leases", flags).GetValue(_pool);
+        return (LianaArm[])typeof(ArmLeases).GetField("_arms", flags).GetValue(leases);
+    }
+
+    [Test]
+    public void SetAccent_ChainDelivery_TintsEveryBranchOfItsLeaseOnly()
+    {
+        _pool.BeginDelivery(1, DeliveryStyle.ChainSync, null, Vector3.one);
+        _pool.ContactDelivery(1, Vector3.one, null);
+        _pool.ContactDelivery(1, Vector3.right * 2f, null);
+        _pool.BeginDelivery(2, DeliveryStyle.Direct, null, Vector3.one);
+
+        _pool.SetAccent(1, Color.magenta);
+
+        int tinted = 0;
+        foreach (LianaArm arm in Arms())
+        {
+            if (arm != null && arm.tipColour == Color.magenta)
+            {
+                tinted++;
+            }
+        }
+        Assert.AreEqual(2, tinted);
+    }
+
     [Test]
     public void Tick_LiveProjectile_ArmFollowsWithoutObserverPush()
     {
@@ -119,8 +147,7 @@ public class ArmPoolTests
         _projectile.transform.position = new Vector3(2f, 1f, 0f);
         Tick(0.016f);
 
-        FieldInfo field = typeof(ArmPool).GetField("_arms", BindingFlags.Instance | BindingFlags.NonPublic);
-        LianaArm[] arms = (LianaArm[])field.GetValue(_pool);
+        LianaArm[] arms = Arms();
         Assert.That(Vector3.Distance(arms[0].goal, _projectile.transform.position), Is.LessThan(0.00001f));
     }
 
