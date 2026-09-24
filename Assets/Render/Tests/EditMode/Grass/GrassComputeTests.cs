@@ -104,6 +104,7 @@ public class GrassComputeTests
         _compute.SetInt("_HLZoneCount", 2);
         _compute.SetVectorArray("_HLFrustumPlanes", _planes);
         _compute.SetFloat("_HLCullMargin", GrassBounds.Envelope(1f));
+        _compute.SetFloat("_HLWindStrength", 0f);
     }
 
     [TearDown]
@@ -278,6 +279,44 @@ public class GrassComputeTests
             Assert.AreEqual(new Vector4(0f, i / 128f, 1f, 0f), _states[i].leanHeightSpike);
             Assert.AreEqual(first[i], _states[i], "No wind, nothing moves between frames.");
         }
+    }
+
+    [Test]
+    public void Dispatch_Wind_ChangesLeanOnlyAndRepeatsAtTheSameTime()
+    {
+        _compute.SetInt("_HLZoneCount", 0);
+        _compute.SetFloat("_HLWindStrength", 1f);
+        _compute.SetFloat("_HLWindTime", 0f);
+        Dispatch();
+        ReadStates();
+        Vector4 first = _states[0].leanHeightSpike;
+        _compute.SetFloat("_HLWindTime", 0.8f);
+        Dispatch();
+        ReadStates();
+        Vector4 second = _states[0].leanHeightSpike;
+        Assert.Greater(Vector2.Distance(first, second), 0.01f);
+        Assert.That(new Vector2(second.x, second.y).magnitude, Is.LessThan(0.105f));
+        Assert.AreEqual(1f, second.z);
+        Assert.AreEqual(0f, second.w);
+        Assert.AreEqual(Vector4.one * 123f, _states[65].leanHeightSpike);
+        Dispatch();
+        ReadStates();
+        Assert.AreEqual(second, _states[0].leanHeightSpike);
+        _compute.SetFloat("_HLWindTime", 0f);
+        Dispatch();
+        ReadStates();
+        Assert.AreEqual(first, _states[0].leanHeightSpike);
+    }
+
+    [Test]
+    public void Dispatch_Wind_DoesNotMoveStoneSpikesOrTrampledRoots()
+    {
+        _compute.SetFloat("_HLWindStrength", 1f);
+        TuftState spike = Sample(2, Vector3.zero, 3f, 1f);
+        TuftState trample = Sample(6, Vector3.zero, 1f, 1f);
+        _compute.SetFloat("_HLWindTime", 1.25f);
+        Assert.AreEqual(spike, Sample(2, Vector3.zero, 3f, 1f));
+        Assert.AreEqual(trample, Sample(6, Vector3.zero, 1f, 1f));
     }
 
     [Test]

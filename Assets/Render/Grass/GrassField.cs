@@ -15,6 +15,7 @@ namespace HealerLike.Render.Grass
         [SerializeField] int _bladeBudget = GrassLayout.MaxBudget;
         [SerializeField] uint _seed = 1;
         [SerializeField] float _bladeHeightScale = 1f;
+        [SerializeField, Range(0f, 1f)] float _windStrength = 1f;
 
         GraphicsBuffer _zones;
         GraphicsBuffer _seeds;
@@ -56,6 +57,12 @@ namespace HealerLike.Render.Grass
         }
 
         public uint seed { get { return _seed; } set { _seed = value; } }
+
+        public float windStrength
+        {
+            get { return _windStrength; }
+            set { _windStrength = Mathf.Clamp01(RenderMath.FiniteOr(value, 0f)); }
+        }
 
         // Presentation-only tuft height; spike height, tuft width and density stay unchanged
         public float bladeHeightScale
@@ -197,6 +204,8 @@ namespace HealerLike.Render.Grass
             _updateGrass.SetBuffer(_kernel, "_HLVisibleBlades", _visibleTufts);
             _updateGrass.SetVectorArray("_HLFrustumPlanes", _planeVectors);
             _updateGrass.SetFloat("_HLCullMargin", _cullMargin);
+            _updateGrass.SetFloat("_HLWindTime", Time.time);
+            _updateGrass.SetFloat("_HLWindStrength", windStrength);
             _updateGrass.SetBuffer(_kernel, "_HLZones", _zones);
             _updateGrass.SetInt("_HLZoneCount", _zoneCount);
             _visibleTufts.SetCounterValue(0);
