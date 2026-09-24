@@ -34,7 +34,6 @@ namespace HealerLike.Render.Deliveries
         static readonly float extendSeconds = 0.1f;
         static readonly float contactSeconds = 0.04f;
         static readonly float retractSeconds = 0.2f;
-        static readonly float rigidRetractSeconds = 0.045f;
         // An arc delivery lifts its middle by this much per cell of reach, never more than the cap
         static readonly float arcLiftPerCell = 0.4f;
         static readonly float arcMaxLift = 2f;
@@ -51,9 +50,6 @@ namespace HealerLike.Render.Deliveries
         static readonly float leafDepth = 0.22f;
         static readonly float leafLean = 0.45f;
         static readonly float leafCentre = 0.45f;
-        // A swarm arm and its leaves are drawn thinner
-        static readonly float swarmWidth = 0.6f;
-        static readonly float swarmLeafWidth = 0.45f;
 
         readonly ChainSolver _solver = new ChainSolver();
         readonly Matrix4x4[] _leaves = new Matrix4x4[LeafCount];
@@ -318,9 +314,10 @@ namespace HealerLike.Render.Deliveries
         {
             float dt = Mathf.Max(0f, deltaTime);
             float retract = retractSeconds;
-            if (_isDeliveryProfile && style == DeliveryStyle.Rigid)
+            ArmStyle arm = ArmStyleOf(style);
+            if (_isDeliveryProfile && arm.retractSeconds > 0f)
             {
-                retract = rigidRetractSeconds;
+                retract = arm.retractSeconds;
             }
 
             Vector3 restTip = rootWorld + restOrientation * _rest[_rest.Length - 1];
@@ -364,9 +361,7 @@ namespace HealerLike.Render.Deliveries
                     }
                 }
 
-                bool isRod = style == DeliveryStyle.Rigid || style == DeliveryStyle.Direct
-                    || style == DeliveryStyle.Swarm || style == DeliveryStyle.Bounce
-                    || style == DeliveryStyle.ChainSync;
+                bool isRod = arm.isRod;
                 if (!_isDeliveryProfile)
                 {
                     if (!_solver.Solve(_joints, _lengths, rootWorld, target, restOrientation * _pole,
@@ -448,6 +443,16 @@ namespace HealerLike.Render.Deliveries
             RenderObjects.Release(_mesh);
         }
 
+        // How the vocabulary draws the style, a bending arm when there is no vocabulary
+        ArmStyle ArmStyleOf(DeliveryStyle deliveryStyle)
+        {
+            if (_vocabulary == null)
+            {
+                return DeliveryVocabulary.BendingArm;
+            }
+            return _vocabulary.GetArm(deliveryStyle);
+        }
+
         void HideForFrame()
         {
             if (_renderer)
@@ -485,6 +490,7 @@ namespace HealerLike.Render.Deliveries
 
             UpdateDetails();
             Matrix4x4 worldToLocal = _container.worldToLocalMatrix;
+            float styleWidth = ArmStyleOf(style).width;
             for (int j = 0; j < _joints.Length; j++)
             {
                 Vector3 tangent = _joints[Mathf.Min(j + 1, _joints.Length - 1)] - _joints[Mathf.Max(j - 1, 0)];
@@ -498,10 +504,7 @@ namespace HealerLike.Render.Deliveries
                 Vector3 u = Vector3.Cross(tangent, axis).normalized;
                 Vector3 v = Vector3.Cross(tangent, u);
                 float width = Mathf.Lerp(_radius, _radius * tipTaper, (float)j / _lengths.Length);
-                if (style == DeliveryStyle.Swarm)
-                {
-                    width *= swarmWidth;
-                }
+                width *= styleWidth;
 
                 // Narrow collars between broader internodes read as a jointed plant arm at gameplay scale
                 if (j % 3 == 0)
@@ -535,7 +538,7 @@ namespace HealerLike.Render.Deliveries
 
         void UpdateDetails()
         {
-            float width = style == DeliveryStyle.Swarm ? swarmLeafWidth : 1f;
+            float width = ArmStyleOf(style).leafWidth;
             for (int i = 0; i < LeafCount; i++)
             {
                 int j = Mathf.Clamp((i + 1) * _lengths.Length / (LeafCount + 1), 1, _lengths.Length - 1);
