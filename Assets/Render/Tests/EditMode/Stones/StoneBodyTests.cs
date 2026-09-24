@@ -30,7 +30,6 @@ public class StoneBodyTests
 
     GameObject _owner;
     GameObject _source;
-    GameObject _projectile;
     GameObject _fxObject;
     ResourceAttribute _health;
     CreatureRecipe _recipe;
@@ -59,7 +58,6 @@ public class StoneBodyTests
     {
         _owner = new GameObject("Stone");
         _source = new GameObject("Source");
-        _projectile = new GameObject("Projectile");
         _health = TestHelpers.CreateResourceAttribute(_owner, AttributeType.HealthMax, 100);
         TestHelpers.CreateAttributeManager(_source);
         _fx = RenderTestAssets.CreateStoneEffects();
@@ -81,7 +79,6 @@ public class StoneBodyTests
         TestHelpers.InvokePrivate(_fx, "OnDestroy");
         Object.DestroyImmediate(_owner);
         Object.DestroyImmediate(_source);
-        Object.DestroyImmediate(_projectile);
         Object.DestroyImmediate(_fxObject);
         Object.DestroyImmediate(_recipe);
         Object.DestroyImmediate(_material);
@@ -270,79 +267,6 @@ public class StoneBodyTests
 
         _body.Collapse(null);
         Assert.IsFalse(shadow.gameObject.activeSelf);
-    }
-
-    [Test]
-    public void BeginDelivery_RigWithoutArms_TheBodyClaimsWhatTheBuilderRefuses()
-    {
-        CreatureBuilder builder = _body.GetComponent<CreatureBuilder>();
-
-        bool isBuilderClaiming = builder.BeginDelivery(1, DeliveryStyle.Direct, _projectile.transform, Vector3.one);
-        bool isBodyClaiming = _body.BeginDelivery(1, DeliveryStyle.Direct, _projectile.transform, Vector3.one);
-
-        Assert.IsFalse(isBuilderClaiming);
-        Assert.IsTrue(isBodyClaiming);
-    }
-
-    [TestCase(DeliveryStyle.Direct)]
-    [TestCase(DeliveryStyle.Arc)]
-    [TestCase(DeliveryStyle.Rigid)]
-    [TestCase(DeliveryStyle.Swarm)]
-    [TestCase(DeliveryStyle.Bounce)]
-    [TestCase(DeliveryStyle.ChainSync)]
-    [TestCase(DeliveryStyle.Thrown)]
-    public void BeginDelivery_AnyStyle_ThrowsAShardFromTheHeadThatFollowsTheProjectile(DeliveryStyle style)
-    {
-        Vector3 head = _body.parts[3].GetComponent<Renderer>().bounds.center;
-
-        Assert.IsTrue(_body.BeginDelivery(1, style, _projectile.transform, Vector3.forward));
-        Assert.IsFalse(_body.BeginDelivery(1, style, _projectile.transform, Vector3.forward));
-        Transform shard = _fxObject.GetComponentInChildren<MeshFilter>().transform;
-        Assert.AreEqual(head, shard.position);
-
-        _projectile.transform.position = new Vector3(4f, 3f, 2f);
-        TestHelpers.InvokePrivate(_body, "LateUpdate");
-        Assert.AreEqual(_projectile.transform.position, shard.position);
-
-        _body.ContactDelivery(1, Vector3.one * 7f, null);
-        Assert.AreEqual(0, _body.liveDeliveryCount);
-        int minimum = StoneEffects.MinThrownChips + StoneEffects.StarRays;
-        Assert.That(_fx.liveCount, Is.InRange(minimum, minimum + 2));
-    }
-
-    [Test]
-    public void BeginDelivery_Collapsed_Refuses()
-    {
-        _body.Collapse(null);
-
-        bool isClaimed = _body.BeginDelivery(1, DeliveryStyle.Thrown, _projectile.transform, Vector3.one);
-
-        Assert.IsFalse(isClaimed);
-    }
-
-    [Test]
-    public void OnDisable_LiveDeliveries_LeaksNothing()
-    {
-        _body.BeginDelivery(1, DeliveryStyle.Thrown, _projectile.transform, Vector3.one);
-        _body.BeginDelivery(2, DeliveryStyle.Thrown, _projectile.transform, Vector3.one);
-
-        _body.enabled = false;
-        TestHelpers.InvokePrivate(_body, "OnDisable");
-
-        Assert.AreEqual(0, _body.liveDeliveryCount);
-        Assert.AreEqual(0, _fx.liveCount);
-    }
-
-    [Test]
-    public void LateUpdate_DestroyedProjectile_ReleasesTheDeliveryWithoutContact()
-    {
-        _body.BeginDelivery(1, DeliveryStyle.Thrown, _projectile.transform, Vector3.one);
-
-        Object.DestroyImmediate(_projectile);
-        TestHelpers.InvokePrivate(_body, "LateUpdate");
-
-        Assert.AreEqual(0, _body.liveDeliveryCount);
-        Assert.AreEqual(0, _fx.liveCount);
     }
 
     [Test]

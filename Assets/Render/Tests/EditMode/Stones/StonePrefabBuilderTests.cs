@@ -12,7 +12,7 @@ public class StonePrefabBuilderTests
     static readonly string root = "Assets/Render/Stones/Prefabs/";
 
     [Test]
-    public void DerivedStone_ShippedPrefab_CarriesTheBuilderThenTheBodyAndAHiddenShadow()
+    public void DerivedStone_ShippedPrefab_CarriesTheBuilderThenTheBodyTheThrowAndAHiddenShadow()
     {
         GameObject stone = AssetDatabase.LoadAssetAtPath<GameObject>(root + "DerivedStone.prefab");
 
@@ -20,6 +20,7 @@ public class StonePrefabBuilderTests
         CreatureBuilder builder = stone.GetComponent<CreatureBuilder>();
         StoneBody body = stone.GetComponent<StoneBody>();
         Assert.Less(components.IndexOf(builder), components.IndexOf(body)); // the builder makes the rig first
+        Assert.IsNotNull(stone.GetComponent<StoneThrow>());
         StoneGroundDisc shadow = stone.transform.Find("GroundShadow").GetComponent<StoneGroundDisc>();
         Assert.IsTrue(shadow.isShadow);
         Assert.IsFalse(shadow.gameObject.activeSelf);

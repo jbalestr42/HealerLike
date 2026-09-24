@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace HealerLike.Render.Stones
@@ -68,6 +69,42 @@ namespace HealerLike.Render.Stones
                 width / Mathf.Max(0.0001f, Mathf.Abs(inherited.x)),
                 0.001f / Mathf.Max(0.0001f, Mathf.Abs(inherited.y)),
                 length / Mathf.Max(0.0001f, Mathf.Abs(inherited.z)));
+        }
+
+        // The parts' box in the given space, the space Init takes its bounds in
+        public static Bounds Measure(Transform space, IReadOnlyList<Transform> partTransforms)
+        {
+            Bounds bounds = new Bounds(Vector3.zero, Vector3.zero);
+            bool isEmpty = true;
+            foreach (Transform part in partTransforms)
+            {
+                Bounds world = part.GetComponent<Renderer>().bounds;
+                for (int corner = 0; corner < 8; corner++)
+                {
+                    Vector3 sign = new Vector3(CornerSign(corner, 1), CornerSign(corner, 2), CornerSign(corner, 4));
+                    Vector3 point = space.InverseTransformPoint(world.center + Vector3.Scale(world.extents, sign));
+                    if (isEmpty)
+                    {
+                        bounds = new Bounds(point, Vector3.zero);
+                        isEmpty = false;
+                    }
+                    else
+                    {
+                        bounds.Encapsulate(point);
+                    }
+                }
+            }
+            return bounds;
+        }
+
+        // -1 or 1 along one axis of a box corner, the axis picked by its bit
+        static float CornerSign(int corner, int bit)
+        {
+            if ((corner & bit) == 0)
+            {
+                return -1f;
+            }
+            return 1f;
         }
     }
 }
