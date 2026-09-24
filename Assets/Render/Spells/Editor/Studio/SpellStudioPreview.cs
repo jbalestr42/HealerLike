@@ -27,6 +27,15 @@ namespace HealerLike.Render.Spells.Editor.Studio
         float _distance = 3.7f;
         int _dragControl;
         string _error;
+        string _referenceError;
+        CreatureRecipe _referenceRecipe;
+        bool _referenceDirty = true;
+
+        public CreatureRecipe ReferenceRecipe
+        {
+            get => _referenceRecipe;
+            set { if (_referenceRecipe == value) return; _referenceRecipe = value; Refresh(); }
+        }
 
         public bool ShowGround { get; set; } = true;
         bool _showReference = true;
@@ -36,7 +45,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
             set { if (_showReference != value) _fitRequested = true; _showReference = value; }
         }
 
-        public void Refresh() { _dirty = true; _fitRequested = true; }
+        public void Refresh() { _dirty = true; _fitRequested = true; _referenceDirty = true; }
 
         public void ResetCamera()
         {
@@ -58,9 +67,9 @@ namespace HealerLike.Render.Spells.Editor.Studio
                 return;
             }
             Sample(preset, time);
-            if (!string.IsNullOrEmpty(_error))
+            if (!string.IsNullOrEmpty(_error) || !string.IsNullOrEmpty(_referenceError))
             {
-                GUI.Label(new Rect(rect.x + 20f, rect.y + 20f, rect.width - 40f, 70f), _error, EditorStyles.wordWrappedLabel);
+                GUI.Label(new Rect(rect.x + 20f, rect.y + 20f, rect.width - 40f, 70f), _referenceError ?? _error, EditorStyles.wordWrappedLabel);
                 return;
             }
 
@@ -86,6 +95,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
         {
             if (_disposed) throw new ObjectDisposedException(nameof(SpellStudioPreview));
             EnsurePreview();
+            if (_referenceDirty && _reference) RebuildReference();
             if (_preset != preset) { _preset = preset; _dirty = true; _fitRequested = true; }
             float safeTime = float.IsFinite(time) ? Mathf.Max(0f, time) : 0f;
             if (_dirty || safeTime < _time) RebuildEffect();
@@ -104,6 +114,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
         {
             Sample(preset, time);
             if (!string.IsNullOrEmpty(_error)) throw new InvalidOperationException(_error);
+            if (!string.IsNullOrEmpty(_referenceError)) throw new InvalidOperationException(_referenceError);
             if (!preset) throw new ArgumentNullException(nameof(preset));
             ConfigureCamera(width, height);
             _preview.BeginStaticPreview(new Rect(0f, 0f, Mathf.Clamp(width, 16, 4096), Mathf.Clamp(height, 16, 4096)));
@@ -224,13 +235,29 @@ namespace HealerLike.Render.Spells.Editor.Studio
             }
             _reference = new GameObject("Reference Creature");
             _reference.transform.SetParent(_root.transform, false);
-            CreatureRecipe creature = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
-            if (creature)
+            HideTree(_root);
+        }
+
+        void RebuildReference()
+        {
+            _referenceDirty = false;
+            _referenceError = null;
+            _rig?.Dispose();
+            _rig = null;
+            CreatureRecipe creature = _referenceRecipe ? _referenceRecipe :
+                AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
+            if (creature && CreatureValidator.TryValidate(creature, out string validationError))
             {
                 _rig = new CreatureRig();
                 if (_rig.Init(creature, _reference.transform, _material, _meshes))
                     _rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
             }
+            else if (creature)
+            {
+                CreatureValidator.TryValidate(creature, out string problem);
+                _referenceError = "The reference creature needs repair in Creature Studio: " + problem;
+            }
+            _dirty = true;
             HideTree(_root);
         }
 

@@ -1,5 +1,7 @@
 # Spell Studio
 
+Creature authoring is also available through **Tools → Render → Render Studio**. See [Creature Studio](CreatureStudio.md). The Creature field beneath the spell timeline previews effects on any saved creature recipe.
+
 Open **Tools → Render → Spell Studio** in Unity 6000.6.0f1. No Play mode is needed. You can also double-click a saved preset or use its **Open in Spell Studio** inspector button.
 
 The studio previews the existing `SpellEffect` renderer, its baked meshes, shader and placement rules against the healer reference. Neutral studio lighting keeps geometry and colour legible; the game stage can apply a different lighting calibration. It does not run gameplay or put preview objects in your scene.
@@ -43,6 +45,6 @@ Images are written to `Logs/SpellStudioCaptures/` in that Unity project. Use a g
 
 ## Verified build
 
-Unity 6000.6.0f1, macOS Metal, 24 September 2026: **954 passed, 0 failed, 3 skipped** across the renderer and Spell Studio EditMode assemblies. All **63 Spell Studio tests passed**. The three skipped tests are existing opt-in renderer screenshot fixtures. All 14 spell vocabulary previews were captured and visually inspected. Manual mouse/keyboard acceptance testing was unavailable because Computer Use permissions were not granted.
+Unity 6000.6.0f1, macOS Metal, 24 September 2026: **988 passed, 0 failed, 3 skipped** across the renderer and Spell Studio EditMode assemblies. All **65 Spell Studio tests** and **32 Creature Studio tests passed**. The three skipped tests are existing opt-in renderer screenshot fixtures. All 14 spell vocabulary previews were captured and visually inspected. Manual mouse/keyboard acceptance testing was unavailable because Computer Use permissions were not granted.
 
-The complete test report is in `Logs/SpellStudio-Tests.xml`; individual preview PNGs are in `Logs/SpellStudioCaptures`.
+The complete test report is in `Logs/RenderStudio-Tests.xml`; individual preview PNGs are in `Logs/SpellStudioCaptures`.

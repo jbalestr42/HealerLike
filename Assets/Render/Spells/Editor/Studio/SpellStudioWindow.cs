@@ -18,6 +18,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
         private SpellStudioPreset selected;
         private SerializedObject serialized;
         private SpellStudioPreview preview;
+        [SerializeField] private HealerLike.Render.Creatures.CreatureRecipe targetCreature;
         private Vector2 libraryScroll, inspectorScroll;
         private string search = "";
         private string[] validationWarnings = Array.Empty<string>();
@@ -121,6 +122,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
             titleContent = new GUIContent("Spell Studio");
             minSize = new Vector2(1040, 640);
             preview = new SpellStudioPreview();
+            preview.ReferenceRecipe = targetCreature;
             CreateDrafts();
             ReloadAssets();
             Select(selected != null ? selected : drafts.Count > 0 ? drafts[0] : null);
@@ -278,6 +280,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
         private void DrawHeader()
         {
             GUI.Label(new Rect(20,12,260,30), "Spell Studio", titleStyle);
+            if (GUI.Button(new Rect(260,17,115,24), "Creatures →")) EditorApplication.ExecuteMenuItem("Tools/Render/Creature Studio");
             GUI.Label(new Rect(21,43,520,22), "RENDER LAB  /  Create, shape and rehearse your spell effects", smallStyle);
             var rect = new Rect(position.width-325,24,95,26);
             if (GUI.Button(rect, "New spell")) { NewDraft(); GUIUtility.ExitGUI(); }
@@ -353,6 +356,15 @@ namespace HealerLike.Render.Spells.Editor.Studio
             GUILayout.FlexibleSpace();
             preview.ShowGround = GUILayout.Toggle(preview.ShowGround,"Ground");
             preview.ShowReference = GUILayout.Toggle(preview.ShowReference,"Target");
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            EditorGUI.BeginChangeCheck();
+            targetCreature = (HealerLike.Render.Creatures.CreatureRecipe)EditorGUILayout.ObjectField(
+                new GUIContent("Creature", "Reference recipe; None uses the built-in healer."), targetCreature,
+                typeof(HealerLike.Render.Creatures.CreatureRecipe), false);
+            if (EditorGUI.EndChangeCheck()) { preview.ReferenceRecipe = targetCreature; Repaint(); }
+            using (new EditorGUI.DisabledScope(targetCreature == null))
+                if (GUILayout.Button("Edit", GUILayout.Width(42))) AssetDatabase.OpenAsset(targetCreature);
             EditorGUILayout.EndHorizontal();
             GUILayout.EndArea();
         }

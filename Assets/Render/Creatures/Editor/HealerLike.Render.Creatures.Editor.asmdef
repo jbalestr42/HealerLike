@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "HealerLike.Runtime",
-        "HealerLike.Render"
+        "HealerLike.Render",
+        "HealerLike.Render.Spells.Editor"
     ],
     "includePlatforms": [
         "Editor"

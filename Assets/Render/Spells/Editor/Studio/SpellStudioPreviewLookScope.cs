@@ -7,7 +7,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
 {
     // A render-only scope: stage callbacks may publish their look at beginFrameRendering,
     // so apply again for this camera and restore every touched global in Dispose.
-    internal sealed class SpellStudioPreviewLookScope : IDisposable
+    public sealed class SpellStudioPreviewLookScope : IDisposable
     {
         static readonly string[] FloatNames =
         {
