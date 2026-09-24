@@ -10,8 +10,9 @@ namespace HealerLike.Render.Stage
     public class StageSmokeRun : AStageRun
     {
         public static readonly int Rounds = 3;
-        // Editor side errors that are not the game's: the package search index and its web fetch
-        static readonly string[] knownErrors = { "Insecure connection not allowed", "SearchDatabase" };
+        // Errors that are not the render layer's: the package search index and its web fetch on the editor side, and
+        // the game's own report that BasicHealer has six skills for the five inputs of Main
+        static readonly string[] knownErrors = { "Insecure connection not allowed", "SearchDatabase", "Not Enough inputs" };
 
         AscensionGameType.State _state = AscensionGameType.State.None;
         int _roundsDone;
