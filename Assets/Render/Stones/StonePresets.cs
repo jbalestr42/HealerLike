@@ -1,12 +1,5 @@
 namespace HealerLike.Render.Stones
 {
-    public enum StonePreset
-    {
-        Boulder,
-        Cairn,
-        Monolith
-    }
-
     public static class StonePresets
     {
         public static readonly StoneSettings Boulder = Shape(0.58f, 0.85f, 0.9f, 0.14f);

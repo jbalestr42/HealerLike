@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Look;
-using HealerLike.Render.Stones;
 using HealerLike.Render.Zones;
 using NUnit.Framework;
 using UnityEditor;
@@ -445,12 +444,12 @@ public class GrassFieldTests
         TestHelpers.SetPrivateField(field, "_ringMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/HealRing.mat"));
         for (int i = 0; i < 3; i++)
         {
-            GameObject stone = CreateCaptureObject("FixtureStone" + i);
+            GameObject stone = Track(GameObject.CreatePrimitive(PrimitiveType.Sphere));
+            stone.name = "FixtureStone" + i;
+            stone.layer = 30;
             stone.transform.position = new Vector3((i - 1) * 2.2f, 0f, 1.6f);
-            StoneTerrainClump clump = stone.AddComponent<StoneTerrainClump>();
-            TestHelpers.SetPrivateField(clump, "_stoneMaterial", material);
-            clump.Init((uint)(i + 3), 1.3f, null, null);
-            clump.groundShadowEnabled = false;
+            stone.transform.localScale = Vector3.one * 1.2f;
+            stone.GetComponent<Renderer>().sharedMaterial = material;
             registry.Add(ZoneKind.Trample, stone.transform.position, 0.8f, 1f);
         }
         registry.Add(ZoneKind.Heal, new Vector3(-1.7f, 0f, -1.2f), 1.3f, 1f);

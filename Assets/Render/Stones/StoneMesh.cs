@@ -7,6 +7,9 @@ namespace HealerLike.Render.Stones
     {
         public static readonly int GeneratorVersion = 1;
 
+        // A face whose edge cross product is shorter than this has no area
+        static readonly float degenerateCross = 0.0000000001f;
+
         public static bool IsValid(StoneSettings settings)
         {
             return InRange(settings.size, 0.02f, 8f) && InRange(settings.elongation, 0.25f, 5f)
@@ -17,21 +20,6 @@ namespace HealerLike.Render.Stones
         static bool InRange(float value, float min, float max)
         {
             return float.IsFinite(value) && value >= min && value <= max;
-        }
-
-        public static int TriangleCount(int subdivisions)
-        {
-            if (subdivisions < 0 || subdivisions > 2)
-            {
-                Debug.LogError($"[StoneMesh] Subdivisions must be 0, 1 or 2, not {subdivisions}.");
-                return 0;
-            }
-            return 20 << (subdivisions * 2);
-        }
-
-        public static int VertexCount(int subdivisions)
-        {
-            return TriangleCount(subdivisions) * 3;
         }
 
         // Logs and returns empty data when the settings are out of range
@@ -183,7 +171,7 @@ namespace HealerLike.Render.Stones
                 Vector3 b = points[faces[i + 1]];
                 Vector3 c = points[faces[i + 2]];
                 Vector3 cross = Vector3.Cross(b - a, c - a);
-                if (cross.magnitude <= 1e-10f || Vector3.Dot(cross, a + b + c) <= 0f)
+                if (cross.magnitude <= degenerateCross || Vector3.Dot(cross, a + b + c) <= 0f)
                 {
                     return false;
                 }

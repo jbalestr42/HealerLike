@@ -224,7 +224,13 @@ public class StatusObserverTests
         StatusObserver observer = _go.AddComponent<StatusObserver>();
 
         observer.Init(entity, renderManager);
-        manager.OnBuffHandlerStarted.Invoke(new BuffManager.BuffHandlerData { target = _go, buffHandlerFactory = _factory, currentStacks = 1 });
+        BuffManager.BuffHandlerData data = new BuffManager.BuffHandlerData
+        {
+            target = _go,
+            buffHandlerFactory = _factory,
+            currentStacks = 1
+        };
+        manager.OnBuffHandlerStarted.Invoke(data);
 
         Assert.AreEqual(1, sink.statusCount);
         Assert.IsNotNull(_go.GetComponent<AttributeShieldView>());

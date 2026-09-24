@@ -8,6 +8,7 @@ using HealerLike.Render.Grammar;
 namespace HealerLike.Render.Spells
 {
     // What an effect draws, the composer picks one from the family and the group of a handler
+    // Stored by value in assets: append new members, never reorder or remove
     public enum EffectElement
     {
         Burst,
@@ -27,6 +28,7 @@ namespace HealerLike.Render.Spells
     }
 
     // How the parts of an element move, one motion cycle at a time
+    // Stored by value in assets: append new members, never reorder or remove
     public enum EffectMotion
     {
         Burst,
@@ -40,6 +42,7 @@ namespace HealerLike.Render.Spells
     }
 
     // Where an element sits, read from the anchors of its target
+    // Stored by value in assets: append new members, never reorder or remove
     public enum EffectSocket
     {
         Body,
@@ -51,6 +54,7 @@ namespace HealerLike.Render.Spells
     }
 
     // What decides how many shape parts of an element show
+    // Stored by value in assets: append new members, never reorder or remove
     public enum EffectCount
     {
         Fixed,
@@ -65,12 +69,12 @@ namespace HealerLike.Render.Spells
     public class ElementEntry
     {
         // Body role parts are the shape, Stem role parts are the stalks of the shape parts in the same order
-        public LookPart[] parts = new LookPart[0];
+        public LookPart[] parts = Array.Empty<LookPart>();
         // One bead per stack
-        public LookPart[] stackBeads = new LookPart[0];
-        public LookPart[] criticalRings = new LookPart[0];
+        public LookPart[] stackBeads = Array.Empty<LookPart>();
+        public LookPart[] criticalRings = Array.Empty<LookPart>();
         // Shows the caster's side
-        public LookPart[] sideRim = new LookPart[0];
+        public LookPart[] sideRim = Array.Empty<LookPart>();
         public EffectMotion motion;
         public EffectSocket socket;
         public EffectCount count;

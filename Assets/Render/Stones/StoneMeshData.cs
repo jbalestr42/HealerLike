@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Stones
 {
-    // Arrays belong to this result; consumers must treat them as immutable.
+    // Arrays belong to this result; consumers must treat them as immutable
     public readonly struct StoneMeshData
     {
         public readonly Vector3[] vertices;

@@ -60,16 +60,17 @@ public class StoneDeathBridgeTests
 
         TestHelpers.SetPrivateField(health, "_value", 0f);
         bridge.HandleDeparture(entity);
-        Assert.AreEqual(17, _fx.liveCount); // 12 debris and 5 dust
+        int collapse = StoneEffects.CollapseDebris + StoneEffects.DustPuffs;
+        Assert.AreEqual(collapse, _fx.liveCount); // 12 debris and 5 dust
         Assert.IsTrue(_body.isCollapsed);
 
         bridge.HandleDeparture(entity);
-        Assert.AreEqual(17, _fx.liveCount);
+        Assert.AreEqual(collapse, _fx.liveCount);
 
         _body.Init(health, 1, _fx);
         bridge.enabled = false;
         bridge.HandleDeparture(entity);
-        Assert.AreEqual(17, _fx.liveCount);
+        Assert.AreEqual(collapse, _fx.liveCount);
         Assert.IsFalse(_body.isCollapsed);
     }
 
@@ -86,7 +87,7 @@ public class StoneDeathBridgeTests
 
         bridge.HandleDeparture(entity);
 
-        Assert.AreEqual(17, _fx.liveCount);
+        Assert.AreEqual(StoneEffects.CollapseDebris + StoneEffects.DustPuffs, _fx.liveCount);
     }
 }
 

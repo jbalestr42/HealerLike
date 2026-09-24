@@ -105,7 +105,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.StoneGroundDisc
   _renderer: {fileID: 4061448230864010099}
   _isShadow: 1
-  _colour: {r: 0.27450982, g: 0.43529412, b: 0.34117648, a: 1}
 --- !u!1 &6580333430975781026
 GameObject:
   m_ObjectHideFlags: 0

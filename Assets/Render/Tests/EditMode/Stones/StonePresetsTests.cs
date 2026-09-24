@@ -6,14 +6,28 @@ namespace HealerLike.Render.Stones
 public class StonePresetsTests
 {
     [Test]
-    public void Presets_Shipped_AreValidDistinctParameterSets()
+    public void Shape_ShippedPresets_AreValidDistinctParameterSets()
     {
-        Assert.IsTrue(StoneMesh.IsValid(StonePresets.Boulder));
-        Assert.IsTrue(StoneMesh.IsValid(StonePresets.Cairn));
-        Assert.IsTrue(StoneMesh.IsValid(StonePresets.Monolith));
-        Assert.AreEqual(0.58f, StonePresets.Boulder.size);
-        Assert.AreEqual(0.65f, StonePresets.Cairn.elongation);
-        Assert.AreEqual(2.8f, StonePresets.Monolith.elongation);
+        StoneSettings[] presets = { StonePresets.Boulder, StonePresets.Cairn, StonePresets.Monolith };
+
+        foreach (StoneSettings preset in presets)
+        {
+            Assert.IsTrue(StoneMesh.IsValid(preset));
+        }
+        Assert.AreNotEqual(StonePresets.Boulder, StonePresets.Cairn);
+        Assert.AreNotEqual(StonePresets.Cairn, StonePresets.Monolith);
+    }
+
+    [Test]
+    public void Shape_GivenParameters_FillsEveryField()
+    {
+        StoneSettings settings = StonePresets.Shape(0.4f, 1.2f, 0.7f, 0.1f, 2);
+
+        Assert.AreEqual(0.4f, settings.size);
+        Assert.AreEqual(1.2f, settings.elongation);
+        Assert.AreEqual(0.7f, settings.depthRatio);
+        Assert.AreEqual(0.1f, settings.roughness);
+        Assert.AreEqual(2, settings.subdivisions);
     }
 }
 

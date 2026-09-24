@@ -25,7 +25,12 @@ namespace HealerLike.Render.Spells
         // Called by the projectile after the manager handed the sink
         public override void Init(GameObject source)
         {
-            Bind(projectile != null ? projectile : GetComponent<Projectile>(), _sink);
+            Projectile shot = projectile;
+            if (shot == null)
+            {
+                shot = GetComponent<Projectile>();
+            }
+            Bind(shot, _sink);
         }
 
         void OnDisable()

@@ -172,7 +172,8 @@ public class StoneBodyTests
         Drain();
         Assert.AreEqual(3, visibleCount);
         Assert.AreEqual(PartRole.Limb, _recipe.parts[_body.shedPart].role);
-        Assert.AreEqual(29, _fx.liveCount); // two hits of 14, and the falling limb
+        int hit = StoneEffects.DustPuffs + StoneEffects.HitSparks + StoneEffects.HitChips;
+        Assert.AreEqual(2 * hit + 1, _fx.liveCount); // two hits of 14, and the falling limb
 
         Queue(50);
         Drain();
@@ -216,11 +217,12 @@ public class StoneBodyTests
         ResourceModifier modifier = Queue(-1);
         Vector3 point = new Vector3(23f, 7f, 4f);
 
-        _body.RecordImpact(modifier, new StoneImpact(point, Vector3.up, Vector3.zero, false));
+        _body.RecordImpact(modifier, new StoneImpact(point, Vector3.up));
         Drain();
 
         Assert.AreEqual(0, _body.pendingImpactCount);
-        Assert.AreEqual(14, _fx.liveCount); // 5 dust, 6 sparks and 3 chips
+        int hit = StoneEffects.DustPuffs + StoneEffects.HitSparks + StoneEffects.HitChips;
+        Assert.AreEqual(hit, _fx.liveCount); // 5 dust, 6 sparks and 3 chips
         foreach (MeshFilter filter in _fxObject.GetComponentsInChildren<MeshFilter>())
         {
             Vector3 expected = filter.sharedMesh.name == "Pyramid" ? point + Vector3.up * 0.005f : point;
@@ -263,10 +265,10 @@ public class StoneBodyTests
     {
         Transform head = _body.parts[3];
 
-        StoneImpact impact = _body.EstimateImpact(head.position + Vector3.up * 5f, Vector3.zero);
+        StoneImpact impact = _body.EstimateImpact(head.position + Vector3.up * 5f);
 
-        Assert.Greater(impact.pointWS.y, head.GetComponent<Renderer>().bounds.center.y);
-        Assert.Greater(impact.normalWS.y, 0f);
+        Assert.Greater(impact.point.y, head.GetComponent<Renderer>().bounds.center.y);
+        Assert.Greater(impact.normal.y, 0f);
     }
 
     [Test]
@@ -276,17 +278,19 @@ public class StoneBodyTests
         Drain();
         Assert.AreEqual(0, visibleCount);
         Assert.IsTrue(_body.isCollapsed);
-        Assert.AreEqual(31, _fx.liveCount); // 14 for the hit, 12 debris and 5 dust for the collapse
+        int hitAndCollapse = StoneEffects.DustPuffs + StoneEffects.HitSparks + StoneEffects.HitChips
+            + StoneEffects.CollapseDebris + StoneEffects.DustPuffs;
+        Assert.AreEqual(hitAndCollapse, _fx.liveCount); // 14 for the hit, 12 debris and 5 dust for the collapse
 
         _body.Collapse(null);
-        Assert.AreEqual(31, _fx.liveCount);
+        Assert.AreEqual(hitAndCollapse, _fx.liveCount);
 
         TestHelpers.InvokePrivate(_body, "OnDestroy");
         TestHelpers.InvokePrivate(_body.GetComponent<CreatureBuilder>(), "OnDestroy");
         Object.DestroyImmediate(_owner);
         _owner = null;
         _body = null;
-        Assert.AreEqual(31, _fx.liveCount);
+        Assert.AreEqual(hitAndCollapse, _fx.liveCount);
 
         _fx.Advance(0.81f);
         Assert.AreEqual(0, _fx.liveCount);
@@ -352,7 +356,8 @@ public class StoneBodyTests
 
         _body.ContactDelivery(1, Vector3.one * 7f, null);
         Assert.AreEqual(0, _body.liveDeliveryCount);
-        Assert.That(_fx.liveCount, Is.InRange(8, 10));
+        int minimum = StoneEffects.MinThrownChips + StoneEffects.StarRays;
+        Assert.That(_fx.liveCount, Is.InRange(minimum, minimum + 2));
     }
 
     [Test]

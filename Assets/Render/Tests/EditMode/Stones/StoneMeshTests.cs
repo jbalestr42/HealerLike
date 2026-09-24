@@ -195,8 +195,6 @@ public class StoneMeshTests
         Assert.IsNull(rejected.vertices);
         LogAssert.Expect(LogType.Error, new Regex(@"\[StoneMesh\] No stone mesh"));
         Assert.IsNull(StoneMesh.CreateMesh(0, settings));
-        LogAssert.Expect(LogType.Error, new Regex(@"\[StoneMesh\] Subdivisions"));
-        Assert.AreEqual(0, StoneMesh.VertexCount(3));
     }
 
     [Test]

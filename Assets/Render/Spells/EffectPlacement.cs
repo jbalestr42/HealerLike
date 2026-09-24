@@ -119,7 +119,12 @@ namespace HealerLike.Render.Spells
                 }
                 else
                 {
-                    root.position += (isUp ? Vector3.up : Vector3.down) * (overlap + nudge);
+                    Vector3 away = Vector3.down;
+                    if (isUp)
+                    {
+                        away = Vector3.up;
+                    }
+                    root.position += away * (overlap + nudge);
                 }
             }
             Debug.LogError($"[EffectPlacement] {effect.recipe.element} still reaches the head after {attempts} moves.");
@@ -167,9 +172,18 @@ namespace HealerLike.Render.Spells
             float half = Mathf.Sqrt(radius * radius - flat);
             if (isUp)
             {
-                return bounds.max.y <= centre.y - half ? 0f : Mathf.Max(0f, centre.y + half - bounds.min.y);
+                if (bounds.max.y <= centre.y - half)
+                {
+                    return 0f;
+                }
+                return Mathf.Max(0f, centre.y + half - bounds.min.y);
             }
-            return bounds.min.y >= centre.y + half ? 0f : Mathf.Max(0f, bounds.max.y - (centre.y - half));
+
+            if (bounds.min.y >= centre.y + half)
+            {
+                return 0f;
+            }
+            return Mathf.Max(0f, bounds.max.y - (centre.y - half));
         }
 
         // The bud closes up to the neck, never over the head
@@ -199,22 +213,37 @@ namespace HealerLike.Render.Spells
         public static Bounds WorldBounds(Transform part)
         {
             MeshFilter filter = part.GetComponent<MeshFilter>();
-            Bounds local = filter != null && filter.sharedMesh != null ? filter.sharedMesh.bounds : new Bounds(Vector3.zero, Vector3.zero);
+            Bounds local = new Bounds(Vector3.zero, Vector3.zero);
+            if (filter != null && filter.sharedMesh != null)
+            {
+                local = filter.sharedMesh.bounds;
+            }
             Matrix4x4 matrix = part.localToWorldMatrix;
             Bounds world = new Bounds(matrix.MultiplyPoint3x4(local.center), Vector3.zero);
             for (int i = 0; i < 8; i++)
             {
-                Vector3 corner = local.center + Vector3.Scale(local.extents,
-                    new Vector3((i & 1) == 0 ? -1f : 1f, (i & 2) == 0 ? -1f : 1f, (i & 4) == 0 ? -1f : 1f));
+                Vector3 sign = new Vector3(CornerSign(i, 1), CornerSign(i, 2), CornerSign(i, 4));
+                Vector3 corner = local.center + Vector3.Scale(local.extents, sign);
                 world.Encapsulate(matrix.MultiplyPoint3x4(corner));
             }
             return world;
         }
 
+        // -1 or 1 along one axis of a box corner, the axis picked by its bit
+        static float CornerSign(int corner, int bit)
+        {
+            if ((corner & bit) == 0)
+            {
+                return -1f;
+            }
+            return 1f;
+        }
+
         static bool IsValid(EffectAnchors anchors)
         {
             return float.IsFinite(anchors.bodyRadius) && anchors.bodyRadius > 0f && float.IsFinite(anchors.headRadius)
-                   && float.IsFinite(anchors.bodyCentre.y) && float.IsFinite(anchors.headCentre.y) && float.IsFinite(anchors.foot.y);
+                   && float.IsFinite(anchors.bodyCentre.y) && float.IsFinite(anchors.headCentre.y)
+                   && float.IsFinite(anchors.foot.y);
         }
 
         static EffectAnchors Fallback(GameObject target, Entity entity)

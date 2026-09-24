@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Zones
@@ -11,22 +10,14 @@ namespace HealerLike.Render.Zones
         public static readonly float CellSize = 1f;
         public static readonly float Margin = 0.15f;
 
-        [FormerlySerializedAs("Radius")]
-        [Min(0)]
         public float radius = 0.65f;
+        public float strength = 1f;
 
-        [FormerlySerializedAs("Strength")]
-        [Range(0, 1)]
-        public float strength = 1;
-
-        ZoneRegistry _zones;
-        ZoneRegistry _owner;
-        int _handle;
+        readonly ZoneHandle _zone = new ZoneHandle();
 
         public void Init(ZoneRegistry zones)
         {
-            Clear();
-            _zones = zones;
+            _zone.Init(zones);
         }
 
         public void Init(Entity entity, RenderManager manager)
@@ -59,53 +50,23 @@ namespace HealerLike.Render.Zones
 
         public void Refresh()
         {
-            ZoneRegistry zones = _zones;
-            if (_owner != zones)
-            {
-                Clear();
-            }
-
             if (!isActiveAndEnabled)
             {
-                Clear();
+                _zone.Clear();
                 return;
             }
 
-            _owner = zones;
-            if (!_owner)
-            {
-                return;
-            }
-
-            if (!_owner.Contains(_handle))
-            {
-                _handle = _owner.Add(ZoneKind.Trample, transform.position, radius, strength);
-            }
-            else
-            {
-                _owner.RefreshZone(_handle, ZoneKind.Trample, transform.position, radius, strength);
-            }
-        }
-
-        void Clear()
-        {
-            if (_owner)
-            {
-                _owner.Remove(_handle);
-            }
-
-            _owner = null;
-            _handle = 0;
+            _zone.Refresh(ZoneKind.Trample, transform.position, radius, strength);
         }
 
         void OnDisable()
         {
-            Clear();
+            _zone.Clear();
         }
 
         void OnDestroy()
         {
-            Clear();
+            _zone.Clear();
         }
     }
 }

@@ -65,7 +65,7 @@ public class AttributeShieldViewTests
         });
         view.Refresh();
 
-        Assert.AreEqual(0, starts, "The real instant gameplay path must not be replaced with a fabricated start event.");
+        Assert.AreEqual(0, starts, "an instant HitArmor grant raised a buff start event");
         Assert.AreEqual(2, attributes.Get(AttributeType.HitArmor).Value);
         Assert.NotNull(view.effect);
         Assert.AreEqual(EffectElement.Plates, view.effect.element);

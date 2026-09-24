@@ -40,31 +40,64 @@ public class ChainContactVisualTests
         Object.DestroyImmediate(_second);
     }
 
-    [Test]
-    public void OnHit_SecondContact_DrawsThreadFromFirstAndRebindForgetsIt()
+    SpellVisualSink CreateSink()
     {
         SpellVisualSink sink = SpellSinkFixture.Add(_sinkHost);
         TestHelpers.InvokePrivate(sink, "OnEnable");
         _observer.Bind(_projectile, sink);
         _first.transform.position = Vector3.left;
         _second.transform.position = Vector3.right;
+        return sink;
+    }
+
+    [Test]
+    public void OnHit_FirstContact_DrawsNothing()
+    {
+        SpellVisualSink sink = CreateSink();
 
         _projectile.OnHit.Invoke(new OnHitData { target = _first });
+
         Assert.AreEqual(0, sink.impactCount);
+    }
+
+    [Test]
+    public void OnHit_SecondContact_DrawsThreadFromFirst()
+    {
+        SpellVisualSink sink = CreateSink();
+        _projectile.OnHit.Invoke(new OnHitData { target = _first });
+
         _projectile.OnHit.Invoke(new OnHitData { target = _second });
 
         Assert.AreEqual(1, sink.impactCount);
         SpellEffect thread = _sinkHost.GetComponentInChildren<SpellEffect>();
         Assert.IsTrue(thread.isContactThread);
-        Vector3 threadStart = thread.stalks[0].position - thread.stalks[0].up * thread.stalks[0].localScale.y * 0.5f;
+        Transform stalk = thread.stalks[0];
+        Vector3 threadStart = stalk.position - stalk.up * stalk.localScale.y * 0.5f;
         Assert.Less(Vector3.Distance(_first.transform.position, threadStart), 0.0001f);
+    }
+
+    [Test]
+    public void Bind_Rebound_ForgetsThePreviousContact()
+    {
+        SpellVisualSink sink = CreateSink();
+        _projectile.OnHit.Invoke(new OnHitData { target = _first });
 
         _observer.Bind(_projectile, sink);
+        _projectile.OnHit.Invoke(new OnHitData { target = _second });
+
+        Assert.AreEqual(0, sink.impactCount);
+    }
+
+    [Test]
+    public void OnDisable_ThenSecondContact_DrawsNothing()
+    {
+        SpellVisualSink sink = CreateSink();
         _projectile.OnHit.Invoke(new OnHitData { target = _first });
-        Assert.AreEqual(1, sink.impactCount);
+
         TestHelpers.InvokePrivate(_observer, "OnDisable");
         _projectile.OnHit.Invoke(new OnHitData { target = _second });
-        Assert.AreEqual(1, sink.impactCount);
+
+        Assert.AreEqual(0, sink.impactCount);
     }
 
     [Test]

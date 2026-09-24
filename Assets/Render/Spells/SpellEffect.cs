@@ -10,6 +10,8 @@ namespace HealerLike.Render.Spells
     {
         // An element alive longer than this keeps clear of the head
         public static readonly float LastingSeconds = 0.6f;
+        // A drop runs through its motion this much faster than the cycle, so it has landed before the cycle ends
+        public static readonly float FallPace = 1.15f;
 
         static readonly int baseColorId = Shader.PropertyToID("_BaseColor");
         static readonly float riseHeight = 1.8f;
@@ -75,7 +77,12 @@ namespace HealerLike.Render.Spells
 
         void Update()
         {
-            Advance(_clock == ClockKind.Realtime ? Time.unscaledDeltaTime : Time.deltaTime);
+            float delta = Time.deltaTime;
+            if (_clock == ClockKind.Realtime)
+            {
+                delta = Time.unscaledDeltaTime;
+            }
+            Advance(delta);
             if (removalComplete || (!_isStatus && _age >= lifetime))
             {
                 Dispose(gameObject);
@@ -251,18 +258,24 @@ namespace HealerLike.Render.Spells
             else
             {
                 phase = Mathf.Clamp01(time / cycle);
-                isVisible = time < cycle || _recipe.motion == EffectMotion.Close || _recipe.motion == EffectMotion.Orbit;
+                bool isHeld = _recipe.motion == EffectMotion.Close || _recipe.motion == EffectMotion.Orbit;
+                isVisible = time < cycle || isHeld;
             }
 
             Pose(phase, time);
             float fade = _isRemoving ? 1f - Mathf.Clamp01(_removalAge / removalSeconds) : 1f;
-            if (!isVisible || fade < 1f)
+            if (!isVisible)
             {
-                Fade(isVisible ? fade : 0f);
+                Fade(0f);
+            }
+            else if (fade < 1f)
+            {
+                Fade(fade);
             }
         }
 
-        // Lays every shape and stalk at one point of the motion, the sink samples it to keep lasting elements off the head
+        // Lays every shape and stalk at one point of the motion,
+        // the sink samples it to keep lasting elements off the head
         public void Pose(float phase, float time)
         {
             if (_recipe == null)
@@ -332,21 +345,24 @@ namespace HealerLike.Render.Spells
                     // After its first growth a ticking or held element stays up and each tick lifts it from lower down
                     if (_isStatus && _recipe.tempo != EffectTempo.Once && time >= 2f * _recipe.cycleSeconds)
                     {
-                        position = new Vector3(part.position.x, part.position.y * (0.7f + 0.3f * emerge), part.position.z);
+                        float lifted = part.position.y * (0.7f + 0.3f * emerge);
+                        position = new Vector3(part.position.x, lifted, part.position.z);
                         break;
                     }
 
-                    position = new Vector3(part.position.x, part.position.y * emerge - part.size.y * 0.5f * exit, part.position.z);
+                    float height = part.position.y * emerge - part.size.y * 0.5f * exit;
+                    position = new Vector3(part.position.x, height, part.position.z);
                     scale = part.size * (emerge * (1f - exit));
                     break;
                 }
                 case EffectMotion.Fall:
                 {
                     // A drop swells where it hangs for the first part of the cycle, then falls and shrinks at the end
-                    float own = Mathf.Clamp01(phase * 1.15f - index * 0.03f);
+                    float own = Mathf.Clamp01(phase * FallPace - index * 0.03f);
                     float fall = Mathf.Clamp01((own - 0.4f) / 0.6f);
                     position = part.position + Vector3.down * (fall * fall * _fallDistance);
-                    scale = part.size * (Mathf.SmoothStep(0.3f, 1f, Mathf.Clamp01(own / 0.2f)) * Mathf.Clamp01((1f - fall) * 6f));
+                    float swell = Mathf.SmoothStep(0.3f, 1f, Mathf.Clamp01(own / 0.2f));
+                    scale = part.size * (swell * Mathf.Clamp01((1f - fall) * 6f));
                     break;
                 }
                 case EffectMotion.Orbit:
@@ -372,7 +388,8 @@ namespace HealerLike.Render.Spells
                 }
                 case EffectMotion.Press:
                 {
-                    position = part.position + Vector3.down * (pressDepth * (0.5f - 0.5f * Mathf.Cos(phase * Mathf.PI * 2f)));
+                    float press = 0.5f - 0.5f * Mathf.Cos(phase * Mathf.PI * 2f);
+                    position = part.position + Vector3.down * (pressDepth * press);
                     break;
                 }
                 case EffectMotion.Shed:
@@ -410,7 +427,14 @@ namespace HealerLike.Render.Spells
                 Vector3 point = LinkPoint(t);
                 Vector3 next = LinkPoint(Mathf.Min(1f, t + 1f / segments));
                 _stalks[i].position = (point + next) * 0.5f;
-                _stalks[i].rotation = next == point ? Quaternion.identity : Quaternion.FromToRotation(Vector3.up, next - point);
+                if (next == point)
+                {
+                    _stalks[i].rotation = Quaternion.identity;
+                }
+                else
+                {
+                    _stalks[i].rotation = Quaternion.FromToRotation(Vector3.up, next - point);
+                }
                 _stalks[i].localScale = new Vector3(width, Vector3.Distance(point, next), width);
             }
 
@@ -481,7 +505,8 @@ namespace HealerLike.Render.Spells
 
         Transform Build(LookPart part, PrimitiveMeshes meshes, Material material, Color colour)
         {
-            Transform built = PrimitiveMeshes.Geometry(part.id, transform, meshes.GetMesh(part.primitive, 0), material, colour, part.glow);
+            Mesh mesh = meshes.GetMesh(part.primitive, 0);
+            Transform built = PrimitiveMeshes.Geometry(part.id, transform, mesh, material, colour, part.glow);
             built.localPosition = part.position;
             built.localRotation = Quaternion.Euler(part.euler);
             built.localScale = part.size;

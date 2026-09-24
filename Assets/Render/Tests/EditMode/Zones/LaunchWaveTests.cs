@@ -53,7 +53,7 @@ public class LaunchWaveTests
         _owner.PublishFrame(0f);
 
         Assert.AreEqual(1, _owner.count);
-        Assert.AreEqual(5, _owner.snapshot[0].kind);
+        Assert.AreEqual((int)ZoneKind.Launch, _owner.snapshot[0].kind);
         Assert.AreEqual(4, _owner.snapshot[0].radius);
         Assert.AreEqual(1073741824u, _owner.snapshot[0].reserved);
         Assert.AreEqual(_source.transform.position, _owner.snapshot[0].position);

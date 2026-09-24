@@ -34,7 +34,7 @@ public class TrampleZoneTests
         _zone.Init(_registry);
         _zone.Refresh();
         _registry.PublishFrame(1f);
-        Assert.AreEqual(6, _registry.snapshot[0].kind);
+        Assert.AreEqual((int)ZoneKind.Trample, _registry.snapshot[0].kind);
 
         _obstacle.transform.position = Vector3.forward;
         _zone.radius = 2f;
@@ -113,7 +113,7 @@ public class TrampleZoneTests
 
         Assert.AreEqual(0.6f, footprint, 0.0001f); // 1 cell * 0.5 * |-1.2|
         Assert.AreEqual(0.75f, TrampleZone.TrampleRadius(footprint), 0.0001f); // + 0.15 margin
-        Assert.AreEqual(0.15f, TrampleZone.TrampleRadius(-1f), 0.0001f);
+        Assert.AreEqual(TrampleZone.Margin, TrampleZone.TrampleRadius(-1f), 0.0001f);
     }
 
     [Test]

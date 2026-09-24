@@ -44,9 +44,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00810a1f2cd554a669366cdc0f1bdfae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.StoneEffects
-  OnImpactRecorded:
-    m_PersistentCalls:
-      m_Calls: []
   _stoneMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
   _coralMaterial: {fileID: 2100000, guid: a45f697d398734d34ad343466e0c734b, type: 2}
   _dustMaterial: {fileID: 2100000, guid: edf8f2f82e8a546ed86465a6727c2e12, type: 2}

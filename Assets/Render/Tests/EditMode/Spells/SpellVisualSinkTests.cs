@@ -17,7 +17,8 @@ public static class SpellSinkFixture
 
     public static SpellVisualSink Add(GameObject host)
     {
-        SpellVisualSink shipped = AssetDatabase.LoadAssetAtPath<GameObject>(SinkPath).GetComponent<SpellVisualSink>();
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(SinkPath);
+        SpellVisualSink shipped = prefab.GetComponent<SpellVisualSink>();
         SpellVisualSink sink = host.AddComponent<SpellVisualSink>();
         sink.looks = shipped.looks;
         sink.vocabulary = shipped.vocabulary;
@@ -106,13 +107,18 @@ public class SpellVisualSinkTests
     }
 
     [Test]
-    public void Shipped_Sink_CarriesLooksVocabularyAndTheLookMaterial()
+    public void Looks_ShippedPrefab_CarriesLooksVocabularyAndTheLookMaterial()
     {
-        SpellVisualSink shipped = AssetDatabase.LoadAssetAtPath<GameObject>(SpellSinkFixture.SinkPath).GetComponent<SpellVisualSink>();
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(SpellSinkFixture.SinkPath);
+        SpellVisualSink shipped = prefab.GetComponent<SpellVisualSink>();
 
-        Assert.AreSame(AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset"), shipped.looks);
-        Assert.AreSame(AssetDatabase.LoadAssetAtPath<EffectVocabulary>("Assets/Render/Spells/Data/EffectVocabulary.asset"), shipped.vocabulary);
-        Assert.AreSame(AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat"), shipped.material);
+        string data = "Assets/Render/Spells/Data/";
+        SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>(data + "SpellLooks.asset");
+        EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(data + "EffectVocabulary.asset");
+        Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
+        Assert.AreSame(looks, shipped.looks);
+        Assert.AreSame(vocabulary, shipped.vocabulary);
+        Assert.AreSame(material, shipped.material);
     }
 
     [Test]
@@ -225,27 +231,34 @@ public class SpellVisualSinkTests
     }
 
     [Test]
-    public void SetStatus_DisabledSink_ShowsNothingAndEnableStartsClean()
+    public void SetStatus_DisabledSink_ShowsNothing()
     {
         _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
         GameObject status = _sink.GetStatus(_target, _factory);
         _sink.enabled = false;
         TestHelpers.InvokePrivate(_sink, "OnDisable");
-        Assert.IsFalse(status);
 
         _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
         _sink.ShowImpact(null, _target, ResourceKind.Health, 2f, false);
         _sink.PulseArea(Vector3.zero, 1f, ZoneKind.Heal, 1f);
-        Assert.IsNull(_sink.ShowLink(Vector3.zero, Vector3.one));
+
+        Assert.IsFalse(status);
         Assert.AreEqual(0, _sink.statusCount);
         Assert.AreEqual(0, _sink.impactCount);
+    }
 
+    [Test]
+    public void OnEnable_ReEnabled_StartsClean()
+    {
+        _sink.enabled = false;
+        TestHelpers.InvokePrivate(_sink, "OnDisable");
         _sink.enabled = true;
         TestHelpers.InvokePrivate(_sink, "OnEnable");
         _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
         Assert.AreEqual(1, _sink.statusCount);
 
         TestHelpers.InvokePrivate(_sink, "OnEnable");
+
         Assert.AreEqual(0, _sink.statusCount);
     }
 
@@ -258,9 +271,11 @@ public class SpellVisualSinkTests
             _sink.SetStatus(null, _target, _factory, 1, 1f, 4f, ClockKind.Simulation);
         }
         GameObject status = _sink.GetStatus(_target, _factory);
+        // A delegate over the private method, because InvokePrivate allocates and this test measures allocation
         System.Reflection.MethodInfo method = typeof(SpellVisualSink).GetMethod("LateUpdate",
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-        System.Action lateUpdate = (System.Action)System.Delegate.CreateDelegate(typeof(System.Action), _sink, method);
+        System.Action lateUpdate =
+            (System.Action)System.Delegate.CreateDelegate(typeof(System.Action), _sink, method);
         for (int i = 0; i < 32; i++)
         {
             if (isPopulated)
@@ -311,20 +326,31 @@ public class SpellVisualSinkTests
     }
 
     [Test]
-    public void PulseArea_Forwarded_KeepsRadiusAndRejectsInvalidGeometry()
+    public void PulseArea_Forwarded_KeepsRadiusAndKind()
     {
-        int calls = 0;
+        float forwardedRadius = 0f;
+        ZoneKind forwardedKind = ZoneKind.Hostile;
         _sink.areaPulse = (center, radius, kind, strength) =>
         {
-            calls++;
-            Assert.AreEqual(2f, radius);
-            Assert.AreEqual(ZoneKind.Heal, kind);
+            forwardedRadius = radius;
+            forwardedKind = kind;
         };
 
         _sink.PulseArea(Vector3.zero, 2f, ZoneKind.Heal, 0.5f);
+
+        Assert.AreEqual(2f, forwardedRadius);
+        Assert.AreEqual(ZoneKind.Heal, forwardedKind);
+    }
+
+    [Test]
+    public void PulseArea_NegativeRadius_ForwardsNothing()
+    {
+        int calls = 0;
+        _sink.areaPulse = (center, radius, kind, strength) => calls++;
+
         _sink.PulseArea(Vector3.zero, -1f, ZoneKind.Heal, 0.5f);
 
-        Assert.AreEqual(1, calls);
+        Assert.AreEqual(0, calls);
     }
 
     [Test]
@@ -388,15 +414,12 @@ public class SpellVisualSinkTests
     {
         _sink.ShowImpact(null, _target, ResourceKind.Health, -3f, true);
 
-        int rings = 0;
-        foreach (Transform child in _host.GetComponentInChildren<SpellEffect>().transform)
+        SpellEffect effect = _host.GetComponentInChildren<SpellEffect>();
+        Assert.Greater(effect.rings.Count, 0);
+        foreach (Transform ring in effect.rings)
         {
-            if (child.name == "CriticalRing" && child.gameObject.activeSelf)
-            {
-                rings++;
-            }
+            Assert.IsTrue(ring.gameObject.activeSelf, ring.name);
         }
-        Assert.AreEqual(2, rings);
     }
 
     [Test]

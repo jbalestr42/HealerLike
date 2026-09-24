@@ -20,8 +20,15 @@ namespace HealerLike.Render.Stones
         {
             if (!float.IsFinite(thresholdFraction) || thresholdFraction <= 0f || thresholdFraction >= 1f)
             {
-                Debug.LogError($"[StoneHealthState] Shed threshold {thresholdFraction} is outside (0, 1), clamping it.");
-                thresholdFraction = float.IsNaN(thresholdFraction) ? 0.5f : Mathf.Clamp(thresholdFraction, 0.01f, 0.99f);
+                Debug.LogError($"[StoneHealthState] Shed threshold {thresholdFraction} is outside (0, 1), clamping it");
+                if (float.IsNaN(thresholdFraction))
+                {
+                    thresholdFraction = 0.5f;
+                }
+                else
+                {
+                    thresholdFraction = Mathf.Clamp(thresholdFraction, 0.01f, 0.99f);
+                }
             }
 
             _threshold = thresholdFraction;

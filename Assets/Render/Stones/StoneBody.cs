@@ -22,6 +22,14 @@ namespace HealerLike.Render.Stones
             public StoneMeshCache.Lease lease;
         }
 
+        // Seed salts, one per kind of emission so two kinds never share a random stream
+        static readonly uint hitSalt = 100;
+        static readonly uint shedSalt = 201;
+        static readonly uint collapseSalt = 301;
+        static readonly uint shardMeshSalt = 701;
+        static readonly uint contactSalt = 801;
+        static readonly StoneSettings shardShape = StonePresets.Shape(0.15f, 1.7f, 0.65f, 0.18f, 0);
+
         [SerializeField] StoneGroundDisc _groundShadow;
         [SerializeField] float _shedHealthFraction = 0.5f;
 
@@ -54,7 +62,8 @@ namespace HealerLike.Render.Stones
         int _shedPart = -1;
         public int shedPart { get { return _shedPart; } }
 
-        public Vector3 planarVelocity { get; private set; }
+        Vector3 _planarVelocity;
+        public Vector3 planarVelocity { get { return _planarVelocity; } }
 
         public float groundY { get { return transform.position.y; } }
 
@@ -72,13 +81,23 @@ namespace HealerLike.Render.Stones
 
         public void Init(Entity entity, RenderManager manager)
         {
-            Init(entity, manager != null ? manager.stoneEffects : null);
+            StoneEffects effects = null;
+            if (manager != null)
+            {
+                effects = manager.stoneEffects;
+            }
+            Init(entity, effects);
         }
 
         public void Init(Entity owner, StoneEffects effects)
         {
             _entity = owner;
-            Init(owner != null ? owner.health : null, (uint)transform.GetEntityId().GetHashCode(), effects);
+            ResourceAttribute health = null;
+            if (owner != null)
+            {
+                health = owner.health;
+            }
+            Init(health, (uint)transform.GetEntityId().GetHashCode(), effects);
         }
 
         // Taking the resource directly lets tests run without Entity.Init or the game managers
@@ -97,12 +116,13 @@ namespace HealerLike.Render.Stones
             _hitIndex = 0;
             _completedFrames = 0;
             _sampler.Reset();
-            planarVelocity = Vector3.zero;
+            _planarVelocity = Vector3.zero;
             FindRig();
             Bind();
         }
 
-        // The builder makes its rig at Init and again when the ground frame changes, so the rig is looked up every frame
+        // The builder makes its rig at Init and again when the ground frame changes,
+        // so the rig is looked up every frame
         void FindRig()
         {
             CreatureRig rig = _builder != null ? _builder.rig : null;
@@ -152,8 +172,7 @@ namespace HealerLike.Render.Stones
                 Bounds world = part.GetComponent<Renderer>().bounds;
                 for (int corner = 0; corner < 8; corner++)
                 {
-                    Vector3 sign = new Vector3((corner & 1) == 0 ? -1f : 1f, (corner & 2) == 0 ? -1f : 1f,
-                        (corner & 4) == 0 ? -1f : 1f);
+                    Vector3 sign = new Vector3(CornerSign(corner, 1), CornerSign(corner, 2), CornerSign(corner, 4));
                     Vector3 point = transform.InverseTransformPoint(world.center + Vector3.Scale(world.extents, sign));
                     if (isEmpty)
                     {
@@ -169,6 +188,16 @@ namespace HealerLike.Render.Stones
             return bounds;
         }
 
+        // -1 or 1 along one axis of a box corner, the axis picked by its bit
+        static float CornerSign(int corner, int bit)
+        {
+            if ((corner & bit) == 0)
+            {
+                return -1f;
+            }
+            return 1f;
+        }
+
         public void RecordImpact(ResourceModifier modifier, StoneImpact impact)
         {
             if (modifier == null || !_isBound || !isActiveAndEnabled)
@@ -179,11 +208,11 @@ namespace HealerLike.Render.Stones
             _impacts[modifier] = new ImpactRecord { impact = impact, frame = _completedFrames };
             if (_effects != null)
             {
-                _effects.RecordImpact(impact.pointWS, StoneSeed.ForPart(_seed, ++_hitIndex + 100));
+                _effects.RecordImpact(impact.point, StoneSeed.ForPart(_seed, ++_hitIndex + hitSalt));
             }
         }
 
-        public StoneImpact EstimateImpact(Vector3 queryWS, Vector3 incomingVelocityWS)
+        public StoneImpact EstimateImpact(Vector3 query)
         {
             Vector3 point = transform.position + Vector3.up * 0.5f;
             Vector3 normal = Vector3.up;
@@ -196,10 +225,10 @@ namespace HealerLike.Render.Stones
                     continue;
                 }
 
-                if (StoneImpactLocator.TryClosestPoint(_partMeshes[i], partTransforms[i].localToWorldMatrix, queryWS,
+                if (StoneImpactLocator.TryClosestPoint(_partMeshes[i], partTransforms[i].localToWorldMatrix, query,
                     out Vector3 partPoint, out Vector3 partNormal))
                 {
-                    float distance = (partPoint - queryWS).sqrMagnitude;
+                    float distance = (partPoint - query).sqrMagnitude;
                     if (distance < best)
                     {
                         best = distance;
@@ -208,7 +237,7 @@ namespace HealerLike.Render.Stones
                     }
                 }
             }
-            return new StoneImpact(point, normal, incomingVelocityWS, true);
+            return new StoneImpact(point, normal);
         }
 
         void OnConsumersProcessed(GameObject owner, ResourceModifier modifier, float delta, bool critical)
@@ -233,22 +262,22 @@ namespace HealerLike.Render.Stones
                 {
                     query = modifier.source.transform.position;
                 }
-                impact = EstimateImpact(query, Vector3.zero);
+                impact = EstimateImpact(query);
                 if (_effects != null)
                 {
-                    _effects.RecordImpact(impact.pointWS, StoneSeed.ForPart(_seed, ++_hitIndex + 100));
+                    _effects.RecordImpact(impact.point, StoneSeed.ForPart(_seed, ++_hitIndex + hitSalt));
                 }
             }
 
             if (_effects != null)
             {
-                _effects.EmitHit(impact, critical, StoneSeed.ForPart(_seed, ++_hitIndex + 100));
+                _effects.EmitHit(impact, critical, StoneSeed.ForPart(_seed, ++_hitIndex + hitSalt));
             }
         }
 
         void OnHealthChanged(ResourceAttribute resource)
         {
-            // The callback comes after the clamp, and before his entity is destroyed
+            // The callback comes after the clamp, and before the entity is destroyed
             if (resource.Value <= 0f)
             {
                 Collapse(null);
@@ -304,7 +333,7 @@ namespace HealerLike.Render.Stones
                 Mesh mesh = part.GetComponent<MeshFilter>().sharedMesh;
                 Material material = part.GetComponent<Renderer>().sharedMaterial;
                 _effects.EmitDetachedPart(mesh, material, part.localToWorldMatrix, planarVelocity, groundY,
-                    StoneSeed.ForPart(_seed, 201));
+                    StoneSeed.ForPart(_seed, shedSalt));
             }
             part.gameObject.SetActive(false);
         }
@@ -327,7 +356,7 @@ namespace HealerLike.Render.Stones
             ClearDeliveries();
             if (_effects != null)
             {
-                _effects.CollapseParts(parts, planarVelocity, groundY, StoneSeed.ForPart(_seed, 301));
+                _effects.CollapseParts(parts, planarVelocity, groundY, StoneSeed.ForPart(_seed, collapseSalt));
             }
             HideParts();
         }
@@ -356,7 +385,7 @@ namespace HealerLike.Render.Stones
 
             CompleteHealthBatch();
             Vector3 position = _entity != null ? _entity.transform.position : transform.position;
-            planarVelocity = _sampler.Sample(position, Time.deltaTime, _entity != null && _entity.isDraggable);
+            _planarVelocity = _sampler.Sample(position, Time.deltaTime, _entity != null && _entity.isDraggable);
             if (_groundShadow != null && !_isCollapsed)
             {
                 _groundShadow.Refresh();
@@ -425,8 +454,8 @@ namespace HealerLike.Render.Stones
                 return false;
             }
 
-            StoneSettings shardShape = StonePresets.Shape(0.15f, 1.7f, 0.65f, 0.18f, 0);
-            StoneMeshCache.Lease lease = _effects.stoneMeshes.Acquire(StoneSeed.ForPart(_seed, 701), shardShape);
+            uint shardSeed = StoneSeed.ForPart(_seed, shardMeshSalt);
+            StoneMeshCache.Lease lease = _effects.stoneMeshes.Acquire(shardSeed, shardShape);
             if (lease == null)
             {
                 return false;
@@ -473,7 +502,7 @@ namespace HealerLike.Render.Stones
 
             if (_effects != null)
             {
-                _effects.EmitThrownContact(contactPosition, StoneSeed.ForPart(_seed, ++_hitIndex + 801));
+                _effects.EmitThrownContact(contactPosition, StoneSeed.ForPart(_seed, ++_hitIndex + contactSalt));
             }
             EndDelivery(token);
         }

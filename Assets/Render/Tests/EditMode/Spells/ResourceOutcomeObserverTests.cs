@@ -45,12 +45,28 @@ public class ResourceOutcomeObserverTests
 
     GameObject _owner;
     GameObject _caster;
+    GameObject _manaGo;
+    ResourceAttribute _health;
+    ResourceAttribute _mana;
+    SpellSinkSpy _spy;
+    HealSinkSpy _healed;
+    RenderRegistry _registry;
+    ResourceModifier _modifier;
 
     [SetUp]
     public void SetUp()
     {
         _owner = new GameObject("ResourceOwner");
         _caster = new GameObject("Caster");
+        _health = TestHelpers.CreateResourceAttribute(_owner, AttributeType.HealthMax, 100);
+        _manaGo = new GameObject("Mana");
+        _manaGo.transform.SetParent(_owner.transform);
+        _mana = TestHelpers.CreateResourceAttribute(_manaGo, AttributeType.ManaMax, 100);
+        _spy = new SpellSinkSpy();
+        _registry = new RenderRegistry { spellSink = _spy };
+        _healed = new HealSinkSpy();
+        _registry.Register(_caster, _healed);
+        _modifier = new ResourceModifier { source = _caster };
     }
 
     [TearDown]
@@ -60,41 +76,74 @@ public class ResourceOutcomeObserverTests
         Object.DestroyImmediate(_caster);
     }
 
-    [Test]
-    public void Bind_RepeatedWithHealthAndMana_SubscribesOnceAndKeepsManaApartFromHealth()
+    ResourceOutcomeObserver CreateObserver()
     {
-        ResourceAttribute health = TestHelpers.CreateResourceAttribute(_owner, AttributeType.HealthMax, 100);
-        GameObject manaGo = new GameObject("Mana");
-        manaGo.transform.SetParent(_owner.transform);
-        ResourceAttribute mana = TestHelpers.CreateResourceAttribute(manaGo, AttributeType.ManaMax, 100);
-        SpellSinkSpy spy = new SpellSinkSpy();
-        RenderRegistry registry = new RenderRegistry { spellSink = spy };
-        HealSinkSpy healed = new HealSinkSpy();
-        registry.Register(_caster, healed);
         ResourceOutcomeObserver observer = _owner.AddComponent<ResourceOutcomeObserver>();
-        for (int i = 0; i < 5; i++)
+        observer.Bind(_health, _mana, _spy, _registry);
+        return observer;
+    }
+
+    [Test]
+    public void Bind_Repeated_SubscribesOnce()
+    {
+        ResourceOutcomeObserver observer = CreateObserver();
+        for (int i = 0; i < 4; i++)
         {
-            observer.Bind(health, mana, spy, registry);
+            observer.Bind(_health, _mana, _spy, _registry);
         }
-        ResourceModifier modifier = new ResourceModifier { source = _caster };
 
-        health.OnAllConsumerProcessed.Invoke(_owner, modifier, 7, false);
-        mana.OnAllConsumerProcessed.Invoke(manaGo, modifier, 9, false);
+        _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, 7, false);
 
-        Assert.AreEqual(2, spy.impacts);
-        Assert.AreEqual(ResourceKind.Mana, spy.last);
-        Assert.AreEqual(1, healed.count);
+        Assert.AreEqual(1, _spy.impacts);
+    }
 
+    [Test]
+    public void Bind_ManaChanged_ShowsManaWithoutReachingTheHealSinks()
+    {
+        CreateObserver();
+
+        _mana.OnAllConsumerProcessed.Invoke(_manaGo, _modifier, 9, false);
+
+        Assert.AreEqual(1, _spy.impacts);
+        Assert.AreEqual(ResourceKind.Mana, _spy.last);
+        Assert.AreEqual(0, _healed.count);
+    }
+
+    [Test]
+    public void Bind_Damage_ReachesTheRegistryToo()
+    {
+        CreateObserver();
+
+        _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, -2, false);
+
+        Assert.AreEqual(1, _spy.impacts);
+        Assert.AreEqual(1, _healed.count, "each heal sink filters by sign, the registry passes damage on");
+    }
+
+    [Test]
+    public void OnDisable_HealthChanged_ShowsNothing()
+    {
+        ResourceOutcomeObserver observer = CreateObserver();
+        observer.enabled = false;
+
+        TestHelpers.InvokePrivate(observer, "OnDisable");
+        _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, 7, false);
+
+        Assert.AreEqual(0, _spy.impacts);
+    }
+
+    [Test]
+    public void OnEnable_AfterDisable_ListensAgain()
+    {
+        ResourceOutcomeObserver observer = CreateObserver();
         observer.enabled = false;
         TestHelpers.InvokePrivate(observer, "OnDisable");
-        health.OnAllConsumerProcessed.Invoke(_owner, modifier, 7, false);
-        Assert.AreEqual(2, spy.impacts);
-
         observer.enabled = true;
+
         TestHelpers.InvokePrivate(observer, "OnEnable");
-        health.OnAllConsumerProcessed.Invoke(_owner, modifier, -2, false);
-        Assert.AreEqual(3, spy.impacts);
-        Assert.AreEqual(2, healed.count, "damage reaches the registry too, each sink filters by sign");
+        _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, 7, false);
+
+        Assert.AreEqual(1, _spy.impacts);
     }
 }
 

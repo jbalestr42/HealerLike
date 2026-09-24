@@ -45,7 +45,7 @@ public class BruiseZoneTests
         bruise.Init(entity, _owner);
         _owner.PublishFrame(0f);
 
-        Assert.AreEqual(4, _owner.snapshot[0].kind);
+        Assert.AreEqual((int)ZoneKind.Bruise, _owner.snapshot[0].kind);
         Assert.AreEqual(3, _owner.snapshot[0].radius);
 
         _actor.transform.position = Vector3.forward;

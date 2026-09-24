@@ -14,7 +14,7 @@ public class EffectVocabularyTests
     }
 
     [Test]
-    public void Shipped_Vocabulary_HasAnEntryWithShapesForEveryElement()
+    public void GetEntry_ShippedVocabulary_HasAnEntryWithShapesForEveryElement()
     {
         EffectVocabulary vocabulary = LoadVocabulary();
 
@@ -30,7 +30,7 @@ public class EffectVocabularyTests
     }
 
     [Test]
-    public void Shipped_Press_FourOrFiveConesPointingDown()
+    public void GetEntry_ShippedPress_FourOrFiveConesPointingDown()
     {
         ElementEntry press = LoadVocabulary().GetEntry(EffectElement.Press);
 
@@ -45,7 +45,7 @@ public class EffectVocabularyTests
     }
 
     [Test]
-    public void Shipped_BoonAndBane_DrawDifferentPrimitives()
+    public void GetEntry_ShippedBoonAndBane_DrawDifferentPrimitives()
     {
         EffectVocabulary vocabulary = LoadVocabulary();
 
@@ -56,10 +56,11 @@ public class EffectVocabularyTests
     }
 
     [Test]
-    public void Shipped_Orbit_ToriAtTheOrbitRadiusTiltedTenToTwenty()
+    public void GetEntry_ShippedOrbit_ToriAtTheOrbitRadiusTiltedTenToTwenty()
     {
         EffectVocabulary vocabulary = LoadVocabulary();
-        Mesh torus = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(SpellSinkFixture.MeshesPath).GetMesh(Primitive.Torus);
+        PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(SpellSinkFixture.MeshesPath);
+        Mesh torus = meshes.GetMesh(Primitive.Torus);
 
         foreach (LookPart ring in vocabulary.GetEntry(EffectElement.Orbit).parts)
         {
@@ -72,7 +73,7 @@ public class EffectVocabularyTests
     }
 
     [Test]
-    public void Shipped_Rise_EightSpheresFromThree()
+    public void GetEntry_ShippedRise_EightSpheresFromThree()
     {
         ElementEntry rise = LoadVocabulary().GetEntry(EffectElement.Rise);
 
@@ -82,7 +83,7 @@ public class EffectVocabularyTests
     }
 
     [Test]
-    public void Shipped_Parts_AreBakedPrimitivesOnly()
+    public void Elements_ShippedParts_AreBakedPrimitivesOnly()
     {
         PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(SpellSinkFixture.MeshesPath);
 
