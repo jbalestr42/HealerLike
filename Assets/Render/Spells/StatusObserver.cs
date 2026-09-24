@@ -32,7 +32,12 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            Bind(entity.buffManager != null ? entity.buffManager : entity.GetComponent<BuffManager>(), manager.spellSink);
+            BuffManager buffManager = entity.buffManager;
+            if (buffManager == null)
+            {
+                buffManager = entity.GetComponent<BuffManager>();
+            }
+            Bind(buffManager, manager.spellSink);
             ResourceOutcomeObserver.Ensure(entity.gameObject).Init(entity, manager);
             GetShieldView().Init(entity, manager);
         }
@@ -78,7 +83,7 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            ISpellVisualSink sink = CurrentSink();
+            ISpellVisualSink sink = _injected;
             SpellVisualSink visualSink = sink as SpellVisualSink;
             int version = visualSink != null ? visualSink.presentationVersion : 0;
             if (!ReferenceEquals(sink, _lastSink) || version != _sinkVersion)
@@ -134,7 +139,7 @@ namespace HealerLike.Render.Spells
             {
                 if (!_published.TryGetValue(group.Key, out StatusState old) || !IsSame(old, group.Value))
                 {
-                    // TODO: pass the caster once BuffHandlerData carries it (S4)
+                    // TODO: pass the caster once BuffHandlerData carries a source
                     sink.SetStatus(null, group.Key.Item1, group.Key.Item2, group.Value.stacks, group.Value.elapsed,
                                    group.Value.duration, ClockKind.Simulation);
                 }
@@ -197,7 +202,7 @@ namespace HealerLike.Render.Spells
 
             if (!remains)
             {
-                ISpellVisualSink sink = CurrentSink();
+                ISpellVisualSink sink = _injected;
                 if (sink != null)
                 {
                     sink.RemoveStatus(null, data.target, data.buffHandlerFactory);
@@ -205,11 +210,6 @@ namespace HealerLike.Render.Spells
                 _published.Remove((data.target, data.buffHandlerFactory));
             }
             Reconcile();
-        }
-
-        ISpellVisualSink CurrentSink()
-        {
-            return _injected;
         }
 
         void RemovePublished()

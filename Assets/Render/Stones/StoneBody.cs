@@ -277,7 +277,7 @@ namespace HealerLike.Render.Stones
 
         void OnHealthChanged(ResourceAttribute resource)
         {
-            // The callback comes after the clamp, and before his entity is destroyed
+            // The callback comes after the clamp, and before the entity is destroyed
             if (resource.Value <= 0f)
             {
                 Collapse(null);

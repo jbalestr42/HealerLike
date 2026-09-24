@@ -65,12 +65,12 @@ namespace HealerLike.Render.Spells
     public class ElementEntry
     {
         // Body role parts are the shape, Stem role parts are the stalks of the shape parts in the same order
-        public LookPart[] parts = new LookPart[0];
+        public LookPart[] parts = Array.Empty<LookPart>();
         // One bead per stack
-        public LookPart[] stackBeads = new LookPart[0];
-        public LookPart[] criticalRings = new LookPart[0];
+        public LookPart[] stackBeads = Array.Empty<LookPart>();
+        public LookPart[] criticalRings = Array.Empty<LookPart>();
         // Shows the caster's side
-        public LookPart[] sideRim = new LookPart[0];
+        public LookPart[] sideRim = Array.Empty<LookPart>();
         public EffectMotion motion;
         public EffectSocket socket;
         public EffectCount count;

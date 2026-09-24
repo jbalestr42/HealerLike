@@ -50,7 +50,11 @@ namespace HealerLike.Render.Spells
                     }
                     return EffectElement.Orbit;
                 default:
-                    return channels.group == AttributeGroup.Offence ? EffectElement.Press : EffectElement.Crack;
+                    if (channels.group == AttributeGroup.Offence)
+                    {
+                        return EffectElement.Press;
+                    }
+                    return EffectElement.Crack;
             }
         }
 
@@ -60,13 +64,16 @@ namespace HealerLike.Render.Spells
             return isGain ? EffectElement.ManaUp : EffectElement.ManaDown;
         }
 
-        public static EffectRecipe Compose(EffectVocabulary vocabulary, EffectChannels channels, int stacks, float charges)
+        public static EffectRecipe Compose(EffectVocabulary vocabulary, EffectChannels channels, int stacks,
+                                           float charges)
         {
-            return Compose(vocabulary, Element(channels), channels.family, channels.tempo, channels.periodSeconds, stacks, charges, 0f);
+            return Compose(vocabulary, Element(channels), channels.family, channels.tempo, channels.periodSeconds,
+                           stacks, charges, 0f);
         }
 
-        public static EffectRecipe Compose(EffectVocabulary vocabulary, EffectElement element, EffectFamily family, EffectTempo tempo,
-                                           float periodSeconds, int stacks, float charges, float amount)
+        public static EffectRecipe Compose(EffectVocabulary vocabulary, EffectElement element, EffectFamily family,
+                                           EffectTempo tempo, float periodSeconds, int stacks, float charges,
+                                           float amount)
         {
             if (vocabulary == null)
             {

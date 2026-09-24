@@ -17,7 +17,8 @@ public class SpellEffectTests
         return AssetDatabase.LoadAssetAtPath<EffectVocabulary>("Assets/Render/Spells/Data/EffectVocabulary.asset");
     }
 
-    SpellEffect CreateEffect(EffectElement element, EffectFamily family, EffectTempo tempo, float period = 0f, int stacks = 1)
+    SpellEffect CreateEffect(EffectElement element, EffectFamily family, EffectTempo tempo, float period = 0f,
+                             int stacks = 1)
     {
         EffectRecipe recipe = EffectComposer.Compose(LoadVocabulary(), element, family, tempo, period, stacks, 0f, 0f);
         GameObject go = new GameObject(element.ToString());
@@ -245,7 +246,8 @@ public class SpellEffectTests
         _objects.Add(go);
         SpellEffect effect = go.AddComponent<SpellEffect>();
 
-        UnityEngine.TestTools.LogAssert.Expect(LogType.Error, "[SpellEffect] Init needs a recipe and the primitive meshes.");
+        string message = "[SpellEffect] Init needs a recipe and the primitive meshes.";
+        UnityEngine.TestTools.LogAssert.Expect(LogType.Error, message);
         effect.Init(null, null, null);
 
         Assert.AreEqual(0, go.transform.childCount);

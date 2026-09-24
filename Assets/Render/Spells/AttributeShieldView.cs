@@ -11,7 +11,17 @@ namespace HealerLike.Render.Spells
         GameObject _target;
         SpellVisualSink _sink;
 
-        public SpellEffect effect { get { return _sink != null && _target != null ? _sink.GetElement(_target, EffectElement.Plates) : null; } }
+        public SpellEffect effect
+        {
+            get
+            {
+                if (_sink == null || _target == null)
+                {
+                    return null;
+                }
+                return _sink.GetElement(_target, EffectElement.Plates);
+            }
+        }
 
         public void Init(Entity entity, RenderManager manager)
         {

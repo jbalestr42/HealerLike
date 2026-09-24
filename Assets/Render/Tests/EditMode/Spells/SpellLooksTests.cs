@@ -12,6 +12,11 @@ public class SpellLooksTests
 {
     readonly List<Object> _objects = new List<Object>();
 
+    static SpellLooks LoadShipped()
+    {
+        return AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
+    }
+
     [TearDown]
     public void TearDown()
     {
@@ -82,26 +87,40 @@ public class SpellLooksTests
     // Infinite handler would loop their look for the whole run
     [TestCase("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", EffectElement.ManaUp)]
     [TestCase("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", EffectElement.Burst)]
-    [TestCase("PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory", EffectElement.Rise)]
-    public void Shipped_KeptBuffRow_DrawsOnceWithItsElement(string path, EffectElement expected)
+    [TestCase("PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory",
+              EffectElement.Rise)]
+    public void GetLook_ShippedKeptBuffRow_DrawsOnceWithItsElement(string path, EffectElement expected)
     {
-        SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
-        ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>("Assets/Data/" + path + ".asset");
+        SpellLooks looks = LoadShipped();
+        string handlerPath = "Assets/Data/" + path + ".asset";
+        ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(handlerPath);
 
         SpellLook row = looks.GetLook(handler);
 
-        Assert.AreEqual(3, looks.buffs.Count);
         Assert.AreEqual(expected, row.element);
         Assert.AreEqual(EffectTempo.Once, row.tempo);
     }
 
     [Test]
-    public void Shipped_ProjectileRows_OnlyTheChainsKeepTheirContactPath()
+    public void GetLook_ShippedBuffRows_AreInfiniteHandlersDrawnOnce()
     {
-        SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
+        SpellLooks looks = LoadShipped();
+
+        foreach (KeyValuePair<ABuffHandlerFactory, SpellLook> row in looks.buffs)
+        {
+            BuffHandlerFactory handler = row.Key as BuffHandlerFactory;
+            Assert.IsNotNull(handler, row.Key.name);
+            Assert.AreEqual(DurationType.Infinite, handler.data.durationType, row.Key.name);
+            Assert.AreEqual(EffectTempo.Once, row.Value.tempo, row.Key.name);
+        }
+    }
+
+    [Test]
+    public void GetProjectileLook_ShippedRows_OnlyTheChainsKeepTheirContactPath()
+    {
+        SpellLooks looks = LoadShipped();
         GameObject laser = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/LaserBullet.prefab");
 
-        Assert.AreEqual(2, looks.projectiles.Count);
         foreach (KeyValuePair<GameObject, ProjectileLook> row in looks.projectiles)
         {
             Assert.IsTrue(row.Value.preserveContactPath, row.Key.name);

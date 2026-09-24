@@ -13,7 +13,8 @@ public class EffectComposerTests
         return AssetDatabase.LoadAssetAtPath<EffectVocabulary>("Assets/Render/Spells/Data/EffectVocabulary.asset");
     }
 
-    static EffectChannels Channels(EffectFamily family, AttributeGroup group, EffectTempo tempo = EffectTempo.ForDuration)
+    static EffectChannels Channels(EffectFamily family, AttributeGroup group,
+                                   EffectTempo tempo = EffectTempo.ForDuration)
     {
         return new EffectChannels { family = family, group = group, tempo = tempo };
     }
@@ -27,7 +28,8 @@ public class EffectComposerTests
     [TestCase(EffectFamily.Boon, AttributeGroup.Prevention, EffectElement.Bud)]
     [TestCase(EffectFamily.Bane, AttributeGroup.Offence, EffectElement.Press)]
     [TestCase(EffectFamily.Bane, AttributeGroup.Defence, EffectElement.Crack)]
-    public void Element_FamilyAndGroup_PicksTheTableElement(EffectFamily family, AttributeGroup group, EffectElement expected)
+    public void Element_FamilyAndGroup_PicksTheTableElement(EffectFamily family, AttributeGroup group,
+                                                            EffectElement expected)
     {
         Assert.AreEqual(expected, EffectComposer.Element(Channels(family, group)));
     }
@@ -84,7 +86,9 @@ public class EffectComposerTests
     {
         EffectVocabulary vocabulary = LoadVocabulary();
 
-        EffectRecipe recipe = EffectComposer.Compose(vocabulary, Channels(EffectFamily.Heal, AttributeGroup.Offence), 1, 0f);
+        EffectChannels channels = Channels(EffectFamily.Heal, AttributeGroup.Offence);
+
+        EffectRecipe recipe = EffectComposer.Compose(vocabulary, channels, 1, 0f);
 
         Assert.AreEqual(vocabulary.palette.heal, recipe.colour);
     }
@@ -94,7 +98,8 @@ public class EffectComposerTests
     {
         EffectVocabulary vocabulary = LoadVocabulary();
 
-        EffectRecipe recipe = EffectComposer.Compose(vocabulary, EffectElement.ManaUp, EffectFamily.Heal, EffectTempo.Once, 0f, 1, 0f, 0f);
+        EffectRecipe recipe = EffectComposer.Compose(vocabulary, EffectElement.ManaUp, EffectFamily.Heal,
+                                                     EffectTempo.Once, 0f, 1, 0f, 0f);
 
         Assert.AreEqual(vocabulary.palette.mana, recipe.colour);
     }
