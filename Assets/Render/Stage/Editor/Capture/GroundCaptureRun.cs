@@ -106,7 +106,8 @@ namespace HealerLike.Render.Stage
         {
             Material material = new Material(EnvironmentAuthoring.Load<Shader>(lookShaderPath));
             _owned.Add(material);
-            material.SetColor(RenderObjects.BaseColorId, new Color32(78, 126, 87, 255));
+            // The slab's stored value is already linear, as the fixture was tuned, so it stays darker than the carpet
+            material.SetColor(RenderObjects.BaseColorId, ((Color)new Color32(78, 126, 87, 255)).linear);
             GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Cube);
             _owned.Add(ground);
             ground.layer = fixtureLayer;
