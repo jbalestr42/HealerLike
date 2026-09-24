@@ -65,6 +65,11 @@ namespace HealerLike.Render.Studio.Editor
 
         static void Watch()
         {
+            if (SessionState.GetBool(key, false) && EditorApplication.isPlaying)
+            {
+                System.Type gameView = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameView");
+                EditorWindow.GetWindow(gameView, false, null, false).Repaint();
+            }
             if (SessionState.GetBool(key, false)
                 && EditorApplication.timeSinceStartup > SessionState.GetFloat(key + ".Deadline", 0f))
             {
