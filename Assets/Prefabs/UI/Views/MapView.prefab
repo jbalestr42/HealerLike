@@ -594,7 +594,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.05, g: 0.05, b: 0.08, a: 0.92}
+  m_Color: {r: 0.05, g: 0.05, b: 0.08, a: 0.97}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -682,7 +682,7 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes:
-    - Name: _nodeColors
+    - Name: _roomColors
       Entry: 7
       Data: 0|System.Collections.Generic.Dictionary`2[[MapNodeType, HealerLike.Runtime],[UnityEngine.Color, UnityEngine.CoreModule]], mscorlib
     - Name: comparer
@@ -711,13 +711,13 @@ MonoBehaviour:
       Data: UnityEngine.Color, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.55
+      Data: 0.25
     - Name: 
       Entry: 4
       Data: 0.55
     - Name: 
       Entry: 4
-      Data: 0.6
+      Data: 0.95
     - Name: 
       Entry: 4
       Data: 1
@@ -738,13 +738,13 @@ MonoBehaviour:
       Data: UnityEngine.Color, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.8
+      Data: 0.95
     - Name: 
       Entry: 4
       Data: 0.25
     - Name: 
       Entry: 4
-      Data: 0.2
+      Data: 0.25
     - Name: 
       Entry: 4
       Data: 1
@@ -765,13 +765,13 @@ MonoBehaviour:
       Data: UnityEngine.Color, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.9
+      Data: 1
     - Name: 
       Entry: 4
-      Data: 0.7
+      Data: 0.78
     - Name: 
       Entry: 4
-      Data: 0.2
+      Data: 0.15
     - Name: 
       Entry: 4
       Data: 1
@@ -792,13 +792,13 @@ MonoBehaviour:
       Data: UnityEngine.Color, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.3
+      Data: 0.25
     - Name: 
       Entry: 4
-      Data: 0.7
+      Data: 0.85
     - Name: 
       Entry: 4
-      Data: 0.35
+      Data: 0.45
     - Name: 
       Entry: 4
       Data: 1
@@ -819,13 +819,13 @@ MonoBehaviour:
       Data: UnityEngine.Color, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.5
+      Data: 0.75
     - Name: 
       Entry: 4
-      Data: 0.1
+      Data: 0.25
     - Name: 
       Entry: 4
-      Data: 0.5
+      Data: 0.95
     - Name: 
       Entry: 4
       Data: 1
@@ -846,19 +846,25 @@ MonoBehaviour:
       m_Calls: []
   _container: {fileID: 3564140085048613826}
   _closeButton: {fileID: 1587173696368641496}
-  _nodeSize: {x: 120, y: 40}
+  _title: {fileID: 889702651234224736}
+  _nodeSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  _nodeSize: {x: 170, y: 50}
+  _fontSize: 24
   _lineWidth: 4
-  _lineColor: {r: 1, g: 1, b: 1, a: 0.25}
-  _visitedLineColor: {r: 1, g: 0.85, b: 0.3, a: 1}
-  _lockedAlpha: 0.35
-  _nodeColors:
+  _highlightedLineWidth: 7
+  _lineColor: {r: 1, g: 1, b: 1, a: 0.3}
+  _nextLineColor: {r: 1, g: 1, b: 1, a: 0.95}
+  _visitedLineColor: {r: 1, g: 0.8, b: 0.2, a: 1}
+  _pulseAmplitude: 0.08
+  _pulseSpeed: 5
+  _roomColors:
   - key: 0
-    value: {r: 0.55, g: 0.55, b: 0.6, a: 1}
+    value: {r: 0.25, g: 0.55, b: 0.95, a: 1}
   - key: 1
-    value: {r: 0.8, g: 0.25, b: 0.2, a: 1}
+    value: {r: 0.95, g: 0.25, b: 0.25, a: 1}
   - key: 2
-    value: {r: 0.9, g: 0.7, b: 0.2, a: 1}
+    value: {r: 1, g: 0.78, b: 0.15, a: 1}
   - key: 3
-    value: {r: 0.3, g: 0.7, b: 0.35, a: 1}
+    value: {r: 0.25, g: 0.85, b: 0.45, a: 1}
   - key: 4
-    value: {r: 0.5, g: 0.1, b: 0.5, a: 1}
+    value: {r: 0.75, g: 0.25, b: 0.95, a: 1}

@@ -8,30 +8,52 @@ using UnityEngine.UI;
 // to the boss at the top. Only the rooms the player can travel to are clickable.
 public class MapView : AView
 {
+    // How a room is drawn, depending on its state
+    public struct NodeStyle
+    {
+        public Color fill;
+        public Color text;
+        public bool hasOutline;
+        public Color outline;
+        public bool isBold;
+        public bool pulses;
+    }
+
     public UnityEvent<MapNode> OnNodeSelected = new UnityEvent<MapNode>();
 
     // Area where the map is drawn, the view itself when not set
     [SerializeField] RectTransform _container;
     [SerializeField] Button _closeButton;
+    [SerializeField] TMP_Text _title;
+    // Rounded sprite of the rooms, sliced; plain rectangles when not set
+    [SerializeField] Sprite _nodeSprite;
 
-    [SerializeField] Vector2 _nodeSize = new Vector2(120f, 40f);
+    [SerializeField] Vector2 _nodeSize = new Vector2(170f, 50f);
+    [SerializeField] float _fontSize = 24f;
     [SerializeField] float _lineWidth = 4f;
-    [SerializeField] Color _lineColor = new Color(1f, 1f, 1f, 0.25f);
-    [SerializeField] Color _visitedLineColor = new Color(1f, 0.85f, 0.3f, 1f);
-    [SerializeField, Range(0f, 1f)] float _lockedAlpha = 0.35f;
+    [SerializeField] float _highlightedLineWidth = 7f;
+    [SerializeField] Color _lineColor = new Color(1f, 1f, 1f, 0.3f);
+    [SerializeField] Color _nextLineColor = new Color(1f, 1f, 1f, 0.95f);
+    [SerializeField] Color _visitedLineColor = new Color(1f, 0.8f, 0.2f, 1f);
+    [SerializeField] float _pulseAmplitude = 0.08f;
+    [SerializeField] float _pulseSpeed = 5f;
 
-    [SerializeField] Dictionary<MapNodeType, Color> _nodeColors = new Dictionary<MapNodeType, Color>
+    [SerializeField] Dictionary<MapNodeType, Color> _roomColors = new Dictionary<MapNodeType, Color>
     {
-        { MapNodeType.Combat, new Color(0.55f, 0.55f, 0.6f) },
-        { MapNodeType.Elite, new Color(0.8f, 0.25f, 0.2f) },
-        { MapNodeType.Treasure, new Color(0.9f, 0.7f, 0.2f) },
-        { MapNodeType.Rest, new Color(0.3f, 0.7f, 0.35f) },
-        { MapNodeType.Boss, new Color(0.5f, 0.1f, 0.5f) },
+        { MapNodeType.Combat, new Color(0.25f, 0.55f, 0.95f) },
+        { MapNodeType.Elite, new Color(0.95f, 0.25f, 0.25f) },
+        { MapNodeType.Treasure, new Color(1f, 0.78f, 0.15f) },
+        { MapNodeType.Rest, new Color(0.25f, 0.85f, 0.45f) },
+        { MapNodeType.Boss, new Color(0.75f, 0.25f, 0.95f) },
     };
+
+    static readonly Color CurrentOutlineColor = new Color(1f, 0.8f, 0.2f, 1f);
+    static readonly Color LockedGrey = new Color(0.35f, 0.35f, 0.4f);
 
     RunState _run;
     bool _canSelect;
     List<GameObject> _elements = new List<GameObject>();
+    List<RectTransform> _pulsingNodes = new List<RectTransform>();
 
     RectTransform container => _container != null ? _container : (RectTransform)transform;
 
@@ -43,6 +65,16 @@ public class MapView : AView
         }
     }
 
+    // The next rooms breathe to catch the eye, unscaled so it also works when the game is paused
+    void Update()
+    {
+        float scale = 1f + _pulseAmplitude * (0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * _pulseSpeed));
+        foreach (RectTransform node in _pulsingNodes)
+        {
+            node.localScale = new Vector3(scale, scale, 1f);
+        }
+    }
+
     // canSelect is false when the map is only opened to look at it
     public void Display(RunState run, bool canSelect)
     {
@@ -51,6 +83,10 @@ public class MapView : AView
         if (_closeButton != null)
         {
             _closeButton.gameObject.SetActive(!canSelect);
+        }
+        if (_title != null)
+        {
+            _title.text = canSelect ? "Choose your next room" : "Map";
         }
         Clear();
         Build();
@@ -65,6 +101,48 @@ public class MapView : AView
             return new Vector2(0.5f, y);
         }
         return new Vector2((node.column + 0.5f) / map.columnCount, y);
+    }
+
+    // Available rooms stand out, visited ones fade, locked ones stay readable but greyed out
+    public static NodeStyle GetNodeStyle(MapNodeState state, Color roomColor, bool canSelect)
+    {
+        switch (state)
+        {
+            case MapNodeState.Available:
+                return new NodeStyle
+                {
+                    fill = roomColor,
+                    text = Color.white,
+                    hasOutline = true,
+                    outline = Color.white,
+                    isBold = true,
+                    pulses = canSelect,
+                };
+
+            case MapNodeState.Current:
+                return new NodeStyle
+                {
+                    fill = roomColor,
+                    text = Color.white,
+                    hasOutline = true,
+                    outline = CurrentOutlineColor,
+                    isBold = true,
+                };
+
+            case MapNodeState.Visited:
+                return new NodeStyle
+                {
+                    fill = Color.Lerp(roomColor, Color.black, 0.45f),
+                    text = new Color(1f, 1f, 1f, 0.75f),
+                };
+
+            default:
+                return new NodeStyle
+                {
+                    fill = Color.Lerp(Color.Lerp(roomColor, LockedGrey, 0.6f), Color.black, 0.3f),
+                    text = new Color(1f, 1f, 1f, 0.6f),
+                };
+        }
     }
 
     public static string GetNodeLabel(MapNodeType type)
@@ -93,6 +171,7 @@ public class MapView : AView
             Destroy(element);
         }
         _elements.Clear();
+        _pulsingNodes.Clear();
     }
 
     void Build()
@@ -104,8 +183,7 @@ public class MapView : AView
         {
             foreach (MapNode next in node.next)
             {
-                bool isVisitedPath = _run.IsVisited(node) && _run.IsVisited(next);
-                CreateLine(GetNodeAnchor(node, _run.map), GetNodeAnchor(next, _run.map), areaSize, isVisitedPath ? _visitedLineColor : _lineColor);
+                CreateLine(node, next, areaSize);
             }
         }
 
@@ -123,8 +201,14 @@ public class MapView : AView
         rectTransform.anchoredPosition = Vector2.zero;
     }
 
-    void CreateLine(Vector2 fromAnchor, Vector2 toAnchor, Vector2 areaSize, Color color)
+    // Taken path in gold, paths from the current room to the next ones in white, the others faded
+    void CreateLine(MapNode node, MapNode next, Vector2 areaSize)
     {
+        bool isVisitedPath = _run.IsVisited(node) && _run.IsVisited(next);
+        bool isNextPath = node == _run.currentNode;
+        Color color = isVisitedPath ? _visitedLineColor : (isNextPath ? _nextLineColor : _lineColor);
+        float width = isVisitedPath || isNextPath ? _highlightedLineWidth : _lineWidth;
+
         GameObject line = new GameObject("Line", typeof(RectTransform), typeof(Image));
         line.transform.SetParent(container, false);
         _elements.Add(line);
@@ -133,11 +217,12 @@ public class MapView : AView
         image.color = color;
         image.raycastTarget = false;
 
-        Vector2 direction = Vector2.Scale(toAnchor - fromAnchor, areaSize);
+        Vector2 fromAnchor = GetNodeAnchor(node, _run.map);
+        Vector2 direction = Vector2.Scale(GetNodeAnchor(next, _run.map) - fromAnchor, areaSize);
         RectTransform rectTransform = (RectTransform)line.transform;
         PlaceAt(rectTransform, fromAnchor);
         rectTransform.pivot = new Vector2(0f, 0.5f);
-        rectTransform.sizeDelta = new Vector2(direction.magnitude, _lineWidth);
+        rectTransform.sizeDelta = new Vector2(direction.magnitude, width);
         rectTransform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);
     }
 
@@ -153,21 +238,45 @@ public class MapView : AView
         rectTransform.sizeDelta = _nodeSize;
 
         MapNodeState state = _run.GetNodeState(node);
-        Color color = _nodeColors.TryGetValue(node.type, out Color typeColor) ? typeColor : Color.gray;
-        if (state == MapNodeState.Locked)
+        Color roomColor = _roomColors.TryGetValue(node.type, out Color typeColor) ? typeColor : Color.gray;
+        NodeStyle style = GetNodeStyle(state, roomColor, _canSelect);
+
+        Image image = button.GetComponent<Image>();
+        image.color = style.fill;
+        if (_nodeSprite != null)
         {
-            color.a = _lockedAlpha;
+            image.sprite = _nodeSprite;
+            image.type = Image.Type.Sliced;
         }
-        button.GetComponent<Image>().color = color;
+        if (style.hasOutline)
+        {
+            // Not QuickOutline's 3D Outline
+            UnityEngine.UI.Outline outline = button.AddComponent<UnityEngine.UI.Outline>();
+            outline.effectColor = style.outline;
+            outline.effectDistance = new Vector2(3f, -3f);
+        }
 
         TMP_Text text = button.GetComponentInChildren<TMP_Text>();
         text.text = GetNodeLabel(node.type);
-        text.fontStyle = state == MapNodeState.Current ? FontStyles.Bold | FontStyles.Underline : FontStyles.Normal;
-        text.color = state == MapNodeState.Locked ? new Color(0f, 0f, 0f, _lockedAlpha) : Color.black;
+        text.fontSize = _fontSize;
+        text.fontStyle = style.isBold ? FontStyles.Bold : FontStyles.Normal;
+        text.color = style.text;
 
+        // The style already shows what can be clicked, the button must not dim it further
         Button buttonComponent = button.GetComponent<Button>();
+        ColorBlock colors = buttonComponent.colors;
+        colors.normalColor = Color.white;
+        colors.selectedColor = Color.white;
+        colors.disabledColor = Color.white;
+        colors.highlightedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+        buttonComponent.colors = colors;
         buttonComponent.interactable = _canSelect && state == MapNodeState.Available;
         buttonComponent.onClick.AddListener(() => OnNodeSelected.Invoke(node));
+
+        if (style.pulses)
+        {
+            _pulsingNodes.Add(rectTransform);
+        }
     }
 
     #region AView
