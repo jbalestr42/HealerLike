@@ -8,7 +8,6 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using HealerLike.UI.Toolkit;
-using HealerLike.UI.Toolkit.Integration;
 
 namespace HealerLike.Tests.ToolkitIntegration
 {

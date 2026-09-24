@@ -17,20 +17,20 @@ namespace HealerLike.UI.Toolkit.Tests
         [Test]
         public void ReadySpellIncludesResourceCost()
         {
-            Assert.That(ToolkitPresentation.SkillStatus(25f, 0f, true), Is.EqualTo("25 mana · Ready"));
+            Assert.That(ToolkitPresentation.SkillStatus(true, "25", false, null), Is.EqualTo("25 mana · Ready"));
         }
 
         [Test]
         public void FreeSpellDoesNotMisrepresentResourceCost()
         {
-            Assert.That(ToolkitPresentation.SkillStatus(25f, 0f, false), Is.EqualTo("Free · Ready"));
+            Assert.That(ToolkitPresentation.SkillStatus(false, null, false, null), Is.EqualTo("Free · Ready"));
         }
 
         [Test]
         public void CoolingDownSpellIsNotReportedReady()
         {
-            StringAssert.Contains("mana", ToolkitPresentation.SkillStatus(25f, 2f, true));
-            StringAssert.DoesNotContain("Ready", ToolkitPresentation.SkillStatus(25f, 2f, true));
+            StringAssert.Contains("mana", ToolkitPresentation.SkillStatus(true, "25", true, "2s"));
+            StringAssert.DoesNotContain("Ready", ToolkitPresentation.SkillStatus(true, "25", true, "2s"));
         }
     }
 }

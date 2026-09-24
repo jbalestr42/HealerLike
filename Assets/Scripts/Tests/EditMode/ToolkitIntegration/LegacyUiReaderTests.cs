@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using HealerLike.UI.Toolkit.Integration;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -17,14 +16,14 @@ namespace HealerLike.Tests.ToolkitIntegration
         [Test]
         public void AllBindingsMatchUnmodifiedLegacyTypes()
         {
-            Assert.DoesNotThrow(LegacyUiReader.ValidateContract);
+            Assert.That(LegacyUiReader.IsValid(), Is.True);
         }
 
         [Test]
         public void NullStateSourceHasExplicitDiagnostic()
         {
-            var error = Assert.Throws<ArgumentNullException>(() => LegacyUiReader.GameState(null));
-            StringAssert.Contains("GameManager._state", error.Message);
+            UnityEngine.TestTools.LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("GameManager._state"));
+            Assert.That(LegacyUiReader.GameState(null), Is.EqualTo(GameManager.GameState.None));
         }
 
         [Test]

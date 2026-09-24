@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HealerLike.UI.Toolkit.Integration;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
@@ -55,7 +54,12 @@ namespace HealerLike.UI.Toolkit
 
         void Initialize()
         {
-            LegacyUiReader.ValidateContract();
+            if (!LegacyUiReader.IsValid())
+            {
+                Debug.LogError("[ToolkitGameUI] The legacy UI contract changed, the Toolkit interface stays off");
+                enabled = false;
+                return;
+            }
             _document = GetComponent<UIDocument>();
             if (_document.panelSettings == null)
             {
