@@ -643,7 +643,7 @@ namespace HealerLike.Render.Stage
             Camera game = _manager.gameCamera;
             _flatCamera.CopyFrom(game);
             _flatCamera.GetUniversalAdditionalCameraData().renderPostProcessing = game.GetUniversalAdditionalCameraData().renderPostProcessing;
-            Renderer ground = _manager.player.grid.GetComponentInChildren<Renderer>();
+            Renderer ground = _manager.boardGround;
             MaterialPropertyBlock saved = new MaterialPropertyBlock();
             MaterialPropertyBlock flat = new MaterialPropertyBlock();
             if (ground != null)

@@ -1,6 +1,7 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using HealerLike.Render.Environment;
 using HealerLike.Render.Grass;
 using HealerLike.Render.Look;
 using HealerLike.Render.Spells;
@@ -18,6 +19,7 @@ namespace HealerLike.Render.Stage
         public static readonly string BoardMaterialPath = "Assets/Render/Stage/Materials/StageGround.mat";
         public static readonly string SinkPath = "Assets/Render/Spells/Prefabs/SpellVisualSink.prefab";
         public static readonly string StoneEffectsPath = "Assets/Render/Stones/Prefabs/StoneEffects.prefab";
+        public static readonly string DeliveryVocabularyPath = "Assets/Render/Deliveries/Data/Resources/DeliveryVocabulary.asset";
         // Decoration in Main that the render preview hides, and the far ground under the environment plane
         public static readonly string[] HiddenObjects = { "MiddleLine", "Sphere", "Ground" };
         // The Main scene's directional light colour
@@ -52,7 +54,7 @@ namespace HealerLike.Render.Stage
             data.FindProperty("_meshes").objectReferenceValue = EnvironmentAuthoring.Load<Object>(EnvironmentAuthoring.MeshesPath);
             data.FindProperty("_pipeline").objectReferenceValue = pipeline;
             data.FindProperty("_groundMaterial").objectReferenceValue = EnvironmentAuthoring.Load<Material>(BoardMaterialPath);
-            data.FindProperty("_environmentPrefab").objectReferenceValue = environment;
+            data.FindProperty("_environmentPrefab").objectReferenceValue = environment.GetComponent<EnvironmentRoot>();
             data.FindProperty("_look").objectReferenceValue = look;
             data.FindProperty("_zones").objectReferenceValue = zones;
             data.FindProperty("_grass").objectReferenceValue = grass;
@@ -62,6 +64,7 @@ namespace HealerLike.Render.Stage
             data.FindProperty("_battleFocus").objectReferenceValue = battleFocus;
             data.FindProperty("_rangeDriver").objectReferenceValue = rangeDriver;
             data.FindProperty("_keyLight").objectReferenceValue = keyLight;
+            data.FindProperty("_deliveryVocabulary").objectReferenceValue = EnvironmentAuthoring.Load<Object>(DeliveryVocabularyPath);
             SerializedProperty hidden = data.FindProperty("_hiddenObjectNames");
             hidden.arraySize = HiddenObjects.Length;
             for (int i = 0; i < HiddenObjects.Length; i++)

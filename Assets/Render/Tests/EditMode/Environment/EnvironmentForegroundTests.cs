@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using HealerLike.Render.Creatures;
-using HealerLike.Render.Stage;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -22,14 +21,12 @@ public class EnvironmentForegroundTests
 
     GameObject _go;
     GameObject _cameraGo;
-    GameObject _managerGo;
 
     [SetUp]
     public void SetUp()
     {
         _go = new GameObject("ForegroundTest");
         _cameraGo = new GameObject("ForegroundCamera");
-        _managerGo = new GameObject("ForegroundManager");
     }
 
     [TearDown]
@@ -46,7 +43,16 @@ public class EnvironmentForegroundTests
 
         Object.DestroyImmediate(_go);
         Object.DestroyImmediate(_cameraGo);
-        Object.DestroyImmediate(_managerGo);
+    }
+
+    // The stage camera at the pose the layout tests use
+    Camera CreateCamera()
+    {
+        Camera camera = _cameraGo.AddComponent<Camera>();
+        camera.fieldOfView = fov;
+        camera.aspect = aspect;
+        _cameraGo.transform.SetPositionAndRotation(position, rotation);
+        return camera;
     }
 
     static PrimitiveMeshes LoadMeshes()
@@ -160,17 +166,23 @@ public class EnvironmentForegroundTests
     }
 
     [Test]
-    public void Build_StagePose_MakesOneColliderFreeChildPerItem()
+    public void Build_NoCamera_BuildsNothing()
     {
         EnvironmentForeground foreground = _go.AddComponent<EnvironmentForeground>();
-        TestHelpers.SetPrivateField(foreground, "_groundY", ground);
-        TestHelpers.SetPrivateField(foreground, "_seed", 5);
-        TestHelpers.SetPrivateField(foreground, "_meshes", LoadMeshes());
 
         Assert.DoesNotThrow(() => foreground.Build());
-        Assert.IsNull(foreground.root);
 
-        foreground.Build(position, rotation, fov, aspect);
+        Assert.IsNull(foreground.root);
+    }
+
+    [Test]
+    public void Init_StagePose_MakesOneColliderFreeChildPerItem()
+    {
+        Camera camera = CreateCamera();
+        EnvironmentForeground foreground = _go.AddComponent<EnvironmentForeground>();
+        TestHelpers.SetPrivateField(foreground, "_seed", 5);
+
+        foreground.Init(camera, ground, LoadMeshes());
 
         Assert.That(foreground.items.Count, Is.InRange(6, 10));
         Assert.AreEqual(foreground.items.Count, foreground.root.childCount);
@@ -197,16 +209,11 @@ public class EnvironmentForegroundTests
     [Test]
     public void Init_Camera_MatchesTheLayoutForItsPose()
     {
-        Camera camera = _cameraGo.AddComponent<Camera>();
-        camera.fieldOfView = fov;
-        camera.aspect = aspect;
-        _cameraGo.transform.SetPositionAndRotation(position, rotation);
-        RenderManager manager = _managerGo.AddComponent<RenderManager>();
-        TestHelpers.SetPrivateField(manager, "_meshes", LoadMeshes());
+        Camera camera = CreateCamera();
         EnvironmentForeground foreground = _go.AddComponent<EnvironmentForeground>();
         TestHelpers.SetPrivateField(foreground, "_seed", 11);
 
-        foreground.Init(camera, ground, manager);
+        foreground.Init(camera, ground, LoadMeshes());
 
         List<ForegroundItem> expected = EnvironmentForeground.Layout(position, rotation, fov, aspect,
             ground, 11);

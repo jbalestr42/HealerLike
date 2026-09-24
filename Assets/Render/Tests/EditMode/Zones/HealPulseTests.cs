@@ -1,3 +1,4 @@
+using HealerLike.Render.Stage;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -24,7 +25,6 @@ public class HealPulseTests
         _target = new GameObject("target");
         _target.transform.position = new Vector3(1f, 2f, 3f);
         _pulse = _source.AddComponent<HealPulse>();
-        _pulse.cellSize = 2f;
         _pulse.Init(_source, _registry, _zones);
     }
 
@@ -45,7 +45,7 @@ public class HealPulseTests
         Assert.AreEqual(1, _zones.count);
         Assert.AreEqual((int)ZoneKind.Heal, _zones.snapshot[0].kind);
         Assert.AreEqual(_target.transform.position, _zones.snapshot[0].position);
-        Assert.AreEqual(1.2f, _zones.snapshot[0].radius); // 0.6 * cell size 2
+        Assert.AreEqual(HealPulse.PulseCells * StageCalibration.CellSize, _zones.snapshot[0].radius);
 
         _target.transform.position = Vector3.zero;
         _zones.PublishFrame(0.225f);

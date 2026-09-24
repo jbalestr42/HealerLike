@@ -11,7 +11,6 @@ namespace HealerLike.Render.Creatures
         [SerializeField] CreatureRecipe _recipe;
         [SerializeField] Material _material;
         [SerializeField] PrimitiveMeshes _meshes;
-        [SerializeField] float _cellSize = 1f;
 
         Entity _entity;
         readonly List<ASkill> _skills = new List<ASkill>();
@@ -23,6 +22,8 @@ namespace HealerLike.Render.Creatures
         RenderRegistry _registeredRegistry;
         RenderRegistry _registry;
         ISpellVisualSink _spellSink;
+        // The game's cell unless Configure hands another ground frame
+        float _cellSize = StageCalibration.CellSize;
         bool _hasConfiguredPlane;
         Vector3 _groundOrigin;
         Vector3 _groundNormal = Vector3.up;

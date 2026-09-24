@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using HealerLike.Render.Creatures;
-using HealerLike.Render.Stage;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -23,14 +22,12 @@ public class EnvironmentRidgeTests
 
     GameObject _go;
     GameObject _cameraGo;
-    GameObject _managerGo;
 
     [SetUp]
     public void SetUp()
     {
         _go = new GameObject("RidgeTest");
         _cameraGo = new GameObject("RidgeCamera");
-        _managerGo = new GameObject("RidgeManager");
     }
 
     [TearDown]
@@ -47,7 +44,6 @@ public class EnvironmentRidgeTests
 
         Object.DestroyImmediate(_go);
         Object.DestroyImmediate(_cameraGo);
-        Object.DestroyImmediate(_managerGo);
     }
 
     static PrimitiveMeshes LoadMeshes()
@@ -151,21 +147,25 @@ public class EnvironmentRidgeTests
     }
 
     [Test]
-    public void Build_Eye_MakesOneShadowlessColliderFreeChildPerItem()
+    public void Build_NoCamera_BuildsNothing()
     {
         EnvironmentRidge ridge = _go.AddComponent<EnvironmentRidge>();
-        TestHelpers.SetPrivateField(ridge, "_grid", grid);
-        TestHelpers.SetPrivateField(ridge, "_groundY", ground);
-        TestHelpers.SetPrivateField(ridge, "_fogStart", fogStart);
-        TestHelpers.SetPrivateField(ridge, "_fogEnd", fogEnd);
-        TestHelpers.SetPrivateField(ridge, "_fogBands", bands);
-        TestHelpers.SetPrivateField(ridge, "_seed", 4);
-        TestHelpers.SetPrivateField(ridge, "_meshes", LoadMeshes());
 
         Assert.DoesNotThrow(() => ridge.Build());
-        Assert.IsNull(ridge.root);
 
-        ridge.Build(eye);
+        Assert.IsNull(ridge.root);
+    }
+
+    [Test]
+    public void Init_Eye_MakesOneShadowlessColliderFreeChildPerItem()
+    {
+        Camera camera = _cameraGo.AddComponent<Camera>();
+        _cameraGo.transform.position = eye;
+        EnvironmentRidge ridge = _go.AddComponent<EnvironmentRidge>();
+        TestHelpers.SetPrivateField(ridge, "_fogBands", bands);
+        TestHelpers.SetPrivateField(ridge, "_seed", 4);
+
+        ridge.Init(camera, grid, ground, fogStart, fogEnd, LoadMeshes());
 
         Assert.AreEqual(ridge.items.Count, ridge.root.childCount);
         for (int i = 0; i < ridge.items.Count; i++)
@@ -194,15 +194,13 @@ public class EnvironmentRidgeTests
     }
 
     [Test]
-    public void Init_CameraAndManager_BuildsLayoutWithManagerMeshes()
+    public void Init_Camera_BuildsLayoutWithTheGivenMeshes()
     {
         Camera camera = _cameraGo.AddComponent<Camera>();
         _cameraGo.transform.position = eye;
-        RenderManager manager = _managerGo.AddComponent<RenderManager>();
-        TestHelpers.SetPrivateField(manager, "_meshes", LoadMeshes());
         EnvironmentRidge ridge = _go.AddComponent<EnvironmentRidge>();
 
-        ridge.Init(camera, grid, ground, fogStart, fogEnd, manager);
+        ridge.Init(camera, grid, ground, fogStart, fogEnd, LoadMeshes());
 
         List<RidgeItem> expected = EnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, ground, 1707);
         Assert.AreEqual(expected.Count, ridge.items.Count);

@@ -31,10 +31,20 @@ namespace HealerLike.Render.Stage
             SetReference(grass, "_stripTemplate", stripField);
             EnvironmentScatter scatter = root.AddComponent<EnvironmentScatter>();
             SetMaterials(scatter);
-            root.AddComponent<EnvironmentGust>();
-            SetMaterials(Child(root, "Foreground").AddComponent<EnvironmentForeground>());
-            SetMaterials(Child(root, "FarRidge").AddComponent<EnvironmentRidge>());
-            CreateGround(root);
+            EnvironmentGust gust = root.AddComponent<EnvironmentGust>();
+            EnvironmentForeground foreground = Child(root, "Foreground").AddComponent<EnvironmentForeground>();
+            SetMaterials(foreground);
+            EnvironmentRidge ridge = Child(root, "FarRidge").AddComponent<EnvironmentRidge>();
+            SetMaterials(ridge);
+            GameObject ground = CreateGround(root);
+
+            EnvironmentRoot environment = root.AddComponent<EnvironmentRoot>();
+            SetReference(environment, "_scatter", scatter);
+            SetReference(environment, "_foreground", foreground);
+            SetReference(environment, "_ridge", ridge);
+            SetReference(environment, "_grass", grass);
+            SetReference(environment, "_gust", gust);
+            SetReference(environment, "_ground", ground.transform);
 
             Directory.CreateDirectory(Path.GetDirectoryName(PrefabPath));
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
@@ -52,7 +62,7 @@ namespace HealerLike.Render.Stage
         }
 
         // The game-scale ground, a thousand units wide, never intercepting gameplay raycasts
-        static void CreateGround(GameObject root)
+        static GameObject CreateGround(GameObject root)
         {
             GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
             ground.name = "Ground";
@@ -63,6 +73,7 @@ namespace HealerLike.Render.Stage
             MeshRenderer groundRenderer = ground.GetComponent<MeshRenderer>();
             groundRenderer.sharedMaterial = Load<Material>(GroundMaterialPath);
             groundRenderer.shadowCastingMode = ShadowCastingMode.Off;
+            return ground;
         }
 
         static void SetMaterials(Component component)

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using HealerLike.Render.Grass;
-using HealerLike.Render.Stage;
 using HealerLike.Render.Zones;
 using UnityEngine;
 
@@ -23,8 +22,7 @@ namespace HealerLike.Render.Environment
 
         public IReadOnlyList<GrassField> strips { get { return _strips; } }
 
-        public void Init(Rect board, float cellSize, float surfaceY, Camera camera, ZoneRegistry zones,
-                         RenderManager manager)
+        public void Init(Rect board, float cellSize, float surfaceY, Camera camera, ZoneRegistry zones)
         {
             foreach (GrassField strip in _strips)
             {

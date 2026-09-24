@@ -7,15 +7,12 @@ namespace HealerLike.Render.Zones
     public class HealPulse : MonoBehaviour, IEntityView, IHealthVisualSink
     {
         // A heal pulse reaches this far, in cells
-        static readonly float pulseCells = 0.6f;
+        public static readonly float PulseCells = 0.6f;
 
-        [SerializeField] float _cellSize = 1f;
         GameObject _source;
         RenderRegistry _registry;
         ZoneRegistry _zones;
         bool _isRegistered = false;
-
-        public float cellSize { get { return _cellSize; } set { _cellSize = value; } }
 
         public void Init(Entity entity, RenderManager manager)
         {
@@ -56,7 +53,7 @@ namespace HealerLike.Render.Zones
                 return 0;
             }
 
-            return _zones.AddHealPulse(target, pulseCells * _cellSize);
+            return _zones.AddHealPulse(target, PulseCells * StageCalibration.CellSize);
         }
 
         #region IHealthVisualSink

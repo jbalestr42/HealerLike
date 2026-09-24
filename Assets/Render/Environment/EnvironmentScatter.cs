@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
-using HealerLike.Render.Stage;
 using HealerLike.Render.Stones;
 using UnityEngine;
 
@@ -58,15 +57,15 @@ namespace HealerLike.Render.Environment
         public Transform root { get { return _root; } }
 
         public void Init(Rect board, float cellSize, float surfaceY, Camera viewCamera, EnvironmentGust gust,
-                         float fogEnd, RenderManager manager)
+                         float fogEnd, PrimitiveMeshes meshes)
         {
-            if (manager == null || manager.meshes == null)
+            if (meshes == null)
             {
-                Debug.LogError("[EnvironmentScatter] Init needs the render manager and its primitive meshes.");
+                Debug.LogError("[EnvironmentScatter] Init needs the primitive meshes.");
                 return;
             }
 
-            _meshes = manager.meshes;
+            _meshes = meshes;
             _surfaceY = surfaceY;
             ConfigureMotion(viewCamera, gust, fogEnd);
             Build(board, cellSize);
@@ -150,7 +149,7 @@ namespace HealerLike.Render.Environment
             }
         }
 
-        public void Build(Rect gridRect, float cellSize)
+        void Build(Rect gridRect, float cellSize)
         {
             if (_meshes == null)
             {

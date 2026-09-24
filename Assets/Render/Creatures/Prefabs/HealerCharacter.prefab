@@ -65,7 +65,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff72fcddce784a6396cd2bda1d8abbd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HealPulse
-  _cellSize: 1
 --- !u!114 &7959280919119806704
 MonoBehaviour:
   m_ObjectHideFlags: 0

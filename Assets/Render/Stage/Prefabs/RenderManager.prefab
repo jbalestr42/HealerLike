@@ -75,6 +75,7 @@ MonoBehaviour:
   _battleFocus: {fileID: 8059157259222913857}
   _rangeDriver: {fileID: 260637357020886478}
   _keyLight: {fileID: 1873633211094606159}
+  _deliveryVocabulary: {fileID: 11400000, guid: 96531525697a44f538d325bc010163ad, type: 2}
 --- !u!114 &1326039467474303321
 MonoBehaviour:
   m_ObjectHideFlags: 0

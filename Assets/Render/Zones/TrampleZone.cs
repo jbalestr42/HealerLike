@@ -6,8 +6,7 @@ namespace HealerLike.Render.Zones
     // Obstacle footprint in world units, reads the root transform and never the gameplay occupancy
     public class TrampleZone : MonoBehaviour, IEntityView
     {
-        // The game's grid cell is one unit, the ring clears the root crown by this margin
-        public static readonly float CellSize = 1f;
+        // The ring clears the root crown by this margin
         public static readonly float Margin = 0.15f;
 
         public float radius = 0.65f;
@@ -35,7 +34,7 @@ namespace HealerLike.Render.Zones
         // The root footprint stays within the cell
         public static float CreatureFootprint(Transform root)
         {
-            return CellSize * 0.5f * Mathf.Max(Mathf.Abs(root.lossyScale.x), Mathf.Abs(root.lossyScale.z));
+            return StageCalibration.CellSize * 0.5f * Mathf.Max(Mathf.Abs(root.lossyScale.x), Mathf.Abs(root.lossyScale.z));
         }
 
         public static float TrampleRadius(float footprintRadius)

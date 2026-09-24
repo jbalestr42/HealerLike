@@ -15,6 +15,8 @@ namespace HealerLike.Render.Stage
         public static readonly float LandscapePitch = 46f;
         public static readonly float LandscapeAspect = 16f / 9f;
         public static readonly float LandscapeCentreY = 0.46f;
+        // The game's grid cell, in world units; every size the views draw in cells is scaled by it
+        public static readonly float CellSize = 1f;
         // Fog from clear to full over this many units past the far edge, well inside the environment ring
         public static readonly float BackgroundFogDepth = 10f;
 
