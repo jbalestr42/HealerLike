@@ -122,8 +122,8 @@ public class StageKeyLightTests
     [Test]
     public void ApplyCheapShadows_RealShadowsToggled_TurnsEllipsesOffAndBackOn()
     {
-        StoneGroundDisc shadow = StoneGroundDiscTests.CreateDisc(_discGo.transform, true);
-        StoneGroundDisc earth = StoneGroundDiscTests.CreateDisc(_discGo.transform, false);
+        StoneGroundDisc shadow = RenderTestAssets.CreateGroundDisc(_discGo.transform, true);
+        StoneGroundDisc earth = RenderTestAssets.CreateGroundDisc(_discGo.transform, false);
         shadow.Show(true);
         earth.Show(true);
         StoneGroundDisc[] discs = new StoneGroundDisc[] { shadow, earth };

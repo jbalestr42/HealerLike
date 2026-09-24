@@ -10,7 +10,6 @@ namespace HealerLike.Render.Deliveries
     // Draws the tip fragment of one delivery style, instanced once per mesh, in a frame that looks along the travel
     public class DeliveryTip
     {
-        static readonly int baseColorId = Shader.PropertyToID("_BaseColor");
         // A travel shorter than this has no direction
         static readonly float stillSquared = 0.000001f;
 
@@ -80,22 +79,32 @@ namespace HealerLike.Render.Deliveries
             return frame * Matrix4x4.TRS(part.position, Quaternion.Euler(part.euler), part.size);
         }
 
-        // The accent role takes the tip colour and the stem roles the arm's, anything else asks the palette
+        // The accent role takes the delivery's tip colour and the stem role the arm's own, every other role is
+        // the palette's
         public Color PartColour(int index, Color tip, Color stem)
         {
             LookPart part = _parts[index];
-            Color colour = stem;
-            if (part.colour == ColourRole.Accent)
+            Color colour = tip;
+            if (part.colour == ColourRole.Stem)
             {
-                colour = tip;
+                colour = stem;
             }
-            else if (part.colour != ColourRole.Stem && part.colour != ColourRole.Limb && part.colour != ColourRole.Body
-                && _palette)
+            else if (part.colour != ColourRole.Accent)
             {
-                colour = _palette.Colour(part.colour, EffectFamily.Damage);
+                colour = PaletteColour(part.colour);
             }
 
             return PrimitiveMeshes.Brighten(colour, part.glow);
+        }
+
+        Color PaletteColour(ColourRole role)
+        {
+            if (!_palette)
+            {
+                Debug.LogError("[DeliveryTip] No palette.");
+                return Color.magenta;
+            }
+            return _palette.Colour(role, EffectFamily.Damage);
         }
 
         public void Draw(Matrix4x4 frame, Material material, Color tip, Color stem, int layer)
@@ -114,7 +123,7 @@ namespace HealerLike.Render.Deliveries
                     _colours[g][k] = PartColour(group[k], tip, stem);
                 }
 
-                _blocks[g].SetVectorArray(baseColorId, _colours[g]);
+                _blocks[g].SetVectorArray(RenderObjects.BaseColorId, _colours[g]);
                 Graphics.DrawMeshInstanced(_meshes[g], 0, material, _matrices[g], group.Count, _blocks[g],
                     ShadowCastingMode.On, true, layer);
             }

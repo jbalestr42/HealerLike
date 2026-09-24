@@ -3,7 +3,7 @@ using UnityEngine;
 namespace HealerLike.Render.Grammar
 {
     // Reads the look of a unit from its EntityData, never from its title, name or asset path
-    public static partial class LookDerivation
+    public static class LookDerivation
     {
         // Homing prefabs this fast read as a spear: StraightLaserBullet flies at 20, BulletSpeed at 15
         public static readonly float SpearSpeed = 18f;
@@ -25,13 +25,14 @@ namespace HealerLike.Render.Grammar
             ASkillFactory primary = Primary(data);
             UnitChannels channels = new UnitChannels();
             channels.side = Side(entityType);
-            channels.head = Head(primary);
+            channels.head = HeadDerivation.Head(primary);
             channels.count = Count(Hits(primary, data));
             channels.stem = Stem(Cadence(primary, data));
             channels.mass = Mass(Health(data));
             channels.reach = Reach(data);
-            channels.accent = Accent(primary);
-            channels.accessory = Accessory(data, channels.head, channels.accent, out channels.accessoryHead);
+            channels.accent = HeadDerivation.Accent(primary);
+            channels.accessory = HeadDerivation.Accessory(data, channels.head, channels.accent,
+                out channels.accessoryHead);
             return channels;
         }
 

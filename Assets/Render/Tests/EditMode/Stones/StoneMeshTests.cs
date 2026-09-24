@@ -33,7 +33,7 @@ public class StoneMeshTests
     {
         _mesh = StoneMesh.CreateMesh(3u, StonePresets.Boulder);
 
-        PrimitiveMeshBakerTests.AssertClosed(_mesh);
+        RenderTestAssets.AssertClosed(_mesh);
     }
 
     [TestCase(0, 60)]

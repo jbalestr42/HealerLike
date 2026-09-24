@@ -47,7 +47,7 @@ public class CreatureLooksTests
         CreatureLooks looks = CreateTracked<CreatureLooks>();
         looks.plant = CreateView("Plant");
         looks.stone = CreateView("Stone");
-        looks.vocabulary = LookVocabularyTests.Vocabulary();
+        looks.vocabulary = RenderTestAssets.LoadLookVocabulary();
         return looks;
     }
 
@@ -98,7 +98,7 @@ public class CreatureLooksTests
     public void GetRecipe_MappedEntity_ReturnsNullSoTheAuthoredViewKeepsItsOwn()
     {
         CreatureLooks looks = CreateLooks();
-        EntityData data = LookDerivationTests.LoadEntity("NormalEntity");
+        EntityData data = RenderTestAssets.LoadEntity("NormalEntity");
         looks.entities[data] = CreateView("Mapped");
 
         Assert.IsNull(looks.GetRecipe(data, Entity.EntityType.Player));
@@ -108,7 +108,7 @@ public class CreatureLooksTests
     public void GetRecipe_UnmappedEntity_DerivesOncePerSide()
     {
         CreatureLooks looks = CreateLooks();
-        EntityData data = LookDerivationTests.LoadEntity("SoldierEntity");
+        EntityData data = RenderTestAssets.LoadEntity("SoldierEntity");
 
         CreatureRecipe plant = looks.GetRecipe(data, Entity.EntityType.Player);
         CreatureRecipe stone = looks.GetRecipe(data, Entity.EntityType.Computer);
@@ -128,8 +128,8 @@ public class CreatureLooksTests
     {
         CreatureLooks looks = CreateTracked<CreatureLooks>();
         looks.plant = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Creatures/Prefabs/DerivedPlant.prefab");
-        looks.vocabulary = LookVocabularyTests.Vocabulary();
-        EntityData data = LookDerivationTests.LoadEntity("NormalEntity");
+        looks.vocabulary = RenderTestAssets.LoadLookVocabulary();
+        EntityData data = RenderTestAssets.LoadEntity("NormalEntity");
 
         GameObject view = looks.BakeToOverride(data, Entity.EntityType.Player);
 
@@ -154,7 +154,7 @@ public class CreatureLooksTests
 
         Assert.IsEmpty(looks.entities);
         Assert.IsEmpty(looks.characters);
-        Assert.AreSame(LookVocabularyTests.Vocabulary(), looks.vocabulary);
+        Assert.AreSame(RenderTestAssets.LoadLookVocabulary(), looks.vocabulary);
         Assert.AreEqual("DerivedPlant", looks.plant.name);
         Assert.AreEqual("DerivedStone", looks.stone.name);
         Assert.AreEqual("HealerCharacter", looks.GetView(healer).name);

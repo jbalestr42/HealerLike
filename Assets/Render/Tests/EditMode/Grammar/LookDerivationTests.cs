@@ -8,25 +8,7 @@ namespace HealerLike.Render.Grammar
 
 public class LookDerivationTests
 {
-    static readonly string entities = "Assets/Data/Entities/";
-    static readonly string projectiles = "Assets/Prefabs/Projectiles/";
-
     readonly List<Object> _objects = new List<Object>();
-
-    public static EntityData LoadEntity(string folder)
-    {
-        string file = folder == "HitArmorBufferEntityEntity" ? "HitArmorBufferEntity" : folder;
-        EntityData data = AssetDatabase.LoadAssetAtPath<EntityData>(entities + folder + "/" + file + ".asset");
-        Assert.NotNull(data, folder);
-        return data;
-    }
-
-    public static GameObject LoadProjectile(string name)
-    {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(projectiles + name + ".prefab");
-        Assert.NotNull(prefab, name);
-        return prefab;
-    }
 
     [TearDown]
     public void TearDown()
@@ -60,7 +42,7 @@ public class LookDerivationTests
     public void Channels_LiveEntity_MatchesTableRow(string folder, Entity.EntityType entityType, LookSide side, HeadKind head,
         CountBand count, StemBand stem, MassBand mass, AccessoryKind accessory, EffectFamily accent)
     {
-        UnitChannels channels = LookDerivation.Channels(LoadEntity(folder), entityType);
+        UnitChannels channels = LookDerivation.Channels(RenderTestAssets.LoadEntity(folder), entityType);
 
         Assert.AreEqual(side, channels.side);
         Assert.AreEqual(head, channels.head);
@@ -89,7 +71,7 @@ public class LookDerivationTests
     [TestCase("SwarmBullet", HeadKind.Arch)]
     public void Delivery_ProjectilePrefab_ReadsClassMotionAndSpeed(string name, HeadKind expected)
     {
-        Assert.AreEqual(expected, LookDerivation.Delivery(LoadProjectile(name)));
+        Assert.AreEqual(expected, LookDerivation.Delivery(RenderTestAssets.LoadProjectile(name)));
     }
 
     [TestCase("NormalEntity", 1)]
@@ -105,7 +87,7 @@ public class LookDerivationTests
     [TestCase("HitArmorBufferEntityEntity", 1)]
     public void Hits_PrimarySkill_CountsShotsPerTrigger(string folder, int expected)
     {
-        EntityData data = LoadEntity(folder);
+        EntityData data = RenderTestAssets.LoadEntity(folder);
 
         Assert.AreEqual(expected, LookDerivation.Hits(LookDerivation.Primary(data), data));
     }
@@ -132,7 +114,7 @@ public class LookDerivationTests
     [TestCase("HitArmorBufferEntityEntity", 5f)] // the support skill's rate, not its AttackRate 0
     public void Cadence_PrimarySkill_ReadsTheSkillsOwnClock(string folder, float expected)
     {
-        EntityData data = LoadEntity(folder);
+        EntityData data = RenderTestAssets.LoadEntity(folder);
 
         Assert.AreEqual(expected, LookDerivation.Cadence(LookDerivation.Primary(data), data), 0.0001f);
     }
@@ -153,7 +135,7 @@ public class LookDerivationTests
     [TestCase("HitArmorBufferEntityEntity", 100f)]
     public void Health_EntityData_ReadsHealthMax(string folder, float expected)
     {
-        Assert.AreEqual(expected, LookDerivation.Health(LoadEntity(folder)), 0.0001f);
+        Assert.AreEqual(expected, LookDerivation.Health(RenderTestAssets.LoadEntity(folder)), 0.0001f);
     }
 
     [TestCase(100f, MassBand.Light)]
@@ -191,7 +173,7 @@ public class LookDerivationTests
     [TestCase("HitArmorBufferEntityEntity")]
     public void Reach_LiveRange_IsLongOnEveryUnit(string folder)
     {
-        Assert.AreEqual(ReachBand.Long, LookDerivation.Reach(LoadEntity(folder)));
+        Assert.AreEqual(ReachBand.Long, LookDerivation.Reach(RenderTestAssets.LoadEntity(folder)));
     }
 
     [TestCase(2f, ReachBand.Short)]

@@ -113,7 +113,7 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            DestroyEntry(entry);
+            RenderObjects.Release(entry.mesh);
             _entries.Remove(key);
         }
 
@@ -121,21 +121,9 @@ namespace HealerLike.Render.Stones
         {
             foreach (Entry entry in _entries.Values)
             {
-                DestroyEntry(entry);
+                RenderObjects.Release(entry.mesh);
             }
             _entries.Clear();
-        }
-
-        static void DestroyEntry(Entry entry)
-        {
-            if (Application.isPlaying)
-            {
-                UnityEngine.Object.Destroy(entry.mesh);
-            }
-            else
-            {
-                UnityEngine.Object.DestroyImmediate(entry.mesh);
-            }
         }
     }
 }

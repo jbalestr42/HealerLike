@@ -122,32 +122,26 @@ public class RangePreviewTests
     }
 
     [Test]
-    public void Show_ShowAllOnEnemy_UsesLowStrengthAndExcludesEnemies()
+    public void Show_HoveredEnemy_ShowsNothing()
     {
-        _preview.Show(false, true);
-        _preview.Refresh();
-        _owner.PublishFrame(0f);
-        Assert.AreEqual(RangePreview.ShowAllStrength, _owner.snapshot[0].strength);
-
-        _preview.SetPreviewState(true, false);
-        _owner.PublishFrame(0f);
-        Assert.AreEqual(RangePreview.ShowAllStrength, _owner.snapshot[0].strength);
-
         _entity.entityType = Entity.EntityType.Computer;
+
+        _preview.Show(true);
         _preview.Refresh();
+
         Assert.AreEqual(0, _owner.liveCount);
     }
 
     [Test]
     public void Show_Hovered_KeepsTheExplicitSelection()
     {
-        _preview.Show(true, false);
+        _preview.Show(true);
         _preview.Refresh();
         _owner.PublishFrame(0f);
         Assert.AreEqual((int)ZoneKind.Range, _owner.snapshot[0].kind);
 
         _preview.SetPreviewState(true, false);
-        _preview.Show(false, false);
+        _preview.Show(false);
         _preview.Refresh();
         Assert.AreEqual(1, _owner.liveCount);
 
@@ -171,7 +165,7 @@ public class RangePreviewTests
     [Test]
     public void Show_Hovered_ShowsTheRangeAtFullPreviewStrength()
     {
-        _preview.Show(true, false);
+        _preview.Show(true);
         _preview.Refresh();
         _owner.PublishFrame(0f);
 
@@ -180,19 +174,9 @@ public class RangePreviewTests
     }
 
     [Test]
-    public void Show_ShowAll_UsesTheLowStrength()
+    public void Show_NotHovered_HidesTheRange()
     {
-        _preview.Show(false, true);
-        _preview.Refresh();
-        _owner.PublishFrame(0f);
-
-        Assert.AreEqual(RangePreview.ShowAllStrength, _owner.snapshot[0].strength);
-    }
-
-    [Test]
-    public void Show_NeitherHoveredNorShowAll_HidesTheRange()
-    {
-        _preview.Show(false, false);
+        _preview.Show(false);
         _preview.Refresh();
 
         Assert.AreEqual(0, _owner.liveCount);
@@ -201,7 +185,7 @@ public class RangePreviewTests
     [Test]
     public void Show_Selected_StillShowsWhenNotHovered()
     {
-        _preview.Show(false, false);
+        _preview.Show(false);
         _preview.SetPreviewState(true, false);
         _preview.Refresh();
 
@@ -213,7 +197,7 @@ public class RangePreviewTests
     {
         _preview.Init(_entity, (ZoneRegistry)null);
 
-        _preview.Show(true, false);
+        _preview.Show(true);
         _preview.Refresh();
 
         Assert.AreEqual(0, _owner.liveCount);

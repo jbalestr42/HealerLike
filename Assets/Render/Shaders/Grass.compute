@@ -1,22 +1,12 @@
 #pragma kernel HLUpdateGrass
 #include "GrassZones.hlsl"
+#include "GrassTuftData.hlsl"
 
-struct HLBladeSeed
-{
-    float4 positionYaw;
-    float4 heightWidthLean;
-};
-
-struct HLBladeState
-{
-    float4 leanHeightSpike;
-};
-
-StructuredBuffer<HLBladeSeed> _HL_BladeSeeds;
-RWStructuredBuffer<HLBladeState> _HL_BladeStates;
-AppendStructuredBuffer<uint> _HL_VisibleBlades;
-uint _HL_BladeCount;
-float4 _HL_FrustumPlanes[6];
+StructuredBuffer<HLBladeSeed> _HLBladeSeeds;
+RWStructuredBuffer<HLBladeState> _HLBladeStates;
+AppendStructuredBuffer<uint> _HLVisibleBlades;
+uint _HLBladeCount;
+float4 _HLFrustumPlanes[6];
 
 // A lean is a tilt of the rigid tuft about its root, in radians, pointing where the tip goes
 float2 HLCapLean(float2 lean, float limit)
@@ -39,11 +29,11 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
     float2 outwardSum = 0.0;
     float2 yaw = float2(cos(blade.positionYaw.w), sin(blade.positionYaw.w));
 
-    for (int i = 0; i < min(_HL_ZoneCount, 64); i++)
+    for (int i = 0; i < min(_HLZoneCount, HL_MAX_ZONES); i++)
     {
         HLZone zone = HLLoadZone(i);
         float weight = HLGrassZoneWeight(zone, position);
-        if (zone.kind == 2)
+        if (zone.kind == HL_ZONE_HOSTILE)
         {
             spike = max(spike, weight);
             // Presence keeps the same spike geometry during both emergence and sinking
@@ -55,7 +45,7 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
             spikeHeight = max(spikeHeight, weight * smoothstep(0.0, 0.15, zone.age));
         }
 
-        if (zone.kind == 6)
+        if (zone.kind == HL_ZONE_TRAMPLE)
         {
             // Smooth irregular flattening, rather than a shaved disc with a hard circular rim
             float2 delta = position - zone.position.xz;
@@ -64,12 +54,12 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
             trample = max(trample, footprint);
         }
 
-        if (zone.kind == 4)
+        if (zone.kind == HL_ZONE_BRUISE)
         {
             bruise = max(bruise, weight);
         }
 
-        if (zone.kind == 5 && zone.radius > 0.0)
+        if (zone.kind == HL_ZONE_LAUNCH && zone.radius > 0.0)
         {
             float2 delta = position - zone.position.xz;
             float front = zone.radius * saturate(zone.age / 0.4);
@@ -78,12 +68,12 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
             launch += zone.direction * wave * saturate(dot(delta / max(length(delta), 1e-5), zone.direction));
         }
 
-        if ((zone.kind != 1 && zone.kind != 3) || zone.radius <= 0.0)
+        if ((zone.kind != HL_ZONE_HEAL && zone.kind != HL_ZONE_RANGE) || zone.radius <= 0.0)
         {
             continue;
         }
 
-        heal = max(heal, weight * (zone.kind == 3 ? 0.35 : 1.0));
+        heal = max(heal, weight * (zone.kind == HL_ZONE_RANGE ? 0.35 : 1.0));
         float2 offset = position - zone.position.xz;
         float distanceToZone = length(offset);
         outwardSum += weight * (distanceToZone < 1e-5 ? yaw : offset / distanceToZone);
@@ -124,20 +114,20 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
 void HLUpdateGrass(uint3 dispatchID : SV_DispatchThreadID)
 {
     uint index = dispatchID.x;
-    if (index >= _HL_BladeCount)
+    if (index >= _HLBladeCount)
     {
         return;
     }
 
-    HLBladeSeed blade = _HL_BladeSeeds[index];
+    HLBladeSeed blade = _HLBladeSeeds[index];
     for (int plane = 0; plane < 6; plane++)
     {
-        if (dot(_HL_FrustumPlanes[plane].xyz, blade.positionYaw.xyz) + _HL_FrustumPlanes[plane].w < -0.85)
+        if (dot(_HLFrustumPlanes[plane].xyz, blade.positionYaw.xyz) + _HLFrustumPlanes[plane].w < -0.85)
         {
             return;
         }
     }
 
-    _HL_BladeStates[index] = HLEvaluateBlade(blade);
-    _HL_VisibleBlades.Append(index);
+    _HLBladeStates[index] = HLEvaluateBlade(blade);
+    _HLVisibleBlades.Append(index);
 }

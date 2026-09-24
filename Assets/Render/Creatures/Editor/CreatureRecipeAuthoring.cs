@@ -10,9 +10,22 @@ namespace HealerLike.Render.Creatures
     {
         static readonly string root = "Assets/Render/Creatures/";
         static readonly string vocabularyPath = "Assets/Render/Creatures/Data/LookVocabulary.asset";
-        public static readonly Color Body = new Color(0.50f, 0.79f, 0.25f);
-        public static readonly Color Stem = new Color(0.18f, 0.49f, 0.31f);
-        public static readonly Color Bud = new Color(0.78f, 0.95f, 0.29f);
+
+        // The healer is a plant whose buds, crown and collars take the heal accent
+        public static Color Colour(LookVocabulary vocabulary, ColourRole role)
+        {
+            return vocabulary.Colour(role, EffectFamily.Heal, LookSide.Plant);
+        }
+
+        public static LookVocabulary LoadVocabulary()
+        {
+            LookVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<LookVocabulary>(vocabularyPath);
+            if (vocabulary == null)
+            {
+                Debug.LogError($"[CreatureRecipeAuthoring] Missing {vocabularyPath}.");
+            }
+            return vocabulary;
+        }
 
         public static CreaturePart Part(string id, Primitive primitive, Vector3 position, Vector3 dimensions,
             Color colour, Vector3 euler = default, int parent = 0, float glow = 0f, PartRole role = PartRole.Body)
@@ -32,7 +45,7 @@ namespace HealerLike.Render.Creatures
         }
 
         public static CreatureRecipe SaveRecipe(string name, List<CreaturePart> parts, int roots, int armCount,
-            int seed)
+            int seed, LookVocabulary vocabulary)
         {
             string path = root + "Data/" + name + ".asset";
             CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(path);
@@ -63,17 +76,14 @@ namespace HealerLike.Render.Creatures
                 }
 
                 parts.Add(Part("Joint" + i, Primitive.Sphere, Vector3.up * (stemPart.dimensions.y * 0.38f),
-                    Vector3.one * (stemPart.dimensions.x * 1.5f), Bud, parent: i, role: PartRole.Stem));
+                    Vector3.one * (stemPart.dimensions.x * 1.5f), Colour(vocabulary, ColourRole.Accent), parent: i,
+                    role: PartRole.Stem));
             }
 
             recipe.parts = parts.ToArray();
             recipe.idle.seed = seed;
-            LookVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<LookVocabulary>(vocabularyPath);
-            if (vocabulary == null)
-            {
-                Debug.LogError($"[CreatureRecipeAuthoring] Missing {vocabularyPath}.");
-                return null;
-            }
+            recipe.wiltColour = Colour(vocabulary, ColourRole.Wilt);
+            recipe.stoneOchre = Colour(vocabulary, ColourRole.Ochre);
 
             // An authored creature's body sphere is the body unit, and its rosette reaches the long band from the foot
             // of its stem, the same roots a plant grows at that reach
@@ -92,7 +102,8 @@ namespace HealerLike.Render.Creatures
                     side = -0.26f;
                 }
                 recipe.sourceLocal[j] = new Vector3(side, 1.1f, 0f);
-                recipe.arms[j] = LookComposer.Arm(recipe.sourceLocal[j] - parts[0].localPosition, Stem, Color.clear);
+                recipe.arms[j] = LookComposer.Arm(recipe.sourceLocal[j] - parts[0].localPosition,
+                    Colour(vocabulary, ColourRole.Stem), Color.clear);
             }
 
             if (!CreatureValidator.TryValidate(recipe, out string error))

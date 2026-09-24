@@ -20,12 +20,7 @@ namespace HealerLike.Render.Deliveries
 
         public void Init(LookPart part, Mesh mesh, Material material, Color colour, Vector3 position, float size)
         {
-            gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
-            MeshRenderer renderer = gameObject.AddComponent<MeshRenderer>();
-            renderer.sharedMaterial = material;
-            MaterialPropertyBlock block = new MaterialPropertyBlock();
-            block.SetColor("_BaseColor", PrimitiveMeshes.Brighten(colour, part.glow));
-            renderer.SetPropertyBlock(block);
+            PrimitiveMeshes.Geometry(gameObject, mesh, material, colour, part.glow, new MaterialPropertyBlock());
             _size = size;
             _start = position + part.position * size;
             _scale = part.size * size;
@@ -56,14 +51,7 @@ namespace HealerLike.Render.Deliveries
             }
 
             _isInitialized = false;
-            if (Application.isPlaying)
-            {
-                Destroy(gameObject);
-            }
-            else
-            {
-                DestroyImmediate(gameObject);
-            }
+            RenderObjects.Release(gameObject);
         }
     }
 }

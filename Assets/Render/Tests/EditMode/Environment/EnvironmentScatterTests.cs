@@ -1,6 +1,6 @@
 using System.Linq;
 using HealerLike.Render.Creatures;
-using HealerLike.Render.Stage;
+using HealerLike.Render.Grammar;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -12,7 +12,6 @@ public class EnvironmentScatterTests
 {
     GameObject _go;
     GameObject _otherGo;
-    GameObject _managerGo;
     PrimitiveMeshes _meshes;
 
     [SetUp]
@@ -20,7 +19,6 @@ public class EnvironmentScatterTests
     {
         _go = new GameObject("ScatterTest");
         _otherGo = new GameObject("ScatterOther");
-        _managerGo = new GameObject("ScatterManager");
         _meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
     }
 
@@ -29,7 +27,6 @@ public class EnvironmentScatterTests
     {
         DestroyWithGeneratedMeshes(_go);
         DestroyWithGeneratedMeshes(_otherGo);
-        Object.DestroyImmediate(_managerGo);
     }
 
     // Stones are generated per seed; the baked primitive meshes are assets and stay
@@ -54,7 +51,8 @@ public class EnvironmentScatterTests
     EnvironmentScatter Make(GameObject go, int seed)
     {
         EnvironmentScatter scatter = go.AddComponent<EnvironmentScatter>();
-        TestHelpers.SetPrivateField(scatter, "_meshes", _meshes);
+        TestHelpers.SetPrivateField(scatter, "_palette",
+            AssetDatabase.LoadAssetAtPath<LookPalette>("Assets/Render/Grammar/Data/LookPalette.asset"));
         EnvironmentSettings settings = EnvironmentSettings.Default;
         settings.seed = seed;
         settings.counts = new EnvironmentCounts
@@ -69,6 +67,12 @@ public class EnvironmentScatterTests
         };
         scatter.settings = settings;
         return scatter;
+    }
+
+    // What the environment root hands the scatter, without a camera or a gust
+    void Init(EnvironmentScatter scatter, Rect grid)
+    {
+        scatter.Init(grid, 1f, 0.5f, null, null, 60f, _meshes);
     }
 
     Transform FirstPivot(EnvironmentScatter scatter, string name)
@@ -86,12 +90,12 @@ public class EnvironmentScatterTests
     }
 
     [Test]
-    public void Build_SameSeed_SpawnsSamePivotsOutsideGrid()
+    public void Init_SameSeed_SpawnsSamePivotsOutsideGrid()
     {
         EnvironmentScatter scatter = Make(5);
         Rect grid = new Rect(-8f, -8f, 16f, 16f);
 
-        scatter.Build(grid, 1f);
+        Init(scatter, grid);
 
         Assert.That(scatter.items.Count, Is.GreaterThan(0));
         Assert.AreEqual(scatter.items.Count, scatter.root.childCount);
@@ -109,20 +113,17 @@ public class EnvironmentScatterTests
         }
 
         EnvironmentScatter other = Make(_otherGo, 5);
-        other.Build(grid, 1f);
+        Init(other, grid);
 
         Assert.AreEqual(first, PivotPositions(other));
     }
 
     [Test]
-    public void Init_ManagerMeshesOnly_BuildsFromManagerMeshes()
+    public void Init_Meshes_BuildsFromThem()
     {
-        RenderManager manager = _managerGo.AddComponent<RenderManager>();
-        TestHelpers.SetPrivateField(manager, "_meshes", _meshes);
         EnvironmentScatter scatter = Make(3);
-        TestHelpers.SetPrivateField(scatter, "_meshes", null);
 
-        scatter.Init(new Rect(-8f, -8f, 16f, 16f), 1f, 0.5f, null, null, 60f, manager);
+        scatter.Init(new Rect(-8f, -8f, 16f, 16f), 1f, 0.5f, null, null, 60f, _meshes);
 
         Assert.That(scatter.items.Count, Is.GreaterThan(0));
         Assert.AreEqual(scatter.items.Count, scatter.root.childCount);
@@ -131,11 +132,11 @@ public class EnvironmentScatterTests
     }
 
     [Test]
-    public void Build_MixedKinds_OnlyPlantsSway()
+    public void Init_MixedKinds_OnlyPlantsSway()
     {
         EnvironmentScatter scatter = Make(9);
 
-        scatter.Build(new Rect(-8f, -8f, 16f, 16f), 1f);
+        Init(scatter, new Rect(-8f, -8f, 16f, 16f));
 
         int swaying = scatter.items.Count(i => i.kind == EnvironmentKind.MushroomTree
             || i.kind == EnvironmentKind.SpiralFern
@@ -148,7 +149,7 @@ public class EnvironmentScatterTests
     public void Animate_BeyondFog_FreezesAndResumesWithoutAccumulating()
     {
         EnvironmentScatter scatter = Make(5);
-        scatter.Build(new Rect(-8f, -8f, 16f, 16f), 1f);
+        Init(scatter, new Rect(-8f, -8f, 16f, 16f));
         Transform plant = FirstPivot(scatter, "BladeRosette");
         Quaternion rest = plant.localRotation;
 
@@ -170,7 +171,7 @@ public class EnvironmentScatterTests
     public void Animate_Gust_OpensFernJointsAndNodsCaps()
     {
         EnvironmentScatter scatter = Make(5);
-        scatter.Build(new Rect(-8f, -8f, 16f, 16f), 1f);
+        Init(scatter, new Rect(-8f, -8f, 16f, 16f));
         EnvironmentGust gust = _go.AddComponent<EnvironmentGust>();
         scatter.ConfigureMotion(null, gust, 100f);
         Transform fern = FirstPivot(scatter, "SpiralFern");
@@ -197,7 +198,7 @@ public class EnvironmentScatterTests
     public void Animate_AfterSpawn_SettleDecaysAndSamplingIsStable()
     {
         EnvironmentScatter scatter = Make(5);
-        scatter.Build(new Rect(-8f, -8f, 16f, 16f), 1f);
+        Init(scatter, new Rect(-8f, -8f, 16f, 16f));
         Transform plant = FirstPivot(scatter, "BladeRosette");
 
         TestHelpers.SetPrivateField(scatter, "_builtAt", 10d);
@@ -233,7 +234,7 @@ public class EnvironmentScatterTests
     public void Animate_AfterWarmup_AllocatesNothing()
     {
         EnvironmentScatter scatter = Make(5);
-        scatter.Build(new Rect(-8f, -8f, 16f, 16f), 1f);
+        Init(scatter, new Rect(-8f, -8f, 16f, 16f));
         for (int i = 0; i < 10; i++)
         {
             scatter.Animate(i, Vector3.zero, 100f);

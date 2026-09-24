@@ -137,7 +137,7 @@ public class EffectDerivationTests
     [TestCase("SwarmBullet", DeliveryStyle.Swarm)]
     public void Delivery_ProjectilePrefab_AgreesWithTheHead(string name, DeliveryStyle expected)
     {
-        Assert.AreEqual(expected, EffectDerivation.Delivery(LookDerivationTests.LoadProjectile(name)));
+        Assert.AreEqual(expected, EffectDerivation.Delivery(RenderTestAssets.LoadProjectile(name)));
     }
 }
 

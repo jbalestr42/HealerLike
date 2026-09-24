@@ -19,13 +19,12 @@ public class StoneDeathBridgeTests
     [SetUp]
     public void SetUp()
     {
-        _fx = StoneEffectsTests.CreateEffects();
+        _fx = RenderTestAssets.CreateStoneEffects();
         _effectsObject = _fx.gameObject;
         _target = new GameObject("Target");
         _bridgeObject = new GameObject("Bridge");
-        _recipe = StoneBodyTests.Recipe();
-        _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>(
-            "Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
+        _recipe = RenderTestAssets.CreateStoneRecipe();
+        _material = new Material(RenderTestAssets.LoadLookMaterial());
     }
 
     [TearDown]
@@ -49,11 +48,11 @@ public class StoneDeathBridgeTests
     public void HandleDeparture_LivingThenLethal_CollapsesOnlyOnceOnTheLethalDeparture()
     {
         ResourceAttribute health = TestHelpers.CreateResourceAttribute(_target, AttributeType.HealthMax, 100);
-        Entity entity = StoneBodyTests.CreateEntity(_target, health);
-        _body = StoneBodyTests.CreateBody(_target, entity, _recipe, _material);
+        Entity entity = RenderTestAssets.CreateStoneEntity(_target, health);
+        _body = RenderTestAssets.CreateStoneBody(_target, entity, _recipe, _material);
         _body.Init(health, 1, _fx);
         StoneDeathBridge bridge = _bridgeObject.AddComponent<StoneDeathBridge>();
-        bridge.Bind(null, _fx);
+        bridge.Init(null, _fx);
 
         bridge.HandleDeparture(entity);
         Assert.AreEqual(0, _fx.liveCount);
@@ -78,11 +77,11 @@ public class StoneDeathBridgeTests
     public void HandleDeparture_BodyWithoutEffects_CollapsesWithTheBridgeEffects()
     {
         ResourceAttribute health = TestHelpers.CreateResourceAttribute(_target, AttributeType.HealthMax, 100);
-        Entity entity = StoneBodyTests.CreateEntity(_target, health);
-        _body = StoneBodyTests.CreateBody(_target, entity, _recipe, _material);
+        Entity entity = RenderTestAssets.CreateStoneEntity(_target, health);
+        _body = RenderTestAssets.CreateStoneBody(_target, entity, _recipe, _material);
         _body.Init(health, 1, null);
         StoneDeathBridge bridge = _bridgeObject.AddComponent<StoneDeathBridge>();
-        bridge.Bind(null, _fx);
+        bridge.Init(null, _fx);
         TestHelpers.SetPrivateField(health, "_value", 0f);
 
         bridge.HandleDeparture(entity);

@@ -15093,4 +15093,3 @@ MonoBehaviour:
   rootHip: 0.145
   rootKnee: 0.11
   armCount: 2
-  stoneWilt: {r: 0.22, g: 0.25, b: 0.33, a: 1}

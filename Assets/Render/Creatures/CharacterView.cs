@@ -7,12 +7,13 @@ using HealerLike.Render.Stage;
 namespace HealerLike.Render.Creatures
 {
     // Presentation at an authored anchor. Character.Init and Entity.Init are never called from here.
-    public class CharacterView : MonoBehaviour, IHealVisualSink, IDeliverySource, IEffectAnchors
+    public class CharacterView : MonoBehaviour, IHealthVisualSink, IDeliverySource, IEffectAnchors
     {
         [SerializeField] Character _character;
         [SerializeField] CreatureRecipe _recipe;
         [SerializeField] Transform _visualAnchor;
         [SerializeField] Material _material;
+        [SerializeField] Material _bodyMaterial;
         [SerializeField] PrimitiveMeshes _meshes;
         [SerializeField] float _cellSize = 1f;
 
@@ -20,9 +21,7 @@ namespace HealerLike.Render.Creatures
         RenderRegistry _registeredRegistry;
         ISpellVisualSink _sink;
         GameObject _registeredSource;
-        ResourceOutcomeObserver _resourceObserver;
         StatusObserver _statusObserver;
-        BuffManager _boundManager;
 
         CreatureRig _rig;
         public CreatureRig rig { get { return _rig; } }
@@ -134,26 +133,15 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
-            if (!_resourceObserver)
+            // The view prefab carries the status observer, which wires the mana outcomes too
+            if (!_statusObserver)
             {
-                _resourceObserver = ResourceOutcomeObserver.Ensure(_character.gameObject);
+                _statusObserver = GetComponent<StatusObserver>();
             }
 
-            _resourceObserver.Bind(null, _character.mana, _sink, _registry);
-            if (_character.buffManager && _boundManager != _character.buffManager)
+            if (_statusObserver)
             {
-                if (!_statusObserver)
-                {
-                    _statusObserver = GetComponent<StatusObserver>();
-                }
-
-                if (!_statusObserver)
-                {
-                    _statusObserver = gameObject.AddComponent<StatusObserver>();
-                }
-
-                _statusObserver.Bind(_character.buffManager, _sink);
-                _boundManager = _character.buffManager;
+                _statusObserver.Init(_character, _sink, _registry);
             }
         }
 
@@ -165,22 +153,15 @@ namespace HealerLike.Render.Creatures
             }
 
             _castGestureCount++;
-            rig.HealContact(CreatureBuilder.TargetPosition(target));
+            rig.HealContact(RenderTargets.Point(target));
         }
 
         void StopObserving()
         {
-            if (_resourceObserver)
-            {
-                _resourceObserver.Bind(null, null, _sink, _registry);
-            }
-
             if (_statusObserver)
             {
-                _statusObserver.Detach();
+                _statusObserver.Init((Character)null, _sink, _registry);
             }
-
-            _boundManager = null;
         }
 
         void BuildAndRegister()
@@ -193,7 +174,7 @@ namespace HealerLike.Render.Creatures
             if (rig == null)
             {
                 CreatureRig created = new CreatureRig();
-                if (!created.Init(_recipe, _visualAnchor, _material, _meshes, _cellSize))
+                if (!created.Init(_recipe, _visualAnchor, _material, _bodyMaterial, _meshes, _cellSize))
                 {
                     return;
                 }
@@ -230,10 +211,10 @@ namespace HealerLike.Render.Creatures
             _registeredSource = null;
         }
 
-        #region IHealVisualSink
+        #region IHealthVisualSink
 
         // The registry reports every health change the character caused, heals and damage both gesture
-        public void OnHealResolved(GameObject target, float value, bool critical)
+        public void OnHealthResolved(GameObject target, float value, bool critical)
         {
             if (value == 0f || !target || !float.IsFinite(value))
             {
@@ -274,12 +255,18 @@ namespace HealerLike.Render.Creatures
 
         public bool TryGetAnchors(out EffectAnchors anchors)
         {
-            if (rig == null)
+            if (rig == null || !rig.TryGetAnchors(out anchors))
             {
                 anchors = new EffectAnchors();
                 return false;
             }
-            return rig.TryGetAnchors(out anchors);
+
+            // A character casts from its first bud
+            if (bud0 != null)
+            {
+                anchors.castPoint = bud0.position;
+            }
+            return true;
         }
 
         #endregion

@@ -13,11 +13,6 @@ public class PrimitiveMeshesTests
 {
     readonly List<Object> _objects = new List<Object>();
 
-    public static PrimitiveMeshes Meshes()
-    {
-        return AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
-    }
-
     [TearDown]
     public void TearDown()
     {
@@ -42,7 +37,7 @@ public class PrimitiveMeshesTests
     [TestCase(Primitive.Leaf)]
     public void GetMesh_BakedPrimitive_IsFiniteNormalizedAndBounded(Primitive type)
     {
-        Mesh mesh = Meshes().GetMesh(type);
+        Mesh mesh = RenderTestAssets.LoadMeshes().GetMesh(type);
 
         Vector3[] vertices = mesh.vertices;
         Vector3[] normals = mesh.normals;
@@ -90,13 +85,13 @@ public class PrimitiveMeshesTests
     [Test]
     public void GetMesh_OtherPrimitiveWithVariant_IgnoresTheVariant()
     {
-        Assert.AreEqual(Meshes().cone, Meshes().GetMesh(Primitive.Cone, 4));
+        Assert.AreEqual(RenderTestAssets.LoadMeshes().cone, RenderTestAssets.LoadMeshes().GetMesh(Primitive.Cone, 4));
     }
 
     [Test]
     public void GetMesh_ShippedAsset_EveryPrimitiveIsASavedMesh()
     {
-        PrimitiveMeshes meshes = Meshes();
+        PrimitiveMeshes meshes = RenderTestAssets.LoadMeshes();
 
         foreach (Primitive primitive in Enum.GetValues(typeof(Primitive)))
         {
@@ -111,18 +106,18 @@ public class PrimitiveMeshesTests
     [Test]
     public void GetMesh_ShippedSolids_AreClosedAndFaceOutward()
     {
-        PrimitiveMeshes meshes = Meshes();
+        PrimitiveMeshes meshes = RenderTestAssets.LoadMeshes();
 
         foreach (Primitive primitive in Enum.GetValues(typeof(Primitive)))
         {
-            PrimitiveMeshBakerTests.AssertClosed(meshes.GetMesh(primitive));
+            RenderTestAssets.AssertClosed(meshes.GetMesh(primitive));
         }
     }
 
     [Test]
     public void Tuft_ShippedAsset_IsASavedMeshWithFourFacetedSides()
     {
-        Mesh tuft = Meshes().tuft;
+        Mesh tuft = RenderTestAssets.LoadMeshes().tuft;
 
         uint indexCount = tuft.GetIndexCount(0);
 
@@ -134,7 +129,7 @@ public class PrimitiveMeshesTests
     [Test]
     public void Disc_AnnulusAndSocle_AreSavedFlatAndFaceUp()
     {
-        PrimitiveMeshes meshes = Meshes();
+        PrimitiveMeshes meshes = RenderTestAssets.LoadMeshes();
 
         foreach (Mesh mesh in new Mesh[] { meshes.disc, meshes.annulus, meshes.socle })
         {

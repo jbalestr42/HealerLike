@@ -124,7 +124,7 @@ public class SpellVisualSinkTests
     [Test]
     public void SetStatus_DerivedBoon_BuildsTheOrbitWithoutAPrefab()
     {
-        _sink.SetStatus(null, _target, _factory, 1, 0.25f, 4f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, _factory, 1, 0.25f, 4f);
 
         SpellEffect effect = _sink.GetStatus(_target, _factory).GetComponent<SpellEffect>();
         Assert.AreEqual(EffectElement.Orbit, effect.element);
@@ -150,7 +150,7 @@ public class SpellVisualSinkTests
         caster.entityType = Entity.EntityType.Computer;
         recipient.entityType = Entity.EntityType.Player;
 
-        _sink.SetStatus(_other, _target, harm, 1, 0f, 4f, ClockKind.Simulation);
+        _sink.SetStatus(_other, _target, harm, 1, 0f, 4f);
 
         SpellEffect effect = _sink.GetStatus(_target, harm).GetComponent<SpellEffect>();
         MaterialPropertyBlock block = new MaterialPropertyBlock();
@@ -177,7 +177,7 @@ public class SpellVisualSinkTests
         caster.entityType = Entity.EntityType.Player;
         recipient.entityType = Entity.EntityType.Player;
 
-        _sink.SetStatus(_other, _target, handler, 1, 0f, float.PositiveInfinity, ClockKind.Simulation);
+        _sink.SetStatus(_other, _target, handler, 1, 0f, float.PositiveInfinity);
 
         Assert.AreEqual(EffectFamily.Boon, EffectDerivation.Family(handler, true));
         Assert.IsNotNull(_sink.GetStatus(_target, handler));
@@ -186,8 +186,8 @@ public class SpellVisualSinkTests
     [Test]
     public void SetStatus_TwoBoonHandlers_OneOrbitWithTwoStacks()
     {
-        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
-        _sink.SetStatus(null, _target, _second, 1, 0f, 4f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f);
+        _sink.SetStatus(null, _target, _second, 1, 0f, 4f);
 
         SpellEffect orbit = _sink.GetElement(_target, EffectElement.Orbit);
         Assert.AreEqual(1, _sink.statusCount);
@@ -206,11 +206,11 @@ public class SpellVisualSinkTests
     [Test]
     public void SetStatus_SameTargetAndFactory_KeepsOneStatus()
     {
-        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f);
         GameObject first = _sink.GetStatus(_target, _factory);
 
-        _sink.SetStatus(_other, _target, _factory, 3, 2f, 4f, ClockKind.Realtime);
-        _sink.SetStatus(null, _other, _factory, 1, 0f, 4f, ClockKind.Simulation);
+        _sink.SetStatus(_other, _target, _factory, 3, 2f, 4f);
+        _sink.SetStatus(null, _other, _factory, 1, 0f, 4f);
 
         Assert.AreSame(first, _sink.GetStatus(_target, _factory));
         Assert.AreEqual(3, first.GetComponent<SpellEffect>().stacks);
@@ -226,7 +226,7 @@ public class SpellVisualSinkTests
     public void SetCharges_BoonDefenceAndHitArmor_ShareThePlates()
     {
         BuffHandlerFactory armor = SpellSinkFixture.Modifier(AttributeType.HitArmor, 2f, _created);
-        _sink.SetStatus(null, _target, armor, 1, 0f, 4f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, armor, 1, 0f, 4f);
 
         _sink.SetCharges(_target, 3f);
 
@@ -243,7 +243,7 @@ public class SpellVisualSinkTests
     [Test]
     public void RemoveStatus_Removed_KeepsOnlyTheCosmeticTail()
     {
-        _sink.SetStatus(null, _target, _factory, 1, 0.25f, 4f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, _factory, 1, 0.25f, 4f);
         SpellEffect effect = _sink.GetStatus(_target, _factory).GetComponent<SpellEffect>();
 
         _sink.RemoveStatus(null, _target, _factory);
@@ -257,12 +257,12 @@ public class SpellVisualSinkTests
     [Test]
     public void SetStatus_DisabledSink_ShowsNothing()
     {
-        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f);
         GameObject status = _sink.GetStatus(_target, _factory);
         _sink.enabled = false;
         TestHelpers.InvokePrivate(_sink, "OnDisable");
 
-        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f);
         _sink.ShowImpact(null, _target, ResourceKind.Health, 2f, false);
         _sink.PulseArea(Vector3.zero, 1f, ZoneKind.Heal, 1f);
 
@@ -278,7 +278,7 @@ public class SpellVisualSinkTests
         TestHelpers.InvokePrivate(_sink, "OnDisable");
         _sink.enabled = true;
         TestHelpers.InvokePrivate(_sink, "OnEnable");
-        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f);
         Assert.AreEqual(1, _sink.statusCount);
 
         TestHelpers.InvokePrivate(_sink, "OnEnable");
@@ -292,7 +292,7 @@ public class SpellVisualSinkTests
     {
         if (isPopulated)
         {
-            _sink.SetStatus(null, _target, _factory, 1, 1f, 4f, ClockKind.Simulation);
+            _sink.SetStatus(null, _target, _factory, 1, 1f, 4f);
         }
         GameObject status = _sink.GetStatus(_target, _factory);
         // A delegate over the private method, because InvokePrivate allocates and this test measures allocation
@@ -304,7 +304,7 @@ public class SpellVisualSinkTests
         {
             if (isPopulated)
             {
-                _sink.SetStatus(null, _target, _factory, 1, 1f, 4f, ClockKind.Simulation);
+                _sink.SetStatus(null, _target, _factory, 1, 1f, 4f);
             }
             lateUpdate();
         }
@@ -314,7 +314,7 @@ public class SpellVisualSinkTests
         {
             if (isPopulated)
             {
-                _sink.SetStatus(null, _target, _factory, 1, 1f, 4f, ClockKind.Simulation);
+                _sink.SetStatus(null, _target, _factory, 1, 1f, 4f);
             }
             lateUpdate();
         }
@@ -452,7 +452,7 @@ public class SpellVisualSinkTests
         _sink.vocabulary = null;
 
         _sink.ShowImpact(null, _target, ResourceKind.Health, 3f, false);
-        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f);
 
         Assert.AreEqual(0, _sink.impactCount);
         Assert.AreEqual(0, _sink.statusCount);
@@ -524,7 +524,7 @@ public class SpellVisualSinkTests
     [Test]
     public void LateUpdate_DestroyedTarget_ReleasesTheStatus()
     {
-        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, _factory, 1, 0f, 4f);
         Object.DestroyImmediate(_target);
 
         TestHelpers.InvokePrivate(_sink, "LateUpdate");

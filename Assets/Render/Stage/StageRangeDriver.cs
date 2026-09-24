@@ -4,15 +4,13 @@ using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Stage
 {
-    // Tells each ally range preview whether it is hovered and whether every range shows.
+    // Tells each ally range preview whether it is hovered.
     // Gameplay selection is private, so hover is the one pointer state the stage can read.
     public class StageRangeDriver : MonoBehaviour
     {
         readonly List<RangePreview> _previews = new List<RangePreview>();
         Camera _camera;
         bool _isInitialized = false;
-
-        public bool showAll { get; set; }
 
         public void Init(Camera camera)
         {
@@ -56,7 +54,7 @@ namespace HealerLike.Render.Stage
             _previews.RemoveAll(preview => preview == null);
             foreach (RangePreview preview in _previews)
             {
-                preview.Show(hoveredEntity != null && preview.entity == hoveredEntity, showAll);
+                preview.Show(hoveredEntity != null && preview.entity == hoveredEntity);
             }
         }
     }

@@ -26,9 +26,8 @@ namespace HealerLike.Render.Grass
         public static bool IsValid(int width, int height, float size, Vector3 origin, float surfaceY)
         {
             bool isGridValid = width > 0 && height > 0 && (long)width * height <= int.MaxValue
-                               && float.IsFinite(size) && size > 0f;
-            bool isOriginValid = float.IsFinite(origin.x) && float.IsFinite(origin.y) && float.IsFinite(origin.z)
-                                 && float.IsFinite(surfaceY);
+                               && RenderMath.IsPositive(size);
+            bool isOriginValid = RenderMath.IsFinite(origin) && float.IsFinite(surfaceY);
             bool isExtentValid = float.IsFinite(width * size) && float.IsFinite(height * size);
             bool isMaxValid = float.IsFinite(origin.x + width * size) && float.IsFinite(origin.z + height * size);
             bool isMinValid = float.IsFinite(origin.x - width * size) && float.IsFinite(origin.z - height * size);

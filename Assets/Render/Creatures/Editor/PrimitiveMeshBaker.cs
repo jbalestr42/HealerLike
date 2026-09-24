@@ -1,6 +1,5 @@
 using UnityEditor;
 using UnityEngine;
-using HealerLike.Render.Grass;
 
 namespace HealerLike.Render.Creatures
 {
@@ -31,9 +30,9 @@ namespace HealerLike.Render.Creatures
             meshes.cone = Save(RevolvedMeshes.Create("Cone", Primitive.Cone, 12, 6, 0.2f));
             meshes.cylinder = Save(RevolvedMeshes.Create("Cylinder", Primitive.CylinderSegment, 6, 6, 0.2f));
             meshes.torus = Save(RevolvedMeshes.Create("Torus", Primitive.Torus, 12, 6, 0.2f));
-            meshes.tuft = Save(GrassTuft.CreateMesh());
-            meshes.socle = Save(GrassTuft.CreateSocle());
-            meshes.pyramid = Save(FacetedMeshes.CreatePyramid());
+            meshes.tuft = Save(FacetedMeshes.CreatePyramid("Tuft", false));
+            meshes.socle = Save(FacetedMeshes.CreateSocle());
+            meshes.pyramid = Save(FacetedMeshes.CreatePyramid("Pyramid", true));
             meshes.leaf = Save(FacetedMeshes.CreateLeaf());
             meshes.boulder = Save(FacetedMeshes.CreateBoulder());
             meshes.disc = Save(RingMeshes.CreateDisc(32));
@@ -62,10 +61,31 @@ namespace HealerLike.Render.Creatures
         // Mesh from raw vertices and triangles, normals recalculated
         public static Mesh CreateMesh(string name, Vector3[] vertices, int[] triangles)
         {
+            return CreateMesh(name, vertices, triangles, null, null);
+        }
+
+        // Every baked mesh is built here: the normals given, or recalculated when there are none, and the uv
+        // when there are some
+        public static Mesh CreateMesh(string name, Vector3[] vertices, int[] triangles, Vector3[] normals,
+            Vector2[] uv)
+        {
             Mesh mesh = new Mesh { name = name };
             mesh.vertices = vertices;
+            if (uv != null)
+            {
+                mesh.uv = uv;
+            }
+
             mesh.triangles = triangles;
-            mesh.RecalculateNormals();
+            if (normals != null)
+            {
+                mesh.normals = normals;
+            }
+            else
+            {
+                mesh.RecalculateNormals();
+            }
+
             mesh.RecalculateBounds();
             return mesh;
         }

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace HealerLike.Render.Zones
 {
     // Producers update their zones in Update, the RenderManager publishes the snapshot before the grass draws
-    public class ZoneRegistry : MonoBehaviour, IZoneOwner
+    public class ZoneRegistry : MonoBehaviour
     {
         struct Entry
         {
@@ -75,7 +75,7 @@ namespace HealerLike.Render.Zones
         // Fades linearly on scaled time then removes itself
         public int AddPulse(ZoneKind kind, Vector3 position, float radius, float strength, float duration)
         {
-            if (!(duration > 0) || float.IsInfinity(duration))
+            if (!RenderMath.IsPositive(duration))
             {
                 return 0;
             }

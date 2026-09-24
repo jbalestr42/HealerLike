@@ -17,6 +17,13 @@ namespace HealerLike.Render.Stage
             StagePlay.Enter("landscape", 180f);
         }
 
+        // The grass carpet alone under a fixed camera, across two repaints and a revoked zone snapshot
+        [MenuItem("Tools/Render/Capture Ground Fixture")]
+        public static void Ground()
+        {
+            StagePlay.Enter("ground", 180f);
+        }
+
         [MenuItem("Tools/Render/Smoke Three Rounds")]
         public static void Smoke()
         {

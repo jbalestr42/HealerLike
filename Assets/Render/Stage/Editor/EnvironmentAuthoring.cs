@@ -15,6 +15,7 @@ namespace HealerLike.Render.Stage
         public static readonly string StoneMaterialPath = "Assets/Render/Look/Look_Stone.mat";
         public static readonly string GroundMaterialPath = "Assets/Render/Environment/Look_Ground.mat";
         public static readonly string MeshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
+        public static readonly string PalettePath = "Assets/Render/Grammar/Data/LookPalette.asset";
         public static readonly string GrassComputePath = "Assets/Render/Shaders/Grass.compute";
         public static readonly string BladeMaterialPath = "Assets/Render/Grass/Materials/GrassBlade.mat";
         public static readonly string RingMaterialPath = "Assets/Render/Grass/Materials/HealRing.mat";
@@ -31,10 +32,21 @@ namespace HealerLike.Render.Stage
             SetReference(grass, "_stripTemplate", stripField);
             EnvironmentScatter scatter = root.AddComponent<EnvironmentScatter>();
             SetMaterials(scatter);
-            root.AddComponent<EnvironmentGust>();
-            SetMaterials(Child(root, "Foreground").AddComponent<EnvironmentForeground>());
-            SetMaterials(Child(root, "FarRidge").AddComponent<EnvironmentRidge>());
-            CreateGround(root);
+            SetReference(scatter, "_palette", Load<Object>(PalettePath));
+            EnvironmentGust gust = root.AddComponent<EnvironmentGust>();
+            EnvironmentForeground foreground = Child(root, "Foreground").AddComponent<EnvironmentForeground>();
+            SetMaterials(foreground);
+            EnvironmentRidge ridge = Child(root, "FarRidge").AddComponent<EnvironmentRidge>();
+            SetMaterials(ridge);
+            GameObject ground = CreateGround(root);
+
+            EnvironmentRoot environment = root.AddComponent<EnvironmentRoot>();
+            SetReference(environment, "_scatter", scatter);
+            SetReference(environment, "_foreground", foreground);
+            SetReference(environment, "_ridge", ridge);
+            SetReference(environment, "_grass", grass);
+            SetReference(environment, "_gust", gust);
+            SetReference(environment, "_ground", ground.transform);
 
             Directory.CreateDirectory(Path.GetDirectoryName(PrefabPath));
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
@@ -52,7 +64,7 @@ namespace HealerLike.Render.Stage
         }
 
         // The game-scale ground, a thousand units wide, never intercepting gameplay raycasts
-        static void CreateGround(GameObject root)
+        static GameObject CreateGround(GameObject root)
         {
             GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
             ground.name = "Ground";
@@ -63,6 +75,7 @@ namespace HealerLike.Render.Stage
             MeshRenderer groundRenderer = ground.GetComponent<MeshRenderer>();
             groundRenderer.sharedMaterial = Load<Material>(GroundMaterialPath);
             groundRenderer.shadowCastingMode = ShadowCastingMode.Off;
+            return ground;
         }
 
         static void SetMaterials(Component component)

@@ -1,27 +1,29 @@
 using System.Collections.Generic;
 using UnityEngine;
+using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Creatures
 {
     // The part list of the authored healer recipe
     public static class CreatureRecipeParts
     {
-        public static List<CreaturePart> Base()
+        public static List<CreaturePart> Base(LookVocabulary vocabulary)
         {
             Vector3 position = new Vector3(0f, 0.25f, 0f);
             Vector3 size = new Vector3(0.11f, 0.5f, 0.11f);
+            Color stem = CreatureRecipeAuthoring.Colour(vocabulary, ColourRole.Stem);
             return new List<CreaturePart>
             {
-                CreatureRecipeAuthoring.Part("Stem", Primitive.Capsule, position, size, CreatureRecipeAuthoring.Stem,
-                    parent: -1, role: PartRole.Stem)
+                CreatureRecipeAuthoring.Part("Stem", Primitive.Capsule, position, size, stem, parent: -1,
+                    role: PartRole.Stem)
             };
         }
 
-        public static List<CreaturePart> Healer()
+        public static List<CreaturePart> Healer(LookVocabulary vocabulary)
         {
-            List<CreaturePart> parts = Base();
-            Color body = CreatureRecipeAuthoring.Body;
-            Color bud = CreatureRecipeAuthoring.Bud;
+            List<CreaturePart> parts = Base(vocabulary);
+            Color body = CreatureRecipeAuthoring.Colour(vocabulary, ColourRole.Body);
+            Color bud = CreatureRecipeAuthoring.Colour(vocabulary, ColourRole.Accent);
             Vector3 bulbSize = new Vector3(0.5f, 0.62f, 0.45f);
             parts.Add(CreatureRecipeAuthoring.Part("Bulb", Primitive.Cone, new Vector3(0f, 0.48f, 0f), bulbSize, body,
                 new Vector3(0f, 0f, 180f)));

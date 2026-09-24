@@ -33,7 +33,7 @@ namespace HealerLike.Render.Stage
         [SerializeField] Color _ambientColor = new Color(0.35f, 0.4f, 0.5f);
         [SerializeField] List<string> _hiddenObjectNames = new List<string>();
         [SerializeField] float _gridStrength = 0.12f;
-        [SerializeField] GameObject _environmentPrefab;
+        [SerializeField] EnvironmentRoot _environmentPrefab;
         [SerializeField] LookController _look;
         [SerializeField] ZoneRegistry _zones;
         [SerializeField] GrassField _grass;
@@ -43,14 +43,13 @@ namespace HealerLike.Render.Stage
         [SerializeField] BattleFocus _battleFocus;
         [SerializeField] StageRangeDriver _rangeDriver;
         [SerializeField] StageKeyLight _keyLight;
+        [SerializeField] DeliveryVocabulary _deliveryVocabulary;
 
         RenderRegistry _registry = new RenderRegistry();
         RenderPipelineAsset _previousPipeline;
         Scene _scene;
         Renderer _boardGround;
-        GameObject _environment;
-        EnvironmentGrass _environmentGrass;
-        EnvironmentRidge _ridge;
+        EnvironmentRoot _environment;
         Button _nextWaveButton;
         Pose _portraitPose;
         Pose _landscapePose;
@@ -90,6 +89,9 @@ namespace HealerLike.Render.Stage
         public CreatureLooks creatureLooks { get { return _creatureLooks; } }
         public SpellLooks spellLooks { get { return _spellLooks; } }
         public PrimitiveMeshes meshes { get { return _meshes; } }
+        public Renderer boardGround { get { return _boardGround; } }
+        public StageKeyLight keyLight { get { return _keyLight; } }
+        public DeliveryVocabulary deliveryVocabulary { get { return _deliveryVocabulary; } }
 
         void Awake()
         {
@@ -131,9 +133,8 @@ namespace HealerLike.Render.Stage
             // Init chain
             _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board));
             _zones.Init();
-            _registry.Init(_spellSink, _zones);
             Rect boardRect = BoardRect();
-            _grass.Init(boardRect, player.grid.size, _board.max.y, _gameCamera, _zones.buffer, GrassField.MaxZones);
+            _grass.Init(boardRect, player.grid.size, _board.max.y, _gameCamera, _zones.buffer, ZonePacker.MaxZones);
             InitEnvironment(boardRect);
             _spellSink.Init(this);
             _battleFocus.Init(this);
@@ -152,7 +153,7 @@ namespace HealerLike.Render.Stage
             // Producers moved their zones in Update, so the frame's zones are final here
             _zones.PublishFrame(Time.deltaTime);
             _grass.UpdateField(_zones);
-            _environmentGrass.UpdateStrips(_zones);
+            _environment.grass.UpdateStrips(_zones);
         }
 
         // One counter for every projectile, so a token never names two deliveries on one rig
@@ -179,7 +180,7 @@ namespace HealerLike.Render.Stage
             _gameCamera.transform.SetPositionAndRotation(overviewPose.position, overviewPose.rotation);
             _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board));
             _foreground.Build();
-            _ridge.Build();
+            _environment.ridge.Build();
         }
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -332,26 +333,12 @@ namespace HealerLike.Render.Stage
 
         void InitEnvironment(Rect boardRect)
         {
-            float surfaceY = _board.max.y;
             _environment = Instantiate(_environmentPrefab, transform);
-            _environmentGrass = _environment.GetComponent<EnvironmentGrass>();
-            _gust = _environment.GetComponent<EnvironmentGust>();
-            _foreground = _environment.GetComponentInChildren<EnvironmentForeground>();
-            _ridge = _environment.GetComponentInChildren<EnvironmentRidge>();
-
-            // The plane sits a hair under the board top
-            Transform ground = _environment.transform.Find("Ground");
-            if (ground != null)
-            {
-                ground.position = new Vector3(_board.center.x, surfaceY - 0.01f, _board.center.z);
-            }
-
+            _gust = _environment.gust;
+            _foreground = _environment.foreground;
             LookSettings lookSettings = _look.settings;
-            _environmentGrass.Init(boardRect, _player.grid.size, surfaceY, _gameCamera, _zones, this);
-            EnvironmentScatter scatter = _environment.GetComponent<EnvironmentScatter>();
-            scatter.Init(boardRect, _player.grid.size, surfaceY, _gameCamera, _gust, lookSettings.fogEnd, this);
-            _foreground.Init(_gameCamera, surfaceY, this);
-            _ridge.Init(_gameCamera, boardRect, surfaceY, lookSettings.fogStart, lookSettings.fogEnd, this);
+            _environment.Init(_meshes, _gameCamera, boardRect, _player.grid.size, _board.max.y, _zones,
+                lookSettings.fogStart, lookSettings.fogEnd);
         }
 
         void Subscribe()
@@ -399,7 +386,7 @@ namespace HealerLike.Render.Stage
 
             if (_environment != null)
             {
-                Destroy(_environment);
+                Destroy(_environment.gameObject);
             }
 
             Shader.SetGlobalFloat(gridStrengthId, 0f);

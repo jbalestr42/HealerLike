@@ -9,12 +9,6 @@ namespace HealerLike.Render
         Mana
     }
 
-    public enum ClockKind
-    {
-        Simulation,
-        Realtime
-    }
-
     // Everything here is cosmetic: a sink never calls gameplay back
     public interface ISpellVisualSink
     {
@@ -22,7 +16,7 @@ namespace HealerLike.Render
                         bool isCritical);
 
         void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
-                       float elapsedSeconds, float durationSeconds, ClockKind clock);
+                       float elapsedSeconds, float durationSeconds);
 
         void RemoveStatus(GameObject source, GameObject target, ABuffHandlerFactory factory);
 

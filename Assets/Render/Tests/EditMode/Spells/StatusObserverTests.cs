@@ -10,32 +10,6 @@ namespace HealerLike.Render.Spells
 
 public class StatusObserverTests
 {
-    class SinkSpy : ISpellVisualSink
-    {
-        public int calls;
-        public GameObject lastSource;
-
-        public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
-            float elapsed, float duration, ClockKind clock)
-        {
-            calls++;
-            lastSource = source;
-        }
-
-        public void RemoveStatus(GameObject source, GameObject target, ABuffHandlerFactory factory)
-        {
-        }
-
-        public void ShowImpact(GameObject source, GameObject target, ResourceKind resource, float amount,
-            bool critical)
-        {
-        }
-
-        public void PulseArea(Vector3 center, float radius, ZoneKind kind, float strength)
-        {
-        }
-    }
-
     GameObject _go;
     GameObject _sinkGo;
     GameObject _managerGo;
@@ -88,8 +62,8 @@ public class StatusObserverTests
         _factory.data = new BuffHandlerData { durationType = DurationType.Infinite };
         BuffManager manager = _go.AddComponent<BuffManager>();
         StatusObserver observer = _go.AddComponent<StatusObserver>();
-        SinkSpy sink = new SinkSpy();
-        observer.Bind(manager, sink);
+        RecordingSpellSink sink = new RecordingSpellSink();
+        observer.Init(manager, sink);
         BuffManager.BuffHandlerData data = new BuffManager.BuffHandlerData
         {
             target = _go,
@@ -104,7 +78,7 @@ public class StatusObserverTests
         {
             observer.Reconcile();
         }
-        int calls = sink.calls;
+        int calls = sink.statusCount;
 
         long before = System.GC.GetAllocatedBytesForCurrentThread();
         for (int i = 0; i < 32; i++)
@@ -114,12 +88,12 @@ public class StatusObserverTests
         long allocated = System.GC.GetAllocatedBytesForCurrentThread() - before;
 
         Assert.AreEqual(0, allocated);
-        Assert.AreEqual(calls, sink.calls);
+        Assert.AreEqual(calls, sink.statusCount);
         if (populated)
         {
             data.currentStacks = 2;
             observer.Reconcile();
-            Assert.AreEqual(calls + 1, sink.calls);
+            Assert.AreEqual(calls + 1, sink.statusCount);
         }
     }
 
@@ -129,8 +103,8 @@ public class StatusObserverTests
         _factory.data = new BuffHandlerData { durationType = DurationType.Infinite };
         BuffManager manager = _go.AddComponent<BuffManager>();
         StatusObserver observer = _go.AddComponent<StatusObserver>();
-        SinkSpy sink = new SinkSpy();
-        observer.Bind(manager, sink);
+        RecordingSpellSink sink = new RecordingSpellSink();
+        observer.Init(manager, sink);
         manager.OnBuffHandlerStarted.Invoke(new BuffManager.BuffHandlerData
         {
             target = _go,
@@ -155,7 +129,7 @@ public class StatusObserverTests
         BuffManager manager = _go.AddComponent<BuffManager>();
         StatusObserver observer = _go.AddComponent<StatusObserver>();
         SpellVisualSink sink = CreateSink();
-        observer.Bind(manager, sink);
+        observer.Init(manager, sink);
         manager.OnBuffHandlerStarted.Invoke(new BuffManager.BuffHandlerData
         {
             target = _go,
@@ -191,7 +165,7 @@ public class StatusObserverTests
         BuffManager manager = _go.AddComponent<BuffManager>();
         StatusObserver observer = _go.AddComponent<StatusObserver>();
         SpellVisualSink sink = CreateSink();
-        observer.Bind(manager, sink);
+        observer.Init(manager, sink);
         BuffManager.BuffHandlerData data = new BuffManager.BuffHandlerData
         {
             target = _go,

@@ -174,7 +174,7 @@ public class RenderManagerTests
         Assert.IsNotNull(_manager.gust);
         Assert.IsNotNull(_manager.foreground);
         Assert.IsNotNull(_manager.zones.buffer);
-        Assert.IsNotNull(_manager.registry.spellSink);
+        Assert.IsNotNull(_manager.spellSink);
     }
 
     [Test]

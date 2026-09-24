@@ -14,7 +14,6 @@ namespace HealerLike.Render.Deliveries
         // A travel shorter than this has no direction
         static readonly float stillSquared = 0.00000001f;
 
-        GestureKind _presentation = GestureKind.Attack;
         DeliveryStyle _deliveryStyle = DeliveryStyle.Direct;
         bool _preserveContactPath;
 
@@ -68,7 +67,6 @@ namespace HealerLike.Render.Deliveries
             if (look != null)
             {
                 _deliveryStyle = look.style;
-                _presentation = look.presentation;
                 _preserveContactPath = look.preserveContactPath;
             }
         }
@@ -217,16 +215,23 @@ namespace HealerLike.Render.Deliveries
         bool TryAccent(out Color accent)
         {
             accent = Color.clear;
-            if (_consumers == null || !_vocabulary || !_vocabulary.palette)
+            if (_consumers == null || !_vocabulary)
             {
                 return false;
+            }
+
+            if (!_vocabulary.palette)
+            {
+                Debug.LogError("[ProjectileVisualObserver] No palette.");
+                accent = Color.magenta;
+                return true;
             }
 
             foreach (AConsumerFactory consumer in _consumers)
             {
                 if (consumer != null)
                 {
-                    accent = _vocabulary.palette.Accent(EffectDerivation.ConsumerFamily(consumer, false));
+                    accent = _vocabulary.palette.Colour(ColourRole.Accent, EffectDerivation.ConsumerFamily(consumer, false));
                     return true;
                 }
             }
@@ -432,7 +437,7 @@ namespace HealerLike.Render.Deliveries
             Vector3 point = transform.position;
             if (hit.target)
             {
-                point = CreatureBuilder.TargetPosition(hit.target);
+                point = RenderTargets.Point(hit.target);
             }
             else if (_contacts.Count > 0)
             {

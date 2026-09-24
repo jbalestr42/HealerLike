@@ -1,7 +1,6 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using HealerLike.Render.Grass;
-using HealerLike.Render.Stage;
 using HealerLike.Render.Zones;
 using NUnit.Framework;
 using UnityEngine;
@@ -15,7 +14,6 @@ public class EnvironmentGrassTests
 {
     GameObject _go;
     GameObject _zonesGo;
-    GameObject _managerGo;
     ZoneRegistry _zones;
 
     [SetUp]
@@ -23,7 +21,6 @@ public class EnvironmentGrassTests
     {
         _go = new GameObject("RingGrass");
         _zonesGo = new GameObject("RingZones");
-        _managerGo = new GameObject("RingManager");
         _zones = _zonesGo.AddComponent<ZoneRegistry>();
     }
 
@@ -33,7 +30,6 @@ public class EnvironmentGrassTests
         _zones.Release();
         Object.DestroyImmediate(_go);
         Object.DestroyImmediate(_zonesGo);
-        Object.DestroyImmediate(_managerGo);
     }
 
     [Test]
@@ -194,13 +190,12 @@ public class EnvironmentGrassTests
         EnvironmentGrass grass = _go.AddComponent<EnvironmentGrass>();
         TestHelpers.SetPrivateField(grass, "_stripTemplate", template);
         _zones.Init();
-        RenderManager manager = _managerGo.AddComponent<RenderManager>();
         Rect board = new Rect(-8f, -8f, 16f, 16f);
         float boardDensity = GrassLayout.Density;
         RingStrip[] bands = EnvironmentGrass.Bands(board, EnvironmentGrass.DefaultWidths, EnvironmentGrass.DefaultFractions,
                                                    boardDensity);
 
-        grass.Init(board, 1f, 0.5f, null, _zones, manager);
+        grass.Init(board, 1f, 0.5f, null, _zones);
         grass.UpdateStrips(_zones);
 
         Assert.AreEqual(bands.Length, grass.strips.Count);

@@ -110,7 +110,7 @@ namespace HealerLike.Render.Stage
 
             Restore();
             Debug.Log($"[LookSheetRun] Sheets {_contacts.Count} failures {_failures} in {Folder}");
-            LookSheetCapture.Finish(_failures == 0 && _contacts.Count > 0);
+            StagePlay.Finish(this, _failures == 0 && _contacts.Count > 0);
         }
 
         #region Units
@@ -369,7 +369,7 @@ namespace HealerLike.Render.Stage
                 if (cell.handler != null)
                 {
                     float duration = cell.handler.durationType == DurationType.Duration ? cell.handler.duration : float.PositiveInfinity;
-                    sink.SetStatus(healerGo, target, cell.handler, LookSheetSpells.Stacks(cell.spell), 0f, duration, ClockKind.Simulation);
+                    sink.SetStatus(healerGo, target, cell.handler, LookSheetSpells.Stacks(cell.spell), 0f, duration);
                 }
 
                 float impact = LookSheetSpells.Impact(cell.spell);
@@ -619,18 +619,7 @@ namespace HealerLike.Render.Stage
         // The frame as the game camera draws it, rendered into a texture
         static Color32[] Capture(Camera camera)
         {
-            RenderTexture target = RenderTexture.GetTemporary(Width, Height, 24, RenderTextureFormat.ARGB32);
-            RenderTexture previous = RenderTexture.active;
-            Texture2D texture = new Texture2D(Width, Height, TextureFormat.RGB24, false);
-            camera.aspect = (float)Width / Height;
-            RenderPipeline.StandardRequest request = new RenderPipeline.StandardRequest();
-            request.destination = target;
-            RenderPipeline.SubmitRenderRequest(camera, request);
-            RenderTexture.active = target;
-            texture.ReadPixels(new Rect(0f, 0f, Width, Height), 0, 0);
-            texture.Apply();
-            RenderTexture.active = previous;
-            RenderTexture.ReleaseTemporary(target);
+            Texture2D texture = StageReadback.Render(camera, Width, Height);
             Color32[] pixels = texture.GetPixels32();
             Object.Destroy(texture);
             return pixels;
@@ -643,14 +632,14 @@ namespace HealerLike.Render.Stage
             Camera game = _manager.gameCamera;
             _flatCamera.CopyFrom(game);
             _flatCamera.GetUniversalAdditionalCameraData().renderPostProcessing = game.GetUniversalAdditionalCameraData().renderPostProcessing;
-            Renderer ground = _manager.player.grid.GetComponentInChildren<Renderer>();
+            Renderer ground = _manager.boardGround;
             MaterialPropertyBlock saved = new MaterialPropertyBlock();
             MaterialPropertyBlock flat = new MaterialPropertyBlock();
             if (ground != null)
             {
                 ground.GetPropertyBlock(saved);
                 ground.GetPropertyBlock(flat);
-                flat.SetColor("_BaseColor", _manager.grass.lookMaterial.GetColor("_BaseColor"));
+                flat.SetColor(RenderObjects.BaseColorId, _manager.grass.lookMaterial.GetColor(RenderObjects.BaseColorId));
                 flat.SetFloat("_HLGroundGrid", 0f);
                 ground.SetPropertyBlock(flat);
             }

@@ -49,7 +49,7 @@ public class CreatureRecipeTests
         Assert.LessOrEqual(Mathf.Abs(stemFootY), 0.01f, "The stem stands on the ground.");
         Assert.LessOrEqual(recipe.roots.hipHeight, stemFootY + 0.1f, "The roots leave the body at its base.");
         Assert.LessOrEqual(recipe.roots.kneeHeight, 0.1f, "The knee is only slightly raised.");
-        LookVocabulary vocabulary = LookVocabularyTests.Vocabulary();
+        LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
         Assert.AreEqual(vocabulary.roots[ReachBand.Long].reach * vocabulary.bodyUnit, recipe.roots.footRadius, 0.0001f);
         Assert.LessOrEqual(recipe.roots.footRadius + recipe.roots.thickness, CreatureValidator.MaxRootReach);
         Assert.IsTrue(CreatureValidator.TryValidate(recipe, out string error), error);

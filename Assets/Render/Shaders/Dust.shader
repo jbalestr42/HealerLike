@@ -1,4 +1,4 @@
-Shader "HealerLike/Stones/Dust"
+Shader "HL/Stones/Dust"
 {
     Properties
     {

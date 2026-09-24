@@ -1,42 +1,15 @@
 using UnityEngine;
-using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Spells
 {
     // Turns every processed health or mana change of an entity into an impact on the sink, and every health
-    // change into a notice to the registry so the source's view can gesture
-    public class ResourceOutcomeObserver : MonoBehaviour, IEntityView
+    // change into a notice to the registry so the source's view can gesture. StatusObserver wires it.
+    public class ResourceOutcomeObserver : MonoBehaviour
     {
         ResourceAttribute _health;
         ResourceAttribute _mana;
         ISpellVisualSink _sink;
         RenderRegistry _registry;
-
-        public static ResourceOutcomeObserver Ensure(GameObject owner)
-        {
-            if (owner == null)
-            {
-                return null;
-            }
-
-            ResourceOutcomeObserver observer = owner.GetComponent<ResourceOutcomeObserver>();
-            if (observer == null)
-            {
-                observer = owner.AddComponent<ResourceOutcomeObserver>();
-            }
-            return observer;
-        }
-
-        public void Init(Entity entity, RenderManager manager)
-        {
-            if (entity == null || manager == null)
-            {
-                Debug.LogError("[ResourceOutcomeObserver] Init needs an entity and the RenderManager.");
-                return;
-            }
-
-            Bind(entity.health, null, manager.spellSink, manager.registry);
-        }
 
         void OnEnable()
         {
@@ -54,7 +27,7 @@ namespace HealerLike.Render.Spells
             Unsubscribe();
         }
 
-        public void Bind(ResourceAttribute healthResource, ResourceAttribute manaResource, ISpellVisualSink sink,
+        public void Init(ResourceAttribute healthResource, ResourceAttribute manaResource, ISpellVisualSink sink,
                          RenderRegistry registry)
         {
             _sink = sink;
@@ -124,7 +97,7 @@ namespace HealerLike.Render.Spells
 
             if (_registry != null && kind == ResourceKind.Health)
             {
-                _registry.NotifyHeal(source, owner, amount, isCritical);
+                _registry.NotifyHealth(source, owner, amount, isCritical);
             }
         }
     }

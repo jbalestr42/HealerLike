@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
-using HealerLike.Render.Stage;
 using HealerLike.Render.Stones;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -40,15 +39,15 @@ namespace HealerLike.Render.Environment
         public Transform root { get { return _root; } }
 
         public void Init(Camera stageCamera, Rect board, float surfaceY, float fogStart, float fogEnd,
-                         RenderManager manager)
+                         PrimitiveMeshes meshes)
         {
-            if (manager == null || manager.meshes == null)
+            if (meshes == null)
             {
-                Debug.LogError("[EnvironmentRidge] Init needs the render manager and its primitive meshes.");
+                Debug.LogError("[EnvironmentRidge] Init needs the primitive meshes.");
                 return;
             }
 
-            _meshes = manager.meshes;
+            _meshes = meshes;
             _stageCamera = stageCamera;
             _grid = board;
             _groundY = surfaceY;
@@ -182,7 +181,7 @@ namespace HealerLike.Render.Environment
             }
         }
 
-        public void Build(Vector3 cameraPosition)
+        void Build(Vector3 cameraPosition)
         {
             Clear();
             _items = Layout(cameraPosition, _fogStart, _fogEnd, _fogBands, _grid, _groundY, _seed);
@@ -244,13 +243,9 @@ namespace HealerLike.Render.Environment
             partGo.transform.SetParent(parent, false);
             partGo.transform.localScale = scale;
             partGo.transform.localPosition = bottom + new Vector3(0f, -mesh.bounds.min.y * scale.y, 0f);
-            partGo.AddComponent<MeshFilter>().sharedMesh = mesh;
-            MeshRenderer meshRenderer = partGo.AddComponent<MeshRenderer>();
-            meshRenderer.sharedMaterial = material;
+            MeshRenderer meshRenderer = PrimitiveMeshes.Geometry(partGo, mesh, material, color, 0f, _properties);
             meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             meshRenderer.receiveShadows = false;
-            _properties.SetColor("_BaseColor", color.linear);
-            meshRenderer.SetPropertyBlock(_properties);
         }
     }
 }

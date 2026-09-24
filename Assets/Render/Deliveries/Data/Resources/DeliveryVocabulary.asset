@@ -813,6 +813,165 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
+    - Name: arms
+      Entry: 7
+      Data: 9|System.Collections.Generic.Dictionary`2[[HealerLike.Render.DeliveryStyle, HealerLike.Render],[HealerLike.Render.Deliveries.ArmStyle, HealerLike.Render]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 10|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.DeliveryStyle, HealerLike.Render]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 5
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 2
+    - Name: $v
+      Entry: 7
+      Data: 11|HealerLike.Render.Deliveries.ArmStyle, HealerLike.Render
+    - Name: isRod
+      Entry: 5
+      Data: true
+    - Name: width
+      Entry: 4
+      Data: 1
+    - Name: leafWidth
+      Entry: 4
+      Data: 1
+    - Name: retractSeconds
+      Entry: 4
+      Data: 0.045
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 0
+    - Name: $v
+      Entry: 7
+      Data: 12|HealerLike.Render.Deliveries.ArmStyle, HealerLike.Render
+    - Name: isRod
+      Entry: 5
+      Data: true
+    - Name: width
+      Entry: 4
+      Data: 1
+    - Name: leafWidth
+      Entry: 4
+      Data: 1
+    - Name: retractSeconds
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 3
+    - Name: $v
+      Entry: 7
+      Data: 13|HealerLike.Render.Deliveries.ArmStyle, HealerLike.Render
+    - Name: isRod
+      Entry: 5
+      Data: true
+    - Name: width
+      Entry: 4
+      Data: 0.6
+    - Name: leafWidth
+      Entry: 4
+      Data: 0.45
+    - Name: retractSeconds
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 4
+    - Name: $v
+      Entry: 7
+      Data: 14|HealerLike.Render.Deliveries.ArmStyle, HealerLike.Render
+    - Name: isRod
+      Entry: 5
+      Data: true
+    - Name: width
+      Entry: 4
+      Data: 1
+    - Name: leafWidth
+      Entry: 4
+      Data: 1
+    - Name: retractSeconds
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 5
+    - Name: $v
+      Entry: 7
+      Data: 15|HealerLike.Render.Deliveries.ArmStyle, HealerLike.Render
+    - Name: isRod
+      Entry: 5
+      Data: true
+    - Name: width
+      Entry: 4
+      Data: 1
+    - Name: leafWidth
+      Entry: 4
+      Data: 1
+    - Name: retractSeconds
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
   palette: {fileID: 11400000, guid: 97a6ebe080b14b84947880de49d6bb14, type: 2}
   splashPod:
     id: SplashPod

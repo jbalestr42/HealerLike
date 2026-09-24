@@ -140,9 +140,6 @@ MonoBehaviour:
     - Name: style
       Entry: 3
       Data: 5
-    - Name: presentation
-      Entry: 3
-      Data: 0
     - Name: preserveContactPath
       Entry: 5
       Data: true
@@ -164,9 +161,6 @@ MonoBehaviour:
     - Name: style
       Entry: 3
       Data: 5
-    - Name: presentation
-      Entry: 3
-      Data: 2
     - Name: preserveContactPath
       Entry: 5
       Data: true

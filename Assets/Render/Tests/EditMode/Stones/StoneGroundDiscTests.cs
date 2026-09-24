@@ -20,20 +20,10 @@ public class StoneGroundDiscTests
         Object.DestroyImmediate(_owner);
     }
 
-    public static StoneGroundDisc CreateDisc(Transform parent, bool isShadow)
-    {
-        GameObject discGo = new GameObject("Disc", typeof(MeshFilter), typeof(MeshRenderer));
-        discGo.transform.SetParent(parent, false);
-        StoneGroundDisc disc = discGo.AddComponent<StoneGroundDisc>();
-        TestHelpers.SetPrivateField(disc, "_renderer", discGo.GetComponent<MeshRenderer>());
-        TestHelpers.SetPrivateField(disc, "_isShadow", isShadow);
-        return disc;
-    }
-
     [Test]
     public void Init_Shadow_PointsAwayFromLightStaysFlatAndCanBeHidden()
     {
-        StoneGroundDisc shadow = CreateDisc(_owner.transform, true);
+        StoneGroundDisc shadow = RenderTestAssets.CreateGroundDisc(_owner.transform, true);
 
         shadow.Init(new Bounds(Vector3.up, Vector3.one * 2f), new Vector3(-1f, 2f, 0f));
 
@@ -56,7 +46,7 @@ public class StoneGroundDiscTests
     [Test]
     public void IsAllowed_Off_HidesAShownDiscAndOnRestoresOnlyWhatTheOwnerShows()
     {
-        StoneGroundDisc shadow = CreateDisc(_owner.transform, true);
+        StoneGroundDisc shadow = RenderTestAssets.CreateGroundDisc(_owner.transform, true);
         shadow.Show(true);
 
         shadow.isAllowed = false;

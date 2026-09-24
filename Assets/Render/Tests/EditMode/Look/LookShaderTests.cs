@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Grass;
 using HealerLike.Render.Stage;
 using HealerLike.Render.Zones;
@@ -335,36 +336,49 @@ public class LookShaderTests
     }
 
     [Test]
-    public void ShadeControls_ShippedMaterials_BodiesAndGrassShiftStonesKeepTheGlobals()
+    public void ShadeControls_ShippedMaterials_OnlyThePlantBodyShifts()
     {
-        Material body = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
+        Material body = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Body.mat");
+        Material shared = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
         Material grass = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat");
         Material stone = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Stone.mat");
 
         Assert.That(body.GetFloat("_HLToonThresholdOffset"), Is.GreaterThan(0f));
         Assert.That(body.GetColor("_HLShadeTint").a, Is.GreaterThan(0f));
-        Assert.That(grass.GetColor("_HLShadeTint").a, Is.GreaterThan(0f));
-        Assert.That(stone.GetFloat("_HLToonThresholdOffset"), Is.Zero);
-        Assert.That(stone.GetColor("_HLShadeTint").a, Is.Zero); // zero strength keeps the global tint
+        foreach (Material global in new[] { shared, grass, stone })
+        {
+            Assert.That(global.GetFloat("_HLToonThresholdOffset"), Is.Zero, global.name);
+            Assert.That(global.GetColor("_HLShadeTint").a, Is.Zero, global.name); // zero strength keeps the global tint
+        }
     }
 
     [Test]
-    public void Render_UnitSphereUnderKeyLight_BodyMaterialSplitsAboutHalf()
+    public void Render_ComposedPlantUnderKeyLight_OnlyTheBodyTakesTheBodyShade()
     {
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
         {
             Assert.Ignore("Requires graphics readback");
         }
 
-        Material body = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
-        BuildKeyLightScene(6f, 25f);
-        CreateKeyLightSphere(body);
+        // The body's teal is hard to tell from the global shade, so a copy of the body material paints it magenta
+        Material shared = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
+        Material marked = Track(new Material(AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Body.mat")));
+        marked.SetColor("_HLShadeTint", new Color(1f, 0f, 1f, 1f));
+        BuildKeyLightScene(25f, 8f);
+        _camera.transform.position += Vector3.up * 0.7f;
+        Renderer[] renderers = CreateKeyLightPlant(shared, marked);
 
+        ShowOnly(renderers, marked);
         RenderKeyLightScene();
+        float bodyShade = ShadeShare(_texture);
+        ShowOnly(renderers, shared);
+        RenderKeyLightScene();
+        float otherShade = ShadeShare(_texture);
 
-        float litShare = LitShare(_texture);
-        Assert.That(litShare, Is.InRange(0.45f, 0.6f));
-        Debug.Log("[LookShaderTests] Body sphere lit share " + litShare.ToString("F3"));
+        Assert.That(bodyShade, Is.InRange(0.25f, 0.75f)); // about half the body past its later split
+        Assert.That(otherShade, Is.LessThan(0.02f)); // heads, stems and roots keep the global shade
+        Debug.Log("[LookShaderTests] Plant body shade share " + bodyShade.ToString("F3") + ", other parts "
+                  + otherShade.ToString("F3"));
     }
 
     [Test]
@@ -384,7 +398,7 @@ public class LookShaderTests
 
         RenderKeyLightScene();
 
-        // The grass takes the bodies' threshold and tint, so its share follows theirs rather than a grass-only value
+        // The grass takes the global threshold, so its share follows the stones' and the heads'
         float shadeShare = ShadeShare(_texture);
         Assert.That(shadeShare, Is.GreaterThan(0.1f));
         Debug.Log("[LookShaderTests] Grass shade share " + shadeShare.ToString("F3"));
@@ -424,7 +438,7 @@ public class LookShaderTests
     public void Capture_BeautyScene_KeepsGridInsideBoardAndOutlinesAtPixelWidth()
     {
         IgnoreUnlessCapturing("RENDER_CAPTURE_BEAUTY");
-        BuildCaptureScene("Assets/Render/Look/captures");
+        BuildCaptureScene(StagePlay.CaptureFolder);
         _camera.transform.rotation = Quaternion.Euler(73.7f, 0f, 0f);
         _camera.transform.position = -_camera.transform.forward * 43.837f;
         Material groundMaterial = Track(new Material(_material));
@@ -508,7 +522,7 @@ public class LookShaderTests
     public void Capture_PortraitScene_ShowsShadowsAndMasksNormalEdges()
     {
         IgnoreUnlessCapturing("RENDER_CAPTURE_PORTRAIT");
-        BuildCaptureScene("/Users/fc/Documents/healerlike-render-specs/captures");
+        BuildCaptureScene(StagePlay.CaptureFolder);
 
         Capture("render-look-shadow");
         Color32[] pixels = _texture.GetPixels32();
@@ -775,6 +789,32 @@ public class LookShaderTests
         return sphere;
     }
 
+    // A composed plant on the key light layer, a heal accent so no lit part reads redder than green
+    Renderer[] CreateKeyLightPlant(Material shared, Material body)
+    {
+        UnitChannels channels = RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud);
+        channels.accent = EffectFamily.Heal;
+        CreatureRecipe recipe = Track(LookComposer.Compose(channels, RenderTestAssets.LoadLookVocabulary()));
+        GameObject plant = Track(new GameObject("Key light plant"));
+        CreatureRig rig = new CreatureRig();
+        rig.Init(recipe, plant.transform, shared, body,
+            AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset"), 1f);
+        rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
+        foreach (Transform part in plant.GetComponentsInChildren<Transform>(true))
+        {
+            part.gameObject.layer = 30;
+        }
+        return plant.GetComponentsInChildren<Renderer>(true);
+    }
+
+    static void ShowOnly(Renderer[] renderers, Material material)
+    {
+        foreach (Renderer partRenderer in renderers)
+        {
+            partRenderer.enabled = partRenderer.sharedMaterial == material;
+        }
+    }
+
     // An eight by eight patch of the real field, its tufts drawn with the given blade material
     GrassField CreateGrassPatch(Material bladeMaterial)
     {
@@ -782,7 +822,7 @@ public class LookShaderTests
         registry.Init();
         GrassField field = Track(new GameObject("Key light grass")).AddComponent<GrassField>();
         field.gameObject.layer = 30;
-        field.Init(new Rect(-4f, -4f, 8f, 8f), 1f, 0f, _camera, registry.buffer, GrassField.MaxZones);
+        field.Init(new Rect(-4f, -4f, 8f, 8f), 1f, 0f, _camera, registry.buffer, ZonePacker.MaxZones);
         field.bladeBudget = 16384;
         TestHelpers.InvokePrivate(field, "OnEnable");
         TestHelpers.SetPrivateField(field, "_meshes", AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset"));
@@ -801,28 +841,6 @@ public class LookShaderTests
         RenderTexture.active = _target;
         _texture.ReadPixels(new Rect(0f, 0f, 256f, 256f), 0, 0);
         _texture.Apply();
-    }
-
-    // Lit pixels are the green body colour; the teal shade and the ultramarine cast shadow are bluer than green
-    static float LitShare(Texture2D texture)
-    {
-        int covered = 0;
-        int lit = 0;
-        foreach (Color32 pixel in texture.GetPixels32())
-        {
-            if (pixel.r == 255 && pixel.g == 255 && pixel.b == 255)
-            {
-                continue;
-            }
-
-            covered++;
-            if (pixel.g > pixel.r && pixel.g > pixel.b)
-            {
-                lit++;
-            }
-        }
-
-        return covered == 0 ? 0f : (float)lit / covered;
     }
 
     // Channel by channel median of the square of the given half size around a pixel

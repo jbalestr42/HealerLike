@@ -17,18 +17,7 @@ namespace HealerLike.Render.Stage
         {
             // The HitArmorBuffer data folder carries the suffix twice
             string folder = name == "HitArmorBufferEntity" ? "HitArmorBufferEntityEntity" : name;
-            return Load<EntityData>(EntityFolder + folder + "/" + name + ".asset");
-        }
-
-        public static ObjectType Load<ObjectType>(string path)
-                                    where ObjectType : Object
-        {
-            ObjectType loaded = AssetDatabase.LoadAssetAtPath<ObjectType>(path);
-            if (loaded == null)
-            {
-                Debug.LogError($"[LookSheetData] Nothing of type {typeof(ObjectType).Name} at {path}");
-            }
-            return loaded;
+            return EnvironmentAuthoring.Load<EntityData>(EntityFolder + folder + "/" + name + ".asset");
         }
 
         // An entity at the EntityData defaults, with the model every sheet unit borrows from Normal
@@ -149,7 +138,7 @@ namespace HealerLike.Render.Stage
             ShootProjectileSkillData.ProjectileData entry = new ShootProjectileSkillData.ProjectileData
             {
                 projectilePrefab = prefab,
-                onHitConsumer = new List<AConsumerFactory> { Load<AConsumerFactory>(DamagePath) },
+                onHitConsumer = new List<AConsumerFactory> { EnvironmentAuthoring.Load<AConsumerFactory>(DamagePath) },
                 numberOfProjectileToShootPerTarget = perTarget
             };
             shoot.data = new ShootProjectileSkillData
@@ -177,7 +166,7 @@ namespace HealerLike.Render.Stage
 
         public static GameObject Prefab(string name)
         {
-            return Load<GameObject>(ProjectileFolder + name + ".prefab");
+            return EnvironmentAuthoring.Load<GameObject>(ProjectileFolder + name + ".prefab");
         }
 
         // A copy of one of the game's projectile prefabs with behaviours baked in, kept under an inactive holder so it never

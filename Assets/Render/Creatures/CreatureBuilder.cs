@@ -5,23 +5,26 @@ using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Creatures
 {
-    public class CreatureBuilder : MonoBehaviour, IEntityView, IHealVisualSink,
+    public class CreatureBuilder : MonoBehaviour, IEntityView, IHealthVisualSink,
         IDeliverySource, IEffectAnchors
     {
         [SerializeField] CreatureRecipe _recipe;
         [SerializeField] Material _material;
+        [SerializeField] Material _bodyMaterial;
         [SerializeField] PrimitiveMeshes _meshes;
-        [SerializeField] float _cellSize = 1f;
 
         Entity _entity;
         readonly List<ASkill> _skills = new List<ASkill>();
         readonly Dictionary<ASkill, ICooldownSkill> _cooldowns = new Dictionary<ASkill, ICooldownSkill>();
         readonly List<ASkill> _removedSkills = new List<ASkill>();
         ResourceAttribute _health;
-        ResourceOutcomeObserver _outcomeObserver;
+        StatusObserver _statusObserver;
         GameObject _registeredSource;
         RenderRegistry _registeredRegistry;
         RenderRegistry _registry;
+        ISpellVisualSink _spellSink;
+        // The game's cell unless Configure hands another ground frame
+        float _cellSize = StageCalibration.CellSize;
         bool _hasConfiguredPlane;
         Vector3 _groundOrigin;
         Vector3 _groundNormal = Vector3.up;
@@ -70,7 +73,13 @@ namespace HealerLike.Render.Creatures
                 _meshes = manager.meshes;
             }
 
-            _registry = manager ? manager.registry : null;
+            _registry = null;
+            _spellSink = null;
+            if (manager)
+            {
+                _registry = manager.registry;
+                _spellSink = manager.spellSink;
+            }
 
             // A view without an authored recipe draws the one derived from the entity's data
             if (!_recipe && owner && manager && manager.creatureLooks)
@@ -92,6 +101,7 @@ namespace HealerLike.Render.Creatures
 
             _entity = owner;
             RefreshSkills();
+            ObserveOutcomes();
             if (!_entity)
             {
                 if (rig != null)
@@ -174,9 +184,7 @@ namespace HealerLike.Render.Creatures
 
         public void Configure(RenderRegistry registry, float size, Vector3 origin, Vector3 normal)
         {
-            bool isOriginFinite = float.IsFinite(origin.x) && float.IsFinite(origin.y) && float.IsFinite(origin.z);
-            bool isNormalFinite = float.IsFinite(normal.x) && float.IsFinite(normal.y) && float.IsFinite(normal.z);
-            if (!float.IsFinite(size) || size <= 0f || !isOriginFinite || !isNormalFinite
+            if (!RenderMath.IsPositive(size) || !RenderMath.IsFinite(origin) || !RenderMath.IsFinite(normal)
                 || normal.sqrMagnitude < 0.00000001f)
             {
                 Debug.LogError("[CreatureBuilder] Invalid ground frame.");
@@ -185,6 +193,7 @@ namespace HealerLike.Render.Creatures
 
             Unregister();
             _registry = registry;
+            ObserveOutcomes();
             if (_cellSize != size)
             {
                 if (rig != null)
@@ -206,21 +215,18 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        public static Vector3 TargetPosition(GameObject target)
+        // The view prefab carries the status observer, which wires the outcome observers too
+        void ObserveOutcomes()
         {
-            if (!target)
+            if (_statusObserver == null)
             {
-                return Vector3.zero;
+                _statusObserver = GetComponent<StatusObserver>();
             }
 
-            Entity entity = target.GetComponent<Entity>();
-            if (entity && entity.targetPoint)
+            if (_statusObserver != null)
             {
-                return entity.targetPoint.transform.position;
+                _statusObserver.Init(_entity, _spellSink, _registry);
             }
-
-            SkillTargetPointTag tag = target.GetComponentInChildren<SkillTargetPointTag>();
-            return tag ? tag.transform.position : target.transform.position;
         }
 
         void RefreshSkills()
@@ -260,7 +266,7 @@ namespace HealerLike.Render.Creatures
             if (rig == null && _recipe && _material)
             {
                 CreatureRig created = new CreatureRig();
-                if (created.Init(_recipe, transform, _material, _meshes, _cellSize))
+                if (created.Init(_recipe, transform, _material, _bodyMaterial, _meshes, _cellSize))
                 {
                     _rig = created;
                 }
@@ -293,18 +299,6 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
-            if (!_outcomeObserver)
-            {
-                _outcomeObserver = ResourceOutcomeObserver.Ensure(_entity.gameObject);
-            }
-
-            ISpellVisualSink spellSink = null;
-            if (_registry != null)
-            {
-                spellSink = _registry.spellSink;
-            }
-            _outcomeObserver.Bind(_entity.health, null, spellSink, _registry);
-
             if (_health != _entity.health)
             {
                 if (_health)
@@ -317,11 +311,6 @@ namespace HealerLike.Render.Creatures
                 {
                     _health.OnAllConsumerProcessed.AddListener(OnHealthProcessed);
                 }
-            }
-
-            if (_outcomeObserver)
-            {
-                _outcomeObserver.enabled = true;
             }
 
             SyncRegistry();
@@ -366,12 +355,6 @@ namespace HealerLike.Render.Creatures
             }
 
             _health = null;
-            if (_outcomeObserver)
-            {
-                _outcomeObserver.enabled = false;
-            }
-
-            _outcomeObserver = null;
             Unregister();
         }
 
@@ -388,13 +371,14 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        #region IHealVisualSink
+        #region IHealthVisualSink
 
-        public void OnHealResolved(GameObject target, float value, bool critical)
+        // Damage reaches this sink too, only a heal draws the contact
+        public void OnHealthResolved(GameObject target, float value, bool critical)
         {
             if (isActiveAndEnabled && target && value > 0f && rig != null)
             {
-                rig.HealContact(TargetPosition(target));
+                rig.HealContact(RenderTargets.Point(target));
             }
         }
 

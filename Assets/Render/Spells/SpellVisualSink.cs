@@ -222,7 +222,7 @@ namespace HealerLike.Render.Spells
             if (status.charges != charges)
             {
                 status.charges = charges;
-                Refresh(status, status.effect.elapsedSeconds, float.PositiveInfinity, ClockKind.Simulation);
+                Refresh(status, status.effect.elapsedSeconds, float.PositiveInfinity);
             }
         }
 
@@ -234,7 +234,7 @@ namespace HealerLike.Render.Spells
         // A beam in the family's accent, lime for a heal so gold stays with Boon
         public SpellEffect ShowLink(Vector3 start, Vector3 end, EffectFamily family, bool isContactThread)
         {
-            if (!isActiveAndEnabled || !IsFinite(start) || !IsFinite(end))
+            if (!isActiveAndEnabled || !RenderMath.IsFinite(start) || !RenderMath.IsFinite(end))
             {
                 return null;
             }
@@ -270,13 +270,11 @@ namespace HealerLike.Render.Spells
                 }
 
                 Transform anchor = healerAnchor != null ? healerAnchor(group.Key) : null;
-                if (anchor == null)
+                Vector3 start = EffectPlacement.Anchors(group.Key).castPoint;
+                if (anchor != null)
                 {
-                    CharacterView view = group.Key.GetComponentInChildren<CharacterView>();
-                    anchor = view != null ? view.bud0 : null;
+                    start = anchor.position;
                 }
-
-                Vector3 start = anchor != null ? anchor.position : group.Key.transform.position;
                 foreach ((GameObject target, EffectFamily family) recipient in group.Value)
                 {
                     if (recipient.target == null || Recipients(group.Value, recipient.family) < 2)
@@ -359,20 +357,21 @@ namespace HealerLike.Render.Spells
 
         Status Open(GameObject target, EffectElement element, EffectRecipe recipe)
         {
-            SpellEffect effect = Create(recipe);
+            SpellEffect effect = Create(recipe, target);
             if (effect == null)
             {
                 return null;
             }
 
-            EffectPlacement.Place(effect, Parent(target), EffectPlacement.Anchors(target));
+            // A status follows its unit, so it hangs under the target point
+            EffectPlacement.Place(effect, RenderTargets.Anchor(target), EffectPlacement.Anchors(target));
             Status status = new Status();
             status.effect = effect;
             _statuses[(target, element)] = status;
             return status;
         }
 
-        void Refresh(Status status, float elapsedSeconds, float durationSeconds, ClockKind clock)
+        void Refresh(Status status, float elapsedSeconds, float durationSeconds)
         {
             int stacks = 0;
             foreach (KeyValuePair<ABuffHandlerFactory, int> source in status.sources)
@@ -382,7 +381,7 @@ namespace HealerLike.Render.Spells
 
             SpellEffect effect = status.effect;
             effect.SetCount(EffectComposer.Count(effect.recipe.entry, Mathf.Max(1, stacks), status.charges, 0f));
-            effect.SetStatus(Mathf.Max(1, stacks), elapsedSeconds, durationSeconds, clock);
+            effect.SetStatus(Mathf.Max(1, stacks), elapsedSeconds, durationSeconds);
         }
 
         void Drop(GameObject target, ABuffHandlerFactory factory)
@@ -401,7 +400,7 @@ namespace HealerLike.Render.Spells
             status.sources.Remove(factory);
             if (!Close(target, element, status) && status.effect != null)
             {
-                Refresh(status, status.effect.elapsedSeconds, status.effect.durationSeconds, status.effect.clock);
+                Refresh(status, status.effect.elapsedSeconds, status.effect.durationSeconds);
             }
         }
 
@@ -442,15 +441,28 @@ namespace HealerLike.Render.Spells
 
         SpellEffect Create(EffectRecipe recipe)
         {
+            return Create(recipe, null);
+        }
+
+        // An effect on a unit colours its body and stem parts for the unit's side
+        SpellEffect Create(EffectRecipe recipe, GameObject target)
+        {
             if (recipe == null || _meshes == null)
             {
                 return null;
             }
 
+            LookSide targetSide = LookSide.Plant;
+            Entity entity = target != null ? target.GetComponent<Entity>() : null;
+            if (entity != null)
+            {
+                targetSide = LookDerivation.Side(entity.entityType);
+            }
+
             GameObject effectGo = new GameObject(recipe.element.ToString());
             effectGo.transform.SetParent(transform, false);
             SpellEffect effect = effectGo.AddComponent<SpellEffect>();
-            effect.Init(recipe, _meshes, _material);
+            effect.Init(recipe, _meshes, _material, targetSide);
             return effect;
         }
 
@@ -528,22 +540,6 @@ namespace HealerLike.Render.Spells
             return casterSide == recipientSide;
         }
 
-        // A status follows its unit, so it hangs under the target point
-        static Transform Parent(GameObject target)
-        {
-            Entity entity = target.GetComponent<Entity>();
-            if (entity != null && entity.targetPoint != null)
-            {
-                return entity.targetPoint.transform;
-            }
-            return target.transform;
-        }
-
-        static bool IsFinite(Vector3 point)
-        {
-            return float.IsFinite(point.x) && float.IsFinite(point.y) && float.IsFinite(point.z);
-        }
-
         #region ISpellVisualSink
 
         public void ShowImpact(GameObject source, GameObject target, ResourceKind resource, float preClampAmount,
@@ -571,7 +567,7 @@ namespace HealerLike.Render.Spells
             float amount = Mathf.Clamp01(Mathf.Abs(preClampAmount) / Mathf.Max(maximum, 1f));
             EffectRecipe recipe = EffectComposer.Compose(_vocabulary, element, family, EffectTempo.Once, 0f, 1, 0f,
                 amount);
-            SpellEffect effect = Create(recipe);
+            SpellEffect effect = Create(recipe, target);
             if (effect == null)
             {
                 return;
@@ -613,7 +609,7 @@ namespace HealerLike.Render.Spells
         }
 
         public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
-                              float elapsedSeconds, float durationSeconds, ClockKind clock)
+                              float elapsedSeconds, float durationSeconds)
         {
             if (!isActiveAndEnabled || target == null || factory == null)
             {
@@ -647,7 +643,7 @@ namespace HealerLike.Render.Spells
             }
 
             status.sources[factory] = stacks;
-            Refresh(status, elapsedSeconds, durationSeconds, clock);
+            Refresh(status, elapsedSeconds, durationSeconds);
             Entity caster = source != null ? source.GetComponent<Entity>() : null;
             if (caster != null)
             {

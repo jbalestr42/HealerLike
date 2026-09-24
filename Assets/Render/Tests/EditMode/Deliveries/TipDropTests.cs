@@ -16,7 +16,7 @@ public class TipDropTests
         _dropGo = new GameObject("TipDrop");
         _drop = _dropGo.AddComponent<TipDrop>();
         LookPart pod = new LookPart { size = Vector3.one };
-        PrimitiveMeshes meshes = PrimitiveMeshesTests.Meshes();
+        PrimitiveMeshes meshes = RenderTestAssets.LoadMeshes();
         _drop.Init(pod, meshes.sphere, null, Color.white, Vector3.up, 1f);
     }
 

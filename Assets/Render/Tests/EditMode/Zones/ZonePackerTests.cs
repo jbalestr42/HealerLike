@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -284,6 +286,17 @@ public class ZonePackerTests
         {
             Assert.AreEqual(first[i], second[i], "slot " + i);
         }
+    }
+
+    [Test]
+    public void MaxZones_ZoneDataInclude_EqualsTheShaderCapacity()
+    {
+        string include = File.ReadAllText("Assets/Render/Shaders/ZoneData.hlsl");
+
+        Match define = Regex.Match(include, @"#define\s+HL_MAX_ZONES\s+(\d+)");
+
+        Assert.IsTrue(define.Success);
+        Assert.AreEqual(ZonePacker.MaxZones, int.Parse(define.Groups[1].Value));
     }
 }
 

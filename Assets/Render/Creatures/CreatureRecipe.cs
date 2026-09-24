@@ -31,7 +31,7 @@ namespace HealerLike.Render.Creatures
             hipHeight = 0.18f,
             kneeHeight = 0.09f,
             thickness = 0.022f,
-            colour = new Color(0.18f, 0.49f, 0.31f)
+            colour = Color.white
         };
         public IdleDefinition idle = new IdleDefinition
         {
@@ -42,12 +42,13 @@ namespace HealerLike.Render.Creatures
             seed = 17
         };
 
-        // The body colour a wilting creature fades toward, plant green unless the recipe says otherwise
-        public Color wiltColour = new Color(0.18f, 0.49f, 0.31f);
+        // The body colour a wilting creature fades toward. The colours here are the palette's, set by the
+        // composer or the authoring; white shows a field left unset.
+        public Color wiltColour = Color.white;
         public Vector3[] sourceLocal = Array.Empty<Vector3>();
         // Where the head sits on the body, zero lets the view take the middle of the sources
         public Vector3 neckLocal;
         // A stone mesh's second submesh, its ochre faces, draws in this colour
-        public Color stoneOchre = new Color(0.7254902f, 0.6235294f, 0.427451f);
+        public Color stoneOchre = Color.white;
     }
 }

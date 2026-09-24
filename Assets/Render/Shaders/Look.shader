@@ -10,6 +10,7 @@ Shader "HL/Look/Primitive"
         [MainColor] _BaseColor ("Base Color", Color) = (1,1,1,1)
         [ToggleUI] _HLNormalEdges ("Normal Edges (zero keeps depth edges only)", Float) = 1
         _HLHatchMultiplier ("Hatch Multiplier", Float) = 1
+        // Only Look_Body.mat sets these two: plant bodies split later and shade in their own tint
         _HLToonThresholdOffset ("Toon Threshold Offset (added to the global threshold)", Float) = 0
         _HLShadeTint ("Shade Tint (alpha is its strength, zero keeps the global tint)", Color) = (0,0,0,0)
     }
