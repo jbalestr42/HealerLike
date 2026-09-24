@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3844665851161517888}
   - component: {fileID: 5829805107776706031}
   - component: {fileID: 7959280919119806704}
+  - component: {fileID: 4779510211887073201}
   m_Layer: 0
   m_Name: HealerCharacter
   m_TagString: Untagged
@@ -79,3 +80,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.TrampleZone
   radius: 0.65
   strength: 1
+--- !u!114 &4779510211887073201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8779204663335450006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95883ece797a642eb85c1765fa3e1b22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.StatusObserver
