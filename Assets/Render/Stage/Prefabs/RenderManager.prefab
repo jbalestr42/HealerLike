@@ -65,7 +65,8 @@ MonoBehaviour:
   - MiddleLine
   - Sphere
   - Ground
-  _environmentPrefab: {fileID: 5244087420897047793, guid: a8358bd0073da4481a6a1f17d7d3380f, type: 3}
+  _gridStrength: 0.12
+  _environmentPrefab: {fileID: 6435028924057048388, guid: a8358bd0073da4481a6a1f17d7d3380f, type: 3}
   _look: {fileID: 6672015439819253328}
   _zones: {fileID: 8708550167893978255}
   _grass: {fileID: 8078069055359978463}
@@ -241,7 +242,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6006450335263604257}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.24951917, y: -0.74873792, z: 0.40373050, w: 0.46274549}
+  m_LocalRotation: {x: 0.24951917, y: -0.74873793, z: 0.4037305, w: 0.4627455}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

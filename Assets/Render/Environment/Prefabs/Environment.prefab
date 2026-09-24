@@ -64,6 +64,7 @@ GameObject:
   - component: {fileID: 7413670267600538565}
   - component: {fileID: 5586027874303797383}
   - component: {fileID: 175974083362682455}
+  - component: {fileID: 6435028924057048388}
   m_Layer: 0
   m_Name: Environment
   m_TagString: Untagged
@@ -154,6 +155,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2852e16c7035e495f8c3af76977e6ac9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.EnvironmentGust
+--- !u!114 &6435028924057048388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5244087420897047793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 196b46bea1154165983d05d9d3791e3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Environment.EnvironmentRoot
+  _scatter: {fileID: 5586027874303797383}
+  _foreground: {fileID: 2540884033247895795}
+  _ridge: {fileID: 2466111269778914413}
+  _grass: {fileID: 7413670267600538565}
+  _gust: {fileID: 175974083362682455}
+  _ground: {fileID: 8367273859723490468}
 --- !u!1 &5909526321914253073
 GameObject:
   m_ObjectHideFlags: 0
