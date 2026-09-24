@@ -8,10 +8,10 @@ public class MapGenerationSettings : ScriptableObject
     // Floors before the boss room
     [Min(1)] public int floorCount = 10;
 
-    [Min(1)] public int columnCount = 7;
+    [Min(1)] public int columnCount = 3;
 
     // Paths drawn from the first floor to the last one, they can merge and split
-    [Min(1)] public int pathCount = 6;
+    [Min(1)] public int pathCount = 4;
 
     [Header("Fixed floors")]
     // Every room of this floor is a treasure, -1 to disable

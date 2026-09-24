@@ -65,13 +65,6 @@ public class ResourceAttribute : MonoBehaviour
     {
         _value = _max.Value;
     }
-
-    // Gives back a share of the max right away, without going through the consumers
-    public void Restore(float maxRatio)
-    {
-        _value = Mathf.Clamp(_value + _max.Value * maxRatio, 0f, _max.Value);
-    }
-
     public void AddResourceModifier(ResourceModifier resourceModifier)
     {
         _resourceModifiers.Add(resourceModifier);

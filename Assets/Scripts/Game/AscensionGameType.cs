@@ -30,7 +30,8 @@ public class AscensionGameType : AGameType
     [SerializeField] MapGenerationSettings _mapSettings;
     // 0 to get a different map every run
     [SerializeField] int _seed = 0;
-    [SerializeField, Range(0f, 1f)] float _restHealRatio = 0.3f;
+    // Applied to every ally in a rest room
+    [SerializeField] AConsumerFactory _restHealConsumer;
     [SerializeField, Min(1)] int _rewardChoiceCount = 3;
     [SerializeField, Min(1)] int _eliteRewardChoiceCount = 4;
 
@@ -220,7 +221,7 @@ public class AscensionGameType : AGameType
                 break;
 
             case MapNodeType.Rest:
-                RestoreAllyHealth(_restHealRatio);
+                HealAllies();
                 SetState(State.ShowMap);
                 break;
 
@@ -284,9 +285,24 @@ public class AscensionGameType : AGameType
         _state = newState;
     }
 
-    void RestoreAllyHealth(float maxRatio)
+    void HealAllies()
     {
-        _entities.GetEntities(Entity.EntityType.Player).ForEach(x => x.GetComponent<Entity>().health.Restore(maxRatio));
+        if (_restHealConsumer == null)
+        {
+            Debug.LogError("[AscensionGameType] No rest heal consumer set");
+            return;
+        }
+
+        _entities.GetEntities(Entity.EntityType.Player).ForEach(x => ApplyConsumer(x.GetComponent<Entity>(), _restHealConsumer));
+    }
+
+    // Goes through the regular resource flow, so the consumer events and feedbacks are triggered
+    public static void ApplyConsumer(Entity entity, AConsumerFactory consumerFactory)
+    {
+        ResourceModifier resourceModifier = new ResourceModifier();
+        resourceModifier.consumers.Add(consumerFactory.GetConsumer(entity.gameObject, entity.gameObject));
+        resourceModifier.source = entity.gameObject;
+        entity.health.AddResourceModifier(resourceModifier);
     }
 
     void EnableAllEntities(bool isEnabled)
