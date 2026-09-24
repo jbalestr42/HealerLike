@@ -1,23 +1,40 @@
 using System;
+using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace HealerLike.Render.Stage
 {
-    // Batchmode play sessions of RenderStage.unity. The run component is added once play mode starts,
-    // and the editor exits with the code the run set.
+    // Batchmode play sessions of RenderStage.unity. The mode picks the run, which is added once play mode starts,
+    // and the editor exits with the code the run set. The mode, code and deadline live in SessionState, since
+    // entering play mode reloads the domain.
     [InitializeOnLoad]
     public static class StagePlay
     {
-        public static readonly string ScenePath = "Assets/Render/Stage/RenderStage.unity";
-        public static readonly string CaptureFolder = "/Users/fc/Documents/healerlike-render-specs/captures/";
-
         static readonly string modeKey = "StagePlay.Mode";
         static readonly string codeKey = "StagePlay.Code";
         static readonly string deadlineKey = "StagePlay.Deadline";
-        static EditorWindow _gameView;
-        static AStageRun _run;
+        static readonly string captureFolderVariable = "RENDER_CAPTURE_DIR";
+
+        // RENDER_CAPTURE_DIR when set, else Logs/Captures/ under the project, which the project ignores
+        public static string CaptureFolder
+        {
+            get
+            {
+                string folder = System.Environment.GetEnvironmentVariable(captureFolderVariable);
+                if (string.IsNullOrEmpty(folder))
+                {
+                    folder = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Logs", "Captures");
+                }
+
+                if (!folder.EndsWith("/"))
+                {
+                    folder += "/";
+                }
+                return folder;
+            }
+        }
 
         static StagePlay()
         {
@@ -27,7 +44,7 @@ namespace HealerLike.Render.Stage
 
         public static void Enter(string mode, float seconds)
         {
-            EditorSceneManager.OpenScene(ScenePath);
+            EditorSceneManager.OpenScene(StageSceneAuthoring.ScenePath);
             SessionState.SetString(modeKey, mode);
             SessionState.SetInt(codeKey, 1);
             SessionState.SetFloat(deadlineKey, (float)EditorApplication.timeSinceStartup + seconds);
@@ -35,11 +52,31 @@ namespace HealerLike.Render.Stage
         }
 
         // Called by the run when it is done
-        public static void Finish(bool isPassed)
+        public static void Finish(AStageRun run, bool isPassed)
         {
-            _run = null;
+            EditorApplication.update -= run.Step;
             SessionState.SetInt(codeKey, isPassed ? 0 : 1);
             EditorApplication.isPlaying = false;
+        }
+
+        // The run each mode names, the one place a capture registers
+        static AStageRun Create(string mode)
+        {
+            if (mode == "smoke")
+            {
+                return new StageSmokeRun();
+            }
+
+            if (mode == "portrait" || mode == "landscape")
+            {
+                return new StageCaptureRun(mode == "landscape");
+            }
+
+            if (mode == "ground")
+            {
+                return new GroundCaptureRun();
+            }
+            return new LookSheetRun(mode != "effects", mode != "units");
         }
 
         static void OnPlayModeStateChanged(PlayModeStateChange change)
@@ -52,8 +89,9 @@ namespace HealerLike.Render.Stage
 
             if (change == PlayModeStateChange.EnteredPlayMode)
             {
-                _run = mode == "smoke" ? new StageSmokeRun() : (AStageRun)new StageCaptureRun(mode == "landscape");
-                _run.Begin();
+                AStageRun run = Create(mode);
+                EditorApplication.update += run.Step;
+                run.Begin();
             }
 
             if (change == PlayModeStateChange.EnteredEditMode)
@@ -82,23 +120,9 @@ namespace HealerLike.Render.Stage
             // Batchmode has no visible Game view, the repaint is what lets end of frame waits resume
             if (EditorApplication.isPlaying)
             {
-                RepaintGameView();
-                if (_run != null)
-                {
-                    _run.Step();
-                }
-            }
-        }
-
-        static void RepaintGameView()
-        {
-            if (_gameView == null)
-            {
                 Type gameViewType = typeof(Editor).Assembly.GetType("UnityEditor.GameView");
-                _gameView = EditorWindow.GetWindow(gameViewType, false, null, false);
+                EditorWindow.GetWindow(gameViewType, false, null, false).Repaint();
             }
-
-            _gameView.Repaint();
         }
     }
 }

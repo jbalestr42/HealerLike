@@ -82,8 +82,8 @@ namespace HealerLike.Render.Stage
                     data.targetBehaviourType = TargetBehaviourType.Farest;
                     data.attributes[AttributeType.AttackRate] = 2f;
                     GameObject mortar = LookSheetData.Variant("LaserBullet", created,
-                        LookSheetData.Load<AProjectileBehaviourFactory>(distancePath),
-                        LookSheetData.Load<AProjectileBehaviourFactory>(explosionPath));
+                        EnvironmentAuthoring.Load<AProjectileBehaviourFactory>(distancePath),
+                        EnvironmentAuthoring.Load<AProjectileBehaviourFactory>(explosionPath));
                     data.skillFactories.Add(LookSheetData.Shoot(mortar, 1, created));
                     break;
                 case "Flanker":
@@ -116,7 +116,7 @@ namespace HealerLike.Render.Stage
                     break;
                 case "Plague stone":
                     data = LookSheetData.Copy(soldier, unit, created);
-                    LookSheetData.AddOnHitEffect(data, LookSheetData.Load<ABuffHandlerFactory>(poisonPath), created);
+                    LookSheetData.AddOnHitEffect(data, EnvironmentAuthoring.Load<ABuffHandlerFactory>(poisonPath), created);
                     break;
                 case "Hexer":
                     FlatModifierFactory slow = LookSheetData.Modifier(AttributeType.AttackRate, AttributeModifierType.Multiply, 0.5f, created);
@@ -159,7 +159,7 @@ namespace HealerLike.Render.Stage
                 case "Warlord":
                     data.attributes[AttributeType.HealthMax] = 400f;
                     data.skillFactories.Add(Volley(created));
-                    data.skillFactories.Add(LookSheetData.Support(LookSheetData.Load<ABuffHandlerFactory>(armorPath), true, 5f, created));
+                    data.skillFactories.Add(LookSheetData.Support(EnvironmentAuthoring.Load<ABuffHandlerFactory>(armorPath), true, 5f, created));
                     LookSheetData.AddPassive(data, Rising(created), created);
                     break;
                 default:
@@ -181,7 +181,7 @@ namespace HealerLike.Render.Stage
                 case "Puffball":
                     data.attributes[AttributeType.HealthMax] = 200f;
                     AreaOfEffectSkillFactory pulse = LookSheetData.Track(ScriptableObject.CreateInstance<AreaOfEffectSkillFactory>(), created);
-                    AreaOfEffectProjectileBehaviourFactory explosion = LookSheetData.Load<AreaOfEffectProjectileBehaviourFactory>(explosionPath);
+                    AreaOfEffectProjectileBehaviourFactory explosion = EnvironmentAuthoring.Load<AreaOfEffectProjectileBehaviourFactory>(explosionPath);
                     pulse.data = new AreaOfEffectSkillData
                     {
                         onSkillTriggerFactory = new List<AOnSkillTriggerFactory>(),
@@ -207,7 +207,7 @@ namespace HealerLike.Render.Stage
                 case "Storm idol":
                     data.attributes[AttributeType.HealthMax] = 400f;
                     data.skillFactories.Add(LookSheetData.Shoot(LookSheetData.Prefab("ChainLightning"), 1, created));
-                    LookSheetData.AddOnHitEffect(data, LookSheetData.Load<ABuffHandlerFactory>(poisonPath), created);
+                    LookSheetData.AddOnHitEffect(data, EnvironmentAuthoring.Load<ABuffHandlerFactory>(poisonPath), created);
                     break;
                 default:
                     Debug.LogError($"[LookSheetUnits] No unit named {unit}");
@@ -248,7 +248,7 @@ namespace HealerLike.Render.Stage
             ShootProjectileSkillStepData.ProjectileData entry = new ShootProjectileSkillStepData.ProjectileData
             {
                 projectilePrefab = LookSheetData.Prefab("CurveBullet2"),
-                onHitConsumer = new List<AConsumerFactory> { LookSheetData.Load<AConsumerFactory>(LookSheetData.DamagePath) },
+                onHitConsumer = new List<AConsumerFactory> { EnvironmentAuthoring.Load<AConsumerFactory>(LookSheetData.DamagePath) },
                 numberOfProjectileToShootPerTarget = 3
             };
             shoot.data = new ShootProjectileSkillStepData { projectiles = new List<ShootProjectileSkillStepData.ProjectileData> { entry } };

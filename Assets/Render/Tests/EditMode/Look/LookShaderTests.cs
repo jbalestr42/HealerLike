@@ -438,7 +438,7 @@ public class LookShaderTests
     public void Capture_BeautyScene_KeepsGridInsideBoardAndOutlinesAtPixelWidth()
     {
         IgnoreUnlessCapturing("RENDER_CAPTURE_BEAUTY");
-        BuildCaptureScene("Assets/Render/Look/captures");
+        BuildCaptureScene(StagePlay.CaptureFolder);
         _camera.transform.rotation = Quaternion.Euler(73.7f, 0f, 0f);
         _camera.transform.position = -_camera.transform.forward * 43.837f;
         Material groundMaterial = Track(new Material(_material));
@@ -522,7 +522,7 @@ public class LookShaderTests
     public void Capture_PortraitScene_ShowsShadowsAndMasksNormalEdges()
     {
         IgnoreUnlessCapturing("RENDER_CAPTURE_PORTRAIT");
-        BuildCaptureScene("/Users/fc/Documents/healerlike-render-specs/captures");
+        BuildCaptureScene(StagePlay.CaptureFolder);
 
         Capture("render-look-shadow");
         Color32[] pixels = _texture.GetPixels32();

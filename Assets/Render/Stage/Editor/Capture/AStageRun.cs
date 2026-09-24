@@ -66,7 +66,7 @@ namespace HealerLike.Render.Stage
                 if (Time.realtimeSinceStartup > deadline)
                 {
                     Debug.LogError("[AStageRun] The render manager never attached to Main.");
-                    StagePlay.Finish(false);
+                    StagePlay.Finish(this, false);
                     yield break;
                 }
 

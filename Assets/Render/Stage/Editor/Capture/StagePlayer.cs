@@ -46,7 +46,7 @@ namespace HealerLike.Render.Stage
             List<EntityData> allies = new List<EntityData>();
             foreach (string path in Allies)
             {
-                allies.Add(AssetDatabase.LoadAssetAtPath<EntityData>(path));
+                allies.Add(EnvironmentAuthoring.Load<EntityData>(path));
             }
             return allies;
         }
