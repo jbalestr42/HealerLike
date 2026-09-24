@@ -11,6 +11,8 @@ namespace HealerLike.Render
         public Vector3 neck;
         public Vector3 headCentre;
         public float headRadius;
+        // Where a cast leaves the unit: a character's cast bud, a creature's top head
+        public Vector3 castPoint;
     }
 
     // A view that knows its body and head, so a status can keep clear of the head

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Stage;
 using UnityEngine;
 
@@ -32,6 +33,7 @@ namespace HealerLike.Render.Stones
 
         [SerializeField] StoneGroundDisc _groundShadow;
         [SerializeField] float _shedHealthFraction = 0.5f;
+        [SerializeField] LookPalette _palette;
 
         CreatureBuilder _builder;
         CreatureRig _rig;
@@ -103,7 +105,7 @@ namespace HealerLike.Render.Stones
         // Taking the resource directly lets tests run without Entity.Init or the game managers
         public void Init(ResourceAttribute resource, uint visualSeed, StoneEffects effects)
         {
-            Unbind();
+            Unsubscribe();
             _health = resource;
             _seed = visualSeed;
             _effects = effects;
@@ -118,7 +120,7 @@ namespace HealerLike.Render.Stones
             _sampler.Reset();
             _planarVelocity = Vector3.zero;
             FindRig();
-            Bind();
+            Subscribe();
         }
 
         // The builder makes its rig at Init and again when the ground frame changes,
@@ -461,7 +463,7 @@ namespace HealerLike.Render.Stones
                 return false;
             }
 
-            Transform shard = _effects.TakeShard(lease.mesh, StoneAssembly.Palette[1]);
+            Transform shard = _effects.TakeShard(lease.mesh, ShardColour());
             if (shard == null)
             {
                 lease.Dispose();
@@ -546,6 +548,17 @@ namespace HealerLike.Render.Stones
             }
         }
 
+        // A thrown shard is a piece of the stone's body
+        Color ShardColour()
+        {
+            if (_palette == null)
+            {
+                Debug.LogError("[StoneBody] No palette.");
+                return Color.magenta;
+            }
+            return _palette.Colour(ColourRole.Body, EffectFamily.Damage, LookSide.Stone);
+        }
+
         void ClearDeliveries()
         {
             _endedDeliveries.Clear();
@@ -556,7 +569,7 @@ namespace HealerLike.Render.Stones
             }
         }
 
-        void Bind()
+        void Subscribe()
         {
             if (_isBound || _health == null || !isActiveAndEnabled)
             {
@@ -568,7 +581,7 @@ namespace HealerLike.Render.Stones
             _isBound = true;
         }
 
-        void Unbind()
+        void Unsubscribe()
         {
             if (_isBound && _health != null)
             {
@@ -589,12 +602,12 @@ namespace HealerLike.Render.Stones
             {
                 _groundShadow.Show(!_isCollapsed);
             }
-            Bind();
+            Subscribe();
         }
 
         void OnDisable()
         {
-            Unbind();
+            Unsubscribe();
             if (_groundShadow != null)
             {
                 _groundShadow.Show(false);
@@ -603,7 +616,7 @@ namespace HealerLike.Render.Stones
 
         void OnDestroy()
         {
-            Unbind();
+            Unsubscribe();
         }
     }
 }

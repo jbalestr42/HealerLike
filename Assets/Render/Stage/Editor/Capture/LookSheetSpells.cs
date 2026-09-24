@@ -44,11 +44,11 @@ namespace HealerLike.Render.Stage
             switch (spell)
             {
                 case "Quicken":
-                    return LookSheetData.Load<ABuffHandlerFactory>(quickenPath);
+                    return EnvironmentAuthoring.Load<ABuffHandlerFactory>(quickenPath);
                 case "Blight":
-                    return LookSheetData.Load<ABuffHandlerFactory>(blightPath);
+                    return EnvironmentAuthoring.Load<ABuffHandlerFactory>(blightPath);
                 case "Weaken":
-                    return LookSheetData.Load<ABuffHandlerFactory>(weakenPath);
+                    return EnvironmentAuthoring.Load<ABuffHandlerFactory>(weakenPath);
                 case "Focus":
                     // SingleTargetBuffAttackRate with the sign the roster fixes
                     return LookSheetData.Handler(DurationType.Duration, 2f, 0f, created,
@@ -72,7 +72,7 @@ namespace HealerLike.Render.Stage
                         LookSheetData.Track(ScriptableObject.CreateInstance<ProjectileBehaviourBuffFactory>(), created);
                     lend.data = new ProjectileBehaviourBuffData
                     {
-                        projectileBehaviour = LookSheetData.Load<AProjectileBehaviourFactory>(bouncePath)
+                        projectileBehaviour = EnvironmentAuthoring.Load<AProjectileBehaviourFactory>(bouncePath)
                     };
                     return LookSheetData.Handler(DurationType.Duration, 8f, 0f, created, lend);
                 default:

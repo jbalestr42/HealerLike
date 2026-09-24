@@ -23,7 +23,6 @@ namespace HealerLike.Render.Creatures
         // A root thins to this share of its thickness at the foot, its joints are this many radii wide
         static readonly float rootTaper = 0.65f;
         static readonly float rootJointWidth = 2.8f;
-        static readonly int baseColourId = Shader.PropertyToID("_BaseColor");
         static readonly int outlineWidthId = Shader.PropertyToID("_HLOutlineWidthMultiplier");
 
         // A projectile the rig follows until its delivery ends
@@ -115,9 +114,16 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        // A recipe that fails validation logs and leaves the view empty
         public bool Init(CreatureRecipe data, Transform parent, Material material, PrimitiveMeshes meshes,
             float cellSize = 1f)
+        {
+            return Init(data, parent, material, material, meshes, cellSize);
+        }
+
+        // A recipe that fails validation logs and leaves the view empty. Body parts draw with the body material,
+        // which shades a plant's body with its own threshold and tint, every other part with the shared one.
+        public bool Init(CreatureRecipe data, Transform parent, Material material, Material bodyMaterial,
+            PrimitiveMeshes meshes, float cellSize)
         {
             if (!CreatureValidator.TryValidate(data, out string error))
             {
@@ -125,7 +131,7 @@ namespace HealerLike.Render.Creatures
                 return false;
             }
 
-            if (!parent || !material || !meshes || !float.IsFinite(cellSize) || cellSize <= 0f)
+            if (!parent || !material || !meshes || !RenderMath.IsPositive(cellSize))
             {
                 Debug.LogError("[CreatureRig] Needs a parent, a material, the meshes and a positive cell size.");
                 return false;
@@ -140,6 +146,10 @@ namespace HealerLike.Render.Creatures
 
             _recipe = data;
             _material = material;
+            if (bodyMaterial == null)
+            {
+                bodyMaterial = material;
+            }
             _meshes = meshes;
             _cellSize = cellSize;
             _root = new GameObject("GeneratedCreature").transform;
@@ -169,13 +179,19 @@ namespace HealerLike.Render.Creatures
                 _pivots[i].localPosition = part.localPosition * cellSize;
                 _pivots[i].localRotation = Quaternion.Euler(part.localEuler);
                 Mesh mesh = meshes.GetMesh(part.primitive, part.variant);
-                _geometry[i] = PrimitiveMeshes.Geometry("Geometry", _pivots[i], mesh, material, _colours[i], part.glow);
+                Material partMaterial = material;
+                if (part.role == PartRole.Body)
+                {
+                    partMaterial = bodyMaterial;
+                }
+                _geometry[i] = PrimitiveMeshes.Geometry("Geometry", _pivots[i], mesh, partMaterial, _colours[i],
+                    part.glow);
                 _geometry[i].localScale = part.dimensions * cellSize;
                 _bodyRenderers[i] = _geometry[i].GetComponent<Renderer>();
                 _hasOchreFaces[i] = mesh && mesh.subMeshCount > 1;
                 if (_hasOchreFaces[i])
                 {
-                    _bodyRenderers[i].sharedMaterials = new Material[] { material, material };
+                    _bodyRenderers[i].sharedMaterials = new Material[] { partMaterial, partMaterial };
                 }
 
                 Paint(i, _colours[i], part.glow);
@@ -523,12 +539,15 @@ namespace HealerLike.Render.Creatures
             {
                 anchors.headCentre = anchors.neck;
                 anchors.headRadius = 0f;
+                anchors.castPoint = anchors.neck;
                 return true;
             }
 
             Bounds headBounds = _bodyRenderers[head].bounds;
             anchors.headCentre = headBounds.center;
             anchors.headRadius = Mathf.Max(headBounds.extents.x, Mathf.Max(headBounds.extents.y, headBounds.extents.z));
+            // The tip of the top head
+            anchors.castPoint = headBounds.center + Vector3.up * headBounds.extents.y;
             return true;
         }
 
@@ -562,14 +581,7 @@ namespace HealerLike.Render.Creatures
             }
 
             _root.gameObject.SetActive(false);
-            if (Application.isPlaying)
-            {
-                UnityEngine.Object.Destroy(_root.gameObject);
-            }
-            else
-            {
-                UnityEngine.Object.DestroyImmediate(_root.gameObject);
-            }
+            RenderObjects.Release(_root.gameObject);
         }
 
         // A tip carries its wider outline, a stone's ochre faces take the recipe's ochre at the same brightness
@@ -578,7 +590,7 @@ namespace HealerLike.Render.Creatures
             Color lit = PrimitiveMeshes.Brighten(colour, glow);
             bool isTip = _recipe.parts[index].role == PartRole.Tip;
             MaterialPropertyBlock block = isTip ? _tipBlock : _colourBlock;
-            block.SetColor(baseColourId, lit);
+            block.SetColor(RenderObjects.BaseColorId, lit);
             if (isTip)
             {
                 block.SetFloat(outlineWidthId, TipOutlineWidth);
@@ -594,7 +606,7 @@ namespace HealerLike.Render.Creatures
             renderer.SetPropertyBlock(block, 0);
             float wilt = _healthFraction;
             Color ochre = Color.Lerp(_recipe.wiltColour, _recipe.stoneOchre, wilt);
-            _ochreBlock.SetColor(baseColourId, PrimitiveMeshes.Brighten(ochre, glow));
+            _ochreBlock.SetColor(RenderObjects.BaseColorId, PrimitiveMeshes.Brighten(ochre, glow));
             renderer.SetPropertyBlock(_ochreBlock, 1);
         }
 

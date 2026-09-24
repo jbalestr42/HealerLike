@@ -65,7 +65,8 @@ MonoBehaviour:
   - MiddleLine
   - Sphere
   - Ground
-  _environmentPrefab: {fileID: 5244087420897047793, guid: a8358bd0073da4481a6a1f17d7d3380f, type: 3}
+  _gridStrength: 0.12
+  _environmentPrefab: {fileID: 6435028924057048388, guid: a8358bd0073da4481a6a1f17d7d3380f, type: 3}
   _look: {fileID: 6672015439819253328}
   _zones: {fileID: 8708550167893978255}
   _grass: {fileID: 8078069055359978463}
@@ -75,6 +76,7 @@ MonoBehaviour:
   _battleFocus: {fileID: 8059157259222913857}
   _rangeDriver: {fileID: 260637357020886478}
   _keyLight: {fileID: 1873633211094606159}
+  _deliveryVocabulary: {fileID: 11400000, guid: 96531525697a44f538d325bc010163ad, type: 2}
 --- !u!114 &1326039467474303321
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -100,30 +102,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cb5ba83a5304f8f9445eca291e9b4fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Look.LookController
-  _settings:
-    shadowTint: {r: 0.11764706, g: 0.34117648, b: 0.49019608, a: 1}
-    outlineColor: {r: 0.09411765, g: 0.14901961, b: 0.24705882, a: 1}
-    fogColor: {r: 0.6039216, g: 0.7372549, b: 0.827451, a: 1}
-    shadowStrength: 0.7
-    toonThreshold: 0.45
-    toonSoftness: 0.08
-    outlineWidthPixels: 1
-    fogStart: 20
-    fogEnd: 60
-    inkStrength: 1
-    inkScale: 0.05
-    inkWidth: 0.0001
-    inkStart: 0.46
-    inkRange: 1
-    densityMul: 1
-    inkWarp: 0.06
-    inkWarpFreq: 2.44
-    dashAmount: 0.1
-    dashScale: 0.01
-    inkDistStart: 15
-    inkFarSpacing: 0.6
-    contrast: 1.15
-    fogBands: 6
 --- !u!114 &8708550167893978255
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -240,7 +218,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6006450335263604257}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.24951917, y: -0.74873792, z: 0.40373050, w: 0.46274549}
+  m_LocalRotation: {x: 0.24951917, y: -0.74873793, z: 0.4037305, w: 0.4627455}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

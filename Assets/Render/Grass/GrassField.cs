@@ -8,7 +8,6 @@ namespace HealerLike.Render.Grass
     // One flat grass area seen by one camera. The zone owner publishes first, then the field updates.
     public class GrassField : MonoBehaviour
     {
-        public static readonly int MaxZones = 64;
         public static readonly string InstancedKeyword = "HL_GRASS_INSTANCED";
 
         [SerializeField] PrimitiveMeshes _meshes;
@@ -71,8 +70,8 @@ namespace HealerLike.Render.Grass
                 _bladeHeightScale = ClampHeightScale(value);
                 if (_bladeDraw != null)
                 {
-                    _bladeDraw.properties.SetFloat("_HL_BladeHeightScale", _bladeHeightScale);
-                    _socleDraw.properties.SetFloat("_HL_BladeHeightScale", _bladeHeightScale);
+                    _bladeDraw.properties.SetFloat("_HLBladeHeightScale", _bladeHeightScale);
+                    _socleDraw.properties.SetFloat("_HLBladeHeightScale", _bladeHeightScale);
                 }
             }
         }
@@ -81,10 +80,10 @@ namespace HealerLike.Render.Grass
                          int zoneCapacity)
         {
             bool isBufferValid = zones != null && zones.IsValid() && zones.stride == Zone.Stride;
-            bool isCapacityValid = zoneCapacity >= 1 && zoneCapacity <= MaxZones;
+            bool isCapacityValid = zoneCapacity >= 1 && zoneCapacity <= ZonePacker.MaxZones;
             if (!isBufferValid || !isCapacityValid || zoneCapacity > zones.count)
             {
-                Debug.LogError("[GrassField] Borrow a live zone buffer with the 32-byte stride and capacity 1..64.");
+                Debug.LogError($"[GrassField] Borrow a live zone buffer with the 32-byte stride and capacity 1..{ZonePacker.MaxZones}.");
                 return;
             }
 
@@ -149,7 +148,7 @@ namespace HealerLike.Render.Grass
         // The zone owner publishes the same buffer and count globally for the ring draw
         public void SetZoneSnapshot(GraphicsBuffer buffer, int validCount)
         {
-            bool isCountValid = validCount >= 0 && validCount <= MaxZones;
+            bool isCountValid = validCount >= 0 && validCount <= ZonePacker.MaxZones;
             bool isBufferValid = validCount == 0;
             if (buffer != null)
             {
@@ -208,13 +207,13 @@ namespace HealerLike.Render.Grass
             }
 
             // Every field shares the compute asset, so each dispatch binds all of its own state first
-            _updateGrass.SetInt("_HL_BladeCount", _bladeCount);
-            _updateGrass.SetBuffer(_kernel, "_HL_BladeSeeds", _seeds);
-            _updateGrass.SetBuffer(_kernel, "_HL_BladeStates", _states);
-            _updateGrass.SetBuffer(_kernel, "_HL_VisibleBlades", _visibleBlades);
-            _updateGrass.SetVectorArray("_HL_FrustumPlanes", _planeVectors);
-            _updateGrass.SetBuffer(_kernel, "_HL_Zones", _zones);
-            _updateGrass.SetInt("_HL_ZoneCount", _zoneCount);
+            _updateGrass.SetInt("_HLBladeCount", _bladeCount);
+            _updateGrass.SetBuffer(_kernel, "_HLBladeSeeds", _seeds);
+            _updateGrass.SetBuffer(_kernel, "_HLBladeStates", _states);
+            _updateGrass.SetBuffer(_kernel, "_HLVisibleBlades", _visibleBlades);
+            _updateGrass.SetVectorArray("_HLFrustumPlanes", _planeVectors);
+            _updateGrass.SetBuffer(_kernel, "_HLZones", _zones);
+            _updateGrass.SetInt("_HLZoneCount", _zoneCount);
             _visibleBlades.SetCounterValue(0);
             _updateGrass.Dispatch(_kernel, (_bladeCount + 63) / 64, 1, 1);
             GraphicsBuffer.CopyCount(_visibleBlades, _bladeDraw.arguments, 4);
@@ -273,20 +272,20 @@ namespace HealerLike.Render.Grass
             // The socle lies flat on the ground under every tuft, so it takes the yaw and scale but never the lean
             _socleDraw = CreateTuftDraw(_meshes.socle, bounds, 0f);
 
-            _ringDraw = new GrassDraw(_meshes.annulus, _ringMaterial, (uint)MaxZones, bounds, gameObject.layer);
-            _ringDraw.properties.SetFloat("_HL_SurfaceY", key.surfaceY);
-            _ringDraw.properties.SetVector("_HL_FieldRect", key.FieldRect());
+            _ringDraw = new GrassDraw(_meshes.annulus, _ringMaterial, (uint)ZonePacker.MaxZones, bounds, gameObject.layer);
+            _ringDraw.properties.SetFloat("_HLSurfaceY", key.surfaceY);
+            _ringDraw.properties.SetVector("_HLFieldRect", key.FieldRect());
             return true;
         }
 
         GrassDraw CreateTuftDraw(Mesh mesh, Bounds bounds, float lean)
         {
             GrassDraw draw = new GrassDraw(mesh, _lookMaterial, 0, bounds, gameObject.layer);
-            draw.properties.SetBuffer("_HL_BladeSeeds", _seeds);
-            draw.properties.SetBuffer("_HL_BladeStates", _states);
-            draw.properties.SetBuffer("_HL_VisibleBladeIDs", _visibleBlades);
-            draw.properties.SetFloat("_HL_BladeHeightScale", ClampHeightScale(_bladeHeightScale));
-            draw.properties.SetFloat("_HL_TuftLean", lean);
+            draw.properties.SetBuffer("_HLBladeSeeds", _seeds);
+            draw.properties.SetBuffer("_HLBladeStates", _states);
+            draw.properties.SetBuffer("_HLVisibleBladeIDs", _visibleBlades);
+            draw.properties.SetFloat("_HLBladeHeightScale", ClampHeightScale(_bladeHeightScale));
+            draw.properties.SetFloat("_HLTuftLean", lean);
             return draw;
         }
 

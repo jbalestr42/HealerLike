@@ -34,7 +34,7 @@ namespace HealerLike.Render.Spells
             {
                 return anchors;
             }
-            return Fallback(target, entity);
+            return Fallback(target);
         }
 
         public static Vector3 Socket(EffectAnchors anchors, EffectSocket socket)
@@ -246,14 +246,15 @@ namespace HealerLike.Render.Spells
                    && float.IsFinite(anchors.foot.y);
         }
 
-        static EffectAnchors Fallback(GameObject target, Entity entity)
+        static EffectAnchors Fallback(GameObject target)
         {
             float radius = FallbackBodyRadius;
             Vector3 foot = target.transform.position;
             Vector3 centre = foot + Vector3.up * radius;
-            if (entity != null && entity.targetPoint != null)
+            Transform anchor = RenderTargets.Anchor(target);
+            if (anchor != target.transform)
             {
-                centre = entity.targetPoint.transform.position;
+                centre = anchor.position;
             }
 
             EffectAnchors anchors = new EffectAnchors();
@@ -263,6 +264,7 @@ namespace HealerLike.Render.Spells
             anchors.neck = centre + Vector3.up * radius;
             anchors.headCentre = centre + Vector3.up * (1.5f * radius);
             anchors.headRadius = 0.5f * radius;
+            anchors.castPoint = anchors.headCentre;
             return anchors;
         }
     }

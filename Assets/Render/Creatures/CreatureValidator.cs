@@ -34,10 +34,7 @@ namespace HealerLike.Render.Creatures
 
                 Vector3 position = part.localPosition;
                 Vector3 euler = part.localEuler;
-                bool isPositionFinite = float.IsFinite(position.x) && float.IsFinite(position.y)
-                    && float.IsFinite(position.z);
-                bool isEulerFinite = float.IsFinite(euler.x) && float.IsFinite(euler.y) && float.IsFinite(euler.z);
-                if (!isPositionFinite || !isEulerFinite || !Positive(part.dimensions) || !Colour(part.colour)
+                if (!RenderMath.IsFinite(position) || !RenderMath.IsFinite(euler) || !Positive(part.dimensions) || !Colour(part.colour)
                     || !float.IsFinite(part.glow) || part.glow < 0f
                     || (int)part.primitive < 0 || part.primitive > Primitive.Stone)
                 {
@@ -54,7 +51,7 @@ namespace HealerLike.Render.Creatures
 
             foreach (Vector3 source in data.sourceLocal)
             {
-                if (!float.IsFinite(source.x) || !float.IsFinite(source.y) || !float.IsFinite(source.z))
+                if (!RenderMath.IsFinite(source))
                 {
                     return Fail("Nonfinite socket.", out error);
                 }
@@ -64,13 +61,10 @@ namespace HealerLike.Render.Creatures
             {
                 Vector3 rootLocal = arm.rootLocal;
                 Vector3 pole = arm.bendPole;
-                bool isRootFinite = float.IsFinite(rootLocal.x) && float.IsFinite(rootLocal.y)
-                    && float.IsFinite(rootLocal.z);
-                bool isPoleFinite = float.IsFinite(pole.x) && float.IsFinite(pole.y) && float.IsFinite(pole.z);
                 if (arm.bodyPart < 0 || arm.bodyPart >= data.parts.Length
                     || arm.segmentCount < 2 || arm.segmentCount > 128
                     || !Positive(arm.segmentLength) || !Positive(arm.radius)
-                    || !isRootFinite || !isPoleFinite
+                    || !RenderMath.IsFinite(rootLocal) || !RenderMath.IsFinite(pole)
                     || !Colour(arm.colour)
                     || arm.restJoints == null || arm.restJoints.Length != arm.segmentCount + 1
                     || arm.restJoints[0] != Vector3.zero)
@@ -81,7 +75,7 @@ namespace HealerLike.Render.Creatures
                 for (int i = 0; i <= arm.segmentCount; i++)
                 {
                     Vector3 joint = arm.restJoints[i];
-                    if (!float.IsFinite(joint.x) || !float.IsFinite(joint.y) || !float.IsFinite(joint.z))
+                    if (!RenderMath.IsFinite(joint))
                     {
                         return Fail("Rest pose does not preserve link lengths.", out error);
                     }

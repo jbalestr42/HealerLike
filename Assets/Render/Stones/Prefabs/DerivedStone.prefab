@@ -157,8 +157,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.CreatureBuilder
   _recipe: {fileID: 0}
   _material: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
+  _bodyMaterial: {fileID: 2100000, guid: c0f1012e25bb14e6c9c2868a137827ce, type: 2}
   _meshes: {fileID: 11400000, guid: 4ee00372052f248838ebdf645b1e9727, type: 2}
-  _cellSize: 1
 --- !u!114 &8612131674928595501
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183,7 +183,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff72fcddce784a6396cd2bda1d8abbd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Zones.HealPulse
-  _cellSize: 1
 --- !u!114 &458933529464818769
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -224,3 +223,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.StoneBody
   _groundShadow: {fileID: 1735226342536893352}
   _shedHealthFraction: 0.5
+  _palette: {fileID: 11400000, guid: 97a6ebe080b14b84947880de49d6bb14, type: 2}

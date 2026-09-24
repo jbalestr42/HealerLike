@@ -30,7 +30,7 @@ namespace HealerLike.Render.Spells
             {
                 shot = GetComponent<Projectile>();
             }
-            Bind(shot, _sink);
+            Observe(shot, _sink);
         }
 
         void OnDisable()
@@ -43,7 +43,7 @@ namespace HealerLike.Render.Spells
             Unbind();
         }
 
-        public void Bind(Projectile observed, SpellVisualSink sink)
+        void Observe(Projectile observed, SpellVisualSink sink)
         {
             Unbind();
             _sink = sink;
@@ -61,14 +61,8 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            Entity entity = hit.target.GetComponent<Entity>();
-            Vector3 contact = hit.target.transform.position;
-            if (entity != null && entity.targetPoint != null)
-            {
-                contact = entity.targetPoint.transform.position;
-            }
-
-            if (!float.IsFinite(contact.x) || !float.IsFinite(contact.y) || !float.IsFinite(contact.z))
+            Vector3 contact = RenderTargets.Point(hit.target);
+            if (!RenderMath.IsFinite(contact))
             {
                 return;
             }

@@ -43,7 +43,7 @@ public class StonePrefabBuilderTests
         Assert.IsNotNull(fragment.GetComponent<MeshFilter>());
         Assert.IsNotNull(fragment.GetComponent<MeshRenderer>());
         Material dust = (Material)effectsSO.FindProperty("_dustMaterial").objectReferenceValue;
-        Assert.AreEqual("HealerLike/Stones/Dust", dust.shader.name);
+        Assert.AreEqual("HL/Stones/Dust", dust.shader.name);
     }
 }
 

@@ -98,10 +98,10 @@ public class ProjectileVisualObserverTests
         model.transform.SetParent(_source.transform, false);
         EntityModel entityModel = model.AddComponent<EntityModel>();
         TestHelpers.SetPrivateField(entity, "_model", entityModel);
-        _recipe = CreatureValidatorTests.Recipe();
-        _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
+        _recipe = RenderTestAssets.CreateRecipe();
+        _material = new Material(RenderTestAssets.LoadLookMaterial());
         _builder = model.AddComponent<CreatureBuilder>();
-        _builder.SetRecipe(_recipe, _material, PrimitiveMeshesTests.Meshes());
+        _builder.SetRecipe(_recipe, _material, RenderTestAssets.LoadMeshes());
         _builder.Init(entity);
         _projectileObject = new GameObject("Projectile", typeof(LineRenderer));
         _projectile = _projectileObject.AddComponent<Projectile>();
@@ -166,7 +166,7 @@ public class ProjectileVisualObserverTests
 
         TestHelpers.InvokePrivate(_observer, "LateUpdate");
 
-        Color lime = DeliveryVocabularyTests.Vocabulary().palette.heal;
+        Color lime = RenderTestAssets.LoadDeliveryVocabulary().palette.heal;
         Assert.AreEqual(lime, _observer.arms[0].tipColour);
     }
 
@@ -177,7 +177,7 @@ public class ProjectileVisualObserverTests
 
         TestHelpers.InvokePrivate(_observer, "LateUpdate");
 
-        Color coral = DeliveryVocabularyTests.Vocabulary().palette.damage;
+        Color coral = RenderTestAssets.LoadDeliveryVocabulary().palette.damage;
         Assert.AreEqual(coral, _observer.arms[0].tipColour);
     }
 

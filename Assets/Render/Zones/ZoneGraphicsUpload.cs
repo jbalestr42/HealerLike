@@ -5,10 +5,10 @@ namespace HealerLike.Render.Zones
     // The zone table on the GPU, bound as a global buffer for the grass and the rings
     public class ZoneGraphicsUpload : IZoneUpload
     {
-        static readonly int zonesId = Shader.PropertyToID("_HL_Zones");
-        static readonly int countId = Shader.PropertyToID("_HL_ZoneCount");
+        static readonly int zonesId = Shader.PropertyToID("_HLZones");
+        static readonly int countId = Shader.PropertyToID("_HLZoneCount");
 
-        GraphicsBuffer _buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 64, Zone.Stride);
+        GraphicsBuffer _buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, ZonePacker.MaxZones, Zone.Stride);
         public GraphicsBuffer buffer { get { return _buffer; } }
 
         public void Upload(Zone[] zones)

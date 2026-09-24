@@ -1,11 +1,10 @@
 using UnityEngine;
-using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Spells
 {
     // HitArmor is an attribute and instant grants emit no buff start event, so the attribute itself is watched
-    // and its charges go to the sink, which draws them as the plates of the target
-    public class AttributeShieldView : MonoBehaviour, IEntityView
+    // and its charges go to the sink, which draws them as the plates of the target. StatusObserver wires it.
+    public class AttributeShieldView : MonoBehaviour
     {
         AttributeManager _attributes;
         GameObject _target;
@@ -23,17 +22,6 @@ namespace HealerLike.Render.Spells
             }
         }
 
-        public void Init(Entity entity, RenderManager manager)
-        {
-            if (entity == null || manager == null)
-            {
-                Debug.LogError("[AttributeShieldView] Init needs an entity and the RenderManager.");
-                return;
-            }
-
-            Bind(entity.attributeManager, entity.gameObject, manager.spellSink);
-        }
-
         void LateUpdate()
         {
             Refresh();
@@ -49,7 +37,7 @@ namespace HealerLike.Render.Spells
             Clear();
         }
 
-        public void Bind(AttributeManager attributes, GameObject target, SpellVisualSink sink)
+        public void Init(AttributeManager attributes, GameObject target, SpellVisualSink sink)
         {
             if (_attributes != attributes || _target != target || _sink != sink)
             {

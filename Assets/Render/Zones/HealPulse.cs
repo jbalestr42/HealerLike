@@ -4,18 +4,15 @@ using HealerLike.Render.Stage;
 namespace HealerLike.Render.Zones
 {
     // Goes on each healer view, Init registers it for that healer's resolved heals
-    public class HealPulse : MonoBehaviour, IEntityView, IHealVisualSink
+    public class HealPulse : MonoBehaviour, IEntityView, IHealthVisualSink
     {
         // A heal pulse reaches this far, in cells
-        static readonly float pulseCells = 0.6f;
+        public static readonly float PulseCells = 0.6f;
 
-        [SerializeField] float _cellSize = 1f;
         GameObject _source;
         RenderRegistry _registry;
         ZoneRegistry _zones;
         bool _isRegistered = false;
-
-        public float cellSize { get { return _cellSize; } set { _cellSize = value; } }
 
         public void Init(Entity entity, RenderManager manager)
         {
@@ -56,19 +53,23 @@ namespace HealerLike.Render.Zones
                 return 0;
             }
 
-            return _zones.AddHealPulse(target, pulseCells * _cellSize);
+            return _zones.AddHealPulse(target, PulseCells * StageCalibration.CellSize);
         }
 
-        #region IHealVisualSink
+        #region IHealthVisualSink
 
-        public void OnHealResolved(GameObject target, float value, bool critical)
+        // Damage reaches this sink too, only a heal pulses
+        public void OnHealthResolved(GameObject target, float value, bool critical)
         {
-            if (!isActiveAndEnabled || target == null || !(value > 0f) || float.IsInfinity(value))
+            if (!isActiveAndEnabled || target == null || !float.IsFinite(value))
             {
                 return;
             }
 
-            Pulse(target.transform);
+            if (value > 0f)
+            {
+                Pulse(target.transform);
+            }
         }
 
         #endregion

@@ -21,8 +21,8 @@ Shader "HL/Grass/HealRing"
             #include "UnityIndirect.cginc"
             #include "GrassZones.hlsl"
             #include "LookCore.hlsl"
-            float4 _HL_FieldRect;
-            float _HL_SurfaceY;
+            float4 _HLFieldRect;
+            float _HLSurfaceY;
 
             struct HLGrassRingInput
             {
@@ -43,15 +43,15 @@ Shader "HL/Grass/HealRing"
                 InitIndirectDrawArgs(0);
                 uint id = GetIndirectInstanceID(input.instanceID);
                 HLGrassRingOutput output = (HLGrassRingOutput)0;
-                // Fixed 64-instance draw, no CPU snapshot or GPU readback. Invalid slots are degenerate.
-                if (id >= (uint)_HL_ZoneCount)
+                // Fixed HL_MAX_ZONES instance draw, no CPU snapshot or GPU readback. Invalid slots are degenerate.
+                if (id >= (uint)_HLZoneCount)
                 {
                     output.positionCS = float4(0.0, 0.0, 0.0, 1.0);
                     return output;
                 }
 
                 HLZone zone = HLLoadZone(id);
-                if ((zone.kind != 1 && zone.kind != 3) || zone.radius <= 0.0)
+                if ((zone.kind != HL_ZONE_HEAL && zone.kind != HL_ZONE_RANGE) || zone.radius <= 0.0)
                 {
                     output.positionCS = float4(0.0, 0.0, 0.0, 1.0);
                     return output;
@@ -59,7 +59,7 @@ Shader "HL/Grass/HealRing"
 
                 float radius = zone.radius + input.uv.y * min(0.018, zone.radius * 0.25);
                 float2 p = zone.position.xz + float2(cos(input.uv.x), sin(input.uv.x)) * radius;
-                output.positionWS = float3(p.x, _HL_SurfaceY + 0.10, p.y);
+                output.positionWS = float3(p.x, _HLSurfaceY + 0.10, p.y);
                 output.positionCS = TransformWorldToHClip(output.positionWS);
                 output.fade = HLGrassZoneOnset(zone);
                 return output;
@@ -68,13 +68,13 @@ Shader "HL/Grass/HealRing"
             half4 HLGrassRingFragment(HLGrassRingOutput input) : SV_Target
             {
                 clip(input.fade - 0.0001);
-                clip(input.positionWS.xz - _HL_FieldRect.xy);
-                clip(_HL_FieldRect.zw - input.positionWS.xz);
+                clip(input.positionWS.xz - _HLFieldRect.xy);
+                clip(_HLFieldRect.zw - input.positionWS.xz);
                 float hostile = 0.0;
-                for (int j = 0; j < min(_HL_ZoneCount, 64); j++)
+                for (int j = 0; j < min(_HLZoneCount, HL_MAX_ZONES); j++)
                 {
                     HLZone z = HLLoadZone(j);
-                    if (z.kind == 2)
+                    if (z.kind == HL_ZONE_HOSTILE)
                     {
                         hostile = max(hostile, HLGrassZoneWeight(z, input.positionWS.xz));
                     }

@@ -14,11 +14,6 @@ public class DeliveryVocabularyTests
 
     readonly List<Object> _objects = new List<Object>();
 
-    public static DeliveryVocabulary Vocabulary()
-    {
-        return AssetDatabase.LoadAssetAtPath<DeliveryVocabulary>(vocabularyPath);
-    }
-
     [TearDown]
     public void TearDown()
     {
@@ -34,7 +29,7 @@ public class DeliveryVocabularyTests
     {
         DeliveryVocabulary vocabulary = DeliveryVocabulary.Load();
 
-        Assert.AreSame(Vocabulary(), vocabulary);
+        Assert.AreSame(RenderTestAssets.LoadDeliveryVocabulary(), vocabulary);
         Assert.IsNotNull(vocabulary.palette);
         Assert.IsNotNull(vocabulary.meshes);
         Assert.IsNotNull(vocabulary.material);
@@ -49,7 +44,7 @@ public class DeliveryVocabularyTests
     [TestCase(DeliveryStyle.Thrown, new Primitive[0])]
     public void GetTip_Style_FollowsTheHeadOfTheSameDelivery(DeliveryStyle style, Primitive[] expected)
     {
-        LookPart[] tip = Vocabulary().GetTip(style);
+        LookPart[] tip = RenderTestAssets.LoadDeliveryVocabulary().GetTip(style);
 
         Assert.AreEqual(expected.Length, tip.Length);
         for (int i = 0; i < tip.Length; i++)
@@ -61,7 +56,7 @@ public class DeliveryVocabularyTests
     [Test]
     public void GetTip_RigidSpike_PointsAlongTheTravel()
     {
-        LookPart spike = Vocabulary().GetTip(DeliveryStyle.Rigid)[0];
+        LookPart spike = RenderTestAssets.LoadDeliveryVocabulary().GetTip(DeliveryStyle.Rigid)[0];
 
         Vector3 axis = Quaternion.Euler(spike.euler) * Vector3.up;
 
@@ -72,7 +67,7 @@ public class DeliveryVocabularyTests
     [Test]
     public void GetTip_ChainSync_IsBrighterThanTheBead()
     {
-        DeliveryVocabulary vocabulary = Vocabulary();
+        DeliveryVocabulary vocabulary = RenderTestAssets.LoadDeliveryVocabulary();
 
         LookPart spark = vocabulary.GetTip(DeliveryStyle.ChainSync)[0];
         LookPart bead = vocabulary.GetTip(DeliveryStyle.Direct)[0];
@@ -83,7 +78,7 @@ public class DeliveryVocabularyTests
     [Test]
     public void GetTip_EveryAccentPart_IsATip()
     {
-        DeliveryVocabulary vocabulary = Vocabulary();
+        DeliveryVocabulary vocabulary = RenderTestAssets.LoadDeliveryVocabulary();
 
         foreach (LookPart[] tip in vocabulary.tips.Values)
         {
@@ -106,6 +101,35 @@ public class DeliveryVocabularyTests
         LookPart[] tip = vocabulary.GetTip(DeliveryStyle.Direct);
 
         Assert.AreEqual(0, tip.Length);
+    }
+
+    [TestCase(DeliveryStyle.Rigid, true)]
+    [TestCase(DeliveryStyle.Direct, true)]
+    [TestCase(DeliveryStyle.Swarm, true)]
+    [TestCase(DeliveryStyle.Bounce, true)]
+    [TestCase(DeliveryStyle.ChainSync, true)]
+    [TestCase(DeliveryStyle.Arc, false)]
+    [TestCase(DeliveryStyle.Thrown, false)]
+    public void GetArm_ShippedAsset_DrawsTheRodStylesAsRods(DeliveryStyle style, bool isRod)
+    {
+        DeliveryVocabulary vocabulary = RenderTestAssets.LoadDeliveryVocabulary();
+
+        ArmStyle arm = vocabulary.GetArm(style);
+
+        Assert.AreEqual(isRod, arm.isRod);
+    }
+
+    [Test]
+    public void GetArm_ShippedSwarm_IsThinnerAndRigidSnapsBack()
+    {
+        DeliveryVocabulary vocabulary = RenderTestAssets.LoadDeliveryVocabulary();
+
+        ArmStyle swarm = vocabulary.GetArm(DeliveryStyle.Swarm);
+        ArmStyle rigid = vocabulary.GetArm(DeliveryStyle.Rigid);
+
+        Assert.Less(swarm.width, 1f);
+        Assert.Less(swarm.leafWidth, 1f);
+        Assert.Greater(rigid.retractSeconds, 0f);
     }
 }
 

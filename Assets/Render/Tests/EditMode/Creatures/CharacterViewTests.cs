@@ -27,7 +27,7 @@ public class CharacterViewTests
         _anchorGo = new GameObject("Anchor");
         _targetGo = new GameObject("HealTarget");
         _managerGo = new GameObject("RenderManager");
-        _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
+        _material = new Material(RenderTestAssets.LoadLookMaterial());
     }
 
     [TearDown]
@@ -74,15 +74,15 @@ public class CharacterViewTests
     }
 
     [Test]
-    public void OnHealResolved_AnchorAndRegistryWithoutEntityInit_FollowsAnchorAndReactsToHeals()
+    public void OnHealthResolved_AnchorAndRegistryWithoutEntityInit_FollowsAnchorAndReactsToHeals()
     {
-        _ownedRecipe = CreatureValidatorTests.Recipe();
+        _ownedRecipe = RenderTestAssets.CreateRecipe();
         Character character = null;
         TestHelpers.WithLoggingDisabled(() => character = _characterGo.AddComponent<Character>());
         _anchorGo.transform.position = new Vector3(5f, 1f, 2f);
         _targetGo.transform.position = _anchorGo.transform.position + Vector3.one;
         CharacterView view = _anchorGo.AddComponent<CharacterView>();
-        TestHelpers.SetPrivateField(view, "_meshes", PrimitiveMeshesTests.Meshes());
+        TestHelpers.SetPrivateField(view, "_meshes", RenderTestAssets.LoadMeshes());
         RenderRegistry registry = new RenderRegistry();
 
         InitWithoutManager(view, character, _ownedRecipe, _anchorGo.transform, _material, registry);
@@ -95,33 +95,33 @@ public class CharacterViewTests
         Assert.IsNull(_characterGo.GetComponent<Entity>());
         Assert.IsNull(character.mana);
 
-        registry.NotifyHeal(_characterGo, _targetGo, 0f, false);
+        registry.NotifyHealth(_characterGo, _targetGo, 0f, false);
         Assert.AreEqual(0, rig.activeArmCount);
-        registry.NotifyHeal(_characterGo, _targetGo, 4f, true);
+        registry.NotifyHealth(_characterGo, _targetGo, 4f, true);
         Assert.AreEqual(1, rig.activeArmCount);
 
         view.enabled = false;
         TestHelpers.InvokePrivate(view, "OnDisable");
         rig.Tick(1f, 0.3f, new FootFrame(_anchorGo.transform.position, Vector3.up, 1f));
         rig.Tick(1.3f, 0.3f, new FootFrame(_anchorGo.transform.position, Vector3.up, 1f));
-        registry.NotifyHeal(_characterGo, _targetGo, 4f, true);
+        registry.NotifyHealth(_characterGo, _targetGo, 4f, true);
         Assert.AreEqual(0, rig.activeArmCount);
 
         view.enabled = true;
         TestHelpers.InvokePrivate(view, "OnEnable");
-        registry.NotifyHeal(_characterGo, _targetGo, 4f, false);
+        registry.NotifyHealth(_characterGo, _targetGo, 4f, false);
         Assert.AreEqual(1, rig.activeArmCount);
 
         Object.DestroyImmediate(_characterGo);
         view.enabled = false;
         TestHelpers.InvokePrivate(view, "OnDisable");
         BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-        FieldInfo field = typeof(RenderRegistry).GetField("_healSinks", flags);
+        FieldInfo field = typeof(RenderRegistry).GetField("_healthSinks", flags);
         Assert.AreEqual(0, ((IDictionary)field.GetValue(registry)).Count);
     }
 
     [Test]
-    public void OnHealResolved_RegisteredCharacter_CountsHealGesturesAndTintsBudsByManaWithoutAllocating()
+    public void OnHealthResolved_RegisteredCharacter_CountsHealGesturesAndTintsBudsByManaWithoutAllocating()
     {
         CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
         Character character = null;
@@ -129,12 +129,13 @@ public class CharacterViewTests
         ResourceAttribute mana = TestHelpers.CreateResourceAttribute(_characterGo, AttributeType.ManaMax, 100);
         TestHelpers.SetPrivateField(character, "_mana", mana);
         ResourceAttribute health = TestHelpers.CreateResourceAttribute(_targetGo, AttributeType.HealthMax, 100);
+        _characterGo.AddComponent<StatusObserver>();
         CharacterView view = _characterGo.AddComponent<CharacterView>();
-        TestHelpers.SetPrivateField(view, "_meshes", PrimitiveMeshesTests.Meshes());
+        TestHelpers.SetPrivateField(view, "_meshes", RenderTestAssets.LoadMeshes());
         RenderRegistry registry = new RenderRegistry();
         InitWithoutManager(view, character, recipe, _characterGo.transform, _material, registry);
         ResourceOutcomeObserver observer = _targetGo.AddComponent<ResourceOutcomeObserver>();
-        observer.Bind(health, null, null, registry);
+        observer.Init(health, null, null, registry);
         BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
         MethodInfo updateMethod = typeof(CharacterView).GetMethod("Update", flags);
         Action update = (Action)Delegate.CreateDelegate(typeof(Action), view, updateMethod);
@@ -186,6 +187,22 @@ public class CharacterViewTests
     }
 
     [Test]
+    public void TryGetAnchors_HealerRig_CastsFromTheFirstBud()
+    {
+        CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
+        Character character = null;
+        TestHelpers.WithLoggingDisabled(() => character = _characterGo.AddComponent<Character>());
+        CharacterView view = _characterGo.AddComponent<CharacterView>();
+        TestHelpers.SetPrivateField(view, "_meshes", RenderTestAssets.LoadMeshes());
+        InitWithoutManager(view, character, recipe, _characterGo.transform, _material, new RenderRegistry());
+
+        bool hasAnchors = view.TryGetAnchors(out EffectAnchors anchors);
+
+        Assert.IsTrue(hasAnchors);
+        Assert.AreEqual(view.bud0.position, anchors.castPoint);
+    }
+
+    [Test]
     public void TryGetAnchors_BeforeTheRig_ReturnsFalse()
     {
         CharacterView view = _characterGo.AddComponent<CharacterView>();
@@ -203,7 +220,7 @@ public class CharacterViewTests
         Character character = null;
         TestHelpers.WithLoggingDisabled(() => character = _characterGo.AddComponent<Character>());
         RenderManager manager = _managerGo.AddComponent<RenderManager>();
-        TestHelpers.SetPrivateField(manager, "_meshes", PrimitiveMeshesTests.Meshes());
+        TestHelpers.SetPrivateField(manager, "_meshes", RenderTestAssets.LoadMeshes());
         CharacterView view = viewGo.GetComponent<CharacterView>();
 
         view.Init(character, manager);
@@ -223,10 +240,11 @@ public class CharacterViewTests
         Assert.AreEqual(PrefabAssetType.Regular, PrefabUtility.GetPrefabAssetType(prefab));
         Assert.IsNull(prefab.GetComponent<Character>());
         Assert.NotNull(view);
+        Assert.NotNull(prefab.GetComponent<StatusObserver>());
         SerializedObject data = new SerializedObject(view);
         Assert.AreSame(prefab.transform, data.FindProperty("_visualAnchor").objectReferenceValue);
         Assert.AreEqual("Healer", data.FindProperty("_recipe").objectReferenceValue.name);
-        Assert.AreSame(PrimitiveMeshesTests.Meshes(), data.FindProperty("_meshes").objectReferenceValue);
+        Assert.AreSame(RenderTestAssets.LoadMeshes(), data.FindProperty("_meshes").objectReferenceValue);
     }
 }
 

@@ -96,13 +96,13 @@ public class GrassComputeTests
             _planes[i] = new Vector4(0f, 0f, 0f, 100f);
         }
 
-        _compute.SetBuffer(_kernel, "_HL_BladeSeeds", _seedBuffer);
-        _compute.SetBuffer(_kernel, "_HL_BladeStates", _stateBuffer);
-        _compute.SetBuffer(_kernel, "_HL_Zones", _zoneBuffer);
-        _compute.SetBuffer(_kernel, "_HL_VisibleBlades", _visible);
-        _compute.SetInt("_HL_BladeCount", 65);
-        _compute.SetInt("_HL_ZoneCount", 2);
-        _compute.SetVectorArray("_HL_FrustumPlanes", _planes);
+        _compute.SetBuffer(_kernel, "_HLBladeSeeds", _seedBuffer);
+        _compute.SetBuffer(_kernel, "_HLBladeStates", _stateBuffer);
+        _compute.SetBuffer(_kernel, "_HLZones", _zoneBuffer);
+        _compute.SetBuffer(_kernel, "_HLVisibleBlades", _visible);
+        _compute.SetInt("_HLBladeCount", 65);
+        _compute.SetInt("_HLZoneCount", 2);
+        _compute.SetVectorArray("_HLFrustumPlanes", _planes);
     }
 
     [TearDown]
@@ -149,7 +149,7 @@ public class GrassComputeTests
         _seedBuffer.SetData(_layout);
         _zones[0] = new Zone { radius = radius, kind = kind, strength = strength, age = age, reserved = heading };
         _zoneBuffer.SetData(_zones);
-        _compute.SetInt("_HL_ZoneCount", 1);
+        _compute.SetInt("_HLZoneCount", 1);
         Dispatch();
         ReadStates();
         return _states[0];
@@ -178,12 +178,12 @@ public class GrassComputeTests
         ReadStates();
         Assert.AreEqual(hostileState, _states[1], "Spikes stay still from frame to frame.");
 
-        _compute.SetInt("_HL_ZoneCount", 64);
+        _compute.SetInt("_HLZoneCount", ZonePacker.MaxZones);
         Assert.AreEqual(65u, Dispatch());
         ReadStates();
         Assert.GreaterOrEqual(_states[1].leanHeightSpike.w, 0.5f);
 
-        _compute.SetInt("_HL_ZoneCount", 0);
+        _compute.SetInt("_HLZoneCount", 0);
         Assert.AreEqual(65u, Dispatch());
         ReadStates();
         Assert.AreEqual(0f, _states[1].leanHeightSpike.w);
@@ -227,13 +227,13 @@ public class GrassComputeTests
         Sample(6, Vector3.zero, 1f, 1f);
         _zones[1] = new Zone { radius = 2f, kind = 2, strength = 1f, age = 1f };
         _zoneBuffer.SetData(_zones);
-        _compute.SetInt("_HL_ZoneCount", 2);
+        _compute.SetInt("_HLZoneCount", 2);
         Dispatch();
         ReadStates();
         Assert.AreEqual(0f, _states[0].leanHeightSpike.w, "Obstacles remain flattened through hostile overlap.");
 
         _planes[0] = new Vector4(1f, 0f, 0f, -100f);
-        _compute.SetVectorArray("_HL_FrustumPlanes", _planes);
+        _compute.SetVectorArray("_HLFrustumPlanes", _planes);
         Assert.AreEqual(0u, Dispatch());
         foreach (ShaderMessage message in ShaderUtil.GetComputeShaderMessages(_compute))
         {
@@ -249,7 +249,7 @@ public class GrassComputeTests
             _layout[i].heightWidthLean = new Vector4(GrassLayout.TuftHeight, GrassLayout.TuftWidth, 0f, i / 128f);
         }
         _seedBuffer.SetData(_layout);
-        _compute.SetInt("_HL_ZoneCount", 0);
+        _compute.SetInt("_HLZoneCount", 0);
 
         Dispatch();
         ReadStates();

@@ -6,8 +6,16 @@ namespace HealerLike.Render.Creatures
     // Flat-shaded shapes for the primitive baker
     public static class FacetedMeshes
     {
-        // The stones' flat-shaded four-sided cone, base on the ground
-        public static Mesh CreatePyramid()
+        // The open pyramid is the grass tuft, four sides; the socle under it is a flat fan
+        public static readonly int TuftIndexCount = 12;
+        public static readonly int SocleIndexCount = 24;
+        public static readonly int SocleSides = 8;
+        // 0.36 of socle radius for a 0.29 wide pyramid
+        public static readonly float SocleRadius = 0.36f / 0.29f;
+
+        // A flat-shaded four-sided cone, base on the ground spanning -0.5..0.5 and apex at y 1. The stones'
+        // pyramid has its base; the grass tuft is open there, since it sits in the ground on the socle.
+        public static Mesh CreatePyramid(string name, bool hasBase)
         {
             Vector3[] points =
             {
@@ -17,28 +25,67 @@ namespace HealerLike.Render.Creatures
                 new Vector3(-0.5f, 0f, 0.5f),
                 Vector3.up
             };
-            int[] faces = { 0, 4, 1, 1, 4, 2, 2, 4, 3, 3, 4, 0, 0, 1, 2, 0, 2, 3 };
-            Vector3[] vertices = new Vector3[18];
-            Vector3[] normals = new Vector3[18];
-            int[] triangles = new int[18];
-            for (int i = 0; i < 18; i += 3)
+            int[] sides = { 0, 4, 1, 1, 4, 2, 2, 4, 3, 3, 4, 0 };
+            int[] bottom = { 0, 1, 2, 0, 2, 3 };
+            List<Vector3> vertices = new List<Vector3>();
+            List<Vector3> normals = new List<Vector3>();
+            for (int i = 0; i < sides.Length; i += 3)
             {
-                Vector3 origin = points[faces[i]];
-                Vector3 normal = Vector3.Cross(points[faces[i + 1]] - origin, points[faces[i + 2]] - origin).normalized;
-                for (int j = 0; j < 3; j++)
+                AddFacet(vertices, normals, points[sides[i]], points[sides[i + 1]], points[sides[i + 2]]);
+            }
+
+            if (hasBase)
+            {
+                for (int i = 0; i < bottom.Length; i += 3)
                 {
-                    vertices[i + j] = points[faces[i + j]];
-                    normals[i + j] = normal;
-                    triangles[i + j] = i + j;
+                    AddFacet(vertices, normals, points[bottom[i]], points[bottom[i + 1]], points[bottom[i + 2]]);
                 }
             }
 
-            Mesh mesh = new Mesh { name = "Pyramid" };
-            mesh.vertices = vertices;
-            mesh.normals = normals;
-            mesh.triangles = triangles;
-            mesh.RecalculateBounds();
-            return mesh;
+            return CreateFacets(name, vertices, normals);
+        }
+
+        // A flat octagon fan around the root, facing up, in tuft widths
+        public static Mesh CreateSocle()
+        {
+            List<Vector3> vertices = new List<Vector3>();
+            List<Vector3> normals = new List<Vector3>();
+            for (int i = 0; i < SocleSides; i++)
+            {
+                AddFacet(vertices, normals, Vector3.zero, SocleCorner(i + 1), SocleCorner(i));
+            }
+
+            return CreateFacets("Socle", vertices, normals);
+        }
+
+        static Vector3 SocleCorner(int i)
+        {
+            float angle = i * Mathf.PI * 2f / SocleSides;
+            return new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * SocleRadius;
+        }
+
+        // One flat-shaded facet, its normal from its winding
+        static void AddFacet(List<Vector3> vertices, List<Vector3> normals, Vector3 a, Vector3 b, Vector3 c)
+        {
+            Vector3 normal = Vector3.Cross(b - a, c - a).normalized;
+            vertices.Add(a);
+            vertices.Add(b);
+            vertices.Add(c);
+            for (int i = 0; i < 3; i++)
+            {
+                normals.Add(normal);
+            }
+        }
+
+        static Mesh CreateFacets(string name, List<Vector3> vertices, List<Vector3> normals)
+        {
+            int[] triangles = new int[vertices.Count];
+            for (int i = 0; i < triangles.Length; i++)
+            {
+                triangles[i] = i;
+            }
+
+            return PrimitiveMeshBaker.CreateMesh(name, vertices.ToArray(), triangles, normals.ToArray(), null);
         }
 
         // Tall leaf with a diamond section: widest at the base cap, tapering to a sharp tip. One unit on each axis.
@@ -111,12 +158,7 @@ namespace HealerLike.Render.Creatures
                 }
             }
 
-            Mesh mesh = new Mesh { name = name };
-            mesh.vertices = vertices;
-            mesh.normals = normals;
-            mesh.triangles = triangles;
-            mesh.RecalculateBounds();
-            return mesh;
+            return PrimitiveMeshBaker.CreateMesh(name, vertices, triangles, normals, null);
         }
 
         // Flat-shaded octahedron, kept asymmetric on purpose

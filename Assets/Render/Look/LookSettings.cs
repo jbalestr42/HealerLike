@@ -17,6 +17,8 @@ namespace HealerLike.Render.Look
 
         public float shadowStrength;
 
+        // Moves every surface's light and shade split: stones, ground, grass, heads, tips, effects and cast shadows.
+        // Plant bodies add Look_Body.mat's offset to it.
         public float toonThreshold;
 
         // Half width of the soft terminator around the toon threshold
@@ -57,6 +59,8 @@ namespace HealerLike.Render.Look
 
         public int fogBands;
 
+        // The one source of the look's numbers: LookCore.hlsl repeats each as an HL_DEF_ define for a material
+        // drawn without a LookController, and LookSettingsTests keeps the two equal
         public static LookSettings Default
         {
             get
@@ -97,25 +101,25 @@ namespace HealerLike.Render.Look
             value.shadowTint = ValidateColor(shadowTint, defaults.shadowTint, true);
             value.outlineColor = ValidateColor(outlineColor, defaults.outlineColor, true);
             value.fogColor = ValidateColor(fogColor, defaults.fogColor, false);
-            value.shadowStrength = Mathf.Clamp(Finite(shadowStrength, defaults.shadowStrength), 0.01f, 1f);
-            value.toonThreshold = Mathf.Clamp(Finite(toonThreshold, defaults.toonThreshold), 0.001f, 0.999f);
-            value.toonSoftness = Mathf.Clamp(Finite(toonSoftness, defaults.toonSoftness), 0f, 0.5f);
-            value.outlineWidthPixels = Mathf.Max(0f, Finite(outlineWidthPixels, defaults.outlineWidthPixels));
-            value.fogStart = Mathf.Max(0f, Finite(fogStart, defaults.fogStart));
-            value.fogEnd = Mathf.Max(0f, Finite(fogEnd, defaults.fogEnd));
-            value.inkStrength = Mathf.Clamp(Finite(inkStrength, defaults.inkStrength), 0f, 1f);
-            value.inkScale = Mathf.Max(0.0001f, Finite(inkScale, defaults.inkScale));
-            value.inkWidth = Mathf.Max(0f, Finite(inkWidth, defaults.inkWidth));
-            value.inkStart = Mathf.Clamp(Finite(inkStart, defaults.inkStart), 0f, 1f);
-            value.inkRange = Mathf.Max(0.001f, Finite(inkRange, defaults.inkRange));
-            value.densityMul = Mathf.Clamp(Finite(densityMul, defaults.densityMul), 0.01f, 1f);
-            value.inkWarp = Mathf.Max(0f, Finite(inkWarp, defaults.inkWarp));
-            value.inkWarpFreq = Mathf.Max(0f, Finite(inkWarpFreq, defaults.inkWarpFreq));
-            value.dashAmount = Mathf.Clamp(Finite(dashAmount, defaults.dashAmount), 0f, 0.92f);
-            value.dashScale = Mathf.Max(0.001f, Finite(dashScale, defaults.dashScale));
-            value.inkDistStart = Mathf.Max(0.001f, Finite(inkDistStart, defaults.inkDistStart));
-            value.inkFarSpacing = Mathf.Max(0f, Finite(inkFarSpacing, defaults.inkFarSpacing));
-            value.contrast = Mathf.Clamp(Finite(contrast, defaults.contrast), 1f, 1.6f);
+            value.shadowStrength = Mathf.Clamp(RenderMath.FiniteOr(shadowStrength, defaults.shadowStrength), 0.01f, 1f);
+            value.toonThreshold = Mathf.Clamp(RenderMath.FiniteOr(toonThreshold, defaults.toonThreshold), 0.001f, 0.999f);
+            value.toonSoftness = Mathf.Clamp(RenderMath.FiniteOr(toonSoftness, defaults.toonSoftness), 0f, 0.5f);
+            value.outlineWidthPixels = Mathf.Max(0f, RenderMath.FiniteOr(outlineWidthPixels, defaults.outlineWidthPixels));
+            value.fogStart = Mathf.Max(0f, RenderMath.FiniteOr(fogStart, defaults.fogStart));
+            value.fogEnd = Mathf.Max(0f, RenderMath.FiniteOr(fogEnd, defaults.fogEnd));
+            value.inkStrength = Mathf.Clamp(RenderMath.FiniteOr(inkStrength, defaults.inkStrength), 0f, 1f);
+            value.inkScale = Mathf.Max(0.0001f, RenderMath.FiniteOr(inkScale, defaults.inkScale));
+            value.inkWidth = Mathf.Max(0f, RenderMath.FiniteOr(inkWidth, defaults.inkWidth));
+            value.inkStart = Mathf.Clamp(RenderMath.FiniteOr(inkStart, defaults.inkStart), 0f, 1f);
+            value.inkRange = Mathf.Max(0.001f, RenderMath.FiniteOr(inkRange, defaults.inkRange));
+            value.densityMul = Mathf.Clamp(RenderMath.FiniteOr(densityMul, defaults.densityMul), 0.01f, 1f);
+            value.inkWarp = Mathf.Max(0f, RenderMath.FiniteOr(inkWarp, defaults.inkWarp));
+            value.inkWarpFreq = Mathf.Max(0f, RenderMath.FiniteOr(inkWarpFreq, defaults.inkWarpFreq));
+            value.dashAmount = Mathf.Clamp(RenderMath.FiniteOr(dashAmount, defaults.dashAmount), 0f, 0.92f);
+            value.dashScale = Mathf.Max(0.001f, RenderMath.FiniteOr(dashScale, defaults.dashScale));
+            value.inkDistStart = Mathf.Max(0.001f, RenderMath.FiniteOr(inkDistStart, defaults.inkDistStart));
+            value.inkFarSpacing = Mathf.Max(0f, RenderMath.FiniteOr(inkFarSpacing, defaults.inkFarSpacing));
+            value.contrast = Mathf.Clamp(RenderMath.FiniteOr(contrast, defaults.contrast), 1f, 1.6f);
             value.fogBands = Mathf.Max(1, fogBands);
 
             if (value.fogEnd - value.fogStart < minimumFogDepth)
@@ -126,16 +130,11 @@ namespace HealerLike.Render.Look
             return value;
         }
 
-        static float Finite(float value, float fallback)
-        {
-            return float.IsFinite(value) ? value : fallback;
-        }
-
         static Color ValidateColor(Color value, Color fallback, bool nonblack)
         {
-            float red = Mathf.Clamp01(Finite(value.r, fallback.r));
-            float green = Mathf.Clamp01(Finite(value.g, fallback.g));
-            float blue = Mathf.Clamp01(Finite(value.b, fallback.b));
+            float red = Mathf.Clamp01(RenderMath.FiniteOr(value.r, fallback.r));
+            float green = Mathf.Clamp01(RenderMath.FiniteOr(value.g, fallback.g));
+            float blue = Mathf.Clamp01(RenderMath.FiniteOr(value.b, fallback.b));
             value = new Color(red, green, blue, 1f);
             if (nonblack && value.r == 0f && value.g == 0f && value.b == 0f)
             {

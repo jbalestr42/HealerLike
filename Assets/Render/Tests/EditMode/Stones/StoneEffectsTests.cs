@@ -15,7 +15,7 @@ public class StoneEffectsTests
     [SetUp]
     public void SetUp()
     {
-        _fx = CreateEffects();
+        _fx = RenderTestAssets.CreateStoneEffects();
         _go = _fx.gameObject;
         _source = new GameObject("SourceVisual");
         _mesh = StoneMesh.CreateMesh(1, StonePresets.Boulder);
@@ -31,13 +31,6 @@ public class StoneEffectsTests
         {
             Object.DestroyImmediate(_mesh);
         }
-    }
-
-    public static StoneEffects CreateEffects()
-    {
-        string path = "Assets/Render/Stones/Prefabs/StoneEffects.prefab";
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-        return Object.Instantiate(prefab).GetComponent<StoneEffects>();
     }
 
     [Test]

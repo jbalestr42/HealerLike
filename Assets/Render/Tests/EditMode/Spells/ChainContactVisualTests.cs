@@ -40,11 +40,18 @@ public class ChainContactVisualTests
         Object.DestroyImmediate(_second);
     }
 
+    // What Init(RenderManager) hands, without a manager, then the projectile's own Init call
+    static void Observe(ChainContactVisual observer, SpellVisualSink sink, GameObject source)
+    {
+        TestHelpers.SetPrivateField(observer, "_sink", sink);
+        observer.Init(source);
+    }
+
     SpellVisualSink CreateSink()
     {
         SpellVisualSink sink = SpellSinkFixture.Add(_sinkHost);
         TestHelpers.InvokePrivate(sink, "OnEnable");
-        _observer.Bind(_projectile, sink);
+        Observe(_observer, sink, _host);
         _first.transform.position = Vector3.left;
         _second.transform.position = Vector3.right;
         return sink;
@@ -77,12 +84,12 @@ public class ChainContactVisualTests
     }
 
     [Test]
-    public void Bind_Rebound_ForgetsThePreviousContact()
+    public void Init_Rebound_ForgetsThePreviousContact()
     {
         SpellVisualSink sink = CreateSink();
         _projectile.OnHit.Invoke(new OnHitData { target = _first });
 
-        _observer.Bind(_projectile, sink);
+        Observe(_observer, sink, _host);
         _projectile.OnHit.Invoke(new OnHitData { target = _second });
 
         Assert.AreEqual(0, sink.impactCount);
@@ -103,7 +110,7 @@ public class ChainContactVisualTests
     [Test]
     public void OnHit_InvalidOrSinklessContacts_AllocateNothing()
     {
-        _observer.Bind(_projectile, null);
+        Observe(_observer, null, _host);
         OnHitData hit = new OnHitData { target = _first };
         _projectile.OnHit.Invoke(null);
         _projectile.OnHit.Invoke(new OnHitData());

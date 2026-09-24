@@ -1,7 +1,6 @@
 using System.Collections;
 using System.IO;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace HealerLike.Render.Stage
 {
@@ -44,7 +43,7 @@ namespace HealerLike.Render.Stage
             string path = StagePlay.CaptureFolder + (_isLandscape ? "render-stage-landscape.png" : "render-stage-portrait.png");
             bool isCaptured = Capture(path);
             Debug.Log($"[StageCaptureRun] {path} attacks {_attacks} heals {_heals} zones {_maxZones}");
-            StagePlay.Finish(isCaptured);
+            StagePlay.Finish(this, isCaptured);
         }
 
         GameObject FirstOf(Entity.EntityType side)
@@ -76,21 +75,15 @@ namespace HealerLike.Render.Stage
         // Portrait as the device autorotates, the aspect follows the target rather than the batchmode screen
         bool Capture(string path)
         {
-            Camera camera = _manager.gameCamera;
-            int width = _isLandscape ? Height : Width;
-            int height = _isLandscape ? Width : Height;
-            RenderTexture target = RenderTexture.GetTemporary(width, height, 24, RenderTextureFormat.ARGB32);
-            RenderTexture previous = RenderTexture.active;
-            Texture2D texture = new Texture2D(width, height, TextureFormat.RGB24, false);
-            camera.aspect = (float)width / height;
-            RenderPipeline.StandardRequest request = new RenderPipeline.StandardRequest();
-            request.destination = target;
-            RenderPipeline.SubmitRenderRequest(camera, request);
-            RenderTexture.active = target;
-            texture.ReadPixels(new Rect(0f, 0f, width, height), 0, 0);
-            texture.Apply();
-            RenderTexture.active = previous;
-            RenderTexture.ReleaseTemporary(target);
+            int width = Width;
+            int height = Height;
+            if (_isLandscape)
+            {
+                width = Height;
+                height = Width;
+            }
+
+            Texture2D texture = StageReadback.Render(_manager.gameCamera, width, height);
             Directory.CreateDirectory(StagePlay.CaptureFolder);
             File.WriteAllBytes(path, texture.EncodeToPNG());
             Object.Destroy(texture);

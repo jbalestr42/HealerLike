@@ -7,36 +7,12 @@ namespace HealerLike.Render.Creatures
 
 public class CreatureValidatorTests
 {
-    public static CreatureRecipe Recipe()
-    {
-        CreatureRecipe recipe = ScriptableObject.CreateInstance<CreatureRecipe>();
-        recipe.parts = new CreaturePart[]
-        {
-            new CreaturePart { id = "Body", parent = -1, dimensions = Vector3.one, colour = Color.green }
-        };
-        recipe.sourceLocal = new Vector3[] { Vector3.up };
-        recipe.arms = new ArmDefinition[]
-        {
-            new ArmDefinition
-            {
-                bodyPart = 0,
-                segmentCount = 24,
-                segmentLength = 0.2f,
-                radius = 0.018f,
-                restJoints = ChainSolverTests.Rest(),
-                bendPole = Vector3.up,
-                colour = Color.green
-            }
-        };
-        return recipe;
-    }
-
     CreatureRecipe _recipe;
 
     [SetUp]
     public void SetUp()
     {
-        _recipe = Recipe();
+        _recipe = RenderTestAssets.CreateRecipe();
     }
 
     [TearDown]

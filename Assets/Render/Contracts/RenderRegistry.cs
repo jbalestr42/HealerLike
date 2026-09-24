@@ -3,33 +3,24 @@ using UnityEngine;
 
 namespace HealerLike.Render
 {
-    // Plain class so a test can build one; the RenderManager owns it and the views reach it as manager.registry
+    // Routes each source's health outcomes to the views that draw them. Plain class so a test can build one;
+    // the RenderManager owns it and the views reach it as manager.registry
     public class RenderRegistry
     {
-        readonly Dictionary<GameObject, List<IHealVisualSink>> _healSinks =
-            new Dictionary<GameObject, List<IHealVisualSink>>();
+        readonly Dictionary<GameObject, List<IHealthVisualSink>> _healthSinks =
+            new Dictionary<GameObject, List<IHealthVisualSink>>();
 
-        public ISpellVisualSink spellSink { get; set; }
-
-        public IZoneOwner zoneOwner { get; set; }
-
-        public void Init(ISpellVisualSink spellSink, IZoneOwner zoneOwner)
-        {
-            this.spellSink = spellSink;
-            this.zoneOwner = zoneOwner;
-        }
-
-        public void Register(GameObject source, IHealVisualSink sink)
+        public void Register(GameObject source, IHealthVisualSink sink)
         {
             if (source == null || sink == null)
             {
                 return;
             }
 
-            if (!_healSinks.TryGetValue(source, out List<IHealVisualSink> sinks))
+            if (!_healthSinks.TryGetValue(source, out List<IHealthVisualSink> sinks))
             {
-                sinks = new List<IHealVisualSink>(1);
-                _healSinks.Add(source, sinks);
+                sinks = new List<IHealthVisualSink>(1);
+                _healthSinks.Add(source, sinks);
             }
 
             if (!sinks.Contains(sink))
@@ -38,7 +29,7 @@ namespace HealerLike.Render
             }
         }
 
-        public void Unregister(GameObject source, IHealVisualSink sink)
+        public void Unregister(GameObject source, IHealthVisualSink sink)
         {
             // A destroyed source still has to find its entry, so no Unity null check here
             if (ReferenceEquals(source, null) || sink == null)
@@ -46,7 +37,7 @@ namespace HealerLike.Render
                 return;
             }
 
-            if (!_healSinks.TryGetValue(source, out List<IHealVisualSink> sinks))
+            if (!_healthSinks.TryGetValue(source, out List<IHealthVisualSink> sinks))
             {
                 return;
             }
@@ -54,28 +45,28 @@ namespace HealerLike.Render
             sinks.Remove(sink);
             if (sinks.Count == 0)
             {
-                _healSinks.Remove(source);
+                _healthSinks.Remove(source);
             }
         }
 
-        // Every health change a source caused, negative for damage; the heal sinks draw the positive ones
-        public void NotifyHeal(GameObject source, GameObject target, float value, bool critical)
+        // Every health change a source caused, negative for damage; each sink picks the sign it draws
+        public void NotifyHealth(GameObject source, GameObject target, float value, bool critical)
         {
             if (source == null)
             {
                 return;
             }
 
-            if (!_healSinks.TryGetValue(source, out List<IHealVisualSink> sinks))
+            if (!_healthSinks.TryGetValue(source, out List<IHealthVisualSink> sinks))
             {
                 return;
             }
 
             // Copy first so a sink can unregister itself or notify again while we loop
-            IHealVisualSink[] snapshot = sinks.ToArray();
-            foreach (IHealVisualSink sink in snapshot)
+            IHealthVisualSink[] snapshot = sinks.ToArray();
+            foreach (IHealthVisualSink sink in snapshot)
             {
-                sink.OnHealResolved(target, value, critical);
+                sink.OnHealthResolved(target, value, critical);
             }
         }
     }

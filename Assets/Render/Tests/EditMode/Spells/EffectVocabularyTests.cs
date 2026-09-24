@@ -8,15 +8,10 @@ namespace HealerLike.Render.Spells
 
 public class EffectVocabularyTests
 {
-    static EffectVocabulary LoadVocabulary()
-    {
-        return AssetDatabase.LoadAssetAtPath<EffectVocabulary>("Assets/Render/Spells/Data/EffectVocabulary.asset");
-    }
-
     [Test]
     public void GetEntry_ShippedVocabulary_HasAnEntryWithShapesForEveryElement()
     {
-        EffectVocabulary vocabulary = LoadVocabulary();
+        EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
 
         Assert.IsNotNull(vocabulary.palette);
         foreach (EffectElement element in System.Enum.GetValues(typeof(EffectElement)))
@@ -32,7 +27,7 @@ public class EffectVocabularyTests
     [Test]
     public void GetEntry_ShippedPress_FourOrFiveConesPointingDown()
     {
-        ElementEntry press = LoadVocabulary().GetEntry(EffectElement.Press);
+        ElementEntry press = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Press);
 
         Assert.AreEqual(EffectSocket.AboveHead, press.socket);
         Assert.AreEqual(5, press.parts.Length);
@@ -47,7 +42,7 @@ public class EffectVocabularyTests
     [Test]
     public void GetEntry_ShippedBoonAndBane_DrawDifferentPrimitives()
     {
-        EffectVocabulary vocabulary = LoadVocabulary();
+        EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
 
         Assert.AreEqual(Primitive.Torus, vocabulary.GetEntry(EffectElement.Orbit).parts[0].primitive);
         Assert.AreEqual(Primitive.Cone, vocabulary.GetEntry(EffectElement.Press).parts[0].primitive);
@@ -58,7 +53,7 @@ public class EffectVocabularyTests
     [Test]
     public void GetEntry_ShippedOrbit_ToriAtTheOrbitRadiusTiltedTenToTwenty()
     {
-        EffectVocabulary vocabulary = LoadVocabulary();
+        EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
         PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(SpellSinkFixture.MeshesPath);
         Mesh torus = meshes.GetMesh(Primitive.Torus);
 
@@ -75,7 +70,7 @@ public class EffectVocabularyTests
     [Test]
     public void GetEntry_ShippedRise_EightSpheresFromThree()
     {
-        ElementEntry rise = LoadVocabulary().GetEntry(EffectElement.Rise);
+        ElementEntry rise = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Rise);
 
         Assert.AreEqual(8, EffectComposer.Shapes(rise));
         Assert.AreEqual(3, rise.minCount);
@@ -87,7 +82,7 @@ public class EffectVocabularyTests
     {
         PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(SpellSinkFixture.MeshesPath);
 
-        foreach (ElementEntry entry in LoadVocabulary().elements.Values)
+        foreach (ElementEntry entry in RenderTestAssets.LoadEffectVocabulary().elements.Values)
         {
             foreach (LookPart part in entry.parts)
             {

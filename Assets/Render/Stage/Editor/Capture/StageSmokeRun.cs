@@ -55,7 +55,7 @@ namespace HealerLike.Render.Stage
             bool isPassed = _roundsDone >= Rounds && _errors == 0 && _attacks > 0 && _heals > 0 && _maxZones > 0;
             Debug.Log($"[StageSmokeRun] {(isPassed ? "PASS" : "FAIL")} rounds {_roundsDone} attacks {_attacks} "
                       + $"heals {_heals} zones {_maxZones} errors {_errors}");
-            StagePlay.Finish(isPassed);
+            StagePlay.Finish(this, isPassed);
         }
 
         void OnRoundEnd()

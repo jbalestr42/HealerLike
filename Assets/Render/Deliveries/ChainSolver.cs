@@ -24,10 +24,8 @@ namespace HealerLike.Render.Deliveries
                 return false;
             }
 
-            bool isRootFinite = float.IsFinite(root.x) && float.IsFinite(root.y) && float.IsFinite(root.z);
-            bool isTargetFinite = float.IsFinite(target.x) && float.IsFinite(target.y) && float.IsFinite(target.z);
-            bool isPoleFinite = float.IsFinite(bendPole.x) && float.IsFinite(bendPole.y) && float.IsFinite(bendPole.z);
-            if (!isRootFinite || !isTargetFinite || !isPoleFinite || !float.IsFinite(tolerance) || tolerance <= 0f
+            bool isChainFinite = RenderMath.IsFinite(root) && RenderMath.IsFinite(target) && RenderMath.IsFinite(bendPole);
+            if (!isChainFinite || !RenderMath.IsPositive(tolerance)
                 || maxIterations < 1)
             {
                 Debug.LogError("[ChainSolver] Invalid solver settings.");
@@ -38,7 +36,7 @@ namespace HealerLike.Render.Deliveries
             for (int i = 0; i < lengths.Length; i++)
             {
                 bool isEqual = Mathf.Abs(lengths[i] - lengths[0]) <= lengths[0] * equalLengthShare;
-                if (!float.IsFinite(lengths[i]) || lengths[i] <= 0f || !isEqual)
+                if (!RenderMath.IsPositive(lengths[i]) || !isEqual)
                 {
                     Debug.LogError("[ChainSolver] Lengths must be finite, positive and equal.");
                     return false;
@@ -49,7 +47,7 @@ namespace HealerLike.Render.Deliveries
 
             for (int i = 0; i < joints.Length; i++)
             {
-                if (!float.IsFinite(joints[i].x) || !float.IsFinite(joints[i].y) || !float.IsFinite(joints[i].z))
+                if (!RenderMath.IsFinite(joints[i]))
                 {
                     Debug.LogError("[ChainSolver] Nonfinite joint.");
                     return false;

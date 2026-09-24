@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using HealerLike.Render.Grammar;
+using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 using HealerLike.Render.Zones;
 using NUnit.Framework;
@@ -14,53 +15,6 @@ namespace HealerLike.Render.Creatures
 
 public class CreatureBuilderTests
 {
-    public class Sink : IHealVisualSink, ISpellVisualSink
-    {
-        public int heals;
-        public int impacts;
-        public GameObject target;
-        public GameObject source;
-        public float amount;
-        public bool critical;
-
-        // Like every heal sink, only the positive changes are heals
-        public void OnHealResolved(GameObject target, float value, bool critical)
-        {
-            if (value <= 0f)
-            {
-                return;
-            }
-
-            heals++;
-            this.target = target;
-            amount = value;
-            this.critical = critical;
-        }
-
-        public void ShowImpact(GameObject source, GameObject target, ResourceKind resource, float amount,
-            bool critical)
-        {
-            impacts++;
-            this.source = source;
-            this.target = target;
-            this.amount = amount;
-            this.critical = critical;
-        }
-
-        public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
-            float elapsed, float duration, ClockKind clock)
-        {
-        }
-
-        public void RemoveStatus(GameObject source, GameObject target, ABuffHandlerFactory factory)
-        {
-        }
-
-        public void PulseArea(Vector3 center, float radius, ZoneKind kind, float strength)
-        {
-        }
-    }
-
     GameObject _owner;
     GameObject _model;
     GameObject _source;
@@ -70,8 +24,10 @@ public class CreatureBuilderTests
     Entity _entity;
     ResourceAttribute _health;
     CreatureBuilder _builder;
+    StatusObserver _statusObserver;
     RenderRegistry _registry;
-    Sink _sink;
+    RecordingSpellSink _spellSink;
+    RecordingHealthSink _healthSink;
     readonly List<Object> _objects = new List<Object>();
     readonly List<CreatureBuilder> _views = new List<CreatureBuilder>();
 
@@ -93,13 +49,17 @@ public class CreatureBuilderTests
         _target.transform.SetParent(_model.transform, false);
         _target.transform.localPosition = Vector3.up;
         _target.AddComponent<SkillTargetPointTag>();
-        _recipe = CreatureValidatorTests.Recipe();
-        _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
+        _recipe = RenderTestAssets.CreateRecipe();
+        _material = new Material(RenderTestAssets.LoadLookMaterial());
+        // Like the derived prefabs, the view carries the status observer that wires the outcome observers
+        _statusObserver = _model.AddComponent<StatusObserver>();
         _builder = _model.AddComponent<CreatureBuilder>();
-        _builder.SetRecipe(_recipe, _material, PrimitiveMeshesTests.Meshes());
-        _sink = new Sink();
-        _registry = new RenderRegistry { spellSink = _sink };
-        _registry.Register(_source, _sink);
+        _builder.SetRecipe(_recipe, _material, RenderTestAssets.LoadMeshes());
+        _spellSink = new RecordingSpellSink();
+        _healthSink = new RecordingHealthSink();
+        _registry = new RenderRegistry();
+        _registry.Register(_source, _healthSink);
+        TestHelpers.SetPrivateField(_builder, "_spellSink", _spellSink);
         _builder.Configure(_registry, 1f, Vector3.zero, Vector3.up);
         entityModel.Init(_entity);
         _builder.Init(_entity);
@@ -140,9 +100,9 @@ public class CreatureBuilderTests
         {
             foreach (HeadKind head in System.Enum.GetValues(typeof(HeadKind)))
             {
-                CreatureRecipe recipe = LookComposer.Compose(LookComposerTests.CreateChannels(side, head), LookVocabularyTests.Vocabulary());
+                CreatureRecipe recipe = LookComposer.Compose(RenderTestAssets.CreateChannels(side, head), RenderTestAssets.LoadLookVocabulary());
                 _objects.Add(recipe);
-                _builder.SetRecipe(recipe, _material, PrimitiveMeshesTests.Meshes());
+                _builder.SetRecipe(recipe, _material, RenderTestAssets.LoadMeshes());
                 _builder.Init(_entity);
 
                 bool hasAnchors = _builder.TryGetAnchors(out EffectAnchors anchors);
@@ -151,6 +111,7 @@ public class CreatureBuilderTests
                 Assert.Greater(anchors.headCentre.y, anchors.neck.y, $"{side} {head}");
                 Assert.Greater(Vector3.Distance(anchors.headCentre, anchors.bodyCentre), anchors.bodyRadius, $"{side} {head}");
                 Assert.Greater(anchors.neck.y, anchors.foot.y, $"{side} {head}");
+                Assert.GreaterOrEqual(anchors.castPoint.y, anchors.headCentre.y, $"{side} {head}");
             }
         }
     }
@@ -178,9 +139,9 @@ public class CreatureBuilderTests
         Assert.AreEqual(count, _model.GetComponentsInChildren<Transform>().Length);
         Assert.AreSame(_source.GetComponent<SkillSource>(), _model.GetComponent<EntityModel>().GetSourcePoint());
         _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 20f, true);
-        Assert.AreEqual(1, _sink.heals);
-        Assert.AreEqual(1, _sink.impacts);
-        Assert.AreSame(_owner, _sink.target);
+        Assert.AreEqual(1, _healthSink.healCount);
+        Assert.AreEqual(1, _spellSink.impactCount);
+        Assert.AreSame(_owner, _spellSink.lastTarget);
         Assert.IsNull(rig.root.Find("HealMote"));
     }
 
@@ -188,31 +149,35 @@ public class CreatureBuilderTests
     public void OnDisable_ThenEnabledAndInitWithoutEntity_DetachesOldHealthOnce()
     {
         _builder.enabled = false;
+        _statusObserver.enabled = false;
         TestHelpers.InvokePrivate(_builder, "OnDisable");
+        TestHelpers.InvokePrivate(_statusObserver, "OnDisable");
         _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 10f, false);
-        Assert.AreEqual(0, _sink.heals);
+        Assert.AreEqual(0, _healthSink.healCount);
         _builder.enabled = true;
+        _statusObserver.enabled = true;
         TestHelpers.InvokePrivate(_builder, "OnEnable");
+        TestHelpers.InvokePrivate(_statusObserver, "OnEnable");
         _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 10f, false);
-        Assert.AreEqual(1, _sink.heals);
+        Assert.AreEqual(1, _healthSink.healCount);
         _builder.Init(null);
         _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 10f, false);
-        Assert.AreEqual(1, _sink.heals);
+        Assert.AreEqual(1, _healthSink.healCount);
     }
 
     [Test]
     public void Init_DamageZeroOverhealSourceless_ReportsSignedOutcome()
     {
         _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 0f, false);
-        Assert.AreEqual(0, _sink.impacts);
-        Assert.AreEqual(0, _sink.heals);
+        Assert.AreEqual(0, _spellSink.impactCount);
+        Assert.AreEqual(0, _healthSink.healCount);
         _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, -7f, true);
-        Assert.AreEqual(1, _sink.impacts);
-        Assert.AreEqual(0, _sink.heals);
-        Assert.AreEqual(-7, _sink.amount);
+        Assert.AreEqual(1, _spellSink.impactCount);
+        Assert.AreEqual(0, _healthSink.healCount);
+        Assert.AreEqual(-7, _spellSink.lastAmount);
         _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 200f, false);
-        Assert.AreEqual(1, _sink.heals);
-        Assert.AreEqual(200, _sink.amount);
+        Assert.AreEqual(1, _healthSink.healCount);
+        Assert.AreEqual(200, _spellSink.lastAmount);
         Assert.AreEqual(100, _health.Value);
         _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier(), 2f, false);
         Assert.IsNull(_builder.rig.root.Find("HealMote"));
@@ -222,12 +187,12 @@ public class CreatureBuilderTests
     public void OnDisable_EntityDestroyed_StillUnregistersBuilder()
     {
         _model.transform.SetParent(null);
-        _registry.Unregister(_source, _sink);
+        _registry.Unregister(_source, _healthSink);
         Object.DestroyImmediate(_owner);
         _builder.enabled = false;
         TestHelpers.InvokePrivate(_builder, "OnDisable");
         BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-        FieldInfo field = typeof(RenderRegistry).GetField("_healSinks", flags);
+        FieldInfo field = typeof(RenderRegistry).GetField("_healthSinks", flags);
         Assert.AreEqual(0, ((IDictionary)field.GetValue(_registry)).Count);
     }
 
@@ -300,7 +265,7 @@ public class CreatureBuilderTests
         GameObject managerGo = new GameObject("RenderManager");
         _objects.Add(managerGo);
         RenderManager manager = managerGo.AddComponent<RenderManager>();
-        TestHelpers.SetPrivateField(manager, "_meshes", PrimitiveMeshesTests.Meshes());
+        TestHelpers.SetPrivateField(manager, "_meshes", RenderTestAssets.LoadMeshes());
         GameObject viewGo = new GameObject("View");
         viewGo.transform.SetParent(_model.transform, false);
         CreatureBuilder view = viewGo.AddComponent<CreatureBuilder>();

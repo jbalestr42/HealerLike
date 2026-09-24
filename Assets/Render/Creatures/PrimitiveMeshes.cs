@@ -11,7 +11,7 @@ namespace HealerLike.Render.Creatures
         public Mesh cone;
         public Mesh cylinder;
         public Mesh torus;
-        // Grass tuft from GrassTuft, base on the ground and apex at one, and the flat socle under it
+        // Grass tuft, an open pyramid with its base on the ground and apex at one, and the flat socle under it
         public Mesh tuft;
         public Mesh socle;
         public Mesh pyramid;
@@ -66,15 +66,22 @@ namespace HealerLike.Render.Creatures
         public static Transform Geometry(string name, Transform parent, Mesh mesh, Material material, Color colour,
             float glow = 0f)
         {
-            GameObject go = new GameObject(name, typeof(MeshFilter), typeof(MeshRenderer));
+            GameObject go = new GameObject(name);
             go.transform.SetParent(parent, false);
-            go.GetComponent<MeshFilter>().sharedMesh = mesh;
-            MeshRenderer renderer = go.GetComponent<MeshRenderer>();
-            renderer.sharedMaterial = material;
-            MaterialPropertyBlock block = new MaterialPropertyBlock();
-            block.SetColor("_BaseColor", Brighten(colour, glow));
-            renderer.SetPropertyBlock(block);
+            Geometry(go, mesh, material, colour, glow, new MaterialPropertyBlock());
             return go.transform;
+        }
+
+        // Draws the mesh on an object that already exists; the block may be shared, the renderer copies it
+        public static MeshRenderer Geometry(GameObject go, Mesh mesh, Material material, Color colour, float glow,
+            MaterialPropertyBlock block)
+        {
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            MeshRenderer renderer = go.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            block.SetColor(RenderObjects.BaseColorId, Brighten(colour, glow));
+            renderer.SetPropertyBlock(block);
+            return renderer;
         }
 
         public static Color Brighten(Color colour, float glow)

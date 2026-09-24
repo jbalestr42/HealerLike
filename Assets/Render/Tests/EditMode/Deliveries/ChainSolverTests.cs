@@ -7,17 +7,6 @@ namespace HealerLike.Render.Deliveries
 
 public class ChainSolverTests
 {
-    public static Vector3[] Rest(int n = 24)
-    {
-        Vector3[] joints = new Vector3[n + 1];
-        for (int i = 0; i < n; i++)
-        {
-            joints[i + 1] = joints[i] + new Vector3(Mathf.Cos(i * 0.4f), Mathf.Sin(i * 0.4f), 0f) * 0.2f;
-        }
-
-        return joints;
-    }
-
     static float[] Lengths(int n = 24)
     {
         float[] lengths = new float[n];
@@ -45,7 +34,7 @@ public class ChainSolverTests
     [TestCase(0f, 0f, 0f)]
     public void Solve_ReachableTarget_ReachesItAndPreservesLengths(float x, float y, float z)
     {
-        Vector3[] joints = Rest();
+        Vector3[] joints = RenderTestAssets.CreateRestPose();
         Vector3 target = new Vector3(x, y, z);
 
         bool isSolved = new ChainSolver().Solve(joints, Lengths(), Vector3.zero, target, Vector3.up,
@@ -60,7 +49,7 @@ public class ChainSolverTests
     [Test]
     public void Solve_TargetBeyondReach_ClampsButFullReachDoesNot()
     {
-        Vector3[] joints = Rest();
+        Vector3[] joints = RenderTestAssets.CreateRestPose();
         ChainSolver solver = new ChainSolver();
 
         bool isSolved = solver.Solve(joints, Lengths(), Vector3.zero, new Vector3(20f, 0f, 0f), Vector3.up,
@@ -115,7 +104,7 @@ public class ChainSolverTests
         Vector3 root = new Vector3(3f, 2f, -4f);
         for (int k = 0; k < 60; k++)
         {
-            Vector3[] joints = Rest();
+            Vector3[] joints = RenderTestAssets.CreateRestPose();
             for (int i = 0; i < joints.Length; i++)
             {
                 joints[i] += root;
@@ -143,17 +132,17 @@ public class ChainSolverTests
         Vector3 target = Vector3.one;
         float[] lengths = Lengths();
         lengths[3] = 0.3f;
-        Vector3[] joints = Rest();
+        Vector3[] joints = RenderTestAssets.CreateRestPose();
         joints[2].x = float.PositiveInfinity;
         LogAssert.Expect(LogType.Error, "[ChainSolver] Lengths must be finite, positive and equal.");
         LogAssert.Expect(LogType.Error, "[ChainSolver] Lengths must be finite, positive and equal.");
         LogAssert.Expect(LogType.Error, "[ChainSolver] Invalid solver settings.");
         LogAssert.Expect(LogType.Error, "[ChainSolver] Nonfinite joint.");
 
-        bool isUnequalSolved = solver.Solve(Rest(), lengths, root, target, Vector3.up, out ChainResult result);
+        bool isUnequalSolved = solver.Solve(RenderTestAssets.CreateRestPose(), lengths, root, target, Vector3.up, out ChainResult result);
         lengths[3] = float.NaN;
-        bool isNaNSolved = solver.Solve(Rest(), lengths, root, target, Vector3.up, out result);
-        bool isZeroIterationSolved = solver.Solve(Rest(), Lengths(), root, target, Vector3.up, out result, 0);
+        bool isNaNSolved = solver.Solve(RenderTestAssets.CreateRestPose(), lengths, root, target, Vector3.up, out result);
+        bool isZeroIterationSolved = solver.Solve(RenderTestAssets.CreateRestPose(), Lengths(), root, target, Vector3.up, out result, 0);
         bool isInfiniteJointSolved = solver.Solve(joints, Lengths(), root, target, Vector3.up, out result);
 
         Assert.IsFalse(isUnequalSolved);
@@ -165,7 +154,7 @@ public class ChainSolverTests
     [Test]
     public void Solve_IterationLimitHit_ReportsActualResidual()
     {
-        Vector3[] joints = Rest();
+        Vector3[] joints = RenderTestAssets.CreateRestPose();
         Vector3 target = new Vector3(4f, 1f, 0f);
         ChainSolver solver = new ChainSolver();
 
@@ -181,7 +170,7 @@ public class ChainSolverTests
     [Test]
     public void Solve_TargetAtRestTip_StaysReached()
     {
-        Vector3[] joints = Rest();
+        Vector3[] joints = RenderTestAssets.CreateRestPose();
 
         bool isSolved = new ChainSolver().Solve(joints, Lengths(), joints[0], joints[24], Vector3.up,
             out ChainResult result);

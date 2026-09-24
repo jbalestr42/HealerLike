@@ -104,14 +104,14 @@ public class EffectPlacementTests
         BuffHandlerFactory handler = Handler(element);
         float grown = anchors.headRadius + EffectPlacement.HeadMargin * anchors.bodyRadius;
 
-        _sink.SetStatus(null, _target, handler, 3, 0f, 6f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, handler, 3, 0f, 6f);
 
         SpellEffect effect = _sink.GetStatus(_target, handler).GetComponent<SpellEffect>();
         Assert.AreEqual(element, effect.element);
         Assert.IsTrue(effect.isLasting);
         for (float time = 0f; time < 6f; time += 0.1f)
         {
-            _sink.SetStatus(null, _target, handler, 3, time, 6f, ClockKind.Simulation);
+            _sink.SetStatus(null, _target, handler, 3, time, 6f);
             foreach (Renderer part in effect.GetComponentsInChildren<Renderer>())
             {
                 if (part.bounds.size.sqrMagnitude < 0.00000001f)
@@ -132,8 +132,8 @@ public class EffectPlacementTests
         BuffHandlerFactory offence = Handler(EffectElement.Orbit);
         BuffHandlerFactory defence = Handler(EffectElement.Plates);
 
-        _sink.SetStatus(null, _target, offence, 1, 0f, 6f, ClockKind.Simulation);
-        _sink.SetStatus(null, _target, defence, 1, 0f, 6f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, offence, 1, 0f, 6f);
+        _sink.SetStatus(null, _target, defence, 1, 0f, 6f);
 
         Assert.AreEqual(2, _sink.statusCount);
         Assert.IsNotNull(_sink.GetElement(_target, EffectElement.Orbit));
@@ -147,7 +147,7 @@ public class EffectPlacementTests
         _target.AddComponent<FakeEffectAnchors>().anchors = anchors;
         BuffHandlerFactory rot = Handler(EffectElement.Drips);
 
-        _sink.SetStatus(null, _target, rot, 1, 0f, 6f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, rot, 1, 0f, 6f);
 
         Transform root = _sink.GetStatus(_target, rot).transform;
         Assert.Greater(root.position.x, anchors.bodyCentre.x + anchors.bodyRadius);
@@ -166,7 +166,7 @@ public class EffectPlacementTests
         _target.AddComponent<FakeEffectAnchors>().anchors = anchors;
         BuffHandlerFactory renew = Handler(EffectElement.Stalks);
 
-        _sink.SetStatus(null, _target, renew, 1, 1.5f, 6f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, renew, 1, 1.5f, 6f);
 
         float top = 0f;
         foreach (Transform sphere in _sink.GetElement(_target, EffectElement.Stalks).shapes)
@@ -186,7 +186,7 @@ public class EffectPlacementTests
         _target.AddComponent<FakeEffectAnchors>().anchors = anchors;
         BuffHandlerFactory weaken = Handler(EffectElement.Press);
 
-        _sink.SetStatus(null, _target, weaken, 1, 0f, 6f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, weaken, 1, 0f, 6f);
 
         Transform root = _sink.GetStatus(_target, weaken).transform;
         float top = anchors.headCentre.y + anchors.headRadius;
@@ -200,7 +200,7 @@ public class EffectPlacementTests
         _target.AddComponent<FakeEffectAnchors>().anchors = anchors;
         BuffHandlerFactory sanctuary = Handler(EffectElement.Bud);
 
-        _sink.SetStatus(null, _target, sanctuary, 1, 1f, 6f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, sanctuary, 1, 1f, 6f);
 
         float top = float.NegativeInfinity;
         foreach (Transform plate in _sink.GetElement(_target, EffectElement.Bud).shapes)
@@ -222,7 +222,7 @@ public class EffectPlacementTests
         TestHelpers.SetPrivateField(entity, "_targetPoint", point);
         BuffHandlerFactory boon = Handler(EffectElement.Orbit);
 
-        _sink.SetStatus(null, _target, boon, 1, 0f, 4f, ClockKind.Simulation);
+        _sink.SetStatus(null, _target, boon, 1, 0f, 4f);
 
         EffectAnchors anchors = EffectPlacement.Anchors(_target);
         Transform root = _sink.GetStatus(_target, boon).transform;
