@@ -49,6 +49,14 @@ public class RenderMathTests
     }
 
     [Test]
+    public void IsFinite_ColourWithANaNChannel_IsFalse()
+    {
+        Assert.IsTrue(RenderMath.IsFinite(new Color(0.1f, 0.2f, 0.3f, 1f)));
+        Assert.IsFalse(RenderMath.IsFinite(new Color(0.1f, float.NaN, 0.3f, 1f)));
+        Assert.IsFalse(RenderMath.IsFinite(new Color(0.1f, 0.2f, 0.3f, float.PositiveInfinity)));
+    }
+
+    [Test]
     public void CornerSign_EveryCorner_PicksOneAxisPerBit()
     {
         Assert.AreEqual(new Vector3(-1f, -1f, -1f), RenderMath.CornerSign(0));

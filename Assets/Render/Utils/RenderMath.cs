@@ -10,6 +10,12 @@ namespace HealerLike.Render
             return float.IsFinite(value.x) && float.IsFinite(value.y) && float.IsFinite(value.z);
         }
 
+        public static bool IsFinite(Color value)
+        {
+            return float.IsFinite(value.r) && float.IsFinite(value.g) && float.IsFinite(value.b)
+                && float.IsFinite(value.a);
+        }
+
         // A NaN or an infinity from an asset or a setter falls back to the given value
         public static float FiniteOr(float value, float fallback)
         {
