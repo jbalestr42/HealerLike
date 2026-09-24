@@ -45,7 +45,12 @@ namespace HealerLike.Render.Creatures
             {
                 return entities[data];
             }
-            return LookDerivation.Side(entityType) == LookSide.Plant ? plant : stone;
+
+            if (LookDerivation.Side(entityType) == LookSide.Plant)
+            {
+                return plant;
+            }
+            return stone;
         }
 
         public GameObject GetView(CharacterData data)
@@ -57,7 +62,8 @@ namespace HealerLike.Render.Creatures
             return character;
         }
 
-        // Saves the derived recipe of an entity and gives it its own row, a host prefab carrying that recipe, to edit by hand
+        // Saves the derived recipe of an entity and gives it its own row, a host prefab carrying that recipe, to edit
+        // by hand
         [Button("Bake to override")]
         public GameObject BakeToOverride(EntityData data, Entity.EntityType entityType)
         {
@@ -80,7 +86,8 @@ namespace HealerLike.Render.Creatures
             DestroyImmediate(derived);
             recipe.hideFlags = HideFlags.None;
             recipe.name = data.name + "Look";
-            AssetDatabase.CreateAsset(recipe, AssetDatabase.GenerateUniqueAssetPath(dataFolder + recipe.name + ".asset"));
+            string recipePath = AssetDatabase.GenerateUniqueAssetPath(dataFolder + recipe.name + ".asset");
+            AssetDatabase.CreateAsset(recipe, recipePath);
 
             GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(host);
             SerializedObject builder = new SerializedObject(instance.GetComponent<CreatureBuilder>());
@@ -108,7 +115,8 @@ namespace HealerLike.Render.Creatures
                 return null;
             }
 
-            Dictionary<EntityData, CreatureRecipe> cache = LookDerivation.Side(entityType) == LookSide.Plant ? _plants : _stones;
+            bool isPlant = LookDerivation.Side(entityType) == LookSide.Plant;
+            Dictionary<EntityData, CreatureRecipe> cache = isPlant ? _plants : _stones;
             if (!cache.ContainsKey(data) || cache[data] == null)
             {
                 cache[data] = LookComposer.Compose(LookDerivation.Channels(data, entityType), vocabulary);

@@ -3,13 +3,13 @@ using UnityEngine;
 
 namespace HealerLike.Render
 {
-    public enum ResourceKind : byte
+    public enum ResourceKind
     {
         Health,
         Mana
     }
 
-    public enum ClockKind : byte
+    public enum ClockKind
     {
         Simulation,
         Realtime

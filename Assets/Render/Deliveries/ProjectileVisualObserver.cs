@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
 using HealerLike.Render.Spells;
@@ -9,15 +8,15 @@ using HealerLike.Render.Stage;
 namespace HealerLike.Render.Deliveries
 {
     // Signals begin, contact and end to the source's view, which follows the projectile itself.
-    // A shot no view claims flies as its tip fragment instead of his own visual.
+    // A shot no view claims flies as its tip fragment instead of the projectile's own visual.
     public class ProjectileVisualObserver : AProjectileBehaviour
     {
-        [FormerlySerializedAs("presentation")]
-        [SerializeField] GestureKind _presentation = GestureKind.Attack;
-        [FormerlySerializedAs("deliveryStyle")]
-        [SerializeField] DeliveryStyle _deliveryStyle = DeliveryStyle.Direct;
-        [FormerlySerializedAs("preserveContactPath")]
-        [SerializeField] bool _preserveContactPath;
+        // A travel shorter than this has no direction
+        static readonly float stillSquared = 0.00000001f;
+
+        GestureKind _presentation = GestureKind.Attack;
+        DeliveryStyle _deliveryStyle = DeliveryStyle.Direct;
+        bool _preserveContactPath;
 
         readonly List<ProjectileContact> _contacts = new List<ProjectileContact>();
         readonly List<LianaArm> _arms = new List<LianaArm>();
@@ -42,9 +41,11 @@ namespace HealerLike.Render.Deliveries
 
         public IReadOnlyList<ProjectileContact> contacts { get { return _contacts; } }
 
-        public GameObject capturedTarget { get; private set; }
+        GameObject _capturedTarget;
+        public GameObject capturedTarget { get { return _capturedTarget; } }
 
-        public GameObject capturedTargetPoint { get; private set; }
+        GameObject _capturedTargetPoint;
+        public GameObject capturedTargetPoint { get { return _capturedTargetPoint; } }
 
         public int gestureToken { get { return _token; } }
 
@@ -54,7 +55,8 @@ namespace HealerLike.Render.Deliveries
 
         public DeliveryTip freeTip { get { return _freeTip; } }
 
-        public Matrix4x4 freeTipFrame { get; private set; }
+        Matrix4x4 _freeTipFrame;
+        public Matrix4x4 freeTipFrame { get { return _freeTipFrame; } }
 
         // The arms the delivery took, their tips carry its family
         public IReadOnlyList<LianaArm> arms { get { return _arms; } }
@@ -95,8 +97,8 @@ namespace HealerLike.Render.Deliveries
             // Bind before any Start callback can apply synchronous chain hits
             _subscribed = projectile;
             _subscribed.OnHit.AddListener(OnProjectileHit);
-            capturedTarget = projectile.target;
-            capturedTargetPoint = projectile.targetPoint;
+            _capturedTarget = projectile.target;
+            _capturedTargetPoint = projectile.targetPoint;
             _consumers = OnHitConsumers();
             // An item can grant the bounce, so the live behaviour decides and not the prefab
             if (GetComponent<BounceProjectileBehaviour>() && _deliveryStyle != DeliveryStyle.ChainSync
@@ -234,7 +236,7 @@ namespace HealerLike.Render.Deliveries
             {
                 if (consumer != null)
                 {
-                    accent = _vocabulary.palette.Accent(EffectDerivation.ConsumerFamily(consumer, 1f, false));
+                    accent = _vocabulary.palette.Accent(EffectDerivation.ConsumerFamily(consumer, false));
                     return true;
                 }
             }
@@ -306,8 +308,13 @@ namespace HealerLike.Render.Deliveries
             }
 
             DeliveryStyle style = _preserveContactPath ? DeliveryStyle.ChainSync : _deliveryStyle;
-            _freeTip.SetStyle(style, _vocabulary, _vocabulary ? _vocabulary.meshes : null);
-            // A style without a tip, the thrown shard, has nothing to show in place of his visual
+            PrimitiveMeshes meshes = null;
+            if (_vocabulary)
+            {
+                meshes = _vocabulary.meshes;
+            }
+            _freeTip.SetStyle(style, _vocabulary, meshes);
+            // A style without a tip, the thrown shard, has nothing to show in place of the projectile's own visual
             if (_freeTip.partCount == 0)
             {
                 return;
@@ -315,7 +322,7 @@ namespace HealerLike.Render.Deliveries
 
             _isFree = true;
             _lastPosition = transform.position;
-            freeTipFrame = DeliveryTip.Frame(transform.position, FreeTravel(), FreeSize());
+            _freeTipFrame = DeliveryTip.Frame(transform.position, FreeTravel(), FreeSize());
             CaptureRenderers();
         }
 
@@ -329,19 +336,19 @@ namespace HealerLike.Render.Deliveries
 
             HideRenderers();
             Vector3 travel = transform.position - _lastPosition;
-            if (travel.sqrMagnitude < 0.00000001f)
+            if (travel.sqrMagnitude < stillSquared)
             {
                 travel = FreeTravel();
             }
 
             _lastPosition = transform.position;
-            freeTipFrame = DeliveryTip.Frame(transform.position, travel, FreeSize());
+            _freeTipFrame = DeliveryTip.Frame(transform.position, travel, FreeSize());
             if (_hasLanded || !_vocabulary)
             {
                 return;
             }
 
-            _freeTip.Draw(freeTipFrame, _vocabulary.material, FreeColour(), FreeColour(), gameObject.layer);
+            _freeTip.Draw(_freeTipFrame, _vocabulary.material, FreeColour(), FreeColour(), gameObject.layer);
         }
 
         void StopFree()
@@ -362,7 +369,7 @@ namespace HealerLike.Render.Deliveries
 
         float FreeSize()
         {
-            return _vocabulary ? _vocabulary.bulletSize : 0.2f;
+            return _vocabulary ? _vocabulary.bulletSize : DeliveryVocabulary.DefaultBulletSize;
         }
 
         // The family's accent, or the damage accent for a shot that carries no consumer

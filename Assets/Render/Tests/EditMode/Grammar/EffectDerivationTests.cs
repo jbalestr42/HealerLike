@@ -2,19 +2,9 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace HealerLike.Render.Grammar
 {
-
-public class FakeCharacterSkill : ACharacterSkill<CharacterSkillData>
-{
-    public override void Use(GameObject source, UnityAction<bool> onSkillComplete)
-    {
-    }
-}
-
-public class FakeCharacterSkillFactory : CharacterSkillFactory<FakeCharacterSkill, CharacterSkillData> {}
 
 public class EffectDerivationTests
 {
@@ -46,54 +36,24 @@ public class EffectDerivationTests
         return instance;
     }
 
-    // All twenty handler factories of his data, with the side each one is cast on
-    [TestCase("CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration)] // AttackRate Mul -0.5
-    [TestCase("CharacterSkills/MultiTargetReduceDamage/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.ForDuration)] // Damage Mul -0.5
-    [TestCase("CharacterSkills/PoisonSingleTarget/PoisonSingleTarget_BuffHandlerFactory", false, EffectFamily.Rot, EffectTempo.PerPeriod)]
-    [TestCase("CharacterSkills/SingleTargetBuffAttackRate/BuffHandlerFactory", true, EffectFamily.Bane, EffectTempo.ForDuration)] // AttackRate Mul +1, slower under the interval reading
-    [TestCase("Entities/HitArmorBufferEntityEntity/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.Once)] // Instant HitArmor +2
-    [TestCase("EntityItems/BounceItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration)]
-    [TestCase("EntityItems/ConclaveItem/New Buff Handler Factory", true, EffectFamily.Bane, EffectTempo.ForDuration)] // AttackRate Mul +0.2
-    [TestCase("EntityItems/ConclaveItem/New Buff Handler Factory 1", true, EffectFamily.Boon, EffectTempo.ForDuration)] // Damage Mul +0.2
-    [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory 1", true, EffectFamily.Boon, EffectTempo.ForDuration)] // Damage +10, AttackRate Mul -0.5
-    [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration)]
-    [TestCase("EntityItems/IncreaseDamagePerHitItem/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.Once)] // Vulnerability +0.01
-    [TestCase("EntityItems/IncreaseDamageWithProjectileDistanceItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration)]
-    [TestCase("EntityItems/MultipleShootItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration)]
-    [TestCase("EntityItems/PoisonItem/BuffHandlerFactory", false, EffectFamily.Rot, EffectTempo.PerPeriod)]
-    [TestCase("EntityItems/RegenHpItem/RegenHpItem_BuffHandlerFactory", true, EffectFamily.Renew, EffectTempo.PerPeriod)]
-    [TestCase("EntityItems/SlowItem/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.ForDuration)] // Speed Mul -0.1
-    [TestCase("EntityItems/TrinityItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration)] // one good, one bad, the side decides
-    [TestCase("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", true, EffectFamily.Damage, EffectTempo.ForDuration)]
-    [TestCase("PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory", true, EffectFamily.Heal, EffectTempo.ForDuration)]
-    [TestCase("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", true, EffectFamily.Heal, EffectTempo.ForDuration)]
-    public void Family_LiveHandler_ReadsConsumerSignThenModifierPolarity(string path, bool isSameSide, EffectFamily family,
-        EffectTempo tempo)
-    {
-        ABuffHandlerFactory handler = Handler(path);
-
-        Assert.AreEqual(family, EffectDerivation.Family(handler, isSameSide));
-        Assert.AreEqual(tempo, EffectDerivation.Tempo(handler));
-    }
-
-    // The same twenty handlers, read at once; only the poisons and the regen tick
-    [TestCase("CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
-    [TestCase("CharacterSkills/MultiTargetReduceDamage/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.ForDuration, 0f)]
+    // All twenty handler factories of the game data, with the side each one is cast on; only the poisons and the regen tick
+    [TestCase("CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)] // AttackRate Mul -0.5
+    [TestCase("CharacterSkills/MultiTargetReduceDamage/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.ForDuration, 0f)] // Damage Mul -0.5
     [TestCase("CharacterSkills/PoisonSingleTarget/PoisonSingleTarget_BuffHandlerFactory", false, EffectFamily.Rot, EffectTempo.PerPeriod, 2f)]
-    [TestCase("CharacterSkills/SingleTargetBuffAttackRate/BuffHandlerFactory", true, EffectFamily.Bane, EffectTempo.ForDuration, 0f)]
-    [TestCase("Entities/HitArmorBufferEntityEntity/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.Once, 0f)]
+    [TestCase("CharacterSkills/SingleTargetBuffAttackRate/BuffHandlerFactory", true, EffectFamily.Bane, EffectTempo.ForDuration, 0f)] // AttackRate Mul +1, slower under the interval reading
+    [TestCase("Entities/HitArmorBufferEntityEntity/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.Once, 0f)] // Instant HitArmor +2
     [TestCase("EntityItems/BounceItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
-    [TestCase("EntityItems/ConclaveItem/New Buff Handler Factory", true, EffectFamily.Bane, EffectTempo.ForDuration, 0f)]
-    [TestCase("EntityItems/ConclaveItem/New Buff Handler Factory 1", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
-    [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory 1", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
+    [TestCase("EntityItems/ConclaveItem/New Buff Handler Factory", true, EffectFamily.Bane, EffectTempo.ForDuration, 0f)] // AttackRate Mul +0.2
+    [TestCase("EntityItems/ConclaveItem/New Buff Handler Factory 1", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)] // Damage Mul +0.2
+    [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory 1", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)] // Damage +10, AttackRate Mul -0.5
     [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
-    [TestCase("EntityItems/IncreaseDamagePerHitItem/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.Once, 0f)]
+    [TestCase("EntityItems/IncreaseDamagePerHitItem/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.Once, 0f)] // Vulnerability +0.01
     [TestCase("EntityItems/IncreaseDamageWithProjectileDistanceItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
     [TestCase("EntityItems/MultipleShootItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
     [TestCase("EntityItems/PoisonItem/BuffHandlerFactory", false, EffectFamily.Rot, EffectTempo.PerPeriod, 1.5f)]
     [TestCase("EntityItems/RegenHpItem/RegenHpItem_BuffHandlerFactory", true, EffectFamily.Renew, EffectTempo.PerPeriod, 2f)]
-    [TestCase("EntityItems/SlowItem/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.ForDuration, 0f)]
-    [TestCase("EntityItems/TrinityItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
+    [TestCase("EntityItems/SlowItem/BuffHandlerFactory", false, EffectFamily.Bane, EffectTempo.ForDuration, 0f)] // Speed Mul -0.1
+    [TestCase("EntityItems/TrinityItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)] // one good, one bad, the side decides
     [TestCase("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", true, EffectFamily.Damage, EffectTempo.ForDuration, 0f)]
     [TestCase("PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory", true, EffectFamily.Heal, EffectTempo.ForDuration, 0f)]
     [TestCase("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", true, EffectFamily.Heal, EffectTempo.ForDuration, 0f)]
@@ -105,34 +65,8 @@ public class EffectDerivationTests
         EffectChannels channels = EffectDerivation.Channels(handler, isSameSide);
 
         Assert.AreEqual(family, channels.family);
-        Assert.AreEqual(EffectDerivation.Group(handler), channels.group);
         Assert.AreEqual(tempo, channels.tempo);
         Assert.AreEqual(periodSeconds, channels.periodSeconds, 0.0001f);
-    }
-
-    // The seven character skills of his data, isSingle as authored
-    [TestCase("DamageAllEnemy", EffectTopology.Group)]
-    [TestCase("HealMultiTarget", EffectTopology.Group)]
-    [TestCase("HealSingleTarget", EffectTopology.Single)]
-    [TestCase("MultiTargetBuffAttackRate", EffectTopology.Group)]
-    [TestCase("MultiTargetReduceDamage", EffectTopology.Group)]
-    [TestCase("PoisonSingleTarget", EffectTopology.Single)]
-    [TestCase("SingleTargetBuffAttackRate", EffectTopology.Group)] // authored with isSingle off
-    public void Topology_LiveCharacterSkill_ReadsIsSingle(string name, EffectTopology expected)
-    {
-        ACharacterSkillFactory skill = AssetDatabase.LoadAssetAtPath<ACharacterSkillFactory>(data + "CharacterSkills/" + name + "/" + name + ".asset");
-        Assert.NotNull(skill, name);
-
-        Assert.AreEqual(expected, EffectDerivation.Topology(skill));
-    }
-
-    [Test]
-    public void Topology_NoBaseData_IsSingle()
-    {
-        FakeCharacterSkillFactory skill = CreateTracked<FakeCharacterSkillFactory>();
-        skill.data = new CharacterSkillData();
-
-        Assert.AreEqual(EffectTopology.Single, EffectDerivation.Topology(skill));
     }
 
     [TestCase(true, EffectFamily.Boon)]
@@ -144,20 +78,18 @@ public class EffectDerivationTests
         Assert.AreEqual(expected, EffectDerivation.Family(handler, isSameSide));
     }
 
-    [TestCase(10f, 1f, false, EffectFamily.Damage)]
-    [TestCase(-2f, 1f, false, EffectFamily.Heal)]
-    [TestCase(20f, -1.5f, false, EffectFamily.Heal)] // his heal skill flips a positive value
-    [TestCase(10f, 1f, true, EffectFamily.Rot)]
-    [TestCase(-4f, 1f, true, EffectFamily.Renew)]
-    public void ConsumerFamily_ValueTimesMultiplier_HarmIsPositive(float value, float multiplier, bool isPeriodic,
-        EffectFamily expected)
+    [TestCase(10f, false, EffectFamily.Damage)]
+    [TestCase(-2f, false, EffectFamily.Heal)]
+    [TestCase(10f, true, EffectFamily.Rot)]
+    [TestCase(-4f, true, EffectFamily.Renew)]
+    public void ConsumerFamily_ValueSign_HarmIsPositive(float value, bool isPeriodic, EffectFamily expected)
     {
         ConsumerFactory consumer = CreateTracked<ConsumerFactory>();
         FlatValue flat = new FlatValue();
         flat.data = new FlatValueData { value = value };
         consumer.data = new ConsumerData { value = flat };
 
-        Assert.AreEqual(expected, EffectDerivation.ConsumerFamily(consumer, multiplier, isPeriodic));
+        Assert.AreEqual(expected, EffectDerivation.ConsumerFamily(consumer, isPeriodic));
     }
 
     [TestCase(AttributeType.AttackRate, -1f)]

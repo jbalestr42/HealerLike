@@ -289,32 +289,6 @@ public class RenderRegistryTests
     }
 
     [Test]
-    public void NotifyHeal_SinkRemovesEarlierSink_UsesNewestFirstSnapshot()
-    {
-        GameObject source = NewObject("Source");
-        List<string> calls = new List<string>();
-        CallbackSink a = new CallbackSink { callback = () => calls.Add("A") };
-        CallbackSink b = new CallbackSink { callback = () => calls.Add("B") };
-        CallbackSink c = new CallbackSink();
-        c.callback = () =>
-        {
-            calls.Add("C");
-            _registry.Unregister(source, a);
-        };
-        _registry.Register(source, a);
-        _registry.Register(source, b);
-        _registry.Register(source, c);
-
-        _registry.NotifyHeal(source, null, 1, false);
-
-        CollectionAssert.AreEqual(new[] { "C", "B", "A" }, calls);
-
-        calls.Clear();
-        _registry.NotifyHeal(source, null, 1, false);
-        CollectionAssert.AreEqual(new[] { "C", "B" }, calls);
-    }
-
-    [Test]
     public void NotifyHeal_Nested_UsesIndependentSnapshot()
     {
         GameObject source = NewObject("Source");
@@ -334,8 +308,8 @@ public class RenderRegistryTests
             _registry.Unregister(source, a);
             _registry.NotifyHeal(source, null, 1, false);
         };
-        _registry.Register(source, a);
         _registry.Register(source, b);
+        _registry.Register(source, a);
 
         _registry.NotifyHeal(source, null, 1, false);
 

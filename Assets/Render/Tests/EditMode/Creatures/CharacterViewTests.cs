@@ -61,7 +61,7 @@ public class CharacterViewTests
     }
 
     // What Init takes from the view prefab and the manager, without a manager
-    static void Bind(CharacterView view, Character character, CreatureRecipe recipe, Transform anchor,
+    static void InitWithoutManager(CharacterView view, Character character, CreatureRecipe recipe, Transform anchor,
         Material material, RenderRegistry registry)
     {
         TestHelpers.SetPrivateField(view, "_character", character);
@@ -74,7 +74,7 @@ public class CharacterViewTests
     }
 
     [Test]
-    public void Bind_AnchorAndRegistryWithoutEntityInit_FollowsAnchorAndReactsToHeals()
+    public void OnHealResolved_AnchorAndRegistryWithoutEntityInit_FollowsAnchorAndReactsToHeals()
     {
         _ownedRecipe = CreatureValidatorTests.Recipe();
         Character character = null;
@@ -85,9 +85,9 @@ public class CharacterViewTests
         TestHelpers.SetPrivateField(view, "_meshes", PrimitiveMeshesTests.Meshes());
         RenderRegistry registry = new RenderRegistry();
 
-        Bind(view, character, _ownedRecipe, _anchorGo.transform, _material, registry);
+        InitWithoutManager(view, character, _ownedRecipe, _anchorGo.transform, _material, registry);
         CreatureRig rig = view.rig;
-        Bind(view, character, _ownedRecipe, _anchorGo.transform, _material, registry);
+        InitWithoutManager(view, character, _ownedRecipe, _anchorGo.transform, _material, registry);
         Assert.AreSame(rig, view.rig);
 
         TestHelpers.InvokePrivate(view, "LateUpdate");
@@ -121,7 +121,7 @@ public class CharacterViewTests
     }
 
     [Test]
-    public void Bind_RegisteredCharacter_CountsHealGesturesAndTintsBudsByManaWithoutAllocating()
+    public void OnHealResolved_RegisteredCharacter_CountsHealGesturesAndTintsBudsByManaWithoutAllocating()
     {
         CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
         Character character = null;
@@ -132,7 +132,7 @@ public class CharacterViewTests
         CharacterView view = _characterGo.AddComponent<CharacterView>();
         TestHelpers.SetPrivateField(view, "_meshes", PrimitiveMeshesTests.Meshes());
         RenderRegistry registry = new RenderRegistry();
-        Bind(view, character, recipe, _characterGo.transform, _material, registry);
+        InitWithoutManager(view, character, recipe, _characterGo.transform, _material, registry);
         ResourceOutcomeObserver observer = _targetGo.AddComponent<ResourceOutcomeObserver>();
         observer.Bind(health, null, null, registry);
         BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
@@ -210,6 +210,23 @@ public class CharacterViewTests
 
         Assert.NotNull(view.rig);
         Assert.AreSame(viewGo.transform, view.rig.root.parent);
+    }
+
+    // What Init reads from the view prefab: its recipe, the shared meshes and itself as the anchor
+    [Test]
+    public void Init_ShippedPrefab_CarriesRecipeMeshesAndAnchorWithoutABaseCharacter()
+    {
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Creatures/Prefabs/HealerCharacter.prefab");
+
+        CharacterView view = prefab.GetComponent<CharacterView>();
+
+        Assert.AreEqual(PrefabAssetType.Regular, PrefabUtility.GetPrefabAssetType(prefab));
+        Assert.IsNull(prefab.GetComponent<Character>());
+        Assert.NotNull(view);
+        SerializedObject data = new SerializedObject(view);
+        Assert.AreSame(prefab.transform, data.FindProperty("_visualAnchor").objectReferenceValue);
+        Assert.AreEqual("Healer", data.FindProperty("_recipe").objectReferenceValue.name);
+        Assert.AreSame(PrimitiveMeshesTests.Meshes(), data.FindProperty("_meshes").objectReferenceValue);
     }
 }
 

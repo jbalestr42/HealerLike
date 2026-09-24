@@ -11,6 +11,8 @@ namespace HealerLike.Render.Deliveries
     public class DeliveryTip
     {
         static readonly int baseColorId = Shader.PropertyToID("_BaseColor");
+        // A travel shorter than this has no direction
+        static readonly float stillSquared = 0.000001f;
 
         readonly List<Mesh> _meshes = new List<Mesh>();
         readonly List<List<int>> _groups = new List<List<int>>();
@@ -122,7 +124,7 @@ namespace HealerLike.Render.Deliveries
         public static Matrix4x4 Frame(Vector3 position, Vector3 travel, float width)
         {
             Quaternion rotation = Quaternion.identity;
-            if (travel.sqrMagnitude > 0.000001f)
+            if (travel.sqrMagnitude > stillSquared)
             {
                 Vector3 forward = travel.normalized;
                 Vector3 up = Mathf.Abs(forward.y) < 0.99f ? Vector3.up : Vector3.forward;

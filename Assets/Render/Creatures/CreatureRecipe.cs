@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Creatures
 {
+    // Stored by value in assets: append new members, never reorder or remove
     public enum Primitive
     {
         Sphere,
@@ -41,8 +42,6 @@ namespace HealerLike.Render.Creatures
             seed = 17
         };
 
-        // Socket hints only guide new authoring, the runtime never relocates authored sockets
-        public Vector3 targetLocal;
         // The body colour a wilting creature fades toward, plant green unless the recipe says otherwise
         public Color wiltColour = new Color(0.18f, 0.49f, 0.31f);
         public Vector3[] sourceLocal = Array.Empty<Vector3>();

@@ -12,6 +12,17 @@ namespace HealerLike.Render.Creatures
         public static readonly float TipOutlineWidth = 1.5f;
         // How dark a tip gets on a dying unit, its hue kept
         public static readonly float WiltedTipValue = 0.45f;
+        // How far a crown turns each second
+        public static readonly float CrownSpinDegrees = 18f;
+        // A hit pulses every part this much larger, and a charged head or tip swells this much more
+        static readonly float hitSwell = 0.06f;
+        static readonly float chargeSwell = 0.24f;
+        // A dying unit leans this many degrees and sinks this many cells
+        static readonly float wiltLean = 32f;
+        static readonly float wiltSink = 0.08f;
+        // A root thins to this share of its thickness at the foot, its joints are this many radii wide
+        static readonly float rootTaper = 0.65f;
+        static readonly float rootJointWidth = 2.8f;
         static readonly int baseColourId = Shader.PropertyToID("_BaseColor");
         static readonly int outlineWidthId = Shader.PropertyToID("_HLOutlineWidthMultiplier");
 
@@ -65,7 +76,8 @@ namespace HealerLike.Render.Creatures
         Quaternion _aim = Quaternion.identity;
         public Quaternion aim { get { return _aim; } }
 
-        public Transform[] budAnchors { get; private set; }
+        Transform[] _budAnchors;
+        public Transform[] budAnchors { get { return _budAnchors; } }
 
         public Transform root { get { return _root; } }
 
@@ -146,9 +158,14 @@ namespace HealerLike.Render.Creatures
             {
                 CreaturePart part = data.parts[i];
                 // The accent stays the palette's own colour, only the body varies from unit to unit
-                _colours[i] = part.role == PartRole.Tip ? part.colour : BeautyMotion.Vary(part.colour, _idle.seed);
+                _colours[i] = part.role == PartRole.Tip ? part.colour : ColourJitter.Vary(part.colour, _idle.seed);
                 _pivots[i] = new GameObject(part.id).transform;
-                _pivots[i].SetParent(part.parent < 0 ? _sway : _pivots[part.parent], false);
+                Transform pivotParent = _sway;
+                if (part.parent >= 0)
+                {
+                    pivotParent = _pivots[part.parent];
+                }
+                _pivots[i].SetParent(pivotParent, false);
                 _pivots[i].localPosition = part.localPosition * cellSize;
                 _pivots[i].localRotation = Quaternion.Euler(part.localEuler);
                 Mesh mesh = meshes.GetMesh(part.primitive, part.variant);
@@ -173,11 +190,11 @@ namespace HealerLike.Render.Creatures
                 }
             }
 
-            budAnchors = buds.ToArray();
+            _budAnchors = buds.ToArray();
             int segments = data.roots.segments;
             _roots = new Transform[data.roots.count * segments];
             _rootJoints = new Transform[data.roots.count * (segments - 1)];
-            Color rootColour = BeautyMotion.Vary(data.roots.colour, _idle.seed);
+            Color rootColour = ColourJitter.Vary(data.roots.colour, _idle.seed);
             for (int i = 0; i < _roots.Length; i++)
             {
                 _roots[i] = PrimitiveMeshes.Geometry("Root", _root, meshes.cylinder, material, rootColour);
@@ -186,7 +203,8 @@ namespace HealerLike.Render.Creatures
             // Lighter knuckles fill the bends between segments
             for (int i = 0; i < _rootJoints.Length; i++)
             {
-                _rootJoints[i] = PrimitiveMeshes.Geometry("RootJoint", _root, meshes.sphere, material, rootColour, 0.35f);
+                _rootJoints[i] = PrimitiveMeshes.Geometry("RootJoint", _root, meshes.sphere, material, rootColour,
+                    0.35f);
             }
 
             for (int i = 0; i < data.arms.Length; i++)
@@ -218,7 +236,12 @@ namespace HealerLike.Render.Creatures
             }
 
             bool isBranch = preserve || delivery.style == DeliveryStyle.ChainSync;
-            Contact(delivery.lease, position, isBranch ? delivery.contact : null);
+            Vector3? branchFrom = null;
+            if (isBranch)
+            {
+                branchFrom = delivery.contact;
+            }
+            Contact(delivery.lease, position, branchFrom);
             delivery.contact = position;
             delivery.hasFreshContact = true;
         }
@@ -238,7 +261,7 @@ namespace HealerLike.Render.Creatures
 
             _tokens[slot] = _nextToken;
             _branchRoots[slot] = null;
-            _arms[slot].deliveryProfile = kind == GestureKind.Heal;
+            _arms[slot].isDeliveryProfile = kind == GestureKind.Heal;
             _arms[slot].style = kind == GestureKind.Heal ? DeliveryStyle.Arc : DeliveryStyle.Direct;
             _arms[slot].SetVisible(true);
             _arms[slot].Begin(_nextToken, kind, goal);
@@ -281,7 +304,7 @@ namespace HealerLike.Render.Creatures
                 _tokens[slot] = token;
                 _branchRoots[slot] = previousContact;
                 _arms[slot].style = DeliveryStyle.ChainSync;
-                _arms[slot].deliveryProfile = true;
+                _arms[slot].isDeliveryProfile = true;
                 _arms[slot].SetVisible(true);
                 _arms[slot].Begin(token, GestureKind.Attack, goal);
                 _arms[slot].Contact(token, goal);
@@ -321,7 +344,7 @@ namespace HealerLike.Render.Creatures
             {
                 if (_arms[i] != null)
                 {
-                    _arms[i].Cancel(_tokens[i]);
+                    _arms[i].End(_tokens[i]);
                     _tokens[i] = 0;
                 }
             }
@@ -352,9 +375,11 @@ namespace HealerLike.Render.Creatures
             _root.SetPositionAndRotation(frame.origin, Quaternion.FromToRotation(Vector3.up, frame.normal));
             _root.localScale = Vector3.one / _root.parent.lossyScale.x;
             float dt = Mathf.Max(0f, deltaTime);
-            Vector3 direction = _aimTarget.HasValue
-                ? _root.InverseTransformDirection(_aimTarget.Value - frame.origin)
-                : new Vector3(Mathf.Sin(time * 0.3f) * 0.4f, 0f, 1f);
+            Vector3 direction = new Vector3(Mathf.Sin(time * 0.3f) * 0.4f, 0f, 1f);
+            if (_aimTarget.HasValue)
+            {
+                direction = _root.InverseTransformDirection(_aimTarget.Value - frame.origin);
+            }
             direction.y = 0f;
             if (direction.sqrMagnitude > 0.000001f)
             {
@@ -364,20 +389,24 @@ namespace HealerLike.Render.Creatures
             _hitPulse = Mathf.Max(0f, _hitPulse - dt * 5f);
             IdlePose idlePose = IdleMotion.Evaluate(_idle, time);
             float shake = Mathf.Sin(_hitPulse * 24f) * _hitPulse * 9f;
-            Quaternion wilt = Quaternion.Euler((1f - _healthFraction) * 32f, 0f, shake);
+            Quaternion wilt = Quaternion.Euler((1f - _healthFraction) * wiltLean, 0f, shake);
             _sway.localRotation = _aim * idlePose.sway * wilt;
-            _sway.localPosition = Vector3.down * ((1f - _healthFraction) * 0.08f * _cellSize);
+            _sway.localPosition = Vector3.down * ((1f - _healthFraction) * wiltSink * _cellSize);
             _crownPulse = Mathf.Max(0f, _crownPulse - dt / 0.2f);
             float light = Mathf.Max(_budPower, _charge) * _healthFraction;
             for (int i = 0; i < _geometry.Length; i++)
             {
                 CreaturePart part = _recipe.parts[i];
                 bool isSwelling = part.role == PartRole.Head || part.role == PartRole.Tip;
-                float swell = 1f + _crownPulse * 0.06f + (isSwelling ? _charge * 0.24f : 0f);
+                float swell = 1f + _crownPulse * hitSwell;
+                if (isSwelling)
+                {
+                    swell += _charge * chargeSwell;
+                }
                 _geometry[i].localScale = Vector3.Scale(part.dimensions, idlePose.bodyScale) * _cellSize * swell;
                 if (part.role == PartRole.Crown)
                 {
-                    Quaternion spin = Quaternion.AngleAxis(time * 18f, Vector3.up);
+                    Quaternion spin = Quaternion.AngleAxis(time * CrownSpinDegrees, Vector3.up);
                     _pivots[i].localRotation = Quaternion.Euler(part.localEuler) * spin;
                 }
 
@@ -398,7 +427,7 @@ namespace HealerLike.Render.Creatures
             RootDefinition roots = _recipe.roots;
             for (int i = 0; i < roots.count; i++)
             {
-                float angle = i * Mathf.PI * 2f / roots.count + roots.angularOffset * Mathf.Deg2Rad;
+                float angle = i * Mathf.PI * 2f / roots.count;
                 Vector3 radial = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
                 Vector3 hip = _sway.TransformPoint((radial * 0.08f + Vector3.up * roots.hipHeight) * _cellSize);
                 Vector3 kneeLocal = radial * (roots.footRadius * 0.6f) + Vector3.up * roots.kneeHeight;
@@ -412,14 +441,14 @@ namespace HealerLike.Render.Creatures
                 {
                     float t = (k + 1f) / roots.segments;
                     Vector3 end = (1f - t) * (1f - t) * hip + 2f * t * (1f - t) * bend + t * t * foot;
-                    float taper = Mathf.Lerp(1f, 0.65f, (float)k / Mathf.Max(1, roots.segments - 1));
+                    float taper = Mathf.Lerp(1f, rootTaper, (float)k / Mathf.Max(1, roots.segments - 1));
                     float radius = roots.thickness * taper * _cellSize;
                     PrimitiveMeshes.Segment(_roots[i * roots.segments + k], start, end, radius);
                     if (k > 0)
                     {
                         Transform joint = _rootJoints[i * (roots.segments - 1) + k - 1];
                         joint.position = start;
-                        joint.localScale = Vector3.one * (radius * 2.8f / _root.lossyScale.x);
+                        joint.localScale = Vector3.one * (radius * rootJointWidth / _root.lossyScale.x);
                     }
 
                     start = end;
@@ -434,8 +463,11 @@ namespace HealerLike.Render.Creatures
                 }
 
                 ArmDefinition definition = _recipe.arms[_definitions[i]];
-                Vector3 shoulder = _branchRoots[i]
-                    ?? _pivots[definition.bodyPart].TransformPoint(definition.rootLocal * _cellSize);
+                Vector3 shoulder = _pivots[definition.bodyPart].TransformPoint(definition.rootLocal * _cellSize);
+                if (_branchRoots[i].HasValue)
+                {
+                    shoulder = _branchRoots[i].Value;
+                }
                 _arms[i].Tick(deltaTime, shoulder, _root.rotation * _sway.localRotation);
                 if (_arms[i].isAvailable)
                 {
@@ -570,7 +602,7 @@ namespace HealerLike.Render.Creatures
         {
             _definitions[slot] = definitionIndex;
             ArmDefinition definition = _recipe.arms[definitionIndex];
-            definition.colour = BeautyMotion.Vary(definition.colour, _idle.seed);
+            definition.colour = ColourJitter.Vary(definition.colour, _idle.seed);
             _arms[slot] = new LianaArm();
             _arms[slot].Init(definition, _root, _material, _meshes, _cellSize);
             Vector3 shoulder = _pivots[definition.bodyPart].TransformPoint(definition.rootLocal * _cellSize);
@@ -659,7 +691,13 @@ namespace HealerLike.Render.Creatures
                 }
             }
 
-            int leaseToken = Begin(GestureKind.Attack, projectile ? projectile.position : intendedEnd);
+            // The tip first reaches for the shot itself, or where it is headed when there is none yet
+            Vector3 goal = intendedEnd;
+            if (projectile)
+            {
+                goal = projectile.position;
+            }
+            int leaseToken = Begin(GestureKind.Attack, goal);
             if (leaseToken == 0)
             {
                 return false;
@@ -671,7 +709,7 @@ namespace HealerLike.Render.Creatures
                 if (_tokens[i] == leaseToken)
                 {
                     _arms[i].style = style;
-                    _arms[i].deliveryProfile = true;
+                    _arms[i].isDeliveryProfile = true;
                 }
             }
 

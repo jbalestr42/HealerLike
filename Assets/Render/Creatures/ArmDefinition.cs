@@ -8,7 +8,6 @@ namespace HealerLike.Render.Creatures
     {
         public int bodyPart;
         public Vector3 rootLocal;
-        public int sourceSocketIndex;
         public int segmentCount;
         public float segmentLength;
         public float radius;

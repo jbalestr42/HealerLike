@@ -5,6 +5,15 @@ namespace HealerLike.Render.Deliveries
     // Equal-link FABRIK that allocates nothing and reads no scene, clock or random state
     public class ChainSolver
     {
+        // Links count as equal within this share of the first one
+        static readonly float equalLengthShare = 0.000001f;
+        // A pole closer than this to the aim gives no bend plane
+        static readonly float poleAlongAimSquared = 0.000000000001f;
+        // A joint further than this off the aim line means the chain already bends
+        static readonly float offLineSquared = 0.0000000001f;
+        // A direction shorter than this has none
+        static readonly float zeroLengthSquared = 0.0000000000000001f;
+
         public bool Solve(Vector3[] joints, float[] lengths, Vector3 root, Vector3 target, Vector3 bendPole,
             out ChainResult result, int maxIterations = 32, float tolerance = 0.001f)
         {
@@ -28,7 +37,7 @@ namespace HealerLike.Render.Deliveries
             float total = 0f;
             for (int i = 0; i < lengths.Length; i++)
             {
-                bool isEqual = Mathf.Abs(lengths[i] - lengths[0]) <= lengths[0] * 0.000001f;
+                bool isEqual = Mathf.Abs(lengths[i] - lengths[0]) <= lengths[0] * equalLengthShare;
                 if (!float.IsFinite(lengths[i]) || lengths[i] <= 0f || !isEqual)
                 {
                     Debug.LogError("[ChainSolver] Lengths must be finite, positive and equal.");
@@ -79,7 +88,7 @@ namespace HealerLike.Render.Deliveries
             }
 
             Vector3 side = bendPole - aim * Vector3.Dot(bendPole, aim);
-            if (side.sqrMagnitude < 0.000000000001f)
+            if (side.sqrMagnitude < poleAlongAimSquared)
             {
                 Vector3 axis;
                 if (Mathf.Abs(aim.x) < Mathf.Abs(aim.y))
@@ -98,7 +107,7 @@ namespace HealerLike.Render.Deliveries
             bool isCollinear = true;
             for (int i = 1; i <= n; i++)
             {
-                if (Vector3.Cross(joints[i] - joints[0], aim).sqrMagnitude > 0.0000000001f)
+                if (Vector3.Cross(joints[i] - joints[0], aim).sqrMagnitude > offLineSquared)
                 {
                     isCollinear = false;
                     break;
@@ -162,7 +171,7 @@ namespace HealerLike.Render.Deliveries
 
         static Vector3 Direction(Vector3 value, Vector3 fallback)
         {
-            return value.sqrMagnitude > 0.0000000000000001f ? value.normalized : fallback;
+            return value.sqrMagnitude > zeroLengthSquared ? value.normalized : fallback;
         }
     }
 }

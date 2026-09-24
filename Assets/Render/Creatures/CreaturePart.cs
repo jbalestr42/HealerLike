@@ -13,7 +13,6 @@ namespace HealerLike.Render.Creatures
         public Vector3 localEuler;
         public Vector3 dimensions;
         public Color colour;
-        public float torusTubeRatio;
         public float glow;
         public PartRole role;
         public int variant;

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.Serialization;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 
@@ -11,12 +10,9 @@ namespace HealerLike.Render.Creatures
     public class CreatureBuilder : MonoBehaviour, IEntityView, IHealVisualSink,
         IDeliverySource, IEffectAnchors
     {
-        [FormerlySerializedAs("recipe")]
         [SerializeField] CreatureRecipe _recipe;
-        [FormerlySerializedAs("material")]
         [SerializeField] Material _material;
         [SerializeField] PrimitiveMeshes _meshes;
-        [FormerlySerializedAs("cellSize")]
         [SerializeField] float _cellSize = 1f;
 
         Entity _entity;
@@ -32,7 +28,8 @@ namespace HealerLike.Render.Creatures
         Vector3 _groundOrigin;
         Vector3 _groundNormal = Vector3.up;
 
-        public CreatureRig rig { get; private set; }
+        CreatureRig _rig;
+        public CreatureRig rig { get { return _rig; } }
 
         public CreatureRecipe recipe { get { return _recipe; } }
 
@@ -65,7 +62,7 @@ namespace HealerLike.Render.Creatures
                 rig.Dispose();
             }
 
-            rig = null;
+            _rig = null;
         }
 
         public void Init(Entity owner, RenderManager manager)
@@ -171,7 +168,7 @@ namespace HealerLike.Render.Creatures
                 rig.Dispose();
             }
 
-            rig = null;
+            _rig = null;
             _recipe = value;
             _material = sharedMaterial;
             _meshes = meshes;
@@ -197,7 +194,7 @@ namespace HealerLike.Render.Creatures
                     rig.Dispose();
                 }
 
-                rig = null;
+                _rig = null;
             }
 
             _cellSize = size;
@@ -266,7 +263,7 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        // Reflection until ACooldownSkill exposes cooldownProgress through ICooldownSkill (seam S3)
+        // Reflection until ACooldownSkill exposes cooldownProgress through a non-generic ICooldownSkill
         static Func<float> CreateCooldownReader(ASkill skill)
         {
             for (Type type = skill.GetType(); type != null; type = type.BaseType)
@@ -288,7 +285,7 @@ namespace HealerLike.Render.Creatures
                 CreatureRig created = new CreatureRig();
                 if (created.Init(_recipe, transform, _material, _meshes, _cellSize))
                 {
-                    rig = created;
+                    _rig = created;
                 }
             }
 
@@ -302,12 +299,14 @@ namespace HealerLike.Render.Creatures
         FootFrame Frame()
         {
             Vector3 origin = transform.position;
+            Vector3 normal = transform.up;
             if (_hasConfiguredPlane)
             {
                 origin -= _groundNormal * Vector3.Dot(origin - _groundOrigin, _groundNormal);
+                normal = _groundNormal;
             }
 
-            return new FootFrame(origin, _hasConfiguredPlane ? _groundNormal : transform.up, _cellSize);
+            return new FootFrame(origin, normal, _cellSize);
         }
 
         void Attach()
@@ -322,7 +321,12 @@ namespace HealerLike.Render.Creatures
                 _outcomeObserver = ResourceOutcomeObserver.Ensure(_entity.gameObject);
             }
 
-            _outcomeObserver.Bind(_entity.health, null, _registry != null ? _registry.spellSink : null, _registry);
+            ISpellVisualSink spellSink = null;
+            if (_registry != null)
+            {
+                spellSink = _registry.spellSink;
+            }
+            _outcomeObserver.Bind(_entity.health, null, spellSink, _registry);
 
             if (_health != _entity.health)
             {

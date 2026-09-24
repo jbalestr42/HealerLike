@@ -8,7 +8,8 @@ namespace HealerLike.Render.Creatures
     // Builds the recipe of a unit from its channels and the vocabulary asset at spawn, in memory and never saved
     public static class LookComposer
     {
-        // How far past the body and head an accessory must reach on screen, in cells; stones need more to tell a group apart
+        // How far past the body and head an accessory must reach on screen, in cells; stones need more to tell a
+        // group apart
         public static readonly float PlantAccessoryReach = 0.25f;
         public static readonly float StoneAccessoryReach = 0.3f;
         // The longest branch of a fanned neck, in body units
@@ -41,8 +42,8 @@ namespace HealerLike.Render.Creatures
             }
 
             // Size is the part's bounding box in body units, whatever the mesh's own pivot
-            public int Add(string id, Primitive primitive, Vector3 centre, Vector3 size, Color colour, Vector3 euler, float glow,
-                PartRole role, int variant = 0)
+            public int Add(string id, Primitive primitive, Vector3 centre, Vector3 size, Color colour, Vector3 euler,
+                float glow, PartRole role, int variant = 0)
             {
                 _sources.Add(new LookPart
                 {
@@ -73,16 +74,24 @@ namespace HealerLike.Render.Creatures
                 string uniqueId = _ids.Contains(id) ? id + _parts.Count : id;
                 _ids.Add(uniqueId);
                 Vector3 origin = _positions.Count > 0 ? _positions[0] : Vector3.zero;
+                // The first part is the body, every other part hangs from it
+                int parent = 0;
+                Vector3 local = pivot - origin;
+                if (_parts.Count == 0)
+                {
+                    parent = -1;
+                    local = pivot;
+                }
+
                 _parts.Add(new CreaturePart
                 {
                     id = uniqueId,
-                    parent = _parts.Count == 0 ? -1 : 0,
+                    parent = parent,
                     primitive = primitive,
-                    localPosition = (_parts.Count == 0 ? pivot : pivot - origin) * _unit,
+                    localPosition = local * _unit,
                     localEuler = euler,
                     dimensions = dimensions * _unit,
                     colour = colour,
-                    torusTubeRatio = 0.2f,
                     glow = glow,
                     role = role,
                     variant = variant
@@ -96,8 +105,8 @@ namespace HealerLike.Render.Creatures
             {
                 Vector3 delta = to - from;
                 Vector3 euler = Quaternion.FromToRotation(Vector3.up, delta).eulerAngles;
-                return Add(id, Primitive.Capsule, (from + to) * 0.5f, new Vector3(thickness, delta.magnitude + thickness, thickness),
-                    colour, euler, 0f, role);
+                Vector3 size = new Vector3(thickness, delta.magnitude + thickness, thickness);
+                return Add(id, Primitive.Capsule, (from + to) * 0.5f, size, colour, euler, 0f, role);
             }
 
             // The part as it was added, centre and bounding box in body units before any pivot or mesh correction
@@ -152,12 +161,12 @@ namespace HealerLike.Render.Creatures
                 float needed = channels.side == LookSide.Plant ? PlantAccessoryReach : StoneAccessoryReach;
                 if (reach < needed)
                 {
-                    Debug.LogError($"[LookComposer] {recipe.name}: the {channels.accessory} reaches {reach:0.00} cell past the outline, under {needed}.");
+                    Debug.LogError($"[LookComposer] {recipe.name}: the {channels.accessory} reaches {reach:0.00} cell"
+                        + $" past the outline, under {needed}.");
                 }
             }
 
             recipe.parts = parts.ToArray();
-            recipe.targetLocal = sockets.body * unit;
             recipe.idle.seed = seed;
             recipe.stoneOchre = vocabulary.palette.stoneOchre;
             recipe.neckLocal = sockets.neck * unit;
@@ -212,13 +221,24 @@ namespace HealerLike.Render.Creatures
 
         public static RootDefinition Roots(ReachBand band, LookVocabulary vocabulary)
         {
-            float reach = vocabulary.Reach(band);
+            return Roots(vocabulary.Reach(band), vocabulary.Unit(LookSide.Plant), vocabulary);
+        }
+
+        // Roots reaching this many body units from a body of this many cells
+        public static RootDefinition Roots(float reach, float unit, LookVocabulary vocabulary)
+        {
             float mid = vocabulary.roots.ContainsKey(ReachBand.Mid) ? vocabulary.roots[ReachBand.Mid].reach : reach;
-            float unit = vocabulary.Unit(LookSide.Plant);
+            // Roots shorter than the mid band bend once, the others twice
+            int segments = 3;
+            if (reach < mid)
+            {
+                segments = 2;
+            }
+
             return new RootDefinition
             {
                 count = vocabulary.rootCount,
-                segments = reach < mid ? 2 : 3,
+                segments = segments,
                 footRadius = reach * unit,
                 hipHeight = vocabulary.rootHip * unit,
                 kneeHeight = vocabulary.rootKnee * unit,
@@ -281,18 +301,22 @@ namespace HealerLike.Render.Creatures
                 return false;
             }
 
-            bool hasAccessory = channels.accessory == AccessoryKind.None || vocabulary.accessories.ContainsKey(channels.accessory);
-            bool hasMiniHead = channels.accessory != AccessoryKind.MiniHead || vocabulary.heads.ContainsKey(channels.accessoryHead);
+            bool hasAccessory = channels.accessory == AccessoryKind.None
+                || vocabulary.accessories.ContainsKey(channels.accessory);
+            bool hasMiniHead = channels.accessory != AccessoryKind.MiniHead
+                || vocabulary.heads.ContainsKey(channels.accessoryHead);
             if (!vocabulary.heads.ContainsKey(channels.head) || !vocabulary.bodies.ContainsKey(channels.mass)
                 || !vocabulary.stems.ContainsKey(channels.stem) || !hasAccessory || !hasMiniHead)
             {
-                Debug.LogError($"[LookComposer] The vocabulary has no entry for {channels.head}, {channels.mass}, {channels.stem} or {channels.accessory}.");
+                Debug.LogError($"[LookComposer] The vocabulary has no entry for {channels.head}, {channels.mass},"
+                    + $" {channels.stem} or {channels.accessory}.");
                 return false;
             }
             return true;
         }
 
-        static PartList Parts(UnitChannels channels, LookVocabulary vocabulary, int copies, int seed, out Sockets sockets)
+        static PartList Parts(UnitChannels channels, LookVocabulary vocabulary, int copies, int seed,
+            out Sockets sockets)
         {
             PartList parts = new PartList(vocabulary.Unit(channels.side));
             sockets = Place(channels, vocabulary);
@@ -309,7 +333,8 @@ namespace HealerLike.Render.Creatures
             }
             else
             {
-                Fragment(parts, vocabulary, channels, body.stone, sockets.body, vocabulary.stoneScale, CountBand.One, seed);
+                Fragment(parts, vocabulary, channels, body.stone, sockets.body, vocabulary.stoneScale, CountBand.One,
+                    seed);
                 Limbs(parts, stem.limbLength * scale, sockets.bodyRadius, scale, stemColour, seed);
             }
 
@@ -350,20 +375,23 @@ namespace HealerLike.Render.Creatures
                 parts.accessoryStart = parts.count;
                 LookVocabulary.AccessoryEntry accessory = vocabulary.accessories[channels.accessory];
                 Vector3 socket = Socket(accessory.socket, sockets);
-                Fragment(parts, vocabulary, channels, isPlant ? accessory.plant : accessory.stone, socket, scale, CountBand.One, seed);
+                LookPart[] accessoryParts = isPlant ? accessory.plant : accessory.stone;
+                Fragment(parts, vocabulary, channels, accessoryParts, socket, scale, CountBand.One, seed);
                 if (channels.accessory == AccessoryKind.MiniHead)
                 {
                     LookVocabulary.HeadEntry mini = vocabulary.heads[channels.accessoryHead];
-                    Fragment(parts, vocabulary, channels, isPlant ? mini.plant : mini.stone, socket + accessory.miniHeadAt * scale,
-                        accessory.miniHeadScale * scale, CountBand.One, seed);
+                    LookPart[] miniParts = isPlant ? mini.plant : mini.stone;
+                    Vector3 miniAt = socket + accessory.miniHeadAt * scale;
+                    float miniScale = accessory.miniHeadScale * scale;
+                    Fragment(parts, vocabulary, channels, miniParts, miniAt, miniScale, CountBand.One, seed);
                 }
             }
             return parts;
         }
 
         // A fragment's parts around a socket, those its count band allows; a stone part takes a variant from the seed
-        static void Fragment(PartList parts, LookVocabulary vocabulary, UnitChannels channels, LookPart[] fragment, Vector3 at,
-            float scale, CountBand band, int seed)
+        static void Fragment(PartList parts, LookVocabulary vocabulary, UnitChannels channels, LookPart[] fragment,
+            Vector3 at, float scale, CountBand band, int seed)
         {
             foreach (LookPart part in fragment)
             {
@@ -373,8 +401,8 @@ namespace HealerLike.Render.Creatures
                 }
 
                 Color colour = vocabulary.Colour(part.colour, channels.accent, channels.side);
-                parts.Add(part.id, part.primitive, at + part.position * scale, part.size * scale, colour, part.euler, part.glow,
-                    part.role, Variant(seed, parts.count));
+                parts.Add(part.id, part.primitive, at + part.position * scale, part.size * scale, colour, part.euler,
+                    part.glow, part.role, Variant(seed, parts.count));
             }
         }
 
@@ -425,7 +453,11 @@ namespace HealerLike.Render.Creatures
             {
                 return parts.headStarts[copy + 1];
             }
-            return parts.accessoryStart >= 0 ? parts.accessoryStart : parts.count;
+            if (parts.accessoryStart >= 0)
+            {
+                return parts.accessoryStart;
+            }
+            return parts.count;
         }
 
         // The screen box of parts start to end on the board camera, in body units; a fanned copy's branch is skipped
@@ -453,7 +485,8 @@ namespace HealerLike.Render.Creatures
             return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
         }
 
-        // Each accessory part is sampled at its centre and its six face centres, the body and head as the ellipsoids in their boxes
+        // Each accessory part is sampled at its centre and its six face centres, the body and head as the ellipsoids
+        // in their boxes
         static float OutlineReach(PartList parts, float bodyUnit)
         {
             Vector3 right = boardCamera * Vector3.right;
@@ -470,7 +503,12 @@ namespace HealerLike.Render.Creatures
                     {
                         int axis = (k - 1) / 2;
                         Vector3 offset = Vector3.zero;
-                        offset[axis] = (k % 2 == 0 ? -0.5f : 0.5f) * part.size[axis];
+                        float face = 0.5f;
+                        if (k % 2 == 0)
+                        {
+                            face = -0.5f;
+                        }
+                        offset[axis] = face * part.size[axis];
                         point += rotation * offset;
                     }
 
@@ -518,8 +556,8 @@ namespace HealerLike.Render.Creatures
         }
 
         // One branch of a fanned neck, returns where its head sits
-        static Vector3 Branch(PartList parts, Vector3 top, int index, int copies, float spread, float length, bool isPlant,
-            float scale, Color colour)
+        static Vector3 Branch(PartList parts, Vector3 top, int index, int copies, float spread, float length,
+            bool isPlant, float scale, Color colour)
         {
             float angle = (index - (copies - 1) * 0.5f) * spread;
             Vector3 direction = Quaternion.Euler(0f, 0f, -angle) * Vector3.up;
@@ -578,28 +616,39 @@ namespace HealerLike.Render.Creatures
             recipe.arms = new ArmDefinition[armCount];
             for (int j = 0; j < armCount; j++)
             {
-                recipe.sourceLocal[j] = (neck + Vector3.right * (j % 2 == 0 ? -0.15f : 0.15f)) * bodyUnit;
-                Vector3[] rest = new Vector3[49];
-                for (int i = 0; i < 48; i++)
+                // The arms leave the neck on either side, the first on the left
+                float side = 0.15f;
+                if (j % 2 == 0)
                 {
-                    float angle = i * Mathf.PI * 2f / 12f;
-                    rest[i + 1] = rest[i] + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0.015f).normalized * 0.5f;
+                    side = -0.15f;
                 }
-
-                recipe.arms[j] = new ArmDefinition
-                {
-                    bodyPart = 0,
-                    rootLocal = recipe.sourceLocal[j] - bodyPivot,
-                    sourceSocketIndex = j,
-                    segmentCount = 48,
-                    segmentLength = 0.5f,
-                    radius = 0.045f,
-                    restJoints = rest,
-                    bendPole = Vector3.up,
-                    colour = colour,
-                    tipColour = accent
-                };
+                recipe.sourceLocal[j] = (neck + Vector3.right * side) * bodyUnit;
+                recipe.arms[j] = Arm(recipe.sourceLocal[j] - bodyPivot, colour, accent);
             }
+        }
+
+        // One liana at rest: four coils of 48 half-cell links from its root on the body
+        public static ArmDefinition Arm(Vector3 rootLocal, Color colour, Color tipColour)
+        {
+            Vector3[] rest = new Vector3[49];
+            for (int i = 0; i < 48; i++)
+            {
+                float angle = i * Mathf.PI * 2f / 12f;
+                rest[i + 1] = rest[i] + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0.015f).normalized * 0.5f;
+            }
+
+            return new ArmDefinition
+            {
+                bodyPart = 0,
+                rootLocal = rootLocal,
+                segmentCount = 48,
+                segmentLength = 0.5f,
+                radius = 0.045f,
+                restJoints = rest,
+                bendPole = Vector3.up,
+                colour = colour,
+                tipColour = tipColour
+            };
         }
 
         static int Variant(int seed, int index)

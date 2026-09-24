@@ -31,11 +31,9 @@ namespace HealerLike.Render.Creatures
             meshes.cone = Save(RevolvedMeshes.Create("Cone", Primitive.Cone, 12, 6, 0.2f));
             meshes.cylinder = Save(RevolvedMeshes.Create("Cylinder", Primitive.CylinderSegment, 6, 6, 0.2f));
             meshes.torus = Save(RevolvedMeshes.Create("Torus", Primitive.Torus, 12, 6, 0.2f));
-            meshes.thinTorus = Save(RingMeshes.CreateThinTorus());
             meshes.tuft = Save(GrassTuft.CreateMesh());
             meshes.socle = Save(GrassTuft.CreateSocle());
             meshes.pyramid = Save(FacetedMeshes.CreatePyramid());
-            meshes.star = Save(FacetedMeshes.CreateStar());
             meshes.leaf = Save(FacetedMeshes.CreateLeaf());
             meshes.boulder = Save(FacetedMeshes.CreateBoulder());
             meshes.disc = Save(RingMeshes.CreateDisc(32));
@@ -43,7 +41,7 @@ namespace HealerLike.Render.Creatures
 
             EditorUtility.SetDirty(meshes);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[PrimitiveMeshBaker] Baked 14 meshes into {meshesFolder}");
+            Debug.Log($"[PrimitiveMeshBaker] Baked 12 meshes into {meshesFolder}");
         }
 
         static Mesh Save(Mesh mesh)

@@ -14,6 +14,8 @@ namespace HealerLike.Render.Deliveries
     {
         // TODO: take it from RenderManager once it holds a reference, Resources is the only road from here
         public static readonly string ResourcePath = "DeliveryVocabulary";
+        // The tip width of a shot no view claims when there is no vocabulary to read it from
+        public static readonly float DefaultBulletSize = 0.2f;
 
         public Dictionary<DeliveryStyle, LookPart[]> tips = new Dictionary<DeliveryStyle, LookPart[]>();
 
@@ -23,7 +25,7 @@ namespace HealerLike.Render.Deliveries
         public LookPart splashPod;
 
         // A shot no view claims draws its tip at this width in world units, with these meshes and material
-        public float bulletSize = 0.2f;
+        public float bulletSize = DefaultBulletSize;
         public PrimitiveMeshes meshes;
         public Material material;
 

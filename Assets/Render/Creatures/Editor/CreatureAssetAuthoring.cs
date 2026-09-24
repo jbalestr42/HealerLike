@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -10,6 +11,9 @@ namespace HealerLike.Render.Creatures
         static readonly string root = "Assets/Render/Creatures/";
         static readonly string materialPath = "Assets/Render/Look/Look_Default.mat";
         static readonly string meshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
+        static readonly int healerRoots = 13;
+        static readonly int healerArms = 2;
+        static readonly int healerSeed = 17;
 
         [MenuItem("Tools/Render/Author Creature Assets")]
         public static void Author()
@@ -24,7 +28,9 @@ namespace HealerLike.Render.Creatures
 
             Directory.CreateDirectory(root + "Data");
             Directory.CreateDirectory(root + "Prefabs");
-            CreatureRecipe healer = CreatureRecipeAuthoring.SaveRecipe("Healer", CreatureRecipeParts.Healer(), 13, 2, 17);
+            List<CreaturePart> parts = CreatureRecipeParts.Healer();
+            CreatureRecipe healer = CreatureRecipeAuthoring.SaveRecipe("Healer", parts, healerRoots, healerArms,
+                healerSeed);
             if (!healer)
             {
                 return;
@@ -35,13 +41,6 @@ namespace HealerLike.Render.Creatures
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[CreatureAssetAuthoring] Healer recipe and view prefab authored.");
-        }
-
-        // Recipe-only refresh keeps the existing prefab presentation intact
-        public static void AuthorBeautyRecipes()
-        {
-            CreatureRecipeAuthoring.SaveRecipe("Healer", CreatureRecipeParts.Healer(), 13, 2, 17);
-            AssetDatabase.SaveAssets();
         }
 
         static void CharacterView(CreatureRecipe recipe, Material material, PrimitiveMeshes meshes)

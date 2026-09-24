@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace HealerLike.Render
 {
-    // Plain class so a test can build one, the RenderManager owns one and hands it to the views through Init
+    // Plain class so a test can build one; the RenderManager owns it and the views reach it as manager.registry
     public class RenderRegistry
     {
         readonly Dictionary<GameObject, List<IHealVisualSink>> _healSinks =
@@ -73,9 +73,9 @@ namespace HealerLike.Render
 
             // Copy first so a sink can unregister itself or notify again while we loop
             IHealVisualSink[] snapshot = sinks.ToArray();
-            for (int i = snapshot.Length - 1; i >= 0; i--)
+            foreach (IHealVisualSink sink in snapshot)
             {
-                snapshot[i].OnHealResolved(target, value, critical);
+                sink.OnHealResolved(target, value, critical);
             }
         }
     }

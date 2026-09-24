@@ -13,7 +13,6 @@ namespace HealerLike.Render.Creatures
         public float hipHeight;
         public float kneeHeight;
         public float thickness;
-        public float angularOffset;
         public Color colour;
     }
 }

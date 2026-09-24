@@ -70,7 +70,7 @@ public class CreatureRecipeTests
     }
 
     [Test]
-    public void CreateInstance_Defaults_HaveBoundedRootsAndArrays()
+    public void Roots_NewRecipe_DefaultWithinTheLongestReachBesideEmptyArrays()
     {
         CreatureRecipe recipe = CreateTracked<CreatureRecipe>();
 

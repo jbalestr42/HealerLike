@@ -80,10 +80,11 @@ public class CreatureValidatorTests
         Assert.AreEqual(valid, CreatureValidator.TryValidate(_recipe, out _));
     }
 
-    [TestCase(40, true)]
-    [TestCase(41, false)]
-    public void TryValidate_PartCount_AcceptsUpToForty(int count, bool valid)
+    [TestCase(0, true)]
+    [TestCase(1, false)]
+    public void TryValidate_PartCount_AcceptsUpToMaxParts(int partsOverCap, bool valid)
     {
+        int count = CreatureValidator.MaxParts + partsOverCap;
         CreaturePart body = _recipe.parts[0];
         _recipe.parts = new CreaturePart[count];
         for (int i = 0; i < count; i++)
@@ -102,37 +103,42 @@ public class CreatureValidatorTests
         Assert.IsTrue(CreatureValidator.TryValidate(_recipe, out string error), error);
     }
 
-    [TestCase(0)]
-    [TestCase(1)]
-    [TestCase(2)]
-    [TestCase(3)]
-    [TestCase(4)]
-    public void TryValidate_InvalidTreeSocketOrRest_ReturnsFalse(int mode)
+    [Test]
+    public void TryValidate_FirstPartWithAParent_ReturnsFalse()
     {
-        if (mode == 0)
-        {
-            _recipe.parts[0].parent = 0;
-        }
+        _recipe.parts[0].parent = 0;
 
-        if (mode == 1)
-        {
-            _recipe.parts = new CreaturePart[] { _recipe.parts[0], _recipe.parts[0] };
-        }
+        Assert.IsFalse(CreatureValidator.TryValidate(_recipe, out _));
+    }
 
-        if (mode == 2)
-        {
-            _recipe.sourceLocal = new Vector3[0];
-        }
+    [Test]
+    public void TryValidate_DuplicateIds_ReturnsFalse()
+    {
+        _recipe.parts = new CreaturePart[] { _recipe.parts[0], _recipe.parts[0] };
 
-        if (mode == 3)
-        {
-            _recipe.arms[0].restJoints[2] = Vector3.one * 100f;
-        }
+        Assert.IsFalse(CreatureValidator.TryValidate(_recipe, out _));
+    }
 
-        if (mode == 4)
-        {
-            _recipe.roots.footRadius = CreatureValidator.MaxRootReach;
-        }
+    [Test]
+    public void TryValidate_ArmWithoutASourceSocket_ReturnsFalse()
+    {
+        _recipe.sourceLocal = new Vector3[0];
+
+        Assert.IsFalse(CreatureValidator.TryValidate(_recipe, out _));
+    }
+
+    [Test]
+    public void TryValidate_RestJointOffTheLinkLength_ReturnsFalse()
+    {
+        _recipe.arms[0].restJoints[2] = Vector3.one * 100f;
+
+        Assert.IsFalse(CreatureValidator.TryValidate(_recipe, out _));
+    }
+
+    [Test]
+    public void TryValidate_RootsPastTheLongestReach_ReturnsFalse()
+    {
+        _recipe.roots.footRadius = CreatureValidator.MaxRootReach;
 
         Assert.IsFalse(CreatureValidator.TryValidate(_recipe, out _));
     }

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
 
 namespace HealerLike.Render.Creatures
@@ -8,8 +7,6 @@ namespace HealerLike.Render.Creatures
 
 public class PrimitiveMeshBakerTests
 {
-    static readonly string meshesAssetPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
-
     // Welds corners by position, skips zero-area triangles, then needs every edge used once in each direction
     // and a positive enclosed volume: a closed solid with its faces turned outward.
     public static void AssertClosed(Mesh mesh)
@@ -61,80 +58,6 @@ public class PrimitiveMeshBakerTests
         }
 
         Assert.Greater(volume, 0f, mesh.name + " encloses no volume or faces inward");
-    }
-
-    [Test]
-    public void Bake_ShippedAsset_ReferencesEveryMesh()
-    {
-        PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesAssetPath);
-
-        Assert.IsNotNull(meshes);
-        Mesh[] all =
-        {
-            meshes.sphere, meshes.capsule, meshes.cone, meshes.cylinder, meshes.torus, meshes.thinTorus,
-            meshes.tuft, meshes.socle, meshes.pyramid, meshes.star, meshes.leaf, meshes.boulder, meshes.disc, meshes.annulus
-        };
-        foreach (Mesh mesh in all)
-        {
-            Assert.IsNotNull(mesh);
-            Assert.IsTrue(AssetDatabase.Contains(mesh), mesh.name);
-            Assert.Greater(mesh.vertexCount, 0, mesh.name);
-        }
-    }
-
-    [Test]
-    public void Bake_ShippedAsset_TuftHasFourFacetedSides()
-    {
-        PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesAssetPath);
-
-        uint indexCount = meshes.tuft.GetIndexCount(0);
-
-        Assert.AreEqual(12u, indexCount); // 4 sides * 3, open at the base on its socle
-    }
-
-    [Test]
-    public void Bake_ShippedSolids_AreClosedAndFaceOutward()
-    {
-        PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesAssetPath);
-        Mesh[] solids =
-        {
-            meshes.sphere, meshes.capsule, meshes.cone, meshes.cylinder, meshes.torus, meshes.thinTorus,
-            meshes.pyramid, meshes.star, meshes.leaf, meshes.boulder
-        };
-
-        foreach (Mesh mesh in solids)
-        {
-            AssertClosed(mesh);
-        }
-    }
-
-    // The disc, the annulus and the grass socle are ground markings, flat by nature: one side, facing up
-    [Test]
-    public void Bake_ShippedGroundMarkings_AreFlatAndFaceUp()
-    {
-        PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesAssetPath);
-
-        foreach (Mesh mesh in new Mesh[] { meshes.disc, meshes.annulus, meshes.socle })
-        {
-            Vector3[] vertices = mesh.vertices;
-            int[] triangles = mesh.triangles;
-            for (int i = 0; i < triangles.Length; i += 3)
-            {
-                Vector3 a = vertices[triangles[i]];
-                Vector3 normal = Vector3.Cross(vertices[triangles[i + 1]] - a, vertices[triangles[i + 2]] - a);
-                Assert.Greater(normal.y, 0f, mesh.name);
-                Assert.AreEqual(0f, a.y, mesh.name);
-            }
-        }
-    }
-
-    [Test]
-    public void Bake_ShippedStar_IsThickAndSpiky()
-    {
-        Mesh star = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesAssetPath).star;
-
-        Assert.That(star.bounds.size.x, Is.EqualTo(2f).Within(0.00001)); // rays reach one unit
-        Assert.That(star.bounds.size.z, Is.EqualTo(0.6f).Within(0.00001)); // an apex on each face
     }
 }
 

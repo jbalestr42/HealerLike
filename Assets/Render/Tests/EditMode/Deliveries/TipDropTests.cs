@@ -1,0 +1,54 @@
+using NUnit.Framework;
+using UnityEngine;
+using HealerLike.Render.Creatures;
+
+namespace HealerLike.Render.Deliveries
+{
+
+public class TipDropTests
+{
+    GameObject _dropGo;
+    TipDrop _drop;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _dropGo = new GameObject("TipDrop");
+        _drop = _dropGo.AddComponent<TipDrop>();
+        LookPart pod = new LookPart { size = Vector3.one };
+        PrimitiveMeshes meshes = PrimitiveMeshesTests.Meshes();
+        _drop.Init(pod, meshes.sphere, null, Color.white, Vector3.up, 1f);
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        if (_dropGo)
+        {
+            Object.DestroyImmediate(_dropGo);
+        }
+    }
+
+    [Test]
+    public void Tick_HalfItsLifetime_FallsAndShrinks()
+    {
+        Vector3 start = _dropGo.transform.position;
+
+        _drop.Tick(TipDrop.Lifetime * 0.5f);
+
+        Assert.Less(_dropGo.transform.position.y, start.y);
+        Assert.Less(_dropGo.transform.localScale.x, 1f);
+    }
+
+    [Test]
+    public void Tick_PastItsLifetime_DestroysItself()
+    {
+        _drop.Tick(TipDrop.Lifetime * 0.5f);
+
+        _drop.Tick(TipDrop.Lifetime);
+
+        Assert.IsFalse(_dropGo);
+    }
+}
+
+}

@@ -2,50 +2,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Grammar
 {
-    // What an effect does to its holder, the accent and the shape of its look come from it
-    public enum EffectFamily
-    {
-        Damage,
-        Heal,
-        Rot,
-        Renew,
-        Boon,
-        Bane
-    }
-
-    public enum EffectTempo
-    {
-        Once,
-        PerPeriod,
-        ForDuration
-    }
-
-    public enum AttributeGroup
-    {
-        Offence,
-        Defence,
-        Prevention
-    }
-
-    // Who a character skill lands on, one picked target or every target of its side
-    public enum EffectTopology
-    {
-        Single,
-        Group,
-        Area
-    }
-
-    // Everything the look of an effect reads from its handler, decided once when it lands
-    public struct EffectChannels
-    {
-        public EffectFamily family;
-        public AttributeGroup group;
-        public EffectTempo tempo;
-        // Seconds between two ticks, 0 when the handler does not tick
-        public float periodSeconds;
-    }
-
-    // Reads the family, tempo and delivery of his buffs and projectiles from their data, never from a name
+    // Reads the family, tempo and delivery of buffs and projectiles from their data, never from a name
     public static class EffectDerivation
     {
         // A curved homing prefab bent at least this much flies as a swarm, SwarmBullet is 3 and the others 1
@@ -75,7 +32,7 @@ namespace HealerLike.Render.Grammar
                 AConsumerFactory consumer = Consumer(buff);
                 if (consumer != null)
                 {
-                    return ConsumerFamily(consumer, 1f, IsPeriodic(handler));
+                    return ConsumerFamily(consumer, IsPeriodic(handler));
                 }
             }
 
@@ -84,7 +41,14 @@ namespace HealerLike.Render.Grammar
             {
                 if (TryModifier(buff, out AttributeType type, out float delta) && delta != 0f)
                 {
-                    goodness += delta * Polarity(type) > 0f ? 1 : -1;
+                    if (delta * Polarity(type) > 0f)
+                    {
+                        goodness++;
+                    }
+                    else
+                    {
+                        goodness--;
+                    }
                 }
             }
 
@@ -100,47 +64,40 @@ namespace HealerLike.Render.Grammar
             return sideFamily;
         }
 
-        // The multiplier is the skill's own, a heal skill flips a positive damage value with a negative one
-        public static EffectFamily ConsumerFamily(AConsumerFactory consumer, float multiplier, bool isPeriodic)
+        public static EffectFamily ConsumerFamily(AConsumerFactory consumer, bool isPeriodic)
         {
-            bool isHarm = Harm(consumer) * multiplier > 0f;
+            bool isHarm = Harm(consumer) > 0f;
             if (isPeriodic)
             {
-                return isHarm ? EffectFamily.Rot : EffectFamily.Renew;
+                if (isHarm)
+                {
+                    return EffectFamily.Rot;
+                }
+                return EffectFamily.Renew;
             }
-            return isHarm ? EffectFamily.Damage : EffectFamily.Heal;
+
+            if (isHarm)
+            {
+                return EffectFamily.Damage;
+            }
+            return EffectFamily.Heal;
         }
 
         // The sign of what the consumer takes from its target, positive for damage
         public static float Harm(AConsumerFactory consumer)
         {
             ConsumerFactory factory = consumer as ConsumerFactory;
+            if (consumer != null && factory == null)
+            {
+                Debug.LogError($"[EffectDerivation] No harm reading for {consumer.GetType().Name}");
+            }
+
             if (factory == null || factory.data == null || factory.data.value == null)
             {
                 return 0f;
             }
 
-            AValue value = factory.data.value;
-            if (value is FlatValue flat)
-            {
-                return flat.data.value;
-            }
-
-            if (value is AttributeValue attribute)
-            {
-                return attribute.data.multiplier;
-            }
-
-            if (value is CurrentHealthValue currentHealth)
-            {
-                return currentHealth.data.multiplier;
-            }
-
-            if (value is MaxHealthValue maxHealth)
-            {
-                return maxHealth.data.multiplier;
-            }
-            return 0f;
+            return SkillWalker.Value(factory.data.value, null);
         }
 
         // AttackRate is read as seconds between shots, so less is better
@@ -169,7 +126,11 @@ namespace HealerLike.Render.Grammar
 
                 if (TryModifier(buff, out AttributeType type, out float delta))
                 {
-                    return IsDefence(type) ? AttributeGroup.Defence : AttributeGroup.Offence;
+                    if (IsDefence(type))
+                    {
+                        return AttributeGroup.Defence;
+                    }
+                    return AttributeGroup.Offence;
                 }
             }
             return AttributeGroup.Offence;
@@ -181,7 +142,11 @@ namespace HealerLike.Render.Grammar
             {
                 return EffectTempo.Once;
             }
-            return IsPeriodic(handler) ? EffectTempo.PerPeriod : EffectTempo.ForDuration;
+            if (IsPeriodic(handler))
+            {
+                return EffectTempo.PerPeriod;
+            }
+            return EffectTempo.ForDuration;
         }
 
         public static float Period(ABuffHandlerFactory handler)
@@ -192,22 +157,6 @@ namespace HealerLike.Render.Grammar
                 return 0f;
             }
             return factory.data.periodDuration;
-        }
-
-        // A skill without his base data has no target rule, it is read as a single target
-        public static EffectTopology Topology(ACharacterSkillFactory skill)
-        {
-            if (skill == null)
-            {
-                return EffectTopology.Single;
-            }
-
-            BaseCharacterSkillData data = skill.Create().GetData() as BaseCharacterSkillData;
-            if (data == null || data.isSingle)
-            {
-                return EffectTopology.Single;
-            }
-            return EffectTopology.Group;
         }
 
         // Projectiles take the same reading as the head, so a unit's head and its shot agree
@@ -245,8 +194,8 @@ namespace HealerLike.Render.Grammar
                 return false;
             }
 
-            ABuffHandler buffHandler = handler.GetBuffHandler();
-            return buffHandler != null && buffHandler.isPeriodic;
+            BuffHandlerFactory factory = handler as BuffHandlerFactory;
+            return factory != null && factory.data.isPeriodic;
         }
 
         // The consumer a buff applies, for the buffs that apply one

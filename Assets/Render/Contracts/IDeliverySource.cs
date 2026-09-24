@@ -2,8 +2,9 @@ using UnityEngine;
 
 namespace HealerLike.Render
 {
-    // Authored per projectile prefab variant, the values are serialized so only append new ones
-    public enum DeliveryStyle : byte
+    // Authored per projectile prefab variant
+    // Stored by value in assets: append new members, never reorder or remove
+    public enum DeliveryStyle
     {
         Direct = 0,
         Arc = 1,

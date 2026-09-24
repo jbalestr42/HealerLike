@@ -1,36 +1,37 @@
+using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using HealerLike.Render.Stones;
+using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Creatures
 {
 
 public class PrimitiveMeshesTests
 {
-    GameObject _parent;
-    CreatureRecipe _recipe;
-    Material _material;
+    readonly List<Object> _objects = new List<Object>();
 
     public static PrimitiveMeshes Meshes()
     {
         return AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
     }
 
-    [SetUp]
-    public void SetUp()
-    {
-        _parent = new GameObject("MeshOwner");
-        _recipe = CreatureValidatorTests.Recipe();
-        _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));
-    }
-
     [TearDown]
     public void TearDown()
     {
-        Object.DestroyImmediate(_parent);
-        Object.DestroyImmediate(_recipe);
-        Object.DestroyImmediate(_material);
+        foreach (Object trackedObject in _objects)
+        {
+            Object.DestroyImmediate(trackedObject);
+        }
+        _objects.Clear();
+    }
+
+    T Track<T>(T trackedObject) where T : Object
+    {
+        _objects.Add(trackedObject);
+        return trackedObject;
     }
 
     [TestCase(Primitive.Sphere)]
@@ -76,20 +77,14 @@ public class PrimitiveMeshesTests
     [TestCase(5, 1)] // wraps round the two variants
     public void GetMesh_StoneVariant_PicksByIndex(int variant, int expected)
     {
-        PrimitiveMeshes meshes = ScriptableObject.CreateInstance<PrimitiveMeshes>();
-        StoneVariants variants = ScriptableObject.CreateInstance<StoneVariants>();
-        Mesh first = new Mesh();
-        Mesh second = new Mesh();
-        variants.meshes = new Mesh[] { first, second };
+        PrimitiveMeshes meshes = Track(ScriptableObject.CreateInstance<PrimitiveMeshes>());
+        StoneVariants variants = Track(ScriptableObject.CreateInstance<StoneVariants>());
+        variants.meshes = new Mesh[] { Track(new Mesh()), Track(new Mesh()) };
         meshes.stoneVariants = variants;
 
         Mesh mesh = meshes.GetMesh(Primitive.Stone, variant);
 
         Assert.AreEqual(variants.meshes[expected], mesh);
-        Object.DestroyImmediate(first);
-        Object.DestroyImmediate(second);
-        Object.DestroyImmediate(variants);
-        Object.DestroyImmediate(meshes);
     }
 
     [Test]
@@ -99,16 +94,61 @@ public class PrimitiveMeshesTests
     }
 
     [Test]
-    public void Dispose_LiveRig_LeavesSharedMeshesAlive()
+    public void GetMesh_ShippedAsset_EveryPrimitiveIsASavedMesh()
     {
-        CreatureRig rig = new CreatureRig();
-        rig.Init(_recipe, _parent.transform, _material, Meshes());
-        Mesh mesh = rig.root.GetComponentInChildren<MeshFilter>().sharedMesh;
+        PrimitiveMeshes meshes = Meshes();
 
-        rig.Dispose();
+        foreach (Primitive primitive in Enum.GetValues(typeof(Primitive)))
+        {
+            Mesh mesh = meshes.GetMesh(primitive);
 
-        Assert.IsTrue(mesh);
-        Assert.IsTrue(AssetDatabase.Contains(mesh));
+            Assert.IsNotNull(mesh, primitive.ToString());
+            Assert.IsTrue(AssetDatabase.Contains(mesh), mesh.name);
+            Assert.Greater(mesh.vertexCount, 0, mesh.name);
+        }
+    }
+
+    [Test]
+    public void GetMesh_ShippedSolids_AreClosedAndFaceOutward()
+    {
+        PrimitiveMeshes meshes = Meshes();
+
+        foreach (Primitive primitive in Enum.GetValues(typeof(Primitive)))
+        {
+            PrimitiveMeshBakerTests.AssertClosed(meshes.GetMesh(primitive));
+        }
+    }
+
+    [Test]
+    public void Tuft_ShippedAsset_IsASavedMeshWithFourFacetedSides()
+    {
+        Mesh tuft = Meshes().tuft;
+
+        uint indexCount = tuft.GetIndexCount(0);
+
+        Assert.IsTrue(AssetDatabase.Contains(tuft));
+        Assert.AreEqual(12u, indexCount); // 4 sides * 3, open at the base on its socle
+    }
+
+    // The disc, the annulus and the grass socle are ground markings, flat by nature: one side, facing up
+    [Test]
+    public void Disc_AnnulusAndSocle_AreSavedFlatAndFaceUp()
+    {
+        PrimitiveMeshes meshes = Meshes();
+
+        foreach (Mesh mesh in new Mesh[] { meshes.disc, meshes.annulus, meshes.socle })
+        {
+            Assert.IsTrue(AssetDatabase.Contains(mesh), mesh.name);
+            Vector3[] vertices = mesh.vertices;
+            int[] triangles = mesh.triangles;
+            for (int i = 0; i < triangles.Length; i += 3)
+            {
+                Vector3 a = vertices[triangles[i]];
+                Vector3 normal = Vector3.Cross(vertices[triangles[i + 1]] - a, vertices[triangles[i + 2]] - a);
+                Assert.Greater(normal.y, 0f, mesh.name);
+                Assert.AreEqual(0f, a.y, mesh.name);
+            }
+        }
     }
 }
 

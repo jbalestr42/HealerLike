@@ -7,6 +7,7 @@ using HealerLike.Render.Grammar;
 namespace HealerLike.Render.Creatures
 {
     // Where an accessory hangs on the body, every socket on the unit's right
+    // Stored by value in assets: append new members, never reorder or remove
     public enum AccessorySocket
     {
         NeckOrbit,
@@ -87,7 +88,8 @@ namespace HealerLike.Render.Creatures
         [BoxGroup("Proportions")]
         public float bodyUnit = 0.55f;
 
-        // A plant's body and sockets grow by this much over the body unit, so a Sturdy body reads about one cell at the board camera
+        // A plant's body and sockets grow by this much over the body unit, so a Sturdy body reads about one cell at
+        // the board camera
         [BoxGroup("Proportions")]
         public float plantScale = 1.8f;
 
@@ -96,10 +98,7 @@ namespace HealerLike.Render.Creatures
         public float stoneScale = 1.6f;
 
         [BoxGroup("Proportions")]
-        public float accessoryReach = 0.45f;
-
-        [BoxGroup("Proportions")]
-        public int maxParts = 40;
+        public int maxParts = CreatureValidator.MaxParts;
 
         // Every live unit has a board-wide range, so reach stays at one value until the data has bands
         [BoxGroup("Proportions")]
