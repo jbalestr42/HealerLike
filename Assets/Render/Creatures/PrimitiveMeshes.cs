@@ -12,8 +12,9 @@ namespace HealerLike.Render.Creatures
         public Mesh cylinder;
         public Mesh torus;
         public Mesh thinTorus;
-        // Grass tuft from GrassTuft, base on the ground and tip at one
+        // Grass tuft from GrassTuft, base on the ground and apex at one, and the flat socle under it
         public Mesh tuft;
+        public Mesh socle;
         public Mesh pyramid;
         public Mesh star;
         public Mesh leaf;

@@ -9,6 +9,14 @@ namespace HealerLike.Render.Grass
 
 public class GrassLayoutTests
 {
+    // The 16 by 16 board at full density: 285 roots a side, each step 16 / 285
+    static readonly int boardSide = 285;
+
+    static BladeSeed[] CreateBoard(uint seed = 1)
+    {
+        return GrassLayout.Generate(16, 16, 1f, Vector3.zero, 0.5f, GrassLayout.MaxBudget, seed);
+    }
+
     [Test]
     public void Generate_SameSeed_IsDeterministicAndLeavesUnityRandomAlone()
     {
@@ -33,143 +41,123 @@ public class GrassLayoutTests
     }
 
     [Test]
-    public void Generate_SeedOne_MatchesGoldenBlade()
+    public void Generate_MainBoard_FillsTheGridAtTheSpacing()
     {
-        BladeSeed blade = GrassLayout.Generate(1, 1, 1f, Vector3.zero, 0.5f, 1, 1)[0];
+        BladeSeed[] seeds = CreateBoard();
 
-        Assert.That(blade.positionYaw.x, Is.EqualTo(0.3113201856613159f).Within(0.000001f));
-        Assert.That(blade.positionYaw.z, Is.EqualTo(0.26609694957733154f).Within(0.000001f));
-        Assert.That(blade.heightPhaseWidthRandom.x, Is.EqualTo(0.2594265639781952f).Within(0.000001f));
+        Assert.AreEqual(boardSide * boardSide, seeds.Length); // 81,225, under the 98,304 cap
+        Assert.That(GrassLayout.Spacing, Is.EqualTo(0.056f).Within(0.0005f)); // 0.2 * 0.2475 / 0.884
+        Assert.That(GrassLayout.Density, Is.EqualTo(319f).Within(1f));
+        Assert.That(16f / boardSide, Is.InRange(GrassLayout.Spacing, GrassLayout.Spacing * 1.01f));
     }
 
     [Test]
-    public void Generate_MainBoard_HasExactQuotasAndRanges()
+    public void Generate_MainBoard_JittersEachRootByUpToHalfAStep()
     {
-        BladeSeed[] seeds = GrassLayout.Generate(16, 16, 1f, Vector3.zero, 0.5f);
-        int[] quotas = new int[256];
+        BladeSeed[] seeds = CreateBoard();
+        float step = 16f / boardSide;
+        float largest = 0f;
 
-        Assert.AreEqual(65536, seeds.Length);
+        for (int i = 0; i < seeds.Length; i++)
+        {
+            float centreX = -8f + (i % boardSide + 0.5f) * step;
+            float centreZ = -8f + (i / boardSide + 0.5f) * step;
+            float offsetX = Mathf.Abs(seeds[i].positionYaw.x - centreX);
+            float offsetZ = Mathf.Abs(seeds[i].positionYaw.z - centreZ);
+            Assert.That(offsetX, Is.LessThanOrEqualTo(GrassLayout.Jitter * step + 0.00001f));
+            Assert.That(offsetZ, Is.LessThanOrEqualTo(GrassLayout.Jitter * step + 0.00001f));
+            Assert.That(seeds[i].positionYaw.x, Is.InRange(-8f, 8f));
+            Assert.That(seeds[i].positionYaw.z, Is.InRange(-8f, 8f));
+            Assert.AreEqual(0.505f, seeds[i].positionYaw.y);
+            largest = Mathf.Max(largest, Mathf.Max(offsetX, offsetZ));
+        }
+
+        Assert.Greater(largest, 0.49f * step); // the jitter uses its whole range
+    }
+
+    [Test]
+    public void Generate_MainBoard_ScalesEachTuftUniformlyBetween08And12()
+    {
+        BladeSeed[] seeds = CreateBoard();
+        float smallest = float.MaxValue;
+        float largest = 0f;
+
         foreach (BladeSeed blade in seeds)
         {
-            Assert.That(blade.positionYaw.x, Is.GreaterThanOrEqualTo(-8f).And.LessThan(8f));
-            Assert.That(blade.positionYaw.z, Is.GreaterThanOrEqualTo(-8f).And.LessThan(8f));
-            Assert.AreEqual(0.505f, blade.positionYaw.y);
+            float scale = blade.heightWidthLean.x / GrassLayout.TuftHeight;
+            Assert.That(scale, Is.InRange(GrassLayout.MinScale - 0.00001f, GrassLayout.MaxScale + 0.00001f));
+            Assert.That(blade.heightWidthLean.y / blade.heightWidthLean.x, Is.EqualTo(0.29f / 0.884f).Within(0.0001f));
             Assert.That(blade.positionYaw.w, Is.InRange(0f, 2f * Mathf.PI));
-            Assert.That(blade.heightPhaseWidthRandom.x, Is.InRange(0.23f, 0.27f));
-            Assert.That(blade.heightPhaseWidthRandom.y, Is.InRange(0f, 2f * Mathf.PI));
-            Assert.That(blade.heightPhaseWidthRandom.z, Is.InRange(0.0747f, 0.0914f));
-            Assert.That(blade.heightPhaseWidthRandom.w, Is.InRange(0f, 1f));
-            quotas[Mathf.FloorToInt(blade.positionYaw.x + 8f) + 16 * Mathf.FloorToInt(blade.positionYaw.z + 8f)]++;
+            smallest = Mathf.Min(smallest, scale);
+            largest = Mathf.Max(largest, scale);
         }
-        foreach (int quota in quotas)
-        {
-            Assert.AreEqual(256, quota);
-        }
+
+        Assert.Less(smallest, 0.81f);
+        Assert.Greater(largest, 1.19f);
+        Assert.That(GrassLayout.TuftHeight, Is.EqualTo(0.45f * 0.55f).Within(0.00001f));
     }
 
     [Test]
-    public void Generate_OrdinaryCells_SpreadsBladesEvenlyAcrossEachCell()
+    public void Generate_MainBoard_LeansEveryTuftTheSameWayByUpToHalfARadian()
     {
-        BladeSeed[] seeds = GrassLayout.Generate(16, 16, 1f, Vector3.zero, 0.5f);
-        int[] rows = new int[8];
-        int[] columns = new int[8];
+        BladeSeed[] seeds = CreateBoard();
+        float largest = 0f;
+        float sum = 0f;
 
         foreach (BladeSeed blade in seeds)
         {
-            rows[Mathf.FloorToInt(Mathf.Repeat(blade.positionYaw.z + 8f, 1f) * 8f)]++;
-            columns[Mathf.FloorToInt(Mathf.Repeat(blade.positionYaw.x + 8f, 1f) * 8f)]++;
+            Vector2 lean = new Vector2(blade.heightWidthLean.z, blade.heightWidthLean.w);
+            Assert.That(lean.magnitude, Is.InRange(0f, GrassLayout.MaxLean + 0.00001f));
+            Assert.That(Vector2.Dot(lean, GrassLayout.LeanHeading), Is.EqualTo(lean.magnitude).Within(0.00001f));
+            largest = Mathf.Max(largest, lean.magnitude);
+            sum += lean.magnitude;
         }
 
-        // 65536 tufts over 8 bands is 8192 each; a sparse last row or gaps between rows fall far below
-        for (int i = 0; i < 8; i++)
-        {
-            Assert.That(rows[i], Is.InRange(8192 * 0.8f, 8192 * 1.2f), "row band " + i);
-            Assert.That(columns[i], Is.InRange(8192 * 0.8f, 8192 * 1.2f), "column band " + i);
-        }
-    }
-
-    [TestCase(32768)]
-    [TestCase(65536)]
-    [TestCase(98304)]
-    public void Generate_QualityBudget_ReturnsThatManyBlades(int count)
-    {
-        Assert.AreEqual(count, GrassLayout.Generate(16, 16, 1f, Vector3.zero, 0f, count).Length);
+        Assert.Greater(largest, 0.49f);
+        Assert.That(sum / seeds.Length, Is.EqualTo(0.25f).Within(0.01f)); // uniform in 0..0.5
     }
 
     [Test]
-    public void Generate_BudgetsAndDensity_CapAndSpreadRemainder()
+    public void Generate_SmallBudget_WidensTheGridAndStaysUnderTheBudget()
     {
-        BladeSeed[] small = GrassLayout.Generate(3, 1, 1f, Vector3.zero, 0f, 8);
-        int[] quotas = new int[3];
-        Rect rect = new Rect(2f, -3f, 4f, 7f);
-        BladeSeed[] dense = GrassLayout.Generate(rect, 0f, 8f);
-
-        Assert.AreEqual(98304, GrassLayout.Generate(32, 32, 1f, Vector3.zero, 0f, int.MaxValue).Length);
-        foreach (BladeSeed blade in small)
-        {
-            quotas[Mathf.FloorToInt(blade.positionYaw.x + 1.5f)]++;
-        }
-        CollectionAssert.AreEqual(new[] { 3, 3, 2 }, quotas);
-        Assert.AreEqual(224, dense.Length); // 4 * 7 * 8
-        foreach (BladeSeed blade in dense)
-        {
-            Assert.IsTrue(rect.Contains(new Vector2(blade.positionYaw.x, blade.positionYaw.z)));
-        }
-        Assert.IsEmpty(GrassLayout.Generate(1, 1, 1f, Vector3.zero, 0f, 0));
-    }
-
-    [Test]
-    public void Generate_PatchLane_VariesSoftlyBetweenNeighbourCells()
-    {
-        BladeSeed[] seeds = GrassLayout.Generate(16, 16, 1f, Vector3.zero, 0f);
-        float[] means = new float[256];
+        BladeSeed[] seeds = GrassLayout.Generate(4, 2, 1.5f, new Vector3(2f, 0f, -1f), 0f, 100, 3);
         HashSet<Vector3> roots = new HashSet<Vector3>();
 
+        Assert.AreEqual(98, seeds.Length); // 14 by 7, the widest grid of at most 100
         foreach (BladeSeed blade in seeds)
         {
             roots.Add(blade.positionYaw);
-            Assert.That(blade.heightPhaseWidthRandom.w, Is.InRange(0f, 1f));
-            means[Mathf.FloorToInt(blade.positionYaw.x + 8f) + 16 * Mathf.FloorToInt(blade.positionYaw.z + 8f)] += blade.heightPhaseWidthRandom.w / 256f;
+            Assert.That(blade.positionYaw.x, Is.InRange(-1f, 5f));
+            Assert.That(blade.positionYaw.z, Is.InRange(-2.5f, 0.5f));
+            Assert.That(blade.heightWidthLean.x / (GrassLayout.TuftHeight * 1.5f), Is.InRange(0.79999f, 1.20001f));
         }
-
-        // Every tuft stands on its own root, no clumps
         Assert.AreEqual(seeds.Length, roots.Count);
-        float largestStep = 0f;
-        float lowest = 1f;
-        float highest = 0f;
-        for (int cell = 0; cell < 256; cell++)
-        {
-            lowest = Mathf.Min(lowest, means[cell]);
-            highest = Mathf.Max(highest, means[cell]);
-            if (cell % 16 < 15)
-            {
-                largestStep = Mathf.Max(largestStep, Mathf.Abs(means[cell + 1] - means[cell]));
-            }
-            if (cell < 240)
-            {
-                largestStep = Mathf.Max(largestStep, Mathf.Abs(means[cell + 16] - means[cell]));
-            }
-        }
-        // A lattice point every 5 cells moves the lane by at most about a quarter of its range per cell
-        Assert.Less(largestStep, 0.3f); // 0.25 measured for seed 1
-        Assert.Greater(highest - lowest, 0.2f);
+    }
+
+    [Test]
+    public void Generate_LargeGrid_IsCappedByTheMaximumBudget()
+    {
+        BladeSeed[] seeds = GrassLayout.Generate(32, 32, 1f, Vector3.zero, 0f, int.MaxValue, 1);
+
+        Assert.That(seeds.Length, Is.InRange(GrassLayout.MaxBudget * 0.99f, GrassLayout.MaxBudget));
+        Assert.AreEqual(GrassLayout.MaxBudget, GrassLayout.CountFor(32, 32, int.MaxValue));
+        Assert.IsEmpty(GrassLayout.Generate(1, 1, 1f, Vector3.zero, 0f, 0, 1));
     }
 
     [Test]
     public void Generate_InvalidInputs_LogsAndReturnsNoSeeds()
     {
         Regex rejected = new Regex(@"^\[GrassLayout\] Rejected");
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < 5; i++)
         {
             LogAssert.Expect(LogType.Error, rejected);
         }
 
-        Assert.IsEmpty(GrassLayout.Generate(0, 1, 1f, Vector3.zero, 0f));
-        Assert.IsEmpty(GrassLayout.Generate(1, 1, float.NaN, Vector3.zero, 0f));
-        Assert.IsEmpty(GrassLayout.Generate(1, 1, 1f, Vector3.zero, 0f, -1));
-        Assert.IsEmpty(GrassLayout.Generate(1, 1, 1f, Vector3.zero, float.PositiveInfinity));
-        Assert.IsEmpty(GrassLayout.Generate(1, 1, 1f, new Vector3(float.NaN, 0f, 0f), 0f));
-        Assert.IsEmpty(GrassLayout.Generate(new Rect(0f, 0f, 1f, 1f), 0f, -1f));
+        Assert.IsEmpty(GrassLayout.Generate(0, 1, 1f, Vector3.zero, 0f, 10, 1));
+        Assert.IsEmpty(GrassLayout.Generate(1, 1, float.NaN, Vector3.zero, 0f, 10, 1));
+        Assert.IsEmpty(GrassLayout.Generate(1, 1, 1f, Vector3.zero, 0f, -1, 1));
+        Assert.IsEmpty(GrassLayout.Generate(1, 1, 1f, Vector3.zero, float.PositiveInfinity, 10, 1));
+        Assert.IsEmpty(GrassLayout.Generate(1, 1, 1f, new Vector3(float.NaN, 0f, 0f), 0f, 10, 1));
     }
 }
 

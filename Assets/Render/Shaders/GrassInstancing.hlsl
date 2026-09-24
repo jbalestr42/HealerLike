@@ -1,8 +1,8 @@
 #ifndef HL_GRASS_INSTANCING_INCLUDED
 #define HL_GRASS_INSTANCING_INCLUDED
 
-// Grass is the solid tuft mesh drawn indirectly: the compute writes one state per tuft
-// and appends the visible ids, and this path places each tuft rigidly and gives it one flat colour.
+// Grass is the tuft and socle meshes drawn indirectly: the compute writes one state per tuft and appends
+// the visible ids, and this path reads each tuft's transform. Everything after it is the plant look.
 
 // Tufts read their own buffers, so procedural instancing needs no per-instance setup
 void HLGrassInstancingSetup()
@@ -16,44 +16,20 @@ void HLGrassInstancingSetup()
 struct HLBladeSeed
 {
     float4 positionYaw;
-    float4 heightPhaseWidthRandom;
+    float4 heightWidthLean;
 };
 
 struct HLBladeState
 {
     float4 leanHeightSpike;
-    float4 rampHealReserved;
-};
-
-struct HLGrassPlacement
-{
-    float3 positionWS;
-    float3 normalWS;
-    float3 color;
 };
 
 StructuredBuffer<HLBladeSeed> _HL_BladeSeeds;
 StructuredBuffer<HLBladeState> _HL_BladeStates;
 StructuredBuffer<uint> _HL_VisibleBladeIDs;
-float4 _HL_DarkGreen;
-float4 _HL_MidGreen;
-float4 _HL_LightGreen;
-float4 _HL_TipGreen;
-float4 _HL_HealColor;
-float4 _HL_SlateColor;
 float _HL_BladeHeightScale;
-
-// One flat colour per tuft, like a plant part: a green between the three picked by the soft patch lane,
-// the tip green on the tip band, then the heal colour when healed and the slate as the spike rises
-float3 HLGrassColor(HLBladeSeed seed, HLBladeState state, float tip)
-{
-    float patch = saturate(seed.heightPhaseWidthRandom.w);
-    float3 color = lerp(_HL_DarkGreen.rgb, _HL_MidGreen.rgb, saturate(2.0 * patch));
-    color = lerp(color, _HL_LightGreen.rgb, saturate(2.0 * patch - 1.0));
-    color = lerp(color, _HL_TipGreen.rgb, tip);
-    color = lerp(color, _HL_HealColor.rgb, 0.72 * state.rampHealReserved.y);
-    return lerp(color, _HL_SlateColor.rgb, saturate(2.0 * state.leanHeightSpike.w));
-}
+// 1 on the tuft draw, 0 on the socle draw, which lies flat on the ground
+float _HL_TuftLean;
 
 // Rotates v about the horizontal axis that tips +Y toward lean, by the length of lean in radians
 float3 HLTiltGrassTuft(float3 v, float2 lean)
@@ -73,10 +49,10 @@ float3 HLYawGrassTuft(float3 v, float yaw)
     return float3(v.x * c + v.z * s, v.y, v.z * c - v.x * s);
 }
 
-// positionOS and normalOS are the unit tuft of GrassTuft: base on y 0, tip at y 1, base width 1;
-// tip is its vertex colour red, 1 on the tip band. The tuft moves as a rigid body: scale, yaw,
-// one tilt about its root, then the root position. GrassTuft.Place and PlaceNormal mirror this on the CPU.
-HLGrassPlacement HLPlaceGrassBlade(float3 positionOS, float3 normalOS, float tip, uint instanceID)
+// positionOS and normalOS are the unit tuft or socle of GrassTuft: base on y 0, apex at y 1, base width 1.
+// The tuft moves as a rigid body: scale, yaw, one tilt about its root, then the root position.
+// GrassTuft.Place and PlaceNormal mirror this on the CPU.
+void HLPlaceGrassBlade(float3 positionOS, float3 normalOS, uint instanceID, out float3 positionWS, out float3 normalWS)
 {
     InitIndirectDrawArgs(0);
     uint bladeID = _HL_VisibleBladeIDs[GetIndirectInstanceID(instanceID)];
@@ -85,20 +61,16 @@ HLGrassPlacement HLPlaceGrassBlade(float3 positionOS, float3 normalOS, float tip
 
     float spike = step(0.5, state.leanHeightSpike.w);
     float heightScale = lerp(_HL_BladeHeightScale, 1.0, spike);
-    float height = max(1e-4, seed.heightPhaseWidthRandom.x * state.leanHeightSpike.z * heightScale);
+    float height = max(1e-4, seed.heightWidthLean.x * state.leanHeightSpike.z * heightScale);
     float spikeWidth = 2.0 * lerp(0.065, 0.045, saturate(2.0 * state.leanHeightSpike.w - 1.0));
-    float width = lerp(seed.heightPhaseWidthRandom.z, spikeWidth, spike);
-    float2 lean = state.leanHeightSpike.xy;
+    float width = lerp(seed.heightWidthLean.y, spikeWidth, spike);
+    float2 lean = state.leanHeightSpike.xy * _HL_TuftLean;
     float yaw = seed.positionYaw.w;
 
     float3 scaledPosition = float3(positionOS.x * width, positionOS.y * height, positionOS.z * width);
     float3 scaledNormal = float3(normalOS.x / width, normalOS.y / height, normalOS.z / width);
-
-    HLGrassPlacement tuft;
-    tuft.positionWS = seed.positionYaw.xyz + HLTiltGrassTuft(HLYawGrassTuft(scaledPosition, yaw), lean);
-    tuft.normalWS = normalize(HLTiltGrassTuft(HLYawGrassTuft(scaledNormal, yaw), lean));
-    tuft.color = HLGrassColor(seed, state, tip);
-    return tuft;
+    positionWS = seed.positionYaw.xyz + HLTiltGrassTuft(HLYawGrassTuft(scaledPosition, yaw), lean);
+    normalWS = normalize(HLTiltGrassTuft(HLYawGrassTuft(scaledNormal, yaw), lean));
 }
 #endif
 

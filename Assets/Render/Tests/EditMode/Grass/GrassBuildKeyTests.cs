@@ -48,13 +48,13 @@ public class GrassBuildKeyTests
     }
 
     [Test]
-    public void GenerateLayout_FiniteArea_ReturnsBudgetBlades()
+    public void GenerateLayout_FiniteArea_ReturnsTheGridUnderTheBudget()
     {
         GrassBuildKey key = CreateKey();
 
         BladeSeed[] layout = key.GenerateLayout();
 
-        Assert.AreEqual(100, layout.Length);
+        Assert.AreEqual(98, layout.Length); // 14 by 7, the widest grid of at most 100
     }
 
     [Test]

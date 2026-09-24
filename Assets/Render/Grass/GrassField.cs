@@ -9,12 +9,13 @@ namespace HealerLike.Render.Grass
     public class GrassField : MonoBehaviour
     {
         public static readonly int MaxZones = 64;
+        public static readonly string InstancedKeyword = "HL_GRASS_INSTANCED";
 
         [SerializeField] PrimitiveMeshes _meshes;
         [SerializeField] ComputeShader _updateGrass;
         [SerializeField] Material _lookMaterial;
         [SerializeField] Material _ringMaterial;
-        [SerializeField] int _bladeBudget = GrassLayout.DefaultBudget;
+        [SerializeField] int _bladeBudget = GrassLayout.MaxBudget;
         [SerializeField] uint _seed = 1;
         [SerializeField] float _bladeHeightScale = 1f;
         // World-space surface top used when the ground has no Renderer, before root lift
@@ -34,14 +35,13 @@ namespace HealerLike.Render.Grass
         float _cellSize;
         bool _isInitialized;
 
-        [SerializeField] GrassWind _wind = new GrassWind();
-        public GrassWind wind { get { return _wind; } }
-
-        [SerializeField] GrassPalette _palette = new GrassPalette();
-        public GrassPalette palette { get { return _palette; } }
+        public Material lookMaterial { get { return _lookMaterial; } }
 
         GrassDraw _bladeDraw;
         public GrassDraw bladeDraw { get { return _bladeDraw; } }
+
+        GrassDraw _socleDraw;
+        public GrassDraw socleDraw { get { return _socleDraw; } }
 
         GrassDraw _ringDraw;
         public GrassDraw ringDraw { get { return _ringDraw; } }
@@ -73,6 +73,7 @@ namespace HealerLike.Render.Grass
                 if (_bladeDraw != null)
                 {
                     _bladeDraw.properties.SetFloat("_HL_BladeHeightScale", _bladeHeightScale);
+                    _socleDraw.properties.SetFloat("_HL_BladeHeightScale", _bladeHeightScale);
                 }
             }
         }
@@ -109,15 +110,9 @@ namespace HealerLike.Render.Grass
             RenderPipelineManager.beginCameraRendering += BeginCameraRendering;
         }
 
-        void Update()
-        {
-            _wind.Advance(Time.deltaTime);
-        }
-
         void OnDisable()
         {
             RenderPipelineManager.beginCameraRendering -= BeginCameraRendering;
-            _wind.ClearGust();
             ReleaseOwned();
         }
 
@@ -148,11 +143,6 @@ namespace HealerLike.Render.Grass
 
             SetZoneSnapshot(zones, count);
             Dispatch(new GrassBuildKey(_area, _cellSize, _surfaceY, _seed, _bladeBudget));
-        }
-
-        public void TriggerGust(Vector3 towardTarget)
-        {
-            _wind.TriggerGust(towardTarget);
         }
 
         // The zone owner publishes the same buffer and count globally for the ring draw
@@ -217,13 +207,12 @@ namespace HealerLike.Render.Grass
             _updateGrass.SetBuffer(_kernel, "_HL_BladeStates", _states);
             _updateGrass.SetBuffer(_kernel, "_HL_VisibleBlades", _visibleBlades);
             _updateGrass.SetVectorArray("_HL_FrustumPlanes", _planeVectors);
-            _updateGrass.SetFloat("_HL_Time", Time.time);
-            _updateGrass.SetVector("_HL_Wind", _wind.current);
             _updateGrass.SetBuffer(_kernel, "_HL_Zones", _zones);
             _updateGrass.SetInt("_HL_ZoneCount", _zoneCount);
             _visibleBlades.SetCounterValue(0);
             _updateGrass.Dispatch(_kernel, (_bladeCount + 63) / 64, 1, 1);
             GraphicsBuffer.CopyCount(_visibleBlades, _bladeDraw.arguments, 4);
+            GraphicsBuffer.CopyCount(_visibleBlades, _socleDraw.arguments, 4);
         }
 
         void BeginCameraRendering(ScriptableRenderContext context, Camera camera)
@@ -240,6 +229,7 @@ namespace HealerLike.Render.Grass
 
             // Queued here rather than in the update so Editor repaints without a player-loop tick still draw
             _bladeDraw.Submit(camera);
+            _socleDraw.Submit(camera);
             if (_zoneCount > 0)
             {
                 _ringDraw.Submit(camera);
@@ -271,18 +261,26 @@ namespace HealerLike.Render.Grass
             _kernel = _updateGrass.FindKernel("HLUpdateGrass");
 
             Bounds bounds = key.CalculateBounds();
-            _bladeDraw = new GrassDraw(_meshes.tuft, _lookMaterial, 0, bounds, gameObject.layer);
+            _bladeDraw = CreateTuftDraw(_meshes.tuft, bounds, 1f);
             _bladeDraw.shadowCastingMode = ShadowCastingMode.On;
-            _bladeDraw.properties.SetBuffer("_HL_BladeSeeds", _seeds);
-            _bladeDraw.properties.SetBuffer("_HL_BladeStates", _states);
-            _bladeDraw.properties.SetBuffer("_HL_VisibleBladeIDs", _visibleBlades);
-            _bladeDraw.properties.SetFloat("_HL_BladeHeightScale", ClampHeightScale(_bladeHeightScale));
-            _palette.Apply(_bladeDraw.properties);
+            // The socle lies flat on the ground under every tuft, so it takes the yaw and scale but never the lean
+            _socleDraw = CreateTuftDraw(_meshes.socle, bounds, 0f);
 
             _ringDraw = new GrassDraw(_meshes.annulus, _ringMaterial, (uint)MaxZones, bounds, gameObject.layer);
             _ringDraw.properties.SetFloat("_HL_SurfaceY", key.surfaceY);
             _ringDraw.properties.SetVector("_HL_FieldRect", key.FieldRect());
             return true;
+        }
+
+        GrassDraw CreateTuftDraw(Mesh mesh, Bounds bounds, float lean)
+        {
+            GrassDraw draw = new GrassDraw(mesh, _lookMaterial, 0, bounds, gameObject.layer);
+            draw.properties.SetBuffer("_HL_BladeSeeds", _seeds);
+            draw.properties.SetBuffer("_HL_BladeStates", _states);
+            draw.properties.SetBuffer("_HL_VisibleBladeIDs", _visibleBlades);
+            draw.properties.SetFloat("_HL_BladeHeightScale", ClampHeightScale(_bladeHeightScale));
+            draw.properties.SetFloat("_HL_TuftLean", lean);
+            return draw;
         }
 
         bool CanBuild()
@@ -311,6 +309,12 @@ namespace HealerLike.Render.Grass
             {
                 _bladeDraw.Release();
                 _bladeDraw = null;
+            }
+
+            if (_socleDraw != null)
+            {
+                _socleDraw.Release();
+                _socleDraw = null;
             }
 
             if (_ringDraw != null)

@@ -3,7 +3,7 @@ using HealerLike.Render.Environment;
 
 namespace HealerLike.Render.Stage
 {
-    // Projectile.Init calls this once per launch, beside LaunchWave's grass gust
+    // Projectile.Init calls this once per launch, beside LaunchWave's grass pulse
     public class StageLaunchGust : AProjectileBehaviour
     {
         public static readonly float Strength = 0.65f;

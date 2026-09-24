@@ -210,21 +210,10 @@ MonoBehaviour:
   _updateGrass: {fileID: 7200000, guid: af460f7acf93345b0b76bfd5a8d48b0e, type: 3}
   _lookMaterial: {fileID: 2100000, guid: a45a203a5ecb94dbd839ab29df6ae56b, type: 2}
   _ringMaterial: {fileID: 2100000, guid: 63795723cc05e4b7fa691f99ca76cc12, type: 2}
-  _bladeBudget: 65536
+  _bladeBudget: 98304
   _seed: 1
   _bladeHeightScale: 1
   _surfaceY: 0.5
-  _wind:
-    direction: {x: 1, y: 0.35}
-    speed: 1.2
-    amplitude: 0.065
-  _palette:
-    darkGreen: {r: 0.298, g: 0.49, b: 0.318, a: 1}
-    midGreen: {r: 0.357, g: 0.565, b: 0.333, a: 1}
-    lightGreen: {r: 0.38, g: 0.604, b: 0.361, a: 1}
-    tipGreen: {r: 0.549, g: 0.729, b: 0.424, a: 1}
-    heal: {r: 0.78, g: 0.95, b: 0.29, a: 1}
-    slate: {r: 0.23, g: 0.26, b: 0.34, a: 1}
 --- !u!1 &6006450335263604257
 GameObject:
   m_ObjectHideFlags: 0
