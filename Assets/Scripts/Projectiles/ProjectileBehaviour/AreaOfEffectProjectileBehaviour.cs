@@ -25,7 +25,8 @@ public class AreaOfEffectProjectileBehaviour : AProjectileBehaviour<AreaOfEffect
         {
             _isDone = true;
 
-            AreaOfEffect areaOfEffect = Instantiate(data.areaOfEffectPrefab, onHitData.target.transform.position, Quaternion.identity);
+            GameObject areaOfEffectGo = EntityManager.instance.SpawnProjectile(data.areaOfEffectPrefab.gameObject, onHitData.target.transform.position, Quaternion.identity);
+            AreaOfEffect areaOfEffect = areaOfEffectGo.GetComponent<AreaOfEffect>();
             areaOfEffect.source = onHitData.source;
             areaOfEffect.target = onHitData.target;
             areaOfEffect.radius = data.radius;
