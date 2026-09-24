@@ -19,12 +19,7 @@ public class HealAllEntitiesOnRoundEndBuff : ABuff<HealAllEntitiesOnRoundEndBuff
     {
         foreach (GameObject entity in EntityManager.instance.GetEntities(Entity.EntityType.Player))
         {
-            ResourceModifier resourceModifier = new ResourceModifier();
-            resourceModifier.consumers.Add(data.consumerFactory.GetConsumer(entity.gameObject, entity.gameObject));
-            resourceModifier.multiplier = _stacks;
-            resourceModifier.source = entity.gameObject;
-
-            entity.GetComponent<Entity>().health.AddResourceModifier(resourceModifier);
+            entity.GetComponent<Entity>().health.AddResourceModifier(ResourceModifier.Create(data.consumerFactory, entity.gameObject, entity.gameObject, _stacks));
         }
     }
 

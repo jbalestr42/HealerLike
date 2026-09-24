@@ -16,11 +16,6 @@ public class ApplyConsumerCharacterSkill : BaseCharacterSkill<ApplyConsumerChara
 {
     public override void ApplySkillOnTarget(GameObject source, GameObject target)
     {
-        ResourceModifier resourceModifier = new ResourceModifier();
-        resourceModifier.consumers.Add(data.consumer.GetConsumer(source, target));
-        resourceModifier.multiplier = data.multiplier;
-        resourceModifier.source = source;
-
-        target.GetComponent<Entity>().health.AddResourceModifier(resourceModifier);
+        target.GetComponent<Entity>().health.AddResourceModifier(ResourceModifier.Create(data.consumer, source, target, data.multiplier));
     }
 }

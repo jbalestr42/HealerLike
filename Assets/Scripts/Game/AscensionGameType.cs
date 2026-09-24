@@ -299,10 +299,7 @@ public class AscensionGameType : AGameType
     // Goes through the regular resource flow, so the consumer events and feedbacks are triggered
     public static void ApplyConsumer(Entity entity, AConsumerFactory consumerFactory)
     {
-        ResourceModifier resourceModifier = new ResourceModifier();
-        resourceModifier.consumers.Add(consumerFactory.GetConsumer(entity.gameObject, entity.gameObject));
-        resourceModifier.source = entity.gameObject;
-        entity.health.AddResourceModifier(resourceModifier);
+        entity.health.AddResourceModifier(ResourceModifier.Create(consumerFactory, entity.gameObject, entity.gameObject));
     }
 
     void EnableAllEntities(bool isEnabled)

@@ -22,12 +22,7 @@ public class DamageAllEntityOnEntityDieBuff : ABuff<DamageAllEntityOnEntityDieBu
         {
             if (entity != target.gameObject)
             {
-                ResourceModifier resourceModifier = new ResourceModifier();
-                resourceModifier.consumers.Add(data.damageToAllEntity.GetConsumer(target.gameObject, target.gameObject));
-                resourceModifier.multiplier = _stacks;
-                resourceModifier.source = target.gameObject;
-
-                entity.GetComponent<Entity>().health.AddResourceModifier(resourceModifier);
+                entity.GetComponent<Entity>().health.AddResourceModifier(ResourceModifier.Create(data.damageToAllEntity, target.gameObject, target.gameObject, _stacks));
             }
         }
     }

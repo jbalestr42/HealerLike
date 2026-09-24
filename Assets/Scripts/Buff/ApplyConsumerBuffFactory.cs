@@ -22,12 +22,7 @@ public class ApplyConsumerBuff : ABuff<ApplyConsumerBuffData>, IStackableBuff
 
     public override void Instant(GameObject source, GameObject target)
     {
-        ResourceModifier resourceModifier = new ResourceModifier();
-        resourceModifier.consumers.Add(data.consumerFactory.GetConsumer(source, target));
-        resourceModifier.multiplier = _stacks;
-        resourceModifier.source = source;
-
-        target.GetComponent<IAttackable>().OnHit(resourceModifier);
+        target.GetComponent<IAttackable>().OnHit(ResourceModifier.Create(data.consumerFactory, source, target, _stacks));
     }
 
     public override void Add(GameObject source, GameObject target)
