@@ -124,7 +124,7 @@ namespace HealerLike.Render.Spells
 
             if (_registry != null && kind == ResourceKind.Health)
             {
-                _registry.NotifyHeal(source, owner, amount, isCritical);
+                _registry.NotifyHealth(source, owner, amount, isCritical);
             }
         }
     }

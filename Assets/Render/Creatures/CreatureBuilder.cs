@@ -5,7 +5,7 @@ using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Creatures
 {
-    public class CreatureBuilder : MonoBehaviour, IEntityView, IHealVisualSink,
+    public class CreatureBuilder : MonoBehaviour, IEntityView, IHealthVisualSink,
         IDeliverySource, IEffectAnchors
     {
         [SerializeField] CreatureRecipe _recipe;
@@ -22,6 +22,7 @@ namespace HealerLike.Render.Creatures
         GameObject _registeredSource;
         RenderRegistry _registeredRegistry;
         RenderRegistry _registry;
+        ISpellVisualSink _spellSink;
         bool _hasConfiguredPlane;
         Vector3 _groundOrigin;
         Vector3 _groundNormal = Vector3.up;
@@ -70,7 +71,13 @@ namespace HealerLike.Render.Creatures
                 _meshes = manager.meshes;
             }
 
-            _registry = manager ? manager.registry : null;
+            _registry = null;
+            _spellSink = null;
+            if (manager)
+            {
+                _registry = manager.registry;
+                _spellSink = manager.spellSink;
+            }
 
             // A view without an authored recipe draws the one derived from the entity's data
             if (!_recipe && owner && manager && manager.creatureLooks)
@@ -279,12 +286,7 @@ namespace HealerLike.Render.Creatures
                 _outcomeObserver = ResourceOutcomeObserver.Ensure(_entity.gameObject);
             }
 
-            ISpellVisualSink spellSink = null;
-            if (_registry != null)
-            {
-                spellSink = _registry.spellSink;
-            }
-            _outcomeObserver.Bind(_entity.health, null, spellSink, _registry);
+            _outcomeObserver.Bind(_entity.health, null, _spellSink, _registry);
 
             if (_health != _entity.health)
             {
@@ -369,9 +371,10 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        #region IHealVisualSink
+        #region IHealthVisualSink
 
-        public void OnHealResolved(GameObject target, float value, bool critical)
+        // Damage reaches this sink too, only a heal draws the contact
+        public void OnHealthResolved(GameObject target, float value, bool critical)
         {
             if (isActiveAndEnabled && target && value > 0f && rig != null)
             {

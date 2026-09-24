@@ -369,7 +369,7 @@ namespace HealerLike.Render.Stage
                 if (cell.handler != null)
                 {
                     float duration = cell.handler.durationType == DurationType.Duration ? cell.handler.duration : float.PositiveInfinity;
-                    sink.SetStatus(healerGo, target, cell.handler, LookSheetSpells.Stacks(cell.spell), 0f, duration, ClockKind.Simulation);
+                    sink.SetStatus(healerGo, target, cell.handler, LookSheetSpells.Stacks(cell.spell), 0f, duration);
                 }
 
                 float impact = LookSheetSpells.Impact(cell.spell);

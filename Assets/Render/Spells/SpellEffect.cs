@@ -47,9 +47,6 @@ namespace HealerLike.Render.Spells
         float _durationSeconds;
         public float durationSeconds { get { return _durationSeconds; } }
 
-        ClockKind _clock;
-        public ClockKind clock { get { return _clock; } }
-
         int _count;
         public int count { get { return _count; } }
 
@@ -76,12 +73,7 @@ namespace HealerLike.Render.Spells
 
         void Update()
         {
-            float delta = Time.deltaTime;
-            if (_clock == ClockKind.Realtime)
-            {
-                delta = Time.unscaledDeltaTime;
-            }
-            Advance(delta);
+            Advance(Time.deltaTime);
             if (removalComplete || (!_isStatus && _age >= lifetime))
             {
                 Dispose(gameObject);
@@ -140,7 +132,7 @@ namespace HealerLike.Render.Spells
             }
         }
 
-        public void SetStatus(int stacks, float elapsed, float duration, ClockKind clock)
+        public void SetStatus(int stacks, float elapsed, float duration)
         {
             int visibleStacks = Mathf.Max(0, stacks);
             if (!_isStatus || _stacks != visibleStacks)
@@ -161,7 +153,6 @@ namespace HealerLike.Render.Spells
             _stacks = visibleStacks;
             _elapsedSeconds = safeElapsed;
             _durationSeconds = duration;
-            _clock = clock;
             Advance(0f);
         }
 

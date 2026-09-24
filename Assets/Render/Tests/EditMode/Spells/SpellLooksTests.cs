@@ -141,7 +141,6 @@ public class SpellLooksTests
 
         ProjectileLook row = looks.GetProjectileLook(prefab);
         Assert.AreEqual(row.style, spawned.style);
-        Assert.AreEqual(row.presentation, spawned.presentation);
         Assert.AreEqual(row.preserveContactPath, spawned.preserveContactPath);
     }
 

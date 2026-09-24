@@ -7,7 +7,7 @@ using HealerLike.Render.Stage;
 namespace HealerLike.Render.Creatures
 {
     // Presentation at an authored anchor. Character.Init and Entity.Init are never called from here.
-    public class CharacterView : MonoBehaviour, IHealVisualSink, IDeliverySource, IEffectAnchors
+    public class CharacterView : MonoBehaviour, IHealthVisualSink, IDeliverySource, IEffectAnchors
     {
         [SerializeField] Character _character;
         [SerializeField] CreatureRecipe _recipe;
@@ -230,10 +230,10 @@ namespace HealerLike.Render.Creatures
             _registeredSource = null;
         }
 
-        #region IHealVisualSink
+        #region IHealthVisualSink
 
         // The registry reports every health change the character caused, heals and damage both gesture
-        public void OnHealResolved(GameObject target, float value, bool critical)
+        public void OnHealthResolved(GameObject target, float value, bool critical)
         {
             if (value == 0f || !target || !float.IsFinite(value))
             {
@@ -274,12 +274,18 @@ namespace HealerLike.Render.Creatures
 
         public bool TryGetAnchors(out EffectAnchors anchors)
         {
-            if (rig == null)
+            if (rig == null || !rig.TryGetAnchors(out anchors))
             {
                 anchors = new EffectAnchors();
                 return false;
             }
-            return rig.TryGetAnchors(out anchors);
+
+            // A character casts from its first bud
+            if (bud0 != null)
+            {
+                anchors.castPoint = bud0.position;
+            }
+            return true;
         }
 
         #endregion

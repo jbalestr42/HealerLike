@@ -7,11 +7,11 @@ namespace HealerLike.Render.Spells
 
 public class ResourceOutcomeObserverTests
 {
-    class HealSinkSpy : IHealVisualSink
+    class HealSinkSpy : IHealthVisualSink
     {
         public int count;
 
-        public void OnHealResolved(GameObject target, float value, bool critical)
+        public void OnHealthResolved(GameObject target, float value, bool critical)
         {
             count++;
         }
@@ -30,7 +30,7 @@ public class ResourceOutcomeObserverTests
         }
 
         public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
-            float elapsed, float duration, ClockKind clock)
+            float elapsed, float duration)
         {
         }
 
@@ -63,7 +63,7 @@ public class ResourceOutcomeObserverTests
         _manaGo.transform.SetParent(_owner.transform);
         _mana = TestHelpers.CreateResourceAttribute(_manaGo, AttributeType.ManaMax, 100);
         _spy = new SpellSinkSpy();
-        _registry = new RenderRegistry { spellSink = _spy };
+        _registry = new RenderRegistry();
         _healed = new HealSinkSpy();
         _registry.Register(_caster, _healed);
         _modifier = new ResourceModifier { source = _caster };

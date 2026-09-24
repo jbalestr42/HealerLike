@@ -81,9 +81,9 @@ public class SpellEffectTests
     {
         SpellEffect effect = CreateEffect(EffectElement.Drips, EffectFamily.Rot, EffectTempo.PerPeriod, 2f);
 
-        effect.SetStatus(1, 1f, 6f, ClockKind.Simulation);
+        effect.SetStatus(1, 1f, 6f);
         float before = LargestShape(effect);
-        effect.SetStatus(1, 2.5f, 6f, ClockKind.Simulation);
+        effect.SetStatus(1, 2.5f, 6f);
 
         Assert.AreEqual(0f, before, 0.0001f);
         Assert.Greater(LargestShape(effect), 0f);
@@ -94,7 +94,7 @@ public class SpellEffectTests
     {
         SpellEffect effect = CreateEffect(EffectElement.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
 
-        effect.SetStatus(1, 1.5f, 6f, ClockKind.Simulation);
+        effect.SetStatus(1, 1.5f, 6f);
 
         Transform sphere = effect.shapes[0];
         Transform stalk = effect.stalks[0];
@@ -107,7 +107,7 @@ public class SpellEffectTests
     {
         SpellEffect effect = CreateEffect(EffectElement.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
 
-        effect.SetStatus(1, 1.95f, 6f, ClockKind.Simulation);
+        effect.SetStatus(1, 1.95f, 6f);
 
         Assert.Greater(LargestShape(effect), 0.1f);
     }
@@ -116,7 +116,7 @@ public class SpellEffectTests
     public void Advance_RenewPastItsDuration_KeepsGrowing()
     {
         SpellEffect effect = CreateEffect(EffectElement.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
-        effect.SetStatus(1, 2.5f, 6f, ClockKind.Simulation);
+        effect.SetStatus(1, 2.5f, 6f);
 
         effect.Advance(4f);
 
@@ -128,7 +128,7 @@ public class SpellEffectTests
     {
         SpellEffect effect = CreateEffect(EffectElement.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
 
-        effect.SetStatus(1, 3.02f, 6f, ClockKind.Simulation);
+        effect.SetStatus(1, 3.02f, 6f);
 
         Assert.Greater(LargestShape(effect), 0.1f);
         Assert.Greater(effect.shapes[0].localPosition.y, 1f);
@@ -138,7 +138,7 @@ public class SpellEffectTests
     public void Advance_ForDurationFall_LoopsUntilRemoval()
     {
         SpellEffect effect = CreateEffect(EffectElement.Drips, EffectFamily.Rot, EffectTempo.ForDuration);
-        effect.SetStatus(1, 0f, float.PositiveInfinity, ClockKind.Simulation);
+        effect.SetStatus(1, 0f, float.PositiveInfinity);
 
         effect.Advance(effect.lifetime * 3.25f);
 
@@ -150,7 +150,7 @@ public class SpellEffectTests
     {
         SpellEffect effect = CreateEffect(EffectElement.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
 
-        effect.SetStatus(3, 0f, 4f, ClockKind.Simulation);
+        effect.SetStatus(3, 0f, 4f);
 
         int beads = 0;
         foreach (Transform child in effect.transform)
@@ -185,7 +185,7 @@ public class SpellEffectTests
     public void Advance_Orbit_TurnsTheTiltedPlane()
     {
         SpellEffect effect = CreateEffect(EffectElement.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
-        effect.SetStatus(1, 0f, 10f, ClockKind.Simulation);
+        effect.SetStatus(1, 0f, 10f);
         Quaternion start = effect.shapes[0].localRotation;
 
         effect.Advance(1f);
@@ -197,7 +197,7 @@ public class SpellEffectTests
     public void BeginRemoval_QuarterSecond_CompletesAndHides()
     {
         SpellEffect effect = CreateEffect(EffectElement.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
-        effect.SetStatus(1, 0f, 10f, ClockKind.Simulation);
+        effect.SetStatus(1, 0f, 10f);
 
         effect.BeginRemoval();
         effect.Advance(0.25f);

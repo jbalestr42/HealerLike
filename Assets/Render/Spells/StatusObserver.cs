@@ -143,7 +143,7 @@ namespace HealerLike.Render.Spells
                 if (!_published.TryGetValue(group.Key, out StatusState old) || !IsSame(old, group.Value))
                 {
                     sink.SetStatus(group.Value.source, group.Key.Item1, group.Key.Item2, group.Value.stacks, group.Value.elapsed,
-                                   group.Value.duration, ClockKind.Simulation);
+                                   group.Value.duration);
                 }
             }
 

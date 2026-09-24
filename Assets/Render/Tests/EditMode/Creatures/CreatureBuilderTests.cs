@@ -14,7 +14,7 @@ namespace HealerLike.Render.Creatures
 
 public class CreatureBuilderTests
 {
-    public class Sink : IHealVisualSink, ISpellVisualSink
+    public class Sink : IHealthVisualSink, ISpellVisualSink
     {
         public int heals;
         public int impacts;
@@ -24,7 +24,7 @@ public class CreatureBuilderTests
         public bool critical;
 
         // Like every heal sink, only the positive changes are heals
-        public void OnHealResolved(GameObject target, float value, bool critical)
+        public void OnHealthResolved(GameObject target, float value, bool critical)
         {
             if (value <= 0f)
             {
@@ -48,7 +48,7 @@ public class CreatureBuilderTests
         }
 
         public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
-            float elapsed, float duration, ClockKind clock)
+            float elapsed, float duration)
         {
         }
 
@@ -98,8 +98,9 @@ public class CreatureBuilderTests
         _builder = _model.AddComponent<CreatureBuilder>();
         _builder.SetRecipe(_recipe, _material, PrimitiveMeshesTests.Meshes());
         _sink = new Sink();
-        _registry = new RenderRegistry { spellSink = _sink };
+        _registry = new RenderRegistry();
         _registry.Register(_source, _sink);
+        TestHelpers.SetPrivateField(_builder, "_spellSink", _sink);
         _builder.Configure(_registry, 1f, Vector3.zero, Vector3.up);
         entityModel.Init(_entity);
         _builder.Init(_entity);
@@ -151,6 +152,7 @@ public class CreatureBuilderTests
                 Assert.Greater(anchors.headCentre.y, anchors.neck.y, $"{side} {head}");
                 Assert.Greater(Vector3.Distance(anchors.headCentre, anchors.bodyCentre), anchors.bodyRadius, $"{side} {head}");
                 Assert.Greater(anchors.neck.y, anchors.foot.y, $"{side} {head}");
+                Assert.GreaterOrEqual(anchors.castPoint.y, anchors.headCentre.y, $"{side} {head}");
             }
         }
     }
@@ -227,7 +229,7 @@ public class CreatureBuilderTests
         _builder.enabled = false;
         TestHelpers.InvokePrivate(_builder, "OnDisable");
         BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-        FieldInfo field = typeof(RenderRegistry).GetField("_healSinks", flags);
+        FieldInfo field = typeof(RenderRegistry).GetField("_healthSinks", flags);
         Assert.AreEqual(0, ((IDictionary)field.GetValue(_registry)).Count);
     }
 

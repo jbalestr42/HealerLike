@@ -37,9 +37,9 @@ public class HealPulseTests
     }
 
     [Test]
-    public void NotifyHeal_Heal_PulsesOnTheTargetInCellUnitsThenExpires()
+    public void NotifyHealth_Heal_PulsesOnTheTargetInCellUnitsThenExpires()
     {
-        _registry.NotifyHeal(_source, _target, 4f, true);
+        _registry.NotifyHealth(_source, _target, 4f, true);
         _zones.PublishFrame(0f);
 
         Assert.AreEqual(1, _zones.count);
@@ -62,14 +62,14 @@ public class HealPulseTests
     public void OnEnable_AfterDisable_SubscribesOnce()
     {
         _pulse.enabled = false;
-        _registry.NotifyHeal(_source, _target, 1f, false);
+        _registry.NotifyHealth(_source, _target, 1f, false);
 
         Assert.AreEqual(0, _zones.liveCount);
 
         _pulse.enabled = true;
         _pulse.enabled = false;
         _pulse.enabled = true;
-        _registry.NotifyHeal(_source, _target, 1f, false);
+        _registry.NotifyHealth(_source, _target, 1f, false);
 
         Assert.AreEqual(1, _zones.liveCount);
     }
@@ -79,11 +79,11 @@ public class HealPulseTests
     {
         _pulse.Init(_target, _registry, _zones);
 
-        _registry.NotifyHeal(_source, _target, 1f, false);
+        _registry.NotifyHealth(_source, _target, 1f, false);
 
         Assert.AreEqual(0, _zones.liveCount);
 
-        _registry.NotifyHeal(_target, _source, 1f, false);
+        _registry.NotifyHealth(_target, _source, 1f, false);
 
         Assert.AreEqual(1, _zones.liveCount);
     }
@@ -94,11 +94,11 @@ public class HealPulseTests
         RenderRegistry other = new RenderRegistry();
         _pulse.Init(_source, other, _zones);
 
-        _registry.NotifyHeal(_source, _target, 1f, false);
+        _registry.NotifyHealth(_source, _target, 1f, false);
 
         Assert.AreEqual(0, _zones.liveCount);
 
-        other.NotifyHeal(_source, _target, 1f, false);
+        other.NotifyHealth(_source, _target, 1f, false);
 
         Assert.AreEqual(1, _zones.liveCount);
     }
@@ -119,14 +119,14 @@ public class HealPulseTests
     }
 
     [Test]
-    public void NotifyHeal_DamageZeroNonFiniteOrNoTarget_Ignored()
+    public void NotifyHealth_DamageZeroNonFiniteOrNoTarget_Ignored()
     {
         foreach (float value in new[] { -1f, 0f, float.NaN, float.PositiveInfinity })
         {
-            _registry.NotifyHeal(_source, _target, value, false);
+            _registry.NotifyHealth(_source, _target, value, false);
         }
 
-        _registry.NotifyHeal(_source, null, 1f, false);
+        _registry.NotifyHealth(_source, null, 1f, false);
 
         Assert.AreEqual(0, _zones.liveCount);
     }
@@ -136,7 +136,7 @@ public class HealPulseTests
     {
         _pulse.Init(_source, _registry, null);
 
-        _registry.NotifyHeal(_source, _target, 1f, false);
+        _registry.NotifyHealth(_source, _target, 1f, false);
 
         Assert.AreEqual(0, _zones.liveCount);
     }

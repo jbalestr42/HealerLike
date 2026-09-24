@@ -264,6 +264,7 @@ namespace HealerLike.Render.Spells
             anchors.neck = centre + Vector3.up * radius;
             anchors.headCentre = centre + Vector3.up * (1.5f * radius);
             anchors.headRadius = 0.5f * radius;
+            anchors.castPoint = anchors.headCentre;
             return anchors;
         }
     }

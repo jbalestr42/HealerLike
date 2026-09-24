@@ -222,7 +222,7 @@ namespace HealerLike.Render.Spells
             if (status.charges != charges)
             {
                 status.charges = charges;
-                Refresh(status, status.effect.elapsedSeconds, float.PositiveInfinity, ClockKind.Simulation);
+                Refresh(status, status.effect.elapsedSeconds, float.PositiveInfinity);
             }
         }
 
@@ -270,13 +270,11 @@ namespace HealerLike.Render.Spells
                 }
 
                 Transform anchor = healerAnchor != null ? healerAnchor(group.Key) : null;
-                if (anchor == null)
+                Vector3 start = EffectPlacement.Anchors(group.Key).castPoint;
+                if (anchor != null)
                 {
-                    CharacterView view = group.Key.GetComponentInChildren<CharacterView>();
-                    anchor = view != null ? view.bud0 : null;
+                    start = anchor.position;
                 }
-
-                Vector3 start = anchor != null ? anchor.position : group.Key.transform.position;
                 foreach ((GameObject target, EffectFamily family) recipient in group.Value)
                 {
                     if (recipient.target == null || Recipients(group.Value, recipient.family) < 2)
@@ -373,7 +371,7 @@ namespace HealerLike.Render.Spells
             return status;
         }
 
-        void Refresh(Status status, float elapsedSeconds, float durationSeconds, ClockKind clock)
+        void Refresh(Status status, float elapsedSeconds, float durationSeconds)
         {
             int stacks = 0;
             foreach (KeyValuePair<ABuffHandlerFactory, int> source in status.sources)
@@ -383,7 +381,7 @@ namespace HealerLike.Render.Spells
 
             SpellEffect effect = status.effect;
             effect.SetCount(EffectComposer.Count(effect.recipe.entry, Mathf.Max(1, stacks), status.charges, 0f));
-            effect.SetStatus(Mathf.Max(1, stacks), elapsedSeconds, durationSeconds, clock);
+            effect.SetStatus(Mathf.Max(1, stacks), elapsedSeconds, durationSeconds);
         }
 
         void Drop(GameObject target, ABuffHandlerFactory factory)
@@ -402,7 +400,7 @@ namespace HealerLike.Render.Spells
             status.sources.Remove(factory);
             if (!Close(target, element, status) && status.effect != null)
             {
-                Refresh(status, status.effect.elapsedSeconds, status.effect.durationSeconds, status.effect.clock);
+                Refresh(status, status.effect.elapsedSeconds, status.effect.durationSeconds);
             }
         }
 
@@ -598,7 +596,7 @@ namespace HealerLike.Render.Spells
         }
 
         public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
-                              float elapsedSeconds, float durationSeconds, ClockKind clock)
+                              float elapsedSeconds, float durationSeconds)
         {
             if (!isActiveAndEnabled || target == null || factory == null)
             {
@@ -632,7 +630,7 @@ namespace HealerLike.Render.Spells
             }
 
             status.sources[factory] = stacks;
-            Refresh(status, elapsedSeconds, durationSeconds, clock);
+            Refresh(status, elapsedSeconds, durationSeconds);
             Entity caster = source != null ? source.GetComponent<Entity>() : null;
             if (caster != null)
             {

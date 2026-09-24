@@ -522,12 +522,15 @@ namespace HealerLike.Render.Creatures
             {
                 anchors.headCentre = anchors.neck;
                 anchors.headRadius = 0f;
+                anchors.castPoint = anchors.neck;
                 return true;
             }
 
             Bounds headBounds = _bodyRenderers[head].bounds;
             anchors.headCentre = headBounds.center;
             anchors.headRadius = Mathf.Max(headBounds.extents.x, Mathf.Max(headBounds.extents.y, headBounds.extents.z));
+            // The tip of the top head
+            anchors.castPoint = headBounds.center + Vector3.up * headBounds.extents.y;
             return true;
         }
 

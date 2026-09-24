@@ -5,7 +5,7 @@ using UnityEngine;
 namespace HealerLike.Render.Zones
 {
     // Producers update their zones in Update, the RenderManager publishes the snapshot before the grass draws
-    public class ZoneRegistry : MonoBehaviour, IZoneOwner
+    public class ZoneRegistry : MonoBehaviour
     {
         struct Entry
         {

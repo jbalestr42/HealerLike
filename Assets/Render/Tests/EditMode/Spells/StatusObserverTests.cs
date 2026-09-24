@@ -16,7 +16,7 @@ public class StatusObserverTests
         public GameObject lastSource;
 
         public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
-            float elapsed, float duration, ClockKind clock)
+            float elapsed, float duration)
         {
             calls++;
             lastSource = source;

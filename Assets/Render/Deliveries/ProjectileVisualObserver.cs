@@ -14,7 +14,6 @@ namespace HealerLike.Render.Deliveries
         // A travel shorter than this has no direction
         static readonly float stillSquared = 0.00000001f;
 
-        GestureKind _presentation = GestureKind.Attack;
         DeliveryStyle _deliveryStyle = DeliveryStyle.Direct;
         bool _preserveContactPath;
 
@@ -68,7 +67,6 @@ namespace HealerLike.Render.Deliveries
             if (look != null)
             {
                 _deliveryStyle = look.style;
-                _presentation = look.presentation;
                 _preserveContactPath = look.preserveContactPath;
             }
         }

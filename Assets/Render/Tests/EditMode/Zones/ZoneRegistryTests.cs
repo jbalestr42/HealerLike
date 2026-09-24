@@ -83,10 +83,9 @@ public class ZoneRegistryTests
     }
 
     [Test]
-    public void AddPulse_AsZoneOwner_AddsAPulseThatExpires()
+    public void AddPulse_Hostile_AddsAPulseThatExpires()
     {
-        IZoneOwner owner = _registry;
-        int handle = owner.AddPulse(ZoneKind.Hostile, Vector3.zero, 2f, 1f, 0.8f);
+        int handle = _registry.AddPulse(ZoneKind.Hostile, Vector3.zero, 2f, 1f, 0.8f);
         Assert.That(handle, Is.GreaterThan(0));
         Assert.IsTrue(_registry.Contains(handle));
 
