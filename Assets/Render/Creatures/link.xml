@@ -1,6 +1,0 @@
-<linker>
-  <!-- Public generic cooldown property is polled through cached reflection. -->
-  <assembly fullname="HealerLike.Runtime">
-    <type fullname="ACooldownSkill`1" preserve="all" />
-  </assembly>
-</linker>

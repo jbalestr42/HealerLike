@@ -270,13 +270,7 @@ namespace HealerLike.Render.Stage
         void SetBoard()
         {
             GridManager grid = _player.grid;
-#if HEALERLIKE_SEAMS
-            Renderer groundRenderer = grid.ground.GetComponent<Renderer>();
-#else
-            // TODO: read GridManager.ground once GridManager exposes it, until then the ground is the grid's
-            // one renderer
-            Renderer groundRenderer = grid.GetComponentInChildren<Renderer>();
-#endif
+            Renderer groundRenderer = grid.ground ? grid.ground.GetComponent<Renderer>() : null;
             _boardGround = groundRenderer;
             float surfaceY = 0.5f;
             if (groundRenderer != null)
@@ -366,10 +360,8 @@ namespace HealerLike.Render.Stage
             _entityManager.OnEntityKilled.AddListener(OnEntityKilled);
             _player.OnCharacterInit.AddListener(OnCharacterInit);
             AscensionGameType.OnRoundEnd.AddListener(OnRoundEnd);
-#if HEALERLIKE_SEAMS
             _entityManager.OnProjectileSpawned.AddListener(OnProjectileSpawned);
             _entityManager.OnAreaOfEffectStarted.AddListener(OnAreaOfEffectStarted);
-#endif
 
             GameView gameView = FindInScene<GameView>(_scene);
             _nextWaveButton = null;
@@ -391,10 +383,8 @@ namespace HealerLike.Render.Stage
             {
                 _entityManager.OnEntitySpawned.RemoveListener(OnEntitySpawned);
                 _entityManager.OnEntityKilled.RemoveListener(OnEntityKilled);
-#if HEALERLIKE_SEAMS
                 _entityManager.OnProjectileSpawned.RemoveListener(OnProjectileSpawned);
                 _entityManager.OnAreaOfEffectStarted.RemoveListener(OnAreaOfEffectStarted);
-#endif
             }
 
             if (_player != null)
@@ -499,17 +489,22 @@ namespace HealerLike.Render.Stage
             _battleFocus.Overview();
         }
 
-#if HEALERLIKE_SEAMS
-        // Runs once EntityManager raises OnProjectileSpawned: added before Projectile.Init, which then calls their
-        // Init(source) with the prefab's own behaviours
-        void OnProjectileSpawned(GameObject prefab, GameObject projectileGo)
+        // EntityManager raises it before Projectile.Init, which then calls Init(source) on these with the
+        // projectile's own behaviours
+        void OnProjectileSpawned(Projectile projectile)
         {
-            ProjectileLook projectileLook = _spellLooks.GetProjectileLook(prefab);
+            if (projectile == null)
+            {
+                return;
+            }
+
+            GameObject projectileGo = projectile.gameObject;
+            ProjectileLook projectileLook = _spellLooks.GetProjectileLook(projectile);
             projectileGo.AddComponent<ProjectileVisualObserver>().Init(this, projectileLook);
             projectileGo.AddComponent<StoneProjectileImpactBridge>();
             projectileGo.AddComponent<LaunchWave>().Init(_zones);
             projectileGo.AddComponent<StageLaunchGust>().Init(_gust);
-            if (projectileGo.GetComponent<ChainLightningProjectile>() != null)
+            if (projectile is ChainLightningProjectile)
             {
                 projectileGo.AddComponent<ChainContactVisual>().Init(this);
             }
@@ -520,13 +515,11 @@ namespace HealerLike.Render.Stage
             }
         }
 
-        // Runs once EntityManager raises OnAreaOfEffectStarted
         void OnAreaOfEffectStarted(AreaOfEffect area)
         {
             area.gameObject.AddComponent<AreaPulse>().Init(_zones);
             area.gameObject.AddComponent<LegacyAreaVisualMask>();
         }
-#endif
 
         Rect BoardRect()
         {

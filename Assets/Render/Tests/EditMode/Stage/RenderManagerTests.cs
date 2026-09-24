@@ -1,4 +1,8 @@
+using System.Collections.Generic;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Deliveries;
+using HealerLike.Render.Spells;
+using HealerLike.Render.Stones;
 using HealerLike.Render.Zones;
 using NUnit.Framework;
 using UnityEditor;
@@ -11,6 +15,9 @@ namespace HealerLike.Render.Stage
 public class RenderManagerTests
 {
     static readonly string prefabPath = "Assets/Render/Stage/Prefabs/RenderManager.prefab";
+    static readonly string projectileFolder = "Assets/Prefabs/Projectiles/";
+
+    readonly List<GameObject> _spawned = new List<GameObject>();
 
     GameObject _managerGo;
     GameObject _gameGo;
@@ -42,6 +49,7 @@ public class RenderManagerTests
         groundGo.transform.SetParent(gridGo.transform, false);
         groundGo.transform.localScale = new Vector3(16f, 1f, 16f);
         ground = groundGo.GetComponent<Renderer>();
+        TestHelpers.SetPrivateField(grid, "_ground", groundGo);
         return grid;
     }
 
@@ -83,6 +91,11 @@ public class RenderManagerTests
         QualitySettings.renderPipeline = _previousPipeline;
         RenderSettings.sun = _previousSun;
         RenderSettings.ambientMode = _previousAmbient;
+        foreach (GameObject spawnedGo in _spawned)
+        {
+            Object.DestroyImmediate(spawnedGo);
+        }
+        _spawned.Clear();
         Object.DestroyImmediate(_managerGo);
         Object.DestroyImmediate(_gameGo);
         Object.DestroyImmediate(_createdCameraGo);
@@ -104,6 +117,14 @@ public class RenderManagerTests
         TestHelpers.SetPrivateField(entity, "_model", modelGo.AddComponent<EntityModel>());
         modelRenderer = modelGo.GetComponent<Renderer>();
         return entity;
+    }
+
+    // A projectile as EntityManager.SpawnProjectile hands it out, before Projectile.Init
+    Projectile SpawnProjectile(string prefabName)
+    {
+        GameObject projectileGo = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(projectileFolder + prefabName + ".prefab"));
+        _spawned.Add(projectileGo);
+        return projectileGo.GetComponent<Projectile>();
     }
 
     [Test]
@@ -245,6 +266,63 @@ public class RenderManagerTests
         Assert.IsNotNull(builder, "The derived stone carries a CreatureBuilder.");
         Assert.IsNotNull(builder.rig);
         Assert.AreEqual(Primitive.Stone, builder.recipe.parts[0].primitive);
+    }
+
+    [Test]
+    public void OnProjectileSpawned_Bullet_AttachesTheDeliveryVisuals()
+    {
+        _manager.Init(_entityManager, _player);
+        Projectile projectile = SpawnProjectile("BulletSpeed");
+
+        _entityManager.OnProjectileSpawned.Invoke(projectile);
+
+        ProjectileVisualObserver observer = projectile.GetComponent<ProjectileVisualObserver>();
+        Assert.IsNotNull(observer);
+        Assert.AreEqual(DeliveryStyle.Direct, observer.deliveryStyle); // Homing at speed 15
+        Assert.IsNotNull(projectile.GetComponent<StoneProjectileImpactBridge>());
+        Assert.IsNotNull(projectile.GetComponent<LaunchWave>());
+        Assert.IsNotNull(projectile.GetComponent<StageLaunchGust>());
+        Assert.IsNull(projectile.GetComponent<ChainContactVisual>());
+    }
+
+    [Test]
+    public void OnProjectileSpawned_Chain_AddsTheContactVisualAndHidesItsLine()
+    {
+        _manager.Init(_entityManager, _player);
+        Projectile projectile = SpawnProjectile("ChainLightning");
+
+        _entityManager.OnProjectileSpawned.Invoke(projectile);
+
+        Assert.AreEqual(DeliveryStyle.ChainSync, projectile.GetComponent<ProjectileVisualObserver>().deliveryStyle);
+        Assert.IsNotNull(projectile.GetComponent<ChainContactVisual>());
+        foreach (LineRenderer line in projectile.GetComponentsInChildren<LineRenderer>(true))
+        {
+            Assert.IsFalse(line.enabled);
+        }
+    }
+
+    [Test]
+    public void OnProjectileSpawned_NotAttached_AddsNothing()
+    {
+        Projectile projectile = SpawnProjectile("BulletSpeed");
+
+        _entityManager.OnProjectileSpawned.Invoke(projectile);
+
+        Assert.IsNull(projectile.GetComponent<ProjectileVisualObserver>());
+    }
+
+    [Test]
+    public void OnAreaOfEffectStarted_Area_AttachesThePulseAndMasksItsOwnVisual()
+    {
+        _manager.Init(_entityManager, _player);
+        GameObject areaGo = new GameObject("Area");
+        _spawned.Add(areaGo);
+        AreaOfEffect area = areaGo.AddComponent<AreaOfEffect>();
+
+        _entityManager.OnAreaOfEffectStarted.Invoke(area);
+
+        Assert.IsNotNull(areaGo.GetComponent<AreaPulse>());
+        Assert.IsNotNull(areaGo.GetComponent<LegacyAreaVisualMask>());
     }
 }
 

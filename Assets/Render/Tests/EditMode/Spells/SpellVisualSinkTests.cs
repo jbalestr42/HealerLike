@@ -159,6 +159,30 @@ public class SpellVisualSinkTests
         Assert.Less(Vector4.Distance(_sink.vocabulary.palette.bane, block.GetColor("_BaseColor")), 0.0001f);
     }
 
+    // BoostCellItem: the handler the item puts on its carrier (a positional buff no row maps) and the boost its
+    // cells put on the allies standing on them
+    [TestCase("BuffHandlerFactory")]
+    [TestCase("BoostBuffHandlerFactory")]
+    public void SetStatus_BoostCellHandlers_DeriveAFamilyWithoutThrowing(string handlerName)
+    {
+        ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(
+            "Assets/Data/EntityItems/BoostCellItem/" + handlerName + ".asset");
+        Entity caster = null;
+        Entity recipient = null;
+        TestHelpers.WithLoggingDisabled(() =>
+        {
+            caster = _other.AddComponent<Entity>();
+            recipient = _target.AddComponent<Entity>();
+        });
+        caster.entityType = Entity.EntityType.Player;
+        recipient.entityType = Entity.EntityType.Player;
+
+        _sink.SetStatus(_other, _target, handler, 1, 0f, float.PositiveInfinity, ClockKind.Simulation);
+
+        Assert.AreEqual(EffectFamily.Boon, EffectDerivation.Family(handler, true));
+        Assert.IsNotNull(_sink.GetStatus(_target, handler));
+    }
+
     [Test]
     public void SetStatus_TwoBoonHandlers_OneOrbitWithTwoStacks()
     {

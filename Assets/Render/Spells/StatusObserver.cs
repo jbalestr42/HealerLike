@@ -12,6 +12,7 @@ namespace HealerLike.Render.Spells
             public int stacks;
             public float elapsed;
             public float duration;
+            public GameObject source;
         }
 
         readonly List<BuffManager.BuffHandlerData> _observed = new List<BuffManager.BuffHandlerData>();
@@ -113,6 +114,7 @@ namespace HealerLike.Render.Spells
                 (GameObject, ABuffHandlerFactory) key = (data.target, data.buffHandlerFactory);
                 StatusState state = new StatusState();
                 state.stacks = Mathf.Max(0, data.currentStacks + data.refreshStacks);
+                state.source = data.source;
                 BuffHandler handler = data.buffHandler as BuffHandler;
                 state.elapsed = handler != null ? handler.durationTimer : 0f;
                 state.duration = data.buffHandlerFactory.durationType == DurationType.Infinite
@@ -123,6 +125,7 @@ namespace HealerLike.Render.Spells
                     state.stacks += old.stacks;
                     state.elapsed = Mathf.Min(old.elapsed, state.elapsed);
                     state.duration = Mathf.Max(old.duration, state.duration);
+                    state.source = old.source;
                 }
                 _groups[key] = state;
             }
@@ -139,8 +142,7 @@ namespace HealerLike.Render.Spells
             {
                 if (!_published.TryGetValue(group.Key, out StatusState old) || !IsSame(old, group.Value))
                 {
-                    // TODO: pass the caster once BuffHandlerData carries a source
-                    sink.SetStatus(null, group.Key.Item1, group.Key.Item2, group.Value.stacks, group.Value.elapsed,
+                    sink.SetStatus(group.Value.source, group.Key.Item1, group.Key.Item2, group.Value.stacks, group.Value.elapsed,
                                    group.Value.duration, ClockKind.Simulation);
                 }
             }

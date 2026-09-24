@@ -127,6 +127,37 @@ public class SpellLooksTests
         }
         Assert.AreEqual(DeliveryStyle.Arc, looks.GetProjectileLook(laser).style); // its baked motion is a ballistic arc
     }
+
+    [TestCase("ChainLightning")]
+    [TestCase("ChannelingLightning")]
+    public void GetProjectileLook_SpawnedChain_ReadsWhatItsRowAuthors(string prefabName)
+    {
+        SpellLooks looks = LoadShipped();
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/" + prefabName + ".prefab");
+        GameObject projectileGo = Object.Instantiate(prefab);
+        _objects.Add(projectileGo);
+
+        ProjectileLook spawned = looks.GetProjectileLook(projectileGo.GetComponent<Projectile>());
+
+        ProjectileLook row = looks.GetProjectileLook(prefab);
+        Assert.AreEqual(row.style, spawned.style);
+        Assert.AreEqual(row.presentation, spawned.presentation);
+        Assert.AreEqual(row.preserveContactPath, spawned.preserveContactPath);
+    }
+
+    [TestCase("BulletSpeed", DeliveryStyle.Direct)]
+    [TestCase("SwarmBullet", DeliveryStyle.Swarm)]
+    [TestCase("LaserBullet", DeliveryStyle.Arc)]
+    public void GetProjectileLook_SpawnedShot_DerivesFromItsBakedBehaviours(string prefabName, DeliveryStyle expected)
+    {
+        GameObject projectileGo = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/" + prefabName + ".prefab"));
+        _objects.Add(projectileGo);
+
+        ProjectileLook look = LoadShipped().GetProjectileLook(projectileGo.GetComponent<Projectile>());
+
+        Assert.AreEqual(expected, look.style);
+        Assert.IsFalse(look.preserveContactPath);
+    }
 }
 
 }

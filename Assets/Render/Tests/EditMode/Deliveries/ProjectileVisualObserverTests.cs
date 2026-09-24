@@ -77,10 +77,10 @@ public class ProjectileVisualObserverTests
         return consumer;
     }
 
-    // Stands in for Projectile.onHitConsumers, private until Projectile exposes it
+    // Shoots the projectile again carrying the consumers, the observer reads them in its Init
     void SeedConsumers(params AConsumerFactory[] consumers)
     {
-        TestHelpers.SetPrivateField(_observer, "_consumers", new List<AConsumerFactory>(consumers));
+        _projectile.Init(_source, _first, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>(consumers));
     }
 
     [SetUp]

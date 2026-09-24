@@ -99,7 +99,8 @@ namespace HealerLike.Render.Deliveries
             _subscribed.OnHit.AddListener(OnProjectileHit);
             _capturedTarget = projectile.target;
             _capturedTargetPoint = projectile.targetPoint;
-            _consumers = OnHitConsumers();
+            // What the projectile applies on hit decides the family its tip shows
+            _consumers = projectile.onHitConsumers;
             // An item can grant the bounce, so the live behaviour decides and not the prefab
             if (GetComponent<BounceProjectileBehaviour>() && _deliveryStyle != DeliveryStyle.ChainSync
                 && _deliveryStyle != DeliveryStyle.Thrown && !_preserveContactPath)
@@ -210,17 +211,6 @@ namespace HealerLike.Render.Deliveries
         int NextToken()
         {
             return _manager ? _manager.NextDeliveryToken() : 0;
-        }
-
-        // What the projectile applies on hit decides the family its tip shows
-        List<AConsumerFactory> OnHitConsumers()
-        {
-#if HEALERLIKE_SEAMS
-            return projectile.onHitConsumers;
-#else
-            // TODO: read Projectile.onHitConsumers once it is public, until then the tip keeps its rest colour
-            return null;
-#endif
         }
 
         // The family of the first consumer, or no accent when the projectile carries none

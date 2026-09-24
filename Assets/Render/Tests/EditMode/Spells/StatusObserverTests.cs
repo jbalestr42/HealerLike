@@ -13,11 +13,13 @@ public class StatusObserverTests
     class SinkSpy : ISpellVisualSink
     {
         public int calls;
+        public GameObject lastSource;
 
         public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
             float elapsed, float duration, ClockKind clock)
         {
             calls++;
+            lastSource = source;
         }
 
         public void RemoveStatus(GameObject source, GameObject target, ABuffHandlerFactory factory)
@@ -119,6 +121,27 @@ public class StatusObserverTests
             observer.Reconcile();
             Assert.AreEqual(calls + 1, sink.calls);
         }
+    }
+
+    [Test]
+    public void Reconcile_HandlerWithASource_PassesTheCasterToTheSink()
+    {
+        _factory.data = new BuffHandlerData { durationType = DurationType.Infinite };
+        BuffManager manager = _go.AddComponent<BuffManager>();
+        StatusObserver observer = _go.AddComponent<StatusObserver>();
+        SinkSpy sink = new SinkSpy();
+        observer.Bind(manager, sink);
+        manager.OnBuffHandlerStarted.Invoke(new BuffManager.BuffHandlerData
+        {
+            target = _go,
+            source = _managerGo,
+            buffHandlerFactory = _factory,
+            currentStacks = 1
+        });
+
+        observer.Reconcile();
+
+        Assert.AreSame(_managerGo, sink.lastSource);
     }
 
     [Test]

@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
@@ -17,7 +15,7 @@ namespace HealerLike.Render.Creatures
 
         Entity _entity;
         readonly List<ASkill> _skills = new List<ASkill>();
-        readonly Dictionary<ASkill, Func<float>> _cooldowns = new Dictionary<ASkill, Func<float>>();
+        readonly Dictionary<ASkill, ICooldownSkill> _cooldowns = new Dictionary<ASkill, ICooldownSkill>();
         readonly List<ASkill> _removedSkills = new List<ASkill>();
         ResourceAttribute _health;
         ResourceOutcomeObserver _outcomeObserver;
@@ -134,14 +132,14 @@ namespace HealerLike.Render.Creatures
             }
 
             float readiness = 0f;
-            foreach (KeyValuePair<ASkill, Func<float>> pair in _cooldowns)
+            foreach (KeyValuePair<ASkill, ICooldownSkill> pair in _cooldowns)
             {
                 if (!pair.Key || !pair.Key.isEnabled)
                 {
                     continue;
                 }
 
-                float remaining = pair.Value();
+                float remaining = pair.Value.cooldownProgress;
                 if (float.IsFinite(remaining))
                 {
                     readiness = Mathf.Max(readiness, 1f - Mathf.Clamp01(remaining));
@@ -250,32 +248,11 @@ namespace HealerLike.Render.Creatures
 
             foreach (ASkill skill in _skills)
             {
-                if (_cooldowns.ContainsKey(skill))
+                if (!_cooldowns.ContainsKey(skill) && skill is ICooldownSkill cooldownSkill)
                 {
-                    continue;
-                }
-
-                Func<float> progress = CreateCooldownReader(skill);
-                if (progress != null)
-                {
-                    _cooldowns.Add(skill, progress);
+                    _cooldowns.Add(skill, cooldownSkill);
                 }
             }
-        }
-
-        // Reflection until ACooldownSkill exposes cooldownProgress through a non-generic ICooldownSkill
-        static Func<float> CreateCooldownReader(ASkill skill)
-        {
-            for (Type type = skill.GetType(); type != null; type = type.BaseType)
-            {
-                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ACooldownSkill<>))
-                {
-                    MethodInfo getter = type.GetProperty("cooldownProgress").GetGetMethod();
-                    return (Func<float>)Delegate.CreateDelegate(typeof(Func<float>), skill, getter);
-                }
-            }
-
-            return null;
         }
 
         void EnsureRig()

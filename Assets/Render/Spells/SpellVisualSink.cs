@@ -512,8 +512,8 @@ namespace HealerLike.Render.Spells
             return source.GetComponent<Character>() != null;
         }
 
-        // TODO: read the caster from BuffHandlerData.source once it exists, until then only a caller that
-        // knows the caster picks bane, and the healer's Character, which is not an Entity, plays for the player
+        // The caster's side against the target's: the healer's Character, which is not an Entity, plays for the
+        // player, and a status without a caster is taken as its target's own
         static bool IsSameSide(GameObject source, GameObject target)
         {
             if (source == null)

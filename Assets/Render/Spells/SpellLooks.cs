@@ -35,6 +35,25 @@ namespace HealerLike.Render.Spells
             }
             return new ProjectileLook { style = EffectDerivation.Delivery(prefab) };
         }
+
+        // A spawned projectile carries no link to its prefab, so its look is read from the behaviours baked in
+        // it: a chain keeps its contact path, and a held chain is a channel
+        public ProjectileLook GetProjectileLook(Projectile projectile)
+        {
+            if (projectile == null)
+            {
+                return GetProjectileLook((GameObject)null);
+            }
+
+            ProjectileLook look = new ProjectileLook { style = EffectDerivation.Delivery(projectile.gameObject) };
+            ChainLightningProjectile chain = projectile as ChainLightningProjectile;
+            if (chain != null)
+            {
+                look.preserveContactPath = true;
+                look.presentation = SkillWalker.IsHeld(chain) ? GestureKind.Channel : GestureKind.Attack;
+            }
+            return look;
+        }
     }
 
     [Serializable]
