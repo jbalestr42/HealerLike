@@ -15085,7 +15085,6 @@ MonoBehaviour:
   bodyUnit: 0.55
   plantScale: 1.8
   stoneScale: 2.2
-  accessoryReach: 0.45
   maxParts: 40
   isReachPinned: 1
   pinnedReach: 1.3
