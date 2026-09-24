@@ -1,0 +1,9 @@
+{
+    "name": "HealerLike.Render.Spells.Editor.Tests",
+    "references": ["HealerLike.Runtime", "HealerLike.Render", "HealerLike.Render.Spells.Editor", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+    "includePlatforms": ["Editor"],
+    "overrideReferences": true,
+    "precompiledReferences": ["nunit.framework.dll", "Sirenix.Serialization.dll"],
+    "autoReferenced": false,
+    "defineConstraints": ["UNITY_INCLUDE_TESTS"]
+}

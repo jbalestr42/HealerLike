@@ -1,0 +1,239 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using HealerLike.Render.Grammar;
+using HealerLike.Render.Spells.Studio;
+using HealerLike.Render.Spells.Editor.Studio;
+using NUnit.Framework;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
+
+namespace HealerLike.Render.Spells.Editor.Tests
+{
+    public sealed class SpellStudioPreviewTests
+    {
+        SpellStudioPreset _preset;
+        SpellStudioPreview _preview;
+
+        static IEnumerable<EffectElement> Elements => Enum.GetValues(typeof(EffectElement)).Cast<EffectElement>();
+
+        [SetUp]
+        public void SetUp()
+        {
+            _preset = ScriptableObject.CreateInstance<SpellStudioPreset>();
+            _preset.hideFlags = HideFlags.HideAndDontSave;
+            _preset.vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>("Assets/Render/Spells/Data/EffectVocabulary.asset");
+            Assert.That(_preset.vocabulary, Is.Not.Null, "The real renderer vocabulary must be installed.");
+            _preview = new SpellStudioPreview();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _preview?.Dispose();
+            if (_preset) Object.DestroyImmediate(_preset);
+        }
+
+        [TestCaseSource(nameof(Elements))]
+        public void SamplesEveryRuntimeElementWithoutGameplayUpdates(EffectElement element)
+        {
+            _preset.element = element;
+            _preset.critical = true;
+            SpellEffect effect = _preview.Sample(_preset, _preset.PreviewDuration * 0.35f);
+            Assert.That(effect, Is.Not.Null);
+            Assert.That(effect.element, Is.EqualTo(element));
+            Assert.That(effect.enabled, Is.False, "Timeline sampling must be the only source of time.");
+            Assert.That(effect.parts.Count, Is.GreaterThan(0));
+            Assert.That(EditorSceneManager.IsPreviewScene(effect.gameObject.scene), Is.True);
+            Assert.That(effect.recipe.entry, Is.Not.SameAs(_preset.vocabulary.elements[element]));
+            Assert.That(effect.recipe.entry.parts, Is.Not.SameAs(_preset.vocabulary.elements[element].parts));
+            foreach (Transform part in effect.parts)
+            {
+                Assert.That(part.GetComponent<MeshFilter>().sharedMesh, Is.Not.Null, part.name);
+                Assert.That(part.GetComponent<Renderer>().sharedMaterial.shader.name, Is.EqualTo("HL/Look/Primitive"));
+                AssertFinite(part.position);
+                AssertFinite(part.localScale);
+            }
+        }
+
+        [TestCaseSource(nameof(Elements))]
+        public void ReverseSeekMatchesFirstSampleForEveryElement(EffectElement element)
+        {
+            _preset.element = element;
+            _preset.tempo = EffectTempo.ForDuration;
+            SpellEffect first = _preview.Sample(_preset, 0.37f);
+            Pose[] expected = Snapshot(first);
+            _preview.Sample(_preset, 3.2f);
+            SpellEffect rewound = _preview.Sample(_preset, 0.37f);
+            Assert.That(rewound, Is.Not.SameAs(first), "Rewinding rebuilds the effect rather than applying a negative delta.");
+            AssertPose(Snapshot(rewound), expected);
+            _preview.Refresh();
+            AssertPose(Snapshot(_preview.Sample(_preset, 0.37f)), expected);
+        }
+
+        [Test]
+        public void PeriodicStatusWaitsForFirstTickAndRewindsToInvisible()
+        {
+            _preset.element = EffectElement.Rise;
+            _preset.tempo = EffectTempo.PerPeriod;
+            _preset.periodSeconds = 1f;
+            SpellEffect before = _preview.Sample(_preset, 0.4f);
+            Assert.That(before.shapes.All(shape => shape.localScale == Vector3.zero), Is.True);
+            SpellEffect after = _preview.Sample(_preset, 1.3f);
+            Assert.That(after.shapes.Any(shape => shape.gameObject.activeSelf && shape.localScale.sqrMagnitude > 0.001f), Is.True);
+            SpellEffect rewound = _preview.Sample(_preset, 0.4f);
+            Assert.That(rewound.shapes.All(shape => shape.localScale == Vector3.zero), Is.True);
+        }
+
+        [Test]
+        public void CleanupRestoresPreviewSceneCountAndLeavesOpenSceneUnchanged()
+        {
+            Scene scene = SceneManager.GetActiveScene();
+            GameObject[] roots = scene.GetRootGameObjects();
+            bool dirty = scene.isDirty;
+            int sceneCount = EditorSceneManager.previewSceneCount;
+            int rootCount = CountObjects("Spell Studio Preview");
+            int materials = Resources.FindObjectsOfTypeAll<Material>().Count(material => material.name == "Spell Studio Preview Material");
+
+            for (int i = 0; i < 3; i++)
+            {
+                using (var preview = new SpellStudioPreview())
+                {
+                    preview.Sample(_preset, 0.2f);
+                    preview.Refresh();
+                    preview.Sample(_preset, 0.1f);
+                }
+            }
+
+            Assert.That(EditorSceneManager.previewSceneCount, Is.EqualTo(sceneCount));
+            Assert.That(CountObjects("Spell Studio Preview"), Is.EqualTo(rootCount));
+            Assert.That(Resources.FindObjectsOfTypeAll<Material>().Count(material => material.name == "Spell Studio Preview Material"), Is.EqualTo(materials));
+            Assert.That(SceneManager.GetActiveScene(), Is.EqualTo(scene));
+            Assert.That(scene.isDirty, Is.EqualTo(dirty));
+            CollectionAssert.AreEquivalent(roots, scene.GetRootGameObjects());
+        }
+
+        [Test]
+        public void CaptureRendersSpellPixelsIntoCallerOwnedTexture()
+        {
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+                Assert.Ignore("Image verification requires a graphics device.");
+            _preset.element = EffectElement.Rise;
+            _preset.family = EffectFamily.Heal;
+            _preview.ShowGround = false;
+            _preview.ShowReference = false;
+            Texture2D capture = null;
+            try
+            {
+                capture = _preview.Capture(_preset, _preset.PreviewDuration * 0.4f, 320, 240);
+                Assert.That(capture, Is.Not.Null);
+                Assert.That(capture.width, Is.EqualTo(320));
+                Assert.That(capture.height, Is.EqualTo(240));
+                Color32[] pixels = capture.GetPixels32();
+                Color32 background = pixels[0];
+                int different = pixels.Count(pixel => System.Math.Abs(pixel.r - background.r) +
+                    System.Math.Abs(pixel.g - background.g) + System.Math.Abs(pixel.b - background.b) > 25);
+                Assert.That(different, Is.GreaterThan(20), "The isolated spell must produce visible pixels through the URP shader.");
+                _preview.Dispose();
+                Assert.That(capture != null, Is.True, "The exported texture belongs to the caller after preview disposal.");
+            }
+            finally
+            {
+                if (capture) Object.DestroyImmediate(capture);
+            }
+        }
+
+        [Test]
+        public void CaptureRestoresShaderGlobalsAfterStageCallbackAndFitsPortrait()
+        {
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+                Assert.Ignore("Image verification requires a graphics device.");
+            string[] names = { "_HLLookApplied", "_HLInkStrength", "_HLFogStart", "_HLFogEnd" };
+            float[] before = names.Select(Shader.GetGlobalFloat).ToArray();
+            Vector4 tint = Shader.GetGlobalVector("_HLShadowTint");
+            Texture2D capture = null;
+            void StageCallback(UnityEngine.Rendering.ScriptableRenderContext context, Camera[] cameras)
+            {
+                Shader.SetGlobalFloat("_HLInkStrength", .987f);
+                Shader.SetGlobalFloat("_HLFogStart", .01f);
+            }
+            try
+            {
+                UnityEngine.Rendering.RenderPipelineManager.beginFrameRendering += StageCallback;
+                capture = _preview.Capture(_preset, .2f, 480, 700);
+                for (int i = 0; i < names.Length; i++) Assert.That(Shader.GetGlobalFloat(names[i]), Is.EqualTo(before[i]), names[i]);
+                Assert.That(Shader.GetGlobalVector("_HLShadowTint"), Is.EqualTo(tint));
+                Color32[] pixels = capture.GetPixels32();
+                Color32 background = pixels[pixels.Length - 1];
+                // The top row is clear background: the complete creature crown fits with breathing room.
+                int upperBandSubject = 0;
+                for (int y = 690; y < 700; y++)
+                    for (int x = 100; x < 380; x++)
+                    {
+                        Color32 pixel = pixels[y * 480 + x];
+                        if (System.Math.Abs(pixel.r - background.r) + System.Math.Abs(pixel.g - background.g) +
+                            System.Math.Abs(pixel.b - background.b) > 35) upperBandSubject++;
+                    }
+                Assert.That(upperBandSubject, Is.EqualTo(0), "The crown must not intersect the upper frame.");
+                int greenPixels = pixels.Count(pixel => pixel.g > pixel.r * 1.15f && pixel.g > pixel.b * 1.2f && pixel.g > 65);
+                Assert.That(greenPixels, Is.GreaterThan(100), "The healer must retain its authored greens under preview lighting.");
+            }
+            finally
+            {
+                UnityEngine.Rendering.RenderPipelineManager.beginFrameRendering -= StageCallback;
+                for (int i = 0; i < names.Length; i++) Shader.SetGlobalFloat(names[i], before[i]);
+                Shader.SetGlobalVector("_HLShadowTint", tint);
+                if (capture) Object.DestroyImmediate(capture);
+            }
+        }
+
+        [Test]
+        public void NullSelectionClearsPreviousEffectAndDisposalIsIdempotent()
+        {
+            SpellEffect previous = _preview.Sample(_preset, 0.1f);
+            Assert.That(_preview.Sample(null, 0f), Is.Null);
+            Assert.That(previous == null, Is.True);
+            _preview.Dispose();
+            Assert.DoesNotThrow(() => _preview.Dispose());
+            Assert.Throws<ObjectDisposedException>(() => _preview.Sample(_preset, 0f));
+        }
+
+        static int CountObjects(string name) => Resources.FindObjectsOfTypeAll<GameObject>().Count(go => go.name == name);
+
+        readonly struct Pose
+        {
+            public readonly Vector3 position, scale;
+            public readonly Quaternion rotation;
+            public readonly bool active;
+            public Pose(Transform transform)
+            {
+                position = transform.position;
+                rotation = transform.rotation;
+                scale = transform.localScale;
+                active = transform.gameObject.activeSelf;
+            }
+        }
+
+        static Pose[] Snapshot(SpellEffect effect) => effect.parts.Select(part => new Pose(part)).ToArray();
+
+        static void AssertPose(Pose[] actual, Pose[] expected)
+        {
+            Assert.That(actual.Length, Is.EqualTo(expected.Length));
+            for (int i = 0; i < actual.Length; i++)
+            {
+                Assert.That(Vector3.Distance(actual[i].position, expected[i].position), Is.LessThan(0.0001f), "Position " + i);
+                Assert.That(Quaternion.Angle(actual[i].rotation, expected[i].rotation), Is.LessThan(0.01f), "Rotation " + i);
+                Assert.That(Vector3.Distance(actual[i].scale, expected[i].scale), Is.LessThan(0.0001f), "Scale " + i);
+                Assert.That(actual[i].active, Is.EqualTo(expected[i].active), "Visibility " + i);
+            }
+        }
+
+        static void AssertFinite(Vector3 vector)
+        {
+            Assert.That(float.IsFinite(vector.x) && float.IsFinite(vector.y) && float.IsFinite(vector.z), Is.True);
+        }
+    }
+}

@@ -1,0 +1,194 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72656a68b4ca4b08aa7781878f3f168f, type: 3}
+  m_Name: Aegis
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.Studio.SpellStudioPreset
+  displayName: Aegis
+  description: A warm gold, three-charge ward. Plates close around the body and remain held. Lower Charges to study how the vocabulary reveals each plate.
+  vocabulary: {fileID: 11400000, guid: 2ebcc249811134625a66debb52a811c9, type: 2}
+  element: 5
+  family: 4
+  tempo: 2
+  periodSeconds: 1
+  stacks: 1
+  charges: 3
+  amount: 0.25
+  durationSeconds: 5
+  critical: 0
+  side: 1
+  scale: 1
+  overrideEntry: 1
+  entry:
+    parts:
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: 1.1, y: 0, z: 0}
+      euler: {x: 0, y: 0, z: 12}
+      size: {x: 0.385, y: 1.60875, z: 1.265}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: 0.54999995, y: 0, z: 0.952628}
+      euler: {x: 0, y: 300, z: 12}
+      size: {x: 0.385, y: 1.60875, z: 1.265}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: -0.5500001, y: 0, z: 0.95262796}
+      euler: {x: 0, y: 240, z: 12}
+      size: {x: 0.385, y: 1.60875, z: 1.265}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: -1.1, y: 0, z: -0.00000009616505}
+      euler: {x: 0, y: 180, z: 12}
+      size: {x: 0.385, y: 1.60875, z: 1.265}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: -0.54999995, y: 0, z: -0.952628}
+      euler: {x: 0, y: 119.99999, z: 12}
+      size: {x: 0.385, y: 1.60875, z: 1.265}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: 0.54999995, y: 0, z: -0.952628}
+      euler: {x: 0, y: 60.000008, z: 12}
+      size: {x: 0.385, y: 1.60875, z: 1.265}
+      glow: 0
+      minCount: 0
+    stackBeads:
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.9625, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.6875, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.41249996, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.1375, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.1375, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.41249996, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.6875, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.9625, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    criticalRings:
+    - id: CriticalRing
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: 0, y: 0, z: 0}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 3.6749997, y: 1.05, z: 3.6749997}
+      glow: 0
+      minCount: 0
+    - id: CriticalRing
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: 0, y: 0, z: 0}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 4.4625, y: 1.275, z: 4.4625}
+      glow: 0
+      minCount: 0
+    sideRim:
+    - id: SideRim
+      primitive: 3
+      role: 0
+      colour: 0
+      position: {x: 0, y: -0.95, z: 0}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 2.6, y: 0.5, z: 2.6}
+      glow: 0
+      minCount: 0
+    motion: 5
+    socket: 0
+    count: 2
+    minCount: 1
+    cycleSeconds: 0.25
+  overrideColour: 1
+  colour: {r: 1, g: 0.77, b: 0.27, a: 1}
