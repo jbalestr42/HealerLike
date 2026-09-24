@@ -130,7 +130,8 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
-            // Producers moved their zones in Update, so the frame's zones are final here
+            // Observers published and producers moved their zones in Update, so the frame is final here
+            _spellSink.Tick();
             _zones.PublishFrame(Time.deltaTime);
             _grass.UpdateField(_zones);
             _environment.grass.UpdateStrips(_zones);

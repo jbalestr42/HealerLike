@@ -531,6 +531,34 @@ namespace HealerLike.Render.Spells
             }
         }
 
+        // A new element under the parent; on a unit, its body and stem parts take the unit's side
+        public static SpellEffect Create(EffectRecipe recipe, Transform parent, PrimitiveMeshes meshes, Material material,
+                                         GameObject target)
+        {
+            if (recipe == null || meshes == null)
+            {
+                return null;
+            }
+
+            LookSide targetSide = LookSide.Plant;
+            Entity entity = null;
+            if (target != null)
+            {
+                entity = target.GetComponent<Entity>();
+            }
+
+            if (entity != null)
+            {
+                targetSide = LookDerivation.Side(entity.entityType);
+            }
+
+            GameObject effectGo = new GameObject(recipe.element.ToString());
+            effectGo.transform.SetParent(parent, false);
+            SpellEffect effect = effectGo.AddComponent<SpellEffect>();
+            effect.Init(recipe, meshes, material, targetSide);
+            return effect;
+        }
+
         // Also runs from edit mode tests, where Destroy is not allowed
         public static void Dispose(GameObject effect)
         {

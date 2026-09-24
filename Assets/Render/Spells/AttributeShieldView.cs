@@ -7,6 +7,7 @@ namespace HealerLike.Render.Spells
     public class AttributeShieldView : MonoBehaviour
     {
         AttributeManager _attributes;
+        Attribute _hitArmor;
         GameObject _target;
         SpellVisualSink _sink;
 
@@ -18,13 +19,18 @@ namespace HealerLike.Render.Spells
                 {
                     return null;
                 }
+
                 return _sink.GetElement(_target, EffectElement.Plates);
             }
         }
 
-        void LateUpdate()
+        // A unit may gain its HitArmor attribute after spawn, so it is looked for until it exists and then followed
+        void Update()
         {
-            Refresh();
+            if (_hitArmor == null)
+            {
+                Listen();
+            }
         }
 
         void OnDisable()
@@ -47,6 +53,7 @@ namespace HealerLike.Render.Spells
             _attributes = attributes;
             _target = target;
             _sink = sink;
+            Listen();
             Refresh();
         }
 
@@ -67,11 +74,35 @@ namespace HealerLike.Render.Spells
             {
                 charges = 0f;
             }
+
             _sink.SetCharges(_target, charges);
+        }
+
+        void Listen()
+        {
+            if (_hitArmor != null || !isActiveAndEnabled || _attributes == null || !_attributes.Has(AttributeType.HitArmor))
+            {
+                return;
+            }
+
+            _hitArmor = _attributes.Get(AttributeType.HitArmor);
+            _hitArmor.AddOnValueChangedListener(OnHitArmorChanged);
+            Refresh();
+        }
+
+        void OnHitArmorChanged(Attribute attribute)
+        {
+            Refresh();
         }
 
         void Clear()
         {
+            if (_hitArmor != null)
+            {
+                _hitArmor.RemoveOnValueChangedListener(OnHitArmorChanged);
+                _hitArmor = null;
+            }
+
             if (_sink != null && _target != null)
             {
                 _sink.SetCharges(_target, 0f);

@@ -17,14 +17,20 @@ namespace HealerLike.Render.Spells
         [DictionaryDrawerSettings(KeyLabel = "Projectile", ValueLabel = "Look")]
         public Dictionary<GameObject, ProjectileLook> projectiles = new Dictionary<GameObject, ProjectileLook>();
 
-        // The authored row, or null when the look is derived
-        public SpellLook GetLook(ABuffHandlerFactory factory)
+        // The authored row, else the look the handler's channels derive for this caster on this target
+        public SpellLook GetLook(ABuffHandlerFactory factory, GameObject source, GameObject target)
         {
             if (factory != null && buffs != null && buffs.ContainsKey(factory))
             {
                 return buffs[factory];
             }
-            return null;
+
+            EffectChannels channels = EffectDerivation.Channels(factory, IsSameSide(source, target));
+            SpellLook look = new SpellLook();
+            look.element = EffectComposer.Element(channels);
+            look.family = channels.family;
+            look.tempo = channels.tempo;
+            return look;
         }
 
         public ProjectileLook GetProjectileLook(GameObject prefab)
@@ -52,6 +58,32 @@ namespace HealerLike.Render.Spells
                 look.preserveContactPath = true;
             }
             return look;
+        }
+
+        // The caster's side against the target's: the healer's Character, which is not an Entity, plays for the
+        // player, and a status without a caster is taken as its target's own
+        static bool IsSameSide(GameObject source, GameObject target)
+        {
+            if (source == null || target == null)
+            {
+                return true;
+            }
+
+            Entity caster = source.GetComponent<Entity>();
+            Entity recipient = target.GetComponent<Entity>();
+            Entity.EntityType casterSide = Entity.EntityType.Player;
+            if (caster != null)
+            {
+                casterSide = caster.entityType;
+            }
+
+            Entity.EntityType recipientSide = Entity.EntityType.Player;
+            if (recipient != null)
+            {
+                recipientSide = recipient.entityType;
+            }
+
+            return casterSide == recipientSide;
         }
     }
 
