@@ -1,12 +1,13 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using HealerLike.Render.Spells;
-using HealerLike.Render.Grammar;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
+using HealerLike.Render.Spells;
 
 namespace HealerLike.Render.Studio.Editor
 {
+    // Each starter recipe alone and under a held boon into Logs/CreatureStudioCaptures, from the menu or batch mode
     public static class CreatureStudioCapture
     {
         public static void CaptureAll()
@@ -14,35 +15,53 @@ namespace HealerLike.Render.Studio.Editor
             CreatureStudioSamples.Create();
             string output = Path.GetFullPath("Logs/CreatureStudioCaptures");
             Directory.CreateDirectory(output);
+            string path = SpellStudioSamples.VocabularyPath;
+            EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(path);
             for (int i = 0; i < CreatureStudioAuthoring.SampleNames.Length; i++)
             {
-                var recipe = CreatureStudioAuthoring.BuildSample(i);
-                try
+                CreatureRecipe recipe = CreatureStudioAuthoring.BuildSample(i);
+                if (recipe == null)
                 {
-                    using (var preview = new CreatureStudioPreview { Side = i == 2 ? LookSide.Stone : LookSide.Plant })
-                        Write(preview.Capture(recipe, 1.25f, 1000, 800), Path.Combine(output, recipe.name + ".png"));
-
-                    var spell = ScriptableObject.CreateInstance<SpellStudioPreset>();
-                    try
-                    {
-                        spell.vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>("Assets/Render/Spells/Data/EffectVocabulary.asset");
-                        spell.element = EffectElement.Orbit;
-                        spell.family = EffectFamily.Boon;
-                        spell.tempo = EffectTempo.ForDuration;
-                        using (var preview = new SpellStudioPreview { ReferenceRecipe = recipe, TargetSide = i == 2 ? LookSide.Stone : LookSide.Plant })
-                            Write(preview.Capture(spell, 1.25f, 1000, 800), Path.Combine(output, recipe.name + " + Spell.png"));
-                    }
-                    finally { Object.DestroyImmediate(spell); }
+                    continue;
                 }
-                finally { if (recipe) Object.DestroyImmediate(recipe); }
+
+                LookSide side = LookSide.Plant;
+                if (i == 2)
+                {
+                    side = LookSide.Stone;
+                }
+
+                CreatureStudioPreview creature = new CreatureStudioPreview();
+                creature.Init();
+                creature.side = side;
+                Write(creature.Capture(recipe, 1.25f, 1000, 800), Path.Combine(output, recipe.name + ".png"));
+                creature.Dispose();
+
+                SpellStudioPreset spell = ScriptableObject.CreateInstance<SpellStudioPreset>();
+                spell.vocabulary = vocabulary;
+                spell.element = EffectElement.Orbit;
+                spell.family = EffectFamily.Boon;
+                spell.tempo = EffectTempo.ForDuration;
+                SpellStudioPreview preview = new SpellStudioPreview();
+                preview.Init();
+                preview.target.recipe = recipe;
+                preview.target.side = side;
+                Write(preview.Capture(spell, 1.25f, 1000, 800), Path.Combine(output, recipe.name + " + Spell.png"));
+                preview.Dispose();
+                Object.DestroyImmediate(spell);
+                Object.DestroyImmediate(recipe);
             }
-            Debug.Log("[Creature Studio] Captured creature and spell combinations to " + output);
         }
 
         static void Write(Texture2D image, string path)
         {
-            try { File.WriteAllBytes(path, image.EncodeToPNG()); }
-            finally { Object.DestroyImmediate(image); }
+            if (image == null)
+            {
+                return;
+            }
+
+            File.WriteAllBytes(path, image.EncodeToPNG());
+            Object.DestroyImmediate(image);
         }
     }
 }

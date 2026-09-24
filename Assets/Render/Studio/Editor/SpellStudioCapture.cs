@@ -3,57 +3,49 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using HealerLike.Render.Grammar;
-using HealerLike.Render.Creatures;
 using HealerLike.Render.Spells;
 
 namespace HealerLike.Render.Studio.Editor
 {
-    /// <summary>Repeatable visual smoke artifacts, also callable from Unity batch mode.</summary>
+    // Every vocabulary element through the studio preview into Logs/SpellStudioCaptures, from the menu or batch mode
     public static class SpellStudioCapture
     {
         public static void CaptureAll()
         {
+            string path = SpellStudioSamples.VocabularyPath;
+            EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(path);
+            if (!vocabulary)
+            {
+                Debug.LogError("[SpellStudioCapture] The spell vocabulary is missing: "
+                    + SpellStudioSamples.VocabularyPath);
+                return;
+            }
+
             string output = Path.GetFullPath("Logs/SpellStudioCaptures");
             Directory.CreateDirectory(output);
-            var vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>("Assets/Render/Spells/Data/EffectVocabulary.asset");
-            if (!vocabulary) throw new InvalidOperationException("The spell vocabulary is missing.");
-            var preset = ScriptableObject.CreateInstance<SpellStudioPreset>();
+            SpellStudioPreset preset = ScriptableObject.CreateInstance<SpellStudioPreset>();
             preset.vocabulary = vocabulary;
-            try
+            SpellStudioPreview preview = new SpellStudioPreview();
+            preview.Init();
+            foreach (EffectElement element in Enum.GetValues(typeof(EffectElement)))
             {
-                using (var preview = new SpellStudioPreview())
-                    foreach (EffectElement element in Enum.GetValues(typeof(EffectElement)))
-                    {
-                        preset.element = element;
-                        preset.family = Family(element);
-                        preset.stacks = 3;
-                        preset.charges = 3;
-                        preset.amount = .5f;
-                        preset.tempo = EffectTempo.Once;
-                        preview.Refresh();
-                        var texture = preview.Capture(preset, preset.PreviewDuration * .4f, 960, 720);
-                        try { File.WriteAllBytes(Path.Combine(output, element + ".png"), texture.EncodeToPNG()); }
-                        finally { UnityEngine.Object.DestroyImmediate(texture); }
-                    }
+                preset.element = element;
+                preset.family = SpellStudioSamples.Family(element);
+                preset.stacks = 3;
+                preset.charges = 3;
+                preset.amount = 0.5f;
+                preset.tempo = EffectTempo.Once;
+                preview.Refresh();
+                Texture2D image = preview.Capture(preset, preset.previewDuration * 0.4f, 960, 720);
+                if (image != null)
+                {
+                    File.WriteAllBytes(Path.Combine(output, element + ".png"), image.EncodeToPNG());
+                    UnityEngine.Object.DestroyImmediate(image);
+                }
             }
-            finally { UnityEngine.Object.DestroyImmediate(preset); }
-            Debug.Log("[Spell Studio] Captured all 14 vocabulary elements to " + output);
-        }
 
-        static EffectFamily Family(EffectElement element)
-        {
-            switch (element)
-            {
-                case EffectElement.Rise: return EffectFamily.Heal;
-                case EffectElement.Stalks: return EffectFamily.Renew;
-                case EffectElement.Drips: return EffectFamily.Rot;
-                case EffectElement.Orbit:
-                case EffectElement.Plates:
-                case EffectElement.Bud: return EffectFamily.Boon;
-                case EffectElement.Press:
-                case EffectElement.Crack: return EffectFamily.Bane;
-                default: return EffectFamily.Damage;
-            }
+            preview.Dispose();
+            UnityEngine.Object.DestroyImmediate(preset);
         }
     }
 }

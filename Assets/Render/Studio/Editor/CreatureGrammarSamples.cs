@@ -1,48 +1,96 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using HealerLike.Render.Grammar;
 using HealerLike.Render.Creatures;
-using HealerLike.Render.Spells;
+using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Studio.Editor
 {
+    // Six grammar presets across both sides, heads and bands, as starting points and as a capture set
     public static class CreatureGrammarSamples
     {
-        public const string Folder = "Assets/Render/Studio/Data/Presets";
-        public static readonly string[] Names = { "Plant Bud", "Plant Spear", "Plant Conductor", "Stone Ward", "Stone Spear", "Stone Pulse" };
+        public static readonly string Folder = "Assets/Render/Studio/Data/Presets";
+        public static readonly string[] Names =
+        {
+            "Plant Bud", "Plant Spear", "Plant Conductor", "Stone Ward", "Stone Spear", "Stone Pulse"
+        };
 
+        static readonly string vocabularyPath = "Assets/Render/Creatures/Data/LookVocabulary.asset";
+        static readonly HeadKind[] heads =
+        {
+            HeadKind.Bud, HeadKind.Spear, HeadKind.Conductor, HeadKind.Ward, HeadKind.Spear, HeadKind.Pulse
+        };
+        static readonly CountBand[] counts =
+        {
+            CountBand.One, CountBand.Few, CountBand.Many, CountBand.One, CountBand.Few, CountBand.Many
+        };
+        static readonly MassBand[] masses =
+        {
+            MassBand.Light, MassBand.Sturdy, MassBand.Heavy, MassBand.Heavy, MassBand.Sturdy, MassBand.Light
+        };
+        static readonly EffectFamily[] accents =
+        {
+            EffectFamily.Heal, EffectFamily.Damage, EffectFamily.Boon, EffectFamily.Boon, EffectFamily.Damage,
+            EffectFamily.Damage
+        };
+        // Quick, steady and slow stems, short, mid and long reach, in turn
+        static readonly StemBand[] stems = { StemBand.Quick, StemBand.Steady, StemBand.Slow };
+        static readonly ReachBand[] reaches = { ReachBand.Short, ReachBand.Mid, ReachBand.Long };
+
+        // An unsaved preset the caller owns; null, with an error, outside the names
         public static CreatureGrammarPreset Build(int index)
         {
-            if (index < 0 || index >= Names.Length) throw new System.ArgumentOutOfRangeException(nameof(index));
-            var preset = ScriptableObject.CreateInstance<CreatureGrammarPreset>();
-            preset.name = preset.displayName = Names[index];
-            preset.vocabulary = AssetDatabase.LoadAssetAtPath<LookVocabulary>("Assets/Render/Creatures/Data/LookVocabulary.asset");
-            preset.side = index < 3 ? LookSide.Plant : LookSide.Stone;
-            preset.head = new[] { HeadKind.Bud, HeadKind.Spear, HeadKind.Conductor, HeadKind.Ward, HeadKind.Spear, HeadKind.Pulse }[index];
-            preset.count = new[] { CountBand.One, CountBand.Few, CountBand.Many, CountBand.One, CountBand.Few, CountBand.Many }[index];
-            preset.stem = index % 3 == 0 ? StemBand.Quick : index % 3 == 1 ? StemBand.Steady : StemBand.Slow;
-            preset.mass = index == 3 || index == 2 ? MassBand.Heavy : index == 1 || index == 4 ? MassBand.Sturdy : MassBand.Light;
-            preset.reach = index % 3 == 0 ? ReachBand.Short : index % 3 == 1 ? ReachBand.Mid : ReachBand.Long;
-            preset.accent = index == 0 ? EffectFamily.Heal : index == 2 || index == 3 ? EffectFamily.Boon : EffectFamily.Damage;
-            preset.description = "Editable inputs to the existing look grammar. The vocabulary supplies all geometry; baking creates a separate manual recipe.";
+            if (index < 0 || index >= Names.Length)
+            {
+                Debug.LogError("[CreatureGrammarSamples] No sample at " + index);
+                return null;
+            }
+
+            CreatureGrammarPreset preset = ScriptableObject.CreateInstance<CreatureGrammarPreset>();
+            preset.name = Names[index];
+            preset.displayName = Names[index];
+            preset.vocabulary = AssetDatabase.LoadAssetAtPath<LookVocabulary>(vocabularyPath);
+            preset.side = LookSide.Stone;
+            if (index < 3)
+            {
+                preset.side = LookSide.Plant;
+            }
+
+            preset.head = heads[index];
+            preset.count = counts[index];
+            preset.stem = stems[index % 3];
+            preset.mass = masses[index];
+            preset.reach = reaches[index % 3];
+            preset.accent = accents[index];
+            preset.description = "Editable inputs to the existing look grammar. The vocabulary supplies all geometry; "
+                + "baking creates a separate manual recipe.";
             return preset;
         }
 
+        // Writes the presets that are not in the folder yet
         [MenuItem("Tools/Render/Creature Grammar Samples")]
         public static void Create()
         {
-            if (!AssetDatabase.IsValidFolder(Folder)) AssetDatabase.CreateFolder("Assets/Render/Studio/Data", "Presets");
+            if (!AssetDatabase.IsValidFolder(Folder))
+            {
+                AssetDatabase.CreateFolder("Assets/Render/Studio/Data", "Presets");
+            }
+
             for (int i = 0; i < Names.Length; i++)
             {
                 string path = Folder + "/" + Names[i] + ".asset";
-                if (!string.IsNullOrEmpty(AssetDatabase.AssetPathToGUID(path))) continue;
-                var preset = Build(i);
+                if (!string.IsNullOrEmpty(AssetDatabase.AssetPathToGUID(path)))
+                {
+                    continue;
+                }
+
+                CreatureGrammarPreset preset = Build(i);
                 AssetDatabase.CreateAsset(preset, path);
                 AssetDatabase.SaveAssetIfDirty(preset);
             }
         }
 
+        // Each preset through the grammar and the studio preview into Logs/GrammarCaptures
         public static void CaptureAll()
         {
             Create();
@@ -50,23 +98,30 @@ namespace HealerLike.Render.Studio.Editor
             Directory.CreateDirectory(folder);
             for (int i = 0; i < Names.Length; i++)
             {
-                var preset = Build(i);
-                CreatureRecipe recipe = null;
-                try
+                CreatureGrammarPreset preset = Build(i);
+                string[] errors = CreatureGrammarValidator.Validate(preset);
+                if (errors.Length != 0)
                 {
-                    string[] errors = preset.Validate();
-                    if (errors.Length != 0) throw new System.InvalidOperationException(Names[i] + ": " + string.Join("; ", errors));
-                    recipe = preset.Compose();
-                    using (var preview = new CreatureStudioPreview { Side = preset.Channels().side })
-                    {
-                        var texture = preview.Capture(recipe, 1.2f, 800, 700);
-                        try { File.WriteAllBytes(Path.Combine(folder, Names[i] + ".png"), texture.EncodeToPNG()); }
-                        finally { Object.DestroyImmediate(texture); }
-                    }
+                    Debug.LogError("[CreatureGrammarSamples] " + Names[i] + ": " + string.Join("; ", errors));
+                    Object.DestroyImmediate(preset);
+                    continue;
                 }
-                finally { if (recipe) Object.DestroyImmediate(recipe); Object.DestroyImmediate(preset); }
+
+                CreatureRecipe recipe = preset.Compose();
+                CreatureStudioPreview preview = new CreatureStudioPreview();
+                preview.Init();
+                preview.side = preset.Channels().side;
+                Texture2D image = preview.Capture(recipe, 1.2f, 800, 700);
+                if (image != null)
+                {
+                    File.WriteAllBytes(Path.Combine(folder, Names[i] + ".png"), image.EncodeToPNG());
+                    Object.DestroyImmediate(image);
+                }
+
+                preview.Dispose();
+                Object.DestroyImmediate(recipe);
+                Object.DestroyImmediate(preset);
             }
-            Debug.Log("[Render Studio] Grammar samples captured to " + folder);
         }
     }
 }
