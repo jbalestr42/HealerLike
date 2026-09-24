@@ -18,23 +18,19 @@ namespace HealerLike.Render.Deliveries
         bool _preserveContactPath;
 
         readonly List<ProjectileContact> _contacts = new List<ProjectileContact>();
-        readonly List<LianaArm> _arms = new List<LianaArm>();
         readonly DeliveryTip _freeTip = new DeliveryTip();
         RenderManager _manager;
         DeliveryVocabulary _vocabulary;
         IDeliverySource _delivery;
+        IDeliveryAccent _accent;
         MonoBehaviour _deliveryComponent;
         Projectile _subscribed;
-        CreatureBuilder _builder;
-        CreatureRig _rig;
         Renderer[] _renderers;
         bool[] _rendererStates;
         List<AConsumerFactory> _consumers;
         int _token;
-        int _lease;
         Vector3 _lastPosition;
         bool _hasLanded;
-        bool _isInitialized;
 
         public DeliveryStyle deliveryStyle { get { return _deliveryStyle; } }
 
@@ -57,9 +53,6 @@ namespace HealerLike.Render.Deliveries
         Matrix4x4 _freeTipFrame;
         public Matrix4x4 freeTipFrame { get { return _freeTipFrame; } }
 
-        // The arms the delivery took, their tips carry its family
-        public IReadOnlyList<LianaArm> arms { get { return _arms; } }
-
         // The manager adds the observer to a spawned projectile and calls this before Projectile.Init
         public void Init(RenderManager manager, ProjectileLook look)
         {
@@ -76,7 +69,6 @@ namespace HealerLike.Render.Deliveries
             Unbind();
             _contacts.Clear();
             _hasLanded = false;
-            _isInitialized = true;
             if (!projectile)
             {
                 projectile = GetComponent<Projectile>();
@@ -136,31 +128,21 @@ namespace HealerLike.Render.Deliveries
                     }
 
                     _delivery = candidate;
+                    _accent = component as IDeliveryAccent;
                     _deliveryComponent = component;
                     _token = token;
-                    _builder = component as CreatureBuilder;
-                    _rig = _builder ? _builder.rig : null;
                     break;
                 }
             }
 
             if (_token != 0)
             {
-                FindArms(true);
-                TintArms();
+                TintTip();
                 CaptureRenderers();
                 return;
             }
 
             StartFree();
-        }
-
-        void OnEnable()
-        {
-            if (_isInitialized && projectile && projectile.source)
-            {
-                Init(projectile.source);
-            }
         }
 
         void OnDisable()
@@ -173,6 +155,8 @@ namespace HealerLike.Render.Deliveries
             Unbind();
         }
 
+        // LateUpdate and not the manager's tick: the projectile's own Update and its retarget listeners move and
+        // retarget it first, and whether it is done can only be read after them
         void LateUpdate()
         {
             if (_isFree)
@@ -186,8 +170,7 @@ namespace HealerLike.Render.Deliveries
                 return;
             }
 
-            if (!_subscribed || !_subscribed.source || !_deliveryComponent || !_deliveryComponent.isActiveAndEnabled
-                || (_builder && _builder.rig != _rig))
+            if (!_subscribed || !_subscribed.source || !_deliveryComponent || !_deliveryComponent.isActiveAndEnabled)
             {
                 // The view that claimed the shot is gone, the shot keeps flying as its own tip
                 EndLease();
@@ -196,7 +179,7 @@ namespace HealerLike.Render.Deliveries
             }
 
             HideRenderers();
-            TintArms();
+            TintTip();
             // Retarget listeners have all finished by now. Never replace ordered hit contacts
             // with the final target, which can already be null for an instant chain.
             if (_subscribed.ShouldDestroyProjectile())
@@ -239,59 +222,12 @@ namespace HealerLike.Render.Deliveries
             return false;
         }
 
-        // The rig begins one arm per delivery and its lease is the newest token among its arms. A chain
-        // contact later branches new arms under the same lease, so a hit looks again.
-        void FindArms(bool isNewLease)
+        // The claimer tints the tip its delivery took, when it can and the shot carries a family
+        void TintTip()
         {
-            _arms.Clear();
-            Transform root = _rig != null ? _rig.root : null;
-            if (!root && _deliveryComponent)
+            if (_accent != null && TryAccent(out Color accent))
             {
-                root = _deliveryComponent.transform;
-            }
-
-            if (!root)
-            {
-                return;
-            }
-
-            LianaArmView[] views = root.GetComponentsInChildren<LianaArmView>(true);
-            if (isNewLease)
-            {
-                _lease = 0;
-                foreach (LianaArmView view in views)
-                {
-                    if (view.arm != null && !view.arm.isAvailable && view.arm.token > _lease)
-                    {
-                        _lease = view.arm.token;
-                    }
-                }
-            }
-
-            if (_lease == 0)
-            {
-                return;
-            }
-
-            foreach (LianaArmView view in views)
-            {
-                if (view.arm != null && view.arm.token == _lease)
-                {
-                    _arms.Add(view.arm);
-                }
-            }
-        }
-
-        void TintArms()
-        {
-            if (!TryAccent(out Color accent))
-            {
-                return;
-            }
-
-            foreach (LianaArm arm in _arms)
-            {
-                arm.SetTipAccent(_lease, accent);
+                _accent.SetDeliveryAccent(_token, accent);
             }
         }
 
@@ -459,8 +395,7 @@ namespace HealerLike.Render.Deliveries
                 _delivery.ContactDelivery(_token, point, hit.target);
             }
 
-            FindArms(false);
-            TintArms();
+            TintTip();
         }
 
         // An area item shows as one pod falling from the tip at the first contact
@@ -472,17 +407,9 @@ namespace HealerLike.Render.Deliveries
                 return;
             }
 
-            Color colour = FreeColour();
-            float size = FreeSize();
-            if (_arms.Count > 0)
-            {
-                colour = _arms[0].tipColour;
-                size = _arms[0].tipWidth;
-            }
-
             TipDrop drop = new GameObject("TipDrop").AddComponent<TipDrop>();
             drop.Init(_vocabulary.splashPod, _vocabulary.meshes.GetMesh(_vocabulary.splashPod.primitive),
-                _vocabulary.material, colour, point, size);
+                _vocabulary.material, FreeColour(), point, FreeSize());
         }
 
         void EndLease()
@@ -493,8 +420,6 @@ namespace HealerLike.Render.Deliveries
             }
 
             _token = 0;
-            _lease = 0;
-            _arms.Clear();
             RestoreRenderers();
         }
 
@@ -508,9 +433,8 @@ namespace HealerLike.Render.Deliveries
             _subscribed = null;
             EndLease();
             StopFree();
-            _rig = null;
-            _builder = null;
             _delivery = null;
+            _accent = null;
             _deliveryComponent = null;
         }
     }

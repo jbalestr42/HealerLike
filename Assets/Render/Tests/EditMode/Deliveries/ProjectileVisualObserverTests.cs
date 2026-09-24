@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
@@ -10,29 +9,46 @@ using HealerLike.Render.Stage;
 namespace HealerLike.Render.Deliveries
 {
 
-public class DeliveryProbe : MonoBehaviour, IDeliverySource
+// A view that claims shots and records what the observer asks of it, through the two contracts alone
+public class DeliveryProbe : MonoBehaviour, IDeliverySource, IDeliveryAccent
 {
     public int begins;
     public int contacts;
     public int ends;
+    public int accents;
     public bool accepts = true;
     public DeliveryStyle style;
+    public int token;
+    public Color accent;
 
-    public bool BeginDelivery(int token, DeliveryStyle value, Transform projectile, Vector3 end)
+    public bool BeginDelivery(int value, DeliveryStyle deliveryStyle, Transform projectile, Vector3 end)
     {
         begins++;
-        style = value;
+        style = deliveryStyle;
+        if (accepts)
+        {
+            token = value;
+        }
         return accepts;
     }
 
-    public void ContactDelivery(int token, Vector3 position, GameObject target)
+    public void ContactDelivery(int value, Vector3 position, GameObject target)
     {
         contacts++;
     }
 
-    public void EndDelivery(int token)
+    public void EndDelivery(int value)
     {
         ends++;
+    }
+
+    public void SetDeliveryAccent(int value, Color colour)
+    {
+        accents++;
+        if (value == token)
+        {
+            accent = colour;
+        }
     }
 }
 
@@ -41,16 +57,15 @@ public class ProjectileVisualObserverTests
     GameObject _source;
     GameObject _first;
     GameObject _second;
+    GameObject _model;
     GameObject _projectileObject;
     Projectile _projectile;
     ProjectileVisualObserver _observer;
-    CreatureRecipe _recipe;
-    Material _material;
+    DeliveryProbe _probe;
     CreatureBuilder _builder;
     GameObject _managerGo;
     RenderManager _manager;
     readonly List<Object> _scriptableObjects = new List<Object>();
-    readonly List<GameObject> _objects = new List<GameObject>();
 
     static Entity EntityFixture(GameObject go)
     {
@@ -77,8 +92,21 @@ public class ProjectileVisualObserverTests
         return consumer;
     }
 
+    // The plant view in place of the probe, the way a derived unit's model carries it
+    void AddPlantView()
+    {
+        Object.DestroyImmediate(_probe);
+        CreatureRecipe recipe = RenderTestAssets.CreateRecipe();
+        _scriptableObjects.Add(recipe);
+        Material material = new Material(RenderTestAssets.LoadLookMaterial());
+        _scriptableObjects.Add(material);
+        _builder = _model.AddComponent<CreatureBuilder>();
+        _builder.SetRecipe(recipe, material, RenderTestAssets.LoadMeshes());
+        _builder.Init(_source.GetComponent<Entity>());
+    }
+
     // Shoots the projectile again carrying the consumers, the observer reads them in its Init
-    void SeedConsumers(params AConsumerFactory[] consumers)
+    void Shoot(params AConsumerFactory[] consumers)
     {
         _projectile.Init(_source, _first, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>(consumers));
     }
@@ -94,32 +122,26 @@ public class ProjectileVisualObserverTests
         _second = new GameObject("Second");
         EntityFixture(_second);
         _second.transform.position = Vector3.right * 2f;
-        GameObject model = new GameObject("Model");
-        model.transform.SetParent(_source.transform, false);
-        EntityModel entityModel = model.AddComponent<EntityModel>();
+        _model = new GameObject("Model");
+        _model.transform.SetParent(_source.transform, false);
+        EntityModel entityModel = _model.AddComponent<EntityModel>();
         TestHelpers.SetPrivateField(entity, "_model", entityModel);
-        _recipe = RenderTestAssets.CreateRecipe();
-        _material = new Material(RenderTestAssets.LoadLookMaterial());
-        _builder = model.AddComponent<CreatureBuilder>();
-        _builder.SetRecipe(_recipe, _material, RenderTestAssets.LoadMeshes());
-        _builder.Init(entity);
+        _probe = _model.AddComponent<DeliveryProbe>();
         _projectileObject = new GameObject("Projectile", typeof(LineRenderer));
         _projectile = _projectileObject.AddComponent<Projectile>();
         _observer = _projectileObject.AddComponent<ProjectileVisualObserver>();
         _managerGo = new GameObject("RenderManager");
         _manager = _managerGo.AddComponent<RenderManager>();
+        TestHelpers.SetPrivateField(_manager, "_deliveryVocabulary", RenderTestAssets.LoadDeliveryVocabulary());
+        TestHelpers.SetPrivateField(_manager, "_meshes", RenderTestAssets.LoadMeshes());
         _observer.Init(_manager, null);
-        _projectile.Init(_source, _first, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
+        Shoot();
     }
 
     [TearDown]
     public void TearDown()
     {
-        if (_observer)
-        {
-            TestHelpers.InvokePrivate(_observer, "OnDestroy");
-        }
-
+        TestHelpers.InvokePrivate(_observer, "OnDestroy");
         if (_builder)
         {
             TestHelpers.InvokePrivate(_builder, "OnDestroy");
@@ -127,16 +149,9 @@ public class ProjectileVisualObserverTests
 
         Object.DestroyImmediate(_projectileObject);
         Object.DestroyImmediate(_managerGo);
-        foreach (GameObject trackedObject in _objects)
-        {
-            Object.DestroyImmediate(trackedObject);
-        }
-        _objects.Clear();
         Object.DestroyImmediate(_source);
         Object.DestroyImmediate(_first);
         Object.DestroyImmediate(_second);
-        Object.DestroyImmediate(_recipe);
-        Object.DestroyImmediate(_material);
         foreach (TipDrop drop in Object.FindObjectsByType<TipDrop>(FindObjectsSortMode.None))
         {
             Object.DestroyImmediate(drop.gameObject);
@@ -151,93 +166,75 @@ public class ProjectileVisualObserverTests
     }
 
     [Test]
-    public void Init_ClaimedByRig_FindsTheArmItsDeliveryTook()
+    public void Init_ClaimingSource_BeginsHidesAndEndsThroughTheInterface()
     {
-        Assert.AreNotEqual(0, _observer.gestureToken);
-
-        Assert.AreEqual(1, _observer.arms.Count);
-        Assert.IsFalse(_observer.arms[0].isAvailable);
-    }
-
-    [Test]
-    public void LateUpdate_HealingConsumer_ColoursTipLime()
-    {
-        SeedConsumers(CreateConsumer(-5f));
-
-        TestHelpers.InvokePrivate(_observer, "LateUpdate");
-
-        Color lime = RenderTestAssets.LoadDeliveryVocabulary().palette.heal;
-        Assert.AreEqual(lime, _observer.arms[0].tipColour);
-    }
-
-    [Test]
-    public void LateUpdate_DamagingConsumer_ColoursTipCoral()
-    {
-        SeedConsumers(CreateConsumer(10f));
-
-        TestHelpers.InvokePrivate(_observer, "LateUpdate");
-
-        Color coral = RenderTestAssets.LoadDeliveryVocabulary().palette.damage;
-        Assert.AreEqual(coral, _observer.arms[0].tipColour);
-    }
-
-    [Test]
-    public void LateUpdate_NoConsumer_TipKeepsRestColour()
-    {
-        SeedConsumers();
-
-        TestHelpers.InvokePrivate(_observer, "LateUpdate");
-
-        Assert.AreEqual(_observer.arms[0].restTipColour, _observer.arms[0].tipColour);
-    }
-
-    [Test]
-    public void OnDisable_AfterAccent_TipReturnsToRestColour()
-    {
-        SeedConsumers(CreateConsumer(10f));
-        TestHelpers.InvokePrivate(_observer, "LateUpdate");
-        LianaArm arm = _observer.arms[0];
-
-        _observer.enabled = false;
-        TestHelpers.InvokePrivate(_observer, "OnDisable");
-        arm.Tick(1f, Vector3.zero, Quaternion.identity);
-
-        Assert.AreEqual(arm.restTipColour, arm.tipColour);
-    }
-
-    [Test]
-    public void Init_ProbeDeliverySource_DispatchesThroughInterface()
-    {
-        GameObject model = _builder.gameObject;
-        TestHelpers.InvokePrivate(_builder, "OnDestroy");
-        Object.DestroyImmediate(_builder);
-        DeliveryProbe probe = model.AddComponent<DeliveryProbe>();
         _observer.Init(_manager, new ProjectileLook { style = DeliveryStyle.Arc });
 
         _observer.Init(_source);
-
-        Assert.AreEqual(1, probe.begins);
-        Assert.AreEqual(DeliveryStyle.Arc, probe.style);
         _projectile.OnHit.Invoke(new OnHitData { target = _first });
-        Assert.AreEqual(1, probe.contacts);
         _observer.enabled = false;
         TestHelpers.InvokePrivate(_observer, "OnDisable");
-        Assert.AreEqual(1, probe.ends);
+
+        Assert.AreEqual(DeliveryStyle.Arc, _probe.style);
+        Assert.AreEqual(1, _probe.contacts);
+        Assert.AreEqual(2, _probe.ends); // the first shot of SetUp, then this one
+        Assert.IsTrue(_projectileObject.GetComponent<LineRenderer>().enabled);
+    }
+
+    [Test]
+    public void Init_ClaimingSource_TintsTheTipThroughTheAccentInterface()
+    {
+        Shoot(CreateConsumer(10f));
+
+        TestHelpers.InvokePrivate(_observer, "LateUpdate");
+
+        Assert.AreNotEqual(0, _observer.gestureToken);
+        Assert.AreEqual(_observer.gestureToken, _probe.token);
+        Assert.AreEqual(RenderTestAssets.LoadDeliveryVocabulary().palette.damage, _probe.accent);
+        Assert.IsFalse(_observer.isFree);
+        Assert.IsFalse(_projectileObject.GetComponent<LineRenderer>().enabled);
+    }
+
+    [Test]
+    public void LateUpdate_HealingConsumer_TintsTheTipLime()
+    {
+        Shoot(CreateConsumer(-5f));
+
+        TestHelpers.InvokePrivate(_observer, "LateUpdate");
+
+        Assert.AreEqual(RenderTestAssets.LoadDeliveryVocabulary().palette.heal, _probe.accent);
+    }
+
+    [Test]
+    public void LateUpdate_NoConsumer_LeavesTheTipAtRest()
+    {
+        int accents = _probe.accents;
+
+        TestHelpers.InvokePrivate(_observer, "LateUpdate");
+
+        Assert.AreEqual(accents, _probe.accents);
+    }
+
+    [Test]
+    public void Init_PlantView_ClaimsTheShot()
+    {
+        AddPlantView();
+
+        _observer.Init(_source);
+
+        Assert.AreNotEqual(0, _observer.gestureToken);
+        Assert.IsFalse(_observer.isFree);
     }
 
     [Test]
     public void Init_MissingOrDecliningSource_FliesAsItsOwnTipAndRestoresRenderersAfter()
     {
-        GameObject model = _builder.gameObject;
-        TestHelpers.InvokePrivate(_builder, "OnDestroy");
-        Object.DestroyImmediate(_builder);
         LineRenderer visible = _projectileObject.GetComponent<LineRenderer>();
         GameObject child = new GameObject("HiddenRenderer", typeof(MeshRenderer));
         child.transform.SetParent(_projectileObject.transform);
         Renderer hidden = child.GetComponent<Renderer>();
         hidden.enabled = false;
-        DeliveryProbe probe = model.AddComponent<DeliveryProbe>();
-        probe.accepts = false;
+        _probe.accepts = false;
 
         _observer.Init(_source);
         TestHelpers.InvokePrivate(_observer, "LateUpdate");
@@ -247,14 +244,15 @@ public class ProjectileVisualObserverTests
         Assert.IsTrue(_observer.isFree);
         Assert.IsFalse(visible.enabled);
         Assert.IsFalse(hidden.enabled);
-        Assert.AreEqual(0, probe.contacts);
-        probe.accepts = true;
+        Assert.AreEqual(0, _probe.contacts);
+        _probe.accepts = true;
         _observer.Init(_source);
         Assert.IsFalse(_observer.isFree);
         Assert.IsFalse(visible.enabled);
-        probe.enabled = false;
+        int ends = _probe.ends;
+        _probe.enabled = false;
         TestHelpers.InvokePrivate(_observer, "LateUpdate");
-        Assert.AreEqual(1, probe.ends);
+        Assert.AreEqual(ends + 1, _probe.ends);
         Assert.IsTrue(_observer.isFree); // the claimer left, the shot keeps its tip
         Assert.IsFalse(visible.enabled);
         _observer.enabled = false;
@@ -266,8 +264,7 @@ public class ProjectileVisualObserverTests
     [Test]
     public void Init_UnclaimedShot_HidesItsRenderersAndDrawsTheTipAlongTheFlight()
     {
-        TestHelpers.InvokePrivate(_builder, "OnDestroy");
-        Object.DestroyImmediate(_builder);
+        Object.DestroyImmediate(_probe);
 
         _observer.Init(_source);
         _projectileObject.transform.position = Vector3.right;
@@ -279,16 +276,6 @@ public class ProjectileVisualObserverTests
         Assert.AreEqual(Vector3.right, (Vector3)_observer.freeTipFrame.GetColumn(3));
         Vector3 forward = _observer.freeTipFrame.MultiplyVector(Vector3.forward).normalized;
         Assert.That(Vector3.Dot(forward, Vector3.right), Is.GreaterThan(0.99f));
-    }
-
-    [Test]
-    public void Init_ClaimedShot_LeavesTheDrawingToTheClaimer()
-    {
-        Assert.AreNotEqual(0, _observer.gestureToken);
-
-        Assert.IsFalse(_observer.isFree);
-        Assert.AreEqual(1, _observer.arms.Count);
-        Assert.IsFalse(_projectileObject.GetComponent<LineRenderer>().enabled);
     }
 
     [Test]
@@ -305,7 +292,7 @@ public class ProjectileVisualObserverTests
         _observer.Init(_source);
 
         Assert.AreEqual(DeliveryStyle.Bounce, _observer.deliveryStyle);
-        Assert.AreEqual(DeliveryStyle.Bounce, _observer.arms[0].style);
+        Assert.AreEqual(DeliveryStyle.Bounce, _probe.style);
     }
 
     [Test]
@@ -324,11 +311,8 @@ public class ProjectileVisualObserverTests
     [Test]
     public void Init_OneSourceDeclines_AnotherSourcePresents()
     {
-        GameObject model = _builder.gameObject;
-        TestHelpers.InvokePrivate(_builder, "OnDestroy");
-        Object.DestroyImmediate(_builder);
-        model.AddComponent<DeliveryProbe>().accepts = false;
-        DeliveryProbe accepted = model.AddComponent<DeliveryProbe>();
+        _probe.accepts = false;
+        DeliveryProbe accepted = _model.AddComponent<DeliveryProbe>();
 
         _observer.Init(_source);
 
@@ -342,18 +326,19 @@ public class ProjectileVisualObserverTests
     {
         Assert.AreSame(_first, _observer.capturedTarget);
         Assert.AreSame(_first, _observer.capturedTargetPoint);
-        Assert.AreNotEqual(0, _observer.gestureToken);
         _observer.Init(_manager, new ProjectileLook { preserveContactPath = true });
+        _observer.Init(_source);
 
         _projectile.OnHit.Invoke(new OnHitData { source = _source, target = _first });
         _projectile.OnHit.Invoke(new OnHitData { source = _source, target = _second });
         _projectile.SetTarget(null);
 
+        Assert.AreEqual(DeliveryStyle.ChainSync, _probe.style);
         Assert.AreEqual(2, _observer.contacts.Count);
         Assert.AreSame(_first, _observer.contacts[0].target);
         Assert.AreSame(_second, _observer.contacts[1].target);
         Assert.AreEqual(_first.transform.position, _observer.contacts[0].position);
-        Assert.IsFalse(_projectileObject.GetComponent<LineRenderer>().enabled);
+        Assert.AreEqual(2, _probe.contacts);
         Assert.IsTrue(_projectile.enabled);
     }
 
@@ -391,11 +376,7 @@ public class ProjectileVisualObserverTests
     [Test]
     public void Init_WithManager_TakesTokensFromManager()
     {
-        GameObject managerGo = new GameObject("RenderManager");
-        _objects.Add(managerGo);
-        RenderManager manager = managerGo.AddComponent<RenderManager>();
-        int previous = manager.NextDeliveryToken();
-        _observer.Init(manager, null);
+        int previous = _manager.NextDeliveryToken();
 
         _observer.Init(_source);
 
@@ -405,6 +386,7 @@ public class ProjectileVisualObserverTests
     [Test]
     public void Init_ThrownStyle_IsRejectedWithoutMovingProjectile()
     {
+        AddPlantView();
         _observer.Init(_manager, new ProjectileLook { style = DeliveryStyle.Thrown });
 
         _observer.Init(_source);
