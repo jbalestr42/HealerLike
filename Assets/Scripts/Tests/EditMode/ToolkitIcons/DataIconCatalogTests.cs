@@ -12,7 +12,7 @@ namespace HealerLike.UI.Toolkit.Icons
             try
             {
                 factory.data = new ItemData { name = "Ward" };
-                catalog.entries.Add(new DataIconCatalog.Entry { source = factory, artworkOverride = artwork });
+                catalog.entries.Add(new DataIconCatalogEntry { source = factory, artworkOverride = artwork });
                 Assert.That(catalog.FindDescriptor(DataIconDescriptor.From(factory.GetItem())), Is.SameAs(artwork));
             }
             finally
@@ -28,7 +28,7 @@ namespace HealerLike.UI.Toolkit.Icons
             var artwork = new Texture2D(16, 16);
             try
             {
-                var entry = new DataIconCatalog.Entry { source = source, generated = generated };
+                var entry = new DataIconCatalogEntry { source = source, generated = generated };
                 catalog.entries.Add(entry);
                 Assert.That(catalog.Find(source), Is.SameAs(generated));
                 entry.artworkOverride = artwork;

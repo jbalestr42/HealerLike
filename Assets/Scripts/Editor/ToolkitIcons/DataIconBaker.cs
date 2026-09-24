@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using HealerLike.UI.Toolkit.Icons;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -78,11 +77,11 @@ namespace HealerLike.UI.Toolkit.Editor
                         AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out string assetGuid, out long localId);
                         string outputPath = OutputFolder + "/" + assetGuid + "_" + localId + ".png";
                         var descriptor = DataIconDescriptor.From(asset);
-                        string fingerprint = RendererVersion + ":" + descriptor.Kind + ":" + descriptor.Key;
+                        string fingerprint = RendererVersion + ":" + descriptor.kind + ":" + descriptor.key;
                         var entry = catalog.entries.Find(value => value != null && value.source == asset);
                         if (entry == null)
                         {
-                            entry = new DataIconCatalog.Entry { source = asset };
+                            entry = new DataIconCatalogEntry { source = asset };
                             catalog.entries.Add(entry);
                             changed = true;
                         }

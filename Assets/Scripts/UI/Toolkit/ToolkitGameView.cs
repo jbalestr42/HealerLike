@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using HealerLike.UI.Toolkit.Icons;
 using UnityEngine.UIElements;
 
 namespace HealerLike.UI.Toolkit

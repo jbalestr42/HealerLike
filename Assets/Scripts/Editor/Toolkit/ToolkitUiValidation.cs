@@ -26,7 +26,7 @@ namespace HealerLike.Editor.Toolkit
             {
                 if (!File.Exists(path)) throw new InvalidOperationException("Missing demo scene: " + path);
             }
-            var catalog = Resources.Load<HealerLike.UI.Toolkit.Icons.DataIconCatalog>("UIToolkit/DataIconCatalog");
+            var catalog = Resources.Load<DataIconCatalog>("UIToolkit/DataIconCatalog");
             if (catalog == null) throw new InvalidOperationException("Generated icon catalog is missing.");
             int count = 0;
             foreach (var guid in AssetDatabase.FindAssets("t:ScriptableObject", new[] { "Assets" }))

@@ -27,7 +27,8 @@ namespace HealerLike.UI.Toolkit.Icons
         [TestCase(0)] [TestCase(2048)]
         public void InvalidSizeRejected(int size)
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => ProceduralDataIcon.Render(default, size));
+            UnityEngine.TestTools.LogAssert.Expect(UnityEngine.LogType.Error, new System.Text.RegularExpressions.Regex("out of range"));
+            Assert.That(ProceduralDataIcon.Render(new DataIconDescriptor("key", "Label", DataIconKind.Data), size), Is.Null);
         }
     }
 }
