@@ -66,6 +66,13 @@ namespace HealerLike.Render.Stage
             }
             frame.width = image.width;
             frame.height = image.height;
+            if (Mathf.Abs((float)frame.width / frame.height - camera.aspect) > 0.01f)
+            {
+                hasFailure = true;
+                Object.Destroy(image);
+                Debug.LogError($"[StageMotionOutput] Game view {frame.width}x{frame.height} does not match camera aspect {camera.aspect}.");
+                yield break;
+            }
             frame.completedFrame = Time.frameCount;
             Object.Destroy(image);
             manifest.frames.Add(frame);
