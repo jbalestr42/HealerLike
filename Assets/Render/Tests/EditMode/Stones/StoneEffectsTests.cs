@@ -139,19 +139,19 @@ public class StoneEffectsTests
         StoneImpact impact = new StoneImpact(Vector3.up, Vector3.up);
 
         _fx.EmitHit(impact, false, 1);
-        Assert.AreEqual(StoneEffects.HitSparks + StoneEffects.HitChips, _fx.liveCount);
+        Assert.AreEqual(StoneEffects.HitChips, _fx.liveCount);
 
         _fx.Advance(0.6f);
         Assert.AreEqual(0, _fx.liveCount);
 
         _fx.EmitHit(impact, true, 1);
-        Assert.AreEqual(StoneEffects.CriticalHitSparks + StoneEffects.CriticalHitChips, _fx.liveCount);
+        Assert.AreEqual(StoneEffects.CriticalHitChips, _fx.liveCount);
 
-        for (uint i = 0; i < 40; i++)
+        for (uint i = 0; i < 60; i++)
         {
             _fx.EmitHit(impact, true, i);
         }
-        Assert.AreEqual(StoneEffects.MaxLiveFragments, _fx.liveCount); // 41 * 14 fragments asked, 256 kept
+        Assert.AreEqual(StoneEffects.MaxLiveFragments, _fx.liveCount); // 61 * 5 fragments asked, 256 kept
 
         _fx.Advance(1f);
         Assert.AreEqual(0, _fx.liveCount);
@@ -201,13 +201,12 @@ public class StoneEffectsTests
     {
         _fx.EmitThrownContact(Vector3.one, 91);
         int count = _fx.liveCount;
-        int minimum = StoneEffects.MinThrownChips + StoneEffects.StarRays;
-        Assert.That(count, Is.InRange(minimum, minimum + 2));
+        Assert.That(count, Is.InRange(StoneEffects.MinThrownChips, StoneEffects.MinThrownChips + 2));
 
-        _fx.Advance(0.2f);
-        Assert.AreEqual(count - StoneEffects.StarRays, _fx.liveCount);
+        _fx.Advance(0.4f);
+        Assert.AreEqual(count, _fx.liveCount);
 
-        _fx.Advance(0.3f);
+        _fx.Advance(0.1f);
         Assert.AreEqual(0, _fx.liveCount);
 
         _fx.EmitThrownContact(Vector3.one, 91);

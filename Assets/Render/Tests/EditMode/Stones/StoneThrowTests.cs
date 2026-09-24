@@ -80,8 +80,7 @@ public class StoneThrowTests
 
         _throw.ContactDelivery(1, Vector3.one * 7f, null);
         Assert.AreEqual(0, _throw.liveDeliveryCount);
-        int minimum = StoneEffects.MinThrownChips + StoneEffects.StarRays;
-        Assert.That(_fx.liveCount, Is.InRange(minimum, minimum + 2));
+        Assert.That(_fx.liveCount, Is.InRange(StoneEffects.MinThrownChips, StoneEffects.MinThrownChips + 2));
     }
 
     [Test]

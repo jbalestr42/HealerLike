@@ -119,8 +119,8 @@ public class StoneBodyTests
         Drain();
         Assert.AreEqual(3, visibleCount);
         Assert.AreEqual(PartRole.Limb, _recipe.parts[_body.shedPart].role);
-        int hit = StoneEffects.DustPuffs + StoneEffects.HitSparks + StoneEffects.HitChips;
-        Assert.AreEqual(2 * hit + 1, _fx.liveCount); // two hits of 14, and the falling limb
+        int hit = StoneEffects.DustPuffs + StoneEffects.HitChips;
+        Assert.AreEqual(2 * hit + 1, _fx.liveCount); // two hits of 8, and the falling limb
 
         Queue(50);
         Drain();
@@ -168,8 +168,8 @@ public class StoneBodyTests
         Drain();
 
         Assert.AreEqual(0, _body.pendingImpactCount);
-        int hit = StoneEffects.DustPuffs + StoneEffects.HitSparks + StoneEffects.HitChips;
-        Assert.AreEqual(hit, _fx.liveCount); // 5 dust, 6 sparks and 3 chips
+        int hit = StoneEffects.DustPuffs + StoneEffects.HitChips;
+        Assert.AreEqual(hit, _fx.liveCount); // 5 dust and 3 chips
         foreach (MeshFilter filter in _fxObject.GetComponentsInChildren<MeshFilter>())
         {
             Vector3 expected = filter.sharedMesh.name == "Pyramid" ? point + Vector3.up * 0.005f : point;
@@ -204,7 +204,7 @@ public class StoneBodyTests
         Queue(-1);
         Drain();
 
-        Assert.AreEqual(14, _fx.liveCount);
+        Assert.AreEqual(StoneEffects.DustPuffs + StoneEffects.HitChips, _fx.liveCount); // one hit
     }
 
     [Test]
@@ -225,9 +225,9 @@ public class StoneBodyTests
         Drain();
         Assert.AreEqual(0, visibleCount);
         Assert.IsTrue(_body.isCollapsed);
-        int hitAndCollapse = StoneEffects.DustPuffs + StoneEffects.HitSparks + StoneEffects.HitChips
+        int hitAndCollapse = StoneEffects.DustPuffs + StoneEffects.HitChips
             + StoneEffects.CollapseDebris + StoneEffects.DustPuffs;
-        Assert.AreEqual(hitAndCollapse, _fx.liveCount); // 14 for the hit, 12 debris and 5 dust for the collapse
+        Assert.AreEqual(hitAndCollapse, _fx.liveCount); // 8 for the hit, 12 debris and 5 dust for the collapse
 
         _body.Collapse(null);
         Assert.AreEqual(hitAndCollapse, _fx.liveCount);

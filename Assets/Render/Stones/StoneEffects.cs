@@ -32,13 +32,10 @@ namespace HealerLike.Render.Stones
 
         // Fragments each emitter spawns
         public static readonly int DustPuffs = 5;
-        public static readonly int HitSparks = 6;
-        public static readonly int CriticalHitSparks = 9;
         public static readonly int HitChips = 3;
         public static readonly int CriticalHitChips = 5;
         public static readonly int CollapseDebris = 12;
         public static readonly int SplitPieces = 3;
-        public static readonly int StarRays = 5;
         public static readonly int MinThrownChips = 3;
 
         // A thrown contact draws from MinThrownChips to MinThrownChips + thrownChipSpread - 1 chips
@@ -228,6 +225,7 @@ namespace HealerLike.Render.Stones
             }
         }
 
+        // Stone chips thrown off the face that was hit; the damage readout itself is the spell composer's
         public void EmitHit(StoneImpact impact, bool critical, uint seed)
         {
             if (!isActiveAndEnabled || !HasAssets())
@@ -236,26 +234,23 @@ namespace HealerLike.Render.Stones
             }
 
             StoneRandom random = new StoneRandom(seed);
-            int sparks = critical ? CriticalHitSparks : HitSparks;
-            int shards = critical ? CriticalHitChips : HitChips;
+            int chips = critical ? CriticalHitChips : HitChips;
             Vector3 normal = impact.normal.sqrMagnitude > 0f ? impact.normal.normalized : Vector3.up;
-            for (int i = 0; i < sparks + shards; i++)
+            for (int i = 0; i < chips; i++)
             {
-                bool isSpark = i < sparks;
                 float size = random.Range(0.025f, 0.07f);
                 Material material = _stoneMaterial;
-                if (isSpark || i % 3 == 0)
+                if (i % 3 == 0)
                 {
                     material = _coralMaterial;
                 }
-                Vector3 scale = isSpark ? new Vector3(size * 0.25f, size, size * 0.25f) : Vector3.one * size;
                 // Keep the random draws in order: direction, speed, then life
                 Vector3 velocity = Direction(ref random, normal) * random.Range(0.6f, 1.4f);
-                float life = isSpark ? random.Range(0.12f, 0.22f) : random.Range(0.35f, 0.55f);
+                float life = random.Range(0.35f, 0.55f);
                 Vector3 position = impact.point + normal * 0.005f;
                 Quaternion rotation = Quaternion.FromToRotation(Vector3.up, normal);
-                Spawn(_meshes.pyramid, material, position, rotation, scale, velocity, life, impact.point.y - 1f, false,
-                    random.Next());
+                Spawn(_meshes.pyramid, material, position, rotation, Vector3.one * size, velocity, life,
+                    impact.point.y - 1f, false, random.Next());
             }
         }
 
@@ -275,17 +270,6 @@ namespace HealerLike.Render.Stones
                 Vector3 velocity = Direction(ref random, Vector3.up) * random.Range(0.6f, 1.3f);
                 Spawn(_meshes.pyramid, _stoneMaterial, contact, rotation, scale, velocity, 0.45f, contact.y, false,
                     random.Next());
-            }
-
-            // Five coral rays share a center: one star silhouette at the resolved contact
-            for (int i = 0; i < StarRays; i++)
-            {
-                Vector3 ray = Quaternion.AngleAxis(i * 360f / StarRays, Vector3.forward) * Vector3.up;
-                Quaternion rotation = Quaternion.FromToRotation(Vector3.up, ray);
-                Vector3 rayScale = new Vector3(0.055f, 0.2f, 0.035f);
-                Fragment star = Spawn(_meshes.pyramid, _coralMaterial, contact, rotation, rayScale, Vector3.up * 0.15f,
-                    0.18f, contact.y, false, random.Next());
-                star.spin = Vector3.zero;
             }
         }
 
