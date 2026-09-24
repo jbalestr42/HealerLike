@@ -11,7 +11,7 @@ namespace HealerLike.Render.Stones
         [SerializeField] StoneEffects _effects;
         bool _isBound;
 
-        public void Bind(EntityManager owner, StoneEffects effectsOwner)
+        public void Init(EntityManager owner, StoneEffects effectsOwner)
         {
             Unbind();
             _manager = owner;

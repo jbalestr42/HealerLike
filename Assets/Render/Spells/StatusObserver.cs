@@ -4,7 +4,9 @@ using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Spells
 {
-    // Groups the running buff handlers of one entity by target and factory and publishes them to the sink
+    // Groups the running buff handlers of one entity by target and factory and publishes them to the sink.
+    // It is also the one place that wires the unit's other outcome observers: the health or mana outcomes on
+    // the unit, and the hit armor plates beside this view.
     public class StatusObserver : MonoBehaviour, IEntityView
     {
         struct StatusState
@@ -24,6 +26,9 @@ namespace HealerLike.Render.Spells
         BuffManager _manager;
         ISpellVisualSink _injected;
         ISpellVisualSink _lastSink;
+        GameObject _outcomesOwner;
+        ResourceOutcomeObserver _outcomes;
+        AttributeShieldView _shield;
 
         public void Init(Entity entity, RenderManager manager)
         {
@@ -33,23 +38,90 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
+            Init(entity, manager.spellSink, manager.registry);
+        }
+
+        // A unit's statuses, its health outcomes and its hit armor plates; a null entity stops observing
+        public void Init(Entity entity, ISpellVisualSink sink, RenderRegistry registry)
+        {
+            if (entity == null)
+            {
+                Init((BuffManager)null, sink);
+                InitOutcomes(null, null, null, sink, registry);
+                return;
+            }
+
             BuffManager buffManager = entity.buffManager;
             if (buffManager == null)
             {
                 buffManager = entity.GetComponent<BuffManager>();
             }
-            Bind(buffManager, manager.spellSink);
-            ResourceOutcomeObserver.Ensure(entity.gameObject).Init(entity, manager);
-            GetShieldView().Init(entity, manager);
+
+            if (_manager != buffManager || !ReferenceEquals(_injected, sink))
+            {
+                Init(buffManager, sink);
+            }
+
+            InitOutcomes(entity.gameObject, entity.health, null, sink, registry);
+            if (_shield == null)
+            {
+                _shield = GetComponent<AttributeShieldView>();
+            }
+
+            if (_shield == null)
+            {
+                _shield = gameObject.AddComponent<AttributeShieldView>();
+            }
+            _shield.Init(entity.attributeManager, entity.gameObject, sink as SpellVisualSink);
+        }
+
+        // A character's statuses and its mana outcomes, called every frame by its view; a null character
+        // stops observing
+        public void Init(Character character, ISpellVisualSink sink, RenderRegistry registry)
+        {
+            if (character == null)
+            {
+                Init((BuffManager)null, sink);
+                InitOutcomes(null, null, null, sink, registry);
+                return;
+            }
+
+            InitOutcomes(character.gameObject, null, character.mana, sink, registry);
+            if (character.buffManager != null && (_manager != character.buffManager || !ReferenceEquals(_injected, sink)))
+            {
+                Init(character.buffManager, sink);
+            }
+        }
+
+        // Statuses only
+        public void Init(BuffManager manager, ISpellVisualSink sink)
+        {
+            Detach();
+            _manager = manager;
+            _injected = sink;
+            if (_manager != null)
+            {
+                _manager.OnBuffHandlerStarted.AddListener(OnBuffHandlerStarted);
+                _manager.OnBuffHandlerStopped.AddListener(OnBuffHandlerStopped);
+            }
         }
 
         void OnEnable()
         {
+            if (_outcomes != null)
+            {
+                _outcomes.enabled = true;
+            }
             Reconcile();
         }
 
         void OnDisable()
         {
+            if (_outcomes != null)
+            {
+                _outcomes.enabled = false;
+            }
+
             RemovePublished();
             _lastSink = null;
             _published.Clear();
@@ -63,18 +135,6 @@ namespace HealerLike.Render.Spells
         void LateUpdate()
         {
             Reconcile();
-        }
-
-        public void Bind(BuffManager manager, ISpellVisualSink sink)
-        {
-            Detach();
-            _manager = manager;
-            _injected = sink;
-            if (_manager != null)
-            {
-                _manager.OnBuffHandlerStarted.AddListener(OnBuffHandlerStarted);
-                _manager.OnBuffHandlerStopped.AddListener(OnBuffHandlerStopped);
-            }
         }
 
         public void Reconcile()
@@ -232,14 +292,34 @@ namespace HealerLike.Render.Spells
             return a.stacks == b.stacks && a.elapsed == b.elapsed && a.duration == b.duration;
         }
 
-        AttributeShieldView GetShieldView()
+        // The outcome observer sits on the unit itself, where the resources raise their events
+        void InitOutcomes(GameObject owner, ResourceAttribute health, ResourceAttribute mana, ISpellVisualSink sink,
+                          RenderRegistry registry)
         {
-            AttributeShieldView shield = GetComponent<AttributeShieldView>();
-            if (shield == null)
+            if (_outcomesOwner != owner)
             {
-                shield = gameObject.AddComponent<AttributeShieldView>();
+                if (_outcomes != null)
+                {
+                    _outcomes.Init(null, null, sink, registry);
+                }
+
+                _outcomesOwner = owner;
+                _outcomes = null;
+                if (owner != null)
+                {
+                    _outcomes = owner.GetComponent<ResourceOutcomeObserver>();
+                    if (_outcomes == null)
+                    {
+                        _outcomes = owner.AddComponent<ResourceOutcomeObserver>();
+                    }
+                    _outcomes.enabled = isActiveAndEnabled;
+                }
             }
-            return shield;
+
+            if (_outcomes != null)
+            {
+                _outcomes.Init(health, mana, sink, registry);
+            }
         }
     }
 }

@@ -129,12 +129,13 @@ public class CharacterViewTests
         ResourceAttribute mana = TestHelpers.CreateResourceAttribute(_characterGo, AttributeType.ManaMax, 100);
         TestHelpers.SetPrivateField(character, "_mana", mana);
         ResourceAttribute health = TestHelpers.CreateResourceAttribute(_targetGo, AttributeType.HealthMax, 100);
+        _characterGo.AddComponent<StatusObserver>();
         CharacterView view = _characterGo.AddComponent<CharacterView>();
         TestHelpers.SetPrivateField(view, "_meshes", PrimitiveMeshesTests.Meshes());
         RenderRegistry registry = new RenderRegistry();
         InitWithoutManager(view, character, recipe, _characterGo.transform, _material, registry);
         ResourceOutcomeObserver observer = _targetGo.AddComponent<ResourceOutcomeObserver>();
-        observer.Bind(health, null, null, registry);
+        observer.Init(health, null, null, registry);
         BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
         MethodInfo updateMethod = typeof(CharacterView).GetMethod("Update", flags);
         Action update = (Action)Delegate.CreateDelegate(typeof(Action), view, updateMethod);
@@ -239,6 +240,7 @@ public class CharacterViewTests
         Assert.AreEqual(PrefabAssetType.Regular, PrefabUtility.GetPrefabAssetType(prefab));
         Assert.IsNull(prefab.GetComponent<Character>());
         Assert.NotNull(view);
+        Assert.NotNull(prefab.GetComponent<StatusObserver>());
         SerializedObject data = new SerializedObject(view);
         Assert.AreSame(prefab.transform, data.FindProperty("_visualAnchor").objectReferenceValue);
         Assert.AreEqual("Healer", data.FindProperty("_recipe").objectReferenceValue.name);

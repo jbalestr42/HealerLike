@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using HealerLike.Render.Grammar;
+using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 using HealerLike.Render.Zones;
 using NUnit.Framework;
@@ -70,6 +71,7 @@ public class CreatureBuilderTests
     Entity _entity;
     ResourceAttribute _health;
     CreatureBuilder _builder;
+    StatusObserver _statusObserver;
     RenderRegistry _registry;
     Sink _sink;
     readonly List<Object> _objects = new List<Object>();
@@ -95,6 +97,8 @@ public class CreatureBuilderTests
         _target.AddComponent<SkillTargetPointTag>();
         _recipe = CreatureValidatorTests.Recipe();
         _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
+        // Like the derived prefabs, the view carries the status observer that wires the outcome observers
+        _statusObserver = _model.AddComponent<StatusObserver>();
         _builder = _model.AddComponent<CreatureBuilder>();
         _builder.SetRecipe(_recipe, _material, PrimitiveMeshesTests.Meshes());
         _sink = new Sink();
@@ -190,11 +194,15 @@ public class CreatureBuilderTests
     public void OnDisable_ThenEnabledAndInitWithoutEntity_DetachesOldHealthOnce()
     {
         _builder.enabled = false;
+        _statusObserver.enabled = false;
         TestHelpers.InvokePrivate(_builder, "OnDisable");
+        TestHelpers.InvokePrivate(_statusObserver, "OnDisable");
         _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 10f, false);
         Assert.AreEqual(0, _sink.heals);
         _builder.enabled = true;
+        _statusObserver.enabled = true;
         TestHelpers.InvokePrivate(_builder, "OnEnable");
+        TestHelpers.InvokePrivate(_statusObserver, "OnEnable");
         _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 10f, false);
         Assert.AreEqual(1, _sink.heals);
         _builder.Init(null);

@@ -79,17 +79,17 @@ public class ResourceOutcomeObserverTests
     ResourceOutcomeObserver CreateObserver()
     {
         ResourceOutcomeObserver observer = _owner.AddComponent<ResourceOutcomeObserver>();
-        observer.Bind(_health, _mana, _spy, _registry);
+        observer.Init(_health, _mana, _spy, _registry);
         return observer;
     }
 
     [Test]
-    public void Bind_Repeated_SubscribesOnce()
+    public void Init_Repeated_SubscribesOnce()
     {
         ResourceOutcomeObserver observer = CreateObserver();
         for (int i = 0; i < 4; i++)
         {
-            observer.Bind(_health, _mana, _spy, _registry);
+            observer.Init(_health, _mana, _spy, _registry);
         }
 
         _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, 7, false);
@@ -98,7 +98,7 @@ public class ResourceOutcomeObserverTests
     }
 
     [Test]
-    public void Bind_ManaChanged_ShowsManaWithoutReachingTheHealSinks()
+    public void Init_ManaChanged_ShowsManaWithoutReachingTheHealSinks()
     {
         CreateObserver();
 
@@ -110,7 +110,7 @@ public class ResourceOutcomeObserverTests
     }
 
     [Test]
-    public void Bind_Damage_ReachesTheRegistryToo()
+    public void Init_Damage_ReachesTheRegistryToo()
     {
         CreateObserver();
 

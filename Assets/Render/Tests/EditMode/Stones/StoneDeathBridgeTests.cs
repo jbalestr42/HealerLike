@@ -53,7 +53,7 @@ public class StoneDeathBridgeTests
         _body = StoneBodyTests.CreateBody(_target, entity, _recipe, _material);
         _body.Init(health, 1, _fx);
         StoneDeathBridge bridge = _bridgeObject.AddComponent<StoneDeathBridge>();
-        bridge.Bind(null, _fx);
+        bridge.Init(null, _fx);
 
         bridge.HandleDeparture(entity);
         Assert.AreEqual(0, _fx.liveCount);
@@ -82,7 +82,7 @@ public class StoneDeathBridgeTests
         _body = StoneBodyTests.CreateBody(_target, entity, _recipe, _material);
         _body.Init(health, 1, null);
         StoneDeathBridge bridge = _bridgeObject.AddComponent<StoneDeathBridge>();
-        bridge.Bind(null, _fx);
+        bridge.Init(null, _fx);
         TestHelpers.SetPrivateField(health, "_value", 0f);
 
         bridge.HandleDeparture(entity);

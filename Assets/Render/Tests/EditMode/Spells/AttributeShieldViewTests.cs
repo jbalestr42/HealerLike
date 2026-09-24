@@ -54,7 +54,7 @@ public class AttributeShieldViewTests
             buffFactoryList = new List<ABuffFactory> { _modifier }
         };
         AttributeShieldView view = _go.AddComponent<AttributeShieldView>();
-        view.Bind(attributes, _go, _sink);
+        view.Init(attributes, _go, _sink);
         Assert.IsNull(view.effect);
 
         TestHelpers.WithLoggingDisabled(() =>

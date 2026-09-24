@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using HealerLike.Render.Spells;
 using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Creatures
@@ -46,6 +47,7 @@ namespace HealerLike.Render.Creatures
         static void CharacterView(CreatureRecipe recipe, Material material, PrimitiveMeshes meshes)
         {
             GameObject view = new GameObject("HealerCharacter");
+            view.AddComponent<StatusObserver>();
             CharacterView characterView = view.AddComponent<CharacterView>();
             SerializedObject data = new SerializedObject(characterView);
             data.FindProperty("_recipe").objectReferenceValue = recipe;

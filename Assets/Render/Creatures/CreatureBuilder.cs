@@ -18,7 +18,7 @@ namespace HealerLike.Render.Creatures
         readonly Dictionary<ASkill, ICooldownSkill> _cooldowns = new Dictionary<ASkill, ICooldownSkill>();
         readonly List<ASkill> _removedSkills = new List<ASkill>();
         ResourceAttribute _health;
-        ResourceOutcomeObserver _outcomeObserver;
+        StatusObserver _statusObserver;
         GameObject _registeredSource;
         RenderRegistry _registeredRegistry;
         RenderRegistry _registry;
@@ -99,6 +99,7 @@ namespace HealerLike.Render.Creatures
 
             _entity = owner;
             RefreshSkills();
+            ObserveOutcomes();
             if (!_entity)
             {
                 if (rig != null)
@@ -190,6 +191,7 @@ namespace HealerLike.Render.Creatures
 
             Unregister();
             _registry = registry;
+            ObserveOutcomes();
             if (_cellSize != size)
             {
                 if (rig != null)
@@ -208,6 +210,20 @@ namespace HealerLike.Render.Creatures
             {
                 EnsureRig();
                 Attach();
+            }
+        }
+
+        // The view prefab carries the status observer, which wires the outcome observers too
+        void ObserveOutcomes()
+        {
+            if (_statusObserver == null)
+            {
+                _statusObserver = GetComponent<StatusObserver>();
+            }
+
+            if (_statusObserver != null)
+            {
+                _statusObserver.Init(_entity, _spellSink, _registry);
             }
         }
 
@@ -281,13 +297,6 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
-            if (!_outcomeObserver)
-            {
-                _outcomeObserver = ResourceOutcomeObserver.Ensure(_entity.gameObject);
-            }
-
-            _outcomeObserver.Bind(_entity.health, null, _spellSink, _registry);
-
             if (_health != _entity.health)
             {
                 if (_health)
@@ -300,11 +309,6 @@ namespace HealerLike.Render.Creatures
                 {
                     _health.OnAllConsumerProcessed.AddListener(OnHealthProcessed);
                 }
-            }
-
-            if (_outcomeObserver)
-            {
-                _outcomeObserver.enabled = true;
             }
 
             SyncRegistry();
@@ -349,12 +353,6 @@ namespace HealerLike.Render.Creatures
             }
 
             _health = null;
-            if (_outcomeObserver)
-            {
-                _outcomeObserver.enabled = false;
-            }
-
-            _outcomeObserver = null;
             Unregister();
         }
 

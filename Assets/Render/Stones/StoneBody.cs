@@ -103,7 +103,7 @@ namespace HealerLike.Render.Stones
         // Taking the resource directly lets tests run without Entity.Init or the game managers
         public void Init(ResourceAttribute resource, uint visualSeed, StoneEffects effects)
         {
-            Unbind();
+            Unsubscribe();
             _health = resource;
             _seed = visualSeed;
             _effects = effects;
@@ -118,7 +118,7 @@ namespace HealerLike.Render.Stones
             _sampler.Reset();
             _planarVelocity = Vector3.zero;
             FindRig();
-            Bind();
+            Subscribe();
         }
 
         // The builder makes its rig at Init and again when the ground frame changes,
@@ -556,7 +556,7 @@ namespace HealerLike.Render.Stones
             }
         }
 
-        void Bind()
+        void Subscribe()
         {
             if (_isBound || _health == null || !isActiveAndEnabled)
             {
@@ -568,7 +568,7 @@ namespace HealerLike.Render.Stones
             _isBound = true;
         }
 
-        void Unbind()
+        void Unsubscribe()
         {
             if (_isBound && _health != null)
             {
@@ -589,12 +589,12 @@ namespace HealerLike.Render.Stones
             {
                 _groundShadow.Show(!_isCollapsed);
             }
-            Bind();
+            Subscribe();
         }
 
         void OnDisable()
         {
-            Unbind();
+            Unsubscribe();
             if (_groundShadow != null)
             {
                 _groundShadow.Show(false);
@@ -603,7 +603,7 @@ namespace HealerLike.Render.Stones
 
         void OnDestroy()
         {
-            Unbind();
+            Unsubscribe();
         }
     }
 }

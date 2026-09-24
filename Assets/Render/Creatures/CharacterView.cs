@@ -20,9 +20,7 @@ namespace HealerLike.Render.Creatures
         RenderRegistry _registeredRegistry;
         ISpellVisualSink _sink;
         GameObject _registeredSource;
-        ResourceOutcomeObserver _resourceObserver;
         StatusObserver _statusObserver;
-        BuffManager _boundManager;
 
         CreatureRig _rig;
         public CreatureRig rig { get { return _rig; } }
@@ -134,26 +132,15 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
-            if (!_resourceObserver)
+            // The view prefab carries the status observer, which wires the mana outcomes too
+            if (!_statusObserver)
             {
-                _resourceObserver = ResourceOutcomeObserver.Ensure(_character.gameObject);
+                _statusObserver = GetComponent<StatusObserver>();
             }
 
-            _resourceObserver.Bind(null, _character.mana, _sink, _registry);
-            if (_character.buffManager && _boundManager != _character.buffManager)
+            if (_statusObserver)
             {
-                if (!_statusObserver)
-                {
-                    _statusObserver = GetComponent<StatusObserver>();
-                }
-
-                if (!_statusObserver)
-                {
-                    _statusObserver = gameObject.AddComponent<StatusObserver>();
-                }
-
-                _statusObserver.Bind(_character.buffManager, _sink);
-                _boundManager = _character.buffManager;
+                _statusObserver.Init(_character, _sink, _registry);
             }
         }
 
@@ -170,17 +157,10 @@ namespace HealerLike.Render.Creatures
 
         void StopObserving()
         {
-            if (_resourceObserver)
-            {
-                _resourceObserver.Bind(null, null, _sink, _registry);
-            }
-
             if (_statusObserver)
             {
-                _statusObserver.Detach();
+                _statusObserver.Init((Character)null, _sink, _registry);
             }
-
-            _boundManager = null;
         }
 
         void BuildAndRegister()

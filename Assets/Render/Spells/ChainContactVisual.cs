@@ -30,7 +30,7 @@ namespace HealerLike.Render.Spells
             {
                 shot = GetComponent<Projectile>();
             }
-            Bind(shot, _sink);
+            Observe(shot, _sink);
         }
 
         void OnDisable()
@@ -43,7 +43,7 @@ namespace HealerLike.Render.Spells
             Unbind();
         }
 
-        public void Bind(Projectile observed, SpellVisualSink sink)
+        void Observe(Projectile observed, SpellVisualSink sink)
         {
             Unbind();
             _sink = sink;

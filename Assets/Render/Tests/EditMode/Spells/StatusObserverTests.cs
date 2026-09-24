@@ -89,7 +89,7 @@ public class StatusObserverTests
         BuffManager manager = _go.AddComponent<BuffManager>();
         StatusObserver observer = _go.AddComponent<StatusObserver>();
         SinkSpy sink = new SinkSpy();
-        observer.Bind(manager, sink);
+        observer.Init(manager, sink);
         BuffManager.BuffHandlerData data = new BuffManager.BuffHandlerData
         {
             target = _go,
@@ -130,7 +130,7 @@ public class StatusObserverTests
         BuffManager manager = _go.AddComponent<BuffManager>();
         StatusObserver observer = _go.AddComponent<StatusObserver>();
         SinkSpy sink = new SinkSpy();
-        observer.Bind(manager, sink);
+        observer.Init(manager, sink);
         manager.OnBuffHandlerStarted.Invoke(new BuffManager.BuffHandlerData
         {
             target = _go,
@@ -155,7 +155,7 @@ public class StatusObserverTests
         BuffManager manager = _go.AddComponent<BuffManager>();
         StatusObserver observer = _go.AddComponent<StatusObserver>();
         SpellVisualSink sink = CreateSink();
-        observer.Bind(manager, sink);
+        observer.Init(manager, sink);
         manager.OnBuffHandlerStarted.Invoke(new BuffManager.BuffHandlerData
         {
             target = _go,
@@ -191,7 +191,7 @@ public class StatusObserverTests
         BuffManager manager = _go.AddComponent<BuffManager>();
         StatusObserver observer = _go.AddComponent<StatusObserver>();
         SpellVisualSink sink = CreateSink();
-        observer.Bind(manager, sink);
+        observer.Init(manager, sink);
         BuffManager.BuffHandlerData data = new BuffManager.BuffHandlerData
         {
             target = _go,
