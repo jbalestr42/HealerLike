@@ -9,6 +9,6 @@ EditorBuildSettings:
     path: Assets/Scenes/MenuScene.unity
     guid: a8ab0e253becb0c40a177111cf5a3204
   - enabled: 1
-    path: Assets/Scenes/TestHealer.unity
-    guid: 29925a0d1bed32341aba06fc70514356
+    path: Assets/Scenes/Main.unity
+    guid: c6b76da152a1ba44a9b40195e37cf8c3
   m_configObjects: {}

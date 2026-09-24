@@ -1,10 +1,7 @@
 ﻿using UnityEngine;
-using UnityEngine.Events;
 
 public class GameManager : Singleton<GameManager>
 {
-    public UnityEvent<int> OnRoundDone = new UnityEvent<int>();
-
     public enum GameState
     {
         None,
