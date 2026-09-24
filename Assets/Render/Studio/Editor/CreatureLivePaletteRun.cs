@@ -23,9 +23,11 @@ namespace HealerLike.Render.Studio.Editor
         CreatureBuilder _view;
         BattleFocus _focus;
         bool _focusEnabled;
+        StageGameViewSize _gameViewSize;
 
         protected override IEnumerator Run()
         {
+            _gameViewSize = new StageGameViewSize(1080, 1920);
             yield return Wait(0.5f);
             _player.PlaceAllies(_manager, StagePlayer.LoadAllies());
             yield return Wait(0.7f);
@@ -148,6 +150,11 @@ namespace HealerLike.Render.Studio.Editor
 
         public void Restore()
         {
+            if (_gameViewSize != null)
+            {
+                _gameViewSize.Dispose();
+                _gameViewSize = null;
+            }
             if (_palette && _original != null)
             {
                 EditorJsonUtility.FromJsonOverwrite(_original, _palette);

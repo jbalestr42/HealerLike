@@ -18,6 +18,8 @@ namespace HealerLike.Render.Stage
         {
             _output = new StageMotionOutput(Path.Combine(StagePlay.CaptureFolder, "motion"));
             StageMotionManifest manifest = _output.manifest;
+            StageGameViewSize gameViewSize = new StageGameViewSize(StageCalibration.PortraitWidth,
+                StageCalibration.PortraitHeight);
             manifest.unityVersion = Application.unityVersion;
             manifest.gpu = SystemInfo.graphicsDeviceName;
             manifest.revision = System.Environment.GetEnvironmentVariable("RENDER_CAPTURE_REVISION") ?? "unspecified";
@@ -87,6 +89,7 @@ namespace HealerLike.Render.Stage
                 Time.timeScale = timeScale;
                 _manager.look.settings = settings;
                 if (focus != null) focus.enabled = focusEnabled;
+                gameViewSize.Dispose();
                 manifest.isPassed &= !_output.hasFailure && manifest.frames.Count == 17;
                 _output.Write();
                 Debug.Log($"[StageMotionRun] motion={manifest.motionMeanDifference:F4} control={manifest.controlMeanDifference:F4}"

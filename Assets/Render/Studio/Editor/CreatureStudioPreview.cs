@@ -28,6 +28,14 @@ namespace HealerLike.Render.Studio.Editor
         float _glow;
         Vector3? _aim;
         string _lastError;
+        Bounds? _framingBounds;
+
+        // A roster supplies one union of its subjects, so each card keeps the same world scale.
+        public Bounds? framingBounds
+        {
+            get { return _framingBounds; }
+            set { _framingBounds = value; _camera.Refit(); }
+        }
 
         public LookSide side
         {
@@ -191,6 +199,15 @@ namespace HealerLike.Render.Studio.Editor
 
         // The rig's renderers, grown by how far its idle breath and sway can carry it
         public Bounds GetSubjectBounds()
+        {
+            if (_framingBounds.HasValue)
+            {
+                return _framingBounds.Value;
+            }
+            return GetContentBounds();
+        }
+
+        public Bounds GetContentBounds()
         {
             Bounds bounds = new Bounds(Vector3.up, Vector3.one * 0.1f);
             StudioPreviewFrame.Encapsulate(_subject, ref bounds, false);

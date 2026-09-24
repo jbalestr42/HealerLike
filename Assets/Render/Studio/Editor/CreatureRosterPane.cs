@@ -68,7 +68,7 @@ namespace HealerLike.Render.Studio.Editor
                 Reload();
             }
             GUILayout.EndHorizontal();
-            GUILayout.Label("Derived from every EntityData. Shared side is an audition; authored overrides are not applied.",
+            GUILayout.Label("Every EntityData at one camera scale. Shared side is an audition; authored overrides are not applied.",
                 EditorStyles.wordWrappedMiniLabel);
             _scroll = GUILayout.BeginScrollView(_scroll);
             int columns = Mathf.Max(2, Mathf.FloorToInt((cards.width - 20f) / 245f));
