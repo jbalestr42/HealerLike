@@ -4,7 +4,6 @@ using HealerLike.Render.Stage;
 using HealerLike.Render.Stones;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Environment
 {
@@ -17,29 +16,17 @@ namespace HealerLike.Render.Environment
         // The cap's bottom sits this far below the stem top, in cap thicknesses; the rest stands above it
         static readonly float capSink = 0.7f;
 
-        [FormerlySerializedAs("stageCamera")]
         [SerializeField] Camera _stageCamera;
-        [FormerlySerializedAs("stoneMaterial")]
         [SerializeField] Material _stoneMaterial;
-        [FormerlySerializedAs("plantMaterial")]
         [SerializeField] Material _plantMaterial;
-        [FormerlySerializedAs("grid")]
         [SerializeField] Rect _grid = new Rect(-8f, -8f, 16f, 16f);
-        [FormerlySerializedAs("groundY")]
         [SerializeField] float _groundY = 0.5f;
-        [FormerlySerializedAs("seed")]
         [SerializeField] int _seed = 1707;
-        [FormerlySerializedAs("fogStart")]
         [SerializeField] float _fogStart = 43.837f;
-        [FormerlySerializedAs("fogEnd")]
         [SerializeField] float _fogEnd = 50.356f;
-        [FormerlySerializedAs("fogBands")]
         [SerializeField] int _fogBands = 6;
-        [FormerlySerializedAs("stoneColor")]
         [SerializeField] Color _stoneColor = new Color32(168, 184, 172, 255);
-        [FormerlySerializedAs("stemColor")]
         [SerializeField] Color _stemColor = new Color32(184, 200, 180, 255);
-        [FormerlySerializedAs("capColor")]
         [SerializeField] Color _capColor = new Color32(156, 180, 162, 255);
 
         readonly List<Mesh> _ownedMeshes = new List<Mesh>();
@@ -52,7 +39,8 @@ namespace HealerLike.Render.Environment
         Transform _root;
         public Transform root { get { return _root; } }
 
-        public void Init(Camera stageCamera, Rect board, float surfaceY, float fogStart, float fogEnd, RenderManager manager)
+        public void Init(Camera stageCamera, Rect board, float surfaceY, float fogStart, float fogEnd,
+                         RenderManager manager)
         {
             if (manager == null || manager.meshes == null)
             {

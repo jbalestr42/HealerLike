@@ -21,7 +21,6 @@ namespace HealerLike.Render.Grass
         // World-space surface top used when the ground has no Renderer, before root lift
         [SerializeField] float _surfaceY = 0.5f;
 
-
         GraphicsBuffer _zones;
         GraphicsBuffer _seeds;
         GraphicsBuffer _states;
@@ -78,7 +77,8 @@ namespace HealerLike.Render.Grass
             }
         }
 
-        public void Init(Rect area, float cellSize, float surfaceY, Camera camera, GraphicsBuffer zones, int zoneCapacity)
+        public void Init(Rect area, float cellSize, float surfaceY, Camera camera, GraphicsBuffer zones,
+                         int zoneCapacity)
         {
             bool isBufferValid = zones != null && zones.IsValid() && zones.stride == Zone.Stride;
             bool isCapacityValid = zoneCapacity >= 1 && zoneCapacity <= MaxZones;
@@ -88,7 +88,8 @@ namespace HealerLike.Render.Grass
                 return;
             }
 
-            bool isAreaValid = float.IsFinite(area.width) && float.IsFinite(area.height) && area.width > 0f && area.height > 0f;
+            bool isAreaValid = float.IsFinite(area.width) && float.IsFinite(area.height)
+                               && area.width > 0f && area.height > 0f;
             if (!isAreaValid || !float.IsFinite(cellSize) || cellSize <= 0f || !float.IsFinite(surfaceY))
             {
                 Debug.LogError($"[GrassField] Rejected area {area} with cell size {cellSize} and surface {surfaceY}.");
@@ -149,7 +150,12 @@ namespace HealerLike.Render.Grass
         public void SetZoneSnapshot(GraphicsBuffer buffer, int validCount)
         {
             bool isCountValid = validCount >= 0 && validCount <= MaxZones;
-            bool isBufferValid = buffer == null ? validCount == 0 : buffer.stride == Zone.Stride && validCount <= buffer.count;
+            bool isBufferValid = validCount == 0;
+            if (buffer != null)
+            {
+                isBufferValid = buffer.stride == Zone.Stride && validCount <= buffer.count;
+            }
+
             if (!isCountValid || !isBufferValid)
             {
                 Debug.LogError($"[GrassField] Rejected zone snapshot with count {validCount}.");
@@ -241,7 +247,8 @@ namespace HealerLike.Render.Grass
             BladeSeed[] layout = CanBuild() ? key.GenerateLayout() : null;
             if (layout == null)
             {
-                Debug.LogError("[GrassField] Grass disabled: it needs compute, indirect draws, its assets and a finite area.", this);
+                Debug.LogError("[GrassField] Grass disabled: it needs compute, indirect draws, its assets "
+                               + "and a finite area.", this);
                 enabled = false;
                 return false;
             }
@@ -285,7 +292,8 @@ namespace HealerLike.Render.Grass
 
         bool CanBuild()
         {
-            if (!SystemInfo.supportsComputeShaders || !SystemInfo.supportsInstancing || !SystemInfo.supportsIndirectArgumentsBuffer)
+            if (!SystemInfo.supportsComputeShaders || !SystemInfo.supportsInstancing
+                || !SystemInfo.supportsIndirectArgumentsBuffer)
             {
                 return false;
             }

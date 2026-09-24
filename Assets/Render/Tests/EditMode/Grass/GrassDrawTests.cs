@@ -20,7 +20,8 @@ public class GrassDrawTests
         {
             Assert.Ignore("Indirect argument buffers need a graphics device; run with -force-metal.");
         }
-        _mesh = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset").tuft;
+        string meshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
+        _mesh = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesPath).tuft;
         _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/Look.shader"));
         _draw = new GrassDraw(_mesh, _material, 7, new Bounds(Vector3.zero, Vector3.one), 3);
     }

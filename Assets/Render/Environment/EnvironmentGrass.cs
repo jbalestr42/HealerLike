@@ -23,7 +23,8 @@ namespace HealerLike.Render.Environment
 
         public IReadOnlyList<GrassField> strips { get { return _strips; } }
 
-        public void Init(Rect board, float cellSize, float surfaceY, Camera camera, ZoneRegistry zones, RenderManager manager)
+        public void Init(Rect board, float cellSize, float surfaceY, Camera camera, ZoneRegistry zones,
+                         RenderManager manager)
         {
             foreach (GrassField strip in _strips)
             {
@@ -105,9 +106,11 @@ namespace HealerLike.Render.Environment
         // Returns no strips and logs when an input is not valid.
         public static RingStrip[] Bands(Rect grid, float[] widths, float[] densityFractions, float boardDensity)
         {
-            if (widths == null || densityFractions == null || widths.Length == 0 || widths.Length != densityFractions.Length)
+            if (widths == null || densityFractions == null || widths.Length == 0
+                || widths.Length != densityFractions.Length)
             {
-                Debug.LogError("[EnvironmentGrass] Widths and density fractions must be non-empty and of equal length.");
+                Debug.LogError("[EnvironmentGrass] Widths and density fractions must be non-empty "
+                               + "and of equal length.");
                 return new RingStrip[0];
             }
 
@@ -117,7 +120,8 @@ namespace HealerLike.Render.Environment
                 return new RingStrip[0];
             }
 
-            bool isWholeGrid = Mathf.Approximately(grid.width, Mathf.Round(grid.width)) && Mathf.Approximately(grid.height, Mathf.Round(grid.height));
+            bool isWholeGrid = Mathf.Approximately(grid.width, Mathf.Round(grid.width))
+                               && Mathf.Approximately(grid.height, Mathf.Round(grid.height));
             if (grid.width <= 0f || grid.height <= 0f || !isWholeGrid)
             {
                 Debug.LogError($"[EnvironmentGrass] Rejected grid {grid}, it needs a whole number of cells.");
@@ -128,9 +132,11 @@ namespace HealerLike.Render.Environment
             {
                 float width = widths[band];
                 float fraction = densityFractions[band];
-                if (!Mathf.Approximately(width, Mathf.Round(width)) || width < 1f || !float.IsFinite(fraction) || fraction <= 0f)
+                bool isWholeWidth = Mathf.Approximately(width, Mathf.Round(width)) && width >= 1f;
+                if (!isWholeWidth || !float.IsFinite(fraction) || fraction <= 0f)
                 {
-                    Debug.LogError($"[EnvironmentGrass] Rejected band {band}: width {width}, density fraction {fraction}.");
+                    Debug.LogError($"[EnvironmentGrass] Rejected band {band}: width {width}, "
+                                   + $"density fraction {fraction}.");
                     return new RingStrip[0];
                 }
             }
@@ -145,7 +151,8 @@ namespace HealerLike.Render.Environment
                     Split(strip, boardDensity * densityFractions[band], band, result);
                 }
 
-                inner = new Rect(inner.xMin - width, inner.yMin - width, inner.width + 2f * width, inner.height + 2f * width);
+                inner = new Rect(inner.xMin - width, inner.yMin - width,
+                                 inner.width + 2f * width, inner.height + 2f * width);
             }
 
             return result.ToArray();
@@ -154,8 +161,16 @@ namespace HealerLike.Render.Environment
         static void Split(Rect strip, float density, int band, List<RingStrip> into)
         {
             bool isWide = strip.width >= strip.height;
-            int length = Mathf.RoundToInt(isWide ? strip.width : strip.height);
-            int across = Mathf.RoundToInt(isWide ? strip.height : strip.width);
+            float longSide = strip.height;
+            float shortSide = strip.width;
+            if (isWide)
+            {
+                longSide = strip.width;
+                shortSide = strip.height;
+            }
+
+            int length = Mathf.RoundToInt(longSide);
+            int across = Mathf.RoundToInt(shortSide);
             int pieces = Mathf.Clamp(Mathf.CeilToInt(length * across * density / GrassLayout.MaxBudget), 1, length);
             while (pieces < length && (length + pieces - 1) / pieces * across * density > GrassLayout.MaxBudget)
             {

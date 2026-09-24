@@ -142,7 +142,8 @@ public class EnvironmentForegroundTests
     {
         LogAssert.Expect(LogType.Error, new Regex(@"^\[EnvironmentForeground\] Rejected field of view"));
         LogAssert.Expect(LogType.Error, new Regex(@"^\[EnvironmentForeground\] Rejected field of view"));
-        LogAssert.Expect(LogType.Error, "[EnvironmentForeground] The bottom corners of the frame do not see the ground.");
+        LogAssert.Expect(LogType.Error,
+                         "[EnvironmentForeground] The bottom corners of the frame do not see the ground.");
 
         Assert.IsEmpty(EnvironmentForeground.Layout(position, rotation, 0f, aspect, ground, 1));
         Assert.IsEmpty(EnvironmentForeground.Layout(position, rotation, fov, 0f, ground, 1));
