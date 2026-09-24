@@ -40,7 +40,6 @@ namespace HealerLike.Render.Stage
         [SerializeField] GrassField _grass;
         [SerializeField] SpellVisualSink _spellSink;
         [SerializeField] StoneEffects _stoneEffects;
-        [SerializeField] StoneDeathBridge _stoneDeath;
         [SerializeField] BattleFocus _battleFocus;
         [SerializeField] StageRangeDriver _rangeDriver;
         [SerializeField] StageKeyLight _keyLight;
@@ -457,13 +456,9 @@ namespace HealerLike.Render.Stage
             }
         }
 
+        // A stone collapses by itself at zero health, the camera only reframes
         void OnEntityKilled(Entity entity)
         {
-            if (entity != null)
-            {
-                _stoneDeath.HandleDeparture(entity);
-            }
-
             _battleFocus.MarkDirty();
         }
 

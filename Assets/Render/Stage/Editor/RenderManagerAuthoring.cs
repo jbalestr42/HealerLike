@@ -33,7 +33,6 @@ namespace HealerLike.Render.Stage
             LookController look = root.AddComponent<LookController>();
             ZoneRegistry zones = root.AddComponent<ZoneRegistry>();
             StageRangeDriver rangeDriver = root.AddComponent<StageRangeDriver>();
-            StoneDeathBridge stoneDeath = root.AddComponent<StoneDeathBridge>();
 
             StageKeyLight keyLight = CreateKeyLight(root);
             GameObject grassGo = new GameObject("Grass");
@@ -59,7 +58,6 @@ namespace HealerLike.Render.Stage
             data.FindProperty("_grass").objectReferenceValue = grass;
             data.FindProperty("_spellSink").objectReferenceValue = sink;
             data.FindProperty("_stoneEffects").objectReferenceValue = stoneEffects;
-            data.FindProperty("_stoneDeath").objectReferenceValue = stoneDeath;
             data.FindProperty("_battleFocus").objectReferenceValue = battleFocus;
             data.FindProperty("_rangeDriver").objectReferenceValue = rangeDriver;
             data.FindProperty("_keyLight").objectReferenceValue = keyLight;
