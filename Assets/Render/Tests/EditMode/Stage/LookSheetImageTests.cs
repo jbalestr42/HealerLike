@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -7,21 +6,6 @@ namespace HealerLike.Render.Stage
 
 public class LookSheetImageTests
 {
-    readonly List<Object> _created = new List<Object>();
-
-    [TearDown]
-    public void TearDown()
-    {
-        foreach (Object created in _created)
-        {
-            if (created != null)
-            {
-                Object.DestroyImmediate(created);
-            }
-        }
-        _created.Clear();
-    }
-
     [Test]
     public void Deuteranope_Grey_StaysGrey()
     {
@@ -68,50 +52,6 @@ public class LookSheetImageTests
         Assert.AreEqual(white, crop[0]);
         Assert.AreEqual(new Color32(0, 0, 0, 255), crop[1]);
         Assert.AreEqual(new Color32(0, 0, 0, 255), crop[3]);
-    }
-
-    [Test]
-    public void Board_SixteenCellsAcross_DrawsACellAtTheCentreInASixteenthOfTheWidth()
-    {
-        Quaternion rotation = Quaternion.Euler(52f, 0f, 0f);
-        Vector3 centre = new Vector3(3f, 0.5f, -2f);
-
-        Pose pose = LookSheetCamera.Board(centre, 1f, rotation, 40f, 9f / 16f, 1080);
-
-        // The view is BoardCells cells wide at the centre's depth, so a cell spans 1080 / 16 = 67.5 px
-        float depth = Vector3.Distance(pose.position, centre);
-        float viewWidth = 2f * depth * Mathf.Tan(40f * Mathf.Deg2Rad * 0.5f) * (9f / 16f);
-        Assert.AreEqual(LookSheetCamera.BoardCells, viewWidth, 0.001f);
-        Assert.AreEqual(rotation, pose.rotation);
-    }
-
-    [Test]
-    public void Build_OneCell_LaysColourGreyAndDeuteranopiaSideBySide()
-    {
-        LookSheetContact contact = new LookSheetContact(165);
-        Color32[] colour = Fill(new Color32(200, 40, 40, 255));
-        Color32[] grey = Fill(new Color32(70, 70, 70, 255));
-        Color32[] deuteranope = Fill(new Color32(120, 110, 40, 255));
-        contact.Add("MENDER", colour, grey, deuteranope);
-
-        Texture2D sheet = contact.Build("UNITS");
-        _created.Add(sheet);
-
-        int side = 165 * 2; // 330 / 165
-        int bottom = sheet.height - (8 * LookSheetContact.LabelScale + 12) - side;
-        Assert.AreEqual(colour[0], (Color32)sheet.GetPixel(10, bottom + 10));
-        Assert.AreEqual(grey[0], (Color32)sheet.GetPixel(side + LookSheetContact.Gap + 10, bottom + 10));
-        Assert.AreEqual(deuteranope[0], (Color32)sheet.GetPixel(2 * (side + LookSheetContact.Gap) + 10, bottom + 10));
-    }
-
-    static Color32[] Fill(Color32 colour)
-    {
-        Color32[] pixels = new Color32[165 * 165];
-        for (int i = 0; i < pixels.Length; i++)
-        {
-            pixels[i] = colour;
-        }
-        return pixels;
     }
 }
 

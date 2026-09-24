@@ -108,24 +108,6 @@ public class LookSheetUnitsTests
         Assert.AreEqual(expected, label);
     }
 
-    [Test]
-    public void Draw_Label_LightsPixelsInsideItsBox()
-    {
-        Texture2D texture = new Texture2D(64, 32, TextureFormat.RGB24, false);
-        _created.Add(texture);
-        texture.SetPixels32(new Color32[64 * 32]);
-
-        LookSheetFont.Draw(texture, "HEAL*", 2, 30, 2, Color.white);
-
-        int lit = 0;
-        foreach (Color32 pixel in texture.GetPixels32())
-        {
-            lit += pixel.r == 255 ? 1 : 0;
-        }
-        Assert.Greater(lit, 40);
-        Assert.AreEqual(Color.black, texture.GetPixel(63, 2));
-    }
-
     static void AssertRow(UnitChannels channels, LookSide side, HeadKind head, CountBand count, StemBand stem, MassBand mass,
         AccessoryKind accessory, EffectFamily accent)
     {

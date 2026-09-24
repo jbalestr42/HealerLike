@@ -58,22 +58,65 @@ public class StageKeyLightTests
     }
 
     [Test]
-    public void RendersRealShadows_MissingPipelineShadowsLightOrDistance_ReturnsFalse()
+    public void RendersRealShadows_ShadowDistanceCoversTheBoard_FollowsThePipeline()
     {
         _pipeline.shadowDistance = 70f;
-        bool isSupported = _pipeline.supportsMainLightShadows && _pipeline.mainLightRenderingMode == LightRenderingMode.PerPixel;
+        bool isSupported = _pipeline.supportsMainLightShadows
+                           && _pipeline.mainLightRenderingMode == LightRenderingMode.PerPixel;
 
-        Assert.That(StageKeyLight.RendersRealShadows(_pipeline, _light, 50f), Is.EqualTo(isSupported));
-        Assert.That(StageKeyLight.RendersRealShadows(_pipeline, _light, 80f), Is.False, "shadow distance short of the board");
+        bool isReal = StageKeyLight.RendersRealShadows(_pipeline, _light, 50f);
 
+        Assert.That(isReal, Is.EqualTo(isSupported));
+    }
+
+    [Test]
+    public void RendersRealShadows_ShadowDistanceShortOfTheBoard_ReturnsFalse()
+    {
+        _pipeline.shadowDistance = 70f;
+
+        bool isReal = StageKeyLight.RendersRealShadows(_pipeline, _light, 80f);
+
+        Assert.That(isReal, Is.False);
+    }
+
+    [Test]
+    public void RendersRealShadows_LightWithoutShadows_ReturnsFalse()
+    {
+        _pipeline.shadowDistance = 70f;
         _light.shadows = LightShadows.None;
-        Assert.That(StageKeyLight.RendersRealShadows(_pipeline, _light, 50f), Is.False);
 
-        _light.shadows = LightShadows.Soft;
+        bool isReal = StageKeyLight.RendersRealShadows(_pipeline, _light, 50f);
+
+        Assert.That(isReal, Is.False);
+    }
+
+    [Test]
+    public void RendersRealShadows_PointLight_ReturnsFalse()
+    {
+        _pipeline.shadowDistance = 70f;
         _light.type = LightType.Point;
-        Assert.That(StageKeyLight.RendersRealShadows(_pipeline, _light, 50f), Is.False);
-        Assert.That(StageKeyLight.RendersRealShadows(null, _light, 50f), Is.False);
-        Assert.That(StageKeyLight.RendersRealShadows(_pipeline, null, 50f), Is.False);
+
+        bool isReal = StageKeyLight.RendersRealShadows(_pipeline, _light, 50f);
+
+        Assert.That(isReal, Is.False);
+    }
+
+    [Test]
+    public void RendersRealShadows_NoPipeline_ReturnsFalse()
+    {
+        bool isReal = StageKeyLight.RendersRealShadows(null, _light, 50f);
+
+        Assert.That(isReal, Is.False);
+    }
+
+    [Test]
+    public void RendersRealShadows_NoLight_ReturnsFalse()
+    {
+        _pipeline.shadowDistance = 70f;
+
+        bool isReal = StageKeyLight.RendersRealShadows(_pipeline, null, 50f);
+
+        Assert.That(isReal, Is.False);
     }
 
     [Test]

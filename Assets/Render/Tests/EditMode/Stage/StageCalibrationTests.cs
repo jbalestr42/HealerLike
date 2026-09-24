@@ -50,14 +50,17 @@ public class StageCalibrationTests
     [Test]
     public void Frame_PortraitBoard_FitsWidthAtNearEdgeAndPlacesTheCentre()
     {
-        _camera.aspect = 9f / 16f;
+        _camera.aspect = StageCalibration.PortraitAspect;
+        _camera.fieldOfView = StageCalibration.PortraitFov;
         Bounds board = new Bounds(new Vector3(0f, 0.505f, 0f), new Vector3(16f, 0f, 16f));
 
-        Pose pose = StageCalibration.Frame(board, 73.7f, 40f, 9f / 16f, 0.5f, 0.42f);
+        Pose pose = StageCalibration.Frame(board, StageCalibration.PortraitPitch, StageCalibration.PortraitFov,
+                                           StageCalibration.PortraitAspect, 0.5f, StageCalibration.PortraitCentreY);
         _go.transform.SetPositionAndRotation(pose.position, pose.rotation);
 
-        Assert.That(pose.rotation.eulerAngles.x, Is.EqualTo(73.7f).Within(0.01f));
-        Assert.That(_camera.WorldToViewportPoint(board.center).y, Is.EqualTo(0.42f).Within(0.002f));
+        Assert.That(pose.rotation.eulerAngles.x, Is.EqualTo(StageCalibration.PortraitPitch).Within(0.01f));
+        float centreY = _camera.WorldToViewportPoint(board.center).y;
+        Assert.That(centreY, Is.EqualTo(StageCalibration.PortraitCentreY).Within(0.002f));
         Vector3 nearLeft = _camera.WorldToViewportPoint(new Vector3(-8f, 0.505f, -8f));
         Vector3 nearRight = _camera.WorldToViewportPoint(new Vector3(8f, 0.505f, -8f));
         float margin = 0.5f / 17f; // half a unit of 17 across
