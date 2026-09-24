@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
 using NUnit.Framework;
 using UnityEngine;
@@ -24,6 +25,8 @@ public class EffectPlacementTests
     GameObject _target;
     SpellVisualSink _sink;
     readonly List<Object> _created = new List<Object>();
+    readonly List<GameObject> _units = new List<GameObject>();
+    readonly List<CreatureRig> _rigs = new List<CreatureRig>();
 
     // A long stem with a small head high over the body
     static EffectAnchors Tall()
@@ -72,6 +75,44 @@ public class EffectPlacementTests
         }
     }
 
+    // The anchors the rig publishes for a unit the composer builds from these channels
+    EffectAnchors ComposeAnchors(LookSide side, HeadKind head)
+    {
+        UnitChannels channels = RenderTestAssets.CreateChannels(side, head);
+        CreatureRecipe recipe = LookComposer.Compose(channels, RenderTestAssets.LoadLookVocabulary());
+        _created.Add(recipe);
+        GameObject unitGo = new GameObject(side + " " + head);
+        _units.Add(unitGo);
+        CreatureRig rig = RenderTestAssets.CreateRig(recipe, unitGo.transform, RenderTestAssets.LoadLookMaterial());
+        _rigs.Add(rig);
+        Assert.IsTrue(rig.TryGetAnchors(out EffectAnchors anchors), side + " " + head);
+        return anchors;
+    }
+
+    void AssertOffTheHead(GameObject target, BuffHandlerFactory handler, EffectElement element, EffectAnchors anchors,
+                          string unit)
+    {
+        float grown = anchors.headRadius + EffectPlacement.HeadMargin * anchors.bodyRadius;
+        _sink.SetStatus(null, target, handler, 3, 0f, 6f);
+        SpellEffect effect = _sink.GetElement(target, element);
+        Assert.IsNotNull(effect, unit);
+        Assert.IsTrue(effect.isLasting, unit);
+        for (float time = 0f; time < 6f; time += 0.1f)
+        {
+            _sink.SetStatus(null, target, handler, 3, time, 6f);
+            foreach (Renderer part in effect.GetComponentsInChildren<Renderer>())
+            {
+                if (part.bounds.size.sqrMagnitude < 0.00000001f)
+                {
+                    continue;
+                }
+
+                float distance = Mathf.Sqrt(part.bounds.SqrDistance(anchors.headCentre));
+                Assert.GreaterOrEqual(distance, grown - 0.001f, $"{unit}: {part.name} at {time:0.0} s");
+            }
+        }
+    }
+
     [SetUp]
     public void SetUp()
     {
@@ -84,44 +125,45 @@ public class EffectPlacementTests
     public void TearDown()
     {
         TestHelpers.InvokePrivate(_sink, "OnDestroy");
+        foreach (CreatureRig rig in _rigs)
+        {
+            rig.Dispose();
+        }
+
+        _rigs.Clear();
+        foreach (GameObject unitGo in _units)
+        {
+            Object.DestroyImmediate(unitGo);
+        }
+
+        _units.Clear();
         Object.DestroyImmediate(_host);
         Object.DestroyImmediate(_target);
         foreach (Object created in _created)
         {
             Object.DestroyImmediate(created);
         }
+
         _created.Clear();
     }
 
+    // Every head the composer draws, on each side: an element alive longer than the lasting limit keeps its
+    // bounds out of the head sphere grown by a tenth of a body unit, over the whole of a status
     [Test]
-    public void SetStatus_LastingElementOnTallAndSquatUnits_NeverReachesTheHead(
+    public void SetStatus_LastingElementOnEveryComposedHead_NeverReachesTheHead(
         [Values(EffectElement.Orbit, EffectElement.Plates, EffectElement.Bud, EffectElement.Press, EffectElement.Crack,
                 EffectElement.Drips, EffectElement.Stalks)] EffectElement element,
-        [Values(true, false)] bool isTall)
+        [Values(LookSide.Plant, LookSide.Stone)] LookSide side)
     {
-        EffectAnchors anchors = isTall ? Tall() : Squat();
-        _target.AddComponent<FakeEffectAnchors>().anchors = anchors;
         BuffHandlerFactory handler = Handler(element);
-        float grown = anchors.headRadius + EffectPlacement.HeadMargin * anchors.bodyRadius;
 
-        _sink.SetStatus(null, _target, handler, 3, 0f, 6f);
-
-        SpellEffect effect = _sink.GetStatus(_target, handler).GetComponent<SpellEffect>();
-        Assert.AreEqual(element, effect.element);
-        Assert.IsTrue(effect.isLasting);
-        for (float time = 0f; time < 6f; time += 0.1f)
+        foreach (HeadKind head in System.Enum.GetValues(typeof(HeadKind)))
         {
-            _sink.SetStatus(null, _target, handler, 3, time, 6f);
-            foreach (Renderer part in effect.GetComponentsInChildren<Renderer>())
-            {
-                if (part.bounds.size.sqrMagnitude < 0.00000001f)
-                {
-                    continue;
-                }
-
-                float distance = Mathf.Sqrt(part.bounds.SqrDistance(anchors.headCentre));
-                Assert.GreaterOrEqual(distance, grown - 0.001f, $"{part.name} at {time:0.0} s");
-            }
+            EffectAnchors anchors = ComposeAnchors(side, head);
+            GameObject target = new GameObject(head.ToString());
+            _units.Add(target);
+            target.AddComponent<FakeEffectAnchors>().anchors = anchors;
+            AssertOffTheHead(target, handler, element, anchors, head.ToString());
         }
     }
 
@@ -153,7 +195,7 @@ public class EffectPlacementTests
         Assert.Greater(root.position.x, anchors.bodyCentre.x + anchors.bodyRadius);
         Assert.Less(root.position.y, anchors.headCentre.y - anchors.headRadius);
         SpellEffect effect = root.GetComponent<SpellEffect>();
-        effect.Pose(1f / SpellEffect.FallPace, 0f);
+        effect.Pose(1f / EffectMotion.FallPace, 0f);
         Assert.AreEqual(anchors.foot.y, effect.shapes[0].position.y, 0.01f);
     }
 

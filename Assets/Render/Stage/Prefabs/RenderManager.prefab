@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 6672015439819253328}
   - component: {fileID: 8708550167893978255}
   - component: {fileID: 260637357020886478}
-  - component: {fileID: 3997228221956938455}
+  - component: {fileID: 5829174630918274635}
   m_Layer: 0
   m_Name: RenderManager
   m_TagString: Untagged
@@ -57,22 +57,13 @@ MonoBehaviour:
   _creatureLooks: {fileID: 11400000, guid: 68957a7ea424c4563ae035a37fb0f650, type: 2}
   _spellLooks: {fileID: 11400000, guid: 3f7bcc3db75d049a78cca2b5cf1fb20c, type: 2}
   _meshes: {fileID: 11400000, guid: 4ee00372052f248838ebdf645b1e9727, type: 2}
-  _pipeline: {fileID: 11400000, guid: 2d4c91615a343414dbdbddb95cbb4d18, type: 2}
-  _groundMaterial: {fileID: 2100000, guid: 2a8b81dadb9c243d7bb6e17e48f090f8, type: 2}
-  _backgroundColor: {r: 0.7490196, g: 0.8235294, b: 0.8784314, a: 1}
-  _ambientColor: {r: 0.35, g: 0.4, b: 0.5, a: 1}
-  _hiddenObjectNames:
-  - MiddleLine
-  - Sphere
-  - Ground
-  _gridStrength: 0.12
+  _dressing: {fileID: 5829174630918274635}
   _environmentPrefab: {fileID: 6435028924057048388, guid: a8358bd0073da4481a6a1f17d7d3380f, type: 3}
   _look: {fileID: 6672015439819253328}
   _zones: {fileID: 8708550167893978255}
   _grass: {fileID: 8078069055359978463}
   _spellSink: {fileID: 241064305910451805}
   _stoneEffects: {fileID: 7510366600707460256}
-  _stoneDeath: {fileID: 3997228221956938455}
   _battleFocus: {fileID: 8059157259222913857}
   _rangeDriver: {fileID: 260637357020886478}
   _keyLight: {fileID: 1873633211094606159}
@@ -126,7 +117,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4ec1f25bb1e4572a78033e6481ba946, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.StageRangeDriver
---- !u!114 &3997228221956938455
+--- !u!114 &5829174630918274635
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -135,11 +126,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 2509917785339152984}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34b6407ca14424797b1fd0d2a5068360, type: 3}
+  m_Script: {fileID: 11500000, guid: 01f651c79584457e934007377834dab9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stones.StoneDeathBridge
-  _manager: {fileID: 0}
-  _effects: {fileID: 0}
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.StageDressing
+  _pipeline: {fileID: 11400000, guid: 2d4c91615a343414dbdbddb95cbb4d18, type: 2}
+  _groundMaterial: {fileID: 2100000, guid: 2a8b81dadb9c243d7bb6e17e48f090f8, type: 2}
+  _backgroundColor: {r: 0.7490196, g: 0.8235294, b: 0.8784314, a: 1}
+  _ambientColor: {r: 0.35, g: 0.4, b: 0.5, a: 1}
+  _hiddenObjectNames:
+  - MiddleLine
+  - Sphere
+  - Ground
+  _gridStrength: 0.12
 --- !u!1 &3416314069946268383
 GameObject:
   m_ObjectHideFlags: 0

@@ -135,7 +135,7 @@ namespace HealerLike.Render.Spells
         public static float HeadOverlap(SpellEffect effect, EffectAnchors anchors, bool isUp)
         {
             float radius = anchors.headRadius + HeadMargin * anchors.bodyRadius;
-            float span = effect.recipe.motion == EffectMotion.Orbit ? orbitSpan : effect.recipe.cycleSeconds;
+            float span = effect.recipe.motion == EffectMotionKind.Orbit ? orbitSpan : effect.recipe.cycleSeconds;
             float worst = 0f;
             for (int i = 0; i < samples; i++)
             {

@@ -22,15 +22,10 @@ namespace HealerLike.Render.Spells
             _sink = manager.spellSink;
         }
 
-        // Called by the projectile after the manager handed the sink
+        // Projectile.Init sets the projectile and calls it, after the manager handed the sink
         public override void Init(GameObject source)
         {
-            Projectile shot = projectile;
-            if (shot == null)
-            {
-                shot = GetComponent<Projectile>();
-            }
-            Observe(shot, _sink);
+            Observe(projectile, _sink);
         }
 
         void OnDisable()

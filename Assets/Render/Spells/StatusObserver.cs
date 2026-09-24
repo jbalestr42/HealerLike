@@ -9,22 +9,13 @@ namespace HealerLike.Render.Spells
     // the unit, and the hit armor plates beside this view.
     public class StatusObserver : MonoBehaviour, IEntityView
     {
-        struct StatusState
-        {
-            public int stacks;
-            public float elapsed;
-            public float duration;
-            public GameObject source;
-        }
-
         readonly List<BuffManager.BuffHandlerData> _observed = new List<BuffManager.BuffHandlerData>();
-        Dictionary<(GameObject, ABuffHandlerFactory), StatusState> _groups =
-            new Dictionary<(GameObject, ABuffHandlerFactory), StatusState>();
-        Dictionary<(GameObject, ABuffHandlerFactory), StatusState> _published =
-            new Dictionary<(GameObject, ABuffHandlerFactory), StatusState>();
-        int _sinkVersion;
+        Dictionary<HandlerKey, StatusGroup> _groups = new Dictionary<HandlerKey, StatusGroup>();
+        Dictionary<HandlerKey, StatusGroup> _published = new Dictionary<HandlerKey, StatusGroup>();
         BuffManager _manager;
         ISpellVisualSink _injected;
+        // The render sink, which can drop a status on its own; another sink keeps whatever it was sent
+        SpellVisualSink _visualSink;
         ISpellVisualSink _lastSink;
         GameObject _outcomesOwner;
         ResourceOutcomeObserver _outcomes;
@@ -72,7 +63,7 @@ namespace HealerLike.Render.Spells
             {
                 _shield = gameObject.AddComponent<AttributeShieldView>();
             }
-            _shield.Init(entity.attributeManager, entity.gameObject, sink as SpellVisualSink);
+            _shield.Init(entity.attributeManager, entity.gameObject, _visualSink);
         }
 
         // A character's statuses and its mana outcomes, called every frame by its view; a null character
@@ -99,6 +90,7 @@ namespace HealerLike.Render.Spells
             Detach();
             _manager = manager;
             _injected = sink;
+            _visualSink = sink as SpellVisualSink;
             if (_manager != null)
             {
                 _manager.OnBuffHandlerStarted.AddListener(OnBuffHandlerStarted);
@@ -132,7 +124,8 @@ namespace HealerLike.Render.Spells
             Detach();
         }
 
-        void LateUpdate()
+        // Publishes before the RenderManager ticks the sink in its LateUpdate
+        void Update()
         {
             Reconcile();
         }
@@ -145,16 +138,10 @@ namespace HealerLike.Render.Spells
             }
 
             ISpellVisualSink sink = _injected;
-            SpellVisualSink visualSink = sink as SpellVisualSink;
-            int version = visualSink != null ? visualSink.presentationVersion : 0;
-            if (!ReferenceEquals(sink, _lastSink) || version != _sinkVersion)
+            if (!ReferenceEquals(sink, _lastSink))
             {
-                if (!ReferenceEquals(sink, _lastSink))
-                {
-                    RemovePublished();
-                }
+                RemovePublished();
                 _lastSink = sink;
-                _sinkVersion = version;
                 _published.Clear();
             }
 
@@ -163,51 +150,26 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            _groups.Clear();
-            foreach (BuffManager.BuffHandlerData data in _observed)
-            {
-                if (data.target == null || data.buffHandlerFactory == null)
-                {
-                    continue;
-                }
-
-                (GameObject, ABuffHandlerFactory) key = (data.target, data.buffHandlerFactory);
-                StatusState state = new StatusState();
-                state.stacks = Mathf.Max(0, data.currentStacks + data.refreshStacks);
-                state.source = data.source;
-                BuffHandler handler = data.buffHandler as BuffHandler;
-                state.elapsed = handler != null ? handler.durationTimer : 0f;
-                state.duration = data.buffHandlerFactory.durationType == DurationType.Infinite
-                    ? float.PositiveInfinity
-                    : data.buffHandlerFactory.duration;
-                if (_groups.TryGetValue(key, out StatusState old))
-                {
-                    state.stacks += old.stacks;
-                    state.elapsed = Mathf.Min(old.elapsed, state.elapsed);
-                    state.duration = Mathf.Max(old.duration, state.duration);
-                    state.source = old.source;
-                }
-                _groups[key] = state;
-            }
-
-            foreach (KeyValuePair<(GameObject, ABuffHandlerFactory), StatusState> previous in _published)
+            StatusGroup.Collect(_observed, _groups);
+            foreach (KeyValuePair<HandlerKey, StatusGroup> previous in _published)
             {
                 if (!_groups.ContainsKey(previous.Key))
                 {
-                    sink.RemoveStatus(null, previous.Key.Item1, previous.Key.Item2);
+                    sink.RemoveStatus(null, previous.Key.target, previous.Key.factory);
                 }
             }
 
-            foreach (KeyValuePair<(GameObject, ABuffHandlerFactory), StatusState> group in _groups)
+            foreach (KeyValuePair<HandlerKey, StatusGroup> group in _groups)
             {
-                if (!_published.TryGetValue(group.Key, out StatusState old) || !IsSame(old, group.Value))
+                if (!_published.TryGetValue(group.Key, out StatusGroup old) || !old.IsSame(group.Value)
+                    || IsDropped(group.Key, group.Value))
                 {
-                    sink.SetStatus(group.Value.source, group.Key.Item1, group.Key.Item2, group.Value.stacks, group.Value.elapsed,
-                                   group.Value.duration);
+                    sink.SetStatus(group.Value.source, group.Key.target, group.Key.factory, group.Value.stacks,
+                                   group.Value.elapsed, group.Value.duration);
                 }
             }
 
-            Dictionary<(GameObject, ABuffHandlerFactory), StatusState> swap = _published;
+            Dictionary<HandlerKey, StatusGroup> swap = _published;
             _published = _groups;
             _groups = swap;
         }
@@ -269,7 +231,7 @@ namespace HealerLike.Render.Spells
                 {
                     sink.RemoveStatus(null, data.target, data.buffHandlerFactory);
                 }
-                _published.Remove((data.target, data.buffHandlerFactory));
+                _published.Remove(new HandlerKey(data.target, data.buffHandlerFactory));
             }
             Reconcile();
         }
@@ -287,9 +249,10 @@ namespace HealerLike.Render.Spells
             }
         }
 
-        static bool IsSame(StatusState a, StatusState b)
+        // A status the render sink dropped on its own, after a clear or a sweep, is published again
+        bool IsDropped(HandlerKey key, StatusGroup state)
         {
-            return a.stacks == b.stacks && a.elapsed == b.elapsed && a.duration == b.duration;
+            return _visualSink != null && state.stacks > 0 && !_visualSink.IsShowing(key.target, key.factory);
         }
 
         // The outcome observer sits on the unit itself, where the resources raise their events

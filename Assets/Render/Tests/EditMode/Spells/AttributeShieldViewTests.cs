@@ -76,6 +76,20 @@ public class AttributeShieldViewTests
         view.Refresh();
         Assert.IsNull(view.effect);
     }
+
+    [Test]
+    public void Init_HitArmorAttribute_FollowsItsChangesWithoutARefresh()
+    {
+        AttributeManager attributes = TestHelpers.CreateAttributeManager(_go, AttributeType.HitArmor, 0);
+        AttributeShieldView view = _go.AddComponent<AttributeShieldView>();
+        view.Init(attributes, _go, _sink);
+
+        attributes.Get(AttributeType.HitArmor).BaseValue = 3f;
+        attributes.Get(AttributeType.HitArmor).Update();
+
+        Assert.NotNull(view.effect);
+        Assert.AreEqual(3, view.effect.count);
+    }
 }
 
 }

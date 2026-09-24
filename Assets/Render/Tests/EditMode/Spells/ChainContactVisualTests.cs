@@ -40,10 +40,11 @@ public class ChainContactVisualTests
         Object.DestroyImmediate(_second);
     }
 
-    // What Init(RenderManager) hands, without a manager, then the projectile's own Init call
-    static void Observe(ChainContactVisual observer, SpellVisualSink sink, GameObject source)
+    // What Init(RenderManager) hands, without a manager, then what the projectile's own Init does
+    void Observe(ChainContactVisual observer, SpellVisualSink sink, GameObject source)
     {
         TestHelpers.SetPrivateField(observer, "_sink", sink);
+        observer.projectile = _projectile;
         observer.Init(source);
     }
 

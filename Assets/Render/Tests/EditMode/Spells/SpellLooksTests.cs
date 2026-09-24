@@ -42,16 +42,31 @@ public class SpellLooksTests
         SpellLook look = new SpellLook { element = EffectElement.ManaUp };
         looks.buffs[factory] = look;
 
-        Assert.AreSame(look, looks.GetLook(factory));
+        Assert.AreSame(look, looks.GetLook(factory, null, null));
     }
 
     [Test]
-    public void GetLook_UnmappedBuff_ReturnsNullSoTheLookIsDerived()
+    public void GetLook_UnmappedBuff_DerivesItFromTheHandlerAndTheSides()
     {
         SpellLooks looks = CreateTracked<SpellLooks>();
+        BuffHandlerFactory harm = SpellSinkFixture.Modifier(AttributeType.Damage, -2f, _objects);
+        GameObject enemyGo = new GameObject("Enemy");
+        GameObject allyGo = new GameObject("Ally");
+        _objects.Add(enemyGo);
+        _objects.Add(allyGo);
+        Entity enemy = null;
+        TestHelpers.WithLoggingDisabled(() =>
+        {
+            enemy = enemyGo.AddComponent<Entity>();
+            allyGo.AddComponent<Entity>().entityType = Entity.EntityType.Player;
+        });
+        enemy.entityType = Entity.EntityType.Computer;
 
-        Assert.IsNull(looks.GetLook(CreateTracked<BuffHandlerFactory>()));
-        Assert.IsNull(looks.GetLook(null));
+        SpellLook look = looks.GetLook(harm, enemyGo, allyGo);
+
+        Assert.AreEqual(EffectFamily.Bane, look.family);
+        Assert.AreEqual(EffectElement.Press, look.element);
+        Assert.IsNotNull(looks.GetLook(null, null, null));
     }
 
     [Test]
@@ -95,7 +110,7 @@ public class SpellLooksTests
         string handlerPath = "Assets/Data/" + path + ".asset";
         ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(handlerPath);
 
-        SpellLook row = looks.GetLook(handler);
+        SpellLook row = looks.GetLook(handler, null, null);
 
         Assert.AreEqual(expected, row.element);
         Assert.AreEqual(EffectTempo.Once, row.tempo);

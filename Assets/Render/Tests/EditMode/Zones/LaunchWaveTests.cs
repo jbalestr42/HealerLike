@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HealerLike.Render.Environment;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -12,6 +13,7 @@ public class LaunchWaveTests
     GameObject _source;
     GameObject _target;
     ZoneRegistry _owner;
+    EnvironmentGust _gust;
     Projectile _projectile;
     LaunchWave _wave;
 
@@ -24,6 +26,7 @@ public class LaunchWaveTests
         _target = new GameObject("target");
         _owner = _root.AddComponent<ZoneRegistry>();
         _owner.Init(new ZoneFakeUpload());
+        _gust = _root.AddComponent<EnvironmentGust>();
         TestHelpers.WithLoggingDisabled(() => _target.AddComponent<Entity>());
         _target.transform.position = Vector3.forward * 4f;
         _projectile = _shot.AddComponent<Projectile>();
@@ -47,7 +50,7 @@ public class LaunchWaveTests
     [Test]
     public void Init_ProjectileLaunched_EmitsDirectionalPulseThatOutlivesIt()
     {
-        _wave.Init(_owner);
+        _wave.Init(_owner, _gust);
 
         Launch();
         _owner.PublishFrame(0f);
@@ -67,23 +70,39 @@ public class LaunchWaveTests
     }
 
     [Test]
-    public void Init_WithZones_LaunchesOnePulse()
+    public void Init_ProjectileLaunched_PushesTheGustFromSourceToTarget()
     {
-        _wave.Init(_owner);
+        _wave.Init(_owner, _gust);
 
         Launch();
 
-        Assert.AreEqual(1, _owner.liveCount);
+        Vector3 wind = _gust.Sample(Time.timeAsDouble + LaunchWave.GustSeconds * 0.5f);
+        Assert.AreEqual(LaunchWave.GustStrength, wind.z, 0.001f);
+        Assert.AreEqual(0f, wind.x, 0.00001f);
+        Assert.AreEqual(0f, wind.y);
+        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + LaunchWave.GustSeconds + 0.01f).sqrMagnitude);
     }
 
     [Test]
-    public void Init_WithoutZones_EmitsNothing()
+    public void Init_WithoutZonesOrGust_EmitsNothing()
     {
-        _wave.Init(null);
+        _wave.Init(null, null);
 
         Launch();
 
         Assert.AreEqual(0, _owner.liveCount);
+        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + 0.1).sqrMagnitude);
+    }
+
+    [Test]
+    public void Init_NoProjectileTarget_LeavesZonesAndGustStill()
+    {
+        _wave.Init(_owner, _gust);
+
+        _wave.Init(_source);
+
+        Assert.AreEqual(0, _owner.liveCount);
+        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + 0.1).sqrMagnitude);
     }
 }
 

@@ -33,7 +33,7 @@ namespace HealerLike.Render.Stage
             LookController look = root.AddComponent<LookController>();
             ZoneRegistry zones = root.AddComponent<ZoneRegistry>();
             StageRangeDriver rangeDriver = root.AddComponent<StageRangeDriver>();
-            StoneDeathBridge stoneDeath = root.AddComponent<StoneDeathBridge>();
+            StageDressing dressing = root.AddComponent<StageDressing>();
 
             StageKeyLight keyLight = CreateKeyLight(root);
             GameObject grassGo = new GameObject("Grass");
@@ -51,27 +51,30 @@ namespace HealerLike.Render.Stage
             data.FindProperty("_creatureLooks").objectReferenceValue = EnvironmentAuthoring.Load<Object>(CreatureLooksPath);
             data.FindProperty("_spellLooks").objectReferenceValue = EnvironmentAuthoring.Load<Object>(SpellLooksPath);
             data.FindProperty("_meshes").objectReferenceValue = EnvironmentAuthoring.Load<Object>(EnvironmentAuthoring.MeshesPath);
-            data.FindProperty("_pipeline").objectReferenceValue = pipeline;
-            data.FindProperty("_groundMaterial").objectReferenceValue = EnvironmentAuthoring.Load<Material>(BoardMaterialPath);
+            data.FindProperty("_dressing").objectReferenceValue = dressing;
             data.FindProperty("_environmentPrefab").objectReferenceValue = environment.GetComponent<EnvironmentRoot>();
             data.FindProperty("_look").objectReferenceValue = look;
             data.FindProperty("_zones").objectReferenceValue = zones;
             data.FindProperty("_grass").objectReferenceValue = grass;
             data.FindProperty("_spellSink").objectReferenceValue = sink;
             data.FindProperty("_stoneEffects").objectReferenceValue = stoneEffects;
-            data.FindProperty("_stoneDeath").objectReferenceValue = stoneDeath;
             data.FindProperty("_battleFocus").objectReferenceValue = battleFocus;
             data.FindProperty("_rangeDriver").objectReferenceValue = rangeDriver;
             data.FindProperty("_keyLight").objectReferenceValue = keyLight;
             data.FindProperty("_deliveryVocabulary").objectReferenceValue = EnvironmentAuthoring.Load<Object>(DeliveryVocabularyPath);
-            SerializedProperty hidden = data.FindProperty("_hiddenObjectNames");
+            data.ApplyModifiedPropertiesWithoutUndo();
+
+            SerializedObject dressingData = new SerializedObject(dressing);
+            dressingData.FindProperty("_pipeline").objectReferenceValue = pipeline;
+            dressingData.FindProperty("_groundMaterial").objectReferenceValue = EnvironmentAuthoring.Load<Material>(BoardMaterialPath);
+            SerializedProperty hidden = dressingData.FindProperty("_hiddenObjectNames");
             hidden.arraySize = HiddenObjects.Length;
             for (int i = 0; i < HiddenObjects.Length; i++)
             {
                 hidden.GetArrayElementAtIndex(i).stringValue = HiddenObjects[i];
             }
 
-            data.ApplyModifiedPropertiesWithoutUndo();
+            dressingData.ApplyModifiedPropertiesWithoutUndo();
 
             Directory.CreateDirectory(Path.GetDirectoryName(PrefabPath));
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);

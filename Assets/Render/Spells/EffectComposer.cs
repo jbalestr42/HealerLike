@@ -1,6 +1,7 @@
 using UnityEngine;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
+using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Spells
 {
@@ -9,7 +10,7 @@ namespace HealerLike.Render.Spells
     {
         public EffectElement element;
         public ElementEntry entry;
-        public EffectMotion motion;
+        public EffectMotionKind motion;
         public EffectSocket socket;
         public EffectFamily family;
         public EffectTempo tempo;
@@ -17,6 +18,8 @@ namespace HealerLike.Render.Spells
         public float cycleSeconds;
         public Color colour;
         public int count;
+        // The element's size on its socket, a harder hit draws a bigger burst
+        public float scale = 1f;
         public LookPalette palette;
     }
 
@@ -25,6 +28,9 @@ namespace HealerLike.Render.Spells
     {
         // Heal spheres go from three to eight as the amount goes from nothing to this share of the maximum health
         public static readonly float FullAmount = 0.5f;
+        // The burst's size from the smallest hit to a hit of the whole health
+        public static readonly float BurstScaleMin = 0.8f;
+        public static readonly float BurstScaleMax = 1.6f;
 
         public static EffectElement Element(EffectChannels channels)
         {
@@ -62,6 +68,56 @@ namespace HealerLike.Render.Spells
         public static EffectElement Mana(bool isGain)
         {
             return isGain ? EffectElement.ManaUp : EffectElement.ManaDown;
+        }
+
+        // A resolved change on a unit: a heal rises, a hit bursts, mana goes up or down; amount is the share of
+        // the maximum, it sizes the heal and the burst
+        public static EffectRecipe Impact(EffectVocabulary vocabulary, ResourceKind resource, bool isGain, float amount)
+        {
+            EffectFamily family = EffectFamily.Damage;
+            EffectElement element = EffectElement.Burst;
+            if (isGain)
+            {
+                family = EffectFamily.Heal;
+                element = EffectElement.Rise;
+            }
+
+            if (resource == ResourceKind.Mana)
+            {
+                element = Mana(isGain);
+            }
+
+            EffectRecipe recipe = Compose(vocabulary, element, family, EffectTempo.Once, 0f, 1, 0f, amount);
+            if (recipe != null && element == EffectElement.Burst)
+            {
+                recipe.scale = Mathf.Lerp(BurstScaleMin, BurstScaleMax, Mathf.Sqrt(Mathf.Clamp01(amount)));
+            }
+
+            return recipe;
+        }
+
+        // An area's footprint: a heal ring, or the bane litter for anything hostile; the entry's cycle is the pulse
+        public static EffectRecipe Area(EffectVocabulary vocabulary, ZoneKind kind)
+        {
+            if (kind == ZoneKind.Hostile)
+            {
+                return Compose(vocabulary, EffectElement.Litter, EffectFamily.Bane, EffectTempo.Once, 0f, 1, 0f, 0f);
+            }
+
+            return Compose(vocabulary, EffectElement.Ring, EffectFamily.Heal, EffectTempo.Once, 0f, 1, 0f, 0f);
+        }
+
+        // A beam in the family's accent, lime for a heal so gold stays with Boon
+        public static EffectRecipe Link(EffectVocabulary vocabulary, EffectFamily family)
+        {
+            return Compose(vocabulary, EffectElement.Beam, family, EffectTempo.Once, 0f, 1, 0f, 0f);
+        }
+
+        // HitArmor charges draw as the Boon defence plates, one plate per charge
+        public static EffectRecipe Shield(EffectVocabulary vocabulary, float charges)
+        {
+            return Compose(vocabulary, EffectElement.Plates, EffectFamily.Boon, EffectTempo.ForDuration, 0f, 1, charges,
+                           0f);
         }
 
         public static EffectRecipe Compose(EffectVocabulary vocabulary, EffectChannels channels, int stacks,

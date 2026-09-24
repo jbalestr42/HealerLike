@@ -1,36 +1,43 @@
 using UnityEngine;
+using HealerLike.Render.Environment;
 
 namespace HealerLike.Render.Zones
 {
-    // Projectile.Init calls this on every launch, reused projectiles included
+    // One launch: a directional pulse through the grass and a gust through the environment, on every shot the
+    // projectile starts, reused projectiles included
     public class LaunchWave : AProjectileBehaviour
     {
-        ZoneRegistry _zones;
+        public static readonly float GustStrength = 0.65f;
+        public static readonly float GustSeconds = 0.8f;
 
-        // Render side setup, the RenderManager calls it before Projectile.Init runs the behaviours
-        public void Init(ZoneRegistry zones)
+        ZoneRegistry _zones;
+        EnvironmentGust _gust;
+
+        // The RenderManager calls it before Projectile.Init runs the behaviours
+        public void Init(ZoneRegistry zones, EnvironmentGust gust)
         {
             _zones = zones;
+            _gust = gust;
         }
 
         public override void Init(GameObject source)
         {
-            if (!isActiveAndEnabled || !source)
+            if (!isActiveAndEnabled || source == null || projectile == null || projectile.target == null)
             {
                 return;
             }
 
-            if (!projectile)
+            Vector3 sourcePosition = source.transform.position;
+            Vector3 targetPosition = projectile.target.transform.position;
+            if (_zones != null)
             {
-                projectile = GetComponent<Projectile>();
+                _zones.AddLaunch(sourcePosition, targetPosition);
             }
 
-            if (!projectile || !projectile.target || _zones == null)
+            if (_gust != null)
             {
-                return;
+                _gust.Gust(targetPosition - sourcePosition, GustStrength, GustSeconds);
             }
-
-            _zones.AddLaunch(source.transform.position, projectile.target.transform.position);
         }
     }
 }

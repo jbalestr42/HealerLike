@@ -29,7 +29,7 @@ namespace HealerLike.Render.Spells
 
     // How the parts of an element move, one motion cycle at a time
     // Stored by value in assets: append new members, never reorder or remove
-    public enum EffectMotion
+    public enum EffectMotionKind
     {
         Burst,
         Rise,
@@ -75,7 +75,7 @@ namespace HealerLike.Render.Spells
         public LookPart[] criticalRings = Array.Empty<LookPart>();
         // Shows the caster's side
         public LookPart[] sideRim = Array.Empty<LookPart>();
-        public EffectMotion motion;
+        public EffectMotionKind motion;
         public EffectSocket socket;
         public EffectCount count;
         // The fewest shape parts shown, one stack or charge adds one more up to every part

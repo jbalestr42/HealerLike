@@ -19,7 +19,8 @@ public class SpellEffectTests
         GameObject go = new GameObject(element.ToString());
         _objects.Add(go);
         SpellEffect effect = go.AddComponent<SpellEffect>();
-        effect.Init(recipe, AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(SpellSinkFixture.MeshesPath), null);
+        effect.Init(recipe, AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(SpellSinkFixture.MeshesPath), null,
+                    LookSide.Plant);
         return effect;
     }
 
@@ -243,7 +244,7 @@ public class SpellEffectTests
 
         string message = "[SpellEffect] Init needs a recipe and the primitive meshes.";
         UnityEngine.TestTools.LogAssert.Expect(LogType.Error, message);
-        effect.Init(null, null, null);
+        effect.Init(null, null, null, LookSide.Plant);
 
         Assert.AreEqual(0, go.transform.childCount);
     }
