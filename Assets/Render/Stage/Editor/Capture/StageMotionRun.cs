@@ -39,6 +39,10 @@ namespace HealerLike.Render.Stage
             manifest.grassRegion = GrassRegion(camera);
             float timeScale = Time.timeScale;
             LookSettings settings = _manager.look.settings;
+            manifest.inkScale = settings.inkScale;
+            manifest.inkStart = settings.inkStart;
+            manifest.grassNormalEdges = _manager.grass.lookMaterial.GetFloat("_HLNormalEdges") > 0f;
+            manifest.grassCastsShadows = _manager.grass.tuftDraw.shadowCastingMode != ShadowCastingMode.Off;
             try
             {
                 Time.timeScale = 0f;
@@ -90,7 +94,7 @@ namespace HealerLike.Render.Stage
                 _manager.look.settings = settings;
                 if (focus != null) focus.enabled = focusEnabled;
                 gameViewSize.Dispose();
-                manifest.isPassed &= !_output.hasFailure && manifest.frames.Count == 17;
+                manifest.isPassed &= !_output.hasFailure && manifest.frames.Count == 18;
                 _output.Write();
                 Debug.Log($"[StageMotionRun] motion={manifest.motionMeanDifference:F4} control={manifest.controlMeanDifference:F4}"
                     + $" changed={manifest.motionChangedFraction:F4} cameraFixed={manifest.cameraFixed} passed={manifest.isPassed}");
@@ -123,8 +127,14 @@ namespace HealerLike.Render.Stage
 
         IEnumerator Variants(Camera camera, LookSettings original)
         {
+            GrassField[] fields = Object.FindObjectsByType<GrassField>(FindObjectsSortMode.None);
+            foreach (GrassField field in fields)
+            {
+                if (field.tuftDraw != null) field.tuftDraw.properties.SetFloat("_HLNormalEdges", 1f);
+            }
             LookSettings settings = original;
             settings.inkScale = 0.05f;
+            settings.inkStart = 0.46f;
             _manager.look.settings = settings;
             yield return Wait(0.2f);
             yield return _output.Capture(camera, "look-ink-050", "comparison");
@@ -137,8 +147,8 @@ namespace HealerLike.Render.Stage
             _manager.look.settings = settings;
             yield return Wait(0.2f);
             yield return _output.Capture(camera, "look-ink-start-060", "comparison");
-            _manager.look.settings = original;
-            GrassField[] fields = Object.FindObjectsByType<GrassField>(FindObjectsSortMode.None);
+            settings.inkStart = 0.46f;
+            _manager.look.settings = settings;
             foreach (GrassField field in fields)
             {
                 if (field.tuftDraw != null) field.tuftDraw.properties.SetFloat("_HLNormalEdges", 0f);
@@ -154,11 +164,19 @@ namespace HealerLike.Render.Stage
             foreach (GrassField field in fields)
             {
                 if (field.tuftDraw == null) continue;
-                field.tuftDraw.properties.SetFloat("_HLNormalEdges", field.lookMaterial.GetFloat("_HLNormalEdges"));
                 field.tuftDraw.shadowCastingMode = ShadowCastingMode.Off;
             }
             yield return Wait(0.2f);
             yield return _output.Capture(camera, "look-grass-shadows-off", "comparison");
+            _manager.look.settings = original;
+            foreach (GrassField field in fields)
+            {
+                if (field.tuftDraw == null) continue;
+                field.tuftDraw.properties.SetFloat("_HLNormalEdges", field.lookMaterial.GetFloat("_HLNormalEdges"));
+                field.tuftDraw.shadowCastingMode = ShadowCastingMode.On;
+            }
+            yield return Wait(0.2f);
+            yield return _output.Capture(camera, "look-selected", "selected");
         }
     }
 }

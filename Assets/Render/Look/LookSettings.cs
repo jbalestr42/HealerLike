@@ -77,7 +77,7 @@ namespace HealerLike.Render.Look
                     fogStart = 20f,
                     fogEnd = 60f,
                     inkStrength = 1f,
-                    inkScale = 0.05f,
+                    inkScale = 0.025f,
                     inkWidth = 0.0001f,
                     inkStart = 0.46f,
                     inkRange = 1f,

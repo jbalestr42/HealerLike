@@ -15,6 +15,10 @@ namespace HealerLike.Render.Stage
         public string unityVersion;
         public string gpu;
         public string revision;
+        public float inkScale;
+        public float inkStart;
+        public bool grassNormalEdges;
+        public bool grassCastsShadows;
         public bool cameraFixed;
         public bool isPassed;
         public float controlMeanDifference;
