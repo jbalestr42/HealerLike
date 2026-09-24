@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Zones;
@@ -83,12 +84,20 @@ public class GrassFieldTests
         Assert.IsTrue(_field.isReady);
     }
 
-    // The argument buffers of the two tuft draws, the ones a caller can reach
-    List<GraphicsBuffer> DrawBuffers()
+    // Every buffer the field owns: the argument buffers of the two tuft draws, then the seeds, the states and the
+    // visible ids the compute writes
+    List<GraphicsBuffer> OwnedBuffers()
     {
         List<GraphicsBuffer> buffers = new List<GraphicsBuffer>();
         buffers.Add(_field.tuftDraw.arguments);
         buffers.Add(_field.socleDraw.arguments);
+        BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        foreach (string name in new string[] { "_seeds", "_states", "_visibleTufts" })
+        {
+            GraphicsBuffer buffer = (GraphicsBuffer)typeof(GrassField).GetField(name, flags).GetValue(_field);
+            Assert.IsTrue(buffer.IsValid(), name);
+            buffers.Add(buffer);
+        }
         return buffers;
     }
 
@@ -226,7 +235,7 @@ public class GrassFieldTests
     }
 
     [Test]
-    public void OnDisable_BuiltField_ReleasesItsDrawsAndKeepsBorrowedZonesAndMaterials()
+    public void OnDisable_BuiltField_ReleasesItsBuffersAndKeepsBorrowedZonesAndMaterials()
     {
         if (!HasGraphicsDevice())
         {
@@ -236,7 +245,7 @@ public class GrassFieldTests
         for (int cycle = 0; cycle < 3; cycle++)
         {
             BuildOneCellField();
-            List<GraphicsBuffer> buffers = DrawBuffers();
+            List<GraphicsBuffer> buffers = OwnedBuffers();
             Material tuftMaterial = _field.tuftDraw.material;
 
             // Runtime messages do not run on their own in EditMode
@@ -255,14 +264,14 @@ public class GrassFieldTests
     }
 
     [Test]
-    public void OnDestroy_BuiltField_ReleasesItsDraws()
+    public void OnDestroy_BuiltField_ReleasesItsBuffers()
     {
         if (!HasGraphicsDevice())
         {
             Assert.Ignore("Requires a graphics device; run with -force-metal.");
         }
         BuildOneCellField();
-        List<GraphicsBuffer> buffers = DrawBuffers();
+        List<GraphicsBuffer> buffers = OwnedBuffers();
 
         TestHelpers.InvokePrivate(_field, "OnDestroy");
         Object.DestroyImmediate(_field);
