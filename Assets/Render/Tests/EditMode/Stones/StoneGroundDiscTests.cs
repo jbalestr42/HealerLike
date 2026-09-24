@@ -1,3 +1,4 @@
+using HealerLike.Render.Stage;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -25,7 +26,7 @@ public class StoneGroundDiscTests
     {
         StoneGroundDisc shadow = RenderTestAssets.CreateGroundDisc(_owner.transform, true);
 
-        shadow.Init(new Bounds(Vector3.up, Vector3.one * 2f), new Vector3(-1f, 2f, 0f));
+        shadow.Init(new Bounds(Vector3.up, Vector3.one * 2f), new Vector3(-1f, 2f, 0f), null);
 
         Assert.Greater(shadow.transform.position.x, 0);
         Assert.Greater(shadow.transform.position.y, 0);
@@ -36,7 +37,7 @@ public class StoneGroundDiscTests
         shadow.Show(false);
         Assert.False(shadow.gameObject.activeSelf);
 
-        shadow.Init(new Bounds(Vector3.up, Vector3.one * 2f), Vector3.zero);
+        shadow.Init(new Bounds(Vector3.up, Vector3.one * 2f), Vector3.zero, null);
         shadow.Show(true);
         Assert.True(shadow.gameObject.activeSelf);
         Assert.Greater(Vector3.Dot(shadow.transform.forward, Vector3.forward), 0.999f);
@@ -44,23 +45,37 @@ public class StoneGroundDiscTests
     }
 
     [Test]
-    public void IsAllowed_Off_HidesAShownDiscAndOnRestoresOnlyWhatTheOwnerShows()
+    public void Refresh_KeyLightWithRealShadows_HidesTheShadowWhileTheyAreDrawn()
     {
+        StageKeyLight keyLight = _owner.AddComponent<StageKeyLight>();
+        TestHelpers.SetPrivateField(keyLight, "_realShadows", true);
         StoneGroundDisc shadow = RenderTestAssets.CreateGroundDisc(_owner.transform, true);
-        shadow.Show(true);
-
-        shadow.isAllowed = false;
-        Assert.IsFalse(shadow.gameObject.activeSelf);
+        shadow.Init(new Bounds(Vector3.up, Vector3.one * 2f), Vector3.up, keyLight);
 
         shadow.Show(true);
-        Assert.IsFalse(shadow.gameObject.activeSelf, "the owner cannot show a disc the key light turned off");
+        Assert.IsFalse(shadow.gameObject.activeSelf, "the owner cannot show a shadow the key light draws");
+
+        TestHelpers.SetPrivateField(keyLight, "_realShadows", false);
+        shadow.Refresh();
+        Assert.IsTrue(shadow.gameObject.activeSelf);
 
         shadow.Show(false);
-        shadow.isAllowed = true;
+        shadow.Refresh();
         Assert.IsFalse(shadow.gameObject.activeSelf);
+    }
 
-        shadow.Show(true);
-        Assert.IsTrue(shadow.gameObject.activeSelf);
+    [Test]
+    public void Refresh_BareEarthUnderRealShadows_StaysShown()
+    {
+        StageKeyLight keyLight = _owner.AddComponent<StageKeyLight>();
+        TestHelpers.SetPrivateField(keyLight, "_realShadows", true);
+        StoneGroundDisc earth = RenderTestAssets.CreateGroundDisc(_owner.transform, false);
+        earth.Init(new Bounds(Vector3.up, Vector3.one * 2f), Vector3.up, keyLight);
+
+        earth.Show(true);
+        earth.Refresh();
+
+        Assert.IsTrue(earth.gameObject.activeSelf);
     }
 }
 

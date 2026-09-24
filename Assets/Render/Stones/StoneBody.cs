@@ -24,6 +24,7 @@ namespace HealerLike.Render.Stones
         CreatureRig _rig;
         StoneThrow _throw;
         StoneEffects _effects;
+        StageKeyLight _keyLight;
         Entity _entity;
         ResourceAttribute _health;
         uint _seed;
@@ -48,6 +49,7 @@ namespace HealerLike.Render.Stones
         public void Init(Entity entity, RenderManager manager)
         {
             _entity = entity;
+            _keyLight = manager != null ? manager.keyLight : null;
             StoneEffects effects = manager != null ? manager.stoneEffects : null;
             ResourceAttribute health = entity != null ? entity.health : null;
             Init(health, (uint)transform.GetEntityId().GetHashCode(), effects);
@@ -104,7 +106,8 @@ namespace HealerLike.Render.Stones
 
             if (_groundShadow != null && partTransforms.Count > 0)
             {
-                _groundShadow.Init(StoneGroundDisc.Measure(transform, partTransforms), StageKeyLight.KeyDirection);
+                Bounds bounds = StoneGroundDisc.Measure(transform, partTransforms);
+                _groundShadow.Init(bounds, StageKeyLight.KeyDirection, _keyLight);
                 _groundShadow.Show(isActiveAndEnabled);
             }
         }

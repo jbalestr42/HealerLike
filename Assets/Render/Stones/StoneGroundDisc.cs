@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HealerLike.Render.Stage;
 using UnityEngine;
 
 namespace HealerLike.Render.Stones
@@ -11,41 +12,30 @@ namespace HealerLike.Render.Stones
 
         Bounds _bounds;
         Vector3 _directionToLight;
+        StageKeyLight _keyLight;
         bool _isShown;
 
         public bool isShadow { get { return _isShadow; } }
 
-        // The key light turns cheap shadows off while it casts real ones, whatever the owner shows
-        bool _isAllowed = true;
-        public bool isAllowed
-        {
-            get
-            {
-                return _isAllowed;
-            }
-            set
-            {
-                _isAllowed = value;
-                gameObject.SetActive(_isShown && _isAllowed);
-            }
-        }
-
-        // Bounds are in the parent's space, the light direction in world space
-        public void Init(Bounds localBounds, Vector3 directionToLight)
+        // Bounds are in the parent's space, the light direction in world space; without a key light the shadow
+        // always shows when its owner shows it
+        public void Init(Bounds localBounds, Vector3 directionToLight, StageKeyLight keyLight)
         {
             _bounds = localBounds;
             _directionToLight = directionToLight;
+            _keyLight = keyLight;
             Refresh();
         }
 
         public void Show(bool show)
         {
             _isShown = show;
-            gameObject.SetActive(_isShown && _isAllowed);
+            UpdateVisibility();
         }
 
         public void Refresh()
         {
+            UpdateVisibility();
             Vector3 away = new Vector3(-_directionToLight.x, 0f, -_directionToLight.z);
             if (!float.IsFinite(away.sqrMagnitude) || away.sqrMagnitude < 0.000001f)
             {
@@ -69,6 +59,17 @@ namespace HealerLike.Render.Stones
                 width / Mathf.Max(0.0001f, Mathf.Abs(inherited.x)),
                 0.001f / Mathf.Max(0.0001f, Mathf.Abs(inherited.y)),
                 length / Mathf.Max(0.0001f, Mathf.Abs(inherited.z)));
+        }
+
+        // Real shadows from the key light take over from a cast shadow, whatever its owner shows
+        void UpdateVisibility()
+        {
+            bool isReplaced = _isShadow && _keyLight != null && _keyLight.realShadows;
+            bool isVisible = _isShown && !isReplaced;
+            if (gameObject.activeSelf != isVisible)
+            {
+                gameObject.SetActive(isVisible);
+            }
         }
 
         // The parts' box in the given space, the space Init takes its bounds in

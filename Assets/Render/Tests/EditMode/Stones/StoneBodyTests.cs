@@ -1,5 +1,6 @@
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
+using HealerLike.Render.Stage;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -266,6 +267,20 @@ public class StoneBodyTests
         Assert.Less(shadow.transform.position.x, _body.transform.position.x); // the light is upper right
 
         _body.Collapse(null);
+        Assert.IsFalse(shadow.gameObject.activeSelf);
+    }
+
+    [Test]
+    public void Init_KeyLightWithRealShadows_HidesTheGroundShadow()
+    {
+        StoneGroundDisc shadow = RenderTestAssets.CreateGroundDisc(_body.transform, true);
+        StageKeyLight keyLight = _owner.AddComponent<StageKeyLight>();
+        TestHelpers.SetPrivateField(keyLight, "_realShadows", true);
+        TestHelpers.SetPrivateField(_body, "_groundShadow", shadow);
+        TestHelpers.SetPrivateField(_body, "_keyLight", keyLight);
+
+        _body.Init(_health, 15, _fx);
+
         Assert.IsFalse(shadow.gameObject.activeSelf);
     }
 

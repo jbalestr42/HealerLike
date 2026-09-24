@@ -1,4 +1,3 @@
-using HealerLike.Render.Stones;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -11,7 +10,6 @@ public class StageKeyLightTests
     GameObject _lightGo;
     Light _light;
     UniversalRenderPipelineAsset _pipeline;
-    GameObject _discGo;
 
     [SetUp]
     public void SetUp()
@@ -21,7 +19,6 @@ public class StageKeyLightTests
         _light.type = LightType.Directional;
         _light.shadows = LightShadows.Soft;
         _pipeline = ScriptableObject.CreateInstance<UniversalRenderPipelineAsset>();
-        _discGo = new GameObject("DiscTest");
     }
 
     [TearDown]
@@ -29,7 +26,6 @@ public class StageKeyLightTests
     {
         Object.DestroyImmediate(_lightGo);
         Object.DestroyImmediate(_pipeline);
-        Object.DestroyImmediate(_discGo);
     }
 
     [Test]
@@ -120,23 +116,16 @@ public class StageKeyLightTests
     }
 
     [Test]
-    public void ApplyCheapShadows_RealShadowsToggled_TurnsEllipsesOffAndBackOn()
+    public void Refresh_LightWithoutShadows_ReportsNoRealShadows()
     {
-        StoneGroundDisc shadow = RenderTestAssets.CreateGroundDisc(_discGo.transform, true);
-        StoneGroundDisc earth = RenderTestAssets.CreateGroundDisc(_discGo.transform, false);
-        shadow.Show(true);
-        earth.Show(true);
-        StoneGroundDisc[] discs = new StoneGroundDisc[] { shadow, earth };
+        StageKeyLight keyLight = _lightGo.AddComponent<StageKeyLight>();
+        keyLight.keyLight = _light;
+        TestHelpers.SetPrivateField(keyLight, "_realShadows", true);
+        _light.shadows = LightShadows.None;
 
-        Assert.That(StageKeyLight.ApplyCheapShadows(true, discs), Is.EqualTo(1));
-        Assert.That(shadow.gameObject.activeSelf, Is.False);
-        Assert.That(earth.gameObject.activeSelf, Is.True, "the bare earth is not a shadow");
-        Assert.That(StageKeyLight.ApplyCheapShadows(true, discs), Is.Zero, "already off");
+        keyLight.Refresh();
 
-        Assert.That(StageKeyLight.ApplyCheapShadows(false, discs), Is.Zero);
-        Assert.That(shadow.gameObject.activeSelf, Is.True);
-        Assert.DoesNotThrow(() => StageKeyLight.ApplyCheapShadows(true, new StoneGroundDisc[] { null }));
-        Assert.DoesNotThrow(() => StageKeyLight.ApplyCheapShadows(true, null));
+        Assert.That(keyLight.realShadows, Is.False);
     }
 }
 
