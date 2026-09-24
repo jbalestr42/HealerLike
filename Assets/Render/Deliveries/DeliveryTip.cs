@@ -10,7 +10,6 @@ namespace HealerLike.Render.Deliveries
     // Draws the tip fragment of one delivery style, instanced once per mesh, in a frame that looks along the travel
     public class DeliveryTip
     {
-        static readonly int baseColorId = Shader.PropertyToID("_BaseColor");
         // A travel shorter than this has no direction
         static readonly float stillSquared = 0.000001f;
 
@@ -114,7 +113,7 @@ namespace HealerLike.Render.Deliveries
                     _colours[g][k] = PartColour(group[k], tip, stem);
                 }
 
-                _blocks[g].SetVectorArray(baseColorId, _colours[g]);
+                _blocks[g].SetVectorArray(RenderObjects.BaseColorId, _colours[g]);
                 Graphics.DrawMeshInstanced(_meshes[g], 0, material, _matrices[g], group.Count, _blocks[g],
                     ShadowCastingMode.On, true, layer);
             }

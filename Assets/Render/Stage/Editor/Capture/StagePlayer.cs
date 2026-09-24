@@ -65,7 +65,7 @@ namespace HealerLike.Render.Stage
             slot.UseSkill();
             AInteraction interaction = InteractionManager.instance.GetInteraction();
             Camera camera = manager.gameCamera;
-            Vector3 aim = target.targetPoint != null ? target.targetPoint.transform.position : target.transform.position;
+            Vector3 aim = RenderTargets.Point(target.gameObject);
             Ray ray = new Ray(camera.transform.position, aim - camera.transform.position);
             if (interaction != null && Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, interaction.GetLayerMask())
                 && interaction.IsValidTarget(hit.transform.gameObject))

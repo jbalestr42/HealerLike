@@ -432,7 +432,7 @@ namespace HealerLike.Render.Deliveries
             Vector3 point = transform.position;
             if (hit.target)
             {
-                point = CreatureBuilder.TargetPosition(hit.target);
+                point = RenderTargets.Point(hit.target);
             }
             else if (_contacts.Count > 0)
             {

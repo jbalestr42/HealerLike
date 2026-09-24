@@ -12,12 +12,12 @@ namespace HealerLike.Render.Zones
         {
             zone = default;
 
-            if (!IsFinite(position.x) || !IsFinite(position.y) || !IsFinite(position.z))
+            if (!RenderMath.IsFinite(position))
             {
                 return false;
             }
 
-            if (!IsFinite(radius) || !IsFinite(strength) || !IsFinite(age))
+            if (!float.IsFinite(radius) || !float.IsFinite(strength) || !float.IsFinite(age))
             {
                 return false;
             }
@@ -121,7 +121,7 @@ namespace HealerLike.Render.Zones
         // Full uint turn: +X is 0, +Z is a quarter turn, the shader decodes it the same way
         public static uint EncodeDirection(Vector3 direction)
         {
-            if (!IsFinite(direction.x) || !IsFinite(direction.z))
+            if (!float.IsFinite(direction.x) || !float.IsFinite(direction.z))
             {
                 return 0;
             }
@@ -133,11 +133,6 @@ namespace HealerLike.Render.Zones
             }
 
             return (uint)(turns * 4294967296.0);
-        }
-
-        static bool IsFinite(float value)
-        {
-            return !float.IsNaN(value) && !float.IsInfinity(value);
         }
     }
 }

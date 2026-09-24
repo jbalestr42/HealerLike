@@ -63,7 +63,7 @@ namespace HealerLike.Render.Zones
 
         public void OnHealResolved(GameObject target, float value, bool critical)
         {
-            if (!isActiveAndEnabled || target == null || !(value > 0f) || float.IsInfinity(value))
+            if (!isActiveAndEnabled || target == null || !RenderMath.IsPositive(value))
             {
                 return;
             }

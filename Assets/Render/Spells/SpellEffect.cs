@@ -13,7 +13,6 @@ namespace HealerLike.Render.Spells
         // A drop runs through its motion this much faster than the cycle, so it has landed before the cycle ends
         public static readonly float FallPace = 1.15f;
 
-        static readonly int baseColorId = Shader.PropertyToID("_BaseColor");
         static readonly float riseHeight = 1.8f;
         static readonly float pressDepth = 0.2f;
         static readonly float removalSeconds = 0.25f;
@@ -516,7 +515,7 @@ namespace HealerLike.Render.Spells
 
         void Paint(Transform part, Color colour)
         {
-            _block.SetColor(baseColorId, colour);
+            _block.SetColor(RenderObjects.BaseColorId, colour);
             part.GetComponent<Renderer>().SetPropertyBlock(_block);
         }
 
@@ -545,14 +544,7 @@ namespace HealerLike.Render.Spells
             }
 
             effect.SetActive(false);
-            if (Application.isPlaying)
-            {
-                Destroy(effect);
-            }
-            else
-            {
-                DestroyImmediate(effect);
-            }
+            RenderObjects.Release(effect);
         }
     }
 }

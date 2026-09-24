@@ -165,7 +165,7 @@ namespace HealerLike.Render.Creatures
             }
 
             _castGestureCount++;
-            rig.HealContact(CreatureBuilder.TargetPosition(target));
+            rig.HealContact(RenderTargets.Point(target));
         }
 
         void StopObserving()

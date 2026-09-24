@@ -136,7 +136,7 @@ namespace HealerLike.Render.Deliveries
             float cellSize = 1f)
         {
             if (definition.restJoints == null || definition.restJoints.Length != definition.segmentCount + 1
-                || definition.segmentCount < 2 || !float.IsFinite(cellSize) || cellSize <= 0f)
+                || definition.segmentCount < 2 || !RenderMath.IsPositive(cellSize))
             {
                 Debug.LogError("[LianaArm] Invalid arm definition.");
                 return false;
@@ -183,7 +183,7 @@ namespace HealerLike.Render.Deliveries
                 detailColours[i] = definition.colour;
             }
 
-            _detailColour.SetVectorArray("_BaseColor", detailColours);
+            _detailColour.SetVectorArray(RenderObjects.BaseColorId, detailColours);
             _container = new GameObject("LianaArm").transform;
             _container.SetParent(parent, false);
             // Lets a projectile's observer find the arm its delivery took, the rig keeps its arms to itself
@@ -232,7 +232,7 @@ namespace HealerLike.Render.Deliveries
             _renderer = _container.gameObject.AddComponent<MeshRenderer>();
             _renderer.sharedMaterial = material;
             MaterialPropertyBlock block = new MaterialPropertyBlock();
-            block.SetColor("_BaseColor", definition.colour);
+            block.SetColor(RenderObjects.BaseColorId, definition.colour);
             _renderer.SetPropertyBlock(block);
             _renderer.enabled = false;
             return true;
@@ -336,10 +336,7 @@ namespace HealerLike.Render.Deliveries
             }
             else
             {
-                bool isRootFinite = float.IsFinite(rootWorld.x) && float.IsFinite(rootWorld.y)
-                    && float.IsFinite(rootWorld.z);
-                bool isGoalFinite = float.IsFinite(_goal.x) && float.IsFinite(_goal.y) && float.IsFinite(_goal.z);
-                if (!isRootFinite || !isGoalFinite)
+                if (!RenderMath.IsFinite(rootWorld) || !RenderMath.IsFinite(_goal))
                 {
                     HideForFrame();
                     return;
@@ -447,16 +444,8 @@ namespace HealerLike.Render.Deliveries
 
             // The chain mesh is rewritten every frame, so it belongs to this arm alone
             _container.gameObject.SetActive(false);
-            if (Application.isPlaying)
-            {
-                UnityEngine.Object.Destroy(_container.gameObject);
-                UnityEngine.Object.Destroy(_mesh);
-            }
-            else
-            {
-                UnityEngine.Object.DestroyImmediate(_container.gameObject);
-                UnityEngine.Object.DestroyImmediate(_mesh);
-            }
+            RenderObjects.Release(_container.gameObject);
+            RenderObjects.Release(_mesh);
         }
 
         void HideForFrame()

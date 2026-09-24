@@ -72,7 +72,7 @@ namespace HealerLike.Render.Creatures
             MeshRenderer renderer = go.GetComponent<MeshRenderer>();
             renderer.sharedMaterial = material;
             MaterialPropertyBlock block = new MaterialPropertyBlock();
-            block.SetColor("_BaseColor", Brighten(colour, glow));
+            block.SetColor(RenderObjects.BaseColorId, Brighten(colour, glow));
             renderer.SetPropertyBlock(block);
             return go.transform;
         }

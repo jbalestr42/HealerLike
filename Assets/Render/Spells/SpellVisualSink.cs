@@ -234,7 +234,7 @@ namespace HealerLike.Render.Spells
         // A beam in the family's accent, lime for a heal so gold stays with Boon
         public SpellEffect ShowLink(Vector3 start, Vector3 end, EffectFamily family, bool isContactThread)
         {
-            if (!isActiveAndEnabled || !IsFinite(start) || !IsFinite(end))
+            if (!isActiveAndEnabled || !RenderMath.IsFinite(start) || !RenderMath.IsFinite(end))
             {
                 return null;
             }
@@ -365,7 +365,8 @@ namespace HealerLike.Render.Spells
                 return null;
             }
 
-            EffectPlacement.Place(effect, Parent(target), EffectPlacement.Anchors(target));
+            // A status follows its unit, so it hangs under the target point
+            EffectPlacement.Place(effect, RenderTargets.Anchor(target), EffectPlacement.Anchors(target));
             Status status = new Status();
             status.effect = effect;
             _statuses[(target, element)] = status;
@@ -526,22 +527,6 @@ namespace HealerLike.Render.Spells
             Entity.EntityType casterSide = caster != null ? caster.entityType : Entity.EntityType.Player;
             Entity.EntityType recipientSide = recipient != null ? recipient.entityType : Entity.EntityType.Player;
             return casterSide == recipientSide;
-        }
-
-        // A status follows its unit, so it hangs under the target point
-        static Transform Parent(GameObject target)
-        {
-            Entity entity = target.GetComponent<Entity>();
-            if (entity != null && entity.targetPoint != null)
-            {
-                return entity.targetPoint.transform;
-            }
-            return target.transform;
-        }
-
-        static bool IsFinite(Vector3 point)
-        {
-            return float.IsFinite(point.x) && float.IsFinite(point.y) && float.IsFinite(point.z);
         }
 
         #region ISpellVisualSink

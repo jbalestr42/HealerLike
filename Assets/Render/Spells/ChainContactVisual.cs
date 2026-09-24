@@ -61,14 +61,8 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            Entity entity = hit.target.GetComponent<Entity>();
-            Vector3 contact = hit.target.transform.position;
-            if (entity != null && entity.targetPoint != null)
-            {
-                contact = entity.targetPoint.transform.position;
-            }
-
-            if (!float.IsFinite(contact.x) || !float.IsFinite(contact.y) || !float.IsFinite(contact.z))
+            Vector3 contact = RenderTargets.Point(hit.target);
+            if (!RenderMath.IsFinite(contact))
             {
                 return;
             }

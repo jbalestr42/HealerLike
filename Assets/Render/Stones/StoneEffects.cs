@@ -41,7 +41,6 @@ namespace HealerLike.Render.Stones
         public static readonly int StarRays = 5;
         public static readonly int MinThrownChips = 3;
 
-        static readonly int baseColorId = Shader.PropertyToID("_BaseColor");
         // A thrown contact draws from MinThrownChips to MinThrownChips + thrownChipSpread - 1 chips
         static readonly uint thrownChipSpread = 3;
         static readonly float gravity = 8f;
@@ -159,14 +158,7 @@ namespace HealerLike.Render.Stones
             _active.Remove(fragment);
             if (fragment.ownedMesh != null)
             {
-                if (Application.isPlaying)
-                {
-                    Destroy(fragment.ownedMesh);
-                }
-                else
-                {
-                    DestroyImmediate(fragment.ownedMesh);
-                }
+                RenderObjects.Release(fragment.ownedMesh);
                 fragment.ownedMesh = null;
             }
             Return(fragment);
@@ -184,7 +176,7 @@ namespace HealerLike.Render.Stones
             fragment.filter.sharedMesh = mesh;
             fragment.renderer.sharedMaterial = _stoneMaterial;
             fragment.block.Clear();
-            fragment.block.SetVector(baseColorId, colour.linear);
+            fragment.block.SetVector(RenderObjects.BaseColorId, colour.linear);
             fragment.renderer.SetPropertyBlock(fragment.block);
             fragment.gameObject.transform.localScale = Vector3.one;
             fragment.gameObject.SetActive(true);
@@ -395,7 +387,7 @@ namespace HealerLike.Render.Stones
                     fragmentTransform.position = fragment.start + fragment.velocity * fragment.age;
                     float fade = Mathf.Clamp01(1f - fragment.age / fragment.life);
                     fragmentTransform.localScale = fragment.scale * (1f + fragment.age * 0.8f);
-                    fragment.block.SetColor(baseColorId, new Color(0.48f, 0.49f, 0.51f, fade * 0.55f));
+                    fragment.block.SetColor(RenderObjects.BaseColorId, new Color(0.48f, 0.49f, 0.51f, fade * 0.55f));
                     fragment.renderer.SetPropertyBlock(fragment.block);
                 }
                 else

@@ -25,10 +25,8 @@ namespace HealerLike.Render.Environment
 
         public void GustAt(Vector3 direction, float strength, float seconds, double time)
         {
-            bool isDirectionValid = float.IsFinite(direction.x) && float.IsFinite(direction.y)
-                                    && float.IsFinite(direction.z);
-            bool isPulseValid = float.IsFinite(strength) && float.IsFinite(seconds) && strength > 0f && seconds > 0f;
-            if (!isDirectionValid || !isPulseValid || !double.IsFinite(time))
+            bool isPulseValid = RenderMath.IsPositive(strength) && RenderMath.IsPositive(seconds);
+            if (!RenderMath.IsFinite(direction) || !isPulseValid || !double.IsFinite(time))
             {
                 return;
             }

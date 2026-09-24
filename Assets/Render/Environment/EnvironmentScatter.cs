@@ -372,7 +372,7 @@ namespace HealerLike.Render.Environment
             partGo.AddComponent<MeshFilter>().sharedMesh = mesh;
             MeshRenderer meshRenderer = partGo.AddComponent<MeshRenderer>();
             meshRenderer.sharedMaterial = material;
-            _properties.SetColor("_BaseColor", VaryColor(color, _colourSeed).linear);
+            _properties.SetColor(RenderObjects.BaseColorId, VaryColor(color, _colourSeed).linear);
             meshRenderer.SetPropertyBlock(_properties);
             return Vector3.Scale(mesh.bounds.size, scale);
         }

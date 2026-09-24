@@ -75,7 +75,7 @@ namespace HealerLike.Render.Zones
         // Fades linearly on scaled time then removes itself
         public int AddPulse(ZoneKind kind, Vector3 position, float radius, float strength, float duration)
         {
-            if (!(duration > 0) || float.IsInfinity(duration))
+            if (!RenderMath.IsPositive(duration))
             {
                 return 0;
             }

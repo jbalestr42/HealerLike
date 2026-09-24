@@ -249,7 +249,7 @@ namespace HealerLike.Render.Environment
             meshRenderer.sharedMaterial = material;
             meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             meshRenderer.receiveShadows = false;
-            _properties.SetColor("_BaseColor", color.linear);
+            _properties.SetColor(RenderObjects.BaseColorId, color.linear);
             meshRenderer.SetPropertyBlock(_properties);
         }
     }

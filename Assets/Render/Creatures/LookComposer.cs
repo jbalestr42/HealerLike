@@ -188,7 +188,7 @@ namespace HealerLike.Render.Creatures
             if (!CreatureValidator.TryValidate(recipe, out string error))
             {
                 Debug.LogError($"[LookComposer] {recipe.name}: {error}");
-                Object.DestroyImmediate(recipe);
+                RenderObjects.Release(recipe);
                 return null;
             }
             return recipe;

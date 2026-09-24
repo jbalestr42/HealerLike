@@ -174,9 +174,7 @@ namespace HealerLike.Render.Creatures
 
         public void Configure(RenderRegistry registry, float size, Vector3 origin, Vector3 normal)
         {
-            bool isOriginFinite = float.IsFinite(origin.x) && float.IsFinite(origin.y) && float.IsFinite(origin.z);
-            bool isNormalFinite = float.IsFinite(normal.x) && float.IsFinite(normal.y) && float.IsFinite(normal.z);
-            if (!float.IsFinite(size) || size <= 0f || !isOriginFinite || !isNormalFinite
+            if (!RenderMath.IsPositive(size) || !RenderMath.IsFinite(origin) || !RenderMath.IsFinite(normal)
                 || normal.sqrMagnitude < 0.00000001f)
             {
                 Debug.LogError("[CreatureBuilder] Invalid ground frame.");
@@ -204,23 +202,6 @@ namespace HealerLike.Render.Creatures
                 EnsureRig();
                 Attach();
             }
-        }
-
-        public static Vector3 TargetPosition(GameObject target)
-        {
-            if (!target)
-            {
-                return Vector3.zero;
-            }
-
-            Entity entity = target.GetComponent<Entity>();
-            if (entity && entity.targetPoint)
-            {
-                return entity.targetPoint.transform.position;
-            }
-
-            SkillTargetPointTag tag = target.GetComponentInChildren<SkillTargetPointTag>();
-            return tag ? tag.transform.position : target.transform.position;
         }
 
         void RefreshSkills()
@@ -394,7 +375,7 @@ namespace HealerLike.Render.Creatures
         {
             if (isActiveAndEnabled && target && value > 0f && rig != null)
             {
-                rig.HealContact(TargetPosition(target));
+                rig.HealContact(RenderTargets.Point(target));
             }
         }
 
