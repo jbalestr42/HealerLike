@@ -26,7 +26,6 @@ namespace HealerLike.Render.Creatures
                 dimensions = dimensions,
                 colour = colour,
                 localEuler = euler,
-                torusTubeRatio = 0.2f,
                 glow = glow,
                 role = role
             };
@@ -43,8 +42,7 @@ namespace HealerLike.Render.Creatures
             }
 
             // Geometry-only readability: root footprint and gameplay sockets stay unchanged
-            float displayHeight = name == "Healer" ? 2.05f : 1.7f;
-            Vector3 displayScale = new Vector3(1.45f, displayHeight, 1.45f);
+            Vector3 displayScale = new Vector3(1.45f, 2.05f, 1.45f);
             for (int i = 0; i < parts.Count; i++)
             {
                 CreaturePart part = parts[i];
@@ -68,10 +66,7 @@ namespace HealerLike.Render.Creatures
             }
 
             recipe.parts = parts.ToArray();
-            recipe.roots.count = roots;
-            recipe.roots.segments = 3;
             recipe.idle.seed = seed;
-            // Roots lie along the ground from the body's base, reaching as far as the derived units
             LookVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<LookVocabulary>(vocabularyPath);
             if (vocabulary == null)
             {
@@ -79,45 +74,18 @@ namespace HealerLike.Render.Creatures
                 return null;
             }
 
-            // An authored creature's body sphere is the body unit, its roots take the same proportions of it as a plant's
-            recipe.roots.thickness = vocabulary.rootThickness * 0.5f * vocabulary.bodyUnit;
-            recipe.roots.footRadius = vocabulary.pinnedReach * vocabulary.bodyUnit;
-            recipe.roots.hipHeight = vocabulary.rootHip * vocabulary.bodyUnit;
-            recipe.roots.kneeHeight = vocabulary.rootKnee * vocabulary.bodyUnit;
-            if (name == "Healer")
-            {
-                // The healer's rosette reaches 2.1 body units, from the foot of its stem
-                recipe.roots.footRadius = vocabulary.roots[ReachBand.Long].reach * vocabulary.bodyUnit;
-            }
+            // An authored creature's body sphere is the body unit, and its rosette reaches the long band from the foot
+            // of its stem, the same roots a plant grows at that reach
+            recipe.roots = LookComposer.Roots(vocabulary.roots[ReachBand.Long].reach, vocabulary.bodyUnit, vocabulary);
+            recipe.roots.count = roots;
 
             recipe.idle.swayFrequency = 0.25f;
-            recipe.targetLocal = Vector3.up * 0.8f;
             recipe.sourceLocal = new Vector3[armCount];
             recipe.arms = new ArmDefinition[armCount];
             for (int j = 0; j < armCount; j++)
             {
                 recipe.sourceLocal[j] = new Vector3(j % 2 == 0 ? -0.26f : 0.26f, 1.1f, 0f);
-                Vector3[] rest = new Vector3[49];
-                // Four compact coils: 48 x 0.5 = 24 cells covers the current 16 x 16 board.
-                // Larger boards and targets outside the board still clamp without changing gameplay.
-                for (int i = 0; i < 48; i++)
-                {
-                    float angle = i * Mathf.PI * 2f / 12f;
-                    rest[i + 1] = rest[i] + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0.015f).normalized * 0.5f;
-                }
-
-                recipe.arms[j] = new ArmDefinition
-                {
-                    bodyPart = 0,
-                    rootLocal = recipe.sourceLocal[j] - parts[0].localPosition,
-                    sourceSocketIndex = j,
-                    segmentCount = 48,
-                    segmentLength = 0.5f,
-                    radius = 0.045f,
-                    restJoints = rest,
-                    bendPole = Vector3.up,
-                    colour = stem
-                };
+                recipe.arms[j] = LookComposer.Arm(recipe.sourceLocal[j] - parts[0].localPosition, stem, Color.clear);
             }
 
             if (!CreatureValidator.TryValidate(recipe, out string error))

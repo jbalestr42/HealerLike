@@ -37,13 +37,6 @@ namespace HealerLike.Render.Creatures
             Debug.Log("[CreatureAssetAuthoring] Healer recipe and view prefab authored.");
         }
 
-        // Recipe-only refresh keeps the existing prefab presentation intact
-        public static void AuthorBeautyRecipes()
-        {
-            CreatureRecipeAuthoring.SaveRecipe("Healer", CreatureRecipeParts.Healer(), 13, 2, 17);
-            AssetDatabase.SaveAssets();
-        }
-
         static void CharacterView(CreatureRecipe recipe, Material material, PrimitiveMeshes meshes)
         {
             GameObject view = new GameObject("HealerCharacter");

@@ -22,7 +22,6 @@ public class IdleMotionTests
         {
             IdlePose pose = IdleMotion.Evaluate(settings, i * 0.17f);
             Assert.That(pose.bodyScale.x, Is.InRange(0.975f, 1.025f));
-            Assert.LessOrEqual(Mathf.Abs(pose.bodyLift), 0.008f);
             Assert.LessOrEqual(Quaternion.Angle(Quaternion.identity, pose.sway), 3.54f);
         }
 

@@ -41,40 +41,6 @@ namespace HealerLike.Render.Creatures
             return mesh;
         }
 
-        // Solid eight-point star: the rim is a thin band, a low apex sits on each face
-        public static Mesh CreateStar()
-        {
-            int points = 16;
-            float band = 0.06f;
-            float apex = 0.3f;
-            Vector3 front = new Vector3(0f, 0f, -apex);
-            Vector3 back = new Vector3(0f, 0f, apex);
-            List<Vector3> corners = new List<Vector3>();
-            for (int i = 0; i < points; i++)
-            {
-                Vector3 a = StarRim(i);
-                Vector3 b = StarRim(i + 1);
-                Vector3 frontA = a + Vector3.back * band;
-                Vector3 frontB = b + Vector3.back * band;
-                Vector3 backA = a + Vector3.forward * band;
-                Vector3 backB = b + Vector3.forward * band;
-                corners.AddRange(new Vector3[] { front, frontA, frontB });
-                corners.AddRange(new Vector3[] { back, backA, backB });
-                corners.AddRange(new Vector3[] { frontA, backA, backB });
-                corners.AddRange(new Vector3[] { frontA, backB, frontB });
-            }
-
-            return CreateFlatShaded("Star", corners);
-        }
-
-        // Eight long rays alternating with short notches, in the XY plane
-        static Vector3 StarRim(int index)
-        {
-            float angle = index * Mathf.PI / 8f;
-            float radius = index % 2 == 0 ? 1f : 0.32f;
-            return new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0f);
-        }
-
         // Tall leaf with a diamond section: widest at the base cap, tapering to a sharp tip. One unit on each axis.
         public static Mesh CreateLeaf()
         {

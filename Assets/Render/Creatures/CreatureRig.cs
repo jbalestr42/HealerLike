@@ -146,7 +146,7 @@ namespace HealerLike.Render.Creatures
             {
                 CreaturePart part = data.parts[i];
                 // The accent stays the palette's own colour, only the body varies from unit to unit
-                _colours[i] = part.role == PartRole.Tip ? part.colour : BeautyMotion.Vary(part.colour, _idle.seed);
+                _colours[i] = part.role == PartRole.Tip ? part.colour : ColourJitter.Vary(part.colour, _idle.seed);
                 _pivots[i] = new GameObject(part.id).transform;
                 _pivots[i].SetParent(part.parent < 0 ? _sway : _pivots[part.parent], false);
                 _pivots[i].localPosition = part.localPosition * cellSize;
@@ -177,7 +177,7 @@ namespace HealerLike.Render.Creatures
             int segments = data.roots.segments;
             _roots = new Transform[data.roots.count * segments];
             _rootJoints = new Transform[data.roots.count * (segments - 1)];
-            Color rootColour = BeautyMotion.Vary(data.roots.colour, _idle.seed);
+            Color rootColour = ColourJitter.Vary(data.roots.colour, _idle.seed);
             for (int i = 0; i < _roots.Length; i++)
             {
                 _roots[i] = PrimitiveMeshes.Geometry("Root", _root, meshes.cylinder, material, rootColour);
@@ -398,7 +398,7 @@ namespace HealerLike.Render.Creatures
             RootDefinition roots = _recipe.roots;
             for (int i = 0; i < roots.count; i++)
             {
-                float angle = i * Mathf.PI * 2f / roots.count + roots.angularOffset * Mathf.Deg2Rad;
+                float angle = i * Mathf.PI * 2f / roots.count;
                 Vector3 radial = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
                 Vector3 hip = _sway.TransformPoint((radial * 0.08f + Vector3.up * roots.hipHeight) * _cellSize);
                 Vector3 kneeLocal = radial * (roots.footRadius * 0.6f) + Vector3.up * roots.kneeHeight;
@@ -570,7 +570,7 @@ namespace HealerLike.Render.Creatures
         {
             _definitions[slot] = definitionIndex;
             ArmDefinition definition = _recipe.arms[definitionIndex];
-            definition.colour = BeautyMotion.Vary(definition.colour, _idle.seed);
+            definition.colour = ColourJitter.Vary(definition.colour, _idle.seed);
             _arms[slot] = new LianaArm();
             _arms[slot].Init(definition, _root, _material, _meshes, _cellSize);
             Vector3 shoulder = _pivots[definition.bodyPart].TransformPoint(definition.rootLocal * _cellSize);

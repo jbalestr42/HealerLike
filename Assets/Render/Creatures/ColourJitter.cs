@@ -3,7 +3,7 @@ using UnityEngine;
 namespace HealerLike.Render.Creatures
 {
     // Stable cosmetic variation, without consuming the gameplay random stream
-    public static class BeautyMotion
+    public static class ColourJitter
     {
         public static Color Vary(Color colour, int seed)
         {

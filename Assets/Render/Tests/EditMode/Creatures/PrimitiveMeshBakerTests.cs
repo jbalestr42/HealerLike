@@ -71,8 +71,8 @@ public class PrimitiveMeshBakerTests
         Assert.IsNotNull(meshes);
         Mesh[] all =
         {
-            meshes.sphere, meshes.capsule, meshes.cone, meshes.cylinder, meshes.torus, meshes.thinTorus,
-            meshes.tuft, meshes.socle, meshes.pyramid, meshes.star, meshes.leaf, meshes.boulder, meshes.disc, meshes.annulus
+            meshes.sphere, meshes.capsule, meshes.cone, meshes.cylinder, meshes.torus,
+            meshes.tuft, meshes.socle, meshes.pyramid, meshes.leaf, meshes.boulder, meshes.disc, meshes.annulus
         };
         foreach (Mesh mesh in all)
         {
@@ -98,8 +98,8 @@ public class PrimitiveMeshBakerTests
         PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesAssetPath);
         Mesh[] solids =
         {
-            meshes.sphere, meshes.capsule, meshes.cone, meshes.cylinder, meshes.torus, meshes.thinTorus,
-            meshes.pyramid, meshes.star, meshes.leaf, meshes.boulder
+            meshes.sphere, meshes.capsule, meshes.cone, meshes.cylinder, meshes.torus,
+            meshes.pyramid, meshes.leaf, meshes.boulder
         };
 
         foreach (Mesh mesh in solids)
@@ -126,15 +126,6 @@ public class PrimitiveMeshBakerTests
                 Assert.AreEqual(0f, a.y, mesh.name);
             }
         }
-    }
-
-    [Test]
-    public void Bake_ShippedStar_IsThickAndSpiky()
-    {
-        Mesh star = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesAssetPath).star;
-
-        Assert.That(star.bounds.size.x, Is.EqualTo(2f).Within(0.00001)); // rays reach one unit
-        Assert.That(star.bounds.size.z, Is.EqualTo(0.6f).Within(0.00001)); // an apex on each face
     }
 }
 

@@ -152,6 +152,7 @@ public class CreatureLooksTests
             "Assets/Data/Characters/BasicHealerCharacter/BasicHealerCharacter.asset");
 
         Assert.IsEmpty(looks.entities);
+        Assert.IsEmpty(looks.characters);
         Assert.AreSame(LookVocabularyTests.Vocabulary(), looks.vocabulary);
         Assert.AreEqual("DerivedPlant", looks.plant.name);
         Assert.AreEqual("DerivedStone", looks.stone.name);

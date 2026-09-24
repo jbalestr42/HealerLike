@@ -97,10 +97,7 @@ namespace HealerLike.Render.Creatures
         public float stoneScale = 1.6f;
 
         [BoxGroup("Proportions")]
-        public float accessoryReach = 0.45f;
-
-        [BoxGroup("Proportions")]
-        public int maxParts = 40;
+        public int maxParts = CreatureValidator.MaxParts;
 
         // Every live unit has a board-wide range, so reach stays at one value until the data has bands
         [BoxGroup("Proportions")]

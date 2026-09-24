@@ -82,7 +82,6 @@ namespace HealerLike.Render.Creatures
                     localEuler = euler,
                     dimensions = dimensions * _unit,
                     colour = colour,
-                    torusTubeRatio = 0.2f,
                     glow = glow,
                     role = role,
                     variant = variant
@@ -157,7 +156,6 @@ namespace HealerLike.Render.Creatures
             }
 
             recipe.parts = parts.ToArray();
-            recipe.targetLocal = sockets.body * unit;
             recipe.idle.seed = seed;
             recipe.stoneOchre = vocabulary.palette.stoneOchre;
             recipe.neckLocal = sockets.neck * unit;
@@ -212,9 +210,13 @@ namespace HealerLike.Render.Creatures
 
         public static RootDefinition Roots(ReachBand band, LookVocabulary vocabulary)
         {
-            float reach = vocabulary.Reach(band);
+            return Roots(vocabulary.Reach(band), vocabulary.Unit(LookSide.Plant), vocabulary);
+        }
+
+        // Roots reaching this many body units from a body of this many cells
+        public static RootDefinition Roots(float reach, float unit, LookVocabulary vocabulary)
+        {
             float mid = vocabulary.roots.ContainsKey(ReachBand.Mid) ? vocabulary.roots[ReachBand.Mid].reach : reach;
-            float unit = vocabulary.Unit(LookSide.Plant);
             return new RootDefinition
             {
                 count = vocabulary.rootCount,
@@ -579,27 +581,32 @@ namespace HealerLike.Render.Creatures
             for (int j = 0; j < armCount; j++)
             {
                 recipe.sourceLocal[j] = (neck + Vector3.right * (j % 2 == 0 ? -0.15f : 0.15f)) * bodyUnit;
-                Vector3[] rest = new Vector3[49];
-                for (int i = 0; i < 48; i++)
-                {
-                    float angle = i * Mathf.PI * 2f / 12f;
-                    rest[i + 1] = rest[i] + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0.015f).normalized * 0.5f;
-                }
-
-                recipe.arms[j] = new ArmDefinition
-                {
-                    bodyPart = 0,
-                    rootLocal = recipe.sourceLocal[j] - bodyPivot,
-                    sourceSocketIndex = j,
-                    segmentCount = 48,
-                    segmentLength = 0.5f,
-                    radius = 0.045f,
-                    restJoints = rest,
-                    bendPole = Vector3.up,
-                    colour = colour,
-                    tipColour = accent
-                };
+                recipe.arms[j] = Arm(recipe.sourceLocal[j] - bodyPivot, colour, accent);
             }
+        }
+
+        // One liana at rest: four coils of 48 half-cell links from its root on the body
+        public static ArmDefinition Arm(Vector3 rootLocal, Color colour, Color tipColour)
+        {
+            Vector3[] rest = new Vector3[49];
+            for (int i = 0; i < 48; i++)
+            {
+                float angle = i * Mathf.PI * 2f / 12f;
+                rest[i + 1] = rest[i] + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0.015f).normalized * 0.5f;
+            }
+
+            return new ArmDefinition
+            {
+                bodyPart = 0,
+                rootLocal = rootLocal,
+                segmentCount = 48,
+                segmentLength = 0.5f,
+                radius = 0.045f,
+                restJoints = rest,
+                bendPole = Vector3.up,
+                colour = colour,
+                tipColour = tipColour
+            };
         }
 
         static int Variant(int seed, int index)

@@ -12,7 +12,7 @@ namespace HealerLike.Render.Creatures
             float breath = Noise(seed + 93.2f, time * settings.breathFrequency);
             Quaternion sway = Quaternion.Euler(x * settings.swayDegrees, 0f, z * settings.swayDegrees);
             Vector3 bodyScale = Vector3.one * (1f + breath * settings.breathAmount);
-            return new IdlePose(sway, bodyScale, breath * 0.008f);
+            return new IdlePose(sway, bodyScale);
         }
 
         static float Noise(float seed, float time)

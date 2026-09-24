@@ -7,13 +7,14 @@ namespace HealerLike.Render.Creatures
     {
         // Roots reach at most the long band, 2.1 body units at a plant's one-cell body, plus their thickness
         public static readonly float MaxRootReach = 2.2f;
+        public static readonly int MaxParts = 40;
 
         public static bool TryValidate(CreatureRecipe data, out string error)
         {
             error = null;
-            if (!data || data.parts == null || data.parts.Length == 0 || data.parts.Length > 40)
+            if (!data || data.parts == null || data.parts.Length == 0 || data.parts.Length > MaxParts)
             {
-                return Fail("Require 1..40 parts.", out error);
+                return Fail($"Require 1..{MaxParts} parts.", out error);
             }
 
             HashSet<string> ids = new HashSet<string>();
@@ -26,9 +27,6 @@ namespace HealerLike.Render.Creatures
                     return Fail("Require unique IDs, one root, and earlier parents.", out error);
                 }
 
-                float ratio = part.torusTubeRatio;
-                bool isTorusValid = part.primitive != Primitive.Torus
-                    || (float.IsFinite(ratio) && ratio > 0f && ratio < 1f);
                 Vector3 position = part.localPosition;
                 Vector3 euler = part.localEuler;
                 bool isPositionFinite = float.IsFinite(position.x) && float.IsFinite(position.y)
@@ -36,15 +34,15 @@ namespace HealerLike.Render.Creatures
                 bool isEulerFinite = float.IsFinite(euler.x) && float.IsFinite(euler.y) && float.IsFinite(euler.z);
                 if (!isPositionFinite || !isEulerFinite || !Positive(part.dimensions) || !Colour(part.colour)
                     || !float.IsFinite(part.glow) || part.glow < 0f
-                    || (int)part.primitive < 0 || part.primitive > Primitive.Stone || !isTorusValid)
+                    || (int)part.primitive < 0 || part.primitive > Primitive.Stone)
                 {
                     return Fail("Invalid primitive settings.", out error);
                 }
             }
 
-            Vector3 target = data.targetLocal;
-            bool isTargetFinite = float.IsFinite(target.x) && float.IsFinite(target.y) && float.IsFinite(target.z);
-            if (!isTargetFinite || data.sourceLocal == null || data.arms == null || data.arms.Length > 8)
+            // Arm j grows from source socket j, so every arm needs its socket
+            if (data.sourceLocal == null || data.arms == null || data.arms.Length > CreatureRig.MaxArms
+                || data.arms.Length > data.sourceLocal.Length)
             {
                 return Fail("Invalid sockets or arms.", out error);
             }
@@ -65,7 +63,6 @@ namespace HealerLike.Render.Creatures
                     && float.IsFinite(rootLocal.z);
                 bool isPoleFinite = float.IsFinite(pole.x) && float.IsFinite(pole.y) && float.IsFinite(pole.z);
                 if (arm.bodyPart < 0 || arm.bodyPart >= data.parts.Length
-                    || arm.sourceSocketIndex < 0 || arm.sourceSocketIndex >= data.sourceLocal.Length
                     || arm.segmentCount < 2 || arm.segmentCount > 128
                     || !Positive(arm.segmentLength) || !Positive(arm.radius)
                     || !isRootFinite || !isPoleFinite
@@ -73,7 +70,7 @@ namespace HealerLike.Render.Creatures
                     || arm.restJoints == null || arm.restJoints.Length != arm.segmentCount + 1
                     || arm.restJoints[0] != Vector3.zero)
                 {
-                    return Fail("Invalid arm or missing source socket.", out error);
+                    return Fail("Invalid arm.", out error);
                 }
 
                 for (int i = 0; i <= arm.segmentCount; i++)
@@ -102,7 +99,7 @@ namespace HealerLike.Render.Creatures
                 || !Positive(roots.footRadius) || !Positive(roots.thickness)
                 || roots.footRadius + roots.thickness > MaxRootReach
                 || !Positive(roots.hipHeight) || !Positive(roots.kneeHeight)
-                || !float.IsFinite(roots.angularOffset) || !Colour(roots.colour))
+                || !Colour(roots.colour))
             {
                 return Fail("Roots reach past the longest band or have invalid settings.", out error);
             }
