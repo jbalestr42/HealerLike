@@ -1,9 +1,22 @@
 {
     "name": "HealerLike.Render.Creatures.Editor.Tests",
-    "references": ["HealerLike.Runtime", "HealerLike.Render", "HealerLike.Render.Creatures.Editor", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
-    "includePlatforms": ["Editor"],
+    "references": [
+        "HealerLike.Runtime",
+        "HealerLike.Render",
+        "HealerLike.Render.Creatures.Editor",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
     "overrideReferences": true,
-    "precompiledReferences": ["nunit.framework.dll"],
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "Sirenix.Serialization.dll"
+    ],
     "autoReferenced": false,
-    "defineConstraints": ["UNITY_INCLUDE_TESTS"]
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ]
 }

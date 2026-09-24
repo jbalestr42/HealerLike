@@ -12,20 +12,27 @@ namespace HealerLike.Render.Creatures.Tests
         private CreatureStudioWindow window;
         private string originalDrafts;
         private bool hadDrafts;
+        private bool hadGrammar;
+        private string originalGrammar;
+        private string GrammarKey=>"HealerLike.CreatureStudio.GrammarDrafts."+Application.dataPath;
         private string Key => "HealerLike.CreatureStudio.Drafts."+Application.dataPath;
         [SetUp] public void SetUp()
         {
             hadDrafts=EditorPrefs.HasKey(Key); originalDrafts=EditorPrefs.GetString(Key);
             EditorPrefs.DeleteKey(Key);
+            hadGrammar=EditorPrefs.HasKey(GrammarKey); originalGrammar=EditorPrefs.GetString(GrammarKey); EditorPrefs.DeleteKey(GrammarKey);
             window=ScriptableObject.CreateInstance<CreatureStudioWindow>();
+            ShowParts();
         }
         [TearDown] public void TearDown()
         {
             if (window!=null) Object.DestroyImmediate(window);
             if (hadDrafts) EditorPrefs.SetString(Key,originalDrafts); else EditorPrefs.DeleteKey(Key);
+            if (hadGrammar) EditorPrefs.SetString(GrammarKey,originalGrammar); else EditorPrefs.DeleteKey(GrammarKey);
         }
         private T Get<T>(string name)=>(T)typeof(CreatureStudioWindow).GetField(name,BindingFlags.Instance|BindingFlags.NonPublic).GetValue(window);
         private void Invoke(string name)=>typeof(CreatureStudioWindow).GetMethod(name,BindingFlags.Instance|BindingFlags.NonPublic).Invoke(window,null);
+        private void ShowParts()=>typeof(CreatureStudioWindow).GetMethod("SwitchToParts",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(window,new object[]{Get<CreatureRecipe>("partsSelection")});
 
         [Test] public void StartsWithIndependentUsableDrafts()
         {
@@ -49,6 +56,7 @@ namespace HealerLike.Render.Creatures.Tests
             Assert.That(source.parts[0].id,Is.EqualTo(originalId));
             Object.DestroyImmediate(window);
             window=ScriptableObject.CreateInstance<CreatureStudioWindow>();
+            ShowParts();
             copy=Get<CreatureRecipe>("selected");
             Assert.That(copy.name,Is.EqualTo("Saved local draft"));
             Assert.That(copy.parts[0].id,Is.EqualTo("Independent root"));

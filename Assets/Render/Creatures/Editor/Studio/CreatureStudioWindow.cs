@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Creatures.Editor.Studio
 {
-    public sealed class CreatureStudioWindow : EditorWindow
+    public sealed partial class CreatureStudioWindow : EditorWindow
     {
         private static readonly Color Background = new Color(.055f,.065f,.083f);
         private static readonly Color Panel = new Color(.085f,.098f,.12f);
@@ -48,7 +48,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
         {
             Open();
             var window = GetWindow<CreatureStudioWindow>();
-            if (recipe != null) window.Select(recipe);
+            if (recipe != null) window.SwitchToParts(recipe);
             window.Focus();
             return window;
         }
@@ -81,6 +81,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
                 }
             ReloadAssets();
             Select(selected != null ? selected : drafts.Count > 0 ? drafts[0] : null);
+            InitializeGrammar();
             lastTick = EditorApplication.timeSinceStartup;
             EditorApplication.update += Tick;
             EditorApplication.projectChanged += ReloadAssets;
@@ -90,6 +91,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
         private void OnDisable()
         {
             PersistDrafts();
+            DisposeGrammar();
             EditorApplication.update -= Tick;
             EditorApplication.projectChanged -= ReloadAssets;
             Undo.undoRedoPerformed -= OnUndo;
@@ -111,7 +113,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             lastTick=now;
         }
 
-        private void OnUndo() { serialized?.Update(); RefreshPreview(); Repaint(); }
+        private void OnUndo() { serialized?.Update(); if (grammarMode) RegenerateGrammar(); RefreshPreview(); Repaint(); }
         private void RefreshPreview() { validationDirty=true; preview?.Refresh(); }
 
         private void ReloadAssets()
@@ -123,6 +125,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
                 if (recipe != null) assets.Add(recipe);
             }
             assets.Sort((a,b)=>string.Compare(a.name,b.name,StringComparison.OrdinalIgnoreCase));
+            ReloadGrammarAssets();
             RefreshPreview(); Repaint();
         }
 
@@ -138,8 +141,9 @@ namespace HealerLike.Render.Creatures.Editor.Studio
 
         private void PersistDrafts()
         {
-            var collection = new DraftCollection { selectedIndex=drafts.IndexOf(selected),
-                selectedAsset=selected != null && AssetDatabase.Contains(selected) ? AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(selected)) : "" };
+            var selection=grammarMode ? partsSelection : selected;
+            var collection = new DraftCollection { selectedIndex=drafts.IndexOf(selection),
+                selectedAsset=selection != null && AssetDatabase.Contains(selection) ? AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(selection)) : "" };
             foreach (var draft in drafts) if (draft != null) collection.items.Add(new DraftRecord { name=draft.name,json=JsonUtility.ToJson(draft) });
             EditorPrefs.SetString(DraftKey,JsonUtility.ToJson(collection));
         }
@@ -192,9 +196,11 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             DrawHeader();
             const float left=210,right=370;
             float height=position.height-87;
-            DrawLibrary(new Rect(10,77,left,height));
+            if (grammarMode) DrawGrammarLibrary(new Rect(10,77,left,height));
+            else DrawLibrary(new Rect(10,77,left,height));
             DrawViewport(new Rect(left+18,77,position.width-left-right-36,height));
-            DrawInspector(new Rect(position.width-right-10,77,right,height));
+            if (grammarMode) DrawGrammarInspector(new Rect(position.width-right-10,77,right,height));
+            else DrawInspector(new Rect(position.width-right-10,77,right,height));
             if (GUI.changed) Repaint();
         }
 
@@ -203,15 +209,17 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             GUI.Label(new Rect(20,12,250,30),"Creature Studio",titleStyle);
             if (GUI.Button(new Rect(270,17,100,24),"Spells →")) EditorApplication.ExecuteMenuItem("Tools/Render/Spell Studio");
             GUI.Label(new Rect(21,43,570,22),"RENDER LAB  /  Assemble, sculpt and animate your creature recipes",smallStyle);
+            int mode=GUI.Toolbar(new Rect(390,17,180,25),grammarMode ? 0 : 1,new[]{"Grammar","Parts"});
+            if ((mode==0)!=grammarMode) { if (mode==0) SwitchToGrammar(); else SwitchToParts(partsSelection); GUIUtility.ExitGUI(); }
             Rect rect=new Rect(position.width-325,24,95,26);
-            if (GUI.Button(rect,"New creature")) { NewDraft(); GUIUtility.ExitGUI(); }
+            if (GUI.Button(rect,grammarMode ? "New grammar" : "New creature")) { if (grammarMode) NewGrammarDraft(); else NewDraft(); GUIUtility.ExitGUI(); }
             rect.x+=102;
-            using (new EditorGUI.DisabledScope(selected == null))
+            using (new EditorGUI.DisabledScope(grammarMode ? grammarSelected == null : selected == null))
             {
-                if (GUI.Button(rect,"Save as…")) { SaveAs(); GUIUtility.ExitGUI(); }
+                if (GUI.Button(rect,grammarMode ? "Save preset…" : "Save recipe…")) { if (grammarMode) SaveGrammarAs(); else SaveAs(); GUIUtility.ExitGUI(); }
                 rect.x+=102;
-                using (new EditorGUI.DisabledScope(selected == null || !AssetDatabase.Contains(selected)))
-                    if (GUI.Button(rect,"Save")) { AssetDatabase.SaveAssetIfDirty(selected); ShowNotification(new GUIContent("Creature saved")); }
+                using (new EditorGUI.DisabledScope(grammarMode ? grammarSelected == null || !AssetDatabase.Contains(grammarSelected) : selected == null || !AssetDatabase.Contains(selected)))
+                    if (GUI.Button(rect,"Save")) { AssetDatabase.SaveAssetIfDirty(grammarMode ? (UnityEngine.Object)grammarSelected : selected); ShowNotification(new GUIContent(grammarMode ? "Grammar preset saved" : "Recipe saved")); }
             }
             EditorGUI.DrawRect(new Rect(10,69,position.width-20,1),new Color(.17f,.20f,.24f));
         }
@@ -237,18 +245,18 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             if (recipe == null || (!string.IsNullOrEmpty(search) && recipe.name.IndexOf(search,StringComparison.OrdinalIgnoreCase)<0)) return;
             Rect rect=GUILayoutUtility.GetRect(10,33,GUILayout.ExpandWidth(true));
             if (recipe == selected) { EditorGUI.DrawRect(rect,new Color(.22f,.18f,.32f)); EditorGUI.DrawRect(new Rect(rect.x,rect.y,3,rect.height),Accent); }
-            if (GUI.Button(rect,(saved ? "◇  " : "·  ")+recipe.name,cardStyle)) { Select(recipe); GUIUtility.ExitGUI(); }
+            if (GUI.Button(rect,(saved ? "◇  " : "·  ")+recipe.name,cardStyle)) { SwitchToParts(recipe); GUIUtility.ExitGUI(); }
         }
 
         private void DrawViewport(Rect rect)
         {
             EditorGUI.DrawRect(rect,Panel);
-            GUI.Label(new Rect(rect.x+14,rect.y+10,160,20),"LIVE CREATURE",sectionStyle);
+            GUI.Label(new Rect(rect.x+14,rect.y+10,220,20),grammarMode ? (previewGameOverride ? "AUTHORED GAME OVERRIDE" : "LIVE GRAMMAR OUTPUT") : "AUTHORED RECIPE",sectionStyle);
             if (selected == null) return;
             if (GUI.Button(new Rect(rect.xMax-180,rect.y+7,87,23),"Export PNG")) ExportPreview();
             if (GUI.Button(new Rect(rect.xMax-87,rect.y+7,75,23),"Reset view")) { preview.ResetCamera(); Repaint(); }
             Rect render=new Rect(rect.x+1,rect.y+38,rect.width-2,rect.height-223);
-            preview.SelectedPartIndex=selectedPart;
+            preview.SelectedPartIndex=grammarMode ? -1 : selectedPart;
             preview.Draw(render,selected,time);
             GUI.Label(new Rect(render.x+14,render.y+12,render.width-28,22),selected.name,EditorStyles.boldLabel);
             GUI.Label(new Rect(render.x+14,render.y+35,render.width-28,20),(selected.parts?.Length ?? 0)+" parts  /  "+(selected.arms?.Length ?? 0)+" arms",smallStyle);
@@ -395,8 +403,8 @@ namespace HealerLike.Render.Creatures.Editor.Studio
         private void RebuildArm() { RecordMutation("Rebuild arm rest pose"); if (!CreatureStudioAuthoring.RebuildArmRestPose(selected,selectedArm)) ShowNotification(new GUIContent("Unable to rebuild this arm")); FinishMutation(); }
         private void DuplicatePart() { RecordMutation("Duplicate creature part"); int index=CreatureStudioAuthoring.DuplicatePart(selected,selectedPart); if (index>=0) selectedPart=index; FinishMutation(); }
         private void RemovePart() { RecordMutation("Remove creature subtree"); if (CreatureStudioAuthoring.RemovePart(selected,selectedPart)) selectedPart=0; FinishMutation(); }
-        private void NewDraft() { var draft=CreatureStudioAuthoring.BuildSample(1); if (draft == null) { ShowNotification(new GUIContent("Starter assets are unavailable")); return; } draft.name="Untitled creature"; draft.hideFlags=HideFlags.HideAndDontSave; drafts.Add(draft); Select(draft); }
-        private void Duplicate() { if (selected==null) return; var draft=CreatureStudioAuthoring.Clone(selected); draft.name=selected.name+" copy"; draft.hideFlags=HideFlags.HideAndDontSave; drafts.Add(draft); Select(draft); }
+        private void NewDraft() { var draft=CreatureStudioAuthoring.BuildSample(1); if (draft == null) { ShowNotification(new GUIContent("Starter assets are unavailable")); return; } draft.name="Untitled creature"; draft.hideFlags=HideFlags.HideAndDontSave; drafts.Add(draft); SwitchToParts(draft); }
+        private void Duplicate() { if (selected==null) return; var draft=CreatureStudioAuthoring.Clone(selected); draft.name=selected.name+" copy"; draft.hideFlags=HideFlags.HideAndDontSave; drafts.Add(draft); SwitchToParts(draft); }
 
         private void SaveAs()
         {
@@ -406,7 +414,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             var copy=CreatureStudioAuthoring.Clone(selected); copy.hideFlags=HideFlags.None;
             copy.name=System.IO.Path.GetFileNameWithoutExtension(path);
             AssetDatabase.CreateAsset(copy,AssetDatabase.GenerateUniqueAssetPath(path)); AssetDatabase.SaveAssets();
-            ReloadAssets(); Select(copy); EditorGUIUtility.PingObject(copy); ShowNotification(new GUIContent("Creature recipe saved"));
+            ReloadAssets(); SwitchToParts(copy); EditorGUIUtility.PingObject(copy); ShowNotification(new GUIContent("Creature recipe saved"));
         }
 
         private void ExportPreview()
@@ -417,7 +425,7 @@ namespace HealerLike.Render.Creatures.Editor.Studio
             Texture2D image=null;
             try { preview.SelectedPartIndex=-1; image=preview.Capture(selected,time,1600,1000); System.IO.File.WriteAllBytes(path,image.EncodeToPNG()); ShowNotification(new GUIContent("Preview exported at 1600 × 1000")); }
             catch (Exception exception) { Debug.LogException(exception); EditorUtility.DisplayDialog("Could not export preview",exception.Message,"OK"); }
-            finally { preview.SelectedPartIndex=selectedPart; if (image!=null) DestroyImmediate(image); }
+            finally { preview.SelectedPartIndex=grammarMode ? -1 : selectedPart; if (image!=null) DestroyImmediate(image); }
         }
     }
 }

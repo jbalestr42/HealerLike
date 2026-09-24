@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72656a68b4ca4b08aa7781878f3f168f, type: 3}
+  m_Name: Opposing debuff
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.Studio.SpellStudioPreset
+  displayName: Opposing debuff
+  description: 'Actual gameplay handler: the damage modifier and its duration derive the opposing debuff. Native SpellLooks rows win when enabled, exactly as in SpellVisualSink.'
+  vocabulary: {fileID: 11400000, guid: 2ebcc249811134625a66debb52a811c9, type: 2}
+  mode: 2
+  attributeGroup: 0
+  sourceHandler: {fileID: 11400000, guid: 8ba0343b8d9a65341b9c5a6e7606e152, type: 2}
+  isSameSide: 0
+  spellLooks: {fileID: 11400000, guid: 3f7bcc3db75d049a78cca2b5cf1fb20c, type: 2}
+  useGameplayOverrides: 1
+  sourceProjectile: {fileID: 0}
+  element: 0
+  family: 0
+  tempo: 0
+  periodSeconds: 1
+  stacks: 1
+  charges: 1
+  amount: 0.25
+  durationSeconds: 6
+  critical: 0
+  side: 2
+  scale: 1
+  overrideEntry: 0
+  entry:
+    parts: []
+    stackBeads: []
+    criticalRings: []
+    sideRim: []
+    motion: 0
+    socket: 0
+    count: 0
+    minCount: 1
+    cycleSeconds: 0.6
+  overrideColour: 0
+  colour: {r: 1, g: 1, b: 1, a: 1}

@@ -6,6 +6,9 @@ using UnityEngine;
 
 namespace HealerLike.Render.Spells.Studio
 {
+    // Append only: existing saved presets must remain manually authored.
+    public enum SpellStudioMode { AuthoredElement = 0, GrammarChannels = 1, GameplayHandler = 2 }
+
     /// <summary>A portable authoring asset. Composition never edits the source vocabulary or the authored parts.</summary>
     [CreateAssetMenu(menuName = "Custom/Data/Render/Spell Studio Preset", fileName = "SpellPreset")]
     public sealed class SpellStudioPreset : ScriptableObject
@@ -13,10 +16,18 @@ namespace HealerLike.Render.Spells.Studio
         public string displayName = "Untitled spell";
         [TextArea] public string description;
         public EffectVocabulary vocabulary;
+        public SpellStudioMode mode;
+        public AttributeGroup attributeGroup = AttributeGroup.Offence;
+        public ABuffHandlerFactory sourceHandler;
+        public bool isSameSide = true;
+        public SpellLooks spellLooks;
+        public bool useGameplayOverrides = true;
+        [Tooltip("Optional delivery lookup only. Spell Studio previews effect elements, not projectile flight.")]
+        public GameObject sourceProjectile;
         public EffectElement element = EffectElement.Burst;
         public EffectFamily family = EffectFamily.Damage;
         public EffectTempo tempo = EffectTempo.Once;
-        [Min(0.01f)] public float periodSeconds = 1f;
+        [Min(0f)] public float periodSeconds = 1f;
         [Min(1)] public int stacks = 1;
         [Min(0f)] public float charges = 1f;
         [Tooltip("Fraction of maximum resource; 0.5 reaches the vocabulary's maximum amount count.")]
@@ -37,7 +48,7 @@ namespace HealerLike.Render.Spells.Studio
         {
             get
             {
-                if (Defined(tempo, EffectTempo.Once) != EffectTempo.Once)
+                if (ResolvedChannels.tempo != EffectTempo.Once)
                     return Bounded(durationSeconds, 4f, 0.01f, 120f);
                 return Bounded(SourceEntry()?.cycleSeconds ?? 0.6f, 0.6f, 0.01f, 120f);
             }
@@ -48,13 +59,12 @@ namespace HealerLike.Render.Spells.Studio
         /// <summary>Uses the runtime composer’s count and colour rules with a sanitized, private entry. Missing sources return null without logging.</summary>
         public EffectRecipe Compose()
         {
+            if (!TryResolve(out EffectChannels channels, out EffectElement safeElement)) return null;
             ElementEntry source = SourceEntry();
             if (source == null) return null;
-
             ElementEntry safeEntry = SanitizedEntry(source);
-            EffectElement safeElement = Defined(element, EffectElement.Burst);
-            EffectFamily safeFamily = Defined(family, EffectFamily.Damage);
-            EffectTempo safeTempo = Defined(tempo, EffectTempo.Once);
+            EffectFamily safeFamily = channels.family;
+            EffectTempo safeTempo = channels.tempo;
             LookPalette palette = vocabulary != null ? vocabulary.palette : null;
             // Mirror the runtime composer's recipe assembly, sharing its count and colour decisions.
             // No temporary Unity objects are needed while the timeline is being scrubbed.
@@ -66,8 +76,9 @@ namespace HealerLike.Render.Spells.Studio
                 socket = safeEntry.socket,
                 family = safeFamily,
                 tempo = safeTempo,
-                cycleSeconds = safeTempo == EffectTempo.PerPeriod
-                    ? Bounded(periodSeconds, 1f, 0.01f, 120f) : safeEntry.cycleSeconds,
+                // Same rule as EffectComposer: only a finite, strictly positive period replaces the entry cycle.
+                cycleSeconds = safeTempo == EffectTempo.PerPeriod && float.IsFinite(channels.periodSeconds) && channels.periodSeconds > 0f
+                    ? channels.periodSeconds : safeEntry.cycleSeconds,
                 palette = palette,
                 colour = SafeColour(overrideColour ? colour : EffectComposer.Colour(palette, safeElement, safeFamily)),
                 count = EffectComposer.Count(safeEntry, SafeStacks, Bounded(charges, 0f, 0f, MaxParts),
@@ -75,11 +86,59 @@ namespace HealerLike.Render.Spells.Studio
             };
         }
 
+        public EffectChannels ResolvedChannels
+        {
+            get { TryResolve(out EffectChannels channels, out _); return channels; }
+        }
+        public EffectElement ResolvedElement
+        {
+            get { TryResolve(out _, out EffectElement resolvedElement); return resolvedElement; }
+        }
+        public bool UsesGameplayOverride => mode == SpellStudioMode.GameplayHandler && useGameplayOverrides &&
+            sourceHandler != null && spellLooks != null && spellLooks.GetLook(sourceHandler) != null;
+
+        /// <summary>Resolves the same channels and native override priority as SpellVisualSink.Open.</summary>
+        public bool TryResolve(out EffectChannels channels, out EffectElement resolvedElement)
+        {
+            channels = new EffectChannels
+            {
+                family = Defined(family, EffectFamily.Damage), group = Defined(attributeGroup, AttributeGroup.Offence),
+                tempo = Defined(tempo, EffectTempo.Once), periodSeconds = periodSeconds
+            };
+            resolvedElement = Defined(element, EffectElement.Burst);
+            SpellStudioMode safeMode = Defined(mode, SpellStudioMode.AuthoredElement);
+            if (safeMode == SpellStudioMode.AuthoredElement) return true;
+            if (safeMode == SpellStudioMode.GameplayHandler)
+            {
+                if (sourceHandler == null) return false;
+                SpellLook row = useGameplayOverrides && spellLooks != null ? spellLooks.GetLook(sourceHandler) : null;
+                if (row != null)
+                {
+                    channels.group = EffectDerivation.Group(sourceHandler);
+                    channels.family = Defined(row.family, EffectFamily.Damage);
+                    channels.tempo = Defined(row.tempo, EffectTempo.Once);
+                    channels.periodSeconds = EffectDerivation.Period(sourceHandler);
+                    resolvedElement = Defined(row.element, EffectElement.Burst);
+                    return true;
+                }
+                channels = EffectDerivation.Channels(sourceHandler, isSameSide);
+            }
+            resolvedElement = EffectComposer.Element(channels);
+            return true;
+        }
+
+        public ProjectileLook ResolveProjectile()
+        {
+            if (spellLooks != null && useGameplayOverrides) return spellLooks.GetProjectileLook(sourceProjectile);
+            return new ProjectileLook { style = EffectDerivation.Delivery(sourceProjectile) };
+        }
+
         /// <summary>Copies the selected vocabulary element for editing without changing the shared asset.</summary>
         public bool CaptureEntry()
         {
             if (vocabulary == null || vocabulary.elements == null ||
-                !vocabulary.elements.TryGetValue(element, out ElementEntry source) || source == null)
+                !TryResolve(out _, out EffectElement resolvedElement) ||
+                !vocabulary.elements.TryGetValue(resolvedElement, out ElementEntry source) || source == null)
                 return false;
             entry = CloneEntry(source);
             overrideEntry = true;
@@ -102,13 +161,17 @@ namespace HealerLike.Render.Spells.Studio
         public string[] Validate()
         {
             var warnings = new List<string>();
+            if (mode == SpellStudioMode.GameplayHandler && sourceHandler == null)
+                warnings.Add("Choose a gameplay buff handler to derive its renderer grammar.");
+            if (!Enum.IsDefined(typeof(SpellStudioMode), mode) || !Enum.IsDefined(typeof(AttributeGroup), attributeGroup))
+                warnings.Add("An unknown grammar mode or group will use its default.");
             ElementEntry source = SourceEntry();
-            if (source == null)
+            if (source == null && !(mode == SpellStudioMode.GameplayHandler && sourceHandler == null))
                 warnings.Add(overrideEntry ? "The authored entry is missing." : "Choose a vocabulary containing the selected element, or enable an authored entry.");
             if (!Enum.IsDefined(typeof(EffectElement), element) || !Enum.IsDefined(typeof(EffectFamily), family) ||
                 !Enum.IsDefined(typeof(EffectTempo), tempo) || !Enum.IsDefined(typeof(Entity.EntityType), side))
                 warnings.Add("An unknown enum value will use its default in the preview.");
-            if (scale != SafeScale || stacks != SafeStacks || !InRange(periodSeconds, 0.01f, 120f) ||
+            if (scale != SafeScale || stacks != SafeStacks ||
                 !InRange(durationSeconds, 0.01f, 120f) || !InRange(charges, 0f, MaxParts) || !InRange(amount, -1f, 1f))
                 warnings.Add("Numeric values outside the supported ranges will be bounded in the preview.");
             if (overrideColour && !ValidColour(colour))
@@ -138,7 +201,8 @@ namespace HealerLike.Render.Spells.Studio
         {
             if (overrideEntry) return entry;
             if (vocabulary == null || vocabulary.elements == null) return null;
-            vocabulary.elements.TryGetValue(Defined(element, EffectElement.Burst), out ElementEntry source);
+            if (!TryResolve(out _, out EffectElement resolvedElement)) return null;
+            vocabulary.elements.TryGetValue(resolvedElement, out ElementEntry source);
             return source;
         }
 

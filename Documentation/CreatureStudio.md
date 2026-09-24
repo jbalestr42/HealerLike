@@ -6,9 +6,21 @@ Creature Studio edits real `CreatureRecipe` assets consumed by the renderer. Its
 
 ![Creature and spell previews](CreatureStudio-Overview.jpg)
 
+## Grammar and presets
+
+The studio opens in **Grammar** mode. Select a saved channel preset or a local draft, then edit side, head, count, stem, mass, reach, accessory and accent. The preview recomposes through the production `LookComposer`. Six saved examples live in `Assets/Render/Creatures/Data/GrammarPresets`.
+
+Choose a **Game entity** to inspect the channels derived by `LookDerivation`. Copy derived channels into manual controls to experiment independently. **Save as** preserves grammar inputs and vocabulary references; **Bake to editable recipe** creates an independent result in **Parts** mode.
+
+**Vocabulary & presets** opens the actual native dictionaries: creature heads, bodies, stems, roots and accessories; creature source overrides; spell elements and handler/projectile overrides; palette and delivery vocabulary. Edits to these shared assets affect their renderer consumers. Native creature overrides take precedence in the game; the editor shows that distinction and can preview an override when its prefab exposes a recipe.
+
+Some vocabulary settings deliberately pin reach or limit part counts. The studio explains those constraints instead of implying that every channel must change the silhouette.
+
+![Actual grammar-generated creatures](CreatureGrammar-Overview.jpg)
+
 ## Author a creature
 
-- Start with a Healer, Sprout or Stone Sentinel draft, or select an existing recipe.
+- Switch to **Parts**, then start with a Healer, Sprout or Stone Sentinel draft, or select an existing recipe.
 - Select a part and edit its primitive, role, parent, transform, colour, glow and mesh variant. Add and duplicate parts to build a silhouette. Removing a part removes its subtree and remaps surviving parents, arm bindings and sockets.
 - Tune roots, idle sway/breathing, arms, and the visual source/neck sockets. Add an arm on the selected part, then use **Rebuild rest pose** after changing segment lengths/counts; paired arm sockets are maintained by the add/remove tools. Validation explains malformed recipes instead of feeding them into the renderer.
 - Play or scrub the preview; inspect health, charge and glow readouts. Orbit, pan and zoom the camera, or reset its framing.
@@ -32,4 +44,4 @@ Run the EditMode filters `CreatureStudio` and `SpellStudio`. To produce visual c
 
 Captures are written to `Logs/CreatureStudioCaptures/`.
 
-Verified in Unity 6000.6.0f1 on macOS Metal: **988 passed, 0 failed, 3 skipped** across the renderer and both studio assemblies. All **32 Creature Studio** and **65 Spell Studio** tests passed. The three skips are existing opt-in screenshot fixtures. Captures of all three creatures and their spell combinations were visually inspected. Manual mouse/keyboard acceptance testing remains unavailable because Computer Use permissions were not granted. Full results: `Logs/RenderStudio-Tests.xml`.
+Verified in Unity 6000.6.0f1 on macOS Metal: **1,079 passed, 0 failed, 3 skipped** across the renderer and both studio assemblies. The three skips are existing opt-in screenshot fixtures. Tests include production grammar parity, native dictionary inspectors, source derivation, grammar preset persistence, draft lifecycle and preview isolation. Six grammar-generated creature captures were visually inspected, along with the earlier creature and spell captures. Manual mouse/keyboard acceptance testing remains unavailable because Computer Use permissions were not granted. Full results: `Logs/RenderStudio-Grammar-Tests.xml`.

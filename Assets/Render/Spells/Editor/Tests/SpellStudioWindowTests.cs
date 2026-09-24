@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -65,11 +66,18 @@ namespace HealerLike.Render.Spells.Tests
         public void StartsWithEveryVocabularyElementAsAnIndependentDraft()
         {
             var drafts = Get<List<SpellStudioPreset>>("drafts");
-            Assert.That(drafts.Count,Is.EqualTo(System.Enum.GetValues(typeof(EffectElement)).Length));
-            var seen = new HashSet<EffectElement>();
+            int vocabularyCount = System.Enum.GetValues(typeof(EffectElement)).Length;
+            Assert.That(drafts.Count,Is.EqualTo(vocabularyCount + 3));
+            var authored = drafts.Where(draft => draft.mode == SpellStudioMode.AuthoredElement).ToList();
+            Assert.That(authored.Count,Is.EqualTo(vocabularyCount));
+            CollectionAssert.AreEquivalent(System.Enum.GetValues(typeof(EffectElement)), authored.Select(draft => draft.element));
+            var grammar = drafts.Where(draft => draft.mode != SpellStudioMode.AuthoredElement).ToList();
+            CollectionAssert.AreEquivalent(new[] { "Healing pulse", "Defence boon", "Opposing debuff" }, grammar.Select(draft => draft.displayName));
+            Assert.That(grammar.Count(draft => draft.mode == SpellStudioMode.GrammarChannels), Is.EqualTo(2));
+            Assert.That(grammar.Count(draft => draft.mode == SpellStudioMode.GameplayHandler), Is.EqualTo(1));
             foreach (var draft in drafts)
             {
-                Assert.That(seen.Add(draft.element),Is.True);
+                Assert.That(draft.Compose(), Is.Not.Null);
                 Assert.That(AssetDatabase.Contains(draft),Is.False);
                 Assert.That(draft.vocabulary,Is.Not.Null);
             }
@@ -93,12 +101,14 @@ namespace HealerLike.Render.Spells.Tests
         [Test]
         public void ReopeningKeepsTheSelectedNewDraft()
         {
+            int initialCount = Get<List<SpellStudioPreset>>("drafts").Count;
             Invoke("NewDraft");
             Get<SpellStudioPreset>("selected").displayName = "Selected custom draft";
             Object.DestroyImmediate(window);
             window = ScriptableObject.CreateInstance<SpellStudioWindow>();
             Assert.That(Get<SpellStudioPreset>("selected").displayName,Is.EqualTo("Selected custom draft"));
-            Assert.That(Get<List<SpellStudioPreset>>("drafts").Count,Is.EqualTo(15));
+            Assert.That(Get<List<SpellStudioPreset>>("drafts").Count,Is.EqualTo(initialCount + 1));
+            Assert.That(Get<List<SpellStudioPreset>>("drafts").Count(draft => draft.mode != SpellStudioMode.AuthoredElement), Is.EqualTo(3));
         }
 
         [Test]

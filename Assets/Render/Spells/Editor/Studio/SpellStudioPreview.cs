@@ -271,7 +271,8 @@ namespace HealerLike.Render.Spells.Editor.Studio
             EffectRecipe recipe = _preset.Compose();
             if (recipe == null)
             {
-                _error = "Assign an effect vocabulary or enable a custom entry to build this spell.";
+                var warnings = _preset.Validate();
+                _error = warnings.Length > 0 ? warnings[0] : "Assign an effect vocabulary or enable a custom entry to build this spell.";
                 return;
             }
             _error = null;

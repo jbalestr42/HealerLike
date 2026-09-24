@@ -14,6 +14,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
         private static readonly Color Panel = new Color(.085f, .098f, .12f);
         private static readonly Color Accent = new Color(.40f, .86f, .74f);
         private readonly List<SpellStudioPreset> drafts = new List<SpellStudioPreset>();
+        private readonly List<ABuffHandlerFactory> gameplayHandlers = new List<ABuffHandlerFactory>();
         private readonly List<SpellStudioPreset> assets = new List<SpellStudioPreset>();
         private SpellStudioPreset selected;
         private SerializedObject serialized;
@@ -27,7 +28,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
         private float time, speed = 1;
         private double lastTick;
         private GUIStyle titleStyle, sectionStyle, smallStyle, cardStyle;
-        [Serializable] private sealed class DraftRecord { public string json; public string vocabularyGuid; }
+        [Serializable] private sealed class DraftRecord { public string json; public string vocabularyGuid; public string handlerGuid; public string looksGuid; public string projectileGuid; }
         [Serializable] private sealed class DraftCollection { public List<DraftRecord> items = new List<DraftRecord>(); public int selectedDraftIndex = -1; public string selectedAssetGuid; }
         private static string DraftKey => "HealerLike.SpellStudio.Drafts." + Application.dataPath;
 
@@ -39,7 +40,10 @@ namespace HealerLike.Render.Spells.Editor.Studio
             {
                 if (draft == null) continue;
                 collection.items.Add(new DraftRecord { json = JsonUtility.ToJson(draft),
-                    vocabularyGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(draft.vocabulary)) });
+                    vocabularyGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(draft.vocabulary)),
+                    handlerGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(draft.sourceHandler)),
+                    looksGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(draft.spellLooks)),
+                    projectileGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(draft.sourceProjectile)) });
             }
             EditorPrefs.SetString(DraftKey, JsonUtility.ToJson(collection));
         }
@@ -59,6 +63,9 @@ namespace HealerLike.Render.Spells.Editor.Studio
                     draft.hideFlags = HideFlags.HideAndDontSave;
                     draft.name = draft.displayName;
                     draft.vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(AssetDatabase.GUIDToAssetPath(record.vocabularyGuid));
+                    draft.sourceHandler = LoadGuid<ABuffHandlerFactory>(record.handlerGuid);
+                    draft.spellLooks = LoadGuid<SpellLooks>(record.looksGuid);
+                    draft.sourceProjectile = LoadGuid<GameObject>(record.projectileGuid);
                 }
                 if (!string.IsNullOrEmpty(collection.selectedAssetGuid))
                     selected = AssetDatabase.LoadAssetAtPath<SpellStudioPreset>(AssetDatabase.GUIDToAssetPath(collection.selectedAssetGuid));
@@ -75,6 +82,9 @@ namespace HealerLike.Render.Spells.Editor.Studio
                 return false;
             }
         }
+
+        private static T LoadGuid<T>(string guid) where T : UnityEngine.Object => string.IsNullOrEmpty(guid) ? null :
+            AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(guid));
 
         [MenuItem("Tools/Render/Spell Studio", false, 110)]
         [MenuItem("HealerLike/Render/Spell Studio", false, 110)]
@@ -130,6 +140,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
             EditorApplication.update += Tick;
             Undo.undoRedoPerformed += OnUndo;
             EditorApplication.projectChanged += ReloadAssets;
+            RenderGrammarLibraryWindow.AssetChanged += OnGrammarAssetChanged;
         }
 
         private void OnDisable()
@@ -138,6 +149,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
             EditorApplication.update -= Tick;
             Undo.undoRedoPerformed -= OnUndo;
             EditorApplication.projectChanged -= ReloadAssets;
+            RenderGrammarLibraryWindow.AssetChanged -= OnGrammarAssetChanged;
             preview?.Dispose();
             preview = null;
             foreach (var draft in drafts) if (draft != null) DestroyImmediate(draft);
@@ -187,6 +199,13 @@ namespace HealerLike.Render.Spells.Editor.Studio
                 draft.durationSeconds = 2.4f;
                 drafts.Add(draft);
             }
+            for (int i = 6; i < SpellStudioSamples.Count; i++)
+            {
+                SpellStudioPreset grammar = SpellStudioSamples.Build(vocabulary, i);
+                if (grammar == null) continue;
+                grammar.hideFlags = HideFlags.HideAndDontSave;
+                drafts.Add(grammar);
+            }
         }
 
         private static EffectFamily Family(EffectElement element)
@@ -205,12 +224,26 @@ namespace HealerLike.Render.Spells.Editor.Studio
             }
         }
 
+        private void OnGrammarAssetChanged(UnityEngine.Object asset)
+        {
+            serialized?.Update();
+            RefreshPreview();
+            Repaint();
+        }
+
         private void RefreshPreview() { validationDirty = true; preview?.Refresh(); }
 
         private void ReloadAssets()
         {
-            validationDirty = true;
+            RefreshPreview();
             assets.Clear();
+            gameplayHandlers.Clear();
+            foreach (string guid in AssetDatabase.FindAssets("t:ABuffHandlerFactory"))
+            {
+                var handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(AssetDatabase.GUIDToAssetPath(guid));
+                if (handler != null) gameplayHandlers.Add(handler);
+            }
+            gameplayHandlers.Sort((a,b) => string.Compare(HandlerLabel(a), HandlerLabel(b), StringComparison.OrdinalIgnoreCase));
             foreach (string guid in AssetDatabase.FindAssets("t:SpellStudioPreset"))
             {
                 var asset = AssetDatabase.LoadAssetAtPath<SpellStudioPreset>(AssetDatabase.GUIDToAssetPath(guid));
@@ -302,7 +335,11 @@ namespace HealerLike.Render.Spells.Editor.Studio
             GUILayout.Label("SPELL LIBRARY", sectionStyle);
             GUILayout.Space(8);
             search = EditorGUILayout.TextField(search, EditorStyles.toolbarSearchField);
-            GUILayout.Space(10);
+            GUILayout.Space(6);
+            if (GUILayout.Button("Grammar & native presets…")) RenderGrammarLibraryWindow.OpenSpells();
+            if (GUILayout.Button("New grammar preset")) { NewGrammarDraft(); GUIUtility.ExitGUI(); }
+            if (GUILayout.Button("Add sample presets")) { SpellStudioSamples.Create(); ReloadAssets(); }
+            GUILayout.Space(6);
             libraryScroll = EditorGUILayout.BeginScrollView(libraryScroll);
             GUILayout.Label("VOCABULARY & DRAFTS  ·  " + drafts.Count, smallStyle);
             foreach (var draft in drafts) DrawCard(draft, false);
@@ -310,6 +347,15 @@ namespace HealerLike.Render.Spells.Editor.Studio
             GUILayout.Label("SAVED PRESETS  ·  " + assets.Count, smallStyle);
             foreach (var asset in assets) DrawCard(asset, true);
             if (assets.Count == 0) GUILayout.Label("Save a creation to build your own library.", smallStyle);
+            GUILayout.Space(16);
+            GUILayout.Label("GAMEPLAY HANDLERS  ·  " + gameplayHandlers.Count, smallStyle);
+            foreach (var handler in gameplayHandlers)
+            {
+                string label = HandlerLabel(handler);
+                if (!string.IsNullOrEmpty(search) && label.IndexOf(search, StringComparison.OrdinalIgnoreCase) < 0) continue;
+                if (GUILayout.Button(new GUIContent("↳ " + label, AssetDatabase.GetAssetPath(handler)), EditorStyles.miniButton))
+                { NewHandlerDraft(handler); GUIUtility.ExitGUI(); }
+            }
             EditorGUILayout.EndScrollView();
             GUILayout.Space(8);
             GUILayout.Label("Vocabulary selections are local drafts. Drafts are kept locally. Save as a preset to share them.", smallStyle);
@@ -318,7 +364,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
 
         private void DrawCard(SpellStudioPreset preset, bool saved)
         {
-            if (preset == null || (!string.IsNullOrEmpty(search) && Label(preset).IndexOf(search,StringComparison.OrdinalIgnoreCase)<0 && preset.element.ToString().IndexOf(search,StringComparison.OrdinalIgnoreCase)<0)) return;
+            if (preset == null || (!string.IsNullOrEmpty(search) && Label(preset).IndexOf(search,StringComparison.OrdinalIgnoreCase)<0 && preset.ResolvedElement.ToString().IndexOf(search,StringComparison.OrdinalIgnoreCase)<0)) return;
             Rect rect = GUILayoutUtility.GetRect(10,33,GUILayout.ExpandWidth(true));
             if (selected == preset)
             {
@@ -336,7 +382,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
             Rect render = new Rect(rect.x+1,rect.y+38,rect.width-2,rect.height-155);
             preview.Draw(render, selected, time);
             GUI.Label(new Rect(render.x+14,render.y+12,render.width-28,24),Label(selected),EditorStyles.boldLabel);
-            GUI.Label(new Rect(render.x+14,render.y+34,render.width-28,20),selected.element+" / "+selected.family,smallStyle);
+            GUI.Label(new Rect(render.x+14,render.y+34,render.width-28,20),selected.ResolvedElement+" / "+selected.ResolvedChannels.family+" / "+selected.ResolvedChannels.tempo,smallStyle);
             if (GUI.Button(new Rect(rect.xMax-180,rect.y+7,87,23),"Export PNG")) ExportPreview();
             if (GUI.Button(new Rect(rect.xMax-87,rect.y+7,75,23),"Reset view")) { preview.ResetCamera(); Repaint(); }
             GUILayout.BeginArea(new Rect(rect.x+12,render.yMax+10,rect.width-24,102));
@@ -384,15 +430,12 @@ namespace HealerLike.Render.Spells.Editor.Studio
             Section("IDENTITY");
             Field("displayName","Name");
             Field("description","Notes");
-            Section("RECIPE");
-            Field("vocabulary","Vocabulary");
-            Field("element","Element");
-            Field("family","Family");
-            Field("tempo","Tempo");
-            Field("periodSeconds","Period (s)");
-            using (new EditorGUI.DisabledScope(selected.tempo == EffectTempo.Once))
+            Section("GRAMMAR & PRESETS");
+            DrawGrammarFields();
+            Section("PREVIEW TIMING");
+            using (new EditorGUI.DisabledScope(selected.ResolvedChannels.tempo == EffectTempo.Once))
                 Field("durationSeconds","Preview length");
-            if (selected.tempo == EffectTempo.Once) GUILayout.Label("One-shot length follows the entry’s motion cycle.",smallStyle);
+            if (selected.ResolvedChannels.tempo == EffectTempo.Once) GUILayout.Label("One-shot length follows the resolved entry’s motion cycle.",smallStyle);
             Section("CAST CONTEXT");
             Field("stacks","Stacks"); Field("charges","Charges"); Field("amount","Amount");
             Field("critical","Critical"); Field("side","Side"); Field("scale","Scale");
@@ -421,7 +464,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
                 if (GUILayout.Button("Apply shape to vocabulary…"))
                 {
                     if (EditorUtility.DisplayDialog("Update shared vocabulary?",
-                        "Replace " + selected.element + " in " + selected.vocabulary.name + "?\n\nThis changes the shared shape, motion, socket and count used by game effects. Colour and cast context remain in this preset. You can undo this change.",
+                        "Replace " + selected.ResolvedElement + " in " + selected.vocabulary.name + "?\n\nThis changes the shared shape, motion, socket and count used by game effects. Colour and cast context remain in this preset. You can undo this change.",
                         "Apply shape", "Cancel"))
                     {
                         HealerLike.Render.Spells.Studio.Editor.SpellStudioPublishing.PublishEntry(selected);
@@ -461,8 +504,85 @@ namespace HealerLike.Render.Spells.Editor.Studio
             draft.hideFlags = HideFlags.HideAndDontSave;
             draft.name = draft.displayName = "Untitled spell";
             if (selected != null) draft.vocabulary = selected.vocabulary;
+            if (draft.vocabulary == null) draft.vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>("Assets/Render/Spells/Data/EffectVocabulary.asset");
+            draft.spellLooks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
             drafts.Add(draft);
             Select(draft);
+        }
+
+        private static string HandlerLabel(ABuffHandlerFactory handler)
+        {
+            string path = AssetDatabase.GetAssetPath(handler);
+            string folder = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path));
+            return ObjectNames.NicifyVariableName(folder) + " / " + handler.name;
+        }
+
+        private void NewGrammarDraft()
+        {
+            NewDraft();
+            selected.mode = SpellStudioMode.GrammarChannels;
+            selected.family = EffectFamily.Boon;
+            selected.attributeGroup = AttributeGroup.Defence;
+            selected.tempo = EffectTempo.ForDuration;
+            selected.name = selected.displayName = "Defence boon";
+            serialized.Update();
+            RefreshPreview();
+        }
+
+        private void NewHandlerDraft(ABuffHandlerFactory handler)
+        {
+            NewDraft();
+            selected.mode = SpellStudioMode.GameplayHandler;
+            selected.sourceHandler = handler;
+            selected.name = selected.displayName = HandlerLabel(handler);
+            selected.isSameSide = true;
+            serialized.Update();
+            RefreshPreview();
+        }
+
+        private void DrawGrammarFields()
+        {
+            Field("mode", "Recipe source");
+            var mode = (SpellStudioMode)serialized.FindProperty("mode").enumValueIndex;
+            Field("vocabulary", "Vocabulary");
+            using (new EditorGUI.DisabledScope(selected.vocabulary == null))
+                if (GUILayout.Button("Edit effect vocabulary…")) RenderGrammarLibraryWindow.OpenAsset(selected.vocabulary);
+            if (mode == SpellStudioMode.AuthoredElement)
+            {
+                Field("element", "Element"); Field("family", "Family"); Field("tempo", "Tempo"); Field("periodSeconds", "Period (s)");
+                GUILayout.Label("Authored elements keep full manual control. Grammar mode derives the element from family and attribute group.", smallStyle);
+            }
+            else if (mode == SpellStudioMode.GrammarChannels)
+            {
+                Field("family", "Family"); Field("attributeGroup", "Attribute group"); Field("tempo", "Tempo"); Field("periodSeconds", "Period (s)");
+                GUILayout.Label("Uses EffectComposer: boon + defence → plates; boon + prevention → bud; bane + offence → press.", smallStyle);
+            }
+            else
+            {
+                Field("sourceHandler", "Buff handler"); Field("isSameSide", "Same side");
+                using (new EditorGUI.DisabledScope(selected.sourceHandler == null))
+                    if (GUILayout.Button("Inspect gameplay handler")) { Selection.activeObject = selected.sourceHandler; EditorGUIUtility.PingObject(selected.sourceHandler); }
+                GUILayout.Label("Reads consumer sign, modifier polarity, attribute group, duration and period from the actual gameplay asset.", smallStyle);
+            }
+            Field("spellLooks", "Native presets");
+            Field("useGameplayOverrides", "Use native rows");
+            using (new EditorGUI.DisabledScope(selected.spellLooks == null))
+                if (GUILayout.Button("Edit native spell / projectile presets…")) RenderGrammarLibraryWindow.OpenAsset(selected.spellLooks);
+            if (selected.TryResolve(out EffectChannels channels, out EffectElement resolved))
+            {
+                string priority = selected.UsesGameplayOverride ? "Native handler preset wins" :
+                    mode == SpellStudioMode.AuthoredElement ? "Manual element" : "Derived by renderer grammar";
+                EditorGUILayout.HelpBox(priority + "\n" + channels.family + " · " + channels.group + " · " + channels.tempo +
+                    " → " + resolved + (channels.tempo == EffectTempo.PerPeriod ? "\nPeriod: " + channels.periodSeconds.ToString("0.###") + " s; zero uses entry cycle." : ""), MessageType.Info);
+            }
+            else EditorGUILayout.HelpBox("Choose a gameplay handler to resolve this preset.", MessageType.Info);
+            Field("sourceProjectile", "Projectile lookup");
+            if (selected.sourceProjectile != null)
+            {
+                ProjectileLook projectile = selected.ResolveProjectile();
+                GUILayout.Label("Delivery: " + projectile.style + " · " + projectile.presentation +
+                    (projectile.preserveContactPath ? " · preserves contact path" : "") + "\nLookup only; this viewport previews the effect element.", smallStyle);
+            }
         }
 
         private void Duplicate()

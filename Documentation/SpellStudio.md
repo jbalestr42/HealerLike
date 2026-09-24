@@ -8,6 +8,14 @@ The studio previews the existing `SpellEffect` renderer, its baked meshes, shade
 
 ![Actual Unity spell previews](SpellStudio-Overview.jpg)
 
+## Grammar and native presets
+
+The inspector exposes three modes: **Authored Element**, **Grammar Channels**, and **Gameplay Handler**. Grammar Channels derives the element from effect family and attribute group through `EffectComposer`. Gameplay Handler derives the real channels from a selected buff handler, including same/opposing side and periodic timing. The library lists gameplay handlers directly.
+
+The resolved readout identifies the effective element and whether a native `SpellLooks` row wins. **Grammar & native presets** opens the real vocabulary and handler/projectile dictionaries with their native editors. Shared asset edits update the studio preview. Saved presets retain source references and grammar inputs, and the samples include Healing pulse, Defence boon and Opposing debuff grammar examples.
+
+Existing authored presets retain their original element mode. Choose **New grammar preset** to begin with derived inputs.
+
 ## Create a spell look
 
 1. Pick an element from the vocabulary library, or choose **New spell**.
@@ -45,6 +53,6 @@ Images are written to `Logs/SpellStudioCaptures/` in that Unity project. Use a g
 
 ## Verified build
 
-Unity 6000.6.0f1, macOS Metal, 24 September 2026: **988 passed, 0 failed, 3 skipped** across the renderer and Spell Studio EditMode assemblies. All **65 Spell Studio tests** and **32 Creature Studio tests passed**. The three skipped tests are existing opt-in renderer screenshot fixtures. All 14 spell vocabulary previews were captured and visually inspected. Manual mouse/keyboard acceptance testing was unavailable because Computer Use permissions were not granted.
+Unity 6000.6.0f1, macOS Metal, 24 September 2026: **1,079 passed, 0 failed, 3 skipped** across the renderer and both studio assemblies. This includes grammar mapping, native handler override priority, real gameplay sources, saved references, native dictionary inspectors and old authored preset compatibility. The three skipped tests are existing opt-in renderer screenshot fixtures. All 14 spell vocabulary previews were previously captured and visually inspected. Manual mouse/keyboard acceptance testing was unavailable because Computer Use permissions were not granted.
 
-The complete test report is in `Logs/RenderStudio-Tests.xml`; individual preview PNGs are in `Logs/SpellStudioCaptures`.
+The complete test report is in `Logs/RenderStudio-Grammar-Tests.xml`; individual preview PNGs are in `Logs/SpellStudioCaptures`.

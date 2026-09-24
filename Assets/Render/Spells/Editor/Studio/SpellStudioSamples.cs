@@ -11,8 +11,8 @@ namespace HealerLike.Render.Spells.Editor.Studio
     {
         public const string Folder = "Assets/Render/Spells/Data/StudioSamples";
         public const string VocabularyPath = "Assets/Render/Spells/Data/EffectVocabulary.asset";
-        public const int Count = 6;
-        static readonly string[] Names = { "Verdant Bloom", "Rotfall", "Aegis", "Arc Link", "Astral Refill", "Ember Corona" };
+        public const int Count = 9;
+        static readonly string[] Names = { "Verdant Bloom", "Rotfall", "Aegis", "Arc Link", "Astral Refill", "Ember Corona", "Healing pulse", "Defence boon", "Opposing debuff" };
 
         public static string NameAt(int index)
         {
@@ -111,7 +111,7 @@ namespace HealerLike.Render.Spells.Editor.Studio
                     preset.colour = new Color(0.42f, 0.66f, 1f);
                     preset.description = "A sky-blue mana gain. An isolated impact example for comparing the mana silhouette with Verdant Bloom; loop the preview to inspect the upward motion.";
                     break;
-                default:
+                case 5:
                     preset.element = EffectElement.Burst;
                     preset.family = EffectFamily.Damage;
                     preset.tempo = EffectTempo.Once;
@@ -123,7 +123,39 @@ namespace HealerLike.Render.Spells.Editor.Studio
                     preset.description = "An orange critical impact with a slightly enlarged silhouette. Scrub near the opening frames to inspect the burst expansion and compare it with the unscaled vocabulary.";
                     break;
             }
-            if (preset.CaptureEntry()) return preset;
+            if (index >= 6)
+            {
+                preset.mode = SpellStudioMode.GrammarChannels;
+                preset.overrideColour = false;
+                preset.spellLooks = AssetDatabase.LoadAssetAtPath<SpellLooks>("Assets/Render/Spells/Data/SpellLooks.asset");
+                preset.durationSeconds = 6f;
+                if (index == 6)
+                {
+                    preset.family = EffectFamily.Renew;
+                    preset.attributeGroup = AttributeGroup.Defence;
+                    preset.tempo = EffectTempo.PerPeriod;
+                    preset.periodSeconds = 1.25f;
+                    preset.description = "Renderer grammar: a periodic renewal derives Stalks from the Renew family. Change family or group to explore the shared vocabulary; the shape stays linked to it.";
+                }
+                else if (index == 7)
+                {
+                    preset.family = EffectFamily.Boon;
+                    preset.attributeGroup = AttributeGroup.Defence;
+                    preset.tempo = EffectTempo.ForDuration;
+                    preset.charges = 3f;
+                    preset.description = "Renderer grammar: a held defence boon derives Plates. Switch the attribute group to Prevention to produce Bud, or Offence to produce Orbit.";
+                }
+                else
+                {
+                    preset.mode = SpellStudioMode.GameplayHandler;
+                    preset.sourceHandler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>("Assets/Data/CharacterSkills/MultiTargetReduceDamage/BuffHandlerFactory.asset");
+                    preset.isSameSide = false;
+                    preset.side = Entity.EntityType.Computer;
+                    preset.description = "Actual gameplay handler: the damage modifier and its duration derive the opposing debuff. Native SpellLooks rows win when enabled, exactly as in SpellVisualSink.";
+                }
+                if (preset.Compose() != null) return preset;
+            }
+            else if (preset.CaptureEntry()) return preset;
             UnityEngine.Object.DestroyImmediate(preset);
             return null;
         }
