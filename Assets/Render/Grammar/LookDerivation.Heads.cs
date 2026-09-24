@@ -50,49 +50,73 @@ namespace HealerLike.Render.Grammar
             return HeadKind.Bud;
         }
 
-        // The projectile class and its baked motion, the same reading for a unit's head and its shot
-        public static HeadKind Delivery(GameObject projectilePrefab)
-        {
-            if (projectilePrefab == null)
-            {
-                return HeadKind.Bud;
-            }
-
-            ChainLightningProjectile chain = projectilePrefab.GetComponent<ChainLightningProjectile>();
-            if (chain != null)
-            {
-                return SkillWalker.IsHeld(chain) ? HeadKind.Fork : HeadKind.Conductor;
-            }
-
-            if (projectilePrefab.GetComponent<CurvedHomingProjectileBehaviour>() != null
-                || projectilePrefab.GetComponent<ArcHomingProjectileBehaviour>() != null)
-            {
-                return HeadKind.Arch;
-            }
-
-            HomingProjectileBehaviour homing = projectilePrefab.GetComponent<HomingProjectileBehaviour>();
-            if (homing != null && homing.data != null && homing.data.speed >= SpearSpeed)
-            {
-                return HeadKind.Spear;
-            }
-            return HeadKind.Bud;
-        }
-
         // One slot: a second skill or delivery, then a baked behaviour, then the first passive, then an on-hit effect
         public static AccessoryKind Accessory(EntityData data)
         {
+            ASkillFactory primary = Primary(data);
+            return Accessory(data, PrimaryHead(primary), Accent(primary), out HeadKind accessoryHead);
+        }
+
+        public static HeadKind AccessoryHead(EntityData data)
+        {
+            TryMiniHead(data, PrimaryHead(Primary(data)), out HeadKind head);
+            return head;
+        }
+
+        // The family the primary delivers, drawn on the tips and the projectile
+        public static EffectFamily Accent(ASkillFactory skill)
+        {
+            if (skill is ShootProjectileSkillFactory shoot && shoot.data.projectiles != null)
+            {
+                foreach (ShootProjectileSkillData.ProjectileData entry in shoot.data.projectiles)
+                {
+                    if (entry.onHitConsumer != null && entry.onHitConsumer.Count > 0)
+                    {
+                        return EffectDerivation.ConsumerFamily(entry.onHitConsumer[0], false);
+                    }
+                }
+                return EffectFamily.Damage;
+            }
+
+            if (skill is ApplyBuffOnTargetSkillFactory support)
+            {
+                return EffectDerivation.Family(support.data.buffHandlerFactory, support.data.targetAlly);
+            }
+
+            if (skill is HealTargetSkillFactory)
+            {
+                return EffectFamily.Heal;
+            }
+
+            if (skill is ApplyConsumerOnTimeFactory self)
+            {
+                return EffectDerivation.ConsumerFamily(self.data.consumerFactory, true);
+            }
+
+            if (skill is ApplyBuffPeriodicallySkillFactory periodic && periodic.data.periodicBuff != null
+                && periodic.data.periodicBuff.Count > 0)
+            {
+                return IsEveryBoon(periodic.data.periodicBuff)
+                    ? EffectFamily.Boon
+                    : EffectDerivation.Family(periodic.data.periodicBuff[0], true);
+            }
+            return EffectFamily.Damage;
+        }
+
+        // The accessory and its small head, read once from the head and the accent already derived
+        static AccessoryKind Accessory(EntityData data, HeadKind head, EffectFamily accent, out HeadKind accessoryHead)
+        {
+            if (TryMiniHead(data, head, out accessoryHead))
+            {
+                return AccessoryKind.MiniHead;
+            }
+
             if (data == null)
             {
                 return AccessoryKind.None;
             }
 
-            ASkillFactory primary = Primary(data);
-            if (TryMiniHead(data, out HeadKind miniHead))
-            {
-                return AccessoryKind.MiniHead;
-            }
-
-            foreach (GameObject prefab in SkillWalker.Prefabs(primary))
+            foreach (GameObject prefab in SkillWalker.Prefabs(Primary(data)))
             {
                 if (prefab.GetComponent<BackstabProjectileBehaviour>() != null)
                 {
@@ -116,11 +140,15 @@ namespace HealerLike.Render.Grammar
 
             if (data.onHitEffects != null)
             {
-                EffectFamily accent = Accent(primary);
                 foreach (ABuffHandlerFactory handler in data.onHitEffects)
                 {
+                    if (handler == null)
+                    {
+                        continue;
+                    }
+
                     EffectFamily family = EffectDerivation.Family(handler, false);
-                    if (handler == null || family == accent)
+                    if (family == accent)
                     {
                         continue;
                     }
@@ -144,54 +172,18 @@ namespace HealerLike.Render.Grammar
             return AccessoryKind.None;
         }
 
-        public static HeadKind AccessoryHead(EntityData data)
+        // The head of the primary skill, Bud for a unit without one
+        static HeadKind PrimaryHead(ASkillFactory primary)
         {
-            TryMiniHead(data, out HeadKind head);
-            return head;
-        }
-
-        // The family the primary delivers, drawn on the tips and the projectile
-        public static EffectFamily Accent(ASkillFactory skill)
-        {
-            if (skill is ShootProjectileSkillFactory shoot && shoot.data.projectiles != null)
+            if (primary == null)
             {
-                foreach (ShootProjectileSkillData.ProjectileData entry in shoot.data.projectiles)
-                {
-                    if (entry.onHitConsumer != null && entry.onHitConsumer.Count > 0)
-                    {
-                        return EffectDerivation.ConsumerFamily(entry.onHitConsumer[0], 1f, false);
-                    }
-                }
-                return EffectFamily.Damage;
+                return HeadKind.Bud;
             }
-
-            if (skill is ApplyBuffOnTargetSkillFactory support)
-            {
-                return EffectDerivation.Family(support.data.buffHandlerFactory, support.data.targetAlly);
-            }
-
-            if (skill is HealTargetSkillFactory)
-            {
-                return EffectFamily.Heal;
-            }
-
-            if (skill is ApplyConsumerOnTimeFactory self)
-            {
-                return EffectDerivation.ConsumerFamily(self.data.consumerFactory, 1f, true);
-            }
-
-            if (skill is ApplyBuffPeriodicallySkillFactory periodic && periodic.data.periodicBuff != null
-                && periodic.data.periodicBuff.Count > 0)
-            {
-                return IsEveryBoon(periodic.data.periodicBuff)
-                    ? EffectFamily.Boon
-                    : EffectDerivation.Family(periodic.data.periodicBuff[0], true);
-            }
-            return EffectFamily.Damage;
+            return Head(primary);
         }
 
         // A second skill, else a second delivery inside the primary, drawn as a small head
-        static bool TryMiniHead(EntityData data, out HeadKind head)
+        static bool TryMiniHead(EntityData data, HeadKind main, out HeadKind head)
         {
             head = HeadKind.Bud;
             ASkillFactory secondary = Secondary(data);
@@ -207,7 +199,6 @@ namespace HealerLike.Render.Grammar
                 return false;
             }
 
-            HeadKind main = Head(primary);
             foreach (GameObject prefab in SkillWalker.Prefabs(primary))
             {
                 HeadKind other = Delivery(prefab);

@@ -109,20 +109,18 @@ public class EffectDerivationTests
         Assert.AreEqual(expected, EffectDerivation.Family(handler, isSameSide));
     }
 
-    [TestCase(10f, 1f, false, EffectFamily.Damage)]
-    [TestCase(-2f, 1f, false, EffectFamily.Heal)]
-    [TestCase(20f, -1.5f, false, EffectFamily.Heal)] // his heal skill flips a positive value
-    [TestCase(10f, 1f, true, EffectFamily.Rot)]
-    [TestCase(-4f, 1f, true, EffectFamily.Renew)]
-    public void ConsumerFamily_ValueTimesMultiplier_HarmIsPositive(float value, float multiplier, bool isPeriodic,
-        EffectFamily expected)
+    [TestCase(10f, false, EffectFamily.Damage)]
+    [TestCase(-2f, false, EffectFamily.Heal)]
+    [TestCase(10f, true, EffectFamily.Rot)]
+    [TestCase(-4f, true, EffectFamily.Renew)]
+    public void ConsumerFamily_ValueSign_HarmIsPositive(float value, bool isPeriodic, EffectFamily expected)
     {
         ConsumerFactory consumer = CreateTracked<ConsumerFactory>();
         FlatValue flat = new FlatValue();
         flat.data = new FlatValueData { value = value };
         consumer.data = new ConsumerData { value = flat };
 
-        Assert.AreEqual(expected, EffectDerivation.ConsumerFamily(consumer, multiplier, isPeriodic));
+        Assert.AreEqual(expected, EffectDerivation.ConsumerFamily(consumer, isPeriodic));
     }
 
     [TestCase(AttributeType.AttackRate, -1f)]

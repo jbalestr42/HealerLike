@@ -128,6 +128,11 @@ namespace HealerLike.Render.Grammar
                 }
                 return Base(data, health) * currentHealth.data.multiplier;
             }
+
+            if (value != null)
+            {
+                Debug.LogError($"[SkillWalker] No reading for the value {value.GetType().Name}");
+            }
             return 0f;
         }
 

@@ -30,9 +30,8 @@ namespace HealerLike.Render.Grammar
             channels.stem = Stem(Cadence(primary, data));
             channels.mass = Mass(Health(data));
             channels.reach = Reach(data);
-            channels.accessory = Accessory(data);
-            channels.accessoryHead = AccessoryHead(data);
             channels.accent = Accent(primary);
+            channels.accessory = Accessory(data, channels.head, channels.accent, out channels.accessoryHead);
             return channels;
         }
 
@@ -41,7 +40,7 @@ namespace HealerLike.Render.Grammar
             return entityType == Entity.EntityType.Player ? LookSide.Plant : LookSide.Stone;
         }
 
-        // TODO: the first skill is the primary until he declares one on EntityData
+        // TODO: read EntityData.primarySkill once EntityData declares one, the first skill is the primary until then
         public static ASkillFactory Primary(EntityData data)
         {
             if (data == null || data.skillFactories == null || data.skillFactories.Count == 0)
@@ -58,6 +57,34 @@ namespace HealerLike.Render.Grammar
                 return null;
             }
             return data.skillFactories[1];
+        }
+
+        // The projectile class and its baked motion, the same reading for a unit's head and its shot
+        public static HeadKind Delivery(GameObject projectilePrefab)
+        {
+            if (projectilePrefab == null)
+            {
+                return HeadKind.Bud;
+            }
+
+            ChainLightningProjectile chain = projectilePrefab.GetComponent<ChainLightningProjectile>();
+            if (chain != null)
+            {
+                return SkillWalker.IsHeld(chain) ? HeadKind.Fork : HeadKind.Conductor;
+            }
+
+            if (projectilePrefab.GetComponent<CurvedHomingProjectileBehaviour>() != null
+                || projectilePrefab.GetComponent<ArcHomingProjectileBehaviour>() != null)
+            {
+                return HeadKind.Arch;
+            }
+
+            HomingProjectileBehaviour homing = projectilePrefab.GetComponent<HomingProjectileBehaviour>();
+            if (homing != null && homing.data != null && homing.data.speed >= SpearSpeed)
+            {
+                return HeadKind.Spear;
+            }
+            return HeadKind.Bud;
         }
 
         // Hits per trigger of the skill: shots per target plus bounces, one loop of a burst, many for any splash

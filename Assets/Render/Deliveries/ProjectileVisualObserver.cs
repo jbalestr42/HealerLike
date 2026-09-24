@@ -234,7 +234,7 @@ namespace HealerLike.Render.Deliveries
             {
                 if (consumer != null)
                 {
-                    accent = _vocabulary.palette.Accent(EffectDerivation.ConsumerFamily(consumer, 1f, false));
+                    accent = _vocabulary.palette.Accent(EffectDerivation.ConsumerFamily(consumer, false));
                     return true;
                 }
             }

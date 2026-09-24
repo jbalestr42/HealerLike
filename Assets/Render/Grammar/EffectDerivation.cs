@@ -32,7 +32,7 @@ namespace HealerLike.Render.Grammar
                 AConsumerFactory consumer = Consumer(buff);
                 if (consumer != null)
                 {
-                    return ConsumerFamily(consumer, 1f, IsPeriodic(handler));
+                    return ConsumerFamily(consumer, IsPeriodic(handler));
                 }
             }
 
@@ -57,10 +57,9 @@ namespace HealerLike.Render.Grammar
             return sideFamily;
         }
 
-        // The multiplier is the skill's own, a heal skill flips a positive damage value with a negative one
-        public static EffectFamily ConsumerFamily(AConsumerFactory consumer, float multiplier, bool isPeriodic)
+        public static EffectFamily ConsumerFamily(AConsumerFactory consumer, bool isPeriodic)
         {
-            bool isHarm = Harm(consumer) * multiplier > 0f;
+            bool isHarm = Harm(consumer) > 0f;
             if (isPeriodic)
             {
                 return isHarm ? EffectFamily.Rot : EffectFamily.Renew;
@@ -72,6 +71,11 @@ namespace HealerLike.Render.Grammar
         public static float Harm(AConsumerFactory consumer)
         {
             ConsumerFactory factory = consumer as ConsumerFactory;
+            if (consumer != null && factory == null)
+            {
+                Debug.LogError($"[EffectDerivation] No harm reading for {consumer.GetType().Name}");
+            }
+
             if (factory == null || factory.data == null || factory.data.value == null)
             {
                 return 0f;
@@ -166,8 +170,8 @@ namespace HealerLike.Render.Grammar
                 return false;
             }
 
-            ABuffHandler buffHandler = handler.GetBuffHandler();
-            return buffHandler != null && buffHandler.isPeriodic;
+            BuffHandlerFactory factory = handler as BuffHandlerFactory;
+            return factory != null && factory.data.isPeriodic;
         }
 
         // The consumer a buff applies, for the buffs that apply one
