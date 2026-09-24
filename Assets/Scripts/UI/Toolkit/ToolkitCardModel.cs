@@ -1,16 +1,15 @@
-using System;
+using UnityEngine.Events;
 
-namespace HealerLike.UI.Toolkit
+// Presentation only data: the layout and the theme never need to know the gameplay types
+public class ToolkitCardModel
 {
-    /// <summary>Presentation-only data. Layout and theme never need to know gameplay types.</summary>
-    public sealed class ToolkitCardModel
-    {
-        public string Key;
-        public object IconSource;
-        public string Title;
-        public string Description;
-        public string Status;
-        public bool Enabled = true;
-        public Action Activate;
-    }
+    public string key;
+    public object iconSource;
+    public string title;
+    public string description;
+    public string status;
+    public bool isEnabled = true;
+    // What the card acts on, read back by its activate callback
+    public object source;
+    public UnityAction<ToolkitCardModel> activate;
 }

@@ -13,10 +13,10 @@ namespace HealerLike.UI.Toolkit.Tests
             var list = new VisualElement { name = "cards" };
             root.Add(list);
             var view = new ToolkitGameView(root);
-            view.Cards("cards", new[] { new ToolkitCardModel { Title = "Heal" }, new ToolkitCardModel { Title = "Guard" } });
+            view.SetCards("cards", new[] { new ToolkitCardModel { title = "Heal" }, new ToolkitCardModel { title = "Guard" } });
             Assert.That(list.childCount, Is.EqualTo(2));
             var first = list[0];
-            view.Cards("cards", new[] { new ToolkitCardModel { Title = "New spell", Enabled = false } });
+            view.SetCards("cards", new[] { new ToolkitCardModel { title = "New spell", isEnabled = false } });
             Assert.That(list.childCount, Is.EqualTo(1));
             Assert.That(list[0], Is.SameAs(first));
             Assert.That(first.enabledSelf, Is.False);
@@ -30,7 +30,7 @@ namespace HealerLike.UI.Toolkit.Tests
             var list = new VisualElement { name = "cards" };
             root.Add(list);
             var view = new ToolkitGameView(root);
-            view.Cards("cards", new[] { new ToolkitCardModel { Title = "Unknown data" } });
+            view.SetCards("cards", new[] { new ToolkitCardModel { title = "Unknown data" } });
             Assert.That(list[0].Q(className: "data-card__icon").style.backgroundImage.value.texture, Is.Not.Null);
         }
 
@@ -43,11 +43,11 @@ namespace HealerLike.UI.Toolkit.Tests
             root.Add(panel);
             root.Add(bar);
             var view = new ToolkitGameView(root);
-            view.Visible("inventory-panel", false);
+            view.Show("inventory-panel", false);
             Assert.That(panel.ClassListContains("is-hidden"), Is.True);
-            view.Visible("inventory-panel", true);
+            view.Show("inventory-panel", true);
             Assert.That(panel.ClassListContains("is-hidden"), Is.False);
-            view.Resource("mana-bar", 30f, 60f);
+            view.SetResource("mana-bar", 30f, 60f);
             Assert.That(bar.value, Is.EqualTo(50f));
         }
 

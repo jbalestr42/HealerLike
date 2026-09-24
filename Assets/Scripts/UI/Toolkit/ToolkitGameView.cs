@@ -1,144 +1,140 @@
-using System;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UIElements;
 
-namespace HealerLike.UI.Toolkit
+// Binds the semantic elements to models, all sizing, colors and layout live in the UXML and USS
+public class ToolkitGameView
 {
-    /// <summary>Binds semantic elements to models. All sizing, colors and layout live in UXML/USS.</summary>
-    public sealed class ToolkitGameView
+    public UnityEvent<ToolkitCardModel> OnInspect = new UnityEvent<ToolkitCardModel>();
+    public UnityEvent OnInspectEnded = new UnityEvent();
+
+    // Structural elements must not consume pointer events over the empty battlefield
+    static readonly string[] structuralElements = { "hud-root", "main-content", "world-space", "game-ui", "hud" };
+
+    VisualTreeAsset _cardTemplate = Resources.Load<VisualTreeAsset>("UI/Toolkit/DataCard");
+    Dictionary<string, List<ToolkitCard>> _lists = new Dictionary<string, List<ToolkitCard>>();
+
+    VisualElement _root;
+    public VisualElement root { get { return _root; } }
+
+    public ToolkitGameView(VisualElement root)
     {
-        public VisualElement Root { get; }
-        readonly VisualTreeAsset _cardTemplate = UnityEngine.Resources.Load<VisualTreeAsset>("UI/Toolkit/DataCard");
-        readonly Dictionary<string, List<Card>> _lists = new Dictionary<string, List<Card>>();
-        public Action<ToolkitCardModel> Inspect;
-        public Action InspectEnded;
-
-        sealed class Card
+        _root = root;
+        _root.pickingMode = PickingMode.Ignore;
+        foreach (string name in structuralElements)
         {
-            public ToolkitCardModel Model;
-            public Button Button;
-            public VisualElement Icon;
-            public Label Title, Description, Status;
-            public object IconSource;
-            public bool HasIcon;
-        }
-
-        public ToolkitGameView(VisualElement root)
-        {
-            Root = root;
-            Root.pickingMode = PickingMode.Ignore;
-            // Structural elements must not consume pointer events over the empty battlefield.
-            foreach (string name in new[] { "hud-root", "main-content", "world-space", "game-ui", "hud" })
+            VisualElement element = _root.Q(name);
+            if (element != null)
             {
-                var element = Root.Q(name);
-                if (element != null) element.pickingMode = PickingMode.Ignore;
+                element.pickingMode = PickingMode.Ignore;
             }
         }
+    }
 
-        public void Text(string name, string value)
+    public void SetText(string name, string value)
+    {
+        Label label = _root.Q<Label>(name);
+        if (label != null && label.text != value)
         {
-            var label = Root.Q<Label>(name);
-            if (label != null && label.text != value) label.text = value;
+            label.text = value;
+        }
+    }
+
+    public void Show(string name, bool show)
+    {
+        VisualElement element = _root.Q(name);
+        if (element != null)
+        {
+            element.EnableInClassList("is-hidden", !show);
+        }
+    }
+
+    public void SetButton(string name, string title, bool isEnabled)
+    {
+        Button button = _root.Q<Button>(name);
+        if (button == null)
+        {
+            return;
         }
 
-        public void Visible(string name, bool visible)
+        if (title != null)
         {
-            Root.Q(name)?.EnableInClassList("is-hidden", !visible);
+            button.text = title;
         }
 
-        public void Button(string name, string title, bool enabled)
+        button.SetEnabled(isEnabled);
+    }
+
+    public void AddClickListener(string name, System.Action action)
+    {
+        Button button = _root.Q<Button>(name);
+        if (button != null)
         {
-            var button = Root.Q<Button>(name);
-            if (button == null) return;
-            if (title != null) button.text = title;
-            button.SetEnabled(enabled);
+            button.clicked += action;
+        }
+    }
+
+    public void SetResource(string name, float value, float maximum)
+    {
+        ProgressBar bar = _root.Q<ProgressBar>(name);
+        if (bar == null)
+        {
+            return;
         }
 
-        public void Bind(string name, Action action)
+        bar.value = ToolkitPresentation.Percentage(value, maximum);
+        bar.title = ToolkitPresentation.Resource(value, maximum);
+    }
+
+    public void SetCards(string name, IReadOnlyList<ToolkitCardModel> models)
+    {
+        VisualElement parent = _root.Q(name);
+        if (parent == null)
         {
-            var button = Root.Q<Button>(name);
-            if (button != null) button.clicked += action;
+            return;
         }
 
-        public void Resource(string name, float value, float maximum)
+        List<ToolkitCard> cards;
+        if (!_lists.TryGetValue(name, out cards))
         {
-            var bar = Root.Q<ProgressBar>(name);
-            if (bar == null) return;
-            bar.value = ToolkitPresentation.Percentage(value, maximum);
-            bar.title = ToolkitPresentation.Resource(value, maximum);
+            cards = new List<ToolkitCard>();
+            _lists.Add(name, cards);
         }
 
-        public void Cards(string name, IReadOnlyList<ToolkitCardModel> models)
+        while (cards.Count > models.Count)
         {
-            var parent = Root.Q(name);
-            if (parent == null) return;
-            if (!_lists.TryGetValue(name, out var cards))
+            cards[cards.Count - 1].button.RemoveFromHierarchy();
+            cards.RemoveAt(cards.Count - 1);
+        }
+
+        for (int i = 0; i < models.Count; i++)
+        {
+            if (i == cards.Count)
             {
-                cards = new List<Card>();
-                _lists.Add(name, cards);
+                ToolkitCard card = new ToolkitCard();
+                card.Init(this, _cardTemplate);
+                parent.Add(card.button);
+                cards.Add(card);
             }
-            while (cards.Count > models.Count)
-            {
-                cards[cards.Count - 1].Button.RemoveFromHierarchy();
-                cards.RemoveAt(cards.Count - 1);
-            }
-            for (int i = 0; i < models.Count; i++)
-            {
-                if (i == cards.Count)
-                {
-                    var template = _cardTemplate != null ? _cardTemplate.CloneTree() : null;
-                    var card = new Card { Button = template?.Q<Button>("data-card") ?? new Button(),
-                        Icon = template?.Q("card-icon") ?? new VisualElement(),
-                        Title = template?.Q<Label>("card-title") ?? new Label(),
-                        Description = template?.Q<Label>("card-description") ?? new Label(),
-                        Status = template?.Q<Label>("card-status") ?? new Label() };
-                    card.Button.AddToClassList("data-card");
-                    card.Icon.AddToClassList("data-card__icon");
-                    card.Title.AddToClassList("data-card__title");
-                    card.Description.AddToClassList("data-card__description");
-                    card.Status.AddToClassList("data-card__status");
-                    if (template == null)
-                    {
-                        card.Button.Add(card.Icon);
-                        card.Button.Add(card.Title);
-                        card.Button.Add(card.Description);
-                        card.Button.Add(card.Status);
-                    }
-                    card.Button.clicked += () => { if (card.Model.Enabled) card.Model.Activate?.Invoke(); };
-                    card.Button.RegisterCallback<PointerEnterEvent>(_ => Inspect?.Invoke(card.Model));
-                    card.Button.RegisterCallback<FocusInEvent>(_ => Inspect?.Invoke(card.Model));
-                    card.Button.RegisterCallback<PointerLeaveEvent>(_ => InspectEnded?.Invoke());
-                    card.Button.RegisterCallback<FocusOutEvent>(_ => InspectEnded?.Invoke());
-                    parent.Add(card.Button);
-                    cards.Add(card);
-                }
-                var current = cards[i];
-                current.Model = models[i];
-                current.Title.text = current.Model.Title;
-                current.Description.text = current.Model.Description;
-                current.Status.text = current.Model.Status;
-                current.Button.tooltip = current.Model.Description;
-                current.Button.SetEnabled(current.Model.Enabled);
-                current.Button.EnableInClassList("is-disabled", !current.Model.Enabled);
-                if (!current.HasIcon || !ReferenceEquals(current.IconSource, current.Model.IconSource))
-                {
-                    current.HasIcon = true;
-                    current.IconSource = current.Model.IconSource;
-                    current.Icon.style.backgroundImage = new StyleBackground(DataIconService.GetIcon(current.IconSource));
-                }
-            }
+
+            cards[i].Refresh(models[i]);
+        }
+    }
+
+    public void ShowDetail(ToolkitCardModel model)
+    {
+        if (model == null)
+        {
+            return;
         }
 
-        public void Detail(ToolkitCardModel model)
+        SetText("detail-title", model.title);
+        SetText("detail-description", model.description);
+        VisualElement icon = _root.Q("detail-icon");
+        if (icon != null)
         {
-            if (model == null) return;
-            Text("detail-title", model.Title);
-            Text("detail-description", model.Description);
-            var icon = Root.Q("detail-icon");
-            if (icon != null)
-            {
-                icon.style.backgroundImage = new StyleBackground(DataIconService.GetIcon(model.IconSource));
-            }
+            icon.style.backgroundImage = new StyleBackground(DataIconService.GetIcon(model.iconSource));
         }
     }
 }

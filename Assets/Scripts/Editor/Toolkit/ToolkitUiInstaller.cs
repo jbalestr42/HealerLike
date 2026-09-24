@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using HealerLike.UI.Toolkit;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -69,7 +68,8 @@ namespace HealerLike.Editor.Toolkit
                 ui = Undo.AddComponent<ToolkitGameUI>(host);
             }
             Undo.RecordObject(ui, "Configure UI Toolkit navigation");
-            ui.ConfigureScenes(gameplay, menu);
+            ui.gameplayScene = gameplay;
+            ui.menuScene = menu;
             EditorUtility.SetDirty(ui);
         }
     }
