@@ -161,7 +161,7 @@ namespace HealerLike.Render.Stage
         public static void Write()
         {
             Document document = Collect();
-            string directory = Environment.GetEnvironmentVariable("RENDER_ATLAS_DIR");
+            string directory = System.Environment.GetEnvironmentVariable("RENDER_ATLAS_DIR");
             if (string.IsNullOrWhiteSpace(directory))
             {
                 directory = Path.Combine("Logs", "Atlas");
