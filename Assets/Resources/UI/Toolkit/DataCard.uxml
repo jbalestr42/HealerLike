@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <!-- Card structure is shared across spells, creatures, inventory and choices. -->
+    <ui:Button name="data-card" class="data-card">
+        <ui:VisualElement name="card-icon" class="data-card__icon" picking-mode="Ignore" />
+        <ui:Label name="card-title" class="data-card__title" picking-mode="Ignore" />
+        <ui:Label name="card-description" class="data-card__description" picking-mode="Ignore" />
+        <ui:Label name="card-status" class="data-card__status" picking-mode="Ignore" />
+    </ui:Button>
+</ui:UXML>

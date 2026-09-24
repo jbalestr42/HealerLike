@@ -1,0 +1,119 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="GameUI.Layout.uss" />
+    <Style src="GameUI.Theme.uss" />
+    <ui:VisualElement name="hud-root" class="game-ui">
+        <ui:VisualElement name="top-bar" class="top-bar surface">
+            <ui:VisualElement class="brand-block">
+                <ui:Label text="HEALER" class="brand" />
+                <ui:Label text="KEEP THE PARTY ALIVE" class="eyebrow" />
+            </ui:VisualElement>
+            <ui:VisualElement class="run-status">
+                <ui:Label name="wave-label" text="WAVE 01" class="heading" />
+                <ui:Label name="phase-label" text="Prepare your party" class="muted" />
+            </ui:VisualElement>
+            <ui:VisualElement class="header-actions">
+                <ui:Label name="currency-label" text="0 gold" class="currency" />
+                <ui:Button name="inventory-button" text="Inventory" class="button button--quiet" />
+                <ui:Button name="pause-button" text="Pause" class="button button--quiet" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="main-content" class="main-content">
+            <ui:VisualElement name="party-panel" class="party-panel surface">
+                <ui:Label text="YOUR PARTY" class="eyebrow section-heading" />
+                <ui:Label text="Choose a creature to deploy" class="muted section-description" />
+                <ui:ScrollView name="party-list" class="party-list" horizontal-scroller-visibility="Hidden" />
+            </ui:VisualElement>
+            <ui:VisualElement name="world-space" class="world-space" picking-mode="Ignore">
+                <ui:VisualElement name="menu-panel" class="menu-panel surface is-hidden">
+                    <ui:Label text="EVERY LIFE IS IN YOUR HANDS" class="eyebrow" />
+                    <ui:Label text="A healer's journey" class="menu-title" />
+                    <ui:Label text="Build your party. Master your spells. Lead your companions through the next encounter." class="menu-description muted" />
+                    <ui:Label text="Begin an expedition and prepare your party." class="menu-hint" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="detail-panel" class="detail-panel surface">
+                <ui:Label text="FIELD NOTES" class="eyebrow section-heading" />
+                <ui:ScrollView name="detail-scroll" class="detail-scroll" horizontal-scroller-visibility="Hidden">
+                    <ui:VisualElement name="detail-icon" class="detail-icon" />
+                    <ui:Label name="detail-title" text="Ready when you are" class="heading detail-title" />
+                    <ui:Label name="detail-description" text="Inspect a creature, spell, or item to see its details here." class="detail-description muted" />
+                    <ui:VisualElement name="detail-actions" class="detail-actions" />
+                </ui:ScrollView>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="command-dock" class="command-dock surface">
+            <ui:VisualElement name="spell-section" class="spell-section">
+                <ui:VisualElement class="section-toolbar">
+                    <ui:Label text="SPELLBOOK" class="eyebrow" />
+                    <ui:ProgressBar name="mana-bar" title="Mana" value="100" class="mana-bar" />
+                </ui:VisualElement>
+                <ui:ScrollView name="spell-list" mode="Horizontal" class="spell-list" vertical-scroller-visibility="Hidden" horizontal-scroller-visibility="Auto" />
+            </ui:VisualElement>
+            <ui:VisualElement name="command-section" class="command-section">
+                <ui:Label name="status-label" text="Prepare, deploy, protect." class="status-label muted" />
+                <ui:Button name="start-button" text="Begin journey" class="button button--primary is-hidden" />
+                <ui:Button name="wave-button" text="Begin encounter" class="button button--primary" />
+                <ui:VisualElement name="speed-controls" class="speed-controls">
+                    <ui:Label text="SPEED" class="eyebrow" />
+                    <ui:Button name="speed-slow-button" text="½×" class="button button--small" />
+                    <ui:Button name="speed-normal-button" text="1×" class="button button--small" />
+                    <ui:Button name="speed-fast-button" text="2×" class="button button--small" />
+                </ui:VisualElement>
+                <ui:Toggle name="mark-entity-toggle" label="Show creature markers" class="marker-toggle" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="inventory-panel" class="modal-layer is-hidden">
+            <ui:VisualElement class="dialog dialog--wide surface">
+                <ui:VisualElement class="dialog-header">
+                    <ui:VisualElement>
+                        <ui:Label text="YOUR COLLECTION" class="eyebrow" />
+                        <ui:Label text="Inventory" class="dialog-title" />
+                    </ui:VisualElement>
+                    <ui:Button name="inventory-close-button" text="Close" class="button button--quiet" />
+                </ui:VisualElement>
+                <ui:Label text="Select an item to inspect or equip it." class="muted dialog-description" />
+                <ui:VisualElement name="inventory-actions" class="inventory-actions">
+                    <ui:Label name="inventory-detail" text="Select equipment from your collection." class="muted inventory-detail" />
+                    <ui:VisualElement class="inventory-action-row">
+                        <ui:DropdownField name="inventory-target" label="Equip to" class="inventory-target" />
+                        <ui:DropdownField name="inventory-slot" label="Equipment slot" class="inventory-slot" />
+                        <ui:Button name="inventory-equip-button" text="Select equipment" class="button" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:ScrollView name="inventory-list" class="collection-list" horizontal-scroller-visibility="Hidden" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="selection-panel" class="modal-layer is-hidden">
+            <ui:VisualElement class="dialog dialog--wide surface">
+                <ui:Label text="THE NEXT ENCOUNTER" class="eyebrow" />
+                <ui:Label name="selection-title" text="Choose your path" class="dialog-title" />
+                <ui:Label name="selection-description" text="Inspect the choices and prepare for the next wave." class="muted dialog-description" />
+                <ui:ScrollView name="selection-list" class="collection-list choice-list" horizontal-scroller-visibility="Hidden" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="upgrade-panel" class="modal-layer is-hidden">
+            <ui:VisualElement class="dialog dialog--wide surface">
+                <ui:Label text="A MOMENT TO GROW" class="eyebrow" />
+                <ui:Label name="upgrade-title" text="Choose a reward" class="dialog-title" />
+                <ui:Label text="Select an upgrade to strengthen your next encounter." class="muted dialog-description" />
+                <ui:ScrollView name="upgrade-list" class="collection-list choice-list" horizontal-scroller-visibility="Hidden" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="pause-panel" class="modal-layer is-hidden">
+            <ui:VisualElement class="dialog dialog--compact surface">
+                <ui:Label text="TAKE A BREATH" class="eyebrow" />
+                <ui:Label text="Paused" class="dialog-title" />
+                <ui:Label text="Your party will be here when you return." class="muted dialog-description" />
+                <ui:Button name="resume-button" text="Resume encounter" class="button button--primary" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="gameover-panel" class="modal-layer is-hidden">
+            <ui:VisualElement class="dialog dialog--compact surface">
+                <ui:Label text="THE JOURNEY ENDS" class="eyebrow" />
+                <ui:Label name="gameover-title" text="Your party has fallen" class="dialog-title" />
+                <ui:Label text="Gather your strength for another journey." class="muted dialog-description" />
+                <ui:Button name="restart-button" text="Return to menu" class="button button--primary" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
