@@ -16,13 +16,27 @@ public class MapGeneratorTests
     // Structural rules must hold for any seed, not only a lucky one
     static IEnumerable<int> Seeds => Enumerable.Range(0, 50);
 
+    MapGenerationSettings _settings;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _settings = ScriptableObject.CreateInstance<MapGenerationSettings>();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        UnityEngine.Object.DestroyImmediate(_settings);
+    }
+
     static RunMap Generate(int seed)
     {
-        return MapGenerator.Generate(FloorCount, ColumnCount, PathCount, new System.Random(seed));
+        return MapGenerator.GenerateLayout(FloorCount, ColumnCount, PathCount, new System.Random(seed));
     }
 
     [Test]
-    public void Generate_HasOneListPerFloorAndBossAboveTheLastFloor([ValueSource(nameof(Seeds))] int seed)
+    public void GenerateLayout_HasOneListPerFloorAndBossAboveTheLastFloor([ValueSource(nameof(Seeds))] int seed)
     {
         RunMap map = Generate(seed);
 
@@ -38,7 +52,7 @@ public class MapGeneratorTests
     }
 
     [Test]
-    public void Generate_NodesAreSortedByColumnAndInsideTheGrid([ValueSource(nameof(Seeds))] int seed)
+    public void GenerateLayout_NodesAreSortedByColumnAndInsideTheGrid([ValueSource(nameof(Seeds))] int seed)
     {
         RunMap map = Generate(seed);
 
@@ -56,7 +70,7 @@ public class MapGeneratorTests
     }
 
     [Test]
-    public void Generate_StartsWithAtLeastTwoRoomsAndAtMostOnePerPath([ValueSource(nameof(Seeds))] int seed)
+    public void GenerateLayout_StartsWithAtLeastTwoRoomsAndAtMostOnePerPath([ValueSource(nameof(Seeds))] int seed)
     {
         RunMap map = Generate(seed);
 
@@ -64,7 +78,7 @@ public class MapGeneratorTests
     }
 
     [Test]
-    public void Generate_EdgesGoToNextFloorMovingAtMostOneColumn([ValueSource(nameof(Seeds))] int seed)
+    public void GenerateLayout_EdgesGoToNextFloorMovingAtMostOneColumn([ValueSource(nameof(Seeds))] int seed)
     {
         RunMap map = Generate(seed);
 
@@ -82,7 +96,7 @@ public class MapGeneratorTests
     }
 
     [Test]
-    public void Generate_EveryRoomLeadsToTheBoss([ValueSource(nameof(Seeds))] int seed)
+    public void GenerateLayout_EveryRoomLeadsToTheBoss([ValueSource(nameof(Seeds))] int seed)
     {
         RunMap map = Generate(seed);
 
@@ -97,7 +111,7 @@ public class MapGeneratorTests
     }
 
     [Test]
-    public void Generate_EveryRoomIsReachableFromTheFirstFloor([ValueSource(nameof(Seeds))] int seed)
+    public void GenerateLayout_EveryRoomIsReachableFromTheFirstFloor([ValueSource(nameof(Seeds))] int seed)
     {
         RunMap map = Generate(seed);
 
@@ -119,7 +133,7 @@ public class MapGeneratorTests
     }
 
     [Test]
-    public void Generate_EdgesNeverCross([ValueSource(nameof(Seeds))] int seed)
+    public void GenerateLayout_EdgesNeverCross([ValueSource(nameof(Seeds))] int seed)
     {
         RunMap map = Generate(seed);
 
@@ -139,7 +153,7 @@ public class MapGeneratorTests
     }
 
     [Test]
-    public void Generate_AllRoomsExceptBossAreCombatsForNow()
+    public void GenerateLayout_AllRoomsExceptBossAreCombats()
     {
         RunMap map = Generate(0);
 
@@ -147,13 +161,13 @@ public class MapGeneratorTests
     }
 
     [Test]
-    public void Generate_SameSeed_GivesSameMap()
+    public void GenerateLayout_SameSeed_GivesSameMap()
     {
         CollectionAssert.AreEqual(Describe(Generate(42)), Describe(Generate(42)));
     }
 
     [Test]
-    public void Generate_DifferentSeeds_GiveDifferentMaps()
+    public void GenerateLayout_DifferentSeeds_GiveDifferentMaps()
     {
         List<string> reference = Describe(Generate(0));
 
@@ -161,27 +175,27 @@ public class MapGeneratorTests
     }
 
     [Test]
-    public void Generate_SinglePath_IsAStraightLineOfOneRoomPerFloor()
+    public void GenerateLayout_SinglePath_IsAStraightLineOfOneRoomPerFloor()
     {
-        RunMap map = MapGenerator.Generate(FloorCount, ColumnCount, 1, new System.Random(3));
+        RunMap map = MapGenerator.GenerateLayout(FloorCount, ColumnCount, 1, new System.Random(3));
 
         Assert.IsTrue(map.floors.All(floor => floor.Count == 1));
         Assert.IsTrue(map.GetAllNodes().Where(node => node != map.boss).All(node => node.next.Count == 1));
     }
 
     [Test]
-    public void Generate_SingleColumn_KeepsEveryPathInThatColumn()
+    public void GenerateLayout_SingleColumn_KeepsEveryPathInThatColumn()
     {
-        RunMap map = MapGenerator.Generate(FloorCount, 1, PathCount, new System.Random(3));
+        RunMap map = MapGenerator.GenerateLayout(FloorCount, 1, PathCount, new System.Random(3));
 
         Assert.IsTrue(map.floors.All(floor => floor.Count == 1 && floor[0].column == 0));
         Assert.AreEqual(0, map.boss.column);
     }
 
     [Test]
-    public void Generate_SingleFloor_ConnectsStartRoomsToTheBoss()
+    public void GenerateLayout_SingleFloor_ConnectsStartRoomsToTheBoss()
     {
-        RunMap map = MapGenerator.Generate(1, ColumnCount, PathCount, new System.Random(3));
+        RunMap map = MapGenerator.GenerateLayout(1, ColumnCount, PathCount, new System.Random(3));
 
         Assert.AreEqual(1, map.floorCount);
         Assert.AreEqual(1, map.boss.floor);
@@ -191,31 +205,39 @@ public class MapGeneratorTests
     [Test]
     public void Generate_UsesTheSettingsSize()
     {
-        MapGenerationSettings settings = ScriptableObject.CreateInstance<MapGenerationSettings>();
-        try
-        {
-            settings.floorCount = 4;
-            settings.columnCount = 3;
-            settings.pathCount = 2;
+        _settings.floorCount = 4;
+        _settings.columnCount = 3;
+        _settings.pathCount = 2;
 
-            RunMap map = MapGenerator.Generate(settings, 7);
+        RunMap map = MapGenerator.Generate(_settings, 7);
 
-            Assert.AreEqual(4, map.floorCount);
-            Assert.AreEqual(3, map.columnCount);
-            Assert.IsTrue(map.floors.All(floor => floor.Count <= 2));
-        }
-        finally
-        {
-            UnityEngine.Object.DestroyImmediate(settings);
-        }
+        Assert.AreEqual(4, map.floorCount);
+        Assert.AreEqual(3, map.columnCount);
+        Assert.IsTrue(map.floors.All(floor => floor.Count <= 2));
+    }
+
+    [Test]
+    public void Generate_AssignsRoomTypes()
+    {
+        RunMap map = MapGenerator.Generate(_settings, 7);
+
+        Assert.IsTrue(map.floors[_settings.treasureFloor].All(node => node.type == MapNodeType.Treasure));
+        Assert.IsTrue(map.floors[map.floorCount - 1].All(node => node.type == MapNodeType.Rest));
+        Assert.AreEqual(MapNodeType.Boss, map.boss.type);
+    }
+
+    [Test]
+    public void Generate_SameSeed_GivesSameRoomTypes()
+    {
+        CollectionAssert.AreEqual(Describe(MapGenerator.Generate(_settings, 42)), Describe(MapGenerator.Generate(_settings, 42)));
     }
 
     [TestCase(0, ColumnCount, PathCount)]
     [TestCase(FloorCount, 0, PathCount)]
     [TestCase(FloorCount, ColumnCount, 0)]
-    public void Generate_InvalidSize_Throws(int floorCount, int columnCount, int pathCount)
+    public void GenerateLayout_InvalidSize_Throws(int floorCount, int columnCount, int pathCount)
     {
-        Assert.Throws<ArgumentException>(() => MapGenerator.Generate(floorCount, columnCount, pathCount, new System.Random(0)));
+        Assert.Throws<ArgumentException>(() => MapGenerator.GenerateLayout(floorCount, columnCount, pathCount, new System.Random(0)));
     }
 
     // Flat description of the rooms and edges, to compare two maps

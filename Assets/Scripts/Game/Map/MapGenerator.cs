@@ -7,10 +7,14 @@ public static class MapGenerator
 {
     public static RunMap Generate(MapGenerationSettings settings, int seed)
     {
-        return Generate(settings.floorCount, settings.columnCount, settings.pathCount, new Random(seed));
+        Random random = new Random(seed);
+        RunMap map = GenerateLayout(settings.floorCount, settings.columnCount, settings.pathCount, random);
+        MapNodeTypeAssigner.Assign(map, settings, random);
+        return map;
     }
 
-    public static RunMap Generate(int floorCount, int columnCount, int pathCount, Random random)
+    // Rooms and paths only, every room but the boss is a combat
+    public static RunMap GenerateLayout(int floorCount, int columnCount, int pathCount, Random random)
     {
         if (floorCount < 1 || columnCount < 1 || pathCount < 1)
         {
