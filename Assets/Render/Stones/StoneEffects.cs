@@ -203,7 +203,7 @@ namespace HealerLike.Render.Stones
             Return(fragment);
         }
 
-        public static Vector3 PositionAt(Vector3 start, Vector3 velocity, float age, float ground, bool bounce)
+        static Vector3 PositionAt(Vector3 start, Vector3 velocity, float age, float ground, bool bounce)
         {
             Vector3 position = start + velocity * age + Vector3.down * (0.5f * gravity * age * age);
             if (!bounce)

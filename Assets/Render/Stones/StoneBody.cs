@@ -42,8 +42,6 @@ namespace HealerLike.Render.Stones
         int _shedPart = -1;
         public int shedPart { get { return _shedPart; } }
 
-        public int pendingImpactCount { get { return _impacts.pendingCount; } }
-
         public IReadOnlyList<Transform> parts { get { return _rig != null ? _rig.partTransforms : noParts; } }
 
         public void Init(Entity entity, RenderManager manager)

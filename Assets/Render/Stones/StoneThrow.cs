@@ -29,8 +29,6 @@ namespace HealerLike.Render.Stones
         uint _contactIndex;
         bool _isEnabled;
 
-        public int liveDeliveryCount { get { return _deliveries.Count; } }
-
         public void Init(CreatureBuilder builder, StoneEffects effects, LookPalette palette, uint seed)
         {
             EndAll();

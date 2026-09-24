@@ -28,8 +28,6 @@ namespace HealerLike.Render.Stones
         uint _hitIndex;
         int _completedFrames;
 
-        public int pendingCount { get { return _impacts.Count; } }
-
         public void Init(Transform owner, StoneEffects effects, uint seed)
         {
             _impacts.Clear();

@@ -27,7 +27,8 @@ public class StoneThrowTests
         _fxObject = _fx.gameObject;
         _recipe = RenderTestAssets.CreateStoneRecipe();
         _material = new Material(RenderTestAssets.LoadLookMaterial());
-        _body = RenderTestAssets.CreateStoneBody(_owner, RenderTestAssets.CreateStoneEntity(_owner, _health), _recipe, _material);
+        Entity entity = RenderTestAssets.CreateStoneEntity(_owner, _health);
+        _body = RenderTestAssets.CreateStoneBody(_owner, entity, _recipe, _material);
         _throw = _body.gameObject.AddComponent<StoneThrow>();
         _body.Init(_health, 15, _fx);
     }
@@ -79,7 +80,7 @@ public class StoneThrowTests
         Assert.AreEqual(_projectile.transform.position, shard.position);
 
         _throw.ContactDelivery(1, Vector3.one * 7f, null);
-        Assert.AreEqual(0, _throw.liveDeliveryCount);
+        Assert.IsFalse(shard.gameObject.activeSelf);
         Assert.That(_fx.liveCount, Is.InRange(StoneEmitters.MinThrownChips, StoneEmitters.MinThrownChips + 2));
     }
 
@@ -97,10 +98,11 @@ public class StoneThrowTests
     public void Enable_False_EndsTheLiveDeliveriesUntilInitAgain()
     {
         _throw.BeginDelivery(1, DeliveryStyle.Thrown, _projectile.transform, Vector3.one);
+        Transform shard = _fxObject.GetComponentInChildren<MeshFilter>().transform;
 
         _throw.Enable(false);
 
-        Assert.AreEqual(0, _throw.liveDeliveryCount);
+        Assert.IsFalse(shard.gameObject.activeSelf);
         Assert.IsFalse(_throw.BeginDelivery(2, DeliveryStyle.Thrown, _projectile.transform, Vector3.one));
         _body.Init(_health, 15, _fx);
         Assert.IsTrue(_throw.BeginDelivery(2, DeliveryStyle.Thrown, _projectile.transform, Vector3.one));
@@ -115,7 +117,7 @@ public class StoneThrowTests
         _throw.enabled = false;
         TestHelpers.InvokePrivate(_throw, "OnDisable");
 
-        Assert.AreEqual(0, _throw.liveDeliveryCount);
+        Assert.AreEqual(0, _fxObject.GetComponentsInChildren<MeshFilter>().Length); // both shards went back
         Assert.AreEqual(0, _fx.liveCount);
     }
 
@@ -127,7 +129,7 @@ public class StoneThrowTests
         Object.DestroyImmediate(_projectile);
         TestHelpers.InvokePrivate(_throw, "LateUpdate");
 
-        Assert.AreEqual(0, _throw.liveDeliveryCount);
+        Assert.AreEqual(0, _fxObject.GetComponentsInChildren<MeshFilter>().Length); // the shard went back
         Assert.AreEqual(0, _fx.liveCount);
     }
 }

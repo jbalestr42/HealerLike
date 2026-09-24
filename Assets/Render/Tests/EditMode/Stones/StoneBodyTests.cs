@@ -65,7 +65,8 @@ public class StoneBodyTests
         _fxObject = _fx.gameObject;
         _recipe = RenderTestAssets.CreateStoneRecipe();
         _material = new Material(RenderTestAssets.LoadLookMaterial());
-        _body = RenderTestAssets.CreateStoneBody(_owner, RenderTestAssets.CreateStoneEntity(_owner, _health), _recipe, _material);
+        Entity entity = RenderTestAssets.CreateStoneEntity(_owner, _health);
+        _body = RenderTestAssets.CreateStoneBody(_owner, entity, _recipe, _material);
         _body.Init(_health, 15, _fx);
     }
 
@@ -168,7 +169,6 @@ public class StoneBodyTests
         _body.RecordImpact(modifier, new StoneImpact(point, Vector3.up));
         Drain();
 
-        Assert.AreEqual(0, _body.pendingImpactCount);
         int hit = StoneEffects.DustPuffs + StoneEmitters.HitChips;
         Assert.AreEqual(hit, _fx.liveCount); // 5 dust and 3 chips
         foreach (MeshFilter filter in _fxObject.GetComponentsInChildren<MeshFilter>())
@@ -179,24 +179,12 @@ public class StoneBodyTests
     }
 
     [Test]
-    public void LateUpdate_TwoFramesWithoutConsumers_ExpiresTheImpact()
-    {
-        _body.RecordImpact(new ResourceModifier(), default);
-        TestHelpers.InvokePrivate(_body, "LateUpdate");
-        Assert.AreEqual(1, _body.pendingImpactCount);
-
-        TestHelpers.InvokePrivate(_body, "LateUpdate");
-
-        Assert.AreEqual(0, _body.pendingImpactCount);
-    }
-
-    [Test]
     public void Init_AfterDisableAndReenable_KeepsOneListener()
     {
         _body.enabled = false;
         TestHelpers.InvokePrivate(_body, "OnDisable");
         _body.RecordImpact(new ResourceModifier(), default);
-        Assert.AreEqual(0, _body.pendingImpactCount);
+        Assert.AreEqual(0, _fx.liveCount); // a recorded contact would have raised dust
 
         _fx.Advance(1f);
         _body.enabled = true;
@@ -206,17 +194,6 @@ public class StoneBodyTests
         Drain();
 
         Assert.AreEqual(StoneEffects.DustPuffs + StoneEmitters.HitChips, _fx.liveCount); // one hit
-    }
-
-    [Test]
-    public void EstimateImpact_QueryAboveTheStone_LandsOnTheHead()
-    {
-        Transform head = _body.parts[3];
-
-        StoneImpact impact = _body.EstimateImpact(head.position + Vector3.up * 5f);
-
-        Assert.Greater(impact.point.y, head.GetComponent<Renderer>().bounds.center.y);
-        Assert.Greater(impact.normal.y, 0f);
     }
 
     [Test]

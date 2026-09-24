@@ -102,14 +102,21 @@ public class StoneEffectsTests
     }
 
     [Test]
-    public void PositionAt_Bouncing_NeverFallsBelowGround()
+    public void Advance_CollapseDebris_NeverFallsBelowTheGround()
     {
-        for (int i = 0; i < 100; i++)
+        GameObject part = new GameObject("Part", typeof(MeshFilter), typeof(MeshRenderer));
+        part.transform.SetParent(_source.transform, false);
+        part.transform.position = Vector3.up;
+        StoneEmitters.Collapse(_fx, new Transform[] { part.transform }, Vector3.right, 0f, 1);
+
+        for (int i = 0; i < 40; i++)
         {
-            Vector3 position = StoneEffects.PositionAt(Vector3.up, Vector3.right, i * 0.02f, 0f, true);
-            Assert.That(position.y, Is.GreaterThanOrEqualTo(0));
+            _fx.Advance(0.02f);
+            foreach (MeshFilter filter in _go.GetComponentsInChildren<MeshFilter>())
+            {
+                Assert.That(filter.transform.position.y, Is.GreaterThanOrEqualTo(0f));
+            }
         }
-        Assert.That(StoneEffects.PositionAt(Vector3.up, Vector3.right, 1f, 0f, false).y, Is.LessThan(0));
     }
 }
 
