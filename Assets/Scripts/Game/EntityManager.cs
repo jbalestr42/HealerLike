@@ -10,6 +10,8 @@ public class EntityManager : Singleton<EntityManager>
 {
     [HideInInspector] public UnityEvent<Entity> OnEntitySpawned = new UnityEvent<Entity>();
     [HideInInspector] public UnityEvent<Entity> OnEntityKilled = new UnityEvent<Entity>();
+    [HideInInspector] public UnityEvent<Projectile> OnProjectileSpawned = new UnityEvent<Projectile>();
+    [HideInInspector] public UnityEvent<AreaOfEffect> OnAreaOfEffectStarted = new UnityEvent<AreaOfEffect>();
 
     [SerializeField]
     GameObject _entityBasePrefab;
@@ -91,7 +93,9 @@ public class EntityManager : Singleton<EntityManager>
 
     public GameObject SpawnProjectile(GameObject projectilePrefab, Vector3 position, Quaternion rotation)
     {
-        return Instantiate(projectilePrefab, position, rotation, _parentProjectile.transform);
+        GameObject projectileGo = Instantiate(projectilePrefab, position, rotation, _parentProjectile.transform);
+        OnProjectileSpawned.Invoke(projectileGo.GetComponent<Projectile>());
+        return projectileGo;
     }
 
     #endregion
