@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -19,7 +18,6 @@ public class FreeShotTests
         _target.transform.position = Vector3.right * 3f;
         _projectileGo = new GameObject("Projectile");
         _projectile = _projectileGo.AddComponent<Projectile>();
-        _projectile.Init(null, _target, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
         _projectile.targetPoint = _target;
         _shot = _projectileGo.AddComponent<FreeShot>();
     }
