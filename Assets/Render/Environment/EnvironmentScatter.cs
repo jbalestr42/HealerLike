@@ -26,9 +26,6 @@ namespace HealerLike.Render.Environment
         static readonly float mushroomConeChance = 0.4f;
         static readonly Vector3 mushroomConeScale = new Vector3(1.4f, 0.7f, 1.4f);
         static readonly Vector3 mushroomDomeScale = new Vector3(1.6f, 0.45f, 1.6f);
-        static readonly Color mushroomStem = new Color(0.65f, 0.82f, 0.62f);
-        static readonly Color mushroomCapTeal = new Color(0.44f, 0.74f, 0.61f);
-        static readonly Color mushroomCapPale = new Color(0.64f, 0.78f, 0.65f);
         static readonly float mushroomSwayPerStem = 0.45f;
         static readonly Vector2 mushroomSwayRange = new Vector2(0.6f, 3f);
         static readonly float mushroomNodDegrees = 1.4f;
@@ -151,7 +148,8 @@ namespace HealerLike.Render.Environment
         {
             float stem = random.Range(mushroomStemHeight.x, mushroomStemHeight.y) * s;
             Vector3 stemScale = new Vector3(mushroomStemWidth * s, stem, mushroomStemWidth * s);
-            PlantPart(pivot, _meshes.capsule, Vector3.zero, Quaternion.identity, stemScale, mushroomStem);
+            Color stemColour = Colour(ColourRole.MushroomStem);
+            PlantPart(pivot, _meshes.capsule, Vector3.zero, Quaternion.identity, stemScale, stemColour);
 
             Transform cap = new GameObject("NoddingCap").transform;
             cap.SetParent(pivot, false);
@@ -163,7 +161,11 @@ namespace HealerLike.Render.Environment
             bool isCone = random.Next01() < mushroomConeChance;
             Mesh top = isCone ? _meshes.cone : _meshes.sphere;
             Vector3 topScale = isCone ? mushroomConeScale * s : mushroomDomeScale * s;
-            Color topColour = random.Next01() < 0.5f ? mushroomCapTeal : mushroomCapPale;
+            Color topColour = Colour(ColourRole.MushroomCap);
+            if (random.Next01() >= 0.5f)
+            {
+                topColour = Colour(ColourRole.MushroomCapPale);
+            }
             PlantPart(cap, top, Vector3.zero, Quaternion.identity, topScale, topColour);
 
             float sway = Mathf.Clamp(stem * mushroomSwayPerStem, mushroomSwayRange.x, mushroomSwayRange.y);

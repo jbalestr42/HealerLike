@@ -45,6 +45,9 @@ public class LookPaletteTests
         palette.stoneWilt = new Color(0.15f, 0f, 0f);
         palette.baneLit = new Color(0.25f, 0f, 0f);
         palette.mana = new Color(0.35f, 0f, 0f);
+        palette.mushroomStem = new Color(0.45f, 0f, 0f);
+        palette.mushroomCap = new Color(0.55f, 0f, 0f);
+        palette.mushroomCapPale = new Color(0.65f, 0f, 0f);
         return palette;
     }
 
@@ -91,6 +94,9 @@ public class LookPaletteTests
     [TestCase(ColourRole.Rim, LookSide.Stone, 0.25f)] // baneLit
     [TestCase(ColourRole.Mana, LookSide.Plant, 0.35f)]
     [TestCase(ColourRole.Mana, LookSide.Stone, 0.35f)]
+    [TestCase(ColourRole.MushroomStem, LookSide.Plant, 0.45f)]
+    [TestCase(ColourRole.MushroomCap, LookSide.Plant, 0.55f)]
+    [TestCase(ColourRole.MushroomCapPale, LookSide.Plant, 0.65f)]
     public void Colour_RoleAndSide_ReadsTheRolesField(ColourRole role, LookSide side, float expectedRed)
     {
         LookPalette palette = CreatePalette();
@@ -98,6 +104,21 @@ public class LookPaletteTests
         Color colour = palette.Colour(role, EffectFamily.Damage, side);
 
         Assert.AreEqual(expectedRed, colour.r, 0.0001f);
+    }
+
+    // The scatter drew these as literals before they were roles; the scenery must not move
+    [Test]
+    public void Colour_LiveAssetMushroom_KeepsTheScatterTints()
+    {
+        LookPalette palette = AssetDatabase.LoadAssetAtPath<LookPalette>(palettePath);
+
+        Color stem = palette.Colour(ColourRole.MushroomStem, EffectFamily.Damage);
+        Color cap = palette.Colour(ColourRole.MushroomCap, EffectFamily.Damage);
+        Color pale = palette.Colour(ColourRole.MushroomCapPale, EffectFamily.Damage);
+
+        Assert.Less(Vector4.Distance(new Color(0.65f, 0.82f, 0.62f), stem), 0.000001f);
+        Assert.Less(Vector4.Distance(new Color(0.44f, 0.74f, 0.61f), cap), 0.000001f);
+        Assert.Less(Vector4.Distance(new Color(0.64f, 0.78f, 0.65f), pale), 0.000001f);
     }
 }
 
