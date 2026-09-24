@@ -2,10 +2,10 @@ using UnityEngine;
 
 namespace HealerLike.Render.Grammar
 {
-    // Reads the look of a unit from his EntityData, never from its title, name or asset path
+    // Reads the look of a unit from its EntityData, never from its title, name or asset path
     public static partial class LookDerivation
     {
-        // Homing prefabs this fast read as a spear: his laser flies at 20, his bullet at 15
+        // Homing prefabs this fast read as a spear: StraightLaserBullet flies at 20, BulletSpeed at 15
         public static readonly float SpearSpeed = 18f;
         public static readonly int FewHits = 2;
         public static readonly int ManyHits = 4;
@@ -13,7 +13,7 @@ namespace HealerLike.Render.Grammar
         public static readonly float SlowCadence = 1.5f;
         public static readonly float LightHealth = 120f;
         public static readonly float HeavyHealth = 250f;
-        // Range in cells, a guess until he says what a short range is
+        // Range in cells, a guess: nothing in the game data says what a short range is
         public static readonly float ShortRange = 3f;
         public static readonly float MidRange = 8f;
         public static readonly float DefaultHealth = 100f;
@@ -70,7 +70,11 @@ namespace HealerLike.Render.Grammar
             ChainLightningProjectile chain = projectilePrefab.GetComponent<ChainLightningProjectile>();
             if (chain != null)
             {
-                return SkillWalker.IsHeld(chain) ? HeadKind.Fork : HeadKind.Conductor;
+                if (SkillWalker.IsHeld(chain))
+                {
+                    return HeadKind.Fork;
+                }
+                return HeadKind.Conductor;
             }
 
             if (projectilePrefab.GetComponent<CurvedHomingProjectileBehaviour>() != null
@@ -124,7 +128,11 @@ namespace HealerLike.Render.Grammar
             {
                 return CountBand.Many;
             }
-            return hits >= FewHits ? CountBand.Few : CountBand.One;
+            if (hits >= FewHits)
+            {
+                return CountBand.Few;
+            }
+            return CountBand.One;
         }
 
         // The skill's own clock in seconds between triggers, never the raw AttackRate
@@ -153,7 +161,11 @@ namespace HealerLike.Render.Grammar
             if (skill is AreaOfEffectSkillFactory)
             {
                 float rate = SkillWalker.ReadAttribute(data, AttributeType.AttackRate, DefaultAttackRate);
-                return rate > 0f ? 1f / rate : 0f;
+                if (rate > 0f)
+                {
+                    return 1f / rate;
+                }
+                return 0f;
             }
 
             if (skill is ApplyConsumerOnTimeFactory self)
@@ -166,7 +178,10 @@ namespace HealerLike.Render.Grammar
                 float total = 0f;
                 foreach (ABuffHandlerFactory handler in periodic.data.periodicBuff)
                 {
-                    total += handler != null ? handler.duration : 0f;
+                    if (handler != null)
+                    {
+                        total += handler.duration;
+                    }
                 }
                 return total;
             }
@@ -179,7 +194,11 @@ namespace HealerLike.Render.Grammar
             {
                 return StemBand.Quick;
             }
-            return cadence <= SlowCadence ? StemBand.Steady : StemBand.Slow;
+            if (cadence <= SlowCadence)
+            {
+                return StemBand.Steady;
+            }
+            return StemBand.Slow;
         }
 
         // HealthMax after the unit's own flat modifier passives, as it spawns
@@ -227,7 +246,11 @@ namespace HealerLike.Render.Grammar
             {
                 return MassBand.Light;
             }
-            return health <= HeavyHealth ? MassBand.Sturdy : MassBand.Heavy;
+            if (health <= HeavyHealth)
+            {
+                return MassBand.Sturdy;
+            }
+            return MassBand.Heavy;
         }
 
         public static ReachBand Reach(EntityData data)
@@ -237,7 +260,11 @@ namespace HealerLike.Render.Grammar
             {
                 return ReachBand.Short;
             }
-            return range <= MidRange ? ReachBand.Mid : ReachBand.Long;
+            if (range <= MidRange)
+            {
+                return ReachBand.Mid;
+            }
+            return ReachBand.Long;
         }
     }
 }

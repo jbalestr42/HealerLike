@@ -5,6 +5,7 @@ using HealerLike.Render.Creatures;
 
 namespace HealerLike.Render.Deliveries
 {
+    // Stored by value in assets: append new members, never reorder or remove
     public enum GestureKind
     {
         Attack,

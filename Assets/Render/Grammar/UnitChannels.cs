@@ -7,6 +7,7 @@ namespace HealerLike.Render.Grammar
     }
 
     // How the primary skill delivers, the unit's main silhouette
+    // Stored by value in assets: append new members, never reorder or remove
     public enum HeadKind
     {
         Bud,
@@ -23,6 +24,7 @@ namespace HealerLike.Render.Grammar
         SelfTick
     }
 
+    // Stored by value in assets: append new members, never reorder or remove
     public enum CountBand
     {
         One,
@@ -30,6 +32,7 @@ namespace HealerLike.Render.Grammar
         Many
     }
 
+    // Stored by value in assets: append new members, never reorder or remove
     public enum StemBand
     {
         Quick,
@@ -37,6 +40,7 @@ namespace HealerLike.Render.Grammar
         Slow
     }
 
+    // Stored by value in assets: append new members, never reorder or remove
     public enum MassBand
     {
         Light,
@@ -44,6 +48,7 @@ namespace HealerLike.Render.Grammar
         Heavy
     }
 
+    // Stored by value in assets: append new members, never reorder or remove
     public enum ReachBand
     {
         Short,
@@ -51,6 +56,7 @@ namespace HealerLike.Render.Grammar
         Long
     }
 
+    // Stored by value in assets: append new members, never reorder or remove
     public enum AccessoryKind
     {
         None,

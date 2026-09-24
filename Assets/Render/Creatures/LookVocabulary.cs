@@ -7,6 +7,7 @@ using HealerLike.Render.Grammar;
 namespace HealerLike.Render.Creatures
 {
     // Where an accessory hangs on the body, every socket on the unit's right
+    // Stored by value in assets: append new members, never reorder or remove
     public enum AccessorySocket
     {
         NeckOrbit,

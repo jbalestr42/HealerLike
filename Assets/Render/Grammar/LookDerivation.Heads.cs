@@ -46,7 +46,12 @@ namespace HealerLike.Render.Grammar
                 return Gift(EffectDerivation.Family(first, true), EffectDerivation.Group(first));
             }
 
-            Debug.LogError($"[LookDerivation] No head for {(skill != null ? skill.GetType().Name : "a unit without skill")}");
+            string name = "a unit without skill";
+            if (skill != null)
+            {
+                name = skill.GetType().Name;
+            }
+            Debug.LogError($"[LookDerivation] No head for {name}");
             return HeadKind.Bud;
         }
 
@@ -96,9 +101,11 @@ namespace HealerLike.Render.Grammar
             if (skill is ApplyBuffPeriodicallySkillFactory periodic && periodic.data.periodicBuff != null
                 && periodic.data.periodicBuff.Count > 0)
             {
-                return IsEveryBoon(periodic.data.periodicBuff)
-                    ? EffectFamily.Boon
-                    : EffectDerivation.Family(periodic.data.periodicBuff[0], true);
+                if (IsEveryBoon(periodic.data.periodicBuff))
+                {
+                    return EffectFamily.Boon;
+                }
+                return EffectDerivation.Family(periodic.data.periodicBuff[0], true);
             }
             return EffectFamily.Damage;
         }
@@ -236,7 +243,11 @@ namespace HealerLike.Render.Grammar
             {
                 if (EffectDerivation.TryModifier(buff, out AttributeType type, out float delta))
                 {
-                    return family == EffectFamily.Bane ? AccessoryKind.ConeCrown : AccessoryKind.SmallTorus;
+                    if (family == EffectFamily.Bane)
+                    {
+                        return AccessoryKind.ConeCrown;
+                    }
+                    return AccessoryKind.SmallTorus;
                 }
             }
             return AccessoryKind.None;
@@ -250,7 +261,11 @@ namespace HealerLike.Render.Grammar
                 case EffectFamily.Renew:
                     return HeadKind.GiftHeal;
                 case EffectFamily.Boon:
-                    return group == AttributeGroup.Offence ? HeadKind.GiftBoonOffence : HeadKind.GiftBoonDefence;
+                    if (group == AttributeGroup.Offence)
+                    {
+                        return HeadKind.GiftBoonOffence;
+                    }
+                    return HeadKind.GiftBoonDefence;
                 default:
                     return HeadKind.GiftBane;
             }

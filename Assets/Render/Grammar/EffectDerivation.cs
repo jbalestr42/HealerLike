@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Grammar
 {
-    // Reads the family, tempo and delivery of his buffs and projectiles from their data, never from a name
+    // Reads the family, tempo and delivery of buffs and projectiles from their data, never from a name
     public static class EffectDerivation
     {
         // A curved homing prefab bent at least this much flies as a swarm, SwarmBullet is 3 and the others 1
@@ -41,7 +41,14 @@ namespace HealerLike.Render.Grammar
             {
                 if (TryModifier(buff, out AttributeType type, out float delta) && delta != 0f)
                 {
-                    goodness += delta * Polarity(type) > 0f ? 1 : -1;
+                    if (delta * Polarity(type) > 0f)
+                    {
+                        goodness++;
+                    }
+                    else
+                    {
+                        goodness--;
+                    }
                 }
             }
 
@@ -62,9 +69,18 @@ namespace HealerLike.Render.Grammar
             bool isHarm = Harm(consumer) > 0f;
             if (isPeriodic)
             {
-                return isHarm ? EffectFamily.Rot : EffectFamily.Renew;
+                if (isHarm)
+                {
+                    return EffectFamily.Rot;
+                }
+                return EffectFamily.Renew;
             }
-            return isHarm ? EffectFamily.Damage : EffectFamily.Heal;
+
+            if (isHarm)
+            {
+                return EffectFamily.Damage;
+            }
+            return EffectFamily.Heal;
         }
 
         // The sign of what the consumer takes from its target, positive for damage
@@ -110,7 +126,11 @@ namespace HealerLike.Render.Grammar
 
                 if (TryModifier(buff, out AttributeType type, out float delta))
                 {
-                    return IsDefence(type) ? AttributeGroup.Defence : AttributeGroup.Offence;
+                    if (IsDefence(type))
+                    {
+                        return AttributeGroup.Defence;
+                    }
+                    return AttributeGroup.Offence;
                 }
             }
             return AttributeGroup.Offence;
@@ -122,7 +142,11 @@ namespace HealerLike.Render.Grammar
             {
                 return EffectTempo.Once;
             }
-            return IsPeriodic(handler) ? EffectTempo.PerPeriod : EffectTempo.ForDuration;
+            if (IsPeriodic(handler))
+            {
+                return EffectTempo.PerPeriod;
+            }
+            return EffectTempo.ForDuration;
         }
 
         public static float Period(ABuffHandlerFactory handler)

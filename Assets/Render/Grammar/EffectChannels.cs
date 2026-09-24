@@ -1,6 +1,7 @@
 namespace HealerLike.Render.Grammar
 {
     // What an effect does to its holder, the accent and the shape of its look come from it
+    // Stored by value in assets: append new members, never reorder or remove
     public enum EffectFamily
     {
         Damage,
@@ -11,6 +12,7 @@ namespace HealerLike.Render.Grammar
         Bane
     }
 
+    // Stored by value in assets: append new members, never reorder or remove
     public enum EffectTempo
     {
         Once,

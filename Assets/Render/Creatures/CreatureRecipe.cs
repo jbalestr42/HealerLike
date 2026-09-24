@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Creatures
 {
+    // Stored by value in assets: append new members, never reorder or remove
     public enum Primitive
     {
         Sphere,

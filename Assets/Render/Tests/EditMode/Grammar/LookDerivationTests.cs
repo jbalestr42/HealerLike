@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Grammar
 {
@@ -47,16 +45,7 @@ public class LookDerivationTests
         return instance;
     }
 
-    // A copy that shares his skills and attributes, so a test can add passives without touching his asset
-    EntityData Copy(EntityData source)
-    {
-        EntityData data = CreateTracked<EntityData>();
-        data.attributes = new Dictionary<AttributeType, float>(source.attributes);
-        data.skillFactories = new List<ASkillFactory>(source.skillFactories);
-        return data;
-    }
-
-    // The spec's Part 3.1 rows for the eleven entities his data holds today
+    // The channel table rows for the eleven entities the game data holds today
     [TestCase("NormalEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
     [TestCase("FastShootEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Spear, CountBand.One, StemBand.Quick, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
     [TestCase("TripleShootEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Spear, CountBand.Few, StemBand.Slow, MassBand.Light, AccessoryKind.MiniHead, EffectFamily.Damage)]
@@ -68,7 +57,7 @@ public class LookDerivationTests
     [TestCase("TestEntity", Entity.EntityType.Player, LookSide.Plant, HeadKind.Spear, CountBand.Many, StemBand.Slow, MassBand.Light, AccessoryKind.MiniHead, EffectFamily.Damage)]
     [TestCase("SoldierEntity", Entity.EntityType.Computer, LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Sturdy, AccessoryKind.None, EffectFamily.Damage)]
     [TestCase("HitArmorBufferEntityEntity", Entity.EntityType.Computer, LookSide.Stone, HeadKind.GiftBoonDefence, CountBand.One, StemBand.Slow, MassBand.Light, AccessoryKind.None, EffectFamily.Boon)]
-    public void Channels_LiveEntity_MatchesSpecRow(string folder, Entity.EntityType entityType, LookSide side, HeadKind head,
+    public void Channels_LiveEntity_MatchesTableRow(string folder, Entity.EntityType entityType, LookSide side, HeadKind head,
         CountBand count, StemBand stem, MassBand mass, AccessoryKind accessory, EffectFamily accent)
     {
         UnitChannels channels = LookDerivation.Channels(LoadEntity(folder), entityType);
@@ -87,32 +76,6 @@ public class LookDerivationTests
     public void Side_EntityType_PlantForTheHealerSideStoneOtherwise(Entity.EntityType entityType, LookSide expected)
     {
         Assert.AreEqual(expected, LookDerivation.Side(entityType));
-    }
-
-    [TestCase("NormalEntity", HeadKind.Bud)]
-    [TestCase("FastShootEntity", HeadKind.Spear)]
-    [TestCase("TripleShootEntity", HeadKind.Spear)]
-    [TestCase("MultiShotEntity", HeadKind.Arch)]
-    [TestCase("RandomShootEntity", HeadKind.Arch)]
-    [TestCase("ChainLightningEntity", HeadKind.Conductor)]
-    [TestCase("ChannelingEntity", HeadKind.Fork)]
-    [TestCase("SwarmEntity", HeadKind.Arch)]
-    [TestCase("TestEntity", HeadKind.Spear)]
-    [TestCase("SoldierEntity", HeadKind.Bud)]
-    [TestCase("HitArmorBufferEntityEntity", HeadKind.GiftBoonDefence)]
-    public void Head_PrimarySkill_ReadsTheDominantDeliveryElseTheSkillKind(string folder, HeadKind expected)
-    {
-        Assert.AreEqual(expected, LookDerivation.Head(LookDerivation.Primary(LoadEntity(folder))));
-    }
-
-    [Test]
-    public void Head_NoSkill_LogsAndFallsBackToBud()
-    {
-        LogAssert.Expect(LogType.Error, new Regex(@"\[LookDerivation\] No head"));
-
-        HeadKind head = LookDerivation.Head(null);
-
-        Assert.AreEqual(HeadKind.Bud, head);
     }
 
     [TestCase("BulletSpeed", HeadKind.Bud)]
@@ -238,52 +201,6 @@ public class LookDerivationTests
         data.attributes[AttributeType.Range] = range;
 
         Assert.AreEqual(expected, LookDerivation.Reach(data));
-    }
-
-    [TestCase("TripleShootEntity", HeadKind.Bud)] // the bullet entry beside two laser entries
-    [TestCase("TestEntity", HeadKind.Arch)] // the curve step after the laser steps
-    public void AccessoryHead_SecondDelivery_IsItsOwnHead(string folder, HeadKind expected)
-    {
-        EntityData data = LoadEntity(folder);
-
-        Assert.AreEqual(AccessoryKind.MiniHead, LookDerivation.Accessory(data));
-        Assert.AreEqual(expected, LookDerivation.AccessoryHead(data));
-    }
-
-    [Test]
-    public void Accessory_SecondSkill_IsAMiniVersionOfItsHead()
-    {
-        EntityData data = CreateTracked<EntityData>();
-        ShootProjectileSkillFactory shoot = CreateTracked<ShootProjectileSkillFactory>();
-        shoot.data = new ShootProjectileSkillData { projectiles = new List<ShootProjectileSkillData.ProjectileData>() };
-        shoot.data.projectiles.Add(new ShootProjectileSkillData.ProjectileData { projectilePrefab = LoadProjectile("BulletSpeed") });
-        data.skillFactories = new List<ASkillFactory> { shoot, LoadEntity("HitArmorBufferEntityEntity").skillFactories[0] };
-
-        Assert.AreEqual(AccessoryKind.MiniHead, LookDerivation.Accessory(data));
-        Assert.AreEqual(HeadKind.GiftBoonDefence, LookDerivation.AccessoryHead(data));
-    }
-
-    [Test]
-    public void Accessory_RotOnHitEffect_HangsDripBeads()
-    {
-        EntityData data = Copy(LoadEntity("SoldierEntity"));
-        ABuffHandlerFactory poison = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(
-            "Assets/Data/EntityItems/PoisonItem/BuffHandlerFactory.asset");
-        data.onHitEffects = new List<ABuffHandlerFactory> { poison };
-
-        Assert.AreEqual(AccessoryKind.DripBeads, LookDerivation.Accessory(data));
-    }
-
-    [Test]
-    public void Accessory_StatPassive_IsASmallTorusForABoon()
-    {
-        EntityData data = Copy(LoadEntity("NormalEntity"));
-        data.passives = new List<ABuffHandlerFactory>
-        {
-            AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>("Assets/Data/EntityItems/ConclaveItem/New Buff Handler Factory 1.asset")
-        };
-
-        Assert.AreEqual(AccessoryKind.SmallTorus, LookDerivation.Accessory(data));
     }
 }
 

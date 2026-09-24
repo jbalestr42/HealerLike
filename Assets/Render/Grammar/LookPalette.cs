@@ -3,6 +3,7 @@ using UnityEngine;
 namespace HealerLike.Render.Grammar
 {
     // What a part's colour means, the palette turns it into a colour for one side and one accent
+    // Stored by value in assets: append new members, never reorder or remove
     public enum ColourRole
     {
         Body,
@@ -22,10 +23,12 @@ namespace HealerLike.Render.Grammar
     {
         public Color plantBody;
         public Color plantStem;
+
         public Color stoneBody;
         public Color stoneLimb;
         public Color stoneOchre;
         public Color moss;
+
         public Color damage;
         public Color heal;
         public Color rot;
@@ -34,6 +37,7 @@ namespace HealerLike.Render.Grammar
         public Color bane;
         // Bane's navy lifted for the lit side of a part, where the dark shade would read as a hole
         public Color baneLit;
+
         public Color mana;
 
         public Color Accent(EffectFamily family)
@@ -62,10 +66,18 @@ namespace HealerLike.Render.Grammar
             switch (role)
             {
                 case ColourRole.Body:
-                    return isStone ? stoneBody : plantBody;
+                    if (isStone)
+                    {
+                        return stoneBody;
+                    }
+                    return plantBody;
                 case ColourRole.Stem:
                 case ColourRole.Limb:
-                    return isStone ? stoneLimb : plantStem;
+                    if (isStone)
+                    {
+                        return stoneLimb;
+                    }
+                    return plantStem;
                 case ColourRole.Moss:
                     return moss;
                 case ColourRole.Ochre:
