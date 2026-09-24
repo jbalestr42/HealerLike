@@ -35,7 +35,8 @@ public class RenderTargetsTests
         GameObject point = CreateChild(_unit, new Vector3(1f, 3f, 2f));
         GameObject tagged = CreateChild(_unit, new Vector3(1f, 5f, 2f));
         tagged.AddComponent<SkillTargetPointTag>();
-        Entity entity = _unit.AddComponent<Entity>();
+        Entity entity = null;
+        TestHelpers.WithLoggingDisabled(() => entity = _unit.AddComponent<Entity>());
         TestHelpers.SetPrivateField(entity, "_targetPoint", point);
 
         Vector3 result = RenderTargets.Point(_unit);
