@@ -19,8 +19,6 @@ MonoBehaviour:
     - {fileID: 11400000, guid: b7bf54a52d782b74fb35c1940ef00a62, type: 2}
     - {fileID: 11400000, guid: b2e232926b8fca9499c5e18c59ab299e, type: 2}
     - {fileID: 11400000, guid: c525ccce07e5a4b46ab825826ae77ee4, type: 2}
-    - {fileID: 1606386851348304030, guid: dc6b772867f70024fa721dc9cf8521c4, type: 3}
-    - {fileID: 1606386851348304030, guid: a43b1549b4caff4488b18a4685997191, type: 3}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -104,66 +102,6 @@ MonoBehaviour:
     - Name: tempo
       Entry: 3
       Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: projectiles
-      Entry: 7
-      Data: 5|System.Collections.Generic.Dictionary`2[[UnityEngine.GameObject, UnityEngine.CoreModule],[HealerLike.Render.Spells.ProjectileLook, HealerLike.Render]], mscorlib
-    - Name: comparer
-      Entry: 7
-      Data: 6|System.Collections.Generic.ObjectEqualityComparer`1[[UnityEngine.GameObject, UnityEngine.CoreModule]], mscorlib
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 12
-      Data: 2
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 10
-      Data: 3
-    - Name: $v
-      Entry: 7
-      Data: 7|HealerLike.Render.Spells.ProjectileLook, HealerLike.Render
-    - Name: style
-      Entry: 3
-      Data: 5
-    - Name: preserveContactPath
-      Entry: 5
-      Data: true
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 10
-      Data: 4
-    - Name: $v
-      Entry: 7
-      Data: 8|HealerLike.Render.Spells.ProjectileLook, HealerLike.Render
-    - Name: style
-      Entry: 3
-      Data: 5
-    - Name: preserveContactPath
-      Entry: 5
-      Data: true
     - Name: 
       Entry: 8
       Data: 
