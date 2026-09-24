@@ -9,8 +9,7 @@ namespace HealerLike.Render.Zones
 
 public class ZonePackerTests
 {
-    static Zone Raw(Vector3 position, float radius, ZoneKind kind, float strength, float age = 1f,
-                      uint reserved = 0u)
+    static Zone Raw(Vector3 position, float radius, ZoneKind kind, float strength, float age = 1f, uint reserved = 0u)
     {
         return new Zone
         {
@@ -102,14 +101,10 @@ public class ZonePackerTests
         float infinity = float.PositiveInfinity;
 
         Assert.IsFalse(ZonePacker.TryCreate(nanPosition, 1f, ZoneKind.Heal, 1f, 0f, out _), "NaN position");
-        Assert.IsFalse(ZonePacker.TryCreate(infinitePosition, 1f, ZoneKind.Heal, 1f, 0f, out _),
-                       "infinite position");
-        Assert.IsFalse(ZonePacker.TryCreate(Vector3.zero, float.NaN, ZoneKind.Heal, 1f, 0f, out _),
-                       "NaN radius");
-        Assert.IsFalse(ZonePacker.TryCreate(Vector3.zero, infinity, ZoneKind.Heal, 1f, 0f, out _),
-                       "infinite radius");
-        Assert.IsFalse(ZonePacker.TryCreate(Vector3.zero, 1f, ZoneKind.Heal, float.NaN, 0f, out _),
-                       "NaN strength");
+        Assert.IsFalse(ZonePacker.TryCreate(infinitePosition, 1f, ZoneKind.Heal, 1f, 0f, out _), "infinite position");
+        Assert.IsFalse(ZonePacker.TryCreate(Vector3.zero, float.NaN, ZoneKind.Heal, 1f, 0f, out _), "NaN radius");
+        Assert.IsFalse(ZonePacker.TryCreate(Vector3.zero, infinity, ZoneKind.Heal, 1f, 0f, out _), "infinite radius");
+        Assert.IsFalse(ZonePacker.TryCreate(Vector3.zero, 1f, ZoneKind.Heal, float.NaN, 0f, out _), "NaN strength");
         Assert.IsFalse(ZonePacker.TryCreate(Vector3.zero, 1f, ZoneKind.Heal, 1f, float.NaN, out _), "NaN age");
     }
 
