@@ -17,7 +17,6 @@ namespace HealerLike.Render.Environment
         [SerializeField] EnvironmentGust _gust;
         [SerializeField] Transform _ground;
 
-        public EnvironmentScatter scatter { get { return _scatter; } }
         public EnvironmentForeground foreground { get { return _foreground; } }
         public EnvironmentRidge ridge { get { return _ridge; } }
         public EnvironmentGrass grass { get { return _grass; } }
