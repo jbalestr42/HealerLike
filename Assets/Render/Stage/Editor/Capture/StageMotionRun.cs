@@ -87,10 +87,11 @@ namespace HealerLike.Render.Stage
                 Time.timeScale = timeScale;
                 _manager.look.settings = settings;
                 if (focus != null) focus.enabled = focusEnabled;
+                manifest.isPassed &= !_output.hasFailure && manifest.frames.Count == 17;
                 _output.Write();
                 Debug.Log($"[StageMotionRun] motion={manifest.motionMeanDifference:F4} control={manifest.controlMeanDifference:F4}"
                     + $" changed={manifest.motionChangedFraction:F4} cameraFixed={manifest.cameraFixed} passed={manifest.isPassed}");
-                StagePlay.Finish(this, manifest.isPassed && _output.isCaptured);
+                StagePlay.Finish(this, manifest.isPassed);
             }
         }
 

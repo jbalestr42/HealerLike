@@ -8,6 +8,7 @@ namespace HealerLike.Render.Stage
     {
         public readonly StageMotionManifest manifest = new StageMotionManifest();
         public bool isCaptured { get; private set; }
+        public bool hasFailure { get; private set; }
         readonly string _folder;
 
         public StageMotionOutput(string folder)
@@ -42,6 +43,7 @@ namespace HealerLike.Render.Stage
             {
                 if (Time.realtimeSinceStartupAsDouble > deadline)
                 {
+                    hasFailure = true;
                     Debug.LogError("[StageMotionOutput] Game view screenshot did not arrive: " + path);
                     yield break;
                 }
@@ -55,6 +57,13 @@ namespace HealerLike.Render.Stage
                 yield return null;
             }
             Texture2D image = Load(frame.file);
+            if (image.width < 64 || image.height < 64)
+            {
+                hasFailure = true;
+                Object.Destroy(image);
+                Debug.LogError("[StageMotionOutput] Game view screenshot has no usable dimensions.");
+                yield break;
+            }
             frame.width = image.width;
             frame.height = image.height;
             frame.completedFrame = Time.frameCount;
