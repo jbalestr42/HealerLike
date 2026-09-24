@@ -1,302 +1,276 @@
-using System;
-using System.Linq;
-using System.Reflection;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
-using HealerLike.Render.Grammar;
-using Object = UnityEngine.Object;
+using UnityEngine.TestTools;
 using HealerLike.Render.Creatures;
-using HealerLike.Render.Spells;
+using HealerLike.Render.Grammar;
 
-using HealerLike.Render.Studio.Editor;
-
-namespace HealerLike.Render.Studio
+namespace HealerLike.Render.Studio.Editor
 {
-    public sealed class CreatureStudioPreviewTests
+
+public class CreatureStudioPreviewTests
+{
+    static readonly string lowPipelinePath = "Assets/Settings/Low_PipelineAsset.asset";
+
+    readonly List<Object> _objects = new List<Object>();
+    CreatureStudioPreview _preview;
+    CreatureRecipe _recipe;
+    RenderPipelineAsset _pipeline;
+    Texture2D _capture;
+
+    [SetUp]
+    public void SetUp()
     {
-        CreatureStudioPreview _preview;
-        CreatureRecipe _recipe;
+        _pipeline = QualitySettings.renderPipeline;
+        _preview = new CreatureStudioPreview();
+        _preview.Init();
+        _recipe = Track(CreatureStudioAuthoring.BuildSample(0));
+    }
 
-        [SetUp]
-        public void SetUp()
+    [TearDown]
+    public void TearDown()
+    {
+        _preview.Dispose();
+        QualitySettings.renderPipeline = _pipeline;
+        if (_capture != null)
         {
-            _preview = new CreatureStudioPreview();
-            _recipe = CreatureStudioAuthoring.BuildSample(0);
+            Object.DestroyImmediate(_capture);
         }
 
-        [TearDown]
-        public void TearDown()
+        foreach (Object trackedObject in _objects)
         {
-            _preview?.Dispose();
-            if (_recipe) Object.DestroyImmediate(_recipe);
+            Object.DestroyImmediate(trackedObject);
         }
+        _objects.Clear();
+    }
 
-        [Test]
-        public void BodyPreviewHasLitAndShadedPixelsEvenWhenEditorPipelineDisablesMainLight()
+    T Track<T>(T instance) where T : Object
+    {
+        _objects.Add(instance);
+        return instance;
+    }
+
+    static void IgnoreWithoutGraphics()
+    {
+        if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
         {
-            var original=QualitySettings.renderPipeline;
-            var low=AssetDatabase.LoadAssetAtPath<UnityEngine.Rendering.RenderPipelineAsset>("Assets/Settings/Low_PipelineAsset.asset");
-            Object.DestroyImmediate(_recipe);
-            _recipe=ScriptableObject.CreateInstance<CreatureRecipe>();
-            _recipe.roots.count=0;
-            var palette=AssetDatabase.LoadAssetAtPath<LookPalette>("Assets/Render/Grammar/Data/LookPalette.asset");
-            _recipe.parts=new[]{new CreaturePart { id="Body",parent=-1,primitive=Primitive.Sphere,role=PartRole.Body,dimensions=Vector3.one,colour=palette.plantBody }};
-            _preview.ShowGround=false;
-            _preview.Side=LookSide.Plant;
-            Texture2D image=null;
-            try
+            Assert.Ignore("Image verification requires a graphics device.");
+        }
+    }
+
+    // Every part's position, scale, rotation and drawn colour
+    static List<Matrix4x4> Snapshot(CreatureRig rig)
+    {
+        List<Matrix4x4> poses = new List<Matrix4x4>();
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        foreach (Transform part in rig.partTransforms)
+        {
+            part.GetComponent<Renderer>().GetPropertyBlock(block);
+            Color colour = block.GetColor("_BaseColor");
+            Matrix4x4 pose = part.localToWorldMatrix;
+            pose.SetRow(3, new Vector4(colour.r, colour.g, colour.b, colour.a));
+            poses.Add(pose);
+        }
+        return poses;
+    }
+
+    static void AssertSamePoses(List<Matrix4x4> expected, List<Matrix4x4> actual)
+    {
+        Assert.AreEqual(expected.Count, actual.Count);
+        for (int i = 0; i < expected.Count; i++)
+        {
+            for (int cell = 0; cell < 16; cell++)
             {
-                QualitySettings.renderPipeline=low;
-                image=_preview.Capture(_recipe,0,256,256);
-                int green=0,shade=0;
-                for(int y=85;y<171;y++) for(int x=85;x<171;x++)
-                {
-                    Color colour=image.GetPixel(x,y);
-                    if(colour.g>colour.r*1.15f && colour.g>colour.b*1.3f && colour.g>.25f) green++;
-                    if(colour.b>colour.r*1.1f && colour.b>colour.g*1.04f && colour.g>.25f) shade++;
-                }
-                Assert.That(green,Is.GreaterThan(100),"Plant body lost its lit green surface; check the preview main-light pipeline.");
-                Assert.That(shade,Is.GreaterThan(20),"Plant body lost the production body-material shade.");
-                Assert.That(QualitySettings.renderPipeline,Is.SameAs(low),"Capture changed the editor's selected pipeline.");
-            }
-            finally { if(image) Object.DestroyImmediate(image); QualitySettings.renderPipeline=original; }
-        }
-
-        [Test]
-        public void ExportAtDifferentAspectPreservesOrbitPanZoomAndCamera()
-        {
-            _preview.Sample(_recipe,.5f);
-            var flags=BindingFlags.Instance|BindingFlags.NonPublic;
-            var type=typeof(CreatureStudioPreview);
-            var configure=type.GetMethod("ConfigureCamera",flags);
-            configure.Invoke(_preview,new object[]{400f,300f,true});
-            var target=new Vector3(.4f,1.3f,-.2f);
-            var orbit=new Vector2(24f,65f);
-            type.GetField("_target",flags).SetValue(_preview,target);
-            type.GetField("_distance",flags).SetValue(_preview,4.2f);
-            type.GetField("_orbit",flags).SetValue(_preview,orbit);
-            configure.Invoke(_preview,new object[]{400f,300f,true});
-            var utility=(PreviewRenderUtility)type.GetField("_preview",flags).GetValue(_preview);
-            Vector3 cameraPosition=utility.camera.transform.position;
-            Quaternion cameraRotation=utility.camera.transform.rotation;
-            float aspect=utility.camera.aspect;
-            utility.camera.clearFlags=CameraClearFlags.Depth;
-            Color background=new Color(.7f,.2f,.5f,.8f);
-            utility.camera.backgroundColor=background;
-            utility.camera.allowHDR=false;
-            Texture2D image=null;
-            try
-            {
-                image=_preview.Capture(_recipe,.5f,320,120);
-                Assert.That(image,Is.Not.Null);
-                Assert.That(type.GetField("_target",flags).GetValue(_preview),Is.EqualTo(target));
-                Assert.That(type.GetField("_distance",flags).GetValue(_preview),Is.EqualTo(4.2f));
-                Assert.That(type.GetField("_orbit",flags).GetValue(_preview),Is.EqualTo(orbit));
-                Assert.That((bool)type.GetField("_fitRequested",flags).GetValue(_preview),Is.False);
-                Assert.That(utility.camera.transform.position,Is.EqualTo(cameraPosition));
-                Assert.That(Quaternion.Angle(utility.camera.transform.rotation,cameraRotation),Is.LessThan(.001f));
-                Assert.That(utility.camera.aspect,Is.EqualTo(aspect));
-                Assert.That(utility.camera.clearFlags,Is.EqualTo(CameraClearFlags.Depth));
-                Assert.That(utility.camera.backgroundColor,Is.EqualTo(background));
-                Assert.That(utility.camera.allowHDR,Is.False);
-            }
-            finally { if (image) Object.DestroyImmediate(image); }
-        }
-
-        [TestCase(0)]
-        [TestCase(1)]
-        [TestCase(2)]
-        public void StarterRecipesBuildRealDetachedRigs(int index)
-        {
-            Object.DestroyImmediate(_recipe);
-            _recipe = CreatureStudioAuthoring.BuildSample(index);
-            _preview.Side = index == 2 ? LookSide.Stone : LookSide.Plant;
-            string before = EditorJsonUtility.ToJson(_recipe);
-            CreatureRig rig = _preview.Sample(_recipe, 1.25f);
-            Assert.That(rig, Is.Not.Null, _preview.LastError);
-            Assert.That(rig.recipe, Is.Not.SameAs(_recipe));
-            Assert.That(rig.recipe.parts, Is.Not.SameAs(_recipe.parts));
-            Assert.That(rig.partTransforms.Count, Is.EqualTo(_recipe.parts.Length));
-            Assert.That(EditorSceneManager.IsPreviewScene(rig.root.gameObject.scene), Is.True);
-            Assert.That(EditorJsonUtility.ToJson(_recipe), Is.EqualTo(before));
-            foreach (Transform part in rig.partTransforms)
-            {
-                Assert.That(part.GetComponent<MeshFilter>().sharedMesh, Is.Not.Null);
-                Assert.That(part.GetComponent<Renderer>().sharedMaterial.shader.name, Is.EqualTo("HL/Look/Primitive"));
-            }
-        }
-
-        [TestCase(LookSide.Plant, 1)]
-        [TestCase(LookSide.Stone, 2)]
-        public void PreviewKeepsProductionBodyAndStoneMaterialProperties(LookSide side,int sample)
-        {
-            Object.DestroyImmediate(_recipe);
-            _recipe=CreatureStudioAuthoring.BuildSample(sample);
-            _preview.Side=side;
-            var rig=_preview.Sample(_recipe,0);
-            Assert.That(rig,Is.Not.Null,_preview.LastError);
-            for (int i=0;i<_recipe.parts.Length;i++)
-            {
-                string filename=side==LookSide.Stone ? "Look_Stone" : _recipe.parts[i].role==PartRole.Body ? "Look_Body" : "Look_Default";
-                var source=AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/"+filename+".mat");
-                var actual=rig.partTransforms[i].GetComponent<Renderer>().sharedMaterial;
-                Assert.That(actual,Is.Not.SameAs(source));
-                Assert.That(actual.GetFloat("_HLToonThresholdOffset"),Is.EqualTo(source.GetFloat("_HLToonThresholdOffset")));
-                Assert.That(actual.GetColor("_HLShadeTint"),Is.EqualTo(source.GetColor("_HLShadeTint")));
-                Assert.That(actual.GetFloat("_HLNormalEdges"),Is.EqualTo(source.GetFloat("_HLNormalEdges")));
-            }
-        }
-
-        [Test]
-        public void ReverseSeekAndDifferentFrameSchedulesMatchIncludingAimAndColour()
-        {
-            _preview.Aim = new Vector3(1.5f, .8f, .5f);
-            _preview.Health = .62f;
-            _preview.Charge = .7f;
-            _preview.Glow = .8f;
-            Snapshot[] expected = SnapshotRig(_preview.Sample(_recipe, 1.237f));
-            _preview.Sample(_recipe, 4f);
-            AssertSame(SnapshotRig(_preview.Sample(_recipe, 1.237f)), expected);
-            _preview.Refresh();
-            _preview.Sample(_recipe, .13f);
-            _preview.Sample(_recipe, .59f);
-            AssertSame(SnapshotRig(_preview.Sample(_recipe, 1.237f)), expected);
-            using (var independent = new CreatureStudioPreview { Aim = _preview.Aim, Health = _preview.Health, Charge = _preview.Charge, Glow = _preview.Glow })
-                AssertSame(SnapshotRig(independent.Sample(_recipe, 1.237f)), expected);
-        }
-
-        [Test]
-        public void ReadoutChangesApplyWhilePausedAndSelectionBoundsTrackPart()
-        {
-            CreatureRig healthy = _preview.Sample(_recipe, .7f);
-            Vector3 healthyPosition = healthy.partTransforms[1].position;
-            _preview.Health = .2f;
-            _preview.Charge = .9f;
-            _preview.SelectedPart = 1;
-            CreatureRig wilted = _preview.Sample(_recipe, .7f);
-            Assert.That(Vector3.Distance(healthyPosition, wilted.partTransforms[1].position), Is.GreaterThan(.01f));
-            GameObject box = wilted.root.parent.parent.Find("Selected Part Bounds").gameObject;
-            Assert.That(box.activeSelf, Is.True);
-            Assert.That(box.transform.childCount, Is.EqualTo(12));
-            _preview.SelectedPart = -1;
-            _preview.Sample(_recipe, .7f);
-            Assert.That(box.activeSelf, Is.False);
-        }
-
-        [Test]
-        public void InvalidRecipeReturnsDiagnosticAndClearsOldRig()
-        {
-            CreatureRig previous = _preview.Sample(_recipe, .1f);
-            Transform oldRoot = previous.root;
-            _recipe.parts[0].parent = 0;
-            _preview.Refresh();
-            Assert.That(_preview.Sample(_recipe, .1f), Is.Null);
-            Assert.That(_preview.LastError, Is.Not.Empty);
-            Assert.That(oldRoot == null, Is.True);
-        }
-
-        [Test]
-        public void CleanupRestoresPreviewScenesAndLeavesSourceSceneUntouched()
-        {
-            Scene scene = SceneManager.GetActiveScene();
-            GameObject[] roots = scene.GetRootGameObjects();
-            bool dirty = scene.isDirty;
-            int scenes = EditorSceneManager.previewSceneCount;
-            int materials = CountMaterials();
-            string before = EditorJsonUtility.ToJson(_recipe);
-            for (int i = 0; i < 3; i++)
-            {
-                using (var preview = new CreatureStudioPreview())
-                {
-                    preview.Sample(_recipe, .9f);
-                    preview.Sample(_recipe, .2f);
-                }
-            }
-            Assert.That(EditorSceneManager.previewSceneCount, Is.EqualTo(scenes));
-            Assert.That(CountMaterials(), Is.EqualTo(materials));
-            Assert.That(SceneManager.GetActiveScene(), Is.EqualTo(scene));
-            Assert.That(scene.isDirty, Is.EqualTo(dirty));
-            CollectionAssert.AreEquivalent(roots, scene.GetRootGameObjects());
-            Assert.That(EditorJsonUtility.ToJson(_recipe), Is.EqualTo(before));
-        }
-
-        [Test]
-        public void CaptureKeepsCreatureVisibleInPortraitAndRestoresLookGlobals()
-        {
-            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
-                Assert.Ignore("Image verification requires a graphics device.");
-            float ink = Shader.GetGlobalFloat("_HLInkStrength"), applied = Shader.GetGlobalFloat("_HLLookApplied");
-            Vector4 tint = Shader.GetGlobalVector("_HLShadowTint");
-            _preview.ShowGround = false;
-            Texture2D capture = null;
-            try
-            {
-                capture = _preview.Capture(_recipe, .4f, 360, 520);
-                Assert.That(capture.width, Is.EqualTo(360));
-                Assert.That(capture.height, Is.EqualTo(520));
-                Color32[] pixels = capture.GetPixels32();
-                int green = pixels.Count(pixel => pixel.g > 65 && pixel.g > pixel.r * 1.15f && pixel.g > pixel.b * 1.2f);
-                Assert.That(green, Is.GreaterThan(100), "The actual creature must retain its authored green colours.");
-                Color32 background = pixels[pixels.Length - 1];
-                int topSubject = 0;
-                for (int y = 510; y < 520; y++)
-                    for (int x = 80; x < 280; x++)
-                    {
-                        Color32 pixel = pixels[y * 360 + x];
-                        if (System.Math.Abs(pixel.r - background.r) + System.Math.Abs(pixel.g - background.g) + System.Math.Abs(pixel.b - background.b) > 35) topSubject++;
-                    }
-                Assert.That(topSubject, Is.Zero, "The crown must fit inside the portrait frame.");
-                Assert.That(Shader.GetGlobalFloat("_HLInkStrength"), Is.EqualTo(ink));
-                Assert.That(Shader.GetGlobalFloat("_HLLookApplied"), Is.EqualTo(applied));
-                Assert.That(Shader.GetGlobalVector("_HLShadowTint"), Is.EqualTo(tint));
-                _preview.Dispose();
-                Assert.That(capture != null, Is.True);
-            }
-            finally { if (capture) Object.DestroyImmediate(capture); }
-        }
-
-        [Test]
-        public void NullRecipeClearsRigAndDisposalIsIdempotent()
-        {
-            Transform old = _preview.Sample(_recipe, 0f).root;
-            Assert.That(_preview.Sample(null, 0f), Is.Null);
-            Assert.That(old == null, Is.True);
-            _preview.Dispose();
-            Assert.DoesNotThrow(() => _preview.Dispose());
-            Assert.Throws<ObjectDisposedException>(() => _preview.Sample(_recipe, 0f));
-        }
-
-        static int CountMaterials() => Resources.FindObjectsOfTypeAll<Material>().Count(material => material.name == "Creature Studio Preview Material");
-
-        readonly struct Snapshot
-        {
-            public readonly Vector3 position, scale;
-            public readonly Quaternion rotation;
-            public readonly Color colour;
-            public Snapshot(Transform part)
-            {
-                position = part.position;
-                scale = part.localScale;
-                rotation = part.rotation;
-                var block = new MaterialPropertyBlock();
-                part.GetComponent<Renderer>().GetPropertyBlock(block);
-                colour = block.GetColor("_BaseColor");
-            }
-        }
-        static Snapshot[] SnapshotRig(CreatureRig rig) => rig.partTransforms.Select(part => new Snapshot(part)).ToArray();
-        static void AssertSame(Snapshot[] actual, Snapshot[] expected)
-        {
-            Assert.That(actual.Length, Is.EqualTo(expected.Length));
-            for (int i = 0; i < actual.Length; i++)
-            {
-                Assert.That(Vector3.Distance(actual[i].position, expected[i].position), Is.LessThan(.0001f), "Position " + i);
-                Assert.That(Vector3.Distance(actual[i].scale, expected[i].scale), Is.LessThan(.0001f), "Scale " + i);
-                Assert.That(Quaternion.Angle(actual[i].rotation, expected[i].rotation), Is.LessThan(.02f), "Rotation " + i);
-                Assert.That(actual[i].colour, Is.EqualTo(expected[i].colour), "Colour " + i);
+                Assert.AreEqual(expected[i][cell], actual[i][cell], 0.0005f, "Part " + i);
             }
         }
     }
+
+    [TestCase(0)]
+    [TestCase(1)]
+    [TestCase(2)]
+    public void Sample_StarterRecipe_BuildsARigOnAPrivateCopy(int index)
+    {
+        _recipe = Track(CreatureStudioAuthoring.BuildSample(index));
+        _preview.side = index == 2 ? LookSide.Stone : LookSide.Plant;
+        string before = EditorJsonUtility.ToJson(_recipe);
+
+        CreatureRig rig = _preview.Sample(_recipe, 1.25f);
+
+        Assert.NotNull(rig, _preview.lastError);
+        Assert.AreNotSame(_recipe, rig.recipe);
+        Assert.AreEqual(_recipe.parts.Length, rig.partTransforms.Count);
+        Assert.IsTrue(EditorSceneManager.IsPreviewScene(rig.root.gameObject.scene));
+        Assert.AreEqual(before, EditorJsonUtility.ToJson(_recipe));
+        foreach (Transform part in rig.partTransforms)
+        {
+            Assert.AreEqual("HL/Look/Primitive", part.GetComponent<Renderer>().sharedMaterial.shader.name);
+        }
+    }
+
+    [TestCase(LookSide.Plant, 1)]
+    [TestCase(LookSide.Stone, 2)]
+    public void Sample_EachSide_KeepsTheProductionMaterialSettings(LookSide side, int sample)
+    {
+        _recipe = Track(CreatureStudioAuthoring.BuildSample(sample));
+        _preview.side = side;
+
+        CreatureRig rig = _preview.Sample(_recipe, 0f);
+
+        for (int i = 0; i < _recipe.parts.Length; i++)
+        {
+            string file = "Look_Default";
+            if (side == LookSide.Stone)
+            {
+                file = "Look_Stone";
+            }
+            else if (_recipe.parts[i].role == PartRole.Body)
+            {
+                file = "Look_Body";
+            }
+
+            Material source = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/" + file + ".mat");
+            Material actual = rig.partTransforms[i].GetComponent<Renderer>().sharedMaterial;
+            Assert.AreNotSame(source, actual);
+            Assert.AreEqual(source.GetFloat("_HLToonThresholdOffset"), actual.GetFloat("_HLToonThresholdOffset"));
+            Assert.AreEqual(source.GetColor("_HLShadeTint"), actual.GetColor("_HLShadeTint"));
+        }
+    }
+
+    [Test]
+    public void Sample_SeekBackOrAnotherSchedule_LandsOnTheSamePose()
+    {
+        _preview.aim = new Vector3(1.5f, 0.8f, 0.5f);
+        _preview.health = 0.62f;
+        _preview.charge = 0.7f;
+        _preview.glow = 0.8f;
+        List<Matrix4x4> expected = Snapshot(_preview.Sample(_recipe, 1.237f));
+
+        _preview.Sample(_recipe, 4f);
+        AssertSamePoses(expected, Snapshot(_preview.Sample(_recipe, 1.237f)));
+        _preview.Refresh();
+        _preview.Sample(_recipe, 0.13f);
+        _preview.Sample(_recipe, 0.59f);
+
+        AssertSamePoses(expected, Snapshot(_preview.Sample(_recipe, 1.237f)));
+    }
+
+    [Test]
+    public void Sample_LowerHealthAndASelectedPart_MovesThePartAndBoxesIt()
+    {
+        Vector3 healthy = _preview.Sample(_recipe, 0.7f).partTransforms[1].position;
+        _preview.health = 0.2f;
+        _preview.selectedPart = 1;
+
+        CreatureRig wilted = _preview.Sample(_recipe, 0.7f);
+
+        Assert.Greater(Vector3.Distance(healthy, wilted.partTransforms[1].position), 0.01f);
+        GameObject box = wilted.root.parent.parent.Find("Selected Part Bounds").gameObject;
+        Assert.IsTrue(box.activeSelf);
+        Assert.AreEqual(12, box.transform.childCount);
+        _preview.selectedPart = -1;
+        _preview.Sample(_recipe, 0.7f);
+        Assert.IsFalse(box.activeSelf);
+    }
+
+    [Test]
+    public void Sample_RecipeBrokenAfterABuild_ReportsAndDropsTheOldRig()
+    {
+        Transform oldRoot = _preview.Sample(_recipe, 0.1f).root;
+        _recipe.parts[0].parent = 0;
+        _preview.Refresh();
+
+        Assert.IsNull(_preview.Sample(_recipe, 0.1f));
+        Assert.IsNotEmpty(_preview.lastError);
+        Assert.IsTrue(oldRoot == null);
+    }
+
+    [Test]
+    public void Dispose_ThreePreviews_LeavesTheOpenSceneAndTheRecipeAsTheyWere()
+    {
+        Scene scene = SceneManager.GetActiveScene();
+        int rootCount = scene.rootCount;
+        int previewScenes = EditorSceneManager.previewSceneCount;
+        string before = EditorJsonUtility.ToJson(_recipe);
+
+        for (int i = 0; i < 3; i++)
+        {
+            CreatureStudioPreview preview = new CreatureStudioPreview();
+            preview.Init();
+            preview.Sample(_recipe, 0.9f);
+            preview.Sample(_recipe, 0.2f);
+            preview.Dispose();
+        }
+
+        Assert.AreEqual(previewScenes, EditorSceneManager.previewSceneCount);
+        Assert.AreEqual(rootCount, scene.rootCount);
+        Assert.AreEqual(before, EditorJsonUtility.ToJson(_recipe));
+    }
+
+    [Test]
+    public void Sample_NullRecipeThenDispose_DropsTheRigAndRefusesToSample()
+    {
+        Transform old = _preview.Sample(_recipe, 0f).root;
+
+        Assert.IsNull(_preview.Sample(null, 0f));
+        Assert.IsTrue(old == null);
+        _preview.Dispose();
+        _preview.Dispose();
+        LogAssert.Expect(LogType.Error, "[CreatureStudioPreview] Sampled after Dispose");
+        Assert.IsNull(_preview.Sample(_recipe, 0f));
+    }
+
+    [Test]
+    public void Capture_NoRecipe_LogsAndReturnsNull()
+    {
+        LogAssert.Expect(LogType.Error, new Regex(@"^\[CreatureStudioPreview\] Choose a creature"));
+
+        _capture = _preview.Capture(null, 0f, 64, 64);
+
+        Assert.IsNull(_capture);
+    }
+
+    [Test]
+    public void Capture_EditorOnTheLowPipeline_DrawsTheLitBodyAndKeepsThePipeline()
+    {
+        IgnoreWithoutGraphics();
+        RenderPipelineAsset low = AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(lowPipelinePath);
+        _recipe = Track(ScriptableObject.CreateInstance<CreatureRecipe>());
+        _recipe.roots.count = 0;
+        _recipe.parts = new CreaturePart[] { new CreaturePart { id = "Body", parent = -1, primitive = Primitive.Sphere,
+            role = PartRole.Body, dimensions = Vector3.one, colour = RenderTestAssets.LoadPalette().plantBody } };
+        _preview.isGroundShown = false;
+        _preview.side = LookSide.Plant;
+        QualitySettings.renderPipeline = low;
+
+        _capture = _preview.Capture(_recipe, 0f, 256, 256);
+
+        Assert.AreSame(low, QualitySettings.renderPipeline);
+        Assert.Greater(StudioTestImages.CountGreen(_capture), 100);
+    }
+
+    [Test]
+    public void Capture_Portrait_FitsTheCrownAndPutsBackTheLookGlobals()
+    {
+        IgnoreWithoutGraphics();
+        float ink = Shader.GetGlobalFloat("_HLInkStrength");
+        Vector4 tint = Shader.GetGlobalVector("_HLShadowTint");
+        _preview.isGroundShown = false;
+
+        _capture = _preview.Capture(_recipe, 0.4f, 360, 520);
+        _preview.Dispose();
+
+        Assert.AreEqual(360, _capture.width);
+        Assert.AreEqual(0, StudioTestImages.CountRowsDifferent(_capture, 510, 520, 80, 280, 35));
+        Assert.Greater(StudioTestImages.CountGreen(_capture), 100);
+        Assert.AreEqual(ink, Shader.GetGlobalFloat("_HLInkStrength"));
+        Assert.AreEqual(tint, Shader.GetGlobalVector("_HLShadowTint"));
+    }
+}
+
 }

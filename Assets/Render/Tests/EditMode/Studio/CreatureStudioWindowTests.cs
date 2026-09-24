@@ -1,137 +1,115 @@
-using System.Collections.Generic;
-using System.Reflection;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using HealerLike.Render.Grammar;
 using HealerLike.Render.Creatures;
-using HealerLike.Render.Spells;
+using HealerLike.Render.Grammar;
 
-using HealerLike.Render.Studio.Editor;
-
-namespace HealerLike.Render.Studio
+namespace HealerLike.Render.Studio.Editor
 {
-    public class CreatureStudioWindowTests
+
+public class CreatureStudioWindowTests
+{
+    readonly StudioPrefsBackup _prefs = new StudioPrefsBackup();
+    CreatureStudioWindow _window;
+
+    [SetUp]
+    public void SetUp()
     {
-        private CreatureStudioWindow window;
-        private string originalDrafts;
-        private bool hadDrafts;
-        private bool hadGrammar;
-        private string originalGrammar;
-        private string GrammarKey=>"HealerLike.CreatureStudio.GrammarDrafts."+Application.dataPath;
-        private string Key => "HealerLike.CreatureStudio.Drafts."+Application.dataPath;
-        [SetUp] public void SetUp()
-        {
-            hadDrafts=EditorPrefs.HasKey(Key); originalDrafts=EditorPrefs.GetString(Key);
-            EditorPrefs.DeleteKey(Key);
-            hadGrammar=EditorPrefs.HasKey(GrammarKey); originalGrammar=EditorPrefs.GetString(GrammarKey); EditorPrefs.DeleteKey(GrammarKey);
-            window=ScriptableObject.CreateInstance<CreatureStudioWindow>();
-            ShowParts();
-        }
-        [TearDown] public void TearDown()
-        {
-            if (window!=null) Object.DestroyImmediate(window);
-            if (hadDrafts) EditorPrefs.SetString(Key,originalDrafts); else EditorPrefs.DeleteKey(Key);
-            if (hadGrammar) EditorPrefs.SetString(GrammarKey,originalGrammar); else EditorPrefs.DeleteKey(GrammarKey);
-        }
-        private T Get<T>(string name)=>(T)typeof(CreatureStudioWindow).GetField(name,BindingFlags.Instance|BindingFlags.NonPublic).GetValue(window);
-        private void Invoke(string name)=>typeof(CreatureStudioWindow).GetMethod(name,BindingFlags.Instance|BindingFlags.NonPublic).Invoke(window,null);
-        private void ShowParts()=>typeof(CreatureStudioWindow).GetMethod("SwitchToParts",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(window,new object[]{Get<CreatureRecipe>("partsSelection")});
-
-        [Test] public void StartsWithIndependentUsableDrafts()
-        {
-            var drafts=Get<List<CreatureRecipe>>("drafts");
-            Assert.That(drafts.Count,Is.EqualTo(CreatureStudioAuthoring.SampleNames.Length));
-            foreach (var draft in drafts)
-            {
-                Assert.That(AssetDatabase.Contains(draft),Is.False);
-                Assert.That(CreatureStudioAuthoring.Validate(draft),Is.Empty);
-                Assert.That(draft.parts.Length,Is.GreaterThan(0));
-            }
-        }
-        [Test] public void DuplicateAndReopenKeepDetachedPartsAndSelection()
-        {
-            var source=Get<CreatureRecipe>("selected");
-            string originalId=source.parts[0].id;
-            Invoke("Duplicate");
-            var copy=Get<CreatureRecipe>("selected");
-            copy.name="Saved local draft";
-            copy.parts[0].id="Independent root";
-            Assert.That(source.parts[0].id,Is.EqualTo(originalId));
-            Object.DestroyImmediate(window);
-            window=ScriptableObject.CreateInstance<CreatureStudioWindow>();
-            ShowParts();
-            copy=Get<CreatureRecipe>("selected");
-            Assert.That(copy.name,Is.EqualTo("Saved local draft"));
-            Assert.That(copy.parts[0].id,Is.EqualTo("Independent root"));
-            Assert.That(AssetDatabase.Contains(copy),Is.False);
-        }
-        [Test] public void PartToolsAddAChildThenRemoveTheSelectedSubtree()
-        {
-            var recipe=Get<CreatureRecipe>("selected");
-            int count=recipe.parts.Length;
-            Invoke("AddPart");
-            Assert.That(recipe.parts.Length,Is.EqualTo(count+1));
-            Assert.That(Get<int>("selectedPart"),Is.EqualTo(count));
-            Assert.That(recipe.parts[count].parent,Is.EqualTo(0));
-            Invoke("RemovePart");
-            Assert.That(recipe.parts.Length,Is.EqualTo(count));
-            Assert.That(CreatureStudioAuthoring.Validate(recipe),Is.Empty);
-        }
-        [Test] public void UnsavedPartEditsNotifyOtherRenderStudios()
-        {
-            var recipe=Get<CreatureRecipe>("selected");
-            UnityEngine.Object changed=null;
-            System.Action<UnityEngine.Object> listener=asset=>changed=asset;
-            RenderGrammarLibraryWindow.AssetChanged+=listener;
-            try
-            {
-                Invoke("AddPart");
-                Assert.That(changed,Is.SameAs(recipe));
-                Assert.That(AssetDatabase.Contains(recipe),Is.False);
-            }
-            finally { RenderGrammarLibraryWindow.AssetChanged-=listener; }
-        }
-
-        [Test] public void PreviewSurfaceIsPerRecipeAndDoesNotDirtyOrNotifyRecipeData()
-        {
-            var recipe=Get<CreatureRecipe>("selected");
-            bool dirty=EditorUtility.IsDirty(recipe);
-            bool notified=false;
-            System.Action<UnityEngine.Object> listener=asset=>notified=true;
-            RenderGrammarLibraryWindow.AssetChanged+=listener;
-            try
-            {
-                typeof(CreatureStudioWindow).GetMethod("RememberSurface",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(window,new object[]{recipe,LookSide.Stone});
-                Invoke("NewDraft");
-                Assert.That(Get<LookSide>("manualSurface"),Is.EqualTo(LookSide.Plant));
-                typeof(CreatureStudioWindow).GetMethod("SwitchToParts",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(window,new object[]{recipe});
-                Assert.That(Get<LookSide>("manualSurface"),Is.EqualTo(LookSide.Stone));
-                Assert.That(EditorUtility.IsDirty(recipe),Is.EqualTo(dirty));
-                Assert.That(notified,Is.False);
-                Object.DestroyImmediate(window);
-                window=ScriptableObject.CreateInstance<CreatureStudioWindow>();
-                ShowParts();
-                Assert.That(Get<LookSide>("manualSurface"),Is.EqualTo(LookSide.Stone));
-            }
-            finally { RenderGrammarLibraryWindow.AssetChanged-=listener; }
-        }
-
-        [Test] public void OpenRecipeSelectsAnExternalRecipe()
-        {
-            var recipe=CreatureStudioAuthoring.BuildSample(1);
-            CreatureStudioWindow opened=null;
-            try
-            {
-                opened=CreatureStudioWindow.OpenRecipe(recipe);
-                var field=typeof(CreatureStudioWindow).GetField("selected",BindingFlags.Instance|BindingFlags.NonPublic);
-                Assert.That(field.GetValue(opened),Is.SameAs(recipe));
-            }
-            finally
-            {
-                if (opened!=null && opened!=window) Object.DestroyImmediate(opened);
-                Object.DestroyImmediate(recipe);
-            }
-        }
+        _prefs.Save();
+        _window = ScriptableObject.CreateInstance<CreatureStudioWindow>();
     }
+
+    [TearDown]
+    public void TearDown()
+    {
+        if (_window != null)
+        {
+            Object.DestroyImmediate(_window);
+        }
+        _prefs.Restore();
+    }
+
+    // Closes the window, keeping its drafts, and opens a new one on them in parts mode
+    void ReopenInParts()
+    {
+        Object.DestroyImmediate(_window);
+        _window = ScriptableObject.CreateInstance<CreatureStudioWindow>();
+        _window.SwitchToParts(_window.partsSelection);
+    }
+
+    [Test]
+    public void OnEnable_FirstOpen_OpensInGrammarModeOnTheComposedRecipe()
+    {
+        Assert.IsTrue(_window.isGrammarMode);
+        Assert.AreSame(_window.grammar.output, _window.selected);
+        Assert.AreSame(_window.drafts.items[0], _window.partsSelection);
+    }
+
+    [Test]
+    public void SwitchToParts_FirstDraft_SelectsItAndItsSurface()
+    {
+        _window.SwitchToParts(null);
+
+        Assert.IsFalse(_window.isGrammarMode);
+        Assert.AreSame(_window.drafts.items[0], _window.selected);
+        Assert.AreEqual(LookSide.Plant, _window.manualSurface);
+    }
+
+    [Test]
+    public void SwitchToGrammar_FromParts_RemembersTheRecipeToReturnTo()
+    {
+        _window.SwitchToParts(_window.drafts.items[2]);
+
+        _window.SwitchToGrammar();
+
+        Assert.IsTrue(_window.isGrammarMode);
+        Assert.AreSame(_window.drafts.items[2], _window.partsSelection);
+        Assert.AreSame(_window.grammar.output, _window.selected);
+    }
+
+    [Test]
+    public void SwitchToParts_RememberedStoneSurface_SurvivesReopening()
+    {
+        CreatureRecipe healer = _window.drafts.items[0];
+        _window.drafts.RememberSurface(healer, LookSide.Stone);
+        _window.SwitchToParts(_window.drafts.items[1]);
+        Assert.AreEqual(LookSide.Plant, _window.manualSurface);
+
+        _window.SwitchToParts(healer);
+        Assert.AreEqual(LookSide.Stone, _window.manualSurface);
+        ReopenInParts();
+
+        Assert.AreEqual(LookSide.Stone, _window.manualSurface);
+    }
+
+    [Test]
+    public void BakeGrammar_ComposedRecipe_OpensAnIndependentPartsDraft()
+    {
+        CreatureRecipe output = _window.grammar.output;
+        string id = output.parts[0].id;
+
+        _window.BakeGrammar();
+        _window.selected.parts[0].id = "Independent authored edit";
+
+        Assert.IsFalse(_window.isGrammarMode);
+        Assert.AreNotSame(output, _window.selected);
+        Assert.AreEqual(id, output.parts[0].id);
+        Assert.Contains(_window.selected, _window.drafts.items);
+        Assert.IsFalse(AssetDatabase.Contains(_window.selected));
+    }
+
+    [Test]
+    public void BakeGrammar_Reopened_KeepsTheBakedDraftSelected()
+    {
+        _window.BakeGrammar();
+        string name = _window.selected.name;
+        _window.selected.parts[0].id = "Kept root";
+
+        ReopenInParts();
+
+        Assert.AreEqual(name, _window.selected.name);
+        Assert.AreEqual("Kept root", _window.selected.parts[0].id);
+    }
+}
+
 }

@@ -1,84 +1,116 @@
+using System;
+using System.IO;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using HealerLike.Render.Creatures;
-using HealerLike.Render.Grammar;
 using HealerLike.Render.Spells;
+using Object = UnityEngine.Object;
 
-using HealerLike.Render.Studio.Editor;
-
-namespace HealerLike.Render.Studio
+namespace HealerLike.Render.Studio.Editor
 {
-    public class SpellStudioPublishingTests
+
+public class SpellStudioPublishingTests
+{
+    SpellStudioPreset _preset;
+    EffectVocabulary _vocabulary;
+    string _copyPath;
+    string _otherPath;
+
+    // An authored Burst shape with its own colour, so it publishes without a palette
+    [SetUp]
+    public void SetUp()
     {
-        SpellStudioPreset preset;
-        EffectVocabulary vocabulary;
-
-        [SetUp]
-        public void SetUp()
-        {
-            vocabulary = ScriptableObject.CreateInstance<EffectVocabulary>();
-            preset = ScriptableObject.CreateInstance<SpellStudioPreset>();
-            preset.vocabulary = vocabulary;
-            preset.element = EffectElement.Burst;
-            preset.overrideEntry = true;
-            preset.overrideColour = true; // This fixture publishes geometry without a palette.
-            preset.entry = new ElementEntry
-            {
-                cycleSeconds = 1.2f,
-                motion = EffectMotionKind.Rise,
-                parts = new[] { new LookPart { id = "Authored", size = Vector3.one } }
-            };
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            Undo.ClearUndo(vocabulary);
-            Object.DestroyImmediate(preset);
-            Object.DestroyImmediate(vocabulary);
-        }
-
-        [Test]
-        public void PublishEntry_CopiesShapeWithoutAliasingPreset()
-        {
-            Assert.IsTrue(SpellStudioPublishing.PublishEntry(preset));
-            var published = vocabulary.elements[EffectElement.Burst];
-            Assert.AreEqual(EffectMotionKind.Rise, published.motion);
-            Assert.AreEqual(1.2f, published.cycleSeconds);
-            Assert.AreNotSame(preset.entry, published);
-            preset.entry.parts[0].size = Vector3.zero;
-            Assert.AreEqual(Vector3.one, published.parts[0].size);
-        }
-
-        [Test]
-        public void PublishEntry_DoesNotReplaceOtherElements()
-        {
-            var other = new ElementEntry { cycleSeconds = 7f };
-            vocabulary.elements[EffectElement.Orbit] = other;
-            Assert.IsTrue(SpellStudioPublishing.PublishEntry(preset));
-            Assert.AreSame(other, vocabulary.elements[EffectElement.Orbit]);
-        }
-
-        [Test]
-        public void PublishEntry_MissingDestination_ReturnsFalse()
-        {
-            preset.vocabulary = null;
-            Assert.IsFalse(SpellStudioPublishing.PublishEntry(preset));
-            Assert.IsFalse(SpellStudioPublishing.PublishEntry(null));
-        }
-
-        [Test]
-        public void PublishEntry_CanUndoSharedDictionaryChange()
-        {
-            vocabulary.elements[EffectElement.Burst] = new ElementEntry { cycleSeconds = 8f };
-            // Odin's dictionary is stored in its serialized backing data before registering the snapshot.
-            ((ISerializationCallbackReceiver)vocabulary).OnBeforeSerialize();
-            Undo.IncrementCurrentGroup();
-            SpellStudioPublishing.PublishEntry(preset);
-            Undo.FlushUndoRecordObjects();
-            Undo.PerformUndo();
-            Assert.AreEqual(8f, vocabulary.elements[EffectElement.Burst].cycleSeconds);
-        }
+        _vocabulary = ScriptableObject.CreateInstance<EffectVocabulary>();
+        _preset = ScriptableObject.CreateInstance<SpellStudioPreset>();
+        _preset.vocabulary = _vocabulary;
+        _preset.element = EffectElement.Burst;
+        _preset.overrideEntry = true;
+        _preset.overrideColour = true;
+        _preset.entry = new ElementEntry { cycleSeconds = 1.2f, motion = EffectMotionKind.Rise,
+            parts = new LookPart[] { new LookPart { id = "Authored", size = Vector3.one } } };
+        string suffix = Guid.NewGuid().ToString("N");
+        _copyPath = "Assets/__SpellStudioSavedCopy_" + suffix + ".asset";
+        _otherPath = "Assets/__SpellStudioUnrelated_" + suffix + ".asset";
     }
+
+    [TearDown]
+    public void TearDown()
+    {
+        Undo.ClearUndo(_vocabulary);
+        AssetDatabase.DeleteAsset(_copyPath);
+        AssetDatabase.DeleteAsset(_otherPath);
+        Object.DestroyImmediate(_preset);
+        Object.DestroyImmediate(_vocabulary);
+    }
+
+    [Test]
+    public void PublishEntry_AuthoredShape_CopiesItIntoTheVocabulary()
+    {
+        Assert.IsTrue(SpellStudioPublishing.PublishEntry(_preset));
+        ElementEntry published = _vocabulary.elements[EffectElement.Burst];
+
+        _preset.entry.parts[0].size = Vector3.zero;
+
+        Assert.AreEqual(EffectMotionKind.Rise, published.motion);
+        Assert.AreEqual(1.2f, published.cycleSeconds);
+        Assert.AreEqual(Vector3.one, published.parts[0].size);
+    }
+
+    [Test]
+    public void PublishEntry_OtherElementPresent_LeavesItAlone()
+    {
+        ElementEntry other = new ElementEntry { cycleSeconds = 7f };
+        _vocabulary.elements[EffectElement.Orbit] = other;
+
+        SpellStudioPublishing.PublishEntry(_preset);
+
+        Assert.AreSame(other, _vocabulary.elements[EffectElement.Orbit]);
+    }
+
+    [Test]
+    public void PublishEntry_NoDestination_ReturnsFalse()
+    {
+        _preset.vocabulary = null;
+
+        Assert.IsFalse(SpellStudioPublishing.PublishEntry(_preset));
+        Assert.IsFalse(SpellStudioPublishing.PublishEntry(null));
+    }
+
+    [Test]
+    public void PublishEntry_Undone_PutsBackTheSharedEntry()
+    {
+        _vocabulary.elements[EffectElement.Burst] = new ElementEntry { cycleSeconds = 8f };
+        // Odin keeps the dictionary in its serialized data, which has to be current before the snapshot
+        ((ISerializationCallbackReceiver)_vocabulary).OnBeforeSerialize();
+        Undo.IncrementCurrentGroup();
+
+        SpellStudioPublishing.PublishEntry(_preset);
+        Undo.FlushUndoRecordObjects();
+        Undo.PerformUndo();
+
+        Assert.AreEqual(8f, _vocabulary.elements[EffectElement.Burst].cycleSeconds);
+    }
+
+    [Test]
+    public void SaveCopy_OtherAssetDirty_SavesOnlyTheCopy()
+    {
+        SpellStudioPreset other = ScriptableObject.CreateInstance<SpellStudioPreset>();
+        other.displayName = "Original disk value";
+        AssetDatabase.CreateAsset(other, _otherPath);
+        AssetDatabase.SaveAssetIfDirty(other);
+        other.displayName = "Unrelated unsaved edit";
+        EditorUtility.SetDirty(other);
+        _preset.displayName = "Saved copy";
+
+        SpellStudioPreset copy = SpellStudioPublishing.SaveCopy(_preset, _copyPath);
+
+        Assert.IsTrue(AssetDatabase.Contains(copy));
+        Assert.IsFalse(EditorUtility.IsDirty(copy));
+        Assert.IsTrue(EditorUtility.IsDirty(other));
+        Assert.AreEqual("Saved copy", copy.displayName);
+        StringAssert.Contains("Original disk value", File.ReadAllText(_otherPath));
+    }
+}
+
 }

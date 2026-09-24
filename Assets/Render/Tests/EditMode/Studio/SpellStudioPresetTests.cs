@@ -1,344 +1,290 @@
-using HealerLike.Render.Creatures;
-using HealerLike.Render.Grammar;
+using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Spells;
-
-using HealerLike.Render.Studio.Editor;
+using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Studio
 {
-    public class SpellStudioPresetTests
+
+public class SpellStudioPresetTests
+{
+    readonly List<Object> _objects = new List<Object>();
+    readonly List<string> _paths = new List<string>();
+    SpellStudioPreset _preset;
+    EffectVocabulary _vocabulary;
+
+    // A four-shape Rise entry counted by amount, on its own palette
+    [SetUp]
+    public void SetUp()
     {
-        SpellStudioPreset preset;
-        EffectVocabulary vocabulary;
-        LookPalette palette;
+        _vocabulary = CreateTracked<EffectVocabulary>();
+        _vocabulary.palette = CreateTracked<LookPalette>();
+        _vocabulary.palette.heal = Color.green;
+        _vocabulary.elements[EffectElement.Rise] = StudioTestAssets.CreateRise();
+        _preset = CreateTracked<SpellStudioPreset>();
+        _preset.vocabulary = _vocabulary;
+        _preset.element = EffectElement.Rise;
+        _preset.family = EffectFamily.Heal;
+    }
 
-        [SetUp]
-        public void SetUp()
+    [TearDown]
+    public void TearDown()
+    {
+        foreach (string path in _paths)
         {
-            preset = ScriptableObject.CreateInstance<SpellStudioPreset>();
-            vocabulary = ScriptableObject.CreateInstance<EffectVocabulary>();
-            palette = ScriptableObject.CreateInstance<LookPalette>();
-            palette.heal = Color.green;
-            vocabulary.palette = palette;
-            vocabulary.elements[EffectElement.Rise] = new ElementEntry
+            AssetDatabase.DeleteAsset(path);
+        }
+
+        foreach (Object trackedObject in _objects)
+        {
+            Object.DestroyImmediate(trackedObject);
+        }
+        _paths.Clear();
+        _objects.Clear();
+    }
+
+    T CreateTracked<T>() where T : ScriptableObject
+    {
+        T instance = ScriptableObject.CreateInstance<T>();
+        _objects.Add(instance);
+        return instance;
+    }
+
+    [Test]
+    public void Compose_PerPeriodHalfAmount_MatchesTheRuntimeComposer()
+    {
+        _preset.tempo = EffectTempo.PerPeriod;
+        _preset.periodSeconds = 1.75f;
+        _preset.amount = 0.5f;
+
+        EffectRecipe actual = _preset.Compose();
+
+        StudioTestAssets.AssertRecipe(EffectComposer.Compose(_vocabulary, EffectElement.Rise, EffectFamily.Heal,
+            EffectTempo.PerPeriod, 1.75f, _preset.stacks, _preset.charges, 0.5f), actual);
+    }
+
+    [Test]
+    public void CaptureEntry_EditedCopy_ComposesWithoutTouchingTheVocabulary()
+    {
+        Assert.IsTrue(_preset.CaptureEntry());
+        _preset.entry.parts[0].position = new Vector3(2f, 3f, 4f);
+        _preset.entry.motion = EffectMotionKind.Orbit;
+        _preset.entry.count = EffectCount.Stacks;
+        _preset.stacks = 2;
+
+        EffectRecipe result = _preset.Compose();
+
+        Assert.IsTrue(_preset.overrideEntry);
+        Assert.AreEqual(new Vector3(2f, 3f, 4f), result.entry.parts[0].position);
+        Assert.AreEqual(EffectMotionKind.Orbit, result.motion);
+        Assert.AreEqual(2, result.count);
+        Assert.AreEqual(Vector3.zero, _vocabulary.elements[EffectElement.Rise].parts[0].position);
+    }
+
+    [Test]
+    public void Compose_MissingVocabularyElementOrEntry_ReturnsNull()
+    {
+        _preset.element = EffectElement.Beam;
+        Assert.IsNull(_preset.Compose());
+        Assert.IsFalse(_preset.CaptureEntry());
+
+        _preset.vocabulary = null;
+        Assert.IsNull(_preset.Compose());
+
+        _preset.overrideEntry = true;
+        _preset.entry = null;
+        Assert.IsNull(_preset.Compose());
+    }
+
+    [Test]
+    public void Compose_AuthoredColourWithoutPalette_DrawsTheColour()
+    {
+        _preset.CaptureEntry();
+        _vocabulary.palette = null;
+        Assert.IsNull(_preset.Compose()); // no palette and no colour of its own
+
+        _preset.vocabulary = null;
+        _preset.overrideColour = true;
+        _preset.colour = Color.magenta;
+        EffectRecipe result = _preset.Compose();
+
+        Assert.AreEqual(Color.magenta, result.colour);
+        Assert.IsNull(result.palette);
+    }
+
+    [Test]
+    public void PreviewDuration_ImpactThenStatus_FollowsTheCycleThenTheLength()
+    {
+        _preset.durationSeconds = 7f;
+        Assert.AreEqual(0.75f, _preset.previewDuration);
+
+        _preset.tempo = EffectTempo.ForDuration;
+        Assert.AreEqual(7f, _preset.previewDuration);
+
+        _preset.durationSeconds = float.NaN;
+        Assert.AreEqual(4f, _preset.previewDuration); // not finite, the default length
+    }
+
+    [Test]
+    public void TryResolve_HandlerWithoutModifierData_ReturnsFalse()
+    {
+        BuffHandlerFactory handler = CreateTracked<BuffHandlerFactory>();
+        FlatModifierFactory modifier = CreateTracked<FlatModifierFactory>();
+        modifier.data = null;
+        handler.data = new BuffHandlerData { durationType = DurationType.Duration,
+            buffFactoryList = new List<ABuffFactory> { modifier } };
+        _preset.mode = SpellStudioMode.GameplayHandler;
+        _preset.sourceHandler = handler;
+
+        EffectChannels channels;
+        EffectElement element;
+        bool isResolved = _preset.TryResolve(out channels, out element);
+
+        Assert.IsFalse(isResolved);
+        Assert.IsNull(_preset.Compose());
+        Assert.AreEqual(0.6f, _preset.previewDuration); // no channels read as Once, with no entry the default cycle
+    }
+
+    [Test]
+    public void Compose_NativeRowOverHandler_TakesTheRowAndTheHandlersPeriod()
+    {
+        BuffHandlerFactory handler = CreateTracked<BuffHandlerFactory>();
+        handler.data = new BuffHandlerData { durationType = DurationType.Duration, isPeriodic = true,
+            periodDuration = 2.4f, buffFactoryList = new List<ABuffFactory>() };
+        SpellLooks looks = CreateTracked<SpellLooks>();
+        looks.buffs[handler] = new SpellLook { element = EffectElement.Rise, family = EffectFamily.Heal,
+            tempo = EffectTempo.PerPeriod };
+        _preset.mode = SpellStudioMode.GameplayHandler;
+        _preset.sourceHandler = handler;
+        _preset.spellLooks = looks;
+        _preset.periodSeconds = 17f;
+
+        EffectRecipe actual = _preset.Compose();
+
+        Assert.IsTrue(_preset.usesGameplayOverride);
+        StudioTestAssets.AssertRecipe(EffectComposer.Compose(_vocabulary, EffectElement.Rise, EffectFamily.Heal,
+            EffectTempo.PerPeriod, 2.4f, _preset.stacks, _preset.charges, _preset.amount), actual);
+        _preset.useGameplayOverrides = false;
+        Assert.IsFalse(_preset.usesGameplayOverride);
+    }
+
+    [TestCaseSource(typeof(StudioTestAssets), nameof(StudioTestAssets.ChannelCases))]
+    public void Compose_GrammarChannels_MatchesTheRuntimeComposer(EffectFamily family, AttributeGroup group,
+        EffectTempo tempo)
+    {
+        EffectVocabulary shipped = RenderTestAssets.LoadEffectVocabulary();
+        _preset.vocabulary = shipped;
+        _preset.mode = SpellStudioMode.GrammarChannels;
+        _preset.family = family;
+        _preset.attributeGroup = group;
+        _preset.tempo = tempo;
+        _preset.periodSeconds = 1.37f;
+        _preset.element = EffectElement.Beam; // a stale manual element the grammar ignores
+
+        EffectChannels channels = new EffectChannels { family = family, group = group, tempo = tempo,
+            periodSeconds = 1.37f };
+        EffectRecipe expected = EffectComposer.Compose(shipped, EffectComposer.Element(channels), family, tempo, 1.37f,
+            _preset.stacks, _preset.charges, _preset.amount);
+
+        StudioTestAssets.AssertRecipe(expected, _preset.Compose());
+        Assert.AreEqual(EffectElement.Beam, _preset.element);
+    }
+
+    [Test]
+    public void Compose_EveryGameplayHandler_MatchesTheRuntimeGrammarOnBothSides()
+    {
+        EffectVocabulary shipped = RenderTestAssets.LoadEffectVocabulary();
+        _preset.vocabulary = shipped;
+        _preset.mode = SpellStudioMode.GameplayHandler;
+        _preset.useGameplayOverrides = false;
+        string[] guids = AssetDatabase.FindAssets("t:ABuffHandlerFactory");
+
+        Assert.Greater(guids.Length, 0);
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            _preset.sourceHandler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(path);
+            foreach (bool isSameSide in new bool[] { true, false })
             {
-                parts = new[] { Part("First"), Part("Second"), Part("Third"), Part("Fourth") },
-                stackBeads = new[] { Part("Bead") }, criticalRings = new[] { Part("Critical") },
-                sideRim = new[] { Part("Side") }, motion = EffectMotionKind.Rise, socket = EffectSocket.Feet,
-                count = EffectCount.Amount, minCount = 1, cycleSeconds = 0.75f
-            };
-            preset.vocabulary = vocabulary;
-            preset.element = EffectElement.Rise;
-            preset.family = EffectFamily.Heal;
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            Object.DestroyImmediate(preset);
-            Object.DestroyImmediate(vocabulary);
-            Object.DestroyImmediate(palette);
-        }
-
-        static LookPart Part(string id) => new LookPart { id = id, size = Vector3.one, colour = ColourRole.Accent };
-
-        [Test]
-        public void Compose_UsesRuntimeCountColourAndPeriodSemantics()
-        {
-            preset.tempo = EffectTempo.PerPeriod;
-            preset.periodSeconds = 1.75f;
-            preset.amount = 0.5f;
-            EffectRecipe actual = preset.Compose();
-            EffectRecipe expected = EffectComposer.Compose(vocabulary, preset.element, preset.family, preset.tempo,
-                preset.periodSeconds, preset.stacks, preset.charges, preset.amount);
-            Assert.AreEqual(expected.count, actual.count);
-            Assert.AreEqual(expected.colour, actual.colour);
-            Assert.AreEqual(expected.cycleSeconds, actual.cycleSeconds);
-            Assert.AreEqual(expected.motion, actual.motion);
-            Assert.AreEqual(expected.socket, actual.socket);
-        }
-
-        [Test]
-        public void Compose_ReturnsIndependentEntriesAcrossAllLayers()
-        {
-            ElementEntry source = vocabulary.elements[preset.element];
-            EffectRecipe first = preset.Compose();
-            EffectRecipe second = preset.Compose();
-            first.entry.parts[0].position = Vector3.up;
-            first.entry.stackBeads[0].id = "Changed";
-            first.entry.criticalRings[0].size = Vector3.zero;
-            first.entry.sideRim[0].glow = 10f;
-            Assert.AreEqual(Vector3.zero, source.parts[0].position);
-            Assert.AreEqual(Vector3.zero, second.entry.parts[0].position);
-            Assert.AreEqual("Bead", source.stackBeads[0].id);
-            Assert.AreEqual(Vector3.one, source.criticalRings[0].size);
-            Assert.AreEqual(0f, source.sideRim[0].glow);
-            Assert.AreNotSame(source, first.entry);
-            Assert.AreNotSame(first.entry, second.entry);
-        }
-
-        [Test]
-        public void CaptureEntry_CopiesThenComposesEditedGeometryWithoutVocabularyMutation()
-        {
-            Assert.IsTrue(preset.CaptureEntry());
-            Assert.IsTrue(preset.overrideEntry);
-            preset.entry.parts[0].position = new Vector3(2f, 3f, 4f);
-            preset.entry.motion = EffectMotionKind.Orbit;
-            preset.entry.count = EffectCount.Stacks;
-            preset.stacks = 2;
-            EffectRecipe result = preset.Compose();
-            Assert.AreEqual(new Vector3(2f, 3f, 4f), result.entry.parts[0].position);
-            Assert.AreEqual(EffectMotionKind.Orbit, result.motion);
-            Assert.AreEqual(2, result.count);
-            Assert.AreEqual(Vector3.zero, vocabulary.elements[preset.element].parts[0].position);
-        }
-
-        [Test]
-        public void MissingSources_ReturnNullAndDiagnosticsWithoutErrors()
-        {
-            preset.vocabulary = null;
-            Assert.IsNull(preset.Compose());
-            Assert.IsFalse(preset.CaptureEntry());
-            Assert.IsNotEmpty(preset.Validate());
-            preset.vocabulary = vocabulary;
-            preset.element = EffectElement.Beam;
-            Assert.IsNull(preset.Compose());
-            Assert.IsFalse(preset.CaptureEntry());
-            preset.overrideEntry = true;
-            preset.entry = null;
-            Assert.IsNull(preset.Compose());
-        }
-
-        [Test]
-        public void AuthoredEntry_CanComposeWithoutVocabulary()
-        {
-            preset.CaptureEntry();
-            preset.vocabulary = null;
-            preset.overrideColour = true;
-            preset.colour = Color.magenta;
-            EffectRecipe result = preset.Compose();
-            Assert.NotNull(result);
-            Assert.AreEqual(Color.magenta, result.colour);
-            Assert.IsNull(result.palette);
-        }
-
-        [Test]
-        public void MissingPalette_ReturnsDiagnosticUnlessColourIsExplicitlyAuthored()
-        {
-            vocabulary.palette = null;
-            Assert.IsNull(preset.Compose());
-            Assert.That(string.Join(" ", preset.Validate()), Does.Contain("palette"));
-            preset.overrideColour = true;
-            preset.colour = Color.cyan;
-            EffectRecipe result = preset.Compose();
-            Assert.NotNull(result);
-            Assert.IsNull(result.palette);
-            Assert.AreEqual(Color.cyan, result.colour);
-            Assert.IsEmpty(preset.Validate());
-        }
-
-        [Test]
-        public void Compose_SanitizesMalformedDataWithoutEditingAuthoringFields()
-        {
-            preset.CaptureEntry();
-            preset.entry.parts[0].position = new Vector3(float.NaN, float.PositiveInfinity, 1000f);
-            preset.entry.parts[0].size = new Vector3(-1f, float.NaN, 1000f);
-            preset.entry.parts[0].primitive = (Primitive)999;
-            preset.entry.stackBeads = null;
-            preset.entry.cycleSeconds = float.NaN;
-            preset.entry.minCount = int.MaxValue;
-            preset.entry.count = EffectCount.Stacks;
-            preset.entry.motion = (EffectMotionKind)999;
-            preset.stacks = int.MaxValue;
-            preset.charges = float.PositiveInfinity;
-            preset.amount = float.NaN;
-            preset.scale = float.NaN;
-            preset.side = (Entity.EntityType)999;
-            preset.family = (EffectFamily)999;
-            preset.overrideColour = true;
-            preset.colour = new Color(float.NaN, float.PositiveInfinity, -2f, 10f);
-            EffectRecipe result = preset.Compose();
-            Assert.AreEqual(new Vector3(0f, 0f, 50f), result.entry.parts[0].position);
-            Assert.AreEqual(new Vector3(0.001f, 0.1f, 20f), result.entry.parts[0].size);
-            Assert.AreEqual(4, result.count);
-            Assert.AreEqual(0.6f, result.cycleSeconds);
-            Assert.AreEqual(EffectMotionKind.Burst, result.motion);
-            Assert.AreEqual(EffectFamily.Damage, result.family);
-            Assert.AreEqual(new Color(1f, 1f, 0f, 1f), result.colour);
-            Assert.IsEmpty(result.entry.stackBeads);
-            Assert.AreEqual(1f, preset.SafeScale);
-            Assert.AreEqual(Entity.EntityType.Player, preset.SafeSide);
-            Assert.IsTrue(float.IsNaN(preset.entry.parts[0].position.x));
-            Assert.IsNull(preset.entry.stackBeads);
-            Assert.AreEqual(int.MaxValue, preset.stacks);
-            Assert.IsNotEmpty(preset.Validate());
-        }
-
-        [Test]
-        public void Compose_NullPartArraysProduceSafeEmptyRecipe()
-        {
-            preset.overrideEntry = true;
-            preset.entry = new ElementEntry { parts = null, stackBeads = null, criticalRings = null, sideRim = null };
-            EffectRecipe result = preset.Compose();
-            Assert.AreEqual(0, result.count);
-            Assert.IsEmpty(result.entry.parts);
-            Assert.IsNotEmpty(preset.Validate());
-        }
-
-        [Test]
-        public void Compose_ExcessiveLayersAreBounded()
-        {
-            preset.CaptureEntry();
-            preset.entry.parts = new LookPart[SpellStudioPreset.MaxParts + 20];
-            preset.entry.count = EffectCount.Fixed;
-            Assert.AreEqual(SpellStudioPreset.MaxParts, preset.Compose().count);
-            Assert.AreEqual(SpellStudioPreset.MaxParts + 20, preset.entry.parts.Length);
-        }
-
-        [Test]
-        public void PreviewDuration_UsesOneCycleForImpactsAndDurationForStatuses()
-        {
-            preset.durationSeconds = 7f;
-            Assert.AreEqual(0.75f, preset.PreviewDuration);
-            preset.tempo = EffectTempo.ForDuration;
-            Assert.AreEqual(7f, preset.PreviewDuration);
-            preset.durationSeconds = float.NaN;
-            Assert.AreEqual(4f, preset.PreviewDuration);
-            preset.tempo = EffectTempo.Once;
-            preset.CaptureEntry();
-            preset.entry.cycleSeconds = -1f;
-            Assert.AreEqual(0.01f, preset.PreviewDuration);
-        }
-
-        [Test]
-        public void ValidPreset_HasNoWarningsAndCompositionLeavesRandomStateUnchanged()
-        {
-            Assert.IsEmpty(preset.Validate());
-            Random.State before = Random.state;
-            EffectRecipe a = preset.Compose();
-            EffectRecipe b = preset.Compose();
-            Assert.AreEqual(before, Random.state);
-            Assert.AreEqual(a.count, b.count);
-            Assert.AreEqual(a.colour, b.colour);
-            Assert.AreEqual(a.entry.parts[2].position, b.entry.parts[2].position);
-        }
-
-        [Test]
-        public void GameplayHandler_MissingNestedModifierDataReturnsDiagnosticWithoutThrowing()
-        {
-            var handler = ScriptableObject.CreateInstance<BuffHandlerFactory>();
-            var modifier = ScriptableObject.CreateInstance<FlatModifierFactory>();
-            try
-            {
-                modifier.data = null;
-                handler.data = new BuffHandlerData { durationType = DurationType.Duration,
-                    buffFactoryList = new System.Collections.Generic.List<ABuffFactory> { modifier } };
-                preset.mode = SpellStudioMode.GameplayHandler; preset.sourceHandler = handler;
-                Assert.IsFalse(preset.TryResolve(out _, out _));
-                Assert.IsNull(preset.Compose());
-                Assert.That(string.Join(" ", preset.Validate()), Does.Contain("missing buff data"));
-                Assert.DoesNotThrow(() => { var channels = preset.ResolvedChannels; var duration = preset.PreviewDuration; });
+                _preset.isSameSide = isSameSide;
+                EffectChannels channels = EffectDerivation.Channels(_preset.sourceHandler, isSameSide);
+                EffectRecipe expected = EffectComposer.Compose(shipped, EffectComposer.Element(channels),
+                    channels.family, channels.tempo, channels.periodSeconds, _preset.stacks, _preset.charges,
+                    _preset.amount);
+                StudioTestAssets.AssertRecipe(expected, _preset.Compose());
             }
-            finally { Object.DestroyImmediate(handler); Object.DestroyImmediate(modifier); }
-        }
-
-        [Test]
-        public void GameplayOverride_BypassesUnneededNestedBuffDerivationLikeRuntime()
-        {
-            var handler = ScriptableObject.CreateInstance<BuffHandlerFactory>();
-            var modifier = ScriptableObject.CreateInstance<FlatModifierFactory>();
-            var looks = ScriptableObject.CreateInstance<SpellLooks>();
-            try
-            {
-                modifier.data = null;
-                handler.data = new BuffHandlerData { durationType = DurationType.Duration, isPeriodic = true,
-                    periodDuration = 2f, buffFactoryList = new System.Collections.Generic.List<ABuffFactory> { modifier } };
-                looks.buffs[handler] = new SpellLook { element = EffectElement.Rise, family = EffectFamily.Heal, tempo = EffectTempo.PerPeriod };
-                preset.mode = SpellStudioMode.GameplayHandler; preset.sourceHandler = handler; preset.spellLooks = looks;
-                Assert.IsTrue(preset.TryResolve(out _, out _));
-                EffectRecipe actual = preset.Compose();
-                EffectRecipe expected = EffectComposer.Compose(vocabulary, EffectElement.Rise, EffectFamily.Heal,
-                    EffectTempo.PerPeriod, EffectDerivation.Period(handler), preset.stacks, preset.charges, preset.amount);
-                Assert.NotNull(actual); Assert.AreEqual(expected.element, actual.element);
-                Assert.AreEqual(expected.family, actual.family); Assert.AreEqual(expected.cycleSeconds, actual.cycleSeconds);
-                Assert.IsEmpty(preset.Validate());
-            }
-            finally { Object.DestroyImmediate(looks); Object.DestroyImmediate(handler); Object.DestroyImmediate(modifier); }
-        }
-
-        [Test]
-        public void SavedAsset_ReloadsAuthoredPartsSettingsAndColour()
-        {
-            string path = "Assets/__SpellStudioPresetTest_" + System.Guid.NewGuid().ToString("N") + ".asset";
-            SpellStudioPreset saved = null;
-            try
-            {
-                saved = Object.Instantiate(preset);
-                saved.CaptureEntry();
-                // Only reference shipped/persistent assets from a persistent preset. This test's vocabulary is transient.
-                saved.vocabulary = null;
-                saved.displayName = "Persistent test spell";
-                saved.description = "A deliberately authored visual";
-                saved.tempo = EffectTempo.PerPeriod;
-                saved.periodSeconds = 2.25f;
-                saved.durationSeconds = 9f;
-                saved.stacks = 3;
-                saved.charges = 2.5f;
-                saved.amount = 0.4f;
-                saved.scale = 1.6f;
-                saved.critical = true;
-                saved.side = Entity.EntityType.Computer;
-                saved.overrideColour = true;
-                saved.colour = new Color(0.2f, 0.4f, 0.8f, 1f);
-                saved.entry.parts[0].position = new Vector3(2f, 3f, 4f);
-                saved.entry.stackBeads[0].glow = 2f;
-                saved.entry.criticalRings[0].id = "Saved ring";
-                saved.entry.sideRim[0].size = Vector3.one * 2f;
-                AssetDatabase.CreateAsset(saved, path);
-                AssetDatabase.SaveAssetIfDirty(saved);
-                Resources.UnloadAsset(saved);
-                saved = null;
-                AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
-                saved = AssetDatabase.LoadAssetAtPath<SpellStudioPreset>(path);
-                Assert.NotNull(saved);
-                Assert.AreEqual("Persistent test spell", saved.displayName);
-                Assert.AreEqual("A deliberately authored visual", saved.description);
-                Assert.AreEqual(EffectTempo.PerPeriod, saved.tempo);
-                Assert.AreEqual(2.25f, saved.periodSeconds);
-                Assert.AreEqual(9f, saved.durationSeconds);
-                Assert.AreEqual(3, saved.stacks);
-                Assert.AreEqual(2.5f, saved.charges);
-                Assert.AreEqual(0.4f, saved.amount);
-                Assert.AreEqual(1.6f, saved.scale);
-                Assert.IsTrue(saved.critical);
-                Assert.AreEqual(Entity.EntityType.Computer, saved.side);
-                Assert.IsTrue(saved.overrideEntry);
-                Assert.IsTrue(saved.overrideColour);
-                Assert.AreEqual(new Color(0.2f, 0.4f, 0.8f, 1f), saved.colour);
-                Assert.AreEqual(new Vector3(2f, 3f, 4f), saved.entry.parts[0].position);
-                Assert.AreEqual(2f, saved.entry.stackBeads[0].glow);
-                Assert.AreEqual("Saved ring", saved.entry.criticalRings[0].id);
-                Assert.AreEqual(Vector3.one * 2f, saved.entry.sideRim[0].size);
-                Assert.AreEqual(saved.colour, saved.Compose().colour);
-                Assert.AreEqual(2.25f, saved.Compose().cycleSeconds);
-                Assert.AreEqual(Vector3.zero, vocabulary.elements[preset.element].parts[0].position);
-            }
-            finally
-            {
-                AssetDatabase.DeleteAsset(path);
-                if (saved != null && !EditorUtility.IsPersistent(saved)) Object.DestroyImmediate(saved);
-            }
-        }
-
-        [Test]
-        public void CloneEntry_HandlesNullAndNormalizesMissingArrays()
-        {
-            Assert.IsNull(SpellStudioPreset.CloneEntry(null));
-            ElementEntry cloned = SpellStudioPreset.CloneEntry(new ElementEntry { parts = null });
-            Assert.IsEmpty(cloned.parts);
         }
     }
+
+    [TestCase(0f)]
+    [TestCase(-1f)]
+    [TestCase(float.NaN)]
+    [TestCase(float.PositiveInfinity)]
+    [TestCase(2.75f)]
+    public void Compose_TickingPeriod_FallsBackAsTheRuntimeDoes(float period)
+    {
+        _preset.vocabulary = RenderTestAssets.LoadEffectVocabulary();
+        _preset.mode = SpellStudioMode.GrammarChannels;
+        _preset.family = EffectFamily.Renew;
+        _preset.tempo = EffectTempo.PerPeriod;
+        _preset.periodSeconds = period;
+
+        EffectRecipe expected = EffectComposer.Compose(_preset.vocabulary, _preset.resolvedChannels, 1, 1f);
+
+        Assert.AreEqual(expected.cycleSeconds, _preset.Compose().cycleSeconds);
+    }
+
+    [Test]
+    public void CaptureEntry_GrammarMode_CopiesTheResolvedElement()
+    {
+        EffectVocabulary shipped = RenderTestAssets.LoadEffectVocabulary();
+        _preset.vocabulary = shipped;
+        _preset.mode = SpellStudioMode.GrammarChannels;
+        _preset.family = EffectFamily.Boon;
+        _preset.attributeGroup = AttributeGroup.Prevention; // boon and prevention grow a bud
+        _preset.tempo = EffectTempo.Once;
+        Vector3 original = shipped.elements[EffectElement.Bud].parts[0].size;
+
+        Assert.AreEqual(shipped.elements[EffectElement.Bud].cycleSeconds, _preset.previewDuration);
+        Assert.IsTrue(_preset.CaptureEntry());
+        _preset.entry.parts[0].size = Vector3.one * 2f;
+
+        Assert.AreEqual(EffectElement.Bud, _preset.Compose().element);
+        Assert.AreEqual(original, shipped.elements[EffectElement.Bud].parts[0].size);
+    }
+
+    [Test]
+    public void SavedAsset_HandlerModeReloaded_KeepsModeChannelsAndReferences()
+    {
+        string path = "Assets/__SpellStudioPreset_" + Guid.NewGuid().ToString("N") + ".asset";
+        _paths.Add(path);
+        SpellStudioPreset saved = Object.Instantiate(_preset);
+        saved.vocabulary = RenderTestAssets.LoadEffectVocabulary();
+        saved.mode = SpellStudioMode.GameplayHandler;
+        saved.sourceHandler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(StudioTestAssets.OpposingHandlerPath);
+        saved.isSameSide = false;
+        saved.attributeGroup = AttributeGroup.Prevention;
+        saved.colour = new Color(0.2f, 0.4f, 0.8f, 1f);
+        AssetDatabase.CreateAsset(saved, path);
+        AssetDatabase.SaveAssetIfDirty(saved);
+        Resources.UnloadAsset(saved);
+
+        AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+        SpellStudioPreset loaded = AssetDatabase.LoadAssetAtPath<SpellStudioPreset>(path);
+
+        Assert.AreEqual(SpellStudioMode.GameplayHandler, loaded.mode);
+        Assert.AreEqual(AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(StudioTestAssets.OpposingHandlerPath),
+            loaded.sourceHandler);
+        Assert.IsFalse(loaded.isSameSide);
+        Assert.AreEqual(AttributeGroup.Prevention, loaded.attributeGroup);
+        Assert.AreEqual(new Color(0.2f, 0.4f, 0.8f, 1f), loaded.colour);
+        Assert.NotNull(loaded.Compose());
+    }
+}
+
 }
