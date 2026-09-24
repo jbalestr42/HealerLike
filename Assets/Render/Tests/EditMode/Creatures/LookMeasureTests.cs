@@ -32,11 +32,13 @@ public class LookMeasureTests
                 {
                     foreach (StemBand stem in Enum.GetValues(typeof(StemBand)))
                     {
-                        UnitChannels channels = RenderTestAssets.CreateChannels(side, HeadKind.Bud, stem: stem, mass: mass, accessory: accessory);
+                        UnitChannels channels = RenderTestAssets.CreateChannels(side, HeadKind.Bud, stem: stem,
+                            mass: mass, accessory: accessory);
 
                         float reach = LookMeasure.AccessoryReach(channels, _vocabulary);
 
-                        Assert.GreaterOrEqual(reach, needed, $"{side} {accessory} {mass} {stem}"); // in cells past body and head
+                        // in cells past body and head
+                        Assert.GreaterOrEqual(reach, needed, $"{side} {accessory} {mass} {stem}");
                     }
                 }
             }

@@ -240,7 +240,8 @@ namespace HealerLike.Render.Environment
 
         void PlantPart(Transform parent, Mesh mesh, Vector3 bottom, Quaternion rotation, Vector3 scale, Color colour)
         {
-            Part(parent, mesh, _plantMaterial, bottom, rotation, scale, ColourJitter.VaryScenery(colour, _colourSeed), mesh.name);
+            Part(parent, mesh, _plantMaterial, bottom, rotation, scale,
+                ColourJitter.VaryScenery(colour, _colourSeed), mesh.name);
         }
 
         // Scatter plants are plants, scatter rocks stones; each part varies its colour from the role's

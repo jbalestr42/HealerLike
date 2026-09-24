@@ -84,8 +84,8 @@ namespace HealerLike.Render.Stage
             return item;
         }
 
-        public static BuffHandlerFactory Handler(DurationType durationType, float duration, float period, List<Object> created,
-                                                 params ABuffFactory[] buffs)
+        public static BuffHandlerFactory Handler(DurationType durationType, float duration, float period,
+            List<Object> created, params ABuffFactory[] buffs)
         {
             BuffHandlerFactory handler = Track(ScriptableObject.CreateInstance<BuffHandlerFactory>(), created);
             handler.data = new BuffHandlerData
@@ -127,14 +127,17 @@ namespace HealerLike.Render.Stage
 
         public static CurrentWaveModifierFactory WaveModifier(AttributeType type, List<Object> created)
         {
-            CurrentWaveModifierFactory modifier = Track(ScriptableObject.CreateInstance<CurrentWaveModifierFactory>(), created);
-            modifier.data = new CurrentWaveModifierData { type = type, modifierType = AttributeModifierType.Multiply, value = 1f };
+            CurrentWaveModifierFactory modifier = Track(
+                ScriptableObject.CreateInstance<CurrentWaveModifierFactory>(), created);
+            modifier.data = new CurrentWaveModifierData
+                { type = type, modifierType = AttributeModifierType.Multiply, value = 1f };
             return modifier;
         }
 
         public static ShootProjectileSkillFactory Shoot(GameObject prefab, int perTarget, List<Object> created)
         {
-            ShootProjectileSkillFactory shoot = Track(ScriptableObject.CreateInstance<ShootProjectileSkillFactory>(), created);
+            ShootProjectileSkillFactory shoot = Track(
+                ScriptableObject.CreateInstance<ShootProjectileSkillFactory>(), created);
             ShootProjectileSkillData.ProjectileData entry = new ShootProjectileSkillData.ProjectileData
             {
                 projectilePrefab = prefab,
@@ -152,7 +155,8 @@ namespace HealerLike.Render.Stage
         public static ApplyBuffOnTargetSkillFactory Support(ABuffHandlerFactory handler, bool targetAlly, float rate,
                                                             List<Object> created)
         {
-            ApplyBuffOnTargetSkillFactory support = Track(ScriptableObject.CreateInstance<ApplyBuffOnTargetSkillFactory>(), created);
+            ApplyBuffOnTargetSkillFactory support = Track(
+                ScriptableObject.CreateInstance<ApplyBuffOnTargetSkillFactory>(), created);
             support.data = new ApplyBuffOnTargetSkillData
             {
                 onSkillTriggerFactory = new List<AOnSkillTriggerFactory>(),
@@ -169,9 +173,10 @@ namespace HealerLike.Render.Stage
             return RenderAssets.Load<GameObject>(ProjectileFolder + name + ".prefab");
         }
 
-        // A copy of one of the game's projectile prefabs with behaviours baked in, kept under an inactive holder so it never
-        // plays itself; EntityManager instantiates it under its own projectile parent, where it is active
-        public static GameObject Variant(string prefab, List<Object> created, params AProjectileBehaviourFactory[] behaviours)
+        // A copy of one of the game's projectile prefabs with behaviours baked in, kept under an inactive holder so
+        // it never plays itself; EntityManager instantiates it under its own projectile parent, where it is active
+        public static GameObject Variant(string prefab, List<Object> created,
+            params AProjectileBehaviourFactory[] behaviours)
         {
             GameObject holder = Track(new GameObject("LookSheetVariant"), created);
             holder.SetActive(false);

@@ -111,7 +111,8 @@ namespace HealerLike.Render.Creatures
                 }
             }
 
-            return PrimitiveMeshBaker.CreateMesh(name, vertices.ToArray(), triangles.ToArray(), normals.ToArray(), null);
+            return PrimitiveMeshBaker.CreateMesh(name, vertices.ToArray(), triangles.ToArray(), normals.ToArray(),
+                null);
         }
 
         static void AddCap(float y, float radius, bool isTop, int count, List<Vector3> vertices, List<Vector3> normals,

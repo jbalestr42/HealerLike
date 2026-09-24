@@ -78,7 +78,8 @@ namespace HealerLike.Render.Spells
             }
 
             InitOutcomes(character.gameObject, null, character.mana, sink, registry);
-            if (character.buffManager != null && (_manager != character.buffManager || !ReferenceEquals(_injected, sink)))
+            if (character.buffManager != null
+                && (_manager != character.buffManager || !ReferenceEquals(_injected, sink)))
             {
                 Init(character.buffManager, sink);
             }

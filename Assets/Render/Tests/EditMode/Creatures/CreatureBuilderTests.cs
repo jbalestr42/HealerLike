@@ -100,7 +100,8 @@ public class CreatureBuilderTests
         {
             foreach (HeadKind head in System.Enum.GetValues(typeof(HeadKind)))
             {
-                CreatureRecipe recipe = LookComposer.Compose(RenderTestAssets.CreateChannels(side, head), RenderTestAssets.LoadLookVocabulary());
+                CreatureRecipe recipe = LookComposer.Compose(RenderTestAssets.CreateChannels(side, head),
+                    RenderTestAssets.LoadLookVocabulary());
                 _objects.Add(recipe);
                 RenderTestAssets.SetRecipe(_builder, recipe, _material, RenderTestAssets.LoadMeshes());
                 _builder.Init(_entity);
@@ -109,7 +110,8 @@ public class CreatureBuilderTests
 
                 Assert.IsTrue(hasAnchors, $"{side} {head}");
                 Assert.Greater(anchors.headCentre.y, anchors.neck.y, $"{side} {head}");
-                Assert.Greater(Vector3.Distance(anchors.headCentre, anchors.bodyCentre), anchors.bodyRadius, $"{side} {head}");
+                Assert.Greater(Vector3.Distance(anchors.headCentre, anchors.bodyCentre), anchors.bodyRadius,
+                    $"{side} {head}");
                 Assert.Greater(anchors.neck.y, anchors.foot.y, $"{side} {head}");
                 Assert.GreaterOrEqual(anchors.castPoint.y, anchors.headCentre.y, $"{side} {head}");
             }

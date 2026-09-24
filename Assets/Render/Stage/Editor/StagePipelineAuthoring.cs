@@ -33,7 +33,8 @@ namespace HealerLike.Render.Stage
             }
 
             UniversalRendererData rendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(RendererPath);
-            UniversalRenderPipelineAsset pipeline = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(PipelinePath);
+            UniversalRenderPipelineAsset pipeline =
+                AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(PipelinePath);
             if (rendererData == null || pipeline == null)
             {
                 Debug.LogError($"[StagePipelineAuthoring] Could not copy {sourcePipeline} and its renderer.");
@@ -86,7 +87,8 @@ namespace HealerLike.Render.Stage
             map.arraySize = rendererData.rendererFeatures.Count;
             for (int i = 0; i < rendererData.rendererFeatures.Count; i++)
             {
-                AssetDatabase.TryGetGUIDAndLocalFileIdentifier(rendererData.rendererFeatures[i], out string _, out long id);
+                AssetDatabase.TryGetGUIDAndLocalFileIdentifier(rendererData.rendererFeatures[i], out string _,
+                    out long id);
                 map.GetArrayElementAtIndex(i).longValue = id;
             }
 

@@ -81,8 +81,8 @@ public class StageCalibrationTests
                                          StageCalibration.PortraitAspect, frame, 0f);
 
         Rect edge = Rect.MinMaxRect(0.0999f, 0.1999f, 0.9001f, 0.8001f); // the fit touches the frame
-        Assert.IsTrue(StageCalibration.Contains(box, pose, StageCalibration.PortraitFov, StageCalibration.PortraitAspect,
-                                                edge));
+        Assert.IsTrue(StageCalibration.Contains(box, pose, StageCalibration.PortraitFov,
+            StageCalibration.PortraitAspect, edge));
         Pose closer = new Pose(pose.position + pose.rotation * Vector3.forward, pose.rotation);
         Assert.IsFalse(StageCalibration.Contains(box, closer, StageCalibration.PortraitFov,
                                                  StageCalibration.PortraitAspect, frame));

@@ -231,8 +231,8 @@ namespace HealerLike.Render.Spells
         }
 
         // A new element under the parent; on a unit, its body and stem parts take the unit's side
-        public static SpellEffect Create(EffectRecipe recipe, Transform parent, PrimitiveMeshes meshes, Material material,
-                                         GameObject target)
+        public static SpellEffect Create(EffectRecipe recipe, Transform parent, PrimitiveMeshes meshes,
+            Material material, GameObject target)
         {
             if (recipe == null || meshes == null)
             {

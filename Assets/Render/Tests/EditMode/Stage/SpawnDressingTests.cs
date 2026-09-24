@@ -36,7 +36,8 @@ public class SpawnDressingTests
     // A projectile as EntityManager.SpawnProjectile hands it out, before Projectile.Init
     Projectile SpawnProjectile(string prefabName)
     {
-        GameObject projectileGo = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(projectileFolder + prefabName + ".prefab"));
+        GameObject projectileGo =
+            Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(projectileFolder + prefabName + ".prefab"));
         _spawned.Add(projectileGo);
         return projectileGo.GetComponent<Projectile>();
     }
@@ -110,10 +111,11 @@ public class SpawnDressingTests
         _scene.manager.Init(_scene.entityManager, _scene.player);
         Entity entity = CreateEntity(_scene.gameGo.transform, Entity.EntityType.Player, out Renderer modelRenderer);
         entity.data = AssetDatabase.LoadAssetAtPath<EntityData>("Assets/Data/Entities/NormalEntity/NormalEntity.asset");
-        GameObject hudGo = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/EntityHUD.prefab"),
-                                              entity.model.transform);
+        GameObject hudGo = Object.Instantiate(
+            AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/EntityHUD.prefab"), entity.model.transform);
         BuffIconBar bar = hudGo.GetComponentInChildren<BuffIconBar>(true);
-        Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/UI/BuffIcon.prefab"), bar.transform);
+        Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/UI/BuffIcon.prefab"),
+            bar.transform);
 
         _scene.entityManager.OnEntitySpawned.Invoke(entity);
 

@@ -9,8 +9,8 @@ namespace HealerLike.Render.Look
 
 public class OutlinesTests
 {
-    static readonly FieldInfo edgeMaterialField = typeof(Outlines).GetField("_edgeMaterial",
-                                                                            BindingFlags.Instance | BindingFlags.NonPublic);
+    static readonly FieldInfo edgeMaterialField =
+        typeof(Outlines).GetField("_edgeMaterial", BindingFlags.Instance | BindingFlags.NonPublic);
 
     Outlines _feature;
 
@@ -68,8 +68,8 @@ public class OutlinesTests
 
         _feature.Create();
 
-        OutlinesPass pass = (OutlinesPass)typeof(Outlines).GetField("_pass", BindingFlags.Instance | BindingFlags.NonPublic)
-            .GetValue(_feature);
+        OutlinesPass pass = (OutlinesPass)typeof(Outlines)
+            .GetField("_pass", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(_feature);
         Assert.That(Convert.ToInt32(pass.input), Is.Zero);
     }
 

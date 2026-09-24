@@ -22,9 +22,12 @@ namespace HealerLike.Render.Stage
         // A factory or an engine change the game does not have yet; the sheet draws the parts and stars the label
         public static readonly string[] StandIns = { "Overgrowth", "Lifebloom", "Sprout", "Transfusion" };
 
-        static readonly string quickenPath = "Assets/Data/CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory.asset";
-        static readonly string blightPath = "Assets/Data/CharacterSkills/PoisonSingleTarget/PoisonSingleTarget_BuffHandlerFactory.asset";
-        static readonly string weakenPath = "Assets/Data/CharacterSkills/MultiTargetReduceDamage/BuffHandlerFactory.asset";
+        static readonly string quickenPath =
+            "Assets/Data/CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory.asset";
+        static readonly string blightPath =
+            "Assets/Data/CharacterSkills/PoisonSingleTarget/PoisonSingleTarget_BuffHandlerFactory.asset";
+        static readonly string weakenPath =
+            "Assets/Data/CharacterSkills/MultiTargetReduceDamage/BuffHandlerFactory.asset";
         static readonly string bouncePath = "Assets/Data/EntityItems/BounceItem/BounceProjectileBehaviourFactory.asset";
 
         public static bool IsStandIn(string spell)
@@ -52,9 +55,11 @@ namespace HealerLike.Render.Stage
                 case "Focus":
                     // SingleTargetBuffAttackRate with the sign the roster fixes
                     return LookSheetData.Handler(DurationType.Duration, 2f, 0f, created,
-                        LookSheetData.Modifier(AttributeType.AttackRate, AttributeModifierType.Multiply, -0.5f, created));
+                        LookSheetData.Modifier(AttributeType.AttackRate, AttributeModifierType.Multiply, -0.5f,
+                            created));
                 case "Renew":
-                    return LookSheetData.Handler(DurationType.Duration, 6f, 1f, created, LookSheetData.Consume(-4f, created));
+                    return LookSheetData.Handler(DurationType.Duration, 6f, 1f, created,
+                        LookSheetData.Consume(-4f, created));
                 case "Barkskin":
                     return LookSheetData.Handler(DurationType.Instant, 0f, 0f, created,
                         LookSheetData.Modifier(AttributeType.HitArmor, AttributeModifierType.Add, 3f, created));

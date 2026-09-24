@@ -12,7 +12,8 @@ namespace HealerLike.Render.Stage
         public static readonly string[] Roster =
         {
             "NormalEntity", "FastShootEntity", "TripleShootEntity", "MultiShotEntity", "RandomShootEntity",
-            "ChainLightningEntity", "ChannelingEntity", "SwarmEntity", "TestEntity", "SoldierEntity", "HitArmorBufferEntity"
+            "ChainLightningEntity", "ChannelingEntity", "SwarmEntity", "TestEntity", "SoldierEntity",
+            "HitArmorBufferEntity"
         };
 
         // The proposed roster units that are not in the game data yet, in roster order
@@ -22,10 +23,12 @@ namespace HealerLike.Render.Stage
             "Mending stone", "Warded idol", "Rising stone", "Splitter", "Runner", "Warlord"
         };
 
-        // A factory or an engine change the game does not have yet; the sheet draws the nearest data and stars the label
+        // A factory or an engine change the game does not have yet; the sheet draws the nearest data
+        // and stars the label
         public static readonly string[] StandIns = { "Mortar", "Bramble", "Splitter", "Runner" };
 
-        public static readonly string[] Undesigned = { "Stormreed", "Puffball", "Old fern", "Needle stone", "Storm idol" };
+        public static readonly string[] Undesigned =
+            { "Stormreed", "Puffball", "Old fern", "Needle stone", "Storm idol" };
 
         static readonly string[] stones =
         {
@@ -34,9 +37,11 @@ namespace HealerLike.Render.Stage
         };
 
         static readonly string poisonPath = "Assets/Data/EntityItems/PoisonItem/BuffHandlerFactory.asset";
-        static readonly string explosionPath = "Assets/Data/EntityItems/ExplodeOnHitItem/AreaOfEffectProjectileBehaviourFactory.asset";
+        static readonly string explosionPath =
+            "Assets/Data/EntityItems/ExplodeOnHitItem/" + "AreaOfEffectProjectileBehaviourFactory.asset";
         static readonly string distancePath =
-            "Assets/Data/EntityItems/IncreaseDamageWithProjectileDistanceItem/IncreaseDamageOnDistanceProjectileBehaviourFactory.asset";
+            "Assets/Data/EntityItems/IncreaseDamageWithProjectileDistanceItem/" +
+            "IncreaseDamageOnDistanceProjectileBehaviourFactory.asset";
         static readonly string armorPath = "Assets/Data/Entities/HitArmorBufferEntityEntity/BuffHandlerFactory.asset";
 
         // Allies are plants and enemies stones, as the game's waves and the roster place them
@@ -88,8 +93,8 @@ namespace HealerLike.Render.Stage
                     break;
                 case "Flanker":
                     data.targetBehaviourType = TargetBehaviourType.Nearest;
-                    BackstabProjectileBehaviourFactory backstab =
-                        LookSheetData.Track(ScriptableObject.CreateInstance<BackstabProjectileBehaviourFactory>(), created);
+                    BackstabProjectileBehaviourFactory backstab = LookSheetData.Track(
+                        ScriptableObject.CreateInstance<BackstabProjectileBehaviourFactory>(), created);
                     backstab.data = new BackstabProjectileBehaviourData();
                     GameObject flanker = LookSheetData.Variant("BulletSpeed", created, backstab);
                     data.skillFactories.Add(LookSheetData.Shoot(flanker, 1, created));
@@ -97,7 +102,8 @@ namespace HealerLike.Render.Stage
                 case "Bramble":
                     // Stand-in: the HP based damage half of the thorns, a passive with no on-hurt trigger
                     data.skillFactories.Add(LookSheetData.Shoot(LookSheetData.Prefab("BulletSpeed"), 1, created));
-                    HPBasedModifierFactory thorns = LookSheetData.Track(ScriptableObject.CreateInstance<HPBasedModifierFactory>(), created);
+                    HPBasedModifierFactory thorns = LookSheetData.Track(
+                        ScriptableObject.CreateInstance<HPBasedModifierFactory>(), created);
                     thorns.data = new HPBasedModifierData
                     {
                         type = AttributeType.Damage,
@@ -105,7 +111,8 @@ namespace HealerLike.Render.Stage
                         factor = 1f,
                         threshold = 0.5f
                     };
-                    LookSheetData.AddPassive(data, LookSheetData.Handler(DurationType.Infinite, 0f, 0f, created, thorns), created);
+                    LookSheetData.AddPassive(data,
+                        LookSheetData.Handler(DurationType.Infinite, 0f, 0f, created, thorns), created);
                     break;
                 case "Brute":
                     data = LookSheetData.Copy(soldier, unit, created);
@@ -119,13 +126,14 @@ namespace HealerLike.Render.Stage
                     LookSheetData.AddOnHitEffect(data, RenderAssets.Load<ABuffHandlerFactory>(poisonPath), created);
                     break;
                 case "Hexer":
-                    FlatModifierFactory slow = LookSheetData.Modifier(AttributeType.AttackRate, AttributeModifierType.Multiply, 0.5f, created);
+                    FlatModifierFactory slow = LookSheetData.Modifier(AttributeType.AttackRate,
+                        AttributeModifierType.Multiply, 0.5f, created);
                     BuffHandlerFactory hex = LookSheetData.Handler(DurationType.Duration, 4f, 0f, created, slow);
                     data.skillFactories.Add(LookSheetData.Support(hex, false, 4f, created));
                     break;
                 case "Warded idol":
-                    ApplyBuffPeriodicallySkillFactory ward =
-                        LookSheetData.Track(ScriptableObject.CreateInstance<ApplyBuffPeriodicallySkillFactory>(), created);
+                    ApplyBuffPeriodicallySkillFactory ward = LookSheetData.Track(
+                        ScriptableObject.CreateInstance<ApplyBuffPeriodicallySkillFactory>(), created);
                     InvincibilityBuffFactory invincibility =
                         LookSheetData.Track(ScriptableObject.CreateInstance<InvincibilityBuffFactory>(), created);
                     invincibility.data = new InvincibilityBuffData();
@@ -147,7 +155,8 @@ namespace HealerLike.Render.Stage
                 case "Splitter":
                     // Stand-in: a passive that does nothing, where the spawn on death would sit
                     data = LookSheetData.Copy(soldier, unit, created);
-                    LookSheetData.AddPassive(data, LookSheetData.Handler(DurationType.Infinite, 0f, 0f, created), created);
+                    LookSheetData.AddPassive(data,
+                        LookSheetData.Handler(DurationType.Infinite, 0f, 0f, created), created);
                     break;
                 case "Runner":
                     // Stand-in: a soldier at melee range, nothing in the game walks
@@ -159,7 +168,8 @@ namespace HealerLike.Render.Stage
                 case "Warlord":
                     data.attributes[AttributeType.HealthMax] = 400f;
                     data.skillFactories.Add(Volley(created));
-                    data.skillFactories.Add(LookSheetData.Support(RenderAssets.Load<ABuffHandlerFactory>(armorPath), true, 5f, created));
+                    data.skillFactories.Add(LookSheetData.Support(
+                        RenderAssets.Load<ABuffHandlerFactory>(armorPath), true, 5f, created));
                     LookSheetData.AddPassive(data, Rising(created), created);
                     break;
                 default:
@@ -176,12 +186,15 @@ namespace HealerLike.Render.Stage
             {
                 case "Stormreed":
                     data.attributes[AttributeType.AttackRate] = 0.5f;
-                    data.skillFactories.Add(LookSheetData.Shoot(LookSheetData.Prefab("ChannelingLightning"), 3, created));
+                    data.skillFactories.Add(
+                        LookSheetData.Shoot(LookSheetData.Prefab("ChannelingLightning"), 3, created));
                     break;
                 case "Puffball":
                     data.attributes[AttributeType.HealthMax] = 200f;
-                    AreaOfEffectSkillFactory pulse = LookSheetData.Track(ScriptableObject.CreateInstance<AreaOfEffectSkillFactory>(), created);
-                    AreaOfEffectProjectileBehaviourFactory explosion = RenderAssets.Load<AreaOfEffectProjectileBehaviourFactory>(explosionPath);
+                    AreaOfEffectSkillFactory pulse = LookSheetData.Track(
+                        ScriptableObject.CreateInstance<AreaOfEffectSkillFactory>(), created);
+                    AreaOfEffectProjectileBehaviourFactory explosion =
+                        RenderAssets.Load<AreaOfEffectProjectileBehaviourFactory>(explosionPath);
                     pulse.data = new AreaOfEffectSkillData
                     {
                         onSkillTriggerFactory = new List<AOnSkillTriggerFactory>(),
@@ -191,7 +204,8 @@ namespace HealerLike.Render.Stage
                     break;
                 case "Old fern":
                     data.attributes[AttributeType.HealthMax] = 300f;
-                    ApplyConsumerOnTimeFactory tick = LookSheetData.Track(ScriptableObject.CreateInstance<ApplyConsumerOnTimeFactory>(), created);
+                    ApplyConsumerOnTimeFactory tick = LookSheetData.Track(
+                        ScriptableObject.CreateInstance<ApplyConsumerOnTimeFactory>(), created);
                     tick.data = new ApplyConsumerOnTimeData
                     {
                         onSkillTriggerFactory = new List<AOnSkillTriggerFactory>(),
@@ -202,7 +216,8 @@ namespace HealerLike.Render.Stage
                     break;
                 case "Needle stone":
                     data.attributes[AttributeType.AttackRate] = 0.5f;
-                    data.skillFactories.Add(LookSheetData.Shoot(LookSheetData.Prefab("StraightLaserBullet"), 2, created));
+                    data.skillFactories.Add(
+                        LookSheetData.Shoot(LookSheetData.Prefab("StraightLaserBullet"), 2, created));
                     break;
                 case "Storm idol":
                     data.attributes[AttributeType.HealthMax] = 400f;
@@ -218,11 +233,14 @@ namespace HealerLike.Render.Stage
         // Support heal on the most hurt ally: an instant flat heal of 12 that ignores reduction
         static ApplyBuffOnTargetSkillFactory Mend(List<Object> created)
         {
-            BuffHandlerFactory heal = LookSheetData.Handler(DurationType.Instant, 0f, 0f, created, LookSheetData.Consume(-12f, created));
+            BuffHandlerFactory heal = LookSheetData.Handler(DurationType.Instant, 0f, 0f, created,
+                LookSheetData.Consume(-12f, created));
             ApplyBuffOnTargetSkillFactory mend = LookSheetData.Support(heal, true, 3f, created);
-            HealthValidatorFactory hurt = LookSheetData.Track(ScriptableObject.CreateInstance<HealthValidatorFactory>(), created);
+            HealthValidatorFactory hurt = LookSheetData.Track(
+                ScriptableObject.CreateInstance<HealthValidatorFactory>(), created);
             hurt.data = new HealthValidatorData { threshold = 0.9f };
-            IgnoreSelfValidatorFactory others = LookSheetData.Track(ScriptableObject.CreateInstance<IgnoreSelfValidatorFactory>(), created);
+            IgnoreSelfValidatorFactory others = LookSheetData.Track(
+                ScriptableObject.CreateInstance<IgnoreSelfValidatorFactory>(), created);
             others.data = new IgnoreSelfValidatorData();
             mend.data.targetValidators.Add(hurt);
             mend.data.targetValidators.Add(others);
@@ -239,24 +257,31 @@ namespace HealerLike.Render.Stage
         // Three times: wait a second, then three curved bullets per target
         static ConfigurableSkillFactory Volley(List<Object> created)
         {
-            DurationSkillStepFactory wait = LookSheetData.Track(ScriptableObject.CreateInstance<DurationSkillStepFactory>(), created);
+            DurationSkillStepFactory wait = LookSheetData.Track(
+                ScriptableObject.CreateInstance<DurationSkillStepFactory>(), created);
             FlatValue second = new FlatValue();
             second.data = new FlatValueData { value = 1f };
             wait.data = new DurationSkillStepData { duration = second };
 
-            ShootProjectileSkillStepFactory shoot = LookSheetData.Track(ScriptableObject.CreateInstance<ShootProjectileSkillStepFactory>(), created);
+            ShootProjectileSkillStepFactory shoot = LookSheetData.Track(
+                ScriptableObject.CreateInstance<ShootProjectileSkillStepFactory>(), created);
             ShootProjectileSkillStepData.ProjectileData entry = new ShootProjectileSkillStepData.ProjectileData
             {
                 projectilePrefab = LookSheetData.Prefab("CurveBullet2"),
-                onHitConsumer = new List<AConsumerFactory> { RenderAssets.Load<AConsumerFactory>(LookSheetData.DamagePath) },
+                onHitConsumer = new List<AConsumerFactory>
+                    { RenderAssets.Load<AConsumerFactory>(LookSheetData.DamagePath) },
                 numberOfProjectileToShootPerTarget = 3
             };
-            shoot.data = new ShootProjectileSkillStepData { projectiles = new List<ShootProjectileSkillStepData.ProjectileData> { entry } };
+            shoot.data = new ShootProjectileSkillStepData
+                { projectiles = new List<ShootProjectileSkillStepData.ProjectileData> { entry } };
 
-            RepeatSkillStepFactory repeat = LookSheetData.Track(ScriptableObject.CreateInstance<RepeatSkillStepFactory>(), created);
-            repeat.data = new RepeatSkillStepData { count = 3, skillStepFactories = new List<ASkillStepFactory> { wait, shoot } };
+            RepeatSkillStepFactory repeat = LookSheetData.Track(
+                ScriptableObject.CreateInstance<RepeatSkillStepFactory>(), created);
+            repeat.data = new RepeatSkillStepData
+                { count = 3, skillStepFactories = new List<ASkillStepFactory> { wait, shoot } };
 
-            ConfigurableSkillFactory volley = LookSheetData.Track(ScriptableObject.CreateInstance<ConfigurableSkillFactory>(), created);
+            ConfigurableSkillFactory volley = LookSheetData.Track(
+                ScriptableObject.CreateInstance<ConfigurableSkillFactory>(), created);
             volley.data = new ConfigurableSkillData
             {
                 onSkillTriggerFactory = new List<AOnSkillTriggerFactory>(),

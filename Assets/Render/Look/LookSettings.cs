@@ -102,9 +102,11 @@ namespace HealerLike.Render.Look
             value.outlineColor = ValidateColor(outlineColor, defaults.outlineColor, true);
             value.fogColor = ValidateColor(fogColor, defaults.fogColor, false);
             value.shadowStrength = Mathf.Clamp(RenderMath.FiniteOr(shadowStrength, defaults.shadowStrength), 0.01f, 1f);
-            value.toonThreshold = Mathf.Clamp(RenderMath.FiniteOr(toonThreshold, defaults.toonThreshold), 0.001f, 0.999f);
+            value.toonThreshold =
+                Mathf.Clamp(RenderMath.FiniteOr(toonThreshold, defaults.toonThreshold), 0.001f, 0.999f);
             value.toonSoftness = Mathf.Clamp(RenderMath.FiniteOr(toonSoftness, defaults.toonSoftness), 0f, 0.5f);
-            value.outlineWidthPixels = Mathf.Max(0f, RenderMath.FiniteOr(outlineWidthPixels, defaults.outlineWidthPixels));
+            value.outlineWidthPixels =
+                Mathf.Max(0f, RenderMath.FiniteOr(outlineWidthPixels, defaults.outlineWidthPixels));
             value.fogStart = Mathf.Max(0f, RenderMath.FiniteOr(fogStart, defaults.fogStart));
             value.fogEnd = Mathf.Max(0f, RenderMath.FiniteOr(fogEnd, defaults.fogEnd));
             value.inkStrength = Mathf.Clamp(RenderMath.FiniteOr(inkStrength, defaults.inkStrength), 0f, 1f);

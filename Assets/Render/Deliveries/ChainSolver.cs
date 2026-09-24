@@ -24,7 +24,8 @@ namespace HealerLike.Render.Deliveries
                 return false;
             }
 
-            bool isChainFinite = RenderMath.IsFinite(root) && RenderMath.IsFinite(target) && RenderMath.IsFinite(bendPole);
+            bool isChainFinite = RenderMath.IsFinite(root) && RenderMath.IsFinite(target)
+                && RenderMath.IsFinite(bendPole);
             if (!isChainFinite || !RenderMath.IsPositive(tolerance)
                 || maxIterations < 1)
             {

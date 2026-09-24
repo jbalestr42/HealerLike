@@ -106,7 +106,9 @@ namespace HealerLike.Render.Grammar
                 int hits = 1;
                 foreach (ShootProjectileSkillData.ProjectileData entry in shoot.data.projectiles)
                 {
-                    hits = Mathf.Max(hits, entry.numberOfProjectileToShootPerTarget + SkillWalker.Bounces(entry.projectilePrefab) + bounces);
+                    hits = Mathf.Max(hits,
+                        entry.numberOfProjectileToShootPerTarget + SkillWalker.Bounces(entry.projectilePrefab)
+                            + bounces);
                 }
                 return hits;
             }

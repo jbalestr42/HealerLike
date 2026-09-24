@@ -24,7 +24,8 @@ namespace HealerLike.Render.Stage
         // A screen overlay button at the top right, the way the game's UI lives in prefabs
         public static GameObject CreateControls()
         {
-            GameObject root = new GameObject("BattleFocusControls", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            GameObject root = new GameObject("BattleFocusControls", typeof(Canvas), typeof(CanvasScaler),
+                typeof(GraphicRaycaster));
             Canvas canvas = root.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 120;

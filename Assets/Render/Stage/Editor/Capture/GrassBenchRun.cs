@@ -69,13 +69,15 @@ namespace HealerLike.Render.Stage
         static string Describe(GrassField field)
         {
             int msaa = QualitySettings.antiAliasing;
-            UniversalRenderPipelineAsset pipeline = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+            UniversalRenderPipelineAsset pipeline =
+                GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             if (pipeline != null)
             {
                 msaa = pipeline.msaaSampleCount;
             }
 
-            return $"tufts={field.tuftCount}; zones={field.activeZoneCount}; {Screen.width}x{Screen.height}; MSAA={msaa};"
+            return $"tufts={field.tuftCount}; zones={field.activeZoneCount}; {Screen.width}x{Screen.height};"
+                   + $" MSAA={msaa};"
                    + $" GPU={SystemInfo.graphicsDeviceName}; CPU={SystemInfo.processorType};"
                    + $" Unity={Application.unityVersion}";
         }

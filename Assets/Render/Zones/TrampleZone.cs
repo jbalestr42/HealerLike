@@ -34,7 +34,8 @@ namespace HealerLike.Render.Zones
         // The root footprint stays within the cell
         public static float CreatureFootprint(Transform root)
         {
-            return StageCalibration.CellSize * 0.5f * Mathf.Max(Mathf.Abs(root.lossyScale.x), Mathf.Abs(root.lossyScale.z));
+            return StageCalibration.CellSize * 0.5f
+                * Mathf.Max(Mathf.Abs(root.lossyScale.x), Mathf.Abs(root.lossyScale.z));
         }
 
         public static float TrampleRadius(float footprintRadius)

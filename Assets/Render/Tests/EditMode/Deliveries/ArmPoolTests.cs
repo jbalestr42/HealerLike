@@ -95,7 +95,8 @@ public class ArmPoolTests
     {
         _pool.Dispose();
         _rig.Dispose();
-        CreatureRecipe healer = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
+        CreatureRecipe healer =
+            AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
         CreatePool(healer);
         Tick(0f);
         Vector3 target = new Vector3(2f, 1.3f, 0f);

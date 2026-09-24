@@ -103,8 +103,10 @@ public class HeadDerivationTests
         EntityData data = CreateTracked<EntityData>();
         ShootProjectileSkillFactory shoot = CreateTracked<ShootProjectileSkillFactory>();
         shoot.data = new ShootProjectileSkillData { projectiles = new List<ShootProjectileSkillData.ProjectileData>() };
-        shoot.data.projectiles.Add(new ShootProjectileSkillData.ProjectileData { projectilePrefab = RenderTestAssets.LoadProjectile("BulletSpeed") });
-        data.skillFactories = new List<ASkillFactory> { shoot, RenderTestAssets.LoadEntity("HitArmorBufferEntityEntity").skillFactories[0] };
+        shoot.data.projectiles.Add(new ShootProjectileSkillData.ProjectileData
+            { projectilePrefab = RenderTestAssets.LoadProjectile("BulletSpeed") });
+        data.skillFactories = new List<ASkillFactory>
+            { shoot, RenderTestAssets.LoadEntity("HitArmorBufferEntityEntity").skillFactories[0] };
 
         Assert.AreEqual(AccessoryKind.MiniHead, HeadDerivation.Accessory(data));
         Assert.AreEqual(HeadKind.GiftBoonDefence, HeadDerivation.AccessoryHead(data));
@@ -126,7 +128,8 @@ public class HeadDerivationTests
         EntityData data = Copy(RenderTestAssets.LoadEntity("NormalEntity"));
         data.items = new List<AItemFactory>
         {
-            CreateItem(buffs: new List<ABuffHandlerFactory> { RenderTestAssets.LoadHandler("ConclaveItem/New Buff Handler Factory 1") })
+            CreateItem(buffs: new List<ABuffHandlerFactory>
+                { RenderTestAssets.LoadHandler("ConclaveItem/New Buff Handler Factory 1") })
         };
 
         Assert.AreEqual(AccessoryKind.SmallTorus, HeadDerivation.Accessory(data));
@@ -153,9 +156,11 @@ public class HeadDerivationTests
     {
         EntityData data = Copy(RenderTestAssets.LoadEntity("NormalEntity"));
         CurrentWaveModifierFactory modifier = CreateTracked<CurrentWaveModifierFactory>();
-        modifier.data = new CurrentWaveModifierData { type = AttributeType.Damage, modifierType = AttributeModifierType.Add, value = 1f };
+        modifier.data = new CurrentWaveModifierData
+            { type = AttributeType.Damage, modifierType = AttributeModifierType.Add, value = 1f };
         BuffHandlerFactory passive = CreateTracked<BuffHandlerFactory>();
-        passive.data = new BuffHandlerData { durationType = DurationType.Infinite, buffFactoryList = new List<ABuffFactory> { modifier } };
+        passive.data = new BuffHandlerData
+            { durationType = DurationType.Infinite, buffFactoryList = new List<ABuffFactory> { modifier } };
         data.items = new List<AItemFactory> { CreateItem(buffs: new List<ABuffHandlerFactory> { passive }) };
 
         Assert.AreEqual(AccessoryKind.TierRings, HeadDerivation.Accessory(data));
@@ -165,7 +170,11 @@ public class HeadDerivationTests
     public void Accessory_RenewPassive_HangsStalkBeads()
     {
         EntityData data = Copy(RenderTestAssets.LoadEntity("NormalEntity"));
-        data.items = new List<AItemFactory> { CreateItem(buffs: new List<ABuffHandlerFactory> { RenderTestAssets.LoadHandler("RegenHpItem/RegenHpItem_BuffHandlerFactory") }) };
+        data.items = new List<AItemFactory>
+        {
+            CreateItem(buffs: new List<ABuffHandlerFactory>
+                { RenderTestAssets.LoadHandler("RegenHpItem/RegenHpItem_BuffHandlerFactory") })
+        };
 
         Assert.AreEqual(AccessoryKind.StalkBeads, HeadDerivation.Accessory(data));
     }
@@ -174,7 +183,12 @@ public class HeadDerivationTests
     public void Accessory_StatPassive_IsAConeCrownForABane()
     {
         EntityData data = Copy(RenderTestAssets.LoadEntity("NormalEntity"));
-        data.items = new List<AItemFactory> { CreateItem(buffs: new List<ABuffHandlerFactory> { RenderTestAssets.LoadHandler("ConclaveItem/New Buff Handler Factory") }) }; // AttackRate Mul +0.2
+        // AttackRate Mul +0.2
+        data.items = new List<AItemFactory>
+        {
+            CreateItem(buffs: new List<ABuffHandlerFactory>
+                { RenderTestAssets.LoadHandler("ConclaveItem/New Buff Handler Factory") })
+        };
 
         Assert.AreEqual(AccessoryKind.ConeCrown, HeadDerivation.Accessory(data));
     }
@@ -183,7 +197,12 @@ public class HeadDerivationTests
     public void Accessory_BaneOnHitEffect_HangsShardBarbs()
     {
         EntityData data = Copy(RenderTestAssets.LoadEntity("SoldierEntity"));
-        data.items = new List<AItemFactory> { CreateItem(onHitEffects: new List<ABuffHandlerFactory> { RenderTestAssets.LoadHandler("SlowItem/BuffHandlerFactory") }) }; // Speed Mul -0.1
+        // Speed Mul -0.1
+        data.items = new List<AItemFactory>
+        {
+            CreateItem(onHitEffects: new List<ABuffHandlerFactory>
+                { RenderTestAssets.LoadHandler("SlowItem/BuffHandlerFactory") })
+        };
 
         Assert.AreEqual(AccessoryKind.ShardBarbs, HeadDerivation.Accessory(data));
     }
