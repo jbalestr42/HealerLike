@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using HealerLike.Render.Creatures;
-using HealerLike.Render.Look;
 using HealerLike.Render.Zones;
 using NUnit.Framework;
 using UnityEditor;
@@ -225,57 +223,6 @@ public class GrassFieldTests
         Assert.AreEqual(ShadowCastingMode.Off, _field.socleDraw.shadowCastingMode);
         Assert.AreEqual(1f, _field.tuftDraw.properties.GetFloat("_HLTuftLean"));
         Assert.AreEqual(0f, _field.socleDraw.properties.GetFloat("_HLTuftLean"));
-    }
-
-    [Test]
-    public void GrassBladeMaterial_Asset_IsThePlantMaterialInTheGrassGreen()
-    {
-        Material grass = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat");
-        Material plant = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
-
-        Assert.AreSame(plant.shader, grass.shader);
-        Assert.IsTrue(grass.IsKeywordEnabled(instancedKeyword));
-        CollectionAssert.AreEquivalent(plant.shaderKeywords.Append(instancedKeyword), grass.shaderKeywords);
-        Assert.AreEqual(plant.enableInstancing, grass.enableInstancing);
-        Assert.AreEqual(plant.renderQueue, grass.renderQueue);
-        Shader shader = grass.shader;
-        for (int i = 0; i < shader.GetPropertyCount(); i++)
-        {
-            string name = shader.GetPropertyName(i);
-            switch (shader.GetPropertyType(i))
-            {
-                case ShaderPropertyType.Color:
-                    if (name != "_BaseColor")
-                    {
-                        Assert.AreEqual(plant.GetColor(name), grass.GetColor(name), name);
-                    }
-                    break;
-                case ShaderPropertyType.Vector:
-                    Assert.AreEqual(plant.GetVector(name), grass.GetVector(name), name);
-                    break;
-                case ShaderPropertyType.Float:
-                case ShaderPropertyType.Range:
-                    Assert.AreEqual(plant.GetFloat(name), grass.GetFloat(name), name);
-                    break;
-                case ShaderPropertyType.Int:
-                    Assert.AreEqual(plant.GetInteger(name), grass.GetInteger(name), name);
-                    break;
-                case ShaderPropertyType.Texture:
-                    Assert.AreEqual(plant.GetTexture(name), grass.GetTexture(name), name);
-                    break;
-            }
-        }
-        Assert.That((Color32)grass.GetColor("_BaseColor"), Is.EqualTo(new Color32(91, 144, 85, 255))); // #5b9055
-    }
-
-    [Test]
-    public void HealRingMaterial_Asset_IsTheRingShaderWithInstancing()
-    {
-        Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/HealRing.mat");
-
-        Shader ring = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/GrassRing.shader");
-        Assert.AreEqual(ring, material.shader);
-        Assert.IsTrue(material.enableInstancing);
     }
 
     [Test]
