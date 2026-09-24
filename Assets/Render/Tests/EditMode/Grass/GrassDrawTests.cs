@@ -113,7 +113,7 @@ public class GrassDrawTests
     }
 
     [Test]
-    public void GrassBladeMaterial_Asset_IsThePlantMaterialInTheGrassGreen()
+    public void GrassBladeMaterial_Asset_UsesGrassGreenWithoutInternalNormalEdges()
     {
         Material grass = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat");
         Material plant = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
@@ -140,7 +140,9 @@ public class GrassDrawTests
                     break;
                 case ShaderPropertyType.Float:
                 case ShaderPropertyType.Range:
-                    Assert.AreEqual(plant.GetFloat(name), grass.GetFloat(name), name);
+                    // Internal facet outlines obscure the carpet; depth edges still draw its silhouette.
+                    float expected = name == "_HLNormalEdges" ? 0f : plant.GetFloat(name);
+                    Assert.AreEqual(expected, grass.GetFloat(name), name);
                     break;
                 case ShaderPropertyType.Int:
                     Assert.AreEqual(plant.GetInteger(name), grass.GetInteger(name), name);
