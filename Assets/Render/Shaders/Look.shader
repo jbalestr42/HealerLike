@@ -1,5 +1,5 @@
 // HL primitive look: flat colour, toon shadow, hatch, outline and banded fog.
-// HL_GRASS_INSTANCED draws the same look on indirect grass blades, see HLGrassInstancing.hlsl.
+// HL_GRASS_INSTANCED draws the same look on indirect grass tufts, see GrassInstancing.hlsl.
 Shader "HL/Look/Primitive"
 {
     Properties
@@ -30,9 +30,6 @@ Shader "HL/Look/Primitive"
             #if defined(HL_GRASS_INSTANCED) && !UNITY_ANY_INSTANCING_ENABLED
             uint instanceID : SV_InstanceID;
             #endif
-            #if defined(HL_GRASS_INSTANCED)
-            float4 grassTip : COLOR;
-            #endif
         };
 
         struct HLVaryings
@@ -40,9 +37,6 @@ Shader "HL/Look/Primitive"
             float4 positionCS : SV_POSITION;
             float3 positionWS : TEXCOORD0;
             float3 normalWS : TEXCOORD1;
-            #if defined(HL_GRASS_INSTANCED)
-            float3 grassColor : TEXCOORD2;
-            #endif
             UNITY_VERTEX_INPUT_INSTANCE_ID
             UNITY_VERTEX_OUTPUT_STEREO
         };
@@ -54,35 +48,13 @@ Shader "HL/Look/Primitive"
             UNITY_TRANSFER_INSTANCE_ID(input, output);
             UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
             #if defined(HL_GRASS_INSTANCED)
-            HLGrassPlacement blade = HLPlaceGrassBlade(input.positionOS.xyz, input.normalOS, input.grassTip.r, input.instanceID);
-            output.positionWS = blade.positionWS;
-            output.normalWS = blade.normalWS;
-            output.grassColor = blade.color;
+            HLPlaceGrassBlade(input.positionOS.xyz, input.normalOS, input.instanceID, output.positionWS, output.normalWS);
             #else
             output.positionWS = TransformObjectToWorld(input.positionOS.xyz);
             output.normalWS = TransformObjectToWorldNormal(input.normalOS);
             #endif
             output.positionCS = TransformWorldToHClip(output.positionWS);
             return output;
-        }
-
-        float3 HLSurfaceColor(HLVaryings input)
-        {
-            #if defined(HL_GRASS_INSTANCED)
-            return input.grassColor;
-            #else
-            return HLGetBaseColor().rgb;
-            #endif
-        }
-
-        // Blades read the material value, their instance ids index the blade buffers rather than instanced properties
-        float HLSurfaceNormalEdges()
-        {
-            #if defined(HL_GRASS_INSTANCED)
-            return saturate(_HLNormalEdges);
-            #else
-            return HLGetNormalEdges();
-            #endif
         }
         ENDHLSL
         Pass
@@ -112,7 +84,7 @@ Shader "HL/Look/Primitive"
                 Light mainLight = GetMainLight(shadowCoord, input.positionWS, half4(1, 1, 1, 1));
                 float facing = dot(normalize(input.normalWS), mainLight.direction) * 0.5 + 0.5;
                 float illum = saturate(facing * mainLight.shadowAttenuation);
-                float3 color = HLShadeSurface(input.positionWS, illum, HLSurfaceColor(input), _HLHatchMultiplier);
+                float3 color = HLShadeSurface(input.positionWS, illum, HLGetBaseColor().rgb, _HLHatchMultiplier);
                 if (_HLGroundGrid > 0.5)
                 {
                     color = HLApplyBattlefieldGrid(input.positionWS, color);
@@ -232,9 +204,9 @@ Shader "HL/Look/Primitive"
                 #if defined(_GBUFFER_NORMALS_OCT)
                 float2 octNormalWS = PackNormalOctQuadEncode(normalWS);
                 float2 remapped = saturate(octNormalWS * 0.5 + 0.5);
-                return half4(PackFloat2To888(remapped), HLSurfaceNormalEdges());
+                return half4(PackFloat2To888(remapped), HLGetNormalEdges());
                 #else
-                return half4(normalWS, HLSurfaceNormalEdges());
+                return half4(normalWS, HLGetNormalEdges());
                 #endif
             }
             ENDHLSL

@@ -295,7 +295,7 @@ public class LookShaderTests
                 foreach (bool isOctahedral in new[] { false, true })
                 {
                     string normals = isOctahedral ? "_GBUFFER_NORMALS_OCT" : "";
-                    material.shaderKeywords = new[] { "PROCEDURAL_INSTANCING_ON", GrassPalette.InstancedKeyword, shadow, normals, "_SHADOWS_SOFT" };
+                    material.shaderKeywords = new[] { "PROCEDURAL_INSTANCING_ON", GrassField.InstancedKeyword, shadow, normals, "_SHADOWS_SOFT" };
                     for (int pass = 0; pass < material.passCount; pass++)
                     {
                         ShaderUtil.CompilePass(material, pass, true);
