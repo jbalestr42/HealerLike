@@ -1,14 +1,8 @@
-using System.Collections.Generic;
-using Unity.Cinemachine;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Deliveries;
 using HealerLike.Render.Environment;
-using HealerLike.Render.Grammar;
 using HealerLike.Render.Grass;
 using HealerLike.Render.Look;
 using HealerLike.Render.Spells;
@@ -17,23 +11,14 @@ using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Stage
 {
-    // Attaches the render layer to every loaded scene that holds an EntityManager, and draws its entities
+    // Attaches the render layer to every loaded scene that holds an EntityManager: dresses the scene, runs the
+    // render services in order, and hands what the game spawns to SpawnDressing
     public class RenderManager : MonoBehaviour
     {
-        static readonly int gridOriginId = Shader.PropertyToID("_HLGridOrigin");
-        static readonly int gridCellId = Shader.PropertyToID("_HLGridCell");
-        static readonly int gridExtentId = Shader.PropertyToID("_HLGridExtent");
-        static readonly int gridStrengthId = Shader.PropertyToID("_HLGridStrength");
-
         [SerializeField] CreatureLooks _creatureLooks;
         [SerializeField] SpellLooks _spellLooks;
         [SerializeField] PrimitiveMeshes _meshes;
-        [SerializeField] RenderPipelineAsset _pipeline;
-        [SerializeField] Material _groundMaterial;
-        [SerializeField] Color _backgroundColor = new Color32(191, 210, 224, 255);
-        [SerializeField] Color _ambientColor = new Color(0.35f, 0.4f, 0.5f);
-        [SerializeField] List<string> _hiddenObjectNames = new List<string>();
-        [SerializeField] float _gridStrength = 0.12f;
+        [SerializeField] StageDressing _dressing;
         [SerializeField] EnvironmentRoot _environmentPrefab;
         [SerializeField] LookController _look;
         [SerializeField] ZoneRegistry _zones;
@@ -46,15 +31,11 @@ namespace HealerLike.Render.Stage
         [SerializeField] DeliveryVocabulary _deliveryVocabulary;
 
         RenderRegistry _registry = new RenderRegistry();
-        RenderPipelineAsset _previousPipeline;
         Scene _scene;
-        Renderer _boardGround;
         EnvironmentRoot _environment;
-        Button _nextWaveButton;
-        Pose _portraitPose;
-        Pose _landscapePose;
+        SpawnDressing _spawns = new SpawnDressing();
         int _deliveryToken;
-        bool _isPipelineSwapped = false;
+        bool _isLandscape = false;
 
         EntityManager _entityManager;
         public EntityManager entityManager { get { return _entityManager; } }
@@ -74,10 +55,7 @@ namespace HealerLike.Render.Stage
         EnvironmentForeground _foreground;
         public EnvironmentForeground foreground { get { return _foreground; } }
 
-        bool _isLandscape = false;
-        public bool isLandscape { get { return _isLandscape; } }
-
-        public Pose overviewPose { get { return _isLandscape ? _landscapePose : _portraitPose; } }
+        public Pose overviewPose { get { return _dressing.OverviewPose(_isLandscape); } }
 
         public RenderRegistry registry { get { return _registry; } }
         public ZoneRegistry zones { get { return _zones; } }
@@ -85,11 +63,10 @@ namespace HealerLike.Render.Stage
         public LookController look { get { return _look; } }
         public SpellVisualSink spellSink { get { return _spellSink; } }
         public StoneEffects stoneEffects { get { return _stoneEffects; } }
-        public StoneMeshCache stoneMeshes { get { return _stoneEffects.stoneMeshes; } }
         public CreatureLooks creatureLooks { get { return _creatureLooks; } }
         public SpellLooks spellLooks { get { return _spellLooks; } }
         public PrimitiveMeshes meshes { get { return _meshes; } }
-        public Renderer boardGround { get { return _boardGround; } }
+        public Renderer boardGround { get { return _dressing.boardGround; } }
         public StageKeyLight keyLight { get { return _keyLight; } }
         public DeliveryVocabulary deliveryVocabulary { get { return _deliveryVocabulary; } }
 
@@ -119,16 +96,18 @@ namespace HealerLike.Render.Stage
             _scene = entityManager.gameObject.scene;
 
             // Attach steps, all on scene instances, never on assets
-            if (!AdoptCamera())
+            _gameCamera = _dressing.AdoptCamera(_scene);
+            if (_gameCamera == null)
             {
                 _entityManager = null;
                 return;
             }
 
-            SwapPipeline();
-            SetLighting();
-            SetBoard();
-            Subscribe();
+            _dressing.SwapPipeline();
+            _dressing.SetLighting(_scene, _keyLight.keyLight);
+            _board = _dressing.SetBoard(_scene, player.grid);
+            _dressing.FrameBoard(_board);
+            _dressing.Frame(_gameCamera, _isLandscape);
 
             // Init chain
             _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board));
@@ -139,6 +118,7 @@ namespace HealerLike.Render.Stage
             _spellSink.Init(this);
             _battleFocus.Init(this);
             _rangeDriver.Init(_gameCamera);
+            _spawns.Init(this, _rangeDriver, _battleFocus);
             _keyLight.Init();
             Debug.Log($"[RenderManager] Attached to {_scene.name}");
         }
@@ -154,6 +134,7 @@ namespace HealerLike.Render.Stage
             _zones.PublishFrame(Time.deltaTime);
             _grass.UpdateField(_zones);
             _environment.grass.UpdateStrips(_zones);
+            _battleFocus.Tick();
         }
 
         // One counter for every projectile, so a token never names two deliveries on one rig
@@ -176,8 +157,7 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
-            _gameCamera.aspect = isLandscape ? StageCalibration.LandscapeAspect : StageCalibration.PortraitAspect;
-            _gameCamera.transform.SetPositionAndRotation(overviewPose.position, overviewPose.rotation);
+            _dressing.Frame(_gameCamera, isLandscape);
             _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board));
             _foreground.Build();
             _environment.ridge.Build();
@@ -209,126 +189,10 @@ namespace HealerLike.Render.Stage
             SceneManager.sceneLoaded -= OnSceneLoaded;
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
             Detach();
-            if (_isPipelineSwapped)
+            if (_dressing != null)
             {
-                QualitySettings.renderPipeline = _previousPipeline;
-                _isPipelineSwapped = false;
+                _dressing.RestorePipeline();
             }
-        }
-
-        bool AdoptCamera()
-        {
-            _gameCamera = Camera.main;
-            if (_gameCamera == null)
-            {
-                Debug.LogError($"[RenderManager] {_scene.name} has no main camera to adopt.");
-                return false;
-            }
-
-            // Cinemachine would overwrite the overview pose on the next frame
-            CinemachineBrain brain = _gameCamera.GetComponent<CinemachineBrain>();
-            if (brain != null)
-            {
-                brain.enabled = false;
-            }
-
-            _gameCamera.clearFlags = CameraClearFlags.SolidColor;
-            _gameCamera.backgroundColor = _backgroundColor;
-            _gameCamera.fieldOfView = StageCalibration.PortraitFov;
-            _gameCamera.nearClipPlane = 0.1f;
-            _gameCamera.farClipPlane = 200f;
-            _gameCamera.GetUniversalAdditionalCameraData().renderPostProcessing = false;
-            return true;
-        }
-
-        void SwapPipeline()
-        {
-            if (_isPipelineSwapped)
-            {
-                return;
-            }
-
-            _previousPipeline = QualitySettings.renderPipeline;
-            QualitySettings.renderPipeline = _pipeline;
-            _isPipelineSwapped = true;
-        }
-
-        void SetLighting()
-        {
-            foreach (Light sceneLight in FindObjectsByType<Light>(FindObjectsSortMode.None))
-            {
-                if (sceneLight.type == LightType.Directional && sceneLight.gameObject.scene == _scene)
-                {
-                    sceneLight.enabled = false;
-                }
-            }
-
-            RenderSettings.sun = _keyLight.keyLight;
-            RenderSettings.ambientMode = AmbientMode.Flat;
-            RenderSettings.ambientLight = _ambientColor;
-        }
-
-        void SetBoard()
-        {
-            GridManager grid = _player.grid;
-            Renderer groundRenderer = grid.ground ? grid.ground.GetComponent<Renderer>() : null;
-            _boardGround = groundRenderer;
-            float surfaceY = 0.5f;
-            if (groundRenderer != null)
-            {
-                surfaceY = groundRenderer.bounds.max.y;
-                groundRenderer.sharedMaterial = _groundMaterial;
-            }
-            else
-            {
-                Debug.LogError("[RenderManager] The grid has no ground renderer, the board keeps its own look.");
-            }
-
-            Vector3 center = grid.transform.position;
-            Vector3 boardSize = new Vector3(grid.width * grid.size, 0f, grid.height * grid.size);
-            _board = new Bounds(new Vector3(center.x, surfaceY, center.z), boardSize);
-            _portraitPose = StageCalibration.PlayableFrame(_board, StageCalibration.PortraitPitch,
-                                                             StageCalibration.PortraitFov, StageCalibration.PortraitAspect,
-                                                             StageCalibration.PortraitCentreY);
-            _landscapePose = StageCalibration.PlayableFrame(_board, StageCalibration.LandscapePitch,
-                                                              StageCalibration.PortraitFov, StageCalibration.LandscapeAspect,
-                                                              StageCalibration.LandscapeCentreY);
-            _gameCamera.aspect = _isLandscape ? StageCalibration.LandscapeAspect : StageCalibration.PortraitAspect;
-            _gameCamera.transform.SetPositionAndRotation(overviewPose.position, overviewPose.rotation);
-
-            // The board ground draws the cell grid from these
-            Shader.SetGlobalVector(gridOriginId, _board.min);
-            Shader.SetGlobalFloat(gridCellId, grid.size);
-            Shader.SetGlobalVector(gridExtentId, _board.size);
-            Shader.SetGlobalFloat(gridStrengthId, _gridStrength);
-
-            foreach (string hiddenName in _hiddenObjectNames)
-            {
-                if (!Hide(hiddenName))
-                {
-                    Debug.LogError($"[RenderManager] No object named {hiddenName} in {_scene.name} to hide.");
-                }
-            }
-        }
-
-        bool Hide(string objectName)
-        {
-            bool isFound = false;
-            foreach (GameObject root in _scene.GetRootGameObjects())
-            {
-                foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
-                {
-                    // The scene's far ground shares the board ground's name, the board itself stays
-                    bool isNamed = child.name == objectName;
-                    if (isNamed && child.TryGetComponent(out Renderer hidden) && hidden != _boardGround)
-                    {
-                        hidden.enabled = false;
-                        isFound = true;
-                    }
-                }
-            }
-
-            return isFound;
         }
 
         void InitEnvironment(Rect boardRect)
@@ -341,47 +205,12 @@ namespace HealerLike.Render.Stage
                 lookSettings.fogStart, lookSettings.fogEnd);
         }
 
-        void Subscribe()
-        {
-            _entityManager.OnEntitySpawned.AddListener(OnEntitySpawned);
-            _entityManager.OnEntityKilled.AddListener(OnEntityKilled);
-            _player.OnCharacterInit.AddListener(OnCharacterInit);
-            AscensionGameType.OnRoundEnd.AddListener(OnRoundEnd);
-            _entityManager.OnProjectileSpawned.AddListener(OnProjectileSpawned);
-            _entityManager.OnAreaOfEffectStarted.AddListener(OnAreaOfEffectStarted);
-
-            GameView gameView = FindInScene<GameView>(_scene);
-            _nextWaveButton = null;
-            if (gameView != null && gameView.gameHUD != null)
-            {
-                _nextWaveButton = gameView.gameHUD.nextWaveButton;
-            }
-
-            if (_nextWaveButton != null)
-            {
-                _nextWaveButton.onClick.AddListener(OnNextWave);
-            }
-        }
-
         void Detach()
         {
-            AscensionGameType.OnRoundEnd.RemoveListener(OnRoundEnd);
-            if (_entityManager != null)
+            _spawns.Clear();
+            if (_battleFocus != null)
             {
-                _entityManager.OnEntitySpawned.RemoveListener(OnEntitySpawned);
-                _entityManager.OnEntityKilled.RemoveListener(OnEntityKilled);
-                _entityManager.OnProjectileSpawned.RemoveListener(OnProjectileSpawned);
-                _entityManager.OnAreaOfEffectStarted.RemoveListener(OnAreaOfEffectStarted);
-            }
-
-            if (_player != null)
-            {
-                _player.OnCharacterInit.RemoveListener(OnCharacterInit);
-            }
-
-            if (_nextWaveButton != null)
-            {
-                _nextWaveButton.onClick.RemoveListener(OnNextWave);
+                _battleFocus.Clear();
             }
 
             if (_environment != null)
@@ -389,7 +218,10 @@ namespace HealerLike.Render.Stage
                 Destroy(_environment.gameObject);
             }
 
-            Shader.SetGlobalFloat(gridStrengthId, 0f);
+            if (_dressing != null)
+            {
+                _dressing.Clear();
+            }
 
             // The children can go first when the manager itself is destroyed
             if (_grass != null)
@@ -409,135 +241,7 @@ namespace HealerLike.Render.Stage
 
             _entityManager = null;
             _player = null;
-            _nextWaveButton = null;
             _environment = null;
-        }
-
-        void OnEntitySpawned(Entity entity)
-        {
-            if (entity.model == null)
-            {
-                return;
-            }
-
-            // The model's sockets and HUD stay live, so projectiles leave from where gameplay puts them
-            foreach (Renderer modelRenderer in entity.model.GetComponentsInChildren<Renderer>(true))
-            {
-                modelRenderer.enabled = false;
-            }
-
-            GameObject viewPrefab = _creatureLooks.GetView(entity.data, entity.entityType);
-            GameObject viewGo = Instantiate(viewPrefab, entity.model.transform);
-            foreach (IEntityView view in viewGo.GetComponentsInChildren<IEntityView>())
-            {
-                view.Init(entity, this);
-            }
-
-            foreach (RangePreview preview in viewGo.GetComponentsInChildren<RangePreview>())
-            {
-                _rangeDriver.Add(preview);
-            }
-
-            _battleFocus.MarkDirty();
-        }
-
-        void OnCharacterInit(Character character)
-        {
-            GameObject viewGo = Instantiate(_creatureLooks.GetView(character.data), character.transform);
-            viewGo.GetComponent<CharacterView>().Init(character, this);
-            foreach (HealPulse pulse in viewGo.GetComponentsInChildren<HealPulse>())
-            {
-                pulse.Init(character.gameObject, _registry, _zones);
-            }
-
-            foreach (TrampleZone trample in viewGo.GetComponentsInChildren<TrampleZone>())
-            {
-                trample.InitFootprint(_zones);
-            }
-        }
-
-        // A stone collapses by itself at zero health, the camera only reframes
-        void OnEntityKilled(Entity entity)
-        {
-            _battleFocus.MarkDirty();
-        }
-
-        void OnNextWave()
-        {
-            _battleFocus.Focus();
-        }
-
-        void OnRoundEnd()
-        {
-            _battleFocus.Overview();
-        }
-
-        // EntityManager raises it before Projectile.Init, which then calls Init(source) on these with the
-        // projectile's own behaviours
-        void OnProjectileSpawned(Projectile projectile)
-        {
-            if (projectile == null)
-            {
-                return;
-            }
-
-            GameObject projectileGo = projectile.gameObject;
-            ProjectileLook projectileLook = _spellLooks.GetSpawnedLook(projectile);
-            projectileGo.AddComponent<ProjectileVisualObserver>().Init(this, projectileLook);
-            projectileGo.AddComponent<StoneProjectileImpactBridge>();
-            projectileGo.AddComponent<LaunchWave>().Init(_zones, _gust);
-            if (projectile is ChainLightningProjectile)
-            {
-                projectileGo.AddComponent<ChainContactVisual>().Init(this);
-            }
-
-            foreach (LineRenderer line in projectileGo.GetComponentsInChildren<LineRenderer>(true))
-            {
-                line.enabled = false;
-            }
-        }
-
-        // AreaOfEffect.Start raises it once the caller has set the radius, before its own visual plays
-        void OnAreaOfEffectStarted(AreaOfEffect area)
-        {
-            if (area == null)
-            {
-                return;
-            }
-
-            _spellSink.PulseArea(area.transform.position, area.radius, AreaKind(area.source), 1f);
-            area.gameObject.AddComponent<LegacyAreaVisualMask>();
-        }
-
-        // An area whose every on hit consumer heals pulses as a heal, anything else as hostile
-        static ZoneKind AreaKind(GameObject source)
-        {
-            IAttacker attacker = null;
-            if (source != null)
-            {
-                attacker = source.GetComponent<IAttacker>();
-            }
-
-            if (attacker == null)
-            {
-                return ZoneKind.Hostile;
-            }
-
-            List<AConsumerFactory> consumers = attacker.GetOnHitConsumers();
-            if (consumers == null || consumers.Count == 0)
-            {
-                return ZoneKind.Hostile;
-            }
-
-            foreach (AConsumerFactory consumer in consumers)
-            {
-                if (EffectDerivation.ConsumerFamily(consumer, false) != EffectFamily.Heal)
-                {
-                    return ZoneKind.Hostile;
-                }
-            }
-
-            return ZoneKind.Heal;
         }
 
         Rect BoardRect()

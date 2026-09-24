@@ -19,10 +19,15 @@ namespace HealerLike.Render.Stage
         public static readonly float CellSize = 1f;
         // Fog from clear to full over this many units past the far edge, well inside the environment ring
         public static readonly float BackgroundFogDepth = 10f;
+        // The game camera's near plane; a corner closer than it is not in view
+        public static readonly float NearClip = 0.1f;
 
         // Width margin of the first framing, then the step back until every board corner fits the HUD frame
         static readonly float playableMargin = 0.35f;
         static readonly float playableStepBack = 0.35f;
+        static readonly int playableSteps = 80;
+        // The overview keeps the board's corners between the HUD bars, nearly edge to edge across
+        static readonly Rect boardFrame = Rect.MinMaxRect(0.015f, 0.12f, 0.985f, 0.84f);
 
         // Perspective pose at a fixed pitch whose view fits the board's width plus margin at its near edge
         // (the widest it projects), with the board centre drawn at the given viewport height
@@ -73,10 +78,9 @@ namespace HealerLike.Render.Stage
         {
             Pose pose = Frame(board, pitch, fov, aspect, playableMargin, centreY);
             Vector3 forward = pose.rotation * Vector3.forward;
-            float tan = Mathf.Tan(fov * Mathf.Deg2Rad * 0.5f);
-            for (int pass = 0; pass < 80; pass++)
+            for (int step = 0; step < playableSteps; step++)
             {
-                if (FitsCorners(board, pose, tan, aspect))
+                if (Contains(board, pose, fov, aspect, boardFrame))
                 {
                     return pose;
                 }
@@ -87,22 +91,78 @@ namespace HealerLike.Render.Stage
             return pose;
         }
 
-        static bool FitsCorners(Bounds board, Pose pose, float tan, float aspect)
+        // The nearest pose at this pitch that keeps all eight corners of the box inside the viewport frame, with
+        // the view lowered by lift times the half height so the box sits that much above the frame's middle
+        public static Pose Fit(Bounds box, float pitch, float fov, float aspect, Rect frame, float lift)
         {
-            bool fits = true;
-            for (int x = -1; x <= 1; x += 2)
+            Quaternion rotation = Quaternion.Euler(pitch, 0f, 0f);
+            Quaternion inverse = Quaternion.Inverse(rotation);
+            float tan = Mathf.Tan(fov * Mathf.Deg2Rad * 0.5f);
+            // Each frame edge as a distance from the view centre, in half heights and half widths
+            float right = 2f * frame.xMax - 1f;
+            float left = 1f - 2f * frame.xMin;
+            float top = 2f * frame.yMax - 1f;
+            float bottom = 1f - 2f * frame.yMin;
+            float distance = 2f;
+            for (int corner = 0; corner < 8; corner++)
             {
-                for (int z = -1; z <= 1; z += 2)
+                Vector3 local = inverse * Vector3.Scale(box.extents, CornerSign(corner));
+                distance = Mathf.Max(distance, local.x / (right * tan * aspect) - local.z);
+                distance = Mathf.Max(distance, -local.x / (left * tan * aspect) - local.z);
+                distance = Mathf.Max(distance, (local.y - top * tan * local.z) / ((top - lift) * tan));
+                distance = Mathf.Max(distance, (-local.y - bottom * tan * local.z) / ((bottom + lift) * tan));
+            }
+
+            Vector3 position = box.center - rotation * Vector3.forward * distance
+                               - rotation * Vector3.up * (lift * tan * distance);
+            return new Pose(position, rotation);
+        }
+
+        // Whether all eight corners of the box are in front of the near plane and inside the viewport frame
+        public static bool Contains(Bounds box, Pose pose, float fov, float aspect, Rect frame)
+        {
+            Quaternion inverse = Quaternion.Inverse(pose.rotation);
+            float tan = Mathf.Tan(fov * Mathf.Deg2Rad * 0.5f);
+            for (int corner = 0; corner < 8; corner++)
+            {
+                Vector3 point = box.center + Vector3.Scale(box.extents, CornerSign(corner));
+                Vector3 local = inverse * (point - pose.position);
+                if (local.z <= NearClip)
                 {
-                    Vector3 corner = board.center + Vector3.Scale(board.extents, new Vector3(x, 0f, z));
-                    Vector3 q = Quaternion.Inverse(pose.rotation) * (corner - pose.position);
-                    float vx = 0.5f + q.x / (2f * q.z * tan * aspect);
-                    float vy = 0.5f + q.y / (2f * q.z * tan);
-                    fits &= vx >= 0.015f && vx <= 0.985f && vy >= 0.12f && vy <= 0.84f;
+                    return false;
+                }
+
+                float x = 0.5f + local.x / (2f * local.z * tan * aspect);
+                float y = 0.5f + local.y / (2f * local.z * tan);
+                if (x < frame.xMin || x > frame.xMax || y < frame.yMin || y > frame.yMax)
+                {
+                    return false;
                 }
             }
 
-            return fits;
+            return true;
+        }
+
+        // The sign of each axis for one of the eight corners of a box, bit 0 for x, 1 for y, 2 for z
+        public static Vector3 CornerSign(int corner)
+        {
+            Vector3 sign = -Vector3.one;
+            if ((corner & 1) != 0)
+            {
+                sign.x = 1f;
+            }
+
+            if ((corner & 2) != 0)
+            {
+                sign.y = 1f;
+            }
+
+            if ((corner & 4) != 0)
+            {
+                sign.z = 1f;
+            }
+
+            return sign;
         }
     }
 }

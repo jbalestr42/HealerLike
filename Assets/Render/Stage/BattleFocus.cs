@@ -18,15 +18,11 @@ namespace HealerLike.Render.Stage
         static readonly float settleDistance = 0.03f;
         static readonly float fogInterval = 0.1f;
         static readonly float boundsInterval = 0.4f;
-        // Room around the bodies for heads and roots
-        static readonly Vector3 boundsPadding = new Vector3(0.8f, 0.5f, 0.8f);
-        // A body with no mesh renderer yet, and the size past which a renderer is an effect rather than a body
-        static readonly Vector3 defaultBodySize = new Vector3(1.2f, 2f, 1.2f);
-        static readonly float maxBodySize = 8f;
 
         readonly Dictionary<Transform, Renderer[]> _bodies = new Dictionary<Transform, Renderer[]>();
         readonly List<Transform> _live = new List<Transform>();
         RenderManager _manager;
+        Button _nextWaveButton;
         Camera _camera;
         Pose _target;
         Vector3 _velocity;
@@ -52,12 +48,43 @@ namespace HealerLike.Render.Stage
                 _toggle.onClick.AddListener(Toggle);
             }
 
+            // A wave starts on the HUD's next wave button, the round ends on the game type's signal
+            Clear();
+            GameView gameView = FindAnyObjectByType<GameView>(FindObjectsInactive.Include);
+            if (gameView != null && gameView.gameHUD != null)
+            {
+                _nextWaveButton = gameView.gameHUD.nextWaveButton;
+            }
+
+            if (_nextWaveButton != null)
+            {
+                _nextWaveButton.onClick.AddListener(Focus);
+            }
+
+            AscensionGameType.OnRoundEnd.AddListener(Overview);
             SetLabel();
         }
 
-        void LateUpdate()
+        public void Clear()
         {
-            if (!_isInitialized || _camera == null)
+            AscensionGameType.OnRoundEnd.RemoveListener(Overview);
+            if (_nextWaveButton != null)
+            {
+                _nextWaveButton.onClick.RemoveListener(Focus);
+            }
+
+            _nextWaveButton = null;
+        }
+
+        void OnDestroy()
+        {
+            Clear();
+        }
+
+        // The RenderManager ticks it after the zones and the grass; a disabled focus leaves the camera alone
+        public void Tick()
+        {
+            if (!_isInitialized || !isActiveAndEnabled || _camera == null)
             {
                 return;
             }
@@ -155,19 +182,9 @@ namespace HealerLike.Render.Stage
                 return false;
             }
 
-            for (int corner = 0; corner < 8; corner++)
-            {
-                Vector3 sign = BattleFocusBounds.CornerSign(corner);
-                Vector3 viewport = _camera.WorldToViewportPoint(_combatBounds.center
-                                                                + Vector3.Scale(_combatBounds.extents, sign));
-                if (viewport.z <= _camera.nearClipPlane || viewport.x < 0.06f || viewport.x > 0.94f
-                    || viewport.y < 0.18f || viewport.y > 0.84f)
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            Pose view = new Pose(_camera.transform.position, _camera.transform.rotation);
+            return StageCalibration.Contains(_combatBounds, view, _camera.fieldOfView, _camera.aspect,
+                                             BattleFocusBounds.VisibleFrame);
         }
 
         void RefreshBounds()
@@ -222,12 +239,11 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
-            bounds.Expand(boundsPadding);
+            bounds.Expand(BattleFocusBounds.Padding);
             _combatBounds = bounds;
             _target = BattleFocusBounds.Fit(bounds, _pitch, _camera.fieldOfView, _camera.aspect);
         }
 
-        // Authored mesh bounds include heads and roots, transient effects and lines are left out
         Bounds BodyBounds(Transform body)
         {
             if (!_bodies.TryGetValue(body, out Renderer[] renderers))
@@ -236,29 +252,7 @@ namespace HealerLike.Render.Stage
                 _bodies[body] = renderers;
             }
 
-            bool hasMesh = false;
-            Bounds bounds = new Bounds(body.position + Vector3.up, defaultBodySize);
-            foreach (Renderer bodyRenderer in renderers)
-            {
-                bool isBody = bodyRenderer != null && bodyRenderer.enabled && bodyRenderer.gameObject.activeInHierarchy
-                              && bodyRenderer is MeshRenderer && bodyRenderer.bounds.size.magnitude < maxBodySize;
-                if (!isBody)
-                {
-                    continue;
-                }
-
-                if (hasMesh)
-                {
-                    bounds.Encapsulate(bodyRenderer.bounds);
-                }
-                else
-                {
-                    bounds = bodyRenderer.bounds;
-                    hasMesh = true;
-                }
-            }
-
-            return bounds;
+            return BattleFocusBounds.Body(body, renderers);
         }
 
         void AddLive(List<GameObject> entities)
@@ -293,51 +287,6 @@ namespace HealerLike.Render.Stage
             {
                 _label.text = _isFocused ? "Overview" : "Focus battle";
             }
-        }
-    }
-
-    public static class BattleFocusBounds
-    {
-        // All eight corners fit x 0.08 to 0.92 and y 0.20 to 0.82, with room for tall heads and the HUD
-        public static Pose Fit(Bounds bounds, float pitch, float fov, float aspect)
-        {
-            Quaternion rotation = Quaternion.Euler(pitch, 0f, 0f);
-            Quaternion inverse = Quaternion.Inverse(rotation);
-            float tan = Mathf.Tan(fov * Mathf.Deg2Rad * 0.5f);
-            float distance = 2f;
-            for (int corner = 0; corner < 8; corner++)
-            {
-                Vector3 local = inverse * Vector3.Scale(bounds.extents, CornerSign(corner));
-                distance = Mathf.Max(distance, Mathf.Abs(local.x) / (0.84f * tan * aspect) - local.z);
-                distance = Mathf.Max(distance, (local.y - 0.64f * tan * local.z) / (0.58f * tan));
-                distance = Mathf.Max(distance, (-local.y - 0.6f * tan * local.z) / (0.66f * tan));
-            }
-
-            Vector3 position = bounds.center - rotation * Vector3.forward * distance
-                               - rotation * Vector3.up * (0.06f * tan * distance);
-            return new Pose(position, rotation);
-        }
-
-        // The sign of each axis for one of the eight corners of a box, bit 0 for x, 1 for y, 2 for z
-        public static Vector3 CornerSign(int corner)
-        {
-            Vector3 sign = -Vector3.one;
-            if ((corner & 1) != 0)
-            {
-                sign.x = 1f;
-            }
-
-            if ((corner & 2) != 0)
-            {
-                sign.y = 1f;
-            }
-
-            if ((corner & 4) != 0)
-            {
-                sign.z = 1f;
-            }
-
-            return sign;
         }
     }
 }

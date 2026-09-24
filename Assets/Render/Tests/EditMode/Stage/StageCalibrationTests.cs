@@ -70,6 +70,34 @@ public class StageCalibrationTests
         Assert.That(far.x, Is.InRange(0f, 1f));
         Assert.That(far.y, Is.InRange(0f, 1f));
     }
+
+    [Test]
+    public void Contains_FittedBox_KeepsEveryCornerInItsFrame()
+    {
+        Bounds box = new Bounds(new Vector3(3f, 1f, -2f), new Vector3(6f, 2f, 4f));
+        Rect frame = Rect.MinMaxRect(0.1f, 0.2f, 0.9f, 0.8f);
+
+        Pose pose = StageCalibration.Fit(box, StageCalibration.PortraitPitch, StageCalibration.PortraitFov,
+                                         StageCalibration.PortraitAspect, frame, 0f);
+
+        Rect edge = Rect.MinMaxRect(0.0999f, 0.1999f, 0.9001f, 0.8001f); // the fit touches the frame
+        Assert.IsTrue(StageCalibration.Contains(box, pose, StageCalibration.PortraitFov, StageCalibration.PortraitAspect,
+                                                edge));
+        Pose closer = new Pose(pose.position + pose.rotation * Vector3.forward, pose.rotation);
+        Assert.IsFalse(StageCalibration.Contains(box, closer, StageCalibration.PortraitFov,
+                                                 StageCalibration.PortraitAspect, frame));
+    }
+
+    [Test]
+    public void Contains_BoxBehindTheCamera_IsOutside()
+    {
+        Bounds box = new Bounds(Vector3.back * 5f, Vector3.one);
+        Pose pose = new Pose(Vector3.zero, Quaternion.identity);
+
+        bool isInside = StageCalibration.Contains(box, pose, 40f, 1f, Rect.MinMaxRect(0f, 0f, 1f, 1f));
+
+        Assert.IsFalse(isInside);
+    }
 }
 
 }
