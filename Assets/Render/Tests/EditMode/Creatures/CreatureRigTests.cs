@@ -19,21 +19,14 @@ public class CreatureRigTests
     CreatureRig _rig;
     readonly List<Object> _objects = new List<Object>();
 
-    public static CreatureRig CreateRig(CreatureRecipe recipe, Transform parent, Material material)
-    {
-        CreatureRig rig = new CreatureRig();
-        rig.Init(recipe, parent, material, PrimitiveMeshesTests.Meshes());
-        return rig;
-    }
-
     [SetUp]
     public void SetUp()
     {
         _parent = new GameObject("TestRig");
-        _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
-        _recipe = CreatureValidatorTests.Recipe();
+        _material = new Material(RenderTestAssets.LoadLookMaterial());
+        _recipe = RenderTestAssets.CreateRecipe();
         _recipe.idle = default;
-        _rig = CreateRig(_recipe, _parent.transform, _material);
+        _rig = RenderTestAssets.CreateRig(_recipe, _parent.transform, _material);
     }
 
     [TearDown]
@@ -61,7 +54,7 @@ public class CreatureRigTests
     {
         _rig.Dispose();
         CreatureRecipe data = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
-        _rig = CreateRig(data, _parent.transform, _material);
+        _rig = RenderTestAssets.CreateRig(data, _parent.transform, _material);
         _rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
         Vector3 target = new Vector3(2f, 1.3f, 0f);
 
@@ -97,7 +90,7 @@ public class CreatureRigTests
         _rig.Dispose();
         _recipe.parts[0].glow = 2f;
         _recipe.parts[0].colour = new Color(0.2f, 0.4f, 0.1f, 0.7f);
-        _rig = CreateRig(_recipe, _parent.transform, _material);
+        _rig = RenderTestAssets.CreateRig(_recipe, _parent.transform, _material);
         Renderer renderer = _rig.root.GetComponentInChildren<Renderer>();
         MaterialPropertyBlock block = new MaterialPropertyBlock();
         renderer.GetPropertyBlock(block);
@@ -120,7 +113,7 @@ public class CreatureRigTests
         _rig.Dispose();
         _recipe.parts[0].glow = 1f;
         _recipe.parts[0].role = PartRole.Tip;
-        _rig = CreateRig(_recipe, _parent.transform, _material);
+        _rig = RenderTestAssets.CreateRig(_recipe, _parent.transform, _material);
         Renderer renderer = _rig.root.GetComponentInChildren<Renderer>();
         MaterialPropertyBlock block = new MaterialPropertyBlock();
         FootFrame frame = new FootFrame(Vector3.zero, Vector3.up, 1f);
@@ -146,8 +139,8 @@ public class CreatureRigTests
     {
         _rig.Dispose();
         Object.DestroyImmediate(_recipe);
-        _recipe = LookComposer.Compose(LookComposerTests.CreateChannels(side, HeadKind.Bud), LookVocabularyTests.Vocabulary());
-        _rig = CreateRig(_recipe, _parent.transform, _material);
+        _recipe = LookComposer.Compose(RenderTestAssets.CreateChannels(side, HeadKind.Bud), RenderTestAssets.LoadLookVocabulary());
+        _rig = RenderTestAssets.CreateRig(_recipe, _parent.transform, _material);
         return _rig;
     }
 
@@ -229,7 +222,7 @@ public class CreatureRigTests
         _rig.Dispose();
         _recipe.parts[0].role = PartRole.Crown;
         _recipe.parts[0].id = "Ring";
-        _rig = CreateRig(_recipe, _parent.transform, _material);
+        _rig = RenderTestAssets.CreateRig(_recipe, _parent.transform, _material);
         FootFrame frame = new FootFrame(Vector3.zero, Vector3.up, 1f);
         _rig.Tick(0f, 0f, frame);
         Quaternion before = _rig.partTransforms[0].parent.localRotation;
@@ -250,7 +243,7 @@ public class CreatureRigTests
         mesh.SetTriangles(new int[] { 0, 2, 3 }, 1);
         StoneVariants variants = Track(ScriptableObject.CreateInstance<StoneVariants>());
         variants.meshes = new Mesh[] { mesh };
-        PrimitiveMeshes meshes = Track(Object.Instantiate(PrimitiveMeshesTests.Meshes()));
+        PrimitiveMeshes meshes = Track(Object.Instantiate(RenderTestAssets.LoadMeshes()));
         meshes.stoneVariants = variants;
         _recipe.parts[0].primitive = Primitive.Stone;
         _rig = new CreatureRig();
@@ -317,7 +310,7 @@ public class CreatureRigTests
             if (child.name == "Root")
             {
                 segments++;
-                Assert.AreSame(PrimitiveMeshesTests.Meshes().cylinder, child.GetComponent<MeshFilter>().sharedMesh);
+                Assert.AreSame(RenderTestAssets.LoadMeshes().cylinder, child.GetComponent<MeshFilter>().sharedMesh);
                 lowest = Mathf.Min(lowest, child.GetComponent<Renderer>().bounds.min.y);
             }
             else if (child.name == "RootJoint")
@@ -361,7 +354,7 @@ public class CreatureRigTests
         _recipe.parts = new CreaturePart[] { _recipe.parts[0], child };
         _recipe.parts[0].dimensions = Vector3.one * 3f;
 
-        _rig = CreateRig(_recipe, _parent.transform, _material);
+        _rig = RenderTestAssets.CreateRig(_recipe, _parent.transform, _material);
 
         Transform pivot = _rig.root.Find("Sway/Body/Child");
         Assert.AreEqual(Vector3.up, pivot.localPosition);
@@ -392,7 +385,7 @@ public class CreatureRigTests
         CreatureRig rig = new CreatureRig();
         LogAssert.Expect(LogType.Error, "[CreatureRig] Creature rig ancestors must have positive uniform scale.");
 
-        bool isInitialized = rig.Init(_recipe, _parent.transform, _material, PrimitiveMeshesTests.Meshes());
+        bool isInitialized = rig.Init(_recipe, _parent.transform, _material, RenderTestAssets.LoadMeshes());
 
         Assert.IsFalse(isInitialized);
         Assert.IsNull(rig.root);
@@ -435,10 +428,10 @@ public class CreatureRigTests
         _recipe.parts[0].primitive = Primitive.Stone;
         _recipe.parts[0].variant = 3;
 
-        _rig = CreateRig(_recipe, _parent.transform, _material);
+        _rig = RenderTestAssets.CreateRig(_recipe, _parent.transform, _material);
 
         Mesh mesh = _rig.partTransforms[0].GetComponent<MeshFilter>().sharedMesh;
-        Mesh[] variants = PrimitiveMeshesTests.Meshes().stoneVariants.meshes;
+        Mesh[] variants = RenderTestAssets.LoadMeshes().stoneVariants.meshes;
         Assert.AreEqual(variants[3 % variants.Length], mesh);
     }
 
@@ -448,7 +441,7 @@ public class CreatureRigTests
         _rig.Dispose();
         CreatureRecipe data = AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
 
-        _rig = CreateRig(data, _parent.transform, _material);
+        _rig = RenderTestAssets.CreateRig(data, _parent.transform, _material);
 
         Assert.AreEqual(data, _rig.recipe);
         Assert.AreEqual(data.parts.Length, _rig.partTransforms.Count);
@@ -512,7 +505,7 @@ public class CreatureRigTests
         CreatureRecipe healer = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(healerPath);
         FootFrame frame = new FootFrame(Vector3.zero, Vector3.up, 1f);
         _rig.Dispose();
-        _rig = CreateRig(healer, _parent.transform, _material);
+        _rig = RenderTestAssets.CreateRig(healer, _parent.transform, _material);
         _rig.Tick(1f, 0.016f, frame);
         Transform crown = _rig.root.Find("Sway/Stem/Crown");
         Quaternion before = crown.localRotation;

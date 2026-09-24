@@ -792,9 +792,9 @@ public class LookShaderTests
     // A composed plant on the key light layer, a heal accent so no lit part reads redder than green
     Renderer[] CreateKeyLightPlant(Material shared, Material body)
     {
-        UnitChannels channels = LookComposerTests.CreateChannels(LookSide.Plant, HeadKind.Bud);
+        UnitChannels channels = RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud);
         channels.accent = EffectFamily.Heal;
-        CreatureRecipe recipe = Track(LookComposer.Compose(channels, LookVocabularyTests.Vocabulary()));
+        CreatureRecipe recipe = Track(LookComposer.Compose(channels, RenderTestAssets.LoadLookVocabulary()));
         GameObject plant = Track(new GameObject("Key light plant"));
         CreatureRig rig = new CreatureRig();
         rig.Init(recipe, plant.transform, shared, body,

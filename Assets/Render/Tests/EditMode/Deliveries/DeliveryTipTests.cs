@@ -10,8 +10,8 @@ public class DeliveryTipTests
     static DeliveryTip CreateTip(DeliveryStyle style, bool hasVocabulary = true)
     {
         DeliveryTip tip = new DeliveryTip();
-        DeliveryVocabulary vocabulary = hasVocabulary ? DeliveryVocabularyTests.Vocabulary() : null;
-        tip.SetStyle(style, vocabulary, PrimitiveMeshesTests.Meshes());
+        DeliveryVocabulary vocabulary = hasVocabulary ? RenderTestAssets.LoadDeliveryVocabulary() : null;
+        tip.SetStyle(style, vocabulary, RenderTestAssets.LoadMeshes());
         return tip;
     }
 
@@ -30,7 +30,7 @@ public class DeliveryTipTests
     {
         DeliveryTip tip = new DeliveryTip();
 
-        tip.SetStyle(DeliveryStyle.Direct, DeliveryVocabularyTests.Vocabulary(), null);
+        tip.SetStyle(DeliveryStyle.Direct, RenderTestAssets.LoadDeliveryVocabulary(), null);
 
         Assert.AreEqual(0, tip.partCount);
     }

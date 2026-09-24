@@ -19,9 +19,8 @@ public class StoneProjectileImpactBridgeTests
     {
         _target = new GameObject("Target");
         _projectileObject = new GameObject("Projectile");
-        _recipe = StoneBodyTests.Recipe();
-        _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>(
-            "Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
+        _recipe = RenderTestAssets.CreateStoneRecipe();
+        _material = new Material(RenderTestAssets.LoadLookMaterial());
     }
 
     [TearDown]
@@ -43,7 +42,7 @@ public class StoneProjectileImpactBridgeTests
     public void OnHit_ProjectileTargetCleared_UsesTheCallbackTargetUntilDisabled()
     {
         ResourceAttribute health = TestHelpers.CreateResourceAttribute(_target, AttributeType.HealthMax, 100);
-        _body = StoneBodyTests.CreateBody(_target, StoneBodyTests.CreateEntity(_target, health), _recipe, _material);
+        _body = RenderTestAssets.CreateStoneBody(_target, RenderTestAssets.CreateStoneEntity(_target, health), _recipe, _material);
         _body.Init(health, 1, null);
         Projectile projectile = _projectileObject.AddComponent<Projectile>();
         StoneProjectileImpactBridge bridge = _projectileObject.AddComponent<StoneProjectileImpactBridge>();

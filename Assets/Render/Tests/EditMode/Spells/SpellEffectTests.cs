@@ -12,15 +12,10 @@ public class SpellEffectTests
 {
     readonly List<GameObject> _objects = new List<GameObject>();
 
-    static EffectVocabulary LoadVocabulary()
-    {
-        return AssetDatabase.LoadAssetAtPath<EffectVocabulary>("Assets/Render/Spells/Data/EffectVocabulary.asset");
-    }
-
     SpellEffect CreateEffect(EffectElement element, EffectFamily family, EffectTempo tempo, float period = 0f,
                              int stacks = 1)
     {
-        EffectRecipe recipe = EffectComposer.Compose(LoadVocabulary(), element, family, tempo, period, stacks, 0f, 0f);
+        EffectRecipe recipe = EffectComposer.Compose(RenderTestAssets.LoadEffectVocabulary(), element, family, tempo, period, stacks, 0f, 0f);
         GameObject go = new GameObject(element.ToString());
         _objects.Add(go);
         SpellEffect effect = go.AddComponent<SpellEffect>();
@@ -54,7 +49,7 @@ public class SpellEffectTests
     [Test]
     public void Init_Recipe_BuildsOneChildPerVocabularyPart()
     {
-        ElementEntry entry = LoadVocabulary().GetEntry(EffectElement.Stalks);
+        ElementEntry entry = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Stalks);
 
         SpellEffect effect = CreateEffect(EffectElement.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
 
@@ -224,7 +219,7 @@ public class SpellEffectTests
         MaterialPropertyBlock block = new MaterialPropertyBlock();
         rim.GetComponent<Renderer>().GetPropertyBlock(block);
         Assert.IsTrue(rim.gameObject.activeSelf);
-        Assert.Less(Vector4.Distance(LoadVocabulary().palette.baneLit, block.GetColor("_BaseColor")), 0.0001f);
+        Assert.Less(Vector4.Distance(RenderTestAssets.LoadEffectVocabulary().palette.baneLit, block.GetColor("_BaseColor")), 0.0001f);
     }
 
     [Test]

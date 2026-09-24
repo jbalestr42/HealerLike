@@ -8,11 +8,6 @@ namespace HealerLike.Render.Spells
 
 public class EffectComposerTests
 {
-    static EffectVocabulary LoadVocabulary()
-    {
-        return AssetDatabase.LoadAssetAtPath<EffectVocabulary>("Assets/Render/Spells/Data/EffectVocabulary.asset");
-    }
-
     static EffectChannels Channels(EffectFamily family, AttributeGroup group,
                                    EffectTempo tempo = EffectTempo.ForDuration)
     {
@@ -37,7 +32,7 @@ public class EffectComposerTests
     [Test]
     public void Element_EveryFamilyGroupAndTempo_ResolvesToAVocabularyEntry()
     {
-        EffectVocabulary vocabulary = LoadVocabulary();
+        EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
 
         foreach (EffectFamily family in System.Enum.GetValues(typeof(EffectFamily)))
         {
@@ -76,7 +71,7 @@ public class EffectComposerTests
         EffectChannels channels = Channels(EffectFamily.Rot, AttributeGroup.Offence, EffectTempo.PerPeriod);
         channels.periodSeconds = 1.5f;
 
-        EffectRecipe recipe = EffectComposer.Compose(LoadVocabulary(), channels, 1, 0f);
+        EffectRecipe recipe = EffectComposer.Compose(RenderTestAssets.LoadEffectVocabulary(), channels, 1, 0f);
 
         Assert.AreEqual(1.5f, recipe.cycleSeconds);
     }
@@ -84,7 +79,7 @@ public class EffectComposerTests
     [Test]
     public void Compose_Heal_TakesTheLimeAccent()
     {
-        EffectVocabulary vocabulary = LoadVocabulary();
+        EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
 
         EffectChannels channels = Channels(EffectFamily.Heal, AttributeGroup.Offence);
 
@@ -96,7 +91,7 @@ public class EffectComposerTests
     [Test]
     public void Compose_Mana_TakesTheManaColour()
     {
-        EffectVocabulary vocabulary = LoadVocabulary();
+        EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
 
         EffectRecipe recipe = EffectComposer.Compose(vocabulary, EffectElement.ManaUp, EffectFamily.Heal,
                                                      EffectTempo.Once, 0f, 1, 0f, 0f);
@@ -109,7 +104,7 @@ public class EffectComposerTests
     [TestCase(9, 3)]
     public void Count_OrbitStacks_TwoOrThreeTori(int stacks, int expected)
     {
-        ElementEntry orbit = LoadVocabulary().GetEntry(EffectElement.Orbit);
+        ElementEntry orbit = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Orbit);
 
         Assert.AreEqual(expected, EffectComposer.Count(orbit, stacks, 0f, 0f));
     }
@@ -119,7 +114,7 @@ public class EffectComposerTests
     [TestCase(2.5f, 3)]
     public void Count_PlateCharges_OnePlatePerCharge(float charges, int expected)
     {
-        ElementEntry plates = LoadVocabulary().GetEntry(EffectElement.Plates);
+        ElementEntry plates = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Plates);
 
         Assert.AreEqual(expected, EffectComposer.Count(plates, 1, charges, 0f));
     }

@@ -7,49 +7,13 @@ namespace HealerLike.Render.Spells
 
 public class ResourceOutcomeObserverTests
 {
-    class HealSinkSpy : IHealthVisualSink
-    {
-        public int count;
-
-        public void OnHealthResolved(GameObject target, float value, bool critical)
-        {
-            count++;
-        }
-    }
-
-    class SpellSinkSpy : ISpellVisualSink
-    {
-        public int impacts;
-        public ResourceKind last;
-
-        public void ShowImpact(GameObject source, GameObject target, ResourceKind resource, float amount,
-            bool critical)
-        {
-            impacts++;
-            last = resource;
-        }
-
-        public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
-            float elapsed, float duration)
-        {
-        }
-
-        public void RemoveStatus(GameObject source, GameObject target, ABuffHandlerFactory factory)
-        {
-        }
-
-        public void PulseArea(Vector3 center, float radius, ZoneKind kind, float strength)
-        {
-        }
-    }
-
     GameObject _owner;
     GameObject _caster;
     GameObject _manaGo;
     ResourceAttribute _health;
     ResourceAttribute _mana;
-    SpellSinkSpy _spy;
-    HealSinkSpy _healed;
+    RecordingSpellSink _spy;
+    RecordingHealthSink _healed;
     RenderRegistry _registry;
     ResourceModifier _modifier;
 
@@ -62,9 +26,9 @@ public class ResourceOutcomeObserverTests
         _manaGo = new GameObject("Mana");
         _manaGo.transform.SetParent(_owner.transform);
         _mana = TestHelpers.CreateResourceAttribute(_manaGo, AttributeType.ManaMax, 100);
-        _spy = new SpellSinkSpy();
+        _spy = new RecordingSpellSink();
         _registry = new RenderRegistry();
-        _healed = new HealSinkSpy();
+        _healed = new RecordingHealthSink();
         _registry.Register(_caster, _healed);
         _modifier = new ResourceModifier { source = _caster };
     }
@@ -94,7 +58,7 @@ public class ResourceOutcomeObserverTests
 
         _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, 7, false);
 
-        Assert.AreEqual(1, _spy.impacts);
+        Assert.AreEqual(1, _spy.impactCount);
     }
 
     [Test]
@@ -104,9 +68,9 @@ public class ResourceOutcomeObserverTests
 
         _mana.OnAllConsumerProcessed.Invoke(_manaGo, _modifier, 9, false);
 
-        Assert.AreEqual(1, _spy.impacts);
-        Assert.AreEqual(ResourceKind.Mana, _spy.last);
-        Assert.AreEqual(0, _healed.count);
+        Assert.AreEqual(1, _spy.impactCount);
+        Assert.AreEqual(ResourceKind.Mana, _spy.lastResource);
+        Assert.AreEqual(0, _healed.calls.Count);
     }
 
     [Test]
@@ -116,8 +80,8 @@ public class ResourceOutcomeObserverTests
 
         _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, -2, false);
 
-        Assert.AreEqual(1, _spy.impacts);
-        Assert.AreEqual(1, _healed.count, "each heal sink filters by sign, the registry passes damage on");
+        Assert.AreEqual(1, _spy.impactCount);
+        Assert.AreEqual(1, _healed.calls.Count, "each heal sink filters by sign, the registry passes damage on");
     }
 
     [Test]
@@ -129,7 +93,7 @@ public class ResourceOutcomeObserverTests
         TestHelpers.InvokePrivate(observer, "OnDisable");
         _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, 7, false);
 
-        Assert.AreEqual(0, _spy.impacts);
+        Assert.AreEqual(0, _spy.impactCount);
     }
 
     [Test]
@@ -143,7 +107,7 @@ public class ResourceOutcomeObserverTests
         TestHelpers.InvokePrivate(observer, "OnEnable");
         _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, 7, false);
 
-        Assert.AreEqual(1, _spy.impacts);
+        Assert.AreEqual(1, _spy.impactCount);
     }
 }
 

@@ -6,38 +6,27 @@ using UnityEngine;
 namespace HealerLike.Render
 {
 
-public class RecordingHealSink : IHealthVisualSink
-{
-    public readonly List<(GameObject target, float value, bool critical)> calls =
-        new List<(GameObject, float, bool)>();
-
-    public void OnHealthResolved(GameObject target, float value, bool critical)
-    {
-        calls.Add((target, value, critical));
-    }
-}
-
-public class SelfUnregisteringHealSink : IHealthVisualSink
-{
-    readonly RenderRegistry _registry;
-    readonly GameObject _source;
-    public int callCount;
-
-    public SelfUnregisteringHealSink(RenderRegistry registry, GameObject source)
-    {
-        _registry = registry;
-        _source = source;
-    }
-
-    public void OnHealthResolved(GameObject target, float value, bool critical)
-    {
-        callCount++;
-        _registry.Unregister(_source, this);
-    }
-}
-
 public class RenderRegistryTests
 {
+    class SelfUnregisteringHealSink : IHealthVisualSink
+    {
+        readonly RenderRegistry _registry;
+        readonly GameObject _source;
+        public int callCount;
+
+        public SelfUnregisteringHealSink(RenderRegistry registry, GameObject source)
+        {
+            _registry = registry;
+            _source = source;
+        }
+
+        public void OnHealthResolved(GameObject target, float value, bool critical)
+        {
+            callCount++;
+            _registry.Unregister(_source, this);
+        }
+    }
+
     class CallbackSink : IHealthVisualSink
     {
         public Action callback;
@@ -83,7 +72,7 @@ public class RenderRegistryTests
     {
         GameObject healer = NewObject("healer");
         GameObject target = NewObject("target");
-        RecordingHealSink sink = new RecordingHealSink();
+        RecordingHealthSink sink = new RecordingHealthSink();
         _registry.Register(healer, sink);
 
         _registry.NotifyHealth(healer, target, 12.5f, true);
@@ -98,7 +87,7 @@ public class RenderRegistryTests
     public void Register_SameSinkTwice_NotifiesOnce()
     {
         GameObject healer = NewObject("healer");
-        RecordingHealSink sink = new RecordingHealSink();
+        RecordingHealthSink sink = new RecordingHealthSink();
         _registry.Register(healer, sink);
         _registry.Register(healer, sink);
 
@@ -111,8 +100,8 @@ public class RenderRegistryTests
     public void NotifyHealth_TwoSinksOnSource_NotifiesBoth()
     {
         GameObject healer = NewObject("healer");
-        RecordingHealSink first = new RecordingHealSink();
-        RecordingHealSink second = new RecordingHealSink();
+        RecordingHealthSink first = new RecordingHealthSink();
+        RecordingHealthSink second = new RecordingHealthSink();
         _registry.Register(healer, first);
         _registry.Register(healer, second);
 
@@ -127,7 +116,7 @@ public class RenderRegistryTests
     {
         GameObject healer = NewObject("healer");
         GameObject otherHealer = NewObject("otherHealer");
-        RecordingHealSink sink = new RecordingHealSink();
+        RecordingHealthSink sink = new RecordingHealthSink();
         _registry.Register(healer, sink);
 
         _registry.NotifyHealth(otherHealer, NewObject("target"), 1f, false);
@@ -139,7 +128,7 @@ public class RenderRegistryTests
     public void Unregister_RegisteredSink_StopsNotifications()
     {
         GameObject healer = NewObject("healer");
-        RecordingHealSink sink = new RecordingHealSink();
+        RecordingHealthSink sink = new RecordingHealthSink();
         _registry.Register(healer, sink);
         _registry.Unregister(healer, sink);
 
@@ -152,8 +141,8 @@ public class RenderRegistryTests
     public void Unregister_OneOfTwoSinks_KeepsTheOther()
     {
         GameObject healer = NewObject("healer");
-        RecordingHealSink kept = new RecordingHealSink();
-        RecordingHealSink dropped = new RecordingHealSink();
+        RecordingHealthSink kept = new RecordingHealthSink();
+        RecordingHealthSink dropped = new RecordingHealthSink();
         _registry.Register(healer, kept);
         _registry.Register(healer, dropped);
 
@@ -168,7 +157,7 @@ public class RenderRegistryTests
     public void RegisterAndNotify_NullArguments_DoNotThrow()
     {
         GameObject healer = NewObject("healer");
-        RecordingHealSink sink = new RecordingHealSink();
+        RecordingHealthSink sink = new RecordingHealthSink();
 
         Assert.DoesNotThrow(() => _registry.Register(null, sink));
         Assert.DoesNotThrow(() => _registry.Register(healer, null));
@@ -183,7 +172,7 @@ public class RenderRegistryTests
     public void NotifyHealth_NullTarget_ForwardsNull()
     {
         GameObject healer = NewObject("healer");
-        RecordingHealSink sink = new RecordingHealSink();
+        RecordingHealthSink sink = new RecordingHealthSink();
         _registry.Register(healer, sink);
 
         _registry.NotifyHealth(healer, null, 2f, false);
@@ -238,7 +227,7 @@ public class RenderRegistryTests
     public void Unregister_DestroyedSource_LaterNotifyReachesNothing()
     {
         GameObject source = NewObject("Source");
-        RecordingHealSink sink = new RecordingHealSink();
+        RecordingHealthSink sink = new RecordingHealthSink();
         _registry.Register(source, sink);
         UnityEngine.Object.DestroyImmediate(source);
 

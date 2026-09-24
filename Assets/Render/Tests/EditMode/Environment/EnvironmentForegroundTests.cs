@@ -55,11 +55,6 @@ public class EnvironmentForegroundTests
         return camera;
     }
 
-    static PrimitiveMeshes LoadMeshes()
-    {
-        return AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
-    }
-
     [Test]
     public void GroundHit_BottomCorners_MatchMeasuredEdge()
     {
@@ -182,7 +177,7 @@ public class EnvironmentForegroundTests
         EnvironmentForeground foreground = _go.AddComponent<EnvironmentForeground>();
         TestHelpers.SetPrivateField(foreground, "_seed", 5);
 
-        foreground.Init(camera, ground, LoadMeshes());
+        foreground.Init(camera, ground, RenderTestAssets.LoadMeshes());
 
         Assert.That(foreground.items.Count, Is.InRange(6, 10));
         Assert.AreEqual(foreground.items.Count, foreground.root.childCount);
@@ -213,7 +208,7 @@ public class EnvironmentForegroundTests
         EnvironmentForeground foreground = _go.AddComponent<EnvironmentForeground>();
         TestHelpers.SetPrivateField(foreground, "_seed", 11);
 
-        foreground.Init(camera, ground, LoadMeshes());
+        foreground.Init(camera, ground, RenderTestAssets.LoadMeshes());
 
         List<ForegroundItem> expected = EnvironmentForeground.Layout(position, rotation, fov, aspect,
             ground, 11);

@@ -8,21 +8,16 @@ namespace HealerLike.Render.Creatures
 
 public class LookVocabularyTests
 {
-    public static LookVocabulary Vocabulary()
-    {
-        return AssetDatabase.LoadAssetAtPath<LookVocabulary>("Assets/Render/Creatures/Data/LookVocabulary.asset");
-    }
-
     [Test]
     public void Palette_ShippedAsset_IsSet()
     {
-        Assert.NotNull(Vocabulary().palette);
+        Assert.NotNull(RenderTestAssets.LoadLookVocabulary().palette);
     }
 
     [Test]
     public void Heads_EveryHeadKind_HasPartsOnBothSides()
     {
-        LookVocabulary vocabulary = Vocabulary();
+        LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
 
         foreach (HeadKind head in Enum.GetValues(typeof(HeadKind)))
         {
@@ -34,7 +29,7 @@ public class LookVocabularyTests
     [Test]
     public void Accessories_EveryAccessoryKind_HasPartsOnBothSides()
     {
-        LookVocabulary vocabulary = Vocabulary();
+        LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
 
         foreach (AccessoryKind accessory in Enum.GetValues(typeof(AccessoryKind)))
         {
@@ -51,7 +46,7 @@ public class LookVocabularyTests
     [Test]
     public void Bodies_EveryMassBand_StartsWithTheBodyOnBothSides()
     {
-        LookVocabulary vocabulary = Vocabulary();
+        LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
 
         foreach (MassBand mass in Enum.GetValues(typeof(MassBand)))
         {
@@ -63,7 +58,7 @@ public class LookVocabularyTests
     [Test]
     public void Stems_EveryStemBand_HasALength()
     {
-        LookVocabulary vocabulary = Vocabulary();
+        LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
 
         foreach (StemBand stem in Enum.GetValues(typeof(StemBand)))
         {
@@ -74,7 +69,7 @@ public class LookVocabularyTests
     [Test]
     public void Roots_EveryReachBand_HasAReach()
     {
-        LookVocabulary vocabulary = Vocabulary();
+        LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
 
         foreach (ReachBand reach in Enum.GetValues(typeof(ReachBand)))
         {
@@ -87,7 +82,7 @@ public class LookVocabularyTests
     [TestCase(ReachBand.Long)]
     public void Reach_WhilePinned_IsOneValueForEveryBand(ReachBand band)
     {
-        LookVocabulary vocabulary = Vocabulary();
+        LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
 
         float reach = vocabulary.Reach(band);
 
@@ -99,7 +94,7 @@ public class LookVocabularyTests
     [Test]
     public void Stems_Bands_KeepTheirRatioToTheSlowStem()
     {
-        LookVocabulary vocabulary = Vocabulary();
+        LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
 
         float slow = vocabulary.stems[StemBand.Slow].length;
 
@@ -110,7 +105,7 @@ public class LookVocabularyTests
     [Test]
     public void Heads_StoneParts_DrawSeededStonesRatherThanTheOneBoulder()
     {
-        LookVocabulary vocabulary = Vocabulary();
+        LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
 
         foreach (LookVocabulary.HeadEntry entry in vocabulary.heads.Values)
         {
@@ -124,7 +119,7 @@ public class LookVocabularyTests
     [Test]
     public void Heads_ArchAndCairn_ShowOneThreeOrFiveCopiesByCount()
     {
-        LookVocabulary vocabulary = Vocabulary();
+        LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
         LookVocabulary.HeadEntry arch = vocabulary.heads[HeadKind.Arch];
 
         int[] plant = TipsByBand(arch.plant);

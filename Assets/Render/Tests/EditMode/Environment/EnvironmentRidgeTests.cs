@@ -46,11 +46,6 @@ public class EnvironmentRidgeTests
         Object.DestroyImmediate(_cameraGo);
     }
 
-    static PrimitiveMeshes LoadMeshes()
-    {
-        return AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
-    }
-
     [Test]
     public void LastBand_SixBands_IsFinalSixthOfFog()
     {
@@ -165,7 +160,7 @@ public class EnvironmentRidgeTests
         TestHelpers.SetPrivateField(ridge, "_fogBands", bands);
         TestHelpers.SetPrivateField(ridge, "_seed", 4);
 
-        ridge.Init(camera, grid, ground, fogStart, fogEnd, LoadMeshes());
+        ridge.Init(camera, grid, ground, fogStart, fogEnd, RenderTestAssets.LoadMeshes());
 
         Assert.AreEqual(ridge.items.Count, ridge.root.childCount);
         for (int i = 0; i < ridge.items.Count; i++)
@@ -200,12 +195,12 @@ public class EnvironmentRidgeTests
         _cameraGo.transform.position = eye;
         EnvironmentRidge ridge = _go.AddComponent<EnvironmentRidge>();
 
-        ridge.Init(camera, grid, ground, fogStart, fogEnd, LoadMeshes());
+        ridge.Init(camera, grid, ground, fogStart, fogEnd, RenderTestAssets.LoadMeshes());
 
         List<RidgeItem> expected = EnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, ground, 1707);
         Assert.AreEqual(expected.Count, ridge.items.Count);
         Assert.AreEqual(expected.Count, ridge.root.childCount);
-        Assert.IsTrue(ridge.root.GetComponentsInChildren<MeshFilter>().Any(f => f.sharedMesh == LoadMeshes().capsule));
+        Assert.IsTrue(ridge.root.GetComponentsInChildren<MeshFilter>().Any(f => f.sharedMesh == RenderTestAssets.LoadMeshes().capsule));
     }
 }
 

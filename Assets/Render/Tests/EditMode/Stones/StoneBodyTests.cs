@@ -28,59 +28,6 @@ public class StoneBodyTests
         public override bool ignoreConsumerPrevention { get { return false; } }
     }
 
-    // A stone the way the composer lays one out: a body on two limbs, a head on top
-    public static CreatureRecipe Recipe()
-    {
-        CreatureRecipe recipe = ScriptableObject.CreateInstance<CreatureRecipe>();
-        recipe.parts = new CreaturePart[]
-        {
-            Part("Body", -1, Vector3.up, Vector3.one, PartRole.Body),
-            Part("LimbLeft", 0, new Vector3(-0.4f, -0.7f, 0f), Vector3.one * 0.4f, PartRole.Limb),
-            Part("LimbRight", 0, new Vector3(0.4f, -0.7f, 0f), Vector3.one * 0.4f, PartRole.Limb),
-            Part("Head", 0, Vector3.up * 0.8f, Vector3.one * 0.5f, PartRole.Head)
-        };
-        recipe.roots.count = 0;
-        recipe.sourceLocal = new Vector3[] { Vector3.up * 2f };
-        return recipe;
-    }
-
-    static CreaturePart Part(string id, int parent, Vector3 position, Vector3 dimensions, PartRole role)
-    {
-        return new CreaturePart
-        {
-            id = id,
-            parent = parent,
-            primitive = Primitive.Stone,
-            localPosition = position,
-            dimensions = dimensions,
-            colour = Color.grey,
-            role = role
-        };
-    }
-
-    // A derived stone the way the prefab lays it out: the builder builds the rig, then the body joins it
-    public static StoneBody CreateBody(GameObject owner, Entity entity, CreatureRecipe recipe, Material material)
-    {
-        GameObject viewGo = new GameObject("DerivedStone");
-        viewGo.transform.SetParent(owner.transform, false);
-        CreatureBuilder builder = viewGo.AddComponent<CreatureBuilder>();
-        builder.SetRecipe(recipe, material,
-            AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset"));
-        builder.Init(entity);
-        StoneBody body = viewGo.AddComponent<StoneBody>();
-        TestHelpers.SetPrivateField(body, "_palette",
-            AssetDatabase.LoadAssetAtPath<LookPalette>("Assets/Render/Grammar/Data/LookPalette.asset"));
-        return body;
-    }
-
-    public static Entity CreateEntity(GameObject owner, ResourceAttribute health)
-    {
-        Entity entity = null;
-        TestHelpers.WithLoggingDisabled(() => entity = owner.AddComponent<Entity>());
-        TestHelpers.SetPrivateField(entity, "_health", health);
-        return entity;
-    }
-
     GameObject _owner;
     GameObject _source;
     GameObject _projectile;
@@ -115,12 +62,11 @@ public class StoneBodyTests
         _projectile = new GameObject("Projectile");
         _health = TestHelpers.CreateResourceAttribute(_owner, AttributeType.HealthMax, 100);
         TestHelpers.CreateAttributeManager(_source);
-        _fx = StoneEffectsTests.CreateEffects();
+        _fx = RenderTestAssets.CreateStoneEffects();
         _fxObject = _fx.gameObject;
-        _recipe = Recipe();
-        _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>(
-            "Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
-        _body = CreateBody(_owner, CreateEntity(_owner, _health), _recipe, _material);
+        _recipe = RenderTestAssets.CreateStoneRecipe();
+        _material = new Material(RenderTestAssets.LoadLookMaterial());
+        _body = RenderTestAssets.CreateStoneBody(_owner, RenderTestAssets.CreateStoneEntity(_owner, _health), _recipe, _material);
         _body.Init(_health, 15, _fx);
     }
 
@@ -315,7 +261,7 @@ public class StoneBodyTests
     [Test]
     public void Init_GroundShadow_FallsAwayFromTheKeyLightAndGoesWithTheCollapse()
     {
-        StoneGroundDisc shadow = StoneGroundDiscTests.CreateDisc(_body.transform, true);
+        StoneGroundDisc shadow = RenderTestAssets.CreateGroundDisc(_body.transform, true);
         TestHelpers.SetPrivateField(_body, "_groundShadow", shadow);
 
         _body.Init(_health, 15, _fx);

@@ -15,28 +15,11 @@ public class LookComposerTests
     GameObject _parent;
     LookVocabulary _vocabulary;
 
-    public static UnitChannels CreateChannels(LookSide side, HeadKind head, CountBand count = CountBand.One,
-        StemBand stem = StemBand.Steady, MassBand mass = MassBand.Light, AccessoryKind accessory = AccessoryKind.None)
-    {
-        return new UnitChannels
-        {
-            side = side,
-            head = head,
-            count = count,
-            stem = stem,
-            mass = mass,
-            reach = ReachBand.Long,
-            accessory = accessory,
-            accessoryHead = HeadKind.Arch,
-            accent = EffectFamily.Damage
-        };
-    }
-
     [SetUp]
     public void SetUp()
     {
         _parent = new GameObject("ComposerFixture");
-        _vocabulary = LookVocabularyTests.Vocabulary();
+        _vocabulary = RenderTestAssets.LoadLookVocabulary();
     }
 
     [TearDown]
@@ -75,7 +58,7 @@ public class LookComposerTests
     [TestCase("HitArmorBufferEntityEntity", Entity.EntityType.Computer)]
     public void Compose_LiveEntity_BuildsAValidRigUnderThePartCap(string folder, Entity.EntityType entityType)
     {
-        UnitChannels channels = LookDerivation.Channels(LookDerivationTests.LoadEntity(folder), entityType);
+        UnitChannels channels = LookDerivation.Channels(RenderTestAssets.LoadEntity(folder), entityType);
 
         CreatureRecipe recipe = Compose(channels);
 
@@ -83,7 +66,7 @@ public class LookComposerTests
         Assert.LessOrEqual(recipe.parts.Length, _vocabulary.maxParts);
         Assert.IsFalse(AssetDatabase.Contains(recipe));
         Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
-        using (CreatureRig rig = CreatureRigTests.CreateRig(recipe, _parent.transform, material))
+        using (CreatureRig rig = RenderTestAssets.CreateRig(recipe, _parent.transform, material))
         {
             rig.Tick(1f, 0.016f, new FootFrame(Vector3.zero, Vector3.up, 1f));
             Assert.NotNull(rig.root);
@@ -100,7 +83,7 @@ public class LookComposerTests
             {
                 foreach (CountBand count in Enum.GetValues(typeof(CountBand)))
                 {
-                    UnitChannels channels = CreateChannels(side, head, count, StemBand.Quick, MassBand.Heavy);
+                    UnitChannels channels = RenderTestAssets.CreateChannels(side, head, count, StemBand.Quick, MassBand.Heavy);
 
                     CreatureRecipe recipe = Compose(channels);
 
@@ -118,7 +101,7 @@ public class LookComposerTests
         {
             foreach (AccessoryKind accessory in Enum.GetValues(typeof(AccessoryKind)))
             {
-                CreatureRecipe recipe = Compose(CreateChannels(side, HeadKind.Bud, accessory: accessory));
+                CreatureRecipe recipe = Compose(RenderTestAssets.CreateChannels(side, HeadKind.Bud, accessory: accessory));
 
                 Assert.NotNull(recipe, $"{side} {accessory}");
             }
@@ -142,7 +125,7 @@ public class LookComposerTests
                 {
                     foreach (StemBand stem in Enum.GetValues(typeof(StemBand)))
                     {
-                        UnitChannels channels = CreateChannels(side, HeadKind.Bud, stem: stem, mass: mass, accessory: accessory);
+                        UnitChannels channels = RenderTestAssets.CreateChannels(side, HeadKind.Bud, stem: stem, mass: mass, accessory: accessory);
 
                         float reach = LookComposer.AccessoryReach(channels, _vocabulary);
 
@@ -163,7 +146,7 @@ public class LookComposerTests
                 continue;
             }
 
-            CreatureRecipe recipe = Compose(CreateChannels(LookSide.Plant, HeadKind.Bud, accessory: accessory));
+            CreatureRecipe recipe = Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, accessory: accessory));
 
             float sum = 0f;
             foreach (CreaturePart part in FindAll(recipe, PartRole.Accessory))
@@ -177,7 +160,7 @@ public class LookComposerTests
     [Test]
     public void Compose_Plant_GrowsJointedRootsAtThePinnedReach()
     {
-        CreatureRecipe recipe = Compose(CreateChannels(LookSide.Plant, HeadKind.Bud));
+        CreatureRecipe recipe = Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud));
 
         Assert.AreEqual(_vocabulary.rootCount, recipe.roots.count);
         Assert.That(recipe.roots.segments, Is.InRange(2, 3));
@@ -191,7 +174,7 @@ public class LookComposerTests
     [Test]
     public void Compose_Stone_StandsOnSeededStonesWithoutRootsOrLianas()
     {
-        CreatureRecipe recipe = Compose(CreateChannels(LookSide.Stone, HeadKind.Bud));
+        CreatureRecipe recipe = Compose(RenderTestAssets.CreateChannels(LookSide.Stone, HeadKind.Bud));
 
         Assert.AreEqual(0, recipe.roots.count);
         Assert.IsEmpty(recipe.arms);
@@ -213,7 +196,7 @@ public class LookComposerTests
     [Test]
     public void Compose_SturdyStone_BodyIsTwoPointTwoBodyUnitsAcross()
     {
-        CreatureRecipe recipe = Compose(CreateChannels(LookSide.Stone, HeadKind.Bud, mass: MassBand.Sturdy));
+        CreatureRecipe recipe = Compose(RenderTestAssets.CreateChannels(LookSide.Stone, HeadKind.Bud, mass: MassBand.Sturdy));
 
         float width = recipe.parts[0].dimensions.x * 2f / _vocabulary.bodyUnit; // the stone mesh spans two units across
 
@@ -224,7 +207,7 @@ public class LookComposerTests
     [TestCase(MassBand.Sturdy, 0.5f)]
     public void Compose_PlantMass_BodyRadiusInCellsIsNearTheTarget(MassBand mass, float target)
     {
-        CreatureRecipe recipe = Compose(CreateChannels(LookSide.Plant, HeadKind.Bud, mass: mass));
+        CreatureRecipe recipe = Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: mass));
 
         float radius = recipe.parts[0].dimensions.x * 0.5f; // the sphere mesh is one unit across
 
@@ -237,7 +220,7 @@ public class LookComposerTests
     {
         foreach (HeadKind head in Enum.GetValues(typeof(HeadKind)))
         {
-            UnitChannels channels = CreateChannels(LookSide.Plant, head, mass: MassBand.Light);
+            UnitChannels channels = RenderTestAssets.CreateChannels(LookSide.Plant, head, mass: MassBand.Light);
 
             float span = LookComposer.HeadSpan(channels, _vocabulary);
 
@@ -256,7 +239,7 @@ public class LookComposerTests
                 continue;
             }
 
-            UnitChannels channels = CreateChannels(LookSide.Plant, head, count, mass: MassBand.Light);
+            UnitChannels channels = RenderTestAssets.CreateChannels(LookSide.Plant, head, count, mass: MassBand.Light);
 
             float gap = LookComposer.HeadGap(channels, _vocabulary);
 
@@ -267,8 +250,8 @@ public class LookComposerTests
     [Test]
     public void Compose_HeavierMass_GrowsTheHeadWithItsSocket()
     {
-        CreaturePart light = FindAll(Compose(CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Light)), PartRole.Tip)[0];
-        CreaturePart heavy = FindAll(Compose(CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Heavy)), PartRole.Tip)[0];
+        CreaturePart light = FindAll(Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Light)), PartRole.Tip)[0];
+        CreaturePart heavy = FindAll(Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Heavy)), PartRole.Tip)[0];
 
         float massRatio = _vocabulary.bodies[MassBand.Heavy].scale / _vocabulary.bodies[MassBand.Light].scale;
         Assert.AreEqual(massRatio, heavy.dimensions.x / light.dimensions.x, 0.001f);
@@ -279,7 +262,7 @@ public class LookComposerTests
     [TestCase(CountBand.Many, 5)]
     public void Compose_Count_DrawsOneThreeOrFiveTips(CountBand count, int tips)
     {
-        CreatureRecipe recipe = Compose(CreateChannels(LookSide.Plant, HeadKind.Bud, count));
+        CreatureRecipe recipe = Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, count));
 
         int found = FindAll(recipe, PartRole.Tip).Length;
 
@@ -291,7 +274,7 @@ public class LookComposerTests
     [TestCase(EffectFamily.Boon)]
     public void Compose_Accent_SitsOnTheTipsAndNeverOnTheBody(EffectFamily family)
     {
-        UnitChannels channels = CreateChannels(LookSide.Plant, HeadKind.Spear, CountBand.Few);
+        UnitChannels channels = RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Spear, CountBand.Few);
         channels.accent = family;
         Color accent = _vocabulary.palette.Accent(family);
 
@@ -308,7 +291,7 @@ public class LookComposerTests
     [Test]
     public void Compose_Plant_GivesTheLianaTipTheAccent()
     {
-        UnitChannels channels = CreateChannels(LookSide.Plant, HeadKind.Bud);
+        UnitChannels channels = RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud);
 
         CreatureRecipe recipe = Compose(channels);
 
@@ -318,8 +301,8 @@ public class LookComposerTests
     [Test]
     public void Compose_HeavyMass_AddsABasePartRatherThanOnlyScaling()
     {
-        int light = Compose(CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Light)).parts.Length;
-        int heavy = Compose(CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Heavy)).parts.Length;
+        int light = Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Light)).parts.Length;
+        int heavy = Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Heavy)).parts.Length;
 
         Assert.AreEqual(light + 1, heavy);
     }
@@ -329,7 +312,7 @@ public class LookComposerTests
     {
         UnityEngine.TestTools.LogAssert.Expect(LogType.Error, "[LookComposer] Needs a vocabulary with a palette.");
 
-        CreatureRecipe recipe = LookComposer.Compose(CreateChannels(LookSide.Plant, HeadKind.Bud), null);
+        CreatureRecipe recipe = LookComposer.Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud), null);
 
         Assert.IsNull(recipe);
     }

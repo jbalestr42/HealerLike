@@ -27,7 +27,7 @@ public class CharacterViewTests
         _anchorGo = new GameObject("Anchor");
         _targetGo = new GameObject("HealTarget");
         _managerGo = new GameObject("RenderManager");
-        _material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader"));
+        _material = new Material(RenderTestAssets.LoadLookMaterial());
     }
 
     [TearDown]
@@ -76,13 +76,13 @@ public class CharacterViewTests
     [Test]
     public void OnHealthResolved_AnchorAndRegistryWithoutEntityInit_FollowsAnchorAndReactsToHeals()
     {
-        _ownedRecipe = CreatureValidatorTests.Recipe();
+        _ownedRecipe = RenderTestAssets.CreateRecipe();
         Character character = null;
         TestHelpers.WithLoggingDisabled(() => character = _characterGo.AddComponent<Character>());
         _anchorGo.transform.position = new Vector3(5f, 1f, 2f);
         _targetGo.transform.position = _anchorGo.transform.position + Vector3.one;
         CharacterView view = _anchorGo.AddComponent<CharacterView>();
-        TestHelpers.SetPrivateField(view, "_meshes", PrimitiveMeshesTests.Meshes());
+        TestHelpers.SetPrivateField(view, "_meshes", RenderTestAssets.LoadMeshes());
         RenderRegistry registry = new RenderRegistry();
 
         InitWithoutManager(view, character, _ownedRecipe, _anchorGo.transform, _material, registry);
@@ -131,7 +131,7 @@ public class CharacterViewTests
         ResourceAttribute health = TestHelpers.CreateResourceAttribute(_targetGo, AttributeType.HealthMax, 100);
         _characterGo.AddComponent<StatusObserver>();
         CharacterView view = _characterGo.AddComponent<CharacterView>();
-        TestHelpers.SetPrivateField(view, "_meshes", PrimitiveMeshesTests.Meshes());
+        TestHelpers.SetPrivateField(view, "_meshes", RenderTestAssets.LoadMeshes());
         RenderRegistry registry = new RenderRegistry();
         InitWithoutManager(view, character, recipe, _characterGo.transform, _material, registry);
         ResourceOutcomeObserver observer = _targetGo.AddComponent<ResourceOutcomeObserver>();
@@ -193,7 +193,7 @@ public class CharacterViewTests
         Character character = null;
         TestHelpers.WithLoggingDisabled(() => character = _characterGo.AddComponent<Character>());
         CharacterView view = _characterGo.AddComponent<CharacterView>();
-        TestHelpers.SetPrivateField(view, "_meshes", PrimitiveMeshesTests.Meshes());
+        TestHelpers.SetPrivateField(view, "_meshes", RenderTestAssets.LoadMeshes());
         InitWithoutManager(view, character, recipe, _characterGo.transform, _material, new RenderRegistry());
 
         bool hasAnchors = view.TryGetAnchors(out EffectAnchors anchors);
@@ -220,7 +220,7 @@ public class CharacterViewTests
         Character character = null;
         TestHelpers.WithLoggingDisabled(() => character = _characterGo.AddComponent<Character>());
         RenderManager manager = _managerGo.AddComponent<RenderManager>();
-        TestHelpers.SetPrivateField(manager, "_meshes", PrimitiveMeshesTests.Meshes());
+        TestHelpers.SetPrivateField(manager, "_meshes", RenderTestAssets.LoadMeshes());
         CharacterView view = viewGo.GetComponent<CharacterView>();
 
         view.Init(character, manager);
@@ -244,7 +244,7 @@ public class CharacterViewTests
         SerializedObject data = new SerializedObject(view);
         Assert.AreSame(prefab.transform, data.FindProperty("_visualAnchor").objectReferenceValue);
         Assert.AreEqual("Healer", data.FindProperty("_recipe").objectReferenceValue.name);
-        Assert.AreSame(PrimitiveMeshesTests.Meshes(), data.FindProperty("_meshes").objectReferenceValue);
+        Assert.AreSame(RenderTestAssets.LoadMeshes(), data.FindProperty("_meshes").objectReferenceValue);
     }
 }
 
