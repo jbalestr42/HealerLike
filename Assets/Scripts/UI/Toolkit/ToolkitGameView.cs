@@ -15,6 +15,9 @@ public class ToolkitGameView
     VisualTreeAsset _cardTemplate = Resources.Load<VisualTreeAsset>("UI/Toolkit/DataCard");
     Dictionary<string, List<ToolkitCard>> _lists = new Dictionary<string, List<ToolkitCard>>();
 
+    readonly DataIconService _icons = new DataIconService();
+    public DataIconService icons { get { return _icons; } }
+
     VisualElement _root;
     public VisualElement root { get { return _root; } }
 
@@ -134,7 +137,13 @@ public class ToolkitGameView
         VisualElement icon = _root.Q("detail-icon");
         if (icon != null)
         {
-            icon.style.backgroundImage = new StyleBackground(DataIconService.GetIcon(model.iconSource));
+            icon.style.backgroundImage = new StyleBackground(_icons.GetIcon(model.iconSource));
         }
+    }
+
+    // Destroys the icons this view generated
+    public void Release()
+    {
+        _icons.Clear();
     }
 }

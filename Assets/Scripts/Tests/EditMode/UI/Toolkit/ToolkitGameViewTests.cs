@@ -32,7 +32,7 @@ public class ToolkitGameViewTests
     [TearDown]
     public void TearDown()
     {
-        DataIconService.Clear();
+        _view.Release();
     }
 
     [Test]

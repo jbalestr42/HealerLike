@@ -18,18 +18,20 @@ public class DataIconServiceTests
 
     Texture2D _texture;
     Sprite _sprite;
+    DataIconService _icons;
 
     [SetUp]
     public void SetUp()
     {
         _texture = new Texture2D(16, 16);
         _sprite = Sprite.Create(_texture, new Rect(0f, 0f, 16f, 16f), new Vector2(0.5f, 0.5f));
+        _icons = new DataIconService();
     }
 
     [TearDown]
     public void TearDown()
     {
-        DataIconService.Clear();
+        _icons.Clear();
         Object.DestroyImmediate(_sprite);
         Object.DestroyImmediate(_texture);
     }
@@ -37,7 +39,7 @@ public class DataIconServiceTests
     [Test]
     public void GetIcon_NullData_ReturnsFallbackTexture()
     {
-        Texture2D icon = DataIconService.GetIcon(null);
+        Texture2D icon = _icons.GetIcon(null);
 
         Assert.IsNotNull(icon);
     }
@@ -45,11 +47,34 @@ public class DataIconServiceTests
     [Test]
     public void GetIcon_SameData_ReturnsCachedTexture()
     {
-        Texture2D first = DataIconService.GetIcon(null);
+        Texture2D first = _icons.GetIcon(null);
 
-        Texture2D second = DataIconService.GetIcon(null);
+        Texture2D second = _icons.GetIcon(null);
 
         Assert.AreSame(first, second);
+    }
+
+    [Test]
+    public void Clear_GeneratedIcon_DestroysIt()
+    {
+        Texture2D icon = _icons.GetIcon(null);
+
+        _icons.Clear();
+
+        Assert.IsFalse(icon);
+    }
+
+    [Test]
+    public void GetIcon_TwoServices_EachOwnsItsTexture()
+    {
+        DataIconService other = new DataIconService();
+        Texture2D mine = _icons.GetIcon(null);
+
+        Texture2D theirs = other.GetIcon(null);
+
+        other.Clear();
+        Assert.AreNotSame(mine, theirs);
+        Assert.IsTrue(mine);
     }
 
     [Test]
