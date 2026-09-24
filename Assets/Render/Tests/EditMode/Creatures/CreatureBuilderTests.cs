@@ -207,7 +207,7 @@ public class CreatureBuilderTests
 
         Assert.AreEqual(source, _source.transform.localPosition);
         Assert.AreEqual(target, _target.transform.localPosition);
-        Assert.AreEqual(new Vector3(4f, 0f, 3f), _builder.rig.root.position);
+        Assert.AreEqual(new Vector3(4f, 2f, 3f), _builder.rig.root.position); // the rig stands where its view is
         Assert.AreEqual(new Vector3(4f, 2f, 3f), _owner.transform.position);
     }
 
