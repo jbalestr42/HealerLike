@@ -19,6 +19,7 @@ MonoBehaviour:
   torus: {fileID: 4300000, guid: 01162d430a2d549fb83b6b4fd8e1172a, type: 2}
   thinTorus: {fileID: 4300000, guid: 156ea4454016f41939c9efe30aab77f9, type: 2}
   tuft: {fileID: 4300000, guid: ed2effe60881e425190b7ab44c40f482, type: 2}
+  socle: {fileID: 4300000, guid: 352e86f730a76465bb0efed4245728f0, type: 2}
   pyramid: {fileID: 4300000, guid: 61a70983f668e45ff980e1f5e0621aec, type: 2}
   star: {fileID: 4300000, guid: 24beb1ec4bdc54b3abedf668c02a6f60, type: 2}
   leaf: {fileID: 4300000, guid: 39340523223504260a21d72b18ab3283, type: 2}
