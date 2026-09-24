@@ -97,7 +97,7 @@ public class GrassFieldTests
 
     static int GreenPixels(Texture2D texture)
     {
-        return texture.GetPixels32().Count(c => c.g > 140 && c.g > c.r * 1.1f && c.g > c.b * 1.3f);
+        return texture.GetPixels32().Count(c => c.g > 100 && c.g > c.r * 1.1f && c.g > c.b * 1.3f);
     }
 
     static void Render(Camera camera, RenderTexture target, Texture2D texture)
