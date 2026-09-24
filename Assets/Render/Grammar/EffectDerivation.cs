@@ -2,49 +2,6 @@ using UnityEngine;
 
 namespace HealerLike.Render.Grammar
 {
-    // What an effect does to its holder, the accent and the shape of its look come from it
-    public enum EffectFamily
-    {
-        Damage,
-        Heal,
-        Rot,
-        Renew,
-        Boon,
-        Bane
-    }
-
-    public enum EffectTempo
-    {
-        Once,
-        PerPeriod,
-        ForDuration
-    }
-
-    public enum AttributeGroup
-    {
-        Offence,
-        Defence,
-        Prevention
-    }
-
-    // Who a character skill lands on, one picked target or every target of its side
-    public enum EffectTopology
-    {
-        Single,
-        Group,
-        Area
-    }
-
-    // Everything the look of an effect reads from its handler, decided once when it lands
-    public struct EffectChannels
-    {
-        public EffectFamily family;
-        public AttributeGroup group;
-        public EffectTempo tempo;
-        // Seconds between two ticks, 0 when the handler does not tick
-        public float periodSeconds;
-    }
-
     // Reads the family, tempo and delivery of his buffs and projectiles from their data, never from a name
     public static class EffectDerivation
     {
@@ -120,27 +77,7 @@ namespace HealerLike.Render.Grammar
                 return 0f;
             }
 
-            AValue value = factory.data.value;
-            if (value is FlatValue flat)
-            {
-                return flat.data.value;
-            }
-
-            if (value is AttributeValue attribute)
-            {
-                return attribute.data.multiplier;
-            }
-
-            if (value is CurrentHealthValue currentHealth)
-            {
-                return currentHealth.data.multiplier;
-            }
-
-            if (value is MaxHealthValue maxHealth)
-            {
-                return maxHealth.data.multiplier;
-            }
-            return 0f;
+            return SkillWalker.Value(factory.data.value, null);
         }
 
         // AttackRate is read as seconds between shots, so less is better
@@ -192,22 +129,6 @@ namespace HealerLike.Render.Grammar
                 return 0f;
             }
             return factory.data.periodDuration;
-        }
-
-        // A skill without his base data has no target rule, it is read as a single target
-        public static EffectTopology Topology(ACharacterSkillFactory skill)
-        {
-            if (skill == null)
-            {
-                return EffectTopology.Single;
-            }
-
-            BaseCharacterSkillData data = skill.Create().GetData() as BaseCharacterSkillData;
-            if (data == null || data.isSingle)
-            {
-                return EffectTopology.Single;
-            }
-            return EffectTopology.Group;
         }
 
         // Projectiles take the same reading as the head, so a unit's head and its shot agree

@@ -2,19 +2,9 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace HealerLike.Render.Grammar
 {
-
-public class FakeCharacterSkill : ACharacterSkill<CharacterSkillData>
-{
-    public override void Use(GameObject source, UnityAction<bool> onSkillComplete)
-    {
-    }
-}
-
-public class FakeCharacterSkillFactory : CharacterSkillFactory<FakeCharacterSkill, CharacterSkillData> {}
 
 public class EffectDerivationTests
 {
@@ -108,31 +98,6 @@ public class EffectDerivationTests
         Assert.AreEqual(EffectDerivation.Group(handler), channels.group);
         Assert.AreEqual(tempo, channels.tempo);
         Assert.AreEqual(periodSeconds, channels.periodSeconds, 0.0001f);
-    }
-
-    // The seven character skills of his data, isSingle as authored
-    [TestCase("DamageAllEnemy", EffectTopology.Group)]
-    [TestCase("HealMultiTarget", EffectTopology.Group)]
-    [TestCase("HealSingleTarget", EffectTopology.Single)]
-    [TestCase("MultiTargetBuffAttackRate", EffectTopology.Group)]
-    [TestCase("MultiTargetReduceDamage", EffectTopology.Group)]
-    [TestCase("PoisonSingleTarget", EffectTopology.Single)]
-    [TestCase("SingleTargetBuffAttackRate", EffectTopology.Group)] // authored with isSingle off
-    public void Topology_LiveCharacterSkill_ReadsIsSingle(string name, EffectTopology expected)
-    {
-        ACharacterSkillFactory skill = AssetDatabase.LoadAssetAtPath<ACharacterSkillFactory>(data + "CharacterSkills/" + name + "/" + name + ".asset");
-        Assert.NotNull(skill, name);
-
-        Assert.AreEqual(expected, EffectDerivation.Topology(skill));
-    }
-
-    [Test]
-    public void Topology_NoBaseData_IsSingle()
-    {
-        FakeCharacterSkillFactory skill = CreateTracked<FakeCharacterSkillFactory>();
-        skill.data = new CharacterSkillData();
-
-        Assert.AreEqual(EffectTopology.Single, EffectDerivation.Topology(skill));
     }
 
     [TestCase(true, EffectFamily.Boon)]
