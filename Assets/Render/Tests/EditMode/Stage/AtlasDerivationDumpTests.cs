@@ -11,16 +11,7 @@ namespace HealerLike.Render.Stage
         [Test]
         public void Collect_RealAssets_CoversEveryAssetAndBothSides()
         {
-            // BuffEntity is intentionally skill-less; the real derivation diagnoses it on both sides.
-            foreach (string guid in AssetDatabase.FindAssets("t:EntityData", new[] { "Assets/Data" }))
-            {
-                EntityData data = AssetDatabase.LoadAssetAtPath<EntityData>(AssetDatabase.GUIDToAssetPath(guid));
-                if (Grammar.LookDerivation.Primary(data) == null)
-                {
-                    LogAssert.Expect(LogType.Error, "[HeadDerivation] No head for a unit without skill");
-                    LogAssert.Expect(LogType.Error, "[HeadDerivation] No head for a unit without skill");
-                }
-            }
+            // Passive-only units use Bud without emitting an error while every source is enumerated.
             AtlasDerivationDump.Document dump = AtlasDerivationDump.Collect();
             string[] entities = AssetDatabase.FindAssets("t:EntityData", new[] { "Assets/Data" })
                 .Select(AssetDatabase.GUIDToAssetPath).ToArray();

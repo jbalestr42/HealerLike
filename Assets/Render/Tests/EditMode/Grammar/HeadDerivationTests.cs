@@ -78,10 +78,8 @@ public class HeadDerivationTests
     }
 
     [Test]
-    public void Head_NoSkill_LogsAndFallsBackToBud()
+    public void Head_NoSkill_UsesTheSupportedPassiveBud()
     {
-        LogAssert.Expect(LogType.Error, new Regex(@"\[HeadDerivation\] No head"));
-
         HeadKind head = HeadDerivation.Head(null);
 
         Assert.AreEqual(HeadKind.Bud, head);

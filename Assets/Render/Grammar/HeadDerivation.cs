@@ -9,6 +9,11 @@ namespace HealerLike.Render.Grammar
     {
         public static HeadKind Head(ASkillFactory skill)
         {
+            // Passive-only units such as BuffEntity have no primary skill and use the plain bud.
+            if (skill == null)
+            {
+                return HeadKind.Bud;
+            }
             if (skill is ShootProjectileSkillFactory || skill is ConfigurableSkillFactory)
             {
                 return LookDerivation.DeliveryHead(SkillWalker.DominantPrefab(skill));
@@ -47,11 +52,7 @@ namespace HealerLike.Render.Grammar
                 return Gift(EffectDerivation.Family(first, true), EffectDerivation.Group(first));
             }
 
-            string name = "a unit without skill";
-            if (skill != null)
-            {
-                name = skill.GetType().Name;
-            }
+            string name = skill.GetType().Name;
             Debug.LogError($"[HeadDerivation] No head for {name}");
             return HeadKind.Bud;
         }
