@@ -1,0 +1,763 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78aabedb117ed44f8b69e531441aaa0a, type: 3}
+  m_Name: DataIconCatalog
+  m_EditorClassIdentifier: HealerLike.Runtime::DataIconCatalog
+  entries:
+  - source: {fileID: 11400000, guid: 01f54a23d3e411a4c831678d70e19e8a, type: 2}
+    generated: {fileID: 2800000, guid: 49d5fd22e3a8644cfbd9085fb52bb337, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 059d0c2e8eebcdc45a72f7263323d9c4, type: 2}
+    generated: {fileID: 2800000, guid: 0247aa2f27c08469590f98d1c52e8815, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:CurrentHealthDamage
+  - source: {fileID: 11400000, guid: 05ae56184a206d646bf31ea32ef61a59, type: 2}
+    generated: {fileID: 2800000, guid: 1b75935b8111843228d42b5de82583cb, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 0809b73230bf3b54b9b131309fd05381, type: 2}
+    generated: {fileID: 2800000, guid: 4d3d8a50183ee40b9b2291ea3a830150, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 0ca53d3d2c9d972418250fda21a431aa, type: 2}
+    generated: {fileID: 2800000, guid: ad62b494bc9ce447094b575419acbd73, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ApplyConsumerBuffData:ApplyConsumerBuffData
+  - source: {fileID: 11400000, guid: 0e42156d42eb9244db24d1871321181b, type: 2}
+    generated: {fileID: 2800000, guid: 67a98592ecfce44378602344dbc6df17, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:EntityData:FastShoot
+  - source: {fileID: 11400000, guid: 0fe911b81aaae204fad2bb44dbdc001c, type: 2}
+    generated: {fileID: 2800000, guid: efb9e53830cf7427fb2774674080f47e, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:ManaOnRoundEnd
+  - source: {fileID: 11400000, guid: 1031ee4e52da5ab41a03527d522aeee3, type: 2}
+    generated: {fileID: 2800000, guid: 8fee3a3710e1e445e9ee8731d77d4e91, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:EntityData:MultiShot
+  - source: {fileID: 11400000, guid: 10e7a3acb9f60c54aa9701c4a92cf377, type: 2}
+    generated: {fileID: 2800000, guid: cca6334e2da494413b23bfa7ab779a9f, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:HealAllEntitiesOnRoundEnd
+  - source: {fileID: 11400000, guid: 111aaf418d3ccfb4c9770e4496326450, type: 2}
+    generated: {fileID: 2800000, guid: 52c679c18d5ad4578947e8fd17692475, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 135b10db4941da24abcd93e1d7fa91ca, type: 2}
+    generated: {fileID: 2800000, guid: 970d80b57f8624608a2d11801c9e388b, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:FlatModifierData:FlatModifierData
+  - source: {fileID: 11400000, guid: 1431d73ab9b1d3449894c9805de19c37, type: 2}
+    generated: {fileID: 2800000, guid: 5aad404817cf644f9bcc1c5e091c77ed, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ProjectileBehaviourBuffData:ProjectileBehaviourBuffData
+  - source: {fileID: 11400000, guid: 15469dd3a4a9e1f46add9308f8213444, type: 2}
+    generated: {fileID: 2800000, guid: b5e5f9eeef87145e7bbb0ebf5975fbc9, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: 17016692f1a03ab4ca4807ba22f03f4b, type: 2}
+    generated: {fileID: 2800000, guid: 55e940dfbd2e948b4b41fdf9186d4a89, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ResourceValidatorData:ResourceValidatorData
+  - source: {fileID: 11400000, guid: 18b3c637233f7c7459355e646a9bc60b, type: 2}
+    generated: {fileID: 2800000, guid: b4e5765b877fa4669b1f0416a83475b5, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: 196f10f8672accc4dbe10df308dc9425, type: 2}
+    generated: {fileID: 2800000, guid: 05572ebe057d24ee4a87708b31639d2d, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:RepeatSkillStepData:RepeatSkillStepData
+  - source: {fileID: 11400000, guid: 19f30c8aca7684b4eb7fbd3a5e0f4b16, type: 2}
+    generated: {fileID: 2800000, guid: a037a6fdb3a944a2f8ded2e7affe9181, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:EntityData:ChainLightning
+  - source: {fileID: 11400000, guid: 1bf36ca141918c94ea485df9e025943a, type: 2}
+    generated: {fileID: 2800000, guid: a835f9b29b2804aaa834808389a19116, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:WavePatternData:Wave_1_3
+  - source: {fileID: 11400000, guid: 1ebca72647271b94ca5968b1b500f88d, type: 2}
+    generated: {fileID: 2800000, guid: ce475a2a9de3d4ac2abfd45a968da534, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ApplyConsumerCharacterSkillData:Heal
+  - source: {fileID: 11400000, guid: 1efa6c4ee6ff78c458d49890b83e33d0, type: 2}
+    generated: {fileID: 2800000, guid: e08f4d9b348af4bf789116492f153dc2, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ApplyConsumerBuffData:ApplyConsumerBuffData
+  - source: {fileID: 11400000, guid: 208da416cfdfb894bb6d4b09a0339217, type: 2}
+    generated: {fileID: 2800000, guid: 5ca0f29e1ed5441908e72dbba87ca6b9, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: 20d029bd75f1c644f9c6013b87b29ab8, type: 2}
+    generated: {fileID: 2800000, guid: 57c2b31073976494bb0f21d906b17775, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:FlatModifierData:FlatModifierData
+  - source: {fileID: 11400000, guid: 2557c6f7ed35a534480878a4f32515fa, type: 2}
+    generated: {fileID: 2800000, guid: d362fa9e404a0469283670118ac839b3, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ApplyBuffPeriodicallySkillData:ApplyBuffPeriodicallySkillData
+  - source: {fileID: 11400000, guid: 255dff38d4e43e54496d1a01bd3b147d, type: 2}
+    generated: {fileID: 2800000, guid: 96fe3ca31e2314d7f8c665fef0bb6a78, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:EntityData:TripleShoot
+  - source: {fileID: 11400000, guid: 26dbd27e829bb32408f456f507d1393f, type: 2}
+    generated: {fileID: 2800000, guid: 8f52fe67381a745ac921175f92df7fe4, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:EntityData:HitArmorBuffer
+  - source: {fileID: 11400000, guid: 27345eaa767457c45adad6333b8c8d6d, type: 2}
+    generated: {fileID: 2800000, guid: 9b156294c9708437ea989a956424c9dd, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 285265cd5b673c34e99014b4d487cf6e, type: 2}
+    generated: {fileID: 2800000, guid: 19d82801ad1f74c7f931cf35dad1bf68, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:IncreaseDamageWithProjectileDistance
+  - source: {fileID: 11400000, guid: 2b924a48e51eb3143b5c1b822235f679, type: 2}
+    generated: {fileID: 2800000, guid: 8d362efc0d88b4b759509d3e1910995b, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:BuffCharacterSkillData:BuffCharacterSkillData
+  - source: {fileID: 11400000, guid: 2e0862fec6e73cb4db8e1de0a6a8e64a, type: 2}
+    generated: {fileID: 2800000, guid: 387c76650fcbd4383bbc3b440d180df6, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ShootProjectileSkillData:ShootProjectileSkillData
+  - source: {fileID: 11400000, guid: 3001a223ad5ed954f89da100bd2bf009, type: 2}
+    generated: {fileID: 2800000, guid: 698aa6ba5f68d4379980ea132ec79e30, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ApplyConsumerCharacterSkillData:Heal group
+  - source: {fileID: 11400000, guid: 32cd44640ef249bbac0ad415bbb5aeba, type: 2}
+    generated: {fileID: 2800000, guid: d7fb2a22505b04a4ba3dee4f3db2c11d, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:BoostCell
+  - source: {fileID: 11400000, guid: 33b876c66cdf9164b8a67cecd500b313, type: 2}
+    generated: {fileID: 2800000, guid: 3e3031d2ec73f40ca8627e0e2eb6db43, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:DurationSkillStepData:DurationSkillStepData
+  - source: {fileID: 11400000, guid: 3835a21a7e0849f47aa8881f016eab76, type: 2}
+    generated: {fileID: 2800000, guid: f7cecceca2c8540efafe0cc56e830fc0, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 38f88bae44f5f1f41b2aef0148296685, type: 2}
+    generated: {fileID: 2800000, guid: e508ffd6ece124a25b1703bfdec51a47, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ApplyConsumerCharacterSkillData:Damage single entity
+  - source: {fileID: 11400000, guid: 398f76355dcd1574d876d59d8e1dd8bd, type: 2}
+    generated: {fileID: 2800000, guid: 70c4eb76e9c2e47829af5805732f0838, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ApplyConsumerCharacterSkillData:Damage all enemy
+  - source: {fileID: 11400000, guid: 3ad2788d4aef15b4ca096bb8a271312a, type: 2}
+    generated: {fileID: 2800000, guid: 6cc8770fd07a54d95a65752425121b1e, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 3b001c9f0efaeec429a2be36da0315a1, type: 2}
+    generated: {fileID: 2800000, guid: 0aa532de7e9564dd297d78198c0d0613, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:WavePatternData:Wave_1_4
+  - source: {fileID: 11400000, guid: 3b3a59b2639ca4544a2166f90d8f8a82, type: 2}
+    generated: {fileID: 2800000, guid: 8fe075d9e378b436c96b7aa4fb092afa, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 3d94387abaae65a42a634b7b705d5cb3, type: 2}
+    generated: {fileID: 2800000, guid: 8e82e8516965a4ee5af0a763d0ec12a5, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:FlatModifierData:FlatModifierData
+  - source: {fileID: 11400000, guid: 41e68c97d2ab0cf4b868a3a3098b1e3d, type: 2}
+    generated: {fileID: 2800000, guid: ca81d73d7d88347599a1493529632fc7, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:EntityData:RandomShoot
+  - source: {fileID: 11400000, guid: 43e0108ce9c547c458d585aea83cee08, type: 2}
+    generated: {fileID: 2800000, guid: 79f25e1b81a034dfeadcb0afe7f7f763, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:GameData:GameData
+  - source: {fileID: 11400000, guid: 46776799d2008614b9df9baa0ad8d107, type: 2}
+    generated: {fileID: 2800000, guid: 2e244624ae45e4f52853c4a9d694c843, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:WavePatternData:Wave_1_1
+  - source: {fileID: 11400000, guid: 4cca8ac36cb5222439b45b2788a98a99, type: 2}
+    generated: {fileID: 2800000, guid: 9625ad52bbf4c4a3c8cc02bbf08f6c82, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:DurationValidatorData:DurationValidatorData
+  - source: {fileID: 11400000, guid: 4f0218fe5a09df44d995112981d110cc, type: 2}
+    generated: {fileID: 2800000, guid: be9b64867008247169e1adb1de6b2c97, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 527aa893ff20c7a47b5aa07531e592bb, type: 2}
+    generated: {fileID: 2800000, guid: 7651ebdab19a84822b8db1042e67c334, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BounceProjectileBehaviourData:BounceProjectileBehaviourData
+  - source: {fileID: 11400000, guid: 546cb8fb40c20e34a87206cf594d901c, type: 2}
+    generated: {fileID: 2800000, guid: 973fff208799f44e4a3c11429c025c6e, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 54a4a578c5855404698780caa3b60094, type: 2}
+    generated: {fileID: 2800000, guid: f22f3e7f1ffe4417abeb4f42c6ec1906, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:EntityData:Channeling
+  - source: {fileID: 11400000, guid: 56bf758b00def184fb1e593331f8fa0b, type: 2}
+    generated: {fileID: 2800000, guid: 5f59adb1901b643aab953c0905c1375a, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:WavePatternData:Wave_1_7
+  - source: {fileID: 11400000, guid: 5798f4360f0e1b64e81aa22d9492631a, type: 2}
+    generated: {fileID: 2800000, guid: 09ce41290f0c149359454345b98042a9, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:DurationValidatorData:DurationValidatorData
+  - source: {fileID: 11400000, guid: 57d741c147c5f5142a6f576437a6dd00, type: 2}
+    generated: {fileID: 2800000, guid: c0fe1fc8bc6de46e99258e163b46eff8, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ShootProjectileSkillData:ShootProjectileSkillData
+  - source: {fileID: 11400000, guid: 5a4e2eee05710fb4cae19f8f8a24234b, type: 2}
+    generated: {fileID: 2800000, guid: 84e5e7f549838410bae75ee0f6d50b27, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ShootProjectileSkillStepData:ShootProjectileSkillStepData
+  - source: {fileID: 11400000, guid: 5ae2bf9335cb27548bfce3dd88ff2844, type: 2}
+    generated: {fileID: 2800000, guid: 4d245bb3be8834bbf8ec82815ee1e98c, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:IncreaseDamageOnDistanceProjectileBehaviourData:IncreaseDamageOnDistanceProjectileBehaviourData
+  - source: {fileID: 11400000, guid: 5b4c314f3e67fde4eb51385e485987f5, type: 2}
+    generated: {fileID: 2800000, guid: dc5281f6c242d4d0cab8b25363e706e5, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ProjectileBehaviourBuffData:ProjectileBehaviourBuffData
+  - source: {fileID: 11400000, guid: 5c28dc58e75982c48895148d9a3b98ae, type: 2}
+    generated: {fileID: 2800000, guid: 2548fe66f419e43cba2dc67d1d1614dc, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:MultipleShootBuffData:MultipleShootBuffData
+  - source: {fileID: 11400000, guid: 5c2a9da5653cb7a4dbb51084f7ecdd11, type: 2}
+    generated: {fileID: 2800000, guid: 20fa3f4cfd4194e3b902cde07acfff2f, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ResourceValidatorData:ResourceValidatorData
+  - source: {fileID: 11400000, guid: 5d22fc0dfaf755047a3f31256be9c665, type: 2}
+    generated: {fileID: 2800000, guid: c757ad034f5594b28903107e94fc03bd, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:ExplodeOnHit
+  - source: {fileID: 11400000, guid: 5e9188501d307ce4cb58334b3221e58f, type: 2}
+    generated: {fileID: 2800000, guid: 4521345f0c8c84ab6bc256cd78a42530, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 5eebe994771eae04ba5dfa8665faaf5b, type: 2}
+    generated: {fileID: 2800000, guid: f389c5a9e4fa0484897cb3ba38cd3272, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:FlatModifierData:FlatModifierData
+  - source: {fileID: 11400000, guid: 5f3bfd10c02e1fd43b5e18206313b11e, type: 2}
+    generated: {fileID: 2800000, guid: a146128f38cad4cc2a11ae4e666e3b18, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ConfigurableSkillData:ConfigurableSkillData
+  - source: {fileID: 11400000, guid: 60b337d5800dd0943ba5e16ee16359fd, type: 2}
+    generated: {fileID: 2800000, guid: 65bd0609491dd4ea6a3beb2f2fe5c7d1, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:Trinity
+  - source: {fileID: 11400000, guid: 61e6b376a00fb444bb5eaa2d7a51e730, type: 2}
+    generated: {fileID: 2800000, guid: 1e9b66fe3c56743ec9e6a33f65d607bc, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 63b63ffc826dfaf49bdf21910a3399c4, type: 2}
+    generated: {fileID: 2800000, guid: a4245a3e83f7e4de980b2cff46d4bd3f, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 655f87c503d88e54d9ca19045b40adfb, type: 2}
+    generated: {fileID: 2800000, guid: b0c89524c8a29441cba83d2e8c83313f, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ShootProjectileSkillData:ShootProjectileSkillData
+  - source: {fileID: 11400000, guid: 66ac5295d66eb854f95ada304b6a6055, type: 2}
+    generated: {fileID: 2800000, guid: 763f4fa25af1e4c7b96ff6f1a7b51ede, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ResourceValidatorData:ResourceValidatorData
+  - source: {fileID: 11400000, guid: 68bef67cd2ce4904a9fc9a954c6bf4ed, type: 2}
+    generated: {fileID: 2800000, guid: 60e3480f6325b494d8d13f8eeb3d734a, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ApplyConsumerBuffData:ApplyConsumerBuffData
+  - source: {fileID: 11400000, guid: 691bb0f9e62ef6c40b3577089580cb15, type: 2}
+    generated: {fileID: 2800000, guid: 7af619680b4934ef08164afe9a23a34d, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:WavePatternData:Wave_1_5
+  - source: {fileID: 11400000, guid: 6a54771d318487d478f485ae1e435d60, type: 2}
+    generated: {fileID: 2800000, guid: a18b45041be7248088df81158ac014ca, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 6f7da3c10b0d9764f879433126e45322, type: 2}
+    generated: {fileID: 2800000, guid: 3ea5c561ef6d74572a28a201b994428c, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:FlatModifierData:FlatModifierData
+  - source: {fileID: 11400000, guid: 7017dc7573d67c24994a98a8e0a1f684, type: 2}
+    generated: {fileID: 2800000, guid: ebd7016743fd9446a981b5b9e9aa0dd2, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:WavePatternData:Wave_1_2
+  - source: {fileID: 11400000, guid: 723a5c26dd4a39d489c9b9accfc6fec4, type: 2}
+    generated: {fileID: 2800000, guid: 26c163d3463e6402fa3d178a81d3931e, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:EntityData:Buff
+  - source: {fileID: 11400000, guid: 727c29ff1ca950646add32fbe5746f5a, type: 2}
+    generated: {fileID: 2800000, guid: b67e43320d1174a64916bdae52b0f820, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 74138de38d4bc1840a327912fa81228e, type: 2}
+    generated: {fileID: 2800000, guid: a1f0f8d0cef63436fb3de2975db7cb4e, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ShootProjectileSkillData:ShootProjectileSkillData
+  - source: {fileID: 11400000, guid: 74b5f35c770b3ac47bcec7c0cd201c7d, type: 2}
+    generated: {fileID: 2800000, guid: 21fb2d2af4b8647f4a276619899f3fb8, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:WavePatternData:Wave_1_9
+  - source: {fileID: 11400000, guid: 74cca3bd6163ba540b8b0168a3c22312, type: 2}
+    generated: {fileID: 2800000, guid: e4cb7bb9a327f47008f36d2d3a864eed, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:GameplayTag:Permanent
+  - source: {fileID: 11400000, guid: 7562b493c5d77b0439cfb5a40b883d53, type: 2}
+    generated: {fileID: 2800000, guid: b45b15a4a55e44cf9818c7628ecc58d2, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:DurationSkillStepData:DurationSkillStepData
+  - source: {fileID: 11400000, guid: 7707f5ccd0a764a41a02cec63f6a4522, type: 2}
+    generated: {fileID: 2800000, guid: 3c00d0ab5efb04c24868eb6f572ce3ac, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 78dd2a1aecb6c0d48bc33171667d0447, type: 2}
+    generated: {fileID: 2800000, guid: a7375910f79c04323b077e5616eedf56, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:FlatModifierData:FlatModifierData
+  - source: {fileID: 11400000, guid: 7a727d3ba171a4a44bc7af8e70c4af88, type: 2}
+    generated: {fileID: 2800000, guid: 5416bb3668c634517b09a2579461d5d3, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:MultipleShoot
+  - source: {fileID: 11400000, guid: 7ad136870e3c90442976e4661357bc78, type: 2}
+    generated: {fileID: 2800000, guid: 1a8477f89f61a400ca05b6d416587de8, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: 7ae2e20ec78aa1e40845d56bad90af47, type: 2}
+    generated: {fileID: 2800000, guid: 3826a782f19bb40fb9bb9a565724ee11, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 7ba34a0a574b0954991ba695c6df28d4, type: 2}
+    generated: {fileID: 2800000, guid: 10912d9aa82b34800b166cd034022d66, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:RepeatSkillStepData:RepeatSkillStepData
+  - source: {fileID: 11400000, guid: 80dffdeee988ccc41a0e7ab0ae1e307c, type: 2}
+    generated: {fileID: 2800000, guid: 189ee082209d84c9aa21feb16a5544d3, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:DurationValidatorData:DurationValidatorData
+  - source: {fileID: 11400000, guid: 82b388a887301cb44bef8fd2faef073a, type: 2}
+    generated: {fileID: 2800000, guid: 965acb5ff233c43e7811264510f79dc1, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
+    generated: {fileID: 2800000, guid: 9ea8a5bdbb09d4f91bd9f39e9dfac47b, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:GameplayTag:Entity
+  - source: {fileID: 11400000, guid: 84838603ada205643ab074dfd136f83b, type: 2}
+    generated: {fileID: 2800000, guid: d724b36a1ba1241848d37ae0299fb689, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:Slow
+  - source: {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
+    generated: {fileID: 2800000, guid: e27ddf740db494713ba0a85086f71baa, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:EntityData:Soldier
+  - source: {fileID: 11400000, guid: 863d741e86f47494a916f37a85d07d2f, type: 2}
+    generated: {fileID: 2800000, guid: b1d86aa1cab694acd84a6b6f54d96ef0, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:Bounce
+  - source: {fileID: 11400000, guid: 88f25125f4f1a3248b9aba6e887861d3, type: 2}
+    generated: {fileID: 2800000, guid: 4eaf2b806461c40bbac602fcd4cbd1d4, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 89edbaa6345fd89478db1b09b2b2150f, type: 2}
+    generated: {fileID: 2800000, guid: 040b8d56ff61e4b01b410cc9e44713a0, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:GameplayTag:FromItem
+  - source: {fileID: 11400000, guid: 8ba0343b8d9a65341b9c5a6e7606e152, type: 2}
+    generated: {fileID: 2800000, guid: f5e444a3e560f422cbfa269231cd94d8, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: 8bf1e981929ef5f4ab415aebf49800b4, type: 2}
+    generated: {fileID: 2800000, guid: 39b453670e8884a4a98218518bbff568, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:DamageAllEntity
+  - source: {fileID: 11400000, guid: 9681fe640fdf8a048805ed340c67a424, type: 2}
+    generated: {fileID: 2800000, guid: 764b239b1eb564fb39f924261a4a93cc, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: 96fde92661bad434282310e609822330, type: 2}
+    generated: {fileID: 2800000, guid: 9fc4f77109af140e799502e762aca698, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:IncreaseDamagePerHit
+  - source: {fileID: 11400000, guid: 982988a7dafc19541ae28d7e873f0776, type: 2}
+    generated: {fileID: 2800000, guid: 3766a4108de624bacaebcc62888cdefc, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:BuffCharacterSkillData:BuffCharacterSkillData
+  - source: {fileID: 11400000, guid: 99a4c735e2632514c92dc8163d03f0e9, type: 2}
+    generated: {fileID: 2800000, guid: f9083f6808f5548a9b069df4707e2be8, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:WavePatternData:Wave_1_8
+  - source: {fileID: 11400000, guid: 99c839410d10b0949a8c13b287954fec, type: 2}
+    generated: {fileID: 2800000, guid: 78e33b3f9f67a412d8f0b83dd27e9ce7, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:MissingHealthDamage
+  - source: {fileID: 11400000, guid: 9d719a7c1884f9e4da5971200a61b619, type: 2}
+    generated: {fileID: 2800000, guid: d8bd57ee2f14a4630801ae01da20a250, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ConfigurableSkillData:ConfigurableSkillData
+  - source: {fileID: 11400000, guid: 9f34690dc26f94540b44a6e6d9134128, type: 2}
+    generated: {fileID: 2800000, guid: a71109f32a15843baa8601dfb89cf460, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ShootProjectileSkillData:ShootProjectileSkillData
+  - source: {fileID: 11400000, guid: 9f8f478ee44e6854eb63d742bb3e420f, type: 2}
+    generated: {fileID: 2800000, guid: ff070096a0f764331836c4502f855049, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:FlatModifierData:FlatModifierData
+  - source: {fileID: 11400000, guid: 9fb6d17c9b1e6c84ba0584f6a6031dd9, type: 2}
+    generated: {fileID: 2800000, guid: dc7ab495a279c4790b53dd989f32d2ba, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: a3b8beec350276643a95a6f6840796ea, type: 2}
+    generated: {fileID: 2800000, guid: 6dfc31565086a428a808b5de14bb988a, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:AreaOfEffectProjectileBehaviourData:AreaOfEffectProjectileBehaviourData
+  - source: {fileID: 11400000, guid: a5c875660032e494eb87dec1e14511c7, type: 2}
+    generated: {fileID: 2800000, guid: 207c10b299f144ff1b8c021d2bb3101d, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: a993cbb977e168d4ca48a23f314023e7, type: 2}
+    generated: {fileID: 2800000, guid: 9f6a16d8ed2534223b6d7f88427931a1, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ShootProjectileSkillData:ShootProjectileSkillData
+  - source: {fileID: 11400000, guid: aa2055b184c89a74881735e170eaff1a, type: 2}
+    generated: {fileID: 2800000, guid: a70a69fc5ad404baaa2cb46fd1df9bce, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:FlatModifierData:FlatModifierData
+  - source: {fileID: 11400000, guid: ab7652ea48905d643a62299e27d30964, type: 2}
+    generated: {fileID: 2800000, guid: 0ad98ed4823924a099596d9eb16ccfa9, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BoostEntitiesOnRelativeCellBuffData:BoostEntitiesOnRelativeCellBuffData
+  - source: {fileID: 11400000, guid: ac2a0344e7492b04cad11c6ce885bce7, type: 2}
+    generated: {fileID: 2800000, guid: 9b8d0eb52fa414fbe86a54a3d3c2b696, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: b175494a7fa13994883dcced3c933c38, type: 2}
+    generated: {fileID: 2800000, guid: 33fbe4bdc486f464884eacb2813f77cc, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:DurationSkillStepData:DurationSkillStepData
+  - source: {fileID: 11400000, guid: b1cc16a79ab213a4bb79e52b13c96bef, type: 2}
+    generated: {fileID: 2800000, guid: 2f012fa3fdee34be5b386a3ca2d64e48, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: b2bc5d9e766f0e14789e2b82c1dc37e9, type: 2}
+    generated: {fileID: 2800000, guid: 7ecd020d1dd0d43ebb5b5494fa1572a1, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:BuffCharacterSkillData:Poison single target
+  - source: {fileID: 11400000, guid: b2e232926b8fca9499c5e18c59ab299e, type: 2}
+    generated: {fileID: 2800000, guid: e451bf4f4607848a0b35ac842e66fd87, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: b6564d3df55530743a8bae3f230c6101, type: 2}
+    generated: {fileID: 2800000, guid: 4ae90c42df4584ee2a1d15b1835a0e24, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Character:Character:CharacterData:BasicHealer
+  - source: {fileID: 11400000, guid: b69ff6d68bcb1d54f8b7d3c35b78d6d6, type: 2}
+    generated: {fileID: 2800000, guid: d5377f8afba414972a55bf143663a225, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: b7bf54a52d782b74fb35c1940ef00a62, type: 2}
+    generated: {fileID: 2800000, guid: 55a5fca37a16c4ecd894faf839d6c366, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: b7d904cc4d250a142b8f81884a3bb75f, type: 2}
+    generated: {fileID: 2800000, guid: ddd841351776e4d42b94ac51620ae0ee, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: ba7f01930d9a3f54780c7fd6772eeefd, type: 2}
+    generated: {fileID: 2800000, guid: 05fccccd8957c40eca6d45b2a477d2b7, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: bed51418fb36cc44cb0ce74a75844c29, type: 2}
+    generated: {fileID: 2800000, guid: 7a400fe36323341df87dfacb54b5dc4a, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: c06844e11a51062428c140c267121451, type: 2}
+    generated: {fileID: 2800000, guid: 8e2ef1ba5374e4f60b4833c18c3694a2, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ManaOnRoundEndBuffData:ManaOnRoundEndBuffData
+  - source: {fileID: 11400000, guid: c0e9a3e0bb2b9094a8b661fe73d93ac9, type: 2}
+    generated: {fileID: 2800000, guid: 1daec9d0e7aed49c7b0f766ff6bff55f, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:FlatModifierData:FlatModifierData
+  - source: {fileID: 11400000, guid: c3236f465491bbf42a002a4da76a6381, type: 2}
+    generated: {fileID: 2800000, guid: c20f6e5a2beb04619a7e2f7b9227df53, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: c525ccce07e5a4b46ab825826ae77ee4, type: 2}
+    generated: {fileID: 2800000, guid: 5538e4a93636e4afea8faa22d5eff1ae, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: c62124ce56224930993248ec27464a56, type: 2}
+    generated: {fileID: 2800000, guid: adcdee8dbeb53411290a6db98144217c, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:GameplayTag:Player
+  - source: {fileID: 11400000, guid: c6d3037918c4cb44eb21c1138fe430e7, type: 2}
+    generated: {fileID: 2800000, guid: 2db2bd13138804162843b34e789bdb70, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: c6e6e638856078a4ca9dc0a131687a2b, type: 2}
+    generated: {fileID: 2800000, guid: d2ccf42ec1aab4ffe9be8c54a4ca7b71, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: c7050747abad2aa49b132e7982ee2f03, type: 2}
+    generated: {fileID: 2800000, guid: 2f5044d116a0049b6a197dce73707c93, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:BuffCharacterSkillData:Buff attack speed
+  - source: {fileID: 11400000, guid: c81f1eabe7553304cb5c463ecd08506b, type: 2}
+    generated: {fileID: 2800000, guid: d1be75b0fc1444d8fbae24d686b9ddf7, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ShootProjectileSkillStepData:ShootProjectileSkillStepData
+  - source: {fileID: 11400000, guid: c833b73cafde2dd4bb983bda29aa4b41, type: 2}
+    generated: {fileID: 2800000, guid: da80da79759b944bbaee40d3184899d5, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ApplyBuffOnTargetSkillData:ApplyBuffOnTargetSkillData
+  - source: {fileID: 11400000, guid: c951e24336a91454f99570ba60ae3905, type: 2}
+    generated: {fileID: 2800000, guid: 3c5842e2015ad424e8efc19cc9830689, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: ca4468408a151b648a8bc7ddb04049fd, type: 2}
+    generated: {fileID: 2800000, guid: 726f3a3b9ca6949f09bafafc64a75b48, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:FlatModifierData:FlatModifierData
+  - source: {fileID: 11400000, guid: cb4a6b00efbe4a447b0fb71b3f33d66a, type: 2}
+    generated: {fileID: 2800000, guid: d41301d825439470eb582adcc09a3641, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:GameData:TestData
+  - source: {fileID: 11400000, guid: ccee8c12bf23b8241b79d3ca5886673f, type: 2}
+    generated: {fileID: 2800000, guid: 5d80b5ea5380f4a36ae33cbb49c0fa55, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: d0dae11441ad20944a24b8232296e2a0, type: 2}
+    generated: {fileID: 2800000, guid: 898b704f123f24f4c96432c007979f4d, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: d38ac4ec04597cb4aa6ebb8581d9072e, type: 2}
+    generated: {fileID: 2800000, guid: 854772f14642a413090768421cb2623c, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:GameplayTag:FromPassive
+  - source: {fileID: 11400000, guid: d442714162ee37b4ca94aed2ea781e32, type: 2}
+    generated: {fileID: 2800000, guid: f90617c2709eb4c1aa54fb4fb031e5eb, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:Conclave
+  - source: {fileID: 11400000, guid: d4932ebf4e6b0f045a9af1ce53c908c1, type: 2}
+    generated: {fileID: 2800000, guid: 4040cf76caf2f4598a081c569d47a16d, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:WavePatternData:Wave_1_6
+  - source: {fileID: 11400000, guid: d5522b5142b13b74bbf81471208c72e0, type: 2}
+    generated: {fileID: 2800000, guid: 2e6e383db1d044d0b8855da0b302007d, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Character:Character:CharacterData:Normal
+  - source: {fileID: 11400000, guid: d7aba650df8a23549b88525d3bb92910, type: 2}
+    generated: {fileID: 2800000, guid: 7a1e3d6bc1b0246379f56839581f6ce9, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:EntityData:Test
+  - source: {fileID: 11400000, guid: dac17834346466a4086f5ceb27d62725, type: 2}
+    generated: {fileID: 2800000, guid: b49beceb04da24271a3a1730790be0e3, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:RepeatSkillStepData:RepeatSkillStepData
+  - source: {fileID: 11400000, guid: dd6c272587b45b947b4c9e814ba179a2, type: 2}
+    generated: {fileID: 2800000, guid: f6d9b75eed7384eafaf84e00aa23cd7b, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ShootProjectileSkillData:ShootProjectileSkillData
+  - source: {fileID: 11400000, guid: df886ce39b12c59449194240adf5d950, type: 2}
+    generated: {fileID: 2800000, guid: 4db5cdc1481764506acc22fb6f53efe2, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:DamageAllEntityOnEntityDieBuffData:DamageAllEntityOnEntityDieBuffData
+  - source: {fileID: 11400000, guid: df8b161f599687c42a15660ae38a1e7b, type: 2}
+    generated: {fileID: 2800000, guid: c6f207071b5a5474d942ec0f8ba9a623, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:FlatModifierData:FlatModifierData
+  - source: {fileID: 11400000, guid: dfb176ea6bd99a14e889bdf14b58b2da, type: 2}
+    generated: {fileID: 2800000, guid: 52b019ae86e5548feb2716a77903aa4e, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:EntityData:Swarm
+  - source: {fileID: 11400000, guid: dfd534f1934884a48a30be8516edaa17, type: 2}
+    generated: {fileID: 2800000, guid: d68a7f8dd072b44c299c06815065bd19, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: e1a0612a4841204419d9883e028ee762, type: 2}
+    generated: {fileID: 2800000, guid: 2abf16b39b98e45cb80c89484c66b15a, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: e2277406477b34d4698747f862072c70, type: 2}
+    generated: {fileID: 2800000, guid: eea9d3037c42344ddb7d973cd799b29f, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:ShootProjectileSkillData:ShootProjectileSkillData
+  - source: {fileID: 11400000, guid: e27f2a3655d88c3409c9ae99cb48169d, type: 2}
+    generated: {fileID: 2800000, guid: 6ce67691725144679972701316e266f7, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: e4b4143d034b7be47b1bdbbdf0b2e6bd, type: 2}
+    generated: {fileID: 2800000, guid: d267c2df028ef4ec99269140ed6002e1, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: e650e43fbec13764bac68e7b756e405f, type: 2}
+    generated: {fileID: 2800000, guid: 0f9300e92d1604b08b1b22a70c509dd7, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:RegenHp
+  - source: {fileID: 11400000, guid: ea482b909510552498f2cfb20b7455cd, type: 2}
+    generated: {fileID: 2800000, guid: 64d51cea960ab4934b659d796c612788, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ProjectileBehaviourBuffData:ProjectileBehaviourBuffData
+  - source: {fileID: 11400000, guid: ecc8c83429ce3474fa1736883d2d67e1, type: 2}
+    generated: {fileID: 2800000, guid: 4f87e1546573e430b82479ed21c96c72, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealAllEntitiesOnRoundEndBuffData:HealAllEntitiesOnRoundEndBuffData
+  - source: {fileID: 11400000, guid: f29eae6fff4249d43b05d4fec818a323, type: 2}
+    generated: {fileID: 2800000, guid: 85c5c8ca2528a48bb8ed0bc10043e883, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ShootProjectileSkillStepData:ShootProjectileSkillStepData
+  - source: {fileID: 11400000, guid: f5cb130f1e5b5664da4524a74dd37a5f, type: 2}
+    generated: {fileID: 2800000, guid: f717b8f7e5f7e459ab463acda6440d57, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
+  - source: {fileID: 11400000, guid: f73d37961f96f3045bb86a27caf4d572, type: 2}
+    generated: {fileID: 2800000, guid: fb2ebd2d80fb94712bdf1e61eec5a2a3, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:SlowModifierData:SlowModifierData
+  - source: {fileID: 11400000, guid: f8a413b84fac75941b6e39053bd756f5, type: 2}
+    generated: {fileID: 2800000, guid: e2cb2d478402142b89742e28b675737f, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:FlatModifierData:FlatModifierData
+  - source: {fileID: 11400000, guid: f90b909a40221764b9cdf4bddffb8a68, type: 2}
+    generated: {fileID: 2800000, guid: 5ec83a990473b4bfa890c468f72e8613, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: fc65945e20ebc994c8cd91e5dcede302, type: 2}
+    generated: {fileID: 2800000, guid: 838810aeb796949cc91b45171bf27d78, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:DurationSkillStepData:DurationSkillStepData
+  - source: {fileID: 11400000, guid: fc720cd10a4f2274982ec917fd77d9ee, type: 2}
+    generated: {fileID: 2800000, guid: 30b744372db4c4a88b72cd2ba03b4cd8, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ItemData:Poison
+  - source: {fileID: 11400000, guid: ff864edc5e8dfdc47ad1e7a7cd3ec589, type: 2}
+    generated: {fileID: 2800000, guid: 51a460f6f64b443a6a290dd25c01ab9d, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:EntityData:Normal
+  - source: {fileID: 11400000, guid: ffd1e9f13f9713847a932252b81ba3c9, type: 2}
+    generated: {fileID: 2800000, guid: 4866ee2042bff4fe88aa2cd142992339, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: -2981693060057987615, guid: 18c52045e46d24619bf700e9069c9e16, type: 2}
+    generated: {fileID: 2800000, guid: 731d60c16c1a547a3ad493d0ed13498a, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Look.Outlines:Outlines
+  - source: {fileID: 11400000, guid: 265a00ac0c6c743d08a762c0950e82e1, type: 2}
+    generated: {fileID: 2800000, guid: 5fa653b73d66e413da8c127eb86b6290, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:HealerLike.Render.Creatures.CreatureRecipe:Healer
+  - source: {fileID: 11400000, guid: 2ebcc249811134625a66debb52a811c9, type: 2}
+    generated: {fileID: 2800000, guid: d94c7ea72221c4c89b76df348c3f4b97, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:HealerLike.Render.Spells.EffectVocabulary:EffectVocabulary
+  - source: {fileID: 11400000, guid: 3f7bcc3db75d049a78cca2b5cf1fb20c, type: 2}
+    generated: {fileID: 2800000, guid: d71a2f7c1873646bc945b79e15bc1f52, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Spell:Spell:HealerLike.Render.Spells.SpellLooks:SpellLooks
+  - source: {fileID: 11400000, guid: 4ee00372052f248838ebdf645b1e9727, type: 2}
+    generated: {fileID: 2800000, guid: 723ff175ca3374213988ce5974b82231, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:HealerLike.Render.Creatures.PrimitiveMeshes:PrimitiveMeshes
+  - source: {fileID: 11400000, guid: 68957a7ea424c4563ae035a37fb0f650, type: 2}
+    generated: {fileID: 2800000, guid: c4c42c9a8ace24d02b4998c35707799c, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:HealerLike.Render.Creatures.CreatureLooks:CreatureLooks
+  - source: {fileID: 11400000, guid: 8b8a7554fceb39841840f45a2d8da540, type: 2}
+    generated: {fileID: 2800000, guid: a4353f7bfe1aa4de6b30499a1242e75c, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:Face:DataFace
+  - source: {fileID: 11400000, guid: 96531525697a44f538d325bc010163ad, type: 2}
+    generated: {fileID: 2800000, guid: 1b05106cef01c4c9d9ee0563f467cf91, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Deliveries.DeliveryVocabulary:DeliveryVocabulary
+  - source: {fileID: 11400000, guid: 97a6ebe080b14b84947880de49d6bb14, type: 2}
+    generated: {fileID: 2800000, guid: a031f84e257d34583a5cde0063cddad2, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Grammar.LookPalette:LookPalette
+  - source: {fileID: 11400000, guid: f2459e8a480e34ee99e9a27a496c3c8a, type: 2}
+    generated: {fileID: 2800000, guid: 24a1f30a78ba948899bd98fceccaf0f4, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:HealerLike.Render.Creatures.LookVocabulary:LookVocabulary
+  - source: {fileID: 11400000, guid: f338777f463b481eb110c7162482b28c, type: 2}
+    generated: {fileID: 2800000, guid: 40ca5a9e42c114bd8a80c3610751d72a, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Stones.StoneVariants:StoneVariants
+  - source: {fileID: 11400000, guid: 09f9c067789934f779a32b3ac62074bf, type: 2}
+    generated: {fileID: 2800000, guid: 21757acbf88b34cf18fb17af57711b68, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:HealerLike.Render.Creatures.CreatureRecipe:Stone Sentinel
+  - source: {fileID: 11400000, guid: 0af1ace0918564730888eb69f8f3ab89, type: 2}
+    generated: {fileID: 2800000, guid: 2aca33e94e48b4ec38ed98d5b5a2544a, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.SpellStudioPreset:Healing pulse
+  - source: {fileID: 11400000, guid: 3f0ab3c1814864de5b10487758aecc71, type: 2}
+    generated: {fileID: 2800000, guid: 1a7442a500fae41919532601a82b20a9, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.SpellStudioPreset:Aegis
+  - source: {fileID: 11400000, guid: 3fc7d9a1eea7143d6ae42579ef5d5e7d, type: 2}
+    generated: {fileID: 2800000, guid: 5fe619ee5dff64366b58ebd161404a7b, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.SpellStudioPreset:Opposing debuff
+  - source: {fileID: 11400000, guid: 4213c8b739e4645fe8e334db06f397b6, type: 2}
+    generated: {fileID: 2800000, guid: 4f1fb1a4363694b008c406c4febca8f3, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.CreatureGrammarPreset:Plant Spear
+  - source: {fileID: 11400000, guid: 46295178ec4e048f490639570a64623c, type: 2}
+    generated: {fileID: 2800000, guid: 07bfa68c15f134b2b890af2a3eb2c80b, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.SpellStudioPreset:Verdant Bloom
+  - source: {fileID: 11400000, guid: 5340b20e1438744089811ce77d783c67, type: 2}
+    generated: {fileID: 2800000, guid: 626b26c3b31c14bebbe97f9e89d99a24, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.SpellStudioPreset:Ember Corona
+  - source: {fileID: 11400000, guid: 538c923231aa14e00b70312cd2900d64, type: 2}
+    generated: {fileID: 2800000, guid: 05f16a57194114b2ab489ec360112c44, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.CreatureGrammarPreset:Stone Pulse
+  - source: {fileID: 11400000, guid: 5e928903bbd284865abbea98fa21a810, type: 2}
+    generated: {fileID: 2800000, guid: 3a3f27ea3332d4c90be8af4b673b83b5, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.SpellStudioPreset:Arc Link
+  - source: {fileID: 11400000, guid: 6ac7fd4ac846c48169a397c36fac2165, type: 2}
+    generated: {fileID: 2800000, guid: 6cd14248e864b408491bb45045a81a9d, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.CreatureGrammarPreset:Stone Spear
+  - source: {fileID: 11400000, guid: 6b831e17b03644d9c83101b680acbfdb, type: 2}
+    generated: {fileID: 2800000, guid: 06b3083b5fa994e5d983c7e0f88202c9, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:HealerLike.Render.Creatures.CreatureRecipe:Sprout
+  - source: {fileID: 11400000, guid: 7d6c6974cce234cdcb1b87c1362a42f1, type: 2}
+    generated: {fileID: 2800000, guid: 26b99ed39f2ca4668b20f7783faac435, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.SpellStudioPreset:Astral Refill
+  - source: {fileID: 11400000, guid: a7264c78ae4af4e5f864fc5083a17703, type: 2}
+    generated: {fileID: 2800000, guid: 26a5e59e94d9947ceb6b0903a68edd8e, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.SpellStudioPreset:Rotfall
+  - source: {fileID: 11400000, guid: d807c9903ca7d4489939a4059cec4ec6, type: 2}
+    generated: {fileID: 2800000, guid: 48f84d30ac8d0461f9815a377b945d3b, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.SpellStudioPreset:Defence boon
+  - source: {fileID: 11400000, guid: eb9ed794055354999b72f37d1fe09e22, type: 2}
+    generated: {fileID: 2800000, guid: 057578ff18c4444a199a8fc4a8dd6bfa, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.CreatureGrammarPreset:Plant Bud
+  - source: {fileID: 11400000, guid: ec664c5b1504c447dbe98ee2462de45e, type: 2}
+    generated: {fileID: 2800000, guid: 6f2e2cf8d3072458f883d0aa6a0d277d, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.CreatureGrammarPreset:Plant Conductor
+  - source: {fileID: 11400000, guid: f5b5afb811b5d49b9be90fdd7988a08e, type: 2}
+    generated: {fileID: 2800000, guid: e9d228af9cde0414985e3bd5dfb5c763, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Studio.CreatureGrammarPreset:Stone Ward
+  - source: {fileID: 11400000, guid: f8d61803e935b4fc5b8a97c69b049eb2, type: 2}
+    generated: {fileID: 2800000, guid: 14728d87a39844ddcae8d9e673fd91bb, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Creature:Creature:HealerLike.Render.Creatures.CreatureRecipe:Healer
