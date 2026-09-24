@@ -28,7 +28,7 @@ public class OutlinesTests
 
     static Shader LoadEdgeShader()
     {
-        return AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/OutlinesEdges.shader");
+        return AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/OutlinesEdges.shader");
     }
 
     [Test]

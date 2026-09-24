@@ -21,8 +21,10 @@ public class GrassBoundsTests
         {
             foreach (int z in new[] { -1, 1 })
             {
-                Assert.IsTrue(shifted.Contains(shifted.center + new Vector3(x * (3f + 0.24f + 0.065f), 0.648f, z * (7f + 0.24f + 0.065f))));
-                Assert.IsTrue(shifted.Contains(shifted.center + new Vector3(x * (3f + 0.065f), 0.54f, z * (7f + 0.065f))));
+                Vector3 outer = new Vector3(x * (3f + 0.24f + 0.065f), 0.648f, z * (7f + 0.24f + 0.065f));
+                Assert.IsTrue(shifted.Contains(shifted.center + outer));
+                Vector3 inner = new Vector3(x * (3f + 0.065f), 0.54f, z * (7f + 0.065f));
+                Assert.IsTrue(shifted.Contains(shifted.center + inner));
             }
         }
     }

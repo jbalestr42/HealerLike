@@ -23,9 +23,8 @@ namespace HealerLike.Render.Stage
 
         public Light keyLight { get { return _keyLight; } set { _keyLight = value; } }
 
-        public bool realShadows { get; private set; }
-
-        public int suppressed { get; private set; }
+        bool _realShadows;
+        public bool realShadows { get { return _realShadows; } }
 
         public void Init()
         {
@@ -45,11 +44,13 @@ namespace HealerLike.Render.Stage
         public void Refresh()
         {
             _next = Time.unscaledTime + _pollSeconds;
-            realShadows = RendersRealShadows(GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset, _keyLight,
-                                             _requiredDistance);
+            RenderPipelineAsset current = GraphicsSettings.currentRenderPipeline;
+            UniversalRenderPipelineAsset pipeline = current as UniversalRenderPipelineAsset;
+            _realShadows = RendersRealShadows(pipeline, _keyLight, _requiredDistance);
             // Discs the key light already hid are inactive, so they are searched too
-            suppressed += ApplyCheapShadows(realShadows, FindObjectsByType<StoneGroundDisc>(FindObjectsInactive.Include,
-                                                                                         FindObjectsSortMode.None));
+            StoneGroundDisc[] discs = FindObjectsByType<StoneGroundDisc>(FindObjectsInactive.Include,
+                                                                         FindObjectsSortMode.None);
+            ApplyCheapShadows(_realShadows, discs);
         }
 
         // Rotation whose back points toward the light along the given direction
@@ -58,7 +59,8 @@ namespace HealerLike.Render.Stage
             return Quaternion.LookRotation(-directionToLight.normalized, Vector3.up);
         }
 
-        public static bool RendersRealShadows(UniversalRenderPipelineAsset pipeline, Light light, float requiredDistance)
+        public static bool RendersRealShadows(UniversalRenderPipelineAsset pipeline, Light light,
+                                              float requiredDistance)
         {
             if (pipeline == null || light == null || !light.isActiveAndEnabled)
             {
@@ -66,7 +68,8 @@ namespace HealerLike.Render.Stage
             }
 
             return light.type == LightType.Directional && light.shadows != LightShadows.None
-                   && pipeline.mainLightRenderingMode == LightRenderingMode.PerPixel && pipeline.supportsMainLightShadows
+                   && pipeline.mainLightRenderingMode == LightRenderingMode.PerPixel
+                   && pipeline.supportsMainLightShadows
                    && pipeline.shadowDistance >= requiredDistance;
         }
 

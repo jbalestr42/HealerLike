@@ -15,7 +15,7 @@ namespace HealerLike.Render.Stage
         {
             LoadSceneParameters parameters = new LoadSceneParameters(LoadSceneMode.Additive);
 #if UNITY_EDITOR
-            // Main is not in his Build Settings, the editor loads it by path
+            // Main is not in the Build Settings, the editor loads it by path
             EditorSceneManager.LoadSceneInPlayMode(_scenePath, parameters);
 #else
             SceneManager.LoadScene(_scenePath, parameters);

@@ -3,7 +3,6 @@ using HealerLike.Render.Creatures;
 using HealerLike.Render.Stage;
 using HealerLike.Render.Stones;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Environment
 {
@@ -16,22 +15,14 @@ namespace HealerLike.Render.Environment
         public static readonly float BladeLength = 1.15f;
         public static readonly float MaxTilt = 50f;
 
-        [FormerlySerializedAs("stageCamera")]
         [SerializeField] Camera _stageCamera;
-        [FormerlySerializedAs("stoneMaterial")]
         [SerializeField] Material _stoneMaterial;
-        [FormerlySerializedAs("plantMaterial")]
         [SerializeField] Material _plantMaterial;
-        [FormerlySerializedAs("groundY")]
         [SerializeField] float _groundY = 0.5f;
-        [FormerlySerializedAs("seed")]
         [SerializeField] int _seed = 1707;
         // Frame aspect the corners are computed for, zero or less uses the camera's
-        [FormerlySerializedAs("aspect")]
         [SerializeField] float _aspect = 0f;
-        [FormerlySerializedAs("tint")]
         [SerializeField] Color _tint = new Color32(43, 75, 143, 255);
-        [FormerlySerializedAs("rosetteTint")]
         [SerializeField] Color _rosetteTint = new Color32(61, 116, 98, 255);
 
         readonly List<Mesh> _ownedMeshes = new List<Mesh>();
@@ -111,7 +102,8 @@ namespace HealerLike.Render.Environment
             bool isLensValid = verticalFov > 1f && verticalFov < 179f && float.IsFinite(aspect) && aspect > 0f;
             if (!isLensValid || !float.IsFinite(groundY))
             {
-                Debug.LogError($"[EnvironmentForeground] Rejected field of view {verticalFov}, aspect {aspect}, ground {groundY}.");
+                Debug.LogError($"[EnvironmentForeground] Rejected field of view {verticalFov}, aspect {aspect}, "
+                               + $"ground {groundY}.");
                 return result;
             }
 
@@ -119,7 +111,9 @@ namespace HealerLike.Render.Environment
             for (int side = 0; side < 2; side++)
             {
                 Vector2 viewport = new Vector2(side, 0f);
-                if (!GroundHit(cameraPosition, cameraRotation, verticalFov, aspect, viewport, groundY, out corners[side]))
+                bool isOnGround = GroundHit(cameraPosition, cameraRotation, verticalFov, aspect, viewport, groundY,
+                                            out corners[side]);
+                if (!isOnGround)
                 {
                     Debug.LogError("[EnvironmentForeground] The bottom corners of the frame do not see the ground.");
                     return result;
@@ -139,7 +133,8 @@ namespace HealerLike.Render.Environment
                 {
                     bool isBoulder = n < boulders;
                     float size = isBoulder ? random.Range(2f, 3.5f) : random.Range(3f, 5f);
-                    float scale = size * (aspect > 1f ? 0.5f : 0.7f);
+                    float aspectScale = aspect > 1f ? 0.5f : 0.7f;
+                    float scale = size * aspectScale;
                     float radius = isBoulder ? scale : scale * BladeLength * Mathf.Sin(MaxTilt * Mathf.Deg2Rad);
                     Vector3 position = corner;
                     for (int attempt = 0; attempt < 16; attempt++)
@@ -164,9 +159,10 @@ namespace HealerLike.Render.Environment
                         }
                     }
 
+                    ForegroundKind kind = isBoulder ? ForegroundKind.Boulder : ForegroundKind.Rosette;
                     result.Add(new ForegroundItem
                     {
-                        kind = isBoulder ? ForegroundKind.Boulder : ForegroundKind.Rosette,
+                        kind = kind,
                         position = position,
                         scale = scale,
                         radius = radius,

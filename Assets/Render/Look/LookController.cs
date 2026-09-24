@@ -1,15 +1,11 @@
-using System;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Serialization;
-using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Look
 {
     // The one look of the render stage, set up by the RenderManager at attach
     public class LookController : MonoBehaviour
     {
-        [FormerlySerializedAs("settings")]
         [SerializeField] LookSettings _settings = LookSettings.Default;
 
         static readonly int shadowTintId = Shader.PropertyToID("_HLShadowTint");
@@ -22,7 +18,6 @@ namespace HealerLike.Render.Look
         static readonly int fogStartId = Shader.PropertyToID("_HLFogStart");
         static readonly int fogEndId = Shader.PropertyToID("_HLFogEnd");
         static readonly int inkStrengthId = Shader.PropertyToID("_HLInkStrength");
-        static readonly int keyLightDirId = Shader.PropertyToID("_HLKeyLightDir");
         static readonly int inkScaleId = Shader.PropertyToID("_HLInkScale");
         static readonly int inkWidthId = Shader.PropertyToID("_HLInkWidth");
         static readonly int inkStartId = Shader.PropertyToID("_HLInkStart");
@@ -38,49 +33,26 @@ namespace HealerLike.Render.Look
         static readonly int fogBandsId = Shader.PropertyToID("_HLFogBands");
         static readonly int lookAppliedId = Shader.PropertyToID("_HLLookApplied");
 
-        // Tests swap these to see the real write order without a renderer
-        static readonly Action<int, float> setGlobalFloat = Shader.SetGlobalFloat;
-        static readonly Action<int, Vector4> setGlobalVector = Shader.SetGlobalVector;
-
-        Bounds _board;
-
         public LookSettings settings { get { return _settings; } set { _settings = value.Validated(); } }
 
         void OnEnable()
         {
-            _settings = _settings.Validated();
             RenderPipelineManager.beginFrameRendering -= OnBeginFrameRendering;
             RenderPipelineManager.beginFrameRendering += OnBeginFrameRendering;
-            RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
         }
 
-        // Fog follows the camera distance to the board, the hatch keeps its authored world spacing
-        public void Init(Camera camera, Bounds board)
+        // The fog range comes from the camera distance to the board, the hatch keeps its authored world spacing
+        public void Init(Vector2 fogRange)
         {
-            if (camera == null)
-            {
-                Debug.LogError("[LookController] Init needs the camera the look is calibrated for.");
-                return;
-            }
-
-            _board = board;
-            Vector3 position = camera.transform.position;
-            Vector2 fog = StageCalibration.BackgroundFog(position, board);
-
-            LookSettings value = _settings;
-            value.fogStart = fog.x;
-            value.fogEnd = fog.y;
-            settings = value;
-            ApplyGlobals();
+            UpdateFog(fogRange);
         }
 
         // The fog starts past every playable corner seen from wherever the camera moved
-        public void UpdateFog(Vector3 cameraPosition)
+        public void UpdateFog(Vector2 fogRange)
         {
-            Vector2 fog = StageCalibration.BackgroundFog(cameraPosition, _board);
             LookSettings value = _settings;
-            value.fogStart = fog.x;
-            value.fogEnd = fog.y;
+            value.fogStart = fogRange.x;
+            value.fogEnd = fogRange.y;
             settings = value;
             ApplyGlobals();
         }
@@ -88,29 +60,12 @@ namespace HealerLike.Render.Look
         void OnDisable()
         {
             RenderPipelineManager.beginFrameRendering -= OnBeginFrameRendering;
-            RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
             Shader.SetGlobalFloat(lookAppliedId, 0f);
-            Shader.SetGlobalVector(keyLightDirId, Vector4.zero);
-        }
-
-        void OnValidate()
-        {
-            _settings = _settings.Validated();
         }
 
         void OnBeginFrameRendering(ScriptableRenderContext context, Camera[] cameras)
         {
             ApplyGlobals();
-        }
-
-        void OnBeginCameraRendering(ScriptableRenderContext context, Camera camera)
-        {
-            if (!isActiveAndEnabled)
-            {
-                return;
-            }
-
-            PublishSunDirection(camera.cullingMask);
         }
 
         public void ApplyGlobals()
@@ -120,56 +75,7 @@ namespace HealerLike.Render.Look
                 return;
             }
 
-            PublishSunDirection(~0);
-            UploadGlobals(in _settings);
-        }
-
-        // Same choice as URP: the sun first, otherwise the brightest directional light
-        public static Vector4 SelectKeyLightDirection(Light[] lights, Light sun, int cameraMask)
-        {
-            Light selected = null;
-            float brightest = 0f;
-            foreach (Light light in lights)
-            {
-                if (!light || !light.isActiveAndEnabled || light.type != LightType.Directional
-                    || (cameraMask & (1 << light.gameObject.layer)) == 0)
-                {
-                    continue;
-                }
-
-                if (light == sun)
-                {
-                    selected = light;
-                    break;
-                }
-
-                if (light.intensity > brightest)
-                {
-                    selected = light;
-                    brightest = light.intensity;
-                }
-            }
-
-            if (!selected)
-            {
-                return Vector4.zero;
-            }
-
-            Vector3 direction = -selected.transform.forward;
-            return new Vector4(direction.x, direction.y, direction.z, 0f);
-        }
-
-        // Outlines calls this with the main light URP actually culled, before drawing. The outlines live only
-        // in the stage renderer, so only the stage publishes.
-        public static void PublishMainLightDirection(Light mainLight)
-        {
-            Vector3 direction = Vector3.zero;
-            if (mainLight && mainLight.type == LightType.Directional)
-            {
-                direction = -mainLight.transform.forward;
-            }
-
-            Shader.SetGlobalVector(keyLightDirId, new Vector4(direction.x, direction.y, direction.z, 0f));
+            PublishGlobals(_settings, QualitySettings.activeColorSpace);
         }
 
         public static Vector4 ToWorkingColor(Color srgb, ColorSpace colorSpace)
@@ -178,48 +84,34 @@ namespace HealerLike.Render.Look
             return new Vector4(color.r, color.g, color.b, 1f);
         }
 
-        public static void UploadGlobals(in LookSettings settings)
+        // The settings setter already validated these
+        static void PublishGlobals(LookSettings value, ColorSpace colorSpace)
         {
-            PublishGlobals(settings, QualitySettings.activeColorSpace, setGlobalFloat, setGlobalVector);
-        }
-
-        // Fallback until Outlines publishes the culled main light, allocates nothing
-        static void PublishSunDirection(int cameraMask)
-        {
-            Light sun = RenderSettings.sun;
-            bool isVisible = sun && sun.isActiveAndEnabled && (cameraMask & (1 << sun.gameObject.layer)) != 0;
-            PublishMainLightDirection(isVisible ? sun : null);
-        }
-
-        static void PublishGlobals(LookSettings settings, ColorSpace colorSpace, Action<int, float> setFloat,
-                                   Action<int, Vector4> setVector)
-        {
-            LookSettings value = settings.Validated();
-            setVector(shadowTintId, ToWorkingColor(value.shadowTint, colorSpace));
-            setVector(outlineColorId, ToWorkingColor(value.outlineColor, colorSpace));
-            setVector(fogColorId, ToWorkingColor(value.fogColor, colorSpace));
-            setFloat(shadowStrengthId, value.shadowStrength);
-            setFloat(toonThresholdId, value.toonThreshold);
-            setFloat(toonSoftnessId, value.toonSoftness);
-            setFloat(outlineWidthPixelsId, value.outlineWidthPixels);
-            setFloat(fogStartId, value.fogStart);
-            setFloat(fogEndId, value.fogEnd);
-            setFloat(inkStrengthId, value.inkStrength);
-            setFloat(inkScaleId, value.inkScale);
-            setFloat(inkWidthId, value.inkWidth);
-            setFloat(inkStartId, value.inkStart);
-            setFloat(inkRangeId, value.inkRange);
-            setFloat(densityMulId, value.densityMul);
-            setFloat(inkWarpId, value.inkWarp);
-            setFloat(inkWarpFreqId, value.inkWarpFreq);
-            setFloat(dashAmountId, value.dashAmount);
-            setFloat(dashScaleId, value.dashScale);
-            setFloat(inkDistStartId, value.inkDistStart);
-            setFloat(inkFarSpacingId, value.inkFarSpacing);
-            setFloat(contrastId, value.contrast);
-            setFloat(fogBandsId, value.fogBands);
+            Shader.SetGlobalVector(shadowTintId, ToWorkingColor(value.shadowTint, colorSpace));
+            Shader.SetGlobalVector(outlineColorId, ToWorkingColor(value.outlineColor, colorSpace));
+            Shader.SetGlobalVector(fogColorId, ToWorkingColor(value.fogColor, colorSpace));
+            Shader.SetGlobalFloat(shadowStrengthId, value.shadowStrength);
+            Shader.SetGlobalFloat(toonThresholdId, value.toonThreshold);
+            Shader.SetGlobalFloat(toonSoftnessId, value.toonSoftness);
+            Shader.SetGlobalFloat(outlineWidthPixelsId, value.outlineWidthPixels);
+            Shader.SetGlobalFloat(fogStartId, value.fogStart);
+            Shader.SetGlobalFloat(fogEndId, value.fogEnd);
+            Shader.SetGlobalFloat(inkStrengthId, value.inkStrength);
+            Shader.SetGlobalFloat(inkScaleId, value.inkScale);
+            Shader.SetGlobalFloat(inkWidthId, value.inkWidth);
+            Shader.SetGlobalFloat(inkStartId, value.inkStart);
+            Shader.SetGlobalFloat(inkRangeId, value.inkRange);
+            Shader.SetGlobalFloat(densityMulId, value.densityMul);
+            Shader.SetGlobalFloat(inkWarpId, value.inkWarp);
+            Shader.SetGlobalFloat(inkWarpFreqId, value.inkWarpFreq);
+            Shader.SetGlobalFloat(dashAmountId, value.dashAmount);
+            Shader.SetGlobalFloat(dashScaleId, value.dashScale);
+            Shader.SetGlobalFloat(inkDistStartId, value.inkDistStart);
+            Shader.SetGlobalFloat(inkFarSpacingId, value.inkFarSpacing);
+            Shader.SetGlobalFloat(contrastId, value.contrast);
+            Shader.SetGlobalFloat(fogBandsId, value.fogBands);
             // The flag goes last so no shader reads a half published set
-            setFloat(lookAppliedId, 1f);
+            Shader.SetGlobalFloat(lookAppliedId, 1f);
         }
     }
 }

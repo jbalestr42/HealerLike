@@ -21,7 +21,7 @@ namespace HealerLike.Render.Stage
             return scene;
         }
 
-        // A screen overlay button at the top right, the way his UI lives in prefabs
+        // A screen overlay button at the top right, the way the game's UI lives in prefabs
         public static GameObject CreateControls()
         {
             GameObject root = new GameObject("BattleFocusControls", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
@@ -30,7 +30,7 @@ namespace HealerLike.Render.Stage
             canvas.sortingOrder = 120;
             CanvasScaler scaler = root.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080f, 1920f);
+            scaler.referenceResolution = new Vector2(StageCalibration.PortraitWidth, StageCalibration.PortraitHeight);
             scaler.matchWidthOrHeight = 1f;
 
             GameObject buttonGo = new GameObject("FocusOverview", typeof(RectTransform), typeof(Image), typeof(Button));

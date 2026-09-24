@@ -23,7 +23,6 @@ namespace HealerLike.Render.Stage
         static readonly int gridCellId = Shader.PropertyToID("_HLGridCell");
         static readonly int gridExtentId = Shader.PropertyToID("_HLGridExtent");
         static readonly int gridStrengthId = Shader.PropertyToID("_HLGridStrength");
-        static readonly int tipLightId = Shader.PropertyToID("_HLTipLight");
 
         [SerializeField] CreatureLooks _creatureLooks;
         [SerializeField] SpellLooks _spellLooks;
@@ -34,7 +33,6 @@ namespace HealerLike.Render.Stage
         [SerializeField] Color _ambientColor = new Color(0.35f, 0.4f, 0.5f);
         [SerializeField] List<string> _hiddenObjectNames = new List<string>();
         [SerializeField] float _gridStrength = 0.12f;
-        [SerializeField] float _tipLight = 0.035f;
         [SerializeField] GameObject _environmentPrefab;
         [SerializeField] LookController _look;
         [SerializeField] ZoneRegistry _zones;
@@ -131,7 +129,7 @@ namespace HealerLike.Render.Stage
             Subscribe();
 
             // Init chain
-            _look.Init(_gameCamera, _board);
+            _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board));
             _zones.Init();
             _registry.Init(_spellSink, _zones);
             Rect boardRect = BoardRect();
@@ -177,9 +175,9 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
-            _gameCamera.aspect = isLandscape ? 16f / 9f : StageCalibration.PortraitAspect;
+            _gameCamera.aspect = isLandscape ? StageCalibration.LandscapeAspect : StageCalibration.PortraitAspect;
             _gameCamera.transform.SetPositionAndRotation(overviewPose.position, overviewPose.rotation);
-            _look.Init(_gameCamera, _board);
+            _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board));
             _foreground.Build();
             _ridge.Build();
         }
@@ -192,7 +190,7 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
-            // His unparented Instantiate calls land in the active scene and unload with it
+            // The game's unparented Instantiate calls land in the active scene and unload with it
             SceneManager.SetActiveScene(scene);
             Init(entityManager, FindInScene<PlayerBehaviour>(scene));
         }
@@ -275,7 +273,8 @@ namespace HealerLike.Render.Stage
 #if HEALERLIKE_SEAMS
             Renderer groundRenderer = grid.ground.GetComponent<Renderer>();
 #else
-            // TODO: read GridManager.ground once S5 lands, until then the ground is the grid's one renderer
+            // TODO: read GridManager.ground once GridManager exposes it, until then the ground is the grid's
+            // one renderer
             Renderer groundRenderer = grid.GetComponentInChildren<Renderer>();
 #endif
             _boardGround = groundRenderer;
@@ -291,19 +290,22 @@ namespace HealerLike.Render.Stage
             }
 
             Vector3 center = grid.transform.position;
-            _board = new Bounds(new Vector3(center.x, surfaceY, center.z), new Vector3(grid.width * grid.size, 0f, grid.height * grid.size));
-            _portraitPose = StageCalibration.PlayableFrame(_board, StageCalibration.PortraitPitch, StageCalibration.PortraitFov,
-                                                             StageCalibration.PortraitAspect, StageCalibration.PortraitCentreY);
-            _landscapePose = StageCalibration.PlayableFrame(_board, 46f, StageCalibration.PortraitFov, 16f / 9f, 0.46f);
-            _gameCamera.aspect = _isLandscape ? 16f / 9f : StageCalibration.PortraitAspect;
+            Vector3 boardSize = new Vector3(grid.width * grid.size, 0f, grid.height * grid.size);
+            _board = new Bounds(new Vector3(center.x, surfaceY, center.z), boardSize);
+            _portraitPose = StageCalibration.PlayableFrame(_board, StageCalibration.PortraitPitch,
+                                                             StageCalibration.PortraitFov, StageCalibration.PortraitAspect,
+                                                             StageCalibration.PortraitCentreY);
+            _landscapePose = StageCalibration.PlayableFrame(_board, StageCalibration.LandscapePitch,
+                                                              StageCalibration.PortraitFov, StageCalibration.LandscapeAspect,
+                                                              StageCalibration.LandscapeCentreY);
+            _gameCamera.aspect = _isLandscape ? StageCalibration.LandscapeAspect : StageCalibration.PortraitAspect;
             _gameCamera.transform.SetPositionAndRotation(overviewPose.position, overviewPose.rotation);
 
-            // The board ground draws the cell grid from these, the grass tips catch the light
+            // The board ground draws the cell grid from these
             Shader.SetGlobalVector(gridOriginId, _board.min);
             Shader.SetGlobalFloat(gridCellId, grid.size);
             Shader.SetGlobalVector(gridExtentId, _board.size);
             Shader.SetGlobalFloat(gridStrengthId, _gridStrength);
-            Shader.SetGlobalFloat(tipLightId, _tipLight);
 
             foreach (string hiddenName in _hiddenObjectNames)
             {
@@ -321,8 +323,9 @@ namespace HealerLike.Render.Stage
             {
                 foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
                 {
-                    // His far ground shares the board ground's name, the board itself stays
-                    if (child.name == objectName && child.TryGetComponent(out Renderer hidden) && hidden != _boardGround)
+                    // The scene's far ground shares the board ground's name, the board itself stays
+                    bool isNamed = child.name == objectName;
+                    if (isNamed && child.TryGetComponent(out Renderer hidden) && hidden != _boardGround)
                     {
                         hidden.enabled = false;
                         isFound = true;
@@ -351,8 +354,8 @@ namespace HealerLike.Render.Stage
 
             LookSettings lookSettings = _look.settings;
             _environmentGrass.Init(boardRect, _player.grid.size, surfaceY, _gameCamera, _zones, this);
-            _environment.GetComponent<EnvironmentScatter>().Init(boardRect, _player.grid.size, surfaceY, _gameCamera, _gust,
-                                                                   lookSettings.fogEnd, this);
+            EnvironmentScatter scatter = _environment.GetComponent<EnvironmentScatter>();
+            scatter.Init(boardRect, _player.grid.size, surfaceY, _gameCamera, _gust, lookSettings.fogEnd, this);
             _foreground.Init(_gameCamera, surfaceY, this);
             _ridge.Init(_gameCamera, boardRect, surfaceY, lookSettings.fogStart, lookSettings.fogEnd, this);
         }
@@ -369,7 +372,12 @@ namespace HealerLike.Render.Stage
 #endif
 
             GameView gameView = FindInScene<GameView>(_scene);
-            _nextWaveButton = gameView != null && gameView.gameHUD != null ? gameView.gameHUD.nextWaveButton : null;
+            _nextWaveButton = null;
+            if (gameView != null && gameView.gameHUD != null)
+            {
+                _nextWaveButton = gameView.gameHUD.nextWaveButton;
+            }
+
             if (_nextWaveButton != null)
             {
                 _nextWaveButton.onClick.AddListener(OnNextWave);
@@ -405,7 +413,6 @@ namespace HealerLike.Render.Stage
             }
 
             Shader.SetGlobalFloat(gridStrengthId, 0f);
-            Shader.SetGlobalFloat(tipLightId, 0f);
 
             // The children can go first when the manager itself is destroyed
             if (_grass != null)
@@ -436,13 +443,14 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
-            // His sockets and HUD stay live, so projectiles leave from where gameplay puts them
+            // The model's sockets and HUD stay live, so projectiles leave from where gameplay puts them
             foreach (Renderer modelRenderer in entity.model.GetComponentsInChildren<Renderer>(true))
             {
                 modelRenderer.enabled = false;
             }
 
-            GameObject viewGo = Instantiate(_creatureLooks.GetView(entity.data, entity.entityType), entity.model.transform);
+            GameObject viewPrefab = _creatureLooks.GetView(entity.data, entity.entityType);
+            GameObject viewGo = Instantiate(viewPrefab, entity.model.transform);
             foreach (IEntityView view in viewGo.GetComponentsInChildren<IEntityView>())
             {
                 view.Init(entity, this);
@@ -492,7 +500,8 @@ namespace HealerLike.Render.Stage
         }
 
 #if HEALERLIKE_SEAMS
-        // S1: added before Projectile.Init, which then calls their Init(source) with his own behaviours
+        // Runs once EntityManager raises OnProjectileSpawned: added before Projectile.Init, which then calls their
+        // Init(source) with the prefab's own behaviours
         void OnProjectileSpawned(GameObject prefab, GameObject projectileGo)
         {
             ProjectileLook projectileLook = _spellLooks.GetProjectileLook(prefab);
@@ -511,7 +520,7 @@ namespace HealerLike.Render.Stage
             }
         }
 
-        // S2
+        // Runs once EntityManager raises OnAreaOfEffectStarted
         void OnAreaOfEffectStarted(AreaOfEffect area)
         {
             area.gameObject.AddComponent<AreaPulse>().Init(_zones);

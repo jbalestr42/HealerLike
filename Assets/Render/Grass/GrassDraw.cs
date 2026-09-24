@@ -34,7 +34,8 @@ namespace HealerLike.Render.Grass
             data[0].startIndex = mesh.GetIndexStart(0);
             data[0].baseVertexIndex = (uint)mesh.GetBaseVertex(0);
             data[0].startInstance = 0;
-            _arguments = new GraphicsBuffer(GraphicsBuffer.Target.IndirectArguments, 1, GraphicsBuffer.IndirectDrawIndexedArgs.size);
+            _arguments = new GraphicsBuffer(GraphicsBuffer.Target.IndirectArguments, 1,
+                                            GraphicsBuffer.IndirectDrawIndexedArgs.size);
             _arguments.SetData(data);
 
             _parameters = new RenderParams(material);

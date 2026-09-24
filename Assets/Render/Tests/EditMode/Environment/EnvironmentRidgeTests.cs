@@ -172,7 +172,8 @@ public class EnvironmentRidgeTests
         {
             RidgeItem item = ridge.items[i];
             Transform pivot = ridge.root.GetChild(i);
-            Assert.AreEqual(item.kind == RidgeKind.Monolith ? 1 : 2, pivot.childCount);
+            int expectedParts = item.kind == RidgeKind.Monolith ? 1 : 2;
+            Assert.AreEqual(expectedParts, pivot.childCount);
             Bounds bounds = pivot.GetComponentsInChildren<MeshRenderer>()
                 .Select(r => r.bounds)
                 .Aggregate((x, y) =>

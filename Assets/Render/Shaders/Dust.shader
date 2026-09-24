@@ -1,6 +1,9 @@
 Shader "HealerLike/Stones/Dust"
 {
-    Properties { _BaseColor("Colour", Color) = (.48,.49,.51,.55) }
+    Properties
+    {
+        _BaseColor("Colour", Color) = (0.48, 0.49, 0.51, 0.55)
+    }
     SubShader
     {
         Tags { "RenderPipeline"="UniversalPipeline" "Queue"="Transparent" "RenderType"="Transparent" }
@@ -15,10 +18,28 @@ Shader "HealerLike/Stones/Dust"
             CBUFFER_START(UnityPerMaterial)
             float4 _BaseColor;
             CBUFFER_END
-            struct Attributes { float4 positionOS : POSITION; };
-            struct Varyings { float4 positionCS : SV_POSITION; };
-            Varyings Vert(Attributes input) { Varyings o; o.positionCS=TransformObjectToHClip(input.positionOS.xyz); return o; }
-            half4 Frag(Varyings input) : SV_Target { return _BaseColor; }
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+            };
+
+            struct Varyings
+            {
+                float4 positionCS : SV_POSITION;
+            };
+
+            Varyings Vert(Attributes input)
+            {
+                Varyings output;
+                output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
+                return output;
+            }
+
+            half4 Frag(Varyings input) : SV_Target
+            {
+                return _BaseColor;
+            }
             ENDHLSL
         }
     }

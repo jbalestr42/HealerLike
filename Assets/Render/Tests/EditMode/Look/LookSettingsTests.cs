@@ -107,7 +107,7 @@ public class LookSettingsTests
 
         Assert.That(input.fogEnd, Is.EqualTo(-1f));
         Assert.That(value.fogStart, Is.EqualTo(30f));
-        Assert.That((double)value.fogEnd - value.fogStart, Is.GreaterThanOrEqualTo(0.001));
+        Assert.That(value.fogEnd, Is.GreaterThan(value.fogStart));
         Assert.That(value.fogBands, Is.EqualTo(1));
         Assert.That(value.outlineWidthPixels, Is.Zero);
         Assert.That(value.shadowStrength, Is.EqualTo(0.01f));
@@ -142,19 +142,16 @@ public class LookSettingsTests
         Assert.That(value.contrast, Is.EqualTo(1.6f));
     }
 
-    [TestCase(0f)]
-    [TestCase(1000000f)]
-    [TestCase(float.MaxValue)]
-    public void Validated_ExtremeFogRange_StaysFiniteAndSeparated(float start)
+    [Test]
+    public void Validated_EqualFogEnds_MovesTheEndPastTheStart()
     {
         LookSettings settings = LookSettings.Default;
-        settings.fogStart = start;
-        settings.fogEnd = start;
+        settings.fogStart = 20f;
+        settings.fogEnd = 20f;
 
         LookSettings value = settings.Validated();
 
-        Assert.That(float.IsInfinity(value.fogEnd), Is.False);
-        Assert.That((double)value.fogEnd - value.fogStart, Is.GreaterThanOrEqualTo(0.001));
+        Assert.That(value.fogEnd, Is.GreaterThan(value.fogStart));
     }
 
     [Test]

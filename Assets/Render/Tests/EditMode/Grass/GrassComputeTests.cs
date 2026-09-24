@@ -78,8 +78,14 @@ public class GrassComputeTests
 
         _zoneBuffer = CreateBuffer(GraphicsBuffer.Target.Structured, 64, Zone.Stride);
         _zones = new Zone[64];
-        _zones[0] = new Zone { position = new Vector3(-2f, 90f, 0f), radius = 1f, kind = 1, strength = 0.8f, age = 0.06f };
-        _zones[1] = new Zone { position = new Vector3(2f, -90f, 0f), radius = 1f, kind = 2, strength = 0.9f, age = 0.09f };
+        _zones[0] = new Zone
+        {
+            position = new Vector3(-2f, 90f, 0f), radius = 1f, kind = 1, strength = 0.8f, age = 0.06f
+        };
+        _zones[1] = new Zone
+        {
+            position = new Vector3(2f, -90f, 0f), radius = 1f, kind = 2, strength = 0.9f, age = 0.09f
+        };
         _zoneBuffer.SetData(_zones);
 
         _visible = CreateBuffer(GraphicsBuffer.Target.Append, 65, 4);
@@ -202,7 +208,8 @@ public class GrassComputeTests
         Assert.AreEqual(calm.leanHeightSpike.y, passed.leanHeightSpike.y);
 
         Assert.AreEqual(1f, Sample(1, Vector3.right, 2f, 0f).leanHeightSpike.z);
-        Assert.That(Sample(1, Vector3.right, 2f, 0.3f).leanHeightSpike.z, Is.EqualTo(1.8f).Within(0.0001)); // grown, heal 1
+        // grown, heal 1
+        Assert.That(Sample(1, Vector3.right, 2f, 0.3f).leanHeightSpike.z, Is.EqualTo(1.8f).Within(0.0001));
 
         float rising = Sample(2, Vector3.zero, 3f, 0.075f).leanHeightSpike.z;
         float peak = Sample(2, Vector3.zero, 3f, 0.15f).leanHeightSpike.z;

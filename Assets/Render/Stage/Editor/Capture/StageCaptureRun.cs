@@ -8,9 +8,9 @@ namespace HealerLike.Render.Stage
     // Places two allies, starts the wave, casts on an ally then an enemy, and captures one still of the fight
     public class StageCaptureRun : AStageRun
     {
+        public static readonly int Width = StageCalibration.PortraitWidth;
+        public static readonly int Height = StageCalibration.PortraitHeight;
         public static readonly float CaptureAt = 8f;
-        public static readonly int Width = 1080;
-        public static readonly int Height = 1920;
 
         bool _isLandscape;
 
@@ -29,7 +29,7 @@ namespace HealerLike.Render.Stage
             float nextCast = Time.time + 2f;
             while (Time.time - started < CaptureAt)
             {
-                // One heal, then strikes only until an enemy is hit, so his first wave is still fighting at the capture
+                // One heal, then strikes only until an enemy is hit, so the first wave is still fighting at the capture
                 if (Time.time >= nextCast && (_heals == 0 || !IsAnyEnemyHit()))
                 {
                     nextCast = Time.time + 1f;
@@ -73,7 +73,7 @@ namespace HealerLike.Render.Stage
             return false;
         }
 
-        // Portrait as his device autorotates, the aspect follows the target rather than the batchmode screen
+        // Portrait as the device autorotates, the aspect follows the target rather than the batchmode screen
         bool Capture(string path)
         {
             Camera camera = _manager.gameCamera;

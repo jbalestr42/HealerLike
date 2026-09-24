@@ -10,14 +10,14 @@ using Object = UnityEngine.Object;
 namespace HealerLike.Render.Stage
 {
     // Clears the board and lays the sheet's units one per cell, in batches the portrait frame holds, spawned through
-    // his EntityManager so the RenderManager builds their views. Each batch renders at the board and the portrait
-    // camera, on the grass and on a flat ground of the grass's body colour, and writes colour, greyscale and
+    // the game's EntityManager so the RenderManager builds their views. Each batch renders at the board and the
+    // portrait camera, on the grass and on a flat ground of the grass's body colour, and writes colour, greyscale and
     // deuteranopia frames plus a labelled contact sheet per ground and camera. The unit pass also renders each unit
     // alone and lists the silhouettes that overlap; the effect pass applies the spells through the SpellVisualSink
     public class LookSheetRun : AStageRun
     {
-        public static readonly int Width = 1080;
-        public static readonly int Height = 1920;
+        public static readonly int Width = StageCalibration.PortraitWidth;
+        public static readonly int Height = StageCalibration.PortraitHeight;
         public static readonly int Columns = 4;
         public static readonly int Rows = 4;
         // Whole cells between two units, so every unit lands on a cell centre
@@ -425,7 +425,7 @@ namespace HealerLike.Render.Stage
 
         #region Board
 
-        // His first wave is already on the board, its cells are taken back for the sheet
+        // The first wave is already on the board, its cells are taken back for the sheet
         void ClearBoard()
         {
             foreach (Entity.EntityType side in new[] { Entity.EntityType.Player, Entity.EntityType.Computer })
@@ -556,7 +556,7 @@ namespace HealerLike.Render.Stage
             }
 
             game.transform.SetPositionAndRotation(pose.position, pose.rotation);
-            _manager.look.UpdateFog(pose.position);
+            _manager.look.UpdateFog(StageCalibration.BackgroundFog(pose.position, _manager.board));
             for (int i = 0; i < 3; i++)
             {
                 yield return NextFrame();
@@ -665,7 +665,7 @@ namespace HealerLike.Render.Stage
             return pixels;
         }
 
-        // The middle of what the unit draws, his hidden model aside
+        // The middle of what the unit draws, the hidden game model aside
         static Vector3 Centre(Transform cell)
         {
             Bounds bounds = new Bounds(cell.position, Vector3.zero);
@@ -709,7 +709,7 @@ namespace HealerLike.Render.Stage
 
             Pose pose = _manager.overviewPose;
             _manager.gameCamera.transform.SetPositionAndRotation(pose.position, pose.rotation);
-            _manager.look.UpdateFog(pose.position);
+            _manager.look.UpdateFog(StageCalibration.BackgroundFog(pose.position, _manager.board));
         }
 
         #endregion

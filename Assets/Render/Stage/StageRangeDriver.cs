@@ -14,10 +14,6 @@ namespace HealerLike.Render.Stage
 
         public bool showAll { get; set; }
 
-        public Entity hovered { get; private set; }
-
-        public IReadOnlyList<RangePreview> previews { get { return _previews; } }
-
         public void Init(Camera camera)
         {
             _camera = camera;
@@ -35,7 +31,6 @@ namespace HealerLike.Render.Stage
         public void Clear()
         {
             _previews.Clear();
-            hovered = null;
         }
 
         // One raycast per frame for every preview
@@ -58,7 +53,6 @@ namespace HealerLike.Render.Stage
 
         public void Apply(Entity hoveredEntity)
         {
-            hovered = hoveredEntity;
             _previews.RemoveAll(preview => preview == null);
             foreach (RangePreview preview in _previews)
             {

@@ -83,7 +83,8 @@ public class GrassTuftTests
         float yaw = 1.1f;
         Vector2 lean = new Vector2(-0.3f, 0.1f);
         Vector3 axis = new Vector3(lean.y, 0f, -lean.x).normalized;
-        Quaternion rotation = Quaternion.AngleAxis(lean.magnitude * Mathf.Rad2Deg, axis) * Quaternion.Euler(0f, yaw * Mathf.Rad2Deg, 0f);
+        Quaternion rotation = Quaternion.AngleAxis(lean.magnitude * Mathf.Rad2Deg, axis)
+                              * Quaternion.Euler(0f, yaw * Mathf.Rad2Deg, 0f);
 
         foreach (Vector3 vertex in _mesh.vertices)
         {
@@ -112,7 +113,8 @@ public class GrassTuftTests
     {
         Vector2 lean = new Vector2(0.2f, 0.15f);
         Vector3 axis = new Vector3(lean.y, 0f, -lean.x).normalized;
-        Quaternion rotation = Quaternion.AngleAxis(lean.magnitude * Mathf.Rad2Deg, axis) * Quaternion.Euler(0f, 40f, 0f);
+        Quaternion rotation = Quaternion.AngleAxis(lean.magnitude * Mathf.Rad2Deg, axis)
+                              * Quaternion.Euler(0f, 40f, 0f);
         Vector3 normal = new Vector3(0f, 0.447f, -0.894f).normalized;
 
         Vector3 placed = GrassTuft.PlaceNormal(normal, 40f * Mathf.Deg2Rad, 1f, 1f, lean);
@@ -143,7 +145,8 @@ public class GrassTuftTests
         {
             // The four base edges close on the ground, the four side edges join two facets
             bool isBaseEdge = !edge.Key.Contains("1.00000");
-            Assert.AreEqual(isBaseEdge ? 1 : 2, edge.Value, edge.Key);
+            int expectedFaces = isBaseEdge ? 1 : 2;
+            Assert.AreEqual(expectedFaces, edge.Value, edge.Key);
             baseEdges += isBaseEdge ? 1 : 0;
         }
         Assert.AreEqual(4, baseEdges);
@@ -211,7 +214,8 @@ public class GrassTuftTests
     [Test]
     public void Bake_ShippedTuftAndSocle_MatchTheBuilder()
     {
-        PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
+        string meshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";
+        PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesPath);
         Mesh socle = GrassTuft.CreateSocle();
 
         Assert.IsNotNull(meshes.tuft);

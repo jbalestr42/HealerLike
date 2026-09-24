@@ -40,19 +40,8 @@ namespace HealerLike.Render.Stage
             return (float)intersection / union;
         }
 
-        // A pixel belongs to the unit when it differs from the ground colour by more than the tolerance,
-        // summed over the three channels
-        public static bool[] Mask(Color32[] pixels, Color32 ground, int tolerance)
-        {
-            bool[] mask = new bool[pixels.Length];
-            for (int i = 0; i < pixels.Length; i++)
-            {
-                mask[i] = Difference(pixels[i], ground) > tolerance;
-            }
-            return mask;
-        }
-
-        // The same against the ground as rendered without the unit, pixel by pixel, so shading and fog cancel
+        // A pixel belongs to the unit when it differs from the ground as rendered without the unit, pixel by pixel,
+        // by more than the tolerance summed over the three channels, so shading and fog cancel
         public static bool[] Mask(Color32[] pixels, Color32[] ground, int tolerance)
         {
             if (ground == null || ground.Length != pixels.Length)

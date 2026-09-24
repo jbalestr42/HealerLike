@@ -96,7 +96,8 @@ namespace HealerLike.Render.Grass
         }
 
         // Scale by width and height, yaw about the root, tilt about the root by the lean, then move to the root
-        public static Vector3 Place(Vector3 positionOS, Vector3 root, float yaw, float width, float height, Vector2 lean)
+        public static Vector3 Place(Vector3 positionOS, Vector3 root, float yaw, float width, float height,
+                                    Vector2 lean)
         {
             Vector3 scaled = new Vector3(positionOS.x * width, positionOS.y * height, positionOS.z * width);
             return root + Tilt(Yaw(scaled, yaw), lean);

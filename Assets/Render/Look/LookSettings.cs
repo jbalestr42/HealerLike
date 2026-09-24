@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Look
 {
@@ -8,73 +7,54 @@ namespace HealerLike.Render.Look
     [Serializable]
     public struct LookSettings
     {
-        [FormerlySerializedAs("ShadowTint")]
+        static readonly float minimumFogDepth = 0.001f;
+
         public Color shadowTint;
 
-        [FormerlySerializedAs("OutlineColor")]
         public Color outlineColor;
 
-        [FormerlySerializedAs("FogColor")]
         public Color fogColor;
 
-        [FormerlySerializedAs("ShadowStrength")]
         public float shadowStrength;
 
-        [FormerlySerializedAs("ToonThreshold")]
         public float toonThreshold;
 
         // Half width of the soft terminator around the toon threshold
         public float toonSoftness;
 
-        [FormerlySerializedAs("OutlineWidthPixels")]
         public float outlineWidthPixels;
 
-        [FormerlySerializedAs("FogStart")]
         public float fogStart;
 
-        [FormerlySerializedAs("FogEnd")]
         public float fogEnd;
 
-        [FormerlySerializedAs("InkStrength")]
         public float inkStrength;
 
-        [FormerlySerializedAs("InkScale")]
         public float inkScale;
 
-        [FormerlySerializedAs("InkWidth")]
         public float inkWidth;
 
-        [FormerlySerializedAs("InkStart")]
         public float inkStart;
 
-        [FormerlySerializedAs("InkRange")]
         public float inkRange;
 
-        [FormerlySerializedAs("DensityMul")]
         public float densityMul;
 
-        [FormerlySerializedAs("InkWarp")]
         public float inkWarp;
 
-        [FormerlySerializedAs("InkWarpFreq")]
         public float inkWarpFreq;
 
-        [FormerlySerializedAs("DashAmount")]
         public float dashAmount;
 
-        [FormerlySerializedAs("DashScale")]
         public float dashScale;
 
-        [FormerlySerializedAs("InkDistStart")]
         public float inkDistStart;
 
-        [FormerlySerializedAs("InkFarSpacing")]
         public float inkFarSpacing;
 
         // Contrast punch after the ink, before the fog
         public float contrast;
 
-        [FormerlySerializedAs("FogBands")]
         public int fogBands;
 
         public static LookSettings Default
@@ -138,20 +118,9 @@ namespace HealerLike.Render.Look
             value.contrast = Mathf.Clamp(Finite(contrast, defaults.contrast), 1f, 1.6f);
             value.fogBands = Mathf.Max(1, fogBands);
 
-            // At the largest float there is no finite end greater than the start
-            if (value.fogStart == float.MaxValue)
+            if (value.fogEnd - value.fogStart < minimumFogDepth)
             {
-                value.fogStart = defaults.fogStart;
-            }
-
-            if ((double)value.fogEnd - value.fogStart < 0.001)
-            {
-                value.fogEnd = (float)((double)value.fogStart + 0.001);
-                // 0.001 can be smaller than the float spacing, then step to the next float up
-                if ((double)value.fogEnd - value.fogStart < 0.001)
-                {
-                    value.fogEnd = BitConverter.Int32BitsToSingle(BitConverter.SingleToInt32Bits(value.fogEnd) + 1);
-                }
+                value.fogEnd = value.fogStart + minimumFogDepth;
             }
 
             return value;
@@ -168,7 +137,12 @@ namespace HealerLike.Render.Look
             float green = Mathf.Clamp01(Finite(value.g, fallback.g));
             float blue = Mathf.Clamp01(Finite(value.b, fallback.b));
             value = new Color(red, green, blue, 1f);
-            return nonblack && value.r == 0f && value.g == 0f && value.b == 0f ? fallback : value;
+            if (nonblack && value.r == 0f && value.g == 0f && value.b == 0f)
+            {
+                return fallback;
+            }
+
+            return value;
         }
     }
 }

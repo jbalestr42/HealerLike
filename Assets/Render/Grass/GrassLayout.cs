@@ -25,8 +25,10 @@ namespace HealerLike.Render.Grass
 
         public static bool IsValid(int width, int height, float size, Vector3 origin, float surfaceY)
         {
-            bool isGridValid = width > 0 && height > 0 && (long)width * height <= int.MaxValue && float.IsFinite(size) && size > 0f;
-            bool isOriginValid = float.IsFinite(origin.x) && float.IsFinite(origin.y) && float.IsFinite(origin.z) && float.IsFinite(surfaceY);
+            bool isGridValid = width > 0 && height > 0 && (long)width * height <= int.MaxValue
+                               && float.IsFinite(size) && size > 0f;
+            bool isOriginValid = float.IsFinite(origin.x) && float.IsFinite(origin.y) && float.IsFinite(origin.z)
+                                 && float.IsFinite(surfaceY);
             bool isExtentValid = float.IsFinite(width * size) && float.IsFinite(height * size);
             bool isMaxValid = float.IsFinite(origin.x + width * size) && float.IsFinite(origin.z + height * size);
             bool isMinValid = float.IsFinite(origin.x - width * size) && float.IsFinite(origin.z - height * size);
@@ -41,11 +43,13 @@ namespace HealerLike.Render.Grass
         }
 
         // Returns no seeds and logs when the footprint is not finite or the budget is negative
-        public static BladeSeed[] Generate(int width, int height, float cellSize, Vector3 gridOrigin, float surfaceY, int budget, uint seed)
+        public static BladeSeed[] Generate(int width, int height, float cellSize, Vector3 gridOrigin, float surfaceY,
+                                           int budget, uint seed)
         {
             if (!IsValid(width, height, cellSize, gridOrigin, surfaceY) || budget < 0)
             {
-                Debug.LogError($"[GrassLayout] Rejected a {width} x {height} grid of size {cellSize} with budget {budget}.");
+                Debug.LogError($"[GrassLayout] Rejected a {width} x {height} grid of size {cellSize} "
+                               + $"with budget {budget}.");
                 return new BladeSeed[0];
             }
 
@@ -73,7 +77,8 @@ namespace HealerLike.Render.Grass
 
             float stepX = (float)width / columns;
             float stepZ = (float)height / rows;
-            Vector2 minimum = new Vector2(gridOrigin.x - width * cellSize * 0.5f, gridOrigin.z - height * cellSize * 0.5f);
+            Vector2 minimum = new Vector2(gridOrigin.x - width * cellSize * 0.5f,
+                                          gridOrigin.z - height * cellSize * 0.5f);
             BladeSeed[] result = new BladeSeed[columns * rows];
             for (int row = 0; row < rows; row++)
             {
@@ -87,7 +92,9 @@ namespace HealerLike.Render.Grass
                     Vector2 lean = LeanHeading * (MaxLean * Sample(seed, index, 5));
                     Vector3 root = new Vector3(minimum.x + x * cellSize, surfaceY + RootLift, minimum.y + z * cellSize);
                     result[index].positionYaw = new Vector4(root.x, root.y, root.z, yaw);
-                    result[index].heightWidthLean = new Vector4(TuftHeight * cellSize * scale, TuftWidth * cellSize * scale, lean.x, lean.y);
+                    float tuftHeight = TuftHeight * cellSize * scale;
+                    float tuftWidth = TuftWidth * cellSize * scale;
+                    result[index].heightWidthLean = new Vector4(tuftHeight, tuftWidth, lean.x, lean.y);
                 }
             }
 

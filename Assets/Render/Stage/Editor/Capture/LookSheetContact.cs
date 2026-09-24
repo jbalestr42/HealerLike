@@ -18,8 +18,6 @@ namespace HealerLike.Render.Stage
         readonly List<Color32[][]> _panels = new List<Color32[][]>();
         int _size;
 
-        public int count { get { return _labels.Count; } }
-
         public LookSheetContact(int size)
         {
             _size = size;

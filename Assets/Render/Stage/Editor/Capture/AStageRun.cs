@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Stage
 {
-    // A scripted player on his real game: it presses his buttons and places allies through his public calls,
+    // A scripted player on the real game: it presses its buttons and places allies through its public calls,
     // and counts the attacks, heals and zones the render layer sees. Editor scripts cannot be components,
     // so StagePlay steps it from the editor update while the game plays.
     public abstract class AStageRun

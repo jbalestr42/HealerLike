@@ -35,7 +35,8 @@ namespace HealerLike.Render.Environment
             bool isShapeValid = settings.marginCells >= 0f && settings.falloff >= 0f && !float.IsNaN(surfaceY);
             if (!isGridValid || !isRingValid || !isShapeValid)
             {
-                Debug.LogError($"[EnvironmentLayout] Rejected grid {grid} with cell size {cellSize} and ring {settings.ringDistance}.");
+                Debug.LogError($"[EnvironmentLayout] Rejected grid {grid} with cell size {cellSize} "
+                               + $"and ring {settings.ringDistance}.");
                 return result;
             }
 

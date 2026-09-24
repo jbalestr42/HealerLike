@@ -8,7 +8,7 @@ struct HLZone
     float strength;
     float age;
     uint reserved;
-    float2 direction; // v3 Launch heading; reserved uint is a full turn from +X toward +Z.
+    float2 direction; // Launch heading, decoded from reserved: a full turn from +X toward +Z
 };
 // Two 16-byte lanes; no reliance on the native Metal layout of float3.
 struct HLZoneStorage
@@ -32,7 +32,11 @@ HLZone HLLoadZone(uint index)
     float angle = (float)z.reserved * (6.28318530718 / 4294967296.0);
     z.direction = float2(cos(angle), sin(angle));
     // Bloom belongs to the shared loader, so the grass footprint and ring stay identical.
-    if (z.kind == 1) z.radius *= saturate(z.age / 0.3);
+    if (z.kind == 1)
+    {
+        z.radius *= saturate(z.age / 0.3);
+    }
+
     return z;
 }
 #endif

@@ -23,13 +23,13 @@ public class LookSheetUnitsTests
         _created.Clear();
     }
 
-    // The spec's Part 3.3 rows, five units nobody designed, built in memory from his classes and prefabs
+    // Five units nobody designed, built in memory from the game's classes and prefabs
     [TestCase("Stormreed", LookSide.Plant, HeadKind.Fork, CountBand.Few, StemBand.Quick, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
     [TestCase("Puffball", LookSide.Plant, HeadKind.Pulse, CountBand.Many, StemBand.Steady, MassBand.Sturdy, AccessoryKind.None, EffectFamily.Damage)]
     [TestCase("Old fern", LookSide.Plant, HeadKind.SelfTick, CountBand.One, StemBand.Slow, MassBand.Heavy, AccessoryKind.None, EffectFamily.Renew)]
     [TestCase("Needle stone", LookSide.Stone, HeadKind.Spear, CountBand.Few, StemBand.Quick, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
     [TestCase("Storm idol", LookSide.Stone, HeadKind.Conductor, CountBand.One, StemBand.Steady, MassBand.Heavy, AccessoryKind.DripBeads, EffectFamily.Damage)]
-    public void Create_UndesignedUnit_DerivesTheSpecRow(string unit, LookSide side, HeadKind head, CountBand count, StemBand stem,
+    public void Create_UndesignedUnit_DerivesItsChannels(string unit, LookSide side, HeadKind head, CountBand count, StemBand stem,
         MassBand mass, AccessoryKind accessory, EffectFamily accent)
     {
         EntityData data = LookSheetUnits.Create(unit, _created);
@@ -39,8 +39,8 @@ public class LookSheetUnitsTests
         AssertRow(channels, side, head, count, stem, mass, accessory, accent);
     }
 
-    // The spec's Part 3.1 rows the bestiary proposes, built in memory. Bramble and Splitter stand in for a factory
-    // his code lacks and no derivation line reads a thorn collar or twin seeds yet, so they pin what their data draws
+    // The proposed roster, built in memory. Bramble and Splitter stand in for a factory the game lacks and no
+    // derivation line reads a thorn collar or twin seeds yet, so they pin what their data draws
     [TestCase("Mender", LookSide.Plant, HeadKind.GiftHeal, CountBand.One, StemBand.Slow, MassBand.Light, AccessoryKind.None, EffectFamily.Heal)]
     [TestCase("Warden", LookSide.Plant, HeadKind.GiftBoonDefence, CountBand.One, StemBand.Slow, MassBand.Light, AccessoryKind.None, EffectFamily.Boon)]
     [TestCase("Mortar", LookSide.Plant, HeadKind.Arch, CountBand.Many, StemBand.Slow, MassBand.Light, AccessoryKind.Antenna, EffectFamily.Damage)]
@@ -56,7 +56,7 @@ public class LookSheetUnitsTests
     [TestCase("Splitter", LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Sturdy, AccessoryKind.None, EffectFamily.Damage)]
     [TestCase("Runner", LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Light, AccessoryKind.None, EffectFamily.Damage)]
     [TestCase("Warlord", LookSide.Stone, HeadKind.Arch, CountBand.Many, StemBand.Slow, MassBand.Heavy, AccessoryKind.MiniHead, EffectFamily.Damage)]
-    public void Create_ProposedUnit_DerivesTheSpecRow(string unit, LookSide side, HeadKind head, CountBand count, StemBand stem,
+    public void Create_ProposedUnit_DerivesItsChannels(string unit, LookSide side, HeadKind head, CountBand count, StemBand stem,
         MassBand mass, AccessoryKind accessory, EffectFamily accent)
     {
         EntityData data = LookSheetUnits.Create(unit, _created);
@@ -77,7 +77,7 @@ public class LookSheetUnitsTests
     }
 
     [Test]
-    public void Create_RosterEntity_ReturnsHisAsset()
+    public void Create_RosterEntity_ReturnsTheGameAsset()
     {
         EntityData data = LookSheetUnits.Create("NormalEntity", _created);
 
@@ -106,24 +106,6 @@ public class LookSheetUnitsTests
         string label = LookSheetUnits.Label(unit);
 
         Assert.AreEqual(expected, label);
-    }
-
-    [Test]
-    public void Draw_Label_LightsPixelsInsideItsBox()
-    {
-        Texture2D texture = new Texture2D(64, 32, TextureFormat.RGB24, false);
-        _created.Add(texture);
-        texture.SetPixels32(new Color32[64 * 32]);
-
-        LookSheetFont.Draw(texture, "HEAL*", 2, 30, 2, Color.white);
-
-        int lit = 0;
-        foreach (Color32 pixel in texture.GetPixels32())
-        {
-            lit += pixel.r == 255 ? 1 : 0;
-        }
-        Assert.Greater(lit, 40);
-        Assert.AreEqual(Color.black, texture.GetPixel(63, 2));
     }
 
     static void AssertRow(UnitChannels channels, LookSide side, HeadKind head, CountBand count, StemBand stem, MassBand mass,

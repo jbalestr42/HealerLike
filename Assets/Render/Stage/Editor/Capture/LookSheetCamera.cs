@@ -17,18 +17,5 @@ namespace HealerLike.Render.Stage
             float distance = cellSize * width / (2f * tanH * cellPixels);
             return new Pose(centre - rotation * Vector3.forward * distance, rotation);
         }
-
-        // Pixels across one cell at the point, for a camera at the pose
-        public static float CellPixels(Pose pose, Vector3 point, float cellSize, float fieldOfView, float aspect, int width)
-        {
-            float depth = Vector3.Dot(point - pose.position, pose.rotation * Vector3.forward);
-            float tanH = Mathf.Tan(fieldOfView * Mathf.Deg2Rad * 0.5f) * aspect;
-            if (depth <= 0f)
-            {
-                Debug.LogError("[LookSheetCamera] The point is behind the camera");
-                return 0f;
-            }
-            return cellSize * width / (2f * depth * tanH);
-        }
     }
 }

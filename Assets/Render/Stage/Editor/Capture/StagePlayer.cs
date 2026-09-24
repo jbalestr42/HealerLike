@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Stage
 {
-    // What a player does with his public calls: place allies near the enemies, cast a skill on a target
+    // What a player does through the game's public calls: place allies near the enemies, cast a skill on a target
     public class StagePlayer
     {
         public static readonly string[] Allies =
@@ -37,7 +37,7 @@ namespace HealerLike.Render.Stage
                     allyGo = manager.entityManager.SpawnEntity(data, position, Entity.EntityType.Player);
                 }
 
-                Debug.Log($"[AStageRun] Placed {data.name}: {(allyGo != null ? allyGo.name : "refused")}");
+                Debug.Log($"[StagePlayer] Placed {data.name}: {(allyGo != null ? allyGo.name : "refused")}");
             }
         }
 

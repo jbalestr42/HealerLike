@@ -28,7 +28,7 @@ public class RenderManagerTests
     Light _previousSun;
     AmbientMode _previousAmbient;
 
-    // His scene as the manager sees it: a main camera, a directional light, the grid and its ground, decoration
+    // The game scene as the manager sees it: a main camera, a directional light, the grid and its ground, decoration
     static GridManager CreateGrid(Transform parent, out Renderer ground)
     {
         GameObject gridGo = new GameObject("Grid");
@@ -116,7 +116,7 @@ public class RenderManagerTests
     }
 
     [Test]
-    public void Init_GameScene_AdoptsHisCameraAndSwapsThePipeline()
+    public void Init_GameScene_AdoptsTheGameCameraAndSwapsThePipeline()
     {
         RenderPipelineAsset stagePipeline = AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(
             "Assets/Render/Stage/Settings/StagePipeline.asset");
@@ -168,7 +168,7 @@ public class RenderManagerTests
     }
 
     [Test]
-    public void OnEntitySpawned_Ally_HidesHisModelAndInitsTheView()
+    public void OnEntitySpawned_Ally_HidesTheGameModelAndInitsTheView()
     {
         _manager.Init(_entityManager, _player);
         Entity entity = CreateEntity(_gameGo.transform, Entity.EntityType.Player, out Renderer modelRenderer);
@@ -230,29 +230,13 @@ public class RenderManagerTests
         Assert.AreEqual(2, _manager.NextDeliveryToken());
     }
 
-    [Test]
-    public void OnEntitySpawned_SoldierEnemy_GetsADerivedStone()
+    [TestCase("Assets/Data/Entities/SoldierEntity/SoldierEntity.asset")]
+    [TestCase("Assets/Data/Entities/HitArmorBufferEntityEntity/HitArmorBufferEntity.asset")]
+    public void OnEntitySpawned_StoneEnemy_GetsADerivedStone(string dataPath)
     {
         _manager.Init(_entityManager, _player);
         Entity entity = CreateEntity(_gameGo.transform, Entity.EntityType.Computer, out Renderer modelRenderer);
-        entity.data = AssetDatabase.LoadAssetAtPath<EntityData>("Assets/Data/Entities/SoldierEntity/SoldierEntity.asset");
-
-        _entityManager.OnEntitySpawned.Invoke(entity);
-
-        Assert.IsNotNull(entity.data);
-        CreatureBuilder builder = entity.model.GetComponentInChildren<CreatureBuilder>();
-        Assert.IsNotNull(builder, "The derived stone carries a CreatureBuilder.");
-        Assert.IsNotNull(builder.rig);
-        Assert.AreEqual(Primitive.Stone, builder.recipe.parts[0].primitive);
-    }
-
-    [Test]
-    public void OnEntitySpawned_HitArmorBufferEnemy_GetsADerivedStone()
-    {
-        _manager.Init(_entityManager, _player);
-        Entity entity = CreateEntity(_gameGo.transform, Entity.EntityType.Computer, out Renderer modelRenderer);
-        entity.data = AssetDatabase.LoadAssetAtPath<EntityData>(
-            "Assets/Data/Entities/HitArmorBufferEntityEntity/HitArmorBufferEntity.asset");
+        entity.data = AssetDatabase.LoadAssetAtPath<EntityData>(dataPath);
 
         _entityManager.OnEntitySpawned.Invoke(entity);
 

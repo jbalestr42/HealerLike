@@ -48,11 +48,6 @@ namespace HealerLike.Render.Stage
             return simulated;
         }
 
-        public static Color32 Deuteranope(Color32 pixel)
-        {
-            return Deuteranope(new Color32[] { pixel })[0];
-        }
-
         // A square of the frame whose bottom-left corner is at the pixel, black outside the frame
         public static Color32[] Crop(Color32[] pixels, int width, int height, int x, int y, int size)
         {

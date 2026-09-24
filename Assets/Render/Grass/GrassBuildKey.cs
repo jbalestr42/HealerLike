@@ -27,7 +27,8 @@ namespace HealerLike.Render.Grass
 
         public bool Matches(GrassBuildKey other)
         {
-            bool isSameGrid = width == other.width && height == other.height && cellSize == other.cellSize && origin == other.origin;
+            bool isSameGrid = width == other.width && height == other.height && cellSize == other.cellSize
+                              && origin == other.origin;
             return isSameGrid && surfaceY == other.surfaceY && seed == other.seed && budget == other.budget;
         }
 
@@ -52,7 +53,8 @@ namespace HealerLike.Render.Grass
         {
             float halfWidth = width * cellSize / 2f;
             float halfHeight = height * cellSize / 2f;
-            return new Vector4(origin.x - halfWidth, origin.z - halfHeight, origin.x + halfWidth, origin.z + halfHeight);
+            return new Vector4(origin.x - halfWidth, origin.z - halfHeight,
+                               origin.x + halfWidth, origin.z + halfHeight);
         }
     }
 }

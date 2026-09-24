@@ -3,7 +3,6 @@ using HealerLike.Render.Creatures;
 using HealerLike.Render.Stage;
 using HealerLike.Render.Stones;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace HealerLike.Render.Environment
 {
@@ -32,17 +31,11 @@ namespace HealerLike.Render.Environment
             public float uncurl;
         }
 
-        [FormerlySerializedAs("plantMaterial")]
         [SerializeField] Material _plantMaterial;
-        [FormerlySerializedAs("stoneMaterial")]
         [SerializeField] Material _stoneMaterial;
-        [FormerlySerializedAs("surfaceY")]
         [SerializeField] float _surfaceY = 0.5f;
-        [FormerlySerializedAs("viewCamera")]
         [SerializeField] Camera _viewCamera;
-        [FormerlySerializedAs("gust")]
         [SerializeField] EnvironmentGust _gust;
-        [FormerlySerializedAs("farDistance")]
         [SerializeField] float _farDistance = 60f;
 
         readonly List<Mesh> _ownedMeshes = new List<Mesh>();
@@ -52,7 +45,6 @@ namespace HealerLike.Render.Environment
         MaterialPropertyBlock _properties;
         PrimitiveMeshes _meshes;
 
-        [FormerlySerializedAs("settings")]
         [SerializeField] EnvironmentSettings _settings = EnvironmentSettings.Default;
         public EnvironmentSettings settings { get { return _settings; } set { _settings = value; } }
 
@@ -65,8 +57,8 @@ namespace HealerLike.Render.Environment
         Transform _root;
         public Transform root { get { return _root; } }
 
-        public void Init(Rect board, float cellSize, float surfaceY, Camera viewCamera, EnvironmentGust gust, float fogEnd,
-            RenderManager manager)
+        public void Init(Rect board, float cellSize, float surfaceY, Camera viewCamera, EnvironmentGust gust,
+                         float fogEnd, RenderManager manager)
         {
             if (manager == null || manager.meshes == null)
             {
@@ -89,8 +81,15 @@ namespace HealerLike.Render.Environment
 
             bool isLookApplied = Shader.GetGlobalFloat(lookAppliedId) > 0.5f;
             float distance = isLookApplied ? Shader.GetGlobalFloat(fogEndId) : _farDistance;
-            Vector3 cameraPosition = _viewCamera ? _viewCamera.transform.position : Vector3.zero;
-            Animate(Time.timeAsDouble, cameraPosition, _viewCamera ? distance : float.MaxValue);
+            Vector3 cameraPosition = Vector3.zero;
+            float farDistance = float.MaxValue;
+            if (_viewCamera)
+            {
+                cameraPosition = _viewCamera.transform.position;
+                farDistance = distance;
+            }
+
+            Animate(Time.timeAsDouble, cameraPosition, farDistance);
         }
 
         void OnEnable()
@@ -112,14 +111,6 @@ namespace HealerLike.Render.Environment
         void OnDestroy()
         {
             Clear();
-        }
-
-        public static Rect GridRect(GridManager grid)
-        {
-            Vector3 center = grid.transform.position;
-            float width = grid.width * grid.size;
-            float height = grid.height * grid.size;
-            return new Rect(center.x - width * 0.5f, center.z - height * 0.5f, width, height);
         }
 
         public void ConfigureMotion(Camera viewCamera, EnvironmentGust gust, float fogEnd)

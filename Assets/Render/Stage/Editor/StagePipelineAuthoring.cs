@@ -6,13 +6,13 @@ using HealerLike.Render.Look;
 
 namespace HealerLike.Render.Stage
 {
-    // The stage pipeline and renderer, based on his Very High tier plus the outlines and the shadow reach
+    // The stage pipeline and renderer, based on the Very High tier plus the outlines and the shadow reach
     public static class StagePipelineAuthoring
     {
         public static readonly string SettingsFolder = "Assets/Render/Stage/Settings";
         public static readonly string PipelinePath = SettingsFolder + "/StagePipeline.asset";
         public static readonly string RendererPath = SettingsFolder + "/StageRenderer.asset";
-        public static readonly string EdgeShaderPath = "Assets/Render/Look/OutlinesEdges.shader";
+        public static readonly string EdgeShaderPath = "Assets/Render/Shaders/OutlinesEdges.shader";
         // The board sits 42 to 48 units from the portrait camera
         public static readonly float ShadowDistance = 70f;
 

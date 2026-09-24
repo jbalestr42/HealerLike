@@ -5,8 +5,8 @@ using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Stage
 {
-    // Builds his data in memory for the sheets. Every object made goes in the caller's list for it to destroy,
-    // nothing is ever saved into his folders or ours
+    // Builds game data in memory for the sheets. Every object made goes in the caller's list for it to destroy,
+    // nothing is ever saved into any project folder
     public static class LookSheetData
     {
         public static readonly string EntityFolder = "Assets/Data/Entities/";
@@ -15,7 +15,7 @@ namespace HealerLike.Render.Stage
 
         public static EntityData LoadEntity(string name)
         {
-            // His HitArmorBuffer folder carries the suffix twice
+            // The HitArmorBuffer data folder carries the suffix twice
             string folder = name == "HitArmorBufferEntity" ? "HitArmorBufferEntityEntity" : name;
             return Load<EntityData>(EntityFolder + folder + "/" + name + ".asset");
         }
@@ -31,7 +31,7 @@ namespace HealerLike.Render.Stage
             return loaded;
         }
 
-        // An entity at his defaults, with the model every sheet unit borrows from Normal
+        // An entity at the EntityData defaults, with the model every sheet unit borrows from Normal
         public static EntityData Entity(string title, List<Object> created)
         {
             EntityData normal = LoadEntity("NormalEntity");
@@ -51,7 +51,7 @@ namespace HealerLike.Render.Stage
             return data;
         }
 
-        // A copy of one of his entities, sharing his skill, passive and on-hit assets
+        // A copy of one of the game's entities, sharing its skill, passive and on-hit assets
         public static EntityData Copy(EntityData source, string title, List<Object> created)
         {
             EntityData data = Entity(title, created);
@@ -155,8 +155,8 @@ namespace HealerLike.Render.Stage
             return Load<GameObject>(ProjectileFolder + name + ".prefab");
         }
 
-        // A copy of one of his projectile prefabs with behaviours baked in, kept under an inactive holder so it never
-        // plays itself; his EntityManager instantiates it under his own projectile parent, where it is active
+        // A copy of one of the game's projectile prefabs with behaviours baked in, kept under an inactive holder so it never
+        // plays itself; EntityManager instantiates it under its own projectile parent, where it is active
         public static GameObject Variant(string prefab, List<Object> created, params AProjectileBehaviourFactory[] behaviours)
         {
             GameObject holder = Track(new GameObject("LookSheetVariant"), created);

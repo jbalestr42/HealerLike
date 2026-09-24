@@ -14,7 +14,7 @@ public class OutlinesPassTests
     [SetUp]
     public void SetUp()
     {
-        Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Look/OutlinesEdges.shader");
+        Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/OutlinesEdges.shader");
         Assert.That(shader, Is.Not.Null);
         _edgeMaterial = new Material(shader);
     }
