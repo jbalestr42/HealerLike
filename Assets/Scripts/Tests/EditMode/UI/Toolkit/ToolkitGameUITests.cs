@@ -14,6 +14,49 @@ namespace UI.Toolkit
 // Play mode runs of the two Toolkit demo scenes
 public class ToolkitGameUITests
 {
+    // The demo data can have more spells than shortcut bindings, depending on the random character.
+    // This known legacy message is allowed while the run starts, any other error still fails the test
+    static readonly string knownError = "Not Enough inputs";
+
+    List<string> _errors = new List<string>();
+
+    [SetUp]
+    public void SetUp()
+    {
+        _errors.Clear();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        Application.logMessageReceived -= OnLogMessage;
+        LogAssert.ignoreFailingMessages = false;
+    }
+
+    void OnLogMessage(string condition, string stackTrace, LogType type)
+    {
+        if (type == LogType.Error || type == LogType.Exception || type == LogType.Assert)
+        {
+            _errors.Add(condition);
+        }
+    }
+
+    IEnumerator StartRun(Button start)
+    {
+        start.Focus();
+        yield return null;
+        LogAssert.ignoreFailingMessages = true;
+        Application.logMessageReceived += OnLogMessage;
+        Submit(start);
+        yield return new WaitForSecondsRealtime(0.3f);
+        Application.logMessageReceived -= OnLogMessage;
+        LogAssert.ignoreFailingMessages = false;
+        foreach (string error in _errors)
+        {
+            Assert.AreEqual(knownError, error);
+        }
+    }
+
     static IEnumerator WaitFrames(int count)
     {
         for (int frame = 0; frame < count; frame++)
@@ -101,12 +144,7 @@ public class ToolkitGameUITests
         Assert.IsNotNull(start.panel, "The runtime document must attach to a panel.");
         Assert.IsTrue(start.enabledInHierarchy);
 
-        start.Focus();
-        yield return null;
-        // The demo data has more spells than shortcut bindings: only this known legacy message is expected
-        LogAssert.Expect(LogType.Error, "Not Enough inputs");
-        Submit(start);
-        yield return new WaitForSecondsRealtime(0.3f);
+        yield return StartRun(start);
 
         Assert.IsNotNull(EventSystem.current);
         Assert.IsTrue(HasToolkitHit(root, root.Q("inventory-button").worldBound.center),
@@ -128,9 +166,8 @@ public class ToolkitGameUITests
         yield return new EnterPlayMode();
         yield return WaitFrames(5);
         ToolkitGameUI gameUI = Object.FindAnyObjectByType<ToolkitGameUI>();
-        LogAssert.Expect(LogType.Error, "Not Enough inputs");
-        Submit(gameUI.GetComponent<UIDocument>().rootVisualElement.Q<Button>("start-button"));
-        yield return new WaitForSecondsRealtime(0.3f);
+        Button start = gameUI.GetComponent<UIDocument>().rootVisualElement.Q<Button>("start-button");
+        yield return StartRun(start);
         Canvas legacyCanvas = FindScreenCanvas();
         Assert.IsNotNull(legacyCanvas);
         Assert.IsFalse(legacyCanvas.enabled);
