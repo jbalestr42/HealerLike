@@ -58,9 +58,9 @@ namespace HealerLike.Render.Stage
 
             int revokedGreen = GreenPixels(camera, false);
             bool isPassed = firstGreen > minimumGreenPixels && repaintGreen > firstGreen * 0.9f
-                            && revokedGreen < firstGreen * 0.1f && field.bladeCount == tuftBudget;
+                            && revokedGreen < firstGreen * 0.1f && field.tuftCount == tuftBudget;
             Debug.Log($"[GroundCaptureRun] green first {firstGreen} repaint {repaintGreen} revoked {revokedGreen}"
-                      + $" tufts {field.bladeCount}");
+                      + $" tufts {field.tuftCount}");
             if (!isPassed)
             {
                 Debug.LogError("[GroundCaptureRun] The carpet did not draw across repaints or outlived its snapshot.");
@@ -129,7 +129,7 @@ namespace HealerLike.Render.Stage
             GrassField field = Fixture("GroundFixtureGrass").AddComponent<GrassField>();
             EnvironmentAuthoring.SetGrass(field);
             field.Init(new Rect(-4f, -4f, 8f, 8f), 1f, 0f, camera, registry.buffer, ZonePacker.MaxZones);
-            field.bladeBudget = tuftBudget;
+            field.tuftBudget = tuftBudget;
             return field;
         }
 

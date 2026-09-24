@@ -18,15 +18,11 @@ namespace HealerLike.Render.Environment
         readonly Pulse[] _pulses = new Pulse[Capacity];
         int _next;
 
+        // Starts now on the game clock, which Sample reads
         public void Gust(Vector3 direction, float strength, float seconds)
         {
-            GustAt(direction, strength, seconds, Time.timeAsDouble);
-        }
-
-        public void GustAt(Vector3 direction, float strength, float seconds, double time)
-        {
             bool isPulseValid = RenderMath.IsPositive(strength) && RenderMath.IsPositive(seconds);
-            if (!RenderMath.IsFinite(direction) || !isPulseValid || !double.IsFinite(time))
+            if (!RenderMath.IsFinite(direction) || !isPulseValid)
             {
                 return;
             }
@@ -42,7 +38,7 @@ namespace HealerLike.Render.Environment
                 direction = direction.normalized,
                 strength = Mathf.Clamp01(strength),
                 seconds = Mathf.Min(seconds, 10f),
-                start = time
+                start = Time.timeAsDouble
             };
             _next = (_next + 1) % Capacity;
         }

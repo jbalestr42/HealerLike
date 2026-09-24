@@ -7,7 +7,7 @@ using UnityEngine.Rendering;
 namespace HealerLike.Render.Environment
 {
     // A row of tall silhouettes past the far edge, each standing so its mid-height sits in the last visible fog band.
-    public class EnvironmentRidge : MonoBehaviour
+    public class EnvironmentRidge : AEnvironmentSpawner
     {
         public static readonly uint Salt = 0x52494447u;
         public static readonly float SpreadX = 14f;
@@ -15,28 +15,20 @@ namespace HealerLike.Render.Environment
         // The cap's bottom sits this far below the stem top, in cap thicknesses; the rest stands above it
         static readonly float capSink = 0.7f;
 
-        [SerializeField] Camera _stageCamera;
-        [SerializeField] Material _stoneMaterial;
-        [SerializeField] Material _plantMaterial;
-        [SerializeField] Rect _grid = new Rect(-8f, -8f, 16f, 16f);
-        [SerializeField] float _groundY = 0.5f;
-        [SerializeField] int _seed = 1707;
-        [SerializeField] float _fogStart = 43.837f;
-        [SerializeField] float _fogEnd = 50.356f;
+        [SerializeField] int _seed = EnvironmentSettings.DefaultSeed;
         [SerializeField] int _fogBands = 6;
         [SerializeField] Color _stoneColor = new Color32(168, 184, 172, 255);
         [SerializeField] Color _stemColor = new Color32(184, 200, 180, 255);
         [SerializeField] Color _capColor = new Color32(156, 180, 162, 255);
 
-        readonly List<Mesh> _ownedMeshes = new List<Mesh>();
-        MaterialPropertyBlock _properties;
-        PrimitiveMeshes _meshes;
+        Camera _stageCamera;
+        Rect _grid;
+        float _groundY;
+        float _fogStart;
+        float _fogEnd;
 
         List<RidgeItem> _items = new List<RidgeItem>();
         public IReadOnlyList<RidgeItem> items { get { return _items; } }
-
-        Transform _root;
-        public Transform root { get { return _root; } }
 
         public void Init(Camera stageCamera, Rect board, float surfaceY, float fogStart, float fogEnd,
                          PrimitiveMeshes meshes)
@@ -56,27 +48,6 @@ namespace HealerLike.Render.Environment
             Build();
         }
 
-        void OnEnable()
-        {
-            if (_root)
-            {
-                _root.gameObject.SetActive(true);
-            }
-        }
-
-        void OnDisable()
-        {
-            if (_root)
-            {
-                _root.gameObject.SetActive(false);
-            }
-        }
-
-        void OnDestroy()
-        {
-            Clear();
-        }
-
         // Camera distances of the last visible fog band, [min, max); zero and a log when the fog is not valid
         public static Vector2 LastBand(float fogStart, float fogEnd, int fogBands)
         {
@@ -87,11 +58,6 @@ namespace HealerLike.Render.Environment
             }
 
             return new Vector2(fogStart + (fogBands - 1f) / fogBands * (fogEnd - fogStart), fogEnd);
-        }
-
-        public static Vector3 MidHeight(RidgeItem item)
-        {
-            return item.position + Vector3.up * (item.height * 0.5f);
         }
 
         // Eight to twelve monoliths and eight to twelve mushroom stems across x in [-SpreadX, SpreadX],
@@ -183,44 +149,23 @@ namespace HealerLike.Render.Environment
 
         void Build(Vector3 cameraPosition)
         {
-            Clear();
             _items = Layout(cameraPosition, _fogStart, _fogEnd, _fogBands, _grid, _groundY, _seed);
-            _root = new GameObject("RidgeItems").transform;
-            _root.SetParent(transform, false);
-            _properties = new MaterialPropertyBlock();
+            CreateRoot("RidgeItems");
             foreach (RidgeItem item in _items)
             {
                 Spawn(item);
             }
         }
 
-        public void Clear()
-        {
-            if (_root)
-            {
-                Destroy(_root.gameObject);
-            }
-
-            _root = null;
-            foreach (Mesh mesh in _ownedMeshes)
-            {
-                Destroy(mesh);
-            }
-
-            _ownedMeshes.Clear();
-        }
-
         void Spawn(RidgeItem item)
         {
             Transform pivot = new GameObject(item.kind.ToString()).transform;
-            pivot.SetParent(_root, true);
+            pivot.SetParent(root, true);
             pivot.position = item.position;
             pivot.rotation = Quaternion.Euler(0f, item.yaw, 0f);
             if (item.kind == RidgeKind.Monolith)
             {
-                Mesh mesh = StoneMesh.CreateMesh(item.seed, StonePresets.Monolith);
-                mesh.name = "RidgeStone";
-                _ownedMeshes.Add(mesh);
+                Mesh mesh = CreateStone(item.seed, StonePresets.Monolith, "RidgeStone");
                 Vector3 size = mesh.bounds.size;
                 float across = item.width / Mathf.Max(size.x, 0.0001f);
                 Vector3 scale = new Vector3(across, item.height / Mathf.Max(size.y, 0.0001f), across);
@@ -237,13 +182,11 @@ namespace HealerLike.Render.Environment
             Part(pivot, sphere, _plantMaterial, capBottom, capScale, _capColor);
         }
 
+        // Far silhouettes neither cast nor take shadows
         void Part(Transform parent, Mesh mesh, Material material, Vector3 bottom, Vector3 scale, Color color)
         {
-            GameObject partGo = new GameObject(mesh.name);
-            partGo.transform.SetParent(parent, false);
-            partGo.transform.localScale = scale;
-            partGo.transform.localPosition = bottom + new Vector3(0f, -mesh.bounds.min.y * scale.y, 0f);
-            MeshRenderer meshRenderer = PrimitiveMeshes.Geometry(partGo, mesh, material, color, 0f, _properties);
+            MeshRenderer meshRenderer = Part(parent, mesh, material, bottom, Quaternion.identity, scale, color,
+                                             mesh.name);
             meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             meshRenderer.receiveShadows = false;
         }

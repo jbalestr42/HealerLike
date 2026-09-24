@@ -88,7 +88,8 @@ public class EnvironmentRidgeTests
             foreach (RidgeItem item in items)
             {
                 string label = $"seed {seed} {item.kind} at {item.position}";
-                float distance = Vector3.Distance(EnvironmentRidge.MidHeight(item), eye);
+                Vector3 midHeight = item.position + Vector3.up * (item.height * 0.5f);
+                float distance = Vector3.Distance(midHeight, eye);
                 Assert.That(distance, Is.GreaterThanOrEqualTo(band.x).And.LessThan(band.y), label);
                 Assert.That(item.position.z,
                     Is.GreaterThanOrEqualTo(grid.yMax + EnvironmentRidge.GridClearance), label);

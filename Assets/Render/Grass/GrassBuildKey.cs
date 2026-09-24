@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Grass
 {
-    // Everything a built field depends on; any change rebuilds the blades
+    // Everything a built field depends on; any change rebuilds the tufts
     public struct GrassBuildKey
     {
         public int width;
@@ -33,7 +33,7 @@ namespace HealerLike.Render.Grass
         }
 
         // Returns null when the footprint is not finite
-        public BladeSeed[] GenerateLayout()
+        public TuftSeed[] GenerateLayout()
         {
             if (!GrassLayout.IsValid(width, height, cellSize, origin, surfaceY) || budget < 0)
             {

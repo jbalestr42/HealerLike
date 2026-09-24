@@ -120,16 +120,16 @@ public class LookControllerTests
     }
 
     [Test]
-    public void ApplyGlobals_InvalidSettings_PublishesValidatedValuesAndTheFlag()
+    public void Settings_InvalidValues_PublishesValidatedValuesAndTheFlag()
     {
         LookController controller = CreateController();
         LookSettings input = LookSettings.Default;
         input.shadowStrength = float.NaN;
         input.fogBands = 0;
         LookSettings validated = input.Validated();
-        controller.settings = input;
+        Shader.SetGlobalFloat(applied, 0f);
 
-        controller.ApplyGlobals();
+        controller.settings = input;
 
         Assert.That(Shader.GetGlobalFloat(applied), Is.EqualTo(1f));
         foreach (FieldInfo field in SettingsFields())
@@ -146,6 +146,19 @@ public class LookControllerTests
                 Assert.That(Shader.GetGlobalFloat(id), Is.EqualTo(Convert.ToSingle(field.GetValue(validated))));
             }
         }
+    }
+
+    [Test]
+    public void Settings_InactiveController_PublishesNothing()
+    {
+        LookController controller = CreateController(false);
+        Shader.SetGlobalFloat(applied, 0f);
+        LookSettings input = LookSettings.Default;
+        input.toonThreshold = 0.2f;
+
+        controller.settings = input;
+
+        Assert.That(Shader.GetGlobalFloat(applied), Is.Zero);
     }
 
     [Test]

@@ -9,11 +9,6 @@ namespace HealerLike.Render.Environment
     // The strips borrow the zone buffer with a count of zero, so zones stay on the board.
     public class EnvironmentGrass : MonoBehaviour
     {
-        public static readonly float[] DefaultWidths = { 3f, 5f, 16f };
-        public static readonly float[] DefaultFractions = { 0.85f, 0.6f, 0.15f };
-        // Tufts per square unit on a one-unit cell board
-        public static readonly float BoardDensity = GrassLayout.Density;
-
         [SerializeField] GrassField _stripTemplate;
         [SerializeField] float[] _widths = { 3f, 5f, 16f };
         [SerializeField] float[] _fractions = { 0.85f, 0.6f, 0.15f };
@@ -42,7 +37,7 @@ namespace HealerLike.Render.Environment
             {
                 GrassField strip = Instantiate(_stripTemplate, transform);
                 strip.name = "GrassStrip" + i + "_band" + bands[i].band;
-                strip.bladeBudget = bands[i].budget;
+                strip.tuftBudget = bands[i].budget;
                 strip.seed = (uint)(11 + i);
                 strip.Init(bands[i].rect, cellSize, surfaceY, camera, zones.buffer, ZonePacker.MaxZones);
                 strip.gameObject.SetActive(true);
@@ -90,13 +85,8 @@ namespace HealerLike.Render.Environment
 
         public static int Budget(Rect strip, float density)
         {
-            int blades = Mathf.RoundToInt(strip.width * strip.height * Mathf.Max(0f, density));
-            return Mathf.Clamp(blades, 0, GrassLayout.MaxBudget);
-        }
-
-        public static RingStrip[] Bands(Rect grid)
-        {
-            return Bands(grid, DefaultWidths, DefaultFractions, BoardDensity);
+            int tufts = Mathf.RoundToInt(strip.width * strip.height * Mathf.Max(0f, density));
+            return Mathf.Clamp(tufts, 0, GrassLayout.MaxBudget);
         }
 
         // Concentric bands of whole-cell widths, each as four strips at boardDensity * fraction.

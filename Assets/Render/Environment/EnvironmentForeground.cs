@@ -6,7 +6,7 @@ using UnityEngine;
 namespace HealerLike.Render.Environment
 {
     // Large dark shapes cropped by the bottom corners of the frame, in front of everything else.
-    public class EnvironmentForeground : MonoBehaviour
+    public class EnvironmentForeground : AEnvironmentSpawner
     {
         public static readonly uint Salt = 0x464F5245u;
         // Longest rosette blade over rosette height, and the widest blade tilt:
@@ -14,25 +14,17 @@ namespace HealerLike.Render.Environment
         public static readonly float BladeLength = 1.15f;
         public static readonly float MaxTilt = 50f;
 
-        [SerializeField] Camera _stageCamera;
-        [SerializeField] Material _stoneMaterial;
-        [SerializeField] Material _plantMaterial;
-        [SerializeField] float _groundY = 0.5f;
-        [SerializeField] int _seed = 1707;
+        [SerializeField] int _seed = EnvironmentSettings.DefaultSeed;
         // Frame aspect the corners are computed for, zero or less uses the camera's
         [SerializeField] float _aspect = 0f;
         [SerializeField] Color _tint = new Color32(43, 75, 143, 255);
         [SerializeField] Color _rosetteTint = new Color32(61, 116, 98, 255);
 
-        readonly List<Mesh> _ownedMeshes = new List<Mesh>();
-        MaterialPropertyBlock _properties;
-        PrimitiveMeshes _meshes;
+        Camera _stageCamera;
+        float _groundY;
 
         List<ForegroundItem> _items = new List<ForegroundItem>();
         public IReadOnlyList<ForegroundItem> items { get { return _items; } }
-
-        Transform _root;
-        public Transform root { get { return _root; } }
 
         public void Init(Camera stageCamera, float surfaceY, PrimitiveMeshes meshes)
         {
@@ -46,27 +38,6 @@ namespace HealerLike.Render.Environment
             _stageCamera = stageCamera;
             _groundY = surfaceY;
             Build();
-        }
-
-        void OnEnable()
-        {
-            if (_root)
-            {
-                _root.gameObject.SetActive(true);
-            }
-        }
-
-        void OnDisable()
-        {
-            if (_root)
-            {
-                _root.gameObject.SetActive(false);
-            }
-        }
-
-        void OnDestroy()
-        {
-            Clear();
         }
 
         // Ground point seen through a viewport point (0..1, origin bottom-left); false when the ray misses the ground
@@ -188,45 +159,24 @@ namespace HealerLike.Render.Environment
 
         void Build(Vector3 cameraPosition, Quaternion cameraRotation, float verticalFov, float frameAspect)
         {
-            Clear();
             _items = Layout(cameraPosition, cameraRotation, verticalFov, frameAspect, _groundY, _seed);
-            _root = new GameObject("ForegroundItems").transform;
-            _root.SetParent(transform, false);
-            _properties = new MaterialPropertyBlock();
+            CreateRoot("ForegroundItems");
             foreach (ForegroundItem item in _items)
             {
                 Spawn(item);
             }
         }
 
-        public void Clear()
-        {
-            if (_root)
-            {
-                Destroy(_root.gameObject);
-            }
-
-            _root = null;
-            foreach (Mesh mesh in _ownedMeshes)
-            {
-                Destroy(mesh);
-            }
-
-            _ownedMeshes.Clear();
-        }
-
         void Spawn(ForegroundItem item)
         {
             Transform pivot = new GameObject(item.kind.ToString()).transform;
-            pivot.SetParent(_root, true);
+            pivot.SetParent(root, true);
             pivot.position = item.position;
             pivot.rotation = Quaternion.Euler(0f, item.yaw, 0f);
             StoneRandom random = new StoneRandom(item.seed);
             if (item.kind == ForegroundKind.Boulder)
             {
-                Mesh mesh = StoneMesh.CreateMesh(item.seed, StonePresets.Boulder);
-                mesh.name = "ForegroundStone";
-                _ownedMeshes.Add(mesh);
+                Mesh mesh = CreateStone(item.seed, StonePresets.Boulder, "ForegroundStone");
                 float k = item.scale / Mathf.Max(mesh.bounds.extents.x, mesh.bounds.extents.z, 0.0001f);
                 // Sink a quarter of the height so the boulder reads as half buried
                 Vector3 bottom = -Vector3.up * (mesh.bounds.size.y * k * 0.25f);
@@ -247,17 +197,6 @@ namespace HealerLike.Render.Environment
                 Vector3 scale = new Vector3(width * 0.3f, length, width);
                 Part(pivot, leaf, _plantMaterial, Vector3.zero, rotation, scale, color, "Leaf");
             }
-        }
-
-        void Part(Transform parent, Mesh mesh, Material material, Vector3 bottom, Quaternion rotation, Vector3 scale,
-            Color color, string name)
-        {
-            GameObject partGo = new GameObject(name);
-            partGo.transform.SetParent(parent, false);
-            partGo.transform.localRotation = rotation;
-            partGo.transform.localScale = scale;
-            partGo.transform.localPosition = bottom + rotation * new Vector3(0f, -mesh.bounds.min.y * scale.y, 0f);
-            PrimitiveMeshes.Geometry(partGo, mesh, material, color, 0f, _properties);
         }
     }
 }

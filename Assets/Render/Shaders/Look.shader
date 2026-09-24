@@ -51,7 +51,7 @@ Shader "HL/Look/Primitive"
             UNITY_TRANSFER_INSTANCE_ID(input, output);
             UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
             #if defined(HL_GRASS_INSTANCED)
-            HLPlaceGrassBlade(input.positionOS.xyz, input.normalOS, input.instanceID,
+            HLPlaceGrassTuft(input.positionOS.xyz, input.normalOS, input.instanceID,
                               output.positionWS, output.normalWS);
             #else
             output.positionWS = TransformObjectToWorld(input.positionOS.xyz);

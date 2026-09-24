@@ -3,7 +3,7 @@ using UnityEngine;
 namespace HealerLike.Render.Grass
 {
     // Where a grass tuft vertex lands: the tuft mesh is FacetedMeshes.CreatePyramid open at its base, x and z in
-    // tuft widths and y in tuft heights. Place mirrors HLPlaceGrassBlade in GrassInstancing.hlsl, a rigid
+    // tuft widths and y in tuft heights. Place mirrors HLPlaceGrassTuft in GrassInstancing.hlsl, a rigid
     // transform with no bending.
     public static class GrassTuft
     {

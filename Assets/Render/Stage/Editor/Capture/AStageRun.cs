@@ -13,6 +13,7 @@ namespace HealerLike.Render.Stage
         protected StagePlayer _player = new StagePlayer();
 
         protected RenderManager _manager;
+        public RenderManager manager { get { return _manager; } }
         protected GameHUD _hud;
         protected int _attacks;
         protected int _heals;
@@ -48,7 +49,7 @@ namespace HealerLike.Render.Stage
             }
         }
 
-        protected static IEnumerator Wait(float seconds)
+        public static IEnumerator Wait(float seconds)
         {
             float end = Time.realtimeSinceStartup + seconds;
             while (Time.realtimeSinceStartup < end)
@@ -83,7 +84,7 @@ namespace HealerLike.Render.Stage
         protected abstract IEnumerator Run();
 
         // The editor update runs between frames, after the manager's LateUpdate
-        protected IEnumerator NextFrame()
+        public IEnumerator NextFrame()
         {
             Observe();
             yield return null;

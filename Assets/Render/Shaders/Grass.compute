@@ -2,11 +2,48 @@
 #include "GrassZones.hlsl"
 #include "GrassTuftData.hlsl"
 
-StructuredBuffer<HLBladeSeed> _HLBladeSeeds;
-RWStructuredBuffer<HLBladeState> _HLBladeStates;
+// Hostile spikes: they rise over this many seconds, stand 0.26 to 0.63 world units tall by a hash of the root,
+// GrassLayout.SpikeHeight on the C# side, and lean at most this far along their yaw
+#define HL_SPIKE_RISE_SECONDS 0.15
+#define HL_SPIKE_MIN_HEIGHT 0.26
+#define HL_SPIKE_HEIGHT_RANGE 0.37
+#define HL_SPIKE_LEAN 0.10
+// A spike under this much trample gives way to the flattened tuft
+#define HL_SPIKE_TRAMPLE_LIMIT 0.5
+// Trample: an irregular rim, full flattening inside this share of the radius, tufts pressed to this height
+#define HL_TRAMPLE_RIM_MIN 0.88
+#define HL_TRAMPLE_RIM_WOBBLE 0.12
+#define HL_TRAMPLE_RIM_FREQUENCY float2(9.7, 6.3)
+#define HL_TRAMPLE_CORE 0.35
+#define HL_TRAMPLE_HEIGHT 0.055
+#define HL_TRAMPLE_LEAN 0.5
+// Launch: the wave front crosses the radius in this many seconds, in a band this wide at least
+#define HL_LAUNCH_SECONDS 0.4
+#define HL_LAUNCH_MIN_BAND 0.15
+#define HL_LAUNCH_BAND 0.12
+// A range preview lifts the grass by this share of a heal
+#define HL_RANGE_HEAL 0.35
+// Heal lifts a tuft by this share of its height, GrassLayout.HealLift minus one; bruise sinks it by this share
+#define HL_HEAL_LIFT 0.8
+#define HL_BRUISE_SINK 0.65
+// The ring clears a band around the heal edge, from the inner to the outer width, capped for large zones
+#define HL_RING_INNER 0.06
+#define HL_RING_INNER_SHARE 0.08
+#define HL_RING_OUTER 0.22
+#define HL_RING_OUTER_SHARE 0.25
+#define HL_RING_CLEAR_HEIGHT 0.005
+// Zones lean a tuft outward and along a launch, up to 20 degrees more, 40 out of a heal
+#define HL_OUTWARD_SHARE 0.55
+#define HL_LAUNCH_SHARE 0.45
+#define HL_ZONE_LEAN 0.35
+
+StructuredBuffer<HLTuftSeed> _HLBladeSeeds;
+RWStructuredBuffer<HLTuftState> _HLBladeStates;
 AppendStructuredBuffer<uint> _HLVisibleBlades;
 uint _HLBladeCount;
 float4 _HLFrustumPlanes[6];
+// How far outside a frustum plane a root may sit and still draw, GrassBounds.Envelope
+float _HLCullMargin;
 
 // A lean is a tilt of the rigid tuft about its root, in radians, pointing where the tip goes
 float2 HLCapLean(float2 lean, float limit)
@@ -14,9 +51,9 @@ float2 HLCapLean(float2 lean, float limit)
     return lean * min(1.0, limit / max(length(lean), 1e-5));
 }
 
-HLBladeState HLEvaluateBlade(HLBladeSeed blade)
+HLTuftState HLEvaluateTuft(HLTuftSeed tuft)
 {
-    float2 position = blade.positionYaw.xz;
+    float2 position = tuft.positionYaw.xz;
     float heal = 0.0;
     float spike = 0.0;
     float bruise = 0.0;
@@ -27,7 +64,7 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
     float trample = 0.0;
     float2 launch = 0.0;
     float2 outwardSum = 0.0;
-    float2 yaw = float2(cos(blade.positionYaw.w), sin(blade.positionYaw.w));
+    float2 yaw = float2(cos(tuft.positionYaw.w), sin(tuft.positionYaw.w));
 
     for (int i = 0; i < min(_HLZoneCount, HL_MAX_ZONES); i++)
     {
@@ -42,15 +79,17 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
                 spikePresence = 1.0;
             }
 
-            spikeHeight = max(spikeHeight, weight * smoothstep(0.0, 0.15, zone.age));
+            spikeHeight = max(spikeHeight, weight * smoothstep(0.0, HL_SPIKE_RISE_SECONDS, zone.age));
         }
 
         if (zone.kind == HL_ZONE_TRAMPLE)
         {
             // Smooth irregular flattening, rather than a shaved disc with a hard circular rim
             float2 delta = position - zone.position.xz;
-            float radius = zone.radius * (0.88 + 0.12 * sin(dot(position, float2(9.7, 6.3))));
-            float footprint = HLGrassZoneOnset(zone) * (1.0 - smoothstep(radius * 0.35, radius, length(delta)));
+            float wobble = HL_TRAMPLE_RIM_WOBBLE * sin(dot(position, HL_TRAMPLE_RIM_FREQUENCY));
+            float radius = zone.radius * (HL_TRAMPLE_RIM_MIN + wobble);
+            float flattened = 1.0 - smoothstep(radius * HL_TRAMPLE_CORE, radius, length(delta));
+            float footprint = HLGrassZoneOnset(zone) * flattened;
             trample = max(trample, footprint);
         }
 
@@ -62,8 +101,8 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
         if (zone.kind == HL_ZONE_LAUNCH && zone.radius > 0.0)
         {
             float2 delta = position - zone.position.xz;
-            float front = zone.radius * saturate(zone.age / 0.4);
-            float band = max(0.15, zone.radius * 0.12);
+            float front = zone.radius * saturate(zone.age / HL_LAUNCH_SECONDS);
+            float band = max(HL_LAUNCH_MIN_BAND, zone.radius * HL_LAUNCH_BAND);
             float wave = (1.0 - smoothstep(0.0, band, abs(length(delta) - front))) * weight;
             launch += zone.direction * wave * saturate(dot(delta / max(length(delta), 1e-5), zone.direction));
         }
@@ -73,36 +112,38 @@ HLBladeState HLEvaluateBlade(HLBladeSeed blade)
             continue;
         }
 
-        heal = max(heal, weight * (zone.kind == HL_ZONE_RANGE ? 0.35 : 1.0));
+        heal = max(heal, weight * (zone.kind == HL_ZONE_RANGE ? HL_RANGE_HEAL : 1.0));
         float2 offset = position - zone.position.xz;
         float distanceToZone = length(offset);
         outwardSum += weight * (distanceToZone < 1e-5 ? yaw : offset / distanceToZone);
         weightSum += weight;
-        float inner = min(0.06, zone.radius * 0.08);
-        float outer = min(0.22, zone.radius * 0.25);
+        float inner = min(HL_RING_INNER, zone.radius * HL_RING_INNER_SHARE);
+        float outer = min(HL_RING_OUTER, zone.radius * HL_RING_OUTER_SHARE);
         float edge = 1.0 - smoothstep(inner, outer, abs(distanceToZone - zone.radius));
         ringClear = max(ringClear, HLGrassZoneOnset(zone) * edge);
     }
 
-    HLBladeState state;
-    float height = blade.heightWidthLean.x;
+    HLTuftState state;
+    float height = tuft.heightWidthLean.x;
     float spikeRandom = frac(sin(dot(position, float2(12.9898, 78.233))) * 43758.5453);
-    if (spikePresence > 0.0 && trample < 0.5)
+    if (spikePresence > 0.0 && trample < HL_SPIKE_TRAMPLE_LIMIT)
     {
-        // Spikes keep their own world height, 0.26 to 0.63 by a hash of the root, whatever the tuft height
-        float2 spikeLean = yaw * (0.10 * spikeRandom);
-        float spikeTall = spikeHeight * (0.26 + 0.37 * spikeRandom);
+        // Spikes keep their own world height, whatever the tuft height
+        float2 spikeLean = yaw * (HL_SPIKE_LEAN * spikeRandom);
+        float spikeTall = spikeHeight * (HL_SPIKE_MIN_HEIGHT + HL_SPIKE_HEIGHT_RANGE * spikeRandom);
         state.leanHeightSpike = float4(spikeLean, max(0.001, spikeTall / height), max(0.5, spike));
         return state;
     }
 
     float2 outward = outwardSum / max(1.0, weightSum);
-    // Each tuft keeps its own fixed rest tilt; zones push on top of it, up to 20 degrees more, 40 out of a heal
-    float2 zoneLean = HLCapLean(0.55 * outward + 0.45 * launch, 0.35 + 0.35 * heal);
-    float2 lean = (blade.heightWidthLean.zw + zoneLean) * (1.0 - 2.0 * spike);
-    float scale = lerp((1.0 + 0.8 * heal) * (1.0 - 0.65 * bruise), 0.005 / height, ringClear);
-    scale = lerp(scale, 0.055 / height, trample);
-    lean = lerp(lean, yaw * 0.5, trample);
+    // Each tuft keeps its own fixed rest tilt; zones push on top of it
+    float2 push = HL_OUTWARD_SHARE * outward + HL_LAUNCH_SHARE * launch;
+    float2 zoneLean = HLCapLean(push, HL_ZONE_LEAN + HL_ZONE_LEAN * heal);
+    float2 lean = (tuft.heightWidthLean.zw + zoneLean) * (1.0 - 2.0 * spike);
+    float grown = (1.0 + HL_HEAL_LIFT * heal) * (1.0 - HL_BRUISE_SINK * bruise);
+    float scale = lerp(grown, HL_RING_CLEAR_HEIGHT / height, ringClear);
+    scale = lerp(scale, HL_TRAMPLE_HEIGHT / height, trample);
+    lean = lerp(lean, yaw * HL_TRAMPLE_LEAN, trample);
     spike *= 1.0 - trample;
 
     // Flatten the edge band as a whole, including sideways displacement
@@ -119,15 +160,15 @@ void HLUpdateGrass(uint3 dispatchID : SV_DispatchThreadID)
         return;
     }
 
-    HLBladeSeed blade = _HLBladeSeeds[index];
+    HLTuftSeed tuft = _HLBladeSeeds[index];
     for (int plane = 0; plane < 6; plane++)
     {
-        if (dot(_HLFrustumPlanes[plane].xyz, blade.positionYaw.xyz) + _HLFrustumPlanes[plane].w < -0.85)
+        if (dot(_HLFrustumPlanes[plane].xyz, tuft.positionYaw.xyz) + _HLFrustumPlanes[plane].w < -_HLCullMargin)
         {
             return;
         }
     }
 
-    _HLBladeStates[index] = HLEvaluateBlade(blade);
+    _HLBladeStates[index] = HLEvaluateTuft(tuft);
     _HLVisibleBlades.Append(index);
 }

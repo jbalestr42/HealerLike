@@ -24,6 +24,13 @@ namespace HealerLike.Render.Stage
             StagePlay.Enter("ground", 180f);
         }
 
+        // Whole-frame time of the running stage with its grass, logged by GrassBenchRun
+        [MenuItem("Tools/Render/Grass Bench")]
+        public static void GrassBench()
+        {
+            StagePlay.Enter("grassbench", 300f);
+        }
+
         [MenuItem("Tools/Render/Smoke Three Rounds")]
         public static void Smoke()
         {

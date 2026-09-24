@@ -14,8 +14,9 @@ namespace HealerLike.Render.Stage
         };
 
         static readonly int encodeSteps = 4096;
-        static float[] _decode;
-        static byte[] _encode;
+        // sRGB byte to linear, and linear in encodeSteps steps back to an sRGB byte, built once
+        static readonly float[] decodeTable = BuildDecode();
+        static readonly byte[] encodeTable = BuildEncode();
 
         // Rec. 709 luminance of each pixel
         public static Color32[] Greyscale(Color32[] pixels)
@@ -33,14 +34,13 @@ namespace HealerLike.Render.Stage
         // The frame as a deuteranope sees it: sRGB decoded to linear, the matrix applied, clamped and encoded back
         public static Color32[] Deuteranope(Color32[] pixels)
         {
-            BuildTables();
             float[] matrix = Deuteranopia;
             Color32[] simulated = new Color32[pixels.Length];
             for (int i = 0; i < pixels.Length; i++)
             {
-                float red = _decode[pixels[i].r];
-                float green = _decode[pixels[i].g];
-                float blue = _decode[pixels[i].b];
+                float red = decodeTable[pixels[i].r];
+                float green = decodeTable[pixels[i].g];
+                float blue = decodeTable[pixels[i].b];
                 simulated[i] = new Color32(Encode(matrix[0] * red + matrix[1] * green + matrix[2] * blue),
                                            Encode(matrix[3] * red + matrix[4] * green + matrix[5] * blue),
                                            Encode(matrix[6] * red + matrix[7] * green + matrix[8] * blue), 255);
@@ -77,30 +77,30 @@ namespace HealerLike.Render.Stage
         static byte Encode(float linear)
         {
             int index = Mathf.RoundToInt(Mathf.Clamp01(linear) * (encodeSteps - 1));
-            return _encode[index];
+            return encodeTable[index];
         }
 
-        static void BuildTables()
+        static float[] BuildDecode()
         {
-            if (_decode != null)
-            {
-                return;
-            }
-
-            _decode = new float[256];
+            float[] decode = new float[256];
             for (int i = 0; i < 256; i++)
             {
                 float encoded = i / 255f;
-                _decode[i] = encoded <= 0.04045f ? encoded / 12.92f : Mathf.Pow((encoded + 0.055f) / 1.055f, 2.4f);
+                decode[i] = encoded <= 0.04045f ? encoded / 12.92f : Mathf.Pow((encoded + 0.055f) / 1.055f, 2.4f);
             }
+            return decode;
+        }
 
-            _encode = new byte[encodeSteps];
+        static byte[] BuildEncode()
+        {
+            byte[] encode = new byte[encodeSteps];
             for (int i = 0; i < encodeSteps; i++)
             {
                 float linear = (float)i / (encodeSteps - 1);
                 float encoded = linear <= 0.0031308f ? linear * 12.92f : 1.055f * Mathf.Pow(linear, 1f / 2.4f) - 0.055f;
-                _encode[i] = (byte)Mathf.RoundToInt(Mathf.Clamp01(encoded) * 255f);
+                encode[i] = (byte)Mathf.RoundToInt(Mathf.Clamp01(encoded) * 255f);
             }
+            return encode;
         }
     }
 }
