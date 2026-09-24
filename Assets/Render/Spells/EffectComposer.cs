@@ -10,7 +10,7 @@ namespace HealerLike.Render.Spells
     {
         public EffectElement element;
         public ElementEntry entry;
-        public EffectMotion motion;
+        public EffectMotionKind motion;
         public EffectSocket socket;
         public EffectFamily family;
         public EffectTempo tempo;

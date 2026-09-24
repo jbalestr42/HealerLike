@@ -153,7 +153,7 @@ public class EffectPlacementTests
         Assert.Greater(root.position.x, anchors.bodyCentre.x + anchors.bodyRadius);
         Assert.Less(root.position.y, anchors.headCentre.y - anchors.headRadius);
         SpellEffect effect = root.GetComponent<SpellEffect>();
-        effect.Pose(1f / SpellEffect.FallPace, 0f);
+        effect.Pose(1f / EffectMotion.FallPace, 0f);
         Assert.AreEqual(anchors.foot.y, effect.shapes[0].position.y, 0.01f);
     }
 
