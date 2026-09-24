@@ -72,7 +72,7 @@ public class PrimitiveMeshBakerTests
         Mesh[] all =
         {
             meshes.sphere, meshes.capsule, meshes.cone, meshes.cylinder, meshes.torus, meshes.thinTorus,
-            meshes.tuft, meshes.pyramid, meshes.star, meshes.leaf, meshes.boulder, meshes.disc, meshes.annulus
+            meshes.tuft, meshes.socle, meshes.pyramid, meshes.star, meshes.leaf, meshes.boulder, meshes.disc, meshes.annulus
         };
         foreach (Mesh mesh in all)
         {
@@ -83,13 +83,13 @@ public class PrimitiveMeshBakerTests
     }
 
     [Test]
-    public void Bake_ShippedAsset_TuftHasFourFacetedSidesAndACap()
+    public void Bake_ShippedAsset_TuftHasFourFacetedSides()
     {
         PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesAssetPath);
 
         uint indexCount = meshes.tuft.GetIndexCount(0);
 
-        Assert.AreEqual(66u, indexCount); // (4 sides * 5 triangles + 2 cap triangles) * 3
+        Assert.AreEqual(12u, indexCount); // 4 sides * 3, open at the base on its socle
     }
 
     [Test]
@@ -108,13 +108,13 @@ public class PrimitiveMeshBakerTests
         }
     }
 
-    // The disc and the annulus are ground markings, flat by nature: one side, facing up
+    // The disc, the annulus and the grass socle are ground markings, flat by nature: one side, facing up
     [Test]
     public void Bake_ShippedGroundMarkings_AreFlatAndFaceUp()
     {
         PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(meshesAssetPath);
 
-        foreach (Mesh mesh in new Mesh[] { meshes.disc, meshes.annulus })
+        foreach (Mesh mesh in new Mesh[] { meshes.disc, meshes.annulus, meshes.socle })
         {
             Vector3[] vertices = mesh.vertices;
             int[] triangles = mesh.triangles;

@@ -33,6 +33,7 @@ namespace HealerLike.Render.Creatures
             meshes.torus = Save(RevolvedMeshes.Create("Torus", Primitive.Torus, 12, 6, 0.2f));
             meshes.thinTorus = Save(RingMeshes.CreateThinTorus());
             meshes.tuft = Save(GrassTuft.CreateMesh());
+            meshes.socle = Save(GrassTuft.CreateSocle());
             meshes.pyramid = Save(FacetedMeshes.CreatePyramid());
             meshes.star = Save(FacetedMeshes.CreateStar());
             meshes.leaf = Save(FacetedMeshes.CreateLeaf());
@@ -42,7 +43,7 @@ namespace HealerLike.Render.Creatures
 
             EditorUtility.SetDirty(meshes);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[PrimitiveMeshBaker] Baked 13 meshes into {meshesFolder}");
+            Debug.Log($"[PrimitiveMeshBaker] Baked 14 meshes into {meshesFolder}");
         }
 
         static Mesh Save(Mesh mesh)

@@ -121,15 +121,34 @@ public class GrassTuftTests
     }
 
     [Test]
-    public void CreateMesh_EveryEdge_IsSharedByTwoTriangles()
+    public void Place_HalfRadianLean_MovesTheApexByItsSine()
+    {
+        Vector3 root = new Vector3(1f, 0.505f, 2f);
+
+        Vector3 apex = GrassTuft.Place(Vector3.up, root, 0.7f, 0.08f, 0.25f, new Vector2(0f, 0.5f));
+
+        Assert.That(apex.z - root.z, Is.EqualTo(0.25f * Mathf.Sin(0.5f)).Within(0.00001f)); // 0.12 sideways
+        Assert.That(apex.y - root.y, Is.EqualTo(0.25f * Mathf.Cos(0.5f)).Within(0.00001f));
+        Assert.That(apex.x - root.x, Is.EqualTo(0f).Within(0.00001f));
+    }
+
+    [Test]
+    public void CreateMesh_Pyramid_IsFourFlatSidesOpenAtTheBase()
     {
         Dictionary<string, int> edges = CountEdges(_mesh);
+        int baseEdges = 0;
 
         Assert.AreEqual(GrassTuft.IndexCount, _mesh.triangles.Length);
         foreach (KeyValuePair<string, int> edge in edges)
         {
-            Assert.AreEqual(2, edge.Value, edge.Key);
+            // The four base edges close on the ground, the four side edges join two facets
+            bool isBaseEdge = !edge.Key.Contains("1.00000");
+            Assert.AreEqual(isBaseEdge ? 1 : 2, edge.Value, edge.Key);
+            baseEdges += isBaseEdge ? 1 : 0;
         }
+        Assert.AreEqual(4, baseEdges);
+        Assert.AreEqual(new Vector3(1f, 1f, 1f), _mesh.bounds.size);
+        Assert.AreEqual(0f, _mesh.bounds.min.y);
     }
 
     [Test]
@@ -140,46 +159,68 @@ public class GrassTuftTests
         int[] triangles = _mesh.triangles;
         Vector3 inside = new Vector3(0f, 0.3f, 0f);
 
-        // The spike is convex, so every facet faces away from a point on its axis
+        // The pyramid is convex, so every facet faces away from a point on its axis, and each facet is flat
         for (int i = 0; i < triangles.Length; i += 3)
         {
             Vector3 face = (vertices[triangles[i]] + vertices[triangles[i + 1]] + vertices[triangles[i + 2]]) / 3f;
             Assert.Greater(Vector3.Dot(normals[triangles[i]], face - inside), 0f);
+            Assert.AreEqual(normals[triangles[i]], normals[triangles[i + 1]]);
+            Assert.AreEqual(normals[triangles[i]], normals[triangles[i + 2]]);
         }
     }
 
     [Test]
-    public void CreateMesh_TipBand_IsMarkedInVertexColourRed()
+    public void CreateMesh_Colours_AreNotAuthored()
     {
-        Vector3[] vertices = _mesh.vertices;
-        Color[] colors = _mesh.colors;
-        int tipVertices = 0;
-
-        for (int i = 0; i < vertices.Length; i++)
-        {
-            if (colors[i].r > 0.5f)
-            {
-                Assert.That(vertices[i].y, Is.GreaterThanOrEqualTo(GrassTuft.TipBand - 0.00001f));
-                tipVertices++;
-            }
-        }
-
-        Assert.AreEqual(12, tipVertices); // one tip triangle per side
-        Assert.AreEqual(1f, _mesh.bounds.max.y);
-        Assert.AreEqual(0f, _mesh.bounds.min.y);
+        Assert.IsEmpty(_mesh.colors);
     }
 
     [Test]
-    public void Bake_ShippedTuft_IsClosedAndMatchesTheBuilder()
+    public void CreateSocle_Octagon_IsAFlatFanFacingUp()
     {
-        Mesh shipped = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset").tuft;
+        Mesh socle = GrassTuft.CreateSocle();
+        Vector3[] vertices = socle.vertices;
+        int[] triangles = socle.triangles;
 
-        Assert.IsNotNull(shipped);
-        CollectionAssert.AreEqual(_mesh.vertices, shipped.vertices);
-        foreach (KeyValuePair<string, int> edge in CountEdges(shipped))
+        Assert.AreEqual(GrassTuft.SocleIndexCount, triangles.Length);
+        for (int i = 0; i < triangles.Length; i += 3)
         {
-            Assert.AreEqual(2, edge.Value, edge.Key);
+            Vector3 a = vertices[triangles[i]];
+            Vector3 normal = Vector3.Cross(vertices[triangles[i + 1]] - a, vertices[triangles[i + 2]] - a);
+            Assert.Greater(normal.y, 0f);
+            Assert.AreEqual(Vector3.up, socle.normals[triangles[i]]);
         }
+        foreach (Vector3 vertex in vertices)
+        {
+            Assert.AreEqual(0f, vertex.y);
+            float radius = new Vector2(vertex.x, vertex.z).magnitude;
+            Assert.That(radius == 0f || Mathf.Abs(radius - GrassTuft.SocleRadius) < 0.00001f, vertex.ToString());
+        }
+        Assert.That(GrassTuft.SocleRadius, Is.EqualTo(1.2414f).Within(0.0001f)); // 0.36 / 0.29
+
+        // Each rim edge once, each spoke between two triangles
+        int rim = 0;
+        foreach (KeyValuePair<string, int> edge in CountEdges(socle))
+        {
+            rim += edge.Value == 1 ? 1 : 0;
+        }
+        Assert.AreEqual(GrassTuft.SocleSides, rim);
+        Object.DestroyImmediate(socle);
+    }
+
+    [Test]
+    public void Bake_ShippedTuftAndSocle_MatchTheBuilder()
+    {
+        PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>("Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
+        Mesh socle = GrassTuft.CreateSocle();
+
+        Assert.IsNotNull(meshes.tuft);
+        Assert.IsNotNull(meshes.socle);
+        CollectionAssert.AreEqual(_mesh.vertices, meshes.tuft.vertices);
+        CollectionAssert.AreEqual(_mesh.triangles, meshes.tuft.triangles);
+        CollectionAssert.AreEqual(socle.vertices, meshes.socle.vertices);
+        CollectionAssert.AreEqual(socle.triangles, meshes.socle.triangles);
+        Object.DestroyImmediate(socle);
     }
 }
 
