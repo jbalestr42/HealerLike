@@ -148,8 +148,9 @@ public class EnvironmentScatterTests
             EnvironmentKind kind = scatter.items[i].kind;
             bool isStone = kind == EnvironmentKind.Boulder || kind == EnvironmentKind.Cairn
                 || kind == EnvironmentKind.Monolith;
-            float angle = Quaternion.Angle(rest[i], scatter.root.GetChild(i).localRotation);
-            Assert.AreEqual(!isStone, angle > 0.001f, kind.ToString());
+            // Exact components, since Quaternion.Angle reads a turn under a sixth of a degree as none
+            bool isMoved = !rest[i].Equals(scatter.root.GetChild(i).localRotation);
+            Assert.AreEqual(!isStone, isMoved, kind.ToString());
         }
     }
 
