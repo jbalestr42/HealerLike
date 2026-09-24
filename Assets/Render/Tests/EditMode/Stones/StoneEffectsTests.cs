@@ -35,7 +35,8 @@ public class StoneEffectsTests
 
     public static StoneEffects CreateEffects()
     {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Stones/Prefabs/StoneEffects.prefab");
+        string path = "Assets/Render/Stones/Prefabs/StoneEffects.prefab";
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
         return Object.Instantiate(prefab).GetComponent<StoneEffects>();
     }
 
@@ -142,7 +143,7 @@ public class StoneEffectsTests
     [Test]
     public void EmitHit_ManyHits_CapsFragmentsAndExpires()
     {
-        StoneImpact impact = new StoneImpact(Vector3.up, Vector3.up, Vector3.zero, true);
+        StoneImpact impact = new StoneImpact(Vector3.up, Vector3.up);
 
         _fx.EmitHit(impact, false, 1);
         Assert.AreEqual(9, _fx.liveCount);

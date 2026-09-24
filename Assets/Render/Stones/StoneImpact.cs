@@ -4,17 +4,13 @@ namespace HealerLike.Render.Stones
 {
     public readonly struct StoneImpact
     {
-        public readonly Vector3 pointWS;
-        public readonly Vector3 normalWS;
-        public readonly Vector3 incomingVelocityWS;
-        public readonly bool estimated;
+        public readonly Vector3 point;
+        public readonly Vector3 normal;
 
-        public StoneImpact(Vector3 pointWS, Vector3 normalWS, Vector3 incomingVelocityWS, bool estimated)
+        public StoneImpact(Vector3 point, Vector3 normal)
         {
-            this.pointWS = pointWS;
-            this.normalWS = normalWS;
-            this.incomingVelocityWS = incomingVelocityWS;
-            this.estimated = estimated;
+            this.point = point;
+            this.normal = normal;
         }
     }
 }

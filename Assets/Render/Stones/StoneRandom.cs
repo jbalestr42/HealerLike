@@ -1,6 +1,6 @@
 namespace HealerLike.Render.Stones
 {
-    // Version 1: full-period uint LCG. Zero is a valid seed. Use the high 24 bits for exact float conversion.
+    // Version 1: full-period uint LCG where zero is a valid seed, its high 24 bits convert to float exactly
     public struct StoneRandom
     {
         uint _state;
@@ -12,7 +12,7 @@ namespace HealerLike.Render.Stones
 
         public uint Next()
         {
-            _state = unchecked(_state * 1664525u + 1013904223u);
+            _state = _state * 1664525u + 1013904223u;
             return _state;
         }
 

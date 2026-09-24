@@ -35,13 +35,8 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            // Projectile.target is already cleared by ApplyOnHit; the callback data keeps the target.
-            Vector3 direction = transform.forward;
-            if (data.source != null)
-            {
-                direction = (transform.position - data.source.transform.position).normalized;
-            }
-            body.RecordImpact(data.resourceModifier, body.EstimateImpact(transform.position, direction));
+            // Projectile.target is already cleared by ApplyOnHit; the callback data keeps the target
+            body.RecordImpact(data.resourceModifier, body.EstimateImpact(transform.position));
         }
 
         void OnDisable()

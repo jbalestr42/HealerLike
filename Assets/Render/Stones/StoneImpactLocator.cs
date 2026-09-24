@@ -4,11 +4,11 @@ namespace HealerLike.Render.Stones
 {
     public static class StoneImpactLocator
     {
-        public static bool TryClosestPoint(in StoneMeshData mesh, in Matrix4x4 localToWorld, Vector3 queryWS,
-            out Vector3 pointWS, out Vector3 normalWS)
+        public static bool TryClosestPoint(StoneMeshData mesh, Matrix4x4 localToWorld, Vector3 query, out Vector3 point,
+            out Vector3 normal)
         {
-            pointWS = default;
-            normalWS = Vector3.up;
+            point = default;
+            normal = Vector3.up;
             float best = float.PositiveInfinity;
             if (mesh.indices == null)
             {
@@ -26,21 +26,21 @@ namespace HealerLike.Render.Stones
                     continue;
                 }
 
-                Vector3 point = Closest(queryWS, a, b, c);
-                float distance = (point - queryWS).sqrMagnitude;
+                Vector3 closest = Closest(query, a, b, c);
+                float distance = (closest - query).sqrMagnitude;
                 if (distance >= best)
                 {
                     continue;
                 }
 
                 best = distance;
-                pointWS = point;
-                normalWS = cross / Mathf.Sqrt(cross.sqrMagnitude);
+                point = closest;
+                normal = cross / Mathf.Sqrt(cross.sqrMagnitude);
             }
             return float.IsFinite(best);
         }
 
-        // Voronoi regions of a triangle, evaluated in world space for nonuniform scale.
+        // Voronoi regions of a triangle, evaluated in world space for nonuniform scale
         static Vector3 Closest(Vector3 p, Vector3 a, Vector3 b, Vector3 c)
         {
             Vector3 ab = b - a;

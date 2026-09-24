@@ -6,12 +6,12 @@ using UnityEngine;
 
 namespace HealerLike.Render.Stones
 {
-    // Bakes the seeded stones a Stone part draws: 20 flat facets, grey in submesh 0 and ochre in submesh 1.
-    // Each variant fills the baked boulder's box, two across and 1.7 from -0.7 to 1, so it can replace a boulder.
+    // Bakes the seeded stones a Stone part draws: 20 flat facets, grey in submesh 0 and ochre in submesh 1
+    // Each variant fills the baked boulder's box, two across and 1.7 from -0.7 to 1, so it can replace a boulder
     public static class StoneVariantBaker
     {
         public static readonly int VariantCount = 12;
-        public static readonly uint VariantSeed = 0x5703E;
+        public static readonly uint VariantSeed = 356414;
         public static readonly string VariantsPath = "Assets/Render/Stones/Data/StoneVariants.asset";
 
         static readonly string meshesFolder = "Assets/Render/Stones/Meshes";

@@ -81,7 +81,8 @@ namespace HealerLike.Render.Stones
             StoneEffects effects = effectsGo.AddComponent<StoneEffects>();
             SerializedObject effectsSO = new SerializedObject(effects);
             effectsSO.FindProperty("_stoneMaterial").objectReferenceValue = Load<Material>(StoneMaterialPath);
-            effectsSO.FindProperty("_coralMaterial").objectReferenceValue = Load<Material>(root + "Materials/CoralSpark.mat");
+            Material coral = Load<Material>(root + "Materials/CoralSpark.mat");
+            effectsSO.FindProperty("_coralMaterial").objectReferenceValue = coral;
             effectsSO.FindProperty("_dustMaterial").objectReferenceValue = Load<Material>(root + "Materials/Dust.mat");
             effectsSO.FindProperty("_meshes").objectReferenceValue = Load<PrimitiveMeshes>(
                 "Assets/Render/Creatures/Data/PrimitiveMeshes.asset");

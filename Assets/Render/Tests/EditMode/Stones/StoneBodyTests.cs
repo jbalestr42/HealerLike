@@ -216,7 +216,7 @@ public class StoneBodyTests
         ResourceModifier modifier = Queue(-1);
         Vector3 point = new Vector3(23f, 7f, 4f);
 
-        _body.RecordImpact(modifier, new StoneImpact(point, Vector3.up, Vector3.zero, false));
+        _body.RecordImpact(modifier, new StoneImpact(point, Vector3.up));
         Drain();
 
         Assert.AreEqual(0, _body.pendingImpactCount);
@@ -263,10 +263,10 @@ public class StoneBodyTests
     {
         Transform head = _body.parts[3];
 
-        StoneImpact impact = _body.EstimateImpact(head.position + Vector3.up * 5f, Vector3.zero);
+        StoneImpact impact = _body.EstimateImpact(head.position + Vector3.up * 5f);
 
-        Assert.Greater(impact.pointWS.y, head.GetComponent<Renderer>().bounds.center.y);
-        Assert.Greater(impact.normalWS.y, 0f);
+        Assert.Greater(impact.point.y, head.GetComponent<Renderer>().bounds.center.y);
+        Assert.Greater(impact.normal.y, 0f);
     }
 
     [Test]
