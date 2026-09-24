@@ -31,7 +31,6 @@ namespace HealerLike.Render.Stage
             RenderManager manager = root.AddComponent<RenderManager>();
             root.AddComponent<StageLauncher>();
             LookController look = root.AddComponent<LookController>();
-            look.settings = StageLookSettings();
             ZoneRegistry zones = root.AddComponent<ZoneRegistry>();
             StageRangeDriver rangeDriver = root.AddComponent<StageRangeDriver>();
             StoneDeathBridge stoneDeath = root.AddComponent<StoneDeathBridge>();
@@ -78,15 +77,6 @@ namespace HealerLike.Render.Stage
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             Object.DestroyImmediate(root);
             return prefab;
-        }
-
-        // The camera independent half of the look, the manager computes the fog at attach
-        public static LookSettings StageLookSettings()
-        {
-            LookSettings settings = LookSettings.Default;
-            settings.fogBands = 6;
-            settings.outlineWidthPixels = 1f;
-            return settings;
         }
 
         // The prefab carries the key light's aim, the manager only makes it the sun

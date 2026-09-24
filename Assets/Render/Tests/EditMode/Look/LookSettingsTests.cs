@@ -40,6 +40,14 @@ public class LookSettingsTests
                 Assert.That(Convert.ToSingle(field.GetValue(defaults)), Is.EqualTo(expected), macro);
             }
         }
+
+        // And every define names a field, so a define left behind by a removed setting fails too
+        foreach (Match define in Regex.Matches(core, @"#define\s+HL_DEF_(\w+)"))
+        {
+            FieldInfo field = typeof(LookSettings).GetField(define.Groups[1].Value,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+            Assert.That(field, Is.Not.Null, define.Value);
+        }
     }
 
     [TestCase(float.NaN)]

@@ -6,7 +6,8 @@ namespace HealerLike.Render.Look
     // The one look of the render stage, set up by the RenderManager at attach
     public class LookController : MonoBehaviour
     {
-        [SerializeField] LookSettings _settings = LookSettings.Default;
+        // Starts from the defaults, which LookCore.hlsl mirrors; the fog changes it at run time
+        LookSettings _settings = LookSettings.Default;
 
         static readonly int shadowTintId = Shader.PropertyToID("_HLShadowTint");
         static readonly int outlineColorId = Shader.PropertyToID("_HLOutlineColor");

@@ -59,6 +59,8 @@ namespace HealerLike.Render.Look
 
         public int fogBands;
 
+        // The one source of the look's numbers: LookCore.hlsl repeats each as an HL_DEF_ define for a material
+        // drawn without a LookController, and LookSettingsTests keeps the two equal
         public static LookSettings Default
         {
             get
