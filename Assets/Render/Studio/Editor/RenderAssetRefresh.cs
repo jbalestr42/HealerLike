@@ -11,7 +11,7 @@ namespace HealerLike.Render.Studio.Editor
     [InitializeOnLoad]
     public static class RenderAssetRefresh
     {
-        static readonly Dictionary<int, string> revisions = new Dictionary<int, string>();
+        static readonly Dictionary<string, string> revisions = new Dictionary<string, string>();
         static double nextCheck;
         static bool isForced;
 
@@ -47,7 +47,7 @@ namespace HealerLike.Render.Studio.Editor
             foreach (RenderManager manager in Object.FindObjectsByType<RenderManager>(FindObjectsSortMode.None))
             {
                 string revision = Revision(manager);
-                int id = manager.GetInstanceID();
+                string id = manager.GetEntityId().ToString();
                 if (isForced || (revisions.TryGetValue(id, out string previous) && revision != previous))
                 {
                     manager.RebuildViews();
@@ -66,7 +66,7 @@ namespace HealerLike.Render.Studio.Editor
 
         static string Stamp(Object asset)
         {
-            return asset ? asset.GetInstanceID() + ":" + EditorUtility.GetDirtyCount(asset) : "none";
+            return asset ? asset.GetEntityId() + ":" + EditorUtility.GetDirtyCount(asset) : "none";
         }
     }
 }
