@@ -15,7 +15,7 @@ namespace HealerLike.Render
 public static class RenderTestAssets
 {
     public static readonly string LookVocabularyPath = "Assets/Render/Creatures/Data/LookVocabulary.asset";
-    public static readonly string DeliveryVocabularyPath = "Assets/Render/Deliveries/Data/Resources/DeliveryVocabulary.asset";
+    public static readonly string DeliveryVocabularyPath = "Assets/Render/Deliveries/Data/DeliveryVocabulary.asset";
     public static readonly string EffectVocabularyPath = "Assets/Render/Spells/Data/EffectVocabulary.asset";
     public static readonly string PalettePath = "Assets/Render/Grammar/Data/LookPalette.asset";
     public static readonly string MeshesPath = "Assets/Render/Creatures/Data/PrimitiveMeshes.asset";

@@ -19,7 +19,7 @@ public class LianaArmTests
         Material material = null)
     {
         LianaArm arm = new LianaArm();
-        arm.Init(definition, parent, material, RenderTestAssets.LoadMeshes());
+        arm.Init(definition, parent, material, RenderTestAssets.LoadMeshes(), RenderTestAssets.LoadDeliveryVocabulary());
         return arm;
     }
 
@@ -249,7 +249,7 @@ public class LianaArmTests
         LianaArm arm = new LianaArm();
         LogAssert.Expect(LogType.Error, "[LianaArm] Invalid arm definition.");
 
-        bool isInitialized = arm.Init(definition, null, null, RenderTestAssets.LoadMeshes());
+        bool isInitialized = arm.Init(definition, null, null, RenderTestAssets.LoadMeshes(), null);
 
         Assert.IsFalse(isInitialized);
     }
@@ -276,7 +276,6 @@ public class LianaArmTests
     public void Tick_DeliveryProfile_FollowsLiveEndpoint(DeliveryStyle style)
     {
         // Which styles draw as a rod is the vocabulary's arm entry
-        _arm.vocabulary = RenderTestAssets.LoadDeliveryVocabulary();
         _arm.style = style;
         _arm.isDeliveryProfile = true;
         _arm.Begin(1, GestureKind.Attack, Vector3.right * 2f);
@@ -361,7 +360,6 @@ public class LianaArmTests
         rendered.SetTipGoal(1, Vector3.right);
         rendered.Tick(0.016f, Vector3.zero, Quaternion.identity);
 
-        Assert.AreSame(RenderTestAssets.LoadDeliveryVocabulary(), rendered.vocabulary);
         Assert.AreEqual(style, rendered.tipFragment.style);
         int expectedParts = RenderTestAssets.LoadDeliveryVocabulary().GetTip(style).Length;
         Assert.AreEqual(expectedParts, rendered.tipFragment.partCount);

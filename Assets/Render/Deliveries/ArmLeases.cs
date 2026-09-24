@@ -18,15 +18,17 @@ namespace HealerLike.Render.Deliveries
         CreatureRig _rig;
         Material _material;
         PrimitiveMeshes _meshes;
+        DeliveryVocabulary _vocabulary;
         int _nextToken;
         bool _isDisposed;
 
         // One arm per arm of the rig's recipe, more are made on demand up to the cap
-        public void Init(CreatureRig rig, Material material, PrimitiveMeshes meshes)
+        public void Init(CreatureRig rig, Material material, PrimitiveMeshes meshes, DeliveryVocabulary vocabulary)
         {
             _rig = rig;
             _material = material;
             _meshes = meshes;
+            _vocabulary = vocabulary;
             for (int i = 0; i < _rig.recipe.arms.Length; i++)
             {
                 CreateArm(i, i);
@@ -217,7 +219,7 @@ namespace HealerLike.Render.Deliveries
         {
             _definitions[slot] = definitionIndex;
             _arms[slot] = new LianaArm();
-            _arms[slot].Init(_rig.GetArm(definitionIndex), _rig.root, _material, _meshes, _rig.cellSize);
+            _arms[slot].Init(_rig.GetArm(definitionIndex), _rig.root, _material, _meshes, _vocabulary, _rig.cellSize);
             _arms[slot].Tick(0f, _rig.ArmSocket(definitionIndex), _rig.armRotation);
         }
 

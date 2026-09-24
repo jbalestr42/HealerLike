@@ -57,6 +57,12 @@ namespace HealerLike.Render.Deliveries
         public void Init(RenderManager manager, ProjectileLook look)
         {
             _manager = manager;
+            _vocabulary = null;
+            if (manager)
+            {
+                _vocabulary = manager.deliveryVocabulary;
+            }
+
             if (look != null)
             {
                 _deliveryStyle = look.style;
@@ -77,11 +83,6 @@ namespace HealerLike.Render.Deliveries
             if (!projectile)
             {
                 return;
-            }
-
-            if (!_vocabulary)
-            {
-                _vocabulary = DeliveryVocabulary.Load();
             }
 
             // Bind before any Start callback can apply synchronous chain hits
@@ -239,12 +240,7 @@ namespace HealerLike.Render.Deliveries
             }
 
             DeliveryStyle style = _preserveContactPath ? DeliveryStyle.ChainSync : _deliveryStyle;
-            PrimitiveMeshes meshes = null;
-            if (_vocabulary)
-            {
-                meshes = _vocabulary.meshes;
-            }
-            _freeTip.SetStyle(style, _vocabulary, meshes);
+            _freeTip.SetStyle(style, _vocabulary, _manager.meshes);
             // A style without a tip, the thrown shard, has nothing to show in place of the projectile's own visual
             if (_freeTip.partCount == 0)
             {
@@ -402,13 +398,13 @@ namespace HealerLike.Render.Deliveries
         void DropSplash(Vector3 point)
         {
             if (_contacts.Count != 1 || !GetComponent<AreaOfEffectProjectileBehaviour>() || !_vocabulary
-                || !_vocabulary.meshes || !_vocabulary.material)
+                || !_manager || !_manager.meshes || !_vocabulary.material)
             {
                 return;
             }
 
             TipDrop drop = new GameObject("TipDrop").AddComponent<TipDrop>();
-            drop.Init(_vocabulary.splashPod, _vocabulary.meshes.GetMesh(_vocabulary.splashPod.primitive),
+            drop.Init(_vocabulary.splashPod, _manager.meshes.GetMesh(_vocabulary.splashPod.primitive),
                 _vocabulary.material, FreeColour(), point, FreeSize());
         }
 

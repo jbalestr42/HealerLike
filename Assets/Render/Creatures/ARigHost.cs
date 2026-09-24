@@ -16,7 +16,7 @@ namespace HealerLike.Render.Creatures
 
         // Builds the rig and its arms once, a later call keeps them
         protected bool BuildRig(CreatureRecipe recipe, Transform parent, Material material, Material bodyMaterial,
-            PrimitiveMeshes meshes, float cellSize)
+            PrimitiveMeshes meshes, DeliveryVocabulary vocabulary, float cellSize)
         {
             if (_rig != null)
             {
@@ -31,7 +31,7 @@ namespace HealerLike.Render.Creatures
 
             _rig = created;
             _pool = new ArmPool();
-            _pool.Init(_rig, material, meshes);
+            _pool.Init(_rig, material, meshes, vocabulary);
             return true;
         }
 

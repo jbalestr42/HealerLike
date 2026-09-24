@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using HealerLike.Render.Deliveries;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 
@@ -20,6 +21,7 @@ namespace HealerLike.Render.Creatures
         ResourceAttribute _health;
         StatusObserver _statusObserver;
         RenderRegistry _registry;
+        DeliveryVocabulary _deliveryVocabulary;
         ISpellVisualSink _spellSink;
         // The game's cell unless Configure hands another ground frame
         float _cellSize = StageCalibration.CellSize;
@@ -65,6 +67,7 @@ namespace HealerLike.Render.Creatures
             {
                 _registry = manager.registry;
                 _spellSink = manager.spellSink;
+                _deliveryVocabulary = manager.deliveryVocabulary;
             }
 
             // A view without an authored recipe draws the one derived from the entity's data
@@ -241,7 +244,7 @@ namespace HealerLike.Render.Creatures
         {
             if (rig == null && _recipe && _material)
             {
-                BuildRig(_recipe, transform, _material, _bodyMaterial, _meshes, _cellSize);
+                BuildRig(_recipe, transform, _material, _bodyMaterial, _meshes, _deliveryVocabulary, _cellSize);
             }
 
             if (rig != null)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using HealerLike.Render.Deliveries;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 
@@ -19,6 +20,7 @@ namespace HealerLike.Render.Creatures
 
         RenderRegistry _registry;
         ISpellVisualSink _sink;
+        DeliveryVocabulary _deliveryVocabulary;
         StatusObserver _statusObserver;
 
         public IReadOnlyList<Transform> budAnchors
@@ -78,6 +80,7 @@ namespace HealerLike.Render.Creatures
             _character = owner;
             _registry = manager.registry;
             _sink = manager.spellSink;
+            _deliveryVocabulary = manager.deliveryVocabulary;
             if (!_visualAnchor)
             {
                 _visualAnchor = transform;
@@ -152,7 +155,7 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
-            if (!BuildRig(_recipe, _visualAnchor, _material, _bodyMaterial, _meshes, _cellSize))
+            if (!BuildRig(_recipe, _visualAnchor, _material, _bodyMaterial, _meshes, _deliveryVocabulary, _cellSize))
             {
                 return;
             }

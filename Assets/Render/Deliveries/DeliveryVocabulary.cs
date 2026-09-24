@@ -24,8 +24,6 @@ namespace HealerLike.Render.Deliveries
     [CreateAssetMenu(menuName = "Custom/Data/Render/DeliveryVocabulary")]
     public class DeliveryVocabulary : SerializedScriptableObject
     {
-        // TODO: take it from RenderManager once it holds a reference, Resources is the only road from here
-        public static readonly string ResourcePath = "DeliveryVocabulary";
         // The tip width of a shot no view claims when there is no vocabulary to read it from
         public static readonly float DefaultBulletSize = 0.2f;
 
@@ -41,15 +39,10 @@ namespace HealerLike.Render.Deliveries
         // The pod an area item drops from the tip at contact
         public LookPart splashPod;
 
-        // A shot no view claims draws its tip at this width in world units, with these meshes and material
+        // A shot no view claims draws its tip at this width in world units, with this material, since it has no
+        // rig to borrow one from
         public float bulletSize = DefaultBulletSize;
-        public PrimitiveMeshes meshes;
         public Material material;
-
-        public static DeliveryVocabulary Load()
-        {
-            return Resources.Load<DeliveryVocabulary>(ResourcePath);
-        }
 
         public ArmStyle GetArm(DeliveryStyle style)
         {

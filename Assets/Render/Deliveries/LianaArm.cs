@@ -90,9 +90,8 @@ namespace HealerLike.Render.Deliveries
         DeliveryStyle _style;
         public DeliveryStyle style { get { return _style; } set { _style = value; } }
 
-        // The tip shape of each style, loaded when the arm is drawn
+        // The tip and the arm look of each style, a bending arm with a bead tip without it
         DeliveryVocabulary _vocabulary;
-        public DeliveryVocabulary vocabulary { get { return _vocabulary; } set { _vocabulary = value; } }
 
         Color _tipColour;
         public Color tipColour { get { return _tipColour; } }
@@ -129,7 +128,7 @@ namespace HealerLike.Render.Deliveries
 
         // Without a parent the arm only solves its chain and draws nothing
         public bool Init(ArmDefinition definition, Transform parent, Material material, PrimitiveMeshes meshes,
-            float cellSize = 1f)
+            DeliveryVocabulary vocabulary, float cellSize = 1f)
         {
             if (definition.restJoints == null || definition.restJoints.Length != definition.segmentCount + 1
                 || definition.segmentCount < 2 || !RenderMath.IsPositive(cellSize))
@@ -144,6 +143,7 @@ namespace HealerLike.Render.Deliveries
                 return false;
             }
 
+            _vocabulary = vocabulary;
             _rest = new Vector3[definition.restJoints.Length];
             _joints = new Vector3[_rest.Length];
             _lengths = new float[definition.segmentCount];
@@ -167,7 +167,6 @@ namespace HealerLike.Render.Deliveries
                 return true;
             }
 
-            vocabulary = DeliveryVocabulary.Load();
             _meshes = meshes;
             _leafMesh = meshes.cone;
             _beadMesh = meshes.sphere;
@@ -565,7 +564,7 @@ namespace HealerLike.Render.Deliveries
             _beads[LeafCount] = DeliveryTip.Frame(tip, tip - _joints[_joints.Length - 2], tipWidth);
             if (!_tip.isSet || _tip.style != style)
             {
-                _tip.SetStyle(style, vocabulary, _meshes);
+                _tip.SetStyle(style, _vocabulary, _meshes);
             }
 
             if (!SystemInfo.supportsInstancing || !_detailMaterial || !_detailMaterial.enableInstancing

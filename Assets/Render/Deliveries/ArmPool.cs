@@ -31,10 +31,10 @@ namespace HealerLike.Render.Deliveries
         Vector3 _previousOrigin;
         bool _isPlaced;
 
-        public void Init(CreatureRig rig, Material material, PrimitiveMeshes meshes)
+        public void Init(CreatureRig rig, Material material, PrimitiveMeshes meshes, DeliveryVocabulary vocabulary)
         {
             _rig = rig;
-            _leases.Init(rig, material, meshes);
+            _leases.Init(rig, material, meshes, vocabulary);
         }
 
         // After the rig's own tick, which places the root and the sway the arms hang from

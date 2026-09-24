@@ -43,7 +43,7 @@ public class ArmPoolTests
     {
         _rig = RenderTestAssets.CreateRig(recipe, _parent.transform, _material);
         _pool = new ArmPool();
-        _pool.Init(_rig, _material, RenderTestAssets.LoadMeshes());
+        _pool.Init(_rig, _material, RenderTestAssets.LoadMeshes(), RenderTestAssets.LoadDeliveryVocabulary());
     }
 
     // The rig places the root and the sway first, the arms hang from them
