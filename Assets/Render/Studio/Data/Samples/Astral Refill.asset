@@ -1,0 +1,203 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72656a68b4ca4b08aa7781878f3f168f, type: 3}
+  m_Name: Astral Refill
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Studio.SpellStudioPreset
+  displayName: Astral Refill
+  description: A sky-blue mana gain. An isolated impact example for comparing the mana silhouette with Verdant Bloom; loop the preview to inspect the upward motion.
+  vocabulary: {fileID: 11400000, guid: 2ebcc249811134625a66debb52a811c9, type: 2}
+  element: 9
+  family: 1
+  tempo: 0
+  periodSeconds: 1
+  stacks: 1
+  charges: 1
+  amount: 0.4
+  durationSeconds: 4
+  critical: 0
+  side: 1
+  scale: 1
+  overrideEntry: 1
+  entry:
+    parts:
+    - id: Primitive
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: 1.25, y: 0, z: 0}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 0.62999994, y: 0.17999999, z: 0.62999994}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: -0.92174226, y: 0.175, z: 0.84432894}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 0.62999994, y: 0.17999999, z: 0.62999994}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: 0.109373964, y: 0.35, z: -1.2452058}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 0.62999994, y: 0.17999999, z: 0.62999994}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: 0.7604389, y: 0.52500004, z: 0.99208504}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 0.62999994, y: 0.17999999, z: 0.62999994}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: -1.2308598, y: 0.7, z: -0.21790893}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 0.62999994, y: 0.17999999, z: 0.62999994}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: 1.0548174, y: 0.875, z: -0.67071617}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 0.62999994, y: 0.17999999, z: 0.62999994}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: -0.32477236, y: 1.0500001, z: 1.207072}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 0.62999994, y: 0.17999999, z: 0.62999994}
+      glow: 0
+      minCount: 0
+    stackBeads:
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.9625, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.6875, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.41249996, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.1375, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.1375, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.41249996, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.6875, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.9625, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    criticalRings:
+    - id: CriticalRing
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: 0, y: 0, z: 0}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 3.6749997, y: 1.05, z: 3.6749997}
+      glow: 0
+      minCount: 0
+    - id: CriticalRing
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: 0, y: 0, z: 0}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 4.4625, y: 1.275, z: 4.4625}
+      glow: 0
+      minCount: 0
+    sideRim:
+    - id: SideRim
+      primitive: 3
+      role: 0
+      colour: 0
+      position: {x: 0, y: -0.95, z: 0}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 2.6, y: 0.5, z: 2.6}
+      glow: 0
+      minCount: 0
+    motion: 1
+    socket: 0
+    count: 0
+    minCount: 1
+    cycleSeconds: 0.6
+  overrideColour: 1
+  colour: {r: 0.42, g: 0.66, b: 1, a: 1}

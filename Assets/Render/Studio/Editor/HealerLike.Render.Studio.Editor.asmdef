@@ -1,9 +1,11 @@
 {
-    "name": "HealerLike.Render.Creatures.Editor",
+    "name": "HealerLike.Render.Studio.Editor",
     "rootNamespace": "",
     "references": [
         "HealerLike.Runtime",
-        "HealerLike.Render"
+        "HealerLike.Render",
+        "HealerLike.Render.Creatures.Editor",
+        "HealerLike.Render.Stage.Editor"
     ],
     "includePlatforms": [
         "Editor"

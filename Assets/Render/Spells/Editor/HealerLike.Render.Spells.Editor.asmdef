@@ -1,7 +1,0 @@
-{
-    "name": "HealerLike.Render.Spells.Editor",
-    "rootNamespace": "HealerLike.Render.Spells.Studio",
-    "references": ["HealerLike.Runtime", "HealerLike.Render", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime"],
-    "includePlatforms": ["Editor"],
-    "autoReferenced": true
-}
