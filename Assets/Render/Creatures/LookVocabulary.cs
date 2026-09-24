@@ -83,11 +83,15 @@ namespace HealerLike.Render.Creatures
         [AssetsOnly]
         public LookPalette palette;
 
-        // Cells per body unit: the reference study reads 1.8 body units to a cell
+        // Cells per body unit, the healer's body sphere
         [BoxGroup("Proportions")]
         public float bodyUnit = 0.55f;
 
-        // A stone's body and sockets grow by this much over a plant's
+        // A plant's body and sockets grow by this much over the body unit, so a Sturdy body reads about one cell at the board camera
+        [BoxGroup("Proportions")]
+        public float plantScale = 1.8f;
+
+        // A stone's body and sockets grow by this much over the body unit
         [BoxGroup("Proportions")]
         public float stoneScale = 1.6f;
 
@@ -107,21 +111,27 @@ namespace HealerLike.Render.Creatures
         [BoxGroup("Proportions")]
         public int rootCount = 10;
 
-        // Root radius in cells, a 0.15 body unit thick cylinder
+        // Root diameter, hip and knee heights, in the creature's own body units
         [BoxGroup("Proportions")]
-        public float rootThickness = 0.042f;
+        public float rootThickness = 0.14f;
 
         [BoxGroup("Proportions")]
-        public float rootHip = 0.08f;
+        public float rootHip = 0.145f;
 
         [BoxGroup("Proportions")]
-        public float rootKnee = 0.06f;
+        public float rootKnee = 0.11f;
 
         [BoxGroup("Proportions")]
         public int armCount = 2;
 
         [BoxGroup("Proportions")]
         public Color stoneWilt = new Color(0.22f, 0.25f, 0.33f);
+
+        // Cells per body unit on a side, a plant's parts and roots are laid out at its own scale
+        public float Unit(LookSide side)
+        {
+            return side == LookSide.Plant ? bodyUnit * plantScale : bodyUnit;
+        }
 
         public float Reach(ReachBand band)
         {

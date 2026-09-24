@@ -181,9 +181,10 @@ public class LookComposerTests
 
         Assert.AreEqual(_vocabulary.rootCount, recipe.roots.count);
         Assert.That(recipe.roots.segments, Is.InRange(2, 3));
-        Assert.AreEqual(1.3f * _vocabulary.bodyUnit, recipe.roots.footRadius, 0.0001f); // pinned at 1.3 body units
-        Assert.That(recipe.roots.thickness * 2f / _vocabulary.bodyUnit, Is.InRange(0.12f, 0.18f)); // diameter in body units
-        Assert.Less(recipe.roots.hipHeight, 0.1f);
+        float unit = _vocabulary.Unit(LookSide.Plant);
+        Assert.AreEqual(1.3f * unit, recipe.roots.footRadius, 0.0001f); // pinned at 1.3 plant body units
+        Assert.That(recipe.roots.thickness * 2f / unit, Is.InRange(0.12f, 0.18f)); // diameter in plant body units
+        Assert.Less(recipe.roots.hipHeight / unit, 0.2f); // the roots leave the body at its base
         Assert.AreEqual(2, recipe.arms.Length);
     }
 
@@ -217,6 +218,50 @@ public class LookComposerTests
         float width = recipe.parts[0].dimensions.x * 2f / _vocabulary.bodyUnit; // the stone mesh spans two units across
 
         Assert.AreEqual(2.2f, width, 0.001f);
+    }
+
+    [TestCase(MassBand.Light, 0.35f)]
+    [TestCase(MassBand.Sturdy, 0.5f)]
+    public void Compose_PlantMass_BodyRadiusInCellsIsNearTheTarget(MassBand mass, float target)
+    {
+        CreatureRecipe recipe = Compose(CreateChannels(LookSide.Plant, HeadKind.Bud, mass: mass));
+
+        float radius = recipe.parts[0].dimensions.x * 0.5f; // the sphere mesh is one unit across
+
+        Assert.AreEqual(PartRole.Body, recipe.parts[0].role);
+        Assert.AreEqual(target, radius, target * 0.1f); // a Sturdy body about one cell across, Light about 0.7
+    }
+
+    [Test]
+    public void HeadSpan_EveryPlantHeadAtLightMass_CoversAThirdOfACell()
+    {
+        foreach (HeadKind head in Enum.GetValues(typeof(HeadKind)))
+        {
+            UnitChannels channels = CreateChannels(LookSide.Plant, head, mass: MassBand.Light);
+
+            float span = LookComposer.HeadSpan(channels, _vocabulary);
+
+            Assert.GreaterOrEqual(span, 0.35f, head.ToString()); // the smaller side of its screen box, in cells
+        }
+    }
+
+    [TestCase(CountBand.Few)]
+    [TestCase(CountBand.Many)]
+    public void HeadGap_EveryFannedPlantHead_KeepsNeighboursApart(CountBand count)
+    {
+        foreach (HeadKind head in Enum.GetValues(typeof(HeadKind)))
+        {
+            if (_vocabulary.heads[head].carriesCount)
+            {
+                continue;
+            }
+
+            UnitChannels channels = CreateChannels(LookSide.Plant, head, count, mass: MassBand.Light);
+
+            float gap = LookComposer.HeadGap(channels, _vocabulary);
+
+            Assert.GreaterOrEqual(gap, 0f, $"{head} {count}"); // in cells between two neighbouring copies
+        }
     }
 
     [Test]

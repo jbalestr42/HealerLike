@@ -79,16 +79,15 @@ namespace HealerLike.Render.Creatures
                 return null;
             }
 
-            recipe.roots.thickness = vocabulary.rootThickness;
+            // An authored creature's body sphere is the body unit, its roots take the same proportions of it as a plant's
+            recipe.roots.thickness = vocabulary.rootThickness * 0.5f * vocabulary.bodyUnit;
             recipe.roots.footRadius = vocabulary.pinnedReach * vocabulary.bodyUnit;
-            recipe.roots.hipHeight = vocabulary.rootHip;
-            recipe.roots.kneeHeight = vocabulary.rootKnee;
+            recipe.roots.hipHeight = vocabulary.rootHip * vocabulary.bodyUnit;
+            recipe.roots.kneeHeight = vocabulary.rootKnee * vocabulary.bodyUnit;
             if (name == "Healer")
             {
                 // The healer's rosette reaches 2.1 body units, from the foot of its stem
                 recipe.roots.footRadius = vocabulary.roots[ReachBand.Long].reach * vocabulary.bodyUnit;
-                recipe.roots.kneeHeight = 0.07f;
-                recipe.roots.thickness = 0.049f;
             }
 
             recipe.idle.swayFrequency = 0.25f;
