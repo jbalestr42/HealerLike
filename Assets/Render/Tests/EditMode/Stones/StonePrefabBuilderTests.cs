@@ -31,8 +31,10 @@ public class StonePrefabBuilderTests
     public void StoneEffects_ShippedPrefab_WiresFragmentMeshesAndMaterials()
     {
         GameObject effects = AssetDatabase.LoadAssetAtPath<GameObject>(root + "StoneEffects.prefab");
-        SerializedObject effectsSO = new SerializedObject(effects.GetComponent<StoneEffects>());
-        foreach (string field in new string[] { "_stoneMaterial", "_coralMaterial", "_dustMaterial", "_meshes" })
+        StoneEffects stoneEffects = effects.GetComponent<StoneEffects>();
+        SerializedObject effectsSO = new SerializedObject(stoneEffects);
+        Assert.IsNotNull(stoneEffects.stoneMaterial);
+        foreach (string field in new string[] { "_coralMaterial", "_dustMaterial", "_meshes" })
         {
             Assert.IsNotNull(effectsSO.FindProperty(field).objectReferenceValue, field);
         }

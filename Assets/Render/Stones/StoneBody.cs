@@ -22,6 +22,14 @@ namespace HealerLike.Render.Stones
             public StoneMeshCache.Lease lease;
         }
 
+        // Seed salts, one per kind of emission so two kinds never share a random stream
+        static readonly uint hitSalt = 100;
+        static readonly uint shedSalt = 201;
+        static readonly uint collapseSalt = 301;
+        static readonly uint shardMeshSalt = 701;
+        static readonly uint contactSalt = 801;
+        static readonly StoneSettings shardShape = StonePresets.Shape(0.15f, 1.7f, 0.65f, 0.18f, 0);
+
         [SerializeField] StoneGroundDisc _groundShadow;
         [SerializeField] float _shedHealthFraction = 0.5f;
 
@@ -200,7 +208,7 @@ namespace HealerLike.Render.Stones
             _impacts[modifier] = new ImpactRecord { impact = impact, frame = _completedFrames };
             if (_effects != null)
             {
-                _effects.RecordImpact(impact.point, StoneSeed.ForPart(_seed, ++_hitIndex + 100));
+                _effects.RecordImpact(impact.point, StoneSeed.ForPart(_seed, ++_hitIndex + hitSalt));
             }
         }
 
@@ -257,13 +265,13 @@ namespace HealerLike.Render.Stones
                 impact = EstimateImpact(query);
                 if (_effects != null)
                 {
-                    _effects.RecordImpact(impact.point, StoneSeed.ForPart(_seed, ++_hitIndex + 100));
+                    _effects.RecordImpact(impact.point, StoneSeed.ForPart(_seed, ++_hitIndex + hitSalt));
                 }
             }
 
             if (_effects != null)
             {
-                _effects.EmitHit(impact, critical, StoneSeed.ForPart(_seed, ++_hitIndex + 100));
+                _effects.EmitHit(impact, critical, StoneSeed.ForPart(_seed, ++_hitIndex + hitSalt));
             }
         }
 
@@ -325,7 +333,7 @@ namespace HealerLike.Render.Stones
                 Mesh mesh = part.GetComponent<MeshFilter>().sharedMesh;
                 Material material = part.GetComponent<Renderer>().sharedMaterial;
                 _effects.EmitDetachedPart(mesh, material, part.localToWorldMatrix, planarVelocity, groundY,
-                    StoneSeed.ForPart(_seed, 201));
+                    StoneSeed.ForPart(_seed, shedSalt));
             }
             part.gameObject.SetActive(false);
         }
@@ -348,7 +356,7 @@ namespace HealerLike.Render.Stones
             ClearDeliveries();
             if (_effects != null)
             {
-                _effects.CollapseParts(parts, planarVelocity, groundY, StoneSeed.ForPart(_seed, 301));
+                _effects.CollapseParts(parts, planarVelocity, groundY, StoneSeed.ForPart(_seed, collapseSalt));
             }
             HideParts();
         }
@@ -446,8 +454,8 @@ namespace HealerLike.Render.Stones
                 return false;
             }
 
-            StoneSettings shardShape = StonePresets.Shape(0.15f, 1.7f, 0.65f, 0.18f, 0);
-            StoneMeshCache.Lease lease = _effects.stoneMeshes.Acquire(StoneSeed.ForPart(_seed, 701), shardShape);
+            uint shardSeed = StoneSeed.ForPart(_seed, shardMeshSalt);
+            StoneMeshCache.Lease lease = _effects.stoneMeshes.Acquire(shardSeed, shardShape);
             if (lease == null)
             {
                 return false;
@@ -494,7 +502,7 @@ namespace HealerLike.Render.Stones
 
             if (_effects != null)
             {
-                _effects.EmitThrownContact(contactPosition, StoneSeed.ForPart(_seed, ++_hitIndex + 801));
+                _effects.EmitThrownContact(contactPosition, StoneSeed.ForPart(_seed, ++_hitIndex + contactSalt));
             }
             EndDelivery(token);
         }

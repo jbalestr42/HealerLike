@@ -44,7 +44,7 @@ public class StoneEffectsTests
     public void EmitDust_Advanced_RisesFadesExpiresAndReusesWithoutAllocating()
     {
         _fx.EmitDust(Vector3.zero, 1);
-        Assert.AreEqual(5, _fx.liveCount);
+        Assert.AreEqual(StoneEffects.DustPuffs, _fx.liveCount);
 
         MeshRenderer renderer = _go.GetComponentInChildren<MeshRenderer>();
         MaterialPropertyBlock block = new MaterialPropertyBlock();
@@ -71,7 +71,7 @@ public class StoneEffectsTests
         }
         long allocated = System.GC.GetAllocatedBytesForCurrentThread() - before;
         Assert.AreEqual(0, allocated);
-        Assert.AreEqual(5, _go.transform.childCount);
+        Assert.AreEqual(StoneEffects.DustPuffs, _go.transform.childCount);
     }
 
     [TestCase(false)]
@@ -129,7 +129,7 @@ public class StoneEffectsTests
     {
         _fx.RecordImpact(Vector3.zero, 1);
 
-        Assert.AreEqual(5, _fx.liveCount);
+        Assert.AreEqual(StoneEffects.DustPuffs, _fx.liveCount);
 
         _fx.Advance(1f);
         _fx.enabled = false;
@@ -146,13 +146,13 @@ public class StoneEffectsTests
         StoneImpact impact = new StoneImpact(Vector3.up, Vector3.up);
 
         _fx.EmitHit(impact, false, 1);
-        Assert.AreEqual(9, _fx.liveCount);
+        Assert.AreEqual(StoneEffects.HitSparks + StoneEffects.HitChips, _fx.liveCount);
 
         _fx.Advance(0.6f);
         Assert.AreEqual(0, _fx.liveCount);
 
         _fx.EmitHit(impact, true, 1);
-        Assert.AreEqual(14, _fx.liveCount);
+        Assert.AreEqual(StoneEffects.CriticalHitSparks + StoneEffects.CriticalHitChips, _fx.liveCount);
 
         for (uint i = 0; i < 40; i++)
         {
@@ -179,7 +179,7 @@ public class StoneEffectsTests
         Assert.IsNotNull(_go.GetComponentInChildren<MeshFilter>().sharedMesh);
 
         _fx.Advance(0.01f);
-        Assert.AreEqual(3, _fx.liveCount);
+        Assert.AreEqual(StoneEffects.SplitPieces, _fx.liveCount);
 
         _fx.Advance(0.25f);
         Assert.AreEqual(0, _fx.liveCount);
@@ -200,7 +200,7 @@ public class StoneEffectsTests
 
         _fx.EmitDust(Vector3.zero, 1);
 
-        Assert.AreEqual(5, _fx.transform.childCount); // the returned shard is reused, four more are made
+        Assert.AreEqual(StoneEffects.DustPuffs, _fx.transform.childCount); // the returned shard is reused
     }
 
     [Test]
@@ -208,10 +208,11 @@ public class StoneEffectsTests
     {
         _fx.EmitThrownContact(Vector3.one, 91);
         int count = _fx.liveCount;
-        Assert.That(count, Is.InRange(8, 10));
+        int minimum = StoneEffects.MinThrownChips + StoneEffects.StarRays;
+        Assert.That(count, Is.InRange(minimum, minimum + 2));
 
         _fx.Advance(0.2f);
-        Assert.AreEqual(count - 5, _fx.liveCount);
+        Assert.AreEqual(count - StoneEffects.StarRays, _fx.liveCount);
 
         _fx.Advance(0.3f);
         Assert.AreEqual(0, _fx.liveCount);
@@ -233,7 +234,7 @@ public class StoneEffectsTests
 
         _fx.CollapseParts(new Transform[] { standing.transform, hidden.transform }, Vector3.zero, 0f, 1);
 
-        Assert.AreEqual(17, _fx.liveCount); // 12 debris and 5 dust
+        Assert.AreEqual(StoneEffects.CollapseDebris + StoneEffects.DustPuffs, _fx.liveCount); // 12 debris and 5 dust
         foreach (MeshFilter filter in _go.GetComponentsInChildren<MeshFilter>())
         {
             Assert.Less(filter.transform.position.x, 25f);

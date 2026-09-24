@@ -6,7 +6,7 @@ using UnityEngine;
 namespace HealerLike.Render.Stones
 {
 
-public class StoneVariantsTests
+public class StoneVariantBakerTests
 {
     Mesh _first;
     Mesh _second;
@@ -30,7 +30,7 @@ public class StoneVariantsTests
     }
 
     [Test]
-    public void Meshes_BakedAsset_HoldsTwelveVariants()
+    public void Bake_BakedAsset_HoldsTwelveVariants()
     {
         StoneVariants variants = Variants();
 
@@ -38,7 +38,7 @@ public class StoneVariantsTests
     }
 
     [Test]
-    public void Meshes_EveryVariant_HasTwentyFacesInTwoSubmeshes()
+    public void Bake_EveryVariant_HasTwentyFacesInTwoSubmeshes()
     {
         StoneVariants variants = Variants();
 
@@ -50,7 +50,7 @@ public class StoneVariantsTests
     }
 
     [Test]
-    public void Meshes_EveryVariant_HasThreeToFiveOchreFacesTurnedToTheCamera()
+    public void Bake_EveryVariant_HasThreeToFiveOchreFacesTurnedToTheCamera()
     {
         StoneVariants variants = Variants();
         Vector3 view = StoneVariantBaker.ViewDirection();
@@ -68,7 +68,7 @@ public class StoneVariantsTests
     }
 
     [Test]
-    public void Meshes_EveryVariant_ShowsEightToTwelveFacetsToThePortraitCamera()
+    public void Bake_EveryVariant_ShowsEightToTwelveFacetsToThePortraitCamera()
     {
         StoneVariants variants = Variants();
         Vector3 view = StoneVariantBaker.ViewDirection();
@@ -91,7 +91,7 @@ public class StoneVariantsTests
     }
 
     [Test]
-    public void Meshes_EveryVariant_FitsTheBoulderBoxWithFiniteBoundsAndOutlineNormals()
+    public void Bake_EveryVariant_FitsTheBoulderBoxWithFiniteBoundsAndOutlineNormals()
     {
         StoneVariants variants = Variants();
 

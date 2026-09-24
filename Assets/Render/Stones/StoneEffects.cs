@@ -29,7 +29,24 @@ namespace HealerLike.Render.Stones
         }
 
         public static readonly int MaxLiveFragments = 256;
+
+        // Fragments each emitter spawns
+        public static readonly int DustPuffs = 5;
+        public static readonly int HitSparks = 6;
+        public static readonly int CriticalHitSparks = 9;
+        public static readonly int HitChips = 3;
+        public static readonly int CriticalHitChips = 5;
+        public static readonly int CollapseDebris = 12;
+        public static readonly int SplitPieces = 3;
+        public static readonly int StarRays = 5;
+        public static readonly int MinThrownChips = 3;
+
         static readonly int baseColorId = Shader.PropertyToID("_BaseColor");
+        // A thrown contact draws from MinThrownChips to MinThrownChips + thrownChipSpread - 1 chips
+        static readonly uint thrownChipSpread = 3;
+        static readonly float gravity = 8f;
+        static readonly Vector3 fragmentSpin = new Vector3(70f, 120f, 45f);
+        static readonly uint dustMeshSeed = 123;
 
         [SerializeField] Material _stoneMaterial;
         [SerializeField] Material _coralMaterial;
@@ -71,7 +88,7 @@ namespace HealerLike.Render.Stones
 
             if (_dustLease == null)
             {
-                _dustLease = _stoneMeshes.Acquire(123, StonePresets.Shape(1f, 1f, 1f, 0f, 1));
+                _dustLease = _stoneMeshes.Acquire(dustMeshSeed, StonePresets.Shape(1f, 1f, 1f, 0f, 1));
             }
             return true;
         }
@@ -122,7 +139,7 @@ namespace HealerLike.Render.Stones
             fragment.start = position;
             fragment.rotation = rotation;
             fragment.velocity = velocity;
-            fragment.spin = new Vector3(70f, 120f, 45f);
+            fragment.spin = fragmentSpin;
             fragment.age = 0f;
             fragment.life = life;
             fragment.ground = ground;
@@ -205,7 +222,7 @@ namespace HealerLike.Render.Stones
             }
 
             StoneRandom random = new StoneRandom(seed);
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < DustPuffs; i++)
             {
                 Vector3 scale = Vector3.one * random.Range(0.09f, 0.17f);
                 float x = random.Range(-0.24f, 0.24f);
@@ -227,8 +244,8 @@ namespace HealerLike.Render.Stones
             }
 
             StoneRandom random = new StoneRandom(seed);
-            int sparks = critical ? 9 : 6;
-            int shards = critical ? 5 : 3;
+            int sparks = critical ? CriticalHitSparks : HitSparks;
+            int shards = critical ? CriticalHitChips : HitChips;
             Vector3 normal = impact.normal.sqrMagnitude > 0f ? impact.normal.normalized : Vector3.up;
             for (int i = 0; i < sparks + shards; i++)
             {
@@ -258,7 +275,7 @@ namespace HealerLike.Render.Stones
             }
 
             StoneRandom random = new StoneRandom(seed);
-            int count = 3 + (int)(random.Next() % 3);
+            int count = MinThrownChips + (int)(random.Next() % thrownChipSpread);
             for (int i = 0; i < count; i++)
             {
                 Quaternion rotation = Quaternion.Euler(random.Range(0f, 180f), random.Range(0f, 360f), 0f);
@@ -269,9 +286,9 @@ namespace HealerLike.Render.Stones
             }
 
             // Five coral rays share a center: one star silhouette at the resolved contact
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < StarRays; i++)
             {
-                Vector3 ray = Quaternion.AngleAxis(i * 72f, Vector3.forward) * Vector3.up;
+                Vector3 ray = Quaternion.AngleAxis(i * 360f / StarRays, Vector3.forward) * Vector3.up;
                 Quaternion rotation = Quaternion.FromToRotation(Vector3.up, ray);
                 Vector3 rayScale = new Vector3(0.055f, 0.2f, 0.035f);
                 Fragment star = Spawn(_meshes.pyramid, _coralMaterial, contact, rotation, rayScale, Vector3.up * 0.15f,
@@ -324,7 +341,7 @@ namespace HealerLike.Render.Stones
             }
 
             StoneRandom random = new StoneRandom(seed);
-            int count = 12;
+            int count = CollapseDebris;
             for (int i = 0; i < count; i++)
             {
                 Transform part = _standing[i % _standing.Count];
@@ -349,7 +366,6 @@ namespace HealerLike.Render.Stones
 
         public static Vector3 PositionAt(Vector3 start, Vector3 velocity, float age, float ground, bool bounce)
         {
-            float gravity = 8f;
             Vector3 position = start + velocity * age + Vector3.down * (0.5f * gravity * age * age);
             if (!bounce)
             {
@@ -408,7 +424,7 @@ namespace HealerLike.Render.Stones
         void SpawnSplit(Vector3 position, float ground, uint seed)
         {
             StoneRandom random = new StoneRandom(seed);
-            for (int j = 0; j < 3; j++)
+            for (int j = 0; j < SplitPieces; j++)
             {
                 Vector3 scale = Vector3.one * random.Range(0.04f, 0.07f);
                 Vector3 velocity = new Vector3(random.Range(-0.3f, 0.3f), 0.3f, random.Range(-0.3f, 0.3f));
