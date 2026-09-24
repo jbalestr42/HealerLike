@@ -130,14 +130,14 @@ public class SpellLooksTests
 
     [TestCase("ChainLightning")]
     [TestCase("ChannelingLightning")]
-    public void GetProjectileLook_SpawnedChain_ReadsWhatItsRowAuthors(string prefabName)
+    public void GetSpawnedLook_Chain_ReadsWhatItsRowAuthors(string prefabName)
     {
         SpellLooks looks = LoadShipped();
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/" + prefabName + ".prefab");
         GameObject projectileGo = Object.Instantiate(prefab);
         _objects.Add(projectileGo);
 
-        ProjectileLook spawned = looks.GetProjectileLook(projectileGo.GetComponent<Projectile>());
+        ProjectileLook spawned = looks.GetSpawnedLook(projectileGo.GetComponent<Projectile>());
 
         ProjectileLook row = looks.GetProjectileLook(prefab);
         Assert.AreEqual(row.style, spawned.style);
@@ -148,12 +148,12 @@ public class SpellLooksTests
     [TestCase("BulletSpeed", DeliveryStyle.Direct)]
     [TestCase("SwarmBullet", DeliveryStyle.Swarm)]
     [TestCase("LaserBullet", DeliveryStyle.Arc)]
-    public void GetProjectileLook_SpawnedShot_DerivesFromItsBakedBehaviours(string prefabName, DeliveryStyle expected)
+    public void GetSpawnedLook_Shot_DerivesFromItsBakedBehaviours(string prefabName, DeliveryStyle expected)
     {
         GameObject projectileGo = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/" + prefabName + ".prefab"));
         _objects.Add(projectileGo);
 
-        ProjectileLook look = LoadShipped().GetProjectileLook(projectileGo.GetComponent<Projectile>());
+        ProjectileLook look = LoadShipped().GetSpawnedLook(projectileGo.GetComponent<Projectile>());
 
         Assert.AreEqual(expected, look.style);
         Assert.IsFalse(look.preserveContactPath);

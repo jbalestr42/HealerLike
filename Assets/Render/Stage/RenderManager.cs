@@ -499,7 +499,7 @@ namespace HealerLike.Render.Stage
             }
 
             GameObject projectileGo = projectile.gameObject;
-            ProjectileLook projectileLook = _spellLooks.GetProjectileLook(projectile);
+            ProjectileLook projectileLook = _spellLooks.GetSpawnedLook(projectile);
             projectileGo.AddComponent<ProjectileVisualObserver>().Init(this, projectileLook);
             projectileGo.AddComponent<StoneProjectileImpactBridge>();
             projectileGo.AddComponent<LaunchWave>().Init(_zones);
