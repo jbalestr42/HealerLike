@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72656a68b4ca4b08aa7781878f3f168f, type: 3}
+  m_Name: Healing pulse
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Spells.Studio.SpellStudioPreset
+  displayName: Healing pulse
+  description: 'Renderer grammar: a periodic renewal derives Stalks from the Renew family. Change family or group to explore the shared vocabulary; the shape stays linked to it.'
+  vocabulary: {fileID: 11400000, guid: 2ebcc249811134625a66debb52a811c9, type: 2}
+  mode: 1
+  attributeGroup: 1
+  sourceHandler: {fileID: 0}
+  isSameSide: 1
+  spellLooks: {fileID: 11400000, guid: 3f7bcc3db75d049a78cca2b5cf1fb20c, type: 2}
+  useGameplayOverrides: 1
+  sourceProjectile: {fileID: 0}
+  element: 0
+  family: 3
+  tempo: 1
+  periodSeconds: 1.25
+  stacks: 1
+  charges: 1
+  amount: 0.25
+  durationSeconds: 6
+  critical: 0
+  side: 1
+  scale: 1
+  overrideEntry: 0
+  entry:
+    parts: []
+    stackBeads: []
+    criticalRings: []
+    sideRim: []
+    motion: 0
+    socket: 0
+    count: 0
+    minCount: 1
+    cycleSeconds: 0.6
+  overrideColour: 0
+  colour: {r: 1, g: 1, b: 1, a: 1}
