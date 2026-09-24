@@ -1,76 +1,106 @@
-using System;
-using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace HealerLike.Editor.Toolkit
+// Explicit opt-in: the existing scenes and their legacy UI stay intact
+public static class ToolkitUiInstaller
 {
-    /// <summary>Explicit opt-in: existing scenes and their legacy UI remain intact.</summary>
-    public static class ToolkitUiInstaller
+    static readonly string toolkitScenesFolder = "Assets/Scenes/Toolkit/";
+
+    [MenuItem("Tools/UI Toolkit/Install in Current Scene")]
+    public static void InstallInCurrentScene()
     {
-        public const string GameplayPath = "Assets/Scenes/Toolkit/MainToolkit.unity";
-        public const string MenuPath = "Assets/Scenes/Toolkit/MenuToolkit.unity";
-
-        [MenuItem("HealerLike/UI Toolkit/Install in Current Scene")]
-        public static void InstallInCurrentScene()
+        Scene scene = SceneManager.GetActiveScene();
+        if (!scene.IsValid() || !scene.isLoaded)
         {
-            var scene = SceneManager.GetActiveScene();
-            if (!scene.IsValid() || !scene.isLoaded)
-                throw new InvalidOperationException("Open a scene before installing UI Toolkit.");
-            if (!scene.path.StartsWith("Assets/Scenes/Toolkit/", StringComparison.Ordinal))
-                throw new InvalidOperationException("Install only in a Toolkit scene copy. Use Create Separate Demo Scenes first.");
-            Install(scene, "MainToolkit", "MenuToolkit");
-            EditorSceneManager.MarkSceneDirty(scene);
+            Debug.LogError("[ToolkitUiInstaller] Open a scene before installing UI Toolkit");
+            return;
         }
 
-        [MenuItem("HealerLike/UI Toolkit/Create Separate Demo Scenes")]
-        public static void CreateDemoScenes()
+        if (!scene.path.StartsWith(toolkitScenesFolder, System.StringComparison.Ordinal))
         {
-            if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
-                return;
-            var setup = EditorSceneManager.GetSceneManagerSetup();
-            try
+            Debug.LogError("[ToolkitUiInstaller] Install only in a Toolkit scene copy, use Create Separate Demo Scenes first");
+            return;
+        }
+
+        Install(scene);
+        EditorSceneManager.MarkSceneDirty(scene);
+    }
+
+    [MenuItem("Tools/UI Toolkit/Create Separate Demo Scenes")]
+    public static void CreateDemoScenes()
+    {
+        if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+        {
+            return;
+        }
+
+        SceneSetup[] setup = EditorSceneManager.GetSceneManagerSetup();
+        if (!AssetDatabase.IsValidFolder("Assets/Scenes/Toolkit"))
+        {
+            AssetDatabase.CreateFolder("Assets/Scenes", "Toolkit");
+        }
+
+        if (CreateScene("Assets/Scenes/Main.unity", ToolkitSceneNavigation.GameplayPath))
+        {
+            CreateScene("Assets/Scenes/MenuScene.unity", ToolkitSceneNavigation.MenuPath);
+        }
+
+        if (setup.Length > 0)
+        {
+            EditorSceneManager.RestoreSceneManagerSetup(setup);
+        }
+    }
+
+    static bool CreateScene(string source, string destination)
+    {
+        // Existing demo scenes may contain design changes: never overwrite them
+        if (AssetDatabase.LoadAssetAtPath<SceneAsset>(destination) == null && !AssetDatabase.CopyAsset(source, destination))
+        {
+            Debug.LogError($"[ToolkitUiInstaller] Could not copy scene {source}");
+            return false;
+        }
+
+        Scene scene = EditorSceneManager.OpenScene(destination, OpenSceneMode.Single);
+        Install(scene);
+        if (!EditorSceneManager.SaveScene(scene))
+        {
+            Debug.LogError($"[ToolkitUiInstaller] Could not save scene {destination}");
+            return false;
+        }
+
+        return true;
+    }
+
+    static void Install(Scene scene)
+    {
+        ToolkitGameUI gameUI = FindGameUI(scene);
+        if (gameUI == null)
+        {
+            GameObject host = new GameObject("UI Toolkit");
+            SceneManager.MoveGameObjectToScene(host, scene);
+            Undo.RegisterCreatedObjectUndo(host, "Install UI Toolkit");
+            gameUI = Undo.AddComponent<ToolkitGameUI>(host);
+        }
+
+        Undo.RecordObject(gameUI, "Configure UI Toolkit navigation");
+        gameUI.gameplayScene = ToolkitSceneNavigation.GameplayScene;
+        gameUI.menuScene = ToolkitSceneNavigation.MenuScene;
+        EditorUtility.SetDirty(gameUI);
+    }
+
+    static ToolkitGameUI FindGameUI(Scene scene)
+    {
+        foreach (GameObject root in scene.GetRootGameObjects())
+        {
+            ToolkitGameUI[] gameUIs = root.GetComponentsInChildren<ToolkitGameUI>(true);
+            if (gameUIs.Length > 0)
             {
-                if (!AssetDatabase.IsValidFolder("Assets/Scenes/Toolkit"))
-                    AssetDatabase.CreateFolder("Assets/Scenes", "Toolkit");
-                CreateScene("Assets/Scenes/Main.unity", GameplayPath);
-                CreateScene("Assets/Scenes/MenuScene.unity", MenuPath);
-                Debug.Log("UI Toolkit demo ready: open " + MenuPath + " and press Play. Original scenes are preserved.");
-            }
-            finally
-            {
-                if (setup.Length > 0) EditorSceneManager.RestoreSceneManagerSetup(setup);
+                return gameUIs[0];
             }
         }
 
-        static void CreateScene(string source, string destination)
-        {
-            // Existing demo scenes may contain user design changes: never overwrite them.
-            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(destination) == null && !AssetDatabase.CopyAsset(source, destination))
-                throw new InvalidOperationException("Could not copy scene " + source);
-            var scene = EditorSceneManager.OpenScene(destination, OpenSceneMode.Single);
-            Install(scene, "MainToolkit", "MenuToolkit");
-            if (!EditorSceneManager.SaveScene(scene))
-                throw new InvalidOperationException("Could not save scene " + destination);
-        }
-
-        static void Install(Scene scene, string gameplay, string menu)
-        {
-            var ui = scene.GetRootGameObjects()
-                .SelectMany(root => root.GetComponentsInChildren<ToolkitGameUI>(true)).FirstOrDefault();
-            if (ui == null)
-            {
-                var host = new GameObject("UI Toolkit");
-                SceneManager.MoveGameObjectToScene(host, scene);
-                Undo.RegisterCreatedObjectUndo(host, "Install UI Toolkit");
-                ui = Undo.AddComponent<ToolkitGameUI>(host);
-            }
-            Undo.RecordObject(ui, "Configure UI Toolkit navigation");
-            ui.gameplayScene = gameplay;
-            ui.menuScene = menu;
-            EditorUtility.SetDirty(ui);
-        }
+        return null;
     }
 }

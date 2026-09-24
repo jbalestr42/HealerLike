@@ -1,43 +1,83 @@
-using System;
 using System.IO;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace HealerLike.Editor.Toolkit
+public static class ToolkitUiValidation
 {
-    public static class ToolkitUiValidation
+    // Usable from -executeMethod: a failed check ends batch mode with exit code 1
+    public static void ValidateAssets()
     {
-        // Usable from -executeMethod after importing the copied project.
-        public static void ValidateAssets()
+        if (!CheckAssets() && Application.isBatchMode)
         {
-            var assets = AssetDatabase.FindAssets("t:VisualTreeAsset", new[] { "Assets/Resources/UI/Toolkit" });
-            if (assets.Length == 0) throw new InvalidOperationException("UI Toolkit layout assets are missing.");
-            foreach (var guid in assets)
-            {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                var tree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(path);
-                var root = tree.CloneTree();
-                if (root.childCount == 0) throw new InvalidOperationException("Empty UI layout: " + path);
-                Debug.Log("Validated UI Toolkit layout: " + path);
-            }
-            foreach (var path in new[] { ToolkitUiInstaller.MenuPath, ToolkitUiInstaller.GameplayPath })
-            {
-                if (!File.Exists(path)) throw new InvalidOperationException("Missing demo scene: " + path);
-            }
-            var catalog = Resources.Load<DataIconCatalog>("UIToolkit/DataIconCatalog");
-            if (catalog == null) throw new InvalidOperationException("Generated icon catalog is missing.");
-            int count = 0;
-            foreach (var guid in AssetDatabase.FindAssets("t:ScriptableObject", new[] { "Assets" }))
-                foreach (var source in AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GUIDToAssetPath(guid)).OfType<ScriptableObject>())
-                    if (HealerLike.UI.Toolkit.Editor.DataIconBaker.IsGameData(source))
-                    {
-                        count++;
-                        if (catalog.Find(source) == null)
-                            throw new InvalidOperationException("Missing generated icon: " + AssetDatabase.GetAssetPath(source));
-                    }
-            Debug.Log("UI Toolkit asset validation passed. Icons cover all " + count + " game data assets.");
+            EditorApplication.Exit(1);
         }
+    }
+
+    public static bool CheckAssets()
+    {
+        return CheckLayouts() && CheckDemoScenes() && CheckIcons();
+    }
+
+    static bool CheckLayouts()
+    {
+        string[] guids = AssetDatabase.FindAssets("t:VisualTreeAsset", new string[] { "Assets/Resources/UI/Toolkit" });
+        if (guids.Length == 0)
+        {
+            Debug.LogError("[ToolkitUiValidation] UI Toolkit layout assets are missing");
+            return false;
+        }
+
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            VisualTreeAsset tree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(path);
+            if (tree.CloneTree().childCount == 0)
+            {
+                Debug.LogError($"[ToolkitUiValidation] Empty UI layout: {path}");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    static bool CheckDemoScenes()
+    {
+        foreach (string path in new string[] { ToolkitSceneNavigation.MenuPath, ToolkitSceneNavigation.GameplayPath })
+        {
+            if (!File.Exists(path))
+            {
+                Debug.LogError($"[ToolkitUiValidation] Missing demo scene: {path}");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    static bool CheckIcons()
+    {
+        DataIconCatalog catalog = Resources.Load<DataIconCatalog>(DataIconService.CatalogResourcePath);
+        if (catalog == null)
+        {
+            Debug.LogError("[ToolkitUiValidation] The generated icon catalog is missing");
+            return false;
+        }
+
+        foreach (string guid in AssetDatabase.FindAssets("t:ScriptableObject", new string[] { "Assets" }))
+        {
+            foreach (Object asset in AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GUIDToAssetPath(guid)))
+            {
+                ScriptableObject source = asset as ScriptableObject;
+                if (DataIconBaker.IsGameData(source) && catalog.Find(source) == null)
+                {
+                    Debug.LogError($"[ToolkitUiValidation] Missing generated icon: {AssetDatabase.GetAssetPath(source)}");
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
