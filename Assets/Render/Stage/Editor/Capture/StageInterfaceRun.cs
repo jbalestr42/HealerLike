@@ -167,6 +167,7 @@ namespace HealerLike.Render.Stage
             _actions.touch.ProcessTouch(3, TouchPhase.Moved, end);
             _actions.touch.ProcessTouch(3, TouchPhase.Ended, end);
             _output.Check(_interaction.GetInteraction() != null, "Gesture beginning over UI cannot deploy on release over board");
+            yield return Wait(0.2f);
             _actions.Submit("cancel-button");
             yield return Wait(0.2f);
         }
@@ -264,10 +265,12 @@ namespace HealerLike.Render.Stage
             yield return Wait(0.3f);
             yield return Capture("09b-landscape-party");
             _actions.Submit("party-close-button");
+            yield return Wait(0.2f);
             _actions.Submit("detail-button");
             yield return Wait(0.3f);
             yield return Capture("09c-landscape-details");
             _actions.Submit("detail-close-button");
+            yield return Wait(0.2f);
             _actions.Submit("pause-button");
             yield return Wait(0.3f);
             yield return Capture("09d-landscape-pause");
