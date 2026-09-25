@@ -37,6 +37,44 @@ namespace HealerLike.Render.Stage
             _window.Repaint();
         }
 
+        // A workspace preset survives capture disposal and Editor restarts. Reuse a fixed size already present.
+        public static void SelectPersistent(int width, int height)
+        {
+            Assembly editor = typeof(Editor).Assembly;
+            Type windowType = editor.GetType("UnityEditor.GameView");
+            Type sizesType = editor.GetType("UnityEditor.GameViewSizes");
+            Type sizeType = editor.GetType("UnityEditor.GameViewSize");
+            Type kindType = editor.GetType("UnityEditor.GameViewSizeType");
+            object sizes = sizesType.BaseType.GetProperty("instance", BindingFlags.Public | BindingFlags.Static)
+                .GetValue(null);
+            object group = sizesType.GetProperty("currentGroup").GetValue(sizes);
+            int total = (int)group.GetType().GetMethod("GetTotalCount").Invoke(group, null);
+            int selected = total;
+            object fixedResolution = Enum.Parse(kindType, "FixedResolution");
+            for (int i = 0; i < total; i++)
+            {
+                object existing = group.GetType().GetMethod("GetGameViewSize").Invoke(group, new object[] { i });
+                if ((int)sizeType.GetProperty("width").GetValue(existing) == width
+                    && (int)sizeType.GetProperty("height").GetValue(existing) == height
+                    && sizeType.GetProperty("sizeType").GetValue(existing).Equals(fixedResolution))
+                {
+                    selected = i;
+                    break;
+                }
+            }
+            if (selected == total)
+            {
+                object size = Activator.CreateInstance(sizeType, fixedResolution, width, height, "HealerLike Portrait");
+                group.GetType().GetMethod("AddCustomSize").Invoke(group, new[] { size });
+            }
+            sizesType.GetMethod("SaveToHDD", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Invoke(sizes, null);
+            EditorWindow window = EditorWindow.GetWindow(windowType, false, null, true);
+            windowType.GetProperty("selectedSizeIndex").SetValue(window, selected);
+            window.Focus();
+            window.Repaint();
+        }
+
         public void Dispose()
         {
             if (_isDisposed) return;

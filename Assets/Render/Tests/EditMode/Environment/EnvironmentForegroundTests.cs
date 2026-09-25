@@ -139,6 +139,24 @@ public class EnvironmentForegroundTests
     }
 
     [Test]
+    public void Layout_QuarterTurn_RotatesTheSameSeededCornerComposition()
+    {
+        Quaternion turn = Quaternion.Euler(0f, 90f, 0f);
+        List<ForegroundItem> original = EnvironmentForeground.Layout(position, rotation, fov, aspect, ground, 3);
+        List<ForegroundItem> turned = EnvironmentForeground.Layout(turn * position, turn * rotation,
+            fov, aspect, ground, 3);
+        Assert.AreEqual(original.Count, turned.Count);
+        for (int i = 0; i < original.Count; i++)
+        {
+            Assert.That(Vector3.Distance(turn * original[i].position, turned[i].position), Is.LessThan(0.001f));
+            Vector2 viewport = EnvironmentForeground.ToViewport(turned[i].position, turn * position,
+                turn * rotation, fov, aspect);
+            Assert.That(viewport.y, Is.LessThan(0.2f));
+            Assert.IsTrue(viewport.x < 0.25f || viewport.x > 0.75f);
+        }
+    }
+
+    [Test]
     public void Layout_InvalidInput_LogsAndReturnsEmpty()
     {
         LogAssert.Expect(LogType.Error, new Regex(@"^\[EnvironmentForeground\] Rejected field of view"));

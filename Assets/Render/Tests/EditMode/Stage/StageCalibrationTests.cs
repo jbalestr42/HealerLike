@@ -88,6 +88,34 @@ public class StageCalibrationTests
                                                  StageCalibration.PortraitAspect, frame));
     }
 
+    [TestCase(16f, 16f)]
+    [TestCase(12f, 20f)]
+    public void PlayableFrame_PortraitHeading_KeepsBoardVisibleAndHealerInLowerThird(float width, float depth)
+    {
+        Bounds board = new Bounds(new Vector3(0f, 0.5f, 0f), new Vector3(width, 0f, depth));
+        Pose pose = StageCalibration.PlayableFrame(board, StageCalibration.PortraitPitch,
+            StageCalibration.PortraitFov, StageCalibration.PortraitAspect, StageCalibration.PortraitCentreY,
+            StageCalibration.PortraitYaw);
+        _camera.aspect = StageCalibration.PortraitAspect;
+        _go.transform.SetPositionAndRotation(pose.position, pose.rotation);
+        Vector3 healer = _camera.WorldToViewportPoint(new Vector3(0f, 0.5f, 0f));
+        Vector3 enemy = _camera.WorldToViewportPoint(new Vector3(5f, 0.5f, 0f));
+        Assert.That(healer.y, Is.InRange(0.25f, 0.38f));
+        Assert.That(healer.y, Is.LessThan(enemy.y));
+        Assert.That(healer.x, Is.EqualTo(enemy.x).Within(0.001f));
+        Assert.IsTrue(StageCalibration.Contains(board, pose, _camera.fieldOfView, _camera.aspect,
+            Rect.MinMaxRect(0.0149f, 0.1199f, 0.9851f, 0.8401f)));
+    }
+
+    [Test]
+    public void BackgroundFog_RotatedPortrait_StartsBeyondPositiveXEdge()
+    {
+        Bounds board = new Bounds(new Vector3(0f, 0.5f, 0f), new Vector3(12f, 0f, 20f));
+        Vector3 camera = new Vector3(-17f, 20f, 3f);
+        Vector2 fog = StageCalibration.BackgroundFog(camera, board, StageCalibration.PortraitYaw);
+        Assert.That(fog.x, Is.EqualTo(Vector3.Distance(camera, new Vector3(6f, 0.5f, 3f))).Within(0.001f));
+    }
+
     [Test]
     public void Contains_BoxBehindTheCamera_IsOutside()
     {

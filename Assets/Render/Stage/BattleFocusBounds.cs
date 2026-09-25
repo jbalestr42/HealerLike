@@ -23,6 +23,11 @@ namespace HealerLike.Render.Stage
             return StageCalibration.Fit(bounds, pitch, fov, aspect, FocusFrame, FocusLift);
         }
 
+        public static Pose Fit(Bounds bounds, Quaternion rotation, float fov, float aspect)
+        {
+            return StageCalibration.Fit(bounds, rotation, fov, aspect, FocusFrame, FocusLift);
+        }
+
         // Authored mesh bounds include heads and roots, transient effects and lines are left out
         public static Bounds Body(Transform body, Renderer[] renderers)
         {

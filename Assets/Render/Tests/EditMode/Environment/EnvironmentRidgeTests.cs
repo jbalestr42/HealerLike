@@ -127,6 +127,20 @@ public class EnvironmentRidgeTests
     }
 
     [Test]
+    public void Layout_PortraitHeading_RotatesFarRidgeBeyondPositiveXEdge()
+    {
+        Quaternion heading = Quaternion.Euler(0f, 90f, 0f);
+        List<RidgeItem> original = EnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, ground, 8);
+        List<RidgeItem> turned = EnvironmentRidge.Layout(heading * eye, fogStart, fogEnd, bands, grid, ground, 8, 90f);
+        Assert.AreEqual(original.Count, turned.Count);
+        for (int i = 0; i < original.Count; i++)
+        {
+            Assert.That(Vector3.Distance(heading * original[i].position, turned[i].position), Is.LessThan(0.001f));
+            Assert.That(turned[i].position.x, Is.GreaterThanOrEqualTo(grid.xMax + EnvironmentRidge.GridClearance - 0.001f));
+        }
+    }
+
+    [Test]
     public void Layout_InvalidInput_LogsAndReturnsEmpty()
     {
         Regex rejected = new Regex(@"^\[EnvironmentRidge\] Rejected");

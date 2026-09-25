@@ -110,7 +110,8 @@ namespace HealerLike.Render.Stage
             _dressing.Frame(_gameCamera, _isLandscape);
 
             // Init chain
-            _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board));
+            _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board,
+                _gameCamera.transform.eulerAngles.y));
             _zones.Init();
             Rect boardRect = BoardRect();
             _grass.Init(boardRect, player.grid.size, _board.max.y, _gameCamera, _zones.buffer, ZonePacker.MaxZones);
@@ -166,9 +167,11 @@ namespace HealerLike.Render.Stage
             }
 
             _dressing.Frame(_gameCamera, isLandscape);
-            _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board));
+            _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board,
+                _gameCamera.transform.eulerAngles.y));
             _foreground.Build();
             _environment.ridge.Build();
+            _battleFocus.MarkDirty();
         }
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)

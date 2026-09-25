@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -79,6 +81,43 @@ public class StageDressingTests
         Assert.AreEqual(pose.position, gameCamera.transform.position);
         Assert.AreEqual(isLandscape, gameCamera.aspect > 1f);
     }
+    [Test]
+    public void FocusAndSafetyWidening_KeepPortraitHeadingAndHealerBelowEnemies()
+    {
+        _scene.manager.Init(_scene.entityManager, _scene.player);
+        GameObject healer = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        healer.transform.SetParent(_scene.gameGo.transform);
+        healer.transform.position = new Vector3(0f, 1f, 0f);
+        healer.transform.localScale = new Vector3(1.2f, 2f, 1.2f);
+        _scene.player.character = healer.AddComponent<Character>();
+        GameObject enemy = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        enemy.transform.SetParent(_scene.gameGo.transform);
+        enemy.transform.position = new Vector3(5f, 1f, 0f);
+        enemy.transform.localScale = new Vector3(1.2f, 2f, 1.2f);
+        TestHelpers.SetPrivateField(_scene.entityManager, "_entities",
+            new Dictionary<Entity.EntityType, List<GameObject>>
+            {
+                { Entity.EntityType.Player, new List<GameObject>() },
+                { Entity.EntityType.Computer, new List<GameObject> { enemy } }
+            });
+        BattleFocus focus = _scene.manager.GetComponent<BattleFocus>();
+        focus.Focus();
+        Pose target = (Pose)typeof(BattleFocus).GetField("_target", BindingFlags.Instance | BindingFlags.NonPublic)
+            .GetValue(focus);
+        Assert.That(Quaternion.Angle(target.rotation, _scene.manager.overviewPose.rotation), Is.LessThan(0.01f));
+        Camera camera = _scene.manager.gameCamera;
+        // Force the out-of-frame safety path before easing has reached the target.
+        camera.transform.SetPositionAndRotation(target.position + Vector3.up * 100f, target.rotation);
+        focus.Tick();
+        Assert.That(Quaternion.Angle(camera.transform.rotation, target.rotation), Is.LessThan(0.01f));
+        Assert.IsTrue(focus.AreAllBodiesVisible());
+        Vector3 healerBase = camera.WorldToViewportPoint(Vector3.zero);
+        Vector3 enemyBase = camera.WorldToViewportPoint(Vector3.right * 5f);
+        Assert.That(healerBase.y, Is.InRange(0.18f, 0.38f));
+        Assert.That(healerBase.y, Is.LessThan(enemyBase.y));
+        Assert.That(healerBase.x, Is.EqualTo(enemyBase.x).Within(0.001f));
+    }
+
 }
 
 }

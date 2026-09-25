@@ -90,13 +90,15 @@ namespace HealerLike.Render.Environment
                 }
             }
 
+            Vector3 across = Vector3.ProjectOnPlane(cameraRotation * Vector3.right, Vector3.up).normalized;
+            Vector3 ahead = Vector3.ProjectOnPlane(cameraRotation * Vector3.forward, Vector3.up).normalized;
             uint baseSeed = SeededRandom.ForPart((uint)seed, Salt);
             SeededRandom random = new SeededRandom(baseSeed);
             for (int side = 0; side < 2; side++)
             {
                 float outward = side == 0 ? -1f : 1f;
                 Vector3 corner = corners[side];
-                // Offsets: positive x goes out past the side edge, negative z goes down past the bottom edge
+                // Offsets follow the view: across goes past the side, negative ahead goes below the frame.
                 int boulders = 2 + (int)(random.Next01() * 2f);
                 int rosettes = 1 + (int)(random.Next01() * 2f);
                 for (int n = 0; n < boulders + rosettes; n++)
@@ -111,7 +113,8 @@ namespace HealerLike.Render.Environment
                     {
                         float dx = isBoulder ? random.Range(-1f, 2.5f) : random.Range(0f, 3f);
                         float dz = isBoulder ? random.Range(-2.5f, 0.5f) : random.Range(-2.5f, 0f);
-                        position = new Vector3(corner.x + outward * dx, groundY, corner.z + dz);
+                        position = corner + across * (outward * dx) + ahead * dz;
+                        position.y = groundY;
                         bool isClear = true;
                         foreach (ForegroundItem other in result)
                         {

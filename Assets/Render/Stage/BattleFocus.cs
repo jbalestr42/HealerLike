@@ -109,7 +109,7 @@ namespace HealerLike.Render.Stage
             // Widen at once when a spawn leaves the safe viewport, only the zoom in eases
             if (_isFocused && !AreAllBodiesVisible())
             {
-                Pose safe = BattleFocusBounds.Fit(_combatBounds, cameraTransform.eulerAngles.x, _camera.fieldOfView,
+                Pose safe = BattleFocusBounds.Fit(_combatBounds, cameraTransform.rotation, _camera.fieldOfView,
                                                   _camera.aspect);
                 cameraTransform.position = safe.position;
                 _velocity = Vector3.zero;
@@ -118,7 +118,8 @@ namespace HealerLike.Render.Stage
             if (Time.unscaledTime >= _fogAt)
             {
                 _fogAt = Time.unscaledTime + fogInterval;
-                Vector2 fogRange = StageCalibration.BackgroundFog(cameraTransform.position, _manager.board);
+                Vector2 fogRange = StageCalibration.BackgroundFog(cameraTransform.position, _manager.board,
+                    cameraTransform.eulerAngles.y);
                 _manager.look.UpdateFog(fogRange);
             }
 
@@ -241,7 +242,8 @@ namespace HealerLike.Render.Stage
 
             bounds.Expand(BattleFocusBounds.Padding);
             _combatBounds = bounds;
-            _target = BattleFocusBounds.Fit(bounds, _pitch, _camera.fieldOfView, _camera.aspect);
+            Quaternion rotation = Quaternion.Euler(_pitch, _manager.overviewPose.rotation.eulerAngles.y, 0f);
+            _target = BattleFocusBounds.Fit(bounds, rotation, _camera.fieldOfView, _camera.aspect);
         }
 
         Bounds BodyBounds(Transform body)

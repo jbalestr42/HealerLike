@@ -139,6 +139,29 @@ namespace HealerLike.Render.Environment
             return result;
         }
 
+        // Rotate the seeded row with the camera heading, keeping its clearance beyond the far board edge.
+        public static List<RidgeItem> Layout(Vector3 cameraPosition, float fogStart, float fogEnd, int fogBands,
+            Rect grid, float groundY, int seed, float yawDegrees)
+        {
+            Quaternion heading = Quaternion.Euler(0f, yawDegrees, 0f);
+            Vector3 centre = new Vector3(grid.center.x, 0f, grid.center.y);
+            Vector3 right = heading * Vector3.right;
+            Vector3 forward = heading * Vector3.forward;
+            float width = Mathf.Abs(right.x) * grid.width + Mathf.Abs(right.z) * grid.height;
+            float depth = Mathf.Abs(forward.x) * grid.width + Mathf.Abs(forward.z) * grid.height;
+            Rect localGrid = new Rect(-width * 0.5f, -depth * 0.5f, width, depth);
+            Vector3 localCamera = Quaternion.Inverse(heading) * (cameraPosition - centre);
+            List<RidgeItem> items = Layout(localCamera, fogStart, fogEnd, fogBands, localGrid, groundY, seed);
+            for (int i = 0; i < items.Count; i++)
+            {
+                RidgeItem item = items[i];
+                item.position = centre + heading * item.position;
+                item.yaw += yawDegrees;
+                items[i] = item;
+            }
+            return items;
+        }
+
         public void Build()
         {
             if (_stageCamera)
@@ -149,7 +172,8 @@ namespace HealerLike.Render.Environment
 
         void Build(Vector3 cameraPosition)
         {
-            _items = Layout(cameraPosition, _fogStart, _fogEnd, _fogBands, _grid, _groundY, _seed);
+            _items = Layout(cameraPosition, _fogStart, _fogEnd, _fogBands, _grid, _groundY, _seed,
+                _stageCamera.transform.eulerAngles.y);
             CreateRoot("RidgeItems");
             foreach (RidgeItem item in _items)
             {

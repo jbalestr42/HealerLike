@@ -4,11 +4,12 @@ namespace HealerLike.Render.Stage
 {
     public static class StageCalibration
     {
-        // Matches the game's Main camera: rotation x 0.5998, w 0.8002, FOV 40, portrait autorotation
+        // Portrait looks along +X: Main places the healer at the origin and the enemy wave around x = 5.
+        public static readonly float PortraitYaw = 90f;
         public static readonly float PortraitPitch = 52f;
         public static readonly float PortraitFov = 40f;
         public static readonly float PortraitAspect = 9f / 16f;
-        public static readonly float PortraitCentreY = 0.48f;
+        public static readonly float PortraitCentreY = 0.35f;
         public static readonly int PortraitWidth = 1080;
         public static readonly int PortraitHeight = 1920;
         // The landscape preview keeps the wide framing from a lower pitch
@@ -32,14 +33,16 @@ namespace HealerLike.Render.Stage
         // Perspective pose at a fixed pitch whose view fits the board's width plus margin at its near edge
         // (the widest it projects), with the board centre drawn at the given viewport height
         public static Pose Frame(Bounds board, float pitchDegrees, float fieldOfView, float aspect, float margin,
-            float centreViewportY)
+            float centreViewportY, float yawDegrees = 0f)
         {
             float pitch = pitchDegrees * Mathf.Deg2Rad;
             float tanV = Mathf.Tan(fieldOfView * Mathf.Deg2Rad * 0.5f);
             float tanH = tanV * aspect;
             float n = 2f * centreViewportY - 1f;
-            float hx = board.extents.x + margin;
-            float hz = board.extents.z;
+            Quaternion heading = Quaternion.Euler(0f, yawDegrees, 0f);
+            Vector3 extents = HeadingExtents(board.extents, heading);
+            float hx = extents.x + margin;
+            float hz = extents.z;
             float cos = Mathf.Cos(pitch);
             float sin = Mathf.Sin(pitch);
             float shift = 0f;
@@ -59,24 +62,29 @@ namespace HealerLike.Render.Stage
                 }
             }
 
-            Quaternion rotation = Quaternion.Euler(pitchDegrees, 0f, 0f);
-            Vector3 target = board.center + Vector3.forward * shift;
+            Quaternion rotation = Quaternion.Euler(pitchDegrees, yawDegrees, 0f);
+            Vector3 target = board.center + heading * Vector3.forward * shift;
             return new Pose(target - rotation * Vector3.forward * distance, rotation);
         }
 
         // The fog starts at the board's far edge, as in the references, and the ring past it turns pale within
         // a few units; the ridge stands in the last band
-        public static Vector2 BackgroundFog(Vector3 camera, Bounds board)
+        public static Vector2 BackgroundFog(Vector3 camera, Bounds board, float yawDegrees = 0f)
         {
-            Vector3 farEdge = new Vector3(Mathf.Clamp(camera.x, board.min.x, board.max.x), board.center.y, board.max.z);
+            Quaternion heading = Quaternion.Euler(0f, yawDegrees, 0f);
+            Vector3 localCamera = Quaternion.Inverse(heading) * (camera - board.center);
+            Vector3 extents = HeadingExtents(board.extents, heading);
+            Vector3 farEdge = board.center + heading * new Vector3(
+                Mathf.Clamp(localCamera.x, -extents.x, extents.x), 0f, extents.z);
             float start = Vector3.Distance(camera, farEdge);
             return new Vector2(start, start + BackgroundFogDepth);
         }
 
         // Fits both axes, keeping room above the back row and below the front row for the HUD
-        public static Pose PlayableFrame(Bounds board, float pitch, float fov, float aspect, float centreY)
+        public static Pose PlayableFrame(Bounds board, float pitch, float fov, float aspect, float centreY,
+            float yawDegrees = 0f)
         {
-            Pose pose = Frame(board, pitch, fov, aspect, playableMargin, centreY);
+            Pose pose = Frame(board, pitch, fov, aspect, playableMargin, centreY, yawDegrees);
             Vector3 forward = pose.rotation * Vector3.forward;
             for (int step = 0; step < playableSteps; step++)
             {
@@ -93,9 +101,15 @@ namespace HealerLike.Render.Stage
 
         // The nearest pose at this pitch that keeps all eight corners of the box inside the viewport frame, with
         // the view lowered by lift times the half height so the box sits that much above the frame's middle
-        public static Pose Fit(Bounds box, float pitch, float fov, float aspect, Rect frame, float lift)
+        public static Pose Fit(Bounds box, float pitch, float fov, float aspect, Rect frame, float lift,
+            float yawDegrees = 0f)
         {
-            Quaternion rotation = Quaternion.Euler(pitch, 0f, 0f);
+            return Fit(box, Quaternion.Euler(pitch, yawDegrees, 0f), fov, aspect, frame, lift);
+        }
+
+        // Fits in the supplied view orientation, including during a turn between overview and focus.
+        public static Pose Fit(Bounds box, Quaternion rotation, float fov, float aspect, Rect frame, float lift)
+        {
             Quaternion inverse = Quaternion.Inverse(rotation);
             float tan = Mathf.Tan(fov * Mathf.Deg2Rad * 0.5f);
             // Each frame edge as a distance from the view centre, in half heights and half widths
@@ -116,6 +130,14 @@ namespace HealerLike.Render.Stage
             Vector3 position = box.center - rotation * Vector3.forward * distance
                                - rotation * Vector3.up * (lift * tan * distance);
             return new Pose(position, rotation);
+        }
+
+        static Vector3 HeadingExtents(Vector3 extents, Quaternion heading)
+        {
+            Vector3 right = heading * Vector3.right;
+            Vector3 forward = heading * Vector3.forward;
+            return new Vector3(Mathf.Abs(right.x) * extents.x + Mathf.Abs(right.z) * extents.z, extents.y,
+                Mathf.Abs(forward.x) * extents.x + Mathf.Abs(forward.z) * extents.z);
         }
 
         // Whether all eight corners of the box are in front of the near plane and inside the viewport frame
