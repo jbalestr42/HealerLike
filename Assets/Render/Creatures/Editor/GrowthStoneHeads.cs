@@ -209,7 +209,7 @@ namespace HealerLike.Render.Creatures
                 if (stone)
                 {
                     parts.Add(Anchored(lobe, ShapeProfile.Block(0.17f, 0.12f, 0.08f, 0.82f),
-                        new Vector3(side * 0.44f, 0.015f, side * 0.025f),
+                        new Vector3(side * 0.49f, 0.015f, side * 0.025f),
                         new Vector3(side < 0 ? 0.7f : 0.66f, side < 0 ? 1.4f : 1.29f, 0.56f),
                         Quaternion.AngleAxis(-side * 7f, Vector3.forward)));
                     AttachedTip(parts, true, lobe, new Vector3(0.14f, 0.22f, 0.14f));
