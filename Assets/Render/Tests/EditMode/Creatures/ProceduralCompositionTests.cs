@@ -139,6 +139,89 @@ namespace HealerLike.Render.Creatures
             Assert.That(Array.TrueForAll(recipe.parts, p => p.shape.isProcedural));
         }
 
+        [Test]
+        public void Compose_ZeroFamilyStemScale_MatchesAnExplicitLegacyLength()
+        {
+            CreatureRecipe original = Compose(LookSide.Plant);
+            Assert.AreEqual(0f, _vocabulary.heads[HeadKind.Bud].plantStemScale);
+            _vocabulary.heads[HeadKind.Bud].plantStemScale = 1f;
+            CreatureRecipe explicitLegacy = Compose(LookSide.Plant);
+
+            CollectionAssert.AreEqual(original.parts, explicitLegacy.parts);
+            Assert.AreEqual(original.neckLocal, explicitLegacy.neckLocal);
+        }
+
+        [TestCase(0.4f)]
+        [TestCase(1.8f)]
+        public void Compose_FamilyStemScale_KeepsTheStalkLinkedAndTheCrownSizeUnchanged(float multiplier)
+        {
+            UnitChannels channels = RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud);
+            CreatureRecipe before = Track(LookComposer.Compose(channels, _vocabulary));
+            _vocabulary.heads[HeadKind.Bud].plantStemScale = multiplier;
+            CreatureRecipe after = Track(LookComposer.Compose(channels, _vocabulary));
+            PartList parts = LookComposer.Layout(channels, _vocabulary);
+            UnitSockets sockets = UnitSockets.Place(channels, _vocabulary);
+            LookPart stalk = parts.Source(1);
+            float length = _vocabulary.stems[channels.stem].length * multiplier;
+
+            Assert.AreEqual(length, Vector3.Distance(sockets.stemFoot, sockets.neck), 0.00001f);
+            Assert.AreEqual((sockets.stemFoot + sockets.neck) * 0.5f, stalk.position);
+            Assert.AreEqual(length + _vocabulary.stems[channels.stem].thickness, stalk.size.y, 0.00001f);
+            Assert.AreEqual(sockets.neck, parts.Source(parts.headStarts[0]).position);
+            Assert.AreEqual(before.parts[0].dimensions, after.parts[0].dimensions);
+            Assert.AreEqual(Array.Find(before.parts, p => p.role == PartRole.Tip).dimensions,
+                Array.Find(after.parts, p => p.role == PartRole.Tip).dimensions);
+            Assert.AreNotEqual(before.neckLocal, after.neckLocal);
+        }
+
+        [Test]
+        public void Compose_FamilyStemScale_LeavesStoneLegsAndCrownUnchanged()
+        {
+            CreatureRecipe before = Compose(LookSide.Stone);
+            _vocabulary.heads[HeadKind.Bud].plantStemScale = 0.25f;
+            CreatureRecipe after = Compose(LookSide.Stone);
+
+            CollectionAssert.AreEqual(before.parts, after.parts);
+            Assert.AreEqual(before.neckLocal, after.neckLocal);
+        }
+
+        [Test]
+        public void Layout_FamilyStemScale_PreservesCadenceOrderingWithinTheFamily()
+        {
+            _vocabulary.heads[HeadKind.Bud].plantStemScale = 0.4f;
+            _vocabulary.stems[StemBand.Quick].length = 1.2f;
+            _vocabulary.stems[StemBand.Steady].length = 0.8f;
+            _vocabulary.stems[StemBand.Slow].length = 0.5f;
+            float[] lengths = new float[3];
+            for (int i = 0; i < 3; i++)
+            {
+                StemBand band = new[] { StemBand.Quick, StemBand.Steady, StemBand.Slow }[i];
+                UnitChannels channels = RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, stem: band);
+                UnitSockets sockets = UnitSockets.Place(channels, _vocabulary);
+                lengths[i] = Vector3.Distance(sockets.stemFoot, sockets.neck);
+            }
+
+            Assert.Greater(lengths[0], lengths[1]);
+            Assert.Greater(lengths[1], lengths[2]);
+            Assert.AreEqual(2.4f, lengths[0] / lengths[2], 0.00001f);
+            Assert.AreEqual(1.6f, lengths[1] / lengths[2], 0.00001f);
+        }
+
+        [TestCase(-0.1f)]
+        [TestCase(float.NaN)]
+        [TestCase(float.PositiveInfinity)]
+        public void Compose_InvalidFamilyStemScale_IsRejectedInStudioAndRuntime(float value)
+        {
+            _vocabulary.heads[HeadKind.Bud].plantStemScale = value;
+            CreatureGrammarPreset preset = Track(ScriptableObject.CreateInstance<CreatureGrammarPreset>());
+            preset.vocabulary = _vocabulary;
+            StringAssert.Contains("Plant family stem scale", string.Join(" ", CreatureGrammarValidator.Validate(preset)));
+            LogAssert.Expect(LogType.Error,
+                "[LookComposer] Plant family stem scale must be finite and nonnegative; zero keeps legacy length.");
+
+            Assert.IsNull(Compose(LookSide.Plant));
+        }
+
         [TestCase(LookSide.Plant)]
         [TestCase(LookSide.Stone)]
         public void Compose_ZeroScaleOverrides_PreserveLegacyMassScaling(LookSide side)

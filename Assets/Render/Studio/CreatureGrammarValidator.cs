@@ -137,6 +137,11 @@ namespace HealerLike.Render.Studio
             LookVocabulary.HeadEntry head = vocabulary.heads[channels.head];
             LookVocabulary.StemEntry stem = vocabulary.stems[channels.stem];
 
+            if (!float.IsFinite(head.plantStemScale) || head.plantStemScale < 0f)
+            {
+                errors.Add("Plant family stem scale must be finite and nonnegative; zero keeps legacy length.");
+            }
+
             CheckParts(Pick(body.plant, body.stone, isPlant), "body", CountBand.One, errors);
             CheckParts(Pick(head.plant, head.stone, isPlant), "head", head.carriesCount ? channels.count : CountBand.One,
                 errors);
