@@ -17,6 +17,7 @@ namespace HealerLike.Render.Stage
             public string inputMethod = "Actual Toolkit button events, Render touch adapter world taps; no physical device";
             public bool isPassed;
             public List<string> checks = new List<string>();
+            public List<string> failures = new List<string>();
             public List<Frame> frames = new List<Frame>();
         }
 
@@ -27,6 +28,8 @@ namespace HealerLike.Render.Stage
             public int width;
             public int height;
             public Rect safeArea;
+            public bool hasSafeAreaOverride;
+            public Rect normalizedSafeAreaOverride;
             public Rect battlefieldViewport;
             public Rect hud;
             public Rect world;
@@ -44,12 +47,18 @@ namespace HealerLike.Render.Stage
         }
 
         public readonly Manifest manifest = new Manifest();
-        readonly string _folder = Path.Combine(StagePlay.CaptureFolder, "mobile-interface");
+        readonly string _folder;
+
+        public StageInterfaceOutput(string folder = null)
+        {
+            _folder = folder ?? Path.Combine(StagePlay.CaptureFolder, "mobile-interface");
+        }
 
         public void Check(bool passed, string detail)
         {
             if (!passed)
             {
+                manifest.failures.Add(detail);
                 throw new InvalidOperationException("[StageInterfaceRun] " + detail);
             }
             manifest.checks.Add(detail);
@@ -69,6 +78,11 @@ namespace HealerLike.Render.Stage
             frame.width = Screen.width;
             frame.height = Screen.height;
             frame.safeArea = Screen.safeArea;
+            frame.hasSafeAreaOverride = ui.safeAreaProvider != null;
+            if (frame.hasSafeAreaOverride)
+            {
+                frame.normalizedSafeAreaOverride = ui.safeAreaProvider();
+            }
             frame.battlefieldViewport = ui.normalizedWorldViewport;
             frame.hud = root.Q("hud-root").worldBound;
             frame.world = root.Q("world-space").worldBound;
@@ -96,12 +110,23 @@ namespace HealerLike.Render.Stage
             {
                 yield return null;
             }
+            Texture2D image = new Texture2D(2, 2, TextureFormat.RGB24, false);
+            image.LoadImage(File.ReadAllBytes(path));
+            bool matches = image.width == frame.width && image.height == frame.height;
+            UnityEngine.Object.Destroy(image);
+            Check(matches, "Native image dimensions match game-frame Screen: " + name);
             manifest.frames.Add(frame);
+        }
+
+        public void Fail(string detail)
+        {
+            manifest.failures.Add(detail);
+            Write(false);
         }
 
         public void Write(bool passed)
         {
-            manifest.isPassed = passed;
+            manifest.isPassed = passed && manifest.failures.Count == 0;
             Directory.CreateDirectory(_folder);
             File.WriteAllText(Path.Combine(_folder, "interface.json"), JsonUtility.ToJson(manifest, true));
         }
