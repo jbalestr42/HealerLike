@@ -159,7 +159,14 @@ public class CreatureRigTests
                 Assert.AreSame(shared, renderer.sharedMaterial, "Root material must stay separate");
             }
         }
-        Assert.That(rootParts, Is.GreaterThan(0), "The composed creature must exercise the separate root material");
+        if (side == LookSide.Plant)
+        {
+            Assert.That(rootParts, Is.GreaterThan(0), "The plant must exercise the separate root material");
+        }
+        else
+        {
+            Assert.That(rootParts, Is.Zero, "Mineral supports are recipe parts, not plant roots");
+        }
     }
 
     [Test]
