@@ -53,3 +53,5 @@
 .unity-scroller .unity-base-slider__dragger { background-color: rgb(65, 88, 81); border-width: 0; border-radius: 4px; }
 .unity-base-popup-field__input { background-color: var(--ui-card); border-color: var(--ui-border); color: var(--ui-ink); }
 .unity-toggle__input > .unity-toggle__checkmark { background-color: var(--ui-card); border-width: 1px; border-color: var(--ui-border); }
+
+.button.is-selected { border-color: var(--ui-accent); background-color: rgb(44, 65, 58); }
