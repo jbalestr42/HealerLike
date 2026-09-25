@@ -196,6 +196,16 @@ namespace HealerLike.Render.Creatures
             Assert.Greater(LookMeasure.HeadGap(channels, _vocabulary), 0f);
         }
 
+        [TestCase(CountBand.Few)]
+        [TestCase(CountBand.Many)]
+        public void Layout_PlantFan_KeepsItsOuterNeighboursApartForWideHeads(CountBand count)
+        {
+            _vocabulary.heads[HeadKind.Bud].plant[0].size = new Vector3(2.3f, 1f, 0.5f);
+            UnitChannels channels = RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, count);
+
+            Assert.Greater(LookMeasure.HeadGap(channels, _vocabulary), 0f);
+        }
+
         [TestCase(CountBand.Few, 2)]
         [TestCase(CountBand.Many, 4)]
         public void Layout_StoneFan_ConnectsOuterCopiesWithMineralSlabs(CountBand count, int supports)

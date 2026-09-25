@@ -119,9 +119,9 @@ namespace HealerLike.Render.Creatures
                     && float.IsFinite(limbSplay) && Mathf.Abs(limbSplay) <= 90f
                     && Positive(limbBodyOverlap) && Positive(minBranch) && maxBranch >= minBranch
                     && Positive(maxBranch) && Positive(threeHeadScale) && Positive(fiveHeadScale)
-                    && Angle(threeHeadSpread) && Angle(fiveHeadSpread) && Positive(stoneBranch)
+                    && Angle(threeHeadSpread) && Angle(fiveHeadSpread) && fiveHeadSpread < 45f && Positive(stoneBranch)
                     && Positive(stoneBranchThickness)
-                    && Positive(branchThickness) && Positive(headClearance) && Positive(foreshortening)
+                    && Positive(branchThickness) && Positive(headClearance) && Positive(foreshortening) && foreshortening <= 1f
                     && Positive(plantAccessoryClearance) && Positive(stoneAccessoryClearance);
             }
 
