@@ -25,8 +25,9 @@ namespace HealerLike.Render.Creatures
             switch (kind)
             {
                 case HeadKind.Bud:
-                    parts.Add(Part("BudBody", round, new Vector3(0f, 0.46f, 0f), new Vector3(0.84f, 0.86f, 0.72f)));
-                    Tip(parts, stone, new Vector3(0f, 0.94f, 0f), new Vector3(0.14f, 0.22f, 0.14f));
+                    parts.Add(Anchored("BudBody", round, new Vector3(0f, 0.01f, 0f),
+                        new Vector3(1.17f, 1.12f, 1f), Quaternion.identity));
+                    AttachedTip(parts, stone, "BudBody", new Vector3(0.14f, 0.22f, 0.14f));
                     break;
                 case HeadKind.Spear:
                     parts.Add(Part("SpearJoint", round, new Vector3(0f, 0.12f, 0f), new Vector3(0.2f, 0.24f, 0.2f)));

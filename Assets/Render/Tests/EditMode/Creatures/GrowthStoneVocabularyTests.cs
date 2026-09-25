@@ -159,6 +159,8 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void Bands_KeepCadenceMassAndReachMeanings()
         {
+            Assert.Greater(_vocabulary.heads[HeadKind.Bud].plant[0].size.x * _vocabulary.bodies[MassBand.Light].scale,
+                _vocabulary.bodies[MassBand.Light].plant[0].size.x * 1.4f, "Normal remains head-led.");
             Assert.Greater(_vocabulary.stems[StemBand.Quick].length, _vocabulary.stems[StemBand.Steady].length);
             Assert.Greater(_vocabulary.stems[StemBand.Steady].length, _vocabulary.stems[StemBand.Slow].length);
             Assert.Less(_vocabulary.stems[StemBand.Quick].thickness, _vocabulary.stems[StemBand.Slow].thickness);
