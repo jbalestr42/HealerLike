@@ -267,6 +267,7 @@ namespace HealerLike.Render.Creatures
                 LookPart[] legs = Enumerable.Range(0, layout.count).Select(layout.Source)
                     .Where(p => p.role == PartRole.Limb).ToArray();
                 Assert.AreEqual(2, legs.Length);
+                Assert.AreNotEqual(legs[0].size, legs[1].size, "The feet remain two unequal mineral blocks.");
                 foreach (LookPart leg in legs)
                 {
                     Assert.AreEqual(ShapeKind.Block, leg.shape.kind);
@@ -349,6 +350,43 @@ namespace HealerLike.Render.Creatures
             }
             Assert.Greater(_vocabulary.bodies[MassBand.Light].stone[0].shape.fracture,
                 _vocabulary.stems[StemBand.Quick].stoneLimbShape.fracture);
+        }
+
+        [Test]
+        public void Arch_GrowsArticulatedFromTheBaseAndKeepsItsCrownDominant()
+        {
+            foreach (StemBand cadence in Enum.GetValues(typeof(StemBand)))
+            foreach (MassBand mass in Enum.GetValues(typeof(MassBand)))
+            {
+                UnitChannels channels = RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Arch,
+                    stem: cadence, mass: mass);
+                PartList layout = LookComposer.Layout(channels, _vocabulary);
+                LookPart[] parts = Enumerable.Range(0, layout.count).Select(layout.Source).ToArray();
+                Assert.IsFalse(parts.Any(p => p.id == "Stem"), "The crook must start as articulated growth.");
+                LookPart[] links = parts.Where(p => p.id == "StemGrowth").ToArray();
+                Assert.AreEqual(2, links.Length);
+                Assert.AreEqual(1, parts.Count(p => p.id == "StemJoint"));
+                Assert.IsTrue(links.All(p => p.size.x >= 0.35f));
+                LookPart[] crown = parts.Skip(layout.headStarts[0]).ToArray();
+                float crownSpan = crown.Max(p => Box(p).max.y) - crown.Min(p => Box(p).min.y);
+                Assert.Greater(crownSpan, _vocabulary.bodies[mass].plant[0].size.y * 2f);
+            }
+        }
+
+        [Test]
+        public void ForkAndMineralSlabs_UseStructuralCurvatureAndRidges()
+        {
+            foreach (LookPart leaf in _vocabulary.heads[HeadKind.Fork].plant.Where(p => p.id.StartsWith("ForkL") || p.id == "ForkRight"))
+            {
+                Assert.Less(leaf.shape.bow, -0.7f);
+                Assert.Greater(leaf.size.x, 0.8f);
+            }
+            foreach (LookPart slab in _vocabulary.heads[HeadKind.Fork].stone.Where(p => p.id == "ForkLeft" || p.id == "ForkRight"))
+            {
+                Assert.Greater(slab.shape.ridge, 0.6f);
+            }
+            Assert.Greater(_vocabulary.heads[HeadKind.Bud].stone[0].shape.ridge, 0.5f);
+            Assert.AreEqual(0f, _vocabulary.stems[StemBand.Quick].stoneLimbShape.ridge);
         }
 
         static Bounds Box(LookPart part)

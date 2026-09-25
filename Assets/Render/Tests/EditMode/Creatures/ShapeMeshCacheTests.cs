@@ -42,5 +42,23 @@ namespace HealerLike.Render.Creatures
             Assert.IsNull(_cache.Get(default));
             Assert.AreEqual(2, _cache.count);
         }
+
+        [Test]
+        public void Get_BowAndRidgeEdits_ProduceIndependentCachedGeometry()
+        {
+            ShapeProfile leaf = ShapeProfile.Leaf();
+            ShapeProfile bowed = leaf;
+            bowed.bow = -0.9f;
+            Assert.AreNotEqual(leaf, bowed);
+            Assert.AreNotSame(_cache.Get(leaf), _cache.Get(bowed));
+            CollectionAssert.AreNotEqual(_cache.Get(leaf).vertices, _cache.Get(bowed).vertices);
+            ShapeProfile block = ShapeProfile.Block(fracture: 0.75f);
+            ShapeProfile ridged = block;
+            ridged.ridge = 0.7f;
+            Assert.AreNotEqual(block, ridged);
+            Assert.AreNotSame(_cache.Get(block, 17), _cache.Get(ridged, 17));
+            CollectionAssert.AreNotEqual(_cache.Get(block, 17).vertices, _cache.Get(ridged, 17).vertices);
+            Assert.AreSame(_cache.Get(ridged, 17), _cache.Get(ridged, 17));
+        }
     }
 }

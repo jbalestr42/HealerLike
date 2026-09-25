@@ -60,15 +60,16 @@ namespace HealerLike.Render.Creatures
             vocabulary.maxParts = CreatureValidator.MaxParts;
             vocabulary.isReachPinned = false;
             vocabulary.rootCount = 8;
-            vocabulary.rootThickness = 0.175f;
-            vocabulary.rootHip = 0.145f;
-            vocabulary.rootKnee = 0.19f;
+            vocabulary.rootThickness = 0.2f;
+            vocabulary.rootHip = 0.28f;
+            vocabulary.rootKnee = 0.22f;
             vocabulary.armCount = 2;
             vocabulary.layout = new LookVocabulary.LayoutEntry
             {
                 maxBranch = 1.65f, minBranch = 0.7f, threeHeadScale = 0.76f, fiveHeadScale = 0.64f,
                 threeHeadSpread = 43f, fiveHeadSpread = 31f, headClearance = 1.25f,
-                branchThickness = 0.13f, limbSpread = 0.36f, limbWidth = 0.48f, limbThickness = 0.5f, limbSplay = 18f,
+                branchThickness = 0.19f, limbSpread = 0.36f, limbWidth = 0.48f, limbThickness = 0.5f,
+                limbSplay = 18f, limbAsymmetry = 0.1f,
                 stoneNeck = 0.55f, extendAccessorySupports = true
             };
         }
@@ -77,14 +78,14 @@ namespace HealerLike.Render.Creatures
         {
             LookPart plant = Part("Body", ShapeProfile.Bulb(1.1f), Vector3.zero,
                 new Vector3(plantWidth, plantWidth * 0.86f, plantWidth * 0.9f), PartRole.Body);
-            LookPart stone = Part("Body", ShapeProfile.Block(0.18f, 0.05f, 0.1f, 0.72f), Vector3.zero,
+            LookPart stone = Part("Body", ShapeProfile.Block(0.16f, 0.05f, 0.13f, 0.72f, 0.38f), Vector3.zero,
                 new Vector3(stoneWidth, stoneWidth * 0.63f, stoneWidth * 0.85f), PartRole.Body);
             return new LookVocabulary.BodyEntry
             {
                 scale = scale, headScale = 0.85f, stemScale = heavy ? 0.35f : 1f, bodyLift = heavy ? 0.52f : 0f,
                 plant = heavy ? new[] { plant, Part("BaseBulb", ShapeProfile.Bulb(1.1f),
                     new Vector3(0.05f, -0.5f, 0f), new Vector3(1.06f, 0.64f, 0.93f), PartRole.Body) } : new[] { plant },
-                stone = heavy ? new[] { stone, Part("BaseBlock", ShapeProfile.Block(0.12f, 0.08f, 0.06f, 0.6f),
+                stone = heavy ? new[] { stone, Part("BaseBlock", ShapeProfile.Block(0.12f, 0.08f, 0.1f, 0.6f, 0.25f),
                     new Vector3(-0.09f, -0.46f, 0f), new Vector3(1.12f, 0.54f, 0.94f), PartRole.Body) } : new[] { stone }
             };
         }
@@ -102,8 +103,8 @@ namespace HealerLike.Render.Creatures
         {
             return new LookVocabulary.RootEntry
             {
-                reach = reach, segmentShape = ShapeProfile.Segment(0.27f, 0.45f), jointShape = ShapeProfile.Bulb(),
-                taper = 0.65f, jointScale = 3.1f, thicknessScale = 1f
+                reach = reach, segmentShape = ShapeProfile.Segment(0.27f, 0.7f), jointShape = ShapeProfile.Bulb(),
+                taper = 0.6f, jointScale = 2.65f, thicknessScale = 1f
             };
         }
     }

@@ -87,6 +87,25 @@ namespace HealerLike.Render.Creatures
                 }
             }
 
+            // A few large planes give a slab a mineral ridge, rather than adding small surface triangles.
+            // Use the same seed for a restrained diagonal lean; the other cuts and the cap stay intact.
+            if (shape.ridge > 0f)
+            {
+                for (int side = 2; side <= 3; side++)
+                {
+                    float lean = random.Range(-0.35f, 0.35f);
+                    Vector3 across = new Vector3(1f, lean, 0f).normalized * shape.ridge;
+                    for (int sign = -1; sign <= 1; sign += 2)
+                    {
+                        Cut ridge = new Cut(sides[side].normal + across * sign,
+                            sides[side].distance - 0.015f * shape.ridge);
+                        float interiorDistance = Vector3.Dot(ridge.normal, interior);
+                        ridge.distance = Mathf.Max(ridge.distance, interiorDistance + 0.08f);
+                        faces = Clip(faces, ridge, cutId++);
+                    }
+                }
+            }
+
             for (int face = 0; face < faces.Count; face++)
             {
                 List<Vector3> polygon = faces[face].points;

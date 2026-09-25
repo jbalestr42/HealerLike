@@ -148,8 +148,12 @@ public class LookComposerTests
         Assert.That(recipe.roots.segments, Is.InRange(2, 3));
         float unit = _vocabulary.Unit(LookSide.Plant);
         Assert.AreEqual(_vocabulary.Reach(ReachBand.Long) * unit, recipe.roots.footRadius, 0.0001f);
-        Assert.That(recipe.roots.thickness * 2f / unit, Is.InRange(0.12f, 0.18f)); // diameter in plant body units
-        Assert.Less(recipe.roots.hipHeight / unit, 0.2f); // the roots leave the body at its base
+        Assert.GreaterOrEqual(recipe.roots.thickness * 2f / unit, 0.12f);
+        Assert.Less(recipe.roots.thickness * 2f, recipe.parts[0].dimensions.x * 0.35f);
+        Assert.Greater(recipe.roots.hipHeight,
+            recipe.parts[0].localPosition.y - recipe.parts[0].dimensions.y * 0.5f);
+        Assert.Less(recipe.roots.hipHeight,
+            recipe.parts[0].localPosition.y + recipe.parts[0].dimensions.y * 0.5f); // the roots emerge inside the base
         Assert.AreEqual(2, recipe.arms.Length);
     }
 
