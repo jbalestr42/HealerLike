@@ -91,6 +91,11 @@ namespace HealerLike.Render.Stage
                 proof.boardTufts = _manager.grass.tuftCount;
                 proof.tuftHeight = GrassLayout.TuftHeight;
                 proof.tuftWidth = GrassLayout.TuftWidth;
+                output.manifest.inkScale = _manager.look.settings.inkScale;
+                output.manifest.inkStart = _manager.look.settings.inkStart;
+                output.manifest.grassNormalEdges = _manager.grass.lookMaterial.GetFloat("_HLNormalEdges") > 0f;
+                output.manifest.grassCastsShadows = _manager.grass.tuftDraw.shadowCastingMode
+                    != UnityEngine.Rendering.ShadowCastingMode.Off;
                 yield return Wait(0.2f);
                 yield return output.Capture(camera, "playfield", "offscreen-player");
                 if (!output.isCaptured) yield break;
@@ -176,6 +181,21 @@ namespace HealerLike.Render.Stage
                 if (shotGo) Object.Destroy(shotGo);
                 size.Dispose();
                 proof.passed &= !output.hasFailure && output.manifest.frames.Count == 6;
+                if (output.manifest.frames.Count > 0)
+                {
+                    StageMotionFrame first = output.manifest.frames[0];
+                    foreach (StageMotionFrame frame in output.manifest.frames)
+                    {
+                        output.manifest.maximumCameraPositionError = Mathf.Max(
+                            output.manifest.maximumCameraPositionError,
+                            Vector3.Distance(first.cameraPosition, frame.cameraPosition));
+                        output.manifest.maximumCameraRotationError = Mathf.Max(
+                            output.manifest.maximumCameraRotationError,
+                            Quaternion.Angle(first.cameraRotation, frame.cameraRotation));
+                    }
+                    output.manifest.cameraFixed = output.manifest.maximumCameraPositionError < 0.00001f
+                        && output.manifest.maximumCameraRotationError < 0.001f;
+                }
                 output.manifest.isPassed = proof.passed;
                 output.Write();
                 File.WriteAllText(Path.Combine(folder, "proof.json"), JsonUtility.ToJson(proof, true));
