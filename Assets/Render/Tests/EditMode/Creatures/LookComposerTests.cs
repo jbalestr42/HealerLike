@@ -111,7 +111,7 @@ public class LookComposerTests
     }
 
     [Test]
-    public void Compose_EveryAccessory_SitsOnTheUnitsRight()
+    public void Compose_Accessories_UseTheirAuthoredCenteredOrRightPlacement()
     {
         foreach (AccessoryKind accessory in Enum.GetValues(typeof(AccessoryKind)))
         {
@@ -128,7 +128,14 @@ public class LookComposerTests
             {
                 sum += part.localPosition.x;
             }
-            Assert.Greater(sum, 0f, accessory.ToString());
+            if (_vocabulary.accessories[accessory].isCentered)
+            {
+                Assert.AreEqual(0f, sum, 0.001f, accessory.ToString());
+            }
+            else
+            {
+                Assert.Greater(sum, 0f, accessory.ToString());
+            }
         }
     }
 
@@ -174,7 +181,8 @@ public class LookComposerTests
         CreatureRecipe recipe =
             Compose(RenderTestAssets.CreateChannels(LookSide.Stone, HeadKind.Bud, mass: MassBand.Sturdy));
 
-        float width = recipe.parts[0].dimensions.x * 2f / _vocabulary.bodyUnit; // the stone mesh spans two units across
+        float meshWidth = recipe.parts[0].shape.isProcedural ? 1f : 2f;
+        float width = recipe.parts[0].dimensions.x * meshWidth / _vocabulary.bodyUnit;
 
         Assert.AreEqual(2.2f, width, 0.001f);
     }
@@ -192,7 +200,7 @@ public class LookComposerTests
     }
 
     [Test]
-    public void Compose_HeavierMass_GrowsTheHeadWithItsSocket()
+    public void Compose_MassUsesItsAuthoredHeadScale()
     {
         CreaturePart light = FindAll(
             Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Light)),
@@ -201,7 +209,7 @@ public class LookComposerTests
             Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Heavy)),
             PartRole.Tip)[0];
 
-        float massRatio = _vocabulary.bodies[MassBand.Heavy].scale / _vocabulary.bodies[MassBand.Light].scale;
+        float massRatio = _vocabulary.bodies[MassBand.Heavy].HeadScale / _vocabulary.bodies[MassBand.Light].HeadScale;
         Assert.AreEqual(massRatio, heavy.dimensions.x / light.dimensions.x, 0.001f);
     }
 

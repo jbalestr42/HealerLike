@@ -24,6 +24,16 @@ namespace HealerLike.Render.Studio.Editor
         BattleFocus _focus;
         bool _focusEnabled;
         StageGameViewSize _gameViewSize;
+        readonly bool _shapes;
+        LookVocabulary _vocabulary;
+        MassBand _editedMass;
+        LookPart _originalBody;
+        bool _hasShapeEdit;
+
+        public CreatureLivePaletteRun(bool shapes = false)
+        {
+            _shapes = shapes;
+        }
 
         protected override IEnumerator Run()
         {
@@ -70,8 +80,12 @@ namespace HealerLike.Render.Studio.Editor
             bool passed = false;
             try
             {
-                _palette = _manager.creatureLooks.vocabulary.palette;
-                _original = EditorJsonUtility.ToJson(_palette);
+                _vocabulary = _manager.creatureLooks.vocabulary;
+                _palette = _vocabulary.palette;
+                if (!_shapes)
+                {
+                    _original = EditorJsonUtility.ToJson(_palette);
+                }
                 _timeScale = Time.timeScale;
                 _isFrozen = true;
                 Time.timeScale = 0f;
@@ -87,23 +101,46 @@ namespace HealerLike.Render.Studio.Editor
                 Transform root = rig.root;
                 int revision = rig.revision;
                 Entity owner = _view.GetComponentInParent<Entity>();
+                Transform[] anchors = (Transform[])rig.budAnchors.Clone();
+                Vector3[] vertices = BodyVertices(rig);
+                Vector3 bodyScale = rig.partTransforms[0].localScale;
                 float health = owner.health.Value;
                 Vector3 camera = _manager.gameCamera.transform.position;
-                string folder = Path.GetFullPath("Logs/CreatureRosterCaptures");
+                string folder = Path.GetFullPath(_shapes ? "Logs/GrowthStoneCaptures" : "Logs/CreatureRosterCaptures");
                 Directory.CreateDirectory(folder);
                 StageMotionOutput output = new StageMotionOutput(folder);
-                yield return output.Capture(_manager.gameCamera, "live-before", "palette");
+                string prefix = _shapes ? "live-shape" : "live";
+                yield return output.Capture(_manager.gameCamera, prefix + "-before", _shapes ? "shape" : "palette");
                 if (!output.isCaptured)
                 {
                     CreatureLivePaletteCapture.Finish(false);
                     yield break;
                 }
-                before = output.Load("live-before.png");
-                using (SerializedObject edit = new SerializedObject(_palette))
+                before = output.Load(prefix + "-before.png");
+                string originalProfile = "null";
+                string editedProfile = "null";
+                if (_shapes)
                 {
-                    edit.FindProperty("plantBody").colorValue = new Color(0.95f, 0.08f, 0.35f);
-                    edit.FindProperty("plantStem").colorValue = new Color(0.9f, 0.28f, 0.06f);
-                    edit.ApplyModifiedProperties();
+                    _editedMass = LookDerivation.Channels(owner.data, owner.entityType).mass;
+                    _originalBody = _vocabulary.bodies[_editedMass].plant[0];
+                    _hasShapeEdit = true;
+                    originalProfile = JsonUtility.ToJson(_originalBody.shape);
+                    LookPart edit = _originalBody;
+                    edit.shape.fullness = 0.24f;
+                    edit.shape.taper = 0.82f;
+                    edit.shape.bend = 0.42f;
+                    _vocabulary.bodies[_editedMass].plant[0] = edit;
+                    editedProfile = JsonUtility.ToJson(edit.shape);
+                    EditorUtility.SetDirty(_vocabulary);
+                }
+                else
+                {
+                    using (SerializedObject edit = new SerializedObject(_palette))
+                    {
+                        edit.FindProperty("plantBody").colorValue = new Color(0.95f, 0.08f, 0.35f);
+                        edit.FindProperty("plantStem").colorValue = new Color(0.9f, 0.28f, 0.06f);
+                        edit.ApplyModifiedProperties();
+                    }
                 }
                 // No direct rebuild call: this is the same dirty signal as an Inspector edit.
                 float deadline = Time.realtimeSinceStartup + 5f;
@@ -112,25 +149,52 @@ namespace HealerLike.Render.Studio.Editor
                     yield return null;
                 }
                 yield return Wait(0.3f);
-                yield return output.Capture(_manager.gameCamera, "live-after", "palette");
+                yield return output.Capture(_manager.gameCamera, prefix + "-after", _shapes ? "shape" : "palette");
                 if (!output.isCaptured)
                 {
                     CreatureLivePaletteCapture.Finish(false);
                     yield break;
                 }
-                after = output.Load("live-after.png");
+                after = output.Load(prefix + "-after.png");
                 int pixels = ChangedPixels(before, after);
+                int changedVertices = ChangedVertices(vertices, BodyVertices(rig));
+                bool anchorsHeld = anchors.Length == rig.budAnchors.Length;
+                for (int i = 0; anchorsHeld && i < anchors.Length; i++)
+                {
+                    anchorsHeld = anchors[i] == rig.budAnchors[i];
+                }
                 bool held = _projectile && _observer && _observer.gestureToken == token;
                 bool lease = held && !_view.BeginDelivery(token, _observer.deliveryStyle, _projectile.transform,
                     _projectile.transform.position);
                 passed = held && lease && _view.rig == rig && rig.root == root && rig.revision > revision
-                    && owner.health.Value == health && _manager.gameCamera.transform.position == camera && pixels > 100;
+                    && owner.health.Value == health && _manager.gameCamera.transform.position == camera && pixels > 100
+                    && (!_shapes || (changedVertices > 0 && anchorsHeld && rig.partTransforms[0].localScale == bodyScale));
+                int revisionAfter = rig.revision;
+                bool profileRestored = true;
+                bool meshRestored = true;
+                if (_shapes)
+                {
+                    RestoreShape();
+                    deadline = Time.realtimeSinceStartup + 5f;
+                    while (rig.revision == revisionAfter && Time.realtimeSinceStartup < deadline)
+                    {
+                        yield return null;
+                    }
+                    profileRestored = JsonUtility.ToJson(_vocabulary.bodies[_editedMass].plant[0].shape) == originalProfile;
+                    meshRestored = ChangedVertices(vertices, BodyVertices(rig)) == 0 && rig.revision > revisionAfter;
+                    passed &= profileRestored && meshRestored;
+                }
                 string report = "{\"passed\":" + passed.ToString().ToLowerInvariant()
-                    + ",\"revisionBefore\":" + revision + ",\"revisionAfter\":" + rig.revision
+                    + ",\"revisionBefore\":" + revision + ",\"revisionAfter\":" + revisionAfter
                     + ",\"changedPixels\":" + pixels + ",\"heldDeliveryPreserved\":"
                     + (held && lease).ToString().ToLowerInvariant() + ",\"realProjectile\":true,\"gestureToken\":"
-                    + token + ",\"nativeGameViewWithHud\":true}";
-                File.WriteAllText(Path.Combine(folder, "live-proof.json"), report);
+                    + token + ",\"nativeGameViewWithHud\":true,\"shapeMode\":" + _shapes.ToString().ToLowerInvariant()
+                    + ",\"changedVertices\":" + changedVertices + ",\"anchorsPreserved\":" + anchorsHeld.ToString().ToLowerInvariant()
+                    + ",\"profileRestored\":" + profileRestored.ToString().ToLowerInvariant()
+                    + ",\"meshRestored\":" + meshRestored.ToString().ToLowerInvariant()
+                    + ",\"originalProfile\":" + originalProfile + ",\"editedProfile\":" + editedProfile
+                    + ",\"blindSpot\":\"Simulation is paused; this verifies watcher propagation during a held delivery, not uninterrupted combat motion.\"}";
+                File.WriteAllText(Path.Combine(folder, prefix + "-proof.json"), report);
                 Debug.Log("[CreatureLivePaletteRun] " + report);
             }
             finally
@@ -150,6 +214,7 @@ namespace HealerLike.Render.Studio.Editor
 
         public void Restore()
         {
+            RestoreShape();
             if (_gameViewSize != null)
             {
                 _gameViewSize.Dispose();
@@ -170,6 +235,37 @@ namespace HealerLike.Render.Studio.Editor
             {
                 _focus.enabled = _focusEnabled;
             }
+        }
+
+        void RestoreShape()
+        {
+            if (_hasShapeEdit && _vocabulary)
+            {
+                // Odin dictionaries need their exact saved value restored; EditorJsonUtility omits them.
+                _vocabulary.bodies[_editedMass].plant[0] = _originalBody;
+                EditorUtility.SetDirty(_vocabulary);
+                _hasShapeEdit = false;
+            }
+        }
+
+        static Vector3[] BodyVertices(CreatureRig rig)
+        {
+            MeshFilter mesh = rig.partTransforms[0].GetComponent<MeshFilter>();
+            return mesh && mesh.sharedMesh ? mesh.sharedMesh.vertices : new Vector3[0];
+        }
+
+        static int ChangedVertices(Vector3[] before, Vector3[] after)
+        {
+            if (before.Length != after.Length)
+            {
+                return Mathf.Max(before.Length, after.Length);
+            }
+            int changed = 0;
+            for (int i = 0; i < before.Length; i++)
+            {
+                if ((before[i] - after[i]).sqrMagnitude > 0.00000001f) changed++;
+            }
+            return changed;
         }
 
         static int ChangedPixels(Texture2D before, Texture2D after)
