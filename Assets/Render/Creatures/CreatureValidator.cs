@@ -8,7 +8,8 @@ namespace HealerLike.Render.Creatures
     {
         // Roots reach at most the long band, 2.1 body units at a plant's one-cell body, plus their thickness
         public static readonly float MaxRootReach = 2.2f;
-        public static readonly int MaxParts = 40;
+        // Full Growth and stone vocabulary: the largest Many + Heavy + MiniHead recipe needs 88 parts, plus at most one support.
+        public static readonly int MaxParts = 96;
 
         public static bool TryValidate(CreatureRecipe data, out string error)
         {
@@ -38,7 +39,7 @@ namespace HealerLike.Render.Creatures
                 if (!RenderMath.IsFinite(position) || !RenderMath.IsFinite(euler) || !Positive(part.dimensions)
                     || !Colour(part.colour)
                     || !float.IsFinite(part.glow) || part.glow < 0f
-                    || (int)part.primitive < 0 || part.primitive > Primitive.Stone)
+                    || (int)part.primitive < 0 || part.primitive > Primitive.Stone || !part.shape.IsValid())
                 {
                     return Fail("Invalid primitive settings.", out error);
                 }
@@ -100,7 +101,9 @@ namespace HealerLike.Render.Creatures
                 || !Positive(roots.footRadius) || !Positive(roots.thickness)
                 || roots.footRadius + roots.thickness > MaxRootReach
                 || !Positive(roots.hipHeight) || !Positive(roots.kneeHeight)
-                || !Colour(roots.colour))
+                || !Colour(roots.colour) || !roots.segmentShape.IsValid() || !roots.jointShape.IsValid()
+                || !Nonnegative(roots.taper) || roots.taper > 1f
+                || !Nonnegative(roots.jointScale) || roots.jointScale > 8f)
             {
                 return Fail("Roots reach past the longest band or have invalid settings.", out error);
             }

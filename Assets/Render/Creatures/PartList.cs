@@ -30,12 +30,13 @@ namespace HealerLike.Render.Creatures
 
         // Size is the part's bounding box in body units, whatever the mesh's own pivot
         public int Add(string id, Primitive primitive, Vector3 centre, Vector3 size, Color colour, Vector3 euler,
-            float glow, PartRole role, int variant = 0)
+            float glow, PartRole role, int variant = 0, ShapeProfile shape = default)
         {
             _sources.Add(new LookPart
             {
                 id = id,
                 primitive = primitive,
+                shape = shape,
                 role = role,
                 position = centre,
                 euler = euler,
@@ -43,7 +44,7 @@ namespace HealerLike.Render.Creatures
                 glow = glow
             });
 
-            PrimitiveMeshes.Fit(primitive, centre, size, Quaternion.Euler(euler), out Vector3 dimensions,
+            PrimitiveMeshes.Fit(primitive, shape, centre, size, Quaternion.Euler(euler), out Vector3 dimensions,
                 out Vector3 pivot);
             string uniqueId = id;
             if (_ids.Contains(id))
@@ -69,6 +70,7 @@ namespace HealerLike.Render.Creatures
                 id = uniqueId,
                 parent = parent,
                 primitive = primitive,
+                shape = shape,
                 localPosition = local * _unit,
                 localEuler = euler,
                 dimensions = dimensions * _unit,
@@ -82,12 +84,28 @@ namespace HealerLike.Render.Creatures
         }
 
         // A capsule from one point to another
-        public int Link(string id, Vector3 from, Vector3 to, float thickness, Color colour, PartRole role)
+        public int Link(string id, Vector3 from, Vector3 to, float thickness, Color colour, PartRole role,
+            ShapeProfile shape = default)
         {
             Vector3 delta = to - from;
             Vector3 euler = Quaternion.FromToRotation(Vector3.up, delta).eulerAngles;
             Vector3 size = new Vector3(thickness, delta.magnitude + thickness, thickness);
-            return Add(id, Primitive.Capsule, (from + to) * 0.5f, size, colour, euler, 0f, role);
+            return Add(id, Primitive.Capsule, (from + to) * 0.5f, size, colour, euler, 0f, role, shape: shape);
+        }
+
+        // Move a completed fragment while preserving its relative part placements and the root pivot.
+        public void Translate(int start, Vector3 offset)
+        {
+            for (int i = Mathf.Max(1, start); i < _parts.Count; i++)
+            {
+                CreaturePart part = _parts[i];
+                part.localPosition += offset * _unit;
+                _parts[i] = part;
+                LookPart source = _sources[i];
+                source.position += offset;
+                _sources[i] = source;
+                _positions[i] += offset;
+            }
         }
 
         // The part as it was added, centre and bounding box in body units before any pivot or mesh correction

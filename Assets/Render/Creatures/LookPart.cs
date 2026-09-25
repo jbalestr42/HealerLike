@@ -10,6 +10,8 @@ namespace HealerLike.Render.Creatures
     {
         public string id;
         public Primitive primitive;
+        // Legacy keeps the baked primitive; procedural profiles use a centered unit box.
+        public ShapeProfile shape;
         public PartRole role;
         public ColourRole colour;
         public Vector3 position;

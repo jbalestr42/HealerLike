@@ -47,6 +47,8 @@ namespace HealerLike.Render.Creatures
         public class BodyEntry
         {
             public float scale = 1f;
+            // Lift a compound base enough to expose its additional basal mass.
+            public float bodyLift;
             public LookPart[] plant = Array.Empty<LookPart>();
             public LookPart[] stone = Array.Empty<LookPart>();
         }
@@ -58,13 +60,74 @@ namespace HealerLike.Render.Creatures
             public float length;
             public float thickness;
             public float limbLength;
+            public ShapeProfile plantShape;
+            public ShapeProfile stoneLimbShape;
         }
 
         [Serializable]
         public class RootEntry
         {
             public float reach;
+            public float thicknessScale = 1f;
+            public float taper = 0.65f;
+            public float jointScale = 2.8f;
+            public ShapeProfile segmentShape;
+            public ShapeProfile jointShape;
+            // Odin assets predating profiles can omit this field; zero is their original unscaled thickness.
+            public float ThicknessScale => thicknessScale == 0f && !segmentShape.isProcedural
+                && !jointShape.isProcedural ? 1f : thicknessScale;
         }
+
+        // Shared construction proportions. Band-specific sizes and profiles stay in their entries above.
+        [Serializable]
+        public class LayoutEntry
+        {
+            public float plantBodySink = 0.84f;
+            public float plantStemFoot = 0.8f;
+            public float stoneBodyLift = 0.8f;
+            public float stoneNeck = 0.75f;
+            public float shoulderOffset = 0.7f;
+            public float limbSpread = 0.36f;
+            public float limbDepth = 0.05f;
+            public float limbWidth = 0.42f;
+            public float limbThickness = 0.45f;
+            public float limbSplay = 25f;
+            public float limbBodyOverlap = 0.5f;
+            public float minBranch = 0.5f;
+            public float maxBranch = 1.2f;
+            public float threeHeadScale = 0.72f;
+            public float fiveHeadScale = 0.55f;
+            public float threeHeadSpread = 40f;
+            public float fiveHeadSpread = 28f;
+            public float stoneBranch = 0.35f;
+            public float branchThickness = 0.12f;
+            public float headClearance = 1.2f;
+            public float foreshortening = 0.85f;
+            public bool extendAccessorySupports;
+            // Required distance beyond the body/head outline, in board cells.
+            public float plantAccessoryClearance = 0.25f;
+            public float stoneAccessoryClearance = 0.3f;
+
+            public bool IsValid()
+            {
+                return Positive(plantBodySink) && Positive(plantStemFoot) && Positive(stoneBodyLift)
+                    && Positive(stoneNeck) && Positive(shoulderOffset) && Positive(limbSpread)
+                    && float.IsFinite(limbDepth) && Positive(limbWidth) && Positive(limbThickness)
+                    && float.IsFinite(limbSplay) && Mathf.Abs(limbSplay) <= 90f
+                    && Positive(limbBodyOverlap) && Positive(minBranch) && maxBranch >= minBranch
+                    && Positive(maxBranch) && Positive(threeHeadScale) && Positive(fiveHeadScale)
+                    && Angle(threeHeadSpread) && Angle(fiveHeadSpread) && Positive(stoneBranch)
+                    && Positive(branchThickness) && Positive(headClearance) && Positive(foreshortening)
+                    && Positive(plantAccessoryClearance) && Positive(stoneAccessoryClearance);
+            }
+
+            static bool Angle(float value) { return Positive(value) && value < 90f; }
+            static bool Positive(float value) { return float.IsFinite(value) && value > 0f; }
+        }
+
+        public LayoutEntry layout = new LayoutEntry();
+        // Older Odin assets can omit the new reference entirely.
+        public LayoutEntry Layout { get { return layout ?? (layout = new LayoutEntry()); } }
 
         [DictionaryDrawerSettings(KeyLabel = "Head", ValueLabel = "Parts")]
         public Dictionary<HeadKind, HeadEntry> heads = new Dictionary<HeadKind, HeadEntry>();
