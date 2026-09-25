@@ -6,7 +6,6 @@ public class DraggableEntity : MonoBehaviour, IDraggable
     Entity _entity;
     Collider[] _colliders;
     int[] _originalLayers;
-    Vector3 _originalPosition = Vector3.zero;
     Vector3 _homePosition = Vector3.zero;
     public Vector3 homePosition { get { return _homePosition; } }
     DraggableEntity _swapTarget;
@@ -17,7 +16,6 @@ public class DraggableEntity : MonoBehaviour, IDraggable
         _entity = GetComponent<Entity>();
         _colliders = GetComponentsInChildren<Collider>();
         _originalLayers = new int[_colliders.Length];
-        _originalPosition = transform.position;
         _homePosition = transform.position;
     }
 
@@ -40,6 +38,17 @@ public class DraggableEntity : MonoBehaviour, IDraggable
         }
     }
 
+    // A cell the dragged entity can move onto: a free one, or the home cell of the swap target
+    // (still flagged as occupied since the target only moved there as a preview).
+    public bool CanMoveTo(Vector2Int coord)
+    {
+        if (_swapTarget != null && coord == _grid.GetCoordFromPosition(_swapTarget.homePosition))
+        {
+            return true;
+        }
+        return _grid.CanPlaceObject(coord);
+    }
+
     #region IDraggable
 
     public bool CanDrag()
@@ -49,8 +58,9 @@ public class DraggableEntity : MonoBehaviour, IDraggable
 
     public void StartDrag(RaycastHit hit)
     {
-        _originalPosition = transform.position;
         _swapTarget = null;
+        // The dragged entity doesn't occupy any cell until it's dropped (see EndDrag/CancelDrag).
+        _grid.SetWalkable(_homePosition, true);
         // Otherwise this entity's own collider(s) would intercept the drag/drop raycast once it
         // moves onto a swap target's cell, hiding the terrain underneath and making a re-hover of
         // that same cell look ambiguous.
@@ -96,12 +106,9 @@ public class DraggableEntity : MonoBehaviour, IDraggable
 
         if (hit.transform.gameObject.layer == Layers.Terrain)
         {
-            if (_grid.CanPlaceObject(hitCoord))
+            if (CanMoveTo(hitCoord))
             {
                 transform.position = _grid.GetCellCenterFromCoord(hitCoord);
-                _grid.SetWalkable(_originalPosition, true);
-                _grid.SetWalkable(hitCoord.x, hitCoord.y, false);
-                _originalPosition = transform.position;
             }
         }
     }
@@ -113,12 +120,14 @@ public class DraggableEntity : MonoBehaviour, IDraggable
             Vector3 targetHomePosition = _swapTarget.homePosition;
             _swapTarget.CommitSwap(_homePosition);
             _homePosition = targetHomePosition;
+            transform.position = _grid.GetCellCenterFromPosition(_homePosition);
             _swapTarget = null;
         }
         else
         {
             _homePosition = transform.position;
         }
+        _grid.SetWalkable(_homePosition, false);
         SetIgnoredByRaycasts(false);
     }
 
@@ -130,6 +139,7 @@ public class DraggableEntity : MonoBehaviour, IDraggable
             _swapTarget = null;
         }
         transform.position = _grid.GetCellCenterFromPosition(_homePosition);
+        _grid.SetWalkable(_homePosition, false);
         SetIgnoredByRaycasts(false);
     }
 
@@ -151,5 +161,6 @@ public class DraggableEntity : MonoBehaviour, IDraggable
     {
         _homePosition = newHomePosition;
         transform.position = _grid.GetCellCenterFromPosition(newHomePosition);
+        _grid.SetWalkable(newHomePosition, false);
     }
 }
