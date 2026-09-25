@@ -11,12 +11,6 @@ namespace HealerLike.Render.Creatures
         // group apart
         public static readonly float PlantAccessoryReach = 0.25f;
         public static readonly float StoneAccessoryReach = 0.3f;
-        // A stone's two limbs: their spread and depth in body units, their width and depth, their splay in degrees
-        static readonly float limbSpread = 0.36f;
-        static readonly float limbDepth = 0.05f;
-        static readonly float limbWidth = 0.42f;
-        static readonly float limbThickness = 0.45f;
-        static readonly float limbSplay = 25f;
         // A stone barely moves at idle
         static readonly float stoneSwayDegrees = 0.6f;
         static readonly float stoneBreath = 0.01f;
@@ -32,21 +26,24 @@ namespace HealerLike.Render.Creatures
             recipe.name = "Derived" + channels.side + channels.head;
             recipe.hideFlags = HideFlags.DontSave;
 
-            // A busy head drawn many times can pass the part cap, then it is drawn fewer times
+            // Count carries gameplay meaning; an oversized recipe is rejected, never thinned silently.
             int seed = Seed(channels);
             int copies = Copies(channels.count);
             PartList parts = Parts(channels, vocabulary, copies, seed, out UnitSockets sockets);
-            while (parts.count > vocabulary.maxParts && copies > 1)
+            int budget = Mathf.Min(vocabulary.maxParts, CreatureValidator.MaxParts);
+            if (parts.count > budget)
             {
-                copies = copies > 3 ? 3 : 1;
-                parts = Parts(channels, vocabulary, copies, seed, out sockets);
+                Debug.LogError($"[LookComposer] {recipe.name}: {channels.count} requires {parts.count} parts,"
+                    + $" exceeding the budget of {budget}; count is preserved.");
+                RenderObjects.Release(recipe);
+                return null;
             }
 
             float unit = vocabulary.Unit(channels.side);
             if (channels.accessory != AccessoryKind.None)
             {
                 float reach = LookMeasure.OutlineReach(parts, unit);
-                float needed = channels.side == LookSide.Plant ? PlantAccessoryReach : StoneAccessoryReach;
+                float needed = AccessoryClearance(channels.side, vocabulary);
                 if (reach < needed)
                 {
                     Debug.LogError($"[LookComposer] {recipe.name}: the {channels.accessory} reaches {reach:0.00} cell"
@@ -93,6 +90,12 @@ namespace HealerLike.Render.Creatures
             return Parts(channels, vocabulary, Copies(channels.count), Seed(channels), out _);
         }
 
+        public static float AccessoryClearance(LookSide side, LookVocabulary vocabulary)
+        {
+            return side == LookSide.Plant ? vocabulary.Layout.plantAccessoryClearance
+                : vocabulary.Layout.stoneAccessoryClearance;
+        }
+
         public static int Copies(CountBand count)
         {
             switch (count)
@@ -108,11 +111,18 @@ namespace HealerLike.Render.Creatures
 
         public static RootDefinition Roots(ReachBand band, LookVocabulary vocabulary)
         {
-            return Roots(vocabulary.Reach(band), vocabulary.Unit(LookSide.Plant), vocabulary);
+            vocabulary.roots.TryGetValue(band, out LookVocabulary.RootEntry entry);
+            return Roots(vocabulary.Reach(band), vocabulary.Unit(LookSide.Plant), vocabulary, entry);
         }
 
         // Roots reaching this many body units from a body of this many cells
         public static RootDefinition Roots(float reach, float unit, LookVocabulary vocabulary)
+        {
+            return Roots(reach, unit, vocabulary, null);
+        }
+
+        static RootDefinition Roots(float reach, float unit, LookVocabulary vocabulary,
+            LookVocabulary.RootEntry entry)
         {
             float mid = vocabulary.roots.ContainsKey(ReachBand.Mid) ? vocabulary.roots[ReachBand.Mid].reach : reach;
             // Roots shorter than the mid band bend once, the others twice
@@ -129,7 +139,11 @@ namespace HealerLike.Render.Creatures
                 footRadius = reach * unit,
                 hipHeight = vocabulary.rootHip * unit,
                 kneeHeight = vocabulary.rootKnee * unit,
-                thickness = vocabulary.rootThickness * 0.5f * unit,
+                thickness = vocabulary.rootThickness * 0.5f * unit * (entry == null ? 1f : entry.ThicknessScale),
+                segmentShape = entry == null ? default : entry.segmentShape,
+                jointShape = entry == null ? default : entry.jointShape,
+                taper = entry == null ? 0.65f : entry.taper,
+                jointScale = entry == null ? 2.8f : entry.jointScale,
                 // The stem role takes no accent, any family reads the same colour
                 colour = vocabulary.Colour(ColourRole.Stem, EffectFamily.Damage, LookSide.Plant)
             };
@@ -154,8 +168,22 @@ namespace HealerLike.Render.Creatures
                     + $" {channels.stem} or {channels.accessory}.");
                 return false;
             }
+            LookVocabulary.BodyEntry body = vocabulary.bodies[channels.mass];
+            LookVocabulary.StemEntry stem = vocabulary.stems[channels.stem];
+            bool plant = channels.side == LookSide.Plant;
+            bool sizesValid = Positive(vocabulary.bodyUnit) && Positive(vocabulary.Unit(channels.side))
+                && Positive(vocabulary.stoneScale) && Positive(body.scale) && float.IsFinite(body.bodyLift)
+                && (plant ? Positive(stem.length) && Positive(stem.thickness) : Positive(stem.limbLength));
+            if (!sizesValid || !vocabulary.Layout.IsValid() || vocabulary.maxParts < 1 || vocabulary.maxParts > CreatureValidator.MaxParts
+                || !stem.plantShape.IsValid() || !stem.stoneLimbShape.IsValid())
+            {
+                Debug.LogError("[LookComposer] Invalid layout, shape profile or selected band dimensions.");
+                return false;
+            }
             return true;
         }
+
+        static bool Positive(float value) { return float.IsFinite(value) && value > 0f; }
 
         static PartList Parts(UnitChannels channels, LookVocabulary vocabulary, int copies, int seed,
             out UnitSockets sockets)
@@ -170,13 +198,15 @@ namespace HealerLike.Render.Creatures
             if (isPlant)
             {
                 Fragment(parts, vocabulary, channels, body.plant, sockets.body, 1f, CountBand.One, seed);
-                parts.Link("Stem", sockets.stemFoot, sockets.neck, stem.thickness, stemColour, PartRole.Stem);
+                parts.Link("Stem", sockets.stemFoot, sockets.neck, stem.thickness, stemColour, PartRole.Stem,
+                    stem.plantShape);
             }
             else
             {
                 Fragment(parts, vocabulary, channels, body.stone, sockets.body, vocabulary.stoneScale, CountBand.One,
                     seed);
-                Limbs(parts, stem.limbLength * scale, sockets.bodyRadius, scale, stemColour, seed);
+                Limbs(parts, stem.limbLength * scale, sockets.bodyRadius, scale, stemColour, seed,
+                    vocabulary.Layout, stem.stoneLimbShape);
             }
 
             LookVocabulary.HeadEntry head = vocabulary.heads[channels.head];
@@ -195,7 +225,7 @@ namespace HealerLike.Render.Creatures
             {
                 // Three or five smaller heads on a branching neck, spread so two neighbours never touch on screen;
                 // a stone carries them side by side
-                HeadFan fan = HeadFan.Shape(headParts, copies, isPlant);
+                HeadFan fan = HeadFan.Shape(headParts, copies, isPlant, vocabulary.Layout, stem.plantShape);
                 for (int i = 0; i < copies; i++)
                 {
                     parts.headStarts.Add(parts.count);
@@ -219,8 +249,60 @@ namespace HealerLike.Render.Creatures
                     float miniScale = accessory.miniHeadScale * scale;
                     Fragment(parts, vocabulary, channels, miniParts, miniAt, miniScale, CountBand.One, seed);
                 }
+                if (vocabulary.Layout.extendAccessorySupports)
+                {
+                    ExtendAccessory(parts, channels, vocabulary, socket, scale, stem, stemColour, seed);
+                }
             }
             return parts;
+        }
+
+        // Keep the whole accessory readable beyond a broad crown, with an attached support back to its socket.
+        static void ExtendAccessory(PartList parts, UnitChannels channels, LookVocabulary vocabulary,
+            Vector3 socket, float scale, LookVocabulary.StemEntry stem, Color colour, int seed)
+        {
+            float unit = vocabulary.Unit(channels.side);
+            float needed = AccessoryClearance(channels.side, vocabulary);
+            if (LookMeasure.OutlineReach(parts, unit) >= needed)
+            {
+                return;
+            }
+
+            float bodyRight = float.MinValue;
+            float accessoryRight = float.MinValue;
+            for (int i = 0; i < parts.count; i++)
+            {
+                LookPart part = parts.Source(i);
+                Quaternion rotation = Quaternion.Euler(part.euler);
+                Vector3 half = part.size * 0.5f;
+                Vector3 direction = Quaternion.Inverse(rotation) * Vector3.right;
+                if (i < parts.accessoryStart)
+                {
+                    bodyRight = Mathf.Max(bodyRight, part.position.x + LookMeasure.Extent(half, direction));
+                }
+                else
+                {
+                    // OutlineReach samples the six face centres, so use the rightmost of those same samples.
+                    float face = Mathf.Max(Mathf.Abs(half.x * direction.x), Mathf.Abs(half.y * direction.y),
+                        Mathf.Abs(half.z * direction.z));
+                    accessoryRight = Mathf.Max(accessoryRight, part.position.x + face);
+                }
+            }
+            if (!float.IsFinite(bodyRight) || !float.IsFinite(accessoryRight))
+            {
+                return;
+            }
+
+            float shift = Mathf.Max(0f, bodyRight + needed / unit - accessoryRight + 0.001f);
+            Vector3 offset = Vector3.right * shift;
+            parts.Translate(parts.accessoryStart, offset);
+            bool plant = channels.side == LookSide.Plant;
+            ShapeProfile profile = plant ? stem.plantShape : stem.stoneLimbShape;
+            Vector3 size = new Vector3(vocabulary.Layout.branchThickness * scale,
+                shift + vocabulary.Layout.branchThickness * scale, vocabulary.Layout.branchThickness * scale);
+            parts.Add("AccessorySupport", plant ? Primitive.Capsule : Primitive.Stone,
+                socket + offset * 0.5f, size, colour, new Vector3(0f, 0f, -90f), 0f, PartRole.Accessory,
+                Variant(seed, parts.count), profile);
         }
 
         // A fragment's parts around a socket, those its count band allows; a stone part takes a variant from the seed
@@ -236,20 +318,21 @@ namespace HealerLike.Render.Creatures
 
                 Color colour = vocabulary.Colour(part.colour, channels.accent, channels.side);
                 parts.Add(part.id, part.primitive, at + part.position * scale, part.size * scale, colour, part.euler,
-                    part.glow, part.role, Variant(seed, parts.count));
+                    part.glow, part.role, Variant(seed, parts.count), part.shape);
             }
         }
 
-        // Two boulder legs under a stone body, from the ground up into it
-        static void Limbs(PartList parts, float limb, float bodyRadius, float scale, Color colour, int seed)
+        // Exactly two mineral legs; the cadence band supplies their profile and length.
+        static void Limbs(PartList parts, float limb, float bodyRadius, float scale, Color colour, int seed,
+            LookVocabulary.LayoutEntry layout, ShapeProfile shape)
         {
-            float height = limb + bodyRadius * 0.5f;
+            float height = limb + bodyRadius * layout.limbBodyOverlap;
             for (int i = -1; i <= 1; i += 2)
             {
-                Vector3 foot = new Vector3(limbSpread * i * scale, height * 0.5f, limbDepth);
-                Vector3 size = new Vector3(limbWidth * scale, height, limbThickness * scale);
-                parts.Add("Limb", Primitive.Stone, foot, size, colour, new Vector3(0f, limbSplay * i, 0f), 0f,
-                    PartRole.Limb, Variant(seed, parts.count));
+                Vector3 foot = new Vector3(layout.limbSpread * i * scale, height * 0.5f, layout.limbDepth);
+                Vector3 size = new Vector3(layout.limbWidth * scale, height, layout.limbThickness * scale);
+                parts.Add("Limb", Primitive.Stone, foot, size, colour, new Vector3(0f, layout.limbSplay * i, 0f), 0f,
+                    PartRole.Limb, Variant(seed, parts.count), shape);
             }
         }
 

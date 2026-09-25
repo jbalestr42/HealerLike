@@ -14,5 +14,10 @@ namespace HealerLike.Render.Creatures
         public float kneeHeight;
         public float thickness;
         public Color colour;
+        public ShapeProfile segmentShape;
+        public ShapeProfile jointShape;
+        // Zero retains the original root proportions in previously saved recipes.
+        public float taper;
+        public float jointScale;
     }
 }

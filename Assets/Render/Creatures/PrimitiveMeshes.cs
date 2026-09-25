@@ -95,6 +95,19 @@ namespace HealerLike.Render.Creatures
             pivot = centre - rotation * (Vector3.up * (middle * dimensions.y));
         }
 
+        // Generated shapes already occupy a centered unit box, including mineral blocks.
+        public static void Fit(Primitive primitive, ShapeProfile shape, Vector3 centre, Vector3 size,
+            Quaternion rotation, out Vector3 dimensions, out Vector3 pivot)
+        {
+            if (shape.isProcedural)
+            {
+                dimensions = size;
+                pivot = centre;
+                return;
+            }
+            Fit(primitive, centre, size, rotation, out dimensions, out pivot);
+        }
+
         public static Transform Geometry(string name, Transform parent, Mesh mesh, Material material, Color colour,
             float glow = 0f)
         {

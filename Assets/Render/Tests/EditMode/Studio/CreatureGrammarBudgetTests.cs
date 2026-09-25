@@ -44,7 +44,7 @@ public class CreatureGrammarBudgetTests
             position = position };
     }
 
-    // One body, one head fanned five times and a small torus bead, in four parts at most
+    // A vocabulary whose Many count exceeds its deliberately small budget
     LookVocabulary CreateTightVocabulary()
     {
         LookVocabulary custom = Track(ScriptableObject.CreateInstance<LookVocabulary>());
@@ -54,7 +54,7 @@ public class CreatureGrammarBudgetTests
         custom.maxParts = 4;
         LookPart body = Sphere("Body", PartRole.Body, ColourRole.Body, Vector3.one, Vector3.zero);
         LookPart crown = Sphere("Head", PartRole.Head, ColourRole.Accent, Vector3.one, Vector3.zero);
-        // Inside the outermost of five fanned heads, clearly outside the single head the budget leaves
+        // Inside the outermost of five fanned heads
         Vector3 beadAt = Quaternion.Euler(0f, 0f, -56f) * Vector3.up * 1.2f;
         LookPart bead = Sphere("Bead", PartRole.Accessory, ColourRole.Accent, Vector3.one * 0.05f, beadAt);
         custom.bodies[MassBand.Light] = new LookVocabulary.BodyEntry { plant = new LookPart[] { body } };
@@ -71,7 +71,7 @@ public class CreatureGrammarBudgetTests
     }
 
     [Test]
-    public void Check_AccessoryInsideFannedHeads_MeasuresAfterTheBudgetDropsCopies()
+    public void Check_OverBudgetMany_ReportsTheRealCountAndRejectsTheRecipe()
     {
         LookVocabulary custom = CreateTightVocabulary();
         _preset.vocabulary = custom;
@@ -82,11 +82,12 @@ public class CreatureGrammarBudgetTests
         CreatureGrammarBudget.Check(custom, _preset.Channels(), errors);
 
         Assert.Less(LookMeasure.AccessoryReach(_preset.Channels(), custom), LookComposer.PlantAccessoryReach);
-        Assert.IsEmpty(errors, string.Join("; ", errors));
-        CreatureRecipe actual = Track(_preset.Compose());
-        CreatureRecipe expected = Track(LookComposer.Compose(_preset.Channels(), custom));
-        Assert.AreEqual(4, actual.parts.Length);
-        CollectionAssert.AreEqual(expected.parts, actual.parts);
+        StringAssert.Contains("Many requires 13 parts", string.Join("; ", errors));
+        StringAssert.Contains("count is preserved", string.Join("; ", errors));
+        Assert.AreEqual(5, LookComposer.Layout(_preset.Channels(), custom).headStarts.Count);
+        UnityEngine.TestTools.LogAssert.Expect(LogType.Error,
+            "[LookComposer] DerivedPlantBud: Many requires 13 parts, exceeding the budget of 4; count is preserved.");
+        Assert.IsNull(LookComposer.Compose(_preset.Channels(), custom));
     }
 
     [Test]

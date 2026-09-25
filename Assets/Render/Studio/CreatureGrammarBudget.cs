@@ -5,16 +5,19 @@ using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Studio
 {
-    // The part budget of a grammar preset and the notes that explain it. The composer drops fanned head copies to
-    // fit the vocabulary's maxParts before it measures the accessory, and the check follows it the same way.
+    // The budget uses the requested count. Neither Studio nor the composer changes count to make a recipe fit.
     public static class CreatureGrammarBudget
     {
         // Run on channels whose vocabulary entries all exist
         public static void Check(LookVocabulary vocabulary, UnitChannels channels, List<string> errors)
         {
-            if (PartCount(vocabulary, channels, 1) > CreatureValidator.MaxParts)
+            PartList layout = LookComposer.Layout(channels, vocabulary);
+            int parts = layout == null ? 0 : layout.count;
+            int limit = System.Math.Min(vocabulary.maxParts, CreatureValidator.MaxParts);
+            if (parts > limit)
             {
-                errors.Add("Even one head copy exceeds the runtime limit of " + CreatureValidator.MaxParts + " parts.");
+                errors.Add(channels.count + " requires " + parts + " parts, exceeding the budget of " + limit
+                    + "; count is preserved.");
             }
 
             if (channels.accessory == AccessoryKind.None)
@@ -22,19 +25,9 @@ namespace HealerLike.Render.Studio
                 return;
             }
 
-            float minimum = LookComposer.StoneAccessoryReach;
-            if (channels.side == LookSide.Plant)
-            {
-                minimum = LookComposer.PlantAccessoryReach;
-            }
+            float minimum = LookComposer.AccessoryClearance(channels.side, vocabulary);
 
-            UnitChannels composed = channels;
-            if (!vocabulary.heads[channels.head].carriesCount)
-            {
-                composed.count = FittedCount(vocabulary, channels);
-            }
-
-            if (LookMeasure.AccessoryReach(composed, vocabulary) < minimum)
+            if (layout != null && LookMeasure.OutlineReach(layout, vocabulary.Unit(channels.side)) < minimum)
             {
                 errors.Add("The accessory does not extend far enough beyond the body/head silhouette "
                     + "for the production grammar.");
@@ -58,7 +51,7 @@ namespace HealerLike.Render.Studio
             }
 
             notes.Add("Production maxParts: " + vocabulary.maxParts
-                + ". The composer reduces multiple head copies if they exceed this budget.");
+                + ". Recipes that exceed this budget are rejected; the requested head count is preserved.");
             if (vocabulary.isReachPinned)
             {
                 string reach = vocabulary.pinnedReach.ToString("0.###", CultureInfo.InvariantCulture);
@@ -73,91 +66,5 @@ namespace HealerLike.Render.Studio
             return notes.ToArray();
         }
 
-        // Five head copies fall to three, then one, until the parts fit maxParts
-        static CountBand FittedCount(LookVocabulary vocabulary, UnitChannels channels)
-        {
-            int copies = LookComposer.Copies(channels.count);
-            while (PartCount(vocabulary, channels, copies) > vocabulary.maxParts && copies > 1)
-            {
-                if (copies > 3)
-                {
-                    copies = 3;
-                }
-                else
-                {
-                    copies = 1;
-                }
-            }
-
-            if (copies == 1)
-            {
-                return CountBand.One;
-            }
-
-            if (copies == 3)
-            {
-                return CountBand.Few;
-            }
-            return CountBand.Many;
-        }
-
-        // The parts the composer lays out: body, the stem or the two limbs, the head copies with their stalks,
-        // the accessory and its mini head
-        static int PartCount(LookVocabulary vocabulary, UnitChannels channels, int copies)
-        {
-            bool isPlant = channels.side == LookSide.Plant;
-            LookVocabulary.BodyEntry body = vocabulary.bodies[channels.mass];
-            LookVocabulary.HeadEntry head = vocabulary.heads[channels.head];
-            int count = Visible(CreatureGrammarValidator.Pick(body.plant, body.stone, isPlant), CountBand.One);
-            if (isPlant)
-            {
-                count += 1;
-            }
-            else
-            {
-                count += 2;
-            }
-
-            LookPart[] headParts = CreatureGrammarValidator.Pick(head.plant, head.stone, isPlant);
-            if (head.carriesCount)
-            {
-                count += Visible(headParts, channels.count);
-            }
-            else
-            {
-                count += Visible(headParts, CountBand.One) * copies;
-                if (isPlant && copies > 1)
-                {
-                    count += copies;
-                }
-            }
-
-            if (channels.accessory == AccessoryKind.None)
-            {
-                return count;
-            }
-
-            LookVocabulary.AccessoryEntry accessory = vocabulary.accessories[channels.accessory];
-            count += Visible(CreatureGrammarValidator.Pick(accessory.plant, accessory.stone, isPlant), CountBand.One);
-            if (channels.accessory == AccessoryKind.MiniHead)
-            {
-                LookVocabulary.HeadEntry miniHead = vocabulary.heads[channels.accessoryHead];
-                count += Visible(CreatureGrammarValidator.Pick(miniHead.plant, miniHead.stone, isPlant), CountBand.One);
-            }
-            return count;
-        }
-
-        static int Visible(LookPart[] parts, CountBand band)
-        {
-            int count = 0;
-            foreach (LookPart part in parts)
-            {
-                if (part.minCount <= band)
-                {
-                    count++;
-                }
-            }
-            return count;
-        }
     }
 }
