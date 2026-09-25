@@ -239,10 +239,15 @@ public class GrassDrawTests
         }
 
         _scene.BuildKeyLight(20f, 20f);
+        _scene.camera.transform.rotation = Quaternion.Euler(StageCalibration.PortraitPitch,
+            StageCalibration.PortraitYaw, 0f);
+        _scene.camera.transform.position = -_scene.camera.transform.forward * 20f;
         CreateGrassPatch(AssetDatabase.LoadAssetAtPath<Material>(grassMaterialPath));
         GameObject stone = CreateStone(AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Stone.mat"));
-        stone.transform.position = new Vector3(0.5f, 1.2f, 0.5f);
-        stone.transform.localScale = Vector3.one * 1.4f;
+        // Lift a broad caster clear of the taller grass. Its surface must not hide the grass colour probe.
+        stone.transform.position = new Vector3(0.5f, 2.5f, 0.5f);
+        stone.transform.localScale = Vector3.one * 2.4f;
+        stone.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.ShadowsOnly;
         // Where the stone's centre falls on the carpet, along the key light
         Vector3 toLight = StageKeyLight.KeyDirection.normalized;
         Vector3 shadowCentre = stone.transform.position - toLight * ((stone.transform.position.y - 0.2f) / toLight.y);
@@ -252,6 +257,8 @@ public class GrassDrawTests
         Vector3 viewport = _scene.camera.WorldToViewportPoint(shadowCentre);
         int x = Mathf.RoundToInt(viewport.x * 256f);
         int y = Mathf.RoundToInt(viewport.y * 256f);
+        Assert.That(x, Is.InRange(4, 251), "The full grass probe must be inside the captured image.");
+        Assert.That(y, Is.InRange(4, 251), "The full grass probe must be inside the captured image.");
         Color32 shadow = LookTestScene.MedianColour(_scene.texture, x, y, 4);
         Color32 study = new Color32(19, 58, 113, 255); // #133a71, the 04 boulder's shadow
         Assert.That(shadow.b - shadow.g, Is.GreaterThan(30), "The grass teal must stay out of cast shadow");

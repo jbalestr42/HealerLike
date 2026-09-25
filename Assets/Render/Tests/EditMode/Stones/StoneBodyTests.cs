@@ -280,7 +280,13 @@ public class StoneBodyTests
 
         _body.Init(_health, 15, _fx);
         Assert.IsTrue(shadow.gameObject.activeSelf);
-        Assert.Less(shadow.transform.position.x, _body.transform.position.x); // the light is upper right
+        Bounds bounds = StoneGroundDisc.Measure(_body.transform, _body.parts);
+        Vector3 centre = _body.transform.TransformPoint(bounds.center);
+        Vector3 offset = Vector3.ProjectOnPlane(shadow.transform.position - centre, Vector3.up);
+        Vector3 toLight = Vector3.ProjectOnPlane(StageKeyLight.KeyDirection, Vector3.up).normalized;
+        Assert.Greater(offset.sqrMagnitude, 0f);
+        Assert.Less(Vector3.Dot(offset.normalized, toLight), -0.999f);
+        Assert.Greater(Vector3.Dot(shadow.transform.forward, -toLight), 0.999f);
 
         _body.Collapse(null);
         Assert.IsFalse(shadow.gameObject.activeSelf);
