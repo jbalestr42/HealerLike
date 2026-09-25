@@ -225,7 +225,8 @@ namespace HealerLike.Render.Creatures
             {
                 // Three or five smaller heads on a branching neck, spread so two neighbours never touch on screen;
                 // a stone carries them side by side
-                HeadFan fan = HeadFan.Shape(headParts, copies, isPlant, vocabulary.Layout, stem.plantShape);
+                HeadFan fan = HeadFan.Shape(headParts, copies, isPlant, vocabulary.Layout,
+                    isPlant ? stem.plantShape : stem.stoneLimbShape);
                 for (int i = 0; i < copies; i++)
                 {
                     parts.headStarts.Add(parts.count);

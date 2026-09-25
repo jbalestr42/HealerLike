@@ -62,6 +62,15 @@ namespace HealerLike.Render.Creatures
             else
             {
                 end = top + Vector3.right * ((index - (_copies - 1) * 0.5f) * _length * scale);
+                Vector3 delta = end - top;
+                if (delta.sqrMagnitude > 0.000001f)
+                {
+                    float thickness = _layout.stoneBranchThickness * scale;
+                    parts.Add(BranchId, Primitive.Stone, (top + end) * 0.5f,
+                        new Vector3(thickness, delta.magnitude + thickness, thickness), colour,
+                        Quaternion.FromToRotation(Vector3.up, delta).eulerAngles, 0f, PartRole.Stem,
+                        shape: _branchShape);
+                }
             }
             return end;
         }

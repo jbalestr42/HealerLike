@@ -100,6 +100,7 @@ namespace HealerLike.Render.Creatures
             public float threeHeadSpread = 40f;
             public float fiveHeadSpread = 28f;
             public float stoneBranch = 0.35f;
+            public float stoneBranchThickness = 0.24f;
             public float branchThickness = 0.12f;
             public float headClearance = 1.2f;
             public float foreshortening = 0.85f;
@@ -117,6 +118,7 @@ namespace HealerLike.Render.Creatures
                     && Positive(limbBodyOverlap) && Positive(minBranch) && maxBranch >= minBranch
                     && Positive(maxBranch) && Positive(threeHeadScale) && Positive(fiveHeadScale)
                     && Angle(threeHeadSpread) && Angle(fiveHeadSpread) && Positive(stoneBranch)
+                    && Positive(stoneBranchThickness)
                     && Positive(branchThickness) && Positive(headClearance) && Positive(foreshortening)
                     && Positive(plantAccessoryClearance) && Positive(stoneAccessoryClearance);
             }
