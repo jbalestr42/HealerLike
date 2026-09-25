@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -34,23 +35,28 @@ public class StageKeyLightTests
         Quaternion rotation = StageKeyLight.Aim(StageKeyLight.KeyDirection);
 
         Assert.That(Vector3.Angle(-(rotation * Vector3.forward), StageKeyLight.KeyDirection), Is.LessThan(0.01f));
-        // Upper right behind the board: the light sits at +x, +z and above the ground
-        Assert.That(StageKeyLight.KeyDirection.x, Is.GreaterThan(0));
-        Assert.That(StageKeyLight.KeyDirection.y, Is.GreaterThan(0));
-        Assert.That(StageKeyLight.KeyDirection.z, Is.GreaterThan(0));
+        Vector3 viewerGroundAxes = Quaternion.Inverse(Quaternion.Euler(0f, StageCalibration.PortraitYaw, 0f))
+            * StageKeyLight.KeyDirection;
+        Assert.That(viewerGroundAxes.x, Is.GreaterThan(0f), "Sun is on the viewer's right.");
+        Assert.That(viewerGroundAxes.y, Is.GreaterThan(0f), "Sun is above the board.");
+        Assert.That(viewerGroundAxes.z, Is.LessThan(0f), "Sun is toward the viewer, over their shoulder.");
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(RenderManagerTests.PrefabPath);
+        Light shipped = prefab.GetComponentInChildren<StageKeyLight>().keyLight;
+        Assert.That(Quaternion.Angle(shipped.transform.rotation, rotation), Is.LessThan(0.05f),
+            "The shipped light must match authoring and the stone shadow fallback.");
     }
 
     [Test]
-    public void KeyDirection_PortraitCamera_CastsShadowsToTheLowerLeft()
+    public void KeyDirection_PortraitCamera_CastsShadowsToTheUpperLeft()
     {
-        Quaternion camera = Quaternion.Euler(StageCalibration.PortraitPitch, 0f, 0f);
+        Quaternion camera = Quaternion.Euler(StageCalibration.PortraitPitch, StageCalibration.PortraitYaw, 0f);
         Vector3 toLight = StageKeyLight.KeyDirection.normalized;
         // Where a point above the ground lands along the light, seen in the camera's axes
         Vector3 shadow = Quaternion.Inverse(camera) * new Vector3(-toLight.x, 0f, -toLight.z);
 
         Assert.That(shadow.x, Is.LessThan(0f));
-        Assert.That(shadow.y, Is.LessThan(0f));
-        Assert.That(Mathf.Atan2(-shadow.y, -shadow.x) * Mathf.Rad2Deg, Is.InRange(10f, 45f)); // below the horizontal
+        Assert.That(shadow.y, Is.GreaterThan(0f));
+        Assert.That(Mathf.Atan2(shadow.y, -shadow.x) * Mathf.Rad2Deg, Is.InRange(10f, 45f)); // above the horizontal
     }
 
     [Test]

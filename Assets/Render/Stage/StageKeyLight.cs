@@ -8,9 +8,9 @@ namespace HealerLike.Render.Stage
     // The stones' cheap ground shadows read that and hide while real ones are drawn
     public class StageKeyLight : MonoBehaviour
     {
-        // Upper right, a little behind the board, so cast shadows fall to the lower left of the portrait view.
-        // Mostly from the side: from further behind, the camera sees the unlit side of every grass tuft.
-        public static readonly Vector3 KeyDirection = new Vector3(1f, 1.7f, 0.5f);
+        // Sun above the viewer's right shoulder in the portrait view; ground shadows run away to the upper left.
+        public static readonly Vector3 KeyDirection = Quaternion.Euler(0f, StageCalibration.PortraitYaw, 0f)
+            * new Vector3(1f, 1.7f, -0.75f);
 
         [SerializeField] Light _keyLight;
         // Farthest board distance from the camera that real shadows must cover
