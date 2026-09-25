@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,10 +14,57 @@ namespace HealerLike.Render.Creatures
                 return null;
             }
 
-            List<Vector3> vertices = new List<Vector3>();
-            List<int> indices = new List<int>();
+            Geometry(shape, variant, out List<Vector3> vertices, out List<int> indices);
             bool mineral = shape.kind == ShapeKind.Block || shape.kind == ShapeKind.Shard
                 || (shape.kind == ShapeKind.Ring && shape.faceted);
+            return CreateMesh(shape, variant, vertices, indices, mineral);
+        }
+
+        // A curved profile's pole need not be on the box's Y axis. Use the same generated vertices as the mesh,
+        // before flat-face splitting, so an attachment follows edits without creating a temporary Unity object.
+        public static Vector3 Anchor(ShapeProfile shape, ShapeAnchor anchor, int variant = 0)
+        {
+            if (anchor < ShapeAnchor.Center || anchor > ShapeAnchor.Top)
+            {
+                throw new ArgumentOutOfRangeException(nameof(anchor));
+            }
+            if (!shape.IsValid())
+            {
+                throw new ArgumentException("Invalid shape profile.", nameof(shape));
+            }
+            if (anchor == ShapeAnchor.Center)
+            {
+                return Vector3.zero;
+            }
+            if (!shape.isProcedural)
+            {
+                return Vector3.up * (anchor == ShapeAnchor.Top ? 0.5f : -0.5f);
+            }
+
+            Geometry(shape, variant, out List<Vector3> vertices, out _);
+            bool top = anchor == ShapeAnchor.Top;
+            float extreme = top ? float.MinValue : float.MaxValue;
+            foreach (Vector3 point in vertices)
+            {
+                extreme = top ? Mathf.Max(extreme, point.y) : Mathf.Min(extreme, point.y);
+            }
+            Vector3 total = Vector3.zero;
+            int count = 0;
+            foreach (Vector3 point in vertices)
+            {
+                if (Mathf.Abs(point.y - extreme) <= 0.000001f)
+                {
+                    total += point;
+                    count++;
+                }
+            }
+            return total / count;
+        }
+
+        static void Geometry(ShapeProfile shape, int variant, out List<Vector3> vertices, out List<int> indices)
+        {
+            vertices = new List<Vector3>();
+            indices = new List<int>();
             if (shape.kind == ShapeKind.Ring)
             {
                 Ring(shape, vertices, indices);
@@ -30,7 +78,6 @@ namespace HealerLike.Render.Creatures
                 Growth(shape, vertices, indices);
             }
             Normalize(vertices);
-            return CreateMesh(shape, variant, vertices, indices, mineral);
         }
 
         static void Growth(ShapeProfile shape, List<Vector3> vertices, List<int> indices)

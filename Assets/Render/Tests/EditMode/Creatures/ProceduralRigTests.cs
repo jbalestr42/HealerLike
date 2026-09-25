@@ -135,5 +135,38 @@ namespace HealerLike.Render.Creatures
             Assert.IsTrue(segment);
             Assert.AreSame(_recipe, _rig.recipe);
         }
+
+        [TestCase(0.022f)]
+        [TestCase(0.8f)]
+        public void Tick_BentRootProfiles_KeepActualMeshEndpointsJoinedAndFeetPlanted(float thickness)
+        {
+            _replacement = Object.Instantiate(_recipe);
+            _replacement.idle = default;
+            ShapeProfile bent = ShapeProfile.Segment(0.7f, 0.3f, 0.9f);
+            _replacement.roots.segmentShape = bent;
+            _replacement.roots.thickness = thickness;
+            Assert.IsTrue(_rig.Recompose(_replacement, _material, _material, RenderTestAssets.LoadMeshes()));
+            _rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
+            Vector3 lower = ProceduralShapeMeshes.Anchor(bent, ShapeAnchor.Bottom);
+            Vector3 upper = ProceduralShapeMeshes.Anchor(bent, ShapeAnchor.Top);
+            Vector3 previous = new Vector3(0.08f, _replacement.roots.hipHeight, 0f);
+            int seen = 0;
+            foreach (Transform child in _rig.root)
+            {
+                if (child.name != "Root")
+                {
+                    continue;
+                }
+                Assert.That(Vector3.Distance(previous, child.TransformPoint(lower)), Is.LessThan(0.0001f));
+                previous = child.TransformPoint(upper);
+                if (++seen == _replacement.roots.segments)
+                {
+                    break;
+                }
+            }
+            Assert.AreEqual(_replacement.roots.segments, seen);
+            Assert.That(Vector3.Distance(new Vector3(_replacement.roots.footRadius, 0f, 0f), previous),
+                Is.LessThan(0.0001f));
+        }
     }
 }
