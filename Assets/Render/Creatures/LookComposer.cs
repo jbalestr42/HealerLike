@@ -30,6 +30,11 @@ namespace HealerLike.Render.Creatures
             int seed = Seed(channels);
             int copies = Copies(channels.count);
             PartList parts = Parts(channels, vocabulary, copies, seed, out UnitSockets sockets);
+            if (parts == null)
+            {
+                RenderObjects.Release(recipe);
+                return null;
+            }
             int budget = Mathf.Min(vocabulary.maxParts, CreatureValidator.MaxParts);
             if (parts.count > budget)
             {
@@ -180,6 +185,32 @@ namespace HealerLike.Render.Creatures
                 Debug.LogError("[LookComposer] Invalid layout, shape profile or selected band dimensions.");
                 return false;
             }
+            LookVocabulary.HeadEntry head = vocabulary.heads[channels.head];
+            if (!FragmentPlacement.TryValidate(plant ? body.plant : body.stone, CountBand.One, out string error)
+                || !FragmentPlacement.TryValidate(plant ? head.plant : head.stone,
+                    head.carriesCount ? channels.count : CountBand.One, out error))
+            {
+                Debug.LogError("[LookComposer] " + error);
+                return false;
+            }
+            if (channels.accessory != AccessoryKind.None)
+            {
+                LookVocabulary.AccessoryEntry accessory = vocabulary.accessories[channels.accessory];
+                if (!FragmentPlacement.TryValidate(plant ? accessory.plant : accessory.stone, CountBand.One, out error))
+                {
+                    Debug.LogError("[LookComposer] " + error);
+                    return false;
+                }
+                if (channels.accessory == AccessoryKind.MiniHead)
+                {
+                    LookVocabulary.HeadEntry mini = vocabulary.heads[channels.accessoryHead];
+                    if (!FragmentPlacement.TryValidate(plant ? mini.plant : mini.stone, CountBand.One, out error))
+                    {
+                        Debug.LogError("[LookComposer] " + error);
+                        return false;
+                    }
+                }
+            }
             return true;
         }
 
@@ -197,14 +228,15 @@ namespace HealerLike.Render.Creatures
             Color stemColour = vocabulary.Colour(ColourRole.Stem, channels.accent, channels.side);
             if (isPlant)
             {
-                Fragment(parts, vocabulary, channels, body.plant, sockets.body, 1f, CountBand.One, seed);
+                if (!Fragment(parts, vocabulary, channels, body.plant, sockets.body, 1f, CountBand.One, seed))
+                    return null;
                 parts.Link("Stem", sockets.stemFoot, sockets.neck, stem.thickness, stemColour, PartRole.Stem,
                     stem.plantShape);
             }
             else
             {
-                Fragment(parts, vocabulary, channels, body.stone, sockets.body, vocabulary.stoneScale, CountBand.One,
-                    seed);
+                if (!Fragment(parts, vocabulary, channels, body.stone, sockets.body, vocabulary.stoneScale,
+                    CountBand.One, seed)) return null;
                 Limbs(parts, stem.limbLength * scale, sockets.bodyRadius, scale, stemColour, seed,
                     vocabulary.Layout, stem.stoneLimbShape);
             }
@@ -214,24 +246,33 @@ namespace HealerLike.Render.Creatures
             if (head.carriesCount)
             {
                 parts.headStarts.Add(parts.count);
-                Fragment(parts, vocabulary, channels, headParts, sockets.neck, scale, channels.count, seed);
+                if (!Fragment(parts, vocabulary, channels, headParts, sockets.neck, scale, channels.count, seed))
+                    return null;
             }
             else if (copies == 1)
             {
                 parts.headStarts.Add(parts.count);
-                Fragment(parts, vocabulary, channels, headParts, sockets.neck, scale, CountBand.One, seed);
+                if (!Fragment(parts, vocabulary, channels, headParts, sockets.neck, scale, CountBand.One, seed))
+                    return null;
             }
             else
             {
                 // Three or five smaller heads on a branching neck, spread so two neighbours never touch on screen;
                 // a stone carries them side by side
-                HeadFan fan = HeadFan.Shape(headParts, copies, isPlant, vocabulary.Layout,
+                if (!FragmentPlacement.TryResolve(headParts, CountBand.One, seed, parts.count + 1,
+                    out LookPart[] measuredHead, out string attachmentError))
+                {
+                    Debug.LogError("[LookComposer] " + attachmentError);
+                    return null;
+                }
+                HeadFan fan = HeadFan.Shape(measuredHead, copies, isPlant, vocabulary.Layout,
                     isPlant ? stem.plantShape : stem.stoneLimbShape);
                 for (int i = 0; i < copies; i++)
                 {
                     parts.headStarts.Add(parts.count);
                     Vector3 end = fan.Branch(parts, sockets.neck, i, scale, stemColour);
-                    Fragment(parts, vocabulary, channels, headParts, end, fan.copyScale * scale, CountBand.One, seed);
+                    if (!Fragment(parts, vocabulary, channels, headParts, end, fan.copyScale * scale,
+                        CountBand.One, seed)) return null;
                 }
             }
 
@@ -241,14 +282,16 @@ namespace HealerLike.Render.Creatures
                 LookVocabulary.AccessoryEntry accessory = vocabulary.accessories[channels.accessory];
                 Vector3 socket = sockets.At(accessory.socket);
                 LookPart[] accessoryParts = isPlant ? accessory.plant : accessory.stone;
-                Fragment(parts, vocabulary, channels, accessoryParts, socket, scale, CountBand.One, seed);
+                if (!Fragment(parts, vocabulary, channels, accessoryParts, socket, scale, CountBand.One, seed))
+                    return null;
                 if (channels.accessory == AccessoryKind.MiniHead)
                 {
                     LookVocabulary.HeadEntry mini = vocabulary.heads[channels.accessoryHead];
                     LookPart[] miniParts = isPlant ? mini.plant : mini.stone;
                     Vector3 miniAt = socket + accessory.miniHeadAt * scale;
                     float miniScale = accessory.miniHeadScale * scale;
-                    Fragment(parts, vocabulary, channels, miniParts, miniAt, miniScale, CountBand.One, seed);
+                    if (!Fragment(parts, vocabulary, channels, miniParts, miniAt, miniScale, CountBand.One, seed))
+                        return null;
                 }
                 if (vocabulary.Layout.extendAccessorySupports && !accessory.isCentered)
                 {
@@ -279,7 +322,7 @@ namespace HealerLike.Render.Creatures
                 Vector3 direction = Quaternion.Inverse(rotation) * Vector3.right;
                 if (i < parts.accessoryStart)
                 {
-                    bodyRight = Mathf.Max(bodyRight, part.position.x + LookMeasure.Extent(half, direction));
+                    bodyRight = Mathf.Max(bodyRight, part.position.x + LookMeasure.Extent(half, direction, part.shape));
                 }
                 else
                 {
@@ -307,20 +350,22 @@ namespace HealerLike.Render.Creatures
         }
 
         // A fragment's parts around a socket, those its count band allows; a stone part takes a variant from the seed
-        static void Fragment(PartList parts, LookVocabulary vocabulary, UnitChannels channels, LookPart[] fragment,
+        static bool Fragment(PartList parts, LookVocabulary vocabulary, UnitChannels channels, LookPart[] fragment,
             Vector3 at, float scale, CountBand band, int seed)
         {
-            foreach (LookPart part in fragment)
+            if (!FragmentPlacement.TryResolve(fragment, band, seed, parts.count, out LookPart[] resolved,
+                out string error))
             {
-                if (part.minCount > band)
-                {
-                    continue;
-                }
-
+                Debug.LogError("[LookComposer] " + error);
+                return false;
+            }
+            foreach (LookPart part in resolved)
+            {
                 Color colour = vocabulary.Colour(part.colour, channels.accent, channels.side);
                 parts.Add(part.id, part.primitive, at + part.position * scale, part.size * scale, colour, part.euler,
                     part.glow, part.role, Variant(seed, parts.count), part.shape);
             }
+            return true;
         }
 
         // Exactly two mineral legs; the cadence band supplies their profile and length.
@@ -337,7 +382,7 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        static int Variant(int seed, int index)
+        internal static int Variant(int seed, int index)
         {
             return (seed * 31 + index * 7919) & 0x7fffffff;
         }

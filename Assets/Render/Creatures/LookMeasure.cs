@@ -111,6 +111,15 @@ namespace HealerLike.Render.Creatures
             return scaled.magnitude;
         }
 
+        // Generated profiles can reach their unit-box corners, especially bent growth and broad mineral slabs.
+        // Their oriented box is a conservative bound; Legacy keeps the original ellipsoid measurement.
+        public static float Extent(Vector3 half, Vector3 direction, ShapeProfile shape)
+        {
+            if (!shape.isProcedural) return Extent(half, direction);
+            return Mathf.Abs(half.x * direction.x) + Mathf.Abs(half.y * direction.y)
+                + Mathf.Abs(half.z * direction.z);
+        }
+
         // Where head copy i ends: the next copy's branch, the accessory, or the last part
         static int HeadEnd(PartList parts, int copy)
         {
@@ -143,7 +152,7 @@ namespace HealerLike.Render.Creatures
                 Quaternion inverse = Quaternion.Inverse(Quaternion.Euler(part.euler));
                 Vector3 half = part.size * 0.5f;
                 Vector2 centre = new Vector2(Vector3.Dot(part.position, right), Vector3.Dot(part.position, up));
-                Vector2 extent = new Vector2(Extent(half, inverse * right), Extent(half, inverse * up));
+                Vector2 extent = new Vector2(Extent(half, inverse * right, part.shape), Extent(half, inverse * up, part.shape));
                 min = Vector2.Min(min, centre - extent);
                 max = Vector2.Max(max, centre + extent);
             }
@@ -155,8 +164,8 @@ namespace HealerLike.Render.Creatures
         {
             Quaternion inverse = Quaternion.Inverse(Quaternion.Euler(part.euler));
             Vector3 half = part.size * 0.5f;
-            float halfX = Extent(half, inverse * right);
-            float halfY = Extent(half, inverse * up);
+            float halfX = Extent(half, inverse * right, part.shape);
+            float halfY = Extent(half, inverse * up, part.shape);
             float dx = Mathf.Max(0f, Mathf.Abs(point.x - Vector3.Dot(part.position, right)) - halfX);
             float dy = Mathf.Max(0f, Mathf.Abs(point.y - Vector3.Dot(part.position, up)) - halfY);
             return Mathf.Sqrt(dx * dx + dy * dy);

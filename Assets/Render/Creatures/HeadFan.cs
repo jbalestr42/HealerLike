@@ -103,7 +103,7 @@ namespace HealerLike.Render.Creatures
             foreach (LookPart part in head)
             {
                 Quaternion inverse = Quaternion.Inverse(Quaternion.Euler(part.euler));
-                float half = LookMeasure.Extent(part.size * 0.5f, inverse * Vector3.right);
+                float half = LookMeasure.Extent(part.size * 0.5f, inverse * Vector3.right, part.shape);
                 width = Mathf.Max(width, 2f * (Mathf.Abs(part.position.x) + half));
             }
             return width;

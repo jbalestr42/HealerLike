@@ -349,6 +349,64 @@ namespace HealerLike.Render.Creatures
         }
 
         [Test]
+        public void Compose_AttachedBlade_UsesItsAnchorsAfterProfileEdits()
+        {
+            _vocabulary.heads[HeadKind.Bud].plant = new[]
+            {
+                new LookPart
+                {
+                    id = "Blade", primitive = Primitive.Leaf, shape = ShapeProfile.Leaf(0.75f, 1.3f),
+                    pivot = ShapeAnchor.Bottom, position = new Vector3(0.2f, 0f, 0f),
+                    size = new Vector3(0.5f, 1.2f, 0.25f), role = PartRole.Head, colour = ColourRole.Body
+                },
+                new LookPart
+                {
+                    id = "Accent", primitive = Primitive.Sphere, shape = ShapeProfile.Bulb(),
+                    pivot = ShapeAnchor.Bottom, attachTo = "Blade", attachAt = ShapeAnchor.Top,
+                    size = Vector3.one * 0.15f, role = PartRole.Tip, colour = ColourRole.Accent
+                }
+            };
+            CreatureRecipe recipe = Compose(LookSide.Plant);
+            CreaturePart blade = Array.Find(recipe.parts, p => p.id == "Blade");
+            CreaturePart accent = Array.Find(recipe.parts, p => p.id == "Accent");
+            Vector3 basePoint = recipe.parts[0].localPosition + blade.localPosition
+                + Vector3.Scale(blade.dimensions, ProceduralShapeMeshes.Anchor(blade.shape, ShapeAnchor.Bottom));
+            Vector3 expectedBase = recipe.neckLocal + Vector3.right * (0.2f * _vocabulary.Unit(LookSide.Plant));
+            Vector3 topPoint = blade.localPosition
+                + Vector3.Scale(blade.dimensions, ProceduralShapeMeshes.Anchor(blade.shape, ShapeAnchor.Top));
+            Vector3 accentBase = accent.localPosition
+                + Vector3.Scale(accent.dimensions, ProceduralShapeMeshes.Anchor(accent.shape, ShapeAnchor.Bottom));
+
+            Assert.Less(Vector3.Distance(expectedBase, basePoint), 0.00001f);
+            Assert.Less(Vector3.Distance(topPoint, accentBase), 0.00001f);
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Compose_EmptyBody_RejectsBeforeReadingItsSocket(bool nullArray)
+        {
+            _vocabulary.bodies[MassBand.Light].plant = nullArray ? null : Array.Empty<LookPart>();
+            LogAssert.Expect(LogType.Error, "[LookComposer] The fragment has no parts.");
+
+            Assert.IsNull(Compose(LookSide.Plant));
+        }
+
+        [Test]
+        public void Validate_InvalidAttachment_StopsStudioAndRuntimeComposition()
+        {
+            _vocabulary.heads[HeadKind.Bud].plant[0].attachTo = "Missing";
+            CreatureGrammarPreset preset = Track(ScriptableObject.CreateInstance<CreatureGrammarPreset>());
+            preset.vocabulary = _vocabulary;
+            preset.side = LookSide.Plant;
+            preset.head = HeadKind.Bud;
+            StringAssert.Contains("earlier unique active part", string.Join(" ", CreatureGrammarValidator.Validate(preset)));
+            Assert.IsNull(preset.Compose());
+            LogAssert.Expect(LogType.Error,
+                "[LookComposer] Part 'Tip' must attach to an earlier unique active part in its fragment: 'Missing'.");
+            Assert.IsNull(Compose(LookSide.Plant));
+        }
+
+        [Test]
         public void Validate_InvalidProfile_ReportsItInStudio()
         {
             ShapeProfile invalid = ShapeProfile.Bulb();
