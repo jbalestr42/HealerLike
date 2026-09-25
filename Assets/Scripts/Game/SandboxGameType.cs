@@ -60,6 +60,22 @@ public class SandboxGameType : AGameType
         InteractionManager.instance.SetInteraction(new RemoveEntityInteraction());
     }
 
+    // Replaces the current enemies by the wave, placed in the enemy camp like in a run
+    public void LoadWave(WavePatternData waveData)
+    {
+        InteractionManager.instance.CancelInteraction();
+        List<GameObject> enemies = new List<GameObject>(_entities.GetEntities(Entity.EntityType.Computer));
+        foreach (GameObject enemy in enemies)
+        {
+            _entities.DestroyEntity(enemy, Entity.EntityType.Computer);
+        }
+
+        foreach (Entity entity in _entities.SpawnWave(waveData, transform.position, Entity.EntityType.Computer))
+        {
+            OnEntitySpawned(entity);
+        }
+    }
+
     void OnEntitySpawned(Entity entity)
     {
         // Entities are disabled at spawn, so the ones placed during a battle must join it

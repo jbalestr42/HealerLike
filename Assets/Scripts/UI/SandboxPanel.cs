@@ -7,6 +7,8 @@ public class SandboxPanel : MonoBehaviour
     [SerializeField] Transform _entityContainer;
     [SerializeField] Transform _skillContainer;
     [SerializeField] Transform _itemContainer;
+    [SerializeField] GameObject _wavePanel;
+    [SerializeField] Transform _waveContainer;
 
     SandboxGameType _gameType;
     SandboxButton _sideButton;
@@ -23,11 +25,14 @@ public class SandboxPanel : MonoBehaviour
         _stopBattleButton = CreateButton(_controlContainer, "Arrêter le combat", StopBattle);
         CreateButton(_controlContainer, "Soigner tout", _gameType.RestoreAll);
         CreateButton(_controlContainer, "Tout effacer", _gameType.ClearAll);
+        CreateButton(_controlContainer, "Charger une vague", () => _wavePanel.SetActive(true));
 
         foreach (EntityData entityData in data.entities)
         {
             CreateButton(_entityContainer, entityData.title, () => _gameType.SelectEntity(entityData));
         }
+
+        InitWavePanel(data);
 
         foreach (CharacterSkillSlot skillSlot in character.skillSlots)
         {
@@ -47,6 +52,26 @@ public class SandboxPanel : MonoBehaviour
         SandboxButton button = Instantiate(_buttonPrefab, container);
         button.Init(label, onClick);
         return button;
+    }
+
+    // One button per wave, the panel closes once a wave is loaded
+    void InitWavePanel(SandboxData data)
+    {
+        foreach (WavePatternData waveData in data.waves)
+        {
+            if (waveData != null)
+            {
+                CreateButton(_waveContainer, waveData.name, () => LoadWave(waveData));
+            }
+        }
+        CreateButton(_waveContainer, "Annuler", () => _wavePanel.SetActive(false));
+        _wavePanel.SetActive(false);
+    }
+
+    void LoadWave(WavePatternData waveData)
+    {
+        _gameType.LoadWave(waveData);
+        _wavePanel.SetActive(false);
     }
 
     void ToggleSide()

@@ -327,15 +327,6 @@ public class AscensionGameType : AGameType
             return;
         }
 
-        for (int i = 0; i < waveData.width; i++)
-        {
-            for (int j = 0; j < waveData.height; j++)
-            {
-                if (waveData.slots[i, j].entity != null)
-                {
-                    EntityManager.instance.SpawnEntity(waveData.slots[i, j].entity, transform.position - new Vector3(waveData.width / 2f, 0f, waveData.height / 2f) + new Vector3(i, 0f, j), Entity.EntityType.Computer);
-                }
-            }
-        }
+        EntityManager.instance.SpawnWave(waveData, transform.position, Entity.EntityType.Computer);
     }
 }
