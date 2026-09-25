@@ -11,6 +11,12 @@ namespace HealerLike.Render.Stage
             StagePlay.Enter("motion", 300f);
         }
 
+        [MenuItem("Tools/Render/Capture Offscreen Player")]
+        public static void OffscreenPlayer()
+        {
+            StagePlay.Enter("offscreen-player", 180f);
+        }
+
         [MenuItem("Tools/Render/Capture Portrait")]
         public static void Portrait()
         {
