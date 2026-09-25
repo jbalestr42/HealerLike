@@ -42,6 +42,9 @@ namespace HealerLike.Render.Creatures
         float _charge;
         float _healthFraction = 1f;
         Quaternion _aim = Quaternion.identity;
+        Vector3? _presentationForward;
+        Quaternion _presentationBasis = Quaternion.identity;
+        float _presentationTurn;
 
         Transform[] _budAnchors;
         public Transform[] budAnchors { get { return _budAnchors; } }
@@ -208,10 +211,18 @@ namespace HealerLike.Render.Creatures
 
         public void SetReadout(Vector3? target, float health, float readiness, float glow)
         {
-            _aimTarget = target;
+            _aimTarget = target.HasValue && RenderMath.IsFinite(target.Value) ? target : null;
             _healthFraction = float.IsFinite(health) ? Mathf.Clamp01(health) : 1f;
             _charge = float.IsFinite(readiness) ? Mathf.Clamp01(readiness) : 0f;
             _budPower = float.IsFinite(glow) ? Mathf.Clamp01(glow) : 0f;
+        }
+
+        // The live view supplies its assigned camera's horizontal forward. A null input keeps the deliberate
+        // target/idle orientation used by Studio and standalone rigs; the rig never looks up a scene camera.
+        public void SetPresentationForward(Vector3? forward)
+        {
+            if (_presentationForward.HasValue != forward.HasValue) _presentationTurn = 0f;
+            _presentationForward = forward;
         }
 
         public void Hit()
@@ -235,16 +246,7 @@ namespace HealerLike.Render.Creatures
             _root.SetPositionAndRotation(frame.origin, Quaternion.FromToRotation(Vector3.up, frame.normal));
             _root.localScale = Vector3.one / _root.parent.lossyScale.x;
             float dt = Mathf.Max(0f, deltaTime);
-            Vector3 direction = new Vector3(Mathf.Sin(time * 0.3f) * 0.4f, 0f, 1f);
-            if (_aimTarget.HasValue)
-            {
-                direction = _root.InverseTransformDirection(_aimTarget.Value - frame.origin);
-            }
-            direction.y = 0f;
-            if (direction.sqrMagnitude > 0.000001f)
-            {
-                _aim = Quaternion.Slerp(_aim, Quaternion.LookRotation(direction), 1f - Mathf.Exp(-dt * 7f));
-            }
+            Aim(time, dt, frame.origin);
 
             _hitPulse = Mathf.Max(0f, _hitPulse - dt * 5f);
             IdlePose idlePose = IdleMotion.Evaluate(_idle, time);
@@ -285,6 +287,43 @@ namespace HealerLike.Render.Creatures
             }
 
             _roots.Place(_sway, _root, _cellSize);
+        }
+
+        void Aim(float time, float deltaTime, Vector3 origin)
+        {
+            float damping = 1f - Mathf.Exp(-deltaTime * 7f);
+            if (_presentationForward.HasValue)
+            {
+                Vector3 forward = _presentationForward.Value;
+                if (RenderMath.IsFinite(forward))
+                {
+                    forward = _root.InverseTransformDirection(forward);
+                    forward.y = 0f;
+                    if (forward.sqrMagnitude > 0.000001f) _presentationBasis = Quaternion.LookRotation(forward);
+                }
+                // Follow camera heading immediately, including the initial paused frame. Only the small
+                // reaction to a target is damped, so a moving camera cannot leave the full silhouette edge-on.
+                float turn = Mathf.Sin(time * 0.3f) * 4f;
+                if (_aimTarget.HasValue)
+                {
+                    Vector3 target = _root.InverseTransformDirection(_aimTarget.Value - origin);
+                    target.y = 0f;
+                    turn = target.sqrMagnitude > 0.000001f
+                        ? Vector3.Dot(target.normalized, _presentationBasis * Vector3.right) * 18f : 0f;
+                }
+                // Lateral response is continuous even when the target crosses directly behind the creature.
+                _presentationTurn = Mathf.Lerp(_presentationTurn, turn, damping);
+                _aim = _presentationBasis * Quaternion.AngleAxis(_presentationTurn, Vector3.up);
+                return;
+            }
+
+            Vector3 direction = new Vector3(Mathf.Sin(time * 0.3f) * 0.4f, 0f, 1f);
+            if (_aimTarget.HasValue) direction = _root.InverseTransformDirection(_aimTarget.Value - origin);
+            direction.y = 0f;
+            if (direction.sqrMagnitude > 0.000001f)
+            {
+                _aim = Quaternion.Slerp(_aim, Quaternion.LookRotation(direction), damping);
+            }
         }
 
         // Where arm index leaves the body now, in world space

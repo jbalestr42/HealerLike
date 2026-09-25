@@ -230,6 +230,37 @@ public class CreatureBuilderTests
     }
 
     [Test]
+    public void InitAndLateUpdate_AssignedCameraTurnsOnlyTheGeneratedCreature()
+    {
+        GameObject managerObject = new GameObject("Facing manager");
+        _objects.Add(managerObject);
+        RenderManager manager = managerObject.AddComponent<RenderManager>();
+        GameObject cameraObject = new GameObject("Assigned facing camera");
+        _objects.Add(cameraObject);
+        Camera camera = cameraObject.AddComponent<Camera>();
+        TestHelpers.SetPrivateField(manager, "_gameCamera", camera);
+        Vector3 source = _source.transform.localPosition;
+        Vector3 target = _target.transform.localPosition;
+        Quaternion ownerRotation = Quaternion.Euler(0f, 23f, 0f);
+        _owner.transform.rotation = ownerRotation;
+        camera.transform.rotation = Quaternion.Euler(52f, 90f, 0f);
+        _builder.Init(_entity, manager);
+        foreach (float yaw in new[] { 90f, -45f, 170f })
+        {
+            camera.transform.rotation = Quaternion.Euler(52f, yaw, 0f);
+            TestHelpers.InvokePrivate(_builder, "LateUpdate");
+            Vector3 facing = Vector3.ProjectOnPlane(_builder.rig.armRotation * Vector3.forward, Vector3.up);
+            Vector3 toViewer = Vector3.ProjectOnPlane(-camera.transform.forward, Vector3.up);
+            Assert.That(Vector3.Angle(facing, toViewer), Is.LessThan(24f));
+            Assert.That(Quaternion.Angle(ownerRotation, _owner.transform.rotation), Is.LessThan(0.001f));
+            Assert.AreEqual(source, _source.transform.localPosition);
+            Assert.AreEqual(target, _target.transform.localPosition);
+            Assert.AreEqual(100f, _health.Value);
+            Assert.IsTrue(_builder.Rebuild(manager));
+        }
+    }
+
+    [Test]
     public void BeginDelivery_ThrownOrDirect_ClaimsOnlyWhatAnArmDraws()
     {
         bool isThrownClaimed = _builder.BeginDelivery(200, DeliveryStyle.Thrown, null, Vector3.one);

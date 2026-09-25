@@ -108,7 +108,7 @@ namespace HealerLike.Render.Creatures
             RefreshArms();
             _readout.Read();
             rig.SetReadout(_readout.target, _readout.healthFraction, _readout.readiness, _readout.readiness);
-            TickRig(Time.time, 0f, Frame());
+            TickPresentation(0f);
             HealerLike.Render.Stones.StoneBody stone = GetComponent<HealerLike.Render.Stones.StoneBody>();
             if (stone != null)
             {
@@ -156,7 +156,7 @@ namespace HealerLike.Render.Creatures
 
             _readout.Read();
             rig.SetReadout(_readout.target, _readout.healthFraction, _readout.readiness, _readout.readiness);
-            TickRig(Time.time, Time.deltaTime, Frame());
+            TickPresentation(Time.deltaTime);
         }
 
         // The view prefab carries the status observer, which wires the outcome observers too
@@ -184,8 +184,15 @@ namespace HealerLike.Render.Creatures
             if (rig != null)
             {
                 rig.SetVisible(isActiveAndEnabled);
-                TickRig(Time.time, 0f, Frame());
+                TickPresentation(0f);
             }
+        }
+
+        void TickPresentation(float deltaTime)
+        {
+            Camera camera = _manager != null ? _manager.gameCamera : null;
+            rig.SetPresentationForward(camera != null ? -camera.transform.forward : (Vector3?)null);
+            TickRig(Time.time, deltaTime, Frame());
         }
 
         FootFrame Frame()

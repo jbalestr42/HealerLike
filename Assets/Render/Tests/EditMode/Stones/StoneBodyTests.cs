@@ -127,6 +127,9 @@ public class StoneBodyTests
         int effects = _fx.liveCount;
         Assert.IsTrue(rig.Recompose(_recipe, _material, _material, RenderTestAssets.LoadMeshes()));
         _body.RefreshRig();
+        rig.SetPresentationForward(Vector3.left);
+        rig.SetReadout(Vector3.forward * 4f, 0.4f, 0f, 0f);
+        rig.Tick(0f, 1f, new FootFrame(_owner.transform.position, Vector3.up, 1f));
         Assert.AreSame(rig, builder.rig);
         Assert.AreEqual(3, visibleCount);
         Assert.AreEqual(effects, _fx.liveCount);
@@ -134,6 +137,8 @@ public class StoneBodyTests
         effects = _fx.liveCount;
         Assert.IsTrue(rig.Recompose(_recipe, _material, _material, RenderTestAssets.LoadMeshes()));
         _body.RefreshRig();
+        rig.SetPresentationForward(Vector3.back);
+        rig.Tick(0f, 1f, new FootFrame(_owner.transform.position, Vector3.up, 1f));
         Assert.AreEqual(0, visibleCount);
         Assert.IsTrue(_body.isCollapsed);
         Assert.AreEqual(effects, _fx.liveCount);

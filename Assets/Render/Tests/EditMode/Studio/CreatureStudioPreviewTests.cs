@@ -147,6 +147,22 @@ public class CreatureStudioPreviewTests
     }
 
     [Test]
+    public void Sample_ExternalMainCameraMoves_ExplicitStudioAimAndPoseStayUnchanged()
+    {
+        GameObject external = Track(new GameObject("External game camera"));
+        external.tag = "MainCamera";
+        Camera camera = external.AddComponent<Camera>();
+        camera.transform.rotation = Quaternion.Euler(52f, 90f, 0f);
+        _preview.aim = new Vector3(4f, 0.8f, 0f);
+        List<Matrix4x4> before = Snapshot(_preview.Sample(_recipe, 1f));
+
+        camera.transform.rotation = Quaternion.Euler(52f, -70f, 0f);
+        _preview.Refresh();
+
+        AssertSamePoses(before, Snapshot(_preview.Sample(_recipe, 1f)));
+    }
+
+    [Test]
     public void Sample_SeekBackOrAnotherSchedule_LandsOnTheSamePose()
     {
         _preview.aim = new Vector3(1.5f, 0.8f, 0.5f);

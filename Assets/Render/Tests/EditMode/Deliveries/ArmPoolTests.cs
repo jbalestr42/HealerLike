@@ -153,6 +153,33 @@ public class ArmPoolTests
     }
 
     [Test]
+    public void Tick_PresentationTurnsAndRecompose_KeepHeldProjectileAndArmAttached()
+    {
+        _recipe.arms[0].rootLocal = new Vector3(0.3f, 0.5f, 0.1f);
+        _rig.SetPresentationForward(Vector3.left);
+        Tick(0f);
+        _projectile.transform.position = new Vector3(2f, 1f, 0f);
+        Assert.IsTrue(_pool.BeginDelivery(41, DeliveryStyle.Direct, _projectile.transform, Vector3.one));
+        Tick(0.2f);
+        LianaArm arm = Arms()[0];
+        int token = arm.token;
+        foreach (Vector3 forward in new[] { Vector3.back, Vector3.right })
+        {
+            _rig.SetPresentationForward(forward);
+            _rig.SetReadout(Vector3.forward * 4f, 1f, 0.5f, 0f);
+            Assert.IsTrue(_rig.Recompose(_recipe, _material, _material, RenderTestAssets.LoadMeshes()));
+            _pool.Refresh();
+            Tick(0.016f);
+            Assert.AreSame(arm, Arms()[0]);
+            Assert.AreEqual(token, arm.token);
+            Assert.IsFalse(arm.isAvailable);
+            Assert.That(Vector3.Distance(arm.goal, _projectile.transform.position), Is.LessThan(0.00001f));
+            Assert.That(Vector3.Distance(arm.Joint(0), _rig.ArmSocket(0)), Is.LessThan(0.0001f));
+            Assert.AreEqual(new Vector3(2f, 1f, 0f), _projectile.transform.position);
+        }
+    }
+
+    [Test]
     public void BeginDelivery_PoolSaturated_RefusesWithoutStealing()
     {
         for (int i = 1; i <= ArmPool.MaxArms; i++)
