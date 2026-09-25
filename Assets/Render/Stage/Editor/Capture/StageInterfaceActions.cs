@@ -22,6 +22,20 @@ namespace HealerLike.Render.Stage
             {
                 throw new InvalidOperationException("UI button unavailable: " + (button != null ? button.name : "null"));
             }
+            VisualElement picked = button.panel.Pick(button.worldBound.center);
+            bool reachable = false;
+            for (VisualElement target = picked; target != null; target = target.parent)
+            {
+                if (target == button)
+                {
+                    reachable = true;
+                    break;
+                }
+            }
+            if (!reachable)
+            {
+                throw new InvalidOperationException("UI button is covered or outside its scroll viewport: " + button.name);
+            }
             button.Focus();
             using (NavigationSubmitEvent submit = NavigationSubmitEvent.GetPooled())
             {

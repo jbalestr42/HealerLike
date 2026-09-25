@@ -83,8 +83,9 @@ public class StageDressingTests
         Assert.AreEqual(pose.position, gameCamera.transform.position);
         Assert.AreEqual(isLandscape, gameCamera.aspect > 1f);
     }
-    [Test]
-    public void FocusAndSafetyWidening_FrameVisibleCombatantsWithoutHiddenCharacterOrigin()
+    [TestCase(false)]
+    [TestCase(true)]
+    public void FocusAndSafetyWidening_FrameVisibleCombatantsWithoutHiddenCharacterOrigin(bool measuredViewport)
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);
         GameObject healer = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -110,6 +111,10 @@ public class StageDressingTests
             });
         BattleFocus focus = _scene.manager.GetComponentInChildren<BattleFocus>(true);
         Assert.IsNotNull(focus, "The render manager carries focus on its nested controls prefab.");
+        if (measuredViewport)
+        {
+            focus.SetViewport(new Rect(0.04f, 0.30f, 0.92f, 0.55f));
+        }
         focus.Focus();
         Pose target = (Pose)typeof(BattleFocus).GetField("_target", BindingFlags.Instance | BindingFlags.NonPublic)
             .GetValue(focus);
@@ -123,8 +128,8 @@ public class StageDressingTests
         Vector3 allyBase = camera.WorldToViewportPoint(Vector3.right * 3f);
         Vector3 enemyBase = camera.WorldToViewportPoint(Vector3.right * 5f);
         Vector3 combatCentre = camera.WorldToViewportPoint(new Vector3(4f, 1f, 0f));
-        Assert.That(combatCentre.y, Is.EqualTo(0.44f).Within(0.001f));
-        Assert.That(allyBase.y, Is.InRange(0.16f, 0.38f));
+        Assert.That(combatCentre.y, Is.EqualTo(measuredViewport ? 0.575f : 0.44f).Within(0.001f));
+        Assert.That(allyBase.y, measuredViewport ? Is.InRange(0.30f, 0.54f) : Is.InRange(0.16f, 0.38f));
         Assert.That(allyBase.y, Is.LessThan(enemyBase.y));
         Assert.That(allyBase.x, Is.EqualTo(enemyBase.x).Within(0.001f));
         Assert.That(healer.transform.position.x, Is.EqualTo(-30f));

@@ -15,11 +15,19 @@ namespace HealerLike.Render.Stage
         InteractionManager _interaction;
         protected override bool shouldStartGame { get { return false; } }
 
+        protected override void OnFailed(System.Exception error)
+        {
+            _output.Fail(error.Message);
+            base.OnFailed(error);
+        }
+
         protected override IEnumerator Run()
         {
             bool passed = false;
             try
             {
+                _output.Check(!string.IsNullOrWhiteSpace(_output.manifest.revision)
+                    && _output.manifest.revision != "unspecified", "Capture source revision recorded");
                 _actions.ui = Object.FindAnyObjectByType<ToolkitGameUI>();
                 _interaction = Object.FindAnyObjectByType<InteractionManager>();
                 yield return Resize(1080, 1920);
@@ -77,6 +85,13 @@ namespace HealerLike.Render.Stage
                 yield return SpellTap();
                 yield return Resize(1170, 2532);
                 yield return Capture("08-tall-phone");
+                _actions.ui.safeAreaProvider = () => new Rect(0f, 34f / 844f, 1f, 1f - 78f / 844f);
+                _actions.Submit("pause-button");
+                yield return Wait(0.4f);
+                yield return Capture("08b-safe-area-pause");
+                _actions.Submit("resume-button");
+                _actions.ui.safeAreaProvider = null;
+                yield return Wait(0.2f);
                 yield return Resize(844, 390);
                 yield return Capture("09-phone-landscape");
                 yield return Resize(1080, 1920);
@@ -140,7 +155,6 @@ namespace HealerLike.Render.Stage
             Vector2 end = _manager.gameCamera.WorldToScreenPoint(_manager.board.center);
             _actions.touch.ProcessTouch(3, TouchPhase.Began, start);
             _actions.Submit(card);
-            yield return Wait(0.2f);
             _actions.touch.ProcessTouch(3, TouchPhase.Moved, end);
             _actions.touch.ProcessTouch(3, TouchPhase.Ended, end);
             _output.Check(_interaction.GetInteraction() != null, "Gesture beginning over UI cannot deploy on release over board");

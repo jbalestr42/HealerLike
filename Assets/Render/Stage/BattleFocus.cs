@@ -34,6 +34,7 @@ namespace HealerLike.Render.Stage
 
         bool _isFocused;
         Bounds _combatBounds;
+        bool _hasViewport;
         Rect _viewport = BattleFocusBounds.FocusFrame;
         Rect _visibleViewport = BattleFocusBounds.VisibleFrame;
 
@@ -49,6 +50,7 @@ namespace HealerLike.Render.Stage
 
         public void SetViewport(Rect viewport)
         {
+            _hasViewport = true;
             _visibleViewport = viewport;
             _viewport = StageViewport.Inset(viewport, 0.025f);
             MarkDirty();
@@ -129,8 +131,7 @@ namespace HealerLike.Render.Stage
             // Widen at once when a spawn leaves the safe viewport, only the zoom in eases
             if (_isFocused && !AreAllBodiesVisible())
             {
-                Pose safe = StageViewport.Fit(_combatBounds, cameraTransform.rotation, _camera.fieldOfView,
-                                                  _camera.aspect, _viewport);
+                Pose safe = Fit(_combatBounds, cameraTransform.rotation);
                 cameraTransform.position = safe.position;
                 _velocity = Vector3.zero;
             }
@@ -265,7 +266,14 @@ namespace HealerLike.Render.Stage
             bounds.Expand(BattleFocusBounds.Padding);
             _combatBounds = bounds;
             Quaternion rotation = Quaternion.Euler(_pitch, _manager.overviewPose.rotation.eulerAngles.y, 0f);
-            _target = StageViewport.Fit(bounds, rotation, _camera.fieldOfView, _camera.aspect, _viewport);
+            _target = Fit(bounds, rotation);
+        }
+
+        Pose Fit(Bounds bounds, Quaternion rotation)
+        {
+            return _hasViewport
+                ? StageViewport.Fit(bounds, rotation, _camera.fieldOfView, _camera.aspect, _viewport)
+                : BattleFocusBounds.Fit(bounds, rotation, _camera.fieldOfView, _camera.aspect);
         }
 
         // Recomposition replaces root renderers and can add parts while retaining the same entity transform.

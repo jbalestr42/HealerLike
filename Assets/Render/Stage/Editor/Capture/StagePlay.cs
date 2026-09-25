@@ -12,6 +12,7 @@ namespace HealerLike.Render.Stage
     [InitializeOnLoad]
     public static class StagePlay
     {
+        static StageCaptureFrame _frame;
         static readonly string modeKey = "StagePlay.Mode";
         static readonly string codeKey = "StagePlay.Code";
         static readonly string deadlineKey = "StagePlay.Deadline";
@@ -55,6 +56,12 @@ namespace HealerLike.Render.Stage
         public static void Finish(AStageRun run, bool isPassed)
         {
             EditorApplication.update -= run.Step;
+            if (_frame != null)
+            {
+                _frame.onFrame = null;
+                UnityEngine.Object.Destroy(_frame.gameObject);
+                _frame = null;
+            }
             SessionState.SetInt(codeKey, isPassed ? 0 : 1);
             EditorApplication.isPlaying = false;
         }
@@ -108,7 +115,18 @@ namespace HealerLike.Render.Stage
             if (change == PlayModeStateChange.EnteredPlayMode)
             {
                 AStageRun run = Create(mode);
-                EditorApplication.update += run.Step;
+                if (mode == "mobile-interface")
+                {
+                    // Screen and pointer coordinates must be read inside a game frame, not Editor.update.
+                    GameObject host = new GameObject("Stage capture frame");
+                    UnityEngine.Object.DontDestroyOnLoad(host);
+                    _frame = host.AddComponent<StageCaptureFrame>();
+                    _frame.onFrame = run.Step;
+                }
+                else
+                {
+                    EditorApplication.update += run.Step;
+                }
                 run.Begin();
             }
 
