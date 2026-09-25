@@ -40,6 +40,7 @@ public class ToolkitWaveBar
         GameHUD hud = _context.legacy.gameHUD;
         bool isAvailable = !_context.isPaused && !hasOverlay;
         _view.Show("start-button", isStart);
+        _view.Show("spell-section", !isStart);
         _view.Show("wave-button", !isStart && isPreparing);
         _view.SetButton("start-button", "Start expedition", isAvailable && hud.startGameButton.interactable);
         _view.SetText("currency-label", $"{_context.player.gold} gold");
@@ -61,6 +62,7 @@ public class ToolkitWaveBar
     public void RefreshMana()
     {
         Character character = _context.player.character;
+        _view.Show("mana-bar", character != null && character.mana != null);
         if (character != null && character.mana != null)
         {
             _view.SetResource("mana-bar", character.mana.Value, character.mana.Max);
