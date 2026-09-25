@@ -129,7 +129,7 @@ public class CreatureStudioPreviewTests
             {
                 file = "Look_Stone";
             }
-            else if (_recipe.parts[i].role == PartRole.Body)
+            else if (_recipe.parts[i].role == PartRole.Body || _recipe.parts[i].role == PartRole.Head)
             {
                 file = "Look_Body";
             }
@@ -140,6 +140,8 @@ public class CreatureStudioPreviewTests
             Assert.AreEqual(source.GetFloat("_HLToonThresholdOffset"), actual.GetFloat("_HLToonThresholdOffset"));
             Assert.AreEqual(source.GetColor("_HLShadeTint"), actual.GetColor("_HLShadeTint"));
             Assert.AreEqual(source.GetFloat("_HLFaceHatch"), actual.GetFloat("_HLFaceHatch"));
+            Assert.AreEqual(source.GetColor("_HLShadeTurnTint"), actual.GetColor("_HLShadeTurnTint"));
+            Assert.AreEqual(source.GetColor("_HLHighlightTint"), actual.GetColor("_HLHighlightTint"));
         }
     }
 

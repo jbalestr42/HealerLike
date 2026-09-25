@@ -92,7 +92,7 @@ namespace HealerLike.Render.Studio.Editor
             return child;
         }
 
-        // A stone target draws every part with the stone material, a plant uses the body material on its body only
+        // A stone target draws every part with the stone material; plants give body and head surfaces their own look.
         public Material Shared(LookSide side)
         {
             if (side == LookSide.Stone)

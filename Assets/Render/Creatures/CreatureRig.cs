@@ -66,8 +66,9 @@ namespace HealerLike.Render.Creatures
             return Init(data, parent, material, material, meshes, cellSize);
         }
 
-        // A recipe that fails validation logs and leaves the view empty. Body parts draw with the body material,
-        // which shades a plant's body with its own threshold and tint, every other part with the shared one.
+        // A recipe that fails validation logs and leaves the view empty. Body and Head surfaces use the body
+        // material; tips and structural parts retain the shared material. The caller gives stones one material
+        // for both slots, so surface shading does not infer a side from colour, geometry or an object name.
         public bool Init(CreatureRecipe data, Transform parent, Material material, Material bodyMaterial,
             PrimitiveMeshes meshes, float cellSize)
         {
@@ -169,7 +170,7 @@ namespace HealerLike.Render.Creatures
                 _pivots[i].localRotation = Quaternion.Euler(part.localEuler);
                 Mesh mesh = resolved[i];
                 Material partMaterial = material;
-                if (part.role == PartRole.Body)
+                if (part.role == PartRole.Body || part.role == PartRole.Head)
                 {
                     partMaterial = bodyMaterial;
                 }

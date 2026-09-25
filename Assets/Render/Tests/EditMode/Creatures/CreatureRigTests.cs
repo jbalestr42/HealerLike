@@ -101,6 +101,55 @@ public class CreatureRigTests
         Assert.IsTrue(anchor);
     }
 
+    [TestCase(LookSide.Plant)]
+    [TestCase(LookSide.Stone)]
+    public void Recompose_ArchSurfacesUseTheCallerBodyMaterialWhileAccentsAndRootsKeepShared(LookSide side)
+    {
+        _rig.Dispose();
+        Object.DestroyImmediate(_recipe);
+        _recipe = LookComposer.Compose(RenderTestAssets.CreateChannels(side, HeadKind.Arch),
+            RenderTestAssets.LoadLookVocabulary());
+        Material stone = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Stone.mat");
+        Material shared = side == LookSide.Stone ? stone : _material;
+        Material body = side == LookSide.Stone ? stone
+            : AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Body.mat");
+        _rig = new CreatureRig();
+        Assert.IsTrue(_rig.Init(_recipe, _parent.transform, shared, body, RenderTestAssets.LoadMeshes(), 1f));
+        Transform headTransform = null;
+        int heads = 0;
+        int tips = 0;
+        for (int pass = 0; pass < 2; pass++)
+        {
+            for (int i = 0; i < _recipe.parts.Length; i++)
+            {
+                CreaturePart part = _recipe.parts[i];
+                Renderer renderer = _rig.partTransforms[i].GetComponent<Renderer>();
+                bool surface = part.role == PartRole.Body || part.role == PartRole.Head;
+                Assert.AreSame(surface ? body : shared, renderer.sharedMaterial, part.id);
+                if (part.role == PartRole.Head)
+                {
+                    heads++;
+                    if (headTransform == null) headTransform = renderer.transform;
+                }
+                if (part.role == PartRole.Tip) tips++;
+            }
+            // Recomposition must preserve the material contract on reused geometry as well as new parts.
+            Assert.IsTrue(_rig.Recompose(_recipe, shared, body, RenderTestAssets.LoadMeshes()));
+            Assert.IsTrue(headTransform);
+        }
+        Assert.That(heads, Is.GreaterThan(0), "The real Arch recipe must exercise head surfaces");
+        Assert.That(tips, Is.GreaterThan(0), "Its semantic tips must retain the shared material");
+        foreach (Renderer renderer in _rig.root.GetComponentsInChildren<Renderer>())
+        {
+            bool recipePart = false;
+            foreach (Transform part in _rig.partTransforms)
+            {
+                if (renderer.transform == part) recipePart = true;
+            }
+            if (!recipePart) Assert.AreSame(shared, renderer.sharedMaterial, "Root material must stay separate");
+        }
+    }
+
     [Test]
     public void Init_GlowingPart_BrightensBaseColourAndKeepsAlpha()
     {
