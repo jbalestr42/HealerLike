@@ -64,21 +64,20 @@ public class LookMaterialTests
         Assert.That(body.GetColor("_HLShadeTurnTint").g, Is.GreaterThan(body.GetColor("_HLShadeTurnTint").b));
         Assert.That(body.GetColor("_HLHighlightTint").a, Is.GreaterThan(0f));
         Assert.That(LookSettings.Default.toonSoftness, Is.LessThan(0.025f), "The primary split must stay short");
-        foreach (Material creature in new[] { body, shared, stone })
+        foreach (Material creature in new[] { body, shared, stone, grass })
         {
             float threshold = LookSettings.Default.toonThreshold + creature.GetFloat("_HLToonThresholdOffset");
             Assert.That(threshold, Is.InRange(0.65f, 0.8f), creature.name);
             Assert.That(creature.GetFloat("_HLHatchMultiplier"), Is.EqualTo(1f), creature.name);
             Assert.That(creature.GetFloat("_HLFaceHatch"), Is.EqualTo(1f), creature.name);
         }
-        foreach (Material global in new[] { shared, stone, grass })
+        foreach (Material global in new[] { shared, stone })
         {
             Assert.That(global.GetColor("_HLShadeTint").a, Is.Zero, global.name);
             Assert.That(global.GetColor("_HLShadeTurnTint").a, Is.Zero, global.name);
             Assert.That(global.GetColor("_HLHighlightTint").a, Is.Zero, global.name);
         }
-        Assert.That(LookSettings.Default.toonThreshold + grass.GetFloat("_HLToonThresholdOffset"),
-            Is.EqualTo(0.45f).Within(0.0001f));
+        Assert.That(grass.GetFloat("_HLToonThresholdOffset"), Is.EqualTo(body.GetFloat("_HLToonThresholdOffset")));
         Assert.That(grass.GetFloat("_HLHatchMultiplier"), Is.GreaterThan(0.5f));
         Assert.That(grass.GetFloat("_HLFaceHatch"), Is.GreaterThan(0.5f));
     }

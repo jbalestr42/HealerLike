@@ -113,10 +113,10 @@ public class GrassDrawTests
     }
 
     [Test]
-    public void GrassBladeMaterial_Asset_UsesGrassGreenWithoutInternalNormalEdges()
+    public void GrassBladeMaterial_Asset_UsesThePlantSurfaceWithGrassInstancingAndDepthEdges()
     {
         Material grass = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat");
-        Material plant = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
+        Material plant = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Body.mat");
 
         Assert.AreSame(plant.shader, grass.shader);
         Assert.IsTrue(grass.IsKeywordEnabled(instancedKeyword));
@@ -124,13 +124,87 @@ public class GrassDrawTests
         Assert.AreEqual(plant.enableInstancing, grass.enableInstancing);
         Assert.AreEqual(plant.renderQueue, grass.renderQueue);
         Assert.That(grass.GetFloat("_HLNormalEdges"), Is.Zero);
-        Assert.That(grass.GetFloat("_HLToonThresholdOffset"), Is.LessThan(0f));
-        Assert.That(grass.GetFloat("_HLFaceHatch"), Is.GreaterThan(0.5f));
-        Assert.That(grass.GetFloat("_HLHatchMultiplier"), Is.InRange(0.5f, 1f));
-        Assert.That(grass.GetFloat("_HLMeadowVariation"), Is.GreaterThan(0f));
-        Assert.That(grass.GetFloat("_HLGrassTipLight"), Is.GreaterThan(0f));
-        Assert.That(grass.GetColor("_HLShadeTint").a, Is.Zero, "The shared blue shade must reach ordinary grass");
-        Assert.That((Color32)grass.GetColor("_BaseColor"), Is.EqualTo(new Color32(97, 166, 64, 255))); // #61a640
+        foreach (string property in new[] { "_HLToonThresholdOffset", "_HLHatchMultiplier", "_HLFaceHatch",
+            "_HLMeadowVariation", "_HLGrassTipLight", "_HLHighlightWidth" })
+        {
+            Assert.That(grass.GetFloat(property), Is.EqualTo(plant.GetFloat(property)), property);
+        }
+        foreach (string property in new[] { "_BaseColor", "_HLShadeTint", "_HLShadeTurnTint", "_HLHighlightTint" })
+        {
+            Assert.That(Vector4.Distance(grass.GetColor(property), plant.GetColor(property)),
+                Is.LessThan(0.000001f), property);
+        }
+    }
+
+    [Test]
+    public void Show_IndirectTuft_MatchesTheSameMeshWithPlantMaterialAcrossRealLightAngles()
+    {
+        _scene.BuildKeyLight(20f, 4f);
+        _scene.camera.orthographic = true;
+        _scene.camera.orthographicSize = 0.65f;
+        _scene.camera.transform.SetPositionAndRotation(new Vector3(0f, 0.5f, -4f), Quaternion.identity);
+        Material grass = AssetDatabase.LoadAssetAtPath<Material>(grassMaterialPath);
+        Material body = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Body.mat");
+        GameObject plantMesh = _scene.Track(new GameObject("Equivalent plant mesh"));
+        plantMesh.layer = LookTestScene.Layer;
+        plantMesh.transform.localScale = new Vector3(0.8f, 1f, 0.8f);
+        plantMesh.AddComponent<MeshFilter>().sharedMesh = _mesh;
+        MeshRenderer direct = plantMesh.AddComponent<MeshRenderer>();
+        direct.sharedMaterial = body;
+        direct.shadowCastingMode = ShadowCastingMode.Off;
+        _draw.Release();
+        _draw = new GrassDraw(_mesh, grass, 1, new Bounds(Vector3.up * 0.5f, Vector3.one * 2f), LookTestScene.Layer);
+        // Select the camera-facing facet after the same nonuniform scale used by the indirect adapter.
+        Vector3 normal = _mesh.normals.OrderBy(n => n.z).First();
+        normal = new Vector3(normal.x / 0.8f, normal.y, normal.z / 0.8f).normalized;
+        Vector3 glintLight = Vector3.Reflect(Vector3.forward, normal);
+        Vector3[] directions = { glintLight, Vector3.left, Vector3.forward };
+        using (GraphicsBuffer seeds = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, TuftSeed.Stride))
+        using (GraphicsBuffer states = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, TuftState.Stride))
+        using (GraphicsBuffer visible = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, 4))
+        {
+            seeds.SetData(new[] { new TuftSeed { heightWidthLean = new Vector4(1f, 0.8f, 0f, 0f) } });
+            states.SetData(new[] { new TuftState { leanHeightSpike = new Vector4(0f, 0f, 1f, 0f) } });
+            visible.SetData(new uint[] { 0 });
+            _draw.BindTufts(seeds, states, visible, 1f);
+            Color32[][] samples = new Color32[directions.Length][];
+            for (int angle = 0; angle < directions.Length; angle++)
+            {
+                RenderSettings.sun.transform.rotation = Quaternion.LookRotation(-directions[angle], Vector3.up);
+                direct.enabled = true;
+                _draw.Hide();
+                _scene.Render();
+                Color32[] expected = _scene.texture.GetPixels32();
+                direct.enabled = false;
+                _draw.Show(_scene.camera, () => true);
+                _scene.Render();
+                Color32[] actual = _scene.texture.GetPixels32();
+                samples[angle] = actual;
+                _draw.Hide();
+                int covered = 0;
+                int mismatched = 0;
+                float totalError = 0f;
+                for (int pixel = 0; pixel < expected.Length; pixel++)
+                {
+                    Color32 a = expected[pixel];
+                    Color32 b = actual[pixel];
+                    if (a.r < 250 || a.g < 250 || a.b < 250) covered++;
+                    int error = Mathf.Abs(a.r - b.r) + Mathf.Abs(a.g - b.g) + Mathf.Abs(a.b - b.b);
+                    totalError += error;
+                    if (error > 6) mismatched++;
+                }
+                Assert.That(covered, Is.GreaterThan(1000), "The comparison must contain visible geometry");
+                Assert.That(mismatched / (float)covered, Is.LessThan(0.02f),
+                    "Instanced grass must match the plant surface, allowing only raster-edge differences");
+                Assert.That(totalError / (3f * covered), Is.LessThan(0.7f), "Mean channel error in 8-bit codes");
+                Debug.Log("[GrassDrawTests] Plant equivalence angle=" + angle + " covered=" + covered
+                    + " mismatched=" + mismatched + " meanError=" + (totalError / (3f * covered)).ToString("F4"));
+            }
+            Color32 glint = samples[0][128 * 256 + 128];
+            Color32 shade = samples[2][128 * 256 + 128];
+            Assert.That(glint.r - shade.r, Is.GreaterThan(100), "Real light movement must reveal the bright face");
+            Assert.That(glint.g - shade.g, Is.GreaterThan(80), "The control cannot pass by comparing two invisible draws");
+        }
     }
 
     [Test]
@@ -321,6 +395,8 @@ public class GrassDrawTests
         // The grass teal is too green to tell from the lit blades, so a copy paints its shade magenta
         Material marked = _scene.Track(new Material(AssetDatabase.LoadAssetAtPath<Material>(grassMaterialPath)));
         marked.SetColor("_HLShadeTint", new Color(1f, 0f, 1f, 1f));
+        marked.SetColor("_HLShadeTurnTint", Color.clear);
+        marked.SetColor("_HLHighlightTint", Color.clear);
         _scene.BuildKeyLight(20f, 20f);
         // Keep the production sun, but observe the shaded side of the patch. A camera beside the sun sees
         // mostly lit faces; that old fixture depended on ordinary blades casting onto one another.
@@ -339,7 +415,7 @@ public class GrassDrawTests
     }
 
     [Test]
-    public void Show_StoneShadowOnGrass_ConvergesToTheGlobalUltramarine()
+    public void Show_StoneShadowOnGrass_PaintsTheLitFacesWithTheGlobalCastBlue()
     {
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null || !SystemInfo.supportsComputeShaders
             || !SystemInfo.supportsIndirectArgumentsBuffer)
@@ -352,6 +428,8 @@ public class GrassDrawTests
             StageCalibration.PortraitYaw, 0f);
         _scene.camera.transform.position = -_scene.camera.transform.forward * 20f;
         CreateGrassPatch(AssetDatabase.LoadAssetAtPath<Material>(grassMaterialPath));
+        _scene.Render();
+        Color32[] withoutStone = _scene.texture.GetPixels32();
         GameObject stone = CreateStone(AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Stone.mat"));
         // Lift a broad caster clear of the taller grass. Its surface must not hide the grass colour probe.
         stone.transform.position = new Vector3(0.5f, 2.5f, 0.5f);
@@ -368,13 +446,27 @@ public class GrassDrawTests
         int y = Mathf.RoundToInt(viewport.y * 256f);
         Assert.That(x, Is.InRange(4, 251), "The full grass probe must be inside the captured image.");
         Assert.That(y, Is.InRange(4, 251), "The full grass probe must be inside the captured image.");
-        Color32 shadow = LookTestScene.MedianColour(_scene.texture, x, y, 4);
-        Color32 study = new Color32(39, 91, 127, 255); // Lifted graphic blue after the working-space contrast
-        Assert.That(shadow.b - shadow.g, Is.GreaterThan(30), "The grass teal must stay out of cast shadow");
-        Assert.That(Mathf.Abs(shadow.r - study.r), Is.LessThanOrEqualTo(24));
-        Assert.That(Mathf.Abs(shadow.g - study.g), Is.LessThanOrEqualTo(24));
-        Assert.That(Mathf.Abs(shadow.b - study.b), Is.LessThanOrEqualTo(24));
-        Debug.Log("[GrassDrawTests] Stone shadow on grass " + shadow);
+        Color32[] withStone = _scene.texture.GetPixels32();
+        Color32 study = new Color32(39, 91, 127, 255); // Shared cast blue after working-space contrast
+        int changedToCastBlue = 0;
+        // The plant surface keeps its own teal on faces already turned away from the sun. Locate actual
+        // lime-to-blue changes instead of taking a median that can fall on an unlit teal face.
+        for (int dy = -20; dy <= 20; dy++)
+        {
+            for (int dx = -20; dx <= 20; dx++)
+            {
+                int px = Mathf.Clamp(x + dx, 0, 255);
+                int py = Mathf.Clamp(y + dy, 0, 255);
+                int index = py * 256 + px;
+                Color32 before = withoutStone[index];
+                Color32 after = withStone[index];
+                bool castBlue = after.b - after.g > 25 && Mathf.Abs(after.r - study.r) <= 24
+                    && Mathf.Abs(after.g - study.g) <= 24 && Mathf.Abs(after.b - study.b) <= 24;
+                if (castBlue && before.g - after.g > 35) changedToCastBlue++;
+            }
+        }
+        Assert.That(changedToCastBlue, Is.GreaterThan(20), "The real caster must replace visible lit grass with blue shadow");
+        Debug.Log("[GrassDrawTests] Grass pixels changed from lit fill to cast blue: " + changedToCastBlue);
     }
 
     GameObject CreateStone(Material material)
