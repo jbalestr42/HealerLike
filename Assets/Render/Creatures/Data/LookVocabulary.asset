@@ -2807,751 +2807,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.26
-    - Name: 
-      Entry: 4
-      Data: 1.54
-    - Name: 
-      Entry: 4
-      Data: 0.0575
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: euler
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 4.073167
-    - Name: 
-      Entry: 4
-      Data: 7.2358675
-    - Name: 
-      Entry: 4
-      Data: 121.293045
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: size
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0.27
-    - Name: 
-      Entry: 4
-      Data: 1.19667256
-    - Name: 
-      Entry: 4
-      Data: 0.27
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: glow
-      Entry: 4
-      Data: 0
-    - Name: minCount
-      Entry: 3
-      Data: 1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
-    - Name: id
-      Entry: 1
-      Data: GrowthJoint
-    - Name: primitive
-      Entry: 3
-      Data: 0
-    - Name: shape
-      Entry: 7
-      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
-    - Name: kind
-      Entry: 3
-      Data: 1
-    - Name: radialSegments
-      Entry: 3
-      Data: 12
-    - Name: lengthSegments
-      Entry: 3
-      Data: 10
-    - Name: fullness
-      Entry: 4
-      Data: 1
-    - Name: taper
-      Entry: 4
-      Data: 0
-    - Name: bend
-      Entry: 4
-      Data: 0
-    - Name: bow
-      Entry: 4
-      Data: 0
-    - Name: bevel
-      Entry: 4
-      Data: 0.18
-    - Name: asymmetry
-      Entry: 4
-      Data: 0
-    - Name: fracture
-      Entry: 4
-      Data: 0
-    - Name: ridge
-      Entry: 4
-      Data: 0
-    - Name: tubeRatio
-      Entry: 4
-      Data: 0.2
-    - Name: faceted
-      Entry: 5
-      Data: false
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: role
-      Entry: 3
-      Data: 3
-    - Name: colour
-      Entry: 3
-      Data: 0
-    - Name: pivot
-      Entry: 3
-      Data: 0
-    - Name: attachTo
-      Entry: 6
-      Data: 
-    - Name: attachAt
-      Entry: 3
-      Data: 0
-    - Name: position
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: -0.25
-    - Name: 
-      Entry: 4
-      Data: 1.2299999
-    - Name: 
-      Entry: 4
-      Data: 0.1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: euler
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: size
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0.194400012
-    - Name: 
-      Entry: 4
-      Data: 0.194400012
-    - Name: 
-      Entry: 4
-      Data: 0.194400012
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: glow
-      Entry: 4
-      Data: 0
-    - Name: minCount
-      Entry: 3
-      Data: 1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
-    - Name: id
-      Entry: 1
-      Data: Bud
-    - Name: primitive
-      Entry: 3
-      Data: 0
-    - Name: shape
-      Entry: 7
-      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
-    - Name: kind
-      Entry: 3
-      Data: 1
-    - Name: radialSegments
-      Entry: 3
-      Data: 12
-    - Name: lengthSegments
-      Entry: 3
-      Data: 10
-    - Name: fullness
-      Entry: 4
-      Data: 0.9
-    - Name: taper
-      Entry: 4
-      Data: 0.25
-    - Name: bend
-      Entry: 4
-      Data: 0
-    - Name: bow
-      Entry: 4
-      Data: 0
-    - Name: bevel
-      Entry: 4
-      Data: 0.18
-    - Name: asymmetry
-      Entry: 4
-      Data: 0
-    - Name: fracture
-      Entry: 4
-      Data: 0
-    - Name: ridge
-      Entry: 4
-      Data: 0
-    - Name: tubeRatio
-      Entry: 4
-      Data: 0.2
-    - Name: faceted
-      Entry: 5
-      Data: false
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: role
-      Entry: 3
-      Data: 4
-    - Name: colour
-      Entry: 3
-      Data: 5
-    - Name: pivot
-      Entry: 3
-      Data: 0
-    - Name: attachTo
-      Entry: 6
-      Data: 
-    - Name: attachAt
-      Entry: 3
-      Data: 0
-    - Name: position
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: -0.25
-    - Name: 
-      Entry: 4
-      Data: 0.8699999
-    - Name: 
-      Entry: 4
-      Data: 0.1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: euler
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: size
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0.34
-    - Name: 
-      Entry: 4
-      Data: 0.64
-    - Name: 
-      Entry: 4
-      Data: 0.31
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: glow
-      Entry: 4
-      Data: 0.6
-    - Name: minCount
-      Entry: 3
-      Data: 1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
-    - Name: id
-      Entry: 1
-      Data: Growth
-    - Name: primitive
-      Entry: 3
-      Data: 0
-    - Name: shape
-      Entry: 7
-      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
-    - Name: kind
-      Entry: 3
-      Data: 2
-    - Name: radialSegments
-      Entry: 3
-      Data: 12
-    - Name: lengthSegments
-      Entry: 3
-      Data: 6
-    - Name: fullness
-      Entry: 4
-      Data: 0.78
-    - Name: taper
-      Entry: 4
-      Data: 0.16
-    - Name: bend
-      Entry: 4
-      Data: 0
-    - Name: bow
-      Entry: 4
-      Data: 0
-    - Name: bevel
-      Entry: 4
-      Data: 0.18
-    - Name: asymmetry
-      Entry: 4
-      Data: 0
-    - Name: fracture
-      Entry: 4
-      Data: 0
-    - Name: ridge
-      Entry: 4
-      Data: 0
-    - Name: tubeRatio
-      Entry: 4
-      Data: 0.2
-    - Name: faceted
-      Entry: 5
-      Data: false
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: role
-      Entry: 3
-      Data: 3
-    - Name: colour
-      Entry: 3
-      Data: 0
-    - Name: pivot
-      Entry: 3
-      Data: 0
-    - Name: attachTo
-      Entry: 6
-      Data: 
-    - Name: attachAt
-      Entry: 3
-      Data: 0
-    - Name: position
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0.56
-    - Name: 
-      Entry: 4
-      Data: 1.515
-    - Name: 
-      Entry: 4
-      Data: 0.0575
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: euler
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 6.13525867
-    - Name: 
-      Entry: 4
-      Data: 21.1165218
-    - Name: 
-      Entry: 4
-      Data: 147.917831
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: size
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0.27
-    - Name: 
-      Entry: 4
-      Data: 0.795314431
-    - Name: 
-      Entry: 4
-      Data: 0.27
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: glow
-      Entry: 4
-      Data: 0
-    - Name: minCount
-      Entry: 3
-      Data: 1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
-    - Name: id
-      Entry: 1
-      Data: GrowthJoint
-    - Name: primitive
-      Entry: 3
-      Data: 0
-    - Name: shape
-      Entry: 7
-      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
-    - Name: kind
-      Entry: 3
-      Data: 1
-    - Name: radialSegments
-      Entry: 3
-      Data: 12
-    - Name: lengthSegments
-      Entry: 3
-      Data: 10
-    - Name: fullness
-      Entry: 4
-      Data: 1
-    - Name: taper
-      Entry: 4
-      Data: 0
-    - Name: bend
-      Entry: 4
-      Data: 0
-    - Name: bow
-      Entry: 4
-      Data: 0
-    - Name: bevel
-      Entry: 4
-      Data: 0.18
-    - Name: asymmetry
-      Entry: 4
-      Data: 0
-    - Name: fracture
-      Entry: 4
-      Data: 0
-    - Name: ridge
-      Entry: 4
-      Data: 0
-    - Name: tubeRatio
-      Entry: 4
-      Data: 0.2
-    - Name: faceted
-      Entry: 5
-      Data: false
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: role
-      Entry: 3
-      Data: 3
-    - Name: colour
-      Entry: 3
-      Data: 0
-    - Name: pivot
-      Entry: 3
-      Data: 0
-    - Name: attachTo
-      Entry: 6
-      Data: 
-    - Name: attachAt
-      Entry: 3
-      Data: 0
-    - Name: position
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0.35
-    - Name: 
-      Entry: 4
-      Data: 1.18
-    - Name: 
-      Entry: 4
-      Data: 0.1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: euler
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: size
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0.194400012
-    - Name: 
-      Entry: 4
-      Data: 0.194400012
-    - Name: 
-      Entry: 4
-      Data: 0.194400012
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: glow
-      Entry: 4
-      Data: 0
-    - Name: minCount
-      Entry: 3
-      Data: 1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
-    - Name: id
-      Entry: 1
-      Data: Bud
-    - Name: primitive
-      Entry: 3
-      Data: 0
-    - Name: shape
-      Entry: 7
-      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
-    - Name: kind
-      Entry: 3
-      Data: 1
-    - Name: radialSegments
-      Entry: 3
-      Data: 12
-    - Name: lengthSegments
-      Entry: 3
-      Data: 10
-    - Name: fullness
-      Entry: 4
-      Data: 0.9
-    - Name: taper
-      Entry: 4
-      Data: 0.25
-    - Name: bend
-      Entry: 4
-      Data: 0
-    - Name: bow
-      Entry: 4
-      Data: 0
-    - Name: bevel
-      Entry: 4
-      Data: 0.18
-    - Name: asymmetry
-      Entry: 4
-      Data: 0
-    - Name: fracture
-      Entry: 4
-      Data: 0
-    - Name: ridge
-      Entry: 4
-      Data: 0
-    - Name: tubeRatio
-      Entry: 4
-      Data: 0.2
-    - Name: faceted
-      Entry: 5
-      Data: false
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: role
-      Entry: 3
-      Data: 4
-    - Name: colour
-      Entry: 3
-      Data: 5
-    - Name: pivot
-      Entry: 3
-      Data: 0
-    - Name: attachTo
-      Entry: 6
-      Data: 
-    - Name: attachAt
-      Entry: 3
-      Data: 0
-    - Name: position
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0.35
-    - Name: 
-      Entry: 4
-      Data: 0.819999933
-    - Name: 
-      Entry: 4
-      Data: 0.1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: euler
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: size
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0.34
-    - Name: 
-      Entry: 4
-      Data: 0.64
-    - Name: 
-      Entry: 4
-      Data: 0.31
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: glow
-      Entry: 4
-      Data: 0.6
-    - Name: minCount
-      Entry: 3
-      Data: 1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
-    - Name: id
-      Entry: 1
-      Data: Growth
-    - Name: primitive
-      Entry: 3
-      Data: 0
-    - Name: shape
-      Entry: 7
-      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
-    - Name: kind
-      Entry: 3
-      Data: 2
-    - Name: radialSegments
-      Entry: 3
-      Data: 12
-    - Name: lengthSegments
-      Entry: 3
-      Data: 6
-    - Name: fullness
-      Entry: 4
-      Data: 0.78
-    - Name: taper
-      Entry: 4
-      Data: 0.16
-    - Name: bend
-      Entry: 4
-      Data: 0
-    - Name: bow
-      Entry: 4
-      Data: 0
-    - Name: bevel
-      Entry: 4
-      Data: 0.18
-    - Name: asymmetry
-      Entry: 4
-      Data: 0
-    - Name: fracture
-      Entry: 4
-      Data: 0
-    - Name: ridge
-      Entry: 4
-      Data: 0
-    - Name: tubeRatio
-      Entry: 4
-      Data: 0.2
-    - Name: faceted
-      Entry: 5
-      Data: false
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: role
-      Entry: 3
-      Data: 3
-    - Name: colour
-      Entry: 3
-      Data: 0
-    - Name: pivot
-      Entry: 3
-      Data: 0
-    - Name: attachTo
-      Entry: 6
-      Data: 
-    - Name: attachAt
-      Entry: 3
-      Data: 0
-    - Name: position
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: -0.44
+      Data: -0.68
     - Name: 
       Entry: 4
       Data: 1.585
     - Name: 
       Entry: 4
-      Data: 0.0575
+      Data: 0.0075
     - Name: 
       Entry: 8
       Data: 
@@ -3560,13 +2822,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 4.07188368
+      Data: 1.60548151
     - Name: 
       Entry: 4
-      Data: 8.066072
+      Data: 2.58134842
     - Name: 
       Entry: 4
-      Data: 126.486023
+      Data: 116.245857
     - Name: 
       Entry: 8
       Data: 
@@ -3578,7 +2840,745 @@ MonoBehaviour:
       Data: 0.27
     - Name: 
       Entry: 4
-      Data: 1.19704854
+      Data: 1.60615218
+    - Name: 
+      Entry: 4
+      Data: 0.27
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0
+    - Name: minCount
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
+      Data: GrowthJoint
+    - Name: primitive
+      Entry: 3
+      Data: 0
+    - Name: shape
+      Entry: 7
+      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
+    - Name: kind
+      Entry: 3
+      Data: 1
+    - Name: radialSegments
+      Entry: 3
+      Data: 12
+    - Name: lengthSegments
+      Entry: 3
+      Data: 10
+    - Name: fullness
+      Entry: 4
+      Data: 1
+    - Name: taper
+      Entry: 4
+      Data: 0
+    - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
+    - Name: bevel
+      Entry: 4
+      Data: 0.18
+    - Name: asymmetry
+      Entry: 4
+      Data: 0
+    - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
+      Entry: 4
+      Data: 0
+    - Name: tubeRatio
+      Entry: 4
+      Data: 0.2
+    - Name: faceted
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: role
+      Entry: 3
+      Data: 3
+    - Name: colour
+      Entry: 3
+      Data: 0
+    - Name: pivot
+      Entry: 3
+      Data: 0
+    - Name: attachTo
+      Entry: 6
+      Data: 
+    - Name: attachAt
+      Entry: 3
+      Data: 0
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: -1.4
+    - Name: 
+      Entry: 4
+      Data: 1.23
+    - Name: 
+      Entry: 4
+      Data: 0.03
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.194400012
+    - Name: 
+      Entry: 4
+      Data: 0.194400012
+    - Name: 
+      Entry: 4
+      Data: 0.194400012
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0
+    - Name: minCount
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
+      Data: Bud
+    - Name: primitive
+      Entry: 3
+      Data: 0
+    - Name: shape
+      Entry: 7
+      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
+    - Name: kind
+      Entry: 3
+      Data: 1
+    - Name: radialSegments
+      Entry: 3
+      Data: 12
+    - Name: lengthSegments
+      Entry: 3
+      Data: 10
+    - Name: fullness
+      Entry: 4
+      Data: 0.9
+    - Name: taper
+      Entry: 4
+      Data: 0.25
+    - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
+    - Name: bevel
+      Entry: 4
+      Data: 0.18
+    - Name: asymmetry
+      Entry: 4
+      Data: 0
+    - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
+      Entry: 4
+      Data: 0
+    - Name: tubeRatio
+      Entry: 4
+      Data: 0.2
+    - Name: faceted
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: role
+      Entry: 3
+      Data: 4
+    - Name: colour
+      Entry: 3
+      Data: 5
+    - Name: pivot
+      Entry: 3
+      Data: 0
+    - Name: attachTo
+      Entry: 6
+      Data: 
+    - Name: attachAt
+      Entry: 3
+      Data: 0
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: -1.4
+    - Name: 
+      Entry: 4
+      Data: 0.87
+    - Name: 
+      Entry: 4
+      Data: 0.03
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.34
+    - Name: 
+      Entry: 4
+      Data: 0.64
+    - Name: 
+      Entry: 4
+      Data: 0.31
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0.6
+    - Name: minCount
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
+      Data: Growth
+    - Name: primitive
+      Entry: 3
+      Data: 0
+    - Name: shape
+      Entry: 7
+      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
+    - Name: kind
+      Entry: 3
+      Data: 2
+    - Name: radialSegments
+      Entry: 3
+      Data: 12
+    - Name: lengthSegments
+      Entry: 3
+      Data: 6
+    - Name: fullness
+      Entry: 4
+      Data: 0.78
+    - Name: taper
+      Entry: 4
+      Data: 0.16
+    - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
+    - Name: bevel
+      Entry: 4
+      Data: 0.18
+    - Name: asymmetry
+      Entry: 4
+      Data: 0
+    - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
+      Entry: 4
+      Data: 0
+    - Name: tubeRatio
+      Entry: 4
+      Data: 0.2
+    - Name: faceted
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: role
+      Entry: 3
+      Data: 3
+    - Name: colour
+      Entry: 3
+      Data: 0
+    - Name: pivot
+      Entry: 3
+      Data: 0
+    - Name: attachTo
+      Entry: 6
+      Data: 
+    - Name: attachAt
+      Entry: 3
+      Data: 0
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 1.41
+    - Name: 
+      Entry: 4
+      Data: 1.515
+    - Name: 
+      Entry: 4
+      Data: 0.022499999
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.594848
+    - Name: 
+      Entry: 4
+      Data: 359.017242
+    - Name: 
+      Entry: 4
+      Data: 242.370758
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.27
+    - Name: 
+      Entry: 4
+      Data: 1.444827
+    - Name: 
+      Entry: 4
+      Data: 0.27
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0
+    - Name: minCount
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
+      Data: GrowthJoint
+    - Name: primitive
+      Entry: 3
+      Data: 0
+    - Name: shape
+      Entry: 7
+      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
+    - Name: kind
+      Entry: 3
+      Data: 1
+    - Name: radialSegments
+      Entry: 3
+      Data: 12
+    - Name: lengthSegments
+      Entry: 3
+      Data: 10
+    - Name: fullness
+      Entry: 4
+      Data: 1
+    - Name: taper
+      Entry: 4
+      Data: 0
+    - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
+    - Name: bevel
+      Entry: 4
+      Data: 0.18
+    - Name: asymmetry
+      Entry: 4
+      Data: 0
+    - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
+      Entry: 4
+      Data: 0
+    - Name: tubeRatio
+      Entry: 4
+      Data: 0.2
+    - Name: faceted
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: role
+      Entry: 3
+      Data: 3
+    - Name: colour
+      Entry: 3
+      Data: 0
+    - Name: pivot
+      Entry: 3
+      Data: 0
+    - Name: attachTo
+      Entry: 6
+      Data: 
+    - Name: attachAt
+      Entry: 3
+      Data: 0
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 2.05
+    - Name: 
+      Entry: 4
+      Data: 1.18
+    - Name: 
+      Entry: 4
+      Data: 0.03
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.194400012
+    - Name: 
+      Entry: 4
+      Data: 0.194400012
+    - Name: 
+      Entry: 4
+      Data: 0.194400012
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0
+    - Name: minCount
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
+      Data: Bud
+    - Name: primitive
+      Entry: 3
+      Data: 0
+    - Name: shape
+      Entry: 7
+      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
+    - Name: kind
+      Entry: 3
+      Data: 1
+    - Name: radialSegments
+      Entry: 3
+      Data: 12
+    - Name: lengthSegments
+      Entry: 3
+      Data: 10
+    - Name: fullness
+      Entry: 4
+      Data: 0.9
+    - Name: taper
+      Entry: 4
+      Data: 0.25
+    - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
+    - Name: bevel
+      Entry: 4
+      Data: 0.18
+    - Name: asymmetry
+      Entry: 4
+      Data: 0
+    - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
+      Entry: 4
+      Data: 0
+    - Name: tubeRatio
+      Entry: 4
+      Data: 0.2
+    - Name: faceted
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: role
+      Entry: 3
+      Data: 4
+    - Name: colour
+      Entry: 3
+      Data: 5
+    - Name: pivot
+      Entry: 3
+      Data: 0
+    - Name: attachTo
+      Entry: 6
+      Data: 
+    - Name: attachAt
+      Entry: 3
+      Data: 0
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 2.05
+    - Name: 
+      Entry: 4
+      Data: 0.819999933
+    - Name: 
+      Entry: 4
+      Data: 0.03
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.34
+    - Name: 
+      Entry: 4
+      Data: 0.64
+    - Name: 
+      Entry: 4
+      Data: 0.31
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0.6
+    - Name: minCount
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
+      Data: Growth
+    - Name: primitive
+      Entry: 3
+      Data: 0
+    - Name: shape
+      Entry: 7
+      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
+    - Name: kind
+      Entry: 3
+      Data: 2
+    - Name: radialSegments
+      Entry: 3
+      Data: 12
+    - Name: lengthSegments
+      Entry: 3
+      Data: 6
+    - Name: fullness
+      Entry: 4
+      Data: 0.78
+    - Name: taper
+      Entry: 4
+      Data: 0.16
+    - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
+    - Name: bevel
+      Entry: 4
+      Data: 0.18
+    - Name: asymmetry
+      Entry: 4
+      Data: 0
+    - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
+      Entry: 4
+      Data: 0
+    - Name: tubeRatio
+      Entry: 4
+      Data: 0.2
+    - Name: faceted
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: role
+      Entry: 3
+      Data: 3
+    - Name: colour
+      Entry: 3
+      Data: 0
+    - Name: pivot
+      Entry: 3
+      Data: 0
+    - Name: attachTo
+      Entry: 6
+      Data: 
+    - Name: attachAt
+      Entry: 3
+      Data: 0
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: -1.8499999
+    - Name: 
+      Entry: 4
+      Data: 1.23
+    - Name: 
+      Entry: 4
+      Data: 0.03
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 90
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.27
+    - Name: 
+      Entry: 4
+      Data: 0.9
     - Name: 
       Entry: 4
       Data: 0.27
@@ -3668,13 +3668,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.92
+      Data: -2.3
     - Name: 
       Entry: 4
-      Data: 1.2299999
+      Data: 1.23
     - Name: 
       Entry: 4
-      Data: 0.1
+      Data: 0.03
     - Name: 
       Entry: 8
       Data: 
@@ -3791,13 +3791,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.92
+      Data: -2.3
     - Name: 
       Entry: 4
-      Data: 0.8699999
+      Data: 0.87
     - Name: 
       Entry: 4
-      Data: 0.1
+      Data: 0.03
     - Name: 
       Entry: 8
       Data: 
@@ -3914,13 +3914,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.175
+      Data: 2.5
     - Name: 
       Entry: 4
-      Data: 1.515
+      Data: 1.18
     - Name: 
       Entry: 4
-      Data: 0.0575
+      Data: 0.03
     - Name: 
       Entry: 8
       Data: 
@@ -3929,13 +3929,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 4.62292242
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 350.1953
+      Data: 0
     - Name: 
       Entry: 4
-      Data: 230.4038
+      Data: 270
     - Name: 
       Entry: 8
       Data: 
@@ -3947,7 +3947,7 @@ MonoBehaviour:
       Data: 0.27
     - Name: 
       Entry: 4
-      Data: 1.05462086
+      Data: 0.9000001
     - Name: 
       Entry: 4
       Data: 0.27
@@ -4037,13 +4037,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.58
+      Data: 2.95
     - Name: 
       Entry: 4
       Data: 1.18
     - Name: 
       Entry: 4
-      Data: 0.1
+      Data: 0.03
     - Name: 
       Entry: 8
       Data: 
@@ -4160,13 +4160,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.58
+      Data: 2.95
     - Name: 
       Entry: 4
       Data: 0.819999933
     - Name: 
       Entry: 4
-      Data: 0.1
+      Data: 0.03
     - Name: 
       Entry: 8
       Data: 
@@ -4220,7 +4220,7 @@ MonoBehaviour:
       Data: 10|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
-      Data: 13
+      Data: 16
     - Name: 
       Entry: 7
       Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
@@ -4718,7 +4718,7 @@ MonoBehaviour:
       Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
     - Name: id
       Entry: 1
-      Data: CanopyLintel
+      Data: CanopySlab
     - Name: primitive
       Entry: 3
       Data: 8
@@ -4787,13 +4787,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.24
+      Data: -1.105
     - Name: 
       Entry: 4
-      Data: 1.08
+      Data: 1.12
     - Name: 
       Entry: 4
-      Data: 0.13
+      Data: 0.02
     - Name: 
       Entry: 8
       Data: 
@@ -4808,7 +4808,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 90
     - Name: 
       Entry: 8
       Data: 
@@ -4817,13 +4817,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 2.9
+      Data: 0.29
     - Name: 
       Entry: 4
-      Data: 0.35
+      Data: 1.49
     - Name: 
       Entry: 4
-      Data: 0.43
+      Data: 0.29
     - Name: 
       Entry: 8
       Data: 
@@ -4832,7 +4832,7 @@ MonoBehaviour:
       Data: 0
     - Name: minCount
       Entry: 3
-      Data: 2
+      Data: 1
     - Name: 
       Entry: 8
       Data: 
@@ -4910,13 +4910,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.32
+      Data: -1.85
     - Name: 
       Entry: 4
       Data: 0.909999967
     - Name: 
       Entry: 4
-      Data: 0.13
+      Data: 0.02
     - Name: 
       Entry: 8
       Data: 
@@ -5033,13 +5033,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.32
+      Data: -1.85
     - Name: 
       Entry: 4
       Data: 0.43
     - Name: 
       Entry: 4
-      Data: 0.13
+      Data: 0.02
     - Name: 
       Entry: 8
       Data: 
@@ -5087,6 +5087,129 @@ MonoBehaviour:
       Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
     - Name: id
       Entry: 1
+      Data: CanopySlab
+    - Name: primitive
+      Entry: 3
+      Data: 8
+    - Name: shape
+      Entry: 7
+      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
+    - Name: kind
+      Entry: 3
+      Data: 4
+    - Name: radialSegments
+      Entry: 3
+      Data: 12
+    - Name: lengthSegments
+      Entry: 3
+      Data: 10
+    - Name: fullness
+      Entry: 4
+      Data: 1
+    - Name: taper
+      Entry: 4
+      Data: 0.08
+    - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
+    - Name: bevel
+      Entry: 4
+      Data: 0.12
+    - Name: asymmetry
+      Entry: 4
+      Data: 0.06
+    - Name: fracture
+      Entry: 4
+      Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
+    - Name: tubeRatio
+      Entry: 4
+      Data: 0.2
+    - Name: faceted
+      Entry: 5
+      Data: true
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: role
+      Entry: 3
+      Data: 3
+    - Name: colour
+      Entry: 3
+      Data: 0
+    - Name: pivot
+      Entry: 3
+      Data: 0
+    - Name: attachTo
+      Entry: 6
+      Data: 
+    - Name: attachAt
+      Entry: 3
+      Data: 0
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 1.43000007
+    - Name: 
+      Entry: 4
+      Data: 1.12
+    - Name: 
+      Entry: 4
+      Data: 0.02
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 270
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.29
+    - Name: 
+      Entry: 4
+      Data: 1.14
+    - Name: 
+      Entry: 4
+      Data: 0.29
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0
+    - Name: minCount
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
       Data: PodBlock
     - Name: primitive
       Entry: 3
@@ -5156,13 +5279,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.28
+      Data: 2
     - Name: 
       Entry: 4
       Data: 0.909999967
     - Name: 
       Entry: 4
-      Data: 0.13
+      Data: 0.02
     - Name: 
       Entry: 8
       Data: 
@@ -5279,13 +5402,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.28
+      Data: 2
     - Name: 
       Entry: 4
       Data: 0.43
     - Name: 
       Entry: 4
-      Data: 0.13
+      Data: 0.02
     - Name: 
       Entry: 8
       Data: 
@@ -5333,6 +5456,129 @@ MonoBehaviour:
       Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
     - Name: id
       Entry: 1
+      Data: CanopySlab
+    - Name: primitive
+      Entry: 3
+      Data: 8
+    - Name: shape
+      Entry: 7
+      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
+    - Name: kind
+      Entry: 3
+      Data: 4
+    - Name: radialSegments
+      Entry: 3
+      Data: 12
+    - Name: lengthSegments
+      Entry: 3
+      Data: 10
+    - Name: fullness
+      Entry: 4
+      Data: 1
+    - Name: taper
+      Entry: 4
+      Data: 0.08
+    - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
+    - Name: bevel
+      Entry: 4
+      Data: 0.12
+    - Name: asymmetry
+      Entry: 4
+      Data: 0.06
+    - Name: fracture
+      Entry: 4
+      Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
+    - Name: tubeRatio
+      Entry: 4
+      Data: 0.2
+    - Name: faceted
+      Entry: 5
+      Data: true
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: role
+      Entry: 3
+      Data: 3
+    - Name: colour
+      Entry: 3
+      Data: 0
+    - Name: pivot
+      Entry: 3
+      Data: 0
+    - Name: attachTo
+      Entry: 6
+      Data: 
+    - Name: attachAt
+      Entry: 3
+      Data: 0
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: -2.35
+    - Name: 
+      Entry: 4
+      Data: 1.12
+    - Name: 
+      Entry: 4
+      Data: 0.02
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 90
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.29
+    - Name: 
+      Entry: 4
+      Data: 0.9999999
+    - Name: 
+      Entry: 4
+      Data: 0.29
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0
+    - Name: minCount
+      Entry: 3
+      Data: 2
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
       Data: PodBlock
     - Name: primitive
       Entry: 3
@@ -5402,13 +5648,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.92
+      Data: -2.85
     - Name: 
       Entry: 4
       Data: 0.909999967
     - Name: 
       Entry: 4
-      Data: 0.13
+      Data: 0.02
     - Name: 
       Entry: 8
       Data: 
@@ -5525,13 +5771,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.92
+      Data: -2.85
     - Name: 
       Entry: 4
       Data: 0.43
     - Name: 
       Entry: 4
-      Data: 0.13
+      Data: 0.02
     - Name: 
       Entry: 8
       Data: 
@@ -5579,6 +5825,129 @@ MonoBehaviour:
       Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
     - Name: id
       Entry: 1
+      Data: CanopySlab
+    - Name: primitive
+      Entry: 3
+      Data: 8
+    - Name: shape
+      Entry: 7
+      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
+    - Name: kind
+      Entry: 3
+      Data: 4
+    - Name: radialSegments
+      Entry: 3
+      Data: 12
+    - Name: lengthSegments
+      Entry: 3
+      Data: 10
+    - Name: fullness
+      Entry: 4
+      Data: 1
+    - Name: taper
+      Entry: 4
+      Data: 0.08
+    - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
+    - Name: bevel
+      Entry: 4
+      Data: 0.12
+    - Name: asymmetry
+      Entry: 4
+      Data: 0.06
+    - Name: fracture
+      Entry: 4
+      Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
+    - Name: tubeRatio
+      Entry: 4
+      Data: 0.2
+    - Name: faceted
+      Entry: 5
+      Data: true
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: role
+      Entry: 3
+      Data: 3
+    - Name: colour
+      Entry: 3
+      Data: 0
+    - Name: pivot
+      Entry: 3
+      Data: 0
+    - Name: attachTo
+      Entry: 6
+      Data: 
+    - Name: attachAt
+      Entry: 3
+      Data: 0
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 2.475
+    - Name: 
+      Entry: 4
+      Data: 1.12
+    - Name: 
+      Entry: 4
+      Data: 0.02
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 4
+      Data: 270
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.29
+    - Name: 
+      Entry: 4
+      Data: 0.950000048
+    - Name: 
+      Entry: 4
+      Data: 0.29
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0
+    - Name: minCount
+      Entry: 3
+      Data: 2
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
       Data: PodBlock
     - Name: primitive
       Entry: 3
@@ -5648,13 +6017,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.5
+      Data: 2.95
     - Name: 
       Entry: 4
       Data: 0.909999967
     - Name: 
       Entry: 4
-      Data: 0.13
+      Data: 0.02
     - Name: 
       Entry: 8
       Data: 
@@ -5771,13 +6140,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.5
+      Data: 2.95
     - Name: 
       Entry: 4
       Data: 0.43
     - Name: 
       Entry: 4
-      Data: 0.13
+      Data: 0.02
     - Name: 
       Entry: 8
       Data: 
