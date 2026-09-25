@@ -188,6 +188,11 @@ namespace HealerLike.Render.Creatures
                 return false;
             }
             LookVocabulary.HeadEntry head = vocabulary.heads[channels.head];
+            if (!float.IsFinite(head.plantStemScale) || head.plantStemScale < 0f)
+            {
+                Debug.LogError("[LookComposer] Plant family stem scale must be finite and nonnegative; zero keeps legacy length.");
+                return false;
+            }
             if (!FragmentPlacement.TryValidate(plant ? body.plant : body.stone, CountBand.One, out string error)
                 || !FragmentPlacement.TryValidate(plant ? head.plant : head.stone,
                     head.carriesCount ? channels.count : CountBand.One, out error))

@@ -36,8 +36,11 @@ namespace HealerLike.Render.Creatures
             sockets.bodyRadius = bodyParts[0].size.x * 0.5f * stoneScale;
             if (isPlant)
             {
+                LookVocabulary.HeadEntry head = vocabulary.heads[channels.head];
+                float familyScale = head.plantStemScale > 0f ? head.plantStemScale : 1f;
+                float length = stem.length * sockets.stemScale * familyScale;
                 sockets.body = Vector3.up * (layout.plantBodySink * sockets.bodyRadius + body.bodyLift);
-                sockets.neck = sockets.body + Vector3.up * (sockets.bodyRadius * layout.plantStemFoot + stem.length * sockets.stemScale);
+                sockets.neck = sockets.body + Vector3.up * (sockets.bodyRadius * layout.plantStemFoot + length);
                 sockets.stemFoot = sockets.body + Vector3.up * (sockets.bodyRadius * layout.plantStemFoot);
             }
             else

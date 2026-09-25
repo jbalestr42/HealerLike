@@ -27,6 +27,8 @@ namespace HealerLike.Render.Creatures
         {
             public LookPart[] plant = Array.Empty<LookPart>();
             public LookPart[] stone = Array.Empty<LookPart>();
+            // Zero keeps the original cadence length; positive values scale only this family's plant stem.
+            public float plantStemScale;
             // The head fans its own copies (arch pods, cairn stones), parts show by their minCount
             public bool carriesCount;
         }
