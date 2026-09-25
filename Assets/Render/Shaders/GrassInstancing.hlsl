@@ -25,6 +25,8 @@ StructuredBuffer<uint> _HLVisibleBladeIDs;
 float _HLBladeHeightScale;
 // 1 on the tuft draw, 0 on the socle draw, which lies flat on the ground
 float _HLTuftLean;
+// Per draw: ordinary meadow blades receive object shadows but only hostile spikes cast onto the carpet.
+float _HLGrassSpikeShadowsOnly;
 
 // Rotates v about the horizontal axis that tips +Y toward lean, by the length of lean in radians
 float3 HLTiltGrassTuft(float3 v, float2 lean)

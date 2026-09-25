@@ -139,6 +139,9 @@ Shader "HL/Look/Primitive"
             half4 HLShadowFragment(HLVaryings input) : SV_Target
             {
                 UNITY_SETUP_INSTANCE_ID(input);
+                #if defined(HL_GRASS_INSTANCED)
+                clip(0.5 - _HLGrassSpikeShadowsOnly * input.grassAppearance.y);
+                #endif
                 return 0;
             }
             ENDHLSL

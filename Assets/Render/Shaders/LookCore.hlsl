@@ -159,7 +159,10 @@ float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, 
     float3 shadowColor = lerp(baseColor, tint, tintStrength);
     // A bounded diffuse ramp within the lit band preserves curved volume and the orientation of stone planes.
     // It leaves full-facing colour intact and does not add a glossy reflection or alter the shadow boundary.
-    float sculpt = lerp(1.0, 0.42 + 0.58 * pow(facing, 1.2), saturate(litSculpt));
+    // The toon boundary uses wrapped facing, but volume needs actual positive N.L. Reusing half-Lambert
+    // here leaves almost the whole visible hemisphere bright when the sun is over the viewer's shoulder.
+    float diffuse = saturate(facing * 2.0 - 1.0);
+    float sculpt = lerp(1.0, 0.22 + 0.78 * pow(diffuse, 0.85), saturate(litSculpt));
     float3 color = lerp(shadowColor, baseColor * sculpt, lit);
     float tone = saturate(((1.0 - illum) - HL_G(_HLInkStart, HL_DEF_INKSTART)) /
                           max(0.001, HL_G(_HLInkRange, HL_DEF_INKRANGE)));
@@ -182,7 +185,11 @@ float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, 
         * lerp(saturate(faceHatch), 1.0, cast));
     // Full ink colour where a stroke is, then the contrast punch; fog comes after
     color = lerp(color, HL_G(_HLOutlineColor, HL_DEF_OUTLINECOLOR).rgb, ink);
-    return saturate((color - 0.5) * HL_G(_HLContrast, HL_DEF_CONTRAST) + 0.5);
+    // Contrast changes brightness without independently clipping the weaker colour channels. In linear
+    // space that clipping erased blue from the authored plant greens and turned teal self shade pure green.
+    float peak = max(color.r, max(color.g, color.b));
+    float contrastedPeak = saturate((peak - 0.5) * HL_G(_HLContrast, HL_DEF_CONTRAST) + 0.5);
+    return saturate(color * (contrastedPeak / max(peak, 1e-5)));
 }
 
 float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, float3 baseColor, float hatch,

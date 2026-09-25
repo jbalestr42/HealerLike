@@ -188,55 +188,62 @@ public class LookShaderTests
                   + " inked=" + inked.ToString("F4"));
     }
 
-    [Test]
-    public void DrawMesh_LitSculpt_LightRotationSeparatesLitPlanesWithoutChangingTheirColourFamily()
+    [TestCase(1f)]
+    [TestCase(1.15f)]
+    public void Render_LitSculpt_LightRotationSeparatesPlanesAndContrastPreservesPlantChannels(float contrast)
     {
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
         {
             Assert.Ignore("Requires graphics readback");
         }
 
+        _scene.BuildKeyLight(20f, 4f);
+        _scene.camera.transform.SetPositionAndRotation(new Vector3(0f, 0f, -4f), Quaternion.identity);
+        LookSettings settings = _scene.look.settings;
+        settings.toonThreshold = 0.3f;
+        settings.toonSoftness = 0.04f;
+        settings.inkStrength = 0f;
+        settings.contrast = contrast;
+        _scene.look.settings = settings;
         Material material = Track(new Material(AssetDatabase.LoadAssetAtPath<Shader>(lookShaderPath)));
         Mesh mesh = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
-        RenderTexture target = Track(new RenderTexture(16, 16, 0, RenderTextureFormat.ARGBFloat,
-            RenderTextureReadWrite.Linear));
-        target.Create();
-        Texture2D texture = Track(new Texture2D(16, 16, TextureFormat.RGBAFloat, false, true));
+        GameObject surface = Track(new GameObject("Lit volume probe"));
+        surface.layer = LookTestScene.Layer;
+        surface.AddComponent<MeshFilter>().sharedMesh = mesh;
+        MeshRenderer renderer = surface.AddComponent<MeshRenderer>();
+        renderer.sharedMaterial = material;
+        renderer.shadowCastingMode = ShadowCastingMode.Off;
         MaterialPropertyBlock block = new MaterialPropertyBlock();
-        block.SetVector("_BaseColor", new Vector4(0.4f, 0.6f, 0.3f, 1f));
-        Shader.SetGlobalFloat("_HLLookApplied", 1f);
-        Shader.SetGlobalFloat("_HLToonThreshold", 0.3f);
-        Shader.SetGlobalFloat("_HLToonSoftness", 0.04f);
-        Shader.SetGlobalFloat("_HLFogStart", 10000f);
-        Shader.SetGlobalFloat("_HLFogEnd", 20000f);
-        Shader.SetGlobalFloat("_HLFogBands", 6f);
-        Shader.SetGlobalFloat("_HLInkStrength", 0f);
-        Shader.SetGlobalFloat("_HLContrast", 1f);
-        Vector4 previousLight = Shader.GetGlobalVector("_MainLightPosition");
-        try
+        // The working-space plant green has a small but deliberate blue channel. Per-channel contrast used
+        // to erase it at the production contrast value, making the whole lit hemisphere neon lime.
+        Color source = new Color(0.21f, 0.58f, 0.05f, 1f);
+        block.SetVector("_BaseColor", source);
+        renderer.SetPropertyBlock(block);
+        Color[] flat = new Color[3];
+        Color[] sculpted = new Color[3];
+        for (int i = 0; i < 3; i++)
         {
-            Color[] flat = new Color[3];
-            Color[] sculpted = new Color[3];
-            for (int i = 0; i < 3; i++)
-            {
-                // Every angle remains fully inside the lit band. Only the lit-surface control can separate them.
-                Vector3 direction = Quaternion.Euler(0f, i * 35f, 0f) * mesh.normals[0];
-                Shader.SetGlobalVector("_MainLightPosition", direction);
-                material.SetFloat("_HLLitSculpt", 0f);
-                flat[i] = ReadCentre(material, mesh, target, texture, block);
-                material.SetFloat("_HLLitSculpt", 0.9f);
-                sculpted[i] = ReadCentre(material, mesh, target, texture, block);
-            }
-            Assert.That(flat[0].g, Is.EqualTo(flat[2].g).Within(0.005f));
-            Assert.That(sculpted[0].g - sculpted[1].g, Is.GreaterThan(0.02f));
-            Assert.That(sculpted[1].g - sculpted[2].g, Is.GreaterThan(0.04f));
-            Assert.That(sculpted[0].g, Is.EqualTo(flat[0].g).Within(0.005f));
-            Assert.That(sculpted[2].r / sculpted[2].g, Is.EqualTo(flat[0].r / flat[0].g).Within(0.01f));
-            Assert.That(sculpted[2].b / sculpted[2].g, Is.EqualTo(flat[0].b / flat[0].g).Within(0.01f));
+            // A real URP render publishes the light's constant buffer. Every angle stays inside the lit band.
+            Vector3 direction = Quaternion.Euler(0f, i * 35f, 0f) * mesh.normals[0];
+            RenderSettings.sun.transform.rotation = Quaternion.LookRotation(-direction, Vector3.up);
+            material.SetFloat("_HLLitSculpt", 0f);
+            _scene.Render();
+            flat[i] = _scene.texture.GetPixel(128, 128).linear;
+            material.SetFloat("_HLLitSculpt", 0.9f);
+            _scene.Render();
+            sculpted[i] = _scene.texture.GetPixel(128, 128).linear;
         }
-        finally
+        Debug.Log("[LookShaderTests] Real-light volume, contrast=" + contrast + " flat=" + flat[0]
+            + "," + flat[1] + "," + flat[2] + " sculpted=" + sculpted[0] + "," + sculpted[1] + "," + sculpted[2]);
+        Assert.That(flat[0].g, Is.EqualTo(flat[2].g).Within(0.005f));
+        Assert.That(sculpted[0].g - sculpted[1].g, Is.GreaterThan(0.02f));
+        Assert.That(sculpted[1].g - sculpted[2].g, Is.GreaterThan(0.04f));
+        Assert.That(sculpted[0].g, Is.EqualTo(flat[0].g).Within(0.005f));
+        foreach (Color pixel in sculpted)
         {
-            Shader.SetGlobalVector("_MainLightPosition", previousLight);
+            Assert.That(pixel.b, Is.GreaterThan(0.01f), "The plant's blue channel must survive shading and contrast");
+            Assert.That(pixel.r / pixel.g, Is.EqualTo(source.r / source.g).Within(0.01f));
+            Assert.That(pixel.b / pixel.g, Is.EqualTo(source.b / source.g).Within(0.01f));
         }
     }
 

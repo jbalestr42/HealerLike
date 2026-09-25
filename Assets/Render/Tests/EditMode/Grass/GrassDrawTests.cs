@@ -241,6 +241,76 @@ public class GrassDrawTests
     }
 
     [Test]
+    public void Show_SpikeShadowPolicy_OrdinaryGrassReceivesLightWithoutCastingButSpikesStillCast()
+    {
+        _scene.BuildKeyLight(20f, 6f);
+        _scene.camera.orthographic = true;
+        _scene.camera.orthographicSize = 1.8f;
+        _scene.camera.transform.SetPositionAndRotation(new Vector3(0f, 6f, 0f), Quaternion.Euler(90f, 0f, 0f));
+        LookSettings settings = _scene.look.settings;
+        settings.inkStrength = 0f;
+        _scene.look.settings = settings;
+        GameObject ground = _scene.Track(GameObject.CreatePrimitive(PrimitiveType.Plane));
+        ground.layer = LookTestScene.Layer;
+        ground.GetComponent<Renderer>().sharedMaterial = _scene.Track(new Material(_material));
+        ground.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+        _material.enableInstancing = true;
+        _material.EnableKeyword(instancedKeyword);
+        _draw.Release();
+        _draw = new GrassDraw(_mesh, _material, 1, new Bounds(Vector3.up * 0.5f, Vector3.one * 3f),
+            LookTestScene.Layer);
+        _draw.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+        using (GraphicsBuffer seeds = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, TuftSeed.Stride))
+        using (GraphicsBuffer states = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, TuftState.Stride))
+        using (GraphicsBuffer visible = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, 4))
+        {
+            seeds.SetData(new[] { new TuftSeed { positionYaw = new Vector4(0f, 0.01f, 0f, 0f),
+                heightWidthLean = new Vector4(1f, 1f, 0f, 0f) } });
+            states.SetData(new[] { new TuftState { leanHeightSpike = new Vector4(0f, 0f, 1f, 0f) } });
+            visible.SetData(new uint[] { 0 });
+            _draw.BindTufts(seeds, states, visible, 1f);
+            _draw.Show(_scene.camera, () => true);
+            try
+            {
+                _draw.properties.SetFloat("_HLGrassSpikeShadowsOnly", 0f);
+                _scene.Render();
+                int ordinaryShadow = ShadowPixels(_scene.texture);
+                _draw.properties.SetFloat("_HLGrassSpikeShadowsOnly", 1f);
+                _scene.Render();
+                int quietGround = ShadowPixels(_scene.texture);
+                states.SetData(new[] { new TuftState { leanHeightSpike = new Vector4(0f, 0f, 1f, 1f) } });
+                _scene.Render();
+                int spikeShadow = ShadowPixels(_scene.texture);
+                Color32[] spikeOnly = _scene.texture.GetPixels32();
+                _draw.properties.SetFloat("_HLGrassSpikeShadowsOnly", 0f);
+                _scene.Render();
+
+                Debug.Log("[GrassDrawTests] Ground shadow pixels: ordinary=" + ordinaryShadow
+                    + " quiet=" + quietGround + " spike=" + spikeShadow);
+                Assert.That(ordinaryShadow, Is.GreaterThan(40), "The control blade must actually cast a shadow");
+                Assert.That(quietGround, Is.LessThan(ordinaryShadow / 10 + 5));
+                Assert.That(spikeShadow, Is.GreaterThan(6), "The hostile spike must keep a real cast shadow");
+                CollectionAssert.AreEqual(spikeOnly, _scene.texture.GetPixels32(),
+                    "Filtering ordinary grass must not alter the spike's shadow");
+            }
+            finally
+            {
+                _draw.Hide();
+            }
+        }
+    }
+
+    static int ShadowPixels(Texture2D texture)
+    {
+        int count = 0;
+        foreach (Color32 pixel in texture.GetPixels32())
+        {
+            if (pixel.r < 200 && pixel.g < 200 && pixel.b < 200) count++;
+        }
+        return count;
+    }
+
+    [Test]
     public void Show_FlatPatchUnderKeyLight_ShowsItsShade()
     {
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null || !SystemInfo.supportsComputeShaders
