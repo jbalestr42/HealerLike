@@ -68,16 +68,24 @@ public class ToolkitMobileLayout
         return settings;
     }
 
-    public void Update()
+    public void Update(Func<Rect> safeAreaProvider = null)
     {
         Vector2Int screen = new Vector2Int(Screen.width, Screen.height);
-        if (_screen == screen && _safeArea == Screen.safeArea)
+        Rect safeArea = Screen.safeArea;
+        if (safeAreaProvider != null)
+        {
+            Rect normalized = safeAreaProvider.Invoke();
+            safeArea = new Rect(normalized.x * screen.x, normalized.y * screen.y,
+                normalized.width * screen.x, normalized.height * screen.y);
+        }
+
+        if (_screen == screen && _safeArea == safeArea)
         {
             return;
         }
 
         _screen = screen;
-        _safeArea = Screen.safeArea;
+        _safeArea = safeArea;
         float scale = ToolkitScreenLayout.GetScale(screen.x, screen.y, Application.isMobilePlatform);
         _document.panelSettings.scale = scale;
         Rect safe = ToolkitScreenLayout.GetSafePanelRect(screen.x, screen.y, _safeArea, scale);
@@ -110,6 +118,8 @@ public class ToolkitMobileLayout
         _hadInteraction = interacting;
         _view.Show("cancel-button", interacting && !blocked);
         _view.Show("field-toolbar", !_context.isMenu);
+        _view.SetButton("pause-button", null, !_context.isMenu
+            && (_context.ui == null || _context.IsCurrentView(ViewType.Game)));
         _view.SetButton("party-button", null, !blocked);
         _view.SetButton("detail-button", null, !blocked);
         _view.SetButton("focus-button", null, !blocked);

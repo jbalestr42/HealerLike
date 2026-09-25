@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-// Opt-in UI Toolkit interface. The legacy views stay alive as gameplay dependencies,
-// their screen canvases are hidden while this document is enabled
 [RequireComponent(typeof(UIDocument))]
 public class ToolkitGameUI : MonoBehaviour
 {
@@ -29,6 +27,9 @@ public class ToolkitGameUI : MonoBehaviour
     ToolkitMobileLayout _mobileLayout = new ToolkitMobileLayout();
 
     public System.Func<string, bool> sceneLoader { get; set; }
+
+    // Optional host insets, expressed as a normalized bottom-left screen rectangle.
+    public System.Func<Rect> safeAreaProvider { get; set; }
 
     public Rect normalizedWorldViewport { get { return _mobileLayout.normalizedWorldViewport; } }
 
@@ -158,7 +159,7 @@ public class ToolkitGameUI : MonoBehaviour
         }
 
         _interactionActive = _context.hasInteraction;
-        _mobileLayout.Update();
+        _mobileLayout.Update(safeAreaProvider);
         if (Time.unscaledTime >= _nextRefresh)
         {
             _nextRefresh = Time.unscaledTime + 0.1f;
@@ -169,7 +170,7 @@ public class ToolkitGameUI : MonoBehaviour
     public void Refresh()
     {
         _mobileLayout.Refresh();
-        _view.Show("pause-panel", _context.isPaused);
+        _view.Show("pause-panel", _context.isPaused && _context.IsCurrentView(ViewType.Game));
         _view.Show("inventory-panel", _context.isInventoryOpen && !_context.isPaused);
         _view.Show("selection-panel", _context.IsCurrentView(ViewType.Wave));
         _view.Show("upgrade-panel", _context.IsCurrentView(ViewType.Upgrade));

@@ -6,9 +6,9 @@
 .is-mobile .heading { font-size: 17px; }
 .is-mobile .run-status .muted { font-size: 10px; }
 .is-mobile .currency { font-size: 12px; margin-right: 5px; }
-.is-mobile .button { min-width: 44px; min-height: 44px; padding: 6px 10px; font-size: 13px; }
+.is-mobile .button { min-width: 45px; min-height: 45px; padding: 6px 10px; font-size: 13px; }
 .is-mobile .header-actions .button { margin-left: 4px; padding-left: 8px; padding-right: 8px; }
-.is-mobile .field-toolbar { height: 44px; margin-top: 6px; }
+.is-mobile .field-toolbar { height: 45px; margin-top: 6px; }
 .is-mobile .field-toolbar > .button { margin-left: 0; margin-right: 6px; }
 .is-mobile .field-toolbar > #focus-button { margin-right: 0; }
 .is-mobile .main-content { min-height: 0; margin-top: 6px; margin-bottom: 6px; }
@@ -26,20 +26,20 @@
 .is-mobile .section-toolbar { margin-bottom: 4px; height: 18px; }
 .is-mobile .mana-bar { width: 160px; }
 .is-mobile .spell-list { height: 106px; flex-grow: 0; flex-shrink: 0; }
-.is-mobile .spell-list .card-shell { width: 112px; height: 102px; margin-right: 6px; }
+.is-mobile .spell-list .card-shell { width: 104px; height: 102px; margin-right: 6px; }
 .is-mobile .spell-list .data-card { width: 100%; height: 102px; min-height: 0; padding: 7px; }
 .is-mobile .spell-list .data-card__icon { width: 30px; height: 30px; margin-bottom: 3px; }
 .is-mobile .spell-list .data-card__title { font-size: 12px; height: 29px; margin-bottom: 0; overflow: hidden; }
 .is-mobile .spell-list .data-card__status { font-size: 11px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.is-mobile .card-info { display: flex; position: absolute; right: 0; top: 0; width: 44px; height: 44px; margin: 0; padding: 0; font-size: 11px; border-top-left-radius: 0; border-bottom-right-radius: 0; }
+.is-mobile .card-info { display: flex; position: absolute; right: 0; top: 0; width: 45px; height: 45px; margin: 0; padding: 0; font-size: 11px; border-top-left-radius: 0; border-bottom-right-radius: 0; }
 .is-mobile .party-list .data-card { padding-right: 52px; min-height: 108px; }
 .is-mobile .command-section { width: auto; margin-left: 0; margin-top: 4px; }
 .is-mobile .status-label { font-size: 11px; margin-bottom: 4px; }
 .is-mobile .encounter-actions { flex-shrink: 0; }
 .is-mobile .speed-controls { margin-top: 0; margin-bottom: 12px; }
 .is-mobile .speed-controls .button { min-width: 56px; }
-.is-mobile .marker-toggle { min-height: 44px; align-items: center; margin-bottom: 12px; font-size: 13px; }
-.is-mobile .marker-toggle .unity-toggle__input { min-width: 44px; min-height: 44px; }
+.is-mobile .marker-toggle { min-height: 45px; align-items: center; margin-bottom: 12px; font-size: 13px; }
+.is-mobile .marker-toggle .unity-toggle__input { min-width: 45px; min-height: 45px; }
 .is-mobile .modal-layer { padding: 0; }
 .is-mobile .dialog { padding: 16px; max-height: 100%; min-height: 0; }
 .is-mobile .dialog--wide { width: 100%; height: 100%; }
@@ -56,9 +56,9 @@
 .is-mobile .inventory-target, .is-mobile .inventory-slot { width: auto; margin: 0 0 8px 0; }
 .is-mobile .inventory-actions { margin-bottom: 12px; }
 .is-mobile .inventory-action-row > .button { margin-left: 0; }
-.is-mobile .unity-base-popup-field__input { min-height: 44px; }
+.is-mobile .unity-base-popup-field__input { min-height: 45px; }
 .is-mobile .detail-targeting { min-height: 64px; }
-.is-mobile .action-button { min-height: 44px; font-size: 13px; }
+.is-mobile .action-button { min-height: 45px; font-size: 13px; }
 .is-mobile .menu-panel { width: 100%; max-width: 100%; margin-top: 12px; padding: 20px; }
 .is-mobile .menu-title { font-size: 32px; }
 .is-mobile .menu-description { font-size: 15px; }
@@ -67,8 +67,6 @@
 .is-mobile.is-menu .field-toolbar { display: none; }
 /* Short landscape keeps spells beside the encounter action so the board retains its height. */
 .is-mobile.is-landscape .top-bar { min-height: 52px; }
-.is-mobile.is-landscape .field-toolbar { position: absolute; top: 62px; left: 8px; right: 8px; }
-.is-mobile.is-landscape .main-content { margin-top: 52px; }
 .is-mobile.is-landscape .command-dock { flex-direction: row; }
 .is-mobile.is-landscape .command-section { width: 180px; margin-left: 10px; margin-top: 0; }
 .is-mobile.is-landscape .spell-list { height: 86px; }
@@ -82,5 +80,22 @@
 .is-mobile .card-info.is-hidden { display: none; }
 .menu-button { margin-top: 8px; }
 /* Popup menus attach outside hud-root in Unity's runtime panel. */
-.unity-base-dropdown__item { min-height: 44px; }
-.unity-base-dropdown__label { min-height: 44px; -unity-text-align: middle-left; }
+.unity-base-dropdown__item { min-height: 45px; }
+.unity-base-dropdown__label { min-height: 45px; -unity-text-align: middle-left; }
+
+/* Landscape drawers can cover the toolbar while their camera viewport stays unchanged. */
+.is-mobile.is-landscape .party-panel, .is-mobile.is-landscape .detail-panel { top: -51px; max-height: none; padding: 8px; }
+.is-mobile.is-landscape .party-panel .section-description { display: none; }
+.is-mobile.is-landscape .party-list .data-card { min-height: 76px; padding: 8px 54px 8px 8px; }
+.is-mobile.is-landscape .party-list .data-card__icon, .is-mobile.is-landscape .detail-icon { display: none; }
+.is-mobile.is-landscape .party-list .data-card__description { font-size: 12px; }
+.is-mobile.is-landscape .dialog--compact { padding: 12px; }
+.is-mobile.is-landscape .dialog--compact .dialog-title { font-size: 22px; margin-top: 2px; margin-bottom: 4px; }
+.is-mobile.is-landscape .dialog--compact .dialog-description { margin-bottom: 8px; }
+.is-mobile.is-landscape .pause-settings { flex-direction: row; align-items: center; margin-bottom: 12px; }
+.is-mobile.is-landscape .pause-settings .speed-controls { width: 50%; margin-bottom: 0; }
+.is-mobile.is-landscape .pause-settings .marker-toggle { margin: 0 0 0 20px; }
+
+/* Solid reading surfaces separate long text from the dense grass behind it. */
+.is-mobile .party-panel, .is-mobile .detail-panel, .is-mobile .dialog { background-color: rgb(16, 29, 30); }
+.is-mobile .unity-base-popup-field__arrow { -unity-background-image-tint-color: rgb(189, 218, 156); opacity: 1; }
