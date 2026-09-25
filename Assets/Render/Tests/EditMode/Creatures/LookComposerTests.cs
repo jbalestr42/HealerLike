@@ -200,7 +200,7 @@ public class LookComposerTests
     }
 
     [Test]
-    public void Compose_HeavierMass_GrowsTheHeadWithItsSocket()
+    public void Compose_MassUsesItsAuthoredHeadScale()
     {
         CreaturePart light = FindAll(
             Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Light)),
@@ -209,7 +209,7 @@ public class LookComposerTests
             Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud, mass: MassBand.Heavy)),
             PartRole.Tip)[0];
 
-        float massRatio = _vocabulary.bodies[MassBand.Heavy].scale / _vocabulary.bodies[MassBand.Light].scale;
+        float massRatio = _vocabulary.bodies[MassBand.Heavy].HeadScale / _vocabulary.bodies[MassBand.Light].HeadScale;
         Assert.AreEqual(massRatio, heavy.dimensions.x / light.dimensions.x, 0.001f);
     }
 

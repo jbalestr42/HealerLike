@@ -51,6 +51,20 @@ namespace HealerLike.Render.Creatures
                     Fork(parts, stone);
                     break;
                 case HeadKind.GiftHeal:
+                    if (stone)
+                    {
+                        parts.Add(Anchored("HealPedestal", ShapeProfile.Block(0.16f), Vector3.zero,
+                            new Vector3(0.92f, 0.38f, 0.72f), Quaternion.identity));
+                        parts.Add(Anchored("HealCore", ShapeProfile.Block(0.22f), new Vector3(0f, 0.3f, 0f),
+                            new Vector3(0.51f, 0.54f, 0.47f), Quaternion.identity));
+                        for (int side = -1; side <= 1; side += 2)
+                        {
+                            parts.Add(Anchored("HealSeed", ShapeProfile.Block(0.22f), new Vector3(side * 0.32f, 0.3f, 0f),
+                                new Vector3(0.35f, 0.4f, 0.34f), Quaternion.identity, PartRole.Tip));
+                        }
+                        AttachedTip(parts, true, "HealCore", new Vector3(0.26f, 0.27f, 0.25f));
+                        break;
+                    }
                     for (int i = -1; i <= 1; i++)
                     {
                         Vector3 end = new Vector3(i * 0.5f, i == 0 ? 1.0f : 0.73f, 0f);
@@ -171,6 +185,15 @@ namespace HealerLike.Render.Creatures
         {
             for (int side = -1; side <= 1; side += 2)
             {
+                string lobe = side < 0 ? "ForkLeft" : "ForkRight";
+                if (stone)
+                {
+                    parts.Add(Anchored(lobe, ShapeProfile.Block(0.17f, 0.12f, 0.08f),
+                        new Vector3(side * 0.44f, 0.015f, 0f), new Vector3(0.68f, 1.32f, 0.56f),
+                        Quaternion.AngleAxis(-side * 7f, Vector3.forward)));
+                    AttachedTip(parts, true, lobe, new Vector3(0.14f, 0.22f, 0.14f));
+                    continue;
+                }
                 Vector3 fork = new Vector3(side * 0.46f, 0.48f, 0f);
                 parts.Add(Link("ForkBranch", stone ? ShapeProfile.Block() : ShapeProfile.Segment(0.1f, 0.4f),
                     Vector3.zero, fork, stone ? 0.25f : 0.2f));
@@ -180,7 +203,6 @@ namespace HealerLike.Render.Creatures
                 }
                 Quaternion rotation = Quaternion.AngleAxis(-side * 8f, Vector3.forward)
                     * Quaternion.AngleAxis(side < 0 ? 0f : 180f, Vector3.up);
-                string lobe = side < 0 ? "ForkLeft" : "ForkRight";
                 parts.Add(Anchored(lobe, stone ? ShapeProfile.Shard(0.6f, 0.08f) : ShapeProfile.Leaf(0.45f),
                     fork, new Vector3(0.51f, 1.48f, stone ? 0.46f : 0.32f), rotation));
                 AttachedTip(parts, stone, lobe, new Vector3(0.14f, 0.22f, 0.14f));

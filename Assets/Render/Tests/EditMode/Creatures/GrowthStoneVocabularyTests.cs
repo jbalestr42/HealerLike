@@ -237,6 +237,85 @@ namespace HealerLike.Render.Creatures
             Assert.AreEqual(2, _vocabulary.accessories[AccessoryKind.TwinSeeds].plant.Count(p => p.id == "TwinSeed"));
         }
 
+        [Test]
+        public void MineralForkAndHeal_AreBroadSeatedBlocksWithoutBotanicalBranches()
+        {
+            LookPart[] fork = _vocabulary.heads[HeadKind.Fork].stone;
+            Assert.IsFalse(fork.Any(p => p.id == "ForkBranch"));
+            foreach (LookPart slab in fork.Where(p => p.id == "ForkLeft" || p.id == "ForkRight"))
+            {
+                Assert.AreEqual(ShapeKind.Block, slab.shape.kind);
+                Assert.LessOrEqual(slab.shape.taper, 0.2f);
+                Assert.Greater(slab.size.x / slab.size.y, 0.45f);
+                Assert.Less(slab.position.y, 0.05f, "The slab starts directly on the body.");
+            }
+            LookPart[] heal = _vocabulary.heads[HeadKind.GiftHeal].stone;
+            Assert.IsFalse(heal.Any(p => p.id == "HealBranch"));
+            Assert.AreEqual(3, heal.Count(p => p.role == PartRole.Tip));
+            Assert.IsTrue(FragmentPlacement.TryResolve(heal, CountBand.One, 17, 0, out LookPart[] resolved, out _));
+            Assert.Less(resolved.Max(p => Box(p).max.y), 1.2f, "The mineral heal crown is a compact stack.");
+        }
+
+        [Test]
+        public void MineralLegs_AllBandsAndMasses_RemainShortBlocks()
+        {
+            foreach (StemBand stem in Enum.GetValues(typeof(StemBand)))
+            foreach (MassBand mass in Enum.GetValues(typeof(MassBand)))
+            {
+                PartList layout = LookComposer.Layout(RenderTestAssets.CreateChannels(LookSide.Stone,
+                    HeadKind.Bud, stem: stem, mass: mass), _vocabulary);
+                LookPart[] legs = Enumerable.Range(0, layout.count).Select(layout.Source)
+                    .Where(p => p.role == PartRole.Limb).ToArray();
+                Assert.AreEqual(2, legs.Length);
+                foreach (LookPart leg in legs)
+                {
+                    Assert.AreEqual(ShapeKind.Block, leg.shape.kind);
+                    Assert.Less(leg.size.y / leg.size.x, 1.7f, stem + " " + mass);
+                }
+            }
+        }
+
+        [Test]
+        public void SharedMassProfile_KeepsHeavyArchLowerThanQuickLightArch()
+        {
+            PartList light = LookComposer.Layout(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Arch,
+                stem: StemBand.Quick), _vocabulary);
+            PartList heavy = LookComposer.Layout(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Arch,
+                stem: StemBand.Steady, mass: MassBand.Heavy), _vocabulary);
+            float lightTop = Enumerable.Range(0, light.count).Select(i => Box(light.Source(i)).max.y).Max();
+            float heavyTop = Enumerable.Range(0, heavy.count).Select(i => Box(heavy.Source(i)).max.y).Max();
+            Assert.Greater(lightTop - heavyTop, 0.2f);
+            Assert.AreEqual(_vocabulary.bodies[MassBand.Light].HeadScale, _vocabulary.bodies[MassBand.Heavy].HeadScale);
+            Assert.AreEqual(2, _vocabulary.bodies[MassBand.Heavy].plant.Length);
+        }
+
+        [Test]
+        public void MineralTiersStayExposedAndPlantCollarUsesNeedles()
+        {
+            LookPart[] rings = _vocabulary.accessories[AccessoryKind.TierRings].stone;
+            Assert.AreEqual(3, rings.Length);
+            for (int i = 0; i < rings.Length; i++)
+            {
+                Assert.Greater(rings[i].size.x * _vocabulary.bodies[MassBand.Light].HeadScale,
+                    _vocabulary.bodies[MassBand.Light].stone[0].size.x);
+                if (i > 0)
+                {
+                    Assert.Greater(rings[i - 1].position.y - rings[i].position.y,
+                        (rings[i - 1].size.y + rings[i].size.y) * 0.5f);
+                }
+            }
+            LookPart[] collar = _vocabulary.accessories[AccessoryKind.ThornCollar].plant;
+            Assert.IsTrue(collar.Any(p => p.shape.kind == ShapeKind.Ring), "Needles attach to a collar.");
+            LookPart[] thorns = collar.Where(p => p.id == "Thorn").ToArray();
+            Assert.AreEqual(6, thorns.Length);
+            foreach (LookPart thorn in thorns)
+            {
+                Assert.AreEqual(ShapeKind.Segment, thorn.shape.kind);
+                Assert.Greater(thorn.shape.taper, 0.85f);
+                Assert.Less(thorn.size.x / thorn.size.y, 0.18f);
+            }
+        }
+
         static Bounds Box(LookPart part)
         {
             Quaternion rotation = Quaternion.Euler(part.euler);

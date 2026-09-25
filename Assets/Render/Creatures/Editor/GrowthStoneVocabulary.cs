@@ -47,9 +47,9 @@ namespace HealerLike.Render.Creatures
             vocabulary.bodies.Add(MassBand.Sturdy, Body(1f, 1f, 1f, false));
             vocabulary.bodies.Add(MassBand.Heavy, Body(1.16f, 0.88f, 1f, true));
             vocabulary.stems.Clear();
-            vocabulary.stems.Add(StemBand.Quick, Stem(1.2f, 0.13f, 0.72f));
-            vocabulary.stems.Add(StemBand.Steady, Stem(0.8f, 0.16f, 0.48f));
-            vocabulary.stems.Add(StemBand.Slow, Stem(0.5f, 0.23f, 0.3f));
+            vocabulary.stems.Add(StemBand.Quick, Stem(1.2f, 0.13f, 0.5f));
+            vocabulary.stems.Add(StemBand.Steady, Stem(0.8f, 0.16f, 0.34f));
+            vocabulary.stems.Add(StemBand.Slow, Stem(0.5f, 0.23f, 0.22f));
             vocabulary.roots.Clear();
             vocabulary.roots.Add(ReachBand.Short, Root(1.1f));
             vocabulary.roots.Add(ReachBand.Mid, Root(1.5f));
@@ -68,7 +68,7 @@ namespace HealerLike.Render.Creatures
             {
                 maxBranch = 1.65f, minBranch = 0.7f, threeHeadScale = 0.76f, fiveHeadScale = 0.64f,
                 threeHeadSpread = 43f, fiveHeadSpread = 31f, headClearance = 1.25f,
-                branchThickness = 0.13f, limbSpread = 0.36f, limbWidth = 0.35f, limbThickness = 0.4f,
+                branchThickness = 0.13f, limbSpread = 0.36f, limbWidth = 0.46f, limbThickness = 0.5f, limbSplay = 18f,
                 stoneNeck = 0.55f, extendAccessorySupports = true
             };
         }
@@ -81,7 +81,7 @@ namespace HealerLike.Render.Creatures
                 new Vector3(stoneWidth, stoneWidth * 0.63f, stoneWidth * 0.85f), PartRole.Body);
             return new LookVocabulary.BodyEntry
             {
-                scale = scale, bodyLift = heavy ? 0.52f : 0f,
+                scale = scale, headScale = 0.85f, stemScale = heavy ? 0.35f : 1f, bodyLift = heavy ? 0.52f : 0f,
                 plant = heavy ? new[] { plant, Part("BaseBulb", ShapeProfile.Bulb(1.1f),
                     new Vector3(0.05f, -0.5f, 0f), new Vector3(1.06f, 0.64f, 0.93f), PartRole.Body) } : new[] { plant },
                 stone = heavy ? new[] { stone, Part("BaseBlock", ShapeProfile.Block(0.12f),
