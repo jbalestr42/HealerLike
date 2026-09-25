@@ -66,11 +66,18 @@ namespace HealerLike.Render.Stage
                 yield return Wait(0.3f);
                 _output.Check(StageInterfaceOutput.IsVisible(_actions.root.Q("inventory-panel")), "Inventory opens");
                 yield return Capture("05-inventory");
+                yield return Resize(1170, 2532);
+                _actions.ui.safeAreaProvider = () => new Rect(0f, 34f / 844f, 1f, 1f - 78f / 844f);
+                yield return Wait(0.4f);
+                yield return Capture("05b-simulated-notch-inventory");
+                _actions.ui.safeAreaProvider = null;
+                yield return Resize(1080, 1920);
                 _actions.Submit("inventory-close-button");
                 yield return Wait(0.3f);
                 _output.Check(!StageInterfaceOutput.IsVisible(_actions.root.Q("inventory-panel")), "Inventory closes");
                 yield return GestureExclusion();
                 yield return Deploy(1, Vector3.left * 2f + Vector3.forward * 2f);
+                yield return LandscapeControls();
                 _actions.Submit("wave-button");
                 yield return Wait(2f);
                 _output.Check(! _actions.root.Q<Button>("wave-button").enabledSelf, "Toolkit begins encounter");
@@ -88,7 +95,7 @@ namespace HealerLike.Render.Stage
                 _actions.ui.safeAreaProvider = () => new Rect(0f, 34f / 844f, 1f, 1f - 78f / 844f);
                 _actions.Submit("pause-button");
                 yield return Wait(0.4f);
-                yield return Capture("08b-safe-area-pause");
+                yield return Capture("08b-simulated-notch-pause");
                 _actions.Submit("resume-button");
                 _actions.ui.safeAreaProvider = null;
                 yield return Wait(0.2f);
@@ -246,6 +253,24 @@ namespace HealerLike.Render.Stage
                 _output.manifest.checks.Add("Equipment transfer not exercised: reward offered healer upgrades only");
             }
             _output.manifest.checks.Add("Wave choice screen not exercised: current Ascension loads waves directly");
+        }
+
+        IEnumerator LandscapeControls()
+        {
+            yield return Resize(844, 390);
+            _actions.Submit("party-button");
+            yield return Wait(0.3f);
+            yield return Capture("09b-landscape-party");
+            _actions.Submit("party-close-button");
+            _actions.Submit("detail-button");
+            yield return Wait(0.3f);
+            yield return Capture("09c-landscape-details");
+            _actions.Submit("detail-close-button");
+            _actions.Submit("pause-button");
+            yield return Wait(0.3f);
+            yield return Capture("09d-landscape-pause");
+            _actions.Submit("resume-button");
+            yield return Resize(1080, 1920);
         }
 
         IEnumerator Navigation()

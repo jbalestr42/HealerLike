@@ -29,6 +29,7 @@ namespace HealerLike.Render.Stage
             public int height;
             public Rect safeArea;
             public bool hasSafeAreaOverride;
+            public string safeAreaSource;
             public Rect normalizedSafeAreaOverride;
             public Rect battlefieldViewport;
             public Rect hud;
@@ -79,6 +80,7 @@ namespace HealerLike.Render.Stage
             frame.height = Screen.height;
             frame.safeArea = Screen.safeArea;
             frame.hasSafeAreaOverride = ui.safeAreaProvider != null;
+            frame.safeAreaSource = frame.hasSafeAreaOverride ? "simulated-insets" : "device-screen";
             if (frame.hasSafeAreaOverride)
             {
                 frame.normalizedSafeAreaOverride = ui.safeAreaProvider();
@@ -93,6 +95,21 @@ namespace HealerLike.Render.Stage
                 {
                     frame.controls.Add(new Control { name = button.name, text = button.text,
                         panelBounds = button.worldBound, enabled = button.enabledInHierarchy });
+                }
+            }
+            if (frame.hasSafeAreaOverride)
+            {
+                Rect normalized = frame.normalizedSafeAreaOverride;
+                Rect panel = root.worldBound;
+                Rect safe = new Rect(panel.x + normalized.x * panel.width, panel.y + (1f - normalized.yMax) * panel.height,
+                    normalized.width * panel.width, normalized.height * panel.height);
+                foreach (VisualElement control in root.Query<Button>().ToList())
+                {
+                    CheckSafe(control, safe);
+                }
+                foreach (VisualElement control in root.Query<DropdownField>().ToList())
+                {
+                    CheckSafe(control, safe);
                 }
             }
             ScreenCapture.CaptureScreenshot(path);
@@ -129,6 +146,27 @@ namespace HealerLike.Render.Stage
             manifest.isPassed = passed && manifest.failures.Count == 0;
             Directory.CreateDirectory(_folder);
             File.WriteAllText(Path.Combine(_folder, "interface.json"), JsonUtility.ToJson(manifest, true));
+        }
+
+        void CheckSafe(VisualElement control, Rect safe)
+        {
+            if (!IsVisible(control))
+            {
+                return;
+            }
+            VisualElement picked = control.panel.Pick(control.worldBound.center);
+            bool reachable = false;
+            for (VisualElement current = picked; current != null; current = current.parent)
+            {
+                reachable |= current == control;
+            }
+            if (reachable)
+            {
+                Rect bounds = control.worldBound;
+                Check(bounds.xMin >= safe.xMin - 1f && bounds.yMin >= safe.yMin - 1f
+                    && bounds.xMax <= safe.xMax + 1f && bounds.yMax <= safe.yMax + 1f,
+                    "Reachable control inside simulated safe area: " + control.name);
+            }
         }
 
         public static bool IsVisible(VisualElement element)
