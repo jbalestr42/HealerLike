@@ -319,14 +319,33 @@ namespace HealerLike.Render.Creatures
                 List<Vector3> outline = new List<Vector3>(indices.Count);
                 List<int> body = new List<int>();
                 List<int> ochre = new List<int>();
+                Dictionary<int, Vector3> faceNormals = null;
+                if (facets != null)
+                {
+                    faceNormals = new Dictionary<int, Vector3>();
+                    for (int triangle = 0; triangle < facets.Count; triangle++)
+                    {
+                        Vector3 a = points[indices[triangle * 3]];
+                        Vector3 b = points[indices[triangle * 3 + 1]];
+                        Vector3 c = points[indices[triangle * 3 + 2]];
+                        faceNormals.TryGetValue(facets[triangle], out Vector3 sum);
+                        faceNormals[facets[triangle]] = sum + Vector3.Cross(b - a, c - a);
+                    }
+                    foreach (int facet in new List<int>(faceNormals.Keys))
+                    {
+                        Vector3 cross = faceNormals[facet];
+                        faceNormals[facet] = cross / Mathf.Sqrt(cross.sqrMagnitude);
+                    }
+                }
                 for (int face = 0; face < indices.Count; face += 3)
                 {
                     Vector3 a = points[indices[face]];
                     Vector3 b = points[indices[face + 1]];
                     Vector3 c = points[indices[face + 2]];
                     Vector3 cross = Vector3.Cross(b - a, c - a);
-                    // Clipped planes can retain small valid triangles below Vector3.normalized's cutoff.
-                    Vector3 normal = facets != null ? cross / Mathf.Sqrt(cross.sqrMagnitude) : cross.normalized;
+                    // A skinny fan triangle amplifies float rounding. The full polygon supplies one stable normal
+                    // for the broad physical cut plane, shared by all triangles on that face.
+                    Vector3 normal = facets != null ? faceNormals[facets[face / 3]] : cross.normalized;
                     // A cut polygon keeps one material across its entire plane, regardless of triangulation.
                     int facet = facets == null ? face / 6 : facets[face / 3];
                     bool warm = mineral && ((facet + (variant & 7)) % 7 == 1);
