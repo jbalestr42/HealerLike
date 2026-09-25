@@ -6,7 +6,7 @@ using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Creatures
 {
-    // Where an accessory hangs on the body, every socket on the unit's right
+    // Where an accessory hangs on the body
     // Stored by value in assets: append new members, never reorder or remove
     public enum AccessorySocket
     {
@@ -35,6 +35,8 @@ namespace HealerLike.Render.Creatures
         public class AccessoryEntry
         {
             public AccessorySocket socket;
+            // Collars/crowns can surround their socket; older accessories keep the right-side clearance rule.
+            public bool isCentered;
             public LookPart[] plant = Array.Empty<LookPart>();
             public LookPart[] stone = Array.Empty<LookPart>();
             // Where a mini head sits in the socket's space, and how small it is drawn
@@ -100,6 +102,7 @@ namespace HealerLike.Render.Creatures
             public float threeHeadSpread = 40f;
             public float fiveHeadSpread = 28f;
             public float stoneBranch = 0.35f;
+            public float stoneBranchThickness = 0.24f;
             public float branchThickness = 0.12f;
             public float headClearance = 1.2f;
             public float foreshortening = 0.85f;
@@ -117,6 +120,7 @@ namespace HealerLike.Render.Creatures
                     && Positive(limbBodyOverlap) && Positive(minBranch) && maxBranch >= minBranch
                     && Positive(maxBranch) && Positive(threeHeadScale) && Positive(fiveHeadScale)
                     && Angle(threeHeadSpread) && Angle(fiveHeadSpread) && Positive(stoneBranch)
+                    && Positive(stoneBranchThickness)
                     && Positive(branchThickness) && Positive(headClearance) && Positive(foreshortening)
                     && Positive(plantAccessoryClearance) && Positive(stoneAccessoryClearance);
             }

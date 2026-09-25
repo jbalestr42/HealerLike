@@ -196,6 +196,40 @@ namespace HealerLike.Render.Creatures
             Assert.Greater(LookMeasure.HeadGap(channels, _vocabulary), 0f);
         }
 
+        [TestCase(CountBand.Few, 2)]
+        [TestCase(CountBand.Many, 4)]
+        public void Layout_StoneFan_ConnectsOuterCopiesWithMineralSlabs(CountBand count, int supports)
+        {
+            UnitChannels channels = RenderTestAssets.CreateChannels(LookSide.Stone, HeadKind.Bud, count);
+            PartList parts = LookComposer.Layout(channels, _vocabulary);
+            Vector3 neck = UnitSockets.Place(channels, _vocabulary).neck;
+            LookPart body = parts.Source(0);
+            Bounds bodyBounds = new Bounds(body.position, body.size);
+            int found = 0;
+            foreach (int start in parts.headStarts)
+            {
+                LookPart support = parts.Source(start);
+                if (support.id != HeadFan.BranchId)
+                {
+                    Assert.IsTrue(bodyBounds.Intersects(new Bounds(support.position, support.size)),
+                        "The central head rests on the body.");
+                    continue;
+                }
+                found++;
+                LookPart head = parts.Source(start + 1);
+                Assert.AreEqual(ShapeKind.Block, support.shape.kind);
+                Assert.AreEqual(Primitive.Stone, support.primitive);
+                Assert.AreEqual(neck.y, support.position.y, 0.00001f);
+                // Supports lie across X after a quarter-turn about Z.
+                Bounds slab = new Bounds(support.position,
+                    new Vector3(support.size.y, support.size.x, support.size.z));
+                Assert.IsTrue(bodyBounds.Intersects(slab), "The slab attaches to the body.");
+                Assert.IsTrue(slab.Intersects(new Bounds(head.position, head.size)),
+                    "Each outer head rests on a connected slab.");
+            }
+            Assert.AreEqual(supports, found);
+        }
+
         [Test]
         public void Compose_TooSmallBudget_RejectsTheRequestedFiveHeads()
         {
@@ -269,6 +303,37 @@ namespace HealerLike.Render.Creatures
 
             Assert.AreEqual(socket + Vector3.right * 0.45f, parts.Source(parts.accessoryStart).position);
             Assert.IsFalse(Array.Exists(parts.ToArray(), p => p.id == "AccessorySupport"));
+        }
+
+        [TestCase(LookSide.Plant)]
+        [TestCase(LookSide.Stone)]
+        public void Compose_CenteredRing_RemainsOnItsSocketWithoutARightSupport(LookSide side)
+        {
+            _vocabulary.Layout.extendAccessorySupports = true;
+            LookPart ring = Part("Collar", PartRole.Accessory, ShapeProfile.Ring());
+            ring.primitive = Primitive.Torus;
+            ring.size = new Vector3(0.9f, 0.13f, 0.9f);
+            _vocabulary.accessories[AccessoryKind.SmallTorus] = new LookVocabulary.AccessoryEntry
+            {
+                socket = AccessorySocket.NeckOrbit, isCentered = true,
+                plant = new[] { ring }, stone = new[] { ring }
+            };
+            CreatureGrammarPreset preset = Track(ScriptableObject.CreateInstance<CreatureGrammarPreset>());
+            preset.vocabulary = _vocabulary;
+            preset.side = side;
+            preset.accessory = AccessoryKind.SmallTorus;
+            UnitChannels channels = preset.Channels();
+            PartList parts = LookComposer.Layout(channels, _vocabulary);
+
+            Assert.AreEqual(UnitSockets.Place(channels, _vocabulary).neck,
+                parts.Source(parts.accessoryStart).position);
+            Assert.IsFalse(Array.Exists(parts.ToArray(), p => p.id == "AccessorySupport"));
+            Assert.IsEmpty(CreatureGrammarValidator.Validate(preset));
+            Assert.NotNull(Track(preset.Compose()));
+            // The collar has an open ring profile with positive visible dimensions, not a hidden marker.
+            Assert.AreEqual(ShapeKind.Ring, parts.Source(parts.accessoryStart).shape.kind);
+            Assert.Greater(parts.Source(parts.accessoryStart).size.x,
+                _vocabulary.stems[StemBand.Steady].thickness * 2f);
         }
 
         [TestCase(float.NaN)]
