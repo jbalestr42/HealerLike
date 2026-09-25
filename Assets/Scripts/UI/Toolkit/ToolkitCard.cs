@@ -6,6 +6,10 @@ public class ToolkitCard
 {
     ToolkitGameView _view;
     Button _button;
+    Button _info;
+    VisualElement _root;
+
+    public VisualElement root { get { return _root; } }
     VisualElement _icon;
     Label _title;
     Label _description;
@@ -45,11 +49,25 @@ public class ToolkitCard
             _button.Add(_status);
         }
 
+        _root = new VisualElement();
+        _root.AddToClassList("card-shell");
+        _root.Add(_button);
+        _info = new Button(OnInfoClicked);
+        _info.name = "card-info";
+        _info.text = "Info";
+        _info.AddToClassList("button");
+        _info.AddToClassList("card-info");
+        _root.Add(_info);
         _button.clicked += OnClicked;
         _button.RegisterCallback<PointerEnterEvent>(OnPointerEnter);
         _button.RegisterCallback<FocusInEvent>(OnFocusIn);
         _button.RegisterCallback<PointerLeaveEvent>(OnPointerLeave);
         _button.RegisterCallback<FocusOutEvent>(OnFocusOut);
+    }
+
+    public void ShowInfo(bool show)
+    {
+        _info.EnableInClassList("is-hidden", !show);
     }
 
     public void Refresh(ToolkitCardModel model)
@@ -59,6 +77,7 @@ public class ToolkitCard
         _description.text = _model.description;
         _status.text = _model.status;
         _button.tooltip = _model.description;
+        _info.tooltip = "Inspect " + _model.title;
         _button.SetEnabled(_model.isEnabled);
         _button.EnableInClassList("is-disabled", !_model.isEnabled);
         if (!_hasIcon || !ReferenceEquals(_iconSource, _model.iconSource))
@@ -92,26 +111,44 @@ public class ToolkitCard
         if (_model.isEnabled && _model.activate != null)
         {
             _model.activate.Invoke(_model);
+            _view.OnCardActivated.Invoke(_model);
         }
+    }
+
+    void OnInfoClicked()
+    {
+        _view.OnInspectRequested.Invoke(_model);
     }
 
     void OnPointerEnter(PointerEnterEvent evt)
     {
-        _view.OnInspect.Invoke(_model);
+        if (!_view.isTouchLayout)
+        {
+            _view.OnInspect.Invoke(_model);
+        }
     }
 
     void OnFocusIn(FocusInEvent evt)
     {
-        _view.OnInspect.Invoke(_model);
+        if (!_view.isTouchLayout)
+        {
+            _view.OnInspect.Invoke(_model);
+        }
     }
 
     void OnPointerLeave(PointerLeaveEvent evt)
     {
-        _view.OnInspectEnded.Invoke();
+        if (!_view.isTouchLayout)
+        {
+            _view.OnInspectEnded.Invoke();
+        }
     }
 
     void OnFocusOut(FocusOutEvent evt)
     {
-        _view.OnInspectEnded.Invoke();
+        if (!_view.isTouchLayout)
+        {
+            _view.OnInspectEnded.Invoke();
+        }
     }
 }

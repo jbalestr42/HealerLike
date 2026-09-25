@@ -80,3 +80,19 @@
 .action-button { min-height: 36px; max-width: 100%; white-space: normal; padding: 6px 8px; margin-top: 8px; }
 .unity-scroller--vertical { min-width: 10px; max-width: 10px; }
 .unity-scroller--horizontal { min-height: 10px; max-height: 10px; }
+
+.field-toolbar { flex-direction: row; flex-shrink: 0; margin-top: 6px; }
+.toolbar-space { flex-grow: 1; }
+.mobile-only { display: none; }
+.drawer-header { flex-direction: row; align-items: center; justify-content: space-between; }
+.encounter-actions { flex-direction: row; }
+.encounter-actions > .button { flex-grow: 1; margin-left: 0; }
+.encounter-actions > #cancel-button { margin-left: 6px; }
+.dialog-body { flex-grow: 1; flex-shrink: 1; min-height: 0; }
+.card-shell { position: relative; flex-shrink: 0; margin-bottom: 8px; }
+.card-shell > .data-card { width: 100%; margin: 0; }
+.card-info { display: none; }
+.spell-list .card-shell { width: 156px; margin-right: 8px; margin-bottom: 2px; }
+.collection-list .card-shell { width: 248px; margin-right: 12px; margin-bottom: 12px; }
+.collection-list .card-shell > .data-card { margin: 0; }
+.is-compact .collection-list .card-shell { width: 210px; }

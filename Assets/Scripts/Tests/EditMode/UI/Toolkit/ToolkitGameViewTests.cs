@@ -53,7 +53,7 @@ public class ToolkitGameViewTests
 
         Assert.AreEqual(1, _list.childCount);
         Assert.AreSame(first, _list[0]);
-        Assert.IsFalse(first.enabledSelf);
+        Assert.IsFalse(first.Q<Button>("data-card").enabledSelf);
         Assert.AreEqual("New spell", first.Q<Label>(className: "data-card__title").text);
     }
 

@@ -15,7 +15,7 @@ public class ToolkitGameUI : MonoBehaviour
     ToolkitGameView _view;
     PanelSettings _ownedPanel;
     float _nextRefresh;
-    bool _interactionActive = false;
+    bool _interactionActive;
     ToolkitGameContext _context = new ToolkitGameContext();
     ToolkitLegacyCanvases _legacyCanvases = new ToolkitLegacyCanvases();
     ToolkitTimeControls _timeControls = new ToolkitTimeControls();
@@ -26,6 +26,16 @@ public class ToolkitGameUI : MonoBehaviour
     ToolkitWavePanel _wavePanel = new ToolkitWavePanel();
     ToolkitDetailPanel _detailPanel = new ToolkitDetailPanel();
     ToolkitInventoryPanel _inventoryPanel = new ToolkitInventoryPanel();
+    ToolkitMobileLayout _mobileLayout = new ToolkitMobileLayout();
+
+    public System.Func<string, bool> sceneLoader { get; set; }
+
+    public Rect normalizedWorldViewport { get { return _mobileLayout.normalizedWorldViewport; } }
+
+    public void SetBattleFocus(bool focused, System.Action toggle)
+    {
+        _mobileLayout.SetBattleFocus(focused, toggle);
+    }
 
     public string gameplayScene { get { return _gameplayScene; } set { _gameplayScene = value; } }
 
@@ -54,9 +64,9 @@ public class ToolkitGameUI : MonoBehaviour
         }
 
         _document = GetComponent<UIDocument>();
-        if (_document.panelSettings == null)
+        if (_ownedPanel == null)
         {
-            _ownedPanel = CreatePanelSettings();
+            _ownedPanel = ToolkitMobileLayout.CreatePanelSettings(_document.panelSettings);
             _document.panelSettings = _ownedPanel;
         }
 
@@ -66,6 +76,11 @@ public class ToolkitGameUI : MonoBehaviour
             Debug.LogError("[ToolkitGameUI] Requires Resources/UI/Toolkit/GameUI.uxml", this);
             enabled = false;
             return;
+        }
+
+        if (_view != null)
+        {
+            _view.Release();
         }
 
         VisualElement root = _document.rootVisualElement;
@@ -78,13 +93,14 @@ public class ToolkitGameUI : MonoBehaviour
         _context.Init();
         _view.OnInspect.AddListener(_detailPanel.OnInspect);
         _view.OnInspectEnded.AddListener(_detailPanel.OnInspectEnded);
-        root.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
+        _mobileLayout.Init(_view, _context, _document);
         _view.AddClickListener("wave-button", StartOrAdvance);
         _view.AddClickListener("start-button", StartOrAdvance);
         _view.AddClickListener("inventory-button", OnInventoryClicked);
         _view.AddClickListener("inventory-close-button", OnInventoryCloseClicked);
         _timeControls.Init(this, _context, _view);
         _view.AddClickListener("restart-button", OnRestartClicked);
+        _view.AddClickListener("menu-button", OnRestartClicked);
         Toggle markToggle = root.Q<Toggle>("mark-entity-toggle");
         if (markToggle != null)
         {
@@ -142,6 +158,7 @@ public class ToolkitGameUI : MonoBehaviour
         }
 
         _interactionActive = _context.hasInteraction;
+        _mobileLayout.Update();
         if (Time.unscaledTime >= _nextRefresh)
         {
             _nextRefresh = Time.unscaledTime + 0.1f;
@@ -151,6 +168,7 @@ public class ToolkitGameUI : MonoBehaviour
 
     public void Refresh()
     {
+        _mobileLayout.Refresh();
         _view.Show("pause-panel", _context.isPaused);
         _view.Show("inventory-panel", _context.isInventoryOpen && !_context.isPaused);
         _view.Show("selection-panel", _context.IsCurrentView(ViewType.Wave));
@@ -190,16 +208,6 @@ public class ToolkitGameUI : MonoBehaviour
         }
     }
 
-    PanelSettings CreatePanelSettings()
-    {
-        PanelSettings settings = ScriptableObject.CreateInstance<PanelSettings>();
-        settings.name = "Toolkit runtime panel";
-        settings.themeStyleSheet = Resources.Load<ThemeStyleSheet>("UI/Toolkit/RuntimeTheme");
-        settings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-        settings.referenceResolution = new Vector2Int(1920, 1080);
-        return settings;
-    }
-
     static void IgnorePicking(TemplateContainer container)
     {
         container.pickingMode = PickingMode.Ignore;
@@ -233,7 +241,8 @@ public class ToolkitGameUI : MonoBehaviour
     void LoadScene(string scene)
     {
         _timeControls.ResetSpeed();
-        if (!ToolkitSceneNavigation.TryLoad(scene))
+        bool loaded = sceneLoader != null ? sceneLoader.Invoke(scene) : ToolkitSceneNavigation.TryLoad(scene);
+        if (!loaded)
         {
             _view.SetText("status-label", $"Scene '{scene}' is not included in this player build.");
         }
@@ -241,6 +250,11 @@ public class ToolkitGameUI : MonoBehaviour
 
     void OnEscape()
     {
+        if (_mobileLayout.CloseDrawers())
+        {
+            return;
+        }
+
         if (_context.isInventoryOpen)
         {
             _context.isInventoryOpen = false;
@@ -273,15 +287,6 @@ public class ToolkitGameUI : MonoBehaviour
     void OnRestartClicked()
     {
         LoadScene(_menuScene);
-    }
-
-    void OnGeometryChanged(GeometryChangedEvent evt)
-    {
-        VisualElement hudRoot = _document.rootVisualElement.Q("hud-root");
-        if (hudRoot != null)
-        {
-            hudRoot.EnableInClassList("is-compact", evt.newRect.width < 1100f);
-        }
     }
 
     void OnMarkToggleChanged(ChangeEvent<bool> evt)

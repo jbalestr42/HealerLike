@@ -40,7 +40,7 @@ public class ToolkitWaveBar
         GameHUD hud = _context.legacy.gameHUD;
         bool isAvailable = !_context.isPaused && !hasOverlay;
         _view.Show("start-button", isStart);
-        _view.Show("wave-button", !isStart);
+        _view.Show("wave-button", !isStart && isPreparing);
         _view.SetButton("start-button", "Start expedition", isAvailable && hud.startGameButton.interactable);
         _view.SetText("currency-label", $"{_context.player.gold} gold");
         _view.SetText("wave-label", GetWaveText());
@@ -104,7 +104,7 @@ public class ToolkitWaveBar
 
         if (_context.hasInteraction)
         {
-            return "Click a valid target. Escape cancels.";
+            return "Tap a target, or Cancel.";
         }
 
         if (isStart)
@@ -114,7 +114,8 @@ public class ToolkitWaveBar
 
         if (isPreparing)
         {
-            return "Deploy your party, distribute equipment, then start the wave.";
+            return _view.isTouchLayout ? "Open Party to deploy your allies."
+                : "Deploy your party, distribute equipment, then start the wave.";
         }
 
         return $"Combat · {Time.timeScale:0.#}× speed";

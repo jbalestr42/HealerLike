@@ -8,9 +8,12 @@ public class ToolkitGameView
 {
     public UnityEvent<ToolkitCardModel> OnInspect = new UnityEvent<ToolkitCardModel>();
     public UnityEvent OnInspectEnded = new UnityEvent();
+    public UnityEvent<ToolkitCardModel> OnInspectRequested = new UnityEvent<ToolkitCardModel>();
+    public UnityEvent<ToolkitCardModel> OnCardActivated = new UnityEvent<ToolkitCardModel>();
+    public bool isTouchLayout { get; set; }
 
     // Structural elements must not consume pointer events over the empty battlefield
-    static readonly string[] structuralElements = { "hud-root", "main-content", "world-space", "game-ui", "hud" };
+    static readonly string[] structuralElements = { "hud-root", "main-content", "world-space", "game-ui", "hud", "field-toolbar" };
 
     VisualTreeAsset _cardTemplate = Resources.Load<VisualTreeAsset>("UI/Toolkit/DataCard");
     Dictionary<string, List<ToolkitCard>> _lists = new Dictionary<string, List<ToolkitCard>>();
@@ -107,7 +110,7 @@ public class ToolkitGameView
 
         while (cards.Count > models.Count)
         {
-            cards[cards.Count - 1].button.RemoveFromHierarchy();
+            cards[cards.Count - 1].root.RemoveFromHierarchy();
             cards.RemoveAt(cards.Count - 1);
         }
 
@@ -117,7 +120,8 @@ public class ToolkitGameView
             {
                 ToolkitCard card = new ToolkitCard();
                 card.Init(this, _cardTemplate);
-                parent.Add(card.button);
+                parent.Add(card.root);
+                card.ShowInfo(name == "party-list" || name == "spell-list");
                 cards.Add(card);
             }
 

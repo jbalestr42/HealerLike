@@ -87,7 +87,7 @@ public class ToolkitPartyPanel
             _context.interaction.SetInteraction(new EntityGridInteraction((EntityData)model.source));
         }
 
-        _view.SetText("status-label", "Click an open tile to deploy. Escape cancels.");
+        _view.SetText("status-label", "Tap an open tile to deploy, or Cancel.");
     }
 
     void OnEntityActivated(ToolkitCardModel model)
