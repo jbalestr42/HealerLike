@@ -21,6 +21,7 @@ namespace HealerLike.Render.Creatures
 
         readonly PartPaint _paint = new PartPaint();
         readonly RootChain _roots = new RootChain();
+        ShapeMeshCache _shapeMeshes = new ShapeMeshCache();
         CreatureRecipe _recipe;
         float _cellSize;
         Transform _root;
@@ -111,6 +112,26 @@ namespace HealerLike.Render.Creatures
             {
                 bodyMaterial = material;
             }
+
+            // Resolve every mesh before replacing the live assembly. A rejected profile leaves the old rig intact.
+            ShapeMeshCache nextMeshes = new ShapeMeshCache();
+            Mesh[] resolved = new Mesh[data.parts.Length];
+            for (int i = 0; i < data.parts.Length; i++)
+            {
+                CreaturePart part = data.parts[i];
+                resolved[i] = part.shape.isProcedural ? nextMeshes.Get(part.shape, part.variant)
+                    : meshes.GetMesh(part.primitive, part.variant);
+                if (part.shape.isProcedural && resolved[i] == null)
+                {
+                    nextMeshes.Dispose();
+                    return false;
+                }
+            }
+            if (!data.roots.segmentShape.IsValid() || !data.roots.jointShape.IsValid())
+            {
+                nextMeshes.Dispose();
+                return false;
+            }
             _recipe = data;
             _pivots = new Transform[data.parts.Length];
             _geometry = new Transform[data.parts.Length];
@@ -146,7 +167,7 @@ namespace HealerLike.Render.Creatures
                 _pivots[i].SetParent(pivotParent, false);
                 _pivots[i].localPosition = part.localPosition * _cellSize;
                 _pivots[i].localRotation = Quaternion.Euler(part.localEuler);
-                Mesh mesh = meshes.GetMesh(part.primitive, part.variant);
+                Mesh mesh = resolved[i];
                 Material partMaterial = material;
                 if (part.role == PartRole.Body)
                 {
@@ -178,6 +199,8 @@ namespace HealerLike.Render.Creatures
 
             _budAnchors = buds.ToArray();
             _roots.Init(data.roots, _root, meshes, material, ColourJitter.Vary(data.roots.colour, _idle.seed));
+            _shapeMeshes.Dispose();
+            _shapeMeshes = nextMeshes;
             _revision++;
             return true;
         }
@@ -310,6 +333,8 @@ namespace HealerLike.Render.Creatures
             }
 
             _isDisposed = true;
+            _roots.Clear();
+            _shapeMeshes.Dispose();
             if (!_root)
             {
                 return;
