@@ -8,21 +8,8 @@ namespace HealerLike.Render.Creatures
     {
         // The id of a fanned neck's branch, which the head measure skips
         public static readonly string BranchId = "Branch";
-        // The longest branch of a fanned neck, never shorter than half a unit, in body units
-        static readonly float maxBranch = 1.2f;
-        static readonly float minBranch = 0.5f;
-        // Three heads on a fan are this much smaller than one and this many degrees apart, five heads smaller and
-        // closer; a stone's side by side heads sit this far out, in body units
-        static readonly float threeHeadScale = 0.72f;
-        static readonly float fiveHeadScale = 0.55f;
-        static readonly float threeHeadSpread = 40f;
-        static readonly float fiveHeadSpread = 28f;
-        static readonly float stoneBranch = 0.35f;
-        static readonly float branchThickness = 0.12f;
-        // A fanned head keeps a fifth of a head clear of its neighbour; the board camera shortens the outer pairs'
-        // lean to about this share
-        static readonly float headClearance = 1.2f;
-        static readonly float foreshortening = 0.85f;
+        LookVocabulary.LayoutEntry _layout;
+        ShapeProfile _branchShape;
 
         int _copies;
         float _spread;
@@ -33,24 +20,31 @@ namespace HealerLike.Render.Creatures
         float _copyScale;
         public float copyScale { get { return _copyScale; } }
 
-        public static HeadFan Shape(LookPart[] head, int copies, bool isPlant)
+        public static HeadFan Shape(LookPart[] head, int copies, bool isPlant,
+            LookVocabulary.LayoutEntry layout = null, ShapeProfile branchShape = default)
         {
-            HeadFan fan = new HeadFan();
+            HeadFan fan = new HeadFan
+            {
+                _layout = layout ?? new LookVocabulary.LayoutEntry(),
+                _branchShape = branchShape
+            };
             fan._copies = copies;
             fan._isPlant = isPlant;
-            fan._copyScale = fiveHeadScale;
-            fan._spread = fiveHeadSpread;
+            fan._copyScale = fan._layout.fiveHeadScale;
+            fan._spread = fan._layout.fiveHeadSpread;
             if (copies == 3)
             {
-                fan._copyScale = threeHeadScale;
-                fan._spread = threeHeadSpread;
+                fan._copyScale = fan._layout.threeHeadScale;
+                fan._spread = fan._layout.threeHeadSpread;
             }
 
-            fan._length = stoneBranch;
+            // Mineral copies sit in a row. Width controls their spacing so broad slabs keep a visible gap.
+            fan._length = Mathf.Max(fan._layout.stoneBranch,
+                HeadWidth(head) * fan._copyScale * fan._layout.headClearance);
             if (isPlant)
             {
-                fan._copyScale = CopyScale(head, fan._copyScale, fan._spread);
-                fan._length = BranchLength(head, fan._copyScale, fan._spread);
+                fan._copyScale = fan.CopyScale(head, fan._copyScale, fan._spread);
+                fan._length = fan.BranchLength(head, fan._copyScale, fan._spread);
             }
             return fan;
         }
@@ -63,34 +57,34 @@ namespace HealerLike.Render.Creatures
             Vector3 end = top + direction * (_length * scale);
             if (_isPlant)
             {
-                parts.Link(BranchId, top, end, branchThickness * scale, colour, PartRole.Stem);
+                parts.Link(BranchId, top, end, _layout.branchThickness * scale, colour, PartRole.Stem, _branchShape);
             }
             else
             {
-                end.y = top.y;
+                end = top + Vector3.right * ((index - (_copies - 1) * 0.5f) * _length * scale);
             }
             return end;
         }
 
         // A fanned head is scaled down when its branches, at their longest, could not keep it clear of its neighbour
-        static float CopyScale(LookPart[] head, float copyScale, float spread)
+        float CopyScale(LookPart[] head, float copyScale, float spread)
         {
-            float fit = maxBranch * Chord(spread) / (HeadWidth(head) * headClearance);
+            float fit = _layout.maxBranch * Chord(spread) / (HeadWidth(head) * _layout.headClearance);
             return Mathf.Min(copyScale, fit);
         }
 
         // How long a fanned branch must be for two neighbouring heads to clear each other on screen with a fifth of
         // a head to spare
-        static float BranchLength(LookPart[] head, float copyScale, float spread)
+        float BranchLength(LookPart[] head, float copyScale, float spread)
         {
-            float length = HeadWidth(head) * copyScale * headClearance / Chord(spread);
-            return Mathf.Clamp(length, minBranch, maxBranch);
+            float length = HeadWidth(head) * copyScale * _layout.headClearance / Chord(spread);
+            return Mathf.Clamp(length, _layout.minBranch, _layout.maxBranch);
         }
 
         // The screen distance between two neighbouring branch ends per unit of branch length
-        static float Chord(float spread)
+        float Chord(float spread)
         {
-            return 2f * Mathf.Sin(spread * 0.5f * Mathf.Deg2Rad) * foreshortening;
+            return 2f * Mathf.Sin(spread * 0.5f * Mathf.Deg2Rad) * _layout.foreshortening;
         }
 
         // A head's width across the screen at unit scale

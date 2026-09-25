@@ -118,6 +118,11 @@ namespace HealerLike.Render.Studio
                 errors.Add("Body unit and the selected side scale must be finite and positive.");
             }
 
+            if (!vocabulary.Layout.IsValid())
+            {
+                errors.Add("Layout proportions must be finite and within their supported ranges.");
+            }
+
             if (vocabulary.maxParts < 1 || vocabulary.maxParts > CreatureValidator.MaxParts)
             {
                 errors.Add("Vocabulary maxParts must be between 1 and " + CreatureValidator.MaxParts + ".");
@@ -141,9 +146,10 @@ namespace HealerLike.Render.Studio
                 isStemSized = RenderMath.IsPositive(stem.length) && RenderMath.IsPositive(stem.thickness);
             }
 
-            if (!RenderMath.IsPositive(body.scale) || !isStemSized)
+            if (!RenderMath.IsPositive(body.scale) || !float.IsFinite(body.bodyLift) || !isStemSized
+                || !stem.plantShape.IsValid() || !stem.stoneLimbShape.IsValid())
             {
-                errors.Add("Body scale and stem dimensions must be finite and positive.");
+                errors.Add("Body scale and stem dimensions must be finite and positive, with valid shape profiles and body lift.");
             }
 
             if (channels.accessory == AccessoryKind.None)
@@ -202,8 +208,21 @@ namespace HealerLike.Render.Studio
                 return;
             }
 
+            LookVocabulary.RootEntry entry;
+            vocabulary.roots.TryGetValue(channels.reach, out entry);
+            float thicknessScale = entry == null ? 1f : entry.ThicknessScale;
+            if (entry != null && (!RenderMath.IsPositive(thicknessScale)
+                || !entry.segmentShape.IsValid() || !entry.jointShape.IsValid()
+                || !float.IsFinite(entry.taper) || entry.taper < 0f || entry.taper > 1f
+                || !float.IsFinite(entry.jointScale) || entry.jointScale < 0f || entry.jointScale > 8f))
+            {
+                errors.Add("The selected root profiles or taper/joint proportions are invalid.");
+                return;
+            }
+
             float unit = vocabulary.Unit(channels.side);
-            float extent = (vocabulary.Reach(channels.reach) + vocabulary.rootThickness * 0.5f) * unit;
+            float extent = (vocabulary.Reach(channels.reach)
+                + vocabulary.rootThickness * thicknessScale * 0.5f) * unit;
             if (extent > CreatureValidator.MaxRootReach)
             {
                 errors.Add("The selected root reach and thickness exceed the renderer's maximum root extent.");
@@ -246,7 +265,8 @@ namespace HealerLike.Render.Studio
                 && RenderMath.IsPositive(part.size.z);
             bool isGlowValid = float.IsFinite(part.glow) && part.glow >= 0f;
 
-            return isNamed && isShapeKnown && isToneKnown && isPlaced && isSized && isGlowValid;
+            return isNamed && isShapeKnown && isToneKnown && isPlaced && isSized && isGlowValid
+                && part.shape.IsValid();
         }
 
         static bool AreDefined(UnitChannels channels)
