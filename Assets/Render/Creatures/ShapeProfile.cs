@@ -6,6 +6,9 @@ namespace HealerLike.Render.Creatures
     // Stored in recipes and vocabulary assets. Zero preserves the existing baked primitive.
     public enum ShapeKind { Legacy, Bulb, Segment, Leaf, Block, Shard, Ring }
 
+    // Attachment points measured on the generated unit mesh, independently of its authored size and rotation.
+    public enum ShapeAnchor { Center, Bottom, Top }
+
     [Serializable]
     public struct ShapeProfile : IEquatable<ShapeProfile>
     {
