@@ -324,7 +324,9 @@ namespace HealerLike.Render.Creatures
                     Vector3 a = points[indices[face]];
                     Vector3 b = points[indices[face + 1]];
                     Vector3 c = points[indices[face + 2]];
-                    Vector3 normal = Vector3.Cross(b - a, c - a).normalized;
+                    Vector3 cross = Vector3.Cross(b - a, c - a);
+                    // Clipped planes can retain small valid triangles below Vector3.normalized's cutoff.
+                    Vector3 normal = facets != null ? cross / Mathf.Sqrt(cross.sqrMagnitude) : cross.normalized;
                     // A cut polygon keeps one material across its entire plane, regardless of triangulation.
                     int facet = facets == null ? face / 6 : facets[face / 3];
                     bool warm = mineral && ((facet + (variant & 7)) % 7 == 1);
