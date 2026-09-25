@@ -12,6 +12,10 @@ namespace HealerLike.Render.Creatures
         {
             bool tip = role == PartRole.Tip;
             bool mineral = shape.kind == ShapeKind.Block || shape.kind == ShapeKind.Shard;
+            if (mineral && shape.fracture == 0f)
+            {
+                shape.fracture = tip ? 0.52f : 0.74f;
+            }
             return new LookPart
             {
                 id = id, shape = shape, primitive = mineral ? Primitive.Stone : Primitive.Sphere,
@@ -55,8 +59,8 @@ namespace HealerLike.Render.Creatures
         public static void Growth(List<LookPart> parts, Vector3 from, Vector3 to, float width,
             CountBand count = CountBand.One)
         {
-            parts.Add(Link("Growth", ShapeProfile.Segment(0.1f, 0.42f), from, to, width, count: count));
-            Joint(parts, to, width * 0.67f, count);
+            parts.Add(Link("Growth", ShapeProfile.Segment(0.16f, 0.78f), from, to, width, count: count));
+            Joint(parts, to, width * 0.72f, count);
         }
     }
 }

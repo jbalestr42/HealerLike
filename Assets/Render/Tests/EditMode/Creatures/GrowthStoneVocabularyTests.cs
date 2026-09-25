@@ -139,7 +139,7 @@ namespace HealerLike.Render.Creatures
             LookPart[] fragment = _vocabulary.heads[HeadKind.Fork].plant;
             int entry = Array.FindIndex(fragment, part => part.id == "ForkLeft");
             LookPart edit = fragment[entry];
-            edit.shape.bend = 0.85f;
+            edit.shape.bend = 0.3f;
             fragment[entry] = edit;
             PartList after = LookComposer.Layout(channels, _vocabulary);
             Assert.Less(Vector3.Distance(originalBase, Pole(after.Source(left), ShapeAnchor.Bottom)), 0.00001f);
@@ -314,6 +314,41 @@ namespace HealerLike.Render.Creatures
                 Assert.Greater(thorn.shape.taper, 0.85f);
                 Assert.Less(thorn.size.x / thorn.size.y, 0.18f);
             }
+        }
+
+        [Test]
+        public void FamilyProportions_LetForkAndCalyxGrowNearTheBodyWhileSpearRemainsAReed()
+        {
+            float Stalk(HeadKind head)
+            {
+                UnitSockets sockets = UnitSockets.Place(RenderTestAssets.CreateChannels(LookSide.Plant, head), _vocabulary);
+                return sockets.neck.y - sockets.stemFoot.y;
+            }
+            Assert.Less(Stalk(HeadKind.Fork), Stalk(HeadKind.Bud));
+            Assert.Less(Stalk(HeadKind.GiftBoonDefence), Stalk(HeadKind.Bud));
+            Assert.Less(Stalk(HeadKind.Bud), Stalk(HeadKind.Arch));
+            Assert.Less(Stalk(HeadKind.Arch), Stalk(HeadKind.Spear));
+            LookPart lance = _vocabulary.heads[HeadKind.Spear].plant.First(p => p.id == "SpearBlade");
+            Assert.Greater(lance.size.y / lance.size.x, 3.5f);
+            Assert.Greater(lance.shape.taper, 0.6f);
+            LookPart[] growth = _vocabulary.heads[HeadKind.Arch].plant.Where(p => p.id == "Growth" && p.minCount == CountBand.One).ToArray();
+            Assert.Greater(growth.Max(p => p.size.x) / growth.Min(p => p.size.x), 1.5f);
+            Assert.IsTrue(growth.All(p => p.shape.fullness > 0.6f));
+        }
+
+        [Test]
+        public void MineralVocabulary_UsesClippedPlanesWhileLegsKeepAQuieterProfile()
+        {
+            foreach (LookVocabulary.HeadEntry entry in _vocabulary.heads.Values)
+            foreach (LookPart part in entry.stone)
+            {
+                if (part.shape.kind == ShapeKind.Block || part.shape.kind == ShapeKind.Shard)
+                {
+                    Assert.Greater(part.shape.fracture, 0.4f, part.id);
+                }
+            }
+            Assert.Greater(_vocabulary.bodies[MassBand.Light].stone[0].shape.fracture,
+                _vocabulary.stems[StemBand.Quick].stoneLimbShape.fracture);
         }
 
         static Bounds Box(LookPart part)

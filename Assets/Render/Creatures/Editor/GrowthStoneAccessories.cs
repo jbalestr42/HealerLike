@@ -59,17 +59,19 @@ namespace HealerLike.Render.Creatures
                     for (int i = 0; i < 3; i++)
                     {
                         parts.Add(Part("TierRing", ShapeProfile.Ring(0.24f, stone),
-                            new Vector3(0f, stone ? 0.02f - i * 0.22f : -0.12f - i * 0.24f, 0f),
+                            new Vector3(0f, stone ? 0.02f - i * 0.22f : -0.04f - i * 0.14f, 0f),
                             stone ? new Vector3(1.25f + i * 0.15f, 0.12f, 1f + i * 0.12f)
-                                : new Vector3(0.94f - i * 0.1f, 0.14f, 0.74f)));
+                                : new Vector3(1.14f - i * 0.07f, 0.09f, 0.88f - i * 0.04f)));
                     }
                     break;
                 case AccessoryKind.TwinSeeds:
                     for (int side = -1; side <= 1; side += 2)
                     {
-                        parts.Add(Link("TwinSeedStem", stalk, Vector3.zero, new Vector3(side * 0.43f, -0.32f, 0f), 0.12f));
-                        parts.Add(Part("TwinSeed", seed, new Vector3(side * 0.51f, -0.51f, 0f),
-                            new Vector3(0.34f, 0.66f, 0.35f), euler: new Vector3(0f, 0f, -side * 22f)));
+                        parts.Add(Link("TwinSeedStem", stalk, Vector3.zero,
+                            new Vector3(side * (stone ? 0.43f : 0.5f), stone ? -0.32f : -0.2f, 0f), 0.12f));
+                        parts.Add(Part("TwinSeed", seed,
+                            new Vector3(side * (stone ? 0.51f : 0.58f), stone ? -0.51f : -0.35f, 0f),
+                            new Vector3(0.34f, stone ? 0.66f : 0.56f, 0.35f), euler: new Vector3(0f, 0f, -side * 22f)));
                     }
                     break;
                 case AccessoryKind.StalkBeads:

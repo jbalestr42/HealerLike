@@ -13,8 +13,25 @@ namespace HealerLike.Render.Creatures
         {
             return new LookVocabulary.HeadEntry
             {
-                plant = Build(kind, false), stone = Build(kind, true), carriesCount = kind == HeadKind.Arch
+                plant = Build(kind, false), stone = Build(kind, true), carriesCount = kind == HeadKind.Arch,
+                plantStemScale = NeckScale(kind)
             };
+        }
+
+        static float NeckScale(HeadKind kind)
+        {
+            switch (kind)
+            {
+                case HeadKind.Spear: return 0.95f;
+                case HeadKind.Arch: return 0.6f;
+                case HeadKind.Fork:
+                case HeadKind.GiftBoonDefence: return 0.25f;
+                case HeadKind.Conductor: return 0.35f;
+                case HeadKind.GiftHeal: return 0.7f;
+                case HeadKind.GiftBane: return 0.55f;
+                case HeadKind.SelfTick: return 0.6f;
+                default: return 0.45f;
+            }
         }
 
         static LookPart[] Build(HeadKind kind, bool stone)
@@ -31,21 +48,23 @@ namespace HealerLike.Render.Creatures
                     break;
                 case HeadKind.Spear:
                     parts.Add(Part("SpearJoint", round, new Vector3(0f, 0.12f, 0f), new Vector3(0.2f, 0.24f, 0.2f)));
-                    parts.Add(Anchored("SpearBlade", leaf, new Vector3(0f, 0.21f, 0f),
-                        new Vector3(0.5f, 1.35f, 0.36f), Quaternion.identity));
-                    AttachedTip(parts, stone, "SpearBlade", new Vector3(0.13f, 0.24f, 0.13f));
+                    ShapeProfile lance = stone ? leaf : ShapeProfile.Leaf(0.2f, 0.65f);
+                    if (!stone) lance.taper = 0.78f;
+                    parts.Add(Anchored("SpearBlade", lance, new Vector3(0f, 0.21f, 0f),
+                        stone ? new Vector3(0.5f, 1.35f, 0.36f) : new Vector3(0.48f, 1.8f, 0.31f), Quaternion.identity));
+                    AttachedTip(parts, stone, "SpearBlade", new Vector3(0.11f, 0.2f, 0.11f));
                     break;
                 case HeadKind.Arch:
                     Arch(parts, stone);
                     break;
                 case HeadKind.Conductor:
-                    parts.Add(Part("ConductorCollar", ShapeProfile.Ring(0.19f, stone), new Vector3(0f, 0.28f, 0f),
-                        new Vector3(1.25f, 0.24f, 1.02f)));
+                    parts.Add(Part("ConductorCollar", ShapeProfile.Ring(0.23f, stone), new Vector3(0f, 0.28f, 0f),
+                        new Vector3(1.55f, 0.3f, 1.18f)));
                     parts.Add(Part("ConductorMast", stone ? ShapeProfile.Block() : ShapeProfile.Segment(),
                         new Vector3(0f, 0.53f, 0f), new Vector3(0.24f, 1.02f, 0.24f)));
-                    parts.Add(Part("ConductorLower", round, new Vector3(0f, 0.71f, 0f), new Vector3(0.47f, 0.51f, 0.42f)));
-                    parts.Add(Part("ConductorUpper", round, new Vector3(0f, 1.13f, 0f), new Vector3(0.35f, 0.38f, 0.32f)));
-                    Tip(parts, stone, new Vector3(0f, 1.37f, 0f), new Vector3(0.14f, 0.19f, 0.14f));
+                    parts.Add(Part("ConductorLower", round, new Vector3(0f, 0.74f, 0f), new Vector3(0.62f, 0.58f, 0.54f)));
+                    parts.Add(Part("ConductorUpper", round, new Vector3(-0.035f, 1.22f, 0f), new Vector3(0.39f, 0.44f, 0.36f)));
+                    AttachedTip(parts, stone, "ConductorUpper", new Vector3(0.14f, 0.19f, 0.14f));
                     break;
                 case HeadKind.Fork:
                     Fork(parts, stone);
@@ -141,7 +160,7 @@ namespace HealerLike.Render.Creatures
                 parts.Add(Part("ArchPier", ShapeProfile.Block(0.18f, 0.16f, 0.12f),
                     new Vector3(-0.33f, 0.4f, 0f), new Vector3(0.55f, 0.88f, 0.58f),
                     euler: new Vector3(0f, 0f, -12f)));
-                parts.Add(Part("ArchLintel", ShapeProfile.Block(0.12f, 0.05f, 0.08f),
+                parts.Add(Part("ArchLintel", ShapeProfile.Block(0.12f, 0.05f, 0.08f, 0.55f),
                     new Vector3(0.18f, 0.98f, 0f), new Vector3(1.38f, 0.4f, 0.59f),
                     euler: new Vector3(0f, 0f, -9f)));
                 parts.Add(Part("ArchKeystone", ShapeProfile.Block(), new Vector3(0.87f, 0.69f, 0f),
@@ -162,22 +181,23 @@ namespace HealerLike.Render.Creatures
 
             Vector3[] curve =
             {
-                Vector3.zero, new Vector3(-0.36f, 0.37f, 0f), new Vector3(-0.45f, 0.92f, 0f),
-                new Vector3(-0.06f, 1.38f, 0f), new Vector3(0.47f, 1.42f, 0f), new Vector3(0.87f, 1.06f, 0f)
+                Vector3.zero, new Vector3(-0.34f, 0.43f, 0.015f), new Vector3(-0.52f, 1.12f, -0.015f),
+                new Vector3(-0.1f, 1.69f, -0.015f), new Vector3(0.53f, 1.63f, 0.015f), new Vector3(0.92f, 1.17f, 0.03f)
             };
+            float[] widths = { 0.4f, 0.46f, 0.39f, 0.34f, 0.28f };
             for (int i = 1; i < curve.Length; i++)
             {
-                Growth(parts, curve[i - 1], curve[i], i == 1 ? 0.3f : 0.26f);
+                Growth(parts, curve[i - 1], curve[i], widths[i - 1]);
             }
-            Tip(parts, false, new Vector3(0.87f, 0.73f, 0f), new Vector3(0.36f, 0.62f, 0.32f));
+            Tip(parts, false, new Vector3(0.92f, 0.79f, 0.03f), new Vector3(0.43f, 0.7f, 0.37f));
             for (int i = 0; i < 4; i++)
             {
                 CountBand band = i < 2 ? CountBand.Few : CountBand.Many;
-                float x = new[] { -0.17f, 0.36f, -0.75f, 1.4f }[i];
-                Vector3 start = new Vector3(i == 2 ? -0.2f : 0.45f, 1.37f, 0.05f);
-                Vector3 end = new Vector3(x, 1.04f, 0.1f);
-                Growth(parts, start, end, 0.2f, band);
-                Tip(parts, false, end + Vector3.down * 0.33f, new Vector3(0.3f, 0.57f, 0.28f), band);
+                float x = new[] { -0.25f, 0.35f, -0.92f, 1.58f }[i];
+                Vector3 start = new Vector3(i == 2 ? -0.1f : 0.53f, i == 2 ? 1.69f : 1.63f, 0.015f);
+                Vector3 end = new Vector3(x, 1.18f + (i % 2 == 0 ? 0.05f : 0f), 0.1f);
+                Growth(parts, start, end, 0.27f, band);
+                Tip(parts, false, end + Vector3.down * 0.36f, new Vector3(0.34f, 0.64f, 0.31f), band);
             }
         }
 
@@ -188,23 +208,23 @@ namespace HealerLike.Render.Creatures
                 string lobe = side < 0 ? "ForkLeft" : "ForkRight";
                 if (stone)
                 {
-                    parts.Add(Anchored(lobe, ShapeProfile.Block(0.17f, 0.12f, 0.08f),
-                        new Vector3(side * 0.44f, 0.015f, 0f), new Vector3(0.68f, 1.32f, 0.56f),
+                    parts.Add(Anchored(lobe, ShapeProfile.Block(0.17f, 0.12f, 0.08f, 0.82f),
+                        new Vector3(side * 0.44f, 0.015f, side * 0.025f),
+                        new Vector3(side < 0 ? 0.7f : 0.66f, side < 0 ? 1.4f : 1.29f, 0.56f),
                         Quaternion.AngleAxis(-side * 7f, Vector3.forward)));
                     AttachedTip(parts, true, lobe, new Vector3(0.14f, 0.22f, 0.14f));
                     continue;
                 }
-                Vector3 fork = new Vector3(side * 0.46f, 0.48f, 0f);
-                parts.Add(Link("ForkBranch", stone ? ShapeProfile.Block() : ShapeProfile.Segment(0.1f, 0.4f),
-                    Vector3.zero, fork, stone ? 0.25f : 0.2f));
+                Vector3 fork = new Vector3(side * 0.55f, 0.42f, 0f);
+                parts.Add(Link("ForkBranch", ShapeProfile.Segment(0.13f, 0.65f), Vector3.zero, fork, 0.25f));
                 if (!stone)
                 {
-                    Joint(parts, fork, 0.17f);
+                    Joint(parts, fork, 0.24f);
                 }
-                Quaternion rotation = Quaternion.AngleAxis(-side * 8f, Vector3.forward)
+                Quaternion rotation = Quaternion.AngleAxis(-side * 14f, Vector3.forward)
                     * Quaternion.AngleAxis(side < 0 ? 0f : 180f, Vector3.up);
-                parts.Add(Anchored(lobe, stone ? ShapeProfile.Shard(0.6f, 0.08f) : ShapeProfile.Leaf(0.45f),
-                    fork, new Vector3(0.51f, 1.48f, stone ? 0.46f : 0.32f), rotation));
+                parts.Add(Anchored(lobe, ShapeProfile.Leaf(0.8f, 0.65f),
+                    fork, new Vector3(side < 0 ? 0.7f : 0.64f, side < 0 ? 1.95f : 1.72f, 0.38f), rotation));
                 AttachedTip(parts, stone, lobe, new Vector3(0.14f, 0.22f, 0.14f));
             }
         }
@@ -227,9 +247,9 @@ namespace HealerLike.Render.Creatures
                 else
                 {
                     float angle = i * Mathf.PI * 2f / pieces + Mathf.PI * 0.25f;
-                    Vector3 at = new Vector3(Mathf.Cos(angle) * 0.14f, 0.2f, Mathf.Sin(angle) * 0.14f);
-                    parts.Add(Anchored("DefencePlate", stone ? ShapeProfile.Shard(0.15f, 0f) : ShapeProfile.Leaf(0.48f),
-                        at, new Vector3(0.65f, 1.16f, stone ? 0.32f : 0.23f),
+                    Vector3 at = new Vector3(Mathf.Cos(angle) * 0.2f, 0.2f, Mathf.Sin(angle) * 0.2f);
+                    parts.Add(Anchored("DefencePlate", stone ? ShapeProfile.Shard(0.15f, 0f) : ShapeProfile.Leaf(0.52f, 0.62f),
+                        at, new Vector3(stone ? 0.65f : 0.72f, stone ? 1.16f : 1.4f, 0.32f),
                         Quaternion.Euler(0f, -angle * Mathf.Rad2Deg, -26f)));
                 }
             }

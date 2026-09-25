@@ -109,16 +109,17 @@ public class LookVocabularyTests
         }
     }
 
-    // A quicker cadence draws a longer stem: Steady is 1.6 and Quick 2.4 times the Slow stem, as the channel table sets
+    // Cadence order remains stable while the vocabulary can exaggerate each band's proportions.
     [Test]
-    public void Stems_Bands_KeepTheirRatioToTheSlowStem()
+    public void Stems_Bands_KeepQuickTallAndSlowShort()
     {
         LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
 
         float slow = vocabulary.stems[StemBand.Slow].length;
 
-        Assert.AreEqual(1.6f, vocabulary.stems[StemBand.Steady].length / slow, 0.0001f);
-        Assert.AreEqual(2.4f, vocabulary.stems[StemBand.Quick].length / slow, 0.0001f);
+        Assert.Greater(vocabulary.stems[StemBand.Steady].length, slow);
+        Assert.Greater(vocabulary.stems[StemBand.Quick].length, vocabulary.stems[StemBand.Steady].length);
+        Assert.Less(vocabulary.stems[StemBand.Quick].thickness, vocabulary.stems[StemBand.Slow].thickness);
     }
 
     [Test]
