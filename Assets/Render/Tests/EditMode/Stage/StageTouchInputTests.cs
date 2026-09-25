@@ -99,6 +99,44 @@ namespace HealerLike.Render.Stage
             });
         }
 
+        [Test]
+        public void WorldGesture_PreservesUnitDragLifecycle()
+        {
+            FixtureDraggable drag = _target.AddComponent<FixtureDraggable>();
+            WithInput((input, manager, interaction) =>
+            {
+                manager.EndInteraction();
+                input.ProcessTouch(4, TouchPhase.Began, Vector2.right);
+                input.ProcessTouch(4, TouchPhase.Moved, Vector2.right * 2f);
+                input.ProcessTouch(4, TouchPhase.Ended, Vector2.right * 2f);
+                CollectionAssert.AreEqual(new[] { "start", "drag", "end" }, drag.calls);
+            });
+        }
+
+        [Test]
+        public void DragCrossingInterface_CancelsWithoutReleasingIntoBoard()
+        {
+            FixtureDraggable drag = _target.AddComponent<FixtureDraggable>();
+            WithInput((input, manager, interaction) =>
+            {
+                manager.EndInteraction();
+                input.ProcessTouch(4, TouchPhase.Began, Vector2.right);
+                input.ProcessTouch(4, TouchPhase.Moved, Vector2.left);
+                input.ProcessTouch(4, TouchPhase.Ended, Vector2.right);
+                CollectionAssert.AreEqual(new[] { "start", "cancel" }, drag.calls);
+            });
+        }
+
+        public class FixtureDraggable : MonoBehaviour, IDraggable
+        {
+            public readonly List<string> calls = new List<string>();
+            public bool CanDrag() { return true; }
+            public void StartDrag(RaycastHit hit) { calls.Add("start"); }
+            public void Drag(RaycastHit hit) { calls.Add("drag"); }
+            public void EndDrag(RaycastHit hit) { calls.Add("end"); }
+            public void CancelDrag() { calls.Add("cancel"); }
+        }
+
         void WithInput(System.Action<FixtureTouchInput, InteractionManager, TapInteraction> action)
         {
             GameObject host = new GameObject("Touch fixture");
