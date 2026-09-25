@@ -53,6 +53,20 @@ namespace HealerLike.Render.Creatures
         [TearDown]
         public void TearDown()
         {
+            // EditMode-created behaviours have not necessarily received Awake, so Unity may omit OnDestroy.
+            // FreeShot's holder lives outside the logical projectile and must be released explicitly.
+            foreach (Object owned in _owned)
+            {
+                if (owned is GameObject root && root)
+                {
+                    foreach (FreeShot shot in root.GetComponentsInChildren<FreeShot>(true))
+                    {
+                        TestHelpers.InvokePrivate(shot, "OnDestroy");
+                    }
+                }
+            }
+            TestHelpers.InvokePrivate(_sink, "OnDestroy");
+            TestHelpers.InvokePrivate(_view, "OnDestroy");
             foreach (Object owned in _owned)
             {
                 if (owned) Object.DestroyImmediate(owned);

@@ -219,7 +219,7 @@ public class GrassFieldTests
         BuildOneCellField();
 
         Assert.IsTrue(_field.isReady);
-        Assert.AreEqual(64, _field.tuftCount); // 8 by 8, the widest grid of at most 65
+        Assert.AreEqual(25, _field.tuftCount); // 5 by 5 at the wider spacing, below the budget of 65
         Assert.AreEqual("HL/Look/Primitive", _field.tuftDraw.material.shader.name);
         Assert.AreSame(_field.tuftDraw.material, _field.socleDraw.material);
         Assert.IsTrue(_field.tuftDraw.material.IsKeywordEnabled(instancedKeyword));
