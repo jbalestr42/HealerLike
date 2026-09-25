@@ -106,6 +106,19 @@ public class ToolkitMobileLayoutTests
         Assert.IsTrue(_root.Q("focus-button").ClassListContains("is-hidden"));
     }
 
+    [TestCase(true, false)]
+    [TestCase(false, true)]
+    public void SetBattleFocus_OverlayOpen_DoesNotEnableControlDuringLateRefresh(bool paused, bool inventory)
+    {
+        _context.isPaused = paused;
+        _context.isInventoryOpen = inventory;
+        _layout.Refresh();
+
+        _layout.SetBattleFocus(true, delegate { });
+
+        Assert.IsFalse(_root.Q<Button>("focus-button").enabledSelf);
+    }
+
     [Test]
     public void SetCards_UnavailableSpell_KeepsSeparateInfoControlEnabled()
     {
