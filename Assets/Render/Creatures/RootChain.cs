@@ -16,6 +16,8 @@ namespace HealerLike.Render.Creatures
 
         RootDefinition _definition;
         readonly ShapeMeshCache _shapeMeshes = new ShapeMeshCache();
+        Vector3 _segmentBottom;
+        Vector3 _segmentTop;
         Transform[] _segments = new Transform[0];
         Transform[] _joints = new Transform[0];
 
@@ -54,6 +56,8 @@ namespace HealerLike.Render.Creatures
             {
                 return;
             }
+            _segmentBottom = ProceduralShapeMeshes.Anchor(definition.segmentShape, ShapeAnchor.Bottom);
+            _segmentTop = ProceduralShapeMeshes.Anchor(definition.segmentShape, ShapeAnchor.Top);
             Mesh segmentMesh = definition.segmentShape.isProcedural
                 ? _shapeMeshes.Get(definition.segmentShape) : meshes.cylinder;
             Mesh jointMesh = definition.jointShape.isProcedural
@@ -93,7 +97,15 @@ namespace HealerLike.Render.Creatures
                     float tipRatio = roots.taper > 0f ? roots.taper : taper;
                     float thinning = Mathf.Lerp(1f, tipRatio, (float)k / Mathf.Max(1, roots.segments - 1));
                     float radius = roots.thickness * thinning * cellSize;
-                    PrimitiveMeshes.Segment(_segments[i * roots.segments + k], start, end, radius);
+                    Transform segment = _segments[i * roots.segments + k];
+                    if (roots.segmentShape.isProcedural)
+                    {
+                        PlaceSegment(segment, start, end, radius);
+                    }
+                    else
+                    {
+                        PrimitiveMeshes.Segment(segment, start, end, radius);
+                    }
                     if (k > 0)
                     {
                         Transform joint = _joints[i * (roots.segments - 1) + k - 1];
@@ -105,6 +117,34 @@ namespace HealerLike.Render.Creatures
                     start = end;
                 }
             }
+        }
+
+        // Profile bend changes the endpoint offsets inside the unit box. Fit their actual span, retaining the
+        // requested width unless it cannot fit a very short link. Anchors were measured once during Init.
+        void PlaceSegment(Transform segment, Vector3 from, Vector3 to, float radius)
+        {
+            Vector3 delta = to - from;
+            float lengthSquared = delta.sqrMagnitude;
+            if (lengthSquared <= 0.000000000001f)
+            {
+                segment.position = from;
+                segment.localScale = Vector3.zero;
+                return;
+            }
+            Vector3 axis = _segmentTop - _segmentBottom;
+            float width = radius * 2f;
+            float lateral = axis.x * axis.x + axis.z * axis.z;
+            if (lateral * width * width >= lengthSquared)
+            {
+                width = Mathf.Sqrt(lengthSquared / lateral) * 0.99f;
+            }
+            float height = Mathf.Sqrt(Mathf.Max(0f, lengthSquared - lateral * width * width)) / Mathf.Abs(axis.y);
+            Vector3 size = new Vector3(width, height, width);
+            Quaternion rotation = Quaternion.FromToRotation(Vector3.Scale(axis, size), delta);
+            Vector3 middle = Vector3.Scale((_segmentBottom + _segmentTop) * 0.5f, size);
+            segment.SetPositionAndRotation((from + to) * 0.5f - rotation * middle, rotation);
+            float parentScale = segment.parent ? segment.parent.lossyScale.x : 1f;
+            segment.localScale = size / parentScale;
         }
     }
 }
