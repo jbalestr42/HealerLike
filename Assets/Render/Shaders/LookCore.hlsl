@@ -59,7 +59,7 @@ float3 HLWorkingColor(float3 srgb)
 #define HL_DEF_FOGCOLOR float4(HLWorkingColor(float3(154,188,211)/255.0),1)
 #define HL_DEF_SHADOWSTRENGTH 0.7
 #define HL_DEF_TOONTHRESHOLD 0.725
-#define HL_DEF_TOONSOFTNESS 0.1
+#define HL_DEF_TOONSOFTNESS 0.018
 #define HL_DEF_OUTLINEWIDTHPIXELS 1.0
 // World-unit fog distances until LookController.Init publishes the calibrated range.
 #define HL_DEF_FOGSTART 20.0
@@ -136,7 +136,8 @@ float3 HLApplyBandedFog(float3 positionWS, float3 color)
 // shadeTint.rgb is the working colour, shadeTint.a its strength, and alpha zero keeps the global tint.
 // Cast shadow, a face the material calls lit but the shadow map darkens, keeps the global tint.
 float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, float3 baseColor, float hatch,
-                      float thresholdOffset, float4 shadeTint, float faceHatch)
+                      float thresholdOffset, float4 shadeTint, float faceHatch,
+                      float4 shadeTurnTint, float4 highlightTint, float highlightMask)
 {
     facing = saturate(facing);
     float illum = saturate(facing * shadowAttenuation);
@@ -152,11 +153,19 @@ float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, 
     float3 tint = lerp(globalTint, shadeTint.rgb, hasShadeTint);
     float strength = lerp(globalStrength, saturate(shadeTint.a), hasShadeTint);
     float3 shadeColor = lerp(baseColor, tint, strength);
+    // A body material may turn deep cyan into teal within its shadow region. This low-contrast hue turn
+    // stops at the cel boundary; it never adds a diffuse ramp across the bright face or mineral planes.
+    float shadeTurn = smoothstep(0.15, max(0.151, threshold - softness), facing);
+    shadeColor = lerp(shadeColor, shadeTurnTint.rgb, shadeTurn * saturate(shadeTurnTint.a));
     float3 color = lerp(shadeColor, baseColor, lit);
     // Real casts keep the shared blue on faces that would otherwise be lit. The material's shade plateau
     // remains on the back-facing region, instead of creating a second continuous illumination ramp there.
     float cast = (1.0 - saturate(shadowAttenuation)) * lit;
     color = lerp(color, globalTint, cast);
+    // A small material-authored highlight follows the real light/view half vector. Neither shade nor
+    // a received cast can glow, and the ink below keeps its authored colour even under the highlight.
+    color = lerp(color, highlightTint.rgb,
+        saturate(highlightMask) * saturate(highlightTint.a) * lit * saturate(shadowAttenuation));
     float tone = saturate(((1.0 - illum) - HL_G(_HLInkStart, HL_DEF_INKSTART)) /
                           max(0.001, HL_G(_HLInkRange, HL_DEF_INKRANGE)));
     float hcoord = dot(positionWS, normalize(float3(1.0, 0.35, 0.6)));
@@ -183,6 +192,13 @@ float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, 
     color = saturate(color * (contrastedPeak / max(peak, 1e-5)));
     // Keep the authored navy ink as the dark floor; applying the fill contrast after ink crushed it to black.
     return lerp(color, HL_G(_HLOutlineColor, HL_DEF_OUTLINECOLOR).rgb, ink);
+}
+
+float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, float3 baseColor, float hatch,
+                      float thresholdOffset, float4 shadeTint, float faceHatch)
+{
+    return HLShadeSurface(positionWS, facing, shadowAttenuation, baseColor, hatch, thresholdOffset,
+        shadeTint, faceHatch, float4(0, 0, 0, 0), float4(0, 0, 0, 0), 0.0);
 }
 
 float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, float3 baseColor, float hatch,

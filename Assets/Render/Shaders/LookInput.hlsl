@@ -10,6 +10,9 @@ CBUFFER_START(UnityPerMaterial)
     float _HLToonThresholdOffset;
     float4 _HLShadeTint;
     float _HLFaceHatch;
+    float4 _HLShadeTurnTint;
+    float4 _HLHighlightTint;
+    float _HLHighlightWidth;
     float _HLMeadowVariation;
     float _HLGrassTipLight;
 CBUFFER_END

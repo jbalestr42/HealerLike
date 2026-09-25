@@ -14,6 +14,9 @@ Shader "HL/Look/Primitive"
         _HLToonThresholdOffset ("Toon Threshold Offset (added to the global threshold)", Float) = 0
         _HLShadeTint ("Shade Tint (alpha is its strength, zero keeps the global tint)", Color) = (0,0,0,0)
         _HLFaceHatch ("Self Shade Hatch", Range(0,1)) = 1
+        _HLShadeTurnTint ("Shadow Turn Tint (alpha enables the body hue turn)", Color) = (0,0,0,0)
+        _HLHighlightTint ("Localized Highlight (alpha is strength)", Color) = (1,1,1,0)
+        _HLHighlightWidth ("Localized Highlight Width", Range(0.001,0.1)) = 0.025
         _HLMeadowVariation ("Meadow Colour Variation", Range(0,0.4)) = 0
         _HLGrassTipLight ("Grass Root To Tip Light", Range(0,0.5)) = 0
     }
@@ -90,7 +93,11 @@ Shader "HL/Look/Primitive"
                 float4 shadowCoord = TransformWorldToShadowCoord(input.positionWS);
                 #endif
                 Light mainLight = GetMainLight(shadowCoord, input.positionWS, half4(1, 1, 1, 1));
-                float facing = dot(normalize(input.normalWS), mainLight.direction) * 0.5 + 0.5;
+                float3 normalWS = normalize(input.normalWS);
+                float facing = dot(normalWS, mainLight.direction) * 0.5 + 0.5;
+                float3 halfDirection = SafeNormalize(mainLight.direction + GetWorldSpaceNormalizeViewDir(input.positionWS));
+                float highlight = smoothstep(1.0 - max(0.001, _HLHighlightWidth), 1.0,
+                    saturate(dot(normalWS, halfDirection)));
                 float3 baseColor = HLGetBaseColor().rgb;
                 float patch = HLDashNoise(dot(input.positionWS.xz, float2(0.37, 0.21))) * 0.65
                     + HLDashNoise(dot(input.positionWS.xz, float2(-0.19, 0.43)) + 17.3) * 0.35;
@@ -99,7 +106,8 @@ Shader "HL/Look/Primitive"
                     * (1.5 * input.grassAppearance.x - 1.0);
                 float3 color = HLShadeSurface(input.positionWS, facing, mainLight.shadowAttenuation,
                                               baseColor, _HLHatchMultiplier, _HLToonThresholdOffset,
-                                              _HLShadeTint, _HLFaceHatch);
+                                              _HLShadeTint, _HLFaceHatch, _HLShadeTurnTint,
+                                              _HLHighlightTint, highlight);
                 if (_HLGroundGrid > 0.5)
                 {
                     color = HLApplyBattlefieldGrid(input.positionWS, color);

@@ -46,9 +46,8 @@ public class LookMaterialTests
         Assert.That(material.GetFloat("_HLGroundGrid"), Is.Zero);
         Assert.That(material.GetFloat("_HLSmoothOutlineNormals"), Is.Zero);
         Color color = material.GetColor("_BaseColor");
-        Assert.That(color.r, Is.EqualTo(127 / 255f).Within(0.000001f));
-        Assert.That(color.g, Is.EqualTo(201 / 255f).Within(0.000001f));
-        Assert.That(color.b, Is.EqualTo(63 / 255f).Within(0.000001f));
+        Assert.That(color, Is.EqualTo(RenderTestAssets.LoadPalette().plantBody),
+            "The material fallback must match the live palette");
         Assert.That(color.a, Is.EqualTo(1f));
     }
 
@@ -62,6 +61,9 @@ public class LookMaterialTests
 
         Assert.That(body.GetColor("_HLShadeTint").a, Is.EqualTo(1f));
         Assert.That(body.GetColor("_HLShadeTint").b, Is.GreaterThan(body.GetColor("_HLShadeTint").g));
+        Assert.That(body.GetColor("_HLShadeTurnTint").g, Is.GreaterThan(body.GetColor("_HLShadeTurnTint").b));
+        Assert.That(body.GetColor("_HLHighlightTint").a, Is.GreaterThan(0f));
+        Assert.That(LookSettings.Default.toonSoftness, Is.LessThan(0.025f), "The primary split must stay short");
         foreach (Material creature in new[] { body, shared, stone })
         {
             float threshold = LookSettings.Default.toonThreshold + creature.GetFloat("_HLToonThresholdOffset");
@@ -72,6 +74,8 @@ public class LookMaterialTests
         foreach (Material global in new[] { shared, stone, grass })
         {
             Assert.That(global.GetColor("_HLShadeTint").a, Is.Zero, global.name);
+            Assert.That(global.GetColor("_HLShadeTurnTint").a, Is.Zero, global.name);
+            Assert.That(global.GetColor("_HLHighlightTint").a, Is.Zero, global.name);
         }
         Assert.That(LookSettings.Default.toonThreshold + grass.GetFloat("_HLToonThresholdOffset"),
             Is.EqualTo(0.45f).Within(0.0001f));
@@ -92,6 +96,8 @@ public class LookMaterialTests
         Material body = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Body.mat");
         Material marked = Track(new Material(body));
         marked.SetColor("_HLShadeTint", new Color(1f, 0f, 1f, 1f));
+        marked.SetColor("_HLShadeTurnTint", Color.clear);
+        marked.SetColor("_HLHighlightTint", Color.clear);
         _scene.BuildKeyLight(25f, 8f);
         _scene.camera.transform.position += Vector3.up * 0.7f;
         Renderer[] renderers = CreateKeyLightPlant(shared, marked);

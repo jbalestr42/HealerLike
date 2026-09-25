@@ -72,7 +72,7 @@ namespace HealerLike.Render.Look
                     fogColor = new Color(154 / 255f, 188 / 255f, 211 / 255f, 1f),
                     shadowStrength = 0.7f,
                     toonThreshold = 0.725f,
-                    toonSoftness = 0.1f,
+                    toonSoftness = 0.018f,
                     outlineWidthPixels = 1f,
                     fogStart = 20f,
                     fogEnd = 60f,
