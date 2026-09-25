@@ -2,26 +2,30 @@ using UnityEngine;
 
 namespace HealerLike.Render.Grass
 {
-    // Tufts on a jittered regular grid. Never consumes gameplay or Unity random state.
+    // Tufts in loosely warped, jittered rows. Never consumes gameplay or Unity random state.
     public static class GrassLayout
     {
         public static readonly int MaxBudget = 98304;
         public static readonly float RootLift = 0.005f;
-        // Three times the former tuft in every dimension; the same ratio widens root spacing.
+        // Three times the former tuft in every dimension. Spacing leaves room around the larger blades.
         public static readonly float TuftHeight = 0.7425f;
         // A 3 to 1 spike, 0.29 wide for 0.884 tall
         public static readonly float TuftWidth = TuftHeight * 0.29f / 0.884f;
-        // Grid step between roots in cells, 0.2 for the same 0.884 tall tuft
-        public static readonly float Spacing = TuftHeight * 0.2f / 0.884f;
-        // Tufts per square cell at the wider grid step, about 35.4
+        // Mean root spacing in cells, shared with the surrounding meadow.
+        public static readonly float Spacing = 0.3f;
+        // Tufts per square cell, about 11.1
         public static readonly float Density = 1f / (Spacing * Spacing);
         // Each root moves by up to this fraction of the grid step on each axis
         public static readonly float Jitter = 0.5f;
+        // A slow spatial bend gathers loose patches without changing the bounded seed count.
+        public static readonly float Clump = 0.45f;
+        public static readonly float ClumpScale = 1.25f;
         public static readonly float MinScale = 0.8f;
         public static readonly float MaxScale = 1.2f;
-        // Rest tilt in radians about the root, every tuft leaning the same way by its own amount
+        // Rest tilt in radians about the root, with a prevailing direction and local variation
         public static readonly float MaxLean = 0.5f;
         public static readonly Vector2 LeanHeading = Vector2.up;
+        public static readonly float LeanSpread = 0.8f;
         // A full heal lifts a tuft to this multiple of its height, HL_HEAL_LIFT in Grass.compute plus one
         public static readonly float HealLift = 1.8f;
         // A hostile spike stands at most this tall in world units whatever the tuft, HL_SPIKE_MIN_HEIGHT plus
@@ -86,16 +90,26 @@ namespace HealerLike.Render.Grass
             Vector2 minimum = new Vector2(gridOrigin.x - width * cellSize * 0.5f,
                                           gridOrigin.z - height * cellSize * 0.5f);
             TuftSeed[] result = new TuftSeed[columns * rows];
+            float phase = Sample(seed, 0, 8) * Mathf.PI * 2f;
             for (int row = 0; row < rows; row++)
             {
                 for (int column = 0; column < columns; column++)
                 {
                     int index = column + row * columns;
-                    float x = (column + 0.5f + Jitter * Signed(seed, index, 1)) * stepX;
-                    float z = (row + 0.5f + Jitter * Signed(seed, index, 2)) * stepZ;
+                    float centreX = (column + 0.5f) * stepX;
+                    float centreZ = (row + 0.5f) * stepZ;
+                    float bendX = Mathf.Sin(centreZ / ClumpScale + phase);
+                    float bendZ = Mathf.Sin(centreX / ClumpScale - phase);
+                    float x = Mathf.Clamp(centreX + (Jitter * Signed(seed, index, 1) + Clump * bendX) * stepX,
+                        0.05f * stepX, width - 0.05f * stepX);
+                    float z = Mathf.Clamp(centreZ + (Jitter * Signed(seed, index, 2) + Clump * bendZ) * stepZ,
+                        0.05f * stepZ, height - 0.05f * stepZ);
                     float yaw = Sample(seed, index, 3) * Mathf.PI * 2f;
                     float scale = Mathf.Lerp(MinScale, MaxScale, Sample(seed, index, 4));
-                    Vector2 lean = LeanHeading * (MaxLean * Sample(seed, index, 5));
+                    float heading = LeanSpread * (0.75f * bendX + 0.25f * Signed(seed, index, 6));
+                    Vector2 leanDirection = new Vector2(LeanHeading.x * Mathf.Cos(heading) - LeanHeading.y * Mathf.Sin(heading),
+                        LeanHeading.x * Mathf.Sin(heading) + LeanHeading.y * Mathf.Cos(heading));
+                    Vector2 lean = leanDirection * (MaxLean * Sample(seed, index, 5));
                     Vector3 root = new Vector3(minimum.x + x * cellSize, surfaceY + RootLift, minimum.y + z * cellSize);
                     result[index].positionYaw = new Vector4(root.x, root.y, root.z, yaw);
                     float tuftHeight = TuftHeight * cellSize * scale;
