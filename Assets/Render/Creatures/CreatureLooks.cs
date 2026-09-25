@@ -104,7 +104,7 @@ namespace HealerLike.Render.Creatures
         }
 
         // A new recipe for a derived view, owned by the caller; null when an authored view carries its own. The same
-        // data always composes the same creature, well under a millisecond, so nothing is kept on this shared asset.
+        // data always composes the same creature; nothing is kept on this shared asset.
         public CreatureRecipe GetRecipe(EntityData data, Entity.EntityType entityType)
         {
             if (data == null || entities.ContainsKey(data))

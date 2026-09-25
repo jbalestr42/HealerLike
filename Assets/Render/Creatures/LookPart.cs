@@ -14,6 +14,10 @@ namespace HealerLike.Render.Creatures
         public ShapeProfile shape;
         public PartRole role;
         public ColourRole colour;
+        // Position names this mesh anchor; attachments offset it from an earlier part's anchor in this fragment.
+        public ShapeAnchor pivot;
+        public string attachTo;
+        public ShapeAnchor attachAt;
         public Vector3 position;
         public Vector3 euler;
         public Vector3 size;

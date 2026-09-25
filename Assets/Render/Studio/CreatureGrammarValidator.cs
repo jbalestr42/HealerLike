@@ -137,8 +137,9 @@ namespace HealerLike.Render.Studio
             LookVocabulary.HeadEntry head = vocabulary.heads[channels.head];
             LookVocabulary.StemEntry stem = vocabulary.stems[channels.stem];
 
-            CheckParts(Pick(body.plant, body.stone, isPlant), "body", errors);
-            CheckParts(Pick(head.plant, head.stone, isPlant), "head", errors);
+            CheckParts(Pick(body.plant, body.stone, isPlant), "body", CountBand.One, errors);
+            CheckParts(Pick(head.plant, head.stone, isPlant), "head", head.carriesCount ? channels.count : CountBand.One,
+                errors);
 
             bool isStemSized = RenderMath.IsPositive(stem.limbLength);
             if (isPlant)
@@ -159,7 +160,7 @@ namespace HealerLike.Render.Studio
 
             LookVocabulary.AccessoryEntry accessory = vocabulary.accessories[channels.accessory];
             bool isMiniHead = channels.accessory == AccessoryKind.MiniHead;
-            CheckParts(Pick(accessory.plant, accessory.stone, isPlant), "accessory", errors);
+            CheckParts(Pick(accessory.plant, accessory.stone, isPlant), "accessory", CountBand.One, errors);
             bool isMiniHeadPlaced = RenderMath.IsFinite(accessory.miniHeadAt)
                 && RenderMath.IsPositive(accessory.miniHeadScale);
             if (!Enum.IsDefined(typeof(AccessorySocket), accessory.socket) || (isMiniHead && !isMiniHeadPlaced))
@@ -170,7 +171,7 @@ namespace HealerLike.Render.Studio
             if (isMiniHead)
             {
                 LookVocabulary.HeadEntry miniHead = vocabulary.heads[channels.accessoryHead];
-                CheckParts(Pick(miniHead.plant, miniHead.stone, isPlant), "miniature head", errors);
+                CheckParts(Pick(miniHead.plant, miniHead.stone, isPlant), "miniature head", CountBand.One, errors);
             }
         }
 
@@ -229,7 +230,7 @@ namespace HealerLike.Render.Studio
             }
         }
 
-        static void CheckParts(LookPart[] parts, string label, List<string> errors)
+        static void CheckParts(LookPart[] parts, string label, CountBand band, List<string> errors)
         {
             if (parts == null || parts.Length == 0)
             {
@@ -240,6 +241,12 @@ namespace HealerLike.Render.Studio
             if (parts.Length > 256)
             {
                 errors.Add("The selected " + label + " fragment exceeds 256 source parts.");
+                return;
+            }
+
+            if (!FragmentPlacement.TryValidate(parts, band, out string attachmentError))
+            {
+                errors.Add("The selected " + label + " fragment contains invalid part data: " + attachmentError);
                 return;
             }
 
