@@ -90,10 +90,17 @@ namespace HealerLike.Render.Creatures
             return Mathf.Clamp(length, _layout.minBranch, _layout.maxBranch);
         }
 
-        // The screen distance between two neighbouring branch ends per unit of branch length
+        // Outer branches of a five-head fan have less horizontal separation than its centre pair.
         float Chord(float spread)
         {
-            return 2f * Mathf.Sin(spread * 0.5f * Mathf.Deg2Rad) * _layout.foreshortening;
+            float gap = float.MaxValue;
+            for (int i = 0; i + 1 < _copies; i++)
+            {
+                float left = (i - (_copies - 1) * 0.5f) * spread * Mathf.Deg2Rad;
+                float right = (i + 1 - (_copies - 1) * 0.5f) * spread * Mathf.Deg2Rad;
+                gap = Mathf.Min(gap, Mathf.Abs(Mathf.Sin(right) - Mathf.Sin(left)));
+            }
+            return gap * _layout.foreshortening;
         }
 
         // A head's width across the screen at unit scale
