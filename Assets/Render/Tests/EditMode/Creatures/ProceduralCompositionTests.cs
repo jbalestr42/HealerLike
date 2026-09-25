@@ -168,11 +168,23 @@ namespace HealerLike.Render.Creatures
         {
             AddMiniHead();
             _vocabulary.Layout.extendAccessorySupports = false;
+            // This test isolates scale from support extension. Keep its authored branch outside even the legs.
+            LookVocabulary.AccessoryEntry mini = _vocabulary.accessories[AccessoryKind.MiniHead];
+            mini.miniHeadAt = Vector3.right * 1.6f;
+            foreach (LookPart[] fragment in new[] { mini.plant, mini.stone })
+            {
+                fragment[0].position = Vector3.right * 0.8f;
+                fragment[0].size = new Vector3(1.6f, 0.12f, 0.12f);
+            }
             UnitChannels channels = RenderTestAssets.CreateChannels(side, HeadKind.Bud,
                 accessory: AccessoryKind.MiniHead);
             channels.accessoryHead = HeadKind.Bud;
+            Assert.GreaterOrEqual(LookMeasure.AccessoryReach(channels, _vocabulary),
+                LookComposer.AccessoryClearance(side, _vocabulary));
             CreatureRecipe before = Track(LookComposer.Compose(channels, _vocabulary));
             _vocabulary.bodies[MassBand.Light].headScale = 0.5f;
+            Assert.GreaterOrEqual(LookMeasure.AccessoryReach(channels, _vocabulary),
+                LookComposer.AccessoryClearance(side, _vocabulary));
             CreatureRecipe after = Track(LookComposer.Compose(channels, _vocabulary));
             CreaturePart[] beforeTips = Array.FindAll(before.parts, p => p.role == PartRole.Tip);
             CreaturePart[] afterTips = Array.FindAll(after.parts, p => p.role == PartRole.Tip);
