@@ -51,13 +51,13 @@ public class LookPaletteTests
         return palette;
     }
 
-    [TestCase(EffectFamily.Damage, 0xf6969a)]
-    [TestCase(EffectFamily.Heal, 0xd6f84c)]
-    [TestCase(EffectFamily.Rot, 0x8e5bd6)]
-    [TestCase(EffectFamily.Renew, 0xd6f84c)]
-    [TestCase(EffectFamily.Boon, 0xdfaf34)]
+    [TestCase(EffectFamily.Damage, 0xff5e63)]
+    [TestCase(EffectFamily.Heal, 0xd6ff33)]
+    [TestCase(EffectFamily.Rot, 0xa652f5)]
+    [TestCase(EffectFamily.Renew, 0xd6ff33)]
+    [TestCase(EffectFamily.Boon, 0xffb321)]
     [TestCase(EffectFamily.Bane, 0x203b64)]
-    public void Accent_LiveAsset_ReturnsTheStudyAccent(EffectFamily family, int rgb)
+    public void Accent_LiveAsset_ReturnsTheVividSemanticAccent(EffectFamily family, int rgb)
     {
         LookPalette palette = AssetDatabase.LoadAssetAtPath<LookPalette>(palettePath);
         Assert.NotNull(palette, palettePath);
@@ -106,7 +106,7 @@ public class LookPaletteTests
         Assert.AreEqual(expectedRed, colour.r, 0.0001f);
     }
 
-    // The scatter drew these as literals before they were roles; the scenery must not move
+    // The authored scenery stays greener and quieter than the luminous creature palette.
     [Test]
     public void Colour_LiveAssetMushroom_KeepsTheScatterTints()
     {
@@ -116,9 +116,9 @@ public class LookPaletteTests
         Color cap = palette.Colour(ColourRole.MushroomCap, EffectFamily.Damage);
         Color pale = palette.Colour(ColourRole.MushroomCapPale, EffectFamily.Damage);
 
-        Assert.Less(Vector4.Distance(new Color(0.65f, 0.82f, 0.62f), stem), 0.000001f);
-        Assert.Less(Vector4.Distance(new Color(0.44f, 0.74f, 0.61f), cap), 0.000001f);
-        Assert.Less(Vector4.Distance(new Color(0.64f, 0.78f, 0.65f), pale), 0.000001f);
+        Assert.Less(Vector4.Distance(new Color(0.52f, 0.76f, 0.4f), stem), 0.000001f);
+        Assert.Less(Vector4.Distance(new Color(0.32f, 0.66f, 0.44f), cap), 0.000001f);
+        Assert.Less(Vector4.Distance(new Color(0.55f, 0.73f, 0.4f), pale), 0.000001f);
     }
 }
 

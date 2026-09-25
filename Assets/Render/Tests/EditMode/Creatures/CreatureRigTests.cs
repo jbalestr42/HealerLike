@@ -175,7 +175,7 @@ public class CreatureRigTests
         Color.RGBToHSV(charged, out float chargedHue, out _, out float chargedValue);
         Assert.AreEqual(restHue, chargedHue, 0.01f);
         Assert.Greater(chargedValue, restValue);
-        Assert.AreEqual(_recipe.parts[tip].colour, rest); // the palette accent at full value at rest
+        Assert.That(Vector4.Distance(_recipe.parts[tip].colour, rest), Is.LessThan(0.000001f)); // palette accent after colour-space round trip
         _rig.SetReadout(null, 0f, 0f, 0f);
         _rig.Tick(0f, 0f, ground);
         Color.RGBToHSV(TipColour(tip), out float wiltedHue, out _, out float wiltedValue);

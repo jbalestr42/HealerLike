@@ -130,7 +130,7 @@ public class GrassDrawTests
         Assert.That(grass.GetFloat("_HLMeadowVariation"), Is.GreaterThan(0f));
         Assert.That(grass.GetFloat("_HLGrassTipLight"), Is.GreaterThan(0f));
         Assert.That(grass.GetColor("_HLShadeTint").a, Is.Zero, "The shared blue shade must reach ordinary grass");
-        Assert.That((Color32)grass.GetColor("_BaseColor"), Is.EqualTo(new Color32(91, 144, 85, 255))); // #5b9055
+        Assert.That((Color32)grass.GetColor("_BaseColor"), Is.EqualTo(new Color32(97, 166, 64, 255))); // #61a640
     }
 
     [Test]

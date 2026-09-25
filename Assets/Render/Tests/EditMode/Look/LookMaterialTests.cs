@@ -46,7 +46,7 @@ public class LookMaterialTests
         Assert.That(material.GetFloat("_HLGroundGrid"), Is.Zero);
         Assert.That(material.GetFloat("_HLSmoothOutlineNormals"), Is.Zero);
         Color color = material.GetColor("_BaseColor");
-        Assert.That(color, Is.EqualTo(RenderTestAssets.LoadPalette().plantBody),
+        Assert.That(Vector4.Distance(color, RenderTestAssets.LoadPalette().plantBody), Is.LessThan(0.000001f),
             "The material fallback must match the live palette");
         Assert.That(color.a, Is.EqualTo(1f));
     }
