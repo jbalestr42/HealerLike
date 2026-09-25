@@ -12,8 +12,10 @@ namespace HealerLike.Render.Creatures
         {
             return new LookVocabulary.AccessoryEntry
             {
-                socket = kind == AccessoryKind.TwinSeeds || kind == AccessoryKind.ShardBarbs
-                    ? AccessorySocket.Flank : AccessorySocket.NeckOrbit,
+                socket = kind == AccessoryKind.ShardBarbs ? AccessorySocket.HipOrbit : AccessorySocket.NeckOrbit,
+                isCentered = kind == AccessoryKind.TierRings || kind == AccessoryKind.SmallTorus
+                    || kind == AccessoryKind.ThornCollar || kind == AccessoryKind.ConeCrown
+                    || kind == AccessoryKind.TwinSeeds || kind == AccessoryKind.ShardBarbs,
                 miniHeadAt = new Vector3(1.75f, 0.42f, 0f), miniHeadScale = 0.46f,
                 plant = Build(kind, false), stone = Build(kind, true)
             };
@@ -45,8 +47,8 @@ namespace HealerLike.Render.Creatures
                     for (int i = 0; i < 6; i++)
                     {
                         float angle = i * Mathf.PI * 2f / 6f;
-                        Vector3 from = new Vector3(0.85f + Mathf.Cos(angle) * 0.28f, -0.08f, Mathf.Sin(angle) * 0.28f);
-                        Vector3 to = new Vector3(0.85f + Mathf.Cos(angle) * 0.75f, -0.48f, Mathf.Sin(angle) * 0.75f);
+                        Vector3 from = new Vector3(Mathf.Cos(angle) * 0.17f, -0.12f, Mathf.Sin(angle) * 0.17f);
+                        Vector3 to = new Vector3(Mathf.Cos(angle) * 0.75f, -0.52f, Mathf.Sin(angle) * 0.75f);
                         parts.Add(Link("Thorn", thorn, from, to, 0.19f));
                     }
                     break;
@@ -54,13 +56,14 @@ namespace HealerLike.Render.Creatures
                     for (int i = 0; i < 3; i++)
                     {
                         parts.Add(Part("TierRing", ShapeProfile.Ring(0.24f, stone),
-                            new Vector3(0.91f, -0.18f + i * 0.24f, 0f), new Vector3(0.9f - i * 0.1f, 0.14f, 0.68f)));
+                            new Vector3(0f, -0.12f - i * 0.24f, 0f), new Vector3(0.94f - i * 0.1f, 0.14f, 0.74f)));
                     }
                     break;
                 case AccessoryKind.TwinSeeds:
                     for (int side = -1; side <= 1; side += 2)
                     {
-                        parts.Add(Part("TwinSeed", seed, new Vector3(0.89f + side * 0.23f, -0.18f, side * 0.1f),
+                        parts.Add(Link("TwinSeedStem", stalk, Vector3.zero, new Vector3(side * 0.43f, -0.32f, 0f), 0.12f));
+                        parts.Add(Part("TwinSeed", seed, new Vector3(side * 0.51f, -0.51f, 0f),
                             new Vector3(0.34f, 0.66f, 0.35f), euler: new Vector3(0f, 0f, -side * 22f)));
                     }
                     break;
@@ -73,14 +76,14 @@ namespace HealerLike.Render.Creatures
                     }
                     break;
                 case AccessoryKind.SmallTorus:
-                    parts.Add(Part("SmallRing", ShapeProfile.Ring(0.23f, stone), new Vector3(1.07f, 0f, 0f),
-                        new Vector3(0.87f, 0.19f, 0.74f)));
+                    parts.Add(Part("SmallRing", ShapeProfile.Ring(0.23f, stone), new Vector3(0f, -0.2f, 0f),
+                        new Vector3(1.05f, 0.19f, 0.89f)));
                     break;
                 case AccessoryKind.ConeCrown:
                     for (int i = 0; i < 3; i++)
                     {
-                        parts.Add(Part("CrownCone", thorn, new Vector3(0.75f + i * 0.25f, 0.56f, 0f),
-                            new Vector3(0.22f, i == 1 ? 0.65f : 0.44f, 0.22f)));
+                        parts.Add(Part("CrownCone", thorn, new Vector3((i - 1) * 0.25f, 1.08f, 0f),
+                            new Vector3(0.22f, i == 1 ? 0.58f : 0.44f, 0.22f)));
                     }
                     break;
                 case AccessoryKind.DripBeads:
@@ -94,11 +97,11 @@ namespace HealerLike.Render.Creatures
                     }
                     break;
                 case AccessoryKind.ShardBarbs:
-                    for (int i = 0; i < 3; i++)
+                    for (int side = -1; side <= 1; side += 2)
                     {
                         parts.Add(Part("ShardBarb", stone ? ShapeProfile.Shard() : ShapeProfile.Leaf(0.2f, 0.55f),
-                            new Vector3(0.55f + i * 0.26f, 0.05f + i * 0.11f, 0f), new Vector3(0.27f, 0.83f, 0.22f),
-                            euler: new Vector3(0f, 0f, -35f + i * 13f)));
+                            new Vector3(side * 0.48f, 0.26f, 0f), new Vector3(0.3f, 0.98f, 0.26f),
+                            euler: new Vector3(0f, side < 0 ? 180f : 0f, -side * 24f)));
                     }
                     break;
                 default:

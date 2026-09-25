@@ -111,7 +111,7 @@ public class LookComposerTests
     }
 
     [Test]
-    public void Compose_EveryAccessory_SitsOnTheUnitsRight()
+    public void Compose_Accessories_UseTheirAuthoredCenteredOrRightPlacement()
     {
         foreach (AccessoryKind accessory in Enum.GetValues(typeof(AccessoryKind)))
         {
@@ -128,7 +128,14 @@ public class LookComposerTests
             {
                 sum += part.localPosition.x;
             }
-            Assert.Greater(sum, 0f, accessory.ToString());
+            if (_vocabulary.accessories[accessory].isCentered)
+            {
+                Assert.AreEqual(0f, sum, 0.001f, accessory.ToString());
+            }
+            else
+            {
+                Assert.Greater(sum, 0f, accessory.ToString());
+            }
         }
     }
 

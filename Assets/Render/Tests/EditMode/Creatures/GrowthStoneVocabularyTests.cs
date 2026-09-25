@@ -71,7 +71,7 @@ namespace HealerLike.Render.Creatures
         }
 
         [Test]
-        public void FullGrammar_AllHeadsCountsMassesAccessoriesAndMiniHeads_PreservesCopiesWithinBudget()
+        public void FullGrammar_AllHeadsCountsAccessoriesAndMiniHeadsAtHeavyMass_PreservesCopiesWithinBudget()
         {
             int maximum = 0;
             string largest = null;
@@ -117,19 +117,50 @@ namespace HealerLike.Render.Creatures
         [TestCase(LookSide.Stone)]
         public void Fork_HasTwoSeparatedLobesAndArchHasOpenSpace(LookSide side)
         {
-            LookPart[] fork = side == LookSide.Plant ? _vocabulary.heads[HeadKind.Fork].plant : _vocabulary.heads[HeadKind.Fork].stone;
-            LookPart[] lobes = fork.Where(p => p.id == "ForkLobe").OrderBy(p => p.position.x).ToArray();
+            PartList layout = LookComposer.Layout(RenderTestAssets.CreateChannels(side, HeadKind.Fork), _vocabulary);
+            LookPart[] lobes = Enumerable.Range(0, layout.count).Select(layout.Source)
+                .Where(p => p.id == "ForkLeft" || p.id == "ForkRight").OrderBy(p => p.position.x).ToArray();
             Assert.AreEqual(2, lobes.Length);
             float gap = lobes[1].position.x - lobes[1].size.x * 0.5f - lobes[0].position.x - lobes[0].size.x * 0.5f;
-            Assert.Greater(gap, 0.45f, "The U must remain a large empty region.");
+            float scale = _vocabulary.bodies[MassBand.Light].scale * (side == LookSide.Stone ? _vocabulary.stoneScale : 1f);
+            Assert.Greater(gap, 0.3f * scale, "The U must remain a large empty region.");
             LookPart[] arch = side == LookSide.Plant ? _vocabulary.heads[HeadKind.Arch].plant : _vocabulary.heads[HeadKind.Arch].stone;
             LookPart pod = arch.First(p => p.role == PartRole.Tip && p.minCount == CountBand.One);
             Assert.Greater(pod.position.x, 0.7f, "A single Arch must read as an offset hanging organ.");
         }
 
         [Test]
+        public void Fork_ProfileBendEdit_KeepsBaseAndSeparateAccentConnected()
+        {
+            UnitChannels channels = RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Fork);
+            PartList before = LookComposer.Layout(channels, _vocabulary);
+            int left = Enumerable.Range(0, before.count).First(i => before.Source(i).id == "ForkLeft");
+            Vector3 originalBase = Pole(before.Source(left), ShapeAnchor.Bottom);
+            LookPart[] fragment = _vocabulary.heads[HeadKind.Fork].plant;
+            int entry = Array.FindIndex(fragment, part => part.id == "ForkLeft");
+            LookPart edit = fragment[entry];
+            edit.shape.bend = 0.85f;
+            fragment[entry] = edit;
+            PartList after = LookComposer.Layout(channels, _vocabulary);
+            Assert.Less(Vector3.Distance(originalBase, Pole(after.Source(left), ShapeAnchor.Bottom)), 0.00001f);
+            Vector3 lobeTip = Pole(after.Source(left), ShapeAnchor.Top);
+            Vector3 accentBase = Pole(after.Source(left + 1), ShapeAnchor.Bottom);
+            Assert.Less(Vector3.Distance(lobeTip + Vector3.down * (0.06f * _vocabulary.bodies[MassBand.Light].scale),
+                accentBase), 0.00001f);
+            Assert.Greater(Vector3.Distance(Pole(before.Source(left), ShapeAnchor.Top), lobeTip), 0.02f);
+        }
+
+        static Vector3 Pole(LookPart part, ShapeAnchor anchor)
+        {
+            return part.position + Quaternion.Euler(part.euler)
+                * Vector3.Scale(ProceduralShapeMeshes.Anchor(part.shape, anchor), part.size);
+        }
+
+        [Test]
         public void Bands_KeepCadenceMassAndReachMeanings()
         {
+            Assert.Greater(_vocabulary.heads[HeadKind.Bud].plant[0].size.x * _vocabulary.bodies[MassBand.Light].scale,
+                _vocabulary.bodies[MassBand.Light].plant[0].size.x * 1.4f, "Normal remains head-led.");
             Assert.Greater(_vocabulary.stems[StemBand.Quick].length, _vocabulary.stems[StemBand.Steady].length);
             Assert.Greater(_vocabulary.stems[StemBand.Steady].length, _vocabulary.stems[StemBand.Slow].length);
             Assert.Less(_vocabulary.stems[StemBand.Quick].thickness, _vocabulary.stems[StemBand.Slow].thickness);
@@ -162,6 +193,48 @@ namespace HealerLike.Render.Creatures
                 bool headConnected = parts.Skip(layout.headStarts[0]).Any(p => Box(p).Intersects(baseBody));
                 Assert.IsTrue(headConnected, mass + " " + stem + " " + head + " head socket");
             }
+        }
+
+        [TestCase(CountBand.Few)]
+        [TestCase(CountBand.Many)]
+        public void StoneFans_KeepEveryOuterHeadAttachedToItsSupportingSlab(CountBand count)
+        {
+            foreach (HeadKind head in Enum.GetValues(typeof(HeadKind)))
+            {
+                if (_vocabulary.heads[head].carriesCount) continue;
+                PartList layout = LookComposer.Layout(RenderTestAssets.CreateChannels(LookSide.Stone, head, count), _vocabulary);
+                for (int copy = 0; copy < layout.headStarts.Count; copy++)
+                {
+                    int first = layout.headStarts[copy];
+                    LookPart support = layout.Source(first);
+                    if (support.id != HeadFan.BranchId) continue; // The central copy sits on the body.
+                    int end = copy + 1 < layout.headStarts.Count ? layout.headStarts[copy + 1] : layout.count;
+                    Assert.IsTrue(Box(support).Intersects(Box(layout.Source(0))), head + " support to body");
+                    bool headConnected = Enumerable.Range(first + 1, end - first - 1)
+                        .Any(i => Box(layout.Source(i)).Intersects(Box(support)));
+                    Assert.IsTrue(headConnected, head + " outer head to support");
+                }
+            }
+        }
+
+        [Test]
+        public void ReferenceCollarsCrownsAndPairedSeeds_AreCenteredWhileSideShootsRemainAsymmetric()
+        {
+            AccessoryKind[] centered = { AccessoryKind.TierRings, AccessoryKind.SmallTorus,
+                AccessoryKind.ThornCollar, AccessoryKind.ConeCrown, AccessoryKind.TwinSeeds, AccessoryKind.ShardBarbs };
+            foreach (AccessoryKind accessory in Enum.GetValues(typeof(AccessoryKind)))
+            {
+                if (accessory == AccessoryKind.None) continue;
+                LookVocabulary.AccessoryEntry entry = _vocabulary.accessories[accessory];
+                Assert.AreEqual(centered.Contains(accessory), entry.isCentered, accessory.ToString());
+                if (entry.isCentered)
+                {
+                    Assert.AreEqual(0f, entry.plant.Sum(p => p.position.x), 0.001f, accessory.ToString());
+                    Assert.AreEqual(0f, entry.stone.Sum(p => p.position.x), 0.001f, accessory.ToString());
+                }
+            }
+            Assert.AreEqual(3, _vocabulary.accessories[AccessoryKind.TierRings].plant.Length);
+            Assert.AreEqual(2, _vocabulary.accessories[AccessoryKind.TwinSeeds].plant.Count(p => p.id == "TwinSeed"));
         }
 
         static Bounds Box(LookPart part)
