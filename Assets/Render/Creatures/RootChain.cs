@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Creatures
 {
-    // The roots under a plant: jointed cylinders bent every frame from the hip through a raised knee to the foot
+    // Separate growing segments and joints, posed from the hip through a raised knee to the foot.
     public class RootChain
     {
         // A root thins to this share of its thickness at the foot, its joints are this many radii wide
@@ -15,6 +15,7 @@ namespace HealerLike.Render.Creatures
         static readonly float kneeReach = 0.6f;
 
         RootDefinition _definition;
+        readonly ShapeMeshCache _shapeMeshes = new ShapeMeshCache();
         Transform[] _segments = new Transform[0];
         Transform[] _joints = new Transform[0];
 
@@ -38,6 +39,7 @@ namespace HealerLike.Render.Creatures
             }
             _segments = new Transform[0];
             _joints = new Transform[0];
+            _shapeMeshes.Dispose();
         }
 
         public void Init(RootDefinition definition, Transform parent, PrimitiveMeshes meshes, Material material,
@@ -48,14 +50,22 @@ namespace HealerLike.Render.Creatures
             int segments = definition.segments;
             _segments = new Transform[definition.count * segments];
             _joints = new Transform[definition.count * (segments - 1)];
+            if (definition.count == 0)
+            {
+                return;
+            }
+            Mesh segmentMesh = definition.segmentShape.isProcedural
+                ? _shapeMeshes.Get(definition.segmentShape) : meshes.cylinder;
+            Mesh jointMesh = definition.jointShape.isProcedural
+                ? _shapeMeshes.Get(definition.jointShape) : meshes.sphere;
             for (int i = 0; i < _segments.Length; i++)
             {
-                _segments[i] = PrimitiveMeshes.Geometry("Root", parent, meshes.cylinder, material, colour);
+                _segments[i] = PrimitiveMeshes.Geometry("Root", parent, segmentMesh, material, colour);
             }
 
             for (int i = 0; i < _joints.Length; i++)
             {
-                _joints[i] = PrimitiveMeshes.Geometry("RootJoint", parent, meshes.sphere, material, colour,
+                _joints[i] = PrimitiveMeshes.Geometry("RootJoint", parent, jointMesh, material, colour,
                     jointGlow);
             }
         }
@@ -80,14 +90,16 @@ namespace HealerLike.Render.Creatures
                 {
                     float t = (k + 1f) / roots.segments;
                     Vector3 end = (1f - t) * (1f - t) * hip + 2f * t * (1f - t) * bend + t * t * foot;
-                    float thinning = Mathf.Lerp(1f, taper, (float)k / Mathf.Max(1, roots.segments - 1));
+                    float tipRatio = roots.taper > 0f ? roots.taper : taper;
+                    float thinning = Mathf.Lerp(1f, tipRatio, (float)k / Mathf.Max(1, roots.segments - 1));
                     float radius = roots.thickness * thinning * cellSize;
                     PrimitiveMeshes.Segment(_segments[i * roots.segments + k], start, end, radius);
                     if (k > 0)
                     {
                         Transform joint = _joints[i * (roots.segments - 1) + k - 1];
                         joint.position = start;
-                        joint.localScale = Vector3.one * (radius * jointWidth / root.lossyScale.x);
+                        float width = roots.jointScale > 0f ? roots.jointScale : jointWidth;
+                        joint.localScale = Vector3.one * (radius * width / root.lossyScale.x);
                     }
 
                     start = end;
