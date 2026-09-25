@@ -40,7 +40,7 @@ public class StageKeyLightTests
         Assert.That(viewerGroundAxes.x, Is.GreaterThan(0f), "Sun is on the viewer's right.");
         Assert.That(viewerGroundAxes.y, Is.GreaterThan(0f), "Sun is above the board.");
         Assert.That(viewerGroundAxes.z, Is.LessThan(0f), "Sun is toward the viewer, over their shoulder.");
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(RenderManagerTests.PrefabPath);
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(RenderManagerAuthoring.PrefabPath);
         Light shipped = prefab.GetComponentInChildren<StageKeyLight>().keyLight;
         Assert.That(Quaternion.Angle(shipped.transform.rotation, rotation), Is.LessThan(0.05f),
             "The shipped light must match authoring and the stone shadow fallback.");
