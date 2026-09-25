@@ -37,8 +37,27 @@ public class LookMeasureTests
 
                         float reach = LookMeasure.AccessoryReach(channels, _vocabulary);
 
-                        // in cells past body and head
-                        Assert.GreaterOrEqual(reach, needed, $"{side} {accessory} {mass} {stem}");
+                        if (_vocabulary.accessories[accessory].isCentered)
+                        {
+                            PartList layout = LookComposer.Layout(channels, _vocabulary);
+                            float left = float.MaxValue;
+                            float right = float.MinValue;
+                            for (int i = layout.accessoryStart; i < layout.count; i++)
+                            {
+                                LookPart part = layout.Source(i);
+                                left = UnityEngine.Mathf.Min(left, part.position.x - part.size.x * 0.5f);
+                                right = UnityEngine.Mathf.Max(right, part.position.x + part.size.x * 0.5f);
+                            }
+                            Assert.Less(left, 0f, accessory.ToString());
+                            Assert.Greater(right, 0f, accessory.ToString());
+                            Assert.Greater((right - left) * _vocabulary.Unit(side), 0.35f,
+                                "A centred collar or crown still needs a readable span: " + accessory);
+                        }
+                        else
+                        {
+                            // Side attachments must still clear the body and head in cells.
+                            Assert.GreaterOrEqual(reach, needed, $"{side} {accessory} {mass} {stem}");
+                        }
                     }
                 }
             }

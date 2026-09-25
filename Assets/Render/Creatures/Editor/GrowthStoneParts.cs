@@ -28,6 +28,25 @@ namespace HealerLike.Render.Creatures
                 Quaternion.FromToRotation(Vector3.up, delta).eulerAngles, count);
         }
 
+        // Store the attachment, rather than baking an offset that would drift after a profile edit.
+        public static LookPart Anchored(string id, ShapeProfile shape, Vector3 baseAt, Vector3 size,
+            Quaternion rotation, PartRole role = PartRole.Head)
+        {
+            LookPart part = Part(id, shape, baseAt, size, role, rotation.eulerAngles);
+            part.pivot = ShapeAnchor.Bottom;
+            return part;
+        }
+
+        public static LookPart Attached(string id, ShapeProfile shape, string parent, ShapeAnchor socket,
+            Vector3 offset, Vector3 size, PartRole role)
+        {
+            LookPart part = Part(id, shape, offset, size, role);
+            part.pivot = ShapeAnchor.Bottom;
+            part.attachTo = parent;
+            part.attachAt = socket;
+            return part;
+        }
+
         public static void Joint(List<LookPart> parts, Vector3 at, float size, CountBand count = CountBand.One)
         {
             parts.Add(Part("GrowthJoint", ShapeProfile.Bulb(), at, Vector3.one * size, count: count));
