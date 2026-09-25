@@ -165,8 +165,16 @@ namespace HealerLike.Render.Creatures
             float length = _vocabulary.stems[channels.stem].length * multiplier;
 
             Assert.AreEqual(length, Vector3.Distance(sockets.stemFoot, sockets.neck), 0.00001f);
-            Assert.AreEqual((sockets.stemFoot + sockets.neck) * 0.5f, stalk.position);
+            Assert.Less(Vector3.Distance((sockets.stemFoot + sockets.neck) * 0.5f, stalk.position), 0.00001f);
             Assert.AreEqual(length + _vocabulary.stems[channels.stem].thickness, stalk.size.y, 0.00001f);
+            Quaternion rotation = Quaternion.Euler(stalk.euler);
+            Vector3 bottom = stalk.position + rotation * Vector3.Scale(stalk.size,
+                ProceduralShapeMeshes.Anchor(stalk.shape, ShapeAnchor.Bottom));
+            Vector3 top = stalk.position + rotation * Vector3.Scale(stalk.size,
+                ProceduralShapeMeshes.Anchor(stalk.shape, ShapeAnchor.Top));
+            Vector3 overlap = Vector3.up * (_vocabulary.stems[channels.stem].thickness * 0.5f);
+            Assert.Less(Vector3.Distance(bottom, sockets.stemFoot - overlap), 0.00001f);
+            Assert.Less(Vector3.Distance(top, sockets.neck + overlap), 0.00001f);
             Assert.AreEqual(sockets.neck, parts.Source(parts.headStarts[0]).position);
             Assert.AreEqual(before.parts[0].dimensions, after.parts[0].dimensions);
             Assert.AreEqual(Array.Find(before.parts, p => p.role == PartRole.Tip).dimensions,
