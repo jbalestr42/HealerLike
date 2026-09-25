@@ -104,9 +104,9 @@ float HLLine(float coord, float warp, float spacing,
     float footprint = max(fwidth(u), 1e-6);
     float aa = min(footprint, 0.25);
     float hw = clamp(inkWidth, 0.0, 0.24 * spacing) / spacing;
-    // No minification fade: d never exceeds half a period, so strokes too fine to resolve
-    // merge into solid ink instead of fading out, which is the look
-    return 1.0 - smoothstep(hw, hw + aa, d);
+    // Keep readable foreground strokes; unresolved far strokes must not merge into solid ink.
+    float resolved = 1.0 - smoothstep(0.6, 1.5, footprint);
+    return (1.0 - smoothstep(hw, hw + aa, d)) * resolved;
 }
 
 float HLFogFactor(float3 positionWS)
@@ -131,12 +131,12 @@ float3 HLApplyBandedFog(float3 positionWS, float3 color)
 // Shared HL surface shading; positionWS and baseColor are adapter inputs.
 // Illumination is remapped main-light facing multiplied by shadow attenuation.
 // The hatch follows the shade past inkStart, not the toon mask, so it carries no step.
-// hatch scales the ink, zero draws none (the grass).
+// hatch scales all ink; faceHatch quiets self shade without suppressing true cast-shadow strokes.
 // A material may move the toon threshold by thresholdOffset and give its own shade faces a tint:
 // shadeTint.rgb is the working colour, shadeTint.a its strength, and alpha zero keeps the global tint.
 // Cast shadow, a face the global threshold calls lit but the shadow map darkens, keeps the global tint.
 float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, float3 baseColor, float hatch,
-                      float thresholdOffset, float4 shadeTint)
+                      float thresholdOffset, float4 shadeTint, float litSculpt, float faceHatch)
 {
     facing = saturate(facing);
     float illum = saturate(facing * shadowAttenuation);
@@ -157,7 +157,10 @@ float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, 
     // enough green base colour to read as grey/teal. Strength controls the toon boundary.
     float tintStrength = lerp(strength, 1.0, saturate(1.0 - illum / max(0.001, threshold)));
     float3 shadowColor = lerp(baseColor, tint, tintStrength);
-    float3 color = lerp(shadowColor, baseColor, lit);
+    // A bounded diffuse ramp within the lit band preserves curved volume and the orientation of stone planes.
+    // It leaves full-facing colour intact and does not add a glossy reflection or alter the shadow boundary.
+    float sculpt = lerp(1.0, 0.42 + 0.58 * pow(facing, 1.2), saturate(litSculpt));
+    float3 color = lerp(shadowColor, baseColor * sculpt, lit);
     float tone = saturate(((1.0 - illum) - HL_G(_HLInkStart, HL_DEF_INKSTART)) /
                           max(0.001, HL_G(_HLInkRange, HL_DEF_INKRANGE)));
     float hcoord = dot(positionWS, normalize(float3(1.0, 0.35, 0.6)));
@@ -175,10 +178,18 @@ float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, 
     float dn = HLDashNoise(hwarp / max(0.001, HL_G(_HLDashScale, HL_DEF_DASHSCALE)) + lineId * 7.31);
     float dashAmount = HL_G(_HLDashAmount, HL_DEF_DASHAMOUNT);
     ink *= smoothstep(dashAmount, dashAmount + 0.08, dn);
-    ink = saturate(ink * step(0.004, tone) * HL_G(_HLInkStrength, HL_DEF_INKSTRENGTH) * hatch);
+    ink = saturate(ink * step(0.004, tone) * HL_G(_HLInkStrength, HL_DEF_INKSTRENGTH) * hatch
+        * lerp(saturate(faceHatch), 1.0, cast));
     // Full ink colour where a stroke is, then the contrast punch; fog comes after
     color = lerp(color, HL_G(_HLOutlineColor, HL_DEF_OUTLINECOLOR).rgb, ink);
     return saturate((color - 0.5) * HL_G(_HLContrast, HL_DEF_CONTRAST) + 0.5);
+}
+
+float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, float3 baseColor, float hatch,
+                      float thresholdOffset, float4 shadeTint)
+{
+    return HLShadeSurface(positionWS, facing, shadowAttenuation, baseColor, hatch, thresholdOffset, shadeTint,
+                          0.0, 1.0);
 }
 
 float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor, float hatch)

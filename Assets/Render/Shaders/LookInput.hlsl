@@ -9,6 +9,10 @@ CBUFFER_START(UnityPerMaterial)
     float _HLHatchMultiplier;
     float _HLToonThresholdOffset;
     float4 _HLShadeTint;
+    float _HLLitSculpt;
+    float _HLFaceHatch;
+    float _HLMeadowVariation;
+    float _HLGrassTipLight;
 CBUFFER_END
 
 #if defined(UNITY_INSTANCING_ENABLED)

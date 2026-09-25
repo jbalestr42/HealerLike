@@ -25,11 +25,16 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
+    - _HLLitSculpt: 0.1
+    - _HLHatchMultiplier: 0.3
+    - _HLFaceHatch: 0
+    - _HLMeadowVariation: 0.12
     - _HLGroundGrid: 0
     - _HLNormalEdges: 1
     - _HLOutlineWidthMultiplier: 1
     - _HLSmoothOutlineNormals: 0
     m_Colors:
+    - _HLShadeTint: {r: 0.2, g: 0.35, b: 0.29, a: 0.85}
     - _BaseColor: {r: 0.30588236, g: 0.49411765, b: 0.34117648, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

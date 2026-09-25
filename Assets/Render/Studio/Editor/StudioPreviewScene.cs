@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
+using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Studio.Editor
 {
@@ -55,7 +56,10 @@ namespace HealerLike.Render.Studio.Editor
             }
 
             _utility.lights[0].intensity = 1.25f;
-            _utility.lights[0].transform.rotation = Quaternion.Euler(42f, -35f, 0f);
+            // The creature preview starts at yaw 30. Keep the stage sun's shoulder relationship at that
+            // angle; the preview remains an isolated, orbitable scene without the stage shadow atlas.
+            Vector3 key = Quaternion.Euler(0f, 30f - StageCalibration.PortraitYaw, 0f) * StageKeyLight.KeyDirection;
+            _utility.lights[0].transform.rotation = Quaternion.LookRotation(-key.normalized, Vector3.up);
             _utility.lights[1].intensity = 0.55f;
             _utility.lights[1].transform.rotation = Quaternion.Euler(320f, 145f, 0f);
             _utility.ambientColor = new Color(0.35f, 0.39f, 0.45f);

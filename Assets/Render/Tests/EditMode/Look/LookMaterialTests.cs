@@ -52,7 +52,7 @@ public class LookMaterialTests
     }
 
     [Test]
-    public void ShadeControls_ShippedMaterials_OnlyThePlantBodyShifts()
+    public void ShadeControls_ShippedMaterials_SculptCreaturesAndKeepGrassSelfShadeQuiet()
     {
         Material body = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Body.mat");
         Material shared = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
@@ -61,11 +61,21 @@ public class LookMaterialTests
 
         Assert.That(body.GetFloat("_HLToonThresholdOffset"), Is.GreaterThan(0f));
         Assert.That(body.GetColor("_HLShadeTint").a, Is.GreaterThan(0f));
-        foreach (Material global in new[] { shared, grass, stone })
+        foreach (Material global in new[] { shared, stone })
         {
             Assert.That(global.GetFloat("_HLToonThresholdOffset"), Is.Zero, global.name);
             Assert.That(global.GetColor("_HLShadeTint").a, Is.Zero, global.name); // zero strength keeps the global tint
         }
+        foreach (Material creature in new[] { body, shared, stone })
+        {
+            Assert.That(creature.GetFloat("_HLLitSculpt"), Is.GreaterThan(0.5f), creature.name);
+        }
+        Assert.That(body.GetColor("_HLShadeTint").g, Is.GreaterThan(body.GetColor("_HLShadeTint").b));
+        Assert.That(stone.GetFloat("_HLFaceHatch"), Is.GreaterThan(shared.GetFloat("_HLFaceHatch")));
+        Assert.That(grass.GetFloat("_HLToonThresholdOffset"), Is.Zero);
+        Assert.That(grass.GetFloat("_HLFaceHatch"), Is.Zero);
+        Assert.That(grass.GetColor("_HLShadeTint").a, Is.GreaterThan(0f));
+        Assert.That(grass.GetColor("_HLShadeTint").g, Is.GreaterThan(grass.GetColor("_HLShadeTint").b));
     }
 
     [Test]
