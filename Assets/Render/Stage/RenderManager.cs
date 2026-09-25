@@ -36,6 +36,7 @@ namespace HealerLike.Render.Stage
         SpawnDressing _spawns = new SpawnDressing();
         int _deliveryToken;
         bool _isLandscape = false;
+        Pose _environmentView;
 
         EntityManager _entityManager;
         public EntityManager entityManager { get { return _entityManager; } }
@@ -169,9 +170,19 @@ namespace HealerLike.Render.Stage
             _dressing.Frame(_gameCamera, isLandscape);
             _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board,
                 _gameCamera.transform.eulerAngles.y));
-            _foreground.Build();
-            _environment.ridge.Build();
+            FrameEnvironment(true);
             _battleFocus.MarkDirty();
+        }
+
+        // Refresh scenery only after the camera settles or its orientation changes, never every render frame.
+        public void FrameEnvironment(bool force = false)
+        {
+            if (_environment == null || _gameCamera == null) return;
+            Transform view = _gameCamera.transform;
+            if (!force && Vector3.Distance(view.position, _environmentView.position) < 0.5f
+                && Quaternion.Angle(view.rotation, _environmentView.rotation) < 0.5f) return;
+            _environment.Frame(_gameCamera, _board);
+            _environmentView = new Pose(view.position, view.rotation);
         }
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -214,6 +225,7 @@ namespace HealerLike.Render.Stage
             LookSettings lookSettings = _look.settings;
             _environment.Init(_meshes, _gameCamera, boardRect, _player.grid.size, _board.max.y, _zones,
                 lookSettings.fogStart, lookSettings.fogEnd);
+            FrameEnvironment(true);
         }
 
         void Detach()

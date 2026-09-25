@@ -124,6 +124,10 @@ namespace HealerLike.Render.Stage
             }
 
             float remaining = Vector3.Distance(cameraTransform.position, _target.position);
+            if (remaining < settleDistance)
+            {
+                _manager.FrameEnvironment();
+            }
             if (!_isFocused && !_isSettled && remaining < settleDistance)
             {
                 _isSettled = true;
@@ -199,10 +203,8 @@ namespace HealerLike.Render.Stage
                 AddLive(entityManager.GetEntities(Entity.EntityType.Computer));
             }
 
-            if (_manager.player != null && _manager.player.character != null)
-            {
-                _live.Add(_manager.player.character.transform);
-            }
+            // The Character has no battlefield body. Its offscreen spell entry must not pull the camera
+            // toward the logical origin and leave an empty lower half beneath the visible combatants.
 
             bool hasBounds = false;
             Bounds bounds = default;

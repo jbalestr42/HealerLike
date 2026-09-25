@@ -82,13 +82,37 @@ namespace HealerLike.Render.Environment
             }
 
             _meshes = meshes;
-            _items = EnvironmentLayout.Generate(_settings, board, cellSize, surfaceY);
+            float heading = viewCamera != null ? viewCamera.transform.eulerAngles.y : 0f;
+            _items = EnvironmentLayout.Generate(_settings, board, cellSize, surfaceY, heading);
             Transform itemsRoot = CreateRoot("EnvironmentItems");
             _sway = itemsRoot.gameObject.AddComponent<EnvironmentSway>();
             _sway.Init(viewCamera, gust, fogEnd, Time.timeAsDouble);
             foreach (EnvironmentItem item in _items)
             {
                 Spawn(item);
+            }
+        }
+
+        // Keep the crowns of central background plants inside the frame instead of chopping them at the HUD.
+        // Only scenery size changes; the seeded ground positions and the board exclusion remain fixed.
+        public void Frame(Camera camera)
+        {
+            if (root == null || camera == null) return;
+            for (int i = 0; i < _items.Count; i++)
+            {
+                EnvironmentKind kind = _items[i].kind;
+                if (kind != EnvironmentKind.MushroomTree && kind != EnvironmentKind.Monolith) continue;
+                Transform pivot = root.GetChild(i);
+                pivot.gameObject.SetActive(true);
+                pivot.localScale = Vector3.one;
+                Renderer[] parts = pivot.GetComponentsInChildren<Renderer>(true);
+                if (parts.Length == 0) continue;
+                Bounds bounds = parts[0].bounds;
+                foreach (Renderer part in parts) bounds.Encapsulate(part.bounds);
+                float scale = EnvironmentFraming.CrownScale(bounds, pivot.position, camera.transform.position,
+                    camera.transform.rotation, camera.fieldOfView, camera.aspect);
+                pivot.localScale = Vector3.one * scale;
+                pivot.gameObject.SetActive(scale > 0f);
             }
         }
 

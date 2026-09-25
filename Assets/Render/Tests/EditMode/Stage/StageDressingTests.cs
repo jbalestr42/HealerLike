@@ -82,23 +82,28 @@ public class StageDressingTests
         Assert.AreEqual(isLandscape, gameCamera.aspect > 1f);
     }
     [Test]
-    public void FocusAndSafetyWidening_KeepPortraitHeadingAndHealerBelowEnemies()
+    public void FocusAndSafetyWidening_FrameVisibleCombatantsWithoutHiddenCharacterOrigin()
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);
         GameObject healer = GameObject.CreatePrimitive(PrimitiveType.Cube);
         healer.transform.SetParent(_scene.gameGo.transform);
-        healer.transform.position = new Vector3(0f, 1f, 0f);
+        healer.transform.position = new Vector3(-30f, 1f, 0f);
         healer.transform.localScale = new Vector3(1.2f, 2f, 1.2f);
+        healer.GetComponent<Renderer>().enabled = false;
         // Character.Reset runs during AddComponent before its gameplay Init has wired the buff manager.
         TestHelpers.WithLoggingDisabled(() => _scene.player.character = healer.AddComponent<Character>());
         GameObject enemy = GameObject.CreatePrimitive(PrimitiveType.Cube);
         enemy.transform.SetParent(_scene.gameGo.transform);
         enemy.transform.position = new Vector3(5f, 1f, 0f);
         enemy.transform.localScale = new Vector3(1.2f, 2f, 1.2f);
+        GameObject ally = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        ally.transform.SetParent(_scene.gameGo.transform);
+        ally.transform.position = new Vector3(3f, 1f, 0f);
+        ally.transform.localScale = new Vector3(1.2f, 2f, 1.2f);
         TestHelpers.SetPrivateField(_scene.entityManager, "_entities",
             new Dictionary<Entity.EntityType, List<GameObject>>
             {
-                { Entity.EntityType.Player, new List<GameObject>() },
+                { Entity.EntityType.Player, new List<GameObject> { ally } },
                 { Entity.EntityType.Computer, new List<GameObject> { enemy } }
             });
         BattleFocus focus = _scene.manager.GetComponentInChildren<BattleFocus>(true);
@@ -113,11 +118,15 @@ public class StageDressingTests
         focus.Tick();
         Assert.That(Quaternion.Angle(camera.transform.rotation, target.rotation), Is.LessThan(0.01f));
         Assert.IsTrue(focus.AreAllBodiesVisible());
-        Vector3 healerBase = camera.WorldToViewportPoint(Vector3.zero);
+        Vector3 allyBase = camera.WorldToViewportPoint(Vector3.right * 3f);
         Vector3 enemyBase = camera.WorldToViewportPoint(Vector3.right * 5f);
-        Assert.That(healerBase.y, Is.InRange(0.18f, 0.38f));
-        Assert.That(healerBase.y, Is.LessThan(enemyBase.y));
-        Assert.That(healerBase.x, Is.EqualTo(enemyBase.x).Within(0.001f));
+        Vector3 combatCentre = camera.WorldToViewportPoint(new Vector3(4f, 1f, 0f));
+        Assert.That(combatCentre.y, Is.EqualTo(0.44f).Within(0.001f));
+        Assert.That(allyBase.y, Is.InRange(0.16f, 0.38f));
+        Assert.That(allyBase.y, Is.LessThan(enemyBase.y));
+        Assert.That(allyBase.x, Is.EqualTo(enemyBase.x).Within(0.001f));
+        Assert.That(healer.transform.position.x, Is.EqualTo(-30f));
+        Assert.That(Vector3.Distance(camera.transform.position, new Vector3(4f, 1f, 0f)), Is.LessThan(20f));
     }
 
 }

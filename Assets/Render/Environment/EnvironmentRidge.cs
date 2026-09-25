@@ -60,7 +60,7 @@ namespace HealerLike.Render.Environment
             return new Vector2(fogStart + (fogBands - 1f) / fogBands * (fogEnd - fogStart), fogEnd);
         }
 
-        // Eight to twelve monoliths and eight to twelve mushroom stems across x in [-SpreadX, SpreadX],
+        // Five to eight monoliths and five to eight mushroom stems across x in [-SpreadX, SpreadX],
         // past the far (+z) edge.
         // Items the band cannot reach are clamped to z >= grid.yMax + GridClearance.
         // Returns no items and logs when an input is not valid.
@@ -81,8 +81,8 @@ namespace HealerLike.Render.Environment
 
             uint baseSeed = SeededRandom.ForPart((uint)seed, Salt);
             SeededRandom random = new SeededRandom(baseSeed);
-            int monoliths = 8 + (int)(random.Next01() * 5f);
-            int mushrooms = 8 + (int)(random.Next01() * 5f);
+            int monoliths = 5 + (int)(random.Next01() * 4f);
+            int mushrooms = 5 + (int)(random.Next01() * 4f);
             int total = monoliths + mushrooms;
 
             // Deal the kinds into x slots with a seeded shuffle so the row alternates irregularly
@@ -113,14 +113,14 @@ namespace HealerLike.Render.Environment
                 };
                 if (item.kind == RidgeKind.Monolith)
                 {
-                    item.height = random.Range(6f, 12f);
+                    item.height = random.Range(3f, 6f);
                     item.width = item.height * random.Range(0.18f, 0.26f);
                 }
                 else
                 {
-                    float stem = random.Range(7f, 14f);
-                    item.width = random.Range(0.35f, 0.6f);
-                    item.capDiameter = random.Range(2.5f, 5f);
+                    float stem = random.Range(3.5f, 6.5f);
+                    item.width = random.Range(0.24f, 0.4f);
+                    item.capDiameter = random.Range(1.5f, 2.6f);
                     item.capThickness = item.capDiameter * random.Range(0.25f, 0.35f);
                     item.height = stem + (1f - capSink) * item.capThickness;
                 }
@@ -160,6 +160,13 @@ namespace HealerLike.Render.Environment
                 items[i] = item;
             }
             return items;
+        }
+
+        public void Frame(float fogStart, float fogEnd)
+        {
+            _fogStart = fogStart;
+            _fogEnd = fogEnd;
+            Build();
         }
 
         public void Build()

@@ -104,6 +104,28 @@ namespace HealerLike.Render.Environment
             return result;
         }
 
+        // Run the same seeded layout in camera-heading coordinates so the near-edge exclusion follows portrait.
+        public static List<EnvironmentItem> Generate(EnvironmentSettings settings, Rect grid, float cellSize,
+            float surfaceY, float yawDegrees)
+        {
+            Quaternion heading = Quaternion.Euler(0f, yawDegrees, 0f);
+            Vector3 centre = new Vector3(grid.center.x, 0f, grid.center.y);
+            Vector3 right = heading * Vector3.right;
+            Vector3 forward = heading * Vector3.forward;
+            float width = Mathf.Abs(right.x) * grid.width + Mathf.Abs(right.z) * grid.height;
+            float depth = Mathf.Abs(forward.x) * grid.width + Mathf.Abs(forward.z) * grid.height;
+            Rect localGrid = new Rect(-width * 0.5f, -depth * 0.5f, width, depth);
+            List<EnvironmentItem> items = Generate(settings, localGrid, cellSize, surfaceY);
+            for (int i = 0; i < items.Count; i++)
+            {
+                EnvironmentItem item = items[i];
+                item.position = centre + heading * item.position;
+                item.yaw += yawDegrees;
+                items[i] = item;
+            }
+            return items;
+        }
+
         // Tall kinds stay off the camera side (below the grid in z) so they never stand in front of the board
         static bool IsTall(EnvironmentKind kind)
         {

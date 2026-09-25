@@ -28,7 +28,7 @@ public class BattleFocusBoundsTests
                     Vector3 corner = bounds.center + Vector3.Scale(bounds.extents, new Vector3(x, y, z));
                     Vector2 point = EnvironmentForeground.ToViewport(corner, pose.position, pose.rotation, 40f, aspect);
                     Assert.That(point.x, Is.InRange(0.0799f, 0.9201f));
-                    Assert.That(point.y, Is.InRange(0.1999f, 0.8201f));
+                    Assert.That(point.y, Is.InRange(0.1599f, 0.8001f));
                 }
             }
         }

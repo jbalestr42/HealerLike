@@ -4,12 +4,12 @@ namespace HealerLike.Render.Stage
 {
     public static class StageCalibration
     {
-        // Portrait looks along +X: Main places the healer at the origin and the enemy wave around x = 5.
+        // Portrait looks along +X, from the allied half toward the enemy wave.
         public static readonly float PortraitYaw = 90f;
         public static readonly float PortraitPitch = 52f;
         public static readonly float PortraitFov = 40f;
         public static readonly float PortraitAspect = 9f / 16f;
-        public static readonly float PortraitCentreY = 0.35f;
+        public static readonly float PortraitCentreY = 0.46f;
         public static readonly int PortraitWidth = 1080;
         public static readonly int PortraitHeight = 1920;
         // The landscape preview keeps the wide framing from a lower pitch

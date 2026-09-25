@@ -90,6 +90,38 @@ public class EnvironmentScatterTests
     }
 
     [Test]
+    public void Frame_PortraitCamera_FitsCrownsAndPreservesOutsideBoardGroundPositions()
+    {
+        EnvironmentScatter scatter = Make(5);
+        Camera camera = _otherGo.AddComponent<Camera>();
+        camera.fieldOfView = 40f;
+        camera.aspect = 9f / 16f;
+        camera.transform.SetPositionAndRotation(new Vector3(-7f, 12f, 0f), Quaternion.Euler(52f, 90f, 0f));
+        Rect board = new Rect(-8f, -8f, 16f, 16f);
+        scatter.Init(board, 1f, 0.5f, camera, null, 50f, _meshes);
+        Vector3[] positions = PivotPositions(scatter);
+        scatter.Frame(camera);
+        CollectionAssert.AreEqual(positions, PivotPositions(scatter));
+        foreach (EnvironmentItem item in scatter.items)
+            Assert.IsFalse(EnvironmentLayout.InsideMargin(board, 1f, new Vector2(item.position.x, item.position.z)));
+        for (int i = 0; i < scatter.items.Count; i++)
+        {
+            EnvironmentKind kind = scatter.items[i].kind;
+            if (kind != EnvironmentKind.MushroomTree && kind != EnvironmentKind.Monolith) continue;
+            Transform pivot = scatter.root.GetChild(i);
+            if (!pivot.gameObject.activeSelf) continue;
+            Renderer[] renderers = pivot.GetComponentsInChildren<Renderer>();
+            Bounds bounds = renderers[0].bounds;
+            foreach (Renderer renderer in renderers) bounds.Encapsulate(renderer.bounds);
+            Vector3 centre = camera.WorldToViewportPoint(bounds.center);
+            if (centre.z <= 0f || centre.x < 0f || centre.x > 1f) continue;
+            for (int corner = 0; corner < 8; corner++)
+                Assert.That(camera.WorldToViewportPoint(RenderMath.Corner(bounds, corner)).y,
+                    Is.LessThanOrEqualTo(EnvironmentFraming.CrownCeiling + 0.001f));
+        }
+    }
+
+    [Test]
     public void Init_SameSeed_SpawnsSamePivotsOutsideGrid()
     {
         EnvironmentScatter scatter = Make(5);

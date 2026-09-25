@@ -90,7 +90,7 @@ public class StageCalibrationTests
 
     [TestCase(16f, 16f)]
     [TestCase(12f, 20f)]
-    public void PlayableFrame_PortraitHeading_KeepsBoardVisibleAndHealerInLowerThird(float width, float depth)
+    public void PlayableFrame_PortraitHeading_KeepsPlacementBoardBalancedBelowEnemyRows(float width, float depth)
     {
         Bounds board = new Bounds(new Vector3(0f, 0.5f, 0f), new Vector3(width, 0f, depth));
         Pose pose = StageCalibration.PlayableFrame(board, StageCalibration.PortraitPitch,
@@ -98,11 +98,11 @@ public class StageCalibrationTests
             StageCalibration.PortraitYaw);
         _camera.aspect = StageCalibration.PortraitAspect;
         _go.transform.SetPositionAndRotation(pose.position, pose.rotation);
-        Vector3 healer = _camera.WorldToViewportPoint(new Vector3(0f, 0.5f, 0f));
+        Vector3 boardCentre = _camera.WorldToViewportPoint(new Vector3(0f, 0.5f, 0f));
         Vector3 enemy = _camera.WorldToViewportPoint(new Vector3(5f, 0.5f, 0f));
-        Assert.That(healer.y, Is.InRange(0.25f, 0.38f));
-        Assert.That(healer.y, Is.LessThan(enemy.y));
-        Assert.That(healer.x, Is.EqualTo(enemy.x).Within(0.001f));
+        Assert.That(boardCentre.y, Is.InRange(0.44f, 0.48f));
+        Assert.That(boardCentre.y, Is.LessThan(enemy.y));
+        Assert.That(boardCentre.x, Is.EqualTo(enemy.x).Within(0.001f));
         Assert.IsTrue(StageCalibration.Contains(board, pose, _camera.fieldOfView, _camera.aspect,
             Rect.MinMaxRect(0.0149f, 0.1199f, 0.9851f, 0.8401f)));
     }

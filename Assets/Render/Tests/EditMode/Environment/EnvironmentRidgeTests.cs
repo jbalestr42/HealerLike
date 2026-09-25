@@ -83,8 +83,8 @@ public class EnvironmentRidgeTests
         {
             List<RidgeItem> items = EnvironmentRidge.Layout(eye, fogStart, fogEnd, bands, grid, ground, seed);
 
-            Assert.That(items.Count(i => i.kind == RidgeKind.Monolith), Is.InRange(8, 12), "seed " + seed);
-            Assert.That(items.Count(i => i.kind == RidgeKind.Mushroom), Is.InRange(8, 12), "seed " + seed);
+            Assert.That(items.Count(i => i.kind == RidgeKind.Monolith), Is.InRange(5, 8), "seed " + seed);
+            Assert.That(items.Count(i => i.kind == RidgeKind.Mushroom), Is.InRange(5, 8), "seed " + seed);
             foreach (RidgeItem item in items)
             {
                 string label = $"seed {seed} {item.kind} at {item.position}";
@@ -98,12 +98,12 @@ public class EnvironmentRidgeTests
                 Assert.AreEqual(ground, item.position.y, label);
                 if (item.kind == RidgeKind.Monolith)
                 {
-                    Assert.That(item.height, Is.InRange(6f, 12f), label);
+                    Assert.That(item.height, Is.InRange(3f, 6f), label);
                     Assert.AreEqual(0f, item.capDiameter, label);
                 }
                 else
                 {
-                    Assert.That(item.height - 0.3f * item.capThickness, Is.InRange(7f - 0.001f, 14f + 0.001f),
+                    Assert.That(item.height - 0.3f * item.capThickness, Is.InRange(3.5f - 0.001f, 6.5f + 0.001f),
                         label);
                     Assert.That(item.capDiameter, Is.GreaterThan(item.width * 3f), label);
                     Assert.That(item.capThickness, Is.LessThan(item.capDiameter * 0.5f), label);
@@ -201,6 +201,23 @@ public class EnvironmentRidgeTests
             Assert.AreEqual(ShadowCastingMode.Off, meshRenderer.shadowCastingMode);
             Assert.IsTrue(meshRenderer.HasPropertyBlock());
         }
+    }
+
+    [Test]
+    public void Frame_FocusCamera_RebuildsAgainstItsCurrentFogBand()
+    {
+        Camera camera = _cameraGo.AddComponent<Camera>();
+        camera.transform.position = eye;
+        EnvironmentRidge ridge = _go.AddComponent<EnvironmentRidge>();
+        ridge.Init(camera, grid, ground, fogStart, fogEnd, RenderTestAssets.LoadMeshes());
+        Vector3 oldPosition = ridge.items[0].position;
+        camera.transform.position = new Vector3(0f, 18f, -8f);
+        ridge.Frame(25f, 35f);
+        List<RidgeItem> expected = EnvironmentRidge.Layout(camera.transform.position, 25f, 35f,
+            bands, grid, ground, EnvironmentSettings.DefaultSeed);
+        Assert.AreEqual(expected.Count, ridge.items.Count);
+        Assert.That(Vector3.Distance(oldPosition, ridge.items[0].position), Is.GreaterThan(1f));
+        for (int i = 0; i < expected.Count; i++) Assert.AreEqual(expected[i].position, ridge.items[i].position);
     }
 
     [Test]

@@ -13,6 +13,25 @@ public class EnvironmentLayoutTests
     static readonly Rect grid = new Rect(-8f, -8f, 16f, 16f);
 
     [Test]
+    public void Generate_PortraitHeading_RotatesTheNearExclusionAndKeepsTheWalkableBoardEmpty()
+    {
+        Rect board = new Rect(-8f, -6f, 16f, 12f);
+        Rect localBoard = new Rect(-6f, -8f, 12f, 16f);
+        Quaternion turn = Quaternion.Euler(0f, 90f, 0f);
+        var original = EnvironmentLayout.Generate(EnvironmentSettings.Default, localBoard, 1f, 0.5f);
+        var portrait = EnvironmentLayout.Generate(EnvironmentSettings.Default, board, 1f, 0.5f, 90f);
+        Assert.AreEqual(original.Count, portrait.Count);
+        for (int i = 0; i < original.Count; i++)
+        {
+            Assert.That(Vector3.Distance(turn * original[i].position, portrait[i].position), Is.LessThan(0.001f));
+            Assert.IsFalse(EnvironmentLayout.InsideMargin(board, 1f,
+                new Vector2(portrait[i].position.x, portrait[i].position.z)));
+            if (portrait[i].kind == EnvironmentKind.Monolith || portrait[i].kind == EnvironmentKind.MushroomTree)
+                Assert.That(portrait[i].position.x, Is.GreaterThanOrEqualTo(board.xMin - 0.001f));
+        }
+    }
+
+    [Test]
     public void Generate_SameSeed_GivesSameLayout()
     {
         List<EnvironmentItem> a = EnvironmentLayout.Generate(EnvironmentSettings.Default, grid, 1f, 0.5f);
