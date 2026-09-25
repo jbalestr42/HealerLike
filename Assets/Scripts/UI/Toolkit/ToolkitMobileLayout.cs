@@ -100,8 +100,7 @@ public class ToolkitMobileLayout
 
     public void Refresh()
     {
-        bool blocked = _context.isMenu || _context.isPaused || _context.isInventoryOpen
-            || (_context.ui != null && !_context.IsCurrentView(ViewType.Game));
+        bool blocked = IsBlocked();
         bool interacting = _context.hasInteraction;
         if (blocked || (interacting && !_hadInteraction))
         {
@@ -234,12 +233,18 @@ public class ToolkitMobileLayout
         }
     }
 
+    bool IsBlocked()
+    {
+        return _context.isMenu || _context.isPaused || _context.isInventoryOpen
+            || (_context.ui != null && !_context.IsCurrentView(ViewType.Game));
+    }
+
     void RefreshFocus()
     {
         if (_view != null)
         {
             _view.Show("focus-button", _toggleFocus != null);
-            _view.SetButton("focus-button", _focused ? "Overview" : "Focus battle", true);
+            _view.SetButton("focus-button", _focused ? "Overview" : "Focus battle", !IsBlocked());
         }
     }
 }
