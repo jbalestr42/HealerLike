@@ -62,6 +62,11 @@ namespace HealerLike.Render.Stage
         // The run each mode names, the one place a capture registers
         static AStageRun Create(string mode)
         {
+            if (mode == "mobile-interface")
+            {
+                return new StageInterfaceRun();
+            }
+
             if (mode == "smoke")
             {
                 return new StageSmokeRun();

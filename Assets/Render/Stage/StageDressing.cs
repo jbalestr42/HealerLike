@@ -146,6 +146,16 @@ namespace HealerLike.Render.Stage
                 StageCalibration.PortraitFov, StageCalibration.LandscapeAspect, StageCalibration.LandscapeCentreY);
         }
 
+        public void FrameBoard(Bounds board, float aspect, Rect viewport)
+        {
+            // The whole deployment grid, including the bodies standing on it, fits between the measured HUD bars.
+            board.Expand(new Vector3(0.7f, 3f, 0.7f));
+            _portraitPose = StageViewport.Fit(board, Quaternion.Euler(StageCalibration.PortraitPitch,
+                StageCalibration.PortraitYaw, 0f), StageCalibration.PortraitFov, aspect, viewport);
+            _landscapePose = StageViewport.Fit(board, Quaternion.Euler(StageCalibration.LandscapePitch, 0f, 0f),
+                StageCalibration.PortraitFov, aspect, viewport);
+        }
+
         public Pose OverviewPose(bool isLandscape)
         {
             if (isLandscape)
@@ -159,7 +169,12 @@ namespace HealerLike.Render.Stage
         // Puts the camera on the overview of its orientation
         public void Frame(Camera gameCamera, bool isLandscape)
         {
-            gameCamera.aspect = isLandscape ? StageCalibration.LandscapeAspect : StageCalibration.PortraitAspect;
+            Frame(gameCamera, isLandscape, isLandscape ? StageCalibration.LandscapeAspect : StageCalibration.PortraitAspect);
+        }
+
+        public void Frame(Camera gameCamera, bool isLandscape, float aspect)
+        {
+            gameCamera.aspect = aspect;
             Pose pose = OverviewPose(isLandscape);
             gameCamera.transform.SetPositionAndRotation(pose.position, pose.rotation);
         }

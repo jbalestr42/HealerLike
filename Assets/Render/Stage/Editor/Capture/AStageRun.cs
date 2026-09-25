@@ -77,9 +77,14 @@ namespace HealerLike.Render.Stage
                 yield return null;
             }
 
-            _hud.startGameButton.onClick.Invoke();
+            if (shouldStartGame)
+            {
+                _hud.startGameButton.onClick.Invoke();
+            }
             yield return Run();
         }
+
+        protected virtual bool shouldStartGame { get { return true; } }
 
         protected abstract IEnumerator Run();
 
