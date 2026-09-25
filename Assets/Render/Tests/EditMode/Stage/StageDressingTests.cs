@@ -89,7 +89,8 @@ public class StageDressingTests
         healer.transform.SetParent(_scene.gameGo.transform);
         healer.transform.position = new Vector3(0f, 1f, 0f);
         healer.transform.localScale = new Vector3(1.2f, 2f, 1.2f);
-        _scene.player.character = healer.AddComponent<Character>();
+        // Character.Reset runs during AddComponent before its gameplay Init has wired the buff manager.
+        TestHelpers.WithLoggingDisabled(() => _scene.player.character = healer.AddComponent<Character>());
         GameObject enemy = GameObject.CreatePrimitive(PrimitiveType.Cube);
         enemy.transform.SetParent(_scene.gameGo.transform);
         enemy.transform.position = new Vector3(5f, 1f, 0f);
@@ -100,7 +101,8 @@ public class StageDressingTests
                 { Entity.EntityType.Player, new List<GameObject>() },
                 { Entity.EntityType.Computer, new List<GameObject> { enemy } }
             });
-        BattleFocus focus = _scene.manager.GetComponent<BattleFocus>();
+        BattleFocus focus = _scene.manager.GetComponentInChildren<BattleFocus>(true);
+        Assert.IsNotNull(focus, "The render manager carries focus on its nested controls prefab.");
         focus.Focus();
         Pose target = (Pose)typeof(BattleFocus).GetField("_target", BindingFlags.Instance | BindingFlags.NonPublic)
             .GetValue(focus);
