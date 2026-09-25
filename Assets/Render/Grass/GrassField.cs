@@ -248,7 +248,9 @@ namespace HealerLike.Render.Grass
             Bounds bounds = key.CalculateBounds();
             int layer = gameObject.layer;
             _tuftDraw = GrassDraw.Tufts(_meshes.tuft, _lookMaterial, bounds, layer, 1f);
+            // Spikes share this draw. Their shadows stay, while ordinary blades leave the ground readable.
             _tuftDraw.shadowCastingMode = ShadowCastingMode.On;
+            _tuftDraw.properties.SetFloat("_HLGrassSpikeShadowsOnly", 1f);
             // The socle lies flat on the ground under every tuft, so it takes the yaw and scale but never the lean
             _socleDraw = GrassDraw.Tufts(_meshes.socle, _lookMaterial, bounds, layer, 0f);
             _tuftDraw.BindTufts(_seeds, _states, _visibleTufts, ClampHeightScale(_bladeHeightScale));

@@ -96,7 +96,8 @@ public class EnvironmentScatterTests
         Camera camera = _otherGo.AddComponent<Camera>();
         camera.fieldOfView = 40f;
         camera.aspect = 9f / 16f;
-        camera.transform.SetPositionAndRotation(new Vector3(-7f, 12f, 0f), Quaternion.Euler(52f, 90f, 0f));
+        // The native first battle's focused view, with the hidden healer excluded from its bounds.
+        camera.transform.SetPositionAndRotation(new Vector3(-5.52f, 14.73f, -1f), Quaternion.Euler(52f, 90f, 0f));
         Rect board = new Rect(-8f, -8f, 16f, 16f);
         scatter.Init(board, 1f, 0.5f, camera, null, 50f, _meshes);
         Vector3[] positions = PivotPositions(scatter);
@@ -104,6 +105,17 @@ public class EnvironmentScatterTests
         CollectionAssert.AreEqual(positions, PivotPositions(scatter));
         foreach (EnvironmentItem item in scatter.items)
             Assert.IsFalse(EnvironmentLayout.InsideMargin(board, 1f, new Vector2(item.position.x, item.position.z)));
+        foreach (string name in new[] { "Monolith", "MushroomTree" })
+        {
+            Transform landmark = FirstPivot(scatter, name);
+            Assert.IsTrue(landmark.gameObject.activeSelf, name);
+            Renderer[] renderers = landmark.GetComponentsInChildren<Renderer>();
+            Bounds bounds = renderers[0].bounds;
+            foreach (Renderer renderer in renderers) bounds.Encapsulate(renderer.bounds);
+            Vector3 centre = camera.WorldToViewportPoint(bounds.center);
+            Assert.That(centre.x, Is.InRange(0.01f, 0.99f), name);
+            Assert.That(centre.y, Is.InRange(0.5f, EnvironmentFraming.CrownCeiling), name);
+        }
         for (int i = 0; i < scatter.items.Count; i++)
         {
             EnvironmentKind kind = scatter.items[i].kind;

@@ -49,6 +49,29 @@ public class EnvironmentLayoutTests
         }
     }
 
+    [TestCase(1707)]
+    [TestCase(99)]
+    public void Generate_FarShoulders_KeepLandmarksNearTheBoardAndClearOfLargeFoliage(int seed)
+    {
+        EnvironmentSettings settings = EnvironmentSettings.Default;
+        settings.seed = seed;
+        var items = EnvironmentLayout.Generate(settings, grid, 1f, 0.5f);
+        EnvironmentItem stone = items.First(i => i.kind == EnvironmentKind.Monolith);
+        EnvironmentItem mushroom = items.First(i => i.kind == EnvironmentKind.MushroomTree);
+        Assert.That(stone.position.x, Is.LessThan(grid.center.x));
+        Assert.That(mushroom.position.x, Is.GreaterThan(grid.center.x));
+        foreach (EnvironmentItem landmark in new[] { stone, mushroom })
+        {
+            Vector2 anchor = new Vector2(landmark.position.x, landmark.position.z);
+            Assert.IsFalse(EnvironmentLayout.InsideMargin(grid, 1f, anchor));
+            Assert.That(anchor.y, Is.InRange(grid.yMax + 1f, grid.yMax + 3f));
+            foreach (EnvironmentItem plant in items.Where(i => i.kind == EnvironmentKind.BladeRosette
+                                                               || i.kind == EnvironmentKind.SpiralFern))
+                Assert.That(Vector2.Distance(anchor, new Vector2(plant.position.x, plant.position.z)),
+                    Is.GreaterThanOrEqualTo(2f));
+        }
+    }
+
     [Test]
     public void Generate_DifferentSeed_GivesDifferentLayout()
     {

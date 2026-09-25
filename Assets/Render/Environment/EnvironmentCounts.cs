@@ -11,8 +11,8 @@ namespace HealerLike.Render.Environment
             cairns = 40,
             monoliths = 3,
             mushroomTrees = 60,
-            spiralFerns = 80,
-            bladeRosettes = 120,
+            spiralFerns = 24,
+            bladeRosettes = 28,
             sphereClusters = 70
         };
 

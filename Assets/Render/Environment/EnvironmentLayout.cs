@@ -47,6 +47,8 @@ namespace HealerLike.Render.Environment
             float xMax = grid.xMax + margin + span;
             float zMin = grid.yMin - margin - span;
             float zMax = grid.yMax + margin + span;
+            Vector2? stoneShoulder = null;
+            Vector2? mushroomShoulder = null;
             foreach (EnvironmentKind kind in Enum.GetValues(typeof(EnvironmentKind)))
             {
                 int count = Mathf.Clamp(settings.counts[kind], 0, MaxPerKind);
@@ -58,6 +60,19 @@ namespace HealerLike.Render.Environment
                         float accept = random.Next01();
                         float jitter = random.Next01();
                         float yaw = random.Next01();
+                        // The first stone and mushroom frame opposite far shoulders. Random distant
+                        // landmarks can sit above the focused camera, even after their crowns are fitted.
+                        bool isShoulder = n == 0 && IsTall(kind);
+                        if (isShoulder)
+                        {
+                            bool isStone = kind == EnvironmentKind.Monolith;
+                            float across = isStone ? -Mathf.Lerp(0.12f, 0.14f, jitter)
+                                : Mathf.Lerp(0.20f, 0.24f, jitter);
+                            float depth = isStone ? Mathf.Lerp(0.6f, 1.2f, accept)
+                                : Mathf.Lerp(1.1f, 1.7f, accept);
+                            point = new Vector2(grid.center.x + grid.width * across,
+                                grid.yMax + margin + Mathf.Min(depth * cellSize, span * 0.2f));
+                        }
                         if (InsideMargin(grid, margin, point))
                         {
                             continue;
@@ -76,14 +91,28 @@ namespace HealerLike.Render.Environment
 
                         if (kind == EnvironmentKind.Monolith)
                         {
-                            if (point.y <= grid.yMax + margin || t < 0.3f)
+                            if (point.y <= grid.yMax + margin || (!isShoulder && t < 0.3f))
                             {
                                 continue;
                             }
                         }
-                        else if (accept > Mathf.Exp(-settings.falloff * t))
+                        else if (!isShoulder && accept > Mathf.Exp(-settings.falloff * t))
                         {
                             continue;
+                        }
+
+                        // Keep the two silhouettes readable without clearing any of the meadow tufts.
+                        if (kind == EnvironmentKind.BladeRosette || kind == EnvironmentKind.SpiralFern)
+                        {
+                            float clearanceSquared = 4f * cellSize * cellSize;
+                            if ((stoneShoulder.HasValue && (point - stoneShoulder.Value).sqrMagnitude < clearanceSquared)
+                                || (mushroomShoulder.HasValue && (point - mushroomShoulder.Value).sqrMagnitude < clearanceSquared))
+                                continue;
+                        }
+                        if (isShoulder)
+                        {
+                            if (kind == EnvironmentKind.Monolith) stoneShoulder = point;
+                            else mushroomShoulder = point;
                         }
 
                         result.Add(new EnvironmentItem
