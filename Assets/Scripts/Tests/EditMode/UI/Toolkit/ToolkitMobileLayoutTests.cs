@@ -120,6 +120,27 @@ public class ToolkitMobileLayoutTests
     }
 
     [Test]
+    public void Update_HostSafeArea_InsetsHudAndModalByTheSamePanelDistance()
+    {
+        _layout.Update(delegate { return new Rect(0.05f, 0.1f, 0.9f, 0.75f); });
+        VisualElement hud = _root.Q("hud-root");
+        VisualElement inventory = _root.Q("inventory-panel");
+        float scale = _panel.scale;
+
+        Assert.AreEqual(Screen.width * 0.05f / scale + 8f, hud.style.paddingLeft.value.value, 0.01f);
+        Assert.AreEqual(Screen.height * 0.15f / scale + 8f, hud.style.paddingTop.value.value, 0.01f);
+        Assert.AreEqual(Screen.height * 0.1f / scale + 8f, hud.style.paddingBottom.value.value, 0.01f);
+        Assert.AreEqual(hud.style.paddingLeft.value.value, inventory.style.left.value.value);
+        Assert.AreEqual(hud.style.paddingTop.value.value, inventory.style.top.value.value);
+        Assert.AreEqual(hud.style.paddingBottom.value.value, inventory.style.bottom.value.value);
+
+        _layout.Update();
+
+        Rect safe = ToolkitScreenLayout.GetSafePanelRect(Screen.width, Screen.height, Screen.safeArea, scale);
+        Assert.AreEqual(safe.yMin + 8f, inventory.style.top.value.value, 0.01f);
+    }
+
+    [Test]
     public void SetCards_UnavailableSpell_KeepsSeparateInfoControlEnabled()
     {
         ToolkitCardModel model = new ToolkitCardModel();

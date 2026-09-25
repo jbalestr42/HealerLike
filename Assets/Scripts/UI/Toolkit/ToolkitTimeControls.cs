@@ -24,7 +24,7 @@ public class ToolkitTimeControls
 
     public void TogglePause()
     {
-        if (_context.isMenu)
+        if (_context.isMenu || (_context.ui != null && !_context.IsCurrentView(ViewType.Game) && !_context.isPaused))
         {
             return;
         }
