@@ -305,6 +305,37 @@ namespace HealerLike.Render.Creatures
             Assert.IsFalse(Array.Exists(parts.ToArray(), p => p.id == "AccessorySupport"));
         }
 
+        [TestCase(LookSide.Plant)]
+        [TestCase(LookSide.Stone)]
+        public void Compose_CenteredRing_RemainsOnItsSocketWithoutARightSupport(LookSide side)
+        {
+            _vocabulary.Layout.extendAccessorySupports = true;
+            LookPart ring = Part("Collar", PartRole.Accessory, ShapeProfile.Ring());
+            ring.primitive = Primitive.Torus;
+            ring.size = new Vector3(0.9f, 0.13f, 0.9f);
+            _vocabulary.accessories[AccessoryKind.SmallTorus] = new LookVocabulary.AccessoryEntry
+            {
+                socket = AccessorySocket.NeckOrbit, isCentered = true,
+                plant = new[] { ring }, stone = new[] { ring }
+            };
+            CreatureGrammarPreset preset = Track(ScriptableObject.CreateInstance<CreatureGrammarPreset>());
+            preset.vocabulary = _vocabulary;
+            preset.side = side;
+            preset.accessory = AccessoryKind.SmallTorus;
+            UnitChannels channels = preset.Channels();
+            PartList parts = LookComposer.Layout(channels, _vocabulary);
+
+            Assert.AreEqual(UnitSockets.Place(channels, _vocabulary).neck,
+                parts.Source(parts.accessoryStart).position);
+            Assert.IsFalse(Array.Exists(parts.ToArray(), p => p.id == "AccessorySupport"));
+            Assert.IsEmpty(CreatureGrammarValidator.Validate(preset));
+            Assert.NotNull(Track(preset.Compose()));
+            // The collar has an open ring profile with positive visible dimensions, not a hidden marker.
+            Assert.AreEqual(ShapeKind.Ring, parts.Source(parts.accessoryStart).shape.kind);
+            Assert.Greater(parts.Source(parts.accessoryStart).size.x,
+                _vocabulary.stems[StemBand.Steady].thickness * 2f);
+        }
+
         [TestCase(float.NaN)]
         [TestCase(float.PositiveInfinity)]
         [TestCase(0f)]
