@@ -20,7 +20,7 @@ namespace HealerLike.Render.Studio
                     + "; count is preserved.");
             }
 
-            if (channels.accessory == AccessoryKind.None)
+            if (channels.accessory == AccessoryKind.None || vocabulary.accessories[channels.accessory].isCentered)
             {
                 return;
             }

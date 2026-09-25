@@ -40,7 +40,7 @@ namespace HealerLike.Render.Creatures
             }
 
             float unit = vocabulary.Unit(channels.side);
-            if (channels.accessory != AccessoryKind.None)
+            if (channels.accessory != AccessoryKind.None && !vocabulary.accessories[channels.accessory].isCentered)
             {
                 float reach = LookMeasure.OutlineReach(parts, unit);
                 float needed = AccessoryClearance(channels.side, vocabulary);
@@ -250,7 +250,7 @@ namespace HealerLike.Render.Creatures
                     float miniScale = accessory.miniHeadScale * scale;
                     Fragment(parts, vocabulary, channels, miniParts, miniAt, miniScale, CountBand.One, seed);
                 }
-                if (vocabulary.Layout.extendAccessorySupports)
+                if (vocabulary.Layout.extendAccessorySupports && !accessory.isCentered)
                 {
                     ExtendAccessory(parts, channels, vocabulary, socket, scale, stem, stemColour, seed);
                 }
