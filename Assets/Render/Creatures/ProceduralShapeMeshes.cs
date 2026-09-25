@@ -14,10 +14,10 @@ namespace HealerLike.Render.Creatures
                 return null;
             }
 
-            Geometry(shape, variant, out List<Vector3> vertices, out List<int> indices);
+            Geometry(shape, variant, out List<Vector3> vertices, out List<int> indices, out List<int> facets);
             bool mineral = shape.kind == ShapeKind.Block || shape.kind == ShapeKind.Shard
                 || (shape.kind == ShapeKind.Ring && shape.faceted);
-            return CreateMesh(shape, variant, vertices, indices, mineral);
+            return CreateMesh(shape, variant, vertices, indices, mineral, facets);
         }
 
         // A curved profile's pole need not be on the box's Y axis. Use the same generated vertices as the mesh,
@@ -41,7 +41,11 @@ namespace HealerLike.Render.Creatures
                 return Vector3.up * (anchor == ShapeAnchor.Top ? 0.5f : -0.5f);
             }
 
-            Geometry(shape, variant, out List<Vector3> vertices, out _);
+            Geometry(shape, variant, out List<Vector3> vertices, out List<int> indices, out List<int> facets);
+            if (facets != null)
+            {
+                return FacetAnchor(vertices, indices, facets, anchor == ShapeAnchor.Top);
+            }
             bool top = anchor == ShapeAnchor.Top;
             float extreme = top ? float.MinValue : float.MaxValue;
             foreach (Vector3 point in vertices)
@@ -61,17 +65,64 @@ namespace HealerLike.Render.Creatures
             return total / count;
         }
 
-        static void Geometry(ShapeProfile shape, int variant, out List<Vector3> vertices, out List<int> indices)
+        // A broken crown attaches through the centre of its actual cap face, not its highest isolated corner.
+        static Vector3 FacetAnchor(List<Vector3> vertices, List<int> indices, List<int> facets, bool top)
+        {
+            Dictionary<int, Vector3> centres = new Dictionary<int, Vector3>();
+            Dictionary<int, float> areas = new Dictionary<int, float>();
+            Dictionary<int, float> projected = new Dictionary<int, float>();
+            for (int triangle = 0; triangle < facets.Count; triangle++)
+            {
+                Vector3 a = vertices[indices[triangle * 3]];
+                Vector3 b = vertices[indices[triangle * 3 + 1]];
+                Vector3 c = vertices[indices[triangle * 3 + 2]];
+                Vector3 cross = Vector3.Cross(b - a, c - a);
+                float area = cross.magnitude;
+                int face = facets[triangle];
+                centres.TryGetValue(face, out Vector3 centre);
+                areas.TryGetValue(face, out float total);
+                projected.TryGetValue(face, out float projection);
+                centres[face] = centre + (a + b + c) * (area / 3f);
+                areas[face] = total + area;
+                projected[face] = projection + cross.y * (top ? 1f : -1f);
+            }
+            int selected = top ? 5 : 4;
+            if (!areas.ContainsKey(selected))
+            {
+                float largest = float.MinValue;
+                foreach (KeyValuePair<int, float> face in projected)
+                {
+                    if (face.Value > largest)
+                    {
+                        selected = face.Key;
+                        largest = face.Value;
+                    }
+                }
+            }
+            return centres[selected] / areas[selected];
+        }
+
+        static void Geometry(ShapeProfile shape, int variant, out List<Vector3> vertices, out List<int> indices,
+            out List<int> facets)
         {
             vertices = new List<Vector3>();
             indices = new List<int>();
+            facets = null;
             if (shape.kind == ShapeKind.Ring)
             {
                 Ring(shape, vertices, indices);
             }
             else if (shape.kind == ShapeKind.Block || shape.kind == ShapeKind.Shard)
             {
-                Block(shape, variant, vertices, indices);
+                if (shape.fracture > 0f)
+                {
+                    facets = new List<int>();
+                    MineralHull.Generate(shape, variant, vertices, indices, facets);
+                }
+                else
+                {
+                    Block(shape, variant, vertices, indices);
+                }
             }
             else
             {
@@ -249,7 +300,8 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        static Mesh CreateMesh(ShapeProfile shape, int variant, List<Vector3> points, List<int> indices, bool mineral)
+        static Mesh CreateMesh(ShapeProfile shape, int variant, List<Vector3> points, List<int> indices, bool mineral,
+            List<int> facets)
         {
             Mesh mesh = new Mesh { name = "Procedural" + shape.kind, hideFlags = HideFlags.DontSave };
             bool flat = mineral || shape.faceted;
@@ -273,8 +325,9 @@ namespace HealerLike.Render.Creatures
                     Vector3 b = points[indices[face + 1]];
                     Vector3 c = points[indices[face + 2]];
                     Vector3 normal = Vector3.Cross(b - a, c - a).normalized;
-                    // A few complete adjacent triangle pairs retain the existing stone palette treatment.
-                    bool warm = mineral && ((face / 6 + (variant & 7)) % 7 == 1);
+                    // A cut polygon keeps one material across its entire plane, regardless of triangulation.
+                    int facet = facets == null ? face / 6 : facets[face / 3];
+                    bool warm = mineral && ((facet + (variant & 7)) % 7 == 1);
                     for (int j = 0; j < 3; j++)
                     {
                         int index = face + j;

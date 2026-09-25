@@ -21,6 +21,8 @@ namespace HealerLike.Render.Creatures
         public float bend;
         public float bevel;
         public float asymmetry;
+        // Unequal mineral cuts and slanted crowns. Zero retains the original beveled block.
+        public float fracture;
         public float tubeRatio;
         public bool faceted;
 
@@ -62,21 +64,24 @@ namespace HealerLike.Render.Creatures
             return shape;
         }
 
-        public static ShapeProfile Block(float bevel = 0.18f, float taper = 0.08f, float asymmetry = 0.06f)
+        public static ShapeProfile Block(float bevel = 0.18f, float taper = 0.08f, float asymmetry = 0.06f,
+            float fracture = 0f)
         {
             ShapeProfile shape = Defaults(ShapeKind.Block);
             shape.bevel = bevel;
             shape.taper = taper;
             shape.asymmetry = asymmetry;
+            shape.fracture = fracture;
             shape.faceted = true;
             return shape;
         }
 
-        public static ShapeProfile Shard(float taper = 0.9f, float bend = 0.12f)
+        public static ShapeProfile Shard(float taper = 0.9f, float bend = 0.12f, float fracture = 0f)
         {
             ShapeProfile shape = Block(0.16f, taper, 0.05f);
             shape.kind = ShapeKind.Shard;
             shape.bend = bend;
+            shape.fracture = fracture;
             return shape;
         }
 
@@ -101,7 +106,8 @@ namespace HealerLike.Render.Creatures
                 && lengthSegments >= 4 && lengthSegments <= 24
                 && Range(fullness, 0.05f, 3f) && Range(taper, -0.8f, 0.95f)
                 && Range(bend, -1f, 1f) && Range(bevel, 0.02f, 0.4f)
-                && Range(asymmetry, 0f, 0.15f) && Range(tubeRatio, 0.06f, 0.45f);
+                && Range(asymmetry, 0f, 0.15f) && Range(fracture, 0f, 1f)
+                && Range(tubeRatio, 0.06f, 0.45f);
         }
 
         static bool Range(float value, float low, float high)
@@ -115,6 +121,7 @@ namespace HealerLike.Render.Creatures
                 && lengthSegments == other.lengthSegments && fullness.Equals(other.fullness)
                 && taper.Equals(other.taper) && bend.Equals(other.bend) && bevel.Equals(other.bevel)
                 && asymmetry.Equals(other.asymmetry) && tubeRatio.Equals(other.tubeRatio)
+                && fracture.Equals(other.fracture)
                 && faceted == other.faceted;
         }
 
@@ -132,6 +139,7 @@ namespace HealerLike.Render.Creatures
                 hash = hash * 397 ^ bend.GetHashCode();
                 hash = hash * 397 ^ bevel.GetHashCode();
                 hash = hash * 397 ^ asymmetry.GetHashCode();
+                hash = hash * 397 ^ fracture.GetHashCode();
                 hash = hash * 397 ^ tubeRatio.GetHashCode();
                 return hash * 397 ^ faceted.GetHashCode();
             }
