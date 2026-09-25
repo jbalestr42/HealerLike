@@ -23,7 +23,12 @@ public class SelectableEntity : MonoBehaviour, ISelectable
     {
         if (_isSelected)
         {
-            InteractionManager.instance.CancelSelection();
+            // InteractionManager may already be destroyed when the scene is torn down
+            InteractionManager interactionManager = InteractionManager.existingInstance;
+            if (interactionManager != null)
+            {
+                interactionManager.CancelSelection();
+            }
         }
     }
 
