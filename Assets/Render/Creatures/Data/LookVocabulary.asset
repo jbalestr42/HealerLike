@@ -84,6 +84,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -91,6 +94,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -201,6 +207,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -208,6 +217,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -330,15 +342,21 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.3
+      Data: 0.25
     - Name: asymmetry
       Entry: 4
       Data: 0.13
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0.65
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -447,6 +465,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -456,6 +477,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -543,6 +567,9 @@ MonoBehaviour:
     - Name: plantStemScale
       Entry: 4
       Data: 0.45
+    - Name: plantStem
+      Entry: 6
+      Data: 
     - Name: carriesCount
       Entry: 5
       Data: false
@@ -597,6 +624,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -604,6 +634,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -714,6 +747,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.2
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -721,6 +757,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -831,6 +870,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -838,6 +880,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -960,15 +1005,21 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.3
+      Data: 0.25
     - Name: asymmetry
       Entry: 4
       Data: 0.13
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0.65
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -1077,6 +1128,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.04
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -1086,6 +1140,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0.45
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -1194,6 +1251,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -1203,6 +1263,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -1290,6 +1353,9 @@ MonoBehaviour:
     - Name: plantStemScale
       Entry: 4
       Data: 0.95
+    - Name: plantStem
+      Entry: 6
+      Data: 
     - Name: carriesCount
       Entry: 5
       Data: false
@@ -1344,6 +1410,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -1351,6 +1420,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -1382,10 +1454,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.17
+      Data: -0.16
     - Name: 
       Entry: 4
-      Data: 0.215
+      Data: 0.25
     - Name: 
       Entry: 4
       Data: 0.0075
@@ -1397,13 +1469,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.5674125
+      Data: 1.44744992
     - Name: 
       Entry: 4
-      Data: 0.544838548
+      Data: 0.4235484
     - Name: 
       Entry: 4
-      Data: 38.3333435
+      Data: 32.6192436
     - Name: 
       Entry: 8
       Data: 
@@ -1412,13 +1484,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.4
+      Data: 0.47
     - Name: 
       Entry: 4
-      Data: 0.548384
+      Data: 0.59382236
     - Name: 
       Entry: 4
-      Data: 0.4
+      Data: 0.47
     - Name: 
       Entry: 8
       Data: 
@@ -1461,6 +1533,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -1468,6 +1543,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -1499,10 +1577,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.34
+      Data: -0.32
     - Name: 
       Entry: 4
-      Data: 0.43
+      Data: 0.5
     - Name: 
       Entry: 4
       Data: 0.015
@@ -1529,13 +1607,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.288000017
+      Data: 0.3384
     - Name: 
       Entry: 4
-      Data: 0.288000017
+      Data: 0.3384
     - Name: 
       Entry: 4
-      Data: 0.288000017
+      Data: 0.3384
     - Name: 
       Entry: 8
       Data: 
@@ -1578,6 +1656,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -1585,6 +1666,132 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
+      Entry: 4
+      Data: 0
+    - Name: tubeRatio
+      Entry: 4
+      Data: 0.2
+    - Name: faceted
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: role
+      Entry: 3
+      Data: 3
+    - Name: colour
+      Entry: 3
+      Data: 0
+    - Name: pivot
+      Entry: 3
+      Data: 0
+    - Name: attachTo
+      Entry: 6
+      Data: 
+    - Name: attachAt
+      Entry: 3
+      Data: 0
+    - Name: position
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: -0.375
+    - Name: 
+      Entry: 4
+      Data: 0.89
+    - Name: 
+      Entry: 4
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: euler
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 357.81897
+    - Name: 
+      Entry: 4
+      Data: 359.846954
+    - Name: 
+      Entry: 4
+      Data: 8.02724
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: size
+      Entry: 7
+      Data: UnityEngine.Vector3, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.53
+    - Name: 
+      Entry: 4
+      Data: 0.788289249
+    - Name: 
+      Entry: 4
+      Data: 0.53
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: glow
+      Entry: 4
+      Data: 0
+    - Name: minCount
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
+    - Name: id
+      Entry: 1
+      Data: GrowthJoint
+    - Name: primitive
+      Entry: 3
+      Data: 0
+    - Name: shape
+      Entry: 7
+      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
+    - Name: kind
+      Entry: 3
+      Data: 1
+    - Name: radialSegments
+      Entry: 3
+      Data: 12
+    - Name: lengthSegments
+      Entry: 3
+      Data: 10
+    - Name: fullness
+      Entry: 4
+      Data: 1
+    - Name: taper
+      Entry: 4
+      Data: 0
+    - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
+    - Name: bevel
+      Entry: 4
+      Data: 0.18
+    - Name: asymmetry
+      Entry: 4
+      Data: 0
+    - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -1619,124 +1826,7 @@ MonoBehaviour:
       Data: -0.43
     - Name: 
       Entry: 4
-      Data: 0.775
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: euler
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 357.590973
-    - Name: 
-      Entry: 4
-      Data: 359.690918
-    - Name: 
-      Entry: 4
-      Data: 14.6208725
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: size
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0.46
-    - Name: 
-      Entry: 4
-      Data: 0.713722646
-    - Name: 
-      Entry: 4
-      Data: 0.46
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: glow
-      Entry: 4
-      Data: 0
-    - Name: minCount
-      Entry: 3
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
-    - Name: id
-      Entry: 1
-      Data: GrowthJoint
-    - Name: primitive
-      Entry: 3
-      Data: 0
-    - Name: shape
-      Entry: 7
-      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
-    - Name: kind
-      Entry: 3
-      Data: 1
-    - Name: radialSegments
-      Entry: 3
-      Data: 12
-    - Name: lengthSegments
-      Entry: 3
-      Data: 10
-    - Name: fullness
-      Entry: 4
-      Data: 1
-    - Name: taper
-      Entry: 4
-      Data: 0
-    - Name: bend
-      Entry: 4
-      Data: 0
-    - Name: bevel
-      Entry: 4
-      Data: 0.18
-    - Name: asymmetry
-      Entry: 4
-      Data: 0
-    - Name: fracture
-      Entry: 4
-      Data: 0
-    - Name: tubeRatio
-      Entry: 4
-      Data: 0.2
-    - Name: faceted
-      Entry: 5
-      Data: false
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: role
-      Entry: 3
-      Data: 3
-    - Name: colour
-      Entry: 3
-      Data: 0
-    - Name: pivot
-      Entry: 3
-      Data: 0
-    - Name: attachTo
-      Entry: 6
-      Data: 
-    - Name: attachAt
-      Entry: 3
-      Data: 0
-    - Name: position
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: -0.52
-    - Name: 
-      Entry: 4
-      Data: 1.12
+      Data: 1.28
     - Name: 
       Entry: 4
       Data: -0.015
@@ -1763,13 +1853,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.331200033
+      Data: 0.3816
     - Name: 
       Entry: 4
-      Data: 0.331200033
+      Data: 0.3816
     - Name: 
       Entry: 4
-      Data: 0.331200033
+      Data: 0.3816
     - Name: 
       Entry: 8
       Data: 
@@ -1812,6 +1902,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -1819,6 +1912,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -1850,10 +1946,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.31
+      Data: -0.195000008
     - Name: 
       Entry: 4
-      Data: 1.405
+      Data: 1.61
     - Name: 
       Entry: 4
       Data: -0.015
@@ -1871,7 +1967,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 323.615662
+      Data: 324.544525
     - Name: 
       Entry: 8
       Data: 
@@ -1880,13 +1976,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.39
+      Data: 0.45
     - Name: 
       Entry: 4
-      Data: 0.708025455
+      Data: 0.810246944
     - Name: 
       Entry: 4
-      Data: 0.39
+      Data: 0.45
     - Name: 
       Entry: 8
       Data: 
@@ -1929,6 +2025,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -1936,6 +2035,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -1967,10 +2069,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.1
+      Data: 0.04
     - Name: 
       Entry: 4
-      Data: 1.69
+      Data: 1.94
     - Name: 
       Entry: 4
       Data: -0.015
@@ -1997,13 +2099,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.2808
+      Data: 0.324
     - Name: 
       Entry: 4
-      Data: 0.2808
+      Data: 0.324
     - Name: 
       Entry: 4
-      Data: 0.2808
+      Data: 0.324
     - Name: 
       Entry: 8
       Data: 
@@ -2046,6 +2148,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -2053,6 +2158,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -2084,10 +2192,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.214999989
+      Data: 0.405
     - Name: 
       Entry: 4
-      Data: 1.66000009
+      Data: 1.895
     - Name: 
       Entry: 4
       Data: 0
@@ -2099,13 +2207,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 2.71404886
+      Data: 2.335633
     - Name: 
       Entry: 4
-      Data: 357.01532
+      Data: 357.358826
     - Name: 
       Entry: 4
-      Data: 264.559662
+      Data: 262.971619
     - Name: 
       Entry: 8
       Data: 
@@ -2114,13 +2222,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.34
+      Data: 0.38
     - Name: 
       Entry: 4
-      Data: 0.6335614
+      Data: 0.7361385
     - Name: 
       Entry: 4
-      Data: 0.34
+      Data: 0.38
     - Name: 
       Entry: 8
       Data: 
@@ -2163,6 +2271,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -2170,6 +2281,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -2201,10 +2315,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.53
+      Data: 0.77
     - Name: 
       Entry: 4
-      Data: 1.63
+      Data: 1.85
     - Name: 
       Entry: 4
       Data: 0.015
@@ -2231,13 +2345,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.244800016
+      Data: 0.2736
     - Name: 
       Entry: 4
-      Data: 0.244800016
+      Data: 0.2736
     - Name: 
       Entry: 4
-      Data: 0.244800016
+      Data: 0.2736
     - Name: 
       Entry: 8
       Data: 
@@ -2280,6 +2394,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -2287,6 +2404,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -2318,10 +2438,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.725
+      Data: 0.95
     - Name: 
       Entry: 4
-      Data: 1.4
+      Data: 1.585
     - Name: 
       Entry: 4
       Data: 0.022499999
@@ -2333,13 +2453,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.42479622
+      Data: 1.34115231
     - Name: 
       Entry: 4
-      Data: 356.117523
+      Data: 355.640533
     - Name: 
       Entry: 4
-      Data: 220.29216
+      Data: 214.186127
     - Name: 
       Entry: 8
       Data: 
@@ -2348,13 +2468,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.28
+      Data: 0.31
     - Name: 
       Entry: 4
-      Data: 0.603262
+      Data: 0.64087826
     - Name: 
       Entry: 4
-      Data: 0.28
+      Data: 0.31
     - Name: 
       Entry: 8
       Data: 
@@ -2397,6 +2517,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -2404,6 +2527,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -2435,10 +2561,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.92
+      Data: 1.13
     - Name: 
       Entry: 4
-      Data: 1.17
+      Data: 1.32
     - Name: 
       Entry: 4
       Data: 0.03
@@ -2465,13 +2591,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.201600015
+      Data: 0.223200008
     - Name: 
       Entry: 4
-      Data: 0.201600015
+      Data: 0.223200008
     - Name: 
       Entry: 4
-      Data: 0.201600015
+      Data: 0.223200008
     - Name: 
       Entry: 8
       Data: 
@@ -2514,6 +2640,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -2521,6 +2650,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -2552,10 +2684,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.92
+      Data: 1.13
     - Name: 
       Entry: 4
-      Data: 0.79
+      Data: 0.92
     - Name: 
       Entry: 4
       Data: 0.03
@@ -2582,13 +2714,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
+      Data: 0.5
+    - Name: 
+      Entry: 4
+      Data: 0.78
+    - Name: 
+      Entry: 4
       Data: 0.43
-    - Name: 
-      Entry: 4
-      Data: 0.7
-    - Name: 
-      Entry: 4
-      Data: 0.37
     - Name: 
       Entry: 8
       Data: 
@@ -2631,6 +2763,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -2638,6 +2773,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -2669,10 +2807,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.139999986
+      Data: 0.26
     - Name: 
       Entry: 4
-      Data: 1.43
+      Data: 1.54
     - Name: 
       Entry: 4
       Data: 0.0575
@@ -2684,13 +2822,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 5.53850174
+      Data: 4.073167
     - Name: 
       Entry: 4
-      Data: 9.052754
+      Data: 7.2358675
     - Name: 
       Entry: 4
-      Data: 117.149681
+      Data: 121.293045
     - Name: 
       Entry: 8
       Data: 
@@ -2702,7 +2840,7 @@ MonoBehaviour:
       Data: 0.27
     - Name: 
       Entry: 4
-      Data: 0.88069576
+      Data: 1.19667256
     - Name: 
       Entry: 4
       Data: 0.27
@@ -2748,6 +2886,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -2755,6 +2896,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -2865,6 +3009,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -2872,6 +3019,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -2982,6 +3132,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -2989,6 +3142,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -3020,10 +3176,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.44
+      Data: 0.56
     - Name: 
       Entry: 4
-      Data: 1.405
+      Data: 1.515
     - Name: 
       Entry: 4
       Data: 0.0575
@@ -3035,13 +3191,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 9.947309
+      Data: 6.13525867
     - Name: 
       Entry: 4
-      Data: 48.63513
+      Data: 21.1165218
     - Name: 
       Entry: 4
-      Data: 158.1986
+      Data: 147.917831
     - Name: 
       Entry: 8
       Data: 
@@ -3053,7 +3209,7 @@ MonoBehaviour:
       Data: 0.27
     - Name: 
       Entry: 4
-      Data: 0.492062032
+      Data: 0.795314431
     - Name: 
       Entry: 4
       Data: 0.27
@@ -3099,6 +3255,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -3106,6 +3265,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -3216,6 +3378,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -3223,6 +3388,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -3333,6 +3501,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -3340,6 +3511,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -3371,10 +3545,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.51
+      Data: -0.44
     - Name: 
       Entry: 4
-      Data: 1.46
+      Data: 1.585
     - Name: 
       Entry: 4
       Data: 0.0575
@@ -3386,13 +3560,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 5.16578674
+      Data: 4.07188368
     - Name: 
       Entry: 4
-      Data: 8.809559
+      Data: 8.066072
     - Name: 
       Entry: 4
-      Data: 119.291374
+      Data: 126.486023
     - Name: 
       Entry: 8
       Data: 
@@ -3404,7 +3578,7 @@ MonoBehaviour:
       Data: 0.27
     - Name: 
       Entry: 4
-      Data: 0.9440472
+      Data: 1.19704854
     - Name: 
       Entry: 4
       Data: 0.27
@@ -3450,6 +3624,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -3457,6 +3634,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -3567,6 +3747,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -3574,6 +3757,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -3684,6 +3870,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -3691,6 +3880,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -3722,10 +3914,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.05500007
+      Data: 1.175
     - Name: 
       Entry: 4
-      Data: 1.405
+      Data: 1.515
     - Name: 
       Entry: 4
       Data: 0.0575
@@ -3737,13 +3929,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 4.255365
+      Data: 4.62292242
     - Name: 
       Entry: 4
-      Data: 353.5504
+      Data: 350.1953
     - Name: 
       Entry: 4
-      Data: 246.8014
+      Data: 230.4038
     - Name: 
       Entry: 8
       Data: 
@@ -3755,7 +3947,7 @@ MonoBehaviour:
       Data: 0.27
     - Name: 
       Entry: 4
-      Data: 1.145524
+      Data: 1.05462086
     - Name: 
       Entry: 4
       Data: 0.27
@@ -3801,6 +3993,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -3808,6 +4003,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -3918,6 +4116,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -3925,6 +4126,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -4043,19 +4247,25 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.16
+      Data: 0.08
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.28
+      Data: 0.23
     - Name: asymmetry
       Entry: 4
       Data: 0.12
     - Name: fracture
       Entry: 4
-      Data: 0.74
+      Data: 0.8
+    - Name: ridge
+      Entry: 4
+      Data: 0.72
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -4085,13 +4295,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.33
+      Data: -0.36
     - Name: 
       Entry: 4
-      Data: 0.4
+      Data: 0.46
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 0.015
     - Name: 
       Entry: 8
       Data: 
@@ -4103,10 +4313,10 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 0
+      Data: -7
     - Name: 
       Entry: 4
-      Data: -12
+      Data: -13
     - Name: 
       Entry: 8
       Data: 
@@ -4115,13 +4325,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.55
+      Data: 0.8
     - Name: 
       Entry: 4
-      Data: 0.88
+      Data: 1.13
     - Name: 
       Entry: 4
-      Data: 0.58
+      Data: 0.72
     - Name: 
       Entry: 8
       Data: 
@@ -4160,19 +4370,25 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.05
+      Data: 0.03
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.12
+      Data: 0.16
     - Name: asymmetry
       Entry: 4
-      Data: 0.08
+      Data: 0.1
     - Name: fracture
       Entry: 4
       Data: 0.55
+    - Name: ridge
+      Entry: 4
+      Data: 0.18
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -4202,13 +4418,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.18
+      Data: 0.2
     - Name: 
       Entry: 4
-      Data: 0.98
+      Data: 1.18
     - Name: 
       Entry: 4
-      Data: 0
+      Data: -0.02
     - Name: 
       Entry: 8
       Data: 
@@ -4220,10 +4436,10 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 4
     - Name: 
       Entry: 4
-      Data: -9
+      Data: -10
     - Name: 
       Entry: 8
       Data: 
@@ -4232,13 +4448,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.38
+      Data: 1.55
     - Name: 
       Entry: 4
-      Data: 0.4
+      Data: 0.53
     - Name: 
       Entry: 4
-      Data: 0.59
+      Data: 0.76
     - Name: 
       Entry: 8
       Data: 
@@ -4277,19 +4493,25 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.08
+      Data: 0.12
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.18
+      Data: 0.2
     - Name: asymmetry
       Entry: 4
-      Data: 0.06
+      Data: 0.1
     - Name: fracture
       Entry: 4
-      Data: 0.74
+      Data: 0.65
+    - Name: ridge
+      Entry: 4
+      Data: 0.42
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -4319,13 +4541,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.87
+      Data: 0.99
     - Name: 
       Entry: 4
-      Data: 0.69
+      Data: 0.82
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 0.01
     - Name: 
       Entry: 8
       Data: 
@@ -4349,13 +4571,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.32
+      Data: 0.42
+    - Name: 
+      Entry: 4
+      Data: 0.59
     - Name: 
       Entry: 4
       Data: 0.46
-    - Name: 
-      Entry: 4
-      Data: 0.38
     - Name: 
       Entry: 8
       Data: 
@@ -4382,7 +4604,7 @@ MonoBehaviour:
       Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
     - Name: kind
       Entry: 3
-      Data: 5
+      Data: 4
     - Name: radialSegments
       Entry: 3
       Data: 12
@@ -4394,19 +4616,25 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.62
+      Data: 0.13
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.16
+      Data: 0.19
     - Name: asymmetry
       Entry: 4
-      Data: 0.05
+      Data: 0.1
     - Name: fracture
       Entry: 4
-      Data: 0.52
+      Data: 0.65
+    - Name: ridge
+      Entry: 4
+      Data: 0.48
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -4436,13 +4664,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.89
+      Data: 1
     - Name: 
       Entry: 4
-      Data: 0.31
+      Data: 0.35
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 0.02
     - Name: 
       Entry: 8
       Data: 
@@ -4466,13 +4694,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.36
+      Data: 0.44
     - Name: 
       Entry: 4
-      Data: 0.47
+      Data: 0.54
     - Name: 
       Entry: 4
-      Data: 0.38
+      Data: 0.45
     - Name: 
       Entry: 8
       Data: 
@@ -4515,6 +4743,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.12
@@ -4524,6 +4755,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -4556,7 +4790,7 @@ MonoBehaviour:
       Data: 0.24
     - Name: 
       Entry: 4
-      Data: 0.91
+      Data: 1.08
     - Name: 
       Entry: 4
       Data: 0.13
@@ -4586,7 +4820,7 @@ MonoBehaviour:
       Data: 2.9
     - Name: 
       Entry: 4
-      Data: 0.32
+      Data: 0.35
     - Name: 
       Entry: 4
       Data: 0.43
@@ -4632,6 +4866,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.12
@@ -4641,6 +4878,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -4673,7 +4913,7 @@ MonoBehaviour:
       Data: -0.32
     - Name: 
       Entry: 4
-      Data: 0.83
+      Data: 0.909999967
     - Name: 
       Entry: 4
       Data: 0.13
@@ -4703,7 +4943,7 @@ MonoBehaviour:
       Data: 0.22
     - Name: 
       Entry: 4
-      Data: 0.26
+      Data: 0.420000017
     - Name: 
       Entry: 4
       Data: 0.22
@@ -4733,7 +4973,7 @@ MonoBehaviour:
       Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
     - Name: kind
       Entry: 3
-      Data: 5
+      Data: 4
     - Name: radialSegments
       Entry: 3
       Data: 12
@@ -4745,19 +4985,25 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.62
+      Data: 0.13
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.16
+      Data: 0.19
     - Name: asymmetry
       Entry: 4
-      Data: 0.05
+      Data: 0.1
     - Name: fracture
       Entry: 4
-      Data: 0.52
+      Data: 0.65
+    - Name: ridge
+      Entry: 4
+      Data: 0.48
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -4790,7 +5036,7 @@ MonoBehaviour:
       Data: -0.32
     - Name: 
       Entry: 4
-      Data: 0.48
+      Data: 0.43
     - Name: 
       Entry: 4
       Data: 0.13
@@ -4817,13 +5063,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.33
+      Data: 0.37
     - Name: 
       Entry: 4
-      Data: 0.52
+      Data: 0.58
     - Name: 
       Entry: 4
-      Data: 0.33
+      Data: 0.37
     - Name: 
       Entry: 8
       Data: 
@@ -4866,6 +5112,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.12
@@ -4875,6 +5124,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -4907,7 +5159,7 @@ MonoBehaviour:
       Data: 0.28
     - Name: 
       Entry: 4
-      Data: 0.83
+      Data: 0.909999967
     - Name: 
       Entry: 4
       Data: 0.13
@@ -4937,7 +5189,7 @@ MonoBehaviour:
       Data: 0.22
     - Name: 
       Entry: 4
-      Data: 0.26
+      Data: 0.420000017
     - Name: 
       Entry: 4
       Data: 0.22
@@ -4967,7 +5219,7 @@ MonoBehaviour:
       Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
     - Name: kind
       Entry: 3
-      Data: 5
+      Data: 4
     - Name: radialSegments
       Entry: 3
       Data: 12
@@ -4979,19 +5231,25 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.62
+      Data: 0.13
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.16
+      Data: 0.19
     - Name: asymmetry
       Entry: 4
-      Data: 0.05
+      Data: 0.1
     - Name: fracture
       Entry: 4
-      Data: 0.52
+      Data: 0.65
+    - Name: ridge
+      Entry: 4
+      Data: 0.48
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -5024,7 +5282,7 @@ MonoBehaviour:
       Data: 0.28
     - Name: 
       Entry: 4
-      Data: 0.48
+      Data: 0.43
     - Name: 
       Entry: 4
       Data: 0.13
@@ -5051,13 +5309,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.33
+      Data: 0.37
     - Name: 
       Entry: 4
-      Data: 0.52
+      Data: 0.58
     - Name: 
       Entry: 4
-      Data: 0.33
+      Data: 0.37
     - Name: 
       Entry: 8
       Data: 
@@ -5100,6 +5358,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.12
@@ -5109,6 +5370,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -5141,7 +5405,7 @@ MonoBehaviour:
       Data: -0.92
     - Name: 
       Entry: 4
-      Data: 0.83
+      Data: 0.909999967
     - Name: 
       Entry: 4
       Data: 0.13
@@ -5171,7 +5435,7 @@ MonoBehaviour:
       Data: 0.22
     - Name: 
       Entry: 4
-      Data: 0.26
+      Data: 0.420000017
     - Name: 
       Entry: 4
       Data: 0.22
@@ -5201,7 +5465,7 @@ MonoBehaviour:
       Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
     - Name: kind
       Entry: 3
-      Data: 5
+      Data: 4
     - Name: radialSegments
       Entry: 3
       Data: 12
@@ -5213,19 +5477,25 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.62
+      Data: 0.13
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.16
+      Data: 0.19
     - Name: asymmetry
       Entry: 4
-      Data: 0.05
+      Data: 0.1
     - Name: fracture
       Entry: 4
-      Data: 0.52
+      Data: 0.65
+    - Name: ridge
+      Entry: 4
+      Data: 0.48
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -5258,7 +5528,7 @@ MonoBehaviour:
       Data: -0.92
     - Name: 
       Entry: 4
-      Data: 0.48
+      Data: 0.43
     - Name: 
       Entry: 4
       Data: 0.13
@@ -5285,13 +5555,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.33
+      Data: 0.37
     - Name: 
       Entry: 4
-      Data: 0.52
+      Data: 0.58
     - Name: 
       Entry: 4
-      Data: 0.33
+      Data: 0.37
     - Name: 
       Entry: 8
       Data: 
@@ -5334,6 +5604,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.12
@@ -5343,6 +5616,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -5375,7 +5651,7 @@ MonoBehaviour:
       Data: 1.5
     - Name: 
       Entry: 4
-      Data: 0.83
+      Data: 0.909999967
     - Name: 
       Entry: 4
       Data: 0.13
@@ -5405,7 +5681,7 @@ MonoBehaviour:
       Data: 0.22
     - Name: 
       Entry: 4
-      Data: 0.26
+      Data: 0.420000017
     - Name: 
       Entry: 4
       Data: 0.22
@@ -5435,7 +5711,7 @@ MonoBehaviour:
       Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
     - Name: kind
       Entry: 3
-      Data: 5
+      Data: 4
     - Name: radialSegments
       Entry: 3
       Data: 12
@@ -5447,19 +5723,25 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.62
+      Data: 0.13
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.16
+      Data: 0.19
     - Name: asymmetry
       Entry: 4
-      Data: 0.05
+      Data: 0.1
     - Name: fracture
       Entry: 4
-      Data: 0.52
+      Data: 0.65
+    - Name: ridge
+      Entry: 4
+      Data: 0.48
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -5492,7 +5774,7 @@ MonoBehaviour:
       Data: 1.5
     - Name: 
       Entry: 4
-      Data: 0.48
+      Data: 0.43
     - Name: 
       Entry: 4
       Data: 0.13
@@ -5519,13 +5801,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.33
+      Data: 0.37
     - Name: 
       Entry: 4
-      Data: 0.52
+      Data: 0.58
     - Name: 
       Entry: 4
-      Data: 0.33
+      Data: 0.37
     - Name: 
       Entry: 8
       Data: 
@@ -5547,6 +5829,114 @@ MonoBehaviour:
     - Name: plantStemScale
       Entry: 4
       Data: 0.6
+    - Name: plantStem
+      Entry: 7
+      Data: 11|HealerLike.Render.Creatures.LookVocabulary+PlantStemEntry, HealerLike.Render
+    - Name: segments
+      Entry: 3
+      Data: 2
+    - Name: thicknessScale
+      Entry: 4
+      Data: 2.8
+    - Name: bow
+      Entry: 4
+      Data: 0.12
+    - Name: jointScale
+      Entry: 4
+      Data: 0.76
+    - Name: segmentShape
+      Entry: 7
+      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
+    - Name: kind
+      Entry: 3
+      Data: 2
+    - Name: radialSegments
+      Entry: 3
+      Data: 12
+    - Name: lengthSegments
+      Entry: 3
+      Data: 6
+    - Name: fullness
+      Entry: 4
+      Data: 0.85
+    - Name: taper
+      Entry: 4
+      Data: 0.12
+    - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
+    - Name: bevel
+      Entry: 4
+      Data: 0.18
+    - Name: asymmetry
+      Entry: 4
+      Data: 0
+    - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
+      Entry: 4
+      Data: 0
+    - Name: tubeRatio
+      Entry: 4
+      Data: 0.2
+    - Name: faceted
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: jointShape
+      Entry: 7
+      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
+    - Name: kind
+      Entry: 3
+      Data: 1
+    - Name: radialSegments
+      Entry: 3
+      Data: 12
+    - Name: lengthSegments
+      Entry: 3
+      Data: 10
+    - Name: fullness
+      Entry: 4
+      Data: 1
+    - Name: taper
+      Entry: 4
+      Data: 0
+    - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
+    - Name: bevel
+      Entry: 4
+      Data: 0.18
+    - Name: asymmetry
+      Entry: 4
+      Data: 0
+    - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
+      Entry: 4
+      Data: 0
+    - Name: tubeRatio
+      Entry: 4
+      Data: 0.2
+    - Name: faceted
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
     - Name: carriesCount
       Entry: 5
       Data: true
@@ -5564,10 +5954,10 @@ MonoBehaviour:
       Data: 3
     - Name: $v
       Entry: 7
-      Data: 11|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
+      Data: 12|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
     - Name: plant
       Entry: 7
-      Data: 12|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 13|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 5
@@ -5601,6 +5991,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -5608,6 +6001,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -5718,6 +6114,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -5725,6 +6124,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -5835,6 +6237,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -5842,6 +6247,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -5952,6 +6360,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -5959,6 +6370,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -6069,6 +6483,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -6076,6 +6493,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -6164,7 +6584,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 13|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 14|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 5
@@ -6198,6 +6618,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -6205,6 +6628,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -6315,6 +6741,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -6324,6 +6753,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -6432,15 +6864,21 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.3
+      Data: 0.25
     - Name: asymmetry
       Entry: 4
       Data: 0.13
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0.65
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -6549,15 +6987,21 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.3
+      Data: 0.25
     - Name: asymmetry
       Entry: 4
       Data: 0.13
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0.65
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -6666,6 +7110,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -6675,6 +7122,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -6762,6 +7212,9 @@ MonoBehaviour:
     - Name: plantStemScale
       Entry: 4
       Data: 0.35
+    - Name: plantStem
+      Entry: 6
+      Data: 
     - Name: carriesCount
       Entry: 5
       Data: false
@@ -6779,10 +7232,10 @@ MonoBehaviour:
       Data: 4
     - Name: $v
       Entry: 7
-      Data: 14|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
+      Data: 15|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
     - Name: plant
       Entry: 7
-      Data: 15|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 16|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 8
@@ -6809,11 +7262,14 @@ MonoBehaviour:
       Data: 6
     - Name: fullness
       Entry: 4
-      Data: 0.65
+      Data: 0.8
     - Name: taper
       Entry: 4
       Data: 0.13
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
@@ -6823,6 +7279,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -6854,10 +7313,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.275
+      Data: -0.285
     - Name: 
       Entry: 4
-      Data: 0.21
+      Data: 0.23
     - Name: 
       Entry: 4
       Data: 0
@@ -6875,7 +7334,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 52.63333
+      Data: 51.0958633
     - Name: 
       Entry: 8
       Data: 
@@ -6884,13 +7343,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.25
+      Data: 0.29
     - Name: 
       Entry: 4
-      Data: 0.692026
+      Data: 0.732461631
     - Name: 
       Entry: 4
-      Data: 0.25
+      Data: 0.29
     - Name: 
       Entry: 8
       Data: 
@@ -6933,6 +7392,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -6940,6 +7402,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -6971,10 +7436,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.55
+      Data: -0.57
     - Name: 
       Entry: 4
-      Data: 0.42
+      Data: 0.46
     - Name: 
       Entry: 4
       Data: 0
@@ -7001,13 +7466,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.24
+      Data: 0.25
     - Name: 
       Entry: 4
-      Data: 0.24
+      Data: 0.25
     - Name: 
       Entry: 4
-      Data: 0.24
+      Data: 0.25
     - Name: 
       Entry: 8
       Data: 
@@ -7043,13 +7508,16 @@ MonoBehaviour:
       Data: 10
     - Name: fullness
       Entry: 4
-      Data: 1.1
+      Data: 0.7
     - Name: taper
       Entry: 4
       Data: 0.35
     - Name: bend
       Entry: 4
-      Data: 1
+      Data: 0.12
+    - Name: bow
+      Entry: 4
+      Data: -0.9
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -7057,6 +7525,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -7088,10 +7559,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.55
+      Data: -0.57
     - Name: 
       Entry: 4
-      Data: 0.42
+      Data: 0.46
     - Name: 
       Entry: 4
       Data: 0
@@ -7109,7 +7580,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 14.000001
+      Data: 354
     - Name: 
       Entry: 8
       Data: 
@@ -7118,13 +7589,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.7
+      Data: 0.96
     - Name: 
       Entry: 4
-      Data: 1.95
+      Data: 2.02
     - Name: 
       Entry: 4
-      Data: 0.38
+      Data: 0.42
     - Name: 
       Entry: 8
       Data: 
@@ -7167,6 +7638,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -7174,6 +7648,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -7277,11 +7754,14 @@ MonoBehaviour:
       Data: 6
     - Name: fullness
       Entry: 4
-      Data: 0.65
+      Data: 0.8
     - Name: taper
       Entry: 4
       Data: 0.13
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
@@ -7291,6 +7771,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -7322,10 +7805,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.275
+      Data: 0.285
     - Name: 
       Entry: 4
-      Data: 0.21
+      Data: 0.23
     - Name: 
       Entry: 4
       Data: 0
@@ -7343,7 +7826,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 307.366669
+      Data: 308.904144
     - Name: 
       Entry: 8
       Data: 
@@ -7352,13 +7835,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.25
+      Data: 0.29
     - Name: 
       Entry: 4
-      Data: 0.692026
+      Data: 0.732461631
     - Name: 
       Entry: 4
-      Data: 0.25
+      Data: 0.29
     - Name: 
       Entry: 8
       Data: 
@@ -7401,6 +7884,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -7408,6 +7894,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -7439,10 +7928,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.55
+      Data: 0.57
     - Name: 
       Entry: 4
-      Data: 0.42
+      Data: 0.46
     - Name: 
       Entry: 4
       Data: 0
@@ -7469,13 +7958,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.24
+      Data: 0.25
     - Name: 
       Entry: 4
-      Data: 0.24
+      Data: 0.25
     - Name: 
       Entry: 4
-      Data: 0.24
+      Data: 0.25
     - Name: 
       Entry: 8
       Data: 
@@ -7511,13 +8000,16 @@ MonoBehaviour:
       Data: 10
     - Name: fullness
       Entry: 4
-      Data: 1.1
+      Data: 0.7
     - Name: taper
       Entry: 4
       Data: 0.35
     - Name: bend
       Entry: 4
-      Data: 1
+      Data: 0.12
+    - Name: bow
+      Entry: 4
+      Data: -0.9
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -7525,6 +8017,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -7556,10 +8051,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.55
+      Data: 0.57
     - Name: 
       Entry: 4
-      Data: 0.42
+      Data: 0.46
     - Name: 
       Entry: 4
       Data: 0
@@ -7571,13 +8066,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -1.21177618E-06
+      Data: 5.23578535E-07
     - Name: 
       Entry: 4
       Data: 180
     - Name: 
       Entry: 4
-      Data: 14.000001
+      Data: 354
     - Name: 
       Entry: 8
       Data: 
@@ -7586,13 +8081,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.64
+      Data: 0.87
     - Name: 
       Entry: 4
-      Data: 1.72
+      Data: 1.84
     - Name: 
       Entry: 4
-      Data: 0.38
+      Data: 0.42
     - Name: 
       Entry: 8
       Data: 
@@ -7635,6 +8130,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -7642,6 +8140,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -7730,7 +8231,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 16|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 17|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 4
@@ -7760,19 +8261,25 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.12
+      Data: 0.1
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.28
+      Data: 0.2
     - Name: asymmetry
       Entry: 4
-      Data: 0.08
+      Data: 0.1
     - Name: fracture
       Entry: 4
       Data: 0.82
+    - Name: ridge
+      Entry: 4
+      Data: 0.72
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -7802,13 +8309,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.49
+      Data: -0.54
     - Name: 
       Entry: 4
-      Data: 0.015
+      Data: 0
     - Name: 
       Entry: 4
-      Data: -0.025
+      Data: 0.04
     - Name: 
       Entry: 8
       Data: 
@@ -7817,13 +8324,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 2.66804268E-08
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 351
     - Name: 
       Entry: 4
-      Data: 7.000001
+      Data: 3
     - Name: 
       Entry: 8
       Data: 
@@ -7832,13 +8339,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.7
+      Data: 0.82
     - Name: 
       Entry: 4
-      Data: 1.4
+      Data: 1.55
     - Name: 
       Entry: 4
-      Data: 0.56
+      Data: 0.72
     - Name: 
       Entry: 8
       Data: 
@@ -7881,6 +8388,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -7890,6 +8400,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -7994,19 +8507,25 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.12
+      Data: 0.1
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.28
+      Data: 0.2
     - Name: asymmetry
       Entry: 4
-      Data: 0.08
+      Data: 0.1
     - Name: fracture
       Entry: 4
       Data: 0.82
+    - Name: ridge
+      Entry: 4
+      Data: 0.72
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -8036,13 +8555,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.49
+      Data: 0.52
     - Name: 
       Entry: 4
-      Data: 0.015
+      Data: 0.035
     - Name: 
       Entry: 4
-      Data: 0.025
+      Data: -0.06
     - Name: 
       Entry: 8
       Data: 
@@ -8051,13 +8570,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0
+      Data: -1.06721707E-07
     - Name: 
       Entry: 4
-      Data: 0
+      Data: 12.999999
     - Name: 
       Entry: 4
-      Data: 353
+      Data: 349
     - Name: 
       Entry: 8
       Data: 
@@ -8066,13 +8585,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.66
+      Data: 0.74
     - Name: 
       Entry: 4
-      Data: 1.29
+      Data: 1.3
     - Name: 
       Entry: 4
-      Data: 0.56
+      Data: 0.67
     - Name: 
       Entry: 8
       Data: 
@@ -8115,6 +8634,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -8124,6 +8646,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -8211,6 +8736,9 @@ MonoBehaviour:
     - Name: plantStemScale
       Entry: 4
       Data: 0.25
+    - Name: plantStem
+      Entry: 6
+      Data: 
     - Name: carriesCount
       Entry: 5
       Data: false
@@ -8228,10 +8756,10 @@ MonoBehaviour:
       Data: 5
     - Name: $v
       Entry: 7
-      Data: 17|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
+      Data: 18|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
     - Name: plant
       Entry: 7
-      Data: 18|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 19|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 6
@@ -8265,6 +8793,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -8272,6 +8803,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -8382,6 +8916,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -8389,6 +8926,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -8499,6 +9039,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -8506,6 +9049,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -8616,6 +9162,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -8623,6 +9172,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -8733,6 +9285,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -8740,6 +9295,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -8850,6 +9408,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -8857,6 +9418,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -8945,7 +9509,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 19|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 20|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 5
@@ -8979,6 +9543,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -8988,6 +9555,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -9096,6 +9666,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.22
@@ -9105,6 +9678,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -9213,6 +9789,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.22
@@ -9222,6 +9801,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -9330,6 +9912,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.22
@@ -9339,6 +9924,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -9447,6 +10035,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -9456,6 +10047,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -9543,6 +10137,9 @@ MonoBehaviour:
     - Name: plantStemScale
       Entry: 4
       Data: 0.7
+    - Name: plantStem
+      Entry: 6
+      Data: 
     - Name: carriesCount
       Entry: 5
       Data: false
@@ -9560,10 +10157,10 @@ MonoBehaviour:
       Data: 6
     - Name: $v
       Entry: 7
-      Data: 20|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
+      Data: 21|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
     - Name: plant
       Entry: 7
-      Data: 21|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 22|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 6
@@ -9597,6 +10194,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -9604,6 +10204,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -9713,7 +10316,10 @@ MonoBehaviour:
       Data: 0.35
     - Name: bend
       Entry: 4
-      Data: 0.52
+      Data: 0.35
+    - Name: bow
+      Entry: 4
+      Data: 0.38
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -9721,6 +10327,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -9830,7 +10439,10 @@ MonoBehaviour:
       Data: 0.35
     - Name: bend
       Entry: 4
-      Data: 0.52
+      Data: 0.35
+    - Name: bow
+      Entry: 4
+      Data: 0.38
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -9838,6 +10450,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -9947,7 +10562,10 @@ MonoBehaviour:
       Data: 0.35
     - Name: bend
       Entry: 4
-      Data: 0.52
+      Data: 0.35
+    - Name: bow
+      Entry: 4
+      Data: 0.38
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -9955,6 +10573,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -10064,7 +10685,10 @@ MonoBehaviour:
       Data: 0.35
     - Name: bend
       Entry: 4
-      Data: 0.52
+      Data: 0.35
+    - Name: bow
+      Entry: 4
+      Data: 0.38
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -10072,6 +10696,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -10182,6 +10809,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -10189,6 +10819,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -10277,7 +10910,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 22|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 23|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 6
@@ -10311,6 +10944,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -10320,6 +10956,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -10412,7 +11051,7 @@ MonoBehaviour:
       Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
     - Name: kind
       Entry: 3
-      Data: 5
+      Data: 4
     - Name: radialSegments
       Entry: 3
       Data: 12
@@ -10424,19 +11063,25 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.15
+      Data: 0.25
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.16
+      Data: 0.2
     - Name: asymmetry
       Entry: 4
-      Data: 0.05
+      Data: 0.08
     - Name: fracture
       Entry: 4
-      Data: 0.74
+      Data: 0.72
+    - Name: ridge
+      Entry: 4
+      Data: 0.55
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -10529,7 +11174,7 @@ MonoBehaviour:
       Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
     - Name: kind
       Entry: 3
-      Data: 5
+      Data: 4
     - Name: radialSegments
       Entry: 3
       Data: 12
@@ -10541,19 +11186,25 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.15
+      Data: 0.25
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.16
+      Data: 0.2
     - Name: asymmetry
       Entry: 4
-      Data: 0.05
+      Data: 0.08
     - Name: fracture
       Entry: 4
-      Data: 0.74
+      Data: 0.72
+    - Name: ridge
+      Entry: 4
+      Data: 0.55
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -10646,7 +11297,7 @@ MonoBehaviour:
       Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
     - Name: kind
       Entry: 3
-      Data: 5
+      Data: 4
     - Name: radialSegments
       Entry: 3
       Data: 12
@@ -10658,19 +11309,25 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.15
+      Data: 0.25
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.16
+      Data: 0.2
     - Name: asymmetry
       Entry: 4
-      Data: 0.05
+      Data: 0.08
     - Name: fracture
       Entry: 4
-      Data: 0.74
+      Data: 0.72
+    - Name: ridge
+      Entry: 4
+      Data: 0.55
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -10763,7 +11420,7 @@ MonoBehaviour:
       Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
     - Name: kind
       Entry: 3
-      Data: 5
+      Data: 4
     - Name: radialSegments
       Entry: 3
       Data: 12
@@ -10775,19 +11432,25 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.15
+      Data: 0.25
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.16
+      Data: 0.2
     - Name: asymmetry
       Entry: 4
-      Data: 0.05
+      Data: 0.08
     - Name: fracture
       Entry: 4
-      Data: 0.74
+      Data: 0.72
+    - Name: ridge
+      Entry: 4
+      Data: 0.55
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -10896,6 +11559,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -10905,6 +11571,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -10992,6 +11661,9 @@ MonoBehaviour:
     - Name: plantStemScale
       Entry: 4
       Data: 0.25
+    - Name: plantStem
+      Entry: 6
+      Data: 
     - Name: carriesCount
       Entry: 5
       Data: false
@@ -11009,10 +11681,10 @@ MonoBehaviour:
       Data: 7
     - Name: $v
       Entry: 7
-      Data: 23|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
+      Data: 24|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
     - Name: plant
       Entry: 7
-      Data: 24|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 25|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 8
@@ -11046,6 +11718,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -11053,6 +11728,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -11163,6 +11841,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -11170,6 +11851,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -11280,6 +11964,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -11287,6 +11974,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -11397,6 +12087,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -11404,6 +12097,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -11514,6 +12210,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -11521,6 +12220,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -11631,6 +12333,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -11638,6 +12343,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -11748,6 +12456,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -11755,6 +12466,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -11865,6 +12579,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -11872,6 +12589,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -11960,7 +12680,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 25|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 26|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 8
@@ -11994,6 +12714,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -12003,6 +12726,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -12111,6 +12837,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -12120,6 +12849,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -12228,6 +12960,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -12237,6 +12972,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -12345,6 +13083,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -12354,6 +13095,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -12462,6 +13206,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -12471,6 +13218,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -12579,6 +13329,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -12588,6 +13341,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -12696,6 +13452,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -12705,6 +13464,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -12813,6 +13575,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -12822,6 +13587,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -12909,6 +13677,9 @@ MonoBehaviour:
     - Name: plantStemScale
       Entry: 4
       Data: 0.45
+    - Name: plantStem
+      Entry: 6
+      Data: 
     - Name: carriesCount
       Entry: 5
       Data: false
@@ -12926,10 +13697,10 @@ MonoBehaviour:
       Data: 8
     - Name: $v
       Entry: 7
-      Data: 26|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
+      Data: 27|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
     - Name: plant
       Entry: 7
-      Data: 27|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 28|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 5
@@ -12963,6 +13734,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -12970,6 +13744,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -13080,6 +13857,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -13087,6 +13867,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -13197,6 +13980,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.35
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -13204,6 +13990,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -13314,6 +14103,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.35
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -13321,6 +14113,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -13431,6 +14226,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.35
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -13438,6 +14236,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -13526,7 +14327,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 28|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 29|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 5
@@ -13560,15 +14361,21 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.3
+      Data: 0.25
     - Name: asymmetry
       Entry: 4
       Data: 0.13
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0.65
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -13677,6 +14484,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -13686,6 +14496,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -13794,6 +14607,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.04
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -13803,6 +14619,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0.45
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -13911,6 +14730,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.04
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -13920,6 +14742,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0.45
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -14028,6 +14853,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.04
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -14037,6 +14865,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0.45
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -14124,6 +14955,9 @@ MonoBehaviour:
     - Name: plantStemScale
       Entry: 4
       Data: 0.55
+    - Name: plantStem
+      Entry: 6
+      Data: 
     - Name: carriesCount
       Entry: 5
       Data: false
@@ -14141,10 +14975,10 @@ MonoBehaviour:
       Data: 9
     - Name: $v
       Entry: 7
-      Data: 29|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
+      Data: 30|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
     - Name: plant
       Entry: 7
-      Data: 30|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 31|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 6
@@ -14178,6 +15012,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -14185,6 +15022,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -14295,6 +15135,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -14302,6 +15145,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -14412,6 +15258,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: -0.3
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -14419,6 +15268,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -14529,6 +15381,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: -0.3
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -14536,6 +15391,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -14646,6 +15504,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: -0.3
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -14653,6 +15514,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -14763,6 +15627,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -14770,6 +15637,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -14858,7 +15728,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 31|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 32|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 6
@@ -14892,6 +15762,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -14901,6 +15774,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -15009,15 +15885,21 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.3
+      Data: 0.25
     - Name: asymmetry
       Entry: 4
       Data: 0.13
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0.65
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -15126,6 +16008,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: -0.2
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -15135,6 +16020,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -15243,6 +16131,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: -0.2
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -15252,6 +16143,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -15360,6 +16254,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: -0.2
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -15369,6 +16266,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -15477,6 +16377,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -15486,6 +16389,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -15573,6 +16479,9 @@ MonoBehaviour:
     - Name: plantStemScale
       Entry: 4
       Data: 0.45
+    - Name: plantStem
+      Entry: 6
+      Data: 
     - Name: carriesCount
       Entry: 5
       Data: false
@@ -15590,10 +16499,10 @@ MonoBehaviour:
       Data: 10
     - Name: $v
       Entry: 7
-      Data: 32|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
+      Data: 33|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
     - Name: plant
       Entry: 7
-      Data: 33|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 34|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 3
@@ -15627,6 +16536,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -15634,6 +16546,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -15744,6 +16659,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -15751,6 +16669,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -15861,6 +16782,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -15868,6 +16792,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -15956,7 +16883,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 34|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 35|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 3
@@ -15990,6 +16917,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -15999,6 +16929,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -16107,6 +17040,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -16116,6 +17052,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -16224,6 +17163,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -16233,6 +17175,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -16320,6 +17265,9 @@ MonoBehaviour:
     - Name: plantStemScale
       Entry: 4
       Data: 0.45
+    - Name: plantStem
+      Entry: 6
+      Data: 
     - Name: carriesCount
       Entry: 5
       Data: false
@@ -16337,10 +17285,10 @@ MonoBehaviour:
       Data: 11
     - Name: $v
       Entry: 7
-      Data: 35|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
+      Data: 36|HealerLike.Render.Creatures.LookVocabulary+HeadEntry, HealerLike.Render
     - Name: plant
       Entry: 7
-      Data: 36|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 37|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 13
@@ -16374,6 +17322,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -16381,6 +17332,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -16491,6 +17445,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -16498,6 +17455,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -16608,6 +17568,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -16615,6 +17578,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -16725,6 +17691,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -16732,6 +17701,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -16842,6 +17814,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -16849,6 +17824,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -16959,6 +17937,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -16966,6 +17947,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -17076,6 +18060,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -17083,6 +18070,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -17193,6 +18183,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -17200,6 +18193,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -17310,6 +18306,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -17317,6 +18316,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -17427,6 +18429,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -17434,6 +18439,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -17544,6 +18552,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -17551,6 +18562,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -17661,6 +18675,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -17668,6 +18685,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -17778,6 +18798,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -17785,6 +18808,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -17873,7 +18899,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 37|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 38|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 7
@@ -17907,6 +18933,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -17916,6 +18945,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -18024,6 +19056,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -18033,6 +19068,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -18141,6 +19179,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -18150,6 +19191,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -18258,6 +19302,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -18267,6 +19314,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -18375,6 +19425,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -18384,6 +19437,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -18492,6 +19548,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -18501,6 +19560,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -18609,6 +19671,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -18618,6 +19683,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.52
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -18705,6 +19773,9 @@ MonoBehaviour:
     - Name: plantStemScale
       Entry: 4
       Data: 0.6
+    - Name: plantStem
+      Entry: 6
+      Data: 
     - Name: carriesCount
       Entry: 5
       Data: false
@@ -18722,10 +19793,10 @@ MonoBehaviour:
       Data: 
     - Name: accessories
       Entry: 7
-      Data: 38|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Grammar.AccessoryKind, HealerLike.Render],[HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render]], mscorlib
+      Data: 39|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Grammar.AccessoryKind, HealerLike.Render],[HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render]], mscorlib
     - Name: comparer
       Entry: 7
-      Data: 39|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Grammar.AccessoryKind, HealerLike.Render]], mscorlib
+      Data: 40|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Grammar.AccessoryKind, HealerLike.Render]], mscorlib
     - Name: 
       Entry: 12
       Data: 0
@@ -18746,7 +19817,7 @@ MonoBehaviour:
       Data: 1
     - Name: $v
       Entry: 7
-      Data: 40|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
+      Data: 41|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
     - Name: socket
       Entry: 3
       Data: 0
@@ -18755,7 +19826,7 @@ MonoBehaviour:
       Data: false
     - Name: plant
       Entry: 7
-      Data: 41|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 42|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 2
@@ -18789,6 +19860,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -18796,6 +19870,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -18906,6 +19983,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -18913,6 +19993,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -19001,7 +20084,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 42|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 43|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 2
@@ -19035,6 +20118,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -19044,6 +20130,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -19152,6 +20241,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.2
@@ -19161,6 +20253,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -19277,7 +20372,7 @@ MonoBehaviour:
       Data: 2
     - Name: $v
       Entry: 7
-      Data: 43|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
+      Data: 44|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
     - Name: socket
       Entry: 3
       Data: 0
@@ -19286,7 +20381,7 @@ MonoBehaviour:
       Data: false
     - Name: plant
       Entry: 7
-      Data: 44|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 45|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 3
@@ -19320,6 +20415,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -19327,6 +20425,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -19437,6 +20538,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -19444,6 +20548,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -19554,6 +20661,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.1
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -19561,6 +20671,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -19649,7 +20762,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 45|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 46|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 3
@@ -19683,6 +20796,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -19692,6 +20808,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -19800,6 +20919,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -19809,6 +20931,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -19917,6 +21042,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -19926,6 +21054,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -20042,7 +21173,7 @@ MonoBehaviour:
       Data: 3
     - Name: $v
       Entry: 7
-      Data: 46|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
+      Data: 47|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
     - Name: socket
       Entry: 3
       Data: 0
@@ -20051,7 +21182,7 @@ MonoBehaviour:
       Data: false
     - Name: plant
       Entry: 7
-      Data: 47|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 48|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 2
@@ -20085,6 +21216,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -20092,6 +21226,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -20202,6 +21339,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -20209,6 +21349,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -20297,7 +21440,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 48|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 49|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 2
@@ -20331,6 +21474,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -20340,6 +21486,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -20448,6 +21597,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.2
@@ -20457,6 +21609,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -20573,7 +21728,7 @@ MonoBehaviour:
       Data: 4
     - Name: $v
       Entry: 7
-      Data: 49|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
+      Data: 50|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
     - Name: socket
       Entry: 3
       Data: 0
@@ -20582,7 +21737,7 @@ MonoBehaviour:
       Data: true
     - Name: plant
       Entry: 7
-      Data: 50|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 51|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 7
@@ -20616,6 +21771,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -20623,6 +21781,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -20733,6 +21894,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -20740,6 +21904,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -20850,6 +22017,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -20857,6 +22027,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -20967,6 +22140,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -20974,6 +22150,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -21084,6 +22263,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -21091,6 +22273,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -21201,6 +22386,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -21208,6 +22396,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -21318,6 +22509,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -21325,6 +22519,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -21413,7 +22610,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 51|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 52|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 7
@@ -21447,6 +22644,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -21454,6 +22654,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -21564,6 +22767,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -21573,6 +22779,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -21681,6 +22890,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -21690,6 +22902,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -21798,6 +23013,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -21807,6 +23025,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -21915,6 +23136,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -21924,6 +23148,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -22032,6 +23259,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -22041,6 +23271,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -22149,6 +23382,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -22158,6 +23394,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -22274,7 +23513,7 @@ MonoBehaviour:
       Data: 5
     - Name: $v
       Entry: 7
-      Data: 52|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
+      Data: 53|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
     - Name: socket
       Entry: 3
       Data: 0
@@ -22283,7 +23522,7 @@ MonoBehaviour:
       Data: true
     - Name: plant
       Entry: 7
-      Data: 53|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 54|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 3
@@ -22317,6 +23556,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -22324,6 +23566,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -22434,6 +23679,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -22441,6 +23689,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -22551,6 +23802,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -22558,6 +23812,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -22646,7 +23903,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 54|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 55|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 3
@@ -22680,6 +23937,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -22687,6 +23947,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -22797,6 +24060,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -22804,6 +24070,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -22914,6 +24183,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -22921,6 +24193,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -23039,7 +24314,7 @@ MonoBehaviour:
       Data: 6
     - Name: $v
       Entry: 7
-      Data: 55|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
+      Data: 56|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
     - Name: socket
       Entry: 3
       Data: 0
@@ -23048,7 +24323,7 @@ MonoBehaviour:
       Data: true
     - Name: plant
       Entry: 7
-      Data: 56|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 57|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 4
@@ -23082,6 +24357,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -23089,6 +24367,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -23199,6 +24480,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -23206,6 +24490,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -23316,6 +24603,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -23323,6 +24613,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -23433,6 +24726,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -23440,6 +24736,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -23528,7 +24827,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 57|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 58|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 4
@@ -23562,6 +24861,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -23571,6 +24873,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -23679,6 +24984,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.2
@@ -23688,6 +24996,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -23796,6 +25107,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -23805,6 +25119,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -23913,6 +25230,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.2
@@ -23922,6 +25242,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -24038,7 +25361,7 @@ MonoBehaviour:
       Data: 7
     - Name: $v
       Entry: 7
-      Data: 58|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
+      Data: 59|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
     - Name: socket
       Entry: 3
       Data: 0
@@ -24047,7 +25370,7 @@ MonoBehaviour:
       Data: false
     - Name: plant
       Entry: 7
-      Data: 59|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 60|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 4
@@ -24081,6 +25404,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -24088,6 +25414,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -24198,6 +25527,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -24205,6 +25537,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -24315,6 +25650,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -24322,6 +25660,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -24432,6 +25773,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -24439,6 +25783,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -24527,7 +25874,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 60|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 61|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 4
@@ -24561,6 +25908,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -24570,6 +25920,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -24678,6 +26031,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.2
@@ -24687,6 +26043,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -24795,6 +26154,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.2
@@ -24804,6 +26166,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -24912,6 +26277,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.2
@@ -24921,6 +26289,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -25037,7 +26408,7 @@ MonoBehaviour:
       Data: 8
     - Name: $v
       Entry: 7
-      Data: 61|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
+      Data: 62|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
     - Name: socket
       Entry: 3
       Data: 0
@@ -25046,7 +26417,7 @@ MonoBehaviour:
       Data: true
     - Name: plant
       Entry: 7
-      Data: 62|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 63|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 1
@@ -25080,6 +26451,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -25087,6 +26461,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -25175,7 +26552,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 63|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 64|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 1
@@ -25209,6 +26586,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -25216,6 +26596,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -25334,7 +26717,7 @@ MonoBehaviour:
       Data: 9
     - Name: $v
       Entry: 7
-      Data: 64|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
+      Data: 65|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
     - Name: socket
       Entry: 3
       Data: 0
@@ -25343,7 +26726,7 @@ MonoBehaviour:
       Data: true
     - Name: plant
       Entry: 7
-      Data: 65|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 66|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 3
@@ -25377,6 +26760,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.1
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -25384,6 +26770,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -25494,6 +26883,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.1
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -25501,6 +26893,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -25611,6 +27006,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.1
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -25618,6 +27016,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -25706,7 +27107,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 66|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 67|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 3
@@ -25740,6 +27141,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -25749,6 +27153,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -25857,6 +27264,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -25866,6 +27276,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -25974,6 +27387,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -25983,6 +27399,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -26099,7 +27518,7 @@ MonoBehaviour:
       Data: 10
     - Name: $v
       Entry: 7
-      Data: 67|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
+      Data: 68|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
     - Name: socket
       Entry: 3
       Data: 0
@@ -26108,7 +27527,7 @@ MonoBehaviour:
       Data: false
     - Name: plant
       Entry: 7
-      Data: 68|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 69|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 7
@@ -26142,6 +27561,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -26149,6 +27571,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -26259,6 +27684,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -26266,6 +27694,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -26376,6 +27807,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -26383,6 +27817,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -26493,6 +27930,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -26500,6 +27940,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -26610,6 +28053,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -26617,6 +28063,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -26727,6 +28176,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -26734,6 +28186,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -26844,6 +28299,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -26851,6 +28309,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -26939,7 +28400,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 69|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 70|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 7
@@ -26973,6 +28434,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -26982,6 +28446,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -27090,6 +28557,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -27099,6 +28569,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -27207,6 +28680,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.2
@@ -27216,6 +28692,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -27324,6 +28803,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -27333,6 +28815,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -27441,6 +28926,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.2
@@ -27450,6 +28938,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -27558,6 +29049,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.1
@@ -27567,6 +29061,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -27675,6 +29172,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.2
@@ -27684,6 +29184,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -27800,7 +29303,7 @@ MonoBehaviour:
       Data: 11
     - Name: $v
       Entry: 7
-      Data: 70|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
+      Data: 71|HealerLike.Render.Creatures.LookVocabulary+AccessoryEntry, HealerLike.Render
     - Name: socket
       Entry: 3
       Data: 1
@@ -27809,7 +29312,7 @@ MonoBehaviour:
       Data: true
     - Name: plant
       Entry: 7
-      Data: 71|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 72|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 2
@@ -27843,6 +29346,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.2
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -27850,6 +29356,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -27960,6 +29469,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.2
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -27967,6 +29479,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -28055,7 +29570,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 72|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 73|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 2
@@ -28089,6 +29604,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.12
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -28098,6 +29616,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -28206,6 +29727,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0.12
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.16
@@ -28215,6 +29739,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.74
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -28331,10 +29858,10 @@ MonoBehaviour:
       Data: 
     - Name: bodies
       Entry: 7
-      Data: 73|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Grammar.MassBand, HealerLike.Render],[HealerLike.Render.Creatures.LookVocabulary+BodyEntry, HealerLike.Render]], mscorlib
+      Data: 74|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Grammar.MassBand, HealerLike.Render],[HealerLike.Render.Creatures.LookVocabulary+BodyEntry, HealerLike.Render]], mscorlib
     - Name: comparer
       Entry: 7
-      Data: 74|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Grammar.MassBand, HealerLike.Render]], mscorlib
+      Data: 75|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Grammar.MassBand, HealerLike.Render]], mscorlib
     - Name: 
       Entry: 12
       Data: 0
@@ -28355,7 +29882,7 @@ MonoBehaviour:
       Data: 0
     - Name: $v
       Entry: 7
-      Data: 75|HealerLike.Render.Creatures.LookVocabulary+BodyEntry, HealerLike.Render
+      Data: 76|HealerLike.Render.Creatures.LookVocabulary+BodyEntry, HealerLike.Render
     - Name: scale
       Entry: 4
       Data: 0.85
@@ -28370,7 +29897,7 @@ MonoBehaviour:
       Data: 0
     - Name: plant
       Entry: 7
-      Data: 76|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 77|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 1
@@ -28404,6 +29931,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -28411,6 +29941,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -28499,7 +30032,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 77|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 78|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 1
@@ -28533,15 +30066,21 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.18
+      Data: 0.16
     - Name: asymmetry
       Entry: 4
-      Data: 0.1
+      Data: 0.13
     - Name: fracture
       Entry: 4
       Data: 0.72
+    - Name: ridge
+      Entry: 4
+      Data: 0.38
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -28640,7 +30179,7 @@ MonoBehaviour:
       Data: 1
     - Name: $v
       Entry: 7
-      Data: 78|HealerLike.Render.Creatures.LookVocabulary+BodyEntry, HealerLike.Render
+      Data: 79|HealerLike.Render.Creatures.LookVocabulary+BodyEntry, HealerLike.Render
     - Name: scale
       Entry: 4
       Data: 1
@@ -28655,7 +30194,7 @@ MonoBehaviour:
       Data: 0
     - Name: plant
       Entry: 7
-      Data: 79|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 80|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 1
@@ -28689,6 +30228,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -28696,6 +30238,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -28784,7 +30329,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 80|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 81|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 1
@@ -28818,15 +30363,21 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.18
+      Data: 0.16
     - Name: asymmetry
       Entry: 4
-      Data: 0.1
+      Data: 0.13
     - Name: fracture
       Entry: 4
       Data: 0.72
+    - Name: ridge
+      Entry: 4
+      Data: 0.38
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -28925,7 +30476,7 @@ MonoBehaviour:
       Data: 2
     - Name: $v
       Entry: 7
-      Data: 81|HealerLike.Render.Creatures.LookVocabulary+BodyEntry, HealerLike.Render
+      Data: 82|HealerLike.Render.Creatures.LookVocabulary+BodyEntry, HealerLike.Render
     - Name: scale
       Entry: 4
       Data: 1.16
@@ -28940,7 +30491,7 @@ MonoBehaviour:
       Data: 0.52
     - Name: plant
       Entry: 7
-      Data: 82|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 83|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 2
@@ -28974,6 +30525,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -28981,6 +30535,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -29091,6 +30648,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -29098,6 +30658,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -29186,7 +30749,7 @@ MonoBehaviour:
       Data: 
     - Name: stone
       Entry: 7
-      Data: 83|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 84|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 2
@@ -29220,15 +30783,21 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
-      Data: 0.18
+      Data: 0.16
     - Name: asymmetry
       Entry: 4
-      Data: 0.1
+      Data: 0.13
     - Name: fracture
       Entry: 4
       Data: 0.72
+    - Name: ridge
+      Entry: 4
+      Data: 0.38
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -29337,15 +30906,21 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.12
     - Name: asymmetry
       Entry: 4
-      Data: 0.06
+      Data: 0.1
     - Name: fracture
       Entry: 4
       Data: 0.6
+    - Name: ridge
+      Entry: 4
+      Data: 0.25
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -29444,10 +31019,10 @@ MonoBehaviour:
       Data: 
     - Name: stems
       Entry: 7
-      Data: 84|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Grammar.StemBand, HealerLike.Render],[HealerLike.Render.Creatures.LookVocabulary+StemEntry, HealerLike.Render]], mscorlib
+      Data: 85|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Grammar.StemBand, HealerLike.Render],[HealerLike.Render.Creatures.LookVocabulary+StemEntry, HealerLike.Render]], mscorlib
     - Name: comparer
       Entry: 7
-      Data: 85|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Grammar.StemBand, HealerLike.Render]], mscorlib
+      Data: 86|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Grammar.StemBand, HealerLike.Render]], mscorlib
     - Name: 
       Entry: 12
       Data: 0
@@ -29468,7 +31043,7 @@ MonoBehaviour:
       Data: 0
     - Name: $v
       Entry: 7
-      Data: 86|HealerLike.Render.Creatures.LookVocabulary+StemEntry, HealerLike.Render
+      Data: 87|HealerLike.Render.Creatures.LookVocabulary+StemEntry, HealerLike.Render
     - Name: length
       Entry: 4
       Data: 1.8
@@ -29499,6 +31074,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -29506,6 +31084,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -29538,6 +31119,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.14
@@ -29547,6 +31131,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.5
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -29570,7 +31157,7 @@ MonoBehaviour:
       Data: 1
     - Name: $v
       Entry: 7
-      Data: 87|HealerLike.Render.Creatures.LookVocabulary+StemEntry, HealerLike.Render
+      Data: 88|HealerLike.Render.Creatures.LookVocabulary+StemEntry, HealerLike.Render
     - Name: length
       Entry: 4
       Data: 0.8
@@ -29601,6 +31188,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -29608,6 +31198,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -29640,6 +31233,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.14
@@ -29649,6 +31245,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.5
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -29672,7 +31271,7 @@ MonoBehaviour:
       Data: 2
     - Name: $v
       Entry: 7
-      Data: 88|HealerLike.Render.Creatures.LookVocabulary+StemEntry, HealerLike.Render
+      Data: 89|HealerLike.Render.Creatures.LookVocabulary+StemEntry, HealerLike.Render
     - Name: length
       Entry: 4
       Data: 0.5
@@ -29703,6 +31302,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -29710,6 +31312,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -29742,6 +31347,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.14
@@ -29751,6 +31359,9 @@ MonoBehaviour:
     - Name: fracture
       Entry: 4
       Data: 0.5
+    - Name: ridge
+      Entry: 4
+      Data: 0
     - Name: tubeRatio
       Entry: 4
       Data: 0.2
@@ -29774,10 +31385,10 @@ MonoBehaviour:
       Data: 
     - Name: roots
       Entry: 7
-      Data: 89|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Grammar.ReachBand, HealerLike.Render],[HealerLike.Render.Creatures.LookVocabulary+RootEntry, HealerLike.Render]], mscorlib
+      Data: 90|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Grammar.ReachBand, HealerLike.Render],[HealerLike.Render.Creatures.LookVocabulary+RootEntry, HealerLike.Render]], mscorlib
     - Name: comparer
       Entry: 7
-      Data: 90|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Grammar.ReachBand, HealerLike.Render]], mscorlib
+      Data: 91|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Grammar.ReachBand, HealerLike.Render]], mscorlib
     - Name: 
       Entry: 12
       Data: 0
@@ -29798,7 +31409,7 @@ MonoBehaviour:
       Data: 0
     - Name: $v
       Entry: 7
-      Data: 91|HealerLike.Render.Creatures.LookVocabulary+RootEntry, HealerLike.Render
+      Data: 92|HealerLike.Render.Creatures.LookVocabulary+RootEntry, HealerLike.Render
     - Name: reach
       Entry: 4
       Data: 1.1
@@ -29807,10 +31418,10 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.65
+      Data: 0.6
     - Name: jointScale
       Entry: 4
-      Data: 3.1
+      Data: 2.65
     - Name: segmentShape
       Entry: 7
       Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
@@ -29825,11 +31436,14 @@ MonoBehaviour:
       Data: 6
     - Name: fullness
       Entry: 4
-      Data: 0.45
+      Data: 0.7
     - Name: taper
       Entry: 4
       Data: 0.27
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
@@ -29839,6 +31453,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -29871,6 +31488,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -29878,6 +31498,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -29903,7 +31526,7 @@ MonoBehaviour:
       Data: 1
     - Name: $v
       Entry: 7
-      Data: 92|HealerLike.Render.Creatures.LookVocabulary+RootEntry, HealerLike.Render
+      Data: 93|HealerLike.Render.Creatures.LookVocabulary+RootEntry, HealerLike.Render
     - Name: reach
       Entry: 4
       Data: 1.5
@@ -29912,10 +31535,10 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.65
+      Data: 0.6
     - Name: jointScale
       Entry: 4
-      Data: 3.1
+      Data: 2.65
     - Name: segmentShape
       Entry: 7
       Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
@@ -29930,11 +31553,14 @@ MonoBehaviour:
       Data: 6
     - Name: fullness
       Entry: 4
-      Data: 0.45
+      Data: 0.7
     - Name: taper
       Entry: 4
       Data: 0.27
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
@@ -29944,6 +31570,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -29976,6 +31605,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -29983,6 +31615,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -30008,7 +31643,7 @@ MonoBehaviour:
       Data: 2
     - Name: $v
       Entry: 7
-      Data: 93|HealerLike.Render.Creatures.LookVocabulary+RootEntry, HealerLike.Render
+      Data: 94|HealerLike.Render.Creatures.LookVocabulary+RootEntry, HealerLike.Render
     - Name: reach
       Entry: 4
       Data: 2.1
@@ -30017,10 +31652,10 @@ MonoBehaviour:
       Data: 1
     - Name: taper
       Entry: 4
-      Data: 0.65
+      Data: 0.6
     - Name: jointScale
       Entry: 4
-      Data: 3.1
+      Data: 2.65
     - Name: segmentShape
       Entry: 7
       Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
@@ -30035,11 +31670,14 @@ MonoBehaviour:
       Data: 6
     - Name: fullness
       Entry: 4
-      Data: 0.45
+      Data: 0.7
     - Name: taper
       Entry: 4
       Data: 0.27
     - Name: bend
+      Entry: 4
+      Data: 0
+    - Name: bow
       Entry: 4
       Data: 0
     - Name: bevel
@@ -30049,6 +31687,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -30081,6 +31722,9 @@ MonoBehaviour:
     - Name: bend
       Entry: 4
       Data: 0
+    - Name: bow
+      Entry: 4
+      Data: 0
     - Name: bevel
       Entry: 4
       Data: 0.18
@@ -30088,6 +31732,9 @@ MonoBehaviour:
       Entry: 4
       Data: 0
     - Name: fracture
+      Entry: 4
+      Data: 0
+    - Name: ridge
       Entry: 4
       Data: 0
     - Name: tubeRatio
@@ -30122,6 +31769,7 @@ MonoBehaviour:
     limbWidth: 0.48
     limbThickness: 0.5
     limbSplay: 18
+    limbAsymmetry: 0.1
     limbBodyOverlap: 0.5
     minBranch: 0.7
     maxBranch: 1.65
@@ -30131,7 +31779,7 @@ MonoBehaviour:
     fiveHeadSpread: 31
     stoneBranch: 0.35
     stoneBranchThickness: 0.24
-    branchThickness: 0.13
+    branchThickness: 0.19
     headClearance: 1.25
     foreshortening: 0.85
     extendAccessorySupports: 1
@@ -30145,7 +31793,7 @@ MonoBehaviour:
   isReachPinned: 0
   pinnedReach: 1.3
   rootCount: 8
-  rootThickness: 0.175
-  rootHip: 0.145
-  rootKnee: 0.19
+  rootThickness: 0.2
+  rootHip: 0.28
+  rootKnee: 0.22
   armCount: 2
