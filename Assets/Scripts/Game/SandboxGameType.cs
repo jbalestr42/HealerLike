@@ -85,6 +85,7 @@ public class SandboxGameType : AGameType
         InteractionManager.instance.CancelInteraction();
         _isBattleRunning = true;
         EnableAllEntities(true);
+        AscensionGameType.OnBattleStart.Invoke();
     }
 
     // Back to placement: entities keep their health and permanent effects

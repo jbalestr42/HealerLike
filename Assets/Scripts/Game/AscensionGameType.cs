@@ -6,6 +6,8 @@ using UnityEngine.Events;
 // fights, rests or loots it, and goes back to the map until the boss
 public class AscensionGameType : AGameType
 {
+    [HideInInspector] public static UnityEvent OnRoundStart = new UnityEvent();
+    [HideInInspector] public static UnityEvent OnBattleStart = new UnityEvent();
     [HideInInspector] public static UnityEvent OnRoundEnd = new UnityEvent();
 
     public enum State
@@ -125,6 +127,7 @@ public class AscensionGameType : AGameType
                 LoadEnemies(_currentWave);
                 EnableAllEntities(false);
                 SetState(State.WaitForRoundToStart);
+                OnRoundStart.Invoke();
                 break;
 
             case State.WaitForRoundToStart:
@@ -141,6 +144,7 @@ public class AscensionGameType : AGameType
                 EnableAllEntities(true);
                 // TODO: Show countdown before starting the battle
                 SetState(State.OnGoingBattle);
+                OnBattleStart.Invoke();
                 break;
 
             case State.OnGoingBattle:
