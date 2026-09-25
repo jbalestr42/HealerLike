@@ -102,7 +102,7 @@ namespace HealerLike.Render.Creatures
             }
             else if (shape.kind == ShapeKind.Block || shape.kind == ShapeKind.Shard)
             {
-                if (shape.fracture > 0f)
+                if (shape.fracture > 0f || shape.ridge > 0f)
                 {
                     facets = new List<int>();
                     MineralHull.Generate(shape, variant, vertices, indices, facets);
@@ -135,7 +135,7 @@ namespace HealerLike.Render.Creatures
                     ? 0.5f * (0.55f + shape.fullness * swell)
                     : 0.5f * Mathf.Pow(Mathf.Max(0f, profile), shape.fullness);
                 radius *= 1f + shape.taper * (1f - 2f * t);
-                Vector3 centre = new Vector3(shape.bend * t * t, t - 0.5f, 0f);
+                Vector3 centre = new Vector3(shape.bend * t * t + shape.bow * swell, t - 0.5f, 0f);
                 int[] ring = new int[pole ? 1 : shape.radialSegments];
                 for (int i = 0; i < ring.Length; i++)
                 {

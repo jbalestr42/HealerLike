@@ -157,16 +157,60 @@ namespace HealerLike.Render.Creatures
         [TestCase(7)]
         [TestCase(15)]
         [TestCase(31)]
-        public void Anchor_AuthoredForkWithFullyClippedCrown_UsesItsHighestSurfacePoint(int variant)
+        public void Anchor_FullyClippedBlockCrown_UsesItsHighestSurfacePoint(int variant)
         {
-            LookPart slab = System.Array.Find(GrowthStoneHeads.Build(HeadKind.Fork).stone,
-                part => part.id == "ForkLeft");
-            Assert.Greater(slab.shape.fracture, 0f);
-            Mesh mesh = Build(slab.shape, variant);
-            Vector3 anchor = ProceduralShapeMeshes.Anchor(slab.shape, ShapeAnchor.Top, variant);
+            // Retain the profile which exposed the removed-cap bug independently of future art tuning.
+            ShapeProfile shape = ShapeProfile.Block(0.28f, 0.12f, 0.08f, 0.82f);
+            Mesh mesh = Build(shape, variant);
+            Vector3 anchor = ProceduralShapeMeshes.Anchor(shape, ShapeAnchor.Top, variant);
             Assert.That(anchor.y, Is.EqualTo(mesh.bounds.max.y).Within(0.000001f),
                 "A removed crown must not move the accent onto a broad sloping side.");
             AssertOnSurface(mesh, anchor);
+        }
+
+        [TestCase(0.02f, -0.8f, 0.001f)]
+        [TestCase(0.2f, 0.1f, 0.8f)]
+        [TestCase(0.4f, 0.95f, 1f)]
+        public void Create_RidgedExtremes_KeepLimitedWholePlanesAndSurfaceAnchors(float bevel, float taper,
+            float fracture)
+        {
+            for (int variant = 0; variant < 8; variant++)
+            {
+                ShapeProfile shape = ShapeProfile.Block(bevel, taper, 0.15f, fracture, 1f);
+                Mesh mesh = Build(shape, variant);
+                RenderTestAssets.AssertClosed(mesh);
+                Assert.That(Vector3.Distance(mesh.bounds.size, Vector3.one), Is.LessThan(0.00001f));
+                Assert.LessOrEqual(new HashSet<Vector3>(mesh.normals).Count, 22,
+                    "A ridge adds four intentional planes; tessellation must not add shading planes.");
+                foreach (Vector3 normal in mesh.normals)
+                {
+                    Assert.IsTrue(RenderMath.IsFinite(normal));
+                    Assert.That(normal.magnitude, Is.EqualTo(1f).Within(0.0001f));
+                }
+                AssertOnSurface(mesh, ProceduralShapeMeshes.Anchor(shape, ShapeAnchor.Top, variant));
+                AssertOnSurface(mesh, ProceduralShapeMeshes.Anchor(shape, ShapeAnchor.Bottom, variant));
+            }
+        }
+
+        [Test]
+        public void Create_Ridge_ReplacesTheBlankFrontWithTwoBroadMeetingPlanes()
+        {
+            Mesh mesh = Build(ShapeProfile.Block(0.16f, 0f, 0f, 0f, 0.7f), 17);
+            Vector3[] vertices = mesh.vertices;
+            Vector3[] normals = mesh.normals;
+            float left = 0f, right = 0f;
+            for (int i = 0; i < vertices.Length; i += 3)
+            {
+                Vector3 centre = (vertices[i] + vertices[i + 1] + vertices[i + 2]) / 3f;
+                if (centre.z < 0.15f || Mathf.Abs(centre.x) > 0.28f || Mathf.Abs(centre.y) > 0.4f) continue;
+                Vector3 normal = normals[i];
+                if (normal.z < 0.5f) continue;
+                float area = Vector3.Cross(vertices[i + 1] - vertices[i], vertices[i + 2] - vertices[i]).magnitude * 0.5f;
+                if (normal.x < -0.2f) left += area;
+                if (normal.x > 0.2f) right += area;
+            }
+            Assert.Greater(left, 0.04f);
+            Assert.Greater(right, 0.04f);
         }
 
         [TestCase(MassBand.Light)]

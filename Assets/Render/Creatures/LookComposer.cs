@@ -188,6 +188,11 @@ namespace HealerLike.Render.Creatures
                 return false;
             }
             LookVocabulary.HeadEntry head = vocabulary.heads[channels.head];
+            if (head.plantStem != null && !head.plantStem.IsValid())
+            {
+                Debug.LogError("[LookComposer] Invalid articulated plant stem profile.");
+                return false;
+            }
             if (!float.IsFinite(head.plantStemScale) || head.plantStemScale < 0f)
             {
                 Debug.LogError("[LookComposer] Plant family stem scale must be finite and nonnegative; zero keeps legacy length.");
@@ -230,6 +235,7 @@ namespace HealerLike.Render.Creatures
             sockets = UnitSockets.Place(channels, vocabulary);
             LookVocabulary.BodyEntry body = vocabulary.bodies[channels.mass];
             LookVocabulary.StemEntry stem = vocabulary.stems[channels.stem];
+            LookVocabulary.HeadEntry head = vocabulary.heads[channels.head];
             bool isPlant = channels.side == LookSide.Plant;
             float scale = sockets.scale;
             float headScale = sockets.headScale;
@@ -238,8 +244,16 @@ namespace HealerLike.Render.Creatures
             {
                 if (!Fragment(parts, vocabulary, channels, body.plant, sockets.body, 1f, CountBand.One, seed))
                     return null;
-                parts.Link("Stem", sockets.stemFoot, sockets.neck, stem.thickness, stemColour, PartRole.Stem,
-                    stem.plantShape);
+                if (head.plantStem == null)
+                {
+                    parts.Link("Stem", sockets.stemFoot, sockets.neck, stem.thickness, stemColour, PartRole.Stem,
+                        stem.plantShape);
+                }
+                else
+                {
+                    PlantStem(parts, sockets, stem, head.plantStem,
+                        vocabulary.Colour(ColourRole.Body, channels.accent, channels.side));
+                }
             }
             else
             {
@@ -249,7 +263,6 @@ namespace HealerLike.Render.Creatures
                     vocabulary.Layout, stem.stoneLimbShape);
             }
 
-            LookVocabulary.HeadEntry head = vocabulary.heads[channels.head];
             LookPart[] headParts = isPlant ? head.plant : head.stone;
             if (head.carriesCount)
             {
@@ -307,6 +320,26 @@ namespace HealerLike.Render.Creatures
                 }
             }
             return parts;
+        }
+
+        static void PlantStem(PartList parts, UnitSockets sockets, LookVocabulary.StemEntry cadence,
+            LookVocabulary.PlantStemEntry growth, Color colour)
+        {
+            float width = cadence.thickness * growth.thicknessScale;
+            Vector3 start = sockets.stemFoot;
+            for (int i = 0; i < growth.segments; i++)
+            {
+                float t = (i + 1f) / growth.segments;
+                Vector3 end = Vector3.Lerp(sockets.stemFoot, sockets.neck, t)
+                    + Vector3.right * (growth.bow * Mathf.Sin(Mathf.PI * t));
+                parts.Link("StemGrowth", start, end, width, colour, PartRole.Stem, growth.segmentShape);
+                if (i + 1 < growth.segments)
+                {
+                    parts.Add("StemJoint", Primitive.Sphere, end, Vector3.one * (width * growth.jointScale),
+                        colour, Vector3.zero, 0f, PartRole.Stem, shape: growth.jointShape);
+                }
+                start = end;
+            }
         }
 
         // Keep the whole accessory readable beyond a broad crown, with an attached support back to its socket.
@@ -383,8 +416,9 @@ namespace HealerLike.Render.Creatures
             float height = limb + bodyRadius * layout.limbBodyOverlap;
             for (int i = -1; i <= 1; i += 2)
             {
-                Vector3 foot = new Vector3(layout.limbSpread * i * scale, height * 0.5f, layout.limbDepth);
-                Vector3 size = new Vector3(layout.limbWidth * scale, height, layout.limbThickness * scale);
+                float proportion = 1f + i * layout.limbAsymmetry;
+                Vector3 foot = new Vector3(layout.limbSpread * i * scale, height * proportion * 0.5f, layout.limbDepth);
+                Vector3 size = new Vector3(layout.limbWidth * scale, height, layout.limbThickness * scale) * proportion;
                 parts.Add("Limb", Primitive.Stone, foot, size, colour, new Vector3(0f, layout.limbSplay * i, 0f), 0f,
                     PartRole.Limb, Variant(seed, parts.count), shape);
             }

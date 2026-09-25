@@ -141,6 +141,10 @@ namespace HealerLike.Render.Studio
             {
                 errors.Add("Plant family stem scale must be finite and nonnegative; zero keeps legacy length.");
             }
+            if (head.plantStem != null && !head.plantStem.IsValid())
+            {
+                errors.Add("Invalid articulated plant stem profile.");
+            }
 
             CheckParts(Pick(body.plant, body.stone, isPlant), "body", CountBand.One, errors);
             CheckParts(Pick(head.plant, head.stone, isPlant), "head", head.carriesCount ? channels.count : CountBand.One,

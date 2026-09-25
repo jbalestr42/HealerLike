@@ -88,9 +88,25 @@ namespace HealerLike.Render.Creatures
             ShapeProfile shape = default)
         {
             Vector3 delta = to - from;
-            Vector3 euler = Quaternion.FromToRotation(Vector3.up, delta).eulerAngles;
             Vector3 size = new Vector3(thickness, delta.magnitude + thickness, thickness);
-            return Add(id, Primitive.Capsule, (from + to) * 0.5f, size, colour, euler, 0f, role, shape: shape);
+            Vector3 centre = (from + to) * 0.5f;
+            Quaternion rotation = Quaternion.FromToRotation(Vector3.up, delta);
+            if (shape.isProcedural)
+            {
+                Vector3 bottom = ProceduralShapeMeshes.Anchor(shape, ShapeAnchor.Bottom);
+                Vector3 top = ProceduralShapeMeshes.Anchor(shape, ShapeAnchor.Top);
+                Vector3 axis = top - bottom;
+                float lateral = axis.x * axis.x + axis.z * axis.z;
+                float span = delta.magnitude + thickness;
+                if (lateral * size.x * size.x >= span * span)
+                {
+                    size.x = size.z = span / Mathf.Sqrt(lateral) * 0.99f;
+                }
+                size.y = Mathf.Sqrt(Mathf.Max(0f, span * span - lateral * size.x * size.x)) / Mathf.Abs(axis.y);
+                rotation = Quaternion.FromToRotation(Vector3.Scale(axis, size), delta);
+                centre -= rotation * Vector3.Scale((bottom + top) * 0.5f, size);
+            }
+            return Add(id, Primitive.Capsule, centre, size, colour, rotation.eulerAngles, 0f, role, shape: shape);
         }
 
         // Move a completed fragment while preserving its relative part placements and the root pivot.

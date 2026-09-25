@@ -185,6 +185,59 @@ namespace HealerLike.Render.Creatures
             Assert.AreEqual(before.neckLocal, after.neckLocal);
         }
 
+        [TestCase(0f)]
+        [TestCase(0.7f)]
+        public void Layout_ArticulatedStem_KeepsEveryProfileEndpointOnItsGrowthPath(float bend)
+        {
+            UnitChannels channels = RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Bud);
+            CreatureRecipe stoneBefore = Compose(LookSide.Stone);
+            UnitSockets sockets = UnitSockets.Place(channels, _vocabulary);
+            LookVocabulary.PlantStemEntry growth = new LookVocabulary.PlantStemEntry
+            {
+                segments = 3, thicknessScale = 2.4f, bow = 0.17f, jointScale = 0.8f,
+                segmentShape = ShapeProfile.Segment(0.2f, 0.75f, bend), jointShape = ShapeProfile.Bulb()
+            };
+            _vocabulary.heads[HeadKind.Bud].plantStem = growth;
+            PartList parts = LookComposer.Layout(channels, _vocabulary);
+            Assert.AreEqual(1 + growth.segments * 2 - 1, parts.headStarts[0]);
+            Assert.AreEqual(sockets.neck, parts.Source(parts.headStarts[0]).position);
+            float width = _vocabulary.stems[channels.stem].thickness * growth.thicknessScale;
+            Vector3 start = sockets.stemFoot;
+            for (int i = 0; i < growth.segments; i++)
+            {
+                float t = (i + 1f) / growth.segments;
+                Vector3 end = Vector3.Lerp(sockets.stemFoot, sockets.neck, t)
+                    + Vector3.right * (growth.bow * Mathf.Sin(Mathf.PI * t));
+                LookPart link = parts.Source(1 + i * 2);
+                Quaternion rotation = Quaternion.Euler(link.euler);
+                Vector3 bottom = link.position + rotation * Vector3.Scale(link.size,
+                    ProceduralShapeMeshes.Anchor(link.shape, ShapeAnchor.Bottom));
+                Vector3 top = link.position + rotation * Vector3.Scale(link.size,
+                    ProceduralShapeMeshes.Anchor(link.shape, ShapeAnchor.Top));
+                Vector3 overlap = (end - start).normalized * (width * 0.5f);
+                Assert.Less(Vector3.Distance(bottom, start - overlap), 0.00001f);
+                Assert.Less(Vector3.Distance(top, end + overlap), 0.00001f);
+                if (i + 1 < growth.segments)
+                {
+                    Assert.Less(Vector3.Distance(end, parts.Source(2 + i * 2).position), 0.00001f);
+                }
+                start = end;
+            }
+            CreatureRecipe stoneAfter = Compose(LookSide.Stone);
+            CollectionAssert.AreEqual(stoneBefore.parts, stoneAfter.parts);
+        }
+
+        [Test]
+        public void Compose_InvalidArticulatedStem_IsRejectedInStudioAndRuntime()
+        {
+            _vocabulary.heads[HeadKind.Bud].plantStem = new LookVocabulary.PlantStemEntry { segments = 20 };
+            CreatureGrammarPreset preset = Track(ScriptableObject.CreateInstance<CreatureGrammarPreset>());
+            preset.vocabulary = _vocabulary;
+            StringAssert.Contains("Invalid articulated plant stem profile", string.Join(" ", CreatureGrammarValidator.Validate(preset)));
+            LogAssert.Expect(LogType.Error, "[LookComposer] Invalid articulated plant stem profile.");
+            Assert.IsNull(Compose(LookSide.Plant));
+        }
+
         [Test]
         public void Layout_FamilyStemScale_PreservesCadenceOrderingWithinTheFamily()
         {

@@ -13,10 +13,29 @@ namespace HealerLike.Render.Creatures
             yield return ShapeProfile.Bulb();
             yield return ShapeProfile.Segment();
             yield return ShapeProfile.Leaf();
+            yield return ShapeProfile.Leaf(0.12f, 0.7f, -0.9f);
             yield return ShapeProfile.Block();
             yield return ShapeProfile.Shard();
             yield return ShapeProfile.Ring();
             yield return ShapeProfile.Ring(0.3f, true);
+        }
+
+        [Test]
+        public void Create_BowedLeaf_HasAConcaveInnerEdgeBetweenItsAttachedPoles()
+        {
+            ShapeProfile shape = ShapeProfile.Leaf(0.12f, 0.7f, -0.9f);
+            Mesh leaf = Build(shape);
+            Vector3 bottom = ProceduralShapeMeshes.Anchor(shape, ShapeAnchor.Bottom);
+            Vector3 top = ProceduralShapeMeshes.Anchor(shape, ShapeAnchor.Top);
+            float innerEdge = float.MinValue;
+            foreach (Vector3 vertex in leaf.vertices)
+            {
+                if (Mathf.Abs(vertex.y) < 0.001f) innerEdge = Mathf.Max(innerEdge, vertex.x);
+            }
+            Assert.Greater(innerEdge, float.MinValue, "The profile must contain a middle cross-section.");
+            Assert.Less(innerEdge, Mathf.Min(bottom.x, top.x) - 0.12f,
+                "The leaf must bow around an opening, rather than remain a straight lance.");
+            CheckSolid(leaf);
         }
 
         Mesh Build(ShapeProfile shape, int variant = 0)
@@ -71,6 +90,7 @@ namespace HealerLike.Render.Creatures
                     shape.fullness = end == 0 ? 0.05f : 3f;
                     shape.taper = end == 0 ? -0.8f : 0.95f;
                     shape.bend = end == 0 ? -1f : 1f;
+                    shape.bow = end == 0 ? -1.5f : 1.5f;
                     shape.bevel = end == 0 ? 0.02f : 0.4f;
                     shape.asymmetry = 0.15f;
                     shape.tubeRatio = end == 0 ? 0.06f : 0.45f;
@@ -113,6 +133,12 @@ namespace HealerLike.Render.Creatures
                 shape = ShapeProfile.Block();
                 shape.bevel = bad;
                 Assert.IsFalse(shape.IsValid());
+                shape = ShapeProfile.Leaf();
+                shape.bow = bad;
+                Assert.IsFalse(shape.IsValid());
+                shape = ShapeProfile.Block();
+                shape.ridge = bad;
+                Assert.IsFalse(shape.IsValid());
             }
             ShapeProfile invalid = ShapeProfile.Ring();
             invalid.tubeRatio = 0.6f;
@@ -134,6 +160,7 @@ namespace HealerLike.Render.Creatures
         public void Create_BendTaperFullnessAndBevel_ChangeVerticesInsideTheSameBounds()
         {
             AssertDifferent(ShapeProfile.Leaf(0f), ShapeProfile.Leaf(0.8f));
+            AssertDifferent(ShapeProfile.Leaf(), ShapeProfile.Leaf(bow: -0.9f));
             AssertDifferent(ShapeProfile.Segment(0f), ShapeProfile.Segment(0.8f));
             AssertDifferent(ShapeProfile.Bulb(0.5f), ShapeProfile.Bulb(2f));
             AssertDifferent(ShapeProfile.Block(0.08f), ShapeProfile.Block(0.35f));

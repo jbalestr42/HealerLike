@@ -29,8 +29,30 @@ namespace HealerLike.Render.Creatures
             public LookPart[] stone = Array.Empty<LookPart>();
             // Zero keeps the original cadence length; positive values scale only this family's plant stem.
             public float plantStemScale;
+            // Optional articulated growth replaces the plain stalk; cadence still sets its total length.
+            public PlantStemEntry plantStem;
             // The head fans its own copies (arch pods, cairn stones), parts show by their minCount
             public bool carriesCount;
+        }
+
+        [Serializable]
+        public class PlantStemEntry
+        {
+            public int segments = 2;
+            public float thicknessScale = 2.8f;
+            public float bow = 0.12f;
+            public float jointScale = 0.72f;
+            public ShapeProfile segmentShape;
+            public ShapeProfile jointShape;
+
+            public bool IsValid()
+            {
+                return segments >= 2 && segments <= 4
+                    && float.IsFinite(thicknessScale) && thicknessScale > 0f && thicknessScale <= 5f
+                    && float.IsFinite(bow) && Mathf.Abs(bow) <= 1f
+                    && float.IsFinite(jointScale) && jointScale > 0f && jointScale <= 2f
+                    && segmentShape.IsValid() && jointShape.IsValid();
+            }
         }
 
         [Serializable]
@@ -101,6 +123,7 @@ namespace HealerLike.Render.Creatures
             public float limbWidth = 0.42f;
             public float limbThickness = 0.45f;
             public float limbSplay = 25f;
+            public float limbAsymmetry;
             public float limbBodyOverlap = 0.5f;
             public float minBranch = 0.5f;
             public float maxBranch = 1.2f;
@@ -124,6 +147,7 @@ namespace HealerLike.Render.Creatures
                     && Positive(stoneNeck) && Positive(shoulderOffset) && Positive(limbSpread)
                     && float.IsFinite(limbDepth) && Positive(limbWidth) && Positive(limbThickness)
                     && float.IsFinite(limbSplay) && Mathf.Abs(limbSplay) <= 90f
+                    && float.IsFinite(limbAsymmetry) && limbAsymmetry >= 0f && limbAsymmetry <= 0.25f
                     && Positive(limbBodyOverlap) && Positive(minBranch) && maxBranch >= minBranch
                     && Positive(maxBranch) && Positive(threeHeadScale) && Positive(fiveHeadScale)
                     && Angle(threeHeadSpread) && Angle(fiveHeadSpread) && fiveHeadSpread < 45f && Positive(stoneBranch)
