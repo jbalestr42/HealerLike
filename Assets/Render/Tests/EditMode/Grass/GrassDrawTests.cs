@@ -124,13 +124,12 @@ public class GrassDrawTests
         Assert.AreEqual(plant.enableInstancing, grass.enableInstancing);
         Assert.AreEqual(plant.renderQueue, grass.renderQueue);
         Assert.That(grass.GetFloat("_HLNormalEdges"), Is.Zero);
-        Assert.That(grass.GetFloat("_HLToonThresholdOffset"), Is.Zero);
-        Assert.That(grass.GetFloat("_HLFaceHatch"), Is.Zero);
-        Assert.That(grass.GetFloat("_HLHatchMultiplier"), Is.InRange(0.01f, 0.25f));
+        Assert.That(grass.GetFloat("_HLToonThresholdOffset"), Is.LessThan(0f));
+        Assert.That(grass.GetFloat("_HLFaceHatch"), Is.GreaterThan(0.5f));
+        Assert.That(grass.GetFloat("_HLHatchMultiplier"), Is.InRange(0.5f, 1f));
         Assert.That(grass.GetFloat("_HLMeadowVariation"), Is.GreaterThan(0f));
         Assert.That(grass.GetFloat("_HLGrassTipLight"), Is.GreaterThan(0f));
-        Assert.That(grass.GetColor("_HLShadeTint").a, Is.GreaterThan(0f));
-        Assert.That(grass.GetColor("_HLShadeTint").g, Is.GreaterThan(grass.GetColor("_HLShadeTint").b));
+        Assert.That(grass.GetColor("_HLShadeTint").a, Is.Zero, "The shared blue shade must reach ordinary grass");
         Assert.That((Color32)grass.GetColor("_BaseColor"), Is.EqualTo(new Color32(91, 144, 85, 255))); // #5b9055
     }
 
@@ -370,7 +369,7 @@ public class GrassDrawTests
         Assert.That(x, Is.InRange(4, 251), "The full grass probe must be inside the captured image.");
         Assert.That(y, Is.InRange(4, 251), "The full grass probe must be inside the captured image.");
         Color32 shadow = LookTestScene.MedianColour(_scene.texture, x, y, 4);
-        Color32 study = new Color32(19, 58, 113, 255); // #133a71, the 04 boulder's shadow
+        Color32 study = new Color32(39, 91, 127, 255); // Lifted graphic blue after the working-space contrast
         Assert.That(shadow.b - shadow.g, Is.GreaterThan(30), "The grass teal must stay out of cast shadow");
         Assert.That(Mathf.Abs(shadow.r - study.r), Is.LessThanOrEqualTo(24));
         Assert.That(Mathf.Abs(shadow.g - study.g), Is.LessThanOrEqualTo(24));

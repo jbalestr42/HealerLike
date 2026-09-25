@@ -18,11 +18,11 @@ namespace HealerLike.Render.Studio.Editor
         };
         static readonly float[] floatValues =
         {
-            0.32f, 0.38f, 0.14f, 1f, 500f, 1000f, 6f, 0.16f, 0.075f, 0.0001f,
+            LookSettings.Default.shadowStrength, LookSettings.Default.toonThreshold, LookSettings.Default.toonSoftness, 1f, 500f, 1000f, 6f, 0.16f, 0.075f, 0.0001f,
             0.65f, 1f, 1f, 0.025f, 2.44f, 0.1f, 0.01f, 100f, 0.6f, 1f, 1f
         };
         static readonly string[] vectorNames = { "_HLShadowTint", "_HLOutlineColor", "_HLFogColor" };
-        static readonly Color shadowTint = new Color(0.18f, 0.27f, 0.31f);
+        static readonly Color shadowTint = LookSettings.Default.shadowTint;
         static readonly Color outlineColour = new Color(0.08f, 0.12f, 0.16f);
         static readonly Color fogColour = new Color(0.075f, 0.095f, 0.115f);
 

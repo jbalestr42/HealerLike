@@ -229,7 +229,7 @@ public class GrassFieldTests
         _field.socleDraw.arguments.GetData(data);
         Assert.AreEqual((uint)FacetedMeshes.SocleIndexCount, data[0]); // eight fan triangles
         Assert.AreEqual(ShadowCastingMode.On, _field.tuftDraw.shadowCastingMode);
-        Assert.AreEqual(1f, _field.tuftDraw.properties.GetFloat("_HLGrassSpikeShadowsOnly"));
+        Assert.AreEqual(0f, _field.tuftDraw.properties.GetFloat("_HLGrassSpikeShadowsOnly"));
         Assert.AreEqual(ShadowCastingMode.Off, _field.socleDraw.shadowCastingMode);
         Assert.AreEqual(1f, _field.tuftDraw.properties.GetFloat("_HLTuftLean"));
         Assert.AreEqual(0f, _field.socleDraw.properties.GetFloat("_HLTuftLean"));

@@ -50,7 +50,7 @@ public class LookShaderTests
             Assert.That(material.FindPass(pass), Is.GreaterThanOrEqualTo(0), pass);
         }
 
-        Assert.That(shader.GetPropertyCount(), Is.EqualTo(12));
+        Assert.That(shader.GetPropertyCount(), Is.EqualTo(11));
         Assert.That(shader.GetPropertyName(3), Is.EqualTo("_BaseColor"));
         if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null)
         {
@@ -188,9 +188,10 @@ public class LookShaderTests
                   + " inked=" + inked.ToString("F4"));
     }
 
-    [TestCase(1f)]
-    [TestCase(1.15f)]
-    public void Render_LitSculpt_LightRotationSeparatesPlanesAndContrastPreservesPlantChannels(float contrast)
+    [TestCase(1f, 0f)]
+    [TestCase(1.15f, 0f)]
+    [TestCase(1.15f, -0.1f)]
+    public void Render_CelGradient_HasTwoPlateausAndABoundedTransition(float contrast, float materialOffset)
     {
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
         {
@@ -200,50 +201,52 @@ public class LookShaderTests
         _scene.BuildKeyLight(20f, 4f);
         _scene.camera.transform.SetPositionAndRotation(new Vector3(0f, 0f, -4f), Quaternion.identity);
         LookSettings settings = _scene.look.settings;
-        settings.toonThreshold = 0.3f;
-        settings.toonSoftness = 0.04f;
         settings.inkStrength = 0f;
         settings.contrast = contrast;
         _scene.look.settings = settings;
         Material material = Track(new Material(AssetDatabase.LoadAssetAtPath<Shader>(lookShaderPath)));
+        material.SetFloat("_HLToonThresholdOffset", materialOffset);
         Mesh mesh = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
-        GameObject surface = Track(new GameObject("Lit volume probe"));
+        GameObject surface = Track(new GameObject("Cel gradient probe"));
         surface.layer = LookTestScene.Layer;
         surface.AddComponent<MeshFilter>().sharedMesh = mesh;
         MeshRenderer renderer = surface.AddComponent<MeshRenderer>();
         renderer.sharedMaterial = material;
         renderer.shadowCastingMode = ShadowCastingMode.Off;
         MaterialPropertyBlock block = new MaterialPropertyBlock();
-        // The working-space plant green has a small but deliberate blue channel. Per-channel contrast used
-        // to erase it at the production contrast value, making the whole lit hemisphere neon lime.
+        // A working-space plant green with a deliberate low blue channel. Fill contrast must keep it.
         Color source = new Color(0.21f, 0.58f, 0.05f, 1f);
         block.SetVector("_BaseColor", source);
         renderer.SetPropertyBlock(block);
-        Color[] flat = new Color[3];
-        Color[] sculpted = new Color[3];
-        for (int i = 0; i < 3; i++)
+        float[] dotProducts = { 0.05f, 0.2f, 0.35f, 0.45f, 0.55f, 0.7f, 0.9f };
+        Color[] pixels = new Color[dotProducts.Length];
+        for (int i = 0; i < dotProducts.Length; i++)
         {
-            // A real URP render publishes the light's constant buffer. Every angle stays inside the lit band.
-            Vector3 direction = Quaternion.Euler(0f, i * 35f, 0f) * mesh.normals[0];
+            // Fixed N.L samples: two on each plateau and three in the transition. An authored offset moves
+            // the whole interval; it must not stretch the gradient across the rest of the lit hemisphere.
+            float angle = Mathf.Acos(dotProducts[i] + 2f * materialOffset) * Mathf.Rad2Deg;
+            Vector3 direction = Quaternion.Euler(0f, angle, 0f) * mesh.normals[0];
             RenderSettings.sun.transform.rotation = Quaternion.LookRotation(-direction, Vector3.up);
-            material.SetFloat("_HLLitSculpt", 0f);
             _scene.Render();
-            flat[i] = _scene.texture.GetPixel(128, 128).linear;
-            material.SetFloat("_HLLitSculpt", 0.9f);
-            _scene.Render();
-            sculpted[i] = _scene.texture.GetPixel(128, 128).linear;
+            pixels[i] = _scene.texture.GetPixel(128, 128).linear;
         }
-        Debug.Log("[LookShaderTests] Real-light volume, contrast=" + contrast + " flat=" + flat[0]
-            + "," + flat[1] + "," + flat[2] + " sculpted=" + sculpted[0] + "," + sculpted[1] + "," + sculpted[2]);
-        Assert.That(flat[0].g, Is.EqualTo(flat[2].g).Within(0.005f));
-        Assert.That(sculpted[0].g - sculpted[1].g, Is.GreaterThan(0.02f));
-        Assert.That(sculpted[1].g - sculpted[2].g, Is.GreaterThan(0.04f));
-        Assert.That(sculpted[0].g, Is.EqualTo(flat[0].g).Within(0.005f));
-        foreach (Color pixel in sculpted)
+        Debug.Log("[LookShaderTests] Cel band, contrast=" + contrast + " offset=" + materialOffset
+            + " samples=" + string.Join(",", pixels.Select(pixel => pixel.ToString("F3"))));
+        Assert.That(((Vector4)pixels[0] - (Vector4)pixels[1]).magnitude, Is.LessThan(0.008f),
+            "The shade plateau must stop changing with the light angle");
+        Assert.That(((Vector4)pixels[5] - (Vector4)pixels[6]).magnitude, Is.LessThan(0.008f),
+            "The lit plateau must stop changing with the light angle");
+        for (int i = 1; i < 5; i++)
         {
-            Assert.That(pixel.b, Is.GreaterThan(0.01f), "The plant's blue channel must survive shading and contrast");
-            Assert.That(pixel.r / pixel.g, Is.EqualTo(source.r / source.g).Within(0.01f));
-            Assert.That(pixel.b / pixel.g, Is.EqualTo(source.b / source.g).Within(0.01f));
+            Assert.That(pixels[i + 1].g - pixels[i].g, Is.GreaterThan(0.025f),
+                "Only the bounded transition should grade between shade and light");
+        }
+        Assert.That(pixels[6].g - pixels[0].g, Is.GreaterThan(0.15f));
+        foreach (int i in new[] { 5, 6 })
+        {
+            Assert.That(pixels[i].b, Is.GreaterThan(0.01f), "The lit plant's blue channel must survive contrast");
+            Assert.That(pixels[i].r / pixels[i].g, Is.EqualTo(source.r / source.g).Within(0.01f));
+            Assert.That(pixels[i].b / pixels[i].g, Is.EqualTo(source.b / source.g).Within(0.01f));
         }
     }
 

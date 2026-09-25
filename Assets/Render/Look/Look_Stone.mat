@@ -25,8 +25,8 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _HLLitSculpt: 0.9
-    - _HLHatchMultiplier: 0.8
+    - _HLToonThresholdOffset: 0
+    - _HLHatchMultiplier: 1
     - _HLFaceHatch: 1
     - _HLGroundGrid: 0
     - _HLNormalEdges: 1

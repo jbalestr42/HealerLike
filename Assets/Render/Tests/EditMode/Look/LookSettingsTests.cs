@@ -76,11 +76,11 @@ public class LookSettingsTests
     }
 
     [Test]
-    public void Default_ShadowTintAndFog_AreTheReferenceColours()
+    public void Default_ShadowTintAndFog_KeepTheLiftedBlueShadeAndReferenceFog()
     {
         LookSettings defaults = LookSettings.Default;
 
-        Assert.That((Color32)defaults.shadowTint, Is.EqualTo(new Color32(30, 87, 125, 255))); // #1e577d, plant shade
+        Assert.That((Color32)defaults.shadowTint, Is.EqualTo(new Color32(42, 99, 137, 255))); // Graphic blue, lifted twelve sRGB codes
         Assert.That((Color32)defaults.fogColor, Is.EqualTo(new Color32(154, 188, 211, 255))); // #9abcd3, far ridge
     }
 

@@ -139,7 +139,6 @@ public class CreatureStudioPreviewTests
             Assert.AreNotSame(source, actual);
             Assert.AreEqual(source.GetFloat("_HLToonThresholdOffset"), actual.GetFloat("_HLToonThresholdOffset"));
             Assert.AreEqual(source.GetColor("_HLShadeTint"), actual.GetColor("_HLShadeTint"));
-            Assert.AreEqual(source.GetFloat("_HLLitSculpt"), actual.GetFloat("_HLLitSculpt"));
             Assert.AreEqual(source.GetFloat("_HLFaceHatch"), actual.GetFloat("_HLFaceHatch"));
         }
     }

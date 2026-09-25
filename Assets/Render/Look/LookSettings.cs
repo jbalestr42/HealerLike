@@ -18,7 +18,7 @@ namespace HealerLike.Render.Look
         public float shadowStrength;
 
         // Moves every surface's light and shade split: stones, ground, grass, heads, tips, effects and cast shadows.
-        // Plant bodies add Look_Body.mat's offset to it.
+        // Ground and grass subtract their material offset to keep their original light/shade split.
         public float toonThreshold;
 
         // Half width of the soft terminator around the toon threshold
@@ -67,12 +67,12 @@ namespace HealerLike.Render.Look
             {
                 return new LookSettings
                 {
-                    shadowTint = new Color(30 / 255f, 87 / 255f, 125 / 255f, 1f),
+                    shadowTint = new Color(42 / 255f, 99 / 255f, 137 / 255f, 1f),
                     outlineColor = new Color(24 / 255f, 38 / 255f, 63 / 255f, 1f),
                     fogColor = new Color(154 / 255f, 188 / 255f, 211 / 255f, 1f),
                     shadowStrength = 0.7f,
-                    toonThreshold = 0.45f,
-                    toonSoftness = 0.08f,
+                    toonThreshold = 0.725f,
+                    toonSoftness = 0.1f,
                     outlineWidthPixels = 1f,
                     fogStart = 20f,
                     fogEnd = 60f,

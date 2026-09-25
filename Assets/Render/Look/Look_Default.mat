@@ -25,9 +25,8 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _HLLitSculpt: 0.65
-    - _HLHatchMultiplier: 0.45
-    - _HLFaceHatch: 0.3
+    - _HLHatchMultiplier: 1
+    - _HLFaceHatch: 1
     - _HLToonThresholdOffset: 0
     m_Colors:
     - _BaseColor: {r: 0.49803922, g: 0.7882353, b: 0.24705882, a: 1}

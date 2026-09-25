@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using UnityEngine;
+using HealerLike.Render.Look;
 
 namespace HealerLike.Render.Studio.Editor
 {
@@ -39,6 +40,9 @@ public class StudioLookScopeTests
 
         Assert.AreEqual(0.16f, Shader.GetGlobalFloat("_HLInkStrength"));
         Assert.AreEqual(1f, Shader.GetGlobalFloat("_HLLookApplied"));
+        Assert.AreEqual(LookSettings.Default.toonThreshold, Shader.GetGlobalFloat("_HLToonThreshold"));
+        Assert.AreEqual(LookSettings.Default.toonSoftness, Shader.GetGlobalFloat("_HLToonSoftness"));
+        Assert.AreEqual(LookSettings.Default.shadowStrength, Shader.GetGlobalFloat("_HLShadowStrength"));
         scope.End();
     }
 

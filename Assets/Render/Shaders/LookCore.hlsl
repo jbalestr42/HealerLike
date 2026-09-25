@@ -54,12 +54,12 @@ float3 HLWorkingColor(float3 srgb)
 // LookController uploads every global before setting _HLLookApplied to 1.
 // When the flag is 0, use the complete baked HL defaults.
 // Keep LookSettings defaults and shader fallback values identical.
-#define HL_DEF_SHADOWTINT float4(HLWorkingColor(float3(30,87,125)/255.0),1)
+#define HL_DEF_SHADOWTINT float4(HLWorkingColor(float3(42,99,137)/255.0),1)
 #define HL_DEF_OUTLINECOLOR float4(HLWorkingColor(float3(24,38,63)/255.0),1)
 #define HL_DEF_FOGCOLOR float4(HLWorkingColor(float3(154,188,211)/255.0),1)
 #define HL_DEF_SHADOWSTRENGTH 0.7
-#define HL_DEF_TOONTHRESHOLD 0.45
-#define HL_DEF_TOONSOFTNESS 0.08
+#define HL_DEF_TOONTHRESHOLD 0.725
+#define HL_DEF_TOONSOFTNESS 0.1
 #define HL_DEF_OUTLINEWIDTHPIXELS 1.0
 // World-unit fog distances until LookController.Init publishes the calibrated range.
 #define HL_DEF_FOGSTART 20.0
@@ -134,36 +134,29 @@ float3 HLApplyBandedFog(float3 positionWS, float3 color)
 // hatch scales all ink; faceHatch quiets self shade without suppressing true cast-shadow strokes.
 // A material may move the toon threshold by thresholdOffset and give its own shade faces a tint:
 // shadeTint.rgb is the working colour, shadeTint.a its strength, and alpha zero keeps the global tint.
-// Cast shadow, a face the global threshold calls lit but the shadow map darkens, keeps the global tint.
+// Cast shadow, a face the material calls lit but the shadow map darkens, keeps the global tint.
 float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, float3 baseColor, float hatch,
-                      float thresholdOffset, float4 shadeTint, float litSculpt, float faceHatch)
+                      float thresholdOffset, float4 shadeTint, float faceHatch)
 {
     facing = saturate(facing);
     float illum = saturate(facing * shadowAttenuation);
     float globalThreshold = HL_G(_HLToonThreshold, HL_DEF_TOONTHRESHOLD);
     float threshold = globalThreshold + thresholdOffset;
     float softness = max(HL_G(_HLToonSoftness, HL_DEF_TOONSOFTNESS), 1e-4);
-    float lit = smoothstep(threshold - softness, threshold + softness, illum);
+    // One bounded transition between two constant colour regions. Turning farther into the light or shade
+    // does not keep brightening/dimming the surface, so a mineral plane reads as a single painted face.
+    float lit = smoothstep(threshold - softness, threshold + softness, facing);
     float3 globalTint = HL_G(_HLShadowTint, HL_DEF_SHADOWTINT).rgb;
     float globalStrength = HL_G(_HLShadowStrength, HL_DEF_SHADOWSTRENGTH);
     float hasShadeTint = step(0.001, shadeTint.a);
     float3 tint = lerp(globalTint, shadeTint.rgb, hasShadeTint);
     float strength = lerp(globalStrength, saturate(shadeTint.a), hasShadeTint);
-    float cast = (1.0 - saturate(shadowAttenuation)) *
-        smoothstep(globalThreshold - softness, globalThreshold + softness, facing);
-    tint = lerp(tint, globalTint, cast);
-    strength = lerp(strength, globalStrength, cast);
-    // Deep cast shadows converge to the authored ultramarine, instead of retaining
-    // enough green base colour to read as grey/teal. Strength controls the toon boundary.
-    float tintStrength = lerp(strength, 1.0, saturate(1.0 - illum / max(0.001, threshold)));
-    float3 shadowColor = lerp(baseColor, tint, tintStrength);
-    // A bounded diffuse ramp within the lit band preserves curved volume and the orientation of stone planes.
-    // It leaves full-facing colour intact and does not add a glossy reflection or alter the shadow boundary.
-    // The toon boundary uses wrapped facing, but volume needs actual positive N.L. Reusing half-Lambert
-    // here leaves almost the whole visible hemisphere bright when the sun is over the viewer's shoulder.
-    float diffuse = saturate(facing * 2.0 - 1.0);
-    float sculpt = lerp(1.0, 0.22 + 0.78 * pow(diffuse, 0.85), saturate(litSculpt));
-    float3 color = lerp(shadowColor, baseColor * sculpt, lit);
+    float3 shadeColor = lerp(baseColor, tint, strength);
+    float3 color = lerp(shadeColor, baseColor, lit);
+    // Real casts keep the shared blue on faces that would otherwise be lit. The material's shade plateau
+    // remains on the back-facing region, instead of creating a second continuous illumination ramp there.
+    float cast = (1.0 - saturate(shadowAttenuation)) * lit;
+    color = lerp(color, globalTint, cast);
     float tone = saturate(((1.0 - illum) - HL_G(_HLInkStart, HL_DEF_INKSTART)) /
                           max(0.001, HL_G(_HLInkRange, HL_DEF_INKRANGE)));
     float hcoord = dot(positionWS, normalize(float3(1.0, 0.35, 0.6)));
@@ -183,20 +176,19 @@ float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, 
     ink *= smoothstep(dashAmount, dashAmount + 0.08, dn);
     ink = saturate(ink * step(0.004, tone) * HL_G(_HLInkStrength, HL_DEF_INKSTRENGTH) * hatch
         * lerp(saturate(faceHatch), 1.0, cast));
-    // Full ink colour where a stroke is, then the contrast punch; fog comes after
-    color = lerp(color, HL_G(_HLOutlineColor, HL_DEF_OUTLINECOLOR).rgb, ink);
     // Contrast changes brightness without independently clipping the weaker colour channels. In linear
     // space that clipping erased blue from the authored plant greens and turned teal self shade pure green.
     float peak = max(color.r, max(color.g, color.b));
     float contrastedPeak = saturate((peak - 0.5) * HL_G(_HLContrast, HL_DEF_CONTRAST) + 0.5);
-    return saturate(color * (contrastedPeak / max(peak, 1e-5)));
+    color = saturate(color * (contrastedPeak / max(peak, 1e-5)));
+    // Keep the authored navy ink as the dark floor; applying the fill contrast after ink crushed it to black.
+    return lerp(color, HL_G(_HLOutlineColor, HL_DEF_OUTLINECOLOR).rgb, ink);
 }
 
 float3 HLShadeSurface(float3 positionWS, float facing, float shadowAttenuation, float3 baseColor, float hatch,
                       float thresholdOffset, float4 shadeTint)
 {
-    return HLShadeSurface(positionWS, facing, shadowAttenuation, baseColor, hatch, thresholdOffset, shadeTint,
-                          0.0, 1.0);
+    return HLShadeSurface(positionWS, facing, shadowAttenuation, baseColor, hatch, thresholdOffset, shadeTint, 1.0);
 }
 
 float3 HLShadeSurface(float3 positionWS, float illum, float3 baseColor, float hatch)

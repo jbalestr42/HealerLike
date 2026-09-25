@@ -1,4 +1,4 @@
-// HL primitive look: sculpted colour bands, toon shadow, hatch, outline and banded fog.
+// HL primitive look: clamped cel gradient, blue shadow, hatch, outline and banded fog.
 // HL_GRASS_INSTANCED draws the same look on indirect grass tufts, see GrassInstancing.hlsl.
 Shader "HL/Look/Primitive"
 {
@@ -13,7 +13,6 @@ Shader "HL/Look/Primitive"
         // Materials keep their own self-shade; cast shadows retain the shared shadow tint.
         _HLToonThresholdOffset ("Toon Threshold Offset (added to the global threshold)", Float) = 0
         _HLShadeTint ("Shade Tint (alpha is its strength, zero keeps the global tint)", Color) = (0,0,0,0)
-        _HLLitSculpt ("Lit Band Volume", Range(0,1)) = 0
         _HLFaceHatch ("Self Shade Hatch", Range(0,1)) = 1
         _HLMeadowVariation ("Meadow Colour Variation", Range(0,0.4)) = 0
         _HLGrassTipLight ("Grass Root To Tip Light", Range(0,0.5)) = 0
@@ -100,7 +99,7 @@ Shader "HL/Look/Primitive"
                     * (1.5 * input.grassAppearance.x - 1.0);
                 float3 color = HLShadeSurface(input.positionWS, facing, mainLight.shadowAttenuation,
                                               baseColor, _HLHatchMultiplier, _HLToonThresholdOffset,
-                                              _HLShadeTint, _HLLitSculpt, _HLFaceHatch);
+                                              _HLShadeTint, _HLFaceHatch);
                 if (_HLGroundGrid > 0.5)
                 {
                     color = HLApplyBattlefieldGrid(input.positionWS, color);

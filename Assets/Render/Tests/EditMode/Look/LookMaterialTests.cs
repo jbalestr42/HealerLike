@@ -52,30 +52,30 @@ public class LookMaterialTests
     }
 
     [Test]
-    public void ShadeControls_ShippedMaterials_SculptCreaturesAndKeepGrassSelfShadeQuiet()
+    public void ShadeControls_ShippedMaterials_KeepCreatureCelBandsAndGraphicGrassShadows()
     {
         Material body = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Body.mat");
         Material shared = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
         Material grass = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Grass/Materials/GrassBlade.mat");
         Material stone = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Stone.mat");
 
-        Assert.That(body.GetFloat("_HLToonThresholdOffset"), Is.GreaterThan(0f));
-        Assert.That(body.GetColor("_HLShadeTint").a, Is.GreaterThan(0f));
-        foreach (Material global in new[] { shared, stone })
-        {
-            Assert.That(global.GetFloat("_HLToonThresholdOffset"), Is.Zero, global.name);
-            Assert.That(global.GetColor("_HLShadeTint").a, Is.Zero, global.name); // zero strength keeps the global tint
-        }
+        Assert.That(body.GetColor("_HLShadeTint").a, Is.EqualTo(1f));
+        Assert.That(body.GetColor("_HLShadeTint").b, Is.GreaterThan(body.GetColor("_HLShadeTint").g));
         foreach (Material creature in new[] { body, shared, stone })
         {
-            Assert.That(creature.GetFloat("_HLLitSculpt"), Is.GreaterThan(0.5f), creature.name);
+            float threshold = LookSettings.Default.toonThreshold + creature.GetFloat("_HLToonThresholdOffset");
+            Assert.That(threshold, Is.InRange(0.65f, 0.8f), creature.name);
+            Assert.That(creature.GetFloat("_HLHatchMultiplier"), Is.EqualTo(1f), creature.name);
+            Assert.That(creature.GetFloat("_HLFaceHatch"), Is.EqualTo(1f), creature.name);
         }
-        Assert.That(body.GetColor("_HLShadeTint").g, Is.GreaterThan(body.GetColor("_HLShadeTint").b));
-        Assert.That(stone.GetFloat("_HLFaceHatch"), Is.GreaterThan(shared.GetFloat("_HLFaceHatch")));
-        Assert.That(grass.GetFloat("_HLToonThresholdOffset"), Is.Zero);
-        Assert.That(grass.GetFloat("_HLFaceHatch"), Is.Zero);
-        Assert.That(grass.GetColor("_HLShadeTint").a, Is.GreaterThan(0f));
-        Assert.That(grass.GetColor("_HLShadeTint").g, Is.GreaterThan(grass.GetColor("_HLShadeTint").b));
+        foreach (Material global in new[] { shared, stone, grass })
+        {
+            Assert.That(global.GetColor("_HLShadeTint").a, Is.Zero, global.name);
+        }
+        Assert.That(LookSettings.Default.toonThreshold + grass.GetFloat("_HLToonThresholdOffset"),
+            Is.EqualTo(0.45f).Within(0.0001f));
+        Assert.That(grass.GetFloat("_HLHatchMultiplier"), Is.GreaterThan(0.5f));
+        Assert.That(grass.GetFloat("_HLFaceHatch"), Is.GreaterThan(0.5f));
     }
 
     [Test]
@@ -86,7 +86,7 @@ public class LookMaterialTests
             Assert.Ignore("Requires graphics readback");
         }
 
-        // The body's teal is hard to tell from the global shade, so a copy of the body material paints it magenta
+        // The body's blue is hard to tell from the global shade, so a copy of the body material paints it magenta
         Material shared = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
         Material body = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Body.mat");
         Material marked = Track(new Material(body));
@@ -102,7 +102,7 @@ public class LookMaterialTests
         _scene.Render();
         float otherShade = LookTestScene.ShadeShare(_scene.texture);
 
-        Assert.That(bodyShade, Is.InRange(0.25f, 0.75f)); // about half the body past its later split
+        Assert.That(bodyShade, Is.InRange(0.25f, 0.75f)); // a substantial, bounded body shade region
         Assert.That(otherShade, Is.LessThan(0.02f)); // heads, stems and roots keep the global shade
         Debug.Log("[LookShaderTests] Plant body shade share " + bodyShade.ToString("F3") + ", other parts "
                   + otherShade.ToString("F3"));
