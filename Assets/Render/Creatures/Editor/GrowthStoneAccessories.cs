@@ -44,19 +44,24 @@ namespace HealerLike.Render.Creatures
                     parts.Add(Part("AntennaSeed", seed, new Vector3(1.14f, 1.26f, 0f), new Vector3(0.25f, 0.35f, 0.24f)));
                     break;
                 case AccessoryKind.ThornCollar:
+                    parts.Add(Part("ThornCollarRing", ShapeProfile.Ring(0.33f, stone), new Vector3(0f, -0.12f, 0f),
+                        new Vector3(0.44f, 0.1f, 0.44f)));
                     for (int i = 0; i < 6; i++)
                     {
                         float angle = i * Mathf.PI * 2f / 6f;
                         Vector3 from = new Vector3(Mathf.Cos(angle) * 0.17f, -0.12f, Mathf.Sin(angle) * 0.17f);
-                        Vector3 to = new Vector3(Mathf.Cos(angle) * 0.75f, -0.52f, Mathf.Sin(angle) * 0.75f);
-                        parts.Add(Link("Thorn", thorn, from, to, 0.19f));
+                        Vector3 to = new Vector3(Mathf.Cos(angle) * 0.75f, -0.43f, Mathf.Sin(angle) * 0.75f);
+                        parts.Add(Link("Thorn", stone ? thorn : ShapeProfile.Segment(0.92f, 0.08f), from, to,
+                            stone ? 0.14f : 0.10f));
                     }
                     break;
                 case AccessoryKind.TierRings:
                     for (int i = 0; i < 3; i++)
                     {
                         parts.Add(Part("TierRing", ShapeProfile.Ring(0.24f, stone),
-                            new Vector3(0f, -0.12f - i * 0.24f, 0f), new Vector3(0.94f - i * 0.1f, 0.14f, 0.74f)));
+                            new Vector3(0f, stone ? 0.02f - i * 0.22f : -0.12f - i * 0.24f, 0f),
+                            stone ? new Vector3(1.25f + i * 0.15f, 0.12f, 1f + i * 0.12f)
+                                : new Vector3(0.94f - i * 0.1f, 0.14f, 0.74f)));
                     }
                     break;
                 case AccessoryKind.TwinSeeds:
