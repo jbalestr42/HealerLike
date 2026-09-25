@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -8,6 +9,7 @@ namespace HealerLike.Render.Stage
     public class StageInterfaceActions
     {
         public ToolkitGameUI ui;
+        public int scrollActions { get; private set; }
         public VisualElement root { get { return ui.GetComponent<UIDocument>().rootVisualElement; } }
         public StageTouchInput touch { get { return ui.GetComponent<StageTouchInput>(); } }
 
@@ -41,6 +43,28 @@ namespace HealerLike.Render.Stage
             {
                 button.SendEvent(submit);
             }
+        }
+
+        public IEnumerator BringIntoView(Button button)
+        {
+            ScrollView scroll = button.GetFirstAncestorOfType<ScrollView>();
+            if (scroll != null)
+            {
+                Vector2 previous = scroll.scrollOffset;
+                scroll.ScrollTo(button);
+                yield return null;
+                yield return null;
+                if (Vector2.Distance(previous, scroll.scrollOffset) > 0.1f)
+                {
+                    scrollActions++;
+                }
+            }
+        }
+
+        public IEnumerator SelectCard(Button button)
+        {
+            yield return BringIntoView(button);
+            Submit(button);
         }
 
         public List<Button> Cards(string list)

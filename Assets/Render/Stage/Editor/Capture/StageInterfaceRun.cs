@@ -45,7 +45,7 @@ namespace HealerLike.Render.Stage
                 yield return Capture("02-party");
                 List<Button> cards = _actions.Cards("party-list");
                 _output.Check(cards.Count > 0, "Party has deploy choices");
-                _actions.Submit(cards[0].parent.Q<Button>("card-info"));
+                yield return _actions.SelectCard(cards[0].parent.Q<Button>("card-info"));
                 yield return Wait(0.3f);
                 _output.Check(_interaction.GetInteraction() == null, "Info opens details without deploying");
                 yield return Capture("03-details");
@@ -53,7 +53,7 @@ namespace HealerLike.Render.Stage
                 yield return Wait(0.2f);
                 _actions.Submit("party-button");
                 yield return Wait(0.2f);
-                _actions.Submit(_actions.Cards("party-list")[0]);
+                yield return _actions.SelectCard(_actions.Cards("party-list")[0]);
                 yield return Wait(0.3f);
                 _output.Check(_interaction.GetInteraction() != null, "Toolkit party card begins deployment");
                 yield return Capture("04-targeting");
@@ -104,6 +104,7 @@ namespace HealerLike.Render.Stage
                 yield return Resize(1080, 1920);
                 yield return Reward();
                 yield return Navigation();
+                _output.Check(_actions.scrollActions > 0, "Scrolled cards below the fold before activating reachable controls");
                 passed = true;
             }
             finally
@@ -142,7 +143,7 @@ namespace HealerLike.Render.Stage
             List<Button> cards = _actions.Cards("party-list").FindAll(button =>
                 button.enabledInHierarchy && button.Q<Label>("card-status").text == "Deploy");
             _output.Check(cards.Count > 0, "Deployable party choice remains");
-            _actions.Submit(cards[Mathf.Min(index, cards.Count - 1)]);
+            yield return _actions.SelectCard(cards[Mathf.Min(index, cards.Count - 1)]);
             yield return Wait(0.2f);
             int before = _manager.entityManager.GetEntities(Entity.EntityType.Player).Count;
             Vector3 point = _manager.player.grid.GetNearestWalkablePosition(offset);
@@ -158,6 +159,7 @@ namespace HealerLike.Render.Stage
             _actions.Submit("party-button");
             yield return Wait(0.2f);
             Button card = _actions.Cards("party-list")[0];
+            yield return _actions.BringIntoView(card);
             Vector2 start = StageInterfaceActions.ScreenPoint(card);
             Vector2 end = _manager.gameCamera.WorldToScreenPoint(_manager.board.center);
             _actions.touch.ProcessTouch(3, TouchPhase.Began, start);
@@ -177,7 +179,7 @@ namespace HealerLike.Render.Stage
                 {
                     continue;
                 }
-                _actions.Submit(card);
+                yield return _actions.SelectCard(card);
                 yield return Wait(0.2f);
                 if (_interaction.GetInteraction() != null)
                 {
@@ -185,7 +187,7 @@ namespace HealerLike.Render.Stage
                     _actions.Submit("cancel-button");
                     yield return Wait(0.2f);
                     _output.Check(_interaction.GetInteraction() == null, "Touch cancel ends spell targeting");
-                    _actions.Submit(card);
+                    yield return _actions.SelectCard(card);
                     yield return Wait(0.2f);
                     AInteraction spell = _interaction.GetInteraction();
                     foreach (Entity entity in _manager.entityManager.GetComponentsInChildren<Entity>())
@@ -228,14 +230,14 @@ namespace HealerLike.Render.Stage
             List<Button> cards = _actions.Cards("upgrade-list");
             _output.Check(cards.Count > 0, "Real wave reward offers choices");
             Button equipment = cards.Find(button => button.Q<Label>("card-status").text.StartsWith("Party equipment"));
-            _actions.Submit(equipment != null ? equipment : cards[0]);
+            yield return _actions.SelectCard(equipment != null ? equipment : cards[0]);
             yield return Wait(1f);
             _output.Check(!StageInterfaceOutput.IsVisible(_actions.root.Q("upgrade-panel")), "Toolkit reward advances to next preparation");
             if (equipment != null)
             {
                 _actions.Submit("inventory-button");
                 yield return Wait(0.3f);
-                _actions.Submit(_actions.Cards("inventory-list")[0]);
+                yield return _actions.SelectCard(_actions.Cards("inventory-list")[0]);
                 DropdownField target = _actions.root.Q<DropdownField>("inventory-target");
                 target.value = target.choices[0];
                 yield return Wait(0.3f);
