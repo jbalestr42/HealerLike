@@ -68,7 +68,7 @@ namespace HealerLike.Render.Creatures
             {
                 maxBranch = 1.65f, minBranch = 0.7f, threeHeadScale = 0.76f, fiveHeadScale = 0.64f,
                 threeHeadSpread = 43f, fiveHeadSpread = 31f, headClearance = 1.25f,
-                branchThickness = 0.13f, limbSpread = 0.36f, limbWidth = 0.46f, limbThickness = 0.5f, limbSplay = 18f,
+                branchThickness = 0.13f, limbSpread = 0.36f, limbWidth = 0.48f, limbThickness = 0.5f, limbSplay = 18f,
                 stoneNeck = 0.55f, extendAccessorySupports = true
             };
         }
