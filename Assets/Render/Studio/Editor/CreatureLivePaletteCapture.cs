@@ -20,8 +20,19 @@ namespace HealerLike.Render.Studio.Editor
 
         public static void Capture()
         {
+            Begin(false);
+        }
+
+        public static void CaptureShapes()
+        {
+            Begin(true);
+        }
+
+        static void Begin(bool shapes)
+        {
             EditorSceneManager.OpenScene(StageSceneAuthoring.ScenePath);
             SessionState.SetBool(key, true);
+            SessionState.SetBool(key + ".Shapes", shapes);
             SessionState.SetInt(key + ".Code", 1);
             SessionState.SetFloat(key + ".Deadline", (float)EditorApplication.timeSinceStartup + 120f);
             EditorApplication.isPlaying = true;
@@ -47,7 +58,7 @@ namespace HealerLike.Render.Studio.Editor
             }
             if (state == PlayModeStateChange.EnteredPlayMode)
             {
-                run = new CreatureLivePaletteRun();
+                run = new CreatureLivePaletteRun(SessionState.GetBool(key + ".Shapes", false));
                 run.Begin();
                 EditorApplication.update += run.Step;
             }

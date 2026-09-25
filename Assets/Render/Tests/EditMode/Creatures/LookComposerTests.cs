@@ -174,7 +174,8 @@ public class LookComposerTests
         CreatureRecipe recipe =
             Compose(RenderTestAssets.CreateChannels(LookSide.Stone, HeadKind.Bud, mass: MassBand.Sturdy));
 
-        float width = recipe.parts[0].dimensions.x * 2f / _vocabulary.bodyUnit; // the stone mesh spans two units across
+        float meshWidth = recipe.parts[0].shape.isProcedural ? 1f : 2f;
+        float width = recipe.parts[0].dimensions.x * meshWidth / _vocabulary.bodyUnit;
 
         Assert.AreEqual(2.2f, width, 0.001f);
     }
