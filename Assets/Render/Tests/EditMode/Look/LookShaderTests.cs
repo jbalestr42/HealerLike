@@ -50,7 +50,7 @@ public class LookShaderTests
             Assert.That(material.FindPass(pass), Is.GreaterThanOrEqualTo(0), pass);
         }
 
-        Assert.That(shader.GetPropertyCount(), Is.EqualTo(8));
+        Assert.That(shader.GetPropertyCount(), Is.EqualTo(12));
         Assert.That(shader.GetPropertyName(3), Is.EqualTo("_BaseColor"));
         if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null)
         {
@@ -137,7 +137,7 @@ public class LookShaderTests
     }
 
     [Test]
-    public void DrawMesh_SubPixelHatch_MergesIntoInkInsteadOfFading()
+    public void DrawMesh_SubPixelHatch_FadesWhileResolvedStrokesRemain()
     {
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
         {
@@ -179,9 +179,65 @@ public class LookShaderTests
         ReadCentre(material, mesh, target, texture, white);
         float inked = MeanBrightness(texture);
 
-        Assert.That(paper - inked, Is.GreaterThan(0.1f), "Unresolved strokes must darken, not fade out");
+        Assert.That(inked, Is.EqualTo(paper).Within(0.005f), "Unresolved strokes must not become solid ink");
+        Shader.SetGlobalFloat("_HLInkScale", 0.5f);
+        ReadCentre(material, mesh, target, texture, white);
+        float resolved = MeanBrightness(texture);
+        Assert.That(paper - resolved, Is.GreaterThan(0.1f), "Readable foreground strokes must remain");
         Debug.Log("[LookShaderTests] Sub-pixel hatch: paper=" + paper.ToString("F4")
                   + " inked=" + inked.ToString("F4"));
+    }
+
+    [Test]
+    public void DrawMesh_LitSculpt_LightRotationSeparatesLitPlanesWithoutChangingTheirColourFamily()
+    {
+        if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+        {
+            Assert.Ignore("Requires graphics readback");
+        }
+
+        Material material = Track(new Material(AssetDatabase.LoadAssetAtPath<Shader>(lookShaderPath)));
+        Mesh mesh = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
+        RenderTexture target = Track(new RenderTexture(16, 16, 0, RenderTextureFormat.ARGBFloat,
+            RenderTextureReadWrite.Linear));
+        target.Create();
+        Texture2D texture = Track(new Texture2D(16, 16, TextureFormat.RGBAFloat, false, true));
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        block.SetVector("_BaseColor", new Vector4(0.4f, 0.6f, 0.3f, 1f));
+        Shader.SetGlobalFloat("_HLLookApplied", 1f);
+        Shader.SetGlobalFloat("_HLToonThreshold", 0.3f);
+        Shader.SetGlobalFloat("_HLToonSoftness", 0.04f);
+        Shader.SetGlobalFloat("_HLFogStart", 10000f);
+        Shader.SetGlobalFloat("_HLFogEnd", 20000f);
+        Shader.SetGlobalFloat("_HLFogBands", 6f);
+        Shader.SetGlobalFloat("_HLInkStrength", 0f);
+        Shader.SetGlobalFloat("_HLContrast", 1f);
+        Vector4 previousLight = Shader.GetGlobalVector("_MainLightPosition");
+        try
+        {
+            Color[] flat = new Color[3];
+            Color[] sculpted = new Color[3];
+            for (int i = 0; i < 3; i++)
+            {
+                // Every angle remains fully inside the lit band. Only the lit-surface control can separate them.
+                Vector3 direction = Quaternion.Euler(0f, i * 35f, 0f) * mesh.normals[0];
+                Shader.SetGlobalVector("_MainLightPosition", direction);
+                material.SetFloat("_HLLitSculpt", 0f);
+                flat[i] = ReadCentre(material, mesh, target, texture, block);
+                material.SetFloat("_HLLitSculpt", 0.9f);
+                sculpted[i] = ReadCentre(material, mesh, target, texture, block);
+            }
+            Assert.That(flat[0].g, Is.EqualTo(flat[2].g).Within(0.005f));
+            Assert.That(sculpted[0].g - sculpted[1].g, Is.GreaterThan(0.02f));
+            Assert.That(sculpted[1].g - sculpted[2].g, Is.GreaterThan(0.04f));
+            Assert.That(sculpted[0].g, Is.EqualTo(flat[0].g).Within(0.005f));
+            Assert.That(sculpted[2].r / sculpted[2].g, Is.EqualTo(flat[0].r / flat[0].g).Within(0.01f));
+            Assert.That(sculpted[2].b / sculpted[2].g, Is.EqualTo(flat[0].b / flat[0].g).Within(0.01f));
+        }
+        finally
+        {
+            Shader.SetGlobalVector("_MainLightPosition", previousLight);
+        }
     }
 
     // The quad covers the middle eight by eight pixels, the rest is the clear colour

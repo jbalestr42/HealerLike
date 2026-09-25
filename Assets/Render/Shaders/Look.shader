@@ -1,4 +1,4 @@
-// HL primitive look: flat colour, toon shadow, hatch, outline and banded fog.
+// HL primitive look: sculpted colour bands, toon shadow, hatch, outline and banded fog.
 // HL_GRASS_INSTANCED draws the same look on indirect grass tufts, see GrassInstancing.hlsl.
 Shader "HL/Look/Primitive"
 {
@@ -10,9 +10,13 @@ Shader "HL/Look/Primitive"
         [MainColor] _BaseColor ("Base Color", Color) = (1,1,1,1)
         [ToggleUI] _HLNormalEdges ("Normal Edges (zero keeps depth edges only)", Float) = 1
         _HLHatchMultiplier ("Hatch Multiplier", Float) = 1
-        // Only Look_Body.mat sets these two: plant bodies split later and shade in their own tint
+        // Materials keep their own self-shade; cast shadows retain the shared shadow tint.
         _HLToonThresholdOffset ("Toon Threshold Offset (added to the global threshold)", Float) = 0
         _HLShadeTint ("Shade Tint (alpha is its strength, zero keeps the global tint)", Color) = (0,0,0,0)
+        _HLLitSculpt ("Lit Band Volume", Range(0,1)) = 0
+        _HLFaceHatch ("Self Shade Hatch", Range(0,1)) = 1
+        _HLMeadowVariation ("Meadow Colour Variation", Range(0,0.4)) = 0
+        _HLGrassTipLight ("Grass Root To Tip Light", Range(0,0.5)) = 0
     }
     SubShader
     {
@@ -40,6 +44,7 @@ Shader "HL/Look/Primitive"
             float4 positionCS : SV_POSITION;
             float3 positionWS : TEXCOORD0;
             float3 normalWS : TEXCOORD1;
+            float2 grassAppearance : TEXCOORD2;
             UNITY_VERTEX_INPUT_INSTANCE_ID
             UNITY_VERTEX_OUTPUT_STEREO
         };
@@ -52,7 +57,7 @@ Shader "HL/Look/Primitive"
             UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
             #if defined(HL_GRASS_INSTANCED)
             HLPlaceGrassTuft(input.positionOS.xyz, input.normalOS, input.instanceID,
-                              output.positionWS, output.normalWS);
+                              output.positionWS, output.normalWS, output.grassAppearance);
             #else
             output.positionWS = TransformObjectToWorld(input.positionOS.xyz);
             output.normalWS = TransformObjectToWorldNormal(input.normalOS);
@@ -87,9 +92,15 @@ Shader "HL/Look/Primitive"
                 #endif
                 Light mainLight = GetMainLight(shadowCoord, input.positionWS, half4(1, 1, 1, 1));
                 float facing = dot(normalize(input.normalWS), mainLight.direction) * 0.5 + 0.5;
+                float3 baseColor = HLGetBaseColor().rgb;
+                float patch = HLDashNoise(dot(input.positionWS.xz, float2(0.37, 0.21))) * 0.65
+                    + HLDashNoise(dot(input.positionWS.xz, float2(-0.19, 0.43)) + 17.3) * 0.35;
+                baseColor *= 1.0 + _HLMeadowVariation * (patch * 2.0 - 1.0);
+                baseColor *= 1.0 + _HLGrassTipLight * input.grassAppearance.y
+                    * (1.5 * input.grassAppearance.x - 1.0);
                 float3 color = HLShadeSurface(input.positionWS, facing, mainLight.shadowAttenuation,
-                                              HLGetBaseColor().rgb, _HLHatchMultiplier, _HLToonThresholdOffset,
-                                              _HLShadeTint);
+                                              baseColor, _HLHatchMultiplier, _HLToonThresholdOffset,
+                                              _HLShadeTint, _HLLitSculpt, _HLFaceHatch);
                 if (_HLGroundGrid > 0.5)
                 {
                     color = HLApplyBattlefieldGrid(input.positionWS, color);

@@ -123,35 +123,14 @@ public class GrassDrawTests
         CollectionAssert.AreEquivalent(plant.shaderKeywords.Append(instancedKeyword), grass.shaderKeywords);
         Assert.AreEqual(plant.enableInstancing, grass.enableInstancing);
         Assert.AreEqual(plant.renderQueue, grass.renderQueue);
-        Shader shader = grass.shader;
-        for (int i = 0; i < shader.GetPropertyCount(); i++)
-        {
-            string name = shader.GetPropertyName(i);
-            switch (shader.GetPropertyType(i))
-            {
-                case ShaderPropertyType.Color:
-                    if (name != "_BaseColor")
-                    {
-                        Assert.AreEqual(plant.GetColor(name), grass.GetColor(name), name);
-                    }
-                    break;
-                case ShaderPropertyType.Vector:
-                    Assert.AreEqual(plant.GetVector(name), grass.GetVector(name), name);
-                    break;
-                case ShaderPropertyType.Float:
-                case ShaderPropertyType.Range:
-                    // Internal facet outlines obscure the carpet; depth edges still draw its silhouette.
-                    float expected = name == "_HLNormalEdges" ? 0f : plant.GetFloat(name);
-                    Assert.AreEqual(expected, grass.GetFloat(name), name);
-                    break;
-                case ShaderPropertyType.Int:
-                    Assert.AreEqual(plant.GetInteger(name), grass.GetInteger(name), name);
-                    break;
-                case ShaderPropertyType.Texture:
-                    Assert.AreEqual(plant.GetTexture(name), grass.GetTexture(name), name);
-                    break;
-            }
-        }
+        Assert.That(grass.GetFloat("_HLNormalEdges"), Is.Zero);
+        Assert.That(grass.GetFloat("_HLToonThresholdOffset"), Is.Zero);
+        Assert.That(grass.GetFloat("_HLFaceHatch"), Is.Zero);
+        Assert.That(grass.GetFloat("_HLHatchMultiplier"), Is.InRange(0.01f, 0.25f));
+        Assert.That(grass.GetFloat("_HLMeadowVariation"), Is.GreaterThan(0f));
+        Assert.That(grass.GetFloat("_HLGrassTipLight"), Is.GreaterThan(0f));
+        Assert.That(grass.GetColor("_HLShadeTint").a, Is.GreaterThan(0f));
+        Assert.That(grass.GetColor("_HLShadeTint").g, Is.GreaterThan(grass.GetColor("_HLShadeTint").b));
         Assert.That((Color32)grass.GetColor("_BaseColor"), Is.EqualTo(new Color32(91, 144, 85, 255))); // #5b9055
     }
 
@@ -202,6 +181,61 @@ public class GrassDrawTests
             foreach (ShaderMessage message in ShaderUtil.GetShaderMessages(shader))
             {
                 Assert.AreNotEqual(ShaderCompilerMessageSeverity.Error, message.severity, message.message);
+            }
+        }
+    }
+
+    [Test]
+    public void Show_TipLight_GradesOrdinaryBladesButLeavesHostileSpikesUnchanged()
+    {
+        _scene.BuildKeyLight(20f, 4f);
+        _scene.camera.orthographic = true;
+        _scene.camera.orthographicSize = 0.65f;
+        _scene.camera.transform.SetPositionAndRotation(new Vector3(0f, 0.5f, -4f), Quaternion.identity);
+        LookSettings settings = _scene.look.settings;
+        settings.toonThreshold = 0f;
+        settings.toonSoftness = 0.001f;
+        settings.inkStrength = 0f;
+        settings.contrast = 1f;
+        _scene.look.settings = settings;
+        _material.enableInstancing = true;
+        _material.EnableKeyword(instancedKeyword);
+        _material.SetColor("_BaseColor", new Color(0.4f, 0.6f, 0.3f));
+        _draw.Release();
+        _draw = new GrassDraw(_mesh, _material, 1, new Bounds(Vector3.up * 0.5f, Vector3.one * 2f),
+            LookTestScene.Layer);
+        using (GraphicsBuffer seeds = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, TuftSeed.Stride))
+        using (GraphicsBuffer states = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, TuftState.Stride))
+        using (GraphicsBuffer visible = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, 4))
+        {
+            seeds.SetData(new[] { new TuftSeed { heightWidthLean = new Vector4(1f, 0.8f, 0f, 0f) } });
+            states.SetData(new[] { new TuftState { leanHeightSpike = new Vector4(0f, 0f, 1f, 0f) } });
+            visible.SetData(new uint[] { 0 });
+            _draw.BindTufts(seeds, states, visible, 1f);
+            _draw.Show(_scene.camera, () => true);
+            try
+            {
+                _scene.Render();
+                Color32 lowBefore = LookTestScene.MedianColour(_scene.texture, 128, 79, 2);
+                Color32 highBefore = LookTestScene.MedianColour(_scene.texture, 128, 197, 2);
+                _material.SetFloat("_HLGrassTipLight", 0.4f);
+                _scene.Render();
+                Color32 lowAfter = LookTestScene.MedianColour(_scene.texture, 128, 79, 2);
+                Color32 highAfter = LookTestScene.MedianColour(_scene.texture, 128, 197, 2);
+                Assert.That(lowBefore.g - lowAfter.g, Is.GreaterThan(8), "The blade base should be darker");
+                Assert.That(highAfter.g - highBefore.g, Is.GreaterThan(4), "The blade tip should catch light");
+
+                states.SetData(new[] { new TuftState { leanHeightSpike = new Vector4(0f, 0f, 1f, 1f) } });
+                _scene.Render();
+                Color32[] spikeWithTipLight = _scene.texture.GetPixels32();
+                _material.SetFloat("_HLGrassTipLight", 0f);
+                _scene.Render();
+                CollectionAssert.AreEqual(spikeWithTipLight, _scene.texture.GetPixels32(),
+                    "The hostile spike must not inherit the plant root-to-tip grade");
+            }
+            finally
+            {
+                _draw.Hide();
             }
         }
     }

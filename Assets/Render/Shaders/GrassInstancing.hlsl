@@ -48,7 +48,7 @@ float3 HLYawGrassTuft(float3 v, float yaw)
 // The tuft moves as a rigid body: scale, yaw, one tilt about its root, then the root position.
 // GrassTuft.Place and PlaceNormal mirror this on the CPU.
 void HLPlaceGrassTuft(float3 positionOS, float3 normalOS, uint instanceID, out float3 positionWS,
-                      out float3 normalWS)
+                      out float3 normalWS, out float2 appearance)
 {
     InitIndirectDrawArgs(0);
     uint tuftID = _HLVisibleBladeIDs[GetIndirectInstanceID(instanceID)];
@@ -56,6 +56,7 @@ void HLPlaceGrassTuft(float3 positionOS, float3 normalOS, uint instanceID, out f
     HLTuftState state = _HLBladeStates[tuftID];
 
     float spike = step(0.5, state.leanHeightSpike.w);
+    appearance = float2(saturate(positionOS.y), 1.0 - spike);
     float heightScale = lerp(_HLBladeHeightScale, 1.0, spike);
     float height = max(1e-4, seed.heightWidthLean.x * state.leanHeightSpike.z * heightScale);
     float risen = saturate(2.0 * state.leanHeightSpike.w - 1.0);

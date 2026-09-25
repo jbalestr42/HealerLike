@@ -11,10 +11,10 @@
 // A spike under this much trample gives way to the flattened tuft
 #define HL_SPIKE_TRAMPLE_LIMIT 0.5
 // Trample: an irregular rim, full flattening inside this share of the radius, tufts pressed to this height
-#define HL_TRAMPLE_RIM_MIN 0.88
-#define HL_TRAMPLE_RIM_WOBBLE 0.12
+#define HL_TRAMPLE_RIM_MIN 0.96
+#define HL_TRAMPLE_RIM_WOBBLE 0.04
 #define HL_TRAMPLE_RIM_FREQUENCY float2(9.7, 6.3)
-#define HL_TRAMPLE_CORE 0.35
+#define HL_TRAMPLE_CORE 0.9
 #define HL_TRAMPLE_HEIGHT 0.055
 #define HL_TRAMPLE_LEAN 0.5
 // Launch: the wave front crosses the radius in this many seconds, in a band this wide at least
