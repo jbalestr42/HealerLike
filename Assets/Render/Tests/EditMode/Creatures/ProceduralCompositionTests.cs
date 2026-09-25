@@ -139,6 +139,93 @@ namespace HealerLike.Render.Creatures
             Assert.That(Array.TrueForAll(recipe.parts, p => p.shape.isProcedural));
         }
 
+        [TestCase(LookSide.Plant)]
+        [TestCase(LookSide.Stone)]
+        public void Compose_ZeroScaleOverrides_PreserveLegacyMassScaling(LookSide side)
+        {
+            LookVocabulary.BodyEntry body = _vocabulary.bodies[MassBand.Light];
+            body.scale = 1.6f;
+            UnitChannels channels = RenderTestAssets.CreateChannels(side, HeadKind.Bud);
+            UnitSockets sockets = UnitSockets.Place(channels, _vocabulary);
+            CreatureRecipe recipe = Compose(side);
+            CreaturePart tip = Array.Find(recipe.parts, p => p.role == PartRole.Tip);
+
+            Assert.AreEqual(0f, body.headScale);
+            Assert.AreEqual(0f, body.stemScale);
+            Assert.AreEqual(1.6f, sockets.headScale, 0.00001f);
+            Assert.AreEqual(side == LookSide.Plant ? 1f : 1.6f, sockets.stemScale, 0.00001f);
+            Assert.AreEqual(0.7f * 1.6f * _vocabulary.Unit(side), tip.dimensions.x, 0.00001f);
+            if (side == LookSide.Plant)
+            {
+                Assert.AreEqual(_vocabulary.stems[channels.stem].length,
+                    Vector3.Distance(sockets.stemFoot, sockets.neck), 0.00001f);
+            }
+        }
+
+        [TestCase(LookSide.Plant)]
+        [TestCase(LookSide.Stone)]
+        public void Compose_ExplicitHeadScale_ChangesBothHeadsWithoutChangingBodyOrLegWidth(LookSide side)
+        {
+            AddMiniHead();
+            _vocabulary.Layout.extendAccessorySupports = false;
+            UnitChannels channels = RenderTestAssets.CreateChannels(side, HeadKind.Bud,
+                accessory: AccessoryKind.MiniHead);
+            channels.accessoryHead = HeadKind.Bud;
+            CreatureRecipe before = Track(LookComposer.Compose(channels, _vocabulary));
+            _vocabulary.bodies[MassBand.Light].headScale = 0.5f;
+            CreatureRecipe after = Track(LookComposer.Compose(channels, _vocabulary));
+            CreaturePart[] beforeTips = Array.FindAll(before.parts, p => p.role == PartRole.Tip);
+            CreaturePart[] afterTips = Array.FindAll(after.parts, p => p.role == PartRole.Tip);
+
+            Assert.AreEqual(2, afterTips.Length);
+            for (int i = 0; i < afterTips.Length; i++)
+            {
+                Assert.AreEqual(beforeTips[i].dimensions * 0.5f, afterTips[i].dimensions);
+            }
+            for (int i = 0; i < before.parts.Length; i++)
+            {
+                if (before.parts[i].role == PartRole.Tip) continue;
+                Assert.AreEqual(before.parts[i].dimensions, after.parts[i].dimensions, before.parts[i].id);
+                Assert.AreEqual(before.parts[i].localPosition, after.parts[i].localPosition, before.parts[i].id);
+            }
+            Assert.AreEqual(before.neckLocal, after.neckLocal);
+        }
+
+        [TestCase(LookSide.Plant)]
+        [TestCase(LookSide.Stone)]
+        public void Compose_ExplicitStemScale_ChangesCadenceLengthWithoutChangingHeadOrBodySize(LookSide side)
+        {
+            _vocabulary.bodies[MassBand.Light].scale = 1.6f;
+            CreatureRecipe before = Compose(side);
+            _vocabulary.bodies[MassBand.Light].stemScale = 0.45f;
+            CreatureRecipe after = Compose(side);
+            PartRole supportRole = side == LookSide.Plant ? PartRole.Stem : PartRole.Limb;
+            CreaturePart supportBefore = Array.Find(before.parts, p => p.role == supportRole);
+            CreaturePart supportAfter = Array.Find(after.parts, p => p.role == supportRole);
+
+            Assert.Less(supportAfter.dimensions.y, supportBefore.dimensions.y);
+            Assert.AreEqual(supportBefore.dimensions.x, supportAfter.dimensions.x);
+            Assert.AreEqual(supportBefore.dimensions.z, supportAfter.dimensions.z);
+            Assert.AreEqual(before.parts[0].dimensions, after.parts[0].dimensions);
+            Assert.AreEqual(Array.Find(before.parts, p => p.role == PartRole.Tip).dimensions,
+                Array.Find(after.parts, p => p.role == PartRole.Tip).dimensions);
+            UnitChannels channels = RenderTestAssets.CreateChannels(side, HeadKind.Bud);
+            Assert.AreEqual(0.45f, UnitSockets.Place(channels, _vocabulary).stemScale, 0.00001f);
+        }
+
+        [TestCase(true, -0.1f)]
+        [TestCase(false, -0.1f)]
+        [TestCase(true, float.NaN)]
+        [TestCase(false, float.PositiveInfinity)]
+        public void Compose_InvalidScaleOverride_RejectsTheEdit(bool head, float value)
+        {
+            if (head) _vocabulary.bodies[MassBand.Light].headScale = value;
+            else _vocabulary.bodies[MassBand.Light].stemScale = value;
+            LogAssert.Expect(LogType.Error, "[LookComposer] Invalid layout, shape profile or selected band dimensions.");
+
+            Assert.IsNull(Compose(LookSide.Plant));
+        }
+
         [Test]
         public void Compose_StemBandProfileEdit_ChangesOnlyItsSelectedBand()
         {

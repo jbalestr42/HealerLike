@@ -49,6 +49,11 @@ namespace HealerLike.Render.Creatures
         public class BodyEntry
         {
             public float scale = 1f;
+            // Zero preserves old assets: head scale inherits scale; cadence length is 1 on plants, scale on stones.
+            public float headScale;
+            public float stemScale;
+            public float HeadScale => headScale > 0f ? headScale : scale;
+            public float StemScale(bool isPlant) => stemScale > 0f ? stemScale : (isPlant ? 1f : scale);
             // Lift a compound base enough to expose its additional basal mass.
             public float bodyLift;
             public LookPart[] plant = Array.Empty<LookPart>();

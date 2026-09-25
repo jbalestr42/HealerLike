@@ -8,7 +8,7 @@ namespace HealerLike.Render.Studio.Editor
     {
         static readonly string[] partFields =
         {
-            "id", "parent", "primitive", "localPosition", "localEuler", "dimensions", "colour", "glow", "role",
+            "id", "parent", "primitive", "shape", "localPosition", "localEuler", "dimensions", "colour", "glow", "role",
             "variant"
         };
 
@@ -21,7 +21,7 @@ namespace HealerLike.Render.Studio.Editor
             {
                 if (name != "parent")
                 {
-                    EditorGUILayout.PropertyField(part.FindPropertyRelative(name));
+                    EditorGUILayout.PropertyField(part.FindPropertyRelative(name), name == "shape");
                     continue;
                 }
 
