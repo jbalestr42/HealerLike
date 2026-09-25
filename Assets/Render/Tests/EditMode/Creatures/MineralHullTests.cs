@@ -41,6 +41,7 @@ namespace HealerLike.Render.Creatures
                 Assert.That(mesh.bounds.center.sqrMagnitude, Is.LessThan(0.00000001f));
                 Assert.LessOrEqual(mesh.vertexCount, 252, "Clipping must stay bounded by its fixed plane count.");
                 Vector3[] points = mesh.vertices;
+                Vector3[] normals = mesh.normals;
                 int[] triangles = mesh.triangles;
                 foreach (Vector3 point in points) Assert.IsTrue(RenderMath.IsFinite(point));
                 for (int i = 0; i < triangles.Length; i += 3)
@@ -49,8 +50,9 @@ namespace HealerLike.Render.Creatures
                     Vector3 cross = Vector3.Cross(points[triangles[i + 1]] - a,
                         points[triangles[i + 2]] - a);
                     Assert.Greater(cross.sqrMagnitude, 0f);
-                    Vector3 normal = cross / Mathf.Sqrt(cross.sqrMagnitude);
+                    Vector3 normal = normals[triangles[i]];
                     Assert.That(normal.magnitude, Is.EqualTo(1f).Within(0.0001f));
+                    Assert.Greater(Vector3.Dot(cross, normal), 0f, "Every triangle must wind out of its cut plane.");
                     foreach (Vector3 point in points)
                     {
                         Assert.LessOrEqual(Vector3.Dot(normal, point - a), 0.00005f,
@@ -59,6 +61,26 @@ namespace HealerLike.Render.Creatures
                 }
                 AssertOnSurface(mesh, ProceduralShapeMeshes.Anchor(shape, ShapeAnchor.Top, variant));
                 AssertOnSurface(mesh, ProceduralShapeMeshes.Anchor(shape, ShapeAnchor.Bottom, variant));
+            }
+        }
+
+        [TestCase(10)]
+        [TestCase(15)]
+        public void Create_SkinnyExtremeFanTriangles_ShareTheirWholeCutFaceNormal(int variant)
+        {
+            ShapeProfile shape = ShapeProfile.Block(0.4f, 0.95f, 0.15f, 1f);
+            shape.bend = variant % 2 == 0 ? 1f : -1f;
+            Mesh mesh = Build(shape, variant);
+            // Six primary planes plus twelve edge cuts; triangle diagonals do not introduce shading planes.
+            Assert.LessOrEqual(new HashSet<Vector3>(mesh.normals).Count, 18);
+            Vector3[] points = mesh.vertices;
+            Vector3[] normals = mesh.normals;
+            for (int i = 0; i < points.Length; i += 3)
+            {
+                Assert.AreEqual(normals[i], normals[i + 1]);
+                Assert.AreEqual(normals[i], normals[i + 2]);
+                Assert.That(Mathf.Abs(Vector3.Dot(normals[i], points[i + 1] - points[i])), Is.LessThan(0.000001f));
+                Assert.That(Mathf.Abs(Vector3.Dot(normals[i], points[i + 2] - points[i])), Is.LessThan(0.000001f));
             }
         }
 
