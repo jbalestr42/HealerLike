@@ -50,6 +50,11 @@ namespace HealerLike.Render.Stage
             string folder = Path.Combine(StagePlay.CaptureFolder, "offscreen-player");
             StageMotionOutput output = new StageMotionOutput(folder);
             Proof proof = new Proof { unityVersion = Application.unityVersion };
+            output.manifest.condition = "Real Main with a hidden Character; six paused samples: playfield, heal, status cast and three projectile positions. Gameplay runs between projectile samples; this is not an ambient-motion comparison.";
+            output.manifest.region = "No pixel-difference region or ambient-motion metrics measured; zero-valued motion fields are unused.";
+            output.manifest.unityVersion = Application.unityVersion;
+            output.manifest.gpu = SystemInfo.graphicsDeviceName;
+            output.manifest.revision = System.Environment.GetEnvironmentVariable("RENDER_CAPTURE_REVISION") ?? "unspecified";
             float timeScale = Time.timeScale;
             BattleFocus focus = null;
             bool focusEnabled = false;
@@ -171,6 +176,7 @@ namespace HealerLike.Render.Stage
                 if (shotGo) Object.Destroy(shotGo);
                 size.Dispose();
                 proof.passed &= !output.hasFailure && output.manifest.frames.Count == 6;
+                output.manifest.isPassed = proof.passed;
                 output.Write();
                 File.WriteAllText(Path.Combine(folder, "proof.json"), JsonUtility.ToJson(proof, true));
                 Debug.Log("[OffscreenPlayerRun] " + JsonUtility.ToJson(proof));

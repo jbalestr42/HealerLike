@@ -145,6 +145,21 @@ namespace HealerLike.Render.Creatures
         }
 
         [Test]
+        public void BaneStatusCast_UsesTheLitPaletteTintForItsEntryLinkOnly()
+        {
+            BuffHandlerFactory factory = SpellSinkFixture.Modifier(AttributeType.Damage, -2f, _owned);
+            _sink.SetStatus(_source, _target, factory, 1, 0f, 8f);
+            SpellEffect status = _sink.GetStatus(_target, factory).GetComponent<SpellEffect>();
+            SpellEffect link = Link();
+            Assert.AreEqual(EffectFamily.Bane, status.recipe.family);
+            Assert.AreEqual(EffectFamily.Bane, link.recipe.family);
+            Assert.AreEqual(status.recipe.palette.bane, status.recipe.colour);
+            Assert.AreEqual(status.recipe.palette.baneLit, link.recipe.colour);
+            SpellEffect contact = _sink.ShowContactLink(Vector3.zero, Vector3.one);
+            Assert.AreEqual(contact.recipe.palette.damage, contact.recipe.colour);
+        }
+
+        [Test]
         public void HiddenCharacter_OwnManaAndStatuses_DoNotLeaveFloatingPresentation()
         {
             BuffHandlerFactory factory = SpellSinkFixture.Modifier(AttributeType.Damage, 2f, _owned);

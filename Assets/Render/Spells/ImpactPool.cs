@@ -90,15 +90,21 @@ namespace HealerLike.Render.Spells
             Add(effect.gameObject);
         }
 
-        public SpellEffect ShowLink(Vector3 start, Vector3 end, EffectFamily family, bool isContactThread)
+        public SpellEffect ShowLink(Vector3 start, Vector3 end, EffectFamily family, bool isContactThread,
+                                    bool isScreenCast = false)
         {
             if (!RenderMath.IsFinite(start) || !RenderMath.IsFinite(end))
             {
                 return null;
             }
 
-            SpellEffect effect = SpellEffect.Create(EffectComposer.Link(_vocabulary, family), _parent, _meshes,
-                                                    _material, null);
+            EffectRecipe recipe = EffectComposer.Link(_vocabulary, family);
+            // The long player entry line crosses the navy ground; use Bane's authored lit tint for that line.
+            if (isScreenCast && family == EffectFamily.Bane && recipe != null && recipe.palette)
+            {
+                recipe.colour = recipe.palette.baneLit;
+            }
+            SpellEffect effect = SpellEffect.Create(recipe, _parent, _meshes, _material, null);
             if (effect == null)
             {
                 return null;
@@ -202,7 +208,7 @@ namespace HealerLike.Render.Spells
                 if (recipient.target != null && (fromScreen || Count(recipients, recipient.family) >= 2))
                 {
                     SpellEffect link = ShowLink(start, EffectPlacement.Anchors(recipient.target).bodyCentre,
-                        recipient.family, false);
+                        recipient.family, false, fromScreen);
                     if (fromScreen && link)
                     {
                         link.SetCastSource(caster);
