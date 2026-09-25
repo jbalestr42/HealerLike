@@ -25,5 +25,4 @@ MonoBehaviour:
   data:
     type: 1
     modifierType: 1
-    isRelative: 1
-    value: -0.5
+    value: 0.5

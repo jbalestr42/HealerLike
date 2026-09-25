@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 // Test mode without restriction: place any number of allies/enemies, use every character skill
 // without cost or cooldown, get any item, and start/stop the battle at will
@@ -28,6 +29,25 @@ public class SandboxGameType : AGameType
         if (!_isInitialized)
         {
             Initialize();
+        }
+
+        // Right click removes an entity, whatever the current interaction
+        if (Input.GetMouseButtonDown(1) && !EventSystem.current.IsPointerOverGameObject())
+        {
+            RemoveEntityUnderMouse();
+        }
+    }
+
+    void RemoveEntityUnderMouse()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << Layers.Entity))
+        {
+            Entity entity = RemoveEntityInteraction.GetEntity(hit.transform.gameObject);
+            if (entity != null)
+            {
+                RemoveEntityInteraction.Remove(entity);
+            }
         }
     }
 
