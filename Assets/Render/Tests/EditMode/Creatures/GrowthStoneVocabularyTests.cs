@@ -113,6 +113,47 @@ namespace HealerLike.Render.Creatures
             }
         }
 
+        [TestCase(LookSide.Plant, CountBand.Few)]
+        [TestCase(LookSide.Plant, CountBand.Many)]
+        [TestCase(LookSide.Stone, CountBand.Few)]
+        [TestCase(LookSide.Stone, CountBand.Many)]
+        public void Arch_CountPodsRemainSeparatedAndClearTheTrunkAcrossViewingYaws(LookSide side, CountBand count)
+        {
+            LookVocabulary.HeadEntry arch = _vocabulary.heads[HeadKind.Arch];
+            LookPart[] parts = side == LookSide.Plant ? arch.plant : arch.stone;
+            LookPart[] pods = parts.Where(p => p.role == PartRole.Tip && p.minCount <= count).ToArray();
+            LookPart[] trunk = parts.Where(p => p.minCount == CountBand.One
+                && (p.id == "ArchPier" || p.id == "Growth")).ToArray();
+            Assert.AreEqual(LookComposer.Copies(count), pods.Length);
+            foreach (float yaw in new[] { -45f, -30f, 0f, 30f, 45f })
+            {
+                Vector3 right = Quaternion.Euler(0f, yaw, 0f) * Vector3.right;
+                LookPart[] ordered = pods.OrderBy(p => Vector3.Dot(p.position, right)).ToArray();
+                for (int i = 1; i < ordered.Length; i++)
+                {
+                    float gap = Project(ordered[i], right).x - Project(ordered[i - 1], right).y;
+                    Assert.Greater(gap, 0.03f, side + " " + count + " pod separation at yaw " + yaw);
+                }
+                foreach (LookPart pod in pods)
+                foreach (LookPart support in trunk)
+                {
+                    Bounds bounds = Box(support);
+                    if (pod.position.y <= bounds.min.y || pod.position.y >= bounds.max.y) continue;
+                    Vector2 organ = Project(pod, right), obstacle = Project(support, right);
+                    float gap = Mathf.Max(organ.x - obstacle.y, obstacle.x - organ.y);
+                    Assert.Greater(gap, 0.015f, side + " " + count + " pod behind trunk at yaw " + yaw);
+                }
+            }
+        }
+
+        static Vector2 Project(LookPart part, Vector3 direction)
+        {
+            float centre = Vector3.Dot(part.position, direction);
+            float extent = LookMeasure.Extent(part.size * 0.5f,
+                Quaternion.Inverse(Quaternion.Euler(part.euler)) * direction, part.shape);
+            return new Vector2(centre - extent, centre + extent);
+        }
+
         [TestCase(LookSide.Plant)]
         [TestCase(LookSide.Stone)]
         public void Fork_HasTwoSeparatedLobesAndArchHasOpenSpace(LookSide side)
