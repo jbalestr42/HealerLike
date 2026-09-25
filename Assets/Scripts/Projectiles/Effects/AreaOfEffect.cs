@@ -13,6 +13,10 @@ public class AreaOfEffect : MonoBehaviour
     GameObject _target;
     public GameObject target { get { return _target; } set { _target = value; } }
 
+    // Applied on top of the source's on hit consumers (ex: the ones of the projectile that exploded)
+    List<AConsumerFactory> _extraOnHitConsumers = new List<AConsumerFactory>();
+    public List<AConsumerFactory> extraOnHitConsumers { get { return _extraOnHitConsumers; } set { _extraOnHitConsumers = value; } }
+
     void Start()
     {
         ATargetBehaviour targetBehaviour = ATargetBehaviour.Create(TargetBehaviourType.Nearest);
@@ -26,24 +30,34 @@ public class AreaOfEffect : MonoBehaviour
             // _target is already hit, we don't want to hit twice
             if (nextTarget != _target)
             {
-                IAttackable attackable = nextTarget.GetComponent<IAttackable>();
-                if (attackable != null)
-                {
-                    OnHitData onHitData = new OnHitData();
-                    onHitData.resourceModifier.source = source;
-                    onHitData.attacker = source.GetComponent<IAttacker>();
-                    onHitData.source = source;
-                    onHitData.attackable = attackable;
-                    onHitData.target = nextTarget;
-
-                    List<AConsumerFactory> onHitConsumers = onHitData.attacker.GetOnHitConsumers();
-                    foreach (AConsumerFactory consumerFactory in onHitConsumers)
-                    {
-                        onHitData.resourceModifier.consumers.Add(consumerFactory.GetConsumer(source, nextTarget));
-                    }
-                    attackable.OnHit(onHitData);
-                }
+                HitTarget(nextTarget);
             }
         }
+    }
+
+    public void HitTarget(GameObject nextTarget)
+    {
+        IAttackable attackable = nextTarget.GetComponent<IAttackable>();
+        if (attackable == null)
+        {
+            return;
+        }
+
+        OnHitData onHitData = new OnHitData();
+        onHitData.resourceModifier.source = source;
+        onHitData.attacker = source.GetComponent<IAttacker>();
+        onHitData.source = source;
+        onHitData.attackable = attackable;
+        onHitData.target = nextTarget;
+
+        foreach (AConsumerFactory consumerFactory in onHitData.attacker.GetOnHitConsumers())
+        {
+            onHitData.resourceModifier.consumers.Add(consumerFactory.GetConsumer(source, nextTarget));
+        }
+        foreach (AConsumerFactory consumerFactory in _extraOnHitConsumers)
+        {
+            onHitData.resourceModifier.consumers.Add(consumerFactory.GetConsumer(source, nextTarget));
+        }
+        attackable.OnHit(onHitData);
     }
 }

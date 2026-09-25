@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -30,6 +31,8 @@ public class AreaOfEffectProjectileBehaviour : AProjectileBehaviour<AreaOfEffect
             areaOfEffect.source = onHitData.source;
             areaOfEffect.target = onHitData.target;
             areaOfEffect.radius = data.radius;
+            // The area deals the projectile's damage too, not only the source's own on hit consumers
+            areaOfEffect.extraOnHitConsumers = new List<AConsumerFactory>(projectile.onHitConsumers);
         }
 	}
 }

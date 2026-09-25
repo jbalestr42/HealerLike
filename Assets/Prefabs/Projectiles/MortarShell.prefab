@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: -6575050316427133680}
   - component: {fileID: 4137439045074934838}
   m_Layer: 11
-  m_Name: LaserBullet
+  m_Name: MortarShell
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -142,9 +142,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   data:
-    speed: 10
-    angleMin: 5
-    angleMax: 25
+    speed: 6
+    angleMin: 40
+    angleMax: 55
 --- !u!114 &-6575050316427133680
 MonoBehaviour:
   m_ObjectHideFlags: 0
