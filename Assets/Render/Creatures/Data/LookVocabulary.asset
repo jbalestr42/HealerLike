@@ -29330,7 +29330,7 @@ MonoBehaviour:
     shoulderOffset: 0.7
     limbSpread: 0.36
     limbDepth: 0.05
-    limbWidth: 0.46
+    limbWidth: 0.48
     limbThickness: 0.5
     limbSplay: 18
     limbBodyOverlap: 0.5
