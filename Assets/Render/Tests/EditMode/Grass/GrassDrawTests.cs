@@ -311,7 +311,7 @@ public class GrassDrawTests
     }
 
     [Test]
-    public void Show_FlatPatchUnderKeyLight_ShowsItsShade()
+    public void Show_FlatPatchFromShadedSideUnderKeyLight_ShowsItsOwnShade()
     {
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null || !SystemInfo.supportsComputeShaders
             || !SystemInfo.supportsIndirectArgumentsBuffer)
@@ -323,13 +323,19 @@ public class GrassDrawTests
         Material marked = _scene.Track(new Material(AssetDatabase.LoadAssetAtPath<Material>(grassMaterialPath)));
         marked.SetColor("_HLShadeTint", new Color(1f, 0f, 1f, 1f));
         _scene.BuildKeyLight(20f, 20f);
+        // Keep the production sun, but observe the shaded side of the patch. A camera beside the sun sees
+        // mostly lit faces; that old fixture depended on ordinary blades casting onto one another.
+        Vector3 toLight = StageKeyLight.KeyDirection;
+        float yaw = Mathf.Atan2(toLight.x, toLight.z) * Mathf.Rad2Deg;
+        _scene.camera.transform.rotation = Quaternion.Euler(25f, yaw, 0f);
+        _scene.camera.transform.position = -_scene.camera.transform.forward * 20f;
         CreateGrassPatch(marked);
 
         _scene.Render();
 
-        // The grass takes the global threshold, so its share follows the stones' and the heads'
         float shadeShare = LookTestScene.ShadeShare(_scene.texture);
         Assert.That(shadeShare, Is.GreaterThan(0.1f));
+        Assert.That(shadeShare, Is.LessThan(0.9f), "Lit faces must still retain the grass green");
         Debug.Log("[GrassDrawTests] Grass shade share " + shadeShare.ToString("F3"));
     }
 
