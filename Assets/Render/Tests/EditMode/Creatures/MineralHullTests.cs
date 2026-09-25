@@ -46,8 +46,10 @@ namespace HealerLike.Render.Creatures
                 for (int i = 0; i < triangles.Length; i += 3)
                 {
                     Vector3 a = points[triangles[i]];
-                    Vector3 normal = Vector3.Cross(points[triangles[i + 1]] - a,
-                        points[triangles[i + 2]] - a).normalized;
+                    Vector3 cross = Vector3.Cross(points[triangles[i + 1]] - a,
+                        points[triangles[i + 2]] - a);
+                    Assert.Greater(cross.sqrMagnitude, 0f);
+                    Vector3 normal = cross / Mathf.Sqrt(cross.sqrMagnitude);
                     Assert.That(normal.magnitude, Is.EqualTo(1f).Within(0.0001f));
                     foreach (Vector3 point in points)
                     {
