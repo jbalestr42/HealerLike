@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using HealerLike.Render.Environment;
+using HealerLike.Render.Creatures;
 
 namespace HealerLike.Render.Stage
 {
@@ -19,7 +20,7 @@ namespace HealerLike.Render.Stage
         static readonly float fogInterval = 0.1f;
         static readonly float boundsInterval = 0.4f;
 
-        readonly Dictionary<Transform, Renderer[]> _bodies = new Dictionary<Transform, Renderer[]>();
+        readonly Dictionary<Transform, BodyView> _bodies = new Dictionary<Transform, BodyView>();
         readonly List<Transform> _live = new List<Transform>();
         RenderManager _manager;
         Button _nextWaveButton;
@@ -248,15 +249,41 @@ namespace HealerLike.Render.Stage
             _target = BattleFocusBounds.Fit(bounds, rotation, _camera.fieldOfView, _camera.aspect);
         }
 
+        // Recomposition replaces root renderers and can add parts while retaining the same entity transform.
+        // Cache the rig revision as well as its owner, so discovery happens only after a geometry change.
+        sealed class BodyView
+        {
+            readonly Transform _body;
+            ARigHost _host;
+            CreatureRig _rig;
+            int _revision = -1;
+            Renderer[] _renderers;
+
+            public BodyView(Transform body) { _body = body; }
+
+            public Bounds Read()
+            {
+                if (!_host) _host = _body.GetComponentInChildren<ARigHost>();
+                CreatureRig rig = _host ? _host.rig : null;
+                int revision = rig != null ? rig.revision : 0;
+                if (_renderers == null || rig != _rig || revision != _revision)
+                {
+                    _renderers = _body.GetComponentsInChildren<Renderer>();
+                    _rig = rig;
+                    _revision = revision;
+                }
+                return BattleFocusBounds.Body(_body, _renderers);
+            }
+        }
+
         Bounds BodyBounds(Transform body)
         {
-            if (!_bodies.TryGetValue(body, out Renderer[] renderers))
+            if (!_bodies.TryGetValue(body, out BodyView view))
             {
-                renderers = body.GetComponentsInChildren<Renderer>();
-                _bodies[body] = renderers;
+                view = new BodyView(body);
+                _bodies[body] = view;
             }
-
-            return BattleFocusBounds.Body(body, renderers);
+            return view.Read();
         }
 
         void AddLive(List<GameObject> entities)

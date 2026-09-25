@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Zones;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -127,6 +129,65 @@ public class StageDressingTests
         Assert.That(allyBase.x, Is.EqualTo(enemyBase.x).Within(0.001f));
         Assert.That(healer.transform.position.x, Is.EqualTo(-30f));
         Assert.That(Vector3.Distance(camera.transform.position, new Vector3(4f, 1f, 0f)), Is.LessThan(20f));
+    }
+
+    [Test]
+    public void Focus_RecomposedLiveRig_IncludesReplacementRootsAndNewBodyParts()
+    {
+        _scene.manager.Init(_scene.entityManager, _scene.player);
+        GameObject body = new GameObject("Live plant");
+        body.transform.SetParent(_scene.gameGo.transform);
+        TrampleRigTestHost host = body.AddComponent<TrampleRigTestHost>();
+        CreatureRecipe recipe = RenderTestAssets.CreateRecipe();
+        recipe.idle = default;
+        Material material = RenderTestAssets.LoadLookMaterial();
+        try
+        {
+            Assert.IsTrue(host.Build(recipe, material));
+            host.rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
+            TestHelpers.SetPrivateField(_scene.entityManager, "_entities",
+                new Dictionary<Entity.EntityType, List<GameObject>>
+                {
+                    { Entity.EntityType.Player, new List<GameObject> { body } },
+                    { Entity.EntityType.Computer, new List<GameObject>() }
+                });
+            BattleFocus focus = _scene.manager.GetComponentInChildren<BattleFocus>(true);
+            focus.Focus();
+            FieldInfo combatBounds = typeof(BattleFocus).GetField("_combatBounds",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Bounds before = (Bounds)combatBounds.GetValue(focus);
+
+            recipe.roots.footRadius = 2f;
+            recipe.parts = new[] { recipe.parts[0], new CreaturePart
+            {
+                id = "ExtendedBody", parent = 0, role = PartRole.Body, localPosition = Vector3.forward * 3f,
+                dimensions = Vector3.one * 0.5f, colour = Color.green
+            } };
+            Assert.IsTrue(host.rig.Recompose(recipe, material, material, RenderTestAssets.LoadMeshes()));
+            host.rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
+            Bounds addedBody = host.rig.partTransforms[1].GetComponent<Renderer>().bounds;
+            Assert.IsFalse(before.Contains(addedBody.center));
+
+            focus.Focus();
+            Bounds after = (Bounds)combatBounds.GetValue(focus);
+            Assert.IsTrue(after.Contains(addedBody.min));
+            Assert.IsTrue(after.Contains(addedBody.max));
+            int roots = 0;
+            foreach (Renderer renderer in host.rig.root.GetComponentsInChildren<Renderer>())
+            {
+                if (renderer.name != "Root" && renderer.name != "RootJoint") continue;
+                Assert.IsTrue(after.Contains(renderer.bounds.min), renderer.name);
+                Assert.IsTrue(after.Contains(renderer.bounds.max), renderer.name);
+                roots++;
+            }
+            Assert.Greater(roots, 0);
+            Assert.That(after.size.x, Is.GreaterThan(before.size.x + 2f));
+        }
+        finally
+        {
+            host.Clear();
+            Object.DestroyImmediate(recipe);
+        }
     }
 
 }
