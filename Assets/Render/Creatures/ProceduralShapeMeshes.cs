@@ -42,11 +42,17 @@ namespace HealerLike.Render.Creatures
             }
 
             Geometry(shape, variant, out List<Vector3> vertices, out List<int> indices, out List<int> facets);
-            if (facets != null)
-            {
-                return FacetAnchor(vertices, indices, facets, anchor == ShapeAnchor.Top);
-            }
             bool top = anchor == ShapeAnchor.Top;
+            // A blade's attachment is its apex, even when clipping leaves a tiny slanted crown.
+            if (facets != null && !(top && shape.kind == ShapeKind.Shard))
+            {
+                return FacetAnchor(vertices, indices, facets, top);
+            }
+            return ExtremeAnchor(vertices, top);
+        }
+
+        static Vector3 ExtremeAnchor(List<Vector3> vertices, bool top)
+        {
             float extreme = top ? float.MinValue : float.MaxValue;
             foreach (Vector3 point in vertices)
             {
@@ -65,41 +71,23 @@ namespace HealerLike.Render.Creatures
             return total / count;
         }
 
-        // A broken crown attaches through the centre of its actual cap face, not its highest isolated corner.
+        // Broad crowns attach through their cap centre. A fully clipped cap leaves an apex, not a side socket.
         static Vector3 FacetAnchor(List<Vector3> vertices, List<int> indices, List<int> facets, bool top)
         {
-            Dictionary<int, Vector3> centres = new Dictionary<int, Vector3>();
-            Dictionary<int, float> areas = new Dictionary<int, float>();
-            Dictionary<int, float> projected = new Dictionary<int, float>();
+            int selected = top ? 5 : 4;
+            Vector3 centre = Vector3.zero;
+            float total = 0f;
             for (int triangle = 0; triangle < facets.Count; triangle++)
             {
+                if (facets[triangle] != selected) continue;
                 Vector3 a = vertices[indices[triangle * 3]];
                 Vector3 b = vertices[indices[triangle * 3 + 1]];
                 Vector3 c = vertices[indices[triangle * 3 + 2]];
-                Vector3 cross = Vector3.Cross(b - a, c - a);
-                float area = cross.magnitude;
-                int face = facets[triangle];
-                centres.TryGetValue(face, out Vector3 centre);
-                areas.TryGetValue(face, out float total);
-                projected.TryGetValue(face, out float projection);
-                centres[face] = centre + (a + b + c) * (area / 3f);
-                areas[face] = total + area;
-                projected[face] = projection + cross.y * (top ? 1f : -1f);
+                float area = Vector3.Cross(b - a, c - a).magnitude;
+                centre += (a + b + c) * (area / 3f);
+                total += area;
             }
-            int selected = top ? 5 : 4;
-            if (!areas.ContainsKey(selected))
-            {
-                float largest = float.MinValue;
-                foreach (KeyValuePair<int, float> face in projected)
-                {
-                    if (face.Value > largest)
-                    {
-                        selected = face.Key;
-                        largest = face.Value;
-                    }
-                }
-            }
-            return centres[selected] / areas[selected];
+            return total > 0f ? centre / total : ExtremeAnchor(vertices, top);
         }
 
         static void Geometry(ShapeProfile shape, int variant, out List<Vector3> vertices, out List<int> indices,
