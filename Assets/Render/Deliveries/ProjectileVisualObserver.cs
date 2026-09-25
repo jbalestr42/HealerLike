@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using HealerLike.Render.Spells;
+using HealerLike.Render.Creatures;
 using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Deliveries
@@ -88,7 +89,8 @@ namespace HealerLike.Render.Deliveries
                 end = _capturedTargetPoint.transform.position;
             }
 
-            if (_claim.TryClaim(Model(source), token, _deliveryStyle, projectile.transform, end))
+            if (!CharacterView.ScreenSource(source)
+                && _claim.TryClaim(Model(source), token, _deliveryStyle, projectile.transform, end))
             {
                 TintTip();
                 _hidden.Capture(gameObject);
@@ -193,7 +195,8 @@ namespace HealerLike.Render.Deliveries
                 _freeShot = gameObject.AddComponent<FreeShot>();
             }
 
-            _freeShot.enabled = _freeShot.Init(_subscribed, _deliveryStyle, _vocabulary, _manager.meshes);
+            _freeShot.enabled = _freeShot.Init(_subscribed, _deliveryStyle, _vocabulary, _manager.meshes,
+                CharacterView.ScreenSource(_subscribed.source));
             if (_freeShot.enabled)
             {
                 _hidden.Capture(gameObject);
@@ -258,6 +261,7 @@ namespace HealerLike.Render.Deliveries
 
             if (IsFree())
             {
+                _freeShot.Contact();
                 // A bounce keeps the tip flying toward its next target
                 _hasLanded = !GetComponent<BounceProjectileBehaviour>();
                 if (_hasLanded)

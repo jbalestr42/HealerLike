@@ -138,7 +138,8 @@ namespace HealerLike.Render.Stage
         void DressCharacter(Character character)
         {
             GameObject viewGo = Object.Instantiate(_manager.creatureLooks.GetView(character.data), character.transform);
-            viewGo.GetComponent<CharacterView>().Init(character, _manager);
+            CharacterView view = viewGo.GetComponent<CharacterView>();
+            view.Init(character, _manager);
             foreach (HealPulse pulse in viewGo.GetComponentsInChildren<HealPulse>())
             {
                 pulse.Init(character.gameObject, _manager.registry, _manager.zones);
@@ -146,7 +147,11 @@ namespace HealerLike.Render.Stage
 
             foreach (TrampleZone trample in viewGo.GetComponentsInChildren<TrampleZone>())
             {
-                trample.InitFootprint(_manager.zones);
+                trample.enabled = view.showBody;
+                if (view.showBody)
+                {
+                    trample.InitFootprint(_manager.zones);
+                }
             }
         }
 

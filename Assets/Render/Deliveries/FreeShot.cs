@@ -18,6 +18,14 @@ namespace HealerLike.Render.Deliveries
         float _size;
         Vector3 _lastPosition;
         bool _hasLanded;
+        CharacterView _screenSource;
+        Vector3 _logicalStart;
+        Vector3 _previousLogicalPosition;
+        float _flightDistance;
+        float _travelled;
+
+        public Vector3 visualPosition { get { return _frame.GetColumn(3); } }
+        public bool fromScreen { get { return _screenSource; } }
 
         // Made in Init, a property block cannot be made while Unity constructs the component
         DeliveryTip _tip;
@@ -28,14 +36,20 @@ namespace HealerLike.Render.Deliveries
 
         // False for a style without a tip, the thrown shard, which has nothing to show in its place
         public bool Init(Projectile projectile, DeliveryStyle style, DeliveryVocabulary vocabulary,
-            PrimitiveMeshes meshes)
+            PrimitiveMeshes meshes, CharacterView screenSource = null)
         {
             if (_tip == null)
             {
                 _tip = new DeliveryTip();
             }
 
+            _screenSource = screenSource;
             _tip.SetStyle(style, vocabulary, meshes);
+            // A thrown creature uses its body shard; the invisible player has no shard to lend.
+            if (_tip.partCount == 0 && _screenSource)
+            {
+                _tip.SetStyle(DeliveryStyle.Direct, vocabulary, meshes);
+            }
             if (_tip.partCount == 0)
             {
                 return false;
@@ -61,9 +75,19 @@ namespace HealerLike.Render.Deliveries
             }
 
             _hasLanded = false;
-            _lastPosition = transform.position;
-            _frame = DeliveryTip.Frame(transform.position, StartTravel(), _size);
+            _logicalStart = transform.position;
+            _previousLogicalPosition = _logicalStart;
+            _travelled = 0f;
+            _flightDistance = _targetPoint ? Vector3.Distance(_logicalStart, _targetPoint.transform.position) : 0f;
+            _lastPosition = PresentationPosition();
+            _frame = DeliveryTip.Frame(_lastPosition, StartTravel(), _size);
             return true;
+        }
+
+        // The first contact finishes the entry path; bounces continue from their real impact point.
+        public void Contact()
+        {
+            _screenSource = null;
         }
 
         // The tip stops drawing where the shot lands, the projectile's own visual stays hidden
@@ -100,14 +124,17 @@ namespace HealerLike.Render.Deliveries
                 return;
             }
 
-            Vector3 travel = transform.position - _lastPosition;
+            _travelled += Vector3.Distance(transform.position, _previousLogicalPosition);
+            _previousLogicalPosition = transform.position;
+            Vector3 position = PresentationPosition();
+            Vector3 travel = position - _lastPosition;
             if (travel.sqrMagnitude < stillSquared)
             {
                 travel = StartTravel();
             }
 
-            _lastPosition = transform.position;
-            _frame = DeliveryTip.Frame(transform.position, travel, _size);
+            _lastPosition = position;
+            _frame = DeliveryTip.Frame(position, travel, _size);
             if (!_hasLanded)
             {
                 _tip.Draw(_holder, _frame, _material, _colour, _colour);
@@ -122,12 +149,22 @@ namespace HealerLike.Render.Deliveries
             }
         }
 
+        Vector3 PresentationPosition()
+        {
+            if (!_screenSource || !_screenSource.TryGetCastPoint(out Vector3 origin))
+            {
+                return transform.position;
+            }
+            float remaining = 1f - Mathf.Clamp01(_travelled / Mathf.Max(0.001f, _flightDistance));
+            return transform.position + (origin - _logicalStart) * remaining;
+        }
+
         // Before the first move the tip looks at its target
         Vector3 StartTravel()
         {
             if (_targetPoint)
             {
-                return _targetPoint.transform.position - transform.position;
+                return _targetPoint.transform.position - PresentationPosition();
             }
             return Vector3.forward;
         }

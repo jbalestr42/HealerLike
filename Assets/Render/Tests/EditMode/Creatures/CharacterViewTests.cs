@@ -227,7 +227,7 @@ public class CharacterViewTests
     }
 
     [Test]
-    public void Init_ViewPrefab_AnchorsBodyOnItself()
+    public void Init_ViewPrefab_KeepsAnInvisibleRegisteredSourceWithoutBuildingABody()
     {
         GameObject prefab =
             AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Creatures/Prefabs/HealerCharacter.prefab");
@@ -240,8 +240,9 @@ public class CharacterViewTests
 
         view.Init(character, manager);
 
-        Assert.NotNull(view.rig);
-        Assert.AreSame(viewGo.transform, view.rig.root.parent);
+        Assert.IsFalse(view.showBody);
+        Assert.IsNull(view.rig);
+        Assert.IsEmpty(viewGo.GetComponentsInChildren<Renderer>(true));
     }
 
     // What Init reads from the view prefab: its recipe, the shared meshes and itself as the anchor

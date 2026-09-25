@@ -134,6 +134,13 @@ namespace HealerLike.Render.Spells
             _removalAge = 0f;
         }
 
+        GameObject _castSource;
+
+        public void SetCastSource(GameObject source)
+        {
+            _castSource = source;
+        }
+
         public void SetEndpoints(Vector3 start, Vector3 end, bool isContactThread)
         {
             _linkStart = start;
@@ -159,6 +166,10 @@ namespace HealerLike.Render.Spells
             float time = _isStatus ? StatusTime() : _age;
             if (_recipe.socket == EffectSocket.Link)
             {
+                if (_castSource)
+                {
+                    _linkStart = EffectPlacement.Anchors(_castSource).castPoint;
+                }
                 _parts.PoseLink(_linkStart, _linkEnd, _isContactThread, _age, _count);
                 return;
             }

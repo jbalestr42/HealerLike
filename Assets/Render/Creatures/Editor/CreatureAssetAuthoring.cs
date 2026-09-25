@@ -53,6 +53,7 @@ namespace HealerLike.Render.Creatures
             CharacterView characterView = view.AddComponent<CharacterView>();
             SerializedObject data = new SerializedObject(characterView);
             data.FindProperty("_recipe").objectReferenceValue = recipe;
+            data.FindProperty("_showBody").boolValue = false;
             data.FindProperty("_visualAnchor").objectReferenceValue = view.transform;
             data.FindProperty("_material").objectReferenceValue = material;
             data.FindProperty("_bodyMaterial").objectReferenceValue =

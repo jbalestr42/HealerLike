@@ -195,12 +195,18 @@ namespace HealerLike.Render.Spells
 
         void Link(GameObject caster, List<Recipient> recipients)
         {
+            bool fromScreen = CharacterView.ScreenSource(caster);
             Vector3 start = EffectPlacement.Anchors(caster).castPoint;
             foreach (Recipient recipient in recipients)
             {
-                if (recipient.target != null && Count(recipients, recipient.family) >= 2)
+                if (recipient.target != null && (fromScreen || Count(recipients, recipient.family) >= 2))
                 {
-                    ShowLink(start, EffectPlacement.Anchors(recipient.target).bodyCentre, recipient.family, false);
+                    SpellEffect link = ShowLink(start, EffectPlacement.Anchors(recipient.target).bodyCentre,
+                        recipient.family, false);
+                    if (fromScreen && link)
+                    {
+                        link.SetCastSource(caster);
+                    }
                 }
             }
         }

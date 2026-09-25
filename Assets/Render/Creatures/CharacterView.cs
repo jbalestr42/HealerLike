@@ -17,6 +17,38 @@ namespace HealerLike.Render.Creatures
         [SerializeField] Material _bodyMaterial;
         [SerializeField] PrimitiveMeshes _meshes;
         [SerializeField] float _cellSize = 1f;
+        [SerializeField] bool _showBody = true;
+        [SerializeField, Range(-0.3f, -0.01f)] float _castViewportY = -0.08f;
+        [SerializeField, Min(0f)] float _castHeight = 1.5f;
+        Camera _camera;
+
+        public bool showBody { get { return _showBody; } }
+        public bool castsFromScreen { get { return !_showBody && _camera; } }
+
+        public static CharacterView ScreenSource(GameObject source)
+        {
+            CharacterView view = source ? source.GetComponentInChildren<CharacterView>() : null;
+            return view && view.castsFromScreen ? view : null;
+        }
+
+        // Intersect the bottom-centre ray with the cast plane, so yaw and focus changes need no cached offset.
+        public bool TryGetCastPoint(out Vector3 point)
+        {
+            point = transform.position;
+            if (!castsFromScreen)
+            {
+                return false;
+            }
+            float height = _character ? _character.transform.position.y : transform.position.y;
+            Plane plane = new Plane(Vector3.up, Vector3.up * (height + _castHeight));
+            Ray ray = _camera.ViewportPointToRay(new Vector3(0.5f, _castViewportY, 0f));
+            if (!plane.Raycast(ray, out float distance))
+            {
+                return false;
+            }
+            point = ray.GetPoint(distance);
+            return true;
+        }
 
         RenderRegistry _registry;
         ISpellVisualSink _sink;
@@ -75,6 +107,7 @@ namespace HealerLike.Render.Creatures
             Unregister();
             _character = owner;
             _registry = manager.registry;
+            _camera = manager.gameCamera;
             _sink = manager.spellSink;
             _deliveryVocabulary = manager.deliveryVocabulary;
             if (!_visualAnchor)
@@ -89,6 +122,10 @@ namespace HealerLike.Render.Creatures
         // After the character's own Update has spent or restored its mana
         void LateUpdate()
         {
+            if (!_showBody)
+            {
+                return;
+            }
             if (rig != null && _character)
             {
                 ResourceAttribute mana = _character.mana;
@@ -145,6 +182,15 @@ namespace HealerLike.Render.Creatures
 
         void BuildAndRegister()
         {
+            if (!_showBody && _character)
+            {
+                ReleaseRig();
+                if (isActiveAndEnabled)
+                {
+                    Register(_registry, _character.gameObject);
+                }
+                return;
+            }
             if (!_character || !_recipe || !_visualAnchor || !_material)
             {
                 return;
@@ -182,6 +228,15 @@ namespace HealerLike.Render.Creatures
         // A character casts from its first bud
         public override bool TryGetAnchors(out EffectAnchors anchors)
         {
+            if (TryGetCastPoint(out Vector3 point))
+            {
+                anchors = new EffectAnchors
+                {
+                    foot = point, bodyCentre = point, neck = point, headCentre = point,
+                    bodyRadius = 0.3f, headRadius = 0.15f, castPoint = point
+                };
+                return true;
+            }
             if (!base.TryGetAnchors(out anchors))
             {
                 return false;

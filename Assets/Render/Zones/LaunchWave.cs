@@ -1,5 +1,6 @@
 using UnityEngine;
 using HealerLike.Render.Environment;
+using HealerLike.Render.Creatures;
 
 namespace HealerLike.Render.Zones
 {
@@ -28,6 +29,11 @@ namespace HealerLike.Render.Zones
             }
 
             Vector3 sourcePosition = source.transform.position;
+            CharacterView screenSource = CharacterView.ScreenSource(source);
+            if (screenSource)
+            {
+                screenSource.TryGetCastPoint(out sourcePosition);
+            }
             Vector3 targetPosition = projectile.target.transform.position;
             if (_zones != null)
             {

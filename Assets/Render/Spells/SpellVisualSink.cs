@@ -89,7 +89,7 @@ namespace HealerLike.Render.Spells
 
         public void SetCharges(GameObject target, float charges)
         {
-            if (target == null)
+            if (target == null || CharacterView.ScreenSource(target))
             {
                 return;
             }
@@ -130,7 +130,8 @@ namespace HealerLike.Render.Spells
         public void ShowImpact(GameObject source, GameObject target, ResourceKind resource, float preClampAmount,
                                bool isCritical)
         {
-            if (!isActiveAndEnabled || target == null || !float.IsFinite(preClampAmount) || preClampAmount == 0f)
+            if (!isActiveAndEnabled || target == null || CharacterView.ScreenSource(target)
+                || !float.IsFinite(preClampAmount) || preClampAmount == 0f)
             {
                 return;
             }
@@ -141,7 +142,7 @@ namespace HealerLike.Render.Spells
         public void SetStatus(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
                               float elapsedSeconds, float durationSeconds)
         {
-            if (!isActiveAndEnabled || target == null || factory == null)
+            if (!isActiveAndEnabled || target == null || factory == null || CharacterView.ScreenSource(target))
             {
                 return;
             }
@@ -154,7 +155,18 @@ namespace HealerLike.Render.Spells
 
             if (float.IsFinite(elapsedSeconds) && !float.IsNaN(durationSeconds))
             {
+                int previousStacks = _statuses.Stacks(target, factory);
                 _statuses.Set(source, target, factory, stacks, elapsedSeconds, durationSeconds);
+                SpellEffect status = _statuses.Get(target, factory);
+                if (stacks > previousStacks && status && CharacterView.ScreenSource(source))
+                {
+                    SpellEffect link = _impacts.ShowLink(EffectPlacement.Anchors(source).castPoint,
+                        EffectPlacement.Anchors(target).bodyCentre, status.recipe.family, false);
+                    if (link)
+                    {
+                        link.SetCastSource(source);
+                    }
+                }
             }
         }
 

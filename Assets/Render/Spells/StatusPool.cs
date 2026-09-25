@@ -61,6 +61,13 @@ namespace HealerLike.Render.Spells
             return Get(target, element);
         }
 
+        public int Stacks(GameObject target, ABuffHandlerFactory factory)
+        {
+            return _elements.TryGetValue(new HandlerKey(target, factory), out EffectElement element)
+                && _statuses.TryGetValue(new StatusKey(target, element), out Status status)
+                && status.sources.TryGetValue(factory, out int stacks) ? stacks : 0;
+        }
+
         public void Set(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
                         float elapsedSeconds, float durationSeconds)
         {

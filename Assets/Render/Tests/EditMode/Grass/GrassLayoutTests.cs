@@ -11,8 +11,8 @@ namespace HealerLike.Render.Grass
 
 public class GrassLayoutTests
 {
-    // The 16 by 16 board at full density: 285 roots a side, each step 16 / 285
-    static readonly int boardSide = 285;
+    // The 16 by 16 board at full density: 95 roots a side, each step 16 / 95
+    static readonly int boardSide = 95;
 
     static TuftSeed[] CreateBoard(uint seed = 1)
     {
@@ -47,9 +47,9 @@ public class GrassLayoutTests
     {
         TuftSeed[] seeds = CreateBoard();
 
-        Assert.AreEqual(boardSide * boardSide, seeds.Length); // 81,225, under the 98,304 cap
-        Assert.That(GrassLayout.Spacing, Is.EqualTo(0.056f).Within(0.0005f)); // 0.2 * 0.2475 / 0.884
-        Assert.That(GrassLayout.Density, Is.EqualTo(319f).Within(1f));
+        Assert.AreEqual(boardSide * boardSide, seeds.Length); // 9,025, one ninth of the former 81,225 roots
+        Assert.That(GrassLayout.Spacing, Is.EqualTo(0.168f).Within(0.0005f)); // Three times the former spacing
+        Assert.That(GrassLayout.Density, Is.EqualTo(319f / 9f).Within(0.1f));
         Assert.That(16f / boardSide, Is.InRange(GrassLayout.Spacing, GrassLayout.Spacing * 1.01f));
     }
 
@@ -96,7 +96,7 @@ public class GrassLayoutTests
 
         Assert.Less(smallest, 0.81f);
         Assert.Greater(largest, 1.19f);
-        Assert.That(GrassLayout.TuftHeight, Is.EqualTo(0.45f * 0.55f).Within(0.00001f));
+        Assert.That(GrassLayout.TuftHeight, Is.EqualTo(3f * 0.45f * 0.55f).Within(0.00001f));
     }
 
     [Test]
@@ -139,10 +139,10 @@ public class GrassLayoutTests
     [Test]
     public void Generate_LargeGrid_IsCappedByTheMaximumBudget()
     {
-        TuftSeed[] seeds = GrassLayout.Generate(32, 32, 1f, Vector3.zero, 0f, int.MaxValue, 1);
+        TuftSeed[] seeds = GrassLayout.Generate(64, 64, 1f, Vector3.zero, 0f, int.MaxValue, 1);
 
         Assert.That(seeds.Length, Is.InRange(GrassLayout.MaxBudget * 0.99f, GrassLayout.MaxBudget));
-        Assert.AreEqual(GrassLayout.MaxBudget, GrassLayout.CountFor(32, 32, int.MaxValue));
+        Assert.AreEqual(GrassLayout.MaxBudget, GrassLayout.CountFor(64, 64, int.MaxValue));
         Assert.IsEmpty(GrassLayout.Generate(1, 1, 1f, Vector3.zero, 0f, 0, 1));
     }
 

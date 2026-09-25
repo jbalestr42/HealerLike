@@ -7,13 +7,13 @@ namespace HealerLike.Render.Grass
     {
         public static readonly int MaxBudget = 98304;
         public static readonly float RootLift = 0.005f;
-        // Tuft height in cells, 0.45 of the 0.55 cell body unit
-        public static readonly float TuftHeight = 0.2475f;
+        // Three times the former tuft in every dimension; the same ratio widens root spacing.
+        public static readonly float TuftHeight = 0.7425f;
         // A 3 to 1 spike, 0.29 wide for 0.884 tall
         public static readonly float TuftWidth = TuftHeight * 0.29f / 0.884f;
         // Grid step between roots in cells, 0.2 for the same 0.884 tall tuft
         public static readonly float Spacing = TuftHeight * 0.2f / 0.884f;
-        // Tufts per square cell at the grid step, about 319
+        // Tufts per square cell at the wider grid step, about 35.4
         public static readonly float Density = 1f / (Spacing * Spacing);
         // Each root moves by up to this fraction of the grid step on each axis
         public static readonly float Jitter = 0.5f;
