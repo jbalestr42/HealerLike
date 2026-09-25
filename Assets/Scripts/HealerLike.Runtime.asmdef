@@ -2,7 +2,6 @@
     "name": "HealerLike.Runtime",
     "rootNamespace": "",
     "references": [
-        "AstarPathfindingProject",
         "QuickOutline",
         "Unity.TextMeshPro",
         "Unity.InputSystem",

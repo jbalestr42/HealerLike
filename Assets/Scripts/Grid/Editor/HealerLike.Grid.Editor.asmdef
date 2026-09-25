@@ -2,8 +2,7 @@
     "name": "HealerLike.Grid.Editor",
     "rootNamespace": "",
     "references": [
-        "HealerLike.Runtime",
-        "AstarPathfindingProject"
+        "HealerLike.Runtime"
     ],
     "includePlatforms": [
         "Editor"
