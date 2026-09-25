@@ -11,8 +11,8 @@ namespace HealerLike.Render.Grass
 
 public class GrassLayoutTests
 {
-    // The 16 by 16 board at full density: 95 roots a side, each step 16 / 95
-    static readonly int boardSide = 95;
+    // The 16 by 16 board at full density: 53 roots a side, each step 16 / 53
+    static readonly int boardSide = 53;
 
     static TuftSeed[] CreateBoard(uint seed = 1)
     {
@@ -47,14 +47,14 @@ public class GrassLayoutTests
     {
         TuftSeed[] seeds = CreateBoard();
 
-        Assert.AreEqual(boardSide * boardSide, seeds.Length); // 9,025, one ninth of the former 81,225 roots
-        Assert.That(GrassLayout.Spacing, Is.EqualTo(0.168f).Within(0.0005f)); // Three times the former spacing
-        Assert.That(GrassLayout.Density, Is.EqualTo(319f / 9f).Within(0.1f));
+        Assert.AreEqual(boardSide * boardSide, seeds.Length); // 2,809 large tufts with room for the ground to remain visible
+        Assert.That(GrassLayout.Spacing, Is.EqualTo(0.3f).Within(0.00001f));
+        Assert.That(GrassLayout.Density, Is.EqualTo(1f / 0.09f).Within(0.001f));
         Assert.That(16f / boardSide, Is.InRange(GrassLayout.Spacing, GrassLayout.Spacing * 1.01f));
     }
 
     [Test]
-    public void Generate_MainBoard_JittersEachRootByUpToHalfAStep()
+    public void Generate_MainBoard_WarpsRowsAndJittersWithoutLeavingTheBoard()
     {
         TuftSeed[] seeds = CreateBoard();
         float step = 16f / boardSide;
@@ -66,15 +66,15 @@ public class GrassLayoutTests
             float centreZ = -8f + (i / boardSide + 0.5f) * step;
             float offsetX = Mathf.Abs(seeds[i].positionYaw.x - centreX);
             float offsetZ = Mathf.Abs(seeds[i].positionYaw.z - centreZ);
-            Assert.That(offsetX, Is.LessThanOrEqualTo(GrassLayout.Jitter * step + 0.00001f));
-            Assert.That(offsetZ, Is.LessThanOrEqualTo(GrassLayout.Jitter * step + 0.00001f));
+            Assert.That(offsetX, Is.LessThanOrEqualTo((GrassLayout.Jitter + GrassLayout.Clump) * step + 0.00001f));
+            Assert.That(offsetZ, Is.LessThanOrEqualTo((GrassLayout.Jitter + GrassLayout.Clump) * step + 0.00001f));
             Assert.That(seeds[i].positionYaw.x, Is.InRange(-8f, 8f));
             Assert.That(seeds[i].positionYaw.z, Is.InRange(-8f, 8f));
             Assert.AreEqual(0.505f, seeds[i].positionYaw.y);
             largest = Mathf.Max(largest, Mathf.Max(offsetX, offsetZ));
         }
 
-        Assert.Greater(largest, 0.49f * step); // the jitter uses its whole range
+        Assert.Greater(largest, 0.8f * step); // roots leave the straight row through coherent bend plus jitter
     }
 
     [Test]
@@ -100,32 +100,39 @@ public class GrassLayoutTests
     }
 
     [Test]
-    public void Generate_MainBoard_LeansEveryTuftTheSameWayByUpToHalfARadian()
+    public void Generate_MainBoard_VariesLeanWithinThePrevailingDirection()
     {
         TuftSeed[] seeds = CreateBoard();
         float largest = 0f;
         float sum = 0f;
+        float mostLeft = 0f;
+        float mostRight = 0f;
 
         foreach (TuftSeed tuft in seeds)
         {
             Vector2 lean = new Vector2(tuft.heightWidthLean.z, tuft.heightWidthLean.w);
             Assert.That(lean.magnitude, Is.InRange(0f, GrassLayout.MaxLean + 0.00001f));
-            Assert.That(Vector2.Dot(lean, GrassLayout.LeanHeading), Is.EqualTo(lean.magnitude).Within(0.00001f));
+            Assert.That(Vector2.Dot(lean.normalized, GrassLayout.LeanHeading),
+                Is.GreaterThanOrEqualTo(Mathf.Cos(GrassLayout.LeanSpread) - 0.00001f));
+            mostLeft = Mathf.Min(mostLeft, lean.x);
+            mostRight = Mathf.Max(mostRight, lean.x);
             largest = Mathf.Max(largest, lean.magnitude);
             sum += lean.magnitude;
         }
 
         Assert.Greater(largest, 0.49f);
+        Assert.Less(mostLeft, -0.15f);
+        Assert.Greater(mostRight, 0.15f);
         Assert.That(sum / seeds.Length, Is.EqualTo(0.25f).Within(0.01f)); // uniform in 0..0.5
     }
 
     [Test]
     public void Generate_SmallBudget_WidensTheGridAndStaysUnderTheBudget()
     {
-        TuftSeed[] seeds = GrassLayout.Generate(4, 2, 1.5f, new Vector3(2f, 0f, -1f), 0f, 100, 3);
+        TuftSeed[] seeds = GrassLayout.Generate(4, 2, 1.5f, new Vector3(2f, 0f, -1f), 0f, 50, 3);
         HashSet<Vector3> roots = new HashSet<Vector3>();
 
-        Assert.AreEqual(98, seeds.Length); // 14 by 7, the widest grid of at most 100
+        Assert.AreEqual(50, seeds.Length); // 10 by 5, the budget widens the .3-cell spacing
         foreach (TuftSeed tuft in seeds)
         {
             roots.Add(tuft.positionYaw);
@@ -139,10 +146,10 @@ public class GrassLayoutTests
     [Test]
     public void Generate_LargeGrid_IsCappedByTheMaximumBudget()
     {
-        TuftSeed[] seeds = GrassLayout.Generate(64, 64, 1f, Vector3.zero, 0f, int.MaxValue, 1);
+        TuftSeed[] seeds = GrassLayout.Generate(128, 128, 1f, Vector3.zero, 0f, int.MaxValue, 1);
 
         Assert.That(seeds.Length, Is.InRange(GrassLayout.MaxBudget * 0.99f, GrassLayout.MaxBudget));
-        Assert.AreEqual(GrassLayout.MaxBudget, GrassLayout.CountFor(64, 64, int.MaxValue));
+        Assert.AreEqual(GrassLayout.MaxBudget, GrassLayout.CountFor(128, 128, int.MaxValue));
         Assert.IsEmpty(GrassLayout.Generate(1, 1, 1f, Vector3.zero, 0f, 0, 1));
     }
 

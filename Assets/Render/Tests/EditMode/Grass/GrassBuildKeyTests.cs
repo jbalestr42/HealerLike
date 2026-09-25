@@ -54,7 +54,7 @@ public class GrassBuildKeyTests
 
         TuftSeed[] layout = key.GenerateLayout();
 
-        Assert.AreEqual(98, layout.Length); // 14 by 7, the widest grid of at most 100
+        Assert.AreEqual(72, layout.Length); // 12 by 6, limited by root spacing before the budget
     }
 
     [Test]

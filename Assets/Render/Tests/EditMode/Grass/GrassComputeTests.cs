@@ -309,6 +309,23 @@ public class GrassComputeTests
     }
 
     [Test]
+    public void Dispatch_Trample_ExposesRootKneesAndFeathersBackIntoTheMeadow()
+    {
+        // The worst inward ripple still clears the articulated knees near .6 of the measured reach.
+        for (int angle = 0; angle < 8; angle++)
+        {
+            float radians = angle * Mathf.PI / 4f;
+            Vector3 knee = new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians)) * 0.64f;
+            float height = Sample(6, knee, 1f, 1f).leanHeightSpike.z * GrassLayout.TuftHeight;
+            Assert.That(height, Is.EqualTo(0.055f).Within(0.0001f));
+        }
+        float feather = Sample(6, Vector3.right * 0.85f, 1f, 1f).leanHeightSpike.z * GrassLayout.TuftHeight;
+        Assert.That(feather, Is.GreaterThan(0.055f).And.LessThan(GrassLayout.TuftHeight));
+        Assert.That(Sample(6, Vector3.right * 1.1f, 1f, 1f).leanHeightSpike.z,
+            Is.EqualTo(1f).Within(0.0001f));
+    }
+
+    [Test]
     public void Dispatch_Wind_DoesNotMoveStoneSpikesOrTrampledRoots()
     {
         _compute.SetFloat("_HLWindStrength", 1f);

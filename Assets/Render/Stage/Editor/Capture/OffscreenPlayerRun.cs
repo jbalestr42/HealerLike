@@ -168,7 +168,10 @@ namespace HealerLike.Render.Stage
                 proof.passed = proof.characterRenderers == 0 && !proof.characterHasRig
                     && !proof.characterTrampleEnabled && Mathf.Abs(proof.castViewport.x - 0.5f) < 0.001f
                     && proof.castViewport.y < 0f && proof.castViewport.z > 0f
-                    && proof.boardTufts == GrassLayout.CountFor(_manager.grid.width, _manager.grid.height, _manager.grass.tuftBudget) && proof.resolvedCharacterHeals > 0 && proof.healLinks > 0
+                    && proof.boardTufts == GrassLayout.Generate(_manager.player.grid.width, _manager.player.grid.height,
+                        _manager.player.grid.size, _manager.player.grid.transform.position, _manager.board.max.y,
+                        _manager.grass.tuftBudget, _manager.grass.seed).Length
+                    && proof.resolvedCharacterHeals > 0 && proof.healLinks > 0
                     && proof.statusCount > 0 && proof.statusLinks > 0 && proof.projectileDressedBySpawn
                     && proof.projectileLogicalStart == logicalStart && proof.projectileEntryViewport.y < 0f
                     && proof.projectileLogicalPositions.Count == 3 && proof.logicalCharacterUnchanged

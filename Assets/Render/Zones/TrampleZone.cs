@@ -36,7 +36,7 @@ namespace HealerLike.Render.Zones
             Init(zones);
         }
 
-        // Only the root crown and the primary body determine the clearing. Elevated heads and arms never
+        // Only the root crown, basal body and mineral feet determine the clearing. Elevated heads and arms never
         // enlarge it. Rigs compensate their parent scale, so their authored reach is in world-sized cells.
         public static float CreatureFootprint(Transform root, CreatureRig rig = null)
         {
@@ -51,13 +51,15 @@ namespace HealerLike.Render.Zones
             for (int i = 0; i < rig.recipe.parts.Length; i++)
             {
                 CreaturePart part = rig.recipe.parts[i];
-                if (part.role != PartRole.Body || part.parent >= 0) continue;
+                bool isBase = part.role == PartRole.Body || (roots.count == 0 && part.role == PartRole.Limb);
+                if (!isBase) continue;
                 Renderer renderer = rig.partTransforms[i].GetComponent<Renderer>();
                 if (!renderer) continue;
                 Bounds bounds = renderer.bounds;
                 Vector3 offset = bounds.center - root.position;
-                extent = Mathf.Max(extent, Mathf.Abs(offset.x) + bounds.extents.x,
-                    Mathf.Abs(offset.z) + bounds.extents.z);
+                float x = Mathf.Abs(offset.x) + bounds.extents.x;
+                float z = Mathf.Abs(offset.z) + bounds.extents.z;
+                extent = Mathf.Max(extent, Mathf.Sqrt(x * x + z * z));
             }
             return Mathf.Max(extent, StageCalibration.CellSize * 0.25f);
         }
