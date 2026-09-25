@@ -89,29 +89,16 @@ public class LookShaderTests
     }
 
     [Test]
-    public void DrawMesh_WorkingSpaceColourVector_ReachesPrimitiveShaderUnchanged()
+    public void Render_WorkingSpaceColourVector_ReachesPrimitiveShaderUnchanged()
     {
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
         {
             Assert.Ignore("Requires graphics readback");
         }
 
-        Material material = Track(new Material(AssetDatabase.LoadAssetAtPath<Shader>(lookShaderPath)));
-        // Built-in asset, not tracked: TearDown must not destroy it
-        Mesh mesh = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
-        RenderTexture target = Track(new RenderTexture(16, 16, 0, RenderTextureFormat.ARGBFloat,
-                                                       RenderTextureReadWrite.Linear));
-        target.Create();
-        Texture2D texture = Track(new Texture2D(16, 16, TextureFormat.RGBAFloat, false, true));
-        // Below any illumination the fill stays lit, and a contrast of 1 leaves the colour as it is
-        Shader.SetGlobalFloat("_HLLookApplied", 1f);
-        Shader.SetGlobalFloat("_HLToonThreshold", -1f);
-        Shader.SetGlobalFloat("_HLToonSoftness", 0f);
-        Shader.SetGlobalFloat("_HLFogStart", 10000f);
-        Shader.SetGlobalFloat("_HLFogEnd", 20000f);
-        Shader.SetGlobalFloat("_HLFogBands", 6f);
-        Shader.SetGlobalFloat("_HLInkStrength", 0f);
-        Shader.SetGlobalFloat("_HLContrast", 1f);
+        // A real URP render initializes the light and shadow constants. A bare command-buffer draw can
+        // inherit zero attenuation, which now correctly covers the fill with the explicit cast-shadow layer.
+        MeshRenderer surface = BuildLitQuad();
         Color artist = new Color(0.4f, 0.6f, 0.8f, 1f);
         Color linear = artist.linear;
 
@@ -121,9 +108,9 @@ public class LookShaderTests
         linearColor.SetColor("_BaseColor", linear);
         MaterialPropertyBlock linearVector = new MaterialPropertyBlock();
         linearVector.SetVector("_BaseColor", linear);
-        Color a = ReadCentre(material, mesh, target, texture, artistColor);
-        Color b = ReadCentre(material, mesh, target, texture, linearColor);
-        Color c = ReadCentre(material, mesh, target, texture, linearVector);
+        Color a = ReadCentre(surface, artistColor);
+        Color b = ReadCentre(surface, linearColor);
+        Color c = ReadCentre(surface, linearVector);
 
         Assert.That(((Vector4)a - (Vector4)c).magnitude, Is.LessThan(0.004f),
                     "Artist SetColor and working SetVector must agree");
@@ -137,55 +124,46 @@ public class LookShaderTests
     }
 
     [Test]
-    public void DrawMesh_SubPixelHatch_FadesWhileResolvedStrokesRemain()
+    public void Render_SubPixelHatch_FadesWhileResolvedStrokesRemain()
     {
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
         {
             Assert.Ignore("Requires graphics readback");
         }
 
-        Material material = Track(new Material(AssetDatabase.LoadAssetAtPath<Shader>(lookShaderPath)));
-        // Built-in asset, not tracked: TearDown must not destroy it
-        Mesh mesh = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
-        RenderTexture target = Track(new RenderTexture(16, 16, 0, RenderTextureFormat.ARGBFloat,
-                                                       RenderTextureReadWrite.Linear));
-        target.Create();
-        Texture2D texture = Track(new Texture2D(16, 16, TextureFormat.RGBAFloat, false, true));
+        // A lit white face with known unshadowed illumination, viewed away from the sun just enough to
+        // exercise the ink mask. The fill remains white; the authored navy ink is its only darkening source.
+        MeshRenderer surface = BuildLitQuad(60f);
         MaterialPropertyBlock white = new MaterialPropertyBlock();
         white.SetVector("_BaseColor", Vector4.one);
-        // Strokes a thousand times finer than a pixel, in full shade, no dashes and no fog
-        Shader.SetGlobalFloat("_HLLookApplied", 1f);
-        Shader.SetGlobalFloat("_HLToonThreshold", -1f);
-        Shader.SetGlobalFloat("_HLToonSoftness", 0f);
-        Shader.SetGlobalFloat("_HLFogStart", 10000f);
-        Shader.SetGlobalFloat("_HLFogEnd", 20000f);
-        Shader.SetGlobalFloat("_HLFogBands", 6f);
-        Shader.SetGlobalFloat("_HLContrast", 1f);
-        Shader.SetGlobalFloat("_HLInkScale", 0.0001f);
-        Shader.SetGlobalFloat("_HLInkWidth", 1f);
-        Shader.SetGlobalFloat("_HLInkStart", -1f);
-        Shader.SetGlobalFloat("_HLInkRange", 1f);
-        Shader.SetGlobalFloat("_HLDensityMul", 1f);
-        Shader.SetGlobalFloat("_HLInkWarp", 0f);
-        Shader.SetGlobalFloat("_HLDashAmount", 0f);
-        Shader.SetGlobalFloat("_HLDashScale", 1f);
-        Shader.SetGlobalFloat("_HLInkDistStart", 10000f);
-        Shader.SetGlobalFloat("_HLInkFarSpacing", 0f);
+        LookSettings settings = _scene.look.settings;
+        settings.inkScale = 0.0001f;
+        settings.inkWidth = 0.04f;
+        settings.inkStart = 0f;
+        settings.inkRange = 1f;
+        settings.densityMul = 1f;
+        settings.inkWarp = 0f;
+        settings.dashAmount = 0f;
+        settings.dashScale = 1f;
+        settings.inkDistStart = 10000f;
+        settings.inkFarSpacing = 0f;
+        _scene.look.settings = settings;
+        ReadCentre(surface, white);
+        float paper = MeanBrightness(_scene.texture);
+        settings.inkStrength = 1f;
+        _scene.look.settings = settings;
+        ReadCentre(surface, white);
+        float inked = MeanBrightness(_scene.texture);
 
-        Shader.SetGlobalFloat("_HLInkStrength", 0f);
-        ReadCentre(material, mesh, target, texture, white);
-        float paper = MeanBrightness(texture);
-        Shader.SetGlobalFloat("_HLInkStrength", 1f);
-        ReadCentre(material, mesh, target, texture, white);
-        float inked = MeanBrightness(texture);
-
+        Assert.That(paper, Is.GreaterThan(0.98f), "The uninked control must be lit white, not cast-shadow blue");
         Assert.That(inked, Is.EqualTo(paper).Within(0.005f), "Unresolved strokes must not become solid ink");
-        Shader.SetGlobalFloat("_HLInkScale", 0.5f);
-        ReadCentre(material, mesh, target, texture, white);
-        float resolved = MeanBrightness(texture);
+        settings.inkScale = 0.25f;
+        _scene.look.settings = settings;
+        ReadCentre(surface, white);
+        float resolved = MeanBrightness(_scene.texture);
         Assert.That(paper - resolved, Is.GreaterThan(0.1f), "Readable foreground strokes must remain");
         Debug.Log("[LookShaderTests] Sub-pixel hatch: paper=" + paper.ToString("F4")
-                  + " inked=" + inked.ToString("F4"));
+                  + " unresolved=" + inked.ToString("F4") + " resolved=" + resolved.ToString("F4"));
     }
 
     [TestCase(1f, 0f)]
@@ -250,36 +228,47 @@ public class LookShaderTests
         }
     }
 
-    // The quad covers the middle eight by eight pixels, the rest is the clear colour
+    // Both colour plumbing and hatch resolution need an actual URP light/shadow state, not globals left by
+    // whichever camera rendered previously. All objects remain on the fixture's private layer.
+    MeshRenderer BuildLitQuad(float lightAngle = 0f)
+    {
+        _scene.BuildKeyLight(20f, 4f);
+        _scene.camera.transform.SetPositionAndRotation(new Vector3(0f, 0f, -4f), Quaternion.identity);
+        LookSettings settings = _scene.look.settings;
+        settings.toonThreshold = 0.1f;
+        settings.toonSoftness = 0.01f;
+        settings.inkStrength = 0f;
+        settings.contrast = 1f;
+        _scene.look.settings = settings;
+        Mesh mesh = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
+        GameObject surface = Track(new GameObject("Lit shader probe"));
+        surface.layer = LookTestScene.Layer;
+        surface.AddComponent<MeshFilter>().sharedMesh = mesh;
+        MeshRenderer renderer = surface.AddComponent<MeshRenderer>();
+        renderer.sharedMaterial = Track(new Material(AssetDatabase.LoadAssetAtPath<Shader>(lookShaderPath)));
+        renderer.shadowCastingMode = ShadowCastingMode.Off;
+        Vector3 direction = Quaternion.Euler(0f, lightAngle, 0f) * mesh.normals[0];
+        RenderSettings.sun.transform.rotation = Quaternion.LookRotation(-direction, Vector3.up);
+        return renderer;
+    }
+
+    // The central square lies entirely inside the quad, excluding the clear colour and antialiased silhouette.
     static float MeanBrightness(Texture2D texture)
     {
-        Color[] pixels = texture.GetPixels(4, 4, 8, 8);
+        Color[] pixels = texture.GetPixels(64, 64, 128, 128);
         float sum = 0f;
         foreach (Color pixel in pixels)
         {
             sum += (pixel.r + pixel.g + pixel.b) / 3f;
         }
-
         return sum / pixels.Length;
     }
 
-    // Draws the quad through the forward pass and reads back the centre pixel
-    static Color ReadCentre(Material material, Mesh mesh, RenderTexture target, Texture2D texture,
-        MaterialPropertyBlock block)
+    Color ReadCentre(Renderer surface, MaterialPropertyBlock block)
     {
-        using (CommandBuffer command = new CommandBuffer())
-        {
-            command.SetRenderTarget(target);
-            command.ClearRenderTarget(false, true, Color.magenta);
-            command.SetViewProjectionMatrices(Matrix4x4.identity, Matrix4x4.identity);
-            command.DrawMesh(mesh, Matrix4x4.identity, material, 0, material.FindPass("HLForward"), block);
-            Graphics.ExecuteCommandBuffer(command);
-        }
-
-        RenderTexture.active = target;
-        texture.ReadPixels(new Rect(0f, 0f, 16f, 16f), 0, 0);
-        texture.Apply();
-        return texture.GetPixel(8, 8);
+        surface.SetPropertyBlock(block);
+        _scene.Render();
+        return _scene.texture.GetPixel(128, 128).linear;
     }
 
     static void Compile(Material material, string passName, bool instanced, params string[] keywords)

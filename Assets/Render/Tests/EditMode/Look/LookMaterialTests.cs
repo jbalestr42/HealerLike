@@ -1,5 +1,6 @@
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
+using HealerLike.Render.Stage;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -98,14 +99,38 @@ public class LookMaterialTests
         ShowOnly(renderers, marked);
         _scene.Render();
         float bodyShade = LookTestScene.ShadeShare(_scene.texture);
+        Vector2 shadeCentre = RegionCentre(_scene.texture, true);
+        Vector2 litCentre = RegionCentre(_scene.texture, false);
+        Vector3 viewLight = _scene.camera.transform.InverseTransformDirection(StageKeyLight.KeyDirection);
+        Vector2 towardsLight = new Vector2(viewLight.x, viewLight.y).normalized;
         ShowOnly(renderers, shared);
         _scene.Render();
         float otherShade = LookTestScene.ShadeShare(_scene.texture);
 
-        Assert.That(bodyShade, Is.InRange(0.25f, 0.75f)); // a substantial, bounded body shade region
+        Assert.That(bodyShade, Is.InRange(0.15f, 0.65f)); // intentional cel coverage, not a half-sphere quota
+        Assert.That(Vector2.Dot(litCentre - shadeCentre, towardsLight), Is.GreaterThan(3f),
+            "The lit band must sit toward the sun relative to the marked shade band");
         Assert.That(otherShade, Is.LessThan(0.02f)); // heads, stems and roots keep the global shade
         Debug.Log("[LookShaderTests] Plant body shade share " + bodyShade.ToString("F3") + ", other parts "
                   + otherShade.ToString("F3"));
+    }
+
+    // Locates the marked shade and the remaining green fill, ignoring the white clear and dark hatch ink.
+    static Vector2 RegionCentre(Texture2D texture, bool shade)
+    {
+        Vector2 sum = Vector2.zero;
+        int count = 0;
+        Color32[] pixels = texture.GetPixels32();
+        for (int i = 0; i < pixels.Length; i++)
+        {
+            Color32 pixel = pixels[i];
+            bool belongs = shade ? pixel.r > pixel.g : pixel.g > pixel.r && pixel.g > pixel.b;
+            if (!belongs) continue;
+            sum += new Vector2(i % texture.width, i / texture.width);
+            count++;
+        }
+        Assert.That(count, Is.GreaterThan(0), shade ? "Shade region" : "Lit region");
+        return sum / count;
     }
 
     // A composed plant on the key light layer, a heal accent so no lit part reads redder than green
