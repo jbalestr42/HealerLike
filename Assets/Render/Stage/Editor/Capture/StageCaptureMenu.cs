@@ -5,6 +5,12 @@ namespace HealerLike.Render.Stage
     // Batchmode entry points: -executeMethod HealerLike.Render.Stage.StageCaptureMenu.Portrait, and so on
     public static class StageCaptureMenu
     {
+        [MenuItem("Tools/Render/Capture Mobile Interface")]
+        public static void MobileInterface()
+        {
+            StagePlay.Enter("mobile-interface", 360f);
+        }
+
         [MenuItem("Tools/Render/Capture Ambient Filmstrip")]
         public static void Motion()
         {

@@ -34,6 +34,25 @@ namespace HealerLike.Render.Stage
 
         bool _isFocused;
         Bounds _combatBounds;
+        Rect _viewport = BattleFocusBounds.FocusFrame;
+        Rect _visibleViewport = BattleFocusBounds.VisibleFrame;
+
+        public bool isFocused { get { return _isFocused; } }
+
+        public void ShowLegacyControl(bool show)
+        {
+            if (_toggle != null)
+            {
+                _toggle.gameObject.SetActive(show);
+            }
+        }
+
+        public void SetViewport(Rect viewport)
+        {
+            _visibleViewport = viewport;
+            _viewport = StageViewport.Inset(viewport, 0.025f);
+            MarkDirty();
+        }
 
         public void Init(RenderManager manager)
         {
@@ -110,8 +129,8 @@ namespace HealerLike.Render.Stage
             // Widen at once when a spawn leaves the safe viewport, only the zoom in eases
             if (_isFocused && !AreAllBodiesVisible())
             {
-                Pose safe = BattleFocusBounds.Fit(_combatBounds, cameraTransform.rotation, _camera.fieldOfView,
-                                                  _camera.aspect);
+                Pose safe = StageViewport.Fit(_combatBounds, cameraTransform.rotation, _camera.fieldOfView,
+                                                  _camera.aspect, _viewport);
                 cameraTransform.position = safe.position;
                 _velocity = Vector3.zero;
             }
@@ -190,7 +209,7 @@ namespace HealerLike.Render.Stage
 
             Pose view = new Pose(_camera.transform.position, _camera.transform.rotation);
             return StageCalibration.Contains(_combatBounds, view, _camera.fieldOfView, _camera.aspect,
-                                             BattleFocusBounds.VisibleFrame);
+                                             _visibleViewport);
         }
 
         void RefreshBounds()
@@ -246,7 +265,7 @@ namespace HealerLike.Render.Stage
             bounds.Expand(BattleFocusBounds.Padding);
             _combatBounds = bounds;
             Quaternion rotation = Quaternion.Euler(_pitch, _manager.overviewPose.rotation.eulerAngles.y, 0f);
-            _target = BattleFocusBounds.Fit(bounds, rotation, _camera.fieldOfView, _camera.aspect);
+            _target = StageViewport.Fit(bounds, rotation, _camera.fieldOfView, _camera.aspect, _viewport);
         }
 
         // Recomposition replaces root renderers and can add parts while retaining the same entity transform.

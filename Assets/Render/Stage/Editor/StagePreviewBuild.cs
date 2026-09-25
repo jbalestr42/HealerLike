@@ -13,7 +13,7 @@ namespace HealerLike.Render.Stage
         public static readonly string[] Scenes =
         {
             StageSceneAuthoring.ScenePath,
-            "Assets/Scenes/MenuScene.unity",
+            "Assets/Scenes/Toolkit/MenuToolkit.unity",
             "Assets/Scenes/Main.unity"
         };
 

@@ -32,6 +32,7 @@ namespace HealerLike.Render.Stage
 
         RenderRegistry _registry = new RenderRegistry();
         Scene _scene;
+        StageInterface _interface;
         EnvironmentRoot _environment;
         SpawnDressing _spawns = new SpawnDressing();
         int _deliveryToken;
@@ -74,6 +75,8 @@ namespace HealerLike.Render.Stage
         void Awake()
         {
             DontDestroyOnLoad(gameObject);
+            _interface = gameObject.AddComponent<StageInterface>();
+            _interface.Init(this, _battleFocus);
             SceneManager.sceneLoaded += OnSceneLoaded;
             SceneManager.sceneUnloaded += OnSceneUnloaded;
         }
@@ -174,6 +177,20 @@ namespace HealerLike.Render.Stage
             _battleFocus.MarkDirty();
         }
 
+        public void FrameViewport(Rect viewport, float aspect)
+        {
+            if (_gameCamera == null || aspect <= 0f)
+            {
+                return;
+            }
+
+            _isLandscape = aspect > 1f;
+            _dressing.FrameBoard(_board, aspect, viewport);
+            _dressing.Frame(_gameCamera, _isLandscape, aspect);
+            _battleFocus.SetViewport(viewport);
+            FrameEnvironment(true);
+        }
+
         // Refresh scenery only after the camera settles or its orientation changes, never every render frame.
         public void FrameEnvironment(bool force = false)
         {
@@ -187,6 +204,7 @@ namespace HealerLike.Render.Stage
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            _interface.Attach(scene);
             EntityManager entityManager = FindInScene<EntityManager>(scene);
             if (entityManager == null)
             {
