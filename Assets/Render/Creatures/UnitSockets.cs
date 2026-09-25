@@ -18,6 +18,8 @@ namespace HealerLike.Render.Creatures
         public Vector3 stemFoot;
         // Mass scale, times the stone scale on stones
         public float scale;
+        public float headScale;
+        public float stemScale;
 
         public static UnitSockets Place(UnitChannels channels, LookVocabulary vocabulary)
         {
@@ -29,17 +31,19 @@ namespace HealerLike.Render.Creatures
             LookVocabulary.LayoutEntry layout = vocabulary.Layout;
             UnitSockets sockets = new UnitSockets { _shoulderOffset = layout.shoulderOffset };
             sockets.scale = body.scale * stoneScale;
+            sockets.headScale = body.HeadScale * stoneScale;
+            sockets.stemScale = body.StemScale(isPlant) * stoneScale;
             sockets.bodyRadius = bodyParts[0].size.x * 0.5f * stoneScale;
             if (isPlant)
             {
                 sockets.body = Vector3.up * (layout.plantBodySink * sockets.bodyRadius + body.bodyLift);
-                sockets.neck = sockets.body + Vector3.up * (sockets.bodyRadius * layout.plantStemFoot + stem.length);
+                sockets.neck = sockets.body + Vector3.up * (sockets.bodyRadius * layout.plantStemFoot + stem.length * sockets.stemScale);
                 sockets.stemFoot = sockets.body + Vector3.up * (sockets.bodyRadius * layout.plantStemFoot);
             }
             else
             {
                 // Stones stand on boulder limbs, the stem band is the limb length
-                sockets.body = Vector3.up * (stem.limbLength * sockets.scale + sockets.bodyRadius * layout.stoneBodyLift
+                sockets.body = Vector3.up * (stem.limbLength * sockets.stemScale + sockets.bodyRadius * layout.stoneBodyLift
                     + body.bodyLift * stoneScale);
                 sockets.neck = sockets.body + Vector3.up * (sockets.bodyRadius * layout.stoneNeck);
             }

@@ -178,6 +178,8 @@ namespace HealerLike.Render.Creatures
             bool plant = channels.side == LookSide.Plant;
             bool sizesValid = Positive(vocabulary.bodyUnit) && Positive(vocabulary.Unit(channels.side))
                 && Positive(vocabulary.stoneScale) && Positive(body.scale) && float.IsFinite(body.bodyLift)
+                && float.IsFinite(body.headScale) && body.headScale >= 0f
+                && float.IsFinite(body.stemScale) && body.stemScale >= 0f
                 && (plant ? Positive(stem.length) && Positive(stem.thickness) : Positive(stem.limbLength));
             if (!sizesValid || !vocabulary.Layout.IsValid() || vocabulary.maxParts < 1 || vocabulary.maxParts > CreatureValidator.MaxParts
                 || !stem.plantShape.IsValid() || !stem.stoneLimbShape.IsValid())
@@ -225,6 +227,7 @@ namespace HealerLike.Render.Creatures
             LookVocabulary.StemEntry stem = vocabulary.stems[channels.stem];
             bool isPlant = channels.side == LookSide.Plant;
             float scale = sockets.scale;
+            float headScale = sockets.headScale;
             Color stemColour = vocabulary.Colour(ColourRole.Stem, channels.accent, channels.side);
             if (isPlant)
             {
@@ -237,7 +240,7 @@ namespace HealerLike.Render.Creatures
             {
                 if (!Fragment(parts, vocabulary, channels, body.stone, sockets.body, vocabulary.stoneScale,
                     CountBand.One, seed)) return null;
-                Limbs(parts, stem.limbLength * scale, sockets.bodyRadius, scale, stemColour, seed,
+                Limbs(parts, stem.limbLength * sockets.stemScale, sockets.bodyRadius, scale, stemColour, seed,
                     vocabulary.Layout, stem.stoneLimbShape);
             }
 
@@ -246,13 +249,13 @@ namespace HealerLike.Render.Creatures
             if (head.carriesCount)
             {
                 parts.headStarts.Add(parts.count);
-                if (!Fragment(parts, vocabulary, channels, headParts, sockets.neck, scale, channels.count, seed))
+                if (!Fragment(parts, vocabulary, channels, headParts, sockets.neck, headScale, channels.count, seed))
                     return null;
             }
             else if (copies == 1)
             {
                 parts.headStarts.Add(parts.count);
-                if (!Fragment(parts, vocabulary, channels, headParts, sockets.neck, scale, CountBand.One, seed))
+                if (!Fragment(parts, vocabulary, channels, headParts, sockets.neck, headScale, CountBand.One, seed))
                     return null;
             }
             else
@@ -270,8 +273,8 @@ namespace HealerLike.Render.Creatures
                 for (int i = 0; i < copies; i++)
                 {
                     parts.headStarts.Add(parts.count);
-                    Vector3 end = fan.Branch(parts, sockets.neck, i, scale, stemColour);
-                    if (!Fragment(parts, vocabulary, channels, headParts, end, fan.copyScale * scale,
+                    Vector3 end = fan.Branch(parts, sockets.neck, i, headScale, stemColour);
+                    if (!Fragment(parts, vocabulary, channels, headParts, end, fan.copyScale * headScale,
                         CountBand.One, seed)) return null;
                 }
             }
@@ -289,7 +292,7 @@ namespace HealerLike.Render.Creatures
                     LookVocabulary.HeadEntry mini = vocabulary.heads[channels.accessoryHead];
                     LookPart[] miniParts = isPlant ? mini.plant : mini.stone;
                     Vector3 miniAt = socket + accessory.miniHeadAt * scale;
-                    float miniScale = accessory.miniHeadScale * scale;
+                    float miniScale = accessory.miniHeadScale * headScale;
                     if (!Fragment(parts, vocabulary, channels, miniParts, miniAt, miniScale, CountBand.One, seed))
                         return null;
                 }

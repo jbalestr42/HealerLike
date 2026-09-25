@@ -148,6 +148,8 @@ namespace HealerLike.Render.Studio
             }
 
             if (!RenderMath.IsPositive(body.scale) || !float.IsFinite(body.bodyLift) || !isStemSized
+                || !float.IsFinite(body.headScale) || body.headScale < 0f
+                || !float.IsFinite(body.stemScale) || body.stemScale < 0f
                 || !stem.plantShape.IsValid() || !stem.stoneLimbShape.IsValid())
             {
                 errors.Add("Body scale and stem dimensions must be finite and positive, with valid shape profiles and body lift.");
