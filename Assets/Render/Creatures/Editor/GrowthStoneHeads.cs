@@ -37,7 +37,7 @@ namespace HealerLike.Render.Creatures
         static LookPart[] Build(HeadKind kind, bool stone)
         {
             List<LookPart> parts = new List<LookPart>();
-            ShapeProfile round = stone ? ShapeProfile.Block(0.25f, 0.12f, 0.13f) : ShapeProfile.Bulb();
+            ShapeProfile round = stone ? ShapeProfile.Block(0.3f, 0.12f, 0.13f) : ShapeProfile.Bulb();
             ShapeProfile leaf = stone ? ShapeProfile.Shard(0.82f, 0.04f) : ShapeProfile.Leaf(0.35f, 0.82f);
             switch (kind)
             {
@@ -157,7 +157,7 @@ namespace HealerLike.Render.Creatures
         {
             if (stone)
             {
-                parts.Add(Part("ArchPier", ShapeProfile.Block(0.18f, 0.16f, 0.12f),
+                parts.Add(Part("ArchPier", ShapeProfile.Block(0.28f, 0.16f, 0.12f),
                     new Vector3(-0.33f, 0.4f, 0f), new Vector3(0.55f, 0.88f, 0.58f),
                     euler: new Vector3(0f, 0f, -12f)));
                 parts.Add(Part("ArchLintel", ShapeProfile.Block(0.12f, 0.05f, 0.08f, 0.55f),
@@ -208,8 +208,8 @@ namespace HealerLike.Render.Creatures
                 string lobe = side < 0 ? "ForkLeft" : "ForkRight";
                 if (stone)
                 {
-                    parts.Add(Anchored(lobe, ShapeProfile.Block(0.17f, 0.12f, 0.08f, 0.82f),
-                        new Vector3(side * 0.44f, 0.015f, side * 0.025f),
+                    parts.Add(Anchored(lobe, ShapeProfile.Block(0.28f, 0.12f, 0.08f, 0.82f),
+                        new Vector3(side * 0.49f, 0.015f, side * 0.025f),
                         new Vector3(side < 0 ? 0.7f : 0.66f, side < 0 ? 1.4f : 1.29f, 0.56f),
                         Quaternion.AngleAxis(-side * 7f, Vector3.forward)));
                     AttachedTip(parts, true, lobe, new Vector3(0.14f, 0.22f, 0.14f));
@@ -223,7 +223,7 @@ namespace HealerLike.Render.Creatures
                 }
                 Quaternion rotation = Quaternion.AngleAxis(-side * 14f, Vector3.forward)
                     * Quaternion.AngleAxis(side < 0 ? 0f : 180f, Vector3.up);
-                parts.Add(Anchored(lobe, ShapeProfile.Leaf(0.8f, 0.65f),
+                parts.Add(Anchored(lobe, ShapeProfile.Leaf(1f, 1.1f),
                     fork, new Vector3(side < 0 ? 0.7f : 0.64f, side < 0 ? 1.95f : 1.72f, 0.38f), rotation));
                 AttachedTip(parts, stone, lobe, new Vector3(0.14f, 0.22f, 0.14f));
             }
