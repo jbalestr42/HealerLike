@@ -47,6 +47,18 @@ namespace HealerLike.Render.Creatures
         }
 
         [Test]
+        public void Create_DefaultBulb_HasARoundSurfaceBeforeTheRecipeAppliesItsProportions()
+        {
+            Mesh bulb = Build(ShapeProfile.Bulb());
+            foreach (Vector3 vertex in bulb.vertices)
+            {
+                Assert.That(vertex.sqrMagnitude, Is.EqualTo(0.25f).Within(0.00001f),
+                    "A default bulb must follow a sphere, including the shoulders near its poles.");
+            }
+            CheckSolid(bulb);
+        }
+
+        [Test]
         public void Create_BoundedParameterExtremes_RetainClosedNondegenerateSolids()
         {
             foreach (ShapeProfile source in Profiles())

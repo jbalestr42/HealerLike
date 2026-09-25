@@ -89,9 +89,12 @@ namespace HealerLike.Render.Creatures
                 bool end = j == 0 || j == shape.lengthSegments;
                 bool pole = end && shape.kind != ShapeKind.Segment;
                 float swell = Mathf.Sin(Mathf.PI * t);
+                // Y advances linearly, so a round bulb needs a circular cross-section, not a sine spindle.
+                float profile = shape.kind == ShapeKind.Bulb
+                    ? Mathf.Sqrt(Mathf.Max(0f, 1f - (2f * t - 1f) * (2f * t - 1f))) : swell;
                 float radius = shape.kind == ShapeKind.Segment
                     ? 0.5f * (0.55f + shape.fullness * swell)
-                    : 0.5f * Mathf.Pow(Mathf.Max(0f, swell), shape.fullness);
+                    : 0.5f * Mathf.Pow(Mathf.Max(0f, profile), shape.fullness);
                 radius *= 1f + shape.taper * (1f - 2f * t);
                 Vector3 centre = new Vector3(shape.bend * t * t, t - 0.5f, 0f);
                 int[] ring = new int[pole ? 1 : shape.radialSegments];
