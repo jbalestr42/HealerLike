@@ -84,7 +84,7 @@ public class LookMaterialTests
     }
 
     [Test]
-    public void Render_ComposedPlantUnderKeyLight_BodyAndHeadKeepShadeAwayFromAccentsAndRoots()
+    public void Render_ComposedPlantUnderKeyLight_ContinuousPlantSurfaceKeepsShadeAwayFromAccentsAndRoots()
     {
         if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
         {
@@ -116,7 +116,7 @@ public class LookMaterialTests
         Assert.That(bodyShade, Is.InRange(0.15f, 0.65f)); // intentional cel coverage, not a half-sphere quota
         Assert.That(Vector2.Dot(litCentre - shadeCentre, towardsLight), Is.GreaterThan(3f),
             "The lit band must sit toward the sun relative to the marked shade band");
-        Assert.That(otherShade, Is.LessThan(0.02f)); // tips, stems and roots keep the global shade
+        Assert.That(otherShade, Is.LessThan(0.02f)); // tips and roots keep the global shade
         Debug.Log("[LookShaderTests] Plant body shade share " + bodyShade.ToString("F3") + ", other parts "
                   + otherShade.ToString("F3"));
     }

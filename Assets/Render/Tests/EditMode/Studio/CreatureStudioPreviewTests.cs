@@ -129,7 +129,8 @@ public class CreatureStudioPreviewTests
             {
                 file = "Look_Stone";
             }
-            else if (_recipe.parts[i].role == PartRole.Body || _recipe.parts[i].role == PartRole.Head)
+            else if (_recipe.parts[i].role == PartRole.Body || _recipe.parts[i].role == PartRole.Head
+                || _recipe.parts[i].role == PartRole.Stem)
             {
                 file = "Look_Body";
             }

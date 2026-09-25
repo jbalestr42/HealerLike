@@ -117,6 +117,7 @@ public class CreatureRigTests
         Assert.IsTrue(_rig.Init(_recipe, _parent.transform, shared, body, RenderTestAssets.LoadMeshes(), 1f));
         Transform headTransform = null;
         int heads = 0;
+        int stems = 0;
         int tips = 0;
         for (int pass = 0; pass < 2; pass++)
         {
@@ -124,13 +125,14 @@ public class CreatureRigTests
             {
                 CreaturePart part = _recipe.parts[i];
                 Renderer renderer = _rig.partTransforms[i].GetComponent<Renderer>();
-                bool surface = part.role == PartRole.Body || part.role == PartRole.Head;
+                bool surface = part.role == PartRole.Body || part.role == PartRole.Head || part.role == PartRole.Stem;
                 Assert.AreSame(surface ? body : shared, renderer.sharedMaterial, part.id);
                 if (part.role == PartRole.Head)
                 {
                     heads++;
                     if (headTransform == null) headTransform = renderer.transform;
                 }
+                if (part.role == PartRole.Stem) stems++;
                 if (part.role == PartRole.Tip) tips++;
             }
             // Recomposition must preserve the material contract on reused geometry as well as new parts.
@@ -139,6 +141,11 @@ public class CreatureRigTests
         }
         Assert.That(heads, Is.GreaterThan(0), "The real Arch recipe must exercise head surfaces");
         Assert.That(tips, Is.GreaterThan(0), "Its semantic tips must retain the shared material");
+        if (side == LookSide.Plant)
+        {
+            Assert.That(stems, Is.GreaterThan(0), "The Arch stalk must exercise the same surface look as its head");
+        }
+        int rootParts = 0;
         foreach (Renderer renderer in _rig.root.GetComponentsInChildren<Renderer>())
         {
             bool recipePart = false;
@@ -146,8 +153,13 @@ public class CreatureRigTests
             {
                 if (renderer.transform == part) recipePart = true;
             }
-            if (!recipePart) Assert.AreSame(shared, renderer.sharedMaterial, "Root material must stay separate");
+            if (!recipePart)
+            {
+                rootParts++;
+                Assert.AreSame(shared, renderer.sharedMaterial, "Root material must stay separate");
+            }
         }
+        Assert.That(rootParts, Is.GreaterThan(0), "The composed creature must exercise the separate root material");
     }
 
     [Test]

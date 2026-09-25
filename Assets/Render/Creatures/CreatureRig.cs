@@ -66,8 +66,8 @@ namespace HealerLike.Render.Creatures
             return Init(data, parent, material, material, meshes, cellSize);
         }
 
-        // A recipe that fails validation logs and leaves the view empty. Body and Head surfaces use the body
-        // material; tips and structural parts retain the shared material. The caller gives stones one material
+        // A recipe that fails validation logs and leaves the view empty. Body, Head and Stem surfaces use the
+        // body material; tips and roots retain the shared material. The caller gives stones one material
         // for both slots, so surface shading does not infer a side from colour, geometry or an object name.
         public bool Init(CreatureRecipe data, Transform parent, Material material, Material bodyMaterial,
             PrimitiveMeshes meshes, float cellSize)
@@ -170,7 +170,7 @@ namespace HealerLike.Render.Creatures
                 _pivots[i].localRotation = Quaternion.Euler(part.localEuler);
                 Mesh mesh = resolved[i];
                 Material partMaterial = material;
-                if (part.role == PartRole.Body || part.role == PartRole.Head)
+                if (part.role == PartRole.Body || part.role == PartRole.Head || part.role == PartRole.Stem)
                 {
                     partMaterial = bodyMaterial;
                 }
