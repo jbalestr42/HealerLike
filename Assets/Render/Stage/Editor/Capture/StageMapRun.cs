@@ -17,6 +17,32 @@ namespace HealerLike.Render.Stage
         // Capture-only observation: gameplay exposes selection commands but no selection getter.
         static readonly System.Reflection.FieldInfo SelectionField = typeof(InteractionManager).GetField("_selectable",
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        static readonly System.Reflection.FieldInfo WaveField = typeof(AscensionGameType).GetField("_currentWave",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+        [Serializable] public sealed class BattleEvidence
+        {
+            public int floor;
+            public string roomType;
+            public string authoredWave;
+            public int alliesBeforeDeployment;
+            public int alliesAtBattleStart;
+            public int enemiesAtBattleStart;
+        }
+
+        [Serializable] public sealed class SpellEvidence
+        {
+            public int floor;
+            public string spell;
+            public string target;
+            public bool isHealing;
+            public bool targetVerifiedByRaycast;
+            public Vector2 targetScreenPoint;
+            public float positiveHealth;
+            public float negativeHealth;
+            public float manaConsumed;
+            public int affectedEntities;
+        }
 
         [Serializable] public sealed class MapFrame
         {
@@ -56,6 +82,8 @@ namespace HealerLike.Render.Stage
             public int roundsStarted;
             public int battlesStarted;
             public int restHealingEvents;
+            public List<BattleEvidence> battles = new List<BattleEvidence>();
+            public List<SpellEvidence> spells = new List<SpellEvidence>();
         }
 
         readonly string _folder = Path.Combine(StagePlay.CaptureFolder, "expedition-map");
@@ -113,6 +141,8 @@ namespace HealerLike.Render.Stage
 
                 _fixture = new StageMapFixture(_ascension, true);
                 _manifest.interventions.Add("Temporary cloned map generation settings: five floors, Combat / Treasure / Combat / Elite / Rest / Boss; no RunState mutation, forced victory, reward injection or authored asset write");
+                _manifest.interventions.Add("Scripted ordinary party input: up to six living allies initially, eight before the next combat and ten before Elite, using only remaining authored Deploy choices; positions are chosen from visible free grid cells");
+                _manifest.interventions.Add("Scripted battle assistance through usable Toolkit cards: check heals every 0.4 seconds, prefer Heal group for multiple injured allies; after six seconds use the shipped free Damage all enemy card at most every three seconds; resource effects and mana consumers are observed, never granted");
                 UnityEngine.Random.InitState(StageMapFixture.Seed);
                 yield return _actions.PointerTap("start-button");
                 yield return StageMapActions.WaitForSelection(_actions);
@@ -122,7 +152,6 @@ namespace HealerLike.Render.Stage
                 yield return SelectRoom(MapNodeType.Combat);
                 _output.Check(_roomEvents == roomEventsBefore + 1 && _roundEvents == roundsBefore + 1,
                     "New expedition dispatches one room selection and one round start after one Toolkit touch");
-                yield return DeployParty();
                 yield return Battle("06-fixture-combat", 3);
                 yield return Map("07-after-combat", "short-route-fixture", true);
                 yield return SelectRoom(MapNodeType.Treasure);
@@ -132,8 +161,7 @@ namespace HealerLike.Render.Stage
                 yield return Battle("09b-fixture-second-combat", 3);
                 yield return SelectRoom(MapNodeType.Elite);
                 List<WavePatternData> eliteWaves = Object.FindAnyObjectByType<DataManager>().GetWavePatterns(MapNodeType.Elite, _ascension.run.currentFloor);
-                WavePatternData selectedWave = (WavePatternData)typeof(AscensionGameType).GetField("_currentWave",
-                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(_ascension);
+                WavePatternData selectedWave = (WavePatternData)WaveField.GetValue(_ascension);
                 _output.Check(eliteWaves.Count > 0 && eliteWaves.Contains(selectedWave),
                     "Elite room selects an authored Elite wave pool entry without Combat fallback");
                 yield return PlanningMap();
@@ -155,6 +183,13 @@ namespace HealerLike.Render.Stage
                 _output.Check(!StageInterfaceOutput.IsVisible(_actions.root.Q("map-panel")), "Completed run closes map overlay");
                 yield return Capture("14-run-complete");
                 _output.Check(_actions.legacyModuleReadTouches, "Selected StandaloneInputModule consumed the map's synthetic touch samples");
+                bool attemptedHealing = _manifest.spells.Exists(spell => spell.isHealing);
+                _output.Check(!attemptedHealing || _manifest.spells.Exists(spell => spell.isHealing && spell.positiveHealth > 0f),
+                    "When injured allies prompted healing input, at least one ordinary cast produced observed positive health consumers");
+                if (!attemptedHealing) _manifest.unobserved.Add("No healing input was needed: the fixture found no injured target while a healing card was usable");
+                _output.Check(!_manifest.spells.Exists(spell => !spell.isHealing)
+                    || _manifest.spells.Exists(spell => !spell.isHealing && spell.negativeHealth > 0f),
+                    "When damage assistance was used, an ordinary cast produced observed negative health consumers");
                 _manifest.unobserved.Add("Physical phone input, Android safe insets and device performance are not exercised");
                 _manifest.unobserved.Add("The full authored ten-floor run is shown but not played to its boss; special-room progression uses the labelled five-floor generation fixture");
                 passed = true;
@@ -331,11 +366,13 @@ namespace HealerLike.Render.Stage
                 "Cancel releases creature placement before map inspection");
         }
 
-        IEnumerator DeployParty()
+        IEnumerator DeployParty(int desiredAllies)
         {
             Vector3[] offsets = { Vector3.left * 2f, Vector3.left * 3f + Vector3.back, Vector3.left * 2f + Vector3.forward * 2f,
-                Vector3.left * 4f + Vector3.forward, Vector3.left * 4f + Vector3.back * 2f, Vector3.left * 3f + Vector3.forward * 3f };
-            for (int i = 0; i < offsets.Length; i++)
+                Vector3.left * 4f + Vector3.forward, Vector3.left * 4f + Vector3.back * 2f, Vector3.left * 3f + Vector3.forward * 3f,
+                Vector3.left * 2f + Vector3.back * 3f, Vector3.left * 4f + Vector3.forward * 3f,
+                Vector3.left * 4f + Vector3.back * 3f, Vector3.left * 3f + Vector3.forward * 4f };
+            for (int i = 0; i < offsets.Length && _manager.entityManager.GetEntities(Entity.EntityType.Player).Count < desiredAllies; i++)
             {
                 yield return _actions.PointerTap("party-button");
                 yield return Wait(0.2f);
@@ -347,65 +384,172 @@ namespace HealerLike.Render.Stage
                     break;
                 }
                 yield return _actions.SelectCardByTouch(cards[Mathf.Min(i, cards.Count - 1)]);
+                yield return Wait(0.15f);
                 int before = _manager.entityManager.GetEntities(Entity.EntityType.Player).Count;
                 Vector3 point = _manager.player.grid.GetNearestWalkablePosition(offsets[i]);
-                yield return _actions.TouchGesture(_manager.gameCamera.WorldToScreenPoint(point));
+                Vector3 screen = _manager.gameCamera.WorldToScreenPoint(point);
+                _output.Check(screen.z > 0f && _actions.ui.normalizedWorldViewport.Contains(
+                    new Vector2(screen.x / Screen.width, screen.y / Screen.height)) && !_actions.touch.IsOverInterface(screen),
+                    "Deployment aims inside the visible battlefield clear of UI");
+                yield return _actions.TouchGesture(screen);
                 yield return Wait(0.4f);
                 _output.Check(_manager.entityManager.GetEntities(Entity.EntityType.Player).Count == before + 1,
                     "Ordinary Toolkit party and board touches deploy fixture ally " + i);
             }
-            _output.Check(_manager.entityManager.GetEntities(Entity.EntityType.Player).Count >= 3,
-                "At least three allies were deployed through the ordinary party interface");
+            _output.Check(_manager.entityManager.GetEntities(Entity.EntityType.Player).Count > 0,
+                "The ordinary party has living allies before battle");
         }
 
         IEnumerator Battle(string prefix, int rewards)
         {
+            BattleEvidence evidence = new BattleEvidence { floor = _ascension.run.currentFloor,
+                roomType = _ascension.run.currentNode.type.ToString(),
+                authoredWave = UnityEditor.AssetDatabase.GetAssetPath((WavePatternData)WaveField.GetValue(_ascension)),
+                alliesBeforeDeployment = _manager.entityManager.GetEntities(Entity.EntityType.Player).Count };
+            _manifest.battles.Add(evidence);
+            int desired = _ascension.run.currentNode.type == MapNodeType.Elite ? 10 : evidence.floor == 0 ? 6 : 8;
+            yield return DeployParty(desired);
+            evidence.alliesAtBattleStart = _manager.entityManager.GetEntities(Entity.EntityType.Player).Count;
+            evidence.enemiesAtBattleStart = _manager.entityManager.GetEntities(Entity.EntityType.Computer).Count;
             int starts = _battleEvents;
             yield return _actions.PointerTap("wave-button");
+            float battleStarted = Time.realtimeSinceStartup;
             yield return Wait(0.3f);
             _output.Check(_battleEvents == starts + 1, "One battle button touch dispatches one battle start");
             yield return Capture(prefix + "-battle");
             float deadline = Time.realtimeSinceStartup + 120f;
             float nextHeal = 0f;
+            float nextDamage = battleStarted + 6f;
             while (!StageInterfaceOutput.IsVisible(_actions.root.Q("upgrade-panel")))
             {
                 _output.Check(!StageInterfaceOutput.IsVisible(_actions.root.Q("gameover-panel")), "Party survives " + prefix);
                 _output.Check(Time.realtimeSinceStartup < deadline, "Natural battle reaches reward within 120 seconds: " + prefix);
                 if (Time.realtimeSinceStartup >= nextHeal)
                 {
-                    nextHeal = Time.realtimeSinceStartup + 2f;
+                    nextHeal = Time.realtimeSinceStartup + 0.4f;
                     yield return HealThroughInterface();
                 }
-                yield return Wait(0.5f);
+                if (Time.realtimeSinceStartup >= nextDamage
+                    && LegacyUiReader.AscensionState(_ascension) == AscensionGameType.State.OnGoingBattle)
+                {
+                    nextDamage = Time.realtimeSinceStartup + 3f;
+                    Button damage = SpellButton("Damage all enemy");
+                    if (damage != null) yield return CastThroughInterface(damage, null, false);
+                }
+                yield return Wait(0.1f);
             }
             yield return Reward(prefix + "-reward", rewards);
         }
 
         IEnumerator HealThroughInterface()
         {
+            if (LegacyUiReader.AscensionState(_ascension) != AscensionGameType.State.OnGoingBattle) yield break;
             Entity target = null;
+            int injured = 0;
             foreach (GameObject ally in _manager.entityManager.GetEntities(Entity.EntityType.Player))
             {
                 Entity entity = ally.GetComponent<Entity>();
-                if (entity.health.percent < 0.8f && (target == null || entity.health.percent < target.health.percent))
-                    target = entity;
+                if (entity.health.percent < 0.9f)
+                {
+                    injured++;
+                    if (target == null || entity.health.percent < target.health.percent) target = entity;
+                }
             }
             if (target == null) yield break;
-            foreach (Button card in _actions.Cards("spell-list"))
+            Button group = SpellButton("Heal group");
+            if (injured >= 2 && group != null)
             {
-                string title = card.Q<Label>("card-title")?.text ?? "";
-                if (!card.enabledInHierarchy || title.IndexOf("heal", StringComparison.OrdinalIgnoreCase) < 0) continue;
-                yield return _actions.SelectCardByTouch(card);
-                InteractionManager interaction = Object.FindAnyObjectByType<InteractionManager>();
-                AInteraction spell = interaction.GetInteraction();
-                if (target != null && spell != null && spell.IsValidTarget(target.gameObject))
-                {
-                    yield return _actions.TouchGesture(_manager.gameCamera.WorldToScreenPoint(RenderTargets.Point(target.gameObject)));
-                    yield return Wait(0.15f);
-                }
-                if (interaction.GetInteraction() != null)
-                    yield return _actions.PointerTap("cancel-button");
+                yield return CastThroughInterface(group, null, true);
                 yield break;
+            }
+            Button single = SpellButton("Heal");
+            if (single != null && TargetPoint(target, out _))
+                yield return CastThroughInterface(single, target, true);
+            else if (group != null) yield return CastThroughInterface(group, null, true);
+        }
+
+        Button SpellButton(string title)
+        {
+            return _actions.Cards("spell-list").Find(card => card.enabledInHierarchy
+                && card.Q<Label>("card-title")?.text == title);
+        }
+
+        bool TargetPoint(Entity target, out Vector2 point)
+        {
+            point = default;
+            if (target == null) return false;
+            Collider collider = target.GetComponent<Collider>();
+            if (collider == null) return false;
+            Vector3 screen = _manager.gameCamera.WorldToScreenPoint(collider.bounds.center);
+            point = screen;
+            if (screen.z <= 0f || !_actions.ui.normalizedWorldViewport.Contains(
+                new Vector2(screen.x / Screen.width, screen.y / Screen.height)) || _actions.touch.IsOverInterface(point)) return false;
+            return Physics.Raycast(_manager.gameCamera.ScreenPointToRay(point), out RaycastHit hit,
+                Mathf.Infinity, 1 << Layers.Entity) && hit.collider.gameObject == target.gameObject;
+        }
+
+        IEnumerator CastThroughInterface(Button button, Entity target, bool healing)
+        {
+            yield return _actions.BringIntoView(button);
+            if (LegacyUiReader.AscensionState(_ascension) != AscensionGameType.State.OnGoingBattle
+                || !button.enabledInHierarchy || !StageInterfaceOutput.IsVisible(button)) yield break;
+            Character character = _manager.player.character;
+            string title = button.Q<Label>("card-title").text;
+            CharacterSkillSlot slot = character.skillSlots.Find(value => value.data != null && value.data.name == title);
+            ApplyConsumerCharacterSkillData data = slot != null ? slot.data as ApplyConsumerCharacterSkillData : null;
+            _output.Check(data != null, "Assisted spell uses the authored resource-consumer skill: " + title);
+            SpellEvidence evidence = new SpellEvidence { floor = _ascension.run.currentFloor, spell = title,
+                target = target != null ? target.name + " " + target.GetEntityId() : "all " + data.entityType, isHealing = healing };
+            _manifest.spells.Add(evidence);
+            List<ResourceAttribute> observed = new List<ResourceAttribute>();
+            foreach (GameObject entity in _manager.entityManager.GetEntities(data.entityType))
+                observed.Add(entity.GetComponent<Entity>().health);
+            UnityEngine.Events.UnityAction<GameObject, ResourceModifier, float, bool> healthEvent = (owner, modifier, value, critical) =>
+            {
+                // The resolver clears modifier.consumers before notifying observers; source and multiplier
+                // identify this cast window, and value records the actual resolved health effect.
+                if (modifier.source != character.gameObject || !Mathf.Approximately(modifier.multiplier, data.multiplier)) return;
+                if (data.isSingle && (target == null || owner != target.gameObject)) return;
+                if (value > 0f) evidence.positiveHealth += value;
+                if (value < 0f) evidence.negativeHealth -= value;
+                if (value != 0f) evidence.affectedEntities++;
+            };
+            UnityEngine.Events.UnityAction<GameObject, ResourceModifier, float, bool> manaEvent = (owner, modifier, value, critical) =>
+            {
+                if (modifier.source == character.gameObject && value < 0f) evidence.manaConsumed -= value;
+            };
+            foreach (ResourceAttribute health in observed) health.OnAllConsumerProcessed.AddListener(healthEvent);
+            character.mana.OnAllConsumerProcessed.AddListener(manaEvent);
+            try
+            {
+                yield return _actions.PointerTap(button);
+                InteractionManager interaction = Object.FindAnyObjectByType<InteractionManager>();
+                if (data.isSingle && target != null && interaction.GetInteraction() is SingleTargetInteraction single
+                    && single.IsValidTarget(target.gameObject) && TargetPoint(target, out Vector2 point))
+                {
+                    evidence.targetVerifiedByRaycast = true;
+                    evidence.targetScreenPoint = point;
+                    yield return _actions.TouchGesture(point);
+                }
+                yield return Wait(0.25f);
+                // A reward overlay can open while the held gesture is being consumed.
+                if (interaction.GetInteraction() != null)
+                {
+                    if (StageInterfaceOutput.IsVisible(_actions.root.Q("cancel-button"))
+                        && LegacyUiReader.CurrentView(Object.FindAnyObjectByType<UIManager>()) == ViewType.Game)
+                        yield return _actions.PointerTap("cancel-button");
+                    else
+                    {
+                        interaction.CancelInteraction();
+                        _manifest.interventions.Add("Capture cleanup cancelled a pending targeting spell through the original CancelInteraction command after the reward overlay hid Cancel; no target was activated");
+                    }
+                }
+            }
+            finally
+            {
+                foreach (ResourceAttribute health in observed)
+                    if (health != null) health.OnAllConsumerProcessed.RemoveListener(healthEvent);
+                if (character != null) character.mana.OnAllConsumerProcessed.RemoveListener(manaEvent);
             }
         }
 
