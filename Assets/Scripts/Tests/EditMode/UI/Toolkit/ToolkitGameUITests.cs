@@ -49,6 +49,17 @@ public class ToolkitGameUITests
         Application.logMessageReceived += OnLogMessage;
         Submit(start);
         yield return new WaitForSecondsRealtime(0.3f);
+        ToolkitGameUI gameUI = Object.FindAnyObjectByType<ToolkitGameUI>();
+        AscensionGameType ascension = Object.FindAnyObjectByType<AscensionGameType>();
+        Assert.AreEqual(AscensionGameType.State.SelectRoom, LegacyUiReader.AscensionState(ascension));
+        MapNode first = ascension.run.GetAvailableNodes()[0];
+        Button room = gameUI.GetComponent<UIDocument>().rootVisualElement.Q<Button>($"map-node-{first.floor}-{first.column}");
+        Assert.IsNotNull(room);
+        room.Focus();
+        yield return null;
+        Submit(room);
+        yield return new WaitForSecondsRealtime(0.3f);
+        Assert.AreSame(first, ascension.run.currentNode);
         Application.logMessageReceived -= OnLogMessage;
         LogAssert.ignoreFailingMessages = false;
         foreach (string error in _errors)

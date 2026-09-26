@@ -2,6 +2,7 @@
     <Style src="GameUI.Layout.uss" />
     <Style src="GameUI.Theme.uss" />
     <Style src="GameUI.Mobile.uss" />
+    <Style src="GameUI.Map.uss" />
     <ui:VisualElement name="hud-root" class="game-ui">
         <ui:VisualElement name="top-bar" class="top-bar surface">
             <ui:VisualElement class="brand-block">
@@ -19,6 +20,7 @@
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="field-toolbar" class="field-toolbar" picking-mode="Ignore">
+            <ui:Button name="map-button" text="Map" class="button is-hidden" />
             <ui:Button name="party-button" text="Party" class="button mobile-only" />
             <ui:Button name="detail-button" text="Details" class="button mobile-only" />
             <ui:VisualElement class="toolbar-space" picking-mode="Ignore" />
@@ -101,12 +103,27 @@
                 </ui:ScrollView>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="selection-panel" class="modal-layer is-hidden">
-            <ui:VisualElement class="dialog dialog--wide surface">
-                <ui:Label text="THE NEXT ENCOUNTER" class="eyebrow" />
-                <ui:Label name="selection-title" text="Choose your path" class="dialog-title" />
-                <ui:Label name="selection-description" text="Inspect the choices and prepare for the next wave." class="muted dialog-description" />
-                <ui:ScrollView name="selection-list" class="collection-list choice-list" horizontal-scroller-visibility="Hidden" />
+        <ui:VisualElement name="map-panel" class="modal-layer map-layer is-hidden">
+            <ui:VisualElement name="map-dialog" class="dialog map-dialog surface">
+                <ui:VisualElement class="dialog-header map-header">
+                    <ui:VisualElement class="map-heading">
+                        <ui:Label name="map-progress" text="THE JOURNEY BEGINS" class="eyebrow" />
+                        <ui:Label name="map-title" text="Choose your next room" class="dialog-title" />
+                    </ui:VisualElement>
+                    <ui:Button name="map-close-button" text="Back" class="button button--quiet is-hidden" />
+                </ui:VisualElement>
+                <ui:Label name="map-description" text="Follow a bright path. Select a room to continue." class="muted map-description" />
+                <ui:ScrollView name="map-scroll" mode="VerticalAndHorizontal" class="map-scroll" horizontal-scroller-visibility="Auto" vertical-scroller-visibility="Auto">
+                    <ui:VisualElement name="map-canvas" class="map-canvas" />
+                </ui:ScrollView>
+                <ui:VisualElement class="map-footer">
+                    <ui:VisualElement class="map-legend">
+                        <ui:Label text="NEXT" class="map-key map-key--available" />
+                        <ui:Label text="HERE" class="map-key map-key--current" />
+                        <ui:Label text="VISITED" class="map-key map-key--visited" />
+                    </ui:VisualElement>
+                    <ui:Button name="map-recenter-button" text="My route" class="button button--quiet" />
+                </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="upgrade-panel" class="modal-layer is-hidden">

@@ -7,14 +7,16 @@ using UnityEngine.UIElements;
 // Previews real data and the modal layouts without starting or changing the gameplay
 public class ToolkitDesignPreview : EditorWindow
 {
-    static readonly string[] states = { "HUD", "inventory", "selection", "upgrade", "pause", "gameover" };
-    static readonly string[] modalPanels = { "inventory", "selection", "upgrade", "pause", "gameover" };
+    static readonly string[] states = { "HUD", "inventory", "map", "upgrade", "pause", "gameover" };
+    static readonly string[] modalPanels = { "inventory", "map", "upgrade", "pause", "gameover" };
     static readonly int cardCount = 8;
     static readonly int rewardCount = 3;
 
     ToolbarMenu _stateMenu;
     VisualElement _preview;
     ToolkitGameView _view;
+    ToolkitMapGraph _mapGraph;
+    RunState _mapRun;
 
     [MenuItem("Tools/UI Toolkit/Design Preview")]
     public static void Open()
@@ -27,6 +29,7 @@ public class ToolkitDesignPreview : EditorWindow
 
     public void CreateGUI()
     {
+        Release();
         VisualElement root = rootVisualElement;
         root.Clear();
         Toolbar toolbar = new Toolbar();
@@ -60,7 +63,7 @@ public class ToolkitDesignPreview : EditorWindow
 
         compact.RegisterValueChangedCallback(OnCompactChanged);
         _view.SetText("currency-label", "125 gold");
-        _view.SetText("wave-label", "Wave 3");
+        _view.SetText("wave-label", "Room 3 · Combat");
         _view.SetText("phase-label", "PREPARATION");
         _view.SetResource("mana-bar", 72f, 100f);
         _view.Show("start-button", false);
@@ -69,6 +72,12 @@ public class ToolkitDesignPreview : EditorWindow
         _view.AddClickListener("pause-button", OnPauseClicked);
         _view.AddClickListener("resume-button", OnResumeClicked);
         FillCards();
+        MapGenerationSettings settings = AssetDatabase.LoadAssetAtPath<MapGenerationSettings>("Assets/Data/Run/MapGenerationSettings.asset");
+        if (settings != null)
+        {
+            _mapRun = new RunState(MapGenerator.Generate(settings, 65));
+            _mapGraph = new ToolkitMapGraph(_preview.Q<ScrollView>("map-scroll"), null);
+        }
     }
 
     void FillCards()
@@ -91,17 +100,10 @@ public class ToolkitDesignPreview : EditorWindow
             items.Add(CreateCard(data, data.title, "Equipment reward"));
         }
 
-        List<ToolkitCardModel> waves = new List<ToolkitCardModel>();
-        foreach (WavePatternData data in FindAssets<WavePatternData>())
-        {
-            waves.Add(CreateCard(data, data.name, "Encounter choice"));
-        }
-
         _view.SetCards("party-list", creatures);
         _view.SetCards("spell-list", spells);
         _view.SetCards("inventory-list", items);
         _view.SetCards("upgrade-list", items.GetRange(0, Mathf.Min(rewardCount, items.Count)));
-        _view.SetCards("selection-list", waves);
         if (creatures.Count > 0)
         {
             _view.ShowDetail(creatures[0]);
@@ -137,10 +139,22 @@ public class ToolkitDesignPreview : EditorWindow
     void OnStateSelected(DropdownMenuAction action)
     {
         _stateMenu.text = action.name;
+        if (action.name == "map") _mapGraph?.Display(_mapRun, false);
+        else _mapGraph?.Hide();
         foreach (string panel in modalPanels)
         {
             _view.Show(panel + "-panel", panel == action.name);
         }
+    }
+
+    void OnDisable() { Release(); }
+
+    void Release()
+    {
+        _mapGraph?.Dispose();
+        _mapGraph = null;
+        _view?.Release();
+        _view = null;
     }
 
     void OnCompactChanged(ChangeEvent<bool> evt)

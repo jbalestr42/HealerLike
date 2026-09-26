@@ -26,12 +26,9 @@ public static class LegacyUiReader
         typeof(Text));
     static readonly FieldInfo upgradeButtonsField = RequireField(typeof(UpgradeView), "_upgradeButtons",
         typeof(List<GameObject>));
-    static readonly FieldInfo waveButtonsField = RequireField(typeof(WaveView), "_waveButtons",
-        typeof(List<SelectWaveButton>));
     static readonly FieldInfo entityItemField = RequireField(typeof(SelectItemUpgradeButton), "_item", typeof(AItem));
     static readonly FieldInfo playerItemField = RequireField(typeof(SelectPlayerItemUpgradeButton), "_item",
         typeof(AItem));
-    static readonly FieldInfo waveField = RequireField(typeof(SelectWaveButton), "_wave", typeof(WavePatternData));
     static readonly Dictionary<Type, FieldInfo> itemDataFields = new Dictionary<Type, FieldInfo>();
 
     public static bool IsValid()
@@ -39,8 +36,8 @@ public static class LegacyUiReader
         return gameStateField != null && ascensionStateField != null && currentViewField != null
             && selectedPanelField != null && selectedObjectField != null && entityButtonsField != null
             && skillButtonField != null && costTextField != null && cooldownTextField != null
-            && upgradeButtonsField != null && waveButtonsField != null && entityItemField != null
-            && playerItemField != null && waveField != null;
+            && upgradeButtonsField != null && entityItemField != null
+            && playerItemField != null;
     }
 
     static FieldInfo RequireField(Type owner, string name, Type valueType)
@@ -108,11 +105,6 @@ public static class LegacyUiReader
         return Read<List<GameObject>>(upgradeButtonsField, source).AsReadOnly();
     }
 
-    public static IReadOnlyList<SelectWaveButton> WaveChoices(WaveView source)
-    {
-        return Read<List<SelectWaveButton>>(waveButtonsField, source).AsReadOnly();
-    }
-
     public static UseCharacterSkillButton SkillButton(CharacterSkillSlot source)
     {
         return Read<UseCharacterSkillButton>(skillButtonField, source);
@@ -131,11 +123,6 @@ public static class LegacyUiReader
         }
 
         return Read<AItem>(playerItemField, source);
-    }
-
-    public static WavePatternData Wave(SelectWaveButton source)
-    {
-        return Read<WavePatternData>(waveField, source);
     }
 
     public static bool CanUse(CharacterSkillSlot source)

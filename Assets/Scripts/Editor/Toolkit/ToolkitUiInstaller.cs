@@ -54,6 +54,22 @@ public static class ToolkitUiInstaller
         }
     }
 
+    // Explicit maintenance of our disposable demo copy after an upstream scene change.
+    // The source scene and its serialized gameplay wiring are never edited.
+    [MenuItem("Tools/UI Toolkit/Refresh Gameplay Demo from Main")]
+    public static void RefreshGameplayDemo()
+    {
+        if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        SceneSetup[] setup = EditorSceneManager.GetSceneManagerSetup();
+        System.IO.File.Copy("Assets/Scenes/Main.unity", ToolkitSceneNavigation.GameplayPath, true);
+        AssetDatabase.ImportAsset(ToolkitSceneNavigation.GameplayPath, ImportAssetOptions.ForceUpdate);
+        Scene scene = EditorSceneManager.OpenScene(ToolkitSceneNavigation.GameplayPath, OpenSceneMode.Single);
+        Install(scene);
+        if (!EditorSceneManager.SaveScene(scene))
+            throw new System.InvalidOperationException("Could not save the refreshed Toolkit gameplay demo");
+        if (setup.Length > 0) EditorSceneManager.RestoreSceneManagerSetup(setup);
+    }
+
     static bool CreateScene(string source, string destination)
     {
         // Existing demo scenes may contain design changes: never overwrite them

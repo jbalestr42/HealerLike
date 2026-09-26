@@ -19,7 +19,7 @@ public class ToolkitGameContextTests
         ToolkitGameContext context = new ToolkitGameContext();
         context.isMenu = true;
 
-        Assert.IsFalse(context.IsCurrentView(ViewType.Wave));
+        Assert.IsFalse(context.IsCurrentView(ViewType.Map));
     }
 
     [Test]

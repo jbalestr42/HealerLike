@@ -8,10 +8,8 @@
     <type fullname="CharacterSkillSlot" preserve="nothing"><field name="_skillButton" /></type>
     <type fullname="UseCharacterSkillButton" preserve="nothing"><field name="_costText" /><field name="_cooldownText" /></type>
     <type fullname="UpgradeView" preserve="nothing"><field name="_upgradeButtons" /></type>
-    <type fullname="WaveView" preserve="nothing"><field name="_waveButtons" /></type>
     <type fullname="SelectItemUpgradeButton" preserve="nothing"><field name="_item" /></type>
     <type fullname="SelectPlayerItemUpgradeButton" preserve="nothing"><field name="_item" /></type>
-    <type fullname="SelectWaveButton" preserve="nothing"><field name="_wave" /></type>
     <type fullname="AItem`1" preserve="nothing"><field name="data" /></type>
   </assembly>
 </linker>

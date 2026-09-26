@@ -17,11 +17,11 @@ public class ToolkitGameUI : MonoBehaviour
     ToolkitGameContext _context = new ToolkitGameContext();
     ToolkitLegacyCanvases _legacyCanvases = new ToolkitLegacyCanvases();
     ToolkitTimeControls _timeControls = new ToolkitTimeControls();
-    ToolkitWaveBar _waveBar = new ToolkitWaveBar();
+    ToolkitEncounterBar _encounterBar = new ToolkitEncounterBar();
     ToolkitPartyPanel _partyPanel = new ToolkitPartyPanel();
     ToolkitSpellBar _spellBar = new ToolkitSpellBar();
     ToolkitRewardPanel _rewardPanel = new ToolkitRewardPanel();
-    ToolkitWavePanel _wavePanel = new ToolkitWavePanel();
+    ToolkitMapPanel _mapPanel = new ToolkitMapPanel();
     ToolkitDetailPanel _detailPanel = new ToolkitDetailPanel();
     ToolkitInventoryPanel _inventoryPanel = new ToolkitInventoryPanel();
     ToolkitMobileLayout _mobileLayout = new ToolkitMobileLayout();
@@ -117,13 +117,13 @@ public class ToolkitGameUI : MonoBehaviour
             markToggle.RegisterValueChangedCallback(OnMarkToggleChanged);
         }
 
-        _waveBar.Init(_context, _view);
+        _encounterBar.Init(_context, _view);
         _detailPanel.Init(_context, _view);
         _inventoryPanel.Init(this, _context, _view, _detailPanel);
         _partyPanel.Init(_context, _view, _detailPanel);
         _spellBar.Init(_context, _view);
         _rewardPanel.Init(this, _context, _view);
-        _wavePanel.Init(_context, _view);
+        _mapPanel.Init(_context, _view);
         if (_hideLegacyCanvases)
         {
             _legacyCanvases.Hide(_context);
@@ -134,6 +134,7 @@ public class ToolkitGameUI : MonoBehaviour
 
     void OnDestroy()
     {
+        _mapPanel.Dispose();
         if (_view != null)
         {
             _view.Release();
@@ -147,6 +148,7 @@ public class ToolkitGameUI : MonoBehaviour
 
     void OnDisable()
     {
+        _mapPanel.Dispose();
         // Keep the host's provider for re-enable, but stop refreshing the detached view.
         if (_view != null) _view.Release();
         _legacyCanvases.Restore();
@@ -181,14 +183,14 @@ public class ToolkitGameUI : MonoBehaviour
     public void Refresh()
     {
         _mobileLayout.Refresh();
+        _mapPanel.Refresh();
         _view.Show("pause-panel", _context.isPaused && _context.IsCurrentView(ViewType.Game));
         _view.Show("inventory-panel", _context.isInventoryOpen && !_context.isPaused);
-        _view.Show("selection-panel", _context.IsCurrentView(ViewType.Wave));
         _view.Show("upgrade-panel", _context.IsCurrentView(ViewType.Upgrade));
         _view.Show("gameover-panel", _context.IsCurrentView(ViewType.GameOver));
         if (_context.isMenu)
         {
-            _waveBar.RefreshMenu();
+            _encounterBar.RefreshMenu();
             return;
         }
 
@@ -200,18 +202,17 @@ public class ToolkitGameUI : MonoBehaviour
         bool isStart = LegacyUiReader.GameState(_context.game) == GameManager.GameState.None;
         bool isPreparing = _context.IsPreparing();
         bool hasOverlay = LegacyUiReader.CurrentView(_context.ui) != ViewType.Game;
-        _waveBar.Refresh(isStart, isPreparing, hasOverlay);
+        _encounterBar.Refresh(isStart, isPreparing, hasOverlay);
         if (!isPreparing || hasOverlay)
         {
             _context.isInventoryOpen = false;
             _view.Show("inventory-panel", false);
         }
 
-        _waveBar.RefreshMana();
+        _encounterBar.RefreshMana();
         _partyPanel.Refresh(isPreparing && !isStart && !hasOverlay);
         _spellBar.Refresh(!isStart && !hasOverlay && !_context.isPaused);
         _rewardPanel.Refresh();
-        _wavePanel.Refresh();
         _detailPanel.Refresh();
         _inventoryPanel.RefreshEquipmentAction(isPreparing && !hasOverlay);
         if (_context.isInventoryOpen)
@@ -233,7 +234,7 @@ public class ToolkitGameUI : MonoBehaviour
             return;
         }
 
-        if (_context.isPaused || _context.legacy == null)
+        if (_context.isPaused || _context.legacy == null || !_context.IsCurrentView(ViewType.Game))
         {
             return;
         }
@@ -262,6 +263,7 @@ public class ToolkitGameUI : MonoBehaviour
 
     void OnEscape()
     {
+        if (_mapPanel.Close()) return;
         if (_mobileLayout.CloseDrawers())
         {
             return;
