@@ -24,6 +24,7 @@ namespace UI.Toolkit
         {
             using (NavigationSubmitEvent submit = NavigationSubmitEvent.GetPooled())
             {
+                submit.target = button;
                 button.SendEvent(submit);
             }
         }

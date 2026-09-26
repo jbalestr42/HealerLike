@@ -36,11 +36,11 @@ public class ToolkitMapConnections : IDisposable
     void ReadStyle()
     {
         ICustomStyle style = _surface.customStyle;
-        style.TryGetValue(new CustomStyleProperty<Color>("--map-path-travelled"), out _travelled);
-        style.TryGetValue(new CustomStyleProperty<Color>("--map-path-reachable"), out _reachable);
-        style.TryGetValue(new CustomStyleProperty<Color>("--map-path-locked"), out _locked);
-        _lineWidth = ToolkitStyleValues.ReadPositive(style, "--map-path-width", 1.5f);
-        _activeWidth = ToolkitStyleValues.ReadPositive(style, "--map-path-active-width", 3f);
+        style.TryGetValue(new CustomStyleProperty<Color>("--map-line-travelled"), out _travelled);
+        style.TryGetValue(new CustomStyleProperty<Color>("--map-line-reachable"), out _reachable);
+        style.TryGetValue(new CustomStyleProperty<Color>("--map-line-locked"), out _locked);
+        _lineWidth = ToolkitStyleValues.ReadPositive(style, "--map-line-width", 1.5f);
+        _activeWidth = ToolkitStyleValues.ReadPositive(style, "--map-line-active-width", 3f);
     }
 
     public void Display(RunState run, float width, ToolkitMapMetrics metrics)

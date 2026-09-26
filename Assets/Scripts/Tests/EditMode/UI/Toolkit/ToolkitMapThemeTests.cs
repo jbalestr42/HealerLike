@@ -41,7 +41,8 @@ namespace UI.Toolkit
             _folder = "Assets/ToolkitMapThemeTest-" + System.Guid.NewGuid().ToString("N");
             AssetDatabase.CreateFolder("Assets", Path.GetFileName(_folder));
             string path = _folder + "/Geometry.uss";
-            File.WriteAllText(path, ".game-ui { --map-node-height: 92; --map-floor-height: 144; }");
+            File.WriteAllText(path, ".game-ui { --map-node-height: 92; --map-floor-height: 144; "
+                + "--map-path-locked: magenta; --map-path-width: 4; --map-glyph-line-width: 3; }");
             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
             _override = AssetDatabase.LoadAssetAtPath<StyleSheet>(path);
         }
@@ -64,6 +65,10 @@ namespace UI.Toolkit
             Assert.IsNotNull(first);
             Assert.AreEqual(68f, first.style.height.value.value);
             float originalTop = first.style.top.value.value;
+            VisualElement surface = _root.Q("map-connections");
+            CustomStyleProperty<Color> lineColour = new CustomStyleProperty<Color>("--map-line-locked");
+            Assert.IsTrue(surface.customStyle.TryGetValue(lineColour, out Color originalColour));
+            Assert.Greater(originalColour.a, 0f, "Map paths need a visible resolved colour.");
             _root.styleSheets.Add(_override);
             yield return null;
             yield return null;
@@ -71,11 +76,18 @@ namespace UI.Toolkit
             Assert.AreEqual(92f, first.style.height.value.value);
             Assert.AreNotEqual(originalTop, first.style.top.value.value);
             Assert.AreEqual(5, _graph.connectionCount);
+            Assert.IsTrue(surface.customStyle.TryGetValue(lineColour, out Color changedColour));
+            Assert.AreEqual(Color.magenta, changedColour);
+            Assert.AreEqual(4f, ToolkitStyleValues.ReadPositive(surface.customStyle, "--map-line-width", 0f));
+            VisualElement glyph = first.Q("map-glyph");
+            Assert.AreEqual(3f, ToolkitStyleValues.ReadPositive(glyph.customStyle, "--map-glyph-stroke-width", 0f));
             _root.styleSheets.Remove(_override);
             yield return null;
             yield return null;
             Assert.AreEqual(68f, first.style.height.value.value);
             Assert.AreEqual(originalTop, first.style.top.value.value);
+            Assert.IsTrue(surface.customStyle.TryGetValue(lineColour, out Color restoredColour));
+            Assert.AreEqual(originalColour, restoredColour);
         }
 
         [Test]

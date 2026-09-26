@@ -19,7 +19,7 @@ public class ToolkitMapGlyph : IDisposable
 
     void ReadStyle()
     {
-        _lineWidth = ToolkitStyleValues.ReadPositive(_surface.customStyle, "--map-glyph-line-width", 1.7f);
+        _lineWidth = ToolkitStyleValues.ReadPositive(_surface.customStyle, "--map-glyph-stroke-width", 1.7f);
     }
 
     void OnStyleResolved(CustomStyleResolvedEvent evt)

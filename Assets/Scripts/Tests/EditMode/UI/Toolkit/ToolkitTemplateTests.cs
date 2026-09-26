@@ -22,6 +22,12 @@ namespace UI.Toolkit
             Assert.AreEqual(PickingMode.Position, root.Q("pause-panel").pickingMode);
             Assert.AreEqual(PickingMode.Ignore, root.Q("detail-actions").pickingMode);
             Assert.AreSame(root.Q("detail-actions"), root.Q<DropdownField>("detail-targeting").parent.parent);
+            Assert.IsTrue(root.Q("inventory-actions").Contains(root.Q("inventory-equip-button")));
+            Assert.IsTrue(root.Q("party-close-button").parent.ClassListContains("section-heading-actions"));
+            Assert.IsTrue(root.Q("detail-close-button").parent.ClassListContains("section-heading-actions"));
+            Assert.IsTrue(root.Q("resume-button").parent.ClassListContains("dialog-content"));
+            Assert.IsTrue(root.Q("restart-button").parent.ClassListContains("dialog-content"));
+            Assert.IsTrue(root.Q("upgrade-title").parent.ClassListContains("dialog-content"));
         }
 
         [Test]
