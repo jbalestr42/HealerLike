@@ -173,6 +173,118 @@ namespace UI.Toolkit
                 Assert.That(popover.isOpen, Is.False); Assert.That(_casts, Is.EqualTo(1));
             }
         }
+        void Key(KeyCode key)
+        {
+            using (var evt = KeyDownEvent.GetPooled(new Event { type = EventType.KeyDown, keyCode = key }))
+                _button.SendEvent(evt);
+        }
+        void NavigationCancel()
+        {
+            using (var evt = NavigationCancelEvent.GetPooled()) _button.SendEvent(evt);
+        }
+        // Synthetic keys cannot set legacy Input.GetKeyDown. Invoke its existing route
+        // once, after or before navigation, without adding a second production key owner.
+        void Escape(ToolkitGameActions actions, bool actionsFirst)
+        {
+            Key(KeyCode.Escape);
+            if (actionsFirst) TestHelpers.InvokePrivate(actions, "OnEscape");
+            NavigationCancel();
+            if (!actionsFirst) TestHelpers.InvokePrivate(actions, "OnEscape");
+        }
+        void WithEscapeRoute(System.Action<ToolkitGameActions, ToolkitGameContext> check)
+        {
+            var settings = ToolkitMobileLayout.CreatePanelSettings(null);
+            var document = _owner.GetComponent<UIDocument>() ?? _owner.AddComponent<UIDocument>();
+            document.panelSettings = settings;
+            var context = new ToolkitGameContext();
+            float speed = Time.timeScale;
+            using (var mobile = new ToolkitMobileLayout())
+            using (var time = new ToolkitTimeControls())
+            using (var map = new ToolkitMapPanel())
+            {
+                mobile.Init(_view, context, document);
+                time.Init(null, context, _view);
+                using (var actions = new ToolkitGameActions(null, context, _view, time, mobile, map))
+                {
+                    try { check(actions, context); }
+                    finally { time.Resume(); Time.timeScale = speed; document.panelSettings = null;
+                        Object.DestroyImmediate(settings); }
+                }
+            }
+        }
+        [UnityTest]
+        public IEnumerator KeyboardEscapeWithFocusedCardPausesWithoutInspection()
+        {
+            Bind(true); yield return null; yield return null;
+            _button.Focus();
+            foreach (bool actionsFirst in new[] { false, true })
+                WithEscapeRoute((actions, context) =>
+                {
+                    Escape(actions, actionsFirst);
+                    Assert.That(context.isPaused, Is.True, "Escape was swallowed by inspection");
+                    Assert.That(_view.root.Q("detail-panel").ClassListContains("is-hidden"), Is.True);
+                    Assert.That(_inspects, Is.Zero); Assert.That(_casts, Is.Zero);
+                });
+        }
+        [UnityTest]
+        public IEnumerator KeyboardEscapeClosesNavigationInspectionWithoutPausing()
+        {
+            foreach (bool actionsFirst in new[] { false, true })
+            {
+                // A fresh entry also avoids relying on Editor Time.frameCount advancing.
+                _view.SetCards("spell-list", new ToolkitCardModel[0]);
+                Bind(true); yield return null; yield return null;
+                _button.Focus();
+                WithEscapeRoute((actions, context) =>
+                {
+                    NavigationCancel();
+                    Assert.That(_view.root.Q("detail-panel").ClassListContains("is-hidden"), Is.False);
+                    int inspections = _inspects;
+                    Escape(actions, actionsFirst);
+                    Assert.That(_view.root.Q("detail-panel").ClassListContains("is-hidden"), Is.True);
+                    Assert.That(context.isPaused, Is.False, "Escape closed inspection then also paused");
+                    Assert.That(_inspects, Is.EqualTo(inspections)); Assert.That(_casts, Is.Zero);
+                });
+            }
+        }
+        [UnityTest]
+        public IEnumerator KeyboardEscapeCancelsSpellTargetingWithoutInspectionOrPause()
+        {
+            Bind(true); yield return null; yield return null;
+            _button.Focus();
+            var manager = _owner.AddComponent<InteractionManager>();
+            foreach (bool actionsFirst in new[] { false, true })
+                WithEscapeRoute((actions, context) =>
+                {
+                    var targeting = new Targeting();
+                    manager.SetInteraction(targeting);
+                    context.interaction = manager;
+                    Escape(actions, actionsFirst);
+                    Assert.That(manager.GetInteraction(), Is.Null, "Escape failed to cancel targeting");
+                    Assert.That(targeting.cancels, Is.EqualTo(1));
+                    Assert.That(context.isPaused, Is.False);
+                    Assert.That(_inspects, Is.Zero); Assert.That(_casts, Is.Zero);
+                });
+        }
+        [UnityTest]
+        public IEnumerator KeyboardInspectShortcutsKeepInspectionWithoutActivation()
+        {
+            Bind(true); yield return null; yield return null;
+            using (var popover = new ToolkitPopover(_view))
+                foreach (KeyCode key in new[] { KeyCode.I, KeyCode.F1 })
+                {
+                    Key(key);
+                    Assert.That(popover.isOpen, Is.True); Assert.That(_casts, Is.Zero);
+                    _view.ClosePopover();
+                }
+            Assert.That(_inspects, Is.EqualTo(2));
+        }
+        sealed class Targeting : AInteraction
+        {
+            public int cancels;
+            public override int GetLayerMask() => 0;
+            public override void Cancel() { cancels++; }
+        }
         sealed class Drag : IToolkitRosterDrag
         {
             public int begins, ends;

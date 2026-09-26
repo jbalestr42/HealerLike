@@ -20,6 +20,7 @@ public sealed class ToolkitCardGesture : IDisposable
     bool _holding;
     bool _dragging;
     bool _navigationInspect;
+    int _escapeFrame = -1;
 
     public ToolkitCardGesture(ToolkitCard card, ToolkitGameView view, Action activate)
     {
@@ -126,6 +127,11 @@ public sealed class ToolkitCardGesture : IDisposable
     // card it toggles inspection; Submit (A / Cross) keeps its activation meaning.
     void InspectNavigation(NavigationCancelEvent evt)
     {
+        // Cancel also maps to Escape. Its one cancel/pause action belongs to
+        // ToolkitGameActions.Update, irrespective of MonoBehaviour update order.
+        // Standalone reports Unknown device type; PanelEventHandler sends KeyDown
+        // before NavigationCancel, so the stamp also covers synthetic/backend keys.
+        if (Input.GetKeyDown(KeyCode.Escape) || _escapeFrame == Time.frameCount) return;
         if (_navigationInspect) _view.ClosePopover();
         else
         {
@@ -142,6 +148,11 @@ public sealed class ToolkitCardGesture : IDisposable
     }
     void Key(KeyDownEvent evt)
     {
+        if (evt.keyCode == KeyCode.Escape)
+        {
+            _escapeFrame = Time.frameCount;
+            return;
+        }
         if (evt.keyCode != KeyCode.I && evt.keyCode != KeyCode.F1) return;
         Inspect();
         evt.StopPropagation();
