@@ -130,7 +130,7 @@ namespace HealerLike.Render.Creatures
             _camera.aspect = 1f;
             _camera.cullingMask = 1 << captureLayer;
             _camera.clearFlags = CameraClearFlags.SolidColor;
-            _camera.backgroundColor = new Color(12f / 255f, 24f / 255f, 26f / 255f, 1f);
+            _camera.backgroundColor = Color.clear;
             _camera.allowHDR = false;
             _camera.allowMSAA = false;
             _camera.useOcclusionCulling = false;

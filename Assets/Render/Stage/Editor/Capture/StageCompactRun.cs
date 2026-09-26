@@ -35,6 +35,8 @@ namespace HealerLike.Render.Stage
                 yield return StageMapActions.SelectFirst(_session.actions, true);
                 yield return Wait(.5f);
                 yield return _session.Capture("01-preparation");
+                var review = new StageCompactReview(_session);
+                review.PortraitPixels();
                 var root = _session.actions.root;
                 _output.Check(_session.actions.legacyModuleReadTouches, "Actual input module consumed synthetic touch frames");
                 _output.Check(root.Q("party-panel").worldBound.yMax <= root.Q("command-dock").worldBound.yMin + 1,
@@ -58,7 +60,7 @@ namespace HealerLike.Render.Stage
                 yield return _gestures.Hold(Available, "02-roster-details", true);
                 Observe("roster-hold");
                 _output.Check(Count == initial, "Creature hold produces zero entities");
-                yield return _session.actions.PointerTap("detail-close-button");
+                yield return review.OutsideDismiss("02b-outside-dismissal");
                 Vector3 cell = _manager.player.grid.GetNearestWalkablePosition(Vector3.left * 2);
                 Vector2 drop = _gestures.DropPoint(cell);
                 yield return _gestures.Drag(Available, new Vector2(4, Screen.height - 4), "03-invalid-placement");
@@ -89,10 +91,13 @@ namespace HealerLike.Render.Stage
                     "Deployed creature retains its actual roster entry and identity");
                 yield return _session.Capture("06-successful-release");
                 yield return _gestures.Hold(entry, "07-deployed-details", true);
+                yield return review.LiveDetails(entry);
                 _output.Check(root.Q<Button>("detail-inventory-button").enabledSelf, "Deployed detail retains equipment access");
                 yield return _session.actions.BringIntoView(root.Q<Button>("detail-inventory-button"));
                 yield return _session.actions.PointerTap("detail-inventory-button");
                 yield return Wait(.2f);
+                _output.Check(StageInterfaceOutput.IsVisible(root.Q("inventory-panel")),
+                    "Actual Equipment tap opens the inventory screen");
                 yield return _session.Capture("08-equipment");
                 yield return _session.actions.PointerTap("inventory-close-button");
                 yield return Wait(.2f);

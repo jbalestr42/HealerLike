@@ -9,6 +9,7 @@ public sealed class ToolkitHudGlyph : VisualElement
     {
         _kind = kind; pickingMode = PickingMode.Ignore;
         style.width = style.height = 22; style.alignSelf = Align.Center;
+        style.scale = new Scale(new Vector3(.8f, .8f, 1));
         generateVisualContent += Draw;
     }
     public static void Attach(VisualElement root)
@@ -18,7 +19,10 @@ public sealed class ToolkitHudGlyph : VisualElement
             Button button = root.Q<Button>(kind + "-button");
             if (button == null) continue;
             button.text = "";
-            button.Add(new ToolkitHudGlyph(kind));
+            var surface = new VisualElement { pickingMode = PickingMode.Ignore };
+            surface.AddToClassList("hud-icon-surface");
+            surface.Add(new ToolkitHudGlyph(kind));
+            button.Add(surface);
         }
     }
     void Draw(MeshGenerationContext context)

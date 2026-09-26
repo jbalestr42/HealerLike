@@ -50,7 +50,7 @@ namespace HealerLike.Render.Stage
             Observe("world-or-ui-release");
             _s.output.Check(ReferenceEquals(targeting, _s.interaction.GetInteraction()) && character.mana.Value == before,
                 "Held world-creature release consumes press without casting targeted spell");
-            yield return _s.actions.PointerTap("detail-close-button");
+            yield return new StageCompactReview(_s).OutsideDismiss("11b-world-outside-dismissal");
             Vector2 unrelated = StageInterfaceActions.ScreenPoint(_s.actions.root.Q("currency-label"));
             using (var touch = new StagePresentationTouch(_s.actions))
             {
@@ -90,6 +90,7 @@ namespace HealerLike.Render.Stage
             yield return _gestures.Hold(spell, "14b-shortage-inspection", false);
             _s.output.Check(character.mana.Value == shortage && _s.interaction.GetInteraction() == null,
                 "Unavailable spell stays inspectable without activation");
+            yield return new StageCompactReview(_s).ControllerInspect(spell);
             yield return Wait(ToolkitSpellState.Read(slot, character).duration + .1f);
             _s.output.Check(ToolkitSpellState.Read(slot, character).remaining == 0,
                 "Existing cooldown recovers and clears the dark remaining sector");

@@ -18,6 +18,22 @@ namespace HealerLike.Render.Creatures
             Object.DestroyImmediate(_host);
         }
 
+        [Test]
+        public void OwnedPortraitCameraClearsTransparentWithoutPostProcessing()
+        {
+            using (var renderer = new CreaturePortraitRenderer(null, null))
+            {
+                TestHelpers.InvokePrivate(renderer, "InitCamera");
+                var field = typeof(CreaturePortraitRenderer).GetField("_camera",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                var camera = (Camera)field.GetValue(renderer);
+                Assert.That(camera.backgroundColor, Is.EqualTo(Color.clear));
+                Assert.That(camera.clearFlags, Is.EqualTo(CameraClearFlags.SolidColor));
+                Assert.That(camera.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>()
+                    .renderPostProcessing, Is.False);
+            }
+        }
+
         [TestCase(4f, 1f, 2f)]
         [TestCase(1f, 6f, 1f)]
         [TestCase(0.1f, 0.1f, 0.1f)]

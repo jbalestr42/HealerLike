@@ -8,6 +8,7 @@ namespace HealerLike.Render.Stage
     [AddComponentMenu("")]
     public class StageCaptureInput : BaseInput
     {
+        public string navigationButton;
         public Touch[] samples = System.Array.Empty<Touch>();
         public int samplesRead { get; private set; }
         public override bool touchSupported { get { return true; } }
@@ -18,7 +19,7 @@ namespace HealerLike.Render.Stage
             return samples[index];
         }
         public override bool mousePresent { get { return false; } }
-        public override bool GetButtonDown(string buttonName) { return false; }
+        public override bool GetButtonDown(string buttonName) { return buttonName == navigationButton; }
         public override float GetAxisRaw(string axisName) { return 0f; }
     }
 }

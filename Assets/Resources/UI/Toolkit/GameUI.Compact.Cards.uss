@@ -24,14 +24,14 @@
 #hud-root.compact-hud .compact-row .data-card__title {
     font-size: 12px; height: 34px; padding: 0; margin: 0; width: 100%;
     -unity-text-align: upper-center; color: rgb(248, 247, 223); white-space: normal;
-    -unity-font-style: bold; -unity-text-outline-width: 0.4px;
+    -unity-font-style: bold; -unity-text-outline-width: 0; text-shadow: 0 1px 1px rgba(15, 42, 37, 0.9);
     -unity-text-outline-color: rgb(15, 42, 37);
 }
 #hud-root.compact-hud .party-list .data-card__title { height: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #hud-root.compact-hud .compact-row .spell-cost {
     position: absolute; right: -3px; bottom: -3px; font-size: 12px;
     color: rgb(248, 247, 223); -unity-font-style: bold;
-    -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(15, 42, 37);
+    -unity-text-outline-width: 0; text-shadow: 0 1px 1px rgba(15, 42, 37, 0.9); -unity-text-outline-color: rgb(15, 42, 37);
 }
 #hud-root.compact-hud .compact-row .mana-shortage .data-card__icon { opacity: 0.4; }
 #hud-root.compact-hud .compact-row .mana-shortage .spell-cost { color: rgb(255, 192, 134); }
