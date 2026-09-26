@@ -17,6 +17,7 @@ namespace HealerLike.Render.Stage
         StageGameViewSize _size;
         ToolkitGameUI _attachedUi;
         Func<Rect> _safeArea;
+        ThemeStyleSheet _hostTheme;
         public RenderManager manager
         {
             get
@@ -62,6 +63,11 @@ namespace HealerLike.Render.Stage
             _safeArea = _attachedUi.safeAreaProvider;
             if (_selectedTheme != null)
             {
+                var serialized = new UnityEditor.SerializedObject(_attachedUi);
+                var themeProperty = serialized.FindProperty("_theme");
+                _hostTheme = (ThemeStyleSheet)themeProperty.objectReferenceValue;
+                themeProperty.objectReferenceValue = _selectedTheme;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
                 UIDocument document = _attachedUi.GetComponent<UIDocument>();
                 _theme = new StageCaptureTheme(document.panelSettings, document.rootVisualElement, _selectedTheme);
             }
@@ -119,6 +125,12 @@ namespace HealerLike.Render.Stage
             if (_attachedUi != null)
             {
                 _attachedUi.safeAreaProvider = _safeArea;
+                if (_selectedTheme != null)
+                {
+                    var serialized = new UnityEditor.SerializedObject(_attachedUi);
+                    serialized.FindProperty("_theme").objectReferenceValue = _hostTheme;
+                    serialized.ApplyModifiedPropertiesWithoutUndo();
+                }
             }
 
             _attachedUi = null;

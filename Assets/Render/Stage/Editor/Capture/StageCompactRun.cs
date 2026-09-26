@@ -20,6 +20,7 @@ namespace HealerLike.Render.Stage
         protected override IEnumerator Run()
         {
             bool passed = false;
+            using var errors = new StageCaptureErrors();
             try
             {
                 ThemeStyleSheet theme = StageCaptureTheme.TakeSelection();
@@ -121,6 +122,7 @@ namespace HealerLike.Render.Stage
                 yield return _session.actions.PointerTap("resume-button");
                 yield return _session.Resize(1080, 1920);
                 yield return new StageInterfaceNavigation(_session).Navigation();
+                _output.Check(errors.count == 0, "Native runtime errors: " + errors.count + "\n" + string.Join("\n", errors.messages));
                 passed = true;
             }
             finally { _session?.Dispose(); _output.Write(passed); StagePlay.Finish(this, passed); }
