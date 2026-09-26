@@ -265,6 +265,7 @@ namespace HealerLike.Render.Creatures
                     bodyRadius = 0.3f,
                     headRadius = 0.15f,
                     castPoint = point,
+                    castSources = new[] { point },
                 };
                 return true;
             }

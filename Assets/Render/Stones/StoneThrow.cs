@@ -83,6 +83,12 @@ namespace HealerLike.Render.Stones
             }
 
             _builder.SyncGeometry();
+            Transform source = rig.SourceTransform();
+            if (source != null)
+            {
+                return source;
+            }
+
             IReadOnlyList<Transform> partTransforms = rig.partTransforms;
             Transform best = null;
             bool isBestHead = false;

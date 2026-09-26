@@ -254,6 +254,11 @@ namespace HealerLike.Render.Creatures
             return _assembly.TryGetAnchors(_cellSize, out anchors);
         }
 
+        public Transform SourceTransform()
+        {
+            return _assembly.SourceTransform();
+        }
+
         public void SetVisible(bool visible)
         {
             if (root)

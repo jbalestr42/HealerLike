@@ -13,5 +13,7 @@ namespace HealerLike.Render
         public float headRadius;
         // Where a cast leaves the unit: a character's cast bud, a creature's top head
         public Vector3 castPoint;
+        // All authored outlets, in recipe order. castPoint is the first stable outlet for legacy consumers.
+        public Vector3[] castSources;
     }
 }

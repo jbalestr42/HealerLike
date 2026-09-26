@@ -39,7 +39,7 @@ namespace HealerLike.Render.Creatures
             out EffectAnchors anchors
         )
         {
-            anchors = new EffectAnchors();
+            anchors = new EffectAnchors { castSources = System.Array.Empty<Vector3>() };
             if (!root || renderers == null || renderers.Count == 0)
             {
                 return false;
@@ -63,7 +63,7 @@ namespace HealerLike.Render.Creatures
             }
 
             Vector3 neck = neckLocal;
-            if (neck == Vector3.zero && sourceLocal.Length > 0)
+            if (neck == Vector3.zero && sourceLocal != null && sourceLocal.Length > 0)
             {
                 foreach (Vector3 source in sourceLocal)
                 {
@@ -78,19 +78,38 @@ namespace HealerLike.Render.Creatures
             anchors.bodyCentre = bodyBounds.center;
             anchors.bodyRadius = Mathf.Max(bodyBounds.extents.x, bodyBounds.extents.z);
             anchors.neck = firstPivot.TransformPoint((neck - parts[0].localPosition) * cellSize);
+            List<Vector3> sources = new List<Vector3>();
+            for (int i = 0; i < renderers.Count && i < parts.Length; i++)
+            {
+                if (!parts[i].isSource)
+                {
+                    continue;
+                }
+
+                Bounds local = renderers[i].localBounds;
+                // Resolve in the part's own frame, so rotation and facing do not become world-axis guesses.
+                sources.Add(renderers[i].transform.TransformPoint(local.max));
+            }
+
+            if (sources.Count == 0 && head >= 0)
+            {
+                Bounds local = renderers[head].localBounds;
+                sources.Add(renderers[head].transform.TransformPoint(local.max));
+            }
+
+            anchors.castSources = sources.ToArray();
             if (head < 0)
             {
                 anchors.headCentre = anchors.neck;
                 anchors.headRadius = 0f;
-                anchors.castPoint = anchors.neck;
+                anchors.castPoint = sources.Count > 0 ? sources[0] : anchors.neck;
                 return true;
             }
 
             Bounds headBounds = renderers[head].bounds;
             anchors.headCentre = headBounds.center;
             anchors.headRadius = Mathf.Max(headBounds.extents.x, Mathf.Max(headBounds.extents.y, headBounds.extents.z));
-            // The tip of the top head
-            anchors.castPoint = headBounds.center + Vector3.up * headBounds.extents.y;
+            anchors.castPoint = sources.Count > 0 ? sources[0] : headBounds.center + Vector3.up * headBounds.extents.y;
             return true;
         }
     }

@@ -106,6 +106,7 @@ namespace HealerLike.Render.Creatures
                     glow = glow,
                     role = role,
                     variant = variant,
+                    isSource = role == PartRole.Tip || role == PartRole.Crown,
                 }
             );
             _positions.Add(pivot);

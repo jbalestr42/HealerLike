@@ -194,6 +194,17 @@ namespace HealerLike.Render.Creatures
             );
         }
 
+        public Transform SourceTransform()
+        {
+            if (data == null) return null;
+            for (int i = 0; i < data.parts.Length && i < _keptParts.Count; i++)
+            {
+                if (data.parts[i].isSource && _keptParts[i].pivot.gameObject.activeInHierarchy)
+                    return _keptParts[i].pivot;
+            }
+            return null;
+        }
+
         public void Dispose()
         {
             _roots.Clear();

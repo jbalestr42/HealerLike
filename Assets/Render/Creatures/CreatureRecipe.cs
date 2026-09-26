@@ -53,5 +53,9 @@ namespace HealerLike.Render.Creatures
 
         // A stone mesh's second submesh, its ochre faces, draws in this colour
         public Color stoneOchre = Color.white;
+
+        // Migration marker for saved authored recipes. Editor tooling may populate part outlets without
+        // rewriting the accepted geometry or the legacy arm sockets.
+        public int sourceMetadataVersion;
     }
 }

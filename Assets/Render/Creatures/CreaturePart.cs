@@ -19,5 +19,7 @@ namespace HealerLike.Render.Creatures
         public float glow;
         public PartRole role;
         public int variant;
+        // Explicit outlet metadata. False preserves legacy recipes, which use the measured head fallback.
+        public bool isSource;
     }
 }

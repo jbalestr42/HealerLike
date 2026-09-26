@@ -31,7 +31,17 @@ namespace HealerLike.Render.Spells
             return RenderMath.IsPositive(anchors.bodyRadius) && float.IsFinite(anchors.headRadius)
                 && anchors.headRadius >= 0f && RenderMath.IsFinite(anchors.bodyCentre)
                 && RenderMath.IsFinite(anchors.headCentre) && RenderMath.IsFinite(anchors.foot)
-                && RenderMath.IsFinite(anchors.neck) && RenderMath.IsFinite(anchors.castPoint);
+                && RenderMath.IsFinite(anchors.neck) && RenderMath.IsFinite(anchors.castPoint)
+                && anchors.castSources != null && AllFinite(anchors.castSources);
+        }
+
+        static bool AllFinite(Vector3[] points)
+        {
+            for (int i = 0; i < points.Length; i++)
+            {
+                if (!RenderMath.IsFinite(points[i])) return false;
+            }
+            return true;
         }
 
         static EffectAnchors Fallback(GameObject target)
@@ -53,6 +63,7 @@ namespace HealerLike.Render.Spells
             anchors.headCentre = centre + Vector3.up * (1.5f * radius);
             anchors.headRadius = 0.5f * radius;
             anchors.castPoint = anchors.headCentre;
+            anchors.castSources = new[] { anchors.castPoint };
             return anchors;
         }
     }
