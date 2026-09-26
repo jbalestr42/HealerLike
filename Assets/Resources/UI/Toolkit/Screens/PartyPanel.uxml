@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Template name="SectionHeading" src="../Controls/SectionHeading.uxml" />
+    <ui:Instance template="SectionHeading" class="drawer-header">
+        <ui:AttributeOverrides element-name="section-label" text="YOUR PARTY" />
+        <ui:Button name="party-close-button" text="Close" class="button mobile-only" />
+    </ui:Instance>
+    <ui:Label text="Choose a creature to deploy" class="muted section-description" />
+    <ui:ScrollView name="party-list" class="party-list" horizontal-scroller-visibility="Hidden" />
+</ui:UXML>

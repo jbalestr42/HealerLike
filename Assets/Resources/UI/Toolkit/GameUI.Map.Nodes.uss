@@ -1,0 +1,169 @@
+.map-node
+{
+    position: absolute;
+    width: var(--ui-room-preview-width);
+    height: var(--ui-room-preview-height);
+    margin: 0;
+    padding: var(--ui-space-xs) var(--ui-space-xxs);
+    border-radius: var(--ui-radius-map);
+    border-width: var(--ui-border-width);
+    border-color: var(--ui-room-border);
+    background-color: var(--ui-room-fill);
+    color: var(--ui-room-ink);
+    align-items: center;
+    justify-content: center;
+}
+
+.map-node__glyph
+{
+    width: var(--ui-map-glyph-size);
+    height: var(--ui-map-glyph-size);
+    margin-bottom: var(--ui-glyph-gap);
+    flex-shrink: 0;
+}
+
+.map-node__label
+{
+    font-size: var(--ui-text-small);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    margin: 0;
+    padding: 0;
+}
+
+.map-node__state
+{
+    font-size: var(--ui-text-micro);
+    letter-spacing: var(--ui-tracking-map-state);
+    margin-top: var(--ui-space-xxs);
+    color: var(--ui-muted);
+}
+
+.map-node.room-elite .map-node__glyph
+{
+    color: var(--ui-room-elite);
+}
+
+.map-node.room-treasure .map-node__glyph
+{
+    color: var(--ui-gold);
+}
+
+.map-node.room-rest .map-node__glyph
+{
+    color: var(--ui-accent);
+}
+
+.map-node.room-boss .map-node__glyph
+{
+    color: var(--ui-room-boss);
+}
+
+.map-node:disabled
+{
+    opacity: 1;
+}
+
+.map-node.is-available
+{
+    background-color: var(--ui-room-available-fill);
+    border-color: var(--ui-accent);
+    border-width: var(--ui-focus-border-width);
+    color: var(--ui-room-available-ink);
+}
+
+.map-node.is-available .map-node__state
+{
+    color: var(--ui-accent);
+}
+
+.map-node.is-available:hover
+{
+    background-color: var(--ui-room-available-hover);
+}
+
+.map-node.is-available:focus
+{
+    border-color: var(--ui-room-focus);
+}
+
+.map-node.is-current
+{
+    background-color: var(--ui-room-current-fill);
+    border-color: var(--ui-gold);
+    border-width: var(--ui-focus-border-width);
+    color: var(--ui-room-current-ink);
+}
+
+.map-node.is-current .map-node__state
+{
+    color: var(--ui-gold);
+}
+
+.map-node.is-visited
+{
+    border-color: var(--ui-room-visited-border);
+    color: var(--ui-room-visited-ink);
+    background-color: var(--ui-room-visited-fill);
+}
+
+.map-node.is-locked .map-node__glyph
+{
+    opacity: 0.65;
+}
+
+.is-mobile .map-dialog
+{
+    width: 100%;
+    padding: var(--ui-space-lg);
+}
+
+.is-mobile .map-header .dialog-title
+{
+    font-size: var(--ui-text-brand);
+    margin-top: var(--ui-space-xs);
+}
+
+.is-mobile .map-description
+{
+    font-size: var(--ui-text-small);
+    margin-bottom: var(--ui-compact-gap);
+}
+
+.is-mobile .map-footer
+{
+    padding-top: var(--ui-space-md);
+}
+
+.is-mobile .map-key
+{
+    margin-right: var(--ui-map-mobile-key-gap);
+    font-size: var(--ui-text-micro);
+}
+
+.is-mobile.is-landscape .map-dialog
+{
+    padding: var(--ui-space-md) var(--ui-space-lg);
+}
+
+.is-mobile.is-landscape .map-header .dialog-title
+{
+    font-size: var(--ui-text-landscape-title);
+    margin: 0;
+}
+
+.is-mobile.is-landscape .map-header .eyebrow
+{
+    display: none;
+}
+
+.is-mobile.is-landscape .map-description
+{
+    font-size: var(--ui-text-caption);
+    margin-bottom: var(--ui-mobile-currency-gap);
+}
+
+.is-mobile.is-landscape .map-footer
+{
+    padding-top: var(--ui-space-xs);
+}

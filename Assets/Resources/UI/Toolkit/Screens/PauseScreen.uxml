@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Template name="DialogFrame" src="../Controls/DialogFrame.uxml" />
+    <ui:Instance template="DialogFrame" class="dialog dialog--compact surface">
+        <ui:Label text="TAKE A BREATH" class="eyebrow" />
+        <ui:Label text="Paused" class="dialog-title" />
+        <ui:Label text="Your party will be here when you return." class="muted dialog-description" />
+        <ui:VisualElement name="pause-settings" class="pause-settings" />
+        <ui:Button name="resume-button" text="Resume encounter" class="button button--primary" />
+        <ui:Button name="menu-button" text="Return to menu" class="button button--quiet menu-button" />
+    </ui:Instance>
+</ui:UXML>

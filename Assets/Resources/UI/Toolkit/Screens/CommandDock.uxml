@@ -1,0 +1,24 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="spell-section" class="spell-section">
+        <ui:VisualElement class="section-toolbar">
+            <ui:Label text="SPELLBOOK" class="eyebrow" />
+            <ui:ProgressBar name="mana-bar" title="Mana" value="100" class="mana-bar" />
+        </ui:VisualElement>
+        <ui:ScrollView name="spell-list" mode="Horizontal" class="spell-list" vertical-scroller-visibility="Hidden" horizontal-scroller-visibility="Hidden" />
+    </ui:VisualElement>
+    <ui:VisualElement name="command-section" class="command-section">
+        <ui:Label name="status-label" text="Prepare, deploy, protect." class="status-label muted" />
+        <ui:VisualElement name="encounter-actions" class="encounter-actions">
+            <ui:Button name="start-button" text="Begin journey" class="button button--primary is-hidden" />
+            <ui:Button name="wave-button" text="Begin encounter" class="button button--primary" />
+            <ui:Button name="cancel-button" text="Cancel" class="button is-hidden" />
+        </ui:VisualElement>
+        <ui:VisualElement name="speed-controls" class="speed-controls">
+            <ui:Label text="SPEED" class="eyebrow" />
+            <ui:Button name="speed-slow-button" text="½×" class="button button--small" />
+            <ui:Button name="speed-normal-button" text="1×" class="button button--small" />
+            <ui:Button name="speed-fast-button" text="2×" class="button button--small" />
+        </ui:VisualElement>
+        <ui:Toggle name="mark-entity-toggle" label="Show creature markers" class="marker-toggle" />
+    </ui:VisualElement>
+</ui:UXML>

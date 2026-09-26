@@ -1,0 +1,52 @@
+:root,
+.toolkit-theme,
+.game-ui
+{
+    --ui-ink: rgb(164, 184, 235);
+    --ui-muted: rgb(121, 136, 173);
+    --ui-accent: rgb(153, 218, 210);
+    --ui-gold: rgb(196, 135, 233);
+    --ui-panel: rgba(16, 20, 30, 0.97);
+    --ui-card: rgb(29, 33, 45);
+    --ui-border: rgb(62, 69, 88);
+    --ui-primary-hover: rgb(166, 186, 237);
+    --ui-control-hover: rgb(44, 50, 65);
+    --ui-control-active: rgb(59, 66, 84);
+    --ui-primary-ink: rgb(23, 27, 39);
+    --ui-quiet-fill: rgba(0, 0, 0, 0);
+    --ui-card-hover: rgb(39, 44, 58);
+    --ui-icon-fill: rgb(12, 16, 26);
+    --ui-scrim: rgba(5, 7, 15, 0.78);
+    --ui-mana-track: rgb(14, 20, 36);
+    --ui-mana-fill: rgb(74, 99, 165);
+    --ui-meter-ink: rgb(174, 194, 248);
+    --ui-health-fill: rgb(115, 133, 178);
+    --ui-panel-solid: rgb(16, 20, 30);
+    --ui-map-fill: rgb(12, 16, 25);
+    --ui-map-border: rgb(38, 44, 58);
+    --ui-map-visited-key: rgb(74, 84, 108);
+    --ui-room-border: rgb(50, 56, 72);
+    --ui-room-fill: rgb(23, 27, 37);
+    --ui-room-ink: rgb(122, 136, 174);
+    --ui-room-elite: rgb(136, 160, 220);
+    --ui-room-boss: rgb(153, 171, 218);
+    --ui-room-available-fill: rgb(45, 51, 68);
+    --ui-room-available-ink: rgb(169, 189, 241);
+    --ui-room-available-hover: rgb(57, 66, 88);
+    --ui-room-focus: white;
+    --ui-room-current-fill: rgb(35, 42, 61);
+    --ui-room-current-ink: rgb(172, 193, 246);
+    --ui-room-visited-border: rgb(69, 81, 113);
+    --ui-room-visited-ink: rgb(122, 137, 175);
+    --ui-room-visited-fill: rgb(26, 29, 37);
+    --ui-preview-background: rgb(20, 24, 33);
+    --map-path-travelled: rgb(167, 99, 209);
+    --map-path-reachable: rgb(157, 224, 216);
+    --map-path-locked: rgb(56, 64, 84);
+    --ui-radius-surface: 3px;
+    --ui-radius-card: 2px;
+    --ui-radius-control: 2px;
+    --ui-radius-map: 3px;
+    --ui-text-heading: 19px;
+    --ui-tracking-eyebrow: 2.4px;
+}

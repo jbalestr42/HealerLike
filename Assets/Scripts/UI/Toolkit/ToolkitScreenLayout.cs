@@ -34,8 +34,14 @@ public class ToolkitScreenLayout
 
     public static Rect GetViewport(Rect worldRect, Rect panelRect)
     {
-        if (panelRect.width <= 0f || panelRect.height <= 0f || worldRect.width <= 0f || worldRect.height <= 0f
-            || float.IsNaN(worldRect.width) || float.IsNaN(worldRect.height))
+        if (
+            panelRect.width <= 0f
+            || panelRect.height <= 0f
+            || worldRect.width <= 0f
+            || worldRect.height <= 0f
+            || float.IsNaN(worldRect.width)
+            || float.IsNaN(worldRect.height)
+        )
         {
             return new Rect(0.04f, 0.24f, 0.92f, 0.64f);
         }

@@ -1,0 +1,93 @@
+.game-ui.is-menu .command-dock
+{
+    align-items: flex-end;
+    min-height: var(--ui-menu-dock-height);
+}
+
+.is-menu .command-section
+{
+    width: var(--ui-menu-actions-width);
+    margin-left: 0;
+}
+
+.command-dock
+{
+    flex-direction: row;
+    min-height: var(--ui-dock-min-height);
+    max-height: var(--ui-dock-max-height);
+    flex-shrink: 0;
+    padding: var(--ui-space-xl);
+}
+
+.spell-section
+{
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.section-toolbar
+{
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--ui-compact-gap);
+}
+
+.mana-bar
+{
+    width: var(--ui-mana-width);
+    height: var(--ui-meter-height);
+}
+
+.command-section
+{
+    width: var(--ui-command-width);
+    margin-left: var(--ui-panel-inline-padding);
+    justify-content: center;
+}
+
+.status-label
+{
+    white-space: normal;
+    margin-bottom: var(--ui-space-md);
+}
+
+.speed-controls
+{
+    flex-direction: row;
+    align-items: center;
+    margin-top: var(--ui-space-md);
+}
+
+.speed-controls .eyebrow
+{
+    flex-grow: 1;
+}
+
+.marker-toggle
+{
+    margin-top: var(--ui-space-md);
+}
+
+.is-compact .command-section
+{
+    width: var(--ui-sidebar-compact-width);
+    margin-left: var(--ui-space-lg);
+}
+
+.encounter-actions
+{
+    flex-direction: row;
+}
+
+.encounter-actions > .button
+{
+    flex-grow: 1;
+    margin-left: 0;
+}
+
+.encounter-actions > #cancel-button
+{
+    margin-left: var(--ui-space-sm);
+}

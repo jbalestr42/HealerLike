@@ -2,61 +2,52 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 // One data card of a ToolkitGameView list, reused while the list refreshes
-public class ToolkitCard
+public class ToolkitCard : System.IDisposable
 {
     ToolkitGameView _view;
     Button _button;
     Button _info;
     VisualElement _root;
+    public VisualElement root
+    {
+        get { return _root; }
+    }
 
-    public VisualElement root { get { return _root; } }
     VisualElement _icon;
     Label _title;
     Label _description;
     Label _status;
     object _iconSource;
-
     ToolkitCardModel _model;
-    public ToolkitCardModel model { get { return _model; } }
+    public ToolkitCardModel model
+    {
+        get { return _model; }
+    }
 
-    public Button button { get { return _button; } }
+    public Button button
+    {
+        get { return _button; }
+    }
 
     public void Init(ToolkitGameView view, VisualTreeAsset cardTemplate)
     {
+        Dispose();
+        if (
+            !ToolkitTemplates.TryClone(cardTemplate, "card-shell", out _root)
+            || !ToolkitTemplates.Require(_root, "data-card", out _button)
+            || !ToolkitTemplates.Require(_root, "card-info", out _info)
+            || !ToolkitTemplates.Require(_root, "card-icon", out _icon)
+            || !ToolkitTemplates.Require(_root, "card-title", out _title)
+            || !ToolkitTemplates.Require(_root, "card-description", out _description)
+            || !ToolkitTemplates.Require(_root, "card-status", out _status)
+        )
+        {
+            Dispose();
+            return;
+        }
+
         _view = view;
-        TemplateContainer template = null;
-        if (cardTemplate != null)
-        {
-            template = cardTemplate.CloneTree();
-        }
-
-        _button = Find<Button>(template, "data-card");
-        _icon = Find<VisualElement>(template, "card-icon");
-        _title = Find<Label>(template, "card-title");
-        _description = Find<Label>(template, "card-description");
-        _status = Find<Label>(template, "card-status");
-        _button.AddToClassList("data-card");
-        _icon.AddToClassList("data-card__icon");
-        _title.AddToClassList("data-card__title");
-        _description.AddToClassList("data-card__description");
-        _status.AddToClassList("data-card__status");
-        if (template == null)
-        {
-            _button.Add(_icon);
-            _button.Add(_title);
-            _button.Add(_description);
-            _button.Add(_status);
-        }
-
-        _root = new VisualElement();
-        _root.AddToClassList("card-shell");
-        _root.Add(_button);
-        _info = new Button(OnInfoClicked);
-        _info.name = "card-info";
-        _info.text = "Info";
-        _info.AddToClassList("button");
-        _info.AddToClassList("card-info");
-        _root.Add(_info);
+        _info.clicked += OnInfoClicked;
         _button.clicked += OnClicked;
         _button.RegisterCallback<PointerEnterEvent>(OnPointerEnter);
         _button.RegisterCallback<FocusInEvent>(OnFocusIn);
@@ -87,35 +78,56 @@ public class ToolkitCard
 
     public void RefreshIcon()
     {
+        if (_view == null || _model == null)
+        {
+            return;
+        }
+
         _icon.style.backgroundImage = new StyleBackground(_view.GetIcon(_iconSource, out bool isPortrait));
         _icon.EnableInClassList("creature-portrait", isPortrait);
         _button.EnableInClassList("creature-card", isPortrait);
     }
 
-    // A missing template or template element falls back to a plain element
-    static ElementType Find<ElementType>(TemplateContainer template, string name)
-                                        where ElementType : VisualElement, new()
+    public void Dispose()
     {
-        ElementType element = null;
-        if (template != null)
+        if (_button != null)
         {
-            element = template.Q<ElementType>(name);
+            _button.clicked -= OnClicked;
+            _button.UnregisterCallback<PointerEnterEvent>(OnPointerEnter);
+            _button.UnregisterCallback<FocusInEvent>(OnFocusIn);
+            _button.UnregisterCallback<PointerLeaveEvent>(OnPointerLeave);
+            _button.UnregisterCallback<FocusOutEvent>(OnFocusOut);
         }
 
-        if (element == null)
+        if (_info != null)
         {
-            element = new ElementType();
+            _info.clicked -= OnInfoClicked;
         }
 
-        return element;
+        if (_root != null)
+        {
+            _root.RemoveFromHierarchy();
+        }
+
+        _root = null;
+        _button = null;
+        _info = null;
+        _view = null;
+        _model = null;
+        _iconSource = null;
     }
 
     void OnClicked()
     {
-        if (_model.isEnabled && _model.activate != null)
+        if (_model != null && _model.isEnabled && _model.activate != null)
         {
-            _model.activate.Invoke(_model);
-            _view.OnCardActivated.Invoke(_model);
+            ToolkitCardModel activated = _model;
+            ToolkitGameView view = _view;
+            activated.activate.Invoke(activated);
+            if (_view == view && _model == activated)
+            {
+                view.OnCardActivated.Invoke(activated);
+            }
         }
     }
 

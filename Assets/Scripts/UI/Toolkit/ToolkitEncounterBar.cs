@@ -53,7 +53,11 @@ public class ToolkitEncounterBar
         }
         else
         {
-            _view.SetButton("wave-button", "Start battle", isAvailable && isPreparing && hud.nextWaveButton.interactable);
+            _view.SetButton(
+                "wave-button",
+                "Start battle",
+                isAvailable && isPreparing && hud.nextWaveButton.interactable
+            );
         }
 
         _view.SetButton("inventory-button", null, !isStart && isPreparing && !hasOverlay);
@@ -85,7 +89,8 @@ public class ToolkitEncounterBar
         }
 
         RunState run = _context.ascension.run;
-        return run == null || run.currentNode == null ? "Choose your route"
+        return run == null || run.currentNode == null
+            ? "Choose your route"
             : $"Room {run.currentFloor + 1} · {MapView.GetNodeLabel(run.currentNode.type)}";
     }
 
@@ -94,11 +99,20 @@ public class ToolkitEncounterBar
         if (isStart)
         {
             return _context.ascension != null && _context.ascension.run != null && _context.ascension.run.isOnBoss
-                ? "SUMMIT REACHED" : "READY";
+                ? "SUMMIT REACHED"
+                : "READY";
         }
 
-        if (_context.IsCurrentView(ViewType.Map)) return "EXPEDITION MAP";
-        if (_context.IsCurrentView(ViewType.Upgrade)) return "CHOOSE A REWARD";
+        if (_context.IsCurrentView(ViewType.Map))
+        {
+            return "EXPEDITION MAP";
+        }
+
+        if (_context.IsCurrentView(ViewType.Upgrade))
+        {
+            return "CHOOSE A REWARD";
+        }
+
         return isPreparing ? "PREPARATION" : "IN BATTLE";
     }
 
@@ -121,7 +135,8 @@ public class ToolkitEncounterBar
 
         if (isPreparing)
         {
-            return _view.isTouchLayout ? "Open Party to deploy your allies."
+            return _view.isTouchLayout
+                ? "Open Party to deploy your allies."
                 : "Deploy your party, distribute equipment, then start the battle.";
         }
 

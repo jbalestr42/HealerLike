@@ -36,16 +36,12 @@ public class ToolkitTimeControlsTests
     public void SetSpeed_WhilePaused_StaysPausedAndResumesAtSelectedSpeed()
     {
         _controls.TogglePause();
-
         _controls.SetSpeed(2f);
-
         Assert.IsTrue(_context.isPaused);
         Assert.AreEqual(0f, Time.timeScale);
         Assert.IsTrue(_view.root.Q("speed-fast-button").ClassListContains("is-selected"));
         Assert.IsFalse(_view.root.Q("speed-normal-button").ClassListContains("is-selected"));
-
         _controls.TogglePause();
-
         Assert.IsFalse(_context.isPaused);
         Assert.AreEqual(2f, Time.timeScale);
     }
@@ -54,7 +50,6 @@ public class ToolkitTimeControlsTests
     public void SetSpeed_WhileRunning_ChangesSpeedImmediately()
     {
         _controls.SetSpeed(0.5f);
-
         Assert.IsFalse(_context.isPaused);
         Assert.AreEqual(0.5f, Time.timeScale);
     }
@@ -64,9 +59,7 @@ public class ToolkitTimeControlsTests
     {
         _controls.TogglePause();
         _controls.SetSpeed(2f);
-
         _controls.ResetSpeed();
-
         Assert.IsFalse(_context.isPaused);
         Assert.AreEqual(1f, Time.timeScale);
         Assert.IsTrue(_view.root.Q("speed-normal-button").ClassListContains("is-selected"));

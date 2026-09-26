@@ -4,41 +4,46 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 // The inspection panel: the hovered card, or the selected ally with its stats and target priority
-public class ToolkitDetailPanel
+public class ToolkitDetailPanel : IDisposable
 {
     ToolkitGameContext _context;
     ToolkitGameView _view;
     DropdownField _targeting;
     bool _hadSelectedEntity = false;
     GameObject _lastWorldSelection;
-
     VisualElement _actionsHost;
-    public VisualElement actionsHost { get { return _actionsHost; } }
+    public VisualElement actionsHost
+    {
+        get { return _actionsHost; }
+    }
 
     public void Init(ToolkitGameContext context, ToolkitGameView view)
     {
+        Dispose();
         _context = context;
         _view = view;
         _actionsHost = view.root.Q("detail-actions");
-        if (_actionsHost == null)
-        {
-            VisualElement description = view.root.Q("detail-description");
-            if (description != null)
-            {
-                _actionsHost = description.parent;
-            }
-        }
-
-        if (_actionsHost == null)
+        if (!ToolkitTemplates.Require(view.root, "detail-targeting", out _targeting))
         {
             return;
         }
 
-        List<string> targetTypes = new List<string>(Enum.GetNames(typeof(TargetBehaviourType)));
-        _targeting = new DropdownField("Target priority", targetTypes, 0);
-        _targeting.AddToClassList("detail-targeting");
+        _targeting.choices = new List<string>(Enum.GetNames(typeof(TargetBehaviourType)));
+        _targeting.SetValueWithoutNotify(_targeting.choices[0]);
         _targeting.RegisterValueChangedCallback(OnTargetingChanged);
-        _actionsHost.Add(_targeting);
+    }
+
+    public void Dispose()
+    {
+        if (_targeting != null)
+        {
+            _targeting.UnregisterValueChangedCallback(OnTargetingChanged);
+        }
+
+        _targeting = null;
+        _actionsHost = null;
+        _lastWorldSelection = null;
+        _hadSelectedEntity = false;
     }
 
     public void Refresh()

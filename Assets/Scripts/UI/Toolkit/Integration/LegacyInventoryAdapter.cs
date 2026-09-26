@@ -11,8 +11,7 @@ public static class LegacyInventoryAdapter
             return;
         }
 
-        SlotInventory[] inventories = Object.FindObjectsByType<SlotInventory>(FindObjectsInactive.Include,
-            FindObjectsSortMode.None);
+        SlotInventory[] inventories = Object.FindObjectsByType<SlotInventory>(FindObjectsInactive.Include);
         foreach (SlotInventory inventory in inventories)
         {
             if (inventory.inventoryHandler == owner)

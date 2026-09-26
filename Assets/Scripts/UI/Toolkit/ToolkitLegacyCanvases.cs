@@ -17,7 +17,7 @@ public class ToolkitLegacyCanvases
         }
         else
         {
-            foreach (MainMenu menu in Object.FindObjectsByType<MainMenu>(FindObjectsSortMode.None))
+            foreach (MainMenu menu in Object.FindObjectsByType<MainMenu>())
             {
                 HideScreenCanvases(menu.gameObject);
             }
@@ -29,7 +29,7 @@ public class ToolkitLegacyCanvases
         }
 
         // Some scenes keep the menu controller beneath its screen Canvas
-        foreach (MainMenu menu in Object.FindObjectsByType<MainMenu>(FindObjectsSortMode.None))
+        foreach (MainMenu menu in Object.FindObjectsByType<MainMenu>())
         {
             Canvas canvas = menu.GetComponentInParent<Canvas>();
             if (canvas != null && !_canvases.ContainsKey(canvas))

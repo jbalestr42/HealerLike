@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
+using UnityEditor;
+using UnityEditor.SceneManagement;
 
 namespace UI.Toolkit
 {
@@ -17,7 +18,6 @@ public class ToolkitGameUITests
     // The demo data can have more spells than shortcut bindings, depending on the random character.
     // This known legacy message is allowed while the run starts, any other error still fails the test
     static readonly string knownError = "Not Enough inputs";
-
     List<string> _errors = new List<string>();
 
     [SetUp]
@@ -53,7 +53,9 @@ public class ToolkitGameUITests
         AscensionGameType ascension = Object.FindAnyObjectByType<AscensionGameType>();
         Assert.AreEqual(AscensionGameType.State.SelectRoom, LegacyUiReader.AscensionState(ascension));
         MapNode first = ascension.run.GetAvailableNodes()[0];
-        Button room = gameUI.GetComponent<UIDocument>().rootVisualElement.Q<Button>($"map-node-{first.floor}-{first.column}");
+        Button room = gameUI
+            .GetComponent<UIDocument>()
+            .rootVisualElement.Q<Button>($"map-node-{first.floor}-{first.column}");
         Assert.IsNotNull(room);
         room.Focus();
         yield return null;
@@ -104,8 +106,10 @@ public class ToolkitGameUITests
         Vector2 panelCorner = RuntimePanelUtils.ScreenToPanel(root.panel, new Vector2(Screen.width, Screen.height));
         Vector2 panelSize = panelCorner - panelOrigin;
         PointerEventData pointer = new PointerEventData(EventSystem.current);
-        pointer.position = new Vector2((point.x - panelOrigin.x) / panelSize.x * Screen.width,
-            Screen.height - (point.y - panelOrigin.y) / panelSize.y * Screen.height);
+        pointer.position = new Vector2(
+            (point.x - panelOrigin.x) / panelSize.x * Screen.width,
+            Screen.height - (point.y - panelOrigin.y) / panelSize.y * Screen.height
+        );
         pointer.pointerId = -1;
         List<RaycastResult> results = new List<RaycastResult>();
         EventSystem.current.RaycastAll(pointer, results);
@@ -130,12 +134,10 @@ public class ToolkitGameUITests
         Assert.IsNotNull(menu);
         VisualElement root = menu.GetComponent<UIDocument>().rootVisualElement;
         Assert.IsFalse(root.Q("menu-panel").ClassListContains("is-hidden"));
-
         root.Q<Button>("start-button").Focus();
         yield return null;
         Submit(root.Q<Button>("start-button"));
         yield return WaitFrames(10);
-
         Assert.AreEqual(ToolkitSceneNavigation.GameplayScene, SceneManager.GetActiveScene().name);
         Assert.IsNotNull(Object.FindAnyObjectByType<ToolkitGameUI>());
         yield return new ExitPlayMode();
@@ -154,14 +156,16 @@ public class ToolkitGameUITests
         Assert.IsNotNull(start);
         Assert.IsNotNull(start.panel, "The runtime document must attach to a panel.");
         Assert.IsTrue(start.enabledInHierarchy);
-
         yield return StartRun(start);
-
         Assert.IsNotNull(EventSystem.current);
-        Assert.IsTrue(HasToolkitHit(root, root.Q("inventory-button").worldBound.center),
-            "The EventSystem raycast must recognize Toolkit controls for the unchanged InteractionManager.");
-        Assert.IsFalse(HasToolkitHit(root, root.Q("world-space").worldBound.center),
-            "The empty battlefield area must let world interactions through.");
+        Assert.IsTrue(
+            HasToolkitHit(root, root.Q("inventory-button").worldBound.center),
+            "The EventSystem raycast must recognize Toolkit controls for the unchanged InteractionManager."
+        );
+        Assert.IsFalse(
+            HasToolkitHit(root, root.Q("world-space").worldBound.center),
+            "The empty battlefield area must let world interactions through."
+        );
         GameManager gameManager = Object.FindAnyObjectByType<GameManager>();
         Assert.AreEqual(GameManager.GameState.Running, LegacyUiReader.GameState(gameManager));
         Assert.Greater(root.Q("party-list").Query<Button>().ToList().Count, 0);
@@ -182,19 +186,60 @@ public class ToolkitGameUITests
         Canvas legacyCanvas = FindScreenCanvas();
         Assert.IsNotNull(legacyCanvas);
         Assert.IsFalse(legacyCanvas.enabled);
-
         gameUI.enabled = false;
         yield return null;
-
         Assert.IsTrue(legacyCanvas.enabled, "Detaching the Toolkit must restore the legacy rendering.");
         Assert.AreEqual(0, gameUI.GetComponent<UIDocument>().rootVisualElement.childCount);
-
         gameUI.enabled = true;
         yield return new WaitForSecondsRealtime(0.15f);
-
         VisualElement root = gameUI.GetComponent<UIDocument>().rootVisualElement;
         Assert.IsFalse(legacyCanvas.enabled);
         Assert.Greater(root.Q("spell-list").Query<Button>().ToList().Count, 0);
+        yield return new ExitPlayMode();
+    }
+
+    [UnityTest]
+    public IEnumerator Init_FirstLayoutInvalid_ReenableAfterRepairBuildsInterface()
+    {
+        EditorSceneManager.OpenScene(ToolkitSceneNavigation.MenuPath);
+        yield return new EnterPlayMode();
+        yield return WaitFrames(5);
+        ToolkitGameUI original = Object.FindAnyObjectByType<ToolkitGameUI>();
+        original.enabled = false;
+        GameObject host = new GameObject("Template recovery test");
+        host.SetActive(false);
+        ToolkitGameUI gameUI = host.AddComponent<ToolkitGameUI>();
+        try
+        {
+            using (SerializedObject serialized = new SerializedObject(gameUI))
+            {
+                serialized.FindProperty("_layout").objectReferenceValue = Resources.Load<VisualTreeAsset>(
+                    "UI/Toolkit/DataCard"
+                );
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            LogAssert.Expect(LogType.Error, "[ToolkitTemplates] Required Button 'cancel-button' is missing.");
+            host.SetActive(true);
+            yield return WaitFrames(3);
+            Assert.IsFalse(gameUI.enabled);
+            Assert.AreEqual(0, host.GetComponent<UIDocument>().rootVisualElement.childCount);
+            using (SerializedObject serialized = new SerializedObject(gameUI))
+            {
+                serialized.FindProperty("_layout").objectReferenceValue = null;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            gameUI.enabled = true;
+            yield return WaitFrames(3);
+            Assert.IsTrue(gameUI.enabled);
+            Assert.IsTrue(ToolkitLayoutContract.Validate(host.GetComponent<UIDocument>().rootVisualElement));
+        }
+        finally
+        {
+            Object.Destroy(host);
+        }
+
         yield return new ExitPlayMode();
     }
 }

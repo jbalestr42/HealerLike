@@ -39,7 +39,6 @@ public class ToolkitGameViewTests
     public void SetCards_TwoModels_AddsTwoCards()
     {
         _view.SetCards("cards", new ToolkitCardModel[] { CreateModel("Heal"), CreateModel("Guard") });
-
         Assert.AreEqual(2, _list.childCount);
     }
 
@@ -48,9 +47,7 @@ public class ToolkitGameViewTests
     {
         _view.SetCards("cards", new ToolkitCardModel[] { CreateModel("Heal"), CreateModel("Guard") });
         VisualElement first = _list[0];
-
         _view.SetCards("cards", new ToolkitCardModel[] { CreateModel("New spell", isEnabled: false) });
-
         Assert.AreEqual(1, _list.childCount);
         Assert.AreSame(first, _list[0]);
         Assert.IsFalse(first.Q<Button>("data-card").enabledSelf);
@@ -61,7 +58,6 @@ public class ToolkitGameViewTests
     public void SetCards_NoIconSource_ShowsFallbackIcon()
     {
         _view.SetCards("cards", new ToolkitCardModel[] { CreateModel("Unknown data") });
-
         Assert.IsNotNull(_list[0].Q(className: "data-card__icon").style.backgroundImage.value.texture);
     }
 
@@ -71,11 +67,9 @@ public class ToolkitGameViewTests
         VisualElement panel = new VisualElement();
         panel.name = "inventory-panel";
         _root.Add(panel);
-
         _view.Show("inventory-panel", false);
         bool wasHidden = panel.ClassListContains("is-hidden");
         _view.Show("inventory-panel", true);
-
         Assert.IsTrue(wasHidden);
         Assert.IsFalse(panel.ClassListContains("is-hidden"));
     }
@@ -86,9 +80,7 @@ public class ToolkitGameViewTests
         ProgressBar bar = new ProgressBar();
         bar.name = "mana-bar";
         _root.Add(bar);
-
         _view.SetResource("mana-bar", 30f, 60f);
-
         Assert.AreEqual(50f, bar.value);
         Assert.AreEqual("30 / 60", bar.title);
     }
@@ -104,9 +96,7 @@ public class ToolkitGameViewTests
         _root.Add(description);
         ToolkitCardModel model = CreateModel("Guard");
         model.description = "Protects an ally";
-
         _view.ShowDetail(model);
-
         Assert.AreEqual("Guard", title.text);
         Assert.AreEqual("Protects an ally", description.text);
     }
@@ -116,9 +106,7 @@ public class ToolkitGameViewTests
     {
         VisualTreeAsset layout = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI");
         VisualTreeAsset card = Resources.Load<VisualTreeAsset>("UI/Toolkit/DataCard");
-
         TemplateContainer cardTree = card.CloneTree();
-
         Assert.IsNotNull(layout);
         Assert.IsNotNull(cardTree.Q<Button>("data-card"));
         Assert.IsNotNull(cardTree.Q("card-icon"));

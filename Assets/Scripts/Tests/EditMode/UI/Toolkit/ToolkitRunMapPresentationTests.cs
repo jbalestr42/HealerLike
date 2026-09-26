@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace UI.Toolkit
 {
+
 public class ToolkitRunMapPresentationTests
 {
     internal static RunState CreateRun()
@@ -13,10 +14,22 @@ public class ToolkitRunMapPresentationTests
         MapNode rest = new MapNode(1, 1, MapNodeType.Rest);
         MapNode treasure = new MapNode(1, 2, MapNodeType.Treasure);
         MapNode boss = new MapNode(2, 1, MapNodeType.Boss);
-        left.Connect(rest); right.Connect(rest); right.Connect(treasure);
-        rest.Connect(boss); treasure.Connect(boss);
-        return new RunState(new RunMap(new List<List<MapNode>>
-            { new List<MapNode> { left, right }, new List<MapNode> { rest, treasure } }, boss, 3));
+        left.Connect(rest);
+        right.Connect(rest);
+        right.Connect(treasure);
+        rest.Connect(boss);
+        treasure.Connect(boss);
+        return new RunState(
+            new RunMap(
+                new List<List<MapNode>>
+                {
+                    new List<MapNode> { left, right },
+                    new List<MapNode> { rest, treasure },
+                },
+                boss,
+                3
+            )
+        );
     }
 
     [TestCase(288f)]
@@ -29,10 +42,14 @@ public class ToolkitRunMapPresentationTests
         float width = ToolkitRunMapPresentation.NodeWidth(map, size.x);
         Assert.GreaterOrEqual(width, 45f);
         Assert.GreaterOrEqual(ToolkitRunMapPresentation.NodeHeight, 45f);
-        Assert.Greater(ToolkitRunMapPresentation.NodeCenter(map.startNodes[1], map, size.x).x,
-            ToolkitRunMapPresentation.NodeCenter(map.startNodes[0], map, size.x).x + width);
-        Assert.Less(ToolkitRunMapPresentation.NodeCenter(map.boss, map, size.x).y,
-            ToolkitRunMapPresentation.NodeCenter(map.startNodes[0], map, size.x).y);
+        Assert.Greater(
+            ToolkitRunMapPresentation.NodeCenter(map.startNodes[1], map, size.x).x,
+            ToolkitRunMapPresentation.NodeCenter(map.startNodes[0], map, size.x).x + width
+        );
+        Assert.Less(
+            ToolkitRunMapPresentation.NodeCenter(map.boss, map, size.x).y,
+            ToolkitRunMapPresentation.NodeCenter(map.startNodes[0], map, size.x).y
+        );
         Assert.AreEqual(size.x * 0.5f, ToolkitRunMapPresentation.NodeCenter(map.boss, map, size.x).x);
     }
 

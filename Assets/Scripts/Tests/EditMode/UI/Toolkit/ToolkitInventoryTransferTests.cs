@@ -11,10 +11,20 @@ public class ToolkitInventoryTransferTests
     {
         public int equipCount = 0;
         public int unequipCount = 0;
+        public override string title
+        {
+            get { return "Equipment"; }
+        }
 
-        public override string title { get { return "Equipment"; } }
-        public override Sprite icon { get { return null; } }
-        public override List<GameplayTag> tags { get { return new List<GameplayTag>(); } }
+        public override Sprite icon
+        {
+            get { return null; }
+        }
+
+        public override List<GameplayTag> tags
+        {
+            get { return new List<GameplayTag>(); }
+        }
 
         public override void Equip(GameObject target)
         {
@@ -72,9 +82,7 @@ public class ToolkitInventoryTransferTests
         InventoryHandler inventory = new InventoryHandler();
         inventory.AddItem(new FakeItem(), 0, false);
         inventory.AddItem(new FakeItem(), 2, false);
-
         int slot = ToolkitInventoryTransfer.FirstEmptySlot(inventory);
-
         Assert.AreEqual(1, slot);
     }
 
@@ -84,9 +92,7 @@ public class ToolkitInventoryTransferTests
         InventoryHandler inventory = new InventoryHandler();
         inventory.AddItem(new FakeItem(), 0, false);
         inventory.AddItem(new FakeItem(), 2, false);
-
         List<int> slots = ToolkitInventoryTransfer.EmptySlots(inventory);
-
         CollectionAssert.AreEqual(new int[] { 1 }, slots);
     }
 
@@ -96,7 +102,6 @@ public class ToolkitInventoryTransferTests
         InventoryHandler inventory = new InventoryHandler();
         FakeItem item = new FakeItem();
         inventory.AddItem(item, 0, false);
-
         Assert.IsTrue(ToolkitInventoryTransfer.Contains(inventory, item));
         Assert.IsFalse(ToolkitInventoryTransfer.Contains(inventory, new FakeItem()));
     }
@@ -106,7 +111,6 @@ public class ToolkitInventoryTransferTests
     {
         InventoryHandler inventory = new InventoryHandler();
         inventory.AddItem(new FakeItem(), 1, false);
-
         Assert.IsTrue(ToolkitInventoryTransfer.IsOccupied(inventory, 1));
         Assert.IsFalse(ToolkitInventoryTransfer.IsOccupied(inventory, 0));
     }
@@ -120,9 +124,7 @@ public class ToolkitInventoryTransferTests
         source.AddItem(item, 0, false);
         source.OnItemRemoved.AddListener(OnItemRemoved);
         destination.OnItemAdded.AddListener(OnItemAdded);
-
         bool isMoved = ToolkitInventoryTransfer.Transfer(item, source, destination, 2);
-
         Assert.IsTrue(isMoved);
         Assert.IsEmpty(source.items);
         Assert.AreEqual(2, destination.items[0].inventoryIndex);
@@ -139,9 +141,7 @@ public class ToolkitInventoryTransferTests
         FakeItem item = new FakeItem();
         source.AddItem(item, 0, false);
         destination.AddItem(new FakeItem(), 0, false);
-
         bool isMoved = ToolkitInventoryTransfer.Transfer(item, source, destination, 0);
-
         Assert.IsFalse(isMoved);
         Assert.AreEqual(1, source.items.Count);
     }
@@ -152,9 +152,7 @@ public class ToolkitInventoryTransferTests
         InventoryHandler source = new InventoryHandler();
         FakeItem item = new FakeItem();
         source.AddItem(item, 0, false);
-
         bool isMoved = ToolkitInventoryTransfer.Transfer(item, source, new InventoryHandler(), -1);
-
         Assert.IsFalse(isMoved);
         Assert.AreEqual(1, source.items.Count);
     }
@@ -167,9 +165,7 @@ public class ToolkitInventoryTransferTests
         InventoryHandler stash = new InventoryHandler();
         FakeItem item = new FakeItem();
         stash.AddItem(item, 0, false);
-
         bool isMoved = ToolkitInventoryTransfer.Transfer(item, stash, _entity.inventoryHandler, slot);
-
         Assert.IsTrue(isMoved);
         Assert.AreEqual(expectedStacks, item.equipCount);
         Assert.AreEqual(0, item.unequipCount);
@@ -184,9 +180,7 @@ public class ToolkitInventoryTransferTests
         FakeItem item = new FakeItem();
         stash.AddItem(item, 0, false);
         ToolkitInventoryTransfer.Transfer(item, stash, _entity.inventoryHandler, slot);
-
         bool isMoved = ToolkitInventoryTransfer.Transfer(item, _entity.inventoryHandler, stash, 0);
-
         Assert.IsTrue(isMoved);
         Assert.AreEqual(expectedStacks, item.unequipCount);
         Assert.AreEqual(0, item.equipCount - item.unequipCount);
@@ -200,10 +194,8 @@ public class ToolkitInventoryTransferTests
         InventoryHandler inventory = new InventoryHandler();
         FakeItem item = new FakeItem();
         inventory.AddItem(item, 1, false);
-
         ToolkitInventoryTransfer.Transfer(item, inventory, stash, 0);
         ToolkitInventoryTransfer.Transfer(item, stash, inventory, 0);
-
         Assert.IsEmpty(stash.items);
         Assert.AreEqual(1, inventory.items.Count);
     }

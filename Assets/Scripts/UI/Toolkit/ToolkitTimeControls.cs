@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 // Pause and game speed buttons, through Time.timeScale
-public class ToolkitTimeControls
+public class ToolkitTimeControls : System.IDisposable
 {
     ToolkitGameUI _gameUI;
     ToolkitGameContext _context;
@@ -11,6 +11,7 @@ public class ToolkitTimeControls
 
     public void Init(ToolkitGameUI gameUI, ToolkitGameContext context, ToolkitGameView view)
     {
+        Dispose();
         _gameUI = gameUI;
         _context = context;
         _view = view;
@@ -20,6 +21,23 @@ public class ToolkitTimeControls
         view.AddClickListener("speed-normal-button", OnNormalClicked);
         view.AddClickListener("speed-fast-button", OnFastClicked);
         RefreshSpeedChoice();
+    }
+
+    public void Dispose()
+    {
+        Resume();
+        if (_view != null)
+        {
+            _view.RemoveClickListener("pause-button", TogglePause);
+            _view.RemoveClickListener("resume-button", TogglePause);
+            _view.RemoveClickListener("speed-slow-button", OnSlowClicked);
+            _view.RemoveClickListener("speed-normal-button", OnNormalClicked);
+            _view.RemoveClickListener("speed-fast-button", OnFastClicked);
+        }
+
+        _view = null;
+        _context = null;
+        _gameUI = null;
     }
 
     public void TogglePause()
@@ -46,7 +64,7 @@ public class ToolkitTimeControls
     // Leaving the interface resumes the game at the speed it had
     public void Resume()
     {
-        if (_context.isPaused)
+        if (_context != null && _context.isPaused)
         {
             Time.timeScale = _previousSpeed;
             _context.isPaused = false;

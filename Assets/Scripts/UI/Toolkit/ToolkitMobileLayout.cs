@@ -3,24 +3,19 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 // Drawers cover the board temporarily, keeping the camera's usable field stable.
-public class ToolkitMobileLayout
+public class ToolkitMobileLayout : IDisposable
 {
     ToolkitGameView _view;
     ToolkitGameContext _context;
-    UIDocument _document;
+    ToolkitSafeArea _safeArea;
     VisualElement _hud;
-    VisualElement _speed;
-    VisualElement _markers;
     bool _isMobile;
     bool _layoutApplied;
     bool _partyOpen;
     bool _detailOpen;
     bool _hadInteraction;
-    Vector2Int _screen;
-    Rect _safeArea;
     Action _toggleFocus;
     bool _focused;
-
     public Rect normalizedWorldViewport
     {
         get
@@ -36,12 +31,11 @@ public class ToolkitMobileLayout
 
     public void Init(ToolkitGameView view, ToolkitGameContext context, UIDocument document)
     {
+        Dispose();
         _view = view;
         _context = context;
-        _document = document;
+        _safeArea = new ToolkitSafeArea(view.root, document);
         _hud = view.root.Q("hud-root");
-        _speed = view.root.Q("speed-controls");
-        _markers = view.root.Q("mark-entity-toggle");
         view.AddClickListener("party-button", ToggleParty);
         view.AddClickListener("detail-button", ToggleDetail);
         view.AddClickListener("party-close-button", OnCloseDrawers);
@@ -53,57 +47,46 @@ public class ToolkitMobileLayout
         view.root.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
         view.root.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
         _layoutApplied = false;
-        _screen = Vector2Int.zero;
         Update();
         RefreshFocus();
     }
 
     public static PanelSettings CreatePanelSettings(PanelSettings source)
     {
-        PanelSettings settings = source != null ? UnityEngine.Object.Instantiate(source)
-            : ScriptableObject.CreateInstance<PanelSettings>();
-        settings.name = "Toolkit runtime panel";
-        settings.themeStyleSheet = Resources.Load<ThemeStyleSheet>("UI/Toolkit/RuntimeTheme");
-        settings.scaleMode = PanelScaleMode.ConstantPixelSize;
-        return settings;
+        return ToolkitTheme.CreatePanelSettings(source, null);
     }
 
     public void Update(Func<Rect> safeAreaProvider = null)
     {
-        Vector2Int screen = new Vector2Int(Screen.width, Screen.height);
-        Rect safeArea = Screen.safeArea;
-        if (safeAreaProvider != null)
+        Vector2 size = _safeArea.Update(safeAreaProvider);
+        Resize(size.x, size.y);
+    }
+
+    public void Dispose()
+    {
+        if (_view != null)
         {
-            Rect normalized = safeAreaProvider.Invoke();
-            safeArea = new Rect(normalized.x * screen.x, normalized.y * screen.y,
-                normalized.width * screen.x, normalized.height * screen.y);
+            _view.RemoveClickListener("party-button", ToggleParty);
+            _view.RemoveClickListener("detail-button", ToggleDetail);
+            _view.RemoveClickListener("party-close-button", OnCloseDrawers);
+            _view.RemoveClickListener("detail-close-button", OnCloseDrawers);
+            _view.RemoveClickListener("cancel-button", CancelInteraction);
+            _view.RemoveClickListener("focus-button", ToggleFocus);
+            _view.OnInspectRequested.RemoveListener(Inspect);
+            _view.OnCardActivated.RemoveListener(OnCardActivated);
+            _view.root.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
         }
 
-        if (_screen == screen && _safeArea == safeArea)
+        if (_safeArea != null)
         {
-            return;
+            _safeArea.Dispose();
+            _safeArea = null;
         }
 
-        _screen = screen;
-        _safeArea = safeArea;
-        float scale = ToolkitScreenLayout.GetScale(screen.x, screen.y, Application.isMobilePlatform);
-        _document.panelSettings.scale = scale;
-        Rect safe = ToolkitScreenLayout.GetSafePanelRect(screen.x, screen.y, _safeArea, scale);
-        float right = screen.x / scale - safe.xMax;
-        float bottom = screen.y / scale - safe.yMax;
-        _hud.style.paddingLeft = safe.xMin + 8f;
-        _hud.style.paddingTop = safe.yMin + 8f;
-        _hud.style.paddingRight = right + 8f;
-        _hud.style.paddingBottom = bottom + 8f;
-        foreach (VisualElement modal in _view.root.Query(className: "modal-layer").ToList())
-        {
-            modal.style.left = safe.xMin + 8f;
-            modal.style.top = safe.yMin + 8f;
-            modal.style.right = right + 8f;
-            modal.style.bottom = bottom + 8f;
-        }
-
-        Resize(screen.x / scale, screen.y / scale);
+        _view = null;
+        _hud = null;
+        _partyOpen = false;
+        _detailOpen = false;
     }
 
     public void Refresh()
@@ -118,8 +101,11 @@ public class ToolkitMobileLayout
         _hadInteraction = interacting;
         _view.Show("cancel-button", interacting && !blocked);
         _view.Show("field-toolbar", !_context.isMenu);
-        _view.SetButton("pause-button", null, !_context.isMenu
-            && (_context.ui == null || _context.IsCurrentView(ViewType.Game)));
+        _view.SetButton(
+            "pause-button",
+            null,
+            !_context.isMenu && (_context.ui == null || _context.IsCurrentView(ViewType.Game))
+        );
         _view.SetButton("party-button", null, !blocked);
         _view.SetButton("detail-button", null, !blocked);
         _view.SetButton("focus-button", null, !blocked);
@@ -158,11 +144,7 @@ public class ToolkitMobileLayout
 
     public void Resize(float width, float height)
     {
-        bool mobile = width < 760f || height < 500f;
-        _hud.EnableInClassList("is-compact", width < 1100f);
-        _hud.EnableInClassList("is-mobile", mobile);
-        _hud.EnableInClassList("is-landscape", width > height);
-        _view.isTouchLayout = mobile;
+        bool mobile = ToolkitResponsiveLayout.Apply(_view, width, height);
         if (_layoutApplied && _isMobile == mobile)
         {
             return;
@@ -170,10 +152,6 @@ public class ToolkitMobileLayout
 
         _layoutApplied = true;
         _isMobile = mobile;
-        VisualElement controls = _view.root.Q(mobile ? "pause-settings" : "command-section");
-        controls.Add(_speed);
-        controls.Add(_markers);
-        _view.SetButton("inventory-button", mobile ? "Bag" : "Inventory", true);
         CloseDrawers();
     }
 
@@ -245,7 +223,9 @@ public class ToolkitMobileLayout
 
     bool IsBlocked()
     {
-        return _context.isMenu || _context.isPaused || _context.isInventoryOpen
+        return _context.isMenu
+            || _context.isPaused
+            || _context.isInventoryOpen
             || (_context.ui != null && !_context.IsCurrentView(ViewType.Game));
     }
 

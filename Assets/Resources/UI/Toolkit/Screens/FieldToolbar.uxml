@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Button name="map-button" text="Map" class="button is-hidden" />
+    <ui:Button name="party-button" text="Party" class="button mobile-only" />
+    <ui:Button name="detail-button" text="Details" class="button mobile-only" />
+    <ui:VisualElement class="toolbar-space" picking-mode="Ignore" />
+    <ui:Button name="focus-button" text="Focus battle" class="button is-hidden" />
+</ui:UXML>

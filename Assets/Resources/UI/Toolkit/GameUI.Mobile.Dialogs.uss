@@ -1,0 +1,138 @@
+.is-mobile .modal-layer
+{
+    padding: 0;
+}
+
+.is-mobile .dialog
+{
+    padding: var(--ui-space-xl);
+    max-height: 100%;
+    min-height: 0;
+}
+
+.is-mobile .dialog--wide
+{
+    width: 100%;
+    height: 100%;
+}
+
+.is-mobile .dialog--compact
+{
+    width: 100%;
+}
+
+.is-mobile .dialog-title
+{
+    font-size: var(--ui-text-mobile-title);
+    margin-bottom: var(--ui-space-md);
+}
+
+.is-mobile .dialog-description
+{
+    margin-bottom: var(--ui-space-lg);
+    font-size: var(--ui-text-control);
+}
+
+.is-mobile .collection-list
+{
+    min-height: 0;
+    flex-shrink: 1;
+}
+
+.is-mobile #inventory-list
+{
+    min-height: var(--ui-inventory-mobile-min-height);
+    flex-shrink: 0;
+}
+
+.is-mobile .collection-list .unity-scroll-view__content-container
+{
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+
+.is-mobile .inventory-action-row
+{
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.is-mobile .inventory-target,
+.is-mobile .inventory-slot
+{
+    width: auto;
+    margin: 0 0 var(--ui-space-md) 0;
+}
+
+.is-mobile .inventory-actions
+{
+    margin-bottom: var(--ui-space-lg);
+}
+
+.is-mobile .inventory-action-row > .button
+{
+    margin-left: 0;
+}
+
+.is-mobile .unity-base-popup-field__input
+{
+    min-height: var(--ui-touch-target);
+}
+
+.is-mobile .detail-targeting
+{
+    min-height: var(--ui-targeting-mobile-height);
+}
+
+.is-mobile .action-button
+{
+    min-height: var(--ui-touch-target);
+    font-size: var(--ui-text-control);
+}
+
+.is-mobile .menu-panel
+{
+    width: 100%;
+    max-width: 100%;
+    margin-top: var(--ui-space-lg);
+    padding: var(--ui-panel-inline-padding);
+}
+
+.is-mobile .menu-title
+{
+    font-size: var(--ui-text-mobile-display);
+}
+
+.is-mobile .menu-description
+{
+    font-size: var(--ui-text-mobile-body);
+}
+
+.menu-button
+{
+    margin-top: var(--ui-space-md);
+}
+
+.unity-base-dropdown__item
+{
+    min-height: var(--ui-touch-target);
+}
+
+.unity-base-dropdown__label
+{
+    min-height: var(--ui-touch-target);
+    -unity-text-align: middle-left;
+}
+
+.is-mobile .party-panel,
+.is-mobile .detail-panel,
+.is-mobile .dialog
+{
+    background-color: var(--ui-panel-solid);
+}
+
+.is-mobile .unity-base-popup-field__arrow
+{
+    -unity-background-image-tint-color: var(--ui-accent);
+    opacity: 1;
+}
