@@ -69,6 +69,13 @@ namespace HealerLike.Render.Stage
             StagePlay.Enter("grassbattle", 240f);
         }
 
+        // Frame to frame flicker of the grass on the board and in the environment, with the suspects switched off
+        [MenuItem("Tools/Render/Grass Jitter")]
+        public static void GrassJitter()
+        {
+            StagePlay.Enter("grassjitter", 240f);
+        }
+
         [MenuItem("Tools/Render/Smoke Three Rounds")]
         public static void Smoke()
         {

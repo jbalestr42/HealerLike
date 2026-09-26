@@ -36,6 +36,7 @@ namespace HealerLike.Render.Stage
         StageCreaturePlacement _placement;
         public StageCreaturePlacement placement { get { return _placement; } }
         EnvironmentRoot _environment;
+        public EnvironmentRoot environment { get { return _environment; } }
         SpawnDressing _spawns = new SpawnDressing();
         int _deliveryToken;
         bool _isLandscape = false;
