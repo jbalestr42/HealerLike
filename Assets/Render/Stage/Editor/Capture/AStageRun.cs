@@ -21,6 +21,9 @@ namespace HealerLike.Render.Stage
 
         readonly Stack<IEnumerator> _steps = new Stack<IEnumerator>();
         bool _hasFailed;
+        bool _isStepping;
+        bool _isStopping;
+        bool _stopRequested;
         public bool hasFailed { get { return _hasFailed; } }
 
         public void Begin()
@@ -30,54 +33,113 @@ namespace HealerLike.Render.Stage
 
         public void Begin(IEnumerator steps)
         {
-            StopObserving();
+            if (_isStepping || _isStopping)
+            {
+                Debug.LogError("[AStageRun] Begin must be called outside a running step or cleanup.");
+                return;
+            }
+
+            Stop();
             _hasFailed = false;
-            _steps.Clear();
             _steps.Push(steps);
         }
 
         // Runs until the next yield, a yielded enumerator runs first
         public void Step()
         {
-            if (_hasFailed)
+            if (_hasFailed || _isStepping)
             {
                 return;
             }
+
+            _isStepping = true;
+            System.Exception failure = null;
             try
             {
                 while (_steps.Count > 0)
                 {
                     IEnumerator step = _steps.Peek();
-                    if (!step.MoveNext())
+                    bool hasNext = step.MoveNext();
+                    if (_stopRequested)
+                    {
+                        return;
+                    }
+
+                    if (!hasNext)
                     {
                         _steps.Pop();
                         continue;
                     }
+
                     if (step.Current is IEnumerator inner)
                     {
                         _steps.Push(inner);
                         continue;
                     }
+
                     return;
                 }
             }
             catch (System.Exception error)
             {
                 _hasFailed = true;
-                // Dispose every parent iterator too, so a failed child cannot resume into a passing result.
+                _stopRequested = true;
+                failure = error;
+            }
+            finally
+            {
+                _isStepping = false;
+                if (_stopRequested)
+                {
+                    Stop();
+                }
+            }
+
+            if (failure != null)
+            {
+                OnFailed(failure);
+            }
+        }
+
+        // Stop can be requested by Finish inside MoveNext; cleanup waits until that call returns.
+        public void Stop()
+        {
+            if (_isStopping)
+            {
+                return;
+            }
+
+            _stopRequested = true;
+            if (_isStepping)
+            {
+                return;
+            }
+
+            _isStopping = true;
+            try
+            {
                 while (_steps.Count > 0)
                 {
                     System.IDisposable step = _steps.Pop() as System.IDisposable;
                     try
                     {
-                        step?.Dispose();
+                        if (step != null)
+                        {
+                            step.Dispose();
+                        }
                     }
                     catch (System.Exception cleanupError)
                     {
                         Debug.LogException(cleanupError);
                     }
                 }
-                OnFailed(error);
+
+                StopObserving();
+            }
+            finally
+            {
+                _stopRequested = false;
+                _isStopping = false;
             }
         }
 
@@ -123,6 +185,7 @@ namespace HealerLike.Render.Stage
                     { ui = Object.FindAnyObjectByType<ToolkitGameUI>() };
                 yield return StageMapActions.SelectFirst(actions, false);
             }
+
             yield return Run();
         }
 
@@ -160,6 +223,7 @@ namespace HealerLike.Render.Stage
                     resource.OnAllConsumerProcessed.RemoveListener(OnProcessed);
                 }
             }
+
             _observed.Clear();
         }
 

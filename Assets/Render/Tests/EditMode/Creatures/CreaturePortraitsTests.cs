@@ -7,7 +7,7 @@ namespace HealerLike.Render.Creatures
 {
     public class CreaturePortraitsTests
     {
-        sealed class FakeCapture : ICreaturePortraitCapture
+        class FakeCapture : ICreaturePortraitCapture
         {
             public int calls;
             public int releases;
@@ -15,16 +15,23 @@ namespace HealerLike.Render.Creatures
             public Texture2D Capture(EntityData data, Entity.EntityType side)
             {
                 calls++;
-                if (fail) throw new InvalidOperationException("no target");
+                if (fail)
+                {
+                    throw new InvalidOperationException("no target");
+                }
+
                 return new Texture2D(2, 2);
             }
-            public void Dispose() { releases++; }
+
+            public void Dispose()
+            {
+                releases++;
+            }
         }
 
         FakeCapture _capture;
         CreaturePortraits _portraits;
         EntityData _data;
-
         [SetUp]
         public void SetUp()
         {
@@ -58,7 +65,11 @@ namespace HealerLike.Render.Creatures
             Texture2D after = null;
             _portraits.Changed += () =>
             {
-                if (_portraits.isDisposed) return;
+                if (_portraits.isDisposed)
+                {
+                    return;
+                }
+
                 Assert.IsFalse(before);
                 after = _portraits.GetCreatureIcon(_data, Entity.EntityType.Player);
             };
@@ -79,6 +90,24 @@ namespace HealerLike.Render.Creatures
             Assert.IsNull(_portraits.GetCreatureIcon(_data, Entity.EntityType.Player));
             Assert.AreEqual(1, _capture.releases);
             Assert.AreEqual(1, _capture.calls);
+            Assert.AreEqual(0, _portraits.cachedCount);
+        }
+
+        [Test]
+        public void Dispose_ThrowingListener_StillReleasesImagesAndCannotRunAgain()
+        {
+            Texture2D image = _portraits.GetCreatureIcon(_data, Entity.EntityType.Player);
+            int calls = 0;
+            _portraits.Changed += () =>
+            {
+                calls++;
+                throw new InvalidOperationException("subscriber failed");
+            };
+            Assert.Throws<InvalidOperationException>(() => _portraits.Dispose());
+            Assert.DoesNotThrow(() => _portraits.Dispose());
+            Assert.IsFalse(image);
+            Assert.AreEqual(1, calls);
+            Assert.AreEqual(1, _capture.releases);
             Assert.AreEqual(0, _portraits.cachedCount);
         }
 

@@ -24,59 +24,60 @@ namespace HealerLike.Render.Studio.Editor
 
         public void Draw(Rect rect)
         {
-            StudioStyles styles = _window.styles;
-            CreatureGrammarMode grammar = _window.grammar;
-            CreatureGrammarPreset selected = grammar.selected;
-            EditorGUI.DrawRect(rect, StudioStyles.Panel);
-            GUILayout.BeginArea(new Rect(rect.x + 12f, rect.y + 12f, rect.width - 24f, rect.height - 24f));
-            GUILayout.Label("GRAMMAR CREATOR", styles.section);
-            if (selected == null)
+            using (StudioLabelWidthScope width = new StudioLabelWidthScope(112f))
             {
-                GUILayout.Label("Choose a grammar preset.");
-                GUILayout.EndArea();
-                return;
-            }
-
-            string state = "Local channel draft · Undo supported";
-            if (AssetDatabase.Contains(selected))
-            {
-                state = "Saved channel preset · Undo supported";
-            }
-
-            GUILayout.Label(state, styles.small);
-            _scroll = EditorGUILayout.BeginScrollView(_scroll);
-            grammar.serialized.Update();
-            EditorGUIUtility.labelWidth = 112f;
-            DrawChannels(styles, grammar);
-            DrawOutput(styles, grammar);
-            CreatureOverridePane.Draw(_window, styles);
-            GUILayout.Space(14f);
-            using (new EditorGUI.DisabledScope(grammar.output == null))
-            {
-                if (GUILayout.Button("Bake grammar output to editable recipe", GUILayout.Height(30f)))
+                StudioStyles styles = _window.styles;
+                CreatureGrammarMode grammar = _window.grammar;
+                CreatureGrammarPreset selected = grammar.selected;
+                EditorGUI.DrawRect(rect, StudioStyles.Panel);
+                GUILayout.BeginArea(new Rect(rect.x + 12f, rect.y + 12f, rect.width - 24f, rect.height - 24f));
+                GUILayout.Label("GRAMMAR CREATOR", styles.section);
+                if (selected == null)
                 {
-                    _window.BakeGrammar();
+                    GUILayout.Label("Choose a grammar preset.");
+                    GUILayout.EndArea();
+                    return;
+                }
+
+                string state = "Local channel draft · Undo supported";
+                if (AssetDatabase.Contains(selected))
+                {
+                    state = "Saved channel preset · Undo supported";
+                }
+
+                GUILayout.Label(state, styles.small);
+                _scroll = EditorGUILayout.BeginScrollView(_scroll);
+                grammar.serialized.Update();
+                DrawChannels(styles, grammar);
+                DrawOutput(styles, grammar);
+                CreatureOverridePane.Draw(_window, styles);
+                GUILayout.Space(14f);
+                using (new EditorGUI.DisabledScope(grammar.output == null))
+                {
+                    if (GUILayout.Button("Bake grammar output to editable recipe", GUILayout.Height(30f)))
+                    {
+                        _window.BakeGrammar();
+                        EndMutation();
+                    }
+                }
+
+                GUILayout.Label("Baking copies the generated grammar output, even while auditioning a game override. "
+                    + "It creates an independent Parts draft.", styles.small);
+                GUILayout.Space(8f);
+                if (GUILayout.Button("Duplicate grammar preset"))
+                {
+                    _window.SelectGrammar(grammar.drafts.Duplicate(selected));
                     EndMutation();
                 }
-            }
 
-            GUILayout.Label("Baking copies the generated grammar output, even while auditioning a game override. "
-                + "It creates an independent Parts draft.", styles.small);
-            GUILayout.Space(8f);
-            if (GUILayout.Button("Duplicate grammar preset"))
-            {
-                _window.SelectGrammar(grammar.drafts.Duplicate(selected));
-                EndMutation();
-            }
+                if (GUILayout.Button("Edit vocabulary & native preset tables"))
+                {
+                    RenderGrammarLibraryWindow.OpenAsset(selected.vocabulary);
+                }
 
-            if (GUILayout.Button("Edit vocabulary & native preset tables"))
-            {
-                RenderGrammarLibraryWindow.OpenAsset(selected.vocabulary);
+                EditorGUILayout.EndScrollView();
+                GUILayout.EndArea();
             }
-
-            EditorGUIUtility.labelWidth = 0f;
-            EditorGUILayout.EndScrollView();
-            GUILayout.EndArea();
         }
 
         void DrawChannels(StudioStyles styles, CreatureGrammarMode grammar)
@@ -153,6 +154,7 @@ namespace HealerLike.Render.Studio.Editor
             {
                 source.objectReferenceValue = grammar.entities[chosen - 1];
             }
+
             grammar.serialized.FindProperty("deriveFromEntity").boolValue = chosen > 0;
         }
 
@@ -215,6 +217,7 @@ namespace HealerLike.Render.Studio.Editor
             {
                 arms = output.arms.Length;
             }
+
             return "Generated output: " + parts + " parts, " + arms + " arms";
         }
 
@@ -229,7 +232,6 @@ namespace HealerLike.Render.Studio.Editor
 
         static void EndMutation()
         {
-            EditorGUIUtility.labelWidth = 0f;
             GUIUtility.ExitGUI();
         }
     }

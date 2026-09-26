@@ -20,8 +20,7 @@ namespace HealerLike.Render.Studio.Editor
         readonly List<EntityData> _entities = new List<EntityData>();
         CreatureStudioWindow _window;
         string[] _entityNames = { "None" };
-        CreatureGrammarPreset _selected;
-        SerializedObject _serialized;
+        readonly StudioSelection<CreatureGrammarPreset> _selection = new StudioSelection<CreatureGrammarPreset>();
         CreatureRecipe _output;
         CreatureLooks _creatureLooks;
         UnitChannels _channels;
@@ -38,9 +37,9 @@ namespace HealerLike.Render.Studio.Editor
         // "None" first, then the entities by name, for the inspector's popup
         public string[] entityNames { get { return _entityNames; } }
 
-        public CreatureGrammarPreset selected { get { return _selected; } }
+        public CreatureGrammarPreset selected { get { return _selection.asset; } }
 
-        public SerializedObject serialized { get { return _serialized; } }
+        public SerializedObject serialized { get { return _selection.serialized; } }
 
         // The recipe the grammar composed, null while the preset has errors; the mode owns it
         public CreatureRecipe output { get { return _output; } }
@@ -62,7 +61,7 @@ namespace HealerLike.Render.Studio.Editor
             {
                 if (_isOverrideShown)
                 {
-                    return LookDerivation.Side(_selected.sourceSide);
+                    return LookDerivation.Side(_selection.asset.sourceSide);
                 }
                 return _channels.side;
             }
@@ -71,6 +70,7 @@ namespace HealerLike.Render.Studio.Editor
         public void Init(CreatureStudioWindow window)
         {
             _window = window;
+            CreatureGrammarPreset selected = null;
             _creatureLooks = AssetDatabase.LoadAssetAtPath<CreatureLooks>(creatureLooksPath);
             CreatureGrammarDraftCollection kept = _drafts.Restore();
             if (kept != null)
@@ -80,7 +80,7 @@ namespace HealerLike.Render.Studio.Editor
                 {
                     _creatureLooks = CreatureGrammarDrafts.Load<CreatureLooks>(kept.creatureLooksAsset);
                 }
-                _selected = _drafts.Selection(kept);
+                selected = _drafts.Selection(kept);
             }
 
             if (_drafts.items.Count == 0)
@@ -88,31 +88,35 @@ namespace HealerLike.Render.Studio.Editor
                 _drafts.NewDraft(_creatureLooks);
             }
 
-            if (_selected == null)
+            if (selected == null)
             {
-                _selected = _drafts.items[0];
+                selected = _drafts.items[0];
             }
 
-            _serialized = new SerializedObject(_selected);
+            _selection.Select(selected);
             Reload();
         }
 
         public void Dispose()
         {
-            _drafts.Persist(_selected, _creatureLooks, _window.manualSurface, _window.isGrammarMode);
-            if (_serialized != null)
+            try
             {
-                _serialized.Dispose();
+                if (_window != null)
+                {
+                    _drafts.Persist(_selection.asset, _creatureLooks, _window.manualSurface, _window.isGrammarMode);
+                }
             }
-
-            _serialized = null;
-            if (_output != null)
+            finally
             {
-                Object.DestroyImmediate(_output);
-            }
+                _selection.Dispose();
+                if (_output != null)
+                {
+                    Object.DestroyImmediate(_output);
+                }
 
-            _output = null;
-            _drafts.Dispose();
+                _output = null;
+                _drafts.Dispose();
+            }
         }
 
         // Lists the saved grammar presets and the game's entities again, sorted by name
@@ -151,42 +155,31 @@ namespace HealerLike.Render.Studio.Editor
 
         public void Select(CreatureGrammarPreset preset)
         {
-            if (_serialized != null)
-            {
-                _serialized.ApplyModifiedProperties();
-                _serialized.Dispose();
-            }
-
-            _selected = preset;
-            _serialized = null;
-            if (preset != null)
-            {
-                _serialized = new SerializedObject(preset);
-            }
+            _selection.Select(preset);
             _isOverrideShown = false;
         }
 
         // Composes the preset again and shows the result, or the game's override when that is what is auditioned
         public void Regenerate()
         {
-            if (_selected == null)
+            if (_selection.asset == null)
             {
                 return;
             }
 
-            if (_serialized != null)
+            if (_selection.serialized != null)
             {
-                _serialized.Update();
+                _selection.serialized.Update();
             }
 
-            _warnings = CreatureGrammarValidator.Validate(_selected);
-            _notes = CreatureGrammarBudget.Notes(_selected);
-            _channels = _selected.Channels();
-            CreatureRecipe output = _selected.Compose();
+            _warnings = CreatureGrammarValidator.Validate(_selection.asset);
+            _notes = CreatureGrammarBudget.Notes(_selection.asset);
+            _channels = _selection.asset.Channels();
+            CreatureRecipe output = _selection.asset.Compose();
             if (output != null)
             {
                 output.hideFlags = HideFlags.HideAndDontSave;
-                output.name = CreatureGrammarDrafts.Label(_selected) + " · generated";
+                output.name = CreatureGrammarDrafts.Label(_selection.asset) + " · generated";
             }
 
             CreatureRecipe old = _output;
@@ -222,25 +215,27 @@ namespace HealerLike.Render.Studio.Editor
             }
 
             CreatureRecipe recipe = CreatureStudioAuthoring.Clone(_output);
-            recipe.name = CreatureGrammarDrafts.Label(_selected) + " baked";
+            recipe.name = CreatureGrammarDrafts.Label(_selection.asset) + " baked";
             return recipe;
         }
 
         public void SaveAs()
         {
             string path = EditorUtility.SaveFilePanelInProject("Save creature grammar preset",
-                CreatureGrammarDrafts.Label(_selected), "asset", "Save the editable channels and vocabulary reference.",
+                CreatureGrammarDrafts.Label(_selection.asset), "asset",
+                    "Save the editable channels and vocabulary reference.",
                 "Assets/Render/Studio/Data/Presets");
             if (string.IsNullOrEmpty(path))
             {
                 return;
             }
 
-            CreatureGrammarPreset copy = Object.Instantiate(_selected);
-            copy.hideFlags = HideFlags.None;
-            copy.name = Path.GetFileNameWithoutExtension(path);
-            AssetDatabase.CreateAsset(copy, AssetDatabase.GenerateUniqueAssetPath(path));
-            AssetDatabase.SaveAssetIfDirty(copy);
+            CreatureGrammarPreset copy = StudioAssetSave.Copy(_selection.asset,
+                AssetDatabase.GenerateUniqueAssetPath(path));
+            if (copy == null)
+            {
+                return;
+            }
             Reload();
             _window.SelectGrammar(copy);
             EditorGUIUtility.PingObject(copy);
@@ -248,11 +243,12 @@ namespace HealerLike.Render.Studio.Editor
 
         public bool HasSourceOverride()
         {
-            if (_selected == null || _selected.sourceEntity == null || _creatureLooks == null)
+            if (_selection.asset == null || _selection.asset.sourceEntity == null || _creatureLooks == null)
             {
                 return false;
             }
-            return _creatureLooks.entities != null && _creatureLooks.entities.ContainsKey(_selected.sourceEntity);
+            return _creatureLooks.entities != null
+                && _creatureLooks.entities.ContainsKey(_selection.asset.sourceEntity);
         }
 
         // The recipe of the game's authored view for the source entity, when that view carries a creature builder
@@ -263,7 +259,7 @@ namespace HealerLike.Render.Studio.Editor
                 return null;
             }
 
-            GameObject view = _creatureLooks.entities[_selected.sourceEntity];
+            GameObject view = _creatureLooks.entities[_selection.asset.sourceEntity];
             if (view == null)
             {
                 return null;

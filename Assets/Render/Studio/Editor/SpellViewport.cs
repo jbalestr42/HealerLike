@@ -1,4 +1,3 @@
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 using HealerLike.Render.Creatures;
@@ -27,7 +26,11 @@ namespace HealerLike.Render.Studio.Editor
 
         public void Dispose()
         {
-            _preview.Dispose();
+            if (_preview != null)
+            {
+                _preview.Dispose();
+                _preview = null;
+            }
         }
 
         // Space plays and pauses, F frames the subject, unless a text field has the keyboard
@@ -133,6 +136,7 @@ namespace HealerLike.Render.Studio.Editor
                     AssetDatabase.OpenAsset(_window.targetCreature);
                 }
             }
+
             EditorGUILayout.EndHorizontal();
         }
 
@@ -170,8 +174,7 @@ namespace HealerLike.Render.Studio.Editor
                 return;
             }
 
-            File.WriteAllBytes(path, image.EncodeToPNG());
-            Object.DestroyImmediate(image);
+            StudioCaptureOutput.Write(image, path);
             _window.ShowNotification(new GUIContent("Preview exported at 1600 × 1000"));
         }
     }

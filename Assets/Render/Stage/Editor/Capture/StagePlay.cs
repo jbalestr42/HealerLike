@@ -13,6 +13,7 @@ namespace HealerLike.Render.Stage
     public static class StagePlay
     {
         static StageCaptureFrame _frame;
+        static AStageRun _activeRun;
         static readonly string modeKey = "StagePlay.Mode";
         static readonly string codeKey = "StagePlay.Code";
         static readonly string deadlineKey = "StagePlay.Deadline";
@@ -33,8 +34,15 @@ namespace HealerLike.Render.Stage
                 {
                     folder += "/";
                 }
+
                 return folder;
             }
+        }
+
+        public static string ReadRevision()
+        {
+            string revision = System.Environment.GetEnvironmentVariable("RENDER_CAPTURE_REVISION");
+            return revision != null ? revision : "unspecified";
         }
 
         static StagePlay()
@@ -56,13 +64,19 @@ namespace HealerLike.Render.Stage
         public static void Finish(AStageRun run, bool isPassed)
         {
             EditorApplication.update -= run.Step;
-            run.StopObserving();
+            run.Stop();
+            if (ReferenceEquals(_activeRun, run))
+            {
+                _activeRun = null;
+            }
+
             if (_frame != null)
             {
                 _frame.onFrame = null;
                 UnityEngine.Object.Destroy(_frame.gameObject);
                 _frame = null;
             }
+
             SessionState.SetInt(codeKey, isPassed ? 0 : 1);
             EditorApplication.isPlaying = false;
         }
@@ -104,19 +118,27 @@ namespace HealerLike.Render.Stage
             {
                 return new GrassBenchRun();
             }
+
             if (mode == "offscreen-player")
             {
                 return new OffscreenPlayerRun();
             }
+
             if (mode == "motion")
             {
                 return new StageMotionRun();
             }
+
             return new LookSheetRun(mode != "effects", mode != "units");
         }
 
         static void OnPlayModeStateChanged(PlayModeStateChange change)
         {
+            if (change == PlayModeStateChange.ExitingPlayMode)
+            {
+                StopActive();
+            }
+
             string mode = SessionState.GetString(modeKey, "");
             if (mode == "")
             {
@@ -126,6 +148,7 @@ namespace HealerLike.Render.Stage
             if (change == PlayModeStateChange.EnteredPlayMode)
             {
                 AStageRun run = Create(mode);
+                _activeRun = run;
                 if (mode == "mobile-interface" || mode == "creature-presentation" || mode == "expedition-map")
                 {
                     // Screen and pointer coordinates must be read inside a game frame, not Editor.update.
@@ -139,6 +162,7 @@ namespace HealerLike.Render.Stage
                 {
                     EditorApplication.update += run.Step;
                 }
+
                 run.Begin();
             }
 
@@ -147,6 +171,22 @@ namespace HealerLike.Render.Stage
                 int code = SessionState.GetInt(codeKey, 1);
                 SessionState.SetString(modeKey, "");
                 EditorApplication.Exit(code);
+            }
+        }
+
+        static void StopActive()
+        {
+            AStageRun run = _activeRun;
+            _activeRun = null;
+            if (_frame != null)
+            {
+                _frame.onFrame = null;
+            }
+
+            if (run != null)
+            {
+                EditorApplication.update -= run.Step;
+                run.Stop();
             }
         }
 
@@ -160,6 +200,7 @@ namespace HealerLike.Render.Stage
             if (EditorApplication.timeSinceStartup > SessionState.GetFloat(deadlineKey, 0f))
             {
                 Debug.LogError("[StagePlay] The session ran past its deadline.");
+                StopActive();
                 SessionState.SetString(modeKey, "");
                 EditorApplication.Exit(2);
                 return;

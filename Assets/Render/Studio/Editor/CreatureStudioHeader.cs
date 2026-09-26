@@ -34,6 +34,7 @@ namespace HealerLike.Render.Studio.Editor
             {
                 current = 0;
             }
+
             if (_window.isRosterMode)
             {
                 current = 2;
@@ -54,8 +55,10 @@ namespace HealerLike.Render.Studio.Editor
                 {
                     _window.SwitchToRoster();
                 }
+
                 GUIUtility.ExitGUI();
             }
+
             if (!_window.isRosterMode)
             {
                 DrawSaveButtons(position);
@@ -140,8 +143,11 @@ namespace HealerLike.Render.Studio.Editor
             CreatureRecipe copy = CreatureStudioAuthoring.Clone(selected);
             copy.hideFlags = HideFlags.None;
             copy.name = Path.GetFileNameWithoutExtension(path);
-            AssetDatabase.CreateAsset(copy, AssetDatabase.GenerateUniqueAssetPath(path));
-            AssetDatabase.SaveAssetIfDirty(copy);
+            if (StudioAssetSave.Write(copy, AssetDatabase.GenerateUniqueAssetPath(path)) == null)
+            {
+                return;
+            }
+
             _window.drafts.RememberSurface(copy, _window.manualSurface);
             _window.ReloadAssets();
             _window.SwitchToParts(copy);

@@ -12,35 +12,71 @@ namespace HealerLike.Render.Creatures
     // One scene owns this cache. Full cards and detail panels borrow the same screenshot.
     // No eviction destroys a texture while a visible element still holds it. Beyond the bounded
     // capacity, the UI keeps its ordinary fallback until the next invalidation or scene attachment.
-    public sealed class CreaturePortraits : IToolkitIconProvider, IDisposable
+    public class CreaturePortraits : IToolkitIconProvider, IDisposable
     {
-        public const int Capacity = 64;
-        readonly Dictionary<(EntityData, Entity.EntityType), Texture2D> _images =
-            new Dictionary<(EntityData, Entity.EntityType), Texture2D>();
+        public static readonly int Capacity = 64;
+        readonly Dictionary<(EntityData, Entity.EntityType), Texture2D> _images = new Dictionary<(EntityData,
+            Entity.EntityType), Texture2D>();
         readonly ICreaturePortraitCapture _capture;
         readonly int _capacity;
         bool _disposed;
-
         public event Action Changed;
-        public int cachedCount { get { return _images.Count; } }
-        public int captureCount { get; private set; }
-        public bool isDisposed { get { return _disposed; } }
-
-        public CreaturePortraits(CreatureLooks looks, PrimitiveMeshes meshes)
-            : this(new CreaturePortraitRenderer(looks, meshes)) { }
-
-        public CreaturePortraits(ICreaturePortraitCapture capture, int capacity = Capacity)
+        public int cachedCount
         {
-            _capture = capture ?? throw new ArgumentNullException(nameof(capture));
+            get
+            {
+                return _images.Count;
+            }
+        }
+
+        public int captureCount { get; private set; }
+
+        public bool isDisposed
+        {
+            get
+            {
+                return _disposed;
+            }
+        }
+
+        public CreaturePortraits(CreatureLooks looks,
+            PrimitiveMeshes meshes) : this(new CreaturePortraitRenderer(looks, meshes))
+        {
+        }
+
+        public CreaturePortraits(ICreaturePortraitCapture capture) : this(capture, Capacity)
+        {
+        }
+
+        public CreaturePortraits(ICreaturePortraitCapture capture, int capacity)
+        {
+            if (capture == null)
+            {
+                throw new ArgumentNullException(nameof(capture));
+            }
+
+            _capture = capture;
             _capacity = Mathf.Clamp(capacity, 1, Capacity);
         }
 
         public Texture2D GetCreatureIcon(EntityData data, Entity.EntityType side)
         {
-            if (_disposed || data == null) return null;
-            var key = (data, side);
-            if (_images.TryGetValue(key, out Texture2D image)) return image;
-            if (_images.Count >= _capacity) return null;
+            if (_disposed || data == null)
+            {
+                return null;
+            }
+
+            (EntityData, Entity.EntityType) key = (data, side);
+            if (_images.TryGetValue(key, out Texture2D image))
+            {
+                return image;
+            }
+
+            if (_images.Count >= _capacity)
+            {
+                return null;
+            }
+
             try
             {
                 captureCount++;
@@ -51,30 +87,50 @@ namespace HealerLike.Render.Creatures
                 // A failed request is cached too, so a missing GPU resource cannot retry every UI refresh.
                 Debug.LogWarning("[CreaturePortraits] Could not capture " + data.name + ": " + error.Message);
             }
+
             _images.Add(key, image);
             return image;
         }
 
         public void Invalidate()
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
+
             Clear();
-            Changed?.Invoke();
+            if (Changed != null)
+            {
+                Changed();
+            }
         }
 
         public void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
+
             _disposed = true;
             Clear();
             _capture.Dispose();
-            Changed?.Invoke();
+            Action changed = Changed;
             Changed = null;
+            if (changed != null)
+            {
+                changed();
+            }
         }
 
         void Clear()
         {
-            foreach (Texture2D image in _images.Values) RenderObjects.Release(image);
+            foreach (Texture2D image in _images.Values)
+            {
+                RenderObjects.Release(image);
+            }
+
             _images.Clear();
         }
     }

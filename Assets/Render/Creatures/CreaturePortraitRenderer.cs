@@ -8,11 +8,11 @@ namespace HealerLike.Render.Creatures
     // A disabled camera performs one URP request on a cache miss. The temporary subject is
     // outside the battlefield and inactive before/after that synchronous call. No gameplay
     // camera, scene light or layer setting is changed. Its materials are the live view's materials.
-    public sealed class CreaturePortraitRenderer : ICreaturePortraitCapture
+    public class CreaturePortraitRenderer : ICreaturePortraitCapture
     {
-        public const int Resolution = 256;
-        public const string RootName = "Creature Portrait Capture";
-        const int captureLayer = 31;
+        public static readonly int Resolution = 256;
+        public static readonly string RootName = "Creature Portrait Capture";
+        static readonly int captureLayer = 31;
         static readonly Vector3 origin = new Vector3(0f, -4096f, 0f);
         static readonly Quaternion rotation = Quaternion.Euler(12f, StageCalibration.PortraitYaw, 0f);
         readonly CreatureLooks _looks;
@@ -20,7 +20,6 @@ namespace HealerLike.Render.Creatures
         GameObject _root;
         Camera _camera;
         bool _disposed;
-
         public CreaturePortraitRenderer(CreatureLooks looks, PrimitiveMeshes meshes)
         {
             _looks = looks;
@@ -29,10 +28,17 @@ namespace HealerLike.Render.Creatures
 
         public Texture2D Capture(EntityData data, Entity.EntityType side)
         {
-            if (_disposed || !_looks || !_meshes || !data) return null;
+            if (_disposed || !_looks || !_meshes || !data)
+            {
+                return null;
+            }
+
             InitCamera();
             UniversalRenderPipeline.SingleCameraRequest request = new UniversalRenderPipeline.SingleCameraRequest();
-            if (!RenderPipeline.SupportsRenderRequest(_camera, request)) return null;
+            if (!RenderPipeline.SupportsRenderRequest(_camera, request))
+            {
+                return null;
+            }
 
             RenderTexture target = null;
             Texture2D image = null;
@@ -45,7 +51,11 @@ namespace HealerLike.Render.Creatures
             {
                 try
                 {
-                    if (!preview.Init(_looks, data, side, _meshes, _root.transform, 1f)) return null;
+                    if (!preview.Init(_looks, data, side, _meshes, _root.transform, 1f))
+                    {
+                        return null;
+                    }
+
                     preview.CompleteAppearance();
                     preview.Tick(0f, 0f, new FootFrame(origin, Vector3.up, 1f), -(rotation * Vector3.forward));
                     foreach (Transform part in preview.rig.root.GetComponentsInChildren<Transform>(true))
@@ -53,8 +63,13 @@ namespace HealerLike.Render.Creatures
                         part.gameObject.layer = captureLayer;
                         part.gameObject.hideFlags = HideFlags.HideAndDontSave;
                     }
+
                     _root.SetActive(true);
-                    if (!TryGetBounds(preview.rig.root, out Bounds bounds)) return null;
+                    if (!TryGetBounds(preview.rig.root, out Bounds bounds))
+                    {
+                        return null;
+                    }
+
                     Frame(_camera, bounds);
                     target = RenderTexture.GetTemporary(Resolution, Resolution, 24, RenderTextureFormat.ARGB32);
                     request.destination = target;
@@ -82,7 +97,11 @@ namespace HealerLike.Render.Creatures
                     Shader.SetGlobalFloat("_HLFogStart", fogStart);
                     Shader.SetGlobalFloat("_HLFogEnd", fogEnd);
                     RenderTexture.active = previous;
-                    if (target != null) RenderTexture.ReleaseTemporary(target);
+                    if (target != null)
+                    {
+                        RenderTexture.ReleaseTemporary(target);
+                    }
+
                     RenderObjects.Release(image);
                 }
             }
@@ -90,10 +109,20 @@ namespace HealerLike.Render.Creatures
 
         void InitCamera()
         {
-            if (_root != null) return;
-            _root = new GameObject(RootName) { hideFlags = HideFlags.HideAndDontSave };
+            if (_root != null)
+            {
+                return;
+            }
+
+            _root = new GameObject(RootName)
+            {
+                hideFlags = HideFlags.HideAndDontSave
+            };
             _root.SetActive(false);
-            GameObject cameraObject = new GameObject("Portrait Camera") { hideFlags = HideFlags.HideAndDontSave };
+            GameObject cameraObject = new GameObject("Portrait Camera")
+            {
+                hideFlags = HideFlags.HideAndDontSave
+            };
             cameraObject.transform.SetParent(_root.transform, false);
             _camera = cameraObject.AddComponent<Camera>();
             _camera.enabled = false;
@@ -120,13 +149,18 @@ namespace HealerLike.Render.Creatures
             Quaternion inverse = Quaternion.Inverse(rotation);
             Vector3 cameraExtent = Vector3.zero;
             for (int x = -1; x <= 1; x += 2)
+            {
                 for (int y = -1; y <= 1; y += 2)
+                {
                     for (int z = -1; z <= 1; z += 2)
                     {
                         Vector3 corner = inverse * Vector3.Scale(extent, new Vector3(x, y, z));
-                        cameraExtent = Vector3.Max(cameraExtent,
-                            new Vector3(Mathf.Abs(corner.x), Mathf.Abs(corner.y), Mathf.Abs(corner.z)));
+                        cameraExtent = Vector3.Max(cameraExtent, new Vector3(Mathf.Abs(corner.x),
+                            Mathf.Abs(corner.y), Mathf.Abs(corner.z)));
                     }
+                }
+            }
+
             float distance = Mathf.Max(2f, extent.magnitude * 2f + 1f);
             camera.transform.SetPositionAndRotation(bounds.center - rotation * Vector3.forward * distance, rotation);
             camera.aspect = 1f;
@@ -141,19 +175,39 @@ namespace HealerLike.Render.Creatures
             bool found = false;
             foreach (Renderer renderer in root.GetComponentsInChildren<Renderer>())
             {
-                if (!renderer.enabled || renderer.bounds.size.sqrMagnitude < 0.000001f) continue;
-                if (found) bounds.Encapsulate(renderer.bounds);
-                else bounds = renderer.bounds;
+                if (!renderer.enabled || renderer.bounds.size.sqrMagnitude < 0.000001f)
+                {
+                    continue;
+                }
+
+                if (found)
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+                else
+                {
+                    bounds = renderer.bounds;
+                }
+
                 found = true;
             }
+
             return found;
         }
 
         public void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
+
             _disposed = true;
-            if (_root != null) _root.SetActive(false);
+            if (_root != null)
+            {
+                _root.SetActive(false);
+            }
+
             RenderObjects.Release(_root);
             _root = null;
             _camera = null;

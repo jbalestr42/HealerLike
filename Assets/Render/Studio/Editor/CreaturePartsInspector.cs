@@ -49,55 +49,57 @@ namespace HealerLike.Render.Studio.Editor
 
         public void Draw(Rect rect)
         {
-            StudioStyles styles = _window.styles;
-            CreatureRecipe selected = _window.selected;
-            EditorGUI.DrawRect(rect, StudioStyles.Panel);
-            GUILayout.BeginArea(new Rect(rect.x + 12f, rect.y + 12f, rect.width - 24f, rect.height - 24f));
-            GUILayout.Label("CREATOR", styles.section);
-            if (selected == null)
+            using (StudioLabelWidthScope width = new StudioLabelWidthScope(112f))
             {
-                GUILayout.Label("Choose a creature to begin.");
-                GUILayout.EndArea();
-                return;
-            }
-
-            GUILayout.Space(6f);
-            string state = "Local draft · edits support Undo";
-            if (AssetDatabase.Contains(selected))
-            {
-                state = "Saved recipe · edits support Undo";
-            }
-
-            GUILayout.Label(state, styles.small);
-            _scroll = EditorGUILayout.BeginScrollView(_scroll);
-            _window.serialized.Update();
-            EditorGUIUtility.labelWidth = 112f;
-            DrawIdentity(styles, selected);
-            DrawAssembly(styles);
-            DrawRig(styles, selected);
-            DrawChecks(styles, selected);
-            GUILayout.Space(16f);
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("Duplicate creature"))
-            {
-                _actions.DuplicateRecipe();
-                EndMutation();
-            }
-
-            using (new EditorGUI.DisabledScope(!AssetDatabase.Contains(selected)))
-            {
-                if (GUILayout.Button("Locate asset"))
+                StudioStyles styles = _window.styles;
+                CreatureRecipe selected = _window.selected;
+                EditorGUI.DrawRect(rect, StudioStyles.Panel);
+                GUILayout.BeginArea(new Rect(rect.x + 12f, rect.y + 12f, rect.width - 24f, rect.height - 24f));
+                GUILayout.Label("CREATOR", styles.section);
+                if (selected == null)
                 {
-                    EditorGUIUtility.PingObject(selected);
+                    GUILayout.Label("Choose a creature to begin.");
+                    GUILayout.EndArea();
+                    return;
                 }
-            }
 
-            EditorGUILayout.EndHorizontal();
-            GUILayout.Label("Ctrl / Cmd + Z to undo. Changes are visual recipe data, ready for the existing renderer.",
-                styles.small);
-            EditorGUIUtility.labelWidth = 0f;
-            EditorGUILayout.EndScrollView();
-            GUILayout.EndArea();
+                GUILayout.Space(6f);
+                string state = "Local draft · edits support Undo";
+                if (AssetDatabase.Contains(selected))
+                {
+                    state = "Saved recipe · edits support Undo";
+                }
+
+                GUILayout.Label(state, styles.small);
+                _scroll = EditorGUILayout.BeginScrollView(_scroll);
+                _window.serialized.Update();
+                DrawIdentity(styles, selected);
+                DrawAssembly(styles);
+                DrawRig(styles, selected);
+                DrawChecks(styles, selected);
+                GUILayout.Space(16f);
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button("Duplicate creature"))
+                {
+                    _actions.DuplicateRecipe();
+                    EndMutation();
+                }
+
+                using (new EditorGUI.DisabledScope(!AssetDatabase.Contains(selected)))
+                {
+                    if (GUILayout.Button("Locate asset"))
+                    {
+                        EditorGUIUtility.PingObject(selected);
+                    }
+                }
+
+                EditorGUILayout.EndHorizontal();
+                GUILayout.Label("Ctrl / Cmd + Z to undo. Changes are visual recipe data, ready for the existing "
+                    + "renderer.",
+                    styles.small);
+                EditorGUILayout.EndScrollView();
+                GUILayout.EndArea();
+            }
         }
 
         void DrawIdentity(StudioStyles styles, CreatureRecipe selected)
@@ -286,7 +288,6 @@ namespace HealerLike.Render.Studio.Editor
         // A structural edit changes the layout under the cursor, so the frame ends there
         static void EndMutation()
         {
-            EditorGUIUtility.labelWidth = 0f;
             GUIUtility.ExitGUI();
         }
     }

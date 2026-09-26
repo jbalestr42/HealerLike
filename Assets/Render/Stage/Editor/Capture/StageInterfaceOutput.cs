@@ -12,9 +12,10 @@ namespace HealerLike.Render.Stage
         [Serializable]
         public class Manifest
         {
-            public string revision = System.Environment.GetEnvironmentVariable("RENDER_CAPTURE_REVISION") ?? "unspecified";
+            public string revision = StagePlay.ReadRevision();
             public string unityVersion = Application.unityVersion;
-            public string inputMethod = "Actual Toolkit button events, Render touch adapter world taps; no physical device";
+            public string inputMethod
+                = "Actual Toolkit button events, Render touch adapter world taps; no physical device";
             public bool isPassed;
             public List<string> checks = new List<string>();
             public List<string> failures = new List<string>();
@@ -52,7 +53,7 @@ namespace HealerLike.Render.Stage
 
         public StageInterfaceOutput(string folder = null)
         {
-            _folder = folder ?? Path.Combine(StagePlay.CaptureFolder, "mobile-interface");
+            _folder = folder != null ? folder : Path.Combine(StagePlay.CaptureFolder, "mobile-interface");
         }
 
         public void Check(bool passed, string detail)
@@ -62,6 +63,7 @@ namespace HealerLike.Render.Stage
                 manifest.failures.Add(detail);
                 throw new InvalidOperationException("[StageInterfaceRun] " + detail);
             }
+
             manifest.checks.Add(detail);
         }
 
@@ -73,6 +75,7 @@ namespace HealerLike.Render.Stage
             {
                 File.Delete(path);
             }
+
             VisualElement root = ui.GetComponent<UIDocument>().rootVisualElement;
             Frame frame = new Frame();
             frame.file = name + ".png";
@@ -85,6 +88,7 @@ namespace HealerLike.Render.Stage
             {
                 frame.normalizedSafeAreaOverride = ui.safeAreaProvider();
             }
+
             frame.battlefieldViewport = ui.normalizedWorldViewport;
             frame.hud = root.Q("hud-root").worldBound;
             frame.world = root.Q("world-space").worldBound;
@@ -97,21 +101,25 @@ namespace HealerLike.Render.Stage
                         panelBounds = button.worldBound, enabled = button.enabledInHierarchy });
                 }
             }
+
             if (frame.hasSafeAreaOverride)
             {
                 Rect normalized = frame.normalizedSafeAreaOverride;
                 Rect panel = root.worldBound;
-                Rect safe = new Rect(panel.x + normalized.x * panel.width, panel.y + (1f - normalized.yMax) * panel.height,
+                Rect safe = new Rect(panel.x + normalized.x * panel.width, panel.y
+                    + (1f - normalized.yMax) * panel.height,
                     normalized.width * panel.width, normalized.height * panel.height);
                 foreach (VisualElement control in root.Query<Button>().ToList())
                 {
                     CheckSafe(control, safe);
                 }
+
                 foreach (VisualElement control in root.Query<DropdownField>().ToList())
                 {
                     CheckSafe(control, safe);
                 }
             }
+
             ScreenCapture.CaptureScreenshot(path);
             double deadline = Time.realtimeSinceStartupAsDouble + 15;
             while (!File.Exists(path) || new FileInfo(path).Length == 0)
@@ -120,17 +128,17 @@ namespace HealerLike.Render.Stage
                 {
                     throw new InvalidOperationException("Screenshot timed out: " + name);
                 }
+
                 yield return null;
             }
+
             int writtenFrame = Time.frameCount;
             while (Time.frameCount <= writtenFrame)
             {
                 yield return null;
             }
-            Texture2D image = new Texture2D(2, 2, TextureFormat.RGB24, false);
-            image.LoadImage(File.ReadAllBytes(path));
-            bool matches = image.width == frame.width && image.height == frame.height;
-            UnityEngine.Object.Destroy(image);
+
+            bool matches = StageCaptureImage.MatchesSize(path, frame.width, frame.height);
             Check(matches, "Native image dimensions match game-frame Screen: " + name);
             manifest.frames.Add(frame);
         }
@@ -154,12 +162,14 @@ namespace HealerLike.Render.Stage
             {
                 return;
             }
+
             VisualElement picked = control.panel.Pick(control.worldBound.center);
             bool reachable = false;
             for (VisualElement current = picked; current != null; current = current.parent)
             {
                 reachable |= current == control;
             }
+
             if (reachable)
             {
                 Rect bounds = control.worldBound;
@@ -171,17 +181,21 @@ namespace HealerLike.Render.Stage
 
         public static bool IsVisible(VisualElement element)
         {
-            if (element == null || element.panel == null || element.worldBound.width < 1f || element.worldBound.height < 1f)
+            if (element == null || element.panel == null || element.worldBound.width < 1f
+                || element.worldBound.height < 1f)
             {
                 return false;
             }
+
             for (VisualElement current = element; current != null; current = current.parent)
             {
-                if (current.resolvedStyle.display == DisplayStyle.None || current.resolvedStyle.visibility == Visibility.Hidden)
+                if (current.resolvedStyle.display == DisplayStyle.None
+                    || current.resolvedStyle.visibility == Visibility.Hidden)
                 {
                     return false;
                 }
             }
+
             return true;
         }
     }

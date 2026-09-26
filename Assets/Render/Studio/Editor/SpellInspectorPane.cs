@@ -32,54 +32,54 @@ namespace HealerLike.Render.Studio.Editor
 
         public void Draw(Rect rect)
         {
-            StudioStyles styles = _window.styles;
-            SpellStudioPreset selected = _window.selected;
-            EditorGUI.DrawRect(rect, StudioStyles.Panel);
-            GUILayout.BeginArea(new Rect(rect.x + 12f, rect.y + 12f, rect.width - 24f, rect.height - 24f));
-            GUILayout.Label("CREATOR", styles.section);
-            if (selected == null)
+            using (StudioLabelWidthScope width = new StudioLabelWidthScope(112f))
             {
-                GUILayout.Label("Choose a spell to begin.");
-                GUILayout.EndArea();
-                return;
-            }
-
-            GUILayout.Space(6f);
-            string state = "Unsaved draft · edits support Undo";
-            if (AssetDatabase.Contains(selected))
-            {
-                state = "Saved preset · edits support Undo";
-            }
-
-            GUILayout.Label(state, styles.small);
-            _scroll = EditorGUILayout.BeginScrollView(_scroll);
-            _window.serialized.Update();
-            EditorGUIUtility.labelWidth = 112f;
-            DrawFields(styles, selected);
-            DrawShape(styles, selected);
-            DrawChecks(styles, selected);
-            GUILayout.Space(16f);
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("Duplicate"))
-            {
-                EditorGUIUtility.labelWidth = 0f;
-                _window.Duplicate();
-                GUIUtility.ExitGUI();
-            }
-
-            using (new EditorGUI.DisabledScope(!AssetDatabase.Contains(selected)))
-            {
-                if (GUILayout.Button("Locate asset"))
+                StudioStyles styles = _window.styles;
+                SpellStudioPreset selected = _window.selected;
+                EditorGUI.DrawRect(rect, StudioStyles.Panel);
+                GUILayout.BeginArea(new Rect(rect.x + 12f, rect.y + 12f, rect.width - 24f, rect.height - 24f));
+                GUILayout.Label("CREATOR", styles.section);
+                if (selected == null)
                 {
-                    EditorGUIUtility.PingObject(selected);
+                    GUILayout.Label("Choose a spell to begin.");
+                    GUILayout.EndArea();
+                    return;
                 }
-            }
 
-            EditorGUILayout.EndHorizontal();
-            GUILayout.Label("Ctrl / Cmd + Z to undo. Use Save as to create a reusable asset.", styles.small);
-            EditorGUIUtility.labelWidth = 0f;
-            EditorGUILayout.EndScrollView();
-            GUILayout.EndArea();
+                GUILayout.Space(6f);
+                string state = "Unsaved draft · edits support Undo";
+                if (AssetDatabase.Contains(selected))
+                {
+                    state = "Saved preset · edits support Undo";
+                }
+
+                GUILayout.Label(state, styles.small);
+                _scroll = EditorGUILayout.BeginScrollView(_scroll);
+                _window.serialized.Update();
+                DrawFields(styles, selected);
+                DrawShape(styles, selected);
+                DrawChecks(styles, selected);
+                GUILayout.Space(16f);
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button("Duplicate"))
+                {
+                        _window.Duplicate();
+                    GUIUtility.ExitGUI();
+                }
+
+                using (new EditorGUI.DisabledScope(!AssetDatabase.Contains(selected)))
+                {
+                    if (GUILayout.Button("Locate asset"))
+                    {
+                        EditorGUIUtility.PingObject(selected);
+                    }
+                }
+
+                EditorGUILayout.EndHorizontal();
+                GUILayout.Label("Ctrl / Cmd + Z to undo. Use Save as to create a reusable asset.", styles.small);
+                EditorGUILayout.EndScrollView();
+                GUILayout.EndArea();
+            }
         }
 
         // What the preview shows about the projectile the preset looks up
@@ -91,6 +91,7 @@ namespace HealerLike.Render.Studio.Editor
             {
                 path = " · preserves contact path";
             }
+
             return "Delivery: " + style + path + "\nLookup only; this viewport previews the effect element.";
         }
 

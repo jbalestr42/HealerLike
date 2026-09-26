@@ -1,4 +1,3 @@
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 using HealerLike.Render.Creatures;
@@ -28,7 +27,11 @@ namespace HealerLike.Render.Studio.Editor
 
         public void Dispose()
         {
-            _preview.Dispose();
+            if (_preview != null)
+            {
+                _preview.Dispose();
+                _preview = null;
+            }
         }
 
         public void Refresh()
@@ -115,11 +118,13 @@ namespace HealerLike.Render.Studio.Editor
             EditorGUILayout.EndHorizontal();
             GUILayout.Space(10f);
             GUILayout.Label("VISUAL READOUTS", styles.section);
-            EditorGUIUtility.labelWidth = 65f;
-            _preview.health = EditorGUILayout.Slider("Vitality", _preview.health, 0f, 1f);
-            _preview.charge = EditorGUILayout.Slider("Charge", _preview.charge, 0f, 1f);
-            _preview.glow = EditorGUILayout.Slider("Glow", _preview.glow, 0f, 1f);
-            EditorGUIUtility.labelWidth = 0f;
+            using (StudioLabelWidthScope width = new StudioLabelWidthScope(65f))
+            {
+                _preview.health = EditorGUILayout.Slider("Vitality", _preview.health, 0f, 1f);
+                _preview.charge = EditorGUILayout.Slider("Charge", _preview.charge, 0f, 1f);
+                _preview.glow = EditorGUILayout.Slider("Glow", _preview.glow, 0f, 1f);
+            }
+
             GUILayout.EndArea();
         }
 
@@ -134,6 +139,7 @@ namespace HealerLike.Render.Studio.Editor
             {
                 return "AUTHORED GAME OVERRIDE";
             }
+
             return "LIVE GRAMMAR OUTPUT";
         }
 
@@ -144,6 +150,7 @@ namespace HealerLike.Render.Studio.Editor
             {
                 return -1;
             }
+
             return _window.parts.selectedPart;
         }
 
@@ -160,6 +167,7 @@ namespace HealerLike.Render.Studio.Editor
             {
                 arms = recipe.arms.Length;
             }
+
             return parts + " parts  /  " + arms + " arms";
         }
 
@@ -174,9 +182,18 @@ namespace HealerLike.Render.Studio.Editor
             }
 
             _preview.side = _window.previewSide;
-            _preview.selectedPart = -1;
-            Texture2D image = _preview.Capture(selected, _timeline.time, 1600, 1000);
-            _preview.selectedPart = SelectedPart();
+            Texture2D image;
+            int selectedPart = _preview.selectedPart;
+            try
+            {
+                _preview.selectedPart = -1;
+                image = _preview.Capture(selected, _timeline.time, 1600, 1000);
+            }
+            finally
+            {
+                _preview.selectedPart = selectedPart;
+            }
+
             if (image == null)
             {
                 string message = "Choose a creature to capture.";
@@ -184,12 +201,12 @@ namespace HealerLike.Render.Studio.Editor
                 {
                     message = _preview.lastError;
                 }
+
                 EditorUtility.DisplayDialog("Could not export preview", message, "OK");
                 return;
             }
 
-            File.WriteAllBytes(path, image.EncodeToPNG());
-            Object.DestroyImmediate(image);
+            StudioCaptureOutput.Write(image, path);
             _window.ShowNotification(new GUIContent("Preview exported at 1600 × 1000"));
         }
     }
