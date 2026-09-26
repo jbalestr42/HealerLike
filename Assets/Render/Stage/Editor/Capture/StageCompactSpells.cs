@@ -20,6 +20,7 @@ namespace HealerLike.Render.Stage
                 (b.userData as ToolkitCardModel)?.source is CharacterSkillSlot slot && slot.data.name == "Heal");
             CharacterSkillSlot slot = (CharacterSkillSlot)((ToolkitCardModel)spell.userData).source;
             float before = character.mana.Value;
+            yield return new StageCompactReview(_s).KeyboardEscapeOwnership(spell);
             yield return _gestures.Hold(spell, "10-spell-hold", false);
             Observe("spell-hold");
             _s.output.Check(character.mana.Value == before && _s.interaction.GetInteraction() == null,

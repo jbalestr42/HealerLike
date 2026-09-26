@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using UnityEngine.EventSystems;
 using UnityEngine;
 using UnityEngine.UIElements;
 using static HealerLike.Render.Stage.AStageRun;
@@ -62,11 +64,25 @@ namespace HealerLike.Render.Stage
                 "Equipment is fully visible in the initial compact summary without scrolling: " + equipment.worldBound + " inside " + viewport);
             _s.output.Check(!summary.Contains("HealthMax") && !summary.Contains("CriticalChance"),
                 "Default summary excludes redundant maximum health and neutral attributes");
+            Rect summaryBounds = root.Q("detail-description").worldBound;
+            _s.output.Check(summaryBounds.yMin >= viewport.yMin - 1 && summaryBounds.yMax <= viewport.yMax + 1,
+                "Initial portrait summary fits before scrolling: " + summaryBounds + " inside " + viewport);
             yield return _s.Capture("07b-persistent-live-health");
             var foldout = root.Q<Foldout>("detail-attributes");
             var toggle = foldout.Q<Toggle>();
             root.Q<ScrollView>("detail-scroll").ScrollTo(toggle);
             yield return Wait(.15f);
+            Rect target = toggle.worldBound;
+            viewport = root.Q<ScrollView>("detail-scroll").contentViewport.worldBound;
+            _s.output.Check(target.width >= 44 && target.height >= 44
+                && target.yMin >= viewport.yMin - 1 && target.yMax <= viewport.yMax + 1,
+                "All attributes resolved touch target is at least 44 logical pixels and fully visible: " + target);
+            foreach (float edge in new[] { 1f, target.height - 1f })
+            {
+                VisualElement picked = toggle.panel.Pick(new Vector2(target.center.x, target.yMin + edge));
+                _s.output.Check(picked == toggle || toggle.Contains(picked),
+                    "All attributes target is pickable at vertical inset " + edge);
+            }
             yield return _s.actions.TouchGesture(StageInterfaceActions.ScreenPoint(toggle));
             yield return Wait(.15f);
             _s.output.Check(foldout.value && root.Q<Label>("detail-full-stats").text.Contains("Maximum health"),
@@ -101,6 +117,81 @@ namespace HealerLike.Render.Stage
             _s.output.Check(!StageInterfaceOutput.IsVisible(_s.actions.root.Q("detail-panel"))
                 && _s.manager.player.character.mana.Value == mana && _s.interaction.GetInteraction() == null,
                 "Ordinary Submit closes inspection and cannot activate an unavailable spell");
+        }
+
+        // Synthetic Toolkit keys cannot set legacy Input.GetKeyDown. Exercise the real
+        // navigation module in the stamped frame, then invoke the unchanged Escape route
+        // exactly once. Reflection is only fixture access to that private route, never
+        // navigation source classification. Physical polling remains unobserved.
+        void Escape(Button spell, bool inspectionOpen, AInteraction targeting)
+        {
+            var root = _s.actions.root;
+            _s.output.Check(ReferenceEquals(spell.focusController.focusedElement, spell),
+                "Keyboard Escape starts with the compact spell card focused");
+            using (var key = KeyDownEvent.GetPooled(new Event { type = EventType.KeyDown, keyCode = KeyCode.Escape }))
+                spell.SendEvent(key);
+            int cancellations = 0;
+            EventCallback<NavigationCancelEvent> observed = _ => cancellations++;
+            root.RegisterCallback(observed);
+            _s.actions.captureInput.navigationButton = "Cancel";
+            try { EventSystem.current.currentInputModule.Process(); }
+            finally
+            {
+                _s.actions.captureInput.navigationButton = null;
+                root.UnregisterCallback(observed);
+            }
+            _s.output.Check(cancellations == 1, "Keyboard navigation Cancel bubbles once without card inspection consuming it");
+            _s.output.Check(StageInterfaceOutput.IsVisible(root.Q("detail-panel")) == inspectionOpen
+                && ReferenceEquals(targeting, _s.interaction.GetInteraction()) && Time.timeScale > 0,
+                "Keyboard navigation alone neither toggles inspection nor cancels targeting or pauses");
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var actions = (ToolkitGameActions)typeof(ToolkitGameUI).GetField("_actions", flags).GetValue(_s.actions.ui);
+            typeof(ToolkitGameActions).GetMethod("OnEscape", flags).Invoke(actions, null);
+        }
+
+        public IEnumerator KeyboardEscapeOwnership(Button spell)
+        {
+            const string input = "Synthetic Escape KeyDown plus actual Standalone Cancel; existing OnEscape invoked once, hardware key poll unobserved";
+            var root = _s.actions.root;
+            float mana = _s.manager.player.character.mana.Value;
+            yield return _s.actions.BringIntoView(spell);
+            spell.Focus(); yield return null;
+            Escape(spell, false, null);
+            yield return Wait(.15f);
+            _s.output.Check(Time.timeScale == 0 && StageInterfaceOutput.IsVisible(root.Q("pause-panel"))
+                && !StageInterfaceOutput.IsVisible(root.Q("detail-panel")),
+                "Focused-card Escape with no popup pauses once instead of swallowing cancellation");
+            yield return _s.Capture("10a-keyboard-escape-pause", input);
+            yield return _s.actions.PointerTap("resume-button");
+            yield return Wait(.15f);
+            spell.Focus(); yield return null;
+            _s.actions.captureInput.navigationButton = "Cancel";
+            yield return null;
+            _s.actions.captureInput.navigationButton = null;
+            yield return Wait(.15f);
+            _s.output.Check(StageInterfaceOutput.IsVisible(root.Q("detail-panel")) && Time.timeScale > 0,
+                "Controller Cancel still inspects on a later frame after keyboard Escape");
+            Escape(spell, true, null);
+            yield return Wait(.15f);
+            _s.output.Check(Time.timeScale > 0 && !StageInterfaceOutput.IsVisible(root.Q("detail-panel"))
+                && !StageInterfaceOutput.IsVisible(root.Q("pause-panel")),
+                "Escape closes navigation inspection once without falling through to pause");
+            yield return _s.Capture("10b-keyboard-escape-inspection-close", input);
+            spell.Focus(); yield return null;
+            _s.actions.captureInput.navigationButton = "Submit";
+            yield return null;
+            _s.actions.captureInput.navigationButton = null;
+            yield return Wait(.15f);
+            AInteraction targeting = _s.interaction.GetInteraction();
+            _s.output.Check(targeting != null, "Ordinary controller Submit still starts usable spell targeting");
+            Escape(spell, false, targeting);
+            yield return Wait(.15f);
+            _s.output.Check(_s.interaction.GetInteraction() == null && Time.timeScale > 0
+                && !StageInterfaceOutput.IsVisible(root.Q("detail-panel"))
+                && !StageInterfaceOutput.IsVisible(root.Q("pause-panel"))
+                && _s.manager.player.character.mana.Value == mana,
+                "Escape cancels real spell targeting without inspection, pause or mana spend");
+            yield return _s.Capture("10c-keyboard-escape-targeting-cancel", input);
         }
 
         public void PortraitPixels()

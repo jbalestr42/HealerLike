@@ -71,6 +71,23 @@ namespace UI.Toolkit
             }
         }
 
+        [UnityTest]
+        public IEnumerator Layout_AllAttributesToggle_Keeps44PixelPortraitTarget()
+        {
+            foreach (ThemeStyleSheet theme in new[] { (ThemeStyleSheet)null,
+                Resources.Load<ThemeStyleSheet>("UI/Toolkit/MoonTheme") })
+            {
+                ToolkitTheme.Apply(_root, theme);
+                Resize(390f, 844f);
+                var foldout = _root.Q<Foldout>("detail-attributes");
+                foldout.RemoveFromClassList("is-hidden");
+                yield return null; yield return null;
+                var toggle = foldout.Q<Toggle>();
+                Debug.Log("All attributes resolved target: " + toggle.worldBound);
+                Assert.That(toggle.worldBound.height, Is.GreaterThanOrEqualTo(44f));
+            }
+        }
+
         IEnumerator CheckLandscape(ThemeStyleSheet theme)
         {
             ToolkitTheme.Apply(_root, theme);
