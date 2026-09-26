@@ -10,7 +10,7 @@ namespace HealerLike.Render.Stones
     {
         class Delivery
         {
-            public Transform shard;
+            public StoneFragmentPool.ShardLease shardLease;
             public Transform projectile;
             public StoneMeshCache.Lease lease;
         }
@@ -57,7 +57,7 @@ namespace HealerLike.Render.Stones
             foreach (KeyValuePair<int, Delivery> pair in _deliveries)
             {
                 Transform projectile = pair.Value.projectile;
-                if (projectile == null || !projectile.gameObject.activeInHierarchy)
+                if (projectile == null || !projectile.gameObject.activeInHierarchy || !pair.Value.shardLease.shard)
                 {
                     _endedDeliveries.Add(pair.Key);
                 }
@@ -93,7 +93,7 @@ namespace HealerLike.Render.Stones
                     continue;
                 }
 
-                bool isHead = rig.recipe.parts[i].role == PartRole.Head;
+                bool isHead = rig.parts[i].role == PartRole.Head;
                 bool isHigher = best == null || part.position.y > best.position.y;
                 if ((isHead && !isBestHead) || (isHead == isBestHead && isHigher))
                 {
@@ -106,12 +106,13 @@ namespace HealerLike.Render.Stones
 
         void Follow(Delivery delivery, Vector3 projectilePosition)
         {
-            Vector3 travel = projectilePosition - delivery.shard.position;
+            Transform shard = delivery.shardLease.shard;
+            Vector3 travel = projectilePosition - shard.position;
             if (travel.sqrMagnitude > 0.00000001f)
             {
-                delivery.shard.rotation = Quaternion.FromToRotation(Vector3.up, travel.normalized);
+                shard.rotation = Quaternion.FromToRotation(Vector3.up, travel.normalized);
             }
-            delivery.shard.position = projectilePosition;
+            shard.position = projectilePosition;
         }
 
         // A thrown shard is a piece of the stone's body
@@ -169,17 +170,18 @@ namespace HealerLike.Render.Stones
                 return false;
             }
 
-            Transform shard = _effects.TakeShard(lease.mesh, ShardColour());
-            if (shard == null)
+            StoneFragmentPool.ShardLease shardLease = _effects.BorrowShard(lease.mesh, ShardColour());
+            if (shardLease == null)
             {
                 lease.Dispose();
                 return false;
             }
 
+            Transform shard = shardLease.shard;
             shard.position = thrower.GetComponent<Renderer>().bounds.center;
             shard.rotation = Quaternion.identity;
             Delivery delivery = new Delivery();
-            delivery.shard = shard;
+            delivery.shardLease = shardLease;
             delivery.projectile = projectile;
             delivery.lease = lease;
             _deliveries.Add(token, delivery);
@@ -210,10 +212,7 @@ namespace HealerLike.Render.Stones
             }
 
             _deliveries.Remove(token);
-            if (_effects != null)
-            {
-                _effects.ReturnShard(delivery.shard);
-            }
+            delivery.shardLease.Dispose();
             delivery.lease.Dispose();
         }
 

@@ -70,7 +70,7 @@ namespace HealerLike.Render.Stones
                     return;
                 }
 
-                _cache.Release(new Key(_seed, _settings));
+                _cache.Release(new Key(_seed, _settings), _mesh);
                 _cache = null;
             }
         }
@@ -100,9 +100,9 @@ namespace HealerLike.Render.Stones
             return new Lease(this, seed, settings, entry.mesh, entry.data);
         }
 
-        void Release(Key key)
+        void Release(Key key, Mesh mesh)
         {
-            if (!_entries.TryGetValue(key, out Entry entry))
+            if (!_entries.TryGetValue(key, out Entry entry) || !ReferenceEquals(entry.mesh, mesh))
             {
                 return;
             }

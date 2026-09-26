@@ -39,7 +39,7 @@ namespace HealerLike.Render.Deliveries
             _material = material;
             _meshes = meshes;
             _vocabulary = vocabulary;
-            for (int i = 0; i < _rig.recipe.arms.Length; i++)
+            for (int i = 0; i < _rig.armCount; i++)
             {
                 CreateArm(i, i);
             }
@@ -61,7 +61,7 @@ namespace HealerLike.Render.Deliveries
                     _tokens[i] = 0;
                     _branchRoots[i] = null;
                     _refresh[i] = false;
-                    if (i < _rig.recipe.arms.Length)
+                    if (i < _rig.armCount)
                     {
                         CreateArm(i, i);
                     }
@@ -82,7 +82,7 @@ namespace HealerLike.Render.Deliveries
                 {
                     _branchRoots[i] = null;
                     _tokens[i] = 0;
-                    _arms[i].SetVisible(i < _rig.recipe.arms.Length);
+                    _arms[i].SetVisible(i < _rig.armCount);
                 }
             }
         }
@@ -250,7 +250,7 @@ namespace HealerLike.Render.Deliveries
 
         int FreeSlot()
         {
-            if (_rig.recipe.arms.Length == 0)
+            if (_rig.armCount == 0)
             {
                 return -1;
             }
@@ -261,7 +261,7 @@ namespace HealerLike.Render.Deliveries
                 {
                     if (_arms[i] == null)
                     {
-                        CreateArm(i, i % _rig.recipe.arms.Length);
+                        CreateArm(i, i % _rig.armCount);
                     }
 
                     return i;

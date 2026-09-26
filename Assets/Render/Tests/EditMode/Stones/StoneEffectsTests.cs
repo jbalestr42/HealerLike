@@ -102,6 +102,30 @@ public class StoneEffectsTests
     }
 
     [Test]
+    public void OnDisable_BorrowedShard_RevokesItBeforeTheFragmentIsReused()
+    {
+        StoneFragmentPool.ShardLease previous = _fx.BorrowShard(_mesh, Color.white);
+        Transform firstShard = previous.shard;
+
+        _fx.enabled = false;
+        TestHelpers.InvokePrivate(_fx, "OnDisable");
+
+        Assert.IsNull(previous.shard);
+        Assert.IsFalse(firstShard.gameObject.activeSelf);
+        Assert.IsNull(firstShard.GetComponent<MeshFilter>().sharedMesh);
+        _fx.enabled = true;
+        StoneFragmentPool.ShardLease current = _fx.BorrowShard(_mesh, Color.red);
+        Assert.AreSame(firstShard, current.shard);
+
+        previous.Dispose();
+
+        Assert.IsNotNull(current.shard);
+        Assert.IsTrue(current.shard.gameObject.activeSelf);
+        current.Dispose();
+        Assert.IsFalse(firstShard.gameObject.activeSelf);
+    }
+
+    [Test]
     public void Advance_CollapseDebris_NeverFallsBelowTheGround()
     {
         GameObject part = new GameObject("Part", typeof(MeshFilter), typeof(MeshRenderer));

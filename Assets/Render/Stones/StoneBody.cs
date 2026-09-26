@@ -11,9 +11,7 @@ namespace HealerLike.Render.Stones
     public class StoneBody : MonoBehaviour, IEntityView
     {
         // Seed salts, one per kind of emission so two kinds never share a random stream
-        static readonly uint shedSalt = 201;
         static readonly uint collapseSalt = 301;
-        static readonly Transform[] noParts = new Transform[0];
 
         [SerializeField] StoneGroundDisc _groundShadow;
         [SerializeField] float _shedHealthFraction = 0.5f;
@@ -21,8 +19,6 @@ namespace HealerLike.Render.Stones
         [SerializeField] LookPalette _palette;
 
         CreatureBuilder _builder;
-        CreatureRig _rig;
-        int _rigRevision;
         StoneThrow _throw;
         StoneEffects _effects;
         StageKeyLight _keyLight;
@@ -40,11 +36,9 @@ namespace HealerLike.Render.Stones
         public bool isCollapsed { get { return _isCollapsed; } }
 
         // The recipe part the stone lost when it was hurt, -1 while it is whole
-        int _shedPart = -1;
-        string _shedId;
-        public int shedPart { get { return _shedPart; } }
-
-        public IReadOnlyList<Transform> parts { get { return _rig != null ? _rig.partTransforms : noParts; } }
+        readonly StoneParts _parts = new StoneParts();
+        public int shedPart { get { return _parts.shedPart; } }
+        public IReadOnlyList<Transform> parts { get { return _parts.parts; } }
 
         public void Init(Entity entity, RenderManager manager)
         {
@@ -63,63 +57,25 @@ namespace HealerLike.Render.Stones
             _seed = visualSeed;
             _effects = effects;
             _builder = GetComponent<CreatureBuilder>();
-            _rig = null;
             _state.Reset(_shedHealthFraction);
-            _shedPart = -1;
-            _shedId = null;
             _isCollapsed = false;
             _sampler.Reset();
             _planarVelocity = Vector3.zero;
             _impacts.Init(transform, effects, visualSeed);
+            _parts.Init(_builder, transform, _groundShadow, _keyLight, _impacts);
             _throw = GetComponent<StoneThrow>();
             if (_throw != null)
             {
                 _throw.Init(_builder, effects, _palette, visualSeed);
             }
-            FindRig();
+            _parts.Refresh(_isCollapsed, isActiveAndEnabled);
             Subscribe();
         }
 
         // An in-place recompose changes the revision while keeping anchors and delivery leases alive.
         public void RefreshRig()
         {
-            FindRig();
-        }
-
-        void FindRig()
-        {
-            CreatureRig rig = _builder != null ? _builder.rig : null;
-            if (rig == _rig && (rig == null || rig.revision == _rigRevision))
-            {
-                return;
-            }
-
-            _rig = rig;
-            _rigRevision = rig != null ? rig.revision : 0;
-            IReadOnlyList<Transform> partTransforms = parts;
-            if (_shedId != null && rig != null)
-            {
-                _shedPart = System.Array.FindIndex(rig.recipe.parts, part => part.id == _shedId);
-            }
-            _impacts.ReadParts(partTransforms);
-            if (_isCollapsed)
-            {
-                HideParts();
-                return;
-            }
-
-            // A body set up again on the same rig stands whole, a rebuilt rig keeps the limb it lost
-            for (int i = 0; i < partTransforms.Count; i++)
-            {
-                partTransforms[i].gameObject.SetActive(i != _shedPart);
-            }
-
-            if (_groundShadow != null && partTransforms.Count > 0)
-            {
-                Bounds bounds = StoneGroundDisc.Measure(transform, partTransforms);
-                _groundShadow.Init(bounds, StageKeyLight.KeyDirection, _keyLight);
-                _groundShadow.Show(isActiveAndEnabled);
-            }
+            _parts.Refresh(_isCollapsed, isActiveAndEnabled);
         }
 
         public void RecordImpact(ResourceModifier modifier, StoneImpact impact)
@@ -166,42 +122,8 @@ namespace HealerLike.Render.Stones
             }
             else if (action == StoneHealthAction.ShedPart)
             {
-                ShedPart();
+                _parts.Shed(_effects, _seed, _planarVelocity, transform.position.y);
             }
-        }
-
-        // One limb or accessory, picked by the seed, falls and splits
-        void ShedPart()
-        {
-            if (_rig == null || _rig.recipe == null)
-            {
-                return;
-            }
-
-            IReadOnlyList<Transform> partTransforms = _rig.partTransforms;
-            List<int> candidates = new List<int>();
-            for (int i = 0; i < partTransforms.Count; i++)
-            {
-                PartRole role = _rig.recipe.parts[i].role;
-                if ((role == PartRole.Limb || role == PartRole.Accessory) && partTransforms[i].gameObject.activeSelf)
-                {
-                    candidates.Add(i);
-                }
-            }
-
-            if (candidates.Count == 0)
-            {
-                return;
-            }
-
-            _shedPart = candidates[(int)(_seed % (uint)candidates.Count)];
-            _shedId = _rig.recipe.parts[_shedPart].id;
-            Transform part = partTransforms[_shedPart];
-            Mesh mesh = part.GetComponent<MeshFilter>().sharedMesh;
-            Material material = part.GetComponent<Renderer>().sharedMaterial;
-            StoneEmitters.DetachedPart(_effects, mesh, material, part.localToWorldMatrix, _planarVelocity,
-                transform.position.y, SeededRandom.ForPart(_seed, shedSalt));
-            part.gameObject.SetActive(false);
         }
 
         // Every part breaks into debris at once; effects handed by the death bridge replace missing ones
@@ -225,26 +147,13 @@ namespace HealerLike.Render.Stones
             }
             uint seed = SeededRandom.ForPart(_seed, collapseSalt);
             StoneEmitters.Collapse(_effects, parts, _planarVelocity, transform.position.y, seed);
-            HideParts();
-        }
-
-        void HideParts()
-        {
-            if (_groundShadow != null)
-            {
-                _groundShadow.Show(false);
-            }
-
-            foreach (Transform part in parts)
-            {
-                part.gameObject.SetActive(false);
-            }
+            _parts.Hide();
         }
 
         // After his Update: the health batch his consumers resolved this frame, and where the entity moved to
         void LateUpdate()
         {
-            FindRig();
+            _parts.Refresh(_isCollapsed, isActiveAndEnabled);
             if (!_isBound)
             {
                 return;
@@ -288,7 +197,7 @@ namespace HealerLike.Render.Stones
 
         void OnEnable()
         {
-            if (_groundShadow != null && _rig != null)
+            if (_groundShadow != null && parts.Count > 0)
             {
                 _groundShadow.Show(!_isCollapsed);
             }

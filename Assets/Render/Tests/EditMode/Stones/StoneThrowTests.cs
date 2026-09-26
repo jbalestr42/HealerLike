@@ -39,7 +39,10 @@ public class StoneThrowTests
         TestHelpers.InvokePrivate(_throw, "OnDestroy");
         TestHelpers.InvokePrivate(_body, "OnDestroy");
         TestHelpers.InvokePrivate(_body.GetComponent<CreatureBuilder>(), "OnDestroy");
-        TestHelpers.InvokePrivate(_fx, "OnDestroy");
+        if (_fx != null)
+        {
+            TestHelpers.InvokePrivate(_fx, "OnDestroy");
+        }
         Object.DestroyImmediate(_owner);
         Object.DestroyImmediate(_projectile);
         Object.DestroyImmediate(_fxObject);
@@ -119,6 +122,35 @@ public class StoneThrowTests
 
         Assert.AreEqual(0, _fxObject.GetComponentsInChildren<MeshFilter>().Length); // both shards went back
         Assert.AreEqual(0, _fx.liveCount);
+    }
+
+    [Test]
+    public void LateUpdate_EffectsOwnerDestroyedBeforeThrower_ReleasesTheRevokedDelivery()
+    {
+        _throw.BeginDelivery(1, DeliveryStyle.Thrown, _projectile.transform, Vector3.one);
+
+        Object.DestroyImmediate(_fxObject);
+
+        Assert.DoesNotThrow(() => TestHelpers.InvokePrivate(_throw, "LateUpdate"));
+        Assert.DoesNotThrow(() => _throw.EndDelivery(1));
+    }
+
+    [Test]
+    public void LateUpdate_EffectsDisabledAndReused_OldDeliveryCannotMoveTheNewShard()
+    {
+        _throw.BeginDelivery(1, DeliveryStyle.Thrown, _projectile.transform, Vector3.one);
+        _fx.enabled = false;
+        TestHelpers.InvokePrivate(_fx, "OnDisable");
+        _fx.enabled = true;
+        StoneFragmentPool.ShardLease current = _fx.BorrowShard(RenderTestAssets.LoadMeshes().pyramid, Color.red);
+        current.shard.position = Vector3.up * 7f;
+        _projectile.transform.position = Vector3.right * 5f;
+
+        TestHelpers.InvokePrivate(_throw, "LateUpdate");
+
+        Assert.IsNotNull(current.shard);
+        Assert.AreEqual(Vector3.up * 7f, current.shard.position);
+        current.Dispose();
     }
 
     [Test]
