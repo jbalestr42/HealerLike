@@ -97,12 +97,14 @@ namespace HealerLike.Render.Stage
                 && _cardPortrait.width == 256 && _cardPortrait.height == 256,
                 "Party card shows the 256px creature screenshot");
             _output.ExportPortrait(_cardPortrait, prefix + "-cached-portrait");
-            int portraitCameras = 0;
-            foreach (Camera camera in Resources.FindObjectsOfTypeAll<Camera>())
-            {
-                if (camera.name == "Portrait Camera" && camera.gameObject.scene.IsValid()) portraitCameras++;
-            }
-            _output.Check(portraitCameras == 1, "Scene has exactly one owned portrait capture camera");
+            List<Camera> portraitCameras = PortraitCameras();
+            _output.Check(portraitCameras.Count == 1, "Exactly one runtime portrait capture camera, including hidden objects; observed "
+                + portraitCameras.Count);
+            Camera portraitCamera = portraitCameras[0];
+            _output.Check(portraitCamera.transform.parent != null
+                && portraitCamera.transform.parent.name == CreaturePortraitRenderer.RootName
+                && !portraitCamera.enabled && !portraitCamera.gameObject.activeInHierarchy,
+                "Owned portrait camera remains disabled and inactive outside capture");
             int captures = attachment.portraits.captureCount;
             yield return Wait(0.45f);
             _output.Check(attachment.portraits.captureCount == captures
@@ -384,6 +386,7 @@ namespace HealerLike.Render.Stage
             yield return Wait(1f);
             _output.Check(preview == null && portraits.isDisposed && texture == null,
                 "Scene exit disposes placement preview and portrait textures");
+            _output.Check(PortraitCameras().Count == 0, "Scene exit destroys every owned portrait capture camera");
             AttachInput();
             _output.Check(SceneManager.GetActiveScene().path == StageInterface.MenuPath, "Pause menu reaches Toolkit menu");
             yield return Capture("04-menu");
@@ -398,6 +401,23 @@ namespace HealerLike.Render.Stage
         }
 
         int EntityCount() { return Object.FindObjectsByType<Entity>(FindObjectsSortMode.None).Length; }
+
+        List<Camera> PortraitCameras()
+        {
+            List<Camera> cameras = new List<Camera>();
+            // HideAndDontSave removes a camera internally from its Scene. Scene.IsValid therefore cannot
+            // distinguish these owned runtime cameras from assets. Include hidden objects and reject assets.
+            foreach (Camera camera in Resources.FindObjectsOfTypeAll<Camera>())
+            {
+                if (camera.name != "Portrait Camera" || EditorUtility.IsPersistent(camera)) continue;
+                cameras.Add(camera);
+                _output.manifest.checks.Add("Observed portrait camera instance " + camera.GetInstanceID()
+                    + ", parent=" + (camera.transform.parent != null ? camera.transform.parent.name : "none")
+                    + ", sceneValid=" + camera.gameObject.scene.IsValid() + ", flags=" + camera.gameObject.hideFlags
+                    + ", enabled=" + camera.enabled + ", active=" + camera.gameObject.activeInHierarchy);
+            }
+            return cameras;
+        }
 
         string GridSnapshot()
         {
