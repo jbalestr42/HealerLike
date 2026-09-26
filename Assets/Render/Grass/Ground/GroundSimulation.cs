@@ -6,8 +6,8 @@ namespace HealerLike.Render.Grass
 {
     // The ground under the grass over one volume. Its motion: each frame the stamps add up into a held target and a
     // kicked force, then fixed steps spring the lean toward the target under the force and ease the flatness. Its
-    // state: the auras ask for ash, vitality and glow, which ease toward them once a frame. The result is published as global textures that every
-    // grass field samples at its tufts' roots, so the board and the strips around it move as one carpet.
+    // state: the auras ask for ash, vitality and glow, which ease toward them once a frame. Global textures let
+    // every field sample the same ground, so the board and the strips around it move as one carpet.
     public class GroundSimulation : IDisposable
     {
         // The most stamps one frame draws; later ones are dropped
@@ -41,16 +41,8 @@ namespace HealerLike.Render.Grass
         static readonly int statePass = 5;
 
         readonly GroundStamp[] _stamps = new GroundStamp[StampCapacity];
-        readonly RenderTexture[] _motion = new RenderTexture[2];
-        readonly RenderTexture[] _crush = new RenderTexture[2];
-        readonly RenderTexture[] _state = new RenderTexture[2];
-        RenderTexture _target;
-        RenderTexture _force;
-        RenderTexture _aura;
+        GroundResources _resources;
         int _currentState;
-        GraphicsBuffer _stampBuffer;
-        CommandBuffer _commands;
-        Material _material;
         int _current;
         int _stampCount;
 
@@ -60,13 +52,13 @@ namespace HealerLike.Render.Grass
         public GroundSpringSettings settings;
         public GroundStateSettings stateSettings = GroundStateSettings.Default;
 
-        public RenderTexture motion { get { return _motion[_current]; } }
-        public RenderTexture crush { get { return _crush[_current]; } }
+        public RenderTexture motion { get { return isValid ? _resources.motion[_current] : null; } }
+        public RenderTexture crush { get { return isValid ? _resources.crush[_current] : null; } }
         // x ash, y vitality from dead at -1 to lush at 1, z light from frost at -1 to glow at 1, w blight
-        public RenderTexture state { get { return _state[_currentState]; } }
+        public RenderTexture state { get { return isValid ? _resources.state[_currentState] : null; } }
         public int stampCount { get { return _stampCount; } }
 
-        public bool isValid { get { return _material != null && _target != null; } }
+        public bool isValid { get { return _resources != null && _resources.isValid; } }
 
         public static bool IsSupported()
         {
@@ -86,36 +78,19 @@ namespace HealerLike.Render.Grass
             }
 
             _volume = volume;
-            _material = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
-            _target = CreateTarget("GroundTarget", RenderTextureFormat.ARGBHalf);
-            _force = CreateTarget("GroundForce", RenderTextureFormat.ARGBHalf);
-            _aura = CreateTarget("GroundAura", RenderTextureFormat.ARGBHalf);
-            for (int i = 0; i < 2; i++)
+            try
             {
-                _motion[i] = CreateTarget("GroundMotion" + i, RenderTextureFormat.ARGBHalf);
-                _crush[i] = CreateTarget("GroundCrush" + i, RenderTextureFormat.RHalf);
-                _state[i] = CreateTarget("GroundState" + i, RenderTextureFormat.ARGBHalf);
+                _resources = new GroundResources(shader, volume);
+                _resources.material.SetVector(RectId, volume.ShaderRect());
+                _resources.material.SetVector(sizeId,
+                    new Vector4(volume.width, volume.height, 1f / volume.width, 1f / volume.height));
+                Reset();
             }
-
-            _stampBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, StampCapacity, GroundStamp.Stride);
-            _commands = new CommandBuffer { name = "GroundSimulation" };
-            _material.SetVector(RectId, volume.ShaderRect());
-            _material.SetVector(sizeId, new Vector4(volume.width, volume.height, 1f / volume.width, 1f / volume.height));
-            Reset();
-        }
-
-        RenderTexture CreateTarget(string name, RenderTextureFormat format)
-        {
-            RenderTexture texture = new RenderTexture(_volume.width, _volume.height, 0, format, RenderTextureReadWrite.Linear)
+            catch (Exception exception)
             {
-                name = name,
-                filterMode = FilterMode.Bilinear,
-                wrapMode = TextureWrapMode.Clamp,
-                useMipMap = false,
-                hideFlags = HideFlags.HideAndDontSave
-            };
-            texture.Create();
-            return texture;
+                Dispose();
+                Debug.LogError("[GroundSimulation] Could not allocate ground: " + exception.Message);
+            }
         }
 
         // Every texel upright, still and standing
@@ -126,18 +101,18 @@ namespace HealerLike.Render.Grass
                 return;
             }
 
-            _commands.Clear();
+            _resources.commands.Clear();
             for (int i = 0; i < 2; i++)
             {
-                _commands.SetRenderTarget(_motion[i]);
-                _commands.ClearRenderTarget(false, true, Color.clear);
-                _commands.SetRenderTarget(_crush[i]);
-                _commands.ClearRenderTarget(false, true, Color.clear);
-                _commands.SetRenderTarget(_state[i]);
-                _commands.ClearRenderTarget(false, true, Color.clear);
+                _resources.commands.SetRenderTarget(_resources.motion[i]);
+                _resources.commands.ClearRenderTarget(false, true, Color.clear);
+                _resources.commands.SetRenderTarget(_resources.crush[i]);
+                _resources.commands.ClearRenderTarget(false, true, Color.clear);
+                _resources.commands.SetRenderTarget(_resources.state[i]);
+                _resources.commands.ClearRenderTarget(false, true, Color.clear);
             }
 
-            Graphics.ExecuteCommandBuffer(_commands);
+            Graphics.ExecuteCommandBuffer(_resources.commands);
             _stampCount = 0;
         }
 
@@ -158,55 +133,57 @@ namespace HealerLike.Render.Grass
             }
 
             int steps = GroundSpring.StepCount(deltaTime, out float step);
-            _commands.Clear();
-            _commands.SetRenderTarget(_target);
-            _commands.ClearRenderTarget(false, true, Color.clear);
+            _resources.commands.Clear();
+            _resources.commands.SetRenderTarget(_resources.target);
+            _resources.commands.ClearRenderTarget(false, true, Color.clear);
             if (_stampCount > 0)
             {
-                _stampBuffer.SetData(_stamps, 0, 0, _stampCount);
-                _material.SetBuffer(stampsId, _stampBuffer);
-                _commands.DrawProcedural(Matrix4x4.identity, _material, stampPass, MeshTopology.Triangles, 6,
-                                         _stampCount);
+                _resources.stamps.SetData(_stamps, 0, 0, _stampCount);
+                _resources.material.SetBuffer(stampsId, _resources.stamps);
+                _resources.commands.DrawProcedural(Matrix4x4.identity, _resources.material, stampPass,
+                    MeshTopology.Triangles, 6, _stampCount);
             }
 
-            _commands.SetRenderTarget(_force);
-            _commands.ClearRenderTarget(false, true, Color.clear);
+            _resources.commands.SetRenderTarget(_resources.force);
+            _resources.commands.ClearRenderTarget(false, true, Color.clear);
             if (_stampCount > 0)
             {
-                _commands.DrawProcedural(Matrix4x4.identity, _material, forcePass, MeshTopology.Triangles, 6,
-                                         _stampCount);
+                _resources.commands.DrawProcedural(Matrix4x4.identity, _resources.material, forcePass,
+                    MeshTopology.Triangles, 6, _stampCount);
             }
 
-            _commands.SetRenderTarget(_aura);
-            _commands.ClearRenderTarget(false, true, Color.clear);
+            _resources.commands.SetRenderTarget(_resources.aura);
+            _resources.commands.ClearRenderTarget(false, true, Color.clear);
             if (_stampCount > 0)
             {
-                _commands.DrawProcedural(Matrix4x4.identity, _material, auraPass, MeshTopology.Triangles, 6,
-                                         _stampCount);
+                _resources.commands.DrawProcedural(Matrix4x4.identity, _resources.material, auraPass,
+                    MeshTopology.Triangles, 6, _stampCount);
             }
 
-            Graphics.ExecuteCommandBuffer(_commands);
-            _material.SetTexture(targetId, _target);
-            _material.SetTexture(forceId, _force);
+            Graphics.ExecuteCommandBuffer(_resources.commands);
+            _resources.material.SetTexture(targetId, _resources.target);
+            _resources.material.SetTexture(forceId, _resources.force);
             Vector2 texel = _volume.texelSize;
-            _material.SetVector(springId, settings.ShaderSpring(Mathf.Min(texel.x, texel.y)));
-            _material.SetVector(crushRatesId, new Vector4(settings.crushFall, settings.crushRise, 0f, 0f));
+            _resources.material.SetVector(springId, settings.ShaderSpring(Mathf.Min(texel.x, texel.y)));
+            _resources.material.SetVector(crushRatesId, new Vector4(settings.crushFall, settings.crushRise, 0f, 0f));
             for (int i = 0; i < steps; i++)
             {
                 // The wind moves on within the frame, each step at its own time
                 Vector4 stepWind = wind;
                 stepWind.w -= (steps - 1 - i) * step;
-                _material.SetVector(windId, stepWind);
-                _material.SetFloat(stepId, step);
-                _material.SetTexture(previousId, _motion[_current]);
-                _material.SetTexture(previousCrushId, _crush[_current]);
+                _resources.material.SetVector(windId, stepWind);
+                _resources.material.SetFloat(stepId, step);
+                _resources.material.SetTexture(previousId, _resources.motion[_current]);
+                _resources.material.SetTexture(previousCrushId, _resources.crush[_current]);
                 int next = 1 - _current;
-                _commands.Clear();
-                _commands.SetRenderTarget(_motion[next]);
-                _commands.DrawProcedural(Matrix4x4.identity, _material, leanPass, MeshTopology.Triangles, 3, 1);
-                _commands.SetRenderTarget(_crush[next]);
-                _commands.DrawProcedural(Matrix4x4.identity, _material, crushPass, MeshTopology.Triangles, 3, 1);
-                Graphics.ExecuteCommandBuffer(_commands);
+                _resources.commands.Clear();
+                _resources.commands.SetRenderTarget(_resources.motion[next]);
+                _resources.commands.DrawProcedural(Matrix4x4.identity, _resources.material, leanPass,
+                    MeshTopology.Triangles, 3, 1);
+                _resources.commands.SetRenderTarget(_resources.crush[next]);
+                _resources.commands.DrawProcedural(Matrix4x4.identity, _resources.material, crushPass,
+                    MeshTopology.Triangles, 3, 1);
+                Graphics.ExecuteCommandBuffer(_resources.commands);
                 _current = next;
             }
 
@@ -219,16 +196,17 @@ namespace HealerLike.Render.Grass
         // The slow state moves once a frame; its exponential ease takes any frame length
         void StepState(float frame)
         {
-            _material.SetTexture(auraId, _aura);
-            _material.SetTexture(previousStateId, _state[_currentState]);
-            _material.SetVector(stateRatesId, stateSettings.ShaderRates());
-            _material.SetVector(glowRatesId, stateSettings.ShaderLightRates());
-            _material.SetFloat(stepId, frame);
+            _resources.material.SetTexture(auraId, _resources.aura);
+            _resources.material.SetTexture(previousStateId, _resources.state[_currentState]);
+            _resources.material.SetVector(stateRatesId, stateSettings.ShaderRates());
+            _resources.material.SetVector(glowRatesId, stateSettings.ShaderLightRates());
+            _resources.material.SetFloat(stepId, frame);
             int next = 1 - _currentState;
-            _commands.Clear();
-            _commands.SetRenderTarget(_state[next]);
-            _commands.DrawProcedural(Matrix4x4.identity, _material, statePass, MeshTopology.Triangles, 3, 1);
-            Graphics.ExecuteCommandBuffer(_commands);
+            _resources.commands.Clear();
+            _resources.commands.SetRenderTarget(_resources.state[next]);
+            _resources.commands.DrawProcedural(Matrix4x4.identity, _resources.material, statePass,
+                MeshTopology.Triangles, 3, 1);
+            Graphics.ExecuteCommandBuffer(_resources.commands);
             _currentState = next;
         }
 
@@ -257,35 +235,16 @@ namespace HealerLike.Render.Grass
 
         public void Dispose()
         {
-            _stampBuffer?.Dispose();
-            _stampBuffer = null;
-            _commands?.Release();
-            _commands = null;
-            ReleaseTarget(ref _target);
-            ReleaseTarget(ref _force);
-            ReleaseTarget(ref _aura);
-            for (int i = 0; i < 2; i++)
+            // A preview or another field may have published after us; release only our publication.
+            Texture published = Shader.GetGlobalTexture(MotionId);
+            if (isValid && (published == _resources.motion[0] || published == _resources.motion[1]))
             {
-                ReleaseTarget(ref _motion[i]);
-                ReleaseTarget(ref _crush[i]);
-                ReleaseTarget(ref _state[i]);
+                Unpublish();
             }
 
-            if (_material != null)
-            {
-                UnityEngine.Object.DestroyImmediate(_material);
-                _material = null;
-            }
-        }
-
-        static void ReleaseTarget(ref RenderTexture texture)
-        {
-            if (texture != null)
-            {
-                texture.Release();
-                UnityEngine.Object.DestroyImmediate(texture);
-                texture = null;
-            }
+            _resources?.Dispose();
+            _resources = null;
+            _stampCount = 0;
         }
     }
 }

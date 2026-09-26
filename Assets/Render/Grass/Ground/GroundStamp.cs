@@ -13,8 +13,9 @@ namespace HealerLike.Render.Grass
     }
 
     // One shape drawn additively into the ground each frame: a disc, a ring front travelling outward, or a
-    // capsule the grass parts around, a body standing in it or a trail left along the ground. Its push is held, a lean the grass springs toward and
-    // keeps while the stamp lasts, and kicked, an acceleration that throws the grass and lets it swing back.
+    // capsule the grass parts around, a body standing in it or a trail left along the ground. Its push is held,
+    // a lean the grass springs toward and keeps while the stamp lasts, and kicked, an acceleration that throws
+    // the grass and lets it swing back.
     // An aura moves nothing: it asks the slow ground state for ash, vitality, glow or frost, and blight over a
     // disc; a streak asks the same along a zigzag line, the mark lightning leaves.
     // HLGroundStamp in GroundCommon.hlsl is the GPU side and Sample mirrors HLGroundStampValue.
@@ -148,171 +149,39 @@ namespace HealerLike.Render.Grass
             };
         }
 
-        // The square the stamp can write into: its centre in world XZ and half its side
         public void Bounds(out Vector2 centre, out float reach)
         {
-            if (kind == GroundStampKind.Streak)
-            {
-                Vector2 start = new Vector2(centreRadius.x, centreRadius.y);
-                Vector2 end = new Vector2(response.x, response.y);
-                centre = 0.5f * (start + end);
-                reach = 0.5f * Vector2.Distance(start, end) + centreRadius.z + centreRadius.w;
-                return;
-            }
-
-            if (kind == GroundStampKind.Body)
-            {
-                Vector2 start = new Vector2(centreRadius.x, centreRadius.y);
-                Vector2 end = new Vector2(push.x, push.y);
-                centre = 0.5f * (start + end);
-                reach = 0.5f * Vector2.Distance(start, end) + centreRadius.w + push.w;
-                return;
-            }
-
-            centre = new Vector2(centreRadius.x, centreRadius.y);
-            reach = centreRadius.z + centreRadius.w;
+            GroundStampSampling.Bounds(this, out centre, out reach);
         }
 
-        // xy lean in radians and z flatness this stamp adds at a world XZ point
         public Vector3 Sample(Vector2 point)
         {
-            if (kind == GroundStampKind.Body)
-            {
-                return SampleBody(point);
-            }
-
-            if (kind == GroundStampKind.Aura || kind == GroundStampKind.Streak)
-            {
-                return Vector3.zero;
-            }
-
-            Vector2 delta = point - new Vector2(centreRadius.x, centreRadius.y);
-            float distance = delta.magnitude;
-            Vector2 outward = distance > 1e-5f ? delta / distance : Vector2.zero;
-            float radius = centreRadius.z;
-            float band = centreRadius.w;
-            float weight;
-            if (kind == GroundStampKind.Front)
-            {
-                weight = 1f - SmoothStep(0f, band, Mathf.Abs(distance - radius));
-            }
-            else
-            {
-                float rim = radius * (1f - shape.z * (0.5f + 0.5f * Mathf.Sin(Vector2.Dot(point, RimFrequency))));
-                weight = 1f - SmoothStep(rim * (1f - shape.y), rim, distance);
-            }
-
-            Vector2 lean = kind == GroundStampKind.Front ? outward * (push.w * weight)
-                                                          : Turn(outward, push.x) * (push.w * weight);
-
-            return new Vector3(lean.x, lean.y, shape.x * weight);
+            return GroundStampSampling.Sample(this, point);
         }
 
-        // What an aura asks of the ground state at a world XZ point, scaled by its cover there: x ash, y vitality,
-        // z light, w blight. Overlapping auras add up. Zero for every other kind.
         public Vector4 State(Vector2 point)
         {
-            if (kind == GroundStampKind.Streak)
-            {
-                return push * StreakWeight(point);
-            }
-
-            if (kind != GroundStampKind.Aura)
-            {
-                return Vector4.zero;
-            }
-
-            return push * DiscWeight(point);
+            return GroundStampSampling.State(this, point);
         }
 
-        // HLGroundStreakWeight: the distance to the zigzag path through the segment, thinning toward its end
-        float StreakWeight(Vector2 point)
-        {
-            Vector2 start = new Vector2(centreRadius.x, centreRadius.y);
-            Vector2 axis = new Vector2(response.x, response.y) - start;
-            float length = Mathf.Max(axis.magnitude, 1e-5f);
-            Vector2 along = axis / length;
-            Vector2 delta = point - start;
-            float t = Mathf.Clamp01(Vector2.Dot(delta, along) / length);
-            float side = along.x * delta.y - along.y * delta.x;
-            float turn = t * length * shape.z;
-            float zigzag = 1f - 4f * Mathf.Abs(Frac(turn + 0.25f) - 0.5f);
-            float slope = 4f * centreRadius.w * shape.z;
-            float offset = Mathf.Abs(side - centreRadius.w * zigzag) / Mathf.Sqrt(1f + slope * slope);
-            float beyond = Mathf.Max(0f, Mathf.Abs(Vector2.Dot(delta, along) - t * length));
-            float distance = Mathf.Sqrt(offset * offset + beyond * beyond);
-            float width = centreRadius.z * (1f - 0.5f * t);
-            return 1f - SmoothStep(width * (1f - shape.y), width, distance);
-        }
-
-        float DiscWeight(Vector2 point)
-        {
-            float distance = Vector2.Distance(point, new Vector2(centreRadius.x, centreRadius.y));
-            float radius = centreRadius.z;
-            float rim = radius * (1f - shape.z * (0.5f + 0.5f * Mathf.Sin(Vector2.Dot(point, RimFrequency))));
-            return 1f - SmoothStep(rim * (1f - shape.y), rim, distance);
-        }
-
-        // The lean the stamp holds and the flatness it asks for at a world XZ point
         public Vector3 Target(Vector2 point)
         {
-            Vector3 value = Sample(point);
-            return new Vector3(value.x * response.z, value.y * response.z, value.z);
+            return GroundStampSampling.Target(this, point);
         }
 
-        // The acceleration the stamp throws the grass with at a world XZ point
         public Vector2 Force(Vector2 point)
         {
-            Vector3 value = Sample(point);
-            return new Vector2(value.x, value.y) * response.w;
+            return GroundStampSampling.Force(this, point);
         }
 
-        // Rotates v counterclockwise seen from above, from +X toward +Z, by angle radians
         public static Vector2 Turn(Vector2 v, float angle)
         {
-            float cos = Mathf.Cos(angle);
-            float sin = Mathf.Sin(angle);
-            return new Vector2(v.x * cos - v.y * sin, v.x * sin + v.y * cos);
+            return GroundStampSampling.Turn(v, angle);
         }
 
-        // HLGroundBodyValue: the nearest point of the capsule's ground shadow, how low the body sits over it, and
-        // how far out the grass still feels it
-        Vector3 SampleBody(Vector2 point)
-        {
-            Vector2 start = new Vector2(centreRadius.x, centreRadius.y);
-            Vector2 end = new Vector2(push.x, push.y);
-            Vector2 axis = end - start;
-            float t = Mathf.Clamp01(Vector2.Dot(point - start, axis) / Mathf.Max(Vector2.Dot(axis, axis), 1e-6f));
-            Vector2 nearest = start + axis * t;
-            float height = Mathf.Lerp(centreRadius.z, push.z, t);
-            float radius = centreRadius.w;
-            Vector2 delta = point - nearest;
-            float distance = delta.magnitude;
-            Vector2 outward = distance > 1e-5f ? delta / distance : Vector2.zero;
-            float underside = height - Mathf.Sqrt(Mathf.Max(radius * radius - distance * distance, 0f));
-            float contact = Mathf.Clamp01((response.x - underside) / response.x);
-            float near = 1f - SmoothStep(radius, radius + push.w, distance);
-            float covered = 1f - SmoothStep(0.6f * radius, Mathf.Max(radius, 1e-4f), distance);
-            Vector2 lean = outward * (response.y * contact * near);
-            return new Vector3(lean.x, lean.y, shape.x * contact * covered);
-        }
-
-        // HLSL frac
-        static float Frac(float x)
-        {
-            return x - Mathf.Floor(x);
-        }
-
-        // HLSL smoothstep, which Mathf.SmoothStep is not
         public static float SmoothStep(float edge0, float edge1, float x)
         {
-            if (edge1 <= edge0)
-            {
-                return x < edge0 ? 0f : 1f;
-            }
-
-            float t = Mathf.Clamp01((x - edge0) / (edge1 - edge0));
-            return t * t * (3f - 2f * t);
+            return GroundStampSampling.SmoothStep(edge0, edge1, x);
         }
     }
 }

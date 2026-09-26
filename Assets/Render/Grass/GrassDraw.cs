@@ -42,16 +42,23 @@ namespace HealerLike.Render.Grass
             data[0].startInstance = 0;
             _arguments = new GraphicsBuffer(GraphicsBuffer.Target.IndirectArguments, 1,
                                             GraphicsBuffer.IndirectDrawIndexedArgs.size);
-            _arguments.SetData(data);
-
-            _parameters = new RenderParams(material);
-            _parameters.worldBounds = bounds;
-            _parameters.matProps = new MaterialPropertyBlock();
-            _parameters.layer = layer;
-            _parameters.shadowCastingMode = ShadowCastingMode.Off;
-            _parameters.receiveShadows = true;
-            _parameters.lightProbeUsage = LightProbeUsage.Off;
-            _parameters.reflectionProbeUsage = ReflectionProbeUsage.Off;
+            try
+            {
+                _arguments.SetData(data);
+                _parameters = new RenderParams(material);
+                _parameters.worldBounds = bounds;
+                _parameters.matProps = new MaterialPropertyBlock();
+                _parameters.layer = layer;
+                _parameters.shadowCastingMode = ShadowCastingMode.Off;
+                _parameters.receiveShadows = true;
+                _parameters.lightProbeUsage = LightProbeUsage.Off;
+                _parameters.reflectionProbeUsage = ReflectionProbeUsage.Off;
+            }
+            catch
+            {
+                Release();
+                throw;
+            }
         }
 
         // A tuft or socle over the field's tufts; a lean of one tilts the mesh with its tuft, zero keeps it flat
@@ -115,7 +122,7 @@ namespace HealerLike.Render.Grass
         {
             if (_hasOwner && _owner == null)
             {
-                Hide();
+                Release();
                 return;
             }
 
