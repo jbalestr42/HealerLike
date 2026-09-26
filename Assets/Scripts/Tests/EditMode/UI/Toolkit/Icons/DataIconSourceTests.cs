@@ -16,6 +16,12 @@ namespace UI.Toolkit.Icons
         }
 
         [Test]
+        public void Label_NullSource_MatchesDescriptorFallback()
+        {
+            Assert.AreEqual(DataIconDescriptor.From(null).label, DataIconSource.Label(null));
+        }
+
+        [Test]
         public void From_UnknownTypeWithoutContract_UsesDeterministicTypeName()
         {
             DataIconDescriptor descriptor = DataIconDescriptor.From(new UnregisteredData());

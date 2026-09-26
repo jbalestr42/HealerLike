@@ -55,6 +55,9 @@ namespace HealerLike.Render.Stones
             SubMeshDescriptor second = _mesh.GetSubMesh(1);
             Bounds bounds = _mesh.bounds;
             AddOutlineDuplicate();
+            // Appending the synthetic submesh can reset mesh bounds in Unity. The repair must preserve
+            // authored bounds present on its input, including a custom box restored after that setup.
+            _mesh.bounds = bounds;
             string authored = StoneMeshFingerprint.Authored(_mesh);
 
             Assert.IsTrue(StoneOutlineRepair.TryRepair(_mesh, out string reason), reason);

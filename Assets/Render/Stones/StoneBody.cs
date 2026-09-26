@@ -90,11 +90,13 @@ namespace HealerLike.Render.Stones
 
         public StoneImpact EstimateImpact(Vector3 query)
         {
+            SyncGeometry();
             return _impacts.Estimate(query);
         }
 
         void OnConsumersProcessed(GameObject owner, ResourceModifier modifier, float delta, bool critical)
         {
+            SyncGeometry();
             _state.RecordProcessedDelta(delta);
             _impacts.Resolve(modifier, delta < 0f && !_isCollapsed, critical);
         }
@@ -139,6 +141,7 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
+            SyncGeometry();
             _isCollapsed = true;
             _state.TryBeginCollapse();
             if (_throw != null)
@@ -167,6 +170,14 @@ namespace HealerLike.Render.Stones
                 _groundShadow.Refresh();
             }
             _impacts.CompleteFrame();
+        }
+
+        void SyncGeometry()
+        {
+            if (_builder != null)
+            {
+                _builder.SyncGeometry();
+            }
         }
 
         void Subscribe()
@@ -216,6 +227,12 @@ namespace HealerLike.Render.Stones
         void OnDestroy()
         {
             Unsubscribe();
+            if (_groundShadow != null)
+            {
+                _groundShadow.Show(false);
+                RenderObjects.Release(_groundShadow.gameObject);
+                _groundShadow = null;
+            }
         }
     }
 }

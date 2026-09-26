@@ -52,8 +52,7 @@ namespace HealerLike.Render.Creatures
             Transform parent,
             PrimitiveMeshes meshes,
             Material material,
-            Color colour,
-            BorrowedMeshCopies borrowedMeshes = null
+            Color colour
         )
         {
             Clear();
@@ -74,17 +73,6 @@ namespace HealerLike.Render.Creatures
             Mesh jointMesh = definition.jointShape.isProcedural
                 ? _shapeMeshes.Get(definition.jointShape)
                 : meshes.sphere;
-            if (borrowedMeshes != null)
-            {
-                if (!definition.segmentShape.isProcedural)
-                {
-                    segmentMesh = borrowedMeshes.Get(segmentMesh);
-                }
-                if (!definition.jointShape.isProcedural)
-                {
-                    jointMesh = borrowedMeshes.Get(jointMesh);
-                }
-            }
             for (int i = 0; i < _segments.Length; i++)
             {
                 _segments[i] = PrimitiveMeshes.Geometry("Root", parent, segmentMesh, material, colour);

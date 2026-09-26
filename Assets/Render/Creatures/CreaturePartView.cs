@@ -80,9 +80,11 @@ namespace HealerLike.Render.Creatures
             float light,
             float elapsed,
             Color wilt,
-            Color ochre
+            Color ochre,
+            CreatureSelection selection = default
         )
         {
+            _paint.selection = selection;
             float swell = 1f + pulse * pulseSwell;
             if (_part.role == PartRole.Head || _part.role == PartRole.Tip)
             {

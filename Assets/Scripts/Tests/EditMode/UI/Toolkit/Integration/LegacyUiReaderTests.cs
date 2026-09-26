@@ -16,6 +16,15 @@ namespace UI.Toolkit.Integration
             public override void Unequip(GameObject target) { }
         }
 
+        class BareItem : AItem
+        {
+            public override string title { get { return "Custom item"; } }
+            public override Sprite icon { get { return null; } }
+            public override List<GameplayTag> tags { get { return new List<GameplayTag>(); } }
+            public override void Equip(GameObject target) { }
+            public override void Unequip(GameObject target) { }
+        }
+
         GameObject _go;
 
         [SetUp]
@@ -51,6 +60,15 @@ namespace UI.Toolkit.Integration
 
             Assert.AreEqual("Protect an ally", description);
             Assert.AreSame(data, item.data);
+        }
+
+        [Test]
+        public void ItemDescription_NonGenericItem_RemainsValidWithoutDataContract()
+        {
+            BareItem item = new BareItem();
+
+            Assert.IsEmpty(LegacyUiReader.ItemDescription(item));
+            Assert.AreEqual(nameof(BareItem), DataIconDescriptor.From(item).label);
         }
 
         [Test]

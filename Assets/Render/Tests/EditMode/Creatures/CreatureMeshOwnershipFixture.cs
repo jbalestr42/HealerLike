@@ -14,6 +14,7 @@ namespace HealerLike.Render.Creatures
         protected CreatureRecipe _recipe;
         protected CreatureRig _rig;
         protected ArmPool _pool;
+        protected CreatureAttachment _attachment;
         protected List<Vector3> _sourceUVs;
 
         [SetUp]
@@ -44,10 +45,11 @@ namespace HealerLike.Render.Creatures
             _recipe.idle = default;
             _material = new Material(RenderTestAssets.LoadLookMaterial());
             _material.enableInstancing = false;
+            _attachment = new CreatureAttachment(_owner.transform);
             _rig = new CreatureRig();
-            Assert.IsTrue(_rig.Init(_recipe, _owner.transform, _material, _material, _meshes, 1f, true));
+            Assert.IsTrue(_rig.Init(_recipe, _attachment.root, _material, _material, _meshes, 1f, _owner.transform));
             _pool = new ArmPool();
-            _pool.Init(_rig, _material, _meshes, null, true);
+            _pool.Init(_rig, _material, _meshes, null);
         }
 
         [TearDown]
@@ -55,6 +57,12 @@ namespace HealerLike.Render.Creatures
         {
             _pool.Dispose();
             _rig.Dispose();
+            CreatureBuilder builder = _owner ? _owner.GetComponent<CreatureBuilder>() : null;
+            if (builder)
+            {
+                TestHelpers.InvokePrivate(builder, "OnDestroy");
+            }
+            _attachment.Dispose();
             Object.DestroyImmediate(_owner);
             Object.DestroyImmediate(_source);
             Object.DestroyImmediate(_meshes);

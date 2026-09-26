@@ -21,13 +21,34 @@ namespace UI.Toolkit
             Assert.AreEqual(PickingMode.Position, root.Q("party-panel").pickingMode);
             Assert.AreEqual(PickingMode.Position, root.Q("pause-panel").pickingMode);
             Assert.AreEqual(PickingMode.Ignore, root.Q("detail-actions").pickingMode);
-            Assert.AreSame(root.Q("detail-actions"), root.Q<DropdownField>("detail-targeting").parent.parent);
+            TemplateContainer actions = root.Q<TemplateContainer>("detail-actions");
+            DropdownField targeting = root.Q<DropdownField>("detail-targeting");
+            string ancestry = DescribeHierarchy(targeting) + " | Action content: "
+                + DescribeHierarchy(actions.contentContainer);
+            Assert.AreSame(actions, targeting.parent, ancestry);
+            Assert.AreSame(actions.Q("action-section-content"), actions.contentContainer, ancestry);
+            Assert.AreSame(actions.contentContainer, targeting.hierarchy.parent, ancestry);
             Assert.IsTrue(root.Q("inventory-actions").Contains(root.Q("inventory-equip-button")));
-            Assert.IsTrue(root.Q("party-close-button").parent.ClassListContains("section-heading-actions"));
-            Assert.IsTrue(root.Q("detail-close-button").parent.ClassListContains("section-heading-actions"));
-            Assert.IsTrue(root.Q("resume-button").parent.ClassListContains("dialog-content"));
-            Assert.IsTrue(root.Q("restart-button").parent.ClassListContains("dialog-content"));
-            Assert.IsTrue(root.Q("upgrade-title").parent.ClassListContains("dialog-content"));
+            Assert.IsTrue(root.Q("party-close-button").hierarchy.parent.ClassListContains("section-heading-actions"));
+            Assert.IsTrue(root.Q("detail-close-button").hierarchy.parent.ClassListContains("section-heading-actions"));
+            Assert.IsTrue(root.Q("resume-button").hierarchy.parent.ClassListContains("dialog-content"));
+            Assert.IsTrue(root.Q("restart-button").hierarchy.parent.ClassListContains("dialog-content"));
+            Assert.IsTrue(root.Q("upgrade-title").hierarchy.parent.ClassListContains("dialog-content"));
+        }
+
+        static string DescribeHierarchy(VisualElement element)
+        {
+            System.Text.StringBuilder path = new System.Text.StringBuilder();
+            while (element != null)
+            {
+                if (path.Length > 0)
+                {
+                    path.Append(" <- ");
+                }
+                path.Append(element.GetType().Name).Append("(").Append(element.name).Append(")");
+                element = element.parent;
+            }
+            return path.ToString();
         }
 
         [Test]

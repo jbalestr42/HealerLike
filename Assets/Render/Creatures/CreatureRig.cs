@@ -31,65 +31,32 @@ namespace HealerLike.Render.Creatures
         float _healthFraction = 1f;
         float _appearanceElapsed = CreatureAppearance.Duration;
         int _revision;
-        public float appearanceElapsed
-        {
-            get { return _appearanceElapsed; }
-        }
+        public float appearanceElapsed => _appearanceElapsed;
 
-        public bool isAppearing
-        {
-            get { return _appearanceElapsed < CreatureAppearance.Duration; }
-        }
+        public bool isAppearing => _appearanceElapsed < CreatureAppearance.Duration;
 
-        public Transform[] budAnchors
-        {
-            get { return _assembly.buds; }
-        }
+        public Transform[] budAnchors => _assembly.buds;
 
-        public Transform root
-        {
-            get { return _assembly.root; }
-        }
+        public Transform root => _assembly.root;
 
-        public CreatureRecipe recipe
-        {
-            get { return _recipe; }
-        }
+        public CreatureRecipe recipe => _recipe;
 
-        public int revision
-        {
-            get { return _revision; }
-        }
+        public int revision => _revision;
 
-        public float cellSize
-        {
-            get { return _cellSize; }
-        }
+        public float cellSize => _cellSize;
 
-        public IReadOnlyList<Transform> partTransforms
-        {
-            get { return _assembly.geometry; }
-        }
+        public IReadOnlyList<Transform> partTransforms => _assembly.geometry;
 
         public IReadOnlyList<CreaturePart> parts
         {
             get { return _assembly.data != null ? _assembly.data.parts : Array.Empty<CreaturePart>(); }
         }
 
-        public int armCount
-        {
-            get { return _assembly.data != null ? _assembly.data.arms.Length : 0; }
-        }
+        public int armCount => _assembly.data != null ? _assembly.data.arms.Length : 0;
 
-        public RootDefinition roots
-        {
-            get { return _assembly.data != null ? _assembly.data.roots : default; }
-        }
+        public RootDefinition roots => _assembly.data != null ? _assembly.data.roots : default;
 
-        public Quaternion armRotation
-        {
-            get { return root.rotation * _assembly.sway.localRotation; }
-        }
+        public Quaternion armRotation => root.rotation * _assembly.sway.localRotation;
 
         public bool Init(
             CreatureRecipe data,
@@ -105,7 +72,6 @@ namespace HealerLike.Render.Creatures
         // A recipe that fails validation logs and leaves the view empty. Body, Head and Stem surfaces use the
         // body material; tips and roots retain the shared material. The caller gives stones one material
         // for both slots, so surface shading does not infer a side from colour, geometry or an object name.
-        // Live hosts copy borrowed meshes to contain legacy selection edits; standalone previews can borrow.
         public bool Init(
             CreatureRecipe data,
             Transform parent,
@@ -113,7 +79,7 @@ namespace HealerLike.Render.Creatures
             Material bodyMaterial,
             PrimitiveMeshes meshes,
             float cellSize,
-            bool copyBorrowedMeshes = false
+            Transform seedSource = null
         )
         {
             if (!CreatureValidator.TryValidate(data, out string error))
@@ -146,7 +112,7 @@ namespace HealerLike.Render.Creatures
             }
 
             _cellSize = cellSize;
-            _assembly.Init(parent, copyBorrowedMeshes);
+            _assembly.Init(parent, seedSource);
             if (Recompose(data, material, bodyMaterial, meshes))
             {
                 return true;
@@ -247,6 +213,11 @@ namespace HealerLike.Render.Creatures
             _crownPulse = Mathf.Max(0f, _crownPulse - dt / 0.2f);
             float light = Mathf.Max(_budPower, _charge) * _healthFraction;
             _assembly.Tick(time, idlePose, _cellSize, _crownPulse, _charge, _healthFraction, light, _appearanceElapsed);
+        }
+
+        public void SetSelection(CreatureSelection selection)
+        {
+            _assembly.selection = selection;
         }
 
         // Where arm index leaves the body now, in world space

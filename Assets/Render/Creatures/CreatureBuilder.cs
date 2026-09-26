@@ -20,6 +20,7 @@ namespace HealerLike.Render.Creatures
         // The recipe this view derived from its entity, released with it
         CreatureRecipe _derivedRecipe;
         Entity _entity;
+        SelectableEntity _selection;
         readonly CreatureHealthObserver _healthObserver = new CreatureHealthObserver();
         StatusObserver _statusObserver;
         RenderRegistry _registry;
@@ -104,6 +105,7 @@ namespace HealerLike.Render.Creatures
                 return false;
             }
 
+            SyncGeometry();
             CreatureRecipe next = _recipe;
             bool isDerived = _derivedRecipe != null;
             if (isDerived)
@@ -158,13 +160,14 @@ namespace HealerLike.Render.Creatures
             }
 
             _entity = owner;
+            _selection = owner ? owner.GetComponent<SelectableEntity>() : null;
             _readout.Init(_entity);
             ObserveOutcomes();
             if (!_entity)
             {
                 if (rig != null)
                 {
-                    rig.SetVisible(false);
+                    SetRigVisible(false);
                 }
 
                 return;
@@ -222,7 +225,7 @@ namespace HealerLike.Render.Creatures
 
             if (rig != null)
             {
-                rig.SetVisible(isActiveAndEnabled);
+                SetRigVisible(isActiveAndEnabled);
                 TickPresentation(0f);
             }
         }
@@ -241,6 +244,7 @@ namespace HealerLike.Render.Creatures
 
         void TickPresentation(float deltaTime)
         {
+            rig.SetSelection(CreatureSelection.Read(_selection));
             Camera camera = _manager != null ? _manager.gameCamera : null;
             rig.SetPresentationForward(camera != null ? -camera.transform.forward : (Vector3?)null);
             TickRig(Time.time, deltaTime, Frame());
@@ -262,7 +266,7 @@ namespace HealerLike.Render.Creatures
             Register(_registry, _entity.gameObject);
             if (rig != null)
             {
-                rig.SetVisible(true);
+                SetRigVisible(true);
             }
         }
 

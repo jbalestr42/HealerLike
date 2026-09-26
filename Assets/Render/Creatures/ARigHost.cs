@@ -1,5 +1,6 @@
 using UnityEngine;
 using HealerLike.Render.Deliveries;
+using HealerLike.Render.Stones;
 
 namespace HealerLike.Render.Creatures
 {
@@ -8,6 +9,8 @@ namespace HealerLike.Render.Creatures
     public abstract class ARigHost : MonoBehaviour, IHealthVisualSink, IDeliverySource, IEffectAnchors, IDeliveryAccent
     {
         ArmPool _pool;
+        CreatureAttachment _attachment;
+        public Transform presentation => _attachment != null ? _attachment.root : null;
         RenderRegistry _registeredRegistry;
         GameObject _registeredSource;
         CreatureRig _rig;
@@ -32,15 +35,28 @@ namespace HealerLike.Render.Creatures
                 return true;
             }
 
-            CreatureRig created = new CreatureRig();
-            if (!created.Init(recipe, parent, material, bodyMaterial, meshes, cellSize, true))
+            if (!parent)
             {
                 return false;
             }
 
+            _attachment = new CreatureAttachment(parent);
+            CreatureRig created = new CreatureRig();
+            if (!created.Init(recipe, _attachment.root, material, bodyMaterial, meshes, cellSize, parent))
+            {
+                _attachment.Dispose();
+                _attachment = null;
+                return false;
+            }
+
+            foreach (StoneGroundDisc disc in GetComponentsInChildren<StoneGroundDisc>(true))
+            {
+                disc.Attach(_attachment);
+            }
+
             _rig = created;
             _pool = new ArmPool();
-            _pool.Init(_rig, material, meshes, vocabulary, true);
+            _pool.Init(_rig, material, meshes, vocabulary);
             return true;
         }
 
@@ -52,8 +68,29 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
+            SyncGeometry();
             _rig.Tick(time, deltaTime, frame);
             _pool.Tick(deltaTime);
+        }
+
+        public void SyncGeometry()
+        {
+            if (_attachment != null)
+            {
+                _attachment.Sync();
+            }
+        }
+
+        protected void SetRigVisible(bool visible)
+        {
+            if (_attachment != null)
+            {
+                _attachment.SetVisible(visible);
+            }
+            if (_rig != null)
+            {
+                _rig.SetVisible(visible);
+            }
         }
 
         protected void CancelGestures()
@@ -81,7 +118,7 @@ namespace HealerLike.Render.Creatures
             }
 
             _pool.CancelAll();
-            _rig.SetVisible(false);
+            SetRigVisible(false);
         }
 
         protected void ReleaseRig()
@@ -94,6 +131,11 @@ namespace HealerLike.Render.Creatures
 
             _rig = null;
             _pool = null;
+            if (_attachment != null)
+            {
+                _attachment.Dispose();
+                _attachment = null;
+            }
         }
 
         // A heal pulses the crown and reaches an arm to the target
@@ -104,6 +146,7 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
+            SyncGeometry();
             _rig.Heal();
             _pool.HealContact(RenderTargets.Point(target));
         }
@@ -142,6 +185,7 @@ namespace HealerLike.Render.Creatures
         #region IDeliverySource
         public bool BeginDelivery(int token, DeliveryStyle style, Transform projectile, Vector3 intendedEnd)
         {
+            SyncGeometry();
             return isActiveAndEnabled && _rig != null && _pool.BeginDelivery(token, style, projectile, intendedEnd);
         }
 
@@ -181,6 +225,7 @@ namespace HealerLike.Render.Creatures
                 return false;
             }
 
+            SyncGeometry();
             return _rig.TryGetAnchors(out anchors);
         }
         #endregion

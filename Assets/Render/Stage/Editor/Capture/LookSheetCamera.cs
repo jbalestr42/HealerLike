@@ -1,3 +1,4 @@
+using HealerLike.Render.Creatures;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -39,7 +40,7 @@ namespace HealerLike.Render.Stage
         public static Vector3 DrawnCentre(Transform unit)
         {
             Bounds bounds = new Bounds(unit.position, Vector3.zero);
-            foreach (Renderer renderer in unit.GetComponentsInChildren<Renderer>())
+            foreach (Renderer renderer in CreatureRenderers.Find(unit))
             {
                 if (renderer.enabled && renderer is MeshRenderer)
                 {

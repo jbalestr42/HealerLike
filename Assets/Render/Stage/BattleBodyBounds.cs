@@ -26,11 +26,15 @@ namespace HealerLike.Render.Stage
                 {
                     _host = _body.GetComponentInChildren<ARigHost>();
                 }
+                if (_host != null)
+                {
+                    _host.SyncGeometry();
+                }
                 CreatureRig rig = _host != null ? _host.rig : null;
                 int revision = rig != null ? rig.revision : 0;
                 if (_renderers == null || rig != _rig || revision != _revision)
                 {
-                    _renderers = _body.GetComponentsInChildren<Renderer>();
+                    _renderers = CreatureRenderers.Find(_body);
                     _rig = rig;
                     _revision = revision;
                 }
