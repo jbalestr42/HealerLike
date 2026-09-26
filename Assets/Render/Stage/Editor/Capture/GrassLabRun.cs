@@ -8,12 +8,14 @@ using UnityEngine.Rendering;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Grass;
 using HealerLike.Render.Look;
+using HealerLike.Render.Spells;
 using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Stage
 {
     // A scripted grass scene stepped at a fixed 60 Hz, whatever the editor's frame rate: an ally walks through
-    // the carpet past a stone enemy and a second ally, a heal blooms, a launch crosses, a gust blows. The
+    // the carpet past a stone enemy and a second ally, a heal blooms and swirls, a launch crosses, two hits blast
+    // out of the stone, a gust blows. The
     // creatures are the game's own rigs pressing the grass as bodies. Writes a filmstrip, a contact sheet and the
     // ground's lean and flatness at a few probes on every frame to grass-lab/ under the capture folder.
     public class GrassLabRun : AStageRun
@@ -124,6 +126,17 @@ namespace HealerLike.Render.Stage
                 if (frame == 108)
                 {
                     registry.AddLaunch(new Vector3(-3.5f, 0f, -3f), new Vector3(3f, 0f, -0.5f));
+                }
+
+                // The launch lands on the stone, then a critical hit lands on it
+                if (frame == 132)
+                {
+                    registry.AddShock(stone.position, ImpactPool.ShockRadius(0.3f, false), 0.65f);
+                }
+
+                if (frame == 170)
+                {
+                    registry.AddShock(stone.position, ImpactPool.ShockRadius(0.5f, true), 0.75f);
                 }
 
                 // A gust sweeps across from the left for the last second

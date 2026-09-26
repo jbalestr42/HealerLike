@@ -12,7 +12,9 @@ namespace HealerLike.Render.Zones
         Range = 3,
         Bruise = 4,
         Launch = 5,
-        Trample = 6
+        Trample = 6,
+        // A blast ring: an impact throwing the grass outward
+        Shock = 7
     }
 
     // Matches the 32 bytes element of _HLZones in ZoneData.hlsl

@@ -17,7 +17,7 @@ public class GroundSpringTests
         for (int i = 0; i < steps; i++)
         {
             // A uniform field: every neighbour moves with the texel
-            GroundSpring.Step(ref lean, ref velocity, target, lean, GroundSpring.MaxStep, spring);
+            GroundSpring.Step(ref lean, ref velocity, target, lean, Vector2.zero, GroundSpring.MaxStep, spring);
             peak = Mathf.Max(peak, lean.magnitude);
         }
 
@@ -61,7 +61,7 @@ public class GroundSpringTests
         float lowest = 1f;
         for (int i = 0; i < 90; i++)
         {
-            GroundSpring.Step(ref lean, ref velocity, Vector2.zero, lean, GroundSpring.MaxStep,
+            GroundSpring.Step(ref lean, ref velocity, Vector2.zero, lean, Vector2.zero, GroundSpring.MaxStep,
                               settings.ShaderSpring(0.1f));
             lowest = Mathf.Min(lowest, lean.x);
         }
@@ -78,8 +78,9 @@ public class GroundSpringTests
         Vector2 coupled = Vector2.zero;
         Vector2 coupledVelocity = Vector2.zero;
 
-        GroundSpring.Step(ref alone, ref aloneVelocity, Vector2.zero, Vector2.zero, GroundSpring.MaxStep, spring);
-        GroundSpring.Step(ref coupled, ref coupledVelocity, Vector2.zero, new Vector2(0.5f, 0f),
+        GroundSpring.Step(ref alone, ref aloneVelocity, Vector2.zero, Vector2.zero, Vector2.zero,
+                          GroundSpring.MaxStep, spring);
+        GroundSpring.Step(ref coupled, ref coupledVelocity, Vector2.zero, new Vector2(0.5f, 0f), Vector2.zero,
                           GroundSpring.MaxStep, spring);
 
         Assert.AreEqual(Vector2.zero, alone);
@@ -94,6 +95,27 @@ public class GroundSpringTests
 
         Assert.LessOrEqual(peak, settings.maxLean + 1e-5f);
         Assert.LessOrEqual(lean.magnitude, settings.maxLean + 1e-5f);
+    }
+
+    [Test]
+    public void Step_BriefKick_ThrowsTheGrassWhichSwingsBackToRest()
+    {
+        Vector4 spring = GroundSpringSettings.Default.ShaderSpring(0.1f);
+        Vector2 lean = Vector2.zero;
+        Vector2 velocity = Vector2.zero;
+        float peak = 0f;
+        float lowest = 0f;
+        for (int i = 0; i < 240; i++)
+        {
+            Vector2 force = i < 6 ? new Vector2(100f, 0f) : Vector2.zero;
+            GroundSpring.Step(ref lean, ref velocity, Vector2.zero, lean, force, GroundSpring.MaxStep, spring);
+            peak = Mathf.Max(peak, lean.x);
+            lowest = Mathf.Min(lowest, lean.x);
+        }
+
+        Assert.Greater(peak, 0.3f, "A tenth of a second's kick throws the grass well over.");
+        Assert.Less(lowest, -0.05f, "It whips back past upright.");
+        Assert.Less(lean.magnitude, 0.02f, "Then it settles, nothing holds it.");
     }
 
     [Test]
@@ -206,7 +228,8 @@ public class GroundSpringTests
                 // The row stands for a wide front, so the two other neighbours move with the texel
                 Vector2 mean = 0.25f * (left + right + 2f * lean[i]);
                 next[i] = lean[i];
-                GroundSpring.Step(ref next[i], ref velocity[i], target, mean, GroundSpring.MaxStep, spring);
+                GroundSpring.Step(ref next[i], ref velocity[i], target, mean, Vector2.zero, GroundSpring.MaxStep,
+                                  spring);
             }
 
             System.Array.Copy(next, lean, count);

@@ -97,11 +97,13 @@ namespace HealerLike.Render.Grass
             return count;
         }
 
-        // lean and velocity advance by one semi-implicit Euler step; the lean stays within the max lean
+        // lean and velocity advance by one semi-implicit Euler step under the spring and the kicked force; the
+        // lean stays within the max lean
         public static void Step(ref Vector2 lean, ref Vector2 velocity, Vector2 target, Vector2 neighbourMean,
-                                float step, Vector4 spring)
+                                Vector2 force, float step, Vector4 spring)
         {
-            Vector2 acceleration = spring.x * (target - lean) - spring.y * velocity + spring.z * (neighbourMean - lean);
+            Vector2 acceleration = spring.x * (target - lean) - spring.y * velocity + spring.z * (neighbourMean - lean)
+                                   + force;
             velocity += acceleration * step;
             lean += velocity * step;
             lean *= Mathf.Min(1f, spring.w / Mathf.Max(lean.magnitude, 1e-5f));

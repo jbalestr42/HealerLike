@@ -14,6 +14,11 @@ namespace HealerLike.Render.Spells
 
         // Sizes an impact on a unit that has no health to read
         static readonly float defaultMaximumHealth = 100f;
+        // A hit's blast through the grass, in world units: its least radius, what a whole health bar adds, and
+        // the widening of a critical
+        static readonly float shockMinRadius = 0.9f;
+        static readonly float shockRadiusRange = 2f;
+        static readonly float shockCriticalScale = 1.4f;
 
         // One recipient of a character's cast this frame
         struct Recipient
@@ -88,6 +93,17 @@ namespace HealerLike.Render.Spells
             }
 
             Add(effect.gameObject);
+            if (_zones != null && preClampAmount < 0f)
+            {
+                _zones.AddShock(target.transform.position, ShockRadius(amount, isCritical), 0.5f + 0.5f * amount);
+            }
+        }
+
+        // The blast a hit throws through the grass, wider as it takes a larger share of the target's health
+        public static float ShockRadius(float share, bool isCritical)
+        {
+            float radius = shockMinRadius + shockRadiusRange * Mathf.Clamp01(share);
+            return isCritical ? radius * shockCriticalScale : radius;
         }
 
         public SpellEffect ShowLink(Vector3 start, Vector3 end, EffectFamily family, bool isContactThread,

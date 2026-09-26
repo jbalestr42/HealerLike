@@ -10,6 +10,7 @@
 #define HL_ZONE_BRUISE 4
 #define HL_ZONE_LAUNCH 5
 #define HL_ZONE_TRAMPLE 6
+#define HL_ZONE_SHOCK 7
 
 struct HLZone
 {

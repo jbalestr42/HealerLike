@@ -4,8 +4,8 @@ using UnityEngine.Rendering;
 
 namespace HealerLike.Render.Grass
 {
-    // The grass motion over one ground volume: each frame the stamps add up into a target, then fixed steps
-    // spring the lean toward it and ease the flatness. The result is published as global textures that every
+    // The grass motion over one ground volume: each frame the stamps add up into a held target and a kicked force,
+    // then fixed steps spring the lean toward the target under the force and ease the flatness. The result is published as global textures that every
     // grass field samples at its tufts' roots, so the board and the strips around it move as one carpet.
     public class GroundMotion : IDisposable
     {
@@ -23,6 +23,7 @@ namespace HealerLike.Render.Grass
         static readonly int previousId = Shader.PropertyToID("_HLGroundPrevious");
         static readonly int previousCrushId = Shader.PropertyToID("_HLGroundPreviousCrush");
         static readonly int targetId = Shader.PropertyToID("_HLGroundTarget");
+        static readonly int forceId = Shader.PropertyToID("_HLGroundForce");
         static readonly int springId = Shader.PropertyToID("_HLGroundSpring");
         static readonly int crushRatesId = Shader.PropertyToID("_HLGroundCrushRates");
         static readonly int windId = Shader.PropertyToID("_HLGroundWind");
@@ -30,11 +31,13 @@ namespace HealerLike.Render.Grass
         static readonly int stampPass = 0;
         static readonly int leanPass = 1;
         static readonly int crushPass = 2;
+        static readonly int forcePass = 3;
 
         readonly GroundStamp[] _stamps = new GroundStamp[StampCapacity];
         readonly RenderTexture[] _motion = new RenderTexture[2];
         readonly RenderTexture[] _crush = new RenderTexture[2];
         RenderTexture _target;
+        RenderTexture _force;
         GraphicsBuffer _stampBuffer;
         CommandBuffer _commands;
         Material _material;
@@ -72,6 +75,7 @@ namespace HealerLike.Render.Grass
             _volume = volume;
             _material = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
             _target = CreateTarget("GroundTarget", RenderTextureFormat.ARGBHalf);
+            _force = CreateTarget("GroundForce", RenderTextureFormat.ARGBHalf);
             for (int i = 0; i < 2; i++)
             {
                 _motion[i] = CreateTarget("GroundMotion" + i, RenderTextureFormat.ARGBHalf);
@@ -148,8 +152,17 @@ namespace HealerLike.Render.Grass
                                          _stampCount);
             }
 
+            _commands.SetRenderTarget(_force);
+            _commands.ClearRenderTarget(false, true, Color.clear);
+            if (_stampCount > 0)
+            {
+                _commands.DrawProcedural(Matrix4x4.identity, _material, forcePass, MeshTopology.Triangles, 6,
+                                         _stampCount);
+            }
+
             Graphics.ExecuteCommandBuffer(_commands);
             _material.SetTexture(targetId, _target);
+            _material.SetTexture(forceId, _force);
             Vector2 texel = _volume.texelSize;
             _material.SetVector(springId, settings.ShaderSpring(Mathf.Min(texel.x, texel.y)));
             _material.SetVector(crushRatesId, new Vector4(settings.crushFall, settings.crushRise, 0f, 0f));
@@ -204,6 +217,7 @@ namespace HealerLike.Render.Grass
             _commands?.Release();
             _commands = null;
             ReleaseTarget(ref _target);
+            ReleaseTarget(ref _force);
             for (int i = 0; i < 2; i++)
             {
                 ReleaseTarget(ref _motion[i]);

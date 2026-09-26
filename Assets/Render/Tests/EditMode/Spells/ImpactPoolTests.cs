@@ -130,6 +130,37 @@ public class ImpactPoolTests
     }
 
     [Test]
+    public void ShowImpact_Hit_ThrowsAShockThroughTheGrass()
+    {
+        _target.transform.position = new Vector3(2f, 0f, 1f);
+
+        _pool.ShowImpact(_caster, _target, ResourceKind.Health, -30f, false);
+        _zones.PublishFrame(0.01f);
+
+        Assert.AreEqual(1, _zones.count);
+        Assert.AreEqual((int)ZoneKind.Shock, _zones.snapshot[0].kind);
+        Assert.AreEqual(new Vector3(2f, 0f, 1f), _zones.snapshot[0].position);
+        Assert.AreEqual(ImpactPool.ShockRadius(0.3f, false), _zones.snapshot[0].radius, 1e-5f);
+    }
+
+    [Test]
+    public void ShowImpact_Heal_ThrowsNoShock()
+    {
+        _pool.ShowImpact(_caster, _target, ResourceKind.Health, 30f, false);
+        _zones.PublishFrame(0.01f);
+
+        Assert.AreEqual(0, _zones.count);
+    }
+
+    [Test]
+    public void ShockRadius_LargerShareOrCritical_BlowsWider()
+    {
+        Assert.Less(ImpactPool.ShockRadius(0.1f, false), ImpactPool.ShockRadius(0.6f, false));
+        Assert.Less(ImpactPool.ShockRadius(0.6f, false), ImpactPool.ShockRadius(0.6f, true));
+        Assert.AreEqual(ImpactPool.ShockRadius(1f, false), ImpactPool.ShockRadius(5f, false));
+    }
+
+    [Test]
     public void ShowImpact_LargerAmount_DrawsALargerBurst()
     {
         _pool.ShowImpact(null, _target, ResourceKind.Health, -1f, false);

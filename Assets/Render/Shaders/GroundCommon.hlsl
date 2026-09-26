@@ -11,17 +11,24 @@
 #define HL_GROUND_FRONT 1
 #define HL_GROUND_BODY 2
 
-// Disc and front: centreRadius xy centre in world XZ, z radius, w front half width; push xy heading, z lean along
-// it, w lean away from the centre. Body: centreRadius the first end (x, z, height, radius), push the second end
-// (x, z, height, margin), body x grass height and y lean away at contact. shape: x flatness, y disc edge share,
-// z rim wobble share, w kind.
+// Disc and front: centreRadius xy centre in world XZ, z radius, w front half width. Disc push: x turn from outward,
+// w push. Front push: xy heading, z push along it (zero blows all round), w push outward. Body: centreRadius the
+// first end (x, z, height, radius), push the second end (x, z, height, margin). shape: x flatness, y disc edge
+// share, z rim wobble share, w kind. response: x grass height and y lean for a body, z held share, w kick.
 struct HLGroundStamp
 {
     float4 centreRadius;
     float4 push;
     float4 shape;
-    float4 body;
+    float4 response;
 };
+
+float2 HLGroundTurn(float2 v, float angle)
+{
+    float c = cos(angle);
+    float s = sin(angle);
+    return float2(v.x * c - v.y * s, v.x * s + v.y * c);
+}
 
 // The square a stamp can write into: its centre in world XZ and half its side
 void HLGroundStampBounds(HLGroundStamp stamp, out float2 centre, out float reach)
@@ -50,10 +57,10 @@ float3 HLGroundBodyValue(HLGroundStamp stamp, float2 p)
     float distanceToAxis = length(delta);
     float2 outward = distanceToAxis > 1e-5 ? delta / distanceToAxis : float2(0.0, 0.0);
     float underside = height - sqrt(max(radius * radius - distanceToAxis * distanceToAxis, 0.0));
-    float contact = saturate((stamp.body.x - underside) / stamp.body.x);
+    float contact = saturate((stamp.response.x - underside) / stamp.response.x);
     float near = 1.0 - smoothstep(radius, radius + stamp.push.w, distanceToAxis);
     float covered = 1.0 - smoothstep(0.6 * radius, radius, distanceToAxis);
-    return float3(outward * (stamp.body.y * contact * near), stamp.shape.x * contact * covered);
+    return float3(outward * (stamp.response.y * contact * near), stamp.shape.x * contact * covered);
 }
 
 // xy lean in radians and z flatness the stamp adds at a world XZ point
@@ -70,20 +77,21 @@ float3 HLGroundStampValue(HLGroundStamp stamp, float2 p)
     float2 outward = distanceToCentre > 1e-5 ? delta / distanceToCentre : float2(0.0, 0.0);
     float radius = stamp.centreRadius.z;
     float band = stamp.centreRadius.w;
-    float weight;
     if (kind == HL_GROUND_FRONT)
     {
-        weight = 1.0 - smoothstep(0.0, band, abs(distanceToCentre - radius));
-        weight *= saturate(dot(outward, stamp.push.xy));
-    }
-    else
-    {
-        float rim = radius * (1.0 - stamp.shape.z * (0.5 + 0.5 * sin(dot(p, HL_GROUND_RIM_FREQUENCY))));
-        weight = 1.0 - smoothstep(rim * (1.0 - stamp.shape.y), rim, distanceToCentre);
+        float front = 1.0 - smoothstep(0.0, band, abs(distanceToCentre - radius));
+        // A heading ahead of the centre only; a ring with no push along it blows all round
+        if (stamp.push.z != 0.0)
+        {
+            front *= saturate(dot(outward, stamp.push.xy));
+        }
+
+        return float3((stamp.push.xy * stamp.push.z + outward * stamp.push.w) * front, stamp.shape.x * front);
     }
 
-    float2 lean = (stamp.push.xy * stamp.push.z + outward * stamp.push.w) * weight;
-    return float3(lean, stamp.shape.x * weight);
+    float rim = radius * (1.0 - stamp.shape.z * (0.5 + 0.5 * sin(dot(p, HL_GROUND_RIM_FREQUENCY))));
+    float weight = 1.0 - smoothstep(rim * (1.0 - stamp.shape.y), rim, distanceToCentre);
+    return float3(HLGroundTurn(outward, stamp.push.x) * (stamp.push.w * weight), stamp.shape.x * weight);
 }
 
 // wind: xy prevailing direction, z strength in radians, w time in seconds. gust is the pulses' lean.
@@ -104,12 +112,15 @@ float2 HLGroundCapLean(float2 lean, float limit)
     return lean * min(1.0, limit / max(length(lean), 1e-5));
 }
 
-// spring: x stiffness, y damping, z coupling stiffness, w max lean. state: xy lean, zw its velocity.
-float4 HLGroundSpringStep(float4 state, float2 target, float2 neighbourMean, float step, float4 spring)
+// spring: x stiffness, y damping, z neighbour pull, w max lean. state: xy lean, zw its velocity. force is the
+// kicked acceleration.
+float4 HLGroundSpringStep(float4 state, float2 target, float2 neighbourMean, float2 force, float step,
+                          float4 spring)
 {
     float2 lean = state.xy;
     float2 velocity = state.zw;
-    float2 acceleration = spring.x * (target - lean) - spring.y * velocity + spring.z * (neighbourMean - lean);
+    float2 acceleration = spring.x * (target - lean) - spring.y * velocity + spring.z * (neighbourMean - lean)
+        + force;
     velocity += acceleration * step;
     lean += velocity * step;
     return float4(HLGroundCapLean(lean, spring.w), velocity);

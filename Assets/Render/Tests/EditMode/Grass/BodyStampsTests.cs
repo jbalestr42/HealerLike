@@ -22,7 +22,7 @@ public class BodyStampsTests
         Assert.AreEqual(3f, stamp.push.x);
         Assert.AreEqual(0.1f, stamp.push.z, 1e-5f);
         Assert.AreEqual(BodyStamps.Margin * 2f, stamp.push.w, 1e-6f);
-        Assert.AreEqual(GrassLayout.TuftHeight * 2f, stamp.body.x, 1e-6f);
+        Assert.AreEqual(GrassLayout.TuftHeight * 2f, stamp.response.x, 1e-6f);
         Assert.Greater(stamp.Sample(new Vector2(2f, 2f)).z, 0.95f, "A root on the ground lays the grass flat.");
     }
 

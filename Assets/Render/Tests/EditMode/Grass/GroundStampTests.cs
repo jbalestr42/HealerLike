@@ -57,7 +57,7 @@ public class GroundStampTests
     [Test]
     public void Front_AheadOfTheCentre_LeansAlongTheHeadingOnlyNearTheFront()
     {
-        GroundStamp stamp = GroundStamp.Front(Vector2.zero, 2f, 0.3f, new Vector2(0f, 2f), 0.6f);
+        GroundStamp stamp = GroundStamp.Front(Vector2.zero, 2f, 0.3f, new Vector2(0f, 2f), 0.6f, 0f);
 
         Vector3 onFront = stamp.Sample(new Vector2(0f, 2f));
         Vector3 behindFront = stamp.Sample(new Vector2(0f, 1f));
@@ -73,7 +73,7 @@ public class GroundStampTests
     [Test]
     public void Bounds_CoverTheFrontBandTheDiscAndTheWholeBody()
     {
-        GroundStamp.Front(Vector2.one, 2f, 0.3f, Vector2.right, 1f).Bounds(out Vector2 frontCentre, out float front);
+        GroundStamp.Front(Vector2.one, 2f, 0.3f, Vector2.right, 1f, 0f).Bounds(out Vector2 frontCentre, out float front);
         GroundStamp.Disc(Vector2.zero, 1.5f, 0f, 1f, 0.2f, 0f).Bounds(out _, out float disc);
         GroundStamp.Body(new Vector3(-1f, 0.2f, 0f), new Vector3(1f, 0.4f, 0f), 0.3f, 0.2f, 0.7f, 0.9f, 1f)
                    .Bounds(out Vector2 bodyCentre, out float body);
@@ -89,7 +89,7 @@ public class GroundStampTests
     public void Kind_EachFactory_TagsItsStamp()
     {
         Assert.AreEqual(GroundStampKind.Disc, GroundStamp.Disc(Vector2.zero, 1f, 0f, 1f, 0.2f, 0f).kind);
-        Assert.AreEqual(GroundStampKind.Front, GroundStamp.Front(Vector2.zero, 1f, 0.2f, Vector2.up, 1f).kind);
+        Assert.AreEqual(GroundStampKind.Front, GroundStamp.Front(Vector2.zero, 1f, 0.2f, Vector2.up, 1f, 0f).kind);
         Assert.AreEqual(GroundStampKind.Body,
             GroundStamp.Body(Vector3.zero, Vector3.one, 0.2f, 0.2f, 0.7f, 0.9f, 1f).kind);
     }
@@ -139,6 +139,61 @@ public class GroundStampTests
 
         Assert.AreEqual(0f, hip);
         Assert.AreEqual(1f, foot, 1e-5f);
+    }
+
+    [Test]
+    public void Target_HeldDisc_HoldsItsPushAndThrowsNothing()
+    {
+        GroundStamp disc = GroundStamp.Disc(Vector2.zero, 2f, 0.4f, 0.5f, 0.2f, 0f);
+
+        Assert.AreEqual(new Vector3(0.4f, 0f, 0.5f), disc.Target(Vector2.right));
+        Assert.AreEqual(Vector2.zero, disc.Force(Vector2.right));
+    }
+
+    [Test]
+    public void Front_Kick_ThrowsTheGrassWithoutHoldingIt()
+    {
+        GroundStamp front = GroundStamp.Front(Vector2.zero, 2f, 0.3f, Vector2.up, 1f, 90f);
+
+        Assert.AreEqual(Vector3.zero, front.Target(new Vector2(0f, 2f)));
+        Assert.That(front.Force(new Vector2(0f, 2f)).y, Is.EqualTo(90f).Within(1e-3f));
+    }
+
+    [Test]
+    public void Shock_Ring_ThrowsOutwardAllRound()
+    {
+        GroundStamp shock = GroundStamp.Shock(new Vector2(1f, 1f), 1f, 0.2f, 1f, 100f);
+
+        Vector2 east = shock.Force(new Vector2(2f, 1f));
+        Vector2 west = shock.Force(new Vector2(0f, 1f));
+        Vector2 south = shock.Force(new Vector2(1f, 0f));
+
+        Assert.That(east.x, Is.EqualTo(100f).Within(1e-3f));
+        Assert.That(west.x, Is.EqualTo(-100f).Within(1e-3f));
+        Assert.That(south.y, Is.EqualTo(-100f).Within(1e-3f));
+        Assert.AreEqual(Vector2.zero, shock.Force(new Vector2(1.5f, 1f)), "Only the travelling ring blows.");
+    }
+
+    [Test]
+    public void Swirl_QuarterTurn_ThrowsTheGrassAroundTheCentre()
+    {
+        GroundStamp swirl = GroundStamp.Swirl(Vector2.zero, 2f, Mathf.PI * 0.5f, 1f, 30f, 0.2f);
+
+        Vector2 east = swirl.Force(new Vector2(1f, 0f));
+        Vector2 north = swirl.Force(new Vector2(0f, 1f));
+
+        Assert.That(east.y, Is.EqualTo(30f).Within(1e-3f), "Counterclockwise seen from above.");
+        Assert.That(east.x, Is.EqualTo(0f).Within(1e-3f));
+        Assert.That(north.x, Is.EqualTo(-30f).Within(1e-3f));
+        Assert.AreEqual(Vector3.zero, swirl.Target(new Vector2(1f, 0f)));
+    }
+
+    [Test]
+    public void Turn_QuarterTurn_TakesXToZ()
+    {
+        Vector2 turned = GroundStamp.Turn(Vector2.right, Mathf.PI * 0.5f);
+
+        Assert.That(Vector2.Distance(turned, Vector2.up), Is.LessThan(1e-6f));
     }
 
     [Test]

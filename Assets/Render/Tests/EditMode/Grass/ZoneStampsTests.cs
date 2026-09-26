@@ -51,14 +51,65 @@ public class ZoneStampsTests
     public void TryCreate_Launch_SendsAFrontAlongTheHeading()
     {
         uint north = ZonePacker.EncodeDirection(Vector3.forward);
-        Zone launch = Make(ZoneKind.Launch, Vector3.zero, 4f, 0.2f, heading: north);
+        Zone launch = Make(ZoneKind.Launch, Vector3.zero, 4f, ZoneStamps.LaunchSeconds * 0.5f, heading: north);
 
         Assert.IsTrue(ZoneStamps.TryCreate(launch, out GroundStamp stamp));
 
         Assert.AreEqual(2f, stamp.centreRadius.z, 1e-4f, "Half way across the radius at half the crossing time.");
-        Vector3 front = stamp.Sample(new Vector2(0f, 2f));
-        Assert.That(front.y, Is.EqualTo(ZoneStamps.LaunchLean).Within(0.001f));
-        Assert.AreEqual(Vector3.zero, stamp.Sample(new Vector2(0f, -2f)));
+        Vector2 front = stamp.Force(new Vector2(0f, 2f));
+        Assert.That(front.y, Is.EqualTo(ZoneStamps.LaunchKick).Within(0.05f));
+        Assert.AreEqual(Vector3.zero, stamp.Target(new Vector2(0f, 2f)), "A launch throws, it holds nothing.");
+        Assert.AreEqual(Vector2.zero, stamp.Force(new Vector2(0f, -2f)));
+    }
+
+    [Test]
+    public void LaunchStrength_RegistryFade_IsUndoneWhileTheFrontCrosses()
+    {
+        float age = 0.25f;
+        float faded = 0.8f * (1f - age / ZoneRegistry.LaunchSeconds);
+
+        Assert.AreEqual(0.8f, ZoneStamps.LaunchStrength(Make(ZoneKind.Launch, Vector3.zero, 4f, age, faded)), 1e-4f);
+        Assert.AreEqual(0f, ZoneStamps.LaunchStrength(Make(ZoneKind.Launch, Vector3.zero, 4f, 0.4f, 0f)));
+        Assert.LessOrEqual(ZoneStamps.LaunchStrength(Make(ZoneKind.Launch, Vector3.zero, 4f, 0.39f, 1f)), 1f);
+    }
+
+    [Test]
+    public void TryCreate_Shock_ThrowsARingOutwardAtOnce()
+    {
+        Zone shock = Make(ZoneKind.Shock, new Vector3(1f, 0f, 1f), 2f, ZoneStamps.ShockSeconds * 0.5f, 0.8f);
+
+        Assert.IsTrue(ZoneStamps.TryCreate(shock, out GroundStamp stamp));
+
+        Assert.AreEqual(1f, stamp.centreRadius.z, 1e-4f, "Half way out at half the travel time.");
+        Vector2 east = stamp.Force(new Vector2(2f, 1f));
+        Assert.That(east.x, Is.EqualTo(0.8f * ZoneStamps.ShockKick).Within(0.05f));
+        Assert.IsTrue(ZoneStamps.TryCreate(Make(ZoneKind.Shock, Vector3.zero, 2f, 0f), out _),
+            "A blast needs no onset.");
+    }
+
+    [Test]
+    public void TryCreateKick_Heal_SpinsTheGrassAsItBlooms()
+    {
+        Zone heal = Make(ZoneKind.Heal, Vector3.zero, 2f, 1f);
+
+        Assert.IsTrue(ZoneStamps.TryCreateKick(heal, out GroundStamp swirl));
+
+        Vector2 east = swirl.Force(new Vector2(1f, 0f));
+        Assert.That(east.y, Is.EqualTo(ZoneStamps.HealSwirl).Within(0.01f));
+        Assert.IsFalse(ZoneStamps.TryCreateKick(Make(ZoneKind.Trample, Vector3.zero, 2f, 1f), out _));
+        Assert.IsFalse(ZoneStamps.TryCreateKick(Make(ZoneKind.Heal, Vector3.zero, 2f, 0f), out _));
+    }
+
+    [Test]
+    public void Append_Heal_WritesItsHoldAndItsSwirl()
+    {
+        GroundStamp[] into = new GroundStamp[4];
+
+        int written = ZoneStamps.Append(new[] { Make(ZoneKind.Heal, Vector3.zero, 2f, 1f) }, into, 0);
+
+        Assert.AreEqual(2, written);
+        Assert.AreEqual(1f, into[0].response.z, "The disc holds.");
+        Assert.AreEqual(ZoneStamps.HealSwirl, into[1].response.w, 1e-5f, "The swirl throws.");
     }
 
     [Test]

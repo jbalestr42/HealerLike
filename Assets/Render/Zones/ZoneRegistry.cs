@@ -19,6 +19,7 @@ namespace HealerLike.Render.Zones
 
         public static readonly float HealPulseSeconds = 0.45f;
         public static readonly float LaunchSeconds = 0.4f;
+        public static readonly float ShockSeconds = 0.6f;
 
         readonly List<Entry> _entries = new List<Entry>();
         readonly List<IZoneBody> _bodies = new List<IZoneBody>();
@@ -131,6 +132,12 @@ namespace HealerLike.Render.Zones
             }
 
             return handle;
+        }
+
+        // A blast ring out from position to radius, fading over ShockSeconds
+        public int AddShock(Vector3 position, float radius, float strength)
+        {
+            return AddPulse(ZoneKind.Shock, position, radius, strength, ShockSeconds);
         }
 
         // Keeps the order and the age, an invalid value removes the zone

@@ -26,6 +26,7 @@ public class ZonePackerTests
     [TestCase(ZoneKind.Bruise, 4)]
     [TestCase(ZoneKind.Launch, 5)]
     [TestCase(ZoneKind.Trample, 6)]
+    [TestCase(ZoneKind.Shock, 7)]
     public void TryCreate_LaterKinds_KeepTheirWireValuesAndAreAccepted(ZoneKind kind, int value)
     {
         Assert.AreEqual(value, (int)kind);

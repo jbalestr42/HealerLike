@@ -27,7 +27,7 @@ namespace HealerLike.Render.Zones
                 return false;
             }
 
-            if (kind < ZoneKind.Heal || kind > ZoneKind.Trample)
+            if (kind < ZoneKind.Heal || kind > ZoneKind.Shock)
             {
                 return false;
             }

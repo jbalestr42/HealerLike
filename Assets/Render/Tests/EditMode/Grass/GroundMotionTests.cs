@@ -88,7 +88,7 @@ public class GroundMotionTests
         Vector4 spring = GroundSpringSettings.Default.ShaderSpring(_volume.texelSize.x);
         for (int i = 0; i < 9; i++)
         {
-            GroundSpring.Step(ref lean, ref velocity, gust, lean, GroundSpring.MaxStep, spring);
+            GroundSpring.Step(ref lean, ref velocity, gust, lean, Vector2.zero, GroundSpring.MaxStep, spring);
         }
 
         StepStill(new GroundStamp[0], 9f * GroundSpring.MaxStep, gust);
@@ -125,6 +125,22 @@ public class GroundMotionTests
 
         Assert.Less(At(Read(_ground.motion), new Vector2(0.5f, 0f)).r, pushed * 0.5f);
         Assert.Greater(At(Read(_ground.crush), new Vector2(0.5f, 0f)).r, 0.5f, "The wake lingers.");
+    }
+
+    [Test]
+    public void Step_ShockRing_ThrowsTheGrassOutwardWithoutHoldingIt()
+    {
+        GroundStamp shock = GroundStamp.Shock(Vector2.zero, 1f, 0.3f, 1f, 120f);
+
+        StepStill(new[] { shock }, 0.1f, Vector2.zero);
+
+        Color thrown = At(Read(_ground.motion), new Vector2(1f, 0f));
+        Assert.Greater(thrown.r, 0.1f, "Thrown outward.");
+        Assert.Greater(thrown.b, 1f, "Still moving outward.");
+
+        StepStill(new GroundStamp[0], 2.5f, Vector2.zero);
+
+        Assert.Less(Mathf.Abs(At(Read(_ground.motion), new Vector2(1f, 0f)).r), 0.02f, "Nothing holds it there.");
     }
 
     [Test]

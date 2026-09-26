@@ -1,5 +1,6 @@
-// The ground's motion, run by GroundMotion off-screen: stamps add up into a target, then fixed steps move a
-// damped, neighbour-coupled spring of lean toward it and ease a flatness toward the stamped one.
+// The ground's motion, run by GroundMotion off-screen: stamps add up into a held target and a kicked force, then
+// fixed steps move a damped, neighbour-coupled spring of lean toward the target under the force and ease a
+// flatness toward the stamped one.
 // Texel (x, y) always holds uv ((x + 0.5) / width, (y + 0.5) / height), whatever the platform's row order.
 Shader "Hidden/HL/GroundMotion"
 {
@@ -38,9 +39,39 @@ Shader "Hidden/HL/GroundMotion"
             #endif
             return positionCS;
         }
+
+        StructuredBuffer<HLGroundStamp> _HLGroundStamps;
+
+        struct HLStampVaryings
+        {
+            float4 positionCS : SV_POSITION;
+            float2 positionXZ : TEXCOORD0;
+            nointerpolation uint stampID : TEXCOORD1;
+        };
+
+        HLStampVaryings HLStampVertex(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
+        {
+            HLGroundStamp stamp = _HLGroundStamps[instanceID];
+            // Two triangles over the square the stamp can reach, two texels wider so its edge is never cut
+            const float2 corners[6] =
+            {
+                float2(-1.0, -1.0), float2(1.0, -1.0), float2(1.0, 1.0),
+                float2(-1.0, -1.0), float2(1.0, 1.0), float2(-1.0, 1.0)
+            };
+            float2 side = corners[vertexID % 6];
+            float2 centre;
+            float reach;
+            HLGroundStampBounds(stamp, centre, reach);
+            reach += 2.0 * max(_HLGroundSize.z / _HLGroundRect.z, _HLGroundSize.w / _HLGroundRect.w);
+            HLStampVaryings output;
+            output.positionXZ = centre + side * reach;
+            output.positionCS = HLGroundClip(HLGroundUV(output.positionXZ, _HLGroundRect));
+            output.stampID = instanceID;
+            return output;
+        }
         ENDHLSL
 
-        // 0: every stamp, one quad each, added into the target
+        // 0: every stamp, one quad each, adding its held lean and flatness into the target
         Pass
         {
             Name "HLGroundStamp"
@@ -50,40 +81,11 @@ Shader "Hidden/HL/GroundMotion"
             #pragma vertex HLStampVertex
             #pragma fragment HLStampFragment
 
-            StructuredBuffer<HLGroundStamp> _HLGroundStamps;
-
-            struct HLStampVaryings
-            {
-                float4 positionCS : SV_POSITION;
-                float2 positionXZ : TEXCOORD0;
-                nointerpolation uint stampID : TEXCOORD1;
-            };
-
-            HLStampVaryings HLStampVertex(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
-            {
-                HLGroundStamp stamp = _HLGroundStamps[instanceID];
-                // Two triangles over the square the stamp can reach, two texels wider so its edge is never cut
-                const float2 corners[6] =
-                {
-                    float2(-1.0, -1.0), float2(1.0, -1.0), float2(1.0, 1.0),
-                    float2(-1.0, -1.0), float2(1.0, 1.0), float2(-1.0, 1.0)
-                };
-                float2 side = corners[vertexID % 6];
-                float2 centre;
-                float reach;
-                HLGroundStampBounds(stamp, centre, reach);
-                reach += 2.0 * max(_HLGroundSize.z / _HLGroundRect.z, _HLGroundSize.w / _HLGroundRect.w);
-                HLStampVaryings output;
-                output.positionXZ = centre + side * reach;
-                output.positionCS = HLGroundClip(HLGroundUV(output.positionXZ, _HLGroundRect));
-                output.stampID = instanceID;
-                return output;
-            }
-
             float4 HLStampFragment(HLStampVaryings input) : SV_Target
             {
                 HLGroundStamp stamp = _HLGroundStamps[input.stampID];
-                return float4(HLGroundStampValue(stamp, input.positionXZ), 0.0);
+                float3 value = HLGroundStampValue(stamp, input.positionXZ);
+                return float4(value.xy * stamp.response.z, value.z, 0.0);
             }
             ENDHLSL
         }
@@ -99,6 +101,7 @@ Shader "Hidden/HL/GroundMotion"
 
             Texture2D<float4> _HLGroundPrevious;
             Texture2D<float4> _HLGroundTarget;
+            Texture2D<float4> _HLGroundForce;
             float4 _HLGroundSpring;
             float4 _HLGroundWind;
             float2 _HLGroundGust;
@@ -120,7 +123,8 @@ Shader "Hidden/HL/GroundMotion"
                 float2 stamped = _HLGroundTarget.Load(int3(texel, 0)).xy;
                 float2 target = HLGroundCapLean(stamped + HLGroundWindLean(p, _HLGroundWind, _HLGroundGust),
                                                 _HLGroundSpring.w);
-                return HLGroundSpringStep(state, target, neighbourMean, _HLGroundStep, _HLGroundSpring);
+                float2 force = _HLGroundForce.Load(int3(texel, 0)).xy;
+                return HLGroundSpringStep(state, target, neighbourMean, force, _HLGroundStep, _HLGroundSpring);
             }
             ENDHLSL
         }
@@ -145,6 +149,25 @@ Shader "Hidden/HL/GroundMotion"
                 float crush = _HLGroundPreviousCrush.Load(int3(texel, 0));
                 float target = saturate(_HLGroundTarget.Load(int3(texel, 0)).z);
                 return HLGroundCrushStep(crush, target, _HLGroundStep, _HLGroundCrushRates);
+            }
+            ENDHLSL
+        }
+
+        // 3: every stamp again, adding its kick into the force
+        Pass
+        {
+            Name "HLGroundForce"
+            Blend One One
+            HLSLPROGRAM
+            #pragma target 4.5
+            #pragma vertex HLStampVertex
+            #pragma fragment HLForceFragment
+
+            float4 HLForceFragment(HLStampVaryings input) : SV_Target
+            {
+                HLGroundStamp stamp = _HLGroundStamps[input.stampID];
+                float3 value = HLGroundStampValue(stamp, input.positionXZ);
+                return float4(value.xy * stamp.response.w, 0.0, 0.0);
             }
             ENDHLSL
         }
