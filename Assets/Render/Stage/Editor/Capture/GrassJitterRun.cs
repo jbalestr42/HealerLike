@@ -23,6 +23,7 @@ namespace HealerLike.Render.Stage
         protected override bool shouldStartGame { get { return false; } }
 
         bool _isCasting;
+        BattleFocus focus;
         int _casts;
         float _nextCast;
 
@@ -31,7 +32,7 @@ namespace HealerLike.Render.Stage
             _manager.SetLandscape(false);
             yield return Wait(1f);
             Camera camera = _manager.gameCamera;
-            BattleFocus focus = Object.FindAnyObjectByType<BattleFocus>();
+            focus = Object.FindAnyObjectByType<BattleFocus>();
             if (focus != null)
             {
                 focus.enabled = false;
@@ -44,6 +45,14 @@ namespace HealerLike.Render.Stage
             try
             {
                 yield return Measure(camera, "stock");
+                // The Editor runs at whatever rate it gets; the same at a fast, a slow and the real frame pace
+                Time.captureDeltaTime = 1f / 240f;
+                yield return Measure(camera, "240-fps");
+                Time.captureDeltaTime = 1f / 20f;
+                yield return Measure(camera, "20-fps");
+                Time.captureDeltaTime = 0f;
+                yield return Measure(camera, "real-time");
+                Time.captureDeltaTime = 1f / 60f;
                 SetEnvironment(field => field.windStrength = 0f);
                 yield return Measure(camera, "environment-still");
                 SetEnvironment(field => field.windStrength = 1f);
@@ -56,6 +65,8 @@ namespace HealerLike.Render.Stage
                 _hud.nextWaveButton.onClick.Invoke();
                 _isCasting = true;
                 yield return Measure(camera, "battle");
+                yield return Gusts();
+                yield return Film(camera);
                 EnvironmentSway[] sways = Object.FindObjectsByType<EnvironmentSway>();
                 foreach (EnvironmentSway sway in sways)
                 {
@@ -74,6 +85,54 @@ namespace HealerLike.Render.Stage
             }
 
             StagePlay.Finish(this, true);
+        }
+
+        // How much of a fight the attack gusts keep a plant at the board's centre bent
+        IEnumerator Gusts()
+        {
+            EnvironmentGust gust = _manager.gust;
+            int frames = 0;
+            int bent = 0;
+            float strongest = 0f;
+            float started = Time.time;
+            while (gust != null && Time.time - started < 5f)
+            {
+                yield return null;
+                Cast();
+                float push = gust.Sample(Time.timeAsDouble, _manager.board.center).magnitude;
+                frames++;
+                bent += push > 0.1f ? 1 : 0;
+                strongest = Mathf.Max(strongest, push);
+            }
+
+            Debug.Log($"[GrassJitterRun] gust: the board centre was pushed over a tenth on {bent} of {frames} frames, "
+                      + $"at most {strongest:F2}");
+        }
+
+        // Eight consecutive frames through the game's own battle camera, kept whole, to look at tuft by tuft
+        IEnumerator Film(Camera camera)
+        {
+            if (focus != null)
+            {
+                focus.enabled = true;
+            }
+
+            yield return Wait(1f);
+            string folder = System.IO.Path.Combine(StagePlay.CaptureFolder, "grass-jitter");
+            System.IO.Directory.CreateDirectory(folder);
+            for (int frame = 0; frame < 8; frame++)
+            {
+                yield return null;
+                Cast();
+                Texture2D shot = StageReadback.Render(camera, width, height);
+                System.IO.File.WriteAllBytes(System.IO.Path.Combine(folder, $"frame-{frame}.png"), shot.EncodeToPNG());
+                Object.Destroy(shot);
+            }
+
+            if (focus != null)
+            {
+                focus.enabled = false;
+            }
         }
 
         // Every few frames the player casts on an ally then an enemy, so the fight keeps going while measured

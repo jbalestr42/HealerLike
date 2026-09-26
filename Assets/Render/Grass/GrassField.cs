@@ -339,9 +339,9 @@ namespace HealerLike.Render.Grass
             _tuftDraw.BindTufts(_seeds, _states, _visibleTufts, ClampHeightScale(_bladeHeightScale));
             _socleDraw.BindTufts(_seeds, _states, _visibleTufts, ClampHeightScale(_bladeHeightScale));
             _ringDraw = GrassDraw.Rings(_meshes.annulus, _ringMaterial, bounds, layer, key);
-            _tuftDraw.Show(_gameplayCamera, IsDrawn);
-            _socleDraw.Show(_gameplayCamera, IsDrawn);
-            _ringDraw.Show(_gameplayCamera, () => IsDrawn() && _zoneCount > 0);
+            _tuftDraw.Show(_gameplayCamera, IsDrawn, this);
+            _socleDraw.Show(_gameplayCamera, IsDrawn, this);
+            _ringDraw.Show(_gameplayCamera, () => IsDrawn() && _zoneCount > 0, this);
             return true;
         }
 

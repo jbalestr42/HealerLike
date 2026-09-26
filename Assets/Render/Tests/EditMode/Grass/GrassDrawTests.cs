@@ -67,6 +67,19 @@ public class GrassDrawTests
     }
 
     [Test]
+    public void Show_OwnerDestroyed_StopsDrawingInsteadOfThrowing()
+    {
+        _scene.BuildKeyLight(20f, 4f);
+        GameObject owner = new GameObject("owner");
+        _draw.Show(_scene.camera, () => true, owner);
+
+        Object.DestroyImmediate(owner);
+
+        Assert.DoesNotThrow(() => _scene.Render());
+        Assert.DoesNotThrow(() => _scene.Render());
+    }
+
+    [Test]
     public void Constructor_Mesh_WritesIndexAndInstanceCounts()
     {
         uint[] data = new uint[5];

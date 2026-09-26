@@ -211,7 +211,7 @@ public class EnvironmentScatterTests
         sway.Animate(peak);
         float resting = joint.localEulerAngles.z;
 
-        gust.Gust(Vector3.forward, 1f, 2f);
+        gust.Gust(fern.position + Vector3.back, fern.position + Vector3.forward, 1f, 2f);
         sway.Animate(peak);
 
         Assert.That(Mathf.DeltaAngle(resting, joint.localEulerAngles.z), Is.GreaterThan(2f));

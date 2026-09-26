@@ -116,11 +116,12 @@ public class LaunchWaveTests
 
         Launch();
 
-        Vector3 wind = _gust.Sample(Time.timeAsDouble + LaunchWave.GustSeconds * 0.5f);
+        // The source at the origin, the target four units north: a plant on the path half way
+        Vector3 wind = _gust.Sample(Time.timeAsDouble + LaunchWave.GustSeconds * 0.5f, Vector3.forward * 2f);
         Assert.AreEqual(LaunchWave.GustStrength, wind.z, 0.001f);
         Assert.AreEqual(0f, wind.x, 0.00001f);
         Assert.AreEqual(0f, wind.y);
-        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + LaunchWave.GustSeconds + 0.01f).sqrMagnitude);
+        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + LaunchWave.GustSeconds + 0.01f, Vector3.forward * 2f).sqrMagnitude);
     }
 
     [Test]
@@ -133,7 +134,7 @@ public class LaunchWaveTests
         _wave.Follow();
 
         Assert.AreEqual(0, _owner.liveCount);
-        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + 0.1).sqrMagnitude);
+        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + 0.1, Vector3.forward * 2f).sqrMagnitude);
     }
 
     [Test]
@@ -144,7 +145,7 @@ public class LaunchWaveTests
         _wave.Init(_source);
 
         Assert.AreEqual(0, _owner.liveCount);
-        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + 0.1).sqrMagnitude);
+        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + 0.1, Vector3.forward * 2f).sqrMagnitude);
     }
 }
 

@@ -6,7 +6,7 @@ namespace HealerLike.Render.Zones
 {
     // One shot in flight: the grass parts along the ground under the projectile, in a trail behind it that follows
     // the projectile itself, harder the lower it flies, and settles once it lands. A launch also gusts the
-    // scatter plants. Every shot the projectile starts, reused projectiles included.
+    // scatter plants near its path. Every shot the projectile starts, reused projectiles included.
     public class LaunchWave : AProjectileBehaviour
     {
         public static readonly float GustStrength = 0.65f;
@@ -53,7 +53,7 @@ namespace HealerLike.Render.Zones
             _isFlying = _zones != null;
             if (_gust != null)
             {
-                _gust.Gust(projectile.target.transform.position - sourcePosition, GustStrength, GustSeconds);
+                _gust.Gust(sourcePosition, projectile.target.transform.position, GustStrength, GustSeconds);
             }
         }
 

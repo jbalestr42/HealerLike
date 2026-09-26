@@ -85,10 +85,27 @@ public class EnvironmentSwayTests
         _sway.Animate(peak);
         float resting = _plant.localEulerAngles.z;
 
-        gust.Gust(Vector3.forward, 1f, 2f);
+        gust.Gust(_plant.position + Vector3.back, _plant.position + Vector3.forward, 1f, 2f);
         _sway.Animate(peak);
 
         Assert.That(Mathf.DeltaAngle(resting, _plant.localEulerAngles.z), Is.GreaterThan(2f));
+    }
+
+    [Test]
+    public void Animate_GustFarFromThePlant_LeavesItToItsIdleSway()
+    {
+        EnvironmentGust gust = _go.AddComponent<EnvironmentGust>();
+        _sway.Init(null, gust, 100f, 0d);
+        _sway.Add(_plant, _plant, 5, 0.12f, -3f);
+        double peak = Time.timeAsDouble + 1;
+        _sway.Animate(peak);
+        Quaternion idle = _plant.localRotation;
+
+        Vector3 far = _plant.position + Vector3.right * (EnvironmentGust.Reach + 3f);
+        gust.Gust(far + Vector3.back, far + Vector3.forward, 1f, 2f);
+        _sway.Animate(peak);
+
+        Assert.That(Quaternion.Angle(idle, _plant.localRotation), Is.LessThan(0.001f));
     }
 
     [Test]
