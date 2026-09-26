@@ -22,7 +22,17 @@ namespace HealerLike.Render.Creatures
             if (meshes == null)
             {
                 meshes = ScriptableObject.CreateInstance<PrimitiveMeshes>();
-                AssetDatabase.CreateAsset(meshes, meshesAssetPath);
+                try
+                {
+                    AssetDatabase.CreateAsset(meshes, meshesAssetPath);
+                }
+                finally
+                {
+                    if (!AssetDatabase.Contains(meshes))
+                    {
+                        Object.DestroyImmediate(meshes);
+                    }
+                }
             }
 
             meshes.sphere = Save(RevolvedMeshes.Create("Sphere", Primitive.Sphere, 12, 6, 0.2f));
@@ -44,19 +54,28 @@ namespace HealerLike.Render.Creatures
 
         static Mesh Save(Mesh mesh)
         {
-            string path = meshesFolder + "/" + mesh.name + ".asset";
-            Mesh existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
-            if (existing == null)
+            try
             {
-                AssetDatabase.CreateAsset(mesh, path);
-                return mesh;
-            }
+                string path = meshesFolder + "/" + mesh.name + ".asset";
+                Mesh existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+                if (existing == null)
+                {
+                    AssetDatabase.CreateAsset(mesh, path);
+                    return mesh;
+                }
 
-            EditorUtility.CopySerialized(mesh, existing);
-            EditorUtility.SetDirty(existing);
-            AssetDatabase.SaveAssetIfDirty(existing);
-            Object.DestroyImmediate(mesh);
-            return existing;
+                EditorUtility.CopySerialized(mesh, existing);
+                EditorUtility.SetDirty(existing);
+                AssetDatabase.SaveAssetIfDirty(existing);
+                return existing;
+            }
+            finally
+            {
+                if (!AssetDatabase.Contains(mesh))
+                {
+                    Object.DestroyImmediate(mesh);
+                }
+            }
         }
 
         // Mesh from raw vertices and triangles, normals recalculated
