@@ -129,6 +129,27 @@ public class SkillDescriptionReaderTests
         Assert.AreEqual(1, description.hits);
         Assert.IsEmpty(description.shots);
     }
+
+    [Test]
+    public void Read_PeriodicCycleWithUnassignedHandler_KeepsTheValidHandlerDuration()
+    {
+        BuffHandlerFactory empty = Create<BuffHandlerFactory>();
+        BuffHandlerFactory valid = Create<BuffHandlerFactory>();
+        valid.data = new BuffHandlerData { durationType = DurationType.Duration, duration = 3f };
+        ApplyBuffPeriodicallySkillFactory skill = Create<ApplyBuffPeriodicallySkillFactory>();
+        skill.data = new ApplyBuffPeriodicallySkillData
+        {
+            periodicBuff = new List<ABuffHandlerFactory> { empty, valid }
+        };
+
+        SkillDescription description = SkillDescriptionReader.Read(skill, null);
+
+        Assert.AreEqual(3f, description.cadence);
+        Assert.AreEqual(0f, EffectDerivation.Duration(empty));
+        EffectChannels effect = EffectDerivation.Channels(empty, true);
+        Assert.AreEqual(EffectTempo.Once, effect.tempo);
+        Assert.AreEqual(0f, effect.periodSeconds);
+    }
 }
 
 }

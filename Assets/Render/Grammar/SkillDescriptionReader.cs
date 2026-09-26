@@ -123,10 +123,7 @@ namespace HealerLike.Render.Grammar
             bool isEveryBoon = handlers.Count > 0;
             foreach (ABuffHandlerFactory handler in handlers)
             {
-                if (handler != null)
-                {
-                    description.cadence += handler.duration;
-                }
+                description.cadence += EffectDerivation.Duration(handler);
                 if (EffectDerivation.Family(handler, true) != EffectFamily.Boon)
                 {
                     isEveryBoon = false;

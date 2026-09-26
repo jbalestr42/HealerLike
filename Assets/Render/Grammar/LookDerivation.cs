@@ -114,15 +114,10 @@ namespace HealerLike.Render.Grammar
             float multiplier = 1f;
             foreach (ABuffHandlerFactory handler in ItemWalker.Buffs(data))
             {
-                if (handler.buffFactoryList == null)
-                {
-                    continue;
-                }
-
-                foreach (ABuffFactory buff in handler.buffFactoryList)
+                foreach (ABuffFactory buff in EffectDerivation.Buffs(handler))
                 {
                     FlatModifierFactory flat = buff as FlatModifierFactory;
-                    if (flat == null || flat.data.type != AttributeType.HealthMax)
+                    if (flat == null || flat.data == null || flat.data.type != AttributeType.HealthMax)
                     {
                         continue;
                     }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace HealerLike.Render.Grammar
@@ -21,13 +22,14 @@ namespace HealerLike.Render.Grammar
         public static EffectFamily Family(ABuffHandlerFactory handler, bool isSameSide)
         {
             EffectFamily sideFamily = isSameSide ? EffectFamily.Boon : EffectFamily.Bane;
-            if (!HasBuffs(handler))
+            IReadOnlyList<ABuffFactory> buffs = Buffs(handler);
+            if (buffs.Count == 0)
             {
                 return sideFamily;
             }
 
             // A heal is negative damage, so the consumer sign decides before any modifier
-            foreach (ABuffFactory buff in handler.buffFactoryList)
+            foreach (ABuffFactory buff in buffs)
             {
                 AConsumerFactory consumer = Consumer(buff);
                 if (consumer != null)
@@ -37,7 +39,7 @@ namespace HealerLike.Render.Grammar
             }
 
             int goodness = 0;
-            foreach (ABuffFactory buff in handler.buffFactoryList)
+            foreach (ABuffFactory buff in buffs)
             {
                 if (TryModifier(buff, out AttributeType type, out float delta) && delta != 0f)
                 {
@@ -112,12 +114,13 @@ namespace HealerLike.Render.Grammar
 
         public static AttributeGroup Group(ABuffHandlerFactory handler)
         {
-            if (!HasBuffs(handler))
+            IReadOnlyList<ABuffFactory> buffs = Buffs(handler);
+            if (buffs.Count == 0)
             {
                 return AttributeGroup.Offence;
             }
 
-            foreach (ABuffFactory buff in handler.buffFactoryList)
+            foreach (ABuffFactory buff in buffs)
             {
                 if (buff is InvincibilityBuffFactory)
                 {
@@ -253,9 +256,19 @@ namespace HealerLike.Render.Grammar
             return handler != null && (factory == null || factory.data != null);
         }
 
-        static bool HasBuffs(ABuffHandlerFactory handler)
+        // A partially authored handler contributes no buffs until its data is assigned.
+        public static IReadOnlyList<ABuffFactory> Buffs(ABuffHandlerFactory handler)
         {
-            return HasData(handler) && handler.buffFactoryList != null;
+            if (!HasData(handler) || handler.buffFactoryList == null)
+            {
+                return System.Array.Empty<ABuffFactory>();
+            }
+            return handler.buffFactoryList;
+        }
+
+        public static float Duration(ABuffHandlerFactory handler)
+        {
+            return HasData(handler) ? handler.duration : 0f;
         }
 
         static bool IsDefence(AttributeType type)
