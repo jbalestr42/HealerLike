@@ -232,7 +232,7 @@ public class ProjectileVisualObserverTests
         _scene.projectile.OnHit.Invoke(new OnHitData { target = _scene.first });
         _scene.projectile.OnHit.Invoke(new OnHitData { target = _scene.second });
 
-        TipDrop[] drops = Object.FindObjectsByType<TipDrop>(FindObjectsSortMode.None);
+        TipDrop[] drops = Object.FindObjectsByType<TipDrop>();
         foreach (TipDrop drop in drops)
         {
             Object.DestroyImmediate(drop.gameObject);

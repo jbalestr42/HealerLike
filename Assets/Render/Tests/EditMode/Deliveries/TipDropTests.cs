@@ -23,7 +23,7 @@ public class TipDropTests
     [TearDown]
     public void TearDown()
     {
-        foreach (TipDrop drop in Object.FindObjectsByType<TipDrop>(FindObjectsSortMode.None))
+        foreach (TipDrop drop in Object.FindObjectsByType<TipDrop>())
         {
             Object.DestroyImmediate(drop.gameObject);
         }
@@ -53,22 +53,22 @@ public class TipDropTests
     [Test]
     public void Splash_AreaShot_DropsOnePodAtTheContact()
     {
-        int before = Object.FindObjectsByType<TipDrop>(FindObjectsSortMode.None).Length;
+        int before = Object.FindObjectsByType<TipDrop>().Length;
 
         TipDrop.Splash(RenderTestAssets.LoadDeliveryVocabulary(), RenderTestAssets.LoadMeshes(), null,
             Vector3.one * 2f);
 
-        Assert.AreEqual(before + 1, Object.FindObjectsByType<TipDrop>(FindObjectsSortMode.None).Length);
+        Assert.AreEqual(before + 1, Object.FindObjectsByType<TipDrop>().Length);
     }
 
     [Test]
     public void Splash_NoVocabulary_DropsNothing()
     {
-        int before = Object.FindObjectsByType<TipDrop>(FindObjectsSortMode.None).Length;
+        int before = Object.FindObjectsByType<TipDrop>().Length;
 
         TipDrop.Splash(null, RenderTestAssets.LoadMeshes(), null, Vector3.one);
 
-        Assert.AreEqual(before, Object.FindObjectsByType<TipDrop>(FindObjectsSortMode.None).Length);
+        Assert.AreEqual(before, Object.FindObjectsByType<TipDrop>().Length);
     }
 }
 

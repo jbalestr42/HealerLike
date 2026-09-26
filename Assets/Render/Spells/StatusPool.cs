@@ -133,7 +133,10 @@ namespace HealerLike.Render.Spells
                 if (status != null)
                 {
                     status.charges = 0f;
-                    Close(key, status);
+                    if (!Close(key, status) && status.effect != null)
+                    {
+                        Refresh(status, status.effect.elapsedSeconds, status.effect.durationSeconds);
+                    }
                 }
 
                 return;
