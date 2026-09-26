@@ -8,6 +8,68 @@ namespace UI.Toolkit
 {
     public class ToolkitPopoverTests
     {
+        [Test]
+        public void PersistentDetailsRefreshHealthWithoutFollowingAnotherWorldSelection()
+        {
+            var owner = new GameObject("Live inspected creature"); owner.SetActive(false);
+            var other = new GameObject("Other selection"); other.SetActive(false);
+            var data = ScriptableObject.CreateInstance<EntityData>();
+            var root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+            var view = new ToolkitGameView(root);
+            using (var details = new ToolkitDetailPanel())
+            {
+                try
+                {
+                    Entity entity = null;
+                    TestHelpers.WithLoggingDisabled(() => entity = owner.AddComponent<Entity>());
+                    entity.data = data;
+                    entity.attributeManager = owner.GetComponent<AttributeManager>();
+                    TestHelpers.InvokePrivate(entity.attributeManager, "Awake");
+                    entity.attributeManager.Add(AttributeType.HealthMax, new Attribute(100));
+                    entity.attributeManager.Add(AttributeType.Damage, new Attribute(12));
+                    entity.attributeManager.Add(AttributeType.CriticalChanceResist, new Attribute(0));
+                    var health = owner.AddComponent<ResourceAttribute>(); health.Init(AttributeType.HealthMax);
+                    TestHelpers.SetPrivateField(entity, "_health", health);
+                    var legacy = owner.AddComponent<GameView>();
+                    var context = new ToolkitGameContext { legacy = legacy };
+                    details.Init(context, view);
+                    view.OnInspect.AddListener(details.OnInspect);
+                    view.OnInspectEnded.AddListener(details.OnInspectEnded);
+                    using (var popover = new ToolkitPopover(view))
+                    {
+                        popover.Open(new ToolkitCardModel { source = entity });
+                        // A hold release deliberately leaves the popover open, followed by 100 ms refreshes.
+                        TestHelpers.SetPrivateField(legacy, "_selectedPanel", PanelType.Entity);
+                        TestHelpers.SetPrivateField(legacy, "_selectedObject", other);
+                        TestHelpers.SetPrivateField(health, "_value", 63f);
+                        details.Refresh(); details.Refresh();
+                        Assert.That(popover.isOpen, Is.True);
+                        Assert.That(context.selectedEntity, Is.SameAs(entity));
+                        string summary = root.Q<Label>("detail-description").text;
+                        Assert.That(summary, Does.Contain("63 / 100"));
+                        Assert.That(summary, Does.Contain("Damage: 12"));
+                        Assert.That(summary, Does.Not.Contain("Maximum health").And.Not.Contain("Critical"));
+                        Assert.That(root.Q<Label>("detail-full-stats").text,
+                            Does.Contain("Maximum health: 100").And.Contain("Critical resistance: 0"));
+                        var expanded = root.Q<Foldout>("detail-attributes");
+                        Assert.That(expanded.value, Is.False);
+                        expanded.value = true; details.Refresh();
+                        Assert.That(expanded.value, Is.True, "Live refresh preserves the expanded state");
+                        popover.Close();
+                        Assert.That(context.isInspecting, Is.False);
+                        popover.Open(new ToolkitCardModel { title = "Spell", description = "Spell description" });
+                        details.Refresh();
+                        Assert.That(root.Q<Label>("detail-description").text, Is.EqualTo("Spell description"));
+                    }
+                }
+                finally
+                {
+                    view.Release();
+                    Object.DestroyImmediate(owner); Object.DestroyImmediate(other); Object.DestroyImmediate(data);
+                }
+            }
+        }
+
         [UnityTest]
         public IEnumerator WorldAndRowAnchorsKeepHeaderAndRowsClearWithoutChangingViewport()
         {

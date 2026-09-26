@@ -123,6 +123,7 @@ public class ToolkitInventoryPanel : IDisposable
             && ToolkitInventoryTransfer.Contains(_context.selectedItemOwner, _context.selectedItem)
             && !isHealerItem
             && (!isFromStash || _context.selectedEntity != null);
+        _view.Show("detail-equip-button", _context.selectedItem != null);
         _equipButton.SetEnabled(isValid);
         _equipButton.text = GetEquipText(isFromStash, isHealerItem);
         _detailPanel.EnableTargeting(isPreparing && _context.selectedEntity != null && !_context.isPaused);

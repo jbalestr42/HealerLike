@@ -152,6 +152,27 @@ namespace UI.Toolkit
                 Assert.That(_casts, Is.Zero);
             }
         }
+        [UnityTest]
+        public IEnumerator ControllerCancelInspectsUnavailableSpellAndSubmitKeepsActivationMeaning()
+        {
+            Bind(true, false); yield return null; yield return null;
+            using (var popover = new ToolkitPopover(_view))
+            {
+                _button.Focus();
+                using (var inspect = NavigationCancelEvent.GetPooled()) _button.SendEvent(inspect);
+                Assert.That(popover.isOpen, Is.True);
+                Assert.That(_inspects, Is.EqualTo(1)); Assert.That(_casts, Is.Zero);
+                using (var submit = NavigationSubmitEvent.GetPooled()) _button.SendEvent(submit);
+                Assert.That(popover.isOpen, Is.False); Assert.That(_casts, Is.Zero);
+                Bind(true); yield return null;
+                using (var submit = NavigationSubmitEvent.GetPooled()) _button.SendEvent(submit);
+                Assert.That(_casts, Is.EqualTo(1));
+                using (var inspect = NavigationCancelEvent.GetPooled()) _button.SendEvent(inspect);
+                Assert.That(popover.isOpen, Is.True);
+                using (var inspect = NavigationCancelEvent.GetPooled()) _button.SendEvent(inspect);
+                Assert.That(popover.isOpen, Is.False); Assert.That(_casts, Is.EqualTo(1));
+            }
+        }
         sealed class Drag : IToolkitRosterDrag
         {
             public int begins, ends;

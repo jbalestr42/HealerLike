@@ -10,10 +10,13 @@
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:Instance template="ActionSection" name="detail-actions" class="detail-actions">
-            <ui:DropdownField name="detail-targeting" label="Target priority" class="detail-targeting" />
             <ui:Button name="detail-inventory-button" text="Equipment" class="button" />
+            <ui:DropdownField name="detail-targeting" label="Target priority" class="detail-targeting" />
             <ui:Button name="detail-equip-button" text="Select equipment" class="button" />
         </ui:Instance>
+        <ui:Foldout name="detail-attributes" text="All attributes" value="false" class="detail-attributes is-hidden">
+            <ui:Label name="detail-full-stats" class="detail-description" />
+        </ui:Foldout>
     </ui:ScrollView>
     <ui:Button name="detail-close-button" text="×" tooltip="Close details" class="button detail-close" />
 </ui:UXML>

@@ -19,6 +19,7 @@ public sealed class ToolkitCardGesture : IDisposable
     ScrollView _scroll;
     bool _holding;
     bool _dragging;
+    bool _navigationInspect;
 
     public ToolkitCardGesture(ToolkitCard card, ToolkitGameView view, Action activate)
     {
@@ -32,6 +33,8 @@ public sealed class ToolkitCardGesture : IDisposable
         _button.RegisterCallback<DetachFromPanelEvent>(Detached);
         _button.RegisterCallback<NavigationSubmitEvent>(Submit);
         _button.RegisterCallback<KeyDownEvent>(Key);
+        _button.RegisterCallback<NavigationCancelEvent>(InspectNavigation);
+        _view.OnInspectEnded.AddListener(InspectionClosed);
         _view.OnGesturesCancelled += Cancel;
     }
 
@@ -116,12 +119,31 @@ public sealed class ToolkitCardGesture : IDisposable
             Screen.height - (point.y - origin.y) / (end.y - origin.y) * Screen.height);
     }
 
-    void Submit(NavigationSubmitEvent evt) { _activate(); evt.StopPropagation(); }
+    void Submit(NavigationSubmitEvent evt)
+    { _view.ClosePopover(); _activate(); evt.StopPropagation(); }
+    void InspectionClosed() { _navigationInspect = false; }
+    // Both UI input modules already map controller Cancel (B / Circle). On a focused
+    // card it toggles inspection; Submit (A / Cross) keeps its activation meaning.
+    void InspectNavigation(NavigationCancelEvent evt)
+    {
+        if (_navigationInspect) _view.ClosePopover();
+        else
+        {
+            _view.ClosePopover();
+            _navigationInspect = true;
+            Inspect();
+        }
+        evt.StopPropagation();
+    }
+    void Inspect()
+    {
+        _view.inspectAnchor = _button.worldBound;
+        _view.OnInspectRequested.Invoke(_card.model);
+    }
     void Key(KeyDownEvent evt)
     {
         if (evt.keyCode != KeyCode.I && evt.keyCode != KeyCode.F1) return;
-        _view.inspectAnchor = _button.worldBound;
-        _view.OnInspectRequested.Invoke(_card.model);
+        Inspect();
         evt.StopPropagation();
     }
     void CancelEvent(PointerCancelEvent evt) { if (evt.pointerId == _press.pointer) Cancel(); }
@@ -153,5 +175,7 @@ public sealed class ToolkitCardGesture : IDisposable
         _button.UnregisterCallback<DetachFromPanelEvent>(Detached);
         _button.UnregisterCallback<NavigationSubmitEvent>(Submit);
         _button.UnregisterCallback<KeyDownEvent>(Key);
+        _button.UnregisterCallback<NavigationCancelEvent>(InspectNavigation);
+        _view.OnInspectEnded.RemoveListener(InspectionClosed);
     }
 }

@@ -90,7 +90,7 @@ public class ToolkitCard : System.IDisposable
         _title.text = _model.title;
         _description.text = _model.description;
         _status.text = _model.status;
-        _button.tooltip = _model.description;
+        _button.tooltip = _compact ? _model.description + "\nInspect: I / F1 or controller B / Circle" : _model.description;
         _info.tooltip = "Inspect " + _model.title;
         _button.SetEnabled(_compact || _model.isEnabled);
         _button.EnableInClassList("is-disabled", !_compact && !_model.isEnabled);

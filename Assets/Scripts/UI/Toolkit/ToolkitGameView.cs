@@ -253,6 +253,7 @@ public class ToolkitGameView
         }
 
         _detail = model;
+        Show("detail-attributes", model.source is Entity);
         SetText("detail-title", model.title);
         SetText("detail-description", model.description);
         VisualElement icon = _root.Q("detail-icon");
