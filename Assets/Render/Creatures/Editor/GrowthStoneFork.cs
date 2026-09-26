@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System;
 using UnityEngine;
-using HealerLike.Render.Grammar;
 using static HealerLike.Render.Creatures.GrowthStoneParts;
 
 namespace HealerLike.Render.Creatures
@@ -30,11 +28,7 @@ namespace HealerLike.Render.Creatures
 
                 Vector3 fork = new Vector3(side * 0.57f, 0.46f, 0f);
                 parts.Add(Link("ForkBranch", ShapeProfile.Segment(0.13f, 0.8f), Vector3.zero, fork, 0.29f));
-                if (!stone)
-                {
-                    Joint(parts, fork, 0.25f);
-                }
-
+                Joint(parts, fork, 0.25f);
                 Quaternion rotation =
                     Quaternion.AngleAxis(side * 6f, Vector3.forward)
                     * Quaternion.AngleAxis(side < 0 ? 0f : 180f, Vector3.up);
@@ -47,7 +41,7 @@ namespace HealerLike.Render.Creatures
                         rotation
                     )
                 );
-                AttachedTip(parts, stone, lobe, new Vector3(0.14f, 0.22f, 0.14f));
+                AttachedTip(parts, false, lobe, new Vector3(0.14f, 0.22f, 0.14f));
             }
         }
     }

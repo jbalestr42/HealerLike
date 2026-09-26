@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System;
 using UnityEngine;
-using HealerLike.Render.Grammar;
 using static HealerLike.Render.Creatures.GrowthStoneParts;
 
 namespace HealerLike.Render.Creatures
