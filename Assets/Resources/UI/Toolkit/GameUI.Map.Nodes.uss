@@ -1,5 +1,7 @@
-.map-node
+.map-node,
+.map-node:disabled
 {
+    background-image: none;
     position: absolute;
     width: var(--ui-room-preview-width);
     height: var(--ui-room-preview-height);

@@ -48,8 +48,10 @@
     font-size: var(--ui-text-value);
 }
 
-.button
+.button,
+.button:disabled
 {
+    background-image: none;
     background-color: var(--ui-card);
     border-width: var(--ui-border-width);
     border-color: var(--ui-border);
@@ -77,7 +79,8 @@
     background-color: var(--ui-control-active);
 }
 
-.button--primary
+.button--primary,
+.button--primary:disabled
 {
     background-color: var(--ui-accent);
     color: var(--ui-primary-ink);
@@ -89,7 +92,8 @@
     background-color: var(--ui-primary-hover);
 }
 
-.button--quiet
+.button--quiet,
+.button--quiet:disabled
 {
     background-color: var(--ui-quiet-fill);
 }
@@ -101,8 +105,10 @@
     opacity: 0.42;
 }
 
-.data-card
+.data-card,
+.data-card:disabled
 {
+    background-image: none;
     background-color: var(--ui-card);
     border-width: var(--ui-border-width);
     border-color: var(--ui-border);
