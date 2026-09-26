@@ -52,7 +52,7 @@
 #hud-root.compact-hud .detail-panel {
     display: flex; position: absolute; width: 280px; max-width: 90%; height: auto;
     max-height: 80%; left: 12px; top: 90px; bottom: auto; right: auto;
-    padding: 14px; background-color: var(--ui-card); border-color: var(--ui-ink);
+    padding: 10px; background-color: var(--ui-card); border-color: var(--ui-ink);
     border-width: 1px; border-radius: 12px;
 }
 #hud-root.compact-hud .detail-panel.is-hidden { display: none; }
@@ -61,13 +61,13 @@
     padding: 0; margin: 0; background-color: transparent; border-width: 0; font-size: 24px;
 }
 #hud-root.compact-hud .detail-summary { flex-direction: row; }
-#hud-root.compact-hud .detail-title { padding-right: 24px; font-size: 16px; }
-#hud-root.compact-hud .detail-description { font-size: 13px; white-space: normal; }
+#hud-root.compact-hud .detail-title { padding: 0 24px 0 0; margin: 0 0 4px 0; font-size: 16px; }
+#hud-root.compact-hud .detail-description { font-size: 13px; white-space: normal; color: var(--ui-ink); margin: 0; padding: 0; }
 #hud-root.compact-hud .detail-icon { display: flex; width: 40px; height: 40px; margin: 0 8px 0 0; }
 #hud-root.compact-hud .detail-copy { flex-shrink: 1; flex-grow: 1; min-width: 0; }
 #hud-root.compact-hud .detail-scroll { min-height: 0; flex-shrink: 1; }
-#hud-root.compact-hud .detail-actions { margin-top: 8px; }
-#hud-root.compact-hud .detail-actions .button { min-height: 44px; }
+#hud-root.compact-hud .detail-actions { margin-top: 4px; }
+#hud-root.compact-hud .detail-actions .button { min-height: 44px; margin: 4px 0 0 0; }
 #hud-root.compact-hud .pause-settings { flex-direction: column; align-items: stretch; }
 #hud-root.compact-hud .pause-settings .speed-controls { width: auto; }
 #hud-root.compact-hud .pause-settings .marker-toggle { margin: 0; }
@@ -84,14 +84,7 @@
     width: 28px; height: 28px; border-radius: 14px;
     background-color: rgba(12, 47, 44, 0.12); justify-content: center; align-items: center;
 }
-#hud-root.compact-hud .detail-description { color: var(--ui-ink); }
-#hud-root.compact-hud .detail-actions { margin-top: 4px; }
-#hud-root.compact-hud .detail-targeting { margin-top: 6px; margin-bottom: 4px; }
-#hud-root.compact-hud .detail-attributes { margin-top: 4px; margin-left: 0; }
-#hud-root.compact-hud .detail-attributes > .unity-foldout__toggle { min-height: 32px; font-size: 12px; }
-
-#hud-root.compact-hud .detail-title { margin-bottom: 4px; }
-#hud-root.compact-hud .detail-icon.creature-portrait { background-color: transparent; border-width: 0; }
+#hud-root.compact-hud .detail-icon.creature-portrait { background-color: transparent; border-width: 0; border-radius: 0; }
 #hud-root.compact-hud .detail-targeting {
     flex-direction: row; align-items: center; min-height: 44px; margin: 4px 0 0 0;
 }
@@ -99,14 +92,10 @@
     width: 90px; min-width: 0; margin: 0 4px 0 0; font-size: 12px;
 }
 #hud-root.compact-hud .detail-targeting > .unity-base-field__input { min-width: 0; flex-grow: 1; }
-#hud-root.compact-hud .detail-scroll .unity-scroller--vertical { width: 8px; margin-left: 3px; }
-#hud-root.compact-hud .detail-scroll .unity-slider--vertical { width: 8px; margin: 0; }
-
-#hud-root.compact-hud .detail-panel { padding: 10px; }
-#hud-root.compact-hud .detail-title { padding: 0 24px 0 0; margin: 0 0 4px 0; }
-#hud-root.compact-hud .detail-description { padding: 0; margin: 0; }
-#hud-root.compact-hud .detail-actions .button { margin: 4px 0 0 0; }
+#hud-root.compact-hud .detail-attributes { margin-top: 4px; margin-left: 0; }
+#hud-root.compact-hud .detail-attributes > .unity-foldout__toggle { min-height: 32px; font-size: 12px; }
 #hud-root.compact-hud .detail-attributes .unity-toggle__text { color: var(--ui-ink); }
 #hud-root.compact-hud .detail-attributes .unity-toggle__checkmark { -unity-background-image-tint-color: var(--ui-ink); }
-#hud-root.compact-hud .detail-scroll #unity-vertical-scroller { min-width: 6px; width: 6px; }
+#hud-root.compact-hud .detail-scroll #unity-vertical-scroller { min-width: 6px; width: 6px; margin-left: 3px; }
+#hud-root.compact-hud .detail-scroll .unity-slider--vertical { width: 6px; margin: 0; }
 #hud-root.compact-hud .detail-scroll .unity-base-slider__dragger { min-width: 6px; width: 6px; }
