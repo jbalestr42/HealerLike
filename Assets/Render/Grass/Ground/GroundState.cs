@@ -2,8 +2,9 @@ using UnityEngine;
 
 namespace HealerLike.Render.Grass
 {
-    // How fast the ground's slow state follows the auras: burning is quick and regrowth slow, a heal's lush green
-    // lingers and its glow fades. All rates are per second.
+    // How fast the ground's slow state follows the auras: burning is quick and regrowth slow, lush and dead grass
+    // follow their creature closely, a heal's glow and a slow's frost fade fast, poison's blight lingers a little.
+    // All rates are per second.
     [System.Serializable]
     public struct GroundStateSettings
     {
@@ -11,8 +12,11 @@ namespace HealerLike.Render.Grass
         public float regrow;
         public float vitalityIn;
         public float vitalityOut;
+        // Toward more glow or frost, and back to neither
         public float glowIn;
         public float glowOut;
+        public float blightIn;
+        public float blightOut;
 
         public static GroundStateSettings Default
         {
@@ -25,7 +29,9 @@ namespace HealerLike.Render.Grass
                     vitalityIn = 1.2f,
                     vitalityOut = 0.8f,
                     glowIn = 8f,
-                    glowOut = 2f
+                    glowOut = 2f,
+                    blightIn = 1.5f,
+                    blightOut = 0.6f
                 };
             }
         }
@@ -36,28 +42,35 @@ namespace HealerLike.Render.Grass
             return new Vector4(burn, regrow, vitalityIn, vitalityOut);
         }
 
-        public Vector2 ShaderGlowRates()
+        public Vector4 ShaderLightRates()
         {
-            return new Vector2(glowIn, glowOut);
+            return new Vector4(glowIn, glowOut, blightIn, blightOut);
         }
     }
 
     // One step of the ground state, the CPU mirror of HLGroundStateStep: x ash, y vitality from dead at -1 to
-    // lush at 1, z glow. aura is the summed GroundStamp.State over the texel.
+    // lush at 1, z light from frost at -1 to glow at 1, w blight. aura is the summed GroundStamp.State over the
+    // texel.
     public static class GroundState
     {
-        public static Vector3 Step(Vector3 state, Vector4 aura, float step, GroundStateSettings settings)
+        public static Vector4 Step(Vector4 state, Vector4 aura, float step, GroundStateSettings settings)
         {
-            float cover = Mathf.Clamp01(aura.w);
-            float inverse = 1f / Mathf.Max(aura.w, 1e-4f);
-            Vector3 asked = new Vector3(aura.x, aura.y, aura.z) * (cover * inverse);
+            Vector4 asked = new Vector4(Mathf.Clamp01(aura.x), Mathf.Clamp(aura.y, -1f, 1f),
+                                        Mathf.Clamp(aura.z, -1f, 1f), Mathf.Clamp01(aura.w));
             float ashRate = asked.x > state.x ? settings.burn : settings.regrow;
             float vitalityRate = Mathf.Abs(asked.y) > Mathf.Abs(state.y) ? settings.vitalityIn : settings.vitalityOut;
-            float glowRate = asked.z > state.z ? settings.glowIn : settings.glowOut;
-            float ash = state.x + (asked.x - state.x) * (1f - Mathf.Exp(-ashRate * step));
-            float vitality = state.y + (asked.y - state.y) * (1f - Mathf.Exp(-vitalityRate * step));
-            float glow = state.z + (asked.z - state.z) * (1f - Mathf.Exp(-glowRate * step));
-            return new Vector3(Mathf.Clamp01(ash), Mathf.Clamp(vitality, -1f, 1f), Mathf.Clamp01(glow));
+            float lightRate = Mathf.Abs(asked.z) > Mathf.Abs(state.z) ? settings.glowIn : settings.glowOut;
+            float blightRate = asked.w > state.w ? settings.blightIn : settings.blightOut;
+            Vector4 next = new Vector4(
+                Ease(state.x, asked.x, ashRate, step), Ease(state.y, asked.y, vitalityRate, step),
+                Ease(state.z, asked.z, lightRate, step), Ease(state.w, asked.w, blightRate, step));
+            return new Vector4(Mathf.Clamp01(next.x), Mathf.Clamp(next.y, -1f, 1f), Mathf.Clamp(next.z, -1f, 1f),
+                               Mathf.Clamp01(next.w));
+        }
+
+        static float Ease(float value, float target, float rate, float step)
+        {
+            return value + (target - value) * (1f - Mathf.Exp(-rate * step));
         }
     }
 }

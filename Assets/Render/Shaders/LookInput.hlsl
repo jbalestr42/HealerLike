@@ -18,6 +18,8 @@ CBUFFER_START(UnityPerMaterial)
     float4 _HLAshColor;
     float4 _HLWiltColor;
     float4 _HLGlowColor;
+    float4 _HLBlightColor;
+    float4 _HLFrostColor;
 CBUFFER_END
 
 #if defined(UNITY_INSTANCING_ENABLED)

@@ -40,6 +40,12 @@
 #define HL_WILT_DROOP 0.8
 #define HL_ASH_HEIGHT 0.2
 #define HL_ASH_STIFF 0.7
+// Frost stiffens a tuft against the air by this share and shrinks it by this one; blight sinks it by this share
+// and droops it this far along its heading
+#define HL_FROST_STIFF 0.8
+#define HL_FROST_SINK 0.1
+#define HL_BLIGHT_SINK 0.25
+#define HL_BLIGHT_DROOP 0.5
 
 StructuredBuffer<HLTuftSeed> _HLBladeSeeds;
 RWStructuredBuffer<HLTuftState> _HLBladeStates;
@@ -50,8 +56,8 @@ float4 _HLFrustumPlanes[6];
 float _HLCullMargin;
 // GroundWind.Shader
 float4 _HLGroundWind;
-// The ground GroundSimulation publishes: xy lean and zw its velocity, the flatness, the ash, vitality and glow,
-// where it lies, and one while live
+// The ground GroundSimulation publishes: xy lean and zw its velocity, the flatness, the ash, vitality, light
+// and blight, where it lies, and one while live
 Texture2D<float4> _HLGroundMotion;
 Texture2D<float> _HLGroundCrush;
 Texture2D<float4> _HLGroundState;
@@ -140,15 +146,20 @@ HLTuftState HLEvaluateTuft(HLTuftSeed tuft)
     float ash = saturate(ground.x);
     float grow = saturate(ground.y);
     float wilt = saturate(-ground.y);
+    float frost = saturate(-ground.z);
+    float blight = saturate(ground.w);
     float2 rest = tuft.heightWidthLean.zw;
     float2 droop = length(rest) > 1e-3 ? normalize(rest) : yaw;
-    lean = lean * (1.0 - HL_ASH_STIFF * ash) + droop * (HL_WILT_DROOP * wilt);
+    float2 moving = lean - rest;
+    lean = rest + moving * (1.0 - HL_ASH_STIFF * ash) * (1.0 - HL_FROST_STIFF * frost);
+    lean += droop * (HL_WILT_DROOP * wilt + HL_BLIGHT_DROOP * blight);
     // Flattened tufts fold down along their push and shrink toward the ground
     float2 fold = length(air) > 1e-3 ? normalize(air) : yaw;
     lean = lerp(lean, fold * HL_CRUSH_LEAN, crush);
     // Heal and lush ground share the heal's lift, so a tuft never outgrows GrassBounds
     float lifted = min((1.0 + HL_HEAL_LIFT * heal) * (1.0 + HL_GROW_LIFT * grow), 1.0 + HL_HEAL_LIFT);
-    float grown = lifted * (1.0 - HL_BRUISE_SINK * bruise) * (1.0 - HL_WILT_SINK * wilt) * lerp(1.0, HL_ASH_HEIGHT, ash);
+    float grown = lifted * (1.0 - HL_BRUISE_SINK * bruise) * (1.0 - HL_WILT_SINK * wilt) * lerp(1.0, HL_ASH_HEIGHT, ash)
+        * (1.0 - HL_FROST_SINK * frost) * (1.0 - HL_BLIGHT_SINK * blight);
     float scale = lerp(grown, HL_RING_CLEAR_HEIGHT / height, ringClear);
     scale = lerp(scale, min(scale, HL_CRUSH_HEIGHT / height), crush);
     spike *= 1.0 - crush;

@@ -19,6 +19,7 @@ namespace HealerLike.Render.Zones
 
         public static readonly float HealPulseSeconds = 0.45f;
         public static readonly float ShockSeconds = 0.6f;
+        public static readonly float ScorchSeconds = 0.6f;
 
         readonly List<Entry> _entries = new List<Entry>();
         readonly List<IZoneBody> _bodies = new List<IZoneBody>();
@@ -114,6 +115,16 @@ namespace HealerLike.Render.Zones
                 _entries[i] = entry;
             }
 
+            return handle;
+        }
+
+        // A lightning bolt's burn along the ground from one point to another, fading over ScorchSeconds
+        public int AddScorch(Vector3 from, Vector3 to)
+        {
+            Vector3 path = to - from;
+            path.y = 0f;
+            int handle = AddPulse(ZoneKind.Scorch, from, path.magnitude, 1f, ScorchSeconds);
+            SetDirection(handle, path);
             return handle;
         }
 

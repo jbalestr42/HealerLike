@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using HealerLike.Render.Stage;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Deliveries;
 
 namespace HealerLike.Render.Zones
 {
@@ -16,8 +17,11 @@ namespace HealerLike.Render.Zones
         public static readonly float Margin = 0.15f;
         // Meshes whose lowest point sits higher than this above the view's root never reach the grass
         public static readonly float BodyReach = 1.5f;
-        // The most capsules one body sends in a frame
-        public static readonly int MaxCapsules = 48;
+        // The most capsules one body sends in a frame, and of those the most one liana sends
+        public static readonly int MaxCapsules = 96;
+        public static readonly int MaxArmCapsules = 12;
+        // A liana brushes the grass as if this much thicker than its tube
+        public static readonly float ArmReach = 1.5f;
         // In cells: a jump longer than this in one frame is a move into place, not a step
         public static readonly float LandingJump = 0.5f;
         // The landing's rings, radii in cells: one out of each root foot, one round the whole footprint
@@ -32,6 +36,7 @@ namespace HealerLike.Render.Zones
         readonly ZoneHandle _zone = new ZoneHandle();
         readonly BodyMeshes _meshes = new BodyMeshes();
         readonly List<Vector3> _feet = new List<Vector3>();
+        Vector3[] _joints = new Vector3[32];
         ZoneRegistry _zones;
         Collider _hold;
         Vector3 _lastPosition;
@@ -216,7 +221,44 @@ namespace HealerLike.Render.Zones
                 return 0;
             }
 
-            return _meshes.Append(into, start, transform.position.y + BodyReach, MaxCapsules);
+            float ceiling = transform.position.y + BodyReach;
+            int count = _meshes.Append(into, start, ceiling, MaxCapsules);
+            return count + AppendArms(into, start + count, ceiling, MaxCapsules - count);
+        }
+
+        // Every liana out of its rest parts the grass where it sweeps low, along its own curve
+        int AppendArms(BodyCapsule[] into, int start, float ceiling, int room)
+        {
+            if (_host == null)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            for (int i = 0; i < _host.armCount && count < room; i++)
+            {
+                LianaArm arm = _host.GetArm(i);
+                if (arm == null || arm.phase == GesturePhase.Rest)
+                {
+                    continue;
+                }
+
+                int joints = arm.segmentCount + 1;
+                if (_joints.Length < joints)
+                {
+                    _joints = new Vector3[joints];
+                }
+
+                for (int j = 0; j < joints; j++)
+                {
+                    _joints[j] = arm.Joint(j);
+                }
+
+                count += ChainCapsules.Append(_joints, joints, arm.radius * ArmReach, ceiling, into, start + count,
+                                              Mathf.Min(MaxArmCapsules, room - count));
+            }
+
+            return count;
         }
 
         void OnEnable()

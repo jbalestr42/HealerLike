@@ -14,6 +14,10 @@
 #define HL_ZONE_ASH 8
 #define HL_ZONE_WILT 9
 #define HL_ZONE_BOOST 10
+#define HL_ZONE_BLIGHT 11
+#define HL_ZONE_FROST 12
+#define HL_ZONE_SCORCH 13
+#define HL_ZONE_TREMBLE 14
 
 struct HLZone
 {

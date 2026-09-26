@@ -27,7 +27,7 @@ namespace HealerLike.Render.Zones
                 return false;
             }
 
-            if (kind < ZoneKind.Heal || kind > ZoneKind.Boost)
+            if (kind < ZoneKind.Heal || kind > ZoneKind.Tremble)
             {
                 return false;
             }
@@ -41,11 +41,17 @@ namespace HealerLike.Render.Zones
             return true;
         }
 
+        // The kinds whose reserved lane holds an XZ heading; the others keep it zero
+        public static bool CarriesHeading(int kind)
+        {
+            return kind == (int)ZoneKind.Launch || kind == (int)ZoneKind.Scorch;
+        }
+
         // What a body leaves on the ground while it stands there, as opposed to feedback on something it did
         public static bool IsFootprint(int kind)
         {
             return kind == (int)ZoneKind.Trample || kind == (int)ZoneKind.Ash || kind == (int)ZoneKind.Wilt
-                   || kind == (int)ZoneKind.Boost;
+                   || kind == (int)ZoneKind.Boost || kind == (int)ZoneKind.Blight || kind == (int)ZoneKind.Frost;
         }
 
         // Not a sort: keeps room for the gameplay feedback first and gives the footprints what is left,
@@ -108,7 +114,7 @@ namespace HealerLike.Render.Zones
                     continue;
                 }
 
-                if (canonical.kind == (int)ZoneKind.Launch)
+                if (CarriesHeading(canonical.kind))
                 {
                     canonical.reserved = raw.reserved;
                 }

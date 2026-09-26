@@ -15,7 +15,8 @@ void HLGrassInstancingSetup()
 #include "GrassTuftData.hlsl"
 #include "GroundCommon.hlsl"
 
-// The ground state GroundSimulation publishes, read by world position: x ash, y vitality, z glow
+// The ground state GroundSimulation publishes, read by world position: x ash, y vitality, z light from frost at
+// -1 to glow at 1, w blight
 TEXTURE2D(_HLGroundState);
 SAMPLER(sampler_HLGroundState);
 float4 _HLGroundRect;
@@ -36,13 +37,17 @@ float4 HLGrassGroundState(float3 positionWS)
     return SAMPLE_TEXTURE2D_LOD(_HLGroundState, sampler_HLGroundState, saturate(uv), 0) * coverage;
 }
 
-// Lush grass greens, dead grass fades to straw, ash turns it grey; ash wins where both lie
-float3 HLGrassGroundColour(float3 baseColor, float4 ground)
+// Lush grass greens, dead grass fades to straw, blight sickens it, frost whitens it toward the tips and ash turns
+// it grey; ash wins where they overlap. appearance x is the height share along the tuft.
+float3 HLGrassGroundColour(float3 baseColor, float4 ground, float2 appearance)
 {
     float grow = saturate(ground.y);
     float wilt = saturate(-ground.y);
+    float frost = saturate(-ground.z) * (0.4 + 0.6 * appearance.x);
     float3 colour = lerp(baseColor, baseColor * HL_GROW_TINT, 0.8 * grow);
     colour = lerp(colour, _HLWiltColor.rgb, _HLWiltColor.a * wilt);
+    colour = lerp(colour, _HLBlightColor.rgb, _HLBlightColor.a * saturate(ground.w));
+    colour = lerp(colour, _HLFrostColor.rgb, _HLFrostColor.a * frost);
     return lerp(colour, _HLAshColor.rgb, _HLAshColor.a * saturate(ground.x));
 }
 

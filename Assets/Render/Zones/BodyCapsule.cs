@@ -2,13 +2,16 @@ using UnityEngine;
 
 namespace HealerLike.Render.Zones
 {
-    // One solid piece of a body on the ground, in world space: the segment between two points, swollen by a
-    // radius. A sphere has both ends at its centre.
+    // One piece of a body on the ground, in world space: the segment between two points, swollen by a radius. A
+    // sphere has both ends at its centre. A solid piece presses the grass flat under it; a brushing one, like a
+    // liana sweeping low, only parts the grass beside it.
     public struct BodyCapsule
     {
         public Vector3 start;
         public Vector3 end;
         public float radius;
+        // One flattens the grass under the capsule, zero only pushes it aside
+        public float press;
 
         // The lowest point of the capsule's surface
         public float bottom
@@ -58,7 +61,7 @@ namespace HealerLike.Render.Zones
 
             // A capsule's caps add its radius past each end, so the segment stops a radius short of the box
             Vector3 half = axis * (Mathf.Max(0f, length - radius) / length);
-            capsule = new BodyCapsule { start = centre - half, end = centre + half, radius = radius };
+            capsule = new BodyCapsule { start = centre - half, end = centre + half, radius = radius, press = 1f };
             return true;
         }
     }

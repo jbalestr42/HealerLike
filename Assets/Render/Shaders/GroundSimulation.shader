@@ -201,7 +201,7 @@ Shader "Hidden/HL/GroundSimulation"
             Texture2D<float4> _HLGroundPreviousState;
             Texture2D<float4> _HLGroundAura;
             float4 _HLGroundStateRates;
-            float2 _HLGroundGlowRates;
+            float4 _HLGroundGlowRates;
             float _HLGroundStep;
 
             float4 HLStateFragment(float4 positionCS : SV_POSITION) : SV_Target

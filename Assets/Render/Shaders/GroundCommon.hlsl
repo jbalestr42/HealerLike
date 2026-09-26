@@ -11,12 +11,15 @@
 #define HL_GROUND_FRONT 1
 #define HL_GROUND_BODY 2
 #define HL_GROUND_AURA 3
+#define HL_GROUND_STREAK 4
 
 // Disc and front: centreRadius xy centre in world XZ, z radius, w front half width. Disc push: x turn from outward,
 // w push. Front push: w push outward, the front a ring travelling out. Body: centreRadius the
 // first end (x, z, height, radius), push the second end (x, z, height, margin). shape: x flatness, y disc edge
 // share, z rim wobble share, w kind. response: x grass height and y lean for a body, z held share, w kick.
-// Aura: centreRadius like a disc, push x ash, y vitality, z glow.
+// Aura: centreRadius like a disc, push x ash, y vitality, z light (frost below zero, glow above), w blight.
+// Streak: push like an aura; centreRadius xy start, z half width, w zigzag swing; response xy end; shape z turns
+// per world unit.
 struct HLGroundStamp
 {
     float4 centreRadius;
@@ -35,6 +38,14 @@ float2 HLGroundTurn(float2 v, float angle)
 // The square a stamp can write into: its centre in world XZ and half its side
 void HLGroundStampBounds(HLGroundStamp stamp, out float2 centre, out float reach)
 {
+    if (round(stamp.shape.w) == HL_GROUND_STREAK)
+    {
+        centre = 0.5 * (stamp.centreRadius.xy + stamp.response.xy);
+        reach = 0.5 * distance(stamp.centreRadius.xy, stamp.response.xy) + stamp.centreRadius.z
+            + stamp.centreRadius.w;
+        return;
+    }
+
     if (round(stamp.shape.w) == HL_GROUND_BODY)
     {
         centre = 0.5 * (stamp.centreRadius.xy + stamp.push.xy);
@@ -73,16 +84,40 @@ float HLGroundDiscWeight(HLGroundStamp stamp, float2 p)
     return 1.0 - smoothstep(rim * (1.0 - stamp.shape.y), rim, length(p - stamp.centreRadius.xy));
 }
 
-// What an aura asks of the ground state, weighted by its cover: x ash, y vitality, z glow, w cover
+// A streak's cover at a point: the distance to its zigzag path, thinning toward its end
+float HLGroundStreakWeight(HLGroundStamp stamp, float2 p)
+{
+    float2 start = stamp.centreRadius.xy;
+    float2 axis = stamp.response.xy - start;
+    float length = max(sqrt(dot(axis, axis)), 1e-5);
+    float2 along = axis / length;
+    float2 delta = p - start;
+    float t = saturate(dot(delta, along) / length);
+    float side = along.x * delta.y - along.y * delta.x;
+    float turn = t * length * stamp.shape.z;
+    float zigzag = abs(turn - floor(turn) - 0.5) * 4.0 - 1.0;
+    float offset = abs(side - stamp.centreRadius.w * zigzag);
+    float beyond = abs(dot(delta, along) - t * length);
+    float distanceToPath = sqrt(offset * offset + beyond * beyond);
+    float width = stamp.centreRadius.z * (1.0 - 0.5 * t);
+    return 1.0 - smoothstep(width * (1.0 - stamp.shape.y), width, distanceToPath);
+}
+
+// What an aura or a streak asks of the ground state, scaled by its cover: x ash, y vitality, z light, w blight
 float4 HLGroundStampState(HLGroundStamp stamp, float2 p)
 {
-    if (round(stamp.shape.w) != HL_GROUND_AURA)
+    float kind = round(stamp.shape.w);
+    if (kind == HL_GROUND_STREAK)
+    {
+        return stamp.push * HLGroundStreakWeight(stamp, p);
+    }
+
+    if (kind != HL_GROUND_AURA)
     {
         return float4(0.0, 0.0, 0.0, 0.0);
     }
 
-    float weight = HLGroundDiscWeight(stamp, p);
-    return float4(stamp.push.xyz * weight, weight);
+    return stamp.push * HLGroundDiscWeight(stamp, p);
 }
 
 // xy lean in radians and z flatness the stamp adds at a world XZ point
@@ -94,7 +129,7 @@ float3 HLGroundStampValue(HLGroundStamp stamp, float2 p)
         return HLGroundBodyValue(stamp, p);
     }
 
-    if (kind == HL_GROUND_AURA)
+    if (kind == HL_GROUND_AURA || kind == HL_GROUND_STREAK)
     {
         return float3(0.0, 0.0, 0.0);
     }
@@ -153,18 +188,19 @@ float HLGroundCrushStep(float crush, float target, float step, float2 rates)
     return crush + (target - crush) * (1.0 - exp(-rate * step));
 }
 
-// rates: x toward more ash, y back from ash, z toward the asked vitality, w back to neutral vitality; glowRates:
-// x rising, y fading, all per second. aura is the summed HLGroundStampState. state: x ash, y vitality, z glow.
-float4 HLGroundStateStep(float4 state, float4 aura, float step, float4 rates, float2 glowRates)
+// rates: x toward more ash, y back from ash, z toward the asked vitality, w back to neutral vitality; lightRates:
+// x toward more light or frost, y back to none, z toward more blight, w back from it, all per second. aura is
+// the summed HLGroundStampState. state: x ash, y vitality, z light, w blight.
+float4 HLGroundStateStep(float4 state, float4 aura, float step, float4 rates, float4 lightRates)
 {
-    float cover = saturate(aura.w);
-    float3 asked = cover * aura.xyz / max(aura.w, 1e-4);
+    float4 asked = float4(saturate(aura.x), clamp(aura.yz, -1.0, 1.0), saturate(aura.w));
     float ashRate = asked.x > state.x ? rates.x : rates.y;
     float vitalityRate = abs(asked.y) > abs(state.y) ? rates.z : rates.w;
-    float glowRate = asked.z > state.z ? glowRates.x : glowRates.y;
-    float3 rate = float3(ashRate, vitalityRate, glowRate);
-    float3 next = state.xyz + (asked - state.xyz) * (1.0 - exp(-rate * step));
-    return float4(saturate(next.x), clamp(next.y, -1.0, 1.0), saturate(next.z), 0.0);
+    float lightRate = abs(asked.z) > abs(state.z) ? lightRates.x : lightRates.y;
+    float blightRate = asked.w > state.w ? lightRates.z : lightRates.w;
+    float4 rate = float4(ashRate, vitalityRate, lightRate, blightRate);
+    float4 next = state + (asked - state) * (1.0 - exp(-rate * step));
+    return float4(saturate(next.x), clamp(next.yz, -1.0, 1.0), saturate(next.w));
 }
 
 // uv on the ground textures of a world XZ point; rect is GroundVolume.ShaderRect

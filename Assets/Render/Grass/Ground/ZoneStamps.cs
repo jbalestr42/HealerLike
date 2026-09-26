@@ -6,8 +6,10 @@ namespace HealerLike.Render.Grass
 {
     // The published zones as ground stamps. Heals and range previews hold the grass leaning away from their
     // centre and a heal also spins it and makes it grow and glow; obstacles flatten it outward; a shot in flight
-    // parts it along its trail and a shock throws it outward in a ring; boosted cells light it; ash and wilt zones burn or kill it. Hostile and
-    // bruise zones change height only, which the tuft compute still reads from the zones.
+    // parts it along its trail, a shock throws it outward in a ring and a coming enemy area shivers it. Ash and
+    // wilt zones burn or kill it, boosted cells light it, poison blights it, a slow frosts it and lightning
+    // scorches a jagged line into it. Hostile and bruise zones change height only, which the tuft compute still
+    // reads from the zones.
     public static class ZoneStamps
     {
         // Radians of held lean at a zone's full onset
@@ -44,6 +46,18 @@ namespace HealerLike.Render.Grass
         // A boosted cell's grass: this lush and this lit
         public static readonly float BoostVitality = 0.6f;
         public static readonly float BoostGlow = 0.3f;
+        public static readonly float BlightEdge = 0.5f;
+        public static readonly float BlightWobble = 0.2f;
+        public static readonly float FrostEdge = 0.4f;
+        public static readonly float FrostWobble = 0.25f;
+        // A bolt's scorch: this half wide at its start, zigzagging this far either side, this many turns per unit
+        public static readonly float ScorchWidth = 0.12f;
+        public static readonly float ScorchSwing = 0.15f;
+        public static readonly float ScorchTurns = 1.8f;
+        // A warning shivers the grass outward and back this many times a second, this hard at its strongest
+        public static readonly float TrembleRate = 5f;
+        public static readonly float TrembleKick = 320f;
+        public static readonly float TrembleEdge = 0.25f;
 
         // HLGrassZoneOnset: the strength, eased in over the first 0.12 s
         public static float Onset(Zone zone)
@@ -114,6 +128,10 @@ namespace HealerLike.Render.Grass
                     Vector2 behind = centre - Heading(zone.reserved) * zone.radius;
                     stamp = GroundStamp.Trail(behind, centre, LaunchWidth, LaunchKick * strength);
                     return true;
+                case ZoneKind.Tremble:
+                    float shiver = Mathf.Sin(zone.age * TrembleRate * 2f * Mathf.PI);
+                    stamp = GroundStamp.Swirl(centre, zone.radius, 0f, 1f, TrembleKick * strength * shiver, TrembleEdge);
+                    return true;
                 case ZoneKind.Shock:
                     float ring = zone.radius * Mathf.Clamp01(zone.age / ShockSeconds);
                     float width = Mathf.Max(ShockMinBand, zone.radius * ShockBand);
@@ -168,6 +186,17 @@ namespace HealerLike.Render.Grass
                 case ZoneKind.Boost:
                     stamp = GroundStamp.Aura(centre, zone.radius, BoostEdge, BoostWobble, 0f,
                                              BoostVitality * strength, BoostGlow * strength);
+                    return true;
+                case ZoneKind.Blight:
+                    stamp = GroundStamp.Aura(centre, zone.radius, BlightEdge, BlightWobble, 0f, 0f, 0f, strength);
+                    return true;
+                case ZoneKind.Frost:
+                    stamp = GroundStamp.Aura(centre, zone.radius, FrostEdge, FrostWobble, 0f, 0f, -strength);
+                    return true;
+                case ZoneKind.Scorch:
+                    Vector2 end = centre + Heading(zone.reserved) * zone.radius;
+                    stamp = GroundStamp.Streak(centre, end, ScorchWidth, ScorchSwing, ScorchTurns, strength, 0f, 0f,
+                                               0f);
                     return true;
                 default:
                     return false;

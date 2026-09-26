@@ -113,6 +113,14 @@ namespace HealerLike.Render.Stage
             walkerAura.Init(registry);
             ZoneHandle shotZone = new ZoneHandle();
             shotZone.Init(registry);
+            ZoneHandle poison = new ZoneHandle();
+            poison.Init(registry);
+            ZoneHandle frost = new ZoneHandle();
+            frost.Init(registry);
+            ZoneHandle warning = new ZoneHandle();
+            warning.Init(registry);
+            PointerBrush finger = Fixture("GrassLabFinger").AddComponent<PointerBrush>();
+            finger.Init(registry, camera, 0f, 1f);
             StringBuilder csv = new StringBuilder("frame,time");
             for (int i = 0; i < probes.Length; i++)
             {
@@ -167,6 +175,31 @@ namespace HealerLike.Render.Stage
                 {
                     registry.AddShock(stone.position, ImpactPool.ShockRadius(0.5f, true), 0.75f);
                 }
+
+                // The healed ally is poisoned, the stone slowed; a chain bolt scorches walker to stone to ally
+                Status(poison, ZoneKind.Blight, healed.position, frame >= 120 && frame < 230);
+                Status(frost, ZoneKind.Frost, stone.position, frame >= 60 && frame < 200);
+                if (frame == 190)
+                {
+                    registry.AddScorch(walker.position, stone.position);
+                    registry.AddScorch(stone.position, healed.position);
+                }
+
+                // The stone's area skill comes off cooldown from frame 200 to 240 and lands
+                float cooldown = Mathf.Clamp01((240 - frame) / 40f) * GroundWarning.WarningShare;
+                float shiver = frame >= 200 && frame < 240 ? GroundWarning.Strength(cooldown) : 0f;
+                if (shiver > 0f)
+                {
+                    warning.Refresh(ZoneKind.Tremble, stone.position, 1.5f, shiver);
+                }
+                else
+                {
+                    warning.Clear();
+                }
+
+                // A finger strokes through the open grass on the left in the first second
+                Vector2 stroke = camera.WorldToScreenPoint(new Vector3(-3f + 4f * (frame / 60f), 0f, -2.8f));
+                finger.Point(frame < 60, frame == 0, stroke);
 
 
                 registry.PublishFrame(step);
@@ -460,6 +493,18 @@ namespace HealerLike.Render.Stage
             return map;
         }
 
+        static void Status(ZoneHandle zone, ZoneKind kind, Vector3 position, bool isOn)
+        {
+            if (isOn)
+            {
+                zone.Refresh(kind, position, GroundStatus.PatchRadius, 1f);
+            }
+            else
+            {
+                zone.Clear();
+            }
+        }
+
         // A shot from source to target taking flight seconds, at a quarter of a unit over the ground
         static void Shot(ZoneHandle zone, Vector3 source, Vector3 target, float age, float flight)
         {
@@ -488,7 +533,7 @@ namespace HealerLike.Render.Stage
         }
 
         // The ground state from above, north up: green grass, grey ash, straw where it died, bright lime where it
-        // grows and yellow where it glows. The field's own area is outlined.
+        // grows, violet where it is blighted, pale blue where it is frosted and yellow where it glows. The field's own area is outlined.
         static Texture2D StateMap(GroundSimulation ground, Color[] state)
         {
             Texture2D map = new Texture2D(mapSize, mapSize, TextureFormat.RGB24, false);
@@ -498,6 +543,8 @@ namespace HealerLike.Render.Stage
             Color straw = new Color(0.75f, 0.65f, 0.35f);
             Color lush = new Color(0.55f, 0.95f, 0.25f);
             Color glow = new Color(1f, 0.95f, 0.5f);
+            Color frost = new Color(0.85f, 0.93f, 1f);
+            Color blight = new Color(0.55f, 0.4f, 0.65f);
             for (int y = 0; y < mapSize; y++)
             {
                 for (int x = 0; x < mapSize; x++)
@@ -510,6 +557,8 @@ namespace HealerLike.Render.Stage
                         colour = Color.Lerp(grass, lush, Mathf.Clamp01(value.g));
                         colour = Color.Lerp(colour, straw, Mathf.Clamp01(-value.g));
                         colour = Color.Lerp(colour, ash, Mathf.Clamp01(value.r));
+                        colour = Color.Lerp(colour, blight, Mathf.Clamp01(value.a));
+                        colour = Color.Lerp(colour, frost, Mathf.Clamp01(-value.b));
                         colour = Color.Lerp(colour, glow, Mathf.Clamp01(value.b));
                         bool isEdge = Mathf.Abs(Mathf.Abs(world.x) - area.xMax) < 0.04f && Mathf.Abs(world.y) < area.yMax
                                       || Mathf.Abs(Mathf.Abs(world.y) - area.yMax) < 0.04f && Mathf.Abs(world.x) < area.xMax;

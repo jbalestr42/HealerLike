@@ -6,7 +6,8 @@ namespace HealerLike.Render.Grass
 
 public class GroundStateTests
 {
-    static Vector3 Run(Vector3 state, Vector4 aura, float seconds)
+    // aura: x ash, y vitality, z light, w blight, as the auras over the texel add up to
+    static Vector4 Run(Vector4 state, Vector4 aura, float seconds)
     {
         GroundStateSettings settings = GroundStateSettings.Default;
         for (float t = 0f; t < seconds; t += 0.05f)
@@ -20,9 +21,9 @@ public class GroundStateTests
     [Test]
     public void Step_AshAura_BurnsInAboutASecondAndRegrowsSlowly()
     {
-        Vector3 burnt = Run(Vector3.zero, new Vector4(1f, 0f, 0f, 1f), 2f);
-        Vector3 later = Run(burnt, Vector4.zero, 1f);
-        Vector3 regrown = Run(burnt, Vector4.zero, 10f);
+        Vector4 burnt = Run(Vector4.zero, new Vector4(1f, 0f, 0f, 0f), 2f);
+        Vector4 later = Run(burnt, Vector4.zero, 1f);
+        Vector4 regrown = Run(burnt, Vector4.zero, 10f);
 
         Assert.Greater(burnt.x, 0.9f);
         Assert.Greater(later.x, 0.6f, "A second later the ash still shows where the enemy stood.");
@@ -32,26 +33,26 @@ public class GroundStateTests
     [Test]
     public void Step_HalfCoveredAura_AsksForHalf()
     {
-        Vector3 edge = Run(Vector3.zero, new Vector4(0.5f, 0f, 0f, 0.5f), 20f);
+        Vector4 edge = Run(Vector4.zero, new Vector4(0.5f, 0f, 0f, 0f), 20f);
 
         Assert.AreEqual(0.5f, edge.x, 0.01f);
     }
 
     [Test]
-    public void Step_OverlappingAuras_Average()
+    public void Step_OverlappingAuras_AddUpToTheLimit()
     {
-        // A full ash aura and a lush one over the same texel
-        Vector3 mixed = Run(Vector3.zero, new Vector4(1f, 1f, 0f, 2f), 20f);
+        Vector4 mixed = Run(Vector4.zero, new Vector4(1.6f, 0.8f, -1.2f, 0f), 20f);
 
-        Assert.AreEqual(0.5f, mixed.x, 0.01f);
-        Assert.AreEqual(0.5f, mixed.y, 0.01f);
+        Assert.AreEqual(1f, mixed.x, 0.01f);
+        Assert.AreEqual(0.8f, mixed.y, 0.01f);
+        Assert.AreEqual(-1f, mixed.z, 0.01f);
     }
 
     [Test]
     public void Step_WiltAura_KillsTheGrassAndItRecovers()
     {
-        Vector3 dead = Run(Vector3.zero, new Vector4(0f, -1f, 0f, 1f), 4f);
-        Vector3 recovered = Run(dead, Vector4.zero, 20f);
+        Vector4 dead = Run(Vector4.zero, new Vector4(0f, -1f, 0f, 0f), 4f);
+        Vector4 recovered = Run(dead, Vector4.zero, 20f);
 
         Assert.Less(dead.y, -0.95f);
         Assert.Greater(recovered.y, -0.05f);
@@ -60,9 +61,9 @@ public class GroundStateTests
     [Test]
     public void Step_HealAura_GlowsAtOnceAndLeavesLushGrassAfterTheGlowFades()
     {
-        Vector3 healed = Run(Vector3.zero, new Vector4(0f, 1f, 1f, 1f), 0.5f);
-        Vector3 after = Run(healed, Vector4.zero, 0.5f);
-        Vector3 gone = Run(healed, Vector4.zero, 3f);
+        Vector4 healed = Run(Vector4.zero, new Vector4(0f, 1f, 1f, 0f), 0.5f);
+        Vector4 after = Run(healed, Vector4.zero, 0.5f);
+        Vector4 gone = Run(healed, Vector4.zero, 3f);
 
         Assert.Greater(healed.z, 0.95f);
         Assert.Greater(healed.y, 0.3f);
@@ -72,11 +73,23 @@ public class GroundStateTests
     }
 
     [Test]
+    public void Step_FrostAndBlight_SettleInAndFadeOut()
+    {
+        Vector4 afflicted = Run(Vector4.zero, new Vector4(0f, 0f, -1f, 1f), 3f);
+        Vector4 recovered = Run(afflicted, Vector4.zero, 10f);
+
+        Assert.Less(afflicted.z, -0.95f);
+        Assert.Greater(afflicted.w, 0.95f);
+        Assert.Greater(recovered.z, -0.05f);
+        Assert.Less(recovered.w, 0.05f);
+    }
+
+    [Test]
     public void Step_Values_StayInRange()
     {
-        Vector3 state = GroundState.Step(new Vector3(2f, -3f, 5f), Vector4.zero, 0f, GroundStateSettings.Default);
+        Vector4 state = GroundState.Step(new Vector4(2f, -3f, 5f, 4f), Vector4.zero, 0f, GroundStateSettings.Default);
 
-        Assert.AreEqual(new Vector3(1f, -1f, 1f), state);
+        Assert.AreEqual(new Vector4(1f, -1f, 1f, 1f), state);
     }
 }
 

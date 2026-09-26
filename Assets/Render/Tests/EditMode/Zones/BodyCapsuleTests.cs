@@ -17,6 +17,7 @@ public class BodyCapsuleTests
         Assert.AreEqual(sphere.start, sphere.end);
         Assert.AreEqual(0.5f, sphere.radius, 1e-6f);
         Assert.AreEqual(1.5f, sphere.bottom, 1e-6f);
+        Assert.AreEqual(1f, sphere.press, "A mesh of the body is solid.");
     }
 
     [Test]

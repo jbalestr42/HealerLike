@@ -121,6 +121,9 @@ namespace HealerLike.Render.Stage
             _zones.Init();
             Rect boardRect = BoardRect();
             _grass.Init(boardRect, player.grid.size, _board.max.y, _gameCamera, _zones.buffer, ZonePacker.MaxZones);
+            PointerBrush brush = GetComponent<PointerBrush>();
+            if (brush == null) brush = gameObject.AddComponent<PointerBrush>();
+            brush.Init(_zones, _gameCamera, _board.max.y, player.grid.size);
             InitEnvironment(boardRect);
             _spellSink.Init(this);
             _battleFocus.Init(this);

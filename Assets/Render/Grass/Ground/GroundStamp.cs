@@ -8,13 +8,15 @@ namespace HealerLike.Render.Grass
         Disc = 0,
         Front = 1,
         Body = 2,
-        Aura = 3
+        Aura = 3,
+        Streak = 4
     }
 
     // One shape drawn additively into the ground each frame: a disc, a ring front travelling outward, or a
     // capsule the grass parts around, a body standing in it or a trail left along the ground. Its push is held, a lean the grass springs toward and
     // keeps while the stamp lasts, and kicked, an acceleration that throws the grass and lets it swing back.
-    // An aura moves nothing: it asks the slow ground state for ash, vitality and glow over a disc.
+    // An aura moves nothing: it asks the slow ground state for ash, vitality, glow or frost, and blight over a
+    // disc; a streak asks the same along a zigzag line, the mark lightning leaves.
     // HLGroundStamp in GroundCommon.hlsl is the GPU side and Sample mirrors HLGroundStampValue.
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct GroundStamp
@@ -27,7 +29,10 @@ namespace HealerLike.Render.Grass
         // Disc and front: xy centre in world XZ, z radius, w half width of the front band.
         // Body: the capsule's first end, x and z in world XZ, y its height above the ground, w its radius.
         public Vector4 centreRadius;
-        // Aura: x the ash it asks for, y the vitality, from dead at -1 to lush at 1, z the glow.
+        // Aura and streak: x the ash it asks for, y the vitality, from dead at -1 to lush at 1, z the light, from
+        // frost at -1 to a heal's glow at 1, w the blight.
+        // Streak: centreRadius xy its start in world XZ, z its half width, w how far the zigzag swings either side;
+        // response xy its end; shape z the zigzag's turns per world unit.
         // Disc: x the turn of its push from straight outward, counterclockwise seen from above in radians, a
         // quarter turn swirls; z unused; w the push in radians.
         // Front: w the push away from the centre, in radians.
@@ -112,22 +117,48 @@ namespace HealerLike.Render.Grass
             };
         }
 
-        // A disc asking the ground state for ash, vitality and glow, the rim wobbling inward like a burn's edge
+        // A disc asking the ground state for ash, vitality, light and blight, the rim wobbling inward like a
+        // burn's edge
         public static GroundStamp Aura(Vector2 centre, float radius, float edgeShare, float wobble, float ash,
-                                       float vitality, float glow)
+                                       float vitality, float light, float blight = 0f)
         {
             return new GroundStamp
             {
                 centreRadius = new Vector4(centre.x, centre.y, Mathf.Max(0f, radius), 0f),
-                push = new Vector4(Mathf.Clamp01(ash), Mathf.Clamp(vitality, -1f, 1f), Mathf.Clamp01(glow), 0f),
+                push = new Vector4(Mathf.Clamp01(ash), Mathf.Clamp(vitality, -1f, 1f), Mathf.Clamp(light, -1f, 1f),
+                                   Mathf.Clamp01(blight)),
                 shape = new Vector4(0f, Mathf.Clamp(edgeShare, 0.01f, 1f), Mathf.Clamp01(wobble),
                                     (float)GroundStampKind.Aura)
+            };
+        }
+
+        // A zigzag line from start to end, width wide either side and thinning toward its end, asking the ground
+        // state like an aura does
+        public static GroundStamp Streak(Vector2 start, Vector2 end, float width, float swing, float turns,
+                                         float ash, float vitality, float light, float blight)
+        {
+            return new GroundStamp
+            {
+                centreRadius = new Vector4(start.x, start.y, Mathf.Max(0.001f, width), Mathf.Max(0f, swing)),
+                push = new Vector4(Mathf.Clamp01(ash), Mathf.Clamp(vitality, -1f, 1f), Mathf.Clamp(light, -1f, 1f),
+                                   Mathf.Clamp01(blight)),
+                shape = new Vector4(0f, 0.5f, Mathf.Max(0f, turns), (float)GroundStampKind.Streak),
+                response = new Vector4(end.x, end.y, 0f, 0f)
             };
         }
 
         // The square the stamp can write into: its centre in world XZ and half its side
         public void Bounds(out Vector2 centre, out float reach)
         {
+            if (kind == GroundStampKind.Streak)
+            {
+                Vector2 start = new Vector2(centreRadius.x, centreRadius.y);
+                Vector2 end = new Vector2(response.x, response.y);
+                centre = 0.5f * (start + end);
+                reach = 0.5f * Vector2.Distance(start, end) + centreRadius.z + centreRadius.w;
+                return;
+            }
+
             if (kind == GroundStampKind.Body)
             {
                 Vector2 start = new Vector2(centreRadius.x, centreRadius.y);
@@ -149,7 +180,7 @@ namespace HealerLike.Render.Grass
                 return SampleBody(point);
             }
 
-            if (kind == GroundStampKind.Aura)
+            if (kind == GroundStampKind.Aura || kind == GroundStampKind.Streak)
             {
                 return Vector3.zero;
             }
@@ -176,17 +207,40 @@ namespace HealerLike.Render.Grass
             return new Vector3(lean.x, lean.y, shape.x * weight);
         }
 
-        // What an aura asks of the ground state at a world XZ point, weighted by its coverage there: x ash, y
-        // vitality, z glow, w the coverage, so overlapping auras average. Zero for every other kind.
+        // What an aura asks of the ground state at a world XZ point, scaled by its cover there: x ash, y vitality,
+        // z light, w blight. Overlapping auras add up. Zero for every other kind.
         public Vector4 State(Vector2 point)
         {
+            if (kind == GroundStampKind.Streak)
+            {
+                return push * StreakWeight(point);
+            }
+
             if (kind != GroundStampKind.Aura)
             {
                 return Vector4.zero;
             }
 
-            float weight = DiscWeight(point);
-            return new Vector4(push.x * weight, push.y * weight, push.z * weight, weight);
+            return push * DiscWeight(point);
+        }
+
+        // HLGroundStreakWeight: the distance to the zigzag path through the segment, thinning toward its end
+        float StreakWeight(Vector2 point)
+        {
+            Vector2 start = new Vector2(centreRadius.x, centreRadius.y);
+            Vector2 axis = new Vector2(response.x, response.y) - start;
+            float length = Mathf.Max(axis.magnitude, 1e-5f);
+            Vector2 along = axis / length;
+            Vector2 delta = point - start;
+            float t = Mathf.Clamp01(Vector2.Dot(delta, along) / length);
+            float side = along.x * delta.y - along.y * delta.x;
+            float turn = t * length * shape.z;
+            float zigzag = Mathf.Abs(turn - Mathf.Floor(turn) - 0.5f) * 4f - 1f;
+            float offset = Mathf.Abs(side - centreRadius.w * zigzag);
+            float beyond = Mathf.Max(0f, Mathf.Abs(Vector2.Dot(delta, along) - t * length));
+            float distance = Mathf.Sqrt(offset * offset + beyond * beyond);
+            float width = centreRadius.z * (1f - 0.5f * t);
+            return 1f - SmoothStep(width * (1f - shape.y), width, distance);
         }
 
         float DiscWeight(Vector2 point)

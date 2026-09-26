@@ -23,6 +23,8 @@ Shader "HL/Look/Primitive"
         _HLAshColor ("Grass Ash Colour", Color) = (0.58, 0.58, 0.56, 1)
         _HLWiltColor ("Grass Dead Colour", Color) = (0.74, 0.65, 0.38, 0.9)
         _HLGlowColor ("Grass Glow Colour", Color) = (1, 0.96, 0.62, 0.7)
+        _HLBlightColor ("Grass Blight Colour", Color) = (0.55, 0.45, 0.62, 0.85)
+        _HLFrostColor ("Grass Frost Colour", Color) = (0.86, 0.94, 1, 0.9)
     }
     SubShader
     {
@@ -110,7 +112,7 @@ Shader "HL/Look/Primitive"
                     * (1.5 * input.grassAppearance.x - 1.0);
                 #if defined(HL_GRASS_INSTANCED)
                 float4 ground = HLGrassGroundState(input.positionWS);
-                baseColor = HLGrassGroundColour(baseColor, ground);
+                baseColor = HLGrassGroundColour(baseColor, ground, input.grassAppearance);
                 #endif
                 float3 color = HLShadeSurface(input.positionWS, facing, mainLight.shadowAttenuation,
                                               baseColor, _HLHatchMultiplier, _HLToonThresholdOffset,

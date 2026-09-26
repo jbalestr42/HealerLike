@@ -62,7 +62,7 @@ namespace HealerLike.Render.Grass
 
         public RenderTexture motion { get { return _motion[_current]; } }
         public RenderTexture crush { get { return _crush[_current]; } }
-        // x ash, y vitality from dead at -1 to lush at 1, z glow
+        // x ash, y vitality from dead at -1 to lush at 1, z light from frost at -1 to glow at 1, w blight
         public RenderTexture state { get { return _state[_currentState]; } }
         public int stampCount { get { return _stampCount; } }
 
@@ -222,7 +222,7 @@ namespace HealerLike.Render.Grass
             _material.SetTexture(auraId, _aura);
             _material.SetTexture(previousStateId, _state[_currentState]);
             _material.SetVector(stateRatesId, stateSettings.ShaderRates());
-            _material.SetVector(glowRatesId, stateSettings.ShaderGlowRates());
+            _material.SetVector(glowRatesId, stateSettings.ShaderLightRates());
             _material.SetFloat(stepId, frame);
             int next = 1 - _currentState;
             _commands.Clear();

@@ -10,13 +10,18 @@ namespace HealerLike.Render.Grass
         public static readonly float Margin = 0.3f;
         // Radians of lean away from a body at full contact
         public static readonly float Lean = 0.9f;
+        // In cells: how far above the grass a brushing capsule still stirs it, fading with height, the wind of a
+        // liana sweeping over it
+        public static readonly float BrushAir = 1f;
 
+        // A solid capsule presses the grass it reaches; a brushing one stirs it from further above
         public static GroundStamp Create(BodyCapsule capsule, float surfaceY, float cellSize)
         {
             Vector3 lift = new Vector3(0f, surfaceY, 0f);
-            float grassHeight = GrassLayout.TuftHeight * cellSize;
+            float press = Mathf.Clamp01(capsule.press);
+            float grassHeight = (GrassLayout.TuftHeight + (1f - press) * BrushAir) * cellSize;
             return GroundStamp.Body(capsule.start - lift, capsule.end - lift, capsule.radius, Margin * cellSize,
-                                    grassHeight, Lean, 1f);
+                                    grassHeight, Lean, press);
         }
 
         // Writes one stamp per capsule from start on, as many as fit, and returns how many it wrote

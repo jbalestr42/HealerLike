@@ -30,6 +30,10 @@ public class ZonePackerTests
     [TestCase(ZoneKind.Ash, 8)]
     [TestCase(ZoneKind.Wilt, 9)]
     [TestCase(ZoneKind.Boost, 10)]
+    [TestCase(ZoneKind.Blight, 11)]
+    [TestCase(ZoneKind.Frost, 12)]
+    [TestCase(ZoneKind.Scorch, 13)]
+    [TestCase(ZoneKind.Tremble, 14)]
     public void TryCreate_LaterKinds_KeepTheirWireValuesAndAreAccepted(ZoneKind kind, int value)
     {
         Assert.AreEqual(value, (int)kind);
@@ -97,6 +101,10 @@ public class ZonePackerTests
         Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Ash));
         Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Wilt));
         Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Boost));
+        Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Blight));
+        Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Frost));
+        Assert.IsFalse(ZonePacker.IsFootprint((int)ZoneKind.Scorch));
+        Assert.IsFalse(ZonePacker.IsFootprint((int)ZoneKind.Tremble));
         Assert.IsFalse(ZonePacker.IsFootprint((int)ZoneKind.Shock));
         Assert.IsFalse(ZonePacker.IsFootprint((int)ZoneKind.Heal));
     }
@@ -117,6 +125,14 @@ public class ZonePackerTests
 
         Assert.AreEqual(ZonePacker.MaxZones, kept);
         Assert.AreEqual((int)ZoneKind.Shock, zones[kept - 1].kind);
+    }
+
+    [Test]
+    public void CarriesHeading_LaunchAndScorch_Only()
+    {
+        Assert.IsTrue(ZonePacker.CarriesHeading((int)ZoneKind.Launch));
+        Assert.IsTrue(ZonePacker.CarriesHeading((int)ZoneKind.Scorch));
+        Assert.IsFalse(ZonePacker.CarriesHeading((int)ZoneKind.Shock));
     }
 
     [Test]

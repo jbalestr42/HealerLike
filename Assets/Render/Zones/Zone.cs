@@ -20,7 +20,15 @@ namespace HealerLike.Render.Zones
         // Grass dying around an ally, spreading as its health falls
         Wilt = 9,
         // A cell a buff blesses: lush, softly lit grass while the buff lasts
-        Boost = 10
+        Boost = 10,
+        // A poisoned creature's grass sickens around it
+        Blight = 11,
+        // A slowed creature's grass frosts over and stiffens
+        Frost = 12,
+        // A lightning bolt's jagged burn from position along the heading for radius
+        Scorch = 13,
+        // An enemy area about to land: the grass in it shivers, harder the closer it is
+        Tremble = 14
     }
 
     // Matches the 32 bytes element of _HLZones in ZoneData.hlsl

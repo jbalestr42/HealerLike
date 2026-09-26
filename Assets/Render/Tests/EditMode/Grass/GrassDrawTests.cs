@@ -318,6 +318,16 @@ public class GrassDrawTests
                 state = PublishState(new Vector4(0f, 0f, 1f, 0f));
                 _scene.Render();
                 Color32 glowing = LookTestScene.MedianColour(_scene.texture, 128, 128, 2);
+                Object.DestroyImmediate(state);
+
+                state = PublishState(new Vector4(0f, 0f, 0f, 1f));
+                _scene.Render();
+                Color32 blighted = LookTestScene.MedianColour(_scene.texture, 128, 128, 2);
+                Object.DestroyImmediate(state);
+
+                state = PublishState(new Vector4(0f, 0f, -1f, 0f));
+                _scene.Render();
+                Color32 frozen = LookTestScene.MedianColour(_scene.texture, 128, 160, 2);
 
                 Assert.Greater(green.g - green.r, 40, $"Green grass {green}");
                 Assert.Less(Mathf.Abs(ash.g - ash.r), 12, $"Ash is grey, not green: {ash}");
@@ -325,6 +335,9 @@ public class GrassDrawTests
                 Assert.Greater(dead.r, green.r + 30, $"Dead grass turns straw: {dead}");
                 Assert.Greater(glowing.r + glowing.g + glowing.b, green.r + green.g + green.b + 40,
                     $"A heal's glow lights the grass: {glowing}");
+                Assert.Greater(blighted.b, blighted.g, $"Blight turns it sickly violet: {blighted}");
+                Assert.Greater(frozen.b, green.b + 60, $"Frost whitens it: {frozen}");
+                Assert.Greater(frozen.r, green.r + 60, $"Frost whitens it: {frozen}");
             }
             finally
             {

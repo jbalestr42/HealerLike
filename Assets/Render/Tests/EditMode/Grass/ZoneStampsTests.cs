@@ -130,7 +130,7 @@ public class ZoneStampsTests
         Assert.IsTrue(ZoneStamps.TryCreateAura(Make(ZoneKind.Ash, new Vector3(1f, 0f, 1f), 1.5f, 3f), out GroundStamp ash));
 
         Vector4 state = ash.State(new Vector2(1f, 1f));
-        Assert.AreEqual(new Vector4(1f, 0f, 0f, 1f), state);
+        Assert.AreEqual(new Vector4(1f, 0f, 0f, 0f), state);
         Assert.AreEqual(Vector4.zero, ash.State(new Vector2(3f, 1f)));
         Assert.IsFalse(ZoneStamps.TryCreate(Make(ZoneKind.Ash, Vector3.zero, 1f, 1f), out _), "Ash moves nothing.");
     }
@@ -152,6 +152,43 @@ public class ZoneStampsTests
         Assert.AreEqual(1f, state.y, 1e-6f);
         Assert.AreEqual(1f, state.z, 1e-6f);
         Assert.IsFalse(ZoneStamps.TryCreateAura(Make(ZoneKind.Shock, Vector3.zero, 2f, 1f), out _));
+    }
+
+    [Test]
+    public void TryCreateAura_BlightAndFrost_SickenAndChillTheGrass()
+    {
+        ZoneStamps.TryCreateAura(Make(ZoneKind.Blight, Vector3.zero, 1f, 1f), out GroundStamp blight);
+        ZoneStamps.TryCreateAura(Make(ZoneKind.Frost, Vector3.zero, 1f, 1f, 0.5f), out GroundStamp frost);
+
+        Assert.AreEqual(1f, blight.State(Vector2.zero).w, 1e-5f);
+        Assert.AreEqual(-0.5f, frost.State(Vector2.zero).z, 1e-5f, "Frost is light below zero.");
+        Assert.IsFalse(ZoneStamps.TryCreate(Make(ZoneKind.Frost, Vector3.zero, 1f, 1f), out _), "Neither moves grass.");
+    }
+
+    [Test]
+    public void TryCreateAura_Scorch_BurnsAJaggedLineAlongTheBolt()
+    {
+        Zone scorch = Make(ZoneKind.Scorch, new Vector3(1f, 0f, 1f), 3f, 0.1f,
+                           heading: ZonePacker.EncodeDirection(Vector3.right));
+
+        Assert.IsTrue(ZoneStamps.TryCreateAura(scorch, out GroundStamp bolt));
+
+        Assert.AreEqual(GroundStampKind.Streak, bolt.kind);
+        Assert.AreEqual(4f, bolt.response.x, 1e-4f, "It runs to where the bolt struck.");
+        Assert.Greater(bolt.State(new Vector2(2.5f, 1f)).x + bolt.State(new Vector2(2.5f, 1.15f)).x
+                       + bolt.State(new Vector2(2.5f, 0.85f)).x, 0.5f);
+    }
+
+    [Test]
+    public void TryCreate_Tremble_ShiversTheAreaOutwardAndBack()
+    {
+        float quarter = 0.25f / ZoneStamps.TrembleRate;
+        ZoneStamps.TryCreate(Make(ZoneKind.Tremble, Vector3.zero, 2f, quarter, 0.5f), out GroundStamp outward);
+        ZoneStamps.TryCreate(Make(ZoneKind.Tremble, Vector3.zero, 2f, 3f * quarter, 0.5f), out GroundStamp inward);
+
+        Assert.AreEqual(0.5f * ZoneStamps.TrembleKick, outward.Force(new Vector2(1f, 0f)).x, 0.5f);
+        Assert.AreEqual(-0.5f * ZoneStamps.TrembleKick, inward.Force(new Vector2(1f, 0f)).x, 0.5f);
+        Assert.AreEqual(Vector3.zero, outward.Target(new Vector2(1f, 0f)), "A warning holds nothing.");
     }
 
     [Test]

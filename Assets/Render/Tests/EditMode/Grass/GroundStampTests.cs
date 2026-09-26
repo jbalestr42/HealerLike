@@ -188,10 +188,37 @@ public class GroundStampTests
         Assert.AreEqual(GroundStampKind.Aura, aura.kind);
         Assert.AreEqual(Vector3.zero, aura.Sample(new Vector2(0.3f, 0f)));
         Assert.AreEqual(Vector2.zero, aura.Force(new Vector2(0.3f, 0f)));
-        Assert.AreEqual(new Vector4(1f, -0.5f, 0.25f, 1f), aura.State(new Vector2(0.3f, 0f)));
+        Assert.AreEqual(new Vector4(1f, -0.5f, 0.25f, 0f), aura.State(new Vector2(0.3f, 0f)));
         Assert.AreEqual(Vector4.zero, aura.State(new Vector2(1.2f, 0f)));
         Assert.AreEqual(Vector4.zero, GroundStamp.Disc(Vector2.zero, 1f, 0.2f, 1f, 0.2f, 0f).State(Vector2.zero),
             "Only auras ask the state.");
+    }
+
+    [Test]
+    public void Streak_AsksTheStateAlongAZigzagThinningToItsEnd()
+    {
+        GroundStamp bolt = GroundStamp.Streak(Vector2.zero, new Vector2(4f, 0f), 0.2f, 0f, 1f, 1f, 0f, 0f, 0f);
+
+        Assert.AreEqual(GroundStampKind.Streak, bolt.kind);
+        Assert.AreEqual(1f, bolt.State(new Vector2(1f, 0f)).x, 1e-5f, "Full along the path.");
+        Assert.AreEqual(0f, bolt.State(new Vector2(1f, 0.5f)).x, "Nothing beside it.");
+        Assert.AreEqual(0f, bolt.State(new Vector2(5f, 0f)).x, "Nothing past its end.");
+        Assert.Greater(bolt.State(new Vector2(0.5f, 0.12f)).x, bolt.State(new Vector2(3.5f, 0.12f)).x,
+            "It thins toward its end.");
+        Assert.AreEqual(Vector3.zero, bolt.Sample(new Vector2(1f, 0f)), "It moves nothing.");
+        bolt.Bounds(out Vector2 centre, out float reach);
+        Assert.AreEqual(new Vector2(2f, 0f), centre);
+        Assert.AreEqual(2.2f, reach, 1e-5f);
+    }
+
+    [Test]
+    public void Streak_Swing_ZigzagsAcrossTheLine()
+    {
+        GroundStamp bolt = GroundStamp.Streak(Vector2.zero, new Vector2(4f, 0f), 0.05f, 0.3f, 1f, 1f, 0f, 0f, 0f);
+
+        Assert.AreEqual(0f, bolt.State(new Vector2(0f, 0f)).x, 1e-5f, "At the start it sits a full swing aside.");
+        Assert.Greater(bolt.State(new Vector2(0f, 0.3f)).x, 0.9f);
+        Assert.Greater(bolt.State(new Vector2(0.5f, -0.3f)).x, 0.9f, "Half a turn on it swings to the other side.");
     }
 
     [Test]

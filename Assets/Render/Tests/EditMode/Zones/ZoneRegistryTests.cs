@@ -273,6 +273,20 @@ public class ZoneRegistryTests
     }
 
     [Test]
+    public void AddScorch_Bolt_RunsFromOnePointToTheOtherAndFades()
+    {
+        _registry.AddScorch(new Vector3(1f, 0.5f, 1f), new Vector3(1f, 2f, 4f));
+        _registry.PublishFrame(0f);
+
+        Assert.AreEqual((int)ZoneKind.Scorch, _registry.snapshot[0].kind);
+        Assert.AreEqual(3f, _registry.snapshot[0].radius, 1e-5f);
+        Assert.AreEqual(ZonePacker.EncodeDirection(Vector3.forward), _registry.snapshot[0].reserved);
+
+        _registry.PublishFrame(ZoneRegistry.ScorchSeconds);
+        Assert.AreEqual(0, _registry.count);
+    }
+
+    [Test]
     public void SetDirection_Heading_IsKeptThroughLaterUpdates()
     {
         int handle = _registry.Add(ZoneKind.Launch, Vector3.zero, 1f, 1f);

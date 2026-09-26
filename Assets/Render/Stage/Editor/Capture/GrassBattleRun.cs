@@ -1,13 +1,16 @@
 using System.Collections;
 using System.IO;
 using UnityEngine;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Deliveries;
 using HealerLike.Render.Grass;
+using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Stage
 {
     // A real wave seen through the game camera while the player casts every skill in turn on allies and enemies:
-    // a still every second beside the ground's motion and state from above, to grass-battle/ under the capture
-    // folder. The ground's own area and the board are outlined on the maps.
+    // a still every second beside the ground's motion and state from above, and three more the first times a
+    // liana reaches out, to grass-battle/ under the capture folder. The ground's own area and the board are outlined on the maps.
     public class GrassBattleRun : AStageRun
     {
         static readonly int shots = 10;
@@ -27,6 +30,10 @@ namespace HealerLike.Render.Stage
             float nextCast = started + 1f;
             int shot = 0;
             int casts = 0;
+            int armFrames = 0;
+            int mostArmCapsules = 0;
+            int reached = 0;
+            int lastReach = -100;
             while (shot < shots)
             {
                 if (Time.time >= nextCast)
@@ -44,10 +51,22 @@ namespace HealerLike.Render.Stage
                     shot++;
                 }
 
+                // The first moments a liana is out, caught between the regular stills
+                int reaching = ArmCapsules();
+                armFrames += reaching > 0 ? 1 : 0;
+                mostArmCapsules = Mathf.Max(mostArmCapsules, reaching);
+                if (reaching > 0 && reached < 3 && Time.frameCount - lastReach > 10)
+                {
+                    lastReach = Time.frameCount;
+                    Save(folder, 90 + reached);
+                    reached++;
+                }
+
                 yield return NextFrame();
             }
 
-            Debug.Log($"[GrassBattleRun] {shots} shots, attacks {_attacks} heals {_heals} zones {_maxZones} in {folder}");
+            Debug.Log($"[GrassBattleRun] {shots} shots, attacks {_attacks} heals {_heals} zones {_maxZones} in {folder}; "
+                      + $"a liana was out on {armFrames} frames, pressing at most {mostArmCapsules} capsules");
             StagePlay.Finish(this, true);
         }
 
@@ -78,6 +97,30 @@ namespace HealerLike.Render.Stage
 
             File.WriteAllBytes(Path.Combine(folder, $"motion-{shot:D2}.png"), Map(ground, ground.motion, false).EncodeToPNG());
             File.WriteAllBytes(Path.Combine(folder, $"state-{shot:D2}.png"), Map(ground, ground.state, true).EncodeToPNG());
+        }
+
+        // The capsules the lianas out of their rest add to every body this frame
+        static int ArmCapsules()
+        {
+            BodyCapsule[] capsules = new BodyCapsule[TrampleZone.MaxCapsules];
+            int total = 0;
+            foreach (TrampleZone body in Object.FindObjectsByType<TrampleZone>())
+            {
+                ARigHost host = body.GetComponent<ARigHost>();
+                bool isOut = false;
+                for (int i = 0; host != null && i < host.armCount; i++)
+                {
+                    LianaArm arm = host.GetArm(i);
+                    isOut |= arm != null && arm.phase != GesturePhase.Rest;
+                }
+
+                if (isOut)
+                {
+                    total += body.AppendCapsules(capsules, 0);
+                }
+            }
+
+            return total;
         }
 
         // The ground from above, north up. Motion: lean east in red and north in green around grey. State: ash in
