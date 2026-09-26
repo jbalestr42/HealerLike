@@ -12,7 +12,7 @@ namespace HealerLike.Render.Stage
         public StageCompactInterruptions(StageCaptureSession session) { _s = session; }
         public IEnumerator Run(Button card, Vector2 destination)
         {
-            foreach (string interruption in new[] { "pointer-loss", "pause", "ui-teardown" })
+            foreach (string interruption in new[] { "pointer-loss", "pause", "synthetic-focus-loss", "ui-teardown" })
             {
                 card = _s.actions.Cards("party-list")[0];
                 yield return _s.actions.BringIntoView(card);
@@ -33,6 +33,11 @@ namespace HealerLike.Render.Stage
                         _s.actions.touch.captureTouches = Array.Empty<Touch>();
                     }
                     else if (interruption == "pause") _s.actions.Submit("pause-button");
+                    else if (interruption == "synthetic-focus-loss")
+                    {
+                        _s.actions.touch.SendMessage("OnApplicationFocus", false);
+                        _s.actions.ui.SendMessage("OnApplicationFocus", false);
+                    }
                     else _s.actions.ui.enabled = false;
                     yield return Wait(.25f);
                     _s.output.ObserveGameplay(interruption, _s.manager, _s.actions.touch);

@@ -114,7 +114,16 @@ namespace HealerLike.Render.Stage
                     Mathf.Infinity, targeting.GetLayerMask()) && targeting.IsValidTarget(reprojected.collider.gameObject),
                 "Combat target is reprojected against the current camera after contextual viewport change");
             before = character.mana.Value;
-            yield return _s.actions.TouchGesture(board);
+            using (var touch = new StagePresentationTouch(_s.actions))
+            {
+                yield return touch.Frame(TouchPhase.Began, board);
+                Vector2 release = _s.manager.gameCamera.WorldToScreenPoint(entity.GetComponent<Collider>().bounds.center);
+                _s.output.Check(Vector2.Distance(board, release) <= 18 * ToolkitScreenLayout.GetScale(Screen.width, Screen.height, false)
+                    && Physics.Raycast(_s.manager.gameCamera.ScreenPointToRay(release), out RaycastHit released,
+                        Mathf.Infinity, targeting.GetLayerMask()) && targeting.IsValidTarget(released.collider.gameObject),
+                    "Moving combat creature remains a legal target at the tracked short release");
+                yield return touch.Frame(TouchPhase.Ended, release);
+            }
             yield return Wait(.1f);
             Observe("combat-reprojected-cast");
             _s.output.Check(_s.interaction.GetInteraction() == null && character.mana.Value < before,
