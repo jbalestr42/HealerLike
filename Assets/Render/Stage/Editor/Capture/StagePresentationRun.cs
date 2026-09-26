@@ -17,6 +17,7 @@ namespace HealerLike.Render.Stage
         readonly StagePresentationOutput _output = new StagePresentationOutput();
         readonly StageInterfaceActions _actions = new StageInterfaceActions();
         StageGameViewSize _size;
+        StageMapFixture _mapFixture;
         InteractionManager _interaction;
         EntityData _selectedData;
         Texture2D _cardPortrait;
@@ -38,9 +39,13 @@ namespace HealerLike.Render.Stage
                 AttachInput();
                 yield return Resize(1080, 1920);
                 UnityEngine.Random.InitState(271828);
+                _mapFixture = new StageMapFixture(Object.FindAnyObjectByType<AscensionGameType>(), false);
+                _output.manifest.interventions.Add("Authored map settings retained; capture-only map seed fixed to 271828");
                 yield return _actions.PointerTap("start-button");
                 yield return Wait(0.8f);
                 _output.Check(_actions.legacyModuleReadTouches, "Begin journey consumed actual multi-frame legacy input samples");
+                yield return StageMapActions.SelectFirst(_actions, true);
+                _output.manifest.checks.Add("Entered first combat through actual multi-frame Toolkit map touch");
                 yield return Portraits("01-portrait");
                 yield return Resize(844, 390);
                 yield return Portraits("02-landscape");
@@ -53,6 +58,7 @@ namespace HealerLike.Render.Stage
             }
             finally
             {
+                _mapFixture?.Dispose();
                 _size?.Dispose();
                 _output.Write(passed);
                 StagePlay.Finish(this, passed);
@@ -389,6 +395,8 @@ namespace HealerLike.Render.Stage
             _output.Check(preview == null && portraits.isDisposed && texture == null,
                 "Scene exit disposes placement preview and portrait textures");
             _output.Check(PortraitCameras().Count == 0, "Scene exit destroys every owned portrait capture camera");
+            _mapFixture.Dispose();
+            _mapFixture = null;
             AttachInput();
             _output.Check(SceneManager.GetActiveScene().path == StageInterface.MenuPath, "Pause menu reaches Toolkit menu");
             yield return Capture("04-menu");
@@ -397,8 +405,10 @@ namespace HealerLike.Render.Stage
             AttachInput();
             _output.Check(Object.FindAnyObjectByType<RenderManager>() == _manager,
                 "New expedition retains the single original RenderManager");
+            _mapFixture = new StageMapFixture(Object.FindAnyObjectByType<AscensionGameType>(), false);
             yield return _actions.PointerTap("start-button");
             yield return Wait(0.8f);
+            yield return StageMapActions.SelectFirst(_actions, true);
             yield return Portraits("05-new-expedition");
         }
 

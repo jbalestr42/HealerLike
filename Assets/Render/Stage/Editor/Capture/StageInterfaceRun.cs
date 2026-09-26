@@ -12,6 +12,7 @@ namespace HealerLike.Render.Stage
         readonly StageInterfaceOutput _output = new StageInterfaceOutput();
         readonly StageInterfaceActions _actions = new StageInterfaceActions();
         StageGameViewSize _size;
+        StageMapFixture _mapFixture;
         InteractionManager _interaction;
         protected override bool shouldStartGame { get { return false; } }
 
@@ -37,12 +38,16 @@ namespace HealerLike.Render.Stage
                     "Exactly one Toolkit host");
                 yield return Capture("01-journey");
                 Random.InitState(271828);
+                _mapFixture = new StageMapFixture(Object.FindAnyObjectByType<AscensionGameType>(), false);
+                _output.manifest.checks.Add("Authored map settings retained; capture-only map seed fixed to 271828");
                 yield return _actions.PointerTap("start-button");
                 yield return Wait(1f);
                 _output.Check(_actions.legacyModuleReadTouches,
                     "Selected StandaloneInputModule consumed held touch samples for Begin journey");
                 _output.Check(LegacyUiReader.GameState(Object.FindAnyObjectByType<GameManager>()) == GameManager.GameState.Running,
                     "Toolkit begin journey started real gameplay");
+                yield return StageMapActions.SelectFirst(_actions, true);
+                _output.manifest.checks.Add("First map room selected through actual multi-frame Toolkit touch input");
                 yield return _actions.PointerTap("party-button");
                 yield return Wait(0.3f);
                 yield return Capture("02-party");
@@ -113,6 +118,7 @@ namespace HealerLike.Render.Stage
             }
             finally
             {
+                _mapFixture?.Dispose();
                 if (_size != null)
                 {
                     _size.Dispose();
@@ -240,7 +246,9 @@ namespace HealerLike.Render.Stage
             Button equipment = cards.Find(button => button.Q<Label>("card-status").text.StartsWith("Party equipment"));
             yield return _actions.SelectCard(equipment != null ? equipment : cards[0]);
             yield return Wait(1f);
-            _output.Check(!StageInterfaceOutput.IsVisible(_actions.root.Q("upgrade-panel")), "Toolkit reward advances to next preparation");
+            _output.Check(!StageInterfaceOutput.IsVisible(_actions.root.Q("upgrade-panel"))
+                && StageInterfaceOutput.IsVisible(_actions.root.Q("map-panel")), "Toolkit reward returns to expedition map");
+            yield return StageMapActions.EnterCombat(_actions);
             if (equipment != null)
             {
                 _actions.Submit("inventory-button");
@@ -262,7 +270,6 @@ namespace HealerLike.Render.Stage
             {
                 _output.manifest.checks.Add("Equipment transfer not exercised: reward offered healer upgrades only");
             }
-            _output.manifest.checks.Add("Wave choice screen not exercised: current Ascension loads waves directly");
         }
 
         IEnumerator LandscapeControls()
@@ -292,6 +299,8 @@ namespace HealerLike.Render.Stage
             yield return Wait(0.2f);
             _actions.Submit("menu-button");
             yield return Wait(1f);
+            _mapFixture.Dispose();
+            _mapFixture = null;
             _actions.ui = Object.FindAnyObjectByType<ToolkitGameUI>();
             _actions.ConfigureLegacyInput();
             _output.Check(SceneManager.GetActiveScene().path == StageInterface.MenuPath, "Pause menu returns to Toolkit menu");
@@ -304,8 +313,10 @@ namespace HealerLike.Render.Stage
                 "New expedition reuses attached RenderManager");
             _output.Check(Object.FindObjectsByType<ToolkitGameUI>(FindObjectsSortMode.None).Length == 1,
                 "New expedition has exactly one Toolkit host");
+            _mapFixture = new StageMapFixture(Object.FindAnyObjectByType<AscensionGameType>(), false);
             yield return _actions.PointerTap("start-button");
             yield return Wait(0.8f);
+            yield return StageMapActions.SelectFirst(_actions, true);
             _output.Check(_actions.legacyModuleReadTouches,
                 "New expedition uses the selected legacy module for touch input");
             yield return Capture("12-new-expedition");

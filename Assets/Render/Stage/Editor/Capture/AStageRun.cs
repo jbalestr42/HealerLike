@@ -117,6 +117,10 @@ namespace HealerLike.Render.Stage
             if (shouldStartGame)
             {
                 _hud.startGameButton.onClick.Invoke();
+                // Legacy visual captures use a Toolkit navigation submit, not a measured touch gesture.
+                StageInterfaceActions actions = new StageInterfaceActions
+                    { ui = Object.FindAnyObjectByType<ToolkitGameUI>() };
+                yield return StageMapActions.SelectFirst(actions, false);
             }
             yield return Run();
         }

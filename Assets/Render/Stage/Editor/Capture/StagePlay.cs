@@ -69,6 +69,8 @@ namespace HealerLike.Render.Stage
         // The run each mode names, the one place a capture registers
         static AStageRun Create(string mode)
         {
+            if (mode == "expedition-map") return new StageMapRun();
+
             if (mode == "creature-presentation")
             {
                 return new StagePresentationRun();
@@ -120,7 +122,7 @@ namespace HealerLike.Render.Stage
             if (change == PlayModeStateChange.EnteredPlayMode)
             {
                 AStageRun run = Create(mode);
-                if (mode == "mobile-interface" || mode == "creature-presentation")
+                if (mode == "mobile-interface" || mode == "creature-presentation" || mode == "expedition-map")
                 {
                     // Screen and pointer coordinates must be read inside a game frame, not Editor.update.
                     GameObject host = new GameObject("Stage capture frame");

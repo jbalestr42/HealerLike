@@ -26,9 +26,17 @@ namespace HealerLike.Render.Stage
             Time.timeScale = 3f;
             List<EntityData> allies = StagePlayer.LoadAllies();
             float nextCast = 0f;
+            // AStageRun has already selected the first map room through Toolkit navigation.
+            _state = LegacyUiReader.AscensionState(UnityEngine.Object.FindAnyObjectByType<AscensionGameType>());
             while (_roundsDone < Rounds && _state != AscensionGameType.State.GameOver)
             {
-                if (_state == AscensionGameType.State.WaitForRoundToStart)
+                if (_state == AscensionGameType.State.SelectRoom)
+                {
+                    StageInterfaceActions actions = new StageInterfaceActions
+                        { ui = UnityEngine.Object.FindAnyObjectByType<ToolkitGameUI>() };
+                    yield return StageMapActions.SelectFirst(actions, false);
+                }
+                else if (_state == AscensionGameType.State.WaitForRoundToStart)
                 {
                     yield return Wait(1f);
                     _player.PlaceAllies(_manager, allies);
