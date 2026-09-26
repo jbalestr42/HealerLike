@@ -193,6 +193,8 @@ namespace HealerLike.Render.Stage
         IEnumerator Map(string name, string scenario, bool canTravel)
         {
             yield return Wait(0.25f);
+            // Retain the actual frame even when a later geometry or ownership assertion fails.
+            yield return Capture(name);
             VisualElement dialog = _actions.root.Q("map-dialog");
             ScrollView scroll = _actions.root.Q<ScrollView>("map-scroll");
             VisualElement canvas = _actions.root.Q("map-canvas");
@@ -201,12 +203,25 @@ namespace HealerLike.Render.Stage
             _output.Check(Contains(_actions.root.worldBound, dialog.worldBound), "Map dialog remains within screen: " + name);
             _output.Check(LegacyUiReader.CurrentView(Object.FindAnyObjectByType<UIManager>()) == ViewType.Map,
                 "Map is backed by the original UI view stack: " + name);
+            // The authored MapView owns MapCanvas as a child. ToolkitLegacyCanvases suppresses
+            // screen canvases below UIManager, including inactive views before they are opened.
+            UIManager owner = Object.FindAnyObjectByType<UIManager>();
+            int screenCanvases = 0;
+            int raycasters = 0;
             foreach (Canvas legacy in _mapView.GetComponentsInChildren<Canvas>(true))
-                _output.Check(!legacy.enabled || !legacy.gameObject.activeInHierarchy,
-                    "Original map canvas stays suppressed: " + legacy.name);
-            Canvas parentCanvas = _mapView.GetComponentInParent<Canvas>();
-            _output.Check(parentCanvas != null && (!parentCanvas.enabled || !parentCanvas.gameObject.activeInHierarchy),
-                "The original map parent canvas is present and suppressed");
+            {
+                if (legacy.renderMode == RenderMode.WorldSpace) continue;
+                screenCanvases++;
+                _output.Check(legacy.transform.IsChildOf(owner.transform) && !legacy.enabled,
+                    "Original map screen canvas belongs to UIManager and stays disabled: " + legacy.name);
+                foreach (UnityEngine.UI.GraphicRaycaster raycaster in legacy.GetComponents<UnityEngine.UI.GraphicRaycaster>())
+                {
+                    raycasters++;
+                    _output.Check(!raycaster.enabled, "Original map input raycaster stays disabled: " + raycaster.name);
+                }
+            }
+            _output.Check(screenCanvases > 0 && raycasters > 0,
+                "Authored map supplies screen canvas and input raycaster descendants for suppression checks");
             RunState run = _ascension.run;
             MapFrame frame = new MapFrame { name = name, scenario = scenario, width = Screen.width, height = Screen.height,
                 dialog = dialog.worldBound, viewport = scroll.contentViewport.worldBound, graph = canvas.worldBound,
@@ -234,7 +249,6 @@ namespace HealerLike.Render.Stage
                 "Visible path painter carries every live directed map connection");
             frame.drawnEdges = connections.edgeCount;
             _manifest.maps.Add(frame);
-            yield return Capture(name);
         }
 
         IEnumerator LockedRoom()
