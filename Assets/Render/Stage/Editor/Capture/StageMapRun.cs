@@ -14,6 +14,10 @@ namespace HealerLike.Render.Stage
     // fixture makes special rooms reachable without changing gameplay state or awarding a forced win.
     public sealed class StageMapRun : AStageRun
     {
+        // Capture-only observation: gameplay exposes selection commands but no selection getter.
+        static readonly System.Reflection.FieldInfo SelectionField = typeof(InteractionManager).GetField("_selectable",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
         [Serializable] public sealed class MapFrame
         {
             public string name;
@@ -284,13 +288,17 @@ namespace HealerLike.Render.Stage
             yield return Map("planning-map-" + _roundEvents + "-" + Screen.width, "inspect-only", false);
             Button current = StageMapActions.ButtonFor(_actions, _ascension.run.currentNode);
             yield return _actions.BringIntoView(current);
+            InteractionManager interaction = Object.FindAnyObjectByType<InteractionManager>();
+            ISelectable selected = Selected(interaction);
             int entities = Object.FindObjectsByType<Entity>(FindObjectsSortMode.None).Length;
             yield return _actions.TouchGesture(StageInterfaceActions.ScreenPoint(current));
             _output.Check(_ascension.run.visitedNodes.Count == visited && _roomEvents == events,
                 "Inspect-only map touch cannot advance travel");
             _output.Check(Object.FindObjectsByType<Entity>(FindObjectsSortMode.None).Length == entities
-                && Object.FindAnyObjectByType<InteractionManager>().GetInteraction() == null,
-                "Map-origin input neither deploys nor selects a battlefield entity");
+                && interaction.GetInteraction() == null,
+                "Map-origin input neither deploys nor begins a battlefield interaction");
+            _output.Check(ReferenceEquals(Selected(interaction), selected),
+                "Map-origin input preserves the actual battlefield selection");
             yield return _actions.PointerTap("map-close-button");
             yield return Wait(0.3f);
             _output.Check(!StageInterfaceOutput.IsVisible(_actions.root.Q("map-panel"))
@@ -309,11 +317,14 @@ namespace HealerLike.Render.Stage
                 "Party touch begins creature placement with the generated preview");
             Button map = _actions.root.Q<Button>("map-button");
             _output.Check(!map.enabledInHierarchy, "Map inspection is disabled during active placement");
+            ISelectable selected = Selected(interaction);
             int entities = Object.FindObjectsByType<Entity>(FindObjectsSortMode.None).Length;
             yield return _actions.TouchGesture(StageInterfaceActions.ScreenPoint(map));
             _output.Check(!StageInterfaceOutput.IsVisible(_actions.root.Q("map-panel"))
                 && Object.FindObjectsByType<Entity>(FindObjectsSortMode.None).Length == entities,
                 "Touching unavailable Map neither opens a modal nor deploys through the HUD");
+            _output.Check(ReferenceEquals(Selected(interaction), selected),
+                "Touching unavailable Map preserves the actual battlefield selection");
             yield return _actions.PointerTap("cancel-button");
             yield return Wait(0.2f);
             _output.Check(interaction.GetInteraction() == null && _manager.placement.preview == null,
@@ -448,6 +459,13 @@ namespace HealerLike.Render.Stage
         {
             return inner.xMin >= outer.xMin - 1f && inner.yMin >= outer.yMin - 1f
                 && inner.xMax <= outer.xMax + 1f && inner.yMax <= outer.yMax + 1f;
+        }
+
+        static ISelectable Selected(InteractionManager interaction)
+        {
+            if (interaction == null || SelectionField == null || SelectionField.FieldType != typeof(ISelectable))
+                throw new InvalidOperationException("Capture selection observation requires InteractionManager._selectable of type ISelectable.");
+            return (ISelectable)SelectionField.GetValue(interaction);
         }
 
         void Write(bool passed)
