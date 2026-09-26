@@ -11,11 +11,13 @@ using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Stage
 {
-    // Six grammar cells per family, both sides and every count. Render-only fixture, not a gameplay roster.
+    // One count per page, both sides at the actual board scale. Render-only fixture, not a gameplay roster.
     public sealed class SpellSourceFixture : IDisposable
     {
         readonly RenderManager _manager;
         readonly StageCaptureSession _session;
+        readonly List<(VisualElement element, StyleEnum<Visibility> visibility)> _hiddenUi =
+            new List<(VisualElement, StyleEnum<Visibility>)>();
         readonly List<GameObject> _hidden = new List<GameObject>();
         readonly List<CreatureRig> _rigs = new List<CreatureRig>();
         readonly List<ArmPool> _pools = new List<ArmPool>();
@@ -32,22 +34,26 @@ namespace HealerLike.Render.Stage
             _vocabulary = RenderAssets.Load<LookVocabulary>("Assets/Render/Creatures/Data/LookVocabulary.asset");
             _material = RenderAssets.Load<Material>("Assets/Render/Look/Look_Default.mat");
             _ui = session.actions.ui.GetComponent<UIDocument>().rootVisualElement;
+            foreach (VisualElement child in _ui.Children())
+            { _hiddenUi.Add((child, child.style.visibility)); child.style.visibility = Visibility.Hidden; }
             foreach (ARigHost host in Object.FindObjectsByType<ARigHost>(FindObjectsSortMode.None))
-                if (host.presentation && host.presentation.gameObject.activeSelf)
-                { _hidden.Add(host.presentation.gameObject); host.presentation.gameObject.SetActive(false); }
+                if (host.gameObject.activeSelf)
+                { _hidden.Add(host.gameObject); host.gameObject.SetActive(false); }
         }
 
         public IEnumerator Capture()
         {
             foreach (HeadKind head in Enum.GetValues(typeof(HeadKind)))
             {
-                Label("GRAMMAR FIXTURE: " + head + " (not roster gameplay)", 0.04f, 0.14f, 28);
-                for (int side = 0; side < 2; side++)
+                for (int count = 0; count < 3; count++)
                 {
-                    for (int count = 0; count < 3; count++)
+                    Label("GRAMMAR FIXTURE: " + head + " / count " + LookComposer.Copies((CountBand)count),
+                        0.04f, 0.04f, 12);
+                    Label("Authored grammar at board scale, not roster gameplay", 0.04f, 0.08f, 10);
+                    for (int side = 0; side < 2; side++)
                     {
-                        float x = 0.19f + count * 0.31f;
-                        float y = side == 0 ? 0.54f : 0.28f;
+                        float x = 0.5f;
+                        float y = side == 0 ? 0.64f : 0.31f;
                         Vector3 at = Ground(x, y);
                         UnitChannels channels = new UnitChannels
                         {
@@ -68,7 +74,7 @@ namespace HealerLike.Render.Stage
                         rig.Tick(0f, 0f, new FootFrame(at, Vector3.up, _manager.player.grid.size));
                         int outlets = recipe.parts.Count(p => p.isSource);
                         Label(channels.side + "  " + LookComposer.Copies(channels.count) + " / " + outlets + " outlets",
-                            x - 0.14f, 1f - y + 0.05f, 22);
+                            0.04f, 1f - y + 0.06f, 11);
                         using var source = new CastSourceLease(rig);
                         source.TryGet(out Vector3 start);
                         if (side == 0)
@@ -98,11 +104,12 @@ namespace HealerLike.Render.Stage
                             line.SetPosition(1, point + normal * 0.22f);
                         }
                     }
+                    Label("Short rays: all outlets. Plant thread: first held delivery.", 0.04f, 0.93f, 10);
+                    yield return AStageRun.Wait(0.1f);
+                    yield return _session.Capture("fixture-" + head + "-" + LookComposer.Copies((CountBand)count),
+                        "Labelled grammar fixture; diagnostic outlet rays; original board scale");
+                    Clear();
                 }
-                Label("Short rays mark all outlets. Plant thread shows first held delivery.", 0.04f, 0.83f, 21);
-                yield return AStageRun.Wait(0.1f);
-                yield return _session.Capture("fixture-" + head, "Labelled grammar fixture; diagnostic outlet rays");
-                Clear();
             }
         }
 
@@ -121,6 +128,8 @@ namespace HealerLike.Render.Stage
             label.style.left = Length.Percent(x * 100f);
             label.style.top = Length.Percent(y * 100f);
             label.style.fontSize = size;
+            label.style.width = Length.Percent(92f);
+            label.style.whiteSpace = WhiteSpace.Normal;
             label.style.color = Color.white;
             label.style.backgroundColor = new Color(0f, 0f, 0f, 0.8f);
             label.pickingMode = PickingMode.Ignore;
@@ -141,6 +150,7 @@ namespace HealerLike.Render.Stage
         {
             Clear();
             foreach (GameObject hidden in _hidden) if (hidden) hidden.SetActive(true);
+            foreach (var entry in _hiddenUi) entry.element.style.visibility = entry.visibility;
         }
     }
 }

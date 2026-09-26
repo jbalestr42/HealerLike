@@ -32,7 +32,9 @@ namespace HealerLike.Render.Stage
             label.style.position = Position.Absolute;
             label.style.top = Length.Percent(16f);
             label.style.left = Length.Percent(4f);
-            label.style.fontSize = 26;
+            label.style.fontSize = 11;
+            label.style.width = Length.Percent(92f);
+            label.style.whiteSpace = WhiteSpace.Normal;
             label.style.color = Color.white;
             label.style.backgroundColor = new Color(0, 0, 0, 0.8f);
             ui.Add(label);
