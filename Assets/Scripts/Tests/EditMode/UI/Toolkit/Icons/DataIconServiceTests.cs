@@ -90,6 +90,14 @@ namespace UI.Toolkit.Icons
         }
 
         [Test]
+        public void TryGetAuthoredSprite_KnownDataFamilies_ReturnsOriginalSprites()
+        {
+            Assert.AreSame(_sprite, DataIconService.TryGetAuthoredSprite(new BaseItemData { icon = _sprite }));
+            Assert.AreSame(_sprite, DataIconService.TryGetAuthoredSprite(new CharacterSkillData { icon = _sprite }));
+            Assert.AreSame(_sprite, DataIconService.TryGetAuthoredSprite(new BuffHandlerBaseData { icon = _sprite }));
+        }
+
+        [Test]
         public void TryGetAuthoredSprite_NoIconField_ReturnsNull()
         {
             Sprite sprite = DataIconService.TryGetAuthoredSprite(new object());

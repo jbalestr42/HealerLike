@@ -12,6 +12,11 @@ public static class DataIconSource
 
     public static string Label(object source)
     {
+        if (source == null || (source is UnityEngine.Object assetSource && !assetSource))
+        {
+            return "Unknown";
+        }
+
         string label = null;
         if (source is IDataIconMetadata metadata)
         {
