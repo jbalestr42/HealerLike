@@ -148,6 +148,7 @@ public class StageDressingTests
         Material material = RenderTestAssets.LoadLookMaterial();
         try
         {
+            Assert.IsNotNull(host, "The Editor-only rig helper must be attachable in EditMode.");
             Assert.IsTrue(host.Build(recipe, material));
             host.rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
             TestHelpers.SetPrivateField(_scene.entityManager, "_entities",
@@ -190,7 +191,10 @@ public class StageDressingTests
         }
         finally
         {
-            host.Clear();
+            if (host != null)
+            {
+                host.Clear();
+            }
             Object.DestroyImmediate(recipe);
         }
     }

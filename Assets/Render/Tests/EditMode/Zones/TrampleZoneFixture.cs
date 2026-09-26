@@ -55,6 +55,7 @@ namespace HealerLike.Render.Zones
         protected void BuildRig()
         {
             _host = _obstacle.AddComponent<TrampleRigTestHost>();
+            Assert.IsNotNull(_host, "The Editor-only rig helper must be attachable in EditMode.");
             Assert.IsTrue(_host.Build(_recipe, RenderTestAssets.LoadLookMaterial()));
             _host.rig.Tick(0f, 0f, new FootFrame(_obstacle.transform.position, Vector3.up, 1f));
             _zone.InitFootprint(_ground);
