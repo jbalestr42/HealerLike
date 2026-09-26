@@ -44,23 +44,23 @@ public class HPBasedModifierTests
     {
         HPBasedModifier modifier = CreateModifierAtPercent(percent: 1f, factor: 1f, threshold: 0.5f);
 
+        Assert.AreEqual(0f, modifier.ApplyModifier(), 0.0001f);
+    }
+
+    [Test]
+    public void ApplyModifier_AtZeroHealth_ReturnsTheWholeFactor()
+    {
+        HPBasedModifier modifier = CreateModifierAtPercent(percent: 0f, factor: 1f, threshold: 0.5f);
+
         Assert.AreEqual(1f, modifier.ApplyModifier(), 0.0001f);
     }
 
     [Test]
-    public void ApplyModifier_AtZeroHealth_ReturnsFullFactorBonus()
-    {
-        HPBasedModifier modifier = CreateModifierAtPercent(percent: 0f, factor: 1f, threshold: 0.5f);
-
-        Assert.AreEqual(2f, modifier.ApplyModifier(), 0.0001f); // 1 + (1 * factor)
-    }
-
-    [Test]
-    public void ApplyModifier_HalfwayBetweenThresholdAndZero_ReturnsHalfFactorBonus()
+    public void ApplyModifier_HalfwayBetweenThresholdAndZero_ReturnsHalfTheFactor()
     {
         HPBasedModifier modifier = CreateModifierAtPercent(percent: 0.25f, factor: 1f, threshold: 0.5f);
 
-        Assert.AreEqual(1.5f, modifier.ApplyModifier(), 0.0001f); // 1 + (0.5 * factor)
+        Assert.AreEqual(0.5f, modifier.ApplyModifier(), 0.0001f);
     }
 
     [Test]
@@ -68,17 +68,40 @@ public class HPBasedModifierTests
     {
         HPBasedModifier modifier = CreateModifierAtPercent(percent: 0.5f, factor: 1f, threshold: 0.5f);
 
-        Assert.AreEqual(1f, modifier.ApplyModifier(), 0.0001f);
+        Assert.AreEqual(0f, modifier.ApplyModifier(), 0.0001f);
     }
 
     [Test]
     public void ApplyModifier_AboveThreshold_ClampsToNoBonus()
     {
-        // percent/threshold > 1 is clamped via Clamp01, so being well above threshold never gives
-        // a negative bonus.
+        // Well above the threshold never gives a negative bonus
         HPBasedModifier modifier = CreateModifierAtPercent(percent: 1f, factor: 2f, threshold: 0.1f);
 
-        Assert.AreEqual(1f, modifier.ApplyModifier(), 0.0001f);
+        Assert.AreEqual(0f, modifier.ApplyModifier(), 0.0001f);
+    }
+
+    [Test]
+    public void AsMultiplyModifier_AtFullHealth_LeavesTheAttributeUnchanged()
+    {
+        HPBasedModifier modifier = CreateModifierAtPercent(percent: 1f, factor: 1f, threshold: 0.5f);
+        Attribute damage = new Attribute(10f);
+        damage.AddModifier(AttributeModifierType.Multiply, _targetGo, modifier);
+
+        damage.Update();
+
+        Assert.AreEqual(10f, damage.Value, 0.0001f);
+    }
+
+    [Test]
+    public void AsMultiplyModifier_AtZeroHealth_MultipliesTheAttributeByOnePlusFactor()
+    {
+        HPBasedModifier modifier = CreateModifierAtPercent(percent: 0f, factor: 1f, threshold: 0.5f);
+        Attribute damage = new Attribute(10f);
+        damage.AddModifier(AttributeModifierType.Multiply, _targetGo, modifier);
+
+        damage.Update();
+
+        Assert.AreEqual(20f, damage.Value, 0.0001f);
     }
 }
 
