@@ -127,10 +127,13 @@ namespace HealerLike.Render.Creatures
             using var same = new CastSourceLease(_rig, 10);
             Assert.AreEqual(lease.sourceId, same.sourceId);
             Assert.IsTrue(_pool.BeginDelivery(17, DeliveryStyle.Direct, null, Vector3.one * 4f));
+            string heldId = lease.sourceId;
             _rig.BeginAppearance();
             for (int frame = 0; frame < 5; frame++)
             {
                 _rig.SetPresentationForward(new Vector3(1f, 0f, 1f));
+                _rig.SetReadout(frame < 2 ? Vector3.right * 4f : Vector3.back * 4f, 1f, 0f, 0f);
+                Assert.AreEqual(heldId, lease.sourceId);
                 _rig.Tick(frame * 0.1f, 0.1f, new FootFrame(Vector3.right * frame * 0.02f, Vector3.up, 1f));
                 _pool.Tick(0.1f);
                 Assert.IsTrue(lease.TryGet(out Vector3 source));

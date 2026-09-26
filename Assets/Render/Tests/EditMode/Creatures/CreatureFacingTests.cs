@@ -11,7 +11,7 @@ public class CreatureFacingTests : CreatureRigFixture
 {
     [TestCase(LookSide.Plant)]
     [TestCase(LookSide.Stone)]
-    public void PresentationFacing_ForkRetainsItsAuthoredWidthAcrossCamerasTargetsAndRecompose(LookSide side)
+    public void PresentationFacing_TargetFreeForkRetainsWidthAcrossCamerasAndRecompose(LookSide side)
     {
         _rig.Dispose();
         Object.DestroyImmediate(_recipe);
@@ -37,17 +37,9 @@ public class CreatureFacingTests : CreatureRigFixture
         {
             Quaternion camera = Quaternion.Euler(52f, yaw, 0f);
             _rig.SetPresentationForward(-(camera * Vector3.forward));
-            foreach (Vector3 target in new[] { Vector3.right, Vector3.forward, Vector3.back, Vector3.zero })
-            {
-                _rig.SetReadout(target * 4f, 1f, 0f, 0f);
-                _rig.Tick(1f, 1f, ground);
-                Assert.That(
-                    ProjectedHeadWidth(camera * Vector3.right),
-                    Is.GreaterThan(authoredWidth * 0.88f),
-                    "The target reaction must preserve visible mesh width at camera yaw " + yaw
-                );
-                Assert.AreEqual(Vector3.zero, _rig.root.position);
-            }
+            _rig.SetReadout(null, 1f, 0f, 0f);
+            _rig.Tick(0f, 1f, ground);
+            Assert.That(ProjectedHeadWidth(camera * Vector3.right), Is.GreaterThan(authoredWidth * 0.88f));
 
             Assert.IsTrue(_rig.Recompose(_recipe, _material, _material, RenderTestAssets.LoadMeshes()));
             _rig.Tick(1f, 0f, ground);
@@ -57,6 +49,44 @@ public class CreatureFacingTests : CreatureRigFixture
             Assert.IsTrue(_rig.TryGetAnchors(out EffectAnchors anchors));
             Assert.That(Vector3.Distance(anchors.foot, _rig.root.position), Is.LessThan(0.00001f));
             Assert.That(anchors.headRadius, Is.GreaterThan(0f));
+        }
+    }
+
+    [Test]
+    public void CombatTarget_OverridesCameraAndRetargetsSmoothlyWithoutRotatingOwner()
+    {
+        var facing = new CreatureFacing();
+        _parent.transform.rotation = Quaternion.Euler(0f, 37f, 0f);
+        Quaternion owner = _parent.transform.rotation;
+        facing.SetForward(Vector3.back);
+        Quaternion rest = facing.Evaluate(0f, 0f, Vector3.zero, _parent.transform, null);
+        Assert.Less(Vector3.Angle(_parent.transform.TransformDirection(rest * Vector3.forward), Vector3.back), 0.01f);
+        foreach (Vector3 target in new[] { Vector3.right, Vector3.left, Vector3.forward })
+        {
+            Quaternion before = facing.Evaluate(0f, 0f, Vector3.zero, _parent.transform, target * 4f);
+            Quaternion step = facing.Evaluate(0f, 0.02f, Vector3.zero, _parent.transform, target * 4f);
+            Assert.That(Quaternion.Angle(before, step), Is.InRange(1f, 25f));
+            Quaternion settled = facing.Evaluate(0f, 1f, Vector3.zero, _parent.transform, target * 4f);
+            Assert.Less(Vector3.Angle(_parent.transform.TransformDirection(settled * Vector3.forward), target), 0.2f);
+            Assert.AreEqual(owner, _parent.transform.rotation);
+        }
+        Quaternion paused = facing.Evaluate(0f, 0f, Vector3.zero, _parent.transform, null);
+        Quaternion returning = facing.Evaluate(0f, 0.02f, Vector3.zero, _parent.transform, null);
+        Assert.That(Quaternion.Angle(paused, returning), Is.InRange(1f, 25f));
+        Quaternion recovered = facing.Evaluate(0f, 1f, Vector3.zero, _parent.transform, null);
+        Assert.Less(Vector3.Angle(_parent.transform.TransformDirection(recovered * Vector3.forward), Vector3.back), 0.2f);
+    }
+
+    [Test]
+    public void InvalidOrCoincidentTargetsAndTime_NeverPoisonFacing()
+    {
+        var facing = new CreatureFacing();
+        facing.SetForward(Vector3.left);
+        foreach (Vector3 target in new[] { Vector3.zero, Vector3.up, new Vector3(float.NaN, 0f, 0f),
+            new Vector3(float.PositiveInfinity, 0f, 0f), Vector3.one * float.MaxValue })
+        {
+            Quaternion pose = facing.Evaluate(float.NaN, float.NaN, Vector3.zero, _parent.transform, target);
+            Assert.Less(Quaternion.Angle(pose, Quaternion.LookRotation(Vector3.left)), 0.001f);
         }
     }
 

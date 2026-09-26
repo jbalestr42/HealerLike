@@ -30,7 +30,7 @@ namespace HealerLike.Render.Creatures
             {
                 Color authored = index == 0 ? body : ochre;
                 renderer.GetPropertyBlock(block, index);
-                Color expected = Color.Lerp(authored, Color.cyan, 0.3f);
+                Color expected = authored * 0.45f + Color.white * 0.50f + Color.cyan * 0.05f;
                 expected.a = authored.a;
                 AssertNativeColour(expected, block.GetColor("_BaseColor"));
                 Assert.AreEqual(4f, block.GetFloat("_HLOutlineWidthMultiplier"));
@@ -50,6 +50,25 @@ namespace HealerLike.Render.Creatures
                 }
             }
             CollectionAssert.AreEqual(materials, renderer.sharedMaterials);
+        }
+
+        [Test]
+        public void Highlight_LiftsDarkColoursTowardWhiteWhileKeepingContrastAndSmallColourCue()
+        {
+            var selection = new CreatureSelection(true, Color.red, 4f);
+            Color dark = selection.Tint(new Color(0.1f, 0.2f, 0.3f, 0.37f));
+            Color light = selection.Tint(new Color(0.7f, 0.8f, 0.9f, 0.81f));
+            Assert.Greater(dark.r, 0.5f);
+            Assert.Greater(dark.g, 0.5f);
+            Assert.Greater(dark.b, 0.5f);
+            Assert.That(light.r - dark.r, Is.EqualTo(0.27f).Within(0.00001f));
+            Assert.That(light.g - dark.g, Is.EqualTo(0.27f).Within(0.00001f));
+            Color neutral = new CreatureSelection(true, Color.black, 4f).Tint(Color.gray);
+            Color cue = selection.Tint(Color.gray);
+            Assert.That(cue.r - neutral.r, Is.EqualTo(0.05f).Within(0.00001f));
+            Assert.AreEqual(neutral.g, cue.g);
+            Assert.AreEqual(0.37f, dark.a);
+            Assert.AreEqual(0.81f, light.a);
         }
 
         // Native color storage can round RGB. Bound that comparison in float ULPs; alpha and restoration stay exact.

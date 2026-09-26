@@ -30,7 +30,8 @@ namespace HealerLike.Render.Creatures
                 return authored;
             }
 
-            Color result = Color.Lerp(authored, _colour, 0.3f);
+            // Retain authored contrast, with a white lift and only a small gameplay colour cue.
+            Color result = authored * 0.45f + Color.white * 0.50f + _colour * 0.05f;
             result.a = authored.a;
             return result;
         }

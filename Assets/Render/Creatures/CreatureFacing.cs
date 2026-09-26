@@ -2,72 +2,64 @@ using UnityEngine;
 
 namespace HealerLike.Render.Creatures
 {
-    // Camera heading follows immediately; only the unit's small target reaction is damped.
+    // Combat aim owns cosmetic yaw. The assigned camera supplies only the target-free rest pose.
     public class CreatureFacing
     {
         Quaternion _aim = Quaternion.identity;
         Vector3? _presentationForward;
         Quaternion _presentationBasis = Quaternion.identity;
-        float _presentationTurn;
+        bool _returningToRest;
 
         public void SetForward(Vector3? forward)
         {
-            if (_presentationForward.HasValue != forward.HasValue)
-            {
-                _presentationTurn = 0f;
-            }
-
             _presentationForward = forward;
         }
 
         public Quaternion Evaluate(float time, float deltaTime, Vector3 origin, Transform root, Vector3? aimTarget)
         {
-            float damping = 1f - Mathf.Exp(-deltaTime * 7f);
-            if (_presentationForward.HasValue)
+            float dt = float.IsFinite(deltaTime) ? Mathf.Max(0f, deltaTime) : 0f;
+            float damping = 1f - Mathf.Exp(-dt * 7f);
+            if (!float.IsFinite(time)) time = 0f;
+            if (_presentationForward.HasValue
+                && TryHeading(_presentationForward.Value, root, out Quaternion camera))
             {
-                Vector3 forward = _presentationForward.Value;
-                if (RenderMath.IsFinite(forward))
-                {
-                    forward = root.InverseTransformDirection(forward);
-                    forward.y = 0f;
-                    if (forward.sqrMagnitude > 0.000001f)
-                    {
-                        _presentationBasis = Quaternion.LookRotation(forward);
-                    }
-                }
+                _presentationBasis = camera;
+            }
 
-                // Follow camera heading immediately, including the initial paused frame. Only the small
-                // reaction to a target is damped, so a moving camera cannot leave the full silhouette edge-on.
-                float turn = Mathf.Sin(time * 0.3f) * 4f;
-                if (aimTarget.HasValue)
-                {
-                    Vector3 target = root.InverseTransformDirection(aimTarget.Value - origin);
-                    target.y = 0f;
-                    turn =
-                        target.sqrMagnitude > 0.000001f
-                            ? Vector3.Dot(target.normalized, _presentationBasis * Vector3.right) * 18f
-                            : 0f;
-                }
-
-                // Lateral response is continuous even when the target crosses directly behind the creature.
-                _presentationTurn = Mathf.Lerp(_presentationTurn, turn, damping);
-                _aim = _presentationBasis * Quaternion.AngleAxis(_presentationTurn, Vector3.up);
+            if (aimTarget.HasValue && RenderMath.IsFinite(origin)
+                && TryHeading(aimTarget.Value - origin, root, out Quaternion target))
+            {
+                _aim = Quaternion.Slerp(_aim, target, damping);
+                _returningToRest = true;
                 return _aim;
             }
 
-            Vector3 direction = new Vector3(Mathf.Sin(time * 0.3f) * 0.4f, 0f, 1f);
-            if (aimTarget.HasValue)
+            if (_presentationForward.HasValue)
             {
-                direction = root.InverseTransformDirection(aimTarget.Value - origin);
+                Quaternion rest = _presentationBasis * Quaternion.AngleAxis(Mathf.Sin(time * 0.3f) * 4f, Vector3.up);
+                // First portrait/rest frame follows the camera immediately. Losing a target returns smoothly.
+                _aim = _returningToRest ? Quaternion.Slerp(_aim, rest, damping) : rest;
+                if (Quaternion.Angle(_aim, rest) < 0.05f) _returningToRest = false;
             }
-
-            direction.y = 0f;
-            if (direction.sqrMagnitude > 0.000001f)
+            else
             {
-                _aim = Quaternion.Slerp(_aim, Quaternion.LookRotation(direction), damping);
+                Vector3 rest = new Vector3(Mathf.Sin(time * 0.3f) * 0.4f, 0f, 1f);
+                _aim = Quaternion.Slerp(_aim, Quaternion.LookRotation(rest), damping);
             }
 
             return _aim;
+        }
+
+        static bool TryHeading(Vector3 direction, Transform root, out Quaternion heading)
+        {
+            heading = Quaternion.identity;
+            if (!RenderMath.IsFinite(direction)) return false;
+            direction = root.InverseTransformDirection(direction);
+            direction.y = 0f;
+            float length = direction.sqrMagnitude;
+            if (!float.IsFinite(length) || length < 0.000001f) return false;
+            heading = Quaternion.LookRotation(direction);
+            return true;
         }
     }
 }
