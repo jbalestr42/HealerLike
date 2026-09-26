@@ -6,55 +6,57 @@ namespace HealerLike.Render.Creatures
     public class CreatureMeshOwnershipTests : CreatureMeshOwnershipFixture
     {
         [Test]
-        public void BodyAndRoots_ReuseOneCopyAndReleaseItWithoutReleasingTheSource()
+        public void BodyAndRoots_BorrowSourceOutsideTheGameplayHierarchy()
         {
-            Mesh copy = BodyMesh();
-            Assert.AreNotSame(_source, copy);
-            CollectionAssert.AreEqual(_source.vertices, copy.vertices);
-            CollectionAssert.AreEqual(_source.triangles, copy.triangles);
+            Mesh mesh = BodyMesh();
+            Assert.IsFalse(_rig.root.IsChildOf(_owner.transform));
+            Assert.IsEmpty(_owner.GetComponentsInChildren<Renderer>(true));
+            Assert.AreSame(_source, mesh);
+            CollectionAssert.AreEqual(_source.vertices, mesh.vertices);
+            CollectionAssert.AreEqual(_source.triangles, mesh.triangles);
             foreach (MeshFilter filter in _rig.root.GetComponentsInChildren<MeshFilter>())
             {
                 if (filter.name != "LianaArm")
                 {
-                    Assert.AreSame(copy, filter.sharedMesh, filter.name);
+                    Assert.AreSame(mesh, filter.sharedMesh, filter.name);
                 }
             }
 
             _pool.Dispose();
             _rig.Dispose();
             _rig.Dispose();
-            Assert.IsFalse(copy);
+            Assert.IsTrue(mesh);
             Assert.IsTrue(_source);
         }
 
         [Test]
-        public void Recompose_SameSourceEditedInPlace_RefreshesCopyAndReleasesPreviousGeneration()
+        public void Recompose_SameSourceEditedInPlace_SeesTheCurrentMeshWithoutStaleCopies()
         {
             for (int i = 0; i < 3; i++)
             {
                 Mesh previous = BodyMesh();
                 EditSource();
                 Assert.IsTrue(_rig.Recompose(_recipe, _material, _material, _meshes));
-                Assert.IsFalse(previous);
-                Assert.AreNotSame(_source, BodyMesh());
+                Assert.IsTrue(previous);
+                Assert.AreSame(_source, BodyMesh());
                 CollectionAssert.AreEqual(_source.vertices, BodyMesh().vertices);
             }
         }
 
         [Test]
-        public void Recompose_MissingBorrowedMesh_KeepsCurrentGenerationAlive()
+        public void Recompose_MissingBorrowedMesh_KeepsCurrentGeometryAlive()
         {
             Mesh previous = BodyMesh();
-            int copies = Copies();
             CreaturePart missing = _recipe.parts[0];
             missing.id = "Missing";
+            missing.parent = 0;
             missing.primitive = Primitive.Capsule;
             _recipe.parts = new[] { _recipe.parts[0], missing };
             Assert.IsFalse(_rig.Recompose(_recipe, _material, _material, _meshes));
             Assert.AreSame(previous, BodyMesh());
             Assert.IsTrue(previous);
             Assert.IsTrue(_source);
-            Assert.AreEqual(copies, Copies(), "A rejected candidate must release any copies it already created.");
+            Assert.AreEqual(1, _rig.parts.Count);
         }
 
         [Test]
@@ -64,7 +66,9 @@ namespace HealerLike.Render.Creatures
             part.shape = ShapeProfile.Bulb();
             CreaturePart second = part;
             second.id = "Second";
+            second.parent = 0;
             _recipe.parts = new[] { part, second };
+            Assert.IsTrue(CreatureValidator.TryValidate(_recipe, out string error), error);
             Assert.IsTrue(_rig.Recompose(_recipe, _material, _material, _meshes));
             Mesh shape = BodyMesh();
             Assert.AreSame(shape, _rig.partTransforms[1].GetComponent<MeshFilter>().sharedMesh);
@@ -76,7 +80,7 @@ namespace HealerLike.Render.Creatures
         }
 
         [Test]
-        public void LiveBuilder_AlwaysProtectsBorrowedMeshesAndRefreshesThemOnRebuild()
+        public void LiveBuilder_DetachesGeometryAndReadsSameAssetEditsOnRebuild()
         {
             _pool.Dispose();
             _rig.Dispose();
@@ -84,30 +88,17 @@ namespace HealerLike.Render.Creatures
             CreatureBuilder builder = _owner.AddComponent<CreatureBuilder>();
             RenderTestAssets.SetRecipe(builder, _recipe, _material, _meshes);
             builder.Init(entity);
-            Mesh copy = builder.rig.partTransforms[0].GetComponent<MeshFilter>().sharedMesh;
-            Assert.AreNotSame(_source, copy);
+            Mesh mesh = builder.rig.partTransforms[0].GetComponent<MeshFilter>().sharedMesh;
+            Assert.AreSame(_source, mesh);
+            Assert.IsFalse(builder.rig.root.IsChildOf(_owner.transform));
             EditSource();
             Assert.IsTrue(builder.Rebuild(null));
-            Assert.IsFalse(copy);
+            Assert.IsTrue(mesh);
             Mesh next = builder.rig.partTransforms[0].GetComponent<MeshFilter>().sharedMesh;
             CollectionAssert.AreEqual(_source.vertices, next.vertices);
             TestHelpers.InvokePrivate(builder, "OnDestroy");
-            Assert.IsFalse(next);
+            Assert.IsTrue(next);
             Assert.IsTrue(_source);
-        }
-
-        int Copies()
-        {
-            int count = 0;
-            foreach (Mesh mesh in Resources.FindObjectsOfTypeAll<Mesh>())
-            {
-                if (mesh.name == _source.name && mesh != _source)
-                {
-                    count++;
-                }
-            }
-
-            return count;
         }
     }
 }

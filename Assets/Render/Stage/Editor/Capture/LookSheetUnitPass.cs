@@ -1,3 +1,4 @@
+using HealerLike.Render.Creatures;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -68,7 +69,7 @@ namespace HealerLike.Render.Stage
             Dictionary<Renderer, ShadowCastingMode> shown = new Dictionary<Renderer, ShadowCastingMode>();
             foreach (Transform cell in cells)
             {
-                foreach (Renderer renderer in cell.GetComponentsInChildren<Renderer>())
+                foreach (Renderer renderer in CreatureRenderers.Find(cell))
                 {
                     if (renderer.enabled)
                     {
@@ -84,7 +85,7 @@ namespace HealerLike.Render.Stage
                 for (int i = 0; i < cells.Count; i++)
                 {
                     List<Renderer> own = new List<Renderer>();
-                    foreach (Renderer renderer in cells[i].GetComponentsInChildren<Renderer>(true))
+                    foreach (Renderer renderer in CreatureRenderers.Find(cells[i], true))
                     {
                         if (shown.ContainsKey(renderer))
                         {

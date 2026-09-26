@@ -227,7 +227,7 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
-            rig.SetVisible(isActiveAndEnabled);
+            SetRigVisible(isActiveAndEnabled);
             if (isActiveAndEnabled)
             {
                 Register(_registry, _character.gameObject);

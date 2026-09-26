@@ -39,6 +39,10 @@ namespace HealerLike.Render.Stones
 
         public void Refresh(bool isCollapsed, bool isVisible)
         {
+            if (_builder != null)
+            {
+                _builder.SyncGeometry();
+            }
             CreatureRig rig = _builder != null ? _builder.rig : null;
             if (rig == _rig && (rig == null || rig.revision == _rigRevision))
             {
@@ -89,6 +93,7 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
+            _builder.SyncGeometry();
             IReadOnlyList<Transform> partTransforms = _rig.partTransforms;
             List<int> candidates = new List<int>();
             for (int i = 0; i < partTransforms.Count; i++)

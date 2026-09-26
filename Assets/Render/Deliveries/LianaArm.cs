@@ -49,7 +49,7 @@ namespace HealerLike.Render.Deliveries
 
         // Without a parent the arm only solves its chain and draws nothing
         public bool Init(ArmDefinition definition, Transform parent, Material material, PrimitiveMeshes meshes,
-            DeliveryVocabulary vocabulary, float cellSize = 1f, bool copyBorrowedMeshes = false)
+            DeliveryVocabulary vocabulary, float cellSize = 1f)
         {
             if (definition.restJoints == null || definition.restJoints.Length != definition.segmentCount + 1
                 || definition.segmentCount < 2 || !RenderMath.IsPositive(cellSize))
@@ -79,7 +79,7 @@ namespace HealerLike.Render.Deliveries
                 return true;
             }
 
-            _details.Init(meshes, material, definition.colour, copyBorrowedMeshes);
+            _details.Init(meshes, material, definition.colour);
             _mesh.Init(parent, material, definition.colour, definition.segmentCount + 1);
             return true;
         }

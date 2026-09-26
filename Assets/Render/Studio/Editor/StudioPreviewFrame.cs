@@ -1,3 +1,4 @@
+using HealerLike.Render.Creatures;
 using System;
 using UnityEditor;
 using UnityEngine;
@@ -97,7 +98,7 @@ namespace HealerLike.Render.Studio.Editor
                 return isFound;
             }
 
-            foreach (Renderer renderer in subject.GetComponentsInChildren<Renderer>())
+            foreach (Renderer renderer in CreatureRenderers.Find(subject.transform))
             {
                 if (!renderer.enabled || renderer.bounds.size.sqrMagnitude < 0.00001f)
                 {

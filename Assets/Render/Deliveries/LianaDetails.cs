@@ -18,19 +18,16 @@ namespace HealerLike.Render.Deliveries
         readonly Matrix4x4[] _leaves = new Matrix4x4[LianaArm.LeafCount];
         readonly Matrix4x4[] _beads = new Matrix4x4[LianaArm.LeafCount + 1];
         readonly DeliveryTip _tip = new DeliveryTip();
-        readonly BorrowedMeshCopies _borrowedMeshes = new BorrowedMeshCopies();
         PrimitiveMeshes _meshes;
         Material _material;
         MaterialPropertyBlock _colours;
         Color _colour;
-        bool _copyBorrowedMeshes;
 
-        public void Init(PrimitiveMeshes meshes, Material material, Color colour, bool copyBorrowedMeshes)
+        public void Init(PrimitiveMeshes meshes, Material material, Color colour)
         {
             _meshes = meshes;
             _material = material;
             _colour = colour;
-            _copyBorrowedMeshes = copyBorrowedMeshes;
             _colours = new MaterialPropertyBlock();
             Vector4[] colours = new Vector4[LianaArm.LeafCount + 1];
             for (int i = 0; i < colours.Length; i++)
@@ -83,7 +80,7 @@ namespace HealerLike.Render.Deliveries
             _beads[LianaArm.LeafCount] = DeliveryTip.Frame(pose.tip, pose.tip - last, tipWidth);
             if (!_tip.isSet || _tip.style != pose.style)
             {
-                _tip.SetStyle(pose.style, vocabulary, _meshes, _copyBorrowedMeshes ? _borrowedMeshes : null);
+                _tip.SetStyle(pose.style, vocabulary, _meshes);
             }
 
             _tip.Draw(parent, _beads[LianaArm.LeafCount], _material, tipColour, _colour);
@@ -104,7 +101,6 @@ namespace HealerLike.Render.Deliveries
         public void Dispose()
         {
             _tip.Release();
-            _borrowedMeshes.Dispose();
         }
     }
 }

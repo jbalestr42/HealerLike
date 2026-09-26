@@ -42,7 +42,8 @@ namespace HealerLike.Render.Stage
             public bool logicalCharacterUnchanged;
             public List<Vector3> projectileLogicalPositions = new List<Vector3>();
             public List<Vector3> projectileVisualPositions = new List<Vector3>();
-            public string limitation = "Captures freeze simulation at each sample. The projectile is spawned by the harness "
+            public string limitation = "Captures freeze simulation at each sample. "
+                + "The projectile is spawned by the harness "
                 + "with the real Character as source; no Character projectile skill exists in the shipped roster. "
                 + "This verifies presentation and native rendering, not device performance.";
         }
@@ -94,7 +95,7 @@ namespace HealerLike.Render.Stage
                 }
                 Time.timeScale = 0f;
                 proof.characterPosition = character.transform.position;
-                proof.characterRenderers = character.GetComponentsInChildren<Renderer>().Length;
+                proof.characterRenderers = CreatureRenderers.Find(character.transform).Length;
                 proof.characterHasRig = view.rig != null;
                 TrampleZone trample = view.GetComponent<TrampleZone>();
                 proof.characterTrampleEnabled = trample && trample.enabled;

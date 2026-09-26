@@ -15,10 +15,8 @@ namespace HealerLike.Render.Stones
         Vector3 _directionToLight;
         StageKeyLight _keyLight;
         bool _isShown;
-        readonly BorrowedMeshCopies _meshCopies = new BorrowedMeshCopies();
-        MeshFilter _filter;
-        Mesh _sourceMesh;
-        Mesh _meshCopy;
+        CreatureAttachment _attachment;
+        Transform _space;
 
         public bool isShadow { get { return _isShadow; } }
 
@@ -26,40 +24,17 @@ namespace HealerLike.Render.Stones
         // always shows when its owner shows it
         public void Init(Bounds localBounds, Vector3 directionToLight, StageKeyLight keyLight)
         {
-            CopyMesh();
             _bounds = localBounds;
             _directionToLight = directionToLight;
             _keyLight = keyLight;
             Refresh();
         }
 
-        // The prefab disc is another active descendant scanned by the legacy selection outline.
-        void CopyMesh()
+        public void Attach(CreatureAttachment attachment)
         {
-            _filter = GetComponent<MeshFilter>();
-            if (!_filter)
-            {
-                return;
-            }
-
-            if (_filter.sharedMesh != _meshCopy)
-            {
-                _sourceMesh = _filter.sharedMesh;
-            }
-
-            _meshCopies.Dispose();
-            _meshCopy = _meshCopies.Get(_sourceMesh);
-            _filter.sharedMesh = _meshCopy;
-        }
-
-        void OnDestroy()
-        {
-            if (_filter && _filter.sharedMesh == _meshCopy)
-            {
-                _filter.sharedMesh = _sourceMesh;
-            }
-
-            _meshCopies.Dispose();
+            _space = transform.parent;
+            _attachment = attachment;
+            attachment.Take(transform);
         }
 
         public void Show(bool show)
@@ -70,6 +45,10 @@ namespace HealerLike.Render.Stones
 
         public void Refresh()
         {
+            if (_attachment != null)
+            {
+                _attachment.Sync();
+            }
             UpdateVisibility();
             Vector3 away = new Vector3(-_directionToLight.x, 0f, -_directionToLight.z);
             if (!float.IsFinite(away.sqrMagnitude) || away.sqrMagnitude < 0.000001f)
@@ -78,7 +57,7 @@ namespace HealerLike.Render.Stones
             }
             away.Normalize();
 
-            Transform parent = transform.parent;
+            Transform parent = _space ? _space : transform.parent;
             Vector3 scale = parent.lossyScale;
             float footprint = Mathf.Max(_bounds.size.x * Mathf.Abs(scale.x), _bounds.size.z * Mathf.Abs(scale.z));
             float width = Mathf.Max(0.05f, footprint * 0.55f);

@@ -29,8 +29,7 @@ namespace HealerLike.Render.Deliveries
         public bool isSet { get { return _hasStyle; } }
 
         // Without a vocabulary every style keeps the one bead the arm always had
-        public void SetStyle(DeliveryStyle value, DeliveryVocabulary vocabulary, PrimitiveMeshes meshes,
-            BorrowedMeshCopies borrowedMeshes = null)
+        public void SetStyle(DeliveryStyle value, DeliveryVocabulary vocabulary, PrimitiveMeshes meshes)
         {
             _style = value;
             _hasStyle = true;
@@ -51,10 +50,6 @@ namespace HealerLike.Render.Deliveries
             for (int i = 0; i < _parts.Length; i++)
             {
                 _meshes[i] = meshes.GetMesh(_parts[i].primitive);
-                if (borrowedMeshes != null)
-                {
-                    _meshes[i] = borrowedMeshes.Get(_meshes[i]);
-                }
             }
 
             ReleaseParts();
