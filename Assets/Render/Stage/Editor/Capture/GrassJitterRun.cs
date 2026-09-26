@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using HealerLike.Render.Environment;
@@ -23,7 +22,7 @@ namespace HealerLike.Render.Stage
         protected override bool shouldStartGame { get { return false; } }
 
         bool _isCasting;
-        BattleFocus focus;
+        BattleFocus _focus;
         int _casts;
         float _nextCast;
 
@@ -32,56 +31,51 @@ namespace HealerLike.Render.Stage
             _manager.SetLandscape(false);
             yield return Wait(1f);
             Camera camera = _manager.gameCamera;
-            focus = Object.FindAnyObjectByType<BattleFocus>();
-            if (focus != null)
-            {
-                focus.enabled = false;
-            }
-
-            Pose pose = _manager.overviewPose;
-            camera.transform.SetPositionAndRotation(pose.position, pose.rotation);
-            float capture = Time.captureDeltaTime;
-            Time.captureDeltaTime = 1f / 60f;
+            _focus = Object.FindAnyObjectByType<BattleFocus>();
+            _isCasting = false;
+            _casts = 0;
+            _nextCast = 0f;
             try
             {
-                yield return Measure(camera, "stock");
-                // The Editor runs at whatever rate it gets; the same at a fast, a slow and the real frame pace
-                Time.captureDeltaTime = 1f / 240f;
-                yield return Measure(camera, "240-fps");
-                Time.captureDeltaTime = 1f / 20f;
-                yield return Measure(camera, "20-fps");
-                Time.captureDeltaTime = 0f;
-                yield return Measure(camera, "real-time");
-                Time.captureDeltaTime = 1f / 60f;
-                SetEnvironment(field => field.windStrength = 0f);
-                yield return Measure(camera, "environment-still");
-                SetEnvironment(field => field.windStrength = 1f);
-                SetEnvironment(field => field.tuftDraw.shadowCastingMode = ShadowCastingMode.Off);
-                yield return Measure(camera, "environment-no-shadows");
-                SetEnvironment(field => field.tuftDraw.shadowCastingMode = ShadowCastingMode.On);
-
-                // The same during a wave, then with the decor plants' sway stopped
-                _player.PlaceAllies(_manager, StagePlayer.LoadAllies());
-                _hud.nextWaveButton.onClick.Invoke();
-                _isCasting = true;
-                yield return Measure(camera, "battle");
-                yield return Gusts();
-                yield return Film(camera);
-                EnvironmentSway[] sways = Object.FindObjectsByType<EnvironmentSway>();
-                foreach (EnvironmentSway sway in sways)
+                using (GrassJitterState state = new GrassJitterState(camera, _focus, _manager.environment.grass.strips))
                 {
-                    sway.enabled = false;
-                }
+                    if (_focus != null)
+                    {
+                        _focus.enabled = false;
+                    }
+                    Pose pose = _manager.overviewPose;
+                    camera.transform.SetPositionAndRotation(pose.position, pose.rotation);
+                    Time.captureDeltaTime = 1f / 60f;
+                    yield return Measure(camera, "stock");
+                    // The Editor runs at whatever rate it gets; the same at a fast, a slow and the real frame pace
+                    Time.captureDeltaTime = 1f / 240f;
+                    yield return Measure(camera, "240-fps");
+                    Time.captureDeltaTime = 1f / 20f;
+                    yield return Measure(camera, "20-fps");
+                    Time.captureDeltaTime = 0f;
+                    yield return Measure(camera, "real-time");
+                    Time.captureDeltaTime = 1f / 60f;
+                    state.SetWind(0f);
+                    yield return Measure(camera, "environment-still");
+                    state.RestoreEnvironment();
+                    state.SetShadows(ShadowCastingMode.Off);
+                    yield return Measure(camera, "environment-no-shadows");
+                    state.RestoreEnvironment();
 
-                yield return Measure(camera, "battle-decor-still");
-                foreach (EnvironmentSway sway in sways)
-                {
-                    sway.enabled = true;
+                    // The same during a wave, then with the decor plants' sway stopped
+                    _player.PlaceAllies(_manager, StagePlayer.LoadAllies());
+                    _hud.nextWaveButton.onClick.Invoke();
+                    _isCasting = true;
+                    yield return Measure(camera, "battle");
+                    yield return Gusts();
+                    yield return Film(camera);
+                    state.StopSways(Object.FindObjectsByType<EnvironmentSway>());
+                    yield return Measure(camera, "battle-decor-still");
                 }
             }
             finally
             {
-                Time.captureDeltaTime = capture;
+                _isCasting = false;
             }
 
             StagePlay.Finish(this, true);
@@ -112,9 +106,9 @@ namespace HealerLike.Render.Stage
         // Eight consecutive frames through the game's own battle camera, kept whole, to look at tuft by tuft
         IEnumerator Film(Camera camera)
         {
-            if (focus != null)
+            if (_focus != null)
             {
-                focus.enabled = true;
+                _focus.enabled = true;
             }
 
             yield return Wait(1f);
@@ -125,13 +119,12 @@ namespace HealerLike.Render.Stage
                 yield return null;
                 Cast();
                 Texture2D shot = StageReadback.Render(camera, width, height);
-                System.IO.File.WriteAllBytes(System.IO.Path.Combine(folder, $"frame-{frame}.png"), shot.EncodeToPNG());
-                Object.Destroy(shot);
+                StageCaptureTexture.SaveAndRelease(shot, System.IO.Path.Combine(folder, $"frame-{frame}.png"));
             }
 
-            if (focus != null)
+            if (_focus != null)
             {
-                focus.enabled = false;
+                _focus.enabled = false;
             }
         }
 
@@ -155,17 +148,6 @@ namespace HealerLike.Render.Stage
             }
         }
 
-        void SetEnvironment(System.Action<GrassField> change)
-        {
-            foreach (GrassField field in _manager.environment.grass.strips)
-            {
-                if (field != null && field.tuftDraw != null)
-                {
-                    change(field);
-                }
-            }
-        }
-
         IEnumerator Measure(Camera camera, string variant)
         {
             yield return Wait(0.3f);
@@ -181,8 +163,7 @@ namespace HealerLike.Render.Stage
                 yield return null;
                 Cast();
                 Texture2D shot = StageReadback.Render(camera, width, height);
-                Color32[] pixels = shot.GetPixels32();
-                Object.Destroy(shot);
+                Color32[] pixels = StageCaptureTexture.PixelsAndRelease(shot);
                 float[] brightness = new float[pixels.Length];
                 for (int i = 0; i < pixels.Length; i++)
                 {
@@ -207,7 +188,14 @@ namespace HealerLike.Render.Stage
                         float[] totals = onBoard[i] ? boardTotals : environmentTotals;
                         totals[0] += moved;
                         totals[1] += reversed ? 1f : 0f;
-                        if (onBoard[i]) boardCount++; else environmentCount++;
+                        if (onBoard[i])
+                        {
+                            boardCount++;
+                        }
+                        else
+                        {
+                            environmentCount++;
+                        }
                     }
 
                     change = next;

@@ -8,13 +8,15 @@ namespace HealerLike.Render.Stage
     {
         public static Texture2D Render(Camera camera, int width, int height)
         {
-            RenderTexture target = RenderTexture.GetTemporary(width, height, 24, RenderTextureFormat.ARGB32);
-            RenderTexture previous = RenderTexture.active;
-            Texture2D texture = new Texture2D(width, height, TextureFormat.RGB24, false);
             float aspect = camera.aspect;
+            RenderTexture target = null;
+            RenderTexture previous = RenderTexture.active;
+            Texture2D texture = null;
             bool completed = false;
             try
             {
+                target = RenderTexture.GetTemporary(width, height, 24, RenderTextureFormat.ARGB32);
+                texture = new Texture2D(width, height, TextureFormat.RGB24, false);
                 camera.aspect = (float)width / height;
                 RenderPipeline.StandardRequest request = new RenderPipeline.StandardRequest();
                 request.destination = target;
@@ -27,9 +29,15 @@ namespace HealerLike.Render.Stage
             }
             finally
             {
-                camera.aspect = aspect;
+                if (camera != null)
+                {
+                    camera.aspect = aspect;
+                }
                 RenderTexture.active = previous;
-                RenderTexture.ReleaseTemporary(target);
+                if (target != null)
+                {
+                    RenderTexture.ReleaseTemporary(target);
+                }
                 if (!completed)
                 {
                     RenderObjects.Release(texture);

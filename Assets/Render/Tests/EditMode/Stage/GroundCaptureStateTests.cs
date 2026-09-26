@@ -14,14 +14,14 @@ namespace HealerLike.Render.Stage
         GameObject _sunObject;
         RenderPipelineAsset _pipeline;
         Light _sun;
-        float _lookApplied;
+        LookShaderProperties.Snapshot _look;
 
         [SetUp]
         public void SetUp()
         {
             _pipeline = QualitySettings.renderPipeline;
             _sun = RenderSettings.sun;
-            _lookApplied = Shader.GetGlobalFloat("_HLLookApplied");
+            _look = LookShaderProperties.Capture();
             _enabledObject = new GameObject("Existing look");
             _disabledObject = new GameObject("Disabled look");
             _sunObject = new GameObject("Original sun");
@@ -35,7 +35,7 @@ namespace HealerLike.Render.Stage
             Object.DestroyImmediate(_sunObject);
             QualitySettings.renderPipeline = _pipeline;
             RenderSettings.sun = _sun;
-            Shader.SetGlobalFloat("_HLLookApplied", _lookApplied);
+            _look.Restore();
         }
 
         [Test]
@@ -47,6 +47,8 @@ namespace HealerLike.Render.Stage
             Light sun = _sunObject.AddComponent<Light>();
             RenderSettings.sun = sun;
             enabled.ApplyGlobals();
+            Shader.SetGlobalFloat("_HLFogStart", 123.5f);
+            Shader.SetGlobalVector("_HLShadowTint", new Vector4(0.2f, 0.3f, 0.4f, 0.7f));
             GameObject fixture = null;
 
             Assert.Throws<InvalidOperationException>(() =>
@@ -68,6 +70,8 @@ namespace HealerLike.Render.Stage
             Assert.AreSame(_pipeline, QualitySettings.renderPipeline);
             Assert.AreSame(sun, RenderSettings.sun);
             Assert.AreEqual(1f, Shader.GetGlobalFloat("_HLLookApplied"));
+            Assert.AreEqual(123.5f, Shader.GetGlobalFloat("_HLFogStart"));
+            Assert.AreEqual(new Vector4(0.2f, 0.3f, 0.4f, 0.7f), Shader.GetGlobalVector("_HLShadowTint"));
             Assert.IsTrue(fixture == null);
         }
     }

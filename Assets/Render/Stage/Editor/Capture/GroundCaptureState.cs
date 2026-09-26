@@ -14,7 +14,7 @@ namespace HealerLike.Render.Stage
         readonly bool[] _enabled;
         readonly RenderPipelineAsset _pipeline;
         readonly Light _sun;
-        readonly float _lookApplied;
+        readonly LookShaderProperties.Snapshot _look;
         bool _isDisposed;
         readonly List<Object> _created = new List<Object>();
 
@@ -26,7 +26,7 @@ namespace HealerLike.Render.Stage
             _enabled = new bool[owners.Length];
             _pipeline = QualitySettings.renderPipeline;
             _sun = RenderSettings.sun;
-            _lookApplied = Shader.GetGlobalFloat("_HLLookApplied");
+            _look = LookShaderProperties.Capture();
             for (int i = 0; i < owners.Length; i++)
             {
                 _enabled[i] = owners[i].enabled;
@@ -60,7 +60,7 @@ namespace HealerLike.Render.Stage
                     _owners[i].enabled = _enabled[i];
                 }
             }
-            Shader.SetGlobalFloat("_HLLookApplied", _lookApplied);
+            _look.Restore();
         }
     }
 }

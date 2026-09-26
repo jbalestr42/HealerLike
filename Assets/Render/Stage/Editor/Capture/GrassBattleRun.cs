@@ -87,16 +87,17 @@ namespace HealerLike.Render.Stage
         {
             Texture2D still = StageReadback.Render(_manager.gameCamera, StageCalibration.PortraitWidth / 2,
                                                    StageCalibration.PortraitHeight / 2);
-            File.WriteAllBytes(Path.Combine(folder, $"shot-{shot:D2}.png"), still.EncodeToPNG());
-            Object.Destroy(still);
+            StageCaptureTexture.SaveAndRelease(still, Path.Combine(folder, $"shot-{shot:D2}.png"));
             GroundSimulation ground = _manager.grass.simulation;
             if (ground == null)
             {
                 return;
             }
 
-            File.WriteAllBytes(Path.Combine(folder, $"motion-{shot:D2}.png"), Map(ground, ground.motion, false).EncodeToPNG());
-            File.WriteAllBytes(Path.Combine(folder, $"state-{shot:D2}.png"), Map(ground, ground.state, true).EncodeToPNG());
+            StageCaptureTexture.SaveAndRelease(Map(ground, ground.motion, false),
+                                               Path.Combine(folder, $"motion-{shot:D2}.png"));
+            StageCaptureTexture.SaveAndRelease(Map(ground, ground.state, true),
+                                               Path.Combine(folder, $"state-{shot:D2}.png"));
         }
 
         // The capsules the lianas out of their rest add to every body this frame
@@ -128,40 +129,55 @@ namespace HealerLike.Render.Stage
         Texture2D Map(GroundSimulation ground, RenderTexture source, bool isState)
         {
             RenderTexture previous = RenderTexture.active;
-            RenderTexture.active = source;
-            Texture2D copy = new Texture2D(source.width, source.height, TextureFormat.RGBAFloat, false, true);
-            copy.ReadPixels(new Rect(0, 0, source.width, source.height), 0, 0);
-            copy.Apply();
-            RenderTexture.active = previous;
-            Texture2D map = new Texture2D(mapSize, mapSize, TextureFormat.RGB24, false);
-            Bounds board = _manager.board;
-            Rect area = ground.volume.area;
-            for (int y = 0; y < mapSize; y++)
+            Texture2D copy = null;
+            Texture2D map = null;
+            bool completed = false;
+            try
             {
-                for (int x = 0; x < mapSize; x++)
+                RenderTexture.active = source;
+                copy = new Texture2D(source.width, source.height, TextureFormat.RGBAFloat, false, true);
+                copy.ReadPixels(new Rect(0, 0, source.width, source.height), 0, 0);
+                copy.Apply();
+                RenderTexture.active = previous;
+                map = new Texture2D(mapSize, mapSize, TextureFormat.RGB24, false);
+                Bounds board = _manager.board;
+                Rect area = ground.volume.area;
+                for (int y = 0; y < mapSize; y++)
                 {
-                    Color value = copy.GetPixelBilinear((x + 0.5f) / mapSize, (y + 0.5f) / mapSize);
-                    Color colour = isState
-                        ? new Color(value.r, 0.5f + 0.5f * value.g, value.b)
-                        : new Color(0.5f + value.r, 0.5f + value.g, 0.5f);
-                    Vector2 world = ground.volume.ToWorld(new Vector2((x + 0.5f) / mapSize, (y + 0.5f) / mapSize));
-                    float line = area.width / mapSize;
-                    bool onBoard = Mathf.Abs(world.x - board.min.x) < line || Mathf.Abs(world.x - board.max.x) < line
-                                   || Mathf.Abs(world.y - board.min.z) < line || Mathf.Abs(world.y - board.max.z) < line;
-                    bool inBoard = world.x > board.min.x - line && world.x < board.max.x + line
-                                   && world.y > board.min.z - line && world.y < board.max.z + line;
-                    if (onBoard && inBoard)
+                    for (int x = 0; x < mapSize; x++)
                     {
-                        colour = Color.white;
-                    }
+                        Color value = copy.GetPixelBilinear((x + 0.5f) / mapSize, (y + 0.5f) / mapSize);
+                        Color colour = isState
+                            ? new Color(value.r, 0.5f + 0.5f * value.g, value.b)
+                            : new Color(0.5f + value.r, 0.5f + value.g, 0.5f);
+                        Vector2 world = ground.volume.ToWorld(new Vector2((x + 0.5f) / mapSize, (y + 0.5f) / mapSize));
+                        float line = area.width / mapSize;
+                        bool onBoard = Mathf.Abs(world.x - board.min.x) < line || Mathf.Abs(world.x - board.max.x) < line
+                                       || Mathf.Abs(world.y - board.min.z) < line || Mathf.Abs(world.y - board.max.z) < line;
+                        bool inBoard = world.x > board.min.x - line && world.x < board.max.x + line
+                                       && world.y > board.min.z - line && world.y < board.max.z + line;
+                        if (onBoard && inBoard)
+                        {
+                            colour = Color.white;
+                        }
 
-                    map.SetPixel(x, y, colour);
+                        map.SetPixel(x, y, colour);
+                    }
+                }
+
+                map.Apply();
+                completed = true;
+                return map;
+            }
+            finally
+            {
+                RenderTexture.active = previous;
+                RenderObjects.Release(copy);
+                if (!completed)
+                {
+                    RenderObjects.Release(map);
                 }
             }
-
-            map.Apply();
-            Object.Destroy(copy);
-            return map;
         }
     }
 }
