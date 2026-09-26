@@ -61,6 +61,7 @@ MonoBehaviour:
   _environmentPrefab: {fileID: 6435028924057048388, guid: a8358bd0073da4481a6a1f17d7d3380f, type: 3}
   _look: {fileID: 6672015439819253328}
   _zones: {fileID: 8708550167893978255}
+  _groundVocabulary: {fileID: 11400000, guid: a1eb2f7477eeb4d9e8eba85e3dc2fc4f, type: 2}
   _grass: {fileID: 8078069055359978463}
   _spellSink: {fileID: 241064305910451805}
   _stoneEffects: {fileID: 7510366600707460256}
@@ -189,8 +190,18 @@ MonoBehaviour:
   _bladeBudget: 98304
   _seed: 1
   _bladeHeightScale: 1
-  _surfaceY: 0.5
+  _windStrength: 1
+  _bladeSegments: 4
   _groundShader: {fileID: 4800000, guid: 62476e78203f495b9c27974718be0774, type: 3}
+  _groundMargin: 3
+  _groundTexel: 0.125
+  _groundSpring:
+    frequency: 1.6
+    dampingRatio: 0.45
+    spread: 0.08
+    maxLean: 1.25
+    crushFall: 16
+    crushRise: 1.1
 --- !u!1 &6006450335263604257
 GameObject:
   m_ObjectHideFlags: 0
@@ -217,7 +228,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6006450335263604257}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.428280629, y: 0.282169315, z: -0.142760210, w: 0.846507946}
+  m_LocalRotation: {x: 0.42828062, y: 0.2821693, z: -0.14276022, w: 0.84650797}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

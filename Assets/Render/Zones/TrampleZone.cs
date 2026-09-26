@@ -3,15 +3,16 @@ using UnityEngine;
 using HealerLike.Render.Stage;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Deliveries;
+using HealerLike.Render.Grass;
 
 namespace HealerLike.Render.Zones
 {
     // What an obstacle or a creature presses into the grass. A creature with a rig is a body: every mesh of its
     // parts and roots near the ground becomes a capsule the grass parts around, so feet, roots and low bodies
-    // leave their own shapes. Anything else keeps a footprint disc from its root transform, never from the
-    // gameplay occupancy. When a creature lands, spawned, dropped or moved into place, each root foot throws the
-    // grass out in a ring and the body throws one round itself.
-    public class TrampleZone : MonoBehaviour, IEntityView, IZoneBody
+    // leave their own shapes, and its lianas brush the grass where they sweep. Anything else holds the ground's
+    // obstacle effect round its root transform, never the gameplay occupancy. When a creature lands, spawned,
+    // dropped or moved into place, each root foot plays the foot ring and the body the body ring.
+    public class TrampleZone : MonoBehaviour, IEntityView, IGroundBody
     {
         // The ring clears the root crown by this margin
         public static readonly float Margin = 0.15f;
@@ -26,20 +27,19 @@ namespace HealerLike.Render.Zones
         public static readonly float ArmReach = 1.5f;
         // In cells: a jump longer than this in one frame is a move into place, not a step
         public static readonly float LandingJump = 0.5f;
-        // The landing's rings, radii in cells: one out of each root foot, one round the whole footprint
+        // The landing's rings: out of each root foot this many cells wide, round the body this share wider than
+        // its footprint
         public static readonly float FootRingRadius = 0.9f;
-        public static readonly float FootRingStrength = 1f;
         public static readonly float BodyRingScale = 1.8f;
-        public static readonly float BodyRingStrength = 1f;
 
         public float radius = 0.65f;
         public float strength = 1f;
 
-        readonly ZoneHandle _zone = new ZoneHandle();
         readonly BodyMeshes _meshes = new BodyMeshes();
         readonly List<Vector3> _feet = new List<Vector3>();
         Vector3[] _joints = new Vector3[32];
-        ZoneRegistry _zones;
+        Ground _ground;
+        GroundHandle _obstacle;
         Collider _hold;
         Vector3 _lastPosition;
         bool _isHeld;
@@ -55,30 +55,30 @@ namespace HealerLike.Render.Zones
         int _landings;
         public int landings { get { return _landings; } }
 
-        public void Init(ZoneRegistry zones)
+        public void Init(Ground ground)
         {
-            _zone.Init(zones);
-            if (_zones != null && _zones != zones)
+            if (_ground != ground)
             {
-                _zones.RemoveBody(this);
+                ReleaseGround();
+                _ground = ground;
+                _obstacle = ground != null ? ground.Hold(ground.vocabulary.obstacle) : null;
             }
 
-            _zones = zones;
             SyncBody();
         }
 
         public void Init(Entity entity, RenderManager manager)
         {
             _hold = EntityHold.Find(entity);
-            InitFootprint(manager.zones);
+            InitFootprint(manager.ground);
         }
 
         // Creature views size the ring from their own root, obstacles keep the authored radius
-        public void InitFootprint(ZoneRegistry zones)
+        public void InitFootprint(Ground ground)
         {
             _host = GetComponent<ARigHost>();
             RefreshFootprint();
-            Init(zones);
+            Init(ground);
         }
 
         // Only the root crown, basal body and mineral feet determine the clearing. Elevated heads and arms never
@@ -133,7 +133,7 @@ namespace HealerLike.Render.Zones
         {
             if (!isActiveAndEnabled)
             {
-                _zone.Clear();
+                _obstacle?.Hide();
                 return;
             }
 
@@ -146,13 +146,18 @@ namespace HealerLike.Render.Zones
             UpdateLanding();
 
             // A body presses through its capsules, the disc is only for shapeless obstacles
-            if (_isBody || _isHeld)
+            if (_obstacle == null)
             {
-                _zone.Clear();
                 return;
             }
 
-            _zone.Refresh(ZoneKind.Trample, transform.position, radius, strength);
+            if (_isBody || _isHeld)
+            {
+                _obstacle.Hide();
+                return;
+            }
+
+            _obstacle.Show(transform.position, radius, strength);
         }
 
         // Held while the player drags it; lands when let go, when it first stands, and when it jumps into place
@@ -175,17 +180,18 @@ namespace HealerLike.Render.Zones
 
         void Land()
         {
-            if (_zones == null)
+            if (_ground == null)
             {
                 return;
             }
 
             _landings++;
-            Landing(_zones, _footprintRig, transform.position, radius, _feet);
+            Landing(_ground, _footprintRig, transform.position, radius, _feet);
         }
 
-        // A ring out of each root foot of the rig, if it has roots, and one round a footprint of this radius
-        public static void Landing(ZoneRegistry zones, CreatureRig rig, Vector3 position, float footprint,
+        // The foot ring out of each root foot of the rig, if it has roots, and the body ring round a footprint
+        // of this radius
+        public static void Landing(Ground ground, CreatureRig rig, Vector3 position, float footprint,
                                    List<Vector3> feet)
         {
             float cell = rig != null ? rig.cellSize : StageCalibration.CellSize;
@@ -197,10 +203,10 @@ namespace HealerLike.Render.Zones
 
             foreach (Vector3 foot in feet)
             {
-                zones.AddShock(foot, FootRingRadius * cell, FootRingStrength);
+                ground.Play(ground.vocabulary.footRing, foot, FootRingRadius * cell);
             }
 
-            zones.AddShock(position, footprint * BodyRingScale, BodyRingStrength);
+            ground.Play(ground.vocabulary.bodyRing, position, footprint * BodyRingScale);
         }
 
         // Where each root's foot rests, as RootChain places it: out along its heading at the foot radius
@@ -270,37 +276,37 @@ namespace HealerLike.Render.Zones
 
         void OnDisable()
         {
-            _zone.Clear();
-            if (_zones != null)
-            {
-                _zones.RemoveBody(this);
-            }
+            _obstacle?.Hide();
+            _ground?.RemoveBody(this);
         }
 
         void OnDestroy()
         {
-            _zone.Clear();
-            if (_zones != null)
-            {
-                _zones.RemoveBody(this);
-            }
+            ReleaseGround();
         }
 
-        // Registered with the zones exactly while it is an enabled body
+        void ReleaseGround()
+        {
+            _obstacle?.Release();
+            _obstacle = null;
+            _ground?.RemoveBody(this);
+        }
+
+        // Registered with the ground exactly while it is an enabled body
         void SyncBody()
         {
-            if (_zones == null)
+            if (_ground == null)
             {
                 return;
             }
 
             if (_isBody && isActiveAndEnabled)
             {
-                _zones.AddBody(this);
+                _ground.AddBody(this);
             }
             else
             {
-                _zones.RemoveBody(this);
+                _ground.RemoveBody(this);
             }
         }
     }

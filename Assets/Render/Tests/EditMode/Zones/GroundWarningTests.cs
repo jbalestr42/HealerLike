@@ -1,3 +1,4 @@
+using HealerLike.Render.Grass;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -29,8 +30,7 @@ public class GroundWarningTests
         GameObject go = new GameObject("enemy");
         try
         {
-            ZoneRegistry zones = go.AddComponent<ZoneRegistry>();
-            zones.Init(new ZoneFakeUpload());
+            Ground ground = new Ground();
             Entity entity = null;
             TestHelpers.WithLoggingDisabled(() => entity = go.AddComponent<Entity>());
             entity.entityType = Entity.EntityType.Computer;
@@ -39,11 +39,12 @@ public class GroundWarningTests
             skill.isEnabled = false;
             GroundWarning warning = go.AddComponent<GroundWarning>();
 
-            warning.Init(entity, zones);
+            warning.Init(entity, ground);
             warning.Refresh();
 
             Assert.IsTrue(warning.hasSkill);
-            Assert.AreEqual(0, zones.liveCount, "Out of combat its cooldown stands still; nothing is coming.");
+            Assert.IsFalse(warning.isShown, "Out of combat its cooldown stands still; nothing is coming.");
+            Assert.AreEqual(1, ground.heldCount);
         }
         finally
         {
@@ -57,15 +58,14 @@ public class GroundWarningTests
         GameObject go = new GameObject("warning");
         try
         {
-            ZoneRegistry zones = go.AddComponent<ZoneRegistry>();
-            zones.Init(new ZoneFakeUpload());
+            Ground ground = new Ground();
             GroundWarning warning = go.AddComponent<GroundWarning>();
 
-            warning.Init(null, zones);
+            warning.Init(null, ground);
             warning.Refresh();
 
             Assert.IsFalse(warning.hasSkill);
-            Assert.AreEqual(0, zones.liveCount);
+            Assert.AreEqual(0, ground.heldCount, "No skill, nothing held.");
         }
         finally
         {

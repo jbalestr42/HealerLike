@@ -1,4 +1,5 @@
 using HealerLike.Render.Grammar;
+using HealerLike.Render.Grass;
 using HealerLike.Render.Zones;
 using NUnit.Framework;
 using UnityEngine;
@@ -13,6 +14,7 @@ public class ImpactPoolTests
     GameObject _other;
     GameObject _caster;
     ZoneRegistry _zones;
+    Ground _ground;
     ImpactPool _pool;
 
     [SetUp]
@@ -24,9 +26,10 @@ public class ImpactPoolTests
         _caster = new GameObject("Caster");
         _zones = _host.AddComponent<ZoneRegistry>();
         _zones.Init(new ZoneFakeUpload());
+        _ground = new Ground();
         _pool = new ImpactPool();
         _pool.Init(_host.transform, RenderTestAssets.LoadEffectVocabulary(), RenderTestAssets.LoadMeshes(),
-                   RenderTestAssets.LoadLookMaterial(), _zones, null);
+                   RenderTestAssets.LoadLookMaterial(), _zones, _ground, null);
     }
 
     [TearDown]
@@ -135,37 +138,35 @@ public class ImpactPoolTests
         _target.transform.position = new Vector3(2f, 0f, 1f);
 
         _pool.ShowImpact(_caster, _target, ResourceKind.Health, -30f, false);
-        _zones.PublishFrame(0.01f);
 
-        Assert.AreEqual(1, _zones.count);
-        Assert.AreEqual((int)ZoneKind.Shock, _zones.snapshot[0].kind);
-        Assert.AreEqual(new Vector3(2f, 0f, 1f), _zones.snapshot[0].position);
-        Assert.AreEqual(ImpactPool.ShockRadius(0.3f, false), _zones.snapshot[0].radius, 1e-5f);
+        Assert.AreEqual(1, _ground.Playing(_ground.vocabulary.hit));
+        Assert.IsTrue(_ground.Find(_ground.vocabulary.hit, out Vector2 at, out _, out float radius, out float strength));
+        Assert.AreEqual(new Vector2(2f, 1f), at);
+        Assert.AreEqual(ImpactPool.ShockRadius(0.3f, false), radius, 1e-5f);
+        Assert.AreEqual(ImpactPool.HitShock(0.3f), strength, 1e-5f);
     }
 
     [Test]
     public void ShowImpact_ManaSpent_ThrowsNoShock()
     {
         _pool.ShowImpact(_caster, _target, ResourceKind.Mana, -10f, false);
-        _zones.PublishFrame(0.01f);
 
-        Assert.AreEqual(0, _zones.count, "A spell's cost is not a blow.");
+        Assert.AreEqual(0, _ground.oneShotCount, "A spell's cost is not a blow.");
     }
 
     [Test]
     public void ShowImpact_Heal_ThrowsNoShock()
     {
         _pool.ShowImpact(_caster, _target, ResourceKind.Health, 30f, false);
-        _zones.PublishFrame(0.01f);
 
-        Assert.AreEqual(0, _zones.count);
+        Assert.AreEqual(0, _ground.oneShotCount);
     }
 
     [Test]
     public void HitShock_LargerShare_ThrowsHarderButLessThanALanding()
     {
         Assert.Less(ImpactPool.HitShock(0.1f), ImpactPool.HitShock(0.8f));
-        Assert.Less(ImpactPool.HitShock(1f), HealerLike.Render.Zones.TrampleZone.FootRingStrength);
+        Assert.Less(ImpactPool.HitShock(1f), 1f, "A landing throws at full strength.");
         Assert.AreEqual(ImpactPool.HitShock(1f), ImpactPool.HitShock(3f));
     }
 

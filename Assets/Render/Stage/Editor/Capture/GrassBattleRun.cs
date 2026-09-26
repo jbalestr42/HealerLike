@@ -89,7 +89,7 @@ namespace HealerLike.Render.Stage
                                                    StageCalibration.PortraitHeight / 2);
             File.WriteAllBytes(Path.Combine(folder, $"shot-{shot:D2}.png"), still.EncodeToPNG());
             Object.Destroy(still);
-            GroundSimulation ground = _manager.grass.ground;
+            GroundSimulation ground = _manager.grass.simulation;
             if (ground == null)
             {
                 return;

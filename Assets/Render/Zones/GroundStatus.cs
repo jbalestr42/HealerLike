@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HealerLike.Render.Grammar;
+using HealerLike.Render.Grass;
 using UnityEngine;
 
 namespace HealerLike.Render.Zones
@@ -11,8 +12,8 @@ namespace HealerLike.Render.Zones
         // In cells: the patch round a poisoned or slowed creature
         public static readonly float PatchRadius = 0.9f;
 
-        readonly ZoneHandle _blight = new ZoneHandle();
-        readonly ZoneHandle _frost = new ZoneHandle();
+        GroundHandle _blight;
+        GroundHandle _frost;
         readonly HashSet<BuffManager.BuffHandlerData> _poisons = new HashSet<BuffManager.BuffHandlerData>();
         readonly HashSet<BuffManager.BuffHandlerData> _slows = new HashSet<BuffManager.BuffHandlerData>();
         Entity _entity;
@@ -23,15 +24,20 @@ namespace HealerLike.Render.Zones
         public bool isPoisoned { get { return _poisons.Count > 0; } }
         public bool isSlowed { get { return _slows.Count > 0; } }
 
-        public void Init(Entity entity, ZoneRegistry zones, float cellSize)
+        public void Init(Entity entity, Ground ground, float cellSize)
         {
             Unbind();
+            ReleaseHandles();
+            if (ground != null)
+            {
+                _blight = ground.Hold(ground.vocabulary.blight);
+                _frost = ground.Hold(ground.vocabulary.frost);
+            }
+
             _entity = entity;
             _buffs = entity != null ? entity.buffManager : null;
             _hold = EntityHold.Find(entity);
             _cellSize = RenderMath.IsPositive(cellSize) ? cellSize : 1f;
-            _blight.Init(zones);
-            _frost.Init(zones);
             if (_buffs != null)
             {
                 _buffs.OnBuffHandlerStarted.AddListener(OnStarted);
@@ -101,19 +107,32 @@ namespace HealerLike.Render.Zones
         public void Refresh()
         {
             bool isShown = isActiveAndEnabled && !EntityHold.IsHeld(_hold);
-            Show(_blight, ZoneKind.Blight, isShown && isPoisoned);
-            Show(_frost, ZoneKind.Frost, isShown && isSlowed);
+            Show(_blight, isShown && isPoisoned);
+            Show(_frost, isShown && isSlowed);
         }
 
-        void Show(ZoneHandle zone, ZoneKind kind, bool isShown)
+        void Show(GroundHandle handle, bool isShown)
         {
-            if (!isShown)
+            if (handle == null)
             {
-                zone.Clear();
                 return;
             }
 
-            zone.Refresh(kind, transform.position, PatchRadius * _cellSize, 1f);
+            if (!isShown)
+            {
+                handle.Hide();
+                return;
+            }
+
+            handle.Show(transform.position, PatchRadius * _cellSize, 1f);
+        }
+
+        void ReleaseHandles()
+        {
+            _blight?.Release();
+            _frost?.Release();
+            _blight = null;
+            _frost = null;
         }
 
         void Unbind()
@@ -131,15 +150,14 @@ namespace HealerLike.Render.Zones
 
         void OnDisable()
         {
-            _blight.Clear();
-            _frost.Clear();
+            _blight?.Hide();
+            _frost?.Hide();
         }
 
         void OnDestroy()
         {
             Unbind();
-            _blight.Clear();
-            _frost.Clear();
+            ReleaseHandles();
         }
     }
 }

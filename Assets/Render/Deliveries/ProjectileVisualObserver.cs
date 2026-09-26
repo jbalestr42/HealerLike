@@ -284,13 +284,13 @@ namespace HealerLike.Render.Deliveries
         // target to target
         void Scorch(GameObject target)
         {
-            if (!_manager || !_manager.zones || !target)
+            if (!_manager || _manager.ground == null || !target)
             {
                 return;
             }
 
             Vector3 to = target.transform.position;
-            _manager.zones.AddScorch(_hasBolt ? _boltEnd : transform.position, to);
+            _manager.ground.Play(_manager.ground.vocabulary.scorch, _hasBolt ? _boltEnd : transform.position, to);
             _boltEnd = to;
             _hasBolt = true;
         }

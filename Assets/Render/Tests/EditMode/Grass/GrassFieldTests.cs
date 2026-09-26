@@ -101,7 +101,10 @@ public class GrassFieldTests
         return buffers;
     }
 
-    // A field on the one-cell area stepped through a real zone registry, owning the ground when asked
+    // A field on the one-cell area stepped through a real zone registry and a ground holding an obstacle at its
+    // centre, owning the ground simulation when asked
+    Ground _ground;
+
     ZoneRegistry BuildWithRegistry(bool ownsGround)
     {
         Camera camera = _go.AddComponent<Camera>();
@@ -116,9 +119,11 @@ public class GrassFieldTests
                 AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/GroundSimulation.shader"));
         }
 
-        registry.Add(ZoneKind.Trample, new Vector3(0f, 0.5f, 0f), 0.6f, 1f);
+        _ground = new Ground();
+        _ground.Hold(_ground.vocabulary.obstacle).Show(new Vector3(0f, 0.5f, 0f), 0.6f, 1f);
+        _ground.Advance(0.2f);
         registry.PublishFrame(0.2f);
-        _field.UpdateField(registry);
+        _field.UpdateField(registry, _ground);
         return registry;
     }
 
@@ -132,18 +137,18 @@ public class GrassFieldTests
 
         BuildWithRegistry(true);
 
-        Assert.IsNotNull(_field.ground);
-        Assert.IsTrue(_field.ground.isValid);
-        Assert.AreEqual(1, _field.ground.stampCount, "The trample zone became a stamp.");
-        Rect area = _field.ground.volume.area;
+        Assert.IsNotNull(_field.simulation);
+        Assert.IsTrue(_field.simulation.isValid);
+        Assert.AreEqual(1, _field.simulation.stampCount, "The obstacle became a stamp.");
+        Rect area = _field.simulation.volume.area;
         Assert.AreEqual(-3.5f, area.xMin, 1e-5f, "Three cells of margin around the one-cell field.");
         Assert.AreEqual(7f, area.width, 1e-5f);
         Assert.AreEqual(1f, Shader.GetGlobalFloat(GroundSimulation.ActiveId));
-        Assert.AreSame(_field.ground.motion, Shader.GetGlobalTexture(GroundSimulation.MotionId));
+        Assert.AreSame(_field.simulation.motion, Shader.GetGlobalTexture(GroundSimulation.MotionId));
 
         TestHelpers.InvokePrivate(_field, "OnDisable");
 
-        Assert.IsNull(_field.ground);
+        Assert.IsNull(_field.simulation);
         Assert.AreEqual(0f, Shader.GetGlobalFloat(GroundSimulation.ActiveId), "A released ground is unpublished.");
     }
 
@@ -159,7 +164,8 @@ public class GrassFieldTests
         for (int frame = 1; frame < 30; frame++)
         {
             registry.PublishFrame(1f / 60f);
-            _field.UpdateField(registry, 1f / 60f, frame / 60f);
+            _ground.Advance(1f / 60f);
+            _field.UpdateField(registry, _ground, 1f / 60f, frame / 60f);
         }
 
         BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
@@ -193,12 +199,12 @@ public class GrassFieldTests
         }
 
         ZoneRegistry registry = BuildWithRegistry(true);
-        GroundSimulation ground = _field.ground;
+        GroundSimulation ground = _field.simulation;
 
         _field.tuftBudget = 20;
-        _field.UpdateField(registry, 1f / 60f, 1f);
+        _field.UpdateField(registry, _ground, 1f / 60f, 1f);
 
-        Assert.AreSame(ground, _field.ground, "Its motion and state live on.");
+        Assert.AreSame(ground, _field.simulation, "Its motion and state live on.");
         Assert.IsTrue(_field.isReady);
         Assert.AreEqual(1f, Shader.GetGlobalFloat(GroundSimulation.ActiveId));
     }
@@ -214,7 +220,7 @@ public class GrassFieldTests
         GroundSimulation.Unpublish();
         BuildWithRegistry(false);
 
-        Assert.IsNull(_field.ground);
+        Assert.IsNull(_field.simulation);
         Assert.IsTrue(_field.isReady);
         Assert.AreEqual(0f, Shader.GetGlobalFloat(GroundSimulation.ActiveId));
     }

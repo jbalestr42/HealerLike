@@ -1,3 +1,4 @@
+using HealerLike.Render.Grass;
 using UnityEngine;
 
 namespace HealerLike.Render.Zones
@@ -9,14 +10,14 @@ namespace HealerLike.Render.Zones
         // The last share of the cooldown the warning shows over
         public static readonly float WarningShare = 0.3f;
 
-        readonly ZoneHandle _zone = new ZoneHandle();
+        GroundHandle _handle;
         AreaOfEffectSkill _skill;
         Entity _entity;
 
         public bool hasSkill { get { return _skill != null; } }
 
         // Only enemies holding an area skill warn
-        public void Init(Entity entity, ZoneRegistry zones)
+        public void Init(Entity entity, Ground ground)
         {
             _entity = entity;
             _skill = null;
@@ -25,8 +26,11 @@ namespace HealerLike.Render.Zones
                 _skill = entity.GetComponentInChildren<AreaOfEffectSkill>();
             }
 
-            _zone.Init(zones);
+            _handle?.Release();
+            _handle = _skill != null && ground != null ? ground.Hold(ground.vocabulary.warning) : null;
         }
+
+        public bool isShown { get { return _handle != null && _handle.isShown; } }
 
         void Update()
         {
@@ -39,13 +43,18 @@ namespace HealerLike.Render.Zones
             bool isLive = _skill != null && _skill.isEnabled && isActiveAndEnabled;
             float strength = isLive ? Strength(_skill.cooldownProgress) : 0f;
             float radius = Range();
-            if (strength <= 0f || radius <= 0f)
+            if (_handle == null)
             {
-                _zone.Clear();
                 return;
             }
 
-            _zone.Refresh(ZoneKind.Tremble, _entity.transform.position, radius, strength);
+            if (strength <= 0f || radius <= 0f)
+            {
+                _handle.Hide();
+                return;
+            }
+
+            _handle.Show(_entity.transform.position, radius, strength);
         }
 
         // Nothing until the last WarningShare of the cooldown, then rising to full as it runs out. A skill waiting
@@ -73,12 +82,13 @@ namespace HealerLike.Render.Zones
 
         void OnDisable()
         {
-            _zone.Clear();
+            _handle?.Hide();
         }
 
         void OnDestroy()
         {
-            _zone.Clear();
+            _handle?.Release();
+            _handle = null;
         }
     }
 }

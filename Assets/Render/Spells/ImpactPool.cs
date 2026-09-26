@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
+using HealerLike.Render.Grass;
 using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Spells
@@ -34,18 +35,20 @@ namespace HealerLike.Render.Spells
         PrimitiveMeshes _meshes;
         Material _material;
         ZoneRegistry _zones;
+        Ground _ground;
         Camera _camera;
 
         public int count { get { return _impacts.Count; } }
 
         public void Init(Transform parent, EffectVocabulary vocabulary, PrimitiveMeshes meshes, Material material,
-                         ZoneRegistry zones, Camera camera)
+                         ZoneRegistry zones, Ground ground, Camera camera)
         {
             _parent = parent;
             _vocabulary = vocabulary;
             _meshes = meshes;
             _material = material;
             _zones = zones;
+            _ground = ground;
             _camera = camera;
         }
 
@@ -94,9 +97,10 @@ namespace HealerLike.Render.Spells
 
             Add(effect.gameObject);
             // Only a hit on health blasts the grass; a spell's mana cost is not a blow
-            if (_zones != null && resource == ResourceKind.Health && preClampAmount < 0f)
+            if (_ground != null && resource == ResourceKind.Health && preClampAmount < 0f)
             {
-                _zones.AddShock(target.transform.position, ShockRadius(amount, isCritical), HitShock(amount));
+                _ground.Play(_ground.vocabulary.hit, target.transform.position, ShockRadius(amount, isCritical),
+                             HitShock(amount));
             }
         }
 

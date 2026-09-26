@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using UnityEngine;
 
-namespace HealerLike.Render.Zones
+namespace HealerLike.Render.Grass
 {
 
 public class BodyCapsuleTests

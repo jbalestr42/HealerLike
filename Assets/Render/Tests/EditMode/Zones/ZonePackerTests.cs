@@ -24,16 +24,6 @@ public class ZonePackerTests
 
     [TestCase(ZoneKind.Range, 3)]
     [TestCase(ZoneKind.Bruise, 4)]
-    [TestCase(ZoneKind.Launch, 5)]
-    [TestCase(ZoneKind.Trample, 6)]
-    [TestCase(ZoneKind.Shock, 7)]
-    [TestCase(ZoneKind.Ash, 8)]
-    [TestCase(ZoneKind.Wilt, 9)]
-    [TestCase(ZoneKind.Boost, 10)]
-    [TestCase(ZoneKind.Blight, 11)]
-    [TestCase(ZoneKind.Frost, 12)]
-    [TestCase(ZoneKind.Scorch, 13)]
-    [TestCase(ZoneKind.Tremble, 14)]
     public void TryCreate_LaterKinds_KeepTheirWireValuesAndAreAccepted(ZoneKind kind, int value)
     {
         Assert.AreEqual(value, (int)kind);
@@ -41,23 +31,14 @@ public class ZonePackerTests
     }
 
     [Test]
-    public void Pack_LaunchHeading_SurvivesWhileOtherKindsClearIt()
+    public void Pack_Reserved_IsAlwaysCleared()
     {
-        Assert.AreEqual(0u, ZonePacker.EncodeDirection(Vector3.right));
-        Assert.AreEqual(1073741824u, ZonePacker.EncodeDirection(Vector3.forward));
-        Assert.AreEqual(2147483648u, ZonePacker.EncodeDirection(Vector3.left));
-        Assert.AreEqual(3221225472u, ZonePacker.EncodeDirection(Vector3.back));
-        Zone[] source =
-        {
-            Raw(Vector3.zero, 2f, ZoneKind.Launch, 1f, reserved: 1073741824u),
-            Raw(Vector3.zero, 2f, ZoneKind.Range, 1f, reserved: 123u)
-        };
-        Zone[] destination = new Zone[2];
+        Zone[] source = { Raw(Vector3.zero, 2f, ZoneKind.Range, 1f, reserved: 123u) };
+        Zone[] destination = new Zone[1];
 
         ZonePacker.Pack(source, destination, out _, out _);
 
-        Assert.AreEqual(1073741824u, destination[0].reserved);
-        Assert.AreEqual(0u, destination[1].reserved);
+        Assert.AreEqual(0u, destination[0].reserved);
     }
 
     [Test]
@@ -92,47 +73,6 @@ public class ZonePackerTests
     {
         Assert.IsFalse(ZonePacker.TryCreate(Vector3.zero, 0f, ZoneKind.Heal, 1f, 0f, out _));
         Assert.IsFalse(ZonePacker.TryCreate(Vector3.zero, -1f, ZoneKind.Heal, 1f, 0f, out _));
-    }
-
-    [Test]
-    public void IsFootprint_StandingKinds_YieldToFeedback()
-    {
-        Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Trample));
-        Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Ash));
-        Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Wilt));
-        Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Boost));
-        Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Blight));
-        Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Frost));
-        Assert.IsFalse(ZonePacker.IsFootprint((int)ZoneKind.Scorch));
-        Assert.IsFalse(ZonePacker.IsFootprint((int)ZoneKind.Tremble));
-        Assert.IsFalse(ZonePacker.IsFootprint((int)ZoneKind.Shock));
-        Assert.IsFalse(ZonePacker.IsFootprint((int)ZoneKind.Heal));
-    }
-
-    [Test]
-    public void ReserveFeedback_FullOfAuras_KeepsTheShocks()
-    {
-        Zone[] zones = new Zone[ZonePacker.MaxZones + 2];
-        for (int i = 0; i < ZonePacker.MaxZones; i++)
-        {
-            zones[i] = Raw(Vector3.right * i, 1f, ZoneKind.Ash, 1f);
-        }
-
-        zones[ZonePacker.MaxZones] = Raw(Vector3.zero, 1f, ZoneKind.Shock, 1f);
-        zones[ZonePacker.MaxZones + 1] = Raw(Vector3.zero, 1f, ZoneKind.Wilt, 1f);
-
-        int kept = ZonePacker.ReserveFeedback(zones, zones.Length);
-
-        Assert.AreEqual(ZonePacker.MaxZones, kept);
-        Assert.AreEqual((int)ZoneKind.Shock, zones[kept - 1].kind);
-    }
-
-    [Test]
-    public void CarriesHeading_LaunchAndScorch_Only()
-    {
-        Assert.IsTrue(ZonePacker.CarriesHeading((int)ZoneKind.Launch));
-        Assert.IsTrue(ZonePacker.CarriesHeading((int)ZoneKind.Scorch));
-        Assert.IsFalse(ZonePacker.CarriesHeading((int)ZoneKind.Shock));
     }
 
     [Test]

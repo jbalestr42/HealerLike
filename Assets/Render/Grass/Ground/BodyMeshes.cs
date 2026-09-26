@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using HealerLike.Render.Creatures;
 
-namespace HealerLike.Render.Zones
+namespace HealerLike.Render.Grass
 {
     // A body's solid meshes as capsules: taken once per rebuild, measured every frame as they move. Only meshes
     // whose own transform places them, so a chain drawn as one mesh in its parent's space never joins: its bounds

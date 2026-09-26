@@ -1,6 +1,7 @@
 using UnityEngine;
 using HealerLike.Render.Environment;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grass;
 
 namespace HealerLike.Render.Zones
 {
@@ -17,25 +18,24 @@ namespace HealerLike.Render.Zones
         public static readonly float LowFlight = 0.3f;
         public static readonly float HighFlight = 1.8f;
 
-        readonly ZoneHandle _shot = new ZoneHandle();
-        ZoneRegistry _zones;
+        GroundHandle _shot;
         EnvironmentGust _gust;
         Vector3 _launch;
-        float _ground;
+        float _groundY;
         bool _isFlying;
 
         // The RenderManager calls it before Projectile.Init runs the behaviours
-        public void Init(ZoneRegistry zones, EnvironmentGust gust)
+        public void Init(Ground ground, EnvironmentGust gust)
         {
-            _zones = zones;
             _gust = gust;
-            _shot.Init(zones);
+            _shot?.Release();
+            _shot = ground != null ? ground.Hold(ground.vocabulary.launch) : null;
         }
 
         public override void Init(GameObject source)
         {
             _isFlying = false;
-            _shot.Clear();
+            _shot?.Hide();
             if (!isActiveAndEnabled || source == null || projectile == null || projectile.target == null)
             {
                 return;
@@ -49,8 +49,8 @@ namespace HealerLike.Render.Zones
             }
 
             _launch = transform.position;
-            _ground = source.transform.position.y;
-            _isFlying = _zones != null;
+            _groundY = source.transform.position.y;
+            _isFlying = _shot != null;
             if (_gust != null)
             {
                 _gust.Gust(sourcePosition, projectile.target.transform.position, GustStrength, GustSeconds);
@@ -65,7 +65,7 @@ namespace HealerLike.Render.Zones
         // Moves the trail to where the projectile is now
         public void Follow()
         {
-            if (!_isFlying)
+            if (!_isFlying || _shot == null)
             {
                 return;
             }
@@ -74,15 +74,15 @@ namespace HealerLike.Render.Zones
             Vector3 travelled = position - _launch;
             travelled.y = 0f;
             float length = Mathf.Min(travelled.magnitude, TrailLength);
-            float strength = Strength(position.y - _ground);
+            float strength = Strength(position.y - _groundY);
             if (length < 0.01f || strength <= 0f)
             {
-                _shot.Clear();
+                _shot.Hide();
                 return;
             }
 
-            Vector3 head = new Vector3(position.x, _ground, position.z);
-            _shot.Refresh(ZoneKind.Launch, head, length, strength, travelled);
+            Vector3 head = new Vector3(position.x, _groundY, position.z);
+            _shot.ShowLine(head - travelled.normalized * length, head, strength);
         }
 
         // Full near the ground, none past HighFlight
@@ -96,15 +96,19 @@ namespace HealerLike.Render.Zones
             return 1f - Mathf.Clamp01((height - LowFlight) / (HighFlight - LowFlight));
         }
 
+        // Whether the grass parts under the shot this frame
+        public bool isParting { get { return _shot != null && _shot.isShown; } }
+
         void OnDisable()
         {
             _isFlying = false;
-            _shot.Clear();
+            _shot?.Hide();
         }
 
         void OnDestroy()
         {
-            _shot.Clear();
+            _shot?.Release();
+            _shot = null;
         }
     }
 }

@@ -45,7 +45,7 @@ namespace HealerLike.Render.Stage
         readonly List<LabCreature> _creatures = new List<LabCreature>();
 
         // A cosmetic creature and the body it presses into the grass
-        class LabCreature : IZoneBody
+        class LabCreature : IGroundBody
         {
             public Transform anchor;
             public CreaturePreview preview = new CreaturePreview();
@@ -84,18 +84,20 @@ namespace HealerLike.Render.Stage
             look.settings = settings;
             ZoneRegistry registry = Fixture("GrassLabZones").AddComponent<ZoneRegistry>();
             registry.Init();
+            Ground ground = new Ground();
+            GroundVocabulary said = ground.vocabulary;
             CreateGround();
             GrassField field = CreateField(camera, registry);
 
             Transform walker = Creature("NormalEntity", Entity.EntityType.Player, new Vector3(-3.2f, 0f, 0.5f),
-                                        registry);
+                                        ground);
             Transform stone = Creature("SoldierEntity", Entity.EntityType.Computer, new Vector3(2.2f, 0f, 2.2f),
-                                       registry);
+                                       ground);
             Transform healed = Creature("NormalEntity", Entity.EntityType.Player, new Vector3(-1.5f, 0f, -1.5f),
-                                        registry);
+                                        ground);
             // A fourth creature is dropped in during the run
             Transform dropped = Creature("NormalEntity", Entity.EntityType.Player, new Vector3(1.4f, 0f, -2.2f),
-                                         registry);
+                                         ground);
             dropped.gameObject.SetActive(false);
             if (_creatures.Count < 4)
             {
@@ -107,20 +109,14 @@ namespace HealerLike.Render.Stage
             List<Texture2D> film = new List<Texture2D>();
             List<Texture2D> maps = new List<Texture2D>();
             List<Texture2D> states = new List<Texture2D>();
-            ZoneHandle stoneAura = new ZoneHandle();
-            stoneAura.Init(registry);
-            ZoneHandle walkerAura = new ZoneHandle();
-            walkerAura.Init(registry);
-            ZoneHandle shotZone = new ZoneHandle();
-            shotZone.Init(registry);
-            ZoneHandle poison = new ZoneHandle();
-            poison.Init(registry);
-            ZoneHandle frost = new ZoneHandle();
-            frost.Init(registry);
-            ZoneHandle warning = new ZoneHandle();
-            warning.Init(registry);
+            GroundHandle stoneAura = ground.Hold(said.ash);
+            GroundHandle walkerAura = ground.Hold(said.wilt);
+            GroundHandle launch = ground.Hold(said.launch);
+            GroundHandle poison = ground.Hold(said.blight);
+            GroundHandle frost = ground.Hold(said.frost);
+            GroundHandle warning = ground.Hold(said.warning);
             PointerBrush finger = Fixture("GrassLabFinger").AddComponent<PointerBrush>();
-            finger.Init(registry, camera, 0f, 1f);
+            finger.Init(ground, camera, 0f, 1f);
             StringBuilder csv = new StringBuilder("frame,time");
             for (int i = 0; i < probes.Length; i++)
             {
@@ -141,7 +137,7 @@ namespace HealerLike.Render.Stage
                 {
                     dropped.gameObject.SetActive(true);
                     LabCreature landed = _creatures[3];
-                    TrampleZone.Landing(registry, landed.preview.rig, dropped.position,
+                    TrampleZone.Landing(ground, landed.preview.rig, dropped.position,
                                         TrampleZone.TrampleRadius(TrampleZone.CreatureFootprint(dropped,
                                                                                                 landed.preview.rig)),
                                         new List<Vector3>());
@@ -150,8 +146,10 @@ namespace HealerLike.Render.Stage
                 // Both lose health across the run
                 float stoneHealth = Mathf.Lerp(1f, 0.1f, time / (frames * step));
                 float walkerHealth = Mathf.Lerp(1f, 0.2f, time / (frames * step));
-                Aura(stoneAura, ZoneKind.Ash, stone.position, stoneHealth);
-                Aura(walkerAura, ZoneKind.Wilt, walker.position, walkerHealth);
+                _sources.Clear();
+                _sourceReach.Clear();
+                Aura(stoneAura, GroundAura.Mark.Ash, stone.position, stoneHealth);
+                Aura(walkerAura, GroundAura.Mark.Wilt, walker.position, walkerHealth);
                 foreach (LabCreature creature in _creatures)
                 {
                     creature.preview.Tick(time, step, new FootFrame(creature.anchor.position, Vector3.up, 1f),
@@ -163,26 +161,31 @@ namespace HealerLike.Render.Stage
                 }
 
                 // A low shot flies at the stone from the far corner, its trail following it as LaunchWave's does
-                Shot(shotZone, new Vector3(-3.5f, 0f, -3f), stone.position, (frame - 108) * step, 0.6f);
+                Shot(launch, new Vector3(-3.5f, 0f, -3f), stone.position, (frame - 108) * step, 0.6f);
 
                 // The launch lands on the stone, then a critical hit lands on it
                 if (frame == 132)
                 {
-                    registry.AddShock(stone.position, ImpactPool.ShockRadius(0.3f, false), 0.65f);
+                    ground.Play(said.hit, stone.position, ImpactPool.ShockRadius(0.3f, false), ImpactPool.HitShock(0.3f));
                 }
 
                 if (frame == 170)
                 {
-                    registry.AddShock(stone.position, ImpactPool.ShockRadius(0.5f, true), 0.75f);
+                    ground.Play(said.hit, stone.position, ImpactPool.ShockRadius(0.5f, true), ImpactPool.HitShock(0.5f));
                 }
 
+                // Hits, landings and the heal blast out of these; the lab measures motion against them
+                Source(stone.position, ImpactPool.ShockRadius(1f, true));
+                Source(healed.position, 1.6f);
+                Source(dropped.position, 2.5f);
+
                 // The healed ally is poisoned, the stone slowed; a chain bolt scorches walker to stone to ally
-                Status(poison, ZoneKind.Blight, healed.position, frame >= 120 && frame < 230);
-                Status(frost, ZoneKind.Frost, stone.position, frame >= 60 && frame < 200);
+                Status(poison, healed.position, frame >= 120 && frame < 230);
+                Status(frost, stone.position, frame >= 60 && frame < 200);
                 if (frame == 190)
                 {
-                    registry.AddScorch(walker.position, stone.position);
-                    registry.AddScorch(stone.position, healed.position);
+                    ground.Play(said.scorch, walker.position, stone.position);
+                    ground.Play(said.scorch, stone.position, healed.position);
                 }
 
                 // The stone's area skill comes off cooldown from frame 200 to 240 and lands
@@ -190,25 +193,27 @@ namespace HealerLike.Render.Stage
                 float shiver = frame >= 200 && frame < 240 ? GroundWarning.Strength(cooldown) : 0f;
                 if (shiver > 0f)
                 {
-                    warning.Refresh(ZoneKind.Tremble, stone.position, 1.5f, shiver);
+                    warning.Show(stone.position, 1.5f, shiver);
                 }
                 else
                 {
-                    warning.Clear();
+                    warning.Hide();
                 }
 
                 // A finger strokes through the open grass on the left in the first second
                 Vector2 stroke = camera.WorldToScreenPoint(new Vector3(-3f + 4f * (frame / 60f), 0f, -2.8f));
                 finger.Point(frame < 60, frame == 0, stroke);
+                Source(new Vector3(-3f, 0f, -2.8f), new Vector3(1f, 0f, -2.8f));
 
 
                 registry.PublishFrame(step);
-                field.UpdateField(registry, step, time);
+                ground.Advance(step);
+                field.UpdateField(registry, ground, step, time);
                 look.ApplyGlobals();
-                Color[] motion = field.ground != null ? Read(field.ground.motion) : null;
-                Color[] crush = field.ground != null ? Read(field.ground.crush) : null;
-                Probe(field.ground, motion, crush, frame, time, csv);
-                Vector2 activity = Activity(field.ground, motion, registry);
+                Color[] motion = field.simulation != null ? Read(field.simulation.motion) : null;
+                Color[] crush = field.simulation != null ? Read(field.simulation.crush) : null;
+                Probe(field.simulation, motion, crush, frame, time, csv);
+                Vector2 activity = Activity(field.simulation, motion);
                 movingSum += activity.x;
                 farSum += activity.y;
                 farPeak = Mathf.Max(farPeak, activity.y);
@@ -217,8 +222,8 @@ namespace HealerLike.Render.Stage
                    .Append(',').Append(activity.y.ToString("0.0000", CultureInfo.InvariantCulture)).Append('\n');
                 if (frame % filmEvery == 0)
                 {
-                    maps.Add(Map(field.ground, motion, crush));
-                    states.Add(StateMap(field.ground, field.ground != null ? Read(field.ground.state) : null));
+                    maps.Add(Map(field.simulation, motion, crush));
+                    states.Add(StateMap(field.simulation, field.simulation != null ? Read(field.simulation.state) : null));
                     Texture2D shot = StageReadback.Render(camera, frameWidth, frameHeight);
                     film.Add(shot);
                     if (frame % (filmEvery * 6) == 0)
@@ -236,7 +241,7 @@ namespace HealerLike.Render.Stage
             WriteSheet(film, Path.Combine(folder, "contact.png"), frameWidth / sheetScale, frameHeight / sheetScale);
             WriteSheet(maps, Path.Combine(folder, "ground-contact.png"), mapSize, mapSize);
             WriteSheet(states, Path.Combine(folder, "state-contact.png"), mapSize, mapSize);
-            bool isPassed = field.ground != null && field.ground.isValid && film.Count > 0;
+            bool isPassed = field.simulation != null && field.simulation.isValid && film.Count > 0;
             Debug.Log($"[GrassLabRun] {film.Count} film frames, ground {(isPassed ? "live" : "missing")} "
                       + $"in {folder}");
             foreach (Texture2D shot in film)
@@ -256,7 +261,7 @@ namespace HealerLike.Render.Stage
 
             foreach (LabCreature creature in _creatures)
             {
-                registry.RemoveBody(creature);
+                ground.RemoveBody(creature);
                 creature.preview.Dispose();
             }
 
@@ -308,7 +313,7 @@ namespace HealerLike.Render.Stage
         }
 
         // The game's look for an entity, grown in full on the lab layer and pressing the grass as a body
-        Transform Creature(string entity, Entity.EntityType side, Vector3 position, ZoneRegistry registry)
+        Transform Creature(string entity, Entity.EntityType side, Vector3 position, Ground ground)
         {
             GameObject anchor = Fixture("GrassLab" + entity);
             anchor.transform.position = position;
@@ -327,7 +332,7 @@ namespace HealerLike.Render.Stage
             }
 
             creature.Refresh();
-            registry.AddBody(creature);
+            ground.AddBody(creature);
             _creatures.Add(creature);
             return anchor.transform;
         }
@@ -363,7 +368,7 @@ namespace HealerLike.Render.Stage
         static readonly float swingSpeed = 0.5f;
         static readonly float reach = 1.5f;
 
-        Vector2 Activity(GroundSimulation ground, Color[] motion, ZoneRegistry registry)
+        Vector2 Activity(GroundSimulation ground, Color[] motion)
         {
             if (ground == null || motion == null)
             {
@@ -373,7 +378,6 @@ namespace HealerLike.Render.Stage
             int inside = 0;
             int moving = 0;
             int far = 0;
-            System.ReadOnlySpan<Zone> zones = registry.snapshot;
             for (float z = area.yMin + 0.05f; z < area.yMax; z += 0.1f)
             {
                 for (float x = area.xMin + 0.05f; x < area.xMax; x += 0.1f)
@@ -387,7 +391,7 @@ namespace HealerLike.Render.Stage
                     }
 
                     moving++;
-                    if (DistanceToSources(point, zones) > reach)
+                    if (DistanceToSources(point) > reach)
                     {
                         far++;
                     }
@@ -397,7 +401,23 @@ namespace HealerLike.Render.Stage
             return new Vector2((float)moving / inside, (float)far / inside);
         }
 
-        float DistanceToSources(Vector2 point, System.ReadOnlySpan<Zone> zones)
+        // What the scenario plays this frame, as segments with a reach round them
+        readonly List<Vector4> _sources = new List<Vector4>();
+        readonly List<float> _sourceReach = new List<float>();
+
+        void Source(Vector3 position, float radius)
+        {
+            _sources.Add(new Vector4(position.x, position.z, position.x, position.z));
+            _sourceReach.Add(radius);
+        }
+
+        void Source(Vector3 from, Vector3 to)
+        {
+            _sources.Add(new Vector4(from.x, from.z, to.x, to.z));
+            _sourceReach.Add(0f);
+        }
+
+        float DistanceToSources(Vector2 point)
         {
             float nearest = float.MaxValue;
             foreach (LabCreature creature in _creatures)
@@ -406,25 +426,11 @@ namespace HealerLike.Render.Stage
                 nearest = Mathf.Min(nearest, Vector2.Distance(point, new Vector2(position.x, position.z)));
             }
 
-            foreach (Zone zone in zones)
+            for (int i = 0; i < _sources.Count; i++)
             {
-                Vector2 centre = new Vector2(zone.position.x, zone.position.z);
-                float distance = Vector2.Distance(point, centre);
-                if (zone.kind == (int)ZoneKind.Launch)
-                {
-                    Vector2 end = centre + ZoneStamps.Heading(zone.reserved) * zone.radius;
-                    distance = DistanceToSegment(point, centre, end);
-                }
-                else if (zone.kind == (int)ZoneKind.Ash || zone.kind == (int)ZoneKind.Wilt)
-                {
-                    continue;
-                }
-                else
-                {
-                    distance = Mathf.Max(0f, distance - zone.radius);
-                }
-
-                nearest = Mathf.Min(nearest, distance);
+                Vector4 source = _sources[i];
+                float distance = DistanceToSegment(point, new Vector2(source.x, source.y), new Vector2(source.z, source.w));
+                nearest = Mathf.Min(nearest, Mathf.Max(0f, distance - _sourceReach[i]));
             }
 
             return nearest;
@@ -493,43 +499,44 @@ namespace HealerLike.Render.Stage
             return map;
         }
 
-        static void Status(ZoneHandle zone, ZoneKind kind, Vector3 position, bool isOn)
+        static void Status(GroundHandle handle, Vector3 position, bool isOn)
         {
             if (isOn)
             {
-                zone.Refresh(kind, position, GroundStatus.PatchRadius, 1f);
+                handle.Show(position, GroundStatus.PatchRadius, 1f);
             }
             else
             {
-                zone.Clear();
+                handle.Hide();
             }
         }
 
         // A shot from source to target taking flight seconds, at a quarter of a unit over the ground
-        static void Shot(ZoneHandle zone, Vector3 source, Vector3 target, float age, float flight)
+        void Shot(GroundHandle handle, Vector3 source, Vector3 target, float age, float flight)
         {
             if (age <= 0f || age >= flight)
             {
-                zone.Clear();
+                handle.Hide();
                 return;
             }
 
             Vector3 head = Vector3.Lerp(source, target, age / flight);
             Vector3 travelled = head - source;
             float length = Mathf.Min(travelled.magnitude, LaunchWave.TrailLength);
-            zone.Refresh(ZoneKind.Launch, head, length, LaunchWave.Strength(0.25f), travelled);
+            handle.ShowLine(head - travelled.normalized * length, head, LaunchWave.Strength(0.25f));
+            Source(source, head);
         }
 
-        static void Aura(ZoneHandle zone, ZoneKind kind, Vector3 position, float health)
+        static void Aura(GroundHandle handle, GroundAura.Mark mark, Vector3 position, float health)
         {
-            float strength = GroundAura.Strength(kind, health);
+            float strength = GroundAura.Strength(mark, health);
             if (strength <= 0f)
             {
-                zone.Clear();
+                handle.Hide();
                 return;
             }
 
-            zone.Refresh(kind, position, GroundAura.Radius(kind, health), strength);
+            handle.Show(position, GroundAura.Radius(mark, health), strength);
         }
 
         // The ground state from above, north up: green grass, grey ash, straw where it died, bright lime where it

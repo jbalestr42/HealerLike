@@ -3,32 +3,16 @@ using UnityEngine;
 
 namespace HealerLike.Render.Zones
 {
-    // The values are read by the shaders, do not renumber them
+    // What the tuft compute and the heal ring read from the zone buffer: heal lift and ring, hostile spikes, a
+    // range preview's lift and a bruise's sink. The values are read by the shaders, do not renumber them.
     public enum ZoneKind
     {
         None = 0,
         Heal = 1,
         Hostile = 2,
         Range = 3,
-        Bruise = 4,
-        Launch = 5,
-        Trample = 6,
-        // A blast ring: an impact throwing the grass outward
-        Shock = 7,
-        // Grass burnt to ash around a rocky enemy, shrinking as its health falls
-        Ash = 8,
-        // Grass dying around an ally, spreading as its health falls
-        Wilt = 9,
-        // A cell a buff blesses: lush, softly lit grass while the buff lasts
-        Boost = 10,
-        // A poisoned creature's grass sickens around it
-        Blight = 11,
-        // A slowed creature's grass frosts over and stiffens
-        Frost = 12,
-        // A lightning bolt's jagged burn from position along the heading for radius
-        Scorch = 13,
-        // An enemy area about to land: the grass in it shivers, harder the closer it is
-        Tremble = 14
+        // Everything else the grass shows goes through Ground, not the zones
+        Bruise = 4
     }
 
     // Matches the 32 bytes element of _HLZones in ZoneData.hlsl
@@ -40,7 +24,7 @@ namespace HealerLike.Render.Zones
         [FieldOffset(16)] public int kind;
         [FieldOffset(20)] public float strength;
         [FieldOffset(24)] public float age;
-        // Launch: the shot's XZ heading encoded as uint turns, zero for the other kinds
+        // Unused, zero; it keeps the element at the 32 bytes the shaders read
         [FieldOffset(28)] public uint reserved;
 
         public static readonly int Stride = 32;

@@ -1,4 +1,4 @@
-using HealerLike.Render.Zones;
+using HealerLike.Render.Grass;
 using UnityEngine;
 
 namespace HealerLike.Render.Stage
@@ -6,13 +6,13 @@ namespace HealerLike.Render.Stage
     // A finger or the mouse drawn through the grass parts it. A press that starts on the interface or on a
     // creature is someone else's gesture and brushes nothing; one that starts on open ground brushes the grass
     // along the pointer's path on the board plane for as long as it is held.
-    public class PointerBrush : MonoBehaviour, IZoneBody
+    public class PointerBrush : MonoBehaviour, IGroundBody
     {
         // In cells: how wide a finger brushes, and how hard it presses
         public static readonly float BrushRadius = 0.18f;
         public static readonly float BrushPress = 0.35f;
 
-        ZoneRegistry _zones;
+        Ground _ground;
         Camera _camera;
         StageTouchInput _touch;
         float _groundY;
@@ -26,23 +26,16 @@ namespace HealerLike.Render.Stage
         bool _isBrushing;
         public bool isBrushing { get { return _isBrushing; } }
 
-        public void Init(ZoneRegistry zones, Camera camera, float groundY, float cellSize)
+        public void Init(Ground ground, Camera camera, float groundY, float cellSize)
         {
-            if (_zones != null)
-            {
-                _zones.RemoveBody(this);
-            }
-
-            _zones = zones;
+            _ground?.RemoveBody(this);
+            _ground = ground;
             _camera = camera;
             _groundY = groundY;
             _cellSize = RenderMath.IsPositive(cellSize) ? cellSize : 1f;
             _isBrushing = false;
             _hasPoint = false;
-            if (_zones != null)
-            {
-                _zones.AddBody(this);
-            }
+            _ground?.AddBody(this);
         }
 
         void Update()
@@ -163,10 +156,7 @@ namespace HealerLike.Render.Stage
 
         void OnDestroy()
         {
-            if (_zones != null)
-            {
-                _zones.RemoveBody(this);
-            }
+            _ground?.RemoveBody(this);
         }
     }
 }

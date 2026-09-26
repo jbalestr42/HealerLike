@@ -610,7 +610,7 @@ public class GrassDrawTests
         TestHelpers.SetPrivateField(field, "_lookMaterial", tuftMaterial);
         TestHelpers.SetPrivateField(field, "_ringMaterial", ring);
         registry.PublishFrame(0f);
-        field.UpdateField(registry);
+        field.UpdateField(registry, new Ground());
         return field;
     }
 }

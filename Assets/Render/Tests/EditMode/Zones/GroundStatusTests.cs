@@ -1,3 +1,4 @@
+using HealerLike.Render.Grass;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -11,17 +12,16 @@ public class GroundStatusTests
     static readonly string slowPath = "Assets/Data/EntityItems/SlowItem/BuffHandlerFactory.asset";
 
     GameObject _root;
-    ZoneRegistry _zones;
+    Ground _ground;
     GroundStatus _status;
 
     [SetUp]
     public void SetUp()
     {
         _root = new GameObject("status");
-        _zones = _root.AddComponent<ZoneRegistry>();
-        _zones.Init(new ZoneFakeUpload());
+        _ground = new Ground();
         _status = _root.AddComponent<GroundStatus>();
-        _status.Init(null, _zones, 1f);
+        _status.Init(null, _ground, 1f);
     }
 
     [TearDown]
@@ -37,16 +37,10 @@ public class GroundStatusTests
         return factory;
     }
 
-    int Count(ZoneKind kind)
+    // What the grass under the creature is asked for: w blight, z below zero frost
+    Vector4 State()
     {
-        _zones.PublishFrame(0f);
-        int count = 0;
-        foreach (Zone zone in _zones.snapshot)
-        {
-            count += zone.kind == (int)kind ? 1 : 0;
-        }
-
-        return count;
+        return GroundProbe.State(_ground, _root.transform.position);
     }
 
     [Test]
@@ -72,14 +66,14 @@ public class GroundStatusTests
         _status.Refresh();
 
         Assert.IsTrue(_status.isPoisoned);
-        Assert.AreEqual(1, Count(ZoneKind.Blight));
-        Assert.AreEqual(0, Count(ZoneKind.Frost));
+        Assert.AreEqual(1f, State().w, 1e-5f);
+        Assert.AreEqual(0f, State().z);
 
         _status.OnStopped(poison);
         _status.Refresh();
 
         Assert.IsFalse(_status.isPoisoned);
-        Assert.AreEqual(0, Count(ZoneKind.Blight));
+        Assert.AreEqual(0f, State().w);
     }
 
     [Test]
@@ -89,7 +83,7 @@ public class GroundStatusTests
         _status.Refresh();
 
         Assert.IsTrue(_status.isSlowed);
-        Assert.AreEqual(1, Count(ZoneKind.Frost));
+        Assert.AreEqual(-1f, State().z, 1e-5f);
     }
 
     [Test]

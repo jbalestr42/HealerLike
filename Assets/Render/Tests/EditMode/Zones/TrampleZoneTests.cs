@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HealerLike.Render.Grass;
 using NUnit.Framework;
 using HealerLike.Render.Creatures;
 using UnityEngine;
@@ -20,7 +21,7 @@ public class TrampleZoneTests
 {
     GameObject _root;
     GameObject _obstacle;
-    ZoneRegistry _registry;
+    Ground _ground;
     TrampleZone _zone;
     CreatureRecipe _recipe;
     TrampleRigTestHost _host;
@@ -30,8 +31,7 @@ public class TrampleZoneTests
     {
         _root = new GameObject("zones");
         _obstacle = new GameObject("obstacle");
-        _registry = _root.AddComponent<ZoneRegistry>();
-        _registry.Init(new ZoneFakeUpload());
+        _ground = new Ground();
         _zone = _obstacle.AddComponent<TrampleZone>();
     }
 
@@ -44,13 +44,29 @@ public class TrampleZoneTests
         Object.DestroyImmediate(_root);
     }
 
-    [Test]
-    public void Refresh_ObstacleMovesOrTurnsInvalid_UpdatesOneHandleAndRemovesIt()
+    // The obstacle's disc on the ground this frame, eased in, or none
+    bool Disc(out GroundStamp disc)
     {
-        _zone.Init(_registry);
+        _ground.Advance(1f);
+        foreach (GroundStamp stamp in GroundProbe.Stamps(_ground))
+        {
+            if (stamp.kind == GroundStampKind.Disc)
+            {
+                disc = stamp;
+                return true;
+            }
+        }
+
+        disc = default;
+        return false;
+    }
+
+    [Test]
+    public void Refresh_ObstacleMovesOrTurnsInvalid_MovesItsOneDiscAndHidesIt()
+    {
+        _zone.Init(_ground);
         _zone.Refresh();
-        _registry.PublishFrame(1f);
-        Assert.AreEqual((int)ZoneKind.Trample, _registry.snapshot[0].kind);
+        Assert.IsTrue(Disc(out _));
 
         _obstacle.transform.position = Vector3.forward;
         _zone.radius = 2f;
@@ -59,35 +75,35 @@ public class TrampleZoneTests
             _zone.Refresh();
         }
 
-        _registry.PublishFrame(1f);
-        Assert.AreEqual(1, _registry.count);
-        Assert.AreEqual(Vector3.forward, _registry.snapshot[0].position);
-        Assert.AreEqual(2, _registry.snapshot[0].radius);
+        Assert.AreEqual(1, _ground.heldCount);
+        Assert.IsTrue(Disc(out GroundStamp disc));
+        Assert.AreEqual(new Vector2(0f, 1f), new Vector2(disc.centreRadius.x, disc.centreRadius.y));
+        Assert.AreEqual(2f, disc.centreRadius.z);
 
         _zone.radius = float.NaN;
         _zone.Refresh();
-        Assert.AreEqual(0, _registry.liveCount);
+        Assert.IsFalse(Disc(out _));
 
         _zone.radius = 1f;
         _zone.Refresh();
-        Assert.AreEqual(1, _registry.liveCount);
+        Assert.IsTrue(Disc(out _));
 
         _zone.enabled = false;
         TestHelpers.InvokePrivate(_zone, "OnDisable");
-        Assert.AreEqual(0, _registry.liveCount);
+        Assert.IsFalse(Disc(out _));
 
         _zone.enabled = true;
         _zone.Refresh();
-        Assert.AreEqual(1, _registry.liveCount);
+        Assert.IsTrue(Disc(out _));
 
         TestHelpers.InvokePrivate(_zone, "OnDestroy");
-        Assert.AreEqual(0, _registry.liveCount);
+        Assert.AreEqual(0, _ground.heldCount);
     }
 
     [Test]
     public void Refresh_Steady_AllocatesNothing()
     {
-        _zone.Init(_registry);
+        _zone.Init(_ground);
         for (int i = 0; i < 100; i++)
         {
             _zone.Refresh();
@@ -104,20 +120,17 @@ public class TrampleZoneTests
     }
 
     [Test]
-    public void Init_RecreatedRegistry_MovesTheFootprintThere()
+    public void Init_AnotherGround_MovesTheObstacleThere()
     {
-        _zone.Init(_registry);
+        _zone.Init(_ground);
         _zone.Refresh();
-        Object.DestroyImmediate(_root);
-        _zone.Refresh();
-        _root = new GameObject("replacement");
-        _registry = _root.AddComponent<ZoneRegistry>();
-        _registry.Init(new ZoneFakeUpload());
+        Ground replacement = new Ground();
 
-        _zone.Init(_registry);
+        _zone.Init(replacement);
         _zone.Refresh();
 
-        Assert.AreEqual(1, _registry.liveCount);
+        Assert.AreEqual(0, _ground.heldCount);
+        Assert.AreEqual(1, replacement.heldCount);
     }
 
     [Test]
@@ -137,7 +150,7 @@ public class TrampleZoneTests
         _host = _obstacle.AddComponent<TrampleRigTestHost>();
         Assert.IsTrue(_host.Build(_recipe, RenderTestAssets.LoadLookMaterial()));
         _host.rig.Tick(0f, 0f, new FootFrame(_obstacle.transform.position, Vector3.up, 1f));
-        _zone.InitFootprint(_registry);
+        _zone.InitFootprint(_ground);
     }
 
     [Test]
@@ -156,8 +169,8 @@ public class TrampleZoneTests
         _host.rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
         _zone.Refresh();
         Assert.That(_zone.radius, Is.EqualTo(1.8f + 0.08f + TrampleZone.Margin).Within(0.0001f));
-        Assert.AreEqual(0, Count(ZoneKind.Trample), "A creature presses as a body, not as a disc.");
-        Assert.AreEqual(1, _registry.bodyCount);
+        Assert.IsFalse(Disc(out _), "A creature presses as a body, not as a disc.");
+        Assert.AreEqual(1, _ground.bodyCount);
         for (int i = 0; i < 100; i++) _zone.Refresh();
         long before = System.GC.GetAllocatedBytesForCurrentThread();
         for (int i = 0; i < 1000; i++) _zone.Refresh();
@@ -203,18 +216,18 @@ public class TrampleZoneTests
         _recipe.idle = default;
         BuildRig();
         _zone.Refresh();
-        _zone.InitFootprint(_registry);
+        _zone.InitFootprint(_ground);
 
         Assert.IsTrue(_zone.isBody);
-        Assert.AreEqual(1, _registry.bodyCount);
-        Assert.AreEqual(0, Count(ZoneKind.Trample));
+        Assert.AreEqual(1, _ground.bodyCount);
+        Assert.IsFalse(Disc(out _));
 
         TestHelpers.InvokePrivate(_zone, "OnDisable");
-        Assert.AreEqual(0, _registry.bodyCount, "A disabled body stops pressing.");
+        Assert.AreEqual(0, _ground.bodyCount, "A disabled body stops pressing.");
         TestHelpers.InvokePrivate(_zone, "OnEnable");
-        Assert.AreEqual(1, _registry.bodyCount);
+        Assert.AreEqual(1, _ground.bodyCount);
         TestHelpers.InvokePrivate(_zone, "OnDestroy");
-        Assert.AreEqual(0, _registry.bodyCount);
+        Assert.AreEqual(0, _ground.bodyCount);
     }
 
     [Test]
@@ -265,11 +278,11 @@ public class TrampleZoneTests
     [Test]
     public void AppendCapsules_Obstacle_IsNoBody()
     {
-        _zone.Init(_registry);
+        _zone.Init(_ground);
 
         Assert.IsFalse(_zone.isBody);
         Assert.AreEqual(0, _zone.AppendCapsules(new BodyCapsule[4], 0));
-        Assert.AreEqual(0, _registry.bodyCount);
+        Assert.AreEqual(0, _ground.bodyCount);
     }
 
     // A root-legged creature standing at the origin, its landing on its first refresh already counted
@@ -284,22 +297,10 @@ public class TrampleZoneTests
         BuildRig();
     }
 
-    int CountShocks()
+    // Landing rings playing: out of the feet and round the body
+    int CountRings()
     {
-        return Count(ZoneKind.Shock);
-    }
-
-    // Zones of one kind in the published snapshot; landings add shock pulses beside the footprints
-    int Count(ZoneKind kind)
-    {
-        _registry.PublishFrame(0f);
-        int count = 0;
-        foreach (Zone zone in _registry.snapshot)
-        {
-            count += zone.kind == (int)kind ? 1 : 0;
-        }
-
-        return count;
+        return _ground.Playing(_ground.vocabulary.footRing) + _ground.Playing(_ground.vocabulary.bodyRing);
     }
 
     [Test]
@@ -310,7 +311,8 @@ public class TrampleZoneTests
         _zone.Refresh();
 
         Assert.AreEqual(1, _zone.landings);
-        Assert.AreEqual(6 + 1, CountShocks());
+        Assert.AreEqual(6, _ground.Playing(_ground.vocabulary.footRing));
+        Assert.AreEqual(1, _ground.Playing(_ground.vocabulary.bodyRing));
         _zone.Refresh();
         Assert.AreEqual(1, _zone.landings, "Standing still lands once.");
     }
@@ -409,23 +411,24 @@ public class TrampleZoneTests
     }
 
     [Test]
-    public void Refresh_InitWithZones_AddsOneFootprintThere()
+    public void Refresh_InitWithGround_ShowsOneDiscAndLandsOnce()
     {
-        _zone.Init(_registry);
+        _zone.Init(_ground);
         _zone.Refresh();
         _zone.Refresh();
 
-        Assert.AreEqual(1, Count(ZoneKind.Trample));
-        Assert.AreEqual(1, Count(ZoneKind.Shock), "An obstacle lands once with a ring round itself.");
+        Assert.AreEqual(1, CountRings(), "An obstacle lands once with a ring round itself.");
+        Assert.IsTrue(Disc(out _));
     }
 
     [Test]
-    public void Refresh_InitWithoutZones_AddsNothing()
+    public void Refresh_InitWithoutGround_AddsNothing()
     {
         _zone.Init(null);
         _zone.Refresh();
 
-        Assert.AreEqual(0, _registry.liveCount);
+        Assert.AreEqual(0, _ground.heldCount);
+        Assert.AreEqual(0, _zone.landings);
     }
 }
 

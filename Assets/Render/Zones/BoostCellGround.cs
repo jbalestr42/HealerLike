@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HealerLike.Render.Grass;
 using UnityEngine;
 
 namespace HealerLike.Render.Zones
@@ -14,25 +15,25 @@ namespace HealerLike.Render.Zones
         struct Patch
         {
             public BoostCell cell;
-            public ZoneHandle zone;
+            public GroundHandle patch;
         }
 
         readonly List<Patch> _patches = new List<Patch>();
         readonly List<BoostCell> _found = new List<BoostCell>();
         Transform _owner;
         Collider _hold;
-        ZoneRegistry _zones;
+        Ground _ground;
         float _cellSize = 1f;
         int _childrenKey = -1;
 
         public int patchCount { get { return _patches.Count; } }
 
-        public void Init(Transform owner, ZoneRegistry zones, float cellSize)
+        public void Init(Transform owner, Ground ground, float cellSize)
         {
             Clear();
             _owner = owner;
             _hold = EntityHold.Find(owner);
-            _zones = zones;
+            _ground = ground;
             _cellSize = RenderMath.IsPositive(cellSize) ? cellSize : 1f;
             _childrenKey = -1;
         }
@@ -44,7 +45,7 @@ namespace HealerLike.Render.Zones
 
         public void Refresh()
         {
-            if (!_owner || _zones == null)
+            if (!_owner || _ground == null)
             {
                 return;
             }
@@ -63,7 +64,7 @@ namespace HealerLike.Render.Zones
                 Patch patch = _patches[i];
                 if (!patch.cell || !patch.cell.gameObject.activeInHierarchy)
                 {
-                    patch.zone.Clear();
+                    patch.patch.Release();
                     _patches.RemoveAt(i);
                     continue;
                 }
@@ -71,11 +72,11 @@ namespace HealerLike.Render.Zones
                 // The cells ride along with a held creature; they light the grass again once it lands
                 if (EntityHold.IsHeld(_hold))
                 {
-                    patch.zone.Clear();
+                    patch.patch.Hide();
                     continue;
                 }
 
-                patch.zone.Refresh(ZoneKind.Boost, patch.cell.transform.position, PatchRadius * _cellSize, 1f);
+                patch.patch.Show(patch.cell.transform.position, PatchRadius * _cellSize, 1f);
             }
         }
 
@@ -98,9 +99,7 @@ namespace HealerLike.Render.Zones
                     renderer.enabled = false;
                 }
 
-                ZoneHandle zone = new ZoneHandle();
-                zone.Init(_zones);
-                _patches.Add(new Patch { cell = cell, zone = zone });
+                _patches.Add(new Patch { cell = cell, patch = _ground.Hold(_ground.vocabulary.boost) });
             }
         }
 
@@ -132,7 +131,7 @@ namespace HealerLike.Render.Zones
         {
             foreach (Patch patch in _patches)
             {
-                patch.zone.Clear();
+                patch.patch.Release();
             }
 
             _patches.Clear();

@@ -31,16 +31,6 @@ namespace HealerLike.Render.Zones
             }
         }
 
-        // The same, carrying an XZ heading
-        public void Refresh(ZoneKind kind, Vector3 position, float radius, float strength, Vector3 direction)
-        {
-            Refresh(kind, position, radius, strength);
-            if (_zones != null)
-            {
-                _zones.SetDirection(_handle, direction);
-            }
-        }
-
         public void Clear()
         {
             if (_zones != null)

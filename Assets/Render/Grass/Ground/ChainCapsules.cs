@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace HealerLike.Render.Zones
+namespace HealerLike.Render.Grass
 {
     // A chain of joints, a liana, as brushing capsules along its real curve: consecutive joints grouped so the
     // whole chain fits in at most maxSegments capsules, each skipped where it flies above the ceiling

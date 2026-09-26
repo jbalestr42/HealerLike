@@ -1,4 +1,4 @@
-using HealerLike.Render.Zones;
+using HealerLike.Render.Grass;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -9,7 +9,7 @@ public class PointerBrushTests
 {
     GameObject _go;
     Camera _camera;
-    ZoneRegistry _zones;
+    Ground _ground;
     PointerBrush _brush;
 
     [SetUp]
@@ -19,10 +19,9 @@ public class PointerBrushTests
         _camera = new GameObject("camera").AddComponent<Camera>();
         _camera.transform.SetPositionAndRotation(new Vector3(0f, 10f, 0f), Quaternion.Euler(90f, 0f, 0f));
         _camera.pixelRect = new Rect(0f, 0f, 200f, 200f);
-        _zones = _go.AddComponent<ZoneRegistry>();
-        _zones.Init(new ZoneFakeUpload());
+        _ground = new Ground();
         _brush = _go.AddComponent<PointerBrush>();
-        _brush.Init(_zones, _camera, 0f, 1f);
+        _brush.Init(_ground, _camera, 0f, 1f);
     }
 
     [TearDown]
@@ -47,7 +46,7 @@ public class PointerBrushTests
         _brush.Point(true, false, new Vector2(140f, 100f));
         BodyCapsule[] into = new BodyCapsule[2];
 
-        Assert.AreEqual(1, _zones.bodyCount, "The brush is a body of the zones.");
+        Assert.AreEqual(1, _ground.bodyCount, "The brush is a body on the ground.");
         Assert.IsTrue(_brush.isBrushing);
         Assert.AreEqual(1, _brush.AppendCapsules(into, 0));
         Assert.Greater(into[0].end.x - into[0].start.x, 0.5f, "From last frame's point to this one's.");

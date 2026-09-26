@@ -1,3 +1,4 @@
+using HealerLike.Render.Grass;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -8,18 +9,17 @@ public class BoostCellGroundTests
 {
     GameObject _root;
     GameObject _owner;
-    ZoneRegistry _zones;
+    Ground _groundService;
     BoostCellGround _ground;
 
     [SetUp]
     public void SetUp()
     {
         _root = new GameObject("zones");
-        _zones = _root.AddComponent<ZoneRegistry>();
-        _zones.Init(new ZoneFakeUpload());
+        _groundService = new Ground();
         _owner = new GameObject("entity");
         _ground = _root.AddComponent<BoostCellGround>();
-        _ground.Init(_owner.transform, _zones, 1f);
+        _ground.Init(_owner.transform, _groundService, 1f);
     }
 
     [TearDown]
@@ -47,20 +47,14 @@ public class BoostCellGroundTests
         new GameObject("not a cell").transform.SetParent(_owner.transform, false);
 
         _ground.Refresh();
-        _zones.PublishFrame(0f);
 
         Assert.AreEqual(2, _ground.patchCount);
         Assert.IsFalse(first.GetComponent<Renderer>().enabled, "The flat tile is hidden.");
-        Assert.AreEqual(2, _zones.count);
-        bool isUnderFirst = false;
-        foreach (Zone zone in _zones.snapshot)
-        {
-            Assert.AreEqual((int)ZoneKind.Boost, zone.kind);
-            Assert.AreEqual(BoostCellGround.PatchRadius, zone.radius, 1e-6f);
-            isUnderFirst |= zone.position == new Vector3(1f, 0f, 1f);
-        }
-
-        Assert.IsTrue(isUnderFirst, "A patch sits under each cell.");
+        Assert.AreEqual(2, GroundProbe.Count(_groundService, GroundStampKind.Aura));
+        Vector4 lit = GroundProbe.State(_groundService, new Vector3(1f, 0f, 1f));
+        Assert.AreEqual(_groundService.vocabulary.boost.vitality, lit.y, 1e-5f, "Lush under the cell.");
+        Assert.AreEqual(Vector4.zero, GroundProbe.State(_groundService, new Vector3(1f, 0f, 2f)),
+            "A soft patch inside its cell.");
     }
 
     [Test]
@@ -73,7 +67,7 @@ public class BoostCellGroundTests
         _ground.Refresh();
 
         Assert.AreEqual(0, _ground.patchCount);
-        Assert.AreEqual(0, _zones.liveCount);
+        Assert.AreEqual(0, _groundService.heldCount);
     }
 
     [Test]
@@ -102,7 +96,7 @@ public class BoostCellGroundTests
         }
 
         Assert.AreEqual(1, _ground.patchCount);
-        Assert.AreEqual(1, _zones.liveCount);
+        Assert.AreEqual(1, _groundService.heldCount);
     }
 
     [Test]
@@ -113,7 +107,7 @@ public class BoostCellGroundTests
 
         TestHelpers.InvokePrivate(_ground, "OnDisable");
 
-        Assert.AreEqual(0, _zones.liveCount);
+        Assert.AreEqual(0, _groundService.heldCount);
     }
 }
 

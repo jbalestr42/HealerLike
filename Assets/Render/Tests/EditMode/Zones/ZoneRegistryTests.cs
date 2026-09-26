@@ -46,7 +46,6 @@ public class ZoneFakeUpload : IZoneUpload
 public class ZoneRegistryTests
 {
     static readonly string overflowWarning = "[ZoneRegistry] Cosmetic zone capacity exceeded; "
-                                             + "feedback reserved before decorative footprints; "
                                              + "first registered wins within each kind.";
 
     GameObject _go;
@@ -142,37 +141,28 @@ public class ZoneRegistryTests
     }
 
     [Test]
-    public void PublishFrame_FootprintOverflow_ReservesFeedbackAndReturnsCapacity()
+    public void PublishFrame_Overflow_KeepsTheFirstRegistered()
     {
         for (int i = 0; i < 80; i++)
         {
-            _registry.Add(ZoneKind.Trample, Vector3.right * i, 1f, 1f);
+            _registry.Add(ZoneKind.Range, Vector3.right * i, 1f, 1f);
         }
 
         int heal = _registry.AddPulse(ZoneKind.Heal, Vector3.right * 100f, 2f, 1f, ZoneRegistry.HealPulseSeconds);
-        _registry.AddPulse(ZoneKind.Hostile, Vector3.right * 101f, 2f, 1f, 0.8f);
         LogAssert.Expect(LogType.Error, overflowWarning);
 
         _registry.PublishFrame(0.1f);
 
         Assert.AreEqual(ZonePacker.MaxZones, _registry.count);
-        Assert.AreEqual(82, _registry.liveCount);
-        Assert.AreEqual(18, _registry.overflowCount);
-        for (int i = 0; i < 62; i++)
+        Assert.AreEqual(81, _registry.liveCount);
+        Assert.AreEqual(17, _registry.overflowCount);
+        for (int i = 0; i < ZonePacker.MaxZones; i++)
         {
             Assert.AreEqual(i, _registry.snapshot[i].position.x);
         }
 
-        Assert.AreEqual((int)ZoneKind.Heal, _registry.snapshot[62].kind);
-        Assert.AreEqual((int)ZoneKind.Hostile, _registry.snapshot[63].kind);
-
         _registry.PublishFrame(0.4f);
         Assert.IsFalse(_registry.Contains(heal));
-        Assert.AreEqual(62, _registry.snapshot[62].position.x);
-        Assert.AreEqual((int)ZoneKind.Hostile, _registry.snapshot[63].kind);
-
-        _registry.PublishFrame(0.4f);
-        Assert.AreEqual(63, _registry.snapshot[63].position.x);
     }
 
     [Test]
@@ -270,106 +260,6 @@ public class ZoneRegistryTests
 
         Assert.AreEqual(0, _upload.calls.Count);
         Assert.AreEqual(0, _registry.count);
-    }
-
-    [Test]
-    public void AddScorch_Bolt_RunsFromOnePointToTheOtherAndFades()
-    {
-        _registry.AddScorch(new Vector3(1f, 0.5f, 1f), new Vector3(1f, 2f, 4f));
-        _registry.PublishFrame(0f);
-
-        Assert.AreEqual((int)ZoneKind.Scorch, _registry.snapshot[0].kind);
-        Assert.AreEqual(3f, _registry.snapshot[0].radius, 1e-5f);
-        Assert.AreEqual(ZonePacker.EncodeDirection(Vector3.forward), _registry.snapshot[0].reserved);
-
-        _registry.PublishFrame(ZoneRegistry.ScorchSeconds);
-        Assert.AreEqual(0, _registry.count);
-    }
-
-    [Test]
-    public void SetDirection_Heading_IsKeptThroughLaterUpdates()
-    {
-        int handle = _registry.Add(ZoneKind.Launch, Vector3.zero, 1f, 1f);
-
-        _registry.SetDirection(handle, Vector3.forward);
-        _registry.UpdateZone(handle, ZoneKind.Launch, Vector3.right, 1.2f, 1f);
-        _registry.SetDirection(handle, Vector3.up);
-        _registry.SetDirection(handle, new Vector3(float.NaN, 0f, 0f));
-        _registry.PublishFrame(0f);
-
-        Assert.AreEqual(ZonePacker.EncodeDirection(Vector3.forward), _registry.snapshot[0].reserved,
-            "Flat or invalid directions leave the heading.");
-        Assert.AreEqual(Vector3.right, _registry.snapshot[0].position);
-    }
-
-    class FakeBody : IZoneBody
-    {
-        public int reported;
-        public float radius;
-
-        public int AppendCapsules(BodyCapsule[] into, int start)
-        {
-            int written = 0;
-            for (int i = 0; i < 2 && start + i < into.Length; i++)
-            {
-                into[start + i] = new BodyCapsule { radius = radius };
-                written++;
-            }
-
-            return reported != 0 ? reported : written;
-        }
-    }
-
-    [Test]
-    public void AddBody_Twice_RegistersOnceAndGathersInOrder()
-    {
-        GameObject go = new GameObject("bodies");
-        try
-        {
-            ZoneRegistry registry = go.AddComponent<ZoneRegistry>();
-            registry.Init(new ZoneFakeUpload());
-            FakeBody first = new FakeBody { radius = 1f };
-            FakeBody second = new FakeBody { radius = 2f };
-            registry.AddBody(first);
-            registry.AddBody(first);
-            registry.AddBody(second);
-            registry.AddBody(null);
-            BodyCapsule[] into = new BodyCapsule[8];
-
-            Assert.AreEqual(2, registry.bodyCount);
-            Assert.AreEqual(4, registry.GatherBodies(into));
-            Assert.AreEqual(1f, into[1].radius);
-            Assert.AreEqual(2f, into[2].radius);
-            Assert.AreEqual(3, registry.GatherBodies(new BodyCapsule[3]), "Stops where the array ends.");
-            Assert.AreEqual(0, registry.GatherBodies(null));
-
-            registry.RemoveBody(first);
-            Assert.AreEqual(1, registry.bodyCount);
-            registry.Release();
-            Assert.AreEqual(1, registry.bodyCount, "Bodies outlive a release; they only re-register on enable.");
-        }
-        finally
-        {
-            Object.DestroyImmediate(go);
-        }
-    }
-
-    [Test]
-    public void GatherBodies_BodyOverReportsItsCount_StaysWithinTheArray()
-    {
-        GameObject go = new GameObject("bodies");
-        try
-        {
-            ZoneRegistry registry = go.AddComponent<ZoneRegistry>();
-            registry.Init(new ZoneFakeUpload());
-            registry.AddBody(new FakeBody { reported = 99 });
-
-            Assert.AreEqual(4, registry.GatherBodies(new BodyCapsule[4]));
-        }
-        finally
-        {
-            Object.DestroyImmediate(go);
-        }
     }
 }
 

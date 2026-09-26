@@ -18,11 +18,8 @@ namespace HealerLike.Render.Zones
         }
 
         public static readonly float HealPulseSeconds = 0.45f;
-        public static readonly float ShockSeconds = 0.6f;
-        public static readonly float ScorchSeconds = 0.6f;
 
         readonly List<Entry> _entries = new List<Entry>();
-        readonly List<IZoneBody> _bodies = new List<IZoneBody>();
         readonly Zone[] _packed = new Zone[ZonePacker.MaxZones];
         Zone[] _source = new Zone[ZonePacker.MaxZones];
         IZoneUpload _upload;
@@ -36,8 +33,6 @@ namespace HealerLike.Render.Zones
         public int overflowCount { get { return _overflowCount; } }
 
         public int liveCount { get { return _entries.Count; } }
-
-        public int bodyCount { get { return _bodies.Count; } }
 
         public GraphicsBuffer buffer { get { return _upload != null ? _upload.buffer : null; } }
 
@@ -118,37 +113,6 @@ namespace HealerLike.Render.Zones
             return handle;
         }
 
-        // A lightning bolt's burn along the ground from one point to another, fading over ScorchSeconds
-        public int AddScorch(Vector3 from, Vector3 to)
-        {
-            Vector3 path = to - from;
-            path.y = 0f;
-            int handle = AddPulse(ZoneKind.Scorch, from, path.magnitude, 1f, ScorchSeconds);
-            SetDirection(handle, path);
-            return handle;
-        }
-
-        // The XZ heading a zone carries, kept through later updates; a flat or invalid direction leaves it
-        public void SetDirection(int handle, Vector3 direction)
-        {
-            int i = Find(handle);
-            direction.y = 0f;
-            if (i < 0 || !RenderMath.IsFinite(direction) || direction.sqrMagnitude < 1e-10f)
-            {
-                return;
-            }
-
-            Entry entry = _entries[i];
-            entry.zone.reserved = ZonePacker.EncodeDirection(direction);
-            _entries[i] = entry;
-        }
-
-        // A blast ring out from position to radius, fading over ShockSeconds
-        public int AddShock(Vector3 position, float radius, float strength)
-        {
-            return AddPulse(ZoneKind.Shock, position, radius, strength, ShockSeconds);
-        }
-
         // Keeps the order and the age, an invalid value removes the zone
         public void UpdateZone(int handle, ZoneKind kind, Vector3 position, float radius, float strength)
         {
@@ -166,7 +130,6 @@ namespace HealerLike.Render.Zones
                 return;
             }
 
-            zone.reserved = entry.zone.reserved;
             entry.initialStrength = zone.strength;
             if (entry.duration > 0)
             {
@@ -189,37 +152,6 @@ namespace HealerLike.Render.Zones
         public bool Contains(int handle)
         {
             return Find(handle) >= 0;
-        }
-
-        // Bodies stay registered until removed; each is asked for its capsules when the grass gathers them
-        public void AddBody(IZoneBody body)
-        {
-            if (body != null && !_bodies.Contains(body))
-            {
-                _bodies.Add(body);
-            }
-        }
-
-        public void RemoveBody(IZoneBody body)
-        {
-            _bodies.Remove(body);
-        }
-
-        // Every body's capsules for this frame, in registration order, as many as fit
-        public int GatherBodies(BodyCapsule[] into)
-        {
-            if (into == null)
-            {
-                return 0;
-            }
-
-            int count = 0;
-            for (int i = 0; i < _bodies.Count && count < into.Length; i++)
-            {
-                count += Mathf.Clamp(_bodies[i].AppendCapsules(into, count), 0, into.Length - count);
-            }
-
-            return count;
         }
 
         public void PublishFrame(float deltaTime)
@@ -271,14 +203,11 @@ namespace HealerLike.Render.Zones
                 _entries.RemoveRange(written, _entries.Count - written);
             }
 
-            int selected = ZonePacker.ReserveFeedback(_source, written);
-            _count = ZonePacker.Pack(new ReadOnlySpan<Zone>(_source, 0, selected), _packed, out _, out int overflow);
-            overflow += written - selected;
+            _count = ZonePacker.Pack(new ReadOnlySpan<Zone>(_source, 0, written), _packed, out _, out int overflow);
             _overflowCount = overflow;
             if (overflow > 0 && !_overflowing)
             {
                 Debug.LogError("[ZoneRegistry] Cosmetic zone capacity exceeded; "
-                                 + "feedback reserved before decorative footprints; "
                                  + "first registered wins within each kind.", this);
             }
 
@@ -309,7 +238,6 @@ namespace HealerLike.Render.Zones
                 _upload = null;
             }
 
-            // Bodies stay registered: they hold no GPU resource and re-registering is theirs only on enable
             _entries.Clear();
             Array.Clear(_packed, 0, _packed.Length);
             _count = 0;

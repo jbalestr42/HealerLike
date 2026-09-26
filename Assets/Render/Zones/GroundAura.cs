@@ -1,3 +1,4 @@
+using HealerLike.Render.Grass;
 using UnityEngine;
 
 namespace HealerLike.Render.Zones
@@ -7,6 +8,13 @@ namespace HealerLike.Render.Zones
     // that spreads and deepens as its health falls. The disc follows the creature and is gone with it.
     public class GroundAura : MonoBehaviour
     {
+        public enum Mark
+        {
+            None,
+            Ash,
+            Wilt
+        }
+
         // In cells: the ash around a rocky enemy at no health and what full health adds
         public static readonly float AshMinRadius = 0.4f;
         public static readonly float AshRadiusRange = 1.8f;
@@ -14,31 +22,38 @@ namespace HealerLike.Render.Zones
         public static readonly float WiltMinRadius = 0.5f;
         public static readonly float WiltRadiusRange = 1.4f;
 
-        readonly ZoneHandle _zone = new ZoneHandle();
+        GroundHandle _handle;
         ResourceAttribute _health;
         Collider _hold;
-        ZoneKind _kind;
         float _cellSize = 1f;
 
-        public ZoneKind kind { get { return _kind; } }
+        Mark _mark;
+        public Mark mark { get { return _mark; } }
+
+        public bool isShown { get { return _handle != null && _handle.isShown; } }
 
         // Enemies burn, allies wilt; any other side leaves the ground alone
-        public void Init(Entity entity, ZoneRegistry zones, float cellSize)
+        public void Init(Entity entity, Ground ground, float cellSize)
         {
             _health = entity != null ? entity.health : null;
             _hold = EntityHold.Find(entity);
-            _kind = ZoneKind.None;
+            _mark = Mark.None;
             if (entity != null && entity.entityType == Entity.EntityType.Computer)
             {
-                _kind = ZoneKind.Ash;
+                _mark = Mark.Ash;
             }
             else if (entity != null && entity.entityType == Entity.EntityType.Player)
             {
-                _kind = ZoneKind.Wilt;
+                _mark = Mark.Wilt;
             }
 
             _cellSize = RenderMath.IsPositive(cellSize) ? cellSize : 1f;
-            _zone.Init(zones);
+            _handle?.Release();
+            _handle = null;
+            if (ground != null && _mark != Mark.None)
+            {
+                _handle = ground.Hold(_mark == Mark.Ash ? ground.vocabulary.ash : ground.vocabulary.wilt);
+            }
         }
 
         void Update()
@@ -48,23 +63,20 @@ namespace HealerLike.Render.Zones
 
         public void Refresh()
         {
-            // A held creature paints nothing along its drag
-            if (!isActiveAndEnabled || _health == null || _kind == ZoneKind.None || EntityHold.IsHeld(_hold))
+            if (_handle == null)
             {
-                _zone.Clear();
+                return;
+            }
+
+            // A held creature paints nothing along its drag
+            if (!isActiveAndEnabled || _health == null || EntityHold.IsHeld(_hold))
+            {
+                _handle.Hide();
                 return;
             }
 
             float health = HealthShare(_health.Value, _health.Max);
-            float radius = Radius(_kind, health) * _cellSize;
-            float strength = Strength(_kind, health);
-            if (strength <= 0f || radius <= 0f)
-            {
-                _zone.Clear();
-                return;
-            }
-
-            _zone.Refresh(_kind, transform.position, radius, strength);
+            _handle.Show(transform.position, Radius(_mark, health) * _cellSize, Strength(_mark, health));
         }
 
         public static float HealthShare(float value, float max)
@@ -78,15 +90,15 @@ namespace HealerLike.Render.Zones
         }
 
         // In cells, for a health share
-        public static float Radius(ZoneKind kind, float health)
+        public static float Radius(Mark mark, float health)
         {
             health = Mathf.Clamp01(health);
-            if (kind == ZoneKind.Ash)
+            if (mark == Mark.Ash)
             {
                 return AshMinRadius + AshRadiusRange * health;
             }
 
-            if (kind == ZoneKind.Wilt)
+            if (mark == Mark.Wilt)
             {
                 return WiltMinRadius + WiltRadiusRange * (1f - health);
             }
@@ -95,15 +107,15 @@ namespace HealerLike.Render.Zones
         }
 
         // Ash burns fully while the enemy stands; an ally's grass dies as deep as its health is missing
-        public static float Strength(ZoneKind kind, float health)
+        public static float Strength(Mark mark, float health)
         {
             health = Mathf.Clamp01(health);
-            if (kind == ZoneKind.Ash)
+            if (mark == Mark.Ash)
             {
                 return health > 0f ? 1f : 0f;
             }
 
-            if (kind == ZoneKind.Wilt)
+            if (mark == Mark.Wilt)
             {
                 return 1f - health;
             }
@@ -113,12 +125,13 @@ namespace HealerLike.Render.Zones
 
         void OnDisable()
         {
-            _zone.Clear();
+            _handle?.Hide();
         }
 
         void OnDestroy()
         {
-            _zone.Clear();
+            _handle?.Release();
+            _handle = null;
         }
     }
 }

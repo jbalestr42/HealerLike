@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace HealerLike.Render.Zones
+namespace HealerLike.Render.Grass
 {
     // One piece of a body on the ground, in world space: the segment between two points, swollen by a radius. A
     // sphere has both ends at its centre. A solid piece presses the grass flat under it; a brushing one, like a
@@ -66,8 +66,8 @@ namespace HealerLike.Render.Zones
         }
     }
 
-    // Something with a shape on the ground that the grass parts around, asked once per published frame
-    public interface IZoneBody
+    // Something with a shape on the ground that the grass parts around, asked once a frame
+    public interface IGroundBody
     {
         // Writes this frame's capsules from start on, as many as fit, and returns how many it wrote
         int AppendCapsules(BodyCapsule[] into, int start);

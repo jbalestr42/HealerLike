@@ -51,14 +51,15 @@ namespace HealerLike.Render.Grass
             get { return (GroundStampKind)Mathf.RoundToInt(shape.w); }
         }
 
-        // A disc with a soft edge; wobble lets its rim wander inward so it never reads as a stamped circle
+        // A disc with a soft edge; wobble lets its rim wander inward so it never reads as a stamped circle. Its
+        // held push leans away from the centre, turned by turn radians counterclockwise seen from above.
         public static GroundStamp Disc(Vector2 centre, float radius, float outward, float crush, float edgeShare,
-                                       float wobble)
+                                       float wobble, float turn = 0f)
         {
             return new GroundStamp
             {
                 centreRadius = new Vector4(centre.x, centre.y, Mathf.Max(0f, radius), 0f),
-                push = new Vector4(0f, 0f, 0f, outward),
+                push = new Vector4(turn, 0f, 0f, outward),
                 shape = new Vector4(crush, Mathf.Clamp(edgeShare, 0.01f, 1f), Mathf.Clamp01(wobble),
                                     (float)GroundStampKind.Disc),
                 response = new Vector4(0f, 0f, 1f, 0f)
