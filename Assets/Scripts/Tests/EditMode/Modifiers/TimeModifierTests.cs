@@ -30,6 +30,18 @@ public class TimeModifierTests
     }
 
     [Test]
+    public void Init_InfiniteHandler_NeverFades()
+    {
+        // An infinite handler keeps duration at 0 (the field is hidden in the Inspector)
+        TimeModifier modifier = new TimeModifier { data = new TimeModifierData { value = 10f }, buffHandler = CreateHandler(DurationType.Infinite, 0f) };
+        modifier.Init(null, null);
+
+        TestHelpers.SetPrivateField(modifier, "_start", Time.time - 1000f);
+
+        Assert.AreEqual(10f, modifier.ApplyModifier(), 0.0001f);
+    }
+
+    [Test]
     public void Init_HandlerWithoutDuration_DefaultsToOneSecond()
     {
         TimeModifier modifier = new TimeModifier { data = new TimeModifierData { value = 10f }, buffHandler = CreateHandler(DurationType.Instant, 4f) };

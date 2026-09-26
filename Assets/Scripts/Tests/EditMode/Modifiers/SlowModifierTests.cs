@@ -30,6 +30,18 @@ public class SlowModifierTests
     }
 
     [Test]
+    public void Init_InfiniteHandler_NeverFades()
+    {
+        // An infinite handler keeps duration at 0 (the field is hidden in the Inspector)
+        SlowModifier modifier = new SlowModifier { data = new SlowModifierData { value = 0.5f }, buffHandler = CreateHandler(DurationType.Infinite, 0f) };
+        modifier.Init(null, null);
+
+        TestHelpers.SetPrivateField(modifier, "_start", Time.time - 1000f);
+
+        Assert.AreEqual(0.5f, modifier.ApplyModifier(), 0.0001f);
+    }
+
+    [Test]
     public void Init_HandlerWithoutDuration_DefaultsToOneSecond()
     {
         SlowModifier modifier = new SlowModifier { data = new SlowModifierData { value = 0.5f }, buffHandler = CreateHandler(DurationType.Instant, 10f) };
@@ -105,41 +117,42 @@ public class SlowModifierTests
 
         modifier.Stack(null, null);
 
-        float expectedStackFactor = Mathf.Log(2f + 1f) / 2f + 1f; // _stacks went from 1 to 2
-        Assert.AreEqual(expectedStackFactor, modifier.ApplyModifier(), 0.0001f); // decay reset to 0
+        Assert.AreEqual(1.3466f, modifier.ApplyModifier(), 0.0001f); // 2 stacks: ln(2)/2 + 1, decay reset
     }
 
     [Test]
-    public void Unstack_DecreasesStackFactor()
+    public void Stack_Twice_KeepsIncreasingWithDiminishingReturns()
     {
         SlowModifier modifier = CreateModifierBypassingConstructor(value: 1f, secondsElapsed: 0f, duration: 10f);
-        modifier.Stack(null, null); // _stacks = 2
 
-        modifier.Unstack(null, null); // _stacks = 1
+        modifier.Stack(null, null);
+        modifier.Stack(null, null);
 
-        float expectedStackFactor = Mathf.Log(1f + 1f) / 2f + 1f;
-        Assert.AreEqual(expectedStackFactor, modifier.ApplyModifier(), 0.0001f);
+        Assert.AreEqual(1.5493f, modifier.ApplyModifier(), 0.0001f); // 3 stacks: ln(3)/2 + 1
     }
 
     [Test]
-    public void StackThenUnstack_MultipleCycles_RecomputesFromCurrentStackCount()
+    public void Unstack_BackToOneStack_IsAsStrongAsAFreshSlow()
     {
-        // NOTE: unlike FlatModifier, a full Stack/Unstack round trip does NOT return _stackFactor to
-        // its original value here. The field initializer sets it
-        // to 1f, but Stack()/Unstack() always recompute it from the CURRENT
-        // _stacks count via Log(_stacks + 1) / 2 + 1 - which at _stacks == 1 evaluates to
-        // Log(2)/2+1 (~1.35), not 1f. So 2 stacks followed by 2 unstacks lands on the formula's
-        // value for 1 stack, not the field initializer's default. Documenting the actual behavior
-        // here rather than assuming symmetry with FlatModifier's stacking.
+        SlowModifier modifier = CreateModifierBypassingConstructor(value: 1f, secondsElapsed: 0f, duration: 10f);
+        modifier.Stack(null, null);
+
+        modifier.Unstack(null, null);
+
+        Assert.AreEqual(1f, modifier.ApplyModifier(), 0.0001f);
+    }
+
+    [Test]
+    public void StackThenUnstack_MultipleCycles_ReturnsToTheSingleStackValue()
+    {
         SlowModifier modifier = CreateModifierBypassingConstructor(value: 1f, secondsElapsed: 0f, duration: 10f);
 
-        modifier.Stack(null, null); // _stacks = 2
-        modifier.Stack(null, null); // _stacks = 3
-        modifier.Unstack(null, null); // _stacks = 2
-        modifier.Unstack(null, null); // _stacks = 1
+        modifier.Stack(null, null);
+        modifier.Stack(null, null);
+        modifier.Unstack(null, null);
+        modifier.Unstack(null, null);
 
-        float expectedStackFactor = Mathf.Log(1f + 1f) / 2f + 1f;
-        Assert.AreEqual(expectedStackFactor, modifier.ApplyModifier(), 0.0001f);
+        Assert.AreEqual(1f, modifier.ApplyModifier(), 0.0001f);
     }
 }
 

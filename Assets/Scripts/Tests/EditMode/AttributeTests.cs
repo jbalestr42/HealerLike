@@ -335,13 +335,12 @@ public class AttributeTests
     }
 
     [Test]
-    public void Value_MultipleMultiplyModifiers_StackAdditivelyBeforeMultiplying()
+    public void Value_MultipleMultiplyModifiers_MultiplyEachOther()
     {
         Attribute attribute = new Attribute(10f);
         GameObject source = new GameObject();
 
-        // multiplicative = (1 + 0.5) * (1 + 0.5) is NOT how it works: it's 1 * (1+0.5) * (1+0.5) applied
-        // sequentially, i.e. multiplicative *= 1 + value for each modifier.
+        // Two +50% give x2.25, not x2: each Multiply modifier applies (1 + value) on top of the others
         attribute.AddModifier(AttributeModifierType.Multiply, source, new FakeModifier(0.5f));
         attribute.AddModifier(AttributeModifierType.Multiply, source, new FakeModifier(0.5f));
         attribute.Update();

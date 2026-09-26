@@ -14,6 +14,8 @@ public class ResourceAttribute : MonoBehaviour
 
     Attribute _max;
     public float Max { get { return _max.Value; } }
+    // Max value the current value was last adjusted to, to apply only the difference when the max changes
+    float _lastMax;
 
     public float percent => _value / _max.Value;
 
@@ -32,6 +34,7 @@ public class ResourceAttribute : MonoBehaviour
         AttributeManager attributeManager = GetComponent<AttributeManager>();
         _max = attributeManager.Get(maxResourceType);
         _value = _max.Value;
+        _lastMax = _max.Value;
         _max.AddOnValueChangedListener(OnValueMaxChanged);
         _resourceConsumerResolver.Init(attributeManager);
         Update();
@@ -70,9 +73,22 @@ public class ResourceAttribute : MonoBehaviour
         _resourceModifiers.Add(resourceModifier);
     }
 
+    // A growing max adds the same amount to the value (40/100 becomes 90/150), a shrinking max keeps
+    // the value and only caps it (90/150 becomes 90/100, 140/150 becomes 100/100)
     void OnValueMaxChanged(Attribute max)
     {
-        _value = max.Value;
-        OnValueChanged.Invoke(this);
+        float delta = max.Value - _lastMax;
+        _lastMax = max.Value;
+        if (delta > 0f)
+        {
+            _value += delta;
+        }
+        _value = Mathf.Clamp(_value, 0f, max.Value);
+
+        if (_prevValue != _value)
+        {
+            OnValueChanged.Invoke(this);
+            _prevValue = _value;
+        }
     }
 }

@@ -9,7 +9,8 @@ public class GameplayTag : ScriptableObject
     GameplayTag _parent = null;
     public GameplayTag parent { get { return _parent; } }
 
-    public bool IsDescendantOf(GameplayTag other, int searchLimit = 4)
+    // The limit only guards against a circular parent chain, real hierarchies are far shallower
+    public bool IsDescendantOf(GameplayTag other, int searchLimit = 10)
     {
         GameplayTag ancestor = parent;
         while (searchLimit-- > 0 && ancestor != null)

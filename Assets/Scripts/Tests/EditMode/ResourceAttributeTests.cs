@@ -339,6 +339,73 @@ public class ResourceAttributeTests
         Assert.AreEqual(150f, _health.Max);
         Assert.AreEqual(1, callCount);
     }
+
+    void SetMax(float value)
+    {
+        Attribute maxAttribute = _targetAttributeManager.Get(AttributeType.HealthMax);
+        maxAttribute.BaseValue = value;
+        maxAttribute.Update();
+    }
+
+    [Test]
+    public void MaxIncreased_WhileDamaged_KeepsTheDamageTaken()
+    {
+        AddModifier(new FakeConsumer(-60f));
+        Drain(); // 40 / 100
+
+        SetMax(150f);
+
+        Assert.AreEqual(90f, _health.Value); // still 60 damage taken, not a full heal
+    }
+
+    [Test]
+    public void MaxDecreased_KeepsTheCurrentValue()
+    {
+        AddModifier(new FakeConsumer(-60f));
+        Drain(); // 40 / 100
+        SetMax(150f); // 90 / 150
+
+        SetMax(100f); // the buff ends
+
+        Assert.AreEqual(90f, _health.Value);
+    }
+
+    [Test]
+    public void MaxDecreasedBelowTheValue_CapsItAtTheNewMax()
+    {
+        AddModifier(new FakeConsumer(-10f));
+        Drain(); // 90 / 100
+
+        SetMax(50f);
+
+        Assert.AreEqual(50f, _health.Value);
+    }
+
+    [Test]
+    public void MaxIncreased_WhenEmpty_AddsTheDifference()
+    {
+        // e.g. mana: 0 / 100 means 100 spent, still 100 spent at 50 / 150
+        AddModifier(new FakeConsumer(-1000f));
+        Drain(); // 0 / 100
+
+        SetMax(150f);
+
+        Assert.AreEqual(50f, _health.Value);
+    }
+
+    [Test]
+    public void MaxChanged_ThenUpdate_FiresOnValueChangedOnce()
+    {
+        AddModifier(new FakeConsumer(-60f));
+        Drain();
+        int callCount = 0;
+        _health.OnValueChanged.AddListener(_ => callCount++);
+
+        SetMax(150f);
+        Drain();
+
+        Assert.AreEqual(1, callCount);
+    }
 }
 
 }

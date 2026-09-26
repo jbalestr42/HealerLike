@@ -16,6 +16,13 @@ class under `Assets/Scripts/` is automatically visible to tests without extra wi
 isn't Editor-only code (that belongs in an `Editor/` subfolder instead, which is NOT visible to the
 runtime or test assemblies).
 
+**Tests assert the intended behaviour, never the current one.** Derive each expected value from
+what the code is supposed to do (its name, description, design, the user's intent), not from
+running it and copying the output. If a test fails because the production code is wrong, fix the
+code in the same change or report it to the user - never write a passing test that pins a bug
+(e.g. asserting "took 13 damage with 3 armor" with a `LikelyBug` comment), since that hides
+exactly the kind of error tests exist to reveal. If the intended behaviour is unclear, ask.
+
 **A modifier implementing `IStackableBuff` (`Stack(source, target)`/`Unstack(source, target)`) MUST
 have tests for both**, not just `ApplyModifier()`. At minimum: one test proving `Stack()` changes the
 applied value in the expected direction, and one proving `Unstack()` reverses it (see
