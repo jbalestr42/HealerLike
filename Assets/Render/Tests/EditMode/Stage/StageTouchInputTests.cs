@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.UIElements;
 using static HealerLike.Render.Stage.StageTouchFixture;
 
 namespace HealerLike.Render.Stage
@@ -45,6 +46,36 @@ namespace HealerLike.Render.Stage
                 Assert.That(StageTouchInput.CanBeginPointer(null, pointer, samples), Is.True);
             }
             finally { Object.DestroyImmediate(host); }
+        }
+
+        [Test]
+        public void OnlyWorldOriginPressDismissesPopoverAndUiOriginCannotLeakToBoard()
+        {
+            _fixture.WithInput((input, manager, interaction) =>
+            {
+                var root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+                var view = new ToolkitGameView(root);
+                var ui = manager.gameObject.AddComponent<ToolkitGameUI>();
+                TestHelpers.SetPrivateField(ui, "_view", view);
+                input.Init(manager);
+                using (var popover = new ToolkitPopover(view))
+                {
+                    popover.Open(new ToolkitCardModel { title = "Persistent creature" });
+                    input.ProcessTouch(2, TouchPhase.Began, Vector2.left);
+                    input.ProcessTouch(2, TouchPhase.Moved, Vector2.right);
+                    input.ProcessTouch(2, TouchPhase.Ended, Vector2.right);
+                    Assert.That(popover.isOpen, Is.True);
+                    Assert.That(interaction.calls, Is.Empty);
+                    input.ProcessTouch(3, TouchPhase.Began, Vector2.right);
+                    Assert.That(popover.isOpen, Is.False);
+                    Assert.That(root.pickingMode, Is.EqualTo(PickingMode.Ignore));
+                    Assert.That(root.Q("world-space").pickingMode, Is.EqualTo(PickingMode.Ignore));
+                    input.ProcessTouch(3, TouchPhase.Canceled, Vector2.right);
+                    Assert.That(interaction.calls, Is.Empty);
+                }
+                view.Release();
+                TestHelpers.SetPrivateField(ui, "_view", null);
+            });
         }
 
         [Test]

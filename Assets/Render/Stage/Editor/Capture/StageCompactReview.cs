@@ -16,13 +16,14 @@ namespace HealerLike.Render.Stage
 
         public IEnumerator OutsideDismiss(string image)
         {
-            var world = _s.actions.root.Q("world-space");
-            Vector2 center = StageInterfaceActions.ScreenPoint(world);
-            Vector2 point = center;
+            Rect world = _s.actions.ui.normalizedWorldViewport;
+            Vector2 point = Vector2.zero;
             bool empty = false;
-            for (int i = 1; i <= 8; i++)
+            for (int row = 1; row < 10 && !empty; row++)
+            for (int column = 1; column < 10; column++)
             {
-                point = center + Vector2.left * (Screen.width * .04f * i);
+                point = new Vector2((world.x + world.width * column / 10f) * Screen.width,
+                    (world.y + world.height * row / 10f) * Screen.height);
                 bool creature = Physics.Raycast(_s.manager.gameCamera.ScreenPointToRay(point), out RaycastHit hit)
                     && hit.collider.GetComponentInParent<Entity>() != null;
                 if (!creature && !_s.actions.touch.IsOverInterface(point)) { empty = true; break; }
@@ -70,6 +71,9 @@ namespace HealerLike.Render.Stage
             yield return Wait(.15f);
             _s.output.Check(foldout.value && root.Q<Label>("detail-full-stats").text.Contains("Maximum health"),
                 "Actual All attributes tap expands the complete readable attribute list");
+            var scroll = root.Q<ScrollView>("detail-scroll");
+            scroll.scrollOffset = new Vector2(0, foldout.worldBound.yMin - scroll.contentContainer.worldBound.yMin);
+            yield return Wait(.15f);
             yield return _s.Capture("07c-expanded-attributes");
             yield return _s.actions.TouchGesture(StageInterfaceActions.ScreenPoint(toggle));
             root.Q<ScrollView>("detail-scroll").scrollOffset = Vector2.zero;

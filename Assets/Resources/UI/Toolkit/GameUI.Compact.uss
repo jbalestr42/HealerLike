@@ -101,3 +101,12 @@
 #hud-root.compact-hud .detail-targeting > .unity-base-field__input { min-width: 0; flex-grow: 1; }
 #hud-root.compact-hud .detail-scroll .unity-scroller--vertical { width: 8px; margin-left: 3px; }
 #hud-root.compact-hud .detail-scroll .unity-slider--vertical { width: 8px; margin: 0; }
+
+#hud-root.compact-hud .detail-panel { padding: 10px; }
+#hud-root.compact-hud .detail-title { padding: 0 24px 0 0; margin: 0 0 4px 0; }
+#hud-root.compact-hud .detail-description { padding: 0; margin: 0; }
+#hud-root.compact-hud .detail-actions .button { margin: 4px 0 0 0; }
+#hud-root.compact-hud .detail-attributes .unity-toggle__text { color: var(--ui-ink); }
+#hud-root.compact-hud .detail-attributes .unity-toggle__checkmark { -unity-background-image-tint-color: var(--ui-ink); }
+#hud-root.compact-hud .detail-scroll #unity-vertical-scroller { min-width: 6px; width: 6px; }
+#hud-root.compact-hud .detail-scroll .unity-base-slider__dragger { min-width: 6px; width: 6px; }
