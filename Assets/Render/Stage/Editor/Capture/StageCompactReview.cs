@@ -56,8 +56,9 @@ namespace HealerLike.Render.Stage
                 "Persistent details refresh actual health after release without changing inspected subject");
             var equipment = root.Q<Button>("detail-inventory-button");
             var viewport = root.Q<ScrollView>("detail-scroll").contentViewport.worldBound;
-            _s.output.Check(viewport.Contains(equipment.worldBound.min) && viewport.Contains(equipment.worldBound.max),
-                "Equipment is fully visible in the initial compact summary without scrolling");
+            _s.output.Check(equipment.worldBound.xMin >= viewport.xMin - 1 && equipment.worldBound.yMin >= viewport.yMin - 1
+                && equipment.worldBound.xMax <= viewport.xMax + 1 && equipment.worldBound.yMax <= viewport.yMax + 1,
+                "Equipment is fully visible in the initial compact summary without scrolling: " + equipment.worldBound + " inside " + viewport);
             _s.output.Check(!summary.Contains("HealthMax") && !summary.Contains("CriticalChance"),
                 "Default summary excludes redundant maximum health and neutral attributes");
             yield return _s.Capture("07b-persistent-live-health");

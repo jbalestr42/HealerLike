@@ -89,3 +89,15 @@
 #hud-root.compact-hud .detail-targeting { margin-top: 6px; margin-bottom: 4px; }
 #hud-root.compact-hud .detail-attributes { margin-top: 4px; margin-left: 0; }
 #hud-root.compact-hud .detail-attributes > .unity-foldout__toggle { min-height: 32px; font-size: 12px; }
+
+#hud-root.compact-hud .detail-title { margin-bottom: 4px; }
+#hud-root.compact-hud .detail-icon.creature-portrait { background-color: transparent; border-width: 0; }
+#hud-root.compact-hud .detail-targeting {
+    flex-direction: row; align-items: center; min-height: 44px; margin: 4px 0 0 0;
+}
+#hud-root.compact-hud .detail-targeting > .unity-base-field__label {
+    width: 90px; min-width: 0; margin: 0 4px 0 0; font-size: 12px;
+}
+#hud-root.compact-hud .detail-targeting > .unity-base-field__input { min-width: 0; flex-grow: 1; }
+#hud-root.compact-hud .detail-scroll .unity-scroller--vertical { width: 8px; margin-left: 3px; }
+#hud-root.compact-hud .detail-scroll .unity-slider--vertical { width: 8px; margin: 0; }
