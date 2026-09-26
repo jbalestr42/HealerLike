@@ -17,6 +17,19 @@ public sealed class ToolkitRoster
     public void Clear() { _entries.Clear(); }
     public void Sync(IReadOnlyList<SelectEntityButton> choices, IReadOnlyList<Entity> entities)
     {
+        // Gameplay consumes the first matching data choice, even when a later identical card was dragged.
+        // Transfer the surviving choice into that vacated slot before clearing the deployed slot.
+        foreach (Entry deployed in _entries)
+        {
+            if (deployed.entity == null || deployed.choice == null) continue;
+            if (Contains(choices, deployed.choice))
+            {
+                Entry vacant = _entries.Find(e => e != deployed && e.entity == null
+                    && e.data == deployed.data && !Contains(choices, e.choice));
+                if (vacant != null) vacant.choice = deployed.choice;
+            }
+            deployed.choice = null;
+        }
         foreach (SelectEntityButton choice in choices)
         {
             if (choice == null || choice.data == null || _entries.Exists(e => e.choice == choice)) continue;

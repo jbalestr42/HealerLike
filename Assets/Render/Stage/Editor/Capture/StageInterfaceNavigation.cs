@@ -50,6 +50,8 @@ namespace HealerLike.Render.Stage
             yield return _session.actions.PointerTap("start-button");
             yield return Wait(1.5f);
             _session.AttachInput();
+            // Let EventSystem activate the configured legacy module before delivering a new Began.
+            yield return Wait(0.2f);
             _session.output.Check(Object.FindAnyObjectByType<RenderManager>() == original
                 && original.entityManager != null, "New expedition reuses attached RenderManager");
             _session.output.Check(Object.FindObjectsByType<ToolkitGameUI>().Length == 1,
