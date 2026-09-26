@@ -10,6 +10,7 @@ namespace HealerLike.Render.Creatures
     {
         // The board camera's pitch, an accessory is measured on its screen plane
         static readonly Quaternion boardCamera = Quaternion.Euler(StageCalibration.PortraitPitch, 0f, 0f);
+
         // An accessory part is sampled at its centre and its six face centres
         static readonly int samples = 7;
 
@@ -21,6 +22,7 @@ namespace HealerLike.Render.Creatures
             {
                 return 0f;
             }
+
             return OutlineReach(parts, vocabulary.Unit(channels.side));
         }
 
@@ -40,6 +42,7 @@ namespace HealerLike.Render.Creatures
                 Rect box = ScreenBox(parts, parts.headStarts[i], HeadEnd(parts, i));
                 span = Mathf.Min(span, Mathf.Min(box.width, box.height));
             }
+
             return span * vocabulary.Unit(channels.side);
         }
 
@@ -61,6 +64,7 @@ namespace HealerLike.Render.Creatures
                 float gapY = Mathf.Max(box.yMin - previous.yMax, previous.yMin - box.yMax);
                 gap = Mathf.Min(gap, Mathf.Max(gapX, gapY));
             }
+
             return gap * vocabulary.Unit(channels.side);
         }
 
@@ -87,6 +91,7 @@ namespace HealerLike.Render.Creatures
                         {
                             face = -0.5f;
                         }
+
                         offset[axis] = face * part.size[axis];
                         point += rotation * offset;
                     }
@@ -101,6 +106,7 @@ namespace HealerLike.Render.Creatures
                     reach = Mathf.Max(reach, nearest);
                 }
             }
+
             return reach * bodyUnit;
         }
 
@@ -115,9 +121,12 @@ namespace HealerLike.Render.Creatures
         // Their oriented box is a conservative bound; Legacy keeps the original ellipsoid measurement.
         public static float Extent(Vector3 half, Vector3 direction, ShapeProfile shape)
         {
-            if (!shape.isProcedural) return Extent(half, direction);
-            return Mathf.Abs(half.x * direction.x) + Mathf.Abs(half.y * direction.y)
-                + Mathf.Abs(half.z * direction.z);
+            if (!shape.isProcedural)
+            {
+                return Extent(half, direction);
+            }
+
+            return Mathf.Abs(half.x * direction.x) + Mathf.Abs(half.y * direction.y) + Mathf.Abs(half.z * direction.z);
         }
 
         // Where head copy i ends: the next copy's branch, the accessory, or the last part
@@ -127,10 +136,12 @@ namespace HealerLike.Render.Creatures
             {
                 return parts.headStarts[copy + 1];
             }
+
             if (parts.accessoryStart >= 0)
             {
                 return parts.accessoryStart;
             }
+
             return parts.count;
         }
 
@@ -152,10 +163,14 @@ namespace HealerLike.Render.Creatures
                 Quaternion inverse = Quaternion.Inverse(Quaternion.Euler(part.euler));
                 Vector3 half = part.size * 0.5f;
                 Vector2 centre = new Vector2(Vector3.Dot(part.position, right), Vector3.Dot(part.position, up));
-                Vector2 extent = new Vector2(Extent(half, inverse * right, part.shape), Extent(half, inverse * up, part.shape));
+                Vector2 extent = new Vector2(
+                    Extent(half, inverse * right, part.shape),
+                    Extent(half, inverse * up, part.shape)
+                );
                 min = Vector2.Min(min, centre - extent);
                 max = Vector2.Max(max, centre + extent);
             }
+
             return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
         }
 

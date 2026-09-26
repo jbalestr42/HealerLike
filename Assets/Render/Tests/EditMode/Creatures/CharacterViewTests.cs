@@ -1,11 +1,11 @@
-using System;
 using System.Collections;
 using System.Reflection;
+using System;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEditor;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
-using NUnit.Framework;
-using UnityEditor;
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Creatures
@@ -72,12 +72,19 @@ public class CharacterViewTests
                 count++;
             }
         }
+
         return count;
     }
 
     // What Init takes from the view prefab and the manager, without a manager
-    static void InitWithoutManager(CharacterView view, Character character, CreatureRecipe recipe, Transform anchor,
-        Material material, RenderRegistry registry)
+    static void InitWithoutManager(
+        CharacterView view,
+        Character character,
+        CreatureRecipe recipe,
+        Transform anchor,
+        Material material,
+        RenderRegistry registry
+    )
     {
         TestHelpers.SetPrivateField(view, "_character", character);
         TestHelpers.SetPrivateField(view, "_recipe", recipe);
@@ -99,22 +106,18 @@ public class CharacterViewTests
         CharacterView view = _anchorGo.AddComponent<CharacterView>();
         TestHelpers.SetPrivateField(view, "_meshes", RenderTestAssets.LoadMeshes());
         RenderRegistry registry = new RenderRegistry();
-
         InitWithoutManager(view, character, _ownedRecipe, _anchorGo.transform, _material, registry);
         CreatureRig rig = view.rig;
         InitWithoutManager(view, character, _ownedRecipe, _anchorGo.transform, _material, registry);
         Assert.AreSame(rig, view.rig);
-
         TestHelpers.InvokePrivate(view, "LateUpdate");
         Assert.AreEqual(_anchorGo.transform.position, rig.root.position);
         Assert.IsNull(_characterGo.GetComponent<Entity>());
         Assert.IsNull(character.mana);
-
         registry.NotifyHealth(_characterGo, _targetGo, 0f, false);
         Assert.AreEqual(0, DrawnArms(view));
         registry.NotifyHealth(_characterGo, _targetGo, 4f, true);
         Assert.AreEqual(1, DrawnArms(view));
-
         Object.DestroyImmediate(_characterGo);
         view.enabled = false;
         TestHelpers.InvokePrivate(view, "OnDisable");
@@ -126,8 +129,9 @@ public class CharacterViewTests
     [Test]
     public void OnHealthResolved_RegisteredCharacter_CountsHealGesturesAndTintsBudsByManaWithoutAllocating()
     {
-        CreatureRecipe recipe =
-            AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
+        CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(
+            "Assets/Render/Creatures/Data/Healer.asset"
+        );
         Character character = null;
         TestHelpers.WithLoggingDisabled(() => character = _characterGo.AddComponent<Character>());
         ResourceAttribute mana = TestHelpers.CreateResourceAttribute(_characterGo, AttributeType.ManaMax, 100);
@@ -157,7 +161,6 @@ public class CharacterViewTests
         Assert.AreEqual(0, GC.GetAllocatedBytesForCurrentThread() - before);
         Assert.AreEqual(3, view.budAnchors.Count);
         Assert.NotNull(view.bud0);
-
         ResourceModifier modifier = new ResourceModifier { source = _characterGo };
         health.OnAllConsumerProcessed.Invoke(_targetGo, modifier, -5f, false);
         for (int i = 0; i < 2; i++)
@@ -168,7 +171,6 @@ public class CharacterViewTests
         health.OnAllConsumerProcessed.Invoke(_targetGo, modifier, 7f, false);
         mana.OnAllConsumerProcessed.Invoke(_characterGo, modifier, 10f, false);
         Assert.AreEqual(4, DrawnArms(view), "Mana restoration must not reach out an arm.");
-
         TestHelpers.SetPrivateField(mana, "_value", 0f);
         TestHelpers.InvokePrivate(view, "LateUpdate");
         MaterialPropertyBlock block = new MaterialPropertyBlock();
@@ -193,25 +195,22 @@ public class CharacterViewTests
         InitWithoutManager(view, character, _ownedRecipe, _anchorGo.transform, _material, registry);
         view.enabled = false;
         TestHelpers.InvokePrivate(view, "OnDisable");
-
         registry.NotifyHealth(_characterGo, _targetGo, 4f, true);
-
         Assert.AreEqual(0, DrawnArms(view));
     }
 
     [Test]
     public void TryGetAnchors_HealerRig_CastsFromTheFirstBud()
     {
-        CreatureRecipe recipe =
-            AssetDatabase.LoadAssetAtPath<CreatureRecipe>("Assets/Render/Creatures/Data/Healer.asset");
+        CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(
+            "Assets/Render/Creatures/Data/Healer.asset"
+        );
         Character character = null;
         TestHelpers.WithLoggingDisabled(() => character = _characterGo.AddComponent<Character>());
         CharacterView view = _characterGo.AddComponent<CharacterView>();
         TestHelpers.SetPrivateField(view, "_meshes", RenderTestAssets.LoadMeshes());
         InitWithoutManager(view, character, recipe, _characterGo.transform, _material, new RenderRegistry());
-
         bool hasAnchors = view.TryGetAnchors(out EffectAnchors anchors);
-
         Assert.IsTrue(hasAnchors);
         Assert.AreEqual(view.bud0.position, anchors.castPoint);
     }
@@ -220,26 +219,23 @@ public class CharacterViewTests
     public void TryGetAnchors_BeforeTheRig_ReturnsFalse()
     {
         CharacterView view = _characterGo.AddComponent<CharacterView>();
-
         bool hasAnchors = view.TryGetAnchors(out _);
-
         Assert.IsFalse(hasAnchors);
     }
 
     [Test]
     public void Init_ViewPrefab_KeepsAnInvisibleRegisteredSourceWithoutBuildingABody()
     {
-        GameObject prefab =
-            AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Creatures/Prefabs/HealerCharacter.prefab");
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+            "Assets/Render/Creatures/Prefabs/HealerCharacter.prefab"
+        );
         GameObject viewGo = Object.Instantiate(prefab, _characterGo.transform);
         Character character = null;
         TestHelpers.WithLoggingDisabled(() => character = _characterGo.AddComponent<Character>());
         RenderManager manager = _managerGo.AddComponent<RenderManager>();
         TestHelpers.SetPrivateField(manager, "_meshes", RenderTestAssets.LoadMeshes());
         CharacterView view = viewGo.GetComponent<CharacterView>();
-
         view.Init(character, manager);
-
         Assert.IsFalse(view.showBody);
         Assert.IsNull(view.rig);
         Assert.IsEmpty(viewGo.GetComponentsInChildren<Renderer>(true));
@@ -249,11 +245,10 @@ public class CharacterViewTests
     [Test]
     public void Init_ShippedPrefab_CarriesRecipeMeshesAndAnchorWithoutABaseCharacter()
     {
-        GameObject prefab =
-            AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Creatures/Prefabs/HealerCharacter.prefab");
-
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+            "Assets/Render/Creatures/Prefabs/HealerCharacter.prefab"
+        );
         CharacterView view = prefab.GetComponent<CharacterView>();
-
         Assert.AreEqual(PrefabAssetType.Regular, PrefabUtility.GetPrefabAssetType(prefab));
         Assert.IsNull(prefab.GetComponent<Character>());
         Assert.NotNull(view);
@@ -264,5 +259,4 @@ public class CharacterViewTests
         Assert.AreSame(RenderTestAssets.LoadMeshes(), data.FindProperty("_meshes").objectReferenceValue);
     }
 }
-
 }

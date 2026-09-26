@@ -7,6 +7,7 @@ namespace HealerLike.Render.Creatures
     public struct RootDefinition
     {
         public int count;
+
         // Jointed cylinder segments per root, hip to foot
         public int segments;
         public float footRadius;
@@ -16,6 +17,7 @@ namespace HealerLike.Render.Creatures
         public Color colour;
         public ShapeProfile segmentShape;
         public ShapeProfile jointShape;
+
         // Zero retains the original root proportions in previously saved recipes.
         public float taper;
         public float jointScale;

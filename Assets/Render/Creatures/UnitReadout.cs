@@ -11,16 +11,24 @@ namespace HealerLike.Render.Creatures
         readonly Dictionary<ASkill, ICooldownSkill> _cooldowns = new Dictionary<ASkill, ICooldownSkill>();
         readonly List<ASkill> _removedSkills = new List<ASkill>();
         Entity _entity;
-
         Vector3? _target;
-        public Vector3? target { get { return _target; } }
+        public Vector3? target
+        {
+            get { return _target; }
+        }
 
         // One when the readiest skill can fire again
         float _readiness;
-        public float readiness { get { return _readiness; } }
+        public float readiness
+        {
+            get { return _readiness; }
+        }
 
         float _healthFraction = 1f;
-        public float healthFraction { get { return _healthFraction; } }
+        public float healthFraction
+        {
+            get { return _healthFraction; }
+        }
 
         public void Init(Entity entity)
         {

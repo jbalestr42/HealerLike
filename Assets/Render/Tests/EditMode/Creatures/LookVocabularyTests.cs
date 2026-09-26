@@ -18,7 +18,6 @@ public class LookVocabularyTests
     public void Heads_EveryHeadKind_HasPartsOnBothSides()
     {
         LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
-
         foreach (HeadKind head in Enum.GetValues(typeof(HeadKind)))
         {
             Assert.IsNotEmpty(vocabulary.heads[head].plant, head.ToString());
@@ -30,7 +29,6 @@ public class LookVocabularyTests
     public void Accessories_EveryAccessoryKind_HasPartsOnBothSides()
     {
         LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
-
         foreach (AccessoryKind accessory in Enum.GetValues(typeof(AccessoryKind)))
         {
             if (accessory == AccessoryKind.None)
@@ -47,7 +45,6 @@ public class LookVocabularyTests
     public void Bodies_EveryMassBand_StartsWithTheBodyOnBothSides()
     {
         LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
-
         foreach (MassBand mass in Enum.GetValues(typeof(MassBand)))
         {
             Assert.AreEqual(PartRole.Body, vocabulary.bodies[mass].plant[0].role, mass.ToString());
@@ -59,7 +56,6 @@ public class LookVocabularyTests
     public void Stems_EveryStemBand_HasALength()
     {
         LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
-
         foreach (StemBand stem in Enum.GetValues(typeof(StemBand)))
         {
             Assert.Greater(vocabulary.stems[stem].length, 0f, stem.ToString());
@@ -70,7 +66,6 @@ public class LookVocabularyTests
     public void Roots_EveryReachBand_HasAReach()
     {
         LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
-
         foreach (ReachBand reach in Enum.GetValues(typeof(ReachBand)))
         {
             Assert.Greater(vocabulary.roots[reach].reach, 0f, reach.ToString());
@@ -83,9 +78,7 @@ public class LookVocabularyTests
     public void Reach_ShippedAsset_UsesEachBandsAuthoredSpread(ReachBand band)
     {
         LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
-
         float reach = vocabulary.Reach(band);
-
         Assert.IsFalse(vocabulary.isReachPinned);
         Assert.AreEqual(vocabulary.roots[band].reach, reach);
     }
@@ -114,9 +107,7 @@ public class LookVocabularyTests
     public void Stems_Bands_KeepQuickTallAndSlowShort()
     {
         LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
-
         float slow = vocabulary.stems[StemBand.Slow].length;
-
         Assert.Greater(vocabulary.stems[StemBand.Steady].length, slow);
         Assert.Greater(vocabulary.stems[StemBand.Quick].length, vocabulary.stems[StemBand.Steady].length);
         Assert.Less(vocabulary.stems[StemBand.Quick].thickness, vocabulary.stems[StemBand.Slow].thickness);
@@ -126,7 +117,6 @@ public class LookVocabularyTests
     public void Heads_StoneParts_DrawSeededStonesRatherThanTheOneBoulder()
     {
         LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
-
         foreach (LookVocabulary.HeadEntry entry in vocabulary.heads.Values)
         {
             foreach (LookPart part in entry.stone)
@@ -141,10 +131,8 @@ public class LookVocabularyTests
     {
         LookVocabulary vocabulary = RenderTestAssets.LoadLookVocabulary();
         LookVocabulary.HeadEntry arch = vocabulary.heads[HeadKind.Arch];
-
         int[] plant = TipsByBand(arch.plant);
         int[] stone = TipsByBand(arch.stone);
-
         Assert.IsTrue(arch.carriesCount);
         Assert.AreEqual(new int[] { 1, 3, 5 }, plant);
         Assert.AreEqual(new int[] { 1, 3, 5 }, stone);
@@ -160,8 +148,8 @@ public class LookVocabularyTests
                 tips[band]++;
             }
         }
+
         return tips;
     }
 }
-
 }

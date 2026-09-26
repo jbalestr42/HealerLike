@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using HealerLike.Render.Deliveries;
 using HealerLike.Render.Spells;
@@ -11,19 +11,36 @@ namespace HealerLike.Render.Creatures
     public class CharacterView : ARigHost
     {
         [SerializeField] Character _character;
-        [SerializeField] CreatureRecipe _recipe;
-        [SerializeField] Transform _visualAnchor;
-        [SerializeField] Material _material;
-        [SerializeField] Material _bodyMaterial;
-        [SerializeField] PrimitiveMeshes _meshes;
-        [SerializeField] float _cellSize = 1f;
-        [SerializeField] bool _showBody = true;
-        [SerializeField, Range(-0.3f, -0.01f)] float _castViewportY = -0.08f;
-        [SerializeField, Min(0f)] float _castHeight = 1.5f;
-        Camera _camera;
 
-        public bool showBody { get { return _showBody; } }
-        public bool castsFromScreen { get { return !_showBody && _camera; } }
+        [SerializeField] CreatureRecipe _recipe;
+
+        [SerializeField] Transform _visualAnchor;
+
+        [SerializeField] Material _material;
+
+        [SerializeField] Material _bodyMaterial;
+
+        [SerializeField] PrimitiveMeshes _meshes;
+
+        [SerializeField] float _cellSize = 1f;
+
+        [SerializeField] bool _showBody = true;
+
+        [SerializeField, Range(-0.3f, -0.01f)]
+        float _castViewportY = -0.08f;
+
+        [SerializeField, Min(0f)]
+        float _castHeight = 1.5f;
+        Camera _camera;
+        public bool showBody
+        {
+            get { return _showBody; }
+        }
+
+        public bool castsFromScreen
+        {
+            get { return !_showBody && _camera; }
+        }
 
         public static CharacterView ScreenSource(GameObject source)
         {
@@ -39,6 +56,7 @@ namespace HealerLike.Render.Creatures
             {
                 return false;
             }
+
             float height = _character ? _character.transform.position.y : transform.position.y;
             Plane plane = new Plane(Vector3.up, Vector3.up * (height + _castHeight));
             Ray ray = _camera.ViewportPointToRay(new Vector3(0.5f, _castViewportY, 0f));
@@ -46,6 +64,7 @@ namespace HealerLike.Render.Creatures
             {
                 return false;
             }
+
             point = ray.GetPoint(distance);
             return true;
         }
@@ -54,7 +73,6 @@ namespace HealerLike.Render.Creatures
         ISpellVisualSink _sink;
         DeliveryVocabulary _deliveryVocabulary;
         StatusObserver _statusObserver;
-
         public IReadOnlyList<Transform> budAnchors
         {
             get
@@ -63,11 +81,15 @@ namespace HealerLike.Render.Creatures
                 {
                     return Array.Empty<Transform>();
                 }
+
                 return rig.budAnchors;
             }
         }
 
-        public Transform bud0 { get { return budAnchors.Count > 0 ? budAnchors[0] : null; } }
+        public Transform bud0
+        {
+            get { return budAnchors.Count > 0 ? budAnchors[0] : null; }
+        }
 
         void OnEnable()
         {
@@ -126,6 +148,7 @@ namespace HealerLike.Render.Creatures
             {
                 return;
             }
+
             if (rig != null && _character)
             {
                 ResourceAttribute mana = _character.mana;
@@ -134,6 +157,7 @@ namespace HealerLike.Render.Creatures
                 {
                     manaFraction = mana.Value / mana.Max;
                 }
+
                 rig.SetReadout(null, 1f, 0f, manaFraction);
             }
 
@@ -189,8 +213,10 @@ namespace HealerLike.Render.Creatures
                 {
                     Register(_registry, _character.gameObject);
                 }
+
                 return;
             }
+
             if (!_character || !_recipe || !_visualAnchor || !_material)
             {
                 return;
@@ -209,7 +235,6 @@ namespace HealerLike.Render.Creatures
         }
 
         #region IHealthVisualSink
-
         // The registry reports every health change the character caused, heals and damage both gesture
         public override void OnHealthResolved(GameObject target, float value, bool critical)
         {
@@ -222,9 +247,7 @@ namespace HealerLike.Render.Creatures
         }
 
         #endregion
-
         #region IEffectAnchors
-
         // A character casts from its first bud
         public override bool TryGetAnchors(out EffectAnchors anchors)
         {
@@ -232,11 +255,17 @@ namespace HealerLike.Render.Creatures
             {
                 anchors = new EffectAnchors
                 {
-                    foot = point, bodyCentre = point, neck = point, headCentre = point,
-                    bodyRadius = 0.3f, headRadius = 0.15f, castPoint = point
+                    foot = point,
+                    bodyCentre = point,
+                    neck = point,
+                    headCentre = point,
+                    bodyRadius = 0.3f,
+                    headRadius = 0.15f,
+                    castPoint = point,
                 };
                 return true;
             }
+
             if (!base.TryGetAnchors(out anchors))
             {
                 return false;
@@ -246,9 +275,9 @@ namespace HealerLike.Render.Creatures
             {
                 anchors.castPoint = bud0.position;
             }
+
             return true;
         }
-
         #endregion
     }
 }

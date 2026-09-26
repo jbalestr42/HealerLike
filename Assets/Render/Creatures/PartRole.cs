@@ -10,6 +10,6 @@ namespace HealerLike.Render.Creatures
         Head,
         Tip,
         Accessory,
-        Crown
+        Crown,
     }
 }

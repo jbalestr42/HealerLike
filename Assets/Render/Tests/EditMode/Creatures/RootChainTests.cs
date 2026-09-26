@@ -38,7 +38,6 @@ public class RootChainTests
     public void Place_Roots_AreJointedCylinderChainsDownToTheFoot()
     {
         _roots.Place(_sway.transform, _root.transform, 1f);
-
         int segments = 0;
         int joints = 0;
         float lowest = float.MaxValue;
@@ -67,10 +66,8 @@ public class RootChainTests
         _roots.Place(_sway.transform, _root.transform, 1f);
         Transform last = LastSegment();
         float footBefore = last.GetComponent<Renderer>().bounds.min.y;
-
         _sway.transform.localRotation = Quaternion.Euler(20f, 0f, 0f);
         _roots.Place(_sway.transform, _root.transform, 1f);
-
         Assert.AreEqual(footBefore, last.GetComponent<Renderer>().bounds.min.y, 0.05f);
     }
 
@@ -86,7 +83,11 @@ public class RootChainTests
         Vector3 growingScale = last.localScale;
         Assert.That(growingScale.magnitude, Is.LessThan(authoredScale.magnitude));
         Assert.That(Vector3.Distance(foot, last.TransformPoint(Vector3.up * 0.5f)), Is.LessThan(0.00001f));
-        for (int i = 0; i < 20; i++) _roots.Place(_sway.transform, _root.transform, 1f, 0.1f);
+        for (int i = 0; i < 20; i++)
+        {
+            _roots.Place(_sway.transform, _root.transform, 1f, 0.1f);
+        }
+
         Assert.That(last.localScale, Is.EqualTo(growingScale));
         _roots.Place(_sway.transform, _root.transform, 1f, CreatureAppearance.Duration);
         Assert.That(last.localScale, Is.EqualTo(authoredScale));
@@ -103,8 +104,8 @@ public class RootChainTests
                 last = child;
             }
         }
+
         return last;
     }
 }
-
 }

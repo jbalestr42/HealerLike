@@ -8,14 +8,15 @@ namespace HealerLike.Render.Creatures
     public struct UnitSockets
     {
         float _shoulderOffset;
-
         public Vector3 foot;
         public Vector3 body;
         public float bodyRadius;
         public Vector3 hip;
         public Vector3 neck;
+
         // Where a plant's stem leaves its body
         public Vector3 stemFoot;
+
         // Mass scale, times the stone scale on stones
         public float scale;
         public float headScale;
@@ -28,11 +29,11 @@ namespace HealerLike.Render.Creatures
             bool isPlant = channels.side == LookSide.Plant;
             LookPart[] bodyParts = isPlant ? body.plant : body.stone;
             float stoneScale = isPlant ? 1f : vocabulary.stoneScale;
-            LookVocabulary.LayoutEntry layout = vocabulary.Layout;
+            LookVocabulary.LayoutEntry layout = vocabulary.layoutSettings;
             UnitSockets sockets = new UnitSockets { _shoulderOffset = layout.shoulderOffset };
             sockets.scale = body.scale * stoneScale;
-            sockets.headScale = body.HeadScale * stoneScale;
-            sockets.stemScale = body.StemScale(isPlant) * stoneScale;
+            sockets.headScale = body.effectiveHeadScale * stoneScale;
+            sockets.stemScale = body.GetStemScale(isPlant) * stoneScale;
             sockets.bodyRadius = bodyParts[0].size.x * 0.5f * stoneScale;
             if (isPlant)
             {
@@ -46,8 +47,13 @@ namespace HealerLike.Render.Creatures
             else
             {
                 // Stones stand on boulder limbs, the stem band is the limb length
-                sockets.body = Vector3.up * (stem.limbLength * sockets.stemScale + sockets.bodyRadius * layout.stoneBodyLift
-                    + body.bodyLift * stoneScale);
+                sockets.body =
+                    Vector3.up
+                    * (
+                        stem.limbLength * sockets.stemScale
+                        + sockets.bodyRadius * layout.stoneBodyLift
+                        + body.bodyLift * stoneScale
+                    );
                 sockets.neck = sockets.body + Vector3.up * (sockets.bodyRadius * layout.stoneNeck);
             }
 

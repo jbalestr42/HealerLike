@@ -44,11 +44,11 @@ public class UnitReadoutTests
         TestHelpers.SetPrivateField(skill, "_cooldownDuration", new Attribute(2));
         skill.isEnabled = true;
         TestHelpers.SetPrivateField(_health, "_value", 25f);
-        FieldInfo cooldown = typeof(ACooldownSkill<ShootProjectileSkillData>).GetField("_cooldown",
-            BindingFlags.NonPublic | BindingFlags.Instance);
-
+        FieldInfo cooldown = typeof(ACooldownSkill<ShootProjectileSkillData>).GetField(
+            "_cooldown",
+            BindingFlags.NonPublic | BindingFlags.Instance
+        );
         _readout.Read();
-
         Assert.AreEqual(1f, _readout.readiness);
         Assert.AreEqual(0.25f, _readout.healthFraction);
         Assert.AreEqual(Vector3.right * 3f, _readout.target);
@@ -69,12 +69,9 @@ public class UnitReadoutTests
         _readout.Read();
         Object.DestroyImmediate(skill);
         TestHelpers.SetPrivateField(_health, "_value", 100f);
-
         _readout.Read();
-
         Assert.AreEqual(0f, _readout.readiness);
         Assert.AreEqual(1f, _readout.healthFraction);
     }
 }
-
 }

@@ -1,8 +1,8 @@
-using System;
 using System.Collections.Generic;
+using System;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
+using UnityEditor;
 using HealerLike.Render.Stones;
 using Object = UnityEngine.Object;
 
@@ -20,10 +20,12 @@ public class PrimitiveMeshesTests
         {
             Object.DestroyImmediate(trackedObject);
         }
+
         _objects.Clear();
     }
 
-    T Track<T>(T trackedObject) where T : Object
+    T Track<T>(T trackedObject)
+        where T : Object
     {
         _objects.Add(trackedObject);
         return trackedObject;
@@ -38,7 +40,6 @@ public class PrimitiveMeshesTests
     public void GetMesh_BakedPrimitive_IsFiniteNormalizedAndBounded(Primitive type)
     {
         Mesh mesh = RenderTestAssets.LoadMeshes().GetMesh(type);
-
         Vector3[] vertices = mesh.vertices;
         Vector3[] normals = mesh.normals;
         int[] indices = mesh.triangles;
@@ -76,27 +77,26 @@ public class PrimitiveMeshesTests
         StoneVariants variants = Track(ScriptableObject.CreateInstance<StoneVariants>());
         variants.meshes = new Mesh[] { Track(new Mesh()), Track(new Mesh()) };
         meshes.stoneVariants = variants;
-
         Mesh mesh = meshes.GetMesh(Primitive.Stone, variant);
-
         Assert.AreEqual(variants.meshes[expected], mesh);
     }
 
     [Test]
     public void GetMesh_OtherPrimitiveWithVariant_IgnoresTheVariant()
     {
-        Assert.AreEqual(RenderTestAssets.LoadMeshes().cone, RenderTestAssets.LoadMeshes().GetMesh(Primitive.Cone, 4));
+        Assert.AreEqual(
+            RenderTestAssets.LoadMeshes().cone,
+            RenderTestAssets.LoadMeshes().GetMesh(Primitive.Cone, 4)
+        );
     }
 
     [Test]
     public void GetMesh_ShippedAsset_EveryPrimitiveIsASavedMesh()
     {
         PrimitiveMeshes meshes = RenderTestAssets.LoadMeshes();
-
         foreach (Primitive primitive in Enum.GetValues(typeof(Primitive)))
         {
             Mesh mesh = meshes.GetMesh(primitive);
-
             Assert.IsNotNull(mesh, primitive.ToString());
             Assert.IsTrue(AssetDatabase.Contains(mesh), mesh.name);
             Assert.Greater(mesh.vertexCount, 0, mesh.name);
@@ -107,7 +107,6 @@ public class PrimitiveMeshesTests
     public void GetMesh_ShippedSolids_AreClosedAndFaceOutward()
     {
         PrimitiveMeshes meshes = RenderTestAssets.LoadMeshes();
-
         foreach (Primitive primitive in Enum.GetValues(typeof(Primitive)))
         {
             RenderTestAssets.AssertClosed(meshes.GetMesh(primitive));
@@ -118,9 +117,7 @@ public class PrimitiveMeshesTests
     public void Tuft_ShippedAsset_IsASavedMeshWithFourFacetedSides()
     {
         Mesh tuft = RenderTestAssets.LoadMeshes().tuft;
-
         uint indexCount = tuft.GetIndexCount(0);
-
         Assert.IsTrue(AssetDatabase.Contains(tuft));
         Assert.AreEqual(12u, indexCount); // 4 sides * 3, open at the base on its socle
     }
@@ -130,7 +127,6 @@ public class PrimitiveMeshesTests
     public void Disc_AnnulusAndSocle_AreSavedFlatAndFaceUp()
     {
         PrimitiveMeshes meshes = RenderTestAssets.LoadMeshes();
-
         foreach (Mesh mesh in new Mesh[] { meshes.disc, meshes.annulus, meshes.socle })
         {
             Assert.IsTrue(AssetDatabase.Contains(mesh), mesh.name);
@@ -146,5 +142,4 @@ public class PrimitiveMeshesTests
         }
     }
 }
-
 }

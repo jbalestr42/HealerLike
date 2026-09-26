@@ -7,8 +7,13 @@ namespace HealerLike.Render.Creatures
     public static class RevolvedMeshes
     {
         // Sphere, capsule, cone, cylinder and torus around the Y axis, one unit high and wide
-        public static Mesh Create(string name, Primitive primitive, int radialSegments, int axialSegments,
-            float torusTubeRatio)
+        public static Mesh Create(
+            string name,
+            Primitive primitive,
+            int radialSegments,
+            int axialSegments,
+            float torusTubeRatio
+        )
         {
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
@@ -70,6 +75,7 @@ namespace HealerLike.Render.Creatures
                         {
                             capCentre = -0.25f;
                         }
+
                         point = normal * 0.25f + Vector3.up * capCentre;
                         point.x *= 2f;
                         point.z *= 2f;
@@ -111,12 +117,24 @@ namespace HealerLike.Render.Creatures
                 }
             }
 
-            return PrimitiveMeshBaker.CreateMesh(name, vertices.ToArray(), triangles.ToArray(), normals.ToArray(),
-                null);
+            return PrimitiveMeshBaker.CreateMesh(
+                name,
+                vertices.ToArray(),
+                triangles.ToArray(),
+                normals.ToArray(),
+                null
+            );
         }
 
-        static void AddCap(float y, float radius, bool isTop, int count, List<Vector3> vertices, List<Vector3> normals,
-            List<int> triangles)
+        static void AddCap(
+            float y,
+            float radius,
+            bool isTop,
+            int count,
+            List<Vector3> vertices,
+            List<Vector3> normals,
+            List<int> triangles
+        )
         {
             int center = vertices.Count;
             Vector3 normal = isTop ? Vector3.up : Vector3.down;
@@ -139,6 +157,7 @@ namespace HealerLike.Render.Creatures
                     first = center + 2 + i;
                     second = center + 1 + i;
                 }
+
                 triangles.Add(center);
                 triangles.Add(first);
                 triangles.Add(second);

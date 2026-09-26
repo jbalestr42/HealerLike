@@ -9,25 +9,42 @@ namespace HealerLike.Render.Creatures
     public class CreatureBuilder : ARigHost, IEntityView
     {
         [SerializeField] CreatureRecipe _recipe;
-        [SerializeField] Material _material;
-        [SerializeField] Material _bodyMaterial;
-        [SerializeField] PrimitiveMeshes _meshes;
 
+        [SerializeField] Material _material;
+
+        [SerializeField] Material _bodyMaterial;
+
+        [SerializeField] PrimitiveMeshes _meshes;
         readonly UnitReadout _readout = new UnitReadout();
+
         // The recipe this view derived from its entity, released with it
         CreatureRecipe _derivedRecipe;
         Entity _entity;
-        ResourceAttribute _health;
+        readonly CreatureHealthObserver _healthObserver = new CreatureHealthObserver();
         StatusObserver _statusObserver;
         RenderRegistry _registry;
         DeliveryVocabulary _deliveryVocabulary;
         ISpellVisualSink _spellSink;
         RenderManager _manager;
+        public CreatureRecipe recipe
+        {
+            get { return _recipe; }
+        }
 
-        public CreatureRecipe recipe { get { return _recipe; } }
-        public Material material { get { return _material; } }
-        public Material bodyMaterial { get { return _bodyMaterial; } }
-        public PrimitiveMeshes meshes { get { return _meshes; } }
+        public Material material
+        {
+            get { return _material; }
+        }
+
+        public Material bodyMaterial
+        {
+            get { return _bodyMaterial; }
+        }
+
+        public PrimitiveMeshes meshes
+        {
+            get { return _meshes; }
+        }
 
         void OnEnable()
         {
@@ -93,12 +110,14 @@ namespace HealerLike.Render.Creatures
             {
                 next = manager.creatureLooks.GetRecipe(_entity.data, _entity.entityType);
             }
+
             if (next == null || !rig.Recompose(next, _material, _bodyMaterial, _meshes))
             {
                 if (isDerived)
                 {
                     RenderObjects.Release(next);
                 }
+
                 return false;
             }
 
@@ -107,18 +126,24 @@ namespace HealerLike.Render.Creatures
                 RenderObjects.Release(_derivedRecipe);
                 _derivedRecipe = next;
             }
+
             _recipe = next;
             RefreshArms();
             _readout.Read();
             rig.SetReadout(_readout.target, _readout.healthFraction, _readout.readiness, _readout.readiness);
             // Recompose leaves complete geometry for structural measurements, before restoring its growth pose.
             HealerLike.Render.Zones.TrampleZone trample = GetComponent<HealerLike.Render.Zones.TrampleZone>();
-            if (trample != null) trample.Refresh();
+            if (trample != null)
+            {
+                trample.Refresh();
+            }
+
             HealerLike.Render.Stones.StoneBody stone = GetComponent<HealerLike.Render.Stones.StoneBody>();
             if (stone != null)
             {
                 stone.RefreshRig();
             }
+
             TickPresentation(0f);
             return true;
         }
@@ -184,8 +209,15 @@ namespace HealerLike.Render.Creatures
         {
             if (rig == null && _recipe && _material)
             {
-                BuildRig(_recipe, transform, _material, _bodyMaterial, _meshes, _deliveryVocabulary,
-                    StageCalibration.CellSize);
+                BuildRig(
+                    _recipe,
+                    transform,
+                    _material,
+                    _bodyMaterial,
+                    _meshes,
+                    _deliveryVocabulary,
+                    StageCalibration.CellSize
+                );
             }
 
             if (rig != null)
@@ -198,7 +230,11 @@ namespace HealerLike.Render.Creatures
         // SpawnDressing calls this after every view has measured the complete geometry for its own caches.
         public void BeginAppearance()
         {
-            if (rig == null) return;
+            if (rig == null)
+            {
+                return;
+            }
+
             rig.BeginAppearance();
             TickPresentation(0f);
         }
@@ -222,20 +258,7 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
-            if (_health != _entity.health)
-            {
-                if (_health)
-                {
-                    _health.OnAllConsumerProcessed.RemoveListener(OnHealthProcessed);
-                }
-
-                _health = _entity.health;
-                if (_health)
-                {
-                    _health.OnAllConsumerProcessed.AddListener(OnHealthProcessed);
-                }
-            }
-
+            _healthObserver.Init(_entity.health, rig);
             Register(_registry, _entity.gameObject);
             if (rig != null)
             {
@@ -245,30 +268,11 @@ namespace HealerLike.Render.Creatures
 
         void Detach()
         {
-            if (_health)
-            {
-                _health.OnAllConsumerProcessed.RemoveListener(OnHealthProcessed);
-            }
-
-            _health = null;
+            _healthObserver.Dispose();
             Unregister();
         }
 
-        void OnHealthProcessed(GameObject owner, ResourceModifier modifier, float value, bool critical)
-        {
-            if (!isActiveAndEnabled || value == 0f || !float.IsFinite(value))
-            {
-                return;
-            }
-
-            if (value < 0f && rig != null)
-            {
-                rig.Hit();
-            }
-        }
-
         #region IHealthVisualSink
-
         // Damage reaches this sink too, only a heal draws the contact
         public override void OnHealthResolved(GameObject target, float value, bool critical)
         {
@@ -277,7 +281,6 @@ namespace HealerLike.Render.Creatures
                 HealContact(target);
             }
         }
-
         #endregion
     }
 }

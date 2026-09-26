@@ -1,5 +1,5 @@
-using UnityEditor;
 using UnityEngine;
+using UnityEditor;
 
 namespace HealerLike.Render.Creatures
 {
@@ -37,9 +37,8 @@ namespace HealerLike.Render.Creatures
             meshes.boulder = Save(FacetedMeshes.CreateBoulder());
             meshes.disc = Save(RingMeshes.CreateDisc(32));
             meshes.annulus = Save(RingMeshes.CreateAnnulus(128));
-
             EditorUtility.SetDirty(meshes);
-            AssetDatabase.SaveAssets();
+            AssetDatabase.SaveAssetIfDirty(meshes);
             Debug.Log($"[PrimitiveMeshBaker] Baked 12 meshes into {meshesFolder}");
         }
 
@@ -54,6 +53,8 @@ namespace HealerLike.Render.Creatures
             }
 
             EditorUtility.CopySerialized(mesh, existing);
+            EditorUtility.SetDirty(existing);
+            AssetDatabase.SaveAssetIfDirty(existing);
             Object.DestroyImmediate(mesh);
             return existing;
         }
@@ -66,8 +67,7 @@ namespace HealerLike.Render.Creatures
 
         // Every baked mesh is built here: the normals given, or recalculated when there are none, and the uv
         // when there are some
-        public static Mesh CreateMesh(string name, Vector3[] vertices, int[] triangles, Vector3[] normals,
-            Vector2[] uv)
+        public static Mesh CreateMesh(string name, Vector3[] vertices, int[] triangles, Vector3[] normals, Vector2[] uv)
         {
             Mesh mesh = new Mesh { name = name };
             mesh.vertices = vertices;

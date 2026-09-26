@@ -15,7 +15,7 @@ public class IdleMotionTests
             swayFrequency = 0.12f,
             breathAmount = 0.025f,
             breathFrequency = 0.25f,
-            seed = 17
+            seed = 17,
         };
         IdlePose first = IdleMotion.Evaluate(settings, 8f);
         for (int i = 0; i < 200; i++)
@@ -32,5 +32,4 @@ public class IdleMotionTests
         Assert.AreNotEqual(first.sway, IdleMotion.Evaluate(settings, 8f).sway);
     }
 }
-
 }

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
+using UnityEditor;
 using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Creatures
@@ -20,15 +20,18 @@ public class CreatureLooksTests
         {
             Object.DestroyImmediate(trackedObject);
         }
+
         _objects.Clear();
         foreach (string path in _bakedPaths)
         {
             AssetDatabase.DeleteAsset(path);
         }
+
         _bakedPaths.Clear();
     }
 
-    T CreateTracked<T>() where T : ScriptableObject
+    T CreateTracked<T>()
+        where T : ScriptableObject
     {
         T instance = ScriptableObject.CreateInstance<T>();
         _objects.Add(instance);
@@ -58,9 +61,7 @@ public class CreatureLooksTests
         EntityData data = CreateTracked<EntityData>();
         GameObject view = CreateView("Mapped");
         looks.entities[data] = view;
-
         GameObject result = looks.GetView(data, Entity.EntityType.Computer);
-
         Assert.AreSame(view, result);
     }
 
@@ -68,9 +69,7 @@ public class CreatureLooksTests
     public void GetView_UnmappedPlayerEntity_ReturnsThePlantHost()
     {
         CreatureLooks looks = CreateLooks();
-
         GameObject result = looks.GetView(CreateTracked<EntityData>(), Entity.EntityType.Player);
-
         Assert.AreSame(looks.plant, result);
     }
 
@@ -78,9 +77,7 @@ public class CreatureLooksTests
     public void GetView_UnmappedComputerEntity_ReturnsTheStoneHost()
     {
         CreatureLooks looks = CreateLooks();
-
         GameObject result = looks.GetView(CreateTracked<EntityData>(), Entity.EntityType.Computer);
-
         Assert.AreSame(looks.stone, result);
     }
 
@@ -88,9 +85,7 @@ public class CreatureLooksTests
     public void GetView_NullData_ReturnsSideDefault()
     {
         CreatureLooks looks = CreateLooks();
-
         GameObject result = looks.GetView(null, Entity.EntityType.Player);
-
         Assert.AreSame(looks.plant, result);
     }
 
@@ -100,7 +95,6 @@ public class CreatureLooksTests
         CreatureLooks looks = CreateLooks();
         EntityData data = RenderTestAssets.LoadEntity("NormalEntity");
         looks.entities[data] = CreateView("Mapped");
-
         Assert.IsNull(looks.GetRecipe(data, Entity.EntityType.Player));
     }
 
@@ -109,12 +103,10 @@ public class CreatureLooksTests
     {
         CreatureLooks looks = CreateLooks();
         EntityData data = RenderTestAssets.LoadEntity("SoldierEntity");
-
         CreatureRecipe plant = looks.GetRecipe(data, Entity.EntityType.Player);
         CreatureRecipe stone = looks.GetRecipe(data, Entity.EntityType.Computer);
         _objects.Add(plant);
         _objects.Add(stone);
-
         Assert.NotNull(plant);
         Assert.NotNull(stone);
         Assert.AreNotSame(plant, stone);
@@ -130,12 +122,12 @@ public class CreatureLooksTests
     public void BakeToOverride_DerivedEntity_SavesItsRecipeAndAddsItsRow()
     {
         CreatureLooks looks = CreateTracked<CreatureLooks>();
-        looks.plant = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Render/Creatures/Prefabs/DerivedPlant.prefab");
+        looks.plant = AssetDatabase.LoadAssetAtPath<GameObject>(
+            "Assets/Render/Creatures/Prefabs/DerivedPlant.prefab"
+        );
         looks.vocabulary = RenderTestAssets.LoadLookVocabulary();
         EntityData data = RenderTestAssets.LoadEntity("NormalEntity");
-
         GameObject view = looks.BakeToOverride(data, Entity.EntityType.Player);
-
         string prefabPath = AssetDatabase.GetAssetPath(view);
         CreatureRecipe recipe = view.GetComponent<CreatureBuilder>().recipe;
         string recipePath = AssetDatabase.GetAssetPath(recipe);
@@ -151,11 +143,12 @@ public class CreatureLooksTests
     [Test]
     public void GetView_ShippedAsset_DerivesEveryEntityAndKeepsTheHealerAuthored()
     {
-        CreatureLooks looks =
-            AssetDatabase.LoadAssetAtPath<CreatureLooks>("Assets/Render/Creatures/Data/CreatureLooks.asset");
+        CreatureLooks looks = AssetDatabase.LoadAssetAtPath<CreatureLooks>(
+            "Assets/Render/Creatures/Data/CreatureLooks.asset"
+        );
         CharacterData healer = AssetDatabase.LoadAssetAtPath<CharacterData>(
-            "Assets/Data/Characters/BasicHealerCharacter/BasicHealerCharacter.asset");
-
+            "Assets/Data/Characters/BasicHealerCharacter/BasicHealerCharacter.asset"
+        );
         Assert.IsEmpty(looks.entities);
         Assert.IsEmpty(looks.characters);
         Assert.AreSame(RenderTestAssets.LoadLookVocabulary(), looks.vocabulary);
@@ -170,15 +163,15 @@ public class CreatureLooksTests
     [Test]
     public void Character_PrefabsFolder_HoldsOnlyThePlantHostAndTheCharacterView()
     {
-        CreatureLooks looks =
-            AssetDatabase.LoadAssetAtPath<CreatureLooks>("Assets/Render/Creatures/Data/CreatureLooks.asset");
-
+        CreatureLooks looks = AssetDatabase.LoadAssetAtPath<CreatureLooks>(
+            "Assets/Render/Creatures/Data/CreatureLooks.asset"
+        );
         string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Render/Creatures/Prefabs" });
-
-        string[] names = System.Array.ConvertAll(guids,
-            guid => Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(guid)));
+        string[] names = System.Array.ConvertAll(
+            guids,
+            guid => Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(guid))
+        );
         CollectionAssert.AreEquivalent(new[] { looks.plant.name, looks.character.name }, names);
     }
 }
-
 }

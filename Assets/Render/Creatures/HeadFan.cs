@@ -10,7 +10,6 @@ namespace HealerLike.Render.Creatures
         public static readonly string BranchId = "Branch";
         LookVocabulary.LayoutEntry _layout;
         ShapeProfile _branchShape;
-
         int _copies;
         float _spread;
         float _length;
@@ -18,15 +17,23 @@ namespace HealerLike.Render.Creatures
 
         // Each copy's scale against a single head
         float _copyScale;
-        public float copyScale { get { return _copyScale; } }
+        public float copyScale
+        {
+            get { return _copyScale; }
+        }
 
-        public static HeadFan Shape(LookPart[] head, int copies, bool isPlant,
-            LookVocabulary.LayoutEntry layout = null, ShapeProfile branchShape = default)
+        public static HeadFan Shape(
+            LookPart[] head,
+            int copies,
+            bool isPlant,
+            LookVocabulary.LayoutEntry layout = null,
+            ShapeProfile branchShape = default
+        )
         {
             HeadFan fan = new HeadFan
             {
-                _layout = layout ?? new LookVocabulary.LayoutEntry(),
-                _branchShape = branchShape
+                _layout = layout != null ? layout : new LookVocabulary.LayoutEntry(),
+                _branchShape = branchShape,
             };
             fan._copies = copies;
             fan._isPlant = isPlant;
@@ -39,13 +46,16 @@ namespace HealerLike.Render.Creatures
             }
 
             // Mineral copies sit in a row. Width controls their spacing so broad slabs keep a visible gap.
-            fan._length = Mathf.Max(fan._layout.stoneBranch,
-                HeadWidth(head) * fan._copyScale * fan._layout.headClearance);
+            fan._length = Mathf.Max(
+                fan._layout.stoneBranch,
+                HeadWidth(head) * fan._copyScale * fan._layout.headClearance
+            );
             if (isPlant)
             {
                 fan._copyScale = fan.CopyScale(head, fan._copyScale, fan._spread);
                 fan._length = fan.BranchLength(head, fan._copyScale, fan._spread);
             }
+
             return fan;
         }
 
@@ -66,12 +76,20 @@ namespace HealerLike.Render.Creatures
                 if (delta.sqrMagnitude > 0.000001f)
                 {
                     float thickness = _layout.stoneBranchThickness * scale;
-                    parts.Add(BranchId, Primitive.Stone, (top + end) * 0.5f,
-                        new Vector3(thickness, delta.magnitude + thickness, thickness), colour,
-                        Quaternion.FromToRotation(Vector3.up, delta).eulerAngles, 0f, PartRole.Stem,
-                        shape: _branchShape);
+                    parts.Add(
+                        BranchId,
+                        Primitive.Stone,
+                        (top + end) * 0.5f,
+                        new Vector3(thickness, delta.magnitude + thickness, thickness),
+                        colour,
+                        Quaternion.FromToRotation(Vector3.up, delta).eulerAngles,
+                        0f,
+                        PartRole.Stem,
+                        shape: _branchShape
+                    );
                 }
             }
+
             return end;
         }
 
@@ -100,6 +118,7 @@ namespace HealerLike.Render.Creatures
                 float right = (i + 1 - (_copies - 1) * 0.5f) * spread * Mathf.Deg2Rad;
                 gap = Mathf.Min(gap, Mathf.Abs(Mathf.Sin(right) - Mathf.Sin(left)));
             }
+
             return gap * _layout.foreshortening;
         }
 
@@ -113,6 +132,7 @@ namespace HealerLike.Render.Creatures
                 float half = LookMeasure.Extent(part.size * 0.5f, inverse * Vector3.right, part.shape);
                 width = Mathf.Max(width, 2f * (Mathf.Abs(part.position.x) + half));
             }
+
             return width;
         }
     }
