@@ -140,6 +140,9 @@ namespace HealerLike.Render.Stage
             {
                 _rangeDriver.Add(preview);
             }
+
+            // The creature's health reads in the grass around it
+            viewGo.AddComponent<GroundAura>().Init(entity, _manager.zones, StageCalibration.CellSize);
         }
 
         void DressCharacter(Character character)

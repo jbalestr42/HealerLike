@@ -10,11 +10,13 @@
 #define HL_GROUND_DISC 0
 #define HL_GROUND_FRONT 1
 #define HL_GROUND_BODY 2
+#define HL_GROUND_AURA 3
 
 // Disc and front: centreRadius xy centre in world XZ, z radius, w front half width. Disc push: x turn from outward,
 // w push. Front push: xy heading, z push along it (zero blows all round), w push outward. Body: centreRadius the
 // first end (x, z, height, radius), push the second end (x, z, height, margin). shape: x flatness, y disc edge
 // share, z rim wobble share, w kind. response: x grass height and y lean for a body, z held share, w kick.
+// Aura: centreRadius like a disc, push x ash, y vitality, z glow.
 struct HLGroundStamp
 {
     float4 centreRadius;
@@ -63,6 +65,26 @@ float3 HLGroundBodyValue(HLGroundStamp stamp, float2 p)
     return float3(outward * (stamp.response.y * contact * near), stamp.shape.x * contact * covered);
 }
 
+// A disc's cover at a point, its rim wobbling inward by the wobble share
+float HLGroundDiscWeight(HLGroundStamp stamp, float2 p)
+{
+    float radius = stamp.centreRadius.z;
+    float rim = radius * (1.0 - stamp.shape.z * (0.5 + 0.5 * sin(dot(p, HL_GROUND_RIM_FREQUENCY))));
+    return 1.0 - smoothstep(rim * (1.0 - stamp.shape.y), rim, length(p - stamp.centreRadius.xy));
+}
+
+// What an aura asks of the ground state, weighted by its cover: x ash, y vitality, z glow, w cover
+float4 HLGroundStampState(HLGroundStamp stamp, float2 p)
+{
+    if (round(stamp.shape.w) != HL_GROUND_AURA)
+    {
+        return float4(0.0, 0.0, 0.0, 0.0);
+    }
+
+    float weight = HLGroundDiscWeight(stamp, p);
+    return float4(stamp.push.xyz * weight, weight);
+}
+
 // xy lean in radians and z flatness the stamp adds at a world XZ point
 float3 HLGroundStampValue(HLGroundStamp stamp, float2 p)
 {
@@ -70,6 +92,11 @@ float3 HLGroundStampValue(HLGroundStamp stamp, float2 p)
     if (kind == HL_GROUND_BODY)
     {
         return HLGroundBodyValue(stamp, p);
+    }
+
+    if (kind == HL_GROUND_AURA)
+    {
+        return float3(0.0, 0.0, 0.0);
     }
 
     float2 delta = p - stamp.centreRadius.xy;
@@ -89,8 +116,7 @@ float3 HLGroundStampValue(HLGroundStamp stamp, float2 p)
         return float3((stamp.push.xy * stamp.push.z + outward * stamp.push.w) * front, stamp.shape.x * front);
     }
 
-    float rim = radius * (1.0 - stamp.shape.z * (0.5 + 0.5 * sin(dot(p, HL_GROUND_RIM_FREQUENCY))));
-    float weight = 1.0 - smoothstep(rim * (1.0 - stamp.shape.y), rim, distanceToCentre);
+    float weight = HLGroundDiscWeight(stamp, p);
     return float3(HLGroundTurn(outward, stamp.push.x) * (stamp.push.w * weight), stamp.shape.x * weight);
 }
 
@@ -131,6 +157,20 @@ float HLGroundCrushStep(float crush, float target, float step, float2 rates)
 {
     float rate = target > crush ? rates.x : rates.y;
     return crush + (target - crush) * (1.0 - exp(-rate * step));
+}
+
+// rates: x toward more ash, y back from ash, z toward the asked vitality, w back to neutral vitality; glowRates:
+// x rising, y fading, all per second. aura is the summed HLGroundStampState. state: x ash, y vitality, z glow.
+float4 HLGroundStateStep(float4 state, float4 aura, float step, float4 rates, float2 glowRates)
+{
+    float cover = saturate(aura.w);
+    float3 asked = cover * aura.xyz / max(aura.w, 1e-4);
+    float ashRate = asked.x > state.x ? rates.x : rates.y;
+    float vitalityRate = abs(asked.y) > abs(state.y) ? rates.z : rates.w;
+    float glowRate = asked.z > state.z ? glowRates.x : glowRates.y;
+    float3 rate = float3(ashRate, vitalityRate, glowRate);
+    float3 next = state.xyz + (asked - state.xyz) * (1.0 - exp(-rate * step));
+    return float4(saturate(next.x), clamp(next.y, -1.0, 1.0), saturate(next.z), 0.0);
 }
 
 // uv on the ground textures of a world XZ point; rect is GroundVolume.ShaderRect

@@ -5,9 +5,9 @@ using UnityEngine;
 namespace HealerLike.Render.Grass
 {
     // The published zones as ground stamps. Heals and range previews hold the grass leaning away from their
-    // centre and a heal also spins it; obstacles flatten it outward; launches throw it along their heading and
-    // shocks throw it outward in a ring. Hostile and bruise zones change height only, which the tuft compute
-    // still reads from the zones.
+    // centre and a heal also spins it and makes it grow and glow; obstacles flatten it outward; launches throw it
+    // along their heading and shocks throw it outward in a ring; ash and wilt zones burn or kill it. Hostile and
+    // bruise zones change height only, which the tuft compute still reads from the zones.
     public static class ZoneStamps
     {
         // Radians of held lean at a zone's full onset
@@ -36,6 +36,12 @@ namespace HealerLike.Render.Grass
         public static readonly float ShockMinBand = 0.2f;
         // A quarter turn counterclockwise: the heal spins the grass around its centre
         public static readonly float SwirlTurn = Mathf.PI * 0.5f;
+        // Aura edges as shares of their radius, and how far their rims wobble inward
+        public static readonly float AshEdge = 0.35f;
+        public static readonly float AshWobble = 0.22f;
+        public static readonly float WiltEdge = 0.5f;
+        public static readonly float WiltWobble = 0.15f;
+        public static readonly float BloomEdge = 0.4f;
 
         // HLGrassZoneOnset: the strength, eased in over the first 0.12 s
         public static float Onset(Zone zone)
@@ -63,6 +69,12 @@ namespace HealerLike.Render.Grass
                 if (start + count < into.Length && TryCreateKick(zones[i], out GroundStamp kick))
                 {
                     into[start + count] = kick;
+                    count++;
+                }
+
+                if (start + count < into.Length && TryCreateAura(zones[i], out GroundStamp aura))
+                {
+                    into[start + count] = aura;
                     count++;
                 }
             }
@@ -133,6 +145,36 @@ namespace HealerLike.Render.Grass
         {
             float left = 1f - zone.age / ZoneRegistry.LaunchSeconds;
             return Mathf.Clamp01(zone.strength / Mathf.Max(0.05f, left));
+        }
+
+        // What a zone asks of the ground state: ash for a rocky enemy, dead grass for a hurt ally, lush glowing
+        // grass for a heal
+        public static bool TryCreateAura(Zone zone, out GroundStamp stamp)
+        {
+            stamp = new GroundStamp();
+            if (!RenderMath.IsPositive(zone.radius) || !RenderMath.IsPositive(zone.strength))
+            {
+                return false;
+            }
+
+            Vector2 centre = new Vector2(zone.position.x, zone.position.z);
+            float strength = Mathf.Clamp01(zone.strength);
+            switch ((ZoneKind)zone.kind)
+            {
+                case ZoneKind.Ash:
+                    stamp = GroundStamp.Aura(centre, zone.radius, AshEdge, AshWobble, strength, 0f, 0f);
+                    return true;
+                case ZoneKind.Wilt:
+                    stamp = GroundStamp.Aura(centre, zone.radius, WiltEdge, WiltWobble, 0f, -strength, 0f);
+                    return true;
+                case ZoneKind.Heal:
+                    float bloom = Mathf.Clamp01(zone.age / HealBloomSeconds);
+                    float onset = Onset(zone);
+                    stamp = GroundStamp.Aura(centre, zone.radius * bloom, BloomEdge, 0f, 0f, onset, onset);
+                    return bloom > 0f && onset > 0f;
+                default:
+                    return false;
+            }
         }
 
         // The launch heading ZonePacker.EncodeDirection stores, a full turn from +X toward +Z

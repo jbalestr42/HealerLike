@@ -4,16 +4,18 @@ using UnityEngine.Rendering;
 
 namespace HealerLike.Render.Grass
 {
-    // The grass motion over one ground volume: each frame the stamps add up into a held target and a kicked force,
-    // then fixed steps spring the lean toward the target under the force and ease the flatness. The result is published as global textures that every
+    // The ground under the grass over one volume. Its motion: each frame the stamps add up into a held target and a
+    // kicked force, then fixed steps spring the lean toward the target under the force and ease the flatness. Its
+    // state: the auras ask for ash, vitality and glow, which ease toward them once a frame. The result is published as global textures that every
     // grass field samples at its tufts' roots, so the board and the strips around it move as one carpet.
-    public class GroundMotion : IDisposable
+    public class GroundSimulation : IDisposable
     {
         // The most stamps one frame draws; later ones are dropped
         public static readonly int StampCapacity = 1024;
 
         public static readonly int MotionId = Shader.PropertyToID("_HLGroundMotion");
         public static readonly int CrushId = Shader.PropertyToID("_HLGroundCrush");
+        public static readonly int StateId = Shader.PropertyToID("_HLGroundState");
         public static readonly int RectId = Shader.PropertyToID("_HLGroundRect");
         public static readonly int ActiveId = Shader.PropertyToID("_HLGroundActive");
         public static readonly int GustId = Shader.PropertyToID("_HLGroundGust");
@@ -24,6 +26,10 @@ namespace HealerLike.Render.Grass
         static readonly int previousCrushId = Shader.PropertyToID("_HLGroundPreviousCrush");
         static readonly int targetId = Shader.PropertyToID("_HLGroundTarget");
         static readonly int forceId = Shader.PropertyToID("_HLGroundForce");
+        static readonly int auraId = Shader.PropertyToID("_HLGroundAura");
+        static readonly int previousStateId = Shader.PropertyToID("_HLGroundPreviousState");
+        static readonly int stateRatesId = Shader.PropertyToID("_HLGroundStateRates");
+        static readonly int glowRatesId = Shader.PropertyToID("_HLGroundGlowRates");
         static readonly int springId = Shader.PropertyToID("_HLGroundSpring");
         static readonly int crushRatesId = Shader.PropertyToID("_HLGroundCrushRates");
         static readonly int windId = Shader.PropertyToID("_HLGroundWind");
@@ -32,12 +38,17 @@ namespace HealerLike.Render.Grass
         static readonly int leanPass = 1;
         static readonly int crushPass = 2;
         static readonly int forcePass = 3;
+        static readonly int auraPass = 4;
+        static readonly int statePass = 5;
 
         readonly GroundStamp[] _stamps = new GroundStamp[StampCapacity];
         readonly RenderTexture[] _motion = new RenderTexture[2];
         readonly RenderTexture[] _crush = new RenderTexture[2];
+        readonly RenderTexture[] _state = new RenderTexture[2];
         RenderTexture _target;
         RenderTexture _force;
+        RenderTexture _aura;
+        int _currentState;
         GraphicsBuffer _stampBuffer;
         CommandBuffer _commands;
         Material _material;
@@ -48,9 +59,12 @@ namespace HealerLike.Render.Grass
         public GroundVolume volume { get { return _volume; } }
 
         public GroundSpringSettings settings;
+        public GroundStateSettings stateSettings = GroundStateSettings.Default;
 
         public RenderTexture motion { get { return _motion[_current]; } }
         public RenderTexture crush { get { return _crush[_current]; } }
+        // x ash, y vitality from dead at -1 to lush at 1, z glow
+        public RenderTexture state { get { return _state[_currentState]; } }
         public int stampCount { get { return _stampCount; } }
 
         public bool isValid { get { return _material != null && _target != null; } }
@@ -63,12 +77,12 @@ namespace HealerLike.Render.Grass
         }
 
         // Logs and stays invalid when the device, the shader or the volume cannot run the ground
-        public GroundMotion(Shader shader, GroundVolume volume, GroundSpringSettings settings)
+        public GroundSimulation(Shader shader, GroundVolume volume, GroundSpringSettings settings)
         {
             this.settings = settings;
             if (shader == null || !shader.isSupported || !volume.isValid || !IsSupported())
             {
-                Debug.LogError("[GroundMotion] Needs a supported ground shader, half float targets and a valid volume.");
+                Debug.LogError("[GroundSimulation] Needs a supported ground shader, half float targets and a valid volume.");
                 return;
             }
 
@@ -76,14 +90,16 @@ namespace HealerLike.Render.Grass
             _material = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
             _target = CreateTarget("GroundTarget", RenderTextureFormat.ARGBHalf);
             _force = CreateTarget("GroundForce", RenderTextureFormat.ARGBHalf);
+            _aura = CreateTarget("GroundAura", RenderTextureFormat.ARGBHalf);
             for (int i = 0; i < 2; i++)
             {
                 _motion[i] = CreateTarget("GroundMotion" + i, RenderTextureFormat.ARGBHalf);
                 _crush[i] = CreateTarget("GroundCrush" + i, RenderTextureFormat.RHalf);
+                _state[i] = CreateTarget("GroundState" + i, RenderTextureFormat.ARGBHalf);
             }
 
             _stampBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, StampCapacity, GroundStamp.Stride);
-            _commands = new CommandBuffer { name = "GroundMotion" };
+            _commands = new CommandBuffer { name = "GroundSimulation" };
             _material.SetVector(RectId, volume.ShaderRect());
             _material.SetVector(sizeId, new Vector4(volume.width, volume.height, 1f / volume.width, 1f / volume.height));
             Reset();
@@ -117,6 +133,8 @@ namespace HealerLike.Render.Grass
                 _commands.SetRenderTarget(_motion[i]);
                 _commands.ClearRenderTarget(false, true, Color.clear);
                 _commands.SetRenderTarget(_crush[i]);
+                _commands.ClearRenderTarget(false, true, Color.clear);
+                _commands.SetRenderTarget(_state[i]);
                 _commands.ClearRenderTarget(false, true, Color.clear);
             }
 
@@ -160,6 +178,14 @@ namespace HealerLike.Render.Grass
                                          _stampCount);
             }
 
+            _commands.SetRenderTarget(_aura);
+            _commands.ClearRenderTarget(false, true, Color.clear);
+            if (_stampCount > 0)
+            {
+                _commands.DrawProcedural(Matrix4x4.identity, _material, auraPass, MeshTopology.Triangles, 6,
+                                         _stampCount);
+            }
+
             Graphics.ExecuteCommandBuffer(_commands);
             _material.SetTexture(targetId, _target);
             _material.SetTexture(forceId, _force);
@@ -185,6 +211,27 @@ namespace HealerLike.Render.Grass
                 Graphics.ExecuteCommandBuffer(_commands);
                 _current = next;
             }
+
+            if (steps > 0)
+            {
+                StepState(step * steps);
+            }
+        }
+
+        // The slow state moves once a frame; its exponential ease takes any frame length
+        void StepState(float frame)
+        {
+            _material.SetTexture(auraId, _aura);
+            _material.SetTexture(previousStateId, _state[_currentState]);
+            _material.SetVector(stateRatesId, stateSettings.ShaderRates());
+            _material.SetVector(glowRatesId, stateSettings.ShaderGlowRates());
+            _material.SetFloat(stepId, frame);
+            int next = 1 - _currentState;
+            _commands.Clear();
+            _commands.SetRenderTarget(_state[next]);
+            _commands.DrawProcedural(Matrix4x4.identity, _material, statePass, MeshTopology.Triangles, 3, 1);
+            Graphics.ExecuteCommandBuffer(_commands);
+            _currentState = next;
         }
 
         // What every grass field samples until Unpublish
@@ -197,6 +244,7 @@ namespace HealerLike.Render.Grass
 
             Shader.SetGlobalTexture(MotionId, motion);
             Shader.SetGlobalTexture(CrushId, crush);
+            Shader.SetGlobalTexture(StateId, state);
             Shader.SetGlobalVector(RectId, _volume.ShaderRect());
             Shader.SetGlobalVector(GustId, gust);
             Shader.SetGlobalFloat(ActiveId, 1f);
@@ -206,6 +254,7 @@ namespace HealerLike.Render.Grass
         {
             Shader.SetGlobalTexture(MotionId, Texture2D.blackTexture);
             Shader.SetGlobalTexture(CrushId, Texture2D.blackTexture);
+            Shader.SetGlobalTexture(StateId, Texture2D.blackTexture);
             Shader.SetGlobalVector(GustId, Vector4.zero);
             Shader.SetGlobalFloat(ActiveId, 0f);
         }
@@ -218,10 +267,12 @@ namespace HealerLike.Render.Grass
             _commands = null;
             ReleaseTarget(ref _target);
             ReleaseTarget(ref _force);
+            ReleaseTarget(ref _aura);
             for (int i = 0; i < 2; i++)
             {
                 ReleaseTarget(ref _motion[i]);
                 ReleaseTarget(ref _crush[i]);
+                ReleaseTarget(ref _state[i]);
             }
 
             if (_material != null)

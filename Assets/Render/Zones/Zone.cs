@@ -14,7 +14,11 @@ namespace HealerLike.Render.Zones
         Launch = 5,
         Trample = 6,
         // A blast ring: an impact throwing the grass outward
-        Shock = 7
+        Shock = 7,
+        // Grass burnt to ash around a rocky enemy, shrinking as its health falls
+        Ash = 8,
+        // Grass dying around an ally, spreading as its health falls
+        Wilt = 9
     }
 
     // Matches the 32 bytes element of _HLZones in ZoneData.hlsl

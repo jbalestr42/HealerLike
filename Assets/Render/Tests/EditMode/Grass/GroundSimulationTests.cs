@@ -5,25 +5,25 @@ using UnityEngine;
 namespace HealerLike.Render.Grass
 {
 
-// GroundMotion runs its shader on the graphics device; these read the results back
-public class GroundMotionTests
+// GroundSimulation runs its shader on the graphics device; these read the results back
+public class GroundSimulationTests
 {
-    static readonly string shaderPath = "Assets/Render/Shaders/GroundMotion.shader";
+    static readonly string shaderPath = "Assets/Render/Shaders/GroundSimulation.shader";
     static readonly Rect area = new Rect(-4f, -2f, 8f, 4f);
 
-    GroundMotion _ground;
+    GroundSimulation _ground;
     GroundVolume _volume;
 
     [SetUp]
     public void SetUp()
     {
-        if (!GroundMotion.IsSupported())
+        if (!GroundSimulation.IsSupported())
         {
             Assert.Ignore("Requires a graphics device; run the grass suite with -force-metal.");
         }
 
         _volume = GroundVolume.Create(area, 0.125f);
-        _ground = new GroundMotion(AssetDatabase.LoadAssetAtPath<Shader>(shaderPath), _volume,
+        _ground = new GroundSimulation(AssetDatabase.LoadAssetAtPath<Shader>(shaderPath), _volume,
                                    GroundSpringSettings.Default);
         Assert.IsTrue(_ground.isValid);
     }
@@ -32,7 +32,7 @@ public class GroundMotionTests
     public void TearDown()
     {
         _ground?.Dispose();
-        GroundMotion.Unpublish();
+        GroundSimulation.Unpublish();
     }
 
     static Color[] Read(RenderTexture texture)
@@ -144,6 +144,20 @@ public class GroundMotionTests
     }
 
     [Test]
+    public void Step_AshAura_BurnsTheStateUnderItOnly()
+    {
+        GroundStamp ash = GroundStamp.Aura(new Vector2(2f, 1f), 0.8f, 0.2f, 0f, 1f, 0f, 0f);
+
+        StepStill(new[] { ash }, 2f, Vector2.zero);
+
+        Color[] state = Read(_ground.state);
+        Assert.Greater(At(state, new Vector2(2f, 1f)).r, 0.9f);
+        Assert.Less(At(state, new Vector2(2f, -1f)).r, 0.01f, "Not mirrored across the rows.");
+        Assert.Less(At(state, new Vector2(-2f, 1f)).r, 0.01f);
+        Assert.AreEqual(0f, At(Read(_ground.motion), new Vector2(2f, 1f)).r, 1e-3f, "An aura moves nothing.");
+    }
+
+    [Test]
     public void Step_Paused_ChangesNothing()
     {
         StepStill(new[] { GroundStamp.Disc(Vector2.zero, 1f, 0.5f, 1f, 0.2f, 0f) }, 0.1f, Vector2.zero);
@@ -163,14 +177,15 @@ public class GroundMotionTests
 
         Assert.AreEqual(Color.clear, At(Read(_ground.motion), new Vector2(0.5f, 0f)));
         Assert.AreEqual(0f, At(Read(_ground.crush), new Vector2(0.5f, 0f)).r);
+        Assert.AreEqual(Color.clear, At(Read(_ground.state), new Vector2(0.5f, 0f)));
     }
 
     [Test]
     public void SetStamps_PastTheCapacity_KeepsTheFirstOnes()
     {
-        _ground.SetStamps(new GroundStamp[GroundMotion.StampCapacity + 5]);
+        _ground.SetStamps(new GroundStamp[GroundSimulation.StampCapacity + 5]);
 
-        Assert.AreEqual(GroundMotion.StampCapacity, _ground.stampCount);
+        Assert.AreEqual(GroundSimulation.StampCapacity, _ground.stampCount);
     }
 
     [Test]
@@ -178,13 +193,13 @@ public class GroundMotionTests
     {
         _ground.Publish(new Vector2(0.1f, 0.2f));
 
-        Assert.AreEqual(1f, Shader.GetGlobalFloat(GroundMotion.ActiveId));
-        Assert.AreSame(_ground.motion, Shader.GetGlobalTexture(GroundMotion.MotionId));
-        Assert.AreEqual(_volume.ShaderRect(), Shader.GetGlobalVector(GroundMotion.RectId));
+        Assert.AreEqual(1f, Shader.GetGlobalFloat(GroundSimulation.ActiveId));
+        Assert.AreSame(_ground.motion, Shader.GetGlobalTexture(GroundSimulation.MotionId));
+        Assert.AreEqual(_volume.ShaderRect(), Shader.GetGlobalVector(GroundSimulation.RectId));
 
-        GroundMotion.Unpublish();
+        GroundSimulation.Unpublish();
 
-        Assert.AreEqual(0f, Shader.GetGlobalFloat(GroundMotion.ActiveId));
+        Assert.AreEqual(0f, Shader.GetGlobalFloat(GroundSimulation.ActiveId));
     }
 
     [Test]
@@ -192,7 +207,7 @@ public class GroundMotionTests
     {
         TestHelpers.WithLoggingDisabled(() =>
         {
-            GroundMotion ground = new GroundMotion(null, _volume, GroundSpringSettings.Default);
+            GroundSimulation ground = new GroundSimulation(null, _volume, GroundSpringSettings.Default);
             Assert.IsFalse(ground.isValid);
             ground.Step(0.1f, Vector4.zero, Vector2.zero);
             ground.Dispose();

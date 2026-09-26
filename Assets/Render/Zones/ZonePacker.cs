@@ -27,7 +27,7 @@ namespace HealerLike.Render.Zones
                 return false;
             }
 
-            if (kind < ZoneKind.Heal || kind > ZoneKind.Shock)
+            if (kind < ZoneKind.Heal || kind > ZoneKind.Wilt)
             {
                 return false;
             }
@@ -41,6 +41,12 @@ namespace HealerLike.Render.Zones
             return true;
         }
 
+        // What a body leaves on the ground while it stands there, as opposed to feedback on something it did
+        public static bool IsFootprint(int kind)
+        {
+            return kind == (int)ZoneKind.Trample || kind == (int)ZoneKind.Ash || kind == (int)ZoneKind.Wilt;
+        }
+
         // Not a sort: keeps room for the gameplay feedback first and gives the footprints what is left,
         // moving the kept zones to the front in their order and returning how many were kept
         public static int ReserveFeedback(Zone[] zones, int count)
@@ -48,7 +54,7 @@ namespace HealerLike.Render.Zones
             int feedback = 0;
             for (int i = 0; i < count; i++)
             {
-                if (zones[i].kind != (int)ZoneKind.Trample)
+                if (!IsFootprint(zones[i].kind))
                 {
                     feedback++;
                 }
@@ -58,7 +64,7 @@ namespace HealerLike.Render.Zones
             int selected = 0;
             for (int i = 0; i < count; i++)
             {
-                if (zones[i].kind == (int)ZoneKind.Trample && footprints-- <= 0)
+                if (IsFootprint(zones[i].kind) && footprints-- <= 0)
                 {
                     continue;
                 }

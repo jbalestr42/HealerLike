@@ -28,6 +28,7 @@ public class GrassComputeTests
     Vector4[] _planes;
     Texture2D _groundMotion;
     Texture2D _groundCrush;
+    Texture2D _groundState;
 
     // 65 upright tufts of the mean size, so a zone's push is the whole lean
     static TuftSeed[] CreateSeeds()
@@ -111,27 +112,33 @@ public class GrassComputeTests
         SetGround(null, 0f);
     }
 
-    // A ground of one lean and flatness over the whole test area, or none
-    void SetGround(Vector4? motion, float crush)
+    // A ground of one lean, flatness and state over the whole test area, or none
+    void SetGround(Vector4? motion, float crush, Vector4 state = default)
     {
         DestroyGround();
         _groundMotion = new Texture2D(4, 4, TextureFormat.RGBAFloat, false, true);
         _groundCrush = new Texture2D(4, 4, TextureFormat.RFloat, false, true);
+        _groundState = new Texture2D(4, 4, TextureFormat.RGBAFloat, false, true);
         Color motionColour = motion.HasValue ? (Color)motion.Value : Color.clear;
         Color[] motionPixels = new Color[16];
         Color[] crushPixels = new Color[16];
+        Color[] statePixels = new Color[16];
         for (int i = 0; i < 16; i++)
         {
             motionPixels[i] = motionColour;
             crushPixels[i] = new Color(crush, 0f, 0f, 0f);
+            statePixels[i] = state;
         }
 
         _groundMotion.SetPixels(motionPixels);
         _groundMotion.Apply();
         _groundCrush.SetPixels(crushPixels);
         _groundCrush.Apply();
+        _groundState.SetPixels(statePixels);
+        _groundState.Apply();
         _compute.SetTexture(_kernel, "_HLGroundMotion", _groundMotion);
         _compute.SetTexture(_kernel, "_HLGroundCrush", _groundCrush);
+        _compute.SetTexture(_kernel, "_HLGroundState", _groundState);
         // Twenty units either side of the origin, well past every test tuft
         _compute.SetVector("_HLGroundRect", new Vector4(-40f, -40f, 1f / 80f, 1f / 80f));
         _compute.SetFloat("_HLGroundActive", motion.HasValue ? 1f : 0f);
@@ -143,8 +150,10 @@ public class GrassComputeTests
         {
             Object.DestroyImmediate(_groundMotion);
             Object.DestroyImmediate(_groundCrush);
+            Object.DestroyImmediate(_groundState);
             _groundMotion = null;
             _groundCrush = null;
+            _groundState = null;
         }
     }
 
@@ -371,6 +380,55 @@ public class GrassComputeTests
         Assert.That(new Vector2(state.x, state.y).magnitude, Is.EqualTo(1.2f).Within(0.001f));
         Assert.Greater(state.y, 1.19f, "The fold follows the push.");
         Assert.That(state.z * GrassLayout.TuftHeight, Is.LessThanOrEqualTo(0.1401f));
+    }
+
+    [Test]
+    public void Dispatch_GroundAsh_BurnsTheTuftShortAndStiff()
+    {
+        _compute.SetInt("_HLZoneCount", 0);
+        SetGround(new Vector4(0.4f, 0f, 0f, 0f), 0f);
+        Dispatch();
+        ReadStates();
+        Vector4 green = _states[0].leanHeightSpike;
+
+        SetGround(new Vector4(0.4f, 0f, 0f, 0f), 0f, new Vector4(1f, 0f, 0f, 0f));
+        Dispatch();
+        ReadStates();
+        Vector4 burnt = _states[0].leanHeightSpike;
+
+        Assert.That(burnt.z, Is.EqualTo(0.2f).Within(0.001f));
+        Assert.That(burnt.x, Is.EqualTo(green.x * 0.3f).Within(0.001f), "Ash barely moves in the air.");
+    }
+
+    [Test]
+    public void Dispatch_GroundVitality_LiftsLushGrassAndDroopsDeadGrass()
+    {
+        _compute.SetInt("_HLZoneCount", 0);
+        _layout[0].heightWidthLean = new Vector4(GrassLayout.TuftHeight, GrassLayout.TuftWidth, 0f, 0.2f);
+        _seedBuffer.SetData(_layout);
+        SetGround(Vector4.zero, 0f, new Vector4(0f, 1f, 0f, 0f));
+        Dispatch();
+        ReadStates();
+        Vector4 lush = _states[0].leanHeightSpike;
+
+        SetGround(Vector4.zero, 0f, new Vector4(0f, -1f, 0f, 0f));
+        Dispatch();
+        ReadStates();
+        Vector4 dead = _states[0].leanHeightSpike;
+
+        Assert.That(lush.z, Is.EqualTo(1.5f).Within(0.001f));
+        Assert.That(dead.z, Is.EqualTo(0.6f).Within(0.001f));
+        Assert.That(dead.y, Is.EqualTo(0.2f + 0.8f).Within(0.001f), "Dead grass droops along its rest heading.");
+    }
+
+    [Test]
+    public void Dispatch_HealOnLushGrass_StaysWithinTheHealLift()
+    {
+        SetGround(Vector4.zero, 0f, new Vector4(0f, 1f, 0f, 0f));
+
+        TuftState healed = Sample(1, Vector3.right, 2f, 1f);
+
+        Assert.That(healed.leanHeightSpike.z, Is.EqualTo(GrassLayout.HealLift).Within(0.0001f));
     }
 
     [Test]

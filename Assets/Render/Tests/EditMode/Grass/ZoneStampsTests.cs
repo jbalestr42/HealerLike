@@ -107,9 +107,40 @@ public class ZoneStampsTests
 
         int written = ZoneStamps.Append(new[] { Make(ZoneKind.Heal, Vector3.zero, 2f, 1f) }, into, 0);
 
-        Assert.AreEqual(2, written);
+        Assert.AreEqual(3, written);
         Assert.AreEqual(1f, into[0].response.z, "The disc holds.");
         Assert.AreEqual(ZoneStamps.HealSwirl, into[1].response.w, 1e-5f, "The swirl throws.");
+        Assert.AreEqual(GroundStampKind.Aura, into[2].kind, "The aura greens and lights it.");
+    }
+
+    [Test]
+    public void TryCreateAura_Ash_AsksForFullAshOverTheDisc()
+    {
+        Assert.IsTrue(ZoneStamps.TryCreateAura(Make(ZoneKind.Ash, new Vector3(1f, 0f, 1f), 1.5f, 3f), out GroundStamp ash));
+
+        Vector4 state = ash.State(new Vector2(1f, 1f));
+        Assert.AreEqual(new Vector4(1f, 0f, 0f, 1f), state);
+        Assert.AreEqual(Vector4.zero, ash.State(new Vector2(3f, 1f)));
+        Assert.IsFalse(ZoneStamps.TryCreate(Make(ZoneKind.Ash, Vector3.zero, 1f, 1f), out _), "Ash moves nothing.");
+    }
+
+    [Test]
+    public void TryCreateAura_Wilt_AsksForDeadGrassAsDeepAsItsStrength()
+    {
+        ZoneStamps.TryCreateAura(Make(ZoneKind.Wilt, Vector3.zero, 2f, 1f, strength: 0.6f), out GroundStamp wilt);
+
+        Assert.AreEqual(-0.6f, wilt.State(Vector2.zero).y, 1e-6f);
+    }
+
+    [Test]
+    public void TryCreateAura_Heal_AsksForLushGlowingGrass()
+    {
+        ZoneStamps.TryCreateAura(Make(ZoneKind.Heal, Vector3.zero, 2f, 1f), out GroundStamp bloom);
+
+        Vector4 state = bloom.State(Vector2.zero);
+        Assert.AreEqual(1f, state.y, 1e-6f);
+        Assert.AreEqual(1f, state.z, 1e-6f);
+        Assert.IsFalse(ZoneStamps.TryCreateAura(Make(ZoneKind.Shock, Vector3.zero, 2f, 1f), out _));
     }
 
     [Test]

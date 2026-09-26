@@ -19,6 +19,10 @@ Shader "HL/Look/Primitive"
         _HLHighlightWidth ("Localized Highlight Width", Range(0.001,0.1)) = 0.025
         _HLMeadowVariation ("Meadow Colour Variation", Range(0,0.4)) = 0
         _HLGrassTipLight ("Grass Root To Tip Light", Range(0,0.5)) = 0
+        // Ground state on grass: ash grey, dead straw and heal glow, alpha is each one's strength
+        _HLAshColor ("Grass Ash Colour", Color) = (0.58, 0.58, 0.56, 1)
+        _HLWiltColor ("Grass Dead Colour", Color) = (0.74, 0.65, 0.38, 0.9)
+        _HLGlowColor ("Grass Glow Colour", Color) = (1, 0.96, 0.62, 0.7)
     }
     SubShader
     {
@@ -104,6 +108,10 @@ Shader "HL/Look/Primitive"
                 baseColor *= 1.0 + _HLMeadowVariation * (patch * 2.0 - 1.0);
                 baseColor *= 1.0 + _HLGrassTipLight * input.grassAppearance.y
                     * (1.5 * input.grassAppearance.x - 1.0);
+                #if defined(HL_GRASS_INSTANCED)
+                float4 ground = HLGrassGroundState(input.positionWS);
+                baseColor = HLGrassGroundColour(baseColor, ground);
+                #endif
                 float3 color = HLShadeSurface(input.positionWS, facing, mainLight.shadowAttenuation,
                                               baseColor, _HLHatchMultiplier, _HLToonThresholdOffset,
                                               _HLShadeTint, _HLFaceHatch, _HLShadeTurnTint,
@@ -112,6 +120,9 @@ Shader "HL/Look/Primitive"
                 {
                     color = HLApplyBattlefieldGrid(input.positionWS, color);
                 }
+                #if defined(HL_GRASS_INSTANCED)
+                color += HLGrassGroundGlow(ground, input.grassAppearance);
+                #endif
                 return half4(HLApplyBandedFog(input.positionWS, color), 1);
             }
             ENDHLSL

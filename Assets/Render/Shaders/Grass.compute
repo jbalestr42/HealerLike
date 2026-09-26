@@ -33,6 +33,13 @@
 #define HL_SHIVER_RATE 13.0
 // The ground's own lean fades into the plain wind over this many world units before its edge
 #define HL_GROUND_FADE 1.0
+// Ground state: lush grass rises by this share, dead grass sinks by this share and droops this far along its
+// heading, ash burns a tuft down to this share of its height and stiffens it by this share
+#define HL_GROW_LIFT 0.5
+#define HL_WILT_SINK 0.4
+#define HL_WILT_DROOP 0.8
+#define HL_ASH_HEIGHT 0.2
+#define HL_ASH_STIFF 0.7
 
 StructuredBuffer<HLTuftSeed> _HLBladeSeeds;
 RWStructuredBuffer<HLTuftState> _HLBladeStates;
@@ -44,9 +51,11 @@ float _HLCullMargin;
 // GroundWind.Shader, and the gust pulses' lean
 float4 _HLGroundWind;
 float2 _HLGroundGust;
-// The ground GroundMotion publishes: xy lean and zw its velocity, the flatness, where it lies, and one while live
+// The ground GroundSimulation publishes: xy lean and zw its velocity, the flatness, the ash, vitality and glow,
+// where it lies, and one while live
 Texture2D<float4> _HLGroundMotion;
 Texture2D<float> _HLGroundCrush;
+Texture2D<float4> _HLGroundState;
 SamplerState hl_linear_clamp_sampler;
 float4 _HLGroundRect;
 float _HLGroundActive;
@@ -102,14 +111,16 @@ HLTuftState HLEvaluateTuft(HLTuftSeed tuft)
     float coverage = _HLGroundActive > 0.5 ? HLGroundCoverage(uv, _HLGroundRect, HL_GROUND_FADE) : 0.0;
     float4 motion = float4(0.0, 0.0, 0.0, 0.0);
     float crush = 0.0;
+    float4 ground = float4(0.0, 0.0, 0.0, 0.0);
     if (coverage > 0.0)
     {
         motion = _HLGroundMotion.SampleLevel(hl_linear_clamp_sampler, uv, 0.0);
         crush = saturate(_HLGroundCrush.SampleLevel(hl_linear_clamp_sampler, uv, 0.0)) * coverage;
+        ground = _HLGroundState.SampleLevel(hl_linear_clamp_sampler, uv, 0.0) * coverage;
     }
 
     float2 wind = HLGroundWindLean(position, _HLGroundWind, _HLGroundGust);
-    float2 ground = lerp(wind, motion.xy, coverage);
+    float2 air = lerp(wind, motion.xy, coverage);
 
     HLTuftState state;
     float height = tuft.heightWidthLean.x;
@@ -125,11 +136,20 @@ HLTuftState HLEvaluateTuft(HLTuftSeed tuft)
 
     float response = HL_RESPONSE_MIN + HL_RESPONSE_RANGE * frac(spikeRandom * 7.31);
     float shiver = HL_SHIVER * sin(_HLGroundWind.w * HL_SHIVER_RATE + spikeRandom * 6.2831853);
-    float2 lean = tuft.heightWidthLean.zw + response * ground + shiver * motion.zw * coverage;
+    float2 lean = tuft.heightWidthLean.zw + response * air + shiver * motion.zw * coverage;
+    // Dead grass droops along its rest heading, ash stands stiff in the air
+    float ash = saturate(ground.x);
+    float grow = saturate(ground.y);
+    float wilt = saturate(-ground.y);
+    float2 rest = tuft.heightWidthLean.zw;
+    float2 droop = length(rest) > 1e-3 ? normalize(rest) : yaw;
+    lean = lean * (1.0 - HL_ASH_STIFF * ash) + droop * (HL_WILT_DROOP * wilt);
     // Flattened tufts fold down along their push and shrink toward the ground
-    float2 fold = length(ground) > 1e-3 ? normalize(ground) : yaw;
+    float2 fold = length(air) > 1e-3 ? normalize(air) : yaw;
     lean = lerp(lean, fold * HL_CRUSH_LEAN, crush);
-    float grown = (1.0 + HL_HEAL_LIFT * heal) * (1.0 - HL_BRUISE_SINK * bruise);
+    // Heal and lush ground share the heal's lift, so a tuft never outgrows GrassBounds
+    float lifted = min((1.0 + HL_HEAL_LIFT * heal) * (1.0 + HL_GROW_LIFT * grow), 1.0 + HL_HEAL_LIFT);
+    float grown = lifted * (1.0 - HL_BRUISE_SINK * bruise) * (1.0 - HL_WILT_SINK * wilt) * lerp(1.0, HL_ASH_HEIGHT, ash);
     float scale = lerp(grown, HL_RING_CLEAR_HEIGHT / height, ringClear);
     scale = lerp(scale, min(scale, HL_CRUSH_HEIGHT / height), crush);
     spike *= 1.0 - crush;

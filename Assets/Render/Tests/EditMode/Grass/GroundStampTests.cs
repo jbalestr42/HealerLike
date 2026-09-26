@@ -189,6 +189,20 @@ public class GroundStampTests
     }
 
     [Test]
+    public void Aura_MovesNothingAndAsksTheStateUnderItsDisc()
+    {
+        GroundStamp aura = GroundStamp.Aura(Vector2.zero, 1f, 0.2f, 0f, 1f, -0.5f, 0.25f);
+
+        Assert.AreEqual(GroundStampKind.Aura, aura.kind);
+        Assert.AreEqual(Vector3.zero, aura.Sample(new Vector2(0.3f, 0f)));
+        Assert.AreEqual(Vector2.zero, aura.Force(new Vector2(0.3f, 0f)));
+        Assert.AreEqual(new Vector4(1f, -0.5f, 0.25f, 1f), aura.State(new Vector2(0.3f, 0f)));
+        Assert.AreEqual(Vector4.zero, aura.State(new Vector2(1.2f, 0f)));
+        Assert.AreEqual(Vector4.zero, GroundStamp.Disc(Vector2.zero, 1f, 0.2f, 1f, 0.2f, 0f).State(Vector2.zero),
+            "Only auras ask the state.");
+    }
+
+    [Test]
     public void Turn_QuarterTurn_TakesXToZ()
     {
         Vector2 turned = GroundStamp.Turn(Vector2.right, Mathf.PI * 0.5f);

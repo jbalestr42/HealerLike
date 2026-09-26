@@ -42,13 +42,13 @@ namespace HealerLike.Render.Grass
         float _cullMargin;
         bool _isInitialized;
         GrassDraw _ringDraw;
-        GroundStamp[] _stamps = new GroundStamp[GroundMotion.StampCapacity];
-        BodyCapsule[] _capsules = new BodyCapsule[GroundMotion.StampCapacity];
+        GroundStamp[] _stamps = new GroundStamp[GroundSimulation.StampCapacity];
+        BodyCapsule[] _capsules = new BodyCapsule[GroundSimulation.StampCapacity];
         Vector2 _gust;
         bool _isGroundFailed;
 
-        GroundMotion _ground;
-        public GroundMotion ground { get { return _ground; } }
+        GroundSimulation _ground;
+        public GroundSimulation ground { get { return _ground; } }
 
         public Material lookMaterial { get { return _lookMaterial; } }
 
@@ -189,7 +189,7 @@ namespace HealerLike.Render.Grass
                                  _area.height + 2f * margin);
             float texel = Mathf.Max(0.01f, RenderMath.FiniteOr(_groundTexel, 0.125f)) * _cellSize;
             GroundVolume volume = GroundVolume.Create(area, texel);
-            _ground = new GroundMotion(_groundShader, volume, _groundSpring);
+            _ground = new GroundSimulation(_groundShader, volume, _groundSpring);
             if (!_ground.isValid)
             {
                 _ground.Dispose();
@@ -287,16 +287,18 @@ namespace HealerLike.Render.Grass
         // The ground published this frame, or none: the tufts then take the plain wind with this field's gust
         void BindGround()
         {
-            bool isActive = Shader.GetGlobalFloat(GroundMotion.ActiveId) > 0.5f;
-            Texture motion = isActive ? Shader.GetGlobalTexture(GroundMotion.MotionId) : null;
-            Texture crush = isActive ? Shader.GetGlobalTexture(GroundMotion.CrushId) : null;
-            isActive = motion != null && crush != null;
-            _updateGrass.SetTexture(_kernel, GroundMotion.MotionId, isActive ? motion : Texture2D.blackTexture);
-            _updateGrass.SetTexture(_kernel, GroundMotion.CrushId, isActive ? crush : Texture2D.blackTexture);
-            _updateGrass.SetVector(GroundMotion.RectId, isActive ? Shader.GetGlobalVector(GroundMotion.RectId)
+            bool isActive = Shader.GetGlobalFloat(GroundSimulation.ActiveId) > 0.5f;
+            Texture motion = isActive ? Shader.GetGlobalTexture(GroundSimulation.MotionId) : null;
+            Texture crush = isActive ? Shader.GetGlobalTexture(GroundSimulation.CrushId) : null;
+            Texture state = isActive ? Shader.GetGlobalTexture(GroundSimulation.StateId) : null;
+            isActive = motion != null && crush != null && state != null;
+            _updateGrass.SetTexture(_kernel, GroundSimulation.MotionId, isActive ? motion : Texture2D.blackTexture);
+            _updateGrass.SetTexture(_kernel, GroundSimulation.CrushId, isActive ? crush : Texture2D.blackTexture);
+            _updateGrass.SetTexture(_kernel, GroundSimulation.StateId, isActive ? state : Texture2D.blackTexture);
+            _updateGrass.SetVector(GroundSimulation.RectId, isActive ? Shader.GetGlobalVector(GroundSimulation.RectId)
                                                                   : new Vector4(0f, 0f, 1f, 1f));
-            _updateGrass.SetFloat(GroundMotion.ActiveId, isActive ? 1f : 0f);
-            _updateGrass.SetVector(GroundMotion.GustId, isActive ? Shader.GetGlobalVector(GroundMotion.GustId)
+            _updateGrass.SetFloat(GroundSimulation.ActiveId, isActive ? 1f : 0f);
+            _updateGrass.SetVector(GroundSimulation.GustId, isActive ? Shader.GetGlobalVector(GroundSimulation.GustId)
                                                                   : (Vector4)_gust);
         }
 
@@ -367,7 +369,7 @@ namespace HealerLike.Render.Grass
             {
                 _ground.Dispose();
                 _ground = null;
-                GroundMotion.Unpublish();
+                GroundSimulation.Unpublish();
             }
 
             _isReady = false;

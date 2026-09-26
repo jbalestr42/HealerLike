@@ -11,6 +11,8 @@
 #define HL_ZONE_LAUNCH 5
 #define HL_ZONE_TRAMPLE 6
 #define HL_ZONE_SHOCK 7
+#define HL_ZONE_ASH 8
+#define HL_ZONE_WILT 9
 
 struct HLZone
 {

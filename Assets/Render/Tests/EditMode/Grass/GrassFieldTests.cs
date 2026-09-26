@@ -113,7 +113,7 @@ public class GrassFieldTests
         if (ownsGround)
         {
             TestHelpers.SetPrivateField(_field, "_groundShader",
-                AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/GroundMotion.shader"));
+                AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/GroundSimulation.shader"));
         }
 
         registry.Add(ZoneKind.Trample, new Vector3(0f, 0.5f, 0f), 0.6f, 1f);
@@ -125,7 +125,7 @@ public class GrassFieldTests
     [Test]
     public void UpdateField_GroundShader_OwnsAndPublishesTheGroundAroundTheField()
     {
-        if (!HasGraphicsDevice() || !GroundMotion.IsSupported())
+        if (!HasGraphicsDevice() || !GroundSimulation.IsSupported())
         {
             Assert.Ignore("Requires a graphics device; run with -force-metal.");
         }
@@ -138,19 +138,19 @@ public class GrassFieldTests
         Rect area = _field.ground.volume.area;
         Assert.AreEqual(-3.5f, area.xMin, 1e-5f, "Three cells of margin around the one-cell field.");
         Assert.AreEqual(7f, area.width, 1e-5f);
-        Assert.AreEqual(1f, Shader.GetGlobalFloat(GroundMotion.ActiveId));
-        Assert.AreSame(_field.ground.motion, Shader.GetGlobalTexture(GroundMotion.MotionId));
+        Assert.AreEqual(1f, Shader.GetGlobalFloat(GroundSimulation.ActiveId));
+        Assert.AreSame(_field.ground.motion, Shader.GetGlobalTexture(GroundSimulation.MotionId));
 
         TestHelpers.InvokePrivate(_field, "OnDisable");
 
         Assert.IsNull(_field.ground);
-        Assert.AreEqual(0f, Shader.GetGlobalFloat(GroundMotion.ActiveId), "A released ground is unpublished.");
+        Assert.AreEqual(0f, Shader.GetGlobalFloat(GroundSimulation.ActiveId), "A released ground is unpublished.");
     }
 
     [Test]
     public void UpdateField_TrampleOverTime_FlattensTheTuftsUnderIt()
     {
-        if (!HasGraphicsDevice() || !GroundMotion.IsSupported())
+        if (!HasGraphicsDevice() || !GroundSimulation.IsSupported())
         {
             Assert.Ignore("Requires a graphics device; run with -force-metal.");
         }
@@ -192,12 +192,12 @@ public class GrassFieldTests
             Assert.Ignore("Requires a graphics device; run with -force-metal.");
         }
 
-        GroundMotion.Unpublish();
+        GroundSimulation.Unpublish();
         BuildWithRegistry(false);
 
         Assert.IsNull(_field.ground);
         Assert.IsTrue(_field.isReady);
-        Assert.AreEqual(0f, Shader.GetGlobalFloat(GroundMotion.ActiveId));
+        Assert.AreEqual(0f, Shader.GetGlobalFloat(GroundSimulation.ActiveId));
     }
 
     [Test]

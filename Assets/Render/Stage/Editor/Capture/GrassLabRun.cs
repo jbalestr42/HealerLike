@@ -15,9 +15,11 @@ namespace HealerLike.Render.Stage
 {
     // A scripted grass scene stepped at a fixed 60 Hz, whatever the editor's frame rate: an ally walks through
     // the carpet past a stone enemy and a second ally, a heal blooms and swirls, a launch crosses, two hits blast
-    // out of the stone, a gust blows. The
+    // out of the stone, a gust blows. The stone's health falls, so its ash shrinks and the grass regrows toward
+    // it; the walker's falls too, so the grass dies around it. The
     // creatures are the game's own rigs pressing the grass as bodies. Writes a filmstrip, a contact sheet and the
-    // ground's lean and flatness at a few probes on every frame to grass-lab/ under the capture folder.
+    // ground's lean and flatness at a few probes on every frame to grass-lab/ under the capture folder, with a
+    // sheet of the ground's motion and one of its state.
     public class GrassLabRun : AStageRun
     {
         static readonly int frameWidth = 720;
@@ -100,6 +102,11 @@ namespace HealerLike.Render.Stage
 
             List<Texture2D> film = new List<Texture2D>();
             List<Texture2D> maps = new List<Texture2D>();
+            List<Texture2D> states = new List<Texture2D>();
+            ZoneHandle stoneAura = new ZoneHandle();
+            stoneAura.Init(registry);
+            ZoneHandle walkerAura = new ZoneHandle();
+            walkerAura.Init(registry);
             StringBuilder csv = new StringBuilder("frame,time");
             for (int i = 0; i < probes.Length; i++)
             {
@@ -113,6 +120,11 @@ namespace HealerLike.Render.Stage
                 // The walker crosses in three seconds, then stands
                 float walk = Mathf.Clamp01(time / 3f);
                 walker.position = new Vector3(Mathf.Lerp(-3.2f, 3.2f, walk), 0f, 0.5f + 0.4f * Mathf.Sin(walk * 5f));
+                // Both lose health across the run
+                float stoneHealth = Mathf.Lerp(1f, 0.1f, time / (frames * step));
+                float walkerHealth = Mathf.Lerp(1f, 0.2f, time / (frames * step));
+                Aura(stoneAura, ZoneKind.Ash, stone.position, stoneHealth);
+                Aura(walkerAura, ZoneKind.Wilt, walker.position, walkerHealth);
                 foreach (LabCreature creature in _creatures)
                 {
                     creature.preview.Tick(time, step, new FootFrame(creature.anchor.position, Vector3.up, 1f),
@@ -152,6 +164,7 @@ namespace HealerLike.Render.Stage
                 if (frame % filmEvery == 0)
                 {
                     maps.Add(Map(field.ground, motion, crush));
+                    states.Add(StateMap(field.ground, field.ground != null ? Read(field.ground.state) : null));
                     Texture2D shot = StageReadback.Render(camera, frameWidth, frameHeight);
                     film.Add(shot);
                     if (frame % (filmEvery * 6) == 0)
@@ -166,6 +179,7 @@ namespace HealerLike.Render.Stage
             File.WriteAllText(Path.Combine(folder, "probes.csv"), csv.ToString());
             WriteSheet(film, Path.Combine(folder, "contact.png"), frameWidth / sheetScale, frameHeight / sheetScale);
             WriteSheet(maps, Path.Combine(folder, "ground-contact.png"), mapSize, mapSize);
+            WriteSheet(states, Path.Combine(folder, "state-contact.png"), mapSize, mapSize);
             bool isPassed = field.ground != null && field.ground.isValid && film.Count > 0;
             Debug.Log($"[GrassLabRun] {film.Count} film frames, ground {(isPassed ? "live" : "missing")} "
                       + $"in {folder}");
@@ -175,6 +189,11 @@ namespace HealerLike.Render.Stage
             }
 
             foreach (Texture2D map in maps)
+            {
+                Object.Destroy(map);
+            }
+
+            foreach (Texture2D map in states)
             {
                 Object.Destroy(map);
             }
@@ -266,7 +285,7 @@ namespace HealerLike.Render.Stage
             return field;
         }
 
-        static void Probe(GroundMotion ground, Color[] motion, Color[] crush, int frame, float time,
+        static void Probe(GroundSimulation ground, Color[] motion, Color[] crush, int frame, float time,
                           StringBuilder csv)
         {
             csv.Append(frame.ToString(CultureInfo.InvariantCulture)).Append(',')
@@ -306,7 +325,7 @@ namespace HealerLike.Render.Stage
 
         // The ground seen from above, north up: lean east in red and north in green around mid grey, flatness
         // darkening toward blue. The field's own area is outlined.
-        static Texture2D Map(GroundMotion ground, Color[] motion, Color[] crush)
+        static Texture2D Map(GroundSimulation ground, Color[] motion, Color[] crush)
         {
             Texture2D map = new Texture2D(mapSize, mapSize, TextureFormat.RGB24, false);
             Color[] pixels = new Color[mapSize * mapSize];
@@ -322,6 +341,59 @@ namespace HealerLike.Render.Stage
                         float flat = At(ground.volume, crush, world).r;
                         colour = new Color(0.5f + lean.r, 0.5f + lean.g, 0.5f) * (1f - 0.6f * flat);
                         colour.b += 0.4f * flat;
+                        bool isEdge = Mathf.Abs(Mathf.Abs(world.x) - area.xMax) < 0.04f && Mathf.Abs(world.y) < area.yMax
+                                      || Mathf.Abs(Mathf.Abs(world.y) - area.yMax) < 0.04f && Mathf.Abs(world.x) < area.xMax;
+                        if (isEdge)
+                        {
+                            colour = Color.white;
+                        }
+                    }
+
+                    pixels[y * mapSize + x] = colour;
+                }
+            }
+
+            map.SetPixels(pixels);
+            map.Apply();
+            return map;
+        }
+
+        static void Aura(ZoneHandle zone, ZoneKind kind, Vector3 position, float health)
+        {
+            float strength = GroundAura.Strength(kind, health);
+            if (strength <= 0f)
+            {
+                zone.Clear();
+                return;
+            }
+
+            zone.Refresh(kind, position, GroundAura.Radius(kind, health), strength);
+        }
+
+        // The ground state from above, north up: green grass, grey ash, straw where it died, bright lime where it
+        // grows and yellow where it glows. The field's own area is outlined.
+        static Texture2D StateMap(GroundSimulation ground, Color[] state)
+        {
+            Texture2D map = new Texture2D(mapSize, mapSize, TextureFormat.RGB24, false);
+            Color[] pixels = new Color[mapSize * mapSize];
+            Color grass = new Color(0.3f, 0.62f, 0.3f);
+            Color ash = new Color(0.55f, 0.55f, 0.53f);
+            Color straw = new Color(0.75f, 0.65f, 0.35f);
+            Color lush = new Color(0.55f, 0.95f, 0.25f);
+            Color glow = new Color(1f, 0.95f, 0.5f);
+            for (int y = 0; y < mapSize; y++)
+            {
+                for (int x = 0; x < mapSize; x++)
+                {
+                    Color colour = Color.black;
+                    if (ground != null && state != null)
+                    {
+                        Vector2 world = ground.volume.ToWorld(new Vector2((x + 0.5f) / mapSize, (y + 0.5f) / mapSize));
+                        Color value = At(ground.volume, state, world);
+                        colour = Color.Lerp(grass, lush, Mathf.Clamp01(value.g));
+                        colour = Color.Lerp(colour, straw, Mathf.Clamp01(-value.g));
+                        colour = Color.Lerp(colour, ash, Mathf.Clamp01(value.r));
+                        colour = Color.Lerp(colour, glow, Mathf.Clamp01(value.b));
                         bool isEdge = Mathf.Abs(Mathf.Abs(world.x) - area.xMax) < 0.04f && Mathf.Abs(world.y) < area.yMax
                                       || Mathf.Abs(Mathf.Abs(world.y) - area.yMax) < 0.04f && Mathf.Abs(world.x) < area.xMax;
                         if (isEdge)

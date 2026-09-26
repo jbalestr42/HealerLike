@@ -13,6 +13,44 @@ void HLGrassInstancingSetup()
 #define UNITY_INDIRECT_DRAW_ARGS IndirectDrawIndexedArgs
 #include "UnityIndirect.cginc"
 #include "GrassTuftData.hlsl"
+#include "GroundCommon.hlsl"
+
+// The ground state GroundSimulation publishes, read by world position: x ash, y vitality, z glow
+TEXTURE2D(_HLGroundState);
+SAMPLER(sampler_HLGroundState);
+float4 _HLGroundRect;
+float _HLGroundActive;
+// Lush grass turns this much more lime
+#define HL_GROW_TINT float3(1.05, 1.3, 0.75)
+#define HL_GROUND_COLOUR_FADE 1.0
+
+float4 HLGrassGroundState(float3 positionWS)
+{
+    if (_HLGroundActive < 0.5)
+    {
+        return float4(0.0, 0.0, 0.0, 0.0);
+    }
+
+    float2 uv = HLGroundUV(positionWS.xz, _HLGroundRect);
+    float coverage = HLGroundCoverage(uv, _HLGroundRect, HL_GROUND_COLOUR_FADE);
+    return SAMPLE_TEXTURE2D_LOD(_HLGroundState, sampler_HLGroundState, saturate(uv), 0) * coverage;
+}
+
+// Lush grass greens, dead grass fades to straw, ash turns it grey; ash wins where both lie
+float3 HLGrassGroundColour(float3 baseColor, float4 ground)
+{
+    float grow = saturate(ground.y);
+    float wilt = saturate(-ground.y);
+    float3 colour = lerp(baseColor, baseColor * HL_GROW_TINT, 0.8 * grow);
+    colour = lerp(colour, _HLWiltColor.rgb, _HLWiltColor.a * wilt);
+    return lerp(colour, _HLAshColor.rgb, _HLAshColor.a * saturate(ground.x));
+}
+
+// The heal's glow, brightest toward the tips; appearance x is the height share along the tuft
+float3 HLGrassGroundGlow(float4 ground, float2 appearance)
+{
+    return _HLGlowColor.rgb * (_HLGlowColor.a * saturate(ground.z) * (0.3 + 0.7 * appearance.x));
+}
 
 // A spike's half width at its base, narrowing to the second as it fully rises; GrassLayout.SpikeHalfWidth is
 // the first

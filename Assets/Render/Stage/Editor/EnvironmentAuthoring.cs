@@ -19,7 +19,7 @@ namespace HealerLike.Render.Stage
         public static readonly string GrassComputePath = "Assets/Render/Shaders/Grass.compute";
         public static readonly string BladeMaterialPath = "Assets/Render/Grass/Materials/GrassBlade.mat";
         public static readonly string RingMaterialPath = "Assets/Render/Grass/Materials/HealRing.mat";
-        public static readonly string GroundShaderPath = "Assets/Render/Shaders/GroundMotion.shader";
+        public static readonly string GroundShaderPath = "Assets/Render/Shaders/GroundSimulation.shader";
 
         public static GameObject Create()
         {

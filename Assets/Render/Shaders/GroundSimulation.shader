@@ -1,8 +1,9 @@
-// The ground's motion, run by GroundMotion off-screen: stamps add up into a held target and a kicked force, then
+// The ground, run by GroundSimulation off-screen. Motion: stamps add up into a held target and a kicked force, then
 // fixed steps move a damped, neighbour-coupled spring of lean toward the target under the force and ease a
-// flatness toward the stamped one.
+// flatness toward the stamped one. State: auras add up into what they ask for, and once a frame the ash,
+// vitality and glow ease toward it.
 // Texel (x, y) always holds uv ((x + 0.5) / width, (y + 0.5) / height), whatever the platform's row order.
-Shader "Hidden/HL/GroundMotion"
+Shader "Hidden/HL/GroundSimulation"
 {
     SubShader
     {
@@ -168,6 +169,47 @@ Shader "Hidden/HL/GroundMotion"
                 HLGroundStamp stamp = _HLGroundStamps[input.stampID];
                 float3 value = HLGroundStampValue(stamp, input.positionXZ);
                 return float4(value.xy * stamp.response.w, 0.0, 0.0);
+            }
+            ENDHLSL
+        }
+
+        // 4: every stamp again, adding what the auras ask of the state
+        Pass
+        {
+            Name "HLGroundAura"
+            Blend One One
+            HLSLPROGRAM
+            #pragma target 4.5
+            #pragma vertex HLStampVertex
+            #pragma fragment HLAuraFragment
+
+            float4 HLAuraFragment(HLStampVaryings input) : SV_Target
+            {
+                return HLGroundStampState(_HLGroundStamps[input.stampID], input.positionXZ);
+            }
+            ENDHLSL
+        }
+
+        // 5: one frame of the state toward what the auras ask
+        Pass
+        {
+            Name "HLGroundState"
+            HLSLPROGRAM
+            #pragma target 4.5
+            #pragma vertex HLFullScreen
+            #pragma fragment HLStateFragment
+
+            Texture2D<float4> _HLGroundPreviousState;
+            Texture2D<float4> _HLGroundAura;
+            float4 _HLGroundStateRates;
+            float2 _HLGroundGlowRates;
+            float _HLGroundStep;
+
+            float4 HLStateFragment(float4 positionCS : SV_POSITION) : SV_Target
+            {
+                int3 texel = int3(int2(positionCS.xy), 0);
+                return HLGroundStateStep(_HLGroundPreviousState.Load(texel), _HLGroundAura.Load(texel),
+                                         _HLGroundStep, _HLGroundStateRates, _HLGroundGlowRates);
             }
             ENDHLSL
         }
