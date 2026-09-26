@@ -6,9 +6,13 @@
         <ui:Button name="detail-close-button" text="Close" class="button mobile-only" />
     </ui:Instance>
     <ui:ScrollView name="detail-scroll" class="detail-scroll" horizontal-scroller-visibility="Hidden">
-        <ui:VisualElement name="detail-icon" class="detail-icon" />
-        <ui:Label name="detail-title" text="Ready when you are" class="heading detail-title" />
-        <ui:Label name="detail-description" text="Use a card’s Info button or select an ally to see its details." class="detail-description muted" />
+        <ui:VisualElement class="detail-summary" picking-mode="Ignore">
+            <ui:VisualElement name="detail-icon" class="detail-icon" />
+            <ui:VisualElement class="detail-copy" picking-mode="Ignore">
+                <ui:Label name="detail-title" text="Ready when you are" class="heading detail-title" />
+                <ui:Label name="detail-description" text="Use a card’s Info button or select an ally to see its details." class="detail-description muted" />
+            </ui:VisualElement>
+        </ui:VisualElement>
         <ui:Instance template="ActionSection" name="detail-actions" class="detail-actions">
             <ui:DropdownField name="detail-targeting" label="Target priority" class="detail-targeting" />
             <ui:Button name="detail-equip-button" text="Select equipment" class="button" />
