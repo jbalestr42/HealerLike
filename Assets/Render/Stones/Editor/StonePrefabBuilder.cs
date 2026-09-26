@@ -1,4 +1,3 @@
-using System.IO;
 using HealerLike.Render.Creatures;
 using UnityEditor;
 using UnityEngine;
@@ -16,11 +15,12 @@ namespace HealerLike.Render.Stones
         [MenuItem("Tools/Render/Author Stone Prefabs")]
         public static void Build()
         {
-            Directory.CreateDirectory(root + "Prefabs");
+            if (!AssetDatabase.IsValidFolder(root + "Prefabs"))
+            {
+                AssetDatabase.CreateFolder(root.TrimEnd('/'), "Prefabs");
+            }
             BuildEffects();
             BuildDerivedStone();
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
         }
 
         public static AssetType Load<AssetType>(string path) where AssetType : Object

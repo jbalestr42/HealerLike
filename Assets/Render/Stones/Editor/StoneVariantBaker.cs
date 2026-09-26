@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using HealerLike.Render.Stage;
 using UnityEditor;
 using UnityEngine;
@@ -30,7 +29,10 @@ namespace HealerLike.Render.Stones
                 return;
             }
 
-            Directory.CreateDirectory(meshesFolder);
+            if (!AssetDatabase.IsValidFolder(meshesFolder))
+            {
+                AssetDatabase.CreateFolder("Assets/Render/Stones", "Meshes");
+            }
             Mesh[] meshes = new Mesh[VariantCount];
             for (int i = 0; i < VariantCount; i++)
             {
@@ -46,7 +48,7 @@ namespace HealerLike.Render.Stones
 
             variants.meshes = meshes;
             EditorUtility.SetDirty(variants);
-            AssetDatabase.SaveAssets();
+            AssetDatabase.SaveAssetIfDirty(variants);
             Debug.Log($"[StoneVariantBaker] Baked {VariantCount} stones into {meshesFolder}");
         }
 
@@ -161,6 +163,8 @@ namespace HealerLike.Render.Stones
             }
 
             EditorUtility.CopySerialized(mesh, existing);
+            EditorUtility.SetDirty(existing);
+            AssetDatabase.SaveAssetIfDirty(existing);
             Object.DestroyImmediate(mesh);
             return existing;
         }
