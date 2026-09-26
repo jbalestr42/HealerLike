@@ -21,6 +21,7 @@ namespace HealerLike.Render.Zones
         public static readonly float LaunchSeconds = 0.4f;
 
         readonly List<Entry> _entries = new List<Entry>();
+        readonly List<IZoneBody> _bodies = new List<IZoneBody>();
         readonly Zone[] _packed = new Zone[ZonePacker.MaxZones];
         Zone[] _source = new Zone[ZonePacker.MaxZones];
         IZoneUpload _upload;
@@ -34,6 +35,8 @@ namespace HealerLike.Render.Zones
         public int overflowCount { get { return _overflowCount; } }
 
         public int liveCount { get { return _entries.Count; } }
+
+        public int bodyCount { get { return _bodies.Count; } }
 
         public GraphicsBuffer buffer { get { return _upload != null ? _upload.buffer : null; } }
 
@@ -171,6 +174,37 @@ namespace HealerLike.Render.Zones
             return Find(handle) >= 0;
         }
 
+        // Bodies stay registered until removed; each is asked for its capsules when the grass gathers them
+        public void AddBody(IZoneBody body)
+        {
+            if (body != null && !_bodies.Contains(body))
+            {
+                _bodies.Add(body);
+            }
+        }
+
+        public void RemoveBody(IZoneBody body)
+        {
+            _bodies.Remove(body);
+        }
+
+        // Every body's capsules for this frame, in registration order, as many as fit
+        public int GatherBodies(BodyCapsule[] into)
+        {
+            if (into == null)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            for (int i = 0; i < _bodies.Count && count < into.Length; i++)
+            {
+                count += Mathf.Clamp(_bodies[i].AppendCapsules(into, count), 0, into.Length - count);
+            }
+
+            return count;
+        }
+
         public void PublishFrame(float deltaTime)
         {
             if (_upload == null)
@@ -259,6 +293,7 @@ namespace HealerLike.Render.Zones
             }
 
             _entries.Clear();
+            _bodies.Clear();
             Array.Clear(_packed, 0, _packed.Length);
             _count = 0;
             _overflowCount = 0;

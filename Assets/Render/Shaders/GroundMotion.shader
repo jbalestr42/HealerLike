@@ -69,10 +69,12 @@ Shader "Hidden/HL/GroundMotion"
                     float2(-1.0, -1.0), float2(1.0, 1.0), float2(-1.0, 1.0)
                 };
                 float2 side = corners[vertexID % 6];
-                float reach = stamp.centreRadius.z + stamp.centreRadius.w
-                    + 2.0 * max(_HLGroundSize.z / _HLGroundRect.z, _HLGroundSize.w / _HLGroundRect.w);
+                float2 centre;
+                float reach;
+                HLGroundStampBounds(stamp, centre, reach);
+                reach += 2.0 * max(_HLGroundSize.z / _HLGroundRect.z, _HLGroundSize.w / _HLGroundRect.w);
                 HLStampVaryings output;
-                output.positionXZ = stamp.centreRadius.xy + side * reach;
+                output.positionXZ = centre + side * reach;
                 output.positionCS = HLGroundClip(HLGroundUV(output.positionXZ, _HLGroundRect));
                 output.stampID = instanceID;
                 return output;

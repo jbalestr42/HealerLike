@@ -43,6 +43,7 @@ namespace HealerLike.Render.Grass
         bool _isInitialized;
         GrassDraw _ringDraw;
         GroundStamp[] _stamps = new GroundStamp[GroundMotion.StampCapacity];
+        BodyCapsule[] _capsules = new BodyCapsule[GroundMotion.StampCapacity];
         Vector2 _gust;
         bool _isGroundFailed;
 
@@ -171,6 +172,8 @@ namespace HealerLike.Render.Grass
             if (_ground != null)
             {
                 int count = ZoneStamps.Append(zones.snapshot, _stamps, 0);
+                count += BodyStamps.Append(_capsules, zones.GatherBodies(_capsules), _surfaceY, _cellSize, _stamps,
+                                           count);
                 _ground.SetStamps(new System.ReadOnlySpan<GroundStamp>(_stamps, 0, count));
                 _ground.Step(deltaTime, GroundWind.Shader(_windStrength, time), _gust);
                 _ground.Publish(_gust);

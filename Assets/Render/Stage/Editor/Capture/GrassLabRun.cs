@@ -5,14 +5,16 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Rendering;
+using HealerLike.Render.Creatures;
 using HealerLike.Render.Grass;
 using HealerLike.Render.Look;
 using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Stage
 {
-    // A scripted grass scene stepped at a fixed 60 Hz, whatever the editor's frame rate: a body walks through
-    // the carpet, a heal blooms, a launch crosses, a gust blows. Writes a filmstrip, a contact sheet and the
+    // A scripted grass scene stepped at a fixed 60 Hz, whatever the editor's frame rate: an ally walks through
+    // the carpet past a stone enemy and a second ally, a heal blooms, a launch crosses, a gust blows. The
+    // creatures are the game's own rigs pressing the grass as bodies. Writes a filmstrip, a contact sheet and the
     // ground's lean and flatness at a few probes on every frame to grass-lab/ under the capture folder.
     public class GrassLabRun : AStageRun
     {
@@ -36,6 +38,25 @@ namespace HealerLike.Render.Stage
         };
 
         readonly List<Object> _owned = new List<Object>();
+        readonly List<LabCreature> _creatures = new List<LabCreature>();
+
+        // A cosmetic creature and the body it presses into the grass
+        class LabCreature : IZoneBody
+        {
+            public Transform anchor;
+            public CreaturePreview preview = new CreaturePreview();
+            readonly BodyMeshes _meshes = new BodyMeshes();
+
+            public void Refresh()
+            {
+                _meshes.Refresh(preview.rig != null ? preview.rig.root : null);
+            }
+
+            public int AppendCapsules(BodyCapsule[] into, int start)
+            {
+                return _meshes.Append(into, start, anchor.position.y + TrampleZone.BodyReach, TrampleZone.MaxCapsules);
+            }
+        }
 
         protected override bool shouldStartGame { get { return false; } }
 
@@ -59,18 +80,21 @@ namespace HealerLike.Render.Stage
             look.settings = settings;
             ZoneRegistry registry = Fixture("GrassLabZones").AddComponent<ZoneRegistry>();
             registry.Init();
-            Material slab = CreateGround();
+            CreateGround();
             GrassField field = CreateField(camera, registry);
 
-            Transform walker = Body("Walker", new Vector3(-3.2f, 0f, 0.5f), 0.9f, slab);
-            Transform stone = Body("Stone", new Vector3(2.2f, 0f, 2.2f), 1.1f, slab);
-            Transform healed = Body("Healed", new Vector3(-1.5f, 0f, -1.5f), 0.7f, slab);
-            ZoneHandle walkerZone = new ZoneHandle();
-            walkerZone.Init(registry);
-            ZoneHandle stoneZone = new ZoneHandle();
-            stoneZone.Init(registry);
-            ZoneHandle healedZone = new ZoneHandle();
-            healedZone.Init(registry);
+            Transform walker = Creature("NormalEntity", Entity.EntityType.Player, new Vector3(-3.2f, 0f, 0.5f),
+                                        registry);
+            Transform stone = Creature("SoldierEntity", Entity.EntityType.Computer, new Vector3(2.2f, 0f, 2.2f),
+                                       registry);
+            Transform healed = Creature("NormalEntity", Entity.EntityType.Player, new Vector3(-1.5f, 0f, -1.5f),
+                                        registry);
+            if (_creatures.Count < 3)
+            {
+                Debug.LogError("[GrassLabRun] The lab needs its three creatures.");
+                StagePlay.Finish(this, false);
+                yield break;
+            }
 
             List<Texture2D> film = new List<Texture2D>();
             List<Texture2D> maps = new List<Texture2D>();
@@ -87,9 +111,11 @@ namespace HealerLike.Render.Stage
                 // The walker crosses in three seconds, then stands
                 float walk = Mathf.Clamp01(time / 3f);
                 walker.position = new Vector3(Mathf.Lerp(-3.2f, 3.2f, walk), 0f, 0.5f + 0.4f * Mathf.Sin(walk * 5f));
-                walkerZone.Refresh(ZoneKind.Trample, walker.position, 0.75f, 1f);
-                stoneZone.Refresh(ZoneKind.Trample, stone.position, 0.85f, 1f);
-                healedZone.Refresh(ZoneKind.Trample, healed.position, 0.55f, 1f);
+                foreach (LabCreature creature in _creatures)
+                {
+                    creature.preview.Tick(time, step, new FootFrame(creature.anchor.position, Vector3.up, 1f),
+                                          Vector3.back);
+                }
                 if (frame == 36)
                 {
                     registry.AddHealPulse(healed, 1.6f);
@@ -140,6 +166,12 @@ namespace HealerLike.Render.Stage
                 Object.Destroy(map);
             }
 
+            foreach (LabCreature creature in _creatures)
+            {
+                registry.RemoveBody(creature);
+                creature.preview.Dispose();
+            }
+
             foreach (Object owned in _owned)
             {
                 Object.Destroy(owned);
@@ -174,7 +206,7 @@ namespace HealerLike.Render.Stage
             return camera;
         }
 
-        Material CreateGround()
+        void CreateGround()
         {
             Material material = new Material(RenderAssets.Load<Shader>(lookShaderPath));
             _owned.Add(material);
@@ -185,19 +217,31 @@ namespace HealerLike.Render.Stage
             ground.transform.localScale = new Vector3(8f, 0.2f, 8f);
             ground.transform.position = Vector3.down * 0.1f;
             ground.GetComponent<Renderer>().sharedMaterial = material;
-            return material;
         }
 
-        Transform Body(string name, Vector3 position, float size, Material material)
+        // The game's look for an entity, grown in full on the lab layer and pressing the grass as a body
+        Transform Creature(string entity, Entity.EntityType side, Vector3 position, ZoneRegistry registry)
         {
-            GameObject body = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            _owned.Add(body);
-            body.name = "GrassLab" + name;
-            body.layer = labLayer;
-            body.transform.position = position;
-            body.transform.localScale = Vector3.one * size;
-            body.GetComponent<Renderer>().sharedMaterial = material;
-            return body.transform;
+            GameObject anchor = Fixture("GrassLab" + entity);
+            anchor.transform.position = position;
+            LabCreature creature = new LabCreature { anchor = anchor.transform };
+            EntityData data = LookSheetData.LoadEntity(entity);
+            if (!creature.preview.Init(_manager.creatureLooks, data, side, _manager.meshes, anchor.transform, 1f))
+            {
+                return anchor.transform;
+            }
+
+            creature.preview.CompleteAppearance();
+            creature.preview.Tick(0f, 0f, new FootFrame(position, Vector3.up, 1f), Vector3.back);
+            foreach (Transform child in anchor.GetComponentsInChildren<Transform>(true))
+            {
+                child.gameObject.layer = labLayer;
+            }
+
+            creature.Refresh();
+            registry.AddBody(creature);
+            _creatures.Add(creature);
+            return anchor.transform;
         }
 
         GrassField CreateField(Camera camera, ZoneRegistry registry)

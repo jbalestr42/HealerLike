@@ -273,6 +273,76 @@ public class ZoneRegistryTests
         Assert.AreEqual(0, _upload.calls.Count);
         Assert.AreEqual(0, _registry.count);
     }
+
+    class FakeBody : IZoneBody
+    {
+        public int reported;
+        public float radius;
+
+        public int AppendCapsules(BodyCapsule[] into, int start)
+        {
+            int written = 0;
+            for (int i = 0; i < 2 && start + i < into.Length; i++)
+            {
+                into[start + i] = new BodyCapsule { radius = radius };
+                written++;
+            }
+
+            return reported != 0 ? reported : written;
+        }
+    }
+
+    [Test]
+    public void AddBody_Twice_RegistersOnceAndGathersInOrder()
+    {
+        GameObject go = new GameObject("bodies");
+        try
+        {
+            ZoneRegistry registry = go.AddComponent<ZoneRegistry>();
+            registry.Init(new ZoneFakeUpload());
+            FakeBody first = new FakeBody { radius = 1f };
+            FakeBody second = new FakeBody { radius = 2f };
+            registry.AddBody(first);
+            registry.AddBody(first);
+            registry.AddBody(second);
+            registry.AddBody(null);
+            BodyCapsule[] into = new BodyCapsule[8];
+
+            Assert.AreEqual(2, registry.bodyCount);
+            Assert.AreEqual(4, registry.GatherBodies(into));
+            Assert.AreEqual(1f, into[1].radius);
+            Assert.AreEqual(2f, into[2].radius);
+            Assert.AreEqual(3, registry.GatherBodies(new BodyCapsule[3]), "Stops where the array ends.");
+            Assert.AreEqual(0, registry.GatherBodies(null));
+
+            registry.RemoveBody(first);
+            Assert.AreEqual(1, registry.bodyCount);
+            registry.Release();
+            Assert.AreEqual(0, registry.bodyCount);
+        }
+        finally
+        {
+            Object.DestroyImmediate(go);
+        }
+    }
+
+    [Test]
+    public void GatherBodies_BodyOverReportsItsCount_StaysWithinTheArray()
+    {
+        GameObject go = new GameObject("bodies");
+        try
+        {
+            ZoneRegistry registry = go.AddComponent<ZoneRegistry>();
+            registry.Init(new ZoneFakeUpload());
+            registry.AddBody(new FakeBody { reported = 99 });
+
+            Assert.AreEqual(4, registry.GatherBodies(new BodyCapsule[4]));
+        }
+        finally
+        {
+            Object.DestroyImmediate(go);
+        }
+    }
 }
 
 }

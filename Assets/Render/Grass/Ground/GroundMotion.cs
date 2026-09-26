@@ -10,7 +10,7 @@ namespace HealerLike.Render.Grass
     public class GroundMotion : IDisposable
     {
         // The most stamps one frame draws; later ones are dropped
-        public static readonly int StampCapacity = 256;
+        public static readonly int StampCapacity = 1024;
 
         public static readonly int MotionId = Shader.PropertyToID("_HLGroundMotion");
         public static readonly int CrushId = Shader.PropertyToID("_HLGroundCrush");

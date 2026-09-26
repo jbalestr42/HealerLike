@@ -155,7 +155,8 @@ public class TrampleZoneTests
         _host.rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
         _zone.Refresh();
         Assert.That(_zone.radius, Is.EqualTo(1.8f + 0.08f + TrampleZone.Margin).Within(0.0001f));
-        Assert.AreEqual(1, _registry.liveCount);
+        Assert.AreEqual(0, _registry.liveCount, "A creature presses as a body, not as a disc.");
+        Assert.AreEqual(1, _registry.bodyCount);
         for (int i = 0; i < 100; i++) _zone.Refresh();
         long before = System.GC.GetAllocatedBytesForCurrentThread();
         for (int i = 0; i < 1000; i++) _zone.Refresh();
@@ -192,6 +193,82 @@ public class TrampleZoneTests
         _zone.Refresh();
         Assert.That(_zone.radius, Is.EqualTo(Mathf.Sqrt(1.1f * 1.1f + 0.2f * 0.2f) + TrampleZone.Margin)
             .Within(0.001f), "The extra basal piece remains part of the footprint despite parenting to Body.");
+    }
+
+    [Test]
+    public void InitFootprint_Rig_RegistersOneBodyAndNoDisc()
+    {
+        _recipe = RenderTestAssets.CreateRecipe();
+        _recipe.idle = default;
+        BuildRig();
+        _zone.Refresh();
+        _zone.InitFootprint(_registry);
+
+        Assert.IsTrue(_zone.isBody);
+        Assert.AreEqual(1, _registry.bodyCount);
+        Assert.AreEqual(0, _registry.liveCount);
+
+        TestHelpers.InvokePrivate(_zone, "OnDisable");
+        Assert.AreEqual(0, _registry.bodyCount, "A disabled body stops pressing.");
+        TestHelpers.InvokePrivate(_zone, "OnEnable");
+        Assert.AreEqual(1, _registry.bodyCount);
+        TestHelpers.InvokePrivate(_zone, "OnDestroy");
+        Assert.AreEqual(0, _registry.bodyCount);
+    }
+
+    [Test]
+    public void AppendCapsules_Rig_SendsTheLowMeshesAndSkipsTheRaisedOnes()
+    {
+        _recipe = RenderTestAssets.CreateRecipe();
+        _recipe.roots.count = 0;
+        _recipe.idle = default;
+        _recipe.parts = new[]
+        {
+            new CreaturePart { id = "Body", parent = -1, shape = ShapeProfile.Block(),
+                dimensions = Vector3.one * 0.4f, colour = Color.white, role = PartRole.Body },
+            new CreaturePart { id = "Head", parent = 0, shape = ShapeProfile.Block(),
+                localPosition = new Vector3(0f, 4f, 0f), dimensions = Vector3.one * 0.5f,
+                colour = Color.white, role = PartRole.Head }
+        };
+        _recipe.arms = new ArmDefinition[0];
+        BuildRig();
+        BodyCapsule[] capsules = new BodyCapsule[8];
+
+        int count = _zone.AppendCapsules(capsules, 1);
+
+        Assert.AreEqual(1, count, "The head floats past the grass's reach.");
+        Assert.Less(capsules[1].bottom, TrampleZone.BodyReach);
+        Assert.Greater(capsules[1].radius, 0f);
+        Assert.AreEqual(0, _zone.AppendCapsules(capsules, capsules.Length), "No room, nothing written.");
+        Assert.AreEqual(0, _zone.AppendCapsules(null, 0));
+    }
+
+    [Test]
+    public void AppendCapsules_Steady_AllocatesNothing()
+    {
+        _recipe = RenderTestAssets.CreateRecipe();
+        _recipe.idle = default;
+        BuildRig();
+        BodyCapsule[] capsules = new BodyCapsule[TrampleZone.MaxCapsules];
+        _zone.AppendCapsules(capsules, 0);
+
+        long before = System.GC.GetAllocatedBytesForCurrentThread();
+        for (int i = 0; i < 200; i++)
+        {
+            _zone.AppendCapsules(capsules, 0);
+        }
+
+        Assert.AreEqual(0, System.GC.GetAllocatedBytesForCurrentThread() - before);
+    }
+
+    [Test]
+    public void AppendCapsules_Obstacle_IsNoBody()
+    {
+        _zone.Init(_registry);
+
+        Assert.IsFalse(_zone.isBody);
+        Assert.AreEqual(0, _zone.AppendCapsules(new BodyCapsule[4], 0));
+        Assert.AreEqual(0, _registry.bodyCount);
     }
 
     [Test]

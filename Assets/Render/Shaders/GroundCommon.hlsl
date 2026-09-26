@@ -6,38 +6,80 @@
 // The rim wobble's spatial frequency, GroundStamp.RimFrequency
 #define HL_GROUND_RIM_FREQUENCY float2(9.7, 6.3)
 
-// centreRadius: xy centre in world XZ, z radius, w half width of a ring front, zero for a disc
-// push: xy heading, z lean along it, w lean away from the centre, in radians
-// shape: x flatness, y the share of the radius a disc edge fades over, z rim wobble share, w ahead-only
+// The kinds of GroundStampKind
+#define HL_GROUND_DISC 0
+#define HL_GROUND_FRONT 1
+#define HL_GROUND_BODY 2
+
+// Disc and front: centreRadius xy centre in world XZ, z radius, w front half width; push xy heading, z lean along
+// it, w lean away from the centre. Body: centreRadius the first end (x, z, height, radius), push the second end
+// (x, z, height, margin), body x grass height and y lean away at contact. shape: x flatness, y disc edge share,
+// z rim wobble share, w kind.
 struct HLGroundStamp
 {
     float4 centreRadius;
     float4 push;
     float4 shape;
+    float4 body;
 };
+
+// The square a stamp can write into: its centre in world XZ and half its side
+void HLGroundStampBounds(HLGroundStamp stamp, out float2 centre, out float reach)
+{
+    if (round(stamp.shape.w) == HL_GROUND_BODY)
+    {
+        centre = 0.5 * (stamp.centreRadius.xy + stamp.push.xy);
+        reach = 0.5 * distance(stamp.centreRadius.xy, stamp.push.xy) + stamp.centreRadius.w + stamp.push.w;
+        return;
+    }
+
+    centre = stamp.centreRadius.xy;
+    reach = stamp.centreRadius.z + stamp.centreRadius.w;
+}
+
+// A capsule's pressure on the grass: flat where the body sits low over it, leaning away beside it
+float3 HLGroundBodyValue(HLGroundStamp stamp, float2 p)
+{
+    float2 start = stamp.centreRadius.xy;
+    float2 axis = stamp.push.xy - start;
+    float t = saturate(dot(p - start, axis) / max(dot(axis, axis), 1e-6));
+    float2 nearest = start + axis * t;
+    float height = lerp(stamp.centreRadius.z, stamp.push.z, t);
+    float radius = stamp.centreRadius.w;
+    float2 delta = p - nearest;
+    float distanceToAxis = length(delta);
+    float2 outward = distanceToAxis > 1e-5 ? delta / distanceToAxis : float2(0.0, 0.0);
+    float underside = height - sqrt(max(radius * radius - distanceToAxis * distanceToAxis, 0.0));
+    float contact = saturate((stamp.body.x - underside) / stamp.body.x);
+    float near = 1.0 - smoothstep(radius, radius + stamp.push.w, distanceToAxis);
+    float covered = 1.0 - smoothstep(0.6 * radius, radius, distanceToAxis);
+    return float3(outward * (stamp.body.y * contact * near), stamp.shape.x * contact * covered);
+}
 
 // xy lean in radians and z flatness the stamp adds at a world XZ point
 float3 HLGroundStampValue(HLGroundStamp stamp, float2 p)
 {
+    float kind = round(stamp.shape.w);
+    if (kind == HL_GROUND_BODY)
+    {
+        return HLGroundBodyValue(stamp, p);
+    }
+
     float2 delta = p - stamp.centreRadius.xy;
-    float distance = length(delta);
-    float2 outward = distance > 1e-5 ? delta / distance : float2(0.0, 0.0);
+    float distanceToCentre = length(delta);
+    float2 outward = distanceToCentre > 1e-5 ? delta / distanceToCentre : float2(0.0, 0.0);
     float radius = stamp.centreRadius.z;
     float band = stamp.centreRadius.w;
     float weight;
-    if (band > 0.0)
+    if (kind == HL_GROUND_FRONT)
     {
-        weight = 1.0 - smoothstep(0.0, band, abs(distance - radius));
+        weight = 1.0 - smoothstep(0.0, band, abs(distanceToCentre - radius));
+        weight *= saturate(dot(outward, stamp.push.xy));
     }
     else
     {
         float rim = radius * (1.0 - stamp.shape.z * (0.5 + 0.5 * sin(dot(p, HL_GROUND_RIM_FREQUENCY))));
-        weight = 1.0 - smoothstep(rim * (1.0 - stamp.shape.y), rim, distance);
-    }
-
-    if (stamp.shape.w > 0.0)
-    {
-        weight *= saturate(dot(outward, stamp.push.xy));
+        weight = 1.0 - smoothstep(rim * (1.0 - stamp.shape.y), rim, distanceToCentre);
     }
 
     float2 lean = (stamp.push.xy * stamp.push.z + outward * stamp.push.w) * weight;
