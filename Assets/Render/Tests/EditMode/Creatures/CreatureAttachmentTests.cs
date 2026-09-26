@@ -39,6 +39,11 @@ namespace HealerLike.Render.Creatures
             Assert.IsEmpty(_owner.GetComponentsInChildren<Renderer>(true));
             Assert.IsNotEmpty(CreatureRenderers.Find(_owner.transform));
             Assert.AreSame(host, _owner.GetComponentInChildren<CreatureBuilder>());
+            _owner.transform.localScale = Vector3.one * 3f;
+            _owner.transform.rotation = Quaternion.Euler(0f, 120f, 0f);
+            TestHelpers.InvokePrivate(host, "LateUpdate");
+            Assert.That(Vector3.Distance(Vector3.one, host.rig.root.lossyScale), Is.LessThan(0.0001f));
+            Assert.That(Quaternion.Angle(Quaternion.identity, host.rig.root.rotation), Is.LessThan(0.0001f));
         }
 
         [TestCase(false)]
@@ -104,6 +109,26 @@ namespace HealerLike.Render.Creatures
                 Assert.IsTrue(next.rig.root);
             }
             Assert.IsTrue(_source);
+        }
+
+        [Test]
+        public void ModelRemoved_SourceEntityAndColliderRemainButItsPresentationIsReleased()
+        {
+            Entity entity = RenderTestAssets.CreateStoneEntity(_owner, null);
+            BoxCollider collider = _owner.AddComponent<BoxCollider>();
+            GameObject model = new GameObject("Model");
+            model.transform.SetParent(_owner.transform, false);
+            CreatureBuilder host = model.AddComponent<CreatureBuilder>();
+            RenderTestAssets.SetRecipe(host, _recipe, _material, _meshes);
+            host.Init(entity);
+            Transform presentation = host.presentation;
+            TestHelpers.InvokePrivate(host, "OnDisable");
+            Assert.IsFalse(presentation.gameObject.activeInHierarchy);
+            TestHelpers.InvokePrivate(host, "OnDestroy");
+            Object.DestroyImmediate(model);
+            Assert.IsFalse(presentation);
+            Assert.IsTrue(entity);
+            Assert.IsTrue(collider.enabled);
         }
 
         [Test]
