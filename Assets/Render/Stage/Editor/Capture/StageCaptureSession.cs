@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace HealerLike.Render.Stage
 {
@@ -11,6 +12,8 @@ namespace HealerLike.Render.Stage
         readonly StageInterfaceOutput _output;
         readonly StageInterfaceActions _actions = new StageInterfaceActions();
         readonly float _timeScale = Time.timeScale;
+        readonly ThemeStyleSheet _selectedTheme;
+        StageCaptureTheme _theme;
         StageGameViewSize _size;
         ToolkitGameUI _attachedUi;
         Func<Rect> _safeArea;
@@ -41,10 +44,11 @@ namespace HealerLike.Render.Stage
         public InteractionManager interaction { get; private set; }
         public StageMapFixture mapFixture { get; set; }
 
-        public StageCaptureSession(RenderManager manager, StageInterfaceOutput output)
+        public StageCaptureSession(RenderManager manager, StageInterfaceOutput output, ThemeStyleSheet theme = null)
         {
             _manager = manager;
             _output = output;
+            _selectedTheme = theme;
         }
 
         public void AttachInput()
@@ -56,6 +60,12 @@ namespace HealerLike.Render.Stage
                 "Exactly one Toolkit UI host");
             _attachedUi = _actions.ui;
             _safeArea = _attachedUi.safeAreaProvider;
+            if (_selectedTheme != null)
+            {
+                UIDocument document = _attachedUi.GetComponent<UIDocument>();
+                _theme = new StageCaptureTheme(document.panelSettings, document.rootVisualElement, _selectedTheme);
+            }
+
             _actions.ConfigureLegacyInput();
             interaction = UnityEngine.Object.FindAnyObjectByType<InteractionManager>();
         }
@@ -100,6 +110,12 @@ namespace HealerLike.Render.Stage
 
         void RestoreSafeArea()
         {
+            if (_theme != null)
+            {
+                _theme.Dispose();
+                _theme = null;
+            }
+
             if (_attachedUi != null)
             {
                 _attachedUi.safeAreaProvider = _safeArea;

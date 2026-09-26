@@ -17,6 +17,7 @@ namespace HealerLike.Render.Stage
             public string inputMethod
                 = "Actual Toolkit button events, Render touch adapter world taps; no physical device";
             public bool isPassed;
+            public StageCaptureTheme.Identity theme;
             public List<string> checks = new List<string>();
             public List<string> failures = new List<string>();
             public List<Frame> frames = new List<Frame>();
@@ -28,6 +29,7 @@ namespace HealerLike.Render.Stage
             public string file;
             public int width;
             public int height;
+            public StageCaptureTheme.Identity theme;
             public Rect safeArea;
             public bool hasSafeAreaOverride;
             public string safeAreaSource;
@@ -76,11 +78,21 @@ namespace HealerLike.Render.Stage
                 File.Delete(path);
             }
 
-            VisualElement root = ui.GetComponent<UIDocument>().rootVisualElement;
+            UIDocument document = ui.GetComponent<UIDocument>();
+            VisualElement root = document.rootVisualElement;
             Frame frame = new Frame();
             frame.file = name + ".png";
             frame.width = Screen.width;
             frame.height = Screen.height;
+            frame.theme = StageCaptureTheme.Describe(document.panelSettings.themeStyleSheet);
+            Check(root.styleSheets.Contains(document.panelSettings.themeStyleSheet),
+                "Root and owned panel share the captured theme: " + name);
+            if (manifest.theme != null)
+            {
+                Check(frame.theme.guid == manifest.theme.guid && frame.theme.path == manifest.theme.path,
+                    "Requested theme remains active on this live host: " + name);
+            }
+
             frame.safeArea = Screen.safeArea;
             frame.hasSafeAreaOverride = ui.safeAreaProvider != null;
             frame.safeAreaSource = frame.hasSafeAreaOverride ? "simulated-insets" : "device-screen";

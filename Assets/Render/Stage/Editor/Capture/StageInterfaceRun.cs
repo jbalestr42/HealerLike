@@ -33,7 +33,9 @@ namespace HealerLike.Render.Stage
             {
                 _output.Check(!string.IsNullOrWhiteSpace(_output.manifest.revision)
                     && _output.manifest.revision != "unspecified", "Capture source revision recorded");
-                _session = new StageCaptureSession(_manager, _output);
+                ThemeStyleSheet theme = StageCaptureTheme.TakeSelection();
+                _output.manifest.theme = StageCaptureTheme.Describe(theme);
+                _session = new StageCaptureSession(_manager, _output, theme);
                 _session.AttachInput();
                 StageInterfaceDeployment deployment = new StageInterfaceDeployment(_session);
                 StageInterfaceEncounter encounter = new StageInterfaceEncounter(_session);
@@ -52,7 +54,12 @@ namespace HealerLike.Render.Stage
                 _output.Check(
                     LegacyUiReader.GameState(Object.FindAnyObjectByType<GameManager>())
                     == GameManager.GameState.Running, "Toolkit begin journey started real gameplay");
+                yield return StageMapActions.WaitForSelection(_session.actions);
+                yield return _session.Capture("01b-phone-map");
+                yield return _session.Resize(1440, 900);
+                yield return _session.Capture("01c-desktop-map");
                 yield return StageMapActions.SelectFirst(_session.actions, true);
+                yield return _session.Resize(1080, 1920);
                 _output.manifest.checks.Add("First map room selected through actual multi-frame Toolkit touch input");
                 yield return _session.actions.PointerTap("party-button");
                 yield return Wait(0.3f);
@@ -63,6 +70,9 @@ namespace HealerLike.Render.Stage
                 yield return Wait(0.3f);
                 _output.Check(_session.interaction.GetInteraction() == null, "Info opens details without deploying");
                 yield return _session.Capture("03-details");
+                yield return _session.Resize(1440, 900);
+                yield return _session.Capture("03b-desktop-details");
+                yield return _session.Resize(1080, 1920);
                 _session.actions.Submit("detail-close-button");
                 yield return Wait(0.2f);
                 _session.actions.Submit("party-button");

@@ -20,6 +20,7 @@ namespace HealerLike.Render.Stage
         [MenuItem("Tools/Render/Capture Mobile Interface")]
         public static void MobileInterface()
         {
+            StageCaptureTheme.Prepare();
             StagePlay.Enter("mobile-interface", 360f);
         }
 
