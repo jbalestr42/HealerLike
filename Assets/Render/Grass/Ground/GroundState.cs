@@ -23,9 +23,9 @@ namespace HealerLike.Render.Grass
                     burn = 1.6f,
                     regrow = 0.35f,
                     vitalityIn = 1.2f,
-                    vitalityOut = 0.25f,
+                    vitalityOut = 0.8f,
                     glowIn = 8f,
-                    glowOut = 0.9f
+                    glowOut = 2f
                 };
             }
         }

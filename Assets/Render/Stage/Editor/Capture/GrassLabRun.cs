@@ -93,7 +93,11 @@ namespace HealerLike.Render.Stage
                                        registry);
             Transform healed = Creature("NormalEntity", Entity.EntityType.Player, new Vector3(-1.5f, 0f, -1.5f),
                                         registry);
-            if (_creatures.Count < 3)
+            // A fourth creature is dropped in during the run
+            Transform dropped = Creature("NormalEntity", Entity.EntityType.Player, new Vector3(1.4f, 0f, -2.2f),
+                                         registry);
+            dropped.gameObject.SetActive(false);
+            if (_creatures.Count < 4)
             {
                 Debug.LogError("[GrassLabRun] The lab needs its three creatures.");
                 StagePlay.Finish(this, false);
@@ -125,6 +129,16 @@ namespace HealerLike.Render.Stage
                 // The walker crosses in three seconds, then stands
                 float walk = Mathf.Clamp01(time / 3f);
                 walker.position = new Vector3(Mathf.Lerp(-3.2f, 3.2f, walk), 0f, 0.5f + 0.4f * Mathf.Sin(walk * 5f));
+                if (frame == 72)
+                {
+                    dropped.gameObject.SetActive(true);
+                    LabCreature landed = _creatures[3];
+                    TrampleZone.Landing(registry, landed.preview.rig, dropped.position,
+                                        TrampleZone.TrampleRadius(TrampleZone.CreatureFootprint(dropped,
+                                                                                                landed.preview.rig)),
+                                        new List<Vector3>());
+                }
+
                 // Both lose health across the run
                 float stoneHealth = Mathf.Lerp(1f, 0.1f, time / (frames * step));
                 float walkerHealth = Mathf.Lerp(1f, 0.2f, time / (frames * step));

@@ -41,6 +41,25 @@ public class GroundAuraTests
     }
 
     [Test]
+    public void IsHeld_ColliderOnTheIgnoreRaycastLayer_IsHeld()
+    {
+        GameObject go = new GameObject("held");
+        try
+        {
+            Collider collider = go.AddComponent<BoxCollider>();
+            Assert.IsFalse(EntityHold.IsHeld(collider));
+            go.layer = Layers.IgnoreRaycast;
+            Assert.IsTrue(EntityHold.IsHeld(collider));
+            Assert.IsFalse(EntityHold.IsHeld(null));
+            Assert.AreSame(collider, EntityHold.Find(go.transform));
+        }
+        finally
+        {
+            Object.DestroyImmediate(go);
+        }
+    }
+
+    [Test]
     public void Refresh_WithoutAnEntity_AddsNoZone()
     {
         GameObject go = new GameObject("aura");

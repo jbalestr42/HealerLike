@@ -61,12 +61,14 @@ public class GroundStateTests
     public void Step_HealAura_GlowsAtOnceAndLeavesLushGrassAfterTheGlowFades()
     {
         Vector3 healed = Run(Vector3.zero, new Vector4(0f, 1f, 1f, 1f), 0.5f);
-        Vector3 after = Run(healed, Vector4.zero, 2f);
+        Vector3 after = Run(healed, Vector4.zero, 0.5f);
+        Vector3 gone = Run(healed, Vector4.zero, 3f);
 
         Assert.Greater(healed.z, 0.95f);
         Assert.Greater(healed.y, 0.3f);
-        Assert.Less(after.z, 0.25f);
-        Assert.Greater(after.y, 0.15f, "The lush green lingers.");
+        Assert.Less(after.z, 0.4f, "The glow fades quickly.");
+        Assert.Greater(after.y, 0.15f, "The lush green lingers a moment longer.");
+        Assert.Less(gone.y, 0.05f, "Gone before a moving creature can paint a trail.");
     }
 
     [Test]

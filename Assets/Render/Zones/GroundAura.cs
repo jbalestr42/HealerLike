@@ -16,6 +16,7 @@ namespace HealerLike.Render.Zones
 
         readonly ZoneHandle _zone = new ZoneHandle();
         ResourceAttribute _health;
+        Collider _hold;
         ZoneKind _kind;
         float _cellSize = 1f;
 
@@ -25,6 +26,7 @@ namespace HealerLike.Render.Zones
         public void Init(Entity entity, ZoneRegistry zones, float cellSize)
         {
             _health = entity != null ? entity.health : null;
+            _hold = EntityHold.Find(entity);
             _kind = ZoneKind.None;
             if (entity != null && entity.entityType == Entity.EntityType.Computer)
             {
@@ -46,7 +48,8 @@ namespace HealerLike.Render.Zones
 
         public void Refresh()
         {
-            if (!isActiveAndEnabled || _health == null || _kind == ZoneKind.None)
+            // A held creature paints nothing along its drag
+            if (!isActiveAndEnabled || _health == null || _kind == ZoneKind.None || EntityHold.IsHeld(_hold))
             {
                 _zone.Clear();
                 return;

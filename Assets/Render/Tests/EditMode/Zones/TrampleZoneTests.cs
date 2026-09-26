@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using HealerLike.Render.Creatures;
 using UnityEngine;
@@ -155,7 +156,7 @@ public class TrampleZoneTests
         _host.rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
         _zone.Refresh();
         Assert.That(_zone.radius, Is.EqualTo(1.8f + 0.08f + TrampleZone.Margin).Within(0.0001f));
-        Assert.AreEqual(0, _registry.liveCount, "A creature presses as a body, not as a disc.");
+        Assert.AreEqual(0, Count(ZoneKind.Trample), "A creature presses as a body, not as a disc.");
         Assert.AreEqual(1, _registry.bodyCount);
         for (int i = 0; i < 100; i++) _zone.Refresh();
         long before = System.GC.GetAllocatedBytesForCurrentThread();
@@ -206,7 +207,7 @@ public class TrampleZoneTests
 
         Assert.IsTrue(_zone.isBody);
         Assert.AreEqual(1, _registry.bodyCount);
-        Assert.AreEqual(0, _registry.liveCount);
+        Assert.AreEqual(0, Count(ZoneKind.Trample));
 
         TestHelpers.InvokePrivate(_zone, "OnDisable");
         Assert.AreEqual(0, _registry.bodyCount, "A disabled body stops pressing.");
@@ -271,6 +272,110 @@ public class TrampleZoneTests
         Assert.AreEqual(0, _registry.bodyCount);
     }
 
+    // A root-legged creature standing at the origin, its landing on its first refresh already counted
+    void BuildRootedCreature()
+    {
+        _recipe = RenderTestAssets.CreateRecipe();
+        _recipe.idle = default;
+        _recipe.arms = new ArmDefinition[0];
+        _recipe.roots.count = 6;
+        _recipe.roots.footRadius = 0.8f;
+        _recipe.roots.thickness = 0.08f;
+        BuildRig();
+    }
+
+    int CountShocks()
+    {
+        return Count(ZoneKind.Shock);
+    }
+
+    // Zones of one kind in the published snapshot; landings add shock pulses beside the footprints
+    int Count(ZoneKind kind)
+    {
+        _registry.PublishFrame(0f);
+        int count = 0;
+        foreach (Zone zone in _registry.snapshot)
+        {
+            count += zone.kind == (int)kind ? 1 : 0;
+        }
+
+        return count;
+    }
+
+    [Test]
+    public void Refresh_FirstStand_ThrowsARingOutOfEveryFootAndOneRoundTheBody()
+    {
+        BuildRootedCreature();
+
+        _zone.Refresh();
+
+        Assert.AreEqual(1, _zone.landings);
+        Assert.AreEqual(6 + 1, CountShocks());
+        _zone.Refresh();
+        Assert.AreEqual(1, _zone.landings, "Standing still lands once.");
+    }
+
+    [Test]
+    public void Refresh_Held_PressesNothingAndLandsWhenLetGo()
+    {
+        BuildRootedCreature();
+        GameObject grip = new GameObject("collider");
+        grip.transform.SetParent(_obstacle.transform, false);
+        Collider collider = grip.AddComponent<BoxCollider>();
+        TestHelpers.SetPrivateField(_zone, "_hold", collider);
+        _zone.Refresh();
+
+        grip.layer = Layers.IgnoreRaycast;
+        _obstacle.transform.position = new Vector3(3f, 0f, 0f);
+        _zone.Refresh();
+
+        Assert.AreEqual(0, _zone.AppendCapsules(new BodyCapsule[TrampleZone.MaxCapsules], 0), "Held in the air.");
+        Assert.AreEqual(1, _zone.landings, "Hopping from cell to cell while held lands nowhere.");
+
+        grip.layer = 0;
+        _zone.Refresh();
+
+        Assert.AreEqual(2, _zone.landings);
+        Assert.Greater(_zone.AppendCapsules(new BodyCapsule[TrampleZone.MaxCapsules], 0), 0);
+    }
+
+    [Test]
+    public void Refresh_JumpIntoPlace_LandsButAStepDoesNot()
+    {
+        BuildRootedCreature();
+        _zone.Refresh();
+
+        _obstacle.transform.position += new Vector3(0.1f, 0f, 0f);
+        _zone.Refresh();
+        Assert.AreEqual(1, _zone.landings, "A walking step is no landing.");
+
+        _obstacle.transform.position += new Vector3(1f, 0f, 0f);
+        _zone.Refresh();
+        Assert.AreEqual(2, _zone.landings, "A swap moves it a whole cell at once.");
+    }
+
+    [Test]
+    public void Feet_Roots_RestAtTheFootRadiusAroundTheRoot()
+    {
+        GameObject root = new GameObject("root");
+        try
+        {
+            root.transform.position = new Vector3(1f, 0f, 2f);
+            RootDefinition roots = new RootDefinition { count = 4, footRadius = 0.5f };
+            List<Vector3> feet = new List<Vector3>();
+
+            TrampleZone.Feet(root.transform, roots, 2f, feet);
+
+            Assert.AreEqual(4, feet.Count);
+            Assert.That(Vector3.Distance(new Vector3(2f, 0f, 2f), feet[0]), Is.LessThan(1e-5f));
+            Assert.That(Vector3.Distance(new Vector3(1f, 0f, 3f), feet[1]), Is.LessThan(1e-5f));
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
     [Test]
     public void Refresh_InitWithZones_AddsOneFootprintThere()
     {
@@ -278,7 +383,8 @@ public class TrampleZoneTests
         _zone.Refresh();
         _zone.Refresh();
 
-        Assert.AreEqual(1, _registry.liveCount);
+        Assert.AreEqual(1, Count(ZoneKind.Trample));
+        Assert.AreEqual(1, Count(ZoneKind.Shock), "An obstacle lands once with a ring round itself.");
     }
 
     [Test]

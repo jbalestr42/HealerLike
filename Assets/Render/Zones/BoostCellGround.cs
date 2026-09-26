@@ -20,6 +20,7 @@ namespace HealerLike.Render.Zones
         readonly List<Patch> _patches = new List<Patch>();
         readonly List<BoostCell> _found = new List<BoostCell>();
         Transform _owner;
+        Collider _hold;
         ZoneRegistry _zones;
         float _cellSize = 1f;
         int _childCount = -1;
@@ -30,6 +31,7 @@ namespace HealerLike.Render.Zones
         {
             Clear();
             _owner = owner;
+            _hold = EntityHold.Find(owner);
             _zones = zones;
             _cellSize = RenderMath.IsPositive(cellSize) ? cellSize : 1f;
             _childCount = -1;
@@ -60,6 +62,13 @@ namespace HealerLike.Render.Zones
                 {
                     patch.zone.Clear();
                     _patches.RemoveAt(i);
+                    continue;
+                }
+
+                // The cells ride along with a held creature; they light the grass again once it lands
+                if (EntityHold.IsHeld(_hold))
+                {
+                    patch.zone.Clear();
                     continue;
                 }
 
