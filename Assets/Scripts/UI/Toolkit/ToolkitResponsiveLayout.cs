@@ -23,7 +23,8 @@ public static class ToolkitResponsiveLayout
             controls.Add(markers);
         }
 
-        view.SetButton("inventory-button", mobile ? "Bag" : "Inventory", true);
+        Button inventory = view.root.Q<Button>("inventory-button");
+        inventory.text = mobile ? "Bag" : "Inventory";
         return mobile;
     }
 }

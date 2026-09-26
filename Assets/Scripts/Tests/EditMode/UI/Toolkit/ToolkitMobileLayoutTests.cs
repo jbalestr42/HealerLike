@@ -153,5 +153,17 @@ public class ToolkitMobileLayoutTests
         _view.OnInspectRequested.Invoke(new ToolkitCardModel());
         Assert.IsFalse(_root.Q("hud-root").ClassListContains("detail-open"));
     }
+
+    [Test]
+    public void Resize_RepeatedOrChangedViewport_PreservesGameplayButtonAvailability()
+    {
+        _layout.Resize(390f, 844f);
+        _view.SetButton("inventory-button", null, false);
+        _layout.Resize(390f, 844f);
+        Assert.IsFalse(_root.Q<Button>("inventory-button").enabledSelf);
+        _layout.Resize(1440f, 900f);
+        Assert.IsFalse(_root.Q<Button>("inventory-button").enabledSelf);
+        Assert.AreEqual("Inventory", _root.Q<Button>("inventory-button").text);
+    }
 }
 }
