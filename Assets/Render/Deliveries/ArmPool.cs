@@ -37,6 +37,14 @@ namespace HealerLike.Render.Deliveries
             _leases.Init(rig, material, meshes, vocabulary);
         }
 
+        // Every arm slot, resting and lent; GetArm returns null for a slot that has no arm yet
+        public int armCount { get { return _leases.count; } }
+
+        public LianaArm GetArm(int index)
+        {
+            return _leases.Get(index);
+        }
+
         public void Refresh()
         {
             _leases.Refresh();

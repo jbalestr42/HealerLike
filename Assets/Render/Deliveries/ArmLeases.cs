@@ -23,6 +23,14 @@ namespace HealerLike.Render.Deliveries
         int _nextToken;
         bool _isDisposed;
 
+        // Every arm slot, made or not: Get returns null for a slot that has no arm yet
+        public int count { get { return _arms.Length; } }
+
+        public LianaArm Get(int index)
+        {
+            return index >= 0 && index < _arms.Length ? _arms[index] : null;
+        }
+
         // A held delivery keeps its arm and lease. Its next rest uses the edited recipe.
         public void Refresh()
         {

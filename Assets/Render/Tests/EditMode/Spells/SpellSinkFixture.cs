@@ -24,7 +24,7 @@ public static class SpellSinkFixture
 
     public static void Init(SpellVisualSink sink)
     {
-        sink.Init(AssetDatabase.LoadAssetAtPath<SpellLooks>(LooksPath), RenderTestAssets.LoadMeshes(), null, null);
+        sink.Init(AssetDatabase.LoadAssetAtPath<SpellLooks>(LooksPath), RenderTestAssets.LoadMeshes(), null, null, null);
     }
 
     public static BuffHandlerFactory Modifier(AttributeType type, float value, List<Object> created)

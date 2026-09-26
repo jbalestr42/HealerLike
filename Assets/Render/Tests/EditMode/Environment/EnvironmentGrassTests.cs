@@ -210,6 +210,8 @@ public class EnvironmentGrassTests
             Assert.AreEqual(bands[i].budget, grass.strips[i].tuftBudget);
             Assert.AreEqual(0, grass.strips[i].activeZoneCount);
             Assert.AreSame(_go.transform, grass.strips[i].transform.parent);
+            int segments = bands[i].band == 0 ? template.bladeSegments : 1;
+            Assert.AreEqual(segments, grass.strips[i].bladeSegments, "Only the band on the ground bends.");
         }
         Assert.IsFalse(templateGo.activeSelf);
     }

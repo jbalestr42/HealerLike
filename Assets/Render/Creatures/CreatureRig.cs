@@ -39,6 +39,12 @@ namespace HealerLike.Render.Creatures
 
         public Transform root => _assembly.root;
 
+        // Ground contact reads accepted roots first, then the active body parts; deliveries own their chains.
+        public void CollectBodyMeshes(List<MeshFilter> into)
+        {
+            _assembly.CollectBodyMeshes(into);
+        }
+
         public CreatureRecipe recipe => _recipe;
 
         public int revision => _revision;

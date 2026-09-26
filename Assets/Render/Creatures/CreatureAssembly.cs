@@ -156,6 +156,19 @@ namespace HealerLike.Render.Creatures
             _roots.Place(sway, root, cellSize, elapsed);
         }
 
+        public void CollectBodyMeshes(List<MeshFilter> into)
+        {
+            _roots.CollectMeshes(into);
+            foreach (Transform part in _geometry)
+            {
+                MeshFilter filter = part ? part.GetComponent<MeshFilter>() : null;
+                if (filter != null)
+                {
+                    into.Add(filter);
+                }
+            }
+        }
+
         public Transform Pivot(int index)
         {
             return _keptParts[index].pivot;

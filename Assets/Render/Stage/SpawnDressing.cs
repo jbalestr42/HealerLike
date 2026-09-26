@@ -140,6 +140,13 @@ namespace HealerLike.Render.Stage
             {
                 _rangeDriver.Add(preview);
             }
+
+            // The creature's health reads in the grass around it, and so do the cells its boosts bless
+            viewGo.AddComponent<GroundAura>().Init(entity, _manager.ground, StageCalibration.CellSize);
+            viewGo.AddComponent<BoostCellGround>().Init(entity.transform, _manager.ground, StageCalibration.CellSize);
+            // What it suffers and what it is about to unleash read there too
+            viewGo.AddComponent<GroundStatus>().Init(entity, _manager.ground, StageCalibration.CellSize);
+            viewGo.AddComponent<GroundWarning>().Init(entity, _manager.ground);
         }
 
         void DressCharacter(Character character)
@@ -157,7 +164,7 @@ namespace HealerLike.Render.Stage
                 trample.enabled = view.showBody;
                 if (view.showBody)
                 {
-                    trample.InitFootprint(_manager.zones);
+                    trample.InitFootprint(_manager.ground);
                 }
             }
         }
@@ -171,7 +178,7 @@ namespace HealerLike.Render.Stage
             DeliveryStyle style = EffectDerivation.Delivery(projectileGo);
             projectileGo.AddComponent<ProjectileVisualObserver>().Init(_manager, style);
             projectileGo.AddComponent<StoneProjectileImpactBridge>();
-            projectileGo.AddComponent<LaunchWave>().Init(_manager.zones, _manager.gust);
+            projectileGo.AddComponent<LaunchWave>().Init(_manager.ground, _manager.gust);
 
             foreach (LineRenderer line in projectileGo.GetComponentsInChildren<LineRenderer>(true))
             {

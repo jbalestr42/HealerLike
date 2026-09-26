@@ -19,6 +19,14 @@ namespace HealerLike.Render.Creatures
             get { return _rig; }
         }
 
+        // The arm slots the rig lends to gestures and shots, resting ones included; null where none is made yet
+        public int armCount { get { return _pool != null ? _pool.armCount : 0; } }
+
+        public LianaArm GetArm(int index)
+        {
+            return _pool != null ? _pool.GetArm(index) : null;
+        }
+
         // Builds the rig and its arms once, a later call keeps them
         protected bool BuildRig(
             CreatureRecipe recipe,

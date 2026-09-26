@@ -39,6 +39,8 @@ namespace HealerLike.Render.Environment
                 strip.name = "GrassStrip" + i + "_band" + bands[i].band;
                 strip.tuftBudget = bands[i].budget;
                 strip.seed = (uint)(11 + i);
+                // Only the first band lies on the board's ground and bends there; the far ones stay rigid pyramids
+                strip.bladeSegments = bands[i].band == 0 ? strip.bladeSegments : 1;
                 strip.Init(bands[i].rect, cellSize, surfaceY, camera, zones.buffer, ZonePacker.MaxZones);
                 strip.gameObject.SetActive(true);
                 _strips.Add(strip);
@@ -47,10 +49,16 @@ namespace HealerLike.Render.Environment
 
         public void UpdateStrips(ZoneRegistry zones)
         {
+            UpdateStrips(zones, Time.time);
+        }
+
+        // On the board's clock, so the strips' wind matches the board's where they meet
+        public void UpdateStrips(ZoneRegistry zones, float time)
+        {
             GraphicsBuffer buffer = zones != null ? zones.buffer : null;
             foreach (GrassField strip in _strips)
             {
-                strip.UpdateField(buffer, 0);
+                strip.UpdateField(buffer, 0, time);
             }
         }
 

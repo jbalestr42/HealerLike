@@ -13,6 +13,49 @@ void HLGrassInstancingSetup()
 #define UNITY_INDIRECT_DRAW_ARGS IndirectDrawIndexedArgs
 #include "UnityIndirect.cginc"
 #include "GrassTuftData.hlsl"
+#include "GroundCommon.hlsl"
+
+// The ground state GroundSimulation publishes, read by world position: x ash, y vitality, z light from frost at
+// -1 to glow at 1, w blight
+TEXTURE2D(_HLGroundState);
+SAMPLER(sampler_HLGroundState);
+float4 _HLGroundRect;
+float _HLGroundActive;
+// Lush grass turns this much more lime
+#define HL_GROW_TINT float3(1.05, 1.3, 0.75)
+#define HL_GROUND_COLOUR_FADE 1.0
+
+float4 HLGrassGroundState(float3 positionWS)
+{
+    if (_HLGroundActive < 0.5)
+    {
+        return float4(0.0, 0.0, 0.0, 0.0);
+    }
+
+    float2 uv = HLGroundUV(positionWS.xz, _HLGroundRect);
+    float coverage = HLGroundCoverage(uv, _HLGroundRect, HL_GROUND_COLOUR_FADE);
+    return SAMPLE_TEXTURE2D_LOD(_HLGroundState, sampler_HLGroundState, saturate(uv), 0) * coverage;
+}
+
+// Lush grass greens, dead grass fades to straw, blight sickens it, frost whitens it toward the tips and ash turns
+// it grey; ash wins where they overlap. appearance x is the height share along the tuft.
+float3 HLGrassGroundColour(float3 baseColor, float4 ground, float2 appearance)
+{
+    float grow = saturate(ground.y);
+    float wilt = saturate(-ground.y);
+    float frost = saturate(-ground.z) * (0.4 + 0.6 * appearance.x);
+    float3 colour = lerp(baseColor, baseColor * HL_GROW_TINT, 0.8 * grow);
+    colour = lerp(colour, _HLWiltColor.rgb, _HLWiltColor.a * wilt);
+    colour = lerp(colour, _HLBlightColor.rgb, _HLBlightColor.a * saturate(ground.w));
+    colour = lerp(colour, _HLFrostColor.rgb, _HLFrostColor.a * frost);
+    return lerp(colour, _HLAshColor.rgb, _HLAshColor.a * saturate(ground.x));
+}
+
+// The heal's glow, brightest toward the tips; appearance x is the height share along the tuft
+float3 HLGrassGroundGlow(float4 ground, float2 appearance)
+{
+    return _HLGlowColor.rgb * (_HLGlowColor.a * saturate(ground.z) * (0.3 + 0.7 * appearance.x));
+}
 
 // A spike's half width at its base, narrowing to the second as it fully rises; GrassLayout.SpikeHalfWidth is
 // the first
@@ -46,8 +89,30 @@ float3 HLYawGrassTuft(float3 v, float yaw)
     return float3(v.x * c + v.z * s, v.y, v.z * c - v.x * s);
 }
 
+// The tangent turns from HL_ROOT_BEND of the lean at the root to HL_ROOT_BEND plus HL_TIP_BEND at the tip, so the
+// chord from root to tip tilts by the lean itself; GrassTuft.RootBend and TipBend
+#define HL_ROOT_BEND 0.4
+#define HL_TIP_BEND 1.2
+
+float HLGrassSinc(float x)
+{
+    return abs(x) < 1e-4 ? 1.0 - x * x / 6.0 : sin(x) / x;
+}
+
+// The point a height share t along the bent axis of a tuft this tall, an arc of the tuft's own length
+float3 HLGrassSpine(float2 lean, float height, float t)
+{
+    float angle = length(lean);
+    float2 heading = angle > 1e-5 ? lean / angle : float2(0.0, 0.0);
+    float turn = angle * HL_TIP_BEND * t;
+    float mean = angle * (HL_ROOT_BEND + 0.5 * HL_TIP_BEND * t);
+    float chord = height * t * HLGrassSinc(0.5 * turn);
+    float across = chord * sin(mean);
+    return float3(heading.x * across, chord * cos(mean), heading.y * across);
+}
+
 // positionOS and normalOS are the unit tuft or socle of GrassTuft: base on y 0, apex at y 1, base width 1.
-// The tuft moves as a rigid body: scale, yaw, one tilt about its root, then the root position.
+// Scale and yaw, then the tuft bends: the section at each height rides the spine and turns with its tangent.
 // GrassTuft.Place and PlaceNormal mirror this on the CPU.
 void HLPlaceGrassTuft(float3 positionOS, float3 normalOS, uint instanceID, out float3 positionWS,
                       out float3 normalWS, out float2 appearance)
@@ -67,10 +132,12 @@ void HLPlaceGrassTuft(float3 positionOS, float3 normalOS, uint instanceID, out f
     float2 lean = state.leanHeightSpike.xy * _HLTuftLean;
     float yaw = seed.positionYaw.w;
 
-    float3 scaledPosition = float3(positionOS.x * width, positionOS.y * height, positionOS.z * width);
+    float t = positionOS.y;
+    float2 tangentLean = lean * (HL_ROOT_BEND + HL_TIP_BEND * t);
+    float3 section = HLYawGrassTuft(float3(positionOS.x * width, 0.0, positionOS.z * width), yaw);
     float3 scaledNormal = float3(normalOS.x / width, normalOS.y / height, normalOS.z / width);
-    positionWS = seed.positionYaw.xyz + HLTiltGrassTuft(HLYawGrassTuft(scaledPosition, yaw), lean);
-    normalWS = normalize(HLTiltGrassTuft(HLYawGrassTuft(scaledNormal, yaw), lean));
+    positionWS = seed.positionYaw.xyz + HLGrassSpine(lean, height, t) + HLTiltGrassTuft(section, tangentLean);
+    normalWS = normalize(HLTiltGrassTuft(HLYawGrassTuft(scaledNormal, yaw), tangentLean));
 }
 #endif
 

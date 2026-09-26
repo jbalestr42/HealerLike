@@ -10,6 +10,8 @@ namespace HealerLike.Render.Stage
         EnvironmentRoot _root;
         Pose _view;
 
+        public EnvironmentRoot root { get { return _root; } }
+
         public EnvironmentGust gust { get { return _root != null ? _root.gust : null; } }
         public EnvironmentForeground foreground { get { return _root != null ? _root.foreground : null; } }
 

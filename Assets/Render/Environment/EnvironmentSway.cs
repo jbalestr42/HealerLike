@@ -75,12 +75,6 @@ namespace HealerLike.Render.Environment
                 distance = _farDistance;
             }
 
-            Vector3 wind = Vector3.zero;
-            if (_gust)
-            {
-                wind = _gust.Sample(time);
-            }
-
             float age = Mathf.Max(0f, (float)(time - _builtAt));
             float settle = 0f;
             if (age < settleSeconds)
@@ -96,6 +90,8 @@ namespace HealerLike.Render.Environment
                     continue;
                 }
 
+                // A launch bends only the plants near its path
+                Vector3 wind = _gust ? _gust.Sample(time, motion.anchor.position) : Vector3.zero;
                 double cycle = time * motion.frequency * 2 * System.Math.PI % (2 * System.Math.PI);
                 float wave = Mathf.Sin((float)cycle + motion.phase);
                 Vector3 localWind = motion.pivot.parent.InverseTransformDirection(wind);

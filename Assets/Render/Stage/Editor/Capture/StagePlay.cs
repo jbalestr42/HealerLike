@@ -119,6 +119,20 @@ namespace HealerLike.Render.Stage
                 return new GrassBenchRun();
             }
 
+            if (mode == "grasslab")
+            {
+                return new GrassLabRun();
+            }
+
+            if (mode == "grassbattle")
+            {
+                return new GrassBattleRun();
+            }
+
+            if (mode == "grassjitter")
+            {
+                return new GrassJitterRun();
+            }
             if (mode == "offscreen-player")
             {
                 return new OffscreenPlayerRun();

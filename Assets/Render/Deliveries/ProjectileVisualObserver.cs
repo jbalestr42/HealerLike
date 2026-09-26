@@ -15,6 +15,8 @@ namespace HealerLike.Render.Deliveries
 
         readonly List<ProjectileContact> _contacts = new List<ProjectileContact>();
         RenderManager _manager;
+        Vector3 _boltEnd;
+        bool _hasBolt;
         DeliveryVocabulary _vocabulary;
         readonly DeliveryClaim _claim = new DeliveryClaim();
         readonly HiddenRenderers _hidden = new HiddenRenderers();
@@ -53,6 +55,7 @@ namespace HealerLike.Render.Deliveries
             Unbind();
             _contacts.Clear();
             _hasLanded = false;
+            _hasBolt = false;
             if (!projectile)
             {
                 projectile = GetComponent<Projectile>();
@@ -235,6 +238,7 @@ namespace HealerLike.Render.Deliveries
             if (_subscribed is ChainLightningProjectile)
             {
                 _thread.Contact(hit.target);
+                Scorch(hit.target);
             }
 
             if (!_claim.isClaimed && !IsFree())
@@ -274,6 +278,21 @@ namespace HealerLike.Render.Deliveries
             // A chain shot began as ChainSync, so its source keeps the path of its contacts
             _claim.Contact(point, hit.target);
             TintTip();
+        }
+
+        // Each bolt of a chain burns a jagged line into the grass, from the caster to its first target, then from
+        // target to target
+        void Scorch(GameObject target)
+        {
+            if (!_manager || _manager.ground == null || !target)
+            {
+                return;
+            }
+
+            Vector3 to = target.transform.position;
+            _manager.ground.Play(_manager.ground.vocabulary.scorch, _hasBolt ? _boltEnd : transform.position, to);
+            _boltEnd = to;
+            _hasBolt = true;
         }
 
         void EndLease()

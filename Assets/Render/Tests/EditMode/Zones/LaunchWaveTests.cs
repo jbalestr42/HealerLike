@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HealerLike.Render.Environment;
+using HealerLike.Render.Grass;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -12,7 +13,7 @@ public class LaunchWaveTests
     GameObject _shot;
     GameObject _source;
     GameObject _target;
-    ZoneRegistry _owner;
+    Ground _ground;
     EnvironmentGust _gust;
     Projectile _projectile;
     LaunchWave _wave;
@@ -24,8 +25,7 @@ public class LaunchWaveTests
         _shot = new GameObject("projectile");
         _source = new GameObject("source");
         _target = new GameObject("target");
-        _owner = _root.AddComponent<ZoneRegistry>();
-        _owner.Init(new ZoneFakeUpload());
+        _ground = new Ground();
         _gust = _root.AddComponent<EnvironmentGust>();
         TestHelpers.WithLoggingDisabled(() => _target.AddComponent<Entity>());
         _target.transform.position = Vector3.forward * 4f;
@@ -47,40 +47,90 @@ public class LaunchWaveTests
         _projectile.Init(_source, _target, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
     }
 
-    [Test]
-    public void Init_ProjectileLaunched_EmitsDirectionalPulseThatOutlivesIt()
+    // The trail the grass gets this frame: its tail and its head on the ground
+    GroundStamp Trail()
     {
-        _wave.Init(_owner, _gust);
+        List<GroundStamp> stamps = GroundProbe.Stamps(_ground);
+        Assert.AreEqual(1, stamps.Count);
+        Assert.AreEqual(GroundStampKind.Body, stamps[0].kind, "A shot's trail throws the grass aside as a line.");
+        return stamps[0];
+    }
 
+    [Test]
+    public void Follow_ProjectileInFlight_TrailsBehindItAlongItsPath()
+    {
+        _wave.Init(_ground, _gust);
         Launch();
-        _owner.PublishFrame(0f);
 
-        Assert.AreEqual(1, _owner.count);
-        Assert.AreEqual((int)ZoneKind.Launch, _owner.snapshot[0].kind);
-        Assert.AreEqual(4, _owner.snapshot[0].radius);
-        Assert.AreEqual(1073741824u, _owner.snapshot[0].reserved);
-        Assert.AreEqual(_source.transform.position, _owner.snapshot[0].position);
+        _shot.transform.position = new Vector3(0f, 0.2f, 0.8f);
+        _wave.Follow();
 
-        Object.DestroyImmediate(_shot);
-        _owner.PublishFrame(0.2f);
-        Assert.AreEqual(1, _owner.count);
+        GroundStamp trail = Trail();
+        Assert.IsTrue(_wave.isParting);
+        Assert.AreEqual(new Vector2(0f, 0f), new Vector2(trail.centreRadius.x, trail.centreRadius.y),
+            "From where it left.");
+        Assert.AreEqual(new Vector2(0f, 0.8f), new Vector2(trail.push.x, trail.push.y), "To under the projectile.");
 
-        _owner.PublishFrame(0.2f);
-        Assert.AreEqual(0, _owner.count);
+        _shot.transform.position = new Vector3(0f, 0.2f, 3f);
+        _wave.Follow();
+
+        trail = Trail();
+        Assert.AreEqual(3f - LaunchWave.TrailLength, trail.centreRadius.y, 1e-5f, "One trail that moves with it.");
+        Assert.AreEqual(3f, trail.push.y, 1e-5f);
+    }
+
+    [Test]
+    public void Follow_HighFlight_PartsNoGrass()
+    {
+        _wave.Init(_ground, _gust);
+        Launch();
+
+        _shot.transform.position = new Vector3(0f, LaunchWave.HighFlight + 0.5f, 1f);
+        _wave.Follow();
+
+        Assert.IsFalse(_wave.isParting);
+        Assert.AreEqual(0, GroundProbe.Stamps(_ground).Count);
+    }
+
+    [Test]
+    public void OnDisable_ProjectileLanded_ClearsItsTrail()
+    {
+        _wave.Init(_ground, _gust);
+        Launch();
+        _shot.transform.position = new Vector3(0f, 0f, 1f);
+        _wave.Follow();
+        Assert.IsTrue(_wave.isParting);
+
+        TestHelpers.InvokePrivate(_wave, "OnDisable");
+        _wave.Follow();
+
+        Assert.IsFalse(_wave.isParting);
+        Assert.AreEqual(0, GroundProbe.Stamps(_ground).Count);
+    }
+
+    [Test]
+    public void Strength_Height_FallsFromTheGroundToHighFlight()
+    {
+        Assert.AreEqual(1f, LaunchWave.Strength(0f));
+        Assert.AreEqual(1f, LaunchWave.Strength(LaunchWave.LowFlight));
+        Assert.AreEqual(0f, LaunchWave.Strength(LaunchWave.HighFlight));
+        Assert.AreEqual(0.5f, LaunchWave.Strength(0.5f * (LaunchWave.LowFlight + LaunchWave.HighFlight)), 1e-5f);
+        Assert.AreEqual(0f, LaunchWave.Strength(float.NaN));
     }
 
     [Test]
     public void Init_ProjectileLaunched_PushesTheGustFromSourceToTarget()
     {
-        _wave.Init(_owner, _gust);
+        _wave.Init(_ground, _gust);
 
         Launch();
 
-        Vector3 wind = _gust.Sample(Time.timeAsDouble + LaunchWave.GustSeconds * 0.5f);
+        // The source at the origin, the target four units north: a plant on the path half way
+        Vector3 wind = _gust.Sample(Time.timeAsDouble + LaunchWave.GustSeconds * 0.5f, Vector3.forward * 2f);
         Assert.AreEqual(LaunchWave.GustStrength, wind.z, 0.001f);
         Assert.AreEqual(0f, wind.x, 0.00001f);
         Assert.AreEqual(0f, wind.y);
-        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + LaunchWave.GustSeconds + 0.01f).sqrMagnitude);
+        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + LaunchWave.GustSeconds + 0.01f, Vector3.forward * 2f).sqrMagnitude);
     }
 
     [Test]
@@ -89,20 +139,22 @@ public class LaunchWaveTests
         _wave.Init(null, null);
 
         Launch();
+        _shot.transform.position = Vector3.forward;
+        _wave.Follow();
 
-        Assert.AreEqual(0, _owner.liveCount);
-        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + 0.1).sqrMagnitude);
+        Assert.AreEqual(0, GroundProbe.Stamps(_ground).Count);
+        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + 0.1, Vector3.forward * 2f).sqrMagnitude);
     }
 
     [Test]
     public void Init_NoProjectileTarget_LeavesZonesAndGustStill()
     {
-        _wave.Init(_owner, _gust);
+        _wave.Init(_ground, _gust);
 
         _wave.Init(_source);
 
-        Assert.AreEqual(0, _owner.liveCount);
-        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + 0.1).sqrMagnitude);
+        Assert.AreEqual(0, GroundProbe.Stamps(_ground).Count);
+        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + 0.1, Vector3.forward * 2f).sqrMagnitude);
     }
 }
 

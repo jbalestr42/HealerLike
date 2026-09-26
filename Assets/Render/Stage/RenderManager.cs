@@ -22,6 +22,8 @@ namespace HealerLike.Render.Stage
         [SerializeField] EnvironmentRoot _environmentPrefab;
         [SerializeField] LookController _look;
         [SerializeField] ZoneRegistry _zones;
+        // What the grass answers each thing with; the defaults stand in without it
+        [SerializeField] GroundVocabulary _groundVocabulary;
         [SerializeField] GrassField _grass;
         [SerializeField] SpellVisualSink _spellSink;
         [SerializeField] StoneEffects _stoneEffects;
@@ -36,6 +38,7 @@ namespace HealerLike.Render.Stage
         StageCreaturePlacement _placement;
         public StageCreaturePlacement placement { get { return _placement; } }
         readonly StageEnvironment _environment = new StageEnvironment();
+        public EnvironmentRoot environment { get { return _environment.root; } }
         SpawnDressing _spawns = new SpawnDressing();
         int _deliveryToken;
         bool _isLandscape = false;
@@ -60,6 +63,10 @@ namespace HealerLike.Render.Stage
 
         public RenderRegistry registry { get { return _registry; } }
         public ZoneRegistry zones { get { return _zones; } }
+
+        // Everything the render layer tells the grass goes through here: effects, held marks and bodies
+        Ground _ground;
+        public Ground ground { get { return _ground; } }
         public GrassField grass { get { return _grass; } }
         public LookController look { get { return _look; } }
         public SpellVisualSink spellSink { get { return _spellSink; } }
@@ -116,8 +123,23 @@ namespace HealerLike.Render.Stage
             _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board,
                 _gameCamera.transform.eulerAngles.y));
             _zones.Init();
+            if (_ground == null)
+            {
+                _ground = new Ground(_groundVocabulary);
+            }
+            else
+            {
+                _ground.Clear();
+            }
+
             Rect boardRect = BoardRect();
             _grass.Init(boardRect, player.grid.size, _board.max.y, _gameCamera, _zones.buffer, ZonePacker.MaxZones);
+            PointerBrush brush = GetComponent<PointerBrush>();
+            if (brush == null)
+            {
+                brush = gameObject.AddComponent<PointerBrush>();
+            }
+            brush.Init(_ground, _gameCamera, _board.max.y, player.grid.size);
             _environment.Init(_environmentPrefab, this, boardRect);
             _spellSink.Init(this);
             _battleFocus.Init(this);
@@ -143,7 +165,8 @@ namespace HealerLike.Render.Stage
             // Observers published and producers moved their zones in Update, so the frame is final here
             _spellSink.Tick();
             _zones.PublishFrame(Time.deltaTime);
-            _grass.UpdateField(_zones);
+            _ground.Advance(Time.deltaTime);
+            _grass.UpdateField(_zones, _ground);
             _environment.Tick(_zones);
             _battleFocus.Tick();
             if (_placement != null)

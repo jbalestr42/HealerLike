@@ -44,11 +44,12 @@ namespace HealerLike.Render.Stage
             look.settings = settings;
             ZoneRegistry registry = Fixture("GroundFixtureZones").AddComponent<ZoneRegistry>();
             registry.Init();
-            GrassField field = CreateField(camera, registry);
+            Ground ground = new Ground();
+            GrassField field = CreateField(camera, registry, ground);
             AddZones(registry);
 
             look.ApplyGlobals();
-            field.UpdateField(registry);
+            field.UpdateField(registry, ground);
             int firstGreen = GreenPixels(camera, false);
             yield return null;
 
@@ -100,7 +101,7 @@ namespace HealerLike.Render.Stage
         }
 
         // An eight by eight carpet on a ground slab, three stones trampling it
-        GrassField CreateField(Camera camera, ZoneRegistry registry)
+        GrassField CreateField(Camera camera, ZoneRegistry registry, Ground said)
         {
             Material material = new Material(RenderAssets.Load<Shader>(lookShaderPath));
             _state.created.Add(material);
@@ -121,11 +122,12 @@ namespace HealerLike.Render.Stage
                 stone.transform.position = new Vector3((i - 1) * 2.2f, 0f, 1.6f);
                 stone.transform.localScale = Vector3.one * 1.2f;
                 stone.GetComponent<Renderer>().sharedMaterial = material;
-                registry.Add(ZoneKind.Trample, stone.transform.position, 0.8f, 1f);
+                said.Hold(said.vocabulary.obstacle).Show(stone.transform.position, 0.8f, 1f);
             }
 
             GrassField field = Fixture("GroundFixtureGrass").AddComponent<GrassField>();
             EnvironmentAuthoring.SetGrass(field);
+            EnvironmentAuthoring.SetGround(field);
             field.Init(new Rect(-4f, -4f, 8f, 8f), 1f, 0f, camera, registry.buffer, ZonePacker.MaxZones);
             field.tuftBudget = tuftBudget;
             return field;

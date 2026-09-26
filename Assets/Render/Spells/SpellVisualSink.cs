@@ -2,6 +2,7 @@ using UnityEngine;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
 using HealerLike.Render.Stage;
+using HealerLike.Render.Grass;
 using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Spells
@@ -45,15 +46,15 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            Init(manager.spellLooks, manager.meshes, manager.zones, manager.gameCamera);
+            Init(manager.spellLooks, manager.meshes, manager.zones, manager.ground, manager.gameCamera);
         }
 
         // The shared looks and meshes come from the manager, the vocabulary and the material from the prefab; the
         // zones take the area pulses and the bursts turn to the camera
-        public void Init(SpellLooks looks, PrimitiveMeshes meshes, ZoneRegistry zones, Camera camera)
+        public void Init(SpellLooks looks, PrimitiveMeshes meshes, ZoneRegistry zones, Ground ground, Camera camera)
         {
             _statuses.Init(transform, _vocabulary, looks, meshes, _material);
-            _impacts.Init(transform, _vocabulary, meshes, _material, zones, camera);
+            _impacts.Init(transform, _vocabulary, meshes, _material, zones, ground, camera);
         }
 
         // The RenderManager ticks it in its LateUpdate, once every observer has published in Update

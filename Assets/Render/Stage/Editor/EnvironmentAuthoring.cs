@@ -19,6 +19,7 @@ namespace HealerLike.Render.Stage
         public static readonly string GrassComputePath = "Assets/Render/Shaders/Grass.compute";
         public static readonly string BladeMaterialPath = "Assets/Render/Grass/Materials/GrassBlade.mat";
         public static readonly string RingMaterialPath = "Assets/Render/Grass/Materials/HealRing.mat";
+        public static readonly string GroundShaderPath = "Assets/Render/Shaders/GroundSimulation.shader";
 
         public static GameObject Create()
         {
@@ -61,6 +62,12 @@ namespace HealerLike.Render.Stage
             RenderAssets.SetReference(field, "_updateGrass", RenderAssets.Load<ComputeShader>(GrassComputePath));
             RenderAssets.SetReference(field, "_lookMaterial", RenderAssets.Load<Material>(BladeMaterialPath));
             RenderAssets.SetReference(field, "_ringMaterial", RenderAssets.Load<Material>(RingMaterialPath));
+        }
+
+        // The field that owns the ground motion the others sample: the board's
+        public static void SetGround(GrassField field)
+        {
+            RenderAssets.SetReference(field, "_groundShader", RenderAssets.Load<Shader>(GroundShaderPath));
         }
 
         // The game-scale ground, a thousand units wide, never intercepting gameplay raycasts

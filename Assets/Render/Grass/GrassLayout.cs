@@ -28,6 +28,9 @@ namespace HealerLike.Render.Grass
         public static readonly float LeanSpread = 0.8f;
         // A full heal lifts a tuft to this multiple of its height, HL_HEAL_LIFT in Grass.compute plus one
         public static readonly float HealLift = 1.8f;
+        // The most a tuft leans by, rest lean, wind, pushes and droop together, HL_MAX_TUFT_LEAN in Grass.compute.
+        // A flattened tuft folds to 1.2; past half a turn the bent tip would dip into the ground.
+        public static readonly float MaxTuftLean = 1.35f;
         // A hostile spike stands at most this tall in world units whatever the tuft, HL_SPIKE_MIN_HEIGHT plus
         // HL_SPIKE_HEIGHT_RANGE in Grass.compute, and at most this wide either side of its root,
         // HL_SPIKE_HALF_WIDTH in GrassInstancing.hlsl

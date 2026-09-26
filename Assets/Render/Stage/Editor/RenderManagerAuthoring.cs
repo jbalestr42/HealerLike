@@ -20,6 +20,7 @@ namespace HealerLike.Render.Stage
         public static readonly string SinkPath = "Assets/Render/Spells/Prefabs/SpellVisualSink.prefab";
         public static readonly string StoneEffectsPath = "Assets/Render/Stones/Prefabs/StoneEffects.prefab";
         public static readonly string DeliveryVocabularyPath = "Assets/Render/Deliveries/Data/DeliveryVocabulary.asset";
+        public static readonly string GroundVocabularyPath = "Assets/Render/Grass/Data/GroundVocabulary.asset";
         // Decoration in Main that the render preview hides, and the far ground under the environment plane
         public static readonly string[] HiddenObjects = { "MiddleLine", "Sphere", "Ground" };
         // The Main scene's directional light colour
@@ -40,6 +41,7 @@ namespace HealerLike.Render.Stage
             grassGo.transform.SetParent(root.transform, false);
             GrassField grass = grassGo.AddComponent<GrassField>();
             EnvironmentAuthoring.SetGrass(grass);
+            EnvironmentAuthoring.SetGround(grass);
             // The tufts are laid out at the reference size, the ring strips keep the same scale
             grass.bladeHeightScale = 1f;
 
@@ -65,6 +67,7 @@ namespace HealerLike.Render.Stage
                 data.FindProperty("_keyLight").objectReferenceValue = keyLight;
                 data.FindProperty("_deliveryVocabulary").objectReferenceValue =
                     RenderAssets.Load<Object>(DeliveryVocabularyPath);
+                data.FindProperty("_groundVocabulary").objectReferenceValue = LoadOrCreateGroundVocabulary();
                 data.ApplyModifiedPropertiesWithoutUndo();
             }
             using (SerializedObject dressingData = new SerializedObject(dressing))
@@ -86,6 +89,23 @@ namespace HealerLike.Render.Stage
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             Object.DestroyImmediate(root);
             return prefab;
+        }
+
+        // What the grass does for each thing the game tells it, with the defaults until tuned
+        public static GroundVocabulary LoadOrCreateGroundVocabulary()
+        {
+            GroundVocabulary vocabulary = RenderAssets.Load<GroundVocabulary>(GroundVocabularyPath);
+            if (vocabulary != null)
+            {
+                return vocabulary;
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(GroundVocabularyPath));
+            vocabulary = GroundVocabulary.CreateDefault();
+            vocabulary.hideFlags = HideFlags.None;
+            AssetDatabase.CreateAsset(vocabulary, GroundVocabularyPath);
+            AssetDatabase.SaveAssetIfDirty(vocabulary);
+            return vocabulary;
         }
 
         // The prefab carries the key light's aim, the manager only makes it the sun

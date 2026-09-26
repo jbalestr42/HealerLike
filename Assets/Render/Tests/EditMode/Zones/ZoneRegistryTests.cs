@@ -46,7 +46,6 @@ public class ZoneFakeUpload : IZoneUpload
 public class ZoneRegistryTests
 {
     static readonly string overflowWarning = "[ZoneRegistry] Cosmetic zone capacity exceeded; "
-                                             + "feedback reserved before decorative footprints; "
                                              + "first registered wins within each kind.";
 
     GameObject _go;
@@ -74,10 +73,8 @@ public class ZoneRegistryTests
     }
 
     [Test]
-    public void AddLaunchAndAddHealPulse_InvalidInput_ReturnNoHandle()
+    public void AddHealPulse_InvalidInput_ReturnsNoHandle()
     {
-        Assert.AreEqual(0, _registry.AddLaunch(Vector3.zero, Vector3.up));
-        Assert.AreEqual(0, _registry.AddLaunch(Vector3.zero, new Vector3(float.NaN, 0, 0)));
         Assert.AreEqual(0, _registry.AddHealPulse(null, 1));
         Assert.AreEqual(0, _registry.liveCount);
     }
@@ -144,37 +141,28 @@ public class ZoneRegistryTests
     }
 
     [Test]
-    public void PublishFrame_FootprintOverflow_ReservesFeedbackAndReturnsCapacity()
+    public void PublishFrame_Overflow_KeepsTheFirstRegistered()
     {
         for (int i = 0; i < 80; i++)
         {
-            _registry.Add(ZoneKind.Trample, Vector3.right * i, 1f, 1f);
+            _registry.Add(ZoneKind.Range, Vector3.right * i, 1f, 1f);
         }
 
         int heal = _registry.AddPulse(ZoneKind.Heal, Vector3.right * 100f, 2f, 1f, ZoneRegistry.HealPulseSeconds);
-        _registry.AddPulse(ZoneKind.Hostile, Vector3.right * 101f, 2f, 1f, 0.8f);
         LogAssert.Expect(LogType.Error, overflowWarning);
 
         _registry.PublishFrame(0.1f);
 
         Assert.AreEqual(ZonePacker.MaxZones, _registry.count);
-        Assert.AreEqual(82, _registry.liveCount);
-        Assert.AreEqual(18, _registry.overflowCount);
-        for (int i = 0; i < 62; i++)
+        Assert.AreEqual(81, _registry.liveCount);
+        Assert.AreEqual(17, _registry.overflowCount);
+        for (int i = 0; i < ZonePacker.MaxZones; i++)
         {
             Assert.AreEqual(i, _registry.snapshot[i].position.x);
         }
 
-        Assert.AreEqual((int)ZoneKind.Heal, _registry.snapshot[62].kind);
-        Assert.AreEqual((int)ZoneKind.Hostile, _registry.snapshot[63].kind);
-
         _registry.PublishFrame(0.4f);
         Assert.IsFalse(_registry.Contains(heal));
-        Assert.AreEqual(62, _registry.snapshot[62].position.x);
-        Assert.AreEqual((int)ZoneKind.Hostile, _registry.snapshot[63].kind);
-
-        _registry.PublishFrame(0.4f);
-        Assert.AreEqual(63, _registry.snapshot[63].position.x);
     }
 
     [Test]

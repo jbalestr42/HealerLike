@@ -18,7 +18,6 @@ namespace HealerLike.Render.Zones
         }
 
         public static readonly float HealPulseSeconds = 0.45f;
-        public static readonly float LaunchSeconds = 0.4f;
 
         readonly List<Entry> _entries = new List<Entry>();
         readonly Zone[] _packed = new Zone[ZonePacker.MaxZones];
@@ -114,22 +113,6 @@ namespace HealerLike.Render.Zones
             return handle;
         }
 
-        public int AddLaunch(Vector3 source, Vector3 target)
-        {
-            Vector3 direction = target - source;
-            direction.y = 0;
-            int handle = AddPulse(ZoneKind.Launch, source, direction.magnitude, 1, LaunchSeconds);
-            int i = Find(handle);
-            if (i >= 0)
-            {
-                Entry entry = _entries[i];
-                entry.zone.reserved = ZonePacker.EncodeDirection(direction);
-                _entries[i] = entry;
-            }
-
-            return handle;
-        }
-
         // Keeps the order and the age, an invalid value removes the zone
         public void UpdateZone(int handle, ZoneKind kind, Vector3 position, float radius, float strength)
         {
@@ -148,10 +131,6 @@ namespace HealerLike.Render.Zones
             }
 
             entry.initialStrength = zone.strength;
-            if (kind == ZoneKind.Launch && entry.zone.kind == (int)ZoneKind.Launch)
-            {
-                zone.reserved = entry.zone.reserved;
-            }
             if (entry.duration > 0)
             {
                 zone.strength *= Mathf.Clamp01(1 - zone.age / entry.duration);
@@ -224,14 +203,11 @@ namespace HealerLike.Render.Zones
                 _entries.RemoveRange(written, _entries.Count - written);
             }
 
-            int selected = ZonePacker.ReserveFeedback(_source, written);
-            _count = ZonePacker.Pack(new ReadOnlySpan<Zone>(_source, 0, selected), _packed, out _, out int overflow);
-            overflow += written - selected;
+            _count = ZonePacker.Pack(new ReadOnlySpan<Zone>(_source, 0, written), _packed, out _, out int overflow);
             _overflowCount = overflow;
             if (overflow > 0 && !_overflowing)
             {
                 Debug.LogError("[ZoneRegistry] Cosmetic zone capacity exceeded; "
-                                 + "feedback reserved before decorative footprints; "
                                  + "first registered wins within each kind.", this);
             }
 

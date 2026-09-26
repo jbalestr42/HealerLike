@@ -12,6 +12,8 @@ namespace HealerLike.Render.Grass
         RenderParams _parameters;
         Camera _camera;
         Func<bool> _isShown;
+        UnityEngine.Object _owner;
+        bool _hasOwner;
 
         Material _material;
         public Material material { get { return _material; } }
@@ -85,9 +87,18 @@ namespace HealerLike.Render.Grass
         // player-loop tick still draw.
         public void Show(Camera camera, Func<bool> isShown)
         {
+            Show(camera, isShown, null);
+        }
+
+        // The same, stopping for good once owner is destroyed, which in the Editor can happen without the owner
+        // ever hiding it
+        public void Show(Camera camera, Func<bool> isShown, UnityEngine.Object owner)
+        {
             Hide();
             _camera = camera;
             _isShown = isShown;
+            _owner = owner;
+            _hasOwner = !ReferenceEquals(owner, null);
             RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
         }
 
@@ -96,10 +107,18 @@ namespace HealerLike.Render.Grass
             RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
             _camera = null;
             _isShown = null;
+            _owner = null;
+            _hasOwner = false;
         }
 
         void OnBeginCameraRendering(ScriptableRenderContext context, Camera camera)
         {
+            if (_hasOwner && _owner == null)
+            {
+                Hide();
+                return;
+            }
+
             if (camera != _camera || !_isShown())
             {
                 return;

@@ -24,8 +24,6 @@ public class ZonePackerTests
 
     [TestCase(ZoneKind.Range, 3)]
     [TestCase(ZoneKind.Bruise, 4)]
-    [TestCase(ZoneKind.Launch, 5)]
-    [TestCase(ZoneKind.Trample, 6)]
     public void TryCreate_LaterKinds_KeepTheirWireValuesAndAreAccepted(ZoneKind kind, int value)
     {
         Assert.AreEqual(value, (int)kind);
@@ -33,23 +31,14 @@ public class ZonePackerTests
     }
 
     [Test]
-    public void Pack_LaunchHeading_SurvivesWhileOtherKindsClearIt()
+    public void Pack_Reserved_IsAlwaysCleared()
     {
-        Assert.AreEqual(0u, ZonePacker.EncodeDirection(Vector3.right));
-        Assert.AreEqual(1073741824u, ZonePacker.EncodeDirection(Vector3.forward));
-        Assert.AreEqual(2147483648u, ZonePacker.EncodeDirection(Vector3.left));
-        Assert.AreEqual(3221225472u, ZonePacker.EncodeDirection(Vector3.back));
-        Zone[] source =
-        {
-            Raw(Vector3.zero, 2f, ZoneKind.Launch, 1f, reserved: 1073741824u),
-            Raw(Vector3.zero, 2f, ZoneKind.Range, 1f, reserved: 123u)
-        };
-        Zone[] destination = new Zone[2];
+        Zone[] source = { Raw(Vector3.zero, 2f, ZoneKind.Range, 1f, reserved: 123u) };
+        Zone[] destination = new Zone[1];
 
         ZonePacker.Pack(source, destination, out _, out _);
 
-        Assert.AreEqual(1073741824u, destination[0].reserved);
-        Assert.AreEqual(0u, destination[1].reserved);
+        Assert.AreEqual(0u, destination[0].reserved);
     }
 
     [Test]

@@ -101,6 +101,142 @@ public class GrassFieldTests
         return buffers;
     }
 
+    // A field on the one-cell area stepped through a real zone registry and a ground holding an obstacle at its
+    // centre, owning the ground simulation when asked
+    Ground _ground;
+
+    ZoneRegistry BuildWithRegistry(bool ownsGround)
+    {
+        Camera camera = _go.AddComponent<Camera>();
+        ZoneRegistry registry = _go.AddComponent<ZoneRegistry>();
+        registry.Init();
+        _field.Init(oneCell, 1f, 0.5f, camera, registry.buffer, ZonePacker.MaxZones);
+        _field.tuftBudget = 65;
+        SetAssets();
+        if (ownsGround)
+        {
+            TestHelpers.SetPrivateField(_field, "_groundShader",
+                AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/GroundSimulation.shader"));
+        }
+
+        _ground = new Ground();
+        _ground.Hold(_ground.vocabulary.obstacle).Show(new Vector3(0f, 0.5f, 0f), 0.6f, 1f);
+        _ground.Advance(0.2f);
+        registry.PublishFrame(0.2f);
+        _field.UpdateField(registry, _ground);
+        return registry;
+    }
+
+    [Test]
+    public void UpdateField_GroundShader_OwnsAndPublishesTheGroundAroundTheField()
+    {
+        if (!HasGraphicsDevice() || !GroundSimulation.IsSupported())
+        {
+            Assert.Ignore("Requires a graphics device; run with -force-metal.");
+        }
+
+        BuildWithRegistry(true);
+
+        Assert.IsNotNull(_field.simulation);
+        Assert.IsTrue(_field.simulation.isValid);
+        Assert.AreEqual(1, _field.simulation.stampCount, "The obstacle became a stamp.");
+        Rect area = _field.simulation.volume.area;
+        Assert.AreEqual(-3.5f, area.xMin, 1e-5f, "Three cells of margin around the one-cell field.");
+        Assert.AreEqual(7f, area.width, 1e-5f);
+        Assert.AreEqual(1f, Shader.GetGlobalFloat(GroundSimulation.ActiveId));
+        Assert.AreSame(_field.simulation.motion, Shader.GetGlobalTexture(GroundSimulation.MotionId));
+
+        TestHelpers.InvokePrivate(_field, "OnDisable");
+
+        Assert.IsNull(_field.simulation);
+        Assert.AreEqual(0f, Shader.GetGlobalFloat(GroundSimulation.ActiveId), "A released ground is unpublished.");
+    }
+
+    [Test]
+    public void UpdateField_TrampleOverTime_FlattensTheTuftsUnderIt()
+    {
+        if (!HasGraphicsDevice() || !GroundSimulation.IsSupported())
+        {
+            Assert.Ignore("Requires a graphics device; run with -force-metal.");
+        }
+
+        ZoneRegistry registry = BuildWithRegistry(true);
+        for (int frame = 1; frame < 30; frame++)
+        {
+            registry.PublishFrame(1f / 60f);
+            _ground.Advance(1f / 60f);
+            _field.UpdateField(registry, _ground, 1f / 60f, frame / 60f);
+        }
+
+        BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        GraphicsBuffer seeds = (GraphicsBuffer)typeof(GrassField).GetField("_seeds", flags).GetValue(_field);
+        GraphicsBuffer states = (GraphicsBuffer)typeof(GrassField).GetField("_states", flags).GetValue(_field);
+        TuftSeed[] seedData = new TuftSeed[_field.tuftCount];
+        TuftState[] stateData = new TuftState[_field.tuftCount];
+        seeds.GetData(seedData);
+        states.GetData(stateData);
+        int flattened = 0;
+        for (int i = 0; i < seedData.Length; i++)
+        {
+            Vector4 root = seedData[i].positionYaw;
+            if (new Vector2(root.x, root.z).magnitude < 0.3f)
+            {
+                float height = seedData[i].heightWidthLean.x * stateData[i].leanHeightSpike.z;
+                Assert.Less(height, 0.2f, $"Tuft {i} at {root} still stands {height} tall.");
+                flattened++;
+            }
+        }
+
+        Assert.Greater(flattened, 0);
+    }
+
+    [Test]
+    public void UpdateField_NewLayout_RebuildsTheTuftsButKeepsTheGround()
+    {
+        if (!HasGraphicsDevice() || !GroundSimulation.IsSupported())
+        {
+            Assert.Ignore("Requires a graphics device; run with -force-metal.");
+        }
+
+        ZoneRegistry registry = BuildWithRegistry(true);
+        GroundSimulation ground = _field.simulation;
+
+        _field.tuftBudget = 20;
+        _field.UpdateField(registry, _ground, 1f / 60f, 1f);
+
+        Assert.AreSame(ground, _field.simulation, "Its motion and state live on.");
+        Assert.IsTrue(_field.isReady);
+        Assert.AreEqual(1f, Shader.GetGlobalFloat(GroundSimulation.ActiveId));
+    }
+
+    [Test]
+    public void UpdateField_NoGroundShader_OnlyReadsTheGround()
+    {
+        if (!HasGraphicsDevice())
+        {
+            Assert.Ignore("Requires a graphics device; run with -force-metal.");
+        }
+
+        GroundSimulation.Unpublish();
+        BuildWithRegistry(false);
+
+        Assert.IsNull(_field.simulation);
+        Assert.IsTrue(_field.isReady);
+        Assert.AreEqual(0f, Shader.GetGlobalFloat(GroundSimulation.ActiveId));
+    }
+
+    [Test]
+    public void BladeSegments_OutsideRange_Clamps()
+    {
+        Assert.AreEqual(4, _field.bladeSegments);
+
+        _field.bladeSegments = 0;
+        Assert.AreEqual(1, _field.bladeSegments);
+
+        _field.bladeSegments = 99;
+        Assert.AreEqual(GrassBladeMesh.MaxSegments, _field.bladeSegments);
+    }
+
     [Test]
     public void TuftBudget_Default_IsTheMaximum()
     {
@@ -225,7 +361,7 @@ public class GrassFieldTests
         Assert.IsTrue(_field.tuftDraw.material.IsKeywordEnabled(instancedKeyword));
         uint[] data = new uint[5];
         _field.tuftDraw.arguments.GetData(data);
-        Assert.AreEqual((uint)FacetedMeshes.TuftIndexCount, data[0]); // four sides
+        Assert.AreEqual(GrassBladeMesh.Shared(_field.bladeSegments).GetIndexCount(0), data[0]); // four bent sides
         _field.socleDraw.arguments.GetData(data);
         Assert.AreEqual((uint)FacetedMeshes.SocleIndexCount, data[0]); // eight fan triangles
         Assert.AreEqual(ShadowCastingMode.On, _field.tuftDraw.shadowCastingMode);

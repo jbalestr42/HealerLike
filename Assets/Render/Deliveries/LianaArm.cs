@@ -47,6 +47,9 @@ namespace HealerLike.Render.Deliveries
         // The width of one tip unit in world space
         public float tipWidth { get { return _radius * tipWidthRadii; } }
 
+        // The tube's radius at its root in world space; it thins toward the tip
+        public float radius { get { return _radius; } }
+
         // Without a parent the arm only solves its chain and draws nothing
         public bool Init(ArmDefinition definition, Transform parent, Material material, PrimitiveMeshes meshes,
             DeliveryVocabulary vocabulary, float cellSize = 1f)

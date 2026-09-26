@@ -50,8 +50,14 @@ public class LookShaderTests
             Assert.That(material.FindPass(pass), Is.GreaterThanOrEqualTo(0), pass);
         }
 
-        Assert.That(shader.GetPropertyCount(), Is.EqualTo(14));
+        Assert.That(shader.GetPropertyCount(), Is.EqualTo(19));
         Assert.That(shader.GetPropertyName(3), Is.EqualTo("_BaseColor"));
+        // The ground state's colours on grass: ash, dead grass and the heal's glow
+        Assert.That(shader.FindPropertyIndex("_HLAshColor"), Is.GreaterThanOrEqualTo(0));
+        Assert.That(shader.FindPropertyIndex("_HLWiltColor"), Is.GreaterThanOrEqualTo(0));
+        Assert.That(shader.FindPropertyIndex("_HLGlowColor"), Is.GreaterThanOrEqualTo(0));
+        Assert.That(shader.FindPropertyIndex("_HLBlightColor"), Is.GreaterThanOrEqualTo(0));
+        Assert.That(shader.FindPropertyIndex("_HLFrostColor"), Is.GreaterThanOrEqualTo(0));
         if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null)
         {
             Assert.That(shader.isSupported, Is.True);

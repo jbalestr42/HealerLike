@@ -62,6 +62,27 @@ namespace HealerLike.Render.Stage
             StagePlay.Enter("grassbench", 300f);
         }
 
+        // A scripted walk, heal, launch and gust through the grass at a fixed 60 Hz, as a filmstrip and probes
+        [MenuItem("Tools/Render/Grass Lab")]
+        public static void GrassLab()
+        {
+            StagePlay.Enter("grasslab", 300f);
+        }
+
+        // A real wave through the game camera with every skill cast in turn, beside the ground from above
+        [MenuItem("Tools/Render/Grass Battle")]
+        public static void GrassBattle()
+        {
+            StagePlay.Enter("grassbattle", 240f);
+        }
+
+        // Frame to frame flicker of the grass on the board and in the environment, with the suspects switched off
+        [MenuItem("Tools/Render/Grass Jitter")]
+        public static void GrassJitter()
+        {
+            StagePlay.Enter("grassjitter", 240f);
+        }
+
         [MenuItem("Tools/Render/Smoke Three Rounds")]
         public static void Smoke()
         {

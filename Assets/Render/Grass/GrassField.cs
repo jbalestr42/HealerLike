@@ -5,7 +5,10 @@ using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Grass
 {
-    // One flat grass area seen by one camera. The zone owner publishes first, then the field updates.
+    // One flat grass area seen by one camera. The zone owner publishes first, then the field updates. A field
+    // given the ground shader also owns the ground simulation over its area and a margin around it, which it
+    // steps from what the Ground was told before its own tufts read it; every field samples whatever ground is
+    // published.
     public class GrassField : MonoBehaviour
     {
         [SerializeField] PrimitiveMeshes _meshes;
@@ -16,6 +19,14 @@ namespace HealerLike.Render.Grass
         [SerializeField] uint _seed = 1;
         [SerializeField] float _bladeHeightScale = 1f;
         [SerializeField, Range(0f, 1f)] float _windStrength = 1f;
+        // Height segments of each tuft, so it can bend; one is the rigid pyramid
+        [SerializeField, Range(1, 8)] int _bladeSegments = 4;
+        // Left empty on fields that only read the ground another field owns
+        [SerializeField] Shader _groundShader;
+        // In cells: how far the ground reaches past the field, and the side of one ground texel
+        [SerializeField] float _groundMargin = 3f;
+        [SerializeField] float _groundTexel = 0.125f;
+        [SerializeField] GroundSpringSettings _groundSpring = GroundSpringSettings.Default;
 
         GraphicsBuffer _zones;
         GraphicsBuffer _seeds;
@@ -32,6 +43,13 @@ namespace HealerLike.Render.Grass
         float _cullMargin;
         bool _isInitialized;
         GrassDraw _ringDraw;
+        GroundStamp[] _stamps = new GroundStamp[GroundSimulation.StampCapacity];
+        BodyCapsule[] _capsules = new BodyCapsule[GroundSimulation.StampCapacity];
+        bool _isGroundFailed;
+
+        GroundSimulation _simulation;
+        // The GPU ground this field owns, when it was given the ground shader
+        public GroundSimulation simulation { get { return _simulation; } }
 
         public Material lookMaterial { get { return _lookMaterial; } }
 
@@ -57,6 +75,13 @@ namespace HealerLike.Render.Grass
         }
 
         public uint seed { get { return _seed; } set { _seed = value; } }
+
+        public int bladeSegments
+        {
+            get { return _bladeSegments; }
+            set { _bladeSegments = Mathf.Clamp(value, 1, GrassBladeMesh.MaxSegments); }
+        }
+
 
         public float windStrength
         {
@@ -118,19 +143,68 @@ namespace HealerLike.Render.Grass
             Release();
         }
 
-        public void UpdateField(ZoneRegistry zones)
+        public void UpdateField(ZoneRegistry zones, Ground ground)
         {
-            if (zones == null)
+            UpdateField(zones, ground, Time.deltaTime, Time.time);
+        }
+
+        // The frame's length and clock given explicitly, so a capture can step the grass at a fixed rate. The zones
+        // feed the tufts' own reading; everything the ground was told this frame moves the grass.
+        public void UpdateField(ZoneRegistry zones, Ground ground, float deltaTime, float time)
+        {
+            if (zones == null || ground == null)
             {
-                Debug.LogError("[GrassField] UpdateField needs the zone registry.");
+                Debug.LogError("[GrassField] UpdateField needs the zone registry and the ground.");
                 return;
             }
 
-            UpdateField(zones.buffer, zones.count);
+            if (!_isInitialized)
+            {
+                return;
+            }
+
+            SetZoneSnapshot(zones.buffer, zones.count);
+            if (_simulation == null && _groundShader != null && !_isGroundFailed)
+            {
+                CreateGround();
+            }
+
+            if (_simulation != null)
+            {
+                int count = ground.Collect(_stamps, 0, zones.snapshot, _capsules, _surfaceY, _cellSize);
+                _simulation.SetStamps(new System.ReadOnlySpan<GroundStamp>(_stamps, 0, count));
+                _simulation.Step(deltaTime, GroundWind.Shader(_windStrength, time));
+                _simulation.Publish();
+            }
+
+            Dispatch(new GrassBuildKey(_area, _cellSize, _surfaceY, _seed, _bladeBudget), time);
+        }
+
+        void CreateGround()
+        {
+            float margin = Mathf.Max(0f, RenderMath.FiniteOr(_groundMargin, 0f)) * _cellSize;
+            Rect area = new Rect(_area.xMin - margin, _area.yMin - margin, _area.width + 2f * margin,
+                                 _area.height + 2f * margin);
+            float texel = Mathf.Max(0.01f, RenderMath.FiniteOr(_groundTexel, 0.125f)) * _cellSize;
+            GroundVolume volume = GroundVolume.Create(area, texel);
+            _simulation = new GroundSimulation(_groundShader, volume, _groundSpring);
+            if (!_simulation.isValid)
+            {
+                _simulation.Dispose();
+                _simulation = null;
+                // Without it the tufts keep the plain wind; no retry every frame
+                _isGroundFailed = true;
+            }
         }
 
         // Grass strips around the board borrow the zone buffer with a count of zero
         public void UpdateField(GraphicsBuffer zones, int count)
+        {
+            UpdateField(zones, count, Time.time);
+        }
+
+        // The same on the clock the board's ground runs on, so both winds agree where they blend
+        public void UpdateField(GraphicsBuffer zones, int count, float time)
         {
             if (!_isInitialized)
             {
@@ -138,7 +212,7 @@ namespace HealerLike.Render.Grass
             }
 
             SetZoneSnapshot(zones, count);
-            Dispatch(new GrassBuildKey(_area, _cellSize, _surfaceY, _seed, _bladeBudget));
+            Dispatch(new GrassBuildKey(_area, _cellSize, _surfaceY, _seed, _bladeBudget), time);
         }
 
         // The zone owner publishes the same buffer and count globally for the ring draw
@@ -168,16 +242,17 @@ namespace HealerLike.Render.Grass
             _zoneCount = 0;
         }
 
-        void Dispatch(GrassBuildKey key)
+        void Dispatch(GrassBuildKey key, float time)
         {
             if (_gameplayCamera == null || _zones == null || !_zones.IsValid())
             {
                 return;
             }
 
+            // A new layout rebuilds the tufts only; the ground keeps its motion and state
             if (_isReady && !key.Matches(_builtKey))
             {
-                ReleaseOwned();
+                ReleaseTufts();
             }
 
             if (!_isReady && !Build(key))
@@ -204,14 +279,30 @@ namespace HealerLike.Render.Grass
             _updateGrass.SetBuffer(_kernel, "_HLVisibleBlades", _visibleTufts);
             _updateGrass.SetVectorArray("_HLFrustumPlanes", _planeVectors);
             _updateGrass.SetFloat("_HLCullMargin", _cullMargin);
-            _updateGrass.SetFloat("_HLWindTime", Time.time);
-            _updateGrass.SetFloat("_HLWindStrength", windStrength);
+            _updateGrass.SetVector("_HLGroundWind", GroundWind.Shader(_windStrength, time));
+            BindGround();
             _updateGrass.SetBuffer(_kernel, "_HLZones", _zones);
             _updateGrass.SetInt("_HLZoneCount", _zoneCount);
             _visibleTufts.SetCounterValue(0);
             _updateGrass.Dispatch(_kernel, (_tuftCount + 63) / 64, 1, 1);
             GraphicsBuffer.CopyCount(_visibleTufts, _tuftDraw.arguments, 4);
             GraphicsBuffer.CopyCount(_visibleTufts, _socleDraw.arguments, 4);
+        }
+
+        // The ground published this frame, or none: the tufts then take the plain wind
+        void BindGround()
+        {
+            bool isActive = Shader.GetGlobalFloat(GroundSimulation.ActiveId) > 0.5f;
+            Texture motion = isActive ? Shader.GetGlobalTexture(GroundSimulation.MotionId) : null;
+            Texture crush = isActive ? Shader.GetGlobalTexture(GroundSimulation.CrushId) : null;
+            Texture state = isActive ? Shader.GetGlobalTexture(GroundSimulation.StateId) : null;
+            isActive = motion != null && crush != null && state != null;
+            _updateGrass.SetTexture(_kernel, GroundSimulation.MotionId, isActive ? motion : Texture2D.blackTexture);
+            _updateGrass.SetTexture(_kernel, GroundSimulation.CrushId, isActive ? crush : Texture2D.blackTexture);
+            _updateGrass.SetTexture(_kernel, GroundSimulation.StateId, isActive ? state : Texture2D.blackTexture);
+            _updateGrass.SetVector(GroundSimulation.RectId, isActive ? Shader.GetGlobalVector(GroundSimulation.RectId)
+                                                                  : new Vector4(0f, 0f, 1f, 1f));
+            _updateGrass.SetFloat(GroundSimulation.ActiveId, isActive ? 1f : 0f);
         }
 
         bool IsDrawn()
@@ -247,7 +338,7 @@ namespace HealerLike.Render.Grass
 
             Bounds bounds = key.CalculateBounds();
             int layer = gameObject.layer;
-            _tuftDraw = GrassDraw.Tufts(_meshes.tuft, _lookMaterial, bounds, layer, 1f);
+            _tuftDraw = GrassDraw.Tufts(GrassBladeMesh.Shared(_bladeSegments), _lookMaterial, bounds, layer, 1f);
             // Both ordinary blades and hostile spikes carry the graphic field shadows.
             _tuftDraw.shadowCastingMode = ShadowCastingMode.On;
             _tuftDraw.properties.SetFloat("_HLGrassSpikeShadowsOnly", 0f);
@@ -256,9 +347,9 @@ namespace HealerLike.Render.Grass
             _tuftDraw.BindTufts(_seeds, _states, _visibleTufts, ClampHeightScale(_bladeHeightScale));
             _socleDraw.BindTufts(_seeds, _states, _visibleTufts, ClampHeightScale(_bladeHeightScale));
             _ringDraw = GrassDraw.Rings(_meshes.annulus, _ringMaterial, bounds, layer, key);
-            _tuftDraw.Show(_gameplayCamera, IsDrawn);
-            _socleDraw.Show(_gameplayCamera, IsDrawn);
-            _ringDraw.Show(_gameplayCamera, () => IsDrawn() && _zoneCount > 0);
+            _tuftDraw.Show(_gameplayCamera, IsDrawn, this);
+            _socleDraw.Show(_gameplayCamera, IsDrawn, this);
+            _ringDraw.Show(_gameplayCamera, () => IsDrawn() && _zoneCount > 0, this);
             return true;
         }
 
@@ -276,6 +367,18 @@ namespace HealerLike.Render.Grass
         }
 
         void ReleaseOwned()
+        {
+            if (_simulation != null)
+            {
+                _simulation.Dispose();
+                _simulation = null;
+                GroundSimulation.Unpublish();
+            }
+
+            ReleaseTufts();
+        }
+
+        void ReleaseTufts()
         {
             _isReady = false;
             _tuftCount = 0;

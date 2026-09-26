@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
+using HealerLike.Render.Grass;
 using HealerLike.Render.Zones;
 
 namespace HealerLike.Render.Spells
@@ -14,6 +15,11 @@ namespace HealerLike.Render.Spells
 
         // Sizes an impact on a unit that has no health to read
         static readonly float defaultMaximumHealth = 100f;
+        // A hit's blast through the grass, in world units: its least radius, what a whole health bar adds, and
+        // the widening of a critical
+        static readonly float shockMinRadius = 0.5f;
+        static readonly float shockRadiusRange = 1f;
+        static readonly float shockCriticalScale = 1.3f;
 
         // One recipient of a character's cast this frame
         struct Recipient
@@ -29,18 +35,20 @@ namespace HealerLike.Render.Spells
         PrimitiveMeshes _meshes;
         Material _material;
         ZoneRegistry _zones;
+        Ground _ground;
         Camera _camera;
 
         public int count { get { return _impacts.Count; } }
 
         public void Init(Transform parent, EffectVocabulary vocabulary, PrimitiveMeshes meshes, Material material,
-                         ZoneRegistry zones, Camera camera)
+                         ZoneRegistry zones, Ground ground, Camera camera)
         {
             _parent = parent;
             _vocabulary = vocabulary;
             _meshes = meshes;
             _material = material;
             _zones = zones;
+            _ground = ground;
             _camera = camera;
         }
 
@@ -88,6 +96,25 @@ namespace HealerLike.Render.Spells
             }
 
             Add(effect.gameObject);
+            // Only a hit on health blasts the grass; a spell's mana cost is not a blow
+            if (_ground != null && resource == ResourceKind.Health && preClampAmount < 0f)
+            {
+                _ground.Play(_ground.vocabulary.hit, target.transform.position, ShockRadius(amount, isCritical),
+                             HitShock(amount));
+            }
+        }
+
+        // How hard a hit's blast throws the grass, a share of a landing's, harder as it takes more health
+        public static float HitShock(float share)
+        {
+            return 0.3f + 0.35f * Mathf.Clamp01(share);
+        }
+
+        // The blast a hit throws through the grass, wider as it takes a larger share of the target's health
+        public static float ShockRadius(float share, bool isCritical)
+        {
+            float radius = shockMinRadius + shockRadiusRange * Mathf.Clamp01(share);
+            return isCritical ? radius * shockCriticalScale : radius;
         }
 
         public SpellEffect ShowLink(Vector3 start, Vector3 end, EffectFamily family, bool isContactThread,
