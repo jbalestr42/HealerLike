@@ -17,6 +17,8 @@ namespace UI.Toolkit
         {
             _panel = new ToolkitTestPanel();
             _root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+            // This virtual viewport must keep its requested size inside the editor test window.
+            _root.style.flexShrink = 0f;
             _panel.root.Add(_root);
             _view = new ToolkitGameView(_root);
             _view.SetCards("spell-list", new[]
@@ -61,6 +63,7 @@ namespace UI.Toolkit
                 Resize(size.x, size.y);
                 yield return null;
                 yield return null;
+                AssertViewport(size);
                 Rect portrait = _root.Q("detail-icon").worldBound;
                 Rect title = _root.Q("detail-title").worldBound;
                 Assert.LessOrEqual(portrait.yMax, title.yMin, "Stacked detail layout at " + size);
@@ -74,6 +77,7 @@ namespace UI.Toolkit
             Resize(844f, 390f);
             yield return null;
             yield return null;
+            AssertViewport(new Vector2(844f, 390f));
             VisualElement portrait = _root.Q("detail-icon");
             Label title = _root.Q<Label>("detail-title");
             Label description = _root.Q<Label>("detail-description");
@@ -112,7 +116,8 @@ namespace UI.Toolkit
             Rect viewport = _root.Q<ScrollView>("detail-scroll").contentViewport.worldBound;
             Rect drawer = _root.Q("detail-panel").worldBound;
             Rect root = _root.worldBound;
-            string diagnostic = element.name + ": " + bounds + "; viewport: " + viewport;
+            string diagnostic = element.name + ": " + bounds + "; viewport: " + viewport
+                + "; drawer: " + drawer + "; root: " + root;
             Assert.Greater(bounds.width, 0f, diagnostic);
             Assert.Greater(bounds.height, 0f, diagnostic);
             foreach (Rect clip in new[] { viewport, drawer, root })
@@ -121,6 +126,16 @@ namespace UI.Toolkit
                 Assert.GreaterOrEqual(bounds.yMin, clip.yMin - 1f, diagnostic);
                 Assert.LessOrEqual(bounds.xMax, clip.xMax + 1f, diagnostic);
                 Assert.LessOrEqual(bounds.yMax, clip.yMax + 1f, diagnostic);
+            }
+        }
+
+        void AssertViewport(Vector2 expected)
+        {
+            foreach (VisualElement element in new[] { _root, _root.Q("hud-root") })
+            {
+                string diagnostic = element.name + ": " + element.worldBound + "; expected size: " + expected;
+                Assert.AreEqual(expected.x, element.worldBound.width, 1f, diagnostic);
+                Assert.AreEqual(expected.y, element.worldBound.height, 1f, diagnostic);
             }
         }
     }
