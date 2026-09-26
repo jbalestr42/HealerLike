@@ -66,6 +66,7 @@ namespace UI.Toolkit
             Assert.AreSame(_second, card.style.backgroundImage.value.texture);
             Assert.AreSame(_second, _root.Q("detail-icon").style.backgroundImage.value.texture);
             Assert.IsTrue(card.ClassListContains("creature-portrait"));
+            Assert.IsTrue(_root.Q<Button>("data-card").ClassListContains("creature-card"));
             Assert.AreEqual(Entity.EntityType.Player, _provider.side);
         }
 
@@ -119,6 +120,7 @@ namespace UI.Toolkit
             Assert.IsNotNull(icon.style.backgroundImage.value.texture);
             Assert.AreNotSame(_first, icon.style.backgroundImage.value.texture);
             Assert.IsFalse(icon.ClassListContains("creature-portrait"));
+            Assert.IsFalse(_root.Q<Button>("data-card").ClassListContains("creature-card"));
             Assert.IsTrue(_first);
         }
 

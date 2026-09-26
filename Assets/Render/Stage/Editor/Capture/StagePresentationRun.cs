@@ -96,6 +96,8 @@ namespace HealerLike.Render.Stage
                 && _cardPortrait.name.StartsWith("Creature Portrait ")
                 && _cardPortrait.width == 256 && _cardPortrait.height == 256,
                 "Party card shows the 256px creature screenshot");
+            CheckPartyLabel(cards[0], "card-title", prefix);
+            CheckPartyLabel(cards[0], "card-status", prefix);
             _output.ExportPortrait(_cardPortrait, prefix + "-cached-portrait");
             List<Camera> portraitCameras = PortraitCameras();
             _output.Check(portraitCameras.Count == 1, "Exactly one runtime portrait capture camera, including hidden objects; observed "
@@ -402,6 +404,34 @@ namespace HealerLike.Render.Stage
 
         int EntityCount() { return Object.FindObjectsByType<Entity>(FindObjectsSortMode.None).Length; }
 
+        void CheckPartyLabel(Button card, string name, string context)
+        {
+            Label label = card.Q<Label>(name);
+            ScrollView scroll = card.GetFirstAncestorOfType<ScrollView>();
+            VisualElement drawer = _actions.root.Q("party-panel");
+            _output.Check(label != null && scroll != null && drawer != null,
+                context + " party card provides " + name + " inside a ScrollView");
+            Rect clip = Intersect(scroll.contentViewport.worldBound, _actions.root.worldBound);
+            clip = Intersect(clip, drawer.worldBound);
+            Rect bounds = label.worldBound;
+            // IsVisible alone checks layout/display, not whether the scroll viewport actually clips the text.
+            _output.manifest.checks.Add(context + " " + name + " bounds=" + bounds + ", visibleScrollClip=" + clip);
+            _output.Check(StageInterfaceOutput.IsVisible(label) && !string.IsNullOrWhiteSpace(label.text)
+                && clip.width > 0f && clip.height > 0f && bounds.xMin >= clip.xMin - 1f
+                && bounds.yMin >= clip.yMin - 1f && bounds.xMax <= clip.xMax + 1f
+                && bounds.yMax <= clip.yMax + 1f,
+                context + " first party card " + name + " is fully inside the visible scroll viewport at "
+                    + Screen.width + "x" + Screen.height);
+        }
+
+        static Rect Intersect(Rect a, Rect b)
+        {
+            float x = Mathf.Max(a.xMin, b.xMin);
+            float y = Mathf.Max(a.yMin, b.yMin);
+            return new Rect(x, y, Mathf.Max(0f, Mathf.Min(a.xMax, b.xMax) - x),
+                Mathf.Max(0f, Mathf.Min(a.yMax, b.yMax) - y));
+        }
+
         List<Camera> PortraitCameras()
         {
             List<Camera> cameras = new List<Camera>();
@@ -411,7 +441,7 @@ namespace HealerLike.Render.Stage
             {
                 if (camera.name != "Portrait Camera" || EditorUtility.IsPersistent(camera)) continue;
                 cameras.Add(camera);
-                _output.manifest.checks.Add("Observed portrait camera instance " + camera.GetInstanceID()
+                _output.manifest.checks.Add("Observed portrait camera instance " + camera.GetEntityId()
                     + ", parent=" + (camera.transform.parent != null ? camera.transform.parent.name : "none")
                     + ", sceneValid=" + camera.gameObject.scene.IsValid() + ", flags=" + camera.gameObject.hideFlags
                     + ", enabled=" + camera.enabled + ", active=" + camera.gameObject.activeInHierarchy);

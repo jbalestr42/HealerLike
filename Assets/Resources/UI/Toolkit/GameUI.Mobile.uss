@@ -34,6 +34,9 @@
 .is-mobile .spell-list .data-card__status { font-size: 11px; height: 28px; flex-shrink: 0; margin-top: 2px; white-space: normal; }
 .is-mobile .card-info { display: flex; position: absolute; right: 0; top: 0; width: 45px; height: 45px; margin: 0; padding: 0; font-size: 11px; border-top-left-radius: 0; border-bottom-right-radius: 0; }
 .is-mobile .party-list .data-card { padding-right: 52px; min-height: 108px; }
+/* Keep the creature's name and deployment state alongside its screenshot in the short drawer. */
+.is-mobile .party-list .data-card.creature-card { min-height: 104px; padding: 12px 52px 12px 104px; align-items: stretch; }
+.is-mobile .party-list .creature-card .data-card__icon { position: absolute; left: 12px; top: 12px; width: 80px; height: 80px; margin-bottom: 0; }
 .is-mobile .command-section { width: auto; margin-left: 0; margin-top: 4px; }
 .is-mobile .status-label { font-size: 11px; margin-bottom: 4px; }
 .is-mobile .encounter-actions { flex-shrink: 0; }
@@ -88,8 +91,9 @@
 .is-mobile.is-landscape .party-panel, .is-mobile.is-landscape .detail-panel { top: -51px; max-height: none; padding: 8px; }
 .is-mobile.is-landscape .party-panel .section-description { display: none; }
 .is-mobile.is-landscape .party-list .data-card { min-height: 76px; padding: 8px 54px 8px 8px; }
+.is-mobile.is-landscape .party-list .data-card.creature-card { min-height: 80px; padding: 8px 54px 8px 80px; }
 .is-mobile.is-landscape .party-list .data-card__icon, .is-mobile.is-landscape .detail-icon { display: none; }
-.is-mobile.is-landscape .party-list .data-card__icon.creature-portrait { display: flex; width: 64px; height: 64px; }
+.is-mobile.is-landscape .party-list .creature-card .data-card__icon.creature-portrait { display: flex; left: 8px; top: 8px; width: 64px; height: 64px; }
 .is-mobile.is-landscape .detail-icon.creature-portrait { display: flex; width: 80px; height: 80px; }
 .is-mobile.is-landscape .party-list .data-card__description { font-size: 12px; }
 .is-mobile.is-landscape .dialog--compact { padding: 12px; }

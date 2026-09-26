@@ -89,6 +89,7 @@ public class ToolkitCard
     {
         _icon.style.backgroundImage = new StyleBackground(_view.GetIcon(_iconSource, out bool isPortrait));
         _icon.EnableInClassList("creature-portrait", isPortrait);
+        _button.EnableInClassList("creature-card", isPortrait);
     }
 
     // A missing template or template element falls back to a plain element
