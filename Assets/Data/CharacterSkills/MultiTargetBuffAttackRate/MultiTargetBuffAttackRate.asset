@@ -23,7 +23,7 @@ MonoBehaviour:
     SerializationNodes: []
   data:
     icon: {fileID: 0}
-    name: Buff attack speed
+    name: "Buff Attack Speed"
     description: 'Increase all targets <color="green">{data:buffHandlerFactory|0.data.buffFactoryList|0.data.type}</color>
 
       by

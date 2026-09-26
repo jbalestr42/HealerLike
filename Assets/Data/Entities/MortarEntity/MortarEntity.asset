@@ -94,8 +94,8 @@ MonoBehaviour:
       Entry: 8
       Data: 
   model: {fileID: 873531700701352353, guid: 28d0a30d6aed6fc4c8ca473413f70c24, type: 3}
-  title: Mortier
-  description: "Tirs en cloche lents qui explosent en zone, sur l'alli\xE9 le plus \xE9loign\xE9"
+  title: "Mortar"
+  description: "Slow lobbed shots that explode in an area, aimed at your farthest unit"
   attributes:
   - key: 0
     value: 100

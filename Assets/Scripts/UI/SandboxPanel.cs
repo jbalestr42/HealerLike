@@ -24,12 +24,12 @@ public class SandboxPanel : MonoBehaviour
         UIManager.instance.GetView<GameView>(ViewType.Game).panels[PanelType.Entity] = _entityInfoPanel;
 
         _sideButton = CreateButton(_controlContainer, "", ToggleSide);
-        CreateButton(_controlContainer, "Supprimer", _gameType.StartRemovingEntities);
-        _startBattleButton = CreateButton(_controlContainer, "Lancer le combat", StartBattle);
-        _stopBattleButton = CreateButton(_controlContainer, "Arrêter le combat", StopBattle);
-        CreateButton(_controlContainer, "Soigner tout", _gameType.RestoreAll);
-        CreateButton(_controlContainer, "Tout effacer", _gameType.ClearAll);
-        CreateButton(_controlContainer, "Charger une vague", () => _wavePanel.SetActive(true));
+        CreateButton(_controlContainer, "Remove", _gameType.StartRemovingEntities);
+        _startBattleButton = CreateButton(_controlContainer, "Start battle", StartBattle);
+        _stopBattleButton = CreateButton(_controlContainer, "Stop battle", StopBattle);
+        CreateButton(_controlContainer, "Heal all", _gameType.RestoreAll);
+        CreateButton(_controlContainer, "Clear all", _gameType.ClearAll);
+        CreateButton(_controlContainer, "Load a wave", () => _wavePanel.SetActive(true));
 
         foreach (EntityData entityData in data.entities)
         {
@@ -68,7 +68,7 @@ public class SandboxPanel : MonoBehaviour
                 CreateButton(_waveContainer, waveData.name, () => LoadWave(waveData));
             }
         }
-        CreateButton(_waveContainer, "Annuler", () => _wavePanel.SetActive(false));
+        CreateButton(_waveContainer, "Cancel", () => _wavePanel.SetActive(false));
         _wavePanel.SetActive(false);
     }
 
@@ -100,7 +100,7 @@ public class SandboxPanel : MonoBehaviour
 
     void Refresh()
     {
-        _sideButton.SetLabel(_gameType.placementSide == Entity.EntityType.Player ? "Camp : Allié" : "Camp : Ennemi");
+        _sideButton.SetLabel(_gameType.placementSide == Entity.EntityType.Player ? "Side: Ally" : "Side: Enemy");
         _startBattleButton.SetInteractable(!_gameType.isBattleRunning);
         _stopBattleButton.SetInteractable(_gameType.isBattleRunning);
     }

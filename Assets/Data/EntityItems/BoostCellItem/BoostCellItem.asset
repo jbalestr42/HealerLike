@@ -23,8 +23,8 @@ MonoBehaviour:
     SerializationNodes: []
   data:
     icon: {fileID: 21300000, guid: 97d86a1e589756a41a7320ebe81b0c8e, type: 3}
-    name: BoostCell
-    description: 
+    name: "Boost Cell"
+    description: "Allies on the diagonal cells around the holder, up to 3 cells away, get +10 damage"
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     buffs:

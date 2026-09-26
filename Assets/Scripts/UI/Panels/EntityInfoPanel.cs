@@ -94,7 +94,7 @@ public class EntityInfoPanel : APanel
         float buttonWidth = (_width - 2f * _padding - 8f) / 2f;
         _targetButton = CreateButton(_padding, buttonWidth, CycleTargetBehaviour);
         _closeButton = CreateButton(_padding + buttonWidth + 8f, buttonWidth, Close);
-        _closeButton.SetLabel("Fermer");
+        _closeButton.SetLabel("Close");
 
         // Scrollable body, a transparent image catches the mouse wheel
         _viewport = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D), typeof(ScrollRect)).GetComponent<RectTransform>();
@@ -187,7 +187,7 @@ public class EntityInfoPanel : APanel
         _title.rectTransform.anchoredPosition = new Vector2(0f, -_padding);
 
         float buttonsTop = _padding + titleHeight + 6f;
-        _targetButton.SetLabel($"Ciblage : {_entity.targetProvider.targetBehaviourType}");
+        _targetButton.SetLabel($"Targeting: {_entity.targetProvider.targetBehaviourType}");
         ((RectTransform)_targetButton.transform).anchoredPosition = new Vector2(((RectTransform)_targetButton.transform).anchoredPosition.x, -buttonsTop);
         ((RectTransform)_closeButton.transform).anchoredPosition = new Vector2(((RectTransform)_closeButton.transform).anchoredPosition.x, -buttonsTop);
 
@@ -207,8 +207,8 @@ public class EntityInfoPanel : APanel
 
     string BuildTitle()
     {
-        string side = _entity.entityType == Entity.EntityType.Player ? "Allié" : "Ennemi";
-        string state = _entity.isDraggable ? "placement" : "en combat";
+        string side = _entity.entityType == Entity.EntityType.Player ? "Ally" : "Enemy";
+        string state = _entity.isDraggable ? "placement" : "in battle";
         string title = $"<size={_fontSize + 6f}><b>{_entity.data.title}</b></size>\n<color={EntityInfoFormatter.MutedColor}>{side} · {state}</color>";
         if (!string.IsNullOrEmpty(_entity.data.description))
         {
@@ -222,13 +222,13 @@ public class EntityInfoPanel : APanel
         StringBuilder builder = new StringBuilder();
         GameObject owner = _entity.gameObject;
 
-        AppendSection(builder, "Vie", GetHealthLines());
-        AppendSection(builder, "Ciblage", GetTargetingLines());
-        AppendSection(builder, "Statistiques", EntityInfoFormatter.GetAttributeLines(_entity.attributeManager, owner));
-        AppendSection(builder, "Sorts", GetSkillLines());
-        AppendSection(builder, "Objets", GetItemLines());
-        AppendSection(builder, "Effets actifs", EntityInfoFormatter.GetBuffLines(_entity.buffManager, owner));
-        AppendSection(builder, "À l'impact", GetOnHitLines());
+        AppendSection(builder, "Health", GetHealthLines());
+        AppendSection(builder, "Targeting", GetTargetingLines());
+        AppendSection(builder, "Stats", EntityInfoFormatter.GetAttributeLines(_entity.attributeManager, owner));
+        AppendSection(builder, "Skills", GetSkillLines());
+        AppendSection(builder, "Items", GetItemLines());
+        AppendSection(builder, "Active effects", EntityInfoFormatter.GetBuffLines(_entity.buffManager, owner));
+        AppendSection(builder, "On hit", GetOnHitLines());
         return builder.ToString().TrimEnd();
     }
 
@@ -241,7 +241,7 @@ public class EntityInfoPanel : APanel
         builder.Append($"<color={EntityInfoFormatter.HeaderColor}><b>{title}</b></color>\n");
         if (lines.Count == 0)
         {
-            builder.Append($"<color={EntityInfoFormatter.MutedColor}>aucun</color>\n");
+            builder.Append($"<color={EntityInfoFormatter.MutedColor}>none</color>\n");
         }
         foreach (string line in lines)
         {
@@ -258,7 +258,7 @@ public class EntityInfoPanel : APanel
         };
         if (health.preventConsumers)
         {
-            lines.Add($"<color={EntityInfoFormatter.BonusColor}>Invulnérable</color>");
+            lines.Add($"<color={EntityInfoFormatter.BonusColor}>Invulnerable</color>");
         }
         return lines;
     }
@@ -268,14 +268,14 @@ public class EntityInfoPanel : APanel
         TargetProvider targetProvider = _entity.targetProvider;
         List<string> lines = new List<string>
         {
-            $"{targetProvider.targetBehaviourType} <color={EntityInfoFormatter.MutedColor}>· {targetProvider.targetCount} cible(s)</color>",
+            $"{targetProvider.targetBehaviourType} <color={EntityInfoFormatter.MutedColor}>· {targetProvider.targetCount} target(s)</color>",
         };
 
         foreach (ATargetValidatorFactory validator in _entity.data.targetValidators)
         {
             if (validator != null)
             {
-                lines.Add($"<color={EntityInfoFormatter.MutedColor}>    condition : {EntityInfoFormatter.Prettify(validator.GetType().Name, "Factory", "Validator")}</color>");
+                lines.Add($"<color={EntityInfoFormatter.MutedColor}>    condition: {EntityInfoFormatter.Prettify(validator.GetType().Name, "Factory", "Validator")}</color>");
             }
         }
 
@@ -293,7 +293,7 @@ public class EntityInfoPanel : APanel
         }
         if (targets.Count > 0)
         {
-            lines.Add($"Vise : {string.Join(", ", targets)}");
+            lines.Add($"Aiming at: {string.Join(", ", targets)}");
         }
         return lines;
     }
@@ -307,7 +307,7 @@ public class EntityInfoPanel : APanel
             string line = EntityInfoFormatter.FormatSkill(skill);
             if (!_entity.skills.Contains(skill))
             {
-                line += $" <color={EntityInfoFormatter.MutedColor}>(objet)</color>";
+                line += $" <color={EntityInfoFormatter.MutedColor}>(item)</color>";
             }
             lines.Add(line);
         }
@@ -333,15 +333,15 @@ public class EntityInfoPanel : APanel
         List<string> lines = new List<string>();
         foreach (ABuffHandlerFactory onHitEffect in _entity.GetOnHitEffects())
         {
-            lines.Add($"Applique : {EntityInfoFormatter.GetBuffName(onHitEffect)}");
+            lines.Add($"Applies: {EntityInfoFormatter.GetBuffName(onHitEffect)}");
         }
         foreach (AConsumerFactory consumer in _entity.GetOnHitConsumers())
         {
-            lines.Add($"Consommateur : {EntityInfoFormatter.Prettify(consumer.GetType().Name, "Factory", "Consumer")}");
+            lines.Add($"Consumer: {EntityInfoFormatter.Prettify(consumer.GetType().Name, "Factory", "Consumer")}");
         }
         foreach (ABuffHandlerFactory projectileBehaviour in _entity.projectileBehaviours)
         {
-            lines.Add($"Projectile : {EntityInfoFormatter.GetBuffName(projectileBehaviour)}");
+            lines.Add($"Projectile: {EntityInfoFormatter.GetBuffName(projectileBehaviour)}");
         }
         // An item in the first slots is equipped several times, so its effects are added several times
         return EntityInfoFormatter.GroupDuplicates(lines);

@@ -23,8 +23,8 @@ MonoBehaviour:
     SerializationNodes: []
   data:
     icon: {fileID: 21300000, guid: b8428167e3680bd48832aa8c94bcae6d, type: 3}
-    name: Venin
-    description: Les tirs empoisonnent la cible pendant 5s, chaque tir ajoute un stack
+    name: "Venom"
+    description: "Hits poison the target for 5s (1 damage per second), each hit adds a stack"
     tags:
     - {fileID: 11400000, guid: 70e1d7434c8b934438c8f00ac71691d8, type: 2}
     buffs: []

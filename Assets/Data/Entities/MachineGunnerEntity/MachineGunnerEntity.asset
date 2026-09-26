@@ -94,8 +94,8 @@ MonoBehaviour:
       Entry: 8
       Data: 
   model: {fileID: 6705402075998324148, guid: d941199d4a58fcb45adc75ea8e37c42c, type: 3}
-  title: Mitrailleur
-  description: Tire des rafales de 6 petits tirs, puis recharge
+  title: "Machine Gunner"
+  description: "Fires bursts of 6 small shots, then reloads"
   attributes:
   - key: 0
     value: 100

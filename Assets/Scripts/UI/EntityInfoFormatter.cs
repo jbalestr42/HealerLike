@@ -14,20 +14,20 @@ public static class EntityInfoFormatter
 
     static readonly Dictionary<AttributeType, string> AttributeNames = new Dictionary<AttributeType, string>
     {
-        { AttributeType.HealthMax, "PV max" },
-        { AttributeType.AttackRate, "Cadence" },
-        { AttributeType.Damage, "Dégâts" },
-        { AttributeType.Range, "Portée" },
-        { AttributeType.FlatArmor, "Armure" },
-        { AttributeType.PercentArmor, "Armure %" },
-        { AttributeType.HitArmor, "Armure de coups" },
-        { AttributeType.Speed, "Vitesse" },
-        { AttributeType.Vulnerability, "Vulnérabilité" },
-        { AttributeType.ManaMax, "Mana max" },
-        { AttributeType.HealPower, "Puissance de soin" },
-        { AttributeType.CriticalChance, "Chance de critique" },
-        { AttributeType.CriticalMultiplier, "Multiplicateur critique" },
-        { AttributeType.CriticalChanceResist, "Résistance aux critiques" },
+        { AttributeType.HealthMax, "Max HP" },
+        { AttributeType.AttackRate, "Attack Cooldown" },
+        { AttributeType.Damage, "Damage" },
+        { AttributeType.Range, "Range" },
+        { AttributeType.FlatArmor, "Armor" },
+        { AttributeType.PercentArmor, "Armor %" },
+        { AttributeType.HitArmor, "Hit Armor" },
+        { AttributeType.Speed, "Speed" },
+        { AttributeType.Vulnerability, "Vulnerability" },
+        { AttributeType.ManaMax, "Max Mana" },
+        { AttributeType.HealPower, "Heal Power" },
+        { AttributeType.CriticalChance, "Critical Chance" },
+        { AttributeType.CriticalMultiplier, "Critical Multiplier" },
+        { AttributeType.CriticalChanceResist, "Critical Resist" },
     };
 
     static readonly AttributeModifierType[] ModifierTypes = { AttributeModifierType.Add, AttributeModifierType.Multiply, AttributeModifierType.Override };
@@ -101,11 +101,11 @@ public static class EntityInfoFormatter
     {
         if (source == null)
         {
-            return "source disparue";
+            return "missing source";
         }
         if (source == owner)
         {
-            return "lui-même";
+            return "itself";
         }
 
         Entity entity = source.GetComponent<Entity>();
@@ -118,10 +118,10 @@ public static class EntityInfoFormatter
 
     #region Attributes
 
-    // "Dégâts : 12 (base 10)", the base is only shown when modifiers change the value
+    // "Damage: 12 (base 10)", the base is only shown when modifiers change the value
     public static string FormatAttribute(AttributeType type, Attribute attribute)
     {
-        string line = $"{GetAttributeName(type)} : <b>{FormatNumber(attribute.Value)}</b>";
+        string line = $"{GetAttributeName(type)}: <b>{FormatNumber(attribute.Value)}</b>";
         if (!Mathf.Approximately(attribute.Value, attribute.BaseValue))
         {
             string color = attribute.Value > attribute.BaseValue ? BonusColor : MalusColor;
@@ -130,7 +130,7 @@ public static class EntityInfoFormatter
         return line;
     }
 
-    // "+2 · Maudit", "+30 % · lui-même", "= 5 · Givreur"
+    // "+2 · Hexer", "+30 % · itself", "= 5 · Frost Shooter"
     public static string FormatModifier(AttributeModifierType type, Attribute.SourceModifier sourceModifier, GameObject owner)
     {
         float value = sourceModifier.modifier.ApplyModifier();
@@ -179,7 +179,7 @@ public static class EntityInfoFormatter
 
     #region Buffs
 
-    // "Vulnérabilité (Flat Modifier)" for an attribute modifier, the buff type otherwise
+    // "Vulnerability (Flat Modifier)" for an attribute modifier, the buff type otherwise
     public static string DescribeBuff(ABuffFactory buffFactory)
     {
         string typeName = Prettify(buffFactory.GetType().Name, "Factory", "Buff");
@@ -213,10 +213,10 @@ public static class EntityInfoFormatter
                 buffs.Add(DescribeBuff(buffFactory));
             }
         }
-        return buffs.Count > 0 ? string.Join(", ", buffs) : "Effet";
+        return buffs.Count > 0 ? string.Join(", ", buffs) : "Effect";
     }
 
-    // "Vulnérabilité (Flat Modifier) ×2 · 3.2s · de Maudit"
+    // "Vulnerability (Flat Modifier) ×2 · 3.2s · from Hexer"
     public static string FormatBuff(BuffManager.BuffHandlerData buffHandlerData, GameObject owner)
     {
         string line = $"<b>{GetBuffName(buffHandlerData.buffHandlerFactory)}</b>";
@@ -227,7 +227,7 @@ public static class EntityInfoFormatter
 
         ABuffHandler buffHandler = buffHandlerData.buffHandler;
         string duration = buffHandler.durationType == DurationType.Duration ? FormatDuration(buffHandler.remainingDuration) : "permanent";
-        line += $" <color={MutedColor}>· {duration} · de {GetSourceName(buffHandlerData.source, owner)}</color>";
+        line += $" <color={MutedColor}>· {duration} · from {GetSourceName(buffHandlerData.source, owner)}</color>";
 
         List<string> tags = new List<string>();
         foreach (GameplayTag tag in buffHandlerData.buffHandlerFactory.tags)
@@ -239,7 +239,7 @@ public static class EntityInfoFormatter
         }
         if (tags.Count > 0)
         {
-            line += $"\n<color={MutedColor}>    tags : {string.Join(", ", tags)}</color>";
+            line += $"\n<color={MutedColor}>    tags: {string.Join(", ", tags)}</color>";
         }
         return line;
     }
@@ -258,20 +258,20 @@ public static class EntityInfoFormatter
 
     #region Skills and items
 
-    // "Shoot Projectile · recharge 1.5s · prêt"
+    // "Shoot Projectile · cooldown 1.5s · ready"
     public static string FormatSkill(ASkill skill)
     {
         string line = $"<b>{Prettify(skill.GetType().Name, "Skill")}</b>";
         if (skill is ICooldownSkill cooldownSkill)
         {
             float remaining = Mathf.Max(0f, cooldownSkill.cooldownProgress * cooldownSkill.cooldownDuration);
-            string state = remaining > 0f ? $"prêt dans {FormatDuration(remaining)}" : "prêt";
-            line += $" <color={MutedColor}>· recharge {FormatDuration(cooldownSkill.cooldownDuration)} · {state}</color>";
+            string state = remaining > 0f ? $"ready in {FormatDuration(remaining)}" : "ready";
+            line += $" <color={MutedColor}>· cooldown {FormatDuration(cooldownSkill.cooldownDuration)} · {state}</color>";
         }
         return line;
     }
 
-    // "Venin — Empoisonne la cible (de base)"
+    // "Venom — Poisons the target (innate)"
     public static string FormatItem(AItem item, bool isInnate)
     {
         string line = $"<b>{item.title}</b>";
@@ -279,7 +279,7 @@ public static class EntityInfoFormatter
         {
             line += $" — {item.description}";
         }
-        line += $" <color={MutedColor}>({(isInnate ? "de base" : "ajouté")})</color>";
+        line += $" <color={MutedColor}>({(isInnate ? "innate" : "added")})</color>";
         return line;
     }
 

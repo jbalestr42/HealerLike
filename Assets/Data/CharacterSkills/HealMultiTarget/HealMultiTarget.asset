@@ -23,7 +23,7 @@ MonoBehaviour:
     SerializationNodes: []
   data:
     icon: {fileID: 0}
-    name: Heal group
+    name: "Heal Group"
     description: "Heal all entities for <color=\"green\">[{attribute:current:HealPower}x{data:multiplier}]</color>
       <color=#008080ff>([{data:multiplier}x100]% HealPower)</color> \nCost: <color=\"blue\">{data:validators|1.data.consumer.data.value.data.value}</color>
       mana\nCooldown: <color=\"yellow\">{data:validators|0.data.duration}s</color>"

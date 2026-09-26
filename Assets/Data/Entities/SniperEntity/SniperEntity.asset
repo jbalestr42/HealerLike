@@ -95,7 +95,7 @@ MonoBehaviour:
       Data: 
   model: {fileID: 3198502390492704377, guid: 0ba0f6eee23032e4e83d421e739dc905, type: 3}
   title: Sniper
-  description: "Tire lentement mais fort, toujours sur l'alli\xE9 le plus bless\xE9"
+  description: "Slow but heavy shots, always aimed at your most wounded unit"
   attributes:
   - key: 0
     value: 80

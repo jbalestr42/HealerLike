@@ -23,8 +23,8 @@ MonoBehaviour:
     SerializationNodes: []
   data:
     icon: {fileID: 21300000, guid: 07cbc85522bad3e4c8191650d309c93f, type: 3}
-    name: IncreaseDamagePerHit
-    description: 
+    name: "Increase Damage Per Hit"
+    description: "Each hit makes the target take 1% more damage until the end of the fight"
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     buffList: []

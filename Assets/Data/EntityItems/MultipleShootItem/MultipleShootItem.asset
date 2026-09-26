@@ -23,8 +23,8 @@ MonoBehaviour:
     SerializationNodes: []
   data:
     icon: {fileID: 21300000, guid: c11fa297dd331de418654209c490f7e6, type: 3}
-    name: MultipleShoot
-    description: 
+    name: "Multiple Shot"
+    description: "Shoots one more projectile per attack"
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     buffs:

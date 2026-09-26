@@ -70,7 +70,7 @@ MonoBehaviour:
       Entry: 8
       Data: 
   model: {fileID: 0}
-  title: BasicHealer
+  title: "Basic Healer"
   text: 
   attributes:
   - key: 10

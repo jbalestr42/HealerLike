@@ -96,8 +96,8 @@ MonoBehaviour:
       Entry: 8
       Data: 
   model: {fileID: 1081930672269232, guid: da2863f2b1683574f84656c8c3cd830b, type: 3}
-  title: FastShoot
-  description: Shoot 2 fast pprojectile dealing moderate damage
+  title: "Fast Shot"
+  description: "Shoots 2 fast projectiles dealing moderate damage"
   targetBehaviourType: 0
   targetValidators: []
   items: []

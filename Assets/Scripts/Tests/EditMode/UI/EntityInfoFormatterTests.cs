@@ -102,20 +102,20 @@ public class EntityInfoFormatterTests
     [Test]
     public void GetAttributeName_IsTranslated()
     {
-        Assert.AreEqual("Dégâts", EntityInfoFormatter.GetAttributeName(AttributeType.Damage));
-        Assert.AreEqual("Vulnérabilité", EntityInfoFormatter.GetAttributeName(AttributeType.Vulnerability));
+        Assert.AreEqual("Damage", EntityInfoFormatter.GetAttributeName(AttributeType.Damage));
+        Assert.AreEqual("Vulnerability", EntityInfoFormatter.GetAttributeName(AttributeType.Vulnerability));
     }
 
     [Test]
     public void GetSourceName_MissingSource_SaysItIsGone()
     {
-        Assert.AreEqual("source disparue", EntityInfoFormatter.GetSourceName(null, _owner));
+        Assert.AreEqual("missing source", EntityInfoFormatter.GetSourceName(null, _owner));
     }
 
     [Test]
     public void GetSourceName_Owner_IsItself()
     {
-        Assert.AreEqual("lui-même", EntityInfoFormatter.GetSourceName(_owner, _owner));
+        Assert.AreEqual("itself", EntityInfoFormatter.GetSourceName(_owner, _owner));
     }
 
     [Test]
@@ -133,7 +133,7 @@ public class EntityInfoFormatterTests
     {
         string line = EntityInfoFormatter.FormatAttribute(AttributeType.Damage, new Attribute(10f));
 
-        Assert.AreEqual("Dégâts : <b>10</b>", line);
+        Assert.AreEqual("Damage: <b>10</b>", line);
     }
 
     [Test]
@@ -145,7 +145,7 @@ public class EntityInfoFormatterTests
 
         string line = EntityInfoFormatter.FormatAttribute(AttributeType.Damage, attribute);
 
-        StringAssert.StartsWith("Dégâts : <b>12.5</b>", line);
+        StringAssert.StartsWith("Damage: <b>12.5</b>", line);
         StringAssert.Contains($"<color={EntityInfoFormatter.BonusColor}>(base 10)", line);
     }
 
@@ -169,7 +169,7 @@ public class EntityInfoFormatterTests
     [Test]
     public void FormatModifier_Multiply_IsAPercentage()
     {
-        StringAssert.Contains("+30 % · lui-même", EntityInfoFormatter.FormatModifier(AttributeModifierType.Multiply, CreateSourceModifier(_owner, 0.3f), _owner));
+        StringAssert.Contains("+30 % · itself", EntityInfoFormatter.FormatModifier(AttributeModifierType.Multiply, CreateSourceModifier(_owner, 0.3f), _owner));
     }
 
     [Test]
@@ -189,8 +189,8 @@ public class EntityInfoFormatterTests
         List<string> lines = EntityInfoFormatter.GetAttributeLines(attributeManager, _owner);
 
         Assert.AreEqual(3, lines.Count);
-        StringAssert.StartsWith("PV max", lines[0]);
-        StringAssert.StartsWith("Dégâts", lines[1]);
+        StringAssert.StartsWith("Max HP", lines[0]);
+        StringAssert.StartsWith("Damage", lines[1]);
         StringAssert.Contains("+2 · Source", lines[2]);
     }
 
@@ -201,7 +201,7 @@ public class EntityInfoFormatterTests
     [Test]
     public void GetBuffName_MeaningfulAssetName_IsKept()
     {
-        Assert.AreEqual("Venin", EntityInfoFormatter.GetBuffName(CreateHandlerFactory("Venin", new List<ABuffFactory>())));
+        Assert.AreEqual("Venom", EntityInfoFormatter.GetBuffName(CreateHandlerFactory("Venom", new List<ABuffFactory>())));
     }
 
     [Test]
@@ -219,13 +219,13 @@ public class EntityInfoFormatterTests
     {
         BuffHandlerFactory handlerFactory = CreateHandlerFactory(name, new List<ABuffFactory> { CreateFlatModifier(AttributeType.Vulnerability) });
 
-        Assert.AreEqual("Vulnérabilité (Flat Modifier)", EntityInfoFormatter.GetBuffName(handlerFactory));
+        Assert.AreEqual("Vulnerability (Flat Modifier)", EntityInfoFormatter.GetBuffName(handlerFactory));
     }
 
     [Test]
     public void GetBuffName_GenericNameWithoutBuff_IsAnEffect()
     {
-        Assert.AreEqual("Effet", EntityInfoFormatter.GetBuffName(CreateHandlerFactory("BuffHandlerFactory", new List<ABuffFactory>())));
+        Assert.AreEqual("Effect", EntityInfoFormatter.GetBuffName(CreateHandlerFactory("BuffHandlerFactory", new List<ABuffFactory>())));
     }
 
     [Test]
@@ -242,7 +242,7 @@ public class EntityInfoFormatterTests
     {
         BuffManager.BuffHandlerData buffHandlerData = new BuffManager.BuffHandlerData
         {
-            buffHandlerFactory = CreateHandlerFactory("Venin", new List<ABuffFactory>(), DurationType.Duration, 5f),
+            buffHandlerFactory = CreateHandlerFactory("Venom", new List<ABuffFactory>(), DurationType.Duration, 5f),
             source = _source,
             target = _owner,
             currentStacks = 2,
@@ -253,8 +253,8 @@ public class EntityInfoFormatterTests
 
         string line = EntityInfoFormatter.FormatBuff(buffHandlerData, _owner);
 
-        StringAssert.StartsWith("<b>Venin</b> ×2", line);
-        StringAssert.Contains("· 3.5s · de Source", line);
+        StringAssert.StartsWith("<b>Venom</b> ×2", line);
+        StringAssert.Contains("· 3.5s · from Source", line);
     }
 
     [Test]
@@ -262,7 +262,7 @@ public class EntityInfoFormatterTests
     {
         BuffManager.BuffHandlerData buffHandlerData = new BuffManager.BuffHandlerData
         {
-            buffHandlerFactory = CreateHandlerFactory("Venin", new List<ABuffFactory>(), DurationType.Infinite),
+            buffHandlerFactory = CreateHandlerFactory("Venom", new List<ABuffFactory>(), DurationType.Infinite),
             source = _owner,
             target = _owner,
             currentStacks = 1,
@@ -272,7 +272,7 @@ public class EntityInfoFormatterTests
         string line = EntityInfoFormatter.FormatBuff(buffHandlerData, _owner);
 
         StringAssert.DoesNotContain("×", line);
-        StringAssert.Contains("· permanent · de lui-même", line);
+        StringAssert.Contains("· permanent · from itself", line);
     }
 
     [Test]
@@ -282,8 +282,8 @@ public class EntityInfoFormatterTests
         buffFactory.data = new Buff.FakeBuffData();
         BuffManager buffManager = _owner.AddComponent<BuffManager>();
         buffManager.isEnabled = true;
-        buffManager.AddHandler(CreateHandlerFactory("Venin", new List<ABuffFactory> { buffFactory }), _source, _owner);
-        buffManager.AddHandler(CreateHandlerFactory("Brûlure", new List<ABuffFactory> { buffFactory }), _source, _owner);
+        buffManager.AddHandler(CreateHandlerFactory("Venom", new List<ABuffFactory> { buffFactory }), _source, _owner);
+        buffManager.AddHandler(CreateHandlerFactory("Burn", new List<ABuffFactory> { buffFactory }), _source, _owner);
         buffManager.ForceUpdate();
 
         List<string> lines = EntityInfoFormatter.GetBuffLines(buffManager, _owner);
@@ -303,7 +303,7 @@ public class EntityInfoFormatterTests
 
         string line = EntityInfoFormatter.FormatSkill(skill);
 
-        Assert.AreEqual($"<b>Fake Cooldown</b> <color={EntityInfoFormatter.MutedColor}>· recharge 4.0s · prêt</color>", line);
+        Assert.AreEqual($"<b>Fake Cooldown</b> <color={EntityInfoFormatter.MutedColor}>· cooldown 4.0s · ready</color>", line);
     }
 
     [Test]
@@ -313,25 +313,25 @@ public class EntityInfoFormatterTests
         skill.data = new SkillDataBase { onSkillTriggerFactory = new List<AOnSkillTriggerFactory>() };
         skill.UpdateBehaviour(_owner);
 
-        StringAssert.Contains("prêt dans 4.0s", EntityInfoFormatter.FormatSkill(skill));
+        StringAssert.Contains("ready in 4.0s", EntityInfoFormatter.FormatSkill(skill));
     }
 
     [Test]
     public void FormatItem_ShowsTheTitleTheDescriptionAndWhereItComesFrom()
     {
         ItemFactory itemFactory = CreateTracked<ItemFactory>();
-        itemFactory.data = new ItemData { name = "Venin", description = "Empoisonne la cible" };
+        itemFactory.data = new ItemData { name = "Venom", description = "Poisons the target" };
         AItem item = itemFactory.GetItem();
 
-        Assert.AreEqual($"<b>Venin</b> — Empoisonne la cible <color={EntityInfoFormatter.MutedColor}>(de base)</color>", EntityInfoFormatter.FormatItem(item, true));
-        StringAssert.EndsWith("(ajouté)</color>", EntityInfoFormatter.FormatItem(item, false));
+        Assert.AreEqual($"<b>Venom</b> — Poisons the target <color={EntityInfoFormatter.MutedColor}>(innate)</color>", EntityInfoFormatter.FormatItem(item, true));
+        StringAssert.EndsWith("(added)</color>", EntityInfoFormatter.FormatItem(item, false));
     }
 
     [Test]
     public void FormatItem_WithoutDescription_HasNoDash()
     {
         ItemFactory itemFactory = CreateTracked<ItemFactory>();
-        itemFactory.data = new ItemData { name = "Venin" };
+        itemFactory.data = new ItemData { name = "Venom" };
 
         StringAssert.DoesNotContain("—", EntityInfoFormatter.FormatItem(itemFactory.GetItem(), true));
     }

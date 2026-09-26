@@ -106,8 +106,8 @@ MonoBehaviour:
       Entry: 8
       Data: 
   model: {fileID: 2795397902362475942, guid: 72c47fdc43d84b243bdc109c284341d6, type: 3}
-  title: Maudit
-  description: "Ne tape pas, maudit l'alli\xE9 le plus bless\xE9 pas encore maudit : +30% de d\xE9g\xE2ts subis pendant 6s"
+  title: "Hexer"
+  description: "Doesn't attack. Curses your most wounded unit not cursed yet: +30% damage taken for 6s"
   attributes:
   - key: 0
     value: 90

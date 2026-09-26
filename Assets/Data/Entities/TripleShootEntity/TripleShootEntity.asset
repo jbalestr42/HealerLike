@@ -96,8 +96,8 @@ MonoBehaviour:
       Entry: 8
       Data: 
   model: {fileID: 1081930672269232, guid: da2863f2b1683574f84656c8c3cd830b, type: 3}
-  title: TripleShoot
-  description: 
+  title: "Triple Shot"
+  description: "Fires a volley of 6 projectiles every 2s"
   targetBehaviourType: 0
   targetValidators: []
   items: []
