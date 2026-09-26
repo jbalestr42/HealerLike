@@ -3,11 +3,11 @@
     background-color: transparent; flex-shrink: 0;
 }
 #hud-root.compact-hud #wave-label {
-    font-size: 14px; -unity-font-style: bold; white-space: nowrap;
+    font-size: 14px; -unity-font-style: bold; white-space: nowrap; color: rgb(248, 247, 223);
     -unity-text-outline-width: 0; text-shadow: 0 1px 1px rgba(15, 42, 37, 0.9); -unity-text-outline-color: rgb(15, 42, 37);
 }
 #hud-root.compact-hud #currency-label {
-    font-size: 14px; margin-left: 10px; margin-right: 2px;
+    font-size: 14px; margin-left: 10px; margin-right: 2px; color: rgb(248, 247, 223);
     -unity-text-outline-width: 0; text-shadow: 0 1px 1px rgba(15, 42, 37, 0.9); -unity-text-outline-color: rgb(15, 42, 37);
 }
 #hud-root.compact-hud .hud-icon {
