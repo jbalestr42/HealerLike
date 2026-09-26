@@ -62,7 +62,7 @@ namespace HealerLike.Render.Stage
                 {
                     Label("GRAMMAR FIXTURE: " + head + " / count " + LookComposer.Copies((CountBand)count),
                         0.04f, 0.04f, 12);
-                    Label(count == 2 ? "Isolated grammar fixture, count 5 at 0.8x layout scale"
+                    Label(count == 2 ? "Isolated grammar fixture, count 5 at 0.6x layout scale"
                         : "Isolated grammar fixture at board scale, not roster gameplay", 0.04f, 0.08f, 10);
                     for (int side = 0; side < 2; side++)
                     {
@@ -81,7 +81,7 @@ namespace HealerLike.Render.Stage
                         _objects.Add(parent);
                         CreatureRig rig = new CreatureRig();
                         _session.output.Check(rig.Init(recipe, parent.transform, _material, _manager.meshes,
-                            _manager.player.grid.size * (count == 2 ? 0.8f : 1f)),
+                            _manager.player.grid.size * (count == 2 ? 0.6f : 1f)),
                             "Fixture assembled " + channels.side + "/" + head + "/" + channels.count);
                         _rigs.Add(rig);
                         rig.SetPresentationForward(-_manager.gameCamera.transform.forward);
