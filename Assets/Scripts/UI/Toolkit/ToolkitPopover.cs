@@ -35,7 +35,8 @@ public sealed class ToolkitPopover : IDisposable
         Rect bounds = _hud.worldBound;
         float left = bounds.xMin + _hud.resolvedStyle.paddingLeft;
         float right = bounds.xMax - _hud.resolvedStyle.paddingRight;
-        float top = bounds.yMin + _hud.resolvedStyle.paddingTop;
+        float top = Mathf.Max(bounds.yMin + _hud.resolvedStyle.paddingTop,
+            _view.root.Q("top-bar").worldBound.yMax + 8);
         float bottom = _view.root.Q("party-panel").worldBound.yMin - 8;
         float width = Mathf.Min(280, right - left);
         float height = Mathf.Min(240, Mathf.Max(100, bottom - top));

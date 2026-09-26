@@ -30,7 +30,10 @@ namespace HealerLike.Render.Stage
             AInteraction targeting = _s.interaction.GetInteraction();
             _s.output.Check(targeting != null, "Short spell touch activates existing targeting on release");
             Entity entity = _s.manager.entityManager.GetEntities(Entity.EntityType.Player)[0].GetComponent<Entity>();
-            Vector2 board = _s.manager.gameCamera.WorldToScreenPoint(RenderTargets.Point(entity.gameObject));
+            Vector2 board = _s.manager.gameCamera.WorldToScreenPoint(entity.GetComponent<Collider>().bounds.center);
+            _s.output.Check(Physics.Raycast(_s.manager.gameCamera.ScreenPointToRay(board), out RaycastHit holdHit,
+                Mathf.Infinity, targeting.GetLayerMask()) && holdHit.collider.gameObject == entity.gameObject,
+                "World hold aims at the actual gameplay collider of the inspected creature");
             using (var touch = new StagePresentationTouch(_s.actions))
             {
                 yield return touch.Frame(TouchPhase.Began, board);
@@ -57,6 +60,11 @@ namespace HealerLike.Render.Stage
             Observe("world-or-ui-release");
             _s.output.Check(ReferenceEquals(targeting, _s.interaction.GetInteraction()) && character.mana.Value == before,
                 "Unrelated UI-origin release over a valid target cannot activate the board");
+            board = _s.manager.gameCamera.WorldToScreenPoint(entity.GetComponent<Collider>().bounds.center);
+            _s.output.Check(!_s.actions.touch.IsOverInterface(board), "Reprojected spell target is outside UI");
+            _s.output.Check(Physics.Raycast(_s.manager.gameCamera.ScreenPointToRay(board), out RaycastHit castHit,
+                Mathf.Infinity, targeting.GetLayerMask()) && targeting.IsValidTarget(castHit.collider.gameObject),
+                "Reprojected spell target hits an actual legal entity collider");
             yield return _s.actions.TouchGesture(board);
             yield return Wait(.15f);
             Observe("actual-spell-cast");
