@@ -84,6 +84,8 @@ namespace HealerLike.Render.Stage
         // The run each mode names, the one place a capture registers
         static AStageRun Create(string mode)
         {
+            if (mode == "spell-sources") return new SpellSourceRun();
+
             if (mode == "expedition-map")
             {
                 return new StageMapRun();
