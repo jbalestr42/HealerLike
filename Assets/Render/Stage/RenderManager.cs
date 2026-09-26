@@ -137,6 +137,8 @@ namespace HealerLike.Render.Stage
             }
             _placement.Init(_creatureLooks, _meshes, StageSceneObjects.Find<InteractionManager>(_scene),
                 _gameCamera, StageCalibration.CellSize);
+            _placement.isRosterPlacement = () => _interface.ui != null
+                && (_interface.ui.GetComponent<StageTouchInput>()?.roster?.active ?? false);
             _keyLight.Init();
             Debug.Log($"[RenderManager] Attached to {_scene.name}");
         }

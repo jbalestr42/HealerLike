@@ -6,6 +6,7 @@ namespace HealerLike.Render.Stage
     // Watches the existing placement interaction after mouse/touch processing. Its model still owns position.
     public class StageCreaturePlacement : MonoBehaviour
     {
+        public System.Func<bool> isRosterPlacement;
         CreatureLooks _looks;
         PrimitiveMeshes _meshes;
         InteractionManager _interaction;
@@ -67,7 +68,7 @@ namespace HealerLike.Render.Stage
                     return;
                 }
                 _preview = created;
-                if (ReferenceEquals(active, _settleOnRefresh))
+                if (ReferenceEquals(active, _settleOnRefresh) || (isRosterPlacement?.Invoke() ?? false))
                 {
                     _preview.CompleteAppearance();
                 }

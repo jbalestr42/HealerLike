@@ -13,7 +13,7 @@ namespace HealerLike.Render.Stage
             _size = size * .46f;
             _host = new GameObject("Roster placement cell");
             _line = _host.AddComponent<LineRenderer>();
-            _material = new Material(Shader.Find("Sprites/Default"));
+            _material = new Material(Resources.Load<Shader>("CompactPlacement"));
             _line.sharedMaterial = _material;
             _line.loop = true; _line.positionCount = 4;
             _line.startWidth = _line.endWidth = size * .035f;

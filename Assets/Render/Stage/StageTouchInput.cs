@@ -123,6 +123,9 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
+            // StandaloneInputModule can translate TouchPhase.Canceled into PointerUp.
+            // Revoke the UI lease before that later module update can treat it as a drop.
+            if (phase == TouchPhase.Canceled) { _ui?.CancelGestures(); _roster?.Cancel(); }
             if (phase == TouchPhase.Canceled || IsOverInterface(position))
             {
                 CancelDrag();

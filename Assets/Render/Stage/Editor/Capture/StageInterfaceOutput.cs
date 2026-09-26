@@ -21,6 +21,7 @@ namespace HealerLike.Render.Stage
             public List<string> checks = new List<string>();
             public List<string> failures = new List<string>();
             public List<Frame> frames = new List<Frame>();
+            public List<Observation> observations = new List<Observation>();
         }
 
         [Serializable]
@@ -49,6 +50,23 @@ namespace HealerLike.Render.Stage
             public string text;
             public Rect panelBounds;
             public bool enabled;
+        }
+
+        [Serializable]
+        public class Observation
+        {
+            public string scenario;
+            public int frame, entities, gold;
+            public float mana;
+            public bool placementActive, previewVisible;
+        }
+        public void ObserveGameplay(string scenario, RenderManager manager, StageTouchInput input)
+        {
+            manifest.observations.Add(new Observation { scenario = scenario, frame = Time.frameCount,
+                entities = manager.entityManager.GetEntities(Entity.EntityType.Player).Count,
+                gold = manager.player.gold, mana = manager.player.character.mana.Value,
+                placementActive = input.roster != null && input.roster.active,
+                previewVisible = manager.placement.preview != null });
         }
 
         public readonly Manifest manifest = new Manifest();

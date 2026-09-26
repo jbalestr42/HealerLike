@@ -26,6 +26,7 @@ namespace HealerLike.Render.Stage
 
         public bool Begin(EntityData data, Vector2 point, Action<Entity> deployed)
         {
+            if (active) return false;
             Cancel();
             if (data == null || data.model == null || _grid == null || _interaction == null) return false;
             _claim();

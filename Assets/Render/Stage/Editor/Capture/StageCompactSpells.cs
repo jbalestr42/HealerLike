@@ -12,6 +12,7 @@ namespace HealerLike.Render.Stage
         readonly StageCompactGestures _gestures;
         public StageCompactSpells(StageCaptureSession session, StageCompactGestures gestures)
         { _s = session; _gestures = gestures; }
+        void Observe(string name) { _s.output.ObserveGameplay(name, _s.manager, _s.actions.touch); }
         public IEnumerator Run()
         {
             Character character = _s.manager.player.character;
@@ -20,10 +21,12 @@ namespace HealerLike.Render.Stage
             CharacterSkillSlot slot = (CharacterSkillSlot)((ToolkitCardModel)spell.userData).source;
             float before = character.mana.Value;
             yield return _gestures.Hold(spell, "10-spell-hold", false);
+            Observe("spell-hold");
             _s.output.Check(character.mana.Value == before && _s.interaction.GetInteraction() == null,
                 "Held usable spell and duplicate release never cast or spend mana");
             yield return _s.actions.PointerTap(spell);
             yield return Wait(.2f);
+            Observe("short-spell-activation");
             AInteraction targeting = _s.interaction.GetInteraction();
             _s.output.Check(targeting != null, "Short spell touch activates existing targeting on release");
             Entity entity = _s.manager.entityManager.GetEntities(Entity.EntityType.Player)[0].GetComponent<Entity>();
@@ -39,6 +42,7 @@ namespace HealerLike.Render.Stage
                 yield return touch.Frame(TouchPhase.Ended, board);
             }
             yield return Wait(.2f);
+            Observe("world-or-ui-release");
             _s.output.Check(ReferenceEquals(targeting, _s.interaction.GetInteraction()) && character.mana.Value == before,
                 "Held world-creature release consumes press without casting targeted spell");
             yield return _s.actions.PointerTap("detail-close-button");
@@ -50,10 +54,12 @@ namespace HealerLike.Render.Stage
                 yield return touch.Frame(TouchPhase.Ended, board);
             }
             yield return Wait(.1f);
+            Observe("world-or-ui-release");
             _s.output.Check(ReferenceEquals(targeting, _s.interaction.GetInteraction()) && character.mana.Value == before,
                 "Unrelated UI-origin release over a valid target cannot activate the board");
             yield return _s.actions.TouchGesture(board);
             yield return Wait(.15f);
+            Observe("actual-spell-cast");
             _s.output.Check(_s.interaction.GetInteraction() == null && character.mana.Value < before,
                 "Short world release completes real spell action and spends actual mana");
             _s.output.Check(ToolkitSpellState.Read(slot, character).remaining > 0,
@@ -68,6 +74,7 @@ namespace HealerLike.Render.Stage
             Object.Destroy(consumer);
             _s.output.Check(character.mana.Value < ToolkitSpellState.Read(slot, character).cost,
                 "Fixture public mana consumer creates actual insufficient-mana state");
+            Observe("mana-shortage-fixture");
             yield return _s.Capture("14-mana-shortage");
             float shortage = character.mana.Value;
             yield return _gestures.Hold(spell, "14b-shortage-inspection", false);

@@ -75,6 +75,18 @@ namespace HealerLike.Render.Stage
         }
 
         [Test]
+        public void OwnedRosterPreviewAppearsImmediatelyWithoutGameplayHosts()
+        {
+            int before = Object.FindObjectsByType<Entity>().Length;
+            _placement.isRosterPlacement = () => true;
+            _placement.Tick(_interaction, 0, 0);
+            Assert.That(_placement.preview.rig.isAppearing, Is.False);
+            Assert.That(Object.FindObjectsByType<Entity>().Length, Is.EqualTo(before));
+            _placement.Tick(null, 0, 0);
+            Assert.That(_placement.preview, Is.Null);
+        }
+
+        [Test]
         public void Refresh_DoesNotReplayGrowthAndDisableRestoresTheOriginalModel()
         {
             _placement.Tick(_interaction, 0f, 0.3f);
