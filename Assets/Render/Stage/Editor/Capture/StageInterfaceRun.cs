@@ -71,9 +71,14 @@ namespace HealerLike.Render.Stage
                 _output.Check(_session.interaction.GetInteraction() == null, "Info opens details without deploying");
                 yield return _session.Capture("03-details");
                 yield return _session.Resize(1440, 900);
-                yield return _session.actions.SelectCard(_session.actions.Cards("party-list")[0].parent
-                    .Q<Button>("card-info"));
+                Button desktopCard = _session.actions.Cards("party-list")[0];
+                yield return _session.actions.InspectCard(desktopCard);
                 yield return Wait(0.2f);
+                Label desktopTitle = _session.actions.root.Q<Label>("detail-title");
+                _output.Check(_session.interaction.GetInteraction() == null
+                    && StageInterfaceOutput.IsVisible(desktopTitle)
+                    && desktopTitle.text == desktopCard.Q<Label>("card-title").text,
+                    "Actual desktop keyboard focus inspects the requested creature without deploying");
                 yield return _session.Capture("03b-desktop-details");
                 yield return _session.Resize(1080, 1920);
                 _session.actions.Submit("detail-button");

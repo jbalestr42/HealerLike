@@ -192,6 +192,20 @@ namespace HealerLike.Render.Stage
             Submit(button);
         }
 
+        public IEnumerator InspectCard(Button button)
+        {
+            yield return BringIntoView(button);
+            RequireReachable(button);
+            button.Blur();
+            yield return null;
+            button.Focus();
+            yield return null;
+            if (!ReferenceEquals(button.focusController.focusedElement, button))
+            {
+                throw new InvalidOperationException("Desktop inspection did not focus the requested card.");
+            }
+        }
+
         public List<Button> Cards(string list)
         {
             return root.Q(list).Query<Button>("data-card").ToList();

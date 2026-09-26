@@ -15,7 +15,7 @@ namespace HealerLike.Render.Stage
             public string revision = StagePlay.ReadRevision();
             public string unityVersion = Application.unityVersion;
             public string inputMethod
-                = "Actual Toolkit button events, Render touch adapter world taps; no physical device";
+                = "Actual Toolkit button/focus events, Render touch adapter world taps; no physical device";
             public bool isPassed;
             public StageCaptureTheme.Identity theme;
             public List<string> checks = new List<string>();
