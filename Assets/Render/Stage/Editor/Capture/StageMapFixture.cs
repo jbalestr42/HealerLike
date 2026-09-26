@@ -6,26 +6,33 @@ namespace HealerLike.Render.Stage
 {
     // A temporary generation configuration, used only by the native acceptance capture.
     // Ascension still generates its map and owns every room transition. No asset is edited.
-    public sealed class StageMapFixture : IDisposable
+    public class StageMapFixture : IDisposable
     {
-        static readonly FieldInfo SettingsField = typeof(AscensionGameType).GetField("_mapSettings",
+        static readonly FieldInfo settingsField = typeof(AscensionGameType).GetField("_mapSettings",
             BindingFlags.Instance | BindingFlags.NonPublic);
-        static readonly FieldInfo SeedField = typeof(AscensionGameType).GetField("_seed",
+        static readonly FieldInfo seedField = typeof(AscensionGameType).GetField("_seed",
             BindingFlags.Instance | BindingFlags.NonPublic);
         readonly AscensionGameType _owner;
         readonly MapGenerationSettings _original;
         readonly int _originalSeed;
         public MapGenerationSettings settings { get; private set; }
-        public const int Seed = 271828;
 
+        public static readonly int Seed = 271828;
         public StageMapFixture(AscensionGameType owner, bool shortRoute)
         {
-            if (owner == null || SettingsField == null || SeedField == null)
+            if (owner == null || settingsField == null || seedField == null)
+            {
                 throw new InvalidOperationException("Ascension map generation capture contract changed.");
+            }
+
             _owner = owner;
-            _original = (MapGenerationSettings)SettingsField.GetValue(owner);
-            _originalSeed = (int)SeedField.GetValue(owner);
-            if (_original == null) throw new InvalidOperationException("Ascension has no map settings.");
+            _original = (MapGenerationSettings)settingsField.GetValue(owner);
+            _originalSeed = (int)seedField.GetValue(owner);
+            if (_original == null)
+            {
+                throw new InvalidOperationException("Ascension has no map settings.");
+            }
+
             settings = UnityEngine.Object.Instantiate(_original);
             settings.name = "Temporary capture map settings";
             settings.hideFlags = HideFlags.HideAndDontSave;
@@ -43,18 +50,29 @@ namespace HealerLike.Render.Stage
                 settings.restWeight = 0f;
                 settings.treasureWeight = 0f;
             }
-            SettingsField.SetValue(owner, settings);
-            SeedField.SetValue(owner, Seed);
+
+            settingsField.SetValue(owner, settings);
+            seedField.SetValue(owner, Seed);
         }
 
         public void Dispose()
         {
+            if (settings == null)
+            {
+                return;
+            }
+
             if (_owner != null)
             {
-                SettingsField.SetValue(_owner, _original);
-                SeedField.SetValue(_owner, _originalSeed);
+                settingsField.SetValue(_owner, _original);
+                seedField.SetValue(_owner, _originalSeed);
             }
-            if (settings != null) UnityEngine.Object.DestroyImmediate(settings);
+
+            if (settings != null)
+            {
+                UnityEngine.Object.DestroyImmediate(settings);
+            }
+
             settings = null;
         }
     }

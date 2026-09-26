@@ -14,9 +14,13 @@ namespace HealerLike.Render.Stage
             while (!StageInterfaceOutput.IsVisible(actions.root.Q("map-panel")))
             {
                 if (Time.realtimeSinceStartup > deadline)
+                {
                     throw new InvalidOperationException("The run never offered its Toolkit expedition map.");
+                }
+
                 yield return null;
             }
+
             yield return AStageRun.Wait(0.25f);
         }
 
@@ -30,15 +34,28 @@ namespace HealerLike.Render.Stage
             yield return WaitForSelection(actions);
             AscensionGameType ascension = UnityEngine.Object.FindAnyObjectByType<AscensionGameType>();
             if (ascension == null || ascension.run == null || ascension.run.GetAvailableNodes().Count == 0)
+            {
                 throw new InvalidOperationException("No available expedition room.");
+            }
+
             MapNode node = ascension.run.GetAvailableNodes()[0];
             Button button = ButtonFor(actions, node);
             yield return actions.BringIntoView(button);
-            if (useTouch) yield return actions.PointerTap(button);
-            else actions.Submit(button);
+            if (useTouch)
+            {
+                yield return actions.PointerTap(button);
+            }
+            else
+            {
+                actions.Submit(button);
+            }
+
             yield return AStageRun.Wait(0.5f);
             if (ascension.run.currentNode != node)
+            {
                 throw new InvalidOperationException("Toolkit room activation did not travel to the selected room.");
+            }
+
             Debug.Log("[StageMapActions] Selected " + node + " through Toolkit "
                 + (useTouch ? "multi-frame touch input" : "navigation submit event"));
         }
@@ -49,14 +66,21 @@ namespace HealerLike.Render.Stage
             {
                 AscensionGameType ascension = UnityEngine.Object.FindAnyObjectByType<AscensionGameType>();
                 if (LegacyUiReader.AscensionState(ascension) == AscensionGameType.State.WaitForRoundToStart)
+                {
                     yield break;
+                }
+
                 if (StageInterfaceOutput.IsVisible(actions.root.Q("upgrade-panel")))
                 {
                     yield return actions.SelectCardByTouch(actions.Cards("upgrade-list")[0]);
                     yield return AStageRun.Wait(0.3f);
                 }
-                else yield return SelectFirst(actions, true);
+                else
+                {
+                    yield return SelectFirst(actions, true);
+                }
             }
+
             throw new InvalidOperationException("No combat preparation reached after map progression.");
         }
     }

@@ -10,42 +10,27 @@ namespace HealerLike.Render.Studio.Editor
     // the mode's inspector on the right. CreatureStudioMenu opens it.
     public class CreatureStudioWindow : EditorWindow
     {
-        static readonly Color accent = new Color(0.75f, 0.68f, 1f);
-        static readonly Color highlight = new Color(0.22f, 0.18f, 0.32f);
-        static readonly Color smallText = new Color(0.62f, 0.68f, 0.75f);
-        static readonly Color cardText = new Color(0.85f, 0.88f, 0.94f);
-        static readonly float libraryWidth = 210f;
-        static readonly float inspectorWidth = 370f;
-        static readonly float top = 77f;
-
-        readonly StudioStyles _styles = new StudioStyles();
+        readonly CreatureStudioLayout _layout = new CreatureStudioLayout();
         readonly CreatureStudioDrafts _drafts = new CreatureStudioDrafts();
         readonly CreatureGrammarMode _grammar = new CreatureGrammarMode();
-        readonly CreatureLibraryPane _library = new CreatureLibraryPane();
-        readonly CreaturePartsInspector _parts = new CreaturePartsInspector();
-        readonly CreatureGrammarInspector _grammarInspector = new CreatureGrammarInspector();
-        readonly CreatureViewport _viewport = new CreatureViewport();
-        readonly CreatureStudioHeader _header = new CreatureStudioHeader();
-        readonly CreatureRosterPane _roster = new CreatureRosterPane();
         bool _isRosterMode;
         bool _isRosterReady;
-        CreatureRecipe _selected;
-        SerializedObject _serialized;
+        readonly StudioSelection<CreatureRecipe> _selection = new StudioSelection<CreatureRecipe>();
         bool _isGrammarMode = true;
         CreatureRecipe _partsSelection;
         LookSide _manualSurface;
 
-        public CreatureRecipe selected { get { return _selected; } }
+        public CreatureRecipe selected { get { return _selection.asset; } }
 
-        public SerializedObject serialized { get { return _serialized; } }
+        public SerializedObject serialized { get { return _selection.serialized; } }
 
         public CreatureStudioDrafts drafts { get { return _drafts; } }
 
         public CreatureGrammarMode grammar { get { return _grammar; } }
 
-        public CreaturePartsInspector parts { get { return _parts; } }
+        public CreaturePartsInspector parts { get { return _layout.parts; } }
 
-        public StudioStyles styles { get { return _styles; } }
+        public StudioStyles styles { get { return _layout.styles; } }
 
         public bool isGrammarMode { get { return _isGrammarMode; } }
         public bool isRosterMode { get { return _isRosterMode; } }
@@ -64,6 +49,7 @@ namespace HealerLike.Render.Studio.Editor
                 {
                     return _grammar.previewSide;
                 }
+
                 return _manualSurface;
             }
         }
@@ -72,13 +58,9 @@ namespace HealerLike.Render.Studio.Editor
         {
             titleContent = new GUIContent("Creature Studio");
             minSize = new Vector2(1120f, 680f);
-            _viewport.Init(this);
-            _header.Init(this);
+            _layout.Init(this);
             _drafts.Init();
-            _library.Init(this);
-            _parts.Init(this);
-            _grammarInspector.Init(this);
-            _library.Reload();
+            _layout.library.Reload();
             CreatureRecipe first = _drafts.restoredSelection;
             if (first == null && _drafts.items.Count > 0)
             {
@@ -86,7 +68,7 @@ namespace HealerLike.Render.Studio.Editor
             }
 
             Select(first);
-            _partsSelection = _selected;
+            _partsSelection = _selection.asset;
             _grammar.Init(this);
             _isGrammarMode = true;
             _isRosterMode = false;
@@ -99,96 +81,45 @@ namespace HealerLike.Render.Studio.Editor
 
         void OnDisable()
         {
-            CreatureRecipe selection = _selected;
-            if (_isGrammarMode)
-            {
-                selection = _partsSelection;
-            }
-
-            _drafts.Persist(selection);
-            _grammar.Dispose();
-            _roster.Dispose();
-            _isRosterReady = false;
             RenderGrammarLibraryWindow.OnAssetChanged.RemoveListener(OnGrammarLibraryChanged);
             EditorApplication.update -= OnEditorUpdate;
             EditorApplication.projectChanged -= ReloadAssets;
             Undo.undoRedoPerformed -= OnUndoRedo;
-            _viewport.Dispose();
-            if (_serialized != null)
+            try
             {
-                _serialized.Dispose();
+                _drafts.Persist(_isGrammarMode ? _partsSelection : _selection.asset);
             }
-
-            _serialized = null;
-            _drafts.Dispose();
+            finally
+            {
+                try
+                {
+                    _grammar.Dispose();
+                }
+                finally
+                {
+                    _layout.Dispose();
+                    _isRosterReady = false;
+                    _selection.Dispose();
+                    _drafts.Dispose();
+                }
+            }
         }
 
         void OnGUI()
         {
-            if (!_styles.isReady)
-            {
-                _styles.Init(accent, highlight, smallText, cardText);
-            }
-
-            _viewport.HandleShortcuts();
-            StudioStyles.DrawBackground(position);
-            _header.Draw(position);
-            float height = position.height - 87f;
-            if (_isRosterMode)
-            {
-                _roster.Draw(new Rect(10f, top, position.width - 20f, height));
-                return;
-            }
-            Rect library = new Rect(10f, top, libraryWidth, height);
-            Rect inspector = new Rect(position.width - inspectorWidth - 10f, top, inspectorWidth, height);
-            if (_isGrammarMode)
-            {
-                _library.DrawGrammar(library);
-            }
-            else
-            {
-                _library.DrawParts(library);
-            }
-
-            _viewport.Draw(new Rect(libraryWidth + 18f, top, position.width - libraryWidth - inspectorWidth - 36f,
-                height));
-            if (_isGrammarMode)
-            {
-                _grammarInspector.Draw(inspector);
-            }
-            else
-            {
-                _parts.Draw(inspector);
-            }
-
-            if (GUI.changed)
-            {
-                Repaint();
-            }
+            _layout.Draw();
         }
 
         public void Select(CreatureRecipe recipe)
         {
-            if (_serialized != null)
-            {
-                _serialized.ApplyModifiedProperties();
-                _serialized.Dispose();
-            }
-
-            _selected = recipe;
+            _selection.Select(recipe);
             if (!_isGrammarMode && recipe != null)
             {
                 _manualSurface = _drafts.GetSurface(recipe);
             }
 
-            _serialized = null;
-            if (recipe != null)
-            {
-                _serialized = new SerializedObject(recipe);
-            }
-
-            _parts.Reset();
-            _viewport.Restart();
+            _layout.parts.Reset();
+            _layout.viewport.Restart();
             RefreshPreview();
             Repaint();
         }
@@ -203,6 +134,7 @@ namespace HealerLike.Render.Studio.Editor
             {
                 _partsSelection = _drafts.items[0];
             }
+
             Select(_partsSelection);
         }
 
@@ -211,7 +143,7 @@ namespace HealerLike.Render.Studio.Editor
             _isRosterMode = false;
             if (!_isGrammarMode)
             {
-                _partsSelection = _selected;
+                _partsSelection = _selection.asset;
             }
 
             _isGrammarMode = true;
@@ -223,29 +155,30 @@ namespace HealerLike.Render.Studio.Editor
             _isRosterMode = false;
             if (!_isGrammarMode)
             {
-                _partsSelection = _selected;
+                _partsSelection = _selection.asset;
             }
 
             _grammar.Select(preset);
-            _grammarInspector.Reset();
+            _layout.grammarInspector.Reset();
             _isGrammarMode = true;
             _grammar.Regenerate();
         }
 
         public void RefreshPreview()
         {
-            _parts.InvalidateChecks();
-            _viewport.Refresh();
+            _layout.parts.InvalidateChecks();
+            _layout.viewport.Refresh();
         }
 
         public void ReloadAssets()
         {
-            _library.Reload();
+            _layout.library.Reload();
             _grammar.Reload();
             if (_isRosterReady)
             {
-                _roster.Reload();
+                _layout.roster.Reload();
             }
+
             RefreshPreview();
             Repaint();
         }
@@ -268,13 +201,15 @@ namespace HealerLike.Render.Studio.Editor
         {
             if (_isRosterMode)
             {
-                if (_roster.RefreshIfChanged())
+                if (_layout.roster.RefreshIfChanged())
                 {
                     Repaint();
                 }
+
                 return;
             }
-            _viewport.Tick();
+
+            _layout.viewport.Tick();
         }
 
         public void SwitchToRoster()
@@ -282,13 +217,14 @@ namespace HealerLike.Render.Studio.Editor
             _isRosterMode = true;
             if (!_isRosterReady)
             {
-                _roster.Init();
+                _layout.roster.Init();
                 _isRosterReady = true;
             }
             else
             {
-                _roster.Refresh();
+                _layout.roster.Refresh();
             }
+
             Repaint();
         }
 
@@ -296,11 +232,12 @@ namespace HealerLike.Render.Studio.Editor
         {
             if (_isRosterReady)
             {
-                _roster.Refresh();
+                _layout.roster.Refresh();
             }
-            if (_serialized != null)
+
+            if (_selection.serialized != null)
             {
-                _serialized.Update();
+                _selection.serialized.Update();
             }
 
             if (_isGrammarMode)
@@ -309,7 +246,7 @@ namespace HealerLike.Render.Studio.Editor
             }
             else
             {
-                RenderGrammarLibraryWindow.OnAssetChanged.Invoke(_selected);
+                RenderGrammarLibraryWindow.OnAssetChanged.Invoke(_selection.asset);
             }
 
             RefreshPreview();
@@ -320,8 +257,9 @@ namespace HealerLike.Render.Studio.Editor
         {
             if (_isRosterReady)
             {
-                _roster.Refresh();
+                _layout.roster.Refresh();
             }
+
             if (_isGrammarMode)
             {
                 _grammar.Regenerate();
@@ -330,15 +268,16 @@ namespace HealerLike.Render.Studio.Editor
             {
                 RefreshPreview();
             }
+
             Repaint();
         }
 
         // Reads the selected recipe again after an edit made elsewhere
         public void ReadSelection()
         {
-            if (_serialized != null)
+            if (_selection.serialized != null)
             {
-                _serialized.Update();
+                _selection.serialized.Update();
             }
 
             RefreshPreview();

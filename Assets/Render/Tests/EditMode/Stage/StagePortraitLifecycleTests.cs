@@ -30,16 +30,22 @@ namespace HealerLike.Render.Stage
                 TestHelpers.InvokePrivate(stage, "CreatePortraits");
                 CreaturePortraits initial = stage.portraits;
                 stage.RefreshCreatureIcons();
-                Assert.AreSame(initial, stage.portraits, "An edit within the same source invalidates its existing cache.");
+                Assert.AreSame(initial, stage.portraits,
+                    "An edit within the same source invalidates its existing cache.");
+                if (replaceLooks)
+                {
+                    TestHelpers.SetPrivateField(manager, "_creatureLooks", nextLooks);
+                }
+                else
+                {
+                    TestHelpers.SetPrivateField(manager, "_meshes", nextMeshes);
+                }
 
-                if (replaceLooks) TestHelpers.SetPrivateField(manager, "_creatureLooks", nextLooks);
-                else TestHelpers.SetPrivateField(manager, "_meshes", nextMeshes);
                 stage.RefreshCreatureIcons();
                 Assert.IsTrue(initial.isDisposed);
                 Assert.AreNotSame(initial, stage.portraits);
                 Assert.AreSame(stage.portraits, ui.iconProvider);
                 Assert.AreEqual(0, stage.portraits.captureCount);
-
                 CreaturePortraits replacement = stage.portraits;
                 TestHelpers.InvokePrivate(stage, "ReleasePortraits");
                 Assert.IsTrue(replacement.isDisposed);
@@ -48,7 +54,11 @@ namespace HealerLike.Render.Stage
             }
             finally
             {
-                if (stage != null) TestHelpers.InvokePrivate(stage, "ReleasePortraits");
+                if (stage != null)
+                {
+                    TestHelpers.InvokePrivate(stage, "ReleasePortraits");
+                }
+
                 Object.DestroyImmediate(host);
                 Object.DestroyImmediate(firstLooks);
                 Object.DestroyImmediate(nextLooks);

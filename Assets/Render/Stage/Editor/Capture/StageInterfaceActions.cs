@@ -7,13 +7,18 @@ using UnityEngine.UIElements;
 
 namespace HealerLike.Render.Stage
 {
-    public class StageInterfaceActions
+    public class StageInterfaceActions : IDisposable
     {
         public ToolkitGameUI ui;
         public int scrollActions { get; private set; }
         public VisualElement root { get { return ui.GetComponent<UIDocument>().rootVisualElement; } }
         public StageTouchInput touch { get { return ui.GetComponent<StageTouchInput>(); } }
+        public StageCaptureInput captureInput { get { return _input; } }
         StageCaptureInput _input;
+        StandaloneInputModule _module;
+        BaseInput _previousInput;
+        StageTouchInput _capturedTouch;
+        Touch[] _previousTouches;
         public bool legacyModuleReadTouches
         {
             get
@@ -26,13 +31,39 @@ namespace HealerLike.Render.Stage
 
         public void ConfigureLegacyInput()
         {
+            Dispose();
             StandaloneInputModule module = StageLegacyInput.Configure(ui.gameObject.scene);
             if (module == null)
             {
                 throw new InvalidOperationException("The capture scene has no EventSystem for legacy touch input.");
             }
+
+            _module = module;
+            _previousInput = module.inputOverride;
+            _capturedTouch = touch;
+            _previousTouches = _capturedTouch != null ? _capturedTouch.captureTouches : null;
             _input = ui.gameObject.AddComponent<StageCaptureInput>();
             module.inputOverride = _input;
+        }
+
+        public void Dispose()
+        {
+            if (_module != null && _module.inputOverride == _input)
+            {
+                _module.inputOverride = _previousInput;
+            }
+
+            if (_capturedTouch != null)
+            {
+                _capturedTouch.captureTouches = _previousTouches;
+            }
+
+            RenderObjects.Release(_input);
+            _input = null;
+            _module = null;
+            _previousInput = null;
+            _capturedTouch = null;
+            _previousTouches = null;
         }
 
         public void Submit(string name)
@@ -54,8 +85,10 @@ namespace HealerLike.Render.Stage
         {
             if (button == null || !button.enabledInHierarchy || !StageInterfaceOutput.IsVisible(button))
             {
-                throw new InvalidOperationException("UI button unavailable: " + (button != null ? button.name : "null"));
+                throw new InvalidOperationException("UI button unavailable: "
+                    + (button != null ? button.name : "null"));
             }
+
             VisualElement picked = button.panel.Pick(button.worldBound.center);
             bool reachable = false;
             for (VisualElement target = picked; target != null; target = target.parent)
@@ -66,9 +99,11 @@ namespace HealerLike.Render.Stage
                     break;
                 }
             }
+
             if (!reachable)
             {
-                throw new InvalidOperationException("UI button is covered or outside its scroll viewport: " + button.name);
+                throw new InvalidOperationException("UI button is covered or outside its scroll viewport: "
+                    + button.name);
             }
         }
 
@@ -108,6 +143,7 @@ namespace HealerLike.Render.Stage
                 {
                     input.captureTouches = Array.Empty<Touch>();
                 }
+
                 _input.samples = Array.Empty<Touch>();
                 yield return null;
             }
@@ -115,8 +151,9 @@ namespace HealerLike.Render.Stage
             {
                 if (input != null)
                 {
-                    input.captureTouches = null;
+                    input.captureTouches = _previousTouches;
                 }
+
                 _input.samples = Array.Empty<Touch>();
             }
         }

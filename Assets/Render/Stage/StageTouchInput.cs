@@ -25,6 +25,9 @@ namespace HealerLike.Render.Stage
 
         public void Init(InteractionManager interaction)
         {
+            CancelDrag();
+            RestoreMouse();
+            _finger = -1;
             _interaction = interaction;
         }
 
@@ -49,11 +52,13 @@ namespace HealerLike.Render.Stage
                 RestoreMouse();
                 return;
             }
+
             if (_interaction.enabled)
             {
                 _interaction.enabled = false;
                 _suspended = true;
             }
+
             for (int i = 0; i < touchCount; i++)
             {
                 Touch touch;
@@ -67,12 +72,14 @@ namespace HealerLike.Render.Stage
                 {
                     touch = Input.GetTouch(i);
                 }
+
                 if (_finger < 0 || touch.fingerId == _finger)
                 {
                     ProcessTouch(touch.fingerId, touch.phase, touch.position);
                     return;
                 }
             }
+
             CancelDrag();
             _finger = -1;
         }
@@ -83,6 +90,7 @@ namespace HealerLike.Render.Stage
             {
                 return;
             }
+
             if (phase == TouchPhase.Began && _finger < 0)
             {
                 _finger = finger;
@@ -103,10 +111,12 @@ namespace HealerLike.Render.Stage
                     }
                 }
             }
+
             if (finger != _finger)
             {
                 return;
             }
+
             if (phase == TouchPhase.Canceled || IsOverInterface(position))
             {
                 CancelDrag();
@@ -122,6 +132,7 @@ namespace HealerLike.Render.Stage
             {
                 placement.OnMouseOver(placementHit);
             }
+
             if (!_blocked && _draggable != null && Raycast(position, out RaycastHit dragHit))
             {
                 if (phase == TouchPhase.Moved)
@@ -135,6 +146,7 @@ namespace HealerLike.Render.Stage
                     _blocked = true;
                 }
             }
+
             if (phase == TouchPhase.Ended)
             {
                 float threshold = 18f * Mathf.Min(Screen.width, Screen.height) / 390f;
@@ -143,6 +155,7 @@ namespace HealerLike.Render.Stage
                     Tap(position);
                 }
             }
+
             if (phase == TouchPhase.Ended || phase == TouchPhase.Canceled)
             {
                 CancelDrag();
@@ -179,6 +192,7 @@ namespace HealerLike.Render.Stage
             {
                 _interaction.enabled = true;
             }
+
             _suspended = false;
         }
 
@@ -188,6 +202,7 @@ namespace HealerLike.Render.Stage
             {
                 return false;
             }
+
             PointerEventData pointer = new PointerEventData(EventSystem.current);
             pointer.position = screenPoint;
             _hits.Clear();
@@ -199,6 +214,7 @@ namespace HealerLike.Render.Stage
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -209,16 +225,19 @@ namespace HealerLike.Render.Stage
             {
                 return false;
             }
+
             AInteraction active = _interaction.GetInteraction();
             int mask = active != null ? active.GetLayerMask() : Physics.DefaultRaycastLayers;
             if (!Raycast(screenPoint, out RaycastHit hit, mask))
             {
                 return false;
             }
+
             if (active != null)
             {
                 return Activate(active, hit);
             }
+
             ISelectable selectable = hit.collider.GetComponentInParent<ISelectable>();
             _interaction.CancelSelection();
             _interaction.Select(selectable);
@@ -231,6 +250,7 @@ namespace HealerLike.Render.Stage
             {
                 return false;
             }
+
             interaction.OnMouseEnter(hit);
             interaction.OnMouseOver(hit);
             interaction.OnMouseClick(hit);

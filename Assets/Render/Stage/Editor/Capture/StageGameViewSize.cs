@@ -32,9 +32,17 @@ namespace HealerLike.Render.Stage
             object size = Activator.CreateInstance(sizeType, Enum.Parse(kindType, "FixedResolution"),
                 width, height, "Render capture (temporary)");
             _group.GetType().GetMethod("AddCustomSize").Invoke(_group, new[] { size });
-            _selection.SetValue(_window, _temporary);
-            _window.Focus();
-            _window.Repaint();
+            try
+            {
+                _selection.SetValue(_window, _temporary);
+                _window.Focus();
+                _window.Repaint();
+            }
+            catch
+            {
+                Dispose();
+                throw;
+            }
         }
 
         // A workspace preset survives capture disposal and Editor restarts. Reuse a fixed size already present.
@@ -62,11 +70,13 @@ namespace HealerLike.Render.Stage
                     break;
                 }
             }
+
             if (selected == total)
             {
                 object size = Activator.CreateInstance(sizeType, fixedResolution, width, height, "HealerLike Portrait");
                 group.GetType().GetMethod("AddCustomSize").Invoke(group, new[] { size });
             }
+
             sizesType.GetMethod("SaveToHDD", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                 .Invoke(sizes, null);
             EditorWindow window = EditorWindow.GetWindow(windowType, false, null, true);
@@ -81,10 +91,17 @@ namespace HealerLike.Render.Stage
             {
                 return;
             }
+
             _isDisposed = true;
-            _selection.SetValue(_window, _previous);
-            _group.GetType().GetMethod("RemoveCustomSize").Invoke(_group, new object[] { _temporary });
-            _window.Repaint();
+            try
+            {
+                _selection.SetValue(_window, _previous);
+            }
+            finally
+            {
+                _group.GetType().GetMethod("RemoveCustomSize").Invoke(_group, new object[] { _temporary });
+                _window.Repaint();
+            }
         }
     }
 }

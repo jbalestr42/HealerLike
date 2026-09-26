@@ -1,10 +1,10 @@
 using HealerLike.Render.Creatures;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
 #endif
-
 namespace HealerLike.Render.Stage
 {
     // RenderStage alone opts gameplay into the Toolkit HUD. The manager survives menu and expedition changes.
@@ -12,7 +12,6 @@ namespace HealerLike.Render.Stage
     {
         public static readonly string GameplayPath = "Assets/Scenes/Main.unity";
         public static readonly string MenuPath = "Assets/Scenes/Toolkit/MenuToolkit.unity";
-
         RenderManager _manager;
         BattleFocus _focus;
         ToolkitGameUI _ui;
@@ -23,9 +22,21 @@ namespace HealerLike.Render.Stage
         CreatureLooks _portraitLooks;
         PrimitiveMeshes _portraitMeshes;
         Scene _uiScene;
+        public ToolkitGameUI ui
+        {
+            get
+            {
+                return _ui;
+            }
+        }
 
-        public ToolkitGameUI ui { get { return _ui; } }
-        public CreaturePortraits portraits { get { return _portraits; } }
+        public CreaturePortraits portraits
+        {
+            get
+            {
+                return _portraits;
+            }
+        }
 
         void Awake()
         {
@@ -44,12 +55,12 @@ namespace HealerLike.Render.Stage
             {
                 return;
             }
+
             ReleasePortraits();
             _uiScene = scene;
 #if UNITY_ANDROID && !UNITY_EDITOR
             StageLegacyInput.Configure(scene);
 #endif
-
             _ui = StageSceneObjects.Find<ToolkitGameUI>(scene);
             if (_ui == null)
             {
@@ -65,28 +76,44 @@ namespace HealerLike.Render.Stage
             {
                 CreatePortraits();
                 StageTouchInput touch = _ui.GetComponent<StageTouchInput>();
-                if (touch == null) touch = _ui.gameObject.AddComponent<StageTouchInput>();
+                if (touch == null)
+                {
+                    touch = _ui.gameObject.AddComponent<StageTouchInput>();
+                }
+
                 touch.Init(StageSceneObjects.Find<InteractionManager>(scene));
                 _ui.SetBattleFocus(false, _focus.Toggle);
             }
+
             _focus.ShowLegacyControl(false);
             _camera = null;
         }
 
         public void RefreshCreatureIcons()
         {
-            if (_portraits == null) return;
+            if (_portraits == null)
+            {
+                return;
+            }
+
             if (_portraitLooks != _manager.creatureLooks || _portraitMeshes != _manager.meshes)
             {
                 ReleasePortraits();
                 CreatePortraits();
             }
-            else _portraits.Invalidate();
+            else
+            {
+                _portraits.Invalidate();
+            }
         }
 
         void CreatePortraits()
         {
-            if (_ui == null) return;
+            if (_ui == null)
+            {
+                return;
+            }
+
             _portraitLooks = _manager.creatureLooks;
             _portraitMeshes = _manager.meshes;
             _portraits = new CreaturePortraits(_portraitLooks, _portraitMeshes);
@@ -95,7 +122,10 @@ namespace HealerLike.Render.Stage
 
         void OnSceneUnloaded(Scene scene)
         {
-            if (scene == _uiScene) ReleasePortraits();
+            if (scene == _uiScene)
+            {
+                ReleasePortraits();
+            }
         }
 
         void OnDestroy()
@@ -106,8 +136,16 @@ namespace HealerLike.Render.Stage
 
         void ReleasePortraits()
         {
-            if (_ui != null) _ui.SetIconProvider(null);
-            _portraits?.Dispose();
+            if (_ui != null)
+            {
+                _ui.SetIconProvider(null);
+            }
+
+            if (_portraits != null)
+            {
+                _portraits.Dispose();
+            }
+
             _portraits = null;
             _portraitLooks = null;
             _portraitMeshes = null;
@@ -123,8 +161,8 @@ namespace HealerLike.Render.Stage
             Camera camera = _manager.gameCamera;
             float aspect = (float)camera.pixelWidth / Mathf.Max(1, camera.pixelHeight);
             Rect viewport = _ui.normalizedWorldViewport;
-            if (viewport.width > 0.1f && viewport.height > 0.1f
-                && (_camera != camera || _viewport != viewport || !Mathf.Approximately(_aspect, aspect)))
+            if (viewport.width > 0.1f && viewport.height > 0.1f && (_camera != camera || _viewport != viewport
+                || !Mathf.Approximately(_aspect, aspect)))
             {
                 _camera = camera;
                 _viewport = viewport;
@@ -138,6 +176,7 @@ namespace HealerLike.Render.Stage
                     }
                 }
             }
+
             _ui.SetBattleFocus(_focus.isFocused, _focus.Toggle);
         }
 
@@ -147,10 +186,12 @@ namespace HealerLike.Render.Stage
             {
                 return GameplayPath;
             }
+
             if (scene == "MenuScene" || scene == "MenuToolkit")
             {
                 return MenuPath;
             }
+
             return null;
         }
 
@@ -161,6 +202,7 @@ namespace HealerLike.Render.Stage
             {
                 return false;
             }
+
 #if UNITY_EDITOR
             EditorSceneManager.LoadSceneInPlayMode(path, new LoadSceneParameters(LoadSceneMode.Single));
 #else
@@ -168,10 +210,10 @@ namespace HealerLike.Render.Stage
             {
                 return false;
             }
+
             SceneManager.LoadScene(path, LoadSceneMode.Single);
 #endif
             return true;
         }
-
     }
 }

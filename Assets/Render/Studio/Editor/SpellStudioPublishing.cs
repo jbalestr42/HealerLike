@@ -33,19 +33,7 @@ namespace HealerLike.Render.Studio.Editor
         // A copy of the preset saved at path; the other dirty assets of the project stay unsaved
         public static SpellStudioPreset SaveCopy(SpellStudioPreset source, string path)
         {
-            SpellStudioPreset copy = Object.Instantiate(source);
-            copy.hideFlags = HideFlags.None;
-            copy.name = Path.GetFileNameWithoutExtension(path);
-            AssetDatabase.CreateAsset(copy, path);
-            if (!AssetDatabase.Contains(copy))
-            {
-                Debug.LogError("[SpellStudioPublishing] Could not save the preset at " + path);
-                Object.DestroyImmediate(copy);
-                return null;
-            }
-
-            AssetDatabase.SaveAssetIfDirty(copy);
-            return copy;
+            return StudioAssetSave.Copy(source, path);
         }
     }
 }

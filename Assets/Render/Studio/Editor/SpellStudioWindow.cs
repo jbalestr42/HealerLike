@@ -29,12 +29,11 @@ namespace HealerLike.Render.Studio.Editor
         readonly SpellLibraryPane _library = new SpellLibraryPane();
         readonly SpellViewport _viewport = new SpellViewport();
         readonly SpellInspectorPane _inspector = new SpellInspectorPane();
-        SpellStudioPreset _selected;
-        SerializedObject _serialized;
+        readonly StudioSelection<SpellStudioPreset> _selection = new StudioSelection<SpellStudioPreset>();
 
-        public SpellStudioPreset selected { get { return _selected; } }
+        public SpellStudioPreset selected { get { return _selection.asset; } }
 
-        public SerializedObject serialized { get { return _serialized; } }
+        public SerializedObject serialized { get { return _selection.serialized; } }
 
         public SpellStudioDrafts drafts { get { return _drafts; } }
 
@@ -51,11 +50,12 @@ namespace HealerLike.Render.Studio.Editor
         {
             get
             {
-                if (_selected == null)
+                if (_selection.asset == null)
                 {
                     return 2f;
                 }
-                return Mathf.Max(0.01f, _selected.previewDuration);
+
+                return Mathf.Max(0.01f, _selection.asset.previewDuration);
             }
         }
 
@@ -84,18 +84,20 @@ namespace HealerLike.Render.Studio.Editor
 
         void OnDisable()
         {
-            _drafts.Persist(_selected);
             EditorApplication.update -= OnEditorUpdate;
             Undo.undoRedoPerformed -= ReadSelection;
             EditorApplication.projectChanged -= ReloadAssets;
             RenderGrammarLibraryWindow.OnAssetChanged.RemoveListener(OnGrammarAssetChanged);
-            _viewport.Dispose();
-            _drafts.Dispose();
-            if (_serialized != null)
+            try
             {
-                _serialized.Dispose();
+                _drafts.Persist(_selection.asset);
             }
-            _serialized = null;
+            finally
+            {
+                _viewport.Dispose();
+                _selection.Dispose();
+                _drafts.Dispose();
+            }
         }
 
         void OnGUI()
@@ -121,18 +123,7 @@ namespace HealerLike.Render.Studio.Editor
 
         public void Select(SpellStudioPreset preset)
         {
-            if (_serialized != null)
-            {
-                _serialized.ApplyModifiedProperties();
-                _serialized.Dispose();
-            }
-
-            _selected = preset;
-            _serialized = null;
-            if (preset != null)
-            {
-                _serialized = new SerializedObject(preset);
-            }
+            _selection.Select(preset);
 
             _timeline.time = 0f;
             _inspector.Reset();
@@ -143,9 +134,9 @@ namespace HealerLike.Render.Studio.Editor
         // Reads the selected preset again after an undo or an edit made elsewhere
         public void ReadSelection()
         {
-            if (_serialized != null)
+            if (_selection.serialized != null)
             {
-                _serialized.Update();
+                _selection.serialized.Update();
             }
 
             RefreshPreview();
@@ -182,15 +173,15 @@ namespace HealerLike.Render.Studio.Editor
 
         public void Duplicate()
         {
-            if (_selected != null)
+            if (_selection.asset != null)
             {
-                Select(_drafts.Duplicate(_selected));
+                Select(_drafts.Duplicate(_selection.asset));
             }
         }
 
         void OnEditorUpdate()
         {
-            if (_timeline.Tick(duration, _selected != null))
+            if (_timeline.Tick(duration, _selection.asset != null))
             {
                 Repaint();
             }
@@ -203,11 +194,12 @@ namespace HealerLike.Render.Studio.Editor
 
         EffectVocabulary SelectedVocabulary()
         {
-            if (_selected == null)
+            if (_selection.asset == null)
             {
                 return null;
             }
-            return _selected.vocabulary;
+
+            return _selection.asset.vocabulary;
         }
 
         void DrawHeader()
@@ -228,7 +220,7 @@ namespace HealerLike.Render.Studio.Editor
             }
 
             rect.x += 102f;
-            using (new EditorGUI.DisabledScope(_selected == null))
+            using (new EditorGUI.DisabledScope(_selection.asset == null))
             {
                 if (GUI.Button(rect, "Save as…"))
                 {
@@ -238,11 +230,11 @@ namespace HealerLike.Render.Studio.Editor
             }
 
             rect.x += 102f;
-            using (new EditorGUI.DisabledScope(_selected == null || !AssetDatabase.Contains(_selected)))
+            using (new EditorGUI.DisabledScope(_selection.asset == null || !AssetDatabase.Contains(_selection.asset)))
             {
                 if (GUI.Button(rect, "Save"))
                 {
-                    AssetDatabase.SaveAssetIfDirty(_selected);
+                    AssetDatabase.SaveAssetIfDirty(_selection.asset);
                     ShowNotification(new GUIContent("Preset saved"));
                 }
             }
@@ -250,14 +242,15 @@ namespace HealerLike.Render.Studio.Editor
 
         void SaveAs()
         {
-            string path = EditorUtility.SaveFilePanelInProject("Save spell preset", SpellStudioDrafts.Label(_selected),
+            string path = EditorUtility.SaveFilePanelInProject("Save spell preset",
+                SpellStudioDrafts.Label(_selection.asset),
                 "asset", "Choose where to store this spell preset.", "Assets/Render/Studio/Data/Presets");
             if (string.IsNullOrEmpty(path))
             {
                 return;
             }
 
-            SpellStudioPreset copy = SpellStudioPublishing.SaveCopy(_selected,
+            SpellStudioPreset copy = SpellStudioPublishing.SaveCopy(_selection.asset,
                 AssetDatabase.GenerateUniqueAssetPath(path));
             if (copy == null)
             {
