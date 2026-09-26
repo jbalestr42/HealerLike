@@ -31,6 +31,23 @@ public class StoneMeshCacheTests
     }
 
     [Test]
+    public void Clear_ReacquiredKey_OldLeaseCannotReleaseTheReplacementMesh()
+    {
+        StoneMeshCache cache = new StoneMeshCache();
+        StoneMeshCache.Lease previous = cache.Acquire(23, StonePresets.Boulder);
+        cache.Clear();
+        StoneMeshCache.Lease current = cache.Acquire(23, StonePresets.Boulder);
+
+        previous.Dispose();
+
+        Assert.IsTrue(current.mesh != null);
+        Assert.AreEqual(1, cache.count);
+        current.Dispose();
+        Assert.IsTrue(current.mesh == null);
+        Assert.AreEqual(0, cache.count);
+    }
+
+    [Test]
     public void Acquire_TwoCaches_NeverShareMeshes()
     {
         StoneMeshCache first = new StoneMeshCache();

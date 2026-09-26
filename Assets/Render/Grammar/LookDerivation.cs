@@ -24,14 +24,15 @@ namespace HealerLike.Render.Grammar
         public static UnitChannels Channels(EntityData data, Entity.EntityType entityType)
         {
             ASkillFactory primary = Primary(data);
+            SkillDescription description = SkillDescriptionReader.Read(primary, data);
             UnitChannels channels = new UnitChannels();
             channels.side = Side(entityType);
-            channels.head = HeadDerivation.Head(primary);
-            channels.count = Count(Hits(primary, data));
-            channels.stem = Stem(Cadence(primary, data));
+            channels.head = description.head;
+            channels.count = Count(description.hits);
+            channels.stem = Stem(description.cadence);
             channels.mass = Mass(Health(data));
             channels.reach = Reach(data);
-            channels.accent = HeadDerivation.Accent(primary);
+            channels.accent = description.accent;
             channels.accessory = HeadDerivation.Accessory(data, channels.head, channels.accent,
                 out channels.accessoryHead);
             return channels;
@@ -64,66 +65,13 @@ namespace HealerLike.Render.Grammar
         // The projectile class and its baked motion, the same reading for a unit's head and its shot
         public static HeadKind DeliveryHead(GameObject projectilePrefab)
         {
-            if (projectilePrefab == null)
-            {
-                return HeadKind.Bud;
-            }
-
-            ChainLightningProjectile chain = projectilePrefab.GetComponent<ChainLightningProjectile>();
-            if (chain != null)
-            {
-                if (SkillWalker.IsHeld(chain))
-                {
-                    return HeadKind.Fork;
-                }
-                return HeadKind.Conductor;
-            }
-
-            if (projectilePrefab.GetComponent<CurvedHomingProjectileBehaviour>() != null
-                || projectilePrefab.GetComponent<ArcHomingProjectileBehaviour>() != null)
-            {
-                return HeadKind.Arch;
-            }
-
-            HomingProjectileBehaviour homing = projectilePrefab.GetComponent<HomingProjectileBehaviour>();
-            if (homing != null && homing.data != null && homing.data.speed >= SpearSpeed)
-            {
-                return HeadKind.Spear;
-            }
-            return HeadKind.Bud;
+            return ProjectileDescriptionReader.Read(projectilePrefab).head;
         }
 
         // Hits per trigger of the skill: shots per target plus bounces, one loop of a burst, many for any splash
         public static int Hits(ASkillFactory skill, EntityData data)
         {
-            if (skill is AreaOfEffectSkillFactory || SkillWalker.HasSplash(skill, data))
-            {
-                return ManyHits;
-            }
-
-            int bounces = ItemWalker.Bounces(data);
-            if (skill is ShootProjectileSkillFactory shoot && shoot.data.projectiles != null)
-            {
-                int hits = 1;
-                foreach (ShootProjectileSkillData.ProjectileData entry in shoot.data.projectiles)
-                {
-                    hits = Mathf.Max(hits,
-                        entry.numberOfProjectileToShootPerTarget + SkillWalker.Bounces(entry.projectilePrefab)
-                            + bounces);
-                }
-                return hits;
-            }
-
-            if (skill is ConfigurableSkillFactory configurable)
-            {
-                float total = 0f;
-                foreach (SkillWalker.Shot shot in SkillWalker.Shots(configurable))
-                {
-                    total += shot.count;
-                }
-                return Mathf.Max(1, Mathf.RoundToInt(total) + bounces);
-            }
-            return 1;
+            return SkillDescriptionReader.Read(skill, data).hits;
         }
 
         public static CountBand Count(int hits)
@@ -142,54 +90,7 @@ namespace HealerLike.Render.Grammar
         // The skill's own clock in seconds between triggers, never the raw AttackRate
         public static float Cadence(ASkillFactory skill, EntityData data)
         {
-            if (skill is ShootProjectileSkillFactory)
-            {
-                return SkillWalker.ReadAttribute(data, AttributeType.AttackRate, DefaultAttackRate);
-            }
-
-            if (skill is ConfigurableSkillFactory configurable)
-            {
-                return SkillWalker.Waits(configurable.data.skillStepFactories, data);
-            }
-
-            if (skill is ApplyBuffOnTargetSkillFactory support)
-            {
-                return support.data.rate;
-            }
-
-            if (skill is HealTargetSkillFactory heal)
-            {
-                return heal.data.rate;
-            }
-
-            if (skill is AreaOfEffectSkillFactory)
-            {
-                float rate = SkillWalker.ReadAttribute(data, AttributeType.AttackRate, DefaultAttackRate);
-                if (rate > 0f)
-                {
-                    return 1f / rate;
-                }
-                return 0f;
-            }
-
-            if (skill is ApplyConsumerOnTimeFactory self)
-            {
-                return self.data.rate;
-            }
-
-            if (skill is ApplyBuffPeriodicallySkillFactory periodic && periodic.data.periodicBuff != null)
-            {
-                float total = 0f;
-                foreach (ABuffHandlerFactory handler in periodic.data.periodicBuff)
-                {
-                    if (handler != null)
-                    {
-                        total += handler.duration;
-                    }
-                }
-                return total;
-            }
-            return DefaultAttackRate;
+            return SkillDescriptionReader.Read(skill, data).cadence;
         }
 
         public static StemBand Stem(float cadence)

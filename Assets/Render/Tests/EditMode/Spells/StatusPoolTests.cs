@@ -170,6 +170,23 @@ public class StatusPoolTests
     }
 
     [Test]
+    public void SetCharges_LastChargeRemovedWhileBuffRemains_RefreshesTheRemainingPlateCount()
+    {
+        BuffHandlerFactory armor = SpellSinkFixture.Modifier(AttributeType.HitArmor, 2f, _created);
+        _pool.Set(null, _target, armor, 1, 0f, 4f);
+        _pool.SetCharges(_target, 3f);
+        SpellEffect plates = _pool.Get(_target, EffectElement.Plates);
+
+        _pool.SetCharges(_target, 0f);
+
+        Assert.AreSame(plates, _pool.Get(_target, armor));
+        Assert.AreEqual(1, plates.count);
+        Assert.AreEqual(1, plates.stacks);
+        _pool.Remove(_target, armor);
+        Assert.AreEqual(0, _pool.count);
+    }
+
+    [Test]
     public void Remove_Removed_KeepsOnlyTheCosmeticTail()
     {
         _pool.Set(null, _target, _factory, 1, 0.25f, 4f);

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HealerLike.Render.Creatures;
+using Fragment = HealerLike.Render.Stones.StoneFragmentPool.Fragment;
 using UnityEngine;
 
 namespace HealerLike.Render.Stones
@@ -8,27 +9,6 @@ namespace HealerLike.Render.Stones
     // the fragment pool, their ballistic flight and the shard lender. StoneEmitters holds the recipes
     public class StoneEffects : MonoBehaviour
     {
-        class Fragment
-        {
-            public GameObject gameObject;
-            public MeshFilter filter;
-            public MeshRenderer renderer;
-            public Vector3 start;
-            public Vector3 velocity;
-            public Vector3 spin;
-            public Quaternion rotation;
-            public float age;
-            public float life;
-            public float ground;
-            public bool bounce;
-            public bool split;
-            public bool isDust;
-            public Vector3 scale;
-            public MaterialPropertyBlock block = new MaterialPropertyBlock();
-            public uint seed;
-            public Mesh ownedMesh;
-        }
-
         public static readonly int MaxLiveFragments = 256;
 
         // Fragments the dust and collapse recipes of StoneEmitters spawn
@@ -46,8 +26,7 @@ namespace HealerLike.Render.Stones
         [SerializeField] GameObject _fragmentPrefab;
 
         readonly List<Fragment> _active = new List<Fragment>(MaxLiveFragments);
-        readonly Stack<Fragment> _pool = new Stack<Fragment>(MaxLiveFragments);
-        readonly Dictionary<Transform, Fragment> _shards = new Dictionary<Transform, Fragment>();
+        StoneFragmentPool _pool;
         StoneMeshCache.Lease _dustLease;
 
         readonly StoneMeshCache _stoneMeshes = new StoneMeshCache();
@@ -77,39 +56,15 @@ namespace HealerLike.Render.Stones
                 return false;
             }
 
+            if (_pool == null)
+            {
+                _pool = new StoneFragmentPool(_fragmentPrefab, transform);
+            }
             if (_dustLease == null)
             {
                 _dustLease = _stoneMeshes.Acquire(dustMeshSeed, StonePresets.Shape(1f, 1f, 1f, 0f, 1));
             }
             return true;
-        }
-
-        Fragment Take()
-        {
-            if (_pool.Count > 0)
-            {
-                return _pool.Pop();
-            }
-
-            GameObject fragmentGo = Instantiate(_fragmentPrefab, transform, false);
-            Fragment fragment = new Fragment();
-            fragment.gameObject = fragmentGo;
-            fragment.filter = fragmentGo.GetComponent<MeshFilter>();
-            fragment.renderer = fragmentGo.GetComponent<MeshRenderer>();
-            return fragment;
-        }
-
-        void Return(Fragment fragment)
-        {
-            // Scene teardown can destroy the children before the owner receives OnDestroy
-            if (fragment.gameObject == null)
-            {
-                return;
-            }
-
-            fragment.gameObject.SetActive(false);
-            fragment.filter.sharedMesh = null;
-            _pool.Push(fragment);
         }
 
         public void Spawn(Mesh mesh, Material material, Vector3 position, Quaternion rotation, Vector3 scale,
@@ -136,7 +91,7 @@ namespace HealerLike.Render.Stones
                 Release(_active[0]);
             }
 
-            Fragment fragment = Take();
+            Fragment fragment = _pool.Take();
 
             fragment.filter.sharedMesh = mesh;
             fragment.renderer.sharedMaterial = material;
@@ -169,38 +124,17 @@ namespace HealerLike.Render.Stones
                 RenderObjects.Release(fragment.ownedMesh);
                 fragment.ownedMesh = null;
             }
-            Return(fragment);
+            _pool.Return(fragment);
         }
 
-        // A shard that follows a thrown projectile; it is not simulated and goes back with ReturnShard
-        public Transform TakeShard(Mesh mesh, Color colour)
+        // A thrown delivery keeps this lease; disabling the owner revokes it before reusing the fragment.
+        public StoneFragmentPool.ShardLease BorrowShard(Mesh mesh, Color colour)
         {
             if (!isActiveAndEnabled || !HasAssets())
             {
                 return null;
             }
-
-            Fragment fragment = Take();
-            fragment.filter.sharedMesh = mesh;
-            fragment.renderer.sharedMaterial = _stoneMaterial;
-            fragment.block.Clear();
-            fragment.block.SetColor(RenderObjects.BaseColorId, colour);
-            fragment.renderer.SetPropertyBlock(fragment.block);
-            fragment.gameObject.transform.localScale = Vector3.one;
-            fragment.gameObject.SetActive(true);
-            _shards.Add(fragment.gameObject.transform, fragment);
-            return fragment.gameObject.transform;
-        }
-
-        public void ReturnShard(Transform shard)
-        {
-            if (shard == null || !_shards.TryGetValue(shard, out Fragment fragment))
-            {
-                return;
-            }
-
-            _shards.Remove(shard);
-            Return(fragment);
+            return _pool.Borrow(mesh, _stoneMaterial, colour);
         }
 
         static Vector3 PositionAt(Vector3 start, Vector3 velocity, float age, float ground, bool bounce)
@@ -273,20 +207,19 @@ namespace HealerLike.Render.Stones
             {
                 Release(_active[_active.Count - 1]);
             }
-            foreach (Fragment fragment in _pool)
+            if (_pool != null)
             {
-                if (fragment.gameObject != null)
-                {
-                    fragment.gameObject.SetActive(false);
-                }
+                _pool.RevokeShards();
             }
         }
 
         void OnDestroy()
         {
             OnDisable();
-            _shards.Clear();
-            _pool.Clear();
+            if (_pool != null)
+            {
+                _pool.Clear();
+            }
             if (_dustLease != null)
             {
                 _dustLease.Dispose();

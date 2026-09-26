@@ -24,7 +24,10 @@ public class StoneEffectsTests
     [TearDown]
     public void TearDown()
     {
-        TestHelpers.InvokePrivate(_fx, "OnDestroy");
+        if (_fx != null)
+        {
+            TestHelpers.InvokePrivate(_fx, "OnDestroy");
+        }
         Object.DestroyImmediate(_go);
         Object.DestroyImmediate(_source);
         if (_mesh != null)
@@ -84,21 +87,61 @@ public class StoneEffectsTests
     }
 
     [Test]
-    public void TakeShard_ThenReturned_ComesFromAndGoesBackToThePool()
+    public void BorrowShard_LeaseDisposed_ComesFromAndGoesBackToThePool()
     {
-        Transform shard = _fx.TakeShard(_mesh, Color.white);
+        StoneFragmentPool.ShardLease lease = _fx.BorrowShard(_mesh, Color.white);
+        Transform shard = lease.shard;
 
         Assert.IsTrue(shard.gameObject.activeSelf);
         Assert.AreSame(_mesh, shard.GetComponent<MeshFilter>().sharedMesh);
         Assert.AreEqual(0, _fx.liveCount);
 
-        _fx.ReturnShard(shard);
+        lease.Dispose();
+        Assert.IsNull(lease.shard);
         Assert.IsFalse(shard.gameObject.activeSelf);
         Assert.AreEqual(1, _fx.transform.childCount);
 
         StoneEmitters.Dust(_fx, Vector3.zero, 1);
 
         Assert.AreEqual(StoneEffects.DustPuffs, _fx.transform.childCount); // the returned shard is reused
+    }
+
+    [Test]
+    public void OnDisable_BorrowedShard_RevokesItBeforeTheFragmentIsReused()
+    {
+        StoneFragmentPool.ShardLease previous = _fx.BorrowShard(_mesh, Color.white);
+        Transform firstShard = previous.shard;
+
+        _fx.enabled = false;
+        TestHelpers.InvokePrivate(_fx, "OnDisable");
+
+        Assert.IsNull(previous.shard);
+        Assert.IsFalse(firstShard.gameObject.activeSelf);
+        Assert.IsNull(firstShard.GetComponent<MeshFilter>().sharedMesh);
+        _fx.enabled = true;
+        StoneFragmentPool.ShardLease current = _fx.BorrowShard(_mesh, Color.red);
+        Assert.AreSame(firstShard, current.shard);
+
+        previous.Dispose();
+
+        Assert.IsNotNull(current.shard);
+        Assert.IsTrue(current.shard.gameObject.activeSelf);
+        current.Dispose();
+        Assert.IsFalse(firstShard.gameObject.activeSelf);
+    }
+
+    [Test]
+    public void OnDestroy_ComponentOnly_ReleasesEveryOwnedFragmentObject()
+    {
+        StoneEmitters.ThrownContact(_fx, Vector3.zero, 1);
+        StoneFragmentPool.ShardLease shard = _fx.BorrowShard(_mesh, Color.white);
+        Assert.Greater(_go.transform.childCount, 0);
+
+        Object.DestroyImmediate(_fx);
+
+        Assert.IsNull(shard.shard);
+        Assert.AreEqual(0, _go.transform.childCount);
+        Assert.DoesNotThrow(() => shard.Dispose());
     }
 
     [Test]

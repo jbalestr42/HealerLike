@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,37 +13,15 @@ namespace HealerLike.Render.Grammar
             public float count;
         }
 
-        // ChainLightningProjectile keeps its mode private, it is read through its own serialization
-        // TODO: read ChainLightningProjectile.effectMode once ChainLightningProjectile exposes it
         public static bool IsHeld(ChainLightningProjectile chain)
         {
-            ChainModeReading reading = new ChainModeReading();
-            JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(chain), reading);
-            return reading._effectMode == ChainLightningProjectile.EffectMode.AttackRateDuration;
-        }
-
-        [Serializable]
-        class ChainModeReading
-        {
-            // Named as the serialized field of ChainLightningProjectile so the JSON matches it
-            public ChainLightningProjectile.EffectMode _effectMode =
-                ChainLightningProjectile.EffectMode.FixedDuration;
+            return ChainProjectileReading.IsHeld(chain);
         }
 
         // The prefab shooting the most per cycle, the first one on a tie
         public static GameObject DominantPrefab(ASkillFactory skill)
         {
-            GameObject dominant = null;
-            float most = 0f;
-            foreach (Shot shot in Shots(skill))
-            {
-                if (shot.count > most)
-                {
-                    most = shot.count;
-                    dominant = shot.prefab;
-                }
-            }
-            return dominant;
+            return SkillProjectiles.Dominant(Shots(skill));
         }
 
         // Every projectile prefab of the skill, in the order the data lists them
@@ -58,23 +35,10 @@ namespace HealerLike.Render.Grammar
             return prefabs;
         }
 
-        // Shots per prefab in one cycle of the skill, in the order the data lists them: each entry fires once per
-        // cycle, a step once per execution
+        // The existing cosmetic shot counts, in authored prefab order; configurable entries share executions.
         public static List<Shot> Shots(ASkillFactory skill)
         {
-            List<Shot> shots = new List<Shot>();
-            if (skill is ShootProjectileSkillFactory shoot && shoot.data.projectiles != null)
-            {
-                foreach (ShootProjectileSkillData.ProjectileData entry in shoot.data.projectiles)
-                {
-                    AddShot(shots, entry.projectilePrefab, entry.numberOfProjectileToShootPerTarget);
-                }
-            }
-            else if (skill is ConfigurableSkillFactory configurable)
-            {
-                AddShots(configurable.data.skillStepFactories, 1f, shots);
-            }
-            return shots;
+            return SkillDescriptionReader.Read(skill, null).shots;
         }
 
         // Seconds of waiting in one loop of a burst
@@ -88,11 +52,11 @@ namespace HealerLike.Render.Grammar
 
             foreach (ASkillStepFactory step in steps)
             {
-                if (step is RepeatSkillStepFactory repeat)
+                if (step is RepeatSkillStepFactory repeat && repeat.data != null)
                 {
                     total += repeat.data.count * Waits(repeat.data.skillStepFactories, data);
                 }
-                else if (step is DurationSkillStepFactory duration)
+                else if (step is DurationSkillStepFactory duration && duration.data != null)
                 {
                     total += Value(duration.data.duration, data);
                 }
@@ -106,21 +70,41 @@ namespace HealerLike.Render.Grammar
         {
             if (value is FlatValue flat)
             {
+                if (flat.data == null)
+                {
+                    return 0f;
+                }
+
                 return flat.data.value;
             }
 
             if (value is AttributeValue attribute)
             {
+                if (attribute.data == null)
+                {
+                    return 0f;
+                }
+
                 return Base(data, ReadAttribute(data, attribute.data.type, 0f)) * attribute.data.multiplier;
             }
 
             if (value is MaxHealthValue maxHealth)
             {
+                if (maxHealth.data == null)
+                {
+                    return 0f;
+                }
+
                 return Base(data, LookDerivation.Health(data)) * maxHealth.data.multiplier;
             }
 
             if (value is CurrentHealthValue currentHealth)
             {
+                if (currentHealth.data == null)
+                {
+                    return 0f;
+                }
+
                 // A unit spawns at full health, so the health it misses is none
                 float health = 0f;
                 if (!currentHealth.data.inverse)
@@ -148,81 +132,12 @@ namespace HealerLike.Render.Grammar
 
         public static int Bounces(GameObject prefab)
         {
-            if (prefab == null)
-            {
-                return 0;
-            }
-
-            BounceProjectileBehaviour bounce = prefab.GetComponent<BounceProjectileBehaviour>();
-            if (bounce == null || bounce.data == null)
-            {
-                return 0;
-            }
-            return bounce.data.bounce;
+            return ProjectileDescriptionReader.Read(prefab).bounces;
         }
 
         public static bool HasSplash(ASkillFactory skill, EntityData data)
         {
-            foreach (GameObject prefab in Prefabs(skill))
-            {
-                if (prefab.GetComponent<AreaOfEffectProjectileBehaviour>() != null)
-                {
-                    return true;
-                }
-            }
-
-            foreach (AProjectileBehaviourFactory behaviour in ItemWalker.Behaviours(data))
-            {
-                if (behaviour is AreaOfEffectProjectileBehaviourFactory)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        static void AddShots(List<ASkillStepFactory> steps, float repeats, List<Shot> shots)
-        {
-            if (steps == null)
-            {
-                return;
-            }
-
-            foreach (ASkillStepFactory step in steps)
-            {
-                if (step is RepeatSkillStepFactory repeat)
-                {
-                    AddShots(repeat.data.skillStepFactories, repeats * repeat.data.count, shots);
-                }
-                else if (step is ShootProjectileSkillStepFactory shoot && shoot.data.projectiles != null
-                         && shoot.data.projectiles.Count > 0)
-                {
-                    // The step cycles its entries, one per execution
-                    float executions = repeats / shoot.data.projectiles.Count;
-                    foreach (ShootProjectileSkillStepData.ProjectileData entry in shoot.data.projectiles)
-                    {
-                        AddShot(shots, entry.projectilePrefab, executions * entry.numberOfProjectileToShootPerTarget);
-                    }
-                }
-            }
-        }
-
-        static void AddShot(List<Shot> shots, GameObject prefab, float count)
-        {
-            if (prefab == null)
-            {
-                return;
-            }
-
-            foreach (Shot shot in shots)
-            {
-                if (shot.prefab == prefab)
-                {
-                    shot.count += count;
-                    return;
-                }
-            }
-            shots.Add(new Shot() { prefab = prefab, count = count });
+            return SkillDescriptionReader.HasSplash(Shots(skill), data);
         }
 
         // The base a value scales, or 1 when there is no unit to read it on

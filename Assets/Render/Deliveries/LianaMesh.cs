@@ -136,14 +136,14 @@ namespace HealerLike.Render.Deliveries
 
         public void Dispose()
         {
-            if (!_container)
+            if (_container)
             {
-                return;
+                _container.gameObject.SetActive(false);
+                RenderObjects.Release(_container.gameObject);
             }
-
-            _container.gameObject.SetActive(false);
-            RenderObjects.Release(_container.gameObject);
             RenderObjects.Release(_mesh);
+            _container = null;
+            _mesh = null;
         }
     }
 }
