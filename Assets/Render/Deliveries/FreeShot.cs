@@ -55,6 +55,8 @@ namespace HealerLike.Render.Deliveries
             }
             if (_tip.partCount == 0)
             {
+                _source?.Dispose();
+                _source = null;
                 return false;
             }
 
@@ -111,6 +113,8 @@ namespace HealerLike.Render.Deliveries
 
         void OnDestroy()
         {
+            _source?.Dispose();
+            _source = null;
             if (_tip != null)
             {
                 _tip.Release();
@@ -163,6 +167,12 @@ namespace HealerLike.Render.Deliveries
                 : _source != null && _source.TryGet(out origin);
             if (!resolved)
             {
+                if (_source != null && _source.isExplicit)
+                {
+                    _hasLanded = true;
+                    Hide();
+                    return _lastPosition;
+                }
                 return transform.position;
             }
             float remaining = 1f - Mathf.Clamp01(_travelled / Mathf.Max(0.001f, _flightDistance));

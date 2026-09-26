@@ -119,7 +119,9 @@ public class CreatureBuilderTests
                     $"{side} {head}"
                 );
                 Assert.Greater(anchors.neck.y, anchors.foot.y, $"{side} {head}");
-                Assert.GreaterOrEqual(anchors.castPoint.y, anchors.headCentre.y, $"{side} {head}");
+                string sourceId = CreatureSources.Select(_builder.rig, 0);
+                Assert.IsTrue(CreatureSources.Resolve(_builder.rig, sourceId, out Vector3 outlet));
+                Assert.Less(Vector3.Distance(outlet, anchors.castPoint), 0.00001f, $"{side} {head}");
             }
         }
     }

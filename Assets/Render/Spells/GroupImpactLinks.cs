@@ -63,7 +63,7 @@ namespace HealerLike.Render.Spells
                 {
                     SpellEffect link = impacts.ShowLink(start, EffectPlacement.Anchors(recipient.target).bodyCentre,
                         recipient.family, false, fromScreen);
-                    if (fromScreen && link)
+                    if (link)
                     {
                         link.SetCastSource(caster);
                     }

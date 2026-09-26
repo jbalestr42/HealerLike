@@ -149,7 +149,8 @@ namespace HealerLike.Render.Creatures
                 centre = pose.position;
             }
 
-            return Add(id, Primitive.Capsule, centre, size, colour, rotation.eulerAngles, 0f, role, shape: shape);
+            return Add(id, Primitive.Capsule, centre, size, colour, rotation.eulerAngles, 0f, role,
+                shape: shape, isSource: isSource, sourceAnchor: sourceAnchor, sourceFamily: sourceFamily);
         }
 
         // Move a completed fragment while preserving its relative part placements and the root pivot.

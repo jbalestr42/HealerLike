@@ -68,6 +68,15 @@ namespace HealerLike.Render.Spells
                 _groups.Add(source, target, recipe.family);
             }
 
+            // Armless creature healers have no plant gesture. The event identifies owner/recipient only,
+            // so direct and periodic positive health outcomes use that same primary anatomical source.
+            if (resource == ResourceKind.Health && preClampAmount > 0f && CreatureSources.HasExplicit(source, true))
+            {
+                SpellEffect link = ShowLink(EffectPlacement.Anchors(source).castPoint,
+                    EffectPlacement.Anchors(target).bodyCentre, recipe.family, false);
+                if (link) link.SetCastSource(source);
+            }
+
             EffectPlacement.Place(effect, _parent, EffectPlacement.Anchors(target));
             effect.transform.localScale *= recipe.scale;
             if (recipe.element == EffectElement.Burst)

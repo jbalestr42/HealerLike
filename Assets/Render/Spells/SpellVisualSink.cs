@@ -159,10 +159,11 @@ namespace HealerLike.Render.Spells
                 int previousStacks = _statuses.Stacks(target, factory);
                 _statuses.Set(source, target, factory, stacks, elapsedSeconds, durationSeconds);
                 SpellEffect status = _statuses.Get(target, factory);
-                if (stacks > previousStacks && status && CharacterView.ScreenSource(source))
+                if (stacks > previousStacks && status
+                    && (CharacterView.ScreenSource(source) || CreatureSources.HasExplicit(source)))
                 {
                     SpellEffect link = _impacts.ShowLink(EffectPlacement.Anchors(source).castPoint,
-                        EffectPlacement.Anchors(target).bodyCentre, status.recipe.family, false, true);
+                        EffectPlacement.Anchors(target).bodyCentre, status.recipe.family, false, CharacterView.ScreenSource(source));
                     if (link)
                     {
                         link.SetCastSource(source);

@@ -69,6 +69,24 @@ namespace HealerLike.Render.Creatures
         }
 
         [Test]
+        public void Reset_RestoresSourceMetadata_AndLiveAnchorReadsReuseAcceptedStorage()
+        {
+            GrowthStoneVocabulary.Apply(_vocabulary);
+            foreach (var head in _vocabulary.heads.Values)
+            {
+                Assert.IsTrue(head.plant.Any(p => p.isSource));
+                Assert.IsTrue(head.stone.Any(p => p.isSource));
+            }
+            _recipe = LookComposer.Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.GiftHeal,
+                CountBand.Many), _vocabulary);
+            Assert.AreEqual(15, _recipe.parts.Count(p => p.isSource));
+            _rig = RenderTestAssets.CreateRig(_recipe, _parent.transform, _material);
+            _rig.TryGetAnchors(out EffectAnchors first);
+            _rig.TryGetAnchors(out EffectAnchors second);
+            Assert.AreSame(first.castSources, second.castSources);
+        }
+
+        [Test]
         public void Migration_PreservesEveryExistingFieldAndPalette_AndIsIdempotent()
         {
             foreach (var entry in _vocabulary.heads.Values)

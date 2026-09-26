@@ -69,11 +69,7 @@ namespace HealerLike.Render.Deliveries
                 Vector3 shoulder = _rig.ArmSocket(_definitions[i]);
                 if (_sources[i] != null && !_sources[i].TryGet(out shoulder))
                 {
-                    _arms[i].Dispose();
-                    _arms[i] = null;
-                    _sources[i].Dispose();
-                    _sources[i] = null;
-                    _tokens[i] = 0;
+                    Revoke(_tokens[i]);
                     continue;
                 }
                 if (_branchRoots[i].HasValue)
@@ -227,6 +223,19 @@ namespace HealerLike.Render.Deliveries
                 {
                     arm.Dispose();
                 }
+            }
+        }
+        void Revoke(int token)
+        {
+            for (int i = 0; i < _arms.Length; i++)
+            {
+                if (_tokens[i] != token) continue;
+                _arms[i]?.Dispose();
+                _arms[i] = null;
+                _sources[i]?.Dispose();
+                _sources[i] = null;
+                _tokens[i] = 0;
+                _branchRoots[i] = null;
             }
         }
         void CreateArm(int slot, int definitionIndex)

@@ -52,7 +52,6 @@ namespace HealerLike.Render.Creatures
                 localEuler = euler,
                 glow = glow,
                 role = role,
-                isSource = role == PartRole.Tip || role == PartRole.Crown,
             };
         }
 

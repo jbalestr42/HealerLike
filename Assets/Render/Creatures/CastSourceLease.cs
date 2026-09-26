@@ -24,9 +24,8 @@ namespace HealerLike.Render.Creatures
 
         public static CastSourceLease From(GameObject owner, uint sequence = 0)
         {
-            ARigHost host = owner ? owner.GetComponentInChildren<ARigHost>() : null;
-            Entity entity = owner ? owner.GetComponent<Entity>() : null;
-            if (!host && entity && entity.model) host = entity.model.GetComponentInChildren<ARigHost>();
+            ARigHost host = CreatureSources.Host(owner);
+            if (host) host.SyncGeometry();
             CastSourceLease lease = new CastSourceLease(host ? host.rig : null, sequence);
             if (lease._rig == null) lease._fallback = owner;
             return lease;

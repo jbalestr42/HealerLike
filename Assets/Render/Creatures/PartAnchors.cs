@@ -36,7 +36,9 @@ namespace HealerLike.Render.Creatures
             Transform firstPivot,
             IReadOnlyList<Renderer> renderers,
             float cellSize,
-            out EffectAnchors anchors
+            out EffectAnchors anchors,
+            IReadOnlyList<Vector3> surfacePoints = null,
+            Vector3[] retainedSources = null
         )
         {
             anchors = new EffectAnchors { castSources = System.Array.Empty<Vector3>() };
@@ -78,37 +80,34 @@ namespace HealerLike.Render.Creatures
             anchors.bodyCentre = bodyBounds.center;
             anchors.bodyRadius = Mathf.Max(bodyBounds.extents.x, bodyBounds.extents.z);
             anchors.neck = firstPivot.TransformPoint((neck - parts[0].localPosition) * cellSize);
-            List<Vector3> sources = new List<Vector3>();
+            int explicitCount = 0;
+            foreach (CreaturePart part in parts) if (part.isSource) explicitCount++;
+            Vector3[] sources = retainedSources ?? new Vector3[explicitCount > 0 ? explicitCount : head >= 0 ? 1 : 0];
+            int written = 0;
             for (int i = 0; i < renderers.Count && i < parts.Length; i++)
             {
-                if (!parts[i].isSource)
-                {
-                    continue;
-                }
-
-                sources.Add(renderers[i].transform.TransformPoint(CreatureSources.Local(parts[i])));
+                if (!parts[i].isSource) continue;
+                Vector3 local = surfacePoints != null ? surfacePoints[i] : CreatureSources.Local(parts[i]);
+                sources[written++] = renderers[i].transform.TransformPoint(local);
             }
-
-            if (sources.Count == 0 && head >= 0)
+            if (explicitCount == 0 && head >= 0)
             {
-                Bounds local = renderers[head].localBounds;
                 Bounds bounds = renderers[head].bounds;
-                sources.Add(bounds.center + Vector3.up * bounds.extents.y);
+                sources[0] = bounds.center + Vector3.up * bounds.extents.y;
             }
-
-            anchors.castSources = sources.ToArray();
+            anchors.castSources = sources;
             if (head < 0)
             {
                 anchors.headCentre = anchors.neck;
                 anchors.headRadius = 0f;
-                anchors.castPoint = sources.Count > 0 ? sources[0] : anchors.neck;
+                anchors.castPoint = sources.Length > 0 ? sources[0] : anchors.neck;
                 return true;
             }
 
             Bounds headBounds = renderers[head].bounds;
             anchors.headCentre = headBounds.center;
             anchors.headRadius = Mathf.Max(headBounds.extents.x, Mathf.Max(headBounds.extents.y, headBounds.extents.z));
-            anchors.castPoint = sources.Count > 0 ? sources[0] : headBounds.center + Vector3.up * headBounds.extents.y;
+            anchors.castPoint = sources.Length > 0 ? sources[0] : headBounds.center + Vector3.up * headBounds.extents.y;
             return true;
         }
     }

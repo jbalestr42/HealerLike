@@ -27,6 +27,8 @@ namespace HealerLike.Render.Creatures
             return _pool != null ? _pool.GetArm(index) : null;
         }
 
+        public LianaArm GetDeliveryArm(int token) => _pool?.GetDeliveryArm(token);
+
         // Builds the rig and its arms once, a later call keeps them
         protected bool BuildRig(
             CreatureRecipe recipe,

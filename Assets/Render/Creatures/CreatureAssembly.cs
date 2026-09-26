@@ -15,6 +15,7 @@ namespace HealerLike.Render.Creatures
         Transform[] _geometry = Array.Empty<Transform>();
         Renderer[] _renderers = Array.Empty<Renderer>();
         Transform[] _buds = Array.Empty<Transform>();
+        Vector3[] _castSources = Array.Empty<Vector3>();
         public Transform root { get; private set; }
         public Transform sway { get; private set; }
         public CreatureRigData data { get; private set; }
@@ -107,6 +108,14 @@ namespace HealerLike.Render.Creatures
                 }
             }
 
+            int sources = 0;
+            bool hasHead = false;
+            foreach (CreaturePart part in accepted.parts)
+            {
+                if (part.isSource) sources++;
+                hasHead |= part.role == PartRole.Head || part.role == PartRole.Tip;
+            }
+            _castSources = new Vector3[sources > 0 ? sources : hasHead ? 1 : 0];
             data = accepted;
             seed = nextSeed;
             MeasureAppearance();
@@ -190,7 +199,9 @@ namespace HealerLike.Render.Creatures
                 _keptParts[0].pivot,
                 _renderers,
                 cellSize,
-                out anchors
+                out anchors,
+                data.sourcePoints,
+                _castSources
             );
         }
 

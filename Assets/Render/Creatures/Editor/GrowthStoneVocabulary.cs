@@ -68,6 +68,7 @@ namespace HealerLike.Render.Creatures
             vocabulary.rootHip = 0.28f;
             vocabulary.rootKnee = 0.22f;
             vocabulary.armCount = 2;
+            CreatureSourceMigration.Apply(vocabulary);
             vocabulary.layout = new LookVocabulary.LayoutEntry
             {
                 maxBranch = 1.65f,

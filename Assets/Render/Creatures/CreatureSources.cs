@@ -18,6 +18,19 @@ namespace HealerLike.Render.Creatures
             return point;
         }
 
+        public static ARigHost Host(GameObject owner)
+        {
+            Entity entity = owner ? owner.GetComponent<Entity>() : null;
+            ARigHost host = entity && entity.model ? entity.model.GetComponentInChildren<ARigHost>() : null;
+            return host ? host : owner ? owner.GetComponentInChildren<ARigHost>() : null;
+        }
+
+        public static bool HasExplicit(GameObject owner, bool armless = false)
+        {
+            ARigHost host = Host(owner);
+            return host && host.rig != null && (!armless || host.rig.armCount == 0) && HasExplicit(host.rig);
+        }
+
         public static bool HasExplicit(CreatureRig rig)
         {
             foreach (CreaturePart part in rig.parts) if (part.isSource) return true;

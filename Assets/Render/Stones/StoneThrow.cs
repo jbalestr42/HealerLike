@@ -78,12 +78,27 @@ namespace HealerLike.Render.Stones
             }
         }
 
+        // Manual recipes retain their old highest-head centre; authored sources never enter this path.
+        static Vector3 LegacyOrigin(CreatureRig rig)
+        {
+            int selected = -1;
+            bool head = false;
+            for (int i = 0; i < rig.parts.Count; i++)
+            {
+                bool candidateHead = rig.parts[i].role == PartRole.Head;
+                if (selected < 0 || (candidateHead && !head) || (candidateHead == head
+                    && rig.partTransforms[i].position.y > rig.partTransforms[selected].position.y))
+                { selected = i; head = candidateHead; }
+            }
+            return rig.partTransforms[selected].GetComponent<Renderer>().bounds.center;
+        }
+
         void Follow(Delivery delivery, Vector3 projectilePosition)
         {
             Transform shard = delivery.shardLease.shard;
             delivery.travelled += Vector3.Distance(projectilePosition, delivery.previous);
             delivery.previous = projectilePosition;
-            if (delivery.source.TryGet(out Vector3 origin))
+            if (delivery.source.isExplicit && delivery.source.TryGet(out Vector3 origin))
                 projectilePosition += (origin - delivery.logicalStart)
                     * (1f - Mathf.Clamp01(delivery.travelled / Mathf.Max(0.001f, delivery.distance)));
             Vector3 travel = projectilePosition - shard.position;
@@ -147,6 +162,7 @@ namespace HealerLike.Render.Stones
             StoneMeshCache.Lease lease = _effects.stoneMeshes.Acquire(shardSeed, shardShape);
             if (lease == null)
             {
+                source.Dispose();
                 return false;
             }
 
@@ -154,11 +170,12 @@ namespace HealerLike.Render.Stones
             if (shardLease == null)
             {
                 lease.Dispose();
+                source.Dispose();
                 return false;
             }
 
             Transform shard = shardLease.shard;
-            shard.position = origin;
+            shard.position = source.isExplicit ? origin : LegacyOrigin(_builder.rig);
             shard.rotation = Quaternion.identity;
             Delivery delivery = new Delivery();
             delivery.shardLease = shardLease;

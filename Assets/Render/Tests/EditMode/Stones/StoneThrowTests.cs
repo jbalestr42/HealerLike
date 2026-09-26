@@ -51,6 +51,38 @@ public class StoneThrowTests
     }
 
     [Test]
+    public void ExplicitSurface_StartsOnGeometry_RecomposesDuringFlight_AndReleasesWhenRemoved()
+    {
+        CreatureRig rig = _body.GetComponent<CreatureBuilder>().rig;
+        int index = 3;
+        _recipe.parts[index].isSource = true;
+        _recipe.parts[index].sourceId = "mineral-outlet";
+        _recipe.parts[index].sourceAnchor = ShapeAnchor.Bottom;
+        _recipe.parts[index].shape = ShapeProfile.Block(0.2f, 0.3f, 0.1f, 0.7f, 0.4f);
+        _recipe.parts[index].localEuler = new Vector3(15f, 30f, 70f);
+        Assert.IsTrue(rig.Recompose(_recipe, _material, _material, RenderTestAssets.LoadMeshes()));
+        Vector3 owner = _owner.transform.position;
+        Assert.IsTrue(_throw.BeginDelivery(42, DeliveryStyle.Thrown, _projectile.transform, Vector3.right * 10f));
+        Transform shard = _fxObject.GetComponentInChildren<MeshFilter>().transform;
+        CreatureSources.Resolve(rig, "mineral-outlet", out Vector3 outlet);
+        Assert.Less(Vector3.Distance(outlet, shard.position), 0.00001f);
+        Assert.AreEqual(Vector3.zero, _projectile.transform.position);
+        _recipe.parts[index].dimensions *= 1.3f;
+        Assert.IsTrue(rig.Recompose(_recipe, _material, _material, RenderTestAssets.LoadMeshes()));
+        _projectile.transform.position = Vector3.right * 2f;
+        TestHelpers.InvokePrivate(_throw, "LateUpdate");
+        CreatureSources.Resolve(rig, "mineral-outlet", out outlet);
+        Assert.Less(Vector3.Distance(Vector3.right * 2f + outlet * 0.8f, shard.position), 0.00001f);
+        Assert.AreEqual(Vector3.right * 2f, _projectile.transform.position);
+        Assert.AreEqual(owner, _owner.transform.position);
+        _recipe.parts[index].isSource = false;
+        Assert.IsTrue(rig.Recompose(_recipe, _material, _material, RenderTestAssets.LoadMeshes()));
+        TestHelpers.InvokePrivate(_throw, "LateUpdate");
+        Assert.IsFalse(shard.gameObject.activeSelf);
+        Assert.AreEqual(0, _fx.liveCount);
+    }
+
+    [Test]
     public void BeginDelivery_RigWithoutArms_ClaimsWhatTheBuilderRefuses()
     {
         CreatureBuilder builder = _body.GetComponent<CreatureBuilder>();

@@ -25,6 +25,7 @@ namespace HealerLike.Render.Spells
         float _removalAge;
         float _fallDistance = 1f;
         Vector3 _linkStart;
+        public Vector3 castOrigin => _linkStart;
         Vector3 _linkEnd;
 
         int _stacks;
