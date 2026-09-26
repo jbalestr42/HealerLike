@@ -23,8 +23,8 @@ MonoBehaviour:
     SerializationNodes: []
   uniqueID: aaeeeac0-a073-4009-8c09-535e7969dcd0
   data:
-    durationType: 2
-    duration: 0
+    durationType: 1
+    duration: 6
     isPeriodic: 1
     periodDuration: 1.5
     buffFactoryList:
