@@ -77,8 +77,9 @@ public static class DataIconBaker
     // never schedules another
     public static void Bake(bool force)
     {
-        Directory.CreateDirectory(OutputFolder);
-        AssetDatabase.Refresh();
+        EnsureFolder("Assets", "Resources");
+        EnsureFolder("Assets/Resources", "UIToolkit");
+        EnsureFolder("Assets/Resources/UIToolkit", "GeneratedIcons");
         DataIconCatalog catalog = AssetDatabase.LoadAssetAtPath<DataIconCatalog>(CatalogPath);
         if (!catalog)
         {
@@ -143,8 +144,14 @@ public static class DataIconBaker
         }
 
         Texture2D texture = ProceduralDataIcon.Create(descriptor);
-        File.WriteAllBytes(outputPath, texture.EncodeToPNG());
-        UnityEngine.Object.DestroyImmediate(texture);
+        try
+        {
+            File.WriteAllBytes(outputPath, texture.EncodeToPNG());
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(texture);
+        }
         AssetDatabase.ImportAsset(outputPath, ImportAssetOptions.ForceSynchronousImport);
         TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(outputPath);
         importer.textureType = TextureImporterType.Default;
@@ -156,6 +163,14 @@ public static class DataIconBaker
         entry.generated = AssetDatabase.LoadAssetAtPath<Texture2D>(outputPath);
         entry.fingerprint = fingerprint;
         return true;
+    }
+
+    static void EnsureFolder(string parent, string name)
+    {
+        if (!AssetDatabase.IsValidFolder(parent + "/" + name))
+        {
+            AssetDatabase.CreateFolder(parent, name);
+        }
     }
 
     static DataIconCatalogEntry FindEntry(DataIconCatalog catalog, ScriptableObject data)

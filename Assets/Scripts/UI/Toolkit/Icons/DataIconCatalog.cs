@@ -13,7 +13,11 @@ public class DataIconCatalog : ScriptableObject
         {
             if (entry != null && entry.source && DataIconDescriptor.From(entry.source).key == descriptor.key)
             {
-                return GetTexture(entry);
+                Texture2D texture = GetTexture(entry);
+                if (texture)
+                {
+                    return texture;
+                }
             }
         }
 
@@ -31,7 +35,11 @@ public class DataIconCatalog : ScriptableObject
         {
             if (entry != null && entry.source == source)
             {
-                return GetTexture(entry);
+                Texture2D texture = GetTexture(entry);
+                if (texture)
+                {
+                    return texture;
+                }
             }
         }
 

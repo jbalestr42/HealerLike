@@ -38,19 +38,24 @@ public static class ToolkitUiInstaller
         }
 
         SceneSetup[] setup = EditorSceneManager.GetSceneManagerSetup();
-        if (!AssetDatabase.IsValidFolder("Assets/Scenes/Toolkit"))
+        try
         {
-            AssetDatabase.CreateFolder("Assets/Scenes", "Toolkit");
-        }
+            if (!AssetDatabase.IsValidFolder("Assets/Scenes/Toolkit"))
+            {
+                AssetDatabase.CreateFolder("Assets/Scenes", "Toolkit");
+            }
 
-        if (CreateScene("Assets/Scenes/Main.unity", ToolkitSceneNavigation.GameplayPath))
-        {
-            CreateScene("Assets/Scenes/MenuScene.unity", ToolkitSceneNavigation.MenuPath);
+            if (CreateScene("Assets/Scenes/Main.unity", ToolkitSceneNavigation.GameplayPath))
+            {
+                CreateScene("Assets/Scenes/MenuScene.unity", ToolkitSceneNavigation.MenuPath);
+            }
         }
-
-        if (setup.Length > 0)
+        finally
         {
-            EditorSceneManager.RestoreSceneManagerSetup(setup);
+            if (setup.Length > 0)
+            {
+                EditorSceneManager.RestoreSceneManagerSetup(setup);
+            }
         }
     }
 
@@ -59,15 +64,29 @@ public static class ToolkitUiInstaller
     [MenuItem("Tools/UI Toolkit/Refresh Gameplay Demo from Main")]
     public static void RefreshGameplayDemo()
     {
-        if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+        {
+            return;
+        }
         SceneSetup[] setup = EditorSceneManager.GetSceneManagerSetup();
-        System.IO.File.Copy("Assets/Scenes/Main.unity", ToolkitSceneNavigation.GameplayPath, true);
-        AssetDatabase.ImportAsset(ToolkitSceneNavigation.GameplayPath, ImportAssetOptions.ForceUpdate);
-        Scene scene = EditorSceneManager.OpenScene(ToolkitSceneNavigation.GameplayPath, OpenSceneMode.Single);
-        Install(scene);
-        if (!EditorSceneManager.SaveScene(scene))
-            throw new System.InvalidOperationException("Could not save the refreshed Toolkit gameplay demo");
-        if (setup.Length > 0) EditorSceneManager.RestoreSceneManagerSetup(setup);
+        try
+        {
+            System.IO.File.Copy("Assets/Scenes/Main.unity", ToolkitSceneNavigation.GameplayPath, true);
+            AssetDatabase.ImportAsset(ToolkitSceneNavigation.GameplayPath, ImportAssetOptions.ForceUpdate);
+            Scene scene = EditorSceneManager.OpenScene(ToolkitSceneNavigation.GameplayPath, OpenSceneMode.Single);
+            Install(scene);
+            if (!EditorSceneManager.SaveScene(scene))
+            {
+                throw new System.InvalidOperationException("Could not save the refreshed Toolkit gameplay demo");
+            }
+        }
+        finally
+        {
+            if (setup.Length > 0)
+            {
+                EditorSceneManager.RestoreSceneManagerSetup(setup);
+            }
+        }
     }
 
     static bool CreateScene(string source, string destination)

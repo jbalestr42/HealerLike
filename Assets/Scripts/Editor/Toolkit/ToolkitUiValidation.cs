@@ -32,7 +32,7 @@ public static class ToolkitUiValidation
         {
             string path = AssetDatabase.GUIDToAssetPath(guid);
             VisualTreeAsset tree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(path);
-            if (tree.CloneTree().childCount == 0)
+            if (tree == null || tree.CloneTree().childCount == 0)
             {
                 Debug.LogError($"[ToolkitUiValidation] Empty UI layout: {path}");
                 return false;
