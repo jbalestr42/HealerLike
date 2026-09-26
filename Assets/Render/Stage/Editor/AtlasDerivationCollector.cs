@@ -27,7 +27,8 @@ namespace HealerLike.Render.Stage
             Document document = new Document();
             document.generatedAt = DateTime.UtcNow.ToString("o");
             document.commit = AtlasAssetCatalog.Commit();
-            CreatureLooks looks = AtlasAssetCatalog.Required<CreatureLooks>("Assets/Render/Creatures/Data/CreatureLooks.asset");
+            CreatureLooks looks = AtlasAssetCatalog.Required<CreatureLooks>(
+                "Assets/Render/Creatures/Data/CreatureLooks.asset");
             LookVocabulary vocabulary = looks.vocabulary;
             if (vocabulary == null)
             {
@@ -70,7 +71,8 @@ namespace HealerLike.Render.Stage
                 }
                 if (primary == null)
                 {
-                    document.diagnostics.Add(path + ": passive-only unit without primary skill; supported Bud fallback.");
+                    document.diagnostics.Add(path
+                        + ": passive-only unit without primary skill; supported Bud fallback.");
                 }
             }
             foreach (string path in AtlasAssetCatalog.Paths<ABuffHandlerFactory>("Assets/Data"))

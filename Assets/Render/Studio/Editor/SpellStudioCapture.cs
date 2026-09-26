@@ -24,28 +24,30 @@ namespace HealerLike.Render.Studio.Editor
             string output = Path.GetFullPath("Logs/SpellStudioCaptures");
             Directory.CreateDirectory(output);
             SpellStudioPreset preset = ScriptableObject.CreateInstance<SpellStudioPreset>();
-            preset.vocabulary = vocabulary;
-            SpellStudioPreview preview = new SpellStudioPreview();
-            preview.Init();
-            foreach (EffectElement element in Enum.GetValues(typeof(EffectElement)))
+            try
             {
-                preset.element = element;
-                preset.family = SpellStudioSamples.Family(element);
-                preset.stacks = 3;
-                preset.charges = 3;
-                preset.amount = 0.5f;
-                preset.tempo = EffectTempo.Once;
-                preview.Refresh();
-                Texture2D image = preview.Capture(preset, preset.previewDuration * 0.4f, 960, 720);
-                if (image != null)
+                preset.vocabulary = vocabulary;
+                using (SpellStudioPreview preview = new SpellStudioPreview())
                 {
-                    File.WriteAllBytes(Path.Combine(output, element + ".png"), image.EncodeToPNG());
-                    UnityEngine.Object.DestroyImmediate(image);
+                    preview.Init();
+                    foreach (EffectElement element in Enum.GetValues(typeof(EffectElement)))
+                    {
+                        preset.element = element;
+                        preset.family = SpellStudioSamples.Family(element);
+                        preset.stacks = 3;
+                        preset.charges = 3;
+                        preset.amount = 0.5f;
+                        preset.tempo = EffectTempo.Once;
+                        preview.Refresh();
+                        StudioCaptureOutput.Write(preview.Capture(preset, preset.previewDuration * 0.4f, 960, 720),
+                            Path.Combine(output, element + ".png"));
+                    }
                 }
             }
-
-            preview.Dispose();
-            UnityEngine.Object.DestroyImmediate(preset);
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(preset);
+            }
         }
     }
 }

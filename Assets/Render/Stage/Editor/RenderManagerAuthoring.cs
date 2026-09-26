@@ -53,7 +53,8 @@ namespace HealerLike.Render.Stage
                 data.FindProperty("_meshes").objectReferenceValue =
                     RenderAssets.Load<Object>(EnvironmentAuthoring.MeshesPath);
                 data.FindProperty("_dressing").objectReferenceValue = dressing;
-                data.FindProperty("_environmentPrefab").objectReferenceValue = environment.GetComponent<EnvironmentRoot>();
+                data.FindProperty("_environmentPrefab").objectReferenceValue
+                    = environment.GetComponent<EnvironmentRoot>();
                 data.FindProperty("_look").objectReferenceValue = look;
                 data.FindProperty("_zones").objectReferenceValue = zones;
                 data.FindProperty("_grass").objectReferenceValue = grass;

@@ -107,20 +107,23 @@ namespace HealerLike.Render.Studio.Editor
                     continue;
                 }
 
-                CreatureRecipe recipe = preset.Compose();
-                CreatureStudioPreview preview = new CreatureStudioPreview();
-                preview.Init();
-                preview.side = preset.Channels().side;
-                Texture2D image = preview.Capture(recipe, 1.2f, 800, 700);
-                if (image != null)
+                CreatureRecipe recipe = null;
+                try
                 {
-                    File.WriteAllBytes(Path.Combine(folder, Names[i] + ".png"), image.EncodeToPNG());
-                    Object.DestroyImmediate(image);
+                    recipe = preset.Compose();
+                    using (CreatureStudioPreview preview = new CreatureStudioPreview())
+                    {
+                        preview.Init();
+                        preview.side = preset.Channels().side;
+                        StudioCaptureOutput.Write(preview.Capture(recipe, 1.2f, 800, 700),
+                            Path.Combine(folder, Names[i] + ".png"));
+                    }
                 }
-
-                preview.Dispose();
-                Object.DestroyImmediate(recipe);
-                Object.DestroyImmediate(preset);
+                finally
+                {
+                    Object.DestroyImmediate(recipe);
+                    Object.DestroyImmediate(preset);
+                }
             }
         }
     }

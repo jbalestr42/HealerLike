@@ -7,7 +7,7 @@ namespace HealerLike.Render.Studio.Editor
 {
     // The real creature rig in a private scene, built from a private copy of the recipe and sampled by the
     // studio timeline at a fixed 60 steps a second, so any seek lands on the same pose
-    public class CreatureStudioPreview : IPreviewSubject
+    public class CreatureStudioPreview : IPreviewSubject, System.IDisposable
     {
         static readonly Color background = new Color(0.075f, 0.095f, 0.115f);
 

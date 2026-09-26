@@ -70,7 +70,8 @@ namespace HealerLike.Render.Stage
             {
                 hasFailure = true;
                 Object.Destroy(image);
-                Debug.LogError($"[StageMotionOutput] Game view {frame.width}x{frame.height} does not match camera aspect {camera.aspect}.");
+                Debug.LogError($"[StageMotionOutput] Game view {frame.width}x{frame.height}"
+                    + $" does not match camera aspect {camera.aspect}.");
                 yield break;
             }
             frame.completedFrame = Time.frameCount;
@@ -81,21 +82,44 @@ namespace HealerLike.Render.Stage
 
         public Texture2D Load(string file)
         {
+            byte[] bytes = File.ReadAllBytes(Path.Combine(_folder, file));
             Texture2D image = new Texture2D(2, 2, TextureFormat.RGB24, false);
-            image.LoadImage(File.ReadAllBytes(Path.Combine(_folder, file)));
-            return image;
+            bool loaded = false;
+            try
+            {
+                loaded = image.LoadImage(bytes);
+                if (!loaded)
+                {
+                    throw new InvalidDataException("Cannot decode screenshot: " + file);
+                }
+                return image;
+            }
+            finally
+            {
+                if (!loaded)
+                {
+                    Object.Destroy(image);
+                }
+            }
         }
 
         public Vector2 Compare(string first, string second)
         {
-            Texture2D a = Load(first);
-            Texture2D b = Load(second);
-            Vector2 measure = a.width == b.width && a.height == b.height
-                ? StageMotionMeasure.Difference(a.GetPixels32(), b.GetPixels32(), a.width, a.height,
-                    manifest.grassRegion) : new Vector2(-1f, -1f);
-            Object.Destroy(a);
-            Object.Destroy(b);
-            return measure;
+            Texture2D a = null;
+            Texture2D b = null;
+            try
+            {
+                a = Load(first);
+                b = Load(second);
+                return a.width == b.width && a.height == b.height
+                    ? StageMotionMeasure.Difference(a.GetPixels32(), b.GetPixels32(), a.width, a.height,
+                        manifest.grassRegion) : new Vector2(-1f, -1f);
+            }
+            finally
+            {
+                Object.Destroy(a);
+                Object.Destroy(b);
+            }
         }
 
         public void Write()
