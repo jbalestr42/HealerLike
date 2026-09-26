@@ -46,7 +46,12 @@ namespace HealerLike.Render.Stage
                 System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             if (getter != null)
             {
-                _inputSettings = getter.Invoke(null, null) as SerializedObject;
+                SerializedObject cached = getter.Invoke(null, null) as SerializedObject;
+                if (cached != null)
+                {
+                    // Unity owns the cached wrapper. This scope owns a separate iterator over the same targets.
+                    _inputSettings = new SerializedObject(cached.targetObjects);
+                }
             }
             if (_inputSettings != null)
             {
