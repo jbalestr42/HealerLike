@@ -42,7 +42,7 @@ namespace HealerLike.Render.Stage
 
         [Serializable] public sealed class Manifest
         {
-            public string revision = Environment.GetEnvironmentVariable("RENDER_CAPTURE_REVISION") ?? "unspecified";
+            public string revision = System.Environment.GetEnvironmentVariable("RENDER_CAPTURE_REVISION") ?? "unspecified";
             public bool isPassed;
             public string input = "Multi-frame synthetic Touch samples through StandaloneInputModule and StageTouchInput; no Android OS input";
             public List<string> interventions = new List<string>();
