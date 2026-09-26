@@ -24,6 +24,11 @@ public class StudioPrefsTests
         Assert.IsTrue(StudioPrefs.IsWholeObject(json));
     }
 
+    [TestCase("{\"items\" []}")]
+    [TestCase("{[}]}")]
+    [TestCase("{\"items\":")]
+    [TestCase("{}{}")]
+    [TestCase("{\"items\": [{\"json\": \"{}\"}]} trailing")]
     [TestCase("")]
     [TestCase("{\"items\":[{\"json\":\"x\"}")]
     [TestCase("{\"name\":\"cut")]

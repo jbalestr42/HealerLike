@@ -113,7 +113,7 @@ namespace HealerLike.Render.Stage
             };
             for (int i = 0; i < rig.partTransforms.Count; i++)
             {
-                CreaturePart part = rig.recipe.parts[i];
+                CreaturePart part = rig.parts[i];
                 frame.parts.Add(new PartScale { id = part.id, role = part.role.ToString(),
                     scale = rig.partTransforms[i].localScale, authoredScale = part.dimensions * rig.cellSize });
             }

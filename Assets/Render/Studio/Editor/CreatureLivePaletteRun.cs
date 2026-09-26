@@ -45,8 +45,7 @@ namespace HealerLike.Render.Studio.Editor
             float shotDeadline = Time.realtimeSinceStartup + 15f;
             while (!_view && Time.realtimeSinceStartup < shotDeadline)
             {
-                foreach (ProjectileVisualObserver observer in Object.FindObjectsByType<ProjectileVisualObserver>(
-                    FindObjectsSortMode.None))
+                foreach (ProjectileVisualObserver observer in Object.FindObjectsByType<ProjectileVisualObserver>())
                 {
                     Projectile projectile = observer.GetComponent<Projectile>();
                     Entity entity = projectile && projectile.source ? projectile.source.GetComponent<Entity>() : null;
@@ -102,7 +101,7 @@ namespace HealerLike.Render.Studio.Editor
                 int revision = rig.revision;
                 Entity owner = _view.GetComponentInParent<Entity>();
                 Transform[] anchors = (Transform[])rig.budAnchors.Clone();
-                Vector3[] vertices = BodyVertices(rig);
+                Vector3[] vertices = CreatureLiveEditMeasure.BodyVertices(rig);
                 Vector3 bodyScale = rig.partTransforms[0].localScale;
                 float health = owner.health.Value;
                 Vector3 camera = _manager.gameCamera.transform.position;
@@ -156,8 +155,9 @@ namespace HealerLike.Render.Studio.Editor
                     yield break;
                 }
                 after = output.Load(prefix + "-after.png");
-                int pixels = ChangedPixels(before, after);
-                int changedVertices = ChangedVertices(vertices, BodyVertices(rig));
+                int pixels = CreatureLiveEditMeasure.ChangedPixels(before, after);
+                int changedVertices = CreatureLiveEditMeasure.ChangedVertices(vertices,
+                    CreatureLiveEditMeasure.BodyVertices(rig));
                 bool anchorsHeld = anchors.Length == rig.budAnchors.Length;
                 for (int i = 0; anchorsHeld && i < anchors.Length; i++)
                 {
@@ -168,7 +168,8 @@ namespace HealerLike.Render.Studio.Editor
                     _projectile.transform.position);
                 passed = held && lease && _view.rig == rig && rig.root == root && rig.revision > revision
                     && owner.health.Value == health && _manager.gameCamera.transform.position == camera && pixels > 100
-                    && (!_shapes || (changedVertices > 0 && anchorsHeld && rig.partTransforms[0].localScale == bodyScale));
+                    && (!_shapes || (changedVertices > 0 && anchorsHeld
+                        && rig.partTransforms[0].localScale == bodyScale));
                 int revisionAfter = rig.revision;
                 bool profileRestored = true;
                 bool meshRestored = true;
@@ -181,7 +182,8 @@ namespace HealerLike.Render.Studio.Editor
                         yield return null;
                     }
                     profileRestored = JsonUtility.ToJson(_vocabulary.bodies[_editedMass].plant[0].shape) == originalProfile;
-                    meshRestored = ChangedVertices(vertices, BodyVertices(rig)) == 0 && rig.revision > revisionAfter;
+                    meshRestored = CreatureLiveEditMeasure.ChangedVertices(vertices,
+                        CreatureLiveEditMeasure.BodyVertices(rig)) == 0 && rig.revision > revisionAfter;
                     passed &= profileRestored && meshRestored;
                 }
                 string report = "{\"passed\":" + passed.ToString().ToLowerInvariant()
@@ -248,39 +250,5 @@ namespace HealerLike.Render.Studio.Editor
             }
         }
 
-        static Vector3[] BodyVertices(CreatureRig rig)
-        {
-            MeshFilter mesh = rig.partTransforms[0].GetComponent<MeshFilter>();
-            return mesh && mesh.sharedMesh ? mesh.sharedMesh.vertices : new Vector3[0];
-        }
-
-        static int ChangedVertices(Vector3[] before, Vector3[] after)
-        {
-            if (before.Length != after.Length)
-            {
-                return Mathf.Max(before.Length, after.Length);
-            }
-            int changed = 0;
-            for (int i = 0; i < before.Length; i++)
-            {
-                if ((before[i] - after[i]).sqrMagnitude > 0.00000001f) changed++;
-            }
-            return changed;
-        }
-
-        static int ChangedPixels(Texture2D before, Texture2D after)
-        {
-            Color32[] a = before.GetPixels32();
-            Color32[] b = after.GetPixels32();
-            int count = 0;
-            for (int i = 0; i < a.Length; i++)
-            {
-                if (Mathf.Abs(a[i].r - b[i].r) + Mathf.Abs(a[i].g - b[i].g) + Mathf.Abs(a[i].b - b[i].b) > 30)
-                {
-                    count++;
-                }
-            }
-            return count;
-        }
     }
 }

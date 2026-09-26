@@ -52,6 +52,19 @@ public class SpellStudioDraftsTests
         return count;
     }
 
+    static int CountDrafts()
+    {
+        int count = 0;
+        foreach (SpellStudioPreset draft in Resources.FindObjectsOfTypeAll<SpellStudioPreset>())
+        {
+            if (draft.hideFlags == HideFlags.HideAndDontSave)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
     [Test]
     public void Init_FirstOpen_DraftsEveryElementAndTheLinkedSamples()
     {
@@ -143,6 +156,22 @@ public class SpellStudioDraftsTests
 
         Assert.Greater(drafts.items.Count, 0);
     }
+    [TestCase("{\"items\":[null]}")]
+    [TestCase("{\"items\":[{\"json\":\"{}\"},{\"json\":\"{broken}\"}]}")]
+    public void Init_CorruptRecord_DiscardsPartialRestoreAndCreatesDefaults(string json)
+    {
+        string key = "HealerLike.SpellStudio.Drafts." + Application.dataPath;
+        EditorPrefs.SetString(key, json);
+        int before = CountDrafts();
+        LogAssert.Expect(LogType.Error, "[StudioPrefs] Dropped the unreadable drafts under " + key);
+
+        SpellStudioDrafts drafts = CreateDrafts();
+
+        Assert.IsFalse(EditorPrefs.HasKey(key));
+        Assert.Greater(drafts.items.Count, 0);
+        Assert.AreEqual(before + drafts.items.Count, CountDrafts());
+    }
+
 }
 
 }

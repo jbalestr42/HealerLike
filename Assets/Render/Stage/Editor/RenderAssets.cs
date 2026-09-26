@@ -18,16 +18,18 @@ namespace HealerLike.Render.Stage
 
         public static void SetReference(Object target, string field, Object value)
         {
-            SerializedObject serialized = new SerializedObject(target);
-            SerializedProperty property = serialized.FindProperty(field);
-            if (property == null)
+            using (SerializedObject serialized = new SerializedObject(target))
             {
-                Debug.LogError($"[RenderAssets] {target.GetType().Name} has no field {field}.");
-                return;
-            }
+                SerializedProperty property = serialized.FindProperty(field);
+                if (property == null)
+                {
+                    Debug.LogError($"[RenderAssets] {target.GetType().Name} has no field {field}.");
+                    return;
+                }
 
-            property.objectReferenceValue = value;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
+                property.objectReferenceValue = value;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
         }
     }
 }

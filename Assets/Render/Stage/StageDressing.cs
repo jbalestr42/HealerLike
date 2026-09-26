@@ -83,7 +83,7 @@ namespace HealerLike.Render.Stage
 
         public void SetLighting(Scene scene, Light keyLight)
         {
-            foreach (Light sceneLight in FindObjectsByType<Light>(FindObjectsSortMode.None))
+            foreach (Light sceneLight in FindObjectsByType<Light>())
             {
                 if (sceneLight.type == LightType.Directional && sceneLight.gameObject.scene == scene)
                 {
@@ -169,7 +169,8 @@ namespace HealerLike.Render.Stage
         // Puts the camera on the overview of its orientation
         public void Frame(Camera gameCamera, bool isLandscape)
         {
-            Frame(gameCamera, isLandscape, isLandscape ? StageCalibration.LandscapeAspect : StageCalibration.PortraitAspect);
+            Frame(gameCamera, isLandscape,
+                isLandscape ? StageCalibration.LandscapeAspect : StageCalibration.PortraitAspect);
         }
 
         public void Frame(Camera gameCamera, bool isLandscape, float aspect)

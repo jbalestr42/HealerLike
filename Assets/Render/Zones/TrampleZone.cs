@@ -46,11 +46,11 @@ namespace HealerLike.Render.Zones
                     * Mathf.Max(Mathf.Abs(root.lossyScale.x), Mathf.Abs(root.lossyScale.z));
             }
 
-            RootDefinition roots = rig.recipe.roots;
+            RootDefinition roots = rig.roots;
             float extent = roots.count > 0 ? (roots.footRadius + roots.thickness) * rig.cellSize : 0f;
-            for (int i = 0; i < rig.recipe.parts.Length; i++)
+            for (int i = 0; i < rig.parts.Count; i++)
             {
-                CreaturePart part = rig.recipe.parts[i];
+                CreaturePart part = rig.parts[i];
                 bool isBase = part.role == PartRole.Body || (roots.count == 0 && part.role == PartRole.Limb);
                 if (!isBase) continue;
                 Renderer renderer = rig.partTransforms[i].GetComponent<Renderer>();

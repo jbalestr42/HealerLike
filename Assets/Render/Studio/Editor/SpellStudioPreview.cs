@@ -186,14 +186,9 @@ namespace HealerLike.Render.Studio.Editor
                 return null;
             }
 
-            Camera camera = _scene.utility.camera;
             int safeWidth = StudioPreviewFrame.ClampSize(width);
             int safeHeight = StudioPreviewFrame.ClampSize(height);
-            _camera.BeginCapture(camera);
-            _camera.Apply(camera, safeWidth, safeHeight, false, this);
-            Texture2D image = StudioPreviewFrame.Capture(_scene.utility, safeWidth, safeHeight);
-            _camera.EndCapture(camera);
-            return image;
+            return StudioPreviewFrame.Capture(_scene.utility, _camera, this, safeWidth, safeHeight);
         }
 
         // The target and the whole motion of the effect, so playback never clips a rising or falling spell

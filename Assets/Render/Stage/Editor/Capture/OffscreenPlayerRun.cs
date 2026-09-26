@@ -79,7 +79,10 @@ namespace HealerLike.Render.Stage
                 Camera camera = _manager.gameCamera;
                 focus = Object.FindAnyObjectByType<BattleFocus>();
                 focusEnabled = focus && focus.enabled;
-                if (focus) focus.enabled = false;
+                if (focus)
+                {
+                    focus.enabled = false;
+                }
                 Time.timeScale = 0f;
                 proof.characterPosition = character.transform.position;
                 proof.characterRenderers = character.GetComponentsInChildren<Renderer>().Length;
@@ -98,12 +101,18 @@ namespace HealerLike.Render.Stage
                     != UnityEngine.Rendering.ShadowCastingMode.Off;
                 yield return Wait(0.2f);
                 yield return output.Capture(camera, "playfield", "offscreen-player");
-                if (!output.isCaptured) yield break;
+                if (!output.isCaptured)
+                {
+                    yield break;
+                }
 
                 _manager.spellSink.Clear();
                 target.health.OnAllConsumerProcessed.AddListener((owner, modifier, amount, critical) =>
                 {
-                    if (modifier.source == character.gameObject && amount > 0f) proof.resolvedCharacterHeals++;
+                    if (modifier.source == character.gameObject && amount > 0f)
+                    {
+                        proof.resolvedCharacterHeals++;
+                    }
                 });
                 ApplyConsumerCharacterSkillFactory healFactory = RenderAssets.Load<ApplyConsumerCharacterSkillFactory>(
                     "Assets/Data/CharacterSkills/HealSingleTarget/HealSingleTarget.asset");
@@ -112,7 +121,10 @@ namespace HealerLike.Render.Stage
                 yield return Wait(0.2f);
                 proof.healLinks = Links(_manager.spellSink);
                 yield return output.Capture(camera, "single-heal", "offscreen-player");
-                if (!output.isCaptured) yield break;
+                if (!output.isCaptured)
+                {
+                    yield break;
+                }
 
                 _manager.spellSink.Clear();
                 yield return Wait(0.1f);
@@ -125,7 +137,10 @@ namespace HealerLike.Render.Stage
                 proof.statusLinks = Links(_manager.spellSink);
                 proof.statusCount = _manager.spellSink.statusCount;
                 yield return output.Capture(camera, "status-cast", "offscreen-player");
-                if (!output.isCaptured) yield break;
+                if (!output.isCaptured)
+                {
+                    yield break;
+                }
 
                 _manager.spellSink.Clear();
                 GameObject prefab = RenderAssets.Load<GameObject>("Assets/Prefabs/Projectiles/BulletSpeed.prefab");
@@ -133,7 +148,10 @@ namespace HealerLike.Render.Stage
                 shotGo = _manager.entityManager.SpawnProjectile(prefab, logicalStart, Quaternion.identity);
                 Projectile projectile = shotGo.GetComponent<Projectile>();
                 HomingProjectileBehaviour homing = shotGo.GetComponent<HomingProjectileBehaviour>();
-                if (homing) homing.data.speed = 1.5f;
+                if (homing)
+                {
+                    homing.data.speed = 1.5f;
+                }
                 projectile.Init(character.gameObject, target.gameObject, new List<ABuffHandlerFactory>(),
                     new List<AConsumerFactory> { healFactory.data.consumer });
                 FreeShot shot = shotGo.GetComponent<FreeShot>();
@@ -162,7 +180,10 @@ namespace HealerLike.Render.Stage
                     proof.projectileLogicalPositions.Add(projectile.transform.position);
                     proof.projectileVisualPositions.Add(shot.visualPosition);
                     yield return output.Capture(camera, "projectile-" + i.ToString("00"), "offscreen-player");
-                    if (!output.isCaptured) yield break;
+                    if (!output.isCaptured)
+                    {
+                        yield break;
+                    }
                 }
                 proof.logicalCharacterUnchanged = character.transform.position == proof.characterPosition;
                 proof.passed = proof.characterRenderers == 0 && !proof.characterHasRig
@@ -180,8 +201,14 @@ namespace HealerLike.Render.Stage
             finally
             {
                 Time.timeScale = timeScale;
-                if (focus) focus.enabled = focusEnabled;
-                if (shotGo) Object.Destroy(shotGo);
+                if (focus)
+                {
+                    focus.enabled = focusEnabled;
+                }
+                if (shotGo)
+                {
+                    Object.Destroy(shotGo);
+                }
                 size.Dispose();
                 proof.passed &= !output.hasFailure && output.manifest.frames.Count == 6;
                 if (output.manifest.frames.Count > 0)
@@ -212,7 +239,10 @@ namespace HealerLike.Render.Stage
             int count = 0;
             foreach (SpellEffect effect in sink.GetComponentsInChildren<SpellEffect>())
             {
-                if (effect.recipe != null && effect.recipe.socket == EffectSocket.Link) count++;
+                if (effect.recipe != null && effect.recipe.socket == EffectSocket.Link)
+                {
+                    count++;
+                }
             }
             return count;
         }

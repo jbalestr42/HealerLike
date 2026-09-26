@@ -70,6 +70,7 @@ namespace HealerLike.Render.Studio.Editor
                 }
             }
             _items.Clear();
+            _restoredSelection = null;
         }
 
         // A blank preset on the given vocabulary, the shipped one when null
@@ -139,22 +140,25 @@ namespace HealerLike.Render.Studio.Editor
 
         bool Restore()
         {
-            string json = StudioPrefs.ReadJson(key);
-            if (json == null)
+            if (!StudioPrefs.TryRead(key, out SpellDraftCollection collection))
             {
                 return false;
             }
-
-            SpellDraftCollection collection = JsonUtility.FromJson<SpellDraftCollection>(json);
-            if (collection == null || collection.items == null)
+            if (collection.items == null)
             {
+                StudioPrefs.Discard(key);
                 return false;
             }
 
             foreach (SpellDraftRecord record in collection.items)
             {
-                SpellStudioPreset draft = Add(ScriptableObject.CreateInstance<SpellStudioPreset>());
-                JsonUtility.FromJsonOverwrite(record.json, draft);
+                if (record == null || !StudioPrefs.TryDraft(record.json, out SpellStudioPreset draft))
+                {
+                    Dispose();
+                    StudioPrefs.Discard(key);
+                    return false;
+                }
+                Add(draft);
                 draft.name = draft.displayName;
                 draft.vocabulary = Load<EffectVocabulary>(record.vocabularyGuid);
                 draft.sourceHandler = Load<ABuffHandlerFactory>(record.handlerGuid);

@@ -78,35 +78,41 @@ namespace HealerLike.Render.Stage
                 }
             }
 
-            Color32[] empty = _run.CaptureFlat();
-            for (int i = 0; i < cells.Count; i++)
+            try
             {
-                List<Renderer> own = new List<Renderer>();
-                foreach (Renderer renderer in cells[i].GetComponentsInChildren<Renderer>(true))
+                Color32[] empty = _run.CaptureFlat();
+                for (int i = 0; i < cells.Count; i++)
                 {
-                    if (shown.ContainsKey(renderer))
+                    List<Renderer> own = new List<Renderer>();
+                    foreach (Renderer renderer in cells[i].GetComponentsInChildren<Renderer>(true))
                     {
-                        renderer.enabled = true;
-                        renderer.shadowCastingMode = ShadowCastingMode.Off;
-                        own.Add(renderer);
+                        if (shown.ContainsKey(renderer))
+                        {
+                            renderer.enabled = true;
+                            renderer.shadowCastingMode = ShadowCastingMode.Off;
+                            own.Add(renderer);
+                        }
+                    }
+
+                    Color32[] alone = _run.CaptureFlat();
+                    Vector2Int corner = MaskCorner(cells[i].position, window);
+                    _run.output.AddMask(camera, _run.labels[i], alone, empty, corner, window);
+                    foreach (Renderer renderer in own)
+                    {
+                        renderer.enabled = false;
+                        renderer.shadowCastingMode = shown[renderer];
                     }
                 }
-
-                Color32[] alone = _run.CaptureFlat();
-                Vector2Int corner = MaskCorner(cells[i].position, window);
-                _run.output.AddMask(camera, _run.labels[i], alone, empty, corner, window);
-                foreach (Renderer renderer in own)
-                {
-                    renderer.enabled = false;
-                    renderer.shadowCastingMode = shown[renderer];
-                }
             }
-
-            foreach (KeyValuePair<Renderer, ShadowCastingMode> pair in shown)
+            finally
             {
-                if (pair.Key != null)
+                foreach (KeyValuePair<Renderer, ShadowCastingMode> pair in shown)
                 {
-                    pair.Key.enabled = true;
+                    if (pair.Key != null)
+                    {
+                        pair.Key.enabled = true;
+                        pair.Key.shadowCastingMode = pair.Value;
+                    }
                 }
             }
         }

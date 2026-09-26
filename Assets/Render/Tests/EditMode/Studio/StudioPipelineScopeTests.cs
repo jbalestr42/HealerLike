@@ -52,6 +52,23 @@ public class StudioPipelineScopeTests
 
         Assert.IsNull(QualitySettings.renderPipeline);
     }
+    [Test]
+    public void Dispose_FailureInsideScope_RestoresTheOriginalPipeline()
+    {
+        QualitySettings.renderPipeline = null;
+        Assert.Throws<System.InvalidOperationException>(() =>
+        {
+            using (StudioPipelineScope scope = new StudioPipelineScope())
+            {
+                Assert.IsTrue(scope.Begin());
+                Assert.IsTrue(scope.Begin());
+                throw new System.InvalidOperationException("Simulated render failure");
+            }
+        });
+
+        Assert.IsNull(QualitySettings.renderPipeline);
+    }
+
 }
 
 }

@@ -28,12 +28,10 @@ namespace HealerLike.Render.Stage
         bool _isUnits;
         bool _isEffects;
         int _failures;
-        Camera _flatCamera;
-        BattleFocus _focus;
+        readonly LookSheetSceneState _scene = new LookSheetSceneState();
         readonly List<GameObject> _spawned = new List<GameObject>();
 
-        readonly List<Object> _created = new List<Object>();
-        public List<Object> created { get { return _created; } }
+        public List<Object> created { get { return _scene.created; } }
 
         readonly List<Transform> _cells = new List<Transform>();
         public List<Transform> cells { get { return _cells; } }
@@ -52,22 +50,24 @@ namespace HealerLike.Render.Stage
 
         protected override IEnumerator Run()
         {
+            try
+            {
+                yield return Capture();
+            }
+            finally
+            {
+                Restore();
+            }
+        }
+
+        IEnumerator Capture()
+        {
             _manager.SetLandscape(false);
             yield return Wait(0.5f);
             ClearBoard();
             yield return NextFrame();
 
-            // The capture holds the camera still, the focus would ease it back to the overview every frame
-            _focus = Object.FindAnyObjectByType<BattleFocus>();
-            if (_focus != null)
-            {
-                _focus.enabled = false;
-            }
-
-            GameObject flatGo = new GameObject("LookSheetFlatCamera");
-            _created.Add(flatGo);
-            _flatCamera = flatGo.AddComponent<Camera>();
-            _flatCamera.enabled = false;
+            _scene.Init(_manager);
             Directory.CreateDirectory(Folder);
 
             if (_isUnits)
@@ -82,7 +82,6 @@ namespace HealerLike.Render.Stage
             }
 
             int sheets = _output.WriteContacts();
-            Restore();
             int failures = _failures + _output.failures;
             Debug.Log($"[LookSheetRun] Sheets {sheets} failures {failures} in {Folder}");
             StagePlay.Finish(this, failures == 0 && sheets > 0);
@@ -269,30 +268,14 @@ namespace HealerLike.Render.Stage
         public Color32[] CaptureFlat()
         {
             Color grassColour = _manager.grass.lookMaterial.GetColor(RenderObjects.BaseColorId);
-            return LookSheetCamera.RenderFlat(_flatCamera, _manager.gameCamera, _manager.boardGround, grassColour,
+            return LookSheetCamera.RenderFlat(_scene.flatCamera, _manager.gameCamera, _manager.boardGround, grassColour,
                                               Width, Height);
         }
 
         void Restore()
         {
             ClearBatch();
-            foreach (Object item in _created)
-            {
-                if (item != null)
-                {
-                    Object.Destroy(item);
-                }
-            }
-
-            _created.Clear();
-            if (_focus != null)
-            {
-                _focus.enabled = true;
-            }
-
-            Pose pose = _manager.overviewPose;
-            _manager.gameCamera.transform.SetPositionAndRotation(pose.position, pose.rotation);
-            _manager.look.UpdateFog(StageCalibration.BackgroundFog(pose.position, _manager.board, pose.rotation.eulerAngles.y));
+            _scene.Dispose();
         }
     }
 }

@@ -4,8 +4,7 @@ using UnityEngine;
 namespace HealerLike.Render.Stage
 {
     // Watches the existing placement interaction after mouse/touch processing. Its model still owns position.
-    [DefaultExecutionOrder(200)]
-    public sealed class StageCreaturePlacement : MonoBehaviour
+    public class StageCreaturePlacement : MonoBehaviour
     {
         CreatureLooks _looks;
         PrimitiveMeshes _meshes;
@@ -35,9 +34,14 @@ namespace HealerLike.Render.Stage
             _cellSize = cellSize;
         }
 
-        void LateUpdate()
+        public void Tick()
         {
-            Tick(_interaction != null ? _interaction.GetInteraction() : null, Time.unscaledTime, Time.unscaledDeltaTime);
+            if (!isActiveAndEnabled)
+            {
+                return;
+            }
+            Tick(_interaction != null ? _interaction.GetInteraction() : null, Time.unscaledTime,
+                Time.unscaledDeltaTime);
         }
 
         // Explicit input lets native capture and unit tests observe the adapter without creating game managers.
@@ -63,7 +67,10 @@ namespace HealerLike.Render.Stage
                     return;
                 }
                 _preview = created;
-                if (ReferenceEquals(active, _settleOnRefresh)) _preview.CompleteAppearance();
+                if (ReferenceEquals(active, _settleOnRefresh))
+                {
+                    _preview.CompleteAppearance();
+                }
                 _settleOnRefresh = null;
                 _legacyRenderers = model.GetComponentsInChildren<Renderer>(true);
                 _legacyEnabled = new bool[_legacyRenderers.Length];
@@ -73,9 +80,17 @@ namespace HealerLike.Render.Stage
                     _legacyRenderers[i].enabled = false;
                 }
             }
-            if (_preview == null) return;
+            if (_preview == null)
+            {
+                return;
+            }
             foreach (Renderer renderer in _legacyRenderers)
-                if (renderer) renderer.enabled = false;
+            {
+                if (renderer != null)
+                {
+                    renderer.enabled = false;
+                }
+            }
             _preview.Tick(time, deltaTime,
                 new FootFrame(model.transform.position, Vector3.up, _cellSize),
                 _camera != null ? -_camera.transform.forward : (Vector3?)null);
@@ -106,9 +121,17 @@ namespace HealerLike.Render.Stage
             if (_legacyRenderers != null)
             {
                 for (int i = 0; i < _legacyRenderers.Length; i++)
-                    if (_legacyRenderers[i]) _legacyRenderers[i].enabled = _legacyEnabled[i];
+                {
+                    if (_legacyRenderers[i] != null)
+                    {
+                        _legacyRenderers[i].enabled = _legacyEnabled[i];
+                    }
+                }
             }
-            if (_preview != null) _preview.Dispose();
+            if (_preview != null)
+            {
+                _preview.Dispose();
+            }
             _preview = null;
             _selection = null;
             _data = null;
@@ -117,7 +140,14 @@ namespace HealerLike.Render.Stage
             _legacyEnabled = null;
         }
 
-        void OnDisable() { ClearVisual(); }
-        void OnDestroy() { Clear(); }
+        void OnDisable()
+        {
+            ClearVisual();
+        }
+
+        void OnDestroy()
+        {
+            Clear();
+        }
     }
 }

@@ -21,7 +21,9 @@ namespace HealerLike.Render.Stage
             model = null;
             side = Entity.EntityType.Player;
             if (!(interaction is EntityGridInteraction) || dataField == null || modelField == null || sideField == null)
+            {
                 return false;
+            }
             data = dataField.GetValue(interaction) as EntityData;
             model = modelField.GetValue(interaction) as GameObject;
             side = (Entity.EntityType)sideField.GetValue(interaction);

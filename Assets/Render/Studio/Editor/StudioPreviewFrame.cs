@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,11 +7,18 @@ namespace HealerLike.Render.Studio.Editor
     // One render of a studio preview through the stage pipeline and the studio look, into the window or a texture
     public static class StudioPreviewFrame
     {
-        public static void Draw(PreviewRenderUtility utility, Rect rect)
+        public static void Draw(PreviewRenderUtility utility, Rect rect, Action render = null)
         {
             utility.BeginPreview(rect, GUIStyle.none);
-            Render(utility);
-            Texture texture = utility.EndPreview();
+            Texture texture;
+            try
+            {
+                Render(utility, render);
+            }
+            finally
+            {
+                texture = utility.EndPreview();
+            }
             if (texture)
             {
                 GUI.DrawTexture(rect, texture, ScaleMode.StretchToFill, false);
@@ -20,11 +28,41 @@ namespace HealerLike.Render.Studio.Editor
         }
 
         // The caller owns the texture, it outlives the preview
-        public static Texture2D Capture(PreviewRenderUtility utility, int width, int height)
+        public static Texture2D Capture(PreviewRenderUtility utility, int width, int height, Action render = null)
         {
             utility.BeginStaticPreview(new Rect(0f, 0f, width, height));
-            Render(utility);
-            return utility.EndStaticPreview();
+            bool completed = false;
+            Texture2D image;
+            try
+            {
+                Render(utility, render);
+                completed = true;
+            }
+            finally
+            {
+                image = utility.EndStaticPreview();
+                if (!completed && image != null)
+                {
+                    UnityEngine.Object.DestroyImmediate(image);
+                }
+            }
+            return image;
+        }
+
+        public static Texture2D Capture(PreviewRenderUtility utility, StudioPreviewCamera framing,
+            IPreviewSubject subject, int width, int height)
+        {
+            Camera camera = utility.camera;
+            framing.BeginCapture(camera);
+            try
+            {
+                framing.Apply(camera, width, height, false, subject);
+                return Capture(utility, width, height);
+            }
+            finally
+            {
+                framing.EndCapture(camera);
+            }
         }
 
         // A capture's size, kept between 16 and 4096 pixels a side
@@ -33,15 +71,22 @@ namespace HealerLike.Render.Studio.Editor
             return Mathf.Clamp(size, 16, 4096);
         }
 
-        static void Render(PreviewRenderUtility utility)
+        static void Render(PreviewRenderUtility utility, Action render)
         {
-            StudioPipelineScope pipeline = new StudioPipelineScope();
-            StudioLookScope look = new StudioLookScope();
-            pipeline.Begin();
-            look.Begin(utility.camera);
-            utility.Render(true, false);
-            look.End();
-            pipeline.End();
+            using (StudioPipelineScope pipeline = new StudioPipelineScope())
+            using (StudioLookScope look = new StudioLookScope())
+            {
+                pipeline.Begin();
+                look.Begin(utility.camera);
+                if (render != null)
+                {
+                    render();
+                }
+                else
+                {
+                    utility.Render(true, false);
+                }
+            }
         }
 
         // Grows bounds over the subject's visible renderers; true once the bounds hold one

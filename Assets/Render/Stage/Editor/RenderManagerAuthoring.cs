@@ -46,38 +46,40 @@ namespace HealerLike.Render.Stage
             SpellVisualSink sink = Nest<SpellVisualSink>(SinkPath, root);
             StoneEffects stoneEffects = Nest<StoneEffects>(StoneEffectsPath, root);
             BattleFocus battleFocus = Nest<BattleFocus>(AssetDatabase.GetAssetPath(controls), root);
-
-            SerializedObject data = new SerializedObject(manager);
-            data.FindProperty("_creatureLooks").objectReferenceValue = RenderAssets.Load<Object>(CreatureLooksPath);
-            data.FindProperty("_spellLooks").objectReferenceValue = RenderAssets.Load<Object>(SpellLooksPath);
-            data.FindProperty("_meshes").objectReferenceValue =
-                RenderAssets.Load<Object>(EnvironmentAuthoring.MeshesPath);
-            data.FindProperty("_dressing").objectReferenceValue = dressing;
-            data.FindProperty("_environmentPrefab").objectReferenceValue = environment.GetComponent<EnvironmentRoot>();
-            data.FindProperty("_look").objectReferenceValue = look;
-            data.FindProperty("_zones").objectReferenceValue = zones;
-            data.FindProperty("_grass").objectReferenceValue = grass;
-            data.FindProperty("_spellSink").objectReferenceValue = sink;
-            data.FindProperty("_stoneEffects").objectReferenceValue = stoneEffects;
-            data.FindProperty("_battleFocus").objectReferenceValue = battleFocus;
-            data.FindProperty("_rangeDriver").objectReferenceValue = rangeDriver;
-            data.FindProperty("_keyLight").objectReferenceValue = keyLight;
-            data.FindProperty("_deliveryVocabulary").objectReferenceValue =
-                RenderAssets.Load<Object>(DeliveryVocabularyPath);
-            data.ApplyModifiedPropertiesWithoutUndo();
-
-            SerializedObject dressingData = new SerializedObject(dressing);
-            dressingData.FindProperty("_pipeline").objectReferenceValue = pipeline;
-            dressingData.FindProperty("_groundMaterial").objectReferenceValue =
-                RenderAssets.Load<Material>(BoardMaterialPath);
-            SerializedProperty hidden = dressingData.FindProperty("_hiddenObjectNames");
-            hidden.arraySize = HiddenObjects.Length;
-            for (int i = 0; i < HiddenObjects.Length; i++)
+            using (SerializedObject data = new SerializedObject(manager))
             {
-                hidden.GetArrayElementAtIndex(i).stringValue = HiddenObjects[i];
+                data.FindProperty("_creatureLooks").objectReferenceValue = RenderAssets.Load<Object>(CreatureLooksPath);
+                data.FindProperty("_spellLooks").objectReferenceValue = RenderAssets.Load<Object>(SpellLooksPath);
+                data.FindProperty("_meshes").objectReferenceValue =
+                    RenderAssets.Load<Object>(EnvironmentAuthoring.MeshesPath);
+                data.FindProperty("_dressing").objectReferenceValue = dressing;
+                data.FindProperty("_environmentPrefab").objectReferenceValue = environment.GetComponent<EnvironmentRoot>();
+                data.FindProperty("_look").objectReferenceValue = look;
+                data.FindProperty("_zones").objectReferenceValue = zones;
+                data.FindProperty("_grass").objectReferenceValue = grass;
+                data.FindProperty("_spellSink").objectReferenceValue = sink;
+                data.FindProperty("_stoneEffects").objectReferenceValue = stoneEffects;
+                data.FindProperty("_battleFocus").objectReferenceValue = battleFocus;
+                data.FindProperty("_rangeDriver").objectReferenceValue = rangeDriver;
+                data.FindProperty("_keyLight").objectReferenceValue = keyLight;
+                data.FindProperty("_deliveryVocabulary").objectReferenceValue =
+                    RenderAssets.Load<Object>(DeliveryVocabularyPath);
+                data.ApplyModifiedPropertiesWithoutUndo();
             }
+            using (SerializedObject dressingData = new SerializedObject(dressing))
+            {
+                dressingData.FindProperty("_pipeline").objectReferenceValue = pipeline;
+                dressingData.FindProperty("_groundMaterial").objectReferenceValue =
+                    RenderAssets.Load<Material>(BoardMaterialPath);
+                SerializedProperty hidden = dressingData.FindProperty("_hiddenObjectNames");
+                hidden.arraySize = HiddenObjects.Length;
+                for (int i = 0; i < HiddenObjects.Length; i++)
+                {
+                    hidden.GetArrayElementAtIndex(i).stringValue = HiddenObjects[i];
+                }
 
-            dressingData.ApplyModifiedPropertiesWithoutUndo();
+                dressingData.ApplyModifiedPropertiesWithoutUndo();
+            }
 
             Directory.CreateDirectory(Path.GetDirectoryName(PrefabPath));
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);

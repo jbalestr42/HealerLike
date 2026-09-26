@@ -56,6 +56,7 @@ namespace HealerLike.Render.Stage
         public static void Finish(AStageRun run, bool isPassed)
         {
             EditorApplication.update -= run.Step;
+            run.StopObserving();
             if (_frame != null)
             {
                 _frame.onFrame = null;
@@ -69,7 +70,10 @@ namespace HealerLike.Render.Stage
         // The run each mode names, the one place a capture registers
         static AStageRun Create(string mode)
         {
-            if (mode == "expedition-map") return new StageMapRun();
+            if (mode == "expedition-map")
+            {
+                return new StageMapRun();
+            }
 
             if (mode == "creature-presentation")
             {

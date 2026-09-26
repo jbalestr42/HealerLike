@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -6,7 +7,7 @@ namespace HealerLike.Render.Studio.Editor
 {
     // The stage pipeline for the length of one preview render, whatever quality preset the editor is on.
     // The look material has a UniversalForwardOnly pass, so the preview has to render through URP.
-    public class StudioPipelineScope
+    public class StudioPipelineScope : IDisposable
     {
         public static readonly string PipelinePath = "Assets/Render/Stage/Settings/StagePipeline.asset";
 
@@ -16,6 +17,10 @@ namespace HealerLike.Render.Studio.Editor
         // False, with an error, when the stage pipeline asset is missing; the render then keeps the editor's
         public bool Begin()
         {
+            if (_isActive)
+            {
+                return true;
+            }
             RenderPipelineAsset pipeline = AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(PipelinePath);
             if (pipeline == null)
             {
@@ -30,6 +35,11 @@ namespace HealerLike.Render.Studio.Editor
                 QualitySettings.renderPipeline = pipeline;
             }
             return true;
+        }
+
+        public void Dispose()
+        {
+            End();
         }
 
         public void End()

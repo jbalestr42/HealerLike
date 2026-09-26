@@ -1,8 +1,6 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using HealerLike.Render.Environment;
-using HealerLike.Render.Creatures;
 
 namespace HealerLike.Render.Stage
 {
@@ -20,8 +18,7 @@ namespace HealerLike.Render.Stage
         static readonly float fogInterval = 0.1f;
         static readonly float boundsInterval = 0.4f;
 
-        readonly Dictionary<Transform, BodyView> _bodies = new Dictionary<Transform, BodyView>();
-        readonly List<Transform> _live = new List<Transform>();
+        readonly BattleBodyBounds _bodies = new BattleBodyBounds();
         RenderManager _manager;
         Button _nextWaveButton;
         Camera _camera;
@@ -58,6 +55,7 @@ namespace HealerLike.Render.Stage
 
         public void Init(RenderManager manager)
         {
+            Clear();
             _manager = manager;
             _camera = manager.gameCamera;
             _target = manager.overviewPose;
@@ -71,7 +69,6 @@ namespace HealerLike.Render.Stage
             }
 
             // A wave starts on the HUD's next wave button, the round ends on the game type's signal
-            Clear();
             GameView gameView = FindAnyObjectByType<GameView>(FindObjectsInactive.Include);
             if (gameView != null && gameView.gameHUD != null)
             {
@@ -89,6 +86,12 @@ namespace HealerLike.Render.Stage
 
         public void Clear()
         {
+            _bodies.Clear();
+            _isInitialized = false;
+            if (_toggle != null)
+            {
+                _toggle.onClick.RemoveListener(Toggle);
+            }
             AscensionGameType.OnRoundEnd.RemoveListener(Overview);
             if (_nextWaveButton != null)
             {
@@ -203,7 +206,7 @@ namespace HealerLike.Render.Stage
 
         public bool AreAllBodiesVisible()
         {
-            if (_camera == null || _live.Count == 0)
+            if (_camera == null || _bodies.count == 0)
             {
                 return false;
             }
@@ -216,48 +219,7 @@ namespace HealerLike.Render.Stage
         void RefreshBounds()
         {
             _refreshAt = Time.unscaledTime + boundsInterval;
-            _live.Clear();
-            EntityManager entityManager = _manager.entityManager;
-            if (entityManager != null && entityManager.entities != null)
-            {
-                AddLive(entityManager.GetEntities(Entity.EntityType.Player));
-                AddLive(entityManager.GetEntities(Entity.EntityType.Computer));
-            }
-
-            // The Character has no battlefield body. Its offscreen spell entry must not pull the camera
-            // toward the logical origin and leave an empty lower half beneath the visible combatants.
-
-            bool hasBounds = false;
-            Bounds bounds = default;
-            foreach (Transform body in _live)
-            {
-                Bounds bodyBounds = BodyBounds(body);
-                if (hasBounds)
-                {
-                    bounds.Encapsulate(bodyBounds);
-                }
-                else
-                {
-                    bounds = bodyBounds;
-                    hasBounds = true;
-                }
-            }
-
-            List<Transform> gone = new List<Transform>();
-            foreach (Transform body in _bodies.Keys)
-            {
-                if (body == null || !_live.Contains(body))
-                {
-                    gone.Add(body);
-                }
-            }
-
-            foreach (Transform body in gone)
-            {
-                _bodies.Remove(body);
-            }
-
-            if (!hasBounds)
+            if (!_bodies.TryRead(_manager.entityManager, out Bounds bounds))
             {
                 Overview();
                 return;
@@ -274,54 +236,6 @@ namespace HealerLike.Render.Stage
             return _hasViewport
                 ? StageViewport.Fit(bounds, rotation, _camera.fieldOfView, _camera.aspect, _viewport)
                 : BattleFocusBounds.Fit(bounds, rotation, _camera.fieldOfView, _camera.aspect);
-        }
-
-        // Recomposition replaces root renderers and can add parts while retaining the same entity transform.
-        // Cache the rig revision as well as its owner, so discovery happens only after a geometry change.
-        sealed class BodyView
-        {
-            readonly Transform _body;
-            ARigHost _host;
-            CreatureRig _rig;
-            int _revision = -1;
-            Renderer[] _renderers;
-
-            public BodyView(Transform body) { _body = body; }
-
-            public Bounds Read()
-            {
-                if (!_host) _host = _body.GetComponentInChildren<ARigHost>();
-                CreatureRig rig = _host ? _host.rig : null;
-                int revision = rig != null ? rig.revision : 0;
-                if (_renderers == null || rig != _rig || revision != _revision)
-                {
-                    _renderers = _body.GetComponentsInChildren<Renderer>();
-                    _rig = rig;
-                    _revision = revision;
-                }
-                return BattleFocusBounds.Body(_body, _renderers);
-            }
-        }
-
-        Bounds BodyBounds(Transform body)
-        {
-            if (!_bodies.TryGetValue(body, out BodyView view))
-            {
-                view = new BodyView(body);
-                _bodies[body] = view;
-            }
-            return view.Read();
-        }
-
-        void AddLive(List<GameObject> entities)
-        {
-            foreach (GameObject entityGo in entities)
-            {
-                if (entityGo != null && entityGo.activeInHierarchy)
-                {
-                    _live.Add(entityGo.transform);
-                }
-            }
         }
 
         void ShowForeground(bool show)

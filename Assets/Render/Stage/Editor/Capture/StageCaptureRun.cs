@@ -85,10 +85,16 @@ namespace HealerLike.Render.Stage
             }
 
             Texture2D texture = StageReadback.Render(_manager.gameCamera, width, height);
-            Directory.CreateDirectory(StagePlay.CaptureFolder);
-            File.WriteAllBytes(path, texture.EncodeToPNG());
-            Object.Destroy(texture);
-            return File.Exists(path);
+            try
+            {
+                Directory.CreateDirectory(StagePlay.CaptureFolder);
+                File.WriteAllBytes(path, texture.EncodeToPNG());
+                return File.Exists(path);
+            }
+            finally
+            {
+                RenderObjects.Release(texture);
+            }
         }
     }
 }
