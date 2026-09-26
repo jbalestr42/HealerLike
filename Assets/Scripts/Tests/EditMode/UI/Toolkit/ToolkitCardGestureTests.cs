@@ -270,6 +270,7 @@ namespace UI.Toolkit
         public IEnumerator KeyboardInspectShortcutsKeepInspectionWithoutActivation()
         {
             Bind(true); yield return null; yield return null;
+            _button.Focus();
             using (var popover = new ToolkitPopover(_view))
                 foreach (KeyCode key in new[] { KeyCode.I, KeyCode.F1 })
                 {
