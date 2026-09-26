@@ -50,6 +50,8 @@ namespace HealerLike.Render.Stage
                 // SpawnEntity assigns its final position after Init notifies render observers.
                 yield return null;
                 yield return Appearance(stone, "stone", AssetDatabase.GetAssetPath(data));
+                StagePresentationSelection selection = new StagePresentationSelection(_session, _output);
+                yield return selection.Observe(stone, "stone");
             }
             finally
             {

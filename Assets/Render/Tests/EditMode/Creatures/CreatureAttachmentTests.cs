@@ -149,7 +149,10 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void SceneUnload_AlsoOwnsDetachedGeometryInTheSourceScene()
         {
-            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
+            Scene initialActive = SceneManager.GetActiveScene();
+            SceneSetup[] initialSetup = EditorSceneManager.GetSceneManagerSetup();
+            bool initialDirty = initialActive.isDirty;
+            Scene scene = EditorSceneManager.NewPreviewScene();
             try
             {
                 SceneManager.MoveGameObjectToScene(_owner, scene);
@@ -158,8 +161,10 @@ namespace HealerLike.Render.Creatures
                     GameObject geometry = new GameObject("Scene-owned geometry", typeof(MeshRenderer));
                     presentation.Take(geometry.transform);
                     Transform root = presentation.root;
+                    Assert.AreEqual(scene, _owner.scene);
                     Assert.AreEqual(scene, root.gameObject.scene);
-                    Assert.IsTrue(EditorSceneManager.CloseScene(scene, true));
+                    EditorSceneManager.ClosePreviewScene(scene);
+                    Assert.IsFalse(_owner);
                     Assert.IsFalse(root);
                     Assert.IsFalse(geometry);
                 }
@@ -170,8 +175,11 @@ namespace HealerLike.Render.Creatures
             {
                 if (scene.IsValid() && scene.isLoaded)
                 {
-                    EditorSceneManager.CloseScene(scene, true);
+                    EditorSceneManager.ClosePreviewScene(scene);
                 }
+                Assert.AreEqual(initialActive, SceneManager.GetActiveScene());
+                Assert.AreEqual(initialDirty, initialActive.isDirty);
+                CollectionAssert.AreEqual(initialSetup, EditorSceneManager.GetSceneManagerSetup());
             }
         }
 

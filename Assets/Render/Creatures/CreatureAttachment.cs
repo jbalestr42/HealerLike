@@ -9,6 +9,7 @@ namespace HealerLike.Render.Creatures
     public class CreatureAttachment : IDisposable
     {
         readonly Transform _source;
+        bool _isVisible = true;
         public Transform root { get; private set; }
 
         public CreatureAttachment(Transform source)
@@ -24,6 +25,7 @@ namespace HealerLike.Render.Creatures
 
         public void Sync()
         {
+            ApplyVisibility();
             if (!root || !_source)
             {
                 return;
@@ -41,9 +43,21 @@ namespace HealerLike.Render.Creatures
 
         public void SetVisible(bool visible)
         {
-            if (root)
+            _isVisible = visible;
+            ApplyVisibility();
+        }
+
+        void ApplyVisibility()
+        {
+            if (!root)
             {
-                root.gameObject.SetActive(visible && _source && _source.gameObject.activeInHierarchy);
+                return;
+            }
+
+            bool visible = _isVisible && _source && _source.gameObject.activeInHierarchy;
+            if (root.gameObject.activeSelf != visible)
+            {
+                root.gameObject.SetActive(visible);
             }
         }
 

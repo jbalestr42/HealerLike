@@ -15,6 +15,15 @@ namespace HealerLike.Render.Creatures
             Color body = new Color(0.2f, 0.5f, 0.1f, 0.7f);
             Color ochre = new Color(0.6f, 0.4f, 0.2f, 0.8f);
             MaterialPropertyBlock block = new MaterialPropertyBlock();
+            Color[] baseline = new Color[2];
+            paint.Paint(renderer, tip, body, ochre, 0f);
+            for (int index = 0; index < baseline.Length; index++)
+            {
+                renderer.GetPropertyBlock(block, index);
+                baseline[index] = block.GetColor("_BaseColor");
+                AssertNativeColour(index == 0 ? body : ochre, baseline[index]);
+            }
+
             paint.selection = new CreatureSelection(true, Color.cyan, 4f);
             paint.Paint(renderer, tip, body, ochre, 0f);
             for (int index = 0; index < 2; index++)
@@ -23,7 +32,7 @@ namespace HealerLike.Render.Creatures
                 renderer.GetPropertyBlock(block, index);
                 Color expected = Color.Lerp(authored, Color.cyan, 0.3f);
                 expected.a = authored.a;
-                Assert.AreEqual(expected, block.GetColor("_BaseColor"));
+                AssertNativeColour(expected, block.GetColor("_BaseColor"));
                 Assert.AreEqual(4f, block.GetFloat("_HLOutlineWidthMultiplier"));
             }
 
@@ -32,7 +41,7 @@ namespace HealerLike.Render.Creatures
             for (int index = 0; index < 2; index++)
             {
                 renderer.GetPropertyBlock(block, index);
-                Assert.AreEqual(index == 0 ? body : ochre, block.GetColor("_BaseColor"));
+                Assert.AreEqual(baseline[index], block.GetColor("_BaseColor"));
                 bool hasTipWidth = tip && index == 0;
                 Assert.AreEqual(hasTipWidth, block.HasFloat("_HLOutlineWidthMultiplier"));
                 if (hasTipWidth)
@@ -41,6 +50,16 @@ namespace HealerLike.Render.Creatures
                 }
             }
             CollectionAssert.AreEqual(materials, renderer.sharedMaterials);
+        }
+
+        // Native color storage can round RGB. Bound that comparison in float ULPs; alpha and restoration stay exact.
+        static void AssertNativeColour(Color expected, Color actual)
+        {
+            for (int channel = 0; channel < 3; channel++)
+            {
+                Assert.That(actual[channel], Is.EqualTo(expected[channel]).Within(4).Ulps, "RGB channel " + channel);
+            }
+            Assert.AreEqual(expected.a, actual.a);
         }
 
         [TestCase(false)]

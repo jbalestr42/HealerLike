@@ -144,6 +144,12 @@ namespace HealerLike.Render.Creatures
         // After the character's own Update has spent or restored its mana
         void LateUpdate()
         {
+            SyncGeometry();
+            if (!_visualAnchor)
+            {
+                ReleaseRig();
+                return;
+            }
             if (!_showBody)
             {
                 return;
@@ -161,10 +167,7 @@ namespace HealerLike.Render.Creatures
                 rig.SetReadout(null, 1f, 0f, manaFraction);
             }
 
-            if (_visualAnchor)
-            {
-                TickRig(Time.time, Time.deltaTime, new FootFrame(_visualAnchor.position, _visualAnchor.up, _cellSize));
-            }
+            TickRig(Time.time, Time.deltaTime, new FootFrame(_visualAnchor.position, _visualAnchor.up, _cellSize));
         }
 
         void ObserveResources()

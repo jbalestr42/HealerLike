@@ -150,6 +150,8 @@ namespace HealerLike.Render.Stage
                 List<GameObject> allies = _session.manager.entityManager.GetEntities(Entity.EntityType.Player);
                 GameObject placed = allies[allies.Count - 1];
                 yield return _growth.Appearance(placed, "plant", AssetDatabase.GetAssetPath(_selectedData));
+                StagePresentationSelection selection = new StagePresentationSelection(_session, _output);
+                yield return selection.Observe(placed, "plant");
                 _output.Check(_session.manager.placement.preview == null
                     && _session.interaction.GetInteraction() == null,
                     "Successful deployment releases cosmetic preview and grid interaction");

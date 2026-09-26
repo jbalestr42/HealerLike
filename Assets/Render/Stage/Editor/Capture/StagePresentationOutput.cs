@@ -20,12 +20,13 @@ namespace HealerLike.Render.Stage
                 + "and StageTouchInput.Update";
             public string blindSpot
                 = "Editor Metal capture with synthetic OS touch samples; no physical Android input, appearance or "
-                + "device performance evidence";
+                + "device performance evidence. Hover uses explicit Unity callbacks, not OS mouse movement.";
             public bool isPassed;
             public List<string> interventions = new List<string>();
             public List<string> checks = new List<string>();
             public List<string> failures = new List<string>();
             public List<GrowthFrame> growth = new List<GrowthFrame>();
+            public List<StageSelectionObservation.Frame> selection = new List<StageSelectionObservation.Frame>();
             public List<string> portraitFiles = new List<string>();
         }
 
