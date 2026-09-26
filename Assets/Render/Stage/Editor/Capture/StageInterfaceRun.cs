@@ -79,7 +79,8 @@ namespace HealerLike.Render.Stage
                     && StageInterfaceOutput.IsVisible(desktopTitle)
                     && desktopTitle.text == desktopCard.Q<Label>("card-title").text,
                     "Actual desktop keyboard focus inspects the requested creature without deploying");
-                yield return _session.Capture("03b-desktop-details");
+                yield return _session.Capture("03b-desktop-details",
+                    "Actual keyboard focus on a reachable desktop creature card");
                 yield return _session.Resize(1080, 1920);
                 _session.actions.Submit("detail-button");
                 yield return Wait(0.2f);

@@ -84,9 +84,9 @@ namespace HealerLike.Render.Stage
                 "Camera agrees with Game frame aspect");
         }
 
-        public IEnumerator Capture(string name)
+        public IEnumerator Capture(string name, string inputMethod = null)
         {
-            yield return _output.Capture(_actions.ui, name);
+            yield return _output.Capture(_actions.ui, name, inputMethod);
         }
 
         public virtual void Dispose()

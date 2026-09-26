@@ -27,6 +27,7 @@ namespace HealerLike.Render.Stage
         public class Frame
         {
             public string file;
+            public string inputMethod;
             public int width;
             public int height;
             public StageCaptureTheme.Identity theme;
@@ -69,7 +70,7 @@ namespace HealerLike.Render.Stage
             manifest.checks.Add(detail);
         }
 
-        public IEnumerator Capture(ToolkitGameUI ui, string name)
+        public IEnumerator Capture(ToolkitGameUI ui, string name, string inputMethod = null)
         {
             Directory.CreateDirectory(_folder);
             string path = Path.Combine(_folder, name + ".png");
@@ -82,6 +83,7 @@ namespace HealerLike.Render.Stage
             VisualElement root = document.rootVisualElement;
             Frame frame = new Frame();
             frame.file = name + ".png";
+            frame.inputMethod = inputMethod != null ? inputMethod : manifest.inputMethod;
             frame.width = Screen.width;
             frame.height = Screen.height;
             frame.theme = StageCaptureTheme.Describe(document.panelSettings.themeStyleSheet);
