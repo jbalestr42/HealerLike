@@ -43,11 +43,22 @@ namespace HealerLike.Render.Stage
 
         bool CanBeginPointer(int pointer)
         {
+            var module = EventSystem.current != null ? EventSystem.current.currentInputModule : null;
             Touch[] samples = Input.touches;
 #if UNITY_EDITOR
             if (captureTouches != null) samples = captureTouches;
 #endif
+            return CanBeginPointer(module, pointer, samples);
+        }
+
+        public static bool CanBeginPointer(BaseInputModule module, int pointer, Touch[] samples)
+        {
+            // Only StandaloneInputModule translates legacy fingerId to Toolkit touch IDs.
+            // InputSystem uses TouchControl slots and a separate pen range, with its own lifecycle.
+            if (!(module is StandaloneInputModule)) return true;
             if (pointer == PointerId.mousePointerId) return samples.Length == 0;
+            if (pointer < PointerId.touchPointerIdBase
+                || pointer >= PointerId.touchPointerIdBase + PointerId.touchPointerCount) return true;
             foreach (Touch sample in samples)
                 if (sample.fingerId == pointer - PointerId.touchPointerIdBase)
                     return sample.phase == TouchPhase.Began;
@@ -130,6 +141,7 @@ namespace HealerLike.Render.Stage
                 _finger = finger;
                 _start = position;
                 _blocked = IsOverInterface(position);
+                if (!_blocked) _ui?.WorldPointerDown();
                 if (!_blocked && Raycast(position, out RaycastHit hit))
                     _worldPress.Begin(finger, PanelPoint(position), hit, _interaction.GetInteraction() == null);
             }

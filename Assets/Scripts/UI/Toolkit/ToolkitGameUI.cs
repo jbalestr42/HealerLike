@@ -40,6 +40,7 @@ public class ToolkitGameUI : MonoBehaviour
     { _rosterDrag = drag; if (_view != null) _view.rosterDrag = drag; }
     public bool acceptsWorldInput => _view != null && !_context.isPaused && !_context.isInventoryOpen
         && _context.IsCurrentView(ViewType.Game);
+    public void WorldPointerDown() { _view?.ClosePopover(); }
     public void CancelGestures() { _view?.CancelGestures(); }
     public void InspectEntity(Entity entity, Vector2 screenPoint)
     {

@@ -22,6 +22,32 @@ namespace HealerLike.Render.Stage
         }
 
         [Test]
+        public void PointerStartGateOnlyInterpretsLegacyTouchIdsForStandaloneModule()
+        {
+            var host = new GameObject("Pointer module fixture");
+            host.SetActive(false);
+            try
+            {
+                var legacy = host.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+                var samples = new[] { new Touch { fingerId = 2, phase = TouchPhase.Began } };
+                int pointer = UnityEngine.UIElements.PointerId.touchPointerIdBase + 2;
+                Assert.That(StageTouchInput.CanBeginPointer(legacy, pointer, samples), Is.True);
+                samples[0] = new Touch { fingerId = 2, phase = TouchPhase.Ended };
+                Assert.That(StageTouchInput.CanBeginPointer(legacy, pointer, samples), Is.False);
+                Assert.That(StageTouchInput.CanBeginPointer(legacy, pointer, System.Array.Empty<Touch>()), Is.False);
+                Assert.That(StageTouchInput.CanBeginPointer(legacy, UnityEngine.UIElements.PointerId.mousePointerId, samples), Is.False);
+                Assert.That(StageTouchInput.CanBeginPointer(legacy, UnityEngine.UIElements.PointerId.mousePointerId,
+                    System.Array.Empty<Touch>()), Is.True);
+                var modern = host.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+                foreach (int id in new[] { pointer, UnityEngine.UIElements.PointerId.penPointerIdBase,
+                    UnityEngine.UIElements.PointerId.mousePointerId })
+                    Assert.That(StageTouchInput.CanBeginPointer(modern, id, samples), Is.True);
+                Assert.That(StageTouchInput.CanBeginPointer(null, pointer, samples), Is.True);
+            }
+            finally { Object.DestroyImmediate(host); }
+        }
+
+        [Test]
         public void NativeCancellationRunsBeforeTheEventSystemReleaseTranslation()
         {
             var order = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(typeof(StageTouchInput),

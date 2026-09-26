@@ -10,6 +10,7 @@
         "HealerLike.Render.Studio.Editor",
         "HealerLike.Tests.EditMode",
         "QuickOutline",
+        "Unity.InputSystem",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Unity.RenderPipelines.Universal.Runtime",
