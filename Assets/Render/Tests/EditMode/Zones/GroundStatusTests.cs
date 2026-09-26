@@ -28,6 +28,7 @@ public class GroundStatusTests
     public void TearDown()
     {
         Object.DestroyImmediate(_root);
+        _ground.Dispose();
     }
 
     static ABuffHandlerFactory Load(string path)

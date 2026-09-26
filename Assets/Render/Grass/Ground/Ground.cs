@@ -9,7 +9,7 @@ namespace HealerLike.Render.Grass
     // once at a point or along a line and fades on its own; a held effect follows its source through a handle
     // for as long as the source keeps it; a body presses the grass with its own shape. The zones the tuft compute
     // reads also move the grass through the vocabulary. Each frame the board's grass collects it all as stamps.
-    public class Ground
+    public class Ground : IDisposable
     {
         // The most one-shots playing at once; a new one past it replaces the oldest
         public static readonly int OneShotCapacity = 256;
@@ -29,6 +29,8 @@ namespace HealerLike.Render.Grass
         readonly List<IGroundBody> _bodies = new List<IGroundBody>();
         int _oneShotCount;
 
+        readonly bool _ownsVocabulary;
+        bool _isDisposed;
         GroundVocabulary _vocabulary;
         public GroundVocabulary vocabulary { get { return _vocabulary; } }
 
@@ -39,6 +41,7 @@ namespace HealerLike.Render.Grass
         // Without a vocabulary the defaults stand in
         public Ground(GroundVocabulary vocabulary = null)
         {
+            _ownsVocabulary = vocabulary == null;
             _vocabulary = vocabulary != null ? vocabulary : GroundVocabulary.CreateDefault();
         }
 
@@ -57,7 +60,7 @@ namespace HealerLike.Render.Grass
 
         void Add(GroundEffect effect, Vector2 from, Vector2 to, float radius, float strength)
         {
-            bool isValid = effect != null && float.IsFinite(from.x) && float.IsFinite(from.y)
+            bool isValid = !_isDisposed && effect != null && float.IsFinite(from.x) && float.IsFinite(from.y)
                            && float.IsFinite(to.x) && float.IsFinite(to.y) && float.IsFinite(radius)
                            && RenderMath.IsPositive(strength);
             if (!isValid)
@@ -89,6 +92,11 @@ namespace HealerLike.Render.Grass
         public GroundHandle Hold(GroundEffect effect)
         {
             GroundHandle handle = new GroundHandle(this, effect);
+            if (_isDisposed)
+            {
+                handle.Release();
+                return handle;
+            }
             _held.Add(handle);
             return handle;
         }
@@ -100,7 +108,7 @@ namespace HealerLike.Render.Grass
 
         public void AddBody(IGroundBody body)
         {
-            if (body != null && !_bodies.Contains(body))
+            if (!_isDisposed && body != null && !_bodies.Contains(body))
             {
                 _bodies.Add(body);
             }
@@ -114,7 +122,7 @@ namespace HealerLike.Render.Grass
         // One-shots age and the ones played out go; shown held effects age
         public void Advance(float deltaTime)
         {
-            if (!float.IsFinite(deltaTime) || deltaTime <= 0f)
+            if (_isDisposed || !float.IsFinite(deltaTime) || deltaTime <= 0f)
             {
                 return;
             }
@@ -149,7 +157,7 @@ namespace HealerLike.Render.Grass
         public int Collect(GroundStamp[] into, int start, ReadOnlySpan<Zone> zones, BodyCapsule[] capsules,
                            float surfaceY, float cellSize)
         {
-            if (into == null)
+            if (_isDisposed || into == null)
             {
                 return 0;
             }
@@ -185,10 +193,15 @@ namespace HealerLike.Render.Grass
             if (capsules != null)
             {
                 int gathered = 0;
-                for (int i = 0; i < _bodies.Count && gathered < capsules.Length; i++)
+                int bodyIndex = 0;
+                while (bodyIndex < _bodies.Count && gathered < capsules.Length)
                 {
-                    gathered += Mathf.Clamp(_bodies[i].AppendCapsules(capsules, gathered), 0,
-                                            capsules.Length - gathered);
+                    IGroundBody body = _bodies[bodyIndex];
+                    gathered += Mathf.Clamp(body.AppendCapsules(capsules, gathered), 0, capsules.Length - gathered);
+                    if (bodyIndex < _bodies.Count && ReferenceEquals(_bodies[bodyIndex], body))
+                    {
+                        bodyIndex++;
+                    }
                 }
 
                 count += BodyStamps.Append(capsules, gathered, surfaceY, cellSize, into, start + count);
@@ -205,6 +218,25 @@ namespace HealerLike.Render.Grass
             foreach (GroundHandle handle in _held)
             {
                 handle.Hide();
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+            _isDisposed = true;
+            Clear();
+            while (_held.Count > 0)
+            {
+                _held[_held.Count - 1].Release();
+            }
+            _bodies.Clear();
+            if (_ownsVocabulary)
+            {
+                RenderObjects.Release(_vocabulary);
             }
         }
 

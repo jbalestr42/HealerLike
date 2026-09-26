@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Deliveries
 {
-    // A projectile's own renderers, hidden while a tip draws the shot and put back as they were found
+    // Borrowed gameplay renderers, hidden while Render owns their presentation and restored on release
     public class HiddenRenderers
     {
         Renderer[] _renderers;

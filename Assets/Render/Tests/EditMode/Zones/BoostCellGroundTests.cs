@@ -27,6 +27,7 @@ public class BoostCellGroundTests
     {
         Object.DestroyImmediate(_owner);
         Object.DestroyImmediate(_root);
+        _groundService.Dispose();
     }
 
     // A cell as the buff lays it: a child of the entity carrying its own flat tile
@@ -97,6 +98,47 @@ public class BoostCellGroundTests
 
         Assert.AreEqual(1, _ground.patchCount);
         Assert.AreEqual(1, _groundService.heldCount);
+    }
+
+    [Test]
+    public void DisableAndReenable_RestoresOriginalRendererStatesAndReacquiresCells()
+    {
+        Renderer visible = AddCell(Vector3.one).GetComponent<Renderer>();
+        Renderer hidden = AddCell(Vector3.left).GetComponent<Renderer>();
+        hidden.enabled = false;
+        _ground.Refresh();
+        Assert.IsFalse(visible.enabled);
+        _ground.enabled = false;
+        TestHelpers.InvokePrivate(_ground, "OnDisable");
+        _ground.Refresh();
+        Assert.IsTrue(visible.enabled);
+        Assert.IsFalse(hidden.enabled);
+        Assert.AreEqual(0, _ground.patchCount);
+        _ground.enabled = true;
+        _ground.Refresh();
+        Assert.AreEqual(2, _ground.patchCount);
+        Assert.IsFalse(visible.enabled);
+        Object.DestroyImmediate(_ground);
+        Assert.IsTrue(visible.enabled);
+        Assert.IsFalse(hidden.enabled);
+    }
+
+    [Test]
+    public void InactiveCellResumesAndReparentedCellRestoresItsBorrowedRenderer()
+    {
+        GameObject cell = AddCell(Vector3.one);
+        _ground.Refresh();
+        cell.SetActive(false);
+        _ground.Refresh();
+        Assert.AreEqual(0, GroundProbe.Stamps(_groundService).Count);
+        cell.SetActive(true);
+        _ground.Refresh();
+        Assert.AreEqual(1, GroundProbe.Stamps(_groundService).Count);
+        cell.transform.SetParent(_root.transform, false);
+        _ground.Refresh();
+        Assert.AreEqual(0, _ground.patchCount);
+        Assert.AreEqual(0, _groundService.heldCount);
+        Assert.IsTrue(cell.GetComponent<Renderer>().enabled);
     }
 
     [Test]

@@ -62,6 +62,35 @@ public class EnvironmentSwayTests
     }
 
     [Test]
+    public void SetFarDistance_ReframedFogRangeResumesTheExistingSwayWithoutRebuilding()
+    {
+        _sway.Init(_camera, null, 1f, 0d);
+        _sway.Add(_plant, _plant, 5, 1.2f, 0f);
+        Quaternion rest = _plant.localRotation;
+        _sway.Animate(10);
+        Assert.AreEqual(rest, _plant.localRotation);
+        _sway.SetFarDistance(20f);
+        _sway.Animate(10);
+        Assert.That(Quaternion.Angle(rest, _plant.localRotation), Is.GreaterThan(0.001f));
+        Quaternion moved = _plant.localRotation;
+        _sway.SetFarDistance(1f);
+        _sway.Animate(11);
+        Assert.AreEqual(moved, _plant.localRotation);
+    }
+
+    [Test]
+    public void Animate_RemovedIndependentAnchor_SkipsItsSurvivingPivot()
+    {
+        GameObject anchor = new GameObject("Motion anchor");
+        _sway.Init(_camera, null, 20f, 0d);
+        _sway.Add(_plant, anchor.transform, 5, 1.2f, 0f);
+        Quaternion rest = _plant.localRotation;
+        Object.DestroyImmediate(anchor);
+        Assert.DoesNotThrow(() => _sway.Animate(10));
+        Assert.AreEqual(rest, _plant.localRotation);
+    }
+
+    [Test]
     public void Animate_NoCamera_MovesEveryPlant()
     {
         _sway.Init(null, null, 1f, 0d);

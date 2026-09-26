@@ -40,6 +40,7 @@ public class LaunchWaveTests
         Object.DestroyImmediate(_source);
         Object.DestroyImmediate(_target);
         Object.DestroyImmediate(_root);
+        _ground.Dispose();
     }
 
     void Launch()
@@ -130,7 +131,8 @@ public class LaunchWaveTests
         Assert.AreEqual(LaunchWave.GustStrength, wind.z, 0.001f);
         Assert.AreEqual(0f, wind.x, 0.00001f);
         Assert.AreEqual(0f, wind.y);
-        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + LaunchWave.GustSeconds + 0.01f, Vector3.forward * 2f).sqrMagnitude);
+        Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + LaunchWave.GustSeconds + 0.01f,
+            Vector3.forward * 2f).sqrMagnitude);
     }
 
     [Test]

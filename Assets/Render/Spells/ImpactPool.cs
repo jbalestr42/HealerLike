@@ -21,15 +21,8 @@ namespace HealerLike.Render.Spells
         static readonly float shockRadiusRange = 1f;
         static readonly float shockCriticalScale = 1.3f;
 
-        // One recipient of a character's cast this frame
-        struct Recipient
-        {
-            public GameObject target;
-            public EffectFamily family;
-        }
-
         readonly List<GameObject> _impacts = new List<GameObject>();
-        readonly Dictionary<GameObject, List<Recipient>> _groups = new Dictionary<GameObject, List<Recipient>>();
+        readonly GroupImpactLinks _groups = new GroupImpactLinks();
         Transform _parent;
         EffectVocabulary _vocabulary;
         PrimitiveMeshes _meshes;
@@ -72,7 +65,7 @@ namespace HealerLike.Render.Spells
 
             if (resource == ResourceKind.Health && source != null && source.GetComponent<Character>() != null)
             {
-                AddRecipient(source, target, recipe.family);
+                _groups.Add(source, target, recipe.family);
             }
 
             EffectPlacement.Place(effect, _parent, EffectPlacement.Anchors(target));
@@ -189,18 +182,7 @@ namespace HealerLike.Render.Spells
         // recipient gets a beam. Recipients of one cast hit in different frames draw no beam.
         public void Flush(bool isShown)
         {
-            if (isShown)
-            {
-                foreach (KeyValuePair<GameObject, List<Recipient>> group in _groups)
-                {
-                    if (group.Key != null)
-                    {
-                        Link(group.Key, group.Value);
-                    }
-                }
-            }
-
-            _groups.Clear();
+            _groups.Flush(this, isShown);
         }
 
         // Forgets the impacts that ended on their own
@@ -226,24 +208,6 @@ namespace HealerLike.Render.Spells
             _impacts.Clear();
         }
 
-        void Link(GameObject caster, List<Recipient> recipients)
-        {
-            bool fromScreen = CharacterView.ScreenSource(caster);
-            Vector3 start = EffectPlacement.Anchors(caster).castPoint;
-            foreach (Recipient recipient in recipients)
-            {
-                if (recipient.target != null && (fromScreen || Count(recipients, recipient.family) >= 2))
-                {
-                    SpellEffect link = ShowLink(start, EffectPlacement.Anchors(recipient.target).bodyCentre,
-                        recipient.family, false, fromScreen);
-                    if (fromScreen && link)
-                    {
-                        link.SetCastSource(caster);
-                    }
-                }
-            }
-        }
-
         void Add(GameObject impact)
         {
             _impacts.Add(impact);
@@ -252,42 +216,6 @@ namespace HealerLike.Render.Spells
                 SpellEffect.Dispose(_impacts[0]);
                 _impacts.RemoveAt(0);
             }
-        }
-
-        void AddRecipient(GameObject source, GameObject target, EffectFamily family)
-        {
-            if (!_groups.TryGetValue(source, out List<Recipient> recipients))
-            {
-                recipients = new List<Recipient>();
-                _groups[source] = recipients;
-            }
-
-            foreach (Recipient recipient in recipients)
-            {
-                if (recipient.target == target)
-                {
-                    return;
-                }
-            }
-
-            Recipient added = new Recipient();
-            added.target = target;
-            added.family = family;
-            recipients.Add(added);
-        }
-
-        static int Count(List<Recipient> recipients, EffectFamily family)
-        {
-            int count = 0;
-            foreach (Recipient recipient in recipients)
-            {
-                if (recipient.family == family)
-                {
-                    count++;
-                }
-            }
-
-            return count;
         }
 
         // A caster on a side draws that side's rim, a sourceless impact the neutral one

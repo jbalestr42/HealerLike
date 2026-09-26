@@ -64,6 +64,7 @@ namespace HealerLike.Render.Environment
             Clear();
             _root = new GameObject(name).transform;
             _root.SetParent(transform, false);
+            _root.gameObject.SetActive(isActiveAndEnabled);
             _properties = new MaterialPropertyBlock();
             return _root;
         }

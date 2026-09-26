@@ -95,24 +95,13 @@ namespace HealerLike.Render.Environment
 
         // Keep the crowns of central background plants inside the frame instead of chopping them at the HUD.
         // Only scenery size changes; the seeded ground positions and the board exclusion remain fixed.
-        public void Frame(Camera camera)
+        public void Frame(Camera camera) => EnvironmentFraming.FrameCrowns(root, _items, camera);
+
+        public void SetMotionDistance(float distance)
         {
-            if (root == null || camera == null) return;
-            for (int i = 0; i < _items.Count; i++)
+            if (_sway)
             {
-                EnvironmentKind kind = _items[i].kind;
-                if (kind != EnvironmentKind.MushroomTree && kind != EnvironmentKind.Monolith) continue;
-                Transform pivot = root.GetChild(i);
-                pivot.gameObject.SetActive(true);
-                pivot.localScale = Vector3.one;
-                Renderer[] parts = pivot.GetComponentsInChildren<Renderer>(true);
-                if (parts.Length == 0) continue;
-                Bounds bounds = parts[0].bounds;
-                foreach (Renderer part in parts) bounds.Encapsulate(part.bounds);
-                float scale = EnvironmentFraming.CrownScale(bounds, pivot.position, camera.transform.position,
-                    camera.transform.rotation, camera.fieldOfView, camera.aspect);
-                pivot.localScale = Vector3.one * scale;
-                pivot.gameObject.SetActive(scale > 0f);
+                _sway.SetFarDistance(distance);
             }
         }
 
@@ -269,12 +258,7 @@ namespace HealerLike.Render.Environment
         }
 
         // Scatter plants are plants, scatter rocks stones; each part varies its colour from the role's
-        Color Colour(ColourRole role)
-        {
-            return Colour(role, LookSide.Plant);
-        }
-
-        Color Colour(ColourRole role, LookSide side)
+        Color Colour(ColourRole role, LookSide side = LookSide.Plant)
         {
             if (_palette == null)
             {

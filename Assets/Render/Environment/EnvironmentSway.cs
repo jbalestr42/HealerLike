@@ -39,8 +39,13 @@ namespace HealerLike.Render.Environment
         {
             _camera = camera;
             _gust = gust;
-            _farDistance = Mathf.Max(1f, farDistance);
+            SetFarDistance(farDistance);
             _builtAt = builtAt;
+        }
+
+        public void SetFarDistance(float distance)
+        {
+            _farDistance = Mathf.Max(1f, distance);
         }
 
         void Update()
@@ -85,7 +90,8 @@ namespace HealerLike.Render.Environment
             for (int i = 0; i < _motions.Count; i++)
             {
                 Motion motion = _motions[i];
-                if (!motion.pivot || (motion.anchor.position - cameraPosition).sqrMagnitude > distance * distance)
+                if (!motion.pivot || !motion.anchor
+                    || (motion.anchor.position - cameraPosition).sqrMagnitude > distance * distance)
                 {
                     continue;
                 }

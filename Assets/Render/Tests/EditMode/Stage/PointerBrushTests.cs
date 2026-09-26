@@ -29,6 +29,7 @@ public class PointerBrushTests
     {
         Object.DestroyImmediate(_camera.gameObject);
         Object.DestroyImmediate(_go);
+        _ground.Dispose();
     }
 
     [Test]

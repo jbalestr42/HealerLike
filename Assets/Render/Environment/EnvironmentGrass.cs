@@ -19,12 +19,7 @@ namespace HealerLike.Render.Environment
 
         public void Init(Rect board, float cellSize, float surfaceY, Camera camera, ZoneRegistry zones)
         {
-            foreach (GrassField strip in _strips)
-            {
-                Destroy(strip.gameObject);
-            }
-
-            _strips.Clear();
+            Clear();
             if (_stripTemplate == null || zones == null)
             {
                 Debug.LogError("[EnvironmentGrass] Init needs the strip template and the zone registry.");
@@ -42,6 +37,7 @@ namespace HealerLike.Render.Environment
                 // Only the first band lies on the board's ground and bends there; the far ones stay rigid pyramids
                 strip.bladeSegments = bands[i].band == 0 ? strip.bladeSegments : 1;
                 strip.Init(bands[i].rect, cellSize, surfaceY, camera, zones.buffer, ZonePacker.MaxZones);
+                strip.enabled = isActiveAndEnabled;
                 strip.gameObject.SetActive(true);
                 _strips.Add(strip);
             }
@@ -55,11 +51,45 @@ namespace HealerLike.Render.Environment
         // On the board's clock, so the strips' wind matches the board's where they meet
         public void UpdateStrips(ZoneRegistry zones, float time)
         {
+            if (!isActiveAndEnabled)
+            {
+                return;
+            }
             GraphicsBuffer buffer = zones != null ? zones.buffer : null;
             foreach (GrassField strip in _strips)
             {
-                strip.UpdateField(buffer, 0, time);
+                if (strip)
+                {
+                    strip.UpdateField(buffer, 0, time);
+                }
             }
+        }
+
+        void OnEnable()
+        {
+            foreach (GrassField strip in _strips)
+            {
+                if (strip)
+                {
+                    strip.enabled = true;
+                }
+            }
+        }
+
+        void OnDestroy() => Clear();
+
+        public void Clear()
+        {
+            foreach (GrassField strip in _strips)
+            {
+                if (strip)
+                {
+                    strip.gameObject.SetActive(false);
+                    strip.Release();
+                    RenderObjects.Release(strip.gameObject);
+                }
+            }
+            _strips.Clear();
         }
 
         void OnDisable()
@@ -69,6 +99,7 @@ namespace HealerLike.Render.Environment
                 if (strip)
                 {
                     strip.SetZoneSnapshot(null, 0);
+                    strip.enabled = false;
                 }
             }
         }

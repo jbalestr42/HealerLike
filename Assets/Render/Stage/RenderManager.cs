@@ -65,8 +65,8 @@ namespace HealerLike.Render.Stage
         public ZoneRegistry zones { get { return _zones; } }
 
         // Everything the render layer tells the grass goes through here: effects, held marks and bodies
-        Ground _ground;
-        public Ground ground { get { return _ground; } }
+        readonly StageGround _ground = new StageGround();
+        public Ground ground { get { return _ground.ground; } }
         public GrassField grass { get { return _grass; } }
         public LookController look { get { return _look; } }
         public SpellVisualSink spellSink { get { return _spellSink; } }
@@ -123,23 +123,9 @@ namespace HealerLike.Render.Stage
             _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board,
                 _gameCamera.transform.eulerAngles.y));
             _zones.Init();
-            if (_ground == null)
-            {
-                _ground = new Ground(_groundVocabulary);
-            }
-            else
-            {
-                _ground.Clear();
-            }
-
-            Rect boardRect = BoardRect();
+            _ground.Init(gameObject, _groundVocabulary, _gameCamera, _board.max.y, player.grid.size);
+            Rect boardRect = new Rect(_board.min.x, _board.min.z, _board.size.x, _board.size.z);
             _grass.Init(boardRect, player.grid.size, _board.max.y, _gameCamera, _zones.buffer, ZonePacker.MaxZones);
-            PointerBrush brush = GetComponent<PointerBrush>();
-            if (brush == null)
-            {
-                brush = gameObject.AddComponent<PointerBrush>();
-            }
-            brush.Init(_ground, _gameCamera, _board.max.y, player.grid.size);
             _environment.Init(_environmentPrefab, this, boardRect);
             _spellSink.Init(this);
             _battleFocus.Init(this);
@@ -165,8 +151,8 @@ namespace HealerLike.Render.Stage
             // Observers published and producers moved their zones in Update, so the frame is final here
             _spellSink.Tick();
             _zones.PublishFrame(Time.deltaTime);
-            _ground.Advance(Time.deltaTime);
-            _grass.UpdateField(_zones, _ground);
+            ground.Advance(Time.deltaTime);
+            _grass.UpdateField(_zones, ground);
             _environment.Tick(_zones);
             _battleFocus.Tick();
             if (_placement != null)
@@ -233,10 +219,7 @@ namespace HealerLike.Render.Stage
         }
 
         // Refresh scenery only after the camera settles or its orientation changes, never every render frame.
-        public void FrameEnvironment(bool force = false)
-        {
-            _environment.Frame(_gameCamera, _board, force);
-        }
+        public void FrameEnvironment(bool force = false) => _environment.Frame(_gameCamera, _board, force);
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
@@ -274,6 +257,7 @@ namespace HealerLike.Render.Stage
         void Detach()
         {
             _spawns.Clear();
+            _ground.Clear();
             if (_placement != null)
             {
                 _placement.Clear();
@@ -308,11 +292,6 @@ namespace HealerLike.Render.Stage
 
             _entityManager = null;
             _player = null;
-        }
-
-        Rect BoardRect()
-        {
-            return new Rect(_board.min.x, _board.min.z, _board.size.x, _board.size.z);
         }
 
     }

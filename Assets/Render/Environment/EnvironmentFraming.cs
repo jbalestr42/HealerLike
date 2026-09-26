@@ -1,10 +1,44 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace HealerLike.Render.Environment
 {
     // Fits distant scenery crowns below the top HUD while keeping their ground anchors outside the board.
     public static class EnvironmentFraming
     {
+        public static void FrameCrowns(Transform root, IReadOnlyList<EnvironmentItem> items, Camera camera)
+        {
+            if (root == null || camera == null)
+            {
+                return;
+            }
+            for (int i = 0; i < items.Count; i++)
+            {
+                EnvironmentKind kind = items[i].kind;
+                if (kind != EnvironmentKind.MushroomTree && kind != EnvironmentKind.Monolith)
+                {
+                    continue;
+                }
+                Transform pivot = root.GetChild(i);
+                pivot.gameObject.SetActive(true);
+                pivot.localScale = Vector3.one;
+                Renderer[] parts = pivot.GetComponentsInChildren<Renderer>(true);
+                if (parts.Length == 0)
+                {
+                    continue;
+                }
+                Bounds bounds = parts[0].bounds;
+                foreach (Renderer part in parts)
+                {
+                    bounds.Encapsulate(part.bounds);
+                }
+                float scale = EnvironmentFraming.CrownScale(bounds, pivot.position, camera.transform.position,
+                    camera.transform.rotation, camera.fieldOfView, camera.aspect);
+                pivot.localScale = Vector3.one * scale;
+                pivot.gameObject.SetActive(scale > 0f);
+            }
+        }
+
         public const float CrownCeiling = 0.88f;
 
         public static float CrownScale(Bounds bounds, Vector3 anchor, Vector3 eye, Quaternion rotation,
@@ -14,7 +48,8 @@ namespace HealerLike.Render.Environment
             float right = float.NegativeInfinity;
             for (int i = 0; i < 8; i++)
             {
-                Vector2 point = EnvironmentForeground.ToViewport(RenderMath.Corner(bounds, i), eye, rotation, fov, aspect);
+                Vector2 point = EnvironmentForeground.ToViewport(RenderMath.Corner(bounds, i), eye, rotation,
+                    fov, aspect);
                 left = Mathf.Min(left, point.x);
                 right = Mathf.Max(right, point.x);
             }

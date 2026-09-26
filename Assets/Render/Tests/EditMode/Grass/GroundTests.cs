@@ -35,6 +35,12 @@ public class GroundTests
         _burst = new GroundEffect { lifetime = 0.5f, hold = 0.4f };
     }
 
+    [TearDown]
+    public void TearDown()
+    {
+        _ground.Dispose();
+    }
+
     [Test]
     public void Play_OneShot_PlaysThenFadesAway()
     {

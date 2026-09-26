@@ -26,8 +26,10 @@ namespace HealerLike.Render.Environment
         public void Frame(Camera camera, Bounds board)
         {
             if (camera == null) return;
-            Vector2 fog = StageCalibration.BackgroundFog(camera.transform.position, board, camera.transform.eulerAngles.y);
+            Vector2 fog = StageCalibration.BackgroundFog(camera.transform.position, board,
+                camera.transform.eulerAngles.y);
             _scatter.Frame(camera);
+            _scatter.SetMotionDistance(fog.y);
             _ridge.Frame(fog.x, fog.y);
             if (_foreground.enabled) _foreground.Build();
         }

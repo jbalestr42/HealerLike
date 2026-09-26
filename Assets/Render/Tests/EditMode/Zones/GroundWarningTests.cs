@@ -30,7 +30,7 @@ public class GroundWarningTests
         GameObject go = new GameObject("enemy");
         try
         {
-            Ground ground = new Ground();
+            using Ground ground = new Ground();
             Entity entity = null;
             TestHelpers.WithLoggingDisabled(() => entity = go.AddComponent<Entity>());
             entity.entityType = Entity.EntityType.Computer;
@@ -58,7 +58,7 @@ public class GroundWarningTests
         GameObject go = new GameObject("warning");
         try
         {
-            Ground ground = new Ground();
+            using Ground ground = new Ground();
             GroundWarning warning = go.AddComponent<GroundWarning>();
 
             warning.Init(null, ground);

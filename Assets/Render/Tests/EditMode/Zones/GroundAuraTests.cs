@@ -10,7 +10,8 @@ public class GroundAuraTests
     [Test]
     public void Radius_Ash_ShrinksAsTheEnemyWeakens()
     {
-        Assert.AreEqual(GroundAura.AshMinRadius + GroundAura.AshRadiusRange, GroundAura.Radius(GroundAura.Mark.Ash, 1f), 1e-6f);
+        Assert.AreEqual(GroundAura.AshMinRadius + GroundAura.AshRadiusRange,
+            GroundAura.Radius(GroundAura.Mark.Ash, 1f), 1e-6f);
         Assert.Less(GroundAura.Radius(GroundAura.Mark.Ash, 0.4f), GroundAura.Radius(GroundAura.Mark.Ash, 0.8f));
         Assert.AreEqual(GroundAura.AshMinRadius, GroundAura.Radius(GroundAura.Mark.Ash, -3f), 1e-6f);
     }
@@ -66,7 +67,7 @@ public class GroundAuraTests
         GameObject go = new GameObject("aura");
         try
         {
-            Ground ground = new Ground();
+            using Ground ground = new Ground();
             GroundAura aura = go.AddComponent<GroundAura>();
 
             aura.Init(null, ground, 1f);
@@ -88,7 +89,7 @@ public class GroundAuraTests
         GameObject healthGo = new GameObject("health");
         try
         {
-            Ground ground = new Ground();
+            using Ground ground = new Ground();
             Entity entity = null;
             TestHelpers.WithLoggingDisabled(() => entity = go.AddComponent<Entity>());
             entity.entityType = Entity.EntityType.Player;

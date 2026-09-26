@@ -45,6 +45,7 @@ namespace HealerLike.Render.Zones
         bool _isHeld;
         bool _hasLanded;
         ARigHost _host;
+        bool _hasHost;
         CreatureRig _footprintRig;
         int _footprintRevision;
         bool _isBody;
@@ -77,6 +78,7 @@ namespace HealerLike.Render.Zones
         public void InitFootprint(Ground ground)
         {
             _host = GetComponent<ARigHost>();
+            _hasHost = _host != null;
             RefreshFootprint();
             Init(ground);
         }
@@ -85,35 +87,15 @@ namespace HealerLike.Render.Zones
         // enlarge it. Rigs compensate their parent scale, so their authored reach is in world-sized cells.
         public static float CreatureFootprint(Transform root, CreatureRig rig = null)
         {
-            if (rig == null || rig.recipe == null)
-            {
-                return StageCalibration.CellSize * 0.5f
-                    * Mathf.Max(Mathf.Abs(root.lossyScale.x), Mathf.Abs(root.lossyScale.z));
-            }
-
-            RootDefinition roots = rig.roots;
-            float extent = roots.count > 0 ? (roots.footRadius + roots.thickness) * rig.cellSize : 0f;
-            for (int i = 0; i < rig.parts.Count; i++)
-            {
-                CreaturePart part = rig.parts[i];
-                bool isBase = part.role == PartRole.Body || (roots.count == 0 && part.role == PartRole.Limb);
-                if (!isBase) continue;
-                Renderer renderer = rig.partTransforms[i].GetComponent<Renderer>();
-                if (!renderer) continue;
-                Bounds bounds = renderer.bounds;
-                Vector3 offset = bounds.center - root.position;
-                float x = Mathf.Abs(offset.x) + bounds.extents.x;
-                float z = Mathf.Abs(offset.z) + bounds.extents.z;
-                extent = Mathf.Max(extent, Mathf.Sqrt(x * x + z * z));
-            }
-            return Mathf.Max(extent, StageCalibration.CellSize * 0.25f);
+            return GroundLanding.Footprint(root, rig);
         }
 
         void RefreshFootprint()
         {
             _footprintRig = _host ? _host.rig : null;
             _footprintRevision = _footprintRig != null ? _footprintRig.revision : 0;
-            radius = TrampleRadius(CreatureFootprint(transform, _footprintRig));
+            Transform origin = _footprintRig != null && _footprintRig.root ? _footprintRig.root : transform;
+            radius = TrampleRadius(CreatureFootprint(origin, _footprintRig));
             _meshes.Refresh(_footprintRig);
             _isBody = _meshes.count > 0;
             SyncBody();
@@ -137,10 +119,10 @@ namespace HealerLike.Render.Zones
                 return;
             }
 
-            if (_host && (_host.rig != _footprintRig
-                || (_footprintRig != null && _footprintRig.revision != _footprintRevision)))
+            if (!SyncPresentation())
             {
-                RefreshFootprint();
+                _obstacle?.Hide();
+                return;
             }
 
             UpdateLanding();
@@ -163,7 +145,7 @@ namespace HealerLike.Render.Zones
         // Held while the player drags it; lands when let go, when it first stands, and when it jumps into place
         void UpdateLanding()
         {
-            Vector3 position = transform.position;
+            Vector3 position = _footprintRig != null ? _footprintRig.root.position : transform.position;
             bool isHeld = EntityHold.IsHeld(_hold);
             Vector3 jump = position - _lastPosition;
             jump.y = 0f;
@@ -186,7 +168,8 @@ namespace HealerLike.Render.Zones
             }
 
             _landings++;
-            Landing(_ground, _footprintRig, transform.position, radius, _feet);
+            Vector3 position = _footprintRig != null ? _footprintRig.root.position : transform.position;
+            Landing(_ground, _footprintRig, position, radius, _feet);
         }
 
         // The foot ring out of each root foot of the rig, if it has roots, and the body ring round a footprint
@@ -194,42 +177,24 @@ namespace HealerLike.Render.Zones
         public static void Landing(Ground ground, CreatureRig rig, Vector3 position, float footprint,
                                    List<Vector3> feet)
         {
-            float cell = rig != null ? rig.cellSize : StageCalibration.CellSize;
-            feet.Clear();
-            if (rig != null && rig.recipe != null && rig.root)
-            {
-                Feet(rig.root, rig.roots, cell, feet);
-            }
-
-            foreach (Vector3 foot in feet)
-            {
-                ground.Play(ground.vocabulary.footRing, foot, FootRingRadius * cell);
-            }
-
-            ground.Play(ground.vocabulary.bodyRing, position, footprint * BodyRingScale);
+            GroundLanding.Play(ground, rig, position, footprint, feet);
         }
 
-        // Where each root's foot rests, as RootChain places it: out along its heading at the foot radius
         public static void Feet(Transform root, RootDefinition roots, float cellSize, List<Vector3> into)
         {
-            for (int i = 0; i < roots.count; i++)
-            {
-                float angle = i * Mathf.PI * 2f / roots.count;
-                Vector3 radial = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
-                into.Add(root.TransformPoint(radial * roots.footRadius * cellSize));
-            }
+            GroundLanding.Feet(root, roots, cellSize, into);
         }
 
         // The capsules of the body's parts and roots low enough to touch the grass, as they stand this frame. A held
         // creature still brushes the grass it is dragged over, leaving a trail behind it.
         public int AppendCapsules(BodyCapsule[] into, int start)
         {
-            if (into == null || !_isBody || !isActiveAndEnabled || strength <= 0f)
+            if (into == null || !isActiveAndEnabled || strength <= 0f || !SyncPresentation() || !_isBody)
             {
                 return 0;
             }
 
-            float ceiling = transform.position.y + BodyReach;
+            float ceiling = _footprintRig.root.position.y + BodyReach;
             int count = _meshes.Append(into, start, ceiling, MaxCapsules - ArmReserve);
             return count + AppendArms(into, start + count, ceiling, MaxCapsules - count);
         }
@@ -267,6 +232,25 @@ namespace HealerLike.Render.Zones
             }
 
             return count;
+        }
+
+        bool SyncPresentation()
+        {
+            if (!_hasHost)
+            {
+                return true;
+            }
+            if (_host != null)
+            {
+                _host.SyncGeometry();
+            }
+            CreatureRig current = _host ? _host.rig : null;
+            if (current != _footprintRig || (current != null && current.revision != _footprintRevision))
+            {
+                RefreshFootprint();
+            }
+            return _host && _host.isActiveAndEnabled && current != null && current.root
+                && current.root.gameObject.activeInHierarchy;
         }
 
         void OnEnable()

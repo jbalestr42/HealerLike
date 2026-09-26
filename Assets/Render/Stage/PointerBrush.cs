@@ -28,7 +28,7 @@ namespace HealerLike.Render.Stage
 
         public void Init(Ground ground, Camera camera, float groundY, float cellSize)
         {
-            _ground?.RemoveBody(this);
+            Clear();
             _ground = ground;
             _camera = camera;
             _groundY = groundY;
@@ -36,6 +36,17 @@ namespace HealerLike.Render.Stage
             _isBrushing = false;
             _hasPoint = false;
             _ground?.AddBody(this);
+        }
+
+        public void Clear()
+        {
+            _ground?.RemoveBody(this);
+            _ground = null;
+            _camera = null;
+            _touch = null;
+            _isBrushing = false;
+            _hasPoint = false;
+            _finger = -1;
         }
 
         void Update()
@@ -156,7 +167,7 @@ namespace HealerLike.Render.Stage
 
         void OnDestroy()
         {
-            _ground?.RemoveBody(this);
+            Clear();
         }
     }
 }

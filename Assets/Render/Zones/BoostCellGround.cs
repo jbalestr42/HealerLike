@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HealerLike.Render.Grass;
+using HealerLike.Render.Deliveries;
 using UnityEngine;
 
 namespace HealerLike.Render.Zones
@@ -16,6 +17,7 @@ namespace HealerLike.Render.Zones
         {
             public BoostCell cell;
             public GroundHandle patch;
+            public HiddenRenderers renderers;
         }
 
         readonly List<Patch> _patches = new List<Patch>();
@@ -45,8 +47,9 @@ namespace HealerLike.Render.Zones
 
         public void Refresh()
         {
-            if (!_owner || _ground == null)
+            if (!isActiveAndEnabled || !_owner || _ground == null)
             {
+                Clear();
                 return;
             }
 
@@ -62,15 +65,16 @@ namespace HealerLike.Render.Zones
             for (int i = _patches.Count - 1; i >= 0; i--)
             {
                 Patch patch = _patches[i];
-                if (!patch.cell || !patch.cell.gameObject.activeInHierarchy)
+                if (!patch.cell || patch.cell.transform.parent != _owner)
                 {
                     patch.patch.Release();
+                    patch.renderers.Restore();
                     _patches.RemoveAt(i);
                     continue;
                 }
 
                 // The cells ride along with a held creature; they light the grass again once it lands
-                if (EntityHold.IsHeld(_hold))
+                if (!patch.cell.gameObject.activeInHierarchy || EntityHold.IsHeld(_hold))
                 {
                     patch.patch.Hide();
                     continue;
@@ -94,12 +98,12 @@ namespace HealerLike.Render.Zones
 
             foreach (BoostCell cell in _found)
             {
-                foreach (Renderer renderer in cell.GetComponentsInChildren<Renderer>(true))
+                HiddenRenderers renderers = new HiddenRenderers();
+                renderers.Capture(cell.gameObject);
+                _patches.Add(new Patch
                 {
-                    renderer.enabled = false;
-                }
-
-                _patches.Add(new Patch { cell = cell, patch = _ground.Hold(_ground.vocabulary.boost) });
+                    cell = cell, patch = _ground.Hold(_ground.vocabulary.boost), renderers = renderers
+                });
             }
         }
 
@@ -132,15 +136,21 @@ namespace HealerLike.Render.Zones
             foreach (Patch patch in _patches)
             {
                 patch.patch.Release();
+                patch.renderers.Restore();
             }
 
             _patches.Clear();
+            _childrenKey = -1;
         }
 
         void OnDisable()
         {
             Clear();
-            _childrenKey = -1;
+        }
+
+        void OnDestroy()
+        {
+            Clear();
         }
     }
 }
