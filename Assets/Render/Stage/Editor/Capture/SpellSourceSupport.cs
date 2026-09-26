@@ -28,7 +28,7 @@ namespace HealerLike.Render.Stage
                 accessory = AccessoryKind.None, accent = EffectFamily.Renew
             }, manager.creatureLooks.vocabulary);
             VisualElement ui = session.actions.ui.GetComponent<UIDocument>().rootVisualElement;
-            Label label = new Label("SUPPORT FIXTURE: mineral GiftHeal\nReal creature owner and recipient; harness applies existing skills.");
+            Label label = new Label("SUPPORT FIXTURE: mineral GiftHeal\nReal creature owner and recipient; harness applies existing heal/boon consumers.");
             label.style.position = Position.Absolute;
             label.style.top = Length.Percent(16f);
             label.style.left = Length.Percent(4f);
@@ -40,9 +40,10 @@ namespace HealerLike.Render.Stage
             {
                 session.output.Check(host.rig.Recompose(fixture, material, material, manager.meshes), "Support fixture accepted");
                 manager.spellSink.Clear();
-                var healFactory = RenderAssets.Load<ApplyConsumerCharacterSkillFactory>(
-                    "Assets/Data/CharacterSkills/HealSingleTarget/HealSingleTarget.asset");
-                ((ApplyConsumerCharacterSkill)healFactory.Create()).ApplySkillOnTarget(source.gameObject, target.gameObject);
+                // RestHealConsumer reads HealthMax, which creatures actually possess. The Character heal
+                // instead requires the player-only HealPower attribute and is not a valid creature fixture.
+                var healFactory = RenderAssets.Load<ConsumerFactory>("Assets/Data/Run/RestHealConsumer.asset");
+                target.health.AddResourceModifier(ResourceModifier.Create(healFactory, source.gameObject, target.gameObject));
                 yield return AStageRun.Wait(0.2f);
                 proof.supportHealLinks = Measure(manager, host, proof);
                 session.output.Check(proof.supportHealLinks > 0, "Creature health outcome produced an anatomical link");
