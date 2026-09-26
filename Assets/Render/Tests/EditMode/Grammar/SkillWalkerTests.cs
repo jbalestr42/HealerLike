@@ -85,6 +85,49 @@ public class SkillWalkerTests
         Assert.AreEqual(3f, shots[0].count);
     }
 
+    [TestCase(0, 2f)]
+    [TestCase(1, 6f)]
+    [TestCase(2, 18f)]
+    public void Shots_ConfigurableSelectionResets_OnlyTheFirstEntryExecutes(int repeatDepth, float count)
+    {
+        GameObject selected = CreatePrefab("Selected");
+        GameObject later = CreatePrefab("Not selected");
+        ShootProjectileSkillStepFactory shoot = CreateTracked<ShootProjectileSkillStepFactory>();
+        shoot.data = new ShootProjectileSkillStepData
+        {
+            projectiles = new List<ShootProjectileSkillStepData.ProjectileData>
+            {
+                new ShootProjectileSkillStepData.ProjectileData
+                {
+                    projectilePrefab = selected, numberOfProjectileToShootPerTarget = 2
+                },
+                new ShootProjectileSkillStepData.ProjectileData
+                {
+                    projectilePrefab = later, numberOfProjectileToShootPerTarget = 17
+                }
+            }
+        };
+        ASkillStepFactory step = shoot;
+        for (int i = 0; i < repeatDepth; i++)
+        {
+            RepeatSkillStepFactory repeat = CreateTracked<RepeatSkillStepFactory>();
+            repeat.data = new RepeatSkillStepData
+            {
+                count = 3, skillStepFactories = new List<ASkillStepFactory> { step }
+            };
+            step = repeat;
+        }
+        ConfigurableSkillFactory skill = CreateTracked<ConfigurableSkillFactory>();
+        skill.data = new ConfigurableSkillData { skillStepFactories = new List<ASkillStepFactory> { step } };
+
+        List<SkillWalker.Shot> shots = SkillWalker.Shots(skill);
+
+        Assert.AreEqual(1, shots.Count);
+        Assert.AreSame(selected, shots[0].prefab);
+        Assert.AreEqual(count, shots[0].count);
+        Assert.AreSame(selected, SkillWalker.DominantPrefab(skill));
+    }
+
     [Test]
     public void Value_AttributeWithoutData_ScalesABaseOfOne()
     {

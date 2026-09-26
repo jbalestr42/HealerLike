@@ -65,15 +65,12 @@ namespace HealerLike.Render.Grammar
                          && shoot.data.projectiles != null
                          && shoot.data.projectiles.Count > 0)
                 {
-                    // The visual reading averages the executions across the authored entries.
-                    float executions = repeats / shoot.data.projectiles.Count;
-                    foreach (ShootProjectileSkillStepData.ProjectileData entry in shoot.data.projectiles)
+                    // ConfigurableSkill and RepeatSkillStep reset each selected step before execution.
+                    // ShootProjectileSkillStep.Reset selects entry zero, including every repeat.
+                    ShootProjectileSkillStepData.ProjectileData entry = shoot.data.projectiles[0];
+                    if (entry != null)
                     {
-                        if (entry == null)
-                        {
-                            continue;
-                        }
-                        AddShot(shots, entry.projectilePrefab, executions * entry.numberOfProjectileToShootPerTarget);
+                        AddShot(shots, entry.projectilePrefab, repeats * entry.numberOfProjectileToShootPerTarget);
                     }
                 }
             }
