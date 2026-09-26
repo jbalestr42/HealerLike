@@ -14,7 +14,7 @@ namespace HealerLike.Render.Stage
     {
         public string revision = StagePlay.ReadRevision();
         public string baseline = "431af58a0c7ad020e8b5c9de2db45662e324acb4";
-        public string condition = "Actual RenderStage Main+HUD. ChainLightningEntity spawned via EntityManager for "
+        public string condition = "Actual RenderStage Main+HUD. ChannelingEntity (derived Fork) spawned via EntityManager for "
             + "both sides in planning. Selection uses explicit SelectableEntity.Select/UnSelect, not physical input. "
             + "Facing uses synthetic target objects assigned to the real TargetProvider list with acquisition disabled; "
             + "CreatureBuilder reads it in production LateUpdate. Plant synthetic held delivery uses the normal source API; armless mineral keeps an anatomical lease only. "

@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 using System.Linq;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -37,9 +38,11 @@ namespace HealerLike.Render.Stage
                 yield return _session.Resize(1080, 1920);
                 if (focus) focus.enabled = false;
                 _output.manifest.interventions.Add(_proof.condition);
-                EntityData data = RenderAssets.Load<EntityData>(StagePlayer.Allies[1]);
+                EntityData data = RenderAssets.Load<EntityData>("Assets/Data/Entities/ChannelingEntity/ChannelingEntity.asset");
                 foreach (Entity.EntityType side in new[] { Entity.EntityType.Player, Entity.EntityType.Computer })
                 {
+                    _output.Check(LookDerivation.Channels(data, side).head == HeadKind.Fork,
+                        "Real ChannelingEntity derives an asymmetric Fork head");
                     string subject = side == Entity.EntityType.Player ? "plant" : "mineral";
                     Vector3 point = _manager.player.grid.GetNearestWalkablePosition(Vector3.left * 2f);
                     GameObject entity = _manager.entityManager.SpawnEntity(data, point, side);

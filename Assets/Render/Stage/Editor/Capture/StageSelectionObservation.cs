@@ -31,6 +31,8 @@ namespace HealerLike.Render.Stage
             public float timeScale;
             public Vector3 cameraPosition;
             public Quaternion cameraRotation;
+            public Vector3 ownerPosition;
+            public Quaternion ownerRotation;
             public bool isHighlighted;
             public Color highlightColour;
             public float highlightWidth;
@@ -73,6 +75,7 @@ namespace HealerLike.Render.Stage
                 + state + ".png", gameFrame = Time.frameCount, timeScale = Time.timeScale,
                 cameraPosition = UnityEngine.Object.FindAnyObjectByType<RenderManager>().gameCamera.transform.position,
                 cameraRotation = UnityEngine.Object.FindAnyObjectByType<RenderManager>().gameCamera.transform.rotation,
+                ownerPosition = _source.transform.position, ownerRotation = _source.transform.rotation,
                 entity = _source.name, entityInstance = _source.GetEntityId().ToString(),
                 presentationInstance = _host.presentation.GetEntityId().ToString(),
                 isHighlighted = _source.isHighlighted,
