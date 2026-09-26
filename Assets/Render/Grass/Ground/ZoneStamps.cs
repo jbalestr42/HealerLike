@@ -17,7 +17,7 @@ namespace HealerLike.Render.Grass
         // Accelerations at full strength, in radians per second squared
         public static readonly float HealSwirl = 30f;
         public static readonly float LaunchKick = 110f;
-        public static readonly float ShockKick = 100f;
+        public static readonly float ShockKick = 170f;
         // A heal disc fades over this share of its radius, an obstacle over this one with a wobbling rim
         public static readonly float HealEdge = 0.25f;
         public static readonly float SwirlEdge = 0.4f;

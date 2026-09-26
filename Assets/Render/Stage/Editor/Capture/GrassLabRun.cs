@@ -53,7 +53,7 @@ namespace HealerLike.Render.Stage
 
             public void Refresh()
             {
-                _meshes.Refresh(preview.rig != null ? preview.rig.root : null);
+                _meshes.Refresh(preview.rig);
             }
 
             public int AppendCapsules(BodyCapsule[] into, int start)

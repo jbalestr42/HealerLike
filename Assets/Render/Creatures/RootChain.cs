@@ -21,6 +21,25 @@ namespace HealerLike.Render.Creatures
         Transform[] _segments = new Transform[0];
         Transform[] _joints = new Transform[0];
 
+        // The meshes of every root segment and joint, the solid feet a body stands on
+        public void CollectMeshes(System.Collections.Generic.List<MeshFilter> into)
+        {
+            Collect(_segments, into);
+            Collect(_joints, into);
+        }
+
+        static void Collect(Transform[] transforms, System.Collections.Generic.List<MeshFilter> into)
+        {
+            foreach (Transform transform in transforms)
+            {
+                MeshFilter filter = transform ? transform.GetComponent<MeshFilter>() : null;
+                if (filter != null)
+                {
+                    into.Add(filter);
+                }
+            }
+        }
+
         public void Clear()
         {
             foreach (Transform segment in _segments)

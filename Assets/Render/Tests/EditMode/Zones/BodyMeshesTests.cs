@@ -35,7 +35,7 @@ public class BodyMeshesTests
     public void Append_Ceiling_KeepsOnlyTheMeshesThatReachTheGrass()
     {
         BodyMeshes meshes = new BodyMeshes();
-        meshes.Refresh(_root.transform);
+        meshes.Refresh(_root.GetComponentsInChildren<MeshFilter>());
         BodyCapsule[] into = new BodyCapsule[4];
 
         Assert.AreEqual(2, meshes.count);
@@ -48,7 +48,7 @@ public class BodyMeshesTests
     public void Append_LimitRoomOrHiddenParts_WritesLess()
     {
         BodyMeshes meshes = new BodyMeshes();
-        meshes.Refresh(_root.transform);
+        meshes.Refresh(_root.GetComponentsInChildren<MeshFilter>());
         BodyCapsule[] into = new BodyCapsule[4];
 
         Assert.AreEqual(1, meshes.Append(into, 0, 10f, 1));
@@ -59,12 +59,12 @@ public class BodyMeshesTests
     }
 
     [Test]
-    public void Refresh_NoRoot_Empties()
+    public void Refresh_NoRig_Empties()
     {
         BodyMeshes meshes = new BodyMeshes();
-        meshes.Refresh(_root.transform);
+        meshes.Refresh(_root.GetComponentsInChildren<MeshFilter>());
 
-        meshes.Refresh(null);
+        meshes.Refresh((HealerLike.Render.Creatures.CreatureRig)null);
 
         Assert.AreEqual(0, meshes.count);
     }

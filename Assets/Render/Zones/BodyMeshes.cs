@@ -1,21 +1,34 @@
 using System.Collections.Generic;
 using UnityEngine;
+using HealerLike.Render.Creatures;
 
 namespace HealerLike.Render.Zones
 {
-    // The meshes under a body's root as capsules: taken once per rebuild, measured every frame as they move
+    // A body's solid meshes as capsules: taken once per rebuild, measured every frame as they move. Only meshes
+    // whose own transform places them, so a chain drawn as one mesh in its parent's space never joins: its bounds
+    // would span its whole length along a world axis.
     public class BodyMeshes
     {
         readonly List<MeshFilter> _meshes = new List<MeshFilter>();
 
         public int count { get { return _meshes.Count; } }
 
-        public void Refresh(Transform root)
+        // The rig's own parts and roots
+        public void Refresh(CreatureRig rig)
         {
             _meshes.Clear();
-            if (root)
+            if (rig != null)
             {
-                root.GetComponentsInChildren(false, _meshes);
+                rig.CollectBodyMeshes(_meshes);
+            }
+        }
+
+        public void Refresh(IEnumerable<MeshFilter> meshes)
+        {
+            _meshes.Clear();
+            if (meshes != null)
+            {
+                _meshes.AddRange(meshes);
             }
         }
 

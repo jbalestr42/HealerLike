@@ -153,6 +153,14 @@ public class ImpactPoolTests
     }
 
     [Test]
+    public void HitShock_LargerShare_ThrowsHarderButLessThanALanding()
+    {
+        Assert.Less(ImpactPool.HitShock(0.1f), ImpactPool.HitShock(0.8f));
+        Assert.Less(ImpactPool.HitShock(1f), HealerLike.Render.Zones.TrampleZone.FootRingStrength);
+        Assert.AreEqual(ImpactPool.HitShock(1f), ImpactPool.HitShock(3f));
+    }
+
+    [Test]
     public void ShockRadius_LargerShareOrCritical_BlowsWider()
     {
         Assert.Less(ImpactPool.ShockRadius(0.1f, false), ImpactPool.ShockRadius(0.6f, false));

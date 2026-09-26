@@ -316,7 +316,7 @@ public class TrampleZoneTests
     }
 
     [Test]
-    public void Refresh_Held_PressesNothingAndLandsWhenLetGo()
+    public void Refresh_Held_BrushesTheGrassAndLandsWhenLetGo()
     {
         BuildRootedCreature();
         GameObject grip = new GameObject("collider");
@@ -329,7 +329,8 @@ public class TrampleZoneTests
         _obstacle.transform.position = new Vector3(3f, 0f, 0f);
         _zone.Refresh();
 
-        Assert.AreEqual(0, _zone.AppendCapsules(new BodyCapsule[TrampleZone.MaxCapsules], 0), "Held in the air.");
+        Assert.Greater(_zone.AppendCapsules(new BodyCapsule[TrampleZone.MaxCapsules], 0), 0,
+            "Dragged over the grass, it leaves a trail.");
         Assert.AreEqual(1, _zone.landings, "Hopping from cell to cell while held lands nowhere.");
 
         grip.layer = 0;
@@ -352,6 +353,35 @@ public class TrampleZoneTests
         _obstacle.transform.position += new Vector3(1f, 0f, 0f);
         _zone.Refresh();
         Assert.AreEqual(2, _zone.landings, "A swap moves it a whole cell at once.");
+    }
+
+    [Test]
+    public void CollectBodyMeshes_Rig_TakesThePartsAndRootsButNotTheArms()
+    {
+        _recipe = RenderTestAssets.CreateRecipe();
+        _recipe.idle = default;
+        _recipe.roots.count = 4;
+        _recipe.roots.footRadius = 0.8f;
+        _recipe.roots.thickness = 0.08f;
+        BuildRig();
+        List<MeshFilter> meshes = new List<MeshFilter>();
+
+        _host.rig.CollectBodyMeshes(meshes);
+
+        int roots = _recipe.roots.count * _recipe.roots.segments + _recipe.roots.count * (_recipe.roots.segments - 1);
+        Assert.AreEqual(_recipe.parts.Length + roots, meshes.Count);
+        foreach (MeshFilter filter in meshes)
+        {
+            Assert.AreNotEqual("LianaChain", filter.sharedMesh.name, "An arm is one mesh along its whole chain.");
+        }
+
+        bool hasArm = false;
+        foreach (MeshFilter filter in _host.rig.root.GetComponentsInChildren<MeshFilter>())
+        {
+            hasArm |= filter.sharedMesh != null && filter.sharedMesh.name == "LianaChain";
+        }
+
+        Assert.IsTrue(hasArm, "The rig does draw its arm, the body only leaves it out.");
     }
 
     [Test]

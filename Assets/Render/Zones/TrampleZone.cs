@@ -8,8 +8,8 @@ namespace HealerLike.Render.Zones
     // What an obstacle or a creature presses into the grass. A creature with a rig is a body: every mesh of its
     // parts and roots near the ground becomes a capsule the grass parts around, so feet, roots and low bodies
     // leave their own shapes. Anything else keeps a footprint disc from its root transform, never from the
-    // gameplay occupancy. A creature the player holds presses nothing; when it lands, spawned, dropped or moved
-    // into place, each root foot throws the grass out in a ring and the body throws one round itself.
+    // gameplay occupancy. When a creature lands, spawned, dropped or moved into place, each root foot throws the
+    // grass out in a ring and the body throws one round itself.
     public class TrampleZone : MonoBehaviour, IEntityView, IZoneBody
     {
         // The ring clears the root crown by this margin
@@ -21,9 +21,9 @@ namespace HealerLike.Render.Zones
         // In cells: a jump longer than this in one frame is a move into place, not a step
         public static readonly float LandingJump = 0.5f;
         // The landing's rings, radii in cells: one out of each root foot, one round the whole footprint
-        public static readonly float FootRingRadius = 0.6f;
-        public static readonly float FootRingStrength = 0.8f;
-        public static readonly float BodyRingScale = 1.3f;
+        public static readonly float FootRingRadius = 0.9f;
+        public static readonly float FootRingStrength = 1f;
+        public static readonly float BodyRingScale = 1.8f;
         public static readonly float BodyRingStrength = 1f;
 
         public float radius = 0.65f;
@@ -107,7 +107,7 @@ namespace HealerLike.Render.Zones
             _footprintRig = _host ? _host.rig : null;
             _footprintRevision = _footprintRig != null ? _footprintRig.revision : 0;
             radius = TrampleRadius(CreatureFootprint(transform, _footprintRig));
-            _meshes.Refresh(_footprintRig != null ? _footprintRig.root : null);
+            _meshes.Refresh(_footprintRig);
             _isBody = _meshes.count > 0;
             SyncBody();
         }
@@ -207,10 +207,11 @@ namespace HealerLike.Render.Zones
             }
         }
 
-        // The capsules of the meshes low enough to touch the grass, as they stand this frame; none while held
+        // The capsules of the body's parts and roots low enough to touch the grass, as they stand this frame. A held
+        // creature still brushes the grass it is dragged over, leaving a trail behind it.
         public int AppendCapsules(BodyCapsule[] into, int start)
         {
-            if (into == null || !_isBody || _isHeld || !isActiveAndEnabled || strength <= 0f)
+            if (into == null || !_isBody || !isActiveAndEnabled || strength <= 0f)
             {
                 return 0;
             }

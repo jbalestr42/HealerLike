@@ -95,8 +95,14 @@ namespace HealerLike.Render.Spells
             Add(effect.gameObject);
             if (_zones != null && preClampAmount < 0f)
             {
-                _zones.AddShock(target.transform.position, ShockRadius(amount, isCritical), 0.5f + 0.5f * amount);
+                _zones.AddShock(target.transform.position, ShockRadius(amount, isCritical), HitShock(amount));
             }
+        }
+
+        // How hard a hit's blast throws the grass, a share of a landing's, harder as it takes more health
+        public static float HitShock(float share)
+        {
+            return 0.3f + 0.35f * Mathf.Clamp01(share);
         }
 
         // The blast a hit throws through the grass, wider as it takes a larger share of the target's health
