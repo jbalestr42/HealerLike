@@ -147,6 +147,10 @@ namespace HealerLike.Render.Stones
         public void Clear()
         {
             RevokeShards();
+            foreach (Fragment fragment in _available)
+            {
+                RenderObjects.Release(fragment.gameObject);
+            }
             _available.Clear();
         }
     }

@@ -24,7 +24,10 @@ public class StoneEffectsTests
     [TearDown]
     public void TearDown()
     {
-        TestHelpers.InvokePrivate(_fx, "OnDestroy");
+        if (_fx != null)
+        {
+            TestHelpers.InvokePrivate(_fx, "OnDestroy");
+        }
         Object.DestroyImmediate(_go);
         Object.DestroyImmediate(_source);
         if (_mesh != null)
@@ -123,6 +126,20 @@ public class StoneEffectsTests
         Assert.IsTrue(current.shard.gameObject.activeSelf);
         current.Dispose();
         Assert.IsFalse(firstShard.gameObject.activeSelf);
+    }
+
+    [Test]
+    public void OnDestroy_ComponentOnly_ReleasesEveryOwnedFragmentObject()
+    {
+        StoneEmitters.ThrownContact(_fx, Vector3.zero, 1);
+        StoneFragmentPool.ShardLease shard = _fx.BorrowShard(_mesh, Color.white);
+        Assert.Greater(_go.transform.childCount, 0);
+
+        Object.DestroyImmediate(_fx);
+
+        Assert.IsNull(shard.shard);
+        Assert.AreEqual(0, _go.transform.childCount);
+        Assert.DoesNotThrow(() => shard.Dispose());
     }
 
     [Test]
