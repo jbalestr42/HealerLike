@@ -71,8 +71,13 @@ namespace HealerLike.Render.Stage
                 _output.Check(_session.interaction.GetInteraction() == null, "Info opens details without deploying");
                 yield return _session.Capture("03-details");
                 yield return _session.Resize(1440, 900);
+                yield return _session.actions.SelectCard(_session.actions.Cards("party-list")[0].parent
+                    .Q<Button>("card-info"));
+                yield return Wait(0.2f);
                 yield return _session.Capture("03b-desktop-details");
                 yield return _session.Resize(1080, 1920);
+                _session.actions.Submit("detail-button");
+                yield return Wait(0.2f);
                 _session.actions.Submit("detail-close-button");
                 yield return Wait(0.2f);
                 _session.actions.Submit("party-button");
