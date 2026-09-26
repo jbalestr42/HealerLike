@@ -6,31 +6,31 @@ using UnityEditor;
 namespace UI.Toolkit
 {
 
-public class ToolkitTestPanel : IDisposable
-{
-    readonly EditorWindow _window;
-    public VisualElement root
+    public class ToolkitTestPanel : IDisposable
     {
-        get { return _window.rootVisualElement; }
-    }
-
-    public ToolkitTestPanel()
-    {
-        _window = ScriptableObject.CreateInstance<EditorWindow>();
-        _window.Show();
-    }
-
-    public static void Submit(Button button)
-    {
-        using (NavigationSubmitEvent submit = NavigationSubmitEvent.GetPooled())
+        readonly EditorWindow _window;
+        public VisualElement root
         {
-            button.SendEvent(submit);
+            get { return _window.rootVisualElement; }
+        }
+
+        public ToolkitTestPanel()
+        {
+            _window = ScriptableObject.CreateInstance<EditorWindow>();
+            _window.Show();
+        }
+
+        public static void Submit(Button button)
+        {
+            using (NavigationSubmitEvent submit = NavigationSubmitEvent.GetPooled())
+            {
+                button.SendEvent(submit);
+            }
+        }
+
+        public void Dispose()
+        {
+            _window.Close();
         }
     }
-
-    public void Dispose()
-    {
-        _window.Close();
-    }
-}
 }
