@@ -99,7 +99,9 @@ namespace HealerLike.Render.Stage
                 = canvas.Q<VisualElement>("map-connections").userData as ToolkitMapConnections;
             _session.output.Check(connections != null && connections.edgeCount == frame.expectedEdges,
                 "Visible path painter carries every live directed map connection");
-            frame.drawnEdges = connections.edgeCount;
+            _session.output.Check(connections.paintedEdgeCount == frame.expectedEdges,
+                "Captured map frame painted every live directed connection");
+            frame.drawnEdges = connections.paintedEdgeCount;
             _session.manifest.maps.Add(frame);
         }
 
