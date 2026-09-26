@@ -14,6 +14,9 @@ namespace HealerLike.Render.Stage
     // One count per page, both sides at the actual board scale. Render-only fixture, not a gameplay roster.
     public sealed class SpellSourceFixture : IDisposable
     {
+        readonly int _mask;
+        readonly CameraClearFlags _clear;
+        readonly Color _background;
         readonly RenderManager _manager;
         readonly StageCaptureSession _session;
         readonly List<(VisualElement element, StyleEnum<Visibility> visibility)> _hiddenUi =
@@ -31,6 +34,12 @@ namespace HealerLike.Render.Stage
         public SpellSourceFixture(RenderManager manager, StageCaptureSession session)
         {
             _manager = manager;
+            _mask = manager.gameCamera.cullingMask;
+            _clear = manager.gameCamera.clearFlags;
+            _background = manager.gameCamera.backgroundColor;
+            manager.gameCamera.cullingMask = 1 << 31;
+            manager.gameCamera.clearFlags = CameraClearFlags.SolidColor;
+            manager.gameCamera.backgroundColor = new Color(0.15f, 0.19f, 0.23f);
             _session = session;
             _vocabulary = RenderAssets.Load<LookVocabulary>("Assets/Render/Creatures/Data/LookVocabulary.asset");
             _material = RenderAssets.Load<Material>("Assets/Render/Look/Look_Default.mat");
@@ -38,7 +47,7 @@ namespace HealerLike.Render.Stage
             foreach (VisualElement child in _ui.Children())
             { _hiddenUi.Add((child, child.style.visibility)); child.style.visibility = Visibility.Hidden; }
             foreach (Canvas canvas in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
-                if (canvas.enabled && canvas.renderMode == RenderMode.WorldSpace)
+                if (canvas.enabled)
                 { _worldCanvases.Add(canvas); canvas.enabled = false; }
             foreach (ARigHost host in Object.FindObjectsByType<ARigHost>(FindObjectsSortMode.None))
                 if (host.gameObject.activeSelf)
@@ -47,15 +56,14 @@ namespace HealerLike.Render.Stage
 
         public IEnumerator Capture()
         {
-            // Widen only the fixture viewport. Same vertical resolution/FOV preserves actual pixel scale.
-            yield return _session.Resize(1440, 1920);
             foreach (HeadKind head in Enum.GetValues(typeof(HeadKind)))
             {
                 for (int count = 0; count < 3; count++)
                 {
                     Label("GRAMMAR FIXTURE: " + head + " / count " + LookComposer.Copies((CountBand)count),
                         0.04f, 0.04f, 12);
-                    Label("Authored grammar at board scale, not roster gameplay", 0.04f, 0.08f, 10);
+                    Label(count == 2 ? "Isolated grammar fixture, count 5 at 0.8x layout scale"
+                        : "Isolated grammar fixture at board scale, not roster gameplay", 0.04f, 0.08f, 10);
                     for (int side = 0; side < 2; side++)
                     {
                         float x = 0.5f;
@@ -72,7 +80,8 @@ namespace HealerLike.Render.Stage
                         GameObject parent = new GameObject("Grammar fixture " + head);
                         _objects.Add(parent);
                         CreatureRig rig = new CreatureRig();
-                        _session.output.Check(rig.Init(recipe, parent.transform, _material, _manager.meshes),
+                        _session.output.Check(rig.Init(recipe, parent.transform, _material, _manager.meshes,
+                            _manager.player.grid.size * (count == 2 ? 0.8f : 1f)),
                             "Fixture assembled " + channels.side + "/" + head + "/" + channels.count);
                         _rigs.Add(rig);
                         rig.SetPresentationForward(-_manager.gameCamera.transform.forward);
@@ -87,20 +96,23 @@ namespace HealerLike.Render.Stage
                         {
                             ArmPool pool = new ArmPool();
                             pool.Init(rig, _material, _manager.meshes, _manager.deliveryVocabulary);
-                            pool.BeginDelivery(1, DeliveryStyle.Direct, null, start + Vector3.right * 0.7f);
+                            pool.BeginDelivery(1, DeliveryStyle.Direct, null, start + _manager.gameCamera.transform.right * 0.7f);
                             pool.Tick(0.3f);
                             _pools.Add(pool);
                         }
+                        foreach (Transform partTransform in rig.root.GetComponentsInChildren<Transform>(true))
+                            partTransform.gameObject.layer = 31;
                         // Every outlet is shown as a short ray, labelled diagnostic geometry on this fixture only.
                         foreach (CreaturePart part in recipe.parts.Where(p => p.isSource))
                         {
                             CreatureSources.Resolve(rig, part.sourceId, out Vector3 point);
                             GameObject ray = new GameObject("Diagnostic outlet ray");
                             _objects.Add(ray);
+                            ray.layer = 31;
                             LineRenderer line = ray.AddComponent<LineRenderer>();
                             line.sharedMaterial = _material;
                             line.startColor = line.endColor = Color.yellow;
-                            line.startWidth = 0.015f;
+                            line.startWidth = 0.025f;
                             line.endWidth = 0.006f;
                             line.positionCount = 2;
                             int index = Array.FindIndex(recipe.parts, p => p.sourceId == part.sourceId);
@@ -113,7 +125,7 @@ namespace HealerLike.Render.Stage
                     Label("Short rays: all outlets. Plant thread: first held delivery.", 0.04f, 0.93f, 10);
                     yield return AStageRun.Wait(0.1f);
                     yield return _session.Capture("fixture-" + head + "-" + LookComposer.Copies((CountBand)count),
-                        "Labelled grammar fixture; diagnostic outlet rays; original board scale");
+                        "Labelled grammar fixture; diagnostic outlet rays; labelled layout scale");
                     Clear();
                 }
             }
@@ -155,6 +167,9 @@ namespace HealerLike.Render.Stage
         public void Dispose()
         {
             Clear();
+            _manager.gameCamera.cullingMask = _mask;
+            _manager.gameCamera.clearFlags = _clear;
+            _manager.gameCamera.backgroundColor = _background;
             foreach (GameObject hidden in _hidden) if (hidden) hidden.SetActive(true);
             foreach (Canvas canvas in _worldCanvases) if (canvas) canvas.enabled = true;
             foreach (var entry in _hiddenUi) entry.element.style.visibility = entry.visibility;
