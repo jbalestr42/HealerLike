@@ -116,14 +116,6 @@ namespace HealerLike.Render.Stones
             return lease;
         }
 
-        public void ReturnShard(Transform shard)
-        {
-            if (!ReferenceEquals(shard, null) && _shards.TryGetValue(shard, out ShardLease lease))
-            {
-                ReturnShard(lease);
-            }
-        }
-
         void ReturnShard(ShardLease lease)
         {
             Fragment fragment = lease.Revoke();

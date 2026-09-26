@@ -137,20 +137,6 @@ namespace HealerLike.Render.Stones
             return _pool.Borrow(mesh, _stoneMaterial, colour);
         }
 
-        public Transform TakeShard(Mesh mesh, Color colour)
-        {
-            StoneFragmentPool.ShardLease lease = BorrowShard(mesh, colour);
-            return lease != null ? lease.shard : null;
-        }
-
-        public void ReturnShard(Transform shard)
-        {
-            if (_pool != null)
-            {
-                _pool.ReturnShard(shard);
-            }
-        }
-
         static Vector3 PositionAt(Vector3 start, Vector3 velocity, float age, float ground, bool bounce)
         {
             Vector3 position = start + velocity * age + Vector3.down * (0.5f * gravity * age * age);

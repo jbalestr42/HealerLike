@@ -87,15 +87,17 @@ public class StoneEffectsTests
     }
 
     [Test]
-    public void TakeShard_ThenReturned_ComesFromAndGoesBackToThePool()
+    public void BorrowShard_LeaseDisposed_ComesFromAndGoesBackToThePool()
     {
-        Transform shard = _fx.TakeShard(_mesh, Color.white);
+        StoneFragmentPool.ShardLease lease = _fx.BorrowShard(_mesh, Color.white);
+        Transform shard = lease.shard;
 
         Assert.IsTrue(shard.gameObject.activeSelf);
         Assert.AreSame(_mesh, shard.GetComponent<MeshFilter>().sharedMesh);
         Assert.AreEqual(0, _fx.liveCount);
 
-        _fx.ReturnShard(shard);
+        lease.Dispose();
+        Assert.IsNull(lease.shard);
         Assert.IsFalse(shard.gameObject.activeSelf);
         Assert.AreEqual(1, _fx.transform.childCount);
 
