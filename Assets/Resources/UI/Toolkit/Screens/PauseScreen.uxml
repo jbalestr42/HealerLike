@@ -4,7 +4,15 @@
         <ui:Label text="TAKE A BREATH" class="eyebrow" />
         <ui:Label text="Paused" class="dialog-title" />
         <ui:Label text="Your party will be here when you return." class="muted dialog-description" />
-        <ui:VisualElement name="pause-settings" class="pause-settings" />
+        <ui:VisualElement name="pause-settings" class="pause-settings">
+            <ui:Button name="focus-button" text="Overview" class="button is-hidden" />
+            <ui:VisualElement name="speed-controls" class="speed-controls">
+                <ui:Button name="speed-slow-button" text="½×" class="button" />
+                <ui:Button name="speed-normal-button" text="1×" class="button" />
+                <ui:Button name="speed-fast-button" text="2×" class="button" />
+            </ui:VisualElement>
+            <ui:Toggle name="mark-entity-toggle" label="Show creature markers" class="marker-toggle" />
+        </ui:VisualElement>
         <ui:Button name="resume-button" text="Resume encounter" class="button button--primary" />
         <ui:Button name="menu-button" text="Return to menu" class="button button--quiet menu-button" />
     </ui:Instance>

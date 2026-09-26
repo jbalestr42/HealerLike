@@ -199,6 +199,8 @@ namespace HealerLike.Render.Stage
             button.Blur();
             yield return null;
             button.Focus();
+            using (KeyDownEvent inspect = KeyDownEvent.GetPooled(new Event { type = EventType.KeyDown, keyCode = KeyCode.I }))
+                button.SendEvent(inspect);
             yield return null;
             if (!ReferenceEquals(button.focusController.focusedElement, button))
             {

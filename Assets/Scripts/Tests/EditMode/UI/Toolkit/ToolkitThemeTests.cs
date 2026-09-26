@@ -72,7 +72,7 @@ namespace UI.Toolkit
         }
 
         [UnityTest]
-        public IEnumerator ResolveStyles_PhoneInfoButton_PreservesCompactCardOverride()
+        public IEnumerator ResolveStyles_CompactCards_HideSeparateInfoAndKeepTouchTarget()
         {
             using (ToolkitTestPanel panel = new ToolkitTestPanel())
             {
@@ -89,13 +89,10 @@ namespace UI.Toolkit
                     yield return null;
                     yield return null;
                     Button info = root.Q("spell-list").Q<Button>("card-info");
-                    Assert.AreEqual(45f, info.resolvedStyle.width);
-                    Assert.AreEqual(45f, info.resolvedStyle.height);
-                    Assert.AreEqual(11f, info.resolvedStyle.fontSize);
-                    Assert.AreEqual(0f, info.resolvedStyle.paddingLeft);
-                    Assert.AreEqual(0f, info.resolvedStyle.paddingRight);
-                    Assert.AreEqual(0f, info.resolvedStyle.paddingTop);
-                    Assert.AreEqual(0f, info.resolvedStyle.paddingBottom);
+                    Assert.AreEqual(DisplayStyle.None, info.resolvedStyle.display);
+                    Button card = root.Q("spell-list").Q<Button>("data-card");
+                    Assert.GreaterOrEqual(card.worldBound.width, 44);
+                    Assert.GreaterOrEqual(card.worldBound.height, 44);
                 }
                 finally
                 {

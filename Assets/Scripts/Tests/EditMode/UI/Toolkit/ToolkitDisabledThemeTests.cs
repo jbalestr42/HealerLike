@@ -63,10 +63,10 @@ namespace UI.Toolkit
             AssertColour(locked, moon ? Rgb(23, 27, 37) : Rgb(23, 37, 37));
             Assert.AreEqual(1f, locked.resolvedStyle.opacity);
             Button card = _root.Q("party-list").Q<Button>("data-card");
-            Assert.IsFalse(card.enabledInHierarchy);
+            Assert.IsTrue(card.enabledInHierarchy, "Unavailable cards still accept inspection");
             Color cardColour = moon ? Rgb(29, 33, 45) : Rgb(29, 45, 45);
-            AssertColour(card, cardColour);
-            Assert.AreEqual(0.42f, card.resolvedStyle.opacity, 0.001f);
+            AssertColour(card, Color.clear);
+            Assert.AreEqual(1f, card.resolvedStyle.opacity, 0.001f);
 
             Button first = _root.Q<Button>("map-node-0-0");
             Assert.IsTrue(first.enabledInHierarchy);
@@ -88,15 +88,15 @@ namespace UI.Toolkit
             yield return null;
             yield return null;
             AssertColour(_root.Q<Button>("detail-equip-button"), cardColour);
-            AssertColour(_root.Q<Button>("pause-button"), Color.clear);
-            AssertColour(_root.Q<Button>("wave-button"), moon ? Rgb(153, 218, 210) : Rgb(189, 218, 156));
-            AssertColour(card, cardColour);
+            AssertColour(_root.Q<Button>("pause-button"), new Color(12f/255, 47f/255, 44f/255, .30f));
+            AssertColour(_root.Q<Button>("wave-button"), new Color(16f/255, 63f/255, 56f/255, .85f));
+            AssertColour(card, Color.clear);
             VisualElement input = _root.Q<DropdownField>("detail-targeting")
                 .Q(className: "unity-base-popup-field__input");
             AssertColour(input, cardColour);
             Color ink = moon ? Rgb(164, 184, 235) : Rgb(229, 235, 228);
             Color border = moon ? Rgb(62, 69, 88) : Rgb(65, 88, 81);
-            foreach (VisualElement control in new[] { card, _root.Q("detail-equip-button"), input })
+            foreach (VisualElement control in new[] { _root.Q("detail-equip-button"), input })
             {
                 Assert.AreEqual(ink, control.resolvedStyle.color, control.name + " disabled text");
                 Assert.AreEqual(border, control.resolvedStyle.borderTopColor, control.name + " disabled border");

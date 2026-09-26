@@ -30,7 +30,8 @@ public class ToolkitSpellBar
                 model.iconSource = slot.data;
                 model.title = slot.data.name;
                 model.description = TextConvertor.Convert(slot.data.description, character, slot.data);
-                model.status = LegacyUiReader.SkillStatus(slot);
+                model.spell = ToolkitSpellState.Read(slot, character);
+                model.status = "";
                 model.isEnabled = canCast && LegacyUiReader.CanUse(slot);
                 model.source = slot;
                 model.activate = OnSpellActivated;

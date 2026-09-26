@@ -43,11 +43,19 @@ public class ToolkitInventoryPanel : IDisposable
             _inventoryEquipButton.clicked += TransferSelectedItem;
         }
 
+        view.AddClickListener("detail-inventory-button", OpenEquipment);
         _choices = new ToolkitInventoryChoices(context, view.root, OnTargetSelected);
+    }
+
+    void OpenEquipment()
+    {
+        _context.isInventoryOpen = true;
+        _gameUI.Refresh();
     }
 
     public void Dispose()
     {
+        _view?.RemoveClickListener("detail-inventory-button", OpenEquipment);
         if (_equipButton != null)
         {
             _equipButton.clicked -= TransferSelectedItem;
@@ -102,6 +110,7 @@ public class ToolkitInventoryPanel : IDisposable
             return;
         }
 
+        _view.SetButton("detail-inventory-button", "Equipment", isPreparing && !_context.isPaused);
         InventoryHandler stash = _context.legacy != null ? _context.stash : null;
         bool isFromStash = _context.selectedItemOwner == stash;
         Character character = _context.player != null ? _context.player.character : null;

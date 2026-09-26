@@ -39,11 +39,13 @@ public class ToolkitEncounterBar
     {
         GameHUD hud = _context.legacy.gameHUD;
         bool isAvailable = !_context.isPaused && !hasOverlay;
+        _view.Show("field-toolbar", isStart || isPreparing || _context.hasInteraction);
         _view.Show("start-button", isStart);
         _view.Show("spell-section", !isStart);
-        _view.Show("wave-button", !isStart && isPreparing);
+        _view.Show("wave-button", !isStart && isPreparing && !_context.hasInteraction);
+        _view.Show("party-panel", !isStart);
         _view.SetButton("start-button", "Start expedition", isAvailable && hud.startGameButton.interactable);
-        _view.SetText("currency-label", $"{_context.player.gold} gold");
+        _view.SetText("currency-label", $"● {_context.player.gold}");
         _view.SetText("wave-label", GetRoomText());
         _view.SetText("phase-label", GetPhaseText(isStart, isPreparing));
         _view.SetText("status-label", GetStatusText(isStart, isPreparing));
@@ -66,10 +68,10 @@ public class ToolkitEncounterBar
     public void RefreshMana()
     {
         Character character = _context.player.character;
-        _view.Show("mana-bar", character != null && character.mana != null);
+        _view.Show("mana-value", character != null && character.mana != null);
         if (character != null && character.mana != null)
         {
-            _view.SetResource("mana-bar", character.mana.Value, character.mana.Max);
+            _view.SetText("mana-value", character.mana.Value.ToString("0"));
         }
     }
 
@@ -91,7 +93,7 @@ public class ToolkitEncounterBar
         RunState run = _context.ascension.run;
         return run == null || run.currentNode == null
             ? "Choose your route"
-            : $"Room {run.currentFloor + 1} · {MapView.GetNodeLabel(run.currentNode.type)}";
+            : $"Room {run.currentFloor + 1}";
     }
 
     string GetPhaseText(bool isStart, bool isPreparing)

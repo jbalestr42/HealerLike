@@ -9,6 +9,10 @@ public class ToolkitCardModel
     public string description;
     public string status;
     public bool isEnabled = true;
+    public bool canDrag;
+    public ToolkitSpellState spell;
+    public float healthFraction = -1f;
+    public System.Action<Entity> deployed;
 
     // What the card acts on, read back by its activate callback
     public object source;

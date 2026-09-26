@@ -27,7 +27,7 @@ namespace HealerLike.Render.Stage
             _root.Add(new Label { name = "detail-title" });
             _root.Add(new Label { name = "detail-description" });
             _view = new ToolkitGameView(_root);
-            _view.OnInspect.AddListener(_view.ShowDetail);
+            _view.OnInspectRequested.AddListener(_view.ShowDetail);
             _actions = new StageInterfaceActions();
         }
 
@@ -40,13 +40,13 @@ namespace HealerLike.Render.Stage
         }
 
         [UnityTest]
-        public IEnumerator InspectCard_DesktopInfoHidden_UsesRealFocusWithoutActivatingTheCard()
+        public IEnumerator InspectCard_DesktopInfoHidden_UsesExplicitInspectKeyWithoutActivatingTheCard()
         {
             int activations = 0;
             int inspections = 0;
             ToolkitCardModel model = new ToolkitCardModel { key = "creature", title = "Focused creature",
                 description = "Real card inspection", isEnabled = true, activate = _ => activations++ };
-            _view.OnInspect.AddListener(_ => inspections++);
+            _view.OnInspectRequested.AddListener(_ => inspections++);
             _view.SetCards("party-list", new[] { model });
             yield return null;
             yield return null;

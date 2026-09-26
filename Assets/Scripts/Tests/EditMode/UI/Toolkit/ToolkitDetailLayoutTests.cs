@@ -55,7 +55,7 @@ namespace UI.Toolkit
         }
 
         [UnityTest]
-        public IEnumerator Layout_PortraitAndDesktop_KeepsPortraitAboveText()
+        public IEnumerator Layout_PortraitAndDesktop_KeepsCompactSummaryReadable()
         {
             ToolkitTheme.Apply(_root, null);
             foreach (Vector2 size in new[] { new Vector2(390f, 844f), new Vector2(1440f, 900f) })
@@ -66,7 +66,7 @@ namespace UI.Toolkit
                 AssertViewport(size);
                 Rect portrait = _root.Q("detail-icon").worldBound;
                 Rect title = _root.Q("detail-title").worldBound;
-                Assert.LessOrEqual(portrait.yMax, title.yMin, "Stacked detail layout at " + size);
+                Assert.LessOrEqual(portrait.xMax, title.xMin, "Compact detail summary at " + size);
                 AssertVisible(_root.Q("detail-title"));
             }
         }
@@ -107,7 +107,8 @@ namespace UI.Toolkit
             _root.style.width = width;
             _root.style.height = height;
             ToolkitResponsiveLayout.Apply(_view, width, height);
-            _root.Q("hud-root").AddToClassList("detail-open");
+            _root.Q("detail-panel").RemoveFromClassList("is-hidden");
+            _root.Q("detail-panel").style.maxHeight = height - 110;
         }
 
         void AssertVisible(VisualElement element)

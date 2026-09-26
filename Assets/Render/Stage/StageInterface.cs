@@ -81,7 +81,7 @@ namespace HealerLike.Render.Stage
                     touch = _ui.gameObject.AddComponent<StageTouchInput>();
                 }
 
-                touch.Init(StageSceneObjects.Find<InteractionManager>(scene));
+                touch.Init(StageSceneObjects.Find<InteractionManager>(scene), StageSceneObjects.Find<PlayerBehaviour>(scene).grid);
                 _ui.SetBattleFocus(false, _focus.Toggle);
             }
 

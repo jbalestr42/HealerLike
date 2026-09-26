@@ -109,7 +109,13 @@ public class ToolkitDetailPanel : IDisposable
     public void OnInspect(ToolkitCardModel model)
     {
         _context.isInspecting = true;
-        _view.ShowDetail(model);
+        if (model.source is Entity entity)
+        {
+            _context.selectedEntity = entity;
+            _context.selectedItem = null;
+            RefreshEntity();
+        }
+        else _view.ShowDetail(model);
     }
 
     public void OnInspectEnded()

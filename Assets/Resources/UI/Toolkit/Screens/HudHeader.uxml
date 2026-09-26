@@ -1,15 +1,8 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
-    <ui:VisualElement class="brand-block">
-        <ui:Label text="HEALER" class="brand" />
-        <ui:Label text="KEEP THE PARTY ALIVE" class="eyebrow" />
-    </ui:VisualElement>
-    <ui:VisualElement class="run-status">
-        <ui:Label name="wave-label" text="WAVE 01" class="heading" />
-        <ui:Label name="phase-label" text="Prepare your party" class="muted" />
-    </ui:VisualElement>
-    <ui:VisualElement class="header-actions">
-        <ui:Label name="currency-label" text="0 gold" class="currency" />
-        <ui:Button name="inventory-button" text="Inventory" class="button button--quiet" />
-        <ui:Button name="pause-button" text="Pause" class="button button--quiet" />
-    </ui:VisualElement>
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Label name="wave-label" class="heading" />
+    <ui:Label name="currency-label" class="currency" />
+    <ui:VisualElement class="toolbar-space" picking-mode="Ignore" />
+    <ui:Button name="map-button" text="Map" tooltip="Expedition map" class="button hud-icon is-hidden" />
+    <ui:Button name="inventory-button" text="Bag" tooltip="Inventory and equipment" class="button hud-icon" />
+    <ui:Button name="pause-button" text="II" tooltip="Pause" class="button hud-icon" />
 </ui:UXML>

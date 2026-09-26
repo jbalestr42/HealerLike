@@ -16,19 +16,27 @@ namespace HealerLike.Render.Stage
         int _finger = -1;
         Vector2 _start;
         bool _blocked;
-        IDraggable _draggable;
+        readonly StageWorldPress _worldPress = new StageWorldPress();
+        StageRosterDrag _roster;
+        ToolkitGameUI _ui;
+        public StageRosterDrag roster => _roster;
 
 #if UNITY_EDITOR
         // Native capture supplies one sample per player frame; Android always reads Input.touches.
         public Touch[] captureTouches { get; set; }
 #endif
 
-        public void Init(InteractionManager interaction)
+        public void Init(InteractionManager interaction, GridManager grid = null)
         {
             CancelDrag();
             RestoreMouse();
             _finger = -1;
+            _roster?.Dispose();
             _interaction = interaction;
+            _ui = GetComponent<ToolkitGameUI>();
+            _roster = interaction != null && grid != null
+                ? new StageRosterDrag(interaction, grid, Raycast, IsOverInterface, ClaimRoster) : null;
+            _ui?.SetRosterDrag(_roster);
         }
 
         void Update()
@@ -37,6 +45,8 @@ namespace HealerLike.Render.Stage
             {
                 return;
             }
+
+            if (_ui != null && !_ui.acceptsWorldInput) { Interrupt(); return; }
 
             int touchCount = Input.touchCount;
 #if UNITY_EDITOR
@@ -47,17 +57,25 @@ namespace HealerLike.Render.Stage
 #endif
             if (touchCount == 0)
             {
+                bool useMouse = true;
+#if UNITY_EDITOR
+                useMouse = captureTouches == null;
+#endif
+                if (useMouse && (Input.GetMouseButton(0) || Input.GetMouseButtonUp(0)))
+                {
+                    SuspendMouse();
+                    ProcessTouch(99, Input.GetMouseButtonDown(0) ? TouchPhase.Began
+                        : Input.GetMouseButtonUp(0) ? TouchPhase.Ended : TouchPhase.Moved, Input.mousePosition);
+                    return;
+                }
+                if (_finger >= 0) _ui?.CancelGestures();
                 CancelDrag();
                 _finger = -1;
                 RestoreMouse();
                 return;
             }
 
-            if (_interaction.enabled)
-            {
-                _interaction.enabled = false;
-                _suspended = true;
-            }
+            SuspendMouse();
 
             for (int i = 0; i < touchCount; i++)
             {
@@ -96,20 +114,8 @@ namespace HealerLike.Render.Stage
                 _finger = finger;
                 _start = position;
                 _blocked = IsOverInterface(position);
-                if (!_blocked && _interaction.GetInteraction() == null && Raycast(position, out RaycastHit hit))
-                {
-                    _interaction.CancelSelection();
-                    _interaction.Select(hit.collider.GetComponentInParent<ISelectable>());
-                    _draggable = hit.collider.GetComponentInParent<IDraggable>();
-                    if (_draggable != null && _draggable.CanDrag())
-                    {
-                        _draggable.StartDrag(hit);
-                    }
-                    else
-                    {
-                        _draggable = null;
-                    }
-                }
+                if (!_blocked && Raycast(position, out RaycastHit hit))
+                    _worldPress.Begin(finger, PanelPoint(position), hit, _interaction.GetInteraction() == null);
             }
 
             if (finger != _finger)
@@ -133,17 +139,14 @@ namespace HealerLike.Render.Stage
                 placement.OnMouseOver(placementHit);
             }
 
-            if (!_blocked && _draggable != null && Raycast(position, out RaycastHit dragHit))
+            if (!_blocked && Raycast(position, out RaycastHit worldHit))
             {
-                if (phase == TouchPhase.Moved)
+                _worldPress.Move(finger, PanelPoint(position), worldHit, _ui, position);
+                if (phase == TouchPhase.Ended)
                 {
-                    _draggable.Drag(dragHit);
-                }
-                else if (phase == TouchPhase.Ended)
-                {
-                    _draggable.EndDrag(dragHit);
-                    _draggable = null;
-                    _blocked = true;
+                    bool consumed = _worldPress.consumed;
+                    _worldPress.End(worldHit);
+                    _blocked |= consumed;
                 }
             }
 
@@ -170,20 +173,38 @@ namespace HealerLike.Render.Stage
                 out hit, Mathf.Infinity, mask);
         }
 
-        void CancelDrag()
+        Vector2 PanelPoint(Vector2 point)
         {
-            if (_draggable != null)
-            {
-                _draggable.CancelDrag();
-                _draggable = null;
-            }
+            float scale = ToolkitScreenLayout.GetScale(Screen.width, Screen.height, Application.isMobilePlatform);
+            return new Vector2(point.x, -point.y) / scale;
+        }
+
+        void ClaimRoster()
+        {
+            _blocked = true;
+            _worldPress.Cancel();
+        }
+        void CancelDrag() { _worldPress.Cancel(); }
+        void OnApplicationFocus(bool focused) { if (!focused) Interrupt(); }
+        void OnApplicationPause(bool paused) { if (paused) Interrupt(); }
+        public void Interrupt()
+        {
+            _ui?.CancelGestures(); _roster?.Cancel(); CancelDrag();
+            _blocked = true; _finger = -1; RestoreMouse();
         }
 
         void OnDisable()
         {
+            _roster?.Cancel();
+            _ui?.CancelGestures();
             CancelDrag();
             _finger = -1;
             RestoreMouse();
+        }
+
+        void SuspendMouse()
+        {
+            if (_interaction.enabled) { _interaction.enabled = false; _suspended = true; }
         }
 
         void RestoreMouse()

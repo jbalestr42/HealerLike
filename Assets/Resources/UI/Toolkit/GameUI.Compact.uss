@@ -1,0 +1,79 @@
+#hud-root.compact-hud .top-bar {
+    min-height: 44px; height: 44px; flex-direction: row; padding: 0; border-width: 0;
+    background-color: transparent; flex-shrink: 0;
+}
+#hud-root.compact-hud #wave-label {
+    font-size: 14px; -unity-font-style: bold; white-space: nowrap;
+    -unity-text-outline-width: 0.7px; -unity-text-outline-color: rgb(15, 42, 37);
+}
+#hud-root.compact-hud #currency-label {
+    font-size: 14px; margin-left: 10px; margin-right: 2px;
+    -unity-text-outline-width: 0.7px; -unity-text-outline-color: rgb(15, 42, 37);
+}
+#hud-root.compact-hud .hud-icon {
+    min-width: 44px; width: 44px; min-height: 44px; padding: 0; margin: 0;
+    background-color: rgba(12, 47, 44, 0.30); border-width: 0; border-radius: 22px;
+    font-size: 14px; color: rgb(248, 247, 223);
+}
+#hud-root.compact-hud .main-content {
+    min-height: 0; margin: 0; flex-direction: column; flex-grow: 1;
+}
+#hud-root.compact-hud .world-space { min-width: 0; min-height: 0; flex-grow: 1; }
+#hud-root.compact-hud .field-toolbar {
+    height: 44px; min-height: 44px; margin: 0; flex-shrink: 0; align-items: flex-end;
+    flex-direction: column;
+}
+#hud-root.compact-hud .command-section {
+    width: auto; margin: 0; height: 44px;
+}
+#hud-root.compact-hud .encounter-actions { flex-direction: row; }
+#hud-root.compact-hud .encounter-actions .button {
+    flex-grow: 0; min-height: 44px; padding: 4px 12px; font-size: 13px;
+    background-color: rgba(16, 63, 56, 0.85); color: rgb(248, 247, 223);
+    border-color: rgba(245, 242, 216, 0.65); border-width: 1px; border-radius: 16px;
+}
+#hud-root.compact-hud .party-panel {
+    position: relative; left: auto; top: auto; bottom: auto; right: auto;
+    width: auto; height: 76px; min-height: 76px; max-height: 76px; padding: 0;
+    flex-shrink: 0; display: flex; background-color: transparent; border-width: 0;
+}
+#hud-root.compact-hud .command-dock {
+    min-height: 96px; height: 96px; max-height: 96px; padding: 0; margin: 0;
+    flex-direction: column; flex-shrink: 0; background-color: transparent; border-width: 0;
+}
+#hud-root.compact-hud .spell-section {
+    flex-direction: row; align-items: flex-start; min-width: 0; height: 96px;
+}
+#hud-root.compact-hud #mana-value {
+    width: 44px; min-width: 44px; flex-shrink: 0; padding: 12px 0 0 2px;
+    font-size: 24px; -unity-font-style: bold; color: rgb(248, 247, 223);
+    -unity-text-outline-width: 0.8px; -unity-text-outline-color: rgb(15, 42, 37);
+}
+#hud-root.compact-hud .detail-panel {
+    display: flex; position: absolute; width: 280px; max-width: 90%; height: auto;
+    max-height: 80%; left: 12px; top: 90px; bottom: auto; right: auto;
+    padding: 14px; background-color: var(--ui-panel); border-color: var(--ui-ink);
+    border-width: 1px; border-radius: 12px;
+}
+#hud-root.compact-hud .detail-panel.is-hidden { display: none; }
+#hud-root.compact-hud .detail-close {
+    position: absolute; right: 0; top: 0; width: 44px; height: 44px; min-height: 44px;
+    padding: 0; margin: 0; background-color: transparent; border-width: 0; font-size: 24px;
+}
+#hud-root.compact-hud .detail-summary { flex-direction: row; }
+#hud-root.compact-hud .detail-title { padding-right: 24px; font-size: 16px; }
+#hud-root.compact-hud .detail-description { font-size: 13px; white-space: normal; }
+#hud-root.compact-hud .detail-icon { display: flex; width: 40px; height: 40px; margin: 0 8px 0 0; }
+#hud-root.compact-hud .detail-copy { flex-shrink: 1; flex-grow: 1; min-width: 0; }
+#hud-root.compact-hud .detail-scroll { min-height: 0; flex-shrink: 1; }
+#hud-root.compact-hud .detail-actions { margin-top: 8px; }
+#hud-root.compact-hud .detail-actions .button { min-height: 44px; }
+#hud-root.compact-hud .pause-settings { flex-direction: column; align-items: stretch; }
+#hud-root.compact-hud .pause-settings .speed-controls { width: auto; }
+#hud-root.compact-hud .pause-settings .marker-toggle { margin: 0; }
+#hud-root.compact-hud .pause-settings #focus-button { min-height: 44px; }
+#hud-root.compact-hud .is-hidden { display: none; }
+#hud-root.compact-hud.is-menu .party-panel { display: none; }
+#hud-root.compact-hud.is-menu .command-dock { display: none; }
+
+#hud-root.compact-hud.is-menu .field-toolbar { display: flex; }

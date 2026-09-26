@@ -39,7 +39,7 @@ namespace UI.Toolkit
         }
 
         [Test]
-        public void Resize_PhoneThenDesktop_MovesSameSpeedControlsBetweenPauseAndDock()
+        public void Resize_PhoneThenDesktop_KeepsSettingsInPause()
         {
             VisualElement speed = _root.Q("speed-controls");
             VisualElement markers = _root.Q("mark-entity-toggle");
@@ -49,7 +49,7 @@ namespace UI.Toolkit
             Assert.AreEqual("pause-settings", markers.parent.name);
             _layout.Resize(1440f, 900f);
             Assert.IsFalse(_root.Q("hud-root").ClassListContains("is-mobile"));
-            Assert.AreEqual("command-section", speed.parent.name);
+            Assert.AreEqual("pause-settings", speed.parent.name);
             Assert.AreSame(speed, _root.Q("speed-controls"));
         }
 
@@ -65,7 +65,7 @@ namespace UI.Toolkit
                 activations++;
             };
             _view.OnInspectRequested.Invoke(model);
-            Assert.IsTrue(_root.Q("hud-root").ClassListContains("detail-open"));
+            Assert.IsFalse(_root.Q("detail-panel").ClassListContains("is-hidden"));
             Assert.AreEqual(0, activations);
         }
 
@@ -76,16 +76,16 @@ namespace UI.Toolkit
             _view.OnInspectRequested.Invoke(new ToolkitCardModel());
             _context.isInventoryOpen = true;
             _layout.Refresh();
-            Assert.IsFalse(_root.Q("hud-root").ClassListContains("detail-open"));
+            Assert.IsTrue(_root.Q("detail-panel").ClassListContains("is-hidden"));
         }
 
         [Test]
-        public void CardActivated_Phone_ClosesDrawerForBattlefieldTargeting()
+        public void ClosePopover_ClosesLocalReadingSurface()
         {
             _layout.Resize(390f, 844f);
             _view.OnInspectRequested.Invoke(new ToolkitCardModel());
-            _view.OnCardActivated.Invoke(new ToolkitCardModel());
-            Assert.IsFalse(_root.Q("hud-root").ClassListContains("detail-open"));
+            _view.ClosePopover();
+            Assert.IsTrue(_root.Q("detail-panel").ClassListContains("is-hidden"));
         }
 
         [Test]
@@ -100,13 +100,13 @@ namespace UI.Toolkit
 
         [TestCase(true, false)]
         [TestCase(false, true)]
-        public void SetBattleFocus_OverlayOpen_DoesNotEnableControlDuringLateRefresh(bool paused, bool inventory)
+        public void SetBattleFocus_InsidePause_RemainsAvailable(bool paused, bool inventory)
         {
             _context.isPaused = paused;
             _context.isInventoryOpen = inventory;
             _layout.Refresh();
             _layout.SetBattleFocus(true, delegate { });
-            Assert.IsFalse(_root.Q<Button>("focus-button").enabledSelf);
+            Assert.IsTrue(_root.Q<Button>("focus-button").enabledSelf);
         }
 
         [Test]
@@ -133,16 +133,16 @@ namespace UI.Toolkit
         }
 
         [Test]
-        public void SetCards_UnavailableSpell_KeepsSeparateInfoControlEnabled()
+        public void SetCards_UnavailableSpell_RemainsInspectableWithoutInfoButton()
         {
             ToolkitCardModel model = new ToolkitCardModel();
             model.title = "Cooling down";
             model.isEnabled = false;
             _view.SetCards("spell-list", new ToolkitCardModel[] { model });
             VisualElement card = _root.Q("spell-list").Q(className: "card-shell");
-            Assert.IsFalse(card.Q<Button>("data-card").enabledInHierarchy);
+            Assert.IsTrue(card.Q<Button>("data-card").enabledInHierarchy);
             Assert.IsTrue(card.Q<Button>("card-info").enabledInHierarchy);
-            Assert.IsFalse(card.Q("card-info").ClassListContains("is-hidden"));
+            Assert.IsTrue(card.Q("card-info").ClassListContains("is-hidden"));
         }
 
         [Test]
@@ -151,7 +151,7 @@ namespace UI.Toolkit
             _layout.Resize(390f, 844f);
             _layout.Dispose();
             _view.OnInspectRequested.Invoke(new ToolkitCardModel());
-            Assert.IsFalse(_root.Q("hud-root").ClassListContains("detail-open"));
+            Assert.IsTrue(_root.Q("detail-panel").ClassListContains("is-hidden"));
         }
 
         [Test]
@@ -163,7 +163,7 @@ namespace UI.Toolkit
             Assert.IsFalse(_root.Q<Button>("inventory-button").enabledSelf);
             _layout.Resize(1440f, 900f);
             Assert.IsFalse(_root.Q<Button>("inventory-button").enabledSelf);
-            Assert.AreEqual("Inventory", _root.Q<Button>("inventory-button").text);
+            Assert.AreEqual("Bag", _root.Q<Button>("inventory-button").text);
         }
     }
 }

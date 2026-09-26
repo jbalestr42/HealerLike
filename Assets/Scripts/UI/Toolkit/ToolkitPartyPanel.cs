@@ -1,99 +1,36 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// The creature cards: the ones left to deploy, then the deployed allies
 public class ToolkitPartyPanel
 {
     ToolkitGameContext _context;
     ToolkitGameView _view;
-    ToolkitDetailPanel _detailPanel;
-
+    readonly ToolkitRoster _roster = new ToolkitRoster();
     public void Init(ToolkitGameContext context, ToolkitGameView view, ToolkitDetailPanel detailPanel)
-    {
-        _context = context;
-        _view = view;
-        _detailPanel = detailPanel;
-    }
+    { _context = context; _view = view; _roster.Clear(); }
 
     public void Refresh(bool canDeploy)
     {
-        List<ToolkitCardModel> models = new List<ToolkitCardModel>();
-        if (_context.legacy.entityInventory != null)
-        {
-            foreach (SelectEntityButton choice in LegacyUiReader.AvailableEntities(_context.legacy.entityInventory))
-            {
-                if (choice == null || choice.data == null)
-                {
-                    continue;
-                }
-
-                models.Add(CreateDeployCard(choice.data, canDeploy));
-            }
-        }
-
+        var choices = _context.legacy.entityInventory != null
+            ? LegacyUiReader.AvailableEntities(_context.legacy.entityInventory) : System.Array.Empty<SelectEntityButton>();
+        var entities = new List<Entity>();
         if (_context.entities != null && _context.entities.entities != null)
+            foreach (GameObject go in _context.entities.GetEntities(Entity.EntityType.Player))
+                if (go != null) entities.Add(go.GetComponent<Entity>());
+        _roster.Sync(choices, entities);
+        var models = new List<ToolkitCardModel>();
+        foreach (ToolkitRoster.Entry entry in _roster.entries)
         {
-            foreach (GameObject entityGo in _context.entities.GetEntities(Entity.EntityType.Player))
-            {
-                if (entityGo == null)
-                {
-                    continue;
-                }
-
-                models.Add(CreateEntityCard(entityGo));
-            }
+            Entity entity = entry.entity;
+            var model = new ToolkitCardModel { key = entry.key, iconSource = entity != null ? (object)entity : entry.data,
+                title = entry.data.title, description = entry.data.description,
+                source = entity != null ? (object)entity : entry.data, canDrag = entity == null && canDeploy,
+                isEnabled = true, activate = Inspect, deployed = spawned => { entry.entity = spawned; entry.choice = null; } };
+            if (entity != null && entity.health != null)
+                model.healthFraction = entity.health.Value / Mathf.Max(1, entity.health.Max);
+            models.Add(model);
         }
-
         _view.SetCards("party-list", models);
     }
-
-    ToolkitCardModel CreateDeployCard(EntityData data, bool canDeploy)
-    {
-        ToolkitCardModel model = new ToolkitCardModel();
-        model.key = $"deploy-{data.GetEntityId()}";
-        model.iconSource = data;
-        model.title = data.title;
-        model.description = data.description;
-        model.status = "Deploy";
-        model.isEnabled = canDeploy;
-        model.source = data;
-        model.activate = OnDeployActivated;
-        return model;
-    }
-
-    ToolkitCardModel CreateEntityCard(GameObject entityGo)
-    {
-        Entity entity = entityGo.GetComponent<Entity>();
-        ToolkitCardModel model = new ToolkitCardModel();
-        model.key = $"entity-{entityGo.GetEntityId()}";
-        model.iconSource = entity;
-        model.title = entity.data.title;
-        model.description = entity.data.description;
-        model.status = "Deployed";
-        if (entity.health != null)
-        {
-            model.status = $"HP {ToolkitPresentation.Resource(entity.health.Value, entity.health.Max)}";
-        }
-
-        model.source = entity;
-        model.activate = OnEntityActivated;
-        return model;
-    }
-
-    void OnDeployActivated(ToolkitCardModel model)
-    {
-        if (_context.interaction != null)
-        {
-            _context.interaction.SetInteraction(new EntityGridInteraction((EntityData)model.source));
-        }
-
-        _view.SetText("status-label", "Tap an open tile to deploy, or Cancel.");
-    }
-
-    void OnEntityActivated(ToolkitCardModel model)
-    {
-        _context.selectedEntity = (Entity)model.source;
-        _context.selectedItem = null;
-        _detailPanel.RefreshEntity();
-    }
+    void Inspect(ToolkitCardModel model) { _view.OnInspectRequested.Invoke(model); }
 }

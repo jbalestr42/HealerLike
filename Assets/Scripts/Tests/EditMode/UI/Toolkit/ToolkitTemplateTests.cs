@@ -18,7 +18,7 @@ namespace UI.Toolkit
             ToolkitTemplates.PreparePicking(root);
             Assert.AreEqual(PickingMode.Ignore, root.Q("world-space").pickingMode);
             Assert.AreEqual(PickingMode.Ignore, root.Q("field-toolbar").pickingMode);
-            Assert.AreEqual(PickingMode.Position, root.Q("party-panel").pickingMode);
+            Assert.AreEqual(PickingMode.Ignore, root.Q("party-panel").pickingMode);
             Assert.AreEqual(PickingMode.Position, root.Q("pause-panel").pickingMode);
             Assert.AreEqual(PickingMode.Ignore, root.Q("detail-actions").pickingMode);
             TemplateContainer actions = root.Q<TemplateContainer>("detail-actions");
@@ -29,8 +29,8 @@ namespace UI.Toolkit
             Assert.AreSame(actions.Q("action-section-content"), actions.contentContainer, ancestry);
             Assert.AreSame(actions.contentContainer, targeting.hierarchy.parent, ancestry);
             Assert.IsTrue(root.Q("inventory-actions").Contains(root.Q("inventory-equip-button")));
-            Assert.IsTrue(root.Q("party-close-button").hierarchy.parent.ClassListContains("section-heading-actions"));
-            Assert.IsTrue(root.Q("detail-close-button").hierarchy.parent.ClassListContains("section-heading-actions"));
+            Assert.IsNull(root.Q("party-close-button"));
+            Assert.IsTrue(root.Q("detail-panel").Contains(root.Q("detail-close-button")));
             Assert.IsTrue(root.Q("resume-button").hierarchy.parent.ClassListContains("dialog-content"));
             Assert.IsTrue(root.Q("restart-button").hierarchy.parent.ClassListContains("dialog-content"));
             Assert.IsTrue(root.Q("upgrade-title").hierarchy.parent.ClassListContains("dialog-content"));

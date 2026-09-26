@@ -162,9 +162,9 @@ namespace HealerLike.Render.Stage
             {
                 manager.EndInteraction();
                 input.ProcessTouch(4, TouchPhase.Began, Vector2.right);
-                input.ProcessTouch(4, TouchPhase.Moved, Vector2.right * 2f);
-                input.ProcessTouch(4, TouchPhase.Ended, Vector2.right * 2f);
-                CollectionAssert.AreEqual(new[] { "start", "drag", "end" }, drag.calls);
+                input.ProcessTouch(4, TouchPhase.Moved, Vector2.right * 100f);
+                input.ProcessTouch(4, TouchPhase.Ended, Vector2.right * 100f);
+                CollectionAssert.AreEqual(new[] { "start", "drag", "drag", "end" }, drag.calls);
             });
         }
 
@@ -176,9 +176,10 @@ namespace HealerLike.Render.Stage
             {
                 manager.EndInteraction();
                 input.ProcessTouch(4, TouchPhase.Began, Vector2.right);
+                input.ProcessTouch(4, TouchPhase.Moved, Vector2.right * 100f);
                 input.ProcessTouch(4, TouchPhase.Moved, Vector2.left);
                 input.ProcessTouch(4, TouchPhase.Ended, Vector2.right);
-                CollectionAssert.AreEqual(new[] { "start", "cancel" }, drag.calls);
+                CollectionAssert.AreEqual(new[] { "start", "drag", "cancel" }, drag.calls);
             });
         }
 

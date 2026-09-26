@@ -5,6 +5,29 @@ using UnityEngine.UIElements;
 public class ToolkitCard : System.IDisposable
 {
     ToolkitGameView _view;
+    ToolkitCardGesture _gesture;
+    ToolkitCooldown _cooldown;
+    Label _cost;
+    VisualElement _health;
+    VisualElement _healthFill;
+    bool _compact;
+
+    public void SetCompact()
+    {
+        _compact = true;
+        _gesture = new ToolkitCardGesture(this, _view, OnClicked);
+        _cooldown = new ToolkitCooldown();
+        _icon.Add(_cooldown);
+        _cost = new Label { pickingMode = PickingMode.Ignore };
+        _cost.AddToClassList("spell-cost");
+        _icon.Add(_cost);
+        _health = new VisualElement { pickingMode = PickingMode.Ignore };
+        _health.AddToClassList("creature-health");
+        _healthFill = new VisualElement { pickingMode = PickingMode.Ignore };
+        _healthFill.AddToClassList("creature-health-fill");
+        _health.Add(_healthFill);
+        _icon.Add(_health);
+    }
     Button _button;
     Button _info;
     VisualElement _root;
@@ -63,13 +86,23 @@ public class ToolkitCard : System.IDisposable
     public void Refresh(ToolkitCardModel model)
     {
         _model = model;
+        _button.userData = model;
         _title.text = _model.title;
         _description.text = _model.description;
         _status.text = _model.status;
         _button.tooltip = _model.description;
         _info.tooltip = "Inspect " + _model.title;
-        _button.SetEnabled(_model.isEnabled);
-        _button.EnableInClassList("is-disabled", !_model.isEnabled);
+        _button.SetEnabled(_compact || _model.isEnabled);
+        _button.EnableInClassList("is-disabled", !_compact && !_model.isEnabled);
+        if (_compact)
+        {
+            bool spell = model.source is CharacterSkillSlot;
+            _cost.text = spell ? model.spell.cost.ToString("0") : "";
+            _cooldown.remaining = spell ? model.spell.remaining : 0;
+            _button.EnableInClassList("mana-shortage", spell && model.spell.insufficientMana);
+            _health.style.display = model.healthFraction >= 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            _healthFill.style.width = Length.Percent(Mathf.Clamp01(model.healthFraction) * 100);
+        }
         // Source side/data can change while the Entity reference stays the same. The provider
         // caches the screenshot, so requesting it again never renders an unchanged creature.
         _iconSource = _model.iconSource;
@@ -90,6 +123,8 @@ public class ToolkitCard : System.IDisposable
 
     public void Dispose()
     {
+        _gesture?.Dispose();
+        _gesture = null;
         if (_button != null)
         {
             _button.clicked -= OnClicked;
@@ -138,7 +173,7 @@ public class ToolkitCard : System.IDisposable
 
     void OnPointerEnter(PointerEnterEvent evt)
     {
-        if (!_view.isTouchLayout)
+        if (!_compact && !_view.isTouchLayout)
         {
             _view.OnInspect.Invoke(_model);
         }
@@ -146,7 +181,7 @@ public class ToolkitCard : System.IDisposable
 
     void OnFocusIn(FocusInEvent evt)
     {
-        if (!_view.isTouchLayout)
+        if (!_compact && !_view.isTouchLayout)
         {
             _view.OnInspect.Invoke(_model);
         }
@@ -154,7 +189,7 @@ public class ToolkitCard : System.IDisposable
 
     void OnPointerLeave(PointerLeaveEvent evt)
     {
-        if (!_view.isTouchLayout)
+        if (!_compact && !_view.isTouchLayout)
         {
             _view.OnInspectEnded.Invoke();
         }
@@ -162,7 +197,7 @@ public class ToolkitCard : System.IDisposable
 
     void OnFocusOut(FocusOutEvent evt)
     {
-        if (!_view.isTouchLayout)
+        if (!_compact && !_view.isTouchLayout)
         {
             _view.OnInspectEnded.Invoke();
         }

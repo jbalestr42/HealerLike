@@ -10,17 +10,17 @@
     <ui:Template name="RewardScreen" src="Screens/RewardScreen.uxml" />
     <ui:Template name="PauseScreen" src="Screens/PauseScreen.uxml" />
     <ui:Template name="GameOverScreen" src="Screens/GameOverScreen.uxml" />
-    <ui:VisualElement name="hud-root" class="game-ui" picking-mode="Ignore">
-        <ui:Instance template="HudHeader" name="top-bar" class="top-bar surface" picking-mode="Position" />
-        <ui:Instance template="FieldToolbar" name="field-toolbar" class="field-toolbar" picking-mode="Ignore" />
+    <ui:VisualElement name="hud-root" class="game-ui compact-hud" picking-mode="Ignore">
+        <ui:Instance template="HudHeader" name="top-bar" class="top-bar" picking-mode="Ignore" />
         <ui:VisualElement name="main-content" class="main-content" picking-mode="Ignore">
-            <ui:Instance template="PartyPanel" name="party-panel" class="party-panel surface" picking-mode="Position" />
             <ui:VisualElement name="world-space" class="world-space" picking-mode="Ignore">
                 <ui:Instance template="MenuScreen" name="menu-panel" class="menu-panel surface is-hidden" picking-mode="Position" />
             </ui:VisualElement>
-            <ui:Instance template="DetailPanel" name="detail-panel" class="detail-panel surface" picking-mode="Position" />
         </ui:VisualElement>
-        <ui:Instance template="CommandDock" name="command-dock" class="command-dock surface" picking-mode="Position" />
+        <ui:Instance template="FieldToolbar" name="field-toolbar" class="field-toolbar" picking-mode="Ignore" />
+        <ui:Instance template="PartyPanel" name="party-panel" class="party-panel" picking-mode="Ignore" />
+        <ui:Instance template="CommandDock" name="command-dock" class="command-dock" picking-mode="Ignore" />
+        <ui:Instance template="DetailPanel" name="detail-panel" class="detail-panel surface is-hidden" picking-mode="Position" />
         <ui:Instance template="InventoryScreen" name="inventory-panel" class="modal-layer is-hidden" picking-mode="Position" />
         <ui:Instance template="MapScreen" name="map-panel" class="modal-layer map-layer is-hidden" picking-mode="Position" />
         <ui:Instance template="RewardScreen" name="upgrade-panel" class="modal-layer is-hidden" picking-mode="Position" />

@@ -14,17 +14,6 @@ public static class ToolkitResponsiveLayout
         hud.EnableInClassList("is-mobile", mobile);
         hud.EnableInClassList("is-landscape", width > height);
         view.isTouchLayout = mobile;
-        VisualElement controls = view.root.Q(mobile ? "pause-settings" : "command-section");
-        VisualElement speed = view.root.Q("speed-controls");
-        VisualElement markers = view.root.Q("mark-entity-toggle");
-        if (speed.parent != controls)
-        {
-            controls.Add(speed);
-            controls.Add(markers);
-        }
-
-        Button inventory = view.root.Q<Button>("inventory-button");
-        inventory.text = mobile ? "Bag" : "Inventory";
         return mobile;
     }
 }

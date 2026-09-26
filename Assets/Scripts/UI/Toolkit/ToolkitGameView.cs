@@ -12,6 +12,13 @@ public class ToolkitGameView
     public UnityEvent<ToolkitCardModel> OnInspectRequested = new UnityEvent<ToolkitCardModel>();
     public UnityEvent<ToolkitCardModel> OnCardActivated = new UnityEvent<ToolkitCardModel>();
     public bool isTouchLayout { get; set; }
+    public IToolkitRosterDrag rosterDrag;
+    public Rect inspectAnchor;
+    public Func<Vector2, Vector2> screenPointProvider;
+    public event Action OnGesturesCancelled;
+    public event Action OnClosePopover;
+    public void CancelGestures() { OnGesturesCancelled?.Invoke(); rosterDrag?.Cancel(); }
+    public void ClosePopover() { OnClosePopover?.Invoke(); }
 
     // Structural elements must not consume pointer events over the empty battlefield
     static readonly string[] structuralElements =
@@ -254,6 +261,7 @@ public class ToolkitGameView
     // Destroys the icons this view generated
     public void Release()
     {
+        CancelGestures();
         if (_iconProvider != null)
         {
             _iconProvider.Changed -= RefreshIcons;
