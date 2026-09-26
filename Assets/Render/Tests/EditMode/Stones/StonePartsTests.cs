@@ -111,6 +111,7 @@ public class StonePartsTests : AStoneBodyTests
 
         Assert.AreEqual(3, visibleCount);
         Assert.IsFalse(_body.parts[_body.shedPart].gameObject.activeSelf);
-    }}
+    }
+}
 
 }
