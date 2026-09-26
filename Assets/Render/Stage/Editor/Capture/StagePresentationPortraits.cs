@@ -59,6 +59,12 @@ namespace HealerLike.Render.Stage
                 "Expanded detail reuses the exact creature screenshot");
             _output.Check(_session.interaction.GetInteraction() == null,
                 "Inspecting a creature does not begin placement");
+            if (Screen.width == 844 && Screen.height == 390)
+            {
+                CheckDetailLabel("detail-title", prefix, true);
+                CheckDetailLabel("detail-description", prefix, false);
+            }
+
             yield return _session.Capture(prefix + "-detail");
             attachment.RefreshCreatureIcons();
             yield return Wait(0.2f);
@@ -101,6 +107,28 @@ namespace HealerLike.Render.Stage
             float y = Mathf.Max(a.yMin, b.yMin);
             return new Rect(x, y, Mathf.Max(0f, Mathf.Min(a.xMax, b.xMax) - x), Mathf.Max(0f, Mathf.Min(a.yMax,
                 b.yMax) - y));
+        }
+
+        void CheckDetailLabel(string name, string context, bool requireFullHeight)
+        {
+            Label label = _session.actions.root.Q<Label>(name);
+            ScrollView scroll = _session.actions.root.Q<ScrollView>("detail-scroll");
+            VisualElement drawer = _session.actions.root.Q("detail-panel");
+            _output.Check(label != null && scroll != null && drawer != null,
+                context + " detail provides " + name + " inside its ScrollView");
+            Rect clip = Intersect(scroll.contentViewport.worldBound, _session.actions.root.worldBound);
+            clip = Intersect(clip, drawer.worldBound);
+            Rect bounds = label.worldBound;
+            float lineHeight = label.MeasureTextSize("Ag", 0f, VisualElement.MeasureMode.Undefined,
+                0f, VisualElement.MeasureMode.Undefined).y;
+            float requiredHeight = requireFullHeight ? bounds.height : Mathf.Min(bounds.height, lineHeight);
+            _output.manifest.checks.Add(context + " " + name + " bounds=" + bounds + ", visibleScrollClip=" + clip
+                + ", requiredVisibleHeight=" + requiredHeight);
+            _output.Check(StageInterfaceOutput.IsVisible(label) && !string.IsNullOrWhiteSpace(label.text)
+                && clip.width > 0f && clip.height > 0f && requiredHeight > 0f && bounds.xMin >= clip.xMin - 1f
+                && bounds.xMax <= clip.xMax + 1f && bounds.yMin >= clip.yMin - 1f
+                && bounds.yMin + requiredHeight <= clip.yMax + 1f,
+                context + " detail " + name + " is readable inside the initial landscape scroll viewport");
         }
 
         public List<Camera> PortraitCameras()

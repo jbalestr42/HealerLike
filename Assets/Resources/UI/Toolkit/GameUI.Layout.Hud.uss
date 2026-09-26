@@ -79,6 +79,12 @@
     padding: var(--ui-detail-padding);
 }
 
+.detail-summary,
+.detail-copy
+{
+    flex-shrink: 0;
+}
+
 .detail-icon
 {
     width: var(--ui-detail-icon-size);

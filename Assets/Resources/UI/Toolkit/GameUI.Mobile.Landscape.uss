@@ -160,3 +160,21 @@
 {
     margin: 0 0 0 var(--ui-panel-inline-padding);
 }
+
+.is-mobile.is-landscape .detail-summary
+{
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.is-mobile.is-landscape .detail-copy
+{
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.is-mobile.is-landscape .detail-summary .detail-icon
+{
+    margin: 0 var(--ui-space-lg) 0 0;
+}

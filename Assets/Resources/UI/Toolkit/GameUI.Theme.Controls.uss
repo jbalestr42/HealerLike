@@ -84,8 +84,10 @@
     display: none;
 }
 
-.action-button
+.action-button,
+.action-button:disabled
 {
+    background-image: none;
     background-color: var(--ui-card);
     border-width: var(--ui-border-width);
     border-color: var(--ui-border);
@@ -112,14 +114,17 @@
     border-radius: var(--ui-radius-meter);
 }
 
-.unity-base-popup-field__input
+.unity-base-popup-field__input,
+.unity-base-popup-field:disabled > .unity-base-popup-field__input
 {
+    background-image: none;
     background-color: var(--ui-card);
     border-color: var(--ui-border);
     color: var(--ui-ink);
 }
 
-.unity-toggle__input > .unity-toggle__checkmark
+.unity-toggle__input > .unity-toggle__checkmark,
+.unity-toggle:disabled > .unity-toggle__input > .unity-toggle__checkmark
 {
     background-color: var(--ui-card);
     border-width: var(--ui-border-width);
