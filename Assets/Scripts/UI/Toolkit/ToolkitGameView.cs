@@ -15,6 +15,7 @@ public class ToolkitGameView
     public IToolkitRosterDrag rosterDrag;
     public Rect inspectAnchor;
     public Func<Vector2, Vector2> screenPointProvider;
+    public Func<int, bool> canBeginPointer;
     public event Action OnGesturesCancelled;
     public event Action OnClosePopover;
     public void CancelGestures() { OnGesturesCancelled?.Invoke(); rosterDrag?.Cancel(); }

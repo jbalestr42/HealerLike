@@ -25,7 +25,7 @@ public class ToolkitPartyPanel
             var model = new ToolkitCardModel { key = entry.key, iconSource = entity != null ? (object)entity : entry.data,
                 title = entry.data.title, description = entry.data.description,
                 source = entity != null ? (object)entity : entry.data, canDrag = entity == null && canDeploy,
-                isEnabled = true, activate = Inspect, deployed = spawned => { entry.entity = spawned; entry.choice = null; } };
+                isEnabled = true, activate = Inspect, canBeginDrag = () => entry.choice != null && _context.IsPreparing(), deployed = spawned => { entry.entity = spawned; entry.choice = null; } };
             if (entity != null && entity.health != null)
                 model.healthFraction = entity.health.Value / Mathf.Max(1, entity.health.Max);
             models.Add(model);

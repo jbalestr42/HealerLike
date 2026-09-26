@@ -38,6 +38,9 @@ public sealed class ToolkitCardGesture : IDisposable
     void Down(PointerDownEvent evt)
     {
         if (evt.button != 0 || _card.model == null) return;
+        // Legacy input may synthesize Down from an orphaned Ended sample.
+        if (!(_view.canBeginPointer?.Invoke(evt.pointerId) ?? true))
+        { evt.StopImmediatePropagation(); return; }
         _pressed = _card.model;
         if (!_press.Begin(evt.pointerId, evt.position, Time.realtimeSinceStartup, _pressed.canDrag)) return;
         _point = _down = evt.position;
@@ -73,7 +76,8 @@ public sealed class ToolkitCardGesture : IDisposable
         {
             if (!_dragging)
             {
-                _dragging = _view.rosterDrag != null && _view.rosterDrag.Begin(
+                _dragging = (_pressed.canBeginDrag?.Invoke() ?? true)
+                    && _view.rosterDrag != null && _view.rosterDrag.Begin(
                     _pressed.source as EntityData, ScreenPoint(_point), _pressed.deployed);
                 if (!_dragging) { Cancel(); return; }
                 _view.ClosePopover();
@@ -88,7 +92,11 @@ public sealed class ToolkitCardGesture : IDisposable
         _point = evt.position;
         Resolve();
         var owner = _press.End(evt.pointerId, _point, Time.realtimeSinceStartup);
-        if (_dragging) _view.rosterDrag?.End(ScreenPoint(_point));
+        if (_dragging)
+        {
+            if (_pressed.canBeginDrag?.Invoke() ?? true) _view.rosterDrag?.End(ScreenPoint(_point));
+            else _view.rosterDrag?.Cancel();
+        }
         _dragging = false;
         if (_holding && _pressed.source is CharacterSkillSlot) _view.ClosePopover();
         // The captured source must still represent this entry after periodic HUD refreshes.

@@ -10,6 +10,7 @@ public class ToolkitCardModel
     public string status;
     public bool isEnabled = true;
     public bool canDrag;
+    public System.Func<bool> canBeginDrag;
     public ToolkitSpellState spell;
     public float healthFraction = -1f;
     public System.Action<Entity> deployed;

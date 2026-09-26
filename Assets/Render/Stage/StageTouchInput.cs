@@ -38,6 +38,20 @@ namespace HealerLike.Render.Stage
             _roster = interaction != null && grid != null
                 ? new StageRosterDrag(interaction, grid, Raycast, IsOverInterface, ClaimRoster) : null;
             _ui?.SetRosterDrag(_roster);
+            _ui?.SetPointerGate(CanBeginPointer);
+        }
+
+        bool CanBeginPointer(int pointer)
+        {
+            Touch[] samples = Input.touches;
+#if UNITY_EDITOR
+            if (captureTouches != null) samples = captureTouches;
+#endif
+            if (pointer == PointerId.mousePointerId) return samples.Length == 0;
+            foreach (Touch sample in samples)
+                if (sample.fingerId == pointer - PointerId.touchPointerIdBase)
+                    return sample.phase == TouchPhase.Began;
+            return false;
         }
 
         void Update()
@@ -99,6 +113,7 @@ namespace HealerLike.Render.Stage
                 }
             }
 
+            _ui?.CancelGestures(); _roster?.Cancel();
             CancelDrag();
             _finger = -1;
         }

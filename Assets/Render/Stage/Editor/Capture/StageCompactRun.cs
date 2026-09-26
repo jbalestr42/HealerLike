@@ -22,7 +22,9 @@ namespace HealerLike.Render.Stage
             bool passed = false;
             try
             {
-                _session = new StageCaptureSession(_manager, _output, StageCaptureTheme.TakeSelection());
+                ThemeStyleSheet theme = StageCaptureTheme.TakeSelection();
+                _output.manifest.theme = StageCaptureTheme.Describe(theme);
+                _session = new StageCaptureSession(_manager, _output, theme);
                 _session.AttachInput(); _gestures = new StageCompactGestures(_session);
                 yield return _session.Resize(1080, 1920);
                 _session.mapFixture = new StageMapFixture(Object.FindAnyObjectByType<AscensionGameType>(), false);
@@ -38,11 +40,16 @@ namespace HealerLike.Render.Stage
                     "Party is immediately above spells");
                 _output.Check(root.Q("command-dock").worldBound.height + root.Q("party-panel").worldBound.height <= 180,
                     "Both compact rows occupy at most 180 logical pixels");
+                _output.Check(root.Q("mana-value").worldBound.xMax <= root.Q("hud-root").worldBound.xMax - 7,
+                    "Global mana stays fixed inside the safe row width");
                 int initial = Count;
                 Observe("initial");
                 float gold = _manager.player.gold;
                 float mana = _manager.player.character.mana.Value;
                 yield return _gestures.Scroll(Available);
+                _output.Check(root.Q<ScrollView>("party-list").scrollOffset.x > 0,
+                    "Real roster overflow scrolls horizontally");
+                yield return _session.Capture("01b-roster-overflow");
                 Observe("horizontal-scroll");
                 _output.Check(Count == initial && _session.interaction.GetInteraction() == null,
                     "Horizontal scroll then upward movement produces zero entities and no placement");
@@ -63,6 +70,7 @@ namespace HealerLike.Render.Stage
                 yield return _session.Capture("04b-after-cancel");
                 _output.Check(gold == _manager.player.gold && mana == _manager.player.character.mana.Value,
                     "Scroll, hold, invalid drop and cancellation spend no resources");
+                yield return new StageCompactInterruptions(_session).Run(Available, drop);
                 Button entry = Available;
                 string key = ((ToolkitCardModel)entry.userData).key;
                 yield return _gestures.Drag(entry, drop, "05-held-placement");
@@ -75,6 +83,7 @@ namespace HealerLike.Render.Stage
                 yield return _session.Capture("06-successful-release");
                 yield return _gestures.Hold(entry, "07-deployed-details", true);
                 _output.Check(root.Q<Button>("detail-inventory-button").enabledSelf, "Deployed detail retains equipment access");
+                yield return _session.actions.BringIntoView(root.Q<Button>("detail-inventory-button"));
                 yield return _session.actions.PointerTap("detail-inventory-button");
                 yield return Wait(.2f);
                 yield return _session.Capture("08-equipment");

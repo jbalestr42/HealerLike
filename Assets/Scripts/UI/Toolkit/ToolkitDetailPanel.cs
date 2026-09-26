@@ -111,6 +111,12 @@ public class ToolkitDetailPanel : IDisposable
         _context.isInspecting = true;
         if (model.source is Entity entity)
         {
+            var selectable = entity.GetComponent<SelectableEntity>();
+            if (_context.interaction != null && selectable != null)
+            {
+                _context.interaction.CancelSelection();
+                _context.interaction.Select(selectable);
+            }
             _context.selectedEntity = entity;
             _context.selectedItem = null;
             RefreshEntity();
@@ -139,7 +145,8 @@ public class ToolkitDetailPanel : IDisposable
         {
             foreach (AttributeType type in Enum.GetValues(typeof(AttributeType)))
             {
-                if (entity.attributeManager.Has(type))
+                if (type != AttributeType.HealthMax && entity.attributeManager.Has(type)
+                    && !Mathf.Approximately(entity.attributeManager.Get(type).Value, 0))
                 {
                     stats += $"\n{type}: {entity.attributeManager.Get(type).Value:0.##}";
                 }

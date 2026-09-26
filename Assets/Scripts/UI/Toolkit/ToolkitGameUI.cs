@@ -33,6 +33,9 @@ public class ToolkitGameUI : MonoBehaviour
     ToolkitMobileLayout _mobileLayout = new ToolkitMobileLayout();
     IToolkitIconProvider _iconProvider;
     IToolkitRosterDrag _rosterDrag;
+    System.Func<int, bool> _canBeginPointer;
+    public void SetPointerGate(System.Func<int, bool> gate)
+    { _canBeginPointer = gate; if (_view != null) _view.canBeginPointer = gate; }
     public void SetRosterDrag(IToolkitRosterDrag drag)
     { _rosterDrag = drag; if (_view != null) _view.rosterDrag = drag; }
     public bool acceptsWorldInput => _view != null && !_context.isPaused && !_context.isInventoryOpen
@@ -143,6 +146,7 @@ public class ToolkitGameUI : MonoBehaviour
         ToolkitTemplates.PreparePicking(root);
         _view = new ToolkitGameView(root, _iconProvider);
         _view.rosterDrag = _rosterDrag;
+        _view.canBeginPointer = _canBeginPointer;
         ToolkitHudGlyph.Attach(root);
         _context.Init();
         _view.OnInspect.AddListener(_detailPanel.OnInspect);

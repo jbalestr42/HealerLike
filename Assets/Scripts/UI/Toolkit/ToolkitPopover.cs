@@ -38,7 +38,7 @@ public sealed class ToolkitPopover : IDisposable
         float top = bounds.yMin + _hud.resolvedStyle.paddingTop;
         float bottom = _view.root.Q("party-panel").worldBound.yMin - 8;
         float width = Mathf.Min(280, right - left);
-        float height = Mathf.Min(340, Mathf.Max(100, bottom - top));
+        float height = Mathf.Min(240, Mathf.Max(100, bottom - top));
         _panel.style.width = width;
         _panel.style.maxHeight = height;
         float actual = float.IsNaN(_panel.resolvedStyle.height) ? height : Mathf.Min(height, _panel.resolvedStyle.height);

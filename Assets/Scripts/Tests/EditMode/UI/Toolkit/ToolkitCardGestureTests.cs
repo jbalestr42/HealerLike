@@ -115,6 +115,28 @@ namespace UI.Toolkit
             Assert.That(_drag.ends, Is.Zero); Assert.That(_drag.active, Is.False);
             Assert.That(_casts, Is.Zero);
         }
+        [UnityTest]
+        public IEnumerator OrphanedReleaseCannotSynthesizeAnotherSpellPress()
+        {
+            Bind(true); yield return null; yield return null;
+            Vector2 point = _button.worldBound.center;
+            _view.canBeginPointer = _ => true;
+            Down(point); yield return Hold(); Up(point);
+            _view.canBeginPointer = _ => false;
+            Down(point); Up(point);
+            Assert.That(_casts, Is.Zero); Assert.That(_inspects, Is.EqualTo(1));
+        }
+        [UnityTest]
+        public IEnumerator ExpiredRosterChoiceCannotCommitPendingDrag()
+        {
+            Bind(false); yield return null; yield return null;
+            bool preparing = true;
+            ((ToolkitCardModel)_button.userData).canBeginDrag = () => preparing;
+            Vector2 point = _button.worldBound.center;
+            Down(point); Move(point + Vector2.down * 30);
+            preparing = false; Up(point + Vector2.down * 40);
+            Assert.That(_drag.ends, Is.Zero); Assert.That(_drag.active, Is.False);
+        }
         sealed class Drag : IToolkitRosterDrag
         {
             public int begins, ends;
