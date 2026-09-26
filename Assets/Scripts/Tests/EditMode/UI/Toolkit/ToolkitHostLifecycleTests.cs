@@ -40,7 +40,16 @@ namespace UI.Toolkit
             yield return null;
             Object.Destroy(_originalPanel);
             yield return new ExitPlayMode();
-            EditorSceneManager.RestoreSceneManagerSetup(_scenes);
+            bool canRestore = _scenes != null && System.Array.Exists(_scenes,
+                scene => scene.isLoaded && scene.isActive && !string.IsNullOrEmpty(scene.path));
+            if (canRestore)
+            {
+                EditorSceneManager.RestoreSceneManagerSetup(_scenes);
+            }
+            else
+            {
+                EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            }
         }
 
         [UnityTest]

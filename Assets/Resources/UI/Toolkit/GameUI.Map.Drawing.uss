@@ -1,0 +1,25 @@
+/* ICustomStyle exposes local declarations; var() reads the inherited theme tokens. */
+.map-canvas
+{
+    --map-layout-floor-height: var(--map-floor-height);
+    --map-layout-node-height: var(--map-node-height);
+    --map-layout-column-width: var(--map-column-width);
+    --map-layout-gutter: var(--map-gutter);
+    --map-layout-node-gap: var(--map-node-gap);
+    --map-layout-node-min-width: var(--map-node-min-width);
+    --map-layout-node-max-width: var(--map-node-max-width);
+}
+
+.map-connections
+{
+    --map-line-travelled: var(--map-path-travelled);
+    --map-line-reachable: var(--map-path-reachable);
+    --map-line-locked: var(--map-path-locked);
+    --map-line-width: var(--map-path-width);
+    --map-line-active-width: var(--map-path-active-width);
+}
+
+.map-node__glyph
+{
+    --map-glyph-stroke-width: var(--map-glyph-line-width);
+}
