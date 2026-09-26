@@ -8,6 +8,9 @@ public class UseCharacterSkillButton : MonoBehaviour
     [SerializeField] UnityEngine.UI.Text _cooldownText;
     [SerializeField] UnityEngine.UI.Text _costText;
     [SerializeField] UnityEngine.UI.Image _cooldownImage;
+
+    public string costText { get { return _costText != null ? _costText.text : null; } }
+    public string cooldownText { get { return _cooldownText != null ? _cooldownText.text : null; } }
     public Character character { get; set; }
     public CharacterSkillData data { get; set; }
     public bool hasCooldown { get; set; } = false;

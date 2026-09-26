@@ -10,13 +10,14 @@ public abstract class AItemFactory : SerializedScriptableObject
     public abstract List<GameplayTag> tags { get; }
 }
 
-public class ItemFactory<ItemType, DataType> : AItemFactory
+public class ItemFactory<ItemType, DataType> : AItemFactory, IGameDataSource
                                             where ItemType : AItem<DataType>, new()
                                             where DataType : BaseItemData
 {
     [InlineProperty]
     [HideLabel]
     public DataType data;
+    public object sourceData { get { return data; } }
 
     public override AItem GetItem()
     {
@@ -58,9 +59,10 @@ public abstract class AItem
     public abstract List<GameplayTag> tags { get; }
 }
 
-public abstract class AItem<DataType> : AItem where DataType : BaseItemData
+public abstract class AItem<DataType> : AItem, IGameDataSource where DataType : BaseItemData
 {
     public DataType data;
+    public object sourceData { get { return data; } }
     public override string title => data.name;
     public override Sprite icon => data.icon;
     public override List<GameplayTag> tags => data.tags;

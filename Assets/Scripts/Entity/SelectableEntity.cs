@@ -10,6 +10,10 @@ public class SelectableEntity : MonoBehaviour, ISelectable
     Entity.EntityType _entityType;
     bool _isSelected = false;
 
+    public bool isHighlighted { get { return _outline != null && _outline.isActiveAndEnabled; } }
+    public Color highlightColor { get { return _outline != null ? _outline.OutlineColor : Color.clear; } }
+    public float highlightWidth { get { return _outline != null ? _outline.OutlineWidth : 0f; } }
+
     void Start()
     {
         _outline = gameObject.AddComponent<Outline>();

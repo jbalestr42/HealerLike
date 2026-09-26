@@ -8,13 +8,14 @@ public abstract class ASkillStepFactory : SerializedScriptableObject
     public abstract ASkillStep AddSkillStep(GameObject source);
 }
 
-public class SkillStepFactory<SkillStepType, SkillStepData> : ASkillStepFactory
+public class SkillStepFactory<SkillStepType, SkillStepData> : ASkillStepFactory, IGameDataSource
                                 where SkillStepType : ASkillStep<SkillStepData>, new()
                                 where SkillStepData : SkillStepDataBase
 {
     [InlineProperty]
     [HideLabel]
     public SkillStepData data;
+    public object sourceData { get { return data; } }
 
     public override ASkillStep AddSkillStep(GameObject source)
     {
@@ -37,9 +38,10 @@ public class SkillStepDataBase
 {
 }
 
-public abstract class ASkillStep<SkillStepData> : ASkillStep where SkillStepData : SkillStepDataBase
+public abstract class ASkillStep<SkillStepData> : ASkillStep, IGameDataSource where SkillStepData : SkillStepDataBase
 {
     [InlineProperty]
     [HideLabel]
     public SkillStepData data;
+    public object sourceData { get { return data; } }
 }

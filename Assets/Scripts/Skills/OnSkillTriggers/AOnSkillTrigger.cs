@@ -9,11 +9,12 @@ public abstract class AOnSkillTriggerFactory : SerializedScriptableObject
     public abstract AOnSkillTrigger GetSkillTrigger();
 }
 
-public class OnSkillTriggerFactory<OnSkillTriggerType, OnSkillTriggerData> : AOnSkillTriggerFactory where OnSkillTriggerType : AOnSkillTrigger<OnSkillTriggerData>, new()
+public class OnSkillTriggerFactory<OnSkillTriggerType, OnSkillTriggerData> : AOnSkillTriggerFactory, IGameDataSource where OnSkillTriggerType : AOnSkillTrigger<OnSkillTriggerData>, new()
 {
     [InlineProperty]
     [HideLabel]
     public OnSkillTriggerData data;
+    public object sourceData { get { return data; } }
 
     public override AOnSkillTrigger GetSkillTrigger()
     {
@@ -28,9 +29,10 @@ public abstract class AOnSkillTrigger
     public abstract void Execute(GameObject source);
 }
 
-public abstract class AOnSkillTrigger<OnSkillTriggerData> : AOnSkillTrigger
+public abstract class AOnSkillTrigger<OnSkillTriggerData> : AOnSkillTrigger, IGameDataSource
 {
     [InlineProperty]
     [HideLabel]
     public OnSkillTriggerData data;
+    public object sourceData { get { return data; } }
 }

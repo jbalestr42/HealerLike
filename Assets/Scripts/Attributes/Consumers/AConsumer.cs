@@ -8,13 +8,14 @@ public abstract class AConsumerFactory : SerializedScriptableObject
     public abstract AConsumer GetConsumer(GameObject source, GameObject target);
 }
 
-public class ConsumerFactory<ConsumerType, DataType> : AConsumerFactory
+public class ConsumerFactory<ConsumerType, DataType> : AConsumerFactory, IGameDataSource
                                             where ConsumerType : AConsumer<DataType>, new()
                                             where DataType : ConsumerBaseData
 {
     [InlineProperty]
     [HideLabel]
     public DataType data;
+    public object sourceData { get { return data; } }
 
     public override AConsumer GetConsumer(GameObject source, GameObject target)
     {
@@ -39,9 +40,10 @@ public class ConsumerBaseData
     public bool ignoreConsumerPrevention;
 }
 
-public abstract class AConsumer<DataType> : AConsumer where DataType : ConsumerBaseData
+public abstract class AConsumer<DataType> : AConsumer, IGameDataSource where DataType : ConsumerBaseData
 {
     public DataType data;
+    public object sourceData { get { return data; } }
     public override bool ignoreDamageReduction => data.ignoreDamageReduction;
     public override bool ignoreConsumerPrevention => data.ignoreConsumerPrevention;
 }
