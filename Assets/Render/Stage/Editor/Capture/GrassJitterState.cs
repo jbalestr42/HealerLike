@@ -37,6 +37,8 @@ namespace HealerLike.Render.Stage
         readonly Dictionary<EnvironmentSway, bool> _sways = new Dictionary<EnvironmentSway, bool>();
         bool _isDisposed;
 
+        public int errorCount { get; private set; }
+
         public GrassJitterState(Camera camera, BattleFocus focus, IEnumerable<GrassField> fields)
         {
             _camera = camera;
@@ -52,6 +54,25 @@ namespace HealerLike.Render.Stage
                 {
                     _fields.Add(new FieldState(field));
                 }
+            }
+            Application.logMessageReceived += OnLog;
+        }
+
+        public void UseOverview(Pose pose, float aspect)
+        {
+            if (_focus != null)
+            {
+                _focus.enabled = false;
+            }
+            _camera.transform.SetPositionAndRotation(pose.position, pose.rotation);
+            _camera.aspect = aspect;
+        }
+
+        void OnLog(string message, string stackTrace, LogType type)
+        {
+            if (type == LogType.Error || type == LogType.Exception || type == LogType.Assert)
+            {
+                errorCount++;
             }
         }
 
@@ -104,15 +125,8 @@ namespace HealerLike.Render.Stage
             }
         }
 
-        public void Dispose()
+        public void RestoreSways()
         {
-            if (_isDisposed)
-            {
-                return;
-            }
-            _isDisposed = true;
-            Time.captureDeltaTime = _captureDelta;
-            RestoreEnvironment();
             foreach (KeyValuePair<EnvironmentSway, bool> state in _sways)
             {
                 if (state.Key != null)
@@ -121,14 +135,33 @@ namespace HealerLike.Render.Stage
                 }
             }
             _sways.Clear();
-            if (_camera != null)
+        }
+
+        public void Dispose()
+        {
+            if (_isDisposed)
             {
-                _camera.transform.SetPositionAndRotation(_position, _rotation);
-                _camera.aspect = _aspect;
+                return;
             }
-            if (_focus != null)
+            _isDisposed = true;
+            try
             {
-                _focus.enabled = _focusEnabled;
+                Time.captureDeltaTime = _captureDelta;
+                RestoreEnvironment();
+                RestoreSways();
+                if (_camera != null)
+                {
+                    _camera.transform.SetPositionAndRotation(_position, _rotation);
+                    _camera.aspect = _aspect;
+                }
+                if (_focus != null)
+                {
+                    _focus.enabled = _focusEnabled;
+                }
+            }
+            finally
+            {
+                Application.logMessageReceived -= OnLog;
             }
         }
     }

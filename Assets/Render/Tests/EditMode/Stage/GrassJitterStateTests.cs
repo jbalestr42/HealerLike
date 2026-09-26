@@ -3,6 +3,7 @@ using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.TestTools;
 using HealerLike.Render.Environment;
 using HealerLike.Render.Grass;
 using HealerLike.Render.Zones;
@@ -110,6 +111,60 @@ namespace HealerLike.Render.Stage
                 {
                     _field.Release();
                 }
+            }
+        }
+
+        [Test]
+        public void UseOverview_RepeatedAfterFocusedView_RestoresIdenticalComparisonPose()
+        {
+            Pose overview = new Pose(new Vector3(4f, 8f, -6f), Quaternion.Euler(48f, 9f, 0f));
+            using (GrassJitterState state = CreateState())
+            {
+                state.UseOverview(overview, 0.5625f);
+                _camera.transform.SetPositionAndRotation(Vector3.one, Quaternion.Euler(3f, 90f, 0f));
+                _camera.aspect = 1.8f;
+                _focus.enabled = true;
+                state.UseOverview(overview, 0.5625f);
+                Assert.AreEqual(overview.position, _camera.transform.position);
+                Assert.Less(Quaternion.Angle(overview.rotation, _camera.transform.rotation), 0.001f);
+                Assert.AreEqual(0.5625f, _camera.aspect);
+                Assert.IsFalse(_focus.enabled);
+            }
+            AssertRestored(true);
+        }
+
+        [Test]
+        public void RestoreSways_BeforeFocusedFilm_PreservesOriginallyDisabledDecor()
+        {
+            using (GrassJitterState state = CreateState())
+            {
+                state.StopSways(new[] { _enabledSway, _disabledSway });
+                Assert.IsFalse(_enabledSway.enabled);
+                state.RestoreSways();
+                Assert.IsTrue(_enabledSway.enabled);
+                Assert.IsFalse(_disabledSway.enabled);
+                _enabledSway.enabled = false;
+            }
+            Assert.IsFalse(_enabledSway.enabled, "Restored sways are no longer borrowed by the measurement.");
+        }
+
+        [Test]
+        public void Dispose_LogFailureObserver_CountsErrorsOnlyDuringMeasurement()
+        {
+            GrassJitterState state = CreateState();
+            try
+            {
+                LogAssert.Expect(LogType.Error, "Jitter measurement error");
+                Debug.LogError("Jitter measurement error");
+                Assert.AreEqual(1, state.errorCount);
+                state.Dispose();
+                LogAssert.Expect(LogType.Error, "Unrelated later error");
+                Debug.LogError("Unrelated later error");
+                Assert.AreEqual(1, state.errorCount, "Disposal must remove the global log callback.");
+            }
+            finally
+            {
+                state.Dispose();
             }
         }
 

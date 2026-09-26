@@ -19,32 +19,42 @@ namespace HealerLike.Render.Stage
         // Brightness changes smaller than this are noise, in 0..1
         static readonly float threshold = 0.02f;
 
-        protected override bool shouldStartGame { get { return false; } }
-
         bool _isCasting;
         BattleFocus _focus;
         int _casts;
+        int _targetedCasts;
         float _nextCast;
 
         protected override IEnumerator Run()
         {
+            AscensionGameType ascension = Object.FindAnyObjectByType<AscensionGameType>();
+            Character character = _manager != null && _manager.player != null ? _manager.player.character : null;
+            if (character == null || character.buffManager == null || character.mana == null
+                || character.skillSlots.Count == 0 || _manager.entityManager == null
+                || _manager.entityManager.GetEntities(Entity.EntityType.Computer).Count == 0 || ascension == null
+                || ascension.state != AscensionGameType.State.WaitForRoundToStart)
+            {
+                throw new System.InvalidOperationException("[GrassJitterRun] Expected an initialized character "
+                    + "and a combat room prepared through normal game/map startup.");
+            }
+            Debug.Log($"[GrassJitterRun] Prepared combat room with {character.skillSlots.Count} character skills.");
             _manager.SetLandscape(false);
             yield return Wait(1f);
             Camera camera = _manager.gameCamera;
             _focus = Object.FindAnyObjectByType<BattleFocus>();
             _isCasting = false;
             _casts = 0;
+            _targetedCasts = 0;
+            _attacks = 0;
+            _heals = 0;
             _nextCast = 0f;
+            GrassJitterState state = new GrassJitterState(camera, _focus, _manager.environment.grass.strips);
             try
             {
-                using (GrassJitterState state = new GrassJitterState(camera, _focus, _manager.environment.grass.strips))
+                using (state)
                 {
-                    if (_focus != null)
-                    {
-                        _focus.enabled = false;
-                    }
                     Pose pose = _manager.overviewPose;
-                    camera.transform.SetPositionAndRotation(pose.position, pose.rotation);
+                    state.UseOverview(pose, (float)width / height);
                     Time.captureDeltaTime = 1f / 60f;
                     yield return Measure(camera, "stock");
                     // The Editor runs at whatever rate it gets; the same at a fast, a slow and the real frame pace
@@ -64,13 +74,28 @@ namespace HealerLike.Render.Stage
 
                     // The same during a wave, then with the decor plants' sway stopped
                     _player.PlaceAllies(_manager, StagePlayer.LoadAllies());
+                    Observe();
                     _hud.nextWaveButton.onClick.Invoke();
+                    float deadline = Time.realtimeSinceStartup + 12f;
+                    while (ascension.state != AscensionGameType.State.OnGoingBattle)
+                    {
+                        if (state.errorCount > 0 || Time.realtimeSinceStartup > deadline)
+                        {
+                            throw new System.InvalidOperationException("[GrassJitterRun] The prepared round "
+                                + "did not reach real battle without errors.");
+                        }
+                        yield return NextFrame();
+                    }
+                    Debug.Log("[GrassJitterRun] Entered real battle through Next Wave.");
                     _isCasting = true;
+                    state.UseOverview(pose, (float)width / height);
                     yield return Measure(camera, "battle");
                     yield return Gusts();
-                    yield return Film(camera);
                     state.StopSways(Object.FindObjectsByType<EnvironmentSway>());
+                    state.UseOverview(pose, (float)width / height);
                     yield return Measure(camera, "battle-decor-still");
+                    state.RestoreSways();
+                    yield return Film(camera);
                 }
             }
             finally
@@ -78,7 +103,10 @@ namespace HealerLike.Render.Stage
                 _isCasting = false;
             }
 
-            StagePlay.Finish(this, true);
+            bool isPassed = state.errorCount == 0 && _targetedCasts > 0 && _attacks + _heals > 0;
+            Debug.Log($"[GrassJitterRun] targeted cast attempts {_targetedCasts}, attacks {_attacks}, heals {_heals}, "
+                + $"errors {state.errorCount}; passed {isPassed}");
+            StagePlay.Finish(this, isPassed);
         }
 
         // How much of a fight the attack gusts keep a plant at the board's centre bent
@@ -91,7 +119,7 @@ namespace HealerLike.Render.Stage
             float started = Time.time;
             while (gust != null && Time.time - started < 5f)
             {
-                yield return null;
+                yield return NextFrame();
                 Cast();
                 float push = gust.Sample(Time.timeAsDouble, _manager.board.center).magnitude;
                 frames++;
@@ -116,7 +144,7 @@ namespace HealerLike.Render.Stage
             System.IO.Directory.CreateDirectory(folder);
             for (int frame = 0; frame < 8; frame++)
             {
-                yield return null;
+                yield return NextFrame();
                 Cast();
                 Texture2D shot = StageReadback.Render(camera, width, height);
                 StageCaptureTexture.SaveAndRelease(shot, System.IO.Path.Combine(folder, $"frame-{frame}.png"));
@@ -143,6 +171,7 @@ namespace HealerLike.Render.Stage
                 if (entityGo != null)
                 {
                     _player.CastOn(_manager, entityGo.GetComponent<Entity>());
+                    _targetedCasts++;
                     return;
                 }
             }
@@ -160,7 +189,7 @@ namespace HealerLike.Render.Stage
             int environmentCount = 0;
             for (int frame = 0; frame < frames; frame++)
             {
-                yield return null;
+                yield return NextFrame();
                 Cast();
                 Texture2D shot = StageReadback.Render(camera, width, height);
                 Color32[] pixels = StageCaptureTexture.PixelsAndRelease(shot);
