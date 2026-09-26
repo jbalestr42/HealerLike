@@ -52,6 +52,7 @@ public class ToolkitGameView
     public ToolkitGameView(VisualElement root, IToolkitIconProvider iconProvider = null)
     {
         _root = root;
+        _root.RegisterCallback<PointerDownEvent>(GatePointer, TrickleDown.TrickleDown);
         _root.pickingMode = PickingMode.Ignore;
         _root.AddToClassList("toolkit-theme");
         ToolkitTemplates.PreparePicking(_root);
@@ -66,6 +67,9 @@ public class ToolkitGameView
 
         SetIconProvider(iconProvider);
     }
+
+    void GatePointer(PointerDownEvent evt)
+    { if (!(canBeginPointer?.Invoke(evt.pointerId) ?? true)) evt.StopImmediatePropagation(); }
 
     public void SetIconProvider(IToolkitIconProvider provider)
     {
@@ -263,6 +267,7 @@ public class ToolkitGameView
     public void Release()
     {
         CancelGestures();
+        _root.UnregisterCallback<PointerDownEvent>(GatePointer, TrickleDown.TrickleDown);
         if (_iconProvider != null)
         {
             _iconProvider.Changed -= RefreshIcons;

@@ -137,6 +137,21 @@ namespace UI.Toolkit
             preparing = false; Up(point + Vector2.down * 40);
             Assert.That(_drag.ends, Is.Zero); Assert.That(_drag.active, Is.False);
         }
+        [UnityTest]
+        public IEnumerator OrphanedNativePressDoesNotDismissPersistentCreatureDetails()
+        {
+            Bind(false); yield return null; yield return null;
+            using (var popover = new ToolkitPopover(_view))
+            {
+                Vector2 point = _button.worldBound.center;
+                Down(point); yield return Hold(); Up(point);
+                Assert.That(popover.isOpen, Is.True);
+                _view.canBeginPointer = _ => false;
+                Down(point); Up(point);
+                Assert.That(popover.isOpen, Is.True);
+                Assert.That(_casts, Is.Zero);
+            }
+        }
         sealed class Drag : IToolkitRosterDrag
         {
             public int begins, ends;
