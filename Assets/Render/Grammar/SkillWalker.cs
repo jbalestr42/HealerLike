@@ -24,7 +24,7 @@ namespace HealerLike.Render.Grammar
             return SkillProjectiles.Dominant(Shots(skill));
         }
 
-        // Every projectile prefab of the skill, in the order the data lists them
+        // The projectile prefabs the skill fires, combined in authored order
         public static List<GameObject> Prefabs(ASkillFactory skill)
         {
             List<GameObject> prefabs = new List<GameObject>();
@@ -35,7 +35,7 @@ namespace HealerLike.Render.Grammar
             return prefabs;
         }
 
-        // The existing cosmetic shot counts, in authored prefab order; configurable entries share executions.
+        // Shots per cycle; configurable steps reset to their first entry before each execution.
         public static List<Shot> Shots(ASkillFactory skill)
         {
             return SkillDescriptionReader.Read(skill, null).shots;

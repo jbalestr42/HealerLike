@@ -143,14 +143,15 @@ namespace HealerLike.Render.Grammar
 
         static AccessoryKind PassiveAccessory(ABuffHandlerFactory handler)
         {
-            if (handler.buffFactoryList == null)
+            IReadOnlyList<ABuffFactory> buffs = EffectDerivation.Buffs(handler);
+            if (buffs.Count == 0)
             {
                 return AccessoryKind.None;
             }
 
-            foreach (ABuffFactory buff in handler.buffFactoryList)
+            foreach (ABuffFactory buff in buffs)
             {
-                if (buff is CurrentWaveModifierFactory)
+                if (buff is CurrentWaveModifierFactory wave && wave.data != null)
                 {
                     return AccessoryKind.TierRings;
                 }
@@ -162,7 +163,7 @@ namespace HealerLike.Render.Grammar
                 return AccessoryKind.StalkBeads;
             }
 
-            foreach (ABuffFactory buff in handler.buffFactoryList)
+            foreach (ABuffFactory buff in buffs)
             {
                 if (EffectDerivation.TryModifier(buff, out AttributeType type, out float delta))
                 {

@@ -69,7 +69,7 @@ namespace HealerLike.Render.Grammar
             int bounces = 0;
             foreach (AProjectileBehaviourFactory behaviour in Behaviours(data))
             {
-                if (behaviour is BounceProjectileBehaviourFactory bounce)
+                if (behaviour is BounceProjectileBehaviourFactory bounce && bounce.data != null)
                 {
                     bounces += bounce.data.bounce;
                 }
@@ -89,14 +89,10 @@ namespace HealerLike.Render.Grammar
             List<AProjectileBehaviourFactory> behaviours = new List<AProjectileBehaviourFactory>();
             foreach (ABuffHandlerFactory handler in handlers)
             {
-                if (handler.buffFactoryList == null)
-                {
-                    continue;
-                }
-
-                foreach (ABuffFactory buff in handler.buffFactoryList)
+                foreach (ABuffFactory buff in EffectDerivation.Buffs(handler))
                 {
                     if (buff is ProjectileBehaviourBuffFactory projectileBuff
+                        && projectileBuff.data != null
                         && projectileBuff.data.projectileBehaviour != null)
                     {
                         behaviours.Add(projectileBuff.data.projectileBehaviour);

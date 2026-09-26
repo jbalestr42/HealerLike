@@ -90,6 +90,73 @@ public class ItemWalkerTests
         Assert.AreEqual(0, ItemWalker.Behaviours(null).Count);
         Assert.AreEqual(0, ItemWalker.Buffs(CreateTracked<EntityData>()).Count);
     }
+
+    [TestCase(false, 100f, CountBand.One, AccessoryKind.None)]
+    [TestCase(true, 300f, CountBand.Few, AccessoryKind.SmallTorus)]
+    public void Channels_IncompleteItemFactories_KeepThePrimaryAndValidModifiers(bool hasCompleteModifiers,
+        float health, CountBand count, AccessoryKind accessory)
+    {
+        BuffHandlerFactory partial = CreateTracked<BuffHandlerFactory>();
+        partial.data = new BuffHandlerData
+        {
+            buffFactoryList = new List<ABuffFactory>
+            {
+                CreateTracked<FlatModifierFactory>(), CreateTracked<ProjectileBehaviourBuffFactory>(),
+                CreateTracked<CurrentWaveModifierFactory>(), CreateTracked<ApplyConsumerBuffFactory>(),
+                CreateTracked<DamageAllEntityOnEntityDieBuffFactory>(),
+                CreateTracked<HealAllEntitiesOnRoundEndBuffFactory>(),
+                CreateTracked<ManaOnRoundEndBuffFactory>(), null
+            }
+        };
+        BuffHandlerFactory unassigned = CreateTracked<BuffHandlerFactory>();
+        BuffHandlerFactory emptyBounce = CreateBehaviourHandler(CreateTracked<BounceProjectileBehaviourFactory>());
+        ItemData item = new ItemData
+        {
+            buffs = new List<ABuffHandlerFactory> { partial, unassigned },
+            projectileBehaviours = new List<ABuffHandlerFactory> { emptyBounce, unassigned }
+        };
+        if (hasCompleteModifiers)
+        {
+            FlatModifierFactory flat = CreateTracked<FlatModifierFactory>();
+            flat.data = new FlatModifierData
+            {
+                type = AttributeType.HealthMax, modifierType = AttributeModifierType.Add, value = 200f
+            };
+            partial.data.buffFactoryList.Add(flat);
+            BounceProjectileBehaviourFactory bounce = CreateTracked<BounceProjectileBehaviourFactory>();
+            bounce.data = new BounceProjectileBehaviourData { bounce = 2 };
+            item.projectileBehaviours.Add(CreateBehaviourHandler(bounce));
+        }
+        EntityData data = CreateUnit(item);
+        data.items.Add(CreateTracked<ItemFactory>());
+        data.attributes[AttributeType.HealthMax] = 100f;
+        data.attributes[AttributeType.AttackRate] = 0.25f;
+        ShootProjectileSkillFactory primary = CreateTracked<ShootProjectileSkillFactory>();
+        primary.data = new ShootProjectileSkillData
+        {
+            projectiles = new List<ShootProjectileSkillData.ProjectileData>
+            {
+                new ShootProjectileSkillData.ProjectileData
+                {
+                    projectilePrefab = RenderTestAssets.LoadProjectile("StraightLaserBullet"),
+                    numberOfProjectileToShootPerTarget = 1
+                }
+            }
+        };
+        data.skillFactories = new List<ASkillFactory> { primary };
+
+        UnitChannels channels = LookDerivation.Channels(data, Entity.EntityType.Player);
+
+        Assert.AreEqual(HeadKind.Spear, channels.head);
+        Assert.AreEqual(StemBand.Quick, channels.stem);
+        Assert.AreEqual(EffectFamily.Damage, channels.accent);
+        Assert.AreEqual(count, channels.count);
+        Assert.AreEqual(accessory, channels.accessory);
+        Assert.AreEqual(health, LookDerivation.Health(data));
+        Assert.AreEqual(hasCompleteModifiers ? MassBand.Heavy : MassBand.Light, channels.mass);
+        Assert.AreEqual(hasCompleteModifiers ? 2 : 0, ItemWalker.Bounces(data));
+        Assert.IsEmpty(EffectDerivation.Buffs(unassigned));
+    }
 }
 
 }
