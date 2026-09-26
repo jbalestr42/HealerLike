@@ -63,7 +63,8 @@ public class ResourceConsumerResolver
                 _hitArmor.BaseValue -= 1f;
                 return 0f;
             }
-            return Mathf.Min(0f, value - _flatArmor.Value) * (1f - _percentArmor.Value) * (1f + _vulnerability.Value);
+            // Damage is negative: flat armor blocks up to its value per hit, never turning it into a heal
+            return Mathf.Min(0f, value + _flatArmor.Value) *(1f - _percentArmor.Value) * (1f + _vulnerability.Value);
         }
 
         return value;

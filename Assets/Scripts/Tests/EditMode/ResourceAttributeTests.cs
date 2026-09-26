@@ -119,29 +119,36 @@ public class ResourceAttributeTests
     }
 
     [Test]
-    public void AddResourceModifier_PositiveFlatArmor_IncreasesDamageInstead_LikelyBug()
+    public void AddResourceModifier_PositiveFlatArmor_ReducesEachHit()
     {
-        // CRITICAL: the armor formula is `value - flatArmor.Value`, and value is negative for
-        // damage. A POSITIVE FlatArmor therefore makes the result MORE negative - i.e. MORE
-        // damage taken - the exact opposite of what "armor" should do.
         _targetAttributeManager.GetOrAdd(AttributeType.FlatArmor).BaseValue = 3f;
         _targetAttributeManager.GetOrAdd(AttributeType.FlatArmor).Update();
 
         AddModifier(new FakeConsumer(-10f));
         Drain();
 
-        Assert.AreEqual(87f, _health.Value); // took 13 damage instead of 10 - armor made it worse
+        Assert.AreEqual(93f, _health.Value); // took 7 damage (10 - 3) instead of 10
+    }
+
+    [Test]
+    public void AddResourceModifier_FlatArmorAboveDamage_BlocksTheHitWithoutHealing()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+        _targetAttributeManager.GetOrAdd(AttributeType.FlatArmor).BaseValue = 3f;
+        _targetAttributeManager.GetOrAdd(AttributeType.FlatArmor).Update();
+
+        AddModifier(new FakeConsumer(-2f));
+        Drain();
+
+        Assert.AreEqual(50f, _health.Value); // 2 damage fully blocked, not turned into +1 heal
     }
 
     [Test]
     public void AddResourceModifier_NegativeFlatArmor_ClampsToZero_HasNoEffect()
     {
-        // CRITICAL: Attribute.Update() clamps every attribute's .Value to Mathf.Max(_value, 0f)
-        // (Assets/Scripts/Attributes/Attribute.cs), so a NEGATIVE FlatArmor - which is what would
-        // be needed to reduce damage given the formula above - is clamped to 0 and has no effect.
-        // Combined with the test above: FlatArmor is currently unable to reduce damage under any
-        // configuration. Worth a real fix (likely `value + flatArmor.Value` with FlatArmor
-        // interpreted as a positive "block N damage" amount) - flagged, not changed here.
+        // Attribute.Update() clamps every attribute's .Value to Mathf.Max(_value, 0f), so a
+        // negative FlatArmor can't be used to add damage.
         Attribute flatArmor = _targetAttributeManager.GetOrAdd(AttributeType.FlatArmor);
         flatArmor.BaseValue = -3f;
         flatArmor.Update();
