@@ -1,128 +1,79 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
-using UnityEngine.UI;
 
-// Read-only access to the legacy UI state that has no public accessor. Every field binding is cached and
-// checked for name and type, the gameplay commands still go through the original public methods and buttons
+// Presentation reads the existing gameplay/UI state; commands still use the original public actions.
 public static class LegacyUiReader
 {
-    static readonly FieldInfo gameStateField = RequireField(typeof(GameManager), "_state",
-        typeof(GameManager.GameState));
-    static readonly FieldInfo ascensionStateField = RequireField(typeof(AscensionGameType), "_state",
-        typeof(AscensionGameType.State));
-    static readonly FieldInfo currentViewField = RequireField(typeof(UIManager), "_currentView", typeof(ViewType));
-    static readonly FieldInfo selectedPanelField = RequireField(typeof(GameView), "_selectedPanel", typeof(PanelType));
-    static readonly FieldInfo selectedObjectField = RequireField(typeof(GameView), "_selectedObject",
-        typeof(GameObject));
-    static readonly FieldInfo entityButtonsField = RequireField(typeof(EntityInventory), "_entityButtons",
-        typeof(List<SelectEntityButton>));
-    static readonly FieldInfo skillButtonField = RequireField(typeof(CharacterSkillSlot), "_skillButton",
-        typeof(UseCharacterSkillButton));
-    static readonly FieldInfo costTextField = RequireField(typeof(UseCharacterSkillButton), "_costText",
-        typeof(Text));
-    static readonly FieldInfo cooldownTextField = RequireField(typeof(UseCharacterSkillButton), "_cooldownText",
-        typeof(Text));
-    static readonly FieldInfo upgradeButtonsField = RequireField(typeof(UpgradeView), "_upgradeButtons",
-        typeof(List<GameObject>));
-    static readonly FieldInfo entityItemField = RequireField(typeof(SelectItemUpgradeButton), "_item", typeof(AItem));
-    static readonly FieldInfo playerItemField = RequireField(typeof(SelectPlayerItemUpgradeButton), "_item",
-        typeof(AItem));
-    static readonly Dictionary<Type, FieldInfo> itemDataFields = new Dictionary<Type, FieldInfo>();
-
-    public static bool IsValid()
+    static bool HasSource(UnityEngine.Object source, string member)
     {
-        return gameStateField != null && ascensionStateField != null && currentViewField != null
-            && selectedPanelField != null && selectedObjectField != null && entityButtonsField != null
-            && skillButtonField != null && costTextField != null && cooldownTextField != null
-            && upgradeButtonsField != null && entityItemField != null
-            && playerItemField != null;
-    }
-
-    static FieldInfo RequireField(Type owner, string name, Type valueType)
-    {
-        FieldInfo field = owner.GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        if (field == null || field.FieldType != valueType)
+        if (source != null)
         {
-            Debug.LogError($"[LegacyUiReader] The Toolkit binding requires {owner.FullName}.{name} of type "
-                + $"{valueType.FullName}. The legacy contract changed, update LegacyUiReader and its link.xml");
-            return null;
+            return true;
         }
 
-        return field;
-    }
-
-    static T Read<T>(FieldInfo field, object source)
-    {
-        if (field == null)
-        {
-            return default(T);
-        }
-
-        if (source == null)
-        {
-            Debug.LogError($"[LegacyUiReader] Cannot read {field.DeclaringType.FullName}.{field.Name} "
-                + "from a null source");
-            return default(T);
-        }
-
-        return (T)field.GetValue(source);
+        Debug.LogError($"[LegacyUiReader] Cannot read {member} from a null source");
+        return false;
     }
 
     public static GameManager.GameState GameState(GameManager source)
     {
-        return Read<GameManager.GameState>(gameStateField, source);
+        return HasSource(source, "GameManager.state") ? source.state : GameManager.GameState.None;
     }
 
     public static AscensionGameType.State AscensionState(AscensionGameType source)
     {
-        return Read<AscensionGameType.State>(ascensionStateField, source);
+        return HasSource(source, "AscensionGameType.state") ? source.state : AscensionGameType.State.None;
     }
 
     public static ViewType CurrentView(UIManager source)
     {
-        return Read<ViewType>(currentViewField, source);
+        return HasSource(source, "UIManager.currentView") ? source.currentView : ViewType.None;
     }
 
     public static GameObject SelectedObject(GameView source)
     {
-        if (Read<PanelType>(selectedPanelField, source) == PanelType.None)
+        if (!HasSource(source, "GameView.selectedPanel") || source.selectedPanel == PanelType.None)
         {
             return null;
         }
 
-        return Read<GameObject>(selectedObjectField, source);
+        return source.selectedObject;
     }
 
     public static IReadOnlyList<SelectEntityButton> AvailableEntities(EntityInventory source)
     {
-        return Read<List<SelectEntityButton>>(entityButtonsField, source).AsReadOnly();
+        if (!HasSource(source, "EntityInventory.entityButtons"))
+        {
+            return Array.Empty<SelectEntityButton>();
+        }
+
+        return source.entityButtons;
     }
 
     public static IReadOnlyList<GameObject> UpgradeChoices(UpgradeView source)
     {
-        return Read<List<GameObject>>(upgradeButtonsField, source).AsReadOnly();
+        if (!HasSource(source, "UpgradeView.upgradeButtons"))
+        {
+            return Array.Empty<GameObject>();
+        }
+
+        return source.upgradeButtons;
     }
 
     public static UseCharacterSkillButton SkillButton(CharacterSkillSlot source)
     {
-        return Read<UseCharacterSkillButton>(skillButtonField, source);
+        return HasSource(source, "CharacterSkillSlot.skillButton") ? source.skillButton : null;
     }
 
     public static AItem Item(SelectItemUpgradeButton source)
     {
-        return Read<AItem>(entityItemField, source);
+        return HasSource(source, "SelectItemUpgradeButton.item") ? source.item : null;
     }
 
     public static AItem Item(SelectPlayerItemUpgradeButton source)
     {
-        if (source == null)
-        {
-            return null;
-        }
-
-        return Read<AItem>(playerItemField, source);
+        return source != null ? source.item : null;
     }
 
     public static bool CanUse(CharacterSkillSlot source)
@@ -139,57 +90,18 @@ public static class LegacyUiReader
             return "Unavailable";
         }
 
-        Text cost = Read<Text>(costTextField, presentation);
-        Text cooldown = Read<Text>(cooldownTextField, presentation);
-        bool showCost = presentation.hasCost && cost != null;
-        bool showCooldown = presentation.hasCooldown && cooldown != null;
-        string costText = showCost ? cost.text : null;
-        string cooldownText = showCooldown ? cooldown.text : null;
-        return ToolkitPresentation.SkillStatus(showCost, costText, showCooldown, cooldownText);
+        string cost = presentation.costText;
+        string cooldown = presentation.cooldownText;
+        return ToolkitPresentation.SkillStatus(
+            presentation.hasCost && cost != null, cost,
+            presentation.hasCooldown && cooldown != null, cooldown);
     }
 
-    // data is the public AItem<T> field. A custom non-generic item may have no description,
-    // no private member or naming guess is used here
+    // Non-generic custom items do not need data or a description to remain valid items.
     public static string ItemDescription(AItem item)
     {
-        if (item == null)
-        {
-            return string.Empty;
-        }
-
-        Type type = item.GetType();
-        FieldInfo field;
-        if (!itemDataFields.TryGetValue(type, out field))
-        {
-            field = FindDataField(type);
-            itemDataFields.Add(type, field);
-        }
-
-        if (field == null)
-        {
-            return string.Empty;
-        }
-
-        BaseItemData data = field.GetValue(item) as BaseItemData;
-        if (data == null || data.description == null)
-        {
-            return string.Empty;
-        }
-
-        return data.description;
-    }
-
-    static FieldInfo FindDataField(Type type)
-    {
-        for (Type current = type; current != null; current = current.BaseType)
-        {
-            if (current.IsGenericType && current.GetGenericTypeDefinition() == typeof(AItem<>))
-            {
-                BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly;
-                return current.GetField("data", flags);
-            }
-        }
-
-        return null;
+        IGameDataSource source = item as IGameDataSource;
+        BaseItemData data = source != null ? source.sourceData as BaseItemData : null;
+        return data != null && data.description != null ? data.description : string.Empty;
     }
 }

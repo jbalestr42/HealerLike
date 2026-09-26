@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using UnityEngine;
 
 public enum DataIconKind
@@ -65,7 +64,7 @@ public class DataIconDescriptor
         }
         else
         {
-            nested = ReadField(source, "data");
+            nested = DataIconSource.Unwrap(source);
         }
 
         if (nested == null)
@@ -74,7 +73,7 @@ public class DataIconDescriptor
         }
 
         DataIconKind kind = GetKind(source, nested);
-        string label = GetLabel(nested);
+        string label = DataIconSource.Label(nested);
         return new DataIconDescriptor(kind + ":" + nested.GetType().FullName + ":" + label, label, kind);
     }
 
@@ -99,27 +98,6 @@ public class DataIconDescriptor
         return KindFromNamespace(nested.GetType().Namespace);
     }
 
-    static string GetLabel(object nested)
-    {
-        string label = ReadField(nested, "title") as string;
-        if (string.IsNullOrWhiteSpace(label))
-        {
-            label = ReadField(nested, "name") as string;
-        }
-
-        if (string.IsNullOrWhiteSpace(label) && nested is UnityEngine.Object)
-        {
-            label = ((UnityEngine.Object)nested).name;
-        }
-
-        if (string.IsNullOrWhiteSpace(label))
-        {
-            label = nested.GetType().Name;
-        }
-
-        return label;
-    }
-
     // The namespace convention avoids a circular Runtime to Render assembly reference
     public static DataIconKind KindFromNamespace(string dataNamespace)
     {
@@ -137,22 +115,6 @@ public class DataIconDescriptor
         }
 
         return DataIconKind.Data;
-    }
-
-    public static object ReadField(object source, string name)
-    {
-        if (source == null)
-        {
-            return null;
-        }
-
-        FieldInfo field = source.GetType().GetField(name, BindingFlags.Public | BindingFlags.Instance);
-        if (field == null)
-        {
-            return null;
-        }
-
-        return field.GetValue(source);
     }
 
     // String.GetHashCode is avoided on purpose: its result can change between processes
