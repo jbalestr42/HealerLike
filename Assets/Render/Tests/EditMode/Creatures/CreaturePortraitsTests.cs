@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -107,6 +108,9 @@ namespace HealerLike.Render.Creatures
             Assert.DoesNotThrow(() => _portraits.Dispose());
             Assert.IsFalse(image);
             Assert.AreEqual(1, calls);
+            FieldInfo listeners = typeof(CreaturePortraits).GetField("Changed",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNull(listeners.GetValue(_portraits), "Disposed cache must not retain the throwing subscriber.");
             Assert.AreEqual(1, _capture.releases);
             Assert.AreEqual(0, _portraits.cachedCount);
         }
