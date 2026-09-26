@@ -7,7 +7,7 @@ using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Studio.Editor
 {
-    // The creature studio's starting recipes, deep copies, and the checks the runtime validator does not make
+    // The creature studio's starting recipes, deep copies and authored validation diagnostics.
     public static class CreatureStudioAuthoring
     {
         public static readonly string[] SampleNames = { "Healer", "Sprout", "Stone Sentinel" };
@@ -90,39 +90,13 @@ namespace HealerLike.Render.Studio.Editor
             return result;
         }
 
-        // The runtime validator's error, then the fields it does not read
+        // Field diagnostics share runtime acceptance rules; a structural error is added once.
         public static string[] Validate(CreatureRecipe recipe)
         {
-            List<string> warnings = new List<string>();
-            string error;
-            if (!CreatureValidator.TryValidate(recipe, out error))
+            List<string> warnings = new List<string>(CreaturePresentationValidation.Errors(recipe));
+            if (!CreatureValidator.TryValidate(recipe, out string error) && !warnings.Contains(error))
             {
-                warnings.Add(error);
-            }
-
-            if (recipe == null)
-            {
-                return warnings.ToArray();
-            }
-
-            if (!RenderMath.IsFinite(recipe.neckLocal))
-            {
-                warnings.Add("Neck coordinates must be finite.");
-            }
-
-            if (!RenderMath.IsFinite(recipe.wiltColour) || !RenderMath.IsFinite(recipe.stoneOchre))
-            {
-                warnings.Add("Wilt and stone colours must be finite.");
-            }
-
-            if (recipe.parts != null && HasUnknownRole(recipe.parts))
-            {
-                warnings.Add("Every part needs a valid role.");
-            }
-
-            if (recipe.arms != null && HasUnknownTip(recipe.arms))
-            {
-                warnings.Add("Arm tip colours must be finite.");
+                warnings.Insert(0, error);
             }
             return warnings.ToArray();
         }
@@ -153,28 +127,5 @@ namespace HealerLike.Render.Studio.Editor
             return channels;
         }
 
-        static bool HasUnknownRole(CreaturePart[] parts)
-        {
-            foreach (CreaturePart part in parts)
-            {
-                if (!Enum.IsDefined(typeof(PartRole), part.role))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        static bool HasUnknownTip(ArmDefinition[] arms)
-        {
-            foreach (ArmDefinition arm in arms)
-            {
-                if (!RenderMath.IsFinite(arm.tipColour))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
     }
 }

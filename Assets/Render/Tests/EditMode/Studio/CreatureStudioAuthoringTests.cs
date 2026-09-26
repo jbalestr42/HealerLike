@@ -134,7 +134,12 @@ public class CreatureStudioAuthoringTests
 
         string[] warnings = CreatureStudioAuthoring.Validate(_recipe);
 
-        Assert.AreEqual(3, warnings.Length); // the neck, the colours and the role
+        CollectionAssert.AreEquivalent(new[]
+        {
+            "Neck coordinates must be finite.",
+            "Wilt and stone colours must be finite.",
+            "Every part needs a valid role."
+        }, warnings);
     }
 }
 

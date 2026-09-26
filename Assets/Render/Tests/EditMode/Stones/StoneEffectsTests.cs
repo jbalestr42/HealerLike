@@ -137,6 +137,7 @@ public class StoneEffectsTests
         StoneFragmentPool.ShardLease shard = _fx.BorrowShard(_mesh, Color.white);
         Assert.Greater(_go.transform.childCount, 0);
 
+        TestHelpers.InvokePrivate(_fx, "OnDestroy");
         Object.DestroyImmediate(_fx);
 
         Assert.IsNull(shard.shard);
