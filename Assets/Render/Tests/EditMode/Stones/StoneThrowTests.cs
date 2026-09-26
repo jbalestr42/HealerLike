@@ -51,6 +51,20 @@ public class StoneThrowTests
     }
 
     [Test]
+    public void LegacyHiddenParts_AreNeverSelected_AndNoActiveCandidateRefuses()
+    {
+        CreatureRig rig = _body.GetComponent<CreatureBuilder>().rig;
+        rig.partTransforms[3].gameObject.SetActive(false);
+        Vector3 hidden = rig.partTransforms[3].GetComponent<Renderer>().bounds.center;
+        Assert.IsTrue(_throw.BeginDelivery(1, DeliveryStyle.Thrown, _projectile.transform, Vector3.one));
+        Transform shard = _fxObject.GetComponentInChildren<MeshFilter>().transform;
+        Assert.AreNotEqual(hidden, shard.position);
+        _throw.EndDelivery(1);
+        foreach (Transform part in rig.partTransforms) part.gameObject.SetActive(false);
+        Assert.IsFalse(_throw.BeginDelivery(2, DeliveryStyle.Thrown, _projectile.transform, Vector3.one));
+    }
+
+    [Test]
     public void ExplicitSurface_StartsOnGeometry_RecomposesDuringFlight_AndReleasesWhenRemoved()
     {
         CreatureRig rig = _body.GetComponent<CreatureBuilder>().rig;

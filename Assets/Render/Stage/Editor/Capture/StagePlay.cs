@@ -165,7 +165,8 @@ namespace HealerLike.Render.Stage
             {
                 AStageRun run = Create(mode);
                 _activeRun = run;
-                if (mode == "mobile-interface" || mode == "creature-presentation" || mode == "expedition-map")
+                if (mode == "mobile-interface" || mode == "creature-presentation" || mode == "expedition-map"
+                    || mode == "spell-sources")
                 {
                     // Screen and pointer coordinates must be read inside a game frame, not Editor.update.
                     GameObject host = new GameObject("Stage capture frame");

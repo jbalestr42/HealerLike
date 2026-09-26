@@ -49,7 +49,7 @@ namespace HealerLike.Render.Stage
         StageCaptureSession _session;
         string _folder;
 
-        public static void Capture() => StagePlay.Enter("spell-sources", 360f);
+        public static void Capture() => SpellSourcePreparation.Enter("spell-sources", 360f);
 
         protected override void OnFailed(Exception error)
         {

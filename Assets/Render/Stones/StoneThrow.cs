@@ -79,18 +79,20 @@ namespace HealerLike.Render.Stones
         }
 
         // Manual recipes retain their old highest-head centre; authored sources never enter this path.
-        static Vector3 LegacyOrigin(CreatureRig rig)
+        static bool TryLegacyOrigin(CreatureRig rig, out Vector3 origin)
         {
             int selected = -1;
             bool head = false;
             for (int i = 0; i < rig.parts.Count; i++)
             {
+                if (!rig.partTransforms[i].gameObject.activeInHierarchy) continue;
                 bool candidateHead = rig.parts[i].role == PartRole.Head;
                 if (selected < 0 || (candidateHead && !head) || (candidateHead == head
                     && rig.partTransforms[i].position.y > rig.partTransforms[selected].position.y))
                 { selected = i; head = candidateHead; }
             }
-            return rig.partTransforms[selected].GetComponent<Renderer>().bounds.center;
+            origin = selected >= 0 ? rig.partTransforms[selected].GetComponent<Renderer>().bounds.center : default;
+            return selected >= 0;
         }
 
         void Follow(Delivery delivery, Vector3 projectilePosition)
@@ -158,6 +160,12 @@ namespace HealerLike.Render.Stones
                 return false;
             }
 
+            if (!source.isExplicit && !TryLegacyOrigin(_builder.rig, out origin))
+            {
+                source.Dispose();
+                return false;
+            }
+
             uint shardSeed = SeededRandom.ForPart(_seed, shardMeshSalt);
             StoneMeshCache.Lease lease = _effects.stoneMeshes.Acquire(shardSeed, shardShape);
             if (lease == null)
@@ -175,7 +183,7 @@ namespace HealerLike.Render.Stones
             }
 
             Transform shard = shardLease.shard;
-            shard.position = source.isExplicit ? origin : LegacyOrigin(_builder.rig);
+            shard.position = origin;
             shard.rotation = Quaternion.identity;
             Delivery delivery = new Delivery();
             delivery.shardLease = shardLease;
