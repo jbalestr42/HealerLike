@@ -75,7 +75,8 @@ namespace HealerLike.Render.Creatures
         }
 
         // The hips follow the swaying body, the knees and feet stay on the ground under the root
-        public void Place(Transform sway, Transform root, float cellSize)
+        public void Place(Transform sway, Transform root, float cellSize,
+            float appearanceElapsed = CreatureAppearance.Duration)
         {
             RootDefinition roots = _definition;
             for (int i = 0; i < roots.count; i++)
@@ -106,12 +107,17 @@ namespace HealerLike.Render.Creatures
                     {
                         PrimitiveMeshes.Segment(segment, start, end, radius);
                     }
+                    float growth = CreatureAppearance.Scale(appearanceElapsed,
+                        CreatureAppearance.RootDelay(i, roots.count, k, roots.segments));
+                    // Grow toward the hip from the segment's outer end. The next Place restores the full pose.
+                    segment.position = Vector3.LerpUnclamped(end, segment.position, growth);
+                    segment.localScale *= growth;
                     if (k > 0)
                     {
                         Transform joint = _joints[i * (roots.segments - 1) + k - 1];
                         joint.position = start;
                         float width = roots.jointScale > 0f ? roots.jointScale : jointWidth;
-                        joint.localScale = Vector3.one * (radius * width / root.lossyScale.x);
+                        joint.localScale = Vector3.one * (radius * width / root.lossyScale.x) * growth;
                     }
 
                     start = end;

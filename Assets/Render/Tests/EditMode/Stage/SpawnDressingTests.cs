@@ -165,6 +165,35 @@ public class SpawnDressingTests
         Assert.IsNotNull(entity.model.GetComponentInChildren<CreatureBuilder>().rig);
     }
 
+    [TestCase(Entity.EntityType.Player)]
+    [TestCase(Entity.EntityType.Computer)]
+    public void OnEntitySpawned_GrowthStartsAfterTheFullFootprintIsMeasured(Entity.EntityType side)
+    {
+        _scene.manager.Init(_scene.entityManager, _scene.player);
+        Entity entity = CreateEntity(_scene.gameGo.transform, side, out _);
+        entity.data = RenderTestAssets.LoadEntity("NormalEntity");
+        _scene.entityManager.OnEntitySpawned.Invoke(entity);
+        CreatureBuilder builder = entity.model.GetComponentInChildren<CreatureBuilder>();
+        CreatureRig rig = builder.rig;
+        TrampleZone zone = builder.GetComponent<TrampleZone>();
+        Assert.That(rig.isAppearing, Is.True);
+        Assert.That(rig.appearanceElapsed, Is.Zero);
+        Assert.That(zone, Is.Not.Null);
+        float radius = zone.radius;
+        rig.AdvanceAppearance(0.2f);
+        Assert.That(_scene.manager.RebuildViews(), Is.EqualTo(1));
+        Assert.That(rig.appearanceElapsed, Is.EqualTo(0.2f));
+        Assert.That(zone.radius, Is.InRange(radius * 0.9f, radius * 1.1f),
+            "A rebuild must retain the complete footprint even while the rendered body is still tiny");
+        rig.CompleteAppearance();
+        rig.Tick(Time.time, 0f, new FootFrame(builder.transform.position, builder.transform.up, StageCalibration.CellSize));
+        float expected = TrampleZone.TrampleRadius(TrampleZone.CreatureFootprint(builder.transform, rig));
+        Assert.That(radius, Is.EqualTo(expected).Within(0.01f));
+        TestHelpers.InvokePrivate(builder, "OnDisable");
+        TestHelpers.InvokePrivate(builder, "OnEnable");
+        Assert.That(rig.isAppearing, Is.False, "Re-enabling the existing view must not replay its first appearance");
+    }
+
     [Test]
     public void OnEntitySpawned_ModelWithTheHUD_KeepsTheEffectIconsShowing()
     {

@@ -19,8 +19,18 @@ namespace HealerLike.Render.Stage
         Rect _viewport;
         float _aspect;
         Camera _camera;
+        CreaturePortraits _portraits;
+        CreatureLooks _portraitLooks;
+        PrimitiveMeshes _portraitMeshes;
+        Scene _uiScene;
 
         public ToolkitGameUI ui { get { return _ui; } }
+        public CreaturePortraits portraits { get { return _portraits; } }
+
+        void Awake()
+        {
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
+        }
 
         public void Init(RenderManager manager, BattleFocus focus)
         {
@@ -34,6 +44,11 @@ namespace HealerLike.Render.Stage
             {
                 return;
             }
+            ReleasePortraits();
+            _uiScene = scene;
+#if UNITY_ANDROID && !UNITY_EDITOR
+            StageLegacyInput.Configure(scene);
+#endif
 
             _ui = FindInScene<ToolkitGameUI>(scene);
             if (_ui == null)
@@ -48,12 +63,54 @@ namespace HealerLike.Render.Stage
             _ui.sceneLoader = LoadScene;
             if (scene.path == GameplayPath)
             {
-                StageTouchInput touch = _ui.gameObject.AddComponent<StageTouchInput>();
+                CreatePortraits();
+                StageTouchInput touch = _ui.GetComponent<StageTouchInput>();
+                if (touch == null) touch = _ui.gameObject.AddComponent<StageTouchInput>();
                 touch.Init(FindInScene<InteractionManager>(scene));
                 _ui.SetBattleFocus(false, _focus.Toggle);
             }
             _focus.ShowLegacyControl(false);
             _camera = null;
+        }
+
+        public void RefreshCreatureIcons()
+        {
+            if (_portraits == null) return;
+            if (_portraitLooks != _manager.creatureLooks || _portraitMeshes != _manager.meshes)
+            {
+                ReleasePortraits();
+                CreatePortraits();
+            }
+            else _portraits.Invalidate();
+        }
+
+        void CreatePortraits()
+        {
+            if (_ui == null) return;
+            _portraitLooks = _manager.creatureLooks;
+            _portraitMeshes = _manager.meshes;
+            _portraits = new CreaturePortraits(_portraitLooks, _portraitMeshes);
+            _ui.SetIconProvider(_portraits);
+        }
+
+        void OnSceneUnloaded(Scene scene)
+        {
+            if (scene == _uiScene) ReleasePortraits();
+        }
+
+        void OnDestroy()
+        {
+            SceneManager.sceneUnloaded -= OnSceneUnloaded;
+            ReleasePortraits();
+        }
+
+        void ReleasePortraits()
+        {
+            if (_ui != null) _ui.SetIconProvider(null);
+            _portraits?.Dispose();
+            _portraits = null;
+            _portraitLooks = null;
+            _portraitMeshes = null;
         }
 
         void LateUpdate()

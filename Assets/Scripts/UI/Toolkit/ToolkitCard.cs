@@ -15,7 +15,6 @@ public class ToolkitCard
     Label _description;
     Label _status;
     object _iconSource;
-    bool _hasIcon = false;
 
     ToolkitCardModel _model;
     public ToolkitCardModel model { get { return _model; } }
@@ -80,12 +79,16 @@ public class ToolkitCard
         _info.tooltip = "Inspect " + _model.title;
         _button.SetEnabled(_model.isEnabled);
         _button.EnableInClassList("is-disabled", !_model.isEnabled);
-        if (!_hasIcon || !ReferenceEquals(_iconSource, _model.iconSource))
-        {
-            _hasIcon = true;
-            _iconSource = _model.iconSource;
-            _icon.style.backgroundImage = new StyleBackground(_view.icons.GetIcon(_iconSource));
-        }
+        // Source side/data can change while the Entity reference stays the same. The provider
+        // caches the screenshot, so requesting it again never renders an unchanged creature.
+        _iconSource = _model.iconSource;
+        RefreshIcon();
+    }
+
+    public void RefreshIcon()
+    {
+        _icon.style.backgroundImage = new StyleBackground(_view.GetIcon(_iconSource, out bool isPortrait));
+        _icon.EnableInClassList("creature-portrait", isPortrait);
     }
 
     // A missing template or template element falls back to a plain element

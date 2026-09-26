@@ -29,6 +29,7 @@ namespace HealerLike.Render.Stage
                 _output.Check(!string.IsNullOrWhiteSpace(_output.manifest.revision)
                     && _output.manifest.revision != "unspecified", "Capture source revision recorded");
                 _actions.ui = Object.FindAnyObjectByType<ToolkitGameUI>();
+                _actions.ConfigureLegacyInput();
                 _interaction = Object.FindAnyObjectByType<InteractionManager>();
                 yield return Resize(1080, 1920);
                 _output.Check(_actions.ui != null, "RenderStage attached Toolkit interface");
@@ -36,11 +37,13 @@ namespace HealerLike.Render.Stage
                     "Exactly one Toolkit host");
                 yield return Capture("01-journey");
                 Random.InitState(271828);
-                _actions.Submit("start-button");
+                yield return _actions.PointerTap("start-button");
                 yield return Wait(1f);
+                _output.Check(_actions.legacyModuleReadTouches,
+                    "Selected StandaloneInputModule consumed held touch samples for Begin journey");
                 _output.Check(LegacyUiReader.GameState(Object.FindAnyObjectByType<GameManager>()) == GameManager.GameState.Running,
                     "Toolkit begin journey started real gameplay");
-                _actions.Submit("party-button");
+                yield return _actions.PointerTap("party-button");
                 yield return Wait(0.3f);
                 yield return Capture("02-party");
                 List<Button> cards = _actions.Cards("party-list");
@@ -53,15 +56,16 @@ namespace HealerLike.Render.Stage
                 yield return Wait(0.2f);
                 _actions.Submit("party-button");
                 yield return Wait(0.2f);
-                yield return _actions.SelectCard(_actions.Cards("party-list")[0]);
+                yield return _actions.SelectCardByTouch(_actions.Cards("party-list")[0]);
                 yield return Wait(0.3f);
                 _output.Check(_interaction.GetInteraction() != null, "Toolkit party card begins deployment");
                 yield return Capture("04-targeting");
-                _actions.Submit("cancel-button");
+                yield return _actions.PointerTap("cancel-button");
                 yield return Wait(0.2f);
                 _output.Check(_interaction.GetInteraction() == null, "Touch cancel ends deployment");
                 yield return Deploy(0, Vector3.left * 2f);
                 yield return Deploy(1, Vector3.left * 3f + Vector3.back);
+                _output.manifest.checks.Add("Deployment uses multi-frame StandaloneInputModule and StageTouchInput.Update; Android OS input is not covered by this capture");
                 _actions.Submit("inventory-button");
                 yield return Wait(0.3f);
                 _output.Check(StageInterfaceOutput.IsVisible(_actions.root.Q("inventory-panel")), "Inventory opens");
@@ -138,20 +142,23 @@ namespace HealerLike.Render.Stage
 
         IEnumerator Deploy(int index, Vector3 offset)
         {
-            _actions.Submit("party-button");
+            yield return _actions.PointerTap("party-button");
             yield return Wait(0.2f);
             List<Button> cards = _actions.Cards("party-list").FindAll(button =>
                 button.enabledInHierarchy && button.Q<Label>("card-status").text == "Deploy");
             _output.Check(cards.Count > 0, "Deployable party choice remains");
-            yield return _actions.SelectCard(cards[Mathf.Min(index, cards.Count - 1)]);
+            yield return _actions.SelectCardByTouch(cards[Mathf.Min(index, cards.Count - 1)]);
             yield return Wait(0.2f);
+            _output.Check(_interaction.GetInteraction() is EntityGridInteraction,
+                "Multi-frame Toolkit touch selects deployment card " + index);
             int before = _manager.entityManager.GetEntities(Entity.EntityType.Player).Count;
             Vector3 point = _manager.player.grid.GetNearestWalkablePosition(offset);
             Vector2 screen = _manager.gameCamera.WorldToScreenPoint(point);
-            _actions.WorldTap(screen);
+            yield return _actions.TouchGesture(screen);
             yield return Wait(0.4f);
             _output.Check(_manager.entityManager.GetEntities(Entity.EntityType.Player).Count > before,
                 "First world touch deploys ally " + index);
+            _output.Check(_interaction.enabled, "Legacy input restored after multi-frame world touch " + index);
         }
 
         IEnumerator GestureExclusion()
@@ -168,7 +175,7 @@ namespace HealerLike.Render.Stage
             _actions.touch.ProcessTouch(3, TouchPhase.Ended, end);
             _output.Check(_interaction.GetInteraction() != null, "Gesture beginning over UI cannot deploy on release over board");
             yield return Wait(0.2f);
-            _actions.Submit("cancel-button");
+            yield return _actions.PointerTap("cancel-button");
             yield return Wait(0.2f);
         }
 
@@ -185,7 +192,7 @@ namespace HealerLike.Render.Stage
                 if (_interaction.GetInteraction() != null)
                 {
                     _output.Check(StageInterfaceOutput.IsVisible(_actions.root.Q("cancel-button")), "Spell targeting has touch cancel");
-                    _actions.Submit("cancel-button");
+                    yield return _actions.PointerTap("cancel-button");
                     yield return Wait(0.2f);
                     _output.Check(_interaction.GetInteraction() == null, "Touch cancel ends spell targeting");
                     yield return _actions.SelectCard(card);
@@ -286,17 +293,21 @@ namespace HealerLike.Render.Stage
             _actions.Submit("menu-button");
             yield return Wait(1f);
             _actions.ui = Object.FindAnyObjectByType<ToolkitGameUI>();
+            _actions.ConfigureLegacyInput();
             _output.Check(SceneManager.GetActiveScene().path == StageInterface.MenuPath, "Pause menu returns to Toolkit menu");
             yield return Capture("11-menu");
-            _actions.Submit("start-button");
+            yield return _actions.PointerTap("start-button");
             yield return Wait(1.5f);
             _actions.ui = Object.FindAnyObjectByType<ToolkitGameUI>();
+            _actions.ConfigureLegacyInput();
             _output.Check(Object.FindAnyObjectByType<RenderManager>() == original && original.entityManager != null,
                 "New expedition reuses attached RenderManager");
             _output.Check(Object.FindObjectsByType<ToolkitGameUI>(FindObjectsSortMode.None).Length == 1,
                 "New expedition has exactly one Toolkit host");
-            _actions.Submit("start-button");
+            yield return _actions.PointerTap("start-button");
             yield return Wait(0.8f);
+            _output.Check(_actions.legacyModuleReadTouches,
+                "New expedition uses the selected legacy module for touch input");
             yield return Capture("12-new-expedition");
         }
     }

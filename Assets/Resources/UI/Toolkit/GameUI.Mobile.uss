@@ -21,6 +21,7 @@
 .is-mobile .party-list, .is-mobile .detail-scroll { min-height: 0; flex-grow: 1; flex-shrink: 1; }
 .is-mobile .section-description { margin-bottom: 8px; }
 .is-mobile .detail-icon { width: 56px; height: 56px; margin-top: 0; }
+.is-mobile .detail-icon.creature-portrait { width: 112px; height: 112px; }
 .is-mobile .detail-description { font-size: 14px; }
 .is-mobile .command-dock { min-height: 0; max-height: none; flex-direction: column; padding: 8px; }
 .is-mobile .section-toolbar { margin-bottom: 4px; height: 18px; }
@@ -88,6 +89,8 @@
 .is-mobile.is-landscape .party-panel .section-description { display: none; }
 .is-mobile.is-landscape .party-list .data-card { min-height: 76px; padding: 8px 54px 8px 8px; }
 .is-mobile.is-landscape .party-list .data-card__icon, .is-mobile.is-landscape .detail-icon { display: none; }
+.is-mobile.is-landscape .party-list .data-card__icon.creature-portrait { display: flex; width: 64px; height: 64px; }
+.is-mobile.is-landscape .detail-icon.creature-portrait { display: flex; width: 80px; height: 80px; }
 .is-mobile.is-landscape .party-list .data-card__description { font-size: 12px; }
 .is-mobile.is-landscape .dialog--compact { padding: 12px; }
 .is-mobile.is-landscape .dialog--compact .dialog-title { font-size: 22px; margin-top: 2px; margin-bottom: 4px; }

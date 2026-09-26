@@ -25,6 +25,15 @@ public class ToolkitGameUI : MonoBehaviour
     ToolkitDetailPanel _detailPanel = new ToolkitDetailPanel();
     ToolkitInventoryPanel _inventoryPanel = new ToolkitInventoryPanel();
     ToolkitMobileLayout _mobileLayout = new ToolkitMobileLayout();
+    IToolkitIconProvider _iconProvider;
+
+    public IToolkitIconProvider iconProvider { get { return _iconProvider; } }
+
+    public void SetIconProvider(IToolkitIconProvider provider)
+    {
+        _iconProvider = provider;
+        if (_view != null && isActiveAndEnabled) _view.SetIconProvider(provider);
+    }
 
     public System.Func<string, bool> sceneLoader { get; set; }
 
@@ -90,7 +99,7 @@ public class ToolkitGameUI : MonoBehaviour
         layout.CloneTree(root);
         // CloneTree may introduce full-screen TemplateContainers, keep the board pickable
         root.Query<TemplateContainer>().ForEach(IgnorePicking);
-        _view = new ToolkitGameView(root);
+        _view = new ToolkitGameView(root, _iconProvider);
         _context.Init();
         _view.OnInspect.AddListener(_detailPanel.OnInspect);
         _view.OnInspectEnded.AddListener(_detailPanel.OnInspectEnded);
@@ -138,6 +147,8 @@ public class ToolkitGameUI : MonoBehaviour
 
     void OnDisable()
     {
+        // Keep the host's provider for re-enable, but stop refreshing the detached view.
+        if (_view != null) _view.Release();
         _legacyCanvases.Restore();
         _timeControls.Resume();
         if (_document != null && _document.rootVisualElement != null)

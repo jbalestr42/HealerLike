@@ -18,6 +18,11 @@ namespace HealerLike.Render.Stage
         bool _blocked;
         IDraggable _draggable;
 
+#if UNITY_EDITOR
+        // Native capture supplies one sample per player frame; Android always reads Input.touches.
+        public Touch[] captureTouches { get; set; }
+#endif
+
         public void Init(InteractionManager interaction)
         {
             _interaction = interaction;
@@ -30,7 +35,14 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
-            if (Input.touchCount == 0)
+            int touchCount = Input.touchCount;
+#if UNITY_EDITOR
+            if (captureTouches != null)
+            {
+                touchCount = captureTouches.Length;
+            }
+#endif
+            if (touchCount == 0)
             {
                 CancelDrag();
                 _finger = -1;
@@ -42,9 +54,19 @@ namespace HealerLike.Render.Stage
                 _interaction.enabled = false;
                 _suspended = true;
             }
-            for (int i = 0; i < Input.touchCount; i++)
+            for (int i = 0; i < touchCount; i++)
             {
-                Touch touch = Input.GetTouch(i);
+                Touch touch;
+#if UNITY_EDITOR
+                if (captureTouches != null)
+                {
+                    touch = captureTouches[i];
+                }
+                else
+#endif
+                {
+                    touch = Input.GetTouch(i);
+                }
                 if (_finger < 0 || touch.fingerId == _finger)
                 {
                     ProcessTouch(touch.fingerId, touch.phase, touch.position);
@@ -89,6 +111,16 @@ namespace HealerLike.Render.Stage
             {
                 CancelDrag();
                 _blocked = true;
+            }
+            // A held finger supplies placement hover, while release remains the single owner of activation.
+            // This only moves the legacy cosmetic model; the placement adapter follows it in LateUpdate.
+            AInteraction placement = _interaction.GetInteraction();
+            if (!_blocked && placement is EntityGridInteraction
+                && (phase == TouchPhase.Began || phase == TouchPhase.Moved || phase == TouchPhase.Stationary)
+                && Raycast(position, out RaycastHit placementHit, placement.GetLayerMask())
+                && placement.IsValidTarget(placementHit.collider.gameObject))
+            {
+                placement.OnMouseOver(placementHit);
             }
             if (!_blocked && _draggable != null && Raycast(position, out RaycastHit dragHit))
             {

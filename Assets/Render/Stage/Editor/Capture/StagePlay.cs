@@ -69,6 +69,11 @@ namespace HealerLike.Render.Stage
         // The run each mode names, the one place a capture registers
         static AStageRun Create(string mode)
         {
+            if (mode == "creature-presentation")
+            {
+                return new StagePresentationRun();
+            }
+
             if (mode == "mobile-interface")
             {
                 return new StageInterfaceRun();
@@ -115,12 +120,13 @@ namespace HealerLike.Render.Stage
             if (change == PlayModeStateChange.EnteredPlayMode)
             {
                 AStageRun run = Create(mode);
-                if (mode == "mobile-interface")
+                if (mode == "mobile-interface" || mode == "creature-presentation")
                 {
                     // Screen and pointer coordinates must be read inside a game frame, not Editor.update.
                     GameObject host = new GameObject("Stage capture frame");
                     UnityEngine.Object.DontDestroyOnLoad(host);
-                    _frame = host.AddComponent<StageCaptureFrame>();
+                    _frame = mode == "creature-presentation"
+                        ? host.AddComponent<StagePresentationFrame>() : host.AddComponent<StageCaptureFrame>();
                     _frame.onFrame = run.Step;
                 }
                 else

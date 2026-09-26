@@ -1,0 +1,9 @@
+<linker>
+  <assembly fullname="HealerLike.Runtime">
+    <type fullname="EntityGridInteraction" preserve="nothing">
+      <field name="_data" />
+      <field name="_entity" />
+      <field name="_entityType" />
+    </type>
+  </assembly>
+</linker>

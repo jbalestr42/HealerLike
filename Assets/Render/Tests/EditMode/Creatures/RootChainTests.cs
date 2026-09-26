@@ -74,6 +74,25 @@ public class RootChainTests
         Assert.AreEqual(footBefore, last.GetComponent<Renderer>().bounds.min.y, 0.05f);
     }
 
+    [Test]
+    public void GrowingPose_IsRecomputedWithoutAccumulationAndSettlesToTheOriginalFoot()
+    {
+        _roots.Place(_sway.transform, _root.transform, 1f);
+        Transform last = LastSegment();
+        Vector3 authoredScale = last.localScale;
+        Vector3 authoredPosition = last.position;
+        Vector3 foot = last.TransformPoint(Vector3.up * 0.5f);
+        _roots.Place(_sway.transform, _root.transform, 1f, 0.1f);
+        Vector3 growingScale = last.localScale;
+        Assert.That(growingScale.magnitude, Is.LessThan(authoredScale.magnitude));
+        Assert.That(Vector3.Distance(foot, last.TransformPoint(Vector3.up * 0.5f)), Is.LessThan(0.00001f));
+        for (int i = 0; i < 20; i++) _roots.Place(_sway.transform, _root.transform, 1f, 0.1f);
+        Assert.That(last.localScale, Is.EqualTo(growingScale));
+        _roots.Place(_sway.transform, _root.transform, 1f, CreatureAppearance.Duration);
+        Assert.That(last.localScale, Is.EqualTo(authoredScale));
+        Assert.That(Vector3.Distance(last.position, authoredPosition), Is.LessThan(0.00001f));
+    }
+
     Transform LastSegment()
     {
         Transform last = null;

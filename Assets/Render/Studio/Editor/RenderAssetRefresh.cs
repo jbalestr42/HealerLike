@@ -59,9 +59,33 @@ namespace HealerLike.Render.Studio.Editor
 
         public static string Revision(RenderManager manager)
         {
-            CreatureLooks looks = manager.creatureLooks;
+            return CreatureRevision(manager.creatureLooks) + ":" + Stamp(manager.meshes);
+        }
+
+        public static string CreatureRevision(CreatureLooks looks)
+        {
             LookVocabulary vocabulary = looks ? looks.vocabulary : null;
-            return Stamp(vocabulary) + ":" + Stamp(vocabulary ? vocabulary.palette : null);
+            string revision = Stamp(looks) + ":" + Stamp(vocabulary) + ":" + Stamp(vocabulary ? vocabulary.palette : null);
+            if (!looks) return revision;
+            revision += ":" + ViewStamp(looks.plant) + ":" + ViewStamp(looks.stone);
+            foreach (KeyValuePair<EntityData, GameObject> entry in looks.entities)
+            {
+                revision += ":" + Stamp(entry.Key) + ":" + ViewStamp(entry.Value);
+            }
+            return revision;
+        }
+
+        static string ViewStamp(GameObject view)
+        {
+            CreatureBuilder builder = view ? view.GetComponentInChildren<CreatureBuilder>(true) : null;
+            if (!builder) return Stamp(view);
+            return Stamp(view) + ":" + Stamp(builder) + ":" + Stamp(builder.recipe) + ":" + Stamp(builder.meshes)
+                + ":" + MaterialStamp(builder.material) + ":" + MaterialStamp(builder.bodyMaterial);
+        }
+
+        static string MaterialStamp(Material material)
+        {
+            return Stamp(material) + ":" + Stamp(material ? material.shader : null);
         }
 
         static string Stamp(Object asset)

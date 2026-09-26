@@ -66,7 +66,7 @@ public class ToolkitPartyPanel
         Entity entity = entityGo.GetComponent<Entity>();
         ToolkitCardModel model = new ToolkitCardModel();
         model.key = $"entity-{entityGo.GetEntityId()}";
-        model.iconSource = entity.data;
+        model.iconSource = entity;
         model.title = entity.data.title;
         model.description = entity.data.description;
         model.status = "Deployed";

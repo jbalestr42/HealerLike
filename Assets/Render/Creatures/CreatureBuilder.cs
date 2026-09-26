@@ -25,6 +25,9 @@ namespace HealerLike.Render.Creatures
         RenderManager _manager;
 
         public CreatureRecipe recipe { get { return _recipe; } }
+        public Material material { get { return _material; } }
+        public Material bodyMaterial { get { return _bodyMaterial; } }
+        public PrimitiveMeshes meshes { get { return _meshes; } }
 
         void OnEnable()
         {
@@ -108,12 +111,15 @@ namespace HealerLike.Render.Creatures
             RefreshArms();
             _readout.Read();
             rig.SetReadout(_readout.target, _readout.healthFraction, _readout.readiness, _readout.readiness);
-            TickPresentation(0f);
+            // Recompose leaves complete geometry for structural measurements, before restoring its growth pose.
+            HealerLike.Render.Zones.TrampleZone trample = GetComponent<HealerLike.Render.Zones.TrampleZone>();
+            if (trample != null) trample.Refresh();
             HealerLike.Render.Stones.StoneBody stone = GetComponent<HealerLike.Render.Stones.StoneBody>();
             if (stone != null)
             {
                 stone.RefreshRig();
             }
+            TickPresentation(0f);
             return true;
         }
 
@@ -156,6 +162,7 @@ namespace HealerLike.Render.Creatures
 
             _readout.Read();
             rig.SetReadout(_readout.target, _readout.healthFraction, _readout.readiness, _readout.readiness);
+            rig.AdvanceAppearance(Time.unscaledDeltaTime);
             TickPresentation(Time.deltaTime);
         }
 
@@ -186,6 +193,14 @@ namespace HealerLike.Render.Creatures
                 rig.SetVisible(isActiveAndEnabled);
                 TickPresentation(0f);
             }
+        }
+
+        // SpawnDressing calls this after every view has measured the complete geometry for its own caches.
+        public void BeginAppearance()
+        {
+            if (rig == null) return;
+            rig.BeginAppearance();
+            TickPresentation(0f);
         }
 
         void TickPresentation(float deltaTime)

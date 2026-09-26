@@ -83,7 +83,7 @@ public class ToolkitDetailPanel
         }
 
         ToolkitCardModel model = new ToolkitCardModel();
-        model.iconSource = entity.data;
+        model.iconSource = entity;
         model.title = entity.data.title;
         model.description = GetStats(entity);
         _view.ShowDetail(model);

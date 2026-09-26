@@ -30,6 +30,11 @@ namespace HealerLike.Render.Creatures
         readonly List<Transform> _keptPivots = new List<Transform>();
         readonly List<Transform> _keptGeometry = new List<Transform>();
         Transform[] _geometry = Array.Empty<Transform>();
+        float[] _appearanceDelays = Array.Empty<float>();
+        Vector3[] _growthAnchors = Array.Empty<Vector3>();
+        float _appearanceElapsed = CreatureAppearance.Duration;
+        public float appearanceElapsed { get { return _appearanceElapsed; } }
+        public bool isAppearing { get { return _appearanceElapsed < CreatureAppearance.Duration; } }
         Renderer[] _bodyRenderers;
         bool[] _hasOchreFaces;
         Color[] _colours;
@@ -139,6 +144,8 @@ namespace HealerLike.Render.Creatures
             _recipe = data;
             _pivots = new Transform[data.parts.Length];
             _geometry = new Transform[data.parts.Length];
+            _appearanceDelays = new float[data.parts.Length];
+            _growthAnchors = new Vector3[data.parts.Length];
             _bodyRenderers = new Renderer[data.parts.Length];
             _hasOchreFaces = new bool[data.parts.Length];
             _colours = new Color[data.parts.Length];
@@ -185,7 +192,10 @@ namespace HealerLike.Render.Creatures
                 _geometry[i] = _keptGeometry[i];
                 _geometry[i].gameObject.SetActive(true);
                 _geometry[i].GetComponent<MeshFilter>().sharedMesh = mesh;
+                _geometry[i].localPosition = Vector3.zero;
                 _geometry[i].localScale = part.dimensions * _cellSize;
+                _growthAnchors[i] = mesh ? new Vector3(mesh.bounds.center.x, mesh.bounds.min.y, mesh.bounds.center.z)
+                    : Vector3.down * 0.5f;
                 _bodyRenderers[i] = _geometry[i].GetComponent<Renderer>();
                 _bodyRenderers[i].sharedMaterials = new Material[] { partMaterial };
                 _hasOchreFaces[i] = mesh && mesh.subMeshCount > 1;
@@ -201,6 +211,21 @@ namespace HealerLike.Render.Creatures
                 }
             }
 
+            // Measure the assembled pivots, not recipe array order, which puts some mineral supports last.
+            float min = float.PositiveInfinity;
+            float max = float.NegativeInfinity;
+            for (int i = 0; i < _pivots.Length; i++)
+            {
+                float height = _sway.InverseTransformPoint(_pivots[i].position).y;
+                _appearanceDelays[i] = height;
+                min = Mathf.Min(min, height);
+                max = Mathf.Max(max, height);
+            }
+            for (int i = 0; i < _pivots.Length; i++)
+            {
+                _appearanceDelays[i] = CreatureAppearance.PartDelay(data.parts[i].role,
+                    Mathf.InverseLerp(min, max, _appearanceDelays[i]));
+            }
             _budAnchors = buds.ToArray();
             _roots.Init(data.roots, _root, meshes, material, ColourJitter.Vary(data.roots.colour, _idle.seed));
             _shapeMeshes.Dispose();
@@ -223,6 +248,23 @@ namespace HealerLike.Render.Creatures
         {
             if (_presentationForward.HasValue != forward.HasValue) _presentationTurn = 0f;
             _presentationForward = forward;
+        }
+
+        // Default rigs stay grown for Studio and existing callers. Only a new live view or placement opts in.
+        public void BeginAppearance()
+        {
+            _appearanceElapsed = 0f;
+        }
+
+        public void AdvanceAppearance(float deltaTime)
+        {
+            if (float.IsFinite(deltaTime) && deltaTime > 0f)
+                _appearanceElapsed = Mathf.Min(CreatureAppearance.Duration, _appearanceElapsed + deltaTime);
+        }
+
+        public void CompleteAppearance()
+        {
+            _appearanceElapsed = CreatureAppearance.Duration;
         }
 
         public void Hit()
@@ -265,7 +307,10 @@ namespace HealerLike.Render.Creatures
                 {
                     swell += _charge * chargeSwell;
                 }
-                _geometry[i].localScale = Vector3.Scale(part.dimensions, idlePose.bodyScale) * _cellSize * swell;
+                Vector3 posedScale = Vector3.Scale(part.dimensions, idlePose.bodyScale) * _cellSize * swell;
+                float growth = CreatureAppearance.Scale(_appearanceElapsed, _appearanceDelays[i]);
+                _geometry[i].localScale = posedScale * growth;
+                _geometry[i].localPosition = Vector3.Scale(_growthAnchors[i], posedScale) * (1f - growth);
                 if (part.role == PartRole.Crown)
                 {
                     Quaternion spin = Quaternion.AngleAxis(time * CrownSpinDegrees, Vector3.up);
@@ -286,7 +331,7 @@ namespace HealerLike.Render.Creatures
                 Paint(i, Color.Lerp(wiltColour, _colours[i], _healthFraction), part.glow * light);
             }
 
-            _roots.Place(_sway, _root, _cellSize);
+            _roots.Place(_sway, _root, _cellSize, _appearanceElapsed);
         }
 
         void Aim(float time, float deltaTime, Vector3 origin)

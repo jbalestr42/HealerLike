@@ -50,6 +50,8 @@
 .button--small { min-width: 40px; min-height: 28px; padding: 3px 6px; }
 .data-card { flex-direction: column; flex-shrink: 0; padding: 12px; margin: 0 0 8px 0; min-height: 76px; align-items: flex-start; white-space: normal; }
 .data-card__icon { width: 48px; height: 48px; flex-shrink: 0; margin-bottom: 8px; }
+.data-card__icon.creature-portrait { width: 80px; height: 80px; }
+.detail-icon.creature-portrait { width: 128px; height: 128px; flex-shrink: 0; }
 .data-card__title { white-space: normal; margin-bottom: 4px; }
 .data-card__description { white-space: normal; }
 .data-card__status { white-space: normal; margin-top: 6px; }

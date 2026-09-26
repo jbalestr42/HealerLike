@@ -20,11 +20,13 @@ public class ToolkitGameView
 
     readonly DataIconService _icons = new DataIconService();
     public DataIconService icons { get { return _icons; } }
+    IToolkitIconProvider _iconProvider;
+    ToolkitCardModel _detail;
 
     VisualElement _root;
     public VisualElement root { get { return _root; } }
 
-    public ToolkitGameView(VisualElement root)
+    public ToolkitGameView(VisualElement root, IToolkitIconProvider iconProvider = null)
     {
         _root = root;
         _root.pickingMode = PickingMode.Ignore;
@@ -36,6 +38,37 @@ public class ToolkitGameView
                 element.pickingMode = PickingMode.Ignore;
             }
         }
+        SetIconProvider(iconProvider);
+    }
+
+    public void SetIconProvider(IToolkitIconProvider provider)
+    {
+        if (ReferenceEquals(_iconProvider, provider)) return;
+        if (_iconProvider != null) _iconProvider.Changed -= RefreshIcons;
+        _iconProvider = provider;
+        if (_iconProvider != null) _iconProvider.Changed += RefreshIcons;
+        RefreshIcons();
+    }
+
+    public Texture2D GetIcon(object source, out bool isPortrait)
+    {
+        Entity entity = source as Entity;
+        EntityData data = entity != null ? entity.data : source as EntityData;
+        Texture2D portrait = data != null && _iconProvider != null
+            ? _iconProvider.GetCreatureIcon(data, entity != null ? entity.entityType : Entity.EntityType.Player)
+            : null;
+        isPortrait = portrait != null;
+        return isPortrait ? portrait : _icons.GetIcon(data != null ? data : source);
+    }
+
+    // An invalidation also updates a hovered detail or a drawer whose model did not change.
+    public void RefreshIcons()
+    {
+        foreach (List<ToolkitCard> cards in _lists.Values)
+        {
+            foreach (ToolkitCard card in cards) card.RefreshIcon();
+        }
+        if (_detail != null) ShowDetail(_detail);
     }
 
     public void SetText(string name, string value)
@@ -136,18 +169,25 @@ public class ToolkitGameView
             return;
         }
 
+        _detail = model;
+
         SetText("detail-title", model.title);
         SetText("detail-description", model.description);
         VisualElement icon = _root.Q("detail-icon");
         if (icon != null)
         {
-            icon.style.backgroundImage = new StyleBackground(_icons.GetIcon(model.iconSource));
+            icon.style.backgroundImage = new StyleBackground(GetIcon(model.iconSource, out bool isPortrait));
+            icon.EnableInClassList("creature-portrait", isPortrait);
         }
     }
 
     // Destroys the icons this view generated
     public void Release()
     {
+        if (_iconProvider != null) _iconProvider.Changed -= RefreshIcons;
+        _iconProvider = null;
+        _lists.Clear();
+        _detail = null;
         _icons.Clear();
     }
 }

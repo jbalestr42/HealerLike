@@ -33,6 +33,8 @@ namespace HealerLike.Render.Stage
         RenderRegistry _registry = new RenderRegistry();
         Scene _scene;
         StageInterface _interface;
+        StageCreaturePlacement _placement;
+        public StageCreaturePlacement placement { get { return _placement; } }
         EnvironmentRoot _environment;
         SpawnDressing _spawns = new SpawnDressing();
         int _deliveryToken;
@@ -124,6 +126,9 @@ namespace HealerLike.Render.Stage
             _battleFocus.Init(this);
             _rangeDriver.Init(_gameCamera);
             _spawns.Init(this, _rangeDriver, _battleFocus);
+            if (_placement == null) _placement = gameObject.AddComponent<StageCreaturePlacement>();
+            _placement.Init(_creatureLooks, _meshes, FindInScene<InteractionManager>(_scene),
+                _gameCamera, StageCalibration.CellSize);
             _keyLight.Init();
             Debug.Log($"[RenderManager] Attached to {_scene.name}");
         }
@@ -158,7 +163,10 @@ namespace HealerLike.Render.Stage
         // subscriptions; SpawnDressing continues to dress later spawns with the same edited vocabulary.
         public int RebuildViews()
         {
-            return _spawns.RebuildViews();
+            int rebuilt = _spawns.RebuildViews();
+            if (_placement != null) _placement.Refresh(_creatureLooks, _meshes);
+            if (_interface != null) _interface.RefreshCreatureIcons();
+            return rebuilt;
         }
 
         // Landscape keeps the wide framing, the look is calibrated for portrait
@@ -249,6 +257,7 @@ namespace HealerLike.Render.Stage
         void Detach()
         {
             _spawns.Clear();
+            if (_placement != null) _placement.Clear();
             if (_battleFocus != null)
             {
                 _battleFocus.Clear();

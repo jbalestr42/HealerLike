@@ -129,6 +129,13 @@ namespace HealerLike.Render.Stage
                 }
             }
 
+            // Ground shadows and trample clearings measure the grown geometry during IEntityView.Init.
+            // Appearance changes only the rendered pose after those one-time measurements are complete.
+            foreach (CreatureBuilder creature in viewGo.GetComponentsInChildren<CreatureBuilder>())
+            {
+                creature.BeginAppearance();
+            }
+
             foreach (RangePreview preview in viewGo.GetComponentsInChildren<RangePreview>())
             {
                 _rangeDriver.Add(preview);
