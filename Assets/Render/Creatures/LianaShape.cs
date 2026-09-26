@@ -7,6 +7,7 @@ namespace HealerLike.Render.Creatures
     {
         // The lianas leave the neck this far to either side, in body units
         static readonly float armSpread = 0.15f;
+
         // One liana coils four turns of this many links, twelve to a turn, drifting forward a little each link so the
         // coil does not close on itself
         static readonly int armLinks = 48;
@@ -15,8 +16,14 @@ namespace HealerLike.Render.Creatures
         static readonly float armDrift = 0.015f;
         static readonly float armRadius = 0.045f;
 
-        public static void Arms(CreatureRecipe recipe, Vector3 neck, int armCount, float bodyUnit, Color colour,
-            Color accent)
+        public static void Arms(
+            CreatureRecipe recipe,
+            Vector3 neck,
+            int armCount,
+            float bodyUnit,
+            Color colour,
+            Color accent
+        )
         {
             Vector3 bodyPivot = recipe.parts[0].localPosition;
             recipe.sourceLocal = new Vector3[armCount];
@@ -29,6 +36,7 @@ namespace HealerLike.Render.Creatures
                 {
                     side = -armSpread;
                 }
+
                 recipe.sourceLocal[j] = (neck + Vector3.right * side) * bodyUnit;
                 recipe.arms[j] = Arm(recipe.sourceLocal[j] - bodyPivot, colour, accent);
             }
@@ -55,7 +63,7 @@ namespace HealerLike.Render.Creatures
                 restJoints = rest,
                 bendPole = Vector3.up,
                 colour = colour,
-                tipColour = tipColour
+                tipColour = tipColour,
             };
         }
     }

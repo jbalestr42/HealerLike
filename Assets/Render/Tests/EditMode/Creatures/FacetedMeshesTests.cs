@@ -47,7 +47,6 @@ public class FacetedMeshesTests
     {
         Dictionary<string, int> edges = CountEdges(_mesh);
         int baseEdges = 0;
-
         Assert.AreEqual(FacetedMeshes.TuftIndexCount, _mesh.triangles.Length);
         foreach (KeyValuePair<string, int> edge in edges)
         {
@@ -57,6 +56,7 @@ public class FacetedMeshesTests
             Assert.AreEqual(expectedFaces, edge.Value, edge.Key);
             baseEdges += isBaseEdge ? 1 : 0;
         }
+
         Assert.AreEqual(4, baseEdges);
         Assert.AreEqual(new Vector3(1f, 1f, 1f), _mesh.bounds.size);
         Assert.AreEqual(0f, _mesh.bounds.min.y);
@@ -69,7 +69,6 @@ public class FacetedMeshesTests
         Vector3[] normals = _mesh.normals;
         int[] triangles = _mesh.triangles;
         Vector3 inside = new Vector3(0f, 0.3f, 0f);
-
         // The pyramid is convex, so every facet faces away from a point on its axis, and each facet is flat
         for (int i = 0; i < triangles.Length; i += 3)
         {
@@ -92,7 +91,6 @@ public class FacetedMeshesTests
         Mesh socle = FacetedMeshes.CreateSocle();
         Vector3[] vertices = socle.vertices;
         int[] triangles = socle.triangles;
-
         Assert.AreEqual(FacetedMeshes.SocleIndexCount, triangles.Length);
         for (int i = 0; i < triangles.Length; i += 3)
         {
@@ -101,23 +99,27 @@ public class FacetedMeshesTests
             Assert.Greater(normal.y, 0f);
             Assert.AreEqual(Vector3.up, socle.normals[triangles[i]]);
         }
+
         foreach (Vector3 vertex in vertices)
         {
             Assert.AreEqual(0f, vertex.y);
             float radius = new Vector2(vertex.x, vertex.z).magnitude;
-            Assert.That(radius == 0f || Mathf.Abs(radius - FacetedMeshes.SocleRadius) < 0.00001f, vertex.ToString());
+            Assert.That(
+                radius == 0f || Mathf.Abs(radius - FacetedMeshes.SocleRadius) < 0.00001f,
+                vertex.ToString()
+            );
         }
-        Assert.That(FacetedMeshes.SocleRadius, Is.EqualTo(1.2414f).Within(0.0001f)); // 0.36 / 0.29
 
+        Assert.That(FacetedMeshes.SocleRadius, Is.EqualTo(1.2414f).Within(0.0001f)); // 0.36 / 0.29
         // Each rim edge once, each spoke between two triangles
         int rim = 0;
         foreach (KeyValuePair<string, int> edge in CountEdges(socle))
         {
             rim += edge.Value == 1 ? 1 : 0;
         }
+
         Assert.AreEqual(FacetedMeshes.SocleSides, rim);
         Object.DestroyImmediate(socle);
     }
 }
-
 }

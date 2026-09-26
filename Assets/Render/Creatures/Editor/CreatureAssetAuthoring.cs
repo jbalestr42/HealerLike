@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
-using UnityEditor;
 using UnityEngine;
+using UnityEditor;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Zones;
 
@@ -32,8 +32,14 @@ namespace HealerLike.Render.Creatures
             Directory.CreateDirectory(root + "Data");
             Directory.CreateDirectory(root + "Prefabs");
             List<CreaturePart> parts = CreatureRecipeParts.Healer(vocabulary);
-            CreatureRecipe healer = CreatureRecipeAuthoring.SaveRecipe("Healer", parts, healerRoots, healerArms,
-                healerSeed, vocabulary);
+            CreatureRecipe healer = CreatureRecipeAuthoring.SaveRecipe(
+                "Healer",
+                parts,
+                healerRoots,
+                healerArms,
+                healerSeed,
+                vocabulary
+            );
             if (!healer)
             {
                 return;
@@ -41,7 +47,7 @@ namespace HealerLike.Render.Creatures
 
             // Every other unit is derived from its data, the healer is the one authored view
             CharacterView(healer, material, meshes);
-            AssetDatabase.SaveAssets();
+            AssetDatabase.SaveAssetIfDirty(healer);
             AssetDatabase.Refresh();
             Debug.Log("[CreatureAssetAuthoring] Healer recipe and view prefab authored.");
         }
@@ -56,8 +62,9 @@ namespace HealerLike.Render.Creatures
             data.FindProperty("_showBody").boolValue = false;
             data.FindProperty("_visualAnchor").objectReferenceValue = view.transform;
             data.FindProperty("_material").objectReferenceValue = material;
-            data.FindProperty("_bodyMaterial").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<Material>(bodyMaterialPath);
+            data.FindProperty("_bodyMaterial").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Material>(
+                bodyMaterialPath
+            );
             data.FindProperty("_meshes").objectReferenceValue = meshes;
             data.ApplyModifiedPropertiesWithoutUndo();
             view.AddComponent<HealPulse>();

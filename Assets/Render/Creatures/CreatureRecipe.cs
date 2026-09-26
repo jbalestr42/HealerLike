@@ -14,8 +14,9 @@ namespace HealerLike.Render.Creatures
         Leaf,
         Boulder,
         Pyramid,
+
         // A seeded stone from StoneVariants, picked by the part's variant
-        Stone
+        Stone,
     }
 
     [CreateAssetMenu(menuName = "Custom/Data/Render/CreatureRecipe")]
@@ -31,7 +32,7 @@ namespace HealerLike.Render.Creatures
             hipHeight = 0.18f,
             kneeHeight = 0.09f,
             thickness = 0.022f,
-            colour = Color.white
+            colour = Color.white,
         };
         public IdleDefinition idle = new IdleDefinition
         {
@@ -39,15 +40,17 @@ namespace HealerLike.Render.Creatures
             swayFrequency = 0.12f,
             breathAmount = 0.025f,
             breathFrequency = 0.25f,
-            seed = 17
+            seed = 17,
         };
 
         // The body colour a wilting creature fades toward. The colours here are the palette's, set by the
         // composer or the authoring; white shows a field left unset.
         public Color wiltColour = Color.white;
         public Vector3[] sourceLocal = Array.Empty<Vector3>();
+
         // Where the head sits on the body, zero lets the view take the middle of the sources
         public Vector3 neckLocal;
+
         // A stone mesh's second submesh, its ochre faces, draws in this colour
         public Color stoneOchre = Color.white;
     }

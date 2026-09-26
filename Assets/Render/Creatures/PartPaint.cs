@@ -8,10 +8,21 @@ namespace HealerLike.Render.Creatures
         // Tips draw a wider outline, so a coral tip on a green body separates by an edge and not only by hue
         public static readonly float TipOutlineWidth = 1.5f;
         static readonly int outlineWidthId = Shader.PropertyToID("_HLOutlineWidthMultiplier");
-
         readonly MaterialPropertyBlock _colourBlock = new MaterialPropertyBlock();
         readonly MaterialPropertyBlock _tipBlock = new MaterialPropertyBlock();
         readonly MaterialPropertyBlock _ochreBlock = new MaterialPropertyBlock();
+
+        // Indexed blocks override renderer-wide blocks and survive a material layout change.
+        public void Clear(Renderer renderer)
+        {
+            int count = renderer.sharedMaterials.Length;
+            for (int i = 0; i < count; i++)
+            {
+                renderer.SetPropertyBlock(null, i);
+            }
+
+            renderer.SetPropertyBlock(null);
+        }
 
         // A tip carries its wider outline
         public void Paint(Renderer renderer, bool isTip, Color colour, float glow)

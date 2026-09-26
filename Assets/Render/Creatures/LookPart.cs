@@ -10,10 +10,12 @@ namespace HealerLike.Render.Creatures
     {
         public string id;
         public Primitive primitive;
+
         // Legacy keeps the baked primitive; procedural profiles use a centered unit box.
         public ShapeProfile shape;
         public PartRole role;
         public ColourRole colour;
+
         // Position names this mesh anchor; attachments offset it from an earlier part's anchor in this fragment.
         public ShapeAnchor pivot;
         public string attachTo;
@@ -22,6 +24,7 @@ namespace HealerLike.Render.Creatures
         public Vector3 euler;
         public Vector3 size;
         public float glow;
+
         // The fewest copies the count band must allow for this part to show
         public CountBand minCount;
     }

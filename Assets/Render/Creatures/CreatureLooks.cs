@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
+using UnityEngine;
+using HealerLike.Render.Grammar;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-using UnityEngine;
-using HealerLike.Render.Grammar;
-
 namespace HealerLike.Render.Creatures
 {
     // An authored view wins for an entity or character that has a row, every other entity is derived from its data
@@ -31,7 +30,6 @@ namespace HealerLike.Render.Creatures
         // The parts and proportions every derived unit is composed from
         [AssetsOnly]
         public LookVocabulary vocabulary;
-
         static readonly string dataFolder = "Assets/Render/Creatures/Data/";
         static readonly string prefabFolder = "Assets/Render/Creatures/Prefabs/";
 
@@ -46,6 +44,7 @@ namespace HealerLike.Render.Creatures
             {
                 return plant;
             }
+
             return stone;
         }
 
@@ -55,6 +54,7 @@ namespace HealerLike.Render.Creatures
             {
                 return characters[data];
             }
+
             return character;
         }
 
@@ -71,8 +71,13 @@ namespace HealerLike.Render.Creatures
             }
 
             GameObject host = LookDerivation.Side(entityType) == LookSide.Plant ? plant : stone;
+            if (host == null || host.GetComponent<CreatureBuilder>() == null)
+            {
+                Debug.LogError("[CreatureLooks] The selected host needs a CreatureBuilder before it can be baked.");
+                return null;
+            }
             CreatureRecipe derived = LookComposer.Compose(LookDerivation.Channels(data, entityType), vocabulary);
-            if (derived == null || host == null)
+            if (derived == null)
             {
                 Debug.LogError($"[CreatureLooks] {data.name} has no derived recipe or no host to bake.");
                 return null;
@@ -95,7 +100,10 @@ namespace HealerLike.Render.Creatures
 
             entities[data] = view;
             EditorUtility.SetDirty(this);
-            AssetDatabase.SaveAssets();
+            if (AssetDatabase.Contains(this))
+            {
+                AssetDatabase.SaveAssetIfDirty(this);
+            }
             Debug.Log($"[CreatureLooks] {data.name} now draws {prefabPath}.");
             return view;
 #else
@@ -111,6 +119,7 @@ namespace HealerLike.Render.Creatures
             {
                 return null;
             }
+
             return LookComposer.Compose(LookDerivation.Channels(data, entityType), vocabulary);
         }
     }

@@ -12,16 +12,25 @@ namespace HealerLike.Render.Creatures
         readonly List<LookPart> _sources = new List<LookPart>();
         readonly HashSet<string> _ids = new HashSet<string>();
         float _unit;
-
-        public int count { get { return _parts.Count; } }
+        public int count
+        {
+            get { return _parts.Count; }
+        }
 
         // The first accessory part, every part before it is body and head
         int _accessoryStart = -1;
-        public int accessoryStart { get { return _accessoryStart; } set { _accessoryStart = value; } }
+        public int accessoryStart
+        {
+            get { return _accessoryStart; }
+            set { _accessoryStart = value; }
+        }
 
         // The first part of each head copy, the head runs from the first of them to the accessory
         readonly List<int> _headStarts = new List<int>();
-        public List<int> headStarts { get { return _headStarts; } }
+        public List<int> headStarts
+        {
+            get { return _headStarts; }
+        }
 
         public PartList(float unit)
         {
@@ -29,23 +38,41 @@ namespace HealerLike.Render.Creatures
         }
 
         // Size is the part's bounding box in body units, whatever the mesh's own pivot
-        public int Add(string id, Primitive primitive, Vector3 centre, Vector3 size, Color colour, Vector3 euler,
-            float glow, PartRole role, int variant = 0, ShapeProfile shape = default)
+        public int Add(
+            string id,
+            Primitive primitive,
+            Vector3 centre,
+            Vector3 size,
+            Color colour,
+            Vector3 euler,
+            float glow,
+            PartRole role,
+            int variant = 0,
+            ShapeProfile shape = default
+        )
         {
-            _sources.Add(new LookPart
-            {
-                id = id,
-                primitive = primitive,
-                shape = shape,
-                role = role,
-                position = centre,
-                euler = euler,
-                size = size,
-                glow = glow
-            });
-
-            PrimitiveMeshes.Fit(primitive, shape, centre, size, Quaternion.Euler(euler), out Vector3 dimensions,
-                out Vector3 pivot);
+            _sources.Add(
+                new LookPart
+                {
+                    id = id,
+                    primitive = primitive,
+                    shape = shape,
+                    role = role,
+                    position = centre,
+                    euler = euler,
+                    size = size,
+                    glow = glow,
+                }
+            );
+            PrimitiveMeshes.Fit(
+                primitive,
+                shape,
+                centre,
+                size,
+                Quaternion.Euler(euler),
+                out Vector3 dimensions,
+                out Vector3 pivot
+            );
             string uniqueId = id;
             if (_ids.Contains(id))
             {
@@ -65,27 +92,36 @@ namespace HealerLike.Render.Creatures
                 parent = -1;
             }
 
-            _parts.Add(new CreaturePart
-            {
-                id = uniqueId,
-                parent = parent,
-                primitive = primitive,
-                shape = shape,
-                localPosition = local * _unit,
-                localEuler = euler,
-                dimensions = dimensions * _unit,
-                colour = colour,
-                glow = glow,
-                role = role,
-                variant = variant
-            });
+            _parts.Add(
+                new CreaturePart
+                {
+                    id = uniqueId,
+                    parent = parent,
+                    primitive = primitive,
+                    shape = shape,
+                    localPosition = local * _unit,
+                    localEuler = euler,
+                    dimensions = dimensions * _unit,
+                    colour = colour,
+                    glow = glow,
+                    role = role,
+                    variant = variant,
+                }
+            );
             _positions.Add(pivot);
             return _parts.Count - 1;
         }
 
         // A capsule from one point to another
-        public int Link(string id, Vector3 from, Vector3 to, float thickness, Color colour, PartRole role,
-            ShapeProfile shape = default)
+        public int Link(
+            string id,
+            Vector3 from,
+            Vector3 to,
+            float thickness,
+            Color colour,
+            PartRole role,
+            ShapeProfile shape = default
+        )
         {
             Vector3 delta = to - from;
             Vector3 size = new Vector3(thickness, delta.magnitude + thickness, thickness);
@@ -95,17 +131,13 @@ namespace HealerLike.Render.Creatures
             {
                 Vector3 bottom = ProceduralShapeMeshes.Anchor(shape, ShapeAnchor.Bottom);
                 Vector3 top = ProceduralShapeMeshes.Anchor(shape, ShapeAnchor.Top);
-                Vector3 axis = top - bottom;
-                float lateral = axis.x * axis.x + axis.z * axis.z;
-                float span = delta.magnitude + thickness;
-                if (lateral * size.x * size.x >= span * span)
-                {
-                    size.x = size.z = span / Mathf.Sqrt(lateral) * 0.99f;
-                }
-                size.y = Mathf.Sqrt(Mathf.Max(0f, span * span - lateral * size.x * size.x)) / Mathf.Abs(axis.y);
-                rotation = Quaternion.FromToRotation(Vector3.Scale(axis, size), delta);
-                centre -= rotation * Vector3.Scale((bottom + top) * 0.5f, size);
+                Vector3 overlap = delta.normalized * (thickness * 0.5f);
+                ShapeSegment pose = ShapeSegment.Fit(bottom, top, from - overlap, to + overlap, thickness);
+                size = pose.scale;
+                rotation = pose.rotation;
+                centre = pose.position;
             }
+
             return Add(id, Primitive.Capsule, centre, size, colour, rotation.eulerAngles, 0f, role, shape: shape);
         }
 

@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using HealerLike.Render.Grammar;
@@ -14,7 +14,7 @@ namespace HealerLike.Render.Creatures
         HipOrbit,
         Crook,
         Shoulder,
-        Flank
+        Flank,
     }
 
     // The parts a unit is built from, one entry per channel value, plus the proportions that size them.
@@ -27,10 +27,13 @@ namespace HealerLike.Render.Creatures
         {
             public LookPart[] plant = Array.Empty<LookPart>();
             public LookPart[] stone = Array.Empty<LookPart>();
+
             // Zero keeps the original cadence length; positive values scale only this family's plant stem.
             public float plantStemScale;
+
             // Optional articulated growth replaces the plain stalk; cadence still sets its total length.
             public PlantStemEntry plantStem;
+
             // The head fans its own copies (arch pods, cairn stones), parts show by their minCount
             public bool carriesCount;
         }
@@ -47,11 +50,18 @@ namespace HealerLike.Render.Creatures
 
             public bool IsValid()
             {
-                return segments >= 2 && segments <= 4
-                    && float.IsFinite(thicknessScale) && thicknessScale > 0f && thicknessScale <= 5f
-                    && float.IsFinite(bow) && Mathf.Abs(bow) <= 1f
-                    && float.IsFinite(jointScale) && jointScale > 0f && jointScale <= 2f
-                    && segmentShape.IsValid() && jointShape.IsValid();
+                return segments >= 2
+                    && segments <= 4
+                    && float.IsFinite(thicknessScale)
+                    && thicknessScale > 0f
+                    && thicknessScale <= 5f
+                    && float.IsFinite(bow)
+                    && Mathf.Abs(bow) <= 1f
+                    && float.IsFinite(jointScale)
+                    && jointScale > 0f
+                    && jointScale <= 2f
+                    && segmentShape.IsValid()
+                    && jointShape.IsValid();
             }
         }
 
@@ -59,10 +69,12 @@ namespace HealerLike.Render.Creatures
         public class AccessoryEntry
         {
             public AccessorySocket socket;
+
             // Collars/crowns can surround their socket; older accessories keep the right-side clearance rule.
             public bool isCentered;
             public LookPart[] plant = Array.Empty<LookPart>();
             public LookPart[] stone = Array.Empty<LookPart>();
+
             // Where a mini head sits in the socket's space, and how small it is drawn
             public Vector3 miniHeadAt;
             public float miniHeadScale = 0.5f;
@@ -73,11 +85,20 @@ namespace HealerLike.Render.Creatures
         public class BodyEntry
         {
             public float scale = 1f;
+
             // Zero preserves old assets: head scale inherits scale; cadence length is 1 on plants, scale on stones.
             public float headScale;
             public float stemScale;
-            public float HeadScale => headScale > 0f ? headScale : scale;
-            public float StemScale(bool isPlant) => stemScale > 0f ? stemScale : (isPlant ? 1f : scale);
+            public float effectiveHeadScale
+            {
+                get { return headScale > 0f ? headScale : scale; }
+            }
+
+            public float GetStemScale(bool isPlant)
+            {
+                return stemScale > 0f ? stemScale : (isPlant ? 1f : scale);
+            }
+
             // Lift a compound base enough to expose its additional basal mass.
             public float bodyLift;
             public LookPart[] plant = Array.Empty<LookPart>();
@@ -104,9 +125,17 @@ namespace HealerLike.Render.Creatures
             public float jointScale = 2.8f;
             public ShapeProfile segmentShape;
             public ShapeProfile jointShape;
+
             // Odin assets predating profiles can omit this field; zero is their original unscaled thickness.
-            public float ThicknessScale => thicknessScale == 0f && !segmentShape.isProcedural
-                && !jointShape.isProcedural ? 1f : thicknessScale;
+            public float effectiveThicknessScale
+            {
+                get
+                {
+                    return thicknessScale == 0f && !segmentShape.isProcedural && !jointShape.isProcedural
+                        ? 1f
+                        : thicknessScale;
+                }
+            }
         }
 
         // Shared construction proportions. Band-specific sizes and profiles stay in their entries above.
@@ -137,32 +166,29 @@ namespace HealerLike.Render.Creatures
             public float headClearance = 1.2f;
             public float foreshortening = 0.85f;
             public bool extendAccessorySupports;
+
             // Required distance beyond the body/head outline, in board cells.
             public float plantAccessoryClearance = 0.25f;
             public float stoneAccessoryClearance = 0.3f;
 
             public bool IsValid()
             {
-                return Positive(plantBodySink) && Positive(plantStemFoot) && Positive(stoneBodyLift)
-                    && Positive(stoneNeck) && Positive(shoulderOffset) && Positive(limbSpread)
-                    && float.IsFinite(limbDepth) && Positive(limbWidth) && Positive(limbThickness)
-                    && float.IsFinite(limbSplay) && Mathf.Abs(limbSplay) <= 90f
-                    && float.IsFinite(limbAsymmetry) && limbAsymmetry >= 0f && limbAsymmetry <= 0.25f
-                    && Positive(limbBodyOverlap) && Positive(minBranch) && maxBranch >= minBranch
-                    && Positive(maxBranch) && Positive(threeHeadScale) && Positive(fiveHeadScale)
-                    && Angle(threeHeadSpread) && Angle(fiveHeadSpread) && fiveHeadSpread < 45f && Positive(stoneBranch)
-                    && Positive(stoneBranchThickness)
-                    && Positive(branchThickness) && Positive(headClearance) && Positive(foreshortening) && foreshortening <= 1f
-                    && Positive(plantAccessoryClearance) && Positive(stoneAccessoryClearance);
+                return IsValid(LookSide.Plant) && IsValid(LookSide.Stone);
             }
 
-            static bool Angle(float value) { return Positive(value) && value < 90f; }
-            static bool Positive(float value) { return float.IsFinite(value) && value > 0f; }
+            public bool IsValid(LookSide side)
+            {
+                return CreatureLayoutSettings.IsValid(this, side);
+            }
         }
 
         public LayoutEntry layout = new LayoutEntry();
+
         // Older Odin assets can omit the new reference entirely.
-        public LayoutEntry Layout { get { return layout ?? (layout = new LayoutEntry()); } }
+        public LayoutEntry layoutSettings
+        {
+            get { return layout != null ? layout : new LayoutEntry(); }
+        }
 
         [DictionaryDrawerSettings(KeyLabel = "Head", ValueLabel = "Parts")]
         public Dictionary<HeadKind, HeadEntry> heads = new Dictionary<HeadKind, HeadEntry>();
@@ -233,6 +259,7 @@ namespace HealerLike.Render.Creatures
             {
                 return pinnedReach;
             }
+
             return roots[band].reach;
         }
 
@@ -244,6 +271,7 @@ namespace HealerLike.Render.Creatures
                 Debug.LogError("[LookVocabulary] No palette.");
                 return Color.magenta;
             }
+
             return palette.Colour(role, accent, side);
         }
     }

@@ -14,6 +14,7 @@ namespace HealerLike.Render.Creatures
         public Vector3[] restJoints;
         public Vector3 bendPole;
         public Color colour;
+
         // The tip's own colour, alpha 0 keeps the arm colour
         public Color tipColour;
     }

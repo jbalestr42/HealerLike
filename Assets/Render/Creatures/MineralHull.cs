@@ -4,9 +4,9 @@ using UnityEngine;
 namespace HealerLike.Render.Creatures
 {
     // Six broad faces clipped by twelve unequal edge planes. Every cut remains a convex, planar polygon.
-    internal static class MineralHull
+    public static class MineralHull
     {
-        sealed class Face
+        class Face
         {
             public List<Vector3> points;
             public int id;
@@ -31,8 +31,13 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        public static void Generate(ShapeProfile shape, int variant, List<Vector3> vertices, List<int> indices,
-            List<int> facets)
+        public static void Generate(
+            ShapeProfile shape,
+            int variant,
+            List<Vector3> vertices,
+            List<int> indices,
+            List<int> facets
+        )
         {
             SeededRandom random = new SeededRandom(unchecked((uint)variant) ^ 0x796432u);
             float fracture = shape.fracture;
@@ -41,8 +46,7 @@ namespace HealerLike.Render.Creatures
             Cut[] sides = new Cut[6];
             for (int i = 0; i < 4; i++)
             {
-                Vector3 normal = i < 2 ? Vector3.right * (i == 0 ? -1f : 1f)
-                    : Vector3.forward * (i == 2 ? -1f : 1f);
+                Vector3 normal = i < 2 ? Vector3.right * (i == 0 ? -1f : 1f) : Vector3.forward * (i == 2 ? -1f : 1f);
                 normal.y = slope + random.Range(-0.13f, 0.13f) * fracture;
                 if (i < 2)
                 {
@@ -52,19 +56,23 @@ namespace HealerLike.Render.Creatures
                 {
                     normal.x = random.Range(-0.1f, 0.1f) * fracture;
                 }
+
                 sides[i] = new Cut(normal, sideDistance + random.Range(-0.035f, 0.035f) * fracture);
             }
+
             sides[4] = new Cut(Vector3.down, 0.5f);
             float crownAngle = random.Range(0f, Mathf.PI * 2f);
             float crownSlope = random.Range(0.22f, 0.42f) * fracture;
-            sides[5] = new Cut(new Vector3(Mathf.Cos(crownAngle) * crownSlope, 1f,
-                Mathf.Sin(crownAngle) * crownSlope), 0.5f);
-
+            sides[5] = new Cut(
+                new Vector3(Mathf.Cos(crownAngle) * crownSlope, 1f, Mathf.Sin(crownAngle) * crownSlope),
+                0.5f
+            );
             List<Face> faces = Box();
             for (int i = 0; i < sides.Length; i++)
             {
                 faces = Clip(faces, sides[i], i);
             }
+
             // A point retained by every clipping plane keeps the solid nonempty even at extreme bevel/taper.
             Vector3 interior = new Vector3(0f, -0.2f, 0f);
             int cutId = sides.Length;
@@ -76,6 +84,7 @@ namespace HealerLike.Render.Creatures
                     {
                         continue;
                     }
+
                     float balance = random.Range(-0.48f, 0.48f) * fracture;
                     Vector3 combined = sides[a].normal * (1f + balance) + sides[b].normal * (1f - balance);
                     float distance = sides[a].distance * (1f + balance) + sides[b].distance * (1f - balance);
@@ -97,8 +106,10 @@ namespace HealerLike.Render.Creatures
                     Vector3 across = new Vector3(1f, lean, 0f).normalized * shape.ridge;
                     for (int sign = -1; sign <= 1; sign += 2)
                     {
-                        Cut ridge = new Cut(sides[side].normal + across * sign,
-                            sides[side].distance - 0.015f * shape.ridge);
+                        Cut ridge = new Cut(
+                            sides[side].normal + across * sign,
+                            sides[side].distance - 0.015f * shape.ridge
+                        );
                         float interiorDistance = Vector3.Dot(ridge.normal, interior);
                         ridge.distance = Mathf.Max(ridge.distance, interiorDistance + 0.08f);
                         faces = Clip(faces, ridge, cutId++);
@@ -118,6 +129,7 @@ namespace HealerLike.Render.Creatures
                     facets.Add(faces[face].id);
                 }
             }
+
             float skewX = random.Range(-shape.asymmetry, shape.asymmetry);
             float skewZ = random.Range(-shape.asymmetry, shape.asymmetry);
             for (int i = 0; i < vertices.Count; i++)
@@ -134,16 +146,23 @@ namespace HealerLike.Render.Creatures
         {
             Vector3[] p =
             {
-                new Vector3(-2f,-2f,-2f), new Vector3(2f,-2f,-2f),
-                new Vector3(2f,2f,-2f), new Vector3(-2f,2f,-2f),
-                new Vector3(-2f,-2f,2f), new Vector3(2f,-2f,2f),
-                new Vector3(2f,2f,2f), new Vector3(-2f,2f,2f)
+                new Vector3(-2f, -2f, -2f),
+                new Vector3(2f, -2f, -2f),
+                new Vector3(2f, 2f, -2f),
+                new Vector3(-2f, 2f, -2f),
+                new Vector3(-2f, -2f, 2f),
+                new Vector3(2f, -2f, 2f),
+                new Vector3(2f, 2f, 2f),
+                new Vector3(-2f, 2f, 2f),
             };
             return new List<Face>
             {
-                new Face(new List<Vector3>{p[0],p[3],p[2],p[1]}), new Face(new List<Vector3>{p[4],p[5],p[6],p[7]}),
-                new Face(new List<Vector3>{p[0],p[4],p[7],p[3]}), new Face(new List<Vector3>{p[1],p[2],p[6],p[5]}),
-                new Face(new List<Vector3>{p[0],p[1],p[5],p[4]}), new Face(new List<Vector3>{p[3],p[7],p[6],p[2]})
+                new Face(new List<Vector3> { p[0], p[3], p[2], p[1] }),
+                new Face(new List<Vector3> { p[4], p[5], p[6], p[7] }),
+                new Face(new List<Vector3> { p[0], p[4], p[7], p[3] }),
+                new Face(new List<Vector3> { p[1], p[2], p[6], p[5] }),
+                new Face(new List<Vector3> { p[0], p[1], p[5], p[4] }),
+                new Face(new List<Vector3> { p[3], p[7], p[6], p[2] }),
             };
         }
 
@@ -166,6 +185,7 @@ namespace HealerLike.Render.Creatures
                     {
                         AddUnique(polygon, a);
                     }
+
                     if (aInside != bInside)
                     {
                         Vector3 crossing = Vector3.LerpUnclamped(a, b, da / (da - db));
@@ -173,11 +193,13 @@ namespace HealerLike.Render.Creatures
                         AddUnique(rim, crossing);
                     }
                 }
+
                 if (polygon.Count >= 3)
                 {
                     result.Add(new Face(polygon, face.id));
                 }
             }
+
             if (rim.Count >= 3)
             {
                 Vector3 centre = Vector3.zero;
@@ -185,14 +207,20 @@ namespace HealerLike.Render.Creatures
                 {
                     centre += point;
                 }
+
                 centre /= rim.Count;
                 Vector3 reference = Mathf.Abs(cut.normal.y) < 0.8f ? Vector3.up : Vector3.right;
                 Vector3 u = Vector3.Cross(reference, cut.normal).normalized;
                 Vector3 v = Vector3.Cross(cut.normal, u);
-                rim.Sort((a, b) => Mathf.Atan2(Vector3.Dot(a - centre, v), Vector3.Dot(a - centre, u))
-                    .CompareTo(Mathf.Atan2(Vector3.Dot(b - centre, v), Vector3.Dot(b - centre, u))));
+                rim.Sort(
+                    (a, b) =>
+                        Mathf
+                            .Atan2(Vector3.Dot(a - centre, v), Vector3.Dot(a - centre, u))
+                            .CompareTo(Mathf.Atan2(Vector3.Dot(b - centre, v), Vector3.Dot(b - centre, u)))
+                );
                 result.Add(new Face(rim, cutId));
             }
+
             return result;
         }
 
@@ -205,6 +233,7 @@ namespace HealerLike.Render.Creatures
                     return;
                 }
             }
+
             points.Add(point);
         }
 
@@ -217,6 +246,7 @@ namespace HealerLike.Render.Creatures
                     return i;
                 }
             }
+
             points.Add(point);
             return points.Count - 1;
         }

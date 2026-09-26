@@ -11,6 +11,7 @@ namespace HealerLike.Render.Creatures
         public Mesh cone;
         public Mesh cylinder;
         public Mesh torus;
+
         // Grass tuft, an open pyramid with its base on the ground and apex at one, and the flat socle under it
         public Mesh tuft;
         public Mesh socle;
@@ -87,8 +88,14 @@ namespace HealerLike.Render.Creatures
         }
 
         // The scale and the pivot that fit a part's mesh to the box it is authored as, centre and size in any unit
-        public static void Fit(Primitive primitive, Vector3 centre, Vector3 size, Quaternion rotation,
-            out Vector3 dimensions, out Vector3 pivot)
+        public static void Fit(
+            Primitive primitive,
+            Vector3 centre,
+            Vector3 size,
+            Quaternion rotation,
+            out Vector3 dimensions,
+            out Vector3 pivot
+        )
         {
             GetSpan(primitive, out Vector3 span, out float middle);
             dimensions = new Vector3(size.x / span.x, size.y / span.y, size.z / span.z);
@@ -96,8 +103,15 @@ namespace HealerLike.Render.Creatures
         }
 
         // Generated shapes already occupy a centered unit box, including mineral blocks.
-        public static void Fit(Primitive primitive, ShapeProfile shape, Vector3 centre, Vector3 size,
-            Quaternion rotation, out Vector3 dimensions, out Vector3 pivot)
+        public static void Fit(
+            Primitive primitive,
+            ShapeProfile shape,
+            Vector3 centre,
+            Vector3 size,
+            Quaternion rotation,
+            out Vector3 dimensions,
+            out Vector3 pivot
+        )
         {
             if (shape.isProcedural)
             {
@@ -105,11 +119,18 @@ namespace HealerLike.Render.Creatures
                 pivot = centre;
                 return;
             }
+
             Fit(primitive, centre, size, rotation, out dimensions, out pivot);
         }
 
-        public static Transform Geometry(string name, Transform parent, Mesh mesh, Material material, Color colour,
-            float glow = 0f)
+        public static Transform Geometry(
+            string name,
+            Transform parent,
+            Mesh mesh,
+            Material material,
+            Color colour,
+            float glow = 0f
+        )
         {
             GameObject go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -118,8 +139,14 @@ namespace HealerLike.Render.Creatures
         }
 
         // Draws the mesh on an object that already exists; the block may be shared, the renderer copies it
-        public static MeshRenderer Geometry(GameObject go, Mesh mesh, Material material, Color colour, float glow,
-            MaterialPropertyBlock block)
+        public static MeshRenderer Geometry(
+            GameObject go,
+            Mesh mesh,
+            Material material,
+            Color colour,
+            float glow,
+            MaterialPropertyBlock block
+        )
         {
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
             MeshRenderer renderer = go.AddComponent<MeshRenderer>();

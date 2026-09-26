@@ -1,14 +1,17 @@
-using System;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 namespace HealerLike.Render.Creatures
 {
     // One owner per rig/root assembly. Baked assets are never stored or destroyed here.
-    public sealed class ShapeMeshCache : IDisposable
+    public class ShapeMeshCache : IDisposable
     {
         readonly Dictionary<(ShapeProfile, int), Mesh> _meshes = new Dictionary<(ShapeProfile, int), Mesh>();
-        public int count => _meshes.Count;
+        public int count
+        {
+            get { return _meshes.Count; }
+        }
 
         public Mesh Get(ShapeProfile shape, int variant = 0)
         {
@@ -16,19 +19,24 @@ namespace HealerLike.Render.Creatures
             {
                 return null;
             }
+
             // Growth has no seeded geometry; reuse the mesh even when the recipe carries a stone variant.
-            bool mineral = shape.kind == ShapeKind.Block || shape.kind == ShapeKind.Shard
+            bool mineral =
+                shape.kind == ShapeKind.Block
+                || shape.kind == ShapeKind.Shard
                 || (shape.kind == ShapeKind.Ring && shape.faceted);
             if (!mineral)
             {
                 variant = 0;
             }
-            var key = (shape, variant);
+
+            (ShapeProfile shape, int variant) key = (shape, variant);
             if (!_meshes.TryGetValue(key, out Mesh mesh))
             {
                 mesh = ProceduralShapeMeshes.Create(shape, variant);
                 _meshes.Add(key, mesh);
             }
+
             return mesh;
         }
 
@@ -38,6 +46,7 @@ namespace HealerLike.Render.Creatures
             {
                 RenderObjects.Release(mesh);
             }
+
             _meshes.Clear();
         }
     }

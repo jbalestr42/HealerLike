@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
+using UnityEditor;
 
 namespace HealerLike.Render.Creatures
 {
@@ -9,7 +9,6 @@ namespace HealerLike.Render.Creatures
 public class PrimitiveMeshBakerTests
 {
     static readonly string meshesFolder = "Assets/Render/Creatures/Meshes/";
-
     readonly List<Mesh> _built = new List<Mesh>();
 
     [TearDown]
@@ -19,6 +18,7 @@ public class PrimitiveMeshBakerTests
         {
             Object.DestroyImmediate(mesh);
         }
+
         _built.Clear();
     }
 
@@ -38,7 +38,7 @@ public class PrimitiveMeshBakerTests
             FacetedMeshes.CreateLeaf(),
             FacetedMeshes.CreateBoulder(),
             RingMeshes.CreateDisc(32),
-            RingMeshes.CreateAnnulus(128)
+            RingMeshes.CreateAnnulus(128),
         };
     }
 
@@ -46,7 +46,6 @@ public class PrimitiveMeshBakerTests
     public void CreateMesh_EveryBuilder_MatchesTheCommittedAsset()
     {
         _built.AddRange(BuildEveryPrimitive());
-
         foreach (Mesh mesh in _built)
         {
             Mesh baked = AssetDatabase.LoadAssetAtPath<Mesh>(meshesFolder + mesh.name + ".asset");
@@ -58,5 +57,4 @@ public class PrimitiveMeshBakerTests
         }
     }
 }
-
 }

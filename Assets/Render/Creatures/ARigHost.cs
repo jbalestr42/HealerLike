@@ -10,13 +10,22 @@ namespace HealerLike.Render.Creatures
         ArmPool _pool;
         RenderRegistry _registeredRegistry;
         GameObject _registeredSource;
-
         CreatureRig _rig;
-        public CreatureRig rig { get { return _rig; } }
+        public CreatureRig rig
+        {
+            get { return _rig; }
+        }
 
         // Builds the rig and its arms once, a later call keeps them
-        protected bool BuildRig(CreatureRecipe recipe, Transform parent, Material material, Material bodyMaterial,
-            PrimitiveMeshes meshes, DeliveryVocabulary vocabulary, float cellSize)
+        protected bool BuildRig(
+            CreatureRecipe recipe,
+            Transform parent,
+            Material material,
+            Material bodyMaterial,
+            PrimitiveMeshes meshes,
+            DeliveryVocabulary vocabulary,
+            float cellSize
+        )
         {
             if (_rig != null)
             {
@@ -128,13 +137,9 @@ namespace HealerLike.Render.Creatures
         }
 
         #region IHealthVisualSink
-
         public abstract void OnHealthResolved(GameObject target, float value, bool critical);
-
         #endregion
-
         #region IDeliverySource
-
         public bool BeginDelivery(int token, DeliveryStyle style, Transform projectile, Vector3 intendedEnd)
         {
             return isActiveAndEnabled && _rig != null && _pool.BeginDelivery(token, style, projectile, intendedEnd);
@@ -157,9 +162,7 @@ namespace HealerLike.Render.Creatures
         }
 
         #endregion
-
         #region IDeliveryAccent
-
         public void SetDeliveryAccent(int token, Color colour)
         {
             if (_pool != null)
@@ -169,9 +172,7 @@ namespace HealerLike.Render.Creatures
         }
 
         #endregion
-
         #region IEffectAnchors
-
         public virtual bool TryGetAnchors(out EffectAnchors anchors)
         {
             if (_rig == null)
@@ -179,9 +180,9 @@ namespace HealerLike.Render.Creatures
                 anchors = new EffectAnchors();
                 return false;
             }
+
             return _rig.TryGetAnchors(out anchors);
         }
-
         #endregion
     }
 }

@@ -1,14 +1,14 @@
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections;
 using System.Reflection;
+using NUnit.Framework;
+using UnityEngine.TestTools;
+using UnityEngine;
+using UnityEditor;
 using HealerLike.Render.Grammar;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Stage;
 using HealerLike.Render.Zones;
-using NUnit.Framework;
-using UnityEditor;
-using UnityEngine;
-using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Creatures
 {
@@ -77,6 +77,7 @@ public class CreatureBuilderTests
         {
             TestHelpers.InvokePrivate(view, "OnDestroy");
         }
+
         _views.Clear();
         Object.DestroyImmediate(_owner);
         // A test can detach the model from its owner
@@ -89,10 +90,12 @@ public class CreatureBuilderTests
         {
             Object.DestroyImmediate(trackedObject);
         }
+
         _objects.Clear();
         Object.DestroyImmediate(_recipe);
         Object.DestroyImmediate(_material);
     }
+
     [Test]
     public void TryGetAnchors_EveryHeadOnBothSides_PutsTheHeadAboveTheNeckAndOutsideTheBody()
     {
@@ -100,18 +103,21 @@ public class CreatureBuilderTests
         {
             foreach (HeadKind head in System.Enum.GetValues(typeof(HeadKind)))
             {
-                CreatureRecipe recipe = LookComposer.Compose(RenderTestAssets.CreateChannels(side, head),
-                    RenderTestAssets.LoadLookVocabulary());
+                CreatureRecipe recipe = LookComposer.Compose(
+                    RenderTestAssets.CreateChannels(side, head),
+                    RenderTestAssets.LoadLookVocabulary()
+                );
                 _objects.Add(recipe);
                 RenderTestAssets.SetRecipe(_builder, recipe, _material, RenderTestAssets.LoadMeshes());
                 _builder.Init(_entity);
-
                 bool hasAnchors = _builder.TryGetAnchors(out EffectAnchors anchors);
-
                 Assert.IsTrue(hasAnchors, $"{side} {head}");
                 Assert.Greater(anchors.headCentre.y, anchors.neck.y, $"{side} {head}");
-                Assert.Greater(Vector3.Distance(anchors.headCentre, anchors.bodyCentre), anchors.bodyRadius,
-                    $"{side} {head}");
+                Assert.Greater(
+                    Vector3.Distance(anchors.headCentre, anchors.bodyCentre),
+                    anchors.bodyRadius,
+                    $"{side} {head}"
+                );
                 Assert.Greater(anchors.neck.y, anchors.foot.y, $"{side} {head}");
                 Assert.GreaterOrEqual(anchors.castPoint.y, anchors.headCentre.y, $"{side} {head}");
             }
@@ -126,6 +132,7 @@ public class CreatureBuilderTests
         {
             Assert.IsTrue(_builder.Rebuild(null));
         }
+
         Assert.AreSame(rig, _builder.rig);
         Assert.AreSame(_source.GetComponent<SkillSource>(), _model.GetComponent<EntityModel>().GetSourcePoint());
         _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 20f, true);
@@ -138,9 +145,7 @@ public class CreatureBuilderTests
     public void TryGetAnchors_BeforeTheRig_ReturnsFalse()
     {
         CreatureBuilder builder = _owner.AddComponent<CreatureBuilder>();
-
         bool hasAnchors = builder.TryGetAnchors(out _);
-
         Assert.IsFalse(hasAnchors);
     }
 
@@ -149,10 +154,8 @@ public class CreatureBuilderTests
     {
         CreatureRig rig = _builder.rig;
         int count = _model.GetComponentsInChildren<Transform>().Length;
-
         _builder.Init(_entity);
         _builder.Init(_entity);
-
         Assert.AreSame(rig, _builder.rig);
         Assert.AreEqual(count, _model.GetComponentsInChildren<Transform>().Length);
         Assert.AreSame(_source.GetComponent<SkillSource>(), _model.GetComponent<EntityModel>().GetSourcePoint());
@@ -219,10 +222,8 @@ public class CreatureBuilderTests
     {
         Vector3 source = _source.transform.localPosition;
         Vector3 target = _target.transform.localPosition;
-
         _owner.transform.position = new Vector3(4f, 2f, 3f);
         TestHelpers.InvokePrivate(_builder, "LateUpdate");
-
         Assert.AreEqual(source, _source.transform.localPosition);
         Assert.AreEqual(target, _target.transform.localPosition);
         Assert.AreEqual(new Vector3(4f, 2f, 3f), _builder.rig.root.position); // the rig stands where its view is
@@ -265,7 +266,6 @@ public class CreatureBuilderTests
     {
         bool isThrownClaimed = _builder.BeginDelivery(200, DeliveryStyle.Thrown, null, Vector3.one);
         bool isDirectClaimed = _builder.BeginDelivery(201, DeliveryStyle.Direct, null, Vector3.one);
-
         Assert.IsFalse(isThrownClaimed);
         Assert.IsTrue(isDirectClaimed);
     }
@@ -282,11 +282,8 @@ public class CreatureBuilderTests
         CreatureBuilder view = viewGo.AddComponent<CreatureBuilder>();
         _views.Add(view);
         RenderTestAssets.SetRecipe(view, _recipe, _material, null);
-
         view.Init(_entity, manager);
-
         Assert.NotNull(view.rig);
     }
 }
-
 }

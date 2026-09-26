@@ -10,6 +10,7 @@ namespace HealerLike.Render.Creatures
         public static readonly int TuftIndexCount = 12;
         public static readonly int SocleIndexCount = 24;
         public static readonly int SocleSides = 8;
+
         // 0.36 of socle radius for a 0.29 wide pyramid
         public static readonly float SocleRadius = 0.36f / 0.29f;
 
@@ -23,7 +24,7 @@ namespace HealerLike.Render.Creatures
                 new Vector3(0.5f, 0f, -0.5f),
                 new Vector3(0.5f, 0f, 0.5f),
                 new Vector3(-0.5f, 0f, 0.5f),
-                Vector3.up
+                Vector3.up,
             };
             int[] sides = { 0, 4, 1, 1, 4, 2, 2, 4, 3, 3, 4, 0 };
             int[] bottom = { 0, 1, 2, 0, 2, 3 };

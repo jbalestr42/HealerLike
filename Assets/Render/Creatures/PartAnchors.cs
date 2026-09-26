@@ -7,8 +7,37 @@ namespace HealerLike.Render.Creatures
     // renderers
     public static class PartAnchors
     {
-        public static bool TryMeasure(CreatureRecipe recipe, Transform root, Transform firstPivot,
-            IReadOnlyList<Renderer> renderers, float cellSize, out EffectAnchors anchors)
+        public static bool TryMeasure(
+            CreatureRecipe recipe,
+            Transform root,
+            Transform firstPivot,
+            IReadOnlyList<Renderer> renderers,
+            float cellSize,
+            out EffectAnchors anchors
+        )
+        {
+            return TryMeasure(
+                recipe.parts,
+                recipe.neckLocal,
+                recipe.sourceLocal,
+                root,
+                firstPivot,
+                renderers,
+                cellSize,
+                out anchors
+            );
+        }
+
+        public static bool TryMeasure(
+            CreaturePart[] parts,
+            Vector3 neckLocal,
+            Vector3[] sourceLocal,
+            Transform root,
+            Transform firstPivot,
+            IReadOnlyList<Renderer> renderers,
+            float cellSize,
+            out EffectAnchors anchors
+        )
         {
             anchors = new EffectAnchors();
             if (!root || renderers == null || renderers.Count == 0)
@@ -20,7 +49,7 @@ namespace HealerLike.Render.Creatures
             int head = -1;
             for (int i = 0; i < renderers.Count; i++)
             {
-                PartRole role = recipe.parts[i].role;
+                PartRole role = parts[i].role;
                 if (role == PartRole.Body && body < 0)
                 {
                     body = i;
@@ -33,21 +62,22 @@ namespace HealerLike.Render.Creatures
                 }
             }
 
-            Vector3 neck = recipe.neckLocal;
-            if (neck == Vector3.zero && recipe.sourceLocal.Length > 0)
+            Vector3 neck = neckLocal;
+            if (neck == Vector3.zero && sourceLocal.Length > 0)
             {
-                foreach (Vector3 source in recipe.sourceLocal)
+                foreach (Vector3 source in sourceLocal)
                 {
                     neck += source;
                 }
-                neck /= recipe.sourceLocal.Length;
+
+                neck /= sourceLocal.Length;
             }
 
             Bounds bodyBounds = renderers[Mathf.Max(0, body)].bounds;
             anchors.foot = root.position;
             anchors.bodyCentre = bodyBounds.center;
             anchors.bodyRadius = Mathf.Max(bodyBounds.extents.x, bodyBounds.extents.z);
-            anchors.neck = firstPivot.TransformPoint((neck - recipe.parts[0].localPosition) * cellSize);
+            anchors.neck = firstPivot.TransformPoint((neck - parts[0].localPosition) * cellSize);
             if (head < 0)
             {
                 anchors.headCentre = anchors.neck;

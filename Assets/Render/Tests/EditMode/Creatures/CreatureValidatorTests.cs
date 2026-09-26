@@ -29,7 +29,6 @@ public class CreatureValidatorTests
     public void TryValidate_RootCount_AcceptsNoneOrFourToFourteen(int count, bool valid)
     {
         _recipe.roots.count = count;
-
         Assert.AreEqual(valid, CreatureValidator.TryValidate(_recipe, out _));
     }
 
@@ -40,7 +39,6 @@ public class CreatureValidatorTests
     public void TryValidate_RootSegments_AcceptsOneToFour(int segments, bool valid)
     {
         _recipe.roots.segments = segments;
-
         Assert.AreEqual(valid, CreatureValidator.TryValidate(_recipe, out _));
     }
 
@@ -52,7 +50,6 @@ public class CreatureValidatorTests
     {
         _recipe.roots.footRadius = footRadius;
         _recipe.roots.thickness = 0.07f;
-
         Assert.AreEqual(valid, CreatureValidator.TryValidate(_recipe, out _));
     }
 
@@ -73,6 +70,35 @@ public class CreatureValidatorTests
         Assert.AreEqual(valid, CreatureValidator.TryValidate(_recipe, out _));
     }
 
+    [TestCase("neck")]
+    [TestCase("wilt")]
+    [TestCase("ochre")]
+    [TestCase("tip")]
+    [TestCase("role")]
+    public void TryValidate_InvalidManualRecipePresentation_ReturnsFalse(string field)
+    {
+        switch (field)
+        {
+            case "neck":
+                _recipe.neckLocal.x = float.NaN;
+                break;
+            case "wilt":
+                _recipe.wiltColour.r = float.PositiveInfinity;
+                break;
+            case "ochre":
+                _recipe.stoneOchre.b = float.NaN;
+                break;
+            case "tip":
+                _recipe.arms[0].tipColour.a = float.NaN;
+                break;
+            case "role":
+                _recipe.parts[0].role = (PartRole)int.MaxValue;
+                break;
+        }
+
+        Assert.IsFalse(CreatureValidator.TryValidate(_recipe, out _));
+    }
+
     [Test]
     public void TryValidate_ValidTreeAndRest_ReturnsTrue()
     {
@@ -83,7 +109,6 @@ public class CreatureValidatorTests
     public void TryValidate_FirstPartWithAParent_ReturnsFalse()
     {
         _recipe.parts[0].parent = 0;
-
         Assert.IsFalse(CreatureValidator.TryValidate(_recipe, out _));
     }
 
@@ -91,7 +116,6 @@ public class CreatureValidatorTests
     public void TryValidate_DuplicateIds_ReturnsFalse()
     {
         _recipe.parts = new CreaturePart[] { _recipe.parts[0], _recipe.parts[0] };
-
         Assert.IsFalse(CreatureValidator.TryValidate(_recipe, out _));
     }
 
@@ -99,7 +123,6 @@ public class CreatureValidatorTests
     public void TryValidate_ArmWithoutASourceSocket_ReturnsFalse()
     {
         _recipe.sourceLocal = new Vector3[0];
-
         Assert.IsFalse(CreatureValidator.TryValidate(_recipe, out _));
     }
 
@@ -107,7 +130,6 @@ public class CreatureValidatorTests
     public void TryValidate_RestJointOffTheLinkLength_ReturnsFalse()
     {
         _recipe.arms[0].restJoints[2] = Vector3.one * 100f;
-
         Assert.IsFalse(CreatureValidator.TryValidate(_recipe, out _));
     }
 
@@ -115,9 +137,7 @@ public class CreatureValidatorTests
     public void TryValidate_RootsPastTheLongestReach_ReturnsFalse()
     {
         _recipe.roots.footRadius = CreatureValidator.MaxRootReach;
-
         Assert.IsFalse(CreatureValidator.TryValidate(_recipe, out _));
     }
 }
-
 }
