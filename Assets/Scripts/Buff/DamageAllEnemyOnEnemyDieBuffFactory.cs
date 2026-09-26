@@ -15,14 +15,24 @@ public class DamageAllEntityOnEntityDieBuffData
 public class DamageAllEntityOnEntityDieBuff : ABuff<DamageAllEntityOnEntityDieBuffData>, IStackableBuff
 {
     int _stacks = 1;
+    // Entity carrying the buff, source of the damage
+    GameObject _owner;
 
-    void OnEntityDie(Entity target)
+    void OnEntityDie(Entity dead)
     {
+        // A destroyed entity never gets Remove() called on its buffs: stop listening once it is gone
+        if (_owner == null)
+        {
+            EntityManager.instance.OnEntityKilled.RemoveListener(OnEntityDie);
+            return;
+        }
+
         foreach (GameObject entity in EntityManager.instance.GetEntities(data.entityType))
         {
-            if (entity != target.gameObject)
+            if (entity != dead.gameObject)
             {
-                entity.GetComponent<Entity>().health.AddResourceModifier(ResourceModifier.Create(data.damageToAllEntity, target.gameObject, target.gameObject, _stacks));
+                // The dead entity is destroyed at the end of the frame, it can't be the damage source
+                entity.GetComponent<Entity>().health.AddResourceModifier(ResourceModifier.Create(data.damageToAllEntity, _owner, entity, _stacks));
             }
         }
     }
@@ -31,6 +41,7 @@ public class DamageAllEntityOnEntityDieBuff : ABuff<DamageAllEntityOnEntityDieBu
 
     public override void Add(GameObject source, GameObject target)
     {
+        _owner = target;
         EntityManager.instance.OnEntityKilled.AddListener(OnEntityDie);
     }
 
