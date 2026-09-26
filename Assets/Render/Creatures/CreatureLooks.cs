@@ -76,36 +76,56 @@ namespace HealerLike.Render.Creatures
                 Debug.LogError("[CreatureLooks] The selected host needs a CreatureBuilder before it can be baked.");
                 return null;
             }
-            CreatureRecipe derived = LookComposer.Compose(LookDerivation.Channels(data, entityType), vocabulary);
-            if (derived == null)
+            CreatureRecipe recipe = LookComposer.Compose(LookDerivation.Channels(data, entityType), vocabulary);
+            if (recipe == null)
             {
-                Debug.LogError($"[CreatureLooks] {data.name} has no derived recipe or no host to bake.");
+                Debug.LogError($"[CreatureLooks] {data.name} has no derived recipe to bake.");
                 return null;
             }
 
-            CreatureRecipe recipe = Instantiate(derived);
-            DestroyImmediate(derived);
-            recipe.hideFlags = HideFlags.None;
-            recipe.name = data.name + "Look";
-            string recipePath = AssetDatabase.GenerateUniqueAssetPath(dataFolder + recipe.name + ".asset");
-            AssetDatabase.CreateAsset(recipe, recipePath);
-
-            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(host);
-            SerializedObject builder = new SerializedObject(instance.GetComponent<CreatureBuilder>());
-            builder.FindProperty("_recipe").objectReferenceValue = recipe;
-            builder.ApplyModifiedPropertiesWithoutUndo();
-            string prefabPath = AssetDatabase.GenerateUniqueAssetPath(prefabFolder + recipe.name + ".prefab");
-            GameObject view = PrefabUtility.SaveAsPrefabAsset(instance, prefabPath);
-            DestroyImmediate(instance);
-
-            entities[data] = view;
-            EditorUtility.SetDirty(this);
-            if (AssetDatabase.Contains(this))
+            GameObject instance = null;
+            try
             {
-                AssetDatabase.SaveAssetIfDirty(this);
+                recipe.hideFlags = HideFlags.None;
+                recipe.name = data.name + "Look";
+                string recipePath = AssetDatabase.GenerateUniqueAssetPath(dataFolder + recipe.name + ".asset");
+                AssetDatabase.CreateAsset(recipe, recipePath);
+                instance = (GameObject)PrefabUtility.InstantiatePrefab(host);
+                if (instance == null)
+                {
+                    return null;
+                }
+                using (SerializedObject builder = new SerializedObject(instance.GetComponent<CreatureBuilder>()))
+                {
+                    builder.FindProperty("_recipe").objectReferenceValue = recipe;
+                    builder.ApplyModifiedPropertiesWithoutUndo();
+                }
+                string prefabPath = AssetDatabase.GenerateUniqueAssetPath(prefabFolder + recipe.name + ".prefab");
+                GameObject view = PrefabUtility.SaveAsPrefabAsset(instance, prefabPath);
+                if (view == null)
+                {
+                    return null;
+                }
+                entities[data] = view;
+                EditorUtility.SetDirty(this);
+                if (AssetDatabase.Contains(this))
+                {
+                    AssetDatabase.SaveAssetIfDirty(this);
+                }
+                Debug.Log($"[CreatureLooks] {data.name} now draws {prefabPath}.");
+                return view;
             }
-            Debug.Log($"[CreatureLooks] {data.name} now draws {prefabPath}.");
-            return view;
+            finally
+            {
+                if (instance != null)
+                {
+                    DestroyImmediate(instance);
+                }
+                if (!AssetDatabase.Contains(recipe))
+                {
+                    DestroyImmediate(recipe);
+                }
+            }
 #else
             return null;
 #endif
