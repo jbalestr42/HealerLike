@@ -29,6 +29,8 @@ namespace HealerLike.Render.Stage
             public string file;
             public int gameFrame;
             public float timeScale;
+            public Vector3 cameraPosition;
+            public Quaternion cameraRotation;
             public bool isHighlighted;
             public Color highlightColour;
             public float highlightWidth;
@@ -69,6 +71,8 @@ namespace HealerLike.Render.Stage
             _output.Check(!_host.rig.isAppearing, subject + " selection proof follows completed growth");
             Frame frame = new Frame { subject = subject, state = state, file = "selection-" + subject + "-"
                 + state + ".png", gameFrame = Time.frameCount, timeScale = Time.timeScale,
+                cameraPosition = UnityEngine.Object.FindAnyObjectByType<RenderManager>().gameCamera.transform.position,
+                cameraRotation = UnityEngine.Object.FindAnyObjectByType<RenderManager>().gameCamera.transform.rotation,
                 entity = _source.name, entityInstance = _source.GetEntityId().ToString(),
                 presentationInstance = _host.presentation.GetEntityId().ToString(),
                 isHighlighted = _source.isHighlighted,
@@ -80,7 +84,7 @@ namespace HealerLike.Render.Stage
             {
                 Part actual = frame.parts[i];
                 Part idle = _idle[i];
-                Color expected = highlighted ? Color.Lerp(idle.colour, frame.highlightColour, 0.3f) : idle.colour;
+                Color expected = highlighted ? idle.colour * 0.45f + Color.white * 0.50f + frame.highlightColour * 0.05f : idle.colour;
                 expected.a = idle.colour.a;
                 float width = highlighted ? Mathf.Max(idle.outlineWidth, frame.highlightWidth) : idle.outlineWidth;
                 _output.Check(Vector4.Distance(actual.colour, expected) < 0.0001f,

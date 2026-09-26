@@ -84,6 +84,7 @@ namespace HealerLike.Render.Stage
         // The run each mode names, the one place a capture registers
         static AStageRun Create(string mode)
         {
+            if (mode == "selection-facing") return new SelectionFacingRun();
             if (mode == "spell-sources") return new SpellSourceRun();
 
             if (mode == "expedition-map")
@@ -166,7 +167,7 @@ namespace HealerLike.Render.Stage
                 AStageRun run = Create(mode);
                 _activeRun = run;
                 if (mode == "mobile-interface" || mode == "creature-presentation" || mode == "expedition-map"
-                    || mode == "spell-sources")
+                    || mode == "spell-sources" || mode == "selection-facing")
                 {
                     // Screen and pointer coordinates must be read inside a game frame, not Editor.update.
                     GameObject host = new GameObject("Stage capture frame");
