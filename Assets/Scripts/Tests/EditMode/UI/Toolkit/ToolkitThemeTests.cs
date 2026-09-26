@@ -1,10 +1,11 @@
+using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 
 namespace UI.Toolkit
 {
-
     public class ToolkitThemeTests
     {
         [Test]
@@ -67,6 +68,39 @@ namespace UI.Toolkit
                 Object.DestroyImmediate(source);
                 Object.DestroyImmediate(inherited);
                 Object.DestroyImmediate(selected);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator ResolveStyles_PhoneInfoButton_PreservesCompactCardOverride()
+        {
+            using (ToolkitTestPanel panel = new ToolkitTestPanel())
+            {
+                VisualElement root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+                root.style.width = 390f;
+                root.style.height = 844f;
+                ToolkitTheme.Apply(root, null);
+                panel.root.Add(root);
+                ToolkitGameView view = new ToolkitGameView(root);
+                try
+                {
+                    ToolkitResponsiveLayout.Apply(view, 390f, 844f);
+                    view.SetCards("spell-list", new[] { new ToolkitCardModel() });
+                    yield return null;
+                    yield return null;
+                    Button info = root.Q("spell-list").Q<Button>("card-info");
+                    Assert.AreEqual(45f, info.resolvedStyle.width);
+                    Assert.AreEqual(45f, info.resolvedStyle.height);
+                    Assert.AreEqual(11f, info.resolvedStyle.fontSize);
+                    Assert.AreEqual(0f, info.resolvedStyle.paddingLeft);
+                    Assert.AreEqual(0f, info.resolvedStyle.paddingRight);
+                    Assert.AreEqual(0f, info.resolvedStyle.paddingTop);
+                    Assert.AreEqual(0f, info.resolvedStyle.paddingBottom);
+                }
+                finally
+                {
+                    view.Release();
+                }
             }
         }
     }
