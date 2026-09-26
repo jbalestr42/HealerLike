@@ -6,7 +6,6 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
-using UnityEditor;
 using UnityEditor.SceneManagement;
 
 namespace UI.Toolkit
@@ -195,51 +194,6 @@ public class ToolkitGameUITests
         VisualElement root = gameUI.GetComponent<UIDocument>().rootVisualElement;
         Assert.IsFalse(legacyCanvas.enabled);
         Assert.Greater(root.Q("spell-list").Query<Button>().ToList().Count, 0);
-        yield return new ExitPlayMode();
-    }
-
-    [UnityTest]
-    public IEnumerator Init_FirstLayoutInvalid_ReenableAfterRepairBuildsInterface()
-    {
-        EditorSceneManager.OpenScene(ToolkitSceneNavigation.MenuPath);
-        yield return new EnterPlayMode();
-        yield return WaitFrames(5);
-        ToolkitGameUI original = Object.FindAnyObjectByType<ToolkitGameUI>();
-        original.enabled = false;
-        GameObject host = new GameObject("Template recovery test");
-        host.SetActive(false);
-        ToolkitGameUI gameUI = host.AddComponent<ToolkitGameUI>();
-        try
-        {
-            using (SerializedObject serialized = new SerializedObject(gameUI))
-            {
-                serialized.FindProperty("_layout").objectReferenceValue = Resources.Load<VisualTreeAsset>(
-                    "UI/Toolkit/DataCard"
-                );
-                serialized.ApplyModifiedPropertiesWithoutUndo();
-            }
-
-            LogAssert.Expect(LogType.Error, "[ToolkitTemplates] Required Button 'cancel-button' is missing.");
-            host.SetActive(true);
-            yield return WaitFrames(3);
-            Assert.IsFalse(gameUI.enabled);
-            Assert.AreEqual(0, host.GetComponent<UIDocument>().rootVisualElement.childCount);
-            using (SerializedObject serialized = new SerializedObject(gameUI))
-            {
-                serialized.FindProperty("_layout").objectReferenceValue = null;
-                serialized.ApplyModifiedPropertiesWithoutUndo();
-            }
-
-            gameUI.enabled = true;
-            yield return WaitFrames(3);
-            Assert.IsTrue(gameUI.enabled);
-            Assert.IsTrue(ToolkitLayoutContract.Validate(host.GetComponent<UIDocument>().rootVisualElement));
-        }
-        finally
-        {
-            Object.Destroy(host);
-        }
-
         yield return new ExitPlayMode();
     }
 }

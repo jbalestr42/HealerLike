@@ -16,6 +16,7 @@ public class ToolkitGameUI : MonoBehaviour
     UIDocument _document;
     ToolkitGameView _view;
     PanelSettings _ownedPanel;
+    PanelSettings _originalPanel;
     float _nextRefresh;
     ToolkitGameActions _actions;
     bool _started;
@@ -98,7 +99,8 @@ public class ToolkitGameUI : MonoBehaviour
         _document = GetComponent<UIDocument>();
         if (_ownedPanel == null)
         {
-            _ownedPanel = ToolkitTheme.CreatePanelSettings(_document.panelSettings, _theme);
+            _originalPanel = _document.panelSettings;
+            _ownedPanel = ToolkitTheme.CreatePanelSettings(_originalPanel, _theme);
             _document.panelSettings = _ownedPanel;
         }
 
@@ -156,7 +158,13 @@ public class ToolkitGameUI : MonoBehaviour
         ReleaseView();
         if (_ownedPanel != null)
         {
+            if (_document != null && _document.panelSettings == _ownedPanel)
+            {
+                _document.panelSettings = _originalPanel;
+            }
+
             Destroy(_ownedPanel);
+            _ownedPanel = null;
         }
     }
 
