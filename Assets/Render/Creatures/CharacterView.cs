@@ -275,7 +275,7 @@ namespace HealerLike.Render.Creatures
                 return false;
             }
 
-            if (bud0 != null)
+            if (bud0 != null && rig != null && !CreatureSources.HasExplicit(rig))
             {
                 anchors.castPoint = bud0.position;
             }

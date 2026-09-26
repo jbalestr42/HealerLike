@@ -7,6 +7,7 @@ namespace HealerLike.Render.Creatures
     public class CreatureRigData
     {
         public readonly CreaturePart[] parts;
+        public readonly Vector3[] sourcePoints;
         public readonly ArmDefinition[] arms;
         public readonly RootDefinition roots;
         public readonly IdleDefinition idle;
@@ -18,6 +19,9 @@ namespace HealerLike.Render.Creatures
         public CreatureRigData(CreatureRecipe recipe)
         {
             parts = (CreaturePart[])recipe.parts.Clone();
+            sourcePoints = new Vector3[parts.Length];
+            for (int i = 0; i < parts.Length; i++)
+                if (parts[i].isSource) sourcePoints[i] = CreatureSources.Local(parts[i]);
             arms = (ArmDefinition[])recipe.arms.Clone();
             for (int i = 0; i < arms.Length; i++)
             {

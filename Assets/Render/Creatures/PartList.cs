@@ -10,6 +10,7 @@ namespace HealerLike.Render.Creatures
         readonly List<CreaturePart> _parts = new List<CreaturePart>();
         readonly List<Vector3> _positions = new List<Vector3>();
         readonly List<LookPart> _sources = new List<LookPart>();
+        readonly Dictionary<string, int> _sourceOccurrences = new Dictionary<string, int>();
         readonly HashSet<string> _ids = new HashSet<string>();
         float _unit;
         public int count
@@ -48,7 +49,10 @@ namespace HealerLike.Render.Creatures
             float glow,
             PartRole role,
             int variant = 0,
-            ShapeProfile shape = default
+            ShapeProfile shape = default,
+            bool isSource = false,
+            ShapeAnchor sourceAnchor = ShapeAnchor.Top,
+            string sourceFamily = ""
         )
         {
             _sources.Add(
@@ -92,6 +96,8 @@ namespace HealerLike.Render.Creatures
                 parent = -1;
             }
 
+            _sourceOccurrences.TryGetValue(id, out int occurrence);
+            if (isSource) _sourceOccurrences[id] = occurrence + 1;
             _parts.Add(
                 new CreaturePart
                 {
@@ -106,7 +112,9 @@ namespace HealerLike.Render.Creatures
                     glow = glow,
                     role = role,
                     variant = variant,
-                    isSource = role == PartRole.Tip || role == PartRole.Crown,
+                    isSource = isSource,
+                    sourceAnchor = sourceAnchor,
+                    sourceId = isSource ? sourceFamily + "/" + id + ":" + occurrence : null,
                 }
             );
             _positions.Add(pivot);
@@ -121,7 +129,10 @@ namespace HealerLike.Render.Creatures
             float thickness,
             Color colour,
             PartRole role,
-            ShapeProfile shape = default
+            ShapeProfile shape = default,
+            bool isSource = false,
+            ShapeAnchor sourceAnchor = ShapeAnchor.Top,
+            string sourceFamily = ""
         )
         {
             Vector3 delta = to - from;

@@ -25,6 +25,7 @@ namespace HealerLike.Render.Creatures
                 return Fail(presentationError, out error);
             }
 
+            HashSet<string> sourceIds = new HashSet<string>();
             HashSet<string> ids = new HashSet<string>();
             for (int i = 0; i < data.parts.Length; i++)
             {
@@ -40,6 +41,10 @@ namespace HealerLike.Render.Creatures
                 {
                     return Fail("Require unique IDs, one root, and earlier parents.", out error);
                 }
+
+                if (part.isSource && (!CreatureSources.Valid(part.sourceAnchor)
+                    || string.IsNullOrEmpty(part.sourceId) || !sourceIds.Add(part.sourceId)))
+                    return Fail("Invalid or duplicate anatomical source.", out error);
 
                 Vector3 position = part.localPosition;
                 Vector3 euler = part.localEuler;

@@ -21,5 +21,7 @@ namespace HealerLike.Render.Creatures
         public int variant;
         // Explicit outlet metadata. False preserves legacy recipes, which use the measured head fallback.
         public bool isSource;
+        public ShapeAnchor sourceAnchor;
+        public string sourceId;
     }
 }

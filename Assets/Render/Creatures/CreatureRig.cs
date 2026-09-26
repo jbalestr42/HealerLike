@@ -48,6 +48,8 @@ namespace HealerLike.Render.Creatures
         public CreatureRecipe recipe => _recipe;
 
         public int revision => _revision;
+        public event Action recomposed;
+        public Vector3 SourceLocal(int index) => _assembly.data.sourcePoints[index];
 
         public float cellSize => _cellSize;
 
@@ -151,6 +153,7 @@ namespace HealerLike.Render.Creatures
             _idle = _assembly.data.idle;
             _idle.seed = _assembly.seed;
             _revision++;
+            recomposed?.Invoke();
             return true;
         }
 
@@ -252,11 +255,6 @@ namespace HealerLike.Render.Creatures
         public bool TryGetAnchors(out EffectAnchors anchors)
         {
             return _assembly.TryGetAnchors(_cellSize, out anchors);
-        }
-
-        public Transform SourceTransform()
-        {
-            return _assembly.SourceTransform();
         }
 
         public void SetVisible(bool visible)

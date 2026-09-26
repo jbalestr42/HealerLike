@@ -14,6 +14,9 @@ namespace HealerLike.Render.Creatures
         // Legacy keeps the baked primitive; procedural profiles use a centered unit box.
         public ShapeProfile shape;
         public PartRole role;
+        // Explicit local surface pole, independent of colour and decorative role.
+        public bool isSource;
+        public ShapeAnchor sourceAnchor;
         public ColourRole colour;
 
         // Position names this mesh anchor; attachments offset it from an earlier part's anchor in this fragment.

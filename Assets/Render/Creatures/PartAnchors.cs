@@ -86,15 +86,14 @@ namespace HealerLike.Render.Creatures
                     continue;
                 }
 
-                Bounds local = renderers[i].localBounds;
-                // Resolve in the part's own frame, so rotation and facing do not become world-axis guesses.
-                sources.Add(renderers[i].transform.TransformPoint(local.max));
+                sources.Add(renderers[i].transform.TransformPoint(CreatureSources.Local(parts[i])));
             }
 
             if (sources.Count == 0 && head >= 0)
             {
                 Bounds local = renderers[head].localBounds;
-                sources.Add(renderers[head].transform.TransformPoint(local.max));
+                Bounds bounds = renderers[head].bounds;
+                sources.Add(bounds.center + Vector3.up * bounds.extents.y);
             }
 
             anchors.castSources = sources.ToArray();

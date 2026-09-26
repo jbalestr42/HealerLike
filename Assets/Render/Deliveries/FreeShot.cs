@@ -19,6 +19,7 @@ namespace HealerLike.Render.Deliveries
         Vector3 _lastPosition;
         bool _hasLanded;
         CharacterView _screenSource;
+        CastSourceLease _source;
         Vector3 _logicalStart;
         Vector3 _previousLogicalPosition;
         float _flightDistance;
@@ -44,6 +45,8 @@ namespace HealerLike.Render.Deliveries
             }
 
             _screenSource = screenSource;
+            _source?.Dispose();
+            _source = screenSource ? null : CastSourceLease.From(projectile.source);
             _tip.SetStyle(style, vocabulary, meshes);
             // A thrown creature uses its body shard; the invisible player has no shard to lend.
             if (_tip.partCount == 0 && _screenSource)
@@ -88,6 +91,8 @@ namespace HealerLike.Render.Deliveries
         public void Contact()
         {
             _screenSource = null;
+            _source?.Dispose();
+            _source = null;
         }
 
         // The tip stops drawing where the shot lands, the projectile's own visual stays hidden
@@ -99,6 +104,8 @@ namespace HealerLike.Render.Deliveries
 
         void OnDisable()
         {
+            _source?.Dispose();
+            _source = null;
             Hide();
         }
 
@@ -151,7 +158,10 @@ namespace HealerLike.Render.Deliveries
 
         Vector3 PresentationPosition()
         {
-            if (!_screenSource || !_screenSource.TryGetCastPoint(out Vector3 origin))
+            Vector3 origin = default;
+            bool resolved = _screenSource ? _screenSource.TryGetCastPoint(out origin)
+                : _source != null && _source.TryGet(out origin);
+            if (!resolved)
             {
                 return transform.position;
             }

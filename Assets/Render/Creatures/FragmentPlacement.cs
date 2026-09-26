@@ -27,6 +27,7 @@ namespace HealerLike.Render.Creatures
                     || !Valid(part.pivot)
                     || !Valid(part.attachAt)
                     || !part.shape.IsValid()
+                    || (part.isSource && !CreatureSources.Valid(part.sourceAnchor))
                 )
                 {
                     error = "A fragment part has an invalid name, anchor or shape profile.";
@@ -199,7 +200,10 @@ namespace HealerLike.Render.Creatures
                     part.glow,
                     part.role,
                     LookComposer.Variant(seed, parts.count),
-                    part.shape
+                    part.shape,
+                    part.isSource && parts.accessoryStart < 0,
+                    part.sourceAnchor,
+                    ((int)channels.head).ToString()
                 );
             }
 

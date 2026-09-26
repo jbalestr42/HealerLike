@@ -36,14 +36,14 @@ namespace HealerLike.Render.Creatures.Tests
             CreaturePart[] parts =
             {
                 new CreaturePart { id = "body", parent = -1, role = PartRole.Body },
-                new CreaturePart { id = "left", parent = 0, role = PartRole.Tip, isSource = true },
+                new CreaturePart { id = "left", parent = 0, role = PartRole.Tip, isSource = true, sourceAnchor = ShapeAnchor.Top, sourceId = "left:0" },
             };
             Renderer[] renderers = { _body.GetComponent<Renderer>(), _tip.GetComponent<Renderer>() };
             Assert.IsTrue(PartAnchors.TryMeasure(
                 parts, Vector3.up, new Vector3[0], _root.transform, _root.transform, renderers, 1f,
                 out EffectAnchors anchors));
 
-            Vector3 expected = renderers[1].transform.TransformPoint(renderers[1].localBounds.max);
+            Vector3 expected = renderers[1].transform.TransformPoint(Vector3.up * 0.5f);
             Assert.AreEqual(1, anchors.castSources.Length);
             Assert.Less(Vector3.Distance(expected, anchors.castSources[0]), 0.00001f);
             Assert.AreEqual(anchors.castSources[0], anchors.castPoint);

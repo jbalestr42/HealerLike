@@ -1,17 +1,14 @@
 using System;
 using UnityEngine;
 using HealerLike.Render.Creatures;
-
 namespace HealerLike.Render.Deliveries
 {
-    // The arms of one rig, each lent under a lease token while a gesture has it out. A chain contact branches more
-    // arms from the last contact under the same lease, and they all retract together.
     public class ArmLeases : IDisposable
     {
-        // Two contacts closer than this land on the same point
         static readonly float samePointSquared = 0.000001f;
-
         readonly LianaArm[] _arms = new LianaArm[ArmPool.MaxArms];
+        readonly CastSourceLease[] _sources = new CastSourceLease[ArmPool.MaxArms];
+        uint _sourceSequence;
         readonly int[] _tokens = new int[ArmPool.MaxArms];
         readonly int[] _definitions = new int[ArmPool.MaxArms];
         readonly Vector3?[] _branchRoots = new Vector3?[ArmPool.MaxArms];
@@ -22,16 +19,11 @@ namespace HealerLike.Render.Deliveries
         DeliveryVocabulary _vocabulary;
         int _nextToken;
         bool _isDisposed;
-
-        // Every arm slot, made or not: Get returns null for a slot that has no arm yet
         public int count { get { return _arms.Length; } }
-
         public LianaArm Get(int index)
         {
             return index >= 0 && index < _arms.Length ? _arms[index] : null;
         }
-
-        // A held delivery keeps its arm and lease. Its next rest uses the edited recipe.
         public void Refresh()
         {
             for (int i = 0; i < ArmPool.MaxArms; i++)
@@ -39,8 +31,6 @@ namespace HealerLike.Render.Deliveries
                 _refresh[i] = true;
             }
         }
-
-        // One arm per arm of the rig's recipe, more are made on demand up to the cap
         public void Init(CreatureRig rig, Material material, PrimitiveMeshes meshes, DeliveryVocabulary vocabulary)
         {
             _rig = rig;
@@ -52,8 +42,6 @@ namespace HealerLike.Render.Deliveries
                 CreateArm(i, i);
             }
         }
-
-        // An arm back at rest is free again, beyond the recipe's own arms it hides
         public void Tick(float deltaTime)
         {
             Quaternion rest = _rig.armRotation;
@@ -78,24 +66,31 @@ namespace HealerLike.Render.Deliveries
                 {
                     continue;
                 }
-
                 Vector3 shoulder = _rig.ArmSocket(_definitions[i]);
+                if (_sources[i] != null && !_sources[i].TryGet(out shoulder))
+                {
+                    _arms[i].Dispose();
+                    _arms[i] = null;
+                    _sources[i].Dispose();
+                    _sources[i] = null;
+                    _tokens[i] = 0;
+                    continue;
+                }
                 if (_branchRoots[i].HasValue)
                 {
                     shoulder = _branchRoots[i].Value;
                 }
-
                 _arms[i].Tick(deltaTime, shoulder, rest);
                 if (_arms[i].isAvailable)
                 {
                     _branchRoots[i] = null;
+                    _sources[i]?.Dispose();
+                    _sources[i] = null;
                     _tokens[i] = 0;
                     _arms[i].SetVisible(i < _rig.armCount);
                 }
             }
         }
-
-        // The lease token, zero when every arm is out
         public int Begin(GestureKind kind, Vector3 goal)
         {
             int slot = FreeSlot();
@@ -103,19 +98,19 @@ namespace HealerLike.Render.Deliveries
             {
                 return 0;
             }
-
             if (++_nextToken == 0)
             {
                 ++_nextToken;
             }
-
-            // A heal lifts its arm in an arc, any other gesture reaches straight
             DeliveryStyle style = DeliveryStyle.Direct;
             if (kind == GestureKind.Heal)
             {
                 style = DeliveryStyle.Arc;
             }
-
+            _sources[slot]?.Dispose();
+            _sources[slot] = CreatureSources.HasExplicit(_rig) ? new CastSourceLease(_rig, _sourceSequence++) : null;
+            if (_sources[slot] != null && _sources[slot].TryGet(out Vector3 source))
+                _arms[slot].Tick(0f, source, _rig.armRotation);
             _tokens[slot] = _nextToken;
             _branchRoots[slot] = null;
             _arms[slot].isDeliveryProfile = kind == GestureKind.Heal;
@@ -124,8 +119,6 @@ namespace HealerLike.Render.Deliveries
             _arms[slot].Begin(_nextToken, kind, goal);
             return _nextToken;
         }
-
-        // A shot draws its lease as its style, a rod or an arc to the projectile
         public void SetStyle(int lease, DeliveryStyle style)
         {
             for (int i = 0; i < ArmPool.MaxArms; i++)
@@ -137,14 +130,12 @@ namespace HealerLike.Render.Deliveries
                 }
             }
         }
-
         public void SetTipGoal(int lease, Vector3 goal)
         {
             if (lease == 0)
             {
                 return;
             }
-
             for (int i = 0; i < ArmPool.MaxArms; i++)
             {
                 if (_tokens[i] == lease && !_branchRoots[i].HasValue && _arms[i] != null)
@@ -153,8 +144,6 @@ namespace HealerLike.Render.Deliveries
                 }
             }
         }
-
-        // A contact with a previous one branches a new arm from it under the same lease
         public void Contact(int lease, Vector3 goal, Vector3? previousContact = null)
         {
             if (lease == 0)
@@ -162,7 +151,6 @@ namespace HealerLike.Render.Deliveries
                 CoalesceContact(goal);
                 return;
             }
-
             if (!previousContact.HasValue)
             {
                 for (int i = 0; i < ArmPool.MaxArms; i++)
@@ -174,14 +162,14 @@ namespace HealerLike.Render.Deliveries
                 }
                 return;
             }
-
             int slot = FreeSlot();
             if (slot < 0)
             {
                 CoalesceContact(goal);
                 return;
             }
-
+            _sources[slot]?.Dispose();
+            _sources[slot] = null;
             _tokens[slot] = lease;
             _branchRoots[slot] = previousContact;
             _arms[slot].style = DeliveryStyle.ChainSync;
@@ -190,14 +178,12 @@ namespace HealerLike.Render.Deliveries
             _arms[slot].Begin(lease, GestureKind.Attack, goal);
             _arms[slot].Contact(lease, goal);
         }
-
         public void End(int lease)
         {
             if (lease == 0)
             {
                 return;
             }
-
             for (int i = 0; i < ArmPool.MaxArms; i++)
             {
                 if (_tokens[i] == lease && _arms[i] != null)
@@ -206,8 +192,6 @@ namespace HealerLike.Render.Deliveries
                 }
             }
         }
-
-        // The tips of a lease's arms, chain branches included, take the colour until they are back at rest
         public void SetAccent(int lease, Color colour)
         {
             for (int i = 0; i < ArmPool.MaxArms; i++)
@@ -218,7 +202,6 @@ namespace HealerLike.Render.Deliveries
                 }
             }
         }
-
         public void CancelAll()
         {
             for (int i = 0; i < ArmPool.MaxArms; i++)
@@ -230,15 +213,14 @@ namespace HealerLike.Render.Deliveries
                 }
             }
         }
-
         public void Dispose()
         {
             if (_isDisposed)
             {
                 return;
             }
-
             _isDisposed = true;
+            foreach (CastSourceLease source in _sources) source?.Dispose();
             foreach (LianaArm arm in _arms)
             {
                 if (arm != null)
@@ -247,7 +229,6 @@ namespace HealerLike.Render.Deliveries
                 }
             }
         }
-
         void CreateArm(int slot, int definitionIndex)
         {
             _definitions[slot] = definitionIndex;
@@ -256,14 +237,12 @@ namespace HealerLike.Render.Deliveries
                 _rig.cellSize);
             _arms[slot].Tick(0f, _rig.ArmSocket(definitionIndex), _rig.armRotation);
         }
-
         int FreeSlot()
         {
             if (_rig.armCount == 0)
             {
                 return -1;
             }
-
             for (int i = 0; i < ArmPool.MaxArms; i++)
             {
                 if (_arms[i] == null || _arms[i].isAvailable)
@@ -272,18 +251,13 @@ namespace HealerLike.Render.Deliveries
                     {
                         CreateArm(i, i % _rig.armCount);
                     }
-
                     return i;
                 }
             }
-
             return -1;
         }
-
         void CoalesceContact(Vector3 goal)
         {
-            // Saturated same-position contacts renew an existing visual contact, without sharing
-            // its lease token. A dropped observer can never end somebody else's chain.
             for (int i = 0; i < ArmPool.MaxArms; i++)
             {
                 if (_tokens[i] != 0 && _arms[i] != null && !_arms[i].isAvailable

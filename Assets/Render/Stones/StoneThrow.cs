@@ -13,6 +13,11 @@ namespace HealerLike.Render.Stones
             public StoneFragmentPool.ShardLease shardLease;
             public Transform projectile;
             public StoneMeshCache.Lease lease;
+            public CastSourceLease source;
+            public Vector3 logicalStart;
+            public Vector3 previous;
+            public float distance;
+            public float travelled;
         }
 
         // Seed salts, apart from the body's so a shard never shares a random stream with a hit
@@ -57,7 +62,7 @@ namespace HealerLike.Render.Stones
             foreach (KeyValuePair<int, Delivery> pair in _deliveries)
             {
                 Transform projectile = pair.Value.projectile;
-                if (projectile == null || !projectile.gameObject.activeInHierarchy || !pair.Value.shardLease.shard)
+                if (projectile == null || !projectile.gameObject.activeInHierarchy || !pair.Value.shardLease.shard || !pair.Value.source.TryGet(out _))
                 {
                     _endedDeliveries.Add(pair.Key);
                 }
@@ -73,47 +78,14 @@ namespace HealerLike.Render.Stones
             }
         }
 
-        // The highest head throws, or the highest part of a stone that has no head
-        Transform ThrowingPart()
-        {
-            CreatureRig rig = _builder != null ? _builder.rig : null;
-            if (rig == null)
-            {
-                return null;
-            }
-
-            _builder.SyncGeometry();
-            Transform source = rig.SourceTransform();
-            if (source != null)
-            {
-                return source;
-            }
-
-            IReadOnlyList<Transform> partTransforms = rig.partTransforms;
-            Transform best = null;
-            bool isBestHead = false;
-            for (int i = 0; i < partTransforms.Count; i++)
-            {
-                Transform part = partTransforms[i];
-                if (!part.gameObject.activeInHierarchy)
-                {
-                    continue;
-                }
-
-                bool isHead = rig.parts[i].role == PartRole.Head;
-                bool isHigher = best == null || part.position.y > best.position.y;
-                if ((isHead && !isBestHead) || (isHead == isBestHead && isHigher))
-                {
-                    best = part;
-                    isBestHead = isHead;
-                }
-            }
-            return best;
-        }
-
         void Follow(Delivery delivery, Vector3 projectilePosition)
         {
             Transform shard = delivery.shardLease.shard;
+            delivery.travelled += Vector3.Distance(projectilePosition, delivery.previous);
+            delivery.previous = projectilePosition;
+            if (delivery.source.TryGet(out Vector3 origin))
+                projectilePosition += (origin - delivery.logicalStart)
+                    * (1f - Mathf.Clamp01(delivery.travelled / Mathf.Max(0.001f, delivery.distance)));
             Vector3 travel = projectilePosition - shard.position;
             if (travel.sqrMagnitude > 0.00000001f)
             {
@@ -164,8 +136,9 @@ namespace HealerLike.Render.Stones
                 return false;
             }
 
-            Transform thrower = ThrowingPart();
-            if (thrower == null)
+            _builder?.SyncGeometry();
+            CastSourceLease source = new CastSourceLease(_builder != null ? _builder.rig : null, (uint)token);
+            if (!source.TryGet(out Vector3 origin))
             {
                 return false;
             }
@@ -185,12 +158,16 @@ namespace HealerLike.Render.Stones
             }
 
             Transform shard = shardLease.shard;
-            shard.position = thrower.GetComponent<Renderer>().bounds.center;
+            shard.position = origin;
             shard.rotation = Quaternion.identity;
             Delivery delivery = new Delivery();
             delivery.shardLease = shardLease;
             delivery.projectile = projectile;
             delivery.lease = lease;
+            delivery.source = source;
+            delivery.logicalStart = projectile.position;
+            delivery.previous = projectile.position;
+            delivery.distance = Vector3.Distance(projectile.position, intendedEnd);
             _deliveries.Add(token, delivery);
             return true;
         }
@@ -221,6 +198,7 @@ namespace HealerLike.Render.Stones
             _deliveries.Remove(token);
             delivery.shardLease.Dispose();
             delivery.lease.Dispose();
+            delivery.source.Dispose();
         }
 
         #endregion
