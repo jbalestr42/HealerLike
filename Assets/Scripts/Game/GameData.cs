@@ -15,10 +15,13 @@ public class GameData : SerializedScriptableObject
         public float bonusPerUpgrade;
     }
 
+    // Waves that can be fought in a room of this type, between these floors (included)
     [Serializable]
-    public class WavePerRound
+    public class WavePool
     {
-        public int round;
+        public MapNodeType roomType = MapNodeType.Combat;
+        public int minFloor = 0;
+        public int maxFloor = 0;
         public List<WavePatternData> wavePatterns = new List<WavePatternData>();
     }
 
@@ -36,7 +39,7 @@ public class GameData : SerializedScriptableObject
     public Dictionary<AttributeType, AttributeUpgradeData> attributeUpgradeData = new Dictionary<AttributeType, AttributeUpgradeData>();
 
     [BoxGroup("Split/Player Data")]
-    public List<WavePerRound> wavePerRound = new List<WavePerRound>();
+    public List<WavePool> wavePools = new List<WavePool>();
 
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<CharacterData>, CharacterData>(characters, this)")]
     public List<CharacterData> characters = new List<CharacterData>();

@@ -117,6 +117,96 @@ public class DataManagerTests
 
         CollectionAssert.AreEqual(new[] { playerTag }, item.tags);
     }
+
+    GameData.WavePool AddWavePool(MapNodeType roomType, int minFloor, int maxFloor, params WavePatternData[] waves)
+    {
+        GameData.WavePool pool = new GameData.WavePool
+        {
+            roomType = roomType,
+            minFloor = minFloor,
+            maxFloor = maxFloor,
+            wavePatterns = new List<WavePatternData>(waves),
+        };
+        _gameData.wavePools.Add(pool);
+        return pool;
+    }
+
+    [Test]
+    public void GetWavePatterns_ReturnsWavesOfPoolsMatchingTypeAndFloor()
+    {
+        WavePatternData early = CreateTracked<WavePatternData>();
+        WavePatternData late = CreateTracked<WavePatternData>();
+        WavePatternData elite = CreateTracked<WavePatternData>();
+        WavePatternData anyFloor = CreateTracked<WavePatternData>();
+        AddWavePool(MapNodeType.Combat, 0, 2, early);
+        AddWavePool(MapNodeType.Combat, 3, 5, late);
+        AddWavePool(MapNodeType.Elite, 0, 9, elite);
+        AddWavePool(MapNodeType.Combat, 0, 9, anyFloor);
+
+        CollectionAssert.AreEquivalent(new[] { early, anyFloor }, _dataManager.GetWavePatterns(MapNodeType.Combat, 2));
+        CollectionAssert.AreEquivalent(new[] { late, anyFloor }, _dataManager.GetWavePatterns(MapNodeType.Combat, 3));
+        CollectionAssert.AreEquivalent(new[] { elite }, _dataManager.GetWavePatterns(MapNodeType.Elite, 5));
+        Assert.IsEmpty(_dataManager.GetWavePatterns(MapNodeType.Combat, 10));
+    }
+
+    [Test]
+    public void GetWavePatterns_SkipsMissingWaves()
+    {
+        WavePatternData wave = CreateTracked<WavePatternData>();
+        AddWavePool(MapNodeType.Combat, 0, 0, null, wave);
+
+        CollectionAssert.AreEqual(new[] { wave }, _dataManager.GetWavePatterns(MapNodeType.Combat, 0));
+    }
+
+    [Test]
+    public void GetWavePattern_PicksAmongTheMatchingWaves()
+    {
+        WavePatternData first = CreateTracked<WavePatternData>();
+        WavePatternData second = CreateTracked<WavePatternData>();
+        WavePatternData otherFloor = CreateTracked<WavePatternData>();
+        AddWavePool(MapNodeType.Combat, 1, 1, first, second);
+        AddWavePool(MapNodeType.Combat, 2, 2, otherFloor);
+        System.Random random = new System.Random(0);
+
+        HashSet<WavePatternData> picked = new HashSet<WavePatternData>();
+        for (int i = 0; i < 50; i++)
+        {
+            picked.Add(_dataManager.GetWavePattern(MapNodeType.Combat, 1, random));
+        }
+
+        CollectionAssert.AreEquivalent(new[] { first, second }, picked);
+    }
+
+    [Test]
+    public void GetWavePattern_EliteWithoutOwnWaves_FallsBackToCombatWaves()
+    {
+        WavePatternData combat = CreateTracked<WavePatternData>();
+        AddWavePool(MapNodeType.Combat, 4, 4, combat);
+
+        Assert.AreSame(combat, _dataManager.GetWavePattern(MapNodeType.Elite, 4, new System.Random(0)));
+    }
+
+    [Test]
+    public void GetWavePattern_EliteWithOwnWaves_DoesNotUseCombatWaves()
+    {
+        WavePatternData combat = CreateTracked<WavePatternData>();
+        WavePatternData elite = CreateTracked<WavePatternData>();
+        AddWavePool(MapNodeType.Combat, 4, 4, combat);
+        AddWavePool(MapNodeType.Elite, 4, 4, elite);
+
+        Assert.AreSame(elite, _dataManager.GetWavePattern(MapNodeType.Elite, 4, new System.Random(0)));
+    }
+
+    [Test]
+    public void GetWavePattern_NoMatchingWave_ReturnsNull()
+    {
+        AddWavePool(MapNodeType.Combat, 0, 0, CreateTracked<WavePatternData>());
+
+        WavePatternData wave = null;
+        TestHelpers.WithLoggingDisabled(() => wave = _dataManager.GetWavePattern(MapNodeType.Combat, 3, new System.Random(0)));
+
+        Assert.IsNull(wave);
+    }
 }
 
 }

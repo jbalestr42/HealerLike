@@ -32,10 +32,31 @@ public class DataManager : Singleton<DataManager>
         return items[Random.Range(0, items.Count)].GetItem();
     }
 
-    public WavePatternData GetWavePattern(int round)
+    // Waves of every pool matching the room type and floor
+    public List<WavePatternData> GetWavePatterns(MapNodeType roomType, int floor)
     {
-        GameData.WavePerRound wavePerRound = _data.wavePerRound.Where(x => x.round == round).FirstOrDefault();
-        return wavePerRound.wavePatterns[Random.Range(0, wavePerRound.wavePatterns.Count)];
+        return _data.wavePools
+            .Where(pool => pool.roomType == roomType && floor >= pool.minFloor && floor <= pool.maxFloor)
+            .SelectMany(pool => pool.wavePatterns)
+            .Where(wave => wave != null)
+            .ToList();
+    }
+
+    // Rooms without their own waves (elites for now) fight the combat waves of their floor
+    public WavePatternData GetWavePattern(MapNodeType roomType, int floor, System.Random random)
+    {
+        List<WavePatternData> waves = GetWavePatterns(roomType, floor);
+        if (waves.Count == 0 && roomType != MapNodeType.Combat)
+        {
+            waves = GetWavePatterns(MapNodeType.Combat, floor);
+        }
+
+        if (waves.Count == 0)
+        {
+            Debug.LogError($"[DataManager] No wave for a {roomType} room on floor {floor}");
+            return null;
+        }
+        return waves[random.Next(waves.Count)];
     }
 
     public GameplayTag GetTagWithName(string tagName)

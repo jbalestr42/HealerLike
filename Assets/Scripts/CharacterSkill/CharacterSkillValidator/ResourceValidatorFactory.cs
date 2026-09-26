@@ -30,10 +30,6 @@ public class ResourceValidator : ACharacterSkillValidator<ResourceValidatorData>
 
     public override void OnSkillUsed(GameObject owner)
     {
-        ResourceModifier resourceModifier = new ResourceModifier();
-        resourceModifier.consumers.Add(data.consumer.GetConsumer(owner, owner));
-        resourceModifier.multiplier = 1f;
-        resourceModifier.source = owner;
-        resource.AddResourceModifier(resourceModifier);
+        resource.AddResourceModifier(ResourceModifier.Create(data.consumer, owner, owner));
     }
 }

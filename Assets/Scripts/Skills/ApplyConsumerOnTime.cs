@@ -18,12 +18,7 @@ public class ApplyConsumerOnTime : ACooldownSkill<ApplyConsumerOnTimeData>, ISta
 
     public override bool Execute(GameObject source)
     {
-        ResourceModifier resourceModifier = new ResourceModifier();
-        resourceModifier.consumers.Add(data.consumerFactory.GetConsumer(source, source));
-        resourceModifier.multiplier = _stacks;
-        resourceModifier.source = source;
-
-        source.GetComponent<IAttackable>().OnHit(resourceModifier);
+        source.GetComponent<IAttackable>().OnHit(ResourceModifier.Create(data.consumerFactory, source, source, _stacks));
         return true;
     }
 

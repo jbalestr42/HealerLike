@@ -6,4 +6,5 @@ public class GridCell
 {
     public Vector2Int coord { get; set; }
     public Vector3 center { get; set; }
+    public bool walkable { get; set; } = true;
 }

@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Pathfinding;
 using UnityEngine;
 
 public class GridManager : MonoBehaviour 
@@ -23,7 +22,6 @@ public class GridManager : MonoBehaviour
 
     Vector3 _min;
     Vector3 _max;
-    GridGraph _gridGraph;
 
     public void Generate()
     {
@@ -43,24 +41,6 @@ public class GridManager : MonoBehaviour
         }
 
         _ground.transform.localScale = new Vector3(_width * _size, 1f, _height * _size);
-
-        _gridGraph = AstarPath.active.data.AddGraph(typeof(GridGraph)) as GridGraph;
-        _gridGraph.collision.heightMask = LayerMask.GetMask("Terrain");
-        _gridGraph.collision.collisionCheck = false;
-        _gridGraph.neighbours = NumNeighbours.Eight;
-        _gridGraph.cutCorners = false;
-        _gridGraph.showNodeConnections = true;
-        _gridGraph.center = transform.position;
-        _gridGraph.SetDimensions(_width, _height, _size);
-        _gridGraph.Scan();
-    }
-
-    void OnDestroy()
-    {
-        if (AstarPath.active != null && _gridGraph != null)
-        {
-            AstarPath.active.data.RemoveGraph(_gridGraph);
-        }
     }
 
     public GridCell GetCell(Vector2Int coord)
@@ -77,7 +57,7 @@ public class GridManager : MonoBehaviour
     {
         if (IsValidCoord(x, y))
         {
-            return _gridGraph.GetNode(x, y).Walkable;
+            return GetCell(x, y).walkable;
         }
         return false;
     }
@@ -111,12 +91,7 @@ public class GridManager : MonoBehaviour
     {
         if (IsValidCoord(x, y))
         {
-            AstarPath.active.AddWorkItem(new AstarWorkItem(() => {
-                _gridGraph.GetNode(x, y).Walkable = walkable;
-                _gridGraph.CalculateConnectionsForCellAndNeighbours(x, y);
-                //_gridGraph.GetNodes(node => _gridGraph.CalculateConnections((GridNodeBase)node));
-            }));
-            AstarPath.active.FlushWorkItems();
+            GetCell(x, y).walkable = walkable;
         }
     }
 
@@ -150,26 +125,37 @@ public class GridManager : MonoBehaviour
 
     public bool CanPlaceObject(Vector2Int coord)
     {
-        return CanPlaceObject(new Bounds(GetCellCenterFromCoord(coord), new Vector3(_size, _size, _size)));
+        return IsWalkable(coord.x, coord.y);
     }
 
-    public bool CanPlaceObject(Bounds bounds)
-    {
-        GraphUpdateObject guo = new GraphUpdateObject(bounds);
-        guo.modifyWalkability = true;
-        guo.setWalkability = false;
-
-        List<GraphNode> nodes = new List<GraphNode>();
-        return GraphUpdateUtilities.UpdateGraphsNoBlock(guo, nodes, true);
-    }
-
+    // Returns the center of the walkable cell closest to position (on the XZ plane), or the center of
+    // the cell under position if no cell is walkable.
     public Vector3 GetNearestWalkablePosition(Vector3 position)
     {
-        NNConstraint constraint = NNConstraint.None;
-        constraint.constrainWalkability = true;
-        constraint.walkable = true;
-        NNInfoInternal info = _gridGraph.GetNearestForce(position, constraint);
-        return (Vector3)info.node.position;
+        GridCell nearest = null;
+        float nearestSqrDistance = float.MaxValue;
+        foreach (GridCell cell in _cells)
+        {
+            if (!cell.walkable)
+            {
+                continue;
+            }
+
+            float dx = cell.center.x - position.x;
+            float dz = cell.center.z - position.z;
+            float sqrDistance = dx * dx + dz * dz;
+            if (sqrDistance < nearestSqrDistance)
+            {
+                nearest = cell;
+                nearestSqrDistance = sqrDistance;
+            }
+        }
+
+        if (nearest == null)
+        {
+            return GetCellCenterFromPosition(position);
+        }
+        return nearest.center;
     }
 
     void OnDrawGizmos()

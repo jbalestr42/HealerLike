@@ -81,7 +81,6 @@ public class ResourceAttributeTests
         Assert.AreEqual(100f, _health.Value);
         Assert.AreEqual(1, changedCount);
     }
-
     [Test]
     public void Percent_ReturnsValueOverMax()
     {

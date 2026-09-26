@@ -32,11 +32,7 @@ public class HealTargetSkill : ACooldownSkill<HealTargetSkillData>
         List<GameObject> targets = _targetBehaviour.GetTargets(source, transform.position, data.range, source.GetComponent<Entity>().GetTargetType());
         if (targets.Count > 0)
         {
-            ResourceModifier resourceModifier = new ResourceModifier();
-            resourceModifier.consumers.Add(data.consumerFactory.GetConsumer(source, targets[0]));
-            resourceModifier.source = source;
-
-            targets[0].GetComponent<IAttackable>().OnHit(resourceModifier);
+            targets[0].GetComponent<IAttackable>().OnHit(ResourceModifier.Create(data.consumerFactory, source, targets[0]));
             return true;
         }
         return false;

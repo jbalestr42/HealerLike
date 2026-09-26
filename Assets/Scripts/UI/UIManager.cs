@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
+// Values are serialized in the scenes, never change them
 public enum ViewType
 {
-    None,
-    Game,
-    Upgrade,
-    Wave,
-    GameOver
+    None = 0,
+    Game = 1,
+    Upgrade = 2,
+    GameOver = 4,
+    Map = 5,
 }
 
 public class UIManager : Singleton<UIManager>

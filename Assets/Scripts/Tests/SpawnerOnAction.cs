@@ -10,7 +10,7 @@ public class SpawnerOnAction : SerializedMonoBehaviour
     [Button("Spawn")]
     public void Spawn()
     {
-        LoadWave(DataManager.instance.GetWavePattern(0));
+        LoadWave(DataManager.instance.GetWavePattern(MapNodeType.Combat, 0, new System.Random()));
     }
 
     public void LoadWave(WavePatternData waveData)

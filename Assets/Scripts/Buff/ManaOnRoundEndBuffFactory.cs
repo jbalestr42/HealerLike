@@ -18,12 +18,7 @@ public class ManaOnRoundEndBuff : ABuff<ManaOnRoundEndBuffData>, IStackableBuff
     void OnRoundEnd()
     {
         Character character = PlayerBehaviour.instance.character;
-        ResourceModifier resourceModifier = new ResourceModifier();
-        resourceModifier.consumers.Add(data.consumerFactory.GetConsumer(character.gameObject, character.gameObject));
-        resourceModifier.multiplier = _stacks;
-        resourceModifier.source = character.gameObject;
-
-        character.mana.AddResourceModifier(resourceModifier);
+        character.mana.AddResourceModifier(ResourceModifier.Create(data.consumerFactory, character.gameObject, character.gameObject, _stacks));
     }
 
     public override void Instant(GameObject source, GameObject target) { }

@@ -135,34 +135,62 @@ MonoBehaviour:
       startingUpgradeCost: 10
       costIncreaseFactor: 4
       bonusPerUpgrade: 0.1
-  wavePerRound:
-  - round: 0
+  wavePools:
+  - roomType: 0
+    minFloor: 0
+    maxFloor: 0
     wavePatterns:
     - {fileID: 11400000, guid: 46776799d2008614b9df9baa0ad8d107, type: 2}
-  - round: 1
+  - roomType: 0
+    minFloor: 1
+    maxFloor: 1
     wavePatterns:
     - {fileID: 11400000, guid: 7017dc7573d67c24994a98a8e0a1f684, type: 2}
-  - round: 2
+  - roomType: 0
+    minFloor: 2
+    maxFloor: 2
     wavePatterns:
     - {fileID: 11400000, guid: 1bf36ca141918c94ea485df9e025943a, type: 2}
-  - round: 3
+  - roomType: 0
+    minFloor: 3
+    maxFloor: 3
     wavePatterns:
     - {fileID: 11400000, guid: 3b001c9f0efaeec429a2be36da0315a1, type: 2}
-  - round: 4
+  - roomType: 0
+    minFloor: 4
+    maxFloor: 4
     wavePatterns:
     - {fileID: 11400000, guid: 691bb0f9e62ef6c40b3577089580cb15, type: 2}
-  - round: 5
+  - roomType: 0
+    minFloor: 5
+    maxFloor: 5
     wavePatterns:
     - {fileID: 11400000, guid: d4932ebf4e6b0f045a9af1ce53c908c1, type: 2}
-  - round: 6
+  - roomType: 0
+    minFloor: 6
+    maxFloor: 6
     wavePatterns:
     - {fileID: 11400000, guid: 56bf758b00def184fb1e593331f8fa0b, type: 2}
-  - round: 7
+  - roomType: 0
+    minFloor: 7
+    maxFloor: 7
     wavePatterns:
     - {fileID: 11400000, guid: 99a4c735e2632514c92dc8163d03f0e9, type: 2}
-  - round: 8
+  - roomType: 0
+    minFloor: 8
+    maxFloor: 8
     wavePatterns:
     - {fileID: 11400000, guid: 74b5f35c770b3ac47bcec7c0cd201c7d, type: 2}
+  - roomType: 1
+    minFloor: 3
+    maxFloor: 4
+    wavePatterns:
+    - {fileID: 11400000, guid: c586266b2d0f45fc841138d1e95300ff, type: 2}
+  - roomType: 1
+    minFloor: 6
+    maxFloor: 8
+    wavePatterns:
+    - {fileID: 11400000, guid: 8c7aacf4b16749ee84b1a6152a73be45, type: 2}
   characters:
   - {fileID: 11400000, guid: b6564d3df55530743a8bae3f230c6101, type: 2}
   items:
