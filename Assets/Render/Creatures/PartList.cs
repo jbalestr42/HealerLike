@@ -131,8 +131,7 @@ namespace HealerLike.Render.Creatures
             {
                 Vector3 bottom = ProceduralShapeMeshes.Anchor(shape, ShapeAnchor.Bottom);
                 Vector3 top = ProceduralShapeMeshes.Anchor(shape, ShapeAnchor.Top);
-                Vector3 overlap = delta.normalized * (thickness * 0.5f);
-                ShapeSegment pose = ShapeSegment.Fit(bottom, top, from - overlap, to + overlap, thickness);
+                ShapeSegment pose = ShapeSegment.Fit(bottom, top, from, to, thickness, thickness);
                 size = pose.scale;
                 rotation = pose.rotation;
                 centre = pose.position;
