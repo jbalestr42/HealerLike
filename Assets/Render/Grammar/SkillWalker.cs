@@ -35,8 +35,7 @@ namespace HealerLike.Render.Grammar
             return prefabs;
         }
 
-        // Shots per prefab in one cycle of the skill, in the order the data lists them: each entry fires once per
-        // cycle, a step once per execution
+        // The existing cosmetic shot counts, in authored prefab order; configurable entries share executions.
         public static List<Shot> Shots(ASkillFactory skill)
         {
             return SkillDescriptionReader.Read(skill, null).shots;
@@ -53,11 +52,11 @@ namespace HealerLike.Render.Grammar
 
             foreach (ASkillStepFactory step in steps)
             {
-                if (step is RepeatSkillStepFactory repeat)
+                if (step is RepeatSkillStepFactory repeat && repeat.data != null)
                 {
                     total += repeat.data.count * Waits(repeat.data.skillStepFactories, data);
                 }
-                else if (step is DurationSkillStepFactory duration)
+                else if (step is DurationSkillStepFactory duration && duration.data != null)
                 {
                     total += Value(duration.data.duration, data);
                 }
@@ -71,21 +70,41 @@ namespace HealerLike.Render.Grammar
         {
             if (value is FlatValue flat)
             {
+                if (flat.data == null)
+                {
+                    return 0f;
+                }
+
                 return flat.data.value;
             }
 
             if (value is AttributeValue attribute)
             {
+                if (attribute.data == null)
+                {
+                    return 0f;
+                }
+
                 return Base(data, ReadAttribute(data, attribute.data.type, 0f)) * attribute.data.multiplier;
             }
 
             if (value is MaxHealthValue maxHealth)
             {
+                if (maxHealth.data == null)
+                {
+                    return 0f;
+                }
+
                 return Base(data, LookDerivation.Health(data)) * maxHealth.data.multiplier;
             }
 
             if (value is CurrentHealthValue currentHealth)
             {
+                if (currentHealth.data == null)
+                {
+                    return 0f;
+                }
+
                 // A unit spawns at full health, so the health it misses is none
                 float health = 0f;
                 if (!currentHealth.data.inverse)

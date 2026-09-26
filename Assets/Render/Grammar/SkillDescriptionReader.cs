@@ -17,7 +17,10 @@ namespace HealerLike.Render.Grammar
             {
                 description.shots = SkillProjectiles.Read(configurable.data);
                 description.head = ProjectileHead(description.shots);
-                description.cadence = SkillWalker.Waits(configurable.data.skillStepFactories, data);
+                if (configurable.data != null)
+                {
+                    description.cadence = SkillWalker.Waits(configurable.data.skillStepFactories, data);
+                }
                 float total = 0f;
                 foreach (SkillWalker.Shot shot in description.shots)
                 {
@@ -27,16 +30,22 @@ namespace HealerLike.Render.Grammar
             }
             else if (skill is ApplyBuffOnTargetSkillFactory support)
             {
-                ABuffHandlerFactory handler = support.data.buffHandlerFactory;
-                description.accent = EffectDerivation.Family(handler, support.data.targetAlly);
-                description.head = Gift(description.accent, EffectDerivation.Group(handler));
-                description.cadence = support.data.rate;
+                if (support.data != null)
+                {
+                    ABuffHandlerFactory handler = support.data.buffHandlerFactory;
+                    description.accent = EffectDerivation.Family(handler, support.data.targetAlly);
+                    description.head = Gift(description.accent, EffectDerivation.Group(handler));
+                    description.cadence = support.data.rate;
+                }
             }
             else if (skill is HealTargetSkillFactory heal)
             {
                 description.head = HeadKind.GiftHeal;
                 description.accent = EffectFamily.Heal;
-                description.cadence = heal.data.rate;
+                if (heal.data != null)
+                {
+                    description.cadence = heal.data.rate;
+                }
             }
             else if (skill is AreaOfEffectSkillFactory)
             {
@@ -49,12 +58,18 @@ namespace HealerLike.Render.Grammar
             else if (skill is ApplyConsumerOnTimeFactory self)
             {
                 description.head = HeadKind.SelfTick;
-                description.accent = EffectDerivation.ConsumerFamily(self.data.consumerFactory, true);
-                description.cadence = self.data.rate;
+                if (self.data != null)
+                {
+                    description.accent = EffectDerivation.ConsumerFamily(self.data.consumerFactory, true);
+                    description.cadence = self.data.rate;
+                }
             }
             else if (skill is ApplyBuffPeriodicallySkillFactory periodic)
             {
-                ReadPeriodic(periodic.data.periodicBuff, description);
+                if (periodic.data != null)
+                {
+                    ReadPeriodic(periodic.data.periodicBuff, description);
+                }
             }
             else if (skill != null)
             {
@@ -74,7 +89,7 @@ namespace HealerLike.Render.Grammar
             description.head = ProjectileHead(description.shots);
             description.cadence = SkillWalker.ReadAttribute(data, AttributeType.AttackRate,
                 LookDerivation.DefaultAttackRate);
-            if (skill.projectiles == null)
+            if (skill == null || skill.projectiles == null)
             {
                 return;
             }
@@ -83,6 +98,10 @@ namespace HealerLike.Render.Grammar
             bool hasAccent = false;
             foreach (ShootProjectileSkillData.ProjectileData entry in skill.projectiles)
             {
+                if (entry == null)
+                {
+                    continue;
+                }
                 description.hits = Mathf.Max(description.hits,
                     entry.numberOfProjectileToShootPerTarget + SkillWalker.Bounces(entry.projectilePrefab) + bounces);
                 if (!hasAccent && entry.onHitConsumer != null && entry.onHitConsumer.Count > 0)

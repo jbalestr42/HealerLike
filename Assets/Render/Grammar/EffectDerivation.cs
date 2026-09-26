@@ -179,22 +179,22 @@ namespace HealerLike.Render.Grammar
         // The consumer a buff applies, for the buffs that apply one
         public static AConsumerFactory Consumer(ABuffFactory buff)
         {
-            if (buff is ApplyConsumerBuffFactory applyConsumer)
+            if (buff is ApplyConsumerBuffFactory applyConsumer && applyConsumer.data != null)
             {
                 return applyConsumer.data.consumerFactory;
             }
 
-            if (buff is DamageAllEntityOnEntityDieBuffFactory damageAll)
+            if (buff is DamageAllEntityOnEntityDieBuffFactory damageAll && damageAll.data != null)
             {
                 return damageAll.data.damageToAllEntity;
             }
 
-            if (buff is HealAllEntitiesOnRoundEndBuffFactory healAll)
+            if (buff is HealAllEntitiesOnRoundEndBuffFactory healAll && healAll.data != null)
             {
                 return healAll.data.consumerFactory;
             }
 
-            if (buff is ManaOnRoundEndBuffFactory mana)
+            if (buff is ManaOnRoundEndBuffFactory mana && mana.data != null)
             {
                 return mana.data.consumerFactory;
             }
@@ -206,32 +206,32 @@ namespace HealerLike.Render.Grammar
         {
             BaseData data = null;
             delta = 0f;
-            if (buff is FlatModifierFactory flat)
+            if (buff is FlatModifierFactory flat && flat.data != null)
             {
                 data = flat.data;
                 delta = flat.data.value;
             }
-            else if (buff is UpgradeModifierFactory upgrade)
+            else if (buff is UpgradeModifierFactory upgrade && upgrade.data != null)
             {
                 data = upgrade.data;
                 delta = upgrade.data.value;
             }
-            else if (buff is SlowModifierFactory slow)
+            else if (buff is SlowModifierFactory slow && slow.data != null)
             {
                 data = slow.data;
                 delta = slow.data.value;
             }
-            else if (buff is TimeModifierFactory time)
+            else if (buff is TimeModifierFactory time && time.data != null)
             {
                 data = time.data;
                 delta = time.data.value;
             }
-            else if (buff is CurrentWaveModifierFactory wave)
+            else if (buff is CurrentWaveModifierFactory wave && wave.data != null)
             {
                 data = wave.data;
                 delta = wave.data.value;
             }
-            else if (buff is HPBasedModifierFactory hpBased)
+            else if (buff is HPBasedModifierFactory hpBased && hpBased.data != null)
             {
                 data = hpBased.data;
                 delta = hpBased.data.factor;

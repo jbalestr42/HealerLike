@@ -28,6 +28,10 @@ namespace HealerLike.Render.Grammar
             {
                 foreach (ShootProjectileSkillData.ProjectileData entry in data.projectiles)
                 {
+                    if (entry == null)
+                    {
+                        continue;
+                    }
                     AddShot(shots, entry.projectilePrefab, entry.numberOfProjectileToShootPerTarget);
                 }
             }
@@ -53,18 +57,22 @@ namespace HealerLike.Render.Grammar
 
             foreach (ASkillStepFactory step in steps)
             {
-                if (step is RepeatSkillStepFactory repeat)
+                if (step is RepeatSkillStepFactory repeat && repeat.data != null)
                 {
                     AddShots(repeat.data.skillStepFactories, repeats * repeat.data.count, shots);
                 }
-                else if (step is ShootProjectileSkillStepFactory shoot && shoot.data.projectiles != null
+                else if (step is ShootProjectileSkillStepFactory shoot && shoot.data != null
+                         && shoot.data.projectiles != null
                          && shoot.data.projectiles.Count > 0)
                 {
-                    // Existing cosmetic averaging. Gameplay resets multi-entry steps differently;
-                    // keep authored channels stable until that interpretation changes explicitly.
+                    // The visual reading averages the executions across the authored entries.
                     float executions = repeats / shoot.data.projectiles.Count;
                     foreach (ShootProjectileSkillStepData.ProjectileData entry in shoot.data.projectiles)
                     {
+                        if (entry == null)
+                        {
+                            continue;
+                        }
                         AddShot(shots, entry.projectilePrefab, executions * entry.numberOfProjectileToShootPerTarget);
                     }
                 }

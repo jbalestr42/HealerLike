@@ -26,6 +26,46 @@ public class SkillDescriptionReaderTests
         return instance;
     }
 
+    [TestCase(typeof(HealTargetSkillFactory), HeadKind.GiftHeal)]
+    [TestCase(typeof(AreaOfEffectSkillFactory), HeadKind.Pulse)]
+    [TestCase(typeof(ApplyConsumerOnTimeFactory), HeadKind.SelfTick)]
+    [TestCase(typeof(ShootProjectileSkillFactory), HeadKind.Bud)]
+    [TestCase(typeof(ConfigurableSkillFactory), HeadKind.Bud)]
+    [TestCase(typeof(ApplyBuffOnTargetSkillFactory), HeadKind.Bud)]
+    [TestCase(typeof(ApplyBuffPeriodicallySkillFactory), HeadKind.Bud)]
+    public void Read_UnassignedFactoryData_KeepsTheKnownHeadWithoutThrowing(System.Type type, HeadKind expected)
+    {
+        ASkillFactory skill = (ASkillFactory)ScriptableObject.CreateInstance(type);
+        _objects.Add(skill);
+
+        SkillDescription description = SkillDescriptionReader.Read(skill, null);
+
+        Assert.AreEqual(expected, description.head);
+        Assert.IsEmpty(description.shots);
+        Assert.AreEqual(expected, HeadDerivation.Head(skill));
+        Assert.IsEmpty(SkillWalker.Shots(skill));
+    }
+
+    [Test]
+    public void Read_ConfigurableStepNotYetAssigned_KeepsOtherValidEntries()
+    {
+        ShootProjectileSkillStepFactory emptyShot = Create<ShootProjectileSkillStepFactory>();
+        RepeatSkillStepFactory emptyRepeat = Create<RepeatSkillStepFactory>();
+        DurationSkillStepFactory duration = Create<DurationSkillStepFactory>();
+        duration.data = new DurationSkillStepData { duration = new FlatValue() };
+        ConfigurableSkillFactory skill = Create<ConfigurableSkillFactory>();
+        skill.data = new ConfigurableSkillData
+        {
+            skillStepFactories = new List<ASkillStepFactory> { emptyShot, emptyRepeat, duration, null }
+        };
+
+        SkillDescription description = SkillDescriptionReader.Read(skill, null);
+
+        Assert.AreEqual(HeadKind.Bud, description.head);
+        Assert.IsEmpty(description.shots);
+        Assert.AreEqual(0f, description.cadence);
+    }
+
     [Test]
     public void Read_HealingShooter_DescribesItsDeliveryCountAndOwnClock()
     {
