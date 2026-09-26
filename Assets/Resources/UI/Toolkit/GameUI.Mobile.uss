@@ -92,6 +92,9 @@
 .is-mobile.is-landscape .party-panel .section-description { display: none; }
 .is-mobile.is-landscape .party-list .data-card { min-height: 76px; padding: 8px 54px 8px 8px; }
 .is-mobile.is-landscape .party-list .data-card.creature-card { min-height: 80px; padding: 8px 54px 8px 80px; }
+.is-mobile.is-landscape .party-list .creature-card .data-card__description { display: none; }
+.is-mobile.is-landscape .party-list .creature-card .data-card__title, .is-mobile.is-landscape .party-list .creature-card .data-card__status { margin: 0; padding: 0; }
+.is-mobile.is-landscape .party-list .creature-card .data-card__status { margin-top: 4px; }
 .is-mobile.is-landscape .party-list .data-card__icon, .is-mobile.is-landscape .detail-icon { display: none; }
 .is-mobile.is-landscape .party-list .creature-card .data-card__icon.creature-portrait { display: flex; left: 8px; top: 8px; width: 64px; height: 64px; }
 .is-mobile.is-landscape .detail-icon.creature-portrait { display: flex; width: 80px; height: 80px; }
