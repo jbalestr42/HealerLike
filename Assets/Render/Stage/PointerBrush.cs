@@ -20,6 +20,8 @@ namespace HealerLike.Render.Stage
         Vector3 _previous;
         Vector3 _current;
         bool _hasPoint;
+        // The finger the stroke follows, -1 for the mouse or none
+        int _finger = -1;
 
         bool _isBrushing;
         public bool isBrushing { get { return _isBrushing; } }
@@ -51,17 +53,28 @@ namespace HealerLike.Render.Stage
             if (Input.touchCount > 0)
             {
                 Touch touch = Input.GetTouch(0);
-                isDown = touch.phase != TouchPhase.Ended && touch.phase != TouchPhase.Canceled;
-                hasBegun = touch.phase == TouchPhase.Began;
-                screen = touch.position;
-            }
-            else
-            {
-                isDown = Input.GetMouseButton(0);
-                hasBegun = Input.GetMouseButtonDown(0);
-                screen = Input.mousePosition;
+                Touching(touch.fingerId, touch.phase, touch.position);
+                return;
             }
 
+            _finger = -1;
+            isDown = Input.GetMouseButton(0);
+            hasBegun = Input.GetMouseButtonDown(0);
+            screen = Input.mousePosition;
+            Point(isDown, hasBegun, screen);
+        }
+
+        // One frame of the first touch. The stroke follows the finger that started it: when it lifts and another
+        // finger becomes the first touch, that finger brushes nothing until it begins a stroke of its own.
+        public void Touching(int fingerId, TouchPhase phase, Vector2 screen)
+        {
+            bool hasBegun = phase == TouchPhase.Began;
+            if (hasBegun)
+            {
+                _finger = fingerId;
+            }
+
+            bool isDown = fingerId == _finger && phase != TouchPhase.Ended && phase != TouchPhase.Canceled;
             Point(isDown, hasBegun, screen);
         }
 

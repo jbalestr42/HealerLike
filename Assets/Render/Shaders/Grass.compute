@@ -46,6 +46,9 @@
 #define HL_FROST_SINK 0.1
 #define HL_BLIGHT_SINK 0.25
 #define HL_BLIGHT_DROOP 0.5
+// Everything a tuft leans by together stops short of lying down, so its tip never dips into the ground;
+// GrassLayout.MaxTuftLean
+#define HL_MAX_TUFT_LEAN 1.35
 
 StructuredBuffer<HLTuftSeed> _HLBladeSeeds;
 RWStructuredBuffer<HLTuftState> _HLBladeStates;
@@ -153,6 +156,7 @@ HLTuftState HLEvaluateTuft(HLTuftSeed tuft)
     float2 moving = lean - rest;
     lean = rest + moving * (1.0 - HL_ASH_STIFF * ash) * (1.0 - HL_FROST_STIFF * frost);
     lean += droop * (HL_WILT_DROOP * wilt + HL_BLIGHT_DROOP * blight);
+    lean = HLGroundCapLean(lean, HL_MAX_TUFT_LEAN);
     // Flattened tufts fold down along their push and shrink toward the ground
     float2 fold = length(air) > 1e-3 ? normalize(air) : yaw;
     lean = lerp(lean, fold * HL_CRUSH_LEAN, crush);

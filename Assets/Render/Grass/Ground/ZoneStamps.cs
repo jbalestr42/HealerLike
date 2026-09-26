@@ -31,6 +31,7 @@ namespace HealerLike.Render.Grass
         public static readonly float LaunchWidth = 0.45f;
         // A shock ring reaches its radius after this many seconds, in a band this share of it, at least MinBand
         public static readonly float ShockSeconds = 0.35f;
+        public static readonly float ShockRelease = 0.1f;
         public static readonly float ShockBand = 0.15f;
         public static readonly float ShockMinBand = 0.2f;
         // A quarter turn counterclockwise: the heal spins the grass around its centre
@@ -135,8 +136,10 @@ namespace HealerLike.Render.Grass
                 case ZoneKind.Shock:
                     float ring = zone.radius * Mathf.Clamp01(zone.age / ShockSeconds);
                     float width = Mathf.Max(ShockMinBand, zone.radius * ShockBand);
-                    stamp = GroundStamp.Shock(centre, ring, width, 1f, ShockKick * strength);
-                    return true;
+                    // Once the ring has arrived it lets go, rather than pinning the grass at its rim
+                    float arrived = 1f - GroundStamp.SmoothStep(ShockSeconds, ShockSeconds + ShockRelease, zone.age);
+                    stamp = GroundStamp.Shock(centre, ring, width, 1f, ShockKick * strength * arrived);
+                    return arrived > 0f;
                 default:
                     return false;
             }

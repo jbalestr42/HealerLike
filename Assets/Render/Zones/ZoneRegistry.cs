@@ -309,8 +309,8 @@ namespace HealerLike.Render.Zones
                 _upload = null;
             }
 
+            // Bodies stay registered: they hold no GPU resource and re-registering is theirs only on enable
             _entries.Clear();
-            _bodies.Clear();
             Array.Clear(_packed, 0, _packed.Length);
             _count = 0;
             _overflowCount = 0;

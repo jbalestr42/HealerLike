@@ -49,10 +49,16 @@ namespace HealerLike.Render.Environment
 
         public void UpdateStrips(ZoneRegistry zones)
         {
+            UpdateStrips(zones, Time.time);
+        }
+
+        // On the board's clock, so the strips' wind matches the board's where they meet
+        public void UpdateStrips(ZoneRegistry zones, float time)
+        {
             GraphicsBuffer buffer = zones != null ? zones.buffer : null;
             foreach (GrassField strip in _strips)
             {
-                strip.UpdateField(buffer, 0);
+                strip.UpdateField(buffer, 0, time);
             }
         }
 

@@ -144,6 +144,15 @@ public class ImpactPoolTests
     }
 
     [Test]
+    public void ShowImpact_ManaSpent_ThrowsNoShock()
+    {
+        _pool.ShowImpact(_caster, _target, ResourceKind.Mana, -10f, false);
+        _zones.PublishFrame(0.01f);
+
+        Assert.AreEqual(0, _zones.count, "A spell's cost is not a blow.");
+    }
+
+    [Test]
     public void ShowImpact_Heal_ThrowsNoShock()
     {
         _pool.ShowImpact(_caster, _target, ResourceKind.Health, 30f, false);

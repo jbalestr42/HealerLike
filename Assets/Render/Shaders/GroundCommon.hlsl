@@ -72,7 +72,8 @@ float3 HLGroundBodyValue(HLGroundStamp stamp, float2 p)
     float underside = height - sqrt(max(radius * radius - distanceToAxis * distanceToAxis, 0.0));
     float contact = saturate((stamp.response.x - underside) / stamp.response.x);
     float near = 1.0 - smoothstep(radius, radius + stamp.push.w, distanceToAxis);
-    float covered = 1.0 - smoothstep(0.6 * radius, radius, distanceToAxis);
+    // A trail has no radius; the guard keeps smoothstep off equal edges, which is 0/0 on some GPUs
+    float covered = 1.0 - smoothstep(0.6 * radius, max(radius, 1e-4), distanceToAxis);
     return float3(outward * (stamp.response.y * contact * near), stamp.shape.x * contact * covered);
 }
 
@@ -94,9 +95,11 @@ float HLGroundStreakWeight(HLGroundStamp stamp, float2 p)
     float2 delta = p - start;
     float t = saturate(dot(delta, along) / length);
     float side = along.x * delta.y - along.y * delta.x;
+    // Crosses the axis at the start, so the bolt leaves from where it struck; measured across its slanted legs
     float turn = t * length * stamp.shape.z;
-    float zigzag = abs(turn - floor(turn) - 0.5) * 4.0 - 1.0;
-    float offset = abs(side - stamp.centreRadius.w * zigzag);
+    float zigzag = 1.0 - 4.0 * abs(frac(turn + 0.25) - 0.5);
+    float slope = 4.0 * stamp.centreRadius.w * stamp.shape.z;
+    float offset = abs(side - stamp.centreRadius.w * zigzag) / sqrt(1.0 + slope * slope);
     float beyond = abs(dot(delta, along) - t * length);
     float distanceToPath = sqrt(offset * offset + beyond * beyond);
     float width = stamp.centreRadius.z * (1.0 - 0.5 * t);
@@ -178,7 +181,16 @@ float4 HLGroundSpringStep(float4 state, float2 target, float2 neighbourMean, flo
         + force;
     velocity += acceleration * step;
     lean += velocity * step;
-    return float4(HLGroundCapLean(lean, spring.w), velocity);
+    // At the cap the grass stops leaning further: the outward part of its velocity goes, so it swings back
+    float length = sqrt(dot(lean, lean));
+    if (length > spring.w)
+    {
+        float2 outward = lean / length;
+        velocity -= max(dot(velocity, outward), 0.0) * outward;
+        lean = outward * spring.w;
+    }
+
+    return float4(lean, velocity);
 }
 
 // rates: x toward a higher flatness, y toward a lower one, per second

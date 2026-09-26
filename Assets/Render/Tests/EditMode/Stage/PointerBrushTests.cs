@@ -60,6 +60,20 @@ public class PointerBrushTests
     }
 
     [Test]
+    public void Touching_FirstFingerLifts_TheNextFingerDoesNotContinueItsStroke()
+    {
+        _brush.Touching(0, TouchPhase.Began, new Vector2(100f, 100f));
+        _brush.Touching(0, TouchPhase.Moved, new Vector2(120f, 100f));
+        Assert.IsTrue(_brush.isBrushing);
+
+        // Finger 0 lifts; finger 1, already down elsewhere, becomes the first touch mid-gesture
+        _brush.Touching(1, TouchPhase.Moved, new Vector2(20f, 180f));
+
+        Assert.IsFalse(_brush.isBrushing);
+        Assert.AreEqual(0, _brush.AppendCapsules(new BodyCapsule[1], 0), "No streak across the board.");
+    }
+
+    [Test]
     public void Point_PressStartingOnACreature_BrushesNothing()
     {
         GameObject creature = GameObject.CreatePrimitive(PrimitiveType.Cube);

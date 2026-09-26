@@ -370,6 +370,8 @@ public class TrampleZoneTests
 
         int roots = _recipe.roots.count * _recipe.roots.segments + _recipe.roots.count * (_recipe.roots.segments - 1);
         Assert.AreEqual(_recipe.parts.Length + roots, meshes.Count);
+        Assert.AreEqual(_host.rig.partTransforms[0], meshes[meshes.Count - 1].transform,
+            "The feet come first, so a many-part body never crowds them out.");
         foreach (MeshFilter filter in meshes)
         {
             Assert.AreNotEqual("LianaChain", filter.sharedMesh.name, "An arm is one mesh along its whole chain.");

@@ -77,6 +77,21 @@ public class BoostCellGroundTests
     }
 
     [Test]
+    public void Refresh_ChildLeavesAsACellArrives_StillFindsTheCell()
+    {
+        GameObject effect = new GameObject("buff effect");
+        effect.transform.SetParent(_owner.transform, false);
+        _ground.Refresh();
+
+        Object.DestroyImmediate(effect);
+        GameObject cell = AddCell(Vector3.one);
+        _ground.Refresh();
+
+        Assert.AreEqual(1, _ground.patchCount, "Same number of children, not the same children.");
+        Assert.IsFalse(cell.GetComponent<Renderer>().enabled);
+    }
+
+    [Test]
     public void Refresh_Steady_KeepsOnePatchPerCell()
     {
         AddCell(Vector3.one);

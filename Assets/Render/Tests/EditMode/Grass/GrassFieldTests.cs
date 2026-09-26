@@ -185,6 +185,25 @@ public class GrassFieldTests
     }
 
     [Test]
+    public void UpdateField_NewLayout_RebuildsTheTuftsButKeepsTheGround()
+    {
+        if (!HasGraphicsDevice() || !GroundSimulation.IsSupported())
+        {
+            Assert.Ignore("Requires a graphics device; run with -force-metal.");
+        }
+
+        ZoneRegistry registry = BuildWithRegistry(true);
+        GroundSimulation ground = _field.ground;
+
+        _field.tuftBudget = 20;
+        _field.UpdateField(registry, 1f / 60f, 1f);
+
+        Assert.AreSame(ground, _field.ground, "Its motion and state live on.");
+        Assert.IsTrue(_field.isReady);
+        Assert.AreEqual(1f, Shader.GetGlobalFloat(GroundSimulation.ActiveId));
+    }
+
+    [Test]
     public void UpdateField_NoGroundShader_OnlyReadsTheGround()
     {
         if (!HasGraphicsDevice())

@@ -36,18 +36,41 @@ namespace HealerLike.Render.Grass
             }
         }
 
+        // Semi-implicit Euler stays stable while stiffness * step^2 + 2 * damping * step < 4; the longest step
+        // keeps below Margin of that, spring and neighbour pull together
+        public static readonly float Margin = 3.5f;
+
+        public static float longestStep
+        {
+            get { return Mathf.Max(GroundSpring.MaxStep, GroundSpring.MaxFrame / GroundSpring.MaxSteps); }
+        }
+
+        // The frequency, lowered where the spring alone would not be stable at the longest step
+        public float stableFrequency
+        {
+            get
+            {
+                float frequencyAsked = Mathf.Max(0f, RenderMath.FiniteOr(frequency, 0f));
+                float ratio = Mathf.Clamp01(dampingRatio);
+                float h = longestStep;
+                // omega^2 h^2 + 4 ratio omega h <= Margin, the positive root of the quadratic in omega h
+                float omegaStep = -2f * ratio + Mathf.Sqrt(4f * ratio * ratio + Margin);
+                return Mathf.Min(frequencyAsked, omegaStep / h / (2f * Mathf.PI));
+            }
+        }
+
         public float stiffness
         {
             get
             {
-                float omega = 2f * Mathf.PI * Mathf.Max(0f, frequency);
+                float omega = 2f * Mathf.PI * stableFrequency;
                 return omega * omega;
             }
         }
 
         public float damping
         {
-            get { return 2f * Mathf.Clamp01(dampingRatio) * 2f * Mathf.PI * Mathf.Max(0f, frequency); }
+            get { return 2f * Mathf.Clamp01(dampingRatio) * 2f * Mathf.PI * stableFrequency; }
         }
 
         // The pull toward the neighbours' mean on a grid of this texel size. A held push decays as
@@ -61,8 +84,9 @@ namespace HealerLike.Render.Grass
             }
 
             float share = Mathf.Max(0f, RenderMath.FiniteOr(spread, 0f)) / texelSize;
-            float longest = Mathf.Max(GroundSpring.MaxStep, GroundSpring.MaxFrame / GroundSpring.MaxSteps);
-            float stable = Mathf.Max(0f, (3f / (longest * longest) - stiffness) * 0.5f);
+            float h = longestStep;
+            // The checkerboard mode feels stiffness + 2 * pull, and damping still takes its share of the bound
+            float stable = Mathf.Max(0f, ((Margin - 2f * damping * h) / (h * h) - stiffness) * 0.5f);
             return Mathf.Min(4f * stiffness * share * share, stable);
         }
 
@@ -106,7 +130,13 @@ namespace HealerLike.Render.Grass
                                    + force;
             velocity += acceleration * step;
             lean += velocity * step;
-            lean *= Mathf.Min(1f, spring.w / Mathf.Max(lean.magnitude, 1e-5f));
+            float length = lean.magnitude;
+            if (length > spring.w)
+            {
+                Vector2 outward = lean / length;
+                velocity -= Mathf.Max(Vector2.Dot(velocity, outward), 0f) * outward;
+                lean = outward * spring.w;
+            }
         }
 
         public static float Crush(float crush, float target, float step, float fall, float rise)

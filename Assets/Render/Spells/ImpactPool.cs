@@ -93,7 +93,8 @@ namespace HealerLike.Render.Spells
             }
 
             Add(effect.gameObject);
-            if (_zones != null && preClampAmount < 0f)
+            // Only a hit on health blasts the grass; a spell's mana cost is not a blow
+            if (_zones != null && resource == ResourceKind.Health && preClampAmount < 0f)
             {
                 _zones.AddShock(target.transform.position, ShockRadius(amount, isCritical), HitShock(amount));
             }

@@ -65,10 +65,11 @@ namespace HealerLike.Render.Creatures
         // One per recipe part, the transform carrying that part's mesh
         public IReadOnlyList<Transform> partTransforms { get { return _geometry; } }
 
-        // The solid body's meshes: every part and every root segment and joint. Arms, deliveries and effects are
-        // left out; they are drawn as chains or float around the body, not stood on.
+        // The solid body's meshes: every root segment and joint first, the feet the grass feels most, then every
+        // part. Arms, deliveries and effects are left out; they are drawn as chains or float around the body.
         public void CollectBodyMeshes(List<MeshFilter> into)
         {
+            _roots.CollectMeshes(into);
             foreach (Transform part in _geometry)
             {
                 MeshFilter filter = part ? part.GetComponent<MeshFilter>() : null;
@@ -77,8 +78,6 @@ namespace HealerLike.Render.Creatures
                     into.Add(filter);
                 }
             }
-
-            _roots.CollectMeshes(into);
         }
 
         // The rotation the arms rest in: the root turned by the unit's aim, idle and wilt

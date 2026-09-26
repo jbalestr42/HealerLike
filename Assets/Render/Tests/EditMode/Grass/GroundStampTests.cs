@@ -216,9 +216,21 @@ public class GroundStampTests
     {
         GroundStamp bolt = GroundStamp.Streak(Vector2.zero, new Vector2(4f, 0f), 0.05f, 0.3f, 1f, 1f, 0f, 0f, 0f);
 
-        Assert.AreEqual(0f, bolt.State(new Vector2(0f, 0f)).x, 1e-5f, "At the start it sits a full swing aside.");
-        Assert.Greater(bolt.State(new Vector2(0f, 0.3f)).x, 0.9f);
-        Assert.Greater(bolt.State(new Vector2(0.5f, -0.3f)).x, 0.9f, "Half a turn on it swings to the other side.");
+        Assert.Greater(bolt.State(new Vector2(0f, 0f)).x, 0.9f, "It leaves from where the bolt struck.");
+        Assert.Greater(bolt.State(new Vector2(0.25f, 0.3f)).x, 0.9f, "A quarter turn on it has swung aside.");
+        Assert.Greater(bolt.State(new Vector2(0.75f, -0.3f)).x, 0.9f, "Half a turn later, to the other side.");
+        Assert.AreEqual(0f, bolt.State(new Vector2(0.25f, 0f)).x, 1e-5f, "Off the path, nothing.");
+    }
+
+    [Test]
+    public void Trail_OnItsVeryAxis_StaysFinite()
+    {
+        GroundStamp trail = GroundStamp.Trail(Vector2.zero, new Vector2(2f, 0f), 0.4f, 100f);
+
+        Vector3 onAxis = trail.Sample(new Vector2(1f, 0f));
+
+        Assert.IsTrue(float.IsFinite(onAxis.x) && float.IsFinite(onAxis.y) && float.IsFinite(onAxis.z));
+        Assert.AreEqual(0f, onAxis.z);
     }
 
     [Test]

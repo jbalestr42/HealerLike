@@ -99,6 +99,14 @@ public class ZoneStampsTests
     }
 
     [Test]
+    public void TryCreate_ShockArrived_LetsTheGrassGo()
+    {
+        Zone late = Make(ZoneKind.Shock, Vector3.zero, 2f, ZoneStamps.ShockSeconds + ZoneStamps.ShockRelease + 0.01f);
+
+        Assert.IsFalse(ZoneStamps.TryCreate(late, out _), "Parked at its rim it would pin the grass there.");
+    }
+
+    [Test]
     public void TryCreateKick_Heal_SpinsTheGrassAsItBlooms()
     {
         Zone heal = Make(ZoneKind.Heal, Vector3.zero, 2f, 1f);

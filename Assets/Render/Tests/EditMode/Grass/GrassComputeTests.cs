@@ -454,6 +454,23 @@ public class GrassComputeTests
     }
 
     [Test]
+    public void Dispatch_EveryLeanTogether_StaysShortOfLyingDown()
+    {
+        _compute.SetInt("_HLZoneCount", 0);
+        _layout[0].heightWidthLean = new Vector4(GrassLayout.TuftHeight, GrassLayout.TuftWidth, 0f, 0.5f);
+        _seedBuffer.SetData(_layout);
+        // A push along the rest heading, dead and blighted grass, all at once
+        SetGround(new Vector4(0f, 1.25f, 0f, 0f), 0f, new Vector4(0f, -1f, 0f, 1f));
+
+        Dispatch();
+        ReadStates();
+
+        Vector2 lean = _states[0].leanHeightSpike;
+        Assert.That(lean.magnitude, Is.EqualTo(GrassLayout.MaxTuftLean).Within(0.001f));
+        Assert.GreaterOrEqual(GrassTuft.Spine(lean, 1f, 1f).y, 0f, "The tip stays above the ground.");
+    }
+
+    [Test]
     public void Dispatch_HealOnLushGrass_StaysWithinTheHealLift()
     {
         SetGround(Vector4.zero, 0f, new Vector4(0f, 1f, 0f, 0f));

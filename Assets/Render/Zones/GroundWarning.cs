@@ -10,7 +10,7 @@ namespace HealerLike.Render.Zones
         public static readonly float WarningShare = 0.3f;
 
         readonly ZoneHandle _zone = new ZoneHandle();
-        ICooldownSkill _skill;
+        AreaOfEffectSkill _skill;
         Entity _entity;
 
         public bool hasSkill { get { return _skill != null; } }
@@ -35,7 +35,9 @@ namespace HealerLike.Render.Zones
 
         public void Refresh()
         {
-            float strength = _skill != null && isActiveAndEnabled ? Strength(_skill.cooldownProgress) : 0f;
+            // A skill that is not running keeps its last cooldown; only a live one is about to fire
+            bool isLive = _skill != null && _skill.isEnabled && isActiveAndEnabled;
+            float strength = isLive ? Strength(_skill.cooldownProgress) : 0f;
             float radius = Range();
             if (strength <= 0f || radius <= 0f)
             {

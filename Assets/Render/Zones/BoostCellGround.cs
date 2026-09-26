@@ -23,7 +23,7 @@ namespace HealerLike.Render.Zones
         Collider _hold;
         ZoneRegistry _zones;
         float _cellSize = 1f;
-        int _childCount = -1;
+        int _childrenKey = -1;
 
         public int patchCount { get { return _patches.Count; } }
 
@@ -34,7 +34,7 @@ namespace HealerLike.Render.Zones
             _hold = EntityHold.Find(owner);
             _zones = zones;
             _cellSize = RenderMath.IsPositive(cellSize) ? cellSize : 1f;
-            _childCount = -1;
+            _childrenKey = -1;
         }
 
         void Update()
@@ -49,9 +49,12 @@ namespace HealerLike.Render.Zones
                 return;
             }
 
-            if (_owner.childCount != _childCount)
+            // Which children the entity has, not only how many: a cell laid the frame another child leaves still
+            // changes it
+            int childrenKey = ChildrenKey(_owner);
+            if (childrenKey != _childrenKey)
             {
-                _childCount = _owner.childCount;
+                _childrenKey = childrenKey;
                 Rescan();
             }
 
@@ -101,6 +104,17 @@ namespace HealerLike.Render.Zones
             }
         }
 
+        static int ChildrenKey(Transform owner)
+        {
+            int key = owner.childCount;
+            for (int i = 0; i < owner.childCount; i++)
+            {
+                key = key * 31 + owner.GetChild(i).GetEntityId().GetHashCode();
+            }
+
+            return key;
+        }
+
         bool Contains(BoostCell cell)
         {
             foreach (Patch patch in _patches)
@@ -127,7 +141,7 @@ namespace HealerLike.Render.Zones
         void OnDisable()
         {
             Clear();
-            _childCount = -1;
+            _childrenKey = -1;
         }
     }
 }

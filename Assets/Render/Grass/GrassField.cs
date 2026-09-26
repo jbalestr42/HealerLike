@@ -199,13 +199,19 @@ namespace HealerLike.Render.Grass
         // Grass strips around the board borrow the zone buffer with a count of zero
         public void UpdateField(GraphicsBuffer zones, int count)
         {
+            UpdateField(zones, count, Time.time);
+        }
+
+        // The same on the clock the board's ground runs on, so both winds agree where they blend
+        public void UpdateField(GraphicsBuffer zones, int count, float time)
+        {
             if (!_isInitialized)
             {
                 return;
             }
 
             SetZoneSnapshot(zones, count);
-            Dispatch(new GrassBuildKey(_area, _cellSize, _surfaceY, _seed, _bladeBudget), Time.time);
+            Dispatch(new GrassBuildKey(_area, _cellSize, _surfaceY, _seed, _bladeBudget), time);
         }
 
         // The zone owner publishes the same buffer and count globally for the ring draw
@@ -242,9 +248,10 @@ namespace HealerLike.Render.Grass
                 return;
             }
 
+            // A new layout rebuilds the tufts only; the ground keeps its motion and state
             if (_isReady && !key.Matches(_builtKey))
             {
-                ReleaseOwned();
+                ReleaseTufts();
             }
 
             if (!_isReady && !Build(key))
@@ -367,6 +374,11 @@ namespace HealerLike.Render.Grass
                 GroundSimulation.Unpublish();
             }
 
+            ReleaseTufts();
+        }
+
+        void ReleaseTufts()
+        {
             _isReady = false;
             _tuftCount = 0;
             _seeds = DisposeBuffer(_seeds);

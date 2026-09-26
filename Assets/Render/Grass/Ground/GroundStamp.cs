@@ -235,8 +235,9 @@ namespace HealerLike.Render.Grass
             float t = Mathf.Clamp01(Vector2.Dot(delta, along) / length);
             float side = along.x * delta.y - along.y * delta.x;
             float turn = t * length * shape.z;
-            float zigzag = Mathf.Abs(turn - Mathf.Floor(turn) - 0.5f) * 4f - 1f;
-            float offset = Mathf.Abs(side - centreRadius.w * zigzag);
+            float zigzag = 1f - 4f * Mathf.Abs(Frac(turn + 0.25f) - 0.5f);
+            float slope = 4f * centreRadius.w * shape.z;
+            float offset = Mathf.Abs(side - centreRadius.w * zigzag) / Mathf.Sqrt(1f + slope * slope);
             float beyond = Mathf.Max(0f, Mathf.Abs(Vector2.Dot(delta, along) - t * length));
             float distance = Mathf.Sqrt(offset * offset + beyond * beyond);
             float width = centreRadius.z * (1f - 0.5f * t);
@@ -290,9 +291,15 @@ namespace HealerLike.Render.Grass
             float underside = height - Mathf.Sqrt(Mathf.Max(radius * radius - distance * distance, 0f));
             float contact = Mathf.Clamp01((response.x - underside) / response.x);
             float near = 1f - SmoothStep(radius, radius + push.w, distance);
-            float covered = 1f - SmoothStep(0.6f * radius, radius, distance);
+            float covered = 1f - SmoothStep(0.6f * radius, Mathf.Max(radius, 1e-4f), distance);
             Vector2 lean = outward * (response.y * contact * near);
             return new Vector3(lean.x, lean.y, shape.x * contact * covered);
+        }
+
+        // HLSL frac
+        static float Frac(float x)
+        {
+            return x - Mathf.Floor(x);
         }
 
         // HLSL smoothstep, which Mathf.SmoothStep is not

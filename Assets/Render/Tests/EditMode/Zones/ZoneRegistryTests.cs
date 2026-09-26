@@ -346,7 +346,7 @@ public class ZoneRegistryTests
             registry.RemoveBody(first);
             Assert.AreEqual(1, registry.bodyCount);
             registry.Release();
-            Assert.AreEqual(0, registry.bodyCount);
+            Assert.AreEqual(1, registry.bodyCount, "Bodies outlive a release; they only re-register on enable.");
         }
         finally
         {

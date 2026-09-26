@@ -18,8 +18,10 @@ namespace HealerLike.Render.Zones
         // Meshes whose lowest point sits higher than this above the view's root never reach the grass
         public static readonly float BodyReach = 1.5f;
         // The most capsules one body sends in a frame, and of those the most one liana sends
-        public static readonly int MaxCapsules = 96;
+        public static readonly int MaxCapsules = 128;
         public static readonly int MaxArmCapsules = 12;
+        // Of those, this many are kept for the lianas out at once, whatever the body's own mesh count
+        public static readonly int ArmReserve = 36;
         // A liana brushes the grass as if this much thicker than its tube
         public static readonly float ArmReach = 1.5f;
         // In cells: a jump longer than this in one frame is a move into place, not a step
@@ -222,7 +224,7 @@ namespace HealerLike.Render.Zones
             }
 
             float ceiling = transform.position.y + BodyReach;
-            int count = _meshes.Append(into, start, ceiling, MaxCapsules);
+            int count = _meshes.Append(into, start, ceiling, MaxCapsules - ArmReserve);
             return count + AppendArms(into, start + count, ceiling, MaxCapsules - count);
         }
 

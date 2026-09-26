@@ -200,11 +200,65 @@ public class GroundSpringTests
     public void Coupling_TinyTexels_StayWithinTheStableBound()
     {
         GroundSpringSettings settings = GroundSpringSettings.Default;
-        float longest = Mathf.Max(GroundSpring.MaxStep, GroundSpring.MaxFrame / GroundSpring.MaxSteps);
+        float h = GroundSpringSettings.longestStep;
 
         float pull = settings.Coupling(0.0001f);
 
-        Assert.LessOrEqual(longest * longest * (settings.stiffness + 2f * pull), 3.0001f);
+        Assert.LessOrEqual(h * h * (settings.stiffness + 2f * pull) + 2f * settings.damping * h,
+            GroundSpringSettings.Margin + 1e-3f);
+    }
+
+    [Test]
+    public void StableFrequency_TooStiffForTheLongestStep_IsLowered()
+    {
+        GroundSpringSettings settings = GroundSpringSettings.Default;
+        settings.frequency = 50f;
+        settings.dampingRatio = 1f;
+        float h = GroundSpringSettings.longestStep;
+
+        Assert.Less(settings.stableFrequency, 50f);
+        Assert.LessOrEqual(settings.stiffness * h * h + 2f * settings.damping * h, GroundSpringSettings.Margin + 1e-3f);
+        Assert.AreEqual(1.6f, GroundSpringSettings.Default.stableFrequency, 1e-6f, "The default stands as set.");
+    }
+
+    [Test]
+    public void Step_CriticallyDampedCheckerboardAtTheLongestStep_StaysBounded()
+    {
+        // Two neighbours in opposite phase, the hardest mode for the pull, at the slowest frame the ground takes
+        GroundSpringSettings settings = GroundSpringSettings.Default;
+        settings.dampingRatio = 1f;
+        settings.spread = 1f;
+        Vector4 spring = settings.ShaderSpring(0.01f);
+        float h = GroundSpringSettings.longestStep;
+        Vector2 a = new Vector2(0.1f, 0f);
+        Vector2 b = -a;
+        Vector2 va = Vector2.zero;
+        Vector2 vb = Vector2.zero;
+        for (int i = 0; i < 2000; i++)
+        {
+            Vector2 nextA = a;
+            Vector2 nextB = b;
+            GroundSpring.Step(ref nextA, ref va, Vector2.zero, b, Vector2.zero, h, spring);
+            GroundSpring.Step(ref nextB, ref vb, Vector2.zero, a, Vector2.zero, h, spring);
+            a = nextA;
+            b = nextB;
+        }
+
+        Assert.Less(a.magnitude, 1e-3f);
+        Assert.IsTrue(float.IsFinite(va.x));
+    }
+
+    [Test]
+    public void Step_AtTheCap_DropsTheOutwardVelocity()
+    {
+        Vector4 spring = GroundSpringSettings.Default.ShaderSpring(0.1f);
+        Vector2 lean = new Vector2(1.2f, 0f);
+        Vector2 velocity = new Vector2(40f, 3f);
+
+        GroundSpring.Step(ref lean, ref velocity, Vector2.zero, lean, Vector2.zero, GroundSpring.MaxStep, spring);
+
+        Assert.AreEqual(spring.w, lean.magnitude, 1e-5f);
+        Assert.LessOrEqual(velocity.x, 0f, "It stops leaning further and can swing back at once.");
     }
 
     [Test]
