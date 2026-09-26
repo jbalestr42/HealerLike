@@ -162,29 +162,7 @@ namespace HealerLike.Render.Grammar
         // Projectiles take the same reading as the head, so a unit's head and its shot agree
         public static DeliveryStyle Delivery(GameObject projectilePrefab)
         {
-            if (projectilePrefab == null)
-            {
-                return DeliveryStyle.Direct;
-            }
-
-            CurvedHomingProjectileBehaviour curved = projectilePrefab.GetComponent<CurvedHomingProjectileBehaviour>();
-            if (curved != null && curved.data != null && curved.data.curveMultiplier >= SwarmCurve)
-            {
-                return DeliveryStyle.Swarm;
-            }
-
-            switch (LookDerivation.DeliveryHead(projectilePrefab))
-            {
-                case HeadKind.Conductor:
-                case HeadKind.Fork:
-                    return DeliveryStyle.ChainSync;
-                case HeadKind.Arch:
-                    return DeliveryStyle.Arc;
-                case HeadKind.Spear:
-                    return DeliveryStyle.Rigid;
-                default:
-                    return DeliveryStyle.Direct;
-            }
+            return ProjectileDescriptionReader.Read(projectilePrefab).delivery;
         }
 
         public static bool IsPeriodic(ABuffHandlerFactory handler)

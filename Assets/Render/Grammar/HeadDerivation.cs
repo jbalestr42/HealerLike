@@ -9,59 +9,15 @@ namespace HealerLike.Render.Grammar
     {
         public static HeadKind Head(ASkillFactory skill)
         {
-            // Passive-only units such as BuffEntity have no primary skill and use the plain bud.
-            if (skill == null)
-            {
-                return HeadKind.Bud;
-            }
-            if (skill is ShootProjectileSkillFactory || skill is ConfigurableSkillFactory)
-            {
-                return LookDerivation.DeliveryHead(SkillWalker.DominantPrefab(skill));
-            }
-
-            if (skill is ApplyBuffOnTargetSkillFactory support)
-            {
-                ABuffHandlerFactory handler = support.data.buffHandlerFactory;
-                return Gift(EffectDerivation.Family(handler, support.data.targetAlly), EffectDerivation.Group(handler));
-            }
-
-            if (skill is HealTargetSkillFactory)
-            {
-                return HeadKind.GiftHeal;
-            }
-
-            if (skill is AreaOfEffectSkillFactory)
-            {
-                return HeadKind.Pulse;
-            }
-
-            if (skill is ApplyConsumerOnTimeFactory)
-            {
-                return HeadKind.SelfTick;
-            }
-
-            if (skill is ApplyBuffPeriodicallySkillFactory periodic && periodic.data.periodicBuff != null
-                && periodic.data.periodicBuff.Count > 0)
-            {
-                if (IsEveryBoon(periodic.data.periodicBuff))
-                {
-                    return HeadKind.Ward;
-                }
-
-                ABuffHandlerFactory first = periodic.data.periodicBuff[0];
-                return Gift(EffectDerivation.Family(first, true), EffectDerivation.Group(first));
-            }
-
-            string name = skill.GetType().Name;
-            Debug.LogError($"[HeadDerivation] No head for {name}");
-            return HeadKind.Bud;
+            return SkillDescriptionReader.Read(skill, null).head;
         }
 
         // One slot: a second skill or delivery, then a baked behaviour, then the first passive, then an on-hit effect
         public static AccessoryKind Accessory(EntityData data)
         {
             ASkillFactory primary = LookDerivation.Primary(data);
-            return Accessory(data, PrimaryHead(primary), Accent(primary), out HeadKind accessoryHead);
+            SkillDescription description = SkillDescriptionReader.Read(primary, data);
+            return Accessory(data, description.head, description.accent, out HeadKind accessoryHead);
         }
 
         public static HeadKind AccessoryHead(EntityData data)
@@ -73,43 +29,7 @@ namespace HealerLike.Render.Grammar
         // The family the primary delivers, drawn on the tips and the projectile
         public static EffectFamily Accent(ASkillFactory skill)
         {
-            if (skill is ShootProjectileSkillFactory shoot && shoot.data.projectiles != null)
-            {
-                foreach (ShootProjectileSkillData.ProjectileData entry in shoot.data.projectiles)
-                {
-                    if (entry.onHitConsumer != null && entry.onHitConsumer.Count > 0)
-                    {
-                        return EffectDerivation.ConsumerFamily(entry.onHitConsumer[0], false);
-                    }
-                }
-                return EffectFamily.Damage;
-            }
-
-            if (skill is ApplyBuffOnTargetSkillFactory support)
-            {
-                return EffectDerivation.Family(support.data.buffHandlerFactory, support.data.targetAlly);
-            }
-
-            if (skill is HealTargetSkillFactory)
-            {
-                return EffectFamily.Heal;
-            }
-
-            if (skill is ApplyConsumerOnTimeFactory self)
-            {
-                return EffectDerivation.ConsumerFamily(self.data.consumerFactory, true);
-            }
-
-            if (skill is ApplyBuffPeriodicallySkillFactory periodic && periodic.data.periodicBuff != null
-                && periodic.data.periodicBuff.Count > 0)
-            {
-                if (IsEveryBoon(periodic.data.periodicBuff))
-                {
-                    return EffectFamily.Boon;
-                }
-                return EffectDerivation.Family(periodic.data.periodicBuff[0], true);
-            }
-            return EffectFamily.Damage;
+            return SkillDescriptionReader.Read(skill, null).accent;
         }
 
         // The accessory and its small head, read once from the head and the accent already derived
@@ -256,34 +176,5 @@ namespace HealerLike.Render.Grammar
             return AccessoryKind.None;
         }
 
-        static HeadKind Gift(EffectFamily family, AttributeGroup group)
-        {
-            switch (family)
-            {
-                case EffectFamily.Heal:
-                case EffectFamily.Renew:
-                    return HeadKind.GiftHeal;
-                case EffectFamily.Boon:
-                    if (group == AttributeGroup.Offence)
-                    {
-                        return HeadKind.GiftBoonOffence;
-                    }
-                    return HeadKind.GiftBoonDefence;
-                default:
-                    return HeadKind.GiftBane;
-            }
-        }
-
-        static bool IsEveryBoon(List<ABuffHandlerFactory> handlers)
-        {
-            foreach (ABuffHandlerFactory handler in handlers)
-            {
-                if (EffectDerivation.Family(handler, true) != EffectFamily.Boon)
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
     }
 }
