@@ -7,7 +7,8 @@ using UnityEngine.UIElements;
 namespace HealerLike.Render.Stage
 {
     // Touch has no hover frame. Deliver enter and click together, without the legacy mouse copy consuming it twice.
-    [DefaultExecutionOrder(-1000)]
+    // EventSystem itself imports at -1000; cancellation must be observed before it dispatches PointerUp.
+    [DefaultExecutionOrder(-2000)]
     public class StageTouchInput : MonoBehaviour
     {
         readonly List<RaycastResult> _hits = new List<RaycastResult>();

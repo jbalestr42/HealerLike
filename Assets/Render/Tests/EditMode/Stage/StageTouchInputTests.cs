@@ -22,6 +22,23 @@ namespace HealerLike.Render.Stage
         }
 
         [Test]
+        public void NativeCancellationRunsBeforeTheEventSystemReleaseTranslation()
+        {
+            var order = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(typeof(StageTouchInput),
+                typeof(DefaultExecutionOrder));
+            var scripts = UnityEditor.AssetDatabase.FindAssets("EventSystem t:MonoScript", new[] { "Packages/com.unity.ugui" });
+            bool checkedSystem = false;
+            foreach (string guid in scripts)
+            {
+                var script = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.MonoScript>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
+                if (script.GetClass() != typeof(UnityEngine.EventSystems.EventSystem)) continue;
+                Assert.That(order.order, Is.LessThan(UnityEditor.MonoImporter.GetExecutionOrder(script)));
+                checkedSystem = true;
+            }
+            Assert.That(checkedSystem, Is.True);
+        }
+
+        [Test]
         public void FirstTap_EntersPreviewsAndActivatesWithoutPreviousHover()
         {
             TapInteraction interaction = new TapInteraction();
