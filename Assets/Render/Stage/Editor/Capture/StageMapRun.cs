@@ -524,7 +524,10 @@ namespace HealerLike.Render.Stage
             {
                 yield return _actions.PointerTap(button);
                 InteractionManager interaction = Object.FindAnyObjectByType<InteractionManager>();
-                if (data.isSingle && target != null && interaction.GetInteraction() is SingleTargetInteraction single
+                if (data.isSingle && target != null
+                    && LegacyUiReader.AscensionState(_ascension) == AscensionGameType.State.OnGoingBattle
+                    && LegacyUiReader.CurrentView(Object.FindAnyObjectByType<UIManager>()) == ViewType.Game
+                    && interaction.GetInteraction() is SingleTargetInteraction single
                     && single.IsValidTarget(target.gameObject) && TargetPoint(target, out Vector2 point))
                 {
                     evidence.targetVerifiedByRaycast = true;
