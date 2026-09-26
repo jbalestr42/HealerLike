@@ -10,16 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: efe4e1f5836d4fb4cbc56b8284243758, type: 3}
-  m_Name: Wave_Elite_Bastion
-  m_EditorClassIdentifier: 
+  m_Name: Wave_Winter
+  m_EditorClassIdentifier: HealerLike.Runtime::WavePatternData
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
     ReferencedUnityObjects:
-    - {fileID: 11400000, guid: 26dbd27e829bb32408f456f507d1393f, type: 2}
-    - {fileID: 11400000, guid: b14f20f6db94a1942b867df24115570f, type: 2}
     - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
-    - {fileID: 11400000, guid: 1e4ddcb10b35d0e4fbd04e3cc6af63d5, type: 2}
+    - {fileID: 11400000, guid: d4fe46281f621eb4690eae61dd8247f0, type: 2}
+    - {fileID: 11400000, guid: 16f92a7dacfc6af4fac5c774dec0ead7, type: 2}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -47,8 +46,8 @@ MonoBehaviour:
       Entry: 7
       Data: EntitySlot, HealerLike.Runtime
     - Name: entity
-      Entry: 10
-      Data: 1
+      Entry: 6
+      Data: 
     - Name: 
       Entry: 8
       Data: 
@@ -66,16 +65,7 @@ MonoBehaviour:
       Data: EntitySlot, HealerLike.Runtime
     - Name: entity
       Entry: 10
-      Data: 2
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: EntitySlot, HealerLike.Runtime
-    - Name: entity
-      Entry: 10
-      Data: 3
+      Data: 1
     - Name: 
       Entry: 8
       Data: 
@@ -85,6 +75,15 @@ MonoBehaviour:
     - Name: entity
       Entry: 10
       Data: 2
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 10
+      Data: 1
     - Name: 
       Entry: 8
       Data: 
