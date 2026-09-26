@@ -185,10 +185,14 @@ namespace HealerLike.Render.Creatures
             _geometry = Array.Empty<Transform>();
             _renderers = Array.Empty<Renderer>();
             _buds = Array.Empty<Transform>();
-            if (root)
+            Transform releasedRoot = root;
+            root = null;
+            sway = null;
+            _keptParts.Clear();
+            if (releasedRoot)
             {
-                root.gameObject.SetActive(false);
-                RenderObjects.Release(root.gameObject);
+                releasedRoot.gameObject.SetActive(false);
+                RenderObjects.Release(releasedRoot.gameObject);
             }
         }
     }

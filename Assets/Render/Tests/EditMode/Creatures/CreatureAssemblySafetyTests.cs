@@ -104,6 +104,9 @@ public class CreatureAssemblySafetyTests : CreatureRigFixture
         }
 
         _rig.Dispose();
+        Assert.IsNull(_rig.root);
+        Assert.IsEmpty(_rig.partTransforms);
+        Assert.DoesNotThrow(() => _rig.Tick(0f, 0f, ground));
         Assert.IsEmpty(_rig.parts);
         Assert.AreEqual(0, _rig.armCount);
         Assert.AreEqual(0, _rig.roots.count);
