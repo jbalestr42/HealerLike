@@ -6,6 +6,9 @@ namespace HealerLike.Render.Stage
     public sealed class StageWorldPress
     {
         readonly ToolkitPress _press = new ToolkitPress();
+        readonly System.Func<float> _clock;
+        public StageWorldPress(System.Func<float> clock = null)
+        { _clock = clock ?? (() => Time.realtimeSinceStartup); }
         IDraggable _candidate;
         IDraggable _drag;
         Entity _entity;
@@ -16,11 +19,11 @@ namespace HealerLike.Render.Stage
             Cancel(); consumed = false; _start = hit;
             _entity = hit.collider != null ? hit.collider.GetComponentInParent<Entity>() : null;
             _candidate = canMove && hit.collider != null ? hit.collider.GetComponentInParent<IDraggable>() : null;
-            _press.Begin(id, point, Time.unscaledTime, true);
+            _press.Begin(id, point, _clock(), true);
         }
         public void Move(int id, Vector2 point, RaycastHit hit, ToolkitGameUI ui, Vector2 screen)
         {
-            var owner = _press.Move(id, point, Time.unscaledTime);
+            var owner = _press.Move(id, point, _clock());
             if (owner == ToolkitPress.Owner.Hold && !consumed && _entity != null)
             {
                 consumed = true;

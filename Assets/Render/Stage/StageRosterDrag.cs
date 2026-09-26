@@ -54,6 +54,12 @@ namespace HealerLike.Render.Stage
             Vector2 lifted = point + Vector2.up * (56f * ToolkitScreenLayout.GetScale(Screen.width, Screen.height,
                 Application.isMobilePlatform));
             if (!_project(lifted, out hit, _owned.GetLayerMask()) || !_owned.IsValidTarget(hit.collider.gameObject)) return false;
+            if (_grid.cells == null || _grid.cells.Length == 0) return false;
+            Vector3 first = _grid.GetCell(0, 0).center;
+            Vector3 last = _grid.GetCell(_grid.width - 1, _grid.height - 1).center;
+            float half = _grid.size * .5f;
+            if (hit.point.x < first.x - half || hit.point.x > last.x + half
+                || hit.point.z < first.z - half || hit.point.z > last.z + half) return false;
             Vector2Int coord = _grid.GetCoordFromPosition(hit.point);
             if (!_grid.IsValidCoord(coord)) return false;
             // Respect the existing nearest-walkable rule, including occupied-cell snapping.

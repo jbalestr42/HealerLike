@@ -1,7 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
     <ui:Template name="SectionHeading" src="../Controls/SectionHeading.uxml" />
     <ui:Template name="ActionSection" src="../Controls/ActionSection.uxml" />
-    <ui:Button name="detail-close-button" text="×" tooltip="Close details" class="button detail-close" />
     <ui:ScrollView name="detail-scroll" class="detail-scroll" horizontal-scroller-visibility="Hidden">
         <ui:VisualElement class="detail-summary" picking-mode="Ignore">
             <ui:VisualElement name="detail-icon" class="detail-icon" />
@@ -16,4 +15,5 @@
             <ui:Button name="detail-equip-button" text="Select equipment" class="button" />
         </ui:Instance>
     </ui:ScrollView>
+    <ui:Button name="detail-close-button" text="×" tooltip="Close details" class="button detail-close" />
 </ui:UXML>
