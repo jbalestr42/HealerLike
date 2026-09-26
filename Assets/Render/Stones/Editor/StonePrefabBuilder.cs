@@ -98,7 +98,8 @@ namespace HealerLike.Render.Stones
                 effectsSO.FindProperty("_stoneMaterial").objectReferenceValue = Load<Material>(StoneMaterialPath);
                 Material coral = Load<Material>(root + "Materials/CoralSpark.mat");
                 effectsSO.FindProperty("_coralMaterial").objectReferenceValue = coral;
-                effectsSO.FindProperty("_dustMaterial").objectReferenceValue = Load<Material>(root + "Materials/Dust.mat");
+                Material dust = Load<Material>(root + "Materials/Dust.mat");
+                effectsSO.FindProperty("_dustMaterial").objectReferenceValue = dust;
                 effectsSO.FindProperty("_meshes").objectReferenceValue = Load<PrimitiveMeshes>(
                     "Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
                 effectsSO.FindProperty("_fragmentPrefab").objectReferenceValue = fragment;
