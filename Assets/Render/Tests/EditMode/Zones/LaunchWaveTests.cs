@@ -48,25 +48,65 @@ public class LaunchWaveTests
     }
 
     [Test]
-    public void Init_ProjectileLaunched_EmitsDirectionalPulseThatOutlivesIt()
+    public void Follow_ProjectileInFlight_TrailsBehindItAlongItsPath()
     {
         _wave.Init(_owner, _gust);
-
         Launch();
+
+        _shot.transform.position = new Vector3(0f, 0.2f, 0.8f);
+        _wave.Follow();
         _owner.PublishFrame(0f);
 
         Assert.AreEqual(1, _owner.count);
         Assert.AreEqual((int)ZoneKind.Launch, _owner.snapshot[0].kind);
-        Assert.AreEqual(4, _owner.snapshot[0].radius);
-        Assert.AreEqual(1073741824u, _owner.snapshot[0].reserved);
-        Assert.AreEqual(_source.transform.position, _owner.snapshot[0].position);
+        Assert.AreEqual(new Vector3(0f, 0f, 0.8f), _owner.snapshot[0].position, "Under the projectile.");
+        Assert.AreEqual(0.8f, _owner.snapshot[0].radius, 1e-5f, "As long as it has flown so far.");
+        Assert.AreEqual(1073741824u, _owner.snapshot[0].reserved, "Heading north.");
 
-        Object.DestroyImmediate(_shot);
-        _owner.PublishFrame(0.2f);
-        Assert.AreEqual(1, _owner.count);
+        _shot.transform.position = new Vector3(0f, 0.2f, 3f);
+        _wave.Follow();
+        _owner.PublishFrame(0.1f);
 
-        _owner.PublishFrame(0.2f);
-        Assert.AreEqual(0, _owner.count);
+        Assert.AreEqual(1, _owner.count, "One trail that moves with its projectile.");
+        Assert.AreEqual(new Vector3(0f, 0f, 3f), _owner.snapshot[0].position);
+        Assert.AreEqual(LaunchWave.TrailLength, _owner.snapshot[0].radius, 1e-5f);
+    }
+
+    [Test]
+    public void Follow_HighFlight_PartsNoGrass()
+    {
+        _wave.Init(_owner, _gust);
+        Launch();
+
+        _shot.transform.position = new Vector3(0f, LaunchWave.HighFlight + 0.5f, 1f);
+        _wave.Follow();
+
+        Assert.AreEqual(0, _owner.liveCount);
+    }
+
+    [Test]
+    public void OnDisable_ProjectileLanded_ClearsItsTrail()
+    {
+        _wave.Init(_owner, _gust);
+        Launch();
+        _shot.transform.position = new Vector3(0f, 0f, 1f);
+        _wave.Follow();
+        Assert.AreEqual(1, _owner.liveCount);
+
+        TestHelpers.InvokePrivate(_wave, "OnDisable");
+        _wave.Follow();
+
+        Assert.AreEqual(0, _owner.liveCount);
+    }
+
+    [Test]
+    public void Strength_Height_FallsFromTheGroundToHighFlight()
+    {
+        Assert.AreEqual(1f, LaunchWave.Strength(0f));
+        Assert.AreEqual(1f, LaunchWave.Strength(LaunchWave.LowFlight));
+        Assert.AreEqual(0f, LaunchWave.Strength(LaunchWave.HighFlight));
+        Assert.AreEqual(0.5f, LaunchWave.Strength(0.5f * (LaunchWave.LowFlight + LaunchWave.HighFlight)), 1e-5f);
+        Assert.AreEqual(0f, LaunchWave.Strength(float.NaN));
     }
 
     [Test]
@@ -89,6 +129,8 @@ public class LaunchWaveTests
         _wave.Init(null, null);
 
         Launch();
+        _shot.transform.position = Vector3.forward;
+        _wave.Follow();
 
         Assert.AreEqual(0, _owner.liveCount);
         Assert.AreEqual(0f, _gust.Sample(Time.timeAsDouble + 0.1).sqrMagnitude);

@@ -74,10 +74,8 @@ public class ZoneRegistryTests
     }
 
     [Test]
-    public void AddLaunchAndAddHealPulse_InvalidInput_ReturnNoHandle()
+    public void AddHealPulse_InvalidInput_ReturnsNoHandle()
     {
-        Assert.AreEqual(0, _registry.AddLaunch(Vector3.zero, Vector3.up));
-        Assert.AreEqual(0, _registry.AddLaunch(Vector3.zero, new Vector3(float.NaN, 0, 0)));
         Assert.AreEqual(0, _registry.AddHealPulse(null, 1));
         Assert.AreEqual(0, _registry.liveCount);
     }
@@ -272,6 +270,22 @@ public class ZoneRegistryTests
 
         Assert.AreEqual(0, _upload.calls.Count);
         Assert.AreEqual(0, _registry.count);
+    }
+
+    [Test]
+    public void SetDirection_Heading_IsKeptThroughLaterUpdates()
+    {
+        int handle = _registry.Add(ZoneKind.Launch, Vector3.zero, 1f, 1f);
+
+        _registry.SetDirection(handle, Vector3.forward);
+        _registry.UpdateZone(handle, ZoneKind.Launch, Vector3.right, 1.2f, 1f);
+        _registry.SetDirection(handle, Vector3.up);
+        _registry.SetDirection(handle, new Vector3(float.NaN, 0f, 0f));
+        _registry.PublishFrame(0f);
+
+        Assert.AreEqual(ZonePacker.EncodeDirection(Vector3.forward), _registry.snapshot[0].reserved,
+            "Flat or invalid directions leave the heading.");
+        Assert.AreEqual(Vector3.right, _registry.snapshot[0].position);
     }
 
     class FakeBody : IZoneBody

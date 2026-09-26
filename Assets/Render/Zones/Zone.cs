@@ -18,7 +18,9 @@ namespace HealerLike.Render.Zones
         // Grass burnt to ash around a rocky enemy, shrinking as its health falls
         Ash = 8,
         // Grass dying around an ally, spreading as its health falls
-        Wilt = 9
+        Wilt = 9,
+        // A cell a buff blesses: lush, softly lit grass while the buff lasts
+        Boost = 10
     }
 
     // Matches the 32 bytes element of _HLZones in ZoneData.hlsl
@@ -30,7 +32,7 @@ namespace HealerLike.Render.Zones
         [FieldOffset(16)] public int kind;
         [FieldOffset(20)] public float strength;
         [FieldOffset(24)] public float age;
-        // Launch: XZ heading encoded as uint turns, zero for the other kinds
+        // Launch: the shot's XZ heading encoded as uint turns, zero for the other kinds
         [FieldOffset(28)] public uint reserved;
 
         public static readonly int Stride = 32;

@@ -62,6 +62,13 @@ namespace HealerLike.Render.Stage
             StagePlay.Enter("grasslab", 300f);
         }
 
+        // A real wave through the game camera with every skill cast in turn, beside the ground from above
+        [MenuItem("Tools/Render/Grass Battle")]
+        public static void GrassBattle()
+        {
+            StagePlay.Enter("grassbattle", 240f);
+        }
+
         [MenuItem("Tools/Render/Smoke Three Rounds")]
         public static void Smoke()
         {

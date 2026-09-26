@@ -103,6 +103,11 @@ namespace HealerLike.Render.Stage
             {
                 return new GrassLabRun();
             }
+
+            if (mode == "grassbattle")
+            {
+                return new GrassBattleRun();
+            }
             if (mode == "offscreen-player")
             {
                 return new OffscreenPlayerRun();

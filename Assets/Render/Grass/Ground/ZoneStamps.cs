@@ -5,8 +5,8 @@ using UnityEngine;
 namespace HealerLike.Render.Grass
 {
     // The published zones as ground stamps. Heals and range previews hold the grass leaning away from their
-    // centre and a heal also spins it and makes it grow and glow; obstacles flatten it outward; a launch parts it
-    // along the shot's path behind its head and a shock throws it outward in a ring; ash and wilt zones burn or kill it. Hostile and
+    // centre and a heal also spins it and makes it grow and glow; obstacles flatten it outward; a shot in flight
+    // parts it along its trail and a shock throws it outward in a ring; boosted cells light it; ash and wilt zones burn or kill it. Hostile and
     // bruise zones change height only, which the tuft compute still reads from the zones.
     public static class ZoneStamps
     {
@@ -25,10 +25,7 @@ namespace HealerLike.Render.Grass
         public static readonly float TrampleWobble = 0.24f;
         // A heal disc reaches its full radius after this many seconds, the bloom in HLLoadZone
         public static readonly float HealBloomSeconds = 0.3f;
-        // The shot's head crosses from shooter to target in this many seconds, inside the registry's pulse,
-        // parting the grass in a streak this long behind it and this wide either side, in world units
-        public static readonly float LaunchSeconds = 0.3f;
-        public static readonly float LaunchTrail = 1.2f;
+        // A shot parts the grass this wide either side of its trail, in world units
         public static readonly float LaunchWidth = 0.45f;
         // A shock ring reaches its radius after this many seconds, in a band this share of it, at least MinBand
         public static readonly float ShockSeconds = 0.35f;
@@ -42,6 +39,11 @@ namespace HealerLike.Render.Grass
         public static readonly float WiltEdge = 0.5f;
         public static readonly float WiltWobble = 0.15f;
         public static readonly float BloomEdge = 0.4f;
+        public static readonly float BoostEdge = 0.6f;
+        public static readonly float BoostWobble = 0.12f;
+        // A boosted cell's grass: this lush and this lit
+        public static readonly float BoostVitality = 0.6f;
+        public static readonly float BoostGlow = 0.3f;
 
         // HLGrassZoneOnset: the strength, eased in over the first 0.12 s
         public static float Onset(Zone zone)
@@ -108,12 +110,10 @@ namespace HealerLike.Render.Grass
                                              TrampleWobble);
                     return onset > 0f;
                 case ZoneKind.Launch:
-                    Vector2 heading = Heading(zone.reserved);
-                    float head = zone.radius * Mathf.Clamp01(zone.age / LaunchSeconds);
-                    float tail = Mathf.Max(0f, head - LaunchTrail);
-                    stamp = GroundStamp.Trail(centre + heading * tail, centre + heading * head, LaunchWidth,
-                                              LaunchKick * LaunchStrength(zone));
-                    return head > 0f;
+                    // The zone sits under the projectile, its radius the trail behind it along its heading
+                    Vector2 behind = centre - Heading(zone.reserved) * zone.radius;
+                    stamp = GroundStamp.Trail(behind, centre, LaunchWidth, LaunchKick * strength);
+                    return true;
                 case ZoneKind.Shock:
                     float ring = zone.radius * Mathf.Clamp01(zone.age / ShockSeconds);
                     float width = Mathf.Max(ShockMinBand, zone.radius * ShockBand);
@@ -138,14 +138,6 @@ namespace HealerLike.Render.Grass
             stamp = GroundStamp.Swirl(new Vector2(zone.position.x, zone.position.z), zone.radius * bloom, SwirlTurn,
                                       1f, HealSwirl * onset, SwirlEdge);
             return bloom > 0f && onset > 0f;
-        }
-
-        // A launch's trail keeps the strength it started with while it crosses; the registry fades the pulse
-        // over its whole life, which would spend the trail before it arrives
-        public static float LaunchStrength(Zone zone)
-        {
-            float left = 1f - zone.age / ZoneRegistry.LaunchSeconds;
-            return Mathf.Clamp01(zone.strength / Mathf.Max(0.05f, left));
         }
 
         // What a zone asks of the ground state: ash for a rocky enemy, dead grass for a hurt ally, lush glowing
@@ -173,6 +165,10 @@ namespace HealerLike.Render.Grass
                     float onset = Onset(zone);
                     stamp = GroundStamp.Aura(centre, zone.radius * bloom, BloomEdge, 0f, 0f, onset, onset);
                     return bloom > 0f && onset > 0f;
+                case ZoneKind.Boost:
+                    stamp = GroundStamp.Aura(centre, zone.radius, BoostEdge, BoostWobble, 0f,
+                                             BoostVitality * strength, BoostGlow * strength);
+                    return true;
                 default:
                     return false;
             }

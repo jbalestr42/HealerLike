@@ -18,7 +18,6 @@ namespace HealerLike.Render.Zones
         }
 
         public static readonly float HealPulseSeconds = 0.45f;
-        public static readonly float LaunchSeconds = 0.4f;
         public static readonly float ShockSeconds = 0.6f;
 
         readonly List<Entry> _entries = new List<Entry>();
@@ -118,20 +117,19 @@ namespace HealerLike.Render.Zones
             return handle;
         }
 
-        public int AddLaunch(Vector3 source, Vector3 target)
+        // The XZ heading a zone carries, kept through later updates; a flat or invalid direction leaves it
+        public void SetDirection(int handle, Vector3 direction)
         {
-            Vector3 direction = target - source;
-            direction.y = 0;
-            int handle = AddPulse(ZoneKind.Launch, source, direction.magnitude, 1, LaunchSeconds);
             int i = Find(handle);
-            if (i >= 0)
+            direction.y = 0f;
+            if (i < 0 || !RenderMath.IsFinite(direction) || direction.sqrMagnitude < 1e-10f)
             {
-                Entry entry = _entries[i];
-                entry.zone.reserved = ZonePacker.EncodeDirection(direction);
-                _entries[i] = entry;
+                return;
             }
 
-            return handle;
+            Entry entry = _entries[i];
+            entry.zone.reserved = ZonePacker.EncodeDirection(direction);
+            _entries[i] = entry;
         }
 
         // A blast ring out from position to radius, fading over ShockSeconds
@@ -157,6 +155,7 @@ namespace HealerLike.Render.Zones
                 return;
             }
 
+            zone.reserved = entry.zone.reserved;
             entry.initialStrength = zone.strength;
             if (entry.duration > 0)
             {

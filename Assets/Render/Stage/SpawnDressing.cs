@@ -141,8 +141,9 @@ namespace HealerLike.Render.Stage
                 _rangeDriver.Add(preview);
             }
 
-            // The creature's health reads in the grass around it
+            // The creature's health reads in the grass around it, and so do the cells its boosts bless
             viewGo.AddComponent<GroundAura>().Init(entity, _manager.zones, StageCalibration.CellSize);
+            viewGo.AddComponent<BoostCellGround>().Init(entity.transform, _manager.zones, StageCalibration.CellSize);
         }
 
         void DressCharacter(Character character)

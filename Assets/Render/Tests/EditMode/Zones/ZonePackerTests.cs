@@ -29,6 +29,7 @@ public class ZonePackerTests
     [TestCase(ZoneKind.Shock, 7)]
     [TestCase(ZoneKind.Ash, 8)]
     [TestCase(ZoneKind.Wilt, 9)]
+    [TestCase(ZoneKind.Boost, 10)]
     public void TryCreate_LaterKinds_KeepTheirWireValuesAndAreAccepted(ZoneKind kind, int value)
     {
         Assert.AreEqual(value, (int)kind);
@@ -95,6 +96,7 @@ public class ZonePackerTests
         Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Trample));
         Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Ash));
         Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Wilt));
+        Assert.IsTrue(ZonePacker.IsFootprint((int)ZoneKind.Boost));
         Assert.IsFalse(ZonePacker.IsFootprint((int)ZoneKind.Shock));
         Assert.IsFalse(ZonePacker.IsFootprint((int)ZoneKind.Heal));
     }

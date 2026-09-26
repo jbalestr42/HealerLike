@@ -48,31 +48,40 @@ public class ZoneStampsTests
     }
 
     [Test]
-    public void TryCreate_Launch_PartsTheGrassBehindTheShotsHeadOnly()
+    public void TryCreate_Launch_PartsTheGrassAlongTheTrailBehindTheShot()
     {
         uint north = ZonePacker.EncodeDirection(Vector3.forward);
-        Zone launch = Make(ZoneKind.Launch, Vector3.zero, 4f, ZoneStamps.LaunchSeconds * 0.5f, heading: north);
+        Zone launch = Make(ZoneKind.Launch, new Vector3(0f, 0f, 2f), 1.2f, 0.1f, 0.5f, north);
 
         Assert.IsTrue(ZoneStamps.TryCreate(launch, out GroundStamp stamp));
 
-        // The head half way along, the trail behind it
-        Assert.Greater(stamp.Force(new Vector2(0.2f, 1.5f)).x, 1f, "Parted sideways behind the head.");
-        Assert.AreEqual(Vector2.zero, stamp.Force(new Vector2(0.2f, 3.5f)), "Not yet ahead of the head.");
-        Assert.AreEqual(Vector2.zero, stamp.Force(new Vector2(0.2f, 0.2f)), "Settled behind the trail.");
-        Assert.AreEqual(Vector2.zero, stamp.Force(new Vector2(1.5f, 1.5f)), "Nothing beside the path.");
-        Assert.AreEqual(Vector3.zero, stamp.Target(new Vector2(0.2f, 1.5f)), "A launch throws, it holds nothing.");
-        Assert.IsFalse(ZoneStamps.TryCreate(Make(ZoneKind.Launch, Vector3.zero, 4f, 0f, heading: north), out _));
+        Vector2 beside = stamp.Force(new Vector2(0.2f, 1.5f));
+        Assert.Greater(beside.x, 1f, "Parted sideways along the trail.");
+        Assert.Less(stamp.Force(new Vector2(-0.2f, 1.5f)).x, -1f);
+        Assert.AreEqual(Vector2.zero, stamp.Force(new Vector2(0.2f, 3f)), "Nothing ahead of the shot.");
+        Assert.AreEqual(Vector2.zero, stamp.Force(new Vector2(0.2f, 0.3f)), "Settled behind the trail.");
+        Assert.AreEqual(Vector3.zero, stamp.Target(new Vector2(0.2f, 1.5f)), "A shot throws, it holds nothing.");
+        Assert.AreEqual(beside.x * 2f, ZoneStampsTestKick(launch, 1f).x, 1e-2f, "A lower shot parts harder.");
+    }
+
+    static Vector2 ZoneStampsTestKick(Zone zone, float strength)
+    {
+        zone.strength = strength;
+        ZoneStamps.TryCreate(zone, out GroundStamp stamp);
+        return stamp.Force(new Vector2(0.2f, 1.5f));
     }
 
     [Test]
-    public void LaunchStrength_RegistryFade_IsUndoneWhileTheFrontCrosses()
+    public void TryCreateAura_Boost_LightsAndGreensTheCell()
     {
-        float age = 0.25f;
-        float faded = 0.8f * (1f - age / ZoneRegistry.LaunchSeconds);
+        Assert.IsTrue(ZoneStamps.TryCreateAura(Make(ZoneKind.Boost, Vector3.one, 0.45f, 2f), out GroundStamp boost));
 
-        Assert.AreEqual(0.8f, ZoneStamps.LaunchStrength(Make(ZoneKind.Launch, Vector3.zero, 4f, age, faded)), 1e-4f);
-        Assert.AreEqual(0f, ZoneStamps.LaunchStrength(Make(ZoneKind.Launch, Vector3.zero, 4f, 0.4f, 0f)));
-        Assert.LessOrEqual(ZoneStamps.LaunchStrength(Make(ZoneKind.Launch, Vector3.zero, 4f, 0.39f, 1f)), 1f);
+        Vector4 state = boost.State(new Vector2(1f, 1f));
+        Assert.AreEqual(ZoneStamps.BoostVitality, state.y, 1e-5f);
+        Assert.AreEqual(ZoneStamps.BoostGlow, state.z, 1e-5f);
+        Assert.AreEqual(0f, state.x);
+        Assert.AreEqual(Vector4.zero, boost.State(new Vector2(2f, 1f)), "A soft patch inside its cell.");
+        Assert.IsFalse(ZoneStamps.TryCreate(Make(ZoneKind.Boost, Vector3.one, 0.45f, 2f), out _), "It moves nothing.");
     }
 
     [Test]

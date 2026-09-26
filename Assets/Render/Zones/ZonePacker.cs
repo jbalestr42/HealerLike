@@ -27,7 +27,7 @@ namespace HealerLike.Render.Zones
                 return false;
             }
 
-            if (kind < ZoneKind.Heal || kind > ZoneKind.Wilt)
+            if (kind < ZoneKind.Heal || kind > ZoneKind.Boost)
             {
                 return false;
             }
@@ -44,7 +44,8 @@ namespace HealerLike.Render.Zones
         // What a body leaves on the ground while it stands there, as opposed to feedback on something it did
         public static bool IsFootprint(int kind)
         {
-            return kind == (int)ZoneKind.Trample || kind == (int)ZoneKind.Ash || kind == (int)ZoneKind.Wilt;
+            return kind == (int)ZoneKind.Trample || kind == (int)ZoneKind.Ash || kind == (int)ZoneKind.Wilt
+                   || kind == (int)ZoneKind.Boost;
         }
 
         // Not a sort: keeps room for the gameplay feedback first and gives the footprints what is left,

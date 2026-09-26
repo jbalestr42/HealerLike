@@ -107,6 +107,8 @@ namespace HealerLike.Render.Stage
             stoneAura.Init(registry);
             ZoneHandle walkerAura = new ZoneHandle();
             walkerAura.Init(registry);
+            ZoneHandle shotZone = new ZoneHandle();
+            shotZone.Init(registry);
             StringBuilder csv = new StringBuilder("frame,time");
             for (int i = 0; i < probes.Length; i++)
             {
@@ -138,10 +140,8 @@ namespace HealerLike.Render.Stage
                     registry.AddHealPulse(healed, 1.6f);
                 }
 
-                if (frame == 108)
-                {
-                    registry.AddLaunch(new Vector3(-3.5f, 0f, -3f), new Vector3(3f, 0f, -0.5f));
-                }
+                // A low shot flies at the stone from the far corner, its trail following it as LaunchWave's does
+                Shot(shotZone, new Vector3(-3.5f, 0f, -3f), stone.position, (frame - 108) * step, 0.6f);
 
                 // The launch lands on the stone, then a critical hit lands on it
                 if (frame == 132)
@@ -444,6 +444,21 @@ namespace HealerLike.Render.Stage
             map.SetPixels(pixels);
             map.Apply();
             return map;
+        }
+
+        // A shot from source to target taking flight seconds, at a quarter of a unit over the ground
+        static void Shot(ZoneHandle zone, Vector3 source, Vector3 target, float age, float flight)
+        {
+            if (age <= 0f || age >= flight)
+            {
+                zone.Clear();
+                return;
+            }
+
+            Vector3 head = Vector3.Lerp(source, target, age / flight);
+            Vector3 travelled = head - source;
+            float length = Mathf.Min(travelled.magnitude, LaunchWave.TrailLength);
+            zone.Refresh(ZoneKind.Launch, head, length, LaunchWave.Strength(0.25f), travelled);
         }
 
         static void Aura(ZoneHandle zone, ZoneKind kind, Vector3 position, float health)
