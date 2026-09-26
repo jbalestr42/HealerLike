@@ -9,6 +9,7 @@
         "HealerLike.Render.Stones.Editor",
         "HealerLike.Render.Studio.Editor",
         "HealerLike.Tests.EditMode",
+        "QuickOutline",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Unity.RenderPipelines.Universal.Runtime",

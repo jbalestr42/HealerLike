@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.Rendering;
 using HealerLike.Render.Creatures;
 
 namespace HealerLike.Render.Deliveries
@@ -10,33 +9,15 @@ namespace HealerLike.Render.Deliveries
     {
         // Leaves along the chain, and as many beads plus the tip
         public static readonly int LeafCount = 5;
-        // Proportions in arm radii: the tip unit, the leaves and the beads
+        // The width of one tip unit, in arm radii
         static readonly float tipWidthRadii = 4.5f;
-        static readonly float leafLengthRadii = 9f;
-        static readonly float beadRadii = 2.4f;
-        // A leaf's width and depth for its length, its lean along the chain and where its centre sits along it
-        static readonly float leafWidth = 0.38f;
-        static readonly float leafDepth = 0.22f;
-        static readonly float leafLean = 0.45f;
-        static readonly float leafCentre = 0.45f;
-        // A direction shorter than this has none
-        static readonly float zeroLengthSquared = 0.000000000001f;
-
         readonly LianaPose _pose = new LianaPose();
         readonly LianaMesh _mesh = new LianaMesh();
-        readonly Matrix4x4[] _leaves = new Matrix4x4[LeafCount];
-        readonly Matrix4x4[] _beads = new Matrix4x4[LeafCount + 1];
-        readonly DeliveryTip _tip = new DeliveryTip();
-        Mesh _leafMesh;
-        Mesh _beadMesh;
-        PrimitiveMeshes _meshes;
-        Material _detailMaterial;
-        MaterialPropertyBlock _detailColour;
+        readonly LianaDetails _details = new LianaDetails();
         float _radius;
         bool _isDisposed;
         bool _hasLoggedSolveError;
         bool _isVisible = true;
-        Color _colour;
         // The tip and the arm look of each style, a bending arm with a bead tip without it
         DeliveryVocabulary _vocabulary;
 
@@ -68,7 +49,7 @@ namespace HealerLike.Render.Deliveries
 
         // Without a parent the arm only solves its chain and draws nothing
         public bool Init(ArmDefinition definition, Transform parent, Material material, PrimitiveMeshes meshes,
-            DeliveryVocabulary vocabulary, float cellSize = 1f)
+            DeliveryVocabulary vocabulary, float cellSize = 1f, bool copyBorrowedMeshes = false)
         {
             if (definition.restJoints == null || definition.restJoints.Length != definition.segmentCount + 1
                 || definition.segmentCount < 2 || !RenderMath.IsPositive(cellSize))
@@ -86,7 +67,6 @@ namespace HealerLike.Render.Deliveries
             _vocabulary = vocabulary;
             _pose.Init(definition, cellSize);
             _radius = definition.radius * cellSize;
-            _colour = definition.colour;
             _restTipColour = definition.colour;
             if (definition.tipColour.a > 0f)
             {
@@ -99,25 +79,14 @@ namespace HealerLike.Render.Deliveries
                 return true;
             }
 
-            _meshes = meshes;
-            _leafMesh = meshes.cone;
-            _beadMesh = meshes.sphere;
-            _detailMaterial = material;
-            _detailColour = new MaterialPropertyBlock();
-            Vector4[] detailColours = new Vector4[LeafCount + 1];
-            for (int i = 0; i < detailColours.Length; i++)
-            {
-                detailColours[i] = definition.colour;
-            }
-
-            _detailColour.SetVectorArray(RenderObjects.BaseColorId, detailColours);
+            _details.Init(meshes, material, definition.colour, copyBorrowedMeshes);
             _mesh.Init(parent, material, definition.colour, definition.segmentCount + 1);
             return true;
         }
 
         public Matrix4x4 LeafMatrix(int index)
         {
-            return _leaves[index];
+            return _details.LeafMatrix(index);
         }
 
         public Vector3 Joint(int index)
@@ -179,7 +148,7 @@ namespace HealerLike.Render.Deliveries
             if (_mesh.renderer && (!_isVisible || _pose.phase == GesturePhase.Rest))
             {
                 _mesh.renderer.enabled = false;
-                _tip.Hide();
+                _details.Hide();
             }
         }
 
@@ -191,6 +160,7 @@ namespace HealerLike.Render.Deliveries
             }
 
             _isDisposed = true;
+            _details.Dispose();
             _mesh.Dispose();
         }
 
@@ -209,7 +179,7 @@ namespace HealerLike.Render.Deliveries
             if (_mesh.renderer)
             {
                 _mesh.renderer.enabled = false;
-                _tip.Hide();
+                _details.Hide();
             }
 
             if (!_hasLoggedSolveError)
@@ -229,69 +199,13 @@ namespace HealerLike.Render.Deliveries
             _mesh.renderer.enabled = _isVisible && _pose.phase != GesturePhase.Rest;
             if (!_mesh.renderer.enabled)
             {
-                _tip.Hide();
+                _details.Hide();
                 return;
             }
 
-            UpdateDetails();
+            _details.Draw(_pose, _mesh.container, _radius, ArmStyleOf(_pose.style).leafWidth,
+                tipWidth, _vocabulary, _tipColour);
             _mesh.Write(_pose, _radius, ArmStyleOf(_pose.style).width);
-        }
-
-        void UpdateDetails()
-        {
-            float width = ArmStyleOf(_pose.style).leafWidth;
-            int segments = _pose.segmentCount;
-            for (int i = 0; i < LeafCount; i++)
-            {
-                int j = Mathf.Clamp((i + 1) * segments / (LeafCount + 1), 1, segments - 1);
-                Vector3 tangent = (_pose.Joint(j + 1) - _pose.Joint(j - 1)).normalized;
-                if (tangent.sqrMagnitude < zeroLengthSquared)
-                {
-                    tangent = Vector3.up;
-                }
-
-                Vector3 axis = Vector3.right;
-                if (Mathf.Abs(tangent.y) < 0.9f)
-                {
-                    axis = Vector3.up;
-                }
-
-                Vector3 side = Vector3.Cross(tangent, axis).normalized;
-                // The leaves alternate sides along the chain
-                if (i % 2 == 1)
-                {
-                    side = -side;
-                }
-
-                Vector3 direction = (side + tangent * leafLean).normalized;
-                float length = _radius * leafLengthRadii * width;
-                Quaternion rotation = Quaternion.FromToRotation(Vector3.up, direction);
-                Vector3 leafScale = new Vector3(length * leafWidth, length, length * leafDepth);
-                _leaves[i] = Matrix4x4.TRS(_pose.Joint(j) + direction * length * leafCentre, rotation, leafScale);
-                Vector3 beadScale = Vector3.one * _radius * beadRadii * width;
-                _beads[i] = Matrix4x4.TRS(_pose.Joint(j), Quaternion.identity, beadScale);
-            }
-
-            Vector3 last = _pose.Joint(_pose.jointCount - 2);
-            _beads[LeafCount] = DeliveryTip.Frame(_pose.tip, _pose.tip - last, tipWidth);
-            if (!_tip.isSet || _tip.style != _pose.style)
-            {
-                _tip.SetStyle(_pose.style, _vocabulary, _meshes);
-            }
-
-            _tip.Draw(_mesh.container, _beads[LeafCount], _detailMaterial, _tipColour, _colour);
-            GameObject container = _mesh.container.gameObject;
-            if (!SystemInfo.supportsInstancing || !_detailMaterial || !_detailMaterial.enableInstancing
-                || !container.activeInHierarchy)
-            {
-                return;
-            }
-
-            int layer = container.layer;
-            Graphics.DrawMeshInstanced(_leafMesh, 0, _detailMaterial, _leaves, LeafCount, _detailColour,
-                ShadowCastingMode.On, true, layer);
-            Graphics.DrawMeshInstanced(_beadMesh, 0, _detailMaterial, _beads, LeafCount, _detailColour,
-                ShadowCastingMode.On, true, layer);
         }
     }
 }

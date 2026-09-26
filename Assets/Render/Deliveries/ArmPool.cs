@@ -31,10 +31,11 @@ namespace HealerLike.Render.Deliveries
         Vector3 _previousOrigin;
         bool _isPlaced;
 
-        public void Init(CreatureRig rig, Material material, PrimitiveMeshes meshes, DeliveryVocabulary vocabulary)
+        public void Init(CreatureRig rig, Material material, PrimitiveMeshes meshes, DeliveryVocabulary vocabulary,
+            bool copyBorrowedMeshes = false)
         {
             _rig = rig;
-            _leases.Init(rig, material, meshes, vocabulary);
+            _leases.Init(rig, material, meshes, vocabulary, copyBorrowedMeshes);
         }
 
         public void Refresh()

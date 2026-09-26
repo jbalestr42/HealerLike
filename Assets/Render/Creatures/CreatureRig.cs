@@ -105,13 +105,15 @@ namespace HealerLike.Render.Creatures
         // A recipe that fails validation logs and leaves the view empty. Body, Head and Stem surfaces use the
         // body material; tips and roots retain the shared material. The caller gives stones one material
         // for both slots, so surface shading does not infer a side from colour, geometry or an object name.
+        // Live hosts copy borrowed meshes to contain legacy selection edits; standalone previews can borrow.
         public bool Init(
             CreatureRecipe data,
             Transform parent,
             Material material,
             Material bodyMaterial,
             PrimitiveMeshes meshes,
-            float cellSize
+            float cellSize,
+            bool copyBorrowedMeshes = false
         )
         {
             if (!CreatureValidator.TryValidate(data, out string error))
@@ -144,7 +146,7 @@ namespace HealerLike.Render.Creatures
             }
 
             _cellSize = cellSize;
-            _assembly.Init(parent);
+            _assembly.Init(parent, copyBorrowedMeshes);
             if (Recompose(data, material, bodyMaterial, meshes))
             {
                 return true;
