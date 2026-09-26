@@ -142,14 +142,15 @@ public class StageDressingTests
         _scene.manager.Init(_scene.entityManager, _scene.player);
         GameObject body = new GameObject("Live plant");
         body.transform.SetParent(_scene.gameGo.transform);
-        TrampleRigTestHost host = body.AddComponent<TrampleRigTestHost>();
+        CreatureBuilder host = null;
         CreatureRecipe recipe = RenderTestAssets.CreateRecipe();
         recipe.idle = default;
         Material material = RenderTestAssets.LoadLookMaterial();
         try
         {
-            Assert.IsNotNull(host, "The Editor-only rig helper must be attachable in EditMode.");
-            Assert.IsTrue(host.Build(recipe, material));
+            host = RenderTestAssets.CreateCreatureBuilder(body, recipe, material);
+            Assert.IsNotNull(host, "The runtime creature host must be attachable in EditMode.");
+            Assert.IsNotNull(host.rig, "The runtime host must build the authored recipe.");
             host.rig.Tick(0f, 0f, new FootFrame(Vector3.zero, Vector3.up, 1f));
             TestHelpers.SetPrivateField(_scene.entityManager, "_entities",
                 new Dictionary<Entity.EntityType, List<GameObject>>
@@ -193,7 +194,7 @@ public class StageDressingTests
         {
             if (host != null)
             {
-                host.Clear();
+                TestHelpers.InvokePrivate(host, "OnDestroy");
             }
             Object.DestroyImmediate(recipe);
         }

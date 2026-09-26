@@ -14,7 +14,7 @@ namespace HealerLike.Render.Zones
         protected Ground _ground;
         protected TrampleZone _zone;
         protected CreatureRecipe _recipe;
-        protected TrampleRigTestHost _host;
+        protected CreatureBuilder _host;
 
         [SetUp]
         public void SetUp()
@@ -28,7 +28,10 @@ namespace HealerLike.Render.Zones
         [TearDown]
         public void TearDown()
         {
-            if (_host != null) _host.Clear();
+            if (_host != null)
+            {
+                TestHelpers.InvokePrivate(_host, "OnDestroy");
+            }
             if (_recipe != null) Object.DestroyImmediate(_recipe);
             Object.DestroyImmediate(_obstacle);
             Object.DestroyImmediate(_root);
@@ -54,9 +57,9 @@ namespace HealerLike.Render.Zones
 
         protected void BuildRig()
         {
-            _host = _obstacle.AddComponent<TrampleRigTestHost>();
-            Assert.IsNotNull(_host, "The Editor-only rig helper must be attachable in EditMode.");
-            Assert.IsTrue(_host.Build(_recipe, RenderTestAssets.LoadLookMaterial()));
+            _host = RenderTestAssets.CreateCreatureBuilder(_obstacle, _recipe, RenderTestAssets.LoadLookMaterial());
+            Assert.IsNotNull(_host, "The runtime creature host must be attachable in EditMode.");
+            Assert.IsNotNull(_host.rig, "The runtime host must build the authored recipe.");
             _host.rig.Tick(0f, 0f, new FootFrame(_obstacle.transform.position, Vector3.up, 1f));
             _zone.InitFootprint(_ground);
         }

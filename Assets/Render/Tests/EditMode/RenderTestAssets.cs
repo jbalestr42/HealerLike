@@ -182,6 +182,18 @@ public static class RenderTestAssets
         TestHelpers.SetPrivateField(builder, "_meshes", meshes);
     }
 
+    // A real runtime host with an authored recipe, without Entity.Init or a scene manager.
+    public static CreatureBuilder CreateCreatureBuilder(GameObject owner, CreatureRecipe recipe, Material material)
+    {
+        Entity entity = null;
+        TestHelpers.WithLoggingDisabled(() => entity = owner.AddComponent<Entity>());
+        CreatureBuilder builder = owner.AddComponent<CreatureBuilder>();
+        Assert.IsNotNull(builder, "The runtime creature host must be attachable in EditMode.");
+        SetRecipe(builder, recipe, material, LoadMeshes());
+        builder.Init(entity);
+        return builder;
+    }
+
     // A derived stone the way the prefab lays it out: the builder builds the rig, then the body joins it
     public static StoneBody CreateStoneBody(GameObject owner, Entity entity, CreatureRecipe recipe, Material material)
     {
