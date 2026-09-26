@@ -105,6 +105,7 @@ namespace HealerLike.Render.Stones
             {
                 backup.name = mesh.name;
                 mesh.subMeshCount = 2;
+                mesh.bounds = backup.bounds;
                 if (StoneMeshFingerprint.Authored(mesh) != before)
                 {
                     EditorUtility.CopySerialized(backup, mesh);
