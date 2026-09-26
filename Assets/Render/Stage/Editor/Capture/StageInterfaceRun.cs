@@ -78,9 +78,10 @@ namespace HealerLike.Render.Stage
                 _output.Check(_session.interaction.GetInteraction() == null
                     && StageInterfaceOutput.IsVisible(desktopTitle)
                     && desktopTitle.text == desktopCard.Q<Label>("card-title").text,
-                    "Actual desktop keyboard focus inspects the requested creature without deploying");
+                    "Programmatic Toolkit FocusIn inspects the requested creature without deploying; "
+                    + "no OS keyboard input");
                 yield return _session.Capture("03b-desktop-details",
-                    "Actual keyboard focus on a reachable desktop creature card");
+                    "Programmatic focus through the real Toolkit FocusIn callback; no OS keyboard input");
                 yield return _session.Resize(1080, 1920);
                 _session.actions.Submit("detail-button");
                 yield return Wait(0.2f);
