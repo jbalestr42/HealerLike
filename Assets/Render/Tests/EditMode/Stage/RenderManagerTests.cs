@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HealerLike.Render.Grass;
 using HealerLike.Render.Zones;
 using NUnit.Framework;
 using UnityEditor;
@@ -61,8 +62,17 @@ public class StageSceneFixture
     // Edit mode runs no OnDestroy, so the buffers and the pipeline are given back here
     public void Destroy()
     {
-        manager.zones.Release();
-        manager.grass.Release();
+        if (manager != null)
+        {
+            // Environment strips also own draw subscriptions; runtime OnDisable does not run in this fixture.
+            foreach (GrassField field in manager.GetComponentsInChildren<GrassField>(true))
+            {
+                field.Release();
+            }
+
+            manager.zones.Release();
+        }
+
         QualitySettings.renderPipeline = _previousPipeline;
         RenderSettings.sun = _previousSun;
         RenderSettings.ambientMode = _previousAmbient;
@@ -172,6 +182,53 @@ public class RenderManagerTests
         TestHelpers.InvokePrivate(_scene.manager, "LateUpdate");
 
         Assert.AreEqual(1, _scene.manager.zones.count);
+    }
+
+    [Test]
+    public void Destroy_FixtureWithBuiltEnvironment_ReleasesEveryOwnedDraw()
+    {
+        _scene.manager.Init(_scene.entityManager, _scene.player);
+        GrassField[] fields = _scene.manager.GetComponentsInChildren<GrassField>(true);
+        foreach (GrassField field in fields)
+        {
+            field.tuftBudget = 65;
+        }
+
+        TestHelpers.InvokePrivate(_scene.manager, "LateUpdate");
+        List<GrassDraw> draws = new List<GrassDraw>();
+        List<GraphicsBuffer> arguments = new List<GraphicsBuffer>();
+        foreach (GrassField field in fields)
+        {
+            if (!field.isReady)
+            {
+                continue;
+            }
+
+            Assert.IsNotNull(field.tuftDraw, field.name);
+            Assert.IsNotNull(field.socleDraw, field.name);
+            draws.Add(field.tuftDraw);
+            draws.Add(field.socleDraw);
+            arguments.Add(field.tuftDraw.arguments);
+            arguments.Add(field.socleDraw.arguments);
+        }
+
+        Assert.Greater(draws.Count, 2, "Both the board and its environment must have built draws.");
+        foreach (GraphicsBuffer buffer in arguments)
+        {
+            Assert.IsTrue(buffer.IsValid());
+        }
+
+        _scene.Destroy();
+
+        foreach (GrassDraw draw in draws)
+        {
+            Assert.IsNull(draw.arguments, "Every owned draw must release its argument buffer.");
+        }
+
+        foreach (GraphicsBuffer buffer in arguments)
+        {
+            Assert.IsFalse(buffer.IsValid());
+        }
     }
 
     [Test]
