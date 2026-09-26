@@ -49,13 +49,7 @@ public class DataIconService
 
     public static Sprite TryGetAuthoredSprite(object data)
     {
-        object nested = DataIconDescriptor.ReadField(data, "data");
-        if (nested == null)
-        {
-            nested = data;
-        }
-
-        return DataIconDescriptor.ReadField(nested, "icon") as Sprite;
+        return DataIconSource.AuthoredSprite(DataIconSource.Unwrap(data));
     }
 
     public void Clear()

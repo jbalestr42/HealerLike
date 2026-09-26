@@ -89,13 +89,6 @@ public class ToolkitGameUI : MonoBehaviour
 
     void Init()
     {
-        if (!LegacyUiReader.IsValid())
-        {
-            Debug.LogError("[ToolkitGameUI] The legacy UI contract changed, the Toolkit interface stays off");
-            enabled = false;
-            return;
-        }
-
         _document = GetComponent<UIDocument>();
         if (_ownedPanel == null)
         {
