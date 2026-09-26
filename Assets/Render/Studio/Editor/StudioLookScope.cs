@@ -10,26 +10,8 @@ namespace HealerLike.Render.Studio.Editor
     // global it touched.
     public class StudioLookScope : IDisposable
     {
-        static readonly string[] floatNames =
-        {
-            "_HLShadowStrength", "_HLToonThreshold", "_HLToonSoftness", "_HLOutlineWidthPixels",
-            "_HLFogStart", "_HLFogEnd", "_HLFogBands", "_HLInkStrength", "_HLInkScale", "_HLInkWidth",
-            "_HLInkStart", "_HLInkRange", "_HLDensityMul", "_HLInkWarp", "_HLInkWarpFreq", "_HLDashAmount",
-            "_HLDashScale", "_HLInkDistStart", "_HLInkFarSpacing", "_HLContrast", "_HLLookApplied"
-        };
-        static readonly float[] floatValues =
-        {
-            LookSettings.Default.shadowStrength, LookSettings.Default.toonThreshold,
-                LookSettings.Default.toonSoftness, 1f, 500f, 1000f, 6f, 0.16f, 0.075f, 0.0001f,
-            0.65f, 1f, 1f, 0.025f, 2.44f, 0.1f, 0.01f, 100f, 0.6f, 1f, 1f
-        };
-        static readonly string[] vectorNames = { "_HLShadowTint", "_HLOutlineColor", "_HLFogColor" };
-        static readonly Color shadowTint = LookSettings.Default.shadowTint;
-        static readonly Color outlineColour = new Color(0.08f, 0.12f, 0.16f);
-        static readonly Color fogColour = new Color(0.075f, 0.095f, 0.115f);
-
-        readonly float[] _previousFloats = new float[floatNames.Length];
-        readonly Vector4[] _previousVectors = new Vector4[vectorNames.Length];
+        static readonly LookSettings settings = CreateSettings();
+        LookShaderProperties.Snapshot _previous;
         Camera _camera;
         bool _isActive;
 
@@ -41,15 +23,7 @@ namespace HealerLike.Render.Studio.Editor
             }
             _isActive = true;
             _camera = camera;
-            for (int i = 0; i < floatNames.Length; i++)
-            {
-                _previousFloats[i] = Shader.GetGlobalFloat(floatNames[i]);
-            }
-
-            for (int i = 0; i < vectorNames.Length; i++)
-            {
-                _previousVectors[i] = Shader.GetGlobalVector(vectorNames[i]);
-            }
+            _previous = LookShaderProperties.Capture();
 
             RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
             Apply();
@@ -69,15 +43,8 @@ namespace HealerLike.Render.Studio.Editor
             _isActive = false;
             _camera = null;
             RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
-            for (int i = 0; i < floatNames.Length; i++)
-            {
-                Shader.SetGlobalFloat(floatNames[i], _previousFloats[i]);
-            }
-
-            for (int i = 0; i < vectorNames.Length; i++)
-            {
-                Shader.SetGlobalVector(vectorNames[i], _previousVectors[i]);
-            }
+            _previous.Restore();
+            _previous = null;
         }
 
         void OnBeginCameraRendering(ScriptableRenderContext context, Camera camera)
@@ -90,15 +57,32 @@ namespace HealerLike.Render.Studio.Editor
 
         static void Apply()
         {
-            for (int i = 0; i < floatNames.Length; i++)
-            {
-                Shader.SetGlobalFloat(floatNames[i], floatValues[i]);
-            }
+            LookShaderProperties.Publish(settings, QualitySettings.activeColorSpace);
+        }
 
-            ColorSpace space = QualitySettings.activeColorSpace;
-            Shader.SetGlobalVector("_HLShadowTint", LookController.ToWorkingColor(shadowTint, space));
-            Shader.SetGlobalVector("_HLOutlineColor", LookController.ToWorkingColor(outlineColour, space));
-            Shader.SetGlobalVector("_HLFogColor", LookController.ToWorkingColor(fogColour, space));
+        static LookSettings CreateSettings()
+        {
+            LookSettings value = LookSettings.Default;
+            value.outlineColor = new Color(0.08f, 0.12f, 0.16f);
+            value.fogColor = new Color(0.075f, 0.095f, 0.115f);
+            value.outlineWidthPixels = 1f;
+            value.fogStart = 500f;
+            value.fogEnd = 1000f;
+            value.fogBands = 6;
+            value.inkStrength = 0.16f;
+            value.inkScale = 0.075f;
+            value.inkWidth = 0.0001f;
+            value.inkStart = 0.65f;
+            value.inkRange = 1f;
+            value.densityMul = 1f;
+            value.inkWarp = 0.025f;
+            value.inkWarpFreq = 2.44f;
+            value.dashAmount = 0.1f;
+            value.dashScale = 0.01f;
+            value.inkDistStart = 100f;
+            value.inkFarSpacing = 0.6f;
+            value.contrast = 1f;
+            return value;
         }
     }
 }
