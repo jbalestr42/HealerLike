@@ -39,21 +39,27 @@ namespace HealerLike.Render.Stones
         {
             string path = root + "Prefabs/DerivedStone.prefab";
             GameObject stoneGo = PrefabUtility.LoadPrefabContents(path);
-            if (stoneGo.GetComponent<StoneBody>() == null)
+            try
             {
-                StoneBody body = stoneGo.AddComponent<StoneBody>();
-                SerializedObject bodySO = new SerializedObject(body);
-                bodySO.FindProperty("_groundShadow").objectReferenceValue = AddShadow(stoneGo.transform);
-                bodySO.FindProperty("_palette").objectReferenceValue = Load<Object>(PalettePath);
-                bodySO.ApplyModifiedPropertiesWithoutUndo();
-            }
+                if (stoneGo.GetComponent<StoneBody>() == null)
+                {
+                    StoneBody body = stoneGo.AddComponent<StoneBody>();
+                    SerializedObject bodySO = new SerializedObject(body);
+                    bodySO.FindProperty("_groundShadow").objectReferenceValue = AddShadow(stoneGo.transform);
+                    bodySO.FindProperty("_palette").objectReferenceValue = Load<Object>(PalettePath);
+                    bodySO.ApplyModifiedPropertiesWithoutUndo();
+                }
 
-            if (stoneGo.GetComponent<StoneThrow>() == null)
-            {
-                stoneGo.AddComponent<StoneThrow>();
+                if (stoneGo.GetComponent<StoneThrow>() == null)
+                {
+                    stoneGo.AddComponent<StoneThrow>();
+                }
+                PrefabUtility.SaveAsPrefabAsset(stoneGo, path);
             }
-            PrefabUtility.SaveAsPrefabAsset(stoneGo, path);
-            PrefabUtility.UnloadPrefabContents(stoneGo);
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(stoneGo);
+            }
         }
 
         // A cast shadow, flat on the baked unit disc, hidden until its owner's Init
@@ -82,22 +88,38 @@ namespace HealerLike.Render.Stones
         static void BuildEffects()
         {
             GameObject fragmentGo = new GameObject("StoneFragment", typeof(MeshFilter), typeof(MeshRenderer));
-            GameObject fragment = PrefabUtility.SaveAsPrefabAsset(fragmentGo, root + "Prefabs/StoneFragment.prefab");
-            Object.DestroyImmediate(fragmentGo);
+            GameObject fragment = SavePrefab(fragmentGo, root + "Prefabs/StoneFragment.prefab");
 
             GameObject effectsGo = new GameObject("StoneEffects");
-            StoneEffects effects = effectsGo.AddComponent<StoneEffects>();
-            SerializedObject effectsSO = new SerializedObject(effects);
-            effectsSO.FindProperty("_stoneMaterial").objectReferenceValue = Load<Material>(StoneMaterialPath);
-            Material coral = Load<Material>(root + "Materials/CoralSpark.mat");
-            effectsSO.FindProperty("_coralMaterial").objectReferenceValue = coral;
-            effectsSO.FindProperty("_dustMaterial").objectReferenceValue = Load<Material>(root + "Materials/Dust.mat");
-            effectsSO.FindProperty("_meshes").objectReferenceValue = Load<PrimitiveMeshes>(
-                "Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
-            effectsSO.FindProperty("_fragmentPrefab").objectReferenceValue = fragment;
-            effectsSO.ApplyModifiedPropertiesWithoutUndo();
-            PrefabUtility.SaveAsPrefabAsset(effectsGo, root + "Prefabs/StoneEffects.prefab");
-            Object.DestroyImmediate(effectsGo);
+            try
+            {
+                StoneEffects effects = effectsGo.AddComponent<StoneEffects>();
+                SerializedObject effectsSO = new SerializedObject(effects);
+                effectsSO.FindProperty("_stoneMaterial").objectReferenceValue = Load<Material>(StoneMaterialPath);
+                Material coral = Load<Material>(root + "Materials/CoralSpark.mat");
+                effectsSO.FindProperty("_coralMaterial").objectReferenceValue = coral;
+                effectsSO.FindProperty("_dustMaterial").objectReferenceValue = Load<Material>(root + "Materials/Dust.mat");
+                effectsSO.FindProperty("_meshes").objectReferenceValue = Load<PrimitiveMeshes>(
+                    "Assets/Render/Creatures/Data/PrimitiveMeshes.asset");
+                effectsSO.FindProperty("_fragmentPrefab").objectReferenceValue = fragment;
+                effectsSO.ApplyModifiedPropertiesWithoutUndo();
+                PrefabUtility.SaveAsPrefabAsset(effectsGo, root + "Prefabs/StoneEffects.prefab");
+            }
+            finally
+            {
+                Object.DestroyImmediate(effectsGo);
+            }
+        }
+        static GameObject SavePrefab(GameObject instance, string path)
+        {
+            try
+            {
+                return PrefabUtility.SaveAsPrefabAsset(instance, path);
+            }
+            finally
+            {
+                Object.DestroyImmediate(instance);
+            }
         }
     }
 }

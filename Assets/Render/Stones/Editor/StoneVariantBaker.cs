@@ -155,18 +155,27 @@ namespace HealerLike.Render.Stones
         static Mesh Save(Mesh mesh)
         {
             string path = meshesFolder + "/" + mesh.name + ".asset";
-            Mesh existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
-            if (existing == null)
+            try
             {
-                AssetDatabase.CreateAsset(mesh, path);
-                return mesh;
-            }
+                Mesh existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+                if (existing == null)
+                {
+                    AssetDatabase.CreateAsset(mesh, path);
+                    return mesh;
+                }
 
-            EditorUtility.CopySerialized(mesh, existing);
-            EditorUtility.SetDirty(existing);
-            AssetDatabase.SaveAssetIfDirty(existing);
-            Object.DestroyImmediate(mesh);
-            return existing;
+                EditorUtility.CopySerialized(mesh, existing);
+                EditorUtility.SetDirty(existing);
+                AssetDatabase.SaveAssetIfDirty(existing);
+                return existing;
+            }
+            finally
+            {
+                if (!AssetDatabase.Contains(mesh))
+                {
+                    Object.DestroyImmediate(mesh);
+                }
+            }
         }
     }
 }
