@@ -48,18 +48,20 @@ public class ZoneStampsTests
     }
 
     [Test]
-    public void TryCreate_Launch_SendsAFrontAlongTheHeading()
+    public void TryCreate_Launch_PartsTheGrassBehindTheShotsHeadOnly()
     {
         uint north = ZonePacker.EncodeDirection(Vector3.forward);
         Zone launch = Make(ZoneKind.Launch, Vector3.zero, 4f, ZoneStamps.LaunchSeconds * 0.5f, heading: north);
 
         Assert.IsTrue(ZoneStamps.TryCreate(launch, out GroundStamp stamp));
 
-        Assert.AreEqual(2f, stamp.centreRadius.z, 1e-4f, "Half way across the radius at half the crossing time.");
-        Vector2 front = stamp.Force(new Vector2(0f, 2f));
-        Assert.That(front.y, Is.EqualTo(ZoneStamps.LaunchKick).Within(0.05f));
-        Assert.AreEqual(Vector3.zero, stamp.Target(new Vector2(0f, 2f)), "A launch throws, it holds nothing.");
-        Assert.AreEqual(Vector2.zero, stamp.Force(new Vector2(0f, -2f)));
+        // The head half way along, the trail behind it
+        Assert.Greater(stamp.Force(new Vector2(0.2f, 1.5f)).x, 1f, "Parted sideways behind the head.");
+        Assert.AreEqual(Vector2.zero, stamp.Force(new Vector2(0.2f, 3.5f)), "Not yet ahead of the head.");
+        Assert.AreEqual(Vector2.zero, stamp.Force(new Vector2(0.2f, 0.2f)), "Settled behind the trail.");
+        Assert.AreEqual(Vector2.zero, stamp.Force(new Vector2(1.5f, 1.5f)), "Nothing beside the path.");
+        Assert.AreEqual(Vector3.zero, stamp.Target(new Vector2(0.2f, 1.5f)), "A launch throws, it holds nothing.");
+        Assert.IsFalse(ZoneStamps.TryCreate(Make(ZoneKind.Launch, Vector3.zero, 4f, 0f, heading: north), out _));
     }
 
     [Test]

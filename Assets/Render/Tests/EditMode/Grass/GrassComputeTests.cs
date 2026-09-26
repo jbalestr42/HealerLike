@@ -108,7 +108,6 @@ public class GrassComputeTests
         _compute.SetVectorArray("_HLFrustumPlanes", _planes);
         _compute.SetFloat("_HLCullMargin", GrassBounds.Envelope(1f));
         _compute.SetVector("_HLGroundWind", GroundWind.Shader(0f, 0f));
-        _compute.SetVector("_HLGroundGust", Vector4.zero);
         SetGround(null, 0f);
     }
 

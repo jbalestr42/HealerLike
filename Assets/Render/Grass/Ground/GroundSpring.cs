@@ -27,8 +27,8 @@ namespace HealerLike.Render.Grass
                 return new GroundSpringSettings
                 {
                     frequency = 1.6f,
-                    dampingRatio = 0.3f,
-                    spread = 0.2f,
+                    dampingRatio = 0.45f,
+                    spread = 0.08f,
                     maxLean = 1.25f,
                     crushFall = 16f,
                     crushRise = 1.1f

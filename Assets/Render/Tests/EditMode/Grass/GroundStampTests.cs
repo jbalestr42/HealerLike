@@ -55,25 +55,25 @@ public class GroundStampTests
     }
 
     [Test]
-    public void Front_AheadOfTheCentre_LeansAlongTheHeadingOnlyNearTheFront()
+    public void Trail_ThrowsTheGrassBesideItSidewaysAndHoldsNothing()
     {
-        GroundStamp stamp = GroundStamp.Front(Vector2.zero, 2f, 0.3f, new Vector2(0f, 2f), 0.6f, 0f);
+        GroundStamp trail = GroundStamp.Trail(Vector2.zero, new Vector2(2f, 0f), 0.4f, 100f);
 
-        Vector3 onFront = stamp.Sample(new Vector2(0f, 2f));
-        Vector3 behindFront = stamp.Sample(new Vector2(0f, 1f));
-        Vector3 behindCentre = stamp.Sample(new Vector2(0f, -2f));
+        Vector2 north = trail.Force(new Vector2(1f, 0.1f));
+        Vector2 south = trail.Force(new Vector2(1f, -0.1f));
 
-        Assert.That(onFront.y, Is.EqualTo(0.6f).Within(1e-5f));
-        Assert.AreEqual(0f, onFront.x);
-        Assert.AreEqual(0f, onFront.z, "A front never flattens.");
-        Assert.AreEqual(Vector3.zero, behindFront);
-        Assert.AreEqual(Vector3.zero, behindCentre);
+        Assert.Greater(north.y, 50f, "The grass beside the path is thrown away from it.");
+        Assert.Less(south.y, -50f);
+        Assert.AreEqual(0f, north.x, 1e-3f);
+        Assert.AreEqual(Vector2.zero, trail.Force(new Vector2(1f, 0.5f)), "Only within its width.");
+        Assert.AreEqual(Vector2.zero, trail.Force(new Vector2(3f, 0.1f)), "Nothing past its head.");
+        Assert.AreEqual(Vector3.zero, trail.Target(new Vector2(1f, 0.1f)), "A trail holds nothing, flattens nothing.");
     }
 
     [Test]
     public void Bounds_CoverTheFrontBandTheDiscAndTheWholeBody()
     {
-        GroundStamp.Front(Vector2.one, 2f, 0.3f, Vector2.right, 1f, 0f).Bounds(out Vector2 frontCentre, out float front);
+        GroundStamp.Shock(Vector2.one, 2f, 0.3f, 1f, 0f).Bounds(out Vector2 frontCentre, out float front);
         GroundStamp.Disc(Vector2.zero, 1.5f, 0f, 1f, 0.2f, 0f).Bounds(out _, out float disc);
         GroundStamp.Body(new Vector3(-1f, 0.2f, 0f), new Vector3(1f, 0.4f, 0f), 0.3f, 0.2f, 0.7f, 0.9f, 1f)
                    .Bounds(out Vector2 bodyCentre, out float body);
@@ -89,7 +89,8 @@ public class GroundStampTests
     public void Kind_EachFactory_TagsItsStamp()
     {
         Assert.AreEqual(GroundStampKind.Disc, GroundStamp.Disc(Vector2.zero, 1f, 0f, 1f, 0.2f, 0f).kind);
-        Assert.AreEqual(GroundStampKind.Front, GroundStamp.Front(Vector2.zero, 1f, 0.2f, Vector2.up, 1f, 0f).kind);
+        Assert.AreEqual(GroundStampKind.Front, GroundStamp.Shock(Vector2.zero, 1f, 0.2f, 1f, 0f).kind);
+        Assert.AreEqual(GroundStampKind.Body, GroundStamp.Trail(Vector2.zero, Vector2.one, 0.2f, 1f).kind);
         Assert.AreEqual(GroundStampKind.Body,
             GroundStamp.Body(Vector3.zero, Vector3.one, 0.2f, 0.2f, 0.7f, 0.9f, 1f).kind);
     }
@@ -148,15 +149,6 @@ public class GroundStampTests
 
         Assert.AreEqual(new Vector3(0.4f, 0f, 0.5f), disc.Target(Vector2.right));
         Assert.AreEqual(Vector2.zero, disc.Force(Vector2.right));
-    }
-
-    [Test]
-    public void Front_Kick_ThrowsTheGrassWithoutHoldingIt()
-    {
-        GroundStamp front = GroundStamp.Front(Vector2.zero, 2f, 0.3f, Vector2.up, 1f, 90f);
-
-        Assert.AreEqual(Vector3.zero, front.Target(new Vector2(0f, 2f)));
-        Assert.That(front.Force(new Vector2(0f, 2f)).y, Is.EqualTo(90f).Within(1e-3f));
     }
 
     [Test]

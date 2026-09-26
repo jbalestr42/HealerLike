@@ -15,7 +15,7 @@ namespace HealerLike.Render.Stage
 {
     // A scripted grass scene stepped at a fixed 60 Hz, whatever the editor's frame rate: an ally walks through
     // the carpet past a stone enemy and a second ally, a heal blooms and swirls, a launch crosses, two hits blast
-    // out of the stone, a gust blows. The stone's health falls, so its ash shrinks and the grass regrows toward
+    // out of the stone. The stone's health falls, so its ash shrinks and the grass regrows toward
     // it; the walker's falls too, so the grass dies around it. The
     // creatures are the game's own rigs pressing the grass as bodies. Writes a filmstrip, a contact sheet and the
     // ground's lean and flatness at a few probes on every frame to grass-lab/ under the capture folder, with a
@@ -112,7 +112,10 @@ namespace HealerLike.Render.Stage
             {
                 csv.Append($",lean{i}x,lean{i}z,crush{i}");
             }
-            csv.Append('\n');
+            csv.Append(",moving,far\n");
+            float movingSum = 0f;
+            float farSum = 0f;
+            float farPeak = 0f;
 
             for (int frame = 0; frame < frames; frame++)
             {
@@ -151,9 +154,6 @@ namespace HealerLike.Render.Stage
                     registry.AddShock(stone.position, ImpactPool.ShockRadius(0.5f, true), 0.75f);
                 }
 
-                // A gust sweeps across from the left for the last second
-                float gust = Mathf.Clamp01((time - 3.3f) / 0.9f);
-                field.gust = Vector3.right * Mathf.Sin(gust * Mathf.PI);
 
                 registry.PublishFrame(step);
                 field.UpdateField(registry, step, time);
@@ -161,6 +161,13 @@ namespace HealerLike.Render.Stage
                 Color[] motion = field.ground != null ? Read(field.ground.motion) : null;
                 Color[] crush = field.ground != null ? Read(field.ground.crush) : null;
                 Probe(field.ground, motion, crush, frame, time, csv);
+                Vector2 activity = Activity(field.ground, motion, registry);
+                movingSum += activity.x;
+                farSum += activity.y;
+                farPeak = Mathf.Max(farPeak, activity.y);
+                csv.Length--;
+                csv.Append(',').Append(activity.x.ToString("0.0000", CultureInfo.InvariantCulture))
+                   .Append(',').Append(activity.y.ToString("0.0000", CultureInfo.InvariantCulture)).Append('\n');
                 if (frame % filmEvery == 0)
                 {
                     maps.Add(Map(field.ground, motion, crush));
@@ -177,6 +184,8 @@ namespace HealerLike.Render.Stage
             }
 
             File.WriteAllText(Path.Combine(folder, "probes.csv"), csv.ToString());
+            Debug.Log($"[GrassLabRun] moving {movingSum / frames:P1} of the field on average, "
+                      + $"far from every source {farSum / frames:P1} on average and {farPeak:P1} at worst");
             WriteSheet(film, Path.Combine(folder, "contact.png"), frameWidth / sheetScale, frameHeight / sheetScale);
             WriteSheet(maps, Path.Combine(folder, "ground-contact.png"), mapSize, mapSize);
             WriteSheet(states, Path.Combine(folder, "state-contact.png"), mapSize, mapSize);
@@ -300,6 +309,85 @@ namespace HealerLike.Render.Stage
             }
 
             csv.Append('\n');
+        }
+
+        // The share of the field whose grass swings faster than a calm sway, and the share doing so more than
+        // Reach from every creature and every zone that moves grass: motion nobody can trace to a source
+        static readonly float swingSpeed = 0.5f;
+        static readonly float reach = 1.5f;
+
+        Vector2 Activity(GroundSimulation ground, Color[] motion, ZoneRegistry registry)
+        {
+            if (ground == null || motion == null)
+            {
+                return Vector2.zero;
+            }
+
+            int inside = 0;
+            int moving = 0;
+            int far = 0;
+            System.ReadOnlySpan<Zone> zones = registry.snapshot;
+            for (float z = area.yMin + 0.05f; z < area.yMax; z += 0.1f)
+            {
+                for (float x = area.xMin + 0.05f; x < area.xMax; x += 0.1f)
+                {
+                    Vector2 point = new Vector2(x, z);
+                    Color texel = At(ground.volume, motion, point);
+                    inside++;
+                    if (new Vector2(texel.b, texel.a).magnitude < swingSpeed)
+                    {
+                        continue;
+                    }
+
+                    moving++;
+                    if (DistanceToSources(point, zones) > reach)
+                    {
+                        far++;
+                    }
+                }
+            }
+
+            return new Vector2((float)moving / inside, (float)far / inside);
+        }
+
+        float DistanceToSources(Vector2 point, System.ReadOnlySpan<Zone> zones)
+        {
+            float nearest = float.MaxValue;
+            foreach (LabCreature creature in _creatures)
+            {
+                Vector3 position = creature.anchor.position;
+                nearest = Mathf.Min(nearest, Vector2.Distance(point, new Vector2(position.x, position.z)));
+            }
+
+            foreach (Zone zone in zones)
+            {
+                Vector2 centre = new Vector2(zone.position.x, zone.position.z);
+                float distance = Vector2.Distance(point, centre);
+                if (zone.kind == (int)ZoneKind.Launch)
+                {
+                    Vector2 end = centre + ZoneStamps.Heading(zone.reserved) * zone.radius;
+                    distance = DistanceToSegment(point, centre, end);
+                }
+                else if (zone.kind == (int)ZoneKind.Ash || zone.kind == (int)ZoneKind.Wilt)
+                {
+                    continue;
+                }
+                else
+                {
+                    distance = Mathf.Max(0f, distance - zone.radius);
+                }
+
+                nearest = Mathf.Min(nearest, distance);
+            }
+
+            return nearest;
+        }
+
+        static float DistanceToSegment(Vector2 point, Vector2 start, Vector2 end)
+        {
+            Vector2 axis = end - start;
+            float t = Mathf.Clamp01(Vector2.Dot(point - start, axis) / Mathf.Max(axis.sqrMagnitude, 1e-6f));
+            return Vector2.Distance(point, start + axis * t);
         }
 
         static Color[] Read(RenderTexture texture)

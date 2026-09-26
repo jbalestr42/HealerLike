@@ -44,7 +44,6 @@ namespace HealerLike.Render.Grass
         GrassDraw _ringDraw;
         GroundStamp[] _stamps = new GroundStamp[GroundSimulation.StampCapacity];
         BodyCapsule[] _capsules = new BodyCapsule[GroundSimulation.StampCapacity];
-        Vector2 _gust;
         bool _isGroundFailed;
 
         GroundSimulation _ground;
@@ -81,8 +80,6 @@ namespace HealerLike.Render.Grass
             set { _bladeSegments = Mathf.Clamp(value, 1, GrassBladeMesh.MaxSegments); }
         }
 
-        // The cosmetic gust pulse this frame, EnvironmentGust.Sample, in world space
-        public Vector3 gust { set { _gust = GroundWind.Gust(value); } }
 
         public float windStrength
         {
@@ -175,8 +172,8 @@ namespace HealerLike.Render.Grass
                 count += BodyStamps.Append(_capsules, zones.GatherBodies(_capsules), _surfaceY, _cellSize, _stamps,
                                            count);
                 _ground.SetStamps(new System.ReadOnlySpan<GroundStamp>(_stamps, 0, count));
-                _ground.Step(deltaTime, GroundWind.Shader(_windStrength, time), _gust);
-                _ground.Publish(_gust);
+                _ground.Step(deltaTime, GroundWind.Shader(_windStrength, time));
+                _ground.Publish();
             }
 
             Dispatch(new GrassBuildKey(_area, _cellSize, _surfaceY, _seed, _bladeBudget), time);
@@ -284,7 +281,7 @@ namespace HealerLike.Render.Grass
             GraphicsBuffer.CopyCount(_visibleTufts, _socleDraw.arguments, 4);
         }
 
-        // The ground published this frame, or none: the tufts then take the plain wind with this field's gust
+        // The ground published this frame, or none: the tufts then take the plain wind
         void BindGround()
         {
             bool isActive = Shader.GetGlobalFloat(GroundSimulation.ActiveId) > 0.5f;
@@ -298,8 +295,6 @@ namespace HealerLike.Render.Grass
             _updateGrass.SetVector(GroundSimulation.RectId, isActive ? Shader.GetGlobalVector(GroundSimulation.RectId)
                                                                   : new Vector4(0f, 0f, 1f, 1f));
             _updateGrass.SetFloat(GroundSimulation.ActiveId, isActive ? 1f : 0f);
-            _updateGrass.SetVector(GroundSimulation.GustId, isActive ? Shader.GetGlobalVector(GroundSimulation.GustId)
-                                                                  : (Vector4)_gust);
         }
 
         bool IsDrawn()

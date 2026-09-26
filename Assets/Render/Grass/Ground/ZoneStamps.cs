@@ -5,8 +5,8 @@ using UnityEngine;
 namespace HealerLike.Render.Grass
 {
     // The published zones as ground stamps. Heals and range previews hold the grass leaning away from their
-    // centre and a heal also spins it and makes it grow and glow; obstacles flatten it outward; launches throw it
-    // along their heading and shocks throw it outward in a ring; ash and wilt zones burn or kill it. Hostile and
+    // centre and a heal also spins it and makes it grow and glow; obstacles flatten it outward; a launch parts it
+    // along the shot's path behind its head and a shock throws it outward in a ring; ash and wilt zones burn or kill it. Hostile and
     // bruise zones change height only, which the tuft compute still reads from the zones.
     public static class ZoneStamps
     {
@@ -16,8 +16,8 @@ namespace HealerLike.Render.Grass
         public static readonly float TrampleOutward = 0.35f;
         // Accelerations at full strength, in radians per second squared
         public static readonly float HealSwirl = 30f;
-        public static readonly float LaunchKick = 90f;
-        public static readonly float ShockKick = 120f;
+        public static readonly float LaunchKick = 110f;
+        public static readonly float ShockKick = 100f;
         // A heal disc fades over this share of its radius, an obstacle over this one with a wobbling rim
         public static readonly float HealEdge = 0.25f;
         public static readonly float SwirlEdge = 0.4f;
@@ -25,11 +25,11 @@ namespace HealerLike.Render.Grass
         public static readonly float TrampleWobble = 0.24f;
         // A heal disc reaches its full radius after this many seconds, the bloom in HLLoadZone
         public static readonly float HealBloomSeconds = 0.3f;
-        // The launch front crosses the radius in this many seconds, inside the registry's pulse, in a band this share
-        // of it, at least MinBand
+        // The shot's head crosses from shooter to target in this many seconds, inside the registry's pulse,
+        // parting the grass in a streak this long behind it and this wide either side, in world units
         public static readonly float LaunchSeconds = 0.3f;
-        public static readonly float LaunchBand = 0.12f;
-        public static readonly float LaunchMinBand = 0.15f;
+        public static readonly float LaunchTrail = 1.2f;
+        public static readonly float LaunchWidth = 0.45f;
         // A shock ring reaches its radius after this many seconds, in a band this share of it, at least MinBand
         public static readonly float ShockSeconds = 0.35f;
         public static readonly float ShockBand = 0.15f;
@@ -108,11 +108,12 @@ namespace HealerLike.Render.Grass
                                              TrampleWobble);
                     return onset > 0f;
                 case ZoneKind.Launch:
-                    float front = zone.radius * Mathf.Clamp01(zone.age / LaunchSeconds);
-                    float band = Mathf.Max(LaunchMinBand, zone.radius * LaunchBand);
-                    stamp = GroundStamp.Front(centre, front, band, Heading(zone.reserved), 1f,
+                    Vector2 heading = Heading(zone.reserved);
+                    float head = zone.radius * Mathf.Clamp01(zone.age / LaunchSeconds);
+                    float tail = Mathf.Max(0f, head - LaunchTrail);
+                    stamp = GroundStamp.Trail(centre + heading * tail, centre + heading * head, LaunchWidth,
                                               LaunchKick * LaunchStrength(zone));
-                    return true;
+                    return head > 0f;
                 case ZoneKind.Shock:
                     float ring = zone.radius * Mathf.Clamp01(zone.age / ShockSeconds);
                     float width = Mathf.Max(ShockMinBand, zone.radius * ShockBand);
@@ -139,8 +140,8 @@ namespace HealerLike.Render.Grass
             return bloom > 0f && onset > 0f;
         }
 
-        // A launch's front keeps the strength it started with while it crosses; the registry fades the pulse
-        // over its whole life, which would spend the front before it arrives
+        // A launch's trail keeps the strength it started with while it crosses; the registry fades the pulse
+        // over its whole life, which would spend the trail before it arrives
         public static float LaunchStrength(Zone zone)
         {
             float left = 1f - zone.age / ZoneRegistry.LaunchSeconds;

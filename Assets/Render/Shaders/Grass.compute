@@ -48,9 +48,8 @@ uint _HLBladeCount;
 float4 _HLFrustumPlanes[6];
 // How far outside a frustum plane a root may sit and still draw, GrassBounds.Envelope
 float _HLCullMargin;
-// GroundWind.Shader, and the gust pulses' lean
+// GroundWind.Shader
 float4 _HLGroundWind;
-float2 _HLGroundGust;
 // The ground GroundSimulation publishes: xy lean and zw its velocity, the flatness, the ash, vitality and glow,
 // where it lies, and one while live
 Texture2D<float4> _HLGroundMotion;
@@ -119,7 +118,7 @@ HLTuftState HLEvaluateTuft(HLTuftSeed tuft)
         ground = _HLGroundState.SampleLevel(hl_linear_clamp_sampler, uv, 0.0) * coverage;
     }
 
-    float2 wind = HLGroundWindLean(position, _HLGroundWind, _HLGroundGust);
+    float2 wind = HLGroundWindLean(position, _HLGroundWind);
     float2 air = lerp(wind, motion.xy, coverage);
 
     HLTuftState state;

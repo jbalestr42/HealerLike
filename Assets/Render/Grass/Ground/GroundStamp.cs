@@ -11,8 +11,8 @@ namespace HealerLike.Render.Grass
         Aura = 3
     }
 
-    // One shape drawn additively into the ground each frame: a disc, a ring front travelling outward or along a
-    // heading, or a body capsule the grass parts around. Its push is held, a lean the grass springs toward and
+    // One shape drawn additively into the ground each frame: a disc, a ring front travelling outward, or a
+    // capsule the grass parts around, a body standing in it or a trail left along the ground. Its push is held, a lean the grass springs toward and
     // keeps while the stamp lasts, and kicked, an acceleration that throws the grass and lets it swing back.
     // An aura moves nothing: it asks the slow ground state for ash, vitality and glow over a disc.
     // HLGroundStamp in GroundCommon.hlsl is the GPU side and Sample mirrors HLGroundStampValue.
@@ -30,8 +30,7 @@ namespace HealerLike.Render.Grass
         // Aura: x the ash it asks for, y the vitality, from dead at -1 to lush at 1, z the glow.
         // Disc: x the turn of its push from straight outward, counterclockwise seen from above in radians, a
         // quarter turn swirls; z unused; w the push in radians.
-        // Front: xy heading, zero for a ring pushing outward all round; z push along the heading, w push away from
-        // the centre, in radians.
+        // Front: w the push away from the centre, in radians.
         // Body: the capsule's second end, x and z in world XZ, y its height above the ground, w the width of the
         // band around it where the grass already leans away.
         public Vector4 push;
@@ -74,20 +73,6 @@ namespace HealerLike.Render.Grass
             };
         }
 
-        // A ring front at radius, band wide either side, kicking the grass along heading ahead of the centre
-        public static GroundStamp Front(Vector2 centre, float radius, float band, Vector2 heading, float push,
-                                        float kick)
-        {
-            Vector2 direction = heading.sqrMagnitude > 1e-10f ? heading.normalized : Vector2.right;
-            return new GroundStamp
-            {
-                centreRadius = new Vector4(centre.x, centre.y, Mathf.Max(0f, radius), Mathf.Max(0.001f, band)),
-                push = new Vector4(direction.x, direction.y, push, 0f),
-                shape = new Vector4(0f, 1f, 0f, (float)GroundStampKind.Front),
-                response = new Vector4(0f, 0f, 0f, kick)
-            };
-        }
-
         // A ring front at radius, band wide either side, kicking the grass outward all round: a blast
         public static GroundStamp Shock(Vector2 centre, float radius, float band, float push, float kick)
         {
@@ -111,6 +96,19 @@ namespace HealerLike.Render.Grass
                 push = new Vector4(end.x, end.z, end.y, Mathf.Max(0.001f, margin)),
                 shape = new Vector4(crush, 1f, 0f, (float)GroundStampKind.Body),
                 response = new Vector4(Mathf.Max(0.01f, grassHeight), lean, 1f, 0f)
+            };
+        }
+
+        // A streak on the ground from start to end, throwing the grass within width of it sideways away from it:
+        // the grass parting where something passes low over it
+        public static GroundStamp Trail(Vector2 start, Vector2 end, float width, float kick)
+        {
+            return new GroundStamp
+            {
+                centreRadius = new Vector4(start.x, start.y, 0f, 0f),
+                push = new Vector4(end.x, end.y, 0f, Mathf.Max(0.001f, width)),
+                shape = new Vector4(0f, 1f, 0f, (float)GroundStampKind.Body),
+                response = new Vector4(1f, 1f, 0f, kick)
             };
         }
 
@@ -172,22 +170,8 @@ namespace HealerLike.Render.Grass
                 weight = 1f - SmoothStep(rim * (1f - shape.y), rim, distance);
             }
 
-            Vector2 lean;
-            if (kind == GroundStampKind.Front)
-            {
-                Vector2 heading = new Vector2(push.x, push.y);
-                // A heading ahead of the centre only; a ring with no push along it blows all round
-                if (push.z != 0f)
-                {
-                    weight *= Mathf.Clamp01(Vector2.Dot(outward, heading));
-                }
-
-                lean = (heading * push.z + outward * push.w) * weight;
-            }
-            else
-            {
-                lean = Turn(outward, push.x) * (push.w * weight);
-            }
+            Vector2 lean = kind == GroundStampKind.Front ? outward * (push.w * weight)
+                                                          : Turn(outward, push.x) * (push.w * weight);
 
             return new Vector3(lean.x, lean.y, shape.x * weight);
         }

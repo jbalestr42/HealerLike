@@ -16,9 +16,9 @@ namespace HealerLike.Render.Spells
         static readonly float defaultMaximumHealth = 100f;
         // A hit's blast through the grass, in world units: its least radius, what a whole health bar adds, and
         // the widening of a critical
-        static readonly float shockMinRadius = 0.9f;
-        static readonly float shockRadiusRange = 2f;
-        static readonly float shockCriticalScale = 1.4f;
+        static readonly float shockMinRadius = 0.5f;
+        static readonly float shockRadiusRange = 1f;
+        static readonly float shockCriticalScale = 1.3f;
 
         // One recipient of a character's cast this frame
         struct Recipient

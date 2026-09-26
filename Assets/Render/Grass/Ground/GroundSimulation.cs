@@ -18,7 +18,6 @@ namespace HealerLike.Render.Grass
         public static readonly int StateId = Shader.PropertyToID("_HLGroundState");
         public static readonly int RectId = Shader.PropertyToID("_HLGroundRect");
         public static readonly int ActiveId = Shader.PropertyToID("_HLGroundActive");
-        public static readonly int GustId = Shader.PropertyToID("_HLGroundGust");
 
         static readonly int stampsId = Shader.PropertyToID("_HLGroundStamps");
         static readonly int sizeId = Shader.PropertyToID("_HLGroundSize");
@@ -150,8 +149,8 @@ namespace HealerLike.Render.Grass
         }
 
         // Adds the frame's stamps, then advances the lean and flatness by deltaTime in equal steps. wind is
-        // GroundWind.Shader at the frame's time and gust the pulses' lean.
-        public void Step(float deltaTime, Vector4 wind, Vector2 gust)
+        // GroundWind.Shader at the frame's time.
+        public void Step(float deltaTime, Vector4 wind)
         {
             if (!isValid)
             {
@@ -192,7 +191,6 @@ namespace HealerLike.Render.Grass
             Vector2 texel = _volume.texelSize;
             _material.SetVector(springId, settings.ShaderSpring(Mathf.Min(texel.x, texel.y)));
             _material.SetVector(crushRatesId, new Vector4(settings.crushFall, settings.crushRise, 0f, 0f));
-            _material.SetVector(GustId, gust);
             for (int i = 0; i < steps; i++)
             {
                 // The wind moves on within the frame, each step at its own time
@@ -235,7 +233,7 @@ namespace HealerLike.Render.Grass
         }
 
         // What every grass field samples until Unpublish
-        public void Publish(Vector2 gust)
+        public void Publish()
         {
             if (!isValid)
             {
@@ -246,7 +244,6 @@ namespace HealerLike.Render.Grass
             Shader.SetGlobalTexture(CrushId, crush);
             Shader.SetGlobalTexture(StateId, state);
             Shader.SetGlobalVector(RectId, _volume.ShaderRect());
-            Shader.SetGlobalVector(GustId, gust);
             Shader.SetGlobalFloat(ActiveId, 1f);
         }
 
@@ -255,7 +252,6 @@ namespace HealerLike.Render.Grass
             Shader.SetGlobalTexture(MotionId, Texture2D.blackTexture);
             Shader.SetGlobalTexture(CrushId, Texture2D.blackTexture);
             Shader.SetGlobalTexture(StateId, Texture2D.blackTexture);
-            Shader.SetGlobalVector(GustId, Vector4.zero);
             Shader.SetGlobalFloat(ActiveId, 0f);
         }
 

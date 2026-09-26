@@ -13,7 +13,7 @@
 #define HL_GROUND_AURA 3
 
 // Disc and front: centreRadius xy centre in world XZ, z radius, w front half width. Disc push: x turn from outward,
-// w push. Front push: xy heading, z push along it (zero blows all round), w push outward. Body: centreRadius the
+// w push. Front push: w push outward, the front a ring travelling out. Body: centreRadius the
 // first end (x, z, height, radius), push the second end (x, z, height, margin). shape: x flatness, y disc edge
 // share, z rim wobble share, w kind. response: x grass height and y lean for a body, z held share, w kick.
 // Aura: centreRadius like a disc, push x ash, y vitality, z glow.
@@ -107,21 +107,15 @@ float3 HLGroundStampValue(HLGroundStamp stamp, float2 p)
     if (kind == HL_GROUND_FRONT)
     {
         float front = 1.0 - smoothstep(0.0, band, abs(distanceToCentre - radius));
-        // A heading ahead of the centre only; a ring with no push along it blows all round
-        if (stamp.push.z != 0.0)
-        {
-            front *= saturate(dot(outward, stamp.push.xy));
-        }
-
-        return float3((stamp.push.xy * stamp.push.z + outward * stamp.push.w) * front, stamp.shape.x * front);
+        return float3(outward * (stamp.push.w * front), stamp.shape.x * front);
     }
 
     float weight = HLGroundDiscWeight(stamp, p);
     return float3(HLGroundTurn(outward, stamp.push.x) * (stamp.push.w * weight), stamp.shape.x * weight);
 }
 
-// wind: xy prevailing direction, z strength in radians, w time in seconds. gust is the pulses' lean.
-float2 HLGroundWindLean(float2 p, float4 wind, float2 gust)
+// wind: xy prevailing direction, z strength in radians, w time in seconds
+float2 HLGroundWindLean(float2 p, float4 wind)
 {
     float2 direction = wind.xy;
     float2 across = float2(-direction.y, direction.x);
@@ -130,7 +124,7 @@ float2 HLGroundWindLean(float2 p, float4 wind, float2 gust)
     float side = dot(p, across);
     float front = sin(along * 0.9 - time * 1.7 + 1.3 * sin(side * 0.6 + time * 0.4));
     float flutter = sin(dot(p, float2(0.67, 0.43)) * 1.3 + time * 1.1);
-    return (direction * (0.55 + 0.45 * front) + across * (0.3 * flutter)) * wind.z + gust;
+    return (direction * (0.55 + 0.45 * front) + across * (0.3 * flutter)) * wind.z;
 }
 
 float2 HLGroundCapLean(float2 lean, float limit)

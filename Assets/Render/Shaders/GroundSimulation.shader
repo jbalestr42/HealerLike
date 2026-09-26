@@ -105,7 +105,6 @@ Shader "Hidden/HL/GroundSimulation"
             Texture2D<float4> _HLGroundForce;
             float4 _HLGroundSpring;
             float4 _HLGroundWind;
-            float2 _HLGroundGust;
             float _HLGroundStep;
 
             float4 HLLoadState(int2 texel)
@@ -122,7 +121,7 @@ Shader "Hidden/HL/GroundSimulation"
                     + HLLoadState(texel + int2(0, 1)).xy + HLLoadState(texel - int2(0, 1)).xy);
                 float2 p = _HLGroundRect.xy + HLTexelUV(positionCS) / _HLGroundRect.zw;
                 float2 stamped = _HLGroundTarget.Load(int3(texel, 0)).xy;
-                float2 target = HLGroundCapLean(stamped + HLGroundWindLean(p, _HLGroundWind, _HLGroundGust),
+                float2 target = HLGroundCapLean(stamped + HLGroundWindLean(p, _HLGroundWind),
                                                 _HLGroundSpring.w);
                 float2 force = _HLGroundForce.Load(int3(texel, 0)).xy;
                 return HLGroundSpringStep(state, target, neighbourMean, force, _HLGroundStep, _HLGroundSpring);
