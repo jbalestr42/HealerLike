@@ -1,0 +1,126 @@
+.spell-list
+{
+    flex-grow: 1;
+}
+
+.spell-list .unity-scroll-view__content-container
+{
+    flex-direction: row;
+}
+
+.data-card
+{
+    flex-direction: column;
+    flex-shrink: 0;
+    padding: var(--ui-space-lg);
+    margin: 0 0 var(--ui-space-md) 0;
+    min-height: var(--ui-card-min-height);
+    align-items: flex-start;
+    white-space: normal;
+}
+
+.data-card__icon
+{
+    width: var(--ui-card-icon-size);
+    height: var(--ui-card-icon-size);
+    flex-shrink: 0;
+    margin-bottom: var(--ui-space-md);
+}
+
+.data-card__icon.creature-portrait
+{
+    width: var(--ui-portrait-size);
+    height: var(--ui-portrait-size);
+}
+
+.data-card__title
+{
+    white-space: normal;
+    margin-bottom: var(--ui-space-xs);
+}
+
+.data-card__description
+{
+    white-space: normal;
+}
+
+.data-card__status
+{
+    white-space: normal;
+    margin-top: var(--ui-space-sm);
+}
+
+.spell-list .data-card
+{
+    width: var(--ui-spell-width);
+    min-height: var(--ui-spell-min-height);
+    margin-right: var(--ui-space-md);
+    margin-bottom: var(--ui-space-xxs);
+}
+
+.spell-list .data-card__icon
+{
+    width: var(--ui-spell-icon-size);
+    height: var(--ui-spell-icon-size);
+    margin-bottom: var(--ui-space-xs);
+}
+
+.spell-list .data-card__description
+{
+    display: none;
+}
+
+.collection-list .data-card
+{
+    width: var(--ui-item-width);
+    min-height: var(--ui-item-min-height);
+    margin-right: var(--ui-space-lg);
+    margin-bottom: var(--ui-space-lg);
+}
+
+.is-compact .collection-list .data-card
+{
+    width: var(--ui-item-compact-width);
+}
+
+.card-shell
+{
+    position: relative;
+    flex-shrink: 0;
+    margin-bottom: var(--ui-space-md);
+}
+
+.card-shell > .data-card
+{
+    width: 100%;
+    margin: 0;
+}
+
+.card-info
+{
+    display: none;
+}
+
+.spell-list .card-shell
+{
+    width: var(--ui-spell-width);
+    margin-right: var(--ui-space-md);
+    margin-bottom: var(--ui-space-xxs);
+}
+
+.collection-list .card-shell
+{
+    width: var(--ui-item-width);
+    margin-right: var(--ui-space-lg);
+    margin-bottom: var(--ui-space-lg);
+}
+
+.collection-list .card-shell > .data-card
+{
+    margin: 0;
+}
+
+.is-compact .collection-list .card-shell
+{
+    width: var(--ui-item-compact-width);
+}

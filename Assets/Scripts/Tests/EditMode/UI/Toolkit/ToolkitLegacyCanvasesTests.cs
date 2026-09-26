@@ -46,7 +46,6 @@ public class ToolkitLegacyCanvasesTests
     public void Hide_ScreenCanvas_DisablesCanvasAndRaycaster()
     {
         _legacyCanvases.Hide(_context);
-
         Assert.IsFalse(_screenCanvas.enabled);
         Assert.IsFalse(_raycaster.enabled);
     }
@@ -55,7 +54,6 @@ public class ToolkitLegacyCanvasesTests
     public void Hide_WorldSpaceCanvas_KeepsItEnabled()
     {
         _legacyCanvases.Hide(_context);
-
         Assert.IsTrue(_worldCanvas.enabled);
     }
 
@@ -64,9 +62,7 @@ public class ToolkitLegacyCanvasesTests
     {
         _raycaster.enabled = false;
         _legacyCanvases.Hide(_context);
-
         _legacyCanvases.Restore();
-
         Assert.IsTrue(_screenCanvas.enabled);
         Assert.IsFalse(_raycaster.enabled); // it was already off before Hide
     }

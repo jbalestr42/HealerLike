@@ -1,0 +1,157 @@
+.game-ui
+{
+    color: var(--ui-ink);
+    font-size: var(--ui-text-body);
+}
+
+.surface
+{
+    background-color: var(--ui-panel);
+    border-width: var(--ui-border-width);
+    border-color: var(--ui-border);
+    border-radius: var(--ui-radius-surface);
+}
+
+.brand
+{
+    font-size: var(--ui-text-brand);
+    -unity-font-style: bold;
+    color: var(--ui-accent);
+    letter-spacing: var(--ui-tracking-brand);
+}
+
+.eyebrow
+{
+    font-size: var(--ui-text-eyebrow);
+    -unity-font-style: bold;
+    letter-spacing: var(--ui-tracking-eyebrow);
+    color: var(--ui-muted);
+}
+
+.heading
+{
+    font-size: var(--ui-text-heading);
+    -unity-font-style: bold;
+    color: var(--ui-ink);
+}
+
+.muted
+{
+    color: var(--ui-muted);
+    font-size: var(--ui-text-small);
+}
+
+.currency
+{
+    color: var(--ui-gold);
+    -unity-font-style: bold;
+    font-size: var(--ui-text-value);
+}
+
+.button
+{
+    background-color: var(--ui-card);
+    border-width: var(--ui-border-width);
+    border-color: var(--ui-border);
+    border-radius: var(--ui-radius-control);
+    color: var(--ui-ink);
+    font-size: var(--ui-text-control);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.button:hover
+{
+    background-color: var(--ui-control-hover);
+    border-color: var(--ui-accent);
+}
+
+.button:focus
+{
+    border-color: var(--ui-gold);
+    border-width: var(--ui-focus-border-width);
+}
+
+.button:active
+{
+    background-color: var(--ui-control-active);
+}
+
+.button--primary
+{
+    background-color: var(--ui-accent);
+    color: var(--ui-primary-ink);
+    border-color: var(--ui-accent);
+}
+
+.button--primary:hover
+{
+    background-color: var(--ui-primary-hover);
+}
+
+.button--quiet
+{
+    background-color: var(--ui-quiet-fill);
+}
+
+.button:disabled,
+.data-card:disabled,
+.is-disabled
+{
+    opacity: 0.42;
+}
+
+.data-card
+{
+    background-color: var(--ui-card);
+    border-width: var(--ui-border-width);
+    border-color: var(--ui-border);
+    border-radius: var(--ui-radius-card);
+    color: var(--ui-ink);
+    -unity-text-align: upper-left;
+}
+
+.data-card:hover
+{
+    background-color: var(--ui-card-hover);
+    border-color: var(--ui-accent);
+}
+
+.data-card:focus,
+.data-card.is-selected
+{
+    border-color: var(--ui-gold);
+    border-width: var(--ui-focus-border-width);
+}
+
+.data-card__icon,
+.detail-icon
+{
+    background-color: var(--ui-icon-fill);
+    border-radius: var(--ui-radius-control);
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.data-card__title
+{
+    font-size: var(--ui-text-body);
+    -unity-font-style: bold;
+    color: var(--ui-ink);
+}
+
+.data-card__description
+{
+    font-size: var(--ui-text-caption);
+    color: var(--ui-muted);
+}
+
+.data-card__status
+{
+    font-size: var(--ui-text-caption);
+    color: var(--ui-gold);
+}
+
+.is-affordable .data-card__status
+{
+    color: var(--ui-accent);
+}

@@ -1,1 +1,7 @@
 @import url("unity-theme://default");
+@import url("Themes/Forest.uss");
+@import url("Themes/Metrics.uss");
+@import url("GameUI.Layout.uss");
+@import url("GameUI.Theme.uss");
+@import url("GameUI.Mobile.uss");
+@import url("GameUI.Map.uss");

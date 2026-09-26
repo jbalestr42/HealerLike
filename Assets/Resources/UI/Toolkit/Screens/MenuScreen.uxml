@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Label text="EVERY LIFE IS IN YOUR HANDS" class="eyebrow" />
+    <ui:Label text="A healer's journey" class="menu-title" />
+    <ui:Label text="Build your party. Master your spells. Lead your companions through the next encounter." class="menu-description muted" />
+    <ui:Label text="Begin an expedition and prepare your party." class="menu-hint" />
+</ui:UXML>

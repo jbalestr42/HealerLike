@@ -27,10 +27,15 @@ public sealed class ToolkitMapPanel : IDisposable
 
     public void Refresh()
     {
-        if (_context == null || _view == null) return;
+        if (_context == null || _view == null)
+        {
+            return;
+        }
+
         RunState run = _context.ascension != null ? _context.ascension.run : null;
         bool visible = run != null && _context.IsCurrentView(ViewType.Map);
-        bool canSelect = visible && LegacyUiReader.AscensionState(_context.ascension) == AscensionGameType.State.SelectRoom;
+        bool canSelect =
+            visible && LegacyUiReader.AscensionState(_context.ascension) == AscensionGameType.State.SelectRoom;
         _view.Show("map-panel", visible);
         _view.Show("map-button", run != null);
         _open.SetEnabled(CanOpen());
@@ -40,35 +45,59 @@ public sealed class ToolkitMapPanel : IDisposable
             _graph.Hide();
             return;
         }
+
         _view.SetText("map-title", canSelect ? "Choose your next room" : "Your expedition");
-        _view.SetText("map-progress", run.currentNode == null ? "THE JOURNEY BEGINS"
-            : $"ROOM {run.currentFloor + 1} / {run.map.floorCount + 1}");
-        _view.SetText("map-description", canSelect ? "Follow a bright path. Select a room to continue."
-            : "Plan your route, then return to your party.");
+        _view.SetText(
+            "map-progress",
+            run.currentNode == null ? "THE JOURNEY BEGINS" : $"ROOM {run.currentFloor + 1} / {run.map.floorCount + 1}"
+        );
+        _view.SetText(
+            "map-description",
+            canSelect
+                ? "Follow a bright path. Select a room to continue."
+                : "Plan your route, then return to your party."
+        );
         _graph.Display(run, canSelect);
     }
 
     bool CanOpen()
     {
-        return _context != null && _context.ascension != null && _context.ascension.run != null
-            && _context.IsCurrentView(ViewType.Game) && _context.IsPreparing()
-            && !_context.isPaused && !_context.isInventoryOpen && !_context.hasInteraction
-            && _context.legacy != null && _context.legacy.gameHUD.mapButton != null
+        return _context != null
+            && _context.ascension != null
+            && _context.ascension.run != null
+            && _context.IsCurrentView(ViewType.Game)
+            && _context.IsPreparing()
+            && !_context.isPaused
+            && !_context.isInventoryOpen
+            && !_context.hasInteraction
+            && _context.legacy != null
+            && _context.legacy.gameHUD.mapButton != null
             && _context.legacy.gameHUD.mapButton.interactable;
     }
 
     void Open()
     {
-        if (!CanOpen()) return;
+        if (!CanOpen())
+        {
+            return;
+        }
+
         _context.legacy.gameHUD.mapButton.onClick.Invoke();
         Refresh();
     }
 
-    void OnClose() { Close(); }
+    void OnClose()
+    {
+        Close();
+    }
 
     public bool Close()
     {
-        if (_context == null || !_context.IsCurrentView(ViewType.Map) || !_context.IsPreparing()) return false;
+        if (_context == null || !_context.IsCurrentView(ViewType.Map) || !_context.IsPreparing())
+        {
+            return false;
+        }
+
         _context.ui.PopCurrentView();
         Refresh();
         return true;
@@ -76,22 +105,49 @@ public sealed class ToolkitMapPanel : IDisposable
 
     void Select(MapNode node)
     {
-        if (_context == null) return;
+        if (_context == null)
+        {
+            return;
+        }
+
         RunState run = _context.ascension != null ? _context.ascension.run : null;
         // Recheck on click, including a queued second click after travel or a restarted run.
-        if (run == null || !_context.IsCurrentView(ViewType.Map)
+        if (
+            run == null
+            || !_context.IsCurrentView(ViewType.Map)
             || LegacyUiReader.AscensionState(_context.ascension) != AscensionGameType.State.SelectRoom
-            || !run.CanTravelTo(node)) return;
+            || !run.CanTravelTo(node)
+        )
+        {
+            return;
+        }
+
         _context.ui.GetView<MapView>(ViewType.Map).OnNodeSelected.Invoke(node);
         Refresh();
     }
 
     public void Dispose()
     {
-        if (_open != null) _open.clicked -= Open;
-        if (_close != null) _close.clicked -= OnClose;
-        if (_recenter != null && _graph != null) _recenter.clicked -= _graph.Recenter;
-        _graph?.Dispose();
+        if (_open != null)
+        {
+            _open.clicked -= Open;
+        }
+
+        if (_close != null)
+        {
+            _close.clicked -= OnClose;
+        }
+
+        if (_recenter != null && _graph != null)
+        {
+            _recenter.clicked -= _graph.Recenter;
+        }
+
+        if (_graph != null)
+        {
+            _graph.Dispose();
+        }
+
         _graph = null;
         _open = _close = _recenter = null;
         _context = null;

@@ -1,0 +1,25 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="map-dialog" class="dialog map-dialog surface">
+        <ui:VisualElement class="dialog-header map-header">
+            <ui:VisualElement class="map-heading">
+                <ui:Label name="map-progress" text="THE JOURNEY BEGINS" class="eyebrow" />
+                <ui:Label name="map-title" text="Choose your next room" class="dialog-title" />
+            </ui:VisualElement>
+            <ui:Button name="map-close-button" text="Back" class="button button--quiet is-hidden" />
+        </ui:VisualElement>
+        <ui:Label name="map-description" text="Follow a bright path. Select a room to continue." class="muted map-description" />
+        <ui:ScrollView name="map-scroll" mode="VerticalAndHorizontal" class="map-scroll" horizontal-scroller-visibility="Auto" vertical-scroller-visibility="Auto">
+            <ui:VisualElement name="map-canvas" class="map-canvas">
+                <ui:VisualElement name="map-connections" class="map-connections" picking-mode="Ignore" />
+            </ui:VisualElement>
+        </ui:ScrollView>
+        <ui:VisualElement class="map-footer">
+            <ui:VisualElement class="map-legend">
+                <ui:Label text="NEXT" class="map-key map-key--available" />
+                <ui:Label text="HERE" class="map-key map-key--current" />
+                <ui:Label text="VISITED" class="map-key map-key--visited" />
+            </ui:VisualElement>
+            <ui:Button name="map-recenter-button" text="My route" class="button button--quiet" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

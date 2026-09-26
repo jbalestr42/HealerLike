@@ -1,0 +1,270 @@
+.game-ui
+{
+    flex-grow: 1;
+    padding: var(--ui-space-xl);
+}
+
+.top-bar
+{
+    flex-direction: row;
+    align-items: center;
+    min-height: var(--ui-header-height);
+    padding: var(--ui-space-lg) var(--ui-panel-inline-padding);
+    flex-shrink: 0;
+}
+
+.brand-block
+{
+    width: var(--ui-brand-width);
+}
+
+.run-status
+{
+    flex-grow: 1;
+}
+
+.header-actions
+{
+    flex-direction: row;
+    align-items: center;
+}
+
+.currency
+{
+    margin-right: var(--ui-panel-inline-padding);
+}
+
+.main-content
+{
+    flex-grow: 1;
+    flex-direction: row;
+    margin-top: var(--ui-space-lg);
+    margin-bottom: var(--ui-space-lg);
+    min-height: var(--ui-field-min-height);
+}
+
+.party-panel
+{
+    width: var(--ui-party-width);
+    padding: var(--ui-space-xl) var(--ui-space-lg);
+}
+
+.section-heading
+{
+    margin-bottom: var(--ui-space-sm);
+}
+
+.section-description
+{
+    white-space: normal;
+    margin-bottom: var(--ui-space-lg);
+}
+
+.party-list
+{
+    flex-grow: 1;
+}
+
+.world-space
+{
+    flex-grow: 1;
+    min-width: var(--ui-field-min-width);
+}
+
+.detail-panel
+{
+    width: var(--ui-detail-width);
+    align-self: flex-start;
+    max-height: 100%;
+    padding: var(--ui-detail-padding);
+}
+
+.detail-icon
+{
+    width: var(--ui-detail-icon-size);
+    height: var(--ui-detail-icon-size);
+    margin-top: var(--ui-button-inline-padding);
+    margin-bottom: var(--ui-compact-gap);
+}
+
+.detail-title
+{
+    white-space: normal;
+    margin-bottom: var(--ui-space-md);
+}
+
+.detail-description
+{
+    white-space: normal;
+}
+
+.detail-scroll
+{
+    flex-shrink: 1;
+}
+
+.detail-actions
+{
+    margin-top: var(--ui-space-lg);
+}
+
+.detail-actions .button
+{
+    margin-left: 0;
+    margin-top: var(--ui-space-sm);
+}
+
+.detail-targeting
+{
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: var(--ui-space-md);
+}
+
+.detail-targeting > .unity-base-field__label
+{
+    min-width: 0;
+    margin-bottom: var(--ui-space-xs);
+}
+
+.button
+{
+    min-height: var(--ui-control-height);
+    margin: 0 0 0 var(--ui-space-sm);
+    padding: var(--ui-space-sm) var(--ui-button-inline-padding);
+}
+
+.button--small
+{
+    min-width: var(--ui-small-control-width);
+    min-height: var(--ui-small-control-height);
+    padding: var(--ui-small-control-padding) var(--ui-space-sm);
+}
+
+.detail-icon.creature-portrait
+{
+    width: var(--ui-detail-portrait-size);
+    height: var(--ui-detail-portrait-size);
+    flex-shrink: 0;
+}
+
+.health-bar,
+.cast-bar
+{
+    width: 100%;
+    height: var(--ui-health-height);
+    margin-top: var(--ui-space-sm);
+}
+
+.is-hidden
+{
+    display: none;
+}
+
+.game-ui.is-compact
+{
+    padding: var(--ui-space-md);
+}
+
+.is-compact .brand-block
+{
+    width: var(--ui-brand-compact-width);
+}
+
+.is-compact .party-panel
+{
+    width: var(--ui-party-compact-width);
+}
+
+.is-compact .detail-panel
+{
+    width: var(--ui-sidebar-compact-width);
+}
+
+.is-compact .top-bar
+{
+    padding: var(--ui-space-md) var(--ui-space-lg);
+}
+
+.action-button
+{
+    min-height: var(--ui-control-height);
+    max-width: 100%;
+    white-space: normal;
+    padding: var(--ui-space-sm) var(--ui-space-md);
+    margin-top: var(--ui-space-md);
+}
+
+.unity-scroller--vertical
+{
+    min-width: var(--ui-scrollbar-width);
+    max-width: var(--ui-scrollbar-width);
+}
+
+.unity-scroller--horizontal
+{
+    min-height: var(--ui-scrollbar-width);
+    max-height: var(--ui-scrollbar-width);
+}
+
+.field-toolbar
+{
+    flex-direction: row;
+    flex-shrink: 0;
+    margin-top: var(--ui-space-sm);
+}
+
+.toolbar-space
+{
+    flex-grow: 1;
+}
+
+.mobile-only
+{
+    display: none;
+}
+
+.drawer-header
+{
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section-heading-actions
+{
+    flex-direction: row;
+    flex-shrink: 0;
+}
+.drawer-header > .section-heading
+{
+    flex-grow: 1;
+}
+.dialog-content
+{
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-height: 0;
+}
+.action-section-content
+{
+    flex-shrink: 0;
+}
+.map-connections
+{
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+.toolkit-preview
+{
+    flex-shrink: 0;
+    background-color: var(--ui-preview-background);
+}
+
+.toolkit-document
+{
+    flex-grow: 1;
+}

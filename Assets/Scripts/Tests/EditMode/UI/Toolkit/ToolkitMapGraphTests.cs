@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 
 namespace UI.Toolkit
 {
+
 public class ToolkitMapGraphTests
 {
     VisualElement _root;
@@ -19,16 +20,22 @@ public class ToolkitMapGraphTests
     }
 
     [TearDown]
-    public void TearDown() { _graph.Dispose(); }
+    public void TearDown()
+    {
+        _graph.Dispose();
+    }
 
-    Button Node(MapNode node) { return _root.Q<Button>($"map-node-{node.floor}-{node.column}"); }
+    Button Node(MapNode node)
+    {
+        return _root.Q<Button>($"map-node-{node.floor}-{node.column}");
+    }
 
     [Test]
     public void Display_BindsUpstreamNodesAndAllConnections()
     {
         _graph.Display(_run, true);
         Assert.AreEqual(5, _root.Query<Button>(className: "map-node").ToList().Count);
-        Assert.AreEqual(5, _root.Q<ToolkitMapConnections>("map-connections").edgeCount);
+        Assert.AreEqual(5, _graph.connectionCount);
         Assert.AreSame(_run.map.startNodes[0], Node(_run.map.startNodes[0]).userData);
         Assert.IsTrue(Node(_run.map.startNodes[0]).enabledSelf);
         Assert.IsFalse(Node(_run.map.boss).enabledSelf);
@@ -59,7 +66,10 @@ public class ToolkitMapGraphTests
         _graph.Display(_run, false);
         Assert.IsTrue(Node(_run.map.startNodes[0]).ClassListContains("is-available"));
         foreach (Button button in _root.Query<Button>(className: "map-node").ToList())
+        {
             Assert.IsFalse(button.enabledSelf);
+        }
+
         Assert.IsNull(_run.currentNode);
     }
 
@@ -82,7 +92,9 @@ public class ToolkitMapGraphTests
         _graph.Dispose();
         _graph.Display(_run, true);
         Assert.AreEqual(0, _root.Query<Button>(className: "map-node").ToList().Count);
-        Assert.IsNull(_root.Q("map-connections"));
+        Assert.IsNotNull(_root.Q("map-connections"));
+        Assert.IsNull(_root.Q("map-connections").userData);
+        Assert.AreEqual(0, _graph.connectionCount);
     }
 }
 }

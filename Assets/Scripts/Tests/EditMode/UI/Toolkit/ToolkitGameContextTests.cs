@@ -9,7 +9,6 @@ public class ToolkitGameContextTests
     public void IsPreparing_NoAscension_ReturnsTrue()
     {
         ToolkitGameContext context = new ToolkitGameContext();
-
         Assert.IsTrue(context.IsPreparing());
     }
 
@@ -18,7 +17,6 @@ public class ToolkitGameContextTests
     {
         ToolkitGameContext context = new ToolkitGameContext();
         context.isMenu = true;
-
         Assert.IsFalse(context.IsCurrentView(ViewType.Map));
     }
 
@@ -26,7 +24,6 @@ public class ToolkitGameContextTests
     public void HasInteraction_NoInteractionManager_ReturnsFalse()
     {
         ToolkitGameContext context = new ToolkitGameContext();
-
         Assert.IsFalse(context.hasInteraction);
     }
 }

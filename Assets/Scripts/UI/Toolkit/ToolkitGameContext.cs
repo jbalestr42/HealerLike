@@ -15,10 +15,15 @@ public class ToolkitGameContext
     public Entity selectedEntity;
     public AItem selectedItem;
     public InventoryHandler selectedItemOwner;
+    public bool hasInteraction
+    {
+        get { return interaction != null && interaction.GetInteraction() != null; }
+    }
 
-    public bool hasInteraction { get { return interaction != null && interaction.GetInteraction() != null; } }
-
-    public InventoryHandler stash { get { return legacy.playerInventory.inventory.inventoryHandler; } }
+    public InventoryHandler stash
+    {
+        get { return legacy.playerInventory.inventory.inventoryHandler; }
+    }
 
     public void Init()
     {

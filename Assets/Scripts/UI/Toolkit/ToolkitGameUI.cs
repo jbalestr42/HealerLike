@@ -5,15 +5,20 @@ using UnityEngine.UIElements;
 public class ToolkitGameUI : MonoBehaviour
 {
     [SerializeField] string _gameplayScene = "Main";
+
     [SerializeField] string _menuScene = "MenuScene";
+
     [SerializeField] bool _hideLegacyCanvases = true;
+
     [SerializeField] VisualTreeAsset _layout;
 
+    [SerializeField] ThemeStyleSheet _theme;
     UIDocument _document;
     ToolkitGameView _view;
     PanelSettings _ownedPanel;
     float _nextRefresh;
-    bool _interactionActive;
+    ToolkitGameActions _actions;
+    bool _started;
     ToolkitGameContext _context = new ToolkitGameContext();
     ToolkitLegacyCanvases _legacyCanvases = new ToolkitLegacyCanvases();
     ToolkitTimeControls _timeControls = new ToolkitTimeControls();
@@ -26,13 +31,18 @@ public class ToolkitGameUI : MonoBehaviour
     ToolkitInventoryPanel _inventoryPanel = new ToolkitInventoryPanel();
     ToolkitMobileLayout _mobileLayout = new ToolkitMobileLayout();
     IToolkitIconProvider _iconProvider;
-
-    public IToolkitIconProvider iconProvider { get { return _iconProvider; } }
+    public IToolkitIconProvider iconProvider
+    {
+        get { return _iconProvider; }
+    }
 
     public void SetIconProvider(IToolkitIconProvider provider)
     {
         _iconProvider = provider;
-        if (_view != null && isActiveAndEnabled) _view.SetIconProvider(provider);
+        if (_view != null && isActiveAndEnabled)
+        {
+            _view.SetIconProvider(provider);
+        }
     }
 
     public System.Func<string, bool> sceneLoader { get; set; }
@@ -40,25 +50,37 @@ public class ToolkitGameUI : MonoBehaviour
     // Optional host insets, expressed as a normalized bottom-left screen rectangle.
     public System.Func<Rect> safeAreaProvider { get; set; }
 
-    public Rect normalizedWorldViewport { get { return _mobileLayout.normalizedWorldViewport; } }
+    public Rect normalizedWorldViewport
+    {
+        get { return _mobileLayout.normalizedWorldViewport; }
+    }
 
     public void SetBattleFocus(bool focused, System.Action toggle)
     {
         _mobileLayout.SetBattleFocus(focused, toggle);
     }
 
-    public string gameplayScene { get { return _gameplayScene; } set { _gameplayScene = value; } }
+    public string gameplayScene
+    {
+        get { return _gameplayScene; }
+        set { _gameplayScene = value; }
+    }
 
-    public string menuScene { get { return _menuScene; } set { _menuScene = value; } }
+    public string menuScene
+    {
+        get { return _menuScene; }
+        set { _menuScene = value; }
+    }
 
     void Start()
     {
+        _started = true;
         Init();
     }
 
     void OnEnable()
     {
-        if (_view != null)
+        if (_started)
         {
             Init();
         }
@@ -76,7 +98,7 @@ public class ToolkitGameUI : MonoBehaviour
         _document = GetComponent<UIDocument>();
         if (_ownedPanel == null)
         {
-            _ownedPanel = ToolkitMobileLayout.CreatePanelSettings(_document.panelSettings);
+            _ownedPanel = ToolkitTheme.CreatePanelSettings(_document.panelSettings, _theme);
             _document.panelSettings = _ownedPanel;
         }
 
@@ -88,35 +110,32 @@ public class ToolkitGameUI : MonoBehaviour
             return;
         }
 
-        if (_view != null)
-        {
-            _view.Release();
-        }
-
+        ReleaseView();
         VisualElement root = _document.rootVisualElement;
         root.Clear();
-        root.style.flexGrow = 1f;
+        root.AddToClassList("toolkit-document");
+        if (!ToolkitTheme.Apply(root, _theme))
+        {
+            enabled = false;
+            return;
+        }
+
+        _ownedPanel.themeStyleSheet = ToolkitTheme.Resolve(_theme);
         layout.CloneTree(root);
-        // CloneTree may introduce full-screen TemplateContainers, keep the board pickable
-        root.Query<TemplateContainer>().ForEach(IgnorePicking);
+        if (!ToolkitLayoutContract.Validate(root))
+        {
+            enabled = false;
+            return;
+        }
+
+        ToolkitTemplates.PreparePicking(root);
         _view = new ToolkitGameView(root, _iconProvider);
         _context.Init();
         _view.OnInspect.AddListener(_detailPanel.OnInspect);
         _view.OnInspectEnded.AddListener(_detailPanel.OnInspectEnded);
         _mobileLayout.Init(_view, _context, _document);
-        _view.AddClickListener("wave-button", StartOrAdvance);
-        _view.AddClickListener("start-button", StartOrAdvance);
-        _view.AddClickListener("inventory-button", OnInventoryClicked);
-        _view.AddClickListener("inventory-close-button", OnInventoryCloseClicked);
         _timeControls.Init(this, _context, _view);
-        _view.AddClickListener("restart-button", OnRestartClicked);
-        _view.AddClickListener("menu-button", OnRestartClicked);
-        Toggle markToggle = root.Q<Toggle>("mark-entity-toggle");
-        if (markToggle != null)
-        {
-            markToggle.RegisterValueChangedCallback(OnMarkToggleChanged);
-        }
-
+        _actions = new ToolkitGameActions(this, _context, _view, _timeControls, _mobileLayout, _mapPanel);
         _encounterBar.Init(_context, _view);
         _detailPanel.Init(_context, _view);
         _inventoryPanel.Init(this, _context, _view, _detailPanel);
@@ -134,12 +153,7 @@ public class ToolkitGameUI : MonoBehaviour
 
     void OnDestroy()
     {
-        _mapPanel.Dispose();
-        if (_view != null)
-        {
-            _view.Release();
-        }
-
+        ReleaseView();
         if (_ownedPanel != null)
         {
             Destroy(_ownedPanel);
@@ -148,11 +162,8 @@ public class ToolkitGameUI : MonoBehaviour
 
     void OnDisable()
     {
-        _mapPanel.Dispose();
-        // Keep the host's provider for re-enable, but stop refreshing the detached view.
-        if (_view != null) _view.Release();
+        ReleaseView();
         _legacyCanvases.Restore();
-        _timeControls.Resume();
         if (_document != null && _document.rootVisualElement != null)
         {
             _document.rootVisualElement.Clear();
@@ -166,12 +177,7 @@ public class ToolkitGameUI : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            OnEscape();
-        }
-
-        _interactionActive = _context.hasInteraction;
+        _actions.Update();
         _mobileLayout.Update(safeAreaProvider);
         if (Time.unscaledTime >= _nextRefresh)
         {
@@ -182,6 +188,11 @@ public class ToolkitGameUI : MonoBehaviour
 
     public void Refresh()
     {
+        if (_view == null || !isActiveAndEnabled)
+        {
+            return;
+        }
+
         _mobileLayout.Refresh();
         _mapPanel.Refresh();
         _view.Show("pause-panel", _context.isPaused && _context.IsCurrentView(ViewType.Game));
@@ -221,93 +232,23 @@ public class ToolkitGameUI : MonoBehaviour
         }
     }
 
-    static void IgnorePicking(TemplateContainer container)
+    void ReleaseView()
     {
-        container.pickingMode = PickingMode.Ignore;
-    }
-
-    void StartOrAdvance()
-    {
-        if (_context.isMenu)
+        if (_actions != null)
         {
-            LoadScene(_gameplayScene);
-            return;
+            _actions.Dispose();
+            _actions = null;
         }
 
-        if (_context.isPaused || _context.legacy == null || !_context.IsCurrentView(ViewType.Game))
+        _timeControls.Dispose();
+        _mobileLayout.Dispose();
+        _inventoryPanel.Dispose();
+        _detailPanel.Dispose();
+        _mapPanel.Dispose();
+        if (_view != null)
         {
-            return;
-        }
-
-        GameHUD hud = _context.legacy.gameHUD;
-        bool isStart = LegacyUiReader.GameState(_context.game) == GameManager.GameState.None;
-        if (isStart && hud.startGameButton.interactable)
-        {
-            hud.startGameButton.onClick.Invoke();
-        }
-        else if (hud.nextWaveButton.interactable)
-        {
-            hud.nextWaveButton.onClick.Invoke();
-        }
-    }
-
-    void LoadScene(string scene)
-    {
-        _timeControls.ResetSpeed();
-        bool loaded = sceneLoader != null ? sceneLoader.Invoke(scene) : ToolkitSceneNavigation.TryLoad(scene);
-        if (!loaded)
-        {
-            _view.SetText("status-label", $"Scene '{scene}' is not included in this player build.");
-        }
-    }
-
-    void OnEscape()
-    {
-        if (_mapPanel.Close()) return;
-        if (_mobileLayout.CloseDrawers())
-        {
-            return;
-        }
-
-        if (_context.isInventoryOpen)
-        {
-            _context.isInventoryOpen = false;
-        }
-        else if (_interactionActive || _context.hasInteraction)
-        {
-            if (_context.interaction != null)
-            {
-                _context.interaction.CancelInteraction();
-            }
-        }
-        else
-        {
-            _timeControls.TogglePause();
-        }
-    }
-
-    void OnInventoryClicked()
-    {
-        _context.isInventoryOpen = !_context.isInventoryOpen;
-        Refresh();
-    }
-
-    void OnInventoryCloseClicked()
-    {
-        _context.isInventoryOpen = false;
-        Refresh();
-    }
-
-    void OnRestartClicked()
-    {
-        LoadScene(_menuScene);
-    }
-
-    void OnMarkToggleChanged(ChangeEvent<bool> evt)
-    {
-        if (_context.legacy != null)
-        {
-            _context.legacy.gameHUD.markEntityToggle.isOn = evt.newValue;
+            _view.Release();
+            _view = null;
         }
     }
 }

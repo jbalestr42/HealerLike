@@ -1,0 +1,133 @@
+.modal-layer
+{
+    background-color: var(--ui-scrim);
+}
+
+.dialog
+{
+    border-top-color: var(--ui-accent);
+    border-top-width: var(--ui-dialog-accent-width);
+}
+
+.dialog-title
+{
+    font-size: var(--ui-text-title);
+    -unity-font-style: bold;
+    color: var(--ui-ink);
+}
+
+.menu-title
+{
+    font-size: var(--ui-text-display);
+    -unity-font-style: bold;
+    color: var(--ui-accent);
+}
+
+.menu-description
+{
+    font-size: var(--ui-text-heading);
+}
+
+.menu-hint
+{
+    color: var(--ui-gold);
+    font-size: var(--ui-text-control);
+}
+
+.mana-bar .unity-progress-bar__background
+{
+    background-color: var(--ui-mana-track);
+    border-radius: var(--ui-radius-meter);
+}
+
+.mana-bar .unity-progress-bar__progress
+{
+    background-color: var(--ui-mana-fill);
+    border-radius: var(--ui-radius-meter);
+}
+
+.mana-bar .unity-progress-bar__title
+{
+    color: var(--ui-meter-ink);
+    font-size: var(--ui-text-caption);
+}
+
+.health-bar .unity-progress-bar__progress
+{
+    background-color: var(--ui-health-fill);
+}
+
+.cast-bar .unity-progress-bar__progress
+{
+    background-color: var(--ui-gold);
+}
+
+.marker-toggle
+{
+    color: var(--ui-muted);
+    font-size: var(--ui-text-caption);
+}
+
+.unity-scroller--vertical
+{
+    width: var(--ui-scrollbar-width);
+}
+
+.unity-scroller--horizontal
+{
+    height: var(--ui-scrollbar-width);
+}
+
+.unity-scroller__low-button,
+.unity-scroller__high-button
+{
+    display: none;
+}
+
+.action-button
+{
+    background-color: var(--ui-card);
+    border-width: var(--ui-border-width);
+    border-color: var(--ui-border);
+    border-radius: var(--ui-radius-control);
+    color: var(--ui-ink);
+    font-size: var(--ui-text-small);
+}
+
+.action-button:disabled
+{
+    opacity: 0.42;
+}
+
+.unity-scroller .unity-base-slider__tracker
+{
+    background-color: var(--ui-panel-solid);
+    border-width: 0;
+}
+
+.unity-scroller .unity-base-slider__dragger
+{
+    background-color: var(--ui-border);
+    border-width: 0;
+    border-radius: var(--ui-radius-meter);
+}
+
+.unity-base-popup-field__input
+{
+    background-color: var(--ui-card);
+    border-color: var(--ui-border);
+    color: var(--ui-ink);
+}
+
+.unity-toggle__input > .unity-toggle__checkmark
+{
+    background-color: var(--ui-card);
+    border-width: var(--ui-border-width);
+    border-color: var(--ui-border);
+}
+
+.button.is-selected
+{
+    border-color: var(--ui-accent);
+    background-color: var(--ui-control-hover);
+}

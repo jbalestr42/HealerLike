@@ -1,0 +1,162 @@
+.is-mobile.is-landscape .top-bar
+{
+    min-height: var(--ui-header-landscape-height);
+}
+
+.is-mobile.is-landscape .command-dock
+{
+    flex-direction: row;
+}
+
+.is-mobile.is-landscape .command-section
+{
+    width: var(--ui-command-landscape-width);
+    margin-left: var(--ui-compact-gap);
+    margin-top: 0;
+}
+
+.is-mobile.is-landscape .spell-list
+{
+    height: var(--ui-spell-landscape-list-height);
+}
+
+.is-mobile.is-landscape .spell-list .card-shell,
+.is-mobile.is-landscape .spell-list .data-card
+{
+    height: var(--ui-spell-landscape-height);
+}
+
+.is-mobile.is-landscape .spell-list .data-card__icon
+{
+    display: none;
+}
+
+.is-mobile.is-landscape .spell-list .data-card__title
+{
+    margin-top: 0;
+    padding-right: var(--ui-menu-padding);
+    height: var(--ui-spell-landscape-title-height);
+}
+
+.is-mobile.is-landscape .menu-panel
+{
+    margin-top: 0;
+    padding: var(--ui-space-lg);
+}
+
+.is-mobile.is-landscape .menu-title
+{
+    margin-top: var(--ui-space-sm);
+    margin-bottom: var(--ui-space-sm);
+    font-size: var(--ui-text-mobile-title);
+}
+
+.is-mobile.is-landscape .menu-description,
+.is-mobile.is-landscape .menu-hint
+{
+    display: none;
+}
+
+.is-mobile.is-landscape .party-panel,
+.is-mobile.is-landscape .detail-panel
+{
+    top: var(--ui-drawer-landscape-top);
+    max-height: none;
+    padding: var(--ui-space-md);
+}
+
+.is-mobile.is-landscape .party-panel .section-description
+{
+    display: none;
+}
+
+.is-mobile.is-landscape .party-list .data-card
+{
+    min-height: var(--ui-party-landscape-height);
+    padding: var(--ui-space-md) var(--ui-card-landscape-info-inset) var(--ui-space-md) var(--ui-space-md);
+}
+
+.is-mobile.is-landscape .party-list .data-card.creature-card
+{
+    min-height: var(--ui-party-landscape-portrait-height);
+    padding: var(--ui-space-md) var(--ui-card-landscape-info-inset) var(--ui-space-md) var(--ui-card-landscape-portrait-inset);
+}
+
+.is-mobile.is-landscape .party-list .creature-card .data-card__description
+{
+    display: none;
+}
+
+.is-mobile.is-landscape .party-list .creature-card .data-card__title,
+.is-mobile.is-landscape .party-list .creature-card .data-card__status
+{
+    margin: 0;
+    padding: 0;
+}
+
+.is-mobile.is-landscape .party-list .creature-card .data-card__status
+{
+    margin-top: var(--ui-space-xs);
+}
+
+.is-mobile.is-landscape .party-list .data-card__icon,
+.is-mobile.is-landscape .detail-icon
+{
+    display: none;
+}
+
+.is-mobile.is-landscape .party-list .creature-card .data-card__icon.creature-portrait
+{
+    display: flex;
+    left: var(--ui-portrait-landscape-inset);
+    top: var(--ui-portrait-landscape-inset);
+    width: var(--ui-portrait-compact-size);
+    height: var(--ui-portrait-compact-size);
+}
+
+.is-mobile.is-landscape .detail-icon.creature-portrait
+{
+    display: flex;
+    width: var(--ui-portrait-size);
+    height: var(--ui-portrait-size);
+}
+
+.is-mobile.is-landscape .party-list .data-card__description
+{
+    font-size: var(--ui-text-small);
+}
+
+.is-mobile.is-landscape .dialog--compact
+{
+    padding: var(--ui-space-lg);
+}
+
+.is-mobile.is-landscape .dialog--compact .dialog-title
+{
+    font-size: var(--ui-text-landscape-title);
+    margin-top: var(--ui-space-xxs);
+    margin-bottom: var(--ui-space-xs);
+}
+
+.is-mobile.is-landscape .dialog--compact .dialog-description
+{
+    margin-bottom: var(--ui-space-md);
+}
+
+.is-mobile.is-landscape .pause-settings
+{
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: var(--ui-space-lg);
+}
+
+.is-mobile.is-landscape .pause-settings .speed-controls
+{
+    width: 50%;
+    margin-bottom: 0;
+}
+
+.is-mobile.is-landscape .pause-settings .marker-toggle
+{
+    margin: 0 0 0 var(--ui-panel-inline-padding);
+}

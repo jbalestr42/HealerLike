@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 // The equipment cards and the moves between the stash and the allies, which keep the chosen slot
-public class ToolkitInventoryPanel
+public class ToolkitInventoryPanel : IDisposable
 {
     ToolkitGameUI _gameUI;
     ToolkitGameContext _context;
@@ -12,14 +12,16 @@ public class ToolkitInventoryPanel
     ToolkitDetailPanel _detailPanel;
     Button _equipButton;
     Button _inventoryEquipButton;
-    DropdownField _inventoryTarget;
-    DropdownField _inventorySlot;
-    List<int> _availableSlots = new List<int>();
-    List<Entity> _inventoryTargets = new List<Entity>();
+    ToolkitInventoryChoices _choices;
 
-    public void Init(ToolkitGameUI gameUI, ToolkitGameContext context, ToolkitGameView view,
-                     ToolkitDetailPanel detailPanel)
+    public void Init(
+        ToolkitGameUI gameUI,
+        ToolkitGameContext context,
+        ToolkitGameView view,
+        ToolkitDetailPanel detailPanel
+    )
     {
+        Dispose();
         _gameUI = gameUI;
         _context = context;
         _view = view;
@@ -29,36 +31,46 @@ public class ToolkitInventoryPanel
             return;
         }
 
-        _equipButton = new Button(TransferSelectedItem);
-        _equipButton.text = "Select equipment";
-        _equipButton.AddToClassList("button");
-        detailPanel.actionsHost.Add(_equipButton);
+        if (!ToolkitTemplates.Require(view.root, "detail-equip-button", out _equipButton))
+        {
+            return;
+        }
+
+        _equipButton.clicked += TransferSelectedItem;
         _inventoryEquipButton = view.root.Q<Button>("inventory-equip-button");
         if (_inventoryEquipButton != null)
         {
             _inventoryEquipButton.clicked += TransferSelectedItem;
         }
 
-        _inventoryTarget = view.root.Q<DropdownField>("inventory-target");
-        _inventorySlot = view.root.Q<DropdownField>("inventory-slot");
-        if (_inventoryTarget != null)
+        _choices = new ToolkitInventoryChoices(context, view.root, OnTargetSelected);
+    }
+
+    public void Dispose()
+    {
+        if (_equipButton != null)
         {
-            _inventoryTarget.RegisterValueChangedCallback(OnTargetChanged);
+            _equipButton.clicked -= TransferSelectedItem;
         }
+
+        if (_inventoryEquipButton != null)
+        {
+            _inventoryEquipButton.clicked -= TransferSelectedItem;
+        }
+
+        if (_choices != null)
+        {
+            _choices.Dispose();
+            _choices = null;
+        }
+
+        _equipButton = null;
+        _inventoryEquipButton = null;
     }
 
     public void Refresh()
     {
-        if (_inventoryTarget != null && _context.entities != null)
-        {
-            RefreshTargets();
-        }
-
-        if (_inventorySlot != null && _context.selectedEntity != null)
-        {
-            RefreshSlots();
-        }
-
+        _choices.Refresh();
         List<ToolkitCardModel> models = new List<ToolkitCardModel>();
         AddItems(models, _context.stash, "Stash");
         if (_context.selectedEntity != null)
@@ -94,10 +106,14 @@ public class ToolkitInventoryPanel
         bool isFromStash = _context.selectedItemOwner == stash;
         Character character = _context.player != null ? _context.player.character : null;
         bool isHealerItem = character != null && _context.selectedItemOwner == character.inventoryHandler;
-        bool isValid = isPreparing && !_context.isPaused && _context.selectedItem != null
+        bool isValid =
+            isPreparing
+            && !_context.isPaused
+            && _context.selectedItem != null
             && _context.selectedItemOwner != null
             && ToolkitInventoryTransfer.Contains(_context.selectedItemOwner, _context.selectedItem)
-            && !isHealerItem && (!isFromStash || _context.selectedEntity != null);
+            && !isHealerItem
+            && (!isFromStash || _context.selectedEntity != null);
         _equipButton.SetEnabled(isValid);
         _equipButton.text = GetEquipText(isFromStash, isHealerItem);
         _detailPanel.EnableTargeting(isPreparing && _context.selectedEntity != null && !_context.isPaused);
@@ -106,44 +122,6 @@ public class ToolkitInventoryPanel
             _inventoryEquipButton.SetEnabled(isValid);
             _inventoryEquipButton.text = _equipButton.text;
         }
-    }
-
-    void RefreshTargets()
-    {
-        _inventoryTargets.Clear();
-        foreach (GameObject entityGo in _context.entities.GetEntities(Entity.EntityType.Player))
-        {
-            if (entityGo != null)
-            {
-                _inventoryTargets.Add(entityGo.GetComponent<Entity>());
-            }
-        }
-
-        List<string> choices = new List<string>();
-        for (int i = 0; i < _inventoryTargets.Count; i++)
-        {
-            choices.Add($"{i + 1}. {_inventoryTargets[i].data.title}");
-        }
-
-        _inventoryTarget.choices = choices;
-        int selected = _inventoryTargets.IndexOf(_context.selectedEntity);
-        _inventoryTarget.SetValueWithoutNotify(selected >= 0 ? _inventoryTarget.choices[selected] : "Choose an ally");
-    }
-
-    void RefreshSlots()
-    {
-        List<int> slots = ToolkitInventoryTransfer.EmptySlots(_context.selectedEntity.inventoryHandler);
-        List<string> labels = new List<string>();
-        foreach (int index in slots)
-        {
-            labels.Add($"Slot {index + 1} · {3 - Mathf.Min(index, 2)}× effect");
-        }
-
-        string previous = _inventorySlot.value;
-        _availableSlots = slots;
-        _inventorySlot.choices = labels;
-        _inventorySlot.SetValueWithoutNotify(labels.Contains(previous) ? previous : labels[0]);
-        _inventorySlot.SetEnabled(_context.selectedItemOwner == _context.stash);
     }
 
     void AddItems(List<ToolkitCardModel> models, InventoryHandler owner, string location)
@@ -216,15 +194,10 @@ public class ToolkitInventoryPanel
         RefreshEquipmentAction(true);
     }
 
-    void OnTargetChanged(ChangeEvent<string> evt)
+    void OnTargetSelected()
     {
-        int index = _inventoryTarget.index;
-        if (index >= 0 && index < _inventoryTargets.Count)
-        {
-            _context.selectedEntity = _inventoryTargets[index];
-            _detailPanel.RefreshEntity();
-            _gameUI.Refresh();
-        }
+        _detailPanel.RefreshEntity();
+        _gameUI.Refresh();
     }
 
     void TransferSelectedItem()
@@ -249,10 +222,9 @@ public class ToolkitInventoryPanel
         }
 
         int index = ToolkitInventoryTransfer.FirstEmptySlot(destination);
-        if (destination != stash && _inventorySlot != null && _inventorySlot.index >= 0
-            && _inventorySlot.index < _availableSlots.Count)
+        if (destination != stash)
         {
-            index = _availableSlots[_inventorySlot.index];
+            index = _choices.GetSlot(index);
         }
 
         if (!ToolkitInventoryTransfer.Transfer(item, owner, destination, index))

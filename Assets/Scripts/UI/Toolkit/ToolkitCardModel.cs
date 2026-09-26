@@ -9,6 +9,7 @@ public class ToolkitCardModel
     public string description;
     public string status;
     public bool isEnabled = true;
+
     // What the card acts on, read back by its activate callback
     public object source;
     public UnityAction<ToolkitCardModel> activate;

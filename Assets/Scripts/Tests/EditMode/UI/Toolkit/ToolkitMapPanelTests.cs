@@ -6,6 +6,7 @@ using UnityEngine.UIElements;
 
 namespace UI.Toolkit
 {
+
 public class ToolkitMapPanelTests
 {
     GameObject _host;
@@ -37,8 +38,11 @@ public class ToolkitMapPanelTests
         mapHost.transform.SetParent(_host.transform);
         _legacyMap = mapHost.AddComponent<MapView>();
         _legacyMap.OnNodeSelected.AddListener(node => _selections++);
-        TestHelpers.SetPrivateField(_context.ui, "_views", new Dictionary<ViewType, AView>
-            { { ViewType.Game, _context.legacy }, { ViewType.Map, _legacyMap } });
+        TestHelpers.SetPrivateField(
+            _context.ui,
+            "_views",
+            new Dictionary<ViewType, AView> { { ViewType.Game, _context.legacy }, { ViewType.Map, _legacyMap } }
+        );
         TestHelpers.SetPrivateField(_context.ui, "_viewStack", new List<ViewType> { ViewType.Game, ViewType.Map });
         SetView(ViewType.Map, AscensionGameType.State.SelectRoom);
         TestHelpers.SetPrivateField(_context.ascension, "_run", _run);
@@ -64,7 +68,8 @@ public class ToolkitMapPanelTests
 
     void Select(MapNode node)
     {
-        typeof(ToolkitMapPanel).GetMethod("Select", BindingFlags.Instance | BindingFlags.NonPublic)
+        typeof(ToolkitMapPanel)
+            .GetMethod("Select", BindingFlags.Instance | BindingFlags.NonPublic)
             .Invoke(_panel, new object[] { node });
     }
 
@@ -139,7 +144,9 @@ public class ToolkitMapPanelTests
     public void Reinitialize_ReleasesPreviousVisualTreeBeforeRebinding()
     {
         _panel.Refresh();
-        ToolkitGameView replacement = new ToolkitGameView(Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree());
+        ToolkitGameView replacement = new ToolkitGameView(
+            Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree()
+        );
         try
         {
             _panel.Init(_context, replacement);
@@ -147,7 +154,11 @@ public class ToolkitMapPanelTests
             Assert.IsNull(_view.root.Q("map-connections"));
             Assert.AreEqual(5, replacement.root.Query<Button>(className: "map-node").ToList().Count);
         }
-        finally { _panel.Dispose(); replacement.Release(); }
+        finally
+        {
+            _panel.Dispose();
+            replacement.Release();
+        }
     }
 }
 }
