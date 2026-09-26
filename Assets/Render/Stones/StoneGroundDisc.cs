@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HealerLike.Render.Creatures;
 using HealerLike.Render.Stage;
 using UnityEngine;
 
@@ -14,6 +15,10 @@ namespace HealerLike.Render.Stones
         Vector3 _directionToLight;
         StageKeyLight _keyLight;
         bool _isShown;
+        readonly BorrowedMeshCopies _meshCopies = new BorrowedMeshCopies();
+        MeshFilter _filter;
+        Mesh _sourceMesh;
+        Mesh _meshCopy;
 
         public bool isShadow { get { return _isShadow; } }
 
@@ -21,10 +26,40 @@ namespace HealerLike.Render.Stones
         // always shows when its owner shows it
         public void Init(Bounds localBounds, Vector3 directionToLight, StageKeyLight keyLight)
         {
+            CopyMesh();
             _bounds = localBounds;
             _directionToLight = directionToLight;
             _keyLight = keyLight;
             Refresh();
+        }
+
+        // The prefab disc is another active descendant scanned by the legacy selection outline.
+        void CopyMesh()
+        {
+            _filter = GetComponent<MeshFilter>();
+            if (!_filter)
+            {
+                return;
+            }
+
+            if (_filter.sharedMesh != _meshCopy)
+            {
+                _sourceMesh = _filter.sharedMesh;
+            }
+
+            _meshCopies.Dispose();
+            _meshCopy = _meshCopies.Get(_sourceMesh);
+            _filter.sharedMesh = _meshCopy;
+        }
+
+        void OnDestroy()
+        {
+            if (_filter && _filter.sharedMesh == _meshCopy)
+            {
+                _filter.sharedMesh = _sourceMesh;
+            }
+
+            _meshCopies.Dispose();
         }
 
         public void Show(bool show)

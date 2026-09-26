@@ -22,6 +22,7 @@ namespace HealerLike.Render.Deliveries
         DeliveryVocabulary _vocabulary;
         int _nextToken;
         bool _isDisposed;
+        bool _copyBorrowedMeshes;
 
         // A held delivery keeps its arm and lease. Its next rest uses the edited recipe.
         public void Refresh()
@@ -33,12 +34,14 @@ namespace HealerLike.Render.Deliveries
         }
 
         // One arm per arm of the rig's recipe, more are made on demand up to the cap
-        public void Init(CreatureRig rig, Material material, PrimitiveMeshes meshes, DeliveryVocabulary vocabulary)
+        public void Init(CreatureRig rig, Material material, PrimitiveMeshes meshes, DeliveryVocabulary vocabulary,
+            bool copyBorrowedMeshes = false)
         {
             _rig = rig;
             _material = material;
             _meshes = meshes;
             _vocabulary = vocabulary;
+            _copyBorrowedMeshes = copyBorrowedMeshes;
             for (int i = 0; i < _rig.armCount; i++)
             {
                 CreateArm(i, i);
@@ -244,7 +247,8 @@ namespace HealerLike.Render.Deliveries
         {
             _definitions[slot] = definitionIndex;
             _arms[slot] = new LianaArm();
-            _arms[slot].Init(_rig.GetArm(definitionIndex), _rig.root, _material, _meshes, _vocabulary, _rig.cellSize);
+            _arms[slot].Init(_rig.GetArm(definitionIndex), _rig.root, _material, _meshes, _vocabulary,
+                _rig.cellSize, _copyBorrowedMeshes);
             _arms[slot].Tick(0f, _rig.ArmSocket(definitionIndex), _rig.armRotation);
         }
 

@@ -33,14 +33,14 @@ namespace HealerLike.Render.Creatures
             }
 
             CreatureRig created = new CreatureRig();
-            if (!created.Init(recipe, parent, material, bodyMaterial, meshes, cellSize))
+            if (!created.Init(recipe, parent, material, bodyMaterial, meshes, cellSize, true))
             {
                 return false;
             }
 
             _rig = created;
             _pool = new ArmPool();
-            _pool.Init(_rig, material, meshes, vocabulary);
+            _pool.Init(_rig, material, meshes, vocabulary, true);
             return true;
         }
 

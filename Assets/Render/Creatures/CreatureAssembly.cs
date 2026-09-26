@@ -10,6 +10,8 @@ namespace HealerLike.Render.Creatures
         readonly List<CreaturePartView> _keptParts = new List<CreaturePartView>();
         readonly RootChain _roots = new RootChain();
         ShapeMeshCache _shapeMeshes = new ShapeMeshCache();
+        BorrowedMeshCopies _borrowedMeshes = new BorrowedMeshCopies();
+        bool _copyBorrowedMeshes;
         Transform[] _geometry = Array.Empty<Transform>();
         Renderer[] _renderers = Array.Empty<Renderer>();
         Transform[] _buds = Array.Empty<Transform>();
@@ -28,8 +30,9 @@ namespace HealerLike.Render.Creatures
             get { return _buds; }
         }
 
-        public void Init(Transform parent)
+        public void Init(Transform parent, bool copyBorrowedMeshes = false)
         {
+            _copyBorrowedMeshes = copyBorrowedMeshes;
             root = new GameObject("GeneratedCreature").transform;
             root.SetParent(parent, false);
             root.localScale = Vector3.one / parent.lossyScale.x;
@@ -58,6 +61,7 @@ namespace HealerLike.Render.Creatures
             }
 
             ShapeMeshCache nextMeshes = new ShapeMeshCache();
+            BorrowedMeshCopies nextBorrowed = new BorrowedMeshCopies();
             Mesh[] resolved = new Mesh[recipe.parts.Length];
             for (int i = 0; i < recipe.parts.Length; i++)
             {
@@ -65,9 +69,14 @@ namespace HealerLike.Render.Creatures
                 resolved[i] = part.shape.isProcedural
                     ? nextMeshes.Get(part.shape, part.variant)
                     : meshes.GetMesh(part.primitive, part.variant);
+                if (_copyBorrowedMeshes && !part.shape.isProcedural)
+                {
+                    resolved[i] = nextBorrowed.Get(resolved[i]);
+                }
                 if (resolved[i] == null)
                 {
                     nextMeshes.Dispose();
+                    nextBorrowed.Dispose();
                     return false;
                 }
             }
@@ -108,9 +117,12 @@ namespace HealerLike.Render.Creatures
             seed = nextSeed;
             MeasureAppearance();
             _buds = buds.ToArray();
-            _roots.Init(data.roots, root, meshes, material, ColourJitter.Vary(data.roots.colour, seed));
+            _roots.Init(data.roots, root, meshes, material, ColourJitter.Vary(data.roots.colour, seed),
+                _copyBorrowedMeshes ? nextBorrowed : null);
             _shapeMeshes.Dispose();
             _shapeMeshes = nextMeshes;
+            _borrowedMeshes.Dispose();
+            _borrowedMeshes = nextBorrowed;
             return true;
         }
 
@@ -181,6 +193,7 @@ namespace HealerLike.Render.Creatures
         {
             _roots.Clear();
             _shapeMeshes.Dispose();
+            _borrowedMeshes.Dispose();
             data = null;
             _geometry = Array.Empty<Transform>();
             _renderers = Array.Empty<Renderer>();
