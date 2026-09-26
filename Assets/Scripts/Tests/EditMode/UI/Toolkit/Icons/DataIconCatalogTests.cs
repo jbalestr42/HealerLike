@@ -97,5 +97,34 @@ public class DataIconCatalogTests
 
         Assert.IsNull(found);
     }
+
+    [Test]
+    public void FindDescriptor_EmptyMatchingEntry_StillFindsLaterArtwork()
+    {
+        ItemFactory first = CreateTracked<ItemFactory>();
+        first.data = new ItemData { name = "Ward" };
+        ItemFactory second = CreateTracked<ItemFactory>();
+        second.data = first.data;
+        Texture2D artwork = CreateTexture();
+        AddEntry(first, null, null);
+        AddEntry(second, null, artwork);
+
+        Texture2D found = _catalog.FindDescriptor(DataIconDescriptor.From(first.GetItem()));
+
+        Assert.AreSame(artwork, found);
+    }
+
+    [Test]
+    public void Find_EmptyMatchingEntry_StillFindsLaterTexture()
+    {
+        EntityData source = CreateTracked<EntityData>();
+        Texture2D generated = CreateTexture();
+        AddEntry(source, null, null);
+        AddEntry(source, generated, null);
+
+        Texture2D found = _catalog.Find(source);
+
+        Assert.AreSame(generated, found);
+    }
 }
 }
