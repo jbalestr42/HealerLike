@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -22,15 +21,18 @@ namespace HealerLike.Render.Stage
         static readonly string pipelinePath = "Assets/Settings/Very High_PipelineAsset.asset";
         static readonly string lookShaderPath = "Assets/Render/Shaders/Look.shader";
 
-        readonly List<Object> _owned = new List<Object>();
+        GroundCaptureState _state;
 
         protected override IEnumerator Run()
         {
-            foreach (LookController owner in Object.FindObjectsByType<LookController>())
+            using (_state = new GroundCaptureState(Object.FindObjectsByType<LookController>()))
             {
-                owner.enabled = false;
+                yield return Capture();
             }
+        }
 
+        IEnumerator Capture()
+        {
             QualitySettings.renderPipeline = RenderAssets.Load<RenderPipelineAsset>(pipelinePath);
             Camera camera = CreateCamera();
             LookController look = Fixture("GroundFixtureLook").AddComponent<LookController>();
@@ -66,10 +68,6 @@ namespace HealerLike.Render.Stage
                 Debug.LogError("[GroundCaptureRun] The carpet did not draw across repaints or outlived its snapshot.");
             }
 
-            foreach (Object owned in _owned)
-            {
-                Object.Destroy(owned);
-            }
             StagePlay.Finish(this, isPassed);
         }
 
@@ -77,7 +75,7 @@ namespace HealerLike.Render.Stage
         {
             GameObject go = new GameObject(name);
             go.layer = fixtureLayer;
-            _owned.Add(go);
+            _state.created.Add(go);
             return go;
         }
 
@@ -105,11 +103,11 @@ namespace HealerLike.Render.Stage
         GrassField CreateField(Camera camera, ZoneRegistry registry)
         {
             Material material = new Material(RenderAssets.Load<Shader>(lookShaderPath));
-            _owned.Add(material);
+            _state.created.Add(material);
             // The slab's stored value is already linear, as the fixture was tuned, so it stays darker than the carpet
             material.SetColor(RenderObjects.BaseColorId, ((Color)new Color32(78, 126, 87, 255)).linear);
             GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            _owned.Add(ground);
+            _state.created.Add(ground);
             ground.layer = fixtureLayer;
             ground.transform.localScale = new Vector3(8f, 0.2f, 8f);
             ground.transform.position = Vector3.down * 0.1f;
@@ -117,7 +115,7 @@ namespace HealerLike.Render.Stage
             for (int i = 0; i < 3; i++)
             {
                 GameObject stone = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                _owned.Add(stone);
+                _state.created.Add(stone);
                 stone.name = "FixtureStone" + i;
                 stone.layer = fixtureLayer;
                 stone.transform.position = new Vector3((i - 1) * 2.2f, 0f, 1.6f);
@@ -144,22 +142,28 @@ namespace HealerLike.Render.Stage
         static int GreenPixels(Camera camera, bool isWritten)
         {
             Texture2D texture = StageReadback.Render(camera, width, height);
-            int count = 0;
-            foreach (Color32 pixel in texture.GetPixels32())
+            try
             {
-                if (pixel.g > 100 && pixel.g > pixel.r * 1.1f && pixel.g > pixel.b * 1.3f)
+                int count = 0;
+                foreach (Color32 pixel in texture.GetPixels32())
                 {
-                    count++;
+                    if (pixel.g > 100 && pixel.g > pixel.r * 1.1f && pixel.g > pixel.b * 1.3f)
+                    {
+                        count++;
+                    }
                 }
-            }
 
-            if (isWritten)
-            {
-                Directory.CreateDirectory(StagePlay.CaptureFolder);
-                File.WriteAllBytes(StagePlay.CaptureFolder + "render-ground-fixture.png", texture.EncodeToPNG());
+                if (isWritten)
+                {
+                    Directory.CreateDirectory(StagePlay.CaptureFolder);
+                    File.WriteAllBytes(StagePlay.CaptureFolder + "render-ground-fixture.png", texture.EncodeToPNG());
+                }
+                return count;
             }
-            Object.Destroy(texture);
-            return count;
+            finally
+            {
+                RenderObjects.Release(texture);
+            }
         }
     }
 }

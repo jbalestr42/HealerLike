@@ -52,7 +52,8 @@ namespace HealerLike.Render.Stage
             if (string.IsNullOrEmpty(revision)
                 || !System.Text.RegularExpressions.Regex.IsMatch(revision, @"\A[0-9a-fA-F]{40}\z"))
             {
-                Debug.LogError("[StagePreviewBuild] RENDER_BUILD_REVISION must be the exact 40-character Git commit SHA.");
+                Debug.LogError("[StagePreviewBuild] RENDER_BUILD_REVISION must be the exact "
+                    + "40-character Git commit SHA.");
                 EditorApplication.Exit(1);
                 return;
             }
@@ -112,7 +113,8 @@ namespace HealerLike.Render.Stage
                     };
                     File.WriteAllText(reportPath, JsonUtility.ToJson(buildReport, true));
 
-                    Debug.Log($"[StagePreviewBuild] Android {report.summary.result}, errors {report.summary.totalErrors}, output {output}, report {reportPath}");
+                    Debug.Log($"[StagePreviewBuild] Android {report.summary.result}, "
+                        + $"errors {report.summary.totalErrors}, output {output}, report {reportPath}");
                 }
             }
             catch (System.Exception error)
@@ -123,7 +125,8 @@ namespace HealerLike.Render.Stage
 
             if (failed)
             {
-                Debug.LogError("[StagePreviewBuild] The Android render preview build failed, did not produce an APK, or did not retain the required legacy input backend.");
+                Debug.LogError("[StagePreviewBuild] The Android render preview build failed, did not produce an APK, "
+                    + "or did not retain the required legacy input backend.");
                 EditorApplication.Exit(1);
             }
         }

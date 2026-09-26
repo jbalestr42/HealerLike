@@ -27,7 +27,8 @@ namespace HealerLike.Render.Stage
                     {
                         draw = draw,
                         normalEdges = draw.properties.HasFloat("_HLNormalEdges")
-                            ? draw.properties.GetFloat("_HLNormalEdges") : field.lookMaterial.GetFloat("_HLNormalEdges"),
+                            ? draw.properties.GetFloat("_HLNormalEdges")
+                            : field.lookMaterial.GetFloat("_HLNormalEdges"),
                         shadows = draw.shadowCastingMode
                     });
                 }

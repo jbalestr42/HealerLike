@@ -38,7 +38,8 @@ namespace HealerLike.Render.Studio.Editor
         {
             using (CreatureRoster roster = new CreatureRoster())
             {
-                Entity.EntityType entitySide = side == LookSide.Plant ? Entity.EntityType.Player : Entity.EntityType.Computer;
+                Entity.EntityType entitySide = side == LookSide.Plant
+                    ? Entity.EntityType.Player : Entity.EntityType.Computer;
                 roster.Reload(vocabulary, entitySide);
                 for (int i = 0; i < roster.rows.Count; i++)
                 {
@@ -80,7 +81,8 @@ namespace HealerLike.Render.Studio.Editor
                     string name = example.group + "-" + side + "-" + example.name + ".png";
                     Save(preview.Capture(example.recipe, 0f, 720, 720), Path.Combine(output, name));
                     manifest.AppendLine(example.group + "\t" + side + "\t" + name + "\t" + example.name
-                        + "\tmanual grammar\t" + JsonUtility.ToJson(example.channels) + "\t" + example.recipe.parts.Length);
+                        + "\tmanual grammar\t" + JsonUtility.ToJson(example.channels)
+                        + "\t" + example.recipe.parts.Length);
                 }
             }
             finally
@@ -162,17 +164,10 @@ namespace HealerLike.Render.Studio.Editor
             {
                 throw new InvalidOperationException("Capture returned no image: " + path);
             }
-            try
-            {
-                File.WriteAllBytes(path, image.EncodeToPNG());
-            }
-            finally
-            {
-                Object.DestroyImmediate(image);
-            }
+            StudioCaptureOutput.Write(image, path);
         }
 
-        sealed class Example
+        class Example
         {
             public readonly string group;
             public readonly string name;

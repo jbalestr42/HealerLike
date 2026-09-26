@@ -7,7 +7,7 @@ namespace HealerLike.Render.Studio.Editor
 {
     // One runtime SpellEffect in a private scene, on its target creature, sampled by the studio timeline.
     // It never runs gameplay: the effect is disabled and only Sample moves it.
-    public class SpellStudioPreview : IPreviewSubject
+    public class SpellStudioPreview : IPreviewSubject, System.IDisposable
     {
         static readonly Color background = new Color(0.075f, 0.095f, 0.115f);
         static readonly float hatchMultiplier = 0.2f;

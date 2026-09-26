@@ -19,12 +19,14 @@ namespace HealerLike.Render.Studio.Editor
             LookVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<LookVocabulary>(
                 RenderGrammarLibraryWindow.AssetPaths[0]);
             CreatureRoster roster = new CreatureRoster();
-            LookVocabulary copy = Object.Instantiate(vocabulary);
-            LookPalette palette = Object.Instantiate(vocabulary.palette);
-            copy.palette = palette;
+            LookVocabulary copy = null;
+            LookPalette palette = null;
             System.Text.StringBuilder manifest = new System.Text.StringBuilder("side\timage\tasset\tchannels\n");
             try
             {
+                copy = Object.Instantiate(vocabulary);
+                palette = Object.Instantiate(vocabulary.palette);
+                copy.palette = palette;
                 foreach (Entity.EntityType side in new[] { Entity.EntityType.Player, Entity.EntityType.Computer })
                 {
                     roster.Reload(vocabulary, side);
@@ -32,7 +34,8 @@ namespace HealerLike.Render.Studio.Editor
                     {
                         CreatureRosterRow row = roster.rows[i];
                         string file = side + "-" + i.ToString("00") + ".png";
-                        Write(row.preview.Capture(row.recipe, 1.25f, 540, 450), Path.Combine(output, file));
+                        StudioCaptureOutput.Write(row.preview.Capture(row.recipe, 1.25f, 540, 450),
+                            Path.Combine(output, file));
                         manifest.AppendLine(side + "\t" + file + "\t" + row.path + "\t"
                             + row.ChannelLabel().Replace('\n', ' '));
                     }
@@ -41,11 +44,13 @@ namespace HealerLike.Render.Studio.Editor
                 if (roster.rows.Count > 0)
                 {
                     CreatureRosterRow row = roster.rows[0];
-                    Write(row.preview.Capture(row.recipe, 1.25f, 540, 450), Path.Combine(output, "palette-before.png"));
+                    StudioCaptureOutput.Write(row.preview.Capture(row.recipe, 1.25f, 540, 450),
+                        Path.Combine(output, "palette-before.png"));
                     palette.plantBody = new Color(0.95f, 0.08f, 0.35f);
                     palette.plantStem = new Color(0.9f, 0.28f, 0.06f);
                     roster.Rebuild(copy, Entity.EntityType.Player);
-                    Write(row.preview.Capture(row.recipe, 1.25f, 540, 450), Path.Combine(output, "palette-after.png"));
+                    StudioCaptureOutput.Write(row.preview.Capture(row.recipe, 1.25f, 540, 450),
+                        Path.Combine(output, "palette-after.png"));
                 }
                 File.WriteAllText(Path.Combine(output, "roster.tsv"), manifest.ToString());
                 Debug.Log("[CreatureStudioCapture] Real roster captured: " + roster.rows.Count + " sources per side.");
@@ -79,37 +84,37 @@ namespace HealerLike.Render.Studio.Editor
                     side = LookSide.Stone;
                 }
 
-                CreatureStudioPreview creature = new CreatureStudioPreview();
-                creature.Init();
-                creature.side = side;
-                Write(creature.Capture(recipe, 1.25f, 1000, 800), Path.Combine(output, recipe.name + ".png"));
-                creature.Dispose();
-
-                SpellStudioPreset spell = ScriptableObject.CreateInstance<SpellStudioPreset>();
-                spell.vocabulary = vocabulary;
-                spell.element = EffectElement.Orbit;
-                spell.family = EffectFamily.Boon;
-                spell.tempo = EffectTempo.ForDuration;
-                SpellStudioPreview preview = new SpellStudioPreview();
-                preview.Init();
-                preview.target.recipe = recipe;
-                preview.target.side = side;
-                Write(preview.Capture(spell, 1.25f, 1000, 800), Path.Combine(output, recipe.name + " + Spell.png"));
-                preview.Dispose();
-                Object.DestroyImmediate(spell);
-                Object.DestroyImmediate(recipe);
+                SpellStudioPreset spell = null;
+                try
+                {
+                    using (CreatureStudioPreview creature = new CreatureStudioPreview())
+                    {
+                        creature.Init();
+                        creature.side = side;
+                        StudioCaptureOutput.Write(creature.Capture(recipe, 1.25f, 1000, 800),
+                            Path.Combine(output, recipe.name + ".png"));
+                    }
+                    spell = ScriptableObject.CreateInstance<SpellStudioPreset>();
+                    spell.vocabulary = vocabulary;
+                    spell.element = EffectElement.Orbit;
+                    spell.family = EffectFamily.Boon;
+                    spell.tempo = EffectTempo.ForDuration;
+                    using (SpellStudioPreview preview = new SpellStudioPreview())
+                    {
+                        preview.Init();
+                        preview.target.recipe = recipe;
+                        preview.target.side = side;
+                        StudioCaptureOutput.Write(preview.Capture(spell, 1.25f, 1000, 800),
+                            Path.Combine(output, recipe.name + " + Spell.png"));
+                    }
+                }
+                finally
+                {
+                    Object.DestroyImmediate(spell);
+                    Object.DestroyImmediate(recipe);
+                }
             }
         }
 
-        static void Write(Texture2D image, string path)
-        {
-            if (image == null)
-            {
-                return;
-            }
-
-            File.WriteAllBytes(path, image.EncodeToPNG());
-            Object.DestroyImmediate(image);
-        }
     }
 }

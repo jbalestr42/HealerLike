@@ -65,7 +65,8 @@ namespace HealerLike.Render.Studio.Editor
         public static string CreatureRevision(CreatureLooks looks)
         {
             LookVocabulary vocabulary = looks ? looks.vocabulary : null;
-            string revision = Stamp(looks) + ":" + Stamp(vocabulary) + ":" + Stamp(vocabulary ? vocabulary.palette : null);
+            string revision = Stamp(looks) + ":" + Stamp(vocabulary) + ":"
+                + Stamp(vocabulary ? vocabulary.palette : null);
             if (!looks)
             {
                 return revision;

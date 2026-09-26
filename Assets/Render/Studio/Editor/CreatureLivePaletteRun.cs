@@ -181,7 +181,8 @@ namespace HealerLike.Render.Studio.Editor
                     {
                         yield return null;
                     }
-                    profileRestored = JsonUtility.ToJson(_vocabulary.bodies[_editedMass].plant[0].shape) == originalProfile;
+                    profileRestored = JsonUtility.ToJson(_vocabulary.bodies[_editedMass].plant[0].shape)
+                        == originalProfile;
                     meshRestored = CreatureLiveEditMeasure.ChangedVertices(vertices,
                         CreatureLiveEditMeasure.BodyVertices(rig)) == 0 && rig.revision > revisionAfter;
                     passed &= profileRestored && meshRestored;
@@ -191,11 +192,13 @@ namespace HealerLike.Render.Studio.Editor
                     + ",\"changedPixels\":" + pixels + ",\"heldDeliveryPreserved\":"
                     + (held && lease).ToString().ToLowerInvariant() + ",\"realProjectile\":true,\"gestureToken\":"
                     + token + ",\"nativeGameViewWithHud\":true,\"shapeMode\":" + _shapes.ToString().ToLowerInvariant()
-                    + ",\"changedVertices\":" + changedVertices + ",\"anchorsPreserved\":" + anchorsHeld.ToString().ToLowerInvariant()
+                    + ",\"changedVertices\":" + changedVertices
+                    + ",\"anchorsPreserved\":" + anchorsHeld.ToString().ToLowerInvariant()
                     + ",\"profileRestored\":" + profileRestored.ToString().ToLowerInvariant()
                     + ",\"meshRestored\":" + meshRestored.ToString().ToLowerInvariant()
                     + ",\"originalProfile\":" + originalProfile + ",\"editedProfile\":" + editedProfile
-                    + ",\"blindSpot\":\"Simulation is paused; this verifies watcher propagation during a held delivery, not uninterrupted combat motion.\"}";
+                    + ",\"blindSpot\":\"Simulation is paused; this verifies watcher propagation during a held delivery, "
+                    + "not uninterrupted combat motion.\"}";
                 File.WriteAllText(Path.Combine(folder, prefix + "-proof.json"), report);
                 Debug.Log("[CreatureLivePaletteRun] " + report);
             }

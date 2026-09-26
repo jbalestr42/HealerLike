@@ -9,6 +9,7 @@ using HealerLike.Render.Grass;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Zones;
 using UnityEngine;
+using UnityEngine.Events;
 using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Stage
@@ -41,24 +42,32 @@ namespace HealerLike.Render.Stage
             public bool logicalCharacterUnchanged;
             public List<Vector3> projectileLogicalPositions = new List<Vector3>();
             public List<Vector3> projectileVisualPositions = new List<Vector3>();
-            public string limitation = "Captures freeze simulation at each sample. The projectile is spawned by the harness with the real Character as source; no Character projectile skill exists in the shipped roster. This verifies presentation and native rendering, not device performance.";
+            public string limitation = "Captures freeze simulation at each sample. The projectile is spawned by the harness "
+                + "with the real Character as source; no Character projectile skill exists in the shipped roster. "
+                + "This verifies presentation and native rendering, not device performance.";
         }
 
         protected override IEnumerator Run()
         {
-            StageGameViewSize size = new StageGameViewSize(1080, 1920);
             string folder = Path.Combine(StagePlay.CaptureFolder, "offscreen-player");
             StageMotionOutput output = new StageMotionOutput(folder);
             Proof proof = new Proof { unityVersion = Application.unityVersion };
-            output.manifest.condition = "Real Main with a hidden Character; six paused samples: playfield, heal, status cast and three projectile positions. Gameplay runs between projectile samples; this is not an ambient-motion comparison.";
-            output.manifest.region = "No pixel-difference region or ambient-motion metrics measured; zero-valued motion fields are unused.";
+            output.manifest.condition = "Real Main with a hidden Character; six paused samples: playfield, heal, "
+                + "status cast and three projectile positions. Gameplay runs between projectile samples; "
+                + "this is not an ambient-motion comparison.";
+            output.manifest.region = "No pixel-difference region or ambient-motion metrics measured; "
+                + "zero-valued motion fields are unused.";
             output.manifest.unityVersion = Application.unityVersion;
             output.manifest.gpu = SystemInfo.graphicsDeviceName;
-            output.manifest.revision = System.Environment.GetEnvironmentVariable("RENDER_CAPTURE_REVISION") ?? "unspecified";
+            output.manifest.revision = System.Environment.GetEnvironmentVariable("RENDER_CAPTURE_REVISION")
+                ?? "unspecified";
             float timeScale = Time.timeScale;
             BattleFocus focus = null;
             bool focusEnabled = false;
             GameObject shotGo = null;
+            ResourceAttribute observedHealth = null;
+            UnityAction<GameObject, ResourceModifier, float, bool> onHealth = null;
+            StageGameViewSize size = new StageGameViewSize(1080, 1920);
             try
             {
                 _manager.SetLandscape(false);
@@ -107,13 +116,15 @@ namespace HealerLike.Render.Stage
                 }
 
                 _manager.spellSink.Clear();
-                target.health.OnAllConsumerProcessed.AddListener((owner, modifier, amount, critical) =>
+                observedHealth = target.health;
+                onHealth = (owner, modifier, amount, critical) =>
                 {
                     if (modifier.source == character.gameObject && amount > 0f)
                     {
                         proof.resolvedCharacterHeals++;
                     }
-                });
+                };
+                observedHealth.OnAllConsumerProcessed.AddListener(onHealth);
                 ApplyConsumerCharacterSkillFactory healFactory = RenderAssets.Load<ApplyConsumerCharacterSkillFactory>(
                     "Assets/Data/CharacterSkills/HealSingleTarget/HealSingleTarget.asset");
                 ApplyConsumerCharacterSkill heal = (ApplyConsumerCharacterSkill)healFactory.Create();
@@ -200,6 +211,10 @@ namespace HealerLike.Render.Stage
             }
             finally
             {
+                if (observedHealth != null && onHealth != null)
+                {
+                    observedHealth.OnAllConsumerProcessed.RemoveListener(onHealth);
+                }
                 Time.timeScale = timeScale;
                 if (focus)
                 {

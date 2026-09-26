@@ -221,7 +221,8 @@ namespace HealerLike.Render.Stage
             }
 
             game.transform.SetPositionAndRotation(pose.position, pose.rotation);
-            _manager.look.UpdateFog(StageCalibration.BackgroundFog(pose.position, _manager.board, pose.rotation.eulerAngles.y));
+            _manager.look.UpdateFog(StageCalibration.BackgroundFog(pose.position, _manager.board,
+                pose.rotation.eulerAngles.y));
             for (int i = 0; i < 3; i++)
             {
                 yield return NextFrame();
