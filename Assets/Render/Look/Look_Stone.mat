@@ -25,14 +25,20 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _HLToonThresholdOffset: 0
-    - _HLHatchMultiplier: 1
     - _HLFaceHatch: 1
+    - _HLGrassTipLight: 0
     - _HLGroundGrid: 0
+    - _HLHatchMultiplier: 1
+    - _HLHighlightWidth: 0.025
+    - _HLMeadowVariation: 0
     - _HLNormalEdges: 1
-    - _HLOutlineWidthMultiplier: 1
+    - _HLOutlineWidthMultiplier: 2
     - _HLSmoothOutlineNormals: 0
+    - _HLToonThresholdOffset: 0
     m_Colors:
     - _BaseColor: {r: 0.76, g: 0.74, b: 0.67, a: 1}
+    - _HLHighlightTint: {r: 1, g: 1, b: 1, a: 0}
+    - _HLShadeTint: {r: 0, g: 0, b: 0, a: 0}
+    - _HLShadeTurnTint: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
