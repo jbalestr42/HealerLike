@@ -21,13 +21,30 @@ namespace UI.Toolkit
             Assert.AreEqual(PickingMode.Position, root.Q("party-panel").pickingMode);
             Assert.AreEqual(PickingMode.Position, root.Q("pause-panel").pickingMode);
             Assert.AreEqual(PickingMode.Ignore, root.Q("detail-actions").pickingMode);
-            Assert.AreSame(root.Q("detail-actions"), root.Q<DropdownField>("detail-targeting").parent.parent);
+            Assert.AreSame(root.Q("detail-actions"), root.Q<DropdownField>("detail-targeting").parent.parent,
+                DescribeHierarchy(root.Q("detail-targeting")) + " | Action content: "
+                + DescribeHierarchy(root.Q<TemplateContainer>("detail-actions").contentContainer));
             Assert.IsTrue(root.Q("inventory-actions").Contains(root.Q("inventory-equip-button")));
             Assert.IsTrue(root.Q("party-close-button").parent.ClassListContains("section-heading-actions"));
             Assert.IsTrue(root.Q("detail-close-button").parent.ClassListContains("section-heading-actions"));
             Assert.IsTrue(root.Q("resume-button").parent.ClassListContains("dialog-content"));
             Assert.IsTrue(root.Q("restart-button").parent.ClassListContains("dialog-content"));
             Assert.IsTrue(root.Q("upgrade-title").parent.ClassListContains("dialog-content"));
+        }
+
+        static string DescribeHierarchy(VisualElement element)
+        {
+            System.Text.StringBuilder path = new System.Text.StringBuilder();
+            while (element != null)
+            {
+                if (path.Length > 0)
+                {
+                    path.Append(" <- ");
+                }
+                path.Append(element.GetType().Name).Append("(").Append(element.name).Append(")");
+                element = element.parent;
+            }
+            return path.ToString();
         }
 
         [Test]
