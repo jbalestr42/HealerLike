@@ -18,6 +18,7 @@ namespace HealerLike.Render.Stage
         readonly StageCaptureSession _session;
         readonly List<(VisualElement element, StyleEnum<Visibility> visibility)> _hiddenUi =
             new List<(VisualElement, StyleEnum<Visibility>)>();
+        readonly List<Canvas> _worldCanvases = new List<Canvas>();
         readonly List<GameObject> _hidden = new List<GameObject>();
         readonly List<CreatureRig> _rigs = new List<CreatureRig>();
         readonly List<ArmPool> _pools = new List<ArmPool>();
@@ -36,6 +37,9 @@ namespace HealerLike.Render.Stage
             _ui = session.actions.ui.GetComponent<UIDocument>().rootVisualElement;
             foreach (VisualElement child in _ui.Children())
             { _hiddenUi.Add((child, child.style.visibility)); child.style.visibility = Visibility.Hidden; }
+            foreach (Canvas canvas in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+                if (canvas.enabled && canvas.renderMode == RenderMode.WorldSpace)
+                { _worldCanvases.Add(canvas); canvas.enabled = false; }
             foreach (ARigHost host in Object.FindObjectsByType<ARigHost>(FindObjectsSortMode.None))
                 if (host.gameObject.activeSelf)
                 { _hidden.Add(host.gameObject); host.gameObject.SetActive(false); }
@@ -43,6 +47,8 @@ namespace HealerLike.Render.Stage
 
         public IEnumerator Capture()
         {
+            // Widen only the fixture viewport. Same vertical resolution/FOV preserves actual pixel scale.
+            yield return _session.Resize(1440, 1920);
             foreach (HeadKind head in Enum.GetValues(typeof(HeadKind)))
             {
                 for (int count = 0; count < 3; count++)
@@ -69,7 +75,7 @@ namespace HealerLike.Render.Stage
                         _session.output.Check(rig.Init(recipe, parent.transform, _material, _manager.meshes),
                             "Fixture assembled " + channels.side + "/" + head + "/" + channels.count);
                         _rigs.Add(rig);
-                        rig.SetPresentationForward(_manager.gameCamera.transform.forward);
+                        rig.SetPresentationForward(-_manager.gameCamera.transform.forward);
                         // Fixture uses the same art scale as real rigs, with fixture-only board placement.
                         rig.Tick(0f, 0f, new FootFrame(at, Vector3.up, _manager.player.grid.size));
                         int outlets = recipe.parts.Count(p => p.isSource);
@@ -150,6 +156,7 @@ namespace HealerLike.Render.Stage
         {
             Clear();
             foreach (GameObject hidden in _hidden) if (hidden) hidden.SetActive(true);
+            foreach (Canvas canvas in _worldCanvases) if (canvas) canvas.enabled = true;
             foreach (var entry in _hiddenUi) entry.element.style.visibility = entry.visibility;
         }
     }
