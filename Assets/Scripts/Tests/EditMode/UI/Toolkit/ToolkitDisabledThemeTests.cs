@@ -23,6 +23,7 @@ namespace UI.Toolkit
             _root.style.height = 900f;
             _panel.root.Add(_root);
             _view = new ToolkitGameView(_root);
+            ToolkitHudGlyph.Attach(_root);
             _view.SetCards("party-list", new[]
             {
                 new ToolkitCardModel { title = "Unavailable creature", isEnabled = false },
@@ -88,7 +89,14 @@ namespace UI.Toolkit
             yield return null;
             yield return null;
             AssertColour(_root.Q<Button>("detail-equip-button"), cardColour);
-            AssertColour(_root.Q<Button>("pause-button"), new Color(12f/255, 47f/255, 44f/255, .30f));
+            Button pause = _root.Q<Button>("pause-button");
+            AssertColour(pause, Color.clear);
+            Assert.That(pause.resolvedStyle.width, Is.EqualTo(44).Within(.01));
+            Assert.That(pause.resolvedStyle.minHeight.value, Is.EqualTo(44).Within(.01));
+            VisualElement surface = pause.Q(className: "hud-icon-surface");
+            AssertColour(surface, new Color(12f/255, 47f/255, 44f/255, .12f));
+            Assert.That(surface.resolvedStyle.width, Is.EqualTo(28).Within(.01));
+            Assert.That(surface.pickingMode, Is.EqualTo(PickingMode.Ignore));
             AssertColour(_root.Q<Button>("wave-button"), new Color(16f/255, 63f/255, 56f/255, .85f));
             AssertColour(card, Color.clear);
             VisualElement input = _root.Q<DropdownField>("detail-targeting")
