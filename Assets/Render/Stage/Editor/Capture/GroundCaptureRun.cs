@@ -128,6 +128,7 @@ namespace HealerLike.Render.Stage
 
             GrassField field = Fixture("GroundFixtureGrass").AddComponent<GrassField>();
             EnvironmentAuthoring.SetGrass(field);
+            EnvironmentAuthoring.SetGround(field);
             field.Init(new Rect(-4f, -4f, 8f, 8f), 1f, 0f, camera, registry.buffer, ZonePacker.MaxZones);
             field.tuftBudget = tuftBudget;
             return field;

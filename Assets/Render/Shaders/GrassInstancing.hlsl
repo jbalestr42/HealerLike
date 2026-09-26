@@ -46,8 +46,30 @@ float3 HLYawGrassTuft(float3 v, float yaw)
     return float3(v.x * c + v.z * s, v.y, v.z * c - v.x * s);
 }
 
+// The tangent turns from HL_ROOT_BEND of the lean at the root to HL_ROOT_BEND plus HL_TIP_BEND at the tip, so the
+// chord from root to tip tilts by the lean itself; GrassTuft.RootBend and TipBend
+#define HL_ROOT_BEND 0.4
+#define HL_TIP_BEND 1.2
+
+float HLGrassSinc(float x)
+{
+    return abs(x) < 1e-4 ? 1.0 - x * x / 6.0 : sin(x) / x;
+}
+
+// The point a height share t along the bent axis of a tuft this tall, an arc of the tuft's own length
+float3 HLGrassSpine(float2 lean, float height, float t)
+{
+    float angle = length(lean);
+    float2 heading = angle > 1e-5 ? lean / angle : float2(0.0, 0.0);
+    float turn = angle * HL_TIP_BEND * t;
+    float mean = angle * (HL_ROOT_BEND + 0.5 * HL_TIP_BEND * t);
+    float chord = height * t * HLGrassSinc(0.5 * turn);
+    float across = chord * sin(mean);
+    return float3(heading.x * across, chord * cos(mean), heading.y * across);
+}
+
 // positionOS and normalOS are the unit tuft or socle of GrassTuft: base on y 0, apex at y 1, base width 1.
-// The tuft moves as a rigid body: scale, yaw, one tilt about its root, then the root position.
+// Scale and yaw, then the tuft bends: the section at each height rides the spine and turns with its tangent.
 // GrassTuft.Place and PlaceNormal mirror this on the CPU.
 void HLPlaceGrassTuft(float3 positionOS, float3 normalOS, uint instanceID, out float3 positionWS,
                       out float3 normalWS, out float2 appearance)
@@ -67,10 +89,12 @@ void HLPlaceGrassTuft(float3 positionOS, float3 normalOS, uint instanceID, out f
     float2 lean = state.leanHeightSpike.xy * _HLTuftLean;
     float yaw = seed.positionYaw.w;
 
-    float3 scaledPosition = float3(positionOS.x * width, positionOS.y * height, positionOS.z * width);
+    float t = positionOS.y;
+    float2 tangentLean = lean * (HL_ROOT_BEND + HL_TIP_BEND * t);
+    float3 section = HLYawGrassTuft(float3(positionOS.x * width, 0.0, positionOS.z * width), yaw);
     float3 scaledNormal = float3(normalOS.x / width, normalOS.y / height, normalOS.z / width);
-    positionWS = seed.positionYaw.xyz + HLTiltGrassTuft(HLYawGrassTuft(scaledPosition, yaw), lean);
-    normalWS = normalize(HLTiltGrassTuft(HLYawGrassTuft(scaledNormal, yaw), lean));
+    positionWS = seed.positionYaw.xyz + HLGrassSpine(lean, height, t) + HLTiltGrassTuft(section, tangentLean);
+    normalWS = normalize(HLTiltGrassTuft(HLYawGrassTuft(scaledNormal, yaw), tangentLean));
 }
 #endif
 

@@ -190,6 +190,7 @@ MonoBehaviour:
   _seed: 1
   _bladeHeightScale: 1
   _surfaceY: 0.5
+  _groundShader: {fileID: 4800000, guid: 62476e78203f495b9c27974718be0774, type: 3}
 --- !u!1 &6006450335263604257
 GameObject:
   m_ObjectHideFlags: 0

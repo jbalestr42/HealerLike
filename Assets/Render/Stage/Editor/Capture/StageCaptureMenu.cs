@@ -55,6 +55,13 @@ namespace HealerLike.Render.Stage
             StagePlay.Enter("grassbench", 300f);
         }
 
+        // A scripted walk, heal, launch and gust through the grass at a fixed 60 Hz, as a filmstrip and probes
+        [MenuItem("Tools/Render/Grass Lab")]
+        public static void GrassLab()
+        {
+            StagePlay.Enter("grasslab", 300f);
+        }
+
         [MenuItem("Tools/Render/Smoke Three Rounds")]
         public static void Smoke()
         {

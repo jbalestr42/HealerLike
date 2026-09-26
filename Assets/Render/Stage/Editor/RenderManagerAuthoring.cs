@@ -40,6 +40,7 @@ namespace HealerLike.Render.Stage
             grassGo.transform.SetParent(root.transform, false);
             GrassField grass = grassGo.AddComponent<GrassField>();
             EnvironmentAuthoring.SetGrass(grass);
+            EnvironmentAuthoring.SetGround(grass);
             // The tufts are laid out at the reference size, the ring strips keep the same scale
             grass.bladeHeightScale = 1f;
 
