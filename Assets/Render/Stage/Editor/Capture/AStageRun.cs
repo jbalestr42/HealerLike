@@ -30,6 +30,7 @@ namespace HealerLike.Render.Stage
 
         public void Begin(IEnumerator steps)
         {
+            StopObserving();
             _hasFailed = false;
             _steps.Clear();
             _steps.Push(steps);
@@ -139,7 +140,7 @@ namespace HealerLike.Render.Stage
         protected void Observe()
         {
             foreach (ResourceAttribute resource in
-                Object.FindObjectsByType<ResourceAttribute>(FindObjectsSortMode.None))
+                Object.FindObjectsByType<ResourceAttribute>())
             {
                 if (_observed.Add(resource))
                 {
@@ -148,6 +149,18 @@ namespace HealerLike.Render.Stage
             }
 
             _maxZones = Mathf.Max(_maxZones, _manager.zones.count);
+        }
+
+        public void StopObserving()
+        {
+            foreach (ResourceAttribute resource in _observed)
+            {
+                if (resource != null)
+                {
+                    resource.OnAllConsumerProcessed.RemoveListener(OnProcessed);
+                }
+            }
+            _observed.Clear();
         }
 
         void OnProcessed(GameObject owner, ResourceModifier modifier, float value, bool isCritical)

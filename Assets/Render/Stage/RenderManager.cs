@@ -35,11 +35,10 @@ namespace HealerLike.Render.Stage
         StageInterface _interface;
         StageCreaturePlacement _placement;
         public StageCreaturePlacement placement { get { return _placement; } }
-        EnvironmentRoot _environment;
+        readonly StageEnvironment _environment = new StageEnvironment();
         SpawnDressing _spawns = new SpawnDressing();
         int _deliveryToken;
         bool _isLandscape = false;
-        Pose _environmentView;
 
         EntityManager _entityManager;
         public EntityManager entityManager { get { return _entityManager; } }
@@ -53,11 +52,9 @@ namespace HealerLike.Render.Stage
         Bounds _board;
         public Bounds board { get { return _board; } }
 
-        EnvironmentGust _gust;
-        public EnvironmentGust gust { get { return _gust; } }
+        public EnvironmentGust gust { get { return _environment.gust; } }
 
-        EnvironmentForeground _foreground;
-        public EnvironmentForeground foreground { get { return _foreground; } }
+        public EnvironmentForeground foreground { get { return _environment.foreground; } }
 
         public Pose overviewPose { get { return _dressing.OverviewPose(_isLandscape); } }
 
@@ -121,13 +118,16 @@ namespace HealerLike.Render.Stage
             _zones.Init();
             Rect boardRect = BoardRect();
             _grass.Init(boardRect, player.grid.size, _board.max.y, _gameCamera, _zones.buffer, ZonePacker.MaxZones);
-            InitEnvironment(boardRect);
+            _environment.Init(_environmentPrefab, this, boardRect);
             _spellSink.Init(this);
             _battleFocus.Init(this);
             _rangeDriver.Init(_gameCamera);
             _spawns.Init(this, _rangeDriver, _battleFocus);
-            if (_placement == null) _placement = gameObject.AddComponent<StageCreaturePlacement>();
-            _placement.Init(_creatureLooks, _meshes, FindInScene<InteractionManager>(_scene),
+            if (_placement == null)
+            {
+                _placement = gameObject.AddComponent<StageCreaturePlacement>();
+            }
+            _placement.Init(_creatureLooks, _meshes, StageSceneObjects.Find<InteractionManager>(_scene),
                 _gameCamera, StageCalibration.CellSize);
             _keyLight.Init();
             Debug.Log($"[RenderManager] Attached to {_scene.name}");
@@ -144,8 +144,12 @@ namespace HealerLike.Render.Stage
             _spellSink.Tick();
             _zones.PublishFrame(Time.deltaTime);
             _grass.UpdateField(_zones);
-            _environment.grass.UpdateStrips(_zones);
+            _environment.Tick(_zones);
             _battleFocus.Tick();
+            if (_placement != null)
+            {
+                _placement.Tick();
+            }
         }
 
         // One counter for every projectile, so a token never names two deliveries on one rig
@@ -164,8 +168,14 @@ namespace HealerLike.Render.Stage
         public int RebuildViews()
         {
             int rebuilt = _spawns.RebuildViews();
-            if (_placement != null) _placement.Refresh(_creatureLooks, _meshes);
-            if (_interface != null) _interface.RefreshCreatureIcons();
+            if (_placement != null)
+            {
+                _placement.Refresh(_creatureLooks, _meshes);
+            }
+            if (_interface != null)
+            {
+                _interface.RefreshCreatureIcons();
+            }
             return rebuilt;
         }
 
@@ -202,18 +212,13 @@ namespace HealerLike.Render.Stage
         // Refresh scenery only after the camera settles or its orientation changes, never every render frame.
         public void FrameEnvironment(bool force = false)
         {
-            if (_environment == null || _gameCamera == null) return;
-            Transform view = _gameCamera.transform;
-            if (!force && Vector3.Distance(view.position, _environmentView.position) < 0.5f
-                && Quaternion.Angle(view.rotation, _environmentView.rotation) < 0.5f) return;
-            _environment.Frame(_gameCamera, _board);
-            _environmentView = new Pose(view.position, view.rotation);
+            _environment.Frame(_gameCamera, _board, force);
         }
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             _interface.Attach(scene);
-            EntityManager entityManager = FindInScene<EntityManager>(scene);
+            EntityManager entityManager = StageSceneObjects.Find<EntityManager>(scene);
             if (entityManager == null)
             {
                 return;
@@ -221,7 +226,7 @@ namespace HealerLike.Render.Stage
 
             // The game's unparented Instantiate calls land in the active scene and unload with it
             SceneManager.SetActiveScene(scene);
-            Init(entityManager, FindInScene<PlayerBehaviour>(scene));
+            Init(entityManager, StageSceneObjects.Find<PlayerBehaviour>(scene));
         }
 
         void OnSceneUnloaded(Scene scene)
@@ -243,30 +248,19 @@ namespace HealerLike.Render.Stage
             }
         }
 
-        void InitEnvironment(Rect boardRect)
-        {
-            _environment = Instantiate(_environmentPrefab, transform);
-            _gust = _environment.gust;
-            _foreground = _environment.foreground;
-            LookSettings lookSettings = _look.settings;
-            _environment.Init(_meshes, _gameCamera, boardRect, _player.grid.size, _board.max.y, _zones,
-                lookSettings.fogStart, lookSettings.fogEnd);
-            FrameEnvironment(true);
-        }
-
         void Detach()
         {
             _spawns.Clear();
-            if (_placement != null) _placement.Clear();
+            if (_placement != null)
+            {
+                _placement.Clear();
+            }
             if (_battleFocus != null)
             {
                 _battleFocus.Clear();
             }
 
-            if (_environment != null)
-            {
-                Destroy(_environment.gameObject);
-            }
+            _environment.Clear();
 
             if (_dressing != null)
             {
@@ -291,7 +285,6 @@ namespace HealerLike.Render.Stage
 
             _entityManager = null;
             _player = null;
-            _environment = null;
         }
 
         Rect BoardRect()
@@ -299,18 +292,5 @@ namespace HealerLike.Render.Stage
             return new Rect(_board.min.x, _board.min.z, _board.size.x, _board.size.z);
         }
 
-        static ComponentType FindInScene<ComponentType>(Scene scene) where ComponentType : Component
-        {
-            foreach (GameObject root in scene.GetRootGameObjects())
-            {
-                ComponentType found = root.GetComponentInChildren<ComponentType>(true);
-                if (found != null)
-                {
-                    return found;
-                }
-            }
-
-            return null;
-        }
     }
 }

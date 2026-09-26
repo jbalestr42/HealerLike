@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 using HealerLike.Render.Look;
@@ -7,7 +8,7 @@ namespace HealerLike.Render.Studio.Editor
     // The studio's own look globals for the length of one preview render. The stage may publish its look at
     // beginFrameRendering, so they are applied again when the preview camera begins, and End puts back every
     // global it touched.
-    public class StudioLookScope
+    public class StudioLookScope : IDisposable
     {
         static readonly string[] floatNames =
         {
@@ -18,7 +19,8 @@ namespace HealerLike.Render.Studio.Editor
         };
         static readonly float[] floatValues =
         {
-            LookSettings.Default.shadowStrength, LookSettings.Default.toonThreshold, LookSettings.Default.toonSoftness, 1f, 500f, 1000f, 6f, 0.16f, 0.075f, 0.0001f,
+            LookSettings.Default.shadowStrength, LookSettings.Default.toonThreshold,
+                LookSettings.Default.toonSoftness, 1f, 500f, 1000f, 6f, 0.16f, 0.075f, 0.0001f,
             0.65f, 1f, 1f, 0.025f, 2.44f, 0.1f, 0.01f, 100f, 0.6f, 1f, 1f
         };
         static readonly string[] vectorNames = { "_HLShadowTint", "_HLOutlineColor", "_HLFogColor" };
@@ -29,9 +31,15 @@ namespace HealerLike.Render.Studio.Editor
         readonly float[] _previousFloats = new float[floatNames.Length];
         readonly Vector4[] _previousVectors = new Vector4[vectorNames.Length];
         Camera _camera;
+        bool _isActive;
 
         public void Begin(Camera camera)
         {
+            if (_isActive)
+            {
+                return;
+            }
+            _isActive = true;
             _camera = camera;
             for (int i = 0; i < floatNames.Length; i++)
             {
@@ -47,8 +55,19 @@ namespace HealerLike.Render.Studio.Editor
             Apply();
         }
 
+        public void Dispose()
+        {
+            End();
+        }
+
         public void End()
         {
+            if (!_isActive)
+            {
+                return;
+            }
+            _isActive = false;
+            _camera = null;
             RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
             for (int i = 0; i < floatNames.Length; i++)
             {

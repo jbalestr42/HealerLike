@@ -25,7 +25,7 @@ namespace HealerLike.Render.Stage
         public static float CellPixels(Camera camera, Vector3 point, float cellSize, int width)
         {
             Vector3 centre = camera.WorldToViewportPoint(point);
-            Vector3 across = camera.WorldToViewportPoint(point + Vector3.right * cellSize);
+            Vector3 across = camera.WorldToViewportPoint(point + camera.transform.right * cellSize);
             return (across.x - centre.x) * width;
         }
 
@@ -53,9 +53,14 @@ namespace HealerLike.Render.Stage
         public static Color32[] Render(Camera camera, int width, int height)
         {
             Texture2D texture = StageReadback.Render(camera, width, height);
-            Color32[] pixels = texture.GetPixels32();
-            Object.Destroy(texture);
-            return pixels;
+            try
+            {
+                return texture.GetPixels32();
+            }
+            finally
+            {
+                RenderObjects.Release(texture);
+            }
         }
 
         // The game frame without grass: the grass only draws for the game camera, so a copy of it sees the ground,
@@ -77,14 +82,20 @@ namespace HealerLike.Render.Stage
                 ground.SetPropertyBlock(flat);
             }
 
+            bool enabled = flatCamera.enabled;
             flatCamera.enabled = true;
-            Color32[] pixels = Render(flatCamera, width, height);
-            flatCamera.enabled = false;
-            if (ground != null)
+            try
             {
-                ground.SetPropertyBlock(saved);
+                return Render(flatCamera, width, height);
             }
-            return pixels;
+            finally
+            {
+                flatCamera.enabled = enabled;
+                if (ground != null)
+                {
+                    ground.SetPropertyBlock(saved);
+                }
+            }
         }
     }
 }

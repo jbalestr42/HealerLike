@@ -73,7 +73,6 @@ namespace HealerLike.Render.Stage
             GameObject controls = StageSceneAuthoring.CreateControls();
             GameObject manager = RenderManagerAuthoring.Create(pipeline, environment, controls);
             StageSceneAuthoring.Create(manager);
-            AssetDatabase.SaveAssets();
             Debug.Log($"[StageMenu] Authored {StageSceneAuthoring.ScenePath}");
         }
     }

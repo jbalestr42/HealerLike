@@ -11,16 +11,30 @@ namespace HealerLike.Render.Stage
             RenderTexture target = RenderTexture.GetTemporary(width, height, 24, RenderTextureFormat.ARGB32);
             RenderTexture previous = RenderTexture.active;
             Texture2D texture = new Texture2D(width, height, TextureFormat.RGB24, false);
-            camera.aspect = (float)width / height;
-            RenderPipeline.StandardRequest request = new RenderPipeline.StandardRequest();
-            request.destination = target;
-            RenderPipeline.SubmitRenderRequest(camera, request);
-            RenderTexture.active = target;
-            texture.ReadPixels(new Rect(0f, 0f, width, height), 0, 0);
-            texture.Apply();
-            RenderTexture.active = previous;
-            RenderTexture.ReleaseTemporary(target);
-            return texture;
+            float aspect = camera.aspect;
+            bool completed = false;
+            try
+            {
+                camera.aspect = (float)width / height;
+                RenderPipeline.StandardRequest request = new RenderPipeline.StandardRequest();
+                request.destination = target;
+                RenderPipeline.SubmitRenderRequest(camera, request);
+                RenderTexture.active = target;
+                texture.ReadPixels(new Rect(0f, 0f, width, height), 0, 0);
+                texture.Apply();
+                completed = true;
+                return texture;
+            }
+            finally
+            {
+                camera.aspect = aspect;
+                RenderTexture.active = previous;
+                RenderTexture.ReleaseTemporary(target);
+                if (!completed)
+                {
+                    RenderObjects.Release(texture);
+                }
+            }
         }
     }
 }

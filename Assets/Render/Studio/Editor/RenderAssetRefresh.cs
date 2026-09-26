@@ -44,7 +44,7 @@ namespace HealerLike.Render.Studio.Editor
                 return;
             }
             nextCheck = EditorApplication.timeSinceStartup + 0.2;
-            foreach (RenderManager manager in Object.FindObjectsByType<RenderManager>(FindObjectsSortMode.None))
+            foreach (RenderManager manager in Object.FindObjectsByType<RenderManager>())
             {
                 string revision = Revision(manager);
                 string id = manager.GetEntityId().ToString();
@@ -66,7 +66,10 @@ namespace HealerLike.Render.Studio.Editor
         {
             LookVocabulary vocabulary = looks ? looks.vocabulary : null;
             string revision = Stamp(looks) + ":" + Stamp(vocabulary) + ":" + Stamp(vocabulary ? vocabulary.palette : null);
-            if (!looks) return revision;
+            if (!looks)
+            {
+                return revision;
+            }
             revision += ":" + ViewStamp(looks.plant) + ":" + ViewStamp(looks.stone);
             foreach (KeyValuePair<EntityData, GameObject> entry in looks.entities)
             {
@@ -78,7 +81,10 @@ namespace HealerLike.Render.Studio.Editor
         static string ViewStamp(GameObject view)
         {
             CreatureBuilder builder = view ? view.GetComponentInChildren<CreatureBuilder>(true) : null;
-            if (!builder) return Stamp(view);
+            if (!builder)
+            {
+                return Stamp(view);
+            }
             return Stamp(view) + ":" + Stamp(builder) + ":" + Stamp(builder.recipe) + ":" + Stamp(builder.meshes)
                 + ":" + MaterialStamp(builder.material) + ":" + MaterialStamp(builder.bodyMaterial);
         }

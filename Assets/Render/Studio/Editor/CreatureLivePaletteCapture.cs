@@ -9,7 +9,7 @@ namespace HealerLike.Render.Studio.Editor
     [InitializeOnLoad]
     public static class CreatureLivePaletteCapture
     {
-        const string key = "CreatureLivePaletteCapture.Running";
+        static readonly string key = "CreatureLivePaletteCapture.Running";
         static CreatureLivePaletteRun run;
 
         static CreatureLivePaletteCapture()
@@ -43,6 +43,7 @@ namespace HealerLike.Render.Studio.Editor
             if (run != null)
             {
                 EditorApplication.update -= run.Step;
+                run.StopObserving();
                 run.Restore();
                 run = null;
             }
@@ -64,6 +65,7 @@ namespace HealerLike.Render.Studio.Editor
             }
             if (state == PlayModeStateChange.ExitingPlayMode && run != null)
             {
+                run.StopObserving();
                 run.Restore();
             }
             if (state == PlayModeStateChange.EnteredEditMode)

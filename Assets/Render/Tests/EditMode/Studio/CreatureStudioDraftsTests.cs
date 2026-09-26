@@ -1,3 +1,5 @@
+using UnityEngine.TestTools;
+using UnityEngine;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
@@ -35,6 +37,19 @@ public class CreatureStudioDraftsTests
         drafts.Init();
         _drafts.Add(drafts);
         return drafts;
+    }
+
+    static int CountDrafts()
+    {
+        int count = 0;
+        foreach (CreatureRecipe draft in Resources.FindObjectsOfTypeAll<CreatureRecipe>())
+        {
+            if (draft.hideFlags == HideFlags.HideAndDontSave)
+            {
+                count++;
+            }
+        }
+        return count;
     }
 
     [Test]
@@ -91,6 +106,22 @@ public class CreatureStudioDraftsTests
         Assert.AreEqual(isDirty, EditorUtility.IsDirty(sprout));
         Assert.AreEqual(LookSide.Stone, reopened.GetSurface(reopened.restoredSelection));
     }
+    [TestCase("{\"items\":[null]}")]
+    [TestCase("{\"items\":[{\"json\":\"{}\"},{\"json\":\"{broken}\"}]}")]
+    public void Init_CorruptRecord_DiscardsPartialRestoreAndCreatesDefaults(string json)
+    {
+        string key = "HealerLike.CreatureStudio.Drafts." + Application.dataPath;
+        EditorPrefs.SetString(key, json);
+        int before = CountDrafts();
+        LogAssert.Expect(LogType.Error, "[StudioPrefs] Dropped the unreadable drafts under " + key);
+
+        CreatureStudioDrafts drafts = CreateDrafts();
+
+        Assert.IsFalse(EditorPrefs.HasKey(key));
+        Assert.Greater(drafts.items.Count, 0);
+        Assert.AreEqual(before + drafts.items.Count, CountDrafts());
+    }
+
 }
 
 }

@@ -13,67 +13,8 @@ namespace HealerLike.Render.Stage
 
 public class SpawnDressingTests
 {
-    static readonly string projectileFolder = "Assets/Prefabs/Projectiles/";
-
-    readonly List<GameObject> _spawned = new List<GameObject>();
-    readonly List<Object> _created = new List<Object>();
+    readonly StageSpawnObjects _objects = new StageSpawnObjects();
     StageSceneFixture _scene;
-
-    static Entity CreateEntity(Transform parent, Entity.EntityType entityType, out Renderer modelRenderer,
-        bool withHealth = false)
-    {
-        GameObject entityGo = new GameObject("Entity");
-        entityGo.transform.SetParent(parent, false);
-        ResourceAttribute health = withHealth
-            ? TestHelpers.CreateResourceAttribute(entityGo, AttributeType.HealthMax, 100) : null;
-        Entity entity = null;
-        TestHelpers.WithLoggingDisabled(() => entity = entityGo.AddComponent<Entity>());
-        if (health)
-        {
-            TestHelpers.SetPrivateField(entity, "_health", health);
-        }
-        entity.entityType = entityType;
-        GameObject modelGo = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        modelGo.transform.SetParent(entityGo.transform, false);
-        TestHelpers.SetPrivateField(entity, "_model", modelGo.AddComponent<EntityModel>());
-        modelRenderer = modelGo.GetComponent<Renderer>();
-        return entity;
-    }
-
-    // A projectile as EntityManager.SpawnProjectile hands it out, before Projectile.Init
-    Projectile SpawnProjectile(string prefabName)
-    {
-        GameObject projectileGo =
-            Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(projectileFolder + prefabName + ".prefab"));
-        _spawned.Add(projectileGo);
-        return projectileGo.GetComponent<Projectile>();
-    }
-
-    // An area as EntityManager.SpawnProjectile hands it out, before its caller sets the source and radius
-    AreaOfEffect SpawnArea()
-    {
-        GameObject areaGo = new GameObject("Area");
-        _spawned.Add(areaGo);
-        return areaGo.AddComponent<AreaOfEffect>();
-    }
-
-    // What the caller then sets: a source entity whose one on hit consumer takes this value, and the radius
-    void ConfigureArea(AreaOfEffect area, float consumerValue)
-    {
-        GameObject sourceGo = new GameObject("Source");
-        _spawned.Add(sourceGo);
-        Entity source = null;
-        TestHelpers.WithLoggingDisabled(() => source = sourceGo.AddComponent<Entity>());
-        ConsumerFactory consumer = ScriptableObject.CreateInstance<ConsumerFactory>();
-        _created.Add(consumer);
-        FlatValue value = new FlatValue();
-        value.data = new FlatValueData { value = consumerValue };
-        consumer.data = new ConsumerData { value = value };
-        source.AddOnHitConsumer(consumer);
-
-        area.source = sourceGo;
-        area.radius = 2.5f;
-    }
 
     [SetUp]
     public void SetUp()
@@ -85,18 +26,7 @@ public class SpawnDressingTests
     [TearDown]
     public void TearDown()
     {
-        foreach (GameObject spawnedGo in _spawned)
-        {
-            Object.DestroyImmediate(spawnedGo);
-        }
-
-        _spawned.Clear();
-        foreach (Object created in _created)
-        {
-            Object.DestroyImmediate(created);
-        }
-
-        _created.Clear();
+        _objects.Dispose();
         _scene.Destroy();
     }
 
@@ -104,16 +34,16 @@ public class SpawnDressingTests
     public void RebuildViews_LiveDeliveryAndPaletteEdit_PreservesOwnersCameraAndSourceAnchor()
     {
         CreatureLooks looks = Object.Instantiate(_scene.manager.creatureLooks);
-        _created.Add(looks);
+        _objects.Track(looks);
         LookVocabulary vocabulary = Object.Instantiate(looks.vocabulary);
-        _created.Add(vocabulary);
+        _objects.Track(vocabulary);
         HealerLike.Render.Grammar.LookPalette palette = Object.Instantiate(vocabulary.palette);
-        _created.Add(palette);
+        _objects.Track(palette);
         vocabulary.palette = palette;
         looks.vocabulary = vocabulary;
         TestHelpers.SetPrivateField(_scene.manager, "_creatureLooks", looks);
         _scene.manager.Init(_scene.entityManager, _scene.player);
-        Entity entity = CreateEntity(_scene.gameGo.transform, Entity.EntityType.Player, out _, true);
+        Entity entity = StageSpawnObjects.CreateEntity(_scene.gameGo.transform, Entity.EntityType.Player, out _, true);
         entity.data = AssetDatabase.LoadAssetAtPath<EntityData>("Assets/Data/Entities/NormalEntity/NormalEntity.asset");
         ResourceAttribute health = entity.health;
         _scene.entityManager.OnEntitySpawned.Invoke(entity);
@@ -123,7 +53,7 @@ public class SpawnDressingTests
         Transform body = rig.partTransforms[0];
         Vector3 camera = _scene.manager.gameCamera.transform.position;
         GameObject projectile = new GameObject("Held projectile");
-        _spawned.Add(projectile);
+        _objects.Track(projectile);
         projectile.transform.position = Vector3.one * 2f;
         Assert.IsTrue(builder.BeginDelivery(818, DeliveryStyle.Direct, projectile.transform, Vector3.one * 3f));
         for (int i = 0; i < 3; i++)
@@ -153,7 +83,8 @@ public class SpawnDressingTests
     public void OnEntitySpawned_Ally_HidesTheGameModelAndInitsTheView()
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);
-        Entity entity = CreateEntity(_scene.gameGo.transform, Entity.EntityType.Player, out Renderer modelRenderer);
+        Entity entity = StageSpawnObjects.CreateEntity(_scene.gameGo.transform, Entity.EntityType.Player,
+            out Renderer modelRenderer);
         entity.data = AssetDatabase.LoadAssetAtPath<EntityData>("Assets/Data/Entities/NormalEntity/NormalEntity.asset");
 
         _scene.entityManager.OnEntitySpawned.Invoke(entity);
@@ -170,7 +101,7 @@ public class SpawnDressingTests
     public void OnEntitySpawned_GrowthStartsAfterTheFullFootprintIsMeasured(Entity.EntityType side)
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);
-        Entity entity = CreateEntity(_scene.gameGo.transform, side, out _);
+        Entity entity = StageSpawnObjects.CreateEntity(_scene.gameGo.transform, side, out _);
         entity.data = RenderTestAssets.LoadEntity("NormalEntity");
         _scene.entityManager.OnEntitySpawned.Invoke(entity);
         CreatureBuilder builder = entity.model.GetComponentInChildren<CreatureBuilder>();
@@ -186,7 +117,8 @@ public class SpawnDressingTests
         Assert.That(zone.radius, Is.InRange(radius * 0.9f, radius * 1.1f),
             "A rebuild must retain the complete footprint even while the rendered body is still tiny");
         rig.CompleteAppearance();
-        rig.Tick(Time.time, 0f, new FootFrame(builder.transform.position, builder.transform.up, StageCalibration.CellSize));
+        rig.Tick(Time.time, 0f, new FootFrame(builder.transform.position, builder.transform.up,
+            StageCalibration.CellSize));
         float expected = TrampleZone.TrampleRadius(TrampleZone.CreatureFootprint(builder.transform, rig));
         Assert.That(radius, Is.EqualTo(expected).Within(0.01f));
         TestHelpers.InvokePrivate(builder, "OnDisable");
@@ -198,7 +130,8 @@ public class SpawnDressingTests
     public void OnEntitySpawned_ModelWithTheHUD_KeepsTheEffectIconsShowing()
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);
-        Entity entity = CreateEntity(_scene.gameGo.transform, Entity.EntityType.Player, out Renderer modelRenderer);
+        Entity entity = StageSpawnObjects.CreateEntity(_scene.gameGo.transform, Entity.EntityType.Player,
+            out Renderer modelRenderer);
         entity.data = AssetDatabase.LoadAssetAtPath<EntityData>("Assets/Data/Entities/NormalEntity/NormalEntity.asset");
         GameObject hudGo = Object.Instantiate(
             AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/EntityHUD.prefab"), entity.model.transform);
@@ -221,7 +154,8 @@ public class SpawnDressingTests
     public void OnEntitySpawned_Enemy_GetsTheStoneHost()
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);
-        Entity entity = CreateEntity(_scene.gameGo.transform, Entity.EntityType.Computer, out Renderer modelRenderer);
+        Entity entity = StageSpawnObjects.CreateEntity(_scene.gameGo.transform, Entity.EntityType.Computer,
+            out Renderer modelRenderer);
 
         _scene.entityManager.OnEntitySpawned.Invoke(entity);
 
@@ -236,7 +170,8 @@ public class SpawnDressingTests
     public void OnEntitySpawned_StoneEnemy_GetsADerivedStone(string dataPath)
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);
-        Entity entity = CreateEntity(_scene.gameGo.transform, Entity.EntityType.Computer, out Renderer modelRenderer);
+        Entity entity = StageSpawnObjects.CreateEntity(_scene.gameGo.transform, Entity.EntityType.Computer,
+            out Renderer modelRenderer);
         entity.data = AssetDatabase.LoadAssetAtPath<EntityData>(dataPath);
 
         _scene.entityManager.OnEntitySpawned.Invoke(entity);
@@ -267,7 +202,7 @@ public class SpawnDressingTests
     public void OnProjectileSpawned_Bullet_AttachesTheDeliveryVisuals()
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);
-        Projectile projectile = SpawnProjectile("BulletSpeed");
+        Projectile projectile = _objects.SpawnProjectile("BulletSpeed");
 
         _scene.entityManager.OnProjectileSpawned.Invoke(projectile.gameObject);
 
@@ -282,7 +217,7 @@ public class SpawnDressingTests
     public void OnProjectileSpawned_Chain_KeepsItsContactPathAndHidesItsLine()
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);
-        Projectile projectile = SpawnProjectile("ChainLightning");
+        Projectile projectile = _objects.SpawnProjectile("ChainLightning");
 
         _scene.entityManager.OnProjectileSpawned.Invoke(projectile.gameObject);
 
@@ -296,7 +231,7 @@ public class SpawnDressingTests
     [Test]
     public void OnProjectileSpawned_NotAttached_AddsNothing()
     {
-        Projectile projectile = SpawnProjectile("BulletSpeed");
+        Projectile projectile = _objects.SpawnProjectile("BulletSpeed");
 
         _scene.entityManager.OnProjectileSpawned.Invoke(projectile.gameObject);
 
@@ -308,7 +243,7 @@ public class SpawnDressingTests
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);
         GameObject spawnedGo = new GameObject("Spawned");
-        _spawned.Add(spawnedGo);
+        _objects.Track(spawnedGo);
 
         _scene.entityManager.OnProjectileSpawned.Invoke(spawnedGo);
 
@@ -323,10 +258,10 @@ public class SpawnDressingTests
         ZoneKind kind, EffectElement element)
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);
-        AreaOfEffect area = SpawnArea();
+        AreaOfEffect area = _objects.SpawnArea();
 
         _scene.entityManager.OnProjectileSpawned.Invoke(area.gameObject);
-        ConfigureArea(area, consumerValue);
+        _objects.ConfigureArea(area, consumerValue);
 
         Assert.AreEqual(0, _scene.manager.spellSink.GetComponentsInChildren<SpellEffect>().Length);
         TestHelpers.InvokePrivate(area.GetComponent<AreaPulseOnStart>(), "Start");

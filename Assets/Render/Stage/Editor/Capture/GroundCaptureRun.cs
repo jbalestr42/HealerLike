@@ -26,7 +26,7 @@ namespace HealerLike.Render.Stage
 
         protected override IEnumerator Run()
         {
-            foreach (LookController owner in Object.FindObjectsByType<LookController>(FindObjectsSortMode.None))
+            foreach (LookController owner in Object.FindObjectsByType<LookController>())
             {
                 owner.enabled = false;
             }

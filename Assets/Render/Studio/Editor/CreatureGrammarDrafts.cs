@@ -71,22 +71,25 @@ namespace HealerLike.Render.Studio.Editor
         // The kept collection, its drafts added to the list; null when nothing was kept
         public CreatureGrammarDraftCollection Restore()
         {
-            string json = StudioPrefs.ReadJson(key);
-            if (json == null)
+            if (!StudioPrefs.TryRead(key, out CreatureGrammarDraftCollection collection))
             {
                 return null;
             }
-
-            CreatureGrammarDraftCollection collection = JsonUtility.FromJson<CreatureGrammarDraftCollection>(json);
-            if (collection == null || collection.items == null)
+            if (collection.items == null)
             {
+                StudioPrefs.Discard(key);
                 return null;
             }
 
             foreach (CreatureGrammarDraftRecord record in collection.items)
             {
-                CreatureGrammarPreset preset = Add(ScriptableObject.CreateInstance<CreatureGrammarPreset>());
-                JsonUtility.FromJsonOverwrite(record.json, preset);
+                if (record == null || !StudioPrefs.TryDraft(record.json, out CreatureGrammarPreset preset))
+                {
+                    Dispose();
+                    StudioPrefs.Discard(key);
+                    return null;
+                }
+                Add(preset);
                 preset.name = Label(preset);
                 preset.vocabulary = Load<LookVocabulary>(record.vocabulary);
                 preset.sourceEntity = Load<EntityData>(record.source);

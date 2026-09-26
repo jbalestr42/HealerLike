@@ -60,10 +60,12 @@ namespace HealerLike.Render.Stage
             label.text = "Focus battle";
 
             BattleFocus battleFocus = root.AddComponent<BattleFocus>();
-            SerializedObject data = new SerializedObject(battleFocus);
-            data.FindProperty("_toggle").objectReferenceValue = buttonGo.GetComponent<Button>();
-            data.FindProperty("_label").objectReferenceValue = label;
-            data.ApplyModifiedPropertiesWithoutUndo();
+            using (SerializedObject data = new SerializedObject(battleFocus))
+            {
+                data.FindProperty("_toggle").objectReferenceValue = buttonGo.GetComponent<Button>();
+                data.FindProperty("_label").objectReferenceValue = label;
+                data.ApplyModifiedPropertiesWithoutUndo();
+            }
 
             Directory.CreateDirectory(Path.GetDirectoryName(ControlsPath));
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, ControlsPath);

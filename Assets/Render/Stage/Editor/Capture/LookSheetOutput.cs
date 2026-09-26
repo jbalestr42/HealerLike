@@ -119,8 +119,14 @@ namespace HealerLike.Render.Stage
 
         void Write(string path, Texture2D texture)
         {
-            File.WriteAllBytes(path, texture.EncodeToPNG());
-            Object.Destroy(texture);
+            try
+            {
+                File.WriteAllBytes(path, texture.EncodeToPNG());
+            }
+            finally
+            {
+                RenderObjects.Release(texture);
+            }
             Check(path);
         }
 

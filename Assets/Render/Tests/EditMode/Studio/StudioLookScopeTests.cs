@@ -59,6 +59,21 @@ public class StudioLookScopeTests
         Assert.AreEqual(0.987f, Shader.GetGlobalFloat("_HLInkStrength"));
         Assert.AreEqual(new Vector4(0.1f, 0.2f, 0.3f, 1f), Shader.GetGlobalVector("_HLShadowTint"));
     }
+    [Test]
+    public void Dispose_RepeatedBeginAndDispose_RestoresTheOriginalSnapshotOnce()
+    {
+        Shader.SetGlobalFloat("_HLInkStrength", 0.987f);
+        StudioLookScope scope = new StudioLookScope();
+
+        scope.Begin(_cameraGo.GetComponent<Camera>());
+        scope.Begin(_cameraGo.GetComponent<Camera>());
+        scope.Dispose();
+        Shader.SetGlobalFloat("_HLInkStrength", 0.654f);
+        scope.Dispose();
+
+        Assert.AreEqual(0.654f, Shader.GetGlobalFloat("_HLInkStrength"));
+    }
+
 }
 
 }

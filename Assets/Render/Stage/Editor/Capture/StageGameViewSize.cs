@@ -6,7 +6,7 @@ namespace HealerLike.Render.Stage
 {
     // Unity exposes fixed Game-view sizes only through its internal Editor types. The preset stays in memory
     // for this capture and is removed on dispose; the previous selection is restored without saving preferences.
-    public sealed class StageGameViewSize : IDisposable
+    public class StageGameViewSize : IDisposable
     {
         readonly EditorWindow _window;
         readonly object _group;
@@ -77,7 +77,10 @@ namespace HealerLike.Render.Stage
 
         public void Dispose()
         {
-            if (_isDisposed) return;
+            if (_isDisposed)
+            {
+                return;
+            }
             _isDisposed = true;
             _selection.SetValue(_window, _previous);
             _group.GetType().GetMethod("RemoveCustomSize").Invoke(_group, new object[] { _temporary });

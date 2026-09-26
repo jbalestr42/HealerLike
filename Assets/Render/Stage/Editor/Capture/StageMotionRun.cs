@@ -17,9 +17,16 @@ namespace HealerLike.Render.Stage
         protected override IEnumerator Run()
         {
             _output = new StageMotionOutput(Path.Combine(StagePlay.CaptureFolder, "motion"));
+            using (StageGameViewSize gameViewSize = new StageGameViewSize(StageCalibration.PortraitWidth,
+                StageCalibration.PortraitHeight))
+            {
+                yield return Capture();
+            }
+        }
+
+        IEnumerator Capture()
+        {
             StageMotionManifest manifest = _output.manifest;
-            StageGameViewSize gameViewSize = new StageGameViewSize(StageCalibration.PortraitWidth,
-                StageCalibration.PortraitHeight);
             manifest.unityVersion = Application.unityVersion;
             manifest.gpu = SystemInfo.graphicsDeviceName;
             manifest.revision = System.Environment.GetEnvironmentVariable("RENDER_CAPTURE_REVISION") ?? "unspecified";
@@ -29,10 +36,6 @@ namespace HealerLike.Render.Stage
             yield return Wait(2f);
             BattleFocus focus = Object.FindAnyObjectByType<BattleFocus>();
             bool focusEnabled = focus != null && focus.enabled;
-            if (focus != null)
-            {
-                focus.enabled = false;
-            }
             Camera camera = _manager.gameCamera;
             _cameraPose = new Pose(camera.transform.position, camera.transform.rotation);
             _cameraFov = camera.fieldOfView;
@@ -45,13 +48,23 @@ namespace HealerLike.Render.Stage
             manifest.grassCastsShadows = _manager.grass.tuftDraw.shadowCastingMode != ShadowCastingMode.Off;
             try
             {
+                if (focus != null)
+                {
+                    focus.enabled = false;
+                }
                 Time.timeScale = 0f;
                 yield return Wait(0.3f);
                 yield return _output.Capture(camera, "control-00", "control");
-                if (!_output.isCaptured) yield break;
+                if (!_output.isCaptured)
+                {
+                    yield break;
+                }
                 yield return Wait(0.5f);
                 yield return _output.Capture(camera, "control-01", "control");
-                if (!_output.isCaptured) yield break;
+                if (!_output.isCaptured)
+                {
+                    yield break;
+                }
                 manifest.controlMeanDifference = _output.Compare("control-00.png", "control-01.png").x;
                 Time.timeScale = 1f;
                 double started = Time.timeAsDouble;
@@ -66,25 +79,38 @@ namespace HealerLike.Render.Stage
                     CheckCamera();
                     string name = "frame-" + i.ToString("00");
                     yield return _output.Capture(camera, name, "motion");
-                    if (!_output.isCaptured) yield break;
+                    if (!_output.isCaptured)
+                    {
+                        yield break;
+                    }
                     if (i > 0)
                     {
                         Vector2 difference = _output.Compare("frame-00.png", name + ".png");
-                        if (difference.x > largest.x) largest = difference;
+                        if (difference.x > largest.x)
+                        {
+                            largest = difference;
+                        }
                     }
                 }
                 manifest.motionMeanDifference = largest.x;
                 manifest.motionChangedFraction = largest.y;
                 manifest.cameraFixed = manifest.maximumCameraPositionError < 0.00001f
                     && manifest.maximumCameraRotationError < 0.001f;
-                manifest.isPassed = StageMotionMeasure.Pass(manifest.controlMeanDifference, largest, manifest.cameraFixed);
+                manifest.isPassed = StageMotionMeasure.Pass(manifest.controlMeanDifference, largest,
+                    manifest.cameraFixed);
 
                 // The game's own wave button reaches battle; freeze the settled playable framing for all variants.
-                if (focus != null) focus.enabled = focusEnabled;
+                if (focus != null)
+                {
+                    focus.enabled = focusEnabled;
+                }
                 _hud.nextWaveButton.onClick.Invoke();
                 yield return Wait(5f);
                 Time.timeScale = 0f;
-                if (focus != null) focus.enabled = false;
+                if (focus != null)
+                {
+                    focus.enabled = false;
+                }
                 yield return Wait(0.3f);
                 yield return Variants(camera, settings);
             }
@@ -92,12 +118,15 @@ namespace HealerLike.Render.Stage
             {
                 Time.timeScale = timeScale;
                 _manager.look.settings = settings;
-                if (focus != null) focus.enabled = focusEnabled;
-                gameViewSize.Dispose();
+                if (focus != null)
+                {
+                    focus.enabled = focusEnabled;
+                }
                 manifest.isPassed &= !_output.hasFailure && manifest.frames.Count == 18;
                 _output.Write();
-                Debug.Log($"[StageMotionRun] motion={manifest.motionMeanDifference:F4} control={manifest.controlMeanDifference:F4}"
-                    + $" changed={manifest.motionChangedFraction:F4} cameraFixed={manifest.cameraFixed} passed={manifest.isPassed}");
+                Debug.Log($"[StageMotionRun] motion={manifest.motionMeanDifference:F4}"
+                    + $" control={manifest.controlMeanDifference:F4} changed={manifest.motionChangedFraction:F4}"
+                    + $" cameraFixed={manifest.cameraFixed} passed={manifest.isPassed}");
                 StagePlay.Finish(this, manifest.isPassed);
             }
         }
@@ -127,10 +156,23 @@ namespace HealerLike.Render.Stage
 
         IEnumerator Variants(Camera camera, LookSettings original)
         {
-            GrassField[] fields = Object.FindObjectsByType<GrassField>(FindObjectsSortMode.None);
+            GrassField[] fields = Object.FindObjectsByType<GrassField>();
+            using (StageGrassComparison comparison = new StageGrassComparison(fields))
+            {
+                yield return Compare(camera, original, fields);
+            }
+            yield return Wait(0.2f);
+            yield return _output.Capture(camera, "look-selected", "selected");
+        }
+
+        IEnumerator Compare(Camera camera, LookSettings original, GrassField[] fields)
+        {
             foreach (GrassField field in fields)
             {
-                if (field.tuftDraw != null) field.tuftDraw.properties.SetFloat("_HLNormalEdges", 1f);
+                if (field.tuftDraw != null)
+                {
+                    field.tuftDraw.properties.SetFloat("_HLNormalEdges", 1f);
+                }
             }
             LookSettings settings = original;
             settings.inkScale = 0.05f;
@@ -151,32 +193,34 @@ namespace HealerLike.Render.Stage
             _manager.look.settings = settings;
             foreach (GrassField field in fields)
             {
-                if (field.tuftDraw != null) field.tuftDraw.properties.SetFloat("_HLNormalEdges", 0f);
+                if (field.tuftDraw != null)
+                {
+                    field.tuftDraw.properties.SetFloat("_HLNormalEdges", 0f);
+                }
             }
             yield return Wait(0.2f);
             yield return _output.Capture(camera, "look-grass-edges-off", "comparison");
             foreach (GrassField field in fields)
             {
-                if (field.tuftDraw != null) field.tuftDraw.properties.SetFloat("_HLNormalEdges", 1f);
+                if (field.tuftDraw != null)
+                {
+                    field.tuftDraw.properties.SetFloat("_HLNormalEdges", 1f);
+                }
             }
             yield return Wait(0.2f);
             yield return _output.Capture(camera, "look-grass-edges-on", "comparison");
             foreach (GrassField field in fields)
             {
-                if (field.tuftDraw == null) continue;
+                if (field.tuftDraw == null)
+                {
+                    continue;
+                }
                 field.tuftDraw.shadowCastingMode = ShadowCastingMode.Off;
             }
             yield return Wait(0.2f);
             yield return _output.Capture(camera, "look-grass-shadows-off", "comparison");
             _manager.look.settings = original;
-            foreach (GrassField field in fields)
-            {
-                if (field.tuftDraw == null) continue;
-                field.tuftDraw.properties.SetFloat("_HLNormalEdges", field.lookMaterial.GetFloat("_HLNormalEdges"));
-                field.tuftDraw.shadowCastingMode = ShadowCastingMode.On;
-            }
-            yield return Wait(0.2f);
-            yield return _output.Capture(camera, "look-selected", "selected");
+
         }
     }
 }

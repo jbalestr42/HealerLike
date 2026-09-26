@@ -42,18 +42,20 @@ namespace HealerLike.Render.Stage
             }
 
             SetOutlines(rendererData);
-
-            SerializedObject pipelineData = new SerializedObject(pipeline);
-            SerializedProperty renderers = pipelineData.FindProperty("m_RendererDataList");
-            renderers.arraySize = 1;
-            renderers.GetArrayElementAtIndex(0).objectReferenceValue = rendererData;
-            pipelineData.FindProperty("m_DefaultRendererIndex").intValue = 0;
-            SetShadows(pipelineData);
-            pipelineData.ApplyModifiedPropertiesWithoutUndo();
+            using (SerializedObject pipelineData = new SerializedObject(pipeline))
+            {
+                SerializedProperty renderers = pipelineData.FindProperty("m_RendererDataList");
+                renderers.arraySize = 1;
+                renderers.GetArrayElementAtIndex(0).objectReferenceValue = rendererData;
+                pipelineData.FindProperty("m_DefaultRendererIndex").intValue = 0;
+                SetShadows(pipelineData);
+                pipelineData.ApplyModifiedPropertiesWithoutUndo();
+            }
 
             EditorUtility.SetDirty(pipeline);
             EditorUtility.SetDirty(rendererData);
-            AssetDatabase.SaveAssets();
+            AssetDatabase.SaveAssetIfDirty(pipeline);
+            AssetDatabase.SaveAssetIfDirty(rendererData);
             return pipeline;
         }
 
@@ -82,17 +84,19 @@ namespace HealerLike.Render.Stage
             outlines.SetActive(true);
 
             // The feature map mirrors the feature list by local file id
-            SerializedObject data = new SerializedObject(rendererData);
-            SerializedProperty map = data.FindProperty("m_RendererFeatureMap");
-            map.arraySize = rendererData.rendererFeatures.Count;
-            for (int i = 0; i < rendererData.rendererFeatures.Count; i++)
+            using (SerializedObject data = new SerializedObject(rendererData))
             {
-                AssetDatabase.TryGetGUIDAndLocalFileIdentifier(rendererData.rendererFeatures[i], out string _,
-                    out long id);
-                map.GetArrayElementAtIndex(i).longValue = id;
-            }
+                SerializedProperty map = data.FindProperty("m_RendererFeatureMap");
+                map.arraySize = rendererData.rendererFeatures.Count;
+                for (int i = 0; i < rendererData.rendererFeatures.Count; i++)
+                {
+                    AssetDatabase.TryGetGUIDAndLocalFileIdentifier(rendererData.rendererFeatures[i], out string _,
+                        out long id);
+                    map.GetArrayElementAtIndex(i).longValue = id;
+                }
 
-            data.ApplyModifiedPropertiesWithoutUndo();
+                data.ApplyModifiedPropertiesWithoutUndo();
+            }
             rendererData.SetDirty();
         }
 

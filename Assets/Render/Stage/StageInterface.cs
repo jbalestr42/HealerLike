@@ -50,7 +50,7 @@ namespace HealerLike.Render.Stage
             StageLegacyInput.Configure(scene);
 #endif
 
-            _ui = FindInScene<ToolkitGameUI>(scene);
+            _ui = StageSceneObjects.Find<ToolkitGameUI>(scene);
             if (_ui == null)
             {
                 GameObject host = new GameObject("Render Interface");
@@ -66,7 +66,7 @@ namespace HealerLike.Render.Stage
                 CreatePortraits();
                 StageTouchInput touch = _ui.GetComponent<StageTouchInput>();
                 if (touch == null) touch = _ui.gameObject.AddComponent<StageTouchInput>();
-                touch.Init(FindInScene<InteractionManager>(scene));
+                touch.Init(StageSceneObjects.Find<InteractionManager>(scene));
                 _ui.SetBattleFocus(false, _focus.Toggle);
             }
             _focus.ShowLegacyControl(false);
@@ -173,17 +173,5 @@ namespace HealerLike.Render.Stage
             return true;
         }
 
-        static ComponentType FindInScene<ComponentType>(Scene scene) where ComponentType : Component
-        {
-            foreach (GameObject root in scene.GetRootGameObjects())
-            {
-                ComponentType found = root.GetComponentInChildren<ComponentType>(true);
-                if (found != null)
-                {
-                    return found;
-                }
-            }
-            return null;
-        }
     }
 }

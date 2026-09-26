@@ -82,6 +82,8 @@ namespace HealerLike.Render.Studio.Editor
                 }
             }
             _items.Clear();
+            _surfaces.Clear();
+            _restoredSelection = null;
         }
 
         // The surface the author chose for the recipe, else the one its body reads as
@@ -118,22 +120,25 @@ namespace HealerLike.Render.Studio.Editor
 
         bool Restore()
         {
-            string json = StudioPrefs.ReadJson(key);
-            if (json == null)
+            if (!StudioPrefs.TryRead(key, out CreatureDraftCollection collection))
             {
                 return false;
             }
-
-            CreatureDraftCollection collection = JsonUtility.FromJson<CreatureDraftCollection>(json);
-            if (collection == null || collection.items == null)
+            if (collection.items == null)
             {
+                StudioPrefs.Discard(key);
                 return false;
             }
 
             foreach (CreatureDraftRecord record in collection.items)
             {
-                CreatureRecipe draft = Add(ScriptableObject.CreateInstance<CreatureRecipe>());
-                JsonUtility.FromJsonOverwrite(record.json, draft);
+                if (record == null || !StudioPrefs.TryDraft(record.json, out CreatureRecipe draft))
+                {
+                    Dispose();
+                    StudioPrefs.Discard(key);
+                    return false;
+                }
+                Add(draft);
                 draft.name = record.name;
                 if (record.hasSurface)
                 {
