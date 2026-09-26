@@ -148,6 +148,10 @@ namespace HealerLike.Render.Zones
             }
 
             entry.initialStrength = zone.strength;
+            if (kind == ZoneKind.Launch && entry.zone.kind == (int)ZoneKind.Launch)
+            {
+                zone.reserved = entry.zone.reserved;
+            }
             if (entry.duration > 0)
             {
                 zone.strength *= Mathf.Clamp01(1 - zone.age / entry.duration);
