@@ -24,6 +24,8 @@ public class OutlinesCaptureScene
         outlines = _scene.Track(ScriptableObject.CreateInstance<Outlines>());
         outlines.layerMask = 0;
         outlines.depthNormalEdges = false;
+        outlines.edgeShader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Render/Shaders/OutlinesEdges.shader");
+        Assert.That(outlines.edgeShader, Is.Not.Null, "The capture fixture needs the authored screen-edge shader.");
         outlines.Create();
         _scene.UsePipeline(outlines);
         _scene.CreateCamera("Portrait camera", 40f, 1080f / 1920f, 50f, 31f, new Color(0.75f, 0.82f, 0.88f));
