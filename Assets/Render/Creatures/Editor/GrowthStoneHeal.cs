@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System;
 using UnityEngine;
-using HealerLike.Render.Grammar;
 using static HealerLike.Render.Creatures.GrowthStoneParts;
 
 namespace HealerLike.Render.Creatures
@@ -51,15 +49,7 @@ namespace HealerLike.Render.Creatures
             for (int i = -1; i <= 1; i++)
             {
                 Vector3 end = new Vector3(i * 0.5f, i == 0 ? 1.0f : 0.73f, 0f);
-                parts.Add(
-                    Link(
-                        "HealBranch",
-                        stone ? ShapeProfile.Block() : ShapeProfile.Segment(),
-                        Vector3.zero,
-                        end,
-                        stone ? 0.19f : 0.12f
-                    )
-                );
+                parts.Add(Link("HealBranch", ShapeProfile.Segment(), Vector3.zero, end, 0.12f));
                 parts.Add(
                     Part("HealSeed", round, end + Vector3.up * 0.19f, new Vector3(0.3f, 0.43f, 0.27f), PartRole.Tip)
                 );
