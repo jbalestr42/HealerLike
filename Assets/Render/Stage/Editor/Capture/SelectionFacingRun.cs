@@ -51,18 +51,17 @@ namespace HealerLike.Render.Stage
                     Bounds bounds = new Bounds(host.rig.root.position, Vector3.zero);
                     foreach (Renderer renderer in host.rig.root.GetComponentsInChildren<Renderer>())
                         bounds.Encapsulate(renderer.bounds);
-                    float radius = Mathf.Max(bounds.extents.x, bounds.extents.z) * 1.45f;
+                    float radius = Mathf.Max(bounds.extents.x, bounds.extents.z) * 1.05f;
                     bounds = new Bounds(new Vector3(point.x, bounds.center.y, point.z),
                         new Vector3(radius * 2f, bounds.size.y, radius * 2f));
                     bounds.Expand(0.5f);
                     Pose fit = StageViewport.Fit(bounds, camera.transform.rotation, camera.fieldOfView, camera.aspect,
-                        StageViewport.Inset(_session.actions.ui.normalizedWorldViewport, 0.12f));
+                        StageViewport.Inset(_session.actions.ui.normalizedWorldViewport, 0.05f));
                     camera.transform.SetPositionAndRotation(fit.position, fit.rotation);
                     Time.timeScale = 0f;
                     yield return null;
                     yield return null;
-                    var selection = new StagePresentationSelection(_session, _output);
-                    yield return selection.Observe(entity, subject);
+                    yield return Selection(entity, host, subject);
                     using (var control = new SelectionFacingControl(entity.GetComponent<Entity>(), host, _output))
                     {
                         yield return Turns(control, subject);
@@ -83,6 +82,29 @@ namespace HealerLike.Render.Stage
                 Directory.CreateDirectory(folder);
                 File.WriteAllText(Path.Combine(folder, "facing-proof.json"), JsonUtility.ToJson(_proof, true));
                 StagePlay.Finish(this, passed);
+            }
+        }
+
+        IEnumerator Selection(GameObject entity, CreatureBuilder host, string subject)
+        {
+            SelectableEntity source = entity.GetComponent<SelectableEntity>();
+            source.SendMessage("OnMouseExit", SendMessageOptions.RequireReceiver);
+            yield return null;
+            yield return null;
+            var observation = new StageSelectionObservation(host, source, _output);
+            Vector3 ownerPosition = entity.transform.position;
+            Quaternion ownerRotation = entity.transform.rotation;
+            foreach (string state in new[] { "idle", "selected", "deselected" })
+            {
+                if (state == "selected") source.Select();
+                if (state == "deselected") source.UnSelect();
+                yield return null;
+                yield return null;
+                var frame = observation.Sample(subject, state, state == "selected");
+                _output.Check(entity.transform.position.Equals(ownerPosition)
+                    && entity.transform.rotation.Equals(ownerRotation), "Selection keeps gameplay owner pose exact");
+                yield return _session.Capture(frame.file.Replace(".png", ""),
+                    "Explicit SelectableEntity.Select/UnSelect calls; actual production selection readout");
             }
         }
 
@@ -108,7 +130,7 @@ namespace HealerLike.Render.Stage
                     yield return null;
                     string file = "facing-" + subject + "-" + turn + "-" + sample.ToString("0.00",
                         System.Globalization.CultureInfo.InvariantCulture);
-                    var frame = control.Sample(subject, turn, elapsed, file, _manager.gameCamera);
+                    var frame = control.Sample(subject, turn, elapsed, sample > 0f ? file : null, _manager.gameCamera);
                     _proof.frames.Add(frame);
                     if (sample > 0f)
                         yield return _session.Capture(file, "Synthetic target provider control; production live LateUpdate; paused PNG");
