@@ -32,7 +32,7 @@ namespace HealerLike.Render.Spells
                 && anchors.headRadius >= 0f && RenderMath.IsFinite(anchors.bodyCentre)
                 && RenderMath.IsFinite(anchors.headCentre) && RenderMath.IsFinite(anchors.foot)
                 && RenderMath.IsFinite(anchors.neck) && RenderMath.IsFinite(anchors.castPoint)
-                && anchors.castSources != null && AllFinite(anchors.castSources);
+                && (anchors.castSources == null || AllFinite(anchors.castSources));
         }
 
         static bool AllFinite(Vector3[] points)
