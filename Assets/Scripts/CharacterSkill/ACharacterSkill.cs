@@ -10,13 +10,14 @@ public abstract class ACharacterSkillFactory : SerializedScriptableObject
     public abstract ACharacterSkill Create();
 }
 
-public class CharacterSkillFactory<CharacterSkillType, DataType> : ACharacterSkillFactory
+public class CharacterSkillFactory<CharacterSkillType, DataType> : ACharacterSkillFactory, IGameDataSource
                                             where CharacterSkillType : ACharacterSkill<DataType>, new()
                                             where DataType : CharacterSkillData, new()
 {
     [InlineProperty]
     [HideLabel]
     public DataType data;
+    public object sourceData { get { return data; } }
 
     public override ACharacterSkill Create()
     {
@@ -56,9 +57,10 @@ public class CharacterSkillData
     public List<ACharacterSkillValidatorFactory> validators;
 }
 
-public abstract class ACharacterSkill<DataType> : ACharacterSkill where DataType : CharacterSkillData
+public abstract class ACharacterSkill<DataType> : ACharacterSkill, IGameDataSource where DataType : CharacterSkillData
 {
     public DataType data;
+    public object sourceData { get { return data; } }
     public override CharacterSkillData GetData() => data;
 
 }

@@ -9,6 +9,21 @@ public class EntityInventory : MonoBehaviour
     [SerializeField] GameObject _inventoryEntity;
 
     List<SelectEntityButton> _entityButtons = new List<SelectEntityButton>();
+    List<SelectEntityButton> _entityButtonsSource;
+    System.Collections.ObjectModel.ReadOnlyCollection<SelectEntityButton> _entityButtonsView;
+
+    public IReadOnlyList<SelectEntityButton> entityButtons
+    {
+        get
+        {
+            if (_entityButtonsView == null || _entityButtonsSource != _entityButtons)
+            {
+                _entityButtonsSource = _entityButtons;
+                _entityButtonsView = _entityButtons.AsReadOnly();
+            }
+            return _entityButtonsView;
+        }
+    }
 
 	public void Init(List<EntityData> entitiesData)
     {

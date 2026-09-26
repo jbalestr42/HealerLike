@@ -10,11 +10,12 @@ public abstract class ABuffFactory : SerializedScriptableObject
     public abstract ABuff GetBuff(ABuffHandler buffHandler);
 }
 
-public class BuffFactory<BuffType, DataType> : ABuffFactory where BuffType : ABuff<DataType>, new()
+public class BuffFactory<BuffType, DataType> : ABuffFactory, IGameDataSource where BuffType : ABuff<DataType>, new()
 {
     [InlineProperty]
     [HideLabel]
     public DataType data;
+    public object sourceData { get { return data; } }
 
     public override ABuff GetBuff(ABuffHandler buffHandler)
     {
@@ -34,8 +35,9 @@ public abstract class ABuff
 }
 
 [Serializable]
-public abstract class ABuff<DataType> : ABuff
+public abstract class ABuff<DataType> : ABuff, IGameDataSource
 {
     public DataType data;
+    public object sourceData { get { return data; } }
     public override bool isStackable => this is IStackableBuff;
 }

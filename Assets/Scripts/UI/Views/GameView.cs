@@ -30,6 +30,9 @@ public class GameView : AView
     PanelType _selectedPanel = PanelType.None;
     GameObject _selectedObject = null;
 
+    public PanelType selectedPanel { get { return _selectedPanel; } }
+    public GameObject selectedObject { get { return _selectedObject; } }
+
     [SerializeField] Dictionary<PanelType, APanel> _panels;
     public IDictionary<PanelType, APanel> panels { get { return _panels; } }
 

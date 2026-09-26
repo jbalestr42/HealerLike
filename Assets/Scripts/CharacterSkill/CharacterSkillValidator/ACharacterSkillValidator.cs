@@ -8,11 +8,12 @@ public abstract class ACharacterSkillValidatorFactory : SerializedScriptableObje
     public abstract ACharacterSkillValidator Create();
 }
 
-public class CharacterSkillValidatorFactory<CharacterSkillValidatorType, DataType> : ACharacterSkillValidatorFactory where CharacterSkillValidatorType : ACharacterSkillValidator<DataType>, new()
+public class CharacterSkillValidatorFactory<CharacterSkillValidatorType, DataType> : ACharacterSkillValidatorFactory, IGameDataSource where CharacterSkillValidatorType : ACharacterSkillValidator<DataType>, new()
 {
     [InlineProperty]
     [HideLabel]
     public DataType data;
+    public object sourceData { get { return data; } }
 
     public override ACharacterSkillValidator Create()
     {
@@ -28,7 +29,8 @@ public abstract class ACharacterSkillValidator
     public abstract void OnSkillUsed(GameObject owner);
 }
 
-public abstract class ACharacterSkillValidator<DataType> : ACharacterSkillValidator
+public abstract class ACharacterSkillValidator<DataType> : ACharacterSkillValidator, IGameDataSource
 {
     public DataType data;
+    public object sourceData { get { return data; } }
 }
