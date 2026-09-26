@@ -57,6 +57,8 @@ public abstract class ABuffHandler
     public abstract void ResetPeriodDuration();
     public abstract DurationType durationType { get; }
     public abstract float duration { get; }
+    // Time left before the handler stops, 0 when it has no limited duration
+    public abstract float remainingDuration { get; }
     public abstract bool hasDuration { get; }
     public abstract bool isPeriodic { get; }
     public abstract bool isDone { get; }

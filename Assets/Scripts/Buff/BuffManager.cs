@@ -219,6 +219,23 @@ public class BuffManager : SerializedMonoBehaviour
         return false;
     }
 
+    // Handlers currently applied, whatever their source
+    public List<BuffHandlerData> GetActiveHandlers()
+    {
+        List<BuffHandlerData> activeHandlers = new List<BuffHandlerData>();
+        foreach (var handlerPerSource in _buffHandlerPerSource)
+        {
+            foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
+            {
+                if (kvpBuffHandler.Value.isInit && kvpBuffHandler.Value.hasStarted)
+                {
+                    activeHandlers.Add(kvpBuffHandler.Value);
+                }
+            }
+        }
+        return activeHandlers;
+    }
+
     public void RemoveBuffWithTag(GameplayTag tag)
     {
         RemoveBuff(buffHandlerData => buffHandlerData.buffHandlerFactory.tags.Contains(tag));

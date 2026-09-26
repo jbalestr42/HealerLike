@@ -9,6 +9,7 @@ public class SandboxPanel : MonoBehaviour
     [SerializeField] Transform _itemContainer;
     [SerializeField] GameObject _wavePanel;
     [SerializeField] Transform _waveContainer;
+    [SerializeField] EntityInfoPanel _entityInfoPanel;
 
     SandboxGameType _gameType;
     SandboxButton _sideButton;
@@ -18,6 +19,9 @@ public class SandboxPanel : MonoBehaviour
     public void Init(SandboxGameType gameType, SandboxData data, Character character)
     {
         _gameType = gameType;
+
+        // Clicking an entity shows the detailed sandbox panel instead of the game one
+        UIManager.instance.GetView<GameView>(ViewType.Game).panels[PanelType.Entity] = _entityInfoPanel;
 
         _sideButton = CreateButton(_controlContainer, "", ToggleSide);
         CreateButton(_controlContainer, "Supprimer", _gameType.StartRemovingEntities);

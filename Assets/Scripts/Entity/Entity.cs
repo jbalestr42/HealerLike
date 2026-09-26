@@ -48,6 +48,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     public GameObject targetPoint => _targetPoint;
 
     List<ASkill> _skills = new List<ASkill>();
+    public List<ASkill> skills { get { return _skills; } }
 
     List<AItem> _items = new List<AItem>();
     public List<AItem> items { get { return _items; } }

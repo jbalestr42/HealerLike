@@ -83,30 +83,45 @@ public abstract class ATargetBehaviour
     public abstract TargetBehaviourType targetType { get; }
     public abstract void ApplyBehaviour(List<GameObject> targets, Vector3 position, float range);
 
+    // Types that have an implementation (Fastest has none)
+    static readonly Dictionary<TargetBehaviourType, System.Func<ATargetBehaviour>> Constructors = new Dictionary<TargetBehaviourType, System.Func<ATargetBehaviour>>
+    {
+        { TargetBehaviourType.First, () => new FirstTargetBehaviour() },
+        { TargetBehaviourType.Nearest, () => new NearestTargetBehaviour() },
+        { TargetBehaviourType.LowestHealth, () => new LowestHealthTargetBehaviour() },
+        { TargetBehaviourType.Random, () => new RandomTargetBehaviour() },
+        { TargetBehaviourType.Farest, () => new FarestTargetBehaviour() },
+    };
+
+    public static bool IsSupported(TargetBehaviourType type)
+    {
+        return Constructors.ContainsKey(type);
+    }
+
+    // Next type in the enum order that has an implementation, back to the first one after the last
+    public static TargetBehaviourType GetNextSupportedType(TargetBehaviourType type)
+    {
+        TargetBehaviourType[] types = (TargetBehaviourType[])System.Enum.GetValues(typeof(TargetBehaviourType));
+        int index = System.Array.IndexOf(types, type);
+        for (int i = 1; i <= types.Length; i++)
+        {
+            TargetBehaviourType next = types[(index + i) % types.Length];
+            if (IsSupported(next))
+            {
+                return next;
+            }
+        }
+        return type;
+    }
+
     public static ATargetBehaviour Create(TargetBehaviourType type)
     {
-        ATargetBehaviour targetBehaviour = null;
-        switch (type)
+        if (Constructors.TryGetValue(type, out System.Func<ATargetBehaviour> constructor))
         {
-            case TargetBehaviourType.First:
-                targetBehaviour = new FirstTargetBehaviour();
-                break;
-            case TargetBehaviourType.Nearest:
-                targetBehaviour = new NearestTargetBehaviour();
-                break;
-            case TargetBehaviourType.LowestHealth:
-                targetBehaviour = new LowestHealthTargetBehaviour();
-                break;
-            case TargetBehaviourType.Random:
-                targetBehaviour = new RandomTargetBehaviour();
-                break;
-            case TargetBehaviourType.Farest:
-                targetBehaviour = new FarestTargetBehaviour();
-                break;
-            default:
-                Debug.LogError($"[ATargetBehaviour] Unkown target behaviour '{type}'");
-                break;
+            return constructor();
         }
-        return targetBehaviour;
+
+        Debug.LogError($"[ATargetBehaviour] Unkown target behaviour '{type}'");
+        return null;
     }
 }

@@ -54,6 +54,7 @@ public abstract class AItem
     public abstract void Equip(GameObject target);
     public abstract void Unequip(GameObject target);
     public abstract string title { get; }
+    public abstract string description { get; }
     public abstract Sprite icon { get; }
     public abstract List<GameplayTag> tags { get; }
 }
@@ -62,6 +63,7 @@ public abstract class AItem<DataType> : AItem where DataType : BaseItemData
 {
     public DataType data;
     public override string title => data.name;
+    public override string description => data.description;
     public override Sprite icon => data.icon;
     public override List<GameplayTag> tags => data.tags;
 }

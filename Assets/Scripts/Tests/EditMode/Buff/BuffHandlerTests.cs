@@ -144,6 +144,48 @@ public class BuffHandlerTests
         Assert.AreEqual(0f, handler.durationTimer);
         Assert.AreEqual(0f, handler.periodDurationTimer);
     }
+
+    [Test]
+    public void RemainingDuration_DurationType_IsTheTimeLeft()
+    {
+        BuffHandler handler = CreateHandler(DurationType.Duration, duration: 5f);
+
+        handler.Update(1.5f);
+
+        Assert.AreEqual(3.5f, handler.remainingDuration, 0.0001f);
+    }
+
+    [Test]
+    public void RemainingDuration_AfterRefresh_IsTheWholeDuration()
+    {
+        BuffHandler handler = CreateHandler(DurationType.Duration, duration: 5f);
+        handler.Update(4f);
+
+        handler.Refresh(null, null);
+
+        Assert.AreEqual(5f, handler.remainingDuration);
+    }
+
+    [Test]
+    public void RemainingDuration_Elapsed_IsZero()
+    {
+        BuffHandler handler = CreateHandler(DurationType.Duration, duration: 5f);
+
+        handler.Update(20f);
+
+        Assert.AreEqual(0f, handler.remainingDuration);
+    }
+
+    [TestCase(DurationType.Infinite)]
+    [TestCase(DurationType.Instant)]
+    public void RemainingDuration_WithoutLimitedDuration_IsZero(DurationType durationType)
+    {
+        BuffHandler handler = CreateHandler(durationType, duration: 5f);
+
+        handler.Update(1f);
+
+        Assert.AreEqual(0f, handler.remainingDuration);
+    }
 }
 
 }

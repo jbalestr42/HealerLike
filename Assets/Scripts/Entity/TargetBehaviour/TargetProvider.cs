@@ -40,9 +40,11 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
 
     public void SetTargetBehaviour(TargetBehaviourType targetBehaviourType)
     {
-        int targetCount = _targetBehaviour.targetCount;
+        ATargetBehaviour previousBehaviour = _targetBehaviour;
         _targetBehaviour = ATargetBehaviour.Create(targetBehaviourType);
-        _targetBehaviour.targetCount = targetCount;
+        _targetBehaviour.targetCount = previousBehaviour.targetCount;
+        // The validators come from the entity data, whatever the way targets are picked
+        _targetBehaviour.targetValidators = previousBehaviour.targetValidators;
     }
 
     public List<GameObject> GetTargets()

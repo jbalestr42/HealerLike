@@ -323,6 +323,69 @@ public class BuffManagerTests
 
         Assert.IsFalse(_buffManager.HasHandler(handlerFactory));
     }
+
+    [Test]
+    public void GetActiveHandlers_WithoutHandler_IsEmpty()
+    {
+        CollectionAssert.IsEmpty(_buffManager.GetActiveHandlers());
+    }
+
+    [Test]
+    public void GetActiveHandlers_BeforeTheHandlerStarted_IsEmpty()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+
+        _buffManager.AddHandler(CreateHandlerFactory(buffFactory, DurationType.Duration), _source, _target);
+
+        CollectionAssert.IsEmpty(_buffManager.GetActiveHandlers());
+    }
+
+    [Test]
+    public void GetActiveHandlers_ListsTheStartedHandlersOfEverySource()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration);
+        ABuffHandlerFactory otherHandlerFactory = CreateHandlerFactory(buffFactory, DurationType.Infinite);
+        GameObject otherSource = new GameObject("OtherSource");
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(otherHandlerFactory, otherSource, _target);
+        _buffManager.ForceUpdate();
+
+        List<BuffManager.BuffHandlerData> activeHandlers = _buffManager.GetActiveHandlers();
+        Assert.AreEqual(2, activeHandlers.Count);
+        CollectionAssert.AreEquivalent(new[] { handlerFactory, otherHandlerFactory }, activeHandlers.ConvertAll(buffHandlerData => buffHandlerData.buffHandlerFactory));
+        Object.DestroyImmediate(otherSource);
+    }
+
+    [Test]
+    public void GetActiveHandlers_InstantHandler_IsNeverListed()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+
+        _buffManager.AddHandler(CreateHandlerFactory(buffFactory, DurationType.Instant), _source, _target);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.IsEmpty(_buffManager.GetActiveHandlers());
+    }
+
+    [Test]
+    public void GetActiveHandlers_AfterTheHandlerStopped_IsEmpty()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        _buffManager.RemoveHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.IsEmpty(_buffManager.GetActiveHandlers());
+    }
 }
 
 }

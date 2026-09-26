@@ -12,6 +12,7 @@ public class InventoryHandlerTests
         public override void Equip(GameObject target) { }
         public override void Unequip(GameObject target) { }
         public override string title => "Stub";
+        public override string description => "";
         public override Sprite icon => null;
         public override List<GameplayTag> tags => new List<GameplayTag>();
     }
