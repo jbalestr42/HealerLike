@@ -52,6 +52,13 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 74b5f35c770b3ac47bcec7c0cd201c7d, type: 2}
   - {fileID: 11400000, guid: c586266b2d0f45fc841138d1e95300ff, type: 2}
   - {fileID: 11400000, guid: 8c7aacf4b16749ee84b1a6152a73be45, type: 2}
+  - {fileID: 11400000, guid: d6a62ca494014f16a3f7d75a4c2410a0, type: 2}
+  - {fileID: 11400000, guid: 55bd537b7a6b4020b407348f851dfc37, type: 2}
+  - {fileID: 11400000, guid: d4ec0ad597364edb8218b9a9cad3364e, type: 2}
+  - {fileID: 11400000, guid: e0c2c40dae69459c9bd530a7a5047c01, type: 2}
+  - {fileID: 11400000, guid: 8161e30f498e47aa9369c3e1ce67f21f, type: 2}
+  - {fileID: 11400000, guid: 0d33496f829346b387a4fda1cebe79bd, type: 2}
+  - {fileID: 11400000, guid: fa27bfdb8534459b9bc966b982f8a5b2, type: 2}
   characterSkills:
   - {fileID: 11400000, guid: 398f76355dcd1574d876d59d8e1dd8bd, type: 2}
   - {fileID: 11400000, guid: 38f88bae44f5f1f41b2aef0148296685, type: 2}
