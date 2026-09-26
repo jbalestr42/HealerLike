@@ -54,6 +54,7 @@ namespace HealerLike.Render.Stage
         {
             if (_root != null)
             {
+                _root.gameObject.SetActive(false);
                 RenderObjects.Release(_root.gameObject);
             }
             _root = null;
