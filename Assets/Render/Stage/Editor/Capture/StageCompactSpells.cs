@@ -41,6 +41,8 @@ namespace HealerLike.Render.Stage
                 _s.output.Check(StageInterfaceOutput.IsVisible(_s.actions.root.Q("detail-panel"))
                     && _s.actions.root.Q<Label>("detail-title").text == entity.data.title,
                     "Holding actual board creature selects its details while spell targeting is active");
+                _s.output.Check(entity.GetComponent<SelectableEntity>().isHighlighted,
+                    "World hold selects the actual creature through existing selection controls");
                 yield return _s.Capture("11-world-creature-hold");
                 yield return touch.Frame(TouchPhase.Ended, board);
             }
@@ -88,12 +90,36 @@ namespace HealerLike.Render.Stage
             yield return _gestures.Hold(spell, "14b-shortage-inspection", false);
             _s.output.Check(character.mana.Value == shortage && _s.interaction.GetInteraction() == null,
                 "Unavailable spell stays inspectable without activation");
+            yield return Wait(ToolkitSpellState.Read(slot, character).duration + .1f);
+            _s.output.Check(ToolkitSpellState.Read(slot, character).remaining == 0,
+                "Existing cooldown recovers and clears the dark remaining sector");
+            yield return _s.Capture("14c-cooldown-recovered-shortage");
             character.mana.Refill();
             yield return _s.actions.PointerTap("wave-button");
             yield return Wait(.6f);
             _s.output.Check(!StageInterfaceOutput.IsVisible(_s.actions.root.Q("wave-button")),
                 "Start battle disappears during real combat");
             yield return _s.Capture("15-combat");
+            Rect beforeTargeting = _s.actions.ui.normalizedWorldViewport;
+            yield return _s.actions.PointerTap(spell);
+            yield return Wait(.2f);
+            _s.output.Check(beforeTargeting != _s.actions.ui.normalizedWorldViewport,
+                "Combat targeting contextual control changes the reserved viewport");
+            yield return _s.Capture("15b-combat-targeting");
+            targeting = _s.interaction.GetInteraction();
+            entity = _s.manager.entityManager.GetEntities(Entity.EntityType.Player)[0].GetComponent<Entity>();
+            board = _s.manager.gameCamera.WorldToScreenPoint(entity.GetComponent<Collider>().bounds.center);
+            _s.output.Check(targeting != null && !_s.actions.touch.IsOverInterface(board)
+                && Physics.Raycast(_s.manager.gameCamera.ScreenPointToRay(board), out RaycastHit reprojected,
+                    Mathf.Infinity, targeting.GetLayerMask()) && targeting.IsValidTarget(reprojected.collider.gameObject),
+                "Combat target is reprojected against the current camera after contextual viewport change");
+            before = character.mana.Value;
+            yield return _s.actions.TouchGesture(board);
+            yield return Wait(.1f);
+            Observe("combat-reprojected-cast");
+            _s.output.Check(_s.interaction.GetInteraction() == null && character.mana.Value < before,
+                "Reprojected combat target casts successfully after camera refit");
+            yield return _s.Capture("15c-combat-cast");
         }
     }
 }

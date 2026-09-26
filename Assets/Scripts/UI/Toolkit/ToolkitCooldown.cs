@@ -25,7 +25,8 @@ public sealed class ToolkitCooldown : VisualElement
         painter.fillColor = new Color(.02f, .08f, .08f, .72f);
         painter.BeginPath(); painter.MoveTo(center);
         painter.LineTo(center + Vector2.up * -radius);
-        painter.Arc(center, radius, -90, -90 + _remaining * 360);
+        // The legacy radial image starts at the top and fills counterclockwise.
+        painter.Arc(center, radius, -90, -90 - _remaining * 360, ArcDirection.CounterClockwise);
         painter.ClosePath(); painter.Fill();
     }
 }

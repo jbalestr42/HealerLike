@@ -42,6 +42,7 @@ namespace HealerLike.Render.Stage
                     "Both compact rows occupy at most 180 logical pixels");
                 _output.Check(root.Q("mana-value").worldBound.xMax <= root.Q("hud-root").worldBound.xMax - 7,
                     "Global mana stays fixed inside the safe row width");
+                yield return new StageCompactLayout(_session).Check();
                 int initial = Count;
                 Observe("initial");
                 float gold = _manager.player.gold;
@@ -68,6 +69,11 @@ namespace HealerLike.Render.Stage
                 _output.Check(Count == initial && _session.interaction.GetInteraction() == null,
                     "Cancelled valid placement produces no entity and clears preview");
                 yield return _session.Capture("04b-after-cancel");
+                yield return _session.actions.BringIntoView(Available);
+                yield return _gestures.Drag(Available, StageInterfaceActions.ScreenPoint(Available), "04d-return-to-roster");
+                Observe("return-to-roster");
+                _output.Check(Count == initial && _session.interaction.GetInteraction() == null,
+                    "Returning an owned drag onto the roster creates no creature");
                 _output.Check(gold == _manager.player.gold && mana == _manager.player.character.mana.Value,
                     "Scroll, hold, invalid drop and cancellation spend no resources");
                 yield return new StageCompactInterruptions(_session).Run(Available, drop);

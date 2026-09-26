@@ -15,14 +15,14 @@ public struct ToolkitSpellState
     {
         ToolkitSpellState state = new ToolkitSpellState();
         if (slot == null || slot.data == null || character == null) return state;
+        UseCharacterSkillButton button = slot.skillButton;
         foreach (ACharacterSkillValidatorFactory factory in slot.data.validators)
         {
-            if (factory is ResourceValidatorFactory resource && resource.data?.consumer?.data?.value != null)
+            if (button != null && button.hasCost && factory is ResourceValidatorFactory resource && resource.data?.consumer?.data?.value != null)
                 state.cost += resource.data.consumer.data.value.GetValue(character.gameObject);
-            if (factory is DurationValidatorFactory duration && duration.data != null)
+            if (button != null && button.hasCooldown && factory is DurationValidatorFactory duration && duration.data != null)
                 state.duration = Mathf.Max(state.duration, duration.data.duration);
         }
-        UseCharacterSkillButton button = slot.skillButton;
         if (button != null && button.hasCooldown)
         {
             foreach (Image image in button.GetComponentsInChildren<Image>(true))
