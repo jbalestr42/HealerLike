@@ -118,6 +118,7 @@ public class BoostCellGroundTests
         _ground.Refresh();
         Assert.AreEqual(2, _ground.patchCount);
         Assert.IsFalse(visible.enabled);
+        TestHelpers.InvokePrivate(_ground, "OnDestroy");
         Object.DestroyImmediate(_ground);
         Assert.IsTrue(visible.enabled);
         Assert.IsFalse(hidden.enabled);

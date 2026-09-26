@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using HealerLike.Render.Grass;
 using NUnit.Framework;
 using UnityEngine;
@@ -23,7 +24,9 @@ namespace HealerLike.Render.Environment
                 Transform root = spawner.Rebuild();
                 Assert.IsFalse(root.gameObject.activeSelf);
                 spawner.enabled = true;
-                owner.SendMessage("OnEnable", SendMessageOptions.RequireReceiver);
+                // The callback is private on the base; EditMode does not dispatch runtime lifecycle messages.
+                typeof(AEnvironmentSpawner).GetMethod("OnEnable", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Invoke(spawner, null);
                 Assert.IsTrue(root.gameObject.activeSelf);
                 spawner.Clear();
                 Assert.IsFalse(root);
@@ -53,6 +56,7 @@ namespace HealerLike.Render.Environment
                 grass.enabled = true;
                 TestHelpers.InvokePrivate(grass, "OnEnable");
                 Assert.IsTrue(strip.enabled);
+                TestHelpers.InvokePrivate(grass, "OnDestroy");
                 Object.DestroyImmediate(grass);
                 Assert.IsFalse(stripObject);
                 Assert.IsTrue(owner);
