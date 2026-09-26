@@ -206,6 +206,19 @@ public class BuffManager : SerializedMonoBehaviour
         Update();
     }
 
+    // Whether this handler is currently applied, whatever its source
+    public bool HasHandler(ABuffHandlerFactory buffHandlerFactory)
+    {
+        foreach (var handlerPerSource in _buffHandlerPerSource)
+        {
+            if (handlerPerSource.Value.buffHandlerPerId.TryGetValue(buffHandlerFactory.uniqueID, out BuffHandlerData buffHandlerData) && buffHandlerData.isInit)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void RemoveBuffWithTag(GameplayTag tag)
     {
         RemoveBuff(buffHandlerData => buffHandlerData.buffHandlerFactory.tags.Contains(tag));

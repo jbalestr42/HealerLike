@@ -244,6 +244,85 @@ public class BuffManagerTests
         // The handler has the tag, so RemoveBuffWithoutTag leaves it alone: no further log entries.
         CollectionAssert.AreEqual(new[] { "Add" }, _data.log);
     }
+
+    [Test]
+    public void HasHandler_WithoutAnyHandler_IsFalse()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+
+        Assert.IsFalse(_buffManager.HasHandler(CreateHandlerFactory(buffFactory, DurationType.Duration)));
+    }
+
+    [Test]
+    public void HasHandler_RightAfterAddHandler_IsTrue()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration);
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+
+        // Before any update, so two skills checking in the same frame don't both pick this target
+        Assert.IsTrue(_buffManager.HasHandler(handlerFactory));
+    }
+
+    [Test]
+    public void HasHandler_FromAnotherSource_IsTrue()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration);
+        GameObject otherSource = new GameObject("OtherSource");
+
+        _buffManager.AddHandler(handlerFactory, otherSource, _target);
+        _buffManager.ForceUpdate();
+
+        Assert.IsTrue(_buffManager.HasHandler(handlerFactory));
+        Object.DestroyImmediate(otherSource);
+    }
+
+    [Test]
+    public void HasHandler_WithAnotherHandler_IsFalse()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration);
+        ABuffHandlerFactory otherHandlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration);
+
+        _buffManager.AddHandler(otherHandlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        Assert.IsFalse(_buffManager.HasHandler(handlerFactory));
+    }
+
+    [Test]
+    public void HasHandler_AfterTheHandlerStopped_IsFalse()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // Add
+
+        _buffManager.RemoveHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // Remove + Stop
+
+        Assert.IsFalse(_buffManager.HasHandler(handlerFactory));
+    }
+
+    [Test]
+    public void HasHandler_AfterAnInstantHandlerApplied_IsFalse()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Instant);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+
+        _buffManager.ForceUpdate();
+
+        Assert.IsFalse(_buffManager.HasHandler(handlerFactory));
+    }
 }
 
 }
