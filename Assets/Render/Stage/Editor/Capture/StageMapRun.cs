@@ -38,6 +38,16 @@ namespace HealerLike.Render.Stage
             public bool isHealing;
             public bool targetVerifiedByRaycast;
             public Vector2 targetScreenPoint;
+            public bool releaseTargetVerifiedByRaycast;
+            public Vector2 releaseScreenPoint;
+            public Vector3 cameraBeforeTargeting;
+            public Vector3 cameraAtPress;
+            public Vector3 cameraAtRelease;
+            public Rect viewportBeforeTargeting;
+            public Rect viewportAtPress;
+            public Rect viewportAtRelease;
+            public bool worldTapEndedInteraction;
+            public bool worldTapCanceled;
             public float positiveHealth;
             public float negativeHealth;
             public float manaConsumed;
@@ -143,6 +153,7 @@ namespace HealerLike.Render.Stage
                 _manifest.interventions.Add("Temporary cloned map generation settings: five floors, Combat / Treasure / Combat / Elite / Rest / Boss; no RunState mutation, forced victory, reward injection or authored asset write");
                 _manifest.interventions.Add("Scripted ordinary party input: up to six living allies initially, eight before the next combat and ten before Elite, using only remaining authored Deploy choices; positions are chosen from visible free grid cells");
                 _manifest.interventions.Add("Scripted battle assistance through usable Toolkit cards: check heals every 0.4 seconds, prefer Heal group for multiple injured allies; after six seconds use the shipped free Damage all enemy card at most every three seconds; resource effects and mana consumers are observed, never granted");
+                _manifest.interventions.Add("Targeted spells wait 0.2 seconds for the targeting HUD and camera to settle, then use a two-frame touch with a refreshed collider aim inside the normal tap movement threshold; targets and physics are not paused");
                 UnityEngine.Random.InitState(StageMapFixture.Seed);
                 yield return _actions.PointerTap("start-button");
                 yield return StageMapActions.WaitForSelection(_actions);
@@ -499,7 +510,9 @@ namespace HealerLike.Render.Stage
             ApplyConsumerCharacterSkillData data = slot != null ? slot.data as ApplyConsumerCharacterSkillData : null;
             _output.Check(data != null, "Assisted spell uses the authored resource-consumer skill: " + title);
             SpellEvidence evidence = new SpellEvidence { floor = _ascension.run.currentFloor, spell = title,
-                target = target != null ? target.name + " " + target.GetEntityId() : "all " + data.entityType, isHealing = healing };
+                target = target != null ? target.name + " " + target.GetEntityId() : "all " + data.entityType, isHealing = healing,
+                cameraBeforeTargeting = _manager.gameCamera.transform.position,
+                viewportBeforeTargeting = _actions.ui.normalizedWorldViewport };
             _manifest.spells.Add(evidence);
             List<ResourceAttribute> observed = new List<ResourceAttribute>();
             foreach (GameObject entity in _manager.entityManager.GetEntities(data.entityType))
@@ -523,6 +536,9 @@ namespace HealerLike.Render.Stage
             try
             {
                 yield return _actions.PointerTap(button);
+                // The next HUD refresh reveals Cancel and changes the free-world viewport. StageInterface
+                // reframes the camera for that layout; aim only after it has settled, like MobileInterface.
+                yield return Wait(0.2f);
                 InteractionManager interaction = Object.FindAnyObjectByType<InteractionManager>();
                 if (data.isSingle && target != null
                     && LegacyUiReader.AscensionState(_ascension) == AscensionGameType.State.OnGoingBattle
@@ -530,9 +546,34 @@ namespace HealerLike.Render.Stage
                     && interaction.GetInteraction() is SingleTargetInteraction single
                     && single.IsValidTarget(target.gameObject) && TargetPoint(target, out Vector2 point))
                 {
+                    _output.Check(Camera.main == _manager.gameCamera, "Targeted touch and render observation use the same main camera");
                     evidence.targetVerifiedByRaycast = true;
                     evidence.targetScreenPoint = point;
-                    yield return _actions.TouchGesture(point);
+                    evidence.cameraAtPress = _manager.gameCamera.transform.position;
+                    evidence.viewportAtPress = _actions.ui.normalizedWorldViewport;
+                    using (StagePresentationTouch finger = new StagePresentationTouch(_actions))
+                    {
+                        yield return finger.Frame(TouchPhase.Began, point);
+                        bool stillInBattle = LegacyUiReader.AscensionState(_ascension) == AscensionGameType.State.OnGoingBattle
+                            && LegacyUiReader.CurrentView(Object.FindAnyObjectByType<UIManager>()) == ViewType.Game;
+                        Vector2 release = point;
+                        bool hit = stillInBattle && TargetPoint(target, out release);
+                        evidence.releaseTargetVerifiedByRaycast = hit;
+                        evidence.releaseScreenPoint = release;
+                        evidence.cameraAtRelease = _manager.gameCamera.transform.position;
+                        evidence.viewportAtRelease = _actions.ui.normalizedWorldViewport;
+                        float threshold = 18f * Mathf.Min(Screen.width, Screen.height) / 390f;
+                        if (hit && Vector2.Distance(point, release) <= threshold)
+                        {
+                            yield return finger.Frame(TouchPhase.Ended, release);
+                            evidence.worldTapEndedInteraction = interaction.GetInteraction() == null;
+                        }
+                        else
+                        {
+                            evidence.worldTapCanceled = true;
+                            yield return finger.Frame(TouchPhase.Canceled, point);
+                        }
+                    }
                 }
                 yield return Wait(0.25f);
                 // A reward overlay can open while the held gesture is being consumed.
