@@ -1,4 +1,4 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
     <ui:Label name="section-label" text="SECTION" class="eyebrow section-heading" picking-mode="Ignore" />
-    <ui:VisualElement class="section-heading-actions" content-container="" picking-mode="Ignore" />
+    <ui:VisualElement name="section-heading-actions" class="section-heading-actions" content-container="section-heading-actions" picking-mode="Ignore" />
 </ui:UXML>

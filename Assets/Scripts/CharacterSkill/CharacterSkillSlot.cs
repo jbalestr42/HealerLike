@@ -14,6 +14,8 @@ public class CharacterSkillSlot : MonoBehaviour
     ACharacterSkill _skill;
     UseCharacterSkillButton _skillButton;
 
+    public UseCharacterSkillButton skillButton { get { return _skillButton; } }
+
     public void Init(ACharacterSkill skill, UseCharacterSkillButton skillButton, bool useValidators = true)
     {
         _skill = skill;

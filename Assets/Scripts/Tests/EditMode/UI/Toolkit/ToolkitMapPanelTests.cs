@@ -151,7 +151,11 @@ namespace UI.Toolkit
             {
                 _panel.Init(_context, replacement);
                 _panel.Refresh();
-                Assert.IsNull(_view.root.Q("map-connections"));
+                VisualElement oldSurface = _view.root.Q("map-connections");
+                Assert.IsNotNull(oldSurface, "The drawing surface belongs to the authored template.");
+                Assert.IsNull(oldSurface.userData, "The old painter must release its binding.");
+                Assert.IsEmpty(_view.root.Query<Button>(className: "map-node").ToList());
+                Assert.IsNotNull(replacement.root.Q("map-connections").userData);
                 Assert.AreEqual(5, replacement.root.Query<Button>(className: "map-node").ToList().Count);
             }
             finally

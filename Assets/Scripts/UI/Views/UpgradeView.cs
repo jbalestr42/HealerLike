@@ -14,6 +14,21 @@ public class UpgradeView : AView
     [SerializeField] GameObject _upgradePlayerItem;
 
     List<GameObject> _upgradeButtons = new List<GameObject>();
+    List<GameObject> _upgradeButtonsSource;
+    System.Collections.ObjectModel.ReadOnlyCollection<GameObject> _upgradeButtonsView;
+
+    public IReadOnlyList<GameObject> upgradeButtons
+    {
+        get
+        {
+            if (_upgradeButtonsView == null || _upgradeButtonsSource != _upgradeButtons)
+            {
+                _upgradeButtonsSource = _upgradeButtons;
+                _upgradeButtonsView = _upgradeButtons.AsReadOnly();
+            }
+            return _upgradeButtonsView;
+        }
+    }
 
 	public void FillChoices(int count)
     {

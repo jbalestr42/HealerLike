@@ -10,7 +10,8 @@ public abstract class AttributeModifier
     public abstract float ApplyModifier();
 }
 
-public abstract class AttributeModifier<DataType> : AttributeModifier
+public abstract class AttributeModifier<DataType> : AttributeModifier, IGameDataSource
 {
     public DataType data;
+    public object sourceData { get { return data; } }
 }

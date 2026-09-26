@@ -11,13 +11,14 @@ public abstract class ASkillFactory : SerializedScriptableObject
     public abstract ASkill AddSkill(GameObject target);
 }
 
-public class SkillFactory<SkillType, SkillData> : ASkillFactory
+public class SkillFactory<SkillType, SkillData> : ASkillFactory, IGameDataSource
                                 where SkillType : ASkill<SkillData>, new()
                                 where SkillData : SkillDataBase
 {
     [InlineProperty]
     [HideLabel]
     public SkillData data;
+    public object sourceData { get { return data; } }
 
     public override ASkill AddSkill(GameObject target)
     {
@@ -68,9 +69,10 @@ public class SkillDataBase
     public List<AOnSkillTriggerFactory> onSkillTriggerFactory;
 }
 
-public abstract class ASkill<SkillData> : ASkill where SkillData : SkillDataBase
+public abstract class ASkill<SkillData> : ASkill, IGameDataSource where SkillData : SkillDataBase
 {
     [InlineProperty]
     [HideLabel]
     public SkillData data;
+    public object sourceData { get { return data; } }
 }

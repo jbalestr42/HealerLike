@@ -30,13 +30,13 @@ public struct ToolkitMapMetrics
     public static ToolkitMapMetrics Read(ICustomStyle style)
     {
         ToolkitMapMetrics value = defaults;
-        value.floorHeight = ToolkitStyleValues.ReadPositive(style, "--map-floor-height", value.floorHeight);
-        value.nodeHeight = ToolkitStyleValues.ReadPositive(style, "--map-node-height", value.nodeHeight);
-        value.columnWidth = ToolkitStyleValues.ReadPositive(style, "--map-column-width", value.columnWidth);
-        value.gutter = ToolkitStyleValues.ReadPositive(style, "--map-gutter", value.gutter);
-        value.nodeGap = ToolkitStyleValues.ReadPositive(style, "--map-node-gap", value.nodeGap);
-        value.minNodeWidth = ToolkitStyleValues.ReadPositive(style, "--map-node-min-width", value.minNodeWidth);
-        value.maxNodeWidth = ToolkitStyleValues.ReadPositive(style, "--map-node-max-width", value.maxNodeWidth);
+        value.floorHeight = ToolkitStyleValues.ReadPositive(style, "--map-layout-floor-height", value.floorHeight);
+        value.nodeHeight = ToolkitStyleValues.ReadPositive(style, "--map-layout-node-height", value.nodeHeight);
+        value.columnWidth = ToolkitStyleValues.ReadPositive(style, "--map-layout-column-width", value.columnWidth);
+        value.gutter = ToolkitStyleValues.ReadPositive(style, "--map-layout-gutter", value.gutter);
+        value.nodeGap = ToolkitStyleValues.ReadPositive(style, "--map-layout-node-gap", value.nodeGap);
+        value.minNodeWidth = ToolkitStyleValues.ReadPositive(style, "--map-layout-node-min-width", value.minNodeWidth);
+        value.maxNodeWidth = ToolkitStyleValues.ReadPositive(style, "--map-layout-node-max-width", value.maxNodeWidth);
         value.maxNodeWidth = UnityEngine.Mathf.Max(value.minNodeWidth, value.maxNodeWidth);
         return value;
     }

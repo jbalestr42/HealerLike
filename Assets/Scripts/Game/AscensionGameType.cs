@@ -39,6 +39,8 @@ public class AscensionGameType : AGameType
 
     [Header("In Game")]
     [ShowInInspector, ReadOnly] State _state = State.None;
+
+    public State state { get { return _state; } }
     EntityManager _entities = null;
     GameView _gameView;
     UpgradeView _upgradeView;

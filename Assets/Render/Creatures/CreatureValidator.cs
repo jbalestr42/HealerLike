@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System;
 using UnityEngine;
 using HealerLike.Render.Deliveries;
 
@@ -21,13 +20,9 @@ namespace HealerLike.Render.Creatures
                 return Fail($"Require 1..{MaxParts} parts.", out error);
             }
 
-            if (
-                !RenderMath.IsFinite(data.neckLocal)
-                || !RenderMath.IsFinite(data.wiltColour)
-                || !RenderMath.IsFinite(data.stoneOchre)
-            )
+            foreach (string presentationError in CreaturePresentationValidation.Errors(data))
             {
-                return Fail("Invalid neck or wilt colours.", out error);
+                return Fail(presentationError, out error);
             }
 
             HashSet<string> ids = new HashSet<string>();
@@ -58,7 +53,6 @@ namespace HealerLike.Render.Creatures
                     || (int)part.primitive < 0
                     || part.primitive > Primitive.Stone
                     || !part.shape.IsValid()
-                    || !Enum.IsDefined(typeof(PartRole), part.role)
                 )
                 {
                     return Fail("Invalid primitive settings.", out error);
@@ -98,7 +92,6 @@ namespace HealerLike.Render.Creatures
                     || !RenderMath.IsFinite(rootLocal)
                     || !RenderMath.IsFinite(pole)
                     || !RenderMath.IsFinite(arm.colour)
-                    || !RenderMath.IsFinite(arm.tipColour)
                     || arm.restJoints == null
                     || arm.restJoints.Length != arm.segmentCount + 1
                     || arm.restJoints[0] != Vector3.zero

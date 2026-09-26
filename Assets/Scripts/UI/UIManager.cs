@@ -19,6 +19,8 @@ public class UIManager : Singleton<UIManager>
     Dictionary<ViewType, AView> _views = new Dictionary<ViewType, AView>();
     ViewType _currentView = ViewType.None;
 
+    public ViewType currentView { get { return _currentView; } }
+
     List<ViewType> _viewStack = new List<ViewType>();
 
     #region Views

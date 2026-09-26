@@ -35,6 +35,25 @@ public class LookMaterialTests
     }
 
     [Test]
+    public void PrimitiveShader_NewMaterial_UsesUnitOutlineMultiplier()
+    {
+        Shader shader = Shader.Find("HL/Look/Primitive");
+        Assert.That(shader, Is.Not.Null);
+        Material material = Track(new Material(shader));
+
+        Assert.That(material.GetFloat("_HLOutlineWidthMultiplier"), Is.EqualTo(1f));
+    }
+
+    [Test]
+    public void DefaultMaterial_ShippedAsset_UsesApprovedOutlineMultiplier()
+    {
+        Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
+
+        Assert.That(material, Is.Not.Null);
+        Assert.That(material.GetFloat("_HLOutlineWidthMultiplier"), Is.EqualTo(2f));
+    }
+
+    [Test]
     public void DefaultMaterial_ShippedAsset_UsesAllyGreenAndInstancing()
     {
         Material material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Render/Look/Look_Default.mat");
@@ -42,7 +61,6 @@ public class LookMaterialTests
         Assert.That(material, Is.Not.Null);
         Assert.That(material.shader.name, Is.EqualTo("HL/Look/Primitive"));
         Assert.That(material.enableInstancing, Is.True);
-        Assert.That(material.GetFloat("_HLOutlineWidthMultiplier"), Is.EqualTo(1));
         Assert.That(material.GetFloat("_HLGroundGrid"), Is.Zero);
         Assert.That(material.GetFloat("_HLSmoothOutlineNormals"), Is.Zero);
         Color color = material.GetColor("_BaseColor");

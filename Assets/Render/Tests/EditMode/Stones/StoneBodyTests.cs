@@ -41,6 +41,7 @@ public class StoneBodyTests : AStoneBodyTests
         {
             _recipe.parts[i].role = PartRole.Head;
         }
+        Assert.IsTrue(_body.GetComponent<CreatureBuilder>().Rebuild(null));
 
         Queue(-60);
         Drain();
