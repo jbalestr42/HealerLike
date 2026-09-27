@@ -68,6 +68,13 @@ public class ResourceAttribute : MonoBehaviour
     {
         _value = _max.Value;
     }
+
+    // Sets the value directly, without any consumer: armor, invincibility and heal modifiers don't apply
+    public void SetValue(float value)
+    {
+        _value = Mathf.Clamp(value, 0f, _max.Value);
+    }
+
     public void AddResourceModifier(ResourceModifier resourceModifier)
     {
         _resourceModifiers.Add(resourceModifier);
