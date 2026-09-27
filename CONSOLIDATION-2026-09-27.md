@@ -38,3 +38,7 @@ Restore committed history with `git clone <repository>/all-refs.bundle <destinat
 The original project was fast-forwarded to the validated integration and its pre-existing local edits were verified byte-for-byte. Removed the five working clones (`HealerLike-compact-ui`, `HealerLike-spell-sources`, `HealerLike-android-016`, `HealerLike-android-017`, `HealerLike-spell-composition`), `/private/tmp/healerlike-integration`, and the handoff folder after verifying its archived copy. Every removed clone's HEAD is an ancestor of the original project's consolidated history. Timestamped actions are in `cleanup-actions.jsonl` in the archive.
 
 Only `/Users/fc/Documents/HealerLike` remains as an active project. Keep using `zfc-render` there. Recovery bundles and evidence live in the sibling archive folder; no remote publication or branch deletion was performed.
+
+## Publication requested
+
+Following the user's request to commit and push everything, the remaining original-project changes are included: generated data icons and catalog entries, Unity platform icon settings, quality settings, and deletion of orphaned Sirenix demo metadata. Publication target: `origin/zfc-render`, including the complete consolidated history. The earlier no-publication notes describe the state before this request. No gameplay source changed after the 3,678-test validation.

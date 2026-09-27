@@ -761,3 +761,27 @@ MonoBehaviour:
     generated: {fileID: 2800000, guid: 14728d87a39844ddcae8d9e673fd91bb, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Creature:Creature:HealerLike.Render.Creatures.CreatureRecipe:Healer
+  - source: {fileID: 11400000, guid: 0538693c98bfd714b959ca388e0251e0, type: 2}
+    generated: {fileID: 2800000, guid: fdafb22ee9de94415bad4ffe88d9d66e, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:SandboxData:SandboxData
+  - source: {fileID: 11400000, guid: 10219a6cd6b91d743b05c7c0bca5d739, type: 2}
+    generated: {fileID: 2800000, guid: f13f47370d95f4f469f020f5e72bdc74, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:ConsumerData:ConsumerData
+  - source: {fileID: 11400000, guid: 2382ba3ade5a45043ace836e6bf1cc19, type: 2}
+    generated: {fileID: 2800000, guid: 3fb870bb98a9244f2a2b45946dbd8b80, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:MapGenerationSettings:MapGenerationSettings
+  - source: {fileID: 11400000, guid: 8c7aacf4b16749ee84b1a6152a73be45, type: 2}
+    generated: {fileID: 2800000, guid: a9080fdb27ce344209d8bcfe63fe76d7, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:WavePatternData:Wave_Elite_2
+  - source: {fileID: 11400000, guid: a1eb2f7477eeb4d9e8eba85e3dc2fc4f, type: 2}
+    generated: {fileID: 2800000, guid: f81be5a74f25944c38ff3fda08b79887, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:HealerLike.Render.Grass.GroundVocabulary:GroundVocabulary
+  - source: {fileID: 11400000, guid: c586266b2d0f45fc841138d1e95300ff, type: 2}
+    generated: {fileID: 2800000, guid: def98ba35837a44faa14eb92c659176b, type: 3}
+    artworkOverride: {fileID: 0}
+    fingerprint: 3:Data:Data:WavePatternData:Wave_Elite_1
