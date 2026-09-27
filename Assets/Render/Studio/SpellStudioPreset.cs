@@ -136,7 +136,7 @@ namespace HealerLike.Render.Studio
             Color safeColour = SpellPresetBounds.SafeColour(colour);
             return EffectComposer.Compose(vocabulary, resolved, channels.family, channels.tempo,
                 channels.periodSeconds, safeStacks, safeCharges, safeAmount,
-                overrideEntry ? safeEntry : null, overrideColour, safeColour);
+                safeEntry, overrideColour, safeColour);
         }
 
         // The channels and element SpellVisualSink would open, a native row winning over the derivation

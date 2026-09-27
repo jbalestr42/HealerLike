@@ -30,7 +30,7 @@ namespace HealerLike.Render.Spells
             EffectElement element;
             if (vocabulary != null && vocabulary.TryGetElement(operation, aspect, tempo, out element)) return element;
             if (vocabulary != null) return default(EffectElement);
-            return LegacyElement(operation, aspect);
+            return LegacyElement(operation, aspect, tempo);
         }
 
         static EffectOperation ToOperation(EffectFamily family)
@@ -45,8 +45,15 @@ namespace HealerLike.Render.Spells
             }
         }
 
-        static EffectElement LegacyElement(EffectOperation operation, EffectAspect aspect)
+        static EffectElement LegacyElement(EffectOperation operation, EffectAspect aspect, EffectTempo tempo)
         {
+            if (tempo == EffectTempo.PerPeriod)
+            {
+                if (operation == EffectOperation.Damage) return EffectElement.Drips;
+                if (operation == EffectOperation.Heal) return EffectElement.Stalks;
+            }
+            if (operation == EffectOperation.Ward) return EffectElement.Plates;
+            if (operation == EffectOperation.Mana) return EffectElement.ManaUp;
             return operation == EffectOperation.Damage ? EffectElement.Burst
                 : operation == EffectOperation.Heal ? EffectElement.Rise
                 : operation == EffectOperation.Boon ? (aspect == EffectAspect.Defence ? EffectElement.Plates
