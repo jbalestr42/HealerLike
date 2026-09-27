@@ -28,3 +28,31 @@ restores derived features. Attribute observers are released on rebinding and des
 For repeatable art review, **Tools > Render > Capture Polished Spells on Grass** records all fourteen
 entries at three phases through real spell meshes and GPU grass. These are presentation fixtures,
 not gameplay casts. `SpellSourceRun.Capture` and the compact stage capture exercise gameplay views.
+
+## Composition and icon audit
+
+Optional reach, delivery, trigger, side and origin entries in `EffectVocabulary` append authored
+pieces in that order. Each keeps its own socket and motion; the full tree shares the 256-part
+budget. Empty tables preserve existing art. Distinct child compositions cannot share a pooled
+status accidentally; periodic descendants retain their handler's clock owner.
+
+`SpellIconDerivation` is the pure boundary for character skills, consumers and handlers.
+`SpellIconComposer` uses the same vocabulary and complete `SpellLooks` overrides as the world.
+`SpellIconRenderer` poses private recipe copies, renders native geometry to a transparent texture,
+and releases all temporary effects and procedural meshes explicitly. UI-only surface settings
+quiet hatching and improve dark-glyph contrast without modifying the world material. The seal
+shows reach, held/periodic tempo, non-cast triggers and item origin when supplied by the context.
+Compound recipes display up to four glyphs with an overflow marker.
+
+`StageIcons` owns creature and spell providers. `SpellIcons` caches by source identity, shares
+factory/data requests, caps owned textures at 128, and releases them on invalidation or disposal.
+The shared Toolkit has one optional `IToolkitDataIconProvider` extension; null results retain its
+existing catalog fallback. Only that interface, the lookup in `ToolkitGameView`, and its test
+extend the earlier Render-only scope. No gameplay data or generated catalog is rewritten.
+Use **Tools > Render > Capture Grammar Spell Icons** for an atlas and source-path manifest.
+
+Percentage buff magnitudes use fraction units directly (0.2 means twenty percent). Additive
+modifiers use the documented 100-point reference when no target attribute baseline is supplied.
+Live creature attribute interpretation lives in `Grammar/LiveUnitDerivation`; observers only
+collect state and apply the derived channels. Init validation, child loss, billboard propagation,
+delivery shape ownership and disabled EditMode preview cleanup have dedicated regression tests.

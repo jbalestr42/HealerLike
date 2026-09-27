@@ -30,7 +30,7 @@ namespace HealerLike.Render.Deliveries
                 return 1f;
             }
             elapsed = float.IsFinite(elapsed) ? Mathf.Max(0f, elapsed) : 0f;
-            float wave = 0.5f - 0.5f * (float)Math.Cos((double)elapsed * pulseFrequency * Math.PI * 2d);
+            float wave = 0.5f - 0.5f * (float)System.Math.Cos((double)elapsed * pulseFrequency * System.Math.PI * 2d);
             float scale = Mathf.Max(0.1f, size) * (1f + wave * pulseAmount);
             return float.IsFinite(scale) ? scale : 1f;
         }

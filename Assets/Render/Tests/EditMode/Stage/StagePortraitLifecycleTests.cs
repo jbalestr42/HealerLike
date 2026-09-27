@@ -44,7 +44,7 @@ namespace HealerLike.Render.Stage
                 stage.RefreshCreatureIcons();
                 Assert.IsTrue(initial.isDisposed);
                 Assert.AreNotSame(initial, stage.portraits);
-                Assert.AreSame(stage.portraits, ui.iconProvider);
+                Assert.AreSame(stage.icons, ui.iconProvider);
                 Assert.AreEqual(0, stage.portraits.captureCount);
                 CreaturePortraits replacement = stage.portraits;
                 TestHelpers.InvokePrivate(stage, "ReleasePortraits");

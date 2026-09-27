@@ -1,0 +1,127 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using HealerLike.Render.Spells;
+using UnityEditor;
+using UnityEngine;
+
+namespace HealerLike.Render.Stage
+{
+    public static class SpellIconCapture
+    {
+        [MenuItem("Tools/Render/Capture Grammar Spell Icons")]
+        public static void All()
+        {
+            StagePlay.Enter("spell-icons", 360f);
+        }
+    }
+
+    // Every real character spell and buff handler, not a hand-maintained list of names or art assignments.
+    public class SpellIconRun : AStageRun
+    {
+        static readonly int columns = 6;
+        static readonly int tileSize = 192;
+        static readonly int labelHeight = 32;
+        protected override bool shouldStartGame { get { return false; } }
+
+        protected override IEnumerator Run()
+        {
+            string folder = Path.Combine(StagePlay.CaptureFolder, "spell-icons");
+            Directory.CreateDirectory(folder);
+            List<string> paths = Sources();
+            int rows = Mathf.CeilToInt((float)paths.Count / columns);
+            Texture2D sheet = new Texture2D(columns * tileSize, rows * (tileSize + labelHeight),
+                TextureFormat.RGBA32, false);
+            Color32[] background = new Color32[sheet.width * sheet.height];
+            for (int i = 0; i < background.Length; i++)
+            {
+                background[i] = new Color32(17, 29, 35, 255);
+            }
+            sheet.SetPixels32(background);
+            List<string> manifest = new List<string> { "source\ticon\tlayers\treach\torigin\ttrigger" };
+            EffectVocabulary vocabulary = RenderAssets.Load<EffectVocabulary>(
+                "Assets/Render/Spells/Data/EffectVocabulary.asset");
+            Material material = RenderAssets.Load<Material>("Assets/Render/Look/Look_Default.mat");
+            try
+            {
+                using (SpellIconRenderer renderer = new SpellIconRenderer(_manager.meshes, material))
+                {
+                    for (int index = 0; index < paths.Count; index++)
+                    {
+                        string path = paths[index];
+                        UnityEngine.Object source = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                        SpellIconRecipe recipe = SpellIconComposer.Compose(source, vocabulary, _manager.spellLooks);
+                        if (recipe == null)
+                        {
+                            throw new InvalidOperationException("No grammar icon for " + path);
+                        }
+                        Texture2D icon = renderer.Capture(recipe);
+                        if (!icon)
+                        {
+                            throw new InvalidOperationException("No native icon capture for " + path);
+                        }
+                        try
+                        {
+                            string file = AssetDatabase.AssetPathToGUID(path) + ".png";
+                            File.WriteAllBytes(Path.Combine(folder, file), icon.EncodeToPNG());
+                            Tile(sheet, icon, index, source.name);
+                            manifest.Add(path + "\t" + file + "\t" + recipe.layers.Count + "\t" + recipe.reach
+                                + "\t" + recipe.origin + "\t" + recipe.trigger);
+                        }
+                        finally
+                        {
+                            RenderObjects.Release(icon);
+                        }
+                        yield return null;
+                    }
+                }
+                sheet.Apply();
+                File.WriteAllBytes(Path.Combine(folder, "atlas.png"), sheet.EncodeToPNG());
+                File.WriteAllLines(Path.Combine(folder, "manifest.tsv"), manifest);
+                Debug.Log("[SpellIconRun] Captured " + paths.Count + " grammar icons at " + folder);
+            }
+            finally
+            {
+                RenderObjects.Release(sheet);
+            }
+            StagePlay.Finish(this, true);
+        }
+
+        static List<string> Sources()
+        {
+            HashSet<string> paths = new HashSet<string>();
+            foreach (string type in new[] { "t:ACharacterSkillFactory", "t:ABuffHandlerFactory" })
+            {
+                foreach (string guid in AssetDatabase.FindAssets(type, new[] { "Assets/Data" }))
+                {
+                    paths.Add(AssetDatabase.GUIDToAssetPath(guid));
+                }
+            }
+            List<string> result = new List<string>(paths);
+            result.Sort(StringComparer.Ordinal);
+            return result;
+        }
+
+        static void Tile(Texture2D sheet, Texture2D icon, int index, string label)
+        {
+            int x = index % columns * tileSize;
+            int y = sheet.height - (index / columns + 1) * (tileSize + labelHeight);
+            Color[] pixels = new Color[tileSize * tileSize];
+            for (int row = 0; row < tileSize; row++)
+            {
+                for (int column = 0; column < tileSize; column++)
+                {
+                    Color ink = icon.GetPixelBilinear((column + .5f) / tileSize, (row + .5f) / tileSize);
+                    pixels[row * tileSize + column] = Color.Lerp(new Color(.067f, .114f, .137f, 1), ink, ink.a);
+                }
+            }
+            sheet.SetPixels(x, y + labelHeight, tileSize, tileSize, pixels);
+            if (label.Length > 29)
+            {
+                label = label.Substring(0, 29);
+            }
+            LookSheetFont.Draw(sheet, label, x + 8, y + 23, 1, Color.white);
+        }
+    }
+}

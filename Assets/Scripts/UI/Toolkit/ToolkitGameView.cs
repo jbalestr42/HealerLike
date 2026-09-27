@@ -107,7 +107,8 @@ public class ToolkitGameView
                 ? _iconProvider.GetCreatureIcon(data, entity != null ? entity.entityType : Entity.EntityType.Player)
                 : null;
         isPortrait = portrait != null;
-        return isPortrait ? portrait : _icons.GetIcon(data != null ? data : source);
+        Texture2D supplied = isPortrait ? portrait : (_iconProvider as IToolkitDataIconProvider)?.GetDataIcon(source);
+        return supplied ? supplied : _icons.GetIcon(data != null ? data : source);
     }
 
     // An invalidation also updates a hovered detail or a drawer whose model did not change.

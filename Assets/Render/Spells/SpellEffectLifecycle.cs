@@ -11,6 +11,7 @@ namespace HealerLike.Render.Spells
         Transform _groundTarget;
         public void BindGround(Ground ground, GameObject target)
         {
+            PruneLayers();
             ReleaseGround();
             foreach (SpellEffect layer in _layers) layer.BindGround(ground, target);
             if (ground == null || _recipe?.entry.ground == null || target == null) return;

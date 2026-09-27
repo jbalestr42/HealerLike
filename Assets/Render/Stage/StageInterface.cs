@@ -1,3 +1,4 @@
+using HealerLike.Render.Spells;
 using HealerLike.Render.Creatures;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -19,8 +20,13 @@ namespace HealerLike.Render.Stage
         float _aspect;
         Camera _camera;
         CreaturePortraits _portraits;
+        StageIcons _icons;
+        public StageIcons icons { get { return _icons; } }
         CreatureLooks _portraitLooks;
         PrimitiveMeshes _portraitMeshes;
+        SpellLooks _iconLooks;
+        EffectVocabulary _iconVocabulary;
+        Material _iconMaterial;
         Scene _uiScene;
         public ToolkitGameUI ui
         {
@@ -96,14 +102,17 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
-            if (_portraitLooks != _manager.creatureLooks || _portraitMeshes != _manager.meshes)
+            SpellVisualSink sink = _manager.spellSink;
+            if (_portraitLooks != _manager.creatureLooks || _portraitMeshes != _manager.meshes
+                || _iconLooks != _manager.spellLooks || _iconVocabulary != (sink ? sink.vocabulary : null)
+                || _iconMaterial != (sink ? sink.material : null))
             {
                 ReleasePortraits();
                 CreatePortraits();
             }
             else
             {
-                _portraits.Invalidate();
+                _icons.Invalidate();
             }
         }
 
@@ -117,7 +126,13 @@ namespace HealerLike.Render.Stage
             _portraitLooks = _manager.creatureLooks;
             _portraitMeshes = _manager.meshes;
             _portraits = new CreaturePortraits(_portraitLooks, _portraitMeshes);
-            _ui.SetIconProvider(_portraits);
+            SpellVisualSink sink = _manager.spellSink;
+            _iconLooks = _manager.spellLooks;
+            _iconVocabulary = sink ? sink.vocabulary : null;
+            _iconMaterial = sink ? sink.material : null;
+            SpellIcons spells = new SpellIcons(_iconVocabulary, _iconLooks, _manager.meshes, _iconMaterial);
+            _icons = new StageIcons(_portraits, spells);
+            _ui.SetIconProvider(_icons);
         }
 
         void OnSceneUnloaded(Scene scene)
@@ -141,14 +156,14 @@ namespace HealerLike.Render.Stage
                 _ui.SetIconProvider(null);
             }
 
-            if (_portraits != null)
-            {
-                _portraits.Dispose();
-            }
-
+            _icons?.Dispose();
+            _icons = null;
             _portraits = null;
             _portraitLooks = null;
             _portraitMeshes = null;
+            _iconLooks = null;
+            _iconVocabulary = null;
+            _iconMaterial = null;
         }
 
         void LateUpdate()

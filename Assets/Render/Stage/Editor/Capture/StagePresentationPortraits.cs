@@ -23,7 +23,7 @@ namespace HealerLike.Render.Stage
         {
             StageInterface attachment = _session.manager.GetComponent<StageInterface>();
             _output.Check(attachment.portraits != null && ReferenceEquals(_session.actions.ui.iconProvider,
-                attachment.portraits), "Toolkit has the Render-owned creature portrait provider");
+                attachment.icons), "Toolkit has the Render-owned creature portrait provider");
             yield return _session.actions.PointerTap("party-button");
             yield return Wait(0.2f);
             List<Button> cards = _session.actions.Cards("party-list");

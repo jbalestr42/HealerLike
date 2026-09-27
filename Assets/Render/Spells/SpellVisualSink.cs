@@ -17,6 +17,9 @@ namespace HealerLike.Render.Spells
         readonly StatusPool _statuses = new StatusPool();
         readonly ImpactPool _impacts = new ImpactPool();
 
+        public EffectVocabulary vocabulary { get { return _vocabulary; } }
+        public Material material { get { return _material; } }
+
         public int statusCount { get { return _statuses.count; } }
 
         // Counts until the next Tick sweeps the impacts that ended

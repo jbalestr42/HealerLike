@@ -30,6 +30,7 @@ namespace HealerLike.Render.Spells
                     BuildLayer(recipe.layers[i], meshes, material, i, shown);
                 }
                 _seal.Build(recipe);
+                PrepareSurfaces();
                 foreach (Transform part in _root.GetComponentsInChildren<Transform>(true))
                 {
                     part.gameObject.layer = SpellIconRenderer.CaptureLayer;
@@ -40,6 +41,22 @@ namespace HealerLike.Render.Spells
             {
                 Dispose();
                 throw;
+            }
+        }
+
+        void PrepareSurfaces()
+        {
+            // Small UI symbols need quiet shading; property blocks keep the borrowed world material untouched.
+            MaterialPropertyBlock properties = new MaterialPropertyBlock();
+            foreach (Renderer renderer in _root.GetComponentsInChildren<Renderer>(true))
+            {
+                renderer.GetPropertyBlock(properties);
+                properties.SetFloat("_HLHatchMultiplier", 0f);
+                properties.SetFloat("_HLFaceHatch", 0f);
+                properties.SetFloat("_HLOutlineWidthMultiplier", .45f);
+                properties.SetColor("_HLShadeTint", new Color(.32f, .4f, .48f, .18f));
+                properties.SetColor("_HLShadeTurnTint", Color.clear);
+                renderer.SetPropertyBlock(properties);
             }
         }
 
@@ -65,7 +82,7 @@ namespace HealerLike.Render.Spells
             else
             {
                 effect.Pose(.42f, recipe.cycleSeconds * .42f);
-                host.transform.localRotation = recipe.presentation.billboard ? Quaternion.identity
+                host.transform.localRotation = recipe.presentation?.billboard == true ? Quaternion.identity
                     : Quaternion.Euler(recipe.socket == EffectSocket.Ground ? 65f : 30f, -18f, 0f);
             }
 
@@ -165,6 +182,13 @@ namespace HealerLike.Render.Spells
             if (_root)
             {
                 _root.SetActive(false);
+                foreach (SpellEffect effect in _root.GetComponentsInChildren<SpellEffect>(true))
+                {
+                    if (effect)
+                    {
+                        SpellEffect.Dispose(effect.gameObject);
+                    }
+                }
             }
             _seal.Dispose();
             RenderObjects.Release(_root);

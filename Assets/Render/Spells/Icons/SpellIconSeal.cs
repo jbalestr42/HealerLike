@@ -24,7 +24,7 @@ namespace HealerLike.Render.Spells
         public void Build(SpellIconRecipe recipe)
         {
             Part("Seal backing", ShapeProfile.Bulb(), new Vector3(0, 0, 1),
-                new Vector3(2.72f, 2.72f, .12f), Backing);
+                new Vector3(2.72f, 2.72f, .12f), Background(recipe));
             Ring("Seal rim", Vector3.forward * .85f, 2.75f, Rim);
             bool periodic = false;
             bool lasting = false;
@@ -57,6 +57,16 @@ namespace HealerLike.Render.Spells
             {
                 Overflow(recipe.layers.Count - SpellIconSubject.MaxGlyphs);
             }
+        }
+
+        static Color Background(SpellIconRecipe recipe)
+        {
+            float brightness = 0f;
+            foreach (EffectRecipe layer in recipe.layers)
+            {
+                brightness += layer.colour.grayscale;
+            }
+            return brightness / recipe.layers.Count < .3f ? new Color(.48f, .6f, .62f, 1) : Backing;
         }
 
         static Color Accent(SpellIconRecipe recipe)
