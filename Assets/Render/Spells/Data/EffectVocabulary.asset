@@ -35838,30 +35838,15 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-    - Name: cells
+    - Name: table
       Entry: 7
-      Data: 72|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Spells.EffectCell, HealerLike.Render],[HealerLike.Render.Spells.EffectElement, HealerLike.Render]], mscorlib
+      Data: 72|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Spells.EffectCell, HealerLike.Render],[HealerLike.Render.Spells.EffectCellEntry, HealerLike.Render]], mscorlib
     - Name: comparer
       Entry: 7
       Data: 73|System.Collections.Generic.GenericEqualityComparer`1[[HealerLike.Render.Spells.EffectCell, HealerLike.Render]], mscorlib
     - Name: 
       Entry: 8
       Data: 
-    - Name: 
-      Entry: 12
-      Data: 0
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: table
-      Entry: 7
-      Data: 74|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Spells.EffectCell, HealerLike.Render],[HealerLike.Render.Spells.EffectCellEntry, HealerLike.Render]], mscorlib
-    - Name: comparer
-      Entry: 9
-      Data: 73
     - Name: 
       Entry: 12
       Data: 18
@@ -35921,10 +35906,10 @@ MonoBehaviour:
       Data: 0
     - Name: hasPeriodic
       Entry: 5
-      Data: false
+      Data: true
     - Name: periodic
       Entry: 3
-      Data: 0
+      Data: 3
     - Name: 
       Entry: 8
       Data: 
@@ -35954,10 +35939,10 @@ MonoBehaviour:
       Data: 0
     - Name: hasPeriodic
       Entry: 5
-      Data: false
+      Data: true
     - Name: periodic
       Entry: 3
-      Data: 0
+      Data: 3
     - Name: 
       Entry: 8
       Data: 
@@ -36020,10 +36005,10 @@ MonoBehaviour:
       Data: 1
     - Name: hasPeriodic
       Entry: 5
-      Data: false
+      Data: true
     - Name: periodic
       Entry: 3
-      Data: 1
+      Data: 2
     - Name: 
       Entry: 8
       Data: 
@@ -36053,10 +36038,10 @@ MonoBehaviour:
       Data: 1
     - Name: hasPeriodic
       Entry: 5
-      Data: false
+      Data: true
     - Name: periodic
       Entry: 3
-      Data: 1
+      Data: 2
     - Name: 
       Entry: 8
       Data: 
