@@ -33,6 +33,7 @@ namespace HealerLike.Render.Spells
                     return new Vector3(anchors.bodyCentre.x + 1.15f * radius,
                                        anchors.headCentre.y - anchors.headRadius - 0.55f * radius,
                                        anchors.bodyCentre.z);
+                case EffectSocket.Ground:
                 case EffectSocket.Feet:
                     return anchors.foot;
                 default:

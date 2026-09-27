@@ -32,6 +32,28 @@ namespace HealerLike.Render.Spells
         }
 
         [Test]
+        public void GroundSocket_UsesFootHeightForCompositeAuras()
+        {
+            var anchors = new EffectAnchors { foot = new Vector3(2, .1f, 3),
+                bodyCentre = new Vector3(2, .8f, 3) };
+            Assert.AreEqual(anchors.foot, EffectPlacement.Socket(anchors, EffectSocket.Ground));
+        }
+
+        [Test]
+        public void SetEndpoints_BeamInScaledCompositeStillConnectsBothWorldEndpoints()
+        {
+            SpellEffect effect = Build(EffectElement.Beam);
+            effect.transform.localScale = new Vector3(.2f, .4f, .3f);
+            effect.transform.rotation = Quaternion.Euler(10, 25, 0);
+            Vector3 start = new Vector3(-2, .6f, .3f), end = new Vector3(1, .8f, -.2f);
+            effect.SetEndpoints(start, end, false);
+            Transform first = effect.stalks[0];
+            Transform last = effect.stalks[effect.stalks.Count - 1];
+            Assert.Less(Vector3.Distance(start, first.TransformPoint(Vector3.down * .5f)), .0001f);
+            Assert.Less(Vector3.Distance(end, last.TransformPoint(Vector3.up * .5f)), .0001f);
+        }
+
+        [Test]
         public void FaceCamera_AuthoredDepthMovesBillboardInFrontWithoutChangingItsScale()
         {
             SpellEffect effect = Build(EffectElement.Burst);
