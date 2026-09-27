@@ -32,3 +32,9 @@ Restore committed history with `git clone <repository>/all-refs.bundle <destinat
 - Native battle and source capture passed on `1c214acd`. Reviewed battle HUD and travelling/chain spell images; launch and support attachment error was zero through source recomposition. Full screenshots and proof JSON are archived under `validation/evidence/spell-sources`.
 - Visual follow-up: long roster names such as Channeling wrap awkwardly on narrow cards; dense grass still competes with combat silhouettes. These remain polish observations, not hidden validation claims.
 - All integrations are local; remote branches have not been deleted or rewritten. The original project's Git branch stays `zfc-render`; `main` is not modified.
+
+## Completed cleanup
+
+The original project was fast-forwarded to the validated integration and its pre-existing local edits were verified byte-for-byte. Removed the five working clones (`HealerLike-compact-ui`, `HealerLike-spell-sources`, `HealerLike-android-016`, `HealerLike-android-017`, `HealerLike-spell-composition`), `/private/tmp/healerlike-integration`, and the handoff folder after verifying its archived copy. Every removed clone's HEAD is an ancestor of the original project's consolidated history. Timestamped actions are in `cleanup-actions.jsonl` in the archive.
+
+Only `/Users/fc/Documents/HealerLike` remains as an active project. Keep using `zfc-render` there. Recovery bundles and evidence live in the sibling archive folder; no remote publication or branch deletion was performed.
