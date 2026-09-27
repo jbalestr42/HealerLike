@@ -109,6 +109,29 @@ public class SandboxEntitiesTests
         CollectionAssert.IsEmpty(invalid, "Summon skills without a sandbox entity, a max alive or a cooldown");
     }
 
+    // A training target: only in the sandbox, it never attacks and never dies
+    [Test]
+    public void PunchingBag_IsASandboxOnlyTargetThatNeverAttacks()
+    {
+        EntityData bag = _sandboxData.entities.Find(entity => entity != null && entity.name == "PunchingBagEntity");
+        Assert.IsNotNull(bag);
+        CollectionAssert.IsEmpty(bag.skillFactories);
+        CollectionAssert.IsNotEmpty(bag.items, "The regen item");
+        Assert.GreaterOrEqual(bag.attributes[AttributeType.HealthMax], 1000f);
+
+        GameData gameData = AssetDatabase.LoadAssetAtPath<GameData>("Assets/Data/TestData.asset");
+        foreach (GameData.WavePool pool in gameData.wavePools)
+        {
+            foreach (WavePatternData wave in pool.wavePatterns)
+            {
+                foreach (EntitySlot slot in wave.slots)
+                {
+                    Assert.AreNotEqual(bag, slot.entity, $"{wave.name} is a wave of the run");
+                }
+            }
+        }
+    }
+
     [Test]
     public void Necromancer_RaisesUpToFourFrailSkeletons()
     {
