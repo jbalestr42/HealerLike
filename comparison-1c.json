@@ -1,0 +1,752 @@
+{
+  "groups": [
+    {
+      "name": "complete-forest",
+      "current_path": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest",
+      "control_path": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest",
+      "frames": [
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/01-preparation.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/01-preparation.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/01b-roster-overflow.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/01b-roster-overflow.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/01c-long-spell-overflow.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/01c-long-spell-overflow.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/02-roster-details.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/02-roster-details.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/02b-outside-dismissal.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/02b-outside-dismissal.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/03-invalid-placement.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/03-invalid-placement.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/04-cancelled-placement.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/04-cancelled-placement.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/04b-after-cancel.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/04b-after-cancel.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/04c-interruptions-cleared.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/04c-interruptions-cleared.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/04d-return-to-roster.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/04d-return-to-roster.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/05-held-placement.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/05-held-placement.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/06-successful-release.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/06-successful-release.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/07-deployed-details.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/07-deployed-details.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/07b-persistent-live-health.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/07b-persistent-live-health.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/07c-expanded-attributes.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/07c-expanded-attributes.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/08-equipment.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/08-equipment.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/09-map.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/09-map.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/10-spell-hold.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/10-spell-hold.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/10a-keyboard-escape-pause.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/10a-keyboard-escape-pause.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/10b-keyboard-escape-inspection-close.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/10b-keyboard-escape-inspection-close.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/10c-keyboard-escape-targeting-cancel.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/10c-keyboard-escape-targeting-cancel.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/11-menu.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/11-menu.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/11-world-creature-hold.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/11-world-creature-hold.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/11b-world-outside-dismissal.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/11b-world-outside-dismissal.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/12-cooldown.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/12-cooldown.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/12-new-expedition.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/12-new-expedition.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/13-disabled-spell-hold.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/13-disabled-spell-hold.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/14-mana-shortage.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/14-mana-shortage.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/14b-shortage-inspection.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/14b-shortage-inspection.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/14c-cooldown-recovered-shortage.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/14c-cooldown-recovered-shortage.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/14d-controller-inspection.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/14d-controller-inspection.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/15-combat.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/15-combat.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/15b-combat-targeting.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/15b-combat-targeting.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/15c-combat-cast.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/15c-combat-cast.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/16-tall-safe-area.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/16-tall-safe-area.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/17-landscape.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/17-landscape.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/18-landscape-pause.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/18-landscape-pause.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-forest/portrait-cutout.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-forest/portrait-cutout.png",
+          "different_pixels": 8600,
+          "bbox": [
+            53,
+            41,
+            203,
+            219
+          ]
+        }
+      ],
+      "status": "compared"
+    },
+    {
+      "name": "complete-moon",
+      "current_path": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon",
+      "control_path": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon",
+      "frames": [
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/01-preparation.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/01-preparation.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/01b-roster-overflow.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/01b-roster-overflow.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/01c-long-spell-overflow.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/01c-long-spell-overflow.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/02-roster-details.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/02-roster-details.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/02b-outside-dismissal.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/02b-outside-dismissal.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/03-invalid-placement.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/03-invalid-placement.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/04-cancelled-placement.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/04-cancelled-placement.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/04b-after-cancel.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/04b-after-cancel.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/04c-interruptions-cleared.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/04c-interruptions-cleared.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/04d-return-to-roster.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/04d-return-to-roster.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/05-held-placement.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/05-held-placement.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/06-successful-release.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/06-successful-release.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/07-deployed-details.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/07-deployed-details.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/07b-persistent-live-health.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/07b-persistent-live-health.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/07c-expanded-attributes.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/07c-expanded-attributes.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/08-equipment.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/08-equipment.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/09-map.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/09-map.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/10-spell-hold.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/10-spell-hold.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/10a-keyboard-escape-pause.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/10a-keyboard-escape-pause.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/10b-keyboard-escape-inspection-close.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/10b-keyboard-escape-inspection-close.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/10c-keyboard-escape-targeting-cancel.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/10c-keyboard-escape-targeting-cancel.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/11-menu.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/11-menu.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/11-world-creature-hold.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/11-world-creature-hold.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/11b-world-outside-dismissal.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/11b-world-outside-dismissal.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/12-cooldown.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/12-cooldown.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/12-new-expedition.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/12-new-expedition.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/13-disabled-spell-hold.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/13-disabled-spell-hold.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/14-mana-shortage.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/14-mana-shortage.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/14b-shortage-inspection.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/14b-shortage-inspection.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/14c-cooldown-recovered-shortage.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/14c-cooldown-recovered-shortage.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/14d-controller-inspection.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/14d-controller-inspection.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/15-combat.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/15-combat.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/15b-combat-targeting.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/15b-combat-targeting.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/15c-combat-cast.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/15c-combat-cast.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/16-tall-safe-area.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/16-tall-safe-area.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/17-landscape.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/17-landscape.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/18-landscape-pause.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/18-landscape-pause.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-portrait/complete-moon/portrait-cutout.png",
+          "control": "/tmp/healerlike-spell-composition/compare-portrait/baseline-moon/portrait-cutout.png",
+          "different_pixels": 8600,
+          "bbox": [
+            53,
+            41,
+            203,
+            219
+          ]
+        }
+      ],
+      "status": "compared"
+    },
+    {
+      "name": "spell-sources",
+      "current_path": "/tmp/healerlike-spell-composition/compare-spell/spell-sources",
+      "control_path": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources",
+      "frames": [
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/00-real-battle.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/00-real-battle.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/01-cast-00.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/01-cast-00.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/01-cast-01.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/01-cast-01.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/01-cast-02.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/01-cast-02.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/01-cast-03.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/01-cast-03.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/02-mineral-heal-fixture.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/02-mineral-heal-fixture.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/03-mineral-boon-fixture.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/03-mineral-boon-fixture.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Arch-1.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Arch-1.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Arch-3.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Arch-3.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Arch-5.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Arch-5.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Bud-1.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Bud-1.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Bud-3.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Bud-3.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Bud-5.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Bud-5.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Conductor-1.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Conductor-1.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Conductor-3.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Conductor-3.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Conductor-5.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Conductor-5.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Fork-1.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Fork-1.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Fork-3.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Fork-3.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Fork-5.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Fork-5.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-GiftBane-1.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-GiftBane-1.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-GiftBane-3.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-GiftBane-3.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-GiftBane-5.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-GiftBane-5.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-GiftBoonDefence-1.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-GiftBoonDefence-1.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-GiftBoonDefence-3.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-GiftBoonDefence-3.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-GiftBoonDefence-5.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-GiftBoonDefence-5.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-GiftBoonOffence-1.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-GiftBoonOffence-1.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-GiftBoonOffence-3.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-GiftBoonOffence-3.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-GiftBoonOffence-5.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-GiftBoonOffence-5.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-GiftHeal-1.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-GiftHeal-1.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-GiftHeal-3.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-GiftHeal-3.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-GiftHeal-5.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-GiftHeal-5.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Pulse-1.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Pulse-1.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Pulse-3.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Pulse-3.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Pulse-5.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Pulse-5.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-SelfTick-1.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-SelfTick-1.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-SelfTick-3.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-SelfTick-3.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-SelfTick-5.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-SelfTick-5.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Spear-1.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Spear-1.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Spear-3.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Spear-3.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Spear-5.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Spear-5.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Ward-1.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Ward-1.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Ward-3.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Ward-3.png",
+          "different_pixels": 0,
+          "bbox": null
+        },
+        {
+          "frame": "/tmp/healerlike-spell-composition/compare-spell/spell-sources/fixture-Ward-5.png",
+          "control": "/tmp/healerlike-spell-composition/compare-spell/baseline-spell-sources/fixture-Ward-5.png",
+          "different_pixels": 0,
+          "bbox": null
+        }
+      ],
+      "status": "compared"
+    }
+  ]
+}
