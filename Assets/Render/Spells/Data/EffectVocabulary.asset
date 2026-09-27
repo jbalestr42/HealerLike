@@ -22526,13 +22526,13 @@ MonoBehaviour:
       Data: HealerLike.Render.Spells.EffectCellEntry, HealerLike.Render
     - Name: once
       Entry: 3
-      Data: 5
+      Data: 6
     - Name: hasPeriodic
       Entry: 5
       Data: false
     - Name: periodic
       Entry: 3
-      Data: 5
+      Data: 6
     - Name: 
       Entry: 8
       Data: 
@@ -23138,10 +23138,10 @@ MonoBehaviour:
       Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
     - Name: once
       Entry: 9
-      Data: 33
+      Data: 39
     - Name: periodic
       Entry: 9
-      Data: 33
+      Data: 39
     - Name: hasPeriodic
       Entry: 5
       Data: false

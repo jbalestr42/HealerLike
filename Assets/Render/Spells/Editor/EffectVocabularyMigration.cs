@@ -63,26 +63,40 @@ namespace HealerLike.Render.Spells.Editor
                 if (pair.Value == null) continue;
                 if (string.IsNullOrEmpty(pair.Value.label)) pair.Value.label = pair.Key.ToString();
             }
+            // The polished authoring command has a deliberate Ward/Prevention override.
+            // Keep that authored choice when upgrading an asset whose old migration already
+            // filled the cell with the generic legacy fallback.
+            EffectCell wardPrevention = new EffectCell(EffectOperation.Ward, EffectAspect.Prevention);
+            if (vocabulary.elements != null && vocabulary.elements.TryGetValue(EffectElement.Bud, out ElementEntry bud)
+                && (vocabulary.table == null || !vocabulary.table.ContainsKey(wardPrevention)
+                    || vocabulary.table[wardPrevention].once == EffectElement.Plates))
+            {
+                vocabulary.table[wardPrevention] = new EffectCellEntry(EffectElement.Bud, EffectElement.Bud, false);
+            }
             foreach (var pair in EffectVocabulary.LegacyCells())
             {
-                EffectElement periodic = pair.Value;
-                bool hasPeriodic = false;
-                if (pair.Key.operation == EffectOperation.Damage)
+                if (!vocabulary.table.TryGetValue(pair.Key, out EffectCellEntry legacyCell))
                 {
-                    periodic = EffectElement.Drips;
-                    hasPeriodic = true;
+                    EffectElement periodic = pair.Value;
+                    bool hasPeriodic = false;
+                    if (pair.Key.operation == EffectOperation.Damage)
+                    {
+                        periodic = EffectElement.Drips;
+                        hasPeriodic = true;
+                    }
+                    else if (pair.Key.operation == EffectOperation.Heal)
+                    {
+                        periodic = EffectElement.Stalks;
+                        hasPeriodic = true;
+                    }
+                    legacyCell = new EffectCellEntry(pair.Value, periodic, hasPeriodic);
+                    vocabulary.table[pair.Key] = legacyCell;
                 }
-                else if (pair.Key.operation == EffectOperation.Heal)
-                {
-                    periodic = EffectElement.Stalks;
-                    hasPeriodic = true;
-                }
-                vocabulary.table[pair.Key] = new EffectCellEntry(pair.Value, periodic, hasPeriodic);
-                ElementEntry once = vocabulary.elements != null && vocabulary.elements.TryGetValue(pair.Value, out ElementEntry onceEntry)
+                ElementEntry once = vocabulary.elements != null && vocabulary.elements.TryGetValue(legacyCell.once, out ElementEntry onceEntry)
                     ? onceEntry : null;
-                ElementEntry periodicEntry = vocabulary.elements != null && vocabulary.elements.TryGetValue(periodic, out ElementEntry periodicValue)
+                ElementEntry periodicEntry = vocabulary.elements != null && vocabulary.elements.TryGetValue(legacyCell.periodic, out ElementEntry periodicValue)
                     ? periodicValue : null;
-                vocabulary.cells[pair.Key] = new EffectCellEntries(once, periodicEntry, hasPeriodic);
+                vocabulary.cells[pair.Key] = new EffectCellEntries(once, periodicEntry, legacyCell.hasPeriodic);
             }
 
             CopyPiece(vocabulary, EffectPiece.Beam, EffectElement.Beam);
