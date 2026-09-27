@@ -194,51 +194,6 @@ namespace HealerLike.Render.Grammar
             return null;
         }
 
-        // The attribute a modifier buff changes and the sign of the change, Override counts as no change
-        public static bool TryModifier(ABuffFactory buff, out AttributeType type, out float delta)
-        {
-            BaseData data = null;
-            delta = 0f;
-            if (buff is FlatModifierFactory flat && flat.data != null)
-            {
-                data = flat.data;
-                delta = flat.data.value;
-            }
-            else if (buff is UpgradeModifierFactory upgrade && upgrade.data != null)
-            {
-                data = upgrade.data;
-                delta = upgrade.data.value;
-            }
-            else if (buff is SlowModifierFactory slow && slow.data != null)
-            {
-                data = slow.data;
-                delta = slow.data.value;
-            }
-            else if (buff is TimeModifierFactory time && time.data != null)
-            {
-                data = time.data;
-                delta = time.data.value;
-            }
-            else if (buff is CurrentWaveModifierFactory wave && wave.data != null)
-            {
-                data = wave.data;
-                delta = wave.data.value;
-            }
-            else if (buff is HPBasedModifierFactory hpBased && hpBased.data != null)
-            {
-                data = hpBased.data;
-                delta = hpBased.data.factor;
-            }
-
-            type = data != null ? data.type : AttributeType.HealthMax;
-            if (data == null || data.modifierType == AttributeModifierType.Override)
-            {
-                delta = 0f;
-                return data != null;
-            }
-            return true;
-        }
-
         // A handler made in memory can come without its data, its members would then throw
         static bool HasData(ABuffHandlerFactory handler)
         {

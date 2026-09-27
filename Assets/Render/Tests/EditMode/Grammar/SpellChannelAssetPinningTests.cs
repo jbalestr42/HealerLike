@@ -33,13 +33,13 @@ namespace HealerLike.Render.Grammar
 
         static readonly HandlerRow[] HandlerRows = {
             new HandlerRow("CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory", EffectOperation.Boon,
-                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
             new HandlerRow("CharacterSkills/MultiTargetReduceDamage/BuffHandlerFactory", EffectOperation.Bane,
-                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
             new HandlerRow("CharacterSkills/PoisonSingleTarget/PoisonSingleTarget_BuffHandlerFactory",
                 EffectOperation.Damage, EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("CharacterSkills/SingleTargetBuffAttackRate/BuffHandlerFactory", EffectOperation.Bane,
-                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
             new HandlerRow("Entities/HitArmorBufferEntityEntity/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Defence, EffectTempo.Once, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("EntityItems/BoostCellItem/BoostBuffHandlerFactory", EffectOperation.Boon,
@@ -50,11 +50,11 @@ namespace HealerLike.Render.Grammar
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             // Conclave applies +20% damage and +20% attack interval through separate timed handlers.
             new HandlerRow("EntityItems/ConclaveItem/New Buff Handler Factory 1", EffectOperation.Boon,
-                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
             new HandlerRow("EntityItems/ConclaveItem/New Buff Handler Factory", EffectOperation.Bane,
-                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
             new HandlerRow("EntityItems/ExplodeOnHitItem/BuffHandlerFactory 1", EffectOperation.Boon,
-                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
             new HandlerRow("EntityItems/ExplodeOnHitItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("EntityItems/IncreaseDamagePerHitItem/BuffHandlerFactory", EffectOperation.Bane,
@@ -68,9 +68,9 @@ namespace HealerLike.Render.Grammar
             new HandlerRow("EntityItems/RegenHpItem/RegenHpItem_BuffHandlerFactory", EffectOperation.Heal,
                 EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("EntityItems/SlowItem/BuffHandlerFactory", EffectOperation.Bane,
-                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
             new HandlerRow("EntityItems/TrinityItem/BuffHandlerFactory", EffectOperation.Boon,
-                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
             new HandlerRow("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", EffectOperation.Damage,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.OnDeath),
             new HandlerRow("PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory",
@@ -81,7 +81,8 @@ namespace HealerLike.Render.Grammar
 
         // Pinned from handler duration fields and referenced buff/consumer assets. Cast is the
         // no-owner-context default, not a claim that an equipped/on-hit item is cast by the healer.
-        // Magnitude uses DefaultHealth=100 and expression base=1 until live target context is supplied.
+        // Multipliers use their fractional deltas directly; additive/consumer values retain DefaultHealth=100
+        // and expression base=1 until live target context is supplied.
         [Test]
         public void Operation_LiveHandlers_MatchesAssetRowsWithSameSideFallback()
         {

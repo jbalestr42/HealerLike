@@ -44,10 +44,37 @@ namespace HealerLike.Render.Spells
         // Apply once after socket placement. Depth is authored in the effect's body-radius units.
         public static void FaceCamera(SpellEffect effect, Camera camera)
         {
-            if (!effect || !camera || effect.recipe?.presentation?.billboard != true) return;
-            effect.transform.rotation = camera.transform.rotation;
-            effect.transform.position -= camera.transform.forward
-                * (effect.transform.lossyScale.x * effect.recipe.presentation.cameraDepth);
+            if (!effect || !camera) return;
+            SpellEffect[] layers = effect.GetComponentsInChildren<SpellEffect>(true);
+            var positions = new Vector3[layers.Length];
+            var rotations = new Quaternion[layers.Length];
+            var scales = new Vector3[layers.Length];
+            for (int i = 0; i < layers.Length; i++)
+            {
+                positions[i] = layers[i].transform.position;
+                rotations[i] = layers[i].transform.rotation;
+                scales[i] = layers[i].transform.lossyScale;
+            }
+            // Restore each socket after rotating its ancestors. Billboard choices belong to individual layers.
+            for (int i = 0; i < layers.Length; i++)
+            {
+                SpellEffect layer = layers[i];
+                Transform root = layer.transform;
+                bool facesCamera = layer.recipe?.presentation?.billboard == true;
+                root.SetPositionAndRotation(positions[i], facesCamera ? camera.transform.rotation : rotations[i]);
+                Vector3 parentScale = root.parent ? root.parent.lossyScale : Vector3.one;
+                if (Mathf.Abs(parentScale.x - parentScale.y) > .0001f
+                    || Mathf.Abs(parentScale.x - parentScale.z) > .0001f)
+                {
+                    Vector3 current = root.lossyScale;
+                    root.localScale = Vector3.Scale(root.localScale, new Vector3(
+                        scales[i].x / Mathf.Max(.0001f, current.x),
+                        scales[i].y / Mathf.Max(.0001f, current.y),
+                        scales[i].z / Mathf.Max(.0001f, current.z)));
+                }
+                if (facesCamera)
+                    root.position -= camera.transform.forward * (scales[i].x * layer.recipe.presentation.cameraDepth);
+            }
         }
 
         // Lays the element at its socket in body radii, the parent keeps it on a moving unit

@@ -75,8 +75,7 @@ namespace HealerLike.Render.Grammar
         {
             AConsumerFactory consumer = Consumer(buff);
             float reference = consumer != null ? Mathf.Abs(Harm(consumer)) / LookDerivation.DefaultHealth : 0f;
-            if (TryModifier(buff, out _, out float delta))
-                reference = Mathf.Max(reference, Mathf.Abs(delta) / LookDerivation.DefaultHealth);
+            reference = Mathf.Max(reference, ModifierMagnitudeShare(buff));
             return reference <= LightMagnitudeMax ? EffectMagnitude.Light
                 : reference <= SolidMagnitudeMax ? EffectMagnitude.Solid : EffectMagnitude.Heavy;
         }

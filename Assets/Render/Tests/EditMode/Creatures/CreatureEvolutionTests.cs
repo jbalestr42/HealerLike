@@ -140,7 +140,7 @@ namespace HealerLike.Render.Creatures
             Attribute speed = new Attribute(1f) { BaseValue = 2f };
             attributes.Add(AttributeType.Damage, damage);
             attributes.Add(AttributeType.Speed, speed);
-            UnitChannels channels = CreatureEvolution.Read(_data, Entity.EntityType.Player, attributes);
+            UnitChannels channels = LiveUnitDerivation.Read(_data, Entity.EntityType.Player, attributes);
             Assert.AreEqual(AccessoryKind.ConeCrown, channels.accessory);
         }
     }

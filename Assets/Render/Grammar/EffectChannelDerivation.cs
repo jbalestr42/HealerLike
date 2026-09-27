@@ -52,10 +52,7 @@ namespace HealerLike.Render.Grammar
                 {
                     reference = Mathf.Max(reference, Mathf.Abs(Harm(consumer)) / LookDerivation.DefaultHealth);
                 }
-                if (TryModifier(buff, out AttributeType type, out float delta))
-                {
-                    reference = Mathf.Max(reference, Mathf.Abs(delta) / LookDerivation.DefaultHealth);
-                }
+                reference = Mathf.Max(reference, ModifierMagnitudeShare(buff));
             }
             return reference <= LightMagnitudeMax ? EffectMagnitude.Light
                 : reference <= SolidMagnitudeMax ? EffectMagnitude.Solid : EffectMagnitude.Heavy;

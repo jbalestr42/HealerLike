@@ -8,6 +8,8 @@ namespace HealerLike.Render.Spells
     public partial class SpellEffect
     {
         readonly List<SpellEffect> _layers = new List<SpellEffect>();
+        void PruneLayers() => _layers.RemoveAll(layer => !layer);
+
         void BuildLayers(PrimitiveMeshes meshes, Material material, LookSide side)
         {
             foreach (EffectRecipe addition in _recipe.additions ?? System.Array.Empty<EffectRecipe>())
@@ -23,22 +25,27 @@ namespace HealerLike.Render.Spells
         // Each layer owns its authored count policy; parent shape counts cannot stand in for its additions.
         public void RefreshCount(int stacks, float charges)
         {
+            PruneLayers();
             SetCount(EffectComposer.Count(_recipe.entry, Mathf.Max(1, stacks), charges, 0f));
             foreach (SpellEffect layer in _layers) layer.RefreshCount(stacks, charges);
         }
 
         public void PlaceLayers(EffectAnchors anchors)
         {
+            PruneLayers();
             foreach (SpellEffect layer in _layers) EffectPlacement.Place(layer, transform, anchors);
         }
         void AdvanceLayers(float delta)
         {
+            PruneLayers();
             foreach (SpellEffect layer in _layers) layer.Advance(delta);
+            PruneLayers();
         }
         float RemovalSeconds() => _recipe?.presentation != null && _recipe.presentation.enabled
             ? _recipe.presentation.releaseSeconds : removalSeconds;
         bool LayersRemoved()
         {
+            PruneLayers();
             foreach (SpellEffect layer in _layers) if (!layer.removalComplete) return false;
             return true;
         }
@@ -47,6 +54,7 @@ namespace HealerLike.Render.Spells
             : EffectEnvelope.Visibility(_recipe.presentation, _age, _recipe.cycleSeconds, _isStatus);
         float CompositeLifetime()
         {
+            PruneLayers();
             float seconds = _recipe != null ? _recipe.cycleSeconds : 0;
             foreach (SpellEffect layer in _layers) seconds = Mathf.Max(seconds, layer.lifetime);
             return seconds;
