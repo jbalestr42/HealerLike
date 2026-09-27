@@ -31,14 +31,14 @@ namespace HealerLike.Render.Creatures
             }
 
             // Retain authored contrast, with a white lift and only a small gameplay colour cue.
-            Color result = authored * 0.45f + Color.white * 0.50f + _colour * 0.05f;
+            Color result = authored * 0.35f + Color.white * 0.60f + _colour * 0.05f;
             result.a = authored.a;
             return result;
         }
 
         public float Width(float authored)
         {
-            return isHighlighted ? Mathf.Max(authored, _width) : authored;
+            return isHighlighted ? Mathf.Max(authored, _width * 1.5f) : authored;
         }
     }
 }

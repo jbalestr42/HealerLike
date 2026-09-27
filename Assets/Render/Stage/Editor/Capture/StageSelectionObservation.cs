@@ -87,9 +87,9 @@ namespace HealerLike.Render.Stage
             {
                 Part actual = frame.parts[i];
                 Part idle = _idle[i];
-                Color expected = highlighted ? idle.colour * 0.45f + Color.white * 0.50f + frame.highlightColour * 0.05f : idle.colour;
+                Color expected = highlighted ? idle.colour * 0.35f + Color.white * 0.60f + frame.highlightColour * 0.05f : idle.colour;
                 expected.a = idle.colour.a;
-                float width = highlighted ? Mathf.Max(idle.outlineWidth, frame.highlightWidth) : idle.outlineWidth;
+                float width = highlighted ? Mathf.Max(idle.outlineWidth, frame.highlightWidth * 1.5f) : idle.outlineWidth;
                 _output.Check(Vector4.Distance(actual.colour, expected) < 0.0001f,
                     subject + " " + actual.id + " live selection colour/alpha: " + state);
                 _output.Check(Mathf.Abs(actual.outlineWidth - width) < 0.0001f

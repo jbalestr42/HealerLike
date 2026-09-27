@@ -261,9 +261,18 @@ namespace HealerLike.Render.Stage
             EventSystem.current.RaycastAll(pointer, _hits);
             foreach (RaycastResult hit in _hits)
             {
-                if (hit.module is GraphicRaycaster || hit.module is PanelRaycaster)
+                if (hit.module is GraphicRaycaster)
                 {
                     return true;
+                }
+                // PanelRaycaster also reports captured pointers outside the UI. A roster
+                // card keeps capture until after End, so only a geometric pick can tell
+                // whether the release is actually over the board or back over a control.
+                if (hit.module is PanelRaycaster panelRaycaster && panelRaycaster.panel != null)
+                {
+                    Vector2 panelPoint = RuntimePanelUtils.ScreenToPanel(panelRaycaster.panel,
+                        new Vector2(screenPoint.x, Screen.height - screenPoint.y));
+                    if (panelRaycaster.panel.Pick(panelPoint) != null) return true;
                 }
             }
 

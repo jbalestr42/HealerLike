@@ -2,6 +2,7 @@ using HealerLike.Render.Spells;
 using HealerLike.Render.Creatures;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
@@ -28,6 +29,10 @@ namespace HealerLike.Render.Stage
         EffectVocabulary _iconVocabulary;
         Material _iconMaterial;
         Scene _uiScene;
+        UIDocument _document;
+        StyleSheet _spellSpacing;
+        readonly StageManaGauge _manaGauge = new StageManaGauge();
+        readonly StageIconLabels _iconLabels = new StageIconLabels();
         public ToolkitGameUI ui
         {
             get
@@ -78,6 +83,11 @@ namespace HealerLike.Render.Stage
             _ui.gameplayScene = "Main";
             _ui.menuScene = "MenuToolkit";
             _ui.sceneLoader = LoadScene;
+            _document = _ui.GetComponent<UIDocument>();
+            if (_spellSpacing == null)
+            {
+                _spellSpacing = Resources.Load<StyleSheet>("RenderSpellSpacing");
+            }
             if (scene.path == GameplayPath)
             {
                 CreatePortraits();
@@ -146,6 +156,7 @@ namespace HealerLike.Render.Stage
         void OnDestroy()
         {
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
+            _iconLabels.Dispose();
             ReleasePortraits();
         }
 
@@ -168,6 +179,17 @@ namespace HealerLike.Render.Stage
 
         void LateUpdate()
         {
+            // Apply after Toolkit initializes its document, including a rebuilt HUD.
+            VisualElement root = _document != null ? _document.rootVisualElement : null;
+            if (root != null && _spellSpacing != null && !root.styleSheets.Contains(_spellSpacing))
+            {
+                root.styleSheets.Add(_spellSpacing);
+            }
+
+            Character character = _manager != null && _manager.player != null ? _manager.player.character : null;
+            _manaGauge.Update(root, character != null ? character.mana : null);
+            _iconLabels.Update(root);
+
             if (_ui == null || _manager.entityManager == null || _manager.gameCamera == null)
             {
                 return;

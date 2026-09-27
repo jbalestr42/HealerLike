@@ -1,0 +1,186 @@
+/* Light glass tiles with generous portraits and a consistent six-pixel gutter. */
+#hud-root.compact-hud {
+    -unity-font-definition: url("../Font/Coiny/Coiny-Regular.ttf");
+}
+#hud-root.compact-hud #party-list .card-shell,
+#hud-root.compact-hud #spell-list .card-shell {
+    width: 68px;
+    height: 82px;
+    margin: 0;
+}
+#hud-root.compact-hud #party-list .data-card,
+#hud-root.compact-hud #spell-list .data-card {
+    height: 82px;
+    padding: 0 3px;
+    margin: 0;
+    border-radius: 14px;
+}
+#hud-root.compact-hud #party-list .data-card__icon,
+#hud-root.compact-hud #spell-list .data-card__icon {
+    width: 62px;
+    height: 76px;
+    margin: 0;
+    border-radius: 14px;
+    border-width: 1px;
+    border-color: rgba(246, 244, 218, 0.55);
+    background-color: rgba(238, 239, 217, 0.24);
+    overflow: visible;
+}
+#hud-root.compact-hud .render-card-art {
+    position: absolute;
+    left: 3px;
+    right: 3px;
+    top: 2px;
+    height: 39px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+#hud-root.compact-hud #spell-list .render-card-art {
+    left: 4px;
+    right: 4px;
+    top: -4px;
+    height: 54px;
+}
+#hud-root.compact-hud #party-list .render-card-art {
+    left: -10px;
+    right: -10px;
+    top: auto;
+    bottom: 0;
+    height: 70px;
+    background-position-y: bottom;
+}
+#hud-root.compact-hud #party-list .unity-scroll-view__content-container {
+    padding-top: 0;
+}
+#hud-root.compact-hud #party-list .data-card,
+#hud-root.compact-hud #party-list .card-shell {
+    height: 100px;
+    overflow: visible;
+}
+#hud-root.compact-hud #party-list .data-card__icon {
+    height: 94px;
+}
+#hud-root.compact-hud #party-list .data-card__title,
+#hud-root.compact-hud #spell-list .data-card__title {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    top: 41px;
+    bottom: auto;
+    width: auto;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    font-size: 9px;
+    -unity-font-style: normal;
+    white-space: normal;
+    overflow: hidden;
+    -unity-text-align: middle-center;
+    color: rgb(36, 43, 40);
+    text-shadow: 0 0 0 transparent;
+    -unity-text-outline-width: 0;
+    background-color: transparent;
+    border-radius: 0;
+}
+#hud-root.compact-hud #party-list .data-card__title {
+    top: 0;
+    height: 24px;
+    font-size: 10px;
+}
+#hud-root.compact-hud #spell-list .spell-cost {
+    top: 3px;
+    right: 3px;
+    bottom: auto;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 3px;
+    margin: 0;
+    font-size: 9px;
+    -unity-text-align: middle-center;
+    color: rgb(245, 247, 231);
+    background-color: rgba(28, 64, 56, 0.65);
+    border-radius: 5px;
+    text-shadow: 0 0 0 transparent;
+}
+#hud-root.compact-hud #party-list .creature-health {
+    left: 10px;
+    right: 10px;
+    bottom: 1px;
+    height: 2px;
+}
+#hud-root.compact-hud .party-panel {
+    height: 100px;
+    min-height: 100px;
+    max-height: 100px;
+    padding: 0 3px;
+    background-color: transparent;
+    border-radius: 10px;
+}
+#hud-root.compact-hud .field-toolbar {
+    align-items: center;
+    height: 50px;
+    min-height: 50px;
+    padding-bottom: 6px;
+}
+#hud-root.compact-hud .command-section { margin: 0; }
+#hud-root.compact-hud .encounter-actions .button {
+    -unity-font-style: normal;
+    background-color: rgba(24, 65, 55, 0.48);
+    border-color: rgba(238, 239, 217, 0.65);
+    border-radius: 16px;
+    padding: 4px 20px;
+}
+#hud-root.compact-hud .command-dock {
+    height: 116px;
+    min-height: 116px;
+    max-height: 116px;
+    margin-top: 6px;
+    padding: 0 3px;
+    background-color: transparent;
+    border-radius: 10px;
+}
+#hud-root.compact-hud #spell-section {
+    flex-direction: column;
+    align-items: stretch;
+    height: 116px;
+}
+#hud-root.compact-hud.render-has-creatures .party-panel,
+#hud-root.compact-hud.render-has-spells .command-dock {
+    background-color: transparent;
+}
+#hud-root.compact-hud #spell-list {
+    width: 100%;
+    height: 82px;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+#hud-root.compact-hud #render-mana-gauge {
+    align-self: center;
+    width: 180px;
+    max-width: 70%;
+    height: 18px;
+    min-height: 18px;
+    flex-shrink: 0;
+    margin: 7px 0 7px;
+    overflow: hidden;
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: rgba(205, 231, 228, 0.45);
+    background-color: rgba(22, 48, 52, 0.35);
+}
+#hud-root.compact-hud #render-mana-fill {
+    height: 100%;
+    flex-shrink: 0;
+    background-color: rgba(85, 166, 178, 0.7);
+}
+#hud-root.compact-hud #render-mana-gauge #mana-value {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
+    -unity-text-align: middle-center;
+}

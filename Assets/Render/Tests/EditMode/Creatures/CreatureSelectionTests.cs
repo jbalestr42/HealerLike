@@ -30,10 +30,10 @@ namespace HealerLike.Render.Creatures
             {
                 Color authored = index == 0 ? body : ochre;
                 renderer.GetPropertyBlock(block, index);
-                Color expected = authored * 0.45f + Color.white * 0.50f + Color.cyan * 0.05f;
+                Color expected = authored * 0.35f + Color.white * 0.60f + Color.cyan * 0.05f;
                 expected.a = authored.a;
                 AssertNativeColour(expected, block.GetColor("_BaseColor"));
-                Assert.AreEqual(4f, block.GetFloat("_HLOutlineWidthMultiplier"));
+                Assert.AreEqual(6f, block.GetFloat("_HLOutlineWidthMultiplier"));
             }
 
             paint.selection = default;
@@ -61,8 +61,8 @@ namespace HealerLike.Render.Creatures
             Assert.Greater(dark.r, 0.5f);
             Assert.Greater(dark.g, 0.5f);
             Assert.Greater(dark.b, 0.5f);
-            Assert.That(light.r - dark.r, Is.EqualTo(0.27f).Within(0.00001f));
-            Assert.That(light.g - dark.g, Is.EqualTo(0.27f).Within(0.00001f));
+            Assert.That(light.r - dark.r, Is.EqualTo(0.21f).Within(0.00001f));
+            Assert.That(light.g - dark.g, Is.EqualTo(0.21f).Within(0.00001f));
             Color neutral = new CreatureSelection(true, Color.black, 4f).Tint(Color.gray);
             Color cue = selection.Tint(Color.gray);
             Assert.That(cue.r - neutral.r, Is.EqualTo(0.05f).Within(0.00001f));
@@ -144,7 +144,7 @@ namespace HealerLike.Render.Creatures
             Assert.IsTrue(_rig.Recompose(_recipe, _material, _material, _meshes));
             Tick(0f);
             renderer.GetPropertyBlock(block, 0);
-            Assert.AreEqual(4f, block.GetFloat("_HLOutlineWidthMultiplier"));
+            Assert.AreEqual(6f, block.GetFloat("_HLOutlineWidthMultiplier"));
             _rig.SetSelection(default);
             Tick(0f);
             renderer.GetPropertyBlock(block, 0);
