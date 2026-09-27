@@ -99,6 +99,29 @@ namespace HealerLike.Render.Creatures
         }
 
         [Test]
+        public void PreviewOwnerWithUninitializedAttributeComponent_UsesDataUntilLiveInit()
+        {
+            _entity.attributeManager = null;
+            TestHelpers.SetPrivateField(_attributes, "_attributes", null);
+            Assert.DoesNotThrow(() => _view.Init(_entity, _manager));
+            Assert.DoesNotThrow(Tick);
+            Assert.IsNotNull(_view.rig);
+            Assert.IsTrue(_view.Rebuild(_manager));
+            // A later proper owner initialization opts back into live evolution.
+            TestHelpers.InvokePrivate(_attributes, "Awake");
+            _attributes.Add(AttributeType.HealthMax, new Attribute(100f));
+            _entity.attributeManager = _attributes;
+            _view.Init(_entity, _manager);
+            Tick();
+            int revision = _view.rig.revision;
+            Attribute maximum = _attributes.Get(AttributeType.HealthMax);
+            maximum.BaseValue = 400f;
+            maximum.Update();
+            Tick();
+            Assert.AreEqual(revision + 1, _view.rig.revision);
+        }
+
+        [Test]
         public void AuthoredRecipe_RemainsAuthoritativeUnderBuffs()
         {
             CreatureRecipe recipe = RenderTestAssets.CreateRecipe();

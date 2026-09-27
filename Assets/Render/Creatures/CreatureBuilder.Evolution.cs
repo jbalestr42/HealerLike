@@ -11,9 +11,9 @@ namespace HealerLike.Render.Creatures
         void ObserveEvolution()
         {
             if (!_derivedRecipe || !_manager || !_manager.creatureLooks) return;
-            AttributeManager attributes = _entity.attributeManager;
-            if (!attributes) attributes = _entity.GetComponent<AttributeManager>();
-            _evolution.Init(_entity.data, _entity.entityType, attributes);
+            // Entity publishes this reference after its simulation attributes are initialized.
+            // A prefab or EditMode preview can carry an unawakened component; keep its data-derived look.
+            _evolution.Init(_entity.data, _entity.entityType, _entity.attributeManager);
         }
 
         void RefreshEvolution()
