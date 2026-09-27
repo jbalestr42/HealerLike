@@ -105,6 +105,7 @@ namespace HealerLike.Render.Spells
         public static EffectRecipe Compose(EffectVocabulary vocabulary, EffectChannels channels, int stacks,
                                            float charges)
         {
+            if (vocabulary == null) return null;
             EffectFamily family = channels.family;
             if (channels.operation != EffectOperation.Damage) family = (EffectFamily)Mathf.Clamp((int)channels.operation, 0, 5);
             EffectRecipe recipe = Compose(vocabulary, Element(vocabulary, channels), family, channels.tempo, channels.periodSeconds,
