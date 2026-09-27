@@ -108,6 +108,9 @@ MonoBehaviour:
     - Name: $v
       Entry: 7
       Data: 4|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+    - Name: label
+      Entry: 1
+      Data: Burst
     - Name: presentation
       Entry: 7
       Data: 5|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
@@ -1467,6 +1470,9 @@ MonoBehaviour:
     - Name: $v
       Entry: 7
       Data: 10|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+    - Name: label
+      Entry: 1
+      Data: Rise
     - Name: presentation
       Entry: 7
       Data: 11|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
@@ -2817,6 +2823,9 @@ MonoBehaviour:
     - Name: $v
       Entry: 7
       Data: 15|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+    - Name: label
+      Entry: 1
+      Data: Stalks
     - Name: presentation
       Entry: 7
       Data: 16|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
@@ -5337,6 +5346,9 @@ MonoBehaviour:
     - Name: $v
       Entry: 7
       Data: 21|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+    - Name: label
+      Entry: 1
+      Data: Drips
     - Name: presentation
       Entry: 7
       Data: 22|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
@@ -6954,6 +6966,9 @@ MonoBehaviour:
     - Name: $v
       Entry: 7
       Data: 27|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+    - Name: label
+      Entry: 1
+      Data: Orbit
     - Name: presentation
       Entry: 7
       Data: 28|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
@@ -8184,6 +8199,9 @@ MonoBehaviour:
     - Name: $v
       Entry: 7
       Data: 33|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+    - Name: label
+      Entry: 1
+      Data: Plates
     - Name: presentation
       Entry: 7
       Data: 34|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
@@ -9930,6 +9948,9 @@ MonoBehaviour:
     - Name: $v
       Entry: 7
       Data: 39|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+    - Name: label
+      Entry: 1
+      Data: Bud
     - Name: presentation
       Entry: 7
       Data: 40|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
@@ -11676,6 +11697,9 @@ MonoBehaviour:
     - Name: $v
       Entry: 7
       Data: 45|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+    - Name: label
+      Entry: 1
+      Data: Press
     - Name: presentation
       Entry: 7
       Data: 46|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
@@ -13155,6 +13179,9 @@ MonoBehaviour:
     - Name: $v
       Entry: 7
       Data: 50|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+    - Name: label
+      Entry: 1
+      Data: Crack
     - Name: presentation
       Entry: 7
       Data: 51|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
@@ -14901,6 +14928,9 @@ MonoBehaviour:
     - Name: $v
       Entry: 7
       Data: 56|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+    - Name: label
+      Entry: 1
+      Data: ManaUp
     - Name: presentation
       Entry: 7
       Data: 57|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
@@ -15726,6 +15756,9 @@ MonoBehaviour:
     - Name: $v
       Entry: 7
       Data: 60|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+    - Name: label
+      Entry: 1
+      Data: ManaDown
     - Name: presentation
       Entry: 7
       Data: 61|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
@@ -16551,6 +16584,9 @@ MonoBehaviour:
     - Name: $v
       Entry: 7
       Data: 64|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+    - Name: label
+      Entry: 1
+      Data: Beam
     - Name: presentation
       Entry: 7
       Data: 65|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
@@ -19053,6 +19089,9 @@ MonoBehaviour:
     - Name: $v
       Entry: 7
       Data: 68|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+    - Name: label
+      Entry: 1
+      Data: Ring
     - Name: presentation
       Entry: 7
       Data: 69|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
@@ -20523,6 +20562,9 @@ MonoBehaviour:
     - Name: $v
       Entry: 7
       Data: 72|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+    - Name: label
+      Entry: 1
+      Data: Litter
     - Name: presentation
       Entry: 7
       Data: 73|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
@@ -22484,13 +22526,13 @@ MonoBehaviour:
       Data: HealerLike.Render.Spells.EffectCellEntry, HealerLike.Render
     - Name: once
       Entry: 3
-      Data: 6
+      Data: 5
     - Name: hasPeriodic
       Entry: 5
       Data: false
     - Name: periodic
       Entry: 3
-      Data: 6
+      Data: 5
     - Name: 
       Entry: 8
       Data: 
@@ -22596,6 +22638,798 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: cells
+      Entry: 7
+      Data: 78|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Spells.EffectCell, HealerLike.Render],[HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 79|System.Collections.Generic.GenericEqualityComparer`1[[HealerLike.Render.Spells.EffectCell, HealerLike.Render]], mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 18
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 0
+    - Name: aspect
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 4
+    - Name: periodic
+      Entry: 9
+      Data: 21
+    - Name: hasPeriodic
+      Entry: 5
+      Data: true
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 0
+    - Name: aspect
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 4
+    - Name: periodic
+      Entry: 9
+      Data: 21
+    - Name: hasPeriodic
+      Entry: 5
+      Data: true
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 0
+    - Name: aspect
+      Entry: 3
+      Data: 2
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 4
+    - Name: periodic
+      Entry: 9
+      Data: 21
+    - Name: hasPeriodic
+      Entry: 5
+      Data: true
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 1
+    - Name: aspect
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 10
+    - Name: periodic
+      Entry: 9
+      Data: 15
+    - Name: hasPeriodic
+      Entry: 5
+      Data: true
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 1
+    - Name: aspect
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 10
+    - Name: periodic
+      Entry: 9
+      Data: 15
+    - Name: hasPeriodic
+      Entry: 5
+      Data: true
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 1
+    - Name: aspect
+      Entry: 3
+      Data: 2
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 10
+    - Name: periodic
+      Entry: 9
+      Data: 15
+    - Name: hasPeriodic
+      Entry: 5
+      Data: true
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 2
+    - Name: aspect
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 27
+    - Name: periodic
+      Entry: 9
+      Data: 27
+    - Name: hasPeriodic
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 2
+    - Name: aspect
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 33
+    - Name: periodic
+      Entry: 9
+      Data: 33
+    - Name: hasPeriodic
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 2
+    - Name: aspect
+      Entry: 3
+      Data: 2
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 39
+    - Name: periodic
+      Entry: 9
+      Data: 39
+    - Name: hasPeriodic
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 3
+    - Name: aspect
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 45
+    - Name: periodic
+      Entry: 9
+      Data: 45
+    - Name: hasPeriodic
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 3
+    - Name: aspect
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 50
+    - Name: periodic
+      Entry: 9
+      Data: 50
+    - Name: hasPeriodic
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 3
+    - Name: aspect
+      Entry: 3
+      Data: 2
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 50
+    - Name: periodic
+      Entry: 9
+      Data: 50
+    - Name: hasPeriodic
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 4
+    - Name: aspect
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 33
+    - Name: periodic
+      Entry: 9
+      Data: 33
+    - Name: hasPeriodic
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 4
+    - Name: aspect
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 33
+    - Name: periodic
+      Entry: 9
+      Data: 33
+    - Name: hasPeriodic
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 4
+    - Name: aspect
+      Entry: 3
+      Data: 2
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 33
+    - Name: periodic
+      Entry: 9
+      Data: 33
+    - Name: hasPeriodic
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 5
+    - Name: aspect
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 56
+    - Name: periodic
+      Entry: 9
+      Data: 56
+    - Name: hasPeriodic
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 5
+    - Name: aspect
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 56
+    - Name: periodic
+      Entry: 9
+      Data: 56
+    - Name: hasPeriodic
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCell, HealerLike.Render
+    - Name: operation
+      Entry: 3
+      Data: 5
+    - Name: aspect
+      Entry: 3
+      Data: 2
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: $v
+      Entry: 7
+      Data: HealerLike.Render.Spells.EffectCellEntries, HealerLike.Render
+    - Name: once
+      Entry: 9
+      Data: 56
+    - Name: periodic
+      Entry: 9
+      Data: 56
+    - Name: hasPeriodic
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: pieces
+      Entry: 7
+      Data: 80|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Spells.EffectPiece, HealerLike.Render],[HealerLike.Render.Spells.ElementEntry, HealerLike.Render]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 81|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Spells.EffectPiece, HealerLike.Render]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 3
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 0
+    - Name: $v
+      Entry: 9
+      Data: 64
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 1
+    - Name: $v
+      Entry: 9
+      Data: 68
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 2
+    - Name: $v
+      Entry: 9
+      Data: 72
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: reach
+      Entry: 7
+      Data: 82|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Grammar.EffectReach, HealerLike.Render],[HealerLike.Render.Spells.ElementEntry, HealerLike.Render]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 83|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Grammar.EffectReach, HealerLike.Render]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: delivery
+      Entry: 7
+      Data: 84|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Grammar.EffectDelivery, HealerLike.Render],[HealerLike.Render.Spells.ElementEntry, HealerLike.Render]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 85|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Grammar.EffectDelivery, HealerLike.Render]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: trigger
+      Entry: 7
+      Data: 86|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Grammar.EffectTrigger, HealerLike.Render],[HealerLike.Render.Spells.ElementEntry, HealerLike.Render]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 87|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Grammar.EffectTrigger, HealerLike.Render]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: side
+      Entry: 7
+      Data: 88|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Grammar.EffectSide, HealerLike.Render],[HealerLike.Render.Spells.ElementEntry, HealerLike.Render]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 89|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Grammar.EffectSide, HealerLike.Render]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: origin
+      Entry: 7
+      Data: 90|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Grammar.EffectOrigin, HealerLike.Render],[HealerLike.Render.Spells.ElementEntry, HealerLike.Render]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 91|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Grammar.EffectOrigin, HealerLike.Render]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 0
     - Name: 
       Entry: 13
       Data: 

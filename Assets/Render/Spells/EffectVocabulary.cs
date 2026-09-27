@@ -38,6 +38,30 @@ namespace HealerLike.Render.Spells
         }
     }
 
+    [Serializable]
+    public struct EffectCellEntries
+    {
+        public ElementEntry once;
+        public ElementEntry periodic;
+        public bool hasPeriodic;
+
+        public EffectCellEntries(ElementEntry once, ElementEntry periodic, bool hasPeriodic)
+        {
+            this.once = once;
+            this.periodic = periodic;
+            this.hasPeriodic = hasPeriodic;
+        }
+    }
+
+    // Additive authored compositions have no operation/aspect cell, so they use a
+    // deliberately small vocabulary of stable piece keys.
+    public enum EffectPiece
+    {
+        Beam,
+        Ring,
+        Litter
+    }
+
     // What an effect draws, the composer picks one from the family and the group of a handler
     // Stored by value in assets: append new members, never reorder or remove
     public enum EffectElement
@@ -112,6 +136,12 @@ namespace HealerLike.Render.Spells
 
         [DictionaryDrawerSettings(KeyLabel = "Operation and aspect", ValueLabel = "Once and periodic elements")]
         public Dictionary<EffectCell, EffectCellEntry> table = new Dictionary<EffectCell, EffectCellEntry>();
+
+        [DictionaryDrawerSettings(KeyLabel = "Operation and aspect", ValueLabel = "Once and periodic entries")]
+        public Dictionary<EffectCell, EffectCellEntries> cells = new Dictionary<EffectCell, EffectCellEntries>();
+
+        [DictionaryDrawerSettings(KeyLabel = "Piece", ValueLabel = "Entry")]
+        public Dictionary<EffectPiece, ElementEntry> pieces = new Dictionary<EffectPiece, ElementEntry>();
 
         // Optional additive pieces. Missing keys leave the core unchanged; each piece owns its socket.
         [DictionaryDrawerSettings(KeyLabel = "Reach", ValueLabel = "Piece")]
