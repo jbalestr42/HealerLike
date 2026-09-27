@@ -125,22 +125,23 @@ namespace HealerLike.Render.Spells
                 channels.operation = ToOperation(channels.family);
             if (channels.aspect == EffectAspect.Offence && channels.group != AttributeGroup.Offence)
                 channels.aspect = (EffectAspect)channels.group;
-            EffectFamily family = channels.family;
-            EffectRecipe recipe = Compose(vocabulary, Element(vocabulary, channels), family, channels.tempo, channels.periodSeconds,
-                           stacks, charges, 0f);
             if (!EffectCompositionValidator.TryValidate(channels, vocabulary, out string compositionError))
             {
                 Debug.LogError("[EffectComposer] " + compositionError);
                 return null;
             }
+            EffectRecipe recipe = Compose(vocabulary, Element(vocabulary, channels), channels.family,
+                channels.tempo, channels.periodSeconds, stacks, charges, 0f);
+            if (recipe == null) return null;
+            recipe.channels = channels;
+            if (recipe.presentation != null && recipe.presentation.enabled)
+                recipe.scale *= vocabulary.MagnitudeScale(channels.magnitude);
+            recipe.additions = EffectChannelComposition.Compose(vocabulary, channels, recipe.element, stacks, charges);
             if (!EffectValidator.TryValidate(recipe, out string recipeError))
             {
                 Debug.LogError("[EffectComposer] " + recipeError);
                 return null;
             }
-            recipe.channels = channels;
-            if (recipe.presentation != null && recipe.presentation.enabled)
-                recipe.scale *= vocabulary.MagnitudeScale(channels.magnitude);
             return recipe;
         }
 

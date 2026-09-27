@@ -15,9 +15,19 @@ namespace HealerLike.Render.Spells
         // Shared children are legal, but every rendered occurrence consumes the same aggregate budget.
         public static bool TryValidate(EffectRecipe recipe, out string error)
         {
+            return TryValidateComposition(new[] { recipe }, out error);
+        }
+
+        public static bool TryValidateComposition(IEnumerable<EffectRecipe> recipes, out string error)
+        {
+            if (recipes == null) return Fail("Require a non-null effect composition.", out error);
             var pending = new Stack<(EffectRecipe recipe, bool exit)>();
             var ancestors = new HashSet<EffectRecipe>();
-            pending.Push((recipe, false));
+            foreach (EffectRecipe recipe in recipes)
+            {
+                if (pending.Count >= MaxParts) return Fail("Require 1..256 effect parts across all additions.", out error);
+                pending.Push((recipe, false));
+            }
             long budget = 0;
             while (pending.Count > 0)
             {
@@ -95,7 +105,7 @@ namespace HealerLike.Render.Spells
             return true;
         }
 
-        static long PartCount(ElementEntry entry) => (long)entry.parts.Length + (entry.stackBeads?.Length ?? 0)
+        internal static long PartCount(ElementEntry entry) => (long)entry.parts.Length + (entry.stackBeads?.Length ?? 0)
             + (entry.criticalRings?.Length ?? 0) + (entry.sideRim?.Length ?? 0);
 
         static bool GroundValid(GroundEffect effect) => Defined(effect.shape)

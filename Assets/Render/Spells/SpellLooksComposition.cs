@@ -39,11 +39,7 @@ namespace HealerLike.Render.Spells
                 EffectRecipe recipe = EffectComposer.Compose(vocabulary, channels, 1, 0);
                 if (recipe != null) recipes.Add(recipe);
             }
-            int total = 0;
-            foreach (EffectRecipe recipe in recipes)
-                total += recipe.entry.parts.Length + (recipe.entry.stackBeads?.Length ?? 0)
-                    + (recipe.entry.criticalRings?.Length ?? 0) + (recipe.entry.sideRim?.Length ?? 0);
-            if (total > EffectValidator.MaxParts) recipes.Clear();
+            if (!EffectValidator.TryValidateComposition(recipes, out _)) recipes.Clear();
             return recipes;
         }
     }

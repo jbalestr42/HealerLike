@@ -113,6 +113,18 @@ namespace HealerLike.Render.Spells
         [DictionaryDrawerSettings(KeyLabel = "Operation and aspect", ValueLabel = "Once and periodic elements")]
         public Dictionary<EffectCell, EffectCellEntry> table = new Dictionary<EffectCell, EffectCellEntry>();
 
+        // Optional additive pieces. Missing keys leave the core unchanged; each piece owns its socket.
+        [DictionaryDrawerSettings(KeyLabel = "Reach", ValueLabel = "Piece")]
+        public Dictionary<EffectReach, ElementEntry> reach = new Dictionary<EffectReach, ElementEntry>();
+        [DictionaryDrawerSettings(KeyLabel = "Delivery", ValueLabel = "Piece")]
+        public Dictionary<EffectDelivery, ElementEntry> delivery = new Dictionary<EffectDelivery, ElementEntry>();
+        [DictionaryDrawerSettings(KeyLabel = "Trigger", ValueLabel = "Piece")]
+        public Dictionary<EffectTrigger, ElementEntry> trigger = new Dictionary<EffectTrigger, ElementEntry>();
+        [DictionaryDrawerSettings(KeyLabel = "Side", ValueLabel = "Piece")]
+        public Dictionary<EffectSide, ElementEntry> side = new Dictionary<EffectSide, ElementEntry>();
+        [DictionaryDrawerSettings(KeyLabel = "Origin", ValueLabel = "Piece")]
+        public Dictionary<EffectOrigin, ElementEntry> origin = new Dictionary<EffectOrigin, ElementEntry>();
+
         public ElementEntry GetEntry(EffectElement element)
         {
             if (elements == null || !elements.ContainsKey(element))

@@ -18,7 +18,7 @@ namespace HealerLike.Render.Spells
                 error = "The effect vocabulary is missing the selected cell entry.";
                 return false;
             }
-            return EffectValidator.TryValidateEntry(entry, out error);
+            return EffectChannelComposition.TryValidate(vocabulary, channels, entry, out error);
         }
 
         public static bool TryValidateChannels(EffectChannels channels, out string error)
