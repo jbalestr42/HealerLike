@@ -9,6 +9,7 @@ public class DeliveryTipTests
 {
     GameObject _parent;
     Material _material;
+    readonly System.Collections.Generic.List<DeliveryTip> _tips = new System.Collections.Generic.List<DeliveryTip>();
 
     [SetUp]
     public void SetUp()
@@ -20,15 +21,18 @@ public class DeliveryTipTests
     [TearDown]
     public void TearDown()
     {
+        foreach (DeliveryTip tip in _tips) tip.Release();
+        _tips.Clear();
         Object.DestroyImmediate(_parent);
         Object.DestroyImmediate(_material);
     }
 
-    static DeliveryTip CreateTip(DeliveryStyle style, bool hasVocabulary = true)
+    DeliveryTip CreateTip(DeliveryStyle style, bool hasVocabulary = true)
     {
         DeliveryTip tip = new DeliveryTip();
         DeliveryVocabulary vocabulary = hasVocabulary ? RenderTestAssets.LoadDeliveryVocabulary() : null;
         tip.SetStyle(style, vocabulary, RenderTestAssets.LoadMeshes());
+        _tips.Add(tip);
         return tip;
     }
 

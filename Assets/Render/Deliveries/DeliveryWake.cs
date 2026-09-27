@@ -15,7 +15,7 @@ namespace HealerLike.Render.Deliveries
 
         public void Draw(Transform parent, Material material, DeliveryPresentation look, Color colour, float width)
         {
-            if (look.trailSeconds <= 0f || look.trailWidth <= 0f)
+            if (look == null || !look.IsValid() || look.trailSeconds <= 0f || look.trailWidth <= 0f)
             {
                 Hide();
                 return;

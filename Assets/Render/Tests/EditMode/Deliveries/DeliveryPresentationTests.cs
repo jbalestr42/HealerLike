@@ -43,5 +43,34 @@ namespace HealerLike.Render.Deliveries
             }
             finally { Object.DestroyImmediate(vocabulary); }
         }
+        [Test]
+        public void InvalidAuthoredProfiles_FallBackWithoutNonfiniteTransforms()
+        {
+            var vocabulary = ScriptableObject.CreateInstance<DeliveryVocabulary>();
+            try
+            {
+                System.Action<DeliveryPresentation>[] invalid =
+                {
+                    value => value.size = float.NaN,
+                    value => value.pulseAmount = float.PositiveInfinity,
+                    value => value.pulseFrequency = -1f,
+                    value => value.trailSeconds = float.NaN,
+                    value => value.trailWidth = 2f,
+                    value => value.trailBreakDistance = 0f
+                };
+                foreach (var change in invalid)
+                {
+                    var look = new DeliveryPresentation();
+                    change(look);
+                    Assert.IsFalse(look.IsValid());
+                    Assert.AreEqual(1f, look.ScaleAt(1f));
+                    vocabulary.presentation[DeliveryStyle.Direct] = look;
+                    Assert.IsTrue(vocabulary.GetPresentation(DeliveryStyle.Direct).IsValid());
+                }
+                Assert.AreEqual(1f, new DeliveryPresentation().ScaleAt(float.NaN));
+            }
+            finally { Object.DestroyImmediate(vocabulary); }
+        }
+
     }
 }

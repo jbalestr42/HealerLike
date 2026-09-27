@@ -23,5 +23,17 @@ namespace HealerLike.Render.Spells
         // The element's size on its socket, a harder hit draws a bigger burst
         public float scale = 1f;
         public LookPalette palette;
+
+        // Resolve legacy unspecified clocks per instance without changing a shared authored recipe.
+        public EffectRecipe ResolveCycle()
+        {
+            if (cycleSeconds > 0f)
+            {
+                return this;
+            }
+            EffectRecipe resolved = (EffectRecipe)MemberwiseClone();
+            resolved.cycleSeconds = entry.cycleSeconds;
+            return resolved;
+        }
     }
 }

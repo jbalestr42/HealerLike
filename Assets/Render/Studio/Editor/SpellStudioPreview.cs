@@ -229,6 +229,10 @@ namespace HealerLike.Render.Studio.Editor
 
             _isDisposed = true;
             _camera.Release();
+            if (_effect)
+            {
+                SpellEffect.Dispose(_effect.gameObject);
+            }
             _target.Dispose();
             _scene.Dispose();
             _effect = null;
@@ -258,7 +262,7 @@ namespace HealerLike.Render.Studio.Editor
             _time = 0f;
             if (_effect)
             {
-                Object.DestroyImmediate(_effect.gameObject);
+                SpellEffect.Dispose(_effect.gameObject);
             }
 
             _effect = null;

@@ -14,6 +14,7 @@ namespace HealerLike.Render.Deliveries
 
         readonly PartPaint _paint = new PartPaint();
         readonly DeliveryWake _wake = new DeliveryWake();
+        readonly ShapeMeshCache _shapeMeshes = new ShapeMeshCache();
         DeliveryPresentation _presentation = new DeliveryPresentation();
         float _elapsed;
         LookPart[] _parts = Array.Empty<LookPart>();
@@ -35,6 +36,8 @@ namespace HealerLike.Render.Deliveries
         public void SetStyle(DeliveryStyle value, DeliveryVocabulary vocabulary, PrimitiveMeshes meshes)
         {
             _wake.Dispose();
+            ReleaseParts();
+            _shapeMeshes.Dispose();
             _elapsed = 0f;
             _presentation = vocabulary ? vocabulary.GetPresentation(value) : new DeliveryPresentation();
             _style = value;
@@ -52,10 +55,13 @@ namespace HealerLike.Render.Deliveries
                 _parts = Array.Empty<LookPart>();
             }
 
+            _parts = Resolve(_parts);
             _meshes = new Mesh[_parts.Length];
             for (int i = 0; i < _parts.Length; i++)
             {
-                _meshes[i] = meshes.GetMesh(_parts[i].primitive);
+                _meshes[i] = _parts[i].shape.isProcedural
+                    ? _shapeMeshes.Get(_parts[i].shape, LookComposer.Variant(0, i))
+                    : meshes.GetMesh(_parts[i].primitive);
             }
 
             ReleaseParts();
@@ -113,7 +119,7 @@ namespace HealerLike.Render.Deliveries
                 parentScale = _root.parent.lossyScale.x;
             }
 
-            _elapsed += Mathf.Max(0f, deltaTime);
+            _elapsed += float.IsFinite(deltaTime) ? Mathf.Max(0f, deltaTime) : 0f;
             float width = frame.lossyScale.x * _presentation.ScaleAt(_elapsed);
             _root.localScale = Vector3.one * (width / Mathf.Max(0.0001f, Mathf.Abs(parentScale)));
             _wake.Draw(_root, material, _presentation, tip, width);
@@ -142,6 +148,10 @@ namespace HealerLike.Render.Deliveries
             }
 
             _root = null;
+            _shapeMeshes.Dispose();
+            _meshes = Array.Empty<Mesh>();
+            _parts = Array.Empty<LookPart>();
+            _hasStyle = false;
             _renderers = Array.Empty<Renderer>();
             _isBuilt = false;
         }
@@ -189,12 +199,33 @@ namespace HealerLike.Render.Deliveries
             {
                 if (renderer)
                 {
+                    renderer.gameObject.SetActive(false);
                     RenderObjects.Release(renderer.gameObject);
                 }
             }
 
             _renderers = Array.Empty<Renderer>();
             _isBuilt = false;
+        }
+
+        static LookPart[] Resolve(LookPart[] source)
+        {
+            if (source == null || source.Length == 0)
+            {
+                return Array.Empty<LookPart>();
+            }
+            bool valid = source.Length <= LookPartBounds.Spell.maxParts;
+            foreach (LookPart part in source)
+            {
+                valid &= LookPartValidation.IsValid(part, LookPartBounds.Spell);
+            }
+            if (!valid || !FragmentPlacement.TryResolve(source, CountBand.Many, 0, 0,
+                out LookPart[] resolved, out _))
+            {
+                Debug.LogError("[DeliveryTip] Require a valid bounded tip fragment and attachments.");
+                return Array.Empty<LookPart>();
+            }
+            return resolved;
         }
 
         Color PaletteColour(ColourRole role)

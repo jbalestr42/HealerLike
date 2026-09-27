@@ -78,8 +78,19 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            _recipe = recipe;
-            _parts.Build(recipe, transform, meshes, material, targetSide);
+            if (_recipe != null)
+            {
+                Debug.LogError("[SpellEffect] Init can only be called once per effect.");
+                return;
+            }
+            if (!EffectValidator.TryValidate(recipe, out string error))
+            {
+                Debug.LogError("[SpellEffect] " + error);
+                return;
+            }
+
+            _recipe = recipe.ResolveCycle();
+            _parts.Build(_recipe, transform, meshes, material, targetSide);
             BuildLayers(meshes, material, targetSide);
             SetCount(recipe.count);
             Advance(0f);
@@ -92,6 +103,7 @@ namespace HealerLike.Render.Spells
 
         public void SetStatus(int stacks, float elapsed, float duration)
         {
+            PruneLayers();
             int visibleStacks = Mathf.Max(0, stacks);
             if (!_isStatus || _stacks != visibleStacks)
             {
@@ -123,18 +135,21 @@ namespace HealerLike.Render.Spells
 
         public void SetSide(Entity.EntityType side)
         {
+            PruneLayers();
             _parts.ShowSide(side);
             foreach (SpellEffect layer in _layers) layer.SetSide(side);
         }
 
         public void ShowCritical()
         {
+            PruneLayers();
             _parts.ShowCritical();
             foreach (SpellEffect layer in _layers) layer.ShowCritical();
         }
 
         public void BeginRemoval()
         {
+            PruneLayers();
             ReleaseGround();
             _isRemoving = true;
             _removalAge = 0f;
@@ -146,6 +161,7 @@ namespace HealerLike.Render.Spells
 
         public void SetCastSource(GameObject source)
         {
+            PruneLayers();
             _castSource?.Dispose();
             _castSource = source ? CastSourceLease.From(source) : null;
             foreach (SpellEffect layer in _layers) layer.SetCastSource(source);
@@ -153,6 +169,7 @@ namespace HealerLike.Render.Spells
 
         public void SetEndpoints(Vector3 start, Vector3 end, bool isContactThread)
         {
+            PruneLayers();
             _linkStart = start;
             _linkEnd = end;
             _isContactThread = isContactThread;

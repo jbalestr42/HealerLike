@@ -14,12 +14,25 @@ namespace HealerLike.Render.Deliveries
         [Range(0f, 1f)] public float trailWidth = 0.35f;
         [Min(0.01f)] public float trailBreakDistance = 2f;
 
+        public bool IsValid() => Positive(size) && Range(pulseAmount, 0f, .25f)
+            && Nonnegative(pulseFrequency) && Nonnegative(trailSeconds) && Range(trailWidth, 0f, 1f)
+            && Positive(trailBreakDistance);
+
+        static bool Positive(float value) => float.IsFinite(value) && value > 0f;
+        static bool Nonnegative(float value) => float.IsFinite(value) && value >= 0f;
+        static bool Range(float value, float min, float max) => float.IsFinite(value) && value >= min && value <= max;
+
         // Starts at the authored size and gently breathes above it; never shrinks out of view.
         public float ScaleAt(float elapsed)
         {
-            float wave = 0.5f - 0.5f * Mathf.Cos(Mathf.Max(0f, elapsed) * Mathf.Max(0f, pulseFrequency)
-                * Mathf.PI * 2f);
-            return Mathf.Max(0.1f, size) * (1f + wave * Mathf.Clamp(pulseAmount, 0f, 0.25f));
+            if (!IsValid())
+            {
+                return 1f;
+            }
+            elapsed = float.IsFinite(elapsed) ? Mathf.Max(0f, elapsed) : 0f;
+            float wave = 0.5f - 0.5f * (float)Math.Cos((double)elapsed * pulseFrequency * Math.PI * 2d);
+            float scale = Mathf.Max(0.1f, size) * (1f + wave * pulseAmount);
+            return float.IsFinite(scale) ? scale : 1f;
         }
     }
 }
