@@ -20,6 +20,8 @@ namespace HealerLike.Render.Stage
     // Every real character spell and buff handler, not a hand-maintained list of names or art assignments.
     public class SpellIconRun : AStageRun
     {
+        [Serializable] class ManifestEntry { public string file, assetPath, ownerName; }
+        [Serializable] class Manifest { public List<ManifestEntry> entries = new List<ManifestEntry>(); }
         static readonly int columns = 6;
         static readonly int tileSize = 192;
         static readonly int labelHeight = 32;
@@ -40,6 +42,7 @@ namespace HealerLike.Render.Stage
             }
             sheet.SetPixels32(background);
             List<string> manifest = new List<string> { "source\ticon\tlayers\treach\torigin\ttrigger" };
+            Manifest jsonManifest = new Manifest();
             EffectVocabulary vocabulary = RenderAssets.Load<EffectVocabulary>(
                 "Assets/Render/Spells/Data/EffectVocabulary.asset");
             Material material = RenderAssets.Load<Material>("Assets/Render/Look/Look_Default.mat");
@@ -68,6 +71,8 @@ namespace HealerLike.Render.Stage
                             Tile(sheet, icon, index, source.name);
                             manifest.Add(path + "\t" + file + "\t" + recipe.layers.Count + "\t" + recipe.reach
                                 + "\t" + recipe.origin + "\t" + recipe.trigger);
+                            jsonManifest.entries.Add(new ManifestEntry { file = file, assetPath = path,
+                                ownerName = OwnerName(source, path) });
                         }
                         finally
                         {
@@ -79,6 +84,7 @@ namespace HealerLike.Render.Stage
                 sheet.Apply();
                 File.WriteAllBytes(Path.Combine(folder, "atlas.png"), sheet.EncodeToPNG());
                 File.WriteAllLines(Path.Combine(folder, "manifest.tsv"), manifest);
+                File.WriteAllText(Path.Combine(folder, "manifest.json"), JsonUtility.ToJson(jsonManifest, true));
                 Debug.Log("[SpellIconRun] Captured " + paths.Count + " grammar icons at " + folder);
             }
             finally
@@ -86,6 +92,23 @@ namespace HealerLike.Render.Stage
                 RenderObjects.Release(sheet);
             }
             StagePlay.Finish(this, true);
+        }
+
+        static string OwnerName(UnityEngine.Object source, string path)
+        {
+            if (source is IGameDataSource data && data.sourceData is CharacterSkillData skill && !string.IsNullOrEmpty(skill.name))
+                return skill.name;
+            string folder = path.Substring(0, path.LastIndexOf('/'));
+            foreach (string guid in AssetDatabase.FindAssets("t:Object", new[] { folder }))
+            {
+                string sibling = AssetDatabase.GUIDToAssetPath(guid);
+                if (sibling != path)
+                {
+                    UnityEngine.Object asset = AssetDatabase.LoadMainAssetAtPath(sibling);
+                    if (asset != null && !(asset is ABuffHandlerFactory)) return asset.name;
+                }
+            }
+            return path.Split('/')[2];
         }
 
         static List<string> Sources()
