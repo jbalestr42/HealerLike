@@ -5,8 +5,8 @@ import sys
 from PIL import Image
 
 before, after = map(Path, sys.argv[1:3])
-left = {p.name: p for p in before.glob("*.png")}
-right = {p.name: p for p in after.glob("*.png")}
+left = {p.relative_to(before).as_posix(): p for p in before.rglob("*.png")}
+right = {p.relative_to(after).as_posix(): p for p in after.rglob("*.png")}
 for name in sorted(left.keys() | right.keys()):
     if name not in left or name not in right:
         print(f"{name}\tmissing")
