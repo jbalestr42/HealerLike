@@ -326,7 +326,7 @@ MonoBehaviour:
       Data: 0
     - Name: 
       Entry: 4
-      Data: 0.5
+      Data: 0.6
     - Name: 
       Entry: 4
       Data: 0
@@ -353,10 +353,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.3
+      Data: 0.36
     - Name: 
       Entry: 4
-      Data: 1.1
+      Data: 1.6
     - Name: 
       Entry: 4
       Data: 0.13
@@ -452,10 +452,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.433012724
+      Data: 0.5196153
     - Name: 
       Entry: 4
-      Data: 0.249999985
+      Data: 0.299999982
     - Name: 
       Entry: 4
       Data: 0
@@ -482,10 +482,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.3
+      Data: 0.36
     - Name: 
       Entry: 4
-      Data: 1.1
+      Data: 1.6
     - Name: 
       Entry: 4
       Data: 0.13
@@ -581,10 +581,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.4330127
+      Data: 0.519615233
     - Name: 
       Entry: 4
-      Data: -0.25000003
+      Data: -0.300000042
     - Name: 
       Entry: 4
       Data: 0
@@ -611,10 +611,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.3
+      Data: 0.36
     - Name: 
       Entry: 4
-      Data: 1.1
+      Data: 1.6
     - Name: 
       Entry: 4
       Data: 0.13
@@ -710,10 +710,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -4.371139E-08
+      Data: -5.24536681E-08
     - Name: 
       Entry: 4
-      Data: -0.5
+      Data: -0.6
     - Name: 
       Entry: 4
       Data: 0
@@ -740,10 +740,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.3
+      Data: 0.36
     - Name: 
       Entry: 4
-      Data: 1.1
+      Data: 1.6
     - Name: 
       Entry: 4
       Data: 0.13
@@ -839,10 +839,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.433012724
+      Data: -0.5196153
     - Name: 
       Entry: 4
-      Data: -0.249999955
+      Data: -0.299999952
     - Name: 
       Entry: 4
       Data: 0
@@ -869,10 +869,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.3
+      Data: 0.36
     - Name: 
       Entry: 4
-      Data: 1.1
+      Data: 1.6
     - Name: 
       Entry: 4
       Data: 0.13
@@ -968,10 +968,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -0.433012724
+      Data: -0.5196153
     - Name: 
       Entry: 4
-      Data: 0.249999955
+      Data: 0.299999952
     - Name: 
       Entry: 4
       Data: 0
@@ -998,10 +998,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.3
+      Data: 0.36
     - Name: 
       Entry: 4
-      Data: 1.1
+      Data: 1.6
     - Name: 
       Entry: 4
       Data: 0.13
@@ -8405,7 +8405,7 @@ MonoBehaviour:
       Data: -0.12
     - Name: 
       Entry: 4
-      Data: 1.18
+      Data: 1.5
     - Name: 
       Entry: 8
       Data: 
@@ -8429,10 +8429,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.84
+      Data: 1.35
     - Name: 
       Entry: 4
-      Data: 1.25
+      Data: 1.45
     - Name: 
       Entry: 4
       Data: 0.3
@@ -8528,13 +8528,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.02191
+      Data: 1.299038
     - Name: 
       Entry: 4
       Data: -0.12
     - Name: 
       Entry: 4
-      Data: -0.590000033
+      Data: -0.7500001
     - Name: 
       Entry: 8
       Data: 
@@ -8558,10 +8558,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.84
+      Data: 1.35
     - Name: 
       Entry: 4
-      Data: 1.25
+      Data: 1.45
     - Name: 
       Entry: 4
       Data: 0.3
@@ -8657,13 +8657,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -1.02191
+      Data: -1.29903817
     - Name: 
       Entry: 4
       Data: -0.12
     - Name: 
       Entry: 4
-      Data: -0.589999855
+      Data: -0.7499999
     - Name: 
       Entry: 8
       Data: 
@@ -8687,10 +8687,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.84
+      Data: 1.35
     - Name: 
       Entry: 4
-      Data: 1.25
+      Data: 1.45
     - Name: 
       Entry: 4
       Data: 0.3
@@ -8786,13 +8786,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 1.02191
+      Data: 1.29903817
     - Name: 
       Entry: 4
       Data: -0.12
     - Name: 
       Entry: 4
-      Data: 0.5899999
+      Data: 0.74999994
     - Name: 
       Entry: 8
       Data: 
@@ -8816,10 +8816,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.84
+      Data: 1.35
     - Name: 
       Entry: 4
-      Data: 1.25
+      Data: 1.45
     - Name: 
       Entry: 4
       Data: 0.3
@@ -8915,13 +8915,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -1.03158875E-07
+      Data: -1.31134158E-07
     - Name: 
       Entry: 4
       Data: -0.12
     - Name: 
       Entry: 4
-      Data: -1.18
+      Data: -1.5
     - Name: 
       Entry: 8
       Data: 
@@ -8945,10 +8945,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.84
+      Data: 1.35
     - Name: 
       Entry: 4
-      Data: 1.25
+      Data: 1.45
     - Name: 
       Entry: 4
       Data: 0.3
@@ -9044,13 +9044,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: -1.02191
+      Data: -1.29903817
     - Name: 
       Entry: 4
       Data: -0.12
     - Name: 
       Entry: 4
-      Data: 0.589999855
+      Data: 0.7499999
     - Name: 
       Entry: 8
       Data: 
@@ -9074,10 +9074,10 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.84
+      Data: 1.35
     - Name: 
       Entry: 4
-      Data: 1.25
+      Data: 1.45
     - Name: 
       Entry: 4
       Data: 0.3
@@ -11933,7 +11933,7 @@ MonoBehaviour:
       Data: 
     - Name: glow
       Entry: 4
-      Data: 0.12
+      Data: 0.8
     - Name: minCount
       Entry: 3
       Data: 0
@@ -12062,7 +12062,7 @@ MonoBehaviour:
       Data: 
     - Name: glow
       Entry: 4
-      Data: 0.12
+      Data: 0.8
     - Name: minCount
       Entry: 3
       Data: 0
@@ -12191,7 +12191,7 @@ MonoBehaviour:
       Data: 
     - Name: glow
       Entry: 4
-      Data: 0.12
+      Data: 0.8
     - Name: minCount
       Entry: 3
       Data: 0
@@ -12320,7 +12320,7 @@ MonoBehaviour:
       Data: 
     - Name: glow
       Entry: 4
-      Data: 0.12
+      Data: 0.8
     - Name: minCount
       Entry: 3
       Data: 0
@@ -12449,7 +12449,7 @@ MonoBehaviour:
       Data: 
     - Name: glow
       Entry: 4
-      Data: 0.12
+      Data: 0.8
     - Name: minCount
       Entry: 3
       Data: 0
@@ -13123,146 +13123,8 @@ MonoBehaviour:
       Entry: 9
       Data: 8
     - Name: sideRim
-      Entry: 7
-      Data: 50|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
-    - Name: 
-      Entry: 12
-      Data: 1
-    - Name: 
-      Entry: 7
-      Data: HealerLike.Render.Creatures.LookPart, HealerLike.Render
-    - Name: id
-      Entry: 1
-      Data: Caster signature
-    - Name: primitive
-      Entry: 3
-      Data: 3
-    - Name: shape
-      Entry: 7
-      Data: HealerLike.Render.Creatures.ShapeProfile, HealerLike.Render
-    - Name: kind
-      Entry: 3
-      Data: 6
-    - Name: radialSegments
-      Entry: 3
-      Data: 16
-    - Name: lengthSegments
-      Entry: 3
+      Entry: 9
       Data: 8
-    - Name: fullness
-      Entry: 4
-      Data: 1
-    - Name: taper
-      Entry: 4
-      Data: 0
-    - Name: bend
-      Entry: 4
-      Data: 0
-    - Name: bow
-      Entry: 4
-      Data: 0
-    - Name: bevel
-      Entry: 4
-      Data: 0.18
-    - Name: asymmetry
-      Entry: 4
-      Data: 0
-    - Name: fracture
-      Entry: 4
-      Data: 0
-    - Name: ridge
-      Entry: 4
-      Data: 0
-    - Name: tubeRatio
-      Entry: 4
-      Data: 0.06
-    - Name: faceted
-      Entry: 5
-      Data: false
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: role
-      Entry: 3
-      Data: 0
-    - Name: isSource
-      Entry: 5
-      Data: false
-    - Name: sourceAnchor
-      Entry: 3
-      Data: 0
-    - Name: colour
-      Entry: 3
-      Data: 10
-    - Name: pivot
-      Entry: 3
-      Data: 0
-    - Name: attachTo
-      Entry: 6
-      Data: 
-    - Name: attachAt
-      Entry: 3
-      Data: 0
-    - Name: position
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: -0.55
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: euler
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: size
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 2.65
-    - Name: 
-      Entry: 4
-      Data: 0.16
-    - Name: 
-      Entry: 4
-      Data: 2.65
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: glow
-      Entry: 4
-      Data: 0.12
-    - Name: minCount
-      Entry: 3
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
     - Name: motion
       Entry: 3
       Data: 6
@@ -13292,10 +13154,10 @@ MonoBehaviour:
       Data: 8
     - Name: $v
       Entry: 7
-      Data: 51|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+      Data: 50|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
     - Name: presentation
       Entry: 7
-      Data: 52|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
+      Data: 51|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
     - Name: enabled
       Entry: 5
       Data: true
@@ -13346,7 +13208,7 @@ MonoBehaviour:
       Data: 
     - Name: ground
       Entry: 7
-      Data: 53|HealerLike.Render.Grass.GroundEffect, HealerLike.Render
+      Data: 52|HealerLike.Render.Grass.GroundEffect, HealerLike.Render
     - Name: shape
       Entry: 3
       Data: 0
@@ -13424,7 +13286,7 @@ MonoBehaviour:
       Data: 0.85
     - Name: parts
       Entry: 7
-      Data: 54|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 53|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 6
@@ -14210,7 +14072,7 @@ MonoBehaviour:
       Data: 
     - Name: stackBeads
       Entry: 7
-      Data: 55|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 54|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 5
@@ -14870,7 +14732,7 @@ MonoBehaviour:
       Data: 8
     - Name: sideRim
       Entry: 7
-      Data: 56|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 55|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 1
@@ -15038,10 +14900,10 @@ MonoBehaviour:
       Data: 9
     - Name: $v
       Entry: 7
-      Data: 57|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+      Data: 56|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
     - Name: presentation
       Entry: 7
-      Data: 58|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
+      Data: 57|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
     - Name: enabled
       Entry: 5
       Data: true
@@ -15092,7 +14954,7 @@ MonoBehaviour:
       Data: 
     - Name: ground
       Entry: 7
-      Data: 59|HealerLike.Render.Grass.GroundEffect, HealerLike.Render
+      Data: 58|HealerLike.Render.Grass.GroundEffect, HealerLike.Render
     - Name: shape
       Entry: 3
       Data: 0
@@ -15170,7 +15032,7 @@ MonoBehaviour:
       Data: 0.85
     - Name: parts
       Entry: 7
-      Data: 60|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 59|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 5
@@ -15863,10 +15725,10 @@ MonoBehaviour:
       Data: 10
     - Name: $v
       Entry: 7
-      Data: 61|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+      Data: 60|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
     - Name: presentation
       Entry: 7
-      Data: 62|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
+      Data: 61|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
     - Name: enabled
       Entry: 5
       Data: true
@@ -15917,7 +15779,7 @@ MonoBehaviour:
       Data: 
     - Name: ground
       Entry: 7
-      Data: 63|HealerLike.Render.Grass.GroundEffect, HealerLike.Render
+      Data: 62|HealerLike.Render.Grass.GroundEffect, HealerLike.Render
     - Name: shape
       Entry: 3
       Data: 0
@@ -15995,7 +15857,7 @@ MonoBehaviour:
       Data: 0.85
     - Name: parts
       Entry: 7
-      Data: 64|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 63|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 5
@@ -16688,10 +16550,10 @@ MonoBehaviour:
       Data: 11
     - Name: $v
       Entry: 7
-      Data: 65|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+      Data: 64|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
     - Name: presentation
       Entry: 7
-      Data: 66|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
+      Data: 65|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
     - Name: enabled
       Entry: 5
       Data: true
@@ -16742,7 +16604,7 @@ MonoBehaviour:
       Data: 
     - Name: ground
       Entry: 7
-      Data: 67|HealerLike.Render.Grass.GroundEffect, HealerLike.Render
+      Data: 66|HealerLike.Render.Grass.GroundEffect, HealerLike.Render
     - Name: shape
       Entry: 3
       Data: 2
@@ -16820,7 +16682,7 @@ MonoBehaviour:
       Data: 0.85
     - Name: parts
       Entry: 7
-      Data: 68|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 67|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 18
@@ -19190,10 +19052,10 @@ MonoBehaviour:
       Data: 12
     - Name: $v
       Entry: 7
-      Data: 69|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+      Data: 68|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
     - Name: presentation
       Entry: 7
-      Data: 70|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
+      Data: 69|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
     - Name: enabled
       Entry: 5
       Data: true
@@ -19244,7 +19106,7 @@ MonoBehaviour:
       Data: 
     - Name: ground
       Entry: 7
-      Data: 71|HealerLike.Render.Grass.GroundEffect, HealerLike.Render
+      Data: 70|HealerLike.Render.Grass.GroundEffect, HealerLike.Render
     - Name: shape
       Entry: 3
       Data: 0
@@ -19322,7 +19184,7 @@ MonoBehaviour:
       Data: 0.85
     - Name: parts
       Entry: 7
-      Data: 72|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 71|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 10
@@ -20660,10 +20522,10 @@ MonoBehaviour:
       Data: 13
     - Name: $v
       Entry: 7
-      Data: 73|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
+      Data: 72|HealerLike.Render.Spells.ElementEntry, HealerLike.Render
     - Name: presentation
       Entry: 7
-      Data: 74|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
+      Data: 73|HealerLike.Render.Spells.EffectPresentation, HealerLike.Render
     - Name: enabled
       Entry: 5
       Data: true
@@ -20714,7 +20576,7 @@ MonoBehaviour:
       Data: 
     - Name: ground
       Entry: 7
-      Data: 75|HealerLike.Render.Grass.GroundEffect, HealerLike.Render
+      Data: 74|HealerLike.Render.Grass.GroundEffect, HealerLike.Render
     - Name: shape
       Entry: 3
       Data: 0
@@ -20792,7 +20654,7 @@ MonoBehaviour:
       Data: 0.85
     - Name: parts
       Entry: 7
-      Data: 76|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
+      Data: 75|HealerLike.Render.Creatures.LookPart[], HealerLike.Render
     - Name: 
       Entry: 12
       Data: 10
@@ -22130,10 +21992,10 @@ MonoBehaviour:
       Data: 
     - Name: table
       Entry: 7
-      Data: 77|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Spells.EffectCell, HealerLike.Render],[HealerLike.Render.Spells.EffectCellEntry, HealerLike.Render]], mscorlib
+      Data: 76|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Spells.EffectCell, HealerLike.Render],[HealerLike.Render.Spells.EffectCellEntry, HealerLike.Render]], mscorlib
     - Name: comparer
       Entry: 7
-      Data: 78|System.Collections.Generic.GenericEqualityComparer`1[[HealerLike.Render.Spells.EffectCell, HealerLike.Render]], mscorlib
+      Data: 77|System.Collections.Generic.GenericEqualityComparer`1[[HealerLike.Render.Spells.EffectCell, HealerLike.Render]], mscorlib
     - Name: 
       Entry: 8
       Data: 
