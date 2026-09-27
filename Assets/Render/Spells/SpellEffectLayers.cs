@@ -20,6 +20,13 @@ namespace HealerLike.Render.Spells
                 _layers.Add(layer);
             }
         }
+        // Each layer owns its authored count policy; parent shape counts cannot stand in for its additions.
+        public void RefreshCount(int stacks, float charges)
+        {
+            SetCount(EffectComposer.Count(_recipe.entry, Mathf.Max(1, stacks), charges, 0f));
+            foreach (SpellEffect layer in _layers) layer.RefreshCount(stacks, charges);
+        }
+
         public void PlaceLayers(EffectAnchors anchors)
         {
             foreach (SpellEffect layer in _layers) EffectPlacement.Place(layer, transform, anchors);

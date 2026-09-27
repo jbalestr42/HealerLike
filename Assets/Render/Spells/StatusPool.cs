@@ -216,7 +216,7 @@ namespace HealerLike.Render.Spells
             int stacks = 0;
             foreach (int count in status.sources.Values) stacks += count;
             SpellEffect effect = status.effect;
-            effect.SetCount(EffectComposer.Count(effect.recipe.entry, Mathf.Max(1, stacks), status.charges, 0));
+            effect.RefreshCount(stacks, status.charges);
             effect.SetStatus(Mathf.Max(1, stacks), elapsedSeconds, durationSeconds);
         }
         bool Close(StatusKey key, Status status)

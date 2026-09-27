@@ -124,7 +124,7 @@ namespace HealerLike.Render.Spells
             // The tails of closed statuses play out under the sink
             foreach (SpellEffect tail in GetComponentsInChildren<SpellEffect>())
             {
-                SpellEffect.Dispose(tail.gameObject);
+                if (tail) SpellEffect.Dispose(tail.gameObject);
             }
         }
 

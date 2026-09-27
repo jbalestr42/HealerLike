@@ -148,6 +148,7 @@ namespace HealerLike.Render.Spells
         {
             _castSource?.Dispose();
             _castSource = source ? CastSourceLease.From(source) : null;
+            foreach (SpellEffect layer in _layers) layer.SetCastSource(source);
         }
 
         public void SetEndpoints(Vector3 start, Vector3 end, bool isContactThread)
