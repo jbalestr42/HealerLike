@@ -12,11 +12,6 @@ namespace HealerLike.Render.Spells.Editor
             EffectVocabulary vocabulary = Selection.activeObject as EffectVocabulary;
             if (vocabulary == null)
             {
-                MigrateShippedAsset();
-                return;
-            }
-            if (vocabulary == null)
-            {
                 Debug.LogError("Select an EffectVocabulary asset first.");
                 return;
             }

@@ -39,6 +39,9 @@ namespace HealerLike.Render.Grammar
 
         public static EffectAspect Aspect(ABuffHandlerFactory handler) { return (EffectAspect)Group(handler); }
 
+        public static readonly float LightMagnitudeMax = 0.1f;
+        public static readonly float SolidMagnitudeMax = 0.4f;
+
         public static EffectMagnitude Magnitude(ABuffHandlerFactory handler)
         {
             float reference = 0f;
@@ -54,8 +57,8 @@ namespace HealerLike.Render.Grammar
                     reference = Mathf.Max(reference, Mathf.Abs(delta) / LookDerivation.DefaultHealth);
                 }
             }
-            return reference <= 0.1f ? EffectMagnitude.Light
-                : reference <= 0.4f ? EffectMagnitude.Solid : EffectMagnitude.Heavy;
+            return reference <= LightMagnitudeMax ? EffectMagnitude.Light
+                : reference <= SolidMagnitudeMax ? EffectMagnitude.Solid : EffectMagnitude.Heavy;
         }
 
         public static EffectReach Reach(ABuffHandlerFactory handler, int targetCount = 1)

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Object = UnityEngine.Object;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -38,13 +40,18 @@ namespace HealerLike.Render.Grammar
                 EffectOperation.Damage, EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("CharacterSkills/SingleTargetBuffAttackRate/BuffHandlerFactory", EffectOperation.Bane,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
-            new HandlerRow("Entities/HitArmorBufferEntityEntity/BuffHandlerFactory", EffectOperation.Ward,
+            new HandlerRow("Entities/HitArmorBufferEntityEntity/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Defence, EffectTempo.Once, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("EntityItems/BoostCellItem/BoostBuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("EntityItems/BoostCellItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("EntityItems/BounceItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Conclave applies +20% damage and +20% attack interval through separate timed handlers.
+            new HandlerRow("EntityItems/ConclaveItem/New Buff Handler Factory 1", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/ConclaveItem/New Buff Handler Factory", EffectOperation.Bane,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("EntityItems/ExplodeOnHitItem/BuffHandlerFactory 1", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
@@ -65,36 +72,79 @@ namespace HealerLike.Render.Grammar
             new HandlerRow("EntityItems/TrinityItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", EffectOperation.Damage,
-                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.OnDeath),
             new HandlerRow("PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory",
                 EffectOperation.Heal, EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.RoundEnd),
             new HandlerRow("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", EffectOperation.Mana,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.RoundEnd)
         };
 
+        // Pinned from handler duration fields and referenced buff/consumer assets. Cast is the
+        // no-owner-context default, not a claim that an equipped/on-hit item is cast by the healer.
+        // Magnitude uses DefaultHealth=100 and expression base=1 until live target context is supplied.
         [Test]
-        public void Channels_LiveHandlers_MatchAssetAuthoredRows()
+        public void Operation_LiveHandlers_MatchesAssetRowsWithSameSideFallback()
         {
-            HashSet<string> expected = new HashSet<string>();
+            AssertRows((row, handler) => Assert.AreEqual(row.operation, EffectDerivation.Operation(handler, true), row.path));
+        }
+
+        [Test]
+        public void Aspect_LiveHandlers_MatchesAssetRows()
+        {
+            AssertRows((row, handler) => Assert.AreEqual(row.aspect, EffectDerivation.Aspect(handler), row.path));
+        }
+
+        [Test]
+        public void Tempo_LiveHandlers_MatchesAssetRows()
+        {
+            AssertRows((row, handler) => Assert.AreEqual(row.tempo, EffectDerivation.Tempo(handler), row.path));
+        }
+
+        [Test]
+        public void Magnitude_LiveHandlers_WithDefaultReference_MatchesAssetRows()
+        {
+            AssertRows((row, handler) => Assert.AreEqual(row.magnitude, EffectDerivation.Magnitude(handler), row.path));
+        }
+
+        [Test]
+        public void Trigger_LiveHandlers_WithoutOwnerContext_UsesListenersOrCastDefault()
+        {
+            AssertRows((row, handler) => Assert.AreEqual(row.trigger, EffectDerivation.Trigger(handler), row.path));
+        }
+
+        static void AssertRows(Action<HandlerRow, ABuffHandlerFactory> assertion)
+        {
             foreach (HandlerRow row in HandlerRows)
             {
-                expected.Add("Assets/Data/" + row.path + ".asset");
                 ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(
                     "Assets/Data/" + row.path + ".asset");
                 Assert.IsNotNull(handler, row.path);
-
-                EffectChannels channels = EffectDerivation.Channels(handler, true);
-                Assert.AreEqual(row.operation, channels.operation, row.path);
-                Assert.AreEqual(row.aspect, channels.aspect, row.path);
-                Assert.AreEqual(row.tempo, channels.tempo, row.path);
-                Assert.AreEqual(row.magnitude, channels.magnitude, row.path);
-                Assert.AreEqual(row.trigger, channels.trigger, row.path);
+                assertion(row, handler);
             }
+        }
 
+        [Test]
+        public void HandlerRows_CoverEveryLiveHandlerAsset()
+        {
+            HashSet<string> expected = new HashSet<string>();
+            foreach (HandlerRow row in HandlerRows) expected.Add("Assets/Data/" + row.path + ".asset");
             string[] guids = AssetDatabase.FindAssets("t:ABuffHandlerFactory", new[] { "Assets/Data" });
             HashSet<string> actual = new HashSet<string>();
             foreach (string guid in guids) actual.Add(AssetDatabase.GUIDToAssetPath(guid));
             CollectionAssert.AreEquivalent(expected, actual, "Every live BuffHandlerFactory must have a pinned row.");
+        }
+
+        [Test]
+        public void DeliveryRows_CoverEveryProjectilePrefab()
+        {
+            string[] names = { "BulletSpeed", "ChainLightning", "ChannelingLightning", "CurveBullet",
+                "CurveBullet2", "CurveSphereBullet", "LaserBullet", "StraightLaserBullet", "SwarmBullet" };
+            HashSet<string> expected = new HashSet<string>();
+            foreach (string name in names) expected.Add("Assets/Prefabs/Projectiles/" + name + ".prefab");
+            HashSet<string> actual = new HashSet<string>();
+            foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Prefabs/Projectiles" }))
+                actual.Add(AssetDatabase.GUIDToAssetPath(guid));
+            CollectionAssert.AreEquivalent(expected, actual);
         }
 
         [TestCase("BulletSpeed", EffectDelivery.Rigid)]
@@ -104,7 +154,7 @@ namespace HealerLike.Render.Grammar
         [TestCase("CurveBullet2", EffectDelivery.Arc)]
         [TestCase("CurveSphereBullet", EffectDelivery.Arc)]
         [TestCase("LaserBullet", EffectDelivery.Arc)]
-        [TestCase("StraightLaserBullet", EffectDelivery.Rigid)]
+        [TestCase("StraightLaserBullet", EffectDelivery.Instant)]
         [TestCase("SwarmBullet", EffectDelivery.Swarm)]
         public void Delivery_LiveProjectilePrefabs_MatchesAssetRow(string name, EffectDelivery expected)
         {
@@ -114,21 +164,17 @@ namespace HealerLike.Render.Grammar
         [Test]
         public void Origin_LiveSourceKinds_MatchDocumentedDefaults()
         {
-            GameObject character = new GameObject("Character source");
-            GameObject entity = new GameObject("Entity source");
+            GameObject character = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Character.prefab");
+            GameObject entity = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/BaseEntity.prefab");
             GameObject item = new GameObject("Item source");
             try
             {
-                character.AddComponent<Character>();
-                entity.AddComponent<Entity>();
                 Assert.AreEqual(EffectOrigin.Healer, EffectDerivation.Origin(character));
                 Assert.AreEqual(EffectOrigin.Creature, EffectDerivation.Origin(entity));
                 Assert.AreEqual(EffectOrigin.Item, EffectDerivation.Origin(item));
             }
             finally
             {
-                Object.DestroyImmediate(character);
-                Object.DestroyImmediate(entity);
                 Object.DestroyImmediate(item);
             }
         }
