@@ -44,7 +44,7 @@ namespace HealerLike.Render.Spells
         public bool isContactThread { get { return _isContactThread; } }
 
         public EffectRecipe recipe { get { return _recipe; } }
-        public EffectElement element { get { return _recipe != null ? _recipe.element : EffectElement.Burst; } }
+        public EffectKey element { get { return _recipe != null ? _recipe.element : EffectKey.Burst; } }
         public float lifetime => CompositeLifetime();
         public List<Transform> shapes { get { return _parts.shapes; } }
         public List<Transform> stalks { get { return _parts.stalks; } }

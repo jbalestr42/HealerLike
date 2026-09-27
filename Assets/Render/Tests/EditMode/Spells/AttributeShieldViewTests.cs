@@ -68,7 +68,7 @@ public class AttributeShieldViewTests
         Assert.AreEqual(0, starts, "an instant HitArmor grant raised a buff start event");
         Assert.AreEqual(2, attributes.Get(AttributeType.HitArmor).Value);
         Assert.NotNull(view.effect);
-        Assert.AreEqual(EffectElement.Plates, view.effect.element);
+        Assert.AreEqual(EffectKey.Plates, view.effect.element);
         Assert.AreEqual(2, view.effect.count);
 
         attributes.Get(AttributeType.HitArmor).BaseValue = 0f;

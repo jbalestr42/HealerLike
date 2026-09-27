@@ -11,7 +11,7 @@ namespace HealerLike.Render.Studio.Editor
         // Replaces the vocabulary's entry for the preset's element with a copy of the preset's composed shape
         public static bool PublishEntry(SpellStudioPreset preset)
         {
-            if (preset == null || preset.vocabulary == null || preset.vocabulary.elements == null)
+            if (preset == null || preset.vocabulary == null || preset.vocabulary.entries == null)
             {
                 return false;
             }
@@ -24,7 +24,7 @@ namespace HealerLike.Render.Studio.Editor
 
             // Odin serializes the dictionary into backing data, so only a complete snapshot can undo it
             Undo.RegisterCompleteObjectUndo(preset.vocabulary, "Apply Spell Studio shape");
-            preset.vocabulary.elements[recipe.element] = SpellPresetBounds.CloneEntry(recipe.entry);
+            preset.vocabulary.entries[recipe.element] = SpellPresetBounds.CloneEntry(recipe.entry);
             EditorUtility.SetDirty(preset.vocabulary);
             AssetDatabase.SaveAssetIfDirty(preset.vocabulary);
             return true;

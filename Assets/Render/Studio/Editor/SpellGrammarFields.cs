@@ -87,7 +87,7 @@ namespace HealerLike.Render.Studio.Editor
         static void DrawResolution(SpellStudioPreset selected, SpellStudioMode mode)
         {
             EffectChannels channels;
-            EffectElement resolved;
+            EffectKey resolved;
             if (!selected.TryResolve(out channels, out resolved))
             {
                 EditorGUILayout.HelpBox("Choose a gameplay handler to resolve this preset.", MessageType.Info);

@@ -38,7 +38,7 @@ public class SpellLooksTests
     {
         SpellLooks looks = CreateTracked<SpellLooks>();
         BuffHandlerFactory factory = CreateTracked<BuffHandlerFactory>();
-        SpellLook look = new SpellLook { element = EffectElement.ManaUp };
+        SpellLook look = new SpellLook { element = EffectKey.ManaUp };
         looks.buffs[factory] = look;
 
         Assert.AreSame(look, looks.GetLook(factory, null, null));
@@ -64,17 +64,17 @@ public class SpellLooksTests
         SpellLook look = looks.GetLook(harm, enemyGo, allyGo);
 
         Assert.AreEqual(EffectFamily.Bane, look.family);
-        Assert.AreEqual(EffectElement.Press, look.element);
+        Assert.AreEqual(EffectKey.Press, look.element);
         Assert.IsNotNull(looks.GetLook(null, null, null));
     }
 
     // Only rows where the grammar is wrong for the handler stay: the three listener items on the healer, whose
     // Infinite handler would loop their look for the whole run
-    [TestCase("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", EffectElement.ManaUp)]
-    [TestCase("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", EffectElement.Burst)]
+    [TestCase("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", EffectKey.ManaUp)]
+    [TestCase("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", EffectKey.Burst)]
     [TestCase("PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory",
-              EffectElement.Rise)]
-    public void GetLook_ShippedKeptBuffRow_DrawsOnceWithItsElement(string path, EffectElement expected)
+              EffectKey.Rise)]
+    public void GetLook_ShippedKeptBuffRow_DrawsOnceWithItsElement(string path, EffectKey expected)
     {
         SpellLooks looks = LoadShipped();
         string handlerPath = "Assets/Data/" + path + ".asset";

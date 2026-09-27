@@ -51,8 +51,8 @@ namespace HealerLike.Render.Spells
             BuffHandlerFactory factory = Compound();
             _pool.Set(null, _target, factory, 2, 0.5f, 5f);
             Assert.AreEqual(2, _pool.count);
-            SpellEffect boon = _pool.Get(_target, EffectElement.Orbit);
-            SpellEffect bane = _pool.Get(_target, EffectElement.Press);
+            SpellEffect boon = _pool.Get(_target, EffectKey.Orbit);
+            SpellEffect bane = _pool.Get(_target, EffectKey.Press);
             Assert.IsNotNull(boon);
             Assert.IsNotNull(bane);
             Assert.AreEqual(2, boon.stacks);
@@ -85,7 +85,7 @@ namespace HealerLike.Render.Spells
             _pool.Remove(_target, compound);
             Assert.AreEqual(1, _pool.count);
             Assert.AreEqual(1, _pool.Get(_target, single).stacks);
-            Assert.IsNull(_pool.Get(_target, EffectElement.Press));
+            Assert.IsNull(_pool.Get(_target, EffectKey.Press));
         }
 
         [TestCase(0.4f)]
@@ -127,9 +127,9 @@ namespace HealerLike.Render.Spells
             BuffHandlerFactory factory = Compound();
             EffectRecipeAsset asset = ScriptableObject.CreateInstance<EffectRecipeAsset>();
             _created.Add(asset);
-            asset.recipe = EffectComposer.Compose(_vocabulary, EffectElement.Orbit, EffectFamily.Boon,
+            asset.recipe = EffectComposer.Compose(_vocabulary, EffectKey.Orbit, EffectFamily.Boon,
                 EffectTempo.ForDuration, 0f, 1, 0f, 0f);
-            asset.recipe.additions = new[] { EffectComposer.Compose(_vocabulary, EffectElement.Plates,
+            asset.recipe.additions = new[] { EffectComposer.Compose(_vocabulary, EffectKey.Plates,
                 EffectFamily.Boon, EffectTempo.ForDuration, 0f, 1, 0f, 0f) };
             int authoredCount = asset.recipe.count;
             _looks.buffs[factory] = new SpellLook { recipe = asset };
@@ -137,7 +137,7 @@ namespace HealerLike.Render.Spells
             SpellEffect effect = _pool.Get(_target, factory);
             Assert.AreEqual(1, _pool.count);
             Assert.AreEqual(2, effect.GetComponentsInChildren<SpellEffect>(true).Length);
-            Assert.IsNull(_pool.Get(_target, EffectElement.Press));
+            Assert.IsNull(_pool.Get(_target, EffectKey.Press));
             Assert.AreNotSame(asset.recipe, effect.recipe);
             Assert.AreNotSame(asset.recipe.entry, effect.recipe.entry);
             Assert.AreNotSame(asset.recipe.additions[0].entry, effect.recipe.additions[0].entry);

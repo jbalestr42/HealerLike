@@ -25,10 +25,10 @@ public class SpellStudioPresetTests
         _vocabulary = CreateTracked<EffectVocabulary>();
         _vocabulary.palette = CreateTracked<LookPalette>();
         _vocabulary.palette.heal = Color.green;
-        _vocabulary.elements[EffectElement.Rise] = StudioTestAssets.CreateRise();
+        _vocabulary.entries[EffectKey.Rise] = StudioTestAssets.CreateRise();
         _preset = CreateTracked<SpellStudioPreset>();
         _preset.vocabulary = _vocabulary;
-        _preset.element = EffectElement.Rise;
+        _preset.element = EffectKey.Rise;
         _preset.family = EffectFamily.Heal;
     }
 
@@ -64,7 +64,7 @@ public class SpellStudioPresetTests
 
         EffectRecipe actual = _preset.Compose();
 
-        StudioTestAssets.AssertRecipe(EffectComposer.Compose(_vocabulary, EffectElement.Rise, EffectFamily.Heal,
+        StudioTestAssets.AssertRecipe(EffectComposer.Compose(_vocabulary, EffectKey.Rise, EffectFamily.Heal,
             EffectTempo.PerPeriod, 1.75f, _preset.stacks, _preset.charges, 0.5f), actual);
     }
 
@@ -83,13 +83,13 @@ public class SpellStudioPresetTests
         Assert.AreEqual(new Vector3(2f, 3f, 4f), result.entry.parts[0].position);
         Assert.AreEqual(EffectMotionKind.Orbit, result.motion);
         Assert.AreEqual(2, result.count);
-        Assert.AreEqual(Vector3.zero, _vocabulary.elements[EffectElement.Rise].parts[0].position);
+        Assert.AreEqual(Vector3.zero, _vocabulary.entries[EffectKey.Rise].parts[0].position);
     }
 
     [Test]
     public void Compose_MissingVocabularyElementOrEntry_ReturnsNull()
     {
-        _preset.element = EffectElement.Beam;
+        _preset.element = EffectKey.Beam;
         Assert.IsNull(_preset.Compose());
         Assert.IsFalse(_preset.CaptureEntry());
 
@@ -142,7 +142,7 @@ public class SpellStudioPresetTests
         _preset.sourceHandler = handler;
 
         EffectChannels channels;
-        EffectElement element;
+        EffectKey element;
         bool isResolved = _preset.TryResolve(out channels, out element);
 
         Assert.IsFalse(isResolved);
@@ -157,7 +157,7 @@ public class SpellStudioPresetTests
         handler.data = new BuffHandlerData { durationType = DurationType.Duration, isPeriodic = true,
             periodDuration = 2.4f, buffFactoryList = new List<ABuffFactory>() };
         SpellLooks looks = CreateTracked<SpellLooks>();
-        looks.buffs[handler] = new SpellLook { element = EffectElement.Rise, family = EffectFamily.Heal,
+        looks.buffs[handler] = new SpellLook { element = EffectKey.Rise, family = EffectFamily.Heal,
             tempo = EffectTempo.PerPeriod };
         _preset.mode = SpellStudioMode.GameplayHandler;
         _preset.sourceHandler = handler;
@@ -167,7 +167,7 @@ public class SpellStudioPresetTests
         EffectRecipe actual = _preset.Compose();
 
         Assert.IsTrue(_preset.usesGameplayOverride);
-        StudioTestAssets.AssertRecipe(EffectComposer.Compose(_vocabulary, EffectElement.Rise, EffectFamily.Heal,
+        StudioTestAssets.AssertRecipe(EffectComposer.Compose(_vocabulary, EffectKey.Rise, EffectFamily.Heal,
             EffectTempo.PerPeriod, 2.4f, _preset.stacks, _preset.charges, _preset.amount), actual);
         _preset.useGameplayOverrides = false;
         Assert.IsFalse(_preset.usesGameplayOverride);
@@ -184,7 +184,7 @@ public class SpellStudioPresetTests
         _preset.attributeGroup = group;
         _preset.tempo = tempo;
         _preset.periodSeconds = 1.37f;
-        _preset.element = EffectElement.Beam; // a stale manual element the grammar ignores
+        _preset.element = EffectKey.Beam; // a stale manual element the grammar ignores
 
         EffectChannels channels = new EffectChannels { family = family, group = group, tempo = tempo,
             periodSeconds = 1.37f };
@@ -192,7 +192,7 @@ public class SpellStudioPresetTests
             _preset.stacks, _preset.charges, _preset.amount);
 
         StudioTestAssets.AssertRecipe(expected, _preset.Compose());
-        Assert.AreEqual(EffectElement.Beam, _preset.element);
+        Assert.AreEqual(EffectKey.Beam, _preset.element);
     }
 
     [Test]
@@ -248,14 +248,14 @@ public class SpellStudioPresetTests
         _preset.family = EffectFamily.Boon;
         _preset.attributeGroup = AttributeGroup.Prevention; // boon and prevention grow a bud
         _preset.tempo = EffectTempo.Once;
-        Vector3 original = shipped.elements[EffectElement.Bud].parts[0].size;
+        Vector3 original = shipped.entries[EffectKey.Bud].parts[0].size;
 
-        Assert.AreEqual(shipped.elements[EffectElement.Bud].cycleSeconds, _preset.previewDuration);
+        Assert.AreEqual(shipped.entries[EffectKey.Bud].cycleSeconds, _preset.previewDuration);
         Assert.IsTrue(_preset.CaptureEntry());
         _preset.entry.parts[0].size = Vector3.one * 2f;
 
-        Assert.AreEqual(EffectElement.Bud, _preset.Compose().element);
-        Assert.AreEqual(original, shipped.elements[EffectElement.Bud].parts[0].size);
+        Assert.AreEqual(EffectKey.Bud, _preset.Compose().element);
+        Assert.AreEqual(original, shipped.entries[EffectKey.Bud].parts[0].size);
     }
 
     [Test]

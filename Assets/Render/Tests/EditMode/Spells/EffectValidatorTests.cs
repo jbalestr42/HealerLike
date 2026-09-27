@@ -109,7 +109,7 @@ namespace HealerLike.Render.Spells
         {
             Action<EffectRecipe>[] invalid =
             {
-                r => r.element = (EffectElement)999,
+                r => r.element = (EffectKey)999,
                 r => r.motion = (EffectMotionKind)999,
                 r => r.socket = (EffectSocket)999,
                 r => r.family = (EffectFamily)999,

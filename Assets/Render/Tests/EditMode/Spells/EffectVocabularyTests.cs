@@ -14,7 +14,7 @@ public class EffectVocabularyTests
         EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
 
         Assert.IsNotNull(vocabulary.palette);
-        foreach (EffectElement element in System.Enum.GetValues(typeof(EffectElement)))
+        foreach (EffectKey element in System.Enum.GetValues(typeof(EffectKey)))
         {
             ElementEntry entry = vocabulary.GetEntry(element);
 
@@ -27,7 +27,7 @@ public class EffectVocabularyTests
     [Test]
     public void GetEntry_ShippedPress_FourOrFiveConesPointingDown()
     {
-        ElementEntry press = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Press);
+        ElementEntry press = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectKey.Press);
 
         Assert.AreEqual(EffectSocket.AboveHead, press.socket);
         Assert.AreEqual(5, press.parts.Length);
@@ -44,10 +44,10 @@ public class EffectVocabularyTests
     {
         EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
 
-        Assert.AreEqual(Primitive.Torus, vocabulary.GetEntry(EffectElement.Orbit).parts[0].primitive);
-        Assert.AreEqual(Primitive.Cone, vocabulary.GetEntry(EffectElement.Press).parts[0].primitive);
-        Assert.AreNotEqual(vocabulary.GetEntry(EffectElement.Plates).parts[0].primitive,
-                           vocabulary.GetEntry(EffectElement.Crack).parts[0].primitive);
+        Assert.AreEqual(Primitive.Torus, vocabulary.GetEntry(EffectKey.Orbit).parts[0].primitive);
+        Assert.AreEqual(Primitive.Cone, vocabulary.GetEntry(EffectKey.Press).parts[0].primitive);
+        Assert.AreNotEqual(vocabulary.GetEntry(EffectKey.Plates).parts[0].primitive,
+                           vocabulary.GetEntry(EffectKey.Crack).parts[0].primitive);
     }
 
     [Test]
@@ -57,7 +57,7 @@ public class EffectVocabularyTests
         PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(SpellSinkFixture.MeshesPath);
         Mesh torus = meshes.GetMesh(Primitive.Torus);
 
-        foreach (LookPart ring in vocabulary.GetEntry(EffectElement.Orbit).parts)
+        foreach (LookPart ring in vocabulary.GetEntry(EffectKey.Orbit).parts)
         {
             float radius = ring.size.x * torus.bounds.extents.x;
             float tilt = Vector3.Angle(Vector3.up, Quaternion.Euler(ring.euler) * Vector3.up);
@@ -70,7 +70,7 @@ public class EffectVocabularyTests
     [Test]
     public void GetEntry_ShippedRise_EightSpheresFromThree()
     {
-        ElementEntry rise = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Rise);
+        ElementEntry rise = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectKey.Rise);
 
         Assert.AreEqual(8, EffectComposer.Shapes(rise));
         Assert.AreEqual(3, rise.minCount);
@@ -82,7 +82,7 @@ public class EffectVocabularyTests
     {
         PrimitiveMeshes meshes = AssetDatabase.LoadAssetAtPath<PrimitiveMeshes>(SpellSinkFixture.MeshesPath);
 
-        foreach (ElementEntry entry in RenderTestAssets.LoadEffectVocabulary().elements.Values)
+        foreach (ElementEntry entry in RenderTestAssets.LoadEffectVocabulary().entries.Values)
         {
             foreach (LookPart part in entry.parts)
             {

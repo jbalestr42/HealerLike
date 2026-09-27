@@ -36,7 +36,7 @@ namespace HealerLike.Render.Spells
         {
             return new EffectRecipe
             {
-                element = EffectElement.Orbit, motion = EffectMotionKind.Orbit,
+                element = EffectKey.Orbit, motion = EffectMotionKind.Orbit,
                 socket = EffectSocket.Body, family = EffectFamily.Boon, tempo = EffectTempo.Once,
                 cycleSeconds = cycle, colour = Color.yellow, count = 1, scale = 1f,
                 palette = RenderTestAssets.LoadPalette(),

@@ -16,7 +16,7 @@ namespace HealerLike.Render.Studio.Editor
         {
             if (index == 0)
             {
-                Set(preset, EffectElement.Rise, EffectFamily.Heal, EffectTempo.Once, new Color(0.54f, 1f, 0.26f));
+                Set(preset, EffectKey.Rise, EffectFamily.Heal, EffectTempo.Once, new Color(0.54f, 1f, 0.26f));
                 preset.amount = 0.5f;
                 preset.critical = true;
                 preset.description = "A full-strength critical heal. Lime spheres rise from the feet; scrub the first "
@@ -24,7 +24,7 @@ namespace HealerLike.Render.Studio.Editor
             }
             else if (index == 1)
             {
-                Set(preset, EffectElement.Drips, EffectFamily.Rot, EffectTempo.PerPeriod, new Color(0.62f, 0.3f, 0.8f));
+                Set(preset, EffectKey.Drips, EffectFamily.Rot, EffectTempo.PerPeriod, new Color(0.62f, 0.3f, 0.8f));
                 preset.periodSeconds = 1.2f;
                 preset.durationSeconds = 6f;
                 preset.stacks = 3;
@@ -35,7 +35,7 @@ namespace HealerLike.Render.Studio.Editor
             else if (index == 2)
             {
                 Color gold = new Color(1f, 0.77f, 0.27f);
-                Set(preset, EffectElement.Plates, EffectFamily.Boon, EffectTempo.ForDuration, gold);
+                Set(preset, EffectKey.Plates, EffectFamily.Boon, EffectTempo.ForDuration, gold);
                 preset.durationSeconds = 5f;
                 preset.charges = 3f;
                 preset.description = "A warm gold, three-charge ward. Plates close around the body and remain held. "
@@ -44,21 +44,21 @@ namespace HealerLike.Render.Studio.Editor
             else if (index == 3)
             {
                 Color blue = new Color(0.35f, 0.77f, 1f);
-                Set(preset, EffectElement.Beam, EffectFamily.Damage, EffectTempo.ForDuration, blue);
+                Set(preset, EffectKey.Beam, EffectFamily.Damage, EffectTempo.ForDuration, blue);
                 preset.durationSeconds = 4f;
                 preset.description = "A cool blue connection with travelling beads. The link socket spans the preview "
                     + "endpoints; orbit the camera to inspect the curve. Shape edits remain local to this preset.";
             }
             else if (index == 4)
             {
-                Set(preset, EffectElement.ManaUp, EffectFamily.Heal, EffectTempo.Once, new Color(0.42f, 0.66f, 1f));
+                Set(preset, EffectKey.ManaUp, EffectFamily.Heal, EffectTempo.Once, new Color(0.42f, 0.66f, 1f));
                 preset.amount = 0.4f;
                 preset.description = "A sky-blue mana gain. An isolated impact example for comparing the mana "
                     + "silhouette with Verdant Bloom; loop the preview to inspect the upward motion.";
             }
             else if (index == 5)
             {
-                Set(preset, EffectElement.Burst, EffectFamily.Damage, EffectTempo.Once, new Color(1f, 0.36f, 0.12f));
+                Set(preset, EffectKey.Burst, EffectFamily.Damage, EffectTempo.Once, new Color(1f, 0.36f, 0.12f));
                 preset.amount = 0.5f;
                 preset.critical = true;
                 preset.side = Entity.EntityType.Computer;
@@ -104,7 +104,7 @@ namespace HealerLike.Render.Studio.Editor
             }
         }
 
-        static void Set(SpellStudioPreset preset, EffectElement element, EffectFamily family, EffectTempo tempo,
+        static void Set(SpellStudioPreset preset, EffectKey element, EffectFamily family, EffectTempo tempo,
             Color colour)
         {
             preset.element = element;

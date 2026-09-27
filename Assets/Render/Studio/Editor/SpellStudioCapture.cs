@@ -30,7 +30,7 @@ namespace HealerLike.Render.Studio.Editor
                 using (SpellStudioPreview preview = new SpellStudioPreview())
                 {
                     preview.Init();
-                    foreach (EffectElement element in Enum.GetValues(typeof(EffectElement)))
+                    foreach (EffectKey element in Enum.GetValues(typeof(EffectKey)))
                     {
                         preset.element = element;
                         preset.family = SpellStudioSamples.Family(element);

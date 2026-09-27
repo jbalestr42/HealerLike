@@ -56,7 +56,7 @@ namespace HealerLike.Render.Spells
         public void Play_AuthoredImpactPublishesRadiusStrengthAndRecoversAfterLifetime()
         {
             EffectRecipe recipe = EffectComposer.Compose(RenderTestAssets.LoadEffectVocabulary(),
-                EffectElement.Rise, EffectFamily.Heal, EffectTempo.Once, 0f, 1, 0f, .4f);
+                EffectKey.Rise, EffectFamily.Heal, EffectTempo.Once, 0f, 1, 0f, .4f);
             Assert.IsNotNull(recipe.entry.ground);
             _target.transform.position = new Vector3(3f, 2f, 4f);
             SpellGround.Play(_ground, recipe, _target.transform.position, 2f, true);

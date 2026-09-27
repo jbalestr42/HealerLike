@@ -29,7 +29,7 @@ namespace HealerLike.Render.Stage
             sheet.SetPixels32(pixels);
         }
 
-        public void Capture(Camera camera, EffectElement element, int moment, float age)
+        public void Capture(Camera camera, EffectKey element, int moment, float age)
         {
             Texture2D shot = StageReadback.Render(camera, Width, Height);
             try
@@ -50,7 +50,7 @@ namespace HealerLike.Render.Stage
             finally { RenderObjects.Release(shot); }
         }
 
-        public void Measure(GroundSimulation simulation, EffectElement element, int moment, float age)
+        public void Measure(GroundSimulation simulation, EffectKey element, int moment, float age)
         {
             if (simulation == null || !simulation.isValid)
                 throw new InvalidOperationException("Spell fixture has no live GPU ground simulation.");

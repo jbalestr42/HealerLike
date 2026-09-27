@@ -17,7 +17,7 @@ namespace HealerLike.Render.Spells
             objects.Clear();
         }
 
-        SpellEffect Build(EffectElement element)
+        SpellEffect Build(EffectKey element)
         {
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
             EffectRecipe recipe = EffectComposer.Compose(vocabulary, element, EffectFamily.Heal,
@@ -42,7 +42,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void SetEndpoints_BeamInScaledCompositeStillConnectsBothWorldEndpoints()
         {
-            SpellEffect effect = Build(EffectElement.Beam);
+            SpellEffect effect = Build(EffectKey.Beam);
             effect.transform.localScale = new Vector3(.2f, .4f, .3f);
             effect.transform.rotation = Quaternion.Euler(10, 25, 0);
             Vector3 start = new Vector3(-2, .6f, .3f), end = new Vector3(1, .8f, -.2f);
@@ -56,7 +56,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void FaceCamera_AuthoredDepthMovesBillboardInFrontWithoutChangingItsScale()
         {
-            SpellEffect effect = Build(EffectElement.Burst);
+            SpellEffect effect = Build(EffectKey.Burst);
             // Own the profile; authoring assets must remain unchanged by tests.
             effect.recipe.entry = EffectRecipeCopy.Entry(effect.recipe.entry);
             effect.recipe.presentation.cameraDepth = 1.2f;
@@ -77,8 +77,8 @@ namespace HealerLike.Render.Spells
         [Test]
         public void Advance_LinkPearlsHaveSamePeakSizeAcrossDifferentFrameSteps()
         {
-            SpellEffect stepped = Build(EffectElement.Beam);
-            SpellEffect direct = Build(EffectElement.Beam);
+            SpellEffect stepped = Build(EffectKey.Beam);
+            SpellEffect direct = Build(EffectKey.Beam);
             float time = stepped.lifetime * .5f;
             for (int i = 0; i < 50; i++) stepped.Advance(time / 50f);
             direct.Advance(time);
@@ -90,7 +90,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void Advance_CriticalHaloRecoversAfterEntranceAndResolvesWithImpact()
         {
-            SpellEffect effect = Build(EffectElement.Burst);
+            SpellEffect effect = Build(EffectKey.Burst);
             effect.ShowCritical();
             Transform halo = effect.rings[0];
             float authored = effect.recipe.entry.criticalRings[0].size.magnitude;
@@ -105,7 +105,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void BeginRemoval_StatusBeadsAndCasterRimFadeWithMainShapes()
         {
-            SpellEffect effect = Build(EffectElement.Orbit);
+            SpellEffect effect = Build(EffectKey.Orbit);
             effect.SetStatus(3, 0, 8);
             effect.SetSide(Entity.EntityType.Player);
             effect.Advance(.5f);

@@ -135,7 +135,7 @@ namespace HealerLike.Render.Studio
 
         static void CheckContext(SpellStudioPreset preset, List<string> warnings)
         {
-            bool isElementKnown = Enum.IsDefined(typeof(EffectElement), preset.element)
+            bool isElementKnown = Enum.IsDefined(typeof(EffectKey), preset.element)
                 && Enum.IsDefined(typeof(EffectFamily), preset.family);
             bool isContextKnown = Enum.IsDefined(typeof(EffectTempo), preset.tempo)
                 && Enum.IsDefined(typeof(Entity.EntityType), preset.side);

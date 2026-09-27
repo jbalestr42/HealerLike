@@ -32,7 +32,7 @@ namespace HealerLike.Render.Studio
         public bool useGameplayOverrides = true;
         // Looked up for its delivery only, the preview draws the effect element and not the flight
         public GameObject sourceProjectile;
-        public EffectElement element = EffectElement.Burst;
+        public EffectKey element = EffectKey.Burst;
         public EffectFamily family = EffectFamily.Damage;
         public EffectTempo tempo = EffectTempo.Once;
         [Min(0f)]
@@ -86,18 +86,18 @@ namespace HealerLike.Render.Studio
             get
             {
                 EffectChannels channels;
-                EffectElement resolved;
+                EffectKey resolved;
                 TryResolve(out channels, out resolved);
                 return channels;
             }
         }
 
-        public EffectElement resolvedElement
+        public EffectKey resolvedElement
         {
             get
             {
                 EffectChannels channels;
-                EffectElement resolved;
+                EffectKey resolved;
                 TryResolve(out channels, out resolved);
                 return resolved;
             }
@@ -115,7 +115,7 @@ namespace HealerLike.Render.Studio
             if (mode == SpellStudioMode.GameplayHandler && authored?.recipe != null)
                 return authored.recipe.InstantiateRecipe();
             EffectChannels channels;
-            EffectElement resolved;
+            EffectKey resolved;
             if (!TryResolve(out channels, out resolved))
             {
                 return null;
@@ -143,7 +143,7 @@ namespace HealerLike.Render.Studio
         }
 
         // The channels and element SpellVisualSink would open, a native row winning over the derivation
-        public bool TryResolve(out EffectChannels channels, out EffectElement resolved)
+        public bool TryResolve(out EffectChannels channels, out EffectKey resolved)
         {
             channels = new EffectChannels();
             channels.family = SpellPresetBounds.Defined(family, EffectFamily.Damage);
@@ -151,7 +151,7 @@ namespace HealerLike.Render.Studio
             channels.tempo = SpellPresetBounds.Defined(tempo, EffectTempo.Once);
             channels.periodSeconds = periodSeconds;
 
-            resolved = SpellPresetBounds.Defined(element, EffectElement.Burst);
+            resolved = SpellPresetBounds.Defined(element, EffectKey.Burst);
             SpellStudioMode safeMode = SpellPresetBounds.Defined(mode, SpellStudioMode.AuthoredElement);
             if (safeMode == SpellStudioMode.AuthoredElement)
             {
@@ -171,7 +171,7 @@ namespace HealerLike.Render.Studio
                     channels.family = SpellPresetBounds.Defined(row.family, EffectFamily.Damage);
                     channels.tempo = SpellPresetBounds.Defined(row.tempo, EffectTempo.Once);
                     channels.periodSeconds = EffectDerivation.Period(sourceHandler);
-                    resolved = SpellPresetBounds.Defined(row.element, EffectElement.Burst);
+                    resolved = SpellPresetBounds.Defined(row.element, EffectKey.Burst);
                     return true;
                 }
 
@@ -196,24 +196,24 @@ namespace HealerLike.Render.Studio
         // Copies the vocabulary's entry for the resolved element into the preset, the shared asset stays as it is
         public bool CaptureEntry()
         {
-            if (vocabulary == null || vocabulary.elements == null)
+            if (vocabulary == null || vocabulary.entries == null)
             {
                 return false;
             }
 
             EffectChannels channels;
-            EffectElement resolved;
+            EffectKey resolved;
             if (!TryResolve(out channels, out resolved))
             {
                 return false;
             }
 
-            if (!vocabulary.elements.ContainsKey(resolved) || vocabulary.elements[resolved] == null)
+            if (!vocabulary.entries.ContainsKey(resolved) || vocabulary.entries[resolved] == null)
             {
                 return false;
             }
 
-            entry = SpellPresetBounds.CloneEntry(vocabulary.elements[resolved]);
+            entry = SpellPresetBounds.CloneEntry(vocabulary.entries[resolved]);
             overrideEntry = true;
             return true;
         }
@@ -226,18 +226,18 @@ namespace HealerLike.Render.Studio
                 return entry;
             }
 
-            if (vocabulary == null || vocabulary.elements == null)
+            if (vocabulary == null || vocabulary.entries == null)
             {
                 return null;
             }
 
             EffectChannels channels;
-            EffectElement resolved;
-            if (!TryResolve(out channels, out resolved) || !vocabulary.elements.ContainsKey(resolved))
+            EffectKey resolved;
+            if (!TryResolve(out channels, out resolved) || !vocabulary.entries.ContainsKey(resolved))
             {
                 return null;
             }
-            return vocabulary.elements[resolved];
+            return vocabulary.entries[resolved];
         }
 
         // The native row for the handler when the preset lets native rows win, else null

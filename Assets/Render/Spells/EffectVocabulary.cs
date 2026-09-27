@@ -26,11 +26,11 @@ namespace HealerLike.Render.Spells
     [Serializable]
     public struct EffectCellEntry
     {
-        public EffectElement once;
+        public EffectKey once;
         public bool hasPeriodic;
-        public EffectElement periodic;
+        public EffectKey periodic;
 
-        public EffectCellEntry(EffectElement once, EffectElement periodic, bool hasPeriodic)
+        public EffectCellEntry(EffectKey once, EffectKey periodic, bool hasPeriodic)
         {
             this.once = once;
             this.periodic = periodic;
@@ -64,7 +64,7 @@ namespace HealerLike.Render.Spells
 
     // What an effect draws, the composer picks one from the family and the group of a handler
     // Stored by value in assets: append new members, never reorder or remove
-    public enum EffectElement
+    public enum EffectKey
     {
         Burst,
         Rise,
@@ -132,10 +132,10 @@ namespace HealerLike.Render.Spells
         }
 
         [DictionaryDrawerSettings(KeyLabel = "Element", ValueLabel = "Entry")]
-        public Dictionary<EffectElement, ElementEntry> elements = new Dictionary<EffectElement, ElementEntry>();
+        public Dictionary<EffectKey, ElementEntry> entries = new Dictionary<EffectKey, ElementEntry>();
 
         [DictionaryDrawerSettings(KeyLabel = "Operation and aspect", ValueLabel = "Once and periodic elements")]
-        public Dictionary<EffectCell, EffectCellEntry> table = new Dictionary<EffectCell, EffectCellEntry>();
+        public Dictionary<EffectCell, EffectCellEntry> legacyTable = new Dictionary<EffectCell, EffectCellEntry>();
 
         [DictionaryDrawerSettings(KeyLabel = "Operation and aspect", ValueLabel = "Once and periodic entries")]
         public Dictionary<EffectCell, EffectCellEntries> cells = new Dictionary<EffectCell, EffectCellEntries>();
@@ -155,64 +155,60 @@ namespace HealerLike.Render.Spells
         [DictionaryDrawerSettings(KeyLabel = "Origin", ValueLabel = "Piece")]
         public Dictionary<EffectOrigin, ElementEntry> origin = new Dictionary<EffectOrigin, ElementEntry>();
 
-        public ElementEntry GetEntry(EffectElement element)
+        public ElementEntry GetEntry(EffectKey element)
         {
-            if (elements == null || !elements.ContainsKey(element))
+            if (entries != null && entries.TryGetValue(element, out ElementEntry direct) && direct != null)
             {
-                Debug.LogError($"[EffectVocabulary] No entry for {element}.");
-                return null;
+                return direct;
             }
-            return elements[element];
+            if (pieces != null && element >= EffectKey.Beam && pieces.TryGetValue((EffectPiece)(element - EffectKey.Beam), out ElementEntry piece)
+                && piece != null)
+            {
+                return piece;
+            }
+            foreach (var pair in cells ?? new Dictionary<EffectCell, EffectCellEntries>())
+            {
+                if (KeyFor(pair.Key, EffectTempo.Once) == element && pair.Value.once != null) return pair.Value.once;
+                if (KeyFor(pair.Key, EffectTempo.PerPeriod) == element && pair.Value.periodic != null) return pair.Value.periodic;
+            }
+            Debug.LogError($"[EffectVocabulary] No entry for {element}.");
+            return null;
         }
 
-        public bool TryGetElement(EffectOperation operation, EffectAspect aspect, out EffectElement element)
+        public bool TryGetElement(EffectOperation operation, EffectAspect aspect, out EffectKey element)
         {
             return TryGetElement(operation, aspect, EffectTempo.Once, out element);
         }
 
-        public bool TryGetElement(EffectOperation operation, EffectAspect aspect, EffectTempo tempo, out EffectElement element)
+        public bool TryGetElement(EffectOperation operation, EffectAspect aspect, EffectTempo tempo, out EffectKey element)
         {
-            EffectCellEntry entry;
-            if (table == null || !table.TryGetValue(new EffectCell(operation, aspect), out entry))
+            EffectCell cell = new EffectCell(operation, aspect);
+            if (legacyTable != null && legacyTable.TryGetValue(cell, out EffectCellEntry legacy))
             {
-                element = default(EffectElement);
-                return false;
-            }
-            if (tempo == EffectTempo.PerPeriod && entry.hasPeriodic)
-            {
-                element = entry.periodic;
+                element = tempo == EffectTempo.PerPeriod && legacy.hasPeriodic ? legacy.periodic : legacy.once;
                 return true;
             }
-            element = entry.once;
-            return true;
+            element = KeyFor(cell, tempo);
+            return cells != null && cells.ContainsKey(cell);
         }
 
-        static EffectElement LegacyElement(EffectOperation operation, EffectAspect aspect)
+        static EffectKey KeyFor(EffectCell cell, EffectTempo tempo)
         {
-            switch (operation)
+            if (tempo == EffectTempo.PerPeriod)
             {
-                case EffectOperation.Damage: return EffectElement.Burst;
-                case EffectOperation.Heal: return EffectElement.Rise;
-                case EffectOperation.Boon:
-                    return aspect == EffectAspect.Defence ? EffectElement.Plates
-                        : aspect == EffectAspect.Prevention ? EffectElement.Bud : EffectElement.Orbit;
-                case EffectOperation.Ward: return EffectElement.Plates;
-                case EffectOperation.Mana: return EffectElement.ManaUp;
-                default: return aspect == EffectAspect.Offence ? EffectElement.Press : EffectElement.Crack;
+                if (cell.operation == EffectOperation.Damage) return EffectKey.Drips;
+                if (cell.operation == EffectOperation.Heal) return EffectKey.Stalks;
             }
-        }
-
-        public static Dictionary<EffectCell, EffectElement> LegacyCells()
-        {
-            Dictionary<EffectCell, EffectElement> result = new Dictionary<EffectCell, EffectElement>();
-            foreach (EffectOperation operation in Enum.GetValues(typeof(EffectOperation)))
+            switch (cell.operation)
             {
-                foreach (EffectAspect aspect in Enum.GetValues(typeof(EffectAspect)))
-                {
-                    result[new EffectCell(operation, aspect)] = LegacyElement(operation, aspect);
-                }
+                case EffectOperation.Damage: return EffectKey.Burst;
+                case EffectOperation.Heal: return EffectKey.Rise;
+                case EffectOperation.Boon: return cell.aspect == EffectAspect.Defence ? EffectKey.Plates
+                    : cell.aspect == EffectAspect.Prevention ? EffectKey.Bud : EffectKey.Orbit;
+                case EffectOperation.Ward: return cell.aspect == EffectAspect.Prevention ? EffectKey.Bud : EffectKey.Plates;
+                case EffectOperation.Mana: return EffectKey.ManaUp;
+                default: return cell.aspect == EffectAspect.Offence ? EffectKey.Press : EffectKey.Crack;
             }
-            return result;
         }
     }
 }

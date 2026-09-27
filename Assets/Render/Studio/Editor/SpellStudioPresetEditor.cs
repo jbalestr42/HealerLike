@@ -84,7 +84,7 @@ namespace HealerLike.Render.Studio.Editor
         static void DrawResolution(SpellStudioPreset preset)
         {
             EffectChannels channels;
-            EffectElement element;
+            EffectKey element;
             if (!preset.TryResolve(out channels, out element))
             {
                 EditorGUILayout.HelpBox("Choose a gameplay handler to derive its renderer grammar.", MessageType.Info);

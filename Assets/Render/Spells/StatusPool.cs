@@ -39,7 +39,7 @@ namespace HealerLike.Render.Spells
             _meshes = meshes; _material = material; _ground = ground;
         }
         // Label lookup exists for legacy inspection; composition and ownership use entry identity and layer.
-        public SpellEffect Get(GameObject target, EffectElement element)
+        public SpellEffect Get(GameObject target, EffectKey element)
         {
             foreach (var pair in _statuses)
                 if (pair.Key.target == target && pair.Key.element == element) return pair.Value.effect;

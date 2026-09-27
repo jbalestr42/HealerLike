@@ -70,7 +70,7 @@ public class SpellStudioDraftsTests
     {
         SpellStudioDrafts drafts = CreateDrafts();
 
-        int elementCount = Enum.GetValues(typeof(EffectElement)).Length;
+        int elementCount = Enum.GetValues(typeof(EffectKey)).Length;
         Assert.AreEqual(elementCount + 3, drafts.items.Count);
         Assert.AreEqual(elementCount, Count(drafts.items, SpellStudioMode.AuthoredElement));
         Assert.AreEqual(2, Count(drafts.items, SpellStudioMode.GrammarChannels));
@@ -126,7 +126,7 @@ public class SpellStudioDraftsTests
         SpellStudioPreset draft = drafts.NewGrammarDraft(null);
 
         Assert.AreEqual(SpellStudioMode.GrammarChannels, draft.mode);
-        Assert.AreEqual(EffectElement.Plates, draft.resolvedElement);
+        Assert.AreEqual(EffectKey.Plates, draft.resolvedElement);
         Assert.AreEqual(RenderTestAssets.LoadEffectVocabulary(), draft.vocabulary);
         Assert.NotNull(draft.spellLooks);
     }

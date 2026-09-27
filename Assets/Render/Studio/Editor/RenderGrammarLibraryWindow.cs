@@ -94,7 +94,7 @@ namespace HealerLike.Render.Studio.Editor
 
             if (value is EffectVocabulary effects)
             {
-                return RenderGrammarSummary.Count(effects.elements) + " effect element presets";
+                return RenderGrammarSummary.Count(effects.entries) + " effect element presets";
             }
 
             if (value is SpellLooks spells)

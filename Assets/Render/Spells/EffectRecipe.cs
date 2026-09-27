@@ -10,7 +10,7 @@ namespace HealerLike.Render.Spells
         public EffectRecipe[] additions = System.Array.Empty<EffectRecipe>();
         public EffectChannels channels;
         public EffectPresentation presentation => entry != null ? entry.presentation : null;
-        public EffectElement element;
+        public EffectKey element;
         public ElementEntry entry;
         public EffectMotionKind motion;
         public EffectSocket socket;

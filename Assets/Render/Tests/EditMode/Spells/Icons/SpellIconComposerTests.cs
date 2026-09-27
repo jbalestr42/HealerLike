@@ -47,14 +47,14 @@ namespace HealerLike.Render.Spells
             try
             {
                 EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
-                asset.recipe = EffectComposer.Compose(vocabulary, EffectElement.Burst, EffectFamily.Damage,
+                asset.recipe = EffectComposer.Compose(vocabulary, EffectKey.Burst, EffectFamily.Damage,
                     EffectTempo.Once, 0, 1, 0, .5f);
-                asset.recipe.additions = new[] { EffectComposer.Compose(vocabulary, EffectElement.Plates,
+                asset.recipe.additions = new[] { EffectComposer.Compose(vocabulary, EffectKey.Plates,
                     EffectFamily.Boon, EffectTempo.ForDuration, 0, 1, 3, 0) };
                 looks.buffs.Add(handler, new SpellLook { recipe = asset });
                 SpellIconRecipe icon = SpellIconComposer.Compose(handler, vocabulary, looks);
                 Assert.AreEqual(1, icon.layers.Count);
-                Assert.AreEqual(EffectElement.Plates, icon.layers[0].additions[0].element);
+                Assert.AreEqual(EffectKey.Plates, icon.layers[0].additions[0].element);
                 Assert.AreEqual(1, icon.layers[0].additions.Length);
                 icon.layers[0].additions[0].entry.parts[0].size = Vector3.one * 8;
                 Assert.AreNotEqual(icon.layers[0].additions[0].entry.parts[0].size, asset.recipe.additions[0].entry.parts[0].size);

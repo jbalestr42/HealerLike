@@ -19,9 +19,9 @@ namespace HealerLike.Render.Spells
             {
                 EffectVocabulary shipped = RenderTestAssets.LoadEffectVocabulary();
                 vocabulary.palette = shipped.palette;
-                vocabulary.elements = new Dictionary<EffectElement, ElementEntry>(shipped.elements);
-                vocabulary.table = new Dictionary<EffectCell, EffectCellEntry>(shipped.table);
-                vocabulary.table.Remove(new EffectCell(EffectOperation.Bane, EffectAspect.Offence));
+                vocabulary.entries = new Dictionary<EffectKey, ElementEntry>(shipped.entries);
+                vocabulary.legacyTable = new Dictionary<EffectCell, EffectCellEntry>(shipped.legacyTable);
+                vocabulary.legacyTable.Remove(new EffectCell(EffectOperation.Bane, EffectAspect.Offence));
                 boon.data = new FlatModifierData { type = AttributeType.Damage,
                     modifierType = AttributeModifierType.Add, value = 5f };
                 bane.data = new FlatModifierData { type = AttributeType.Damage,
@@ -32,7 +32,7 @@ namespace HealerLike.Render.Spells
                     Assert.IsEmpty(looks.Compose(vocabulary, handler, null, null));
                     Assert.IsNull(SpellIconComposer.Compose(handler, vocabulary, looks));
                 });
-                vocabulary.table = new Dictionary<EffectCell, EffectCellEntry>(shipped.table);
+                vocabulary.legacyTable = new Dictionary<EffectCell, EffectCellEntry>(shipped.legacyTable);
                 List<EffectRecipe> world = looks.Compose(vocabulary, handler, null, null);
                 SpellIconRecipe icon = SpellIconComposer.Compose(handler, vocabulary, looks);
                 Assert.AreEqual(2, world.Count);
