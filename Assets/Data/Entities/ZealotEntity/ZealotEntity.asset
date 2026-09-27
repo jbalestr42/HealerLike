@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f9c5cbcc3bade640b655d9fe3fc6912, type: 3}
-  m_Name: ClericCharacter
+  m_Script: {fileID: 11500000, guid: 200499978037cc34d93ebc9c76414b0c, type: 3}
+  m_Name: ZealotEntity
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -38,16 +38,16 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 2
+      Data: 4
     - Name: 
       Entry: 7
       Data: 
     - Name: $k
       Entry: 3
-      Data: 10
+      Data: 0
     - Name: $v
       Entry: 4
-      Data: 25
+      Data: 100
     - Name: 
       Entry: 8
       Data: 
@@ -56,7 +56,31 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 3
-      Data: 9
+      Data: 1
+    - Name: $v
+      Entry: 4
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 2
+    - Name: $v
+      Entry: 4
+      Data: 4
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 3
     - Name: $v
       Entry: 4
       Data: 100
@@ -69,23 +93,21 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  model: {fileID: 0}
-  title: Cleric
-  text: 'A classic healer: strong direct heals, shields and a last resort invincibility'
+  model: {fileID: 1081930672269232, guid: e59aa7298768015418e3da8a9c8d85a8, type: 3}
+  title: Zealot
+  description: 'A fervent fighter dealing +50% damage while above 70% health: keep it topped up'
   attributes:
-  - key: 10
-    value: 25
-  - key: 9
+  - key: 0
     value: 100
-  passives: []
-  entities:
-  - {fileID: 11400000, guid: ff864edc5e8dfdc47ad1e7a7cd3ec589, type: 2}
-  - {fileID: 11400000, guid: 0e42156d42eb9244db24d1871321181b, type: 2}
-  - {fileID: 11400000, guid: 723a5c26dd4a39d489c9b9accfc6fec4, type: 2}
-  - {fileID: 11400000, guid: 26dbd27e829bb32408f456f507d1393f, type: 2}
-  - {fileID: 11400000, guid: 2042951354ead464aa1cd1fefcd8192c, type: 2}
-  skills:
-  - {fileID: 11400000, guid: 1ebca72647271b94ca5968b1b500f88d, type: 2}
-  - {fileID: 11400000, guid: 3001a223ad5ed954f89da100bd2bf009, type: 2}
-  - {fileID: 11400000, guid: 84b32c25f41dcd04cb657bb983143827, type: 2}
-  - {fileID: 11400000, guid: 6b7b4b7d8cbcb1a448681bc0f2caa246, type: 2}
+  - key: 1
+    value: 1
+  - key: 2
+    value: 4
+  - key: 3
+    value: 100
+  targetBehaviourType: 0
+  targetValidators: []
+  items:
+  - {fileID: 11400000, guid: ee53b13f32d72f842b91ac2e6cc4e016, type: 2}
+  skillFactories:
+  - {fileID: 11400000, guid: 7c7523ad38c305e47b2e804fca97b1f3, type: 2}
