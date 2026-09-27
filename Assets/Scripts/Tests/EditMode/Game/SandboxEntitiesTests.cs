@@ -77,6 +77,51 @@ public class SandboxEntitiesTests
 
         CollectionAssert.IsEmpty(invalid, "Entities whose model misses EntityModel, SkillSource, SkillTargetPointTag or EntityHUD");
     }
+
+    // A summoned entity must be a real, playable entity, and the summons must be limited
+    [Test]
+    public void EverySummonSkill_SummonsASandboxEntityAndIsLimited()
+    {
+        List<string> invalid = new List<string>();
+        foreach (EntityData entity in _sandboxData.entities)
+        {
+            if (entity == null)
+            {
+                continue;
+            }
+
+            foreach (ASkillFactory skillFactory in entity.skillFactories)
+            {
+                if (skillFactory is SummonSkillFactory summon)
+                {
+                    bool isValid = summon.data.entity != null
+                        && _sandboxData.entities.Contains(summon.data.entity)
+                        && summon.data.maxAlive >= 1
+                        && summon.data.cooldown > 0f;
+                    if (!isValid)
+                    {
+                        invalid.Add($"{entity.name} ({skillFactory.name})");
+                    }
+                }
+            }
+        }
+
+        CollectionAssert.IsEmpty(invalid, "Summon skills without a sandbox entity, a max alive or a cooldown");
+    }
+
+    [Test]
+    public void Necromancer_RaisesUpToFourFrailSkeletons()
+    {
+        EntityData necromancer = _sandboxData.entities.Find(entity => entity != null && entity.name == "NecromancerEntity");
+        Assert.IsNotNull(necromancer);
+
+        SummonSkillFactory summon = necromancer.skillFactories.Find(skill => skill is SummonSkillFactory) as SummonSkillFactory;
+        Assert.IsNotNull(summon);
+        Assert.AreEqual("SkeletonEntity", summon.data.entity.name);
+        Assert.AreEqual(4, summon.data.maxAlive);
+        // Frailer than the Necromancer itself
+        Assert.Less(summon.data.entity.attributes[AttributeType.HealthMax], necromancer.attributes[AttributeType.HealthMax]);
+    }
 }
 
 }

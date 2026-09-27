@@ -171,6 +171,7 @@ MonoBehaviour:
     wavePatterns:
     - {fileID: 11400000, guid: 6908f06dc1d046145887e3096a487189, type: 2}
     - {fileID: 11400000, guid: a92f9a632870a1d49b6a63d524d5e18e, type: 2}
+    - {fileID: 11400000, guid: 99b0f51e2fc4f204bb04f63607f72966, type: 2}
   - roomType: 0
     minFloor: 8
     maxFloor: 8
@@ -178,6 +179,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 025635afde458914095ccb545c2ff1b0, type: 2}
     - {fileID: 11400000, guid: 751e244b43ca41f43aac44fd6922d25d, type: 2}
     - {fileID: 11400000, guid: 3076e1cd7c4abca4392ac8d6a7ab5dc2, type: 2}
+    - {fileID: 11400000, guid: 3dd9572fccf8ecd448fd7c3c30c43abe, type: 2}
   - roomType: 1
     minFloor: 6
     maxFloor: 8

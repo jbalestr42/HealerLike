@@ -172,6 +172,7 @@ public class TestDataWavesTests
         string[] expected =
         {
             "MachineGunnerEntity", "ArcMageEntity", "WarDrumEntity", "FrostCasterEntity", "ColossusEntity", "BerserkerEntity", "ScavengerEntity",
+            "NecromancerEntity",
         };
         foreach (string entityName in expected)
         {

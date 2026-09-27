@@ -172,6 +172,42 @@ public class GridManagerTests
 
         Assert.AreEqual(center, result);
     }
+
+    [Test]
+    public void GetNearestWalkableCell_FromAnOccupiedCell_ReturnsTheClosestFreeCell()
+    {
+        Generate();
+        _gridManager.SetWalkable(1, 1, false);
+        _gridManager.SetWalkable(2, 1, false);
+        Vector3 occupiedCenter = _gridManager.GetCellCenterFromCoord(new Vector2Int(1, 1));
+
+        // (0, 1) is the only free cell at distance 1
+        GridCell result = _gridManager.GetNearestWalkableCell(occupiedCenter + new Vector3(-0.1f, 0f, 0f));
+
+        Assert.AreEqual(new Vector2Int(0, 1), result.coord);
+    }
+
+    [Test]
+    public void GetNearestWalkableCell_OutsideTheGrid_ReturnsACellOfTheGrid()
+    {
+        Generate();
+
+        GridCell result = _gridManager.GetNearestWalkableCell(new Vector3(100f, 0f, -100f));
+
+        Assert.IsTrue(_gridManager.IsValidCoord(result.coord));
+    }
+
+    [Test]
+    public void GetNearestWalkableCell_NoFreeCell_ReturnsNull()
+    {
+        Generate();
+        foreach (GridCell cell in _gridManager.cells)
+        {
+            _gridManager.SetWalkable(cell, false);
+        }
+
+        Assert.IsNull(_gridManager.GetNearestWalkableCell(Vector3.zero));
+    }
 }
 
 }
