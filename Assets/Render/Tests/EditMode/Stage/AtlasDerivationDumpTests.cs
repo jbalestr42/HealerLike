@@ -29,7 +29,7 @@ namespace HealerLike.Render.Stage
             Assert.AreEqual(2, dump.schemaVersion);
             Assert.AreEqual(2 * AssetDatabase.FindAssets("t:ABuffHandlerFactory", new[] { "Assets/Data" }).Length,
                 dump.spells.Count);
-            Assert.AreEqual(AssetDatabase.FindAssets("t:BaseCharacterSkillData", new[] { "Assets/Data/CharacterSkills" }).Length,
+            Assert.AreEqual(AssetDatabase.FindAssets("t:ACharacterSkillFactory", new[] { "Assets/Data/CharacterSkills" }).Length,
                 dump.healerSkills.Count);
             Assert.AreEqual(dump.projectiles.Count, dump.projectiles.Count(row => !string.IsNullOrEmpty(row.effectDelivery)));
             Assert.IsNotNull(JsonUtility.FromJson<AtlasDerivationDump.Document>(JsonUtility.ToJson(dump)));

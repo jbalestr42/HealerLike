@@ -75,10 +75,11 @@ namespace HealerLike.Render.Stage
                     document.spells.Add(row);
                 }
             }
-            foreach (string path in AssetDatabase.FindAssets("t:BaseCharacterSkillData", new[] { "Assets/Data/CharacterSkills" })
+            foreach (string path in AssetDatabase.FindAssets("t:ACharacterSkillFactory", new[] { "Assets/Data/CharacterSkills" })
                 .Select(AssetDatabase.GUIDToAssetPath).OrderBy(path => path, StringComparer.Ordinal))
             {
-                BaseCharacterSkillData data = AssetDatabase.LoadAllAssetsAtPath(path).OfType<BaseCharacterSkillData>().FirstOrDefault();
+                ACharacterSkillFactory factory = AssetDatabase.LoadAssetAtPath<ACharacterSkillFactory>(path);
+                BaseCharacterSkillData data = factory is IGameDataSource source ? source.sourceData as BaseCharacterSkillData : null;
                 if (data == null) continue;
                 SpellIconDescription description = SpellIconDerivation.Read(data);
                 HealerSkillRow row = new HealerSkillRow { path = path, name = data.name, skillClass = data.GetType().Name,
