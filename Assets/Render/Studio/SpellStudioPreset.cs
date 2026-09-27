@@ -124,48 +124,18 @@ namespace HealerLike.Render.Studio
                 return null;
             }
 
-            LookPalette palette = null;
-            if (vocabulary != null)
-            {
-                palette = vocabulary.palette;
-            }
-
-            // The composer needs a palette, an authored colour previews without one
+            LookPalette palette = vocabulary != null ? vocabulary.palette : null;
             if (palette == null && !overrideColour)
             {
                 return null;
             }
 
             ElementEntry safeEntry = SpellPresetBounds.SanitizedEntry(source);
-            EffectRecipe recipe = new EffectRecipe();
-            recipe.element = resolved;
-            recipe.entry = safeEntry;
-            recipe.motion = safeEntry.motion;
-            recipe.socket = safeEntry.socket;
-            recipe.family = channels.family;
-            recipe.tempo = channels.tempo;
-
-            recipe.cycleSeconds = safeEntry.cycleSeconds;
-
-            // As in EffectComposer, only a finite positive period replaces the entry's cycle
-            bool isTicking = channels.tempo == EffectTempo.PerPeriod;
-            if (isTicking && float.IsFinite(channels.periodSeconds) && channels.periodSeconds > 0f)
-            {
-                recipe.cycleSeconds = channels.periodSeconds;
-            }
-
-            recipe.palette = palette;
-            Color tint = colour;
-            if (!overrideColour)
-            {
-                tint = EffectComposer.Colour(palette, resolved, channels.family);
-            }
-            recipe.colour = SpellPresetBounds.SafeColour(tint);
-
             float safeCharges = SpellPresetBounds.Bounded(charges, 0f, 0f, MaxParts);
             float safeAmount = SpellPresetBounds.Bounded(amount, 0f, -1f, 1f);
-            recipe.count = EffectComposer.Count(safeEntry, safeStacks, safeCharges, safeAmount);
-            return recipe;
+            Color safeColour = SpellPresetBounds.SafeColour(colour);
+            return EffectComposer.Compose(vocabulary, resolved, channels.family, channels.tempo,
+                channels.periodSeconds, safeStacks, safeCharges, safeAmount, safeEntry, overrideColour, safeColour);
         }
 
         // The channels and element SpellVisualSink would open, a native row winning over the derivation

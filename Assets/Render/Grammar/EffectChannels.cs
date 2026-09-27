@@ -12,6 +12,15 @@ namespace HealerLike.Render.Grammar
         Bane
     }
 
+    public enum EffectOperation { Damage, Heal, Rot, Renew, Boon, Bane, Ward, Mana }
+    public enum EffectAspect { Offence, Defence, Prevention }
+    public enum EffectMagnitude { Light, Solid, Heavy }
+    public enum EffectReach { Single, Group, All, Area, Chain }
+    public enum EffectDelivery { Instant, Rigid, Arc, Swarm, ChainSync, Zone, Link }
+    public enum EffectTrigger { Cast, OnHit, OnDeath, RoundEnd, Equip }
+    public enum EffectSide { Ally, Opposing }
+    public enum EffectOrigin { Healer, Creature, Item }
+
     // Stored by value in assets: append new members, never reorder or remove
     public enum EffectTempo
     {
@@ -30,6 +39,16 @@ namespace HealerLike.Render.Grammar
     // Everything the look of an effect reads from its handler, decided once when it lands
     public struct EffectChannels
     {
+        public EffectOperation operation;
+        public EffectAspect aspect;
+        public EffectMagnitude magnitude;
+        public EffectReach reach;
+        public EffectDelivery delivery;
+        public EffectTrigger trigger;
+        public EffectSide side;
+        public EffectOrigin origin;
+
+        // Kept as compatibility aliases while gameplay callers move to the flat grammar.
         public EffectFamily family;
         public AttributeGroup group;
         public EffectTempo tempo;

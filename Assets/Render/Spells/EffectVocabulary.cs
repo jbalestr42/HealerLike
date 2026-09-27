@@ -1,10 +1,28 @@
 using System.Collections.Generic;
+using System;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Spells
 {
+    [Serializable]
+    public struct EffectCell : IEquatable<EffectCell>
+    {
+        public EffectOperation operation;
+        public EffectAspect aspect;
+
+        public EffectCell(EffectOperation operation, EffectAspect aspect)
+        {
+            this.operation = operation;
+            this.aspect = aspect;
+        }
+
+        public bool Equals(EffectCell other) { return operation == other.operation && aspect == other.aspect; }
+        public override bool Equals(object obj) { return obj is EffectCell && Equals((EffectCell)obj); }
+        public override int GetHashCode() { return ((int)operation * 397) ^ (int)aspect; }
+    }
+
     // What an effect draws, the composer picks one from the family and the group of a handler
     // Stored by value in assets: append new members, never reorder or remove
     public enum EffectElement
@@ -69,6 +87,9 @@ namespace HealerLike.Render.Spells
         [DictionaryDrawerSettings(KeyLabel = "Element", ValueLabel = "Entry")]
         public Dictionary<EffectElement, ElementEntry> elements = new Dictionary<EffectElement, ElementEntry>();
 
+        [DictionaryDrawerSettings(KeyLabel = "Operation and aspect", ValueLabel = "Element")]
+        public Dictionary<EffectCell, EffectElement> cells = new Dictionary<EffectCell, EffectElement>();
+
         public ElementEntry GetEntry(EffectElement element)
         {
             if (elements == null || !elements.ContainsKey(element))
@@ -77,6 +98,43 @@ namespace HealerLike.Render.Spells
                 return null;
             }
             return elements[element];
+        }
+
+        public bool TryGetElement(EffectOperation operation, EffectAspect aspect, out EffectElement element)
+        {
+            if (cells != null && cells.TryGetValue(new EffectCell(operation, aspect), out element)) return true;
+            element = LegacyElement(operation, aspect);
+            return true;
+        }
+
+        static EffectElement LegacyElement(EffectOperation operation, EffectAspect aspect)
+        {
+            switch (operation)
+            {
+                case EffectOperation.Damage: return EffectElement.Burst;
+                case EffectOperation.Heal: return EffectElement.Rise;
+                case EffectOperation.Rot: return EffectElement.Drips;
+                case EffectOperation.Renew: return EffectElement.Stalks;
+                case EffectOperation.Boon:
+                    return aspect == EffectAspect.Defence ? EffectElement.Plates
+                        : aspect == EffectAspect.Prevention ? EffectElement.Bud : EffectElement.Orbit;
+                case EffectOperation.Ward: return EffectElement.Plates;
+                case EffectOperation.Mana: return EffectElement.ManaUp;
+                default: return aspect == EffectAspect.Offence ? EffectElement.Press : EffectElement.Crack;
+            }
+        }
+
+        public static Dictionary<EffectCell, EffectElement> LegacyCells()
+        {
+            Dictionary<EffectCell, EffectElement> result = new Dictionary<EffectCell, EffectElement>();
+            foreach (EffectOperation operation in Enum.GetValues(typeof(EffectOperation)))
+            {
+                foreach (EffectAspect aspect in Enum.GetValues(typeof(EffectAspect)))
+                {
+                    result[new EffectCell(operation, aspect)] = LegacyElement(operation, aspect);
+                }
+            }
+            return result;
         }
     }
 }

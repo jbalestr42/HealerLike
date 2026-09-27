@@ -16,34 +16,34 @@ namespace HealerLike.Render.Spells
 
         public static EffectElement Element(EffectChannels channels)
         {
-            switch (channels.family)
-            {
-                case EffectFamily.Damage:
-                    return EffectElement.Burst;
-                case EffectFamily.Heal:
-                    return EffectElement.Rise;
-                case EffectFamily.Rot:
-                    return EffectElement.Drips;
-                case EffectFamily.Renew:
-                    return EffectElement.Stalks;
-                case EffectFamily.Boon:
-                    if (channels.group == AttributeGroup.Defence)
-                    {
-                        return EffectElement.Plates;
-                    }
+            return Element(null, channels);
+        }
 
-                    if (channels.group == AttributeGroup.Prevention)
-                    {
-                        return EffectElement.Bud;
-                    }
-                    return EffectElement.Orbit;
-                default:
-                    if (channels.group == AttributeGroup.Offence)
-                    {
-                        return EffectElement.Press;
-                    }
-                    return EffectElement.Crack;
-            }
+        public static EffectElement Element(EffectVocabulary vocabulary, EffectChannels channels)
+        {
+            EffectOperation operation = channels.operation;
+            EffectAspect aspect = channels.aspect;
+            if (channels.family != EffectFamily.Damage) operation = ToOperation(channels.family);
+            if (channels.group != AttributeGroup.Offence) aspect = (EffectAspect)channels.group;
+            EffectElement element;
+            if (vocabulary != null && vocabulary.TryGetElement(operation, aspect, out element)) return element;
+            return LegacyElement(operation, aspect);
+        }
+
+        static EffectOperation ToOperation(EffectFamily family)
+        {
+            return (EffectOperation)family;
+        }
+
+        static EffectElement LegacyElement(EffectOperation operation, EffectAspect aspect)
+        {
+            return operation == EffectOperation.Damage ? EffectElement.Burst
+                : operation == EffectOperation.Heal ? EffectElement.Rise
+                : operation == EffectOperation.Rot ? EffectElement.Drips
+                : operation == EffectOperation.Renew ? EffectElement.Stalks
+                : operation == EffectOperation.Boon ? (aspect == EffectAspect.Defence ? EffectElement.Plates
+                    : aspect == EffectAspect.Prevention ? EffectElement.Bud : EffectElement.Orbit)
+                : aspect == EffectAspect.Offence ? EffectElement.Press : EffectElement.Crack;
         }
 
         // Mana draws with its own pair of elements, up for a gain and down for a loss
@@ -105,20 +105,34 @@ namespace HealerLike.Render.Spells
         public static EffectRecipe Compose(EffectVocabulary vocabulary, EffectChannels channels, int stacks,
                                            float charges)
         {
-            return Compose(vocabulary, Element(channels), channels.family, channels.tempo, channels.periodSeconds,
+            EffectFamily family = channels.family;
+            if (channels.operation != EffectOperation.Damage) family = (EffectFamily)Mathf.Clamp((int)channels.operation, 0, 5);
+            EffectRecipe recipe = Compose(vocabulary, Element(vocabulary, channels), family, channels.tempo, channels.periodSeconds,
                            stacks, charges, 0f);
+            if (!EffectCompositionValidator.TryValidate(channels, vocabulary, out string compositionError))
+            {
+                Debug.LogError("[EffectComposer] " + compositionError);
+                return null;
+            }
+            if (!EffectValidator.TryValidate(recipe, out string recipeError))
+            {
+                Debug.LogError("[EffectComposer] " + recipeError);
+                return null;
+            }
+            return recipe;
         }
 
         public static EffectRecipe Compose(EffectVocabulary vocabulary, EffectElement element, EffectFamily family,
                                            EffectTempo tempo, float periodSeconds, int stacks, float charges,
-                                           float amount)
+                                           float amount, ElementEntry entryOverride = null,
+                                           bool useColourOverride = false, Color colourOverride = default(Color))
         {
-            if (vocabulary == null)
+            if (vocabulary == null && entryOverride == null)
             {
                 return null;
             }
 
-            ElementEntry entry = vocabulary.GetEntry(element);
+            ElementEntry entry = entryOverride != null ? entryOverride : vocabulary.GetEntry(element);
             if (entry == null)
             {
                 return null;
@@ -137,8 +151,8 @@ namespace HealerLike.Render.Spells
                 recipe.cycleSeconds = periodSeconds;
             }
 
-            recipe.palette = vocabulary.palette;
-            recipe.colour = Colour(vocabulary.palette, element, family);
+            recipe.palette = vocabulary != null ? vocabulary.palette : null;
+            recipe.colour = useColourOverride ? colourOverride : Colour(recipe.palette, element, family);
             recipe.count = Count(entry, stacks, charges, amount);
             return recipe;
         }

@@ -212,15 +212,7 @@ namespace HealerLike.Render.Studio
 
             foreach (LookPart part in parts)
             {
-                bool isPlaced = SpellPresetBounds.InRange(part.position, -50f, 50f)
-                    && SpellPresetBounds.InRange(part.euler, -3600f, 3600f);
-                bool isSized = SpellPresetBounds.InRange(part.size, 0.001f, 20f)
-                    && SpellPresetBounds.InRange(part.glow, 0f, 10f);
-                bool isShapeKnown = Enum.IsDefined(typeof(Primitive), part.primitive)
-                    && Enum.IsDefined(typeof(PartRole), part.role);
-                bool isToneKnown = Enum.IsDefined(typeof(ColourRole), part.colour)
-                    && Enum.IsDefined(typeof(CountBand), part.minCount);
-                if (!isPlaced || !isSized || !isShapeKnown || !isToneKnown)
+                if (!LookPartValidation.IsValid(part, LookPartBounds.RenderDefault))
                 {
                     return true;
                 }

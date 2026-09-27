@@ -14,9 +14,77 @@ namespace HealerLike.Render.Grammar
             EffectChannels channels = new EffectChannels();
             channels.family = Family(handler, isSameSide);
             channels.group = Group(handler);
+            channels.operation = Operation(handler, isSameSide);
+            channels.aspect = Aspect(handler);
             channels.tempo = Tempo(handler);
             channels.periodSeconds = Period(handler);
+            channels.magnitude = Magnitude(handler);
+            channels.reach = Reach(handler);
+            channels.delivery = DeliveryChannel(null);
+            channels.trigger = Trigger(handler);
+            channels.side = isSameSide ? EffectSide.Ally : EffectSide.Opposing;
+            channels.origin = EffectOrigin.Creature;
             return channels;
+        }
+
+        public static EffectOperation Operation(ABuffHandlerFactory handler, bool isSameSide = true)
+        {
+            foreach (ABuffFactory buff in Buffs(handler))
+            {
+                if (buff is InvincibilityBuffFactory) return EffectOperation.Ward;
+                if (buff is ManaOnRoundEndBuffFactory) return EffectOperation.Mana;
+            }
+            switch (Family(handler, isSameSide))
+            {
+                case EffectFamily.Damage: return EffectOperation.Damage;
+                case EffectFamily.Heal: return EffectOperation.Heal;
+                case EffectFamily.Rot: return EffectOperation.Rot;
+                case EffectFamily.Renew: return EffectOperation.Renew;
+                case EffectFamily.Boon: return EffectOperation.Boon;
+                default: return EffectOperation.Bane;
+            }
+        }
+
+        public static EffectAspect Aspect(ABuffHandlerFactory handler)
+        {
+            AttributeGroup group = Group(handler);
+            return (EffectAspect)group;
+        }
+
+        public static EffectMagnitude Magnitude(ABuffHandlerFactory handler)
+        {
+            int count = Buffs(handler).Count;
+            return count <= 1 ? EffectMagnitude.Light : count <= 3 ? EffectMagnitude.Solid : EffectMagnitude.Heavy;
+        }
+
+        public static EffectReach Reach(ABuffHandlerFactory handler, int targetCount = 1)
+        {
+            if (targetCount <= 1) return EffectReach.Single;
+            return targetCount == int.MaxValue ? EffectReach.All : EffectReach.Group;
+        }
+
+        public static EffectDelivery DeliveryChannel(GameObject projectilePrefab = null)
+        {
+            if (projectilePrefab == null) return EffectDelivery.Instant;
+            switch (Delivery(projectilePrefab))
+            {
+                case DeliveryStyle.Direct: return EffectDelivery.Rigid;
+                case DeliveryStyle.Arc: return EffectDelivery.Arc;
+                case DeliveryStyle.Swarm: return EffectDelivery.Swarm;
+                case DeliveryStyle.ChainSync: return EffectDelivery.ChainSync;
+                default: return EffectDelivery.Instant;
+            }
+        }
+
+        public static EffectTrigger Trigger(ABuffHandlerFactory handler)
+        {
+            if (handler == null || !HasData(handler)) return EffectTrigger.Cast;
+            return IsPeriodic(handler) ? EffectTrigger.RoundEnd : EffectTrigger.Cast;
+        }
+
+        public static EffectOrigin Origin(ABuffHandlerFactory handler = null)
+        {
+            return EffectOrigin.Creature;
         }
 
         public static EffectFamily Family(ABuffHandlerFactory handler, bool isSameSide)
