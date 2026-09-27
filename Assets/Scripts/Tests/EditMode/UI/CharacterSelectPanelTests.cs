@@ -50,6 +50,23 @@ public class CharacterSelectPanelTests
         return entity;
     }
 
+    AItemFactory CreateItem(string name, string description)
+    {
+        ItemFactory item = CreateTracked<ItemFactory>();
+        item.data = new ItemData { name = name, description = description };
+        return item;
+    }
+
+    List<string> GetCardTexts(CharacterSelectPanel panel, int index)
+    {
+        List<string> texts = new List<string>();
+        foreach (TMP_Text text in panel.transform.Find("Cards").GetChild(index).GetComponentsInChildren<TMP_Text>())
+        {
+            texts.Add(text.text);
+        }
+        return texts;
+    }
+
     CharacterData CreateCharacter(string title)
     {
         CharacterData character = CreateTracked<CharacterData>();
@@ -57,6 +74,7 @@ public class CharacterSelectPanelTests
         character.text = title + " description";
         character.skills = new List<ACharacterSkillFactory> { CreateSkill("Heal"), CreateSkill("Shield") };
         character.entities = new List<EntityData> { CreateEntity("Normal"), CreateEntity("Zealot") };
+        character.items = new List<AItemFactory>();
         return character;
     }
 
@@ -64,6 +82,42 @@ public class CharacterSelectPanelTests
     public void GetSkills_ListsOneSkillNamePerLine()
     {
         Assert.AreEqual("- Heal\n- Shield", CharacterCardText.GetSkills(CreateCharacter("Cleric")));
+    }
+
+    [Test]
+    public void GetItems_ListsOneItemPerLineWithItsEffect()
+    {
+        CharacterData character = CreateCharacter("Cleric");
+        character.items = new List<AItemFactory> { CreateItem("Sacred Tome", "+10 Heal Power"), CreateItem("Relic", "") };
+
+        Assert.AreEqual("- Sacred Tome: +10 Heal Power\n- Relic", CharacterCardText.GetItems(character));
+    }
+
+    [Test]
+    public void GetItems_WithoutItem_IsEmpty()
+    {
+        Assert.AreEqual("", CharacterCardText.GetItems(CreateCharacter("Druid")));
+    }
+
+    [Test]
+    public void Card_ShowsTheItemsOfTheCharacter()
+    {
+        CharacterData cleric = CreateCharacter("Cleric");
+        cleric.items = new List<AItemFactory> { CreateItem("Sacred Tome", "+10 Heal Power") };
+
+        CharacterSelectPanel panel = CharacterSelectPanel.Create(_canvas.transform, new List<CharacterData> { cleric }, _ => { }, () => { });
+
+        List<string> texts = GetCardTexts(panel, 0);
+        CollectionAssert.Contains(texts, "Items");
+        CollectionAssert.Contains(texts, "- Sacred Tome: +10 Heal Power");
+    }
+
+    [Test]
+    public void Card_WithoutItem_HasNoItemsSection()
+    {
+        CharacterSelectPanel panel = CharacterSelectPanel.Create(_canvas.transform, new List<CharacterData> { CreateCharacter("Druid") }, _ => { }, () => { });
+
+        CollectionAssert.DoesNotContain(GetCardTexts(panel, 0), "Items");
     }
 
     [Test]
@@ -78,9 +132,11 @@ public class CharacterSelectPanelTests
         CharacterData character = CreateTracked<CharacterData>();
         character.skills = new List<ACharacterSkillFactory> { null, CreateSkill("Heal") };
         character.entities = null;
+        character.items = new List<AItemFactory> { null };
 
         Assert.AreEqual("- Heal", CharacterCardText.GetSkills(character));
         Assert.AreEqual("", CharacterCardText.GetUnits(character));
+        Assert.AreEqual("", CharacterCardText.GetItems(character));
         Assert.AreEqual("", CharacterCardText.GetDescription(character));
     }
 

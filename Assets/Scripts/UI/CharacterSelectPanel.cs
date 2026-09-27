@@ -39,7 +39,7 @@ public class CharacterSelectPanel : MonoBehaviour
         cardsLayout.childControlHeight = false;
         cardsLayout.childForceExpandWidth = false;
         cardsLayout.childForceExpandHeight = false;
-        cards.GetComponent<RectTransform>().sizeDelta = new Vector2(1200f, 520f);
+        cards.GetComponent<RectTransform>().sizeDelta = new Vector2(1200f, 600f);
 
         foreach (CharacterData character in characters)
         {
@@ -65,7 +65,7 @@ public class CharacterSelectPanel : MonoBehaviour
     static void CreateCard(Transform parent, CharacterData character, Action onClick)
     {
         GameObject card = CreateUIObject(character.title, parent);
-        card.GetComponent<RectTransform>().sizeDelta = new Vector2(360f, 520f);
+        card.GetComponent<RectTransform>().sizeDelta = new Vector2(360f, 600f);
         card.AddComponent<Image>().color = CardColor;
         card.AddComponent<Button>().onClick.AddListener(() => onClick());
 
@@ -81,6 +81,13 @@ public class CharacterSelectPanel : MonoBehaviour
         CreateText(card.transform, CharacterCardText.GetDescription(character), 20, Color.white, FontStyles.Normal);
         CreateText(card.transform, "Skills", 22, MutedColor, FontStyles.Bold);
         CreateText(card.transform, CharacterCardText.GetSkills(character), 20, Color.white, FontStyles.Normal);
+        // Most characters start without any item
+        string items = CharacterCardText.GetItems(character);
+        if (!string.IsNullOrEmpty(items))
+        {
+            CreateText(card.transform, "Items", 22, MutedColor, FontStyles.Bold);
+            CreateText(card.transform, items, 20, Color.white, FontStyles.Normal);
+        }
         CreateText(card.transform, "Units", 22, MutedColor, FontStyles.Bold);
         CreateText(card.transform, CharacterCardText.GetUnits(character), 20, Color.white, FontStyles.Normal);
     }
