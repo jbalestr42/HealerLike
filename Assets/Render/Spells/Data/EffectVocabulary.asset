@@ -81,12 +81,12 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-    - Name: elements
+    - Name: entries
       Entry: 7
-      Data: 2|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Spells.EffectElement, HealerLike.Render],[HealerLike.Render.Spells.ElementEntry, HealerLike.Render]], mscorlib
+      Data: 2|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Spells.EffectKey, HealerLike.Render],[HealerLike.Render.Spells.ElementEntry, HealerLike.Render]], mscorlib
     - Name: comparer
       Entry: 7
-      Data: 3|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Spells.EffectElement, HealerLike.Render]], mscorlib
+      Data: 3|System.Collections.Generic.EnumEqualityComparer`1[[HealerLike.Render.Spells.EffectKey, HealerLike.Render]], mscorlib
     - Name: 
       Entry: 12
       Data: 0
@@ -22032,7 +22032,7 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-    - Name: table
+    - Name: legacyTable
       Entry: 7
       Data: 76|System.Collections.Generic.Dictionary`2[[HealerLike.Render.Spells.EffectCell, HealerLike.Render],[HealerLike.Render.Spells.EffectCellEntry, HealerLike.Render]], mscorlib
     - Name: comparer
