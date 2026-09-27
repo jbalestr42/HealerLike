@@ -80,6 +80,17 @@ namespace HealerLike.Render.Spells
         }
 
         [Test]
+        public void ShowSupportLink_ComposesOneBeamPerSourceTargetPathPerFrame()
+        {
+            SpellEffect first = _pool.ShowSupportLink(Vector3.zero, Vector3.right, EffectFamily.Heal);
+            SpellEffect second = _pool.ShowSupportLink(Vector3.zero, Vector3.right, EffectFamily.Heal);
+
+            Assert.IsNotNull(first);
+            Assert.IsNull(second);
+            Assert.AreEqual(1, CountBeams());
+        }
+
+        [Test]
         public void ShowImpact_Hit_ThrowsAShockThroughTheGrass()
         {
             _target.transform.position = new Vector3(2f, 0f, 1f);
