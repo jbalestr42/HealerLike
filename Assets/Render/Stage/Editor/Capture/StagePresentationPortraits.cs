@@ -29,7 +29,7 @@ namespace HealerLike.Render.Stage
             List<Button> cards = _session.actions.Cards("party-list");
             _output.Check(cards.Count > 0, "Party has actual creature cards");
             VisualElement icon = cards[0].Q("card-icon");
-            Texture2D cardPortrait = icon.resolvedStyle.backgroundImage.texture;
+            Texture2D cardPortrait = CardImage(icon);
             _output.Check(icon.ClassListContains("creature-portrait") && cardPortrait != null
                 && cardPortrait.name.StartsWith("Creature Portrait ") && cardPortrait.width == 256
                 && cardPortrait.height == 256, "Party card shows the 256px creature screenshot");
@@ -48,7 +48,7 @@ namespace HealerLike.Render.Stage
             int captures = attachment.portraits.captureCount;
             yield return Wait(0.45f);
             _output.Check(attachment.portraits.captureCount == captures
-                && icon.resolvedStyle.backgroundImage.texture == cardPortrait,
+                && CardImage(icon) == cardPortrait,
                 "Repeated UI refresh reuses the captured texture");
             yield return _session.Capture(prefix + "-party");
             yield return _session.actions.SelectCardByTouch(cards[0].parent.Q<Button>("card-info"));
@@ -77,9 +77,15 @@ namespace HealerLike.Render.Stage
             List<Button> spells = _session.actions.Cards("spell-list");
             _output.Check(spells.Count > 0, "Shipped spell cards provide non-creature coverage");
             VisualElement spellIcon = spells[0].Q("card-icon");
-            _output.Check(spellIcon.resolvedStyle.backgroundImage.texture != null
+            _output.Check(CardImage(spellIcon) != null
                 && !spellIcon.ClassListContains("creature-portrait"),
-                "Non-creature spell keeps its normal icon fallback");
+                "Non-creature spell shows its provider or fallback icon");
+        }
+
+        static Texture2D CardImage(VisualElement icon)
+        {
+            // The local HUD moves artwork into a child while keeping labels on the card.
+            return (icon.Q("render-card-art") ?? icon).resolvedStyle.backgroundImage.texture;
         }
 
         public void CheckPartyLabel(Button card, string name, string context)
