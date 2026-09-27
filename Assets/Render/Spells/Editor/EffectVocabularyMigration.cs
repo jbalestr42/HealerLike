@@ -12,6 +12,11 @@ namespace HealerLike.Render.Spells.Editor
             EffectVocabulary vocabulary = Selection.activeObject as EffectVocabulary;
             if (vocabulary == null)
             {
+                vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(
+                    "Assets/Render/Spells/Data/EffectVocabulary.asset");
+            }
+            if (vocabulary == null)
+            {
                 Debug.LogError("Select an EffectVocabulary asset first.");
                 return;
             }
