@@ -16,5 +16,4 @@ for name in sorted(left.keys() | right.keys()):
     if a.size != b.size:
         print(f"{name}\tsize {a.size}!={b.size}")
         continue
-    changed = sum(x != y for x, y in zip(a.getdata(), b.getdata()))
-    print(f"{name}\t{changed}")
+    print(f"{name}\t{sum(x != y for x, y in zip(a.getdata(), b.getdata()))}")
