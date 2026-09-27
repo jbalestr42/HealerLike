@@ -147,9 +147,10 @@ public class EffectComposerTests
         EffectRecipe light = EffectComposer.Impact(vocabulary, ResourceKind.Health, false, 0f);
         EffectRecipe full = EffectComposer.Impact(vocabulary, ResourceKind.Health, false, 1f);
 
-        Assert.AreEqual(EffectComposer.BurstScaleMin, light.scale);
-        Assert.AreEqual(EffectComposer.BurstScaleMax, full.scale);
-        Assert.AreEqual(1f, EffectComposer.Impact(vocabulary, ResourceKind.Health, true, 1f).scale);
+        Assert.AreEqual(EffectComposer.BurstScaleMin * vocabulary.GetEntry(EffectElement.Burst).presentation.scale, light.scale);
+        Assert.AreEqual(EffectComposer.BurstScaleMax * vocabulary.GetEntry(EffectElement.Burst).presentation.scale, full.scale);
+        Assert.AreEqual(vocabulary.GetEntry(EffectElement.Rise).presentation.scale,
+            EffectComposer.Impact(vocabulary, ResourceKind.Health, true, 1f).scale);
     }
 
     [TestCase(ZoneKind.Heal, EffectElement.Ring, EffectFamily.Heal)]

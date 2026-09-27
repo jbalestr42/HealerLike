@@ -33,9 +33,12 @@ namespace HealerLike.Render.Spells.Editor
         {
             var parts = new LookPart[count];
             for (int i = 0; i < count; i++)
+            {
+                int slot = count == 6 ? (i % 3) * 2 + i / 3 : i;
                 parts[i] = Part(id + i, mineral ? Primitive.Pyramid : Primitive.Leaf,
                     mineral ? ShapeProfile.Shard(.72f, .04f, .35f) : ShapeProfile.Leaf(.12f, .85f, .25f),
-                    Radial(i, count, radius, height), size, new Vector3(lean, i * 360f / count, 0));
+                    Radial(slot, count, radius, height), size, new Vector3(lean, slot * 360f / count, 0));
+            }
             return parts;
         }
 
@@ -55,16 +58,16 @@ namespace HealerLike.Render.Spells.Editor
         {
             var parts = new List<LookPart>();
             // Three readable leaves form the smallest heal; larger heals add a constellation of pearls.
-            parts.AddRange(Petals("Healing leaf ", 3, 1.05f, -.25f,
-                new Vector3(.5f, .9f, .2f), false, 18));
-            parts.AddRange(Motes("Healing pearl ", 5, 1.35f, -.2f, .30f, false));
+            parts.AddRange(Petals("Healing leaf ", 3, 1.65f, -.12f,
+                new Vector3(.65f, 1.15f, .24f), false, 18));
+            parts.AddRange(Motes("Healing pearl ", 5, 1.85f, -.05f, .38f, false));
             return parts.ToArray();
         }
 
         public static LookPart[] Stalks()
         {
             var parts = new List<LookPart>();
-            LookPart[] crowns = Petals("Renewal petal ", 6, 1.55f, 1.2f, new Vector3(.48f, .7f, .22f));
+            LookPart[] crowns = Petals("Renewal petal ", 6, 1.55f, 1.2f, new Vector3(.6f, .85f, .25f));
             for (int i = 0; i < crowns.Length; i++)
             {
                 parts.Add(crowns[i]);
@@ -89,7 +92,7 @@ namespace HealerLike.Render.Spells.Editor
             }
             for (int i = 0; i < 6; i++)
                 parts.Add(Part("Travelling pearl " + i, Primitive.Sphere, ShapeProfile.Bulb(),
-                    new Vector3(i / 6f, 0, 0), Vector3.one * .09f));
+                    new Vector3(i / 6f, 0, 0), Vector3.one * .14f));
             return parts.ToArray();
         }
 
@@ -120,10 +123,10 @@ namespace HealerLike.Render.Spells.Editor
 
         public static LookPart[] Zone(bool hostile)
         {
-            var parts = new List<LookPart> { Ring("Boundary", 2f, .025f, .065f),
-                Ring("Inner boundary", 1.82f, .035f, .06f) };
-            parts.AddRange(Petals("Boundary marker ", 8, .95f, .045f,
-                new Vector3(.09f, hostile ? .16f : .12f, .045f), hostile, hostile ? 30 : 90));
+            var parts = new List<LookPart> { Ring("Boundary", 2f, .16f, .09f),
+                Ring("Inner boundary", 1.82f, .13f, .075f) };
+            parts.AddRange(Petals("Boundary marker ", 8, .95f, .18f,
+                new Vector3(.12f, hostile ? .22f : .17f, .06f), hostile, hostile ? 30 : 90));
             return parts.ToArray();
         }
     }

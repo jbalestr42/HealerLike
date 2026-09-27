@@ -52,6 +52,7 @@ namespace HealerLike.Render.Stage
                             if (age >= Phases[sample] * recipe.cycleSeconds)
                             {
                                 images.Capture(scene.camera, element, sample, age);
+                                images.Measure(scene.field.simulation, element, sample, age);
                                 sample++;
                             }
                             yield return null;
@@ -64,19 +65,23 @@ namespace HealerLike.Render.Stage
             File.WriteAllText(Path.Combine(folder, "README.txt"),
                 "Native Unity presentation fixtures, not gameplay casts.\n" +
                 "All 14 vocabulary entries at 15%, 45%, 80% of their authored cycle.\n" +
-                "Fixed 60 Hz motion and GPU grass simulation, identical camera and lighting.\n" +
+                "Fixed 60 Hz motion and GPU grass simulation, identical camera and authored board lighting/grass height.\n" +
+                "ground-metrics.csv records raw GPU motion and colour-state extrema for every frame.\n" +
                 "Every fixture uses the saved composition, real creature rig, and its authored ground reaction.\n");
             Debug.Log("[SpellPolishRun] Wrote 42 native spell frames and contact sheet to " + folder);
             StagePlay.Finish(this, true);
         }
 
-        static void Prepare(GrassLabScene scene)
+        void Prepare(GrassLabScene scene)
         {
             for (int i = 1; i < scene.creatures.Count; i++) scene.creatures[i].anchor.gameObject.SetActive(false);
             GrassLabScene.CreatureBody creature = scene.creatures[0];
             creature.anchor.position = Vector3.zero;
             creature.preview.Tick(0, 0, new FootFrame(Vector3.zero, Vector3.up, 1), Vector3.back);
             creature.Refresh();
+            scene.field.bladeHeightScale = _manager.grass.bladeHeightScale;
+            scene.field.windStrength = _manager.grass.windStrength;
+            scene.look.settings = _manager.look.settings;
             scene.camera.orthographic = true;
             scene.camera.orthographicSize = 2.8f;
             scene.camera.transform.rotation = Quaternion.Euler(50, 0, 0);
@@ -99,7 +104,7 @@ namespace HealerLike.Render.Stage
                     throw new InvalidOperationException("Creature has no effect anchors.");
                 EffectPlacement.Place(effect, null, anchors);
             }
-            if (recipe.entry.presentation.billboard) effect.transform.rotation = scene.camera.transform.rotation;
+            EffectPlacement.FaceCamera(effect, scene.camera);
             effect.SetSide(Entity.EntityType.Player);
             foreach (Transform part in host.GetComponentsInChildren<Transform>(true)) part.gameObject.layer = 30;
             return effect;
@@ -111,7 +116,8 @@ namespace HealerLike.Render.Stage
             if (recipe.socket == EffectSocket.Link)
                 scene.ground.Play(entry.ground, Vector3.left * 1.45f, Vector3.right * 1.45f, entry.groundStrength);
             else
-                scene.ground.Play(entry.ground, Vector3.zero, entry.groundRadius, entry.groundStrength);
+                scene.ground.Play(entry.ground, Vector3.zero, entry.groundRadius *
+                    (recipe.socket == EffectSocket.Ground ? 1.65f : 1f), entry.groundStrength);
         }
 
         static void Tick(GrassLabScene scene, float step, float time)

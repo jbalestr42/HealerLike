@@ -1,6 +1,9 @@
 using System;
 using System.IO;
 using HealerLike.Render.Spells;
+using HealerLike.Render.Grass;
+using System.Text;
+using System.Globalization;
 using UnityEngine;
 
 namespace HealerLike.Render.Stage
@@ -14,6 +17,8 @@ namespace HealerLike.Render.Stage
         const int TileHeight = 260;
         readonly string folder;
         readonly Texture2D sheet;
+        readonly StringBuilder metrics = new StringBuilder(
+            "element,moment,age,maxLean,maxAsh,minVitality,maxVitality,minLight,maxLight,maxBlight\n");
 
         public SpellPolishImages(string folder)
         {
@@ -45,8 +50,32 @@ namespace HealerLike.Render.Stage
             finally { RenderObjects.Release(shot); }
         }
 
+        public void Measure(GroundSimulation simulation, EffectElement element, int moment, float age)
+        {
+            if (simulation == null || !simulation.isValid)
+                throw new InvalidOperationException("Spell fixture has no live GPU ground simulation.");
+            Color[] motion = StageCaptureTexture.Read(simulation.motion);
+            Color[] state = StageCaptureTexture.Read(simulation.state);
+            float lean = 0, ash = 0, lowVitality = 0, vitality = 0, lowLight = 0, light = 0, blight = 0;
+            foreach (Color pixel in motion) lean = Mathf.Max(lean, new Vector2(pixel.r, pixel.g).magnitude);
+            foreach (Color pixel in state)
+            {
+                ash = Mathf.Max(ash, pixel.r);
+                lowVitality = Mathf.Min(lowVitality, pixel.g);
+                vitality = Mathf.Max(vitality, pixel.g);
+                lowLight = Mathf.Min(lowLight, pixel.b);
+                light = Mathf.Max(light, pixel.b);
+                blight = Mathf.Max(blight, pixel.a);
+            }
+            metrics.Append(element).Append(',').Append(moment + 1);
+            foreach (float value in new[] { age, lean, ash, lowVitality, vitality, lowLight, light, blight })
+                metrics.Append(',').Append(value.ToString("0.00000", CultureInfo.InvariantCulture));
+            metrics.AppendLine();
+        }
+
         public void Write()
         {
+            File.WriteAllText(Path.Combine(folder, "ground-metrics.csv"), metrics.ToString());
             sheet.Apply();
             File.WriteAllBytes(Path.Combine(folder, "contact.png"), sheet.EncodeToPNG());
         }
