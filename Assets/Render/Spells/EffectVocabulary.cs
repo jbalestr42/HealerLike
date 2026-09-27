@@ -102,9 +102,6 @@ namespace HealerLike.Render.Spells
         [DictionaryDrawerSettings(KeyLabel = "Element", ValueLabel = "Entry")]
         public Dictionary<EffectElement, ElementEntry> elements = new Dictionary<EffectElement, ElementEntry>();
 
-        [DictionaryDrawerSettings(KeyLabel = "Operation and aspect", ValueLabel = "Element")]
-        public Dictionary<EffectCell, EffectElement> cells = new Dictionary<EffectCell, EffectElement>();
-
         [DictionaryDrawerSettings(KeyLabel = "Operation and aspect", ValueLabel = "Once and periodic elements")]
         public Dictionary<EffectCell, EffectCellEntry> table = new Dictionary<EffectCell, EffectCellEntry>();
 

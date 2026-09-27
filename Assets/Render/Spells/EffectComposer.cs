@@ -25,8 +25,10 @@ namespace HealerLike.Render.Spells
             EffectAspect aspect = channels.aspect;
             if (channels.family != EffectFamily.Damage) operation = ToOperation(channels.family);
             if (channels.group != AttributeGroup.Offence) aspect = (EffectAspect)channels.group;
+            EffectTempo tempo = channels.family == EffectFamily.Rot || channels.family == EffectFamily.Renew
+                ? EffectTempo.PerPeriod : channels.tempo;
             EffectElement element;
-            if (vocabulary != null && vocabulary.TryGetElement(operation, aspect, channels.tempo, out element)) return element;
+            if (vocabulary != null && vocabulary.TryGetElement(operation, aspect, tempo, out element)) return element;
             if (vocabulary != null) return default(EffectElement);
             return LegacyElement(operation, aspect);
         }

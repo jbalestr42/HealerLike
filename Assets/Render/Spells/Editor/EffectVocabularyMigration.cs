@@ -12,12 +12,27 @@ namespace HealerLike.Render.Spells.Editor
             EffectVocabulary vocabulary = Selection.activeObject as EffectVocabulary;
             if (vocabulary == null)
             {
-                vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(
-                    "Assets/Render/Spells/Data/EffectVocabulary.asset");
+                MigrateShippedAsset();
+                return;
             }
             if (vocabulary == null)
             {
                 Debug.LogError("Select an EffectVocabulary asset first.");
+                return;
+            }
+
+            Migrate(vocabulary);
+            EditorUtility.SetDirty(vocabulary);
+            AssetDatabase.SaveAssets();
+        }
+
+        public static void MigrateShippedAsset()
+        {
+            EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(
+                "Assets/Render/Spells/Data/EffectVocabulary.asset");
+            if (vocabulary == null)
+            {
+                Debug.LogError("Shipped EffectVocabulary asset was not found.");
                 return;
             }
 
@@ -34,12 +49,12 @@ namespace HealerLike.Render.Spells.Editor
             {
                 EffectElement periodic = pair.Value;
                 bool hasPeriodic = false;
-                if (pair.Key.operation == EffectOperation.Damage && pair.Key.aspect == EffectAspect.Offence)
+                if (pair.Key.operation == EffectOperation.Damage)
                 {
                     periodic = EffectElement.Drips;
                     hasPeriodic = true;
                 }
-                else if (pair.Key.operation == EffectOperation.Heal && pair.Key.aspect == EffectAspect.Offence)
+                else if (pair.Key.operation == EffectOperation.Heal)
                 {
                     periodic = EffectElement.Stalks;
                     hasPeriodic = true;
