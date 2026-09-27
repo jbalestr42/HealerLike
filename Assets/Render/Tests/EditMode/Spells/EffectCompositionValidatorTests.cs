@@ -14,13 +14,13 @@ namespace HealerLike.Render.Spells
             var vocabulary = ScriptableObject.CreateInstance<EffectVocabulary>();
             try
             {
-                vocabulary.table[new EffectCell(EffectOperation.Damage, EffectAspect.Offence)] =
-                    new EffectCellEntry(EffectElement.Burst, EffectElement.Drips, true);
+                vocabulary.legacyTable[new EffectCell(EffectOperation.Damage, EffectAspect.Offence)] =
+                    new EffectCellEntry(EffectKey.Burst, EffectKey.Drips, true);
                 Assert.IsFalse(EffectCompositionValidator.TryValidate(default, vocabulary, out string error));
                 StringAssert.Contains("missing", error);
-                vocabulary.elements = null;
+                vocabulary.entries = null;
                 Assert.IsFalse(EffectCompositionValidator.TryValidate(default, vocabulary, out error));
-                vocabulary.table = null;
+                vocabulary.legacyTable = null;
                 Assert.IsFalse(EffectCompositionValidator.TryValidate(default, vocabulary, out error));
                 Assert.IsFalse(EffectCompositionValidator.TryValidate(default, null, out error));
             }
@@ -33,11 +33,11 @@ namespace HealerLike.Render.Spells
             var vocabulary = ScriptableObject.CreateInstance<EffectVocabulary>();
             try
             {
-                vocabulary.table[new EffectCell(EffectOperation.Damage, EffectAspect.Offence)] =
-                    new EffectCellEntry(EffectElement.Burst, EffectElement.Burst, false);
-                vocabulary.elements[EffectElement.Burst] = new ElementEntry();
+                vocabulary.legacyTable[new EffectCell(EffectOperation.Damage, EffectAspect.Offence)] =
+                    new EffectCellEntry(EffectKey.Burst, EffectKey.Burst, false);
+                vocabulary.entries[EffectKey.Burst] = new ElementEntry();
                 Assert.IsFalse(EffectCompositionValidator.TryValidate(default, vocabulary, out _));
-                vocabulary.elements[EffectElement.Burst].parts = new[]
+                vocabulary.entries[EffectKey.Burst].parts = new[]
                     { new LookPart { id = "Shape", primitive = Primitive.Sphere, size = Vector3.one } };
                 Assert.IsTrue(EffectCompositionValidator.TryValidate(default, vocabulary, out string error), error);
             }

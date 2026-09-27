@@ -57,7 +57,7 @@ namespace HealerLike.Render.Spells
 
         // The caller validated every selected entry. Use the entry composer so pieces never recurse into channels.
         public static EffectRecipe[] Compose(EffectVocabulary vocabulary, EffectChannels channels,
-            EffectElement label, int stacks, float charges)
+            EffectKey label, int stacks, float charges)
         {
             var additions = new List<EffectRecipe>();
             foreach (ElementEntry entry in Entries(vocabulary, channels))

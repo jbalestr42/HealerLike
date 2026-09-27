@@ -125,6 +125,20 @@ namespace HealerLike.Render.Creatures
         }
 
         [Test]
+        public void Link_IsCastFromItsOwnersRigOnly_UntilTheLeaseEnds()
+        {
+            SpellEffect effect = SpellEffect.Create(EffectComposer.Link(RenderTestAssets.LoadEffectVocabulary(),
+                EffectFamily.Renew), null, RenderTestAssets.LoadMeshes(), RenderTestAssets.LoadLookMaterial(), null);
+            _effectObject = effect.gameObject;
+            Assert.IsFalse(effect.IsCastFrom(_host.rig));
+            effect.SetCastSource(_owner);
+            Assert.IsTrue(effect.IsCastFrom(_host.rig));
+            Assert.IsFalse(effect.IsCastFrom(null));
+            effect.SetCastSource(null);
+            Assert.IsFalse(effect.IsCastFrom(_host.rig));
+        }
+
+        [Test]
         public void CountChange_KeepsExistingCopiedOutletIdentityAndInvalidatesRemovedCopy()
         {
             using var kept = new CastSourceLease(_host.rig, 0);

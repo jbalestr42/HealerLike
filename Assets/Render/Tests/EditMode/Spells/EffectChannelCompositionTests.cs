@@ -21,9 +21,9 @@ namespace HealerLike.Render.Spells
             _vocabulary = ScriptableObject.CreateInstance<EffectVocabulary>();
             _created.Add(_vocabulary);
             _vocabulary.palette = RenderTestAssets.LoadPalette();
-            _vocabulary.elements[EffectElement.Orbit] = Entry();
-            _vocabulary.table[new EffectCell(EffectOperation.Boon, EffectAspect.Offence)] =
-                new EffectCellEntry(EffectElement.Orbit, EffectElement.Orbit, false);
+            _vocabulary.entries[EffectKey.Orbit] = Entry();
+            _vocabulary.legacyTable[new EffectCell(EffectOperation.Boon, EffectAspect.Offence)] =
+                new EffectCellEntry(EffectKey.Orbit, EffectKey.Orbit, false);
         }
 
         [TearDown]
@@ -68,7 +68,7 @@ namespace HealerLike.Render.Spells
             Select(channel, addition);
             EffectRecipe result = EffectComposer.Compose(_vocabulary, Channels, 1, 0);
             Assert.IsNotNull(result);
-            Assert.AreSame(_vocabulary.elements[EffectElement.Orbit], result.entry);
+            Assert.AreSame(_vocabulary.entries[EffectKey.Orbit], result.entry);
             Assert.AreEqual(1, result.additions.Length);
             Assert.AreSame(addition, result.additions[0].entry);
             Assert.AreEqual(EffectSocket.AboveHead, result.additions[0].socket);
@@ -90,7 +90,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void EmptySlots_KeepTheExistingCoreAppearance()
         {
-            EffectRecipe legacy = EffectComposer.Compose(_vocabulary, EffectElement.Orbit, EffectFamily.Boon,
+            EffectRecipe legacy = EffectComposer.Compose(_vocabulary, EffectKey.Orbit, EffectFamily.Boon,
                 EffectTempo.ForDuration, 0f, 2, 0f, 0f);
             EffectRecipe result = EffectComposer.Compose(_vocabulary, Channels, 2, 0);
             Assert.IsEmpty(result.additions);

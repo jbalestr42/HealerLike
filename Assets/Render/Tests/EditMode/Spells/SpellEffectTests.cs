@@ -12,7 +12,7 @@ public class SpellEffectTests
 {
     readonly List<GameObject> _objects = new List<GameObject>();
 
-    SpellEffect CreateEffect(EffectElement element, EffectFamily family, EffectTempo tempo, float period = 0f,
+    SpellEffect CreateEffect(EffectKey element, EffectFamily family, EffectTempo tempo, float period = 0f,
                              int stacks = 1)
     {
         EffectRecipe recipe = EffectComposer.Compose(RenderTestAssets.LoadEffectVocabulary(), element, family, tempo,
@@ -51,9 +51,9 @@ public class SpellEffectTests
     [Test]
     public void Init_Recipe_BuildsOneChildPerVocabularyPart()
     {
-        ElementEntry entry = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Stalks);
+        ElementEntry entry = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectKey.Stalks);
 
-        SpellEffect effect = CreateEffect(EffectElement.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
+        SpellEffect effect = CreateEffect(EffectKey.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
 
         int expected = entry.parts.Length + entry.stackBeads.Length + entry.criticalRings.Length + entry.sideRim.Length;
         Assert.AreEqual(expected, effect.transform.childCount);
@@ -63,7 +63,7 @@ public class SpellEffectTests
     [Test]
     public void Advance_OnceImpactPastItsCycle_ShowsNothing()
     {
-        SpellEffect effect = CreateEffect(EffectElement.Burst, EffectFamily.Damage, EffectTempo.Once);
+        SpellEffect effect = CreateEffect(EffectKey.Burst, EffectFamily.Damage, EffectTempo.Once);
 
         effect.Advance(effect.lifetime * 0.5f);
         float during = LargestShape(effect);
@@ -76,7 +76,7 @@ public class SpellEffectTests
     [Test]
     public void SetStatus_PerPeriodBeforeTheFirstTick_ShowsPresenceThenAnimatesDrips()
     {
-        SpellEffect effect = CreateEffect(EffectElement.Drips, EffectFamily.Rot, EffectTempo.PerPeriod, 2f);
+        SpellEffect effect = CreateEffect(EffectKey.Drips, EffectFamily.Rot, EffectTempo.PerPeriod, 2f);
 
         effect.SetStatus(1, 1f, 6f);
         float before = LargestShape(effect);
@@ -89,7 +89,7 @@ public class SpellEffectTests
     [Test]
     public void SetStatus_RenewPastItsFirstPeriod_StalksReachTheirSpheres()
     {
-        SpellEffect effect = CreateEffect(EffectElement.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
+        SpellEffect effect = CreateEffect(EffectKey.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
 
         effect.SetStatus(1, 1.5f, 6f);
 
@@ -102,7 +102,7 @@ public class SpellEffectTests
     [Test]
     public void SetStatus_RenewLateInItsPeriod_StalksStillStand()
     {
-        SpellEffect effect = CreateEffect(EffectElement.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
+        SpellEffect effect = CreateEffect(EffectKey.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
 
         effect.SetStatus(1, 1.95f, 6f);
 
@@ -112,7 +112,7 @@ public class SpellEffectTests
     [Test]
     public void Advance_RenewPastItsDuration_KeepsGrowing()
     {
-        SpellEffect effect = CreateEffect(EffectElement.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
+        SpellEffect effect = CreateEffect(EffectKey.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
         effect.SetStatus(1, 2.5f, 6f);
 
         effect.Advance(4f);
@@ -123,7 +123,7 @@ public class SpellEffectTests
     [Test]
     public void SetStatus_RenewJustAfterALaterTick_StalksStillStand()
     {
-        SpellEffect effect = CreateEffect(EffectElement.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
+        SpellEffect effect = CreateEffect(EffectKey.Stalks, EffectFamily.Renew, EffectTempo.PerPeriod, 1f);
 
         effect.SetStatus(1, 3.02f, 6f);
 
@@ -134,7 +134,7 @@ public class SpellEffectTests
     [Test]
     public void Advance_ForDurationFall_LoopsUntilRemoval()
     {
-        SpellEffect effect = CreateEffect(EffectElement.Drips, EffectFamily.Rot, EffectTempo.ForDuration);
+        SpellEffect effect = CreateEffect(EffectKey.Drips, EffectFamily.Rot, EffectTempo.ForDuration);
         effect.SetStatus(1, 0f, float.PositiveInfinity);
 
         effect.Advance(effect.lifetime * 3.25f);
@@ -145,7 +145,7 @@ public class SpellEffectTests
     [Test]
     public void SetStatus_Stacks_ShowOneBeadEach()
     {
-        SpellEffect effect = CreateEffect(EffectElement.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
+        SpellEffect effect = CreateEffect(EffectKey.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
 
         effect.SetStatus(3, 0f, 4f);
 
@@ -161,7 +161,7 @@ public class SpellEffectTests
     [Test]
     public void SetCount_FewerCharges_HidesThePlatesThatFell()
     {
-        SpellEffect effect = CreateEffect(EffectElement.Plates, EffectFamily.Boon, EffectTempo.ForDuration);
+        SpellEffect effect = CreateEffect(EffectKey.Plates, EffectFamily.Boon, EffectTempo.ForDuration);
 
         effect.SetCount(2);
 
@@ -179,7 +179,7 @@ public class SpellEffectTests
     [Test]
     public void Advance_Orbit_TurnsTheTiltedPlane()
     {
-        SpellEffect effect = CreateEffect(EffectElement.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
+        SpellEffect effect = CreateEffect(EffectKey.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
         effect.SetStatus(1, 0f, 10f);
         Quaternion start = effect.shapes[0].localRotation;
 
@@ -191,7 +191,7 @@ public class SpellEffectTests
     [Test]
     public void BeginRemoval_AuthoredRelease_CompletesAndHides()
     {
-        SpellEffect effect = CreateEffect(EffectElement.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
+        SpellEffect effect = CreateEffect(EffectKey.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
         effect.SetStatus(1, 0f, 10f);
 
         effect.BeginRemoval();
@@ -204,7 +204,7 @@ public class SpellEffectTests
     [Test]
     public void SetSide_Computer_ShowsTheRimInTheLitBaneColour()
     {
-        SpellEffect effect = CreateEffect(EffectElement.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
+        SpellEffect effect = CreateEffect(EffectKey.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
 
         effect.SetSide(Entity.EntityType.Computer);
 
@@ -220,7 +220,7 @@ public class SpellEffectTests
     [Test]
     public void SetEndpoints_Beam_StartsAtTheFirstPoint()
     {
-        SpellEffect effect = CreateEffect(EffectElement.Beam, EffectFamily.Heal, EffectTempo.Once);
+        SpellEffect effect = CreateEffect(EffectKey.Beam, EffectFamily.Heal, EffectTempo.Once);
 
         effect.SetEndpoints(Vector3.left, Vector3.right, false);
 

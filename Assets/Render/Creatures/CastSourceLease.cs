@@ -13,6 +13,8 @@ namespace HealerLike.Render.Creatures
         bool _disposed;
         public string sourceId { get; private set; }
         public bool isExplicit => _explicit;
+        // Whether this cast still comes from the given rig; a disposed lease comes from no rig
+        public bool IsFrom(CreatureRig rig) => rig != null && _rig == rig;
 
         public CastSourceLease(CreatureRig rig, uint sequence = 0)
         {

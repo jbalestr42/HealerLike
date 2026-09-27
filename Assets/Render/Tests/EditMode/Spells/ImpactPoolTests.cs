@@ -18,8 +18,8 @@ namespace HealerLike.Render.Spells
             SpellEffect effect = _host.GetComponentInChildren<SpellEffect>();
             MaterialPropertyBlock block = new MaterialPropertyBlock();
             effect.shapes[0].GetComponent<Renderer>().GetPropertyBlock(block);
-            float cycle = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Litter).cycleSeconds;
-            Assert.AreEqual(EffectElement.Litter, effect.element);
+            float cycle = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectKey.Litter).cycleSeconds;
+            Assert.AreEqual(EffectKey.Litter, effect.element);
             Assert.AreEqual(cycle, effect.lifetime);
             Assert.AreEqual(Vector3.one, effect.transform.position);
             Assert.Less(Vector4.Distance(PrimitiveMeshes.Brighten(RenderTestAssets.LoadPalette().bane, effect.recipe.entry.parts[0].glow), block.GetColor("_BaseColor")), 0.0001f);
@@ -31,7 +31,7 @@ namespace HealerLike.Render.Spells
             _pool.PulseArea(Vector3.right, 2f, ZoneKind.Heal, 0.3f, true);
 
             SpellEffect ring = _host.GetComponentInChildren<SpellEffect>();
-            Assert.AreEqual(EffectElement.Ring, ring.element);
+            Assert.AreEqual(EffectKey.Ring, ring.element);
             Assert.AreEqual(Vector3.right, ring.transform.position);
             Assert.AreEqual(Vector3.one * 2f, ring.transform.localScale);
         }
@@ -39,7 +39,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void PulseArea_Heal_PulsesTheZonesForTheRingsCycle()
         {
-            float cycle = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Ring).cycleSeconds;
+            float cycle = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectKey.Ring).cycleSeconds;
 
             _pool.PulseArea(Vector3.zero, 2f, ZoneKind.Heal, 0.5f, true);
             _zones.PublishFrame(0f);
@@ -74,7 +74,7 @@ namespace HealerLike.Render.Spells
             SpellEffect thread = _pool.ShowLink(Vector3.zero, Vector3.right, EffectFamily.Damage, true);
 
             Assert.IsTrue(thread.isContactThread);
-            Assert.AreEqual(EffectElement.Beam, thread.element);
+            Assert.AreEqual(EffectKey.Beam, thread.element);
             Assert.IsFalse(thread.shapes[0].gameObject.activeSelf);
             Assert.IsTrue(thread.stalks[0].gameObject.activeSelf);
         }
@@ -86,7 +86,7 @@ namespace HealerLike.Render.Spells
 
             _pool.ShowImpact(_caster, _target, ResourceKind.Health, -30f, false);
 
-            ElementEntry entry = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Burst);
+            ElementEntry entry = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectKey.Burst);
             Assert.AreEqual(1, _ground.Playing(entry.ground));
             Assert.IsTrue(_ground.Find(entry.ground, out Vector2 at, out _, out float radius,
                 out float strength));
@@ -100,7 +100,7 @@ namespace HealerLike.Render.Spells
         {
             _pool.ShowImpact(_caster, _target, ResourceKind.Mana, -10f, false);
 
-            ElementEntry entry = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.ManaDown);
+            ElementEntry entry = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectKey.ManaDown);
             Assert.AreEqual(1, _ground.Playing(entry.ground));
             Assert.Less(entry.ground.light, 0);
             Assert.AreEqual(0, _ground.Playing(_ground.vocabulary.hit));
@@ -111,7 +111,7 @@ namespace HealerLike.Render.Spells
         {
             _pool.ShowImpact(_caster, _target, ResourceKind.Health, 30f, false);
 
-            ElementEntry entry = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Rise);
+            ElementEntry entry = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectKey.Rise);
             Assert.AreEqual(1, _ground.Playing(entry.ground));
             Assert.Greater(entry.ground.light, 0);
             Assert.Greater(entry.ground.vitality, 0);
@@ -169,10 +169,10 @@ namespace HealerLike.Render.Spells
 
             SpellEffect[] effects = _host.GetComponentsInChildren<SpellEffect>();
             Assert.AreEqual(4, _pool.count);
-            Assert.AreEqual(EffectElement.Rise, effects[0].element);
-            Assert.AreEqual(EffectElement.Burst, effects[1].element);
-            Assert.AreEqual(EffectElement.ManaUp, effects[2].element);
-            Assert.AreEqual(EffectElement.ManaDown, effects[3].element);
+            Assert.AreEqual(EffectKey.Rise, effects[0].element);
+            Assert.AreEqual(EffectKey.Burst, effects[1].element);
+            Assert.AreEqual(EffectKey.ManaUp, effects[2].element);
+            Assert.AreEqual(EffectKey.ManaDown, effects[3].element);
         }
 
         [Test]

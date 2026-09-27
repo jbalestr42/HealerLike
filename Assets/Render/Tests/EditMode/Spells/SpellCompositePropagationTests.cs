@@ -37,7 +37,7 @@ namespace HealerLike.Render.Spells
             var entry = new ElementEntry { parts = parts, count = count, cycleSeconds = 1f,
                 motion = EffectMotionKind.Orbit, socket = EffectSocket.Body,
                 presentation = new EffectPresentation { avoidHead = false } };
-            return new EffectRecipe { entry = entry, element = EffectElement.Orbit,
+            return new EffectRecipe { entry = entry, element = EffectKey.Orbit,
                 motion = entry.motion, socket = entry.socket, tempo = EffectTempo.ForDuration,
                 family = EffectFamily.Boon, cycleSeconds = 1f, count = 1, colour = Color.white };
         }

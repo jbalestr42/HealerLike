@@ -96,7 +96,7 @@ namespace HealerLike.Render.Studio.Editor
                     }
                     spell = ScriptableObject.CreateInstance<SpellStudioPreset>();
                     spell.vocabulary = vocabulary;
-                    spell.element = EffectElement.Orbit;
+                    spell.element = EffectKey.Orbit;
                     spell.family = EffectFamily.Boon;
                     spell.tempo = EffectTempo.ForDuration;
                     using (SpellStudioPreview preview = new SpellStudioPreview())

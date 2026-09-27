@@ -81,7 +81,7 @@ namespace HealerLike.Render.Spells
 
         public SpellEffect GetShield(GameObject target) => _statuses.GetShield(target);
 
-        public SpellEffect GetElement(GameObject target, EffectElement element)
+        public SpellEffect GetElement(GameObject target, EffectKey element)
         {
             return _statuses.Get(target, element);
         }

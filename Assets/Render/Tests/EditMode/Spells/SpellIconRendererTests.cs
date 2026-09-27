@@ -9,7 +9,7 @@ namespace HealerLike.Render.Spells
 {
     public class SpellIconRendererTests
     {
-        static EffectRecipe Layer(EffectElement element = EffectElement.Rise)
+        static EffectRecipe Layer(EffectKey element = EffectKey.Rise)
         {
             return EffectComposer.Compose(RenderTestAssets.LoadEffectVocabulary(), element, EffectFamily.Heal,
                 EffectTempo.Once, 0, 3, 3, .5f);
@@ -65,7 +65,7 @@ namespace HealerLike.Render.Spells
         public void DisposeReleasesEveryOwnedProceduralMeshAndTheSubject()
         {
             SpellIconRecipe recipe = new SpellIconRecipe();
-            recipe.layers.Add(Layer(EffectElement.Burst));
+            recipe.layers.Add(Layer(EffectKey.Burst));
             SpellIconSubject subject = new SpellIconSubject(recipe, RenderTestAssets.LoadMeshes(),
                 RenderTestAssets.LoadLookMaterial(), Vector3.zero);
             HashSet<Mesh> meshes = new HashSet<Mesh>();
@@ -85,8 +85,8 @@ namespace HealerLike.Render.Spells
         [Test]
         public void NestedPeriodicPieceRemainsInsideItsGlyphAndContributesTempoMarks()
         {
-            EffectRecipe core = Layer(EffectElement.Burst);
-            EffectRecipe child = Layer(EffectElement.Stalks);
+            EffectRecipe core = Layer(EffectKey.Burst);
+            EffectRecipe child = Layer(EffectKey.Stalks);
             child.tempo = EffectTempo.PerPeriod;
             core.additions = new[] { child };
             SpellIconRecipe recipe = new SpellIconRecipe();
@@ -143,7 +143,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void GrammarMarksShowGroupReachAndPeriodicTempo()
         {
-            EffectRecipe layer = Layer(EffectElement.Stalks);
+            EffectRecipe layer = Layer(EffectKey.Stalks);
             layer.tempo = EffectTempo.PerPeriod;
             SpellIconRecipe recipe = new SpellIconRecipe { reach = EffectReach.Group };
             recipe.layers.Add(layer);

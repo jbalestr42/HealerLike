@@ -20,10 +20,10 @@ public class SpellPresetValidatorTests
     {
         _vocabulary = CreateTracked<EffectVocabulary>();
         _vocabulary.palette = CreateTracked<LookPalette>();
-        _vocabulary.elements[EffectElement.Rise] = StudioTestAssets.CreateRise();
+        _vocabulary.entries[EffectKey.Rise] = StudioTestAssets.CreateRise();
         _preset = CreateTracked<SpellStudioPreset>();
         _preset.vocabulary = _vocabulary;
-        _preset.element = EffectElement.Rise;
+        _preset.element = EffectKey.Rise;
         _preset.family = EffectFamily.Heal;
     }
 
@@ -147,7 +147,7 @@ public class SpellPresetValidatorTests
     {
         BuffHandlerFactory handler = CreateHalfAuthoredHandler();
         SpellLooks looks = CreateTracked<SpellLooks>();
-        looks.buffs[handler] = new SpellLook { element = EffectElement.Rise, family = EffectFamily.Heal,
+        looks.buffs[handler] = new SpellLook { element = EffectKey.Rise, family = EffectFamily.Heal,
             tempo = EffectTempo.PerPeriod };
         _preset.mode = SpellStudioMode.GameplayHandler;
         _preset.sourceHandler = handler;

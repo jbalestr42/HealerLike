@@ -56,7 +56,7 @@ public class SpellStudioPreviewTests
 
     static Array Elements()
     {
-        return Enum.GetValues(typeof(EffectElement));
+        return Enum.GetValues(typeof(EffectKey));
     }
 
     // One body sphere coloured by the target's side, and a rim coloured by the caster's
@@ -99,7 +99,7 @@ public class SpellStudioPreviewTests
     }
 
     [TestCaseSource(nameof(Elements))]
-    public void Sample_EachElement_BuildsADisabledEffectInThePreviewScene(EffectElement element)
+    public void Sample_EachElement_BuildsADisabledEffectInThePreviewScene(EffectKey element)
     {
         _preset.element = element;
         _preset.critical = true;
@@ -110,7 +110,7 @@ public class SpellStudioPreviewTests
         Assert.IsFalse(effect.enabled); // the timeline is the only clock
         Assert.Greater(effect.parts.Count, 0);
         Assert.IsTrue(EditorSceneManager.IsPreviewScene(effect.gameObject.scene));
-        Assert.AreNotSame(_preset.vocabulary.elements[element].parts, effect.recipe.entry.parts);
+        Assert.AreNotSame(_preset.vocabulary.entries[element].parts, effect.recipe.entry.parts);
         foreach (Transform part in effect.parts)
         {
             Assert.NotNull(part.GetComponent<MeshFilter>().sharedMesh, part.name);
@@ -120,7 +120,7 @@ public class SpellStudioPreviewTests
     }
 
     [TestCaseSource(nameof(Elements))]
-    public void Sample_SeekBack_RebuildsTheSamePose(EffectElement element)
+    public void Sample_SeekBack_RebuildsTheSamePose(EffectKey element)
     {
         _preset.element = element;
         _preset.tempo = EffectTempo.ForDuration;
@@ -145,7 +145,7 @@ public class SpellStudioPreviewTests
     [Test]
     public void Sample_TickingStatusBeforeItsFirstTick_ShowsReadablePresence()
     {
-        _preset.element = EffectElement.Rise;
+        _preset.element = EffectKey.Rise;
         _preset.tempo = EffectTempo.PerPeriod;
         _preset.periodSeconds = 1f;
 
@@ -236,7 +236,7 @@ public class SpellStudioPreviewTests
     public void Capture_RiseAlone_RendersVisiblePixelsIntoTheCallersTexture()
     {
         IgnoreWithoutGraphics();
-        _preset.element = EffectElement.Rise;
+        _preset.element = EffectKey.Rise;
         _preset.family = EffectFamily.Heal;
         _preview.isGroundShown = false;
         _preview.isReferenceShown = false;

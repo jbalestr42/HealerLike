@@ -135,7 +135,7 @@ public class SpellPreviewTargetTests
         creature.parts[0].localPosition = Vector3.up * 2f;
         creature.parts[0].dimensions = Vector3.one;
         creature.neckLocal = Vector3.up * 2.5f;
-        _preset.element = EffectElement.Burst;
+        _preset.element = EffectKey.Burst;
         float healerHeight = _preview.Sample(_preset, 0.1f).transform.position.y;
 
         _preview.target.recipe = creature;

@@ -10,10 +10,10 @@ namespace HealerLike.Render.Spells
         public static bool TryValidate(EffectChannels channels, EffectVocabulary vocabulary, out string error)
         {
             if (!TryValidateChannels(channels, out error)) return false;
-            if (vocabulary == null || vocabulary.elements == null
-                || !vocabulary.TryGetElement(channels.operation, channels.aspect, channels.tempo, out EffectElement element)
-                || !Enum.IsDefined(typeof(EffectElement), element)
-                || !vocabulary.elements.TryGetValue(element, out ElementEntry entry) || entry == null)
+            if (vocabulary == null || vocabulary.entries == null
+                || !vocabulary.TryGetElement(channels.operation, channels.aspect, channels.tempo, out EffectKey element)
+                || !Enum.IsDefined(typeof(EffectKey), element)
+                || !vocabulary.entries.TryGetValue(element, out ElementEntry entry) || entry == null)
             {
                 error = "The effect vocabulary is missing the selected cell entry.";
                 return false;

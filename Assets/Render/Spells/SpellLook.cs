@@ -7,7 +7,7 @@ namespace HealerLike.Render.Spells
     public class SpellLook
     {
         public EffectRecipeAsset recipe;
-        public EffectElement element;
+        public EffectKey element;
         // Picks the colour, mana elements keep their own
         public EffectFamily family;
         public EffectTempo tempo;

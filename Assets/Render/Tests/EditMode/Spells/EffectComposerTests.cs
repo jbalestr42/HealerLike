@@ -15,17 +15,17 @@ public class EffectComposerTests
         return new EffectChannels { family = family, group = group, tempo = tempo };
     }
 
-    [TestCase(EffectFamily.Damage, AttributeGroup.Offence, EffectElement.Burst)]
-    [TestCase(EffectFamily.Heal, AttributeGroup.Offence, EffectElement.Rise)]
-    [TestCase(EffectFamily.Rot, AttributeGroup.Offence, EffectElement.Drips)]
-    [TestCase(EffectFamily.Renew, AttributeGroup.Offence, EffectElement.Stalks)]
-    [TestCase(EffectFamily.Boon, AttributeGroup.Offence, EffectElement.Orbit)]
-    [TestCase(EffectFamily.Boon, AttributeGroup.Defence, EffectElement.Plates)]
-    [TestCase(EffectFamily.Boon, AttributeGroup.Prevention, EffectElement.Bud)]
-    [TestCase(EffectFamily.Bane, AttributeGroup.Offence, EffectElement.Press)]
-    [TestCase(EffectFamily.Bane, AttributeGroup.Defence, EffectElement.Crack)]
+    [TestCase(EffectFamily.Damage, AttributeGroup.Offence, EffectKey.Burst)]
+    [TestCase(EffectFamily.Heal, AttributeGroup.Offence, EffectKey.Rise)]
+    [TestCase(EffectFamily.Rot, AttributeGroup.Offence, EffectKey.Drips)]
+    [TestCase(EffectFamily.Renew, AttributeGroup.Offence, EffectKey.Stalks)]
+    [TestCase(EffectFamily.Boon, AttributeGroup.Offence, EffectKey.Orbit)]
+    [TestCase(EffectFamily.Boon, AttributeGroup.Defence, EffectKey.Plates)]
+    [TestCase(EffectFamily.Boon, AttributeGroup.Prevention, EffectKey.Bud)]
+    [TestCase(EffectFamily.Bane, AttributeGroup.Offence, EffectKey.Press)]
+    [TestCase(EffectFamily.Bane, AttributeGroup.Defence, EffectKey.Crack)]
     public void Element_FamilyAndGroup_PicksTheTableElement(EffectFamily family, AttributeGroup group,
-                                                            EffectElement expected)
+                                                            EffectKey expected)
     {
         Assert.AreEqual(expected, EffectComposer.Element(Channels(family, group)));
     }
@@ -59,9 +59,9 @@ public class EffectComposerTests
                            EffectComposer.Element(Channels(EffectFamily.Bane, group)));
     }
 
-    [TestCase(true, EffectElement.ManaUp)]
-    [TestCase(false, EffectElement.ManaDown)]
-    public void Mana_Sign_PicksUpOrDown(bool isGain, EffectElement expected)
+    [TestCase(true, EffectKey.ManaUp)]
+    [TestCase(false, EffectKey.ManaDown)]
+    public void Mana_Sign_PicksUpOrDown(bool isGain, EffectKey expected)
     {
         Assert.AreEqual(expected, EffectComposer.Mana(isGain));
     }
@@ -94,7 +94,7 @@ public class EffectComposerTests
     {
         EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
 
-        EffectRecipe recipe = EffectComposer.Compose(vocabulary, EffectElement.ManaUp, EffectFamily.Heal,
+        EffectRecipe recipe = EffectComposer.Compose(vocabulary, EffectKey.ManaUp, EffectFamily.Heal,
                                                      EffectTempo.Once, 0f, 1, 0f, 0f);
 
         Assert.AreEqual(vocabulary.palette.mana, recipe.colour);
@@ -105,7 +105,7 @@ public class EffectComposerTests
     [TestCase(9, 2)]
     public void Count_OrbitStacks_KeepsTwoReadableRingsWhileBeadsShowStacks(int stacks, int expected)
     {
-        ElementEntry orbit = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Orbit);
+        ElementEntry orbit = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectKey.Orbit);
 
         Assert.AreEqual(expected, EffectComposer.Count(orbit, stacks, 0f, 0f));
     }
@@ -115,7 +115,7 @@ public class EffectComposerTests
     [TestCase(2.5f, 3)]
     public void Count_PlateCharges_OnePlatePerCharge(float charges, int expected)
     {
-        ElementEntry plates = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Plates);
+        ElementEntry plates = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectKey.Plates);
 
         Assert.AreEqual(expected, EffectComposer.Count(plates, 1, charges, 0f));
     }
@@ -126,12 +126,12 @@ public class EffectComposerTests
         Assert.IsNull(EffectComposer.Compose(null, Channels(EffectFamily.Heal, AttributeGroup.Offence), 1, 0f));
     }
 
-    [TestCase(ResourceKind.Health, true, EffectElement.Rise, EffectFamily.Heal)]
-    [TestCase(ResourceKind.Health, false, EffectElement.Burst, EffectFamily.Damage)]
-    [TestCase(ResourceKind.Mana, true, EffectElement.ManaUp, EffectFamily.Heal)]
-    [TestCase(ResourceKind.Mana, false, EffectElement.ManaDown, EffectFamily.Damage)]
+    [TestCase(ResourceKind.Health, true, EffectKey.Rise, EffectFamily.Heal)]
+    [TestCase(ResourceKind.Health, false, EffectKey.Burst, EffectFamily.Damage)]
+    [TestCase(ResourceKind.Mana, true, EffectKey.ManaUp, EffectFamily.Heal)]
+    [TestCase(ResourceKind.Mana, false, EffectKey.ManaDown, EffectFamily.Damage)]
     public void Impact_ResourceAndSign_PicksTheElementAndFamily(ResourceKind resource, bool isGain,
-                                                               EffectElement element, EffectFamily family)
+                                                               EffectKey element, EffectFamily family)
     {
         EffectRecipe recipe = EffectComposer.Impact(RenderTestAssets.LoadEffectVocabulary(), resource, isGain, 0.2f);
 
@@ -147,15 +147,15 @@ public class EffectComposerTests
         EffectRecipe light = EffectComposer.Impact(vocabulary, ResourceKind.Health, false, 0f);
         EffectRecipe full = EffectComposer.Impact(vocabulary, ResourceKind.Health, false, 1f);
 
-        Assert.AreEqual(EffectComposer.BurstScaleMin * vocabulary.GetEntry(EffectElement.Burst).presentation.scale, light.scale);
-        Assert.AreEqual(EffectComposer.BurstScaleMax * vocabulary.GetEntry(EffectElement.Burst).presentation.scale, full.scale);
-        Assert.AreEqual(vocabulary.GetEntry(EffectElement.Rise).presentation.scale,
+        Assert.AreEqual(EffectComposer.BurstScaleMin * vocabulary.GetEntry(EffectKey.Burst).presentation.scale, light.scale);
+        Assert.AreEqual(EffectComposer.BurstScaleMax * vocabulary.GetEntry(EffectKey.Burst).presentation.scale, full.scale);
+        Assert.AreEqual(vocabulary.GetEntry(EffectKey.Rise).presentation.scale,
             EffectComposer.Impact(vocabulary, ResourceKind.Health, true, 1f).scale);
     }
 
-    [TestCase(ZoneKind.Heal, EffectElement.Ring, EffectFamily.Heal)]
-    [TestCase(ZoneKind.Hostile, EffectElement.Litter, EffectFamily.Bane)]
-    public void Area_Kind_ComposesTheFootprintForTheEntryCycle(ZoneKind kind, EffectElement element,
+    [TestCase(ZoneKind.Heal, EffectKey.Ring, EffectFamily.Heal)]
+    [TestCase(ZoneKind.Hostile, EffectKey.Litter, EffectFamily.Bane)]
+    public void Area_Kind_ComposesTheFootprintForTheEntryCycle(ZoneKind kind, EffectKey element,
                                                               EffectFamily family)
     {
         EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
@@ -174,7 +174,7 @@ public class EffectComposerTests
 
         EffectRecipe recipe = EffectComposer.Link(vocabulary, EffectFamily.Heal);
 
-        Assert.AreEqual(EffectElement.Beam, recipe.element);
+        Assert.AreEqual(EffectKey.Beam, recipe.element);
         Assert.AreEqual(vocabulary.palette.heal, recipe.colour);
     }
 
@@ -183,7 +183,7 @@ public class EffectComposerTests
     {
         EffectRecipe recipe = EffectComposer.Shield(RenderTestAssets.LoadEffectVocabulary(), 3f);
 
-        Assert.AreEqual(EffectElement.Plates, recipe.element);
+        Assert.AreEqual(EffectKey.Plates, recipe.element);
         Assert.AreEqual(3, recipe.count);
     }
 }

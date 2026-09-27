@@ -189,7 +189,7 @@ namespace HealerLike.Render.Studio.Editor
                 }
             }
 
-            foreach (EffectElement element in Enum.GetValues(typeof(EffectElement)))
+            foreach (EffectKey element in Enum.GetValues(typeof(EffectKey)))
             {
                 SpellStudioPreset draft = Add(ScriptableObject.CreateInstance<SpellStudioPreset>());
                 draft.name = ObjectNames.NicifyVariableName(element.ToString());

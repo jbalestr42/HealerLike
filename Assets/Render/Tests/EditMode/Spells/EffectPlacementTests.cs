@@ -54,21 +54,21 @@ public class EffectPlacementTests
         return anchors;
     }
 
-    BuffHandlerFactory Handler(EffectElement element)
+    BuffHandlerFactory Handler(EffectKey element)
     {
         switch (element)
         {
-            case EffectElement.Orbit:
+            case EffectKey.Orbit:
                 return SpellSinkFixture.Modifier(AttributeType.Damage, 10f, _created);
-            case EffectElement.Plates:
+            case EffectKey.Plates:
                 return SpellSinkFixture.Modifier(AttributeType.HitArmor, 2f, _created);
-            case EffectElement.Bud:
+            case EffectKey.Bud:
                 return SpellSinkFixture.Invincible(_created);
-            case EffectElement.Press:
+            case EffectKey.Press:
                 return SpellSinkFixture.Modifier(AttributeType.Damage, -5f, _created);
-            case EffectElement.Crack:
+            case EffectKey.Crack:
                 return SpellSinkFixture.Modifier(AttributeType.FlatArmor, -5f, _created);
-            case EffectElement.Drips:
+            case EffectKey.Drips:
                 return SpellSinkFixture.Consumer(10f, 2f, _created);
             default:
                 return SpellSinkFixture.Consumer(-4f, 1f, _created);
@@ -89,7 +89,7 @@ public class EffectPlacementTests
         return anchors;
     }
 
-    void AssertOffTheHead(GameObject target, BuffHandlerFactory handler, EffectElement element, EffectAnchors anchors,
+    void AssertOffTheHead(GameObject target, BuffHandlerFactory handler, EffectKey element, EffectAnchors anchors,
                           string unit)
     {
         float grown = anchors.headRadius + EffectPlacement.HeadMargin * anchors.bodyRadius;
@@ -151,8 +151,8 @@ public class EffectPlacementTests
     // bounds out of the head sphere grown by a tenth of a body unit, over the whole of a status
     [Test]
     public void SetStatus_LastingElementOnEveryComposedHead_NeverReachesTheHead(
-        [Values(EffectElement.Orbit, EffectElement.Plates, EffectElement.Bud, EffectElement.Press, EffectElement.Crack,
-                EffectElement.Drips, EffectElement.Stalks)] EffectElement element,
+        [Values(EffectKey.Orbit, EffectKey.Plates, EffectKey.Bud, EffectKey.Press, EffectKey.Crack,
+                EffectKey.Drips, EffectKey.Stalks)] EffectKey element,
         [Values(LookSide.Plant, LookSide.Stone)] LookSide side)
     {
         BuffHandlerFactory handler = Handler(element);
@@ -171,15 +171,15 @@ public class EffectPlacementTests
     public void SetStatus_BoonOffenceAndDefence_OrbitAndPlatesAtOnce()
     {
         _target.AddComponent<FakeEffectAnchors>().anchors = Tall();
-        BuffHandlerFactory offence = Handler(EffectElement.Orbit);
-        BuffHandlerFactory defence = Handler(EffectElement.Plates);
+        BuffHandlerFactory offence = Handler(EffectKey.Orbit);
+        BuffHandlerFactory defence = Handler(EffectKey.Plates);
 
         _sink.SetStatus(null, _target, offence, 1, 0f, 6f);
         _sink.SetStatus(null, _target, defence, 1, 0f, 6f);
 
         Assert.AreEqual(2, _sink.statusCount);
-        Assert.IsNotNull(_sink.GetElement(_target, EffectElement.Orbit));
-        Assert.IsNotNull(_sink.GetElement(_target, EffectElement.Plates));
+        Assert.IsNotNull(_sink.GetElement(_target, EffectKey.Orbit));
+        Assert.IsNotNull(_sink.GetElement(_target, EffectKey.Plates));
     }
 
     [Test]
@@ -187,7 +187,7 @@ public class EffectPlacementTests
     {
         EffectAnchors anchors = Tall();
         _target.AddComponent<FakeEffectAnchors>().anchors = anchors;
-        BuffHandlerFactory rot = Handler(EffectElement.Drips);
+        BuffHandlerFactory rot = Handler(EffectKey.Drips);
 
         _sink.SetStatus(null, _target, rot, 1, 0f, 6f);
 
@@ -206,11 +206,11 @@ public class EffectPlacementTests
         anchors.headCentre = new Vector3(0f, 0.75f, 0f);
         anchors.headRadius = 0.4f;
         _target.AddComponent<FakeEffectAnchors>().anchors = anchors;
-        BuffHandlerFactory renew = Handler(EffectElement.Stalks);
+        BuffHandlerFactory renew = Handler(EffectKey.Stalks);
 
         _sink.SetStatus(null, _target, renew, 1, 1.5f, 6f);
 
-        SpellEffect effect = _sink.GetElement(_target, EffectElement.Stalks);
+        SpellEffect effect = _sink.GetElement(_target, EffectKey.Stalks);
         effect.Pose(.5f, 1.5f);
         float top = 0f;
         foreach (Transform sphere in effect.shapes)
@@ -230,7 +230,7 @@ public class EffectPlacementTests
     {
         EffectAnchors anchors = Squat();
         _target.AddComponent<FakeEffectAnchors>().anchors = anchors;
-        BuffHandlerFactory weaken = Handler(EffectElement.Press);
+        BuffHandlerFactory weaken = Handler(EffectKey.Press);
 
         _sink.SetStatus(null, _target, weaken, 1, 0f, 6f);
 
@@ -245,11 +245,11 @@ public class EffectPlacementTests
     {
         EffectAnchors anchors = Tall();
         _target.AddComponent<FakeEffectAnchors>().anchors = anchors;
-        BuffHandlerFactory sanctuary = Handler(EffectElement.Bud);
+        BuffHandlerFactory sanctuary = Handler(EffectKey.Bud);
 
         _sink.SetStatus(null, _target, sanctuary, 1, 1f, 6f);
 
-        SpellEffect effect = _sink.GetElement(_target, EffectElement.Bud);
+        SpellEffect effect = _sink.GetElement(_target, EffectKey.Bud);
         Assert.IsNotNull(effect);
         effect.Advance(effect.recipe.cycleSeconds);
         float top = float.NegativeInfinity;
@@ -270,7 +270,7 @@ public class EffectPlacementTests
         point.transform.SetParent(_target.transform);
         point.transform.position = new Vector3(1f, 0.4f, 2f);
         TestHelpers.SetPrivateField(entity, "_targetPoint", point);
-        BuffHandlerFactory boon = Handler(EffectElement.Orbit);
+        BuffHandlerFactory boon = Handler(EffectKey.Orbit);
 
         _sink.SetStatus(null, _target, boon, 1, 0f, 4f);
 

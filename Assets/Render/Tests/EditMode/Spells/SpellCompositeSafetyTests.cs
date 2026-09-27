@@ -25,7 +25,7 @@ namespace HealerLike.Render.Spells
 
         static EffectRecipe Recipe(EffectSocket socket, bool billboard = false)
         {
-            return new EffectRecipe { element = EffectElement.Orbit, count = 1, cycleSeconds = 1f,
+            return new EffectRecipe { element = EffectKey.Orbit, count = 1, cycleSeconds = 1f,
                 colour = Color.white, motion = EffectMotionKind.Orbit, socket = socket,
                 tempo = EffectTempo.ForDuration,
                 entry = new ElementEntry { socket = socket, motion = EffectMotionKind.Orbit,

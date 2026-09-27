@@ -7,7 +7,7 @@ namespace HealerLike.Render.Spells
     public struct StatusKey : IEquatable<StatusKey>
     {
         public GameObject target;
-        public EffectElement element;
+        public EffectKey element;
         public ElementEntry entry;
         public int layer;
         public HealerLike.Render.Grammar.EffectFamily family;
@@ -17,7 +17,7 @@ namespace HealerLike.Render.Spells
         public ABuffHandlerFactory clockOwner;
         public EffectRecipe[] additions;
 
-        public StatusKey(GameObject target, EffectElement element)
+        public StatusKey(GameObject target, EffectKey element)
         {
             this = default;
             this.target = target;

@@ -24,7 +24,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void Apply_EveryFamilyHasReadableDurationAndBoundedProceduralComposition()
         {
-            foreach (EffectElement element in Enum.GetValues(typeof(EffectElement)))
+            foreach (EffectKey element in Enum.GetValues(typeof(EffectKey)))
             {
                 ElementEntry entry = vocabulary.GetEntry(element);
                 Assert.That(entry.cycleSeconds, Is.InRange(1f, 3f), element.ToString());
@@ -50,12 +50,12 @@ namespace HealerLike.Render.Spells
             {
                 vocabulary.palette = palette;
                 var cell = new EffectCell(EffectOperation.Heal, EffectAspect.Defence);
-                var custom = new EffectCellEntry(EffectElement.Bud, EffectElement.Stalks, true);
-                vocabulary.table[cell] = custom;
+                var custom = new EffectCellEntry(EffectKey.Bud, EffectKey.Stalks, true);
+                vocabulary.legacyTable[cell] = custom;
                 SpellPolishVocabulary.Apply(vocabulary);
                 Assert.That(vocabulary.palette, Is.SameAs(palette));
-                Assert.That(vocabulary.table[cell].once, Is.EqualTo(EffectElement.Bud));
-                Assert.That(vocabulary.table[cell].periodic, Is.EqualTo(EffectElement.Stalks));
+                Assert.That(vocabulary.legacyTable[cell].once, Is.EqualTo(EffectKey.Bud));
+                Assert.That(vocabulary.legacyTable[cell].periodic, Is.EqualTo(EffectKey.Stalks));
             }
             finally { UnityEngine.Object.DestroyImmediate(palette); }
         }
@@ -63,37 +63,37 @@ namespace HealerLike.Render.Spells
         [Test]
         public void Apply_RepeatedAuthoringIsStableAndDoesNotAccumulateParts()
         {
-            string before = JsonUtility.ToJson(vocabulary.GetEntry(EffectElement.Stalks));
+            string before = JsonUtility.ToJson(vocabulary.GetEntry(EffectKey.Stalks));
             SpellPolishVocabulary.Apply(vocabulary);
-            Assert.That(vocabulary.elements.Count, Is.EqualTo(14));
-            Assert.That(JsonUtility.ToJson(vocabulary.GetEntry(EffectElement.Stalks)), Is.EqualTo(before));
+            Assert.That(vocabulary.entries.Count, Is.EqualTo(14));
+            Assert.That(JsonUtility.ToJson(vocabulary.GetEntry(EffectKey.Stalks)), Is.EqualTo(before));
         }
 
         [Test]
         public void Apply_PresentationRolesAreAuthoredIndependentlyFromElementNames()
         {
-            Assert.That(vocabulary.GetEntry(EffectElement.Burst).presentation.billboard, Is.True);
-            Assert.That(vocabulary.GetEntry(EffectElement.Plates).presentation.isShield, Is.True);
-            Assert.That(vocabulary.GetEntry(EffectElement.Bud).presentation.closesOverHead, Is.True);
-            Assert.That(vocabulary.GetEntry(EffectElement.ManaUp).presentation.colourRole, Is.EqualTo(ColourRole.Mana));
-            Assert.That(vocabulary.GetEntry(EffectElement.ManaDown).presentation.colourRole, Is.EqualTo(ColourRole.Mana));
-            Assert.That(vocabulary.GetEntry(EffectElement.Beam).presentation.linkBeadSeconds, Is.GreaterThanOrEqualTo(1f));
+            Assert.That(vocabulary.GetEntry(EffectKey.Burst).presentation.billboard, Is.True);
+            Assert.That(vocabulary.GetEntry(EffectKey.Plates).presentation.isShield, Is.True);
+            Assert.That(vocabulary.GetEntry(EffectKey.Bud).presentation.closesOverHead, Is.True);
+            Assert.That(vocabulary.GetEntry(EffectKey.ManaUp).presentation.colourRole, Is.EqualTo(ColourRole.Mana));
+            Assert.That(vocabulary.GetEntry(EffectKey.ManaDown).presentation.colourRole, Is.EqualTo(ColourRole.Mana));
+            Assert.That(vocabulary.GetEntry(EffectKey.Beam).presentation.linkBeadSeconds, Is.GreaterThanOrEqualTo(1f));
         }
 
         [Test]
         public void Apply_WardPreventionUsesEnclosingPetalsWhileArmorKeepsPlates()
         {
             Assert.That(vocabulary.TryGetElement(EffectOperation.Ward, EffectAspect.Prevention,
-                out EffectElement prevention), Is.True);
-            Assert.That(prevention, Is.EqualTo(EffectElement.Bud));
+                out EffectKey prevention), Is.True);
+            Assert.That(prevention, Is.EqualTo(EffectKey.Bud));
             Assert.That(vocabulary.GetEntry(prevention).presentation.closesOverHead, Is.True);
-            Assert.That(vocabulary.GetEntry(EffectElement.Plates).presentation.isShield, Is.True);
+            Assert.That(vocabulary.GetEntry(EffectKey.Plates).presentation.isShield, Is.True);
         }
 
         [Test]
         public void Apply_SingleArmorChargeFacesTheGameplayCamera()
         {
-            ElementEntry armor = vocabulary.GetEntry(EffectElement.Plates);
+            ElementEntry armor = vocabulary.GetEntry(EffectKey.Plates);
             Assert.That(EffectComposer.Count(armor, 1, 1, 0), Is.EqualTo(1));
             Assert.That(armor.parts[0].position.z, Is.LessThan(-1f));
             Assert.That(armor.parts[0].position.x, Is.EqualTo(0).Within(.0001f));
@@ -102,7 +102,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void Apply_EverySpellMovesAndColoursTheGround()
         {
-            foreach (EffectElement element in Enum.GetValues(typeof(EffectElement)))
+            foreach (EffectKey element in Enum.GetValues(typeof(EffectKey)))
             {
                 ElementEntry entry = vocabulary.GetEntry(element);
                 Assert.That(entry.ground, Is.Not.Null, element.ToString());

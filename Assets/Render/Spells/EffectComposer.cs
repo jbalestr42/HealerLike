@@ -14,12 +14,12 @@ namespace HealerLike.Render.Spells
         public static readonly float BurstScaleMin = 0.8f;
         public static readonly float BurstScaleMax = 1.6f;
 
-        public static EffectElement Element(EffectChannels channels)
+        public static EffectKey Element(EffectChannels channels)
         {
             return Element(null, channels);
         }
 
-        public static EffectElement Element(EffectVocabulary vocabulary, EffectChannels channels)
+        public static EffectKey Element(EffectVocabulary vocabulary, EffectChannels channels)
         {
             EffectOperation operation = channels.operation;
             EffectAspect aspect = channels.aspect;
@@ -27,9 +27,9 @@ namespace HealerLike.Render.Spells
             if (channels.group != AttributeGroup.Offence) aspect = (EffectAspect)channels.group;
             EffectTempo tempo = channels.family == EffectFamily.Rot || channels.family == EffectFamily.Renew
                 ? EffectTempo.PerPeriod : channels.tempo;
-            EffectElement element;
+            EffectKey element;
             if (vocabulary != null && vocabulary.TryGetElement(operation, aspect, tempo, out element)) return element;
-            if (vocabulary != null) return default(EffectElement);
+            if (vocabulary != null) return default(EffectKey);
             return LegacyElement(operation, aspect, tempo);
         }
 
@@ -45,26 +45,26 @@ namespace HealerLike.Render.Spells
             }
         }
 
-        static EffectElement LegacyElement(EffectOperation operation, EffectAspect aspect, EffectTempo tempo)
+        static EffectKey LegacyElement(EffectOperation operation, EffectAspect aspect, EffectTempo tempo)
         {
             if (tempo == EffectTempo.PerPeriod)
             {
-                if (operation == EffectOperation.Damage) return EffectElement.Drips;
-                if (operation == EffectOperation.Heal) return EffectElement.Stalks;
+                if (operation == EffectOperation.Damage) return EffectKey.Drips;
+                if (operation == EffectOperation.Heal) return EffectKey.Stalks;
             }
-            if (operation == EffectOperation.Ward) return EffectElement.Plates;
-            if (operation == EffectOperation.Mana) return EffectElement.ManaUp;
-            return operation == EffectOperation.Damage ? EffectElement.Burst
-                : operation == EffectOperation.Heal ? EffectElement.Rise
-                : operation == EffectOperation.Boon ? (aspect == EffectAspect.Defence ? EffectElement.Plates
-                    : aspect == EffectAspect.Prevention ? EffectElement.Bud : EffectElement.Orbit)
-                : aspect == EffectAspect.Offence ? EffectElement.Press : EffectElement.Crack;
+            if (operation == EffectOperation.Ward) return EffectKey.Plates;
+            if (operation == EffectOperation.Mana) return EffectKey.ManaUp;
+            return operation == EffectOperation.Damage ? EffectKey.Burst
+                : operation == EffectOperation.Heal ? EffectKey.Rise
+                : operation == EffectOperation.Boon ? (aspect == EffectAspect.Defence ? EffectKey.Plates
+                    : aspect == EffectAspect.Prevention ? EffectKey.Bud : EffectKey.Orbit)
+                : aspect == EffectAspect.Offence ? EffectKey.Press : EffectKey.Crack;
         }
 
         // Mana draws with its own pair of elements, up for a gain and down for a loss
-        public static EffectElement Mana(bool isGain)
+        public static EffectKey Mana(bool isGain)
         {
-            return isGain ? EffectElement.ManaUp : EffectElement.ManaDown;
+            return isGain ? EffectKey.ManaUp : EffectKey.ManaDown;
         }
 
         // A resolved change on a unit: a heal rises, a hit bursts, mana goes up or down; amount is the share of
@@ -72,11 +72,11 @@ namespace HealerLike.Render.Spells
         public static EffectRecipe Impact(EffectVocabulary vocabulary, ResourceKind resource, bool isGain, float amount)
         {
             EffectFamily family = EffectFamily.Damage;
-            EffectElement element = EffectElement.Burst;
+            EffectKey element = EffectKey.Burst;
             if (isGain)
             {
                 family = EffectFamily.Heal;
-                element = EffectElement.Rise;
+                element = EffectKey.Rise;
             }
 
             if (resource == ResourceKind.Mana)
@@ -98,22 +98,22 @@ namespace HealerLike.Render.Spells
         {
             if (kind == ZoneKind.Hostile)
             {
-                return Compose(vocabulary, EffectElement.Litter, EffectFamily.Bane, EffectTempo.Once, 0f, 1, 0f, 0f);
+                return Compose(vocabulary, EffectKey.Litter, EffectFamily.Bane, EffectTempo.Once, 0f, 1, 0f, 0f);
             }
 
-            return Compose(vocabulary, EffectElement.Ring, EffectFamily.Heal, EffectTempo.Once, 0f, 1, 0f, 0f);
+            return Compose(vocabulary, EffectKey.Ring, EffectFamily.Heal, EffectTempo.Once, 0f, 1, 0f, 0f);
         }
 
         // A beam in the family's accent, lime for a heal so gold stays with Boon
         public static EffectRecipe Link(EffectVocabulary vocabulary, EffectFamily family)
         {
-            return Compose(vocabulary, EffectElement.Beam, family, EffectTempo.Once, 0f, 1, 0f, 0f);
+            return Compose(vocabulary, EffectKey.Beam, family, EffectTempo.Once, 0f, 1, 0f, 0f);
         }
 
         // HitArmor charges draw as the Boon defence plates, one plate per charge
         public static EffectRecipe Shield(EffectVocabulary vocabulary, float charges)
         {
-            return Compose(vocabulary, EffectElement.Plates, EffectFamily.Boon, EffectTempo.ForDuration, 0f, 1, charges,
+            return Compose(vocabulary, EffectKey.Plates, EffectFamily.Boon, EffectTempo.ForDuration, 0f, 1, charges,
                            0f);
         }
 
@@ -145,7 +145,7 @@ namespace HealerLike.Render.Spells
             return recipe;
         }
 
-        public static EffectRecipe Compose(EffectVocabulary vocabulary, EffectElement element, EffectFamily family,
+        public static EffectRecipe Compose(EffectVocabulary vocabulary, EffectKey element, EffectFamily family,
                                            EffectTempo tempo, float periodSeconds, int stacks, float charges,
                                            float amount, ElementEntry entryOverride = null,
                                            bool useColourOverride = false, Color colourOverride = default(Color))
@@ -220,7 +220,7 @@ namespace HealerLike.Render.Spells
             return shapes;
         }
 
-        public static Color Colour(LookPalette palette, EffectElement element, EffectFamily family)
+        public static Color Colour(LookPalette palette, EffectKey element, EffectFamily family)
         {
             if (palette == null)
             {
@@ -228,7 +228,7 @@ namespace HealerLike.Render.Spells
                 return Color.magenta;
             }
 
-            if (element == EffectElement.ManaUp || element == EffectElement.ManaDown)
+            if (element == EffectKey.ManaUp || element == EffectKey.ManaDown)
             {
                 return palette.Colour(ColourRole.Mana, family);
             }

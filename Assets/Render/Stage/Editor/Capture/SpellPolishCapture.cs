@@ -31,7 +31,7 @@ namespace HealerLike.Render.Stage
             Material material = RenderAssets.Load<Material>("Assets/Render/Look/Look_Default.mat");
             using (var images = new SpellPolishImages(folder))
             {
-                foreach (EffectElement element in Enum.GetValues(typeof(EffectElement)))
+                foreach (EffectKey element in Enum.GetValues(typeof(EffectKey)))
                 {
                     using (var scene = new GrassLabScene(_manager))
                     {
@@ -128,21 +128,21 @@ namespace HealerLike.Render.Stage
             scene.look.ApplyGlobals();
         }
 
-        static EffectFamily Family(EffectElement element)
+        static EffectFamily Family(EffectKey element)
         {
             switch (element)
             {
-                case EffectElement.Rise:
-                case EffectElement.Ring:
-                case EffectElement.Beam: return EffectFamily.Heal;
-                case EffectElement.Stalks: return EffectFamily.Renew;
-                case EffectElement.Drips: return EffectFamily.Rot;
-                case EffectElement.Orbit:
-                case EffectElement.Plates:
-                case EffectElement.Bud: return EffectFamily.Boon;
-                case EffectElement.Press:
-                case EffectElement.Crack:
-                case EffectElement.Litter: return EffectFamily.Bane;
+                case EffectKey.Rise:
+                case EffectKey.Ring:
+                case EffectKey.Beam: return EffectFamily.Heal;
+                case EffectKey.Stalks: return EffectFamily.Renew;
+                case EffectKey.Drips: return EffectFamily.Rot;
+                case EffectKey.Orbit:
+                case EffectKey.Plates:
+                case EffectKey.Bud: return EffectFamily.Boon;
+                case EffectKey.Press:
+                case EffectKey.Crack:
+                case EffectKey.Litter: return EffectFamily.Bane;
                 default: return EffectFamily.Damage;
             }
         }

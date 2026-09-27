@@ -252,10 +252,10 @@ public class SpawnDressingTests
         Assert.IsNull(spawnedGo.GetComponent<ProjectileVisualObserver>());
     }
 
-    [TestCase(-5f, ZoneKind.Heal, EffectElement.Ring)]
-    [TestCase(5f, ZoneKind.Hostile, EffectElement.Litter)]
+    [TestCase(-5f, ZoneKind.Heal, EffectKey.Ring)]
+    [TestCase(5f, ZoneKind.Hostile, EffectKey.Litter)]
     public void OnProjectileSpawned_Area_PulsesItsKindOnceAtStartAndMasksItsOwnVisual(float consumerValue,
-        ZoneKind kind, EffectElement element)
+        ZoneKind kind, EffectKey element)
     {
         _scene.manager.Init(_scene.entityManager, _scene.player);
         AreaOfEffect area = _objects.SpawnArea();

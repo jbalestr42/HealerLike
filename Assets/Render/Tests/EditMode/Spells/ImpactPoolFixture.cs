@@ -48,7 +48,7 @@ namespace HealerLike.Render.Spells
             int beams = 0;
             foreach (SpellEffect effect in _host.GetComponentsInChildren<SpellEffect>())
             {
-                if (effect.element == EffectElement.Beam)
+                if (effect.element == EffectKey.Beam)
                 {
                     beams++;
                 }

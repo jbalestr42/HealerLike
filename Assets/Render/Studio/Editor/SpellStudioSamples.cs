@@ -112,22 +112,22 @@ namespace HealerLike.Render.Studio.Editor
         }
 
         // The family an element reads best in when the studio shows it on its own
-        public static EffectFamily Family(EffectElement element)
+        public static EffectFamily Family(EffectKey element)
         {
             switch (element)
             {
-                case EffectElement.Rise:
+                case EffectKey.Rise:
                     return EffectFamily.Heal;
-                case EffectElement.Stalks:
+                case EffectKey.Stalks:
                     return EffectFamily.Renew;
-                case EffectElement.Drips:
+                case EffectKey.Drips:
                     return EffectFamily.Rot;
-                case EffectElement.Press:
-                case EffectElement.Crack:
+                case EffectKey.Press:
+                case EffectKey.Crack:
                     return EffectFamily.Bane;
-                case EffectElement.Orbit:
-                case EffectElement.Plates:
-                case EffectElement.Bud:
+                case EffectKey.Orbit:
+                case EffectKey.Plates:
+                case EffectKey.Bud:
                     return EffectFamily.Boon;
                 default:
                     return EffectFamily.Damage;

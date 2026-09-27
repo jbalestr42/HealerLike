@@ -8,6 +8,8 @@ namespace HealerLike.Render.Spells
     [Serializable]
     public class ElementEntry
     {
+        // Studio-facing description. Runtime composition never switches on this value.
+        public string label;
         public EffectPresentation presentation = new EffectPresentation();
         public HealerLike.Render.Grass.GroundEffect ground;
         public float groundRadius = 1.2f;

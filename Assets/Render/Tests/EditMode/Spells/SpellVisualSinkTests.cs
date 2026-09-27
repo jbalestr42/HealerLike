@@ -59,7 +59,7 @@ public class SpellVisualSinkTests
         SpellSinkFixture.Init(shipped);
         shipped.SetStatus(null, _target, _factory, 1, 0f, 4f);
 
-        SpellEffect effect = shipped.GetElement(_target, EffectElement.Orbit);
+        SpellEffect effect = shipped.GetElement(_target, EffectKey.Orbit);
         Assert.IsNotNull(effect);
         Assert.AreSame(RenderTestAssets.LoadLookMaterial(), effect.parts[0].GetComponent<Renderer>().sharedMaterial);
         Assert.IsNull(new SerializedObject(shipped).FindProperty("_looks")); // the looks come from the manager

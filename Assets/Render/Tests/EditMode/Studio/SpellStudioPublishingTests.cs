@@ -24,7 +24,7 @@ public class SpellStudioPublishingTests
         _vocabulary = ScriptableObject.CreateInstance<EffectVocabulary>();
         _preset = ScriptableObject.CreateInstance<SpellStudioPreset>();
         _preset.vocabulary = _vocabulary;
-        _preset.element = EffectElement.Burst;
+        _preset.element = EffectKey.Burst;
         _preset.overrideEntry = true;
         _preset.overrideColour = true;
         _preset.entry = new ElementEntry { cycleSeconds = 1.2f, motion = EffectMotionKind.Rise,
@@ -48,7 +48,7 @@ public class SpellStudioPublishingTests
     public void PublishEntry_AuthoredShape_CopiesItIntoTheVocabulary()
     {
         Assert.IsTrue(SpellStudioPublishing.PublishEntry(_preset));
-        ElementEntry published = _vocabulary.elements[EffectElement.Burst];
+        ElementEntry published = _vocabulary.entries[EffectKey.Burst];
 
         _preset.entry.parts[0].size = Vector3.zero;
 
@@ -61,11 +61,11 @@ public class SpellStudioPublishingTests
     public void PublishEntry_OtherElementPresent_LeavesItAlone()
     {
         ElementEntry other = new ElementEntry { cycleSeconds = 7f };
-        _vocabulary.elements[EffectElement.Orbit] = other;
+        _vocabulary.entries[EffectKey.Orbit] = other;
 
         SpellStudioPublishing.PublishEntry(_preset);
 
-        Assert.AreSame(other, _vocabulary.elements[EffectElement.Orbit]);
+        Assert.AreSame(other, _vocabulary.entries[EffectKey.Orbit]);
     }
 
     [Test]
@@ -80,7 +80,7 @@ public class SpellStudioPublishingTests
     [Test]
     public void PublishEntry_Undone_PutsBackTheSharedEntry()
     {
-        _vocabulary.elements[EffectElement.Burst] = new ElementEntry { cycleSeconds = 8f };
+        _vocabulary.entries[EffectKey.Burst] = new ElementEntry { cycleSeconds = 8f };
         // Odin keeps the dictionary in its serialized data, which has to be current before the snapshot
         ((ISerializationCallbackReceiver)_vocabulary).OnBeforeSerialize();
         Undo.IncrementCurrentGroup();
@@ -89,7 +89,7 @@ public class SpellStudioPublishingTests
         Undo.FlushUndoRecordObjects();
         Undo.PerformUndo();
 
-        Assert.AreEqual(8f, _vocabulary.elements[EffectElement.Burst].cycleSeconds);
+        Assert.AreEqual(8f, _vocabulary.entries[EffectKey.Burst].cycleSeconds);
     }
 
     [Test]

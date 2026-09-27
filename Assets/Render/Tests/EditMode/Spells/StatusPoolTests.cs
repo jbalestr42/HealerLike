@@ -57,7 +57,7 @@ public class StatusPoolTests
         _pool.Set(null, _target, _factory, 1, 0.25f, 4f);
 
         SpellEffect effect = _pool.Get(_target, _factory);
-        Assert.AreEqual(EffectElement.Orbit, effect.element);
+        Assert.AreEqual(EffectKey.Orbit, effect.element);
         Assert.AreEqual(_target.transform, effect.transform.parent);
         Assert.IsNull(PrefabUtility.GetCorrespondingObjectFromSource(effect.gameObject));
         foreach (Transform part in effect.parts)
@@ -85,7 +85,7 @@ public class StatusPoolTests
         SpellEffect effect = _pool.Get(_target, harm);
         MaterialPropertyBlock block = new MaterialPropertyBlock();
         effect.shapes[0].GetComponent<Renderer>().GetPropertyBlock(block);
-        Assert.AreEqual(EffectElement.Press, effect.element);
+        Assert.AreEqual(EffectKey.Press, effect.element);
         Color expected = PrimitiveMeshes.Brighten(RenderTestAssets.LoadPalette().bane,
             effect.recipe.entry.parts[0].glow);
         Assert.Less(Vector4.Distance(expected, block.GetColor("_BaseColor")), 0.0001f);
@@ -121,7 +121,7 @@ public class StatusPoolTests
         _pool.Set(null, _target, _factory, 1, 0f, 4f);
         _pool.Set(null, _target, _second, 1, 0f, 4f);
 
-        SpellEffect orbit = _pool.Get(_target, EffectElement.Orbit);
+        SpellEffect orbit = _pool.Get(_target, EffectKey.Orbit);
         Assert.AreEqual(1, _pool.count);
         Assert.AreSame(orbit.gameObject, _pool.Get(_target, _second).gameObject);
         Assert.AreEqual(2, orbit.stacks);
@@ -166,7 +166,7 @@ public class StatusPoolTests
 
         _pool.SetCharges(_target, 3f);
 
-        SpellEffect plates = _pool.Get(_target, EffectElement.Plates);
+        SpellEffect plates = _pool.Get(_target, EffectKey.Plates);
         Assert.AreEqual(1, _pool.count);
         Assert.AreEqual(3, plates.count);
 
@@ -182,7 +182,7 @@ public class StatusPoolTests
         BuffHandlerFactory armor = SpellSinkFixture.Modifier(AttributeType.HitArmor, 2f, _created);
         _pool.Set(null, _target, armor, 1, 0f, 4f);
         _pool.SetCharges(_target, 3f);
-        SpellEffect plates = _pool.Get(_target, EffectElement.Plates);
+        SpellEffect plates = _pool.Get(_target, EffectKey.Plates);
 
         _pool.SetCharges(_target, 0f);
 

@@ -75,8 +75,8 @@ delivery shape ownership and disabled EditMode preview cleanup have dedicated re
 - Empty optional vocabulary slots mean no additive ornament. They are valid authored choices,
   covered by both empty-table parity and populated-channel composition tests.
 
-Compatibility is still explicit: legacy `EffectElement` helpers and migrated element-keyed assets
-remain for older presets and impact/area/link entry points. Retiring those labels requires an
-asset migration and visual acceptance, not merely deleting a switch. This is not a claim that
-every proposed phase of the historical handoff has been fully retired or that architecture can
-be certified perfect by passing tests.
+Compatibility is now explicit in the authored vocabulary: operation/aspect cells own their once
+and periodic entries, while additive beam, ring and litter pieces use stable piece keys. Recipes
+carry the resolved key and the entry label only as presentation metadata. SpellLooks rows are
+resolved by their cell and tempo, preserving their shipped visuals. There is no runtime reader
+for the retired element label enum.

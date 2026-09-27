@@ -5,10 +5,10 @@ namespace HealerLike.Render.Spells
 {
     public class EffectVocabularyCompatibilityTests
     {
-        [TestCase(EffectFamily.Rot, EffectElement.Drips)]
-        [TestCase(EffectFamily.Renew, EffectElement.Stalks)]
+        [TestCase(EffectFamily.Rot, EffectKey.Drips)]
+        [TestCase(EffectFamily.Renew, EffectKey.Stalks)]
         public void LegacyPeriodicFamily_EveryAspectAndClock_MatchesShippedVocabulary(
-            EffectFamily family, EffectElement expected)
+            EffectFamily family, EffectKey expected)
         {
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
             foreach (AttributeGroup group in System.Enum.GetValues(typeof(AttributeGroup)))
@@ -20,26 +20,26 @@ namespace HealerLike.Render.Spells
             }
         }
 
-        [TestCase(EffectOperation.Damage, EffectElement.Burst, EffectElement.Burst, EffectElement.Burst)]
-        [TestCase(EffectOperation.Heal, EffectElement.Rise, EffectElement.Rise, EffectElement.Rise)]
-        [TestCase(EffectOperation.Boon, EffectElement.Orbit, EffectElement.Plates, EffectElement.Bud)]
-        [TestCase(EffectOperation.Bane, EffectElement.Press, EffectElement.Crack, EffectElement.Crack)]
-        [TestCase(EffectOperation.Ward, EffectElement.Plates, EffectElement.Plates, EffectElement.Bud)]
-        [TestCase(EffectOperation.Mana, EffectElement.ManaUp, EffectElement.ManaUp, EffectElement.ManaUp)]
+        [TestCase(EffectOperation.Damage, EffectKey.Burst, EffectKey.Burst, EffectKey.Burst)]
+        [TestCase(EffectOperation.Heal, EffectKey.Rise, EffectKey.Rise, EffectKey.Rise)]
+        [TestCase(EffectOperation.Boon, EffectKey.Orbit, EffectKey.Plates, EffectKey.Bud)]
+        [TestCase(EffectOperation.Bane, EffectKey.Press, EffectKey.Crack, EffectKey.Crack)]
+        [TestCase(EffectOperation.Ward, EffectKey.Plates, EffectKey.Plates, EffectKey.Bud)]
+        [TestCase(EffectOperation.Mana, EffectKey.ManaUp, EffectKey.ManaUp, EffectKey.ManaUp)]
         public void ShippedTable_EveryOperation_HasThePinnedAspectEntries(EffectOperation operation,
-            EffectElement offence, EffectElement defence, EffectElement prevention)
+            EffectKey offence, EffectKey defence, EffectKey prevention)
         {
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
-            Assert.AreEqual(18, vocabulary.table.Count);
-            EffectElement[] expected = { offence, defence, prevention };
+            Assert.AreEqual(18, vocabulary.legacyTable.Count);
+            EffectKey[] expected = { offence, defence, prevention };
             foreach (EffectAspect aspect in System.Enum.GetValues(typeof(EffectAspect)))
             {
-                EffectCellEntry cell = vocabulary.table[new EffectCell(operation, aspect)];
+                EffectCellEntry cell = vocabulary.legacyTable[new EffectCell(operation, aspect)];
                 Assert.AreEqual(expected[(int)aspect], cell.once, aspect.ToString());
                 bool periodic = operation == EffectOperation.Damage || operation == EffectOperation.Heal;
                 Assert.AreEqual(periodic, cell.hasPeriodic);
                 if (periodic)
-                    Assert.AreEqual(operation == EffectOperation.Damage ? EffectElement.Drips : EffectElement.Stalks,
+                    Assert.AreEqual(operation == EffectOperation.Damage ? EffectKey.Drips : EffectKey.Stalks,
                         cell.periodic);
             }
         }

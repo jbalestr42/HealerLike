@@ -39,13 +39,13 @@ public class SpellStudioSamplesTests
         return preset;
     }
 
-    [TestCase(0, EffectElement.Rise, EffectFamily.Heal, EffectTempo.Once)]
-    [TestCase(1, EffectElement.Drips, EffectFamily.Rot, EffectTempo.PerPeriod)]
-    [TestCase(2, EffectElement.Plates, EffectFamily.Boon, EffectTempo.ForDuration)]
-    [TestCase(3, EffectElement.Beam, EffectFamily.Damage, EffectTempo.ForDuration)]
-    [TestCase(4, EffectElement.ManaUp, EffectFamily.Heal, EffectTempo.Once)]
-    [TestCase(5, EffectElement.Burst, EffectFamily.Damage, EffectTempo.Once)]
-    public void Build_AuthoredSample_OwnsItsEntryAndComposesAsAuthored(int index, EffectElement element,
+    [TestCase(0, EffectKey.Rise, EffectFamily.Heal, EffectTempo.Once)]
+    [TestCase(1, EffectKey.Drips, EffectFamily.Rot, EffectTempo.PerPeriod)]
+    [TestCase(2, EffectKey.Plates, EffectFamily.Boon, EffectTempo.ForDuration)]
+    [TestCase(3, EffectKey.Beam, EffectFamily.Damage, EffectTempo.ForDuration)]
+    [TestCase(4, EffectKey.ManaUp, EffectFamily.Heal, EffectTempo.Once)]
+    [TestCase(5, EffectKey.Burst, EffectFamily.Damage, EffectTempo.Once)]
+    public void Build_AuthoredSample_OwnsItsEntryAndComposesAsAuthored(int index, EffectKey element,
         EffectFamily family, EffectTempo tempo)
     {
         SpellStudioPreset preset = Build(index);
@@ -63,10 +63,10 @@ public class SpellStudioSamplesTests
         Assert.IsEmpty(SpellPresetValidator.Validate(preset));
     }
 
-    [TestCase(6, SpellStudioMode.GrammarChannels, EffectElement.Stalks)]
-    [TestCase(7, SpellStudioMode.GrammarChannels, EffectElement.Plates)]
-    [TestCase(8, SpellStudioMode.GameplayHandler, EffectElement.Press)]
-    public void Build_LinkedSample_KeepsTheVocabularysEntry(int index, SpellStudioMode mode, EffectElement element)
+    [TestCase(6, SpellStudioMode.GrammarChannels, EffectKey.Stalks)]
+    [TestCase(7, SpellStudioMode.GrammarChannels, EffectKey.Plates)]
+    [TestCase(8, SpellStudioMode.GameplayHandler, EffectKey.Press)]
+    public void Build_LinkedSample_KeepsTheVocabularysEntry(int index, SpellStudioMode mode, EffectKey element)
     {
         SpellStudioPreset preset = Build(index);
 
@@ -81,7 +81,7 @@ public class SpellStudioSamplesTests
     {
         SpellStudioPreset first = Build(0);
         SpellStudioPreset second = Build(0);
-        ElementEntry source = _vocabulary.elements[EffectElement.Rise];
+        ElementEntry source = _vocabulary.entries[EffectKey.Rise];
         Vector3 position = source.parts[0].position;
 
         first.entry.parts[0].position = new Vector3(12f, 13f, 14f);
@@ -110,11 +110,11 @@ public class SpellStudioSamplesTests
         Assert.IsNull(SpellStudioSamples.NameAt(SpellStudioSamples.Count));
     }
 
-    [TestCase(EffectElement.Rise, EffectFamily.Heal)]
-    [TestCase(EffectElement.Press, EffectFamily.Bane)]
-    [TestCase(EffectElement.Bud, EffectFamily.Boon)]
-    [TestCase(EffectElement.Beam, EffectFamily.Damage)]
-    public void Family_ShownAlone_ReadsInItsOwnFamily(EffectElement element, EffectFamily family)
+    [TestCase(EffectKey.Rise, EffectFamily.Heal)]
+    [TestCase(EffectKey.Press, EffectFamily.Bane)]
+    [TestCase(EffectKey.Bud, EffectFamily.Boon)]
+    [TestCase(EffectKey.Beam, EffectFamily.Damage)]
+    public void Family_ShownAlone_ReadsInItsOwnFamily(EffectKey element, EffectFamily family)
     {
         Assert.AreEqual(family, SpellStudioSamples.Family(element));
     }
