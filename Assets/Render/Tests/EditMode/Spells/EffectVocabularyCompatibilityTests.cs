@@ -24,7 +24,7 @@ namespace HealerLike.Render.Spells
         [TestCase(EffectOperation.Heal, EffectElement.Rise, EffectElement.Rise, EffectElement.Rise)]
         [TestCase(EffectOperation.Boon, EffectElement.Orbit, EffectElement.Plates, EffectElement.Bud)]
         [TestCase(EffectOperation.Bane, EffectElement.Press, EffectElement.Crack, EffectElement.Crack)]
-        [TestCase(EffectOperation.Ward, EffectElement.Plates, EffectElement.Plates, EffectElement.Plates)]
+        [TestCase(EffectOperation.Ward, EffectElement.Plates, EffectElement.Plates, EffectElement.Bud)]
         [TestCase(EffectOperation.Mana, EffectElement.ManaUp, EffectElement.ManaUp, EffectElement.ManaUp)]
         public void ShippedTable_EveryOperation_HasThePinnedAspectEntries(EffectOperation operation,
             EffectElement offence, EffectElement defence, EffectElement prevention)
