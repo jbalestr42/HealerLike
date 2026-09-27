@@ -38,7 +38,8 @@ namespace HealerLike.Render.Grass
                 return SampleBody(stamp, point);
             }
 
-            if (stamp.kind == GroundStampKind.Aura || stamp.kind == GroundStampKind.Streak)
+            if (stamp.kind == GroundStampKind.Aura || stamp.kind == GroundStampKind.Streak
+                || stamp.kind == GroundStampKind.Annulus)
             {
                 return Vector3.zero;
             }
@@ -73,6 +74,13 @@ namespace HealerLike.Render.Grass
             if (stamp.kind == GroundStampKind.Streak)
             {
                 return stamp.push * StreakWeight(stamp, point);
+            }
+
+            if (stamp.kind == GroundStampKind.Annulus)
+            {
+                float distance = Vector2.Distance(point, new Vector2(stamp.centreRadius.x, stamp.centreRadius.y));
+                return stamp.push * (1f - SmoothStep(0f, stamp.centreRadius.w,
+                    Mathf.Abs(distance - stamp.centreRadius.z)));
             }
 
             if (stamp.kind != GroundStampKind.Aura)

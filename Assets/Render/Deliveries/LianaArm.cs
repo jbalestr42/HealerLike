@@ -111,6 +111,7 @@ namespace HealerLike.Render.Deliveries
         public void Begin(int gestureToken, GestureKind gestureKind, Vector3 worldTarget)
         {
             _tipColour = _restTipColour;
+            _details.Hide();
             _pose.Begin(gestureToken, gestureKind, worldTarget);
         }
 
@@ -142,7 +143,7 @@ namespace HealerLike.Render.Deliveries
                 _tipColour = _restTipColour;
             }
 
-            Draw();
+            Draw(deltaTime);
         }
 
         public void SetVisible(bool value)
@@ -192,7 +193,7 @@ namespace HealerLike.Render.Deliveries
             }
         }
 
-        void Draw()
+        void Draw(float deltaTime)
         {
             if (!_mesh.container)
             {
@@ -207,7 +208,7 @@ namespace HealerLike.Render.Deliveries
             }
 
             _details.Draw(_pose, _mesh.container, _radius, ArmStyleOf(_pose.style).leafWidth,
-                tipWidth, _vocabulary, _tipColour);
+                tipWidth, _vocabulary, _tipColour, deltaTime);
             _mesh.Write(_pose, _radius, ArmStyleOf(_pose.style).width);
         }
     }

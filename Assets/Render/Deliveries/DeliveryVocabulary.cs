@@ -22,7 +22,17 @@ namespace HealerLike.Render.Deliveries
 
         public Dictionary<DeliveryStyle, ArmStyle> arms = new Dictionary<DeliveryStyle, ArmStyle>();
 
+        public Dictionary<DeliveryStyle, DeliveryPresentation> presentation =
+            new Dictionary<DeliveryStyle, DeliveryPresentation>();
+
         public LookPalette palette;
+
+        public DeliveryPresentation GetPresentation(DeliveryStyle style)
+        {
+            if (presentation != null && presentation.TryGetValue(style, out DeliveryPresentation value)
+                && value != null) return value;
+            return new DeliveryPresentation();
+        }
 
         // The pod an area item drops from the tip at contact
         public LookPart splashPod;

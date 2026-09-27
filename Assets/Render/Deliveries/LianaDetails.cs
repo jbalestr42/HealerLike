@@ -49,7 +49,7 @@ namespace HealerLike.Render.Deliveries
         }
 
         public void Draw(LianaPose pose, Transform parent, float radius, float width, float tipWidth,
-            DeliveryVocabulary vocabulary, Color tipColour)
+            DeliveryVocabulary vocabulary, Color tipColour, float deltaTime = 0f)
         {
             int segments = pose.segmentCount;
             for (int i = 0; i < LianaArm.LeafCount; i++)
@@ -83,7 +83,7 @@ namespace HealerLike.Render.Deliveries
                 _tip.SetStyle(pose.style, vocabulary, _meshes);
             }
 
-            _tip.Draw(parent, _beads[LianaArm.LeafCount], _material, tipColour, _colour);
+            _tip.Draw(parent, _beads[LianaArm.LeafCount], _material, tipColour, _colour, deltaTime);
             GameObject container = parent.gameObject;
             if (!SystemInfo.supportsInstancing || !_material || !_material.enableInstancing
                 || !container.activeInHierarchy)

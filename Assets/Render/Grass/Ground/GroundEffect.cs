@@ -155,6 +155,13 @@ namespace HealerLike.Render.Grass
                         count += Put(into, start + count, GroundStamp.Shock(from, front, halfBand, 1f, throwing * letGo));
                     }
 
+                    if (hasState && letGo > 0f)
+                    {
+                        float statePower = power * letGo;
+                        count += Put(into, start + count, GroundStamp.Annulus(from, front, halfBand,
+                            ash * statePower, vitality * statePower, light * statePower, blight * statePower));
+                    }
+
                     return count;
                 default:
                     if ((to - from).sqrMagnitude < 1e-8f)

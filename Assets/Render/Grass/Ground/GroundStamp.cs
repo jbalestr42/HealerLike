@@ -9,7 +9,8 @@ namespace HealerLike.Render.Grass
         Front = 1,
         Body = 2,
         Aura = 3,
-        Streak = 4
+        Streak = 4,
+        Annulus = 5
     }
 
     // One shape drawn additively into the ground each frame: a disc, a ring front travelling outward, or a
@@ -147,6 +148,16 @@ namespace HealerLike.Render.Grass
                 shape = new Vector4(0f, 0.5f, Mathf.Max(0f, turns), (float)GroundStampKind.Streak),
                 response = new Vector4(end.x, end.y, 0f, 0f)
             };
+        }
+
+        // State following the same soft annulus as a shock front, without filling its interior.
+        public static GroundStamp Annulus(Vector2 centre, float radius, float band, float ash,
+                                          float vitality, float light, float blight = 0f)
+        {
+            GroundStamp stamp = Aura(centre, radius, 1f, 0f, ash, vitality, light, blight);
+            stamp.centreRadius.w = Mathf.Max(0.001f, band);
+            stamp.shape.w = (float)GroundStampKind.Annulus;
+            return stamp;
         }
 
         public void Bounds(out Vector2 centre, out float reach)

@@ -98,7 +98,7 @@ public class DeliveryTipTests
 
         tip.Draw(_parent.transform, frame, _material, Color.red, Color.green);
 
-        Transform spike = _parent.GetComponentInChildren<Renderer>().transform;
+        Transform spike = _parent.GetComponentInChildren<MeshRenderer>().transform;
         Assert.Greater(spike.TransformPoint(Vector3.up * 0.5f).x, 0.9f);
     }
 
@@ -110,7 +110,7 @@ public class DeliveryTipTests
 
         tip.Draw(_parent.transform, frame, _material, Color.red, Color.green);
 
-        Renderer[] renderers = _parent.GetComponentsInChildren<Renderer>();
+        Renderer[] renderers = _parent.GetComponentsInChildren<MeshRenderer>();
         Assert.AreEqual(tip.partCount, renderers.Length);
         MaterialPropertyBlock block = new MaterialPropertyBlock();
         for (int i = 0; i < renderers.Length; i++)
@@ -134,8 +134,9 @@ public class DeliveryTipTests
 
         tip.Draw(_parent.transform, frame, _material, Color.red, Color.green);
 
-        Transform part = _parent.GetComponentInChildren<Renderer>().transform;
-        Vector3 expected = frame.MultiplyPoint3x4(tip.Part(0).position);
+        Transform part = _parent.GetComponentInChildren<MeshRenderer>().transform;
+        Vector3 expected = frame.MultiplyPoint3x4(tip.Part(0).position *
+            RenderTestAssets.LoadDeliveryVocabulary().GetPresentation(DeliveryStyle.Rigid).ScaleAt(0f));
         Assert.That(Vector3.Distance(expected, part.position), Is.LessThan(0.0001f));
     }
 

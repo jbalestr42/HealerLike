@@ -13,6 +13,9 @@ namespace HealerLike.Render.Deliveries
         static readonly float stillSquared = 0.000001f;
 
         readonly PartPaint _paint = new PartPaint();
+        readonly DeliveryWake _wake = new DeliveryWake();
+        DeliveryPresentation _presentation = new DeliveryPresentation();
+        float _elapsed;
         LookPart[] _parts = Array.Empty<LookPart>();
         Mesh[] _meshes = Array.Empty<Mesh>();
         Renderer[] _renderers = Array.Empty<Renderer>();
@@ -31,6 +34,9 @@ namespace HealerLike.Render.Deliveries
         // Without a vocabulary every style keeps the one bead the arm always had
         public void SetStyle(DeliveryStyle value, DeliveryVocabulary vocabulary, PrimitiveMeshes meshes)
         {
+            _wake.Dispose();
+            _elapsed = 0f;
+            _presentation = vocabulary ? vocabulary.GetPresentation(value) : new DeliveryPresentation();
             _style = value;
             _hasStyle = true;
             _parts = Bead();
@@ -79,7 +85,7 @@ namespace HealerLike.Render.Deliveries
         }
 
         // The parts are made under the parent on the first draw after a style change, then only move and recolour
-        public void Draw(Transform parent, Matrix4x4 frame, Material material, Color tip, Color stem)
+        public void Draw(Transform parent, Matrix4x4 frame, Material material, Color tip, Color stem, float deltaTime = 0f)
         {
             if (_parts.Length == 0 || !material)
             {
@@ -107,7 +113,10 @@ namespace HealerLike.Render.Deliveries
                 parentScale = _root.parent.lossyScale.x;
             }
 
-            _root.localScale = Vector3.one * (frame.lossyScale.x / parentScale);
+            _elapsed += Mathf.Max(0f, deltaTime);
+            float width = frame.lossyScale.x * _presentation.ScaleAt(_elapsed);
+            _root.localScale = Vector3.one * (width / Mathf.Max(0.0001f, Mathf.Abs(parentScale)));
+            _wake.Draw(_root, material, _presentation, tip, width);
             for (int i = 0; i < _renderers.Length; i++)
             {
                 _paint.Paint(_renderers[i], _parts[i].role == PartRole.Tip, PartColour(i, tip, stem), 0f);
@@ -116,6 +125,8 @@ namespace HealerLike.Render.Deliveries
 
         public void Hide()
         {
+            _elapsed = 0f;
+            _wake.Hide();
             if (_root)
             {
                 _root.gameObject.SetActive(false);
@@ -124,6 +135,7 @@ namespace HealerLike.Render.Deliveries
 
         public void Release()
         {
+            _wake.Dispose();
             if (_root)
             {
                 RenderObjects.Release(_root.gameObject);

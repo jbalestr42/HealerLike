@@ -71,7 +71,7 @@ public class LianaArmTests
         {
             return 0;
         }
-        return root.GetComponentsInChildren<Renderer>().Length;
+        return root.GetComponentsInChildren<MeshRenderer>().Length;
     }
 
     [Test]

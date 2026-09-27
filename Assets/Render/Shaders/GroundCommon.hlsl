@@ -12,6 +12,7 @@
 #define HL_GROUND_BODY 2
 #define HL_GROUND_AURA 3
 #define HL_GROUND_STREAK 4
+#define HL_GROUND_ANNULUS 5
 
 // Disc and front: centreRadius xy centre in world XZ, z radius, w front half width. Disc push: x turn from outward,
 // w push. Front push: w push outward, the front a ring travelling out. Body: centreRadius the
@@ -115,6 +116,12 @@ float4 HLGroundStampState(HLGroundStamp stamp, float2 p)
         return stamp.push * HLGroundStreakWeight(stamp, p);
     }
 
+    if (kind == HL_GROUND_ANNULUS)
+    {
+        float front = abs(length(p - stamp.centreRadius.xy) - stamp.centreRadius.z);
+        return stamp.push * (1.0 - smoothstep(0.0, stamp.centreRadius.w, front));
+    }
+
     if (kind != HL_GROUND_AURA)
     {
         return float4(0.0, 0.0, 0.0, 0.0);
@@ -132,7 +139,7 @@ float3 HLGroundStampValue(HLGroundStamp stamp, float2 p)
         return HLGroundBodyValue(stamp, p);
     }
 
-    if (kind == HL_GROUND_AURA || kind == HL_GROUND_STREAK)
+    if (kind == HL_GROUND_AURA || kind == HL_GROUND_STREAK || kind == HL_GROUND_ANNULUS)
     {
         return float3(0.0, 0.0, 0.0);
     }

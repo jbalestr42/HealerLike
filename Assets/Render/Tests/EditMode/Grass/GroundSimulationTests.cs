@@ -147,6 +147,18 @@ public class GroundSimulationTests
     }
 
     [Test]
+    public void Step_Annulus_ColoursTheFrontWithoutFillingTheCentre()
+    {
+        GroundStamp stamp = GroundStamp.Annulus(Vector2.zero, 1f, 0.3f, 1f, 0f, 0f);
+        StepStill(new[] { stamp }, 0.5f);
+        Color[] state = Read(_ground.state);
+        Assert.Greater(At(state, Vector2.right).r, 0.7f);
+        Assert.Less(At(state, Vector2.zero).r, 0.01f);
+        Assert.Less(At(state, Vector2.right * 2f).r, 0.01f);
+        Assert.Less(At(Read(_ground.motion), Vector2.right).r, 0.001f);
+    }
+
+    [Test]
     public void Step_AshAura_BurnsTheStateUnderItOnly()
     {
         GroundStamp ash = GroundStamp.Aura(new Vector2(2f, 1f), 0.8f, 0.2f, 0f, 1f, 0f, 0f);

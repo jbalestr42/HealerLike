@@ -148,7 +148,7 @@ namespace HealerLike.Render.Deliveries
             _frame = DeliveryTip.Frame(position, travel, _size);
             if (!_hasLanded)
             {
-                _tip.Draw(_holder, _frame, _material, _colour, _colour);
+                _tip.Draw(_holder, _frame, _material, _colour, _colour, Time.deltaTime);
             }
         }
 
