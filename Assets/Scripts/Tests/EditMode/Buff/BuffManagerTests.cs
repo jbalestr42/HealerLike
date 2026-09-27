@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Buff
 {
@@ -33,7 +34,20 @@ public class HandlerRecordingBuff : ABuff<List<ABuffHandler>>
     public override void Remove(GameObject source, GameObject target) { }
 }
 
+// Listens to a static event while applied, like the round end buffs of the player items
+public class StaticEventBuff : ABuff<FakeBuffData>
+{
+    public static UnityEvent OnEvent = new UnityEvent();
+
+    void OnEventInvoked() => data.log.Add("Event");
+
+    public override void Instant(GameObject source, GameObject target) { }
+    public override void Add(GameObject source, GameObject target) => OnEvent.AddListener(OnEventInvoked);
+    public override void Remove(GameObject source, GameObject target) => OnEvent.RemoveListener(OnEventInvoked);
+}
+
 public class FakeBuffFactory : BuffFactory<FakeBuff, FakeBuffData> { }
+public class StaticEventBuffFactory : BuffFactory<StaticEventBuff, FakeBuffData> { }
 public class HandlerRecordingBuffFactory : BuffFactory<HandlerRecordingBuff, List<ABuffHandler>> { }
 public class FakeStackableBuffFactory : BuffFactory<FakeStackableBuff, FakeBuffData> { }
 
@@ -61,6 +75,7 @@ public class BuffManagerTests
         Object.DestroyImmediate(_source);
         Object.DestroyImmediate(_target);
         Object.DestroyImmediate(_buffManager.gameObject);
+        StaticEventBuff.OnEvent.RemoveAllListeners();
         foreach (Object scriptableObject in _scriptableObjects)
         {
             Object.DestroyImmediate(scriptableObject);
@@ -536,6 +551,83 @@ public class BuffManagerTests
         _buffManager.ForceUpdate();
 
         CollectionAssert.IsEmpty(_buffManager.GetActiveHandlers());
+    }
+
+    // Edit mode never sends OnDestroy() (nor Awake()) to a destroyed component: send it like Unity would
+    void Destroy()
+    {
+        TestHelpers.InvokePrivate(_buffManager, "OnDestroy");
+    }
+
+    [Test]
+    public void Destroy_RemovesEveryAppliedBuff()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        _buffManager.AddHandler(CreateHandlerFactory(buffFactory, DurationType.Infinite), _source, _target);
+        _buffManager.ForceUpdate();
+
+        Destroy();
+
+        CollectionAssert.AreEqual(new[] { "Add", "Remove" }, _data.log);
+    }
+
+    [Test]
+    public void Destroy_StackedBuff_RemovesItOnce()
+    {
+        FakeStackableBuffFactory buffFactory = CreateTracked<FakeStackableBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Infinite);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        Destroy();
+
+        CollectionAssert.AreEqual(new[] { "Add", "Stack", "Remove" }, _data.log);
+    }
+
+    [Test]
+    public void Destroy_HandlerNotStartedYet_RemovesNothing()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        _buffManager.AddHandler(CreateHandlerFactory(buffFactory, DurationType.Infinite), _source, _target);
+
+        Destroy();
+
+        CollectionAssert.IsEmpty(_data.log);
+    }
+
+    [Test]
+    public void Destroy_DoesNotNotifyTheListeners()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        _buffManager.AddHandler(CreateHandlerFactory(buffFactory, DurationType.Infinite), _source, _target);
+        _buffManager.ForceUpdate();
+        bool isNotified = false;
+        _buffManager.OnBuffRemoved.AddListener(buffData => isNotified = true);
+        _buffManager.OnBuffHandlerStopped.AddListener(buffHandlerData => isNotified = true);
+
+        Destroy();
+
+        Assert.IsFalse(isNotified);
+    }
+
+    [Test]
+    public void Destroy_BuffListeningToAStaticEvent_StopsReactingToIt()
+    {
+        StaticEventBuffFactory buffFactory = CreateTracked<StaticEventBuffFactory>();
+        buffFactory.data = _data;
+        _buffManager.AddHandler(CreateHandlerFactory(buffFactory, DurationType.Infinite), _source, _target);
+        _buffManager.ForceUpdate();
+        StaticEventBuff.OnEvent.Invoke();
+
+        Destroy();
+        StaticEventBuff.OnEvent.Invoke();
+
+        CollectionAssert.AreEqual(new[] { "Event" }, _data.log);
     }
 }
 
