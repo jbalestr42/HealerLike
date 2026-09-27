@@ -8,6 +8,8 @@ public abstract class ABuffFactory : SerializedScriptableObject
     [HideInInlineEditors]
     public string uniqueID = Guid.NewGuid().ToString();
     public abstract ABuff GetBuff(ABuffHandler buffHandler);
+    // Data given to every buff created, to describe the buff without instantiating it
+    public abstract object buffData { get; }
 }
 
 public class BuffFactory<BuffType, DataType> : ABuffFactory, IGameDataSource where BuffType : ABuff<DataType>, new()
@@ -21,6 +23,8 @@ public class BuffFactory<BuffType, DataType> : ABuffFactory, IGameDataSource whe
     {
         return new BuffType() { data = this.data, buffHandler = buffHandler };
     }
+
+    public override object buffData => data;
 }
 
 [Serializable]

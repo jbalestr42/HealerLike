@@ -23,8 +23,8 @@ MonoBehaviour:
     SerializationNodes: []
   data:
     icon: {fileID: 0}
-    name: Damage single entity
-    description: 
+    name: "Damage Single Unit"
+    description: "Deal <color=\"red\">{data:consumer.data.value.data.value}</color> damage to any unit, ignoring armor"
     validators: []
     isSingle: 1
     entityType: 3

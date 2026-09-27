@@ -19,6 +19,12 @@ public class WavePatternData : SerializedScriptableObject
 
     public EntitySlot[,] slots;
 
+    // World position of a slot when the pattern is centered on center
+    public Vector3 GetSlotPosition(Vector3 center, int x, int y)
+    {
+        return center - new Vector3(width / 2f, 0f, height / 2f) + new Vector3(x, 0f, y);
+    }
+
     private void CreateData()
     {
         var tmp = slots;

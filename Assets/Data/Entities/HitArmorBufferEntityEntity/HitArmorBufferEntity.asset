@@ -108,8 +108,8 @@ MonoBehaviour:
       Entry: 8
       Data: 
   model: {fileID: 6891580169314388076, guid: 66ae442726d1cf4428dacb34edd61ac4, type: 3}
-  title: HitArmorBuffer
-  description: 
+  title: "Hit Armor Buffer"
+  description: "Doesn't attack. Every 5s, gives +2 hit armor to its most wounded ally"
   targetBehaviourType: 1
   targetValidators: []
   items: []

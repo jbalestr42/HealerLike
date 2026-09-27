@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 // Test mode without restriction: place any number of allies/enemies, use every character skill
 // without cost or cooldown, get any item, and start/stop the battle at will
@@ -28,6 +29,25 @@ public class SandboxGameType : AGameType
         if (!_isInitialized)
         {
             Initialize();
+        }
+
+        // Right click removes an entity, whatever the current interaction
+        if (Input.GetMouseButtonDown(1) && !EventSystem.current.IsPointerOverGameObject())
+        {
+            RemoveEntityUnderMouse();
+        }
+    }
+
+    void RemoveEntityUnderMouse()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << Layers.Entity))
+        {
+            Entity entity = RemoveEntityInteraction.GetEntity(hit.transform.gameObject);
+            if (entity != null)
+            {
+                RemoveEntityInteraction.Remove(entity);
+            }
         }
     }
 
@@ -58,6 +78,22 @@ public class SandboxGameType : AGameType
     public void StartRemovingEntities()
     {
         InteractionManager.instance.SetInteraction(new RemoveEntityInteraction());
+    }
+
+    // Replaces the current enemies by the wave, placed in the enemy camp like in a run
+    public void LoadWave(WavePatternData waveData)
+    {
+        InteractionManager.instance.CancelInteraction();
+        List<GameObject> enemies = new List<GameObject>(_entities.GetEntities(Entity.EntityType.Computer));
+        foreach (GameObject enemy in enemies)
+        {
+            _entities.DestroyEntity(enemy, Entity.EntityType.Computer);
+        }
+
+        foreach (Entity entity in _entities.SpawnWave(waveData, transform.position, Entity.EntityType.Computer))
+        {
+            OnEntitySpawned(entity);
+        }
     }
 
     void OnEntitySpawned(Entity entity)

@@ -16,4 +16,6 @@ public enum AttributeType
     CriticalChance,
     CriticalMultiplier,
     CriticalChanceResist,
+    // Multiplier of the heals received, 1 when the entity has no such attribute
+    HealingReceived,
 }

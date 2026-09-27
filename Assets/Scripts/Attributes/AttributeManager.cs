@@ -43,11 +43,11 @@ public class AttributeManager : MonoBehaviour
         return _attributes[type];
     }
 
-    public Attribute GetOrAdd(AttributeType type)
+    public Attribute GetOrAdd(AttributeType type, float defaultValue = 0f)
     {
         if (!_attributes.ContainsKey(type))
         {
-            _attributes[type] = new Attribute();
+            _attributes[type] = new Attribute(defaultValue);
             Debug.Log($"This AttributeType '{type}' doesn't exists in the AttributeManager, it's automatically added.");
         }
         return _attributes[type];

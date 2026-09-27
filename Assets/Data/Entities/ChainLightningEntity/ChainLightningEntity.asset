@@ -96,8 +96,8 @@ MonoBehaviour:
       Entry: 8
       Data: 
   model: {fileID: 1081930672269232, guid: b2cace1bde908184ca8c4fe8a9637280, type: 3}
-  title: ChainLightning
-  description: Create a lightning that chain from enemy to enemy
+  title: "Chain Lightning"
+  description: "Casts a lightning bolt that chains from enemy to enemy"
   price: 0
   items: []
   onHitConsumer:

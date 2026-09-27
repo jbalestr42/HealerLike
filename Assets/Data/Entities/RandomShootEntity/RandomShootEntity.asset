@@ -120,8 +120,8 @@ MonoBehaviour:
       Entry: 8
       Data: 
   model: {fileID: 1081930672269232, guid: 054ffd7425a4bbc4486585bcd1593eab, type: 3}
-  title: RandomShoot
-  description: 
+  title: "Random Shot"
+  description: "Shoots a random target every 0.6s, every hit is critical"
   targetBehaviourType: 4
   targetValidators: []
   items: []

@@ -54,6 +54,7 @@ public class BuffHandler : ABuffHandler<BuffHandlerData>
     public override void ResetPeriodDuration() => periodDurationTimer = 0f;
     public override DurationType durationType => data.durationType;
     public override float duration => data.duration;
+    public override float remainingDuration => data.durationType == DurationType.Duration ? Mathf.Max(0f, data.duration - durationTimer) : 0f;
     public override bool hasDuration => data.durationType == DurationType.Duration || data.durationType == DurationType.Infinite;
     public override bool isPeriodic => data.isPeriodic;
     public override bool isDone =>

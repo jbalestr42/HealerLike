@@ -132,6 +132,17 @@ public class GridManager : MonoBehaviour
     // the cell under position if no cell is walkable.
     public Vector3 GetNearestWalkablePosition(Vector3 position)
     {
+        GridCell nearest = GetNearestWalkableCell(position);
+        if (nearest == null)
+        {
+            return GetCellCenterFromPosition(position);
+        }
+        return nearest.center;
+    }
+
+    // The walkable cell closest to position (on the XZ plane), null if no cell is walkable
+    public GridCell GetNearestWalkableCell(Vector3 position)
+    {
         GridCell nearest = null;
         float nearestSqrDistance = float.MaxValue;
         foreach (GridCell cell in _cells)
@@ -151,11 +162,7 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        if (nearest == null)
-        {
-            return GetCellCenterFromPosition(position);
-        }
-        return nearest.center;
+        return nearest;
     }
 
     void OnDrawGizmos()

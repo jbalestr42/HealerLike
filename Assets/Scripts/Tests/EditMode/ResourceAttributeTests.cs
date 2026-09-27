@@ -119,29 +119,36 @@ public class ResourceAttributeTests
     }
 
     [Test]
-    public void AddResourceModifier_PositiveFlatArmor_IncreasesDamageInstead_LikelyBug()
+    public void AddResourceModifier_PositiveFlatArmor_ReducesEachHit()
     {
-        // CRITICAL: the armor formula is `value - flatArmor.Value`, and value is negative for
-        // damage. A POSITIVE FlatArmor therefore makes the result MORE negative - i.e. MORE
-        // damage taken - the exact opposite of what "armor" should do.
         _targetAttributeManager.GetOrAdd(AttributeType.FlatArmor).BaseValue = 3f;
         _targetAttributeManager.GetOrAdd(AttributeType.FlatArmor).Update();
 
         AddModifier(new FakeConsumer(-10f));
         Drain();
 
-        Assert.AreEqual(87f, _health.Value); // took 13 damage instead of 10 - armor made it worse
+        Assert.AreEqual(93f, _health.Value); // took 7 damage (10 - 3) instead of 10
+    }
+
+    [Test]
+    public void AddResourceModifier_FlatArmorAboveDamage_BlocksTheHitWithoutHealing()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+        _targetAttributeManager.GetOrAdd(AttributeType.FlatArmor).BaseValue = 3f;
+        _targetAttributeManager.GetOrAdd(AttributeType.FlatArmor).Update();
+
+        AddModifier(new FakeConsumer(-2f));
+        Drain();
+
+        Assert.AreEqual(50f, _health.Value); // 2 damage fully blocked, not turned into +1 heal
     }
 
     [Test]
     public void AddResourceModifier_NegativeFlatArmor_ClampsToZero_HasNoEffect()
     {
-        // CRITICAL: Attribute.Update() clamps every attribute's .Value to Mathf.Max(_value, 0f)
-        // (Assets/Scripts/Attributes/Attribute.cs), so a NEGATIVE FlatArmor - which is what would
-        // be needed to reduce damage given the formula above - is clamped to 0 and has no effect.
-        // Combined with the test above: FlatArmor is currently unable to reduce damage under any
-        // configuration. Worth a real fix (likely `value + flatArmor.Value` with FlatArmor
-        // interpreted as a positive "block N damage" amount) - flagged, not changed here.
+        // Attribute.Update() clamps every attribute's .Value to Mathf.Max(_value, 0f), so a
+        // negative FlatArmor can't be used to add damage.
         Attribute flatArmor = _targetAttributeManager.GetOrAdd(AttributeType.FlatArmor);
         flatArmor.BaseValue = -3f;
         flatArmor.Update();
@@ -175,6 +182,136 @@ public class ResourceAttributeTests
         Drain();
 
         Assert.AreEqual(85f, _health.Value); // took 15 damage (10 * 1.5) instead of 10
+    }
+
+    [Test]
+    public void HealingReceived_ByDefault_IsOneAndKeepsHealsWhole()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+
+        AddModifier(new FakeConsumer(20f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(1f, _targetAttributeManager.Get(AttributeType.HealingReceived).Value);
+        Assert.AreEqual(70f, _health.Value);
+    }
+
+    [Test]
+    public void HealingReceived_MultipliesHeals()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+        SetAttribute(AttributeType.HealingReceived, 0.5f);
+
+        AddModifier(new FakeConsumer(20f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(60f, _health.Value); // healed 10 (20 * 0.5) instead of 20
+    }
+
+    [Test]
+    public void HealingReceived_AppliesAfterTheMultiplier()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+        SetAttribute(AttributeType.HealingReceived, 0.5f);
+
+        AddScaledModifier(new FakeConsumer(10f, ignoreDamageReduction: true), 2f);
+        Drain();
+
+        Assert.AreEqual(60f, _health.Value); // healed 10 (10 * 2 * 0.5) instead of 20
+    }
+
+    [Test]
+    public void HealingReceived_DoesNotChangeDamage()
+    {
+        SetAttribute(AttributeType.HealingReceived, 0.5f);
+
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(90f, _health.Value);
+    }
+
+    // Character skills scale their consumer with the modifier's multiplier
+    void AddScaledModifier(AConsumer consumer, float multiplier)
+    {
+        ResourceModifier modifier = new ResourceModifier { source = _sourceGo, multiplier = multiplier };
+        modifier.consumers.Add(consumer);
+        _health.AddResourceModifier(modifier);
+    }
+
+    void SetAttribute(AttributeType type, float value)
+    {
+        Attribute attribute = _targetAttributeManager.GetOrAdd(type);
+        attribute.BaseValue = value;
+        attribute.Update();
+    }
+
+    // Heals don't always set ignoreDamageReduction: being positive must be enough
+    [Test]
+    public void Heal_IsNotReducedByArmor()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+        SetAttribute(AttributeType.FlatArmor, 3f);
+        SetAttribute(AttributeType.PercentArmor, 0.5f);
+
+        AddModifier(new FakeConsumer(10f));
+        Drain();
+
+        Assert.AreEqual(60f, _health.Value); // full 10 heal, not blocked to 0 by the damage formula
+    }
+
+    [Test]
+    public void Heal_IsNotIncreasedByVulnerability()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+        SetAttribute(AttributeType.Vulnerability, 0.5f);
+
+        AddModifier(new FakeConsumer(10f));
+        Drain();
+
+        Assert.AreEqual(60f, _health.Value); // 10 heal, not 15
+    }
+
+    [Test]
+    public void Heal_DoesNotConsumeHitArmor()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+        SetAttribute(AttributeType.HitArmor, 2f);
+
+        AddModifier(new FakeConsumer(10f));
+        Drain();
+
+        Assert.AreEqual(60f, _health.Value);
+        Assert.AreEqual(2f, _targetAttributeManager.Get(AttributeType.HitArmor).BaseValue);
+    }
+
+    [Test]
+    public void ScaledHeal_IsMultiplied()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+
+        AddScaledModifier(new FakeConsumer(10f), 1.5f);
+        Drain();
+
+        Assert.AreEqual(65f, _health.Value);
+    }
+
+    [Test]
+    public void ScaledDamage_ArmorAppliesBeforeTheMultiplier()
+    {
+        SetAttribute(AttributeType.FlatArmor, 3f);
+
+        AddScaledModifier(new FakeConsumer(-10f), 2f);
+        Drain();
+
+        Assert.AreEqual(86f, _health.Value); // (10 - 3) * 2 = 14 damage
     }
 
     [Test]
@@ -330,6 +467,73 @@ public class ResourceAttributeTests
 
         Assert.AreEqual(150f, _health.Value);
         Assert.AreEqual(150f, _health.Max);
+        Assert.AreEqual(1, callCount);
+    }
+
+    void SetMax(float value)
+    {
+        Attribute maxAttribute = _targetAttributeManager.Get(AttributeType.HealthMax);
+        maxAttribute.BaseValue = value;
+        maxAttribute.Update();
+    }
+
+    [Test]
+    public void MaxIncreased_WhileDamaged_KeepsTheDamageTaken()
+    {
+        AddModifier(new FakeConsumer(-60f));
+        Drain(); // 40 / 100
+
+        SetMax(150f);
+
+        Assert.AreEqual(90f, _health.Value); // still 60 damage taken, not a full heal
+    }
+
+    [Test]
+    public void MaxDecreased_KeepsTheCurrentValue()
+    {
+        AddModifier(new FakeConsumer(-60f));
+        Drain(); // 40 / 100
+        SetMax(150f); // 90 / 150
+
+        SetMax(100f); // the buff ends
+
+        Assert.AreEqual(90f, _health.Value);
+    }
+
+    [Test]
+    public void MaxDecreasedBelowTheValue_CapsItAtTheNewMax()
+    {
+        AddModifier(new FakeConsumer(-10f));
+        Drain(); // 90 / 100
+
+        SetMax(50f);
+
+        Assert.AreEqual(50f, _health.Value);
+    }
+
+    [Test]
+    public void MaxIncreased_WhenEmpty_AddsTheDifference()
+    {
+        // e.g. mana: 0 / 100 means 100 spent, still 100 spent at 50 / 150
+        AddModifier(new FakeConsumer(-1000f));
+        Drain(); // 0 / 100
+
+        SetMax(150f);
+
+        Assert.AreEqual(50f, _health.Value);
+    }
+
+    [Test]
+    public void MaxChanged_ThenUpdate_FiresOnValueChangedOnce()
+    {
+        AddModifier(new FakeConsumer(-60f));
+        Drain();
+        int callCount = 0;
+        _health.OnValueChanged.AddListener(_ => callCount++);
+
+        SetMax(150f);
+        Drain();
+
         Assert.AreEqual(1, callCount);
     }
 }

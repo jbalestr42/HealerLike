@@ -59,28 +59,26 @@ public class GameplayTagTests
     }
 
     [Test]
-    public void IsDescendantOf_BeyondSearchLimit_ReturnsFalse()
+    public void IsDescendantOf_TenLevelsDeep_ReturnsTrue()
     {
-        // searchLimit defaults to 4: root -> t1 -> t2 -> t3 -> t4 -> t5, so t5 is 5 levels below root
         GameplayTag root = CreateTag("Root");
-        GameplayTag t1 = CreateTag("T1", root);
-        GameplayTag t2 = CreateTag("T2", t1);
-        GameplayTag t3 = CreateTag("T3", t2);
-        GameplayTag t4 = CreateTag("T4", t3);
-        GameplayTag t5 = CreateTag("T5", t4);
+        GameplayTag tag = root;
+        for (int i = 1; i <= 10; i++)
+        {
+            tag = CreateTag($"T{i}", tag);
+        }
 
-        Assert.IsFalse(t5.IsDescendantOf(root));
+        Assert.IsTrue(tag.IsDescendantOf(root));
     }
 
     [Test]
-    public void IsDescendantOf_WithinSearchLimit_ReturnsTrue()
+    public void IsDescendantOf_CircularParentChain_ReturnsFalseInsteadOfLoopingForever()
     {
-        GameplayTag root = CreateTag("Root");
-        GameplayTag t1 = CreateTag("T1", root);
-        GameplayTag t2 = CreateTag("T2", t1);
-        GameplayTag t3 = CreateTag("T3", t2);
-        GameplayTag t4 = CreateTag("T4", t3);
+        GameplayTag a = CreateTag("A");
+        GameplayTag b = CreateTag("B", a);
+        TestHelpers.SetPrivateField(a, "_parent", b);
+        GameplayTag other = CreateTag("Other");
 
-        Assert.IsTrue(t4.IsDescendantOf(root));
+        Assert.IsFalse(a.IsDescendantOf(other));
     }
 }

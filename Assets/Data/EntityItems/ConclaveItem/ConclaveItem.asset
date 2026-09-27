@@ -24,7 +24,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: e8327ed7ecf84e34e8d5bb8a37d72618, type: 3}
     name: Conclave
-    description: 
+    description: "Every 2s, alternately gets +20% damage or +20% attack cooldown"
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     buffList: []

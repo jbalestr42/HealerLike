@@ -22,7 +22,7 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    ignoreDamageReduction: 0
+    ignoreDamageReduction: 1
     ignoreConsumerPrevention: 1
     value:
       rid: 5275139311471951899
@@ -34,4 +34,4 @@ MonoBehaviour:
       data:
         data:
           type: 10
-          multiplier: 1
+          multiplier: -1

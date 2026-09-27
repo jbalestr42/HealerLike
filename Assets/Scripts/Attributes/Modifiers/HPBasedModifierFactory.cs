@@ -24,6 +24,8 @@ public class HPBasedModifier : AttributeModifier<HPBasedModifierData>
 
     public override float ApplyModifier()
     {
-        return 1f + ((1f - Mathf.Clamp01(_health.percent / data.threshold)) * data.factor);
+        // Only the bonus: a Multiply modifier is applied as x(1 + value), so 0 leaves the attribute
+        // unchanged above the threshold and it grows linearly up to x(1 + factor) at 0 health
+        return (1f - Mathf.Clamp01(_health.percent / data.threshold)) * data.factor;
     }
 }

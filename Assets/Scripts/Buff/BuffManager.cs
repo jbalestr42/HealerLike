@@ -41,6 +41,8 @@ public class BuffManager : SerializedMonoBehaviour
         public GameObject target = null;
         public GameObject source = null;
         public int refreshStacks = 0;
+        // Stacks asked by AddHandler/RemoveHandler, currentStacks being the ones applied (capped by maxStacks)
+        public int requestedStacks = 0;
         public int currentStacks = 0;
         public bool hasStarted => currentStacks != 0;
         public bool isInit => buffHandler != null;
@@ -149,7 +151,13 @@ public class BuffManager : SerializedMonoBehaviour
                         {
                             Debug.Log($"[BuffManager:{gameObject.name}] Refresh buff handler {buffHandlerFactory.name} | currentStacks={buffHandlerData.currentStacks} | refreshStacks={buffHandlerData.refreshStacks}");
                             buffHandlerData.buffHandler.Refresh(source, buffHandlerData.target);
-                            for (int i = 0; i < buffHandlerData.refreshStacks; i++)
+                            buffHandlerData.requestedStacks += buffHandlerData.refreshStacks;
+                            int targetStacks = Mathf.Max(0, buffHandlerData.requestedStacks);
+                            if (buffHandlerFactory.maxStacks > 0)
+                            {
+                                targetStacks = Mathf.Min(targetStacks, buffHandlerFactory.maxStacks);
+                            }
+                            while (buffHandlerData.currentStacks < targetStacks)
                             {
                                 foreach (var buffFactory in buffHandlerFactory.buffFactoryList)
                                 {
@@ -157,7 +165,7 @@ public class BuffManager : SerializedMonoBehaviour
                                 }
                                 buffHandlerData.currentStacks++;
                             }
-                            for (int i = 0; i > buffHandlerData.refreshStacks; i--)
+                            while (buffHandlerData.currentStacks > targetStacks)
                             {
                                 foreach (var buffFactory in buffHandlerFactory.buffFactoryList)
                                 {
@@ -204,6 +212,36 @@ public class BuffManager : SerializedMonoBehaviour
     public void ForceUpdate()
     {
         Update();
+    }
+
+    // Whether this handler is currently applied, whatever its source
+    public bool HasHandler(ABuffHandlerFactory buffHandlerFactory)
+    {
+        foreach (var handlerPerSource in _buffHandlerPerSource)
+        {
+            if (handlerPerSource.Value.buffHandlerPerId.TryGetValue(buffHandlerFactory.uniqueID, out BuffHandlerData buffHandlerData) && buffHandlerData.isInit)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Handlers currently applied, whatever their source
+    public List<BuffHandlerData> GetActiveHandlers()
+    {
+        List<BuffHandlerData> activeHandlers = new List<BuffHandlerData>();
+        foreach (var handlerPerSource in _buffHandlerPerSource)
+        {
+            foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
+            {
+                if (kvpBuffHandler.Value.isInit && kvpBuffHandler.Value.hasStarted)
+                {
+                    activeHandlers.Add(kvpBuffHandler.Value);
+                }
+            }
+        }
+        return activeHandlers;
     }
 
     public void RemoveBuffWithTag(GameplayTag tag)
@@ -432,10 +470,21 @@ public class BuffManager : SerializedMonoBehaviour
                     else
                     {
                         Debug.Log($"[BuffManager:{gameObject.name}] Remove buff " + buffFactory.name + " | stacks=" + buffData.stacks);
-                        ABuff buff = buffData.first;
-                        buffData.stacks = 0;
-                        buffData.buffList.Remove(buff);
-                        buff.Remove(source, target);
+                        // Without stacking, each application added its own instance: a removal undoes one of
+                        // them, removeAll undoes every one, none can be dropped without its Remove()
+                        do
+                        {
+                            ABuff buff = buffData.first;
+                            buffData.buffList.Remove(buff);
+                            buff.Remove(source, target);
+                            buffData.stacks = Mathf.Max(0, buffData.stacks - 1);
+                        }
+                        while (removeAll && buffData.first != null);
+
+                        if (removeAll)
+                        {
+                            buffData.stacks = 0;
+                        }
                     }
                 }
                 OnBuffRemoved.Invoke(buffData);

@@ -48,6 +48,12 @@ public static class TestHelpers
         field.SetValue(target, value);
     }
 
+    public static T GetPrivateField<T>(object target, string fieldName)
+    {
+        FieldInfo field = target.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+        return (T)field.GetValue(target);
+    }
+
     /// <summary>
     /// Creates a GameObject with a working, empty AttributeManager (Awake forced).
     /// </summary>

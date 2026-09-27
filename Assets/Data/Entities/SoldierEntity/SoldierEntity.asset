@@ -97,7 +97,7 @@ MonoBehaviour:
       Data: 
   model: {fileID: 6688149642241925542, guid: 11eed2dfd1329ab4db9e7f27b8e628b7, type: 3}
   title: Soldier
-  description: first bad enemy
+  description: "The basic enemy: steady and weak shots"
   targetBehaviourType: 0
   targetValidators: []
   items: []

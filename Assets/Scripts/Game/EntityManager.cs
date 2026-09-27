@@ -72,6 +72,27 @@ public class EntityManager : Singleton<EntityManager>
         return null;
     }
 
+    // Spawns every entity of the pattern around center, returns the ones actually spawned
+    public List<Entity> SpawnWave(WavePatternData waveData, Vector3 center, Entity.EntityType entityType)
+    {
+        List<Entity> spawned = new List<Entity>();
+        for (int i = 0; i < waveData.width; i++)
+        {
+            for (int j = 0; j < waveData.height; j++)
+            {
+                if (waveData.slots[i, j].entity != null)
+                {
+                    GameObject entity = SpawnEntity(waveData.slots[i, j].entity, waveData.GetSlotPosition(center, i, j), entityType);
+                    if (entity != null)
+                    {
+                        spawned.Add(entity.GetComponent<Entity>());
+                    }
+                }
+            }
+        }
+        return spawned;
+    }
+
     public void DestroyEntity(GameObject entity, Entity.EntityType entityType)
     {
         if (entity != null)

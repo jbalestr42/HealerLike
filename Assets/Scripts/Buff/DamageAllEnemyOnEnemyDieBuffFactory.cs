@@ -4,25 +4,52 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Custom/Data/Buff/DamageAllEntityOnEntityDieBuff")]
 public class DamageAllEntityOnEntityDieBuffFactory : BuffFactory<DamageAllEntityOnEntityDieBuff, DamageAllEntityOnEntityDieBuffData> { }
 
+public enum DeathTrigger
+{
+    // Any entity dying, from any side
+    AnyEntity,
+    // Only the entity carrying the buff
+    Owner,
+}
+
 [Serializable]
 public class DamageAllEntityOnEntityDieBuffData
 {
+    public DeathTrigger trigger = DeathTrigger.AnyEntity;
     [CreateDataButton]
     public AConsumerFactory damageToAllEntity;
     public Entity.EntityType entityType;
+    // Damages the opponents of the entity carrying the buff instead of entityType, whatever its side
+    public bool targetOwnerOpponents;
 }
 
 public class DamageAllEntityOnEntityDieBuff : ABuff<DamageAllEntityOnEntityDieBuffData>, IStackableBuff
 {
     int _stacks = 1;
+    // Entity carrying the buff, source of the damage
+    GameObject _owner;
 
-    void OnEntityDie(Entity target)
+    void OnEntityDie(Entity dead)
     {
-        foreach (GameObject entity in EntityManager.instance.GetEntities(data.entityType))
+        // A destroyed entity never gets Remove() called on its buffs: stop listening once it is gone
+        if (_owner == null)
         {
-            if (entity != target.gameObject)
+            EntityManager.instance.OnEntityKilled.RemoveListener(OnEntityDie);
+            return;
+        }
+
+        if (data.trigger == DeathTrigger.Owner && dead.gameObject != _owner)
+        {
+            return;
+        }
+
+        Entity.EntityType targetType = data.targetOwnerOpponents ? _owner.GetComponent<Entity>().GetTargetType() : data.entityType;
+        foreach (GameObject entity in EntityManager.instance.GetEntities(targetType))
+        {
+            if (entity != dead.gameObject)
             {
-                entity.GetComponent<Entity>().health.AddResourceModifier(ResourceModifier.Create(data.damageToAllEntity, target.gameObject, target.gameObject, _stacks));
+                // The dead entity is destroyed at the end of the frame, it can't be the damage source
+                entity.GetComponent<Entity>().health.AddResourceModifier(ResourceModifier.Create(data.damageToAllEntity, _owner, entity, _stacks));
             }
         }
     }
@@ -31,6 +58,7 @@ public class DamageAllEntityOnEntityDieBuff : ABuff<DamageAllEntityOnEntityDieBu
 
     public override void Add(GameObject source, GameObject target)
     {
+        _owner = target;
         EntityManager.instance.OnEntityKilled.AddListener(OnEntityDie);
     }
 

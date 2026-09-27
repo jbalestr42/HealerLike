@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Globalization;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -61,8 +60,7 @@ public class TextConvertorTests
     [Test]
     public void Convert_ExpressionInBrackets_IsEvaluatedAndReplaced()
     {
-        string expected = ExpressionEvaluator.Evaluate("10+5").ToString(CultureInfo.InvariantCulture);
-        Assert.AreEqual($"Deals {expected} damage", TextConvertor.Convert("Deals [10+5] damage", null, null));
+        Assert.AreEqual("Deals 15 damage", TextConvertor.Convert("Deals [10+5] damage", null, null));
     }
 
     [Test]
@@ -70,26 +68,19 @@ public class TextConvertorTests
     {
         // TextConvertor replaces ',' with '.' before evaluating, since ExpressionEvaluator itself
         // treats a bare comma as an unparseable decimal separator (see ExpressionEvaluatorTests).
-        string result = TextConvertor.Convert("[10,5+1]", null, null);
-        string expected = ExpressionEvaluator.Evaluate("10.5+1").ToString(CultureInfo.InvariantCulture);
-
-        Assert.AreEqual(expected, result);
+        Assert.AreEqual("11.5", TextConvertor.Convert("[10,5+1]", null, null));
     }
 
     [Test]
     public void Convert_MultipleExpressions_EvaluatesEachIndependently()
     {
-        string first = ExpressionEvaluator.Evaluate("1+1").ToString(CultureInfo.InvariantCulture);
-        string second = ExpressionEvaluator.Evaluate("2+2").ToString(CultureInfo.InvariantCulture);
-
-        Assert.AreEqual($"{first} and {second}", TextConvertor.Convert("[1+1] and [2+2]", null, null));
+        Assert.AreEqual("2 and 4", TextConvertor.Convert("[1+1] and [2+2]", null, null));
     }
 
     [Test]
     public void Convert_NestedBrackets_EvaluatesAsASingleExpression()
     {
-        string expected = ExpressionEvaluator.Evaluate("[1+1]x2").ToString(CultureInfo.InvariantCulture);
-        Assert.AreEqual(expected, TextConvertor.Convert("[[1+1]x2]", null, null));
+        Assert.AreEqual("4", TextConvertor.Convert("[[1+1]x2]", null, null));
     }
 
     #endregion
@@ -213,8 +204,7 @@ public class TextConvertorTests
     [Test]
     public void Convert_VariableAndExpressionCombined_BothAreReplaced()
     {
-        string expected = ExpressionEvaluator.Evaluate("1+1").ToString();
-        Assert.AreEqual($"42 + {expected}", TextConvertor.Convert("{data:Number} + [1+1]", null, new TestData()));
+        Assert.AreEqual("42 + 2", TextConvertor.Convert("{data:Number} + [1+1]", null, new TestData()));
     }
 
     #region GetPropertyValue

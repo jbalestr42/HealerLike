@@ -11,6 +11,9 @@ public class SandboxData : SerializedScriptableObject
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<EntityData>, EntityData>(entities, this)")]
     public List<EntityData> entities = new List<EntityData>();
 
+    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<WavePatternData>, WavePatternData>(waves, this)")]
+    public List<WavePatternData> waves = new List<WavePatternData>();
+
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<ACharacterSkillFactory>, ACharacterSkillFactory>(characterSkills, this)")]
     public List<ACharacterSkillFactory> characterSkills = new List<ACharacterSkillFactory>();
 

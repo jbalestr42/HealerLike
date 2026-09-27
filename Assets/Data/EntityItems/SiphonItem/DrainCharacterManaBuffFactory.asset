@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ee32e6cf714bea4c9fd585010765324, type: 3}
+  m_Name: DrainCharacterManaBuffFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::DrainCharacterManaBuffFactory
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  uniqueID: 552a9d81-305b-4cec-a120-df6305c57bcb
+  data:
+    consumerFactory: {fileID: 11400000, guid: 1cf3f779dee06bc4894874da69cd3978, type: 2}

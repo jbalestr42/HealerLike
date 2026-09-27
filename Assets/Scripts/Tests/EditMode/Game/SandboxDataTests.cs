@@ -46,6 +46,15 @@ public class SandboxDataTests
         Assert.IsEmpty(characterData.entities);
         Assert.IsEmpty(characterData.passives);
     }
+
+    [Test]
+    public void Waves_AreEmptyByDefault()
+    {
+        SandboxData sandboxData = CreateTracked<SandboxData>();
+
+        Assert.IsNotNull(sandboxData.waves);
+        Assert.IsEmpty(sandboxData.waves);
+    }
 }
 
 }
