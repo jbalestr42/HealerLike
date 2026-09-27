@@ -88,7 +88,7 @@ namespace HealerLike.Render.Spells
             Assert.AreEqual(1, _ground.heldCount);
         }
 
-        [TestCase(0)] [TestCase(1)] [TestCase(2)]
+        [TestCase(0)] [TestCase(1)] [TestCase(2)] [TestCase(3)]
         public void Lifecycle_ReleasesRootAndDisabledCompositeLayers(int end)
         {
             EffectRecipe recipe = Recipe(.4f);
@@ -98,8 +98,19 @@ namespace HealerLike.Render.Spells
             Assert.AreEqual(2, _ground.heldCount);
             Assert.Greater(GroundProbe.State(_ground, Vector3.zero).x, 0f);
             if (end == 0) effect.BeginRemoval();
-            if (end == 1) effect.gameObject.SetActive(false);
-            if (end == 2) Object.DestroyImmediate(effect.gameObject);
+            if (end == 1)
+            {
+                effect.gameObject.SetActive(false);
+                // Non-ExecuteAlways behaviours created in EditMode never enter the native player lifecycle.
+                TestHelpers.InvokePrivate(effect, "OnDisable");
+                TestHelpers.InvokePrivate(effect, "OnDisable");
+            }
+            if (end == 2) SpellEffect.Dispose(effect.gameObject);
+            if (end == 3)
+            {
+                TestHelpers.InvokePrivate(effect, "OnDestroy");
+                Object.DestroyImmediate(effect.gameObject);
+            }
             Assert.AreEqual(0, _ground.heldCount);
             Assert.AreEqual(Vector4.zero, GroundProbe.State(_ground, Vector3.zero));
         }

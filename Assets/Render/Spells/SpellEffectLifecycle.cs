@@ -77,6 +77,9 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
+            // EditMode previews may never enter Unity's native lifecycle; release ownership explicitly.
+            SpellEffect owner = effect.GetComponent<SpellEffect>();
+            if (owner) owner.ReleaseGroundTree();
             effect.SetActive(false);
             RenderObjects.Release(effect);
         }
