@@ -9,24 +9,34 @@ namespace HealerLike.Render.Spells
 
         public static bool TryValidate(EffectChannels channels, EffectVocabulary vocabulary, out string error)
         {
-            if (!Enum.IsDefined(typeof(EffectOperation), channels.operation)
-                || !Enum.IsDefined(typeof(EffectAspect), channels.aspect)
-                || !Enum.IsDefined(typeof(EffectTempo), channels.tempo))
-            {
-                error = "Choose valid effect grammar channel values.";
-                return false;
-            }
-
-            EffectElement element;
-            if (vocabulary == null || !vocabulary.TryGetElement(channels.operation, channels.aspect, channels.tempo, out element)
-                || vocabulary.GetEntry(element) == null)
+            if (!TryValidateChannels(channels, out error)) return false;
+            if (vocabulary == null || vocabulary.elements == null
+                || !vocabulary.TryGetElement(channels.operation, channels.aspect, channels.tempo, out EffectElement element)
+                || !Enum.IsDefined(typeof(EffectElement), element)
+                || !vocabulary.elements.TryGetValue(element, out ElementEntry entry) || entry == null)
             {
                 error = "The effect vocabulary is missing the selected cell entry.";
                 return false;
             }
+            return EffectValidator.TryValidateEntry(entry, out error);
+        }
 
+        public static bool TryValidateChannels(EffectChannels channels, out string error)
+        {
+            if (!Defined(channels.operation) || !Defined(channels.aspect) || !Defined(channels.tempo)
+                || !Defined(channels.magnitude) || !Defined(channels.reach) || !Defined(channels.delivery)
+                || !Defined(channels.trigger) || !Defined(channels.side) || !Defined(channels.origin)
+                || !Defined(channels.family) || !Defined(channels.group))
+            {
+                error = "Choose valid effect grammar channel values.";
+                return false;
+            }
+            // periodSeconds is raw gameplay input. Composition intentionally falls back to the entry
+            // cycle for zero, negative or nonfinite periods; validate the resolved recipe clock instead.
             error = null;
             return true;
         }
+
+        static bool Defined<T>(T value) where T : Enum => Enum.IsDefined(typeof(T), value);
     }
 }
