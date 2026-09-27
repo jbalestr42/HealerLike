@@ -55,7 +55,7 @@ namespace HealerLike.Render.Creatures
         }
 
         [Test]
-        public void FreeShot_StartAndLiveCompensationUseHeldOutlet_WithoutMovingGameplayObjects()
+        public void FreeShot_SnapshotsLaunchOutlet_AndDoesNotFollowCreatureMotion()
         {
             FreeShot free = _shotObject.AddComponent<FreeShot>();
             Vector3 ownerStart = _owner.transform.position;
@@ -68,7 +68,6 @@ namespace HealerLike.Render.Creatures
             _projectile.transform.position = Vector3.right * 3f;
             _host.rig.Tick(0.3f, 0.3f, new FootFrame(Vector3.forward * 0.3f, Vector3.up, 1f));
             TestHelpers.InvokePrivate(free, "LateUpdate");
-            CreatureSources.Resolve(_host.rig, id, out outlet);
             Assert.Less(Vector3.Distance(Vector3.right * 3f + outlet * 0.75f, free.visualPosition), 0.00001f);
             Assert.AreEqual(Vector3.right * 3f, _projectile.transform.position);
             Assert.AreEqual(ownerStart, _owner.transform.position);
@@ -78,7 +77,7 @@ namespace HealerLike.Render.Creatures
         }
 
         [Test]
-        public void FreeShot_RemovedOutletStopsCosmeticEmissionWithoutTeleportingOrMovingProjectile()
+        public void FreeShot_RemovedOutletDoesNotCancelAnAlreadyLaunchedSpell()
         {
             FreeShot free = _shotObject.AddComponent<FreeShot>();
             Assert.IsTrue(free.Init(_projectile, DeliveryStyle.Direct, RenderTestAssets.LoadDeliveryVocabulary(),
@@ -91,10 +90,11 @@ namespace HealerLike.Render.Creatures
                 RenderTestAssets.LoadLookMaterial(), RenderTestAssets.LoadMeshes()));
             _projectile.transform.position = Vector3.right * 2f;
             TestHelpers.InvokePrivate(free, "LateUpdate");
-            Assert.AreEqual(last, free.visualPosition);
+            Assert.That(Vector3.Distance(last + Vector3.right * 2f - free.launchOrigin / 6f, free.visualPosition),
+                Is.LessThan(.0001f));
             Assert.AreEqual(Vector3.right * 2f, _projectile.transform.position);
             foreach (Renderer renderer in GameObject.Find("FreeShot").GetComponentsInChildren<Renderer>(true))
-                Assert.IsFalse(renderer.gameObject.activeInHierarchy && renderer.enabled);
+                Assert.IsTrue(renderer.gameObject.activeInHierarchy && renderer.enabled);
         }
 
         [Test]

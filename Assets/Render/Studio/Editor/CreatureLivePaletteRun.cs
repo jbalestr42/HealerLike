@@ -49,7 +49,7 @@ namespace HealerLike.Render.Studio.Editor
                 {
                     Projectile projectile = observer.GetComponent<Projectile>();
                     Entity entity = projectile && projectile.source ? projectile.source.GetComponent<Entity>() : null;
-                    if (entity && entity.entityType == Entity.EntityType.Player && observer.gestureToken != 0
+                    if (entity && entity.entityType == Entity.EntityType.Player && observer.GetComponent<FreeShot>() && observer.GetComponent<FreeShot>().enabled
                         && !projectile.ShouldDestroyProjectile())
                     {
                         CreatureBuilder view = entity.GetComponentInChildren<CreatureBuilder>();
@@ -94,7 +94,9 @@ namespace HealerLike.Render.Studio.Editor
                 {
                     _focus.enabled = false;
                 }
-                int token = _observer.gestureToken;
+                FreeShot spell = _observer.GetComponent<FreeShot>();
+                int token = spell.GetEntityId().GetHashCode();
+                Vector3 launch = spell.launchOrigin;
                 yield return Wait(0.3f);
                 CreatureRig rig = _view.rig;
                 Transform root = rig.root;
@@ -163,9 +165,8 @@ namespace HealerLike.Render.Studio.Editor
                 {
                     anchorsHeld = anchors[i] == rig.budAnchors[i];
                 }
-                bool held = _projectile && _observer && _observer.gestureToken == token;
-                bool lease = held && !_view.BeginDelivery(token, _observer.deliveryStyle, _projectile.transform,
-                    _projectile.transform.position);
+                bool held = _projectile && _observer && spell && spell.enabled;
+                bool lease = held && spell.GetEntityId().GetHashCode() == token && spell.launchOrigin == launch;
                 passed = held && lease && _view.rig == rig && rig.root == root && rig.revision > revision
                     && owner.health.Value == health && _manager.gameCamera.transform.position == camera && pixels > 100
                     && (!_shapes || (changedVertices > 0 && anchorsHeld

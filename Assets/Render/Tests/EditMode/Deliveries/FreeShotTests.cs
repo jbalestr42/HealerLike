@@ -33,12 +33,12 @@ public class FreeShotTests
     }
 
     [Test]
-    public void Init_ThrownStyle_HasNoTipToShow()
+    public void Init_ThrownStyleUsesSpellFragmentWithoutBorrowingCreatureGeometry()
     {
         bool isShown = _shot.Init(_projectile, DeliveryStyle.Thrown, RenderTestAssets.LoadDeliveryVocabulary(),
             RenderTestAssets.LoadMeshes());
 
-        Assert.IsFalse(isShown);
+        Assert.IsTrue(isShown);
     }
 
     [Test]

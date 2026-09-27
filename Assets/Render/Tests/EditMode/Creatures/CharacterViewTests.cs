@@ -117,7 +117,7 @@ public class CharacterViewTests
         registry.NotifyHealth(_characterGo, _targetGo, 0f, false);
         Assert.AreEqual(0, DrawnArms(view));
         registry.NotifyHealth(_characterGo, _targetGo, 4f, true);
-        Assert.AreEqual(1, DrawnArms(view));
+        Assert.AreEqual(0, DrawnArms(view), "Healing presentation belongs to the spell.");
         Object.DestroyImmediate(_characterGo);
         view.enabled = false;
         TestHelpers.InvokePrivate(view, "OnDisable");
@@ -127,7 +127,7 @@ public class CharacterViewTests
     }
 
     [Test]
-    public void OnHealthResolved_RegisteredCharacter_CountsHealGesturesAndTintsBudsByManaWithoutAllocating()
+    public void OnHealthResolved_RegisteredCharacter_KeepsSpellGeometrySeparateAndTintsBudsByManaWithoutAllocating()
     {
         CreatureRecipe recipe = AssetDatabase.LoadAssetAtPath<CreatureRecipe>(
             "Assets/Render/Creatures/Data/Healer.asset"
@@ -170,7 +170,7 @@ public class CharacterViewTests
 
         health.OnAllConsumerProcessed.Invoke(_targetGo, modifier, 7f, false);
         mana.OnAllConsumerProcessed.Invoke(_characterGo, modifier, 10f, false);
-        Assert.AreEqual(4, DrawnArms(view), "Mana restoration must not reach out an arm.");
+        Assert.AreEqual(0, DrawnArms(view), "Resource outcomes must not create creature-owned spell arms.");
         TestHelpers.SetPrivateField(mana, "_value", 0f);
         TestHelpers.InvokePrivate(view, "LateUpdate");
         MaterialPropertyBlock block = new MaterialPropertyBlock();

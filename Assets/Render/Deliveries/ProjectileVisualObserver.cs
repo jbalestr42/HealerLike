@@ -1,298 +1,119 @@
 using System.Collections.Generic;
-using UnityEngine;
-using HealerLike.Render.Spells;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Stage;
+using UnityEngine;
 
 namespace HealerLike.Render.Deliveries
 {
-    // Signals begin, contact and end to the source's view, which follows the projectile itself.
-    // A shot no view claims flies as a FreeShot, its tip fragment in place of the projectile's own visual.
-    // A chain also draws a thread between the successive targets it hits.
+    // The spell owns presentation from spawn to contact. A creature only supplies its cast outlet.
     public class ProjectileVisualObserver : AProjectileBehaviour
     {
-        DeliveryStyle _deliveryStyle = DeliveryStyle.Direct;
-
         readonly List<ProjectileContact> _contacts = new List<ProjectileContact>();
-        RenderManager _manager;
         readonly GroundLightningTrail _scorch = new GroundLightningTrail();
-        DeliveryVocabulary _vocabulary;
-        readonly DeliveryClaim _claim = new DeliveryClaim();
         readonly HiddenRenderers _hidden = new HiddenRenderers();
-        readonly ContactThread _thread = new ContactThread();
+        RenderManager _manager;
         Projectile _subscribed;
-        List<AConsumerFactory> _consumers;
-        FreeShot _freeShot;
-        bool _hasLanded;
-
-        public DeliveryStyle deliveryStyle { get { return _deliveryStyle; } }
-
-        public IReadOnlyList<ProjectileContact> contacts { get { return _contacts; } }
-
+        FreeShot _shot;
+        DeliveryPathView _path;
+        DeliveryChannels _channels;
+        DeliveryStyle _style;
         GameObject _capturedTargetPoint;
-        public GameObject capturedTargetPoint { get { return _capturedTargetPoint; } }
+        public DeliveryStyle deliveryStyle => _channels.style;
+        public IReadOnlyList<ProjectileContact> contacts => _contacts;
+        public GameObject capturedTargetPoint => _capturedTargetPoint;
+        public DeliveryPathView path => _path;
 
-        public int gestureToken { get { return _claim.token; } }
-
-        // The manager adds the observer to a spawned projectile and calls this before Projectile.Init
         public void Init(RenderManager manager, DeliveryStyle style)
         {
             _manager = manager;
-            _vocabulary = null;
-            _thread.Init(null);
-            if (manager)
-            {
-                _vocabulary = manager.deliveryVocabulary;
-                _thread.Init(manager.spellSink);
-            }
-
-            _deliveryStyle = style;
+            _style = style;
+            _channels.style = style;
         }
 
         public override void Init(GameObject source)
         {
             Unbind();
             _contacts.Clear();
-            _hasLanded = false;
             _scorch.Clear();
-            if (!projectile)
-            {
-                projectile = GetComponent<Projectile>();
-            }
-
-            if (!projectile)
-            {
-                return;
-            }
-
-            // Bind before any Start callback can apply synchronous chain hits
+            if (!projectile) projectile = GetComponent<Projectile>();
+            if (!projectile || !_manager) return;
+            _channels = DeliveryDerivation.Read(projectile, _style);
             _subscribed = projectile;
             _subscribed.OnHit.AddListener(OnProjectileHit);
             _capturedTargetPoint = projectile.targetPoint;
-            // What the projectile applies on hit decides the family its tip shows
-            _consumers = projectile.onHitConsumers;
-            // An item can grant the bounce, so the live behaviour decides and not the prefab
-            if (GetComponent<BounceProjectileBehaviour>() && _deliveryStyle != DeliveryStyle.ChainSync
-                && _deliveryStyle != DeliveryStyle.Thrown)
+            DeliveryVocabulary vocabulary = _manager.deliveryVocabulary;
+            uint sequence = (uint)_manager.NextDeliveryToken();
+            if (_channels.path != DeliveryPathKind.Projectile)
             {
-                _deliveryStyle = DeliveryStyle.Bounce;
+                _path = DeliveryPathView.Create(source, _channels, vocabulary, gameObject.layer, sequence);
+                if (_path) _hidden.Capture(gameObject);
             }
-
-            // A projectile the manager did not set up takes no token and draws no gesture
-            int token = NextToken();
-            if (token == 0)
+            else
             {
-                return;
+                if (!_shot) _shot = gameObject.AddComponent<FreeShot>();
+                _shot.enabled = _shot.Init(projectile, _channels.style, vocabulary, _manager.meshes,
+                    CharacterView.ScreenSource(source), sequence);
+                if (_shot.enabled) _hidden.Capture(gameObject);
             }
-
-            Vector3 end = projectile.transform.position;
-            if (_capturedTargetPoint)
-            {
-                end = _capturedTargetPoint.transform.position;
-            }
-
-            if (!CharacterView.ScreenSource(source)
-                && _claim.TryClaim(Model(source), token, _deliveryStyle, projectile.transform, end))
-            {
-                TintTip();
-                _hidden.Capture(gameObject);
-                return;
-            }
-
-            StartFree();
         }
 
-        void OnDisable() => Unbind();
-
-        void OnDestroy()
-        {
-            Unbind();
-        }
-
-        // LateUpdate and not the manager's tick: the projectile's own Update and its retarget listeners move and
-        // retarget it first, and whether it is done can only be read after them
         void LateUpdate()
-        {
-            if (IsFree())
-            {
-                UpdateFree();
-                return;
-            }
-
-            if (!_claim.isClaimed)
-            {
-                return;
-            }
-
-            if (!_subscribed || !_subscribed.source || _claim.isLost)
-            {
-                // The view that claimed the shot is gone, the shot keeps flying as its own tip
-                EndLease();
-                StartFree();
-                return;
-            }
-
-            _hidden.Hide();
-            TintTip();
-            // Retarget listeners have all finished by now. Never replace ordered hit contacts
-            // with the final target, which can already be null for an instant chain.
-            if (_subscribed.ShouldDestroyProjectile())
-            {
-                EndLease();
-            }
-        }
-
-        int NextToken()
-        {
-            if (!_manager)
-            {
-                return 0;
-            }
-            return _manager.NextDeliveryToken();
-        }
-
-        // The shooter's model carries its view, a source without an entity is its own model
-        static GameObject Model(GameObject source)
-        {
-            Entity entity = null;
-            if (source)
-            {
-                entity = source.GetComponent<Entity>();
-            }
-
-            if (entity && entity.model)
-            {
-                return entity.model.gameObject;
-            }
-            return source;
-        }
-
-        // The claimer tints the tip its delivery took, when it can and the shot carries a family
-        void TintTip()
-        {
-            if (_vocabulary && _vocabulary.TryAccent(_consumers, out Color accent))
-            {
-                _claim.Tint(accent);
-            }
-        }
-
-        // True while the shot is unclaimed and flies as its own tip
-        bool IsFree()
-        {
-            return _freeShot && _freeShot.enabled;
-        }
-
-        void StartFree()
-        {
-            if (!_manager || !_subscribed || _hasLanded)
-            {
-                return;
-            }
-
-            if (!_freeShot)
-            {
-                _freeShot = gameObject.AddComponent<FreeShot>();
-            }
-
-            _freeShot.enabled = _freeShot.Init(_subscribed, _deliveryStyle, _vocabulary, _manager.meshes,
-                CharacterView.ScreenSource(_subscribed.source));
-            if (_freeShot.enabled)
-            {
-                _hidden.Capture(gameObject);
-            }
-        }
-
-        // The free shot draws itself, the projectile's own visual stays hidden until it is done
-        void UpdateFree()
         {
             if (!_subscribed || _subscribed.ShouldDestroyProjectile())
             {
-                StopFree();
+                StopVisuals();
                 return;
             }
-
-            _hidden.Hide();
-        }
-
-        void StopFree()
-        {
-            if (_freeShot)
-            {
-                _freeShot.enabled = false;
-            }
-
-            _hidden.Restore();
+            if (_path || _shot && _shot.enabled) _hidden.Hide();
         }
 
         void OnProjectileHit(OnHitData hit)
         {
-            if (!isActiveAndEnabled || hit == null)
-            {
-                return;
-            }
-
-            if (_subscribed is ChainLightningProjectile)
-            {
-                _thread.Contact(hit.target);
-                _scorch.Contact(_manager ? _manager.ground : null, transform.position, hit.target);
-            }
-
-            if (!_claim.isClaimed && !IsFree())
-            {
-                return;
-            }
-
-            Vector3 point = transform.position;
-            if (hit.target)
-            {
-                point = RenderTargets.Point(hit.target);
-            }
-            else if (_contacts.Count > 0)
-            {
-                point = _contacts[_contacts.Count - 1].position;
-            }
-
+            if (!isActiveAndEnabled || hit == null || !_subscribed) return;
+            Vector3 point = hit.target ? RenderTargets.Point(hit.target) : transform.position;
+            if (!RenderMath.IsFinite(point)) return;
             _contacts.Add(new ProjectileContact(hit.target, point));
-            // An area item shows as one pod falling from the tip at the first contact
-            if (_contacts.Count == 1 && GetComponent<AreaOfEffectProjectileBehaviour>() && _manager)
+            if (_path)
             {
-                TipDrop.Splash(_vocabulary, _manager.meshes, _consumers, point);
+                _path.Contact(hit.target, point);
+                _scorch.Contact(_manager.ground, transform.position, hit.target);
             }
-
-            if (IsFree())
+            if (_contacts.Count == 1 && _channels.splash)
             {
-                _freeShot.Contact();
-                // A bounce keeps the tip flying toward its next target
-                _hasLanded = !GetComponent<BounceProjectileBehaviour>();
-                if (_hasLanded)
-                {
-                    _freeShot.Land();
-                }
-                return;
+                TipDrop.Splash(_manager.deliveryVocabulary, _manager.meshes, _subscribed.onHitConsumers, point);
             }
-
-            // A chain shot began as ChainSync, so its source keeps the path of its contacts
-            _claim.Contact(point, hit.target);
-            TintTip();
+            if (_shot && _shot.enabled)
+            {
+                _shot.Contact();
+                if (!_channels.bouncing) _shot.Land();
+            }
         }
 
-        void EndLease()
+        void StopVisuals()
         {
-            _claim.Release();
+            if (_shot)
+            {
+                _shot.Land();
+                _shot.enabled = false;
+            }
+            if (_path)
+            {
+                if (Application.isPlaying) _path.Release();
+                else _path.Dispose();
+                _path = null;
+            }
             _hidden.Restore();
         }
 
         void Unbind()
         {
-            if (_subscribed)
-            {
-                _subscribed.OnHit.RemoveListener(OnProjectileHit);
-            }
-
+            if (_subscribed) _subscribed.OnHit.RemoveListener(OnProjectileHit);
             _subscribed = null;
-            _thread.Clear();
-            EndLease();
-            StopFree();
+            StopVisuals();
         }
+
+        void OnDisable() => Unbind();
+        void OnDestroy() => Unbind();
     }
 }

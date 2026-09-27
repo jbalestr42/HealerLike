@@ -98,8 +98,10 @@ namespace HealerLike.Render.Stage
                 shot.Init(source.gameObject, target.gameObject, new List<ABuffHandlerFactory>(), new List<AConsumerFactory>());
                 _proof.projectileStartUnchanged = shot.transform.position == logicalStart;
                 ProjectileVisualObserver observer = shotObject.GetComponent<ProjectileVisualObserver>();
-                _output.Check(observer && observer.gestureToken != 0, "Spawn dressing claimed proof delivery");
-                string selected = null;
+                FreeShot free = shotObject.GetComponent<FreeShot>();
+                _output.Check(observer && free && free.enabled, "Spawn dressing created a spell-owned projectile");
+                string selected = free.sourceId;
+                _output.Check(CreatureSources.Resolve(host.rig, selected, out Vector3 launch), "Launch outlet resolves");
                 for (int sample = 0; sample < 4; sample++)
                 {
                     if (sample == 2)
@@ -116,25 +118,18 @@ namespace HealerLike.Render.Stage
                     Time.timeScale = 0f;
                     yield return Wait(0.05f);
                     _output.Check(shot && host && host.rig != null, "Proof shot and source remain alive");
-                    LianaArm arm = host.GetDeliveryArm(observer.gestureToken);
-                    _output.Check(arm != null && !arm.isAvailable, "Exact projectile lease remains held");
-                    if (selected == null)
-                        selected = host.rig.parts.Where(p => p.isSource).OrderBy(p =>
-                        {
-                            CreatureSources.Resolve(host.rig, p.sourceId, out Vector3 point);
-                            return Vector3.Distance(point, arm.Joint(0));
-                        }).First().sourceId;
-                    _output.Check(CreatureSources.Resolve(host.rig, selected, out Vector3 outlet), "Held outlet resolves");
+                    _output.Check(free && free.enabled && free.sourceId == selected,
+                        "Detached spell preserves its launch identity through creature recomposition");
                     Sample measurement = new Sample
                     {
-                        gameTime = Time.time, frame = Time.frameCount, sourceId = selected, outlet = outlet,
-                        root = arm.Joint(0), logicalShot = shot.transform.position,
-                        attachmentError = Vector3.Distance(outlet, arm.Joint(0)),
+                        gameTime = Time.time, frame = Time.frameCount, sourceId = selected, outlet = launch,
+                        root = free.launchOrigin, logicalShot = shot.transform.position,
+                        attachmentError = Vector3.Distance(launch, free.launchOrigin),
                         cameraPosition = _manager.gameCamera.transform.position,
                         cameraRotation = _manager.gameCamera.transform.rotation
                     };
                     _proof.samples.Add(measurement);
-                    _output.Check(measurement.attachmentError < 0.0001f, "Delivery root attached at sample " + sample);
+                    _output.Check(measurement.attachmentError < 0.0001f, "Spell launch remains fixed at sample " + sample);
                     yield return _session.Capture("01-cast-" + sample.ToString("00"), "Timed gameplay projectile, paused at sample");
                 }
                 _proof.stableLease = _proof.samples.Select(s => s.sourceId).Distinct().Count() == 1;

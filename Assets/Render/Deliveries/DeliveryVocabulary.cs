@@ -25,6 +25,19 @@ namespace HealerLike.Render.Deliveries
         public Dictionary<DeliveryStyle, DeliveryPresentation> presentation =
             new Dictionary<DeliveryStyle, DeliveryPresentation>();
 
+        // Connected topology is authored independently of projectile fragments and creature rigs.
+        public Dictionary<DeliveryPathKind, DeliveryPathLook> paths =
+            new Dictionary<DeliveryPathKind, DeliveryPathLook>();
+
+        public DeliveryPathLook GetPath(DeliveryPathKind kind)
+        {
+            if (paths != null && paths.TryGetValue(kind, out DeliveryPathLook look) && look != null && look.IsValid())
+            {
+                return look;
+            }
+            return new DeliveryPathLook();
+        }
+
         public LookPalette palette;
 
         public DeliveryPresentation GetPresentation(DeliveryStyle style)

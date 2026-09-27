@@ -148,7 +148,7 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        // A heal pulses the crown and reaches an arm to the target
+        // The creature reacts locally; the spell sink owns every connection to the recipient.
         protected void HealContact(GameObject target)
         {
             if (_rig == null)
@@ -158,7 +158,6 @@ namespace HealerLike.Render.Creatures
 
             SyncGeometry();
             _rig.Heal();
-            _pool.HealContact(RenderTargets.Point(target));
         }
 
         // The registry routes the source's health outcomes here, a new registry moves the entry

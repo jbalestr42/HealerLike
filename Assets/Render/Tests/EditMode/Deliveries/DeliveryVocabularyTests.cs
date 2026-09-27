@@ -28,8 +28,8 @@ public class DeliveryVocabularyTests
     [TestCase(DeliveryStyle.Rigid, new[] { Primitive.Cone })]
     [TestCase(DeliveryStyle.Arc, new[] { Primitive.CylinderSegment, Primitive.Sphere })]
     [TestCase(DeliveryStyle.Swarm, new[] { Primitive.Sphere, Primitive.Sphere, Primitive.Sphere })]
-    [TestCase(DeliveryStyle.Thrown, new Primitive[0])]
-    public void GetTip_Style_FollowsTheHeadOfTheSameDelivery(DeliveryStyle style, Primitive[] expected)
+    [TestCase(DeliveryStyle.Thrown, new[] { Primitive.Cone })]
+    public void GetTip_StyleUsesAuthoredSpellFragment(DeliveryStyle style, Primitive[] expected)
     {
         LookPart[] tip = RenderTestAssets.LoadDeliveryVocabulary().GetTip(style);
 

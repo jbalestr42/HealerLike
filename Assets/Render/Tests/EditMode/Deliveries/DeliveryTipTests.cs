@@ -57,7 +57,7 @@ public class DeliveryTipTests
     }
 
     [Test]
-    public void PartColour_Roles_AccentTakesTipAndStemTakesArm()
+    public void PartColour_ArcPodAndStemTakeTheSpellAccent()
     {
         DeliveryTip tip = CreateTip(DeliveryStyle.Arc);
         Color accent = Color.red;
@@ -66,7 +66,7 @@ public class DeliveryTipTests
         Color stalk = tip.PartColour(0, accent, stem);
         Color pod = tip.PartColour(1, accent, stem);
 
-        Assert.AreEqual(stem, stalk);
+        Assert.AreEqual(accent, stalk);
         Assert.AreEqual(accent, pod);
     }
 

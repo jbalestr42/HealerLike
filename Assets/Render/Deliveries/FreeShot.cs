@@ -1,9 +1,10 @@
 using UnityEngine;
 using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Deliveries
 {
-    // A shot no view claims flies as its own tip fragment, looking along its travel, until it lands. The tip hangs
+    // Every travelling spell owns its fragment, looking along its travel until it lands. The tip hangs
     // from its own object, since a projectile may be scaled unevenly.
     public class FreeShot : MonoBehaviour
     {
@@ -19,7 +20,9 @@ namespace HealerLike.Render.Deliveries
         Vector3 _lastPosition;
         bool _hasLanded;
         CharacterView _screenSource;
-        CastSourceLease _source;
+        Vector3 _launchOffset;
+        public Vector3 launchOrigin { get; private set; }
+        public string sourceId { get; private set; }
         Vector3 _logicalStart;
         Vector3 _previousLogicalPosition;
         float _flightDistance;
@@ -37,7 +40,7 @@ namespace HealerLike.Render.Deliveries
 
         // False for a style without a tip, the thrown shard, which has nothing to show in its place
         public bool Init(Projectile projectile, DeliveryStyle style, DeliveryVocabulary vocabulary,
-            PrimitiveMeshes meshes, CharacterView screenSource = null)
+            PrimitiveMeshes meshes, CharacterView screenSource = null, uint sequence = 0)
         {
             if (_tip == null)
             {
@@ -45,18 +48,15 @@ namespace HealerLike.Render.Deliveries
             }
 
             _screenSource = screenSource;
-            _source?.Dispose();
-            _source = screenSource ? null : CastSourceLease.From(projectile.source);
+
             _tip.SetStyle(style, vocabulary, meshes);
-            // A thrown creature uses its body shard; the invisible player has no shard to lend.
-            if (_tip.partCount == 0 && _screenSource)
+            // Missing legacy thrown entries use the spell vocabulary, never the caster's body.
+            if (_tip.partCount == 0 && style == DeliveryStyle.Thrown)
             {
                 _tip.SetStyle(DeliveryStyle.Direct, vocabulary, meshes);
             }
             if (_tip.partCount == 0)
             {
-                _source?.Dispose();
-                _source = null;
                 return false;
             }
 
@@ -75,12 +75,28 @@ namespace HealerLike.Render.Deliveries
             if (vocabulary)
             {
                 _material = vocabulary.material;
-                _colour = vocabulary.ShotColour(projectile.onHitConsumers);
+                _colour = vocabulary.palette ? vocabulary.palette.Accent(DeliveryDerivation.Family(projectile.onHitConsumers))
+                    : Color.white;
                 _size = vocabulary.bulletSize;
             }
 
             _hasLanded = false;
             _logicalStart = transform.position;
+            launchOrigin = _logicalStart;
+            sourceId = null;
+            if (_screenSource && _screenSource.TryGetCastPoint(out Vector3 screenPoint))
+            {
+                launchOrigin = screenPoint;
+            }
+            else
+            {
+                using (CastSourceLease source = CastSourceLease.From(projectile.source, sequence))
+                {
+                    if (source.TryGet(out Vector3 outlet)) launchOrigin = outlet;
+                    sourceId = source.sourceId;
+                }
+            }
+            _launchOffset = launchOrigin - _logicalStart;
             _previousLogicalPosition = _logicalStart;
             _travelled = 0f;
             _flightDistance = _targetPoint ? Vector3.Distance(_logicalStart, _targetPoint.transform.position) : 0f;
@@ -93,8 +109,7 @@ namespace HealerLike.Render.Deliveries
         public void Contact()
         {
             _screenSource = null;
-            _source?.Dispose();
-            _source = null;
+            _launchOffset = Vector3.zero;
         }
 
         // The tip stops drawing where the shot lands, the projectile's own visual stays hidden
@@ -106,15 +121,13 @@ namespace HealerLike.Render.Deliveries
 
         void OnDisable()
         {
-            _source?.Dispose();
-            _source = null;
+            _launchOffset = Vector3.zero;
             Hide();
         }
 
         void OnDestroy()
         {
-            _source?.Dispose();
-            _source = null;
+            _launchOffset = Vector3.zero;
             if (_tip != null)
             {
                 _tip.Release();
@@ -162,21 +175,8 @@ namespace HealerLike.Render.Deliveries
 
         Vector3 PresentationPosition()
         {
-            Vector3 origin = default;
-            bool resolved = _screenSource ? _screenSource.TryGetCastPoint(out origin)
-                : _source != null && _source.TryGet(out origin);
-            if (!resolved)
-            {
-                if (_source != null && _source.isExplicit)
-                {
-                    _hasLanded = true;
-                    Hide();
-                    return _lastPosition;
-                }
-                return transform.position;
-            }
             float remaining = 1f - Mathf.Clamp01(_travelled / Mathf.Max(0.001f, _flightDistance));
-            return transform.position + (origin - _logicalStart) * remaining;
+            return transform.position + _launchOffset * remaining;
         }
 
         // Before the first move the tip looks at its target

@@ -24,7 +24,6 @@ namespace HealerLike.Render.Stage
         readonly List<Canvas> _worldCanvases = new List<Canvas>();
         readonly List<GameObject> _hidden = new List<GameObject>();
         readonly List<CreatureRig> _rigs = new List<CreatureRig>();
-        readonly List<ArmPool> _pools = new List<ArmPool>();
         readonly List<Object> _objects = new List<Object>();
         readonly List<VisualElement> _labels = new List<VisualElement>();
         readonly LookVocabulary _vocabulary;
@@ -92,14 +91,6 @@ namespace HealerLike.Render.Stage
                             0.04f, 1f - y + 0.06f, 11);
                         using var source = new CastSourceLease(rig);
                         source.TryGet(out Vector3 start);
-                        if (side == 0)
-                        {
-                            ArmPool pool = new ArmPool();
-                            pool.Init(rig, _material, _manager.meshes, _manager.deliveryVocabulary);
-                            pool.BeginDelivery(1, DeliveryStyle.Direct, null, start + _manager.gameCamera.transform.right * 0.7f);
-                            pool.Tick(0.3f);
-                            _pools.Add(pool);
-                        }
                         foreach (Transform partTransform in rig.root.GetComponentsInChildren<Transform>(true))
                             partTransform.gameObject.layer = 31;
                         // Every outlet is shown as a short ray, labelled diagnostic geometry on this fixture only.
@@ -122,7 +113,7 @@ namespace HealerLike.Render.Stage
                             line.SetPosition(1, point + normal * 0.22f);
                         }
                     }
-                    Label("Short rays: all outlets. Plant thread: first held delivery.", 0.04f, 0.93f, 10);
+                    Label("Short rays: cast outlets only. Spell geometry is independent of the creature.", 0.04f, 0.93f, 10);
                     yield return AStageRun.Wait(0.1f);
                     yield return _session.Capture("fixture-" + head + "-" + LookComposer.Copies((CountBand)count),
                         "Labelled grammar fixture; diagnostic outlet rays; labelled layout scale");
@@ -157,11 +148,10 @@ namespace HealerLike.Render.Stage
 
         void Clear()
         {
-            foreach (ArmPool pool in _pools) pool.Dispose();
             foreach (CreatureRig rig in _rigs) rig.Dispose();
             foreach (Object value in _objects) if (value) Object.Destroy(value);
             foreach (VisualElement label in _labels) label.RemoveFromHierarchy();
-            _pools.Clear(); _rigs.Clear(); _objects.Clear(); _labels.Clear();
+            _rigs.Clear(); _objects.Clear(); _labels.Clear();
         }
 
         public void Dispose()
