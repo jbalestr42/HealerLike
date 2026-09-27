@@ -159,6 +159,8 @@ namespace HealerLike.Render.Spells
         CastSourceLease _castSource;
         void OnDestroy() => ReleaseResourcesTree();
 
+        public bool IsCastFrom(CreatureRig rig) => _castSource != null && _castSource.IsFrom(rig);
+
         public void SetCastSource(GameObject source)
         {
             PruneLayers();

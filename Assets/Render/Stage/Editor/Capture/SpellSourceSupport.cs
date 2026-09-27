@@ -75,7 +75,9 @@ namespace HealerLike.Render.Stage
             int count = 0;
             foreach (SpellEffect link in manager.spellSink.GetComponentsInChildren<SpellEffect>())
             {
-                if (link.recipe.socket != EffectSocket.Link) continue;
+                // The battle goes on under the fixture: another creature's status republished after the sink's
+                // Clear draws its own link (a Poisoner's Rot on any ally), which is not this fixture's outcome
+                if (link.recipe.socket != EffectSocket.Link || !link.IsCastFrom(host.rig)) continue;
                 count++;
                 proof.supportMaxAttachmentError = Mathf.Max(proof.supportMaxAttachmentError,
                     Vector3.Distance(outlet, link.castOrigin));

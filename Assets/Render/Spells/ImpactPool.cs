@@ -22,7 +22,6 @@ namespace HealerLike.Render.Spells
         static readonly float shockCriticalScale = 1.3f;
 
         readonly List<GameObject> _impacts = new List<GameObject>();
-        readonly HashSet<SupportLinkKey> _supportLinks = new HashSet<SupportLinkKey>();
         readonly GroupImpactLinks _groups = new GroupImpactLinks();
         Transform _parent;
         EffectVocabulary _vocabulary;
@@ -73,7 +72,7 @@ namespace HealerLike.Render.Spells
             // so direct and periodic positive health outcomes use that same primary anatomical source.
             if (resource == ResourceKind.Health && preClampAmount > 0f && CreatureSources.HasExplicit(source, true))
             {
-                SpellEffect link = ShowSupportLink(EffectPlacement.Anchors(source).castPoint,
+                SpellEffect link = ShowLink(EffectPlacement.Anchors(source).castPoint,
                     EffectPlacement.Anchors(target).bodyCentre, recipe.family, false);
                 if (link) link.SetCastSource(source);
             }
@@ -115,22 +114,6 @@ namespace HealerLike.Render.Spells
         {
             float radius = shockMinRadius + shockRadiusRange * Mathf.Clamp01(share);
             return isCritical ? radius * shockCriticalScale : radius;
-        }
-
-        public SpellEffect ShowSupportLink(Vector3 start, Vector3 end, EffectFamily family, bool isScreenCast = false)
-        {
-            return ShowSupportLink(start, end, family, isScreenCast, false);
-        }
-
-        public SpellEffect ShowSupportLink(Vector3 start, Vector3 end, EffectFamily family, bool isScreenCast,
-                                            bool allowRepeat)
-        {
-            SupportLinkKey key = new SupportLinkKey(start, end, family);
-            if (!allowRepeat && !_supportLinks.Add(key)) return null;
-            if (allowRepeat) _supportLinks.Remove(key);
-            SpellEffect link = ShowLink(start, end, family, false, isScreenCast);
-            if (link == null && !allowRepeat) _supportLinks.Remove(key);
-            return link;
         }
 
         public SpellEffect ShowLink(Vector3 start, Vector3 end, EffectFamily family, bool isContactThread,
@@ -208,7 +191,6 @@ namespace HealerLike.Render.Spells
         public void Flush(bool isShown)
         {
             _groups.Flush(this, isShown);
-            _supportLinks.Clear();
         }
 
         // Forgets the impacts that ended on their own
@@ -226,7 +208,6 @@ namespace HealerLike.Render.Spells
         public void Clear()
         {
             _groups.Clear();
-            _supportLinks.Clear();
             foreach (GameObject impact in _impacts)
             {
                 SpellEffect.Dispose(impact);
@@ -260,24 +241,6 @@ namespace HealerLike.Render.Spells
             }
 
             return owner.entityType;
-        }
-
-        struct SupportLinkKey : System.IEquatable<SupportLinkKey>
-        {
-            readonly Vector3 start;
-            readonly Vector3 end;
-            readonly EffectFamily family;
-
-            public SupportLinkKey(Vector3 start, Vector3 end, EffectFamily family)
-            {
-                this.start = start;
-                this.end = end;
-                this.family = family;
-            }
-
-            public bool Equals(SupportLinkKey other) => start == other.start && end == other.end && family == other.family;
-            public override bool Equals(object obj) => obj is SupportLinkKey && Equals((SupportLinkKey)obj);
-            public override int GetHashCode() => start.GetHashCode() ^ (end.GetHashCode() * 397) ^ (int)family;
         }
     }
 }
