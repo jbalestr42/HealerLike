@@ -1,0 +1,79 @@
+using System.Collections.Generic;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
+using NUnit.Framework;
+using UnityEngine;
+
+namespace HealerLike.Render.Spells
+{
+    public class SpellEnvelopeTests
+    {
+        readonly List<GameObject> objects = new List<GameObject>();
+
+        [TearDown]
+        public void TearDown()
+        {
+            foreach (GameObject item in objects) Object.DestroyImmediate(item);
+            objects.Clear();
+        }
+
+        SpellEffect Build(EffectElement element)
+        {
+            EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
+            EffectRecipe recipe = EffectComposer.Compose(vocabulary, element, EffectFamily.Heal,
+                EffectTempo.Once, 0, 3, 3, .5f);
+            GameObject host = new GameObject("Envelope fixture");
+            objects.Add(host);
+            SpellEffect effect = host.AddComponent<SpellEffect>();
+            effect.Init(recipe, RenderTestAssets.LoadMeshes(), null, LookSide.Plant);
+            if (recipe.socket == EffectSocket.Link)
+                effect.SetEndpoints(Vector3.left, Vector3.right, false);
+            return effect;
+        }
+
+        [Test]
+        public void Advance_LinkPearlsHaveSamePeakSizeAcrossDifferentFrameSteps()
+        {
+            SpellEffect stepped = Build(EffectElement.Beam);
+            SpellEffect direct = Build(EffectElement.Beam);
+            float time = stepped.lifetime * .5f;
+            for (int i = 0; i < 50; i++) stepped.Advance(time / 50f);
+            direct.Advance(time);
+            Assert.That(stepped.shapes[0].localScale.magnitude, Is.GreaterThan(.05f));
+            Assert.That(Vector3.Distance(stepped.shapes[0].localScale, direct.shapes[0].localScale),
+                Is.LessThan(.00001f));
+        }
+
+        [Test]
+        public void Advance_CriticalHaloRecoversAfterEntranceAndResolvesWithImpact()
+        {
+            SpellEffect effect = Build(EffectElement.Burst);
+            effect.ShowCritical();
+            Transform halo = effect.rings[0];
+            float authored = effect.recipe.entry.criticalRings[0].size.magnitude;
+            effect.Advance(effect.lifetime * .4f);
+            Assert.That(halo.localScale.magnitude, Is.EqualTo(authored).Within(.0001f));
+            effect.Advance(effect.lifetime * .55f);
+            Assert.That(halo.localScale.magnitude, Is.LessThan(authored * .2f));
+            effect.Advance(effect.lifetime * .1f);
+            Assert.That(halo.localScale.magnitude, Is.EqualTo(0).Within(.0001f));
+        }
+
+        [Test]
+        public void BeginRemoval_StatusBeadsAndCasterRimFadeWithMainShapes()
+        {
+            SpellEffect effect = Build(EffectElement.Orbit);
+            effect.SetStatus(3, 0, 8);
+            effect.SetSide(Entity.EntityType.Player);
+            effect.Advance(.5f);
+            Transform bead = effect.transform.Find(effect.recipe.entry.stackBeads[0].id);
+            Transform rim = effect.transform.Find(effect.recipe.entry.sideRim[0].id);
+            float beadSize = bead.localScale.magnitude;
+            float rimSize = rim.localScale.magnitude;
+            effect.BeginRemoval();
+            effect.Advance(effect.recipe.presentation.releaseSeconds * .8f);
+            Assert.That(bead.localScale.magnitude, Is.LessThan(beadSize * .2f));
+            Assert.That(rim.localScale.magnitude, Is.LessThan(rimSize * .2f));
+        }
+    }
+}
