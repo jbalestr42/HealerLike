@@ -72,7 +72,8 @@ namespace HealerLike.Render.Grammar
             if (projectilePrefab == null) return EffectDelivery.Instant;
             switch (Delivery(projectilePrefab))
             {
-                case DeliveryStyle.Direct: return EffectDelivery.Rigid;
+                case DeliveryStyle.Direct:
+                case DeliveryStyle.Rigid: return EffectDelivery.Rigid;
                 case DeliveryStyle.Arc: return EffectDelivery.Arc;
                 case DeliveryStyle.Swarm: return EffectDelivery.Swarm;
                 case DeliveryStyle.ChainSync: return EffectDelivery.ChainSync;

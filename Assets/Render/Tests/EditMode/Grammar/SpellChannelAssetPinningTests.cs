@@ -154,7 +154,8 @@ namespace HealerLike.Render.Grammar
         [TestCase("CurveBullet2", EffectDelivery.Arc)]
         [TestCase("CurveSphereBullet", EffectDelivery.Arc)]
         [TestCase("LaserBullet", EffectDelivery.Arc)]
-        [TestCase("StraightLaserBullet", EffectDelivery.Instant)]
+        // Speed 20 exceeds SpearSpeed=18: the shared reader returns Rigid.
+        [TestCase("StraightLaserBullet", EffectDelivery.Rigid)]
         [TestCase("SwarmBullet", EffectDelivery.Swarm)]
         public void Delivery_LiveProjectilePrefabs_MatchesAssetRow(string name, EffectDelivery expected)
         {
