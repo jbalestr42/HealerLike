@@ -4,12 +4,23 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Custom/Data/Buff/DamageAllEntityOnEntityDieBuff")]
 public class DamageAllEntityOnEntityDieBuffFactory : BuffFactory<DamageAllEntityOnEntityDieBuff, DamageAllEntityOnEntityDieBuffData> { }
 
+public enum DeathTrigger
+{
+    // Any entity dying, from any side
+    AnyEntity,
+    // Only the entity carrying the buff
+    Owner,
+}
+
 [Serializable]
 public class DamageAllEntityOnEntityDieBuffData
 {
+    public DeathTrigger trigger = DeathTrigger.AnyEntity;
     [CreateDataButton]
     public AConsumerFactory damageToAllEntity;
     public Entity.EntityType entityType;
+    // Damages the opponents of the entity carrying the buff instead of entityType, whatever its side
+    public bool targetOwnerOpponents;
 }
 
 public class DamageAllEntityOnEntityDieBuff : ABuff<DamageAllEntityOnEntityDieBuffData>, IStackableBuff
@@ -27,7 +38,13 @@ public class DamageAllEntityOnEntityDieBuff : ABuff<DamageAllEntityOnEntityDieBu
             return;
         }
 
-        foreach (GameObject entity in EntityManager.instance.GetEntities(data.entityType))
+        if (data.trigger == DeathTrigger.Owner && dead.gameObject != _owner)
+        {
+            return;
+        }
+
+        Entity.EntityType targetType = data.targetOwnerOpponents ? _owner.GetComponent<Entity>().GetTargetType() : data.entityType;
+        foreach (GameObject entity in EntityManager.instance.GetEntities(targetType))
         {
             if (entity != dead.gameObject)
             {

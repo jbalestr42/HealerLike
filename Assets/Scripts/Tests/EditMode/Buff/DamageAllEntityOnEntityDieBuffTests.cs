@@ -195,6 +195,96 @@ public class DamageAllEntityOnEntityDieBuffTests
     }
 
     [Test]
+    public void Trigger_ByDefault_IsAnyEntity()
+    {
+        // Assets saved before the trigger existed must keep reacting to every death
+        Assert.AreEqual(DeathTrigger.AnyEntity, new DamageAllEntityOnEntityDieBuffData().trigger);
+    }
+
+    [Test]
+    public void OwnerTrigger_AnotherEntityDies_DealsNothing()
+    {
+        GameObject victim = CreateVictim();
+        _buff.data.trigger = DeathTrigger.Owner;
+        _buff.Add(_owner, _owner);
+
+        Kill(_dead);
+
+        Assert.AreEqual(100f, Drain(victim).Value);
+    }
+
+    [Test]
+    public void OwnerTrigger_TheOwnerDies_DamagesEveryEntityOfTheType()
+    {
+        GameObject victim = CreateVictim();
+        GameObject kamikaze = CreateVictim(Entity.EntityType.Computer);
+        _buff.data.trigger = DeathTrigger.Owner;
+        _buff.Add(kamikaze, kamikaze);
+
+        Kill(kamikaze);
+
+        Assert.AreEqual(95f, Drain(victim).Value);
+    }
+
+    [Test]
+    public void OwnerTrigger_TheOwnerDies_IsTheDamageSource()
+    {
+        GameObject victim = CreateVictim();
+        GameObject kamikaze = CreateVictim(Entity.EntityType.Computer);
+        _buff.data.trigger = DeathTrigger.Owner;
+        _buff.Add(kamikaze, kamikaze);
+        ResourceModifier processed = null;
+        victim.GetComponent<Entity>().health.OnAllConsumerProcessed.AddListener((target, modifier, value, isCritical) => processed = modifier);
+
+        Kill(kamikaze);
+        Drain(victim);
+
+        Assert.AreSame(kamikaze, processed.source);
+    }
+
+    [Test]
+    public void TargetOwnerOpponents_ComputerOwnerDies_DamagesPlayersOnly()
+    {
+        GameObject player = CreateVictim(Entity.EntityType.Player);
+        GameObject ally = CreateVictim(Entity.EntityType.Computer);
+        GameObject kamikaze = CreateVictim(Entity.EntityType.Computer);
+        kamikaze.GetComponent<Entity>().entityType = Entity.EntityType.Computer;
+        _buff.data.trigger = DeathTrigger.Owner;
+        _buff.data.targetOwnerOpponents = true;
+        _buff.Add(kamikaze, kamikaze);
+
+        Kill(kamikaze);
+
+        Assert.AreEqual(95f, Drain(player).Value);
+        Assert.AreEqual(100f, Drain(ally).Value);
+    }
+
+    [Test]
+    public void TargetOwnerOpponents_PlayerOwnerDies_DamagesComputersOnly()
+    {
+        // entityType says Player, but the owner's side decides: it never hits its own team
+        GameObject ally = CreateVictim(Entity.EntityType.Player);
+        GameObject computer = CreateVictim(Entity.EntityType.Computer);
+        GameObject kamikaze = CreateVictim(Entity.EntityType.Player);
+        kamikaze.GetComponent<Entity>().entityType = Entity.EntityType.Player;
+        _buff.data.trigger = DeathTrigger.Owner;
+        _buff.data.targetOwnerOpponents = true;
+        _buff.Add(kamikaze, kamikaze);
+
+        Kill(kamikaze);
+
+        Assert.AreEqual(100f, Drain(ally).Value);
+        Assert.AreEqual(95f, Drain(computer).Value);
+    }
+
+    [Test]
+    public void TargetOwnerOpponents_ByDefault_IsFalse()
+    {
+        // Assets saved before the option existed keep using entityType
+        Assert.IsFalse(new DamageAllEntityOnEntityDieBuffData().targetOwnerOpponents);
+    }
+
+    [Test]
     public void Remove_StopsDealingDamage()
     {
         GameObject victim = CreateVictim();

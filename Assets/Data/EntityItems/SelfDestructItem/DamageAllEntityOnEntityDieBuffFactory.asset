@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29b593bfd2467d249a6182b4f319a968, type: 3}
+  m_Name: DamageAllEntityOnEntityDieBuffFactory
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  uniqueID: 0b466a90-d259-41e8-b89d-314a4e0da891
+  data:
+    trigger: 1
+    damageToAllEntity: {fileID: 11400000, guid: d6c3fe24ea0cb724393c42b9ff930be4, type: 2}
+    entityType: 1
+    targetOwnerOpponents: 1
