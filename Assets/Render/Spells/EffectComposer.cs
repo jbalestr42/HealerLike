@@ -26,21 +26,27 @@ namespace HealerLike.Render.Spells
             if (channels.family != EffectFamily.Damage) operation = ToOperation(channels.family);
             if (channels.group != AttributeGroup.Offence) aspect = (EffectAspect)channels.group;
             EffectElement element;
-            if (vocabulary != null && vocabulary.TryGetElement(operation, aspect, out element)) return element;
+            if (vocabulary != null && vocabulary.TryGetElement(operation, aspect, channels.tempo, out element)) return element;
+            if (vocabulary != null) return default(EffectElement);
             return LegacyElement(operation, aspect);
         }
 
         static EffectOperation ToOperation(EffectFamily family)
         {
-            return (EffectOperation)family;
+            switch (family)
+            {
+                case EffectFamily.Heal:
+                case EffectFamily.Renew: return EffectOperation.Heal;
+                case EffectFamily.Boon: return EffectOperation.Boon;
+                case EffectFamily.Bane: return EffectOperation.Bane;
+                default: return EffectOperation.Damage;
+            }
         }
 
         static EffectElement LegacyElement(EffectOperation operation, EffectAspect aspect)
         {
             return operation == EffectOperation.Damage ? EffectElement.Burst
                 : operation == EffectOperation.Heal ? EffectElement.Rise
-                : operation == EffectOperation.Rot ? EffectElement.Drips
-                : operation == EffectOperation.Renew ? EffectElement.Stalks
                 : operation == EffectOperation.Boon ? (aspect == EffectAspect.Defence ? EffectElement.Plates
                     : aspect == EffectAspect.Prevention ? EffectElement.Bud : EffectElement.Orbit)
                 : aspect == EffectAspect.Offence ? EffectElement.Press : EffectElement.Crack;
@@ -107,7 +113,6 @@ namespace HealerLike.Render.Spells
         {
             if (vocabulary == null) return null;
             EffectFamily family = channels.family;
-            if (channels.operation != EffectOperation.Damage) family = (EffectFamily)Mathf.Clamp((int)channels.operation, 0, 5);
             EffectRecipe recipe = Compose(vocabulary, Element(vocabulary, channels), family, channels.tempo, channels.periodSeconds,
                            stacks, charges, 0f);
             if (!EffectCompositionValidator.TryValidate(channels, vocabulary, out string compositionError))

@@ -18,7 +18,7 @@ namespace HealerLike.Render.Spells
             }
 
             EffectElement element;
-            if (vocabulary == null || !vocabulary.TryGetElement(channels.operation, channels.aspect, out element)
+            if (vocabulary == null || !vocabulary.TryGetElement(channels.operation, channels.aspect, channels.tempo, out element)
                 || vocabulary.GetEntry(element) == null)
             {
                 error = "The effect vocabulary is missing the selected cell entry.";

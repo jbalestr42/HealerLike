@@ -24,8 +24,23 @@ namespace HealerLike.Render.Spells.Editor
         public static void Migrate(EffectVocabulary vocabulary)
         {
             if (vocabulary == null) return;
-            if (vocabulary.cells == null) vocabulary.cells = new System.Collections.Generic.Dictionary<EffectCell, EffectElement>();
-            foreach (var pair in EffectVocabulary.LegacyCells()) vocabulary.cells[pair.Key] = pair.Value;
+            if (vocabulary.table == null) vocabulary.table = new System.Collections.Generic.Dictionary<EffectCell, EffectCellEntry>();
+            foreach (var pair in EffectVocabulary.LegacyCells())
+            {
+                EffectElement periodic = pair.Value;
+                bool hasPeriodic = false;
+                if (pair.Key.operation == EffectOperation.Damage && pair.Key.aspect == EffectAspect.Offence)
+                {
+                    periodic = EffectElement.Drips;
+                    hasPeriodic = true;
+                }
+                else if (pair.Key.operation == EffectOperation.Heal && pair.Key.aspect == EffectAspect.Offence)
+                {
+                    periodic = EffectElement.Stalks;
+                    hasPeriodic = true;
+                }
+                vocabulary.table[pair.Key] = new EffectCellEntry(pair.Value, periodic, hasPeriodic);
+            }
         }
     }
 }

@@ -12,7 +12,7 @@ namespace HealerLike.Render.Grammar
         Bane
     }
 
-    public enum EffectOperation { Damage, Heal, Rot, Renew, Boon, Bane, Ward, Mana }
+    public enum EffectOperation { Damage, Heal, Boon, Bane, Ward, Mana }
     public enum EffectAspect { Offence, Defence, Prevention }
     public enum EffectMagnitude { Light, Solid, Heavy }
     public enum EffectReach { Single, Group, All, Area, Chain }
@@ -54,5 +54,18 @@ namespace HealerLike.Render.Grammar
         public EffectTempo tempo;
         // Seconds between two ticks, 0 when the handler does not tick
         public float periodSeconds;
+    }
+
+    public struct EffectContext
+    {
+        public EffectOrigin origin;
+        public EffectTrigger[] triggers;
+        public int targetCount;
+        public UnityEngine.GameObject projectilePrefab;
+
+        public static EffectContext Default
+        {
+            get { return new EffectContext { origin = EffectOrigin.Creature, targetCount = 1 }; }
+        }
     }
 }

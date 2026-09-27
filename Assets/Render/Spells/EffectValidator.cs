@@ -18,6 +18,16 @@ namespace HealerLike.Render.Spells
                 return false;
             }
 
+            foreach (HealerLike.Render.Creatures.LookPart part in recipe.entry.parts)
+            {
+                if (!HealerLike.Render.Creatures.LookPartValidation.IsValid(part,
+                    HealerLike.Render.Creatures.LookPartBounds.Spell))
+                {
+                    error = "Require valid spell part data.";
+                    return false;
+                }
+            }
+
             error = null;
             return true;
         }

@@ -20,7 +20,9 @@ namespace HealerLike.Render.Spells
                 return buffs[factory];
             }
 
-            EffectChannels channels = EffectDerivation.Channels(factory, IsSameSide(source, target));
+            EffectContext context = EffectContext.Default;
+            context.origin = EffectDerivation.Origin(source);
+            EffectChannels channels = EffectDerivation.Channels(factory, IsSameSide(source, target), context);
             SpellLook look = new SpellLook();
             look.element = EffectComposer.Element(channels);
             look.family = channels.family;

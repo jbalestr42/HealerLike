@@ -23,6 +23,21 @@ namespace HealerLike.Render.Spells
         public override int GetHashCode() { return ((int)operation * 397) ^ (int)aspect; }
     }
 
+    [Serializable]
+    public struct EffectCellEntry
+    {
+        public EffectElement once;
+        public bool hasPeriodic;
+        public EffectElement periodic;
+
+        public EffectCellEntry(EffectElement once, EffectElement periodic, bool hasPeriodic)
+        {
+            this.once = once;
+            this.periodic = periodic;
+            this.hasPeriodic = hasPeriodic;
+        }
+    }
+
     // What an effect draws, the composer picks one from the family and the group of a handler
     // Stored by value in assets: append new members, never reorder or remove
     public enum EffectElement
@@ -90,6 +105,9 @@ namespace HealerLike.Render.Spells
         [DictionaryDrawerSettings(KeyLabel = "Operation and aspect", ValueLabel = "Element")]
         public Dictionary<EffectCell, EffectElement> cells = new Dictionary<EffectCell, EffectElement>();
 
+        [DictionaryDrawerSettings(KeyLabel = "Operation and aspect", ValueLabel = "Once and periodic elements")]
+        public Dictionary<EffectCell, EffectCellEntry> table = new Dictionary<EffectCell, EffectCellEntry>();
+
         public ElementEntry GetEntry(EffectElement element)
         {
             if (elements == null || !elements.ContainsKey(element))
@@ -102,8 +120,23 @@ namespace HealerLike.Render.Spells
 
         public bool TryGetElement(EffectOperation operation, EffectAspect aspect, out EffectElement element)
         {
-            if (cells != null && cells.TryGetValue(new EffectCell(operation, aspect), out element)) return true;
-            element = LegacyElement(operation, aspect);
+            return TryGetElement(operation, aspect, EffectTempo.Once, out element);
+        }
+
+        public bool TryGetElement(EffectOperation operation, EffectAspect aspect, EffectTempo tempo, out EffectElement element)
+        {
+            EffectCellEntry entry;
+            if (table == null || !table.TryGetValue(new EffectCell(operation, aspect), out entry))
+            {
+                element = default(EffectElement);
+                return false;
+            }
+            if (tempo == EffectTempo.PerPeriod && entry.hasPeriodic)
+            {
+                element = entry.periodic;
+                return true;
+            }
+            element = entry.once;
             return true;
         }
 
@@ -113,8 +146,6 @@ namespace HealerLike.Render.Spells
             {
                 case EffectOperation.Damage: return EffectElement.Burst;
                 case EffectOperation.Heal: return EffectElement.Rise;
-                case EffectOperation.Rot: return EffectElement.Drips;
-                case EffectOperation.Renew: return EffectElement.Stalks;
                 case EffectOperation.Boon:
                     return aspect == EffectAspect.Defence ? EffectElement.Plates
                         : aspect == EffectAspect.Prevention ? EffectElement.Bud : EffectElement.Orbit;
