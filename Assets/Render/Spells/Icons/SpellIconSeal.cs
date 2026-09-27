@@ -28,7 +28,7 @@ namespace HealerLike.Render.Spells
             Ring("Seal rim", Vector3.forward * .85f, 2.75f, Rim);
             bool periodic = false;
             bool lasting = false;
-            foreach (EffectRecipe layer in recipe.layers)
+            foreach (EffectRecipe layer in recipe.Entries())
             {
                 periodic |= layer.tempo == EffectTempo.PerPeriod;
                 lasting |= layer.tempo == EffectTempo.ForDuration;

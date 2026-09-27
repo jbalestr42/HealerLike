@@ -20,9 +20,8 @@ namespace HealerLike.Render.Spells
                 return buffs[factory];
             }
 
-            EffectContext context = EffectContext.Default;
-            context.origin = EffectDerivation.Origin(source);
-            EffectChannels channels = EffectDerivation.Channels(factory, IsSameSide(source, target), context);
+            EffectContext context = EffectDerivation.Context(source, target);
+            EffectChannels channels = EffectDerivation.Channels(factory, EffectDerivation.IsSameSide(source, target), context);
             SpellLook look = new SpellLook();
             look.element = EffectComposer.Element(channels);
             look.family = channels.family;
@@ -30,30 +29,5 @@ namespace HealerLike.Render.Spells
             return look;
         }
 
-        // The caster's side against the target's: the healer's Character, which is not an Entity, plays for the
-        // player, and a status without a caster is taken as its target's own
-        static bool IsSameSide(GameObject source, GameObject target)
-        {
-            if (source == null || target == null)
-            {
-                return true;
-            }
-
-            Entity caster = source.GetComponent<Entity>();
-            Entity recipient = target.GetComponent<Entity>();
-            Entity.EntityType casterSide = Entity.EntityType.Player;
-            if (caster != null)
-            {
-                casterSide = caster.entityType;
-            }
-
-            Entity.EntityType recipientSide = Entity.EntityType.Player;
-            if (recipient != null)
-            {
-                recipientSide = recipient.entityType;
-            }
-
-            return casterSide == recipientSide;
-        }
     }
 }

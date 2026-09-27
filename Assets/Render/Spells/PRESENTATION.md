@@ -37,12 +37,15 @@ budget. Empty tables preserve existing art. Distinct child compositions cannot s
 status accidentally; periodic descendants retain their handler's clock owner.
 
 `SpellIconDerivation` is the pure boundary for character skills, consumers and handlers.
-`SpellIconComposer` uses the same vocabulary and complete `SpellLooks` overrides as the world.
+`SpellIconComposer` and world statuses call the same `SpellLooks.ComposeHandler` resolver.
+Invalid or over-budget layers reject the whole handler; neither path displays a partial result.
+The shared resolver uses the same vocabulary and complete `SpellLooks` overrides.
 `SpellIconRenderer` poses private recipe copies, renders native geometry to a transparent texture,
 and releases all temporary effects and procedural meshes explicitly. UI-only surface settings
 quiet hatching and improve dark-glyph contrast without modifying the world material. The seal
 shows reach, held/periodic tempo, non-cast triggers and item origin when supplied by the context.
-Compound recipes display up to four glyphs with an overflow marker.
+Icons retain the complete addition tree inside each glyph. Up to four top-level buff recipes
+are displayed, with an overflow marker for further buffs. Nested pieces do not consume glyph slots.
 
 `StageIcons` owns creature and spell providers. `SpellIcons` caches by source identity, shares
 factory/data requests, caps owned textures at 128, and releases them on invalidation or disposal.
@@ -51,8 +54,29 @@ existing catalog fallback. Only that interface, the lookup in `ToolkitGameView`,
 extend the earlier Render-only scope. No gameplay data or generated catalog is rewritten.
 Use **Tools > Render > Capture Grammar Spell Icons** for an atlas and source-path manifest.
 
-Percentage buff magnitudes use fraction units directly (0.2 means twenty percent). Additive
-modifiers use the documented 100-point reference when no target attribute baseline is supplied.
+Percentage buff magnitudes use fraction units directly (0.2 means twenty percent). Live additive
+modifiers use their target attribute baseline; consumers use the current health maximum. The
+grammar captures these values before composition. Targetless previews, missing attributes and
+zero/non-finite baselines retain the documented 100-point reference.
 Live creature attribute interpretation lives in `Grammar/LiveUnitDerivation`; observers only
 collect state and apply the derived channels. Init validation, child loss, billboard propagation,
 delivery shape ownership and disabled EditMode preview cleanup have dedicated regression tests.
+
+
+## Boundaries and deliberate limits
+
+- Gameplay factories, attribute operators and target baselines are interpreted in Grammar.
+- Handler override selection, ordered buff composition and aggregate validation have one resolver.
+- Icon layout inspects validated recipes and keeps their addition trees. Its four-glyph cap is a
+  presentation policy, not a composition budget or a reason to remove authored child pieces.
+- Runtime textures, temporary geometry and ground leases have explicit owners; Toolkit borrows icons.
+- An optional Toolkit provider is an intentional dependency inversion boundary. Render implements
+  the UI contract; Toolkit has no dependency on Render and retains a null-result fallback.
+- Empty optional vocabulary slots mean no additive ornament. They are valid authored choices,
+  covered by both empty-table parity and populated-channel composition tests.
+
+Compatibility is still explicit: legacy `EffectElement` helpers and migrated element-keyed assets
+remain for older presets and impact/area/link entry points. Retiring those labels requires an
+asset migration and visual acceptance, not merely deleting a switch. This is not a claim that
+every proposed phase of the historical handoff has been fully retired or that architecture can
+be certified perfect by passing tests.

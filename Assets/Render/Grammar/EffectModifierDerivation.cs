@@ -52,14 +52,14 @@ namespace HealerLike.Render.Grammar
         }
 
         // Multipliers already express a share (+0.5 means +50%). Additive effects retain the
-        // documented 100-point fallback until their caller can supply the affected attribute's base.
-        static float ModifierMagnitudeShare(ABuffFactory buff)
+        // 100-point fallback only for previews or absent/zero target baselines.
+        static float ModifierMagnitudeShare(ABuffFactory buff, EffectContext context)
         {
             BaseData data = ModifierData(buff, out float delta);
             if (data == null || data.modifierType == AttributeModifierType.Override || !float.IsFinite(delta))
                 return 0f;
             return Mathf.Abs(delta) / (data.modifierType == AttributeModifierType.Multiply
-                ? 1f : LookDerivation.DefaultHealth);
+                ? 1f : AttributeReference(context, data.type));
         }
     }
 }

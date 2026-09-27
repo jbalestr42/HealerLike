@@ -6,40 +6,51 @@ namespace HealerLike.Render.Spells
 {
     public partial class SpellLooks
     {
-        // An authored row replaces the entire composition. Otherwise every buff contributes in declaration order.
         public List<EffectRecipe> Compose(EffectVocabulary vocabulary, ABuffHandlerFactory factory,
             GameObject source, GameObject target)
         {
-            var recipes = new List<EffectRecipe>();
-            if (factory != null && buffs != null && buffs.TryGetValue(factory, out SpellLook authored)
-                && authored != null)
+            EffectContext context = EffectDerivation.Context(source, target);
+            return ComposeHandler(vocabulary, this, factory, EffectDerivation.IsSameSide(source, target), context);
+        }
+
+        // One resolution path for world effects, previews and icons. A bad layer rejects the whole handler.
+        public static List<EffectRecipe> ComposeHandler(EffectVocabulary vocabulary, SpellLooks looks,
+            ABuffHandlerFactory factory, bool isSameSide, EffectContext context, int stacks = 1, float charges = 0)
+        {
+            List<EffectRecipe> recipes = new List<EffectRecipe>();
+            if (factory != null && looks != null && looks.buffs != null
+                && looks.buffs.TryGetValue(factory, out SpellLook authored) && authored != null)
             {
-                if (authored.recipe != null)
+                EffectRecipe recipe = authored.recipe != null ? authored.recipe.InstantiateRecipe()
+                    : EffectComposer.Compose(vocabulary, authored.element, authored.family, authored.tempo,
+                        EffectDerivation.Period(factory), stacks, charges, 0);
+                if (recipe != null)
                 {
-                    EffectRecipe baked = authored.recipe.InstantiateRecipe();
-                    if (baked != null) recipes.Add(baked);
-                    return recipes;
+                    recipes.Add(recipe);
                 }
-                EffectRecipe legacy = EffectComposer.Compose(vocabulary, authored.element, authored.family,
-                    authored.tempo, EffectDerivation.Period(factory), 1, 0, 0);
-                if (legacy != null) recipes.Add(legacy);
-                return recipes;
             }
-            EffectContext context = EffectContext.Default;
-            context.origin = EffectDerivation.Origin(source);
-            IReadOnlyList<EffectChannels> layers = EffectDerivation.Layers(factory, IsSameSide(source, target), context);
-            if (layers.Count == 0)
+            else
             {
-                EffectRecipe fallback = EffectComposer.Compose(vocabulary,
-                    EffectDerivation.Channels(factory, IsSameSide(source, target), context), 1, 0);
-                if (fallback != null) recipes.Add(fallback);
+                IReadOnlyList<EffectChannels> layers = EffectDerivation.Layers(factory, isSameSide, context);
+                if (layers.Count == 0)
+                {
+                    layers = new[] { EffectDerivation.Channels(factory, isSameSide, context) };
+                }
+                foreach (EffectChannels channels in layers)
+                {
+                    EffectRecipe recipe = EffectComposer.Compose(vocabulary, channels, stacks, charges);
+                    if (recipe == null)
+                    {
+                        recipes.Clear();
+                        return recipes;
+                    }
+                    recipes.Add(recipe);
+                }
             }
-            foreach (EffectChannels channels in layers)
+            if (!EffectValidator.TryValidateComposition(recipes, out _))
             {
-                EffectRecipe recipe = EffectComposer.Compose(vocabulary, channels, 1, 0);
-                if (recipe != null) recipes.Add(recipe);
+                recipes.Clear();
             }
-            if (!EffectValidator.TryValidateComposition(recipes, out _)) recipes.Clear();
             return recipes;
         }
     }

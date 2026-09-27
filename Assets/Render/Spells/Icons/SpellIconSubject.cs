@@ -73,18 +73,22 @@ namespace HealerLike.Render.Spells
             SpellEffect effect = host.AddComponent<SpellEffect>();
             effect.enabled = false;
             effect.Init(recipe, meshes, material, LookSide.Plant);
-            if (recipe.socket == EffectSocket.Link)
+            foreach (SpellEffect layer in host.GetComponentsInChildren<SpellEffect>(true))
             {
-                Vector3 middle = _root.transform.position;
-                effect.SetEndpoints(middle + Vector3.left * 1.1f, middle + Vector3.right * 1.1f, false);
-                effect.Advance(recipe.cycleSeconds * .4f);
+                EffectRecipe piece = layer.recipe;
+                if (piece.socket == EffectSocket.Link)
+                {
+                    Vector3 middle = _root.transform.position;
+                    layer.SetEndpoints(middle + Vector3.left * 1.1f, middle + Vector3.right * 1.1f, false);
+                    layer.Advance(piece.cycleSeconds * .4f);
+                }
+                else
+                {
+                    layer.Pose(.42f, piece.cycleSeconds * .42f);
+                }
             }
-            else
-            {
-                effect.Pose(.42f, recipe.cycleSeconds * .42f);
-                host.transform.localRotation = recipe.presentation?.billboard == true ? Quaternion.identity
-                    : Quaternion.Euler(recipe.socket == EffectSocket.Ground ? 65f : 30f, -18f, 0f);
-            }
+            host.transform.localRotation = recipe.presentation?.billboard == true ? Quaternion.identity
+                : Quaternion.Euler(recipe.socket == EffectSocket.Ground ? 65f : 30f, -18f, 0f);
 
             float extent = count == 1 ? .92f : count == 2 ? .58f : .46f;
             Fit(host.transform, Slot(index, count), extent);

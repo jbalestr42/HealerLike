@@ -53,11 +53,11 @@ namespace HealerLike.Render.Spells
                     EffectFamily.Boon, EffectTempo.ForDuration, 0, 1, 3, 0) };
                 looks.buffs.Add(handler, new SpellLook { recipe = asset });
                 SpellIconRecipe icon = SpellIconComposer.Compose(handler, vocabulary, looks);
-                Assert.AreEqual(2, icon.layers.Count);
-                Assert.AreEqual(EffectElement.Plates, icon.layers[1].element);
-                Assert.AreEqual(0, icon.layers[0].additions.Length);
-                icon.layers[1].entry.parts[0].size = Vector3.one * 8;
-                Assert.AreNotEqual(icon.layers[1].entry.parts[0].size, asset.recipe.additions[0].entry.parts[0].size);
+                Assert.AreEqual(1, icon.layers.Count);
+                Assert.AreEqual(EffectElement.Plates, icon.layers[0].additions[0].element);
+                Assert.AreEqual(1, icon.layers[0].additions.Length);
+                icon.layers[0].additions[0].entry.parts[0].size = Vector3.one * 8;
+                Assert.AreNotEqual(icon.layers[0].additions[0].entry.parts[0].size, asset.recipe.additions[0].entry.parts[0].size);
                 asset.recipe.additions = new[] { asset.recipe };
                 Assert.IsNull(SpellIconComposer.Compose(handler, vocabulary, looks));
             }

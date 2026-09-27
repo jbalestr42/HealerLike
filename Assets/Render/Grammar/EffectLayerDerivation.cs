@@ -28,7 +28,7 @@ namespace HealerLike.Render.Grammar
                     group = group,
                     operation = LayerOperation(buff, family),
                     aspect = (EffectAspect)group,
-                    magnitude = LayerMagnitude(buff),
+                    magnitude = LayerMagnitude(buff, context),
                     tempo = Tempo(handler),
                     periodSeconds = Period(handler),
                     reach = Reach(handler, context.targetCount),
@@ -71,11 +71,11 @@ namespace HealerLike.Render.Grammar
             }
         }
 
-        static EffectMagnitude LayerMagnitude(ABuffFactory buff)
+        static EffectMagnitude LayerMagnitude(ABuffFactory buff, EffectContext context)
         {
             AConsumerFactory consumer = Consumer(buff);
-            float reference = consumer != null ? Mathf.Abs(Harm(consumer)) / LookDerivation.DefaultHealth : 0f;
-            reference = Mathf.Max(reference, ModifierMagnitudeShare(buff));
+            float reference = consumer != null ? Mathf.Abs(Harm(consumer)) / HealthReference(context) : 0f;
+            reference = Mathf.Max(reference, ModifierMagnitudeShare(buff, context));
             return reference <= LightMagnitudeMax ? EffectMagnitude.Light
                 : reference <= SolidMagnitudeMax ? EffectMagnitude.Solid : EffectMagnitude.Heavy;
         }

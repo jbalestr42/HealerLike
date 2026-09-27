@@ -63,6 +63,8 @@ namespace HealerLike.Render.Grammar
         public EffectTrigger[] triggers;
         public int targetCount;
         public UnityEngine.GameObject projectilePrefab;
+        public float maximumHealth;
+        public System.Collections.Generic.IReadOnlyDictionary<AttributeType, float> attributeBaselines;
 
         public static EffectContext Default
         {

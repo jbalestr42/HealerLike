@@ -83,6 +83,31 @@ namespace HealerLike.Render.Spells
         }
 
         [Test]
+        public void NestedPeriodicPieceRemainsInsideItsGlyphAndContributesTempoMarks()
+        {
+            EffectRecipe core = Layer(EffectElement.Burst);
+            EffectRecipe child = Layer(EffectElement.Stalks);
+            child.tempo = EffectTempo.PerPeriod;
+            core.additions = new[] { child };
+            SpellIconRecipe recipe = new SpellIconRecipe();
+            recipe.layers.Add(core);
+            using (SpellIconSubject subject = new SpellIconSubject(recipe, RenderTestAssets.LoadMeshes(),
+                RenderTestAssets.LoadLookMaterial(), Vector3.zero))
+            {
+                Transform glyph = subject.root.transform.Find("Spell glyph 0");
+                Assert.AreEqual(2, glyph.GetComponentsInChildren<SpellEffect>().Length);
+                Assert.IsNull(subject.root.transform.Find("Spell glyph 1"));
+                Assert.IsNotNull(subject.root.transform.Find("Periodic beat 2"));
+                Assert.AreEqual(1, core.additions.Length);
+                foreach (Renderer part in glyph.GetComponentsInChildren<Renderer>())
+                {
+                    Assert.LessOrEqual(part.bounds.max.x, 1.1f);
+                    Assert.GreaterOrEqual(part.bounds.min.x, -1.1f);
+                }
+            }
+        }
+
+        [Test]
         public void CaptureCameraIsTransparentAndDoesNotRunPostProcessing()
         {
             using (SpellIconRenderer renderer = new SpellIconRenderer(null, null))

@@ -14,7 +14,7 @@ namespace HealerLike.Render.Grammar
             return new EffectChannels {
                 family = Family(handler, isSameSide), group = Group(handler),
                 operation = Operation(handler, isSameSide), aspect = Aspect(handler),
-                tempo = Tempo(handler), periodSeconds = Period(handler), magnitude = Magnitude(handler),
+                tempo = Tempo(handler), periodSeconds = Period(handler), magnitude = Magnitude(handler, context),
                 reach = Reach(handler, context.targetCount), delivery = DeliveryChannel(context.projectilePrefab), trigger = Trigger(handler, context),
                 side = isSameSide ? EffectSide.Ally : EffectSide.Opposing, origin = context.origin
             };
@@ -44,15 +44,20 @@ namespace HealerLike.Render.Grammar
 
         public static EffectMagnitude Magnitude(ABuffHandlerFactory handler)
         {
+            return Magnitude(handler, EffectContext.Default);
+        }
+
+        public static EffectMagnitude Magnitude(ABuffHandlerFactory handler, EffectContext context)
+        {
             float reference = 0f;
             foreach (ABuffFactory buff in Buffs(handler))
             {
                 AConsumerFactory consumer = Consumer(buff);
                 if (consumer != null)
                 {
-                    reference = Mathf.Max(reference, Mathf.Abs(Harm(consumer)) / LookDerivation.DefaultHealth);
+                    reference = Mathf.Max(reference, Mathf.Abs(Harm(consumer)) / HealthReference(context));
                 }
-                reference = Mathf.Max(reference, ModifierMagnitudeShare(buff));
+                reference = Mathf.Max(reference, ModifierMagnitudeShare(buff, context));
             }
             return reference <= LightMagnitudeMax ? EffectMagnitude.Light
                 : reference <= SolidMagnitudeMax ? EffectMagnitude.Solid : EffectMagnitude.Heavy;
