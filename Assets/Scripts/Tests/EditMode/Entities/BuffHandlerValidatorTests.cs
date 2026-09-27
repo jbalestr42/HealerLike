@@ -89,6 +89,20 @@ public class BuffHandlerValidatorTests
     }
 
     [Test]
+    public void MustNotHave_AnotherSourceAddedTheHandlerThisFrame_IsNotValid()
+    {
+        // Two casters in the same frame: the handler is only applied at the next BuffManager
+        // update, the second caster must still see it and not stack its own
+        GameObject otherSource = new GameObject("OtherSource");
+        _buffManager.AddHandler(_handlerFactory, otherSource, _target);
+
+        bool isValid = CreateValidator(false).IsValid(_source, _target);
+
+        Object.DestroyImmediate(otherSource);
+        Assert.IsFalse(isValid);
+    }
+
+    [Test]
     public void MustHave_TargetWithTheHandler_IsValid()
     {
         ApplyHandler(_handlerFactory);

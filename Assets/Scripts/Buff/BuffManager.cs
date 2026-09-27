@@ -470,10 +470,21 @@ public class BuffManager : SerializedMonoBehaviour
                     else
                     {
                         Debug.Log($"[BuffManager:{gameObject.name}] Remove buff " + buffFactory.name + " | stacks=" + buffData.stacks);
-                        ABuff buff = buffData.first;
-                        buffData.stacks = 0;
-                        buffData.buffList.Remove(buff);
-                        buff.Remove(source, target);
+                        // Without stacking, each application added its own instance: a removal undoes one of
+                        // them, removeAll undoes every one, none can be dropped without its Remove()
+                        do
+                        {
+                            ABuff buff = buffData.first;
+                            buffData.buffList.Remove(buff);
+                            buff.Remove(source, target);
+                            buffData.stacks = Mathf.Max(0, buffData.stacks - 1);
+                        }
+                        while (removeAll && buffData.first != null);
+
+                        if (removeAll)
+                        {
+                            buffData.stacks = 0;
+                        }
                     }
                 }
                 OnBuffRemoved.Invoke(buffData);

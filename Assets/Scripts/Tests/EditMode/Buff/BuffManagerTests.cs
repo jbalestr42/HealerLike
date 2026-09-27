@@ -314,6 +314,49 @@ public class BuffManagerTests
     }
 
     [Test]
+    public void StopHandler_NonStackableBuffAppliedTwice_RemovesEveryInstance()
+    {
+        // Each application of a non stackable buff adds its own instance (an InvincibilityBuff
+        // counts them): stopping the handler must undo all of them, not only the first one
+        GameplayTag tag = CreateTracked<GameplayTag>();
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Duration, tags: new List<GameplayTag> { tag });
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // Add, Add
+
+        _buffManager.RemoveBuffWithTag(tag);
+
+        CollectionAssert.AreEqual(new[] { "Add", "Add", "Remove", "Remove" }, _data.log);
+    }
+
+    [Test]
+    public void RemoveHandler_NonStackableBuffAppliedTwice_RemovesOneInstanceAtATime()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Infinite);
+        int stoppedCount = 0;
+        _buffManager.OnBuffHandlerStopped.AddListener(_ => stoppedCount++);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // Add, Add
+
+        _buffManager.RemoveHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // One instance left
+
+        CollectionAssert.AreEqual(new[] { "Add", "Add", "Remove" }, _data.log);
+        Assert.AreEqual(0, stoppedCount);
+
+        _buffManager.RemoveHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { "Add", "Add", "Remove", "Remove" }, _data.log);
+        Assert.AreEqual(1, stoppedCount);
+    }
+
+    [Test]
     public void RemoveBuffWithTag_StopsMatchingHandlerAndRemovesItsBuff()
     {
         // RemoveBuffWithTag properly tears the handler down: all stacks of its buff are removed at
