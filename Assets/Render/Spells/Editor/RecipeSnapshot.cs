@@ -16,7 +16,21 @@ namespace HealerLike.Render.Spells.Editor
     public static class RecipeSnapshot
     {
         const string VocabularyPath = "Assets/Render/Spells/Data/EffectVocabulary.asset";
-        [Serializable] class Snapshot { public string subject; public List<Recipe> recipes = new List<Recipe>(); }
+        [Serializable] class Snapshot
+        {
+            public string subject;
+            public List<Recipe> recipes = new List<Recipe>();
+            public List<Recipe> supportLinks = new List<Recipe>();
+            public List<HandlerComposition> handlerCompositions = new List<HandlerComposition>();
+        }
+        [Serializable] class HandlerComposition
+        {
+            public string handler;
+            public int recipeCount;
+            public int recipeTreeCount;
+            public int linkCount;
+            public string[] elements;
+        }
         [Serializable] class Recipe
         {
             public string label, element, motion, socket, family, tempo, colour, entry;
@@ -54,6 +68,7 @@ namespace HealerLike.Render.Spells.Editor
                 foreach (EffectPiece piece in Enum.GetValues(typeof(EffectPiece)))
                     WriteOne(folder, "piece-" + piece, new[] { EffectComposer.Compose(vocabulary,
                         (EffectKey)((int)EffectKey.Beam + (int)piece), EffectFamily.Heal, EffectTempo.Once, 0f, 3, 3, .5f) });
+                WriteSupportComposition(folder, vocabulary);
                 Debug.Log("[RecipeSnapshot] Wrote snapshots to " + folder);
                 EditorApplication.Exit(0);
             }
@@ -62,6 +77,56 @@ namespace HealerLike.Render.Spells.Editor
                 Debug.LogException(exception);
                 EditorApplication.Exit(1);
             }
+        }
+
+        static void WriteSupportComposition(string folder, EffectVocabulary vocabulary)
+        {
+            Snapshot snapshot = new Snapshot { subject = "support-composition" };
+            foreach (EffectFamily family in Enum.GetValues(typeof(EffectFamily)))
+                snapshot.supportLinks.Add(Copy(EffectComposer.Link(vocabulary, family), 0f));
+
+            SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>(
+                "Assets/Render/Spells/Data/SpellLooks.asset");
+            var handlers = new HashSet<ABuffHandlerFactory>();
+            foreach (ABuffHandlerFactory handler in Resources.FindObjectsOfTypeAll<ABuffHandlerFactory>())
+                if (handler) handlers.Add(handler);
+            foreach (string guid in AssetDatabase.FindAssets("t:BuffHandlerFactory"))
+            {
+                ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(
+                    AssetDatabase.GUIDToAssetPath(guid));
+                if (handler) handlers.Add(handler);
+            }
+            foreach (ABuffHandlerFactory handler in handlers)
+            {
+                EffectContext context = EffectContext.Default;
+                context.origin = EffectOrigin.Creature;
+                List<EffectRecipe> recipes = SpellLooks.ComposeHandler(vocabulary, looks, handler, false,
+                    context);
+                List<string> elements = new List<string>();
+                int treeCount = 0;
+                int linkCount = 0;
+                foreach (EffectRecipe recipe in recipes) CountTree(recipe, elements, ref treeCount, ref linkCount);
+                snapshot.handlerCompositions.Add(new HandlerComposition
+                {
+                    handler = handler != null ? handler.name : "null",
+                    recipeCount = recipes.Count,
+                    recipeTreeCount = treeCount,
+                    linkCount = linkCount,
+                    elements = elements.ToArray()
+                });
+            }
+            File.WriteAllText(Path.Combine(folder, "support-composition.json"),
+                JsonUtility.ToJson(snapshot, true), Encoding.UTF8);
+        }
+
+        static void CountTree(EffectRecipe recipe, List<string> elements, ref int treeCount, ref int linkCount)
+        {
+            if (recipe == null) return;
+            treeCount++;
+            elements.Add(recipe.element + ":" + recipe.socket);
+            if (recipe.socket == EffectSocket.Link) linkCount++;
+            foreach (EffectRecipe addition in recipe.additions ?? Array.Empty<EffectRecipe>())
+                CountTree(addition, elements, ref treeCount, ref linkCount);
         }
 
         static void WriteOne(string folder, string name, IEnumerable<EffectRecipe> source)
