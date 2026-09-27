@@ -139,7 +139,8 @@ namespace HealerLike.Render.Stage
                 using (var fixture = new SpellSourceFixture(_manager, _session))
                     yield return fixture.Capture();
                 _proof.passed = _proof.projectileStartUnchanged && _proof.stableLease && _proof.samples.Count == 4
-                    && _proof.recomposedWhileHeld && _proof.supportMaxAttachmentError < 0.0001f;
+                    && _proof.recomposedWhileHeld && _proof.supportHealLinks == 1 && _proof.supportBoonLinks == 1
+                    && _proof.supportMaxAttachmentError < 0.0001f;
             }
             finally
             {
