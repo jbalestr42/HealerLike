@@ -18,6 +18,7 @@ namespace UI.Toolkit.Integration
 
         class BareItem : AItem
         {
+            public override string description => string.Empty;
             public override string title { get { return "Custom item"; } }
             public override Sprite icon { get { return null; } }
             public override List<GameplayTag> tags { get { return new List<GameplayTag>(); } }

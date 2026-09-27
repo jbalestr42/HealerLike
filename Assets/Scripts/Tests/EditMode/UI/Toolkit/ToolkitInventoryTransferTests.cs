@@ -9,6 +9,7 @@ namespace UI.Toolkit
     {
         class FakeItem : AItem
         {
+            public override string description => string.Empty;
             public int equipCount = 0;
             public int unequipCount = 0;
             public override string title

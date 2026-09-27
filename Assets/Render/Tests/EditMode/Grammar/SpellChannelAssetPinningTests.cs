@@ -32,6 +32,37 @@ namespace HealerLike.Render.Grammar
         }
 
         static readonly HandlerRow[] HandlerRows = {
+            new HandlerRow("Entities/GuardianEntity/BuffHandlerFactory", EffectOperation.Ward,
+                EffectAspect.Prevention, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("Entities/HexerEntity/BuffHandlerFactory", EffectOperation.Bane,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("Entities/ShamanEntity/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.Once, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("Entities/WarDrumEntity/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/ArcItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/CarrionItem/BuffHandlerFactory", EffectOperation.Damage,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.OnDeath),
+            new HandlerRow("EntityItems/FrostItem/BuffHandlerFactory", EffectOperation.Bane,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/MortarShellItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/PlagueItem/BuffHandlerFactory", EffectOperation.Bane,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/PunchingBagRegenItem/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/RageItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/SelfDestructItem/BuffHandlerFactory", EffectOperation.Damage,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.OnDeath),
+            new HandlerRow("EntityItems/SiphonItem/BuffHandlerFactory", EffectOperation.Mana,
+                EffectAspect.Offence, EffectTempo.Once, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/VenomItem/BuffHandlerFactory", EffectOperation.Damage,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/VolleyItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+
             new HandlerRow("CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
             new HandlerRow("CharacterSkills/MultiTargetReduceDamage/BuffHandlerFactory", EffectOperation.Bane,
@@ -139,7 +170,7 @@ namespace HealerLike.Render.Grammar
         public void DeliveryRows_CoverEveryProjectilePrefab()
         {
             string[] names = { "BulletSpeed", "ChainLightning", "ChannelingLightning", "CurveBullet",
-                "CurveBullet2", "CurveSphereBullet", "LaserBullet", "StraightLaserBullet", "SwarmBullet" };
+                "CurveBullet2", "CurveSphereBullet", "LaserBullet", "MortarShell", "StraightLaserBullet", "SwarmBullet" };
             HashSet<string> expected = new HashSet<string>();
             foreach (string name in names) expected.Add("Assets/Prefabs/Projectiles/" + name + ".prefab");
             HashSet<string> actual = new HashSet<string>();
@@ -155,6 +186,7 @@ namespace HealerLike.Render.Grammar
         [TestCase("CurveBullet2", EffectDelivery.Arc)]
         [TestCase("CurveSphereBullet", EffectDelivery.Arc)]
         [TestCase("LaserBullet", EffectDelivery.Arc)]
+        [TestCase("MortarShell", EffectDelivery.Arc)]
         // Speed 20 exceeds SpearSpeed=18: the shared reader returns Rigid.
         [TestCase("StraightLaserBullet", EffectDelivery.Rigid)]
         [TestCase("SwarmBullet", EffectDelivery.Swarm)]

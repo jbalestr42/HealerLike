@@ -25,7 +25,8 @@ namespace HealerLike.Render.Grammar
             foreach (ABuffFactory buff in Buffs(handler))
             {
                 if (buff is InvincibilityBuffFactory) return EffectOperation.Ward;
-                if (buff is ManaOnRoundEndBuffFactory) return EffectOperation.Mana;
+                if (buff is ManaOnRoundEndBuffFactory || buff is DrainCharacterManaBuffFactory)
+                return EffectOperation.Mana;
             }
             switch (Family(handler, isSameSide))
             {

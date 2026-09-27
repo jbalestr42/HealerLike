@@ -26,6 +26,7 @@ public class SkillDescriptionReaderTests
         return instance;
     }
 
+    [TestCase(typeof(SummonSkillFactory), HeadKind.Bud)]
     [TestCase(typeof(HealTargetSkillFactory), HeadKind.GiftHeal)]
     [TestCase(typeof(AreaOfEffectSkillFactory), HeadKind.Pulse)]
     [TestCase(typeof(ApplyConsumerOnTimeFactory), HeadKind.SelfTick)]
@@ -44,6 +45,19 @@ public class SkillDescriptionReaderTests
         Assert.IsEmpty(description.shots);
         Assert.AreEqual(expected, HeadDerivation.Head(skill));
         Assert.IsEmpty(SkillWalker.Shots(skill));
+    }
+
+    [Test]
+    public void Read_Summon_UsesItsOwnCooldownWithoutBorrowingSummonedAttacks()
+    {
+        SummonSkillFactory skill = Create<SummonSkillFactory>();
+        skill.data = new SummonSkillData { cooldown = 6f, entity = Create<EntityData>(), maxAlive = 2 };
+        SkillDescription description = SkillDescriptionReader.Read(skill, null);
+        Assert.AreEqual(HeadKind.Bud, description.head);
+        Assert.AreEqual(EffectFamily.Boon, description.accent);
+        Assert.AreEqual(6f, description.cadence);
+        Assert.AreEqual(1, description.hits);
+        Assert.IsEmpty(description.shots);
     }
 
     [Test]

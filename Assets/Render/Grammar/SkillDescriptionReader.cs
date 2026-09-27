@@ -64,6 +64,13 @@ namespace HealerLike.Render.Grammar
                     description.cadence = self.data.rate;
                 }
             }
+            else if (skill is SummonSkillFactory summon)
+            {
+                // A growing bud announces creation; its clock belongs to the summon skill.
+                description.head = HeadKind.Bud;
+                description.accent = EffectFamily.Boon;
+                if (summon.data != null) description.cadence = summon.data.cooldown;
+            }
             else if (skill is ApplyBuffPeriodicallySkillFactory periodic)
             {
                 if (periodic.data != null)

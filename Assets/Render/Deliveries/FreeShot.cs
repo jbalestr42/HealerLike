@@ -38,7 +38,7 @@ namespace HealerLike.Render.Deliveries
         Matrix4x4 _frame;
         public Matrix4x4 frame { get { return _frame; } }
 
-        // False for a style without a tip, the thrown shard, which has nothing to show in its place
+        // False only when no valid authored fragment can be resolved
         public bool Init(Projectile projectile, DeliveryStyle style, DeliveryVocabulary vocabulary,
             PrimitiveMeshes meshes, CharacterView screenSource = null, uint sequence = 0)
         {

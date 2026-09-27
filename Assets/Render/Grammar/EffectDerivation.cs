@@ -191,6 +191,10 @@ namespace HealerLike.Render.Grammar
             {
                 return mana.data.consumerFactory;
             }
+            if (buff is DrainCharacterManaBuffFactory drain && drain.data != null)
+            {
+                return drain.data.consumerFactory;
+            }
             return null;
         }
 
@@ -220,6 +224,7 @@ namespace HealerLike.Render.Grammar
         {
             switch (type)
             {
+                case AttributeType.HealingReceived:
                 case AttributeType.HealthMax:
                 case AttributeType.FlatArmor:
                 case AttributeType.PercentArmor:
