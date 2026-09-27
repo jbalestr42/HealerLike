@@ -69,10 +69,16 @@ namespace HealerLike.Render.Stage
             }
         }
 
+        public static int CountLinksFrom(SpellVisualSink sink, CreatureRig rig)
+        {
+            return sink.GetComponentsInChildren<SpellEffect>()
+                .Count(link => link.recipe.socket == EffectSocket.Link && link.IsCastFrom(rig));
+        }
+
         static int Measure(RenderManager manager, CreatureBuilder host, SpellSourceRun.Proof proof)
         {
             CreatureSources.Resolve(host.rig, CreatureSources.Select(host.rig, 0), out Vector3 outlet);
-            int count = 0;
+            int count = CountLinksFrom(manager.spellSink, host.rig);
             foreach (SpellEffect link in manager.spellSink.GetComponentsInChildren<SpellEffect>())
             {
                 // The battle goes on under the fixture: another creature's status republished after the sink's

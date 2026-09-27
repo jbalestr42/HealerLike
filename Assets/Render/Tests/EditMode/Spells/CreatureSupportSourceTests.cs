@@ -4,6 +4,7 @@ using NUnit.Framework;
 using UnityEngine;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
+using HealerLike.Render.Stage;
 using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Spells
@@ -11,8 +12,11 @@ namespace HealerLike.Render.Spells
     public class CreatureSupportSourceTests
     {
         GameObject _source, _target, _effects;
+        GameObject _foreignSource;
         CreatureRecipe _recipe;
+        CreatureRecipe _foreignRecipe;
         SourcePathHost _host;
+        SourcePathHost _foreignHost;
         SpellVisualSink _sink;
         readonly List<Object> _created = new List<Object>();
 
@@ -27,6 +31,11 @@ namespace HealerLike.Render.Spells
                 RenderTestAssets.LoadLookVocabulary());
             _host = _source.AddComponent<SourcePathHost>();
             _host.Build(_recipe);
+            _foreignSource = new GameObject("foreign source");
+            _foreignRecipe = LookComposer.Compose(RenderTestAssets.CreateChannels(LookSide.Stone, HeadKind.GiftHeal),
+                RenderTestAssets.LoadLookVocabulary());
+            _foreignHost = _foreignSource.AddComponent<SourcePathHost>();
+            _foreignHost.Build(_foreignRecipe);
             _sink = SpellSinkFixture.Add(_effects);
         }
 
@@ -35,10 +44,13 @@ namespace HealerLike.Render.Spells
         {
             _sink.Clear();
             _host.Release();
+            _foreignHost.Release();
             Object.DestroyImmediate(_effects);
             Object.DestroyImmediate(_source);
+            Object.DestroyImmediate(_foreignSource);
             Object.DestroyImmediate(_target);
             Object.DestroyImmediate(_recipe);
+            Object.DestroyImmediate(_foreignRecipe);
             foreach (Object value in _created) Object.DestroyImmediate(value);
             _created.Clear();
         }
@@ -68,6 +80,24 @@ namespace HealerLike.Render.Spells
             Assert.AreEqual(1, Links());
             _sink.SetStatus(_source, _target, factory, 2, 0.3f, 4f);
             Assert.AreEqual(2, Links());
+        }
+
+        [Test]
+        public void CountLinksFrom_AttributesOnlyLinksCastFromTheRequestedRig()
+        {
+            SpellEffect own = SpellEffect.Create(EffectComposer.Link(RenderTestAssets.LoadEffectVocabulary(),
+                EffectFamily.Renew), null, RenderTestAssets.LoadMeshes(), RenderTestAssets.LoadLookMaterial(), null);
+            SpellEffect foreign = SpellEffect.Create(EffectComposer.Link(RenderTestAssets.LoadEffectVocabulary(),
+                EffectFamily.Renew), null, RenderTestAssets.LoadMeshes(), RenderTestAssets.LoadLookMaterial(), null);
+            _created.Add(own.gameObject);
+            _created.Add(foreign.gameObject);
+            own.SetCastSource(_source);
+            foreign.SetCastSource(_foreignSource);
+            own.transform.SetParent(_effects.transform, false);
+            foreign.transform.SetParent(_effects.transform, false);
+
+            Assert.AreEqual(1, SpellSourceSupport.CountLinksFrom(_sink, _host.rig));
+            Assert.AreEqual(1, SpellSourceSupport.CountLinksFrom(_sink, _foreignHost.rig));
         }
     }
 }
