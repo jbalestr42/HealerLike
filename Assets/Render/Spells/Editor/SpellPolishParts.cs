@@ -29,7 +29,7 @@ namespace HealerLike.Render.Spells.Editor
         }
 
         public static LookPart[] Petals(string id, int count, float radius, float height, Vector3 size,
-            bool mineral = false, float lean = 0)
+            bool mineral = false, float lean = 0, float angleOffset = 0)
         {
             var parts = new LookPart[count];
             for (int i = 0; i < count; i++)
@@ -37,7 +37,8 @@ namespace HealerLike.Render.Spells.Editor
                 int slot = count == 6 ? (i % 3) * 2 + i / 3 : i;
                 parts[i] = Part(id + i, mineral ? Primitive.Pyramid : Primitive.Leaf,
                     mineral ? ShapeProfile.Shard(.72f, .04f, .35f) : ShapeProfile.Leaf(.12f, .85f, .25f),
-                    Radial(slot, count, radius, height), size, new Vector3(lean, slot * 360f / count, 0));
+                    Radial(slot, count, radius, height, angleOffset), size,
+                    new Vector3(lean, slot * 360f / count + angleOffset, 0));
             }
             return parts;
         }

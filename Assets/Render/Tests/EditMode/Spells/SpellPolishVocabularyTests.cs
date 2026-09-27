@@ -91,6 +91,15 @@ namespace HealerLike.Render.Spells
         }
 
         [Test]
+        public void Apply_SingleArmorChargeFacesTheGameplayCamera()
+        {
+            ElementEntry armor = vocabulary.GetEntry(EffectElement.Plates);
+            Assert.That(EffectComposer.Count(armor, 1, 1, 0), Is.EqualTo(1));
+            Assert.That(armor.parts[0].position.z, Is.LessThan(-1f));
+            Assert.That(armor.parts[0].position.x, Is.EqualTo(0).Within(.0001f));
+        }
+
+        [Test]
         public void Apply_EverySpellMovesAndColoursTheGround()
         {
             foreach (EffectElement element in Enum.GetValues(typeof(EffectElement)))

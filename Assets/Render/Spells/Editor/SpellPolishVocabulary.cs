@@ -40,7 +40,7 @@ namespace HealerLike.Render.Spells.Editor
                 Ring("Inner blessing", 2.85f, -.15f, .085f, rotation: new Vector3(-18, 35, 0)) },
                 EffectMotionKind.Orbit, EffectSocket.Body, 2.4f);
             vocabulary.elements[EffectElement.Plates] = Entry(Petals("Armor petal ", 6, 1.5f, -.12f,
-                new Vector3(1.35f, 1.45f, .3f)), EffectMotionKind.Close, EffectSocket.Body,
+                new Vector3(1.35f, 1.45f, .3f), angleOffset: 180f), EffectMotionKind.Close, EffectSocket.Body,
                 1.1f, EffectCount.Charges, 1);
             vocabulary.elements[EffectElement.Bud] = Entry(Petals("Ward petal ", 6, 1.08f, .12f,
                 new Vector3(.74f, 1.65f, .26f), false, -12), EffectMotionKind.Close, EffectSocket.Body, 1.1f);
