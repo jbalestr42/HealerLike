@@ -186,7 +186,7 @@ namespace HealerLike.Render.Stage
         {
             public string path, name, skillClass, entityType, reach, origin;
             public bool isSingle;
-            public List<Channels> layers = new List<Channels>();
+            public List<SpellChannels> layers = new List<SpellChannels>();
             public List<string> handlerPaths = new List<string>();
         }
 

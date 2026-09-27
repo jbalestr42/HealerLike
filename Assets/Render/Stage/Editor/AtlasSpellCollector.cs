@@ -75,9 +75,11 @@ namespace HealerLike.Render.Stage
                     document.spells.Add(row);
                 }
             }
-            foreach (string path in AtlasAssetCatalog.Paths<BaseCharacterSkillData>("Assets/Data/CharacterSkills"))
+            foreach (string path in AssetDatabase.FindAssets("t:BaseCharacterSkillData", new[] { "Assets/Data/CharacterSkills" })
+                .Select(AssetDatabase.GUIDToAssetPath).OrderBy(path => path, StringComparer.Ordinal))
             {
-                BaseCharacterSkillData data = AtlasAssetCatalog.Required<BaseCharacterSkillData>(path);
+                BaseCharacterSkillData data = AssetDatabase.LoadAllAssetsAtPath(path).OfType<BaseCharacterSkillData>().FirstOrDefault();
+                if (data == null) continue;
                 SpellIconDescription description = SpellIconDerivation.Read(data);
                 HealerSkillRow row = new HealerSkillRow { path = path, name = data.name, skillClass = data.GetType().Name,
                     isSingle = data.isSingle, entityType = data.entityType.ToString(),
