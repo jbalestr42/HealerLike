@@ -1,4 +1,5 @@
 using HealerLike.Render.Grammar;
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -28,8 +29,9 @@ namespace HealerLike.Render.Spells
 
                     EffectVocabulary shipped = RenderTestAssets.LoadEffectVocabulary();
                     vocabulary.palette = shipped.palette;
-                    vocabulary.table = new System.Collections.Generic.Dictionary<EffectCell, EffectCellEntry>(shipped.table);
-                    vocabulary.elements = new System.Collections.Generic.Dictionary<EffectElement, ElementEntry>(shipped.elements);
+                    vocabulary.cells = new Dictionary<EffectCell, EffectCellEntries>(shipped.cells);
+                    vocabulary.entries = new Dictionary<EffectKey, ElementEntry>(shipped.entries);
+                    vocabulary.pieces = new Dictionary<EffectPiece, ElementEntry>(shipped.pieces);
                     Assert.IsNull(icons.GetIcon(source), "A failed request stays cached until invalidation.");
                     icons.Invalidate();
                     Assert.IsNotNull(icons.GetIcon(source), "A repaired vocabulary can produce an icon after invalidation.");

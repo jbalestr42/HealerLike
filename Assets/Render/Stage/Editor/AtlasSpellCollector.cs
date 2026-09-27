@@ -18,18 +18,25 @@ namespace HealerLike.Render.Stage
     {
         static void AppendSpellAtlas(AtlasDerivationDump.Document document, EffectVocabulary vocabulary)
         {
-            foreach (var pair in vocabulary.table.OrderBy(pair => pair.Key.operation.ToString())
+            foreach (var pair in vocabulary.cells.OrderBy(pair => pair.Key.operation.ToString())
                 .ThenBy(pair => pair.Key.aspect.ToString()))
             {
+                EffectKey once;
+                EffectKey periodic;
+                bool hasOnce = vocabulary.TryGetElement(pair.Key.operation, pair.Key.aspect,
+                    EffectTempo.Once, out once);
+                bool hasPeriodic = vocabulary.TryGetElement(pair.Key.operation, pair.Key.aspect,
+                    EffectTempo.PerPeriod, out periodic);
                 string accent = AccentHex(vocabulary, pair.Value.once, pair.Key.operation);
                 document.spellCells.Add(new SpellCellRow { operation = pair.Key.operation.ToString(),
-                    aspect = pair.Key.aspect.ToString(), once = pair.Value.once.ToString(),
-                    hasPeriodic = pair.Value.hasPeriodic, periodic = pair.Value.periodic.ToString(), accent = accent });
+                    aspect = pair.Key.aspect.ToString(), once = hasOnce ? once.ToString() : "",
+                    hasPeriodic = pair.Value.hasPeriodic, periodic = hasPeriodic ? periodic.ToString() : "", accent = accent });
             }
-            foreach (EffectElement element in Enum.GetValues(typeof(EffectElement)))
+            foreach (var pair in vocabulary.entries.OrderBy(pair => pair.Key.ToString()))
             {
-                ElementEntry entry;
-                if (!vocabulary.elements.TryGetValue(element, out entry) || entry == null) continue;
+                EffectKey element = pair.Key;
+                ElementEntry entry = pair.Value;
+                if (entry == null) continue;
                 EffectPresentation p = entry.presentation;
                 document.spellEntries.Add(new SpellEntryRow { element = element.ToString(), motion = entry.motion.ToString(),
                     socket = entry.socket.ToString(), count = entry.count.ToString(), minCount = entry.minCount,
@@ -110,9 +117,9 @@ namespace HealerLike.Render.Stage
                 .Where(p => p != path).ToArray();
             return assets.Length == 0 ? FirstFolder(path) : AssetDatabase.LoadMainAssetAtPath(assets[0]).name;
         }
-        static string AccentHex(EffectVocabulary vocabulary, EffectElement element, EffectOperation operation)
+        static string AccentHex(EffectVocabulary vocabulary, ElementEntry entry, EffectOperation operation)
         {
-            ElementEntry entry; if (!vocabulary.elements.TryGetValue(element, out entry) || entry == null || vocabulary.palette == null) return "";
+            if (entry == null || vocabulary.palette == null) return "";
             Color c = vocabulary.palette.Colour(entry.presentation == null ? ColourRole.Accent : entry.presentation.colourRole,
                 operation == EffectOperation.Heal ? EffectFamily.Heal : EffectFamily.Damage);
             return ColorUtility.ToHtmlStringRGBA(c);
