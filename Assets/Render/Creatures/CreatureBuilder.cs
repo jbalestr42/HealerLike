@@ -6,7 +6,7 @@ using HealerLike.Render.Stage;
 namespace HealerLike.Render.Creatures
 {
     // The view of a spawned entity: derives or takes its recipe, reads the entity's skills, target and health
-    public class CreatureBuilder : ARigHost, IEntityView
+    public partial class CreatureBuilder : ARigHost, IEntityView
     {
         [SerializeField] CreatureRecipe _recipe;
 
@@ -97,59 +97,6 @@ namespace HealerLike.Render.Creatures
             Init(owner);
         }
 
-        // Recompose only the view. The owner, health subscriptions and delivery leases stay live.
-        public bool Rebuild(RenderManager manager)
-        {
-            if (manager != _manager || !_entity || rig == null)
-            {
-                return false;
-            }
-
-            SyncGeometry();
-            CreatureRecipe next = _recipe;
-            bool isDerived = _derivedRecipe != null;
-            if (isDerived)
-            {
-                next = manager.creatureLooks.GetRecipe(_entity.data, _entity.entityType);
-            }
-
-            if (next == null || !rig.Recompose(next, _material, _bodyMaterial, _meshes))
-            {
-                if (isDerived)
-                {
-                    RenderObjects.Release(next);
-                }
-
-                return false;
-            }
-
-            if (isDerived)
-            {
-                RenderObjects.Release(_derivedRecipe);
-                _derivedRecipe = next;
-            }
-
-            _recipe = next;
-            RefreshArms();
-            _readout.Read();
-            rig.SetReadout(_readout.target, _readout.healthFraction, _readout.readiness, _readout.readiness);
-            // Recompose leaves complete geometry for structural measurements, before restoring its growth pose.
-            HealerLike.Render.Zones.TrampleZone trample = GetComponent<HealerLike.Render.Zones.TrampleZone>();
-            if (trample != null)
-            {
-                trample.Refresh();
-            }
-
-            HealerLike.Render.Stones.StoneBody stone = GetComponent<HealerLike.Render.Stones.StoneBody>();
-            if (stone != null)
-            {
-                stone.RefreshRig();
-            }
-
-            TickPresentation(0f);
-            return true;
-        }
-
         // Taking the entity alone lets the studio and tests run without the manager
         public void Init(Entity owner)
         {
@@ -180,7 +127,7 @@ namespace HealerLike.Render.Creatures
             }
         }
 
-        // After his Update has moved the entity and its skills; the readout is the one thing polled every frame
+        // After simulation has moved the entity and resolved attributes, coalesce look edits and read its pose.
         void LateUpdate()
         {
             if (!_entity || rig == null)
@@ -188,6 +135,7 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
+            RefreshEvolution();
             _readout.Read();
             rig.SetReadout(_readout.target, _readout.healthFraction, _readout.readiness, _readout.readiness);
             rig.AdvanceAppearance(Time.unscaledDeltaTime);
@@ -262,6 +210,7 @@ namespace HealerLike.Render.Creatures
                 return;
             }
 
+            ObserveEvolution();
             _healthObserver.Init(_entity.health, rig);
             Register(_registry, _entity.gameObject);
             if (rig != null)
@@ -272,6 +221,7 @@ namespace HealerLike.Render.Creatures
 
         void Detach()
         {
+            _evolution.Dispose();
             _healthObserver.Dispose();
             Unregister();
         }
