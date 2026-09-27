@@ -8,6 +8,9 @@ public class SandboxData : SerializedScriptableObject
     // Attributes (mana, ...) of the sandbox character are taken from this character
     public CharacterData character;
 
+    // Characters that can be played in the sandbox, with their own skills and passives
+    public List<CharacterData> characters = new List<CharacterData>();
+
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<EntityData>, EntityData>(entities, this)")]
     public List<EntityData> entities = new List<EntityData>();
 
@@ -20,16 +23,26 @@ public class SandboxData : SerializedScriptableObject
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<AItemFactory>, AItemFactory>(items, this)")]
     public List<AItemFactory> items = new List<AItemFactory>();
 
-    public CharacterData CreateCharacterData()
+    // played: null plays with every sandbox skill, otherwise the character with its skills and passives
+    public CharacterData CreateCharacterData(CharacterData played = null)
     {
+        CharacterData source = played != null ? played : character;
         CharacterData characterData = CreateInstance<CharacterData>();
         characterData.name = "SandboxCharacter";
-        characterData.model = character.model;
-        characterData.title = "Sandbox";
-        characterData.attributes = new Dictionary<AttributeType, float>(character.attributes);
-        characterData.passives = new List<ABuffHandlerFactory>();
+        characterData.model = source.model;
+        characterData.title = played != null ? played.title : "Sandbox";
+        characterData.attributes = new Dictionary<AttributeType, float>(source.attributes);
+        characterData.passives = played != null && played.passives != null ? new List<ABuffHandlerFactory>(played.passives) : new List<ABuffHandlerFactory>();
+        // The sandbox units are placed from the sandbox panel
         characterData.entities = new List<EntityData>();
-        characterData.skills = new List<ACharacterSkillFactory>(characterSkills);
+        characterData.skills = new List<ACharacterSkillFactory>(played != null ? played.skills : characterSkills);
         return characterData;
+    }
+
+    // Every skill mode (null), then each character, then back to every skill
+    public CharacterData GetNextCharacter(CharacterData current)
+    {
+        int index = current != null ? characters.IndexOf(current) : -1;
+        return index + 1 < characters.Count ? characters[index + 1] : null;
     }
 }

@@ -94,7 +94,7 @@ public class AscensionGameType : AGameType
                 _gameView.gameHUD.inventoryButton.enabled = true;
                 _gameView.gameHUD.ShowManaBar(true);
 
-                PlayerBehaviour.instance.Init(DataManager.instance.GetRandomCharacter());
+                PlayerBehaviour.instance.Init(DataManager.instance.GetCharacter(CharacterSelection.selected));
                 _gameView.entityInventory.Init(PlayerBehaviour.instance.character.entityPool);
 
                 int seed = _seed != 0 ? _seed : System.Environment.TickCount;

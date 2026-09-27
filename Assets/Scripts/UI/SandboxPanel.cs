@@ -26,6 +26,8 @@ public class SandboxPanel : MonoBehaviour
         // Clicking an entity shows the detailed sandbox panel instead of the game one
         UIManager.instance.GetView<GameView>(ViewType.Game).panels[PanelType.Entity] = _entityInfoPanel;
 
+        CharacterData played = _gameType.playedCharacter;
+        CreateButton(_controlContainer, "Character: " + (played != null ? played.title : "All skills"), _gameType.PlayNextCharacter);
         _sideButton = CreateButton(_controlContainer, "", ToggleSide);
         CreateButton(_controlContainer, "Remove", _gameType.StartRemovingEntities);
         _startBattleButton = CreateButton(_controlContainer, "Start battle", StartBattle);

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9f9c5cbcc3bade640b655d9fe3fc6912, type: 3}
-  m_Name: NormalCharacter
+  m_Name: ClericCharacter
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -23,12 +23,10 @@ MonoBehaviour:
     SerializationNodes:
     - Name: attributes
       Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, Assembly-CSharp],[System.Single,
-        mscorlib]], mscorlib
+      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, HealerLike.Runtime],[System.Single, mscorlib]], mscorlib
     - Name: comparer
       Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, Assembly-CSharp]],
-        mscorlib
+      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, HealerLike.Runtime]], mscorlib
     - Name: 
       Entry: 12
       Data: 0
@@ -46,10 +44,10 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 3
-      Data: 9
+      Data: 10
     - Name: $v
       Entry: 4
-      Data: 280
+      Data: 25
     - Name: 
       Entry: 8
       Data: 
@@ -58,10 +56,10 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 3
-      Data: 10
+      Data: 9
     - Name: $v
       Entry: 4
-      Data: 40
+      Data: 100
     - Name: 
       Entry: 8
       Data: 
@@ -72,13 +70,19 @@ MonoBehaviour:
       Entry: 8
       Data: 
   model: {fileID: 0}
-  title: Normal
-  text: The basic healer
+  title: Cleric
+  text: 'A classic healer: strong direct heals, shields and a last resort invincibility'
+  attributes:
+  - key: 10
+    value: 25
+  - key: 9
+    value: 100
   passives: []
-  entities: []
+  entities:
+  - {fileID: 11400000, guid: ff864edc5e8dfdc47ad1e7a7cd3ec589, type: 2}
+  - {fileID: 11400000, guid: 0e42156d42eb9244db24d1871321181b, type: 2}
+  - {fileID: 11400000, guid: 723a5c26dd4a39d489c9b9accfc6fec4, type: 2}
+  - {fileID: 11400000, guid: 26dbd27e829bb32408f456f507d1393f, type: 2}
   skills:
-  - {fileID: 11400000, guid: 6b9b13052c3a4f54eb25e14b54bcce8f, type: 2}
-  - {fileID: 11400000, guid: 070b01962bb037544be10fbcc40f137b, type: 2}
-  - {fileID: 11400000, guid: c7050747abad2aa49b132e7982ee2f03, type: 2}
-  - {fileID: 11400000, guid: 2b924a48e51eb3143b5c1b822235f679, type: 2}
-  - {fileID: 11400000, guid: 982988a7dafc19541ae28d7e873f0776, type: 2}
+  - {fileID: 11400000, guid: 1ebca72647271b94ca5968b1b500f88d, type: 2}
+  - {fileID: 11400000, guid: 3001a223ad5ed954f89da100bd2bf009, type: 2}

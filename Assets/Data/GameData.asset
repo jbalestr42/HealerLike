@@ -137,8 +137,9 @@ MonoBehaviour:
       bonusPerUpgrade: 0.1
   wavePools: []
   characters:
-  - {fileID: 11400000, guid: d5522b5142b13b74bbf81471208c72e0, type: 2}
-  - {fileID: 11400000, guid: b6564d3df55530743a8bae3f230c6101, type: 2}
+  - {fileID: 11400000, guid: 246613bc00a2adc4faacf8f72aa81ddd, type: 2}
+  - {fileID: 11400000, guid: fa67b546fd2076e47a9f5aebfe698f8c, type: 2}
+  - {fileID: 11400000, guid: 137cb5a7a59624041aba09d3f103f0e3, type: 2}
   items:
   - {fileID: 11400000, guid: 981f707cc21684046903704c33211566, type: 2}
   - {fileID: 11400000, guid: 863d741e86f47494a916f37a85d07d2f, type: 2}

@@ -207,6 +207,45 @@ public class DataManagerTests
 
         Assert.IsNull(wave);
     }
+
+    List<CharacterData> CreateCharacters(int count)
+    {
+        List<CharacterData> characters = new List<CharacterData>();
+        for (int i = 0; i < count; i++)
+        {
+            characters.Add(CreateTracked<CharacterData>());
+        }
+        _gameData.characters = characters;
+        return characters;
+    }
+
+    [Test]
+    public void GetCharacter_ChosenGameCharacter_ReturnsIt()
+    {
+        List<CharacterData> characters = CreateCharacters(3);
+
+        Assert.AreSame(characters[1], _dataManager.GetCharacter(characters[1]));
+    }
+
+    [Test]
+    public void GetCharacter_NoneChosen_ReturnsAGameCharacter()
+    {
+        List<CharacterData> characters = CreateCharacters(3);
+
+        CollectionAssert.Contains(characters, _dataManager.GetCharacter(null));
+    }
+
+    [Test]
+    public void GetCharacter_ChosenOutsideOfTheGameCharacters_ReturnsAGameCharacter()
+    {
+        List<CharacterData> characters = CreateCharacters(2);
+        CharacterData other = CreateTracked<CharacterData>();
+
+        CharacterData character = _dataManager.GetCharacter(other);
+
+        Assert.AreNotSame(other, character);
+        CollectionAssert.Contains(characters, character);
+    }
 }
 
 }

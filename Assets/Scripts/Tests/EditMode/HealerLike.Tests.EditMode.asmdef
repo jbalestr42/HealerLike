@@ -4,6 +4,7 @@
     "references": [
         "HealerLike.Runtime",
         "UnityEngine.UI",
+        "Unity.TextMeshPro",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

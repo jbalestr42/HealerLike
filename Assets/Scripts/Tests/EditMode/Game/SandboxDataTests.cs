@@ -48,6 +48,52 @@ public class SandboxDataTests
     }
 
     [Test]
+    public void CreateCharacterData_PlayedCharacter_UsesItsAttributesSkillsAndPassives()
+    {
+        SandboxData sandboxData = CreateTracked<SandboxData>();
+        sandboxData.character = CreateTracked<CharacterData>();
+        sandboxData.character.attributes = new Dictionary<AttributeType, float> { { AttributeType.ManaMax, 100f } };
+        sandboxData.characterSkills = new List<ACharacterSkillFactory> { CreateTracked<BuffCharacterSkillFactory>() };
+        CharacterData played = CreateTracked<CharacterData>();
+        played.title = "Druid";
+        played.attributes = new Dictionary<AttributeType, float> { { AttributeType.ManaMax, 80f }, { AttributeType.HealPower, 15f } };
+        played.entities = new List<EntityData> { CreateTracked<EntityData>() };
+        played.passives = new List<ABuffHandlerFactory> { CreateTracked<BuffHandlerFactory>() };
+        played.skills = new List<ACharacterSkillFactory> { CreateTracked<ApplyConsumerCharacterSkillFactory>() };
+
+        CharacterData characterData = sandboxData.CreateCharacterData(played);
+        _objects.Add(characterData);
+
+        Assert.AreEqual("Druid", characterData.title);
+        CollectionAssert.AreEqual(played.attributes, characterData.attributes);
+        CollectionAssert.AreEqual(played.skills, characterData.skills);
+        CollectionAssert.AreEqual(played.passives, characterData.passives);
+        // The sandbox units are placed from the sandbox panel
+        Assert.IsEmpty(characterData.entities);
+    }
+
+    [Test]
+    public void GetNextCharacter_CyclesFromEverySkillThroughEachCharacter()
+    {
+        SandboxData sandboxData = CreateTracked<SandboxData>();
+        CharacterData first = CreateTracked<CharacterData>();
+        CharacterData second = CreateTracked<CharacterData>();
+        sandboxData.characters = new List<CharacterData> { first, second };
+
+        Assert.AreSame(first, sandboxData.GetNextCharacter(null));
+        Assert.AreSame(second, sandboxData.GetNextCharacter(first));
+        Assert.IsNull(sandboxData.GetNextCharacter(second));
+    }
+
+    [Test]
+    public void GetNextCharacter_WithoutCharacters_StaysOnEverySkill()
+    {
+        SandboxData sandboxData = CreateTracked<SandboxData>();
+
+        Assert.IsNull(sandboxData.GetNextCharacter(null));
+    }
+
+    [Test]
     public void Waves_AreEmptyByDefault()
     {
         SandboxData sandboxData = CreateTracked<SandboxData>();
