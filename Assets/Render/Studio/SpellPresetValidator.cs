@@ -212,7 +212,7 @@ namespace HealerLike.Render.Studio
 
             foreach (LookPart part in parts)
             {
-                if (!LookPartValidation.IsValid(part, LookPartBounds.RenderDefault))
+                if (!LookPartValidation.IsValid(part, LookPartBounds.Spell))
                 {
                     return true;
                 }
