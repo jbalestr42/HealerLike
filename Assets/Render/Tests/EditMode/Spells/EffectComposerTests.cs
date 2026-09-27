@@ -101,9 +101,9 @@ public class EffectComposerTests
     }
 
     [TestCase(1, 2)]
-    [TestCase(2, 3)]
-    [TestCase(9, 3)]
-    public void Count_OrbitStacks_TwoOrThreeTori(int stacks, int expected)
+    [TestCase(2, 2)]
+    [TestCase(9, 2)]
+    public void Count_OrbitStacks_KeepsTwoReadableRingsWhileBeadsShowStacks(int stacks, int expected)
     {
         ElementEntry orbit = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Orbit);
 

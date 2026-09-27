@@ -81,6 +81,16 @@ namespace HealerLike.Render.Spells
         }
 
         [Test]
+        public void Apply_WardPreventionUsesEnclosingPetalsWhileArmorKeepsPlates()
+        {
+            Assert.That(vocabulary.TryGetElement(EffectOperation.Ward, EffectAspect.Prevention,
+                out EffectElement prevention), Is.True);
+            Assert.That(prevention, Is.EqualTo(EffectElement.Bud));
+            Assert.That(vocabulary.GetEntry(prevention).presentation.closesOverHead, Is.True);
+            Assert.That(vocabulary.GetEntry(EffectElement.Plates).presentation.isShield, Is.True);
+        }
+
+        [Test]
         public void Apply_EverySpellMovesAndColoursTheGround()
         {
             foreach (EffectElement element in Enum.GetValues(typeof(EffectElement)))

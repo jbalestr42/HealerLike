@@ -143,17 +143,17 @@ public class SpellStudioPreviewTests
     }
 
     [Test]
-    public void Sample_TickingStatusBeforeItsFirstTick_ShowsNoShape()
+    public void Sample_TickingStatusBeforeItsFirstTick_ShowsReadablePresence()
     {
         _preset.element = EffectElement.Rise;
         _preset.tempo = EffectTempo.PerPeriod;
         _preset.periodSeconds = 1f;
 
         SpellEffect before = _preview.Sample(_preset, 0.4f);
+        bool presence = false;
         foreach (Transform shape in before.shapes)
-        {
-            Assert.AreEqual(Vector3.zero, shape.localScale);
-        }
+            presence |= shape.gameObject.activeSelf && shape.localScale.sqrMagnitude > .001f;
+        Assert.IsTrue(presence);
 
         SpellEffect after = _preview.Sample(_preset, 1.3f);
         bool isShown = false;

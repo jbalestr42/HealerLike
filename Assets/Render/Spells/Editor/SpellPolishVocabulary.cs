@@ -59,6 +59,8 @@ namespace HealerLike.Render.Spells.Editor
                 EffectSocket.Ground, 2.8f);
             vocabulary.elements[EffectElement.Litter] = Entry(Zone(true), EffectMotionKind.Orbit,
                 EffectSocket.Ground, 2.4f);
+            vocabulary.table[new EffectCell(EffectOperation.Ward, EffectAspect.Prevention)] =
+                new EffectCellEntry(EffectElement.Bud, EffectElement.Bud, false);
             Configure(vocabulary);
             SpellPolishGround.Apply(vocabulary);
         }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HealerLike.Render.Grammar;
+using HealerLike.Render.Creatures;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -85,7 +86,9 @@ public class StatusPoolTests
         MaterialPropertyBlock block = new MaterialPropertyBlock();
         effect.shapes[0].GetComponent<Renderer>().GetPropertyBlock(block);
         Assert.AreEqual(EffectElement.Press, effect.element);
-        Assert.Less(Vector4.Distance(RenderTestAssets.LoadPalette().bane, block.GetColor("_BaseColor")), 0.0001f);
+        Color expected = PrimitiveMeshes.Brighten(RenderTestAssets.LoadPalette().bane,
+            effect.recipe.entry.parts[0].glow);
+        Assert.Less(Vector4.Distance(expected, block.GetColor("_BaseColor")), 0.0001f);
     }
 
     // BoostCellItem: the handler the item puts on its carrier (a positional buff no row maps) and the boost its
@@ -122,7 +125,11 @@ public class StatusPoolTests
         Assert.AreEqual(1, _pool.count);
         Assert.AreSame(orbit.gameObject, _pool.Get(_target, _second).gameObject);
         Assert.AreEqual(2, orbit.stacks);
-        Assert.AreEqual(3, orbit.count); // two tori, one more for the second stack
+        Assert.AreEqual(2, orbit.count); // ring silhouette stays stable; stack pearls carry the count
+        int beads = 0;
+        foreach (LookPart bead in orbit.recipe.entry.stackBeads)
+            if (orbit.transform.Find(bead.id).gameObject.activeSelf) beads++;
+        Assert.AreEqual(2, beads);
 
         _pool.Remove(_target, _factory);
         Assert.AreEqual(1, _pool.count);
@@ -193,7 +200,7 @@ public class StatusPoolTests
         SpellEffect effect = _pool.Get(_target, _factory);
 
         _pool.Remove(_target, _factory);
-        effect.Advance(0.25f);
+        effect.Advance(effect.recipe.presentation.releaseSeconds);
 
         Assert.AreEqual(0, _pool.count);
         Assert.IsTrue(effect);

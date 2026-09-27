@@ -74,7 +74,7 @@ public class SpellEffectTests
     }
 
     [Test]
-    public void SetStatus_PerPeriodBeforeTheFirstTick_ShowsNothingThenDrips()
+    public void SetStatus_PerPeriodBeforeTheFirstTick_ShowsPresenceThenAnimatesDrips()
     {
         SpellEffect effect = CreateEffect(EffectElement.Drips, EffectFamily.Rot, EffectTempo.PerPeriod, 2f);
 
@@ -82,7 +82,7 @@ public class SpellEffectTests
         float before = LargestShape(effect);
         effect.SetStatus(1, 2.5f, 6f);
 
-        Assert.AreEqual(0f, before, 0.0001f);
+        Assert.Greater(before, 0.05f);
         Assert.Greater(LargestShape(effect), 0f);
     }
 
@@ -150,12 +150,10 @@ public class SpellEffectTests
         effect.SetStatus(3, 0f, 4f);
 
         int beads = 0;
-        foreach (Transform child in effect.transform)
+        foreach (LookPart part in effect.recipe.entry.stackBeads)
         {
-            if (child.name == "StackBead" && child.gameObject.activeSelf)
-            {
-                beads++;
-            }
+            Transform bead = effect.transform.Find(part.id);
+            if (bead.gameObject.activeSelf) beads++;
         }
         Assert.AreEqual(3, beads);
     }
@@ -191,13 +189,13 @@ public class SpellEffectTests
     }
 
     [Test]
-    public void BeginRemoval_QuarterSecond_CompletesAndHides()
+    public void BeginRemoval_AuthoredRelease_CompletesAndHides()
     {
         SpellEffect effect = CreateEffect(EffectElement.Orbit, EffectFamily.Boon, EffectTempo.ForDuration);
         effect.SetStatus(1, 0f, 10f);
 
         effect.BeginRemoval();
-        effect.Advance(0.25f);
+        effect.Advance(effect.recipe.presentation.releaseSeconds);
 
         Assert.IsTrue(effect.removalComplete);
         Assert.AreEqual(0f, LargestShape(effect), 0.0001f);
@@ -210,14 +208,7 @@ public class SpellEffectTests
 
         effect.SetSide(Entity.EntityType.Computer);
 
-        Transform rim = null;
-        foreach (Transform child in effect.transform)
-        {
-            if (child.name == "SideRim")
-            {
-                rim = child;
-            }
-        }
+        Transform rim = effect.transform.Find(effect.recipe.entry.sideRim[0].id);
         MaterialPropertyBlock block = new MaterialPropertyBlock();
         rim.GetComponent<Renderer>().GetPropertyBlock(block);
         Assert.IsTrue(rim.gameObject.activeSelf);
