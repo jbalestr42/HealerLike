@@ -12,7 +12,12 @@ namespace HealerLike.Render.Creatures
         public float glow;
         public int maxParts;
 
-        public static LookPartBounds RenderDefault
+        public static LookPartBounds Creature
+        {
+            get { return new LookPartBounds { position = float.PositiveInfinity, euler = float.PositiveInfinity, size = float.PositiveInfinity, glow = float.PositiveInfinity, maxParts = 256 }; }
+        }
+
+        public static LookPartBounds Spell
         {
             get { return new LookPartBounds { position = 50f, euler = 3600f, size = 20f, glow = 10f, maxParts = 256 }; }
         }

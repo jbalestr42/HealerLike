@@ -106,12 +106,30 @@ namespace HealerLike.Render.Creatures
 
             foreach (LookPart part in parts)
             {
-                if (!LookPartValidation.IsValid(part, LookPartBounds.RenderDefault))
+                if (!IsValid(part))
                 {
                     errors.Add("The selected " + label + " fragment contains invalid part data.");
                     break;
                 }
             }
+        }
+
+        // Keep the shipped creature acceptance rule byte-for-byte compatible with the
+        // pre-composition renderer. Spell-owned parts use LookPartValidation separately.
+        static bool IsValid(LookPart part)
+        {
+            bool isNamed = !string.IsNullOrEmpty(part.id);
+            bool isShapeKnown =
+                Enum.IsDefined(typeof(Primitive), part.primitive) && Enum.IsDefined(typeof(PartRole), part.role);
+            bool isToneKnown =
+                Enum.IsDefined(typeof(ColourRole), part.colour) && Enum.IsDefined(typeof(CountBand), part.minCount);
+            bool isPlaced = RenderMath.IsFinite(part.position) && RenderMath.IsFinite(part.euler);
+            bool isSized =
+                RenderMath.IsPositive(part.size.x)
+                && RenderMath.IsPositive(part.size.y)
+                && RenderMath.IsPositive(part.size.z);
+            bool isGlowValid = float.IsFinite(part.glow) && part.glow >= 0f;
+            return isNamed && isShapeKnown && isToneKnown && isPlaced && isSized && isGlowValid && part.shape.IsValid();
         }
 
         public static LookPart[] Pick(LookPart[] plant, LookPart[] stone, bool isPlant)
