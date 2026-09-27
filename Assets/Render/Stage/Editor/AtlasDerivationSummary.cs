@@ -50,7 +50,23 @@ namespace HealerLike.Render.Stage
             }
             Summary(document, "projectiles", "", "head", document.projectiles.Select(row => row.head));
             Summary(document, "projectiles", "", "delivery", document.projectiles.Select(row => row.delivery));
+            Summary(document, "projectiles", "", "effectDelivery", document.projectiles.Select(row => row.effectDelivery));
+            foreach (string side in new[] { "Same", "Opposing" })
+            {
+                foreach (string field in new[] { "operation", "aspect", "magnitude", "reach", "delivery", "trigger", "side", "origin", "family", "group", "tempo" })
+                {
+                    Summary(document, "spells", side, field, document.spells.Where(row => row.side == side)
+                        .Select(row => SpellValue(row.channels, field)));
+                }
+                Summary(document, "spells", side, "periodSeconds", document.spells.Where(row => row.side == side)
+                    .Select(row => row.periodSeconds.ToString("R", System.Globalization.CultureInfo.InvariantCulture)));
+            }
             Summary(document, "characters", "", "view", document.characters.Select(row => row.view));
+        }
+
+        static string SpellValue(AtlasDerivationDump.SpellChannels row, string field)
+        {
+            return (string)typeof(AtlasDerivationDump.SpellChannels).GetField(field).GetValue(row);
         }
 
         static void Summary(Document document, string collection, string side, string channel,

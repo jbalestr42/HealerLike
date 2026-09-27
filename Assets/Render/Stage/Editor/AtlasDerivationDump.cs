@@ -16,7 +16,7 @@ namespace HealerLike.Render.Stage
         [Serializable]
         public class Document
         {
-            public int schemaVersion = 1;
+            public int schemaVersion = 2;
             public string generatedAt;
             public string commit;
             public Constants constants = new Constants();
@@ -26,6 +26,11 @@ namespace HealerLike.Render.Stage
             public List<HandlerRow> handlers = new List<HandlerRow>();
             public List<ProjectileRow> projectiles = new List<ProjectileRow>();
             public List<CharacterRow> characters = new List<CharacterRow>();
+            public List<SpellCellRow> spellCells = new List<SpellCellRow>();
+            public List<SpellEntryRow> spellEntries = new List<SpellEntryRow>();
+            public List<SpellPieceRow> spellPieces = new List<SpellPieceRow>();
+            public List<SpellRow> spells = new List<SpellRow>();
+            public List<HealerSkillRow> healerSkills = new List<HealerSkillRow>();
             public List<string> diagnostics = new List<string>();
         }
 
@@ -49,6 +54,12 @@ namespace HealerLike.Render.Stage
             public string ascendingComparison = "<=lower,<=upper,else highest";
             public string spearComparison = ">=spearSpeed";
             public string swarmComparison = ">=swarmCurve";
+            public float LightMagnitudeMax = EffectDerivation.LightMagnitudeMax;
+            public float SolidMagnitudeMax = EffectDerivation.SolidMagnitudeMax;
+            public float lightMagnitudeScale = 1f;
+            public float solidMagnitudeScale = 1.15f;
+            public float heavyMagnitudeScale = 1.3f;
+            public string magnitudeComparison = "<=LightMagnitudeMax,<=SolidMagnitudeMax,else Heavy";
         }
 
         [Serializable]
@@ -89,6 +100,20 @@ namespace HealerLike.Render.Stage
                 accessory = value.accessory.ToString();
                 accessoryHead = value.accessoryHead.ToString();
                 accent = value.accent.ToString();
+            }
+        }
+
+        [Serializable]
+        public class SpellChannels
+        {
+            public string operation, aspect, magnitude, reach, delivery, trigger, side, origin, family, group, tempo;
+            public float periodSeconds;
+            public SpellChannels(EffectChannels value)
+            {
+                operation = value.operation.ToString(); aspect = value.aspect.ToString(); magnitude = value.magnitude.ToString();
+                reach = value.reach.ToString(); delivery = value.delivery.ToString(); trigger = value.trigger.ToString();
+                side = value.side.ToString(); origin = value.origin.ToString(); family = value.family.ToString();
+                group = value.group.ToString(); tempo = value.tempo.ToString(); periodSeconds = value.periodSeconds;
             }
         }
 
@@ -135,6 +160,36 @@ namespace HealerLike.Render.Stage
             public float periodSeconds;
         }
 
+        [Serializable] public class SpellCellRow
+        {
+            public string operation, aspect, once, periodic, accent;
+            public bool hasPeriodic;
+        }
+        [Serializable] public class SpellEntryRow
+        {
+            public string element, motion, socket, count, colourRole;
+            public int minCount, shapePartCount;
+            public float cycleSeconds, scale, entranceSeconds, releaseSeconds, groundRadius, groundStrength;
+            public bool billboard, closesOverHead, scalesWithAmount, isShield, avoidHead, stackBeads, criticalRings, sideRim;
+        }
+        [Serializable] public class SpellPieceRow { public string kind, key; }
+        [Serializable] public class SpellRow
+        {
+            public string path, kind, ownerName, side, durationType, family, group, tempo, element;
+            public float duration, periodSeconds;
+            public bool isPeriodic;
+            public List<BuffInput> buffs = new List<BuffInput>();
+            public SpellChannels channels;
+            public List<SpellChannels> layers = new List<SpellChannels>();
+        }
+        [Serializable] public class HealerSkillRow
+        {
+            public string path, name, skillClass, entityType, reach, origin;
+            public bool isSingle;
+            public List<Channels> layers = new List<Channels>();
+            public List<string> handlerPaths = new List<string>();
+        }
+
         [Serializable]
         public class BuffInput
         {
@@ -146,7 +201,8 @@ namespace HealerLike.Render.Stage
         [Serializable]
         public class ProjectileRow
         {
-            public string path, name, head, delivery;
+            public string path, name, head, delivery, effectDelivery, deliveryPath, deliveryStyle, deliveryFamily;
+            public bool deliveryBouncing, deliverySplash;
             public bool chain, held, curved, arc, homing;
             public float speed, curveMultiplier;
         }
@@ -171,6 +227,7 @@ namespace HealerLike.Render.Stage
             Debug.Log($"[AtlasDerivationDump] {document.entities.Count} entity-side rows, "
                 + $"{document.handlers.Count} handler-side rows, {document.projectiles.Count} projectiles, "
                 + $"{document.characters.Count} characters written to {directory}");
+            if (Application.isBatchMode) EditorApplication.Exit(0);
         }
 
         public static Document Collect()

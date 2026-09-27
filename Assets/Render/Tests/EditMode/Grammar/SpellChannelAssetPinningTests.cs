@@ -10,7 +10,7 @@ namespace HealerLike.Render.Grammar
 {
     public class SpellChannelAssetPinningTests
     {
-        struct HandlerRow
+        public struct HandlerRow
         {
             public string path;
             public EffectOperation operation;
@@ -31,7 +31,7 @@ namespace HealerLike.Render.Grammar
             }
         }
 
-        static readonly HandlerRow[] HandlerRows = {
+        public static readonly HandlerRow[] HandlerRows = {
             new HandlerRow("Entities/GuardianEntity/BuffHandlerFactory", EffectOperation.Ward,
                 EffectAspect.Prevention, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("Entities/HexerEntity/BuffHandlerFactory", EffectOperation.Bane,

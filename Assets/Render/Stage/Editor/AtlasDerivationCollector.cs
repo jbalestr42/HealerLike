@@ -20,7 +20,7 @@ using Distinct = HealerLike.Render.Stage.AtlasDerivationDump.Distinct;
 
 namespace HealerLike.Render.Stage
 {
-    public static class AtlasDerivationCollector
+    public static partial class AtlasDerivationCollector
     {
         public static Document Collect()
         {
@@ -40,6 +40,14 @@ namespace HealerLike.Render.Stage
                 pinnedReach = vocabulary.pinnedReach, shortReach = vocabulary.roots[ReachBand.Short].reach,
                 midReach = vocabulary.roots[ReachBand.Mid].reach, longReach = vocabulary.roots[ReachBand.Long].reach
             };
+            EffectVocabulary spellVocabulary = AtlasAssetCatalog.Required<EffectVocabulary>(
+                "Assets/Render/Spells/Data/EffectVocabulary.asset");
+            if (spellVocabulary.magnitudeScales != null)
+            {
+                spellVocabulary.magnitudeScales.TryGetValue(EffectMagnitude.Light, out document.constants.lightMagnitudeScale);
+                spellVocabulary.magnitudeScales.TryGetValue(EffectMagnitude.Solid, out document.constants.solidMagnitudeScale);
+                spellVocabulary.magnitudeScales.TryGetValue(EffectMagnitude.Heavy, out document.constants.heavyMagnitudeScale);
+            }
             foreach (string path in AtlasAssetCatalog.Paths<EntityData>("Assets/Data"))
             {
                 EntityData data = AtlasAssetCatalog.Required<EntityData>(path);
@@ -126,6 +134,7 @@ namespace HealerLike.Render.Stage
                     view = AssetDatabase.GetAssetPath(view) });
             }
             AtlasDerivationSummary.Append(document);
+            AppendSpellAtlas(document, spellVocabulary);
             return document;
         }
 
@@ -146,7 +155,8 @@ namespace HealerLike.Render.Stage
             {
                 path = AssetDatabase.GetAssetPath(prefab), name = prefab == null ? "None" : prefab.name,
                 head = LookDerivation.DeliveryHead(prefab).ToString(),
-                    delivery = EffectDerivation.Delivery(prefab).ToString()
+                    delivery = EffectDerivation.Delivery(prefab).ToString(),
+                effectDelivery = EffectDerivation.DeliveryChannel(prefab).ToString()
             };
             if (prefab == null)
             {
@@ -162,6 +172,13 @@ namespace HealerLike.Render.Stage
             row.homing = homing != null && homing.data != null;
             row.speed = row.homing ? homing.data.speed : 0f;
             row.curveMultiplier = curved != null && curved.data != null ? curved.data.curveMultiplier : 0f;
+            DeliveryChannels delivery = DeliveryDerivation.Read(prefab.GetComponent<Projectile>(),
+                EffectDerivation.Delivery(prefab));
+            row.deliveryPath = delivery.path.ToString();
+            row.deliveryStyle = delivery.style.ToString();
+            row.deliveryFamily = delivery.family.ToString();
+            row.deliveryBouncing = delivery.bouncing;
+            row.deliverySplash = delivery.splash;
             return row;
         }
 
