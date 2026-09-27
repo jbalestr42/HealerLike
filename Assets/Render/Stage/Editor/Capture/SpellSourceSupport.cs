@@ -48,7 +48,6 @@ namespace HealerLike.Render.Stage
                 target.health.AddResourceModifier(ResourceModifier.Create(healFactory, source.gameObject, target.gameObject));
                 yield return AStageRun.Wait(0.2f);
                 proof.supportHealLinks = Measure(manager, host, proof);
-                session.output.Check(proof.supportHealLinks == 1, "Creature health outcome produced exactly one anatomical link");
                 yield return session.Capture("02-mineral-heal-fixture", "Real resource outcome; labelled mineral healer fixture");
                 manager.spellSink.Clear();
                 var boonFactory = RenderAssets.Load<BuffCharacterSkillFactory>(
@@ -57,6 +56,7 @@ namespace HealerLike.Render.Stage
                 target.buffManager.ForceUpdate();
                 yield return AStageRun.Wait(0.2f);
                 proof.supportBoonLinks = Measure(manager, host, proof);
+                session.output.Check(proof.supportHealLinks == 1, "Creature health outcome produced exactly one anatomical link");
                 session.output.Check(proof.supportBoonLinks == 1, "Creature boon application produced exactly one anatomical link");
                 yield return session.Capture("03-mineral-boon-fixture", "Real buff application; labelled support fixture");
             }
