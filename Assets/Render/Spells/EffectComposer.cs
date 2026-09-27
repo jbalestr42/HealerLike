@@ -23,7 +23,7 @@ namespace HealerLike.Render.Spells
         {
             EffectOperation operation = channels.operation;
             EffectAspect aspect = channels.aspect;
-            if (channels.family != EffectFamily.Damage) operation = ToOperation(channels.family);
+            if (operation == EffectOperation.Damage && channels.family != EffectFamily.Damage) operation = ToOperation(channels.family);
             if (channels.group != AttributeGroup.Offence) aspect = (EffectAspect)channels.group;
             EffectTempo tempo = channels.family == EffectFamily.Rot || channels.family == EffectFamily.Renew
                 ? EffectTempo.PerPeriod : channels.tempo;
@@ -85,9 +85,9 @@ namespace HealerLike.Render.Spells
             }
 
             EffectRecipe recipe = Compose(vocabulary, element, family, EffectTempo.Once, 0f, 1, 0f, amount);
-            if (recipe != null && element == EffectElement.Burst)
+            if (recipe != null && recipe.presentation != null && recipe.presentation.scalesWithAmount)
             {
-                recipe.scale = Mathf.Lerp(BurstScaleMin, BurstScaleMax, Mathf.Sqrt(Mathf.Clamp01(amount)));
+                recipe.scale *= Mathf.Lerp(BurstScaleMin, BurstScaleMax, Mathf.Sqrt(Mathf.Clamp01(amount)));
             }
 
             return recipe;
@@ -121,6 +121,10 @@ namespace HealerLike.Render.Spells
                                            float charges)
         {
             if (vocabulary == null) return null;
+            if (channels.operation == EffectOperation.Damage && channels.family != EffectFamily.Damage)
+                channels.operation = ToOperation(channels.family);
+            if (channels.aspect == EffectAspect.Offence && channels.group != AttributeGroup.Offence)
+                channels.aspect = (EffectAspect)channels.group;
             EffectFamily family = channels.family;
             EffectRecipe recipe = Compose(vocabulary, Element(vocabulary, channels), family, channels.tempo, channels.periodSeconds,
                            stacks, charges, 0f);
@@ -134,6 +138,9 @@ namespace HealerLike.Render.Spells
                 Debug.LogError("[EffectComposer] " + recipeError);
                 return null;
             }
+            recipe.channels = channels;
+            if (recipe.presentation != null && recipe.presentation.enabled)
+                recipe.scale *= vocabulary.MagnitudeScale(channels.magnitude);
             return recipe;
         }
 
@@ -148,8 +155,9 @@ namespace HealerLike.Render.Spells
             }
 
             ElementEntry entry = entryOverride != null ? entryOverride : vocabulary.GetEntry(element);
-            if (entry == null)
+            if (!EffectValidator.TryValidateEntry(entry, out string error))
             {
+                Debug.LogError("[EffectComposer] " + error);
                 return null;
             }
 
@@ -166,8 +174,12 @@ namespace HealerLike.Render.Spells
                 recipe.cycleSeconds = periodSeconds;
             }
 
+            recipe.scale = entry.presentation != null ? entry.presentation.scale : 1f;
             recipe.palette = vocabulary != null ? vocabulary.palette : null;
-            recipe.colour = useColourOverride ? colourOverride : Colour(recipe.palette, element, family);
+            recipe.colour = useColourOverride ? colourOverride
+                : entry.presentation != null && entry.presentation.enabled && recipe.palette != null
+                    ? recipe.palette.Colour(entry.presentation.colourRole, family)
+                    : Colour(recipe.palette, element, family);
             recipe.count = Count(entry, stacks, charges, amount);
             return recipe;
         }

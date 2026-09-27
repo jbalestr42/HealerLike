@@ -12,6 +12,10 @@ namespace HealerLike.Render.Studio
         public static ElementEntry SanitizedEntry(ElementEntry source)
         {
             ElementEntry result = new ElementEntry();
+            result.presentation = source.presentation?.Clone() ?? new EffectPresentation();
+            result.ground = source.ground?.Clone();
+            result.groundRadius = source.groundRadius;
+            result.groundStrength = source.groundStrength;
             result.parts = SafeParts(source.parts);
             result.stackBeads = SafeParts(source.stackBeads);
             result.criticalRings = SafeParts(source.criticalRings);
@@ -34,6 +38,10 @@ namespace HealerLike.Render.Studio
             }
 
             ElementEntry copy = new ElementEntry();
+            copy.presentation = source.presentation?.Clone() ?? new EffectPresentation();
+            copy.ground = source.ground?.Clone();
+            copy.groundRadius = source.groundRadius;
+            copy.groundStrength = source.groundStrength;
             copy.parts = CopyParts(source.parts);
             copy.stackBeads = CopyParts(source.stackBeads);
             copy.criticalRings = CopyParts(source.criticalRings);

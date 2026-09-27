@@ -20,7 +20,7 @@ namespace HealerLike.Render.Spells
                     return null;
                 }
 
-                return _sink.GetElement(_target, EffectElement.Plates);
+                return _sink.GetShield(_target);
             }
         }
 

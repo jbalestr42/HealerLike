@@ -6,7 +6,7 @@ using HealerLike.Render.Grammar;
 namespace HealerLike.Render.Spells
 {
     // One element built from its recipe, no prefab: the parts come from the vocabulary and move by the recipe's motion
-    public class SpellEffect : MonoBehaviour
+    public partial class SpellEffect : MonoBehaviour
     {
         // An element alive longer than this keeps clear of the head
         public static readonly float LastingSeconds = 0.6f;
@@ -45,12 +45,12 @@ namespace HealerLike.Render.Spells
 
         public EffectRecipe recipe { get { return _recipe; } }
         public EffectElement element { get { return _recipe != null ? _recipe.element : EffectElement.Burst; } }
-        public float lifetime { get { return _recipe != null ? _recipe.cycleSeconds : 0f; } }
+        public float lifetime => CompositeLifetime();
         public List<Transform> shapes { get { return _parts.shapes; } }
         public List<Transform> stalks { get { return _parts.stalks; } }
         public List<Transform> parts { get { return _parts.all; } }
         public List<Transform> rings { get { return _parts.rings; } }
-        public bool removalComplete { get { return _isRemoving && _removalAge >= removalSeconds; } }
+        public bool removalComplete => _isRemoving && _removalAge >= RemovalSeconds() && LayersRemoved();
 
         // Ticking or held statuses last, and so does a single run longer than the lasting limit
         public bool isLasting
@@ -80,6 +80,7 @@ namespace HealerLike.Render.Spells
 
             _recipe = recipe;
             _parts.Build(recipe, transform, meshes, material, targetSide);
+            BuildLayers(meshes, material, targetSide);
             SetCount(recipe.count);
             Advance(0f);
         }
@@ -107,6 +108,7 @@ namespace HealerLike.Render.Spells
             _stacks = visibleStacks;
             _elapsedSeconds = safeElapsed;
             _durationSeconds = duration;
+            foreach (SpellEffect layer in _layers) layer.SetStatus(stacks, elapsed, duration);
             Advance(0f);
         }
 
@@ -122,21 +124,25 @@ namespace HealerLike.Render.Spells
         public void SetSide(Entity.EntityType side)
         {
             _parts.ShowSide(side);
+            foreach (SpellEffect layer in _layers) layer.SetSide(side);
         }
 
         public void ShowCritical()
         {
             _parts.ShowCritical();
+            foreach (SpellEffect layer in _layers) layer.ShowCritical();
         }
 
         public void BeginRemoval()
         {
+            ReleaseGround();
             _isRemoving = true;
             _removalAge = 0f;
+            foreach (SpellEffect layer in _layers) layer.BeginRemoval();
         }
 
         CastSourceLease _castSource;
-        void OnDestroy() => _castSource?.Dispose();
+        void OnDestroy() => ReleaseResourcesTree();
 
         public void SetCastSource(GameObject source)
         {
@@ -149,6 +155,7 @@ namespace HealerLike.Render.Spells
             _linkStart = start;
             _linkEnd = end;
             _isContactThread = isContactThread;
+            foreach (SpellEffect layer in _layers) layer.SetEndpoints(start, end, isContactThread);
             Advance(0f);
         }
 
@@ -159,6 +166,7 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
+            AdvanceLayers(delta);
             _age += delta;
             _sinceStatus += delta;
             if (_isRemoving)
@@ -175,16 +183,19 @@ namespace HealerLike.Render.Spells
                     return;
                 }
                 _parts.PoseLink(_linkStart, _linkEnd, _isContactThread, _age, _count);
+                UpdateGround();
+                _parts.Fade(Visibility());
                 return;
             }
 
             float cycle = Mathf.Max(minCycle, _recipe.cycleSeconds);
             bool isVisible = true;
             float phase;
+            bool polished = _recipe.presentation != null && _recipe.presentation.enabled;
             if (_recipe.tempo == EffectTempo.PerPeriod && _isStatus)
             {
-                // A ticking status moves on its ticks, so nothing shows before the first one
-                isVisible = time >= cycle;
+                // Polished statuses retain a readable presence between gameplay ticks.
+                isVisible = polished || time >= cycle;
                 phase = Mathf.Repeat(time, cycle) / cycle;
             }
             else if (_recipe.tempo == EffectTempo.ForDuration && _isStatus)
@@ -198,13 +209,16 @@ namespace HealerLike.Render.Spells
                 isVisible = time < cycle || isHeld;
             }
 
+            if (polished && _isStatus && _recipe.tempo == EffectTempo.PerPeriod)
+                phase = Mathf.Lerp(_recipe.presentation.idleVisibility * .3f, .94f, phase);
             Pose(phase, time);
-            float fade = _isRemoving ? 1f - Mathf.Clamp01(_removalAge / removalSeconds) : 1f;
+            UpdateGround();
+            float fade = Visibility();
             if (!isVisible)
             {
                 _parts.Fade(0f);
             }
-            else if (fade < 1f)
+            else
             {
                 _parts.Fade(fade);
             }
@@ -222,7 +236,7 @@ namespace HealerLike.Render.Spells
             MotionState state = new MotionState();
             state.isStatus = _isStatus;
             state.isRemoving = _isRemoving;
-            state.removal = Mathf.Clamp01(_removalAge / removalSeconds);
+            state.removal = Mathf.Clamp01(_removalAge / RemovalSeconds());
             state.fallDistance = _fallDistance;
             for (int i = 0; i < _parts.shapes.Count; i++)
             {
@@ -245,44 +259,5 @@ namespace HealerLike.Render.Spells
             return _elapsedSeconds + _sinceStatus;
         }
 
-        // A new element under the parent; on a unit, its body and stem parts take the unit's side
-        public static SpellEffect Create(EffectRecipe recipe, Transform parent, PrimitiveMeshes meshes,
-            Material material, GameObject target)
-        {
-            if (recipe == null || meshes == null)
-            {
-                return null;
-            }
-
-            LookSide targetSide = LookSide.Plant;
-            Entity entity = null;
-            if (target != null)
-            {
-                entity = target.GetComponent<Entity>();
-            }
-
-            if (entity != null)
-            {
-                targetSide = LookDerivation.Side(entity.entityType);
-            }
-
-            GameObject effectGo = new GameObject(recipe.element.ToString());
-            effectGo.transform.SetParent(parent, false);
-            SpellEffect effect = effectGo.AddComponent<SpellEffect>();
-            effect.Init(recipe, meshes, material, targetSide);
-            return effect;
-        }
-
-        // Also runs from edit mode tests, where Destroy is not allowed
-        public static void Dispose(GameObject effect)
-        {
-            if (effect == null)
-            {
-                return;
-            }
-
-            effect.SetActive(false);
-            RenderObjects.Release(effect);
-        }
     }
 }

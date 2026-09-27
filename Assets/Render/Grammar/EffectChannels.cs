@@ -37,6 +37,7 @@ namespace HealerLike.Render.Grammar
     }
 
     // Everything the look of an effect reads from its handler, decided once when it lands
+    [System.Serializable]
     public struct EffectChannels
     {
         public EffectOperation operation;

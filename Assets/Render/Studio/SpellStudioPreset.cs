@@ -111,6 +111,9 @@ namespace HealerLike.Render.Studio
         // The runtime composer's count and colour rules over a bounded copy of the entry. A missing source gives null.
         public EffectRecipe Compose()
         {
+            SpellLook authored = GetOverrideRow();
+            if (mode == SpellStudioMode.GameplayHandler && authored?.recipe != null)
+                return authored.recipe.InstantiateRecipe();
             EffectChannels channels;
             EffectElement resolved;
             if (!TryResolve(out channels, out resolved))

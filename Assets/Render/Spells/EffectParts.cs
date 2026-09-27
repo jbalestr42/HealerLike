@@ -22,6 +22,8 @@ namespace HealerLike.Render.Spells
         readonly List<Transform> _rings = new List<Transform>();
         readonly List<Transform> _rims = new List<Transform>();
         readonly List<Transform> _all = new List<Transform>();
+        readonly Dictionary<Transform, Vector3> _markerSizes = new Dictionary<Transform, Vector3>();
+        readonly ShapeMeshCache _meshes = new ShapeMeshCache();
         MaterialPropertyBlock _block;
         EffectRecipe _recipe;
         // The side of the unit the effect sits on, its body and stem parts take that side's colours
@@ -39,9 +41,10 @@ namespace HealerLike.Render.Spells
             _recipe = recipe;
             _targetSide = targetSide;
             _block = new MaterialPropertyBlock();
-            foreach (LookPart part in recipe.entry.parts)
+            int variant = 0;
+            foreach (LookPart part in Resolve(recipe.entry.parts))
             {
-                Transform built = Build(part, root, meshes, material);
+                Transform built = Build(part, root, meshes, material, variant++);
                 if (part.role == PartRole.Stem)
                 {
                     _stalks.Add(built);
@@ -132,7 +135,8 @@ namespace HealerLike.Render.Spells
         public void PoseLink(Vector3 start, Vector3 end, bool isContactThread, float age, int count)
         {
             int segments = Mathf.Max(1, _stalks.Count);
-            float width = beamWidth;
+            EffectPresentation profile = _recipe.presentation;
+            float width = profile != null && profile.enabled ? profile.linkWidth : beamWidth;
             if (isContactThread)
             {
                 width = threadWidth;
@@ -158,14 +162,16 @@ namespace HealerLike.Render.Spells
 
             for (int i = 0; i < _shapes.Count; i++)
             {
-                float t = Mathf.Repeat((float)i / Mathf.Max(1, _shapes.Count) + age / beadSeconds, 1f);
+                float t = Mathf.Repeat((float)i / Mathf.Max(1, _shapes.Count) + age / (_recipe.presentation != null && _recipe.presentation.enabled ? _recipe.presentation.linkBeadSeconds : beadSeconds), 1f);
                 _shapes[i].gameObject.SetActive(!isContactThread && i < count);
                 _shapes[i].position = EffectMotion.Curve(start, end, t);
+                _shapes[i].localScale = _shapeParts[i].size;
             }
         }
 
         public void Fade(float fade)
         {
+            foreach (var marker in _markerSizes) marker.Key.localScale = marker.Value * fade;
             foreach (Transform shape in _shapes)
             {
                 shape.localScale *= fade;
@@ -173,7 +179,8 @@ namespace HealerLike.Render.Spells
 
             foreach (Transform stalk in _stalks)
             {
-                stalk.localScale *= fade;
+                Vector3 size = stalk.localScale;
+                stalk.localScale = new Vector3(size.x * fade, size.y, size.z * fade);
             }
         }
 
@@ -191,23 +198,36 @@ namespace HealerLike.Render.Spells
         void BuildHidden(LookPart[] source, Transform root, PrimitiveMeshes meshes, Material material,
                          List<Transform> built)
         {
-            foreach (LookPart part in source)
+            int variant = 0;
+            foreach (LookPart part in Resolve(source))
             {
-                Transform partTransform = Build(part, root, meshes, material);
+                Transform partTransform = Build(part, root, meshes, material, variant++);
                 partTransform.gameObject.SetActive(false);
                 built.Add(partTransform);
+                _markerSizes.Add(partTransform, part.size);
             }
         }
 
-        Transform Build(LookPart part, Transform root, PrimitiveMeshes meshes, Material material)
+        Transform Build(LookPart part, Transform root, PrimitiveMeshes meshes, Material material, int index)
         {
-            Mesh mesh = meshes.GetMesh(part.primitive, 0);
+            Mesh mesh = part.shape.isProcedural ? _meshes.Get(part.shape, LookComposer.Variant(0, index)) : meshes.GetMesh(part.primitive, 0);
             Transform built = PrimitiveMeshes.Geometry(part.id, root, mesh, material, Colour(part), part.glow);
             built.localPosition = part.position;
             built.localRotation = Quaternion.Euler(part.euler);
             built.localScale = part.size;
             _all.Add(built);
             return built;
+        }
+
+        public void Dispose() => _meshes.Dispose();
+
+        static LookPart[] Resolve(LookPart[] parts)
+        {
+            if (parts == null || parts.Length == 0) return System.Array.Empty<LookPart>();
+            if (FragmentPlacement.TryResolve(parts, CountBand.Many, 0, 0, out LookPart[] resolved, out string error))
+                return resolved;
+            Debug.LogError("[EffectParts] " + error);
+            return System.Array.Empty<LookPart>();
         }
 
         static Vector3 LinkPoint(Vector3 start, Vector3 end, bool isContactThread, float t)

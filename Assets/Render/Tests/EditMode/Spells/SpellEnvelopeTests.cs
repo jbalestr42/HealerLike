@@ -32,6 +32,27 @@ namespace HealerLike.Render.Spells
         }
 
         [Test]
+        public void FaceCamera_AuthoredDepthMovesBillboardInFrontWithoutChangingItsScale()
+        {
+            SpellEffect effect = Build(EffectElement.Burst);
+            // Own the profile; authoring assets must remain unchanged by tests.
+            effect.recipe.entry = EffectRecipeCopy.Entry(effect.recipe.entry);
+            effect.recipe.presentation.cameraDepth = 1.2f;
+            effect.transform.position = new Vector3(2, 1, 3);
+            effect.transform.localScale = Vector3.one * .4f;
+            GameObject cameraObject = new GameObject("Billboard camera");
+            objects.Add(cameraObject);
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.transform.rotation = Quaternion.Euler(35, 20, 0);
+            Vector3 before = effect.transform.position;
+            EffectPlacement.FaceCamera(effect, camera);
+            Assert.Less(Vector3.Distance(before - camera.transform.forward * .48f,
+                effect.transform.position), .00001f);
+            Assert.Less(Quaternion.Angle(camera.transform.rotation, effect.transform.rotation), .001f);
+            Assert.AreEqual(Vector3.one * .4f, effect.transform.localScale);
+        }
+
+        [Test]
         public void Advance_LinkPearlsHaveSamePeakSizeAcrossDifferentFrameSteps()
         {
             SpellEffect stepped = Build(EffectElement.Beam);

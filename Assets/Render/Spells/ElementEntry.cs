@@ -8,6 +8,11 @@ namespace HealerLike.Render.Spells
     [Serializable]
     public class ElementEntry
     {
+        public EffectPresentation presentation = new EffectPresentation();
+        public HealerLike.Render.Grass.GroundEffect ground;
+        public float groundRadius = 1.2f;
+        public float groundStrength = .65f;
+
         // Body role parts are the shape, Stem role parts are the stalks of the shape parts in the same order
         public LookPart[] parts = Array.Empty<LookPart>();
         // One bead per stack

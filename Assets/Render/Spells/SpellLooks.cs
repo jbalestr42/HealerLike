@@ -7,7 +7,7 @@ namespace HealerLike.Render.Spells
 {
     // Rows for the buffs the grammar gets wrong; a row replaces the whole derived look for its buff
     [CreateAssetMenu(menuName = "Custom/Data/Render/SpellLooks")]
-    public class SpellLooks : SerializedScriptableObject
+    public partial class SpellLooks : SerializedScriptableObject
     {
         [DictionaryDrawerSettings(KeyLabel = "Buff", ValueLabel = "Look")]
         public Dictionary<ABuffHandlerFactory, SpellLook> buffs = new Dictionary<ABuffHandlerFactory, SpellLook>();

@@ -78,14 +78,10 @@ namespace HealerLike.Render.Spells
             }
 
             EffectPlacement.Place(effect, _parent, EffectPlacement.Anchors(target));
-            effect.transform.localScale *= recipe.scale;
-            if (recipe.element == EffectElement.Burst)
+            if (recipe.presentation != null && recipe.presentation.billboard)
             {
                 // The star is flat, so it turns to the camera; a rim under it would read as a bar
-                if (_camera != null)
-                {
-                    effect.transform.rotation = _camera.transform.rotation;
-                }
+                EffectPlacement.FaceCamera(effect, _camera);
             }
             else
             {
@@ -98,8 +94,9 @@ namespace HealerLike.Render.Spells
             }
 
             Add(effect.gameObject);
+            SpellGround.Play(_ground, recipe, target.transform.position, Mathf.Lerp(.85f, 1.5f, amount), isCritical);
             // Only a hit on health blasts the grass; a spell's mana cost is not a blow
-            if (_ground != null && resource == ResourceKind.Health && preClampAmount < 0f)
+            if (_ground != null && recipe.entry.ground == null && resource == ResourceKind.Health && preClampAmount < 0f)
             {
                 _ground.Play(_ground.vocabulary.hit, target.transform.position, ShockRadius(amount, isCritical),
                              HitShock(amount));
@@ -140,6 +137,7 @@ namespace HealerLike.Render.Spells
             }
 
             effect.SetEndpoints(start, end, isContactThread);
+            SpellGround.Line(_ground, recipe, start, end);
             Add(effect.gameObject);
             return effect;
         }
@@ -181,6 +179,7 @@ namespace HealerLike.Render.Spells
                 Add(footprint.gameObject);
             }
 
+            SpellGround.Play(_ground, recipe, center, radius);
             if (_zones != null)
             {
                 _zones.AddPulse(kind, center, radius, zone.strength, recipe.cycleSeconds);

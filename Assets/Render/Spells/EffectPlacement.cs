@@ -40,6 +40,15 @@ namespace HealerLike.Render.Spells
             }
         }
 
+        // Apply once after socket placement. Depth is authored in the effect's body-radius units.
+        public static void FaceCamera(SpellEffect effect, Camera camera)
+        {
+            if (!effect || !camera || effect.recipe?.presentation?.billboard != true) return;
+            effect.transform.rotation = camera.transform.rotation;
+            effect.transform.position -= camera.transform.forward
+                * (effect.transform.lossyScale.x * effect.recipe.presentation.cameraDepth);
+        }
+
         // Lays the element at its socket in body radii, the parent keeps it on a moving unit
         public static void Place(SpellEffect effect, Transform parent, EffectAnchors anchors)
         {
@@ -53,13 +62,13 @@ namespace HealerLike.Render.Spells
             root.position = Socket(anchors, effect.recipe.socket);
             root.rotation = Quaternion.identity;
             float parentScale = parent != null ? Mathf.Max(0.0001f, parent.lossyScale.x) : 1f;
-            root.localScale = Vector3.one * (anchors.bodyRadius / parentScale);
-            if (effect.recipe.element == EffectElement.Bud)
+            root.localScale = Vector3.one * (anchors.bodyRadius / parentScale) * effect.recipe.scale;
+            if (effect.recipe.presentation != null && effect.recipe.presentation.closesOverHead)
             {
                 FitToNeck(effect, anchors);
             }
 
-            if (effect.isLasting)
+            if (effect.isLasting && (effect.recipe.presentation == null || effect.recipe.presentation.avoidHead))
             {
                 KeepOffHead(effect, anchors);
             }
@@ -67,8 +76,9 @@ namespace HealerLike.Render.Spells
             // Drops fall from where they ended up to the ground
             if (effect.recipe.socket == EffectSocket.UnderHead)
             {
-                effect.SetFallDistance((root.position.y - anchors.foot.y) / anchors.bodyRadius);
+                effect.SetFallDistance((root.position.y - anchors.foot.y) / Mathf.Max(.0001f, root.lossyScale.y));
             }
+            effect.PlaceLayers(anchors);
             effect.Advance(0f);
         }
 

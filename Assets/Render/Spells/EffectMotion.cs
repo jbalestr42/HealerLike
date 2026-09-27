@@ -139,7 +139,8 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            float seconds = phase * recipe.cycleSeconds;
+            float seconds = phase * (recipe.presentation != null && recipe.presentation.enabled
+                ? recipe.presentation.motionSpan : recipe.cycleSeconds);
             Vector3 flat = new Vector3(part.position.x, 0f, part.position.z);
             Vector3 velocity = flat * shardOutwardSpeed + Vector3.up * (shardUpSpeed + index * shardUpSpeedStep);
             pose.position = part.position + velocity * seconds + Vector3.down * (shardGravity * seconds * seconds);
@@ -186,7 +187,7 @@ namespace HealerLike.Render.Spells
         {
             float own = Mathf.Clamp01(phase * FallPace - index * fallStagger);
             float fall = Mathf.Clamp01((own - fallStart) / (1f - fallStart));
-            pose.position = part.position + Vector3.down * (fall * fall * state.fallDistance);
+            pose.position = part.position + Vector3.down * (fall * fall * (state.fallDistance + part.position.y));
             float swell = Mathf.SmoothStep(fallSwellSize, 1f, Mathf.Clamp01(own / fallSwellPhase));
             pose.scale = part.size * (swell * Mathf.Clamp01((1f - fall) * fallShrinkRate));
         }

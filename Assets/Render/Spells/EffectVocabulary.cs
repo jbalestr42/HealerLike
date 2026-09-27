@@ -98,6 +98,14 @@ namespace HealerLike.Render.Spells
     public class EffectVocabulary : SerializedScriptableObject
     {
         public LookPalette palette;
+        public Dictionary<EffectMagnitude, float> magnitudeScales = new Dictionary<EffectMagnitude, float> {
+            { EffectMagnitude.Light, 1f }, { EffectMagnitude.Solid, 1.15f }, { EffectMagnitude.Heavy, 1.3f }
+        };
+        public float MagnitudeScale(EffectMagnitude magnitude)
+        {
+            return magnitudeScales != null && magnitudeScales.TryGetValue(magnitude, out float scale)
+                && float.IsFinite(scale) && scale > 0 ? scale : 1f;
+        }
 
         [DictionaryDrawerSettings(KeyLabel = "Element", ValueLabel = "Entry")]
         public Dictionary<EffectElement, ElementEntry> elements = new Dictionary<EffectElement, ElementEntry>();

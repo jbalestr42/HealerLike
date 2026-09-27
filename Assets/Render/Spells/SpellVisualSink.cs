@@ -53,7 +53,7 @@ namespace HealerLike.Render.Spells
         // zones take the area pulses and the bursts turn to the camera
         public void Init(SpellLooks looks, PrimitiveMeshes meshes, ZoneRegistry zones, Ground ground, Camera camera)
         {
-            _statuses.Init(transform, _vocabulary, looks, meshes, _material);
+            _statuses.Init(transform, _vocabulary, looks, meshes, _material, ground);
             _impacts.Init(transform, _vocabulary, meshes, _material, zones, ground, camera);
         }
 
@@ -75,6 +75,8 @@ namespace HealerLike.Render.Spells
 
             return effect.gameObject;
         }
+
+        public SpellEffect GetShield(GameObject target) => _statuses.GetShield(target);
 
         public SpellEffect GetElement(GameObject target, EffectElement element)
         {

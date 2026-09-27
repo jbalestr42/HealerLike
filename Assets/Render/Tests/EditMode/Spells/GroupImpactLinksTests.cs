@@ -1,3 +1,4 @@
+using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
 using HealerLike.Render.Grass;
 using HealerLike.Render.Zones;
@@ -35,7 +36,7 @@ namespace HealerLike.Render.Spells
 
             MaterialPropertyBlock block = new MaterialPropertyBlock();
             beam.stalks[0].GetComponent<Renderer>().GetPropertyBlock(block);
-            Assert.Less(Vector4.Distance(RenderTestAssets.LoadPalette().heal, block.GetColor("_BaseColor")), 0.0001f);
+            Assert.Less(Vector4.Distance(PrimitiveMeshes.Brighten(RenderTestAssets.LoadPalette().heal, beam.recipe.entry.parts[0].glow), block.GetColor("_BaseColor")), 0.0001f);
         }
 
         [Test]

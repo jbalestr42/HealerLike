@@ -4,8 +4,12 @@ using HealerLike.Render.Grammar;
 namespace HealerLike.Render.Spells
 {
     // Everything a SpellEffect needs to build and move one element
+    [System.Serializable]
     public class EffectRecipe
     {
+        public EffectRecipe[] additions = System.Array.Empty<EffectRecipe>();
+        public EffectChannels channels;
+        public EffectPresentation presentation => entry != null ? entry.presentation : null;
         public EffectElement element;
         public ElementEntry entry;
         public EffectMotionKind motion;

@@ -1,3 +1,4 @@
+using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
 using HealerLike.Render.Grass;
 using HealerLike.Render.Zones;
@@ -21,7 +22,7 @@ namespace HealerLike.Render.Spells
             Assert.AreEqual(EffectElement.Litter, effect.element);
             Assert.AreEqual(cycle, effect.lifetime);
             Assert.AreEqual(Vector3.one, effect.transform.position);
-            Assert.Less(Vector4.Distance(RenderTestAssets.LoadPalette().bane, block.GetColor("_BaseColor")), 0.0001f);
+            Assert.Less(Vector4.Distance(PrimitiveMeshes.Brighten(RenderTestAssets.LoadPalette().bane, effect.recipe.entry.parts[0].glow), block.GetColor("_BaseColor")), 0.0001f);
         }
 
         [Test]
@@ -85,28 +86,36 @@ namespace HealerLike.Render.Spells
 
             _pool.ShowImpact(_caster, _target, ResourceKind.Health, -30f, false);
 
-            Assert.AreEqual(1, _ground.Playing(_ground.vocabulary.hit));
-            Assert.IsTrue(_ground.Find(_ground.vocabulary.hit, out Vector2 at, out _, out float radius,
+            ElementEntry entry = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Burst);
+            Assert.AreEqual(1, _ground.Playing(entry.ground));
+            Assert.IsTrue(_ground.Find(entry.ground, out Vector2 at, out _, out float radius,
                 out float strength));
             Assert.AreEqual(new Vector2(2f, 1f), at);
-            Assert.AreEqual(ImpactPool.ShockRadius(0.3f, false), radius, 1e-5f);
-            Assert.AreEqual(ImpactPool.HitShock(0.3f), strength, 1e-5f);
+            Assert.AreEqual(entry.groundRadius * Mathf.Lerp(.85f, 1.5f, .3f), radius, 1e-5f);
+            Assert.AreEqual(entry.groundStrength, strength, 1e-5f);
         }
 
         [Test]
-        public void ShowImpact_ManaSpent_ThrowsNoShock()
+        public void ShowImpact_ManaSpent_DimsGrassWithoutAHitShock()
         {
             _pool.ShowImpact(_caster, _target, ResourceKind.Mana, -10f, false);
 
-            Assert.AreEqual(0, _ground.oneShotCount, "A spell's cost is not a blow.");
+            ElementEntry entry = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.ManaDown);
+            Assert.AreEqual(1, _ground.Playing(entry.ground));
+            Assert.Less(entry.ground.light, 0);
+            Assert.AreEqual(0, _ground.Playing(_ground.vocabulary.hit));
         }
 
         [Test]
-        public void ShowImpact_Heal_ThrowsNoShock()
+        public void ShowImpact_Heal_RestoresAndLightsGrass()
         {
             _pool.ShowImpact(_caster, _target, ResourceKind.Health, 30f, false);
 
-            Assert.AreEqual(0, _ground.oneShotCount);
+            ElementEntry entry = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectElement.Rise);
+            Assert.AreEqual(1, _ground.Playing(entry.ground));
+            Assert.Greater(entry.ground.light, 0);
+            Assert.Greater(entry.ground.vitality, 0);
+            Assert.AreEqual(0, _ground.Playing(_ground.vocabulary.hit));
         }
 
         [Test]
