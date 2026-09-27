@@ -32,7 +32,7 @@ public class SandboxDataTests
         CharacterData character = CreateTracked<CharacterData>();
         character.attributes = new Dictionary<AttributeType, float> { { AttributeType.ManaMax, 100f } };
         character.entities = new List<EntityData> { CreateTracked<EntityData>() };
-        character.passives = new List<ABuffHandlerFactory> { CreateTracked<BuffHandlerFactory>() };
+        character.items = new List<AItemFactory> { CreateTracked<ItemFactory>() };
         SandboxData sandboxData = CreateTracked<SandboxData>();
         sandboxData.character = character;
         sandboxData.characterSkills = new List<ACharacterSkillFactory> { CreateTracked<BuffCharacterSkillFactory>(), CreateTracked<ApplyConsumerCharacterSkillFactory>() };
@@ -44,11 +44,11 @@ public class SandboxDataTests
         Assert.AreNotSame(character.attributes, characterData.attributes);
         CollectionAssert.AreEqual(sandboxData.characterSkills, characterData.skills);
         Assert.IsEmpty(characterData.entities);
-        Assert.IsEmpty(characterData.passives);
+        Assert.IsEmpty(characterData.items);
     }
 
     [Test]
-    public void CreateCharacterData_PlayedCharacter_UsesItsAttributesSkillsAndPassives()
+    public void CreateCharacterData_PlayedCharacter_UsesItsAttributesSkillsAndItems()
     {
         SandboxData sandboxData = CreateTracked<SandboxData>();
         sandboxData.character = CreateTracked<CharacterData>();
@@ -58,7 +58,7 @@ public class SandboxDataTests
         played.title = "Druid";
         played.attributes = new Dictionary<AttributeType, float> { { AttributeType.ManaMax, 80f }, { AttributeType.HealPower, 15f } };
         played.entities = new List<EntityData> { CreateTracked<EntityData>() };
-        played.passives = new List<ABuffHandlerFactory> { CreateTracked<BuffHandlerFactory>() };
+        played.items = new List<AItemFactory> { CreateTracked<ItemFactory>() };
         played.skills = new List<ACharacterSkillFactory> { CreateTracked<ApplyConsumerCharacterSkillFactory>() };
 
         CharacterData characterData = sandboxData.CreateCharacterData(played);
@@ -67,7 +67,7 @@ public class SandboxDataTests
         Assert.AreEqual("Druid", characterData.title);
         CollectionAssert.AreEqual(played.attributes, characterData.attributes);
         CollectionAssert.AreEqual(played.skills, characterData.skills);
-        CollectionAssert.AreEqual(played.passives, characterData.passives);
+        CollectionAssert.AreEqual(played.items, characterData.items);
         // The sandbox units are placed from the sandbox panel
         Assert.IsEmpty(characterData.entities);
     }
