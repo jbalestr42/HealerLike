@@ -77,7 +77,8 @@ MonoBehaviour:
     value: 25
   - key: 9
     value: 100
-  items: []
+  items:
+  - {fileID: 11400000, guid: 82c759f729084ad44a087a4608b18b6b, type: 2}
   entities:
   - {fileID: 11400000, guid: ff864edc5e8dfdc47ad1e7a7cd3ec589, type: 2}
   - {fileID: 11400000, guid: 0e42156d42eb9244db24d1871321181b, type: 2}

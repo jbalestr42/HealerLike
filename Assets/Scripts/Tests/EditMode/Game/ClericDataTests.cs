@@ -135,6 +135,14 @@ public class ClericDataTests
     }
 
     [Test]
+    public void Cleric_StartsWithTheSacredTome()
+    {
+        ItemFactory sacredTome = AssetDatabase.LoadAssetAtPath<ItemFactory>("Assets/Data/PlayerItems/HealPowerItem/HealPowerItem.asset");
+
+        CollectionAssert.AreEqual(new[] { sacredTome }, _cleric.items);
+    }
+
+    [Test]
     public void Cleric_RecruitsTheZealot()
     {
         Assert.IsTrue(_cleric.entities.Exists(entity => entity != null && entity.title == "Zealot"));
