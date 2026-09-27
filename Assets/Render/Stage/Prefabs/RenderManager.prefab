@@ -189,7 +189,7 @@ MonoBehaviour:
   _ringMaterial: {fileID: 2100000, guid: 63795723cc05e4b7fa691f99ca76cc12, type: 2}
   _bladeBudget: 98304
   _seed: 1
-  _bladeHeightScale: 1
+  _bladeHeightScale: 0.45
   _windStrength: 1
   _bladeSegments: 4
   _groundShader: {fileID: 4800000, guid: 62476e78203f495b9c27974718be0774, type: 3}

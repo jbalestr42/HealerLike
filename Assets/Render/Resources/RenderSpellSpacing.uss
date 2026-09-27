@@ -84,7 +84,9 @@
 #hud-root.compact-hud #party-list .data-card__title {
     top: 0;
     height: 24px;
-    font-size: 10px;
+    font-size: 9px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 #hud-root.compact-hud #spell-list .spell-cost {
     top: 3px;

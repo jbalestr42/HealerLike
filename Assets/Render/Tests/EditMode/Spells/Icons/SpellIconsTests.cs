@@ -7,6 +7,38 @@ namespace HealerLike.Render.Spells
 {
     public class SpellIconsTests
     {
+        [Test]
+        public void FailedComposition_IsCachedUntilInvalidation_ThenCanRecover()
+        {
+            ACharacterSkillFactory source = AssetDatabase.LoadAssetAtPath<ACharacterSkillFactory>(
+                "Assets/Data/CharacterSkills/HealSingleTarget/HealSingleTarget.asset");
+            EffectVocabulary vocabulary = ScriptableObject.CreateInstance<EffectVocabulary>();
+            FakeCapture capture = new FakeCapture();
+            using (SpellIcons icons = new SpellIcons(vocabulary, null, capture))
+            {
+                try
+                {
+                    UnityEngine.TestTools.LogAssert.Expect(LogType.Error,
+                        "[EffectComposer] The effect vocabulary is missing the selected cell entry.");
+                    Assert.IsNull(icons.GetIcon(source));
+                    Assert.IsNull(icons.GetIcon(SpellIconDerivation.Source(source)));
+                    Assert.AreEqual(1, icons.cachedCount);
+                    Assert.AreEqual(0, capture.calls);
+                    UnityEngine.TestTools.LogAssert.NoUnexpectedReceived();
+
+                    EffectVocabulary shipped = RenderTestAssets.LoadEffectVocabulary();
+                    vocabulary.palette = shipped.palette;
+                    vocabulary.table = new System.Collections.Generic.Dictionary<EffectCell, EffectCellEntry>(shipped.table);
+                    vocabulary.elements = new System.Collections.Generic.Dictionary<EffectElement, ElementEntry>(shipped.elements);
+                    Assert.IsNull(icons.GetIcon(source), "A failed request stays cached until invalidation.");
+                    icons.Invalidate();
+                    Assert.IsNotNull(icons.GetIcon(source), "A repaired vocabulary can produce an icon after invalidation.");
+                    Assert.AreEqual(1, capture.calls);
+                }
+                finally { Object.DestroyImmediate(vocabulary); }
+            }
+        }
+
         class FakeCapture : ISpellIconCapture
         {
             public int calls;

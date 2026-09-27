@@ -48,6 +48,7 @@ namespace HealerLike.Render.Spells
             SpellIconRecipe recipe = SpellIconComposer.Compose(key, _vocabulary, _looks);
             if (recipe == null)
             {
+                _images.Add(key, null);
                 return null;
             }
             try

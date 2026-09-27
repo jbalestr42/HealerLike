@@ -42,3 +42,12 @@ Only `/Users/fc/Documents/HealerLike` remains as an active project. Keep using `
 ## Publication requested
 
 Following the user's request to commit and push everything, the remaining original-project changes are included: generated data icons and catalog entries, Unity platform icon settings, quality settings, and deletion of orphaned Sirenix demo metadata. Publication target: `origin/zfc-render`, including the complete consolidated history. The earlier no-publication notes describe the state before this request. No gameplay source changed after the 3,678-test validation.
+
+## Visual polish and icon recovery
+
+- Roster titles use 9px single-line labels with ellipsis for overflow. Channeling now fits without splitting its final letter; spell labels retain their two-line layout.
+- Combat grass height is 0.45 in the scene, prefab and authoring code (previous scene value 0.6); the surrounding meadow keeps its full height.
+- The open Editor had a stale EffectVocabulary instance with zero table entries despite all 18 entries being present on disk. Unloading and reloading that asset restored the table. A normal play session after removing diagnostics retained the table and displayed grammar spell icons without EffectComposer errors.
+- SpellIcons now caches failed compositions until invalidation, matching its existing failed-capture behavior. A regression test covers repeated requests, shared factory/data keys and recovery after vocabulary repair and invalidation.
+- Validation: **276 spell EditMode tests passed, 0 failed, 0 skipped**. Live portrait preparation checked in Unity; Editor returned to Edit mode. Results and runtime log are at `/private/tmp/healer-polish-tests.xml` and `/private/tmp/healer-polish-runtime.log`.
+- Publication includes the polish, cache fix, regression test and all regenerated icon/catalog changes requested by the user. Temporary diagnostic scripts and probe assets were removed.
