@@ -119,10 +119,17 @@ namespace HealerLike.Render.Spells
 
         public SpellEffect ShowSupportLink(Vector3 start, Vector3 end, EffectFamily family, bool isScreenCast = false)
         {
+            return ShowSupportLink(start, end, family, isScreenCast, false);
+        }
+
+        public SpellEffect ShowSupportLink(Vector3 start, Vector3 end, EffectFamily family, bool isScreenCast,
+                                            bool allowRepeat)
+        {
             SupportLinkKey key = new SupportLinkKey(start, end, family);
-            if (!_supportLinks.Add(key)) return null;
+            if (!allowRepeat && !_supportLinks.Add(key)) return null;
+            if (allowRepeat) _supportLinks.Remove(key);
             SpellEffect link = ShowLink(start, end, family, false, isScreenCast);
-            if (link == null) _supportLinks.Remove(key);
+            if (link == null && !allowRepeat) _supportLinks.Remove(key);
             return link;
         }
 

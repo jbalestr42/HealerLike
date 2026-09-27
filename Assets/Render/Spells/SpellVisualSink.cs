@@ -168,7 +168,8 @@ namespace HealerLike.Render.Spells
                     && (CharacterView.ScreenSource(source) || CreatureSources.HasExplicit(source)))
                 {
                     SpellEffect link = _impacts.ShowSupportLink(EffectPlacement.Anchors(source).castPoint,
-                        EffectPlacement.Anchors(target).bodyCentre, status.recipe.family, CharacterView.ScreenSource(source));
+                        EffectPlacement.Anchors(target).bodyCentre, status.recipe.family,
+                        CharacterView.ScreenSource(source), previousStacks > 0);
                     if (link)
                     {
                         link.SetCastSource(source);
