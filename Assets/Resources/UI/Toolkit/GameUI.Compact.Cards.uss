@@ -19,7 +19,7 @@
     border-width: 1px; border-color: rgba(246, 244, 218, 0.8); border-radius: 24px;
 }
 #hud-root.compact-hud .party-list .data-card__icon {
-    width: 52px; height: 52px; margin: 0; background-color: transparent; border-width: 0; border-radius: 0;
+    width: 52px; height: 52px; margin: 0; background-color: rgba(246, 244, 218, 0.28); border-width: 1px; border-color: rgba(246, 244, 218, 0.7); border-radius: 14px;
 }
 #hud-root.compact-hud .compact-row .data-card__title {
     font-size: 12px; height: 34px; padding: 0; margin: 0; width: 100%;
