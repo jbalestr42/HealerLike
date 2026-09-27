@@ -41,6 +41,16 @@ namespace HealerLike.Render.Spells
         }
         void OnDisable() => ReleaseGroundTree();
 
+        // Dispose is also the owner boundary for previews which never receive native destruction callbacks.
+        void ReleaseResourcesTree()
+        {
+            _castSource?.Dispose();
+            _castSource = null;
+            _parts.Dispose();
+            ReleaseGround();
+            foreach (SpellEffect layer in _layers) if (layer) layer.ReleaseResourcesTree();
+        }
+
         // A new element under the parent; on a unit, its body and stem parts take the unit's side
         public static SpellEffect Create(EffectRecipe recipe, Transform parent, PrimitiveMeshes meshes,
             Material material, GameObject target)
@@ -79,7 +89,7 @@ namespace HealerLike.Render.Spells
 
             // EditMode previews may never enter Unity's native lifecycle; release ownership explicitly.
             SpellEffect owner = effect.GetComponent<SpellEffect>();
-            if (owner) owner.ReleaseGroundTree();
+            if (owner) owner.ReleaseResourcesTree();
             effect.SetActive(false);
             RenderObjects.Release(effect);
         }

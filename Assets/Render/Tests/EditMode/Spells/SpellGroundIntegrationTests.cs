@@ -193,5 +193,29 @@ namespace HealerLike.Render.Spells
             Assert.AreEqual(0, _ground.heldCount);
         }
 
+        [Test]
+        public void Dispose_EditModeReleasesRootAndChildProceduralMeshes()
+        {
+            EffectRecipe recipe = Recipe(.7f);
+            recipe.entry.parts[0].shape = ShapeProfile.Bulb();
+            EffectRecipe child = Recipe(0f, .8f);
+            child.entry.parts[0].shape = ShapeProfile.Leaf();
+            recipe.additions = new[] { child };
+            SpellEffect effect = Create(recipe);
+            effect.BindGround(_ground, _target);
+            MeshFilter[] filters = effect.GetComponentsInChildren<MeshFilter>(true);
+            Assert.AreEqual(2, filters.Length);
+            Mesh first = filters[0].sharedMesh;
+            Mesh second = filters[1].sharedMesh;
+            Assert.IsTrue(first && second);
+            GameObject owner = effect.gameObject;
+            SpellEffect.Dispose(owner);
+            Assert.IsTrue(first == null, "Root procedural mesh is owned by the disposed effect.");
+            Assert.IsTrue(second == null, "Disabled child procedural mesh must also be released.");
+            Assert.AreEqual(0, _ground.heldCount);
+            Assert.DoesNotThrow(() => SpellEffect.Dispose(owner));
+            Assert.IsTrue(RenderTestAssets.LoadMeshes().sphere, "Borrowed primitive assets remain alive.");
+        }
+
     }
 }
