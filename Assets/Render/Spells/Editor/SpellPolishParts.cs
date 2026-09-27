@@ -103,8 +103,8 @@ namespace HealerLike.Render.Spells.Editor
             {
                 float angle = i * 60f * Mathf.Deg2Rad;
                 parts.Add(Part("Impact ray " + i, Primitive.Pyramid, ShapeProfile.Shard(.72f, 0, .3f),
-                    new Vector3(Mathf.Sin(angle) * .5f, Mathf.Cos(angle) * .5f, 0),
-                    new Vector3(.30f, 1.1f, .13f), new Vector3(0, 0, -i * 60f)));
+                    new Vector3(Mathf.Sin(angle) * .6f, Mathf.Cos(angle) * .6f, 0),
+                    new Vector3(.36f, 1.6f, .13f), new Vector3(0, 0, -i * 60f)));
             }
             parts.Add(Ring("Impact halo", 2.3f, 0, .065f, rotation: new Vector3(90, 0, 0)));
             parts.Add(Part("Impact heart", Primitive.Sphere, ShapeProfile.Bulb(), Vector3.zero,
@@ -118,6 +118,7 @@ namespace HealerLike.Render.Spells.Editor
             for (int i = 0; i < parts.Length; i++)
                 parts[i] = Part("Pressure thorn " + i, Primitive.Cone, ShapeProfile.Shard(.9f, 0),
                     Radial(i, 5, .7f, .3f), new Vector3(.35f, .75f, .35f), new Vector3(0, 0, 180));
+            for (int i = 0; i < parts.Length; i++) parts[i].glow = .8f;
             return parts;
         }
 

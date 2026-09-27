@@ -39,8 +39,8 @@ namespace HealerLike.Render.Spells.Editor
                 Ring("Outer blessing", 3.05f, -.25f, .075f, rotation: new Vector3(14, 0, 0)),
                 Ring("Inner blessing", 2.85f, -.15f, .085f, rotation: new Vector3(-18, 35, 0)) },
                 EffectMotionKind.Orbit, EffectSocket.Body, 2.4f);
-            vocabulary.elements[EffectElement.Plates] = Entry(Petals("Armor petal ", 6, 1.18f, -.12f,
-                new Vector3(.84f, 1.25f, .3f)), EffectMotionKind.Close, EffectSocket.Body,
+            vocabulary.elements[EffectElement.Plates] = Entry(Petals("Armor petal ", 6, 1.5f, -.12f,
+                new Vector3(1.35f, 1.45f, .3f)), EffectMotionKind.Close, EffectSocket.Body,
                 1.1f, EffectCount.Charges, 1);
             vocabulary.elements[EffectElement.Bud] = Entry(Petals("Ward petal ", 6, 1.08f, .12f,
                 new Vector3(.74f, 1.65f, .26f), false, -12), EffectMotionKind.Close, EffectSocket.Body, 1.1f);
@@ -110,6 +110,7 @@ namespace HealerLike.Render.Spells.Editor
                 entry.stackBeads = Motes("Stack pearl ", 5, 1.42f, -.32f, .18f, false);
                 entry.sideRim = new[] { Ring("Caster signature", 2.65f, -.55f, .06f, ColourRole.Rim) };
                 entry.presentation.releaseSeconds = .45f;
+                if (element == EffectElement.Press) entry.sideRim = Array.Empty<LookPart>();
                 if (element == EffectElement.Drips)
                     entry.sideRim = new[] { Ring("Caster signature", 1.2f, -.12f, .06f, ColourRole.Rim) };
             }
