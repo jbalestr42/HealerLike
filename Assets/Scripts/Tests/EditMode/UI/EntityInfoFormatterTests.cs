@@ -104,6 +104,7 @@ public class EntityInfoFormatterTests
     {
         Assert.AreEqual("Damage", EntityInfoFormatter.GetAttributeName(AttributeType.Damage));
         Assert.AreEqual("Vulnerability", EntityInfoFormatter.GetAttributeName(AttributeType.Vulnerability));
+        Assert.AreEqual("Healing Received", EntityInfoFormatter.GetAttributeName(AttributeType.HealingReceived));
     }
 
     [Test]

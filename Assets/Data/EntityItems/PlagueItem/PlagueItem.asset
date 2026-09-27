@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4aee98d927598e340ae28ed4c28c0ac7, type: 3}
-  m_Name: AttributeConsumerFactory
+  m_Script: {fileID: 11500000, guid: a8940981ac4386e4395c5404eb3a86d1, type: 3}
+  m_Name: PlagueItem
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -22,16 +22,14 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    ignoreDamageReduction: 1
-    ignoreConsumerPrevention: 1
-    value:
-      rid: 5275139311471951899
-  references:
-    version: 2
-    RefIds:
-    - rid: 5275139311471951899
-      type: {class: AttributeValue, ns: , asm: Assembly-CSharp}
-      data:
-        data:
-          type: 10
-          multiplier: -1
+    icon: {fileID: 21300000, guid: d52306de7206bd34ea489197b237f4a8, type: 3}
+    name: Plague
+    description: Hits halve the heals the target receives for 4s
+    tags:
+    - {fileID: 11400000, guid: 70e1d7434c8b934438c8f00ac71691d8, type: 2}
+    buffs: []
+    onHitEffects:
+    - {fileID: 11400000, guid: 504f1934b0a7d71458b120e629975581, type: 2}
+    onHitConsumers: []
+    projectileBehaviours: []
+    skills: []

@@ -205,6 +205,114 @@ public class BuffManagerTests
         Assert.AreEqual(0, stoppedCount);
     }
 
+    ABuffHandlerFactory CreateStackableHandlerFactory(int maxStacks, DurationType durationType = DurationType.Duration)
+    {
+        FakeStackableBuffFactory buffFactory = CreateTracked<FakeStackableBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, durationType);
+        ((BuffHandlerFactory)handlerFactory).data.maxStacks = maxStacks;
+        return handlerFactory;
+    }
+
+    [Test]
+    public void MaxStacks_ByDefault_IsUnlimited()
+    {
+        ABuffHandlerFactory handlerFactory = CreateStackableHandlerFactory(0);
+
+        for (int i = 0; i < 5; i++)
+        {
+            _buffManager.AddHandler(handlerFactory, _source, _target);
+            _buffManager.ForceUpdate();
+        }
+
+        CollectionAssert.AreEqual(new[] { "Add", "Stack", "Stack", "Stack", "Stack" }, _data.log);
+    }
+
+    [Test]
+    public void MaxStacks_ReachedAcrossUpdates_DoesNotStackAnymore()
+    {
+        ABuffHandlerFactory handlerFactory = CreateStackableHandlerFactory(2);
+
+        for (int i = 0; i < 4; i++)
+        {
+            _buffManager.AddHandler(handlerFactory, _source, _target);
+            _buffManager.ForceUpdate();
+        }
+
+        CollectionAssert.AreEqual(new[] { "Add", "Stack" }, _data.log);
+    }
+
+    [Test]
+    public void MaxStacks_ReachedWithinOneUpdate_DoesNotStackAnymore()
+    {
+        ABuffHandlerFactory handlerFactory = CreateStackableHandlerFactory(1);
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { "Add" }, _data.log);
+    }
+
+    [Test]
+    public void MaxStacks_Reached_StillRefreshesTheDuration()
+    {
+        ABuffHandlerFactory handlerFactory = CreateStackableHandlerFactory(1);
+        int refreshedCount = 0;
+        _buffManager.OnBuffHandlerRefreshed.AddListener(_ => refreshedCount++);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+        BuffHandler handler = null;
+        _buffManager.OnBuffHandlerRefreshed.AddListener(buffHandlerData => handler = (BuffHandler)buffHandlerData.buffHandler);
+        _buffManager.GetActiveHandlers()[0].buffHandler.Update(3f);
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        Assert.AreEqual(2, refreshedCount);
+        // The refresh reset the timer, only the frame's own delta time went by since
+        Assert.Less(handler.durationTimer, 3f);
+    }
+
+    [Test]
+    public void MaxStacks_IsPerSource()
+    {
+        ABuffHandlerFactory handlerFactory = CreateStackableHandlerFactory(1);
+        GameObject otherSource = new GameObject("OtherSource");
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, otherSource, _target);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { "Add", "Add" }, _data.log);
+        Object.DestroyImmediate(otherSource);
+    }
+
+    [Test]
+    public void MaxStacks_RemovingARequestOverTheCap_KeepsTheAppliedStacks()
+    {
+        // Aura-like handlers are added then removed: a removal must first cancel the requests over the cap
+        ABuffHandlerFactory handlerFactory = CreateStackableHandlerFactory(1, DurationType.Infinite);
+        int stoppedCount = 0;
+        _buffManager.OnBuffHandlerStopped.AddListener(_ => stoppedCount++);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // 2 requested, 1 applied
+
+        _buffManager.RemoveHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // 1 requested, still 1 applied
+
+        CollectionAssert.AreEqual(new[] { "Add" }, _data.log);
+        Assert.AreEqual(0, stoppedCount);
+
+        _buffManager.RemoveHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // 0 requested
+
+        Assert.AreEqual("Remove", _data.log[^1]);
+        Assert.AreEqual(1, stoppedCount);
+    }
+
     [Test]
     public void RemoveBuffWithTag_StopsMatchingHandlerAndRemovesItsBuff()
     {

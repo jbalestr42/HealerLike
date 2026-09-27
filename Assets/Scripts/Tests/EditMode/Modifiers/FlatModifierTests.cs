@@ -56,6 +56,32 @@ public class FlatModifierTests
     }
 
     [Test]
+    public void Stack_NegativeMultiplyType_ReducesMoreWithoutReachingMinusOne()
+    {
+        FlatModifier modifier = CreateModifier(-0.5f, AttributeModifierType.Multiply);
+
+        modifier.Stack(null, null);
+        Assert.AreEqual(-0.75f, modifier.ApplyModifier(), 0.0001f); // x0.25
+
+        modifier.Stack(null, null);
+        Assert.AreEqual(-0.875f, modifier.ApplyModifier(), 0.0001f); // x0.125, never x0
+    }
+
+    [Test]
+    public void Unstack_NegativeMultiplyType_ReversesStack()
+    {
+        FlatModifier modifier = CreateModifier(-0.5f, AttributeModifierType.Multiply);
+        modifier.Stack(null, null);
+        modifier.Stack(null, null); // -0.875
+
+        modifier.Unstack(null, null);
+        Assert.AreEqual(-0.75f, modifier.ApplyModifier(), 0.0001f);
+
+        modifier.Unstack(null, null);
+        Assert.AreEqual(-0.5f, modifier.ApplyModifier(), 0.0001f);
+    }
+
+    [Test]
     public void Unstack_MultiplyType_ReversesStack()
     {
         FlatModifier modifier = CreateModifier(0.5f, AttributeModifierType.Multiply);

@@ -22,6 +22,7 @@ public abstract class ABuffHandlerFactory : SerializedScriptableObject
     public abstract DurationType durationType { get; }
     public abstract float duration { get; }
     public abstract bool hasDuration { get; }
+    public abstract int maxStacks { get; }
     public abstract List<GameplayTag> tags { get; }
 }
 
@@ -44,6 +45,7 @@ public class BuffHandlerFactory<BuffHandlerType, DataType> : ABuffHandlerFactory
     public override DurationType durationType => data.durationType;
     public override float duration => data.duration;
     public override bool hasDuration => data.durationType != DurationType.Instant;
+    public override int maxStacks => data.maxStacks;
     public override List<GameplayTag> tags => data.tags;
 }
 
@@ -75,6 +77,10 @@ public class BuffHandlerBaseData
     public bool isPeriodic;
     [ShowIf("@this.durationType != DurationType.Instant && isPeriodic")]
     public float periodDuration;
+    // Stacks a single source can apply, 0 for no limit: over it, a new application only refreshes the duration
+    [HideIf("durationType", DurationType.Instant)]
+    [MinValue(0)]
+    public int maxStacks;
 
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffFactory>, ABuffFactory>(buffFactoryList)")]
     public List<ABuffFactory> buffFactoryList;

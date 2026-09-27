@@ -185,6 +185,136 @@ public class ResourceAttributeTests
     }
 
     [Test]
+    public void HealingReceived_ByDefault_IsOneAndKeepsHealsWhole()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+
+        AddModifier(new FakeConsumer(20f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(1f, _targetAttributeManager.Get(AttributeType.HealingReceived).Value);
+        Assert.AreEqual(70f, _health.Value);
+    }
+
+    [Test]
+    public void HealingReceived_MultipliesHeals()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+        SetAttribute(AttributeType.HealingReceived, 0.5f);
+
+        AddModifier(new FakeConsumer(20f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(60f, _health.Value); // healed 10 (20 * 0.5) instead of 20
+    }
+
+    [Test]
+    public void HealingReceived_AppliesAfterTheMultiplier()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+        SetAttribute(AttributeType.HealingReceived, 0.5f);
+
+        AddScaledModifier(new FakeConsumer(10f, ignoreDamageReduction: true), 2f);
+        Drain();
+
+        Assert.AreEqual(60f, _health.Value); // healed 10 (10 * 2 * 0.5) instead of 20
+    }
+
+    [Test]
+    public void HealingReceived_DoesNotChangeDamage()
+    {
+        SetAttribute(AttributeType.HealingReceived, 0.5f);
+
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(90f, _health.Value);
+    }
+
+    // Character skills scale their consumer with the modifier's multiplier
+    void AddScaledModifier(AConsumer consumer, float multiplier)
+    {
+        ResourceModifier modifier = new ResourceModifier { source = _sourceGo, multiplier = multiplier };
+        modifier.consumers.Add(consumer);
+        _health.AddResourceModifier(modifier);
+    }
+
+    void SetAttribute(AttributeType type, float value)
+    {
+        Attribute attribute = _targetAttributeManager.GetOrAdd(type);
+        attribute.BaseValue = value;
+        attribute.Update();
+    }
+
+    // Heals don't always set ignoreDamageReduction: being positive must be enough
+    [Test]
+    public void Heal_IsNotReducedByArmor()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+        SetAttribute(AttributeType.FlatArmor, 3f);
+        SetAttribute(AttributeType.PercentArmor, 0.5f);
+
+        AddModifier(new FakeConsumer(10f));
+        Drain();
+
+        Assert.AreEqual(60f, _health.Value); // full 10 heal, not blocked to 0 by the damage formula
+    }
+
+    [Test]
+    public void Heal_IsNotIncreasedByVulnerability()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+        SetAttribute(AttributeType.Vulnerability, 0.5f);
+
+        AddModifier(new FakeConsumer(10f));
+        Drain();
+
+        Assert.AreEqual(60f, _health.Value); // 10 heal, not 15
+    }
+
+    [Test]
+    public void Heal_DoesNotConsumeHitArmor()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+        SetAttribute(AttributeType.HitArmor, 2f);
+
+        AddModifier(new FakeConsumer(10f));
+        Drain();
+
+        Assert.AreEqual(60f, _health.Value);
+        Assert.AreEqual(2f, _targetAttributeManager.Get(AttributeType.HitArmor).BaseValue);
+    }
+
+    [Test]
+    public void ScaledHeal_IsMultiplied()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+
+        AddScaledModifier(new FakeConsumer(10f), 1.5f);
+        Drain();
+
+        Assert.AreEqual(65f, _health.Value);
+    }
+
+    [Test]
+    public void ScaledDamage_ArmorAppliesBeforeTheMultiplier()
+    {
+        SetAttribute(AttributeType.FlatArmor, 3f);
+
+        AddScaledModifier(new FakeConsumer(-10f), 2f);
+        Drain();
+
+        Assert.AreEqual(86f, _health.Value); // (10 - 3) * 2 = 14 damage
+    }
+
+    [Test]
     public void AddResourceModifier_HitArmor_BlocksDamageAndDecrementsBaseValue()
     {
         Attribute hitArmor = _targetAttributeManager.GetOrAdd(AttributeType.HitArmor);

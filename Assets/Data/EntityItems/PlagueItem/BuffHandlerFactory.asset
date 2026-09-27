@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4aee98d927598e340ae28ed4c28c0ac7, type: 3}
-  m_Name: AttributeConsumerFactory
+  m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
+  m_Name: BuffHandlerFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -21,17 +21,16 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
+  uniqueID: c9c26961-1d9d-4894-a21e-44570b5fa093
   data:
-    ignoreDamageReduction: 1
-    ignoreConsumerPrevention: 1
-    value:
-      rid: 5275139311471951899
-  references:
-    version: 2
-    RefIds:
-    - rid: 5275139311471951899
-      type: {class: AttributeValue, ns: , asm: Assembly-CSharp}
-      data:
-        data:
-          type: 10
-          multiplier: -1
+    durationType: 1
+    duration: 4
+    isPeriodic: 0
+    periodDuration: 0
+    maxStacks: 1
+    buffFactoryList:
+    - {fileID: 11400000, guid: 993993a3bba7f3646ba4fc236d3c7ee9, type: 2}
+    buffEffect: {fileID: 0}
+    icon: {fileID: 21300000, guid: d52306de7206bd34ea489197b237f4a8, type: 3}
+    tags:
+    - {fileID: 11400000, guid: 89edbaa6345fd89478db1b09b2b2150f, type: 2}

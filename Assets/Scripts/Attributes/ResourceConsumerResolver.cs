@@ -8,6 +8,7 @@ public class ResourceConsumerResolver
     Attribute _hitArmor;
     Attribute _vulnerability;
     Attribute _criticalChanceResist;
+    Attribute _healingReceived;
 
     public void Init(AttributeManager attributeManager)
     {
@@ -16,6 +17,8 @@ public class ResourceConsumerResolver
         _hitArmor = attributeManager.GetOrAdd(AttributeType.HitArmor);
         _vulnerability = attributeManager.GetOrAdd(AttributeType.Vulnerability);
         _criticalChanceResist = attributeManager.GetOrAdd(AttributeType.CriticalChanceResist);
+        // A multiplier: heals are untouched by default, unlike the other attributes starting at 0
+        _healingReceived = attributeManager.GetOrAdd(AttributeType.HealingReceived, 1f);
     }
 
     public (float value, bool isCritical) ComputeValue(ResourceAttribute resourceAttribute, ResourceModifier resourceModifier)
@@ -45,6 +48,11 @@ public class ResourceConsumerResolver
         }
 
         value *= resourceModifier.multiplier;
+        // Heals are positive
+        if (value > 0f)
+        {
+            value *= _healingReceived.Value;
+        }
         return (value, isCritical);
     }
 
@@ -56,7 +64,8 @@ public class ResourceConsumerResolver
     float ApplyConsumerModifiers(AConsumer consumer)
     {
         float value = consumer.GetValue();
-        if (!consumer.ignoreDamageReduction)
+        // Only damage (negative) is reduced, never a heal
+        if (!consumer.ignoreDamageReduction && value < 0f)
         {
             if (_hitArmor.Value > 0f)
             {
@@ -64,7 +73,7 @@ public class ResourceConsumerResolver
                 return 0f;
             }
             // Damage is negative: flat armor blocks up to its value per hit, never turning it into a heal
-            return Mathf.Min(0f, value + _flatArmor.Value) *(1f - _percentArmor.Value) * (1f + _vulnerability.Value);
+            return Mathf.Min(0f, value + _flatArmor.Value) * (1f - _percentArmor.Value) * (1f + _vulnerability.Value);
         }
 
         return value;

@@ -41,6 +41,8 @@ public class BuffManager : SerializedMonoBehaviour
         public GameObject target = null;
         public GameObject source = null;
         public int refreshStacks = 0;
+        // Stacks asked by AddHandler/RemoveHandler, currentStacks being the ones applied (capped by maxStacks)
+        public int requestedStacks = 0;
         public int currentStacks = 0;
         public bool hasStarted => currentStacks != 0;
         public bool isInit => buffHandler != null;
@@ -149,7 +151,13 @@ public class BuffManager : SerializedMonoBehaviour
                         {
                             Debug.Log($"[BuffManager:{gameObject.name}] Refresh buff handler {buffHandlerFactory.name} | currentStacks={buffHandlerData.currentStacks} | refreshStacks={buffHandlerData.refreshStacks}");
                             buffHandlerData.buffHandler.Refresh(source, buffHandlerData.target);
-                            for (int i = 0; i < buffHandlerData.refreshStacks; i++)
+                            buffHandlerData.requestedStacks += buffHandlerData.refreshStacks;
+                            int targetStacks = Mathf.Max(0, buffHandlerData.requestedStacks);
+                            if (buffHandlerFactory.maxStacks > 0)
+                            {
+                                targetStacks = Mathf.Min(targetStacks, buffHandlerFactory.maxStacks);
+                            }
+                            while (buffHandlerData.currentStacks < targetStacks)
                             {
                                 foreach (var buffFactory in buffHandlerFactory.buffFactoryList)
                                 {
@@ -157,7 +165,7 @@ public class BuffManager : SerializedMonoBehaviour
                                 }
                                 buffHandlerData.currentStacks++;
                             }
-                            for (int i = 0; i > buffHandlerData.refreshStacks; i--)
+                            while (buffHandlerData.currentStacks > targetStacks)
                             {
                                 foreach (var buffFactory in buffHandlerFactory.buffFactoryList)
                                 {

@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4aee98d927598e340ae28ed4c28c0ac7, type: 3}
-  m_Name: AttributeConsumerFactory
+  m_Script: {fileID: 11500000, guid: 86578b487da7fb240a18670cd8bed782, type: 3}
+  m_Name: ShootProjectileSkillFactory
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -22,16 +22,9 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    ignoreDamageReduction: 1
-    ignoreConsumerPrevention: 1
-    value:
-      rid: 5275139311471951899
-  references:
-    version: 2
-    RefIds:
-    - rid: 5275139311471951899
-      type: {class: AttributeValue, ns: , asm: Assembly-CSharp}
-      data:
-        data:
-          type: 10
-          multiplier: -1
+    onSkillTriggerFactory: []
+    projectiles:
+    - projectilePrefab: {fileID: 1985067714463758, guid: 53b6f547fca7a7a4292e47d9306d4270, type: 3}
+      onHitConsumer:
+      - {fileID: 11400000, guid: 099684e5718d67f4bbef2a4075cf97b7, type: 2}
+      numberOfProjectileToShootPerTarget: 1
