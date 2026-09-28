@@ -138,6 +138,7 @@ public class SandboxGameType : AGameType
     public void StopBattle()
     {
         _isBattleRunning = false;
+        _entities.RemoveSummons();
         EnableAllEntities(false);
         PlayerBehaviour.instance.character.Reset();
         ForEachEntity(entity => entity.Reset());

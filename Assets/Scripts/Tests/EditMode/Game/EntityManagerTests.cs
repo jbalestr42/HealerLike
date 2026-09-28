@@ -30,6 +30,36 @@ public class EntityManagerTests
     }
 
     [Test]
+    public void FindSummons_KeepsOnlyTheEntitiesWithTheSummonTag()
+    {
+        GameObject placed = new GameObject("Placed");
+        GameObject summoned = new GameObject("Summoned");
+        GameObject tagged = new GameObject("Tagged");
+        GameplayTag summonTag = ScriptableObject.CreateInstance<GameplayTag>();
+        GameplayTag otherTag = ScriptableObject.CreateInstance<GameplayTag>();
+        try
+        {
+            // Adding Entity triggers Entity.Reset() (NREs without a full Init())
+            TestHelpers.WithLoggingDisabled(() =>
+            {
+                placed.AddComponent<Entity>();
+                summoned.AddComponent<Entity>().AddTag(summonTag);
+                tagged.AddComponent<Entity>().AddTag(otherTag);
+            });
+
+            CollectionAssert.AreEqual(new[] { summoned }, EntityManager.FindSummons(new System.Collections.Generic.List<GameObject> { placed, summoned, tagged, null }, summonTag));
+        }
+        finally
+        {
+            Object.DestroyImmediate(placed);
+            Object.DestroyImmediate(summoned);
+            Object.DestroyImmediate(tagged);
+            Object.DestroyImmediate(summonTag);
+            Object.DestroyImmediate(otherTag);
+        }
+    }
+
+    [Test]
     public void SpawnProjectile_InvokesOnProjectileSpawned_WithTheSpawnedGameObject()
     {
         GameObject spawnedGo = null;

@@ -33,6 +33,9 @@ public class EntityData : SerializedScriptableObject
     [VerticalGroup("Group/Target")]
     public List<ATargetValidatorFactory> targetValidators;
 
+    [VerticalGroup("Group/Target")]
+    public List<GameplayTag> tags = new List<GameplayTag>();
+
     [Space]
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<AItemFactory>, AItemFactory>(items)")]
     public List<AItemFactory> items = new List<AItemFactory>();

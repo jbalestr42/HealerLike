@@ -7,6 +7,8 @@ using UnityEngine.Assertions;
 public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkable
 {
     public UnityEvent<bool> OnMarkChanged = new UnityEvent<bool>();
+    // Damage this entity dealt to a target, after its armor (e.g. for a life steal)
+    public UnityEvent<GameObject, float> OnDamageDealt = new UnityEvent<GameObject, float>();
 
     public enum EntityType
     {
@@ -56,6 +58,10 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     bool _isDraggable;
     public bool isDraggable { get { return _isDraggable; } }
 
+    // Tags given at runtime (e.g. Summon), on top of the tags of the data
+    List<GameplayTag> _runtimeTags = new List<GameplayTag>();
+    public List<GameplayTag> runtimeTags { get { return _runtimeTags; } }
+
     public void Init()
     {
         _buffManager = GetComponent<BuffManager>();
@@ -71,6 +77,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         _health = gameObject.AddComponent<ResourceAttribute>();
         _health.Init(AttributeType.HealthMax);
         _health.OnValueChanged.AddListener(OnHealthChanged);
+        _health.OnAllConsumerProcessed.AddListener(OnConsumerProcessed);
 
         // Init target behaviour from data
         _targetProvider.Init(data.targetBehaviourType, data.targetValidators);
@@ -113,6 +120,57 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         {
             EntityManager.instance.DestroyEntity(gameObject, entityType);
         }
+    }
+
+    void OnConsumerProcessed(GameObject target, ResourceModifier resourceModifier, float value, bool isCritical)
+    {
+        NotifyAttacker(resourceModifier.source, target, value);
+    }
+
+    // Damage is a negative value, reported as a positive amount to the entity that dealt it
+    public static void NotifyAttacker(GameObject source, GameObject target, float value)
+    {
+        if (value >= 0f || source == null)
+        {
+            return;
+        }
+
+        Entity attacker = source.GetComponent<Entity>();
+        if (attacker != null)
+        {
+            attacker.OnDamageDealt.Invoke(target, -value);
+        }
+    }
+
+    public void AddTag(GameplayTag tag)
+    {
+        if (tag == null)
+        {
+            Debug.LogError($"[Entity] Can't add a null tag to {name}, is it missing from the GameData tags?");
+            return;
+        }
+
+        if (!_runtimeTags.Contains(tag))
+        {
+            _runtimeTags.Add(tag);
+        }
+    }
+
+    public void RemoveTag(GameplayTag tag)
+    {
+        _runtimeTags.Remove(tag);
+    }
+
+    // Has the tag, or one of its descendants, from the data or given at runtime
+    public bool HasTag(GameplayTag tag)
+    {
+        if (tag == null)
+        {
+            return false;
+        }
+
+        System.Predicate<GameplayTag> matches = entityTag => entityTag != null && (entityTag == tag || entityTag.IsDescendantOf(tag));
+        return _runtimeTags.Exists(matches) || (_data != null && _data.tags.Exists(matches));
     }
 
     public void Enable(bool isEnabled)

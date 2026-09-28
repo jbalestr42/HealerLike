@@ -159,6 +159,7 @@ public class AscensionGameType : AGameType
                 break;
 
             case State.EndBattle:
+                _entities.RemoveSummons();
                 // Reset all unit to their default state (remove temporary buffs)
                 ResetAllEntities();
                 OnRoundEnd.Invoke();

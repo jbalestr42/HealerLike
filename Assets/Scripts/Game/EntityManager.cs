@@ -98,12 +98,38 @@ public class EntityManager : Singleton<EntityManager>
         if (entity != null)
         {
             OnEntityKilled.Invoke(entity.GetComponent<Entity>());
-            PlayerBehaviour player = PlayerBehaviour.instance;
-            Vector2Int coord = player.grid.GetCoordFromPosition(entity.transform.position);
-            player.grid.SetWalkable(coord.x, coord.y, true);
-            _entities[entityType].Remove(entity);
-            Destroy(entity);
+            RemoveEntity(entity, entityType);
         }
+    }
+
+    // Tag given to the entities summoned during a battle
+    public const string summonTagName = "Summon";
+
+    // Summons only last for the battle they were summoned in: removed without being killed
+    public void RemoveSummons()
+    {
+        GameplayTag summonTag = DataManager.instance.GetTagWithName(summonTagName);
+        foreach (Entity.EntityType entityType in Enum.GetValues(typeof(Entity.EntityType)))
+        {
+            foreach (GameObject summon in FindSummons(GetEntities(entityType), summonTag))
+            {
+                RemoveEntity(summon, entityType);
+            }
+        }
+    }
+
+    public static List<GameObject> FindSummons(List<GameObject> entities, GameplayTag summonTag)
+    {
+        return entities.FindAll(entity => entity != null && entity.GetComponent<Entity>().HasTag(summonTag));
+    }
+
+    void RemoveEntity(GameObject entity, Entity.EntityType entityType)
+    {
+        PlayerBehaviour player = PlayerBehaviour.instance;
+        Vector2Int coord = player.grid.GetCoordFromPosition(entity.transform.position);
+        player.grid.SetWalkable(coord.x, coord.y, true);
+        _entities[entityType].Remove(entity);
+        Destroy(entity);
     }
 
     public bool AreAllEntityDead(Entity.EntityType entityType)
