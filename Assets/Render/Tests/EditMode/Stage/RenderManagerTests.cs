@@ -1,10 +1,12 @@
 using System.Collections.Generic;
+using System.Reflection;
 using HealerLike.Render.Grass;
 using HealerLike.Render.Zones;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 
 namespace HealerLike.Render.Stage
 {
@@ -64,6 +66,8 @@ public class StageSceneFixture
     {
         if (manager != null)
         {
+            // A backdrop's host is a scene root of its own, beside the manager
+            manager.backdrop.Clear();
             // Environment strips also own draw subscriptions; runtime OnDisable does not run in this fixture.
             foreach (GrassField field in manager.GetComponentsInChildren<GrassField>(true))
             {
@@ -160,6 +164,104 @@ public class RenderManagerTests
         Assert.IsNotNull(_scene.manager.foreground);
         Assert.IsNotNull(_scene.manager.zones.buffer);
         Assert.IsNotNull(_scene.manager.spellSink);
+    }
+
+    // The menu has no game: the manager dresses it as a calm establishing shot of the same meadow
+    [Test]
+    public void AttachBackdrop_SceneWithoutAGame_BuildsTheMeadowAroundTheRestPose()
+    {
+        RenderPipelineAsset stagePipeline = AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(
+            "Assets/Render/Stage/Settings/StagePipeline.asset");
+        Scene scene = SceneManager.GetActiveScene();
+
+        Assert.IsTrue(_scene.manager.AttachBackdrop(scene));
+
+        Camera camera = _scene.cameraGo.GetComponent<Camera>();
+        Pose rest = StageBackdrop.RestPose(StageBackdrop.Board);
+        Assert.IsTrue(_scene.manager.backdrop.isAttached);
+        Assert.IsNull(_scene.manager.entityManager, "The backdrop is not a game.");
+        Assert.AreSame(camera, _scene.manager.gameCamera);
+        Assert.AreEqual(CameraClearFlags.SolidColor, camera.clearFlags, "No default skybox behind the meadow.");
+        Assert.AreEqual(0f, Vector3.Distance(rest.position, camera.transform.position), 0.001f);
+        Assert.IsNotNull(_scene.manager.environment);
+        Assert.IsNotNull(_scene.manager.gust);
+        Assert.IsNotNull(_scene.manager.zones.buffer);
+        Assert.AreSame(stagePipeline, QualitySettings.renderPipeline);
+        Vector2 fog = StageCalibration.BackgroundFog(rest.position, StageBackdrop.Board, StageCalibration.PortraitYaw);
+        Assert.AreEqual(fog.x, _scene.manager.look.settings.fogStart, 0.01f);
+    }
+
+    [Test]
+    public void AttachBackdrop_AddsNoCameraListenerOrEventSystem()
+    {
+        int cameras = Object.FindObjectsByType<Camera>(FindObjectsInactive.Include).Length;
+        int listeners = Object.FindObjectsByType<AudioListener>(FindObjectsInactive.Include).Length;
+        int eventSystems = Object.FindObjectsByType<UnityEngine.EventSystems.EventSystem>(FindObjectsInactive.Include)
+            .Length;
+
+        _scene.manager.AttachBackdrop(SceneManager.GetActiveScene());
+
+        Assert.AreEqual(cameras, Object.FindObjectsByType<Camera>(FindObjectsInactive.Include).Length);
+        Assert.AreEqual(listeners, Object.FindObjectsByType<AudioListener>(FindObjectsInactive.Include).Length);
+        Assert.AreEqual(eventSystems,
+            Object.FindObjectsByType<UnityEngine.EventSystems.EventSystem>(FindObjectsInactive.Include).Length);
+    }
+
+    // A capture or the stage asking for an orientation must not throw the backdrop onto an unframed board
+    [Test]
+    public void SetLandscape_Backdrop_KeepsTheEstablishingShotAndItsFog()
+    {
+        _scene.manager.AttachBackdrop(SceneManager.GetActiveScene());
+        Vector3 position = _scene.cameraGo.transform.position;
+        float fogStart = _scene.manager.look.settings.fogStart;
+
+        _scene.manager.SetLandscape(false);
+        _scene.manager.FrameViewport(new Rect(0f, 0f, 1f, 1f), 9f / 16f);
+
+        Assert.AreEqual(position, _scene.cameraGo.transform.position);
+        Assert.AreEqual(fogStart, _scene.manager.look.settings.fogStart);
+    }
+
+    [Test]
+    public void LateUpdate_Backdrop_KeepsTheMeadowMoving()
+    {
+        _scene.manager.AttachBackdrop(SceneManager.GetActiveScene());
+        _scene.manager.zones.Add(ZoneKind.Heal, Vector3.zero, 1f, 1f);
+
+        TestHelpers.InvokePrivate(_scene.manager, "LateUpdate");
+
+        Assert.AreEqual(1, _scene.manager.zones.count);
+    }
+
+    // Leaving the menu unloads its scene: the backdrop and the meadow built for it go with it
+    [Test]
+    public void SceneUnloaded_BackdropScene_ReleasesTheBackdropAndItsMeadow()
+    {
+        Scene scene = SceneManager.GetActiveScene();
+        _scene.manager.AttachBackdrop(scene);
+        GameObject host = _scene.manager.backdrop.host;
+
+        typeof(RenderManager).GetMethod("OnSceneUnloaded", BindingFlags.NonPublic | BindingFlags.Instance)
+            .Invoke(_scene.manager, new object[] { scene });
+
+        Assert.IsFalse(_scene.manager.backdrop.isAttached);
+        Assert.IsFalse(host, "The backdrop host is destroyed.");
+        Assert.IsNull(_scene.manager.environment);
+    }
+
+    // Start loads Main in place of the menu: whichever of load and unload comes first, the game replaces the backdrop
+    [Test]
+    public void Init_GameAfterBackdrop_ReplacesTheBackdrop()
+    {
+        _scene.manager.AttachBackdrop(SceneManager.GetActiveScene());
+        GameObject host = _scene.manager.backdrop.host;
+
+        _scene.manager.Init(_scene.entityManager, _scene.player);
+
+        Assert.IsFalse(_scene.manager.backdrop.isAttached);
+        Assert.IsFalse(host);
+        Assert.AreSame(_scene.entityManager, _scene.manager.entityManager);
+        Assert.AreEqual(_scene.manager.overviewPose.position, _scene.cameraGo.transform.position);
     }
 
     [Test]

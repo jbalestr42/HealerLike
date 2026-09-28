@@ -7,6 +7,8 @@ public class ToolkitCardModel
     public object iconSource;
     public string title;
     public string description;
+    // A lighter second block under the description, hidden when empty (the class screen's kit)
+    public string details;
     public string status;
     public bool isEnabled = true;
     public bool canDrag;

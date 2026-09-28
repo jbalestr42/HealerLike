@@ -1,0 +1,316 @@
+/* The start screen over the living backdrop: the title on the pale sky, the meadow left clear in the middle, the
+   expedition as one large primary action at the thumb and the sandbox as a quiet secondary one below it.
+   Imported last so the menu wins over the HUD rules it shares elements with. */
+
+/* Coiny with its descender sign fixed (the shipped file says +250), so wrapped lines no longer overlap. Scoped to
+   the start screens; the battle HUD keeps the original face and its tuned card heights. */
+#hud-root.game-ui.is-menu,
+#hud-root.game-ui .class-dialog
+{
+    -unity-font-definition: url("../../../Render/Font/Coiny/Coiny-Regular-UI.ttf");
+}
+
+/* One veil over the whole screen, safe area included: mist the colour of the stage sky behind the title, clear
+   meadow in the middle, a shade rising from the bottom edge so the actions sit on calm ground */
+#hud-root.game-ui.is-menu
+{
+    background-image: url("Menu/MenuVeil.png");
+    -unity-background-scale-mode: stretch-to-fill;
+}
+
+#hud-root.game-ui.is-menu .top-bar
+{
+    display: none;
+}
+
+#hud-root.game-ui.is-menu .main-content
+{
+    flex-grow: 1;
+}
+
+#hud-root.game-ui.is-menu .menu-panel
+{
+    align-self: stretch;
+    align-items: center;
+    width: auto;
+    max-width: 100%;
+    margin: 0;
+    padding: 44px 24px 0 24px;
+    background-color: transparent;
+    border-width: 0;
+}
+
+#hud-root.game-ui.is-menu .menu-hero
+{
+    align-items: center;
+}
+
+#hud-root.game-ui.is-menu .menu-eyebrow
+{
+    font-size: 13px;
+    letter-spacing: 6px;
+    color: var(--ui-primary-ink);
+    opacity: 0.72;
+    margin-bottom: 6px;
+    -unity-text-align: middle-center;
+}
+
+#hud-root.game-ui.is-menu .menu-title
+{
+    font-size: 50px;
+    color: var(--ui-primary-ink);
+    -unity-text-align: middle-center;
+    white-space: normal;
+    margin: 0;
+    text-shadow: 0 2px 8px rgba(255, 255, 255, 0.55);
+}
+
+#hud-root.game-ui.is-menu .menu-description
+{
+    font-size: 17px;
+    color: var(--ui-primary-ink);
+    opacity: 0.82;
+    -unity-text-align: middle-center;
+    white-space: normal;
+    margin-top: 12px;
+}
+
+#hud-root.game-ui.is-menu .field-toolbar
+{
+    display: flex;
+    height: auto;
+    min-height: 0;
+    align-items: stretch;
+    padding: 0 32px 36px 32px;
+    margin: 0;
+}
+
+#hud-root.game-ui.is-menu .command-section
+{
+    width: auto;
+    height: auto;
+    margin: 0;
+}
+
+#hud-root.game-ui.is-menu .encounter-actions
+{
+    flex-direction: column;
+    align-items: stretch;
+}
+
+#hud-root.game-ui.is-menu .encounter-actions > .button
+{
+    -unity-font-style: normal;
+    -unity-text-align: middle-center;
+    margin: 0;
+}
+
+#hud-root.game-ui.is-menu .encounter-actions > #start-button
+{
+    min-height: 64px;
+    padding: 0 24px;
+    font-size: 23px;
+    color: var(--ui-primary-ink);
+    background-color: var(--ui-accent);
+    border-width: 0;
+    border-radius: 32px;
+}
+
+#hud-root.game-ui.is-menu .encounter-actions > #start-button:hover,
+#hud-root.game-ui.is-menu .encounter-actions > #start-button:focus
+{
+    background-color: var(--ui-primary-hover);
+}
+
+#hud-root.game-ui.is-menu .encounter-actions > #start-button:active
+{
+    background-color: var(--ui-gold);
+}
+
+#hud-root.game-ui.is-menu .encounter-actions > #sandbox-button
+{
+    align-self: center;
+    min-width: 180px;
+    min-height: 48px;
+    margin-top: 14px;
+    padding: 0 28px;
+    font-size: 16px;
+    color: var(--ui-ink);
+    background-color: rgba(16, 29, 30, 0.62);
+    border-width: 1px;
+    border-color: rgba(229, 235, 228, 0.4);
+    border-radius: 24px;
+}
+
+#hud-root.game-ui.is-menu .encounter-actions > #sandbox-button:hover,
+#hud-root.game-ui.is-menu .encounter-actions > #sandbox-button:focus
+{
+    background-color: rgba(16, 29, 30, 0.82);
+    border-color: var(--ui-accent);
+}
+
+#hud-root.game-ui.is-menu.is-landscape .menu-panel
+{
+    padding-top: 20px;
+}
+
+#hud-root.game-ui.is-menu.is-landscape .menu-title
+{
+    font-size: 40px;
+}
+
+#hud-root.game-ui.is-menu.is-landscape .field-toolbar
+{
+    padding: 0 24px 20px 24px;
+    align-items: center;
+}
+
+#hud-root.game-ui.is-menu.is-landscape .encounter-actions
+{
+    flex-direction: row;
+    align-items: center;
+}
+
+#hud-root.game-ui.is-menu.is-landscape .encounter-actions > #start-button
+{
+    min-width: 280px;
+}
+
+#hud-root.game-ui.is-menu.is-landscape .encounter-actions > #sandbox-button
+{
+    margin: 0 0 0 16px;
+}
+
+/* The class screen: a roomy full-height sheet, cards that read name, role, then the kit in a lighter voice */
+
+#hud-root.game-ui .class-dialog
+{
+    padding: 28px 22px 22px 22px;
+}
+
+#hud-root.game-ui .class-dialog .eyebrow
+{
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: var(--ui-gold);
+}
+
+#hud-root.game-ui .class-dialog .dialog-title
+{
+    font-size: 28px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+#hud-root.game-ui .class-dialog .dialog-description
+{
+    font-size: 15px;
+    color: var(--ui-muted);
+    margin-bottom: 18px;
+}
+
+#hud-root.game-ui .class-list .unity-scroll-view__content-container
+{
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+
+#hud-root.game-ui .class-list .card-shell
+{
+    width: 100%;
+    margin: 0 0 14px 0;
+}
+
+#hud-root.game-ui .class-list .data-card
+{
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 16px 18px 16px 18px;
+    border-radius: 14px;
+    background-color: var(--ui-card);
+}
+
+#hud-root.game-ui .class-list .data-card:hover,
+#hud-root.game-ui .class-list .data-card:focus
+{
+    background-color: var(--ui-card-hover);
+}
+
+/* Icon and name share the card's first row; the role and the kit run the full width under them */
+#hud-root.game-ui .class-list .data-card__icon
+{
+    position: absolute;
+    left: 16px;
+    top: 14px;
+    width: 56px;
+    height: 56px;
+    margin: 0;
+    border-radius: 12px;
+}
+
+#hud-root.game-ui .class-list .data-card__title
+{
+    height: 52px;
+    margin: 0 0 8px 66px;
+    font-size: 26px;
+    color: var(--ui-ink);
+    -unity-text-align: middle-left;
+}
+
+#hud-root.game-ui .class-list .data-card__description
+{
+    font-size: 16px;
+    color: var(--ui-ink);
+    margin: 0;
+}
+
+#hud-root.game-ui .class-list .data-card__details
+{
+    font-size: 13px;
+    color: var(--ui-muted);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top-width: 1px;
+    border-top-color: var(--ui-border);
+    -unity-paragraph-spacing: 12px;
+}
+
+#hud-root.game-ui .class-list .data-card__status
+{
+    font-size: 14px;
+    margin-top: 14px;
+    color: var(--ui-gold);
+}
+
+#hud-root.game-ui .class-list .unity-scroller--vertical
+{
+    width: 6px;
+    margin-left: 6px;
+}
+
+#hud-root.game-ui .class-list .unity-scroller--vertical .unity-repeat-button
+{
+    display: none;
+}
+
+#hud-root.game-ui .class-list .card-info
+{
+    display: none;
+}
+
+#hud-root.game-ui .class-actions
+{
+    justify-content: center;
+    margin-top: 14px;
+}
+
+#hud-root.game-ui .class-actions > #class-back-button
+{
+    flex-grow: 1;
+    min-height: 52px;
+    font-size: 17px;
+    border-radius: 26px;
+    -unity-text-align: middle-center;
+    margin: 0;
+}

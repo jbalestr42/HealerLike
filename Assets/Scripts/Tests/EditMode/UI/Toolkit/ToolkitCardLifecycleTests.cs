@@ -40,6 +40,33 @@ namespace UI.Toolkit
             card.Dispose();
         }
 
+        // The class screen's kit is a second, lighter block; any other card keeps the single description
+        [Test]
+        public void Refresh_ModelWithDetails_ShowsThemUnderTheDescription()
+        {
+            _view.SetCards("party-list", new[]
+            {
+                new ToolkitCardModel { title = "Cleric", description = "A classic healer", details = "Skills: Heal" }
+            });
+
+            Label details = _list.Q<Label>("card-details");
+            Assert.AreEqual("Skills: Heal", details.text);
+            Assert.AreEqual(DisplayStyle.Flex, details.style.display.value);
+            Assert.AreEqual("A classic healer", _list.Q<Label>("card-description").text);
+        }
+
+        [Test]
+        public void Refresh_ReusedCardWithoutDetails_HidesTheOldDetails()
+        {
+            _view.SetCards("party-list", new[] { new ToolkitCardModel { title = "Cleric", details = "Skills: Heal" } });
+
+            _view.SetCards("party-list", new[] { new ToolkitCardModel { title = "Random" } });
+
+            Label details = _list.Q<Label>("card-details");
+            Assert.AreEqual("", details.text);
+            Assert.AreEqual(DisplayStyle.None, details.style.display.value);
+        }
+
         [Test]
         public void Refresh_ReusedCard_ActivatesAndInspectsOnlyCurrentModel()
         {

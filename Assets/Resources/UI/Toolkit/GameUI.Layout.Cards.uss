@@ -44,6 +44,11 @@
     white-space: normal;
 }
 
+.data-card__details
+{
+    white-space: normal;
+}
+
 .data-card__status
 {
     white-space: normal;

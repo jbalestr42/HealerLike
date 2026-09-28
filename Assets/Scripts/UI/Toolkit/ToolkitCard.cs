@@ -39,6 +39,7 @@ public class ToolkitCard : System.IDisposable
     VisualElement _icon;
     Label _title;
     Label _description;
+    Label _details;
     Label _status;
     object _iconSource;
     ToolkitCardModel _model;
@@ -69,6 +70,8 @@ public class ToolkitCard : System.IDisposable
             return;
         }
 
+        // Optional: a template without the details line still makes a working card
+        _details = _root.Q<Label>("card-details");
         _view = view;
         _info.clicked += OnInfoClicked;
         _button.clicked += OnClicked;
@@ -89,6 +92,12 @@ public class ToolkitCard : System.IDisposable
         _button.userData = model;
         _title.text = _model.title;
         _description.text = _model.description;
+        if (_details != null)
+        {
+            _details.text = _model.details ?? "";
+            _details.style.display = string.IsNullOrEmpty(_model.details) ? DisplayStyle.None : DisplayStyle.Flex;
+        }
+
         _status.text = _model.status;
         _button.tooltip = _compact ? _model.description + "\nInspect: I / F1 or controller B / Circle" : _model.description;
         _info.tooltip = "Inspect " + _model.title;
@@ -145,6 +154,7 @@ public class ToolkitCard : System.IDisposable
         }
 
         _root = null;
+        _details = null;
         _button = null;
         _info = null;
         _view = null;

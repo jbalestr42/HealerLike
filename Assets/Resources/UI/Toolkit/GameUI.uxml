@@ -12,10 +12,12 @@
     <ui:Template name="GameOverScreen" src="Screens/GameOverScreen.uxml" />
     <ui:Template name="ClassSelectScreen" src="Screens/ClassSelectScreen.uxml" />
     <ui:VisualElement name="hud-root" class="game-ui compact-hud" picking-mode="Ignore">
+        <!-- On the HUD root, not in the theme: it must win over the stage's document-level HUD sheet -->
+        <ui:Style src="GameUI.Menu.uss" />
         <ui:Instance template="HudHeader" name="top-bar" class="top-bar" picking-mode="Ignore" />
         <ui:VisualElement name="main-content" class="main-content" picking-mode="Ignore">
             <ui:VisualElement name="world-space" class="world-space" picking-mode="Ignore">
-                <ui:Instance template="MenuScreen" name="menu-panel" class="menu-panel surface is-hidden" picking-mode="Position" />
+                <ui:Instance template="MenuScreen" name="menu-panel" class="menu-panel is-hidden" picking-mode="Ignore" />
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:Instance template="FieldToolbar" name="field-toolbar" class="field-toolbar" picking-mode="Ignore" />

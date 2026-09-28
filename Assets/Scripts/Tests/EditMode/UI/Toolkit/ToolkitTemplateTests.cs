@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 using UnityEngine;
@@ -34,6 +35,71 @@ namespace UI.Toolkit
             Assert.IsTrue(root.Q("resume-button").hierarchy.parent.ClassListContains("dialog-content"));
             Assert.IsTrue(root.Q("restart-button").hierarchy.parent.ClassListContains("dialog-content"));
             Assert.IsTrue(root.Q("upgrade-title").hierarchy.parent.ClassListContains("dialog-content"));
+        }
+
+        // The start screen: the title and one line of copy, nothing that repeats it, over a backdrop it lets
+        // through; Start above Sandbox in the same actions; its sheet on the HUD root so it wins over the stage's
+        static readonly string MenuSheet = "Assets/Resources/UI/Toolkit/GameUI.Menu.uss";
+        static readonly string MenuVeil = "Assets/Resources/UI/Toolkit/Menu/MenuVeil.png";
+
+        [Test]
+        public void Validate_MenuScreen_TitleAndOneLineOfCopyOverAnOpenBackdrop()
+        {
+            VisualElement root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+            Assert.IsTrue(ToolkitLayoutContract.Validate(root));
+            ToolkitTemplates.PreparePicking(root);
+
+            VisualElement menu = root.Q("menu-panel");
+            Assert.AreEqual("A healer's\njourney", root.Q<Label>("menu-title").text);
+            string tagline = root.Q<Label>("menu-tagline").text;
+            StringAssert.DoesNotContain("\n", tagline);
+            List<string> copy = menu.Query<Label>().ToList().ConvertAll(label => label.text);
+            Assert.AreEqual(3, copy.Count, string.Join(" | ", copy));
+            Assert.AreEqual(PickingMode.Ignore, menu.pickingMode, "Touches through the menu reach the meadow.");
+            Assert.IsTrue(root.Q("menu-hero").ClassListContains("menu-hero"));
+        }
+
+        [Test]
+        public void Validate_MenuActions_PrimaryStartBeforeSecondarySandbox()
+        {
+            VisualElement root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+
+            VisualElement actions = root.Q("encounter-actions");
+            Button start = root.Q<Button>("start-button");
+            Button sandbox = root.Q<Button>("sandbox-button");
+            Assert.AreSame(actions, start.parent);
+            Assert.AreSame(actions, sandbox.parent);
+            Assert.Less(actions.IndexOf(start), actions.IndexOf(sandbox));
+            Assert.IsTrue(start.ClassListContains("button--primary"));
+            Assert.IsFalse(sandbox.ClassListContains("button--primary"));
+        }
+
+        [Test]
+        public void MenuSheet_OnTheHudRoot_StylesTheMenuAndTheClassScreen()
+        {
+            VisualElement root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+            StyleSheet sheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(MenuSheet);
+            Assert.IsNotNull(sheet, MenuSheet);
+
+            Assert.IsTrue(root.Q("hud-root").styleSheets.Contains(sheet),
+                "On the HUD root it outranks the stage's document-level HUD sheet.");
+            string text = File.ReadAllText(MenuSheet);
+            StringAssert.Contains("#hud-root.game-ui.is-menu", text);
+            StringAssert.Contains(".class-list .data-card__details", text);
+            StringAssert.Contains("Coiny-Regular-UI.ttf", text);
+            Assert.IsTrue(root.Q("class-panel").Q(className: "class-dialog") != null, "The class screen opts in.");
+        }
+
+        // A 4 px wide ramp compressed in 4x4 blocks bands into visible steps; it ships uncompressed and unmipped
+        [Test]
+        public void MenuVeil_Import_IsUncompressedWithoutMips()
+        {
+            TextureImporter importer = AssetImporter.GetAtPath(MenuVeil) as TextureImporter;
+            Assert.IsNotNull(importer, MenuVeil);
+
+            Assert.AreEqual(TextureImporterCompression.Uncompressed, importer.textureCompression);
+            Assert.IsFalse(importer.mipmapEnabled);
+            Assert.AreEqual(TextureWrapMode.Clamp, importer.wrapMode);
         }
 
         static string DescribeHierarchy(VisualElement element)

@@ -129,6 +129,84 @@ namespace HealerLike.Render.Stage
             {
                 _problems.Add(moment + ": " + managers + " RenderManagers.");
             }
+
+            LogLeftovers(moment);
+        }
+
+        // Where the start screen's parts landed; the actions must sit whole inside the panel
+        void LogMenuLayout(ToolkitGameUI menu)
+        {
+            UIDocument document = menu.GetComponent<UIDocument>();
+            VisualElement root = document != null ? document.rootVisualElement : null;
+            if (root == null)
+            {
+                _problems.Add("The menu has no document root.");
+                return;
+            }
+
+            Rect screen = root.worldBound;
+            List<string> parts = new List<string>();
+            foreach (string name in new[] { "hud-root", "menu-panel", "menu-title", "menu-tagline", "field-toolbar",
+                         "start-button", "sandbox-button" })
+            {
+                VisualElement element = root.Q(name);
+                if (element == null)
+                {
+                    _problems.Add("The menu has no " + name + ".");
+                    continue;
+                }
+
+                Rect bound = element.worldBound;
+                parts.Add($"{name} {bound.xMin:0},{bound.yMin:0} {bound.width:0}x{bound.height:0}");
+                bool isAction = name == "start-button" || name == "sandbox-button";
+                if (isAction && (bound.width < 1f || bound.xMin < screen.xMin - 0.5f || bound.xMax > screen.xMax + 0.5f
+                                 || bound.yMin < screen.yMin - 0.5f || bound.yMax > screen.yMax + 0.5f))
+                {
+                    _problems.Add($"The menu's {name} is not whole on screen: {bound} in {screen}.");
+                }
+            }
+
+            Debug.Log($"[ClassSelectCaptureRun] Menu layout in {screen.width:0}x{screen.height:0}: {string.Join("; ", parts)}");
+        }
+
+        // The menu backdrop lives in the menu scene only: after the pick nothing of it may remain, and neither
+        // scene may add a second live camera, audio listener or event system
+        void LogLeftovers(string moment)
+        {
+            int cameras = 0;
+            foreach (Camera camera in Object.FindObjectsByType<Camera>())
+            {
+                cameras += camera.isActiveAndEnabled ? 1 : 0;
+            }
+
+            int listeners = 0;
+            foreach (AudioListener listener in Object.FindObjectsByType<AudioListener>())
+            {
+                listeners += listener.isActiveAndEnabled ? 1 : 0;
+            }
+
+            int eventSystems = Object.FindObjectsByType<UnityEngine.EventSystems.EventSystem>().Length;
+            int backdrops = 0;
+            foreach (Transform root in Object.FindObjectsByType<Transform>())
+            {
+                backdrops += root.name == StageBackdrop.HostName ? 1 : 0;
+            }
+
+            bool expectsBackdrop = _manager.entityManager == null;
+            Debug.Log($"[ClassSelectCaptureRun] {moment}: live cameras {cameras}, audio listeners {listeners}, "
+                + $"event systems {eventSystems}, backdrop hosts {backdrops}, backdrop attached "
+                + $"{_manager.backdrop.isAttached} with {_manager.backdrop.creatureCount} creatures, fog "
+                + $"{Shader.GetGlobalFloat("_HLFogStart"):0.#}..{Shader.GetGlobalFloat("_HLFogEnd"):0.#}, camera "
+                + $"{(_manager.gameCamera != null ? _manager.gameCamera.transform.position.ToString() : "none")}");
+            if (cameras != 1 || listeners > 1 || eventSystems > 1)
+            {
+                _problems.Add($"{moment}: {cameras} live cameras, {listeners} audio listeners, {eventSystems} event systems.");
+            }
+
+            if (backdrops != (expectsBackdrop ? 1 : 0) || _manager.backdrop.isAttached != expectsBackdrop)
+            {
+                _problems.Add($"{moment}: {backdrops} backdrop hosts, attached {_manager.backdrop.isAttached}.");
+            }
         }
 
         IEnumerator ToMenu()
@@ -169,6 +247,7 @@ namespace HealerLike.Render.Stage
                     }
                 }
 
+                LogMenuLayout(menu);
                 yield return CaptureScreen("boot-01-menu");
             }
 

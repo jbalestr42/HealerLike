@@ -29,7 +29,8 @@ public class ToolkitEncounterBar
         _view.Show("start-button", true);
         _view.Show("sandbox-button", true);
         _view.SetText("phase-label", "WELCOME TO HEALERLIKE");
-        _view.SetText("wave-label", "Build your party. Keep them alive.");
+        // The menu screen carries the title and its one line of copy; the header says nothing over it
+        _view.SetText("wave-label", "");
         _view.SetText("status-label", "Choose Start expedition to begin.");
         _view.SetButton("start-button", "Start expedition", true);
         _view.SetButton("sandbox-button", "Sandbox", true);
