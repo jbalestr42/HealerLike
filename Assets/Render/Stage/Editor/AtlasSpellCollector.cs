@@ -88,11 +88,14 @@ namespace HealerLike.Render.Stage
                 .Select(AssetDatabase.GUIDToAssetPath).OrderBy(path => path, StringComparer.Ordinal))
             {
                 ACharacterSkillFactory factory = AssetDatabase.LoadAssetAtPath<ACharacterSkillFactory>(path);
-                BaseCharacterSkillData data = factory is IGameDataSource source ? source.sourceData as BaseCharacterSkillData : null;
+                // Skills without a target (BalanceLife, DarkPact, RaiseDead) still get a row, with no target side
+                CharacterSkillData data = factory is IGameDataSource source ? source.sourceData as CharacterSkillData : null;
                 if (data == null) continue;
+                BaseCharacterSkillData targeted = data as BaseCharacterSkillData;
                 SpellIconDescription description = SpellIconDerivation.Read(data);
                 HealerSkillRow row = new HealerSkillRow { path = path, name = data.name, skillClass = data.GetType().Name,
-                    isSingle = data.isSingle, entityType = data.entityType.ToString(),
+                    isSingle = targeted != null && targeted.isSingle,
+                    entityType = targeted == null ? "" : targeted.entityType.ToString(),
                     reach = description == null ? "" : description.context.targetCount == 1 ? "Single" : "All",
                     origin = "Healer" };
                 if (description != null)

@@ -16,7 +16,8 @@ public class CreatureRosterCompositionTests : GrowthStoneFixture
     public void FullRealRoster_ComposesAllSourcesWithUnchangedDerivationAndSeparateProfiles(Entity.EntityType side)
     {
         string[] guids = AssetDatabase.FindAssets("t:EntityData", new[] { "Assets" });
-        Assert.AreEqual(31, guids.Length);
+        // 31 before Julien's class content, plus Zealot, Treant, GroveKeeper, BloodCultist and RisenSkeleton
+        Assert.AreEqual(36, guids.Length);
         foreach (string guid in guids)
         {
             EntityData source = AssetDatabase.LoadAssetAtPath<EntityData>(AssetDatabase.GUIDToAssetPath(guid));

@@ -32,6 +32,12 @@ namespace HealerLike.Render.Stage
             Assert.AreEqual(AssetDatabase.FindAssets("t:ACharacterSkillFactory", new[] { "Assets/Data/CharacterSkills" }).Length,
                 dump.healerSkills.Count);
             Assert.AreEqual(dump.projectiles.Count, dump.projectiles.Count(row => !string.IsNullOrEmpty(row.effectDelivery)));
+            // A skill without a target still gets its row, with no target side
+            AtlasDerivationDump.HealerSkillRow raiseDead = dump.healerSkills.Single(row =>
+                row.path == "Assets/Data/CharacterSkills/RaiseDead/RaiseDead.asset");
+            Assert.AreEqual("RaiseDeadCharacterSkillData", raiseDead.skillClass);
+            Assert.AreEqual("", raiseDead.entityType);
+            Assert.IsFalse(raiseDead.isSingle);
             Assert.IsNotNull(JsonUtility.FromJson<AtlasDerivationDump.Document>(JsonUtility.ToJson(dump)));
         }
 

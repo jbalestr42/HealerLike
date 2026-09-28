@@ -146,15 +146,20 @@ public class CreatureLooksTests
         CreatureLooks looks = AssetDatabase.LoadAssetAtPath<CreatureLooks>(
             "Assets/Render/Creatures/Data/CreatureLooks.asset"
         );
-        CharacterData healer = AssetDatabase.LoadAssetAtPath<CharacterData>(
-            "Assets/Data/Characters/BasicHealerCharacter/BasicHealerCharacter.asset"
-        );
         Assert.IsEmpty(looks.entities);
         Assert.IsEmpty(looks.characters);
         Assert.AreSame(RenderTestAssets.LoadLookVocabulary(), looks.vocabulary);
         Assert.AreEqual("DerivedPlant", looks.plant.name);
         Assert.AreEqual("DerivedStone", looks.stone.name);
-        Assert.AreEqual("HealerCharacter", looks.GetView(healer).name);
+        // Every playable class wears the one authored healer view
+        foreach (string name in new[] { "Cleric", "Druid", "Warlock" })
+        {
+            CharacterData healer = AssetDatabase.LoadAssetAtPath<CharacterData>(
+                "Assets/Data/Characters/" + name + "Character/" + name + "Character.asset"
+            );
+            Assert.IsNotNull(healer, name);
+            Assert.AreEqual("HealerCharacter", looks.GetView(healer).name, name);
+        }
         Assert.IsNull(looks.plant.GetComponent<CreatureBuilder>().recipe);
         Assert.IsNull(looks.stone.GetComponent<CreatureBuilder>().recipe);
     }
