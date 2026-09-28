@@ -9,6 +9,9 @@ public static class ToolkitSceneNavigation
     public static readonly string MenuScene = "MenuToolkit";
     public static readonly string GameplayPath = "Assets/Scenes/Toolkit/MainToolkit.unity";
     public static readonly string MenuPath = "Assets/Scenes/Toolkit/MenuToolkit.unity";
+    // Julien's sandbox is not a Toolkit copy, the menu opens his scene itself
+    public static readonly string SandboxScene = "Sandbox";
+    public static readonly string SandboxPath = "Assets/Scenes/Sandbox.unity";
 
     public static bool TryLoad(string scene)
     {
@@ -31,7 +34,7 @@ public static class ToolkitSceneNavigation
     }
 
 #if UNITY_EDITOR
-    static string GetEditorPath(string scene)
+    public static string GetEditorPath(string scene)
     {
         if (scene == GameplayScene)
         {
@@ -41,6 +44,11 @@ public static class ToolkitSceneNavigation
         if (scene == MenuScene)
         {
             return MenuPath;
+        }
+
+        if (scene == SandboxScene)
+        {
+            return SandboxPath;
         }
 
         return null;

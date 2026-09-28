@@ -18,7 +18,9 @@ namespace HealerLike.Render.Stage
         {
             StageSceneAuthoring.ScenePath,
             "Assets/Scenes/Toolkit/MenuToolkit.unity",
-            "Assets/Scenes/Main.unity"
+            "Assets/Scenes/Main.unity",
+            // Julien's sandbox, reached from the Toolkit menu's Sandbox entry through StageTarget
+            "Assets/Scenes/Sandbox.unity"
         };
 
         [MenuItem("Tools/Render/Build Render Preview")]

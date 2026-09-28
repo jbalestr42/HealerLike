@@ -11,14 +11,18 @@ namespace HealerLike.Render.Stage
     {
         [SerializeField] string _scenePath = "Assets/Scenes/Main.unity";
 
+        // The StageTarget when the menu selected one, the authored scene otherwise
+        public string scenePath { get { return StageTarget.Resolve(_scenePath); } }
+
         void Start()
         {
+            string path = scenePath;
             LoadSceneParameters parameters = new LoadSceneParameters(LoadSceneMode.Additive);
 #if UNITY_EDITOR
             // Main is not in the Build Settings, the editor loads it by path
-            EditorSceneManager.LoadSceneInPlayMode(_scenePath, parameters);
+            EditorSceneManager.LoadSceneInPlayMode(path, parameters);
 #else
-            SceneManager.LoadScene(_scenePath, parameters);
+            SceneManager.LoadScene(path, parameters);
 #endif
         }
     }

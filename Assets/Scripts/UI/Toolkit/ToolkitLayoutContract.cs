@@ -55,6 +55,7 @@ public static class ToolkitLayoutContract
             && ToolkitTemplates.Require(root, "pause-panel", out VisualElement _)
             && ToolkitTemplates.Require(root, "pause-settings", out VisualElement _)
             && ToolkitTemplates.Require(root, "restart-button", out Button _)
+            && ToolkitTemplates.Require(root, "sandbox-button", out Button _)
             && ToolkitTemplates.Require(root, "resume-button", out Button _)
             && ToolkitTemplates.Require(root, "speed-controls", out VisualElement _)
             && ToolkitTemplates.Require(root, "speed-fast-button", out Button _)

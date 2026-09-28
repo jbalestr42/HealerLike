@@ -27,10 +27,12 @@ public class ToolkitEncounterBar
         _view.Show("detail-panel", false);
         _view.Show("wave-button", false);
         _view.Show("start-button", true);
+        _view.Show("sandbox-button", true);
         _view.SetText("phase-label", "WELCOME TO HEALERLIKE");
         _view.SetText("wave-label", "Build your party. Keep them alive.");
         _view.SetText("status-label", "Choose Start expedition to begin.");
         _view.SetButton("start-button", "Start expedition", true);
+        _view.SetButton("sandbox-button", "Sandbox", true);
         _view.SetButton("inventory-button", null, false);
         _view.SetButton("pause-button", null, false);
     }
@@ -41,6 +43,7 @@ public class ToolkitEncounterBar
         bool isAvailable = !_context.isPaused && !hasOverlay;
         _view.Show("field-toolbar", isStart || isPreparing || _context.hasInteraction);
         _view.Show("start-button", isStart);
+        _view.Show("sandbox-button", false);
         _view.Show("spell-section", !isStart);
         _view.Show("wave-button", !isStart && isPreparing && !_context.hasInteraction);
         _view.Show("party-panel", !isStart);

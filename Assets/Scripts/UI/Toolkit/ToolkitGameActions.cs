@@ -30,6 +30,7 @@ public class ToolkitGameActions : IDisposable
         _mapPanel = mapPanel;
         view.AddClickListener("wave-button", StartOrAdvance);
         view.AddClickListener("start-button", StartOrAdvance);
+        view.AddClickListener("sandbox-button", OnSandboxClicked);
         view.AddClickListener("inventory-button", OnInventoryClicked);
         view.AddClickListener("inventory-close-button", OnInventoryCloseClicked);
         view.AddClickListener("restart-button", OnRestartClicked);
@@ -53,6 +54,7 @@ public class ToolkitGameActions : IDisposable
         _markToggle.UnregisterValueChangedCallback(OnMarkToggleChanged);
         _view.RemoveClickListener("wave-button", StartOrAdvance);
         _view.RemoveClickListener("start-button", StartOrAdvance);
+        _view.RemoveClickListener("sandbox-button", OnSandboxClicked);
         _view.RemoveClickListener("inventory-button", OnInventoryClicked);
         _view.RemoveClickListener("inventory-close-button", OnInventoryCloseClicked);
         _view.RemoveClickListener("restart-button", OnRestartClicked);
@@ -81,6 +83,15 @@ public class ToolkitGameActions : IDisposable
         else if (hud.nextWaveButton.interactable)
         {
             hud.nextWaveButton.onClick.Invoke();
+        }
+    }
+
+    // The sandbox is a menu choice only, a running expedition never leaves through it
+    void OnSandboxClicked()
+    {
+        if (_context.isMenu)
+        {
+            LoadScene(_host.sandboxScene);
         }
     }
 

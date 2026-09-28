@@ -2,6 +2,7 @@
     <ui:VisualElement name="command-section" class="command-section" picking-mode="Ignore">
         <ui:VisualElement name="encounter-actions" class="encounter-actions" picking-mode="Ignore">
             <ui:Button name="start-button" text="Start expedition" class="button button--primary is-hidden" />
+            <ui:Button name="sandbox-button" text="Sandbox" class="button is-hidden" />
             <ui:Button name="wave-button" text="Start battle" class="button" />
             <ui:Button name="cancel-button" text="Cancel" class="button is-hidden" />
         </ui:VisualElement>

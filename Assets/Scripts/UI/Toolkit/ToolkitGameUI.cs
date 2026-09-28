@@ -8,6 +8,9 @@ public class ToolkitGameUI : MonoBehaviour
 
     [SerializeField] string _menuScene = "MenuScene";
 
+    // Julien's sandbox, offered beside Start on the menu
+    [SerializeField] string _sandboxScene = ToolkitSceneNavigation.SandboxScene;
+
     [SerializeField] bool _hideLegacyCanvases = true;
 
     [SerializeField] VisualTreeAsset _layout;
@@ -92,6 +95,12 @@ public class ToolkitGameUI : MonoBehaviour
     {
         get { return _menuScene; }
         set { _menuScene = value; }
+    }
+
+    public string sandboxScene
+    {
+        get { return _sandboxScene; }
+        set { _sandboxScene = value; }
     }
 
     // Every Awake of a loaded scene runs before any Start, so the legacy menu never opens its screen

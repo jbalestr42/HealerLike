@@ -14,6 +14,9 @@ namespace HealerLike.Render.Stage
     {
         public static readonly string GameplayPath = "Assets/Scenes/Main.unity";
         public static readonly string MenuPath = "Assets/Scenes/Toolkit/MenuToolkit.unity";
+        public static readonly string SandboxPath = StageTarget.SandboxPath;
+        public static readonly string SandboxScene = "Sandbox";
+        public static readonly string SandboxInputName = "Render Sandbox Input";
         RenderManager _manager;
         BattleFocus _focus;
         ToolkitGameUI _ui;
@@ -62,6 +65,12 @@ namespace HealerLike.Render.Stage
 
         public void Attach(Scene scene)
         {
+            if (scene.path == SandboxPath)
+            {
+                AttachSandbox(scene);
+                return;
+            }
+
             if (scene.path != GameplayPath && scene.path != MenuPath)
             {
                 return;
@@ -82,6 +91,7 @@ namespace HealerLike.Render.Stage
 
             _ui.gameplayScene = "Main";
             _ui.menuScene = "MenuToolkit";
+            _ui.sandboxScene = SandboxScene;
             _ui.sceneLoader = LoadScene;
             _document = _ui.GetComponent<UIDocument>();
             if (_spellSpacing == null)
@@ -103,6 +113,51 @@ namespace HealerLike.Render.Stage
 
             _focus.ShowLegacyControl(false);
             _camera = null;
+        }
+
+        // Julien's sandbox keeps its own uGUI: no Toolkit HUD, which would hide his canvases. It still needs the
+        // preview's input backend on Android and touch delivery for placing entities, as Main gets them.
+        void AttachSandbox(Scene scene)
+        {
+            ReleasePortraits();
+            _uiScene = scene;
+            _ui = null;
+            _document = null;
+#if UNITY_ANDROID && !UNITY_EDITOR
+            StageLegacyInput.Configure(scene);
+#endif
+            AttachSandboxInput(scene);
+            _focus.ShowLegacyControl(false);
+            _camera = null;
+        }
+
+        // One touch host per sandbox scene, fed with its InteractionManager; no roster drag without the Toolkit HUD
+        public static StageTouchInput AttachSandboxInput(Scene scene)
+        {
+            InteractionManager interaction = StageSceneObjects.Find<InteractionManager>(scene);
+            if (interaction == null)
+            {
+                return null;
+            }
+
+            StageTouchInput touch = null;
+            foreach (GameObject root in scene.GetRootGameObjects())
+            {
+                if (root.name == SandboxInputName)
+                {
+                    touch = root.GetComponent<StageTouchInput>();
+                }
+            }
+
+            if (touch == null)
+            {
+                GameObject host = new GameObject(SandboxInputName);
+                SceneManager.MoveGameObjectToScene(host, scene);
+                touch = host.AddComponent<StageTouchInput>();
+            }
+
+            touch.Init(interaction);
+            return touch;
         }
 
         public void RefreshCreatureIcons()
@@ -229,12 +284,34 @@ namespace HealerLike.Render.Stage
                 return MenuPath;
             }
 
+            if (scene == SandboxScene)
+            {
+                return SandboxPath;
+            }
+
             return null;
+        }
+
+        // The path a menu request loads. A gameplay choice is recorded in StageTarget: Start explicitly goes back to
+        // Main, so a visit to the sandbox never sticks; the menu itself leaves the choice as it is.
+        public static string Route(string scene)
+        {
+            string path = ScenePath(scene);
+            if (path == GameplayPath)
+            {
+                StageTarget.Reset();
+            }
+            else if (path == SandboxPath)
+            {
+                StageTarget.Select(SandboxPath);
+            }
+
+            return path;
         }
 
         bool LoadScene(string scene)
         {
-            string path = ScenePath(scene);
+            string path = Route(scene);
             if (path == null)
             {
                 return false;
