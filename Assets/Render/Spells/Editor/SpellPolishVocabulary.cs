@@ -67,6 +67,59 @@ namespace HealerLike.Render.Spells.Editor
             Configure(vocabulary);
             SpellPolishGround.Apply(vocabulary);
             ApplyStone(vocabulary);
+            ApplyKinds(vocabulary);
+        }
+
+        // Only the Plant Boon offence kinds: the saved entries and cells are read, never rewritten
+        [MenuItem("Tools/Render/Author Boon Kind Entries")]
+        public static void AuthorKinds()
+        {
+            EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(AssetPath);
+            if (vocabulary == null) throw new InvalidOperationException("Missing effect vocabulary: " + AssetPath);
+            Undo.RecordObject(vocabulary, "Author boon kind entries");
+            ApplyKinds(vocabulary);
+            EditorUtility.SetDirty(vocabulary);
+            AssetDatabase.SaveAssetIfDirty(vocabulary);
+            Debug.Log("[SpellPolishVocabulary] Authored the six Plant Boon offence kinds; Stone draws them in Plant.");
+            if (Application.isBatchMode) EditorApplication.Exit(0);
+        }
+
+        // Six Boon offence kinds in Plant. Stone has none of its own and draws these through the Plant fallback.
+        // The Orbit entry lends presentation, ground, beads and rim: kind changes construction and motion only
+        public static void ApplyKinds(EffectVocabulary vocabulary)
+        {
+            if (vocabulary == null) throw new ArgumentNullException(nameof(vocabulary));
+            ElementEntry orbit = vocabulary.entries[EffectKey.Orbit];
+            Kind(vocabulary, EffectKind.Projectile, Kind(orbit, "Boon dart", Dart(), EffectMotionKind.Orbit,
+                EffectSocket.Body, 1.6f));
+            Kind(vocabulary, EffectKind.Volume, Kind(orbit, "Boon seeds", Seeds(), EffectMotionKind.Orbit,
+                EffectSocket.AboveHead, 2.2f));
+            Kind(vocabulary, EffectKind.Rate, Kind(orbit, "Boon cadence", Cadence(), EffectMotionKind.Press,
+                EffectSocket.Body, 1f));
+            Kind(vocabulary, EffectKind.Conditional, Kind(orbit, "Boon brackets", Brackets(), EffectMotionKind.Close,
+                EffectSocket.Body, 1.4f));
+            Kind(vocabulary, EffectKind.Positional, Kind(orbit, "Boon footring", Footring(), EffectMotionKind.Grow,
+                EffectSocket.Feet, 2.4f));
+            Kind(vocabulary, EffectKind.Flat, Kind(orbit, "Boon canopy", Canopy(), EffectMotionKind.Orbit,
+                EffectSocket.AboveHead, 2.4f));
+        }
+
+        static void Kind(EffectVocabulary vocabulary, EffectKind kind, ElementEntry entry)
+        {
+            foreach (LookPart part in entry.parts)
+                if (!part.shape.IsValid())
+                    Debug.LogError($"[SpellPolishVocabulary] {entry.label}: {part.id} trips a shape profile bound.");
+            vocabulary.kinds[new EffectKindCell(EffectOperation.Boon, EffectAspect.Offence, kind)] = entry;
+        }
+
+        static ElementEntry Kind(ElementEntry orbit, string label, LookPart[] parts, EffectMotionKind motion,
+            EffectSocket socket, float seconds)
+        {
+            ElementEntry entry = Stone(orbit, label, parts);
+            entry.motion = motion;
+            entry.socket = socket;
+            entry.cycleSeconds = seconds;
+            return entry;
         }
 
         // Only the Stone cells: the saved Plant entries, labels and part edits are read, never rewritten

@@ -57,6 +57,8 @@ namespace HealerLike.Render.Grammar
         public float periodSeconds;
         // The caster's material: what the core element is built from, never its colour
         public LookSide material;
+        // The buff factory the handler is built from: what separates handlers that agree on every other channel
+        public EffectKind kind;
     }
 
     public struct EffectContext

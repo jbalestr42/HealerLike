@@ -31,6 +31,9 @@ namespace HealerLike.Render.Stage
             EffectKey.ManaUp, EffectKey.ManaDown };
         // The elements that have a Stone entry, measured again as a stone caster draws them
         static readonly EffectKey[] StoneElements = { EffectKey.Burst, EffectKey.Rise, EffectKey.Press };
+        // The Boon offence kinds, measured in Plant: Stone draws them through the Plant fallback
+        static readonly EffectKey[] KindElements = { EffectKey.Dart, EffectKey.Seeds, EffectKey.Cadence,
+            EffectKey.Brackets, EffectKey.Footring, EffectKey.Canopy };
         const string GainHandler = "Assets/Data/PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory.asset";
         const string DrainHandler = "Assets/Data/EntityItems/SiphonItem/BuffHandlerFactory.asset";
         readonly bool _isReadability;
@@ -55,6 +58,8 @@ namespace HealerLike.Render.Stage
                 foreach (EffectKey element in elements) fixtures.Add((element, LookSide.Plant));
                 if (_isReadability)
                     foreach (EffectKey element in StoneElements) fixtures.Add((element, LookSide.Stone));
+                if (_isReadability)
+                    foreach (EffectKey element in KindElements) fixtures.Add((element, LookSide.Plant));
                 foreach (var (element, side) in fixtures)
                 {
                     using (var scene = new GrassLabScene(_manager))
@@ -181,6 +186,12 @@ namespace HealerLike.Render.Stage
                 case EffectKey.Stalks: return EffectFamily.Renew;
                 case EffectKey.Drips: return EffectFamily.Rot;
                 case EffectKey.Orbit:
+                case EffectKey.Dart:
+                case EffectKey.Seeds:
+                case EffectKey.Cadence:
+                case EffectKey.Brackets:
+                case EffectKey.Footring:
+                case EffectKey.Canopy:
                 case EffectKey.Plates:
                 case EffectKey.Bud: return EffectFamily.Boon;
                 case EffectKey.Press:

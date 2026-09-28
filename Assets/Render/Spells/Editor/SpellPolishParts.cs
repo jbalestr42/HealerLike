@@ -132,6 +132,100 @@ namespace HealerLike.Render.Spells.Editor
             return parts.ToArray();
         }
 
+        // Boon kinds: what separates boons that agree on every other channel is the buff that builds them. Plant
+        // kit only: smooth bulbs, teardrop seeds, tapering leaf blades, capsule segments, bead chains
+        public static ShapeProfile Seed() { return ShapeProfile.Bulb(.8f, .72f); }
+
+        // Projectile: one leaf-bladed dart standing on its own axis, a teardrop seed for a point and two
+        // fletching leaves; every part sits on that axis so the spin turns it whole
+        public static LookPart[] Dart()
+        {
+            var parts = new List<LookPart>();
+            Vector3 axis = new Vector3(1.05f, 0, .2f);
+            parts.Add(Part("Dart blade", Primitive.Leaf, ShapeProfile.Leaf(.04f, .5f), axis + Vector3.up * .15f,
+                new Vector3(.34f, 1.45f, .12f)));
+            parts.Add(Part("Dart seed", Primitive.Cone, Seed(), axis + Vector3.up * 1.05f,
+                new Vector3(.26f, .42f, .26f), colour: ColourRole.MushroomCapPale));
+            for (int i = 0; i < 2; i++)
+                parts.Add(Part("Dart fletching " + i, Primitive.Leaf, ShapeProfile.Leaf(.2f, .7f),
+                    axis + Vector3.down * .55f, new Vector3(.26f, .55f, .1f), new Vector3(0, 90f * i, i == 0 ? 38f : -38f)));
+            return parts.ToArray();
+        }
+
+        // Volume: a dense clump of many small seeds, each pointing out of the clump
+        public static LookPart[] Seeds()
+        {
+            var parts = new List<LookPart>();
+            int count = 13;
+            for (int i = 0; i < count; i++)
+            {
+                // Fibonacci sphere, a tight even clump without a ring reading
+                float y = 1f - 2f * (i + .5f) / count;
+                float radius = Mathf.Sqrt(1f - y * y);
+                float angle = i * 137.5f * Mathf.Deg2Rad;
+                Vector3 direction = new Vector3(Mathf.Cos(angle) * radius, y, Mathf.Sin(angle) * radius);
+                parts.Add(Part("Clustered seed " + i, Primitive.Cone, Seed(), direction * .48f + Vector3.up * .35f,
+                    new Vector3(.2f, .34f, .2f), Quaternion.FromToRotation(Vector3.up, direction).eulerAngles));
+            }
+            return parts.ToArray();
+        }
+
+        // Rate: a tight stack of thin rings, one beat per ring
+        public static LookPart[] Cadence()
+        {
+            var parts = new LookPart[5];
+            for (int i = 0; i < parts.Length; i++)
+                parts[i] = Ring("Cadence ring " + i, 2.5f - .12f * (i % 2), -.35f + .2f * i, .07f);
+            return parts;
+        }
+
+        // Conditional: two curved leaf brackets facing each other across the body, a bead chain between their
+        // feet, that open and close
+        public static LookPart[] Brackets()
+        {
+            var parts = new List<LookPart>();
+            for (int i = 0; i < 2; i++)
+            {
+                float side = i == 0 ? 1f : -1f;
+                parts.Add(Part("Bracket leaf " + i, Primitive.Leaf, ShapeProfile.Leaf(.65f, .6f, .4f),
+                    new Vector3(side * 1.25f, .1f, 0), new Vector3(.5f, 1.9f, .16f), new Vector3(0, i == 0 ? -90f : 90f, 0)));
+            }
+            for (int i = 0; i < 3; i++)
+                parts.Add(Part("Bracket bead " + i, Primitive.Sphere, ShapeProfile.Bulb(), new Vector3(-.5f + .5f * i, -.8f, 0),
+                    Vector3.one * .18f));
+            return parts.ToArray();
+        }
+
+        // Positional: a low ring of seeds lying on the ground round the feet, four leaf ticks pointing out to the
+        // neighbouring cells
+        public static LookPart[] Footring()
+        {
+            var parts = new List<LookPart>();
+            for (int i = 0; i < 8; i++)
+            {
+                float turn = i * 45f + 22.5f;
+                parts.Add(Part("Ground seed " + i, Primitive.Cone, Seed(), Radial(i, 8, 1.3f, .08f, 22.5f),
+                    new Vector3(.2f, .36f, .2f), new Vector3(90, turn, 0)));
+            }
+            for (int i = 0; i < 4; i++)
+                parts.Add(Part("Cell tick " + i, Primitive.Leaf, ShapeProfile.Leaf(.05f, .6f), Radial(i, 4, 1.75f, .05f),
+                    new Vector3(.22f, .55f, .08f), new Vector3(90, i * 90f, 0)));
+            return parts.ToArray();
+        }
+
+        // Flat: one broad flat leaf plate held above the head on a capsule stem with a spherical knuckle
+        public static LookPart[] Canopy()
+        {
+            return new[] {
+                Part("Canopy leaf", Primitive.Leaf, ShapeProfile.Leaf(.1f, 1.1f, .35f), new Vector3(0, .55f, 0),
+                    new Vector3(1.5f, 1.8f, .12f), new Vector3(90, 0, 0)),
+                Part("Canopy stem", Primitive.CylinderSegment, ShapeProfile.Segment(.2f, .3f), new Vector3(0, .15f, 0),
+                    new Vector3(.12f, .5f, .12f)),
+                Part("Canopy knuckle", Primitive.Sphere, ShapeProfile.Bulb(), new Vector3(0, .42f, 0),
+                    Vector3.one * .2f)
+            };
+        }
+
         // Stone magic is broken and stacked: chipped slabs, blunt wedges, straight shards and flat capstones.
         // Never a sphere, a bead chain or a smooth curve, and never a colour of its own: roles only.
         public static ShapeProfile Slab(float fracture = .45f)

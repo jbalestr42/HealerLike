@@ -16,7 +16,8 @@ namespace HealerLike.Render.Grammar
                 operation = Operation(handler, isSameSide), aspect = Aspect(handler),
                 tempo = Tempo(handler), periodSeconds = Period(handler), magnitude = Magnitude(handler, context),
                 reach = Reach(handler, context.targetCount), delivery = DeliveryChannel(context.projectilePrefab), trigger = Trigger(handler, context),
-                side = isSameSide ? EffectSide.Ally : EffectSide.Opposing, origin = context.origin, material = context.material
+                side = isSameSide ? EffectSide.Ally : EffectSide.Opposing, origin = context.origin, material = context.material,
+                kind = Kind(handler)
             };
         }
 

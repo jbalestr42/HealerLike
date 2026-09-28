@@ -28,6 +28,8 @@ namespace HealerLike.Render.Spells
             EffectTempo tempo = channels.family == EffectFamily.Rot || channels.family == EffectFamily.Renew
                 ? EffectTempo.PerPeriod : channels.tempo;
             EffectKey element;
+            if (vocabulary != null && vocabulary.TryGetKindElement(operation, aspect, channels.kind, channels.material,
+                out element)) return element;
             if (vocabulary != null && vocabulary.TryGetElement(operation, aspect, tempo, out element)) return element;
             if (vocabulary != null) return default(EffectKey);
             return LegacyElement(operation, aspect, tempo);

@@ -159,6 +159,8 @@ namespace HealerLike.Render.Spells.Editor
             switch (key) { case EffectKey.Rise: case EffectKey.Ring: case EffectKey.Beam: return EffectFamily.Heal;
                 case EffectKey.Stalks: return EffectFamily.Renew; case EffectKey.Drips: return EffectFamily.Rot;
                 case EffectKey.Orbit: case EffectKey.Plates: case EffectKey.Bud: return EffectFamily.Boon;
+                case EffectKey.Dart: case EffectKey.Seeds: case EffectKey.Cadence: case EffectKey.Brackets:
+                case EffectKey.Footring: case EffectKey.Canopy: return EffectFamily.Boon;
                 case EffectKey.Press: case EffectKey.Crack: case EffectKey.Litter: return EffectFamily.Bane;
                 default: return EffectFamily.Damage; }
         }

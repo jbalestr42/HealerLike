@@ -29,6 +29,36 @@ namespace HealerLike.Render.Spells
         public override int GetHashCode() { return (((int)operation * 397) ^ (int)aspect) * 31 + (int)side; }
     }
 
+    // A kind refines the cell it sits in: Flat on a Boon and Flat on a Bane stay apart, and a kind drawn in
+    // the caster's material falls back to its Plant entry like a cell does
+    [Serializable]
+    public struct EffectKindCell : IEquatable<EffectKindCell>
+    {
+        public EffectOperation operation;
+        public EffectAspect aspect;
+        public EffectKind kind;
+        public LookSide side;
+
+        public EffectKindCell(EffectOperation operation, EffectAspect aspect, EffectKind kind,
+                              LookSide side = LookSide.Plant)
+        {
+            this.operation = operation;
+            this.aspect = aspect;
+            this.kind = kind;
+            this.side = side;
+        }
+
+        public bool Equals(EffectKindCell other)
+        {
+            return operation == other.operation && aspect == other.aspect && kind == other.kind && side == other.side;
+        }
+        public override bool Equals(object obj) { return obj is EffectKindCell && Equals((EffectKindCell)obj); }
+        public override int GetHashCode()
+        {
+            return ((((int)operation * 397) ^ (int)aspect) * 31 + (int)kind) * 31 + (int)side;
+        }
+    }
+
     [Serializable]
     public struct EffectCellEntry
     {
@@ -85,7 +115,13 @@ namespace HealerLike.Render.Spells
         ManaDown,
         Beam,
         Ring,
-        Litter
+        Litter,
+        Dart,
+        Seeds,
+        Cadence,
+        Brackets,
+        Footring,
+        Canopy
     }
 
     // How the parts of an element move, one motion cycle at a time
@@ -146,6 +182,10 @@ namespace HealerLike.Render.Spells
         [DictionaryDrawerSettings(KeyLabel = "Operation and aspect", ValueLabel = "Once and periodic entries")]
         public Dictionary<EffectCell, EffectCellEntries> cells = new Dictionary<EffectCell, EffectCellEntries>();
 
+        // Consulted before the cells: a handler whose kind has an entry here draws it instead of its cell's
+        [DictionaryDrawerSettings(KeyLabel = "Operation, aspect, kind and material", ValueLabel = "Entry")]
+        public Dictionary<EffectKindCell, ElementEntry> kinds = new Dictionary<EffectKindCell, ElementEntry>();
+
         [DictionaryDrawerSettings(KeyLabel = "Piece", ValueLabel = "Entry")]
         public Dictionary<EffectPiece, ElementEntry> pieces = new Dictionary<EffectPiece, ElementEntry>();
 
@@ -172,6 +212,7 @@ namespace HealerLike.Render.Spells
             {
                 return piece;
             }
+            if (TryGetKindEntry(element, LookSide.Plant, out ElementEntry kindEntry)) return kindEntry;
             foreach (var pair in cells ?? new Dictionary<EffectCell, EffectCellEntries>())
             {
                 if (pair.Key.side != LookSide.Plant) continue;
@@ -187,6 +228,17 @@ namespace HealerLike.Render.Spells
         public ElementEntry GetEntry(EffectKey element, LookSide material, out LookSide drawn)
         {
             drawn = LookSide.Plant;
+            if (material != LookSide.Plant && TryGetKindEntry(element, material, out ElementEntry kindEntry))
+            {
+                drawn = material;
+                return kindEntry;
+            }
+            if (material != LookSide.Plant && KindOf(element) != EffectKind.Plain)
+            {
+                if (_reportedFallbacks.Add((element, material)))
+                    Debug.Log($"[EffectVocabulary] No {material} entry for {element} yet, drawing its Plant entry.");
+                return GetEntry(element);
+            }
             if (material != LookSide.Plant && cells != null)
             {
                 foreach (var pair in cells)
@@ -212,6 +264,61 @@ namespace HealerLike.Render.Spells
 
         [NonSerialized]
         readonly HashSet<(EffectKey, LookSide)> _reportedFallbacks = new HashSet<(EffectKey, LookSide)>();
+
+        // The element of a kind that has an entry for this cell in the caster's material or in Plant.
+        // Plain and a kind with no entry at all return false: the caller falls through to the cells
+        public bool TryGetKindElement(EffectOperation operation, EffectAspect aspect, EffectKind kind,
+                                      LookSide material, out EffectKey element)
+        {
+            element = KindKey(kind);
+            if (kind == EffectKind.Plain || kinds == null) return false;
+            return Has(new EffectKindCell(operation, aspect, kind, material))
+                || Has(new EffectKindCell(operation, aspect, kind, LookSide.Plant));
+        }
+
+        bool Has(EffectKindCell cell) { return kinds.TryGetValue(cell, out ElementEntry entry) && entry != null; }
+
+        bool TryGetKindEntry(EffectKey element, LookSide side, out ElementEntry entry)
+        {
+            entry = null;
+            EffectKind kind = KindOf(element);
+            if (kind == EffectKind.Plain || kinds == null) return false;
+            foreach (var pair in kinds)
+            {
+                if (pair.Key.kind != kind || pair.Key.side != side || pair.Value == null) continue;
+                entry = pair.Value;
+                return true;
+            }
+            return false;
+        }
+
+        public static EffectKey KindKey(EffectKind kind)
+        {
+            switch (kind)
+            {
+                case EffectKind.Projectile: return EffectKey.Dart;
+                case EffectKind.Volume: return EffectKey.Seeds;
+                case EffectKind.Rate: return EffectKey.Cadence;
+                case EffectKind.Conditional: return EffectKey.Brackets;
+                case EffectKind.Positional: return EffectKey.Footring;
+                case EffectKind.Flat: return EffectKey.Canopy;
+                default: return default(EffectKey);
+            }
+        }
+
+        public static EffectKind KindOf(EffectKey element)
+        {
+            switch (element)
+            {
+                case EffectKey.Dart: return EffectKind.Projectile;
+                case EffectKey.Seeds: return EffectKind.Volume;
+                case EffectKey.Cadence: return EffectKind.Rate;
+                case EffectKey.Brackets: return EffectKind.Conditional;
+                case EffectKey.Footring: return EffectKind.Positional;
+                case EffectKey.Canopy: return EffectKind.Flat;
+                default: return EffectKind.Plain;
+            }
+        }
 
         public bool TryGetElement(EffectOperation operation, EffectAspect aspect, out EffectKey element)
         {
