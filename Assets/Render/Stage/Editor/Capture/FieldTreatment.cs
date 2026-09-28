@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Stage
 {
@@ -81,27 +82,27 @@ namespace HealerLike.Render.Stage
             return tint;
         }
 
-        // The authored values a treatment replaces, restored exactly after the frame
+        // The authored material a treatment replaces, restored exactly after the frame: a colour set and read back
+        // through SetColor moves in its last bits, so the restore copies every property from an untouched copy
         public struct Snapshot
         {
-            public Color baseColor, shadeTint, shadeTurnTint;
-            public float hatch;
+            Material _authored;
+            public Color baseColor => _authored.GetColor(baseColorId);
+            public Color shadeTint => _authored.GetColor(shadeTintId);
+            public Color shadeTurnTint => _authored.GetColor(shadeTurnTintId);
+            public float hatch => _authored.GetFloat(hatchId);
 
             public static Snapshot Read(Material material)
             {
-                return new Snapshot
-                {
-                    baseColor = material.GetColor(baseColorId), shadeTint = material.GetColor(shadeTintId),
-                    shadeTurnTint = material.GetColor(shadeTurnTintId), hatch = material.GetFloat(hatchId)
-                };
+                return new Snapshot { _authored = new Material(material) };
             }
 
             public void Restore(Material material)
             {
-                material.SetColor(baseColorId, baseColor);
-                material.SetColor(shadeTintId, shadeTint);
-                material.SetColor(shadeTurnTintId, shadeTurnTint);
-                material.SetFloat(hatchId, hatch);
+                if (_authored == null) return;
+                material.CopyPropertiesFromMaterial(_authored);
+                Object.DestroyImmediate(_authored);
+                _authored = null;
             }
         }
     }

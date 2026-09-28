@@ -9,6 +9,8 @@ using HealerLike.Render.Grammar;
 using HealerLike.Render.Spells;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Stage
@@ -69,7 +71,12 @@ namespace HealerLike.Render.Stage
                 + "creature's anchors by the harness at 45% of its cycle, not a gameplay cast. Readability rows are the "
                 + "isolated grass lab. The floor under the blades is StageGround.mat and is not treated.";
             public string qualityLevel;
+            // QualitySettings.antiAliasing as the session reads it, and the MSAA of the pipeline asset the stage draws
+            // with, which is the one URP honours
             public int antiAliasing;
+            public string pipeline;
+            public int authoredMsaa;
+            public int capturedMsaa;
             public float bladeHeightScale;
             public float combinationStrength;
             public bool passed;
@@ -114,16 +121,21 @@ namespace HealerLike.Render.Stage
             _output = new StageInterfaceOutput(folder);
             _session = new StageCaptureSession(_manager, _output);
             Material blade = RenderAssets.Load<Material>(BladeMaterialPath);
-            int antiAliasing = QualitySettings.antiAliasing;
+            UniversalRenderPipelineAsset pipeline = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+            int msaa = pipeline ? pipeline.msaaSampleCount : 0;
             BattleFocus focus = null;
             bool focusEnabled = false;
             _sheet.combinationStrength = CombinationStrength;
             FieldTreatment[] treatments = FieldTreatment.Sheet(_sheet.combinationStrength);
             try
             {
-                QualitySettings.antiAliasing = 2;
                 _sheet.qualityLevel = QualitySettings.names[QualitySettings.GetQualityLevel()];
                 _sheet.antiAliasing = QualitySettings.antiAliasing;
+                _sheet.pipeline = pipeline ? pipeline.name : "none";
+                _sheet.authoredMsaa = msaa;
+                // Every treatment at 2x MSAA, set on the pipeline in memory and restored, never saved
+                if (pipeline) pipeline.msaaSampleCount = 2;
+                _sheet.capturedMsaa = pipeline ? pipeline.msaaSampleCount : 0;
                 _sheet.bladeHeightScale = _manager.grass.bladeHeightScale;
                 _session.AttachInput();
                 _manager.SetLandscape(false);
@@ -194,7 +206,12 @@ namespace HealerLike.Render.Stage
             }
             finally
             {
-                QualitySettings.antiAliasing = antiAliasing;
+                if (pipeline)
+                {
+                    pipeline.msaaSampleCount = msaa;
+                    EditorUtility.ClearDirty(pipeline);
+                }
+                EditorUtility.ClearDirty(blade);
                 if (focus) focus.enabled = focusEnabled;
                 _session.Dispose();
                 _output.Write(_sheet.passed);
@@ -253,7 +270,8 @@ namespace HealerLike.Render.Stage
         BattleTarget Measure(CreatureBuilder host, GameObject effectRoot, LookSide target, LookSide caster, string keep)
         {
             Camera camera = _manager.gameCamera;
-            Renderer[] effect = Visible(effectRoot), body = Visible(host.gameObject);
+            // The rig is assembled under its own root, not under the builder
+            Renderer[] effect = Visible(effectRoot), body = Visible(host.rig.root.gameObject);
             Texture2D full = StageReadback.Render(camera, Width, Height);
             Texture2D bare = null, field = null;
             try
@@ -276,7 +294,7 @@ namespace HealerLike.Render.Stage
                     Width, Height, RingPixels);
                 return new BattleTarget
                 {
-                    target = target.ToString(), entity = host.transform.root.name, burstMaterial = caster.ToString(),
+                    target = target.ToString(), entity = host.GetComponentInParent<Entity>().name, burstMaterial = caster.ToString(),
                     creaturePixels = shape.pixels, silhouetteSurvival = ReadabilityPixels.Survival(creature, a, b),
                     creatureLuma = shape.shapeLuma, creatureFieldLuma = shape.fieldLuma,
                     creatureLumaDifference = shape.lumaDifference, creatureRgbDistance = shape.rgbDistance,
