@@ -25,8 +25,29 @@ namespace HealerLike.Render.Stage
         }
 
         [Test]
-        public void ScenePath_NoTarget_LoadsMainAsAuthored()
+        public void ScenePath_NoTarget_BootsTheToolkitMenu()
         {
+            Assert.That(_launcher.scenePath, Is.EqualTo("Assets/Scenes/Toolkit/MenuToolkit.unity"));
+        }
+
+        // The launcher RenderStage boots is the one on the RenderManager prefab: it must not pin Main
+        [Test]
+        public void ScenePath_TheStagePrefabsLauncher_BootsTheToolkitMenu()
+        {
+            GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/Render/Stage/Prefabs/RenderManager.prefab");
+            Assert.That(prefab, Is.Not.Null);
+            StageLauncher launcher = prefab.GetComponent<StageLauncher>();
+            Assert.That(launcher, Is.Not.Null);
+
+            Assert.That(launcher.scenePath, Is.EqualTo(StageTarget.MenuPath));
+        }
+
+        [Test]
+        public void ScenePath_MainTarget_LoadsMain()
+        {
+            StageTarget.Select(StageTarget.MainPath);
+
             Assert.That(_launcher.scenePath, Is.EqualTo("Assets/Scenes/Main.unity"));
         }
 
@@ -47,12 +68,12 @@ namespace HealerLike.Render.Stage
         }
 
         [Test]
-        public void ScenePath_TargetResetAfterSandbox_LoadsMainAgain()
+        public void ScenePath_TargetResetAfterSandbox_BootsTheMenuAgain()
         {
             StageTarget.Select(StageTarget.SandboxPath);
             StageTarget.Reset();
 
-            Assert.That(_launcher.scenePath, Is.EqualTo(StageTarget.MainPath));
+            Assert.That(_launcher.scenePath, Is.EqualTo(StageTarget.MenuPath));
         }
     }
 }

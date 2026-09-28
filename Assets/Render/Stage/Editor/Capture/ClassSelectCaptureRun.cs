@@ -7,13 +7,15 @@ using UnityEngine.UIElements;
 namespace HealerLike.Render.Stage
 {
     // The menu's class choice under the render stage, at the portrait phone size: Main boots, its HUD takes the
-    // player to the Toolkit menu, Start opens the class screen (captured, then scrolled to its end), the Druid card
+    // player to the Toolkit menu (or, in the boot mode, the plain boot lands on the menu and it is captured), Start opens the class screen (captured, then scrolled to its end), the Druid card
     // is pressed, and the expedition that follows is started and its first room entered so the HUD shows the played
     // class's spells. It logs the pick, the character PlayerBehaviour plays and the spell cards, and does not judge
     // the look.
     public class ClassSelectCaptureRun : AStageRun
     {
         public static readonly string Mode = "class-select";
+        // The plain boot: nothing is selected, the stage opens the Toolkit menu first
+        public static readonly string BootMode = "menu-boot";
         public static readonly string DefaultPick = "Druid";
         public static readonly string PickVariable = "RENDER_CLASS_PICK";
 
@@ -29,8 +31,16 @@ namespace HealerLike.Render.Stage
         }
 
         readonly List<string> _problems = new List<string>();
+        readonly bool _fromBoot;
+
+        public ClassSelectCaptureRun(bool fromBoot = false)
+        {
+            _fromBoot = fromBoot;
+        }
 
         protected override bool shouldStartGame { get { return false; } }
+
+        protected override bool bootsIntoGame { get { return !_fromBoot; } }
 
         protected override IEnumerator Run()
         {
@@ -95,16 +105,45 @@ namespace HealerLike.Render.Stage
             found(host);
         }
 
-        IEnumerator ToMenu()
+        // What the stage looks like around the menu: one manager, the legacy menu silenced, the scenes loaded
+        void LogStage(string moment)
         {
-            ToolkitGameUI hud = Object.FindAnyObjectByType<ToolkitGameUI>();
-            if (hud == null || hud.sceneLoader == null)
+            List<string> scenes = new List<string>();
+            for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
             {
-                _problems.Add("Main has no Toolkit HUD with a scene loader.");
-                yield break;
+                scenes.Add(UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).path);
             }
 
-            hud.sceneLoader(hud.menuScene);
+            List<string> legacy = new List<string>();
+            foreach (MainMenu menu in Object.FindObjectsByType<MainMenu>(FindObjectsInactive.Include))
+            {
+                legacy.Add(menu.name + (menu.enabled ? " enabled" : " disabled"));
+            }
+
+            int managers = Object.FindObjectsByType<RenderManager>(FindObjectsInactive.Include).Length;
+            Debug.Log($"[ClassSelectCaptureRun] {moment}: RenderManagers {managers}, scenes [{string.Join(", ", scenes)}], "
+                + $"legacy MainMenu [{string.Join(", ", legacy)}], game {ActiveGamePath()}, "
+                + $"stage target {StageTarget.scenePath} selected {StageTarget.isSelected}");
+            if (managers != 1)
+            {
+                _problems.Add(moment + ": " + managers + " RenderManagers.");
+            }
+        }
+
+        IEnumerator ToMenu()
+        {
+            if (!_fromBoot)
+            {
+                ToolkitGameUI hud = Object.FindAnyObjectByType<ToolkitGameUI>();
+                if (hud == null || hud.sceneLoader == null)
+                {
+                    _problems.Add("Main has no Toolkit HUD with a scene loader.");
+                    yield break;
+                }
+
+                hud.sceneLoader(hud.menuScene);
+            }
+
             ToolkitGameUI menu = null;
             yield return WaitForHost(StageInterface.MenuPath, host => menu = host);
             if (menu == null)
@@ -113,6 +152,25 @@ namespace HealerLike.Render.Stage
             }
 
             yield return Wait(2f);
+            if (_fromBoot)
+            {
+                LogStage("Boot menu");
+                if (menu.sceneLoader == null)
+                {
+                    _problems.Add("The booted menu has no stage scene loader.");
+                }
+
+                foreach (MainMenu legacy in Object.FindObjectsByType<MainMenu>())
+                {
+                    if (legacy.enabled)
+                    {
+                        _problems.Add("The legacy MainMenu is still enabled on " + legacy.name + ".");
+                    }
+                }
+
+                yield return CaptureScreen("boot-01-menu");
+            }
+
             Debug.Log("[ClassSelectCaptureRun] Menu game data "
                 + (menu.gameData != null ? menu.gameData.name : "none") + ", offers "
                 + string.Join(", ", ToolkitClassSelect.Offered(menu.gameData).ConvertAll(c => c.title)));
@@ -199,6 +257,7 @@ namespace HealerLike.Render.Stage
             }
 
             Debug.Log("[ClassSelectCaptureRun] Main loaded after the pick: " + ActiveGamePath());
+            LogStage("After the pick");
         }
 
         IEnumerator PlayPick()

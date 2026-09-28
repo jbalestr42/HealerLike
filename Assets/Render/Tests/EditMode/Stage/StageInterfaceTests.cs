@@ -43,8 +43,25 @@ namespace HealerLike.Render.Stage
             string path = StageInterface.Route("Main");
 
             Assert.That(path, Is.EqualTo(StageTarget.MainPath));
-            Assert.That(StageTarget.isSelected, Is.False);
+            Assert.That(StageTarget.isSelected, Is.True);
             Assert.That(StageTarget.scenePath, Is.EqualTo(StageTarget.MainPath));
+        }
+
+        // A plain boot has nothing selected (the menu); Start there records Main, Sandbox records the sandbox
+        [Test]
+        public void Route_FromAMenuBoot_StartSelectsMainAndSandboxSelectsTheSandbox()
+        {
+            Assert.That(StageTarget.scenePath, Is.EqualTo(StageInterface.MenuPath));
+
+            Assert.That(StageInterface.Route("MenuToolkit"), Is.EqualTo(StageInterface.MenuPath));
+            Assert.That(StageTarget.isSelected, Is.False);
+
+            Assert.That(StageInterface.Route("Main"), Is.EqualTo(StageTarget.MainPath));
+            Assert.That(StageTarget.scenePath, Is.EqualTo(StageTarget.MainPath));
+
+            StageTarget.Reset();
+            Assert.That(StageInterface.Route("Sandbox"), Is.EqualTo(StageTarget.SandboxPath));
+            Assert.That(StageTarget.scenePath, Is.EqualTo(StageTarget.SandboxPath));
         }
 
         // The class screen records the pick before the Start route runs; the route resets the scene, not the class
@@ -60,7 +77,7 @@ namespace HealerLike.Render.Stage
                 string path = StageInterface.Route("Main");
 
                 Assert.That(path, Is.EqualTo(StageTarget.MainPath));
-                Assert.That(StageTarget.isSelected, Is.False);
+                Assert.That(StageTarget.scenePath, Is.EqualTo(StageTarget.MainPath));
                 Assert.That(CharacterSelection.selected, Is.SameAs(druid));
             }
             finally

@@ -111,6 +111,13 @@ namespace HealerLike.Render.Stage
             StagePlay.Enter(ClassSelectCaptureRun.Mode, 240f);
         }
 
+        // The plain boot: the Toolkit menu first, then Start, the class screen, the pick (RENDER_CLASS_PICK), its room
+        [MenuItem("Tools/Render/Capture Menu Boot")]
+        public static void MenuBoot()
+        {
+            StagePlay.Enter(ClassSelectCaptureRun.BootMode, 240f);
+        }
+
         [MenuItem("Tools/Render/Smoke Three Rounds")]
         public static void Smoke()
         {

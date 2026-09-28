@@ -6,12 +6,13 @@ using UnityEditor.SceneManagement;
 
 namespace HealerLike.Render.Stage
 {
-    // Loads the game scene next to the render stage, the RenderManager attaches to it once it is loaded
+    // Loads the boot scene next to the render stage, the RenderManager attaches to it once it is loaded
     public class StageLauncher : MonoBehaviour
     {
-        [SerializeField] string _scenePath = "Assets/Scenes/Main.unity";
+        // Empty boots StageTarget's default, the Toolkit menu; a path here is an authored override
+        [SerializeField] string _scenePath = "";
 
-        // The StageTarget when the menu selected one, the authored scene otherwise
+        // The StageTarget when one was selected, else the authored override, else the menu
         public string scenePath { get { return StageTarget.Resolve(_scenePath); } }
 
         void Start()
@@ -19,7 +20,7 @@ namespace HealerLike.Render.Stage
             string path = scenePath;
             LoadSceneParameters parameters = new LoadSceneParameters(LoadSceneMode.Additive);
 #if UNITY_EDITOR
-            // Main is not in the Build Settings, the editor loads it by path
+            // The game scenes are not in the Build Settings, the editor loads them by path
             EditorSceneManager.LoadSceneInPlayMode(path, parameters);
 #else
             SceneManager.LoadScene(path, parameters);

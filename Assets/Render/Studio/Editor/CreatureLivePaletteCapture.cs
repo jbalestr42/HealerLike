@@ -28,6 +28,16 @@ namespace HealerLike.Render.Studio.Editor
             Begin(true);
         }
 
+        // A plain boot opens the Toolkit menu; the palette run plays Main, so its session selects it up front
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void SelectBootTarget()
+        {
+            if (SessionState.GetBool(key, false))
+            {
+                StageTarget.Select(StageTarget.MainPath);
+            }
+        }
+
         static void Begin(bool shapes)
         {
             EditorSceneManager.OpenScene(StageSceneAuthoring.ScenePath);

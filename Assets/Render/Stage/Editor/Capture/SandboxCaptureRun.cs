@@ -15,7 +15,7 @@ namespace HealerLike.Render.Stage
     // allies, a wave button brings enemies, Start battle, Pause and Speed are pressed as a player would. Stills of
     // the Game view (with the uGUI overlay) and of the camera alone go to the capture folder, and the time scale
     // each press leaves is logged. It records what happened and does not judge the look.
-    // The boot run selects the sandbox before RenderStage starts; the menu run boots Main, goes to the Toolkit menu
+    // The boot run boots the sandbox (StagePlay.BootTarget selects it before RenderStage starts); the menu run boots Main, goes to the Toolkit menu
     // and presses its Sandbox entry. The back run boots the sandbox, pauses it, and leaves through the stage's Menu
     // button to the Toolkit menu, then presses Start there.
     public class SandboxCaptureRun : AStageRun
@@ -49,18 +49,6 @@ namespace HealerLike.Render.Stage
         }
 
         protected override bool shouldStartGame { get { return false; } }
-
-        // A play session starts with no target (StageTarget resets at SubsystemRegistration), so the boot run
-        // selects the sandbox after that reset and before StageLauncher.Start reads it
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        static void SelectBootTarget()
-        {
-            if (BootsSandbox(StagePlay.Mode))
-            {
-                StageTarget.Select(StageTarget.SandboxPath);
-                Debug.Log("[SandboxCaptureRun] Boot target selected: " + StageTarget.scenePath);
-            }
-        }
 
         protected override IEnumerator Run()
         {

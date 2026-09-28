@@ -13,8 +13,8 @@ namespace HealerLike.Render.Stage
     // RenderStage alone opts gameplay into the Toolkit HUD. The manager survives menu and expedition changes.
     public class StageInterface : MonoBehaviour
     {
-        public static readonly string GameplayPath = "Assets/Scenes/Main.unity";
-        public static readonly string MenuPath = "Assets/Scenes/Toolkit/MenuToolkit.unity";
+        public static readonly string GameplayPath = StageTarget.MainPath;
+        public static readonly string MenuPath = StageTarget.MenuPath;
         public static readonly string SandboxPath = StageTarget.SandboxPath;
         public static readonly string SandboxScene = "Sandbox";
         public static readonly string SandboxInputName = "Render Sandbox Input";
@@ -317,14 +317,14 @@ namespace HealerLike.Render.Stage
             return null;
         }
 
-        // The path a menu request loads. A gameplay choice is recorded in StageTarget: Start explicitly goes back to
+        // The path a menu request loads. A gameplay choice is recorded in StageTarget: Start explicitly selects
         // Main, so a visit to the sandbox never sticks; the menu itself leaves the choice as it is.
         public static string Route(string scene)
         {
             string path = ScenePath(scene);
             if (path == GameplayPath)
             {
-                StageTarget.Reset();
+                StageTarget.Select(GameplayPath);
             }
             else if (path == SandboxPath)
             {

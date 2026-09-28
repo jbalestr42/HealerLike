@@ -81,7 +81,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24f9988d628f04d2ab635c9a5a9f4e89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Stage.StageLauncher
-  _scenePath: Assets/Scenes/Main.unity
+  _scenePath: 
 --- !u!114 &6672015439819253328
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -289,7 +289,7 @@ namespace HealerLike.Render.Stage
 
             CollectionAssert.AreEqual(new[] { StageInterface.MenuScene }, _loads);
             Assert.That(StageInterface.Route(StageInterface.GameplayScene), Is.EqualTo(StageTarget.MainPath));
-            Assert.That(StageTarget.isSelected, Is.False, "Start after the sandbox must play Main.");
+            Assert.That(StageTarget.scenePath, Is.EqualTo(StageTarget.MainPath), "Start after the sandbox must play Main.");
         }
 
         // The whole round trip on the menu's own actions: sandbox, Menu, Start opens the class screen, the pick routes
@@ -303,7 +303,35 @@ namespace HealerLike.Render.Stage
             Time.timeScale = 0f;
             Assert.That(exit.Leave(), Is.True);
             Assert.That(Time.timeScale, Is.EqualTo(1f));
+            PlayTheMenu(new[] { StageInterface.MenuScene });
+        }
 
+        // The plain boot lands on the menu with nothing selected and nothing loaded yet: Start opens the class screen,
+        // the pick routes Main, Sandbox routes the sandbox, and the sandbox's Menu button comes back to the menu
+        [Test]
+        public void FromAMenuBoot_StartOpensTheClassScreenAndRoutesMain_SandboxAndItsMenuButtonWork()
+        {
+            GameObject launcherHost = new GameObject("Stage launcher");
+            _created.Add(launcherHost);
+            Assert.That(launcherHost.AddComponent<StageLauncher>().scenePath, Is.EqualTo(StageInterface.MenuPath),
+                "The plain boot must open the Toolkit menu.");
+
+            PlayTheMenu(new string[0]);
+
+            StageSandboxExit exit = CreateExit();
+            exit.Init(RouteLoad, StageInterface.MenuScene, null);
+            Assert.That(exit.Leave(), Is.True);
+            Assert.That(_loads[_loads.Count - 1], Is.EqualTo(StageInterface.MenuScene));
+            Assert.That(StageTarget.scenePath, Is.EqualTo(StageTarget.SandboxPath),
+                "The menu leaves the sandbox choice for Start to replace.");
+            Assert.That(StageInterface.Route(StageInterface.GameplayScene), Is.EqualTo(StageTarget.MainPath));
+            Assert.That(StageTarget.scenePath, Is.EqualTo(StageTarget.MainPath));
+        }
+
+        // The menu's own actions from wherever the player came: Start opens the class screen without loading, the
+        // Druid routes Main, and the Sandbox entry routes the sandbox
+        void PlayTheMenu(string[] loadsBefore)
+        {
             GameObject owner = new GameObject("Toolkit menu");
             _created.Add(owner);
             owner.SetActive(false);
@@ -343,7 +371,7 @@ namespace HealerLike.Render.Stage
                     ToolkitTestPanel.Submit(root.Q<Button>("start-button"));
                     Assert.That(root.Q(ToolkitClassSelect.PanelName).ClassListContains("is-hidden"), Is.False,
                         "Start after the sandbox must open the class screen.");
-                    CollectionAssert.AreEqual(new[] { StageInterface.MenuScene }, _loads);
+                    CollectionAssert.AreEqual(loadsBefore, _loads, "Start must wait for a class before loading.");
 
                     Button card = null;
                     foreach (Button candidate in root.Q(ToolkitClassSelect.ListName).Query<Button>("data-card").ToList())
@@ -356,8 +384,8 @@ namespace HealerLike.Render.Stage
 
                     Assert.That(card, Is.Not.Null);
                     ToolkitTestPanel.Submit(card);
-                    CollectionAssert.AreEqual(new[] { StageInterface.MenuScene, StageInterface.GameplayScene }, _loads);
-                    Assert.That(StageTarget.isSelected, Is.False);
+                    CollectionAssert.AreEqual(new List<string>(loadsBefore) { StageInterface.GameplayScene }, _loads);
+                    Assert.That(StageTarget.isSelected, Is.True);
                     Assert.That(StageTarget.scenePath, Is.EqualTo(StageTarget.MainPath));
                     Assert.That(CharacterSelection.selected, Is.SameAs(druid));
 

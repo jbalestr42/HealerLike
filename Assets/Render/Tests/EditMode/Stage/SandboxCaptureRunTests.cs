@@ -76,18 +76,27 @@ namespace HealerLike.Render.Stage
             Assert.That(SandboxCaptureRun.BootsSandbox(null), Is.False);
         }
 
-        // Outside a batchmode sandbox session the boot hook must leave the stage on its normal route
+        // Outside a batchmode session the boot hook must leave the stage on its plain boot, the Toolkit menu
         [Test]
-        public void BootHook_OutsideASandboxSession_LeavesTheTargetOnMain()
+        public void BootHook_OutsideACaptureSession_LeavesThePlainMenuBoot()
         {
-            Assume.That(SandboxCaptureRun.BootsSandbox(StagePlay.Mode), Is.False);
+            Assume.That(StagePlay.Mode, Is.EqualTo(""));
             StageTarget.Reset();
 
-            typeof(SandboxCaptureRun).GetMethod("SelectBootTarget", BindingFlags.NonPublic | BindingFlags.Static)
+            typeof(StagePlay).GetMethod("SelectBootTarget", BindingFlags.NonPublic | BindingFlags.Static)
                 .Invoke(null, null);
 
             Assert.That(StageTarget.isSelected, Is.False);
-            Assert.That(StageTarget.scenePath, Is.EqualTo(StageTarget.MainPath));
+            Assert.That(StageTarget.scenePath, Is.EqualTo(StageTarget.MenuPath));
+        }
+
+        [Test]
+        public void BootTarget_SandboxModes_BootTheSandbox_AndTheMenuModeBootsMain()
+        {
+            Assert.That(StagePlay.BootTarget(SandboxCaptureRun.BootMode), Is.EqualTo(StageTarget.SandboxPath));
+            Assert.That(StagePlay.BootTarget(SandboxCaptureRun.BackMode), Is.EqualTo(StageTarget.SandboxPath));
+            // The menu run reaches the sandbox from Main's HUD, as it always has
+            Assert.That(StagePlay.BootTarget(SandboxCaptureRun.MenuMode), Is.EqualTo(StageTarget.MainPath));
         }
     }
 }

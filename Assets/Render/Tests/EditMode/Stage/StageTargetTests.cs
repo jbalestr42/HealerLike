@@ -18,9 +18,26 @@ namespace HealerLike.Render.Stage
         }
 
         [Test]
-        public void Default_NothingSelected_TargetsMain()
+        public void Default_NothingSelected_BootsTheToolkitMenu()
         {
             Assert.That(StageTarget.isSelected, Is.False);
+            Assert.That(StageTarget.scenePath, Is.EqualTo("Assets/Scenes/Toolkit/MenuToolkit.unity"));
+        }
+
+        [Test]
+        public void BootPath_IsTheToolkitMenuTheStageAttaches()
+        {
+            Assert.That(StageTarget.BootPath, Is.EqualTo(StageTarget.MenuPath));
+            Assert.That(StageTarget.MenuPath, Is.EqualTo(StageInterface.MenuPath));
+            Assert.That(StageTarget.BootPath, Is.Not.EqualTo(StageTarget.MainPath));
+        }
+
+        [Test]
+        public void Select_Main_TargetsMain()
+        {
+            StageTarget.Select(StageTarget.MainPath);
+
+            Assert.That(StageTarget.isSelected, Is.True);
             Assert.That(StageTarget.scenePath, Is.EqualTo("Assets/Scenes/Main.unity"));
         }
 
@@ -34,14 +51,14 @@ namespace HealerLike.Render.Stage
         }
 
         [Test]
-        public void Reset_AfterSandbox_TargetsMainAgain()
+        public void Reset_AfterSandbox_BootsTheMenuAgain()
         {
             StageTarget.Select(StageTarget.SandboxPath);
 
             StageTarget.Reset();
 
             Assert.That(StageTarget.isSelected, Is.False);
-            Assert.That(StageTarget.scenePath, Is.EqualTo(StageTarget.MainPath));
+            Assert.That(StageTarget.scenePath, Is.EqualTo(StageTarget.MenuPath));
         }
 
         [TestCase(null)]
@@ -62,9 +79,17 @@ namespace HealerLike.Render.Stage
 
         [TestCase(null)]
         [TestCase("")]
-        public void Resolve_NothingSelectedOrAuthored_FallsBackToMain(string authored)
+        public void Resolve_NothingSelectedOrAuthored_FallsBackToTheMenu(string authored)
         {
-            Assert.That(StageTarget.Resolve(authored), Is.EqualTo(StageTarget.MainPath));
+            Assert.That(StageTarget.Resolve(authored), Is.EqualTo(StageTarget.MenuPath));
+        }
+
+        [Test]
+        public void Resolve_MainSelected_OverridesAnEmptyAuthoredScene()
+        {
+            StageTarget.Select(StageTarget.MainPath);
+
+            Assert.That(StageTarget.Resolve(""), Is.EqualTo(StageTarget.MainPath));
         }
 
         [Test]

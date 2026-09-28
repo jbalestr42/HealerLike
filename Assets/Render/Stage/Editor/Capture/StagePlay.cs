@@ -48,6 +48,45 @@ namespace HealerLike.Render.Stage
             return revision != null ? revision : "unspecified";
         }
 
+        // The scene a mode's session boots beside the stage. A plain boot opens the Toolkit menu, so every run that
+        // plays Main from the start asks for it; the sandbox runs boot the sandbox, and the menu boot run keeps the
+        // plain boot (null: nothing selected).
+        public static string BootTarget(string mode)
+        {
+            if (SandboxCaptureRun.BootsSandbox(mode))
+            {
+                return StageTarget.SandboxPath;
+            }
+
+            if (mode == ClassSelectCaptureRun.BootMode)
+            {
+                return null;
+            }
+
+            return StageTarget.MainPath;
+        }
+
+        // A play session starts with no target (StageTarget resets at SubsystemRegistration), so a batchmode session
+        // selects its boot scene after that reset and before StageLauncher.Start reads it
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void SelectBootTarget()
+        {
+            string mode = Mode;
+            if (mode == "")
+            {
+                return;
+            }
+
+            string path = BootTarget(mode);
+            if (path != null)
+            {
+                StageTarget.Select(path);
+            }
+
+            Debug.Log("[StagePlay] Mode " + mode + " boots " + StageTarget.scenePath
+                + (StageTarget.isSelected ? "" : " (plain boot)"));
+        }
+
         static StagePlay()
         {
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
@@ -97,6 +136,7 @@ namespace HealerLike.Render.Stage
             if (mode == SandboxCaptureRun.MenuMode) return new SandboxCaptureRun(true);
             if (mode == SandboxCaptureRun.BackMode) return new SandboxCaptureRun(false, true);
             if (mode == ClassSelectCaptureRun.Mode) return new ClassSelectCaptureRun();
+            if (mode == ClassSelectCaptureRun.BootMode) return new ClassSelectCaptureRun(true);
 
             if (mode == "expedition-map")
             {

@@ -160,9 +160,22 @@ namespace HealerLike.Render.Stage
 
         IEnumerator Start()
         {
-            // The launcher loads Main, the manager attaches on sceneLoaded
+            // The launcher loads the session's boot scene, the manager attaches on sceneLoaded
             float deadline = Time.realtimeSinceStartup + 30f;
-            while (_hud == null || _manager == null || _manager.entityManager == null)
+            while (!bootsIntoGame && _manager == null)
+            {
+                if (Time.realtimeSinceStartup > deadline)
+                {
+                    Debug.LogError("[AStageRun] The render manager never came up.");
+                    StagePlay.Finish(this, false);
+                    yield break;
+                }
+
+                _manager = Object.FindAnyObjectByType<RenderManager>();
+                yield return null;
+            }
+
+            while (bootsIntoGame && (_hud == null || _manager == null || _manager.entityManager == null))
             {
                 if (Time.realtimeSinceStartup > deadline)
                 {
@@ -190,6 +203,9 @@ namespace HealerLike.Render.Stage
         }
 
         protected virtual bool shouldStartGame { get { return true; } }
+
+        // False for a run whose session boots the Toolkit menu: it waits for the manager only, not for Main
+        protected virtual bool bootsIntoGame { get { return true; } }
 
         protected abstract IEnumerator Run();
 
