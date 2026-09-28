@@ -136,7 +136,7 @@ namespace HealerLike.Render.Spells.Editor
         // Never a sphere, a bead chain or a smooth curve, and never a colour of its own: roles only.
         public static ShapeProfile Slab(float fracture = .45f)
         {
-            return ShapeProfile.Block(.08f, .12f, .18f, fracture, .15f);
+            return ShapeProfile.Block(.08f, .12f, .12f, fracture, .15f);
         }
 
         public static LookPart FacetedRing(string id, float diameter, float height, float tube = .08f,
