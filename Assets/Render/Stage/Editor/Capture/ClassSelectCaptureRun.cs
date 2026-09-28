@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UIElements;
+using HealerLike.Render.Creatures;
 
 namespace HealerLike.Render.Stage
 {
@@ -296,7 +297,141 @@ namespace HealerLike.Render.Stage
                 + string.Join(", ", Titles(actions.root.Q("spell-list"))));
             Debug.Log("[ClassSelectCaptureRun] HUD party cards: "
                 + string.Join(", ", Titles(actions.root.Q("party-list"))));
+            LogHealer("Run start");
             yield return CaptureScreen("class-03-" + Pick.ToLowerInvariant() + "-run");
+            yield return Battle(actions, player, played);
+        }
+
+        // A few of the class's own units on the lower board, the battle started from the HUD, then the first spell
+        // cast on an ally, each captured with where the healer stands and what it draws
+        IEnumerator Battle(StageInterfaceActions actions, PlayerBehaviour player, CharacterData played)
+        {
+            if (player == null || played == null || played.entities.Count == 0 || _manager.entityManager == null)
+            {
+                _problems.Add("No played class to take into battle.");
+                yield break;
+            }
+
+            Vector3[] offsets = { new Vector3(-2f, 0f, -2f), new Vector3(0f, 0f, -3f), new Vector3(2f, 0f, -2f) };
+            for (int i = 0; i < offsets.Length; i++)
+            {
+                Vector3 point = player.grid.GetNearestWalkablePosition(offsets[i]);
+                _manager.entityManager.SpawnEntity(played.entities[i % played.entities.Count], point,
+                    Entity.EntityType.Player);
+            }
+
+            yield return Wait(0.5f);
+            actions.Submit("wave-button");
+            yield return Wait(3f);
+            LogHealer("Battle");
+            yield return CaptureScreen("class-04-" + Pick.ToLowerInvariant() + "-battle");
+            List<Button> spells = actions.Cards("spell-list").FindAll(card => card.enabledInHierarchy);
+            GameObject ally = _manager.entityManager.GetEntities(Entity.EntityType.Player).Find(go => go != null);
+            if (spells.Count > 0 && ally != null)
+            {
+                // A frame sequence around arming the targeted spell and casting it on an ally, with the camera logged
+                string prefix = "class-06-" + Pick.ToLowerInvariant() + "-target-";
+                int frame = 0;
+                LogCamera(prefix + frame, actions);
+                yield return CaptureScreen(prefix + (frame++).ToString("00"));
+                actions.Submit(spells[0]);
+                for (int i = 0; i < 4; i++)
+                {
+                    yield return Wait(0.12f);
+                    LogCamera(prefix + frame + " armed", actions);
+                    yield return CaptureScreen(prefix + (frame++).ToString("00"));
+                }
+
+                Vector3 screen = _manager.gameCamera.WorldToScreenPoint(ally.transform.position + Vector3.up * 0.5f);
+                actions.WorldTap(screen);
+                for (int i = 0; i < 5; i++)
+                {
+                    yield return Wait(0.12f);
+                    LogCamera(prefix + frame + " cast", actions);
+                    yield return CaptureScreen(prefix + (frame++).ToString("00"));
+                }
+            }
+
+            LogHealer("Cast");
+            yield return CaptureScreen("class-05-" + Pick.ToLowerInvariant() + "-cast");
+        }
+
+        void LogCamera(string moment, StageInterfaceActions actions)
+        {
+            Camera camera = _manager.gameCamera;
+            InteractionManager interaction = Object.FindAnyObjectByType<InteractionManager>();
+            AInteraction armed = interaction != null ? interaction.GetInteraction() : null;
+            Debug.Log($"[ClassSelectCaptureRun] Camera {moment}: position {camera.transform.position:F3} euler "
+                + $"{camera.transform.eulerAngles:F2} fov {camera.fieldOfView:F2}, world viewport "
+                + $"{actions.ui.normalizedWorldViewport}, interaction {(armed != null ? armed.GetType().Name : "none")}");
+        }
+
+        // Where the character is, against the board and the screen, and every renderer that would draw pink
+        void LogHealer(string moment)
+        {
+            PlayerBehaviour player = Object.FindAnyObjectByType<PlayerBehaviour>();
+            Character character = player != null ? player.character : null;
+            if (character == null)
+            {
+                Debug.Log("[ClassSelectCaptureRun] " + moment + ": no character");
+                return;
+            }
+
+            Camera camera = _manager.gameCamera;
+            Vector3 position = character.transform.position;
+            Vector3 viewport = camera != null ? camera.WorldToViewportPoint(position) : Vector3.zero;
+            string board = "none";
+            if (player.grid != null && player.grid.cells != null && player.grid.cells.Length > 0)
+            {
+                float minZ = float.MaxValue;
+                float maxZ = float.MinValue;
+                foreach (GridCell cell in player.grid.cells)
+                {
+                    minZ = Mathf.Min(minZ, cell.center.z);
+                    maxZ = Mathf.Max(maxZ, cell.center.z);
+                }
+
+                board = "cell z " + minZ + ".." + maxZ;
+            }
+
+            CharacterView view = character.GetComponentInChildren<CharacterView>();
+            string cast = "no view";
+            if (view != null)
+            {
+                cast = view.TryGetCastPoint(out Vector3 point)
+                    ? "cast point " + point + " viewport " + (camera ? camera.WorldToViewportPoint(point) : Vector3.zero)
+                    : "no screen cast point";
+                cast += ", showBody " + view.showBody + ", view at " + view.transform.position;
+            }
+
+            Debug.Log($"[ClassSelectCaptureRun] {moment}: {character.data.title} at {position} viewport {viewport}, "
+                + $"board {board}, {cast}");
+            foreach (Renderer renderer in Object.FindObjectsByType<Renderer>())
+            {
+                if (!renderer.enabled || !renderer.gameObject.activeInHierarchy)
+                {
+                    continue;
+                }
+
+                bool near = Vector3.Distance(renderer.bounds.center, position) < 1.5f;
+                foreach (Material material in renderer.sharedMaterials)
+                {
+                    bool broken = material == null || material.shader == null || !material.shader.isSupported
+                        || material.shader.name == "Hidden/InternalErrorShader";
+                    if (broken || near)
+                    {
+                        Debug.Log($"[ClassSelectCaptureRun] {moment} renderer {TransformPath(renderer.transform)}"
+                            + $" {(broken ? "BROKEN" : "near")} material "
+                            + (material != null ? material.name + " shader " + (material.shader ? material.shader.name : "null") : "null")
+                            + " at " + renderer.bounds.center);
+                    }
+                }
+            }
+        }
+
+        static string TransformPath(Transform transform)
+        {
+            return transform.parent == null ? transform.name : TransformPath(transform.parent) + "/" + transform.name;
         }
 
         // The Game view as the player sees it, the Toolkit overlay included
