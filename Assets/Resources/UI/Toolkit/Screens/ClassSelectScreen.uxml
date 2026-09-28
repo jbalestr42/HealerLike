@@ -1,9 +1,9 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
     <ui:Template name="DialogFrame" src="../Controls/DialogFrame.uxml" />
-    <ui:Instance template="DialogFrame" class="dialog dialog--wide surface">
+    <ui:Instance template="DialogFrame" class="dialog dialog--wide surface class-dialog">
         <ui:Label text="BEFORE THE JOURNEY" class="eyebrow" />
         <ui:Label name="class-title" text="Choose your healer" class="dialog-title" />
-        <ui:Label text="Each class brings its own spells, starting items and companions." class="muted dialog-description" />
+        <ui:Label text="Each class brings its own spells, items and companions." class="muted dialog-description" />
         <ui:ScrollView name="class-list" class="collection-list choice-list class-list" horizontal-scroller-visibility="Hidden" />
         <ui:VisualElement name="class-actions" class="class-actions">
             <ui:Button name="class-back-button" text="Back to menu" class="button" />

@@ -52,6 +52,8 @@ public static class ToolkitLayoutContract
             && ToolkitTemplates.Require(root, "mark-entity-toggle", out Toggle _)
             && ToolkitTemplates.Require(root, "menu-button", out Button _)
             && ToolkitTemplates.Require(root, "menu-panel", out VisualElement _)
+            && ToolkitTemplates.Require(root, "menu-title", out Label _)
+            && ToolkitTemplates.Require(root, "menu-tagline", out Label _)
             && ToolkitTemplates.Require(root, "party-list", out ScrollView _)
             && ToolkitTemplates.Require(root, "party-panel", out VisualElement _)
             && ToolkitTemplates.Require(root, "pause-button", out Button _)

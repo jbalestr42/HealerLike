@@ -15,12 +15,12 @@ namespace HealerLike.Render.Stage
         public EnvironmentGust gust { get { return _root != null ? _root.gust : null; } }
         public EnvironmentForeground foreground { get { return _root != null ? _root.foreground : null; } }
 
-        public void Init(EnvironmentRoot prefab, RenderManager manager, Rect board)
+        public void Init(EnvironmentRoot prefab, RenderManager manager, Rect board, float cellSize)
         {
             Clear();
             _root = Object.Instantiate(prefab, manager.transform);
             LookSettings settings = manager.look.settings;
-            _root.Init(manager.meshes, manager.gameCamera, board, manager.player.grid.size, manager.board.max.y,
+            _root.Init(manager.meshes, manager.gameCamera, board, cellSize, manager.board.max.y,
                 manager.zones, settings.fogStart, settings.fogEnd);
             Frame(manager.gameCamera, manager.board, true);
         }

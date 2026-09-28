@@ -38,6 +38,8 @@ namespace HealerLike.Render.Stage
         StageCreaturePlacement _placement;
         public StageCreaturePlacement placement { get { return _placement; } }
         readonly StageEnvironment _environment = new StageEnvironment();
+        readonly StageBackdrop _backdrop = new StageBackdrop();
+        public StageBackdrop backdrop { get { return _backdrop; } }
         public EnvironmentRoot environment { get { return _environment.root; } }
         SpawnDressing _spawns = new SpawnDressing();
         int _deliveryToken;
@@ -120,13 +122,7 @@ namespace HealerLike.Render.Stage
             _dressing.Frame(_gameCamera, _isLandscape);
 
             // Init chain
-            _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board,
-                _gameCamera.transform.eulerAngles.y));
-            _zones.Init();
-            _ground.Init(gameObject, _groundVocabulary, _gameCamera, _board.max.y, player.grid.size);
-            Rect boardRect = new Rect(_board.min.x, _board.min.z, _board.size.x, _board.size.z);
-            _grass.Init(boardRect, player.grid.size, _board.max.y, _gameCamera, _zones.buffer, ZonePacker.MaxZones);
-            _environment.Init(_environmentPrefab, this, boardRect);
+            InitWorld(player.grid.size);
             _spellSink.Init(this);
             _battleFocus.Init(this);
             _rangeDriver.Init(_gameCamera);
@@ -143,10 +139,55 @@ namespace HealerLike.Render.Stage
             Debug.Log($"[RenderManager] Attached to {_scene.name}");
         }
 
+        // The world every attachment shares, around the framed camera and the board: fog, zones, the grass and
+        // its ground, the environment ring
+        void InitWorld(float cellSize)
+        {
+            _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board,
+                _gameCamera.transform.eulerAngles.y));
+            _zones.Init();
+            _ground.Init(gameObject, _groundVocabulary, _gameCamera, _board.max.y, cellSize);
+            Rect boardRect = new Rect(_board.min.x, _board.min.z, _board.size.x, _board.size.z);
+            _grass.Init(boardRect, cellSize, _board.max.y, _gameCamera, _zones.buffer, ZonePacker.MaxZones);
+            _environment.Init(_environmentPrefab, this, boardRect, cellSize);
+        }
+
+        // The menu's living backdrop: the battle meadow with no game in it, framed as a calm establishing shot, and
+        // a few grammar creatures idling on the grass. Everything it spawns lives in the menu scene and goes when
+        // that scene unloads; the grass and the environment are the manager's own and are released with Detach.
+        public bool AttachBackdrop(Scene scene)
+        {
+            Detach();
+            _gameCamera = _dressing.AdoptCamera(scene);
+            if (_gameCamera == null)
+            {
+                return false;
+            }
+
+            _scene = scene;
+            _dressing.SwapPipeline();
+            _dressing.SetLighting(scene, _keyLight.keyLight);
+            _board = StageBackdrop.Board;
+            Pose pose = StageBackdrop.RestPose(_board);
+            _gameCamera.transform.SetPositionAndRotation(pose.position, pose.rotation);
+            InitWorld(StageCalibration.CellSize);
+            _keyLight.Init();
+            ToolkitGameUI menu = StageSceneObjects.Find<ToolkitGameUI>(scene);
+            _backdrop.Init(scene, _creatureLooks, _meshes, _gameCamera, _board, StageCalibration.CellSize,
+                StageBackdrop.Signatures(menu != null ? menu.gameData : null));
+            Debug.Log($"[RenderManager] Backdrop on {scene.name}, {_backdrop.creatureCount} creatures");
+            return true;
+        }
+
         void LateUpdate()
         {
             if (_entityManager == null)
             {
+                if (_backdrop.isAttached)
+                {
+                    TickBackdrop(Time.deltaTime, Time.time);
+                }
+
                 return;
             }
 
@@ -161,6 +202,16 @@ namespace HealerLike.Render.Stage
             {
                 _placement.Tick();
             }
+        }
+
+        // The backdrop's frame: the world moves as in a battle, with no spells, focus or placement to drive
+        void TickBackdrop(float deltaTime, float time)
+        {
+            _zones.PublishFrame(deltaTime);
+            ground.Advance(deltaTime);
+            _grass.UpdateField(_zones, ground);
+            _environment.Tick(_zones);
+            _backdrop.Tick(time, deltaTime);
         }
 
         // One counter for every projectile, so a token never names two deliveries on one rig
@@ -194,7 +245,8 @@ namespace HealerLike.Render.Stage
         public void SetLandscape(bool isLandscape)
         {
             _isLandscape = isLandscape;
-            if (_gameCamera == null)
+            // The menu backdrop keeps its establishing shot and fog; only a game board is framed by orientation
+            if (_gameCamera == null || _entityManager == null)
             {
                 return;
             }
@@ -208,7 +260,7 @@ namespace HealerLike.Render.Stage
 
         public void FrameViewport(Rect viewport, float aspect)
         {
-            if (_gameCamera == null || aspect <= 0f)
+            if (_gameCamera == null || _entityManager == null || aspect <= 0f)
             {
                 return;
             }
@@ -229,6 +281,11 @@ namespace HealerLike.Render.Stage
             EntityManager entityManager = StageSceneObjects.Find<EntityManager>(scene);
             if (entityManager == null)
             {
+                if (StageBackdrop.Hosts(scene.path))
+                {
+                    AttachBackdrop(scene);
+                }
+
                 return;
             }
 
@@ -258,6 +315,7 @@ namespace HealerLike.Render.Stage
 
         void Detach()
         {
+            _backdrop.Clear();
             _spawns.Clear();
             _ground.Clear();
             if (_placement != null)

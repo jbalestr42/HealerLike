@@ -52,32 +52,95 @@ public class ToolkitClassSelect
         return offered;
     }
 
-    // The card text: Julien's select card content (description, skills, starting items, deployable units)
+    // The whole card text as plain lines: Julien's select card content (description, skills, starting items,
+    // deployable units)
     public static string Describe(CharacterData character)
     {
         List<string> lines = new List<string>();
-        string description = CharacterCardText.GetDescription(character);
-        if (!string.IsNullOrEmpty(description))
+        string role = Role(character);
+        if (!string.IsNullOrEmpty(role))
         {
-            lines.Add(description);
+            lines.Add(role);
         }
 
+        string details = Details(character);
+        if (!string.IsNullOrEmpty(details))
+        {
+            lines.Add(details);
+        }
+
+        return string.Join("\n", lines);
+    }
+
+    // The card's lead line under the class name: what the class plays like, Julien's description
+    public static string Role(CharacterData character)
+    {
+        return CharacterCardText.GetDescription(character);
+    }
+
+    // The kit in the card's lighter block, one line each: skills, starting items with their effect, units
+    public static string Details(CharacterData character)
+    {
+        List<string> lines = new List<string>();
         string skills = Inline(CharacterCardText.GetSkills(character));
         if (!string.IsNullOrEmpty(skills))
         {
             lines.Add("Skills: " + skills);
         }
 
-        string items = CharacterCardText.GetItems(character);
-        if (!string.IsNullOrEmpty(items))
+        List<string> items = new List<string>();
+        if (character.items != null)
         {
-            lines.Add("Starts with:\n" + items);
+            foreach (AItemFactory item in character.items)
+            {
+                if (item != null)
+                {
+                    string effect = item.GetItem().description;
+                    items.Add(string.IsNullOrEmpty(effect) ? item.title : item.title + " (" + effect + ")");
+                }
+            }
+        }
+
+        if (items.Count > 0)
+        {
+            lines.Add("Starts with: " + string.Join(", ", items));
         }
 
         string units = CharacterCardText.GetUnits(character);
         if (!string.IsNullOrEmpty(units))
         {
             lines.Add("Units: " + units);
+        }
+
+        return string.Join("\n", lines);
+    }
+
+    // The kit's line labels, which the card tints so each line starts where the eye can find it
+    public static readonly string[] DetailKeys = { "Skills:", "Starts with:", "Units:" };
+    public static readonly string DetailKeyColor = "#BDDA9C";
+
+    // The card's rich text of Details: each line's label in the theme's accent green
+    public static string MarkDetails(string details)
+    {
+        if (string.IsNullOrEmpty(details))
+        {
+            return details;
+        }
+
+        List<string> lines = new List<string>();
+        foreach (string line in details.Split('\n'))
+        {
+            string marked = line;
+            foreach (string key in DetailKeys)
+            {
+                if (line.StartsWith(key, StringComparison.Ordinal))
+                {
+                    marked = "<color=" + DetailKeyColor + ">" + key + "</color>" + line.Substring(key.Length);
+                    break;
+                }
+            }
+
+            lines.Add(marked);
         }
 
         return string.Join("\n", lines);
@@ -157,7 +220,8 @@ public class ToolkitClassSelect
                 source = character,
                 iconSource = character,
                 title = character.title,
-                description = Describe(character),
+                description = Role(character),
+                details = MarkDetails(Details(character)),
                 status = "Choose " + character.title,
                 activate = OnCardActivated
             });

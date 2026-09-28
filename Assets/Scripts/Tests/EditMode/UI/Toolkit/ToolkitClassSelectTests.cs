@@ -211,6 +211,78 @@ namespace UI.Toolkit
             Assert.Greater(druid.entities.Count, 0);
         }
 
+        // The card reads name, one role line, then the kit apart: the role is Julien's description and nothing else
+        [Test]
+        public void Role_Druid_IsItsDescriptionAlone()
+        {
+            CharacterData druid = AssetDatabase.LoadAssetAtPath<CharacterData>(DruidPath);
+
+            Assert.AreEqual(druid.text, ToolkitClassSelect.Role(druid));
+        }
+
+        [Test]
+        public void Details_Druid_GivesSkillsStartingItemsAndUnitsOneLineEach()
+        {
+            CharacterData druid = AssetDatabase.LoadAssetAtPath<CharacterData>(DruidPath);
+
+            string[] lines = ToolkitClassSelect.Details(druid).Split('\n');
+
+            Assert.AreEqual(3, lines.Length, string.Join(" | ", lines));
+            StringAssert.StartsWith("Skills: ", lines[0]);
+            foreach (ACharacterSkillFactory skill in druid.skills)
+            {
+                StringAssert.Contains(skill.Create().GetData().name, lines[0]);
+            }
+
+            StringAssert.DoesNotContain("- ", lines[0], "Julien's list markers are not carried onto the one line.");
+            StringAssert.StartsWith("Starts with: ", lines[1]);
+            foreach (AItemFactory item in druid.items)
+            {
+                StringAssert.Contains(item.title + " (" + item.GetItem().description + ")", lines[1]);
+            }
+
+            Assert.AreEqual("Units: " + CharacterCardText.GetUnits(druid), lines[2]);
+            StringAssert.DoesNotContain(druid.text, ToolkitClassSelect.Details(druid), "The role is not repeated.");
+        }
+
+        [Test]
+        public void Details_NoSkillsItemsOrUnits_IsEmpty()
+        {
+            Assert.AreEqual("", ToolkitClassSelect.Details(Character("Plain")));
+        }
+
+        [Test]
+        public void MarkDetails_KitLines_TintsEachLineLabelOnly()
+        {
+            string marked = ToolkitClassSelect.MarkDetails("Skills: Heal, Shield\nStarts with: Tome (Units: 2)\nUnits: Normal");
+
+            string open = "<color=" + ToolkitClassSelect.DetailKeyColor + ">";
+            Assert.AreEqual(open + "Skills:</color> Heal, Shield\n" + open + "Starts with:</color> Tome (Units: 2)\n"
+                + open + "Units:</color> Normal", marked);
+        }
+
+        [Test]
+        public void MarkDetails_Empty_StaysEmpty()
+        {
+            Assert.AreEqual("", ToolkitClassSelect.MarkDetails(""));
+            Assert.IsNull(ToolkitClassSelect.MarkDetails(null));
+        }
+
+        [Test]
+        public void BuildModels_ClassCard_LeadsWithTheRoleAndKeepsTheKitApart()
+        {
+            CharacterData druid = AssetDatabase.LoadAssetAtPath<CharacterData>(DruidPath);
+            _data.characters = new List<CharacterData> { druid };
+            _select.Open(_data);
+
+            List<ToolkitCardModel> models = _select.BuildModels();
+
+            Assert.AreEqual(druid.title, models[0].title);
+            Assert.AreEqual(druid.text, models[0].description);
+            Assert.AreEqual(ToolkitClassSelect.MarkDetails(ToolkitClassSelect.Details(druid)), models[0].details);
+            Assert.IsTrue(string.IsNullOrEmpty(models[1].details), "The Random card has no kit.");
+        }
+
         [Test]
         public void Describe_NoSkillsItemsOrUnits_IsTheDescriptionAlone()
         {
