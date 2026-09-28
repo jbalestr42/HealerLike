@@ -23,6 +23,7 @@ namespace HealerLike.Render.Stage
         RenderManager _manager;
         BattleFocus _focus;
         ToolkitGameUI _ui;
+        InteractionManager _interaction;
         Rect _viewport;
         float _aspect;
         Camera _camera;
@@ -87,6 +88,7 @@ namespace HealerLike.Render.Stage
 
             ReleasePortraits();
             _uiScene = scene;
+            _interaction = path == GameplayPath ? StageSceneObjects.Find<InteractionManager>(scene) : null;
 #if UNITY_ANDROID && !UNITY_EDITOR
             StageLegacyInput.Configure(scene);
 #endif
@@ -277,7 +279,8 @@ namespace HealerLike.Render.Stage
 
             Camera camera = _manager.gameCamera;
             float aspect = (float)camera.pixelWidth / Mathf.Max(1, camera.pixelHeight);
-            Rect viewport = _ui.normalizedWorldViewport;
+            bool isAiming = _interaction != null && _interaction.GetInteraction() != null;
+            Rect viewport = FramedViewport(_viewport, _ui.normalizedWorldViewport, isAiming, _camera == camera);
             if (viewport.width > 0.1f && viewport.height > 0.1f && (_camera != camera || _viewport != viewport
                 || !Mathf.Approximately(_aspect, aspect)))
             {
@@ -295,6 +298,16 @@ namespace HealerLike.Render.Stage
             }
 
             _ui.SetBattleFocus(_focus.isFocused, _focus.Toggle);
+        }
+
+        // The world viewport the camera is framed to. Arming a targeted spell or a placement shows the HUD's Cancel
+        // row, which takes a strip of screen from the world only while the aim lasts; reframing on it snapped the
+        // camera out to the overview and eased it back in, on the aim and again on the cast. While an interaction is
+        // armed the framed viewport holds, so aiming never moves the camera; with nothing framed yet the measured one
+        // is taken.
+        public static Rect FramedViewport(Rect framed, Rect measured, bool isAiming, bool hasFramed)
+        {
+            return isAiming && hasFramed && framed.width > 0.1f && framed.height > 0.1f ? framed : measured;
         }
 
         public static string ScenePath(string scene)

@@ -141,5 +141,50 @@ namespace HealerLike.Render.Stage
             Assert.That(StageInterface.AttachSandboxInput(scene), Is.Null);
             Assert.That(Object.FindAnyObjectByType<StageTouchInput>(), Is.Null);
         }
+
+        // The battle HUD's world viewport, and the same viewport while a targeted spell's Cancel row is shown
+        static readonly Rect battleViewport = new Rect(0.02f, 0.33f, 0.96f, 0.59f);
+        static readonly Rect aimingViewport = new Rect(0.02f, 0.40f, 0.96f, 0.52f);
+
+        // Arming a targeted heal must not reframe the camera: the framed viewport holds while the aim lasts
+        [Test]
+        public void FramedViewport_WhileAiming_KeepsTheFramedViewport()
+        {
+            Rect viewport = StageInterface.FramedViewport(battleViewport, aimingViewport, true, true);
+
+            Assert.That(viewport, Is.EqualTo(battleViewport));
+        }
+
+        // Once the spell is cast or cancelled the camera follows the HUD again
+        [Test]
+        public void FramedViewport_NotAiming_TakesTheMeasuredViewport()
+        {
+            Rect viewport = StageInterface.FramedViewport(aimingViewport, battleViewport, false, true);
+
+            Assert.That(viewport, Is.EqualTo(battleViewport));
+        }
+
+        // Aim then cast lands on the viewport the battle was framed to, so the pair leaves the camera where it was
+        [Test]
+        public void FramedViewport_AimThenCast_EndsOnTheBattleViewport()
+        {
+            Rect aimed = StageInterface.FramedViewport(battleViewport, aimingViewport, true, true);
+            Rect cast = StageInterface.FramedViewport(aimed, battleViewport, false, true);
+
+            Assert.That(aimed, Is.EqualTo(battleViewport));
+            Assert.That(cast, Is.EqualTo(battleViewport));
+        }
+
+        // Nothing framed yet (first frame, or a new camera): an armed interaction cannot hold an empty viewport
+        [TestCase(false)]
+        [TestCase(true)]
+        public void FramedViewport_AimingWithNothingFramed_TakesTheMeasuredViewport(bool hasFramed)
+        {
+            Rect framed = hasFramed ? Rect.zero : battleViewport;
+
+            Rect viewport = StageInterface.FramedViewport(framed, aimingViewport, true, hasFramed);
+
+            Assert.That(viewport, Is.EqualTo(aimingViewport));
+        }
     }
 }

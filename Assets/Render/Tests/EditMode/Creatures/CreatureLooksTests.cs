@@ -164,6 +164,28 @@ public class CreatureLooksTests
         Assert.IsNull(looks.stone.GetComponent<CreatureBuilder>().recipe);
     }
 
+    // The healer of every class stays off the battlefield: its view draws no body and carries no renderer, so nothing
+    // of it can stand mid-board or draw with a missing shader; it casts from below the screen instead
+    [TestCase("Cleric")]
+    [TestCase("Druid")]
+    [TestCase("Warlock")]
+    public void GetView_ShippedClass_DrawsNoBodyAndNoRenderer(string name)
+    {
+        CreatureLooks looks = AssetDatabase.LoadAssetAtPath<CreatureLooks>(
+            "Assets/Render/Creatures/Data/CreatureLooks.asset"
+        );
+        CharacterData healer = AssetDatabase.LoadAssetAtPath<CharacterData>(
+            "Assets/Data/Characters/" + name + "Character/" + name + "Character.asset"
+        );
+
+        GameObject view = looks.GetView(healer);
+
+        Assert.IsNotNull(view.GetComponent<CharacterView>(), name);
+        Assert.IsFalse(view.GetComponent<CharacterView>().showBody, name);
+        Assert.IsEmpty(view.GetComponentsInChildren<Renderer>(true), name);
+        Assert.IsNull(healer.model, name + " brings no model of its own for the view to hide");
+    }
+
     // The prefab folder holds the views the asset names and nothing else, every other unit is derived
     [Test]
     public void Character_PrefabsFolder_HoldsOnlyThePlantHostAndTheCharacterView()
