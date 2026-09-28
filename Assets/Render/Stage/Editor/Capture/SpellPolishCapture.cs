@@ -13,6 +13,9 @@ namespace HealerLike.Render.Stage
     {
         [MenuItem("Tools/Render/Capture Polished Spells on Grass")]
         public static void All() { StagePlay.Enter("spell-polish", 600f); }
+
+        [MenuItem("Tools/Render/Measure Spell Readability on Grass")]
+        public static void Readability() { StagePlay.Enter("spell-readability", 600f); }
     }
 
     // Presentation fixtures, not gameplay casts: all authored entries run through the real parts and grass paths.
@@ -20,18 +23,32 @@ namespace HealerLike.Render.Stage
     {
         const float Step = 1f / 60f;
         static readonly float[] Phases = { .15f, .45f, .8f };
+        // The middle moment is the harness's readable peak; the readability pass samples only that one
+        static readonly float[] PeakPhase = { .45f };
+        static readonly EffectKey[] CoreElements = { EffectKey.Burst, EffectKey.Rise, EffectKey.Stalks,
+            EffectKey.Drips, EffectKey.Orbit, EffectKey.Plates, EffectKey.Bud, EffectKey.Press, EffectKey.Crack,
+            EffectKey.ManaUp, EffectKey.ManaDown };
+        const string GainHandler = "Assets/Data/PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory.asset";
+        const string DrainHandler = "Assets/Data/EntityItems/SiphonItem/BuffHandlerFactory.asset";
+        readonly bool _isReadability;
         protected override bool shouldStartGame => false;
+
+        public SpellPolishRun(bool isReadability = false) { _isReadability = isReadability; }
 
         protected override IEnumerator Run()
         {
-            string folder = Path.Combine(StagePlay.CaptureFolder, "spell-polish");
+            string folder = Path.Combine(StagePlay.CaptureFolder, _isReadability ? "spell-readability" : "spell-polish");
             Directory.CreateDirectory(folder);
             EffectVocabulary vocabulary = RenderAssets.Load<EffectVocabulary>(
                 "Assets/Render/Spells/Data/EffectVocabulary.asset");
             Material material = RenderAssets.Load<Material>("Assets/Render/Look/Look_Default.mat");
+            float[] phases = _isReadability ? PeakPhase : Phases;
+            EffectKey[] elements = _isReadability ? CoreElements : (EffectKey[])Enum.GetValues(typeof(EffectKey));
             using (var images = new SpellPolishImages(folder))
             {
-                foreach (EffectKey element in Enum.GetValues(typeof(EffectKey)))
+                if (_isReadability)
+                    images.Resolved(Resolve(vocabulary, GainHandler), Resolve(vocabulary, DrainHandler));
+                foreach (EffectKey element in elements)
                 {
                     using (var scene = new GrassLabScene(_manager))
                     {
@@ -44,12 +61,18 @@ namespace HealerLike.Render.Stage
                         ShowGround(scene, recipe);
                         int sample = 0;
                         int total = Mathf.CeilToInt(recipe.cycleSeconds / Step);
-                        for (int frame = 0; frame <= total && sample < Phases.Length; frame++)
+                        for (int frame = 0; frame <= total && sample < phases.Length; frame++)
                         {
                             float age = frame * Step;
                             if (frame > 0) effect.Advance(Step);
                             Tick(scene, Step, .5f + age);
-                            if (age >= Phases[sample] * recipe.cycleSeconds)
+                            if (_isReadability && age >= phases[sample] * recipe.cycleSeconds)
+                            {
+                                images.Readability(scene.camera, scene.creatures[0].anchor.gameObject, effect.gameObject, element,
+                                    age, recipe, effect.lifetime);
+                                sample++;
+                            }
+                            else if (!_isReadability && age >= phases[sample] * recipe.cycleSeconds)
                             {
                                 images.Capture(scene.camera, element, sample, age);
                                 images.Measure(scene.field.simulation, element, sample, age);
@@ -60,7 +83,14 @@ namespace HealerLike.Render.Stage
                     }
                     yield return null;
                 }
-                images.Write();
+                if (_isReadability) images.WriteReadability();
+                else images.Write();
+            }
+            if (_isReadability)
+            {
+                Debug.Log("[SpellPolishRun] Wrote spell readability frames and readability.csv to " + folder);
+                StagePlay.Finish(this, true);
+                yield break;
             }
             File.WriteAllText(Path.Combine(folder, "README.txt"),
                 "Native Unity presentation fixtures, not gameplay casts.\n" +
@@ -70,6 +100,12 @@ namespace HealerLike.Render.Stage
                 "Every fixture uses the saved composition, real creature rig, and its authored ground reaction.\n");
             Debug.Log("[SpellPolishRun] Wrote 42 native spell frames and contact sheet to " + folder);
             StagePlay.Finish(this, true);
+        }
+
+        static EffectKey Resolve(EffectVocabulary vocabulary, string path)
+        {
+            ABuffHandlerFactory handler = RenderAssets.Load<ABuffHandlerFactory>(path);
+            return EffectComposer.Element(vocabulary, EffectDerivation.Channels(handler, true));
         }
 
         void Prepare(GrassLabScene scene)

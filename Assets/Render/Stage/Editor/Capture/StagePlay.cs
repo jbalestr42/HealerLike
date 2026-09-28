@@ -88,6 +88,7 @@ namespace HealerLike.Render.Stage
             if (mode == "selection-facing") return new SelectionFacingRun();
             if (mode == "spell-icons") return new SpellIconRun();
             if (mode == "spell-polish") return new SpellPolishRun();
+            if (mode == "spell-readability") return new SpellPolishRun(true);
             if (mode == "spell-sources") return new SpellSourceRun();
 
             if (mode == "expedition-map")
