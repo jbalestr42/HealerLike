@@ -134,6 +134,48 @@ public class EffectDerivationTests
         Assert.AreEqual(expected, EffectDerivation.Group(Handler(path)));
     }
 
+    // Verdant heals every player entity each period: its consumer sits on the buff, not on an ApplyConsumer buff
+    [Test]
+    public void Consumer_ApplyConsumerOnEntities_ReadsItsConsumerAsAPeriodicHeal()
+    {
+        ConsumerFactory consumer = CreateTracked<ConsumerFactory>();
+        consumer.data = new ConsumerData { value = new FlatValue { data = new FlatValueData { value = -3f } } };
+        ApplyConsumerOnEntitiesBuffFactory buff = CreateTracked<ApplyConsumerOnEntitiesBuffFactory>();
+        buff.data = new ApplyConsumerOnEntitiesBuffData { consumerFactory = consumer };
+        BuffHandlerFactory handler = CreateTracked<BuffHandlerFactory>();
+        handler.data = new BuffHandlerData
+        {
+            durationType = DurationType.Infinite,
+            isPeriodic = true,
+            periodDuration = 2f,
+            buffFactoryList = new List<ABuffFactory> { buff }
+        };
+
+        Assert.AreSame(consumer, EffectDerivation.Consumer(buff));
+        Assert.AreEqual(EffectFamily.Renew, EffectDerivation.Family(handler, false));
+        Assert.AreEqual(EffectOperation.Heal, EffectDerivation.Operation(handler, false));
+        Assert.AreEqual(EffectTempo.PerPeriod, EffectDerivation.Tempo(handler));
+    }
+
+    // Life steal has no consumer asset, yet what it does is heal the most wounded ally, on either side
+    [TestCase(true)]
+    [TestCase(false)]
+    public void Family_LifeSteal_IsAHealWhateverTheSide(bool isSameSide)
+    {
+        LifeStealBuffFactory buff = CreateTracked<LifeStealBuffFactory>();
+        buff.data = new LifeStealBuffData { ratio = 0.5f };
+        BuffHandlerFactory handler = CreateTracked<BuffHandlerFactory>();
+        handler.data = new BuffHandlerData
+        {
+            durationType = DurationType.Infinite,
+            buffFactoryList = new List<ABuffFactory> { buff }
+        };
+
+        Assert.AreEqual(EffectFamily.Heal, EffectDerivation.Family(handler, isSameSide));
+        Assert.AreEqual(EffectOperation.Heal, EffectDerivation.Operation(handler, isSameSide));
+        Assert.AreEqual(EffectKind.Plain, EffectDerivation.Kind(handler));
+    }
+
     [Test]
     public void Group_Invincibility_IsPrevention()
     {

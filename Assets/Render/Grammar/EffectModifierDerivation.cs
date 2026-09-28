@@ -39,6 +39,11 @@ namespace HealerLike.Render.Grammar
                 data = hpBased.data;
                 delta = hpBased.data.factor;
             }
+            else if (buff is HealthThresholdModifierFactory threshold && threshold.data != null)
+            {
+                data = threshold.data;
+                delta = threshold.data.value;
+            }
 
             return data;
         }

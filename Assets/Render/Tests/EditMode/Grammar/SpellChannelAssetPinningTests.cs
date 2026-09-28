@@ -107,7 +107,43 @@ namespace HealerLike.Render.Grammar
             new HandlerRow("PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory",
                 EffectOperation.Heal, EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.RoundEnd),
             new HandlerRow("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", EffectOperation.Mana,
-                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.RoundEnd)
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.RoundEnd),
+
+            // Julien's Cleric, Druid and Warlock content (ade6ad91). Skill consumers read HealPower through an
+            // AttributeValue, which is 1 x multiplier without a caster, so every one of them is Light.
+            // Curse: 0.3 x HealPower damage each second for 6s
+            new HandlerRow("CharacterSkills/Curse/BuffHandlerFactory", EffectOperation.Damage,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Divine Intervention: invincible for 2s
+            new HandlerRow("CharacterSkills/DivineIntervention/BuffHandlerFactory", EffectOperation.Ward,
+                EffectAspect.Prevention, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Rejuvenation: 0.15 x HealPower heal each second for 8s
+            new HandlerRow("CharacterSkills/Rejuvenation/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Shield: +0.5 PercentArmor added for 5s, an additive delta read against the 100-point fallback
+            new HandlerRow("CharacterSkills/Shield/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Wild Growth: 0.1 x HealPower heal each second for 6s
+            new HandlerRow("CharacterSkills/WildGrowth/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Grove Keeper: a flat 2 heal each second for 4s
+            new HandlerRow("Entities/GroveKeeperEntity/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Blood Bond: life steal heals the most wounded ally for as long as the item is held
+            new HandlerRow("EntityItems/BloodBondItem/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Sap: a flat 3 heal every 2s while held
+            new HandlerRow("EntityItems/SapItem/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Zeal: Damage x1.5 while above 70% health, a +0.5 share
+            new HandlerRow("EntityItems/ZealItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            // Sacred Tome: +10 HealPower added, 10 of the 100-point fallback sits on the Light bound
+            new HandlerRow("PlayerItems/HealPowerItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Verdant: 0.05 x HealPower heal on every player entity every 2s
+            new HandlerRow("PlayerItems/VerdantItem/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast)
         };
 
         // Pinned from handler duration fields and referenced buff/consumer assets. Cast is the

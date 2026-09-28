@@ -47,7 +47,18 @@ namespace HealerLike.Render.Grammar
             { "EntityItems/VolleyItem/BuffHandlerFactory", EffectKind.Volume },
             { "PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", EffectKind.Plain },
             { "PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory", EffectKind.Plain },
-            { "PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", EffectKind.Plain }
+            { "PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", EffectKind.Plain },
+            { "CharacterSkills/Curse/BuffHandlerFactory", EffectKind.Plain },
+            { "CharacterSkills/DivineIntervention/BuffHandlerFactory", EffectKind.Plain },
+            { "CharacterSkills/Rejuvenation/BuffHandlerFactory", EffectKind.Plain },
+            { "CharacterSkills/Shield/BuffHandlerFactory", EffectKind.Flat },
+            { "CharacterSkills/WildGrowth/BuffHandlerFactory", EffectKind.Plain },
+            { "Entities/GroveKeeperEntity/BuffHandlerFactory", EffectKind.Plain },
+            { "EntityItems/BloodBondItem/BuffHandlerFactory", EffectKind.Plain },
+            { "EntityItems/SapItem/BuffHandlerFactory", EffectKind.Plain },
+            { "EntityItems/ZealItem/BuffHandlerFactory", EffectKind.Conditional },
+            { "PlayerItems/HealPowerItem/BuffHandlerFactory", EffectKind.Flat },
+            { "PlayerItems/VerdantItem/BuffHandlerFactory", EffectKind.Plain }
         };
 
         readonly List<Object> _owned = new List<Object>();
@@ -98,6 +109,7 @@ namespace HealerLike.Render.Grammar
             Assert.AreEqual(EffectKind.Volume, EffectDerivation.Kind(Make<MultipleShootBuffFactory>()));
             Assert.AreEqual(EffectKind.Rate, EffectDerivation.Kind(Make<TimeModifierFactory>()));
             Assert.AreEqual(EffectKind.Conditional, EffectDerivation.Kind(Make<HPBasedModifierFactory>()));
+            Assert.AreEqual(EffectKind.Conditional, EffectDerivation.Kind(Make<HealthThresholdModifierFactory>()));
             Assert.AreEqual(EffectKind.Positional, EffectDerivation.Kind(Make<BoostEntitiesOnRelativeCellBuffFactory>()));
             Assert.AreEqual(EffectKind.Flat, EffectDerivation.Kind(Make<FlatModifierFactory>()));
             Assert.AreEqual(EffectKind.Plain, EffectDerivation.Kind(Make<InvincibilityBuffFactory>()));

@@ -33,6 +33,36 @@ namespace HealerLike.Render.Grammar
             }
         }
 
+        // Zeal's modifier: the whole value above a health threshold, read like any other modifier of its type
+        [TestCase(.5f, EffectMagnitude.Heavy, EffectFamily.Boon)]
+        [TestCase(.05f, EffectMagnitude.Light, EffectFamily.Boon)]
+        [TestCase(-.2f, EffectMagnitude.Solid, EffectFamily.Bane)]
+        public void HealthThresholdModifier_ReadsItsValueAsAModifier(float value, EffectMagnitude magnitude,
+            EffectFamily family)
+        {
+            HealthThresholdModifierFactory modifier = ScriptableObject.CreateInstance<HealthThresholdModifierFactory>();
+            BuffHandlerFactory handler = ScriptableObject.CreateInstance<BuffHandlerFactory>();
+            try
+            {
+                modifier.data = new HealthThresholdModifierData { type = AttributeType.Damage,
+                    modifierType = AttributeModifierType.Multiply, value = value, threshold = 0.7f };
+                handler.data = new BuffHandlerData { durationType = DurationType.Infinite,
+                    buffFactoryList = new List<ABuffFactory> { modifier } };
+                Assert.IsTrue(EffectDerivation.TryModifier(modifier, out AttributeType type, out float delta));
+                Assert.AreEqual(AttributeType.Damage, type);
+                Assert.AreEqual(value, delta);
+                Assert.AreEqual(magnitude, EffectDerivation.Magnitude(handler));
+                Assert.AreEqual(family, EffectDerivation.Family(handler, true));
+                Assert.AreEqual(AttributeGroup.Offence, EffectDerivation.Group(handler));
+                Assert.AreEqual(EffectKind.Conditional, EffectDerivation.Kind(handler));
+            }
+            finally
+            {
+                Object.DestroyImmediate(handler);
+                Object.DestroyImmediate(modifier);
+            }
+        }
+
         [TestCase(AttributeModifierType.Add, 20f, EffectMagnitude.Solid)]
         [TestCase(AttributeModifierType.Override, 100f, EffectMagnitude.Light)]
         public void OtherOperators_KeepTheirDocumentedFallback(AttributeModifierType operation, float value,

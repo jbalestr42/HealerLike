@@ -21,6 +21,11 @@ namespace HealerLike.Render.Grammar
             // A heal is negative damage, so the consumer sign decides before any modifier
             foreach (ABuffFactory buff in buffs)
             {
+                // Life steal heals the most wounded ally from the damage its holder deals, it has no consumer asset
+                if (buff is LifeStealBuffFactory)
+                {
+                    return IsPeriodic(handler) ? EffectFamily.Renew : EffectFamily.Heal;
+                }
                 AConsumerFactory consumer = Consumer(buff);
                 if (consumer != null)
                 {
@@ -194,6 +199,10 @@ namespace HealerLike.Render.Grammar
             if (buff is DrainCharacterManaBuffFactory drain && drain.data != null)
             {
                 return drain.data.consumerFactory;
+            }
+            if (buff is ApplyConsumerOnEntitiesBuffFactory onEntities && onEntities.data != null)
+            {
+                return onEntities.data.consumerFactory;
             }
             return null;
         }

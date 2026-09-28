@@ -18,7 +18,7 @@ namespace HealerLike.Render.Grammar
             if (buff is ProjectileBehaviourBuffFactory) return EffectKind.Projectile;
             if (buff is MultipleShootBuffFactory) return EffectKind.Volume;
             if (buff is TimeModifierFactory) return EffectKind.Rate;
-            if (buff is HPBasedModifierFactory) return EffectKind.Conditional;
+            if (buff is HPBasedModifierFactory || buff is HealthThresholdModifierFactory) return EffectKind.Conditional;
             if (buff is BoostEntitiesOnRelativeCellBuffFactory) return EffectKind.Positional;
             if (buff is FlatModifierFactory) return EffectKind.Flat;
             return EffectKind.Plain;
