@@ -28,13 +28,13 @@ public class HealthThresholdModifierTests
         Object.DestroyImmediate(_healthGo);
     }
 
-    HealthThresholdModifier CreateModifierAtPercent(float percent, float value, float threshold)
+    HealthThresholdModifier CreateModifierAtPercent(float percent, float value, float threshold, bool isBelow = false)
     {
         ResourceAttribute health = TestHelpers.CreateResourceAttribute(_healthGo, AttributeType.HealthMax, 100f);
         TestHelpers.SetPrivateField(health, "_value", 100f * percent);
         TestHelpers.SetPrivateField(_entity, "_health", health);
 
-        HealthThresholdModifier modifier = new HealthThresholdModifier { data = new HealthThresholdModifierData { value = value, threshold = threshold } };
+        HealthThresholdModifier modifier = new HealthThresholdModifier { data = new HealthThresholdModifierData { value = value, threshold = threshold, isBelow = isBelow } };
         modifier.Init(null, _targetGo);
         return modifier;
     }
@@ -102,6 +102,30 @@ public class HealthThresholdModifierTests
         damage.Update();
 
         Assert.AreEqual(10f, damage.Value, 0.0001f);
+    }
+
+    [Test]
+    public void IsBelow_BelowThreshold_ReturnsTheWholeValue()
+    {
+        HealthThresholdModifier modifier = CreateModifierAtPercent(percent: 0.3f, value: -0.3f, threshold: 0.5f, isBelow: true);
+
+        Assert.AreEqual(-0.3f, modifier.ApplyModifier(), 0.0001f);
+    }
+
+    [Test]
+    public void IsBelow_AtThreshold_ReturnsNoBonus()
+    {
+        HealthThresholdModifier modifier = CreateModifierAtPercent(percent: 0.5f, value: -0.3f, threshold: 0.5f, isBelow: true);
+
+        Assert.AreEqual(0f, modifier.ApplyModifier(), 0.0001f);
+    }
+
+    [Test]
+    public void IsBelow_AboveThreshold_ReturnsNoBonus()
+    {
+        HealthThresholdModifier modifier = CreateModifierAtPercent(percent: 1f, value: -0.3f, threshold: 0.5f, isBelow: true);
+
+        Assert.AreEqual(0f, modifier.ApplyModifier(), 0.0001f);
     }
 }
 

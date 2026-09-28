@@ -42,6 +42,18 @@ public class AttributeManagerTests
     }
 
     [Test]
+    public void GetOrAdd_MissingHealingReceived_StartsAt1SoHealsAreUntouched()
+    {
+        Assert.AreEqual(1f, _attributeManager.GetOrAdd(AttributeType.HealingReceived).Value);
+    }
+
+    [Test]
+    public void GetOrAdd_MissingCriticalMultiplier_StartsAt1Point5()
+    {
+        Assert.AreEqual(1.5f, _attributeManager.GetOrAdd(AttributeType.CriticalMultiplier).Value);
+    }
+
+    [Test]
     public void GetOrAdd_ExistingAttribute_KeepsItsValueAndIgnoresTheDefault()
     {
         Attribute existing = _attributeManager.Add(AttributeType.HealingReceived, new Attribute(0.5f));

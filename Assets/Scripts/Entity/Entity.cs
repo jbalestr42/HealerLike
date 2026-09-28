@@ -130,7 +130,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     // Damage is a negative value, reported as a positive amount to the entity that dealt it
     public static void NotifyAttacker(GameObject source, GameObject target, float value)
     {
-        if (value >= 0f || source == null)
+        // Damage an entity deals to itself (e.g. the Cursed Idol) isn't dealt to anyone
+        if (value >= 0f || source == null || source == target)
         {
             return;
         }

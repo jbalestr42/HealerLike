@@ -479,6 +479,18 @@ public class ResourceAttributeTests
     }
 
     [Test]
+    public void CriticalHit_WithoutCriticalMultiplier_Deals1Point5TimesTheDamage()
+    {
+        // e.g. a Lucky Coin on a unit that never had a critical multiplier
+        _sourceGo.GetComponent<AttributeManager>().Add(AttributeType.CriticalChance, new Attribute(100f));
+
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(85f, _health.Value);
+    }
+
+    [Test]
     public void CriticalHit_NeverHappens_WhenChanceIsZeroOrBelowResist()
     {
         AttributeManager sourceAttributeManager = _sourceGo.GetComponent<AttributeManager>();

@@ -10,6 +10,8 @@ public class HealthThresholdModifierData : BaseData
     public float value;
     // Health percent (0-1) the target must stay strictly above for the modifier to apply
     public float threshold;
+    // Applies strictly below the threshold instead
+    public bool isBelow;
 }
 
 public class HealthThresholdModifier : AttributeModifier<HealthThresholdModifierData>
@@ -23,7 +25,8 @@ public class HealthThresholdModifier : AttributeModifier<HealthThresholdModifier
 
     public override float ApplyModifier()
     {
-        // All or nothing: the whole value above the threshold, no bonus at or below it
-        return _health.percent > data.threshold ? data.value : 0f;
+        // All or nothing: the whole value on the right side of the threshold, no bonus at it
+        bool isApplied = data.isBelow ? _health.percent < data.threshold : _health.percent > data.threshold;
+        return isApplied ? data.value : 0f;
     }
 }

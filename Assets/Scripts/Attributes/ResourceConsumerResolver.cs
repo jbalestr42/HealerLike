@@ -18,7 +18,7 @@ public class ResourceConsumerResolver
         _vulnerability = attributeManager.GetOrAdd(AttributeType.Vulnerability);
         _criticalChanceResist = attributeManager.GetOrAdd(AttributeType.CriticalChanceResist);
         // A multiplier: heals are untouched by default, unlike the other attributes starting at 0
-        _healingReceived = attributeManager.GetOrAdd(AttributeType.HealingReceived, 1f);
+        _healingReceived = attributeManager.GetOrAdd(AttributeType.HealingReceived);
     }
 
     public (float value, bool isCritical) ComputeValue(ResourceAttribute resourceAttribute, ResourceModifier resourceModifier)
@@ -38,7 +38,8 @@ public class ResourceConsumerResolver
         if (sourceAttributeManager.Has(AttributeType.CriticalChance))
         {
             Attribute criticalChance = sourceAttributeManager.Get(AttributeType.CriticalChance);
-            Attribute criticalMultiplier = sourceAttributeManager.Get(AttributeType.CriticalMultiplier);
+            // A critical chance from an item alone uses the default multiplier
+            Attribute criticalMultiplier = sourceAttributeManager.GetOrAdd(AttributeType.CriticalMultiplier);
 
             isCritical = Random.Range(0f, 100f) < (criticalChance.Value - _criticalChanceResist.Value);
             if (isCritical)

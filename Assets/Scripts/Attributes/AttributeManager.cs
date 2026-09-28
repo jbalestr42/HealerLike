@@ -43,7 +43,27 @@ public class AttributeManager : MonoBehaviour
         return _attributes[type];
     }
 
-    public Attribute GetOrAdd(AttributeType type, float defaultValue = 0f)
+    // Value an attribute starts from when it's added without one: the multipliers leave the value
+    // untouched (heals received) or increase it by half (critical hits), the other attributes start at 0
+    public static float GetDefaultValue(AttributeType type)
+    {
+        switch (type)
+        {
+            case AttributeType.HealingReceived:
+                return 1f;
+            case AttributeType.CriticalMultiplier:
+                return 1.5f;
+            default:
+                return 0f;
+        }
+    }
+
+    public Attribute GetOrAdd(AttributeType type)
+    {
+        return GetOrAdd(type, GetDefaultValue(type));
+    }
+
+    public Attribute GetOrAdd(AttributeType type, float defaultValue)
     {
         if (!_attributes.ContainsKey(type))
         {
