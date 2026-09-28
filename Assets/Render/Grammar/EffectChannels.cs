@@ -12,7 +12,7 @@ namespace HealerLike.Render.Grammar
         Bane
     }
 
-    public enum EffectOperation { Damage, Heal, Boon, Bane, Ward, Mana }
+    public enum EffectOperation { Damage, Heal, Boon, Bane, Ward, Mana, ManaDrain }
     public enum EffectAspect { Offence, Defence, Prevention }
     public enum EffectMagnitude { Light, Solid, Heavy }
     public enum EffectReach { Single, Group, All, Area, Chain }

@@ -60,8 +60,8 @@ namespace HealerLike.Render.Grammar
         static EffectOperation LayerOperation(ABuffFactory buff, EffectFamily family)
         {
             if (buff is InvincibilityBuffFactory) return EffectOperation.Ward;
-            if (buff is ManaOnRoundEndBuffFactory || buff is DrainCharacterManaBuffFactory)
-                return EffectOperation.Mana;
+            if (buff is ManaOnRoundEndBuffFactory) return EffectOperation.Mana;
+            if (buff is DrainCharacterManaBuffFactory) return EffectOperation.ManaDrain;
             switch (family)
             {
                 case EffectFamily.Heal:

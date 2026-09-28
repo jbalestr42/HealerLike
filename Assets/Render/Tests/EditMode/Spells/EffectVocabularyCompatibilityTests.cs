@@ -26,11 +26,12 @@ namespace HealerLike.Render.Spells
         [TestCase(EffectOperation.Bane, EffectKey.Press, EffectKey.Crack, EffectKey.Crack)]
         [TestCase(EffectOperation.Ward, EffectKey.Plates, EffectKey.Plates, EffectKey.Bud)]
         [TestCase(EffectOperation.Mana, EffectKey.ManaUp, EffectKey.ManaUp, EffectKey.ManaUp)]
+        [TestCase(EffectOperation.ManaDrain, EffectKey.ManaDown, EffectKey.ManaDown, EffectKey.ManaDown)]
         public void ShippedTable_EveryOperation_HasThePinnedAspectEntries(EffectOperation operation,
             EffectKey offence, EffectKey defence, EffectKey prevention)
         {
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
-            Assert.AreEqual(18, vocabulary.legacyTable.Count);
+            Assert.AreEqual(21, vocabulary.legacyTable.Count);
             EffectKey[] expected = { offence, defence, prevention };
             foreach (EffectAspect aspect in System.Enum.GetValues(typeof(EffectAspect)))
             {

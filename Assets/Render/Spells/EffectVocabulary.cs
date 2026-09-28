@@ -207,6 +207,7 @@ namespace HealerLike.Render.Spells
                     : cell.aspect == EffectAspect.Prevention ? EffectKey.Bud : EffectKey.Orbit;
                 case EffectOperation.Ward: return cell.aspect == EffectAspect.Prevention ? EffectKey.Bud : EffectKey.Plates;
                 case EffectOperation.Mana: return EffectKey.ManaUp;
+                case EffectOperation.ManaDrain: return EffectKey.ManaDown;
                 default: return cell.aspect == EffectAspect.Offence ? EffectKey.Press : EffectKey.Crack;
             }
         }

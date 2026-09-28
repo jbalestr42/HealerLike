@@ -74,6 +74,7 @@ namespace HealerLike.Render.Spells
                         : aspect == EffectAspect.Prevention ? EffectKey.Bud : EffectKey.Orbit)
                     : operation == EffectOperation.Ward ? (aspect == EffectAspect.Prevention ? EffectKey.Bud : EffectKey.Plates)
                     : operation == EffectOperation.Mana ? EffectKey.ManaUp
+                    : operation == EffectOperation.ManaDrain ? EffectKey.ManaDown
                     : aspect == EffectAspect.Offence ? EffectKey.Press : EffectKey.Crack;
                 result[new EffectCell(operation, aspect)] = key;
             }

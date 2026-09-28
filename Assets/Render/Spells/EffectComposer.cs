@@ -54,6 +54,7 @@ namespace HealerLike.Render.Spells
             }
             if (operation == EffectOperation.Ward) return EffectKey.Plates;
             if (operation == EffectOperation.Mana) return EffectKey.ManaUp;
+            if (operation == EffectOperation.ManaDrain) return EffectKey.ManaDown;
             return operation == EffectOperation.Damage ? EffectKey.Burst
                 : operation == EffectOperation.Heal ? EffectKey.Rise
                 : operation == EffectOperation.Boon ? (aspect == EffectAspect.Defence ? EffectKey.Plates

@@ -61,6 +61,9 @@ namespace HealerLike.Render.Spells.Editor
                 EffectSocket.Ground, 2.4f);
             vocabulary.legacyTable[new EffectCell(EffectOperation.Ward, EffectAspect.Prevention)] =
                 new EffectCellEntry(EffectKey.Bud, EffectKey.Bud, false);
+            foreach (EffectAspect aspect in Enum.GetValues(typeof(EffectAspect)))
+                vocabulary.legacyTable[new EffectCell(EffectOperation.ManaDrain, aspect)] =
+                    new EffectCellEntry(EffectKey.ManaDown, EffectKey.ManaDown, false);
             Configure(vocabulary);
             SpellPolishGround.Apply(vocabulary);
         }

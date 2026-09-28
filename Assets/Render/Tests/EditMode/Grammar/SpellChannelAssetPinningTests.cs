@@ -56,7 +56,7 @@ namespace HealerLike.Render.Grammar
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
             new HandlerRow("EntityItems/SelfDestructItem/BuffHandlerFactory", EffectOperation.Damage,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.OnDeath),
-            new HandlerRow("EntityItems/SiphonItem/BuffHandlerFactory", EffectOperation.Mana,
+            new HandlerRow("EntityItems/SiphonItem/BuffHandlerFactory", EffectOperation.ManaDrain,
                 EffectAspect.Offence, EffectTempo.Once, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("EntityItems/VenomItem/BuffHandlerFactory", EffectOperation.Damage,
                 EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
