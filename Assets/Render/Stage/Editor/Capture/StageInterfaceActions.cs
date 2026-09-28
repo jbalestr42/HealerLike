@@ -118,6 +118,48 @@ namespace HealerLike.Render.Stage
             yield return TouchGesture(ScreenPoint(button));
         }
 
+        // Start on the Toolkit menu opens the class choice; the capture then picks a class card by touch, the first
+        // class unless one is named, so the flow continues to the expedition as before
+        public IEnumerator StartExpedition(string classTitle = null)
+        {
+            yield return PointerTap("start-button");
+            yield return null;
+            VisualElement panel = root.Q(ToolkitClassSelect.PanelName);
+            if (panel == null || !StageInterfaceOutput.IsVisible(panel))
+            {
+                yield break;
+            }
+
+            Button card = ClassCard(classTitle);
+            if (card == null)
+            {
+                throw new InvalidOperationException("The class screen has no card for " + (classTitle ?? "a class"));
+            }
+
+            yield return SelectCardByTouch(card);
+        }
+
+        // The named class card, or the first class card when no title is given (never the Random card)
+        public Button ClassCard(string classTitle)
+        {
+            VisualElement list = root.Q(ToolkitClassSelect.ListName);
+            if (list == null)
+            {
+                return null;
+            }
+
+            foreach (Button card in list.Query<Button>("data-card").ToList())
+            {
+                if (card.userData is ToolkitCardModel model && model.source is CharacterData
+                    && (classTitle == null || model.title == classTitle))
+                {
+                    return card;
+                }
+            }
+
+            return null;
+        }
+
         public IEnumerator SelectCardByTouch(Button button)
         {
             yield return BringIntoView(button);

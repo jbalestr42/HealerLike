@@ -44,7 +44,7 @@ namespace HealerLike.Render.Stage
             _output.Check(SceneManager.GetActiveScene().path == StageInterface.MenuPath,
                 "Pause menu reaches Toolkit menu");
             yield return _session.Capture("04-menu");
-            yield return _session.actions.PointerTap("start-button");
+            yield return _session.actions.StartExpedition();
             yield return Wait(1.2f);
             _session.AttachInput();
             _output.Check(Object.FindAnyObjectByType<RenderManager>() == _session.manager,

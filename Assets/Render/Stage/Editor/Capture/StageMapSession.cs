@@ -58,7 +58,7 @@ namespace HealerLike.Render.Stage
             output.Check(oldMap == null && SceneManager.GetActiveScene().path == StageInterface.MenuPath,
                 "Menu destroys the previous gameplay map and scene");
             yield return Capture("04-menu");
-            yield return actions.PointerTap("start-button");
+            yield return actions.StartExpedition();
             yield return Wait(1.2f);
             Attach();
             output.Check(manager == original && ascension != null && mapView != null,

@@ -47,7 +47,7 @@ namespace HealerLike.Render.Stage
             _session.output.Check(SceneManager.GetActiveScene().path == StageInterface.MenuPath,
                 "Pause menu returns to Toolkit menu");
             yield return _session.Capture("11-menu");
-            yield return _session.actions.PointerTap("start-button");
+            yield return _session.actions.StartExpedition();
             yield return Wait(1.5f);
             _session.AttachInput();
             // Let EventSystem activate the configured legacy module before delivering a new Began.
