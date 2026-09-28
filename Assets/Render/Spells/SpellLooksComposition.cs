@@ -23,7 +23,7 @@ namespace HealerLike.Render.Spells
             {
                 EffectRecipe recipe = authored.recipe != null ? authored.recipe.InstantiateRecipe()
                     : EffectComposer.Compose(vocabulary, authored.element, authored.family, authored.tempo,
-                        EffectDerivation.Period(factory), stacks, charges, 0);
+                        EffectDerivation.Period(factory), stacks, charges, 0, material: context.material);
                 if (recipe != null)
                 {
                     recipes.Add(recipe);

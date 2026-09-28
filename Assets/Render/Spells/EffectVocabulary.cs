@@ -11,16 +11,22 @@ namespace HealerLike.Render.Spells
     {
         public EffectOperation operation;
         public EffectAspect aspect;
+        // The caster's material. Appended: every cell saved before it reads as Plant
+        public LookSide side;
 
-        public EffectCell(EffectOperation operation, EffectAspect aspect)
+        public EffectCell(EffectOperation operation, EffectAspect aspect, LookSide side = LookSide.Plant)
         {
             this.operation = operation;
             this.aspect = aspect;
+            this.side = side;
         }
 
-        public bool Equals(EffectCell other) { return operation == other.operation && aspect == other.aspect; }
+        public bool Equals(EffectCell other)
+        {
+            return operation == other.operation && aspect == other.aspect && side == other.side;
+        }
         public override bool Equals(object obj) { return obj is EffectCell && Equals((EffectCell)obj); }
-        public override int GetHashCode() { return ((int)operation * 397) ^ (int)aspect; }
+        public override int GetHashCode() { return (((int)operation * 397) ^ (int)aspect) * 31 + (int)side; }
     }
 
     [Serializable]
@@ -168,12 +174,44 @@ namespace HealerLike.Render.Spells
             }
             foreach (var pair in cells ?? new Dictionary<EffectCell, EffectCellEntries>())
             {
+                if (pair.Key.side != LookSide.Plant) continue;
                 if (KeyFor(pair.Key, EffectTempo.Once) == element && pair.Value.once != null) return pair.Value.once;
                 if (KeyFor(pair.Key, EffectTempo.PerPeriod) == element && pair.Value.periodic != null) return pair.Value.periodic;
             }
             Debug.LogError($"[EffectVocabulary] No entry for {element}.");
             return null;
         }
+
+        // The element drawn in the caster's material. A material with no entry of its own for this element draws
+        // the Plant entry, and says so once per element through the log and through drawn.
+        public ElementEntry GetEntry(EffectKey element, LookSide material, out LookSide drawn)
+        {
+            drawn = LookSide.Plant;
+            if (material != LookSide.Plant && cells != null)
+            {
+                foreach (var pair in cells)
+                {
+                    if (pair.Key.side != material) continue;
+                    if (KeyFor(pair.Key, EffectTempo.Once) == element && pair.Value.once != null)
+                    {
+                        drawn = material;
+                        return pair.Value.once;
+                    }
+                    if (pair.Value.hasPeriodic && KeyFor(pair.Key, EffectTempo.PerPeriod) == element
+                        && pair.Value.periodic != null)
+                    {
+                        drawn = material;
+                        return pair.Value.periodic;
+                    }
+                }
+                if (_reportedFallbacks.Add((element, material)))
+                    Debug.Log($"[EffectVocabulary] No {material} entry for {element} yet, drawing its Plant entry.");
+            }
+            return GetEntry(element);
+        }
+
+        [NonSerialized]
+        readonly HashSet<(EffectKey, LookSide)> _reportedFallbacks = new HashSet<(EffectKey, LookSide)>();
 
         public bool TryGetElement(EffectOperation operation, EffectAspect aspect, out EffectKey element)
         {

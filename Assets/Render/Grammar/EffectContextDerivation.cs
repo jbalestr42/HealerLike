@@ -11,6 +11,7 @@ namespace HealerLike.Render.Grammar
         {
             EffectContext context = EffectContext.Default;
             context.origin = Origin(source);
+            context.material = LookDerivation.CasterSide(source);
             Entity recipient = target ? target.GetComponent<Entity>() : null;
             // Entity publishes this reference during Init; a preview's required component may not have Awoken.
             AttributeManager attributes = recipient ? recipient.attributeManager : null;

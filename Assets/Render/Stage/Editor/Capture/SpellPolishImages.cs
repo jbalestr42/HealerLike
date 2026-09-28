@@ -88,7 +88,7 @@ namespace HealerLike.Render.Stage
         const int PhoneHeight = 1920;
         const int EffectThreshold = 6;
         const int RingPixels = 24;
-        readonly StringBuilder readability = new StringBuilder("element,age,cycleSeconds,lifetimeSeconds,effectPixels," +
+        readonly StringBuilder readability = new StringBuilder("element,material,age,cycleSeconds,lifetimeSeconds,effectPixels," +
             "backgroundPixels,effectR,effectG,effectB,grassR,grassG,grassB,effectLuma,grassLuma,lumaDifference,rgbDistance\n");
         Color32[] manaUp;
         Color32[] manaDown;
@@ -146,16 +146,18 @@ namespace HealerLike.Render.Stage
                 double effectLuma = Luma(effect), groundLuma = Luma(ground);
                 double distance = System.Math.Sqrt(System.Math.Pow(effect[0] - ground[0], 2) + System.Math.Pow(effect[1] - ground[1], 2)
                     + System.Math.Pow(effect[2] - ground[2], 2));
-                readability.Append(element);
+                readability.Append(element).Append(',').Append(recipe.material);
                 foreach (double value in new double[] { age, recipe.cycleSeconds, lifetime, effectCount, groundCount,
                     effect[0], effect[1], effect[2], ground[0], ground[1], ground[2], effectLuma, groundLuma,
                     effectLuma - groundLuma, distance })
                     readability.Append(',').Append(value.ToString("0.###", CultureInfo.InvariantCulture));
                 readability.AppendLine();
+                bool isStone = recipe.material == HealerLike.Render.Grammar.LookSide.Stone;
                 if (element == EffectKey.ManaUp) manaUp = a;
                 if (element == EffectKey.ManaDown) manaDown = a;
-                File.WriteAllBytes(Path.Combine(folder, $"{(int)element:D2}-{element}-peak.png"), full.EncodeToPNG());
-                if (element == EffectKey.Burst)
+                File.WriteAllBytes(Path.Combine(folder, $"{(int)element:D2}-{element}{(isStone ? "-stone" : "")}-peak.png"),
+                    full.EncodeToPNG());
+                if (element == EffectKey.Burst && !isStone)
                 {
                     File.WriteAllBytes(Path.Combine(folder, "00-Burst-no-effect.png"), bare.EncodeToPNG());
                     File.WriteAllBytes(Path.Combine(folder, "00-Burst-grass-only.png"), grass.EncodeToPNG());

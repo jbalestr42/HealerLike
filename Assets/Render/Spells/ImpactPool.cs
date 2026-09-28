@@ -56,7 +56,8 @@ namespace HealerLike.Render.Spells
             }
 
             float amount = Mathf.Clamp01(Mathf.Abs(preClampAmount) / Mathf.Max(maximum, 1f));
-            EffectRecipe recipe = EffectComposer.Impact(_vocabulary, resource, preClampAmount > 0f, amount);
+            EffectRecipe recipe = EffectComposer.Impact(_vocabulary, resource, preClampAmount > 0f, amount,
+                LookDerivation.CasterSide(source));
             SpellEffect effect = SpellEffect.Create(recipe, _parent, _meshes, _material, target);
             if (effect == null)
             {

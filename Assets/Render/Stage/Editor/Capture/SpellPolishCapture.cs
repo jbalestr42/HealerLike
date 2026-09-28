@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using HealerLike.Render.Creatures;
 using HealerLike.Render.Grammar;
@@ -28,6 +29,8 @@ namespace HealerLike.Render.Stage
         static readonly EffectKey[] CoreElements = { EffectKey.Burst, EffectKey.Rise, EffectKey.Stalks,
             EffectKey.Drips, EffectKey.Orbit, EffectKey.Plates, EffectKey.Bud, EffectKey.Press, EffectKey.Crack,
             EffectKey.ManaUp, EffectKey.ManaDown };
+        // The elements that have a Stone entry, measured again as a stone caster draws them
+        static readonly EffectKey[] StoneElements = { EffectKey.Burst, EffectKey.Rise, EffectKey.Press };
         const string GainHandler = "Assets/Data/PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory.asset";
         const string DrainHandler = "Assets/Data/EntityItems/SiphonItem/BuffHandlerFactory.asset";
         readonly bool _isReadability;
@@ -48,7 +51,11 @@ namespace HealerLike.Render.Stage
             {
                 if (_isReadability)
                     images.Resolved(Resolve(vocabulary, GainHandler), Resolve(vocabulary, DrainHandler));
-                foreach (EffectKey element in elements)
+                var fixtures = new List<(EffectKey element, LookSide side)>();
+                foreach (EffectKey element in elements) fixtures.Add((element, LookSide.Plant));
+                if (_isReadability)
+                    foreach (EffectKey element in StoneElements) fixtures.Add((element, LookSide.Stone));
+                foreach (var (element, side) in fixtures)
                 {
                     using (var scene = new GrassLabScene(_manager))
                     {
@@ -56,7 +63,7 @@ namespace HealerLike.Render.Stage
                         Prepare(scene);
                         for (int frame = 0; frame < 30; frame++) Tick(scene, Step, frame * Step);
                         EffectRecipe recipe = EffectComposer.Compose(vocabulary, element, Family(element),
-                            EffectTempo.Once, 0f, 3, 3, .5f);
+                            EffectTempo.Once, 0f, 3, 3, .5f, material: side);
                         SpellEffect effect = Build(scene, recipe, material);
                         ShowGround(scene, recipe);
                         int sample = 0;

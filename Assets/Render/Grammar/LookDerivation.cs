@@ -38,6 +38,14 @@ namespace HealerLike.Render.Grammar
             return channels;
         }
 
+        // A spell is built from its caster's material. A caster that is not a unit on a side (no source, an item,
+        // a neutral entity) draws the grown material; it is never read from the target.
+        public static LookSide CasterSide(GameObject source)
+        {
+            Entity caster = source != null ? source.GetComponent<Entity>() : null;
+            return caster != null && caster.entityType == Entity.EntityType.Computer ? LookSide.Stone : LookSide.Plant;
+        }
+
         public static LookSide Side(Entity.EntityType entityType)
         {
             return entityType == Entity.EntityType.Player ? LookSide.Plant : LookSide.Stone;

@@ -66,7 +66,57 @@ namespace HealerLike.Render.Spells.Editor
                     new EffectCellEntry(EffectKey.ManaDown, EffectKey.ManaDown, false);
             Configure(vocabulary);
             SpellPolishGround.Apply(vocabulary);
+            ApplyStone(vocabulary);
         }
+
+        // Only the Stone cells: the saved Plant entries, labels and part edits are read, never rewritten
+        [MenuItem("Tools/Render/Author Stone Spell Cells")]
+        public static void AuthorStone()
+        {
+            EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(AssetPath);
+            if (vocabulary == null) throw new InvalidOperationException("Missing effect vocabulary: " + AssetPath);
+            Undo.RecordObject(vocabulary, "Author stone spell cells");
+            ApplyStone(vocabulary);
+            EditorUtility.SetDirty(vocabulary);
+            AssetDatabase.SaveAssetIfDirty(vocabulary);
+            Debug.Log("[SpellPolishVocabulary] Authored Stone Burst, Rise and Press; other elements draw Plant.");
+        }
+
+        // Stone Burst, Rise and Press. Every other element has no Stone cell and draws its Plant entry.
+        public static void ApplyStone(EffectVocabulary vocabulary)
+        {
+            if (vocabulary == null) throw new ArgumentNullException(nameof(vocabulary));
+            ElementEntry burst = Stone(vocabulary.entries[EffectKey.Burst], "Stone burst", StoneBurst());
+            burst.criticalRings = new[] { FacetedRing("Critical outer halo", 2.8f, 0, .07f,
+                ColourRole.MushroomCapPale, new Vector3(90, 0, 0)) };
+            ElementEntry rise = Stone(vocabulary.entries[EffectKey.Rise], "Stone rise", StoneRise());
+            rise.criticalRings = new[] { FacetedRing("Critical healing halo", 2.65f, -.35f, .07f) };
+            ElementEntry press = Stone(vocabulary.entries[EffectKey.Press], "Stone press", StonePress());
+            press.stackBeads = Chips("Stack chip ", 5, 1.42f, -.32f, .2f);
+            foreach (EffectAspect aspect in Enum.GetValues(typeof(EffectAspect)))
+            {
+                vocabulary.cells[new EffectCell(EffectOperation.Damage, aspect, LookSide.Stone)] =
+                    new EffectCellEntries(burst, null, false);
+                vocabulary.cells[new EffectCell(EffectOperation.Heal, aspect, LookSide.Stone)] =
+                    new EffectCellEntries(rise, null, false);
+            }
+            vocabulary.cells[new EffectCell(EffectOperation.Bane, EffectAspect.Offence, LookSide.Stone)] =
+                new EffectCellEntries(press, null, false);
+        }
+
+        // Same motion, socket, count, clock, presentation and ground as the Plant entry: material changes
+        // construction only
+        static ElementEntry Stone(ElementEntry plant, string label, LookPart[] parts)
+        {
+            return new ElementEntry { label = label, parts = parts,
+                presentation = plant.presentation != null ? plant.presentation.Clone() : new EffectPresentation(),
+                ground = plant.ground, groundRadius = plant.groundRadius, groundStrength = plant.groundStrength,
+                stackBeads = Copy(plant.stackBeads), criticalRings = Copy(plant.criticalRings), sideRim = Copy(plant.sideRim),
+                motion = plant.motion, socket = plant.socket, count = plant.count, minCount = plant.minCount,
+                cycleSeconds = plant.cycleSeconds };
+        }
+
+        static LookPart[] Copy(LookPart[] parts) { return parts != null ? (LookPart[])parts.Clone() : Array.Empty<LookPart>(); }
 
         static ElementEntry Entry(LookPart[] parts, EffectMotionKind motion, EffectSocket socket,
             float seconds, EffectCount count = EffectCount.Fixed, int minimum = 1)

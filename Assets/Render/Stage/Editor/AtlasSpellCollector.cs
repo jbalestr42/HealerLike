@@ -18,7 +18,9 @@ namespace HealerLike.Render.Stage
     {
         static void AppendSpellAtlas(AtlasDerivationDump.Document document, EffectVocabulary vocabulary)
         {
-            foreach (var pair in vocabulary.cells.OrderBy(pair => pair.Key.operation.ToString())
+            // One row per cell: a Stone entry is the same cell drawn in the caster's other material
+            foreach (var pair in vocabulary.cells.Where(pair => pair.Key.side == LookSide.Plant)
+                .OrderBy(pair => pair.Key.operation.ToString())
                 .ThenBy(pair => pair.Key.aspect.ToString()))
             {
                 EffectKey once;

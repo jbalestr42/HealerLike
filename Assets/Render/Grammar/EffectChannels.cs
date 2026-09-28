@@ -55,6 +55,8 @@ namespace HealerLike.Render.Grammar
         public EffectTempo tempo;
         // Seconds between two ticks, 0 when the handler does not tick
         public float periodSeconds;
+        // The caster's material: what the core element is built from, never its colour
+        public LookSide material;
     }
 
     public struct EffectContext
@@ -63,6 +65,7 @@ namespace HealerLike.Render.Grammar
         public EffectTrigger[] triggers;
         public int targetCount;
         public UnityEngine.GameObject projectilePrefab;
+        public LookSide material;
         public float maximumHealth;
         public System.Collections.Generic.IReadOnlyDictionary<AttributeType, float> attributeBaselines;
 

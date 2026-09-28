@@ -35,7 +35,7 @@ namespace HealerLike.Render.Grammar
                     delivery = DeliveryChannel(context.projectilePrefab),
                     trigger = LayerTrigger(buff, context),
                     side = isSameSide ? EffectSide.Ally : EffectSide.Opposing,
-                    origin = context.origin
+                    origin = context.origin, material = context.material
                 });
             }
             return layers;

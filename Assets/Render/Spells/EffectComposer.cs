@@ -70,7 +70,8 @@ namespace HealerLike.Render.Spells
 
         // A resolved change on a unit: a heal rises, a hit bursts, mana goes up or down; amount is the share of
         // the maximum, it sizes the heal and the burst
-        public static EffectRecipe Impact(EffectVocabulary vocabulary, ResourceKind resource, bool isGain, float amount)
+        public static EffectRecipe Impact(EffectVocabulary vocabulary, ResourceKind resource, bool isGain, float amount,
+                                          LookSide material = LookSide.Plant)
         {
             EffectFamily family = EffectFamily.Damage;
             EffectKey element = EffectKey.Burst;
@@ -85,7 +86,8 @@ namespace HealerLike.Render.Spells
                 element = Mana(isGain);
             }
 
-            EffectRecipe recipe = Compose(vocabulary, element, family, EffectTempo.Once, 0f, 1, 0f, amount);
+            EffectRecipe recipe = Compose(vocabulary, element, family, EffectTempo.Once, 0f, 1, 0f, amount,
+                material: material);
             if (recipe != null && recipe.presentation != null && recipe.presentation.scalesWithAmount)
             {
                 recipe.scale *= Mathf.Lerp(BurstScaleMin, BurstScaleMax, Mathf.Sqrt(Mathf.Clamp01(amount)));
@@ -132,7 +134,7 @@ namespace HealerLike.Render.Spells
                 return null;
             }
             EffectRecipe recipe = Compose(vocabulary, Element(vocabulary, channels), channels.family,
-                channels.tempo, channels.periodSeconds, stacks, charges, 0f);
+                channels.tempo, channels.periodSeconds, stacks, charges, 0f, material: channels.material);
             if (recipe == null) return null;
             recipe.channels = channels;
             if (recipe.presentation != null && recipe.presentation.enabled)
@@ -149,14 +151,16 @@ namespace HealerLike.Render.Spells
         public static EffectRecipe Compose(EffectVocabulary vocabulary, EffectKey element, EffectFamily family,
                                            EffectTempo tempo, float periodSeconds, int stacks, float charges,
                                            float amount, ElementEntry entryOverride = null,
-                                           bool useColourOverride = false, Color colourOverride = default(Color))
+                                           bool useColourOverride = false, Color colourOverride = default(Color),
+                                           LookSide material = LookSide.Plant)
         {
             if (vocabulary == null && entryOverride == null)
             {
                 return null;
             }
 
-            ElementEntry entry = entryOverride != null ? entryOverride : vocabulary.GetEntry(element);
+            LookSide drawn = LookSide.Plant;
+            ElementEntry entry = entryOverride != null ? entryOverride : vocabulary.GetEntry(element, material, out drawn);
             if (!EffectValidator.TryValidateEntry(entry, out string error))
             {
                 Debug.LogError("[EffectComposer] " + error);
@@ -166,6 +170,7 @@ namespace HealerLike.Render.Spells
             EffectRecipe recipe = new EffectRecipe();
             recipe.element = element;
             recipe.entry = entry;
+            recipe.material = drawn;
             recipe.motion = entry.motion;
             recipe.socket = entry.socket;
             recipe.family = family;

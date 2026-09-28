@@ -23,6 +23,8 @@ namespace HealerLike.Render.Spells
         // The element's size on its socket, a harder hit draws a bigger burst
         public float scale = 1f;
         public LookPalette palette;
+        // The caster's material the entry is actually drawn in: Plant when the caster's material has no entry yet
+        public LookSide material;
 
         // Resolve legacy unspecified clocks per instance without changing a shared authored recipe.
         public EffectRecipe ResolveCycle()
