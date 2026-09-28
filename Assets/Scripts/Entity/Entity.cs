@@ -216,27 +216,12 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
 
     public void OnItemAdded(InventoryItemData itemData, bool isNewItem)
     {
-        // If the item is in the first 2 slots, we stack it to be more powerfull
-        int stacks = GetStackCount(itemData.inventoryIndex);
-        for (int i = 0; i < stacks; i++)
-        {
-            itemData.item.Equip(gameObject);
-        }
+        itemData.item.Equip(gameObject);
     }
 
     public void OnItemRemoved(InventoryItemData itemData)
     {
-        int stacks = GetStackCount(itemData.inventoryIndex);
-        for (int i = 0; i < stacks; i++)
-        {
-            itemData.item.Unequip(gameObject);
-        }
-    }
-
-    int GetStackCount(int index)
-    {
-        int maxStacks = 2;
-        return 1 + maxStacks - Mathf.Clamp(index, 0, maxStacks);
+        itemData.item.Unequip(gameObject);
     }
 
     #endregion
