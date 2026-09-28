@@ -83,6 +83,20 @@ namespace HealerLike.Render.Stage
             StagePlay.Enter("grassjitter", 240f);
         }
 
+        // Julien's sandbox booted by the stage, placed and played through its own uGUI
+        [MenuItem("Tools/Render/Capture Sandbox")]
+        public static void Sandbox()
+        {
+            StagePlay.Enter(SandboxCaptureRun.BootMode, 240f);
+        }
+
+        // Main, then the Toolkit menu, then its Sandbox entry
+        [MenuItem("Tools/Render/Capture Sandbox Through The Menu")]
+        public static void SandboxThroughMenu()
+        {
+            StagePlay.Enter(SandboxCaptureRun.MenuMode, 240f);
+        }
+
         [MenuItem("Tools/Render/Smoke Three Rounds")]
         public static void Smoke()
         {

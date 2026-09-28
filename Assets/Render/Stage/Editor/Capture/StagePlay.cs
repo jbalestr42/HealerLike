@@ -39,6 +39,9 @@ namespace HealerLike.Render.Stage
             }
         }
 
+        // The mode of the session being played, empty outside a batchmode play session
+        public static string Mode { get { return SessionState.GetString(modeKey, ""); } }
+
         public static string ReadRevision()
         {
             string revision = System.Environment.GetEnvironmentVariable("RENDER_CAPTURE_REVISION");
@@ -90,6 +93,8 @@ namespace HealerLike.Render.Stage
             if (mode == "spell-polish") return new SpellPolishRun();
             if (mode == "spell-readability") return new SpellPolishRun(true);
             if (mode == "spell-sources") return new SpellSourceRun();
+            if (mode == SandboxCaptureRun.BootMode) return new SandboxCaptureRun(false);
+            if (mode == SandboxCaptureRun.MenuMode) return new SandboxCaptureRun(true);
 
             if (mode == "expedition-map")
             {
