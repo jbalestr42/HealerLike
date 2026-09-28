@@ -44,12 +44,14 @@ public class AttributeManager : MonoBehaviour
     }
 
     // Value an attribute starts from when it's added without one: the multipliers leave the value
-    // untouched (heals received) or increase it by half (critical hits), the other attributes start at 0
+    // untouched (heals received, skill cooldowns) or increase it by half (critical hits), the other
+    // attributes start at 0
     public static float GetDefaultValue(AttributeType type)
     {
         switch (type)
         {
             case AttributeType.HealingReceived:
+            case AttributeType.SkillCooldownMultiplier:
                 return 1f;
             case AttributeType.CriticalMultiplier:
                 return 1.5f;

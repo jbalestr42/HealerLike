@@ -13,25 +13,39 @@ public class DurationValidatorData
 public class DurationValidator : ACharacterSkillValidator<DurationValidatorData>
 {
     float _startTimer = 0f;
+    // Cooldown of the last use, the SkillCooldownMultiplier of the owner applied to the data duration
+    float _duration = 0f;
 
     public override void Init(UseCharacterSkillButton skillButton, GameObject owner)
     {
-        _startTimer = Time.realtimeSinceStartup - data.duration;
+        _duration = GetDuration(owner);
+        _startTimer = Time.realtimeSinceStartup - _duration;
         skillButton.hasCooldown = true;
     }
 
     public override void Update(UseCharacterSkillButton skillButton)
     {
-        skillButton.SetCooldown(Mathf.Max(data.duration - (Time.realtimeSinceStartup - _startTimer), 0f), data.duration);
+        skillButton.SetCooldown(Mathf.Max(_duration - (Time.realtimeSinceStartup - _startTimer), 0f), _duration);
     }
 
     public override bool IsValid(GameObject owner)
     {
-        return Time.realtimeSinceStartup >= (_startTimer + data.duration);
+        return Time.realtimeSinceStartup >= (_startTimer + _duration);
     }
 
     public override void OnSkillUsed(GameObject owner)
     {
         _startTimer = Time.realtimeSinceStartup;
+        _duration = GetDuration(owner);
+    }
+
+    public float GetDuration(GameObject owner)
+    {
+        AttributeManager attributes = owner != null ? owner.GetComponent<AttributeManager>() : null;
+        if (attributes == null)
+        {
+            return data.duration;
+        }
+        return data.duration * attributes.GetOrAdd(AttributeType.SkillCooldownMultiplier).Value;
     }
 }

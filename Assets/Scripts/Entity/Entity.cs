@@ -9,6 +9,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     public UnityEvent<bool> OnMarkChanged = new UnityEvent<bool>();
     // Damage this entity dealt to a target, after its armor (e.g. for a life steal)
     public UnityEvent<GameObject, float> OnDamageDealt = new UnityEvent<GameObject, float>();
+    // Each attack this entity makes (e.g. to repeat it)
+    public UnityEvent<ProjectileAttack> OnAttack = new UnityEvent<ProjectileAttack>();
 
     public enum EntityType
     {

@@ -15,7 +15,7 @@ public class CurrentHealthValue : AValue<CurrentHealthValueData>
 {
     public override float GetValue(GameObject target)
     {
-        // Here target refere to owner, how do we do if we want the health of the real target?
+        // The health of the entity given: the source or the target, from ConsumerData.valueOwner
         float baseHealth = 0f;
         
         if (data.inverse)
