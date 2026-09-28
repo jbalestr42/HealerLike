@@ -97,6 +97,13 @@ namespace HealerLike.Render.Stage
             StagePlay.Enter(SandboxCaptureRun.MenuMode, 240f);
         }
 
+        // Main, then the Toolkit menu, Start, the class screen, the Druid, and its first room
+        [MenuItem("Tools/Render/Capture Class Select")]
+        public static void ClassSelect()
+        {
+            StagePlay.Enter(ClassSelectCaptureRun.Mode, 240f);
+        }
+
         [MenuItem("Tools/Render/Smoke Three Rounds")]
         public static void Smoke()
         {
