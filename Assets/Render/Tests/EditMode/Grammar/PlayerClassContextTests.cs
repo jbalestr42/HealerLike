@@ -205,5 +205,93 @@ namespace HealerLike.Render.Grammar
             Assert.AreEqual(EffectOrigin.Healer, owned.context.origin);
             Assert.AreEqual(EffectMagnitude.Light, SpellIconDerivation.Read(data).layers[0].magnitude);
         }
+
+        // A skill's factory, its data or a handler resolve to the class listing them; an item's data never does
+        [Test]
+        public void OwnerOf_SkillFactoryDataOrHandler_IsTheListingClass()
+        {
+            BuffHandlerFactory handler = Handler();
+            BuffCharacterSkillFactory skill = BuffSkill(handler);
+            ItemFactory item = Item(Handler());
+            CharacterData owner = Character(25f);
+            owner.skills = new List<ACharacterSkillFactory> { skill };
+            owner.items = new List<AItemFactory> { item };
+            CharacterData[] characters = { Character(15f), owner };
+            Assert.AreSame(owner, PlayerClassContext.OwnerOf(skill, characters));
+            Assert.AreSame(owner, PlayerClassContext.OwnerOf(skill.data, characters));
+            Assert.AreSame(owner, PlayerClassContext.OwnerOf(handler, characters));
+            Assert.AreSame(owner, PlayerClassContext.OwnerOf(item.data.buffs[0], characters));
+            Assert.IsNull(PlayerClassContext.OwnerOf(item.data, characters));
+            Assert.IsNull(PlayerClassContext.OwnerOf(Handler(), characters));
+            Assert.IsNull(PlayerClassContext.OwnerOf(null, characters));
+            Assert.IsNull(PlayerClassContext.OwnerOf(new object(), characters));
+        }
+
+        [Test]
+        public void OwnerOf_DestroyedSource_IsNone()
+        {
+            BuffHandlerFactory handler = Handler();
+            CharacterData owner = Character(25f);
+            owner.skills = new List<ACharacterSkillFactory> { BuffSkill(handler) };
+            Object.DestroyImmediate(handler);
+            Assert.IsNull(PlayerClassContext.OwnerOf(handler, new[] { owner }));
+        }
+
+        // A live caster sizes any skill it casts, listed by its class or not, as EffectDerivation.Context does
+        [Test]
+        public void CasterOf_Skill_IsTheCastersClass()
+        {
+            BuffCharacterSkillFactory skill = BuffSkill(Handler());
+            CharacterData lister = Character(15f);
+            lister.skills = new List<ACharacterSkillFactory> { skill };
+            CharacterData caster = Character(25f);
+            Assert.AreSame(caster, PlayerClassContext.CasterOf(skill.data, caster, new[] { lister }));
+            Assert.AreSame(caster, PlayerClassContext.CasterOf(new BuffCharacterSkillData(), caster, null));
+        }
+
+        // A handler the caster's class does not list keeps its own owner, and a creature's handler none at all
+        [Test]
+        public void CasterOf_HandlerTheCasterDoesNotOwn_IsItsListingClassOrNone()
+        {
+            BuffHandlerFactory listed = Handler();
+            BuffHandlerFactory creature = Handler();
+            CharacterData lister = Character(15f);
+            lister.skills = new List<ACharacterSkillFactory> { BuffSkill(listed) };
+            CharacterData caster = Character(25f);
+            Assert.AreSame(lister, PlayerClassContext.CasterOf(listed, caster, new[] { lister }));
+            Assert.IsNull(PlayerClassContext.CasterOf(creature, caster, new[] { lister }));
+            caster.items = new List<AItemFactory> { Item(creature) };
+            Assert.AreSame(caster, PlayerClassContext.CasterOf(creature, caster, new[] { lister }));
+        }
+
+        // Without a caster the listing class decides; a caster with no stats cannot size anything
+        [Test]
+        public void CasterOf_NoCaster_FallsBackToTheListingClass()
+        {
+            BuffCharacterSkillFactory skill = BuffSkill(Handler());
+            CharacterData lister = Character(15f);
+            lister.skills = new List<ACharacterSkillFactory> { skill };
+            Assert.AreSame(lister, PlayerClassContext.CasterOf(skill, null, new[] { lister }));
+            Assert.IsNull(PlayerClassContext.CasterOf(skill, null, null));
+            CharacterData statless = Create<CharacterData>();
+            statless.attributes = null;
+            Assert.AreSame(lister, PlayerClassContext.CasterOf(skill, statless, new[] { lister }));
+        }
+
+        // A 1.5 x HealPower heal: 37.5 on the listing class's 25, Solid; no class lists the other one, Light
+        [Test]
+        public void Channels_SizedByTheListingClassOnly()
+        {
+            ApplyConsumerBuffFactory apply = Create<ApplyConsumerBuffFactory>();
+            apply.data = new ApplyConsumerBuffData { consumerFactory = HealPowerConsumer(-1.5f) };
+            BuffHandlerFactory owned = Handler(apply);
+            BuffHandlerFactory unowned = Handler(apply);
+            CharacterData owner = Character(25f);
+            owner.skills = new List<ACharacterSkillFactory> { BuffSkill(owned) };
+            Assert.AreEqual(EffectMagnitude.Solid, PlayerClassContext.Channels(owned, true, new[] { owner }).magnitude);
+            Assert.AreEqual(EffectMagnitude.Light, PlayerClassContext.Channels(unowned, true, new[] { owner }).magnitude);
+            Assert.AreEqual(EffectDerivation.Channels(unowned, true),
+                PlayerClassContext.Channels(unowned, true, new[] { owner }));
+        }
     }
 }

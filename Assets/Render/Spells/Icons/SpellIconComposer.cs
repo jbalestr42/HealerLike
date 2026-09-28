@@ -6,9 +6,17 @@ namespace HealerLike.Render.Spells
     // Icons use the same vocabulary and whole-recipe overrides as the world, with no second shape table.
     public static class SpellIconComposer
     {
+        // Read with no class, the plain context: an unowned skill or a creature's handler
         public static SpellIconRecipe Compose(object source, EffectVocabulary vocabulary, SpellLooks looks)
         {
-            SpellIconDescription description = SpellIconDerivation.Read(source);
+            return Compose(source, vocabulary, looks, null);
+        }
+
+        // Read as the owning class casts it, at its base stats, the size the atlas and the in-world look give it
+        public static SpellIconRecipe Compose(object source, EffectVocabulary vocabulary, SpellLooks looks,
+            CharacterData owner)
+        {
+            SpellIconDescription description = SpellIconDerivation.Read(source, owner);
             if (description == null || vocabulary == null)
             {
                 return null;

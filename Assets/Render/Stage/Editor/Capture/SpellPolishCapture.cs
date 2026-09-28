@@ -53,7 +53,11 @@ namespace HealerLike.Render.Stage
             using (var images = new SpellPolishImages(folder))
             {
                 if (_isReadability)
-                    images.Resolved(Resolve(vocabulary, GainHandler), Resolve(vocabulary, DrainHandler));
+                {
+                    List<CharacterData> characters = AtlasAssetCatalog.Characters();
+                    images.Resolved(Resolve(vocabulary, GainHandler, characters),
+                        Resolve(vocabulary, DrainHandler, characters));
+                }
                 var fixtures = new List<(EffectKey element, LookSide side)>();
                 foreach (EffectKey element in elements) fixtures.Add((element, LookSide.Plant));
                 if (_isReadability)
@@ -114,10 +118,11 @@ namespace HealerLike.Render.Stage
             StagePlay.Finish(this, true);
         }
 
-        static EffectKey Resolve(EffectVocabulary vocabulary, string path)
+        // The element a handler resolves to as its own class casts it; a creature's or unowned handler reads plain
+        public static EffectKey Resolve(EffectVocabulary vocabulary, string path, IEnumerable<CharacterData> characters)
         {
             ABuffHandlerFactory handler = RenderAssets.Load<ABuffHandlerFactory>(path);
-            return EffectComposer.Element(vocabulary, EffectDerivation.Channels(handler, true));
+            return EffectComposer.Element(vocabulary, PlayerClassContext.Channels(handler, true, characters));
         }
 
         void Prepare(GrassLabScene scene)

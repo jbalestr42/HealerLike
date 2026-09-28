@@ -24,11 +24,12 @@ namespace HealerLike.Render.Stage
             StringBuilder text = new StringBuilder("handler\tchannels\tplant\tstone\n");
             HashSet<string> plantLooks = new HashSet<string>();
             HashSet<string> allLooks = new HashSet<string>();
+            List<CharacterData> characters = AtlasAssetCatalog.Characters();
             foreach (string path in AssetDatabase.FindAssets("t:ABuffHandlerFactory", new[] { "Assets/Data" })
                 .Select(AssetDatabase.GUIDToAssetPath).OrderBy(path => path, System.StringComparer.Ordinal))
             {
                 ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(path);
-                EffectChannels channels = EffectDerivation.Channels(handler, true);
+                EffectChannels channels = Channels(handler, characters);
                 string plant = Look(vocabulary, channels, LookSide.Plant);
                 string stone = Look(vocabulary, channels, LookSide.Stone);
                 plantLooks.Add(plant);
@@ -42,6 +43,12 @@ namespace HealerLike.Render.Stage
             File.WriteAllText(output, text.ToString());
             Debug.Log($"[SpellLookCensus] wrote {output}: {plantLooks.Count} plant looks, {allLooks.Count} over both");
             if (Application.isBatchMode) EditorApplication.Exit(0);
+        }
+
+        // A class's own skill or item is sized as that class casts it, the atlas's reading; the rest keep the plain one
+        public static EffectChannels Channels(ABuffHandlerFactory handler, IEnumerable<CharacterData> characters)
+        {
+            return PlayerClassContext.Channels(handler, true, characters);
         }
 
         static string Look(EffectVocabulary vocabulary, EffectChannels channels, LookSide material)

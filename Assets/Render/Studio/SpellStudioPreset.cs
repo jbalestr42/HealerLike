@@ -181,7 +181,8 @@ namespace HealerLike.Render.Studio
                     channels = new EffectChannels();
                     return false;
                 }
-                channels = EffectDerivation.Channels(sourceHandler, isSameSide);
+                // A class's own skill or item is sized as that class casts it, as the atlas and the game size it
+                channels = PlayerClassContext.Channels(sourceHandler, isSameSide, PlayerClassContext.ProjectClasses());
             }
 
             resolved = EffectComposer.Element(channels);

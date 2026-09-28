@@ -203,6 +203,7 @@ public class SpellStudioPresetTests
         _preset.mode = SpellStudioMode.GameplayHandler;
         _preset.useGameplayOverrides = false;
         string[] guids = AssetDatabase.FindAssets("t:ABuffHandlerFactory");
+        IReadOnlyList<CharacterData> characters = PlayerClassContext.ProjectClasses();
 
         Assert.Greater(guids.Length, 0);
         foreach (string guid in guids)
@@ -212,13 +213,42 @@ public class SpellStudioPresetTests
             foreach (bool isSameSide in new bool[] { true, false })
             {
                 _preset.isSameSide = isSameSide;
-                EffectChannels channels = EffectDerivation.Channels(_preset.sourceHandler, isSameSide);
+                // The runtime grammar sizes a class's own handler as that class casts it
+                EffectChannels channels = EffectDerivation.Channels(_preset.sourceHandler, isSameSide,
+                    PlayerClassContext.For(_preset.sourceHandler, EffectContext.Default, characters));
                 EffectRecipe expected = EffectComposer.Compose(shipped, EffectComposer.Element(channels),
                     channels.family, channels.tempo, channels.periodSeconds, _preset.stacks, _preset.charges,
                     _preset.amount);
                 StudioTestAssets.AssertRecipe(expected, _preset.Compose());
             }
         }
+    }
+
+    // Shield is the Cleric's: +0.5 PercentArmor is its own share, 0.5 > 0.4, Heavy, where the plain reading is Light.
+    // Zeal belongs to a creature's item and keeps the plain reading
+    [TestCase("CharacterSkills/Shield/BuffHandlerFactory", EffectMagnitude.Heavy)]
+    [TestCase("EntityItems/ZealItem/BuffHandlerFactory", EffectMagnitude.Heavy)]
+    [TestCase("CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory", EffectMagnitude.Heavy)]
+    public void TryResolve_GameplayHandler_SizedAsItsOwningClassCastsIt(string path, EffectMagnitude expected)
+    {
+        _preset.mode = SpellStudioMode.GameplayHandler;
+        _preset.useGameplayOverrides = false;
+        _preset.sourceHandler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>("Assets/Data/" + path + ".asset");
+        Assert.IsNotNull(_preset.sourceHandler, path);
+        Assert.IsTrue(_preset.TryResolve(out EffectChannels channels, out _), path);
+        Assert.AreEqual(expected, channels.magnitude, path);
+    }
+
+    [Test]
+    public void TryResolve_ClassHandler_DiffersFromThePlainReading()
+    {
+        _preset.mode = SpellStudioMode.GameplayHandler;
+        _preset.useGameplayOverrides = false;
+        _preset.sourceHandler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(
+            "Assets/Data/CharacterSkills/Shield/BuffHandlerFactory.asset");
+        Assert.IsTrue(_preset.TryResolve(out EffectChannels channels, out _));
+        Assert.AreEqual(EffectMagnitude.Light, EffectDerivation.Channels(_preset.sourceHandler, true).magnitude);
+        Assert.AreEqual(EffectMagnitude.Heavy, channels.magnitude);
     }
 
     [TestCase(0f)]

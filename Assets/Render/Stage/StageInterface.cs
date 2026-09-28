@@ -1,3 +1,4 @@
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Creatures;
 using UnityEngine;
@@ -195,9 +196,17 @@ namespace HealerLike.Render.Stage
             _iconLooks = _manager.spellLooks;
             _iconVocabulary = sink ? sink.vocabulary : null;
             _iconMaterial = sink ? sink.material : null;
-            SpellIcons spells = new SpellIcons(_iconVocabulary, _iconLooks, _manager.meshes, _iconMaterial);
+            SpellIcons spells = new SpellIcons(_iconVocabulary, _iconLooks, _manager.meshes, _iconMaterial,
+                source => IconOwner(source, _manager != null && _manager.player != null ? _manager.player.character : null));
             _icons = new StageIcons(_portraits, spells);
             _ui.SetIconProvider(_icons);
+        }
+
+        // A HUD icon is sized by the class of the healer who casts it, the in-world look's rule. Outside a run no
+        // caster exists and the icon keeps its plain reading: the class list is an editor asset scan, not a runtime one
+        public static CharacterData IconOwner(object source, Character caster)
+        {
+            return PlayerClassContext.CasterOf(source, caster ? caster.data : null, null);
         }
 
         void OnSceneUnloaded(Scene scene)

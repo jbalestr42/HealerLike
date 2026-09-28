@@ -14,7 +14,19 @@ namespace HealerLike.Render.Stage
     public class ClassSelectCaptureRun : AStageRun
     {
         public static readonly string Mode = "class-select";
-        public static readonly string Pick = "Druid";
+        public static readonly string DefaultPick = "Druid";
+        public static readonly string PickVariable = "RENDER_CLASS_PICK";
+
+        // The class card title pressed, RENDER_CLASS_PICK when set (e.g. Cleric), else the Druid
+        public static string Pick
+        {
+            get { return PickFrom(System.Environment.GetEnvironmentVariable(PickVariable)); }
+        }
+
+        public static string PickFrom(string variable)
+        {
+            return string.IsNullOrWhiteSpace(variable) ? DefaultPick : variable.Trim();
+        }
 
         readonly List<string> _problems = new List<string>();
 
@@ -225,7 +237,7 @@ namespace HealerLike.Render.Stage
                 + string.Join(", ", Titles(actions.root.Q("spell-list"))));
             Debug.Log("[ClassSelectCaptureRun] HUD party cards: "
                 + string.Join(", ", Titles(actions.root.Q("party-list"))));
-            yield return CaptureScreen("class-03-druid-run");
+            yield return CaptureScreen("class-03-" + Pick.ToLowerInvariant() + "-run");
         }
 
         // The Game view as the player sees it, the Toolkit overlay included

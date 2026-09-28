@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Spells;
 using UnityEditor;
 using UnityEngine;
@@ -46,6 +47,7 @@ namespace HealerLike.Render.Stage
             EffectVocabulary vocabulary = RenderAssets.Load<EffectVocabulary>(
                 "Assets/Render/Spells/Data/EffectVocabulary.asset");
             Material material = RenderAssets.Load<Material>("Assets/Render/Look/Look_Default.mat");
+            List<CharacterData> characters = AtlasAssetCatalog.Characters();
             try
             {
                 using (SpellIconRenderer renderer = new SpellIconRenderer(_manager.meshes, material))
@@ -54,7 +56,7 @@ namespace HealerLike.Render.Stage
                     {
                         string path = paths[index];
                         UnityEngine.Object source = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
-                        SpellIconRecipe recipe = SpellIconComposer.Compose(source, vocabulary, _manager.spellLooks);
+                        SpellIconRecipe recipe = Compose(source, vocabulary, _manager.spellLooks, characters);
                         if (recipe == null)
                         {
                             throw new InvalidOperationException("No grammar icon for " + path);
@@ -92,6 +94,13 @@ namespace HealerLike.Render.Stage
                 RenderObjects.Release(sheet);
             }
             StagePlay.Finish(this, true);
+        }
+
+        // Each skill or handler read as its own class casts it, the atlas's rule; an unowned one reads plain
+        public static SpellIconRecipe Compose(UnityEngine.Object source, EffectVocabulary vocabulary, SpellLooks looks,
+            IEnumerable<CharacterData> characters)
+        {
+            return SpellIconComposer.Compose(source, vocabulary, looks, PlayerClassContext.OwnerOf(source, characters));
         }
 
         static string OwnerName(UnityEngine.Object source, string path)
