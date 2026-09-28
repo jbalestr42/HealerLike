@@ -132,6 +132,7 @@ namespace HealerLike.Render.Stage
             if (mode == "spell-polish") return new SpellPolishRun();
             if (mode == "spell-readability") return new SpellPolishRun(true);
             if (mode == "spell-sources") return new SpellSourceRun();
+            if (mode == FieldVariantRun.Mode) return new FieldVariantRun();
             if (mode == SandboxCaptureRun.BootMode) return new SandboxCaptureRun(false);
             if (mode == SandboxCaptureRun.MenuMode) return new SandboxCaptureRun(true);
             if (mode == SandboxCaptureRun.BackMode) return new SandboxCaptureRun(false, true);
@@ -218,12 +219,14 @@ namespace HealerLike.Render.Stage
                 AStageRun run = Create(mode);
                 _activeRun = run;
                 if (mode == "mobile-interface" || mode == "creature-presentation" || mode == "expedition-map"
-                    || mode == "spell-sources" || mode == "selection-facing" || mode == "compact-ui")
+                    || mode == "spell-sources" || mode == "selection-facing" || mode == "compact-ui"
+                    || mode == FieldVariantRun.Mode)
                 {
-                    // Screen and pointer coordinates must be read inside a game frame, not Editor.update.
+                    // Screen and pointer coordinates must be read inside a game frame, not Editor.update. The field
+                    // variants read the game camera back too, so they step after the grass's indirect draw is queued.
                     GameObject host = new GameObject("Stage capture frame");
                     UnityEngine.Object.DontDestroyOnLoad(host);
-                    _frame = mode == "creature-presentation"
+                    _frame = mode == "creature-presentation" || mode == FieldVariantRun.Mode
                         ? host.AddComponent<StagePresentationFrame>() : host.AddComponent<StageCaptureFrame>();
                     _frame.onFrame = run.Step;
                 }

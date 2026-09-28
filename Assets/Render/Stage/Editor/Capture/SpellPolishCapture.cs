@@ -23,10 +23,9 @@ namespace HealerLike.Render.Stage
     public class SpellPolishRun : AStageRun
     {
         const float Step = 1f / 60f;
+        public const float FrameStep = Step;
         static readonly float[] Phases = { .15f, .45f, .8f };
-        // The middle moment is the harness's readable peak; the readability pass samples only that one
-        static readonly float[] PeakPhase = { .45f };
-        static readonly EffectKey[] CoreElements = { EffectKey.Burst, EffectKey.Rise, EffectKey.Stalks,
+        public static readonly EffectKey[] CoreElements = { EffectKey.Burst, EffectKey.Rise, EffectKey.Stalks,
             EffectKey.Drips, EffectKey.Orbit, EffectKey.Plates, EffectKey.Bud, EffectKey.Press, EffectKey.Crack,
             EffectKey.ManaUp, EffectKey.ManaDown };
         // The elements that have a Stone entry, measured again as a stone caster draws them
@@ -48,8 +47,8 @@ namespace HealerLike.Render.Stage
             EffectVocabulary vocabulary = RenderAssets.Load<EffectVocabulary>(
                 "Assets/Render/Spells/Data/EffectVocabulary.asset");
             Material material = RenderAssets.Load<Material>("Assets/Render/Look/Look_Default.mat");
-            float[] phases = _isReadability ? PeakPhase : Phases;
-            EffectKey[] elements = _isReadability ? CoreElements : (EffectKey[])Enum.GetValues(typeof(EffectKey));
+            float[] phases = Phases;
+            EffectKey[] elements = (EffectKey[])Enum.GetValues(typeof(EffectKey));
             using (var images = new SpellPolishImages(folder))
             {
                 if (_isReadability)
@@ -57,24 +56,32 @@ namespace HealerLike.Render.Stage
                     List<CharacterData> characters = AtlasAssetCatalog.Characters();
                     images.Resolved(Resolve(vocabulary, GainHandler, characters),
                         Resolve(vocabulary, DrainHandler, characters));
+                    var readability = new List<SpellReadabilityPass.Fixture>();
+                    // Each core element in its plant drawing on both target bodies, the plant ally and the stone enemy
+                    foreach (EffectKey element in CoreElements)
+                        readability.Add(new SpellReadabilityPass.Fixture(element, LookSide.Plant, LookSide.Plant));
+                    foreach (EffectKey element in CoreElements)
+                        readability.Add(new SpellReadabilityPass.Fixture(element, LookSide.Plant, LookSide.Stone));
+                    foreach (EffectKey element in StoneElements)
+                        readability.Add(new SpellReadabilityPass.Fixture(element, LookSide.Stone, LookSide.Plant));
+                    foreach (EffectKey element in KindElements)
+                        readability.Add(new SpellReadabilityPass.Fixture(element, LookSide.Plant, LookSide.Plant));
+                    yield return SpellReadabilityPass.Run(_manager, images, vocabulary, material, readability);
                 }
                 var fixtures = new List<(EffectKey element, LookSide side)>();
-                foreach (EffectKey element in elements) fixtures.Add((element, LookSide.Plant));
-                if (_isReadability)
-                    foreach (EffectKey element in StoneElements) fixtures.Add((element, LookSide.Stone));
-                if (_isReadability)
-                    foreach (EffectKey element in KindElements) fixtures.Add((element, LookSide.Plant));
+                if (!_isReadability)
+                    foreach (EffectKey element in elements) fixtures.Add((element, LookSide.Plant));
                 foreach (var (element, side) in fixtures)
                 {
                     using (var scene = new GrassLabScene(_manager))
                     {
                         if (!scene.Init()) throw new InvalidOperationException("Could not initialize grass spell fixture.");
-                        Prepare(scene);
+                        Prepare(_manager, scene, 0);
                         for (int frame = 0; frame < 30; frame++) Tick(scene, Step, frame * Step);
                         EffectRecipe recipe = EffectComposer.Compose(vocabulary, element, Family(element),
                             EffectTempo.Once, 0f, 3, 3, .5f, material: side);
-                        SpellEffect effect = Build(scene, recipe, material);
-                        ShowGround(scene, recipe);
+                        SpellEffect effect = Build(_manager, scene, recipe, material, 0);
+                        ShowGround(scene, recipe, Vector3.zero);
                         int sample = 0;
                         int total = Mathf.CeilToInt(recipe.cycleSeconds / Step);
                         for (int frame = 0; frame <= total && sample < phases.Length; frame++)
@@ -82,13 +89,7 @@ namespace HealerLike.Render.Stage
                             float age = frame * Step;
                             if (frame > 0) effect.Advance(Step);
                             Tick(scene, Step, .5f + age);
-                            if (_isReadability && age >= phases[sample] * recipe.cycleSeconds)
-                            {
-                                images.Readability(scene.camera, scene.creatures[0].anchor.gameObject, effect.gameObject, element,
-                                    age, recipe, effect.lifetime);
-                                sample++;
-                            }
-                            else if (!_isReadability && age >= phases[sample] * recipe.cycleSeconds)
+                            if (age >= phases[sample] * recipe.cycleSeconds)
                             {
                                 images.Capture(scene.camera, element, sample, age);
                                 images.Measure(scene.field.simulation, element, sample, age);
@@ -125,35 +126,49 @@ namespace HealerLike.Render.Stage
             return EffectComposer.Element(vocabulary, PlayerClassContext.Channels(handler, true, characters));
         }
 
-        void Prepare(GrassLabScene scene)
+        // The lab's plant ally is creature 0, its stone enemy creature 1
+        public static int CreatureIndex(LookSide side) { return side == LookSide.Plant ? 0 : 1; }
+
+        public static void Prepare(RenderManager manager, GrassLabScene scene, params int[] shown)
         {
-            for (int i = 1; i < scene.creatures.Count; i++) scene.creatures[i].anchor.gameObject.SetActive(false);
-            GrassLabScene.CreatureBody creature = scene.creatures[0];
-            creature.anchor.position = Vector3.zero;
-            creature.preview.Tick(0, 0, new FootFrame(Vector3.zero, Vector3.up, 1), Vector3.back);
-            creature.Refresh();
-            scene.field.bladeHeightScale = _manager.grass.bladeHeightScale;
-            scene.field.windStrength = _manager.grass.windStrength;
-            scene.look.settings = _manager.look.settings;
+            Prepare(manager, scene, shown, new[] { Vector3.zero });
+        }
+
+        // Shows the listed creatures, the first at the first position and so on, and hides the rest
+        public static void Prepare(RenderManager manager, GrassLabScene scene, int[] shown, Vector3[] positions)
+        {
+            for (int i = 0; i < scene.creatures.Count; i++)
+                scene.creatures[i].anchor.gameObject.SetActive(Array.IndexOf(shown, i) >= 0);
+            for (int k = 0; k < shown.Length; k++)
+            {
+                GrassLabScene.CreatureBody creature = scene.creatures[shown[k]];
+                creature.anchor.position = positions[k];
+                creature.preview.Tick(0, 0, new FootFrame(positions[k], Vector3.up, 1), Vector3.back);
+                creature.Refresh();
+            }
+            scene.field.bladeHeightScale = manager.grass.bladeHeightScale;
+            scene.field.windStrength = manager.grass.windStrength;
+            scene.look.settings = manager.look.settings;
             scene.camera.orthographic = true;
             scene.camera.orthographicSize = 2.8f;
             scene.camera.transform.rotation = Quaternion.Euler(50, 0, 0);
             scene.camera.transform.position = Vector3.up * .45f - scene.camera.transform.forward * 9f;
         }
 
-        SpellEffect Build(GrassLabScene scene, EffectRecipe recipe, Material material)
+        public static SpellEffect Build(RenderManager manager, GrassLabScene scene, EffectRecipe recipe, Material material,
+                                        int creature, LookSide target = LookSide.Plant)
         {
             GameObject host = scene.Fixture("Spell polish " + recipe.element);
             SpellEffect effect = host.AddComponent<SpellEffect>();
             effect.enabled = false;
-            effect.Init(recipe, _manager.meshes, material, LookSide.Plant);
+            effect.Init(recipe, manager.meshes, material, target);
             if (recipe.socket == EffectSocket.Link)
                 effect.SetEndpoints(new Vector3(-1.45f, .65f, -.15f), new Vector3(1.45f, .65f, -.15f), false);
             else if (recipe.socket == EffectSocket.Ground)
                 effect.transform.localScale = Vector3.one * 1.65f;
             else
             {
-                if (!scene.creatures[0].preview.rig.TryGetAnchors(out EffectAnchors anchors))
+                if (!scene.creatures[creature].preview.rig.TryGetAnchors(out EffectAnchors anchors))
                     throw new InvalidOperationException("Creature has no effect anchors.");
                 EffectPlacement.Place(effect, null, anchors);
             }
@@ -163,17 +178,17 @@ namespace HealerLike.Render.Stage
             return effect;
         }
 
-        static void ShowGround(GrassLabScene scene, EffectRecipe recipe)
+        public static void ShowGround(GrassLabScene scene, EffectRecipe recipe, Vector3 at)
         {
             ElementEntry entry = recipe.entry;
             if (recipe.socket == EffectSocket.Link)
                 scene.ground.Play(entry.ground, Vector3.left * 1.45f, Vector3.right * 1.45f, entry.groundStrength);
             else
-                scene.ground.Play(entry.ground, Vector3.zero, entry.groundRadius *
+                scene.ground.Play(entry.ground, at, entry.groundRadius *
                     (recipe.socket == EffectSocket.Ground ? 1.65f : 1f), entry.groundStrength);
         }
 
-        static void Tick(GrassLabScene scene, float step, float time)
+        public static void Tick(GrassLabScene scene, float step, float time)
         {
             scene.registry.PublishFrame(step);
             scene.ground.Advance(step);
@@ -181,7 +196,7 @@ namespace HealerLike.Render.Stage
             scene.look.ApplyGlobals();
         }
 
-        static EffectFamily Family(EffectKey element)
+        public static EffectFamily Family(EffectKey element)
         {
             switch (element)
             {

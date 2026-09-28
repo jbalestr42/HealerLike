@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using HealerLike.Render.Grammar;
 using HealerLike.Render.Spells;
 using HealerLike.Render.Grass;
 using System.Text;
@@ -82,17 +84,44 @@ namespace HealerLike.Render.Stage
 
         // Readability at the shipped portrait size. Effect pixels are the ones the effect's own renderers change:
         // the frame is rendered with everything, then with the effect's renderers off; a pixel is the effect's when
-        // any channel moves by more than EffectThreshold. The grass behind and around is a third render with the
-        // effect's and the creature's renderers off, read over those pixels and a RingPixels band around them.
+        // any channel moves by more than ReadabilityPixels.Threshold. The grass behind and around is a third render
+        // with the effect's and the creature's renderers off, read over those pixels and a RingPixels band around them.
+        // The creature's own pixels are the ones its renderers change between the second and third renders: its
+        // contrast against the field is read the same way, and its silhouette survival is the fraction of them the
+        // effect leaves unchanged.
         const int PhoneWidth = 1080;
         const int PhoneHeight = 1920;
-        const int EffectThreshold = 6;
         const int RingPixels = 24;
-        readonly StringBuilder readability = new StringBuilder("element,material,age,cycleSeconds,lifetimeSeconds,effectPixels," +
-            "backgroundPixels,effectR,effectG,effectB,grassR,grassG,grassB,effectLuma,grassLuma,lumaDifference,rgbDistance\n");
+        readonly StringBuilder readability = new StringBuilder("element,material,target,age,cycleSeconds,lifetimeSeconds," +
+            "effectPixels,backgroundPixels,effectR,effectG,effectB,grassR,grassG,grassB,effectLuma,grassLuma,lumaDifference," +
+            "rgbDistance,creaturePixels,silhouetteSurvival,creatureR,creatureG,creatureB,creatureFieldR,creatureFieldG," +
+            "creatureFieldB,creatureLuma,creatureFieldLuma,creatureLumaDifference,creatureRgbDistance\n");
+        readonly StringBuilder pairs = new StringBuilder("first,second,firstPixels,secondPixels,firstR,firstG,firstB," +
+            "secondR,secondG,secondB,firstLuma,secondLuma,lumaDifference,rgbDistance\n");
+        public readonly List<ReadabilityRow> rows = new List<ReadabilityRow>();
+        public readonly List<PairRow> pairRows = new List<PairRow>();
         Color32[] manaUp;
         Color32[] manaDown;
         string resolved = "";
+
+        [Serializable]
+        public class ReadabilityRow
+        {
+            public string element, material, target;
+            public float age, cycleSeconds, lifetimeSeconds;
+            public int effectPixels, backgroundPixels, creaturePixels;
+            public double effectLuma, grassLuma, lumaDifference, rgbDistance;
+            public double silhouetteSurvival;
+            public double creatureLuma, creatureFieldLuma, creatureLumaDifference, creatureRgbDistance;
+        }
+
+        [Serializable]
+        public class PairRow
+        {
+            public string first, second;
+            public int firstPixels, secondPixels;
+            public double firstLuma, secondLuma, lumaDifference, rgbDistance;
+        }
 
         public void Resolved(EffectKey gain, EffectKey drain)
         {
@@ -100,7 +129,7 @@ namespace HealerLike.Render.Stage
         }
 
         public void Readability(Camera camera, GameObject creature, GameObject effectHost, EffectKey element, float age,
-                                EffectRecipe recipe, float lifetime)
+                                EffectRecipe recipe, float lifetime, LookSide target)
         {
             Renderer[] effectRenderers = Visible(effectHost), creatureRenderers = Visible(creature);
             Texture2D full = StageReadback.Render(camera, PhoneWidth, PhoneHeight);
@@ -114,53 +143,44 @@ namespace HealerLike.Render.Stage
                 Show(effectRenderers, true);
                 Show(creatureRenderers, true);
                 Color32[] a = full.GetPixels32(), b = bare.GetPixels32(), c = grass.GetPixels32();
-                int[] sum = new int[(PhoneWidth + 1) * (PhoneHeight + 1)];
-                bool[] isEffect = new bool[a.Length];
-                for (int y = 0; y < PhoneHeight; y++)
-                    for (int x = 0; x < PhoneWidth; x++)
-                    {
-                        int i = y * PhoneWidth + x;
-                        isEffect[i] = Mathf.Max(Mathf.Abs(a[i].r - b[i].r), Mathf.Abs(a[i].g - b[i].g),
-                            Mathf.Abs(a[i].b - b[i].b)) > EffectThreshold;
-                        sum[(y + 1) * (PhoneWidth + 1) + x + 1] = (isEffect[i] ? 1 : 0) + sum[y * (PhoneWidth + 1) + x + 1]
-                            + sum[(y + 1) * (PhoneWidth + 1) + x] - sum[y * (PhoneWidth + 1) + x];
-                    }
-                double[] effect = new double[3], ground = new double[3];
-                int effectCount = 0, groundCount = 0;
-                for (int y = 0; y < PhoneHeight; y++)
-                    for (int x = 0; x < PhoneWidth; x++)
-                    {
-                        int i = y * PhoneWidth + x;
-                        if (isEffect[i]) { effectCount++; Add(effect, a[i]); }
-                        int x0 = Mathf.Max(0, x - RingPixels), x1 = Mathf.Min(PhoneWidth, x + RingPixels + 1);
-                        int y0 = Mathf.Max(0, y - RingPixels), y1 = Mathf.Min(PhoneHeight, y + RingPixels + 1);
-                        int near = sum[y1 * (PhoneWidth + 1) + x1] - sum[y0 * (PhoneWidth + 1) + x1]
-                            - sum[y1 * (PhoneWidth + 1) + x0] + sum[y0 * (PhoneWidth + 1) + x0];
-                        if (near > 0) { groundCount++; Add(ground, c[i]); }
-                    }
-                for (int k = 0; k < 3; k++)
-                {
-                    effect[k] /= Mathf.Max(1, effectCount);
-                    ground[k] /= Mathf.Max(1, groundCount);
-                }
-                double effectLuma = Luma(effect), groundLuma = Luma(ground);
-                double distance = System.Math.Sqrt(System.Math.Pow(effect[0] - ground[0], 2) + System.Math.Pow(effect[1] - ground[1], 2)
-                    + System.Math.Pow(effect[2] - ground[2], 2));
-                readability.Append(element).Append(',').Append(recipe.material);
-                foreach (double value in new double[] { age, recipe.cycleSeconds, lifetime, effectCount, groundCount,
-                    effect[0], effect[1], effect[2], ground[0], ground[1], ground[2], effectLuma, groundLuma,
-                    effectLuma - groundLuma, distance })
+                ReadabilityPixels.Contrast effect = ReadabilityPixels.Measure(ReadabilityPixels.Changed(a, b), a, c,
+                    PhoneWidth, PhoneHeight, RingPixels);
+                bool[] body = ReadabilityPixels.Changed(b, c);
+                ReadabilityPixels.Contrast creatureContrast = ReadabilityPixels.Measure(body, b, c, PhoneWidth, PhoneHeight,
+                    RingPixels);
+                double survival = ReadabilityPixels.Survival(body, a, b);
+                int background = ReadabilityPixels.Count(ReadabilityPixels.Grow(ReadabilityPixels.Changed(a, b),
+                    PhoneWidth, PhoneHeight, RingPixels));
+                readability.Append(element).Append(',').Append(recipe.material).Append(',').Append(target);
+                foreach (double value in new double[] { age, recipe.cycleSeconds, lifetime, effect.pixels, background,
+                    effect.shape[0], effect.shape[1], effect.shape[2], effect.field[0], effect.field[1], effect.field[2],
+                    effect.shapeLuma, effect.fieldLuma, effect.lumaDifference, effect.rgbDistance, creatureContrast.pixels,
+                    survival, creatureContrast.shape[0], creatureContrast.shape[1], creatureContrast.shape[2],
+                    creatureContrast.field[0], creatureContrast.field[1], creatureContrast.field[2],
+                    creatureContrast.shapeLuma, creatureContrast.fieldLuma, creatureContrast.lumaDifference,
+                    creatureContrast.rgbDistance })
                     readability.Append(',').Append(value.ToString("0.###", CultureInfo.InvariantCulture));
                 readability.AppendLine();
-                bool isStone = recipe.material == HealerLike.Render.Grammar.LookSide.Stone;
-                if (element == EffectKey.ManaUp) manaUp = a;
-                if (element == EffectKey.ManaDown) manaDown = a;
-                File.WriteAllBytes(Path.Combine(folder, $"{(int)element:D2}-{element}{(isStone ? "-stone" : "")}-peak.png"),
-                    full.EncodeToPNG());
+                rows.Add(new ReadabilityRow
+                {
+                    element = element.ToString(), material = recipe.material.ToString(), target = target.ToString(),
+                    age = age, cycleSeconds = recipe.cycleSeconds, lifetimeSeconds = lifetime,
+                    effectPixels = effect.pixels, backgroundPixels = background, creaturePixels = creatureContrast.pixels,
+                    effectLuma = effect.shapeLuma, grassLuma = effect.fieldLuma, lumaDifference = effect.lumaDifference,
+                    rgbDistance = effect.rgbDistance, silhouetteSurvival = survival,
+                    creatureLuma = creatureContrast.shapeLuma, creatureFieldLuma = creatureContrast.fieldLuma,
+                    creatureLumaDifference = creatureContrast.lumaDifference,
+                    creatureRgbDistance = creatureContrast.rgbDistance
+                });
+                bool isStone = recipe.material == LookSide.Stone;
+                string suffix = (isStone ? "-stone" : "") + (target == LookSide.Stone ? "-on-stone" : "");
+                if (element == EffectKey.ManaUp && target == LookSide.Plant) manaUp = a;
+                if (element == EffectKey.ManaDown && target == LookSide.Plant) manaDown = a;
+                File.WriteAllBytes(Path.Combine(folder, $"{(int)element:D2}-{element}{suffix}-peak.png"), full.EncodeToPNG());
                 if (element == EffectKey.Burst && !isStone)
                 {
-                    File.WriteAllBytes(Path.Combine(folder, "00-Burst-no-effect.png"), bare.EncodeToPNG());
-                    File.WriteAllBytes(Path.Combine(folder, "00-Burst-grass-only.png"), grass.EncodeToPNG());
+                    File.WriteAllBytes(Path.Combine(folder, $"00-Burst{suffix}-no-effect.png"), bare.EncodeToPNG());
+                    File.WriteAllBytes(Path.Combine(folder, $"00-Burst{suffix}-grass-only.png"), grass.EncodeToPNG());
                 }
             }
             finally
@@ -173,9 +193,56 @@ namespace HealerLike.Render.Stage
             }
         }
 
+        // Two different elements in one frame on two adjacent creatures: each element's pixels are the ones its own
+        // renderers change, and the pair reads apart by the distance between their means
+        public void Pair(Camera camera, GameObject firstHost, GameObject secondHost, EffectKey first, EffectKey second)
+        {
+            Renderer[] firstRenderers = Visible(firstHost), secondRenderers = Visible(secondHost);
+            Texture2D full = StageReadback.Render(camera, PhoneWidth, PhoneHeight);
+            Texture2D withoutFirst = null, withoutSecond = null;
+            try
+            {
+                Show(firstRenderers, false);
+                withoutFirst = StageReadback.Render(camera, PhoneWidth, PhoneHeight);
+                Show(firstRenderers, true);
+                Show(secondRenderers, false);
+                withoutSecond = StageReadback.Render(camera, PhoneWidth, PhoneHeight);
+                Show(secondRenderers, true);
+                Color32[] a = full.GetPixels32();
+                bool[] firstMask = ReadabilityPixels.Changed(a, withoutFirst.GetPixels32());
+                bool[] secondMask = ReadabilityPixels.Changed(a, withoutSecond.GetPixels32());
+                double[] firstMean = ReadabilityPixels.Mean(a, firstMask), secondMean = ReadabilityPixels.Mean(a, secondMask);
+                PairRow row = new PairRow
+                {
+                    first = first.ToString(), second = second.ToString(),
+                    firstPixels = ReadabilityPixels.Count(firstMask), secondPixels = ReadabilityPixels.Count(secondMask),
+                    firstLuma = ReadabilityPixels.Luma(firstMean), secondLuma = ReadabilityPixels.Luma(secondMean),
+                    rgbDistance = ReadabilityPixels.Distance(firstMean, secondMean)
+                };
+                row.lumaDifference = row.firstLuma - row.secondLuma;
+                pairRows.Add(row);
+                pairs.Append(first).Append(',').Append(second);
+                foreach (double value in new double[] { row.firstPixels, row.secondPixels, firstMean[0], firstMean[1],
+                    firstMean[2], secondMean[0], secondMean[1], secondMean[2], row.firstLuma, row.secondLuma,
+                    row.lumaDifference, row.rgbDistance })
+                    pairs.Append(',').Append(value.ToString("0.###", CultureInfo.InvariantCulture));
+                pairs.AppendLine();
+                File.WriteAllBytes(Path.Combine(folder, $"pair-{first}-{second}.png"), full.EncodeToPNG());
+            }
+            finally
+            {
+                Show(firstRenderers, true);
+                Show(secondRenderers, true);
+                RenderObjects.Release(full);
+                RenderObjects.Release(withoutFirst);
+                RenderObjects.Release(withoutSecond);
+            }
+        }
+
         public void WriteReadability()
         {
             File.WriteAllText(Path.Combine(folder, "readability.csv"), readability.ToString());
+            File.WriteAllText(Path.Combine(folder, "pairs.csv"), pairs.ToString());
             File.WriteAllText(Path.Combine(folder, "mana-resolution.txt"), resolved + "\n");
             if (manaUp == null || manaDown == null) return;
             Texture2D pair = new Texture2D(PhoneWidth * 2, PhoneHeight, TextureFormat.RGB24, false);
@@ -200,16 +267,6 @@ namespace HealerLike.Render.Stage
         {
             foreach (Renderer renderer in renderers) renderer.enabled = isShown;
         }
-
-        static void Add(double[] total, Color32 pixel)
-        {
-            total[0] += pixel.r;
-            total[1] += pixel.g;
-            total[2] += pixel.b;
-        }
-
-        // Rec. 709 weights on the stored sRGB bytes, 0 to 255, as the phone displays them
-        static double Luma(double[] rgb) { return .2126 * rgb[0] + .7152 * rgb[1] + .0722 * rgb[2]; }
 
         public void Dispose() { RenderObjects.Release(sheet); }
     }
