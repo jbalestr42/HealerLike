@@ -81,6 +81,42 @@ public class ResourceAttributeTests
         Assert.AreEqual(100f, _health.Value);
         Assert.AreEqual(1, changedCount);
     }
+
+    [Test]
+    public void SetValue_SetsTheValueAndNotifiesOnTheNextUpdate()
+    {
+        int changedCount = 0;
+        _health.OnValueChanged.AddListener(_ => changedCount++);
+
+        _health.SetValue(40f);
+        Drain();
+
+        Assert.AreEqual(40f, _health.Value);
+        Assert.AreEqual(1, changedCount);
+    }
+
+    [Test]
+    public void SetValue_IsClampedBetweenZeroAndMax()
+    {
+        _health.SetValue(150f);
+        Assert.AreEqual(100f, _health.Value);
+
+        _health.SetValue(-10f);
+        Assert.AreEqual(0f, _health.Value);
+    }
+
+    [Test]
+    public void SetValue_IgnoresArmorAndInvincibility()
+    {
+        _targetAttributeManager.Get(AttributeType.PercentArmor).BaseValue = 0.5f;
+        _health.preventConsumers = true;
+
+        _health.SetValue(30f);
+        Drain();
+
+        Assert.AreEqual(30f, _health.Value);
+    }
+
     [Test]
     public void Percent_ReturnsValueOverMax()
     {

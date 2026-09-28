@@ -22,14 +22,11 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   data:
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: bbe4f04da39757b43b86e63a47657063, type: 3}
     name: Heal
-    description: 'Heal single target for <color="green">[{attribute:current:HealPower}x{data:multiplier}]</color>
-      <color=#008080ff>([{data:multiplier}x100]% HealPower)</color>
+    description: 'Heal single target for <color="green">[{attribute:current:HealPower}x{data:multiplier}]</color> <color=#008080ff>([{data:multiplier}x100]% HealPower)</color>
 
-      Cost:
-      <color="blue">{data:validators|1.data.consumer.data.value.data.value}</color>
-      mana
+      Cost: <color="blue">{data:validators|1.data.consumer.data.value.data.value}</color> mana
 
       Cooldown: <color="yellow">{data:validators|0.data.duration}s</color>'
     validators:

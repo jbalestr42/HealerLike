@@ -26,8 +26,8 @@ public class CharacterData : SerializedScriptableObject
     public Dictionary<AttributeType, float> attributes = new Dictionary<AttributeType, float>();
 
     [Space]
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(passives)")]
-    public List<ABuffHandlerFactory> passives;
+    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<AItemFactory>, AItemFactory>(items)")]
+    public List<AItemFactory> items = new List<AItemFactory>();
 
     [Space]
     public List<EntityData> entities = new List<EntityData>();

@@ -56,9 +56,19 @@ public class SandboxGameType : AGameType
         _isInitialized = true;
 
         PlayerBehaviour.instance.character.hasUnrestrictedSkills = true;
-        PlayerBehaviour.instance.Init(_data.CreateCharacterData());
+        PlayerBehaviour.instance.Init(_data.CreateCharacterData(playedCharacter));
 
         _panel.Init(this, _data, PlayerBehaviour.instance.character);
+    }
+
+    // Only a character of the sandbox list, the selection may come from another sandbox data
+    public CharacterData playedCharacter => _data.characters.Contains(CharacterSelection.sandboxCharacter) ? CharacterSelection.sandboxCharacter : null;
+
+    // The character is set up once, the scene is reloaded to play another one
+    public void PlayNextCharacter()
+    {
+        CharacterSelection.sandboxCharacter = _data.GetNextCharacter(playedCharacter);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
     }
 
     public override void StartGame()
@@ -128,6 +138,7 @@ public class SandboxGameType : AGameType
     public void StopBattle()
     {
         _isBattleRunning = false;
+        _entities.RemoveSummons();
         EnableAllEntities(false);
         PlayerBehaviour.instance.character.Reset();
         ForEachEntity(entity => entity.Reset());

@@ -28,7 +28,7 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 5275139311471951902
-      type: {class: AttributeValue, ns: , asm: Assembly-CSharp}
+      type: {class: AttributeValue, ns: , asm: HealerLike.Runtime}
       data:
         data:
           type: 1

@@ -21,6 +21,10 @@ public class Character : MonoBehaviour, IBuffable
     List<CharacterSkillSlot> _skillSlots = new List<CharacterSkillSlot>();
     public List<CharacterSkillSlot> skillSlots { get { return _skillSlots; } }
 
+    // Items the character starts with, outside the inventory
+    List<AItem> _items = new List<AItem>();
+    public List<AItem> items { get { return _items; } }
+
     InventoryHandler _inventoryHandler = new InventoryHandler();
     public InventoryHandler inventoryHandler => _inventoryHandler;
 
@@ -42,10 +46,12 @@ public class Character : MonoBehaviour, IBuffable
         _mana = gameObject.AddComponent<ResourceAttribute>();
         _mana.Init(AttributeType.ManaMax);
 
-        // Init self buff from data
-        foreach (ABuffHandlerFactory passive in _data.passives)
+        // Init items (passives, ...) from data
+        foreach (AItemFactory itemFactory in _data.items)
         {
-            AddBuffHandler(passive, gameObject, gameObject);
+            AItem item = itemFactory.GetItem();
+            item.Equip(gameObject);
+            _items.Add(item);
         }
 
         // Init skills

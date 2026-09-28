@@ -73,6 +73,28 @@ public class BuffManager : SerializedMonoBehaviour
 
     void OnDestroy()
     {
+        // Nobody is notified by a dying buff manager, its listeners may already be destroyed too
+        OnBuffAdded.RemoveAllListeners();
+        OnBuffRemoved.RemoveAllListeners();
+        OnBuffHandlerStarted.RemoveAllListeners();
+        OnBuffHandlerRefreshed.RemoveAllListeners();
+        OnBuffHandlerStopped.RemoveAllListeners();
+
+        // Remove() every applied buff, so none outlives its target (e.g. a listener left on a static
+        // event would keep reacting in the next run)
+        foreach (var handlerPerSource in _buffHandlerPerSource)
+        {
+            foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
+            {
+                BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
+                if (buffHandlerData.isInit && buffHandlerData.hasStarted)
+                {
+                    StopHandler(handlerPerSource.Key, buffHandlerData);
+                }
+            }
+        }
+        _cachedIdsToRemove.Clear();
+
         foreach (var item in _buffPerSource)
         {
             foreach (var buffData in item.Value.buffPerId)

@@ -31,7 +31,7 @@ public class DamageAllEntityOnEntityDieBuff : ABuff<DamageAllEntityOnEntityDieBu
 
     void OnEntityDie(Entity dead)
     {
-        // A destroyed entity never gets Remove() called on its buffs: stop listening once it is gone
+        // Safety net if the owner is gone without Remove() being called: stop listening
         if (_owner == null)
         {
             EntityManager.instance.OnEntityKilled.RemoveListener(OnEntityDie);
@@ -64,7 +64,12 @@ public class DamageAllEntityOnEntityDieBuff : ABuff<DamageAllEntityOnEntityDieBu
 
     public override void Remove(GameObject source, GameObject target)
     {
-        EntityManager.instance.OnEntityKilled.RemoveListener(OnEntityDie);
+        // Also called while the scene is torn down, where the entity manager may already be gone
+        EntityManager entityManager = EntityManager.existingInstance;
+        if (entityManager != null)
+        {
+            entityManager.OnEntityKilled.RemoveListener(OnEntityDie);
+        }
     }
 
     public void Stack(GameObject source, GameObject target)

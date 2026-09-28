@@ -15,6 +15,17 @@ public class DataManager : Singleton<DataManager>
         return _data.characters[Random.Range(0, _data.characters.Count)];
     }
 
+    // The chosen character when it's one of the game characters, a random one otherwise (ex: the
+    // Main scene started directly from the Editor, without going through the menu)
+    public CharacterData GetCharacter(CharacterData chosen)
+    {
+        if (chosen != null && _data.characters.Contains(chosen))
+        {
+            return chosen;
+        }
+        return GetRandomCharacter();
+    }
+
     // Items having the tag, or one of its descendants
     public List<AItemFactory> GetItemsWithTag(GameplayTag tag)
     {

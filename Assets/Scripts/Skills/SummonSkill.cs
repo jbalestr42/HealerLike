@@ -62,6 +62,7 @@ public class SummonSkill : ACooldownSkill<SummonSkillData>
         if (summon != null)
         {
             // Entities are disabled at spawn until the battle starts, this one joins the running battle
+            summon.GetComponent<Entity>().AddTag(DataManager.instance.GetTagWithName(EntityManager.summonTagName));
             summon.GetComponent<Entity>().Enable(true);
         }
         return summon;

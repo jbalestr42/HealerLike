@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5a3319670e9bd242a09c0fe204a1c42, type: 3}
+  m_Name: WildGrowth
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  data:
+    icon: {fileID: 21300000, guid: ca532bc308a18b144a9123b6edcfe5de, type: 3}
+    name: Wild Growth
+    description: 'Heal all allies for <color="green">[{attribute:current:HealPower}x{data:buffHandlerFactory|0.data.buffFactoryList|0.data.consumerFactory.data.value.data.multiplier}x-1]</color> <color=#008080ff>([{data:buffHandlerFactory|0.data.buffFactoryList|0.data.consumerFactory.data.value.data.multiplier}x-100]% HealPower)</color> every {data:buffHandlerFactory|0.data.periodDuration}s during <color="green">{data:buffHandlerFactory|0.data.duration}s</color>
+
+      Cost: <color="blue">{data:validators|1.data.consumer.data.value.data.value}</color> mana
+
+      Cooldown: <color="yellow">{data:validators|0.data.duration}s</color>'
+    validators:
+    - {fileID: 11400000, guid: 629cee9d54e0d8847bc7fa3e4b15b8ea, type: 2}
+    - {fileID: 11400000, guid: 5368a79aaec4c324b86f7789b6d39481, type: 2}
+    isSingle: 0
+    entityType: 1
+    buffHandlerFactory:
+    - {fileID: 11400000, guid: 6ae9bb00b2e8698448a5ec4fc73b506e, type: 2}

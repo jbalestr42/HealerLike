@@ -21,7 +21,11 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  character: {fileID: 11400000, guid: b6564d3df55530743a8bae3f230c6101, type: 2}
+  character: {fileID: 11400000, guid: 246613bc00a2adc4faacf8f72aa81ddd, type: 2}
+  characters:
+  - {fileID: 11400000, guid: 246613bc00a2adc4faacf8f72aa81ddd, type: 2}
+  - {fileID: 11400000, guid: fa67b546fd2076e47a9f5aebfe698f8c, type: 2}
+  - {fileID: 11400000, guid: 137cb5a7a59624041aba09d3f103f0e3, type: 2}
   entities:
   - {fileID: 11400000, guid: 723a5c26dd4a39d489c9b9accfc6fec4, type: 2}
   - {fileID: 11400000, guid: 19f30c8aca7684b4eb7fbd3a5e0f4b16, type: 2}
@@ -54,6 +58,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2c3697a6933a9454e99b7ad7dcdab91b, type: 2}
   - {fileID: 11400000, guid: 77f9fb43933fe2145adfe39d5a354a24, type: 2}
   - {fileID: 11400000, guid: e422f3ea61ee8ca4d8efdd58208638ae, type: 2}
+  - {fileID: 11400000, guid: 2042951354ead464aa1cd1fefcd8192c, type: 2}
+  - {fileID: 11400000, guid: 9d7a3690dc71ff44ea39e1ef1e3e300b, type: 2}
+  - {fileID: 11400000, guid: 636f5262ae2761b4ab397c7b5f57a3f3, type: 2}
+  - {fileID: 11400000, guid: 3c3340ffc52d73940965e963046a7995, type: 2}
   waves:
   - {fileID: 11400000, guid: d6a62ca494014f16a3f7d75a4c2410a0, type: 2}
   - {fileID: 11400000, guid: 55bd537b7a6b4020b407348f851dfc37, type: 2}
@@ -104,3 +112,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8bf1e981929ef5f4ab415aebf49800b4, type: 2}
   - {fileID: 11400000, guid: 10e7a3acb9f60c54aa9701c4a92cf377, type: 2}
   - {fileID: 11400000, guid: 0fe911b81aaae204fad2bb44dbdc001c, type: 2}
+  - {fileID: 11400000, guid: 82c759f729084ad44a087a4608b18b6b, type: 2}
