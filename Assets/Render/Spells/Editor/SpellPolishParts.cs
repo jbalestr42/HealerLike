@@ -141,14 +141,15 @@ namespace HealerLike.Render.Spells.Editor
         public static LookPart[] Dart()
         {
             var parts = new List<LookPart>();
-            Vector3 axis = new Vector3(1.05f, 0, .2f);
-            parts.Add(Part("Dart blade", Primitive.Leaf, ShapeProfile.Leaf(.04f, .5f), axis + Vector3.up * .15f,
-                new Vector3(.34f, 1.45f, .12f)));
-            parts.Add(Part("Dart seed", Primitive.Cone, Seed(), axis + Vector3.up * 1.05f,
-                new Vector3(.26f, .42f, .26f), colour: ColourRole.MushroomCapPale));
+            // In front of the body and to one side, so the body never hides it from the board camera
+            Vector3 axis = new Vector3(1.35f, 0, -.7f);
+            parts.Add(Part("Dart blade", Primitive.Leaf, ShapeProfile.Leaf(.04f, .5f), axis + Vector3.up * .2f,
+                new Vector3(.5f, 2f, .14f)));
+            parts.Add(Part("Dart seed", Primitive.Cone, Seed(), axis + Vector3.up * 1.4f,
+                new Vector3(.38f, .6f, .38f), colour: ColourRole.MushroomCapPale));
             for (int i = 0; i < 2; i++)
                 parts.Add(Part("Dart fletching " + i, Primitive.Leaf, ShapeProfile.Leaf(.2f, .7f),
-                    axis + Vector3.down * .55f, new Vector3(.26f, .55f, .1f), new Vector3(0, 90f * i, i == 0 ? 38f : -38f)));
+                    axis + Vector3.down * .75f, new Vector3(.36f, .75f, .12f), new Vector3(0, 90f * i, i == 0 ? 38f : -38f)));
             return parts.ToArray();
         }
 
@@ -188,7 +189,7 @@ namespace HealerLike.Render.Spells.Editor
             {
                 float side = i == 0 ? 1f : -1f;
                 parts.Add(Part("Bracket leaf " + i, Primitive.Leaf, ShapeProfile.Leaf(.65f, .6f, .4f),
-                    new Vector3(side * 1.25f, .1f, 0), new Vector3(.5f, 1.9f, .16f), new Vector3(0, i == 0 ? -90f : 90f, 0)));
+                    new Vector3(side * 1.3f, .1f, -.2f), new Vector3(.8f, 2.1f, .16f), new Vector3(0, side * 25f, 0)));
             }
             for (int i = 0; i < 3; i++)
                 parts.Add(Part("Bracket bead " + i, Primitive.Sphere, ShapeProfile.Bulb(), new Vector3(-.5f + .5f * i, -.8f, 0),
@@ -204,12 +205,13 @@ namespace HealerLike.Render.Spells.Editor
             for (int i = 0; i < 8; i++)
             {
                 float turn = i * 45f + 22.5f;
-                parts.Add(Part("Ground seed " + i, Primitive.Cone, Seed(), Radial(i, 8, 1.3f, .08f, 22.5f),
-                    new Vector3(.2f, .36f, .2f), new Vector3(90, turn, 0)));
+                // Tipped out from the feet and raised over the blades, so the grass does not swallow them
+                parts.Add(Part("Ground seed " + i, Primitive.Cone, Seed(), Radial(i, 8, 1.5f, .3f, 22.5f),
+                    new Vector3(.3f, .55f, .3f), new Vector3(55, turn, 0)));
             }
             for (int i = 0; i < 4; i++)
-                parts.Add(Part("Cell tick " + i, Primitive.Leaf, ShapeProfile.Leaf(.05f, .6f), Radial(i, 4, 1.75f, .05f),
-                    new Vector3(.22f, .55f, .08f), new Vector3(90, i * 90f, 0)));
+                parts.Add(Part("Cell tick " + i, Primitive.Leaf, ShapeProfile.Leaf(.05f, .6f), Radial(i, 4, 1.95f, .25f),
+                    new Vector3(.3f, .7f, .1f), new Vector3(70, i * 90f, 0)));
             return parts.ToArray();
         }
 
