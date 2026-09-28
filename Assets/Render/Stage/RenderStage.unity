@@ -173,7 +173,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8078069055359978463, guid: 2babd57d0596749e098cd9356d733cfe, type: 3}
       propertyPath: _bladeHeightScale
-      value: 0.45
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

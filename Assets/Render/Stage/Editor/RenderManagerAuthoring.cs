@@ -42,8 +42,8 @@ namespace HealerLike.Render.Stage
             GrassField grass = grassGo.AddComponent<GrassField>();
             EnvironmentAuthoring.SetGrass(grass);
             EnvironmentAuthoring.SetGround(grass);
-            // Keep combat silhouettes above the turf; the surrounding meadow stays at full height.
-            grass.bladeHeightScale = 0.45f;
+            // Fc's call, 2026-09-28: the combat field runs at full blade height like the meadow around it.
+            grass.bladeHeightScale = 1f;
 
             SpellVisualSink sink = Nest<SpellVisualSink>(SinkPath, root);
             StoneEffects stoneEffects = Nest<StoneEffects>(StoneEffectsPath, root);
