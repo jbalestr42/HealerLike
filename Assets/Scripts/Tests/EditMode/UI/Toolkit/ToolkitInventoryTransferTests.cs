@@ -158,24 +158,25 @@ namespace UI.Toolkit
             Assert.AreEqual(1, source.items.Count);
         }
 
-        [TestCase(0, 3)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        public void Transfer_ToEntitySlot_EquipsWithSlotStrength(int slot, int expectedStacks)
+        // An entity item is equipped once whatever its slot (Julien's ade6ad91 dropped the slot strength)
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(2)]
+        public void Transfer_ToEntitySlot_EquipsOnceWhateverTheSlot(int slot)
         {
             InventoryHandler stash = new InventoryHandler();
             FakeItem item = new FakeItem();
             stash.AddItem(item, 0, false);
             bool isMoved = ToolkitInventoryTransfer.Transfer(item, stash, _entity.inventoryHandler, slot);
             Assert.IsTrue(isMoved);
-            Assert.AreEqual(expectedStacks, item.equipCount);
+            Assert.AreEqual(1, item.equipCount);
             Assert.AreEqual(0, item.unequipCount);
         }
 
-        [TestCase(0, 3)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        public void Transfer_BackToStash_UnequipsWithSlotStrength(int slot, int expectedStacks)
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(2)]
+        public void Transfer_BackToStash_UnequipsOnceWhateverTheSlot(int slot)
         {
             InventoryHandler stash = new InventoryHandler();
             FakeItem item = new FakeItem();
@@ -183,7 +184,7 @@ namespace UI.Toolkit
             ToolkitInventoryTransfer.Transfer(item, stash, _entity.inventoryHandler, slot);
             bool isMoved = ToolkitInventoryTransfer.Transfer(item, _entity.inventoryHandler, stash, 0);
             Assert.IsTrue(isMoved);
-            Assert.AreEqual(expectedStacks, item.unequipCount);
+            Assert.AreEqual(1, item.unequipCount);
             Assert.AreEqual(0, item.equipCount - item.unequipCount);
             Assert.IsEmpty(_entity.inventoryHandler.items);
         }

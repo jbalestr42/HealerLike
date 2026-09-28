@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Moves equipment between inventories and keeps the slot index, which sets the stacking strength in Entity
+// Moves equipment between inventories and keeps the slot index; an entity equips an item once whatever its slot
 public static class ToolkitInventoryTransfer
 {
     public static int FirstEmptySlot(InventoryHandler inventory)

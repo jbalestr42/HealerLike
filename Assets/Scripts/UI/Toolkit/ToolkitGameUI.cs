@@ -94,6 +94,15 @@ public class ToolkitGameUI : MonoBehaviour
         set { _menuScene = value; }
     }
 
+    // Every Awake of a loaded scene runs before any Start, so the legacy menu never opens its screen
+    void Awake()
+    {
+        if (_hideLegacyCanvases)
+        {
+            ToolkitLegacyCanvases.SilenceMenus();
+        }
+    }
+
     void Start()
     {
         _started = true;

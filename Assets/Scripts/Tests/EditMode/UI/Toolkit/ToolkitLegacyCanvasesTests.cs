@@ -58,6 +58,17 @@ namespace UI.Toolkit
         }
 
         [Test]
+        public void SilenceMenus_LegacyMenuController_IsDisabledAndStaysOffAfterRestore()
+        {
+            MainMenu menu = _go.AddComponent<MainMenu>();
+            ToolkitLegacyCanvases.SilenceMenus();
+            Assert.IsFalse(menu.enabled);
+            _legacyCanvases.Hide(_context);
+            _legacyCanvases.Restore();
+            Assert.IsFalse(menu.enabled);
+        }
+
+        [Test]
         public void Restore_AfterHide_RestoresPreviousState()
         {
             _raycaster.enabled = false;

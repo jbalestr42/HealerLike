@@ -8,6 +8,17 @@ public class ToolkitLegacyCanvases
     Dictionary<Canvas, bool> _canvases = new Dictionary<Canvas, bool>();
     Dictionary<GraphicRaycaster, bool> _raycasters = new Dictionary<GraphicRaycaster, bool>();
 
+    // The legacy menu controller opens its own character select from Start; the Toolkit menu replaces that
+    // screen, so the controller is switched off before any Start of its scene runs. It is not switched back on:
+    // its Start would open a screen the Toolkit scenes are not wired for.
+    public static void SilenceMenus()
+    {
+        foreach (MainMenu menu in Object.FindObjectsByType<MainMenu>())
+        {
+            menu.enabled = false;
+        }
+    }
+
     public void Hide(ToolkitGameContext context)
     {
         // Scope to the legacy screen views, the world-space health bars and floating combat text stay
