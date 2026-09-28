@@ -473,6 +473,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Runtime::ToolkitGameUI
   _gameplayScene: MainToolkit
   _menuScene: MenuToolkit
+  _gameData: {fileID: 11400000, guid: cb4a6b00efbe4a447b0fb71b3f33d66a, type: 2}
   _hideLegacyCanvases: 1
   _layout: {fileID: 0}
 --- !u!114 &923149821

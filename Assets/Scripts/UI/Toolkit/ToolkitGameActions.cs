@@ -11,7 +11,14 @@ public class ToolkitGameActions : IDisposable
     readonly ToolkitMobileLayout _mobileLayout;
     readonly ToolkitMapPanel _mapPanel;
     readonly Toggle _markToggle;
+    readonly ToolkitClassSelect _classSelect = new ToolkitClassSelect();
     bool _interactionActive;
+
+    // The class choice Start opens on the menu
+    public ToolkitClassSelect classSelect
+    {
+        get { return _classSelect; }
+    }
 
     public ToolkitGameActions(
         ToolkitGameUI host,
@@ -35,6 +42,8 @@ public class ToolkitGameActions : IDisposable
         view.AddClickListener("inventory-close-button", OnInventoryCloseClicked);
         view.AddClickListener("restart-button", OnRestartClicked);
         view.AddClickListener("menu-button", OnRestartClicked);
+        view.AddClickListener(ToolkitClassSelect.BackButtonName, OnClassBackClicked);
+        _classSelect.Init(view, OnClassChosen);
         _markToggle = view.root.Q<Toggle>("mark-entity-toggle");
         _markToggle.RegisterValueChangedCallback(OnMarkToggleChanged);
     }
@@ -59,13 +68,20 @@ public class ToolkitGameActions : IDisposable
         _view.RemoveClickListener("inventory-close-button", OnInventoryCloseClicked);
         _view.RemoveClickListener("restart-button", OnRestartClicked);
         _view.RemoveClickListener("menu-button", OnRestartClicked);
+        _view.RemoveClickListener(ToolkitClassSelect.BackButtonName, OnClassBackClicked);
+        _classSelect.Init(null, null);
     }
 
     void StartOrAdvance()
     {
         if (_context.isMenu)
         {
-            LoadScene(_host.gameplayScene);
+            // The class choice comes first; a menu without game data keeps the direct start (a random class)
+            if (!_classSelect.isOpen && !_classSelect.Open(_host.gameData))
+            {
+                LoadScene(_host.gameplayScene);
+            }
+
             return;
         }
 
@@ -91,8 +107,20 @@ public class ToolkitGameActions : IDisposable
     {
         if (_context.isMenu)
         {
+            _classSelect.Close();
             LoadScene(_host.sandboxScene);
         }
+    }
+
+    // The pick is already in CharacterSelection; the expedition starts through the same route as before
+    void OnClassChosen(CharacterData character)
+    {
+        LoadScene(_host.gameplayScene);
+    }
+
+    void OnClassBackClicked()
+    {
+        _classSelect.Close();
     }
 
     void LoadScene(string scene)
@@ -108,6 +136,12 @@ public class ToolkitGameActions : IDisposable
 
     void OnEscape()
     {
+        if (_classSelect.isOpen)
+        {
+            _classSelect.Close();
+            return;
+        }
+
         if (_mapPanel.Close())
         {
             return;

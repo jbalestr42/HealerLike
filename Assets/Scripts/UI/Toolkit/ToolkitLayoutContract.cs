@@ -5,6 +5,9 @@ public static class ToolkitLayoutContract
     public static bool Validate(VisualElement root)
     {
         return ToolkitTemplates.Require(root, "cancel-button", out Button _)
+            && ToolkitTemplates.Require(root, "class-back-button", out Button _)
+            && ToolkitTemplates.Require(root, "class-list", out ScrollView _)
+            && ToolkitTemplates.Require(root, "class-panel", out VisualElement _)
             && ToolkitTemplates.Require(root, "command-dock", out VisualElement _)
             && ToolkitTemplates.Require(root, "command-section", out VisualElement _)
             && ToolkitTemplates.Require(root, "currency-label", out Label _)

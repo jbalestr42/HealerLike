@@ -28,6 +28,7 @@ namespace UI.Toolkit
         [TearDown]
         public void TearDown()
         {
+            CharacterSelection.selected = null;
             Application.logMessageReceived -= OnLogMessage;
             LogAssert.ignoreFailingMessages = false;
         }
@@ -136,7 +137,19 @@ namespace UI.Toolkit
             root.Q<Button>("start-button").Focus();
             yield return null;
             Submit(root.Q<Button>("start-button"));
+            yield return WaitFrames(3);
+            // Start opens the class choice first, the menu stays loaded until a class is picked
+            Assert.AreEqual(ToolkitSceneNavigation.MenuScene, SceneManager.GetActiveScene().name);
+            Assert.IsFalse(root.Q(ToolkitClassSelect.PanelName).ClassListContains("is-hidden"));
+            Button druid = root.Q(ToolkitClassSelect.ListName).Query<Button>("data-card").Where(
+                card => ((ToolkitCardModel)card.userData).title == "Druid").First();
+            Assert.IsNotNull(druid);
+            CharacterData picked = (CharacterData)((ToolkitCardModel)druid.userData).source;
+            druid.Focus();
+            yield return null;
+            Submit(druid);
             yield return WaitFrames(10);
+            Assert.AreSame(picked, CharacterSelection.selected);
             Assert.AreEqual(ToolkitSceneNavigation.GameplayScene, SceneManager.GetActiveScene().name);
             Assert.IsNotNull(Object.FindAnyObjectByType<ToolkitGameUI>());
             yield return new ExitPlayMode();

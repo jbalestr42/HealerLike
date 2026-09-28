@@ -10,6 +10,7 @@
     <ui:Template name="RewardScreen" src="Screens/RewardScreen.uxml" />
     <ui:Template name="PauseScreen" src="Screens/PauseScreen.uxml" />
     <ui:Template name="GameOverScreen" src="Screens/GameOverScreen.uxml" />
+    <ui:Template name="ClassSelectScreen" src="Screens/ClassSelectScreen.uxml" />
     <ui:VisualElement name="hud-root" class="game-ui compact-hud" picking-mode="Ignore">
         <ui:Instance template="HudHeader" name="top-bar" class="top-bar" picking-mode="Ignore" />
         <ui:VisualElement name="main-content" class="main-content" picking-mode="Ignore">
@@ -26,5 +27,6 @@
         <ui:Instance template="RewardScreen" name="upgrade-panel" class="modal-layer is-hidden" picking-mode="Position" />
         <ui:Instance template="PauseScreen" name="pause-panel" class="modal-layer is-hidden" picking-mode="Position" />
         <ui:Instance template="GameOverScreen" name="gameover-panel" class="modal-layer is-hidden" picking-mode="Position" />
+        <ui:Instance template="ClassSelectScreen" name="class-panel" class="modal-layer is-hidden" picking-mode="Position" />
     </ui:VisualElement>
 </ui:UXML>

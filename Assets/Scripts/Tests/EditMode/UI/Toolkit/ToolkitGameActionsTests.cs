@@ -5,7 +5,8 @@ using UnityEngine.UIElements;
 
 namespace UI.Toolkit
 {
-    // The menu's two routes: Start opens the expedition, Sandbox opens Julien's sandbox, both through the host's loader
+    // The menu's two routes through the host's loader: Start opens the class choice then the expedition, Sandbox opens
+    // Julien's sandbox directly
     public class ToolkitGameActionsTests
     {
         ToolkitTestPanel _panel;
@@ -20,10 +21,13 @@ namespace UI.Toolkit
         ToolkitGameActions _actions;
         float _speed;
         readonly List<string> _loads = new List<string>();
+        readonly List<Object> _created = new List<Object>();
+        GameData _data;
 
         [SetUp]
         public void SetUp()
         {
+            CharacterSelection.selected = null;
             _loads.Clear();
             _speed = Time.timeScale;
             _panel = new ToolkitTestPanel();
@@ -63,6 +67,59 @@ namespace UI.Toolkit
             Object.DestroyImmediate(_owner);
             Object.DestroyImmediate(_settings);
             Time.timeScale = _speed;
+            CharacterSelection.selected = null;
+            foreach (Object created in _created)
+            {
+                Object.DestroyImmediate(created);
+            }
+
+            _created.Clear();
+        }
+
+        // Three classes on the host, as MenuToolkit gets Main's game data
+        void GiveClasses()
+        {
+            _data = ScriptableObject.CreateInstance<GameData>();
+            _created.Add(_data);
+            foreach (string title in new[] { "Cleric", "Druid", "Warlock" })
+            {
+                CharacterData character = ScriptableObject.CreateInstance<CharacterData>();
+                character.name = title + "Character";
+                character.title = title;
+                character.text = title + " description";
+                _created.Add(character);
+                _data.characters.Add(character);
+            }
+
+            _host.gameData = _data;
+        }
+
+        VisualElement ClassPanel()
+        {
+            return _view.root.Q(ToolkitClassSelect.PanelName);
+        }
+
+        bool IsShown(VisualElement element)
+        {
+            return !element.ClassListContains("is-hidden");
+        }
+
+        List<Button> ClassCards()
+        {
+            return _view.root.Q(ToolkitClassSelect.ListName).Query<Button>("data-card").ToList();
+        }
+
+        Button ClassCard(string title)
+        {
+            foreach (Button card in ClassCards())
+            {
+                if (card.userData is ToolkitCardModel model && model.title == title)
+                {
+                    return card;
+                }
+            }
+
+            return null;
         }
 
         [Test]
@@ -84,11 +141,114 @@ namespace UI.Toolkit
         }
 
         [Test]
-        public void StartButton_Menu_StillLoadsTheGameplayScene()
+        public void StartButton_MenuWithoutGameData_LoadsTheGameplaySceneDirectly()
         {
             ToolkitTestPanel.Submit(_view.root.Q<Button>("start-button"));
 
             CollectionAssert.AreEqual(new[] { "Main" }, _loads);
+            Assert.IsFalse(IsShown(ClassPanel()));
+        }
+
+        [Test]
+        public void StartButton_Menu_OpensTheClassScreenWithoutLoading()
+        {
+            GiveClasses();
+
+            ToolkitTestPanel.Submit(_view.root.Q<Button>("start-button"));
+
+            CollectionAssert.IsEmpty(_loads);
+            Assert.IsTrue(IsShown(ClassPanel()));
+            CollectionAssert.AreEqual(new[] { "Cleric", "Druid", "Warlock", "Random" },
+                ClassCards().ConvertAll(card => ((ToolkitCardModel)card.userData).title));
+            Assert.IsNull(CharacterSelection.selected);
+        }
+
+        [Test]
+        public void ClassCard_Picked_SelectsTheClassAndLoadsTheGameplayScene()
+        {
+            GiveClasses();
+            ToolkitTestPanel.Submit(_view.root.Q<Button>("start-button"));
+
+            ToolkitTestPanel.Submit(ClassCard("Druid"));
+
+            Assert.AreSame(_data.characters[1], CharacterSelection.selected);
+            CollectionAssert.AreEqual(new[] { "Main" }, _loads);
+            Assert.IsFalse(IsShown(ClassPanel()));
+        }
+
+        [Test]
+        public void ClassCard_Picked_LoadsTheHostsGameplayScene()
+        {
+            GiveClasses();
+            _host.gameplayScene = "MainToolkit";
+            ToolkitTestPanel.Submit(_view.root.Q<Button>("start-button"));
+
+            ToolkitTestPanel.Submit(ClassCard("Warlock"));
+
+            Assert.AreSame(_data.characters[2], CharacterSelection.selected);
+            CollectionAssert.AreEqual(new[] { "MainToolkit" }, _loads);
+        }
+
+        [Test]
+        public void RandomCard_Picked_SelectsAnOfferedClassAndLoadsTheGameplayScene()
+        {
+            GiveClasses();
+            ToolkitTestPanel.Submit(_view.root.Q<Button>("start-button"));
+
+            ToolkitTestPanel.Submit(ClassCard("Random"));
+
+            CollectionAssert.Contains(_data.characters, CharacterSelection.selected);
+            CollectionAssert.AreEqual(new[] { "Main" }, _loads);
+        }
+
+        [Test]
+        public void BackButton_ClassScreen_ReturnsToTheMenuWithoutLoading()
+        {
+            GiveClasses();
+            ToolkitTestPanel.Submit(_view.root.Q<Button>("start-button"));
+
+            ToolkitTestPanel.Submit(_view.root.Q<Button>(ToolkitClassSelect.BackButtonName));
+
+            Assert.IsFalse(IsShown(ClassPanel()));
+            CollectionAssert.IsEmpty(_loads);
+            Assert.IsNull(CharacterSelection.selected);
+        }
+
+        [Test]
+        public void StartButton_AfterBack_OpensTheClassScreenAgain()
+        {
+            GiveClasses();
+            ToolkitTestPanel.Submit(_view.root.Q<Button>("start-button"));
+            ToolkitTestPanel.Submit(_view.root.Q<Button>(ToolkitClassSelect.BackButtonName));
+
+            ToolkitTestPanel.Submit(_view.root.Q<Button>("start-button"));
+
+            Assert.IsTrue(IsShown(ClassPanel()));
+            CollectionAssert.IsEmpty(_loads);
+        }
+
+        [Test]
+        public void SandboxButton_MenuWithClasses_LoadsTheSandboxWithoutTheClassScreen()
+        {
+            GiveClasses();
+
+            ToolkitTestPanel.Submit(_view.root.Q<Button>("sandbox-button"));
+
+            CollectionAssert.AreEqual(new[] { "Sandbox" }, _loads);
+            Assert.IsFalse(IsShown(ClassPanel()));
+            Assert.IsNull(CharacterSelection.selected);
+        }
+
+        [Test]
+        public void StartButton_DuringARun_NeverOpensTheClassScreen()
+        {
+            GiveClasses();
+            _context.isMenu = false;
+
+            ToolkitTestPanel.Submit(_view.root.Q<Button>("start-button"));
+
+            Assert.IsFalse(IsShown(ClassPanel()));
+            CollectionAssert.IsEmpty(_loads);
         }
 
         [Test]

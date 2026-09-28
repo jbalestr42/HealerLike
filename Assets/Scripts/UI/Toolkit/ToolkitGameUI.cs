@@ -11,6 +11,10 @@ public class ToolkitGameUI : MonoBehaviour
     // Julien's sandbox, offered beside Start on the menu
     [SerializeField] string _sandboxScene = ToolkitSceneNavigation.SandboxScene;
 
+    // The classes the menu offers at Start: the game data Main's DataManager plays (Managers.prefab), so a pick
+    // is honoured. Left empty, Start goes straight to the gameplay scene with a random class.
+    [SerializeField] GameData _gameData;
+
     [SerializeField] bool _hideLegacyCanvases = true;
 
     [SerializeField] VisualTreeAsset _layout;
@@ -95,6 +99,17 @@ public class ToolkitGameUI : MonoBehaviour
     {
         get { return _menuScene; }
         set { _menuScene = value; }
+    }
+
+    public GameData gameData
+    {
+        get { return _gameData; }
+        set { _gameData = value; }
+    }
+
+    public ToolkitClassSelect classSelect
+    {
+        get { return _actions != null ? _actions.classSelect : null; }
     }
 
     public string sandboxScene

@@ -17,6 +17,7 @@ namespace HealerLike.Render.Stage
         public void TearDown()
         {
             StageTarget.Reset();
+            CharacterSelection.selected = null;
         }
 
         [Test]
@@ -44,6 +45,28 @@ namespace HealerLike.Render.Stage
             Assert.That(path, Is.EqualTo(StageTarget.MainPath));
             Assert.That(StageTarget.isSelected, Is.False);
             Assert.That(StageTarget.scenePath, Is.EqualTo(StageTarget.MainPath));
+        }
+
+        // The class screen records the pick before the Start route runs; the route resets the scene, not the class
+        [Test]
+        public void Route_StartAfterAClassPick_KeepsThePick()
+        {
+            CharacterData druid = ScriptableObject.CreateInstance<CharacterData>();
+            try
+            {
+                StageInterface.Route("Sandbox");
+                CharacterSelection.selected = druid;
+
+                string path = StageInterface.Route("Main");
+
+                Assert.That(path, Is.EqualTo(StageTarget.MainPath));
+                Assert.That(StageTarget.isSelected, Is.False);
+                Assert.That(CharacterSelection.selected, Is.SameAs(druid));
+            }
+            finally
+            {
+                Object.DestroyImmediate(druid);
+            }
         }
 
         [Test]
