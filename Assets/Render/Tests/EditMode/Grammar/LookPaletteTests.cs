@@ -51,23 +51,37 @@ public class LookPaletteTests
         return palette;
     }
 
-    [TestCase(EffectFamily.Damage, 0xff5e63)]
-    [TestCase(EffectFamily.Heal, 0xd6ff33)]
+    // The operation palette Fc approved on 2026-09-28: one hue per operation, a heal cream rather than lime
+    // (plants #ADFF38, grass #37BF67) and a bane violet rather than slate (grass shadow #1B4052)
+    [TestCase(EffectFamily.Damage, 0xff5a3c)]
+    [TestCase(EffectFamily.Heal, 0xfff6d0)]
     [TestCase(EffectFamily.Rot, 0xa652f5)]
-    [TestCase(EffectFamily.Renew, 0xd6ff33)]
-    [TestCase(EffectFamily.Boon, 0xffb321)]
-    [TestCase(EffectFamily.Bane, 0x203b64)]
+    [TestCase(EffectFamily.Renew, 0xfff6d0)]
+    [TestCase(EffectFamily.Boon, 0xffc53a)]
+    [TestCase(EffectFamily.Bane, 0x5b2e8c)]
     public void Accent_LiveAsset_ReturnsTheVividSemanticAccent(EffectFamily family, int rgb)
     {
         LookPalette palette = AssetDatabase.LoadAssetAtPath<LookPalette>(palettePath);
         Assert.NotNull(palette, palettePath);
 
-        Color accent = palette.Accent(family);
+        AssertHex(rgb, palette.Accent(family));
+    }
 
+    [Test]
+    public void Colour_LiveAssetMana_IsTheCyanManaHue()
+    {
+        LookPalette palette = AssetDatabase.LoadAssetAtPath<LookPalette>(palettePath);
+        Assert.NotNull(palette, palettePath);
+
+        AssertHex(0x34e0e8, palette.Colour(ColourRole.Mana, EffectFamily.Damage));
+    }
+
+    static void AssertHex(int rgb, Color actual)
+    {
         Color expected = Hex(rgb);
-        Assert.AreEqual(expected.r, accent.r, 0.002f);
-        Assert.AreEqual(expected.g, accent.g, 0.002f);
-        Assert.AreEqual(expected.b, accent.b, 0.002f);
+        Assert.AreEqual(expected.r, actual.r, 0.002f);
+        Assert.AreEqual(expected.g, actual.g, 0.002f);
+        Assert.AreEqual(expected.b, actual.b, 0.002f);
     }
 
     [TestCase(ColourRole.Body, LookSide.Plant, 0.1f)] // plantBody
