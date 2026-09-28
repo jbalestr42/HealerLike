@@ -7,6 +7,7 @@ public class SandboxPanel : MonoBehaviour
     [SerializeField] Transform _entityContainer;
     [SerializeField] Transform _skillContainer;
     [SerializeField] Transform _itemContainer;
+    [SerializeField] Transform _playerItemContainer;
     [SerializeField] GameObject _wavePanel;
     [SerializeField] Transform _waveContainer;
     [SerializeField] EntityInfoPanel _entityInfoPanel;
@@ -53,10 +54,17 @@ public class SandboxPanel : MonoBehaviour
 
         foreach (AItemFactory itemFactory in data.items)
         {
-            CreateButton(_itemContainer, itemFactory.title, () => _gameType.GiveItem(itemFactory));
+            Transform container = IsPlayerItem(itemFactory) ? _playerItemContainer : _itemContainer;
+            CreateButton(container, itemFactory.title, () => _gameType.GiveItem(itemFactory));
         }
 
         Refresh();
+    }
+
+    // Player items are equipped on the character, the other ones are given to a unit
+    public static bool IsPlayerItem(AItemFactory itemFactory)
+    {
+        return itemFactory.tags.Exists(tag => tag != null && tag.name == "Player");
     }
 
     SandboxButton CreateButton(Transform container, string label, UnityEngine.Events.UnityAction onClick)
