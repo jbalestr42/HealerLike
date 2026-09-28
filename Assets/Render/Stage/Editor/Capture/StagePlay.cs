@@ -237,10 +237,37 @@ namespace HealerLike.Render.Stage
 
             if (change == PlayModeStateChange.EnteredEditMode)
             {
+                LogLeakedRenderers();
                 int code = SessionState.GetInt(codeKey, 1);
                 SessionState.SetString(modeKey, "");
                 EditorApplication.Exit(code);
             }
+        }
+
+        // What play mode left behind in the edit-mode scene: every renderer outside an asset that is not the
+        // Editor's own handles, with its root, flags, material and shader. The next play session would draw these.
+        public static int LogLeakedRenderers()
+        {
+            int leaked = 0;
+            foreach (Renderer renderer in Resources.FindObjectsOfTypeAll<Renderer>())
+            {
+                if (renderer == null || UnityEditor.EditorUtility.IsPersistent(renderer)
+                    || renderer.transform.root.name == "HandlesGO")
+                {
+                    continue;
+                }
+
+                leaked++;
+                Material material = renderer.sharedMaterial;
+                Debug.Log("[StagePlay] Left after play: " + renderer.transform.root.name + " > " + renderer.name
+                    + " scene '" + renderer.gameObject.scene.name + "' flags " + renderer.gameObject.hideFlags
+                    + " root flags " + renderer.transform.root.gameObject.hideFlags + " active "
+                    + renderer.gameObject.activeInHierarchy + " at " + renderer.transform.position + " material "
+                    + (material == null ? "NULL" : material.name + "/" + (material.shader ? material.shader.name : "none")));
+            }
+
+            Debug.Log("[StagePlay] Renderers left after play: " + leaked);
+            return leaked;
         }
 
         static void StopActive()

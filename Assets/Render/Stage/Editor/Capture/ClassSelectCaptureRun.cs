@@ -298,6 +298,7 @@ namespace HealerLike.Render.Stage
             Debug.Log("[ClassSelectCaptureRun] HUD party cards: "
                 + string.Join(", ", Titles(actions.root.Q("party-list"))));
             LogHealer("Run start");
+            LogCorner("Run start", new Vector2(0.05f, 0.05f));
             yield return CaptureScreen("class-03-" + Pick.ToLowerInvariant() + "-run");
             yield return Battle(actions, player, played);
         }
@@ -312,13 +313,50 @@ namespace HealerLike.Render.Stage
                 yield break;
             }
 
-            Vector3[] offsets = { new Vector3(-2f, 0f, -2f), new Vector3(0f, 0f, -3f), new Vector3(2f, 0f, -2f) };
-            for (int i = 0; i < offsets.Length; i++)
+            Vector3[] offsets = { new Vector3(-2f, 0f, -2f), new Vector3(0f, 0f, -3f), new Vector3(2f, 0f, -2f),
+                new Vector3(-3f, 0f, 0f), new Vector3(3f, 0f, 0f), new Vector3(0f, 0f, -5f) };
+            // Dragged from the party row onto the board, as a player deploys, so the placement preview runs too
+            actions.ConfigureLegacyInput();
+            for (int i = 0; i < Mathf.Min(offsets.Length, played.entities.Count); i++)
             {
-                Vector3 point = player.grid.GetNearestWalkablePosition(offsets[i]);
-                _manager.entityManager.SpawnEntity(played.entities[i % played.entities.Count], point,
-                    Entity.EntityType.Player);
+                Button card = actions.Cards("party-list").Find(b => (b.userData as ToolkitCardModel)?.canDrag == true);
+                if (card == null)
+                {
+                    break;
+                }
+
+                yield return actions.BringIntoView(card);
+                Vector2 start = StageInterfaceActions.ScreenPoint(card);
+                Vector2 destination = (Vector2)_manager.gameCamera.WorldToScreenPoint(
+                    player.grid.GetNearestWalkablePosition(offsets[i]))
+                    - Vector2.up * (56 * ToolkitScreenLayout.GetScale(Screen.width, Screen.height, false));
+                using (StagePresentationTouch touch = new StagePresentationTouch(actions))
+                {
+                    yield return touch.Frame(TouchPhase.Began, start);
+                    yield return touch.Frame(TouchPhase.Moved, start + Vector2.up * 48);
+                    yield return touch.Frame(TouchPhase.Moved, destination);
+                    yield return StageCompactGestures.Still(touch, destination, 0.25f);
+                    yield return touch.Frame(TouchPhase.Ended, destination);
+                    yield return touch.Frame(TouchPhase.Ended, destination);
+                }
+
+                yield return Wait(0.3f);
             }
+
+            actions.Dispose();
+            if (_manager.entityManager.GetEntities(Entity.EntityType.Player).Count == 0)
+            {
+                // The drag did not land in this Game view: place the same units directly
+                for (int i = 0; i < Mathf.Min(offsets.Length, played.entities.Count); i++)
+                {
+                    _manager.entityManager.SpawnEntity(played.entities[i], player.grid.GetNearestWalkablePosition(
+                        offsets[i]), Entity.EntityType.Player);
+                }
+            }
+
+            Debug.Log("[ClassSelectCaptureRun] Allies deployed: "
+                + _manager.entityManager.GetEntities(Entity.EntityType.Player).Count);
+            LogRenderers("Deployed");
 
             yield return Wait(0.5f);
             actions.Submit("wave-button");
@@ -354,6 +392,142 @@ namespace HealerLike.Render.Stage
 
             LogHealer("Cast");
             yield return CaptureScreen("class-05-" + Pick.ToLowerInvariant() + "-cast");
+            yield return ReturnToMenu(actions);
+        }
+
+        // Every spell cast on an ally in turn while the battle plays, then Pause > Return to menu, as a player
+        // leaves a run: the menu is captured and every renderer still loaded is dumped with its scene and path
+        IEnumerator ReturnToMenu(StageInterfaceActions actions)
+        {
+            string pick = Pick.ToLowerInvariant();
+            float until = Time.realtimeSinceStartup + 8f;
+            int next = 0;
+            while (Time.realtimeSinceStartup < until)
+            {
+                List<Button> spells = actions.Cards("spell-list").FindAll(card => card.enabledInHierarchy);
+                GameObject ally = _manager.entityManager != null
+                    ? _manager.entityManager.GetEntities(Entity.EntityType.Player).Find(go => go != null) : null;
+                if (spells.Count > 0 && ally != null)
+                {
+                    actions.Submit(spells[next++ % spells.Count]);
+                    yield return Wait(0.15f);
+                    actions.WorldTap(_manager.gameCamera.WorldToScreenPoint(ally.transform.position + Vector3.up * 0.5f));
+                }
+
+                yield return Wait(0.6f);
+            }
+
+            LogRenderers("Run end");
+            yield return CaptureScreen("class-07-" + pick + "-run-end");
+            if (System.Environment.GetEnvironmentVariable("RENDER_CLASS_STOP_IN_RUN") == "1")
+            {
+                // Stop play in the middle of the run, as a player stops the Editor from Main
+                yield break;
+            }
+
+            // A roster card armed for placement and left armed, as a card tapped and not yet dropped
+            InteractionManager interaction = Object.FindAnyObjectByType<InteractionManager>();
+            PlayerBehaviour player = Object.FindAnyObjectByType<PlayerBehaviour>();
+            if (interaction != null && player != null && player.character != null
+                && StageInterfaceOutput.IsVisible(actions.root.Q("gameover-panel")) == false)
+            {
+                List<EntityData> roster = player.character.data.entities;
+                interaction.SetInteraction(new EntityGridInteraction(roster[roster.Count - 1]));
+                yield return Wait(0.6f);
+                LogPlacement("Armed placement");
+                yield return CaptureScreen("class-07b-" + pick + "-armed-placement");
+            }
+            if (StageInterfaceOutput.IsVisible(actions.root.Q("gameover-panel")))
+            {
+                Debug.Log("[ClassSelectCaptureRun] The party fell, returning from the game over panel");
+                actions.Submit(actions.root.Q("gameover-panel").Q<Button>());
+            }
+            else
+            {
+                actions.Submit("pause-button");
+                yield return Wait(0.5f);
+                actions.Submit("menu-button");
+            }
+            ToolkitGameUI menu = null;
+            yield return WaitForHost(StageInterface.MenuPath, host => menu = host);
+            yield return Wait(2f);
+            LogStage("Back on the menu");
+            LogRenderers("Menu after run");
+            yield return CaptureScreen("class-08-" + pick + "-menu-after-run");
+        }
+
+        // Every drawn renderer whose screen footprint covers a viewport point, nearest first
+        void LogCorner(string moment, Vector2 viewportPoint)
+        {
+            Camera camera = _manager.gameCamera;
+            Ray ray = camera.ViewportPointToRay(viewportPoint);
+            foreach (Renderer renderer in Object.FindObjectsByType<Renderer>())
+            {
+                if (!renderer.enabled || !renderer.gameObject.activeInHierarchy || !renderer.isVisible)
+                {
+                    continue;
+                }
+
+                if (renderer.bounds.IntersectRay(ray, out float distance))
+                {
+                    Material material = renderer.sharedMaterial;
+                    Debug.Log($"[ClassSelectCaptureRun] {moment} corner {viewportPoint} {TransformPath(renderer.transform)} "
+                        + $"{renderer.GetType().Name} distance {distance:F1} bounds {renderer.bounds.center} {renderer.bounds.size} "
+                        + (material ? material.name + "/" + material.shader.name : "NULL"));
+                }
+            }
+        }
+
+        void LogPlacement(string moment)
+        {
+            StageCreaturePlacement placement = _manager.placement;
+            GameObject model = placement != null ? placement.legacyModel : null;
+            Debug.Log($"[ClassSelectCaptureRun] {moment}: preview {(placement != null && placement.preview != null)}, "
+                + $"legacy model {(model != null ? model.name + " in " + model.scene.name + " at " + model.transform.position : "none")}");
+            if (model != null)
+            {
+                foreach (Renderer renderer in model.GetComponentsInChildren<Renderer>(true))
+                {
+                    Debug.Log($"[ClassSelectCaptureRun] {moment} legacy renderer {TransformPath(renderer.transform)} "
+                        + $"enabled {renderer.enabled} material "
+                        + (renderer.sharedMaterial ? renderer.sharedMaterial.name + "/" + renderer.sharedMaterial.shader.name : "NULL"));
+                }
+            }
+        }
+
+        // Every renderer in every loaded scene, DontDestroyOnLoad included, with what it draws with
+        void LogRenderers(string moment)
+        {
+            // Hidden (HideAndDontSave) objects too, which neither the hierarchy nor FindObjectsByType shows
+            Renderer[] renderers = System.Array.FindAll(Resources.FindObjectsOfTypeAll<Renderer>(),
+                renderer => renderer.gameObject.scene.IsValid() || (renderer.hideFlags & HideFlags.DontSave) != 0);
+            Debug.Log($"[ClassSelectCaptureRun] {moment}: {renderers.Length} renderers");
+            foreach (Renderer renderer in renderers)
+            {
+                bool shown = renderer.enabled && renderer.gameObject.activeInHierarchy;
+                if (!shown && !moment.StartsWith("Menu"))
+                {
+                    continue;
+                }
+
+                List<string> materials = new List<string>();
+                foreach (Material material in renderer.sharedMaterials)
+                {
+                    materials.Add(material == null ? "NULL" : material.name + "/" + (material.shader ? material.shader.name
+                        + (material.shader.isSupported ? "" : " UNSUPPORTED") : "no shader"));
+                }
+
+                string scene = renderer.gameObject.scene.IsValid() ? renderer.gameObject.scene.name : "no scene "
+                    + renderer.gameObject.hideFlags;
+                if (moment.StartsWith("Menu") || materials.Exists(m => m == "NULL" || m.Contains("UNSUPPORTED")
+                    || m.Contains("InternalError")))
+                {
+                    Debug.Log($"[ClassSelectCaptureRun] {moment} renderer [{scene}] {(shown ? "SHOWN" : "hidden")} "
+                        + $"flags {renderer.gameObject.hideFlags} {TransformPath(renderer.transform)} "
+                        + $"{renderer.GetType().Name} at {renderer.bounds.center} size {renderer.bounds.size} "
+                        + string.Join(", ", materials));
+                }
+            }
         }
 
         void LogCamera(string moment, StageInterfaceActions actions)
