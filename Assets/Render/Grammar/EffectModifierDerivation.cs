@@ -57,14 +57,25 @@ namespace HealerLike.Render.Grammar
         }
 
         // Multipliers already express a share (+0.5 means +50%). Additive effects retain the
-        // 100-point fallback only for previews or absent/zero target baselines.
+        // 100-point fallback only for previews or absent/zero target baselines. Sized by its owning class, an
+        // added damage-reduction fraction is its own share too: +0.5 PercentArmor halves the damage taken.
         static float ModifierMagnitudeShare(ABuffFactory buff, EffectContext context)
         {
             BaseData data = ModifierData(buff, out float delta);
             if (data == null || data.modifierType == AttributeModifierType.Override || !float.IsFinite(delta))
                 return 0f;
-            return Mathf.Abs(delta) / (data.modifierType == AttributeModifierType.Multiply
-                ? 1f : AttributeReference(context, data.type));
+            if (data.modifierType == AttributeModifierType.Multiply
+                || context.casterBaselines != null && IsDamageFraction(data.type))
+                return Mathf.Abs(delta);
+            return Mathf.Abs(delta) / AttributeReference(context, data.type);
+        }
+
+        // Attributes whose value is already a fraction of the damage taken, ResourceConsumerResolver applies them
+        // as (1 - PercentArmor) and (1 + Vulnerability). Only a class-sized context reads them as a share: an enemy
+        // Vulnerability +0.3 (Hexer) keeps its 100-point reading so no creature effect moves.
+        public static bool IsDamageFraction(AttributeType type)
+        {
+            return type == AttributeType.PercentArmor || type == AttributeType.Vulnerability;
         }
     }
 }

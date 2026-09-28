@@ -76,7 +76,7 @@ namespace HealerLike.Render.Grammar
         static EffectMagnitude LayerMagnitude(ABuffFactory buff, EffectContext context)
         {
             AConsumerFactory consumer = Consumer(buff);
-            float reference = consumer != null ? Mathf.Abs(Harm(consumer)) / HealthReference(context) : 0f;
+            float reference = consumer != null ? Mathf.Abs(Harm(consumer, context)) / HealthReference(context) : 0f;
             reference = Mathf.Max(reference, ModifierMagnitudeShare(buff, context));
             return reference <= LightMagnitudeMax ? EffectMagnitude.Light
                 : reference <= SolidMagnitudeMax ? EffectMagnitude.Solid : EffectMagnitude.Heavy;

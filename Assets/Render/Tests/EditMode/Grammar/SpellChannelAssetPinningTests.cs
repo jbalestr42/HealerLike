@@ -63,6 +63,7 @@ namespace HealerLike.Render.Grammar
             new HandlerRow("EntityItems/VolleyItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
 
+            // The legacy CharacterSkills and PlayerItems rows below belong to no class and keep the plain context
             new HandlerRow("CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
             new HandlerRow("CharacterSkills/MultiTargetReduceDamage/BuffHandlerFactory", EffectOperation.Bane,
@@ -109,21 +110,23 @@ namespace HealerLike.Render.Grammar
             new HandlerRow("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", EffectOperation.Mana,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.RoundEnd),
 
-            // Julien's Cleric, Druid and Warlock content (ade6ad91). Skill consumers read HealPower through an
-            // AttributeValue, which is 1 x multiplier without a caster, so every one of them is Light.
-            // Curse: 0.3 x HealPower damage each second for 6s
+            // Julien's Cleric, Druid and Warlock content (ade6ad91). A class's own skills and items are sized as it
+            // casts them, at its base stats (Cleric HealPower 25, Druid 20, Warlock 15, no class has HealthMax so a
+            // heal reads against 100). Periodic effects are sized per tick, like every creature effect.
+            // Curse (Warlock): 0.3 x HealPower damage each second for 6s, 0.3 x 15 = 4.5 per tick, 4.5 / 100 = 0.045
             new HandlerRow("CharacterSkills/Curse/BuffHandlerFactory", EffectOperation.Damage,
                 EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
-            // Divine Intervention: invincible for 2s
+            // Divine Intervention (Cleric): invincible for 2s, no harm and no modifier, share 0
             new HandlerRow("CharacterSkills/DivineIntervention/BuffHandlerFactory", EffectOperation.Ward,
                 EffectAspect.Prevention, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
-            // Rejuvenation: 0.15 x HealPower heal each second for 8s
+            // Rejuvenation (Druid): 0.15 x HealPower heal each second for 8s, 0.15 x 20 = 3 per tick, 0.03
             new HandlerRow("CharacterSkills/Rejuvenation/BuffHandlerFactory", EffectOperation.Heal,
                 EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
-            // Shield: +0.5 PercentArmor added for 5s, an additive delta read against the 100-point fallback
+            // Shield (Cleric): +0.5 PercentArmor added for 5s. Damage taken is scaled by (1 - PercentArmor), so the
+            // added fraction is its own share: 0.5 > 0.4, Heavy
             new HandlerRow("CharacterSkills/Shield/BuffHandlerFactory", EffectOperation.Boon,
-                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
-            // Wild Growth: 0.1 x HealPower heal each second for 6s
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            // Wild Growth (Druid): 0.1 x HealPower heal each second for 6s, 0.1 x 20 = 2 per tick, 0.02
             new HandlerRow("CharacterSkills/WildGrowth/BuffHandlerFactory", EffectOperation.Heal,
                 EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
             // Grove Keeper: a flat 2 heal each second for 4s
@@ -138,10 +141,12 @@ namespace HealerLike.Render.Grammar
             // Zeal: Damage x1.5 while above 70% health, a +0.5 share
             new HandlerRow("EntityItems/ZealItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
-            // Sacred Tome: +10 HealPower added, 10 of the 100-point fallback sits on the Light bound
+            // Sacred Tome (Cleric's starting item): +10 HealPower against the Cleric's 25, 10 / 25 = 0.40, on the
+            // inclusive Solid bound
             new HandlerRow("PlayerItems/HealPowerItem/BuffHandlerFactory", EffectOperation.Boon,
-                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
-            // Verdant: 0.05 x HealPower heal on every player entity every 2s
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            // Verdant (Druid's starting item): 0.05 x HealPower heal on every player entity every 2s, 0.05 x 20 = 1
+            // per tick, 0.01
             new HandlerRow("PlayerItems/VerdantItem/BuffHandlerFactory", EffectOperation.Heal,
                 EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast)
         };
@@ -149,7 +154,8 @@ namespace HealerLike.Render.Grammar
         // Pinned from handler duration fields and referenced buff/consumer assets. Cast is the
         // no-owner-context default, not a claim that an equipped/on-hit item is cast by the healer.
         // Multipliers use their fractional deltas directly; additive/consumer values retain DefaultHealth=100
-        // and expression base=1 until live target context is supplied.
+        // and expression base=1 until live target context is supplied, except a class's own skills and items,
+        // sized at that class's base stats (PlayerClassContext).
         [Test]
         public void Operation_LiveHandlers_MatchesAssetRowsWithSameSideFallback()
         {
@@ -169,9 +175,67 @@ namespace HealerLike.Render.Grammar
         }
 
         [Test]
-        public void Magnitude_LiveHandlers_WithDefaultReference_MatchesAssetRows()
+        public void Magnitude_LiveHandlers_SizedByTheirOwningClass_MatchesAssetRows()
         {
-            AssertRows((row, handler) => Assert.AreEqual(row.magnitude, EffectDerivation.Magnitude(handler), row.path));
+            List<CharacterData> characters = Characters();
+            AssertRows((row, handler) => Assert.AreEqual(row.magnitude, EffectDerivation.Magnitude(handler,
+                PlayerClassContext.For(handler, EffectContext.Default, characters)), row.path));
+        }
+
+        // Every creature row is sized with no class at all: none of them may read a class's stats
+        [Test]
+        public void Owner_CreatureHandlers_BelongToNoClass()
+        {
+            List<CharacterData> characters = Characters();
+            AssertRows((row, handler) =>
+            {
+                if (row.path.StartsWith("Entities/") || row.path.StartsWith("EntityItems/"))
+                    Assert.IsNull(PlayerClassContext.Owner(handler, characters), row.path);
+            });
+        }
+
+        [TestCase("CharacterSkills/Shield/BuffHandlerFactory", "ClericCharacter")]
+        [TestCase("CharacterSkills/DivineIntervention/BuffHandlerFactory", "ClericCharacter")]
+        [TestCase("PlayerItems/HealPowerItem/BuffHandlerFactory", "ClericCharacter")]
+        [TestCase("CharacterSkills/Rejuvenation/BuffHandlerFactory", "DruidCharacter")]
+        [TestCase("CharacterSkills/WildGrowth/BuffHandlerFactory", "DruidCharacter")]
+        [TestCase("PlayerItems/VerdantItem/BuffHandlerFactory", "DruidCharacter")]
+        [TestCase("CharacterSkills/Curse/BuffHandlerFactory", "WarlockCharacter")]
+        [TestCase("CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory", null)]
+        [TestCase("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", null)]
+        public void Owner_LiveHandlers_IsTheClassListingThem(string path, string expected)
+        {
+            ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>("Assets/Data/" + path + ".asset");
+            Assert.IsNotNull(handler, path);
+            CharacterData owner = PlayerClassContext.Owner(handler, Characters());
+            Assert.AreEqual(expected, owner == null ? null : owner.name, path);
+        }
+
+        // The instant class heals are skills, not handlers: 1 x HealPower scaled by the skill multiplier.
+        // Heal (Cleric): 25 x 1.5 = 37.5, 0.375 Solid. Heal Group (Cleric): 25 x 0.8 = 20, 0.2 Solid
+        [TestCase("CharacterSkills/HealSingleTarget/HealSingleTarget", EffectMagnitude.Solid)]
+        [TestCase("CharacterSkills/HealMultiTarget/HealMultiTarget", EffectMagnitude.Solid)]
+        public void Magnitude_LiveClassHealSkills_SizedByTheirOwningClass(string path, EffectMagnitude expected)
+        {
+            ACharacterSkillFactory factory = AssetDatabase.LoadAssetAtPath<ACharacterSkillFactory>(
+                "Assets/Data/" + path + ".asset");
+            CharacterSkillData data = ((IGameDataSource)factory).sourceData as CharacterSkillData;
+            SpellIconDescription description = SpellIconDerivation.Read(data, PlayerClassContext.Owner(data, Characters()));
+            Assert.AreEqual(1, description.layers.Count, path);
+            Assert.AreEqual(EffectOperation.Heal, description.layers[0].operation, path);
+            Assert.AreEqual(expected, description.layers[0].magnitude, path);
+        }
+
+        static List<CharacterData> Characters()
+        {
+            List<string> paths = new List<string>();
+            foreach (string guid in AssetDatabase.FindAssets("t:CharacterData", new[] { "Assets/Data" }))
+                paths.Add(AssetDatabase.GUIDToAssetPath(guid));
+            paths.Sort(StringComparer.Ordinal);
+            List<CharacterData> characters = new List<CharacterData>();
+            foreach (string path in paths) characters.Add(AssetDatabase.LoadAssetAtPath<CharacterData>(path));
+            Assert.AreEqual(3, characters.Count);
+            return characters;
         }
 
         [Test]

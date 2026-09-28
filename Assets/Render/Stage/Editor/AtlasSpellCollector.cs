@@ -58,19 +58,22 @@ namespace HealerLike.Render.Stage
             AddPieces(document, "trigger", vocabulary.trigger.Keys.Select(k => k.ToString()));
             AddPieces(document, "side", vocabulary.side.Keys.Select(k => k.ToString()));
             AddPieces(document, "origin", vocabulary.origin.Keys.Select(k => k.ToString()));
+            List<CharacterData> characters = AtlasAssetCatalog.Characters();
             foreach (string path in AtlasAssetCatalog.Paths<ABuffHandlerFactory>("Assets/Data"))
             {
                 ABuffHandlerFactory handler = AtlasAssetCatalog.Required<ABuffHandlerFactory>(path);
+                // A class's own skills and items are sized at its base stats, the rest keep the plain context
+                EffectContext context = PlayerClassContext.For(handler, EffectContext.Default, characters);
                 foreach (bool same in new[] { true, false })
                 {
-                    EffectChannels channels = EffectDerivation.Channels(handler, same);
+                    EffectChannels channels = EffectDerivation.Channels(handler, same, context);
                     SpellRow row = new SpellRow { path = path, kind = FirstFolder(path), ownerName = OwnerName(path),
                         side = same ? "Same" : "Opposing", durationType = handler.durationType.ToString(),
                         duration = handler.duration, isPeriodic = EffectDerivation.IsPeriodic(handler),
                         periodSeconds = EffectDerivation.Period(handler), channels = new SpellChannels(channels),
                         family = channels.family.ToString(), group = channels.group.ToString(), tempo = channels.tempo.ToString(),
                         element = EffectComposer.Element(vocabulary, channels).ToString() };
-                    foreach (EffectChannels layer in EffectDerivation.Layers(handler, same)) row.layers.Add(new SpellChannels(layer));
+                    foreach (EffectChannels layer in EffectDerivation.Layers(handler, same, context)) row.layers.Add(new SpellChannels(layer));
                     foreach (ABuffFactory buff in EffectDerivation.Buffs(handler))
                     {
                         AConsumerFactory consumer = EffectDerivation.Consumer(buff);
@@ -92,7 +95,7 @@ namespace HealerLike.Render.Stage
                 CharacterSkillData data = factory is IGameDataSource source ? source.sourceData as CharacterSkillData : null;
                 if (data == null) continue;
                 BaseCharacterSkillData targeted = data as BaseCharacterSkillData;
-                SpellIconDescription description = SpellIconDerivation.Read(data);
+                SpellIconDescription description = SpellIconDerivation.Read(data, PlayerClassContext.Owner(data, characters));
                 HealerSkillRow row = new HealerSkillRow { path = path, name = data.name, skillClass = data.GetType().Name,
                     isSingle = targeted != null && targeted.isSingle,
                     entityType = targeted == null ? "" : targeted.entityType.ToString(),

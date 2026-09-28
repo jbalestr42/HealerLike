@@ -70,6 +70,9 @@ namespace HealerLike.Render.Grammar
         public LookSide material;
         public float maximumHealth;
         public System.Collections.Generic.IReadOnlyDictionary<AttributeType, float> attributeBaselines;
+        // The owning class's base stats when a player skill or item is sized as its class casts it, else null.
+        // Caster-scaled values read these instead of 1, and a damage-reduction fraction is its own share
+        public System.Collections.Generic.IReadOnlyDictionary<AttributeType, float> casterBaselines;
 
         public static EffectContext Default
         {

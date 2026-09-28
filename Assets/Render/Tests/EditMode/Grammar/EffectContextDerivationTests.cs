@@ -61,5 +61,47 @@ namespace HealerLike.Render.Grammar
                 Object.DestroyImmediate(target);
             }
         }
+
+        // A healer's own effect is sized as its class casts it: the class's base stats, not the target's, are the
+        // modifier reference and the caster base. An entity caster keeps the target's baselines
+        [Test]
+        public void RuntimeContext_HealerCaster_UsesItsClassBaseStats()
+        {
+            GameObject healer = new GameObject("healer");
+            GameObject creature = new GameObject("creature");
+            GameObject target = new GameObject("target");
+            CharacterData data = ScriptableObject.CreateInstance<CharacterData>();
+            try
+            {
+                data.attributes = new Dictionary<AttributeType, float> { { AttributeType.HealPower, 25f } };
+                Character character = null;
+                // Character.Reset() reaches for a BuffManager Init() never wired here
+                TestHelpers.WithLoggingDisabled(() => character = healer.AddComponent<Character>());
+                character.data = data;
+                TestHelpers.WithLoggingDisabled(() => creature.AddComponent<Entity>());
+                AttributeManager attributes = TestHelpers.CreateAttributeManager(target, AttributeType.HealPower, 7f);
+                attributes.Add(AttributeType.HealthMax, new Attribute(150f));
+                Entity recipient = null;
+                TestHelpers.WithLoggingDisabled(() => recipient = target.AddComponent<Entity>());
+                recipient.attributeManager = attributes;
+
+                EffectContext cast = EffectDerivation.Context(healer, target);
+                Assert.AreEqual(25f, cast.attributeBaselines[AttributeType.HealPower]);
+                Assert.AreEqual(25f, cast.casterBaselines[AttributeType.HealPower]);
+                Assert.AreEqual(150f, EffectDerivation.HealthReference(cast));
+                Assert.AreEqual(EffectOrigin.Healer, cast.origin);
+
+                EffectContext creatureCast = EffectDerivation.Context(creature, target);
+                Assert.AreEqual(7f, creatureCast.attributeBaselines[AttributeType.HealPower]);
+                Assert.IsNull(creatureCast.casterBaselines);
+            }
+            finally
+            {
+                Object.DestroyImmediate(healer);
+                Object.DestroyImmediate(creature);
+                Object.DestroyImmediate(target);
+                Object.DestroyImmediate(data);
+            }
+        }
     }
 }

@@ -97,6 +97,21 @@ namespace HealerLike.Render.Grammar
             return SkillWalker.Value(factory.data.value, null);
         }
 
+        // The same reading as its class casts it: a caster-scaled value reads the class's base attribute
+        // instead of 1. Without class stats, or for a stat the class lacks, the plain reading is kept
+        public static float Harm(AConsumerFactory consumer, EffectContext context)
+        {
+            float harm = Harm(consumer);
+            if (context.casterBaselines != null && consumer is ConsumerFactory factory && factory.data != null
+                && factory.data.value is AttributeValue attribute && attribute.data != null
+                && context.casterBaselines.TryGetValue(attribute.data.type, out float casterBase)
+                && float.IsFinite(casterBase))
+            {
+                return casterBase * attribute.data.multiplier;
+            }
+            return harm;
+        }
+
         // AttackRate is read as seconds between shots, so less is better
         public static float Polarity(AttributeType type)
         {

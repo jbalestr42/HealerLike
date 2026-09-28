@@ -83,12 +83,14 @@ namespace HealerLike.Render.Stage
                         + ": passive-only unit without primary skill; supported Bud fallback.");
                 }
             }
+            List<CharacterData> characters = AtlasAssetCatalog.Characters();
             foreach (string path in AtlasAssetCatalog.Paths<ABuffHandlerFactory>("Assets/Data"))
             {
                 ABuffHandlerFactory handler = AtlasAssetCatalog.Required<ABuffHandlerFactory>(path);
+                EffectContext context = PlayerClassContext.For(handler, EffectContext.Default, characters);
                 foreach (bool same in new[] { true, false })
                 {
-                    EffectChannels channels = EffectDerivation.Channels(handler, same);
+                    EffectChannels channels = EffectDerivation.Channels(handler, same, context);
                     HandlerRow row = new HandlerRow
                     {
                         path = path, name = handler.name, side = same ? "Same" : "Opposing",

@@ -57,7 +57,7 @@ namespace HealerLike.Render.Grammar
                 AConsumerFactory consumer = Consumer(buff);
                 if (consumer != null)
                 {
-                    reference = Mathf.Max(reference, Mathf.Abs(Harm(consumer)) / HealthReference(context));
+                    reference = Mathf.Max(reference, Mathf.Abs(Harm(consumer, context)) / HealthReference(context));
                 }
                 reference = Mathf.Max(reference, ModifierMagnitudeShare(buff, context));
             }

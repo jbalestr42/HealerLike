@@ -43,6 +43,12 @@ namespace HealerLike.Render.Stage
             return value;
         }
 
+        // Every class, in asset path order: a skill or item listed by two classes is sized by the first
+        public static List<CharacterData> Characters()
+        {
+            return Paths<CharacterData>("Assets/Data").Select(Required<CharacterData>).ToList();
+        }
+
         public static string Commit()
         {
             System.Diagnostics.ProcessStartInfo command = new System.Diagnostics.ProcessStartInfo("git",

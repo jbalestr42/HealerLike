@@ -7,7 +7,14 @@ namespace HealerLike.Render.Grammar
     public static partial class EffectDerivation
     {
         // Capture plain values at the gameplay boundary. Composers never inspect live attributes.
+        // A healer's own skills and items are sized as its class casts them, at the class's base stats.
         public static EffectContext Context(GameObject source, GameObject target)
+        {
+            Character caster = source ? source.GetComponent<Character>() : null;
+            return PlayerClassContext.With(TargetContext(source, target), caster ? caster.data : null);
+        }
+
+        static EffectContext TargetContext(GameObject source, GameObject target)
         {
             EffectContext context = EffectContext.Default;
             context.origin = Origin(source);

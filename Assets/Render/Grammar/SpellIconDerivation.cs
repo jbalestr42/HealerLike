@@ -29,12 +29,19 @@ namespace HealerLike.Render.Grammar
 
         public static SpellIconDescription Read(object source)
         {
+            return Read(source, null);
+        }
+
+        // Read as the owning class casts it: its base stats size the skill (see PlayerClassContext)
+        public static SpellIconDescription Read(object source, CharacterData owner)
+        {
             source = Source(source);
             if (source == null || source is Object asset && !asset)
             {
                 return null;
             }
             SpellIconDescription description = new SpellIconDescription();
+            description.context = PlayerClassContext.With(description.context, owner);
             if (source is ABuffHandlerFactory handler)
             {
                 description.handlers.Add(handler);
@@ -49,11 +56,11 @@ namespace HealerLike.Render.Grammar
             {
                 return null;
             }
-            description.context = new EffectContext
+            description.context = PlayerClassContext.With(new EffectContext
             {
                 origin = EffectOrigin.Healer,
                 targetCount = data.isSingle ? 1 : int.MaxValue
-            };
+            }, owner);
             description.isSameSide = data.entityType == Entity.EntityType.Player;
             if (data is ApplyConsumerCharacterSkillData apply && apply.consumer)
             {
@@ -74,8 +81,8 @@ namespace HealerLike.Render.Grammar
 
         static void AddConsumer(SpellIconDescription description, AConsumerFactory consumer, float multiplier)
         {
-            float harm = EffectDerivation.Harm(consumer) * multiplier;
-            float amount = Mathf.Abs(harm) / LookDerivation.DefaultHealth;
+            float harm = EffectDerivation.Harm(consumer, description.context) * multiplier;
+            float amount = Mathf.Abs(harm) / EffectDerivation.HealthReference(description.context);
             description.layers.Add(new EffectChannels
             {
                 operation = harm > 0f ? EffectOperation.Damage : EffectOperation.Heal,
