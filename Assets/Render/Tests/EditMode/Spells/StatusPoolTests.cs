@@ -28,8 +28,8 @@ public class StatusPoolTests
         _pool.Init(_host.transform, RenderTestAssets.LoadEffectVocabulary(),
                    AssetDatabase.LoadAssetAtPath<SpellLooks>(SpellSinkFixture.LooksPath), RenderTestAssets.LoadMeshes(),
                    RenderTestAssets.LoadLookMaterial());
-        _factory = SpellSinkFixture.Modifier(AttributeType.Damage, 2f, _created);
-        _second = SpellSinkFixture.Modifier(AttributeType.Damage, 3f, _created);
+        _factory = SpellSinkFixture.Upgrade(AttributeType.Damage, 2f, _created);
+        _second = SpellSinkFixture.Upgrade(AttributeType.Damage, 3f, _created);
     }
 
     [TearDown]

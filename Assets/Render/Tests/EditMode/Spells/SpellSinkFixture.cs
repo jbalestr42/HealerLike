@@ -34,6 +34,14 @@ public static class SpellSinkFixture
         return Handler(modifier, false, 0f, created);
     }
 
+    // An upgrade modifier has no kind of its own, so a helpful one still draws the Boon cell's Orbit
+    public static BuffHandlerFactory Upgrade(AttributeType type, float value, List<Object> created)
+    {
+        UpgradeModifierFactory modifier = ScriptableObject.CreateInstance<UpgradeModifierFactory>();
+        modifier.data = new UpgradeModifierData { type = type, modifierType = AttributeModifierType.Add, value = value };
+        return Handler(modifier, false, 0f, created);
+    }
+
     public static BuffHandlerFactory Consumer(float value, float period, List<Object> created)
     {
         ConsumerFactory consumer = ScriptableObject.CreateInstance<ConsumerFactory>();

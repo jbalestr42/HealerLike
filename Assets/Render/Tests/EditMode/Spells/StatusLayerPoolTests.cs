@@ -39,7 +39,7 @@ namespace HealerLike.Render.Spells
 
         BuffHandlerFactory Compound()
         {
-            BuffHandlerFactory positive = SpellSinkFixture.Modifier(AttributeType.Damage, 2f, _created);
+            BuffHandlerFactory positive = SpellSinkFixture.Upgrade(AttributeType.Damage, 2f, _created);
             BuffHandlerFactory negative = SpellSinkFixture.Modifier(AttributeType.AttackRate, 1f, _created);
             positive.data.buffFactoryList.Add(negative.data.buffFactoryList[0]);
             return positive;
@@ -76,7 +76,7 @@ namespace HealerLike.Render.Spells
         public void EquivalentLayer_SharesStacksWhileItsOtherLayerRemainsIndependent()
         {
             BuffHandlerFactory compound = Compound();
-            BuffHandlerFactory single = SpellSinkFixture.Modifier(AttributeType.Damage, 3f, _created);
+            BuffHandlerFactory single = SpellSinkFixture.Upgrade(AttributeType.Damage, 3f, _created);
             _pool.Set(null, _target, compound, 2, 0f, 5f);
             _pool.Set(null, _target, single, 1, 0f, 5f);
             Assert.AreEqual(2, _pool.count);

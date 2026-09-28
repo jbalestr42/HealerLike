@@ -21,7 +21,7 @@ namespace HealerLike.Render.Spells.Editor
             Apply(vocabulary);
             EditorUtility.SetDirty(vocabulary);
             AssetDatabase.SaveAssetIfDirty(vocabulary);
-            Debug.Log("[SpellPolishVocabulary] Authored all 14 compositions; palette and grammar mappings retained.");
+            Debug.Log("[SpellPolishVocabulary] Authored all 20 compositions; palette and grammar mappings retained.");
         }
 
         public static void Apply(EffectVocabulary vocabulary)
@@ -110,6 +110,8 @@ namespace HealerLike.Render.Spells.Editor
                 if (!part.shape.IsValid())
                     Debug.LogError($"[SpellPolishVocabulary] {entry.label}: {part.id} trips a shape profile bound.");
             vocabulary.kinds[new EffectKindCell(EffectOperation.Boon, EffectAspect.Offence, kind)] = entry;
+            // Like every other element, the Plant entry is also the element's own entry for Studio and previews
+            vocabulary.entries[EffectVocabulary.KindKey(kind)] = entry;
         }
 
         static ElementEntry Kind(ElementEntry orbit, string label, LookPart[] parts, EffectMotionKind motion,

@@ -65,7 +65,9 @@ namespace HealerLike.Render.Spells
         {
             string before = JsonUtility.ToJson(vocabulary.GetEntry(EffectKey.Stalks));
             SpellPolishVocabulary.Apply(vocabulary);
-            Assert.That(vocabulary.entries.Count, Is.EqualTo(14));
+            // One entry per element, the six Boon kinds included, and one kind cell per kind
+            Assert.That(vocabulary.entries.Count, Is.EqualTo(Enum.GetValues(typeof(EffectKey)).Length));
+            Assert.That(vocabulary.kinds.Count, Is.EqualTo(6));
             Assert.That(JsonUtility.ToJson(vocabulary.GetEntry(EffectKey.Stalks)), Is.EqualTo(before));
         }
 

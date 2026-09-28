@@ -26,8 +26,8 @@ public class SpellVisualSinkTests
         _target = new GameObject("Target");
         _other = new GameObject("Other");
         _sink = SpellSinkFixture.Add(_host);
-        _factory = SpellSinkFixture.Modifier(AttributeType.Damage, 2f, _created);
-        _second = SpellSinkFixture.Modifier(AttributeType.Damage, 3f, _created);
+        _factory = SpellSinkFixture.Upgrade(AttributeType.Damage, 2f, _created);
+        _second = SpellSinkFixture.Upgrade(AttributeType.Damage, 3f, _created);
     }
 
     [TearDown]

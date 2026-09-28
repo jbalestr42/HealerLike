@@ -59,6 +59,8 @@ public class EffectPlacementTests
         switch (element)
         {
             case EffectKey.Orbit:
+                return SpellSinkFixture.Upgrade(AttributeType.Damage, 10f, _created);
+            case EffectKey.Canopy:
                 return SpellSinkFixture.Modifier(AttributeType.Damage, 10f, _created);
             case EffectKey.Plates:
                 return SpellSinkFixture.Modifier(AttributeType.HitArmor, 2f, _created);
@@ -151,7 +153,7 @@ public class EffectPlacementTests
     // bounds out of the head sphere grown by a tenth of a body unit, over the whole of a status
     [Test]
     public void SetStatus_LastingElementOnEveryComposedHead_NeverReachesTheHead(
-        [Values(EffectKey.Orbit, EffectKey.Plates, EffectKey.Bud, EffectKey.Press, EffectKey.Crack,
+        [Values(EffectKey.Orbit, EffectKey.Canopy, EffectKey.Plates, EffectKey.Bud, EffectKey.Press, EffectKey.Crack,
                 EffectKey.Drips, EffectKey.Stalks)] EffectKey element,
         [Values(LookSide.Plant, LookSide.Stone)] LookSide side)
     {
