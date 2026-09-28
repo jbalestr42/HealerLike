@@ -60,13 +60,27 @@ namespace HealerLike.Render.Stage
             Assert.That(string.IsNullOrEmpty(SandboxCaptureRun.BootMode), Is.False);
             Assert.That(string.IsNullOrEmpty(SandboxCaptureRun.MenuMode), Is.False);
             Assert.That(SandboxCaptureRun.BootMode, Is.Not.EqualTo(SandboxCaptureRun.MenuMode));
+            Assert.That(string.IsNullOrEmpty(SandboxCaptureRun.BackMode), Is.False);
+            Assert.That(SandboxCaptureRun.BackMode, Is.Not.EqualTo(SandboxCaptureRun.BootMode));
+            Assert.That(SandboxCaptureRun.BackMode, Is.Not.EqualTo(SandboxCaptureRun.MenuMode));
+        }
+
+        // The back run starts in the sandbox like the boot run; the menu run boots Main and reaches it by the menu
+        [Test]
+        public void BootsSandbox_BootAndBackModesOnly()
+        {
+            Assert.That(SandboxCaptureRun.BootsSandbox(SandboxCaptureRun.BootMode), Is.True);
+            Assert.That(SandboxCaptureRun.BootsSandbox(SandboxCaptureRun.BackMode), Is.True);
+            Assert.That(SandboxCaptureRun.BootsSandbox(SandboxCaptureRun.MenuMode), Is.False);
+            Assert.That(SandboxCaptureRun.BootsSandbox(""), Is.False);
+            Assert.That(SandboxCaptureRun.BootsSandbox(null), Is.False);
         }
 
         // Outside a batchmode sandbox session the boot hook must leave the stage on its normal route
         [Test]
         public void BootHook_OutsideASandboxSession_LeavesTheTargetOnMain()
         {
-            Assume.That(StagePlay.Mode, Is.Not.EqualTo(SandboxCaptureRun.BootMode));
+            Assume.That(SandboxCaptureRun.BootsSandbox(StagePlay.Mode), Is.False);
             StageTarget.Reset();
 
             typeof(SandboxCaptureRun).GetMethod("SelectBootTarget", BindingFlags.NonPublic | BindingFlags.Static)

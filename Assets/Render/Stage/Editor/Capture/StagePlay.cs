@@ -95,6 +95,7 @@ namespace HealerLike.Render.Stage
             if (mode == "spell-sources") return new SpellSourceRun();
             if (mode == SandboxCaptureRun.BootMode) return new SandboxCaptureRun(false);
             if (mode == SandboxCaptureRun.MenuMode) return new SandboxCaptureRun(true);
+            if (mode == SandboxCaptureRun.BackMode) return new SandboxCaptureRun(false, true);
             if (mode == ClassSelectCaptureRun.Mode) return new ClassSelectCaptureRun();
 
             if (mode == "expedition-map")

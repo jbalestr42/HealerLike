@@ -97,6 +97,13 @@ namespace HealerLike.Render.Stage
             StagePlay.Enter(SandboxCaptureRun.MenuMode, 240f);
         }
 
+        // The sandbox, Pause, then the stage's Menu button back to the Toolkit menu and its Start
+        [MenuItem("Tools/Render/Capture Sandbox Back To The Menu")]
+        public static void SandboxBackToMenu()
+        {
+            StagePlay.Enter(SandboxCaptureRun.BackMode, 240f);
+        }
+
         // Main, then the Toolkit menu, Start, the class screen, the Druid, and its first room
         [MenuItem("Tools/Render/Capture Class Select")]
         public static void ClassSelect()

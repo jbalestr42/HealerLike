@@ -18,6 +18,8 @@ namespace HealerLike.Render.Stage
         public static readonly string SandboxPath = StageTarget.SandboxPath;
         public static readonly string SandboxScene = "Sandbox";
         public static readonly string SandboxInputName = "Render Sandbox Input";
+        public static readonly string GameplayScene = "Main";
+        public static readonly string MenuScene = "MenuToolkit";
         RenderManager _manager;
         BattleFocus _focus;
         ToolkitGameUI _ui;
@@ -66,13 +68,19 @@ namespace HealerLike.Render.Stage
 
         public void Attach(Scene scene)
         {
-            if (scene.path == SandboxPath)
+            Attach(scene, scene.path);
+        }
+
+        // The scene attached as the given path; a test attaches an unsaved scene as one of the stage's scenes
+        public void Attach(Scene scene, string path)
+        {
+            if (HostsSandboxExit(path))
             {
                 AttachSandbox(scene);
                 return;
             }
 
-            if (scene.path != GameplayPath && scene.path != MenuPath)
+            if (path != GameplayPath && path != MenuPath)
             {
                 return;
             }
@@ -90,8 +98,8 @@ namespace HealerLike.Render.Stage
                 _ui = host.AddComponent<ToolkitGameUI>();
             }
 
-            _ui.gameplayScene = "Main";
-            _ui.menuScene = "MenuToolkit";
+            _ui.gameplayScene = GameplayScene;
+            _ui.menuScene = MenuScene;
             _ui.sandboxScene = SandboxScene;
             _ui.sceneLoader = LoadScene;
             _document = _ui.GetComponent<UIDocument>();
@@ -99,7 +107,7 @@ namespace HealerLike.Render.Stage
             {
                 _spellSpacing = Resources.Load<StyleSheet>("RenderSpellSpacing");
             }
-            if (scene.path == GameplayPath)
+            if (path == GameplayPath)
             {
                 CreatePortraits();
                 StageTouchInput touch = _ui.GetComponent<StageTouchInput>();
@@ -116,8 +124,15 @@ namespace HealerLike.Render.Stage
             _camera = null;
         }
 
+        // Only the sandbox gets the stage's Menu button and back handling: Main and the menu have the Toolkit HUD's own
+        public static bool HostsSandboxExit(string path)
+        {
+            return path == SandboxPath;
+        }
+
         // Julien's sandbox keeps its own uGUI: no Toolkit HUD, which would hide his canvases. It still needs the
-        // preview's input backend on Android and touch delivery for placing entities, as Main gets them.
+        // preview's input backend on Android and touch delivery for placing entities, as Main gets them, and a way
+        // back to the menu, through the same loader as the run's "Return to menu".
         void AttachSandbox(Scene scene)
         {
             ReleasePortraits();
@@ -128,6 +143,7 @@ namespace HealerLike.Render.Stage
             StageLegacyInput.Configure(scene);
 #endif
             AttachSandboxInput(scene);
+            StageSandboxExit.Attach(scene, LoadScene, MenuScene);
             _focus.ShowLegacyControl(false);
             _camera = null;
         }

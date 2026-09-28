@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 namespace HealerLike.Render.Stage
 {
@@ -15,11 +16,13 @@ namespace HealerLike.Render.Stage
     // the Game view (with the uGUI overlay) and of the camera alone go to the capture folder, and the time scale
     // each press leaves is logged. It records what happened and does not judge the look.
     // The boot run selects the sandbox before RenderStage starts; the menu run boots Main, goes to the Toolkit menu
-    // and presses its Sandbox entry.
+    // and presses its Sandbox entry. The back run boots the sandbox, pauses it, and leaves through the stage's Menu
+    // button to the Toolkit menu, then presses Start there.
     public class SandboxCaptureRun : AStageRun
     {
         public static readonly string BootMode = "sandbox";
         public static readonly string MenuMode = "sandbox-menu";
+        public static readonly string BackMode = "sandbox-back";
         public static readonly string[] Units =
         {
             "Assets/Data/Entities/ZealotEntity/ZealotEntity.asset",
@@ -30,11 +33,19 @@ namespace HealerLike.Render.Stage
         };
 
         readonly bool _viaMenu;
+        readonly bool _back;
         readonly List<string> _problems = new List<string>();
 
-        public SandboxCaptureRun(bool viaMenu)
+        public SandboxCaptureRun(bool viaMenu, bool back = false)
         {
             _viaMenu = viaMenu;
+            _back = back;
+        }
+
+        // The modes whose session boots straight into the sandbox
+        public static bool BootsSandbox(string mode)
+        {
+            return mode == BootMode || mode == BackMode;
         }
 
         protected override bool shouldStartGame { get { return false; } }
@@ -44,7 +55,7 @@ namespace HealerLike.Render.Stage
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void SelectBootTarget()
         {
-            if (StagePlay.Mode == BootMode)
+            if (BootsSandbox(StagePlay.Mode))
             {
                 StageTarget.Select(StageTarget.SandboxPath);
                 Debug.Log("[SandboxCaptureRun] Boot target selected: " + StageTarget.scenePath);
@@ -65,7 +76,7 @@ namespace HealerLike.Render.Stage
 
                 if (_problems.Count == 0)
                 {
-                    yield return PlaySandbox();
+                    yield return _back ? BackToMenu() : PlaySandbox();
                 }
             }
 
@@ -176,6 +187,100 @@ namespace HealerLike.Render.Stage
             yield return Wait(3f);
             yield return CaptureScreen(prefix + "03-battle");
             yield return TimeControls(prefix);
+        }
+
+        // The stage's Menu button beside Julien's panel, a Pause press, then Menu: the Toolkit menu must come up at
+        // normal time with the sandbox exit gone, and its Start must still open the class screen
+        IEnumerator BackToMenu()
+        {
+            if (ActiveGamePath() != StageTarget.SandboxPath)
+            {
+                _problems.Add("The stage attached to " + ActiveGamePath() + ", not the sandbox.");
+                yield break;
+            }
+
+            float deadline = Time.realtimeSinceStartup + 30f;
+            StageSandboxExit exit = null;
+            while (Buttons().Count == 0 || exit == null || exit.button == null || exit.button.panel == null)
+            {
+                if (Time.realtimeSinceStartup > deadline)
+                {
+                    _problems.Add("The sandbox never showed both its panel and the stage's Menu button.");
+                    yield break;
+                }
+
+                exit = Object.FindAnyObjectByType<StageSandboxExit>();
+                yield return null;
+            }
+
+            yield return Wait(2f);
+            Rect bound = exit.button.worldBound;
+            Debug.Log("[SandboxCaptureRun] Menu button " + string.Format(CultureInfo.InvariantCulture,
+                "'{0}' panel rect x {1:F0} y {2:F0} w {3:F0} h {4:F0}, safe area {5}, screen {6}x{7}",
+                exit.button.text, bound.x, bound.y, bound.width, bound.height, Screen.safeArea, Screen.width,
+                Screen.height));
+            LogTimeScale("sandbox shown");
+            yield return CaptureScreen("sandbox-back-01-menu-button");
+
+            if (!Press("Pause"))
+            {
+                yield break;
+            }
+
+            yield return Wait(1f);
+            LogTimeScale("after Pause");
+            yield return CaptureScreen("sandbox-back-02-paused");
+
+            new StageInterfaceActions().Submit(exit.button);
+            LogTimeScale("after Menu");
+            ToolkitGameUI menu = null;
+            deadline = Time.realtimeSinceStartup + 30f;
+            while (menu == null || menu.gameObject.scene.path != StageInterface.MenuPath)
+            {
+                if (Time.realtimeSinceStartup > deadline)
+                {
+                    _problems.Add("The Menu button never reached the Toolkit menu.");
+                    yield break;
+                }
+
+                menu = Object.FindAnyObjectByType<ToolkitGameUI>();
+                yield return null;
+            }
+
+            yield return Wait(2f);
+            LogTimeScale("menu shown");
+            bool exitGone = Object.FindAnyObjectByType<StageSandboxExit>() == null;
+            Debug.Log($"[SandboxCaptureRun] Menu reached {menu.gameObject.scene.path}, sandbox exit gone {exitGone}, "
+                + $"target {StageTarget.scenePath}");
+            if (!exitGone)
+            {
+                _problems.Add("The sandbox Menu button outlived the sandbox.");
+            }
+
+            if (!Mathf.Approximately(Time.timeScale, 1f))
+            {
+                _problems.Add("The menu came up at timeScale " + Time.timeScale);
+            }
+
+            yield return CaptureScreen("sandbox-back-03-menu");
+
+            StageInterfaceActions actions = new StageInterfaceActions { ui = menu };
+            actions.Submit("start-button");
+            yield return Wait(1f);
+            VisualElement classPanel = actions.root.Q(ToolkitClassSelect.PanelName);
+            bool classShown = classPanel != null && StageInterfaceOutput.IsVisible(classPanel);
+            Debug.Log($"[SandboxCaptureRun] Start after the sandbox: class screen shown {classShown}");
+            if (!classShown)
+            {
+                _problems.Add("Start after returning from the sandbox did not open the class screen.");
+            }
+
+            yield return CaptureScreen("sandbox-back-04-class-screen");
+        }
+
+        static void LogTimeScale(string step)
+        {
+            Debug.Log($"[SandboxCaptureRun] timeScale {step}: {Time.timeScale.ToString(CultureInfo.InvariantCulture)}");
         }
 
         // Each unit's button arms Julien's placement, a tap on the board places it, as a click would
