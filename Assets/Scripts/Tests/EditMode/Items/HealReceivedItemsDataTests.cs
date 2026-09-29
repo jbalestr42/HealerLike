@@ -15,6 +15,7 @@ public class HealReceivedItemsDataTests
     {
         new object[] { EntityItems + "GratitudeItem/GratitudeItem.asset", "Gratitude", "Entity" },
         new object[] { EntityItems + "ThornsOfLifeItem/ThornsOfLifeItem.asset", "Thorns of Life", "Entity" },
+        new object[] { EntityItems + "MartyrsHeartItem/MartyrsHeartItem.asset", "Martyr's Heart", "Entity" },
     };
 
     static ItemFactory Load(string path)
@@ -92,6 +93,18 @@ public class HealReceivedItemsDataTests
 
         Assert.AreEqual(0.25f, buff.data.ratio, 0.0001f);
         Assert.AreEqual(TargetBehaviourType.Nearest, buff.data.targetType);
+    }
+
+    [Test]
+    public void MartyrsHeart_WhenHealedTheAdjacentAlliesReceive20PercentOfTheHeal()
+    {
+        ShareHealOnRelativeCellBuffFactory buff = GetBuff<ShareHealOnRelativeCellBuffFactory>(LoadItem(EntityItems, "MartyrsHeart"));
+
+        Assert.AreEqual(0.2f, buff.data.ratio, 0.0001f);
+        Assert.AreEqual(RelativeCellPatternType.Adjacent, buff.data.pattern);
+        Assert.AreEqual(1, buff.data.range);
+        // The zone is shown around the holder
+        Assert.IsNotNull(buff.data.cellPrefab);
     }
 }
 
