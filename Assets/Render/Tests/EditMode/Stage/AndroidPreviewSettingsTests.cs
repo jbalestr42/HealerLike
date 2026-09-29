@@ -4,6 +4,7 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace HealerLike.Render.Stage
 {
@@ -77,6 +78,35 @@ public class AndroidPreviewSettingsTests
         using (AndroidPreviewSettings restored = new AndroidPreviewSettings())
         {
             Assert.AreEqual(input, restored.inputHandler);
+        }
+    }
+
+    [Test]
+    public void Apply_SetsVulkanOnly_AndDisposeRestoresPreviousGraphicsApis()
+    {
+        bool originalUseDefault = PlayerSettings.GetUseDefaultGraphicsAPIs(BuildTarget.Android);
+        GraphicsDeviceType[] originalApis = PlayerSettings.GetGraphicsAPIs(BuildTarget.Android);
+        GraphicsDeviceType[] before = { GraphicsDeviceType.OpenGLES3, GraphicsDeviceType.Vulkan };
+        try
+        {
+            PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
+            PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, before);
+
+            using (AndroidPreviewSettings settings = new AndroidPreviewSettings())
+            {
+                settings.Apply();
+                Assert.IsFalse(PlayerSettings.GetUseDefaultGraphicsAPIs(BuildTarget.Android));
+                CollectionAssert.AreEqual(new[] { GraphicsDeviceType.Vulkan },
+                    PlayerSettings.GetGraphicsAPIs(BuildTarget.Android));
+            }
+
+            Assert.IsFalse(PlayerSettings.GetUseDefaultGraphicsAPIs(BuildTarget.Android));
+            CollectionAssert.AreEqual(before, PlayerSettings.GetGraphicsAPIs(BuildTarget.Android));
+        }
+        finally
+        {
+            PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, originalUseDefault);
+            PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, originalApis);
         }
     }
 }

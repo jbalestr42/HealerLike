@@ -98,10 +98,11 @@ namespace HealerLike.Render.Stage
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
+            // Vulkan only: the ground and grass passes read StructuredBuffers from vertex stages, and GLES 3.1
+            // guarantees zero vertex shader storage blocks, so a GLES fallback fails to link them.
             PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[]
             {
-                GraphicsDeviceType.Vulkan,
-                GraphicsDeviceType.OpenGLES3
+                GraphicsDeviceType.Vulkan
             });
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
             PlayerSettings.allowedAutorotateToPortrait = true;
