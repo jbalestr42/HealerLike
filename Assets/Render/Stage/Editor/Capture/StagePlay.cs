@@ -87,6 +87,20 @@ namespace HealerLike.Render.Stage
                 + (StageTarget.isSelected ? "" : " (plain boot)"));
         }
 
+        // RENDER_SIMULATE_NO_VERTEX_BUFFERS=1 plays the session as a device without vertex storage buffers (an
+        // OpenGL ES 3.1 phone at its guaranteed minimum), so a capture shows the board with the ground simulation
+        // and the compute grass off. Read at every play start, since entering play mode reloads the domain.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void SimulateDeviceLimits()
+        {
+            bool isSimulated = System.Environment.GetEnvironmentVariable("RENDER_SIMULATE_NO_VERTEX_BUFFERS") == "1";
+            HealerLike.Render.Grass.VertexStorageBuffers.isForcedUnavailable = isSimulated;
+            if (isSimulated)
+            {
+                Debug.Log("[StagePlay] Simulating a device without vertex storage buffers");
+            }
+        }
+
         static StagePlay()
         {
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;

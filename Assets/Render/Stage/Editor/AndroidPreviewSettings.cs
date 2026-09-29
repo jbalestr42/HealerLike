@@ -98,11 +98,14 @@ namespace HealerLike.Render.Stage
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
-            // Vulkan only: the ground and grass passes read StructuredBuffers from vertex stages, and GLES 3.1
-            // guarantees zero vertex shader storage blocks, so a GLES fallback fails to link them.
+            // Vulkan first, OpenGL ES 3 for a device without a Vulkan Unity accepts (0.1.10 shipped Vulkan only and
+            // would not start on such a phone). The ground and grass passes read StructuredBuffers from vertex stages,
+            // and GLES 3.1 guarantees zero vertex shader storage blocks, so on GLES they are not trusted: they gate
+            // on VertexStorageBuffers and the board degrades to its plain ground when the device has none.
             PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[]
             {
-                GraphicsDeviceType.Vulkan
+                GraphicsDeviceType.Vulkan,
+                GraphicsDeviceType.OpenGLES3
             });
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
             PlayerSettings.allowedAutorotateToPortrait = true;

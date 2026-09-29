@@ -11,8 +11,8 @@ namespace HealerLike.Render.Stage
     // A failure logs and exits with code 1, the non-zero exit code a batchmode run reads.
     public static class StagePreviewBuild
     {
-        public static readonly string AndroidVersion = "0.1.10";
-        public static readonly int AndroidVersionCode = 11;
+        public static readonly string AndroidVersion = "0.1.11";
+        public static readonly int AndroidVersionCode = 12;
 
         public static readonly string[] Scenes =
         {

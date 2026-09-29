@@ -82,11 +82,11 @@ public class AndroidPreviewSettingsTests
     }
 
     [Test]
-    public void Apply_SetsVulkanOnly_AndDisposeRestoresPreviousGraphicsApis()
+    public void Apply_SetsVulkanThenOpenGLES3_AndDisposeRestoresPreviousGraphicsApis()
     {
         bool originalUseDefault = PlayerSettings.GetUseDefaultGraphicsAPIs(BuildTarget.Android);
         GraphicsDeviceType[] originalApis = PlayerSettings.GetGraphicsAPIs(BuildTarget.Android);
-        GraphicsDeviceType[] before = { GraphicsDeviceType.OpenGLES3, GraphicsDeviceType.Vulkan };
+        GraphicsDeviceType[] before = { GraphicsDeviceType.Vulkan };
         try
         {
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
@@ -96,7 +96,7 @@ public class AndroidPreviewSettingsTests
             {
                 settings.Apply();
                 Assert.IsFalse(PlayerSettings.GetUseDefaultGraphicsAPIs(BuildTarget.Android));
-                CollectionAssert.AreEqual(new[] { GraphicsDeviceType.Vulkan },
+                CollectionAssert.AreEqual(new[] { GraphicsDeviceType.Vulkan, GraphicsDeviceType.OpenGLES3 },
                     PlayerSettings.GetGraphicsAPIs(BuildTarget.Android));
             }
 

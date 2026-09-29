@@ -60,20 +60,62 @@ namespace HealerLike.Render.Grass
 
         public bool isValid { get { return _resources != null && _resources.isValid; } }
 
+        static bool _isDeviceLimitReported;
+
         public static bool IsSupported()
         {
-            return SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null
-                   && SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBHalf)
-                   && SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RHalf);
+            return UnsupportedReason() == null;
         }
 
-        // Logs and stays invalid when the device, the shader or the volume cannot run the ground
+        // Why this device cannot run the ground, or null when it can
+        public static string UnsupportedReason()
+        {
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+            {
+                return "no graphics device";
+            }
+
+            // The stamp passes read _HLGroundStamps from their vertex stage
+            if (!VertexStorageBuffers.isAvailable)
+            {
+                return VertexStorageBuffers.UnavailableReason;
+            }
+
+            if (!SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBHalf)
+                || !SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RHalf))
+            {
+                return "half float render targets unavailable";
+            }
+
+            return null;
+        }
+
+        // Stays invalid when the device, the shader or the volume cannot run the ground. A missing shader or a
+        // broken volume is a defect and logs an error; a device that cannot run it is not, and warns once.
         public GroundSimulation(Shader shader, GroundVolume volume, GroundSpringSettings settings)
         {
             this.settings = settings;
-            if (shader == null || !shader.isSupported || !volume.isValid || !IsSupported())
+            if (shader == null || !volume.isValid)
             {
-                Debug.LogError("[GroundSimulation] Needs a supported ground shader, half float targets and a valid volume.");
+                Debug.LogError("[GroundSimulation] Needs a ground shader and a valid volume.");
+                return;
+            }
+
+            string unsupported = UnsupportedReason();
+            if (unsupported != null)
+            {
+                if (!_isDeviceLimitReported)
+                {
+                    _isDeviceLimitReported = true;
+                    Debug.LogWarning("[GroundSimulation] Off on this device, " + unsupported
+                        + ": the grass keeps its plain wind.");
+                }
+                return;
+            }
+
+            if (!shader.isSupported)
+            {
+                Debug.LogError("[GroundSimulation] The ground shader is not supported on this device.");
                 return;
             }
 

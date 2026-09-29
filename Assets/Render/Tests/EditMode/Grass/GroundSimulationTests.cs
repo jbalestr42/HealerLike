@@ -1,6 +1,9 @@
+using System.Reflection;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace HealerLike.Render.Grass
 {
@@ -33,6 +36,67 @@ public class GroundSimulationTests
     {
         _ground?.Dispose();
         GroundSimulation.Unpublish();
+        VertexStorageBuffers.isForcedUnavailable = false;
+        SetDeviceLimitReported(false);
+    }
+
+    static void SetDeviceLimitReported(bool value)
+    {
+        typeof(GroundSimulation).GetField("_isDeviceLimitReported", BindingFlags.NonPublic | BindingFlags.Static)
+            .SetValue(null, value);
+    }
+
+    [Test]
+    public void IsSupported_WithoutVertexStorageBuffers_IsFalseAndNamesTheReason()
+    {
+        VertexStorageBuffers.isForcedUnavailable = true;
+
+        Assert.IsFalse(GroundSimulation.IsSupported());
+        Assert.AreEqual(VertexStorageBuffers.UnavailableReason, GroundSimulation.UnsupportedReason());
+    }
+
+    [Test]
+    public void Constructor_WithoutVertexStorageBuffers_WarnsOnceAndNeverErrors()
+    {
+        Shader shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);
+        VertexStorageBuffers.isForcedUnavailable = true;
+        SetDeviceLimitReported(false);
+        LogAssert.Expect(LogType.Warning,
+            new Regex(@"^\[GroundSimulation\] Off on this device, vertex storage buffers unavailable"));
+
+        using (GroundSimulation first = new GroundSimulation(shader, _volume, GroundSpringSettings.Default))
+        using (GroundSimulation second = new GroundSimulation(shader, _volume, GroundSpringSettings.Default))
+        {
+            Assert.IsFalse(first.isValid);
+            Assert.IsFalse(second.isValid);
+            Assert.IsNull(first.motion);
+        }
+
+        LogAssert.NoUnexpectedReceived();
+    }
+
+    [Test]
+    public void Constructor_NullShader_StillLogsAnError()
+    {
+        LogAssert.Expect(LogType.Error, "[GroundSimulation] Needs a ground shader and a valid volume.");
+
+        using (GroundSimulation ground = new GroundSimulation(null, _volume, GroundSpringSettings.Default))
+        {
+            Assert.IsFalse(ground.isValid);
+        }
+    }
+
+    [Test]
+    public void Constructor_InvalidVolume_StillLogsAnErrorEvenWithoutVertexStorageBuffers()
+    {
+        VertexStorageBuffers.isForcedUnavailable = true;
+        LogAssert.Expect(LogType.Error, "[GroundSimulation] Needs a ground shader and a valid volume.");
+
+        using (GroundSimulation ground = new GroundSimulation(AssetDatabase.LoadAssetAtPath<Shader>(shaderPath),
+                   default(GroundVolume), GroundSpringSettings.Default))
+        {
+            Assert.IsFalse(ground.isValid);
+        }
     }
 
     static Color[] Read(RenderTexture texture)

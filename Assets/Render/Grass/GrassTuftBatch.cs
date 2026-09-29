@@ -26,10 +26,15 @@ namespace HealerLike.Render.Grass
             Func<GraphicsBuffer.Target, int, int, GraphicsBuffer> allocate = null)
         {
             batch = null;
+            string unsupported = UnsupportedReason();
+            if (unsupported != null)
+            {
+                error = "Grass is off on this device, " + unsupported + ".";
+                return false;
+            }
+
             error = "Grass needs compute, indirect draws, valid meshes/materials and a finite area.";
-            bool device = SystemInfo.supportsComputeShaders && SystemInfo.supportsInstancing
-                && SystemInfo.supportsIndirectArgumentsBuffer;
-            if (!device || compute == null || !compute.HasKernel("HLUpdateGrass") || meshes == null
+            if (compute == null || !compute.HasKernel("HLUpdateGrass") || meshes == null
                 || meshes.socle == null || meshes.annulus == null || material == null || ringMaterial == null)
             {
                 return false;
@@ -63,6 +68,29 @@ namespace HealerLike.Render.Grass
                 error = "Could not allocate grass: " + exception.Message;
                 return false;
             }
+        }
+
+        public static bool IsSupported()
+        {
+            return UnsupportedReason() == null;
+        }
+
+        // Why this device cannot run the tufts and their rings, or null when it can
+        public static string UnsupportedReason()
+        {
+            if (!SystemInfo.supportsComputeShaders || !SystemInfo.supportsInstancing
+                || !SystemInfo.supportsIndirectArgumentsBuffer)
+            {
+                return "compute and indirect instanced draws unavailable";
+            }
+
+            // The tuft vertex stages read the visible, seed and state buffers, the ring's reads the zones
+            if (!VertexStorageBuffers.isAvailable)
+            {
+                return VertexStorageBuffers.UnavailableReason;
+            }
+
+            return null;
         }
 
         static GraphicsBuffer AllocateBuffer(GraphicsBuffer.Target target, int count, int stride)

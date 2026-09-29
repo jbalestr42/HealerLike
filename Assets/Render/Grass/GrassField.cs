@@ -37,6 +37,7 @@ namespace HealerLike.Render.Grass
         GroundStamp[] _stamps = new GroundStamp[GroundSimulation.StampCapacity];
         BodyCapsule[] _capsules = new BodyCapsule[GroundSimulation.StampCapacity];
         bool _isGroundFailed;
+        static bool _isDeviceLimitReported;
 
         GroundSimulation _simulation;
         // The GPU ground this field owns, when it was given the ground shader
@@ -240,6 +241,21 @@ namespace HealerLike.Render.Grass
 
             if (_tufts == null)
             {
+                // A device that cannot run the tufts is a limit, not a defect: off without an error, said once
+                string unsupported = GrassTuftBatch.UnsupportedReason();
+                if (unsupported != null)
+                {
+                    ReleaseOwned();
+                    enabled = false;
+                    if (!_isDeviceLimitReported)
+                    {
+                        _isDeviceLimitReported = true;
+                        Debug.LogWarning("[GrassField] Off on this device, " + unsupported
+                            + ": the board keeps its plain ground.", this);
+                    }
+                    return;
+                }
+
                 if (!GrassTuftBatch.TryCreate(key, _bladeSegments, _meshes, _updateGrass, _lookMaterial,
                     _ringMaterial, gameObject.layer, out GrassTuftBatch created, out string error))
                 {

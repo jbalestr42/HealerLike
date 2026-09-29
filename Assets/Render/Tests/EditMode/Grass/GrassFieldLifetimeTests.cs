@@ -142,6 +142,43 @@ namespace HealerLike.Render.Grass
         }
 
         [Test]
+        public void UpdateField_WithoutVertexStorageBuffers_TurnsOffWithAWarningAndNoError()
+        {
+            if (!HasGraphicsDevice())
+            {
+                Assert.Ignore("Requires a graphics device; run with -force-metal.");
+            }
+
+            BuildOneCellField();
+            List<GraphicsBuffer> buffers = OwnedBuffers();
+            TestHelpers.InvokePrivate(_field, "OnDisable");
+            typeof(GrassField).GetField("_isDeviceLimitReported",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static).SetValue(null, false);
+            VertexStorageBuffers.isForcedUnavailable = true;
+            try
+            {
+                LogAssert.Expect(LogType.Warning,
+                    new Regex("^\\[GrassField\\] Off on this device, vertex storage buffers unavailable"));
+
+                _field.UpdateField(_borrowedZones, 0);
+                _field.UpdateField(_borrowedZones, 0);
+
+                Assert.IsFalse(_field.enabled);
+                Assert.IsFalse(_field.isReady);
+                Assert.IsNull(_field.simulation);
+                foreach (GraphicsBuffer buffer in buffers)
+                {
+                    Assert.IsFalse(buffer.IsValid());
+                }
+                LogAssert.NoUnexpectedReceived();
+            }
+            finally
+            {
+                VertexStorageBuffers.isForcedUnavailable = false;
+            }
+        }
+
+        [Test]
         public void UpdateField_InvalidAssets_DisablesOnceAndCanRebuildAfterRepair()
         {
             if (!HasGraphicsDevice())

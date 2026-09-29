@@ -38,6 +38,28 @@ namespace HealerLike.Render.Grass
             }
             _allocated.Clear();
             UnityEngine.Object.DestroyImmediate(_meshes);
+            VertexStorageBuffers.isForcedUnavailable = false;
+        }
+
+        [Test]
+        public void TryCreate_WithoutVertexStorageBuffers_RefusesAndAllocatesNothing()
+        {
+            VertexStorageBuffers.isForcedUnavailable = true;
+            int allocations = 0;
+
+            bool created = Create(out string error, (target, count, stride) =>
+            {
+                allocations++;
+                GraphicsBuffer buffer = new GraphicsBuffer(target, count, stride);
+                _allocated.Add(buffer);
+                return buffer;
+            });
+
+            Assert.IsFalse(GrassTuftBatch.IsSupported());
+            Assert.IsFalse(created);
+            Assert.IsNull(_batch);
+            StringAssert.Contains(VertexStorageBuffers.UnavailableReason, error);
+            Assert.AreEqual(0, allocations);
         }
 
         bool Create(out string error, Func<GraphicsBuffer.Target, int, int, GraphicsBuffer> allocate = null)
