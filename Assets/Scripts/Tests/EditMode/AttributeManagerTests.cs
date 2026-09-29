@@ -54,6 +54,12 @@ public class AttributeManagerTests
     }
 
     [Test]
+    public void GetOrAdd_MissingHealCriticalChance_StartsAt0()
+    {
+        Assert.AreEqual(0f, _attributeManager.GetOrAdd(AttributeType.HealCriticalChance).Value);
+    }
+
+    [Test]
     public void GetOrAdd_ExistingAttribute_KeepsItsValueAndIgnoresTheDefault()
     {
         Attribute existing = _attributeManager.Add(AttributeType.HealingReceived, new Attribute(0.5f));

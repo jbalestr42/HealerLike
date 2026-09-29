@@ -1,22 +1,60 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
+using UnityEngine;
 
 namespace Items
 {
 
-// The items reacting to a heal received (new items, stage 3): each one is a droppable reward wired to
-// the behaviour it describes
+// The items about heals (new items, stage 3): each one is a droppable reward wired to the behaviour it
+// describes
 public class HealReceivedItemsDataTests
 {
     const string EntityItems = "Assets/Data/EntityItems/";
+    const string PlayerItems = "Assets/Data/PlayerItems/";
 
     static readonly object[] Items =
     {
         new object[] { EntityItems + "GratitudeItem/GratitudeItem.asset", "Gratitude", "Entity" },
         new object[] { EntityItems + "ThornsOfLifeItem/ThornsOfLifeItem.asset", "Thorns of Life", "Entity" },
         new object[] { EntityItems + "MartyrsHeartItem/MartyrsHeartItem.asset", "Martyr's Heart", "Entity" },
+        new object[] { PlayerItems + "ChaliceOfPlentyItem/ChaliceOfPlentyItem.asset", "Chalice of Plenty", "Player" },
     };
+
+    GameObject _go;
+    AttributeManager _attributes;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _go = new GameObject("Holder");
+        _attributes = TestHelpers.CreateAttributeManager(_go);
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        Object.DestroyImmediate(_go);
+    }
+
+    // Adds every buff of the item, as equipping it does
+    void Equip(ItemFactory item)
+    {
+        foreach (ABuffHandlerFactory handler in item.data.buffs)
+        {
+            foreach (ABuffFactory buffFactory in handler.buffFactoryList)
+            {
+                buffFactory.GetBuff(null).Add(_go, _go);
+            }
+        }
+    }
+
+    float Get(AttributeType type)
+    {
+        Attribute attribute = _attributes.GetOrAdd(type);
+        attribute.Update();
+        return attribute.Value;
+    }
 
     static ItemFactory Load(string path)
     {
@@ -105,6 +143,14 @@ public class HealReceivedItemsDataTests
         Assert.AreEqual(1, buff.data.range);
         // The zone is shown around the holder
         Assert.IsNotNull(buff.data.cellPrefab);
+    }
+
+    [Test]
+    public void ChaliceOfPlenty_GivesHeals15PercentChanceToBeCritical()
+    {
+        Equip(LoadItem(PlayerItems, "ChaliceOfPlenty"));
+
+        Assert.AreEqual(15f, Get(AttributeType.HealCriticalChance), 0.0001f);
     }
 }
 

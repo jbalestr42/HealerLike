@@ -503,6 +503,108 @@ public class ResourceAttributeTests
         Assert.AreEqual(90f, _health.Value); // no crit applied
     }
 
+    // Wounds the target by 50 so a heal can be seen
+    void Wound()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+    }
+
+    [Test]
+    public void HealCritical_Alone_MakesHealsCriticalWithTheDefaultMultiplier()
+    {
+        // e.g. the Chalice of Plenty on a character without any critical attribute
+        Wound();
+        _sourceGo.GetComponent<AttributeManager>().Add(AttributeType.HealCriticalChance, new Attribute(100f));
+        bool isCritical = false;
+        _health.OnAllConsumerProcessed.AddListener((go, modifier, value, critical) => isCritical = critical);
+
+        AddModifier(new FakeConsumer(10f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(65f, _health.Value); // healed 15 (10 * 1.5)
+        Assert.IsTrue(isCritical);
+    }
+
+    [Test]
+    public void HealCritical_UsesTheCriticalMultiplier()
+    {
+        Wound();
+        AttributeManager sourceAttributeManager = _sourceGo.GetComponent<AttributeManager>();
+        sourceAttributeManager.Add(AttributeType.HealCriticalChance, new Attribute(100f));
+        sourceAttributeManager.Add(AttributeType.CriticalMultiplier, new Attribute(3f));
+
+        AddModifier(new FakeConsumer(10f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(80f, _health.Value); // healed 30 (10 * 3)
+    }
+
+    [Test]
+    public void HealCritical_IsAddedToTheCriticalChanceForHeals()
+    {
+        // 60 + 40: a single roll that always succeeds, where two rolls in a row could both fail
+        Wound();
+        AttributeManager sourceAttributeManager = _sourceGo.GetComponent<AttributeManager>();
+        sourceAttributeManager.Add(AttributeType.CriticalChance, new Attribute(60f));
+        sourceAttributeManager.Add(AttributeType.HealCriticalChance, new Attribute(40f));
+
+        AddModifier(new FakeConsumer(10f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(65f, _health.Value);
+    }
+
+    [Test]
+    public void HealCritical_BothChances_AreASingleCritical()
+    {
+        Wound();
+        AttributeManager sourceAttributeManager = _sourceGo.GetComponent<AttributeManager>();
+        sourceAttributeManager.Add(AttributeType.CriticalChance, new Attribute(100f));
+        sourceAttributeManager.Add(AttributeType.HealCriticalChance, new Attribute(100f));
+
+        AddModifier(new FakeConsumer(10f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(65f, _health.Value); // healed 15 (10 * 1.5), not 22.5 (10 * 1.5 * 1.5)
+    }
+
+    [Test]
+    public void HealCritical_NeverHappens_WhenChanceIsZero()
+    {
+        Wound();
+        _sourceGo.GetComponent<AttributeManager>().Add(AttributeType.HealCriticalChance, new Attribute(0f));
+
+        AddModifier(new FakeConsumer(10f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(60f, _health.Value);
+    }
+
+    [Test]
+    public void HealCritical_NeverAppliesToDamage()
+    {
+        _sourceGo.GetComponent<AttributeManager>().Add(AttributeType.HealCriticalChance, new Attribute(100f));
+
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(90f, _health.Value);
+    }
+
+    [Test]
+    public void HealCritical_IsReducedByTheCriticalResistOfTheTarget()
+    {
+        Wound();
+        _sourceGo.GetComponent<AttributeManager>().Add(AttributeType.HealCriticalChance, new Attribute(100f));
+        SetAttribute(AttributeType.CriticalChanceResist, 100f);
+
+        AddModifier(new FakeConsumer(10f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(60f, _health.Value);
+    }
+
     [Test]
     public void MaxAttributeChanged_UpdatesValueAndFiresOnValueChanged()
     {

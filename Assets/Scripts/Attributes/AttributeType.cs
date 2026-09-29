@@ -20,4 +20,6 @@ public enum AttributeType
     HealingReceived,
     // Multiplier of the character skill cooldowns, 1 when the character has no such attribute
     SkillCooldownMultiplier,
+    // Critical chance added to the regular one for the heals sent by the entity
+    HealCriticalChance,
 }

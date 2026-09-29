@@ -35,13 +35,24 @@ public class ResourceConsumerResolver
 
         bool isCritical = false;
         AttributeManager sourceAttributeManager = resourceModifier.source.GetComponent<AttributeManager>();
-        if (sourceAttributeManager.Has(AttributeType.CriticalChance))
+        bool hasCriticalChance = sourceAttributeManager.Has(AttributeType.CriticalChance);
+        // Heals (positive) add their own critical chance to the regular one
+        bool hasHealCriticalChance = value > 0f && sourceAttributeManager.Has(AttributeType.HealCriticalChance);
+        if (hasCriticalChance || hasHealCriticalChance)
         {
-            Attribute criticalChance = sourceAttributeManager.Get(AttributeType.CriticalChance);
+            float criticalChance = 0f;
+            if (hasCriticalChance)
+            {
+                criticalChance += sourceAttributeManager.Get(AttributeType.CriticalChance).Value;
+            }
+            if (hasHealCriticalChance)
+            {
+                criticalChance += sourceAttributeManager.Get(AttributeType.HealCriticalChance).Value;
+            }
             // A critical chance from an item alone uses the default multiplier
             Attribute criticalMultiplier = sourceAttributeManager.GetOrAdd(AttributeType.CriticalMultiplier);
 
-            isCritical = Random.Range(0f, 100f) < (criticalChance.Value - _criticalChanceResist.Value);
+            isCritical = Random.Range(0f, 100f) < (criticalChance - _criticalChanceResist.Value);
             if (isCritical)
             {
                 value *= criticalMultiplier.Value;

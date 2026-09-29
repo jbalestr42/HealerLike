@@ -30,6 +30,7 @@ public static class EntityInfoFormatter
         { AttributeType.CriticalChanceResist, "Critical Resist" },
         { AttributeType.HealingReceived, "Healing Received" },
         { AttributeType.SkillCooldownMultiplier, "Skill Cooldown Multiplier" },
+        { AttributeType.HealCriticalChance, "Heal Critical Chance" },
     };
 
     static readonly AttributeModifierType[] ModifierTypes = { AttributeModifierType.Add, AttributeModifierType.Multiply, AttributeModifierType.Override };
