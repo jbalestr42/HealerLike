@@ -66,6 +66,10 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     List<GameplayTag> _runtimeTags = new List<GameplayTag>();
     public List<GameplayTag> runtimeTags { get { return _runtimeTags; } }
 
+    // Asked in turn when the entity should die, the first one returning true keeps it alive (e.g. a revive)
+    public delegate bool DeathPrevention(Entity dying);
+    List<DeathPrevention> _deathPreventions = new List<DeathPrevention>();
+
     public void Init()
     {
         _buffManager = GetComponent<BuffManager>();
@@ -120,7 +124,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
 
     void OnHealthChanged(ResourceAttribute health)
     {
-        if (health.Value <= 0f)
+        if (health.Value <= 0f && !TryPreventDeath())
         {
             EntityManager.instance.DestroyEntity(gameObject, entityType);
         }
@@ -175,6 +179,30 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         {
             _runtimeTags.Add(tag);
         }
+    }
+
+    public void AddDeathPrevention(DeathPrevention deathPrevention)
+    {
+        _deathPreventions.Add(deathPrevention);
+    }
+
+    public void RemoveDeathPrevention(DeathPrevention deathPrevention)
+    {
+        _deathPreventions.Remove(deathPrevention);
+    }
+
+    // True when one of the death preventions keeps the entity alive, the last added one asked first
+    public bool TryPreventDeath()
+    {
+        // Backwards, so a prevention can remove itself while being asked
+        for (int i = _deathPreventions.Count - 1; i >= 0; i--)
+        {
+            if (_deathPreventions[i](this))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void RemoveTag(GameplayTag tag)

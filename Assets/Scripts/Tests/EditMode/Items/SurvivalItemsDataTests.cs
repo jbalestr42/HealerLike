@@ -14,6 +14,7 @@ public class SurvivalItemsDataTests
     static readonly object[] Items =
     {
         new object[] { EntityItems + "SecondWindItem/SecondWindItem.asset", "Second Wind", "Entity" },
+        new object[] { EntityItems + "PhylacteryItem/PhylacteryItem.asset", "Phylactery", "Entity" },
     };
 
     static ItemFactory Load(string path)
@@ -87,6 +88,14 @@ public class SurvivalItemsDataTests
         Assert.AreEqual(DurationType.Duration, invincibility.durationType);
         Assert.AreEqual(2f, invincibility.duration, 0.0001f);
         Assert.IsTrue(invincibility.buffFactoryList.Exists(factory => factory is InvincibilityBuffFactory));
+    }
+
+    [Test]
+    public void Phylactery_TheFirstDeathOfAFightComesBackWith30PercentHealth()
+    {
+        ReviveOnDeathBuffFactory buff = GetBuff<ReviveOnDeathBuffFactory>(LoadItem(EntityItems, "Phylactery"));
+
+        Assert.AreEqual(0.3f, buff.data.healthRatio, 0.0001f);
     }
 }
 
