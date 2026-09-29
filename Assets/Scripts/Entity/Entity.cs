@@ -11,8 +11,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     public UnityEvent<GameObject, float> OnDamageDealt = new UnityEvent<GameObject, float>();
     // Each attack this entity makes (e.g. to repeat it)
     public UnityEvent<ProjectileAttack> OnAttack = new UnityEvent<ProjectileAttack>();
-    // Heal this entity received from a source, overheal included (e.g. to empower its next attack)
-    public UnityEvent<GameObject, float> OnHealReceived = new UnityEvent<GameObject, float>();
+    // Each heal this entity receives (e.g. to empower its next attack)
+    public UnityEvent<GameObject, ConsumerResult> OnHealReceived = new UnityEvent<GameObject, ConsumerResult>();
 
     public enum EntityType
     {
@@ -126,10 +126,10 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         }
     }
 
-    void OnConsumerProcessed(GameObject target, ResourceModifier resourceModifier, float value, bool isCritical)
+    void OnConsumerProcessed(GameObject target, ResourceModifier resourceModifier, ConsumerResult result)
     {
-        NotifyAttacker(resourceModifier.source, target, value);
-        NotifyHealed(resourceModifier.source, target, value);
+        NotifyAttacker(resourceModifier.source, target, result.value);
+        NotifyHealed(resourceModifier.source, target, result);
     }
 
     // Damage is a negative value, reported as a positive amount to the entity that dealt it
@@ -149,9 +149,9 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     }
 
     // A heal is a positive value, reported to the entity that received it
-    public static void NotifyHealed(GameObject source, GameObject target, float value)
+    public static void NotifyHealed(GameObject source, GameObject target, ConsumerResult result)
     {
-        if (value <= 0f || target == null)
+        if (result.value <= 0f || target == null)
         {
             return;
         }
@@ -159,7 +159,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         Entity healed = target.GetComponent<Entity>();
         if (healed != null)
         {
-            healed.OnHealReceived.Invoke(source, value);
+            healed.OnHealReceived.Invoke(source, result);
         }
     }
 

@@ -6,7 +6,7 @@ using UnityEngine.Events;
 public class ResourceAttribute : MonoBehaviour
 {
     public UnityEvent<ResourceAttribute> OnValueChanged = new UnityEvent<ResourceAttribute>();
-    public UnityEvent<GameObject, ResourceModifier, float, bool> OnAllConsumerProcessed = new UnityEvent<GameObject, ResourceModifier, float, bool>();
+    public UnityEvent<GameObject, ResourceModifier, ConsumerResult> OnAllConsumerProcessed = new UnityEvent<GameObject, ResourceModifier, ConsumerResult>();
 
     float _prevValue;
     float _value;
@@ -49,8 +49,9 @@ public class ResourceAttribute : MonoBehaviour
                 if (resourceModifier.consumers.Count > 0)
                 {
                     (float value, bool isCritical) = _resourceConsumerResolver.ComputeValue(this, resourceModifier);
+                    float overflow = GetOverflow(_value, value, _max.Value);
                     _value += value;
-                    OnAllConsumerProcessed.Invoke(gameObject, resourceModifier, value, isCritical);
+                    OnAllConsumerProcessed.Invoke(gameObject, resourceModifier, new ConsumerResult(value, isCritical, overflow));
                 }
             }
             _resourceModifiers.Clear();
@@ -62,6 +63,17 @@ public class ResourceAttribute : MonoBehaviour
             OnValueChanged.Invoke(this);
             _prevValue = _value;
         }
+    }
+
+    // Part of a heal going above the max, from a value that may already be above it (the value is only
+    // clamped once every modifier of the frame is processed)
+    public static float GetOverflow(float before, float value, float max)
+    {
+        if (value <= 0f)
+        {
+            return 0f;
+        }
+        return Mathf.Max(0f, before + value - Mathf.Max(before, max));
     }
 
     public void Refill()

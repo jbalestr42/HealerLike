@@ -48,7 +48,7 @@ public class DamageEnemyOnHealBuffTests
 
     void Heal(float amount)
     {
-        Entity.NotifyHealed(null, _owner.gameObject, amount);
+        Entity.NotifyHealed(null, _owner.gameObject, new ConsumerResult(amount, false));
     }
 
     [Test]

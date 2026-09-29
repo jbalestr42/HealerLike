@@ -56,7 +56,7 @@ public class EmpowerNextAttackOnHealBuffTests
 
     void Heal()
     {
-        Entity.NotifyHealed(null, _owner.gameObject, 10f);
+        Entity.NotifyHealed(null, _owner.gameObject, new ConsumerResult(10f, false));
     }
 
     [Test]
@@ -95,7 +95,7 @@ public class EmpowerNextAttackOnHealBuffTests
     [Test]
     public void Damage_Received_DoesNotEmpower()
     {
-        Entity.NotifyHealed(null, _owner.gameObject, -10f);
+        Entity.NotifyHealed(null, _owner.gameObject, new ConsumerResult(-10f, false));
 
         Assert.AreEqual(1f, Hit(Attack()), 0.0001f);
     }

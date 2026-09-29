@@ -84,11 +84,11 @@ public class AscensionGameTypeTests
         GameObject processedTarget = null;
         ResourceModifier processedModifier = null;
         float processedValue = 0f;
-        _health.OnAllConsumerProcessed.AddListener((target, modifier, value, isCritical) =>
+        _health.OnAllConsumerProcessed.AddListener((target, modifier, result) =>
         {
             processedTarget = target;
             processedModifier = modifier;
-            processedValue = value;
+            processedValue = result.value;
         });
         int changedCount = 0;
         _health.OnValueChanged.AddListener(_ => changedCount++);

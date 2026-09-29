@@ -69,9 +69,9 @@ public class ShareHealOnRelativeCellBuff : ABuff<ShareHealOnRelativeCellBuffData
         }
     }
 
-    void OnHealReceived(GameObject source, float amount)
+    void OnHealReceived(GameObject source, ConsumerResult heal)
     {
-        float sharedHeal = amount * data.ratio;
+        float sharedHeal = heal.value * data.ratio;
         if (sharedHeal <= 0f || sharedHeal < data.minimumSharedHeal)
         {
             return;

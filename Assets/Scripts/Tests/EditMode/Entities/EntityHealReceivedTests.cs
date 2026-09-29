@@ -21,12 +21,16 @@ public class EntityHealReceivedTests
     {
         Entity healer = _units.Create(100f, 100f, "Healer");
         Entity healed = _units.Create(50f, 100f, "Healed");
-        List<(GameObject, float)> reports = new List<(GameObject, float)>();
-        healed.OnHealReceived.AddListener((source, amount) => reports.Add((source, amount)));
+        List<(GameObject, ConsumerResult)> reports = new List<(GameObject, ConsumerResult)>();
+        healed.OnHealReceived.AddListener((source, heal) => reports.Add((source, heal)));
 
-        Entity.NotifyHealed(healer.gameObject, healed.gameObject, 12f);
+        Entity.NotifyHealed(healer.gameObject, healed.gameObject, new ConsumerResult(12f, true, 2f));
 
-        CollectionAssert.AreEqual(new[] { (healer.gameObject, 12f) }, reports);
+        Assert.AreEqual(1, reports.Count);
+        Assert.AreSame(healer.gameObject, reports[0].Item1);
+        Assert.AreEqual(12f, reports[0].Item2.value, 0.0001f);
+        Assert.IsTrue(reports[0].Item2.isCritical);
+        Assert.AreEqual(2f, reports[0].Item2.overflow, 0.0001f);
     }
 
     [Test]
@@ -34,10 +38,10 @@ public class EntityHealReceivedTests
     {
         Entity target = _units.Create(100f, 100f, "Target");
         bool isReported = false;
-        target.OnHealReceived.AddListener((source, amount) => isReported = true);
+        target.OnHealReceived.AddListener((source, heal) => isReported = true);
 
-        Entity.NotifyHealed(null, target.gameObject, -12f);
-        Entity.NotifyHealed(null, target.gameObject, 0f);
+        Entity.NotifyHealed(null, target.gameObject, new ConsumerResult(-12f, false));
+        Entity.NotifyHealed(null, target.gameObject, new ConsumerResult(0f, false));
 
         Assert.IsFalse(isReported);
     }
@@ -47,9 +51,9 @@ public class EntityHealReceivedTests
     {
         Entity healed = _units.Create(50f, 100f, "Healed");
         float received = 0f;
-        healed.OnHealReceived.AddListener((source, amount) => received += amount);
+        healed.OnHealReceived.AddListener((source, heal) => received += heal.value);
 
-        Entity.NotifyHealed(null, healed.gameObject, 5f);
+        Entity.NotifyHealed(null, healed.gameObject, new ConsumerResult(5f, false));
 
         Assert.AreEqual(5f, received, 0.0001f);
     }
@@ -60,8 +64,8 @@ public class EntityHealReceivedTests
         GameObject character = new GameObject("Character");
         try
         {
-            Assert.DoesNotThrow(() => Entity.NotifyHealed(null, character, 5f));
-            Assert.DoesNotThrow(() => Entity.NotifyHealed(null, null, 5f));
+            Assert.DoesNotThrow(() => Entity.NotifyHealed(null, character, new ConsumerResult(5f, false)));
+            Assert.DoesNotThrow(() => Entity.NotifyHealed(null, null, new ConsumerResult(5f, false)));
         }
         finally
         {

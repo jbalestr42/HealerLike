@@ -38,9 +38,9 @@ public class DamageEnemyOnHealBuff : ABuff<DamageEnemyOnHealBuffData>
         }
     }
 
-    void OnHealReceived(GameObject source, float amount)
+    void OnHealReceived(GameObject source, ConsumerResult heal)
     {
-        float damage = amount * data.ratio;
+        float damage = heal.value * data.ratio;
         if (damage <= 0f)
         {
             return;

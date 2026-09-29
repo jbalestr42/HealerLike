@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -450,11 +451,11 @@ public class ResourceAttributeTests
         GameObject receivedGameObject = null;
         float receivedValue = 0f;
         bool receivedIsCritical = true;
-        _health.OnAllConsumerProcessed.AddListener((go, modifier, value, isCritical) =>
+        _health.OnAllConsumerProcessed.AddListener((go, modifier, result) =>
         {
             receivedGameObject = go;
-            receivedValue = value;
-            receivedIsCritical = isCritical;
+            receivedValue = result.value;
+            receivedIsCritical = result.isCritical;
         });
 
         AddModifier(new FakeConsumer(-10f));
@@ -517,7 +518,7 @@ public class ResourceAttributeTests
         Wound();
         _sourceGo.GetComponent<AttributeManager>().Add(AttributeType.HealCriticalChance, new Attribute(100f));
         bool isCritical = false;
-        _health.OnAllConsumerProcessed.AddListener((go, modifier, value, critical) => isCritical = critical);
+        _health.OnAllConsumerProcessed.AddListener((go, modifier, result) => isCritical = result.isCritical);
 
         AddModifier(new FakeConsumer(10f, ignoreDamageReduction: true));
         Drain();
@@ -603,6 +604,87 @@ public class ResourceAttributeTests
         Drain();
 
         Assert.AreEqual(60f, _health.Value);
+    }
+
+    // The overflows reported for the modifiers of the next drain
+    List<float> Overflows()
+    {
+        List<float> overflows = new List<float>();
+        _health.OnAllConsumerProcessed.AddListener((go, modifier, result) => overflows.Add(result.overflow));
+        return overflows;
+    }
+
+    [Test]
+    public void Overflow_HealAboveTheMax_ReportsThePartAboveIt()
+    {
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+        List<float> overflows = Overflows();
+
+        AddModifier(new FakeConsumer(25f, ignoreDamageReduction: true));
+        Drain();
+
+        CollectionAssert.AreEqual(new[] { 15f }, overflows);
+        Assert.AreEqual(100f, _health.Value);
+    }
+
+    [Test]
+    public void Overflow_HealWithinTheMax_IsZero()
+    {
+        AddModifier(new FakeConsumer(-30f));
+        Drain();
+        List<float> overflows = Overflows();
+
+        AddModifier(new FakeConsumer(20f, ignoreDamageReduction: true));
+        Drain();
+
+        CollectionAssert.AreEqual(new[] { 0f }, overflows);
+    }
+
+    [Test]
+    public void Overflow_HealAtFullHealth_IsEntirelyReported()
+    {
+        List<float> overflows = Overflows();
+
+        AddModifier(new FakeConsumer(20f, ignoreDamageReduction: true));
+        Drain();
+
+        CollectionAssert.AreEqual(new[] { 20f }, overflows);
+    }
+
+    [Test]
+    public void Overflow_Damage_IsZero()
+    {
+        List<float> overflows = Overflows();
+
+        AddModifier(new FakeConsumer(-20f));
+        Drain();
+
+        CollectionAssert.AreEqual(new[] { 0f }, overflows);
+    }
+
+    [Test]
+    public void Overflow_SeveralHealsInAFrame_EachReportsItsOwnPart()
+    {
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+        List<float> overflows = Overflows();
+
+        AddModifier(new FakeConsumer(15f, ignoreDamageReduction: true));
+        AddModifier(new FakeConsumer(20f, ignoreDamageReduction: true));
+        Drain();
+
+        // 5 above the max for the first one, then the whole second one
+        CollectionAssert.AreEqual(new[] { 5f, 20f }, overflows);
+    }
+
+    [Test]
+    public void GetOverflow_ComputesThePartAboveTheMax()
+    {
+        Assert.AreEqual(0f, ResourceAttribute.GetOverflow(50f, 20f, 100f));
+        Assert.AreEqual(10f, ResourceAttribute.GetOverflow(90f, 20f, 100f));
+        Assert.AreEqual(20f, ResourceAttribute.GetOverflow(110f, 20f, 100f));
+        Assert.AreEqual(0f, ResourceAttribute.GetOverflow(110f, -20f, 100f));
     }
 
     [Test]

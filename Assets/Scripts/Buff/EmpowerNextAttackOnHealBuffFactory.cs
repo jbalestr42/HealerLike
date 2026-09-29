@@ -38,7 +38,7 @@ public class EmpowerNextAttackOnHealBuff : ABuff<EmpowerNextAttackOnHealBuffData
         _isEmpowered = false;
     }
 
-    void OnHealReceived(GameObject source, float amount)
+    void OnHealReceived(GameObject source, ConsumerResult heal)
     {
         _isEmpowered = true;
     }

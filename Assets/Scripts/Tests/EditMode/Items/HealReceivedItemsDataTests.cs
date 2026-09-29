@@ -19,6 +19,7 @@ public class HealReceivedItemsDataTests
         new object[] { EntityItems + "ThornsOfLifeItem/ThornsOfLifeItem.asset", "Thorns of Life", "Entity" },
         new object[] { EntityItems + "MartyrsHeartItem/MartyrsHeartItem.asset", "Martyr's Heart", "Entity" },
         new object[] { PlayerItems + "ChaliceOfPlentyItem/ChaliceOfPlentyItem.asset", "Chalice of Plenty", "Player" },
+        new object[] { PlayerItems + "OverflowingFontItem/OverflowingFontItem.asset", "Overflowing Font", "Player" },
     };
 
     GameObject _go;
@@ -151,6 +152,15 @@ public class HealReceivedItemsDataTests
         Equip(LoadItem(PlayerItems, "ChaliceOfPlenty"));
 
         Assert.AreEqual(15f, Get(AttributeType.HealCriticalChance), 0.0001f);
+    }
+
+    [Test]
+    public void OverflowingFont_TheOverhealOfTheUnitsRestores10PercentOfItAsMana()
+    {
+        ManaOnOverhealBuffFactory buff = GetBuff<ManaOnOverhealBuffFactory>(LoadItem(PlayerItems, "OverflowingFont"));
+
+        Assert.AreEqual(0.1f, buff.data.ratio, 0.0001f);
+        Assert.AreEqual(Entity.EntityType.Player, buff.data.healedType);
     }
 }
 

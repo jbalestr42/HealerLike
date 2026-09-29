@@ -143,7 +143,7 @@ public class DamageAllEntityOnEntityDieBuffTests
         GameObject victim = CreateVictim();
         _buff.Add(_owner, _owner);
         ResourceModifier processed = null;
-        victim.GetComponent<Entity>().health.OnAllConsumerProcessed.AddListener((target, modifier, value, isCritical) => processed = modifier);
+        victim.GetComponent<Entity>().health.OnAllConsumerProcessed.AddListener((target, modifier, result) => processed = modifier);
 
         Kill(_dead);
         Drain(victim);
@@ -234,7 +234,7 @@ public class DamageAllEntityOnEntityDieBuffTests
         _buff.data.trigger = DeathTrigger.Owner;
         _buff.Add(kamikaze, kamikaze);
         ResourceModifier processed = null;
-        victim.GetComponent<Entity>().health.OnAllConsumerProcessed.AddListener((target, modifier, value, isCritical) => processed = modifier);
+        victim.GetComponent<Entity>().health.OnAllConsumerProcessed.AddListener((target, modifier, result) => processed = modifier);
 
         Kill(kamikaze);
         Drain(victim);

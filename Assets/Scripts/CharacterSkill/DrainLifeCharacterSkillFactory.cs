@@ -27,7 +27,7 @@ public class DrainLifeCharacterSkill : BaseCharacterSkill<DrainLifeCharacterSkil
 
     public static void Drain(GameObject source, ResourceAttribute targetHealth, ResourceModifier drain, List<GameObject> allies, float healRatio)
     {
-        void OnProcessed(GameObject target, ResourceModifier resourceModifier, float value, bool isCritical)
+        void OnProcessed(GameObject target, ResourceModifier resourceModifier, ConsumerResult result)
         {
             if (resourceModifier != drain)
             {
@@ -35,7 +35,7 @@ public class DrainLifeCharacterSkill : BaseCharacterSkill<DrainLifeCharacterSkil
             }
             targetHealth.OnAllConsumerProcessed.RemoveListener(OnProcessed);
             // Damage is negative
-            LifeSteal.HealMostWounded(source, allies, -value * healRatio);
+            LifeSteal.HealMostWounded(source, allies, -result.value * healRatio);
         }
 
         targetHealth.OnAllConsumerProcessed.AddListener(OnProcessed);
