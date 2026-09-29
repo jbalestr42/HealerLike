@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f2668ffc7884fffa1e1c3f078ab1879, type: 3}
-  m_Name: AlliesOnRelativeCellModifierFactory
+  m_Script: {fileID: 11500000, guid: a8940981ac4386e4395c5404eb3a86d1, type: 3}
+  m_Name: LoneWolfItem
   m_EditorClassIdentifier:
   serializationData:
     SerializedFormat: 2
@@ -21,11 +21,15 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  uniqueID: 06428394-acdb-4099-b8c5-93a32dfcb740
   data:
-    type: 4
-    modifierType: 0
-    value: 2
-    isWhenAlone: 0
-    pattern: 0
-    range: 1
+    icon: {fileID: 21300000, guid: 7727d08cc96a0634f870fb482417b37e, type: 3}
+    name: Lone Wolf
+    description: "+50% damage when no ally is adjacent"
+    tags:
+    - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
+    buffs:
+    - {fileID: 11400000, guid: 17649a6361364779be97fae276fc8723, type: 2}
+    onHitEffects: []
+    onHitConsumers: []
+    projectileBehaviours: []
+    skills: []

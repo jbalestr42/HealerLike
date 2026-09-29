@@ -46,9 +46,14 @@ public class AlliesOnRelativeCellModifierTests
 
     TestAlliesOnRelativeCellModifier CreateModifier(params Entity[] allies)
     {
+        return CreateModifier(false, allies);
+    }
+
+    TestAlliesOnRelativeCellModifier CreateModifier(bool isWhenAlone, params Entity[] allies)
+    {
         TestAlliesOnRelativeCellModifier modifier = new TestAlliesOnRelativeCellModifier
         {
-            data = new AlliesOnRelativeCellModifierData { valuePerAlly = 2f, pattern = RelativeCellPatternType.Adjacent, range = 1 },
+            data = new AlliesOnRelativeCellModifierData { value = 2f, isWhenAlone = isWhenAlone, pattern = RelativeCellPatternType.Adjacent, range = 1 },
             cellSize = CellSize,
         };
         modifier.allies.Add(_target.gameObject);
@@ -94,6 +99,34 @@ public class AlliesOnRelativeCellModifierTests
         ally.transform.position = new Vector3(3f * CellSize, 0f, 0f);
 
         Assert.AreEqual(0f, modifier.ApplyModifier(), 0.0001f);
+    }
+
+    [Test]
+    public void ApplyModifier_WhenAlone_WithoutAdjacentAlly_GivesTheValue()
+    {
+        TestAlliesOnRelativeCellModifier modifier = CreateModifier(true, CreateAt("Far", 2, 0));
+
+        Assert.AreEqual(2f, modifier.ApplyModifier(), 0.0001f);
+    }
+
+    [Test]
+    public void ApplyModifier_WhenAlone_WithAnAdjacentAlly_IsZero()
+    {
+        TestAlliesOnRelativeCellModifier modifier = CreateModifier(true, CreateAt("Right", 1, 0), CreateAt("Diagonal", -1, 1));
+
+        Assert.AreEqual(0f, modifier.ApplyModifier(), 0.0001f);
+    }
+
+    [Test]
+    public void ApplyModifier_WhenAlone_AnAdjacentAllyDying_GivesTheValueBack()
+    {
+        Entity ally = CreateAt("Ally", 1, 0);
+        TestAlliesOnRelativeCellModifier modifier = CreateModifier(true, ally);
+        Assert.AreEqual(0f, modifier.ApplyModifier(), 0.0001f);
+
+        ally.health.SetValue(0f);
+
+        Assert.AreEqual(2f, modifier.ApplyModifier(), 0.0001f);
     }
 }
 

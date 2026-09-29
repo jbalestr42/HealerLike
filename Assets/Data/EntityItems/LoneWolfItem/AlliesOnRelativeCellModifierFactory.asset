@@ -21,11 +21,11 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  uniqueID: 06428394-acdb-4099-b8c5-93a32dfcb740
+  uniqueID: 1733a82c-2d22-465b-b715-2275842e10e8
   data:
-    type: 4
-    modifierType: 0
-    value: 2
-    isWhenAlone: 0
+    type: 2
+    modifierType: 1
+    value: 0.5
+    isWhenAlone: 1
     pattern: 0
     range: 1

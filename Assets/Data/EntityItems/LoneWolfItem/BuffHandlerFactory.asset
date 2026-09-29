@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f2668ffc7884fffa1e1c3f078ab1879, type: 3}
-  m_Name: AlliesOnRelativeCellModifierFactory
+  m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
+  m_Name: BuffHandlerFactory
   m_EditorClassIdentifier:
   serializationData:
     SerializedFormat: 2
@@ -21,11 +21,16 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  uniqueID: 06428394-acdb-4099-b8c5-93a32dfcb740
+  uniqueID: b3c61252-d01d-420d-a282-88979ee6644f
   data:
-    type: 4
-    modifierType: 0
-    value: 2
-    isWhenAlone: 0
-    pattern: 0
-    range: 1
+    durationType: 2
+    duration: 0
+    isPeriodic: 0
+    periodDuration: 0
+    maxStacks: 0
+    buffFactoryList:
+    - {fileID: 11400000, guid: d007c370a088493098eb146c3702c441, type: 2}
+    buffEffect: {fileID: 0}
+    icon: {fileID: 0}
+    tags:
+    - {fileID: 11400000, guid: 89edbaa6345fd89478db1b09b2b2150f, type: 2}

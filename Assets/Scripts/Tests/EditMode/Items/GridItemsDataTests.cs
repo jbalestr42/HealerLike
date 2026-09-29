@@ -14,6 +14,7 @@ public class GridItemsDataTests
     static readonly object[] Items =
     {
         new object[] { EntityItems + "PhalanxItem/PhalanxItem.asset", "Phalanx", "Entity" },
+        new object[] { EntityItems + "LoneWolfItem/LoneWolfItem.asset", "Lone Wolf", "Entity" },
     };
 
     static ItemFactory Load(string path)
@@ -83,7 +84,21 @@ public class GridItemsDataTests
 
         Assert.AreEqual(AttributeType.FlatArmor, buff.data.type);
         Assert.AreEqual(AttributeModifierType.Add, buff.data.modifierType);
-        Assert.AreEqual(2f, buff.data.valuePerAlly, 0.0001f);
+        Assert.AreEqual(2f, buff.data.value, 0.0001f);
+        Assert.IsFalse(buff.data.isWhenAlone);
+        Assert.AreEqual(RelativeCellPatternType.Adjacent, buff.data.pattern);
+        Assert.AreEqual(1, buff.data.range);
+    }
+
+    [Test]
+    public void LoneWolf_Gives50PercentDamageWithoutAdjacentAlly()
+    {
+        AlliesOnRelativeCellModifierFactory buff = GetBuff<AlliesOnRelativeCellModifierFactory>(LoadItem(EntityItems, "LoneWolf"));
+
+        Assert.AreEqual(AttributeType.Damage, buff.data.type);
+        Assert.AreEqual(AttributeModifierType.Multiply, buff.data.modifierType);
+        Assert.AreEqual(0.5f, buff.data.value, 0.0001f);
+        Assert.IsTrue(buff.data.isWhenAlone);
         Assert.AreEqual(RelativeCellPatternType.Adjacent, buff.data.pattern);
         Assert.AreEqual(1, buff.data.range);
     }

@@ -10,14 +10,16 @@ public class AlliesOnRelativeCellModifierFactory : BuffFactory<AttributeModifier
 public class AlliesOnRelativeCellModifierData : BaseData
 {
     // Given for each living ally on a cell of the pattern around the target
-    public float valuePerAlly;
+    public float value;
+    // Gives the value once when no ally is on the pattern instead, nothing otherwise (e.g. a lone wolf)
+    public bool isWhenAlone;
     public RelativeCellPatternType pattern = RelativeCellPatternType.Adjacent;
     [MinValue(1)]
     public int range = 1;
 }
 
-// A value growing with the allies around the target, counted again at each update so it follows the
-// placement and the deaths (e.g. armor for each adjacent ally)
+// A value depending on the allies around the target, counted again at each update so it follows the
+// placement and the deaths (e.g. armor for each adjacent ally, damage without any)
 public class AlliesOnRelativeCellModifier : AttributeModifier<AlliesOnRelativeCellModifierData>
 {
     Entity _target;
@@ -29,7 +31,12 @@ public class AlliesOnRelativeCellModifier : AttributeModifier<AlliesOnRelativeCe
 
     public override float ApplyModifier()
     {
-        return data.valuePerAlly * CountAllies();
+        int allies = CountAllies();
+        if (data.isWhenAlone)
+        {
+            return allies == 0 ? data.value : 0f;
+        }
+        return data.value * allies;
     }
 
     public int CountAllies()
