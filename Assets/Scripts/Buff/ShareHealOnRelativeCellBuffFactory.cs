@@ -77,32 +77,13 @@ public class ShareHealOnRelativeCellBuff : ABuff<ShareHealOnRelativeCellBuffData
             return;
         }
 
-        List<Vector2Int> offsets = RelativeCellPattern.GetOffsets(data.pattern, data.range);
-        float cellSize = GetCellSize();
-        foreach (GameObject ally in GetAllies())
+        foreach (Entity entity in RelativeCellPattern.FindEntities(_owner, GetAllies(), data.pattern, data.range, GetCellSize()))
         {
-            Entity entity = ally != null ? ally.GetComponent<Entity>() : null;
-            if (entity == null || entity == _owner || entity.health == null || entity.health.Value <= 0f)
-            {
-                continue;
-            }
-            if (!offsets.Contains(GetCellOffset(_owner.transform.position, ally.transform.position, cellSize)))
-            {
-                continue;
-            }
-
             // A heal: ignores the armor and the invincibility
             ResourceModifier healModifier = new ResourceModifier { source = _owner.gameObject };
             healModifier.consumers.Add(new RuntimeConsumer(sharedHeal));
             entity.health.AddResourceModifier(healModifier);
         }
-    }
-
-    // Offset in cells from one position to another on the ground plane
-    public static Vector2Int GetCellOffset(Vector3 from, Vector3 to, float cellSize)
-    {
-        Vector3 delta = (to - from) / cellSize;
-        return new Vector2Int(Mathf.RoundToInt(delta.x), Mathf.RoundToInt(delta.z));
     }
 
     protected virtual List<GameObject> GetAllies()

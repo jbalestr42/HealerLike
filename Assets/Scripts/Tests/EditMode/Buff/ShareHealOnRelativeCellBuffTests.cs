@@ -205,13 +205,6 @@ public class ShareHealOnRelativeCellBuffTests
 
         Assert.AreEqual(0, _owner.transform.childCount);
     }
-
-    [Test]
-    public void GetCellOffset_CountsTheCellsOnTheGroundPlane()
-    {
-        Assert.AreEqual(new Vector2Int(1, 0), ShareHealOnRelativeCellBuff.GetCellOffset(Vector3.zero, new Vector3(2f, 5f, 0f), 2f));
-        Assert.AreEqual(new Vector2Int(-1, 2), ShareHealOnRelativeCellBuff.GetCellOffset(new Vector3(2f, 0f, 0f), new Vector3(0.1f, 0f, 3.9f), 2f));
-    }
 }
 
 }
