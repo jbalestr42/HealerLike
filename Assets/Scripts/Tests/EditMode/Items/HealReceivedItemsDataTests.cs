@@ -14,6 +14,7 @@ public class HealReceivedItemsDataTests
     static readonly object[] Items =
     {
         new object[] { EntityItems + "GratitudeItem/GratitudeItem.asset", "Gratitude", "Entity" },
+        new object[] { EntityItems + "ThornsOfLifeItem/ThornsOfLifeItem.asset", "Thorns of Life", "Entity" },
     };
 
     static ItemFactory Load(string path)
@@ -82,6 +83,15 @@ public class HealReceivedItemsDataTests
         EmpowerNextAttackOnHealBuffFactory gratitude = GetBuff<EmpowerNextAttackOnHealBuffFactory>(LoadItem(EntityItems, "Gratitude"));
 
         Assert.AreEqual(1.5f, gratitude.data.damageMultiplier, 0.0001f);
+    }
+
+    [Test]
+    public void ThornsOfLife_WhenHealedTheNearestEnemyTakes25PercentOfTheHeal()
+    {
+        DamageEnemyOnHealBuffFactory buff = GetBuff<DamageEnemyOnHealBuffFactory>(LoadItem(EntityItems, "ThornsOfLife"));
+
+        Assert.AreEqual(0.25f, buff.data.ratio, 0.0001f);
+        Assert.AreEqual(TargetBehaviourType.Nearest, buff.data.targetType);
     }
 }
 
