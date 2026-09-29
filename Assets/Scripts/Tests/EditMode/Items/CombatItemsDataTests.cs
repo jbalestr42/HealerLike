@@ -201,7 +201,7 @@ public class CombatItemsDataTests
 
         AddBuffs(handler);
 
-        Assert.AreEqual(BuffEventTrigger.BattleStart, drums.data.trigger);
+        Assert.AreEqual(BuffEventTrigger.BattleStart, drums.data.triggers);
         Assert.AreEqual(Entity.EntityType.Player, drums.data.entityType);
         Assert.AreEqual(DurationType.Duration, handler.durationType);
         Assert.AreEqual(5f, handler.duration, 0.0001f);
@@ -217,7 +217,7 @@ public class CombatItemsDataTests
 
         AddBuffs(necronomicon.data.buffHandlerFactory);
 
-        Assert.AreEqual(BuffEventTrigger.Summoned, necronomicon.data.trigger);
+        Assert.AreEqual(BuffEventTrigger.Summoned, necronomicon.data.triggers);
         Assert.AreEqual(Entity.EntityType.Player, necronomicon.data.entityType);
         Assert.AreEqual(DurationType.Infinite, necronomicon.data.buffHandlerFactory.durationType);
         Assert.AreEqual(150f, Get(AttributeType.HealthMax), 0.0001f);

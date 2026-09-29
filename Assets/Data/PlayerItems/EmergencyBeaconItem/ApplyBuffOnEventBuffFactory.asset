@@ -21,8 +21,8 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  uniqueID: 1b3dc7bb-7065-469b-946b-f7932b22e1e5
+  uniqueID: 5949a7a0-4a4a-4521-a164-081880362bcc
   data:
-    triggers: 2
-    buffHandlerFactory: {fileID: 11400000, guid: 51aa341b0bc14ea8b7a073bc0bc05828, type: 2}
+    triggers: 3
+    buffHandlerFactory: {fileID: 11400000, guid: b09b24ef1aaf4c51844419bc2330c473, type: 2}
     entityType: 1

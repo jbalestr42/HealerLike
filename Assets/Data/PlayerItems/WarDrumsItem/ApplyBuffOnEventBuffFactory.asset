@@ -23,6 +23,6 @@ MonoBehaviour:
     SerializationNodes: []
   uniqueID: 37c39ed5-053c-4450-b011-8715d8d2699d
   data:
-    trigger: 0
+    triggers: 1
     buffHandlerFactory: {fileID: 11400000, guid: 86ef9787ee9d44f6baf77abb61b9a75c, type: 2}
     entityType: 1

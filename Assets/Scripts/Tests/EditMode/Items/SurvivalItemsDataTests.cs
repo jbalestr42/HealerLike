@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Entities;
 using NUnit.Framework;
 using UnityEditor;
 
@@ -10,12 +11,14 @@ namespace Items
 public class SurvivalItemsDataTests
 {
     const string EntityItems = "Assets/Data/EntityItems/";
+    const string PlayerItems = "Assets/Data/PlayerItems/";
 
     static readonly object[] Items =
     {
         new object[] { EntityItems + "SecondWindItem/SecondWindItem.asset", "Second Wind", "Entity" },
         new object[] { EntityItems + "PhylacteryItem/PhylacteryItem.asset", "Phylactery", "Entity" },
         new object[] { EntityItems + "BoneCharmItem/BoneCharmItem.asset", "Bone Charm", "Entity" },
+        new object[] { PlayerItems + "EmergencyBeaconItem/EmergencyBeaconItem.asset", "Emergency Beacon", "Player" },
     };
 
     static ItemFactory Load(string path)
@@ -106,6 +109,38 @@ public class SurvivalItemsDataTests
 
         Assert.IsNotNull(buff.data.entity);
         Assert.AreEqual("Skeleton", buff.data.entity.title);
+    }
+
+    [Test]
+    public void EmergencyBeacon_EveryUnitBelow20PercentHealthIsHealedFor30PercentOnceAFight()
+    {
+        ApplyBuffOnEventBuffFactory onEvent = GetBuff<ApplyBuffOnEventBuffFactory>(LoadItem(PlayerItems, "EmergencyBeacon"));
+
+        // Every unit of the player at the battle start, and each one summoned during it
+        Assert.AreEqual(BuffEventTrigger.BattleStart | BuffEventTrigger.Summoned, onEvent.data.triggers);
+        Assert.AreEqual(Entity.EntityType.Player, onEvent.data.entityType);
+        ABuffHandlerFactory beacon = onEvent.data.buffHandlerFactory;
+        // Removed with the other temporary buffs at the end of the fight, so it works once a fight
+        Assert.IsEmpty(beacon.tags);
+
+        ApplyBuffBelowHealthBuffFactory belowHealth = (ApplyBuffBelowHealthBuffFactory)beacon.buffFactoryList[0];
+        Assert.AreEqual(0.2f, belowHealth.data.threshold, 0.0001f);
+        ABuffHandlerFactory heal = belowHealth.data.buffHandlerFactory;
+        Assert.AreEqual(DurationType.Instant, heal.durationType);
+
+        TestUnits units = new TestUnits();
+        try
+        {
+            Entity unit = units.Create(10f, 100f);
+            AConsumerFactory healConsumer = ((ApplyConsumerBuffFactory)heal.buffFactoryList[0]).data.consumerFactory;
+
+            // The consumer value is added to the health
+            Assert.AreEqual(30f, healConsumer.GetConsumer(unit.gameObject, unit.gameObject).GetValue(), 0.0001f);
+        }
+        finally
+        {
+            units.DestroyAll();
+        }
     }
 }
 

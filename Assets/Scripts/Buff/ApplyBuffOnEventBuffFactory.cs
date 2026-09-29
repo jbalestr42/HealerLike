@@ -4,18 +4,21 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Custom/Data/Buff/ApplyBuffOnEventBuff")]
 public class ApplyBuffOnEventBuffFactory : BuffFactory<ApplyBuffOnEventBuff, ApplyBuffOnEventBuffData> { }
 
+// A mask: the buff can be given on several events
+[Flags]
 public enum BuffEventTrigger
 {
+    None = 0,
     // Every entity of the side, when a battle starts
-    BattleStart,
+    BattleStart = 1 << 0,
     // Each entity of the side summoned during a battle
-    Summoned,
+    Summoned = 1 << 1,
 }
 
 [Serializable]
 public class ApplyBuffOnEventBuffData
 {
-    public BuffEventTrigger trigger;
+    public BuffEventTrigger triggers;
     [CreateDataButton]
     public ABuffHandlerFactory buffHandlerFactory;
     // Side of the entities getting the buff
@@ -51,14 +54,13 @@ public class ApplyBuffOnEventBuff : ABuff<ApplyBuffOnEventBuffData>
     public override void Add(GameObject source, GameObject target)
     {
         _owner = target;
-        switch (data.trigger)
+        if (data.triggers.HasFlag(BuffEventTrigger.BattleStart))
         {
-            case BuffEventTrigger.BattleStart:
-                AscensionGameType.OnBattleStart.AddListener(OnBattleStart);
-                break;
-            case BuffEventTrigger.Summoned:
-                EntityManager.instance.OnEntitySummoned.AddListener(ApplyTo);
-                break;
+            AscensionGameType.OnBattleStart.AddListener(OnBattleStart);
+        }
+        if (data.triggers.HasFlag(BuffEventTrigger.Summoned))
+        {
+            EntityManager.instance.OnEntitySummoned.AddListener(ApplyTo);
         }
     }
 

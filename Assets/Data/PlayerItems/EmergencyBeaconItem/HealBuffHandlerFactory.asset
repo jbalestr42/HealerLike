@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c7f4bc8ec12545979066a2106fb2887d, type: 3}
-  m_Name: ApplyBuffOnEventBuffFactory
+  m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
+  m_Name: HealBuffHandlerFactory
   m_EditorClassIdentifier:
   serializationData:
     SerializedFormat: 2
@@ -21,8 +21,15 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  uniqueID: 1b3dc7bb-7065-469b-946b-f7932b22e1e5
+  uniqueID: 6b26e628-2dea-4c56-aa2b-ee915d688071
   data:
-    triggers: 2
-    buffHandlerFactory: {fileID: 11400000, guid: 51aa341b0bc14ea8b7a073bc0bc05828, type: 2}
-    entityType: 1
+    durationType: 0
+    duration: 0
+    isPeriodic: 0
+    periodDuration: 0
+    maxStacks: 0
+    buffFactoryList:
+    - {fileID: 11400000, guid: 2c43d600e67a4d0781e8b7d929ad096c, type: 2}
+    buffEffect: {fileID: 0}
+    icon: {fileID: 0}
+    tags: []
