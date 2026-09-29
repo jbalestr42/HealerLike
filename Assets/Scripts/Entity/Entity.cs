@@ -11,6 +11,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     public UnityEvent<GameObject, float> OnDamageDealt = new UnityEvent<GameObject, float>();
     // Each attack this entity makes (e.g. to repeat it)
     public UnityEvent<ProjectileAttack> OnAttack = new UnityEvent<ProjectileAttack>();
+    // Heal this entity received from a source, overheal included (e.g. to empower its next attack)
+    public UnityEvent<GameObject, float> OnHealReceived = new UnityEvent<GameObject, float>();
 
     public enum EntityType
     {
@@ -127,6 +129,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     void OnConsumerProcessed(GameObject target, ResourceModifier resourceModifier, float value, bool isCritical)
     {
         NotifyAttacker(resourceModifier.source, target, value);
+        NotifyHealed(resourceModifier.source, target, value);
     }
 
     // Damage is a negative value, reported as a positive amount to the entity that dealt it
@@ -142,6 +145,21 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         if (attacker != null)
         {
             attacker.OnDamageDealt.Invoke(target, -value);
+        }
+    }
+
+    // A heal is a positive value, reported to the entity that received it
+    public static void NotifyHealed(GameObject source, GameObject target, float value)
+    {
+        if (value <= 0f || target == null)
+        {
+            return;
+        }
+
+        Entity healed = target.GetComponent<Entity>();
+        if (healed != null)
+        {
+            healed.OnHealReceived.Invoke(source, value);
         }
     }
 

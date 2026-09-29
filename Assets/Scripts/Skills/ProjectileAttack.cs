@@ -24,6 +24,8 @@ public class ProjectileAttack
 {
     public GameObject source;
     public ProjectileData projectileData;
+    // Projectiles of the last shot (e.g. to empower their hits)
+    public List<Projectile> projectiles = new List<Projectile>();
 
     // Shoots the projectiles at every target of the source, reported as an attack
     public static ProjectileAttack Shoot(GameObject source, ProjectileData projectileData)
@@ -48,6 +50,7 @@ public class ProjectileAttack
     void Fire()
     {
         Entity entity = source.GetComponent<Entity>();
+        projectiles.Clear();
         foreach (GameObject target in source.GetComponent<ITargetProvider>().GetTargets())
         {
             for (int i = 0; i < projectileData.numberOfProjectileToShootPerTarget; i++)
@@ -58,6 +61,7 @@ public class ProjectileAttack
                 GameObject projectileGo = EntityManager.instance.SpawnProjectile(projectileData.projectilePrefab, skillSource.transform.position, Quaternion.identity);
                 Projectile projectile = projectileGo.GetComponent<Projectile>();
                 projectile.Init(source, target, entity.projectileBehaviours, projectileData.onHitConsumer);
+                projectiles.Add(projectile);
             }
         }
     }
