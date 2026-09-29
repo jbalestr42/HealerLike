@@ -11,6 +11,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     public UnityEvent<GameObject, float> OnDamageDealt = new UnityEvent<GameObject, float>();
     // Each attack this entity makes (e.g. to repeat it)
     public UnityEvent<ProjectileAttack> OnAttack = new UnityEvent<ProjectileAttack>();
+    // Each entity this entity killed, as the last one to damage it, once it's removed (e.g. to raise it)
+    public UnityEvent<Entity> OnKill = new UnityEvent<Entity>();
     // Each heal this entity receives (e.g. to empower its next attack)
     public UnityEvent<GameObject, ConsumerResult> OnHealReceived = new UnityEvent<GameObject, ConsumerResult>();
 
@@ -70,6 +72,10 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     public delegate bool DeathPrevention(Entity dying);
     List<DeathPrevention> _deathPreventions = new List<DeathPrevention>();
 
+    // Last entity that damaged this one, credited with the kill
+    Entity _lastAttacker;
+    public Entity lastAttacker { get { return _lastAttacker; } private set { _lastAttacker = value; } }
+
     public void Init()
     {
         _buffManager = GetComponent<BuffManager>();
@@ -127,6 +133,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         if (health.Value <= 0f && !TryPreventDeath())
         {
             EntityManager.instance.DestroyEntity(gameObject, entityType);
+            // Once its cell is free
+            NotifyKiller();
         }
     }
 
@@ -148,7 +156,21 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         Entity attacker = source.GetComponent<Entity>();
         if (attacker != null)
         {
+            Entity victim = target != null ? target.GetComponent<Entity>() : null;
+            if (victim != null)
+            {
+                victim.lastAttacker = attacker;
+            }
             attacker.OnDamageDealt.Invoke(target, -value);
+        }
+    }
+
+    // The last entity to damage this one killed it
+    public void NotifyKiller()
+    {
+        if (_lastAttacker != null && _lastAttacker != this)
+        {
+            _lastAttacker.OnKill.Invoke(this);
         }
     }
 

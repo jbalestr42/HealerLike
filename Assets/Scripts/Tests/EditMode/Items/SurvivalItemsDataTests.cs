@@ -15,6 +15,7 @@ public class SurvivalItemsDataTests
     {
         new object[] { EntityItems + "SecondWindItem/SecondWindItem.asset", "Second Wind", "Entity" },
         new object[] { EntityItems + "PhylacteryItem/PhylacteryItem.asset", "Phylactery", "Entity" },
+        new object[] { EntityItems + "BoneCharmItem/BoneCharmItem.asset", "Bone Charm", "Entity" },
     };
 
     static ItemFactory Load(string path)
@@ -96,6 +97,15 @@ public class SurvivalItemsDataTests
         ReviveOnDeathBuffFactory buff = GetBuff<ReviveOnDeathBuffFactory>(LoadItem(EntityItems, "Phylactery"));
 
         Assert.AreEqual(0.3f, buff.data.healthRatio, 0.0001f);
+    }
+
+    [Test]
+    public void BoneCharm_EachKilledEnemyRisesAsASkeleton()
+    {
+        SummonOnKillBuffFactory buff = GetBuff<SummonOnKillBuffFactory>(LoadItem(EntityItems, "BoneCharm"));
+
+        Assert.IsNotNull(buff.data.entity);
+        Assert.AreEqual("Skeleton", buff.data.entity.title);
     }
 }
 
