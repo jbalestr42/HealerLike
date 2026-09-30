@@ -104,10 +104,8 @@ public class ResourceAttribute : MonoBehaviour
         }
         _value = Mathf.Clamp(_value, 0f, max.Value);
 
-        if (_prevValue != _value)
-        {
-            OnValueChanged.Invoke(this);
-            _prevValue = _value;
-        }
+        // Always notified, even when only the max changed: the views show it (90 / 150 becomes 90 / 100)
+        _prevValue = _value;
+        OnValueChanged.Invoke(this);
     }
 }

@@ -768,6 +768,20 @@ public class ResourceAttributeTests
 
         Assert.AreEqual(1, callCount);
     }
+
+    [Test]
+    public void MaxDecreased_WithoutChangingTheValue_StillNotifiesTheNewMax()
+    {
+        AddModifier(new FakeConsumer(-60f));
+        Drain(); // 40 / 100
+        SetMax(150f); // 90 / 150
+        float notifiedMax = 0f;
+        _health.OnValueChanged.AddListener(health => notifiedMax = health.Max);
+
+        SetMax(100f); // 90 / 100: same value, the views must show the new max
+
+        Assert.AreEqual(100f, notifiedMax);
+    }
 }
 
 }

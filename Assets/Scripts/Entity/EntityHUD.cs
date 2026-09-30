@@ -8,11 +8,18 @@ public class EntityHUD : MonoBehaviour, IVisualBehaviour
 
     public void Init(Entity entity)
     {
-        entity.health.OnValueChanged.AddListener((ResourceAttribute health) => _resourceView.SetResource(health.Value, health.Max));
+        entity.health.OnValueChanged.AddListener(ShowHealth);
+        // The health was set before the HUD listened to it: shown right away, not only after the first hit
+        ShowHealth(entity.health);
         entity.OnMarkChanged.AddListener(ShowMark);
         _buffIconBar.Init(entity.buffManager);
 
         _resourceView.Show(true);
+    }
+
+    void ShowHealth(ResourceAttribute health)
+    {
+        _resourceView.SetResource(health.Value, health.Max);
     }
 
     public void ShowMark(bool show)
