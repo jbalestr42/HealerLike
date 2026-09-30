@@ -192,6 +192,65 @@ public class TextConvertorTests
 
     #endregion
 
+    #region Convert - {cooldown}
+
+    readonly List<Object> _assets = new List<Object>();
+
+    [TearDown]
+    public void TearDown()
+    {
+        foreach (Object asset in _assets)
+        {
+            Object.DestroyImmediate(asset);
+        }
+        _assets.Clear();
+    }
+
+    // A skill with a mana cost first and its 8s cooldown second, the cooldown isn't always the first validator
+    CharacterSkillData CreateSkillData(float cooldown)
+    {
+        ResourceValidatorFactory cost = ScriptableObject.CreateInstance<ResourceValidatorFactory>();
+        DurationValidatorFactory duration = ScriptableObject.CreateInstance<DurationValidatorFactory>();
+        duration.data = new DurationValidatorData { duration = cooldown };
+        _assets.Add(cost);
+        _assets.Add(duration);
+        return new CharacterSkillData { validators = new List<ACharacterSkillValidatorFactory> { cost, duration } };
+    }
+
+    [Test]
+    public void Convert_Cooldown_WithoutCharacter_ReturnsTheBaseCooldown()
+    {
+        Assert.AreEqual("Cooldown: 8s", TextConvertor.Convert("Cooldown: {cooldown}s", null, CreateSkillData(8f)));
+    }
+
+    [Test]
+    public void Convert_Cooldown_CharacterWithoutMultiplier_ReturnsTheBaseCooldown()
+    {
+        Character character = CreateCharacterWithAttribute(AttributeType.HealPower, 10f);
+
+        Assert.AreEqual("Cooldown: 8s", TextConvertor.Convert("Cooldown: {cooldown}s", character, CreateSkillData(8f)));
+    }
+
+    [Test]
+    public void Convert_Cooldown_AppliesTheSkillCooldownMultiplierOfTheCharacter()
+    {
+        // Prayer Beads: -15% cooldown, 8s -> 6.8s
+        Character character = CreateCharacterWithAttribute(AttributeType.SkillCooldownMultiplier, 0.85f);
+
+        Assert.AreEqual("Cooldown: 6.8s", TextConvertor.Convert("Cooldown: {cooldown}s", character, CreateSkillData(8f)));
+    }
+
+    [Test]
+    public void Convert_Cooldown_SkillWithoutDurationValidator_ReturnsDefaultValue()
+    {
+        string result = null;
+        TestHelpers.WithLoggingDisabled(() => result = TextConvertor.Convert("{cooldown}", null, new CharacterSkillData { validators = new List<ACharacterSkillValidatorFactory>() }));
+
+        Assert.AreEqual("1", result);
+    }
+
+    #endregion
+
     [Test]
     public void Convert_UnknownVariableType_ReturnsDefaultValue()
     {

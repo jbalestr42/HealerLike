@@ -41,11 +41,17 @@ public class DurationValidator : ACharacterSkillValidator<DurationValidatorData>
 
     public float GetDuration(GameObject owner)
     {
+        return GetDuration(data.duration, owner);
+    }
+
+    // The duration with the SkillCooldownMultiplier of the owner applied, unchanged without one
+    public static float GetDuration(float duration, GameObject owner)
+    {
         AttributeManager attributes = owner != null ? owner.GetComponent<AttributeManager>() : null;
-        if (attributes == null)
+        if (attributes == null || !attributes.Has(AttributeType.SkillCooldownMultiplier))
         {
-            return data.duration;
+            return duration;
         }
-        return data.duration * attributes.GetOrAdd(AttributeType.SkillCooldownMultiplier).Value;
+        return duration * attributes.Get(AttributeType.SkillCooldownMultiplier).Value;
     }
 }
