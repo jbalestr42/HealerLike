@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class TargetProvider : MonoBehaviour, ITargetProvider
 {
+    // Tag of the entities the attacks target first
+    public const string tauntTagName = "Taunt";
+
     ATargetBehaviour _targetBehaviour;
     List<GameObject> _targets;
     Attribute _range;
@@ -20,6 +23,9 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
         {
             _targetBehaviour.targetValidators.Add(targetValidator.GetTargetValidator());
         }
+
+        // Only the attacks of the entity are taunted, not its area of effects, bounces or heals
+        _targetBehaviour.tauntTag = DataManager.instance.GetTagWithName(tauntTagName);
 
         _range = GetComponent<AttributeManager>().GetOrAdd(AttributeType.Range);
         _owner = GetComponent<Entity>();
@@ -45,6 +51,7 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
         _targetBehaviour.targetCount = previousBehaviour.targetCount;
         // The validators come from the entity data, whatever the way targets are picked
         _targetBehaviour.targetValidators = previousBehaviour.targetValidators;
+        _targetBehaviour.tauntTag = previousBehaviour.tauntTag;
     }
 
     public List<GameObject> GetTargets()

@@ -15,6 +15,7 @@ public class GridItemsDataTests
     {
         new object[] { EntityItems + "PhalanxItem/PhalanxItem.asset", "Phalanx", "Entity" },
         new object[] { EntityItems + "LoneWolfItem/LoneWolfItem.asset", "Lone Wolf", "Entity" },
+        new object[] { EntityItems + "TauntTotemItem/TauntTotemItem.asset", "Taunt Totem", "Entity" },
     };
 
     static ItemFactory Load(string path)
@@ -101,6 +102,24 @@ public class GridItemsDataTests
         Assert.IsTrue(buff.data.isWhenAlone);
         Assert.AreEqual(RelativeCellPatternType.Adjacent, buff.data.pattern);
         Assert.AreEqual(1, buff.data.range);
+    }
+
+    [Test]
+    public void TauntTotem_TauntsTheEnemiesAndGives50PercentMaxHealth()
+    {
+        ItemFactory item = LoadItem(EntityItems, "TauntTotem");
+
+        // The tag the attacks target first, known by the game data
+        GameplayTag taunt = GetBuff<AddTagBuffFactory>(item).data.tag;
+        Assert.IsNotNull(taunt);
+        Assert.AreEqual(TargetProvider.tauntTagName, taunt.name);
+        Assert.IsTrue(AssetDatabase.LoadAssetAtPath<GameData>("Assets/Data/GameData.asset").tags.Contains(taunt));
+        Assert.IsTrue(AssetDatabase.LoadAssetAtPath<GameData>("Assets/Data/TestData.asset").tags.Contains(taunt));
+
+        FlatModifierFactory health = GetBuff<FlatModifierFactory>(item);
+        Assert.AreEqual(AttributeType.HealthMax, health.data.type);
+        Assert.AreEqual(AttributeModifierType.Multiply, health.data.modifierType);
+        Assert.AreEqual(0.5f, health.data.value, 0.0001f);
     }
 }
 

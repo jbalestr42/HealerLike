@@ -24,6 +24,12 @@ public abstract class ATargetBehaviour
 
     protected List<GameObject> _targets = new List<GameObject>();
 
+    // Entities with this tag are targeted first (e.g. a taunt), null to ignore it
+    GameplayTag _tauntTag;
+    public GameplayTag tauntTag { get { return _tauntTag; } set { _tauntTag = value; } }
+    // Some ways to pick targets don't care about the taunt (e.g. at random)
+    protected virtual bool isTauntable => true;
+
     public virtual List<GameObject> GetTargets(GameObject source, Vector3 position, float range, Entity.EntityType entityType)
     {
         _targets.Clear();
@@ -40,6 +46,7 @@ public abstract class ATargetBehaviour
         }
 
         ApplyBehaviour(_targets, position, range);
+        PrioritizeTaunting(_targets);
 
         // Focus marked entity first
         //if at some point we want multiple marked entity
@@ -61,6 +68,29 @@ public abstract class ATargetBehaviour
             _targets.RemoveRange(_targetCount, _targets.Count - _targetCount);
         }
         return _targets;
+    }
+
+    // Moves the taunting targets first, keeping the order of the behaviour among them and among the others
+    public void PrioritizeTaunting(List<GameObject> targets)
+    {
+        if (_tauntTag == null || !isTauntable)
+        {
+            return;
+        }
+
+        List<GameObject> taunting = targets.FindAll(IsTaunting);
+        if (taunting.Count == 0)
+        {
+            return;
+        }
+        targets.RemoveAll(IsTaunting);
+        targets.InsertRange(0, taunting);
+    }
+
+    bool IsTaunting(GameObject target)
+    {
+        Entity entity = target != null ? target.GetComponent<Entity>() : null;
+        return entity != null && entity.HasTag(_tauntTag);
     }
 
     public bool CanAddTarget(GameObject source, GameObject target)
