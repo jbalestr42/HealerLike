@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -222,31 +222,14 @@ public class EntityInfoPanel : APanel
         StringBuilder builder = new StringBuilder();
         GameObject owner = _entity.gameObject;
 
-        AppendSection(builder, "Health", GetHealthLines());
-        AppendSection(builder, "Targeting", GetTargetingLines());
-        AppendSection(builder, "Stats", EntityInfoFormatter.GetAttributeLines(_entity.attributeManager, owner));
-        AppendSection(builder, "Skills", GetSkillLines());
-        AppendSection(builder, "Items", GetItemLines());
-        AppendSection(builder, "Active effects", EntityInfoFormatter.GetBuffLines(_entity.buffManager, owner));
-        AppendSection(builder, "On hit", GetOnHitLines());
+        EntityInfoFormatter.AppendSection(builder, "Health", GetHealthLines());
+        EntityInfoFormatter.AppendSection(builder, "Targeting", GetTargetingLines());
+        EntityInfoFormatter.AppendSection(builder, "Stats", EntityInfoFormatter.GetAttributeLines(_entity.attributeManager, owner));
+        EntityInfoFormatter.AppendSection(builder, "Skills", GetSkillLines());
+        EntityInfoFormatter.AppendSection(builder, "Items", GetItemLines());
+        EntityInfoFormatter.AppendSection(builder, "Active effects", EntityInfoFormatter.GetBuffLines(_entity.buffManager, owner));
+        EntityInfoFormatter.AppendSection(builder, "On hit", GetOnHitLines());
         return builder.ToString().TrimEnd();
-    }
-
-    static void AppendSection(StringBuilder builder, string title, List<string> lines)
-    {
-        if (builder.Length > 0)
-        {
-            builder.Append("<size=6>\n</size>");
-        }
-        builder.Append($"<color={EntityInfoFormatter.HeaderColor}><b>{title}</b></color>\n");
-        if (lines.Count == 0)
-        {
-            builder.Append($"<color={EntityInfoFormatter.MutedColor}>none</color>\n");
-        }
-        foreach (string line in lines)
-        {
-            builder.Append(line).Append('\n');
-        }
     }
 
     List<string> GetHealthLines()

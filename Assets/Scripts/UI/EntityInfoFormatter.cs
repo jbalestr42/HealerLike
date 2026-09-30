@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -98,6 +99,24 @@ public static class EntityInfoFormatter
             }
         }
         return distinct.ConvertAll(line => counts[line] > 1 ? $"{line} ×{counts[line]}" : line);
+    }
+
+    // A colored header followed by its lines, "none" when there is nothing to show
+    public static void AppendSection(StringBuilder builder, string title, List<string> lines)
+    {
+        if (builder.Length > 0)
+        {
+            builder.Append("<size=6>\n</size>");
+        }
+        builder.Append($"<color={HeaderColor}><b>{title}</b></color>\n");
+        if (lines.Count == 0)
+        {
+            builder.Append($"<color={MutedColor}>none</color>\n");
+        }
+        foreach (string line in lines)
+        {
+            builder.Append(line).Append('\n');
+        }
     }
 
     // The entity title when the source is an entity, its name otherwise
