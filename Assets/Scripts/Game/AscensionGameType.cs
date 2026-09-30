@@ -140,7 +140,14 @@ public class AscensionGameType : AGameType
             case State.OnGoingBattle:
                 if (_entities.AreAllEntityDead(Entity.EntityType.Computer))
                 {
-                    SetState(State.EndBattle);
+                    if (IsRunWon(_run.currentNode.type))
+                    {
+                        WinRun();
+                    }
+                    else
+                    {
+                        SetState(State.EndBattle);
+                    }
                 }
                 else if (_entities.AreAllEntityDead(Entity.EntityType.Player))
                 {
@@ -163,11 +170,12 @@ public class AscensionGameType : AGameType
                 break;
 
             case State.GameEnd:
-                // do something like restart
+                // The run is won, the end screen waits for the player to go back to the menu
                 break;
 
             case State.GameOver:
                 UIManager.instance.AddView(ViewType.GameOver);
+                UIManager.instance.GetView<GameOverView>(ViewType.GameOver).ShowResult(false);
                 SetState(State.None);
                 break;
 
@@ -223,11 +231,25 @@ public class AscensionGameType : AGameType
                 break;
 
             case MapNodeType.Boss:
-                // TODO: boss fight, the run is won for now
-                Debug.Log("[AscensionGameType] Boss reached, the run is over");
-                SetState(State.GameEnd);
+                _currentWave = DataManager.instance.GetWavePattern(node.type, node.floor, _random);
+                SetState(State.InitializeRound);
                 break;
         }
+    }
+
+    // Beating the boss wins the run, the other fights lead to a reward
+    public static bool IsRunWon(MapNodeType roomType)
+    {
+        return roomType == MapNodeType.Boss;
+    }
+
+    void WinRun()
+    {
+        Debug.Log("[AscensionGameType] Boss defeated, the run is won");
+        EnableAllEntities(false);
+        UIManager.instance.AddView(ViewType.GameOver);
+        UIManager.instance.GetView<GameOverView>(ViewType.GameOver).ShowResult(true);
+        SetState(State.GameEnd);
     }
 
     // The map can be looked at while arranging the units before a fight
