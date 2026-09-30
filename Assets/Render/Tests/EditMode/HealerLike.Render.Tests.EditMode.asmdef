@@ -9,6 +9,7 @@
         "HealerLike.Render.Stones.Editor",
         "HealerLike.Render.Spells.Editor",
         "HealerLike.Render.Studio.Editor",
+        "HealerLike.Render.Shaders.Editor",
         "HealerLike.Tests.EditMode",
         "QuickOutline",
         "Unity.InputSystem",
