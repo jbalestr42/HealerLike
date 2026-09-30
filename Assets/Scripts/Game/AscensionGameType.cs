@@ -159,6 +159,8 @@ public class AscensionGameType : AGameType
                 break;
 
             case State.EndBattle:
+                // Nothing fights outside a battle: no skill, no periodic buff while picking a reward or on the map
+                EnableAllEntities(false);
                 _entities.RemoveSummons();
                 // Reset all unit to their default state (remove temporary buffs)
                 ResetAllEntities();
