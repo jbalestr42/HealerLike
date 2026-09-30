@@ -9,6 +9,11 @@ namespace Game
 // Checks the project data used by the Main scene: every room the map can generate must find a wave
 public class TestDataWavesTests
 {
+    // The 15 floors of the Slay the Spire map: the first enemies up to the treasure floor (8), the others
+    // on the floors after it, up to the one before the rests (14)
+    const int LastEarlyFloor = 8;
+    const int LastFightFloor = 13;
+
     const string GameDataPath = "Assets/Data/TestData.asset";
     const string MapSettingsPath = "Assets/Data/Run/MapGenerationSettings.asset";
 
@@ -35,8 +40,8 @@ public class TestDataWavesTests
     // Floors whose rooms are all of a single type, which is not a fight except for the first floor
     bool IsNonFightFixedFloor(int floor)
     {
-        bool isRestFloor = _settings.restBeforeBoss && floor == _settings.floorCount - 1;
-        return floor != 0 && (isRestFloor || floor == _settings.treasureFloor);
+        MapNodeType? fixedType = _settings.GetFixedType(floor);
+        return fixedType.HasValue && fixedType.Value != MapNodeType.Combat && fixedType.Value != MapNodeType.Elite;
     }
 
     [Test]
@@ -65,7 +70,7 @@ public class TestDataWavesTests
     public void EveryFloorWithElites_HasItsOwnEliteWaves()
     {
         List<int> missing = new List<int>();
-        for (int floor = _settings.firstEliteFloor; floor < _settings.floorCount; floor++)
+        for (int floor = _settings.GetRoomType(MapNodeType.Elite).firstFloor; floor < _settings.floorCount; floor++)
         {
             if (floor != 0 && !IsNonFightFixedFloor(floor) && _dataManager.GetWavePatterns(MapNodeType.Elite, floor).Count == 0)
             {
@@ -101,12 +106,12 @@ public class TestDataWavesTests
         CollectionAssert.IsEmpty(invalid, "Waves with a wrong size or without any entity");
     }
 
-    // Floors 0-5 must be varied: at least two combat waves to pick from
+    // The first floors must be varied: at least two combat waves to pick from
     [Test]
     public void FirstFloors_OfferSeveralCombatWaves()
     {
         List<int> monotonous = new List<int>();
-        for (int floor = 0; floor <= 5; floor++)
+        for (int floor = 0; floor <= LastEarlyFloor; floor++)
         {
             if (!IsNonFightFixedFloor(floor) && _dataManager.GetWavePatterns(MapNodeType.Combat, floor).Count < 2)
             {
@@ -121,7 +126,7 @@ public class TestDataWavesTests
     public void FirstFloors_IntroduceTheFirstNewEnemies()
     {
         HashSet<EntityData> met = new HashSet<EntityData>();
-        for (int floor = 0; floor <= 5; floor++)
+        for (int floor = 0; floor <= LastEarlyFloor; floor++)
         {
             foreach (WavePatternData wave in _dataManager.GetWavePatterns(MapNodeType.Combat, floor))
             {
@@ -138,16 +143,16 @@ public class TestDataWavesTests
         {
             EntityData entity = AssetDatabase.LoadAssetAtPath<EntityData>($"Assets/Data/Entities/{entityName}/{entityName}.asset");
             Assert.IsNotNull(entity, entityName);
-            Assert.IsTrue(met.Contains(entity), $"{entityName} is never met on floors 0-5");
+            Assert.IsTrue(met.Contains(entity), $"{entityName} is never met on floors 0-{LastEarlyFloor}");
         }
     }
 
-    // Floors 6-8 must be varied too
+    // The last floors must be varied too
     [Test]
     public void LastFloors_OfferSeveralCombatWaves()
     {
         List<int> monotonous = new List<int>();
-        for (int floor = 6; floor <= 8; floor++)
+        for (int floor = LastEarlyFloor + 1; floor <= LastFightFloor; floor++)
         {
             if (!IsNonFightFixedFloor(floor) && _dataManager.GetWavePatterns(MapNodeType.Combat, floor).Count < 2)
             {
@@ -162,7 +167,7 @@ public class TestDataWavesTests
     public void LastFloors_IntroduceTheOtherNewEnemies()
     {
         HashSet<EntityData> met = new HashSet<EntityData>();
-        for (int floor = 6; floor <= 8; floor++)
+        for (int floor = LastEarlyFloor + 1; floor <= LastFightFloor; floor++)
         {
             foreach (WavePatternData wave in _dataManager.GetWavePatterns(MapNodeType.Combat, floor))
             {
@@ -179,14 +184,14 @@ public class TestDataWavesTests
         {
             EntityData entity = LoadEntity(entityName);
             Assert.IsNotNull(entity, entityName);
-            Assert.IsTrue(met.Contains(entity), $"{entityName} is never met on floors 6-8");
+            Assert.IsTrue(met.Contains(entity), $"{entityName} is never met on floors {LastEarlyFloor + 1}-{LastFightFloor}");
         }
     }
 
     [Test]
     public void FirstElite_IsTheBastionHeldByTheColossus()
     {
-        List<WavePatternData> elites = _dataManager.GetWavePatterns(MapNodeType.Elite, _settings.firstEliteFloor);
+        List<WavePatternData> elites = _dataManager.GetWavePatterns(MapNodeType.Elite, _settings.GetRoomType(MapNodeType.Elite).firstFloor);
 
         Assert.AreEqual(1, elites.Count);
         Assert.AreEqual("Wave_Elite_Bastion", elites[0].name);
@@ -196,7 +201,7 @@ public class TestDataWavesTests
     [Test]
     public void LastFloorsElites_AreTheCultAndTheArtillery()
     {
-        for (int floor = 6; floor <= 8; floor++)
+        for (int floor = LastEarlyFloor + 1; floor <= LastFightFloor; floor++)
         {
             List<string> names = _dataManager.GetWavePatterns(MapNodeType.Elite, floor).ConvertAll(wave => wave.name);
 

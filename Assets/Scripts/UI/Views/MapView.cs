@@ -28,6 +28,9 @@ public class MapView : AView
     // Rounded sprite of the rooms, sliced; plain rectangles when not set
     [SerializeField] Sprite _nodeSprite;
 
+    // Every room drawn in its own color, as if it could be picked (e.g. the map generation test scene)
+    [SerializeField] bool _revealAll = false;
+
     [SerializeField] Vector2 _nodeSize = new Vector2(170f, 50f);
     [SerializeField] float _fontSize = 24f;
     [SerializeField] float _lineWidth = 4f;
@@ -56,6 +59,13 @@ public class MapView : AView
     List<RectTransform> _pulsingNodes = new List<RectTransform>();
 
     RectTransform container => _container != null ? _container : (RectTransform)transform;
+    // Area where the map is drawn, to make room for something else next to it (e.g. a settings panel)
+    public RectTransform mapArea => container;
+
+    public Color GetRoomColor(MapNodeType type)
+    {
+        return _roomColors.TryGetValue(type, out Color color) ? color : Color.gray;
+    }
 
     void Awake()
     {
@@ -187,10 +197,21 @@ public class MapView : AView
             }
         }
 
+        Vector2 nodeSize = GetNodeSize(_nodeSize, areaSize, _run.map);
         foreach (MapNode node in _run.map.GetAllNodes())
         {
-            CreateNode(node, GetNodeAnchor(node, _run.map));
+            CreateNode(node, GetNodeAnchor(node, _run.map), nodeSize);
         }
+    }
+
+    // The room size, shrunk to leave a gap with its neighbours when the map has too many floors or columns
+    // for the area (e.g. the 15 floors of 7 columns of a Slay the Spire map)
+    public static Vector2 GetNodeSize(Vector2 maxSize, Vector2 areaSize, RunMap map)
+    {
+        float cellWidth = areaSize.x / map.columnCount;
+        // The floors and the boss on top
+        float cellHeight = areaSize.y / (map.floorCount + 1);
+        return new Vector2(Mathf.Min(maxSize.x, cellWidth * 0.9f), Mathf.Min(maxSize.y, cellHeight * 0.8f));
     }
 
     // Elements are anchored on their normalized position, so the map follows the container size
@@ -226,7 +247,7 @@ public class MapView : AView
         rectTransform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);
     }
 
-    void CreateNode(MapNode node, Vector2 anchor)
+    void CreateNode(MapNode node, Vector2 anchor, Vector2 nodeSize)
     {
         GameObject button = TMP_DefaultControls.CreateButton(new TMP_DefaultControls.Resources());
         button.name = $"Room {node}";
@@ -235,10 +256,10 @@ public class MapView : AView
 
         RectTransform rectTransform = (RectTransform)button.transform;
         PlaceAt(rectTransform, anchor);
-        rectTransform.sizeDelta = _nodeSize;
+        rectTransform.sizeDelta = nodeSize;
 
-        MapNodeState state = _run.GetNodeState(node);
-        Color roomColor = _roomColors.TryGetValue(node.type, out Color typeColor) ? typeColor : Color.gray;
+        MapNodeState state = _revealAll ? MapNodeState.Available : _run.GetNodeState(node);
+        Color roomColor = GetRoomColor(node.type);
         NodeStyle style = GetNodeStyle(state, roomColor, _canSelect);
 
         Image image = button.GetComponent<Image>();
