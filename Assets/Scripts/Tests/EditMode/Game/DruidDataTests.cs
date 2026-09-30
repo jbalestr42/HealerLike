@@ -53,6 +53,15 @@ public class DruidDataTests
     }
 
     [Test]
+    public void Druid_RecruitsOnlyUnitsFittingARegenerationTeam()
+    {
+        // The burst shooters (Multi Shot, Swarm) left the pool: nothing to do with a regeneration gameplay
+        List<string> titles = _druid.entities.ConvertAll(entity => entity.title);
+
+        CollectionAssert.AreEquivalent(new[] { "Normal", "Channeling", "Treant", "Grove Keeper" }, titles);
+    }
+
+    [Test]
     public void Druid_HasRejuvenationWildGrowthAndBalanceLife()
     {
         List<string> names = _druid.skills.ConvertAll(skill => skill.Create().GetData().name);
