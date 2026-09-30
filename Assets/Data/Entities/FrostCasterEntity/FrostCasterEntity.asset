@@ -105,8 +105,9 @@ MonoBehaviour:
     value: 4
   - key: 3
     value: 100
-  targetBehaviourType: 0
+  targetBehaviourType: 1
   targetValidators: []
+  tags: []
   items:
   - {fileID: 11400000, guid: 21cebdafe05f9a840af42d7c347d1d45, type: 2}
   - {fileID: 11400000, guid: 3dbf003e7d4eeb74e96c0b36f0bb561c, type: 2}
