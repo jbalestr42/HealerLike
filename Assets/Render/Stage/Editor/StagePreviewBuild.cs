@@ -11,8 +11,12 @@ namespace HealerLike.Render.Stage
     // A failure logs and exits with code 1, the non-zero exit code a batchmode run reads.
     public static class StagePreviewBuild
     {
-        public static readonly string AndroidVersion = "0.1.11";
-        public static readonly int AndroidVersionCode = 12;
+        public static readonly string AndroidVersion = "0.1.12";
+        public static readonly int AndroidVersionCode = 13;
+
+        // The Android preview is a development player until the device question is answered, so Unity logs more of
+        // what it does at startup. RENDER_ANDROID_RELEASE=1 builds the same APK as a release player.
+        public static readonly bool AndroidDevelopmentByDefault = true;
 
         public static readonly string[] Scenes =
         {
@@ -82,7 +86,9 @@ namespace HealerLike.Render.Stage
                     options.target = BuildTarget.Android;
                     // StageLegacyInput has a player compile guard for this exact single-backend configuration.
                     options.extraScriptingDefines = new[] { "HEALERLIKE_RENDER_ANDROID_PREVIEW" };
-                    options.options = BuildOptions.None;
+                    bool development = IsAndroidDevelopment(
+                        System.Environment.GetEnvironmentVariable("RENDER_ANDROID_RELEASE"));
+                    options.options = AndroidOptions(development);
                     BuildReport report = BuildPipeline.BuildPlayer(options);
                     long apkSize = report.summary.result == BuildResult.Succeeded && File.Exists(output)
                         ? new FileInfo(output).Length : 0;
@@ -101,6 +107,7 @@ namespace HealerLike.Render.Stage
                         applicationLabel = "HealerLike Render",
                         version = AndroidVersion,
                         versionCode = AndroidVersionCode,
+                        development = development,
                         activeInputHandler = settings.inputHandler,
                         inputBackend = "Input Manager (Old)",
                         uiInputModule = "StandaloneInputModule",
@@ -131,6 +138,17 @@ namespace HealerLike.Render.Stage
                     + "or did not retain the required legacy input backend.");
                 EditorApplication.Exit(1);
             }
+        }
+
+        // A release request is exactly "1"; anything else keeps the default
+        public static bool IsAndroidDevelopment(string releaseRequest)
+        {
+            return releaseRequest == "1" ? false : AndroidDevelopmentByDefault;
+        }
+
+        public static BuildOptions AndroidOptions(bool development)
+        {
+            return development ? BuildOptions.Development : BuildOptions.None;
         }
 
         // Compiles the player scripts without building or changing a scene

@@ -13,6 +13,7 @@ namespace HealerLike.Render.Stage
         public string applicationLabel;
         public string version;
         public int versionCode;
+        public bool development;
         public int activeInputHandler;
         public string inputBackend;
         public string uiInputModule;
