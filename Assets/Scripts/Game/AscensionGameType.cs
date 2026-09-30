@@ -261,8 +261,21 @@ public class AscensionGameType : AGameType
     void ShowRewards(int choiceCount)
     {
         UIManager.instance.AddView(ViewType.Upgrade);
-        _upgradeView.FillChoices(choiceCount);
+        _upgradeView.FillChoices(GetRewardChoiceCount(choiceCount, PlayerBehaviour.instance.character.gameObject));
         SetState(State.SelectUpgrade);
+    }
+
+    // The choices of the room, plus the ones the character gets from its RewardChoices (e.g. the Merchant's
+    // Ledger), always at least one so a reward can still be picked (attributes never go below 0 for now, so
+    // RewardChoices can't take choices away yet)
+    public static int GetRewardChoiceCount(int roomChoiceCount, GameObject character)
+    {
+        AttributeManager attributes = character != null ? character.GetComponent<AttributeManager>() : null;
+        if (attributes == null || !attributes.Has(AttributeType.RewardChoices))
+        {
+            return roomChoiceCount;
+        }
+        return Mathf.Max(1, roomChoiceCount + Mathf.RoundToInt(attributes.Get(AttributeType.RewardChoices).Value));
     }
 
     public void OnItemSelected(AItem item)

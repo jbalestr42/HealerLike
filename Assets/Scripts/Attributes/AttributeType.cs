@@ -22,4 +22,6 @@ public enum AttributeType
     SkillCooldownMultiplier,
     // Critical chance added to the regular one for the heals sent by the entity
     HealCriticalChance,
+    // Item choices added to every reward, 0 when the character has no such attribute
+    RewardChoices,
 }

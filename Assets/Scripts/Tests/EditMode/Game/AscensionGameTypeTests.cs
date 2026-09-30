@@ -113,6 +113,38 @@ public class AscensionGameTypeTests
 
         Assert.AreEqual(70f, _health.Value, 0.001f);
     }
+
+    // A character holding only an attribute manager, with the given RewardChoices (none when null)
+    static GameObject CreateCharacter(float? rewardChoices)
+    {
+        GameObject character = new GameObject("Character");
+        AttributeManager attributes = TestHelpers.CreateAttributeManager(character);
+        if (rewardChoices.HasValue)
+        {
+            attributes.Add(AttributeType.RewardChoices, new Attribute(rewardChoices.Value));
+        }
+        return character;
+    }
+
+    [Test]
+    public void GetRewardChoiceCount_WithoutRewardChoices_IsTheRoomCount()
+    {
+        GameObject character = CreateCharacter(null);
+
+        Assert.AreEqual(3, AscensionGameType.GetRewardChoiceCount(3, character));
+        Assert.AreEqual(3, AscensionGameType.GetRewardChoiceCount(3, null));
+        Object.DestroyImmediate(character);
+    }
+
+    [Test]
+    public void GetRewardChoiceCount_WithRewardChoices_AddsThem()
+    {
+        // e.g. two Merchant's Ledgers in an elite room
+        GameObject character = CreateCharacter(2f);
+
+        Assert.AreEqual(6, AscensionGameType.GetRewardChoiceCount(4, character));
+        Object.DestroyImmediate(character);
+    }
 }
 
 }
