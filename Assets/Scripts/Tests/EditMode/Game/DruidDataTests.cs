@@ -55,10 +55,27 @@ public class DruidDataTests
     [Test]
     public void Druid_RecruitsOnlyUnitsFittingARegenerationTeam()
     {
-        // The burst shooters (Multi Shot, Swarm) left the pool: nothing to do with a regeneration gameplay
+        // The burst shooters (Multi Shot, Swarm) left the pool: nothing to do with a regeneration gameplay,
+        // and the Strangler Vine took the place of the Channeling
         List<string> titles = _druid.entities.ConvertAll(entity => entity.title);
 
-        CollectionAssert.AreEquivalent(new[] { "Normal", "Channeling", "Treant", "Grove Keeper" }, titles);
+        CollectionAssert.AreEquivalent(new[] { "Normal", "Strangler Vine", "Treant", "Grove Keeper" }, titles);
+    }
+
+    [Test]
+    public void StranglerVine_AimsAtTheEnemyWithTheMostHealth_AndDealsDamageFromItsCurrentHealth()
+    {
+        EntityData vine = GetUnit("Strangler Vine");
+
+        Assert.AreEqual(TargetBehaviourType.HighestHealth, vine.targetBehaviourType);
+        Assert.IsFalse(string.IsNullOrEmpty(vine.description));
+        AItemFactory strangle = vine.items.Find(item => item != null && item.title == "Strangle");
+        Assert.IsNotNull(strangle, "The Strangler Vine has no Strangle item");
+        ItemFactory strangleItem = (ItemFactory)strangle;
+        Assert.AreEqual(1, strangleItem.data.onHitConsumers.Count);
+        ConsumerFactory consumer = (ConsumerFactory)strangleItem.data.onHitConsumers[0];
+        Assert.AreEqual(ConsumerValueOwner.Target, consumer.data.valueOwner);
+        Assert.IsInstanceOf<CurrentHealthValue>(consumer.data.value);
     }
 
     [Test]

@@ -6,7 +6,7 @@ public enum TargetBehaviourType
 {
     First = 0,
     Nearest = 1,
-    Fastest = 2,
+    HighestHealth = 2,
     LowestHealth = 3,
     Random = 4,
     Farest = 5,
@@ -113,7 +113,7 @@ public abstract class ATargetBehaviour
     public abstract TargetBehaviourType targetType { get; }
     public abstract void ApplyBehaviour(List<GameObject> targets, Vector3 position, float range);
 
-    // Types that have an implementation (Fastest has none)
+    // Types that have an implementation
     static readonly Dictionary<TargetBehaviourType, System.Func<ATargetBehaviour>> Constructors = new Dictionary<TargetBehaviourType, System.Func<ATargetBehaviour>>
     {
         { TargetBehaviourType.First, () => new FirstTargetBehaviour() },
@@ -121,6 +121,7 @@ public abstract class ATargetBehaviour
         { TargetBehaviourType.LowestHealth, () => new LowestHealthTargetBehaviour() },
         { TargetBehaviourType.Random, () => new RandomTargetBehaviour() },
         { TargetBehaviourType.Farest, () => new FarestTargetBehaviour() },
+        { TargetBehaviourType.HighestHealth, () => new HighestHealthTargetBehaviour() },
     };
 
     public static bool IsSupported(TargetBehaviourType type)

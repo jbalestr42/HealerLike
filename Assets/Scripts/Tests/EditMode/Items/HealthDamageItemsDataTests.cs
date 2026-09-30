@@ -5,7 +5,7 @@ using UnityEditor;
 namespace Items
 {
 
-// Current / Missing Health Damage: hits deal extra damage from the health of the target, whatever
+// Current / Missing Health Damage and Strangle: hits deal extra damage from the health of the target, whatever
 // the health of the attacker
 public class HealthDamageItemsDataTests
 {
@@ -39,6 +39,7 @@ public class HealthDamageItemsDataTests
 
     [TestCase("CurrentHealthDamageItem")]
     [TestCase("MissingHealthDamageItem")]
+    [TestCase("StrangleItem")]
     public void Consumer_IsComputedFromTheTarget(string name)
     {
         Assert.AreEqual(ConsumerValueOwner.Target, LoadConsumer(name).data.valueOwner);
@@ -48,6 +49,13 @@ public class HealthDamageItemsDataTests
     public void CurrentHealthDamage_Deals10PercentOfTheTargetCurrentHealth()
     {
         Assert.AreEqual(50f, Hit(LoadConsumer("CurrentHealthDamageItem")), 0.0001f);
+    }
+
+    // The innate item of the Strangler Vine, half the Current Health Damage item
+    [Test]
+    public void Strangle_Deals5PercentOfTheTargetCurrentHealth()
+    {
+        Assert.AreEqual(25f, Hit(LoadConsumer("StrangleItem")), 0.0001f);
     }
 
     [Test]
