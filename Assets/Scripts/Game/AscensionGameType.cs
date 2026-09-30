@@ -26,8 +26,6 @@ public class AscensionGameType : AGameType
         GameOver,
     }
 
-    [SerializeField] bool _debug = false;
-
     [Header("Run")]
     [SerializeField] MapGenerationSettings _mapSettings;
     // 0 to get a different map every run
@@ -73,14 +71,6 @@ public class AscensionGameType : AGameType
         _upgradeView.OnItemSelected.AddListener(OnItemSelected);
         _upgradeView.OnPlayerItemSelected.AddListener(OnPlayerItemSelected);
         _mapView.OnNodeSelected.AddListener(OnRoomSelected);
-
-        if (_debug)
-        {
-            foreach (var item in DataManager.instance.GetItemsWithTag("Entity"))
-            {
-                _gameView.playerInventory.AddItem(item.GetItem());
-            }
-        }
     }
 
     void Update()
