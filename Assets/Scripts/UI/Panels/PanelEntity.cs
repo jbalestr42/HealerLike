@@ -8,6 +8,7 @@ public class PanelEntity : APanel
 {
     [SerializeField] TMP_Dropdown _targetBehaviourDropdown;
     [SerializeField] SlotInventory _inventory;
+    [SerializeField] TMP_Text _description;
 
     [Serializable]
     class AttributeUI
@@ -30,10 +31,21 @@ public class PanelEntity : APanel
         _targetBehaviourDropdown.AddOptions(options);
 
         Entity entity = selectedObject.GetComponent<Entity>();
+        _description.text = FormatDescription(entity.data.title, entity.data.description);
         _targetBehaviourDropdown.SetValueWithoutNotify((int)entity.GetComponent<ITargetProvider>().targetBehaviourType);
         _targetBehaviourDropdown.onValueChanged.AddListener((int index) => entity.GetComponent<ITargetProvider>().targetBehaviourType = (TargetBehaviourType)index);
         _inventory.inventoryHandler = entity.inventoryHandler;
         _inventory.RefreshInventory();
+    }
+
+    // The name of the unit in bold, then its description when it has one
+    public static string FormatDescription(string title, string description)
+    {
+        if (string.IsNullOrEmpty(description))
+        {
+            return $"<b>{title}</b>";
+        }
+        return $"<b>{title}</b>\n{description}";
     }
 
     public override void UpdateUI(GameObject selectedObject)
