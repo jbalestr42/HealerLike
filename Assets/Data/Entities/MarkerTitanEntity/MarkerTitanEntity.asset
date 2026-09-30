@@ -111,3 +111,4 @@ MonoBehaviour:
   items: []
   skillFactories:
   - {fileID: 11400000, guid: dc4da9e7f831009409d9fa80d9d06b03, type: 2}
+  - {fileID: 11400000, guid: 8a3659da80efea24dbee9a925ce97a88, type: 2}
