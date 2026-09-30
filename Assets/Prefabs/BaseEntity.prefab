@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: -1557207005166871236}
   - component: {fileID: 8465872866791211294}
   - component: {fileID: -8835911320852111699}
+  - component: {fileID: 7506461027385735391}
   m_Layer: 14
   m_Name: BaseEntity
   m_TagString: Untagged
@@ -104,6 +105,18 @@ MonoBehaviour:
   OnMarkChanged:
     m_PersistentCalls:
       m_Calls: []
+  OnDamageDealt:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAttack:
+    m_PersistentCalls:
+      m_Calls: []
+  OnKill:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHealReceived:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &-255542928893784051
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -179,6 +192,9 @@ MonoBehaviour:
   OnBuffHandlerStarted:
     m_PersistentCalls:
       m_Calls: []
+  OnBuffHandlerRefreshed:
+    m_PersistentCalls:
+      m_Calls: []
   OnBuffHandlerStopped:
     m_PersistentCalls:
       m_Calls: []
@@ -236,6 +252,26 @@ MonoBehaviour:
   _computerColor: {r: 1, g: 0, b: 1, a: 1}
   _selectedColor: {r: 1, g: 1, b: 1, a: 1}
   _lineWidth: 4
+--- !u!114 &7506461027385735391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1773381645329648}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d4e5133c5271874db4f4fcff65d5925, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Runtime::TargetLines
+  _linePrefab: {fileID: 7779118750759557761, guid: 72b7a1d97a7f70a49b9931a5db46cf31, type: 3}
+  _playerColor: {r: 0, g: 1, b: 1, a: 1}
+  _computerColor: {r: 1, g: 0, b: 1, a: 1}
+  _arcHeightPerDistance: 0.35
+  _segments: 16
+  _dashLength: 0.3
+  _scrollSpeed: 0.6
+  _refreshPeriod: 0.25
 --- !u!1001 &7482130460885648092
 PrefabInstance:
   m_ObjectHideFlags: 0

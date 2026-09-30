@@ -58,4 +58,15 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
     {
         return _targets;
     }
+
+    // The targets of the battle, or the ones the entity would aim at from where it stands when it doesn't
+    // fight (placement): a copy, the entity doesn't attack them
+    public List<GameObject> GetPreviewTargets()
+    {
+        if (isEnabled)
+        {
+            return _targets != null ? new List<GameObject>(_targets) : new List<GameObject>();
+        }
+        return new List<GameObject>(_targetBehaviour.GetTargets(gameObject, transform.position, _range.Value, _owner.GetTargetType()));
+    }
 }

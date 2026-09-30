@@ -3,6 +3,8 @@ using UnityEngine;
 public class SelectableEntity : MonoBehaviour, ISelectable
 {
     Outline _outline;
+    // Optional, shows the targets of the entity while it's selected
+    TargetLines _targetLines;
     [SerializeField] Color _playerColor = new Color(0f, 1f, 1f);
     [SerializeField] Color _computerColor = new Color(1f, 0f, 1f);
     [SerializeField] Color _selectedColor = new Color(1f, 1f, 1f);
@@ -17,6 +19,7 @@ public class SelectableEntity : MonoBehaviour, ISelectable
         _outline.enabled = false;
 
         _entityType = GetComponent<Entity>().entityType;
+        _targetLines = GetComponent<TargetLines>();
     }
 
     void OnDestroy()
@@ -56,6 +59,10 @@ public class SelectableEntity : MonoBehaviour, ISelectable
         _isSelected = true;
         _outline.enabled = true;
         _outline.OutlineColor = _selectedColor;
+        if (_targetLines != null)
+        {
+            _targetLines.Show(true);
+        }
         UIManager.instance.GetView<GameView>(ViewType.Game).ShowPanel(PanelType.Entity, gameObject);
     }
 
@@ -63,6 +70,10 @@ public class SelectableEntity : MonoBehaviour, ISelectable
     {
         _isSelected = false;
         _outline.enabled = false;
+        if (_targetLines != null)
+        {
+            _targetLines.Show(false);
+        }
         UIManager.instance.GetView<GameView>(ViewType.Game).HidePanel(PanelType.Entity);
     }
 
