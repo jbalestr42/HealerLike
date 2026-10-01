@@ -24,7 +24,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 338cc04877ed9b642abc819503c5f721, type: 3}
     name: Balance Life
-    description: 'Share the health of the team: every ally ends up at the same health percent, the total health being kept. Ignores armor, invincibility, buffs and debuffs
+    description: 'Share the health of the team: every ally ends up at the average health percent of the team. Ignores armor, invincibility, buffs and debuffs
 
       Cost: <color="blue">{data:validators|1.data.consumer.data.value.data.value}</color> mana
 

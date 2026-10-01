@@ -193,11 +193,12 @@ public class DruidDataTests
     }
 
     [Test]
-    public void BalanceLife_BalancesTheAllies()
+    public void BalanceLife_BalancesTheAllies_OnTheAverageOfTheirHealthPercents()
     {
         BalanceLifeCharacterSkillFactory balance = GetSkill<BalanceLifeCharacterSkillFactory>("Balance Life");
 
         Assert.AreEqual(Entity.EntityType.Player, balance.data.entityType);
+        Assert.AreEqual(BalanceLifeMode.Relative, balance.data.mode);
     }
 
     [Test]
