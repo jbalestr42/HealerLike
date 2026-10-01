@@ -59,12 +59,28 @@ public static class CharacterCardText
         return string.Join("\n", lines);
     }
 
-    // Sections apart from each other: "<b>Zealot</b>" and its description, its stats as a list ("- Max HP: 100"),
-    // then its innate items under "Passives"
+    // "<b>Zealot</b>" with its description right under it, then its details
     public static string GetUnitTooltip(EntityData entity)
     {
+        string title = $"<b>{entity.title}</b>";
+        string details = GetUnitDetails(entity);
+        if (string.IsNullOrEmpty(details))
+        {
+            return title;
+        }
+        // The description sticks to the name, the other sections are apart from it
+        return title + (string.IsNullOrEmpty(entity.description) ? "\n\n" : "\n") + details;
+    }
+
+    // Sections apart from each other: the description, the stats as a list ("- Max HP: 100"), then the innate
+    // items under "Passives"
+    public static string GetUnitDetails(EntityData entity)
+    {
         List<string> sections = new List<string>();
-        sections.Add(string.IsNullOrEmpty(entity.description) ? $"<b>{entity.title}</b>" : $"<b>{entity.title}</b>\n{entity.description}");
+        if (!string.IsNullOrEmpty(entity.description))
+        {
+            sections.Add(entity.description);
+        }
 
         if (entity.attributes != null)
         {

@@ -33,6 +33,11 @@ public class GameData : SerializedScriptableObject
     [BoxGroup("Split/Player Data")]
     public float playerItemChance = 0.2f;
 
+    // Chance for each reward choice to be a unit, the other choices being items
+    [BoxGroup("Split/Player Data")]
+    [Range(0f, 1f)]
+    public float unitRewardChance = 0.25f;
+
     [BoxGroup("Split/Upgrade Data")]
     [SerializeField]
     [DictionaryDrawerSettings(DisplayMode = DictionaryDisplayOptions.Foldout)]

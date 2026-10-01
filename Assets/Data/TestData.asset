@@ -118,7 +118,8 @@ MonoBehaviour:
       Entry: 8
       Data: 
   gold: 10000
-  playerItemChance: 0.5
+  playerItemChance: 0.15
+  unitRewardChance: 0.15
   attributeUpgradeData:
   - key: 2
     value:

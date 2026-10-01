@@ -70,6 +70,7 @@ public class AscensionGameType : AGameType
         }
         _upgradeView.OnItemSelected.AddListener(OnItemSelected);
         _upgradeView.OnPlayerItemSelected.AddListener(OnPlayerItemSelected);
+        _upgradeView.OnEntitySelected.AddListener(OnEntitySelected);
         _mapView.OnNodeSelected.AddListener(OnRoomSelected);
     }
 
@@ -301,6 +302,13 @@ public class AscensionGameType : AGameType
     public void OnPlayerItemSelected(AItem item)
     {
         PlayerBehaviour.instance.character.inventoryHandler.AddItem(item, -1);
+        CloseRewards();
+    }
+
+    // The unit joins the ones the player can place on the grid
+    public void OnEntitySelected(EntityData entity)
+    {
+        _gameView.entityInventory.AddEntity(entity);
         CloseRewards();
     }
 
