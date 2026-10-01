@@ -79,11 +79,61 @@ public class DruidDataTests
     }
 
     [Test]
-    public void Druid_HasRejuvenationWildGrowthAndBalanceLife()
+    public void Druid_HasRejuvenationWildGrowthBalanceLifeAndThickBark()
     {
         List<string> names = _druid.skills.ConvertAll(skill => skill.Create().GetData().name);
 
-        CollectionAssert.AreEqual(new[] { "Rejuvenation", "Wild Growth", "Balance Life" }, names);
+        CollectionAssert.AreEqual(new[] { "Rejuvenation", "Wild Growth", "Balance Life", "Thick Bark" }, names);
+    }
+
+    // The anticipation spell of the Druid: cast on the unit about to take a big hit
+    [Test]
+    public void ThickBark_GivesTwoHitArmorToASingleAlly()
+    {
+        BuffCharacterSkillFactory bark = GetSkill<BuffCharacterSkillFactory>("Thick Bark");
+
+        Assert.IsTrue(bark.data.isSingle);
+        Assert.AreEqual(Entity.EntityType.Player, bark.data.entityType);
+        Assert.AreEqual(1, bark.data.buffHandlerFactory.Count);
+        ABuffHandlerFactory handler = bark.data.buffHandlerFactory[0];
+        // Hit armor is spent one hit at a time: it's added to the base value, not as a timed modifier
+        Assert.AreEqual(DurationType.Instant, handler.durationType);
+        Assert.AreEqual(1, handler.buffFactoryList.Count);
+
+        FlatModifierFactory modifier = handler.buffFactoryList[0] as FlatModifierFactory;
+        Assert.IsNotNull(modifier);
+        Assert.AreEqual(AttributeType.HitArmor, modifier.data.type);
+        Assert.AreEqual(AttributeModifierType.Add, modifier.data.modifierType);
+        Assert.AreEqual(2f, modifier.data.value, 0.0001f);
+    }
+
+    [Test]
+    public void ThickBark_AddsToTheHitArmorTheUnitAlreadyHas()
+    {
+        ABuffFactory factory = GetSkill<BuffCharacterSkillFactory>("Thick Bark").data.buffHandlerFactory[0].buffFactoryList[0];
+        GameObject unit = new GameObject("Unit");
+        try
+        {
+            AttributeManager attributeManager = TestHelpers.CreateAttributeManager(unit, AttributeType.HitArmor, 1f);
+
+            factory.GetBuff(null).Instant(_healer, unit);
+
+            Assert.AreEqual(3f, attributeManager.Get(AttributeType.HitArmor).BaseValue, 0.0001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(unit);
+        }
+    }
+
+    [Test]
+    public void ThickBark_TheDescriptionShowsTheHitArmor()
+    {
+        CharacterSkillData data = GetSkill<BuffCharacterSkillFactory>("Thick Bark").data;
+
+        string description = TextConvertor.Convert(data.description, null, data);
+
+        StringAssert.Contains("+2</color> hit armor", description);
     }
 
     [Test]
