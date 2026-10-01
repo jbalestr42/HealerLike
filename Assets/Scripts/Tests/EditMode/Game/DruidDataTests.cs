@@ -56,10 +56,32 @@ public class DruidDataTests
     public void Druid_RecruitsOnlyUnitsFittingARegenerationTeam()
     {
         // The burst shooters (Multi Shot, Swarm) left the pool: nothing to do with a regeneration gameplay,
-        // and the Strangler Vine took the place of the Channeling
+        // the Strangler Vine took the place of the Channeling, and the Briar Beast the one of the Normal
         List<string> titles = _druid.entities.ConvertAll(entity => entity.title);
 
-        CollectionAssert.AreEquivalent(new[] { "Normal", "Strangler Vine", "Treant", "Grove Keeper" }, titles);
+        CollectionAssert.AreEquivalent(new[] { "Briar Beast", "Strangler Vine", "Treant", "Grove Keeper" }, titles);
+    }
+
+    // The heals of the Druid become damage: each heal it receives hurts the nearest enemy for half of it
+    [Test]
+    public void BriarBeast_TurnsHalfOfEachHealItReceivesIntoDamageOnTheNearestEnemy()
+    {
+        EntityData beast = GetUnit("Briar Beast");
+
+        Assert.AreEqual(TargetBehaviourType.Nearest, beast.targetBehaviourType);
+        Assert.IsFalse(string.IsNullOrEmpty(beast.description));
+        Assert.AreEqual(1, beast.items.Count);
+        ItemFactory thorns = beast.items[0] as ItemFactory;
+        Assert.IsNotNull(thorns);
+        Assert.AreEqual("Briar Thorns", thorns.title);
+        Assert.IsFalse(string.IsNullOrEmpty(thorns.data.description));
+        ABuffHandlerFactory handler = thorns.data.buffs[0];
+        Assert.AreEqual(DurationType.Infinite, handler.durationType);
+
+        DamageEnemyOnHealBuffFactory buff = handler.buffFactoryList[0] as DamageEnemyOnHealBuffFactory;
+        Assert.IsNotNull(buff);
+        Assert.AreEqual(0.5f, buff.data.ratio, 0.0001f);
+        Assert.AreEqual(TargetBehaviourType.Nearest, buff.data.targetType);
     }
 
     [Test]

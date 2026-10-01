@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f9c5cbcc3bade640b655d9fe3fc6912, type: 3}
-  m_Name: DruidCharacter
+  m_Script: {fileID: 11500000, guid: 200499978037cc34d93ebc9c76414b0c, type: 3}
+  m_Name: BriarBeastEntity
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -38,16 +38,16 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 2
+      Data: 4
     - Name: 
       Entry: 7
       Data: 
     - Name: $k
       Entry: 3
-      Data: 10
+      Data: 0
     - Name: $v
       Entry: 4
-      Data: 20
+      Data: 100
     - Name: 
       Entry: 8
       Data: 
@@ -56,7 +56,31 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 3
-      Data: 9
+      Data: 1
+    - Name: $v
+      Entry: 4
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 2
+    - Name: $v
+      Entry: 4
+      Data: 3
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 3
     - Name: $v
       Entry: 4
       Data: 100
@@ -69,23 +93,22 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  model: {fileID: 0}
-  title: Druid
-  text: 'Heals over time: regeneration on every unit, and Balance Life to share the health of the team'
+  model: {fileID: 6173172085731050060, guid: fa12db7f8a3f0714799c08ee4da865d6, type: 3}
+  title: Briar Beast
+  description: "Weak shots at the nearest enemy, but each heal it receives hurts that enemy for half of the heal: the more you heal it, the more it deals"
   attributes:
-  - key: 10
-    value: 20
-  - key: 9
+  - key: 0
     value: 100
+  - key: 1
+    value: 1
+  - key: 2
+    value: 3
+  - key: 3
+    value: 100
+  targetBehaviourType: 1
+  targetValidators: []
+  tags: []
   items:
-  - {fileID: 11400000, guid: 49dc63530740c7e4fb2f7b602b813a72, type: 2}
-  entities:
-  - {fileID: 11400000, guid: b24fbd829dbd4ef4b7c3439bacb7affe, type: 2}
-  - {fileID: 11400000, guid: 0ae26bc3d5d760143a3e67d507826f1e, type: 2}
-  - {fileID: 11400000, guid: 9d7a3690dc71ff44ea39e1ef1e3e300b, type: 2}
-  - {fileID: 11400000, guid: 636f5262ae2761b4ab397c7b5f57a3f3, type: 2}
-  skills:
-  - {fileID: 11400000, guid: b186a4f7a6969c44b91ecb17aa91728e, type: 2}
-  - {fileID: 11400000, guid: b40f2f3a346171848a8513576b2060a6, type: 2}
-  - {fileID: 11400000, guid: 2f6f4d931a042a1489504ad7aa830a49, type: 2}
-  - {fileID: 11400000, guid: bce890102be24680a19c84528d6a3400, type: 2}
+  - {fileID: 11400000, guid: a55074c1334740fabfe775ced165ab4d, type: 2}
+  skillFactories:
+  - {fileID: 11400000, guid: 6d24a55661324fc2af412883900c5cb2, type: 2}
