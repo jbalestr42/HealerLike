@@ -168,6 +168,36 @@ public class MarkedStrikeSkillTests
     }
 
     [Test]
+    public void Cooldown_IsTheIntervalBeforeTheNextMark()
+    {
+        Assert.AreEqual(Interval, _skill.cooldownDuration);
+
+        _skill.Tick(2f);
+
+        Assert.AreEqual(6f, _skill.remainingInterval, 0.0001f);
+        Assert.AreEqual(6f / Interval, _skill.cooldownProgress, 0.0001f);
+    }
+
+    [Test]
+    public void SkillLine_ShowsTheIntervalTheDelayAndTheNextMark()
+    {
+        _skill.Tick(2f);
+
+        Assert.AreEqual("every 8.0s, strikes 3.0s after the mark · next mark in 6.0s", EntityInfoFormatter.FormatMarkedStrike(_skill));
+    }
+
+    [Test]
+    public void SkillLine_WhileMarking_ShowsTheMarkedUnitAndTheTimeLeft()
+    {
+        _skill.Tick(Interval);
+        _skill.Tick(1.2f);
+
+        // Test units have no data: named after their game object
+        Assert.AreEqual("every 8.0s, strikes 3.0s after the mark · striking Target in 1.8s", EntityInfoFormatter.FormatMarkedStrike(_skill));
+        StringAssert.Contains("striking Target in 1.8s", EntityInfoFormatter.FormatSkill(_skill));
+    }
+
+    [Test]
     public void Reset_ClearsTheMarkAndRestartsTheInterval()
     {
         _skill.Tick(Interval);

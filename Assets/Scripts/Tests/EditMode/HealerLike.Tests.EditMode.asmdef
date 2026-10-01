@@ -5,6 +5,7 @@
         "HealerLike.Runtime",
         "UnityEngine.UI",
         "Unity.TextMeshPro",
+        "Unity.Cinemachine",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

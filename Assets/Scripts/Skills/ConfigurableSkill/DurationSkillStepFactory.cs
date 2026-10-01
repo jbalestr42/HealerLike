@@ -32,6 +32,16 @@ public class DurationSkillStep : ASkillStep<DurationSkillStepData>
         return false;
     }
 
+    public override float GetDuration()
+    {
+        return data.duration.GetValue(source);
+    }
+
+    public override float GetElapsed()
+    {
+        return Mathf.Min(_timer, GetDuration());
+    }
+
     public override void Reset()
     {
         // Debug.LogWarning($"Reset Duration {data.duration.GetValue(source)}");

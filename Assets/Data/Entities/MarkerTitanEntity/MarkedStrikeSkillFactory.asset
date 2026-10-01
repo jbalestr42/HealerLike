@@ -30,3 +30,10 @@ MonoBehaviour:
     range: 100
     strikeConsumer: {fileID: 11400000, guid: 1d28a5e2784811e4391275545b733c55, type: 2}
     markBuffHandler: {fileID: 0}
+    markerPrefab: {fileID: 4951014413124105219, guid: d90a4a92107474a4db4e10d2f3db7c4e, type: 3}
+    arcPrefab: {fileID: 7779118750759557761, guid: 72b7a1d97a7f70a49b9931a5db46cf31, type: 3}
+    arcColor: {r: 1, g: 0, b: 0, a: 1}
+    arcHeightPerDistance: 0.35
+    arcDashLength: 0.3
+    arcScrollSpeed: 1.2
+    impactPrefab: {fileID: 1040608886635896, guid: a97415c6b57076f41a6621a7b51d63a3, type: 3}

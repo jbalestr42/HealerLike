@@ -33,6 +33,16 @@ public class MarkerTitanDataTests
     }
 
     [Test]
+    public void MarkedStrike_ShowsTheMarkTheArcAndTheImpact()
+    {
+        MarkedStrikeSkillData data = GetMarkedStrike().data;
+
+        Assert.IsNotNull(data.markerPrefab, "No marker on the marked unit");
+        Assert.IsNotNull(data.arcPrefab, "No arc toward the marked unit");
+        Assert.IsNotNull(data.impactPrefab, "No impact effect");
+    }
+
+    [Test]
     public void MarkedStrike_DealsAPercentOfTheMaxHealthOfTheMarkedUnit()
     {
         ConsumerFactory strike = (ConsumerFactory)GetMarkedStrike().data.strikeConsumer;

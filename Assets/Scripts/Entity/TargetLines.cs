@@ -67,7 +67,7 @@ public class TargetLines : MonoBehaviour
         SetLines(GetPoint(gameObject), _targetPositions);
     }
 
-    static Vector3 GetPoint(GameObject go)
+    public static Vector3 GetPoint(GameObject go)
     {
         Entity entity = go.GetComponent<Entity>();
         return entity != null && entity.targetPoint != null ? entity.targetPoint.transform.position : go.transform.position;
@@ -87,11 +87,7 @@ public class TargetLines : MonoBehaviour
             _lines[i].gameObject.SetActive(isUsed);
             if (isUsed)
             {
-                float height = Vector3.Distance(from, targets[i]) * _arcHeightPerDistance;
-                for (int point = 0; point <= _segments; point++)
-                {
-                    _lines[i].SetPosition(point, GetArcPoint(from, targets[i], (float)point / _segments, height));
-                }
+                DrawArc(_lines[i], from, targets[i], _arcHeightPerDistance);
             }
         }
     }
@@ -117,6 +113,17 @@ public class TargetLines : MonoBehaviour
     public static float GetScrollOffset(float time, float speed, float dashLength)
     {
         return Mathf.Repeat(-time * speed / dashLength, 1f);
+    }
+
+    // Bends the line into an arc going up from the start to the end, higher for a farther end
+    public static void DrawArc(LineRenderer line, Vector3 from, Vector3 to, float arcHeightPerDistance)
+    {
+        int segments = line.positionCount - 1;
+        float height = Vector3.Distance(from, to) * arcHeightPerDistance;
+        for (int point = 0; point <= segments; point++)
+        {
+            line.SetPosition(point, GetArcPoint(from, to, (float)point / segments, height));
+        }
     }
 
     // Point of a parabola going up from the start to the end: the straight line raised by height at the middle

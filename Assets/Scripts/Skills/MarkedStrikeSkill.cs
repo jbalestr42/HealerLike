@@ -22,11 +22,28 @@ public class MarkedStrikeSkillData : SkillDataBase
     // Optional, put on the marked unit until the strike (e.g. an icon over its health bar)
     [CreateDataButton]
     public ABuffHandlerFactory markBuffHandler;
+
+    [Header("Visuals")]
+    // Put on the marked unit until the strike, with the seconds left
+    public StrikeMarker markerPrefab;
+    // Arc from the entity to the marked unit, its dashes moving toward it
+    public LineRenderer arcPrefab;
+    public Color arcColor = Color.red;
+    public float arcHeightPerDistance = 0.35f;
+    [Min(0.01f)] public float arcDashLength = 0.3f;
+    public float arcScrollSpeed = 1.2f;
+    // Played where the strike lands
+    public GameObject impactPrefab;
+    // Camera shake when the strike lands, 0 for none
+    [Min(0f)] public float impactShakeForce = 0.4f;
+    [Min(0.01f)] public float impactShakeDuration = 0.25f;
+
+    public bool hasVisuals => markerPrefab != null || arcPrefab != null || impactPrefab != null || impactShakeForce > 0f;
 }
 
 // Telegraphed strike: marks one unit, then strikes it hard a few seconds later. The strike is lost if the
 // marked unit dies or disappears before it lands.
-public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>
+public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>, ICooldownSkill
 {
     public UnityEvent<GameObject> OnMarked = new UnityEvent<GameObject>();
     public UnityEvent<GameObject> OnStrike = new UnityEvent<GameObject>();
@@ -35,11 +52,19 @@ public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>
     Entity _owner;
     float _timer = 0f;
     GameObject _markedTarget;
+    // Kept apart from _markedTarget: a destroyed unit compares equal to null for Unity
+    bool _isMarking = false;
 
     public GameObject markedTarget => _markedTarget;
-    public bool isMarking => _markedTarget != null;
+    public bool isMarking => _isMarking;
     // Seconds left before the strike, 0 when nothing is marked
     public float remainingDelay => isMarking ? Mathf.Max(0f, data.delay - _timer) : 0f;
+    // Seconds left before the next mark, 0 while a unit is marked
+    public float remainingInterval => isMarking ? 0f : Mathf.Max(0f, data.interval - _timer);
+
+    // ICooldownSkill: the cooldown is the interval between a strike and the next mark
+    public float cooldownDuration => data.interval;
+    public float cooldownProgress => data.interval > 0f ? remainingInterval / data.interval : 0f;
 
     // The data is set right after AddComponent, so after Awake: the targeting is built once here
     void Start()
@@ -50,6 +75,11 @@ public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>
         {
             _targetBehaviour.targetValidators.Add(targetValidator.GetTargetValidator());
         }
+
+        if (data.hasVisuals)
+        {
+            gameObject.AddComponent<MarkedStrikeView>().Init(this);
+        }
     }
 
     public override void UpdateBehaviour(GameObject source)
@@ -59,6 +89,13 @@ public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>
 
     public void Tick(float deltaTime)
     {
+        // The marked unit left the game before the strike (killed by something else): the strike is lost
+        if (_isMarking && _markedTarget == null)
+        {
+            ClearMark();
+            _timer = 0f;
+        }
+
         _timer += deltaTime;
         if (!isMarking)
         {
@@ -95,6 +132,7 @@ public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>
         }
 
         _markedTarget = target;
+        _isMarking = true;
         _timer = 0f;
         if (data.markBuffHandler != null)
         {
@@ -135,5 +173,6 @@ public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>
             }
         }
         _markedTarget = null;
+        _isMarking = false;
     }
 }
