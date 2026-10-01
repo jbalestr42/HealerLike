@@ -301,7 +301,7 @@ public static class EntityInfoFormatter
     // "every 8.0s, strikes 3.0s after the mark · next mark in 4.2s", or "... · striking Knight in 1.8s"
     public static string FormatMarkedStrike(MarkedStrikeSkill skill)
     {
-        string line = $"every {FormatDuration(skill.data.interval)}, strikes {FormatDuration(skill.data.delay)} after the mark";
+        string line = $"every {FormatDuration(skill.interval)}, strikes {FormatDuration(skill.data.delay)} after the mark";
         if (skill.isMarking && skill.markedTarget != null)
         {
             return line + $" · striking {GetSourceName(skill.markedTarget, skill.gameObject)} in {FormatDuration(skill.remainingDelay)}";

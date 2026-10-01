@@ -7,7 +7,8 @@ using UnityEngine.Events;
 [Serializable]
 public class MarkedStrikeSkillData : SkillDataBase
 {
-    // Time before each mark, counted from the previous strike (or from the start of the battle)
+    // Time before each mark, counted from the previous strike (or from the start of the battle), with the
+    // SkillCooldownMultiplier of the entity applied
     public float interval = 8f;
     // Time between the mark and the strike: the time the player has to protect the marked unit
     public float delay = 3f;
@@ -19,6 +20,8 @@ public class MarkedStrikeSkillData : SkillDataBase
     // Damage of the strike, applied like any hit (armor, invincibility and shields apply)
     [CreateDataButton]
     public AConsumerFactory strikeConsumer;
+    // Extra strike damage at 0 health of the entity, growing linearly with its missing health (0.5: x1.5)
+    [Min(0f)] public float missingHealthDamageBonus = 0f;
     // Optional, put on the marked unit until the strike (e.g. an icon over its health bar)
     [CreateDataButton]
     public ABuffHandlerFactory markBuffHandler;
@@ -60,11 +63,23 @@ public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>, ICooldownSkill
     // Seconds left before the strike, 0 when nothing is marked
     public float remainingDelay => isMarking ? Mathf.Max(0f, data.delay - _timer) : 0f;
     // Seconds left before the next mark, 0 while a unit is marked
-    public float remainingInterval => isMarking ? 0f : Mathf.Max(0f, data.interval - _timer);
+    public float remainingInterval => isMarking ? 0f : Mathf.Max(0f, interval - _timer);
+    // Time between a strike and the next mark, shortened by the SkillCooldownMultiplier of the entity
+    public float interval => DurationValidator.GetDuration(data.interval, gameObject);
+    // Multiplier of the strike damage, growing as the entity loses health
+    public float strikeMultiplier
+    {
+        get
+        {
+            Entity owner = GetComponent<Entity>();
+            float missingPercent = owner != null && owner.health != null ? 1f - owner.health.percent : 0f;
+            return 1f + data.missingHealthDamageBonus * missingPercent;
+        }
+    }
 
     // ICooldownSkill: the cooldown is the interval between a strike and the next mark
-    public float cooldownDuration => data.interval;
-    public float cooldownProgress => data.interval > 0f ? remainingInterval / data.interval : 0f;
+    public float cooldownDuration => interval;
+    public float cooldownProgress => interval > 0f ? remainingInterval / interval : 0f;
 
     // The data is set right after AddComponent, so after Awake: the targeting is built once here
     void Start()
@@ -99,7 +114,7 @@ public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>, ICooldownSkill
         _timer += deltaTime;
         if (!isMarking)
         {
-            if (_timer >= data.interval)
+            if (_timer >= interval)
             {
                 Mark(FindTarget());
             }
@@ -157,7 +172,7 @@ public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>, ICooldownSkill
             return;
         }
 
-        entity.health.AddResourceModifier(ResourceModifier.Create(data.strikeConsumer, gameObject, target));
+        entity.health.AddResourceModifier(ResourceModifier.Create(data.strikeConsumer, gameObject, target, strikeMultiplier));
         OnStrike.Invoke(target);
     }
 

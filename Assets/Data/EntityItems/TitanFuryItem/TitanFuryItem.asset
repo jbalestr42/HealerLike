@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8940981ac4386e4395c5404eb3a86d1, type: 3}
+  m_Name: TitanFuryItem
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  data:
+    icon: {fileID: 21300000, guid: 825eb3b41d8de03408f109667a88715a, type: 3}
+    name: Titan Fury
+    description: Marks more often as it weakens, every 7s below 75% health, 6s below 50% and 5s below 25%
+    tags:
+    - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
+    buffs:
+    - {fileID: 11400000, guid: e0d544abda124ebfa500a8a5a08a4887, type: 2}
+    onHitEffects: []
+    onHitConsumers: []
+    projectileBehaviours: []
+    skills: []

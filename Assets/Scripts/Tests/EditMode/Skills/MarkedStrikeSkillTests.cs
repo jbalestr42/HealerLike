@@ -26,6 +26,7 @@ public class MarkedStrikeSkillTests
     readonly TestUnits _units = new TestUnits();
     readonly List<Object> _assets = new List<Object>();
     TestMarkedStrikeSkill _skill;
+    Entity _boss;
     Entity _target;
     readonly List<GameObject> _marked = new List<GameObject>();
     readonly List<GameObject> _struck = new List<GameObject>();
@@ -42,8 +43,8 @@ public class MarkedStrikeSkillTests
         };
         _assets.Add(strike);
 
-        Entity boss = _units.Create(2000f, 2000f, "Boss");
-        _skill = boss.gameObject.AddComponent<TestMarkedStrikeSkill>();
+        _boss = _units.Create(2000f, 2000f, "Boss");
+        _skill = _boss.gameObject.AddComponent<TestMarkedStrikeSkill>();
         _skill.data = new MarkedStrikeSkillData { interval = Interval, delay = Delay, strikeConsumer = strike };
         _skill.OnMarked.AddListener(_marked.Add);
         _skill.OnStrike.AddListener(_struck.Add);
@@ -195,6 +196,47 @@ public class MarkedStrikeSkillTests
         // Test units have no data: named after their game object
         Assert.AreEqual("every 8.0s, strikes 3.0s after the mark · striking Target in 1.8s", EntityInfoFormatter.FormatMarkedStrike(_skill));
         StringAssert.Contains("striking Target in 1.8s", EntityInfoFormatter.FormatSkill(_skill));
+    }
+
+    // The phases of the boss shorten the interval through this multiplier
+    [Test]
+    public void SkillCooldownMultiplier_ShortensTheInterval()
+    {
+        _boss.GetComponent<AttributeManager>().Add(AttributeType.SkillCooldownMultiplier, new Attribute(0.75f));
+
+        _skill.Tick(5.9f);
+        Assert.IsFalse(_skill.isMarking);
+        _skill.Tick(0.1f);
+
+        Assert.IsTrue(_skill.isMarking);
+        Assert.AreEqual(6f, _skill.cooldownDuration, 0.0001f);
+        Assert.AreEqual("every 6.0s", EntityInfoFormatter.FormatMarkedStrike(_skill).Substring(0, 10));
+    }
+
+    [Test]
+    public void MissingHealthBonus_AtFullHealth_LeavesTheStrikeUnchanged()
+    {
+        _skill.data.missingHealthDamageBonus = 0.5f;
+
+        _skill.Tick(Interval);
+        _skill.Tick(Delay);
+        ProcessHits();
+
+        Assert.AreEqual(20f, _target.health.Value, 0.0001f);
+    }
+
+    [Test]
+    public void MissingHealthBonus_GrowsTheStrikeWithTheMissingHealthOfTheEntity()
+    {
+        _skill.data.missingHealthDamageBonus = 0.25f;
+        _boss.health.SetValue(1000f);
+
+        _skill.Tick(Interval);
+        _skill.Tick(Delay);
+        ProcessHits();
+
+        // 80 x (1 + 0.25 x 50% missing) = 90
+        Assert.AreEqual(10f, _target.health.Value, 0.0001f);
     }
 
     [Test]
