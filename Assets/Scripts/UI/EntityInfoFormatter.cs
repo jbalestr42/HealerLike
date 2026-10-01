@@ -312,12 +312,17 @@ public static class EntityInfoFormatter
     // "Venom — Poisons the target (innate)"
     public static string FormatItem(AItem item, bool isInnate)
     {
+        return FormatItemDetails(item) + $" <color={MutedColor}>({(isInnate ? "innate" : "added")})</color>";
+    }
+
+    // "Venom — Poisons the target"
+    public static string FormatItemDetails(AItem item)
+    {
         string line = $"<b>{item.title}</b>";
         if (!string.IsNullOrEmpty(item.description))
         {
             line += $" — {item.description}";
         }
-        line += $" <color={MutedColor}>({(isInnate ? "innate" : "added")})</color>";
         return line;
     }
 
