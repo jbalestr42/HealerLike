@@ -30,6 +30,8 @@ public abstract class AConsumer
     public abstract float GetValue();
     public abstract bool ignoreDamageReduction { get; }
     public abstract bool ignoreConsumerPrevention { get; }
+    // False for a value already final, e.g. damage passed on from another unit
+    public virtual bool canBeCritical => true;
 }
 
 [Serializable]

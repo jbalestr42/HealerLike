@@ -3,9 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+// Value of a modifier about to be applied, once reduced by the armor: the listeners may change it
+public class PendingValue
+{
+    public ResourceModifier resourceModifier;
+    public float value;
+}
+
 public class ResourceAttribute : MonoBehaviour
 {
     public UnityEvent<ResourceAttribute> OnValueChanged = new UnityEvent<ResourceAttribute>();
+    public UnityEvent<PendingValue> OnBeforeValueApplied = new UnityEvent<PendingValue>();
     public UnityEvent<GameObject, ResourceModifier, ConsumerResult> OnAllConsumerProcessed = new UnityEvent<GameObject, ResourceModifier, ConsumerResult>();
 
     float _prevValue;
@@ -25,6 +33,8 @@ public class ResourceAttribute : MonoBehaviour
     public bool preventConsumers { get { return _preventConsumersCount > 0; } set { _preventConsumersCount += value ? 1 : -1; } }
 
     List<ResourceModifier> _resourceModifiers = new List<ResourceModifier>();
+    // Reused for every modifier, so sending OnBeforeValueApplied allocates nothing
+    readonly PendingValue _pendingValue = new PendingValue();
 
     // TODO: move in SO
     ResourceConsumerResolver _resourceConsumerResolver = new ResourceConsumerResolver();
@@ -49,6 +59,11 @@ public class ResourceAttribute : MonoBehaviour
                 if (resourceModifier.consumers.Count > 0)
                 {
                     (float value, bool isCritical) = _resourceConsumerResolver.ComputeValue(this, resourceModifier);
+                    _pendingValue.resourceModifier = resourceModifier;
+                    _pendingValue.value = value;
+                    OnBeforeValueApplied.Invoke(_pendingValue);
+                    value = _pendingValue.value;
+                    _pendingValue.resourceModifier = null;
                     float overflow = GetOverflow(_value, value, _max.Value);
                     _value += value;
                     OnAllConsumerProcessed.Invoke(gameObject, resourceModifier, new ConsumerResult(value, isCritical, overflow));

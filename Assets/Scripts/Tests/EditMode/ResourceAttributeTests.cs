@@ -446,6 +446,39 @@ public class ResourceAttributeTests
     }
 
     [Test]
+    public void OnBeforeValueApplied_GetsTheValueReducedByTheArmor()
+    {
+        SetAttribute(AttributeType.PercentArmor, 0.5f);
+        float receivedValue = 0f;
+        ResourceModifier receivedModifier = null;
+        _health.OnBeforeValueApplied.AddListener(pending =>
+        {
+            receivedValue = pending.value;
+            receivedModifier = pending.resourceModifier;
+        });
+
+        ResourceModifier modifier = AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(-5f, receivedValue);
+        Assert.AreSame(modifier, receivedModifier);
+    }
+
+    [Test]
+    public void OnBeforeValueApplied_ListenerCanChangeTheAppliedValue()
+    {
+        float processedValue = 0f;
+        _health.OnBeforeValueApplied.AddListener(pending => pending.value /= 4f);
+        _health.OnAllConsumerProcessed.AddListener((go, modifier, result) => processedValue = result.value);
+
+        AddModifier(new FakeConsumer(-20f));
+        Drain();
+
+        Assert.AreEqual(95f, _health.Value);
+        Assert.AreEqual(-5f, processedValue);
+    }
+
+    [Test]
     public void OnAllConsumerProcessed_InvokedWithComputedValue()
     {
         GameObject receivedGameObject = null;
@@ -477,6 +510,32 @@ public class ResourceAttributeTests
         Drain();
 
         Assert.AreEqual(80f, _health.Value); // 10 * 2 critical damage
+    }
+
+    [Test]
+    public void CriticalHit_DoesNotMultiplyAConsumerThatCanNotBeCritical()
+    {
+        AttributeManager sourceAttributeManager = _sourceGo.GetComponent<AttributeManager>();
+        sourceAttributeManager.Add(AttributeType.CriticalChance, new Attribute(100f));
+        sourceAttributeManager.Add(AttributeType.CriticalMultiplier, new Attribute(2f));
+
+        AddModifier(new RuntimeConsumer(-10f, ignoreDamageReduction: false, ignoreConsumerPrevention: false, canBeCritical: false));
+        Drain();
+
+        Assert.AreEqual(90f, _health.Value);
+    }
+
+    [Test]
+    public void CriticalHit_NeverHappens_WhenOneConsumerCanNotBeCritical()
+    {
+        AttributeManager sourceAttributeManager = _sourceGo.GetComponent<AttributeManager>();
+        sourceAttributeManager.Add(AttributeType.CriticalChance, new Attribute(100f));
+        sourceAttributeManager.Add(AttributeType.CriticalMultiplier, new Attribute(2f));
+
+        AddModifier(new FakeConsumer(-10f), new RuntimeConsumer(-5f, ignoreDamageReduction: false, ignoreConsumerPrevention: false, canBeCritical: false));
+        Drain();
+
+        Assert.AreEqual(85f, _health.Value); // 10 + 5, no critical
     }
 
     [Test]

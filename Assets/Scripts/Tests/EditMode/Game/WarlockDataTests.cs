@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Game
 {
 
-// Checks the Warlock data: Drain Life, Raise Dead, Curse and Dark Pact, and the Blood Cultist unit
+// Checks the Warlock data: Drain Life, Raise Dead, Curse, Dark Pact and Soul Link, and the Blood Cultist unit
 public class WarlockDataTests
 {
     CharacterData _warlock;
@@ -46,11 +46,39 @@ public class WarlockDataTests
     }
 
     [Test]
-    public void Warlock_HasDrainLifeRaiseDeadCurseAndDarkPact()
+    public void Warlock_HasDrainLifeRaiseDeadCurseDarkPactAndSoulLink()
     {
         List<string> names = _warlock.skills.ConvertAll(skill => skill.Create().GetData().name);
 
-        CollectionAssert.AreEqual(new[] { "Drain Life", "Raise Dead", "Curse", "Dark Pact" }, names);
+        CollectionAssert.AreEqual(new[] { "Drain Life", "Raise Dead", "Curse", "Dark Pact", "Soul Link" }, names);
+    }
+
+    // The anticipation spell of the Warlock: cast on the unit about to take a big hit
+    [Test]
+    public void SoulLink_SplitsTheDamageOfASingleAllyWithTheTeamFor5s()
+    {
+        BuffCharacterSkillFactory link = GetSkill<BuffCharacterSkillFactory>("Soul Link");
+
+        Assert.IsTrue(link.data.isSingle);
+        Assert.AreEqual(Entity.EntityType.Player, link.data.entityType);
+        Assert.AreEqual(1, link.data.buffHandlerFactory.Count);
+        ABuffHandlerFactory handler = link.data.buffHandlerFactory[0];
+        Assert.AreEqual(DurationType.Duration, handler.durationType);
+        Assert.AreEqual(5f, handler.duration, 0.0001f);
+        Assert.AreEqual(1, handler.buffFactoryList.Count);
+        Assert.IsInstanceOf<SoulLinkBuffFactory>(handler.buffFactoryList[0]);
+        Assert.IsTrue(link.data.validators.Exists(v => v is ResourceValidatorFactory), "Soul Link has no mana cost");
+    }
+
+    [Test]
+    public void SoulLink_TheDescriptionShowsTheDuration()
+    {
+        CharacterSkillData data = GetSkill<BuffCharacterSkillFactory>("Soul Link").data;
+
+        string description = TextConvertor.Convert(data.description, _character, data);
+
+        StringAssert.Contains("during <color=\"green\">5s</color>", description);
+        StringAssert.Contains("split evenly", description);
     }
 
     [Test]

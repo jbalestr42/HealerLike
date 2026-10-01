@@ -23,6 +23,8 @@ public class ResourceConsumerResolver
 
     public (float value, bool isCritical) ComputeValue(ResourceAttribute resourceAttribute, ResourceModifier resourceModifier)
     {
+        // A single consumer already final (e.g. damage passed on from another unit) makes the whole value so
+        bool canBeCritical = resourceModifier.consumers.TrueForAll(consumer => consumer.canBeCritical);
         float value = 0f;
         foreach (AConsumer consumer in resourceModifier.consumers)
         {
@@ -35,9 +37,9 @@ public class ResourceConsumerResolver
 
         bool isCritical = false;
         AttributeManager sourceAttributeManager = resourceModifier.source.GetComponent<AttributeManager>();
-        bool hasCriticalChance = sourceAttributeManager.Has(AttributeType.CriticalChance);
+        bool hasCriticalChance = canBeCritical && sourceAttributeManager.Has(AttributeType.CriticalChance);
         // Heals (positive) add their own critical chance to the regular one
-        bool hasHealCriticalChance = value > 0f && sourceAttributeManager.Has(AttributeType.HealCriticalChance);
+        bool hasHealCriticalChance = canBeCritical && value > 0f && sourceAttributeManager.Has(AttributeType.HealCriticalChance);
         if (hasCriticalChance || hasHealCriticalChance)
         {
             float criticalChance = 0f;
