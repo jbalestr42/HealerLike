@@ -82,8 +82,6 @@ public class DamageAllEntityOnEntityDieBuffTests
         {
             entity = go.AddComponent<Entity>();
         });
-        // Initialized like in game, where every entity has its attributes
-        TestHelpers.InvokePrivate(go.GetComponent<AttributeManager>(), "Awake");
         // On its own child, with its own AttributeManager holding the max health
         GameObject healthGo = new GameObject("Health");
         healthGo.transform.SetParent(go.transform);

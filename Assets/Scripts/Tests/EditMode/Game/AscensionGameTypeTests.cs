@@ -20,8 +20,6 @@ public class AscensionGameTypeTests
         // Adding Entity triggers Entity.Reset() (an editor-only message), which NREs without a
         // full Entity.Init() - not needed here, we only use it as a holder for .health.
         TestHelpers.WithLoggingDisabled(() => _entity = _entityGo.AddComponent<Entity>());
-        // The entity is the source of the heal, the resolver reads its critical chance
-        TestHelpers.InvokePrivate(_entityGo.GetComponent<AttributeManager>(), "Awake");
 
         _healthGo = new GameObject();
         _health = TestHelpers.CreateResourceAttribute(_healthGo, AttributeType.HealthMax, 100f);

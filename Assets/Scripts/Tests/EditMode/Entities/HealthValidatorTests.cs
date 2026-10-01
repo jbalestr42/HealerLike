@@ -21,7 +21,6 @@ public class HealthValidatorTests
         {
             entity = _target.AddComponent<Entity>();
         });
-        TestHelpers.InvokePrivate(_target.GetComponent<AttributeManager>(), "Awake");
         GameObject healthGo = new GameObject("Health");
         healthGo.transform.SetParent(_target.transform);
         _health = TestHelpers.CreateResourceAttribute(healthGo, AttributeType.HealthMax, 100f);

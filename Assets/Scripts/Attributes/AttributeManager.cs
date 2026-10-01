@@ -4,13 +4,10 @@ using UnityEngine;
 
 public class AttributeManager : MonoBehaviour
 {
-    Dictionary<AttributeType, Attribute> _attributes;
+    // Ready as soon as the component is added, even outside the player loop (e.g. a character built on the
+    // character select screen, or in edit mode)
+    Dictionary<AttributeType, Attribute> _attributes = new Dictionary<AttributeType, Attribute>();
 
-	void Awake()
-    {
-        _attributes = new Dictionary<AttributeType, Attribute>();
-    }
-	
 	void Update()
     {
         foreach (var attribute in _attributes)
@@ -18,6 +15,12 @@ public class AttributeManager : MonoBehaviour
             attribute.Value.Update();
         }
 	}
+
+    // Computes the attributes right away with their modifiers, instead of on the next frame
+    public void ForceUpdate()
+    {
+        Update();
+    }
 
     public Attribute Add(AttributeType type, Attribute attribute)
     {
