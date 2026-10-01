@@ -538,6 +538,24 @@ public class ResourceAttributeTests
         Assert.AreEqual(85f, _health.Value); // 10 + 5, no critical
     }
 
+    // E.g. a unit killed between sending a hit and the hit being processed
+    [Test]
+    public void SourceDestroyedBeforeTheValueIsProcessed_AppliesItWithoutCritical()
+    {
+        GameObject source = new GameObject("Destroyed Source");
+        AttributeManager sourceAttributeManager = TestHelpers.CreateAttributeManager(source);
+        sourceAttributeManager.Add(AttributeType.CriticalChance, new Attribute(100f));
+        sourceAttributeManager.Add(AttributeType.CriticalMultiplier, new Attribute(2f));
+        ResourceModifier modifier = new ResourceModifier { source = source };
+        modifier.consumers.Add(new FakeConsumer(-10f));
+        _health.AddResourceModifier(modifier);
+        Object.DestroyImmediate(source);
+
+        Drain();
+
+        Assert.AreEqual(90f, _health.Value);
+    }
+
     [Test]
     public void CriticalHit_WithoutCriticalMultiplier_Deals1Point5TimesTheDamage()
     {

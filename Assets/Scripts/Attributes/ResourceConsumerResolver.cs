@@ -36,7 +36,9 @@ public class ResourceConsumerResolver
         resourceModifier.consumers.Clear();
 
         bool isCritical = false;
-        AttributeManager sourceAttributeManager = resourceModifier.source.GetComponent<AttributeManager>();
+        // The source may be gone since it sent the value (e.g. killed in between): no critical then
+        AttributeManager sourceAttributeManager = resourceModifier.source != null ? resourceModifier.source.GetComponent<AttributeManager>() : null;
+        canBeCritical = canBeCritical && sourceAttributeManager != null;
         bool hasCriticalChance = canBeCritical && sourceAttributeManager.Has(AttributeType.CriticalChance);
         // Heals (positive) add their own critical chance to the regular one
         bool hasHealCriticalChance = canBeCritical && value > 0f && sourceAttributeManager.Has(AttributeType.HealCriticalChance);

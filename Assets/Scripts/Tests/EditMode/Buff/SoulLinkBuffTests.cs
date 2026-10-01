@@ -130,6 +130,23 @@ public class SoulLinkBuffTests
         Assert.AreEqual(0f, _otherAlly.health.Value, 0.0001f);
     }
 
+    // The holder is removed from the game before the allies process their share
+    [Test]
+    public void HolderKilledByItsShare_TheAlliesStillTakeTheirs()
+    {
+        _holder.health.SetValue(10f);
+        Link(_holder);
+
+        Hit(_holder, 30f);
+        Assert.AreEqual(0f, _holder.health.Value, 0.0001f);
+        Object.DestroyImmediate(_holder.gameObject);
+        TestUnits.Process(_ally.health);
+        TestUnits.Process(_otherAlly.health);
+
+        Assert.AreEqual(90f, _ally.health.Value, 0.0001f);
+        Assert.AreEqual(90f, _otherAlly.health.Value, 0.0001f);
+    }
+
     [Test]
     public void HolderAlone_TakesTheWholeDamage()
     {
