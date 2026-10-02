@@ -143,6 +143,43 @@ public class AscensionGameTypeTests
         Assert.AreEqual(6, AscensionGameType.GetRewardChoiceCount(4, character));
         Object.DestroyImmediate(character);
     }
+
+    [Test]
+    public void IsLostForTheRun_OnlyTheAlliesThatAreNotSummons()
+    {
+        GameObject allyGo = new GameObject();
+        GameObject summonGo = new GameObject();
+        GameObject enemyGo = new GameObject();
+        GameplayTag summonTag = ScriptableObject.CreateInstance<GameplayTag>();
+        try
+        {
+            Entity ally = null;
+            Entity summon = null;
+            Entity enemy = null;
+            TestHelpers.WithLoggingDisabled(() =>
+            {
+                ally = allyGo.AddComponent<Entity>();
+                summon = summonGo.AddComponent<Entity>();
+                enemy = enemyGo.AddComponent<Entity>();
+            });
+            ally.entityType = Entity.EntityType.Player;
+            summon.entityType = Entity.EntityType.Player;
+            summon.AddTag(summonTag);
+            enemy.entityType = Entity.EntityType.Computer;
+
+            Assert.IsTrue(AscensionGameType.IsLostForTheRun(ally, summonTag));
+            Assert.IsFalse(AscensionGameType.IsLostForTheRun(summon, summonTag));
+            Assert.IsFalse(AscensionGameType.IsLostForTheRun(enemy, summonTag));
+            Assert.IsFalse(AscensionGameType.IsLostForTheRun(null, summonTag));
+        }
+        finally
+        {
+            Object.DestroyImmediate(allyGo);
+            Object.DestroyImmediate(summonGo);
+            Object.DestroyImmediate(enemyGo);
+            Object.DestroyImmediate(summonTag);
+        }
+    }
 }
 
 }

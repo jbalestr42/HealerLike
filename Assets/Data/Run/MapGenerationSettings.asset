@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MapGenerationSettings
   m_EditorClassIdentifier: HealerLike.Runtime::MapGenerationSettings
   floorCount: 10
-  columnCount: 4
+  columnCount: 3
   pathCount: 6
   startRoomCount: 3
   maxRoomsPerFloor: 3

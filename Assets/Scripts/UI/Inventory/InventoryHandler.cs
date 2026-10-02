@@ -47,6 +47,18 @@ public class InventoryHandler
         AddItem(item, inventoryIndex, false);
     }
 
+    // Every item of the other inventory moves to this one, each in the first free slot (e.g. the items of a
+    // dead unit going back to the player)
+    public void TakeAllItems(InventoryHandler inventoryHandler)
+    {
+        List<InventoryItemData> itemsToTake = new List<InventoryItemData>(inventoryHandler.items);
+        foreach (InventoryItemData itemData in itemsToTake)
+        {
+            inventoryHandler.RemoveItem(itemData.item);
+            AddItem(itemData.item, -1);
+        }
+    }
+
     public void TransfertItems(InventoryHandler inventoryHandler)
     {
         List<InventoryItemData> itemsToRemove = new List<InventoryItemData>();

@@ -39,4 +39,10 @@ public class PlayerInventory : MonoBehaviour
     {
         _inventoryHandler.RemoveItem(item);
     }
+
+    // The items added to the unit (not its innate ones) come back to the player
+    public void TakeItemsOf(Entity entity)
+    {
+        _inventoryHandler.TakeAllItems(entity.inventoryHandler);
+    }
 }

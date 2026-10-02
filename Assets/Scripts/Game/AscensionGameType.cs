@@ -73,6 +73,33 @@ public class AscensionGameType : AGameType, IEventRoomHost
         _upgradeView.OnPlayerItemSelected.AddListener(OnPlayerItemSelected);
         _upgradeView.OnEntitySelected.AddListener(OnEntitySelected);
         _mapView.OnNodeSelected.AddListener(OnRoomSelected);
+        _entities.OnEntityKilled.AddListener(OnEntityKilled);
+    }
+
+    void OnDestroy()
+    {
+        if (_entities != null)
+        {
+            _entities.OnEntityKilled.RemoveListener(OnEntityKilled);
+        }
+    }
+
+    // A dead ally is lost for the run: its items go back to the player, and it can be resurrected later
+    void OnEntityKilled(Entity entity)
+    {
+        if (_run == null || !IsLostForTheRun(entity, DataManager.instance.GetTagWithName(EntityManager.summonTagName)))
+        {
+            return;
+        }
+
+        _gameView.playerInventory.TakeItemsOf(entity);
+        _run.AddDeadAlly(entity.data);
+    }
+
+    // Allies only, summons aside: they only last for the battle anyway
+    public static bool IsLostForTheRun(Entity entity, GameplayTag summonTag)
+    {
+        return entity != null && entity.entityType == Entity.EntityType.Player && !entity.HasTag(summonTag);
     }
 
     void Update()
