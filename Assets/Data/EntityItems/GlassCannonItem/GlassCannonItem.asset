@@ -27,6 +27,7 @@ MonoBehaviour:
     description: "Double damage, but half max health"
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
+    - {fileID: 11400000, guid: 641f92e7979b3dc49a2338af0549bcf7, type: 2}
     buffs:
     - {fileID: 11400000, guid: 814b74512c484f6ab3dc5d3ec5719ca6, type: 2}
     onHitEffects: []

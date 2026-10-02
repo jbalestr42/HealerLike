@@ -48,6 +48,28 @@ public class LifeStealBuffTests
     }
 
     [Test]
+    public void DamageDealt_HolderTarget_HealsTheHolderInstead()
+    {
+        // e.g. Leech Fang: the wounded ally gets nothing
+        Entity holder = _units.Create(40f, 100f, "Leech");
+        _buff.data = new LifeStealBuffData { ratio = 0.3f, target = LifeStealTarget.Holder };
+        _buff.allies.Add(holder.gameObject);
+        _buff.Add(holder.gameObject, holder.gameObject);
+
+        holder.OnDamageDealt.Invoke(null, 20f);
+        TestUnits.Process(holder.health);
+
+        Assert.AreEqual(46f, holder.health.Value, 0.0001f);
+        CollectionAssert.IsEmpty(TestUnits.GetPendingModifiers(_wounded));
+    }
+
+    [Test]
+    public void Defaults_HealTheMostWoundedAlly()
+    {
+        Assert.AreEqual(LifeStealTarget.MostWoundedAlly, new LifeStealBuffData().target);
+    }
+
+    [Test]
     public void DamageDealt_AfterRemove_HealsNobody()
     {
         _buff.Add(_owner.gameObject, _owner.gameObject);

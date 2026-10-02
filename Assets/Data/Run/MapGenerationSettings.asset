@@ -47,7 +47,7 @@ MonoBehaviour:
   - eventRoom: {fileID: 11400000, guid: 8fce84b80355b6c4faaa6d770cd834f1, type: 2}
     weight: 1
   - eventRoom: {fileID: 11400000, guid: abf00e670cfc34b4c9615070a1e85c70, type: 2}
-    weight: 0
+    weight: 1
   - eventRoom: {fileID: 11400000, guid: edcf2298d47b2654598e9706cd03240a, type: 2}
     weight: 1
   - eventRoom: {fileID: 11400000, guid: 5100bab1a7069f24fba1d158f0e66214, type: 2}

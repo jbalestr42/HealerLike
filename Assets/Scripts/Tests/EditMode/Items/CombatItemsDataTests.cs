@@ -6,8 +6,8 @@ using UnityEngine;
 namespace Items
 {
 
-// The items hooked on the combat (new items, stage 2): each one is a droppable reward wired to the
-// behaviour it describes
+// The items hooked on the combat (new items, stage 2): each one is a droppable reward (the cursed one,
+// Blood Price, from the Cursed Treasure) wired to the behaviour it describes
 public class CombatItemsDataTests
 {
     const string EntityItems = "Assets/Data/EntityItems/";

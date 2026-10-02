@@ -6,8 +6,8 @@ using UnityEngine;
 namespace Items
 {
 
-// The items made of stat modifiers (new items, stage 1): each one is a droppable reward and
-// changes the stats it describes
+// The items made of stat modifiers (new items, stage 1): each one is a droppable reward (the cursed ones,
+// Glass Cannon and Cursed Idol, from the Cursed Treasure) and changes the stats it describes
 public class StatItemsDataTests
 {
     const string EntityItems = "Assets/Data/EntityItems/";

@@ -27,6 +27,7 @@ MonoBehaviour:
     description: "+60% damage, but loses 2% of its max health every second"
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
+    - {fileID: 11400000, guid: 641f92e7979b3dc49a2338af0549bcf7, type: 2}
     buffs:
     - {fileID: 11400000, guid: 9aacf386e51345d6a3db3e5be77c839a, type: 2}
     - {fileID: 11400000, guid: 9cafd5343a474be3a47b63cec979ca47, type: 2}

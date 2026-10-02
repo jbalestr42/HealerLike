@@ -21,6 +21,9 @@ public interface IEventRoomHost
     // The item goes to the character, for the rest of the run
     void AddPlayerItem(AItem item);
 
+    // The item goes to the player inventory, to be given to one of the units
+    void AddUnitItem(AItem item);
+
     // The event is over, the player goes back to the map
     void EndEvent();
 }

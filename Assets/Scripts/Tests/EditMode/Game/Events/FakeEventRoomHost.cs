@@ -19,6 +19,7 @@ public class FakeEventRoomHost : IEventRoomHost
     public List<EventChoice> shownChoices = new List<EventChoice>();
     public List<EntityData> addedUnits = new List<EntityData>();
     public List<AItem> addedItems = new List<AItem>();
+    public List<AItem> addedUnitItems = new List<AItem>();
     public int endCount = 0;
 
     public void ShowChoices(string title, string description, IReadOnlyList<EventChoice> choices)
@@ -63,6 +64,11 @@ public class FakeEventRoomHost : IEventRoomHost
     public void AddPlayerItem(AItem item)
     {
         addedItems.Add(item);
+    }
+
+    public void AddUnitItem(AItem item)
+    {
+        addedUnitItems.Add(item);
     }
 
     public void EndEvent()

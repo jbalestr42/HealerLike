@@ -27,6 +27,7 @@ MonoBehaviour:
     description: "Double damage, but each attack costs 3 health"
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
+    - {fileID: 11400000, guid: 641f92e7979b3dc49a2338af0549bcf7, type: 2}
     buffs:
     - {fileID: 11400000, guid: ef09537994844573b685e2f21ffe9f89, type: 2}
     - {fileID: 11400000, guid: 13c0a412204248f2963f96ff44575daa, type: 2}

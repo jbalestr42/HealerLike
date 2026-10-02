@@ -32,12 +32,20 @@ public static class LifeSteal
         }
 
         Entity mostWounded = FindMostWounded(allies);
-        if (mostWounded != null)
-        {
-            ResourceModifier heal = new ResourceModifier { source = source };
-            heal.consumers.Add(new RuntimeConsumer(amount));
-            mostWounded.health.AddResourceModifier(heal);
-        }
+        Heal(source, mostWounded, amount);
         return mostWounded;
+    }
+
+    // Through the regular resource flow too, nothing for a missing or dead target
+    public static void Heal(GameObject source, Entity target, float amount)
+    {
+        if (amount <= 0f || target == null || target.health == null || target.health.Value <= 0f)
+        {
+            return;
+        }
+
+        ResourceModifier heal = new ResourceModifier { source = source };
+        heal.consumers.Add(new RuntimeConsumer(amount));
+        target.health.AddResourceModifier(heal);
     }
 }

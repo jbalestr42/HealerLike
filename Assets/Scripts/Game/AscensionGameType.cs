@@ -381,7 +381,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
     public void OnItemSelected(AItem item)
     {
-        _gameView.playerInventory.AddItem(item);
+        AddUnitItem(item);
         CloseRewards();
     }
 
@@ -570,6 +570,11 @@ public class AscensionGameType : AGameType, IEventRoomHost
     public void AddPlayerItem(AItem item)
     {
         PlayerBehaviour.instance.character.inventoryHandler.AddItem(item, -1);
+    }
+
+    public void AddUnitItem(AItem item)
+    {
+        _gameView.playerInventory.AddItem(item);
     }
 
     public void ShowChoices(string title, string description, IReadOnlyList<EventChoice> choices)

@@ -156,6 +156,130 @@ public class GrowingItemTests
         Assert.AreEqual(1, _item.growth);
     }
 
+    // Hungering Mask: +1 damage per kill and -10 max health per battle here, each up to its limit
+    GrowingItem CreateHungeringItem(int maxGrowth, int maxKillGrowth)
+    {
+        FlatModifierFactory damage = ScriptableObject.CreateInstance<FlatModifierFactory>();
+        damage.data = new FlatModifierData { type = AttributeType.Damage, modifierType = AttributeModifierType.Add, value = 1f };
+        BuffHandlerFactory killHandler = ScriptableObject.CreateInstance<BuffHandlerFactory>();
+        killHandler.data = new BuffHandlerData { durationType = DurationType.Infinite, buffFactoryList = new List<ABuffFactory> { damage } };
+        FlatModifierFactory health = ScriptableObject.CreateInstance<FlatModifierFactory>();
+        health.data = new FlatModifierData { type = AttributeType.HealthMax, modifierType = AttributeModifierType.Add, value = -10f };
+        BuffHandlerFactory battleHandler = ScriptableObject.CreateInstance<BuffHandlerFactory>();
+        battleHandler.data = new BuffHandlerData { durationType = DurationType.Infinite, buffFactoryList = new List<ABuffFactory> { health } };
+        GrowingItemFactory factory = ScriptableObject.CreateInstance<GrowingItemFactory>();
+        factory.data = new GrowingItemData
+        {
+            name = "Hungering Mask",
+            description = "Hungers",
+            growthBuffHandlerFactory = battleHandler,
+            maxGrowth = maxGrowth,
+            killGrowthBuffHandlerFactory = killHandler,
+            maxKillGrowth = maxKillGrowth,
+        };
+        _scriptableObjects.AddRange(new Object[] { damage, killHandler, health, battleHandler, factory });
+        return (GrowingItem)factory.GetItem();
+    }
+
+    static float GetMaxHealth(Entity unit)
+    {
+        unit.GetComponent<BuffManager>().ForceUpdate();
+        Attribute health = unit.attributeManager.GetOrAdd(AttributeType.HealthMax);
+        health.Update();
+        return health.Value;
+    }
+
+    [Test]
+    public void Kill_GrowsTheKillGrowth()
+    {
+        GrowingItem mask = CreateHungeringItem(0, 0);
+        mask.Equip(_first.gameObject);
+
+        _first.OnKill.Invoke(_second);
+        _first.OnKill.Invoke(_second);
+
+        Assert.AreEqual(2, mask.killGrowth);
+        Assert.AreEqual(0, mask.growth);
+        Assert.AreEqual(12f, GetDamage(_first), 0.0001f);
+        mask.Unequip(_first.gameObject);
+    }
+
+    [Test]
+    public void Kill_StopsAtItsLimit()
+    {
+        GrowingItem mask = CreateHungeringItem(0, 2);
+        mask.Equip(_first.gameObject);
+
+        for (int i = 0; i < 5; i++)
+        {
+            _first.OnKill.Invoke(_second);
+        }
+
+        Assert.AreEqual(2, mask.killGrowth);
+        Assert.AreEqual(12f, GetDamage(_first), 0.0001f);
+        mask.Unequip(_first.gameObject);
+    }
+
+    [Test]
+    public void Grow_StopsAtItsLimit()
+    {
+        GrowingItem mask = CreateHungeringItem(3, 0);
+        _first.attributeManager.Add(AttributeType.HealthMax, new Attribute(100f));
+        mask.Equip(_first.gameObject);
+
+        for (int i = 0; i < 5; i++)
+        {
+            mask.Grow();
+        }
+
+        Assert.AreEqual(3, mask.growth);
+        Assert.AreEqual(70f, GetMaxHealth(_first), 0.0001f);
+        mask.Unequip(_first.gameObject);
+    }
+
+    [Test]
+    public void Kill_AfterUnequip_DoesNotGrow()
+    {
+        GrowingItem mask = CreateHungeringItem(0, 0);
+        mask.Equip(_first.gameObject);
+        mask.Unequip(_first.gameObject);
+
+        _first.OnKill.Invoke(_second);
+
+        Assert.AreEqual(0, mask.killGrowth);
+    }
+
+    [Test]
+    public void KillGrowth_MovesWithTheItem()
+    {
+        GrowingItem mask = CreateHungeringItem(0, 0);
+        mask.Equip(_first.gameObject);
+        _first.OnKill.Invoke(_second);
+        _first.OnKill.Invoke(_second);
+        GetDamage(_first);
+        mask.Unequip(_first.gameObject);
+
+        mask.Equip(_second.gameObject);
+
+        Assert.AreEqual(10f, GetDamage(_first), 0.0001f);
+        Assert.AreEqual(12f, GetDamage(_second), 0.0001f);
+        mask.Unequip(_second.gameObject);
+    }
+
+    [Test]
+    public void Description_WithKillGrowth_ShowsBothCounts()
+    {
+        GrowingItem mask = CreateHungeringItem(0, 0);
+        Assert.AreEqual("Hungers", mask.description);
+
+        mask.Equip(_first.gameObject);
+        _first.OnKill.Invoke(_second);
+        mask.Grow();
+
+        Assert.AreEqual("Hungers (1 kills, 1 battles)", mask.description);
+        mask.Unequip(_first.gameObject);
+    }
+
     [Test]
     public void Description_ShowsTheGrowthOnceGrown()
     {
