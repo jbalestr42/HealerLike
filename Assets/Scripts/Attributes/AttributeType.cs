@@ -24,4 +24,6 @@ public enum AttributeType
     HealCriticalChance,
     // Item choices added to every reward, 0 when the character has no such attribute
     RewardChoices,
+    // Multiplier of the character skill costs, 1 when the character has no such attribute
+    SkillCostMultiplier,
 }

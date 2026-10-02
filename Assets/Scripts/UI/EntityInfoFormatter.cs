@@ -31,6 +31,7 @@ public static class EntityInfoFormatter
         { AttributeType.CriticalChanceResist, "Critical Resist" },
         { AttributeType.HealingReceived, "Healing Received" },
         { AttributeType.SkillCooldownMultiplier, "Skill Cooldown Multiplier" },
+        { AttributeType.SkillCostMultiplier, "Skill Cost Multiplier" },
         { AttributeType.HealCriticalChance, "Heal Critical Chance" },
         { AttributeType.RewardChoices, "Reward Choices" },
     };
