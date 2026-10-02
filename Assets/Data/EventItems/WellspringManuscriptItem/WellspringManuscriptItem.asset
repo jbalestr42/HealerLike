@@ -27,6 +27,7 @@ MonoBehaviour:
     description: +20% max mana
     tags:
     - {fileID: 11400000, guid: c62124ce56224930993248ec27464a56, type: 2}
+    - {fileID: 11400000, guid: e2e36248c4aacf04993f371db00a7984, type: 2}
     buffs:
     - {fileID: 11400000, guid: 52ed36886d8362b44b01d55dd995cca2, type: 2}
     onHitEffects: []

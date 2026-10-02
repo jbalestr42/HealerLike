@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 
-// Items tagged Cursed, a strong bonus and its curse on the same item, only come from the Dark Library: never
-// as a regular reward, and they stand out among the items of the player
+// Items tagged Cursed, a strong bonus and its curse on the same item, only come from events (e.g. the Dark
+// Library): never as a regular reward, and they stand out among the items of the player
 public static class CursedTag
 {
     public const string Name = "Cursed";

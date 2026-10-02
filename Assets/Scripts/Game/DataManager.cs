@@ -55,7 +55,7 @@ public class DataManager : Singleton<DataManager>
             }
         }
 
-        return _data.items.FindAll(item => item != null && included.TrueForAll(tag => HasTag(item, tag)) && !excluded.Exists(tag => HasTag(item, tag)));
+        return _data.items.FindAll(item => ItemTagFilter.Matches(item, included, excluded));
     }
 
     // One of those items, null when there is none
@@ -63,11 +63,6 @@ public class DataManager : Singleton<DataManager>
     {
         List<AItemFactory> items = GetItems(includedTags, excludedTags);
         return items.Count > 0 ? items[Random.Range(0, items.Count)].GetItem() : null;
-    }
-
-    static bool HasTag(AItemFactory item, GameplayTag tag)
-    {
-        return item.tags.Exists(itemTag => itemTag != null && (itemTag == tag || itemTag.IsDescendantOf(tag)));
     }
 
     // Waves of every pool matching the room type and floor

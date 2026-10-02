@@ -6,40 +6,51 @@ using UnityEngine;
 namespace Game.Events
 {
 
+// The Library offers items tagged Library: the ones that aren't cursed, or the cursed ones in the Dark Library
 public class LibraryEventRoomTests
 {
     readonly List<Object> _created = new List<Object>();
     FakeEventRoomHost _host;
     LibraryEventRoom _library;
+    GameplayTag _playerTag;
+    GameplayTag _libraryTag;
+    GameplayTag _cursedTag;
     List<AItemFactory> _blessings;
     List<AItemFactory> _cursedItems;
 
     [SetUp]
     public void SetUp()
     {
+        _playerTag = CreateTag("Player");
+        _libraryTag = CreateTag(LibraryEventRoom.TagName);
+        _cursedTag = CreateTag(CursedTag.Name);
+
         _blessings = new List<AItemFactory>
         {
-            CreateItem("Tome of Haste", "-20% cooldown on your skills"),
-            CreateItem("Scroll of Thrift", "-20% mana cost of your skills"),
-            CreateItem("Codex of Mending", "+20 Heal Power"),
-            CreateItem("Wellspring Manuscript", "+20% max mana"),
+            CreateItem("Tome of Haste", "-20% cooldown on your skills", _playerTag, _libraryTag),
+            CreateItem("Scroll of Thrift", "-20% mana cost of your skills", _playerTag, _libraryTag),
+            CreateItem("Codex of Mending", "+20 Heal Power", _playerTag, _libraryTag),
+            CreateItem("Wellspring Manuscript", "+20% max mana", _playerTag, _libraryTag),
         };
         _cursedItems = new List<AItemFactory>
         {
-            CreateItem("Hasty Grimoire", "-40% cooldown on your skills, +20% mana cost of your skills"),
-            CreateItem("Blood Ledger", "-40% mana cost of your skills, -20% max mana"),
-            CreateItem("Black Codex", "+40 Heal Power, +20% cooldown on your skills"),
-            CreateItem("Abyssal Well", "+40% max mana, -20 Heal Power"),
+            CreateItem("Hasty Grimoire", "-40% cooldown, +20% mana cost", _playerTag, _libraryTag, _cursedTag),
+            CreateItem("Blood Ledger", "-40% mana cost, -20% max mana", _playerTag, _libraryTag, _cursedTag),
+            CreateItem("Black Codex", "+40 Heal Power, +20% cooldown", _playerTag, _libraryTag, _cursedTag),
+            CreateItem("Abyssal Well", "+40% max mana, -20 Heal Power", _playerTag, _libraryTag, _cursedTag),
         };
 
         _library = ScriptableObject.CreateInstance<LibraryEventRoom>();
         _created.Add(_library);
         _library.eventName = "Library";
         _library.description = "Dusty shelves.";
-        _library.blessings = _blessings;
 
         _host = new FakeEventRoomHost();
-        _host.itemsPerTag[CursedTag.Name] = _cursedItems;
+        // Items of other origins never come from the Library
+        _host.items.Add(CreateItem("Sacred Tome", "+10 Heal Power", _playerTag));
+        _host.items.Add(CreateItem("Cursed Idol", "Cursed but not a book", _playerTag, _cursedTag));
+        _host.items.AddRange(_blessings);
+        _host.items.AddRange(_cursedItems);
     }
 
     [TearDown]
@@ -52,17 +63,44 @@ public class LibraryEventRoomTests
         _created.Clear();
     }
 
-    ItemFactory CreateItem(string title, string description)
+    GameplayTag CreateTag(string name)
+    {
+        GameplayTag tag = ScriptableObject.CreateInstance<GameplayTag>();
+        tag.name = name;
+        _created.Add(tag);
+        return tag;
+    }
+
+    ItemFactory CreateItem(string title, string description, params GameplayTag[] tags)
     {
         ItemFactory item = ScriptableObject.CreateInstance<ItemFactory>();
-        item.data = new ItemData { name = title, description = description };
+        item.data = new ItemData { name = title, description = description, tags = new List<GameplayTag>(tags) };
         _created.Add(item);
         return item;
     }
 
-    static IEnumerable<string> Titles(IEnumerable<AItemFactory> items)
+    static List<string> Titles(IEnumerable<AItemFactory> items)
     {
-        return items.Select(item => item.title);
+        return items.Select(item => item.title).ToList();
+    }
+
+    List<string> ShownLabels()
+    {
+        return _host.shownChoices.Select(choice => choice.label).ToList();
+    }
+
+    [Test]
+    public void Tags_NormalTakesTheLibraryItemsThatArentCursed()
+    {
+        CollectionAssert.AreEqual(new[] { LibraryEventRoom.TagName }, LibraryEventRoom.GetIncludedTags(false));
+        CollectionAssert.AreEqual(new[] { CursedTag.Name }, LibraryEventRoom.GetExcludedTags(false));
+    }
+
+    [Test]
+    public void Tags_DarkTakesTheCursedLibraryItems()
+    {
+        CollectionAssert.AreEquivalent(new[] { LibraryEventRoom.TagName, CursedTag.Name }, LibraryEventRoom.GetIncludedTags(true));
+        CollectionAssert.IsEmpty(LibraryEventRoom.GetExcludedTags(true));
     }
 
     [Test]
@@ -74,10 +112,10 @@ public class LibraryEventRoomTests
 
             _library.Play(_host);
 
-            List<string> labels = _host.shownChoices.Select(choice => choice.label).ToList();
+            List<string> labels = ShownLabels();
             Assert.AreEqual(3, labels.Count);
             Assert.AreEqual(3, labels.Distinct().Count());
-            CollectionAssert.IsSubsetOf(labels, Titles(_blessings).ToList());
+            CollectionAssert.IsSubsetOf(labels, Titles(_blessings));
         }
     }
 
@@ -89,7 +127,7 @@ public class LibraryEventRoomTests
         {
             _host.random = new System.Random(seed);
             _library.Play(_host);
-            offered.UnionWith(_host.shownChoices.Select(choice => choice.label));
+            offered.UnionWith(ShownLabels());
         }
 
         CollectionAssert.AreEquivalent(Titles(_blessings), offered);
@@ -120,7 +158,7 @@ public class LibraryEventRoomTests
     }
 
     [Test]
-    public void Dark_ThreeDifferentCursedItemsThenLeave()
+    public void Dark_ThreeDifferentCursedLibraryItemsThenLeave()
     {
         _library.isDark = true;
 
@@ -130,11 +168,11 @@ public class LibraryEventRoomTests
 
             _library.Play(_host);
 
-            List<string> labels = _host.shownChoices.Select(choice => choice.label).ToList();
+            List<string> labels = ShownLabels();
             Assert.AreEqual(4, labels.Count);
             Assert.AreEqual("Leave", labels[3]);
             Assert.AreEqual(3, labels.Take(3).Distinct().Count());
-            CollectionAssert.IsSubsetOf(labels.Take(3).ToList(), Titles(_cursedItems).ToList());
+            CollectionAssert.IsSubsetOf(labels.Take(3).ToList(), Titles(_cursedItems));
         }
     }
 
@@ -168,21 +206,21 @@ public class LibraryEventRoomTests
     public void Dark_FewCursedItems_OffersTheOnesThereAre()
     {
         _library.isDark = true;
-        _host.itemsPerTag[CursedTag.Name] = new List<AItemFactory> { _cursedItems[0], null };
+        _host.items.RemoveAll(item => _cursedItems.IndexOf(item) > 0);
 
         _library.Play(_host);
 
-        CollectionAssert.AreEqual(new[] { "Hasty Grimoire", "Leave" }, _host.shownChoices.Select(choice => choice.label));
+        CollectionAssert.AreEqual(new[] { "Hasty Grimoire", "Leave" }, ShownLabels());
     }
 
     [Test]
     public void NoItemAtAll_OnlyLeave()
     {
-        _library.blessings = new List<AItemFactory>();
+        _host.items.Clear();
 
         _library.Play(_host);
 
-        CollectionAssert.AreEqual(new[] { "Leave" }, _host.shownChoices.Select(choice => choice.label));
+        CollectionAssert.AreEqual(new[] { "Leave" }, ShownLabels());
     }
 
     [Test]

@@ -27,6 +27,7 @@ MonoBehaviour:
     description: -20% cooldown on your skills
     tags:
     - {fileID: 11400000, guid: c62124ce56224930993248ec27464a56, type: 2}
+    - {fileID: 11400000, guid: e2e36248c4aacf04993f371db00a7984, type: 2}
     buffs:
     - {fileID: 11400000, guid: dc6b9a4ac493f1b4f88feecd9ef6efcb, type: 2}
     onHitEffects: []

@@ -27,6 +27,7 @@ MonoBehaviour:
     description: -20% mana cost of your skills
     tags:
     - {fileID: 11400000, guid: c62124ce56224930993248ec27464a56, type: 2}
+    - {fileID: 11400000, guid: e2e36248c4aacf04993f371db00a7984, type: 2}
     buffs:
     - {fileID: 11400000, guid: 726becb9f5734c74f83ec52e5685a550, type: 2}
     onHitEffects: []

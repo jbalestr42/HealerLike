@@ -16,8 +16,3 @@ MonoBehaviour:
   description: Dusty shelves full of old knowledge. One book can come along.
   choiceCount: 3
   isDark: 0
-  blessings:
-  - {fileID: 11400000, guid: 9e835c16c005a494c87623cb751e1315, type: 2}
-  - {fileID: 11400000, guid: 1538b81241980fb469ec28afd616d03a, type: 2}
-  - {fileID: 11400000, guid: 523c3616d5e7a4949b46008a6a715831, type: 2}
-  - {fileID: 11400000, guid: 4139a6b81b5966647a2fdc5fca1a45f8, type: 2}

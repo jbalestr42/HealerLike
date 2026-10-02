@@ -27,6 +27,7 @@ MonoBehaviour:
     description: +20 Heal Power
     tags:
     - {fileID: 11400000, guid: c62124ce56224930993248ec27464a56, type: 2}
+    - {fileID: 11400000, guid: e2e36248c4aacf04993f371db00a7984, type: 2}
     buffs:
     - {fileID: 11400000, guid: d2bc40766cdd56c49a3049b7872b7a7e, type: 2}
     onHitEffects: []

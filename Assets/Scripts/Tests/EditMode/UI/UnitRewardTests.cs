@@ -92,6 +92,13 @@ public class UnitRewardTests
         Assert.AreEqual("New unit: Zealot", title.text);
         Assert.AreEqual(CharacterCardText.GetUnitDetails(zealot), description.text);
     }
+
+    [Test]
+    public void RewardItems_NeverEventOnlyItems()
+    {
+        // Library and cursed items only come from events
+        CollectionAssert.AreEquivalent(new[] { CursedTag.Name, LibraryEventRoom.TagName }, UpgradeView.RewardExcludedTags);
+    }
 }
 
 }

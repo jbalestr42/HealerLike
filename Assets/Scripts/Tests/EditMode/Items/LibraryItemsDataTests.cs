@@ -5,11 +5,11 @@ using UnityEngine;
 namespace Items
 {
 
-// The blessings of the normal Library, player items never offered as regular rewards, and the two libraries
-// of the event pool
+// The blessings of the normal Library, event items tagged Library and never offered as regular rewards, and
+// the two libraries of the event pool
 public class LibraryItemsDataTests
 {
-    const string PlayerItems = "Assets/Data/PlayerItems/";
+    const string EventItems = "Assets/Data/EventItems/";
     const string LibraryEventPath = "Assets/Data/Run/Events/LibraryEvent.asset";
     const string DarkLibraryEventPath = "Assets/Data/Run/Events/DarkLibraryEvent.asset";
 
@@ -42,7 +42,7 @@ public class LibraryItemsDataTests
 
     static ItemFactory Load(string folder)
     {
-        string path = PlayerItems + folder + "/" + folder + ".asset";
+        string path = EventItems + folder + "/" + folder + ".asset";
         ItemFactory item = AssetDatabase.LoadAssetAtPath<ItemFactory>(path);
         Assert.IsNotNull(item, path);
         return item;
@@ -88,6 +88,7 @@ public class LibraryItemsDataTests
         Assert.IsNotEmpty(item.data.description);
         Assert.IsNotNull(item.data.icon, title);
         Assert.IsTrue(item.data.tags.Exists(tag => tag != null && tag.name == "Player"), title);
+        Assert.IsTrue(item.data.tags.Exists(tag => tag != null && tag.name == LibraryEventRoom.TagName), title);
         Assert.IsFalse(CursedTag.IsCursed(item), title);
 
         Equip(item);
@@ -104,7 +105,6 @@ public class LibraryItemsDataTests
         Assert.IsNotEmpty(library.description);
         Assert.IsFalse(library.isDark);
         Assert.AreEqual(3, library.choiceCount);
-        CollectionAssert.AreEqual(new[] { Load("TomeOfHasteItem"), Load("ScrollOfThriftItem"), Load("CodexOfMendingItem"), Load("WellspringManuscriptItem") }, library.blessings);
         EventRoomChance chance = FindInEventPool(library);
         Assert.IsNotNull(chance);
         Assert.Greater(chance.weight, 0f);
@@ -122,25 +122,27 @@ public class LibraryItemsDataTests
         Assert.IsNotNull(FindInEventPool(library));
     }
 
+    // Listed in the game items so the Library finds them by tag
     [TestCase("Assets/Data/GameData.asset")]
     [TestCase("Assets/Data/TestData.asset")]
-    public void Blessings_AreNeverRegularRewards(string gameDataPath)
+    public void Blessings_AreGameItems(string gameDataPath)
     {
         GameData data = AssetDatabase.LoadAssetAtPath<GameData>(gameDataPath);
         foreach (object[] blessing in Blessings)
         {
             string folder = (string)blessing[0];
-            CollectionAssert.DoesNotContain(data.items, Load(folder), folder);
+            CollectionAssert.Contains(data.items, Load(folder), folder);
         }
     }
 
     [TestCase("Assets/Data/GameData.asset")]
     [TestCase("Assets/Data/TestData.asset")]
-    public void CursedTag_IsRegistered(string gameDataPath)
+    public void LibraryAndCursedTags_AreRegistered(string gameDataPath)
     {
         GameData data = AssetDatabase.LoadAssetAtPath<GameData>(gameDataPath);
 
         Assert.IsTrue(data.tags.Exists(tag => tag != null && tag.name == CursedTag.Name));
+        Assert.IsTrue(data.tags.Exists(tag => tag != null && tag.name == LibraryEventRoom.TagName));
     }
 }
 

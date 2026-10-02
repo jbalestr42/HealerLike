@@ -16,4 +16,3 @@ MonoBehaviour:
   description: Forbidden books whisper from the shelves. Their power always comes at a price.
   choiceCount: 3
   isDark: 1
-  blessings: []

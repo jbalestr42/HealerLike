@@ -26,8 +26,8 @@ public class UpgradeView : AView
 
     List<GameObject> _upgradeButtons = new List<GameObject>();
 
-    // Never offered as a reward: the cursed items only come from the Library
-    static readonly List<string> RewardExcludedTags = new List<string> { CursedTag.Name };
+    // Never offered as a reward: those items only come from events (e.g. the Library)
+    public static readonly List<string> RewardExcludedTags = new List<string> { CursedTag.Name, LibraryEventRoom.TagName };
 
 	public void FillChoices(int count)
     {
