@@ -99,6 +99,48 @@ public class MapGenerationPreviewTests
             Object.DestroyImmediate(settings);
         }
     }
+
+    class StubEventRoom : AEventRoom
+    {
+        public override void Play(IEventRoomHost host) { }
+    }
+
+    [Test]
+    public void GetEventRows_NameWeightAndShareOfEachEvent()
+    {
+        MapGenerationSettings settings = ScriptableObject.CreateInstance<MapGenerationSettings>();
+        StubEventRoom library = ScriptableObject.CreateInstance<StubEventRoom>();
+        StubEventRoom unnamed = ScriptableObject.CreateInstance<StubEventRoom>();
+        try
+        {
+            library.eventName = "Library";
+            unnamed.name = "UnnamedEvent";
+            settings.eventRooms = new List<EventRoomChance>
+            {
+                new EventRoomChance { eventRoom = library, weight = 3f },
+                new EventRoomChance { eventRoom = unnamed, weight = 1f },
+                new EventRoomChance { eventRoom = null, weight = 0f },
+            };
+
+            List<MapGenerationPreview.EventRow> rows = MapGenerationPreview.GetEventRows(settings);
+
+            Assert.AreEqual(3, rows.Count);
+            Assert.AreEqual("Library", rows[0].name);
+            Assert.AreEqual(3f, rows[0].weight);
+            Assert.AreEqual(0.75f, rows[0].share, 0.0001f);
+            // No event name: the asset name
+            Assert.AreEqual("UnnamedEvent", rows[1].name);
+            Assert.AreEqual(0.25f, rows[1].share, 0.0001f);
+            Assert.AreEqual("(none)", rows[2].name);
+            Assert.AreEqual(0f, rows[2].share);
+        }
+        finally
+        {
+            Object.DestroyImmediate(settings);
+            Object.DestroyImmediate(library);
+            Object.DestroyImmediate(unnamed);
+        }
+    }
 }
 
 }

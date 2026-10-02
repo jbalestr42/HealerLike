@@ -10,7 +10,7 @@ public class MapGenerationPreview : MonoBehaviour
 {
     // The panel is laid out for a 1080p screen, then scaled to the actual one
     const float ReferenceHeight = 1080f;
-    const float PanelWidth = 420f;
+    const float PanelWidth = 480f;
     const float Margin = 16f;
 
     static readonly MapNodeType[] RoomTypes = { MapNodeType.Combat, MapNodeType.Elite, MapNodeType.Treasure, MapNodeType.Rest, MapNodeType.Event };
@@ -25,6 +25,15 @@ public class MapGenerationPreview : MonoBehaviour
         // Rooms of the type in the map drawn, fixed floors included, and their share of all its rooms
         public int count;
         public float mapShare;
+    }
+
+    // One line of the event table
+    public struct EventRow
+    {
+        public string name;
+        public float weight;
+        // Share of the event rooms playing this event, from 0 to 1
+        public float share;
     }
 
     [SerializeField] MapGenerationSettings _sourceSettings;
@@ -42,6 +51,8 @@ public class MapGenerationPreview : MonoBehaviour
     int _seed;
     // Room type edited under the table, an index in the settings
     int _selectedRoomType = 0;
+    // Event edited under the event table, an index in the settings
+    int _selectedEvent = 0;
     string _lastSettings;
     string _error;
     Dictionary<MapNodeType, int> _counts = new Dictionary<MapNodeType, int>();
@@ -209,6 +220,20 @@ public class MapGenerationPreview : MonoBehaviour
         return rows;
     }
 
+    // A row per event of the settings: its name (the asset name when it has none), weight and share
+    public static List<EventRow> GetEventRows(MapGenerationSettings settings)
+    {
+        List<float> weights = settings.eventRooms.ConvertAll(chance => chance != null ? chance.weight : 0f);
+        List<EventRow> rows = new List<EventRow>();
+        for (int i = 0; i < settings.eventRooms.Count; i++)
+        {
+            AEventRoom eventRoom = settings.eventRooms[i]?.eventRoom;
+            string name = eventRoom == null ? "(none)" : string.IsNullOrEmpty(eventRoom.eventName) ? eventRoom.name : eventRoom.eventName;
+            rows.Add(new EventRow { name = name, weight = weights[i], share = WeightShares.GetShare(weights, i) });
+        }
+        return rows;
+    }
+
     static float GetShare(int count, int total)
     {
         return total > 0 ? 100f * count / total : 0f;
@@ -254,6 +279,9 @@ public class MapGenerationPreview : MonoBehaviour
         {
             DrawRoomType(_selectedRoomType, _settings.floorCount);
         }
+
+        Section("Events");
+        DrawEventTable();
 
         GUILayout.EndScrollView();
         GUILayout.EndArea();
@@ -375,16 +403,77 @@ public class MapGenerationPreview : MonoBehaviour
     void ShareSlider(int index)
     {
         List<float> weights = _settings.roomTypes.ConvertAll(roomType => roomType.weight);
-        float share = WeightShares.GetShare(weights, index);
-        Row("Weight", weights[index].ToString("0.00"));
-        Row("Share of random rooms", $"{share * 100f:0}%");
-        float newShare = Mathf.Round(GUILayout.HorizontalSlider(share, 0f, 1f) * 100f) / 100f;
-        if (!Mathf.Approximately(newShare, Mathf.Round(share * 100f) / 100f))
+        if (ShareSlider(weights, index, "Share of random rooms"))
         {
-            WeightShares.SetShare(weights, index, newShare);
             for (int i = 0; i < weights.Count; i++)
             {
                 _settings.roomTypes[i].weight = weights[i];
+            }
+        }
+    }
+
+    // Weight and share of one of the weights, the slider setting the share by steps of 1%; true when it
+    // changed the weights (the others rescaled to keep 100%)
+    bool ShareSlider(List<float> weights, int index, string shareLabel)
+    {
+        float share = WeightShares.GetShare(weights, index);
+        Row("Weight", weights[index].ToString("0.00"));
+        Row(shareLabel, $"{share * 100f:0}%");
+        float newShare = Mathf.Round(GUILayout.HorizontalSlider(share, 0f, 1f) * 100f) / 100f;
+        if (Mathf.Approximately(newShare, Mathf.Round(share * 100f) / 100f))
+        {
+            return false;
+        }
+
+        WeightShares.SetShare(weights, index, newShare);
+        return true;
+    }
+
+    // Event, weight and share of the event rooms; a click on a row selects the event edited under the table
+    void DrawEventTable()
+    {
+        if (_settings.eventRooms.Count == 0)
+        {
+            GUILayout.Label("No event in the settings", _labelStyle);
+            return;
+        }
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Event", _headerLeftStyle, GUILayout.Width(170f));
+        GUILayout.Label("Weight", _headerStyle, GUILayout.Width(70f));
+        GUILayout.Label("Share", _headerStyle, GUILayout.Width(70f));
+        GUILayout.EndHorizontal();
+
+        _selectedEvent = Mathf.Clamp(_selectedEvent, 0, _settings.eventRooms.Count - 1);
+        List<EventRow> rows = GetEventRows(_settings);
+        for (int i = 0; i < rows.Count; i++)
+        {
+            EventRow row = rows[i];
+            GUILayout.BeginHorizontal(i == _selectedEvent ? _selectedRowStyle : _rowStyle);
+            GUILayout.Label(row.name, _cellStyle, GUILayout.Width(170f));
+            GUILayout.Label(row.weight.ToString("0.00"), _cellValueStyle, GUILayout.Width(70f));
+            GUILayout.Label($"{row.share * 100f:0}%", _cellValueStyle, GUILayout.Width(70f));
+            GUILayout.EndHorizontal();
+
+            Rect rowRect = GUILayoutUtility.GetLastRect();
+            if (Event.current.type == EventType.MouseDown && rowRect.Contains(Event.current.mousePosition))
+            {
+                _selectedEvent = i;
+                Event.current.Use();
+            }
+        }
+
+        GUILayout.Space(8f);
+        GUILayout.Label(rows[_selectedEvent].name.ToUpperInvariant(), _sectionStyle);
+        List<float> weights = _settings.eventRooms.ConvertAll(chance => chance != null ? chance.weight : 0f);
+        if (ShareSlider(weights, _selectedEvent, "Share of event rooms"))
+        {
+            for (int i = 0; i < weights.Count; i++)
+            {
+                if (_settings.eventRooms[i] != null)
+                {
+                    _settings.eventRooms[i].weight = weights[i];
+                }
             }
         }
     }
