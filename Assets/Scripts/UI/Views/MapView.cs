@@ -41,13 +41,17 @@ public class MapView : AView
     [SerializeField] float _pulseAmplitude = 0.08f;
     [SerializeField] float _pulseSpeed = 5f;
 
-    [SerializeField] Dictionary<MapNodeType, Color> _roomColors = new Dictionary<MapNodeType, Color>
+    [SerializeField] Dictionary<MapNodeType, Color> _roomColors = new Dictionary<MapNodeType, Color>(DefaultRoomColors);
+
+    // Also used for the types missing from the serialized colors (e.g. a type added after the prefab was saved)
+    static readonly Dictionary<MapNodeType, Color> DefaultRoomColors = new Dictionary<MapNodeType, Color>
     {
         { MapNodeType.Combat, new Color(0.25f, 0.55f, 0.95f) },
         { MapNodeType.Elite, new Color(0.95f, 0.25f, 0.25f) },
         { MapNodeType.Treasure, new Color(1f, 0.78f, 0.15f) },
         { MapNodeType.Rest, new Color(0.25f, 0.85f, 0.45f) },
         { MapNodeType.Boss, new Color(0.75f, 0.25f, 0.95f) },
+        { MapNodeType.Event, new Color(0.2f, 0.85f, 0.9f) },
     };
 
     static readonly Color CurrentOutlineColor = new Color(1f, 0.8f, 0.2f, 1f);
@@ -64,7 +68,11 @@ public class MapView : AView
 
     public Color GetRoomColor(MapNodeType type)
     {
-        return _roomColors.TryGetValue(type, out Color color) ? color : Color.gray;
+        if (_roomColors.TryGetValue(type, out Color color) || DefaultRoomColors.TryGetValue(type, out color))
+        {
+            return color;
+        }
+        return Color.gray;
     }
 
     void Awake()
@@ -169,6 +177,8 @@ public class MapView : AView
                 return "Rest";
             case MapNodeType.Boss:
                 return "Boss";
+            case MapNodeType.Event:
+                return "Event";
             default:
                 return type.ToString();
         }

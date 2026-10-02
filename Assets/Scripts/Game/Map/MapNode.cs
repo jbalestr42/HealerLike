@@ -7,6 +7,8 @@ public enum MapNodeType
     Treasure,
     Rest,
     Boss,
+    // Plays one of the events of the map settings (e.g. recruit a unit, train one)
+    Event,
 }
 
 // A room of the run map, linked to the rooms of the next floor the player can travel to

@@ -331,6 +331,36 @@ public class MapNodeTypeAssignerTests
     }
 
     [Test]
+    public void Assign_Defaults_NoEventRoom([ValueSource(nameof(Seeds))] int seed)
+    {
+        RunMap map = GenerateAndAssign(seed);
+
+        Assert.IsFalse(Rooms(map).Any(node => node.type == MapNodeType.Event));
+    }
+
+    [Test]
+    public void Assign_EventWeight_PlacesEventRooms([ValueSource(nameof(Seeds))] int seed)
+    {
+        KeepOnlyWeights(MapNodeType.Combat, MapNodeType.Event);
+        Type(MapNodeType.Event).weight = 0.5f;
+
+        RunMap map = GenerateAndAssign(seed);
+
+        Assert.IsTrue(RandomRooms(map).Any(node => node.type == MapNodeType.Event));
+    }
+
+    [Test]
+    public void CreateTypeList_EventWeight_GivesItsShareOfEventRooms()
+    {
+        // 100 rooms: 60 combats / 16 / 12 / 5 / 7 events out of 100
+        Type(MapNodeType.Event).weight = 0.07f;
+
+        List<MapNodeType> types = MapNodeTypeAssigner.CreateTypeList(100, _settings, new System.Random(0));
+
+        Assert.AreEqual(7, types.Count(type => type == MapNodeType.Event));
+    }
+
+    [Test]
     public void CreateTypeList_NoWeight_IsOnlyCombats()
     {
         KeepOnlyWeights();

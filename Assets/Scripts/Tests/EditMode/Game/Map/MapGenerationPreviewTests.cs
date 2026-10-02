@@ -39,6 +39,7 @@ public class MapGenerationPreviewTests
             "Elite: 1 (25%)",
             "Treasure: 0 (0%)",
             "Rest: 1 (25%)",
+            "Event: 0 (0%)",
         };
         CollectionAssert.AreEqual(expected, stats.Replace("\r", "").Split('\n'));
     }

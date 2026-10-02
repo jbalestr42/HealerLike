@@ -13,7 +13,7 @@ public class MapGenerationPreview : MonoBehaviour
     const float PanelWidth = 340f;
     const float Margin = 16f;
 
-    static readonly MapNodeType[] RoomTypes = { MapNodeType.Combat, MapNodeType.Elite, MapNodeType.Treasure, MapNodeType.Rest };
+    static readonly MapNodeType[] RoomTypes = { MapNodeType.Combat, MapNodeType.Elite, MapNodeType.Treasure, MapNodeType.Rest, MapNodeType.Event };
 
     [SerializeField] MapGenerationSettings _sourceSettings;
     [SerializeField] MapView _mapView;

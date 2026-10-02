@@ -50,6 +50,19 @@ public class MapGenerationSettingsTests
     }
 
     [Test]
+    public void Defaults_EventRoomsListedButNeverDrawn()
+    {
+        RoomTypeSettings eventRoom = _source.GetRoomType(MapNodeType.Event);
+
+        // Listed so its chance can be tuned, but no event to play yet
+        Assert.IsNotNull(eventRoom);
+        Assert.AreEqual(0f, eventRoom.weight);
+        CollectionAssert.IsEmpty(eventRoom.fixedFloors);
+        Assert.IsFalse(eventRoom.canFollowItself);
+        CollectionAssert.IsEmpty(_source.eventRooms);
+    }
+
+    [Test]
     public void GetRoomType_MissingType_IsNull()
     {
         _source.roomTypes.RemoveAll(roomType => roomType.type == MapNodeType.Elite);

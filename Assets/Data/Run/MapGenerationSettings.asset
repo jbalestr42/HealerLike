@@ -38,3 +38,9 @@ MonoBehaviour:
     firstFloor: 3
     weight: 0.05
     canFollowItself: 0
+  - type: 5
+    fixedFloors: 
+    firstFloor: 0
+    weight: 0
+    canFollowItself: 0
+  eventRooms: []

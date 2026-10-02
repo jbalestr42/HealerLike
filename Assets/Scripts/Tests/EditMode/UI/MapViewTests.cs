@@ -127,6 +127,26 @@ public class MapViewTests
     }
 
     [Test]
+    public void GetRoomColor_TypeMissingFromTheSavedColors_KeepsItsOwnColor()
+    {
+        // e.g. the Event rooms, added after the MapView prefab saved its colors
+        GameObject go = new GameObject();
+        MapView view = null;
+        TestHelpers.WithLoggingDisabled(() => view = go.AddComponent<MapView>());
+        TestHelpers.SetPrivateField(view, "_roomColors", new System.Collections.Generic.Dictionary<MapNodeType, Color>
+        {
+            { MapNodeType.Combat, Color.blue },
+        });
+
+        Color eventColor = view.GetRoomColor(MapNodeType.Event);
+
+        Assert.AreNotEqual(Color.gray, eventColor);
+        Assert.AreNotEqual(Color.blue, eventColor);
+        Assert.AreEqual(Color.blue, view.GetRoomColor(MapNodeType.Combat));
+        UnityEngine.Object.DestroyImmediate(go);
+    }
+
+    [Test]
     public void GetNodeLabel_EveryTypeHasALabel()
     {
         foreach (MapNodeType type in Enum.GetValues(typeof(MapNodeType)))

@@ -3,8 +3,8 @@ using Sirenix.OdinInspector;
 using UnityEngine.Events;
 
 // A run climbs a Slay the Spire like map: the player picks the next room on the map,
-// fights, rests or loots it, and goes back to the map until the boss
-public class AscensionGameType : AGameType
+// fights, rests, loots or plays an event in it, and goes back to the map until the boss
+public class AscensionGameType : AGameType, IEventRoomHost
 {
     [HideInInspector] public static UnityEvent OnRoundStart = new UnityEvent();
     [HideInInspector] public static UnityEvent OnBattleStart = new UnityEvent();
@@ -22,6 +22,7 @@ public class AscensionGameType : AGameType
         OnGoingBattle,
         EndBattle,
         SelectUpgrade,
+        PlayEvent,
         GameEnd,
         GameOver,
     }
@@ -170,6 +171,10 @@ public class AscensionGameType : AGameType
                 // Wait for player to select an item then go back to the map
                 break;
 
+            case State.PlayEvent:
+                // Wait for the event to end (EndEvent) then go back to the map
+                break;
+
             case State.GameEnd:
                 // The run is won, the end screen waits for the player to go back to the menu
                 break;
@@ -235,7 +240,38 @@ public class AscensionGameType : AGameType
                 _currentWave = DataManager.instance.GetWavePattern(node.type, node.floor, _random);
                 SetState(State.InitializeRound);
                 break;
+
+            case MapNodeType.Event:
+                EnterEventRoom(node);
+                break;
         }
+    }
+
+    // One of the events of the map settings, drawn by its chance; a combat when there is none to draw
+    void EnterEventRoom(MapNode node)
+    {
+        AEventRoom eventRoom = EventRoomPicker.Pick(_mapSettings.eventRooms, _random);
+        if (eventRoom == null)
+        {
+            Debug.LogWarning("[AscensionGameType] No event to draw in the map settings, the event room is played as a combat");
+            _currentWave = DataManager.instance.GetWavePattern(MapNodeType.Combat, node.floor, _random);
+            SetState(State.InitializeRound);
+            return;
+        }
+
+        Debug.Log($"[AscensionGameType] Event room: {eventRoom.name}");
+        SetState(State.PlayEvent);
+        eventRoom.Play(this);
+    }
+
+    public void EndEvent()
+    {
+        if (_state != State.PlayEvent)
+        {
+            return;
+        }
+
+        SetState(State.ShowMap);
     }
 
     // Beating the boss wins the run, the other fights lead to a reward

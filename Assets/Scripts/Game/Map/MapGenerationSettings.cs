@@ -45,8 +45,13 @@ public class MapGenerationSettings : ScriptableObject
     // One entry per type a room can be; combats also fill the rooms no other type fits
     public List<RoomTypeSettings> roomTypes = CreateDefaultRoomTypes();
 
+    [Header("Events")]
+    // What an event room can be, each with its own chance; the chance of an event room itself is the weight
+    // of the Event room type
+    public List<EventRoomChance> eventRooms = new List<EventRoomChance>();
+
     // Slay the Spire: combats on the first floor, treasures on the 9th, rests before the boss, neither
-    // elites nor rests below the 6th floor
+    // elites nor rests below the 6th floor. No event room until there are events to play
     public static List<RoomTypeSettings> CreateDefaultRoomTypes()
     {
         return new List<RoomTypeSettings>
@@ -55,6 +60,7 @@ public class MapGenerationSettings : ScriptableObject
             new RoomTypeSettings { type = MapNodeType.Elite, firstFloor = 5, weight = 0.16f },
             new RoomTypeSettings { type = MapNodeType.Rest, fixedFloors = new List<int> { 14 }, firstFloor = 5, weight = 0.12f },
             new RoomTypeSettings { type = MapNodeType.Treasure, fixedFloors = new List<int> { 8 }, weight = 0.05f },
+            new RoomTypeSettings { type = MapNodeType.Event, weight = 0f },
         };
     }
 
