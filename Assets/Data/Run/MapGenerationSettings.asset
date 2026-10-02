@@ -21,7 +21,7 @@ MonoBehaviour:
   - type: 0
     fixedFloors: 00000000i
     firstFloor: 0
-    weight: 0.6
+    weight: 1.25
     canFollowItself: 1
   - type: 1
     fixedFloors: 
@@ -41,7 +41,7 @@ MonoBehaviour:
   - type: 5
     fixedFloors: 
     firstFloor: 0
-    weight: 0
+    weight: 0.25
     canFollowItself: 0
   eventRooms:
   - eventRoom: {fileID: 11400000, guid: 8fce84b80355b6c4faaa6d770cd834f1, type: 2}

@@ -10,10 +10,22 @@ public class MapGenerationPreview : MonoBehaviour
 {
     // The panel is laid out for a 1080p screen, then scaled to the actual one
     const float ReferenceHeight = 1080f;
-    const float PanelWidth = 340f;
+    const float PanelWidth = 420f;
     const float Margin = 16f;
 
     static readonly MapNodeType[] RoomTypes = { MapNodeType.Combat, MapNodeType.Elite, MapNodeType.Treasure, MapNodeType.Rest, MapNodeType.Event };
+
+    // One line of the room table
+    public struct RoomRow
+    {
+        public MapNodeType type;
+        public float weight;
+        // Share of the random rooms the weight gives, from 0 to 1
+        public float share;
+        // Rooms of the type in the map drawn, fixed floors included, and their share of all its rooms
+        public int count;
+        public float mapShare;
+    }
 
     [SerializeField] MapGenerationSettings _sourceSettings;
     [SerializeField] MapView _mapView;
@@ -28,6 +40,8 @@ public class MapGenerationPreview : MonoBehaviour
     MapGenerationSettings _settings;
 
     int _seed;
+    // Room type edited under the table, an index in the settings
+    int _selectedRoomType = 0;
     string _lastSettings;
     string _error;
     Dictionary<MapNodeType, int> _counts = new Dictionary<MapNodeType, int>();
@@ -47,6 +61,12 @@ public class MapGenerationPreview : MonoBehaviour
     GUIStyle _buttonStyle;
     GUIStyle _smallButtonStyle;
     GUIStyle _toggleStyle;
+    GUIStyle _headerStyle;
+    GUIStyle _headerLeftStyle;
+    GUIStyle _cellStyle;
+    GUIStyle _cellValueStyle;
+    GUIStyle _rowStyle;
+    GUIStyle _selectedRowStyle;
     List<Texture2D> _textures = new List<Texture2D>();
     Dictionary<MapNodeType, Texture2D> _swatches = new Dictionary<MapNodeType, Texture2D>();
 
@@ -164,6 +184,31 @@ public class MapGenerationPreview : MonoBehaviour
         return stats.ToString().TrimEnd();
     }
 
+    // A row per room type of the settings: its weight and share, and what the map drawn got
+    public static List<RoomRow> GetRoomRows(MapGenerationSettings settings, Dictionary<MapNodeType, int> counts, int roomCount)
+    {
+        List<float> weights = settings.roomTypes.ConvertAll(roomType => roomType.weight);
+        List<RoomRow> rows = new List<RoomRow>();
+        for (int i = 0; i < settings.roomTypes.Count; i++)
+        {
+            MapNodeType type = settings.roomTypes[i].type;
+            int count = 0;
+            if (counts != null)
+            {
+                counts.TryGetValue(type, out count);
+            }
+            rows.Add(new RoomRow
+            {
+                type = type,
+                weight = weights[i],
+                share = WeightShares.GetShare(weights, i),
+                count = count,
+                mapShare = roomCount > 0 ? (float)count / roomCount : 0f,
+            });
+        }
+        return rows;
+    }
+
     static float GetShare(int count, int total)
     {
         return total > 0 ? 100f * count / total : 0f;
@@ -202,9 +247,12 @@ public class MapGenerationPreview : MonoBehaviour
         _settings.startRoomCount = IntSlider("Start rooms", _settings.startRoomCount, 1, maxStartRooms);
         _settings.maxRoomsPerFloor = IntSlider("Max rooms per floor", _settings.maxRoomsPerFloor, 0, _settings.columnCount, "No limit");
 
-        foreach (RoomTypeSettings roomType in _settings.roomTypes)
+        Section("Rooms");
+        DrawRoomTable();
+        _selectedRoomType = Mathf.Clamp(_selectedRoomType, 0, _settings.roomTypes.Count - 1);
+        if (_settings.roomTypes.Count > 0)
         {
-            DrawRoomType(roomType, _settings.floorCount);
+            DrawRoomType(_selectedRoomType, _settings.floorCount);
         }
 
         GUILayout.EndScrollView();
@@ -264,16 +312,39 @@ public class MapGenerationPreview : MonoBehaviour
 
         Row("Seed", _seed.ToString());
         Row("Rooms", _roomCount.ToString());
-        foreach (MapNodeType type in RoomTypes)
+    }
+
+    // Type, weight, share of the random rooms, rooms of the type in the map drawn; a click on a row selects
+    // the type edited under the table
+    void DrawRoomTable()
+    {
+        GUILayout.BeginHorizontal();
+        GUILayout.Space(20f);
+        GUILayout.Label("Type", _headerLeftStyle, GUILayout.Width(100f));
+        GUILayout.Label("Weight", _headerStyle, GUILayout.Width(70f));
+        GUILayout.Label("Share", _headerStyle, GUILayout.Width(70f));
+        GUILayout.Label("In this map", _headerStyle, GUILayout.Width(100f));
+        GUILayout.EndHorizontal();
+
+        List<RoomRow> rows = GetRoomRows(_settings, _counts, _roomCount);
+        for (int i = 0; i < rows.Count; i++)
         {
-            _counts.TryGetValue(type, out int count);
-            GUILayout.BeginHorizontal();
-            GUILayout.Box(GetSwatch(type), GUIStyle.none, GUILayout.Width(14f), GUILayout.Height(14f));
-            GUILayout.Space(6f);
-            GUILayout.Label(MapView.GetNodeLabel(type), _labelStyle);
-            GUILayout.FlexibleSpace();
-            GUILayout.Label($"{count}   {GetShare(count, _roomCount):0}%", _valueStyle);
+            RoomRow row = rows[i];
+            GUILayout.BeginHorizontal(i == _selectedRoomType ? _selectedRowStyle : _rowStyle);
+            DrawSwatch(row.type, 14f);
+            GUILayout.Space(8f);
+            GUILayout.Label(MapView.GetNodeLabel(row.type), _cellStyle, GUILayout.Width(100f));
+            GUILayout.Label(row.weight.ToString("0.00"), _cellValueStyle, GUILayout.Width(70f));
+            GUILayout.Label($"{row.share * 100f:0}%", _cellValueStyle, GUILayout.Width(70f));
+            GUILayout.Label($"{row.count} ({row.mapShare * 100f:0}%)", _cellValueStyle, GUILayout.Width(100f));
             GUILayout.EndHorizontal();
+
+            Rect rowRect = GUILayoutUtility.GetLastRect();
+            if (Event.current.type == EventType.MouseDown && rowRect.Contains(Event.current.mousePosition))
+            {
+                _selectedRoomType = i;
+                Event.current.Use();
+            }
         }
     }
 
@@ -299,18 +370,32 @@ public class MapGenerationPreview : MonoBehaviour
         return Mathf.RoundToInt(GUILayout.HorizontalSlider(value, min, max));
     }
 
-    float WeightSlider(float value)
+    // The share of the random rooms the type gets, by steps of 1%; changing it rescales the other types so
+    // the shares stay at 100%
+    void ShareSlider(int index)
     {
-        Row("Weight", value.ToString("0.00"));
-        return Mathf.Round(GUILayout.HorizontalSlider(value, 0f, 1f) * 100f) / 100f;
+        List<float> weights = _settings.roomTypes.ConvertAll(roomType => roomType.weight);
+        float share = WeightShares.GetShare(weights, index);
+        Row("Weight", weights[index].ToString("0.00"));
+        Row("Share of random rooms", $"{share * 100f:0}%");
+        float newShare = Mathf.Round(GUILayout.HorizontalSlider(share, 0f, 1f) * 100f) / 100f;
+        if (!Mathf.Approximately(newShare, Mathf.Round(share * 100f) / 100f))
+        {
+            WeightShares.SetShare(weights, index, newShare);
+            for (int i = 0; i < weights.Count; i++)
+            {
+                _settings.roomTypes[i].weight = weights[i];
+            }
+        }
     }
 
     // Floors shown from 1 like in game, stored from 0
-    void DrawRoomType(RoomTypeSettings roomType, int floorCount)
+    void DrawRoomType(int index, int floorCount)
     {
+        RoomTypeSettings roomType = _settings.roomTypes[index];
         GUILayout.Space(14f);
         GUILayout.BeginHorizontal();
-        GUILayout.Box(GetSwatch(roomType.type), GUIStyle.none, GUILayout.Width(12f), GUILayout.Height(12f));
+        DrawSwatch(roomType.type, 14f);
         GUILayout.Space(6f);
         GUILayout.Label(MapView.GetNodeLabel(roomType.type).ToUpperInvariant(), _sectionStyle);
         GUILayout.EndHorizontal();
@@ -342,8 +427,16 @@ public class MapGenerationPreview : MonoBehaviour
 
         GUILayout.Space(4f);
         roomType.firstFloor = IntSlider("First floor", roomType.firstFloor + 1, 1, floorCount) - 1;
-        roomType.weight = WeightSlider(roomType.weight);
+        ShareSlider(index);
         roomType.canFollowItself = GUILayout.Toggle(roomType.canFollowItself, "  Can follow itself", _toggleStyle);
+    }
+
+    // A square of the room color, the 1 pixel texture stretched over it, centered on the line
+    void DrawSwatch(MapNodeType type, float size)
+    {
+        Rect rect = GUILayoutUtility.GetRect(size, size, GUILayout.Width(size), GUILayout.Height(size));
+        rect.y += Mathf.Max(0f, (_cellStyle.lineHeight - size) * 0.5f) + _cellStyle.padding.top;
+        GUI.DrawTexture(rect, GetSwatch(type), ScaleMode.StretchToFill);
     }
 
     Texture2D GetSwatch(MapNodeType type)
@@ -394,6 +487,16 @@ public class MapGenerationPreview : MonoBehaviour
         _toggleStyle = new GUIStyle(GUI.skin.toggle) { fontSize = 15 };
         _toggleStyle.normal.textColor = _labelStyle.normal.textColor;
         _toggleStyle.onNormal.textColor = Color.white;
+
+        _headerStyle = new GUIStyle(_labelStyle) { fontSize = 12, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleRight };
+        _headerStyle.normal.textColor = new Color(0.6f, 0.6f, 0.7f);
+        _headerLeftStyle = new GUIStyle(_headerStyle) { alignment = TextAnchor.MiddleLeft };
+        _cellStyle = new GUIStyle(_labelStyle) { fontSize = 14 };
+        _cellValueStyle = new GUIStyle(_valueStyle) { fontSize = 14 };
+
+        _rowStyle = new GUIStyle { padding = new RectOffset(4, 4, 3, 3) };
+        _selectedRowStyle = new GUIStyle(_rowStyle);
+        _selectedRowStyle.normal.background = CreateTexture(new Color(1f, 1f, 1f, 0.12f));
     }
 
     #endregion
