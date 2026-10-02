@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -43,6 +44,38 @@ public class EventRoomHostTests
         _gameType.EndEvent();
 
         Assert.AreEqual(AscensionGameType.State.OnGoingBattle, state);
+    }
+
+    [Test]
+    public void CloseBeforeEachChoice_ClosesThenApplies()
+    {
+        List<string> calls = new List<string>();
+        List<EventChoice> choices = new List<EventChoice>
+        {
+            new EventChoice { label = "Heal", description = "Heals", onSelected = () => calls.Add("heal") },
+            new EventChoice { label = "Resurrect", isAvailable = false, onSelected = () => calls.Add("resurrect") },
+        };
+
+        List<EventChoice> closing = AscensionGameType.CloseBeforeEachChoice(choices, () => calls.Add("close"));
+        closing[0].onSelected();
+
+        CollectionAssert.AreEqual(new[] { "close", "heal" }, calls);
+        // Everything else is kept as is
+        Assert.AreEqual("Heal", closing[0].label);
+        Assert.AreEqual("Heals", closing[0].description);
+        Assert.IsTrue(closing[0].isAvailable);
+        Assert.IsFalse(closing[1].isAvailable);
+    }
+
+    [Test]
+    public void CloseBeforeEachChoice_ChoiceWithoutAction_StillCloses()
+    {
+        int closed = 0;
+        List<EventChoice> closing = AscensionGameType.CloseBeforeEachChoice(new List<EventChoice> { new EventChoice { label = "Leave" } }, () => closed++);
+
+        closing[0].onSelected();
+
+        Assert.AreEqual(1, closed);
     }
 }
 

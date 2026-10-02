@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
 using UnityEngine.Events;
@@ -42,6 +43,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
     GameView _gameView;
     UpgradeView _upgradeView;
     MapView _mapView;
+    EventView _eventView;
     System.Random _random;
 
     RunState _run;
@@ -62,6 +64,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
         _upgradeView = UIManager.instance.GetView<UpgradeView>(ViewType.Upgrade);
         _mapView = UIManager.instance.GetView<MapView>(ViewType.Map);
+        _eventView = UIManager.instance.GetView<EventView>(ViewType.Event);
 
         _gameView.gameHUD.nextWaveButton.onClick.AddListener(StartBattle);
         if (_gameView.gameHUD.mapButton != null)
@@ -289,6 +292,34 @@ public class AscensionGameType : AGameType, IEventRoomHost
         Debug.Log($"[AscensionGameType] Event room: {eventRoom.name}");
         SetState(State.PlayEvent);
         eventRoom.Play(this);
+    }
+
+    public void ShowChoices(string title, string description, IReadOnlyList<EventChoice> choices)
+    {
+        UIManager.instance.AddView(ViewType.Event);
+        _eventView.Display(title, description, CloseBeforeEachChoice(choices, () => UIManager.instance.PopCurrentView()));
+    }
+
+    // Copies of the choices calling close before their own action, e.g. so a choice can open another screen
+    public static List<EventChoice> CloseBeforeEachChoice(IReadOnlyList<EventChoice> choices, System.Action close)
+    {
+        List<EventChoice> closingChoices = new List<EventChoice>(choices.Count);
+        foreach (EventChoice choice in choices)
+        {
+            System.Action onSelected = choice.onSelected;
+            closingChoices.Add(new EventChoice
+            {
+                label = choice.label,
+                description = choice.description,
+                isAvailable = choice.isAvailable,
+                onSelected = () =>
+                {
+                    close();
+                    onSelected?.Invoke();
+                },
+            });
+        }
+        return closingChoices;
     }
 
     public void EndEvent()
