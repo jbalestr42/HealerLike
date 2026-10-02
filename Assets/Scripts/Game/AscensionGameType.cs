@@ -24,6 +24,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
         EndBattle,
         SelectUpgrade,
         PlayEvent,
+        Rest,
         GameEnd,
         GameOver,
     }
@@ -32,8 +33,12 @@ public class AscensionGameType : AGameType, IEventRoomHost
     [SerializeField] MapGenerationSettings _mapSettings;
     // 0 to get a different map every run
     [SerializeField] int _seed = 0;
-    // Applied to every ally in a rest room
+    // Applied to every ally when healing in a rest room
     [SerializeField] AConsumerFactory _restHealConsumer;
+    // Applied to the character in every rest room, whatever the choice
+    [SerializeField] AConsumerFactory _restManaConsumer;
+    [SerializeField, TextArea] string _restDescription = "You recover 30% of your max mana.";
+    [SerializeField, TextArea] string _restHealDescription = "Every unit recovers 30% of its max health.";
     [SerializeField, Min(1)] int _rewardChoiceCount = 3;
     [SerializeField, Min(1)] int _eliteRewardChoiceCount = 4;
 
@@ -205,6 +210,10 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 // Wait for the event to end (EndEvent) then go back to the map
                 break;
 
+            case State.Rest:
+                // Wait for the player to heal or resurrect then go back to the map
+                break;
+
             case State.GameEnd:
                 // The run is won, the end screen waits for the player to go back to the menu
                 break;
@@ -262,8 +271,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 break;
 
             case MapNodeType.Rest:
-                HealAllies();
-                SetState(State.ShowMap);
+                EnterRestRoom();
                 break;
 
             case MapNodeType.Boss:
@@ -430,10 +438,106 @@ public class AscensionGameType : AGameType, IEventRoomHost
         _entities.GetEntities(Entity.EntityType.Player).ForEach(x => ApplyConsumer(x.GetComponent<Entity>(), _restHealConsumer));
     }
 
+    #region Rest
+
+    // Mana back whatever the choice, then heal every unit or resurrect a dead one
+    void EnterRestRoom()
+    {
+        RestoreMana();
+        SetState(State.Rest);
+        ShowRestChoices();
+    }
+
+    void RestoreMana()
+    {
+        if (_restManaConsumer == null)
+        {
+            Debug.LogError("[AscensionGameType] No rest mana consumer set");
+            return;
+        }
+
+        Character character = PlayerBehaviour.instance.character;
+        ApplyConsumer(character.mana, character.gameObject, _restManaConsumer);
+    }
+
+    void ShowRestChoices()
+    {
+        ShowChoices("Rest", _restDescription, CreateRestChoices(_restHealDescription, _run.deadAllies.Count > 0, () =>
+        {
+            HealAllies();
+            LeaveRestRoom();
+        }, ShowResurrectChoices));
+    }
+
+    void ShowResurrectChoices()
+    {
+        ShowChoices("Resurrect", "Choose the unit to bring back.", CreateResurrectChoices(_run.deadAllies, Resurrect, ShowRestChoices));
+    }
+
+    // Back to the unit inventory, at full health but without its items: they went to the player when it died
+    void Resurrect(EntityData ally)
+    {
+        if (_run.RemoveDeadAlly(ally))
+        {
+            _gameView.entityInventory.AddEntity(ally);
+        }
+        LeaveRestRoom();
+    }
+
+    void LeaveRestRoom()
+    {
+        if (_state == State.Rest)
+        {
+            SetState(State.ShowMap);
+        }
+    }
+
+    // Resurrect can only be picked when a unit is dead
+    public static List<EventChoice> CreateRestChoices(string healDescription, bool canResurrect, System.Action heal, System.Action resurrect)
+    {
+        return new List<EventChoice>
+        {
+            new EventChoice { label = "Heal", description = healDescription, onSelected = heal },
+            new EventChoice
+            {
+                label = "Resurrect",
+                description = canResurrect ? "Bring a dead unit back, without its items." : "No unit is dead.",
+                isAvailable = canResurrect,
+                onSelected = resurrect,
+            },
+        };
+    }
+
+    // One choice per dead unit (once even when several copies of it died), then a way back to the rest choices
+    public static List<EventChoice> CreateResurrectChoices(IReadOnlyList<EntityData> deadAllies, System.Action<EntityData> resurrect, System.Action back)
+    {
+        List<EventChoice> choices = new List<EventChoice>();
+        HashSet<EntityData> listed = new HashSet<EntityData>();
+        foreach (EntityData ally in deadAllies)
+        {
+            if (ally == null || !listed.Add(ally))
+            {
+                continue;
+            }
+
+            choices.Add(new EventChoice { label = ally.title, description = ally.description, onSelected = () => resurrect(ally) });
+        }
+        choices.Add(new EventChoice { label = "Back", onSelected = back });
+        return choices;
+    }
+
+    #endregion
+
     // Goes through the regular resource flow, so the consumer events and feedbacks are triggered
     public static void ApplyConsumer(Entity entity, AConsumerFactory consumerFactory)
     {
-        entity.health.AddResourceModifier(ResourceModifier.Create(consumerFactory, entity.gameObject, entity.gameObject));
+        ApplyConsumer(entity.health, entity.gameObject, consumerFactory);
+    }
+
+    // On any resource of the owner, e.g. the mana of the character
+    public static void ApplyConsumer(ResourceAttribute resource, GameObject owner, AConsumerFactory consumerFactory)
+    {
+        resource.AddResourceModifier(ResourceModifier.Create(consumerFactory, owner, owner));
     }
 
     void EnableAllEntities(bool isEnabled)

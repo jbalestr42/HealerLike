@@ -53,6 +53,22 @@ public class ConsumerTests
     }
 
     [Test]
+    public void CanBeCritical_DefaultsToTrue()
+    {
+        Assert.IsTrue(new ConsumerData().canBeCritical);
+        Assert.IsTrue(CreateConsumer(ConsumerValueOwner.Source, _target).canBeCritical);
+    }
+
+    [Test]
+    public void CanBeCritical_FollowsTheData()
+    {
+        Consumer consumer = CreateConsumer(ConsumerValueOwner.Source, _target);
+        consumer.data.canBeCritical = false;
+
+        Assert.IsFalse(consumer.canBeCritical);
+    }
+
+    [Test]
     public void GetValue_ValueOwnerTarget_WithoutTarget_IsZero()
     {
         Assert.AreEqual(0f, CreateConsumer(ConsumerValueOwner.Target, null).GetValue(), 0.0001f);

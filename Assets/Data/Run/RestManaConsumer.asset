@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4aee98d927598e340ae28ed4c28c0ac7, type: 3}
-  m_Name: RestHealConsumer
+  m_Name: RestManaConsumer
   m_EditorClassIdentifier: HealerLike.Runtime::ConsumerFactory
   serializationData:
     SerializedFormat: 2
@@ -26,13 +26,13 @@ MonoBehaviour:
     ignoreConsumerPrevention: 1
     canBeCritical: 0
     value:
-      rid: 4866441223440957629
+      rid: 4779641714830126808
   references:
     version: 2
     RefIds:
-    - rid: 4866441223440957629
-      type: {class: MaxHealthValue, ns: , asm: HealerLike.Runtime}
+    - rid: 4779641714830126808
+      type: {class: AttributeValue, ns: , asm: HealerLike.Runtime}
       data:
         data:
+          type: 9
           multiplier: -0.3
-          inverse: 0

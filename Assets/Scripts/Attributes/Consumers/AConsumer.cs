@@ -39,6 +39,8 @@ public class ConsumerBaseData
 {
     public bool ignoreDamageReduction;
     public bool ignoreConsumerPrevention;
+    // False for a value that must stay as set, e.g. the mana and heal of a rest room
+    public bool canBeCritical = true;
 }
 
 public abstract class AConsumer<DataType> : AConsumer where DataType : ConsumerBaseData
@@ -46,4 +48,5 @@ public abstract class AConsumer<DataType> : AConsumer where DataType : ConsumerB
     public DataType data;
     public override bool ignoreDamageReduction => data.ignoreDamageReduction;
     public override bool ignoreConsumerPrevention => data.ignoreConsumerPrevention;
+    public override bool canBeCritical => data.canBeCritical;
 }
