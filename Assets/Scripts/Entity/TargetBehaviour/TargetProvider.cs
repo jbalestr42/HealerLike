@@ -5,7 +5,6 @@ using UnityEngine;
 public class TargetProvider : MonoBehaviour, ITargetProvider
 {
     // Tag of the entities the attacks target first
-    public const string tauntTagName = "Taunt";
 
     ATargetBehaviour _targetBehaviour;
     List<GameObject> _targets;
@@ -25,7 +24,7 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
         }
 
         // Only the attacks of the entity are taunted, not its area of effects, bounces or heals
-        _targetBehaviour.tauntTag = DataManager.instance.GetTagWithName(tauntTagName);
+        _targetBehaviour.tauntTag = DataManager.instance.GetTagWithName(TagNames.Taunt);
 
         _range = GetComponent<AttributeManager>().GetOrAdd(AttributeType.Range);
         _owner = GetComponent<Entity>();

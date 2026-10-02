@@ -90,7 +90,7 @@ public class EntityTagTests
     {
         _entity.AddTag(CreateTag("Summon"));
 
-        Assert.IsFalse(_entity.HasTag(null));
+        Assert.IsFalse(_entity.HasTag((GameplayTag)null));
     }
 
     [Test]

@@ -32,24 +32,10 @@ public class CharacterData : SerializedScriptableObject
     [Space]
     public List<EntityData> entities = new List<EntityData>();
 
-    // Units only recruited through the rewards of a run, on top of the ones of the starting pool
-    public List<EntityData> rewardEntities = new List<EntityData>();
+    // The units tagged with it and Reward can be recruited by the character (rewards, recruitment event)
+    public GameplayTag classTag;
 
     [Space]
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ACharacterSkillFactory>, ACharacterSkillFactory>(skills)")]
     public List<ACharacterSkillFactory> skills = new List<ACharacterSkillFactory>();
-
-    // The units a reward can offer: the starting pool, which can be recruited again, and the reward only units
-    public List<EntityData> GetRewardEntities()
-    {
-        List<EntityData> rewardable = new List<EntityData>();
-        foreach (List<EntityData> list in new[] { entities, rewardEntities })
-        {
-            if (list != null)
-            {
-                rewardable.AddRange(list.FindAll(entity => entity != null));
-            }
-        }
-        return rewardable;
-    }
 }

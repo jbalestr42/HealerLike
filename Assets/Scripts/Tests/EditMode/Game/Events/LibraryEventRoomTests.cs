@@ -22,8 +22,8 @@ public class LibraryEventRoomTests
     public void SetUp()
     {
         _playerTag = CreateTag("Player");
-        _libraryTag = CreateTag(LibraryEventRoom.TagName);
-        _cursedTag = CreateTag(CursedTag.Name);
+        _libraryTag = CreateTag(TagNames.Library);
+        _cursedTag = CreateTag(TagNames.Cursed);
 
         _blessings = new List<AItemFactory>
         {
@@ -92,14 +92,14 @@ public class LibraryEventRoomTests
     [Test]
     public void Tags_NormalTakesTheLibraryItemsThatArentCursed()
     {
-        CollectionAssert.AreEqual(new[] { LibraryEventRoom.TagName }, LibraryEventRoom.GetIncludedTags(false));
-        CollectionAssert.AreEqual(new[] { CursedTag.Name }, LibraryEventRoom.GetExcludedTags(false));
+        CollectionAssert.AreEqual(new[] { TagNames.Library }, LibraryEventRoom.GetIncludedTags(false));
+        CollectionAssert.AreEqual(new[] { TagNames.Cursed }, LibraryEventRoom.GetExcludedTags(false));
     }
 
     [Test]
     public void Tags_DarkTakesTheCursedLibraryItems()
     {
-        CollectionAssert.AreEquivalent(new[] { LibraryEventRoom.TagName, CursedTag.Name }, LibraryEventRoom.GetIncludedTags(true));
+        CollectionAssert.AreEquivalent(new[] { TagNames.Library, TagNames.Cursed }, LibraryEventRoom.GetIncludedTags(true));
         CollectionAssert.IsEmpty(LibraryEventRoom.GetExcludedTags(true));
     }
 

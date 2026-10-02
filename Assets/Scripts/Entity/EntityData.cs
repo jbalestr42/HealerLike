@@ -4,7 +4,7 @@ using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/Data/EntityData")]
 [InlineEditor]
-public class EntityData : SerializedScriptableObject
+public class EntityData : SerializedScriptableObject, ITaggable
 {
     [HorizontalGroup("Data", 75)]
     [PreviewField(75)]
@@ -43,4 +43,7 @@ public class EntityData : SerializedScriptableObject
     [Space]
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ASkillFactory>, ASkillFactory>(skillFactories)")]
     public List<ASkillFactory> skillFactories;
+
+    public bool HasTag(GameplayTag tag) => TagFilter.HasTag(tags, tag);
+    public bool HasTag(string tagName) => TagFilter.HasTag(tags, tagName);
 }

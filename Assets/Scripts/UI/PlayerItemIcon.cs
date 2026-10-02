@@ -22,7 +22,7 @@ public class PlayerItemIcon : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
         // Not QuickOutline's 3D Outline
         UnityEngine.UI.Outline outline = _icon.GetComponent<UnityEngine.UI.Outline>();
-        if (CursedTag.IsCursed(item))
+        if (item.HasTag(TagNames.Cursed))
         {
             if (outline == null)
             {

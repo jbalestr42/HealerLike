@@ -41,7 +41,7 @@ public class PlayerItemIconTests
         TestHelpers.SetPrivateField(_icon, "_icon", _image);
 
         _cursedTag = ScriptableObject.CreateInstance<GameplayTag>();
-        _cursedTag.name = CursedTag.Name;
+        _cursedTag.name = TagNames.Cursed;
         _playerTag = ScriptableObject.CreateInstance<GameplayTag>();
         _playerTag.name = "Player";
     }

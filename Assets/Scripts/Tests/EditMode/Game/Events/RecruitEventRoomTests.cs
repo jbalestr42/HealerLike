@@ -27,12 +27,8 @@ public class RecruitEventRoomTests
         _mage = CreateUnit("Mage");
         _beast = CreateUnit("Beast");
 
-        CharacterData character = ScriptableObject.CreateInstance<CharacterData>();
-        _created.Add(character);
-        character.entities = new List<EntityData> { _knight, _archer, _knight };
-        character.rewardEntities = new List<EntityData> { _mage, _beast };
-
-        _host = new FakeEventRoomHost { characterData = character };
+        _host = new FakeEventRoomHost();
+        _host.rewardEntities = new List<EntityData> { _knight, _archer, _knight, _mage, _beast };
         _event = ScriptableObject.CreateInstance<RecruitEventRoom>();
         _created.Add(_event);
         _event.eventName = "Recruitment";
@@ -149,8 +145,7 @@ public class RecruitEventRoomTests
     [Test]
     public void Play_CharacterWithoutUnits_OnlyLeave()
     {
-        _host.characterData.entities = new List<EntityData>();
-        _host.characterData.rewardEntities = new List<EntityData>();
+        _host.rewardEntities = new List<EntityData>();
 
         _event.Play(_host);
 

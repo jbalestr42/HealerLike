@@ -31,18 +31,48 @@ public class DataManager : Singleton<DataManager>
     // data, an unknown excluded tag excludes nothing
     public List<AItemFactory> GetItems(List<string> includedTags, List<string> excludedTags = null)
     {
-        List<GameplayTag> included = new List<GameplayTag>();
+        if (!ResolveTags(includedTags, excludedTags, out List<GameplayTag> included, out List<GameplayTag> excluded))
+        {
+            return new List<AItemFactory>();
+        }
+        return _data.items.FindAll(item => TagFilter.Matches(item, included, excluded));
+    }
+
+    // Same as the items, for the units of the game data
+    public List<EntityData> GetEntities(List<string> includedTags, List<string> excludedTags = null)
+    {
+        if (!ResolveTags(includedTags, excludedTags, out List<GameplayTag> included, out List<GameplayTag> excluded))
+        {
+            return new List<EntityData>();
+        }
+        return _data.entities.FindAll(entity => TagFilter.Matches(entity, included, excluded));
+    }
+
+    // The units the character can recruit (rewards, recruitment event): the ones tagged with its class and Reward
+    public List<EntityData> GetRewardEntities(CharacterData character)
+    {
+        if (character == null || character.classTag == null)
+        {
+            return new List<EntityData>();
+        }
+        return GetEntities(new List<string> { character.classTag.name, TagNames.Reward });
+    }
+
+    // False when an included tag isn't registered in the game data: nothing can match it
+    bool ResolveTags(List<string> includedTags, List<string> excludedTags, out List<GameplayTag> included, out List<GameplayTag> excluded)
+    {
+        included = new List<GameplayTag>();
+        excluded = new List<GameplayTag>();
         foreach (string tagName in includedTags)
         {
             GameplayTag tag = GetTagWithName(tagName);
             if (tag == null)
             {
-                return new List<AItemFactory>();
+                return false;
             }
             included.Add(tag);
         }
 
-        List<GameplayTag> excluded = new List<GameplayTag>();
         if (excludedTags != null)
         {
             foreach (string tagName in excludedTags)
@@ -54,8 +84,7 @@ public class DataManager : Singleton<DataManager>
                 }
             }
         }
-
-        return _data.items.FindAll(item => ItemTagFilter.Matches(item, included, excluded));
+        return true;
     }
 
     // One of those items, null when there is none

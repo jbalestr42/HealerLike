@@ -141,6 +141,56 @@ public class DataManagerTests
         CollectionAssert.AreEqual(new[] { item }, _dataManager.GetItems(Tags("Player"), Tags("Unknown")));
     }
 
+    EntityData CreateEntity(params GameplayTag[] tags)
+    {
+        EntityData entity = CreateTracked<EntityData>();
+        entity.tags = new List<GameplayTag>(tags);
+        return entity;
+    }
+
+    [Test]
+    public void GetEntities_LikeTheItems()
+    {
+        GameplayTag druid = CreateTag("Druid");
+        GameplayTag reward = CreateTag("Reward");
+        GameplayTag summon = CreateTag("Summon");
+        EntityData recruitable = CreateEntity(druid, reward);
+        EntityData startOnly = CreateEntity(druid);
+        EntityData summoned = CreateEntity(druid, reward, summon);
+        _gameData.entities = new List<EntityData> { recruitable, null, startOnly, summoned };
+
+        CollectionAssert.AreEqual(new[] { recruitable, summoned }, _dataManager.GetEntities(Tags("Druid", "Reward")));
+        CollectionAssert.AreEqual(new[] { recruitable }, _dataManager.GetEntities(Tags("Druid", "Reward"), Tags("Summon")));
+        Assert.IsEmpty(_dataManager.GetEntities(Tags("Unknown")));
+    }
+
+    [Test]
+    public void GetRewardEntities_TheUnitsTaggedWithTheClassAndReward()
+    {
+        GameplayTag druid = CreateTag("Druid");
+        GameplayTag cleric = CreateTag("Cleric");
+        GameplayTag reward = CreateTag(TagNames.Reward);
+        EntityData druidUnit = CreateEntity(druid, reward);
+        EntityData sharedUnit = CreateEntity(druid, cleric, reward);
+        EntityData clericUnit = CreateEntity(cleric, reward);
+        EntityData notRewarded = CreateEntity(druid);
+        _gameData.entities = new List<EntityData> { druidUnit, sharedUnit, clericUnit, notRewarded };
+        CharacterData character = CreateTracked<CharacterData>();
+        character.classTag = druid;
+
+        CollectionAssert.AreEqual(new[] { druidUnit, sharedUnit }, _dataManager.GetRewardEntities(character));
+    }
+
+    [Test]
+    public void GetRewardEntities_NoCharacterOrClass_NoUnit()
+    {
+        GameplayTag druid = CreateTag("Druid");
+        _gameData.entities = new List<EntityData> { CreateEntity(druid, CreateTag(TagNames.Reward)) };
+
+        Assert.IsEmpty(_dataManager.GetRewardEntities(null));
+        Assert.IsEmpty(_dataManager.GetRewardEntities(CreateTracked<CharacterData>()));
+    }
+
     [Test]
     public void GetRandomItem_AnItemOfAMatchingFactory()
     {

@@ -266,14 +266,16 @@ public class BuffManager : SerializedMonoBehaviour
         return activeHandlers;
     }
 
+    // The handlers having the tag or one of its descendants
     public void RemoveBuffWithTag(GameplayTag tag)
     {
-        RemoveBuff(buffHandlerData => buffHandlerData.buffHandlerFactory.tags.Contains(tag));
+        RemoveBuff(buffHandlerData => buffHandlerData.buffHandlerFactory.HasTag(tag));
     }
 
+    // The handlers having neither the tag nor one of its descendants
     public void RemoveBuffWithoutTag(GameplayTag tag)
     {
-        RemoveBuff(buffHandlerData => !buffHandlerData.buffHandlerFactory.tags.Contains(tag));
+        RemoveBuff(buffHandlerData => !buffHandlerData.buffHandlerFactory.HasTag(tag));
     }
 
     // Stops and removes every initialized handler matching the predicate, across all sources -

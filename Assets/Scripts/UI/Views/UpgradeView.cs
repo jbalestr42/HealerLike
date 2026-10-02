@@ -27,12 +27,12 @@ public class UpgradeView : AView
     List<GameObject> _upgradeButtons = new List<GameObject>();
 
     // Never offered as a reward: those items only come from events (e.g. the Library)
-    public static readonly List<string> RewardExcludedTags = new List<string> { CursedTag.Name, LibraryEventRoom.TagName };
+    public static readonly List<string> RewardExcludedTags = new List<string> { TagNames.Cursed, TagNames.Library };
 
 	public void FillChoices(int count)
     {
         GameData data = DataManager.instance.data;
-        List<EntityData> rewardEntities = PlayerBehaviour.instance.character.data.GetRewardEntities();
+        List<EntityData> rewardEntities = DataManager.instance.GetRewardEntities(PlayerBehaviour.instance.character.data);
 		for (int i = 0; i < count; i++)
         {
             // TODO: improve with a bit of abstraction when we have more upgrade types
@@ -46,12 +46,12 @@ public class UpgradeView : AView
             else if (type == RewardChoiceType.PlayerItem)
             {
                 upgradeButton = Instantiate(_upgradePlayerItem);
-                upgradeButton.GetComponent<SelectPlayerItemUpgradeButton>().Init(DataManager.instance.GetRandomItem(new List<string> { "Player" }, RewardExcludedTags));
+                upgradeButton.GetComponent<SelectPlayerItemUpgradeButton>().Init(DataManager.instance.GetRandomItem(new List<string> { TagNames.Player }, RewardExcludedTags));
             }
             else
             {
                 upgradeButton = Instantiate(_upgradeItem);
-                upgradeButton.GetComponent<SelectItemUpgradeButton>().Init(DataManager.instance.GetRandomItem(new List<string> { "Entity" }, RewardExcludedTags));
+                upgradeButton.GetComponent<SelectItemUpgradeButton>().Init(DataManager.instance.GetRandomItem(new List<string> { TagNames.Entity }, RewardExcludedTags));
             }
             upgradeButton.transform.SetParent(_upgradeContainer.transform);
             _upgradeButtons.Add(upgradeButton);

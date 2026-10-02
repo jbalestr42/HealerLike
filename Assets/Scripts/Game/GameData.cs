@@ -48,6 +48,10 @@ public class GameData : SerializedScriptableObject
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<AItemFactory>, AItemFactory>(items, this)")]
     public List<AItemFactory> items = new List<AItemFactory>();
 
+    // Units found by their tags (e.g. the ones a class can recruit)
+    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<EntityData>, EntityData>(entities, this)")]
+    public List<EntityData> entities = new List<EntityData>();
+
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<GameplayTag>, GameplayTag>(tags, this)")]
     public List<GameplayTag> tags = new List<GameplayTag>();
 }

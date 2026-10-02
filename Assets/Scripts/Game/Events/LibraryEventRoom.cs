@@ -8,8 +8,6 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Custom/EventRooms/Library")]
 public class LibraryEventRoom : AEventRoom
 {
-    public const string TagName = "Library";
-
     [Min(1)] public int choiceCount = 3;
 
     // Offers the cursed items of the library instead of the other ones
@@ -27,12 +25,12 @@ public class LibraryEventRoom : AEventRoom
 
     public static List<string> GetIncludedTags(bool isDark)
     {
-        return isDark ? new List<string> { TagName, CursedTag.Name } : new List<string> { TagName };
+        return isDark ? new List<string> { TagNames.Library, TagNames.Cursed } : new List<string> { TagNames.Library };
     }
 
     public static List<string> GetExcludedTags(bool isDark)
     {
-        return isDark ? new List<string>() : new List<string> { CursedTag.Name };
+        return isDark ? new List<string>() : new List<string> { TagNames.Cursed };
     }
 
     // One choice per item, then a way to leave without any when the items come with a curse (or when there

@@ -118,7 +118,7 @@ public class SandboxGameType : AGameType
     public void GiveItem(AItemFactory itemFactory)
     {
         AItem item = itemFactory.GetItem();
-        if (item.tags.Exists(tag => tag == DataManager.instance.GetTagWithName("Player")))
+        if (item.tags.Exists(tag => tag == DataManager.instance.GetTagWithName(TagNames.Player)))
         {
             PlayerBehaviour.instance.character.inventoryHandler.AddItem(item, -1);
         }

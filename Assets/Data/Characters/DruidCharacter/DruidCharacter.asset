@@ -84,6 +84,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0ae26bc3d5d760143a3e67d507826f1e, type: 2}
   - {fileID: 11400000, guid: 9d7a3690dc71ff44ea39e1ef1e3e300b, type: 2}
   - {fileID: 11400000, guid: 636f5262ae2761b4ab397c7b5f57a3f3, type: 2}
+  classTag: {fileID: 11400000, guid: b0c7adf21cc30b446ae9d1de7168fb74, type: 2}
   skills:
   - {fileID: 11400000, guid: b186a4f7a6969c44b91ecb17aa91728e, type: 2}
   - {fileID: 11400000, guid: b40f2f3a346171848a8513576b2060a6, type: 2}

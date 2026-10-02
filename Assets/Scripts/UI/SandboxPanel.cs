@@ -64,7 +64,7 @@ public class SandboxPanel : MonoBehaviour
     // Player items are equipped on the character, the other ones are given to a unit
     public static bool IsPlayerItem(AItemFactory itemFactory)
     {
-        return itemFactory.tags.Exists(tag => tag != null && tag.name == "Player");
+        return itemFactory.HasTag(TagNames.Player);
     }
 
     SandboxButton CreateButton(Transform container, string label, UnityEngine.Events.UnityAction onClick)

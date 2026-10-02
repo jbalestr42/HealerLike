@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
@@ -9,6 +10,8 @@ public abstract class ABaseDataEditor
 {
     public abstract ScriptableObject data { get; }
     public abstract void AddTree(OdinMenuTree tree);
+    // Lists only the data matching the tags, when the data has tags (e.g. items, units); nothing otherwise
+    public virtual void SetTagFilter(List<GameplayTag> includedTags, List<GameplayTag> excludedTags) {}
 }
 
 public class BaseDataEditor<DataType> : ABaseDataEditor where DataType : ScriptableObject
@@ -91,6 +94,14 @@ public class BaseDataEditor<DataType> : ABaseDataEditor where DataType : Scripta
             _data = ScriptableObject.CreateInstance<DataType>();
             _data.name = AssetDatabase.GenerateUniqueAssetPath(typeof(DataType).GetNiceName());
             _initData?.Invoke(_data);
+        }
+    }
+
+    public override void SetTagFilter(List<GameplayTag> includedTags, List<GameplayTag> excludedTags)
+    {
+        if (typeof(ITaggable).IsAssignableFrom(typeof(DataType)))
+        {
+            _filter = data => TagFilter.Matches(data as ITaggable, includedTags, excludedTags);
         }
     }
 

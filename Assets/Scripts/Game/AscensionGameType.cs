@@ -95,7 +95,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
     // A dead ally is lost for the run: its items go back to the player, and it can be resurrected later
     void OnEntityKilled(Entity entity)
     {
-        if (_run == null || !IsLostForTheRun(entity, DataManager.instance.GetTagWithName(EntityManager.summonTagName)))
+        if (_run == null || !IsLostForTheRun(entity, DataManager.instance.GetTagWithName(TagNames.Summon)))
         {
             return;
         }
@@ -302,7 +302,10 @@ public class AscensionGameType : AGameType, IEventRoomHost
         eventRoom.Play(this);
     }
 
-    public CharacterData characterData => PlayerBehaviour.instance.character.data;
+    public IReadOnlyList<EntityData> GetRewardEntities()
+    {
+        return DataManager.instance.GetRewardEntities(PlayerBehaviour.instance.character.data);
+    }
 
     public System.Random random => _random;
 

@@ -4,7 +4,7 @@ using UnityEngine.Events;
 using UnityEngine.Assertions;
 
 [RequireComponent(typeof(BuffManager), typeof(AttributeManager))]
-public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkable
+public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkable, ITaggable
 {
     public UnityEvent<bool> OnMarkChanged = new UnityEvent<bool>();
     // Damage this entity dealt to a target, after its armor (e.g. for a life steal)
@@ -232,18 +232,6 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         _runtimeTags.Remove(tag);
     }
 
-    // Has the tag, or one of its descendants, from the data or given at runtime
-    public bool HasTag(GameplayTag tag)
-    {
-        if (tag == null)
-        {
-            return false;
-        }
-
-        System.Predicate<GameplayTag> matches = entityTag => entityTag != null && (entityTag == tag || entityTag.IsDescendantOf(tag));
-        return _runtimeTags.Exists(matches) || (_data != null && _data.tags.Exists(matches));
-    }
-
     public void Enable(bool isEnabled)
     {
         _isDraggable = !isEnabled;
@@ -261,8 +249,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         _targetProvider.Reset();
         _buffManager.Reset();
 
-        GameplayTag permanentTag = DataManager.instance.GetTagWithName("Permanent");
-        _buffManager.RemoveBuff(buffHandlerData => !buffHandlerData.buffHandlerFactory.tags.Exists(tag => tag.IsDescendantOf(permanentTag)));
+        // Only the permanent buffs outlast the battle (Permanent or a child of it, e.g. FromItem)
+        _buffManager.RemoveBuffWithoutTag(DataManager.instance.GetTagWithName(TagNames.Permanent));
 
         foreach (ASkill skill in _skills)
         {
@@ -381,6 +369,14 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     {
         OnMarkChanged.Invoke(false);
     }
+
+    #endregion
+
+    #region ITaggable
+
+    // Has the tag, or one of its descendants, from the data or given at runtime
+    public bool HasTag(GameplayTag tag) => TagFilter.HasTag(_runtimeTags, tag) || (_data != null && _data.HasTag(tag));
+    public bool HasTag(string tagName) => TagFilter.HasTag(_runtimeTags, tagName) || (_data != null && _data.HasTag(tagName));
 
     #endregion
 }

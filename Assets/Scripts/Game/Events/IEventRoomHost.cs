@@ -3,8 +3,8 @@ using System.Collections.Generic;
 // The run playing an event room
 public interface IEventRoomHost
 {
-    // The character played in the run
-    CharacterData characterData { get; }
+    // The units the character played can recruit
+    IReadOnlyList<EntityData> GetRewardEntities();
 
     // Seeded with the run, so a seed always plays the same events
     System.Random random { get; }

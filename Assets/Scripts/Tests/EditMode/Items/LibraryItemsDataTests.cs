@@ -88,8 +88,8 @@ public class LibraryItemsDataTests
         Assert.IsNotEmpty(item.data.description);
         Assert.IsNotNull(item.data.icon, title);
         Assert.IsTrue(item.data.tags.Exists(tag => tag != null && tag.name == "Player"), title);
-        Assert.IsTrue(item.data.tags.Exists(tag => tag != null && tag.name == LibraryEventRoom.TagName), title);
-        Assert.IsFalse(CursedTag.IsCursed(item), title);
+        Assert.IsTrue(item.data.tags.Exists(tag => tag != null && tag.name == TagNames.Library), title);
+        Assert.IsFalse(item.HasTag(TagNames.Cursed), title);
 
         Equip(item);
 
@@ -141,8 +141,8 @@ public class LibraryItemsDataTests
     {
         GameData data = AssetDatabase.LoadAssetAtPath<GameData>(gameDataPath);
 
-        Assert.IsTrue(data.tags.Exists(tag => tag != null && tag.name == CursedTag.Name));
-        Assert.IsTrue(data.tags.Exists(tag => tag != null && tag.name == LibraryEventRoom.TagName));
+        Assert.IsTrue(data.tags.Exists(tag => tag != null && tag.name == TagNames.Cursed));
+        Assert.IsTrue(data.tags.Exists(tag => tag != null && tag.name == TagNames.Library));
     }
 }
 

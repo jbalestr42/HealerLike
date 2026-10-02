@@ -19,11 +19,16 @@ public class DataEditor : OdinMenuEditorWindow
         Excluded,
     }
 
+    // Tabs whose data have tags, the tag filter shown above them
+    static readonly HashSet<string> TaggableTypes = new HashSet<string> { "Entities", "Items" };
+
     const int ChipsPerRow = 4;
     static readonly Color IncludedColor = new Color(0.45f, 0.85f, 0.45f);
     static readonly Color ExcludedColor = new Color(0.95f, 0.45f, 0.45f);
 
     List<GameplayTag> _tags = new List<GameplayTag>();
+    // Reloaded when the project changes, so a tag created while the window is open shows up
+    bool _areTagsLoaded = false;
     // In the order they were added
     List<GameplayTag> _filterTags = new List<GameplayTag>();
     Dictionary<GameplayTag, TagFilterState> _tagFilter = new Dictionary<GameplayTag, TagFilterState>();
@@ -31,9 +36,16 @@ public class DataEditor : OdinMenuEditorWindow
     [MenuItem("Tools/Data Editor")]
     private static void OpenEditor() => GetWindow<DataEditor>();
 
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        EditorApplication.projectChanged += OnProjectChanged;
+    }
+
     protected override void OnDestroy()
     {
         base.OnDestroy();
+        EditorApplication.projectChanged -= OnProjectChanged;
 
         foreach (var kvp in _dataEditors)
         {
@@ -48,10 +60,13 @@ public class DataEditor : OdinMenuEditorWindow
     {
         if (GUIUtils.SelectButtonList(ref _selectedType, typesToDisplay))
         {
+            // Each tab has its own tags (e.g. Player for the items, Druid for the units)
+            _tagFilter.Clear();
+            _filterTags.Clear();
             ForceMenuTreeRebuild();
         }
 
-        if (_selectedType == "Items" && DrawTagFilter())
+        if (TaggableTypes.Contains(_selectedType) && DrawTagFilter())
         {
             ForceMenuTreeRebuild();
         }
@@ -94,8 +109,10 @@ public class DataEditor : OdinMenuEditorWindow
     // True when the filter changed
     bool DrawTagFilter()
     {
-        if (_tags.Count == 0)
+        if (!_areTagsLoaded)
         {
+            _areTagsLoaded = true;
+            _tags.Clear();
             foreach (string guid in AssetDatabase.FindAssets("t:GameplayTag"))
             {
                 GameplayTag tag = AssetDatabase.LoadAssetAtPath<GameplayTag>(AssetDatabase.GUIDToAssetPath(guid));
@@ -169,6 +186,26 @@ public class DataEditor : OdinMenuEditorWindow
         return changed;
     }
 
+    void OnProjectChanged()
+    {
+        _areTagsLoaded = false;
+        // A tag of the filter may have been deleted
+        _filterTags.RemoveAll(tag => tag == null);
+        List<GameplayTag> deleted = new List<GameplayTag>();
+        foreach (GameplayTag tag in _tagFilter.Keys)
+        {
+            if (tag == null)
+            {
+                deleted.Add(tag);
+            }
+        }
+        foreach (GameplayTag tag in deleted)
+        {
+            _tagFilter.Remove(tag);
+        }
+        Repaint();
+    }
+
     List<GameplayTag> GetTagsInState(TagFilterState state)
     {
         List<GameplayTag> tags = new List<GameplayTag>();
@@ -205,7 +242,7 @@ public class DataEditor : OdinMenuEditorWindow
         _dataEditors["Items"].Add(new BaseDataEditor<ItemFactory>("Event Items", "Assets/Data/EventItems/")
         {
             getDataName = (ItemFactory item) => item.title + "Item",
-            initData = (ItemFactory item) => item.data = new ItemData { tags = new List<GameplayTag> { LoadTag("Player"), LoadTag(LibraryEventRoom.TagName) } },
+            initData = (ItemFactory item) => item.data = new ItemData { tags = new List<GameplayTag> { LoadTag(TagNames.Player), LoadTag(TagNames.Library) } },
         });
         _dataEditors["GameData"].Add(new BaseDataEditor<GameData>("", "Assets/") { createFolder = false, canCreate = false });
 
@@ -213,9 +250,9 @@ public class DataEditor : OdinMenuEditorWindow
         List<GameplayTag> excludedTags = GetTagsInState(TagFilterState.Excluded);
         if (includedTags.Count > 0 || excludedTags.Count > 0)
         {
-            foreach (ABaseDataEditor dataEditor in _dataEditors["Items"])
+            foreach (ABaseDataEditor dataEditor in _dataEditors[_selectedType])
             {
-                ((BaseDataEditor<ItemFactory>)dataEditor).filter = item => ItemTagFilter.Matches(item, includedTags, excludedTags);
+                dataEditor.SetTagFilter(includedTags, excludedTags);
             }
         }
 

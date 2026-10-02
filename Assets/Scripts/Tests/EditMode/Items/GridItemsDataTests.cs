@@ -112,7 +112,7 @@ public class GridItemsDataTests
         // The tag the attacks target first, known by the game data
         GameplayTag taunt = GetBuff<AddTagBuffFactory>(item).data.tag;
         Assert.IsNotNull(taunt);
-        Assert.AreEqual(TargetProvider.tauntTagName, taunt.name);
+        Assert.AreEqual(TagNames.Taunt, taunt.name);
         Assert.IsTrue(AssetDatabase.LoadAssetAtPath<GameData>("Assets/Data/GameData.asset").tags.Contains(taunt));
         Assert.IsTrue(AssetDatabase.LoadAssetAtPath<GameData>("Assets/Data/TestData.asset").tags.Contains(taunt));
 

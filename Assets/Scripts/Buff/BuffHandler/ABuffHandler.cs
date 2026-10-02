@@ -11,7 +11,7 @@ public enum DurationType
 }
 
 [InlineEditor]
-public abstract class ABuffHandlerFactory : SerializedScriptableObject
+public abstract class ABuffHandlerFactory : SerializedScriptableObject, ITaggable
 {
     [HideInInlineEditors]
     public string uniqueID = Guid.NewGuid().ToString();
@@ -24,6 +24,8 @@ public abstract class ABuffHandlerFactory : SerializedScriptableObject
     public abstract bool hasDuration { get; }
     public abstract int maxStacks { get; }
     public abstract List<GameplayTag> tags { get; }
+    public bool HasTag(GameplayTag tag) => TagFilter.HasTag(tags, tag);
+    public bool HasTag(string tagName) => TagFilter.HasTag(tags, tagName);
 }
 
 public class BuffHandlerFactory<BuffHandlerType, DataType> : ABuffHandlerFactory

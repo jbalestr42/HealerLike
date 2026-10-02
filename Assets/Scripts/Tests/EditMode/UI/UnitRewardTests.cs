@@ -97,7 +97,7 @@ public class UnitRewardTests
     public void RewardItems_NeverEventOnlyItems()
     {
         // Library and cursed items only come from events
-        CollectionAssert.AreEquivalent(new[] { CursedTag.Name, LibraryEventRoom.TagName }, UpgradeView.RewardExcludedTags);
+        CollectionAssert.AreEquivalent(new[] { TagNames.Cursed, TagNames.Library }, UpgradeView.RewardExcludedTags);
     }
 }
 

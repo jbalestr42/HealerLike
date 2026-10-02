@@ -6,8 +6,10 @@ namespace Game.Events
 // Records what an event asks the run, and picks a choice like the player would
 public class FakeEventRoomHost : IEventRoomHost
 {
-    public CharacterData characterData { get; set; }
     public System.Random random { get; set; } = new System.Random(0);
+
+    // The units the character can recruit
+    public List<EntityData> rewardEntities = new List<EntityData>();
 
     // The items of the game, looked up by the names of their tags (or of the parents of their tags)
     public List<AItemFactory> items = new List<AItemFactory>();
@@ -24,6 +26,11 @@ public class FakeEventRoomHost : IEventRoomHost
         shownTitle = title;
         shownDescription = description;
         shownChoices = new List<EventChoice>(choices);
+    }
+
+    public IReadOnlyList<EntityData> GetRewardEntities()
+    {
+        return rewardEntities;
     }
 
     public IReadOnlyList<AItemFactory> GetItems(List<string> includedTags, List<string> excludedTags = null)

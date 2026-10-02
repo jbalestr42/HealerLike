@@ -95,7 +95,7 @@ MonoBehaviour:
       Data: 
   model: {fileID: 6058514216512742586, guid: 3254ba096c79f224babbda9e67cdf806, type: 3}
   title: Strangler Vine
-  description: "Weak shots aimed at the enemy with the most health, each hit deals 5% of its current health as extra damage: a tank breaker"
+  description: 'Weak shots aimed at the enemy with the most health, each hit deals 5% of its current health as extra damage: a tank breaker'
   attributes:
   - key: 0
     value: 100
@@ -107,7 +107,9 @@ MonoBehaviour:
     value: 100
   targetBehaviourType: 2
   targetValidators: []
-  tags: []
+  tags:
+  - {fileID: 11400000, guid: b0c7adf21cc30b446ae9d1de7168fb74, type: 2}
+  - {fileID: 11400000, guid: 057ac9b64013d5b4a8e7cad3956503b8, type: 2}
   items:
   - {fileID: 11400000, guid: 10967428d28329b49bcea0623e907da3, type: 2}
   skillFactories:
