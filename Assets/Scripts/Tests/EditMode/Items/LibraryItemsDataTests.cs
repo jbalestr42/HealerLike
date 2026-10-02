@@ -22,6 +22,16 @@ public class LibraryItemsDataTests
         new object[] { "WellspringManuscriptItem", "Wellspring Manuscript", AttributeType.ManaMax, 120f },
     };
 
+    // Path, title, then the two stats the item changes (its bonus, then its curse) with the value expected from
+    // the same base
+    static readonly object[] CursedItems =
+    {
+        new object[] { "HastyGrimoireItem", "Hasty Grimoire", AttributeType.SkillCooldownMultiplier, 0.7f, AttributeType.SkillCostMultiplier, 1.15f },
+        new object[] { "BloodLedgerItem", "Blood Ledger", AttributeType.SkillCostMultiplier, 0.7f, AttributeType.ManaMax, 85f },
+        new object[] { "BlackCodexItem", "Black Codex", AttributeType.HealPower, 60f, AttributeType.SkillCooldownMultiplier, 1.15f },
+        new object[] { "AbyssalWellItem", "Abyssal Well", AttributeType.ManaMax, 130f, AttributeType.HealPower, 15f },
+    };
+
     GameObject _go;
     AttributeManager _attributes;
 
@@ -94,6 +104,47 @@ public class LibraryItemsDataTests
         Equip(item);
 
         Assert.AreEqual(expected, Get(type), 0.0001f, title);
+    }
+
+    [TestCaseSource(nameof(CursedItems))]
+    public void CursedItem_GivesItsBonusAndItsCurse(string folder, string title, AttributeType bonusType, float bonus, AttributeType curseType, float curse)
+    {
+        ItemFactory item = Load(folder);
+        Assert.AreEqual(title, item.data.name);
+        Assert.IsNotNull(item.data.icon, title);
+        Assert.IsTrue(item.HasTag(TagNames.Player), title);
+        Assert.IsTrue(item.HasTag(TagNames.Library), title);
+        Assert.IsTrue(item.HasTag(TagNames.Cursed), title);
+        // The bonus first, then the curse
+        StringAssert.Contains("\n", item.data.description, title);
+
+        Equip(item);
+
+        Assert.AreEqual(bonus, Get(bonusType), 0.0001f, title);
+        Assert.AreEqual(curse, Get(curseType), 0.0001f, title);
+    }
+
+    // Listed in the game items so the Dark Library finds them by tag, never a regular reward
+    [TestCase("Assets/Data/GameData.asset")]
+    [TestCase("Assets/Data/TestData.asset")]
+    public void CursedItems_AreGameItemsButNeverRegularRewards(string gameDataPath)
+    {
+        GameData data = AssetDatabase.LoadAssetAtPath<GameData>(gameDataPath);
+        foreach (object[] cursedItem in CursedItems)
+        {
+            ItemFactory item = Load((string)cursedItem[0]);
+            CollectionAssert.Contains(data.items, item, item.title);
+            Assert.IsTrue(UpgradeView.RewardExcludedTags.Exists(item.HasTag), item.title);
+        }
+    }
+
+    [Test]
+    public void DarkLibrary_HasEnoughCursedItemsForItsChoicesAndCanBeDrawn()
+    {
+        LibraryEventRoom library = LoadLibrary(DarkLibraryEventPath);
+
+        Assert.GreaterOrEqual(CursedItems.Length, library.choiceCount);
+        Assert.Greater(FindInEventPool(library).weight, 0f);
     }
 
     [Test]

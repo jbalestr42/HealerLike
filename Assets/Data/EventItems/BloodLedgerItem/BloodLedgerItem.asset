@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8940981ac4386e4395c5404eb3a86d1, type: 3}
+  m_Name: BloodLedgerItem
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  data:
+    icon: {fileID: 21300000, guid: 8042daf4c7190bf49ba25891ddabb962, type: 3}
+    name: Blood Ledger
+    description: '-30% mana cost of your skills
+
+      -15% max mana'
+    tags:
+    - {fileID: 11400000, guid: c62124ce56224930993248ec27464a56, type: 2}
+    - {fileID: 11400000, guid: e2e36248c4aacf04993f371db00a7984, type: 2}
+    - {fileID: 11400000, guid: 641f92e7979b3dc49a2338af0549bcf7, type: 2}
+    buffs:
+    - {fileID: 11400000, guid: 8f2eef3154da918449cb907f85ce323f, type: 2}
+    onHitEffects: []
+    onHitConsumers: []
+    projectileBehaviours: []
+    skills: []

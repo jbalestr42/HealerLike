@@ -31,7 +31,8 @@ public class DataEditor : OdinMenuEditorWindow
     bool _areTagsLoaded = false;
     // In the order they were added
     List<GameplayTag> _filterTags = new List<GameplayTag>();
-    Dictionary<GameplayTag, TagFilterState> _tagFilter = new Dictionary<GameplayTag, TagFilterState>();
+    // The state of each tag of the filter, same index; lists so the window keeps them through a recompilation
+    List<TagFilterState> _filterStates = new List<TagFilterState>();
 
     [MenuItem("Tools/Data Editor")]
     private static void OpenEditor() => GetWindow<DataEditor>();
@@ -61,8 +62,8 @@ public class DataEditor : OdinMenuEditorWindow
         if (GUIUtils.SelectButtonList(ref _selectedType, typesToDisplay))
         {
             // Each tab has its own tags (e.g. Player for the items, Druid for the units)
-            _tagFilter.Clear();
             _filterTags.Clear();
+            _filterStates.Clear();
             ForceMenuTreeRebuild();
         }
 
@@ -127,7 +128,8 @@ public class DataEditor : OdinMenuEditorWindow
         bool changed = false;
 
         // The tags not in the filter yet, after a placeholder
-        List<GameplayTag> addable = _tags.FindAll(tag => !_tagFilter.ContainsKey(tag));
+        KeepFilterConsistent();
+        List<GameplayTag> addable = _tags.FindAll(tag => !_filterTags.Contains(tag));
         string[] options = new string[addable.Count + 1];
         options[0] = "Filter by tag...";
         for (int i = 0; i < addable.Count; i++)
@@ -138,8 +140,8 @@ public class DataEditor : OdinMenuEditorWindow
         if (picked > 0)
         {
             GameplayTag tag = addable[picked - 1];
-            _tagFilter[tag] = TagFilterState.Included;
             _filterTags.Add(tag);
+            _filterStates.Add(TagFilterState.Included);
             changed = true;
         }
 
@@ -151,8 +153,9 @@ public class DataEditor : OdinMenuEditorWindow
             Rect rowRect = GUILayoutUtility.GetRect(0, 20);
             for (int i = 0; i < ChipsPerRow && start + i < _filterTags.Count; i++)
             {
-                GameplayTag tag = _filterTags[start + i];
-                TagFilterState state = _tagFilter[tag];
+                int index = start + i;
+                GameplayTag tag = _filterTags[index];
+                TagFilterState state = _filterStates[index];
                 Rect chipRect = rowRect.Split(i, ChipsPerRow);
                 Rect removeRect = new Rect(chipRect.xMax - 20f, chipRect.y, 20f, chipRect.height);
                 Rect labelRect = new Rect(chipRect.x, chipRect.y, chipRect.width - 20f, chipRect.height);
@@ -161,7 +164,7 @@ public class DataEditor : OdinMenuEditorWindow
                 Event current = Event.current;
                 if (current.type == EventType.MouseDown && current.button == 1 && labelRect.Contains(current.mousePosition))
                 {
-                    _tagFilter[tag] = state == TagFilterState.Included ? TagFilterState.Excluded : TagFilterState.Included;
+                    _filterStates[index] = state == TagFilterState.Included ? TagFilterState.Excluded : TagFilterState.Included;
                     changed = true;
                     current.Use();
                 }
@@ -179,8 +182,9 @@ public class DataEditor : OdinMenuEditorWindow
 
         if (removed != null)
         {
-            _tagFilter.Remove(removed);
-            _filterTags.Remove(removed);
+            int index = _filterTags.IndexOf(removed);
+            _filterTags.RemoveAt(index);
+            _filterStates.RemoveAt(index);
             changed = true;
         }
         return changed;
@@ -189,31 +193,40 @@ public class DataEditor : OdinMenuEditorWindow
     void OnProjectChanged()
     {
         _areTagsLoaded = false;
-        // A tag of the filter may have been deleted
-        _filterTags.RemoveAll(tag => tag == null);
-        List<GameplayTag> deleted = new List<GameplayTag>();
-        foreach (GameplayTag tag in _tagFilter.Keys)
+        KeepFilterConsistent();
+        Repaint();
+    }
+
+    // A deleted tag leaves the filter, and every tag has a state (needed by default)
+    void KeepFilterConsistent()
+    {
+        while (_filterStates.Count < _filterTags.Count)
         {
-            if (tag == null)
+            _filterStates.Add(TagFilterState.Included);
+        }
+        if (_filterStates.Count > _filterTags.Count)
+        {
+            _filterStates.RemoveRange(_filterTags.Count, _filterStates.Count - _filterTags.Count);
+        }
+        for (int i = _filterTags.Count - 1; i >= 0; i--)
+        {
+            if (_filterTags[i] == null)
             {
-                deleted.Add(tag);
+                _filterTags.RemoveAt(i);
+                _filterStates.RemoveAt(i);
             }
         }
-        foreach (GameplayTag tag in deleted)
-        {
-            _tagFilter.Remove(tag);
-        }
-        Repaint();
     }
 
     List<GameplayTag> GetTagsInState(TagFilterState state)
     {
+        KeepFilterConsistent();
         List<GameplayTag> tags = new List<GameplayTag>();
-        foreach (KeyValuePair<GameplayTag, TagFilterState> kvp in _tagFilter)
+        for (int i = 0; i < _filterTags.Count; i++)
         {
-            if (kvp.Value == state)
+            if (_filterStates[i] == state)
             {
-                tags.Add(kvp.Key);
+                tags.Add(_filterTags[i]);
             }
         }
         return tags;
