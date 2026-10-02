@@ -11,7 +11,7 @@ public class EventView : AView
     // Lays the choices out (e.g. a HorizontalLayoutGroup)
     [SerializeField] RectTransform _choiceContainer;
 
-    [SerializeField] Vector2 _choiceSize = new Vector2(320f, 280f);
+    [SerializeField] Vector2 _choiceSize = new Vector2(300f, 280f);
     [SerializeField] float _fontSize = 24f;
     [SerializeField] float _minFontSize = 12f;
     [SerializeField] Color _choiceColor = new Color(0.2f, 0.25f, 0.35f, 1f);

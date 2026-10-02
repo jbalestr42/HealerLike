@@ -13,6 +13,8 @@ public class FakeEventRoomHost : IEventRoomHost
     public string shownDescription;
     public List<EventChoice> shownChoices = new List<EventChoice>();
     public List<EntityData> addedUnits = new List<EntityData>();
+    public List<AItem> addedItems = new List<AItem>();
+    public Dictionary<string, List<AItemFactory>> itemsPerTag = new Dictionary<string, List<AItemFactory>>();
     public int endCount = 0;
 
     public void ShowChoices(string title, string description, IReadOnlyList<EventChoice> choices)
@@ -25,6 +27,17 @@ public class FakeEventRoomHost : IEventRoomHost
     public void AddUnit(EntityData unit)
     {
         addedUnits.Add(unit);
+    }
+
+    // The items registered for the first included tag, the excluded ones ignored
+    public IReadOnlyList<AItemFactory> GetItems(List<string> includedTags, List<string> excludedTags = null)
+    {
+        return includedTags.Count > 0 && itemsPerTag.TryGetValue(includedTags[0], out List<AItemFactory> items) ? items : new List<AItemFactory>();
+    }
+
+    public void AddPlayerItem(AItem item)
+    {
+        addedItems.Add(item);
     }
 
     public void EndEvent()

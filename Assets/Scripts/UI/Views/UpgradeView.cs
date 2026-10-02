@@ -26,6 +26,9 @@ public class UpgradeView : AView
 
     List<GameObject> _upgradeButtons = new List<GameObject>();
 
+    // Never offered as a reward: the cursed items only come from the Library
+    static readonly List<string> RewardExcludedTags = new List<string> { CursedTag.Name };
+
 	public void FillChoices(int count)
     {
         GameData data = DataManager.instance.data;
@@ -43,12 +46,12 @@ public class UpgradeView : AView
             else if (type == RewardChoiceType.PlayerItem)
             {
                 upgradeButton = Instantiate(_upgradePlayerItem);
-                upgradeButton.GetComponent<SelectPlayerItemUpgradeButton>().Init(DataManager.instance.GetRandomItemWithTag("Player"));
+                upgradeButton.GetComponent<SelectPlayerItemUpgradeButton>().Init(DataManager.instance.GetRandomItem(new List<string> { "Player" }, RewardExcludedTags));
             }
             else
             {
                 upgradeButton = Instantiate(_upgradeItem);
-                upgradeButton.GetComponent<SelectItemUpgradeButton>().Init(DataManager.instance.GetRandomItemWithTag("Entity"));
+                upgradeButton.GetComponent<SelectItemUpgradeButton>().Init(DataManager.instance.GetRandomItem(new List<string> { "Entity" }, RewardExcludedTags));
             }
             upgradeButton.transform.SetParent(_upgradeContainer.transform);
             _upgradeButtons.Add(upgradeButton);

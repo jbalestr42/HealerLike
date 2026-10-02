@@ -311,6 +311,16 @@ public class AscensionGameType : AGameType, IEventRoomHost
         _gameView.entityInventory.AddEntity(unit);
     }
 
+    public IReadOnlyList<AItemFactory> GetItems(List<string> includedTags, List<string> excludedTags = null)
+    {
+        return DataManager.instance.GetItems(includedTags, excludedTags);
+    }
+
+    public void AddPlayerItem(AItem item)
+    {
+        PlayerBehaviour.instance.character.inventoryHandler.AddItem(item, -1);
+    }
+
     public void ShowChoices(string title, string description, IReadOnlyList<EventChoice> choices)
     {
         UIManager.instance.AddView(ViewType.Event);
@@ -412,7 +422,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
     public void OnPlayerItemSelected(AItem item)
     {
-        PlayerBehaviour.instance.character.inventoryHandler.AddItem(item, -1);
+        AddPlayerItem(item);
         CloseRewards();
     }
 

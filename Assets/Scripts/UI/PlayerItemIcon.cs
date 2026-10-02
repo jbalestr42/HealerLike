@@ -2,10 +2,13 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-// Icon of an item of the player, its name and description shown in the tooltip on hover
+// Icon of an item of the player, its name and description shown in the tooltip on hover. A cursed item
+// stands out with a colored outline
 public class PlayerItemIcon : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] Image _icon;
+    [SerializeField] Color _cursedOutlineColor = new Color(0.69f, 0.49f, 1f, 1f);
+    [SerializeField] Vector2 _cursedOutlineDistance = new Vector2(3f, -3f);
 
     AItem _item;
     public AItem item => _item;
@@ -16,6 +19,23 @@ public class PlayerItemIcon : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     {
         _item = item;
         _icon.sprite = item.icon;
+
+        // Not QuickOutline's 3D Outline
+        UnityEngine.UI.Outline outline = _icon.GetComponent<UnityEngine.UI.Outline>();
+        if (CursedTag.IsCursed(item))
+        {
+            if (outline == null)
+            {
+                outline = _icon.gameObject.AddComponent<UnityEngine.UI.Outline>();
+            }
+            outline.effectColor = _cursedOutlineColor;
+            outline.effectDistance = _cursedOutlineDistance;
+            outline.enabled = true;
+        }
+        else if (outline != null)
+        {
+            outline.enabled = false;
+        }
     }
 
     public static string GetToolTipText(AItem item)

@@ -59,13 +59,13 @@ public class RecruitEventRoomTests
     }
 
     [Test]
-    public void PickUnits_DifferentUnitsUpToTheCount()
+    public void PickDistinct_DifferentUnitsUpToTheCount()
     {
         List<EntityData> pool = new List<EntityData> { _knight, _knight, _archer, null, _mage, _beast };
 
         for (int seed = 0; seed < 50; seed++)
         {
-            List<EntityData> picked = RecruitEventRoom.PickUnits(pool, 3, new System.Random(seed));
+            List<EntityData> picked = EventRoomPicker.PickDistinct(pool, 3, new System.Random(seed));
 
             Assert.AreEqual(3, picked.Count);
             Assert.AreEqual(3, picked.Distinct().Count());
@@ -74,22 +74,22 @@ public class RecruitEventRoomTests
     }
 
     [Test]
-    public void PickUnits_SmallPool_EveryUnitOnce()
+    public void PickDistinct_SmallPool_EveryUnitOnce()
     {
-        List<EntityData> picked = RecruitEventRoom.PickUnits(new List<EntityData> { _knight, _knight, _archer }, 3, new System.Random(0));
+        List<EntityData> picked = EventRoomPicker.PickDistinct(new List<EntityData> { _knight, _knight, _archer }, 3, new System.Random(0));
 
         CollectionAssert.AreEquivalent(new[] { _knight, _archer }, picked);
     }
 
     [Test]
-    public void PickUnits_EveryUnitCanBeOffered()
+    public void PickDistinct_EveryUnitCanBeOffered()
     {
         List<EntityData> pool = new List<EntityData> { _knight, _archer, _mage, _beast };
         HashSet<EntityData> offered = new HashSet<EntityData>();
 
         for (int seed = 0; seed < 50; seed++)
         {
-            offered.UnionWith(RecruitEventRoom.PickUnits(pool, 1, new System.Random(seed)));
+            offered.UnionWith(EventRoomPicker.PickDistinct(pool, 1, new System.Random(seed)));
         }
 
         CollectionAssert.AreEquivalent(pool, offered);

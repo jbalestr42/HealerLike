@@ -69,6 +69,11 @@ public class DataEditor : OdinMenuEditorWindow
         }
     }
 
+    static GameplayTag LoadTag(string tagName)
+    {
+        return AssetDatabase.LoadAssetAtPath<GameplayTag>($"Assets/Prefabs/Tags/{tagName}.asset");
+    }
+
     protected override OdinMenuTree BuildMenuTree()
     {
         var tree = new OdinMenuTree();
@@ -83,6 +88,12 @@ public class DataEditor : OdinMenuEditorWindow
         _dataEditors["Entities"].Add(new BaseDataEditor<EntityData>("Entities", "Assets/Data/Entities/") { getDataName = (EntityData data) => data.title + "Entity" });
         _dataEditors["Items"].Add(new BaseDataEditor<ItemFactory>("Entity Items", "Assets/Data/EntityItems/") { getDataName = (ItemFactory item) => item.title + "Item" });
         _dataEditors["Items"].Add(new BaseDataEditor<ItemFactory>("Player Items", "Assets/Data/PlayerItems/") { getDataName = (ItemFactory item) => item.title + "Item" });
+        // Player items only offered by the Library, along with a curse
+        _dataEditors["Items"].Add(new BaseDataEditor<ItemFactory>("Cursed Items", "Assets/Data/CursedItems/")
+        {
+            getDataName = (ItemFactory item) => item.title + "Item",
+            initData = (ItemFactory item) => item.data = new ItemData { tags = new List<GameplayTag> { LoadTag("Player"), LoadTag(CursedTag.Name) } },
+        });
         _dataEditors["GameData"].Add(new BaseDataEditor<GameData>("", "Assets/") { createFolder = false, canCreate = false });
 
         foreach (ABaseDataEditor dataEditor in _dataEditors[_selectedType])

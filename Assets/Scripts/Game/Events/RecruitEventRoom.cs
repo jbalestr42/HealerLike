@@ -11,34 +11,12 @@ public class RecruitEventRoom : AEventRoom
 
     public override void Play(IEventRoomHost host)
     {
-        List<EntityData> units = PickUnits(host.characterData.GetRewardEntities(), unitCount, host.random);
+        List<EntityData> units = EventRoomPicker.PickDistinct(host.characterData.GetRewardEntities(), unitCount, host.random);
         host.ShowChoices(eventName, description, CreateChoices(units, unit =>
         {
             host.AddUnit(unit);
             host.EndEvent();
         }, host.EndEvent));
-    }
-
-    // Different units, as many as the pool has up to count, in a random order
-    public static List<EntityData> PickUnits(IReadOnlyList<EntityData> pool, int count, System.Random random)
-    {
-        List<EntityData> candidates = new List<EntityData>();
-        foreach (EntityData unit in pool)
-        {
-            if (unit != null && !candidates.Contains(unit))
-            {
-                candidates.Add(unit);
-            }
-        }
-
-        List<EntityData> picked = new List<EntityData>();
-        while (picked.Count < count && candidates.Count > 0)
-        {
-            int index = random.Next(candidates.Count);
-            picked.Add(candidates[index]);
-            candidates.RemoveAt(index);
-        }
-        return picked;
     }
 
     // One choice per unit with its details, then a way to leave without recruiting

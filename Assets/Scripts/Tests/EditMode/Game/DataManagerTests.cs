@@ -56,66 +56,125 @@ public class DataManagerTests
         return itemFactory;
     }
 
-    [Test]
-    public void GetItemsWithTag_ReturnsOnlyItemsHavingTheTag()
+    static List<string> Tags(params string[] names)
     {
-        GameplayTag entityTag = CreateTag("Entity");
-        GameplayTag playerTag = CreateTag("Player");
-        ItemFactory entityItem = CreateItemFactory(entityTag);
-        ItemFactory playerItem = CreateItemFactory(playerTag);
+        return new List<string>(names);
+    }
+
+    [Test]
+    public void GetItems_OnlyItemsHavingTheTag()
+    {
+        ItemFactory entityItem = CreateItemFactory(CreateTag("Entity"));
+        ItemFactory playerItem = CreateItemFactory(CreateTag("Player"));
         ItemFactory untaggedItem = CreateItemFactory();
         _gameData.items = new List<AItemFactory> { entityItem, playerItem, untaggedItem };
 
-        CollectionAssert.AreEqual(new[] { entityItem }, _dataManager.GetItemsWithTag(entityTag));
-        CollectionAssert.AreEqual(new[] { playerItem }, _dataManager.GetItemsWithTag(playerTag));
+        CollectionAssert.AreEqual(new[] { entityItem }, _dataManager.GetItems(Tags("Entity")));
+        CollectionAssert.AreEqual(new[] { playerItem }, _dataManager.GetItems(Tags("Player")));
     }
 
     [Test]
-    public void GetItemsWithTag_ByName_ResolvesTheRegisteredTag()
+    public void GetItems_EveryIncludedTagIsNeeded()
     {
-        GameplayTag entityTag = CreateTag("Entity");
         GameplayTag playerTag = CreateTag("Player");
-        ItemFactory entityItem = CreateItemFactory(entityTag);
-        ItemFactory playerItem = CreateItemFactory(playerTag);
-        _gameData.items = new List<AItemFactory> { entityItem, playerItem };
+        GameplayTag cursedTag = CreateTag("Cursed");
+        ItemFactory regular = CreateItemFactory(playerTag);
+        ItemFactory cursed = CreateItemFactory(playerTag, cursedTag);
+        _gameData.items = new List<AItemFactory> { regular, cursed };
 
-        CollectionAssert.AreEqual(new[] { entityItem }, _dataManager.GetItemsWithTag("Entity"));
-        CollectionAssert.AreEqual(new[] { playerItem }, _dataManager.GetItemsWithTag("Player"));
+        CollectionAssert.AreEqual(new[] { cursed }, _dataManager.GetItems(Tags("Player", "Cursed")));
     }
 
     [Test]
-    public void GetItemsWithTag_IncludesItemsTaggedWithADescendant()
+    public void GetItems_NoItemHavingAnExcludedTag()
+    {
+        // e.g. the regular rewards, never cursed
+        GameplayTag playerTag = CreateTag("Player");
+        GameplayTag cursedTag = CreateTag("Cursed");
+        ItemFactory regular = CreateItemFactory(playerTag);
+        ItemFactory cursed = CreateItemFactory(playerTag, cursedTag);
+        _gameData.items = new List<AItemFactory> { cursed, regular };
+
+        CollectionAssert.AreEqual(new[] { regular }, _dataManager.GetItems(Tags("Player"), Tags("Cursed")));
+    }
+
+    [Test]
+    public void GetItems_TagsMatchTheirDescendants()
     {
         GameplayTag parentTag = CreateTag("Parent");
         GameplayTag childTag = CreateTag("Child", parentTag);
+        GameplayTag excludedParent = CreateTag("ExcludedParent");
         ItemFactory childItem = CreateItemFactory(childTag);
-        _gameData.items = new List<AItemFactory> { childItem };
+        ItemFactory excludedItem = CreateItemFactory(childTag, CreateTag("ExcludedChild", excludedParent));
+        _gameData.items = new List<AItemFactory> { childItem, excludedItem };
 
-        CollectionAssert.AreEqual(new[] { childItem }, _dataManager.GetItemsWithTag(parentTag));
-        Assert.IsEmpty(_dataManager.GetItemsWithTag(CreateTag("Other")));
+        CollectionAssert.AreEqual(new[] { childItem }, _dataManager.GetItems(Tags("Parent"), Tags("ExcludedParent")));
+        CreateTag("Other");
+        Assert.IsEmpty(_dataManager.GetItems(Tags("Other")));
     }
 
     [Test]
-    public void GetItemsWithTag_SkipsMissingItems()
+    public void GetItems_SkipsMissingItemsAndTags()
     {
         GameplayTag tag = CreateTag("Entity");
-        ItemFactory item = CreateItemFactory(tag);
+        ItemFactory item = CreateItemFactory(tag, null);
         _gameData.items = new List<AItemFactory> { null, item };
 
-        CollectionAssert.AreEqual(new[] { item }, _dataManager.GetItemsWithTag(tag));
+        CollectionAssert.AreEqual(new[] { item }, _dataManager.GetItems(Tags("Entity"), Tags("Cursed")));
     }
 
     [Test]
-    public void GetRandomItemWithTag_ReturnsAnItemFromTheMatchingFactory()
+    public void GetItems_UnknownIncludedTag_NoItem()
+    {
+        _gameData.items = new List<AItemFactory> { CreateItemFactory(CreateTag("Player")) };
+
+        Assert.IsEmpty(_dataManager.GetItems(Tags("Unknown")));
+        Assert.IsEmpty(_dataManager.GetItems(Tags("Player", "Unknown")));
+    }
+
+    [Test]
+    public void GetItems_UnknownExcludedTag_ExcludesNothing()
+    {
+        ItemFactory item = CreateItemFactory(CreateTag("Player"));
+        _gameData.items = new List<AItemFactory> { item };
+
+        CollectionAssert.AreEqual(new[] { item }, _dataManager.GetItems(Tags("Player"), Tags("Unknown")));
+    }
+
+    [Test]
+    public void GetRandomItem_AnItemOfAMatchingFactory()
     {
         GameplayTag playerTag = CreateTag("Player");
         ItemFactory entityItem = CreateItemFactory(CreateTag("Entity"));
         ItemFactory playerItem = CreateItemFactory(playerTag);
         _gameData.items = new List<AItemFactory> { entityItem, playerItem };
 
-        AItem item = _dataManager.GetRandomItemWithTag("Player");
+        AItem item = _dataManager.GetRandomItem(Tags("Player"));
 
         CollectionAssert.AreEqual(new[] { playerTag }, item.tags);
+    }
+
+    [Test]
+    public void GetRandomItem_NeverAnExcludedItem()
+    {
+        GameplayTag playerTag = CreateTag("Player");
+        GameplayTag cursedTag = CreateTag("Cursed");
+        ItemFactory regular = CreateItemFactory(playerTag);
+        ItemFactory cursed = CreateItemFactory(playerTag, cursedTag);
+        _gameData.items = new List<AItemFactory> { cursed, regular, cursed };
+
+        for (int i = 0; i < 50; i++)
+        {
+            CollectionAssert.DoesNotContain(_dataManager.GetRandomItem(Tags("Player"), Tags("Cursed")).tags, cursedTag);
+        }
+    }
+
+    [Test]
+    public void GetRandomItem_NoMatchingItem_IsNull()
+    {
+        _gameData.items = new List<AItemFactory> { CreateItemFactory(CreateTag("Entity")) };
+
+        Assert.IsNull(_dataManager.GetRandomItem(Tags("Entity"), Tags("Entity")));
     }
 
     GameData.WavePool AddWavePool(MapNodeType roomType, int minFloor, int maxFloor, params WavePatternData[] waves)

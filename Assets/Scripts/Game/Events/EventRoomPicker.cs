@@ -47,4 +47,30 @@ public static class EventRoomPicker
     {
         return chance != null && chance.eventRoom != null && chance.weight > 0f;
     }
+
+    // Different elements, as many as the pool has up to count, in a random order (e.g. the units of a
+    // recruitment, the items of a library)
+    public static List<T> PickDistinct<T>(IReadOnlyList<T> pool, int count, System.Random random) where T : class
+    {
+        List<T> candidates = new List<T>();
+        if (pool != null)
+        {
+            foreach (T element in pool)
+            {
+                if (element != null && !candidates.Contains(element))
+                {
+                    candidates.Add(element);
+                }
+            }
+        }
+
+        List<T> picked = new List<T>();
+        while (picked.Count < count && candidates.Count > 0)
+        {
+            int index = random.Next(candidates.Count);
+            picked.Add(candidates[index]);
+            candidates.RemoveAt(index);
+        }
+        return picked;
+    }
 }

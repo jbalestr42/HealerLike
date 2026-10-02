@@ -38,6 +38,21 @@ public class BaseDataEditor<DataType> : ABaseDataEditor where DataType : Scripta
     GetDataName _getDataName = (DataType data) => typeof(DataType).GetNiceName();
     public GetDataName getDataName { get { return _getDataName; } set { _getDataName = value; } }
 
+    // Fills each new data before it's edited (e.g. the tags every data of the section has)
+    System.Action<DataType> _initData;
+    public System.Action<DataType> initData
+    {
+        get { return _initData; }
+        set
+        {
+            _initData = value;
+            if (_data != null && _initData != null)
+            {
+                _initData(_data);
+            }
+        }
+    }
+
     public BaseDataEditor(string menuName, string dataPath)
     {
         _path = dataPath;
@@ -71,6 +86,7 @@ public class BaseDataEditor<DataType> : ABaseDataEditor where DataType : Scripta
         {
             _data = ScriptableObject.CreateInstance<DataType>();
             _data.name = AssetDatabase.GenerateUniqueAssetPath(typeof(DataType).GetNiceName());
+            _initData?.Invoke(_data);
         }
     }
 

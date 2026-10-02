@@ -26,21 +26,48 @@ public class DataManager : Singleton<DataManager>
         return GetRandomCharacter();
     }
 
-    // Items having the tag, or one of its descendants
-    public List<AItemFactory> GetItemsWithTag(GameplayTag tag)
+    // Items having every included tag and none of the excluded ones, a tag also matching its descendants
+    // (e.g. the player items that aren't cursed). No item when an included tag isn't registered in the game
+    // data, an unknown excluded tag excludes nothing
+    public List<AItemFactory> GetItems(List<string> includedTags, List<string> excludedTags = null)
     {
-        return _data.items.FindAll(item => item != null && item.tags.Exists(itemTag => itemTag == tag || itemTag.IsDescendantOf(tag)));
+        List<GameplayTag> included = new List<GameplayTag>();
+        foreach (string tagName in includedTags)
+        {
+            GameplayTag tag = GetTagWithName(tagName);
+            if (tag == null)
+            {
+                return new List<AItemFactory>();
+            }
+            included.Add(tag);
+        }
+
+        List<GameplayTag> excluded = new List<GameplayTag>();
+        if (excludedTags != null)
+        {
+            foreach (string tagName in excludedTags)
+            {
+                GameplayTag tag = GetTagWithName(tagName);
+                if (tag != null)
+                {
+                    excluded.Add(tag);
+                }
+            }
+        }
+
+        return _data.items.FindAll(item => item != null && included.TrueForAll(tag => HasTag(item, tag)) && !excluded.Exists(tag => HasTag(item, tag)));
     }
 
-    public List<AItemFactory> GetItemsWithTag(string tagName)
+    // One of those items, null when there is none
+    public AItem GetRandomItem(List<string> includedTags, List<string> excludedTags = null)
     {
-        return GetItemsWithTag(GetTagWithName(tagName));
+        List<AItemFactory> items = GetItems(includedTags, excludedTags);
+        return items.Count > 0 ? items[Random.Range(0, items.Count)].GetItem() : null;
     }
 
-    public AItem GetRandomItemWithTag(string tagName)
+    static bool HasTag(AItemFactory item, GameplayTag tag)
     {
-        List<AItemFactory> items = GetItemsWithTag(tagName);
-        return items[Random.Range(0, items.Count)].GetItem();
+        return item.tags.Exists(itemTag => itemTag != null && (itemTag == tag || itemTag.IsDescendantOf(tag)));
     }
 
     // Waves of every pool matching the room type and floor

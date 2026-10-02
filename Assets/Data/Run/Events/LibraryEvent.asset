@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd90f603b7f981d4ca863596af86d3e3, type: 3}
+  m_Name: LibraryEvent
+  m_EditorClassIdentifier: HealerLike.Runtime::LibraryEventRoom
+  eventName: Library
+  description: Dusty shelves full of old knowledge. One book can come along.
+  choiceCount: 3
+  isDark: 0
+  blessings:
+  - {fileID: 11400000, guid: 9e835c16c005a494c87623cb751e1315, type: 2}
+  - {fileID: 11400000, guid: 1538b81241980fb469ec28afd616d03a, type: 2}
+  - {fileID: 11400000, guid: 523c3616d5e7a4949b46008a6a715831, type: 2}
+  - {fileID: 11400000, guid: 4139a6b81b5966647a2fdc5fca1a45f8, type: 2}
