@@ -362,9 +362,6 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  OnGoldChanged:
-    m_PersistentCalls:
-      m_Calls: []
   _character: {fileID: 902406482163109814}
   _grid: {fileID: 7569074054299176394}
   _gridGenerator: {fileID: 5155686162603198870}

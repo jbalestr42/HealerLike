@@ -27,10 +27,6 @@ public class GameData : SerializedScriptableObject
 
     [HorizontalGroup("Split")]
     [BoxGroup("Split/Player Data")]
-    public int gold = 100;
-
-    [HorizontalGroup("Split")]
-    [BoxGroup("Split/Player Data")]
     public float playerItemChance = 0.2f;
 
     // Chance for each reward choice to be a unit, the other choices being items

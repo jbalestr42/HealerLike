@@ -17,7 +17,6 @@ public class GameHUD : MonoBehaviour
     [SerializeField] UnityEngine.UI.Button _mapButton;
     public UnityEngine.UI.Button mapButton { get { return _mapButton; } }
 
-    [SerializeField] UnityEngine.UI.Text _goldText;
     [SerializeField] UnityEngine.UI.Button _playSpeedx0Button;
     public UnityEngine.UI.Button playSpeedx0Button { get { return _playSpeedx0Button; } }
     [SerializeField] UnityEngine.UI.Button _playSpeedx05Button;
@@ -38,11 +37,6 @@ public class GameHUD : MonoBehaviour
         PlayerBehaviour.instance.OnCharacterInit.AddListener(OnCharacterInit);
     }
 
-    public void SetGold(int gold)
-    {
-        _goldText.text = "Gold: " + gold.ToString();
-    }
-
     public void ShowManaBar(bool show)
     {
         _manaBar.gameObject.SetActive(show);
@@ -50,7 +44,6 @@ public class GameHUD : MonoBehaviour
 
     void OnCharacterInit(Character character)
     {
-        PlayerBehaviour.instance.OnGoldChanged.AddListener(SetGold);
         PlayerBehaviour.instance.character.mana.OnValueChanged.AddListener(OnManaChanged);
         OnManaChanged(PlayerBehaviour.instance.character.mana);
     }

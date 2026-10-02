@@ -117,7 +117,6 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  gold: 150
   playerItemChance: 0.2
   attributeUpgradeData:
   - key: 2
