@@ -35,6 +35,8 @@ public class HealAllEntitiesOnRoundEndBuff : ABuff<HealAllEntitiesOnRoundEndBuff
         AscensionGameType.OnRoundEnd.RemoveListener(OnRoundEnd);
     }
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         _stacks++;
@@ -44,4 +46,6 @@ public class HealAllEntitiesOnRoundEndBuff : ABuff<HealAllEntitiesOnRoundEndBuff
     {
         _stacks--;
     }
+
+    #endregion
 }

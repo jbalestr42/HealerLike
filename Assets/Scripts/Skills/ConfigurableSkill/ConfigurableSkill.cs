@@ -25,41 +25,6 @@ public class ConfigurableSkill : ASkill<ConfigurableSkillData>, ICooldownSkill
         }
     }
 
-    // ICooldownSkill: the cooldown is a whole cycle of the steps (e.g. a burst of shots then a pause)
-    public float cooldownDuration
-    {
-        get
-        {
-            float duration = 0f;
-            foreach (ASkillStep skillStep in _skillSteps)
-            {
-                duration += skillStep.GetDuration();
-            }
-            return duration;
-        }
-    }
-
-    // Part of the cycle left, 1 when it starts and 0 at its end
-    public float cooldownProgress
-    {
-        get
-        {
-            float duration = cooldownDuration;
-            if (duration <= 0f)
-            {
-                return 0f;
-            }
-
-            float elapsed = 0f;
-            for (int i = 0; i < _currentStep; i++)
-            {
-                elapsed += _skillSteps[i].GetDuration();
-            }
-            elapsed += _skillSteps[_currentStep].GetElapsed();
-            return Mathf.Clamp01((duration - elapsed) / duration);
-        }
-    }
-
     public override void UpdateBehaviour(GameObject source)
     {
         Tick(source, Time.deltaTime);
@@ -95,4 +60,43 @@ public class ConfigurableSkill : ASkill<ConfigurableSkillData>, ICooldownSkill
             skillStep.Reset();
         }
     }
+
+    #region ICooldownSkill
+
+    // ICooldownSkill: the cooldown is a whole cycle of the steps (e.g. a burst of shots then a pause)
+    public float cooldownDuration
+    {
+        get
+        {
+            float duration = 0f;
+            foreach (ASkillStep skillStep in _skillSteps)
+            {
+                duration += skillStep.GetDuration();
+            }
+            return duration;
+        }
+    }
+
+    // Part of the cycle left, 1 when it starts and 0 at its end
+    public float cooldownProgress
+    {
+        get
+        {
+            float duration = cooldownDuration;
+            if (duration <= 0f)
+            {
+                return 0f;
+            }
+
+            float elapsed = 0f;
+            for (int i = 0; i < _currentStep; i++)
+            {
+                elapsed += _skillSteps[i].GetDuration();
+            }
+            elapsed += _skillSteps[_currentStep].GetElapsed();
+            return Mathf.Clamp01((duration - elapsed) / duration);
+        }
+    }
+
+    #endregion
 }

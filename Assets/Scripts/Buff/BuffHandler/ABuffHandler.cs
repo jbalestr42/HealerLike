@@ -24,8 +24,13 @@ public abstract class ABuffHandlerFactory : SerializedScriptableObject, ITaggabl
     public abstract bool hasDuration { get; }
     public abstract int maxStacks { get; }
     public abstract List<GameplayTag> tags { get; }
+
+    #region ITaggable
+
     public bool HasTag(GameplayTag tag) => TagFilter.HasTag(tags, tag);
     public bool HasTag(string tagName) => TagFilter.HasTag(tags, tagName);
+
+    #endregion
 }
 
 public class BuffHandlerFactory<BuffHandlerType, DataType> : ABuffHandlerFactory

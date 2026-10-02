@@ -10,9 +10,13 @@ public class TargetRequirement : IRequirement
         _targetProvider = source.GetComponent<ITargetProvider>();
     }
 
+    #region IRequirement
+
     public bool IsValid(GameObject source)
     {
         List<GameObject> targets = _targetProvider.GetTargets();
         return targets != null && targets.Count > 0;
     }
+
+    #endregion
 }

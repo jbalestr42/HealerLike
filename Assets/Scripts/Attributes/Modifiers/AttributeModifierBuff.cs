@@ -53,6 +53,8 @@ public class AttributeModifierBuff<ModifierType, DataType> : ABuff<DataType>, IS
 
     public override bool isStackable => _modifier is IStackableBuff;
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         IStackableBuff stackableModifier = _modifier as IStackableBuff;
@@ -64,4 +66,6 @@ public class AttributeModifierBuff<ModifierType, DataType> : ABuff<DataType>, IS
         IStackableBuff stackableModifier = _modifier as IStackableBuff; 
         stackableModifier.Unstack(source, target);
     }
+
+    #endregion
 }

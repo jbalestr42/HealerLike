@@ -33,6 +33,8 @@ public class ApplyConsumerBuff : ABuff<ApplyConsumerBuffData>, IStackableBuff
     {
     }
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         _stacks++;
@@ -42,4 +44,6 @@ public class ApplyConsumerBuff : ABuff<ApplyConsumerBuffData>, IStackableBuff
     {
         _stacks--;
     }
+
+    #endregion
 }

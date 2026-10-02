@@ -12,8 +12,6 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
     Entity _owner;
 
     public bool isEnabled { get; set; }
-    public int targetCount { get { return _targetBehaviour.targetCount; } set { _targetBehaviour.targetCount = value; } }
-    public TargetBehaviourType targetBehaviourType { get => _targetBehaviour.targetType; set => SetTargetBehaviour(value); }
 
     public void Init(TargetBehaviourType targetBehaviourType, List<ATargetValidatorFactory> targetValidators)
     {
@@ -53,11 +51,6 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
         _targetBehaviour.tauntTag = previousBehaviour.tauntTag;
     }
 
-    public List<GameObject> GetTargets()
-    {
-        return _targets;
-    }
-
     // The targets of the battle, or the ones the entity would aim at from where it stands when it doesn't
     // fight (placement): a copy, the entity doesn't attack them
     public List<GameObject> GetPreviewTargets()
@@ -68,4 +61,17 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
         }
         return new List<GameObject>(_targetBehaviour.GetTargets(gameObject, transform.position, _range.Value, _owner.GetTargetType()));
     }
+
+    #region ITargetProvider
+
+    public int targetCount { get { return _targetBehaviour.targetCount; } set { _targetBehaviour.targetCount = value; } }
+
+    public TargetBehaviourType targetBehaviourType { get => _targetBehaviour.targetType; set => SetTargetBehaviour(value); }
+
+    public List<GameObject> GetTargets()
+    {
+        return _targets;
+    }
+
+    #endregion
 }

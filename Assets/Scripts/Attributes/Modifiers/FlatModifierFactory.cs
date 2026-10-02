@@ -26,6 +26,8 @@ public class FlatModifier : AttributeModifier<FlatModifierData>, IStackableBuff
         return _stackedValue;
     }
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         if (data.modifierType == AttributeModifierType.Multiply)
@@ -51,4 +53,6 @@ public class FlatModifier : AttributeModifier<FlatModifierData>, IStackableBuff
             _stackedValue -= data.value;
         }
     }
+
+    #endregion
 }

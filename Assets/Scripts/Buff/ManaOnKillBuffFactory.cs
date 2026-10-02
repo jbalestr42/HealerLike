@@ -48,6 +48,8 @@ public class ManaOnKillBuff : ABuff<ManaOnKillBuffData>, IStackableBuff
         }
     }
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         _stacks++;
@@ -57,4 +59,6 @@ public class ManaOnKillBuff : ABuff<ManaOnKillBuffData>, IStackableBuff
     {
         _stacks--;
     }
+
+    #endregion
 }

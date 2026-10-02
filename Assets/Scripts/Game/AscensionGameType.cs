@@ -302,34 +302,6 @@ public class AscensionGameType : AGameType, IEventRoomHost
         eventRoom.Play(this);
     }
 
-    public IReadOnlyList<EntityData> GetRewardEntities()
-    {
-        return DataManager.instance.GetRewardEntities(PlayerBehaviour.instance.character.data);
-    }
-
-    public System.Random random => _random;
-
-    public void AddUnit(EntityData unit)
-    {
-        _gameView.entityInventory.AddEntity(unit);
-    }
-
-    public IReadOnlyList<AItemFactory> GetItems(List<string> includedTags, List<string> excludedTags = null)
-    {
-        return DataManager.instance.GetItems(includedTags, excludedTags);
-    }
-
-    public void AddPlayerItem(AItem item)
-    {
-        PlayerBehaviour.instance.character.inventoryHandler.AddItem(item, -1);
-    }
-
-    public void ShowChoices(string title, string description, IReadOnlyList<EventChoice> choices)
-    {
-        UIManager.instance.AddView(ViewType.Event);
-        _eventView.Display(title, description, CloseBeforeEachChoice(choices, () => UIManager.instance.PopCurrentView()));
-    }
-
     // Copies of the choices calling close before their own action, e.g. so a choice can open another screen
     public static List<EventChoice> CloseBeforeEachChoice(IReadOnlyList<EventChoice> choices, System.Action close)
     {
@@ -350,16 +322,6 @@ public class AscensionGameType : AGameType, IEventRoomHost
             });
         }
         return closingChoices;
-    }
-
-    public void EndEvent()
-    {
-        if (_state != State.PlayEvent)
-        {
-            return;
-        }
-
-        SetState(State.ShowMap);
     }
 
     // Beating the boss wins the run, the other fights lead to a reward
@@ -585,4 +547,46 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
         EntityManager.instance.SpawnWave(waveData, transform.position, Entity.EntityType.Computer);
     }
+
+    #region IEventRoomHost
+
+    public IReadOnlyList<EntityData> GetRewardEntities()
+    {
+        return DataManager.instance.GetRewardEntities(PlayerBehaviour.instance.character.data);
+    }
+
+    public System.Random random => _random;
+
+    public void AddUnit(EntityData unit)
+    {
+        _gameView.entityInventory.AddEntity(unit);
+    }
+
+    public IReadOnlyList<AItemFactory> GetItems(List<string> includedTags, List<string> excludedTags = null)
+    {
+        return DataManager.instance.GetItems(includedTags, excludedTags);
+    }
+
+    public void AddPlayerItem(AItem item)
+    {
+        PlayerBehaviour.instance.character.inventoryHandler.AddItem(item, -1);
+    }
+
+    public void ShowChoices(string title, string description, IReadOnlyList<EventChoice> choices)
+    {
+        UIManager.instance.AddView(ViewType.Event);
+        _eventView.Display(title, description, CloseBeforeEachChoice(choices, () => UIManager.instance.PopCurrentView()));
+    }
+
+    public void EndEvent()
+    {
+        if (_state != State.PlayEvent)
+        {
+            return;
+        }
+
+        SetState(State.ShowMap);
+    }
+
+    #endregion
 }

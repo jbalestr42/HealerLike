@@ -33,6 +33,8 @@ public class ManaOnRoundEndBuff : ABuff<ManaOnRoundEndBuffData>, IStackableBuff
         AscensionGameType.OnRoundEnd.RemoveListener(OnRoundEnd);
     }
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         _stacks++;
@@ -42,4 +44,6 @@ public class ManaOnRoundEndBuff : ABuff<ManaOnRoundEndBuffData>, IStackableBuff
     {
         _stacks--;
     }
+
+    #endregion
 }

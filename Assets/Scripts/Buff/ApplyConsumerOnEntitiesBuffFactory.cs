@@ -40,6 +40,8 @@ public class ApplyConsumerOnEntitiesBuff : ABuff<ApplyConsumerOnEntitiesBuffData
 
     public override void Remove(GameObject source, GameObject target) { }
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         _stacks++;
@@ -49,4 +51,6 @@ public class ApplyConsumerOnEntitiesBuff : ABuff<ApplyConsumerOnEntitiesBuffData
     {
         _stacks--;
     }
+
+    #endregion
 }

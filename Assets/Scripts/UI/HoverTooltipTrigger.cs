@@ -9,6 +9,14 @@ public class HoverTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointer
     public Action<RectTransform> onEnter;
     public Action onExit;
 
+    // Hidden while still hovered (e.g. the screen is closed): the tooltip must not stay behind
+    void OnDisable()
+    {
+        onExit?.Invoke();
+    }
+
+    #region IPointerEnterHandler, IPointerExitHandler
+
     public void OnPointerEnter(PointerEventData eventData)
     {
         onEnter?.Invoke((RectTransform)transform);
@@ -19,9 +27,5 @@ public class HoverTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointer
         onExit?.Invoke();
     }
 
-    // Hidden while still hovered (e.g. the screen is closed): the tooltip must not stay behind
-    void OnDisable()
-    {
-        onExit?.Invoke();
-    }
+    #endregion
 }

@@ -72,6 +72,8 @@ public class DamageAllEntityOnEntityDieBuff : ABuff<DamageAllEntityOnEntityDieBu
         }
     }
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         _stacks++;
@@ -81,4 +83,6 @@ public class DamageAllEntityOnEntityDieBuff : ABuff<DamageAllEntityOnEntityDieBu
     {
         _stacks--;
     }
+
+    #endregion
 }

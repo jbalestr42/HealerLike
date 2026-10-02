@@ -44,6 +44,10 @@ public class EntityData : SerializedScriptableObject, ITaggable
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ASkillFactory>, ASkillFactory>(skillFactories)")]
     public List<ASkillFactory> skillFactories;
 
+    #region ITaggable
+
     public bool HasTag(GameplayTag tag) => TagFilter.HasTag(tags, tag);
     public bool HasTag(string tagName) => TagFilter.HasTag(tags, tagName);
+
+    #endregion
 }

@@ -77,10 +77,6 @@ public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>, ICooldownSkill
         }
     }
 
-    // ICooldownSkill: the cooldown is the interval between a strike and the next mark
-    public float cooldownDuration => interval;
-    public float cooldownProgress => interval > 0f ? remainingInterval / interval : 0f;
-
     // The data is set right after AddComponent, so after Awake: the targeting is built once here
     void Start()
     {
@@ -190,4 +186,12 @@ public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>, ICooldownSkill
         _markedTarget = null;
         _isMarking = false;
     }
+
+    #region ICooldownSkill
+
+    // The cooldown is the interval between a strike and the next mark
+    public float cooldownDuration => interval;
+    public float cooldownProgress => interval > 0f ? remainingInterval / interval : 0f;
+
+    #endregion
 }

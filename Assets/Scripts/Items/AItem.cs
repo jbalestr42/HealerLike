@@ -8,8 +8,13 @@ public abstract class AItemFactory : SerializedScriptableObject, ITaggable
     public abstract AItem GetItem();
     public abstract string title { get; }
     public abstract List<GameplayTag> tags { get; }
+
+    #region ITaggable
+
     public bool HasTag(GameplayTag tag) => TagFilter.HasTag(tags, tag);
     public bool HasTag(string tagName) => TagFilter.HasTag(tags, tagName);
+
+    #endregion
 }
 
 public class ItemFactory<ItemType, DataType> : AItemFactory
@@ -59,8 +64,13 @@ public abstract class AItem : ITaggable
     public abstract string description { get; }
     public abstract Sprite icon { get; }
     public abstract List<GameplayTag> tags { get; }
+
+    #region ITaggable
+
     public bool HasTag(GameplayTag tag) => TagFilter.HasTag(tags, tag);
     public bool HasTag(string tagName) => TagFilter.HasTag(tags, tagName);
+
+    #endregion
 }
 
 public abstract class AItem<DataType> : AItem where DataType : BaseItemData

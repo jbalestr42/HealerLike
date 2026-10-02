@@ -42,6 +42,8 @@ public class TimeModifier : AttributeModifier<TimeModifierData>, IStackableBuff
         return ratio;
     }
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         _start = Time.time;
@@ -50,4 +52,6 @@ public class TimeModifier : AttributeModifier<TimeModifierData>, IStackableBuff
     public void Unstack(GameObject source, GameObject target)
     {
     }
+
+    #endregion
 }

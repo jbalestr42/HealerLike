@@ -9,13 +9,6 @@ public class LookAtTarget : MonoBehaviour, IVisualBehaviour
     Vector3 _originalForward;
     bool _isInitialized = false;
 
-    public void Init(Entity entity)
-    {
-        _isInitialized = true;
-        _originalForward = transform.forward;
-        _targetProvider = entity.GetComponent<TargetProvider>();
-    }
-
     void Update()
     {
         if (_isInitialized)
@@ -27,4 +20,15 @@ public class LookAtTarget : MonoBehaviour, IVisualBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, targetDir, _speed * Time.deltaTime);
         }
     }
+
+    #region IVisualBehaviour
+
+    public void Init(Entity entity)
+    {
+        _isInitialized = true;
+        _originalForward = transform.forward;
+        _targetProvider = entity.GetComponent<TargetProvider>();
+    }
+
+    #endregion
 }

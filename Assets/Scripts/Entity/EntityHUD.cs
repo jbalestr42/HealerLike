@@ -6,6 +6,18 @@ public class EntityHUD : MonoBehaviour, IVisualBehaviour
     [SerializeField] GameObject _mark;
     [SerializeField] BuffIconBar _buffIconBar;
 
+    void ShowHealth(ResourceAttribute health)
+    {
+        _resourceView.SetResource(health.Value, health.Max);
+    }
+
+    public void ShowMark(bool show)
+    {
+        _mark.SetActive(show);
+    }
+
+    #region IVisualBehaviour
+
     public void Init(Entity entity)
     {
         entity.health.OnValueChanged.AddListener(ShowHealth);
@@ -17,13 +29,5 @@ public class EntityHUD : MonoBehaviour, IVisualBehaviour
         _resourceView.Show(true);
     }
 
-    void ShowHealth(ResourceAttribute health)
-    {
-        _resourceView.SetResource(health.Value, health.Max);
-    }
-
-    public void ShowMark(bool show)
-    {
-        _mark.SetActive(show);
-    }
+    #endregion
 }

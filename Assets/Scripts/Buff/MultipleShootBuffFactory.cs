@@ -24,6 +24,8 @@ public class MultipleShootBuff : ABuff<MultipleShootBuffData>, IStackableBuff
         target.GetComponent<ITargetProvider>().targetCount -= data.value;
     }
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         target.GetComponent<ITargetProvider>().targetCount += data.value;
@@ -33,4 +35,6 @@ public class MultipleShootBuff : ABuff<MultipleShootBuffData>, IStackableBuff
     {
         target.GetComponent<ITargetProvider>().targetCount -= data.value;
     }
+
+    #endregion
 }

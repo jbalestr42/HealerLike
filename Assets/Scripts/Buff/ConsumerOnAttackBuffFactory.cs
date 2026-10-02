@@ -35,6 +35,8 @@ public class ConsumerOnAttackBuff : ABuff<ConsumerOnAttackBuffData>, IStackableB
         _owner.OnAttack.RemoveListener(OnAttack);
     }
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         _stacks++;
@@ -44,4 +46,6 @@ public class ConsumerOnAttackBuff : ABuff<ConsumerOnAttackBuffData>, IStackableB
     {
         _stacks--;
     }
+
+    #endregion
 }

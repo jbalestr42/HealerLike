@@ -21,6 +21,8 @@ public class UpgradeModifier : AttributeModifier<UpgradeModifierData>, IStackabl
         return data.value * stacks;
     }
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         stacks++;
@@ -30,4 +32,6 @@ public class UpgradeModifier : AttributeModifier<UpgradeModifierData>, IStackabl
     {
         stacks--;
     }
+
+    #endregion
 }
