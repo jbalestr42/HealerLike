@@ -43,4 +43,6 @@ MonoBehaviour:
     firstFloor: 0
     weight: 0
     canFollowItself: 0
-  eventRooms: []
+  eventRooms:
+  - eventRoom: {fileID: 11400000, guid: 8fce84b80355b6c4faaa6d770cd834f1, type: 2}
+    weight: 1

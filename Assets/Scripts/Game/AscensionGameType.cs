@@ -302,6 +302,15 @@ public class AscensionGameType : AGameType, IEventRoomHost
         eventRoom.Play(this);
     }
 
+    public CharacterData characterData => PlayerBehaviour.instance.character.data;
+
+    public System.Random random => _random;
+
+    public void AddUnit(EntityData unit)
+    {
+        _gameView.entityInventory.AddEntity(unit);
+    }
+
     public void ShowChoices(string title, string description, IReadOnlyList<EventChoice> choices)
     {
         UIManager.instance.AddView(ViewType.Event);
@@ -410,7 +419,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
     // The unit joins the ones the player can place on the grid
     public void OnEntitySelected(EntityData entity)
     {
-        _gameView.entityInventory.AddEntity(entity);
+        AddUnit(entity);
         CloseRewards();
     }
 
@@ -479,7 +488,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
     {
         if (_run.RemoveDeadAlly(ally))
         {
-            _gameView.entityInventory.AddEntity(ally);
+            AddUnit(ally);
         }
         LeaveRestRoom();
     }

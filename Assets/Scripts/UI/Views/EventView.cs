@@ -11,8 +11,9 @@ public class EventView : AView
     // Lays the choices out (e.g. a HorizontalLayoutGroup)
     [SerializeField] RectTransform _choiceContainer;
 
-    [SerializeField] Vector2 _choiceSize = new Vector2(320f, 160f);
+    [SerializeField] Vector2 _choiceSize = new Vector2(320f, 280f);
     [SerializeField] float _fontSize = 24f;
+    [SerializeField] float _minFontSize = 12f;
     [SerializeField] Color _choiceColor = new Color(0.2f, 0.25f, 0.35f, 1f);
     [SerializeField] Color _unavailableColor = new Color(0.2f, 0.2f, 0.2f, 0.6f);
     // Rounded sprite of the choices, sliced; plain rectangles when not set
@@ -112,7 +113,10 @@ public class EventView : AView
 
         TMP_Text text = buttonGo.GetComponentInChildren<TMP_Text>();
         text.text = GetChoiceText(choice);
-        text.fontSize = _fontSize;
+        // Long texts (e.g. the stats of a unit) shrink to fit the choice
+        text.enableAutoSizing = true;
+        text.fontSizeMax = _fontSize;
+        text.fontSizeMin = _minFontSize;
         text.color = choice.isAvailable ? Color.white : new Color(1f, 1f, 1f, 0.5f);
         text.margin = new Vector4(12f, 8f, 12f, 8f);
 
